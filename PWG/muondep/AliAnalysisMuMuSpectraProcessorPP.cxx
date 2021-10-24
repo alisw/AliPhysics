@@ -17,6 +17,7 @@
 
 ClassImp(AliAnalysisMuMuSpectraProcessorPP)
 
+#include <TObjString.h>
 #include "TF1.h"
 #include "TProfile.h"
 #include "TH1.h"

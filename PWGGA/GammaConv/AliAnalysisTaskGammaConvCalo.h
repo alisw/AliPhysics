@@ -35,6 +35,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void InitBack();
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
+    void SetCaloTriggerHelperName(TString name){fCaloTriggerHelperName=name; return;}
     void SetIsHeavyIon(Int_t flag){
       fIsHeavyIon = flag;
     }
@@ -71,8 +72,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
-    void SetLightOutput                 ( Int_t flag )                                     { fDoLightOutput = flag                       ;}
-    void SetECalibOutput                ( Bool_t flag )                                     { fDoECalibOutput = flag                      ;}
+    void SetLightOutput                 ( Int_t flag )                                      { fDoLightOutput = flag                       ;}
+    void SetPi0EtaSwitch                ( Int_t flag )                                      { fPi0EtaSwitch = flag                        ;}
+    void SetECalibOutput                ( Int_t flag )                                      { fDoECalibOutput = flag                      ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
     void SetDoPhotonQA                  ( Int_t flag )                                      { fDoPhotonQA = flag                          ;}
@@ -153,6 +155,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
   protected:
     AliV0ReaderV1*                      fV0Reader;              //! basic photon Selection Task
     TString                             fV0ReaderName;
+    TString                             fCaloTriggerHelperName;
     TString                             fCorrTaskSetting;       // Correction Task Special Name
     AliGammaConversionAODBGHandler**    fBGHandler;             //! BG handler for Conversion
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           //! BG handler for Conversion (possibility to mix with respect to RP)
@@ -192,6 +195,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fMCGammaCandidates;     //! current list of MC generated photon candidates
     TClonesArray*                       fAODMCTrackArray;       //! pointer to track array
     AliCaloTriggerMimicHelper**         fCaloTriggerMimicHelper;//!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
+    map<TString, Bool_t>                fSetEventCutsOutputlist;//! Store, if Output list for Event Cut has already been added
 
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
@@ -250,6 +254,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherEtaConvPhotonEtaPhi;    //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65 ,eta/phi of conversion photon
     TH2F**                  fHistoMotherInvMassECalib;          //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of cluster
     TH2F**                  fHistoMotherBackInvMassECalib;      //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of cluster
+    TH2F**                  fHistoMotherInvMassECalibPCM;       //! array of histogram with signal + BG for same event photon pairs, inv Mass, energy of PCM photon
+    TH2F**                  fHistoMotherBackInvMassECalibPCM;   //! array of histogram with BG for mixed event photon pairs, inv Mass, energy of PCM photon
 
     // histograms for rec photons tagged by Calo
     TH2F**                  fHistoPhotonPairPtconv;             //! array of histo for pairs vs. pt of converted photon
@@ -257,6 +263,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // histograms for rec photon clusters
     TH1F**                  fHistoClusGammaPt;                  //! array of histos with cluster, pt
     TH1F**                  fHistoClusGammaE;                   //! array of histos with cluster, E
+    TH1F**                  fHistoClusGammaE_BothBM;            //! array of histos with cluster, E; Only clusters, which are good on triggered bad map and analysis bad map; Only MB
+    TH1F**                  fHistoClusGammaE_BothBM_highestE;   //! array of histos with cluster, E; Only highest cluster in event, which is good on triggered bad map and analysis bad map;  MB and tigger but use only triggered clusters for trigger
+    TH1F**                  fHistoClusGammaE_AnaBM_highestE;    //! array of histos with cluster, E; Only highest cluster in event, which is good on analysis bad map; Only MB
+    TH1F**                  fHistoClusGammaE_onlyTriggered;     //! array of histos with cluster, E
     TH1I**                  fHistoGoodMesonClusters;              //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
     TH1F**                  fHistoClusAllHeadersGammaPt;        //! array of histos with cluster, pt all headers
@@ -317,6 +327,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0InvMassPt;                             //! array of histos with validated pi0, invMass, pt
     TH2F**                  fHistoTrueEtaInvMassPt;                             //! array of histos with validated eta, invMass, pt
+    TH2F**                  fHistoTruePi0InvMassPtAdditional;                             //! array of histos with validated pi0, invMass, pt
+    TH2F**                  fHistoTrueEtaInvMassPtAdditional;                             //! array of histos with validated eta, invMass, pt
     TH2F**                  fHistoTruePi0MatchedInvMassPt;                      //! array of histos with rejected pi0, invMass, pt
     TH2F**                  fHistoTrueEtaMatchedInvMassPt;                      //! array of histos with rejected eta, invMass, pt
     TH2F**                  fHistoTruePi0CaloPhotonInvMassPt;                   //! array of histos with validated pi0, photon leading, invMass, pt
@@ -524,6 +536,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
     TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
+    TH2F**                  fHistoTruePi0InvMassECalibPCM;                         //! array of histogram with pure pi0 signal inv Mass, energy of PCM
 
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
@@ -565,7 +578,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
     Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
     Int_t                   fDoLightOutput;                                     // switch for running light output, 0 -> normal mode, 1 -> light mode, 2 -> minimum
-    Bool_t                  fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
+    Int_t                   fPi0EtaSwitch;                                     // switch for running only pi0, oly eta or both, 0 -> both, 1 -> pi0, 2 -> eta
+    Int_t                   fDoECalibOutput;                                    // switch for running with E-Calib Histograms in Light Output, kFALSE -> no E-Calib Histograms, kTRUE -> with E-Calib Histograms
     Bool_t                  fDoMesonAnalysis;                                   // flag for meson analysis
     Int_t                   fDoMesonQA;                                         // flag for meson QA
     Int_t                   fDoPhotonQA;                                        // flag for photon QA
@@ -591,7 +605,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 63);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 68);
 };
 
 #endif

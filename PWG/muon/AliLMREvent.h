@@ -30,6 +30,7 @@ public:
 	void SetPhysicsSelectionMask(UShort_t mask){fPhysicsSelectionMask=mask;};
 	void SetIsPileupFromSPD(Bool_t ispileup){fPileupFromSPD=ispileup;};
 	void SetIsPileupFromSPDInMultBins(Bool_t ispileup){fPileupFromSPDInMultBins=ispileup;};
+	void SetIsPrimaryVertex(Bool_t primaryVtxExists){fIsPrimaryVertex=primaryVtxExists;};
 	void SetL0TriggerInput(UShort_t L0TriggerInput){fL0TriggerInput=L0TriggerInput;};
 	Double_t GetEventPlane() {return fEventPlane ;};
 	Int_t GetRunNumber() {return fRunNb ;};
@@ -44,6 +45,7 @@ public:
 	Float_t GetMultiplicity(TString method);
 	Bool_t IsPileupFromSPD(){return fPileupFromSPD;};
 	Bool_t IsPileupFromSPDInMultBins(){return fPileupFromSPDInMultBins;};
+	Bool_t IsPrimaryVertex(){return fIsPrimaryVertex;};
 	
 	AliLMRMuon *AddMuon();
 	AliLMRMuon *GetMuon(Int_t imu) { return ((imu < fMuons->GetEntriesFast()) ? (AliLMRMuon *)fMuons->At(imu) : 0);};
@@ -74,6 +76,7 @@ private:
 	TString fTriggerString;
 	Bool_t fPileupFromSPD;
 	Bool_t fPileupFromSPDInMultBins;
+	Bool_t fIsPrimaryVertex;
 
 	ClassDef(AliLMREvent, 2)  //The class title
 

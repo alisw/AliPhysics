@@ -19,10 +19,9 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamv0(const int nDaugh = 3);
   virtual ~AliFemtoDreamv0();
-  void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
-  void Setv0(AliVEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
-  void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
-             const int multiplicity = -1);
+  void Setv0(AliAODEvent *evt, AliAODv0 *v0);
+  void Setv0(AliVEvent *evt, AliAODv0 *v0);
+  void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0);
   // the last two are switches to ignore the first entry in the phi, eta, ...
   // vector in case one cases a V0 in this object, and only wants to keep the
   // daughter information

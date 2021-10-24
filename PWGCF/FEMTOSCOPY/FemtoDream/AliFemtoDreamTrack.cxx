@@ -74,9 +74,8 @@ AliFemtoDreamTrack::~AliFemtoDreamTrack() {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
+void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   this->Reset();
-  SetEventMultiplicity(multiplicity);
   fAODTrack = track;
   int trackID = fAODTrack->GetID();
   if (trackID < 0) {
@@ -110,8 +109,7 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
-                                  const int multiplicity) {
+void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event) {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if (man) {
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
@@ -122,7 +120,6 @@ void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
   }
   AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
   this->Reset();
-  SetEventMultiplicity(multiplicity);
   fVTrack = track;
   int trackID = nanoTrack->GetID();
   if (trackID < 0) {
@@ -156,11 +153,9 @@ void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
 }
 
 void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
-                                  const int multiplicity,
                                   const bool TPCOnlyTrack,
                                   const bool IsOmegaTrack) {
   this->Reset();
-  SetEventMultiplicity(multiplicity);
   fESDTrack = track;
   if (fESDTrack) {
     this->fIsReset = false;

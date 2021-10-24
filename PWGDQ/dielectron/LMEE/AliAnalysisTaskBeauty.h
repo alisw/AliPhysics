@@ -38,6 +38,9 @@ public:
   
   void         SetProcessType(Int_t processType)  { fProcessType = processType; }
   void         SetPtCutHigh(Double_t max)         { fPtCutHigh = max; }
+  void         SetPtCutLow(Double_t min)          { fPtCutLow = min; }
+  void         SetEtamax(Double_t max)            { fEtamax = max; }
+  void         SetEtamin(Double_t min)            { fEtamin = min; }
   void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b; }
   void         SetApplyEventw(Bool_t b)           { fEventWeight = b;  }
   
@@ -48,6 +51,7 @@ private:
   Double_t       pt_cut300(double pT);
   Double_t       pt_cut400(double pT);
   Double_t       pt_cutHigh(Double_t pT);
+  Double_t       pt_cutLow(Double_t pT);
   Double_t       scale_RAA(Double_t pT);
   Bool_t         Inphenixacc(Double_t phi, Double_t pt, Int_t pdg);
   
@@ -59,6 +63,9 @@ protected:
   Int_t                    fProcessType; // Select the process type
   Bool_t                   fEventWeight;
   Double_t                 fPtCutHigh;
+  Double_t                 fPtCutLow;
+  Double_t                 fEtamin;
+  Double_t                 fEtamax;
   Bool_t                   fScaleByRAA;
   // Histogram with 4 bins: for # of events 
   TH1F *hNEvents;                                      //!
@@ -121,6 +128,8 @@ protected:
   TH2F *hMeePtee_LS_eta08;                             //!
   TH2F *hMeePtee_ULS_eta08_pt200;                      //!
   TH2F *hMeePtee_LS_eta08_pt200;                       //!
+  TH2F *hMeePtee_ULS_eta_pt;                           //!
+  TH2F *hMeePtee_LS_eta_pt;                            //!
   TH2F *hMeePtee_ULS_eta08_pt400;                      //!
   TH2F *hMeePtee_LS_eta08_pt400;                       //!
   TH2F *hMeePtee_ULS_eta08_pt200_opAngle50;            //!
@@ -148,6 +157,8 @@ protected:
   TH2F *hMeePtee_LS_eta08_be;                          //!
   TH2F *hMeePtee_ULS_eta08_pt200_be;                   //!
   TH2F *hMeePtee_LS_eta08_pt200_be;                    //!
+  TH2F *hMeePtee_ULS_eta_pt_be;                        //!
+  TH2F *hMeePtee_LS_eta_pt_be;                         //!
   TH2F *hMeePtee_ULS_eta08_pt400_be;                   //!
   TH2F *hMeePtee_LS_eta08_pt400_be;                    //!
   //Histograms (ULS,LS),  b->c->e , bBar->c->e
@@ -169,6 +180,8 @@ protected:
   TH2F *hMeePtee_LS_eta08_bce;                         //!
   TH2F *hMeePtee_ULS_eta08_pt200_bce;                  //!
   TH2F *hMeePtee_LS_eta08_pt200_bce;                   //!
+  TH2F *hMeePtee_ULS_eta_pt_bce;                       //!
+  TH2F *hMeePtee_LS_eta_pt_bce;                        //!
   TH2F *hMeePtee_ULS_eta08_pt400_bce;                  //!
   TH2F *hMeePtee_LS_eta08_pt400_bce;                   //!
   // opening angle
@@ -181,7 +194,7 @@ protected:
   AliAnalysisTaskBeauty& operator= (const AliAnalysisTaskBeauty &c); // not implemented
 
   
-  ClassDef(AliAnalysisTaskBeauty,1)
+  ClassDef(AliAnalysisTaskBeauty,2)
 };
 
 #endif

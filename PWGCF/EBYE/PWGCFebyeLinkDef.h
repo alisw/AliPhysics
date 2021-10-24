@@ -80,6 +80,10 @@
 #pragma link C++ class AliAnalysisTempFluc+;
 
 #pragma link C++ class AliAnalysisFBMultFluct+;
+#pragma link C++ class AliAnalysisTaskLongFluctuations+;
+#pragma link C++ class AliAnalysisTaskLegendreCoef+;
+#pragma link C++ class AliAnalysisTaskEtaDist+;
+
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
 #pragma link C++ class AliLightV0+;
@@ -101,7 +105,10 @@
 #pragma link C++ class AliEbyEPhiDistNew+;
 
 #pragma link C++ class AliAnalysisTaskStronglyIntensiveCorrTree+;
+#pragma link C++ class AliAnalysisFBCorrelationsWithPID+;
 #pragma link C++ class TrackInfoCorr+;
 
+#pragma link C++ class TrackInfoCorr+;
+#pragma link C++ class AliAnalysisTaskFluctMCTEPOS+;
 
 #endif

@@ -715,7 +715,7 @@ const Float_t multmax_100_400 = 400;
   nameCorr += suffix;
 
   THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-  Double_t** binEdges = new Double_t[2];
+  Double_t** binEdges = new Double_t*[2];
 
   // set bin limits
 

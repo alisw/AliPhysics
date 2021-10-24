@@ -98,7 +98,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         jetCont->SetRhoName(nrho);
         jetCont->ConnectParticleContainer(trackCont);
         jetCont->ConnectClusterContainer(clusterCont);
-        DefineCutsTaskpp(jetCont, jetradius);
+        //DefineCutsTaskpp(jetCont, jetradius);
     }
 
     if(isMC){
@@ -109,7 +109,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->SetRhoName(nrhoMC);
             jetContMC->ConnectParticleContainer(trackContMC);
             jetContMC->SetIsParticleLevel(kTRUE);
-            jetContMC->SetMaxTrackPt(1000);
+            //jetContMC->SetMaxTrackPt(1000);
             //DefineCutsTaskpp(jetContMC, jetradius);
         }
     }

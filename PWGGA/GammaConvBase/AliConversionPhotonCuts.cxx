@@ -22,7 +22,7 @@
 
 #include "AliConversionPhotonCuts.h"
 
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliAODv0.h"
 #include "AliAODEvent.h"
@@ -60,8 +60,8 @@
 #include "AliDalitzEventMC.h"
 
 class iostream;
-
-using namespace std;
+using std::cout;
+using std::endl;
 
 /// \cond CLASSIMP
 ClassImp(AliConversionPhotonCuts)
@@ -114,6 +114,11 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaxPhiCut(100.),
   fDoShrinkTPCAcceptance(0),
   fPtCut(0.02),
+  fPtCutArraySize(0),
+  fRDepPtCutArray(NULL),
+  fRArraySize(0),
+  fRArray(NULL),
+  fDoRDepPtCut(kFALSE),
   fSinglePtCut(0),
   fSinglePtCut2(0),
   fDoAsymPtCut(kFALSE),
@@ -180,7 +185,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fIncludeRejectedPsiPair(kFALSE),
   fCosPAngleCut(10000),
   fDoToCloseV0sCut(kFALSE),
-  fminV0Dist(200.),
+  fMinV0DistSquared(4000.),
   fDoSharedElecCut(kFALSE),
   fDoPhotonQualitySelectionCut(kFALSE),
   fDoPhotonQualityRejectionCut(kFALSE),
@@ -206,7 +211,6 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fTRDPIDAboveCut(100),
   fTRDPIDBelowCut(-100),
   fDoDoubleCountingCut(kFALSE),
-  fMinRDC(0.),
   fDeltaR(0.),
   fOpenAngle(0.),
   fSwitchToKappa(kFALSE),
@@ -298,6 +302,11 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaxPhiCut(ref.fMaxPhiCut),
   fDoShrinkTPCAcceptance(ref.fDoShrinkTPCAcceptance),
   fPtCut(ref.fPtCut),
+  fPtCutArraySize(ref.fPtCutArraySize),
+  fRDepPtCutArray(ref.fRDepPtCutArray),
+  fRArraySize(ref.fRArraySize),
+  fRArray(ref.fRArray),
+  fDoRDepPtCut(ref.fDoRDepPtCut),
   fSinglePtCut(ref.fSinglePtCut),
   fSinglePtCut2(ref.fSinglePtCut2),
   fDoAsymPtCut(ref.fDoAsymPtCut),
@@ -364,7 +373,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fIncludeRejectedPsiPair(ref.fIncludeRejectedPsiPair),
   fCosPAngleCut(ref.fCosPAngleCut),
   fDoToCloseV0sCut(ref.fDoToCloseV0sCut),
-  fminV0Dist(ref.fminV0Dist),
+  fMinV0DistSquared(ref.fMinV0DistSquared),
   fDoSharedElecCut(ref.fDoSharedElecCut),
   fDoPhotonQualitySelectionCut(ref.fDoPhotonQualitySelectionCut),
   fDoPhotonQualityRejectionCut(ref.fDoPhotonQualityRejectionCut),
@@ -390,7 +399,6 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fTRDPIDAboveCut(ref.fTRDPIDAboveCut),
   fTRDPIDBelowCut(ref.fTRDPIDBelowCut),
   fDoDoubleCountingCut(ref.fDoDoubleCountingCut),
-  fMinRDC(ref.fMinRDC),
   fDeltaR(ref.fDeltaR),
   fOpenAngle(ref.fOpenAngle),
   fSwitchToKappa(ref.fSwitchToKappa),
@@ -453,6 +461,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
   fCutString=new TObjString((GetCutNumber()).Data());
   fElectronLabelArray = new Int_t[fElectronArraySize];
+
   // dont copy histograms (if you like histograms, call InitCutHistograms())
 }
 
@@ -469,9 +478,19 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
     fCutString = NULL;
   }
   if(fElectronLabelArray){
-    delete fElectronLabelArray;
+    delete [] fElectronLabelArray;
     fElectronLabelArray = NULL;
   }
+
+  if(fRDepPtCutArray){
+    delete [] fRDepPtCutArray;
+    fRDepPtCutArray = NULL;
+  }
+  if(fRArray){
+    delete [] fRArray;
+    fRArray = NULL;
+  }
+
 
   if(fFAsymmetryCut != NULL){
     delete fFAsymmetryCut;
@@ -939,12 +958,12 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
   return CornSig;
 }
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma){
+Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(AliMCParticle *particle, AliMCEvent *mcEvent, Bool_t checkForConvertedGamma){
   // MonteCarlo Photon Selection
 
   if(!mcEvent)return kFALSE;
 
-  if (particle->GetPdgCode() == 22){
+  if (particle->PdgCode() == 22){
 
 
     if( particle->Eta() > (fEtaCut) || particle->Eta() < (-fEtaCut) )
@@ -954,29 +973,29 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
                 return kFALSE;
     }
 
-    if(particle->GetMother(0) >-1 && mcEvent->Particle(particle->GetMother(0))->GetPdgCode() == 22){
+    if(particle->GetMother() >-1 && mcEvent->GetTrack(particle->GetMother())->PdgCode() == 22){
       return kFALSE; // no photon as mothers!
     }
 
     // removed, decision on primary and secondary taken in main task
-// 		if(particle->GetMother(0) >= mcEvent->GetNumberOfPrimaries()){
+// 		if(particle->GetMother() >= mcEvent->GetNumberOfPrimaries()){
 // 			return kFALSE; // the gamma has a mother, and it is not a primary particle
 // 		}
 
     if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 
     // looking for conversion gammas (electron + positron from pairbuilding (= 5) )
-    TParticle* ePos = NULL;
-    TParticle* eNeg = NULL;
+    AliMCParticle* ePos = NULL;
+    AliMCParticle* eNeg = NULL;
 
     if(particle->GetNDaughters() >= 2){
-      for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+      for(Int_t daughterIndex=particle->GetDaughterFirst();daughterIndex<=particle->GetDaughterLast();daughterIndex++){
         if(daughterIndex<0) continue;
-        TParticle *tmpDaughter = mcEvent->Particle(daughterIndex);
+        AliMCParticle *tmpDaughter = (AliMCParticle*) mcEvent->GetTrack(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
-        if(tmpDaughter->GetPdgCode() == 11){
+        if(tmpDaughter->PdgCode() == 11){
           eNeg = tmpDaughter;
-        } else if(tmpDaughter->GetPdgCode() == -11){
+        } else if(tmpDaughter->PdgCode() == -11){
           ePos = tmpDaughter;
         }
         }
@@ -997,26 +1016,26 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
         return kFALSE;
     }
 
-    if(ePos->R()>fMaxR){
+    if(ePos->Particle()->R()>fMaxR){
       return kFALSE; // cuts on distance from collision point
     }
 
-    if(TMath::Abs(ePos->Vz()) > fMaxZ){
+    if(TMath::Abs(ePos->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
-    if(TMath::Abs(eNeg->Vz()) > fMaxZ){
+    if(TMath::Abs(eNeg->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
 
-    if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( ePos->Particle()->R() <= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   ePos->Particle()->R() >= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
-    if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( eNeg->Particle()->R() <= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   eNeg->Particle()->R() >= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
@@ -1477,6 +1496,11 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
     return kFALSE;
   }
 
+  if (photon->GetConversionRadius()<0){
+    FillPhotonCutIndex(kConvPointFail);
+    return kFALSE;
+  }
+
   if (fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(photon->GetPhotonEta());
   // Photon Cuts
   if(!PhotonCuts(photon,event)){
@@ -1641,7 +1665,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 
   } else if (fDoShrinkTPCAcceptance == 4){   // accept only photons in eta-phi region from PHOS-PCM (pi0 and eta meson analysis)
     Double_t photonPhi = photon->GetPhotonPhi();
-      
+
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       //cout << "A and C side, eta=" << photon->GetPhotonEta() <<  endl;
       if(!(photonPhi>fMinPhiCut  && photonPhi<fMaxPhiCut )){
@@ -1654,11 +1678,28 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   cutIndex++;
 
 
-
-  if(photon->GetPhotonPt()<fPtCut){
-    if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
-    return kFALSE;
+  if(!fDoRDepPtCut) {
+    if(photon->GetPhotonPt()<fPtCut){
+      if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+      return kFALSE;
+    }
+  }else{
+    for(Int_t ii=0;ii<fRArraySize-1;ii++){
+      if (photon->GetConversionRadius() >= fRArray[ii] && photon->GetConversionRadius() < fRArray[ii+1] ){
+	if(photon->GetPhotonPt()<fRDepPtCutArray[ii]){
+	  if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+	  return kFALSE;
+	}
+      }
+    }
+    if (photon->GetConversionRadius() >= fRArray[fRArraySize-1] ){
+      if(photon->GetPhotonPt()<fPtCut){
+	if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+	return kFALSE;
+      }
+    }
   }
+
   cutIndex++;
 
   if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
@@ -2231,37 +2272,37 @@ Bool_t AliConversionPhotonCuts::PIDProbabilityCut(AliConversionPhotonBase *photo
 
 
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg){
+Bool_t AliConversionPhotonCuts::AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg){
   // MC Acceptance Cuts
   //(Certain areas were excluded for photon reconstruction)
 
-  if(particle->R()>fMaxR){
+  if(TMath::Sqrt(particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv())>fMaxR){
     return kFALSE;}
 
-  if(ePos->R()>fMaxR){
+  if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())>fMaxR){
     return kFALSE;
   }
 
-  if(ePos->R()<fMinR){
+  if(TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())<fMinR){
     return kFALSE;
   }
 
-  if( ePos->R() <= ((TMath::Abs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
+  if( TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) <= ((TMath::Abs(ePos->Zv())*fLineCutZRSlope)-fLineCutZValue)){
     return kFALSE;
   }
-  else if (fUseEtaMinCut &&  ePos->R() >= ((TMath::Abs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
-    return kFALSE;
-  }
-
-  if(TMath::Abs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  else if (fUseEtaMinCut &&  TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv()) >= ((TMath::Abs(ePos->Zv())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
     return kFALSE;
   }
 
-  if(eNeg->Vz()!=ePos->Vz()||eNeg->R()!=ePos->R()){
+  if(TMath::Abs(eNeg->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
-  if(TMath::Abs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(eNeg->Zv()!=ePos->Zv()||TMath::Sqrt(eNeg->Xv()*eNeg->Xv()+eNeg->Yv()*eNeg->Yv())!=TMath::Sqrt(ePos->Xv()*ePos->Xv()+ePos->Yv()*ePos->Yv())){
+    return kFALSE;
+  }
+
+  if(TMath::Abs(ePos->Zv()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
@@ -2645,8 +2686,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fDoPhotonQualityRejectionCut) printf("\t rejection based on photon quality with quality %d \n", fPhotonQualityCut );
   if (fPhotonQualityCutTRD || fPhotonQualityCutTOF) printf("\t TRD quality: %d, TOF quality: %d\n", fPhotonQualityCutTRD, fPhotonQualityCutTOF);
-  if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > %3.2f, DeltaR < %3.2f, OpenAngle < %3.2f  \n", fMinRDC, fDeltaR,fOpenAngle );
-
+  if (fDoDoubleCountingCut) printf("\t Reject doubly counted photons with R > 0., DeltaR < %3.2f, OpenAngle < %3.2f  \n", fDeltaR,fOpenAngle );
 }
 
 ///________________________________________________________________________
@@ -3278,16 +3318,46 @@ Bool_t AliConversionPhotonCuts::SetSinglePtCut(Int_t singlePtCut){   // Set Cut
     fPtCut       = 0.01;
     break;
   case 26: // q: 0.032 GeV + min gamma pT cut of 20 MeV ; equiv. 0.08 for lowB
-    fSinglePtCut = 0.032;
-    fPtCut       = 0.01;
+    //A.M. redefinition 20.10.15. In sys. uncertainty I do not see any variation in efficiency for 8,7,p,6
+    fSinglePtCut = 0.040;
+    fPtCut       = 0.075;
     break;
   case 27: // r: 0.036 GeV + min gamma pT cut of 20 MeV ; equiv. 0.09 for lowB
-    fSinglePtCut = 0.036;
-    fPtCut       = 0.01;
+    //A.M. redefinition 20.10.15. In sys. uncertainty I do not see any variation in efficiency for 8,7,p,6
+    fSinglePtCut = 0.04;
+    fPtCut       = 0.100;
     break;
   case 28: // s: 0.040 GeV + min gamma pT cut of 20 MeV ; equiv. 0.075 for lowB
     fSinglePtCut = 0.040;
     fPtCut       = 0.01;
+    break;
+  case 29: //t  R-Dep pT cut NomB Default 0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fRArraySize]{0.,13.,33.5,55.,72.,95.,180.};;
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.3, 0.3, 0.25, 0.2, 0.2, 0.15};
+    break;
+  case 30: //u  R-Dep pT cut NomB Soft ;0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.050;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fRArraySize]{0.,13.,33.5,55.,72.,95.,180.};
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.25, 0.25, 0.2, 0.2, 0.15, 0.1};
+    break;
+  case 31: //v  R-Dep pT cut LowB Default 0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.020;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fRArraySize]{0.,13.,33.5,55.,72.,95.,180.};
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.2, 0.2, 0.15, 0.15, 0.15, 0.15};
+    break;
+  case 32: //w  R-Dep pT cut LowB Soft ;0.050 GeV + min gamma pT cut of 100 MeV
+    fSinglePtCut = 0.020;
+    fPtCut       = 0.1;
+    fDoRDepPtCut = kTRUE;
+    fRArray = new Double_t[fRArraySize]{0.,13.,33.5,55.,72.,95.,180.};
+    fRDepPtCutArray = new Double_t[fPtCutArraySize]{0.15, 0.15, 0.1, 0.1, 0.1, 0.1};
     break;
 
   default:
@@ -3428,6 +3498,10 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
   case 16: //g -2.5,2.5
     fPIDnSigmaBelowElectronLine=-2.5;
     fPIDnSigmaAboveElectronLine=2.5;
+    break;
+  case 17: //h -1,3
+    fPIDnSigmaBelowElectronLine=-1;
+    fPIDnSigmaAboveElectronLine=3;
     break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");
@@ -4409,38 +4483,35 @@ Bool_t AliConversionPhotonCuts::SetToCloseV0sCut(Int_t toClose) {
   switch(toClose){
   case 0:
     fDoToCloseV0sCut = kFALSE;
-    fminV0Dist = 250;
+    fMinV0DistSquared = TMath::Power(250., 2.);
     break;
   case 1:
     fDoToCloseV0sCut = kTRUE;
-    fminV0Dist = 1;
+    fMinV0DistSquared = TMath::Power(1., 2.);
     break;
   case 2:
     fDoToCloseV0sCut = kTRUE;
-    fminV0Dist = 2;
+    fMinV0DistSquared = TMath::Power(2., 2.);
     break;
   case 3:
     fDoToCloseV0sCut = kTRUE;
-    fminV0Dist = 3;
+    fMinV0DistSquared = TMath::Power(3., 2.);
     break;
   case 4:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.02;
     break;
   case 5:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.03;
     break;
   case 6:
     fDoToCloseV0sCut = kTRUE;
     fDoDoubleCountingCut = kTRUE;
-    fMinRDC=0.;
     fDeltaR=6.;
     fOpenAngle=0.04;
     break;
@@ -4747,7 +4818,7 @@ Bool_t AliConversionPhotonCuts::RejectSharedElectronV0s(AliAODConversionPhoton* 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0){
 
-  if (fDoDoubleCountingCut && photon->GetConversionRadius() < fMinRDC) return kTRUE;
+  if (fDoDoubleCountingCut && photon->GetConversionRadius() < 0.) return kTRUE;
 
   Double_t posX = photon->GetConversionX();
   Double_t posY = photon->GetConversionY();
@@ -4763,7 +4834,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
     if (!fDoDoubleCountingCut){
       Double_t dist = pow((posX - posCompX),2)+pow((posY - posCompY),2)+pow((posZ - posCompZ),2);
 
-      if(dist < fminV0Dist*fminV0Dist){
+      if(dist < fMinV0DistSquared){
         if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
       }
     }else{
@@ -4779,6 +4850,109 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
   return kTRUE;
 }
 
+/// --------------------- TItRemove implementation start -------------------------------------
+///________________________________________________________________________
+AliConversionPhotonCuts::TItRemove::TItRemove(TMapPhotonBool &theMap, TMapPhotonBool::iterator theIt) :
+ fMap(theMap),
+ fIt(theIt),
+ fRemoved(kFALSE)
+{}
+
+///________________________________________________________________________
+void AliConversionPhotonCuts::TItRemove::Remove(){
+  //cout << "removing " << fIt->first->GetTrackLabelPositive() << " " << fIt->first->GetTrackLabelNegative() << " " << fIt->first->GetChi2perNDF() << endl;
+  fIt = fMap.erase(fIt);
+  fRemoved = kTRUE;
+}
+
+///________________________________________________________________________
+void AliConversionPhotonCuts::TItRemove::IncIfNotRemoved(){
+  if (!fRemoved) ++fIt;
+  fRemoved = kFALSE;
+}
+/// --------------------- TItRemove implementation end -------------------------------------
+
+///________________________________________________________________________
+void AliConversionPhotonCuts::RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const {
+  Bool_t lFstWorse = theI1.fIt->first->GetChi2perNDF() > theI2.fIt->first->GetChi2perNDF();
+  lFstWorse ? theI1.Remove() : theI2.Remove();
+}
+
+// Question: is it actually necessary to compare positive against negative tracks? (Was done so far like this but could be superflous I believe)
+/* Strategy: iterate over all pairs of photons in map: outer loop over all photons, inner loop over photons to the right.
+ * For photons ABCD this will look like:
+ * it1  it2
+ * A    B,C,D
+ * B      C,D
+ * C        D
+ * D    none
+ * For each pair P1P2 check if they share a track.
+ * If they do: If P1 has the higher chi2 kick out P1, otherwise kick out P2.
+ */
+///________________________________________________________________________
+void AliConversionPhotonCuts::RemovePhotonsWithSharedTracks(TMapPhotonBool &thePhotons) const {
+
+  // debug
+  //auto printPhoton = [](AliAODConversionPhoton *p){
+  //  cout << p->GetTrackLabelPositive() << " " << p->GetTrackLabelNegative() << " " << p->GetChi2perNDF() << " ";};
+
+  for (TItRemove i1(thePhotons, thePhotons.begin()); i1.fIt != thePhotons.end(); i1.IncIfNotRemoved()){
+    AliAODConversionPhoton *iPhoton1 = i1.fIt->first;
+
+    for (TItRemove i2(thePhotons, std::next(i1.fIt)); !(i1.fRemoved || i2.fIt == thePhotons.end()); i2.IncIfNotRemoved()){
+      AliAODConversionPhoton *iPhoton2 = i2.fIt->first;
+
+      //cout << "phot1: "; printPhoton(iPhoton1); cout << "phot2: "; printPhoton(iPhoton2); cout << endl;
+      if ( iPhoton1->GetTrackLabelPositive() == iPhoton2->GetTrackLabelPositive() ||
+           iPhoton1->GetTrackLabelPositive() == iPhoton2->GetTrackLabelNegative() ||
+           iPhoton1->GetTrackLabelNegative() == iPhoton2->GetTrackLabelPositive() ||
+           iPhoton1->GetTrackLabelNegative() == iPhoton2->GetTrackLabelNegative() )
+      {
+        RemovePhotonWithHigherChi2(i1, i2);
+      }
+    }
+  }
+}
+
+/* Strategy: iterate over all pairs of photons in map: outer loop over all photons, inner loop over photons to the right.
+ * For photons ABCD this will look like:
+ * it1  it2
+ * A    B,C,D
+ * B      C,D
+ * C        D
+ * D    none
+ * For each pair P1P2 check if it's good (meaning both photons can stay.) If it is not good, kick out the photon
+ * with the higher chi2. fDoDoubleCountingCut defines which one of two goodness criteria is applied.
+*/
+///________________________________________________________________________
+void AliConversionPhotonCuts::RemoveTooClosePhotons(TMapPhotonBool &thePhotons) const {
+
+  for (TItRemove i1(thePhotons, thePhotons.begin()); i1.fIt != thePhotons.end(); i1.IncIfNotRemoved()){
+    AliAODConversionPhoton *iPhoton1 = i1.fIt->first;
+
+    for (TItRemove i2(thePhotons, std::next(i1.fIt)); !(i1.fRemoved || i2.fIt == thePhotons.end()); i2.IncIfNotRemoved()){
+      AliAODConversionPhoton *iPhoton2 = i2.fIt->first;
+
+      if (fDoDoubleCountingCut){
+        TVector3 v1(iPhoton1->Px(),iPhoton1->Py(),iPhoton1->Pz());
+        TVector3 v2(iPhoton2->Px(),iPhoton2->Py(),iPhoton2->Pz());
+        if((v1.Angle(v2) < fOpenAngle) &&
+           (TMath::Abs(iPhoton2->GetConversionRadius()-iPhoton1->GetConversionRadius()) < fDeltaR))
+        {
+          RemovePhotonWithHigherChi2(i1, i2);
+        }
+      }
+      else{
+        TVector3 v1(iPhoton1->GetConversionX(), iPhoton1->GetConversionY(), iPhoton1->GetConversionZ());
+        TVector3 v2(iPhoton2->GetConversionX(), iPhoton2->GetConversionY(), iPhoton2->GetConversionZ());
+        if((v2 - v1).Mag2() < fMinV0DistSquared)
+        {
+          RemovePhotonWithHigherChi2(i1, i2);
+        }
+      }
+    }
+  }
+}
 
 ///________________________________________________________________________
 AliConversionPhotonCuts* AliConversionPhotonCuts::GetStandardCuts2010PbPb(){
@@ -4869,7 +5043,7 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityTRD(AliAODConversionPhoto
 
   Int_t negNTrdTracklets = negTrack->GetTRDntrackletsPID();
   Int_t posNTrdTracklets = posTrack->GetTRDntrackletsPID();
-  
+
   if (negNTrdTracklets > 0 && posNTrdTracklets > 0){
     return 3;
   } else if (negNTrdTracklets > 0 || posNTrdTracklets > 0){
@@ -4943,16 +5117,16 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
     Float_t gammaConversionRadius = gamma->GetConversionRadius();
     Float_t scalePt=1.;
     Float_t nomMagField = 5.;
-    if(magField!=0) 
+    if(magField!=0)
       scalePt = nomMagField/(TMath::Abs(magField));
-    
+
     // AM:  Scale the pT for correction in case of lowB field
     //    cout<< "scalePt::"<< scalePt<< "    " <<  magField<< endl;
 
-    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces. 
+    //AM.  the Omega correction for pT > 0.4 is flat and at high pT the statistics reduces.
     // So take the correction  at pT=0.5 if pT is > 0.7 GeV/c
-    Float_t maxPtForCor = 0.7;  
-    Float_t defaultPtForCor = 0.5;  
+    Float_t maxPtForCor = 0.7;
+    Float_t defaultPtForCor = 0.5;
     Float_t gammaPt = scalePt * gamma->Pt();
 
 

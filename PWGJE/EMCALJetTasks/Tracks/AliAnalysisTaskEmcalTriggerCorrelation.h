@@ -31,7 +31,9 @@
 #include "AliCutValueRange.h"
 #include "TString.h"
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalTriggerCorrelation : public AliAnalysisTaskEmcalTriggerBase {
 public:
@@ -60,6 +62,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalTriggerCorrelation, 1);
 };
+
+}
 
 }
 

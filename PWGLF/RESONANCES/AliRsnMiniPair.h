@@ -20,7 +20,7 @@ class AliRsnMiniEvent;
 class AliRsnMiniPair : public TObject {
 public:
 
- AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE), fPassesOOBPileupCut(kFALSE) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
+ AliRsnMiniPair() : fIndex1(-1), fIndex2(-1), fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1), fIsFromB(kFALSE), fIsQuarkFound(kFALSE),fContainsV0Daughter(kFALSE), fPassesOOBPileupCut(kFALSE) {for (Int_t i = 0; i<3; i++) fPmother[i] = 0.0;}
   
    Int_t          &Mother()    {return fMother;}
    Long_t         &MotherPDG() {return fMotherPDG;}
@@ -36,6 +36,8 @@ public:
    void           InvertP(Bool_t first);
 
    Int_t          ID(Bool_t mc) const {if (mc) return 1; else return 0;}
+   Int_t          &Index1() {return fIndex1;}    
+   Int_t          &Index2() {return fIndex2;} 
 
    TLorentzVector &P1 (Bool_t mc) {return fP1 [ID(mc)];}
    TLorentzVector &P2 (Bool_t mc) {return fP2 [ID(mc)];}
@@ -55,6 +57,10 @@ public:
    Double_t        DeltaCos(Bool_t mc)       const;
    Double_t        CosThetaStar(Bool_t mc);
    Double_t        CosThetaStarAbs(Bool_t mc);
+   Double_t        CosThetaHe(Bool_t mc);
+   Double_t        CosThetaHeAbs(Bool_t mc);
+   Double_t        PhiHePbPb5(Bool_t mc);
+   Double_t        PhiHePP5(Bool_t mc);
    Double_t        CosThetaJackson(Bool_t mc);
    Double_t        CosThetaTransversity(Bool_t mc);
    Double_t        CosThetaToEventPlane(AliRsnMiniEvent *event, Bool_t mc);
@@ -67,6 +73,7 @@ public:
    Double_t        PairPtRes()              const;
    Double_t        PairYRes()               const;
    Double_t        PairAsymmetry(Bool_t mc); 
+   Bool_t          ContainsIndex(Int_t index);
 
  private:
    
@@ -77,6 +84,8 @@ public:
    
    Double_t       fDCA1;      // 1st daughter DCA
    Double_t       fDCA2;      // 2nd daughter DCA 
+   Int_t          fIndex1;    //ID 1st daughter
+   Int_t          fIndex2;    //ID 2nd daughter
    
    Int_t          fMother;    // label of mothers (when common)
    Long_t         fMotherPDG; // PDG code of mother (when common)
@@ -87,7 +96,7 @@ public:
    Bool_t         fContainsV0Daughter; // Flag if one of particle is part of V0's daughter
    Bool_t         fPassesOOBPileupCut; // At least one daughter passes the out-of-bunch pileup cut
    
-   ClassDef(AliRsnMiniPair, 6)
+   ClassDef(AliRsnMiniPair, 7)
      };
 
 #endif

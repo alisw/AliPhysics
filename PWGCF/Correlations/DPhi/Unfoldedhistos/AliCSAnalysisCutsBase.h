@@ -132,6 +132,8 @@ public:
     kLHC14b2,         ///< anchored LHC13[b-c] pass 2
     kLHC13b4_fix,     ///< anchored LHC13[b-c] pass 2 - JJ
     kLHC13b4_plus,    ///< anchored LHC13[b-c] pass 2 - JJ
+    kLHC15g4a,        ///< p-Pb, 5.023 TeV, STARLIGHT, rho(1720)->4pi, LHC13b anchors
+    kLHC15g5b,        ///< p-A, 5.023 TeV, HIJING anchored to LHC13b with shadowing
     kLHC16c3a,        ///< anchored LHC13[d-e] pass 2 - JJ
     kLHC16c3b,        ///< anchored LHC13[d-e] pass 2 - JJ
     kLHC16c3c,        ///< anchored LHC13[d-e] pass 2 - GJ
@@ -212,6 +214,12 @@ public:
     ///@{
     kLHC13f3,         ///<  PbPb, AMPT, fast generation, 2.76TeV (min. bias)
     ///@}
+    /// \name on the fly MC productions
+    ///@{
+    kOTFpp,         ///<  pp, on the fly MC production
+    kOTFpPb,        ///<  p-Pb, on the fly MC production
+    kOTFPbPb,       ///<  Pb-Pb, on the fly MC production
+    ///@}
   };
 
   /// \enum EnergyValue
@@ -261,6 +269,7 @@ public:
   virtual void                  Print(Option_t *opt = "") const { fCutsActivatedMask.Print(opt); }
 
   Bool_t                        InitializeCutsFromCutString(const TString cutSelectionString);
+  static void                   SetOnTheFlyMCProduction(TString &ofp);
                                 /// Get the event cuts associated string
                                 /// \return the event cuts associated string
   const char                   *GetCutsString() const { return fCutsString; }
@@ -279,9 +288,12 @@ public:
                                 /// Is a fast Monte Carlo data set (only MC truth)
                                 /// \return kTRUE if it is a fast Monte Carlo data set, kFALSE otherwise
   static Bool_t                 IsMConlyTruth() { return fgIsMConlyTruth; }
+                                /// Is an on the fly MC production (nothing stored)
+                                /// \return true if the current production is an on the fly production
+  static bool                   IsOnTheFlyMC() { return fgIsOnTheFlyMC; } 
                                 /// Get the Monte Carlo event handler
                                 /// \return the Monte Carlo event handler
-  static AliMCEventHandler     *GetMCEventHandler() { return fgMCHandler; }
+  static AliMCEventHandler     *GetMCEventHandler() { return (AliMCEventHandler*) fgMCHandler; }
                                 /// Get the Input event handler
                                 /// \return the Input event handler
   static AliInputEventHandler  *GetInputEventHandler() { return fgInputHandler; }
@@ -309,6 +321,7 @@ private:
 
 private:
   static TString                fgPeriodName;           ///< the period name of the ongoing analysis
+  static TString                fgOnTheFlyProduction;   ///< the on the fly MC production name
   static ProdPeriods            fgDataPeriod;           ///< the global period of ongoing analysis
   static ProdPeriods            fgAnchorPeriod;         ///< the anchor period, different from #fgDataPeriod in case of MC data
   Int_t                         fNParams;               ///< the number of cuts parameters
@@ -323,9 +336,12 @@ protected:
   ProdPeriods                   fDataPeriod;            ///< the current period under analysis. Occasionally could be different from the global period
   static EnergyValue            fgEnergy;               ///< the collision energy for the analysis period
   static Bool_t                 fgIsMC;                 ///< MC flag from production information
+  static Bool_t                 fgIsOnTheFlyMC;         ///< on the fly MC flag from configuration
   static Bool_t                 fgIsMConlyTruth;        ///< fast MC flag (only kinematics) from production information
   static AliInputEventHandler  *fgInputHandler;         ///< the input handler for the current ongoing analysis
-  static AliMCEventHandler     *fgMCHandler;            ///< MC handler for the current ongoing analysis
+private:
+  static AliInputEventHandler  *fgMCHandler;            ///< MC handler for the current ongoing analysis
+protected:
   static Bool_t                 fgIsESD;                ///< kTRUE if data format is ESD, kFALSE if AOD
   static TClonesArray          *fgMCArray;              ///< the array containing true particles when MC AOD analysis
 
@@ -340,7 +356,7 @@ protected:
   AliCSAnalysisCutsBase& operator=(const AliCSAnalysisCutsBase&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSAnalysisCutsBase,2);
+  ClassDef(AliCSAnalysisCutsBase,3);
   /// \endcond
 };
 

@@ -4,13 +4,25 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition,Bool_t isMC);
 void SetupMCSignals(AliDielectron *die);
 
+TString EventCutnames[] = {
+ "pileup0"
+// ,"allevent"//pileup events are included.
+};
+const Int_t nEC = sizeof(EventCutnames)/sizeof(EventCutnames[0]);
+Int_t GetNEC(){return nEC;}
+
 TString TrackCutnames[] = {
 //	"DefaultTrackCut_Nsc0"
-// "DefaultTrackCut_Nsc01",
- "DefaultTrackCut_Nsc01_woPU"
-//,"LooseTrackCut"
-//,"TightTrackCut"
+//  "DefaultTrackCut_Nsc01"
+// "DefaultTrackCut_Nsc01"
 //,"PIDCalibTrackCut"
+ "track0_Nsc01"
+,"track1_Nsc01"
+//,"track2_Nsc01"
+//,"track3_Nsc01"
+//,"track4_Nsc01"
+//,"track5_Nsc01"
+//,"track6_Nsc01"
 };
 
 const Int_t nTC = sizeof(TrackCutnames)/sizeof(TrackCutnames[0]);
@@ -18,44 +30,31 @@ Int_t GetNTC(){return nTC;}
 
 TString PIDnames[] = {
 //  "DefaultPID"
-  "ITSTPChadrejORTOFrec"
- ,"ITSTPChadrej"
- ,"ITSTOFrecover"
- ,"TPChadrejORTOFrec"
- ,"TPChadrej"
- ,"TOFrecover"
-// ,"TightTPCTOF"
-// ,"TightTPC"
-// ,"noPID"
+//    ,"TPChadrejORTOFrec"
+  "pid0"
+ ,"pid1"
+ ,"pid2"
+ ,"pid3"
+ ,"pid4"
 };
 const Int_t nPID = sizeof(PIDnames)/sizeof(PIDnames[0]);
 Int_t GetNPID(){return nPID;}
 
-TString PFnames[] = {
-  "woPF"
-// ,"wPF"
-};
-const Int_t nPF = sizeof(PFnames)/sizeof(PFnames[0]);
-//Int_t GetNPF(){return nPF;}
-Int_t GetNPF(){return 1;}
-
-const Int_t nDie = nTC * nPID * nPF;
+const Int_t nDie = nEC * nTC * nPID;
 Int_t GetN(){return nDie;}
 
 AliDielectron* Config_dsekihat_lowmass_PbPb(
-		const Int_t cutDefinitionTC,
-		const Int_t cutDefinitionPID,
-		const Int_t cutDefinitionPF,
-		const Bool_t applyPairCut,
+		const Int_t iec,
+		const Int_t itc,
+		const Int_t ipc,
 		const Bool_t isMC
 		)
 {
 	// Setup the instance of AliDielectron
 	// create the actual framework object
-	TString name = Form("%s_%s_PairCut%d",TrackCutnames[cutDefinitionTC].Data(),PIDnames[cutDefinitionPID].Data(),applyPairCut);
+	TString name = Form("%s_%s_%s",EventCutnames[iec].Data(), TrackCutnames[itc].Data(), PIDnames[ipc].Data());
 
 	Bool_t isAOD = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
-	printf("isAOD = %d\n",isAOD);
 
 	AliDielectron *die = new AliDielectron(Form("anaFilter_%s",name.Data()), Form("cuts: %s",name.Data()));
 	die->Print();
@@ -66,27 +65,50 @@ AliDielectron* Config_dsekihat_lowmass_PbPb(
 	die->GetTrackFilter().AddCuts(lib->SetupPIDCuts());//AliDielectronCutGroup
 	if(!isAOD) die->GetTrackFilter().AddCuts(lib->SetupESDtrackCuts());
 
-	//if(name.Contains("wPF",TString::kIgnoreCase)) die->GetPairPreFilter().AddCuts(lib->SetupPhiVPreFilter());
-	if(applyPairCut) die->GetPairFilter().AddCuts(lib->SetupPairCuts());
+  //if(name.Contains("wPF",TString::kIgnoreCase)) die->GetPairPreFilter().AddCuts(lib->SetupPhiVPreFilter());
+  die->GetPairFilter().AddCuts(lib->SetupPairCuts());
 
 	//pairing with TLorentzVector
 	die->SetUseKF(kFALSE);
+  if(!isMC){//for data
+    if(name.Contains("pileup0")){//for data
+      TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+      f1min->SetNpx(1000);
+      f1min->FixParameter(0,-3000);
+      f1min->FixParameter(1,0.0099);
+      f1min->FixParameter(2,9.42e-10);
+      AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
+      pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+      pileupcuts->Print();
+      die->GetEventFilter().AddCuts(pileupcuts);
+    }
+  }//end of if isMC
 
-	if(name.Contains("woPU") && !isMC){
-		TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
-		f1min->SetNpx(1000);
-		f1min->FixParameter(0,-3000);
-		f1min->FixParameter(1,0.0099);
-		f1min->FixParameter(2,9.42e-10);
+	//if(name.Contains("woPU")){
+	//	TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+	//	f1min->SetNpx(1000);
+	//	f1min->FixParameter(0,-3000);
+	//	f1min->FixParameter(1,0.0099);
+	//	f1min->FixParameter(2,9.42e-10);
+	//	AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
+	//	pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+	//	pileupcuts->Print();
+	//	die->GetEventFilter().AddCuts(pileupcuts);
+	//}
+	//else if(name.Contains("onlyPU")){
+	//	TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+	//	f1min->SetNpx(1000);
+	//	f1min->FixParameter(0,-3000);
+	//	f1min->FixParameter(1,0.0099);
+  //      f1min->FixParameter(2,9.42e-10);
+	//	AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
+	//	pileupcuts->SetMaxCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+	//	pileupcuts->Print();
+	//	die->GetEventFilter().AddCuts(pileupcuts);
+	//}
 
-		AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
-		pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
-		pileupcuts->Print();
-		die->GetEventFilter().AddCuts(pileupcuts);
-	}
-
-	if(name.Contains("PIDCalib",TString::kIgnoreCase)) die->SetNoPairing(kTRUE);
-	else                                               die->SetNoPairing(kFALSE);
+  die->SetNoPairing(kFALSE);
+	if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase) ) die->SetNoPairing(kTRUE);
 
 	if(isMC) SetupMCSignals(die);
 	InitHistograms(die,0,isMC);
@@ -129,8 +151,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 	histos->UserHistogram("Event","nEvents","Number of processed events after cuts;Number events",1,0,1,AliDielectronVarManager::kNevents);
 	histos->UserHistogram("Event","hVertexZ","vertex Z;Z_{vtx} (cm)",400,-20,20,AliDielectronVarManager::kZvPrim);
 	histos->UserHistogram("Event","hCentralityV0M","centrality;centrality V0M (%)",101,0,101,AliDielectronVarManager::kCentralityNew);//V0M in Run2
-	histos->UserHistogram("Event","hCentralityCL0","centrality;centrality CL0 (%)",101,0,101,AliDielectronVarManager::kCentralityCL0);
-	histos->UserHistogram("Event","hCentralityCL1","centrality;centrality CL1 (%)",101,0,101,AliDielectronVarManager::kCentralityCL1);
+	//histos->UserHistogram("Event","hCentralityCL0","centrality;centrality CL0 (%)",101,0,101,AliDielectronVarManager::kCentralityCL0);
+	//histos->UserHistogram("Event","hCentralityCL1","centrality;centrality CL1 (%)",101,0,101,AliDielectronVarManager::kCentralityCL1);
 	//histos->UserHistogram("Event","hCentralityV0A","centrality;centrality V0A (%)",101,0,101,AliDielectronVarManager::kCentralityV0A);
 	//histos->UserHistogram("Event","hCentralityV0C","centrality;centrality V0C (%)",101,0,101,AliDielectronVarManager::kCentralityV0C);
 	//histos->UserHistogram("Event","hCentralityZNA","centrality;centrality ZNA (%)",101,0,101,AliDielectronVarManager::kCentralityZNA);
@@ -141,9 +163,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 	//histos->UserHistogram("Event","hNclsITS4","Number of clusters on ITS4;N_{cls}^{ITS4}",200,0,2e+4,AliDielectronVarManager::kNclsITS4);
 	//histos->UserHistogram("Event","hNclsITS5","Number of clusters on ITS5;N_{cls}^{ITS5}",200,0,2e+4,AliDielectronVarManager::kNclsITS5);
 	//histos->UserHistogram("Event","hNclsITS6","Number of clusters on ITS6;N_{cls}^{ITS6}",200,0,2e+4,AliDielectronVarManager::kNclsITS6);
-	histos->UserHistogram("Event","hTPCpileupA","TPC pileup Z vs. M on A side;Z_{puv}^{A} (cm);N_{contrib}^{A}",500,-250,250,500,0,5000,AliDielectronVarManager::kTPCpileupZA,AliDielectronVarManager::kTPCpileupMA);
-	histos->UserHistogram("Event","hTPCpileupC","TPC pileup Z vs. M on C side;Z_{puv}^{C} (cm);N_{contrib}^{C}",500,-250,250,500,0,5000,AliDielectronVarManager::kTPCpileupZC,AliDielectronVarManager::kTPCpileupMC);
-	histos->UserHistogram("Event","hTPCpileup","TPC pileup Z vs. M;(Z_{puv}^{A} + Z_{puv}^{C})/2 (cm);N_{contrib}^{A}+N_{contrib}^{C}",500,-250,250,100,0,10000,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
+	//histos->UserHistogram("Event","hTPCpileupA","TPC pileup Z vs. M on A side;Z_{puv}^{A} (cm);N_{contrib}^{A}",500,-250,250,500,0,5000,AliDielectronVarManager::kTPCpileupZA,AliDielectronVarManager::kTPCpileupMA);
+	//histos->UserHistogram("Event","hTPCpileupC","TPC pileup Z vs. M on C side;Z_{puv}^{C} (cm);N_{contrib}^{C}",500,-250,250,500,0,5000,AliDielectronVarManager::kTPCpileupZC,AliDielectronVarManager::kTPCpileupMC);
+	//histos->UserHistogram("Event","hTPCpileup","TPC pileup Z vs. M;(Z_{puv}^{A} + Z_{puv}^{C})/2 (cm);N_{contrib}^{A}+N_{contrib}^{C}",500,-250,250,100,0,10000,AliDielectronVarManager::kTPCpileupZ,AliDielectronVarManager::kTPCpileupM);
 	histos->UserHistogram("Event","hV0TPCcorr","Number of clusters of TPC vs. V0 multiplicity;N_{cls}^{TPC};total V0 multiplicity",500,0,5e+6,600,0,6e+4,AliDielectronVarManager::kNTPCclsEvent,AliDielectronVarManager::kMultV0);
 	histos->UserHistogram("Event","hV0MvsNcontrib","V0 multiplicity vs. N_{contributors}^{PV};total V0 multiplicity;N_{contributors} to PV",120,0,6e+4,500,0,5000,AliDielectronVarManager::kMultV0,AliDielectronVarManager::kNVtxContrib);
 	histos->UserHistogram("Event","hNTPCclsvsNSDDSSDcls","Number of clusters of TPC vs. SDD+SSD cls;N_{cls}^{TPC};N_{cls}^{SDD+SSD}",300,0,6e+6,300,0,6e+4,AliDielectronVarManager::kNTPCclsEvent,AliDielectronVarManager::kNSDDSSDclsEvent);
@@ -168,33 +190,33 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 	histos->UserHistogram("Track","hITSdEdxvsPin","ITS dE/dx vs. p_{in};p_{in} (GeV/c);ITS dE/dx (a.u.)",200,0.,10.,400,0.,400.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSsignal);
 	histos->UserHistogram("Track","hTOFbetavsPin","TOF #beta vs. p_{in};p_{in} (GeV/c);TOF #beta"       ,200,0.,10.,240,0.,1.2 ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
 
-	histos->UserHistogram("Track","hTPCnSigmaElvsPin","TPC n#sigma_{e}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{e}^{TPC}",200,0,+10.0,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
-	histos->UserHistogram("Track","hITSnSigmaElvsPin","ITS n#sigma_{e}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{e}^{ITS}",200,0,+10.0,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
-	histos->UserHistogram("Track","hTOFnSigmaElvsPin","TOF n#sigma_{e}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{e}^{TOF}",200,0,+10.0,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
-	histos->UserHistogram("Track","hTPCnSigmaElvsEta","TPC n#sigma_{e}^{TPC} vs. #eta;#eta;n#sigma_{e}^{TPC}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
-	histos->UserHistogram("Track","hITSnSigmaElvsEta","ITS n#sigma_{e}^{ITS} vs. #eta;#eta;n#sigma_{e}^{ITS}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
-	histos->UserHistogram("Track","hTOFnSigmaElvsEta","TOF n#sigma_{e}^{TOF} vs. #eta;#eta;n#sigma_{e}^{TOF}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);
+	histos->UserHistogram("Track","hTPCnSigmaElvsPin","TPC n#sigma_{e}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{e}^{TPC}",200,0,+10.0,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
+	histos->UserHistogram("Track","hITSnSigmaElvsPin","ITS n#sigma_{e}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{e}^{ITS}",200,0,+10.0,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaEle);
+	histos->UserHistogram("Track","hTOFnSigmaElvsPin","TOF n#sigma_{e}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{e}^{TOF}",200,0,+10.0,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
+	histos->UserHistogram("Track","hTPCnSigmaElvsEta","TPC n#sigma_{e}^{TPC} vs. #eta;#eta;n#sigma_{e}^{TPC}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
+	histos->UserHistogram("Track","hITSnSigmaElvsEta","ITS n#sigma_{e}^{ITS} vs. #eta;#eta;n#sigma_{e}^{ITS}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaEle);
+	histos->UserHistogram("Track","hTOFnSigmaElvsEta","TOF n#sigma_{e}^{TOF} vs. #eta;#eta;n#sigma_{e}^{TOF}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaEle);
 
-	histos->UserHistogram("Track","hTPCnSigmaPivsPin","TPC n#sigma_{#pi}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{#pi}^{TPC}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
-	histos->UserHistogram("Track","hTPCnSigmaPivsEta","TPC n#sigma_{#pi}^{TPC} vs. #eta;#eta;n#sigma_{#pi}^{TPC}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaPio);
-	//  //histos->UserHistogram("Track","hITSnSigmaPivsEta","ITS n#sigma_{#pi}^{ITS} vs. #eta;#eta;n#sigma_{#pi}^{ITS}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaPio);
-	//  //histos->UserHistogram("Track","hTOFnSigmaPivsEta","TOF n#sigma_{#pi}^{TOF} vs. #eta;#eta;n#sigma_{#pi}^{TOF}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaPio);
-	//  //histos->UserHistogram("Track","hITSnSigmaPivsPin","ITS n#sigma_{#pi}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{#pi}^{ITS}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaPio);
-	//  //histos->UserHistogram("Track","hTOFnSigmaPivsPin","TOF n#sigma_{#pi}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{#pi}^{TOF}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPio);
+//	histos->UserHistogram("Track","hTPCnSigmaPivsPin","TPC n#sigma_{#pi}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{#pi}^{TPC}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
+//	histos->UserHistogram("Track","hTPCnSigmaPivsEta","TPC n#sigma_{#pi}^{TPC} vs. #eta;#eta;n#sigma_{#pi}^{TPC}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaPio);
+//	histos->UserHistogram("Track","hITSnSigmaPivsEta","ITS n#sigma_{#pi}^{ITS} vs. #eta;#eta;n#sigma_{#pi}^{ITS}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaPio);
+//	histos->UserHistogram("Track","hTOFnSigmaPivsEta","TOF n#sigma_{#pi}^{TOF} vs. #eta;#eta;n#sigma_{#pi}^{TOF}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaPio);
+//	histos->UserHistogram("Track","hITSnSigmaPivsPin","ITS n#sigma_{#pi}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{#pi}^{ITS}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaPio);
+//	histos->UserHistogram("Track","hTOFnSigmaPivsPin","TOF n#sigma_{#pi}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{#pi}^{TOF}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPio);
 
-	histos->UserHistogram("Track","hTPCnSigmaKavsPin","TPC n#sigma_{K}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{K}^{TPC}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
-	histos->UserHistogram("Track","hTPCnSigmaKavsEta","TPC n#sigma_{K}^{TPC} vs. #eta;#eta;n#sigma_{K}^{TPC}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao);
-	//  //histos->UserHistogram("Track","hITSnSigmaKavsEta","ITS n#sigma_{K}^{ITS} vs. #eta;#eta;n#sigma_{K}^{ITS}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaKao);
-	//  //histos->UserHistogram("Track","hTOFnSigmaKavsEta","TOF n#sigma_{K}^{TOF} vs. #eta;#eta;n#sigma_{K}^{TOF}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaKao);
-	//  //histos->UserHistogram("Track","hITSnSigmaKavsPin","ITS n#sigma_{K}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{K}^{ITS}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaKao);
-	//  //histos->UserHistogram("Track","hTOFnSigmaKavsPin","TOF n#sigma_{K}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{K}^{TOF}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao);
-
-	histos->UserHistogram("Track","hTPCnSigmaPrvsPin","TPC n#sigma_{p}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{p}^{TPC}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
-	histos->UserHistogram("Track","hTPCnSigmaPrvsEta","TPC n#sigma_{p}^{TPC} vs. #eta;#eta;n#sigma_{p}^{TPC}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaPro);
-	//  //histos->UserHistogram("Track","hITSnSigmaPrvsEta","ITS n#sigma_{p}^{ITS} vs. #eta;#eta;n#sigma_{p}^{ITS}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaPro);
-	//  //histos->UserHistogram("Track","hTOFnSigmaPrvsEta","TOF n#sigma_{p}^{TOF} vs. #eta;#eta;n#sigma_{p}^{TOF}",20,-1.0,+1.0,100,-5,+5,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaPro);
-	//  //histos->UserHistogram("Track","hITSnSigmaPrvsPin","ITS n#sigma_{p}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{p}^{ITS}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaPro);
-	//  //histos->UserHistogram("Track","hTOFnSigmaPrvsPin","TOF n#sigma_{p}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{p}^{TOF}",200,0,10,100,-5,+5,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro);
+//	histos->UserHistogram("Track","hTPCnSigmaKavsPin","TPC n#sigma_{K}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{K}^{TPC}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+//	histos->UserHistogram("Track","hTPCnSigmaKavsEta","TPC n#sigma_{K}^{TPC} vs. #eta;#eta;n#sigma_{K}^{TPC}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao);
+//	histos->UserHistogram("Track","hITSnSigmaKavsEta","ITS n#sigma_{K}^{ITS} vs. #eta;#eta;n#sigma_{K}^{ITS}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaKao);
+//	histos->UserHistogram("Track","hTOFnSigmaKavsEta","TOF n#sigma_{K}^{TOF} vs. #eta;#eta;n#sigma_{K}^{TOF}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaKao);
+//	histos->UserHistogram("Track","hITSnSigmaKavsPin","ITS n#sigma_{K}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{K}^{ITS}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaKao);
+//	histos->UserHistogram("Track","hTOFnSigmaKavsPin","TOF n#sigma_{K}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{K}^{TOF}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao);
+//
+//	histos->UserHistogram("Track","hTPCnSigmaPrvsPin","TPC n#sigma_{p}^{TPC} vs. p_{in};p_{in} (GeV/c);n#sigma_{p}^{TPC}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
+//	histos->UserHistogram("Track","hTPCnSigmaPrvsEta","TPC n#sigma_{p}^{TPC} vs. #eta;#eta;n#sigma_{p}^{TPC}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaPro);
+//	histos->UserHistogram("Track","hITSnSigmaPrvsEta","ITS n#sigma_{p}^{ITS} vs. #eta;#eta;n#sigma_{p}^{ITS}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kITSnSigmaPro);
+//	histos->UserHistogram("Track","hTOFnSigmaPrvsEta","TOF n#sigma_{p}^{TOF} vs. #eta;#eta;n#sigma_{p}^{TOF}",20,-1.0,+1.0,200,-10,+10,AliDielectronVarManager::kEta,AliDielectronVarManager::kTOFnSigmaPro);
+//	histos->UserHistogram("Track","hITSnSigmaPrvsPin","ITS n#sigma_{p}^{ITS} vs. p_{in};p_{in} (GeV/c);n#sigma_{p}^{ITS}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kITSnSigmaPro);
+//	histos->UserHistogram("Track","hTOFnSigmaPrvsPin","TOF n#sigma_{p}^{TOF} vs. p_{in};p_{in} (GeV/c);n#sigma_{p}^{TOF}",200,0,10,200,-10,+10,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro);
 
 
 	if(name.Contains("PIDCalib",TString::kIgnoreCase) || isMC){
@@ -237,11 +259,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 	for(Int_t i=0  ;i<110 ;i++) mee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
 	for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) +  1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
 
-	const Int_t NpTee = 121;
+	const Int_t NpTee = 110;
 	Double_t pTee[NpTee] = {};
 	for(Int_t i=0  ;i<10   ;i++) pTee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 0.09 GeV/c, every 0.01 GeV/c
-	for(Int_t i=10 ;i<110  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
-	for(Int_t i=110;i<NpTee;i++) pTee[i] = 1.0  * (i-110) + 10.0;//from 10 to 20 GeV/c, evety 1.0 GeV/c
+	for(Int_t i=10 ;i<NpTee  ;i++) pTee[i] = 0.1  * (i- 10) +  0.1;//from 0.1 to 10 GeV/c, evety 0.1 GeV/c
 
 	TVectorD *v_mee = new TVectorD(Nmee);
 	for(Int_t i=0;i<Nmee;i++) (*v_mee)[i] = mee[i];
@@ -253,7 +274,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 	TVectorD *v_lmee = AliDielectronHelper::MakeLinBinning( 20, 0., 0.2);
 
 	//histos->UserHistogram("Pair","hMvsPt"  ,"m_{ee} vs. p_{T,ee};m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)", (TVectorD*)v_mee->Clone(), (TVectorD*)v_pTee->Clone(), AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
-	//histos->UserHistogram("Pair","hMvsPt"  ,"m_{ee} vs. p_{T,ee};m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)", 500,0.,5.,200,0.,20, AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
+	//histos->UserHistogram("Pair","hMvsPt"  ,"m_{ee} vs. p_{T,ee};m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c)", 500,0.,5.,100,0.,10, AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 	//histos->UserHistogram("Pair","hMvsPtvsPhiV","m_{ee} vs. p_{T,ee} vs. #varphi_{V};m_{ee} (GeV/c^{2});p_{T,ee} (GeV/c);#varphi_{V} (rad.)", (TVectorD*)v_lmee->Clone(), (TVectorD*)v_pTee->Clone(), (TVectorD*)v_phiv->Clone(), AliDielectronVarManager::kM, AliDielectronVarManager::kPt,AliDielectronVarManager::kPhivPair);
 	//histos->UserHistogram("Pair","hMvsPhiV"    ,"m_{ee} vs. #varphi_{V};#varphi_{V} (rad.);m_{ee} (GeV/c^{2})", (TVectorD*)v_phiv->Clone(), (TVectorD*)v_lmee->Clone(), AliDielectronVarManager::kPhivPair, AliDielectronVarManager::kM);
 
@@ -269,9 +290,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 	//Double_t xmax_pair[Ndim_pair] = {  5,  20, +1, TMath::Pi(), TMath::Pi()};
 	//UInt_t var_pair[Ndim_pair] = {AliDielectronVarManager::kM,AliDielectronVarManager::kPt,AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi, AliDielectronVarManager::kPhivPair};
 	const Int_t Ndim_pair = 3;//mee, pT, phiV
-	Int_t Nbin_pair[Ndim_pair]    = {149, 120,         100};
+	Int_t Nbin_pair[Ndim_pair]    = {149, 109,          18};
 	Double_t xmin_pair[Ndim_pair] = {  0,   0,           0};
-	Double_t xmax_pair[Ndim_pair] = {  5,  20, TMath::Pi()};
+	Double_t xmax_pair[Ndim_pair] = {  5,  10, TMath::Pi()};
 	UInt_t var_pair[Ndim_pair] = {AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair};
 
 	histos->UserSparse("Pair","hsPair","ee pairs",Ndim_pair,Nbin_pair,xmin_pair,xmax_pair,var_pair);
@@ -308,28 +329,28 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 void SetupMCSignals(AliDielectron *die)
 {
 
-	AliDielectronSignalMC* LFSig = new AliDielectronSignalMC("LF", "LFSignal"); ///all LF+J/psi
-  LFSig->SetLegPDGs(11,-11);
-  LFSig->SetMotherPDGs(600,600);
-  LFSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-  LFSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  LFSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-  LFSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  LFSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  LFSig->SetFillPureMCStep(kTRUE);
-  die->AddSignalMC(LFSig);
+	//AliDielectronSignalMC* LFSig = new AliDielectronSignalMC("LF", "LFSignal"); ///all LF+J/psi
+  //LFSig->SetLegPDGs(11,-11);
+  //LFSig->SetMotherPDGs(600,600);
+  //LFSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+  //LFSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  //LFSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+  //LFSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  //LFSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  //LFSig->SetFillPureMCStep(kTRUE);
+  //die->AddSignalMC(LFSig);
 
-//	AliDielectronSignalMC* pi0Sig = new AliDielectronSignalMC("pi0", "pi0Signal"); ///pi0 dalitz pairs
-//  pi0Sig->SetLegPDGs(11,-11);
-//  pi0Sig->SetMotherPDGs(111,111);
-//  pi0Sig->SetMothersRelation(AliDielectronSignalMC::kSame);
-//  pi0Sig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//  pi0Sig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-//  pi0Sig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-//  pi0Sig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-//  pi0Sig->SetFillPureMCStep(kTRUE);
-//  die->AddSignalMC(pi0Sig);
-//
+	AliDielectronSignalMC* pi0Sig = new AliDielectronSignalMC("pi0", "pi0Signal"); ///pi0 dalitz pairs
+  pi0Sig->SetLegPDGs(11,-11);
+  pi0Sig->SetMotherPDGs(111,111);
+  pi0Sig->SetMothersRelation(AliDielectronSignalMC::kSame);
+  pi0Sig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  pi0Sig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+  pi0Sig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  pi0Sig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  pi0Sig->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(pi0Sig);
+
 //  //AliDielectronSignalMC* pi0All = new AliDielectronSignalMC("pi0", "pi0All"); ///pi0 dalitz pairs (also from secondary)
 //  //pi0All->SetLegPDGs(11,-11);
 //  //pi0All->SetMotherPDGs(111,111);
@@ -339,19 +360,18 @@ void SetupMCSignals(AliDielectron *die)
 //  //pi0All->SetCheckBothChargesMothers(kTRUE,kTRUE);
 //  //pi0All->SetFillPureMCStep(kTRUE);
 //  //die->AddSignalMC(pi0All);
-//
-//  AliDielectronSignalMC* etaSig = new AliDielectronSignalMC("Eta", "etaSignal"); ///eta dalitz pairs
-//  etaSig->SetLegPDGs(11,-11);
-//  etaSig->SetMotherPDGs(221,221);
-//  etaSig->SetMothersRelation(AliDielectronSignalMC::kSame);
-//  etaSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-//  etaSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
-//  etaSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
-//  etaSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
-//  etaSig->SetFillPureMCStep(kTRUE);
-//  die->AddSignalMC(etaSig);
-//
-//
+
+  AliDielectronSignalMC* etaSig = new AliDielectronSignalMC("Eta", "etaSignal"); ///eta dalitz pairs
+  etaSig->SetLegPDGs(11,-11);
+  etaSig->SetMotherPDGs(221,221);
+  etaSig->SetMothersRelation(AliDielectronSignalMC::kSame);
+  etaSig->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  etaSig->SetMotherSources(AliDielectronSignalMC::kPrimary, AliDielectronSignalMC::kPrimary);
+  etaSig->SetCheckBothChargesLegs(kTRUE,kTRUE);
+  etaSig->SetCheckBothChargesMothers(kTRUE,kTRUE);
+  etaSig->SetFillPureMCStep(kTRUE);
+  die->AddSignalMC(etaSig);
+
 //  AliDielectronSignalMC* etaprimeSig = new AliDielectronSignalMC("Etaprime", "etaprimeSignal"); ///etaprime pairs
 //  etaprimeSig->SetLegPDGs(11,-11);
 //  etaprimeSig->SetMotherPDGs(331,331);
@@ -419,17 +439,16 @@ void SetupMCSignals(AliDielectron *die)
   pcmSig->SetFillPureMCStep(kTRUE);
   die->AddSignalMC(pcmSig);
 
-
-  AliDielectronSignalMC* diEleOpenCharm = new AliDielectronSignalMC("chadrons","di-electrons from open charm hadrons no B grandmother");  // dielectrons originating from open charm hadrons
-  diEleOpenCharm->SetLegPDGs(11,-11);
-  diEleOpenCharm->SetMotherPDGs(402,402);
-  diEleOpenCharm->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenCharm->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleOpenCharm->SetCheckStackForPDG(kTRUE);
-  diEleOpenCharm->SetPDGforStack(503);
-  diEleOpenCharm->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenCharm->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOpenCharm);
+//  AliDielectronSignalMC* diEleOpenCharm = new AliDielectronSignalMC("chadrons","di-electrons from open charm hadrons no B grandmother");  // dielectrons originating from open charm hadrons
+//  diEleOpenCharm->SetLegPDGs(11,-11);
+//  diEleOpenCharm->SetMotherPDGs(402,402);
+//  diEleOpenCharm->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenCharm->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleOpenCharm->SetCheckStackForPDG(kTRUE);
+//  diEleOpenCharm->SetPDGforStack(503);
+//  diEleOpenCharm->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenCharm->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOpenCharm);
 
 	//#################### D-Mesons
 //  AliDielectronSignalMC* diEleOpenCharmCharged = new AliDielectronSignalMC("DmesonsCharged","di-electrons from open charm D+- mesons no B grandmother");  // dielectrons originating from open charm hadrons
@@ -456,15 +475,15 @@ void SetupMCSignals(AliDielectron *die)
 //  die->AddSignalMC(diEleOpenCharmNeutral);
 
 
-  //b hadrons
-  AliDielectronSignalMC* diEleOpenB = new AliDielectronSignalMC("bhadrons","di-electrons from open beauty hadrons");  // dielectrons originating from beauty hadrons
-  diEleOpenB->SetLegPDGs(11,-11);
-  diEleOpenB->SetMotherPDGs(502,502);
-  diEleOpenB->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
-  diEleOpenB->SetMothersRelation(AliDielectronSignalMC::kDifferent);
-  diEleOpenB->SetCheckBothChargesLegs(kTRUE,kTRUE);
-  diEleOpenB->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  die->AddSignalMC(diEleOpenB);
+//  //b hadrons
+//  AliDielectronSignalMC* diEleOpenB = new AliDielectronSignalMC("bhadrons","di-electrons from open beauty hadrons");  // dielectrons originating from beauty hadrons
+//  diEleOpenB->SetLegPDGs(11,-11);
+//  diEleOpenB->SetMotherPDGs(502,502);
+//  diEleOpenB->SetLegSources(AliDielectronSignalMC::kDontCare, AliDielectronSignalMC::kDontCare);
+//  diEleOpenB->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+//  diEleOpenB->SetCheckBothChargesLegs(kTRUE,kTRUE);
+//  diEleOpenB->SetCheckBothChargesMothers(kTRUE,kTRUE);
+//  die->AddSignalMC(diEleOpenB);
 
 //  //B meson (3)
 //  AliDielectronSignalMC* diEleOneOpenB = new AliDielectronSignalMC("B2ee","di-electrons from one B meson");  // dielectrons originating from open charm hadrons

@@ -94,8 +94,34 @@ bool AliHFMLResponse::IsSelected(double &prob, AliAODRecoDecayHF *cand, double b
     if (fVars.empty())
     {
         AliWarning("Map of features empty!");
-        return -999.;
+        return false;
     }
 
     return IsSelected(cand->Pt(), fVars, prob);
+}
+
+//________________________________________________________________
+bool AliHFMLResponse::PredictMultiClass(std::vector<double> &outScores, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int masshypo)
+{
+    SetMapOfVariables(cand, bfield, pidHF, masshypo);
+    if (fVars.empty())
+    {
+        AliWarning("Map of features empty!");
+        return false;
+    }
+
+    return PredictMultiClass(cand->Pt(), fVars, outScores);
+}
+
+//________________________________________________________________
+bool AliHFMLResponse::IsSelectedMultiClass(std::vector<double> &outScores, AliAODRecoDecayHF *cand, double bfield, AliAODPidHF *pidHF, int masshypo)
+{   
+    SetMapOfVariables(cand, bfield, pidHF, masshypo);
+    if (fVars.empty())
+    {
+        AliWarning("Map of features empty!");
+        return false;
+    }
+
+    return IsSelectedMultiClass(cand->Pt(), fVars, outScores);
 }

@@ -29,6 +29,7 @@
 class TObjArray ; 
 class TTree ;
 class TArrayI ;
+class TObjString;
 #include <TRandom3.h>
 
 //--- ANALYSIS system ---
@@ -136,6 +137,13 @@ public:
   virtual TList * GetCreateControlHistograms() ;
   void            SetControlHistogramEnergyBinning(Int_t nBins, Float_t emin, Float_t emax)
   { fEnergyHistogramNbins = nBins ; fEnergyHistogramLimit[0] = emin; fEnergyHistogramLimit[1] = emax ; }
+  
+  Bool_t          IsHistoCentDependentOn()           const {   return fHistoCentDependent  ; }
+  void            SwitchOffHistoCentDependent()            {   fHistoCentDependent = kFALSE; }
+  void            SwitchOnHistoCentDependent()             {   fHistoCentDependent = kTRUE ; }
+  
+  void            SwitchOffHistoPtDependent()              {   fHistoPtDependent = kFALSE  ; }
+  void            SwitchOnHistoPtDependent()               {   fHistoPtDependent = kTRUE   ; }
   
   //------------------------------------------------------------
   // Clusters/Tracks arrays filtering/filling methods and switchs 
@@ -351,8 +359,8 @@ public:
   void             RejectFastClusterEvents()               { fAcceptFastCluster     = kFALSE ; }  
   Bool_t           IsFastClusterAccepted()           const { return fAcceptFastCluster       ; }   
   
-  Bool_t           AcceptEventWithTriggerBit();
-  Bool_t           RejectEventWithTriggerBit();
+  Bool_t           AcceptEventWithTriggerBit(UInt_t trigFired);
+  Bool_t           RejectEventWithTriggerBit(UInt_t trigFired);
   void             SetAcceptEventsWithBit(UInt_t bit)      { Int_t n = fAcceptEventsWithBit.GetSize();
                                                              fAcceptEventsWithBit.Set(n+1);
                                                              fAcceptEventsWithBit.AddAt(bit,n) ; }
@@ -393,6 +401,10 @@ public:
   
   // Event selection when mixed event is used
   
+  UInt_t           GetEventTriggerMaskInput()         const { return fEventTriggerMaskInput    ; }
+  void             SetEventTriggerMaskInput(UInt_t evtTrig = AliVEvent::kAny) 
+                                                           { fEventTriggerMaskInput = evtTrig ; }
+  
   UInt_t           GetEventTriggerMask()             const { return fEventTriggerMask        ; }
   void             SetEventTriggerMask(UInt_t evtTrig = AliVEvent::kAny) 
                                                            { fEventTriggerMask = evtTrig     ; }
@@ -431,6 +443,13 @@ public:
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
+  Bool_t           AreBadTriggerEventsFromTriggerMakerRemoved()      const { return fRemoveBadTriggerEventsFromEMCalTriggerMaker     ; }
+  void             SwitchOffBadTriggerEventsFromTriggerMakerRemoval()      { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kFALSE ; }
+  void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
+  
+  void             SetEMCalTriggerMakerDecisionContainerName(TString name) { fEMCalTriggerMakerDecissionContainerName = name ; }
+  TString          GetEMCalTriggerMakerDecisionContainerName()       const { return fEMCalTriggerMakerDecissionContainerName ; }
+   
   Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
   void             SwitchOnBadTriggerEventsRemoval()       { fRemoveBadTriggerEvents   = kTRUE  ; }
@@ -447,7 +466,7 @@ public:
   void             SwitchOnTriggerClusterTimeRecal ()      { fTriggerClusterTimeRecal  = kTRUE  ; }
   void             SwitchOffTriggerClusterTimeRecal()      { fTriggerClusterTimeRecal  = kFALSE ; }
   
-  void             SetEventTriggerBit();
+  void             SetEventTriggerBit(UInt_t mask);
   Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
   Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
   Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
@@ -470,14 +489,39 @@ public:
   Bool_t           IsEventDCALL1Jet()                const { return (fEventTrigDCALL1Jet1   || fEventTrigDCALL1Jet2  ) ; }
   Bool_t           IsEventDCALL1()                   const { return (IsEventDCALL1Gamma()   || IsEventDCALL1Jet()    ) ; }
   
-  void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
-  void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
-	
-  // Other event rejections criteria
+  Bool_t           IsEventMinimumBiasCaloOnly()      const { return fEventTrigMinBiasCaloOnly        ; }
+  Bool_t           IsEventEMCALL0CaloOnly()          const { return fEventTrigEMCALL0CaloOnly        ; }
+  Bool_t           IsEventEMCALL1Gamma1CaloOnly()    const { return fEventTrigEMCALL1Gamma1CaloOnly  ; }
+  Bool_t           IsEventEMCALL1Gamma2CaloOnly()    const { return fEventTrigEMCALL1Gamma2CaloOnly  ; }
+  Bool_t           IsEventEMCALL1Jet1CaloOnly()      const { return fEventTrigEMCALL1Jet1CaloOnly    ; }
+  Bool_t           IsEventEMCALL1Jet2CaloOnly()      const { return fEventTrigEMCALL1Jet2CaloOnly    ; }
+  Bool_t           IsEventEMCALL1GammaCaloOnly()     const { return (fEventTrigEMCALL1Gamma1CaloOnly || fEventTrigEMCALL1Gamma2CaloOnly) ; }
+  Bool_t           IsEventEMCALL1JetCaloOnly()       const { return (fEventTrigEMCALL1Jet1CaloOnly   || fEventTrigEMCALL1Jet2CaloOnly  ) ; }
+  Bool_t           IsEventEMCALL1CaloOnly()          const { return (IsEventEMCALL1GammaCaloOnly()   || IsEventEMCALL1JetCaloOnly()    ) ; }
   
-  void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
-  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
-  Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
+  Bool_t           IsEventDCALL0CaloOnly()           const { return fEventTrigDCALL0CaloOnly        ; }
+  Bool_t           IsEventDCALL1Gamma1CaloOnly()     const { return fEventTrigDCALL1Gamma1CaloOnly  ; }
+  Bool_t           IsEventDCALL1Gamma2CaloOnly()     const { return fEventTrigDCALL1Gamma2CaloOnly  ; }
+  Bool_t           IsEventDCALL1Jet1CaloOnly()       const { return fEventTrigDCALL1Jet1CaloOnly    ; }
+  Bool_t           IsEventDCALL1Jet2CaloOnly()       const { return fEventTrigDCALL1Jet2CaloOnly    ; }
+  Bool_t           IsEventDCALL1GammaCaloOnly()      const { return (fEventTrigDCALL1Gamma1CaloOnly || fEventTrigDCALL1Gamma2CaloOnly) ; }
+  Bool_t           IsEventDCALL1JetCaloOnly()        const { return (fEventTrigDCALL1Jet1CaloOnly   || fEventTrigDCALL1Jet2CaloOnly  ) ; }
+  Bool_t           IsEventDCALL1CaloOnly()           const { return (IsEventDCALL1GammaCaloOnly()   || IsEventDCALL1JetCaloOnly()    ) ; }
+  
+  void             SwitchOnEMCALEventRejectionL1HighWithL1Low()  { fRejectEMCalTriggerEventsL1HighWithL1Low = kTRUE  ; }
+  void             SwitchOffEMCALEventRejectionL1HighWithL1Low() { fRejectEMCalTriggerEventsL1HighWithL1Low = kFALSE ; }
+	
+  void             SwitchOnRemoveCentralityTriggerOutliers()     { fRemoveCentralityTriggerOutliers = kTRUE  ; }
+  void             SwitchOffRemoveCentralityTriggerOutliers()    { fRemoveCentralityTriggerOutliers = kFALSE ; }
+  
+  // Other event rejections criteria
+  /// \param opt = 0, no rejection, 1 SPD rejection pp/pPb, 2 TPC-ITS correl PbPb
+  /// \param correl = level of TPC-ITS correlation correction, 1 rejects ~38% to 4 that rejects ~6%
+  void             SwitchOnPileUpEventRejection(Int_t opt = 1, Int_t correl = 1) {
+    fDoPileUpEventRejection = opt ;
+    if ( opt == 2 ) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,correl); }
+  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= 0 ; }
+  Int_t            IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -497,7 +541,9 @@ public:
 
   void             UseEventCutsClass(Bool_t use)           { fUseEventCutsClass = use  ; }
   AliEventCuts    &GetEventCutsClass()                     { return fEventCuts         ; }
-  
+  void             SwithOnEvenCutsClassQA()                { fUseEventCutsClassQA = kTRUE  ; }
+  void             SwithOffEvenCutsClassQA()               { fUseEventCutsClassQA = kTRUE  ; }
+
   // Time Stamp
   
   Double_t         GetRunTimeStampMin()              const { return fTimeStampRunMin         ; }
@@ -564,6 +610,28 @@ public:
   void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
+  // Spherocity
+  Float_t          CalculateEventSpherocity( Float_t minPt );
+  Float_t          GetEventSpherocity()              const { return fSpherocity            ; }
+  Float_t          GetEventSpherocityPerMinPtCut(Int_t icut)   const
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityPtCut[icut] ; else return -10. ; }
+
+  Float_t          GetSpherocityMinPt()              const { return fSpherocityMinPt       ; }
+  void             SetSpherocityMinPt(Float_t min)         { fSpherocityMinPt = min        ; }
+
+  Float_t          GetSpherocityMinPtCuts(Int_t icut)
+  { if ( icut >= 0 && icut < 4 ) return fSpherocityMinPtCuts[icut] ; else return 0. ; }
+  void             SetSpherocityMinPtCuts(Int_t icut, Float_t min)
+  { if ( icut >= 0 && icut < 4 ) fSpherocityMinPtCuts[icut] = min ; }
+
+  void             SwitchOnEventSpherocityCalculation()    { fCalculateSpherocity = kTRUE  ; }
+  void             SwitchOffEventSpherocityCalculation()   { fCalculateSpherocity = kFALSE ; }
+  Bool_t           IsEventSpherocityCalculated()     const { return fCalculateSpherocity   ; }
+
+  void             SwitchOnEventSpherocityMinPtStudy()    { fStudySpherocityMinPt = kTRUE  ; }
+  void             SwitchOffEventSpherocityMinPtStudy()   { fStudySpherocityMinPt = kFALSE ; }
+  Bool_t           IsEventSpherocityMinPtStudied()  const { return fStudySpherocityMinPt   ; }
+
   // Track selection
   
   ULong_t          GetTrackStatus()                  const { return fTrackStatus          ; }
@@ -574,6 +642,18 @@ public:
   void             SwitchOnTrackHitSPDSelection()          { fSelectSPDHitTracks = kTRUE  ; }
   void             SwitchOffTrackHitSPDSelection()         { fSelectSPDHitTracks = kFALSE ; }
   
+  Int_t            GetMinimumITSclusters()           const { return fSelectMinITSclusters ; }
+  void             SetMinimumITSclusters(Int_t min)        { fSelectMinITSclusters = min  ; }
+  
+  Float_t          GetMaximumChi2PerITScluster()      const { return fSelectMaxChi2PerITScluster ; }
+  void             SetMaximumChi2PerITScluster(Float_t max) { fSelectMaxChi2PerITScluster = max  ; }
+
+  Int_t            GetMinimumTPCclusters()           const { return fSelectMinTPCclusters ; }
+  void             SetMinimumTPCclusters(Int_t min)        { fSelectMinTPCclusters = min  ; }
+
+  Float_t          GetMaximumChi2PerTPCcluster()      const { return fSelectMaxChi2PerTPCcluster ; }
+  void             SetMaximumChi2PerTPCcluster(Float_t max) { fSelectMaxChi2PerTPCcluster = max  ; }
+
   Int_t            GetTrackMultiplicity(Int_t cut=0) const 
   {  if(cut < 10)  return fTrackMult [cut] ; else return 0 ; }
   Float_t          GetTrackSumPt(Int_t cut=0) const 
@@ -655,7 +735,8 @@ public:
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
   virtual TString  GetCentralityClass()              const { return fCentralityClass             ; }
   virtual Int_t    GetCentralityOpt()                const { return fCentralityOpt               ; }
-  virtual Int_t    GetEventCentrality()              const ;
+  virtual Float_t  GetEventCentralityF()             const ;
+  virtual Int_t    GetEventCentrality()              const { return TMath::Floor(GetEventCentralityF()); }
   virtual void     SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
                                                            { fCentralityBin[0]=min; fCentralityBin[1]=max;  
                                                              if(min>=0 && max > 0) fCentralityOpt = 100 ; }
@@ -736,8 +817,16 @@ public:
   virtual void SwitchOffPythiaEventHeaderUse()            { fCheckPythiaEventHeader = kFALSE ; }
   virtual Bool_t IsPythiaEventHeaderUsed()          const { return fCheckPythiaEventHeader ; }
   
-  // See implementation in AOD and ESD readers
-  
+  // Methods to reject generated MC event or particles
+  // Implemented in ESD/AOD reader
+  virtual Bool_t IsMCParticleFromOutOfBunchPileupCollision(Int_t /*index*/)  const { return kFALSE; }
+  virtual Bool_t IsPileupInGeneratedMCEvent(TString /*genname=""*/)          const { return kFALSE; }
+  virtual Bool_t IsSameBunchPileupInGeneratedMCEvent(TString /*genname=""*/) const { return kFALSE; }
+
+  virtual void   SwitchOnMCParticlePileUpRejection()       { fRejectPileUpMCParticle = kTRUE  ; }
+  virtual void   SwitchOffMCParticlePileUpRejection()      { fRejectPileUpMCParticle = kFALSE ; }
+  virtual Bool_t IsMCParticlePileUpRejected()        const { return fRejectPileUpMCParticle   ; }
+
   // Filtered kinematics in AOD
   
   virtual TClonesArray*     GetAODMCParticles()      const ;
@@ -770,7 +859,13 @@ public:
   virtual void     SetPtHardAndClusterPtComparison(Bool_t compare) { fComparePtHardAndClusterPt = compare ; }	
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
   virtual void     SetPtHardAndClusterPtFactor(Float_t factor)     { fPtHardAndClusterPtFactor = factor   ; }		
-  
+
+  virtual Bool_t   ComparePtHardAndPromptPhotonPt(Int_t process, TString processName) ;
+  virtual Bool_t   IsPtHardAndPromptPhotonPtComparisonSet()       const { return  fComparePtHardAndPromptPhotonPt   ; }
+  virtual void     SetPtHardAndPromptPhotonPtComparison(Bool_t compare) { fComparePtHardAndPromptPhotonPt = compare ; }
+  virtual Float_t  GetPtHardAndPromptPhotonFactor()               const { return  fPtHardAndPromptPhotonPtFactor    ; }
+  virtual void     SetPtHardAndPromptPhotonPtFactor(Float_t factor)     { fPtHardAndPromptPhotonPtFactor = factor   ; }
+
   // Select particles or clusters depending on generator
   virtual void     SetNumberOfMCGeneratorsToAccept(Int_t nGen) 
   { fNMCGenerToAccept = nGen ; 
@@ -792,6 +887,13 @@ public:
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
+  void   SwitchOnMCPromptPhotonsSelection()         { fAcceptMCPromptPhotonOnly    = kTRUE ; }
+  void   SwitchOffMCPromptPhotonsSelection()        { fAcceptMCPromptPhotonOnly    = kFALSE; }
+  Bool_t AreMCPromptPhotonsSelected()         const { return fAcceptMCPromptPhotonOnly     ; }
+  void   SwitchOnMCFragmentationPhotonsRejection()  { fRejectMCFragmentationPhoton = kTRUE ; }
+  void   SwitchOffMCFragmentationPhotonsRejection() { fRejectMCFragmentationPhoton = kFALSE; }
+  Bool_t AreMCFragmentationPhotonsRejected()  const { return fRejectMCFragmentationPhoton  ; }
+
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
   virtual void AddNeutralParticlesArray(TArrayI & /*array*/) { ; }  
@@ -854,6 +956,9 @@ public:
   Bool_t           fComparePtHardAndClusterPt;     ///<  In MonteCarlo, jet events, reject events with too large cluster energy.
   Float_t          fPtHardAndClusterPtFactor;      ///<  Factor between ptHard and cluster pT to reject/accept event.
   
+  Bool_t           fComparePtHardAndPromptPhotonPt;///<  In MonteCarlo, prompt photon events, reject fake events with wrong jet energy.
+  Float_t          fPtHardAndPromptPhotonPtFactor; ///<  Factor between ptHard and prompt photon pT to reject/accept event.
+
   Float_t          fCTSPtMin;                      ///<  pT Threshold on charged particles. 
   Float_t          fEMCALPtMin;                    ///<  pT Threshold on emcal clusters.
   Float_t          fPHOSPtMin;                     ///<  pT Threshold on phos clusters.
@@ -933,7 +1038,11 @@ public:
   
   // Track selection and counting
   ULong_t          fTrackStatus        ;           ///<  Track selection bit, select tracks refitted in TPC, ITS ...
-  Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers.
+  Bool_t           fSelectSPDHitTracks ;           ///<  Ensure that track hits SPD layers, AOD
+  Int_t            fSelectMinITSclusters;          ///< Ensure track as at least this number of ITS clusters, AOD
+  Float_t          fSelectMaxChi2PerITScluster;    ///< Ensure track as less than this Chi2/nCls of ITS, AOD 
+  Int_t            fSelectMinTPCclusters;          ///< Ensure track as at least this number of TPC clusters, AOD
+  Float_t          fSelectMaxChi2PerTPCcluster;    ///< Ensure track as less than this Chi2/nCls of TPC, AOD
   
   Int_t            fTrackMult[10]      ;           ///<  Track multiplicity, count for different pT cuts
   Float_t          fTrackSumPt[10]     ;           ///<  Track sum pT, count for different pT cuts
@@ -945,13 +1054,15 @@ public:
   TString          fFiredTriggerClassName;         ///<  Name of trigger event type used to do the analysis.
 
   // Trigger bit
+  UInt_t           fEventTriggerMaskInput ;        ///<  Event input trigger mask
   UInt_t           fEventTriggerMask ;             ///<  Select this triggerered event.
-  UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kAnyINT.
+  UInt_t           fMixEventTriggerMask ;          ///<  Select this triggerered event for mixing, tipically kMB or kINT7.
   Bool_t           fEventTriggerAtSE;              ///<  Select triggered event at SE base task or here.
   
-  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kAnyInt.
+  Bool_t           fEventTrigMinBias ;             ///<  Event is min bias on its name, it should correspond to AliVEvent::kMB, AliVEvent::kINT7.
   Bool_t           fEventTrigCentral ;             ///<  Event is AliVEvent::kCentral on its name,  it should correspond to PbPb.
   Bool_t           fEventTrigSemiCentral ;         ///<  Event is AliVEvent::kSemiCentral on its name,  it should correspond to PbPb.
+  
   Bool_t           fEventTrigEMCALL0 ;             ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kEMC7, AliVEvent::kEMC1.
   Bool_t           fEventTrigEMCALL1Gamma1 ;       ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigEMCALL1Gamma2 ;       ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
@@ -962,6 +1073,18 @@ public:
   Bool_t           fEventTrigDCALL1Gamma2 ;        ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigDCALL1Jet1 ;          ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kEMCEGA.
   Bool_t           fEventTrigDCALL1Jet2 ;          ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kEMCEGA.
+  
+  Bool_t           fEventTrigMinBiasCaloOnly ;       ///<  Event is min bias on its name, it should correspond to AliVEvent::kCaloOnly.
+  Bool_t           fEventTrigEMCALL0CaloOnly ;       ///<  Event is EMCal L0 on its name, it should correspond to AliVEvent::kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Gamma1CaloOnly ; ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Gamma2CaloOnly ; ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Jet1CaloOnly ;   ///<  Event is EMCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigEMCALL1Jet2CaloOnly ;   ///<  Event is EMCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL0CaloOnly ;        ///<  Event is DCal L0 on its name, it should correspond to AliVEvent::kCaloOnly.
+  Bool_t           fEventTrigDCALL1Gamma1CaloOnly ;  ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL1Gamma2CaloOnly ;  ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL1Jet1CaloOnly ;    ///<  Event is DCal L1-Gamma, threshold 1 on its name,  it should correspond kCaloOnly.
+  Bool_t           fEventTrigDCALL1Jet2CaloOnly ;    ///<  Event is DCal L1-Gamma, threshold 2 on its name,  it should correspond kCaloOnly.
   
   Int_t            fBitEGA;                        ///<  Trigger bit on VCaloTrigger for EGA.
   Int_t            fBitEJE;                        ///<  Trigger bit on VCaloTrigger for EJE.
@@ -982,6 +1105,7 @@ public:
   
   AliEventCuts     fEventCuts;                     ///< Event selection utility
   Bool_t           fUseEventCutsClass;             ///< Use AliEventCuts class 
+  Bool_t           fUseEventCutsClassQA;           ///< Recover AliEventCuts class QA histograms
   
   TList **         fListMixedTracksEvents;         //!<! Container for tracks stored for different events, used in case of own mixing, set in analysis class.
   TList **         fListMixedCaloEvents  ;         //!<! Container for photon stored for different events, used in case of own mixing, set in analysis class.
@@ -1018,6 +1142,10 @@ public:
   Int_t            fLEDLowNCellsCutSM3Strip;       ///<  SM3 strip low activity if n cells below this value, check activity on other SM LED event (Run2)
  
   // Triggered event selection
+  
+  Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
+  TString          fEMCalTriggerMakerDecissionContainerName;      ///<  Name of container with trigger decission
+  
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1038,7 +1166,7 @@ public:
   Bool_t           fRemoveUnMatchedTriggers;       ///<  Analyze events where trigger patch and cluster where found or not.
   
   
-  Bool_t           fDoPileUpEventRejection;        ///<  Select pile-up events by SPD.
+  Int_t            fDoPileUpEventRejection;        ///<  Select pile-up events by SPD if 1, by TPC-ITS correl if 2.
   Bool_t           fDoV0ANDEventSelection;         ///<  Select events depending on V0AND.
   Bool_t           fDoVertexBCEventSelection;      ///<  Select events with vertex on BC=0 or -100.
   Bool_t           fDoRejectNoTrackEvents;         ///<  Reject events with no selected tracks in event.
@@ -1079,6 +1207,18 @@ public:
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
 
+  // Event spherocity
+  Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
+  Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1
+  Float_t          fSpherocityMinPt ;              ///<  Event spherocity min track pT
+  Float_t          fSpherocityMinPtCuts[4] ;       ///<  Event spherocity list of min track pT in case  fStudySpherocityMinPt = 1
+  Bool_t           fCalculateSpherocity ;          ///<  Activate or not event spherocity calculation
+  Bool_t           fStudySpherocityMinPt ;         ///<  Calculate spherocity for different min pT
+  TH1F *           fhSpherocity;                   ///< Spherocity vs track pT  control histogram
+  TH2F *           fhSpherocityCen;                ///< Spherocity vs centrality vs track pT control histogram
+  TH1F *           fhSpherocityMinPtCut[4];        ///< Spherocity control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+  TH2F *           fhSpherocityCenMinPtCut[4];     ///< Spherocity vs centrality control histogram for different MinPtCut, fStudySpherocityMinPt = 1
+
   // Jets
   Bool_t           fFillInputNonStandardJetBranch; ///<  Flag to use data from non standard jets.
   TClonesArray *   fNonStandardJets;               //!<! Temporal array with jets.
@@ -1091,7 +1231,8 @@ public:
   TArrayI          fAcceptEventsWithBit;           ///<  Accept events if trigger bit is on.
   TArrayI          fRejectEventsWithBit;           ///<  Reject events if trigger bit is on.
 
-  Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; ///< Reject events L1 high threshold events also triggered by low threshold.
+  Bool_t           fRejectEMCalTriggerEventsL1HighWithL1Low; ///< Reject events L1 high threshold events also triggered by low threshold.
+  Bool_t           fRemoveCentralityTriggerOutliers; ///< Reject events from centrality triggers out of expected ranges (PbPb 2011,2018)
   
   TLorentzVector   fMomentum;                      //!<! Temporal TLorentzVector container, avoid declaration of TLorentzVectors per event.
 
@@ -1106,18 +1247,34 @@ public:
   TH2F  *          fhEMCALClusterEtaPhiFidCut;     //!<! Control histogram on EMCAL clusters acceptance, after fiducial cuts
   TH2F  *          fhEMCALClusterDisToBadE;        //!<! Control histogram on EMCAL clusters distance to bad channels
   TH2F  *          fhEMCALClusterTimeE;            //!<! Control histogram on EMCAL timing
-  TH1F  *          fhEMCALClusterCutsE[9];         //!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsE         [9];//!<! Control histogram on the different EMCal cluster selection cuts, E
+  TH1F  *          fhEMCALClusterCutsESignal   [9];//!<! Control histogram on the different EMCal cluster selection cuts, E. Embedded signal clusters.
+  TH2F  *          fhEMCALClusterCutsECen      [9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality
+  TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
   TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
- 
+  TH1F  *          fhCTSTrackCutsPtSignal[6];      //!<! Control histogram on the different CTS tracks selection cuts, pT. Embedded signal
+  TH2F  *          fhCTSTrackCutsPtCen[6];         //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality
+  TH2F  *          fhCTSTrackCutsPtCenSignal[6];   //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality. Embedded signal
+  TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
+  TH1F  *          fhCentralityBadTrigger;         //!<! Control histogram on event centrality for bad triggered events
+  TH2F  *          fhEMCALClusterCentralityBadTrigger; //!<! Control histogram on clusters E vs centrality on bad triggered events
+
   TH2F  *          fhEMCALNSumEnCellsPerSM;        //!<! Control histogram of LED events rejection
   TH2F  *          fhEMCALNSumEnCellsPerSMAfter;   //!<! Control histogram of LED events rejection, after cut
   TH2F  *          fhEMCALNSumEnCellsPerSMAfterStripCut; //!<! Control histogram of LED events rejection, after LED strip rejection
   TH2F  *          fhEMCALNSumEnCellsPerStrip;     //!<! Control histogram of LED events on strips rejection, after LED SM rejection
   TH2F  *          fhEMCALNSumEnCellsPerStripAfter;//!<! Control histogram of LED events on strips rejection, after strip LED and SM rejection
-  
+
+  TH1F  *          fhPtHardPtJetPtRatio;           //!<! Control histogram fraction of generated jet pT over pT hard
+  TH1F  *          fhPtHardPromptPhotonPtRatio;    //!<! Control histogram fraction of generated prompt photon Pt over pT hard
+  TH1F  *          fhPtHardEnClusterRatio;         //!<! Control histogram fraction of generated calorimeter cluster energy over pT hard
+  TH2F  *          fhPtHardEnClusterCenRatio;      //!<! Control histogram fraction of generated calorimeter cluster energy over pT hard  vs centrality
+
   Float_t          fEnergyHistogramLimit[2];       ///<  Binning of the control histograms, number of bins
   Int_t            fEnergyHistogramNbins ;         ///<  Binning of the control histograms, min and max window
+  Bool_t           fHistoCentDependent;            ///< Fill centrality dependent of some histograms  
+  Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
   TH1I  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...  
 
@@ -1127,12 +1284,16 @@ public:
   Int_t            fMCGenerIndexToAccept[5];       ///<  List with index of generators that should not be included
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
-  
-  
+
   AliGenEventHeader       * fGenEventHeader;       //!<! Event header
   AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
   Bool_t                    fCheckPythiaEventHeader; ///< Switch on/off recovery of the Pythia event header
   
+  Bool_t           fAcceptMCPromptPhotonOnly ;     ///< Accept in the analysis task (AliiAnaPhoton) only cluster from prompt photons, to be used in gamma-jet simulations
+  Bool_t           fRejectMCFragmentationPhoton ;  ///< Reject in the analysis task (AliAnaPhoton) clusters from fragmentation photons, to be used in jet-jet simulations
+
+  Bool_t           fRejectPileUpMCParticle ;       ///< Reject injected Pile-up MC particles
+
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -1140,7 +1301,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,89) ;
+  ClassDef(AliCaloTrackReader,97) ;
   /// \endcond
 
 } ;

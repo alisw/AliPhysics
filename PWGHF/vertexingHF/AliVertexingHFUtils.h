@@ -54,6 +54,8 @@ class TProfile;
 class TClonesArray;
 class TH1F;
 class TH2F;
+class TH1D;
+class TH2D;
 class TF1;
 
 using std::vector;
@@ -168,6 +170,7 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsTrackFromCharm(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC);
+  static Double_t GetBeautyMotherPt(AliMCEvent* mcEvent, AliMCParticle *mcPart);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   static Double_t GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t &pdgGranma);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
@@ -249,6 +252,7 @@ class AliVertexingHFUtils : public TObject{
 
   // KF Particle functions
   static Double_t CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother);
+  static Double_t CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother);
   static Double_t CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1);
   static Bool_t CheckAODvertexCov(AliAODVertex *vtx);
   static Bool_t CheckAODtrackCov(AliAODTrack *track);
@@ -259,7 +263,13 @@ class AliVertexingHFUtils : public TObject{
   static KFParticle CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg);
   static KFParticle CreateKFParticleV0(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
   static KFParticle CreateKFParticleCasc(KFParticle kfpV0, AliAODTrack *btrack, Int_t pdg_V0, Int_t pdg_btrack);
+  static Double_t DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV);
+  static Double_t DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV);
   static Double_t ldlFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
+  static Double_t ldlXYFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
+  static TH1D* ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+  static TH1D* ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+
 
  private:
 

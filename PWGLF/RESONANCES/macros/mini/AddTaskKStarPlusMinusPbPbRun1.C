@@ -3,7 +3,7 @@
  //            Modified by Enrico Fragiacomo - 15/01/2014
  //            Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)
                Modified by Sudipan De - 01/04/2019 (sde@cern.ch)
-               Modified by Dukhishyam Mallick- 01/04/2019 (dmallick@cern.ch)
+               Modified by Dukhishyam Mallick- 015/10/2019 (dmallick@cern.ch)
 	       //Based on AddAnalysisTaskRsnMini
 	       //pPb specific settings from AddTaskKStarPPB.C
 	       //
@@ -144,7 +144,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
     TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
     AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
     // task->SelectCollisionCandidates(AliVEvent::kMB);
-     task->SelectCollisionCandidates(triggerMask);
+    // task->SelectCollisionCandidates(triggerMask);
+     task->UseESDTriggerMask(triggerMask);
     
        if(isPP){
 	 if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -175,13 +176,38 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
     // - 2nd argument --> |Vz| range
     // - 3rd argument --> minimum required number of contributors
     // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-
+    /*
   AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
    cutEventUtils->SetCheckAcceptedMultSelection();
+    */
+
+
+    //    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+    // cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup                                                                                                   
+    //cutVertex->SetCheckZResolutionSPD();                                                                                                                            
+    //cutVertex->SetCheckDispersionSPD();                                                                                                                             
+    //cutVertex->SetCheckZDifferenceSPDTrack();                                                                                                                       
+    //  AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);                                                               
+    //cutEventUtils->SetCheckIncompleteDAQ();                                                                                                                           
+    //if(aodFilterBit<200) cutEventUtils->SetCheckIncompleteDAQ();                                                                                                    
+    //cutEventUtils->SetCheckSPDClusterVsTrackletBG();                                                                                                                
+
+    // define and fill cut set for event cut                                                                                                                            
+   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kTRUE);
+   cutVertex->SetCheckPileUp(kTRUE);   
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutEventUtils);
-   eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+   eventCuts->AddCut(cutVertex);
+   eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
    task->SetEventCuts(eventCuts);
+
+   //  AliRsnCutEventUtils* cutEventUtils=0;
+    if(!isMC){
+     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup
+     ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+   }
+    
+    
+       
 
 
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------                                                        
@@ -193,10 +219,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun1
    
      // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
    //vertex
-    Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
+   /*  Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
     AliRsnMiniOutput* outVtx=task->CreateOutput("eventVtx","HIST","EVENT");
     outVtx->AddAxis(vtxID,240,-12.0,12.0);
-    
+   */
+   
     //multiplicity
     Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");

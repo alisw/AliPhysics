@@ -1,4 +1,6 @@
 AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
+					    TString year ="16",
+					    Bool_t hasSpline =kFALSE,
 					    TString cFileName = "Config_hmurakam_pp.C",
 					    Char_t* outputFileName="LMEE.root",
 					    ULong64_t triggerMask = AliVEvent::kINT7,
@@ -30,9 +32,9 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
         gROOT->LoadMacro(configFilePath.Data());
     
     //Do we have an MC handler?
-    hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+    Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
     std::cout << "hasMC = " << hasMC << std::endl;
-    if(hasMC) kMixing = 0;
+    //if(hasMC) kMixing = 0;
     
     //=== Create the main dielectron task =============================
     AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDielectron_mb");
@@ -56,7 +58,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     //add dielectron analysis with different cuts to the task
     for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
         
-        AliDielectron *diele = Config_hmurakam_pp(i, kTRUE); // second flag - min.bias analysis?
+        AliDielectron *diele = Config_hmurakam_pp(i,year.Data(),hasSpline);
         if(!diele)continue;
         task->AddDielectron(diele);
     }
@@ -64,7 +66,6 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
     mgr->AddTask(task);
     
     //=== create output containers ===========================
-    
     AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("tree_lowmass",
                          TTree::Class(),
@@ -88,7 +89,7 @@ AliAnalysisTask *AddTask_hmurakam_minbiaspp(Bool_t getFromAlien=kFALSE,
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName);
-    
+
     mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 0, coutput1 );
     mgr->ConnectOutput(task, 1, cOutputHist1);

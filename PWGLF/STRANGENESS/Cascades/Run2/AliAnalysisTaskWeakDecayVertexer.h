@@ -250,6 +250,9 @@ public:
     void SetSkipLargeXYDCA( Bool_t lOpt = kTRUE) {
         fkSkipLargeXYDCA=lOpt;
     }
+    void SetOnlyCountTracks ( Bool_t lOpt = kTRUE) {
+        fOnlyCount = lOpt;
+    }
     void SetUseMonteCarloAssociation( Bool_t lOpt = kTRUE) {
         fkMonteCarlo=lOpt;
     }
@@ -406,6 +409,7 @@ private:
     Double_t fMassWindowAroundCascade;
     
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
+    Bool_t   fOnlyCount; //if true, don't minimize anything (fast, count tracks only) 
     
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
@@ -427,8 +431,10 @@ private:
     TH1D *fHistV0OptimalTrackParamUseBachelor; //!
     
     //V0 statistics
-    TH1D *fHistV0Statistics; //! 
-
+    TH1D *fHistV0Statistics; //!
+    TH1D *fHistPosTrackCounter;
+    TH1D *fHistNegTrackCounter;
+  
     AliAnalysisTaskWeakDecayVertexer(const AliAnalysisTaskWeakDecayVertexer&);            // not implemented
     AliAnalysisTaskWeakDecayVertexer& operator=(const AliAnalysisTaskWeakDecayVertexer&); // not implemented
 

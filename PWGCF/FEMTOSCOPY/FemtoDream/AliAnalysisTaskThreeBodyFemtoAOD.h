@@ -95,6 +95,31 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   void SetIsMC(bool isMCLocal) {
     fIsMC=isMCLocal;
   }
+
+  void SetTriggerOnSample(bool triggerOnSample) {
+    fTriggerOnSample=triggerOnSample;
+  } 
+
+  void SetQ3Limit(float Q3Limit) {
+    fQ3Limit = Q3Limit;
+  }  
+  void SetQ3LimitSample(float Q3LimitSample) {
+    fQ3LimitSample = Q3LimitSample;
+  } 
+  void SetQ3LimitSample2(float Q3LimitSample2) {
+    fQ3LimitSample2 = Q3LimitSample2;
+  } 
+  void SetQ3LimitSampleFraction(float Q3LimitSampleFraction) {
+    fQ3LimitSampleFraction = Q3LimitSampleFraction;
+  } 
+  void SetQ3LimitSampleFraction2(float Q3LimitSampleFraction2) {
+    fQ3LimitSampleFraction2 = Q3LimitSampleFraction2;
+  } 
+
+  void SetQ3LimitFraction(float Q3LimitFraction) {
+    fQ3LimitFraction = Q3LimitFraction;
+  }
+  
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
   AliAnalysisTaskThreeBodyFemtoAOD(const AliAnalysisTaskThreeBodyFemtoAOD &task);
@@ -123,6 +148,16 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   TList *fResults;//!
   // Three particles same event
   TList *fResultsThreeBody;//!
+  TList *fSameEvent;//! 
+  TList *fMixedEvent;//!  
+  TList *fSameEventMult;//! 
+  TList *fMixedEventMult;//!  
+  TList *fSameEventPhiTheta;//! 
+  TList *fMixedEventPhiTheta;//!  
+  TList *fOtherHistos;//! 
+
+  TRandom3* fRandomGen;
+  
   bool fRunThreeBody;
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;
@@ -136,10 +171,24 @@ class AliAnalysisTaskThreeBodyFemtoAOD : public AliAnalysisTaskSE {
   TH2F **fMixedEventTripletPhiThetaArray;
   // Three particles trigger studies
   bool fTriggerOn;
+  bool fTriggerOnSample;
   bool fIsMC;
-  TH1F* fRejectedParticles;
-  TH1F* fAcceptedParticles;
-  TH1F* fAcceptedParticlesButNoPPL;
+
+  float fQ3Limit;
+  float fQ3LimitSample;
+  float fQ3LimitSample2;
+  float fQ3LimitSampleFraction;
+  float fQ3LimitSampleFraction2;
+  float fQ3LimitFraction;
+
+  TH1F* fRejectedEvents;
+  TH1F* fAcceptedEvents;
+  TH1F* fAcceptedEventsButNoPPL;
+  TH1F* fTripletsPerCollision;
+  TH1F* fWhichSample;
+  TH1F* fSameEventOnlyLowestQ3;
+  TH1F* fSameEventOnlyLowestQ3Anti;
+  int ftotalTripletCount;
   AliFemtoDreamEventCuts* fEventCutsTrigger;//
   TList* fEventCutsTriggerList;//!
   AliFemtoDreamTrackCuts* fTrackCutsTrigger;//

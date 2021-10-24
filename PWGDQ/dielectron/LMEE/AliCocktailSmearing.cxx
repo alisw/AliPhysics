@@ -28,6 +28,9 @@
 #include <TMath.h>
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3F.h"
+#include "TH1F.h"
+#include "TH2F.h"
 #include "TFile.h"
 #include "TObjArray.h"
 #include "AliVParticle.h"
@@ -41,7 +44,11 @@ ClassImp(AliCocktailSmearing)
 
 //_______________________________________________________________________________________________
 AliCocktailSmearing::AliCocktailSmearing():
-fUseRelPResolution(kFALSE),
+  fUseEffType(0),
+  fheffPt(0x0),
+  fheffPtEta(0x0),
+  fheffPtEtaPhi(0x0),
+  fUseRelPResolution(kFALSE),
   fPResArr(0x0),
   fOpeningAngleResArr(0x0),
   fArrResoPt(0x0),
@@ -118,6 +125,50 @@ void AliCocktailSmearing::ReadResoFile(TFile *fRes)
   
 }
 
+//_______________________________________________________________________________________________
+void AliCocktailSmearing::ReadEffFile(TFile *fEff)
+{
+  //
+  // Set efficiency histogram
+  //
+  
+  TH1F *effPt = 0x0;
+  TH2F *effPtEta = 0x0;
+  TH3F *effPtEtaPhi = 0x0;
+
+  
+  // Set efficiency
+  if(fEff && fEff->IsOpen()){
+    if(fUseEffType==0) {
+      effPt = (TH1F *) fEff->Get("fhwEffpT");
+      if(!effPt) printf("No efficiency histogram found\n");
+      else {
+	fheffPt = effPt;
+	fheffPt->SetDirectory(0);
+      }
+    }
+    if(fUseEffType==1) {
+      effPtEta = (TH2F *) fEff->Get("fhwEffpTeta");
+      if(!effPtEta) printf("No efficiency histogram found\n");
+      else {
+	fheffPtEta = effPtEta;
+	fheffPtEta->SetDirectory(0);
+      }
+    }
+    if(fUseEffType==2) {
+      effPtEtaPhi = (TH3F *) fEff->Get("fhwEffpTetaphi");
+      if(!effPtEtaPhi) printf("No efficiency histogram found\n");
+      else {
+	fheffPtEtaPhi = effPtEtaPhi;
+	fheffPtEtaPhi->SetDirectory(0);
+      }
+    }
+  }
+  else Printf("no efficiency file given!");
+
+  
+}
+
 
 //_______________________________________________________________________________________________
 void AliCocktailSmearing::SetSeed(UInt_t rndmseed)
@@ -155,6 +206,11 @@ void AliCocktailSmearing::Print() {
   std::cout << std::endl;
   std::cout << "  random number seed:  " << gRandom->GetSeed() << std::endl;
   std::cout << std::endl;
+
+  printf("\n\n========================================\n  Efficiency \n========================================\n\n");
+  if(fheffPt) printf("Efficiency as a function of pt\n");
+  if(fheffPtEta) printf("Efficiency as a function of pt,eta\n");
+  if(fheffPtEtaPhi) printf("Efficiency as a function of pt,eta,phi\n");
 
   
 }
@@ -343,4 +399,84 @@ void AliCocktailSmearing::SmearOpeningAngle(TLorentzVector &lv1, TLorentzVector 
   lv2.SetPtEtaPhiM(lv2.Pt(),lv2.Eta(),phi2,eMass());
   lv1.Rotate(-rotAngle,rotAxis);
   lv2.Rotate(-rotAngle,rotAxis);
+}
+//____________________________________________________________________________________________
+Double_t  AliCocktailSmearing::GetEfficiency(const TLorentzVector& vec)
+{
+  //
+  // Give the efficiency back
+  //
+
+  Double_t phi, pt, eta;
+  Double_t eff = 1.;
+  
+  pt = vec.Pt();
+  phi = vec.Phi();
+  eta = vec.Eta();
+
+  if((fUseEffType==0) && (fheffPt)) {
+    // pt
+    Int_t ptbin     = fheffPt->GetXaxis()->FindBin(pt);
+    Int_t ptbin_max = fheffPt->GetXaxis()->GetNbins();
+    // make sure that no underflow or overflow bins are used
+    if (ptbin < 1)
+      ptbin = 1;
+    else if (ptbin > ptbin_max)
+      ptbin = ptbin_max;
+    // eff
+    eff = fheffPt->GetBinContent(ptbin);
+  }
+
+   if((fUseEffType==1) && (fheffPtEta)) {
+    // pt
+    Int_t ptbin     = fheffPtEta->GetXaxis()->FindBin(pt);
+    Int_t ptbin_max = fheffPtEta->GetXaxis()->GetNbins();
+    // make sure that no underflow or overflow bins are used
+    if (ptbin < 1)
+      ptbin = 1;
+    else if (ptbin > ptbin_max)
+      ptbin = ptbin_max;
+    // eta
+    Int_t etabin     = fheffPtEta->GetYaxis()->FindBin(eta);
+    Int_t etabin_max = fheffPtEta->GetYaxis()->GetNbins();
+    // make sure that no underflow or overflow bins are used
+    if (etabin < 1)
+      etabin = 1;
+    else if (etabin > etabin_max)
+      etabin = etabin_max;
+    // eff
+    eff = fheffPtEta->GetBinContent(ptbin,etabin);
+  }
+
+   if((fUseEffType==2) && (fheffPtEtaPhi)) {
+    // pt
+    Int_t ptbin     = fheffPtEtaPhi->GetXaxis()->FindBin(pt);
+    Int_t ptbin_max = fheffPtEtaPhi->GetXaxis()->GetNbins();
+    // make sure that no underflow or overflow bins are used
+    if (ptbin < 1)
+      ptbin = 1;
+    else if (ptbin > ptbin_max)
+      ptbin = ptbin_max;
+    // eta
+    Int_t etabin     = fheffPtEtaPhi->GetYaxis()->FindBin(eta);
+    Int_t etabin_max = fheffPtEtaPhi->GetYaxis()->GetNbins();
+    // make sure that no underflow or overflow bins are used
+    if (etabin < 1)
+      etabin = 1;
+    else if (etabin > etabin_max)
+      etabin = etabin_max;
+    // phi
+    Int_t phibin     = fheffPtEtaPhi->GetZaxis()->FindBin(phi);
+    Int_t phibin_max = fheffPtEtaPhi->GetZaxis()->GetNbins();
+    // make sure that no underflow or overflow bins are used
+    if (phibin < 1)
+      phibin = 1;
+    else if (phibin > phibin_max)
+      phibin = phibin_max;
+    // eff
+    eff = fheffPtEtaPhi->GetBinContent(ptbin,etabin);
+  }
+
+   return eff;
+   
 }

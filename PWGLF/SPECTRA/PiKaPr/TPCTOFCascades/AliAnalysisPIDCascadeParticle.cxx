@@ -1,5 +1,5 @@
 #include "AliAnalysisPIDCascadeParticle.h"
-#include "TParticle.h"
+#include "AliMCParticle.h"
 #include "AliPID.h"
 #include "TDatabasePDG.h"
 #include "TParticlePDG.h"
@@ -150,7 +150,7 @@ AliAnalysisPIDCascadeParticle::Reset()
 //___________________________________________________________
 
 void
-AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t MotherPdg, Bool_t PrimCheck)
+AliAnalysisPIDCascadeParticle::Update(AliMCParticle *particle, Int_t label, Int_t MotherPdg, Bool_t PrimCheck)
 {
   /*
    * update
@@ -161,6 +161,6 @@ AliAnalysisPIDCascadeParticle::Update(TParticle *particle, Int_t label, Int_t Mo
   fPt = particle->Pt();
   fEta = particle->Eta();
   fPhi = particle->Phi();
-  fPdgCode = particle->GetPdgCode();
+  fPdgCode = particle->PdgCode();
   fPrimary = PrimCheck;
 }

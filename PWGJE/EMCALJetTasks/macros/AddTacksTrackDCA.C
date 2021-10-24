@@ -8,11 +8,11 @@
 #include "AliAnalysisTaskTrackDCA.h"
 #endif
 
-EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA *AddTaskTrackDCA(){
+PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDCA *AddTaskTrackDCA(){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA *dcatask = new EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDCA("TrackDCAtask");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDCA *dcatask = new PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDCA("TrackDCAtask");
   mgr->AddTask(dcatask);
 
   // Set the track cuts: Standard ITS/TPC RAA track cuts

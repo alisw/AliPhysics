@@ -22,10 +22,10 @@
 //---------------------------------------------
 ////////////////////////////////////////////////
 
-
+#include <TObjString.h>
 #include "AliIdentifiedPrimaryCuts.h"
 #include "AliAODConversionPhoton.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliAnalysisManager.h"
@@ -284,7 +284,7 @@ Bool_t AliIdentifiedPrimaryCuts::IdentifiedIsSelectedMC(Int_t labelParticle,AliM
     if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
 // 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
-    TParticle* particle = mcEvent->Particle(labelParticle);
+    AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(labelParticle);
 
     //	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
 	

@@ -15,7 +15,9 @@ ClassImp(AliFemtoDreamPartContainer)
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
     : fPartContainer(0),
       fPDGParticleSpecies(0),
-      fWhichPairs(){
+      fWhichPairs(),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0){
 }
 
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
@@ -23,7 +25,9 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
     : fPartContainer(conf->GetNParticles(),
                      AliFemtoDreamPartContainer(conf->GetMixingDepth())),
       fPDGParticleSpecies(conf->GetPDGCodes()),
-      fWhichPairs(conf->GetWhichPairs()){
+      fWhichPairs(conf->GetWhichPairs()),
+      fSummedPtLimit1(conf->GetSummedPtLimit1()),
+      fSummedPtLimit2(conf->GetSummedPtLimit2()){
   TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
                                         kTRUE, 0.0, 1, "Nucleus", 1000010020);
   TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
@@ -100,8 +104,11 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                                                 part1,
                                                 *itPDGPar1,
                                                 part2,
-                                                *itPDGPar2);
-          HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPart2);
+                                                *itPDGPar2,
+						fSummedPtLimit1,
+						fSummedPtLimit2);
+          HigherMath->MassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
+                                                     *itPart2, *itPDGPar2);
           HigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
                                       *itPart2, *itPDGPar2, RelativeK, false);
           HigherMath->SEMomentumResolution(HistCounter, &(*itPart1), *itPDGPar1,
@@ -162,8 +169,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
                 HistCounter, iMult, cent, *itPart1, *itPDGPar1,
                 *itPart2, *itPDGPar2,
                 AliFemtoDreamCollConfig::kNone);
-			
-			HigherMath->MEMassQA(HistCounter, RelativeK, *itPart1, *itPart2);
+
+            HigherMath->MEMassQA(HistCounter, RelativeK, *itPart1, *itPDGPar1,
+                                                         *itPart2, *itPDGPar2);
             HigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, *itPDGPar1,
                                         *itPart2, *itPDGPar2, RelativeK, false);
             HigherMath->MEMomentumResolution(HistCounter, &(*itPart1),

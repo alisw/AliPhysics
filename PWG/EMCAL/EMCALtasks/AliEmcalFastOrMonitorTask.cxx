@@ -36,6 +36,7 @@
 #include <TParameter.h>
 #include <TVector3.h>
 
+#include "AliAnalysisManager.h"
 #include "AliEmcalFastOrMonitorTask.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
@@ -49,9 +50,7 @@
 #include "AliVVertex.h"
 #include "AliDataFile.h"
 
-/// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalFastOrMonitorTask)
-/// \endcond
 
 using namespace PWG::EMCAL;
 
@@ -64,8 +63,8 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   fTriggerPattern(""),
   fCellData(),
   fMaskedFastors(),
-  fMinCellTime(-1.),
-  fMaxCellTime(1.),
+  fMinCellTimeNS(-1e9),
+  fMaxCellTimeNS(1e9),
   fNameMaskedFastorOADB(),
   fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
@@ -83,8 +82,8 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask(const char *name) :
   fRequestTrigger(AliVEvent::kAny),
   fTriggerPattern(""),
   fMaskedFastors(),
-  fMinCellTime(-1.),
-  fMaxCellTime(1.),
+  fMinCellTimeNS(-1e9),
+  fMaxCellTimeNS(1e9),
   fNameMaskedFastorOADB(),
   fNameMaskedCellOADB(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data()),
   fMaskedFastorOADB(nullptr),
@@ -103,6 +102,17 @@ AliEmcalFastOrMonitorTask::~AliEmcalFastOrMonitorTask() {
 
 void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
+
+  TString cellsName;
+  auto evhand = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  if (evhand->InheritsFrom("AliESDInputHandler")) {
+    cellsName = "EMCALCells";
+    AliInfoStream() << "ESD analysis, cellsName = \"" << cellsName << "\"" << std::endl;
+  } else {
+    cellsName = "emcalCells";
+    AliInfoStream() << "AOD analysis, cellsName = \"" << cellsName << "\"" << std::endl;
+  }
+  SetCaloCellsName(cellsName.Data());
 
   fHistosQA = new THistManager("fastOrHistos");
 
@@ -124,7 +134,9 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   // Helper histograms checking the mask status of cells and FastORs
   fHistosQA->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 7001, -0.5, 7000.5);
   fHistosQA->CreateTH1("hMaskedCells", "Index of masked FastOR; FastOR index; Counts", 20001, -0.5, 20000.5);
-  fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
+  fHistosQA->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5); 
+  fHistosQA->CreateTH2("hCellTimeBefore", "Cell time before time cut", 2000, -1000., 1000., 200., 0., 200.);
+  fHistosQA->CreateTH2("hCellTimeAfter", "Cell time after time cut", 2000, -1000., 1000., 200., 0., 200.);
 
   // THnSparse for fastor-by-fastor energy decalibration
   TAxis fastorIDAxis(4992, -0.5, 4991.5), offlineaxis(200, 0., 20.), onlineaxis(200, 0., 20.), residualaxis(1000, -10., 10.), cellmaskaxis(5, -0.5, 4.5);
@@ -268,14 +280,17 @@ bool AliEmcalFastOrMonitorTask::Run() {
 }
 
 void AliEmcalFastOrMonitorTask::LoadEventCellData(){
-   fCellData.Reset();
-   AliVCaloCells *emccells = InputEvent()->GetEMCALCells();
-   for(int icell = 0; icell < emccells->GetNumberOfCells(); icell++){
-    int position = emccells->GetCellNumber(icell);
-    double amplitude = emccells->GetAmplitude(icell),
-            time = emccells->GetCellTime(icell);
-    if(time < fMinCellTime || time > fMaxCellTime) continue;
+  const Double_t kSecToNanoSec = 1e9;
+  fCellData.Reset();
+  for(int icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++){
+    int position = fCaloCells->GetCellNumber(icell);
+    double amplitude = fCaloCells->GetAmplitude(icell),
+           celltimeNS = fCaloCells->GetTime(icell) * kSecToNanoSec;
+    if(amplitude > 0) fHistosQA->FillTH2("hCellTimeBefore", celltimeNS, amplitude);
+    if(celltimeNS < fMinCellTimeNS || celltimeNS > fMaxCellTimeNS) continue;
     if(amplitude > 0){
+      AliDebugStream(1) << "Found cell time " << celltimeNS << " nanosec" << std::endl;
+      fHistosQA->FillTH2("hCellTimeAfter", celltimeNS, amplitude);
       fHistosQA->FillTH1("hCellEnergyCount", position);
       int absFastor, col, row;
       fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);

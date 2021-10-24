@@ -18,6 +18,7 @@ class TTree;
 
 class TSpline3;
 class AliPIDResponse;
+class AliESDtrackCuts;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
@@ -60,12 +61,24 @@ struct RHyperTritonHe3pi
   bool fMatter;
 };
 
+struct RHyperTritonHe3piFull : public RHyperTritonHe3pi {
+  RHyperTritonHe3piFull() {}
+  RHyperTritonHe3piFull(const RHyperTritonHe3pi& oth) : RHyperTritonHe3pi{oth} {}
+  AliExternalTrackParam fRHe3Track;
+  AliExternalTrackParam fRPiTrack;
+  int fRHe3pidHypo;
+};
+
 struct RCollision
 {
   float fX;
   float fY;
   float fZ;
   float fCent;
+  float fEPangleV0A;
+  float fEPangleV0C;
+  float fQA[2];
+  float fQC[2];
   unsigned char fTrigger;
 };
 
@@ -125,7 +138,8 @@ public:
     kINT7 = BIT(0),
     kCentral = BIT(1),
     kSemiCentral = BIT(2),
-    kPositiveB = BIT(3)
+    kPositiveB = BIT(3),
+    kHighMultV0 = BIT(4)
   };
 
   AliAnalysisTaskHyperTriton2He3piML(bool mc = false, std::string name = "HyperTriton2He3piML");
@@ -179,8 +193,11 @@ public:
 
   void SetCVMFSPath(std::string path) { fCVMFSPath = path; }
 
+  void SetEMdepth(unsigned int deep) { fEMdepth = deep; }
 
   AliEventCuts fEventCuts; /// Event cuts class
+
+  bool fMaxInfo;
   int  fCentralityEstimator;  /// Centrality estimator of AliEventCuts to be used
   bool fFillGenericV0s;
   bool fFillGenericTracklets; /// To check what is the background
@@ -191,7 +208,14 @@ public:
   AliVertexerHyperTriton2Body fV0Vertexer; //
   bool fLambda;
   bool fUseTPCmomentum;
+  int  fNHarm;
+  AliPID::EParticleType fNucleus;
+
+  std::string fV0CalibrationFile;
+
 private:
+  void OpenInfoCalibration(int run);
+
   TList *fListHist; //! List of Cascade histograms
   TTree *fTreeV0;   //! Output Tree, V0s
 
@@ -207,6 +231,7 @@ private:
   float fCustomResolution;
 
   /// Control histograms to monitor the filtering
+  TH2D *fHistCentTrigger;          //! 
   TH2D *fHistNsigmaHe3;          //! # sigma TPC proton for the positive prong
   TH2D *fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass;            //! # Invariant mass histogram
@@ -228,17 +253,59 @@ private:
   float fMinTrackletCosP;
 
   bool fEnableLikeSign;
+  bool fEnableEventMixing;
 
   TObjString fCurrentFileName; //!
+  int fCurrentEventNumber;
 
-  std::vector<SHyperTritonHe3pi> fSHyperTriton;     //!
-  std::vector<SGenericV0> fSGenericV0;              //!
-  std::vector<RHyperTritonHe3pi> fRHyperTriton;     //!
-  std::vector<RTracklet> fRTracklets;               //!
-  std::vector<SGenericTracklet> fSGenericTracklets; //!
-  RCollision fRCollision;                           //!
+  std::vector<SHyperTritonHe3pi> fSHyperTriton;         //!
+  std::vector<SGenericV0> fSGenericV0;                  //!
+  std::vector<RHyperTritonHe3pi> fRHyperTriton;         //!
+  std::vector<RHyperTritonHe3piFull> fRHyperTritonFull; //!
+  std::vector<RTracklet> fRTracklets;                   //!
+  std::vector<SGenericTracklet> fSGenericTracklets;     //!
+  RCollision fRCollision;                               //!
+  float      fRPVcovariance[6];                         //!
   AliPID::EParticleType fFatParticle;
   int fHyperPDG;
+
+  unsigned int fEMdepth;
+  std::list<AliESDtrack> fHe3mixed[2][10][10];
+
+  /// Objects for V0 detector calibration
+  TH1D*        fMultV0;             //! profile from V0 multiplicity
+  TH1D*        fQxnmV0A;            //! <Qx2> V0A
+  TH1D*        fQynmV0A;            //! <Qy2> V0A
+  TH1D*        fQxnsV0A;            //! sigma Qx2 V0A
+  TH1D*        fQynsV0A;            //! sigma Qy2 V0A
+  TH1D*        fQxnmV0C;            //! <Qx2> V0C
+  TH1D*        fQynmV0C;            //! <Qy2> V0C
+  TH1D*        fQxnsV0C;            //! sigma Qx2 V0C
+  TH1D*        fQynsV0C;            //! sigma Qy2 V0C
+
+  // Event Plane vs Centrality
+  TH2D *EPVzAvsCentrality  ;        //!
+  TH2D *EPVzCvsCentrality  ;        //!
+  
+  // For SP resolution
+  TH2D *hQVzAQVzCvsCentrality;      //!
+  TH2D *hQVzAQTPCvsCentrality;      //!
+  TH2D *hQVzCQTPCvsCentrality;      //!
+  // For NUA correction
+  TH2D *hQxVzAvsCentrality;         //!
+  TH2D *hQyVzAvsCentrality;         //!
+  TH2D *hQxVzCvsCentrality;         //!
+  TH2D *hQyVzCvsCentrality;         //!
+  // for EP
+  TH2D *hCos2DeltaTPCVzAvsCentrality; //!
+  TH2D *hCos2DeltaTPCVzCvsCentrality; //!
+  TH2D *hCos2DeltaVzAVzCvsCentrality; //!
+  TH2D *hCos2DeltaVzATPCvsCentrality; //!
+  TH2D *hCos2DeltaVzCTPCvsCentrality; //!
+  TH2D *hCos2DeltaVzCVzAvsCentrality; //!
+
+  AliESDtrackCuts* fESDtrackCutsEP; //!
+    
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML &); // not implemented

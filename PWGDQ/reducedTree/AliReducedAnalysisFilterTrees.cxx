@@ -32,6 +32,7 @@ AliReducedAnalysisFilterTrees::AliReducedAnalysisFilterTrees() :
   fWriteFilteredTracks(kTRUE),
   fPairCuts(),
   fWriteFilteredPairs(kTRUE),
+  fRejectEmptyEvents(kFALSE),
   fBuildCandidatePairs(kFALSE),
   fBuildCandidateLikePairs(kFALSE),
   fCandidateType(AliReducedPairInfo::kJpsiToEE),
@@ -67,6 +68,7 @@ AliReducedAnalysisFilterTrees::AliReducedAnalysisFilterTrees(const Char_t* name,
   fEventCuts(),
   fTrackCuts(),
   fWriteFilteredTracks(kTRUE),
+  fRejectEmptyEvents(kFALSE),
   fPairCuts(),
   fWriteFilteredPairs(kTRUE),
   fBuildCandidatePairs(kFALSE),
@@ -189,7 +191,9 @@ void AliReducedAnalysisFilterTrees::Process() {
      fHistosManager->FillHistClass("EventTriggers_AfterCuts", fValues);
   }
   
-  CreateFilteredEvent();  
+  CreateFilteredEvent();
+  if(fRejectEmptyEvents && (fFilteredEvent->NPairs()+fFilteredEvent->NTracks1()+fFilteredEvent->NTracks2())==0)
+      return;
   fFilteredTree->Fill();
 }
 
@@ -293,7 +297,11 @@ void AliReducedAnalysisFilterTrees::BuildCandidatePairs() {
    //
    // Build candidate pairs and add them to the filtered event
    //
-   RunCandidateLegsSelection();
+   // clear the track arrays
+   fLeg1Tracks.Clear("C"); fLeg2Tracks.Clear("C"); 
+   fLeg1PrefilteredTracks.Clear("C"); fLeg2PrefilteredTracks.Clear("C"); 
+   RunCandidateLegsSelection(1);
+   RunCandidateLegsSelection(2);
    
    if(fRunCandidatePrefilter) {
       RunCandidateLegsPrefilter(1);
@@ -305,7 +313,7 @@ void AliReducedAnalysisFilterTrees::BuildCandidatePairs() {
 }
 
 //___________________________________________________________________________
-void AliReducedAnalysisFilterTrees::RunCandidateLegsSelection() {
+void AliReducedAnalysisFilterTrees::RunCandidateLegsSelection(Int_t arrayOption /*=1*/) {
    //
    // select leg candidates and prefilter tracks
    // NOTE: In the case of symmetric decay channels, the candidates are separated by charge in fLeg1Tracks and fLeg2Tracks
@@ -313,31 +321,30 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsSelection() {
    //                 It is the responsability of the analyzer to setup the track cuts such that these are separated
    Bool_t isAsymmetricDecayChannel = IsAsymmetricDecayChannel();
    Bool_t mcDecision = kTRUE;
- 
-   // clear the track arrays
-   fLeg1Tracks.Clear("C"); fLeg2Tracks.Clear("C"); 
-   fLeg1PrefilteredTracks.Clear("C"); fLeg2PrefilteredTracks.Clear("C");
    
    // loop over the track list and evaluate all the track cuts
    AliReducedBaseTrack* track = 0x0;
-   TClonesArray* trackList = fEvent->GetTracks();
+   TClonesArray* trackList = (arrayOption==1 ? fEvent->GetTracks() : fEvent->GetTracks2());
+   if (!trackList) return;
    TIter nextTrack(trackList);
    for(Int_t it=0; it<trackList->GetEntries(); ++it) {
       track = (AliReducedBaseTrack*)nextTrack();
       AliReducedVarManager::FillTrackInfo(track, fValues);
       AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
+      // NOTE: mcDecision works with just one MC truth cut. It is not implemented properly for asymmetric decay channels
       if(fOptionRunOverMC && fLegCandidatesMCcuts) mcDecision = CheckReconstructedLegMCTruth(track);
       if(isAsymmetricDecayChannel) {
-         if(IsCandidateLegSelected(track, fValues, 1) && mcDecision) {
+         if(IsCandidateLegSelected(track, fValues, 1)) {
             fLeg1Tracks.Add(track);
             FillCandidateLegHistograms("Track_LEG1_BeforePrefilter", track, fValues, 1, isAsymmetricDecayChannel);
          }
-         if(IsCandidateLegSelected(track, fValues, 2) && mcDecision) {
+         if(IsCandidateLegSelected(track, fValues, 2)) {
             fLeg2Tracks.Add(track);
             FillCandidateLegHistograms("Track_LEG2_BeforePrefilter", track, fValues, 2, isAsymmetricDecayChannel);
          }
       }
       else {
+         // mcDecision is by default true, it can be false only if running on MC and the track fails the test 
          if(IsCandidateLegSelected(track, fValues,1) && mcDecision) {
             if(track->Charge()>0) {
                fLeg1Tracks.Add(track);

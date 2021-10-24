@@ -15,16 +15,24 @@ namespace Hist
 {
 struct Axis
 {
-  std::string name;
-  std::string title;
-  std::vector<double> binEdges;
-  int nBins; // 0 when bin edges are specified directly
+  Axis() = default;
+  Axis(const std::string& name_, const std::string& title_, std::vector<double> binEdges_, int nBins_ = 0)
+  : name{name_}, title{title_}, binEdges{binEdges_}, nBins{nBins_}
+  {}
+  std::string name{};
+  std::string title{};
+  std::vector<double> binEdges{};
+  int nBins{}; // 0 when bin edges are specified directly
+
+  //virtual ~Axis(){};
+  //ClassDef(Axis, 1);
+
 };
 
 template <typename RootHist_t>
 class Hist
 {
- public:
+public:
   Hist() : fAxes{}, fRawHist{ nullptr } {}
   Hist(const Hist&) = delete;            // non construction-copyable
   Hist& operator=(const Hist&) = delete; // non copyable
@@ -34,7 +42,7 @@ class Hist
   {
     fAxes.insert(fAxes.end(), axes.begin(), axes.end());
   }
-  void AddAxis(const std::string& name, const std::string& title, const int& nBins,
+  void AddAxis(const std::string& name, const std::string& title, const int nBins,
                const double& lowerEdge, const double& upperEdge)
   {
     fAxes.push_back({ name, title, { lowerEdge, upperEdge }, nBins });
@@ -185,22 +193,22 @@ class Hist
     fRawHist->Fill(static_cast<double>(position)...);
   }
 
-  template <typename T = RootHist_t, typename... Ts,
+  template <typename T = RootHist_t, typename... Ts, typename Tw,
             typename std::enable_if<std::is_base_of<THnBase, T>::value>::type* dummy = nullptr>
-  inline void FillWeight(const T& weight, const Ts&... position)
+  inline void FillWeight(const Tw& weight, const Ts&... position)
   {
     // if(fRawHist->GetNdimensions() != sizeof...(position)) return;
     double tempArray[] = { static_cast<double>(position)... };
     fRawHist->Fill(tempArray, static_cast<double>(weight));
   }
 
-  template <typename T = RootHist_t, typename... Ts,
+  template <typename T = RootHist_t, typename... Ts, typename Tw,
             typename std::enable_if<(((std::is_base_of<TH3, T>::value) && sizeof...(Ts) == 3)
                                      || ((std::is_base_of<TH2, T>::value) && sizeof...(Ts) == 2)
                                      || ((std::is_base_of<TH1, T>::value)
                                          && sizeof...(Ts) == 1))>::type* dummy
             = nullptr>
-  inline void FillWeight(const T& weight, const Ts&... position)
+  inline void FillWeight(const Tw& weight, const Ts&... position)
   {
     fRawHist->Fill(static_cast<double>(position)..., static_cast<double>(weight));
   }
@@ -242,19 +250,40 @@ class Hist
   double GetSize(double fillFraction = 1.)
   {
     if(!fRawHist) return 0.;
-    double nbinsTotal = 1.;
-    for(Int_t d = 0; d < fRawHist->GetNdimensions(); ++d)
-      nbinsTotal *= fRawHist->GetAxis(d)->GetNbins() + 2;
 
-    Double_t overhead = 4.; // probably often less; unfortunatley cannot access
-                            // fRawHist->GetCompactCoord()->GetBufferSize();
+    // THnSparse has massive overhead and should only be used when histogram is large and a very small fraction of bins is filled
+    double nBinsTotal = 1.;
+    int compCoordSize = 0; // size required to store a compact coordinate representation
+    for (int d = 0; d < fRawHist->GetNdimensions(); ++d) {
+      int nBins = fRawHist->GetAxis(d)->GetNbins() + 2;
+      nBinsTotal *= nBins;
 
-    return fillFraction * nbinsTotal
-           * (GetBaseElementSize(fRawHist) + overhead
-              + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.));
+      // number of bits needed to store compact coordinates
+      int b = 1;
+      while (nBins /= 2) {
+        ++b;
+      }
+      compCoordSize += b;
+    }
+    compCoordSize = (compCoordSize + 7) / 8; // turn bits into bytes
+
+    // THnSparse stores the data in an array of chunks (THnSparseArrayChunk), each containing a fixed number of bins (e.g. 1024 * 16)
+    double nBinsFilled = fillFraction * nBinsTotal;
+    int nCunks = ceil(nBinsFilled / fRawHist->GetChunkSize());
+    int chunkOverhead = sizeof(THnSparseArrayChunk);
+
+    // each chunk holds array of compact bin-coordinates and an array of bin content (+ one of bin error if requested)
+    double binSize = compCoordSize + GetBaseElementSize(fRawHist) + ((fRawHist->GetSumw2() != -1.) ? sizeof(double) : 0.);
+    double size = nCunks * (chunkOverhead + fRawHist->GetChunkSize() * binSize);
+    // since THnSparse must keep track of all the stored bins, it stores a map that
+    // relates the compact bin coordinates (or a hash thereof) to a linear index
+    // this index determines in which chunk and therein at which position to find / store bin coordinate and content
+    size += nBinsFilled * 3 * sizeof(Long64_t); // hash, key, value; not sure why 3 are needed here...
+
+    return size;
   }
 
- private:
+private:
   std::vector<Axis> fAxes;
   RootHist_t* fRawHist;
 };
@@ -263,7 +292,7 @@ class Hist
 template <typename RootHist1d_t>
 class Log
 {
- public:
+public:
   Log() : fRawHist{ nullptr } {}
   //~Log() { if(fRawHist) fRawHist->LabelsDeflate(); } // TODO: where to put this in AliPhysics
   Log(const Log&) = delete;            // non construction-copyable
@@ -278,7 +307,7 @@ class Log
     return fRawHist;
   }
 
- private:
+private:
   RootHist1d_t* fRawHist;
 };
 

@@ -26,7 +26,7 @@
 /// \param reco: pointer to object to initialize in this macro.
 /// \param bMC: Bool, indicates if data is MC.
 /// \param bExotic: Bool, indicates if exotic clusters are removed.
-/// \param bNonLin: Bool, indicates if non linearity correction is applied on clusters.
+/// \param bNonLin: Int, indicates if and which non linearity correction is applied on clusters.
 /// \param bRecalE: Bool, indicates if energy recalibration is applied.
 /// \param bBad: Bool, indicates if bad channels/clusters are removed.
 /// \param bRecalT: Bool, indicates if time is calibrated.
@@ -36,7 +36,7 @@
 void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
                              Bool_t  bMC    = kFALSE,
                              Bool_t  bExotic= kTRUE,
-                             Bool_t  bNonLin= kFALSE,
+                             Int_t   bNonLin= 0,
                              Bool_t  bRecalE= kTRUE,
                              Bool_t  bBad   = kTRUE,
                              Bool_t  bRecalT= kTRUE,
@@ -89,24 +89,39 @@ void ConfigureEMCALRecoUtils(AliEMCALRecoUtils* reco,
   reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
 
   // Non linearity
-  
-  if( bNonLin ) 
-  { 
-    if(!bMC)
-    {
-      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
-      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
-    }
-    else
-    {       
-      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
-      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
-    }
-  }
-  else 
-  {
-    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
-    reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+
+  switch( bNonLin ){
+    case 0:
+      if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+      reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+      break;
+    case 1:
+      if( !bMC ) {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+        reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+      } else {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+        reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+      }
+      break;
+    case 2:
+      if( !bMC ) {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+        reco->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
+      } else {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+        reco->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
+      }
+      break;
+    case 3:
+      if( !bMC ) {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+        reco->SetNonLinearityFunction(AliEMCALRecoUtils::kTestBeamShaper);
+      } else {
+        if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+        reco->SetNonLinearityFunction(AliEMCALRecoUtils::kTestBeamFinalMC);
+      }
+      break;
   }
   
 }

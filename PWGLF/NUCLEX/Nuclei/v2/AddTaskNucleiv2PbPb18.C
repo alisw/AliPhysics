@@ -31,8 +31,8 @@ AliAnalysisTask *AddTaskNucleiv2PbPb18(TString name="name",Int_t ptctype =1, Flo
   
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
  
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("clisthist", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("treeNuclei", TTree::Class(),AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("clisthist_%s",name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("treeNuclei_%s",name.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer, outputFileName);
   //           connect containers
 
   mgr->ConnectInput  (task,  0, cinput );

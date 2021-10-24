@@ -22,6 +22,7 @@
 #include "AliFemtoDreamPartCollection.h"
 #include "TTree.h"
 
+//#define MONTECARLO
 
 class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
  public:
@@ -149,23 +150,24 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   //Float_t fTTrackv0Eta[300][2];
   Short_t fTTrackv0Charge[300][2];
   Float_t fTTrackv0DCA[300][2];
-/* 
   Float_t fTTrackv0TPCsigma[300][2];
-  Float_t fTTrackv0TOFsigma[300][2];
+  //Float_t fTTrackv0TOFsigma[300][2];
+
   Int_t fTTrackv0Ncl[300][2];
+/* 
   Float_t fTTrackv0CrR[300][2];
   Float_t fTTrackv0CrF[300][2];
   Int_t fTTrackv0Shared[300][2];
   Float_t fTTrackv0TPCchi2[300][2];
-  Bool_t fTTrackv0ITStime[300][2];
-  Bool_t fTTrackv0TOFtime[300][2];
   Bool_t fTTrackv0TPConly[300][2];
   Bool_t fTTrackv0ITScomplementary[300][2];
   Bool_t fTTrackv0ITSpure[300][2];
   Bool_t fTTrackv0GLOBAL[300][2];
   UInt_t fTTrackv0FilterBit[300][2];
+  Float_t fTTrackv0Phi[300][2];
+  Bool_t fTTrackv0ITStime[300][2];
+  Bool_t fTTrackv0TOFtime[300][2];
 */
-//  Float_t fTTrackv0Phi[300][2];
   Int_t fTTrackv0ID[300][2];
 
 #ifdef MONTECARLO 
@@ -224,17 +226,15 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   //Float_t fTTrackEta[300][3];
   Short_t fTTrackCharge[300][3];
   Float_t fTTrackDCA[300][3];
+  Float_t fTTrackTPCsigma[300][3];
+//  Float_t fTTrackTOFsigma[300][3];
+  Int_t fTTrackNcl[300][3];
 /*
  *
-  Float_t fTTrackTPCsigma[300][3];
-  Float_t fTTrackTOFsigma[300][3];
-  Int_t fTTrackNcl[300][3];
   Float_t fTTrackCrR[300][3];
   Float_t fTTrackCrF[300][3];
   Int_t fTTrackShared[300][3];
   Float_t fTTrackTPCchi2[300][3];
-  Bool_t fTTrackITStime[300][3];
-  Bool_t fTTrackTOFtime[300][3];
   Bool_t fTTrackTPConly[300][3];
   Bool_t fTTrackITScomplementary[300][3];
   Bool_t fTTrackITSpure[300][3];
@@ -242,6 +242,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   UInt_t fTTrackFilterBit[300][3];
 */
 //  Float_t fTTrackPhi[300][3];
+  Bool_t fTTrackITStime[300][3];
+  Bool_t fTTrackTOFtime[300][3];
   Int_t fTTrackID[300][3];
 
 #ifdef MONTECARLO 

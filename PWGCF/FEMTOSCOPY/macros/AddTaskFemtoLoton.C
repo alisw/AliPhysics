@@ -120,6 +120,9 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   pairQA[2] = 12;
   pairQA[6] = 12;
 
+  pairQA[7] = 22;
+  pairQA[9] = 22;
+  
   closeRejection[0] = true;  // pp
   closeRejection[4] = true;  // barp barp
 
@@ -221,6 +224,8 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
   config->SetPhiEtaBinnign(false);
+
+  config->SetMassQA(true);
 
   if (isMC) {
     config->SetMomentumResolution(true);
@@ -1171,6 +1176,9 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
 
       v0Cuts->SetCutDCADaugToPrimVtx(0.06);
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    } else if (suffix == "45") {
+      v0Cuts->SetCutInvMass(0.050);
+      Antiv0Cuts->SetCutInvMass(0.050);
     }
   }
 
@@ -1309,6 +1317,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(int trigger = 0, bool fullBlastQA = false,
     taskNano->Setv0Cuts(v0Cuts);
     taskNano->SetAntiv0Cuts(Antiv0Cuts);
     taskNano->SetCorrelationConfig(config);
+    
     mgr->AddTask(taskNano);
 
     mgr->ConnectInput(taskNano, 0, cinput);

@@ -39,8 +39,11 @@ set(SRCS
   UeDphi/AliAnalysisTaskUeSpectraDphi.cxx
   UeSpectraRT/AliAnalysisTaskUeSpectraRT.cxx
   UeKNO/AliAnalysisTaskMcKnoUe.cxx
+  UeKNO/AliAnalysisTaskGenMcKnoUe.cxx
+  UeKNO/AliAnalysisTaskGenUeVsMult.cxx
   UeKNO/AliAnalysisTaskMcKnoUeSyst.cxx
   UeKNO/AliAnalysisTaskMcKno.cxx
+  UeKNO/AliAnalysisTaskChargedVsRT.cxx
   UeKNO/AliAnalysisTaskDataKno.cxx
   UeKNO/AliAnalysisTaskGenMcKno.cxx
   UeKNO/AliAnalysisTaskGenUeNchTS.cxx

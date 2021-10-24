@@ -46,6 +46,7 @@ set(SRCS
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
   AliAnalysisTaskCRCZDC.cxx 
+  AliAnalysisTaskQvec.cxx
   AliAnalysisTaskCumulants.cxx
   AliAnalysisTaskQCumulants.cxx 
   AliAnalysisTaskLeeYangZeros.cxx 
@@ -87,7 +88,19 @@ set(SRCS
   AliAnalysisTaskNBodyFemtoscopy.cxx
   AliAnalysisTaskCMW.cxx
   AliAnalysisTaskCVEUNI.cxx
-  )
+  AliAnalysisTaskCMWPU.cxx
+  AliAnalysisTaskCMWPU2018.cxx
+  AliAnalysisTaskCMWPU2018eqAch.cxx
+  AliAnalysisTaskCVEUNIpt.cxx
+  AliAnalysisTaskCMWPUeqAch.cxx
+  AliAnalysisTaskCMWPUuncAch.cxx
+  AliAnalysisTaskv2pt.cxx
+  AliAnalysisTaskMuPa.cxx
+  AliAnalysisTaskAR.cxx
+  AliAnalysisTaskEbECumulants.cxx
+  AliAnalysisTaskGammaDeltaPID.cxx
+  AliAnalysisTaskCMWESE.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

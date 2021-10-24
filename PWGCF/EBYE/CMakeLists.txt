@@ -58,6 +58,7 @@ set(SRCS
   BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
   BalanceFunctions/HFtest/AliAnalysisTaskLcToD0MC.cxx
+  KaonIsospinFluctuations/task/AliAnalysisTaskFluctMCTEPOS.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx
@@ -116,7 +117,11 @@ set(SRCS
   NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
+  LongAsymmetry/AliAnalysisTaskLongFluctuations.cxx
+  LongAsymmetry/AliAnalysisTaskLegendreCoef.cxx
+  LongAsymmetry/AliAnalysisTaskEtaDist.cxx
   StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
+  FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   )
 
 # Headers from sources
@@ -165,3 +170,5 @@ install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
 install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)
 install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)
+install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
+install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)

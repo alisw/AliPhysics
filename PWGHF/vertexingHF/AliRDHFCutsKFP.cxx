@@ -59,15 +59,21 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fCombinedPIDThreshold(0.),
   fUseLcPID(kFALSE),
   fUseXic0PID(kFALSE),
+  fUseXiccPPPID(kFALSE),
+  fUseXicPlusPID(kFALSE),
   fPidObjDau(0),
+  fPidObjPiFromXiccPP(0),
+  fPidObjPiFromXicPlus(0),
   fPidObjPiFromXic0(0),
   fPidObjPiFromXi(0),
   fPidObjPrFromV0(0),
   fPidObjPiFromV0(0),
   fPtMinLc(0.),
   fPtMinPrFromLc(0.),
+  fPtMinXiccPP(0.),
+  fPtMinXicPlus(0.),
   fPtMinXic0(0.),
-  fPtMinPiFromXic0(0.),
+  fPtMinPiFromPrimary(0.),
   fPtMinPiFromXi(0.),
   fProdTrackEtaRange(9999.),
   fProdUseAODFilterBit(kTRUE),
@@ -75,6 +81,8 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdMassTolKs0(9999.),
   fProdMassTolLambda(9999.),
   fProdMassTolXi(9999.),
+  fProdMassTolXiccPP(9999.),
+  fProdMassTolXicPlus(9999.),
   fProdMassTolXic0(9999.),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
@@ -105,12 +113,17 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fKFPXi_Chi2geoMax(100.),
   fKFPXi_Chi2topoMax(100.),
   fKFPXi_lDeltalMin(0.),
+  fKFPXiccPP_Chi2geoMax(100.),
+  fKFPXicPlus_Chi2geoMax(100.),
   fKFPXic0_Chi2geoMax(100.),
   fProdTrackTPCNCrossedRowsMin(0),
   fProdTrackTPCNCrossedRowsRatioMin(0.),
   fProdTrackTPCsignalNMin(0),
   fPriTrackChi2perNDFMax(99.),
-  fPriTrackITSNclsMin(0)
+  fPriTrackITSNclsMin(0),
+  fWeight(0),
+  fWeight_up(0),
+  fWeight_dw(0)
 {
   //
   // Default Constructor
@@ -175,15 +188,21 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fCombinedPIDThreshold(source.fCombinedPIDThreshold),
   fUseLcPID(source.fUseLcPID),
   fUseXic0PID(source.fUseXic0PID),
+  fUseXiccPPPID(source.fUseXiccPPPID),
+  fUseXicPlusPID(source.fUseXicPlusPID),
   fPidObjDau(source.fPidObjDau),
+  fPidObjPiFromXiccPP(source.fPidObjPiFromXiccPP),
+  fPidObjPiFromXicPlus(source.fPidObjPiFromXicPlus),
   fPidObjPiFromXic0(source.fPidObjPiFromXic0),
   fPidObjPiFromXi(source.fPidObjPiFromXi),
   fPidObjPrFromV0(source.fPidObjPrFromV0),
   fPidObjPiFromV0(source.fPidObjPiFromV0),
   fPtMinLc(source.fPtMinLc),
   fPtMinPrFromLc(source.fPtMinPrFromLc),
+  fPtMinXiccPP(source.fPtMinXiccPP),
+  fPtMinXicPlus(source.fPtMinXicPlus),
   fPtMinXic0(source.fPtMinXic0),
-  fPtMinPiFromXic0(source.fPtMinPiFromXic0),
+  fPtMinPiFromPrimary(source.fPtMinPiFromPrimary),
   fPtMinPiFromXi(source.fPtMinPiFromXi),
   fProdTrackEtaRange(source.fProdTrackEtaRange),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
@@ -191,6 +210,8 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdMassTolKs0(source.fProdMassTolKs0),
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolXi(source.fProdMassTolXi),
+  fProdMassTolXiccPP(source.fProdMassTolXiccPP),
+  fProdMassTolXicPlus(source.fProdMassTolXicPlus),
   fProdMassTolXic0(source.fProdMassTolXic0),
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
@@ -221,12 +242,17 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fKFPXi_Chi2geoMax(source.fKFPXi_Chi2geoMax),
   fKFPXi_Chi2topoMax(source.fKFPXi_Chi2topoMax),
   fKFPXi_lDeltalMin(source.fKFPXi_lDeltalMin),
+  fKFPXiccPP_Chi2geoMax(source.fKFPXiccPP_Chi2geoMax),
+  fKFPXicPlus_Chi2geoMax(source.fKFPXicPlus_Chi2geoMax),
   fKFPXic0_Chi2geoMax(source.fKFPXic0_Chi2geoMax),
   fProdTrackTPCNCrossedRowsMin(source.fProdTrackTPCNCrossedRowsMin),
   fProdTrackTPCNCrossedRowsRatioMin(source.fProdTrackTPCNCrossedRowsRatioMin),
   fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
   fPriTrackChi2perNDFMax(source.fPriTrackChi2perNDFMax),
-  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin)
+  fPriTrackITSNclsMin(source.fPriTrackITSNclsMin),
+  fWeight(source.fWeight),
+  fWeight_up(source.fWeight_up),
+  fWeight_dw(source.fWeight_dw)
 {
   //
   // Copy constructor
@@ -248,7 +274,11 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fCombinedPIDThreshold = source.fCombinedPIDThreshold;
   fUseLcPID = source.fUseLcPID;
   fUseXic0PID = source.fUseXic0PID;
+  fUseXiccPPPID = source.fUseXiccPPPID;
+  fUseXicPlusPID = source.fUseXicPlusPID;
   fPidObjDau = source.fPidObjDau;
+  fPidObjPiFromXiccPP = source.fPidObjPiFromXiccPP;
+  fPidObjPiFromXicPlus = source.fPidObjPiFromXicPlus;
   fPidObjPiFromXic0 = source.fPidObjPiFromXic0;
   fPidObjPiFromXi = source.fPidObjPiFromXi;
   fPidObjPrFromV0 = source.fPidObjPrFromV0;
@@ -256,13 +286,17 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fPtMinLc = source.fPtMinLc;
   fPtMinPrFromLc = source.fPtMinPrFromLc;
+  fPtMinXiccPP = source.fPtMinXiccPP;
+  fPtMinXicPlus = source.fPtMinXicPlus;
   fPtMinXic0 = source.fPtMinXic0;
-  fPtMinPiFromXic0 = source.fPtMinPiFromXic0;
+  fPtMinPiFromPrimary = source.fPtMinPiFromPrimary;
   fPtMinPiFromXi = source.fPtMinPiFromXi;
   fProdTrackEtaRange = source.fProdTrackEtaRange;
   fProdMassTolLc = source.fProdMassTolLc;
   fProdMassTolKs0 = source.fProdMassTolKs0;
   fProdMassTolLambda = source.fProdMassTolLambda;
+  fProdMassTolXiccPP = source.fProdMassTolXiccPP;
+  fProdMassTolXicPlus = source.fProdMassTolXicPlus;
   fProdMassTolXic0 = source.fProdMassTolXic0;
   fProdRfidMinV0 = source.fProdRfidMinV0;
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
@@ -292,13 +326,17 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fKFPXi_Chi2geoMax = source.fKFPXi_Chi2geoMax;
   fKFPXi_Chi2topoMax = source.fKFPXi_Chi2topoMax;
   fKFPXi_lDeltalMin = source.fKFPXi_lDeltalMin;
+  fKFPXiccPP_Chi2geoMax = source.fKFPXiccPP_Chi2geoMax;
+  fKFPXicPlus_Chi2geoMax = source.fKFPXicPlus_Chi2geoMax;
   fKFPXic0_Chi2geoMax = source.fKFPXic0_Chi2geoMax;
   fProdTrackTPCNCrossedRowsMin = source.fProdTrackTPCNCrossedRowsMin;
   fProdTrackTPCNCrossedRowsRatioMin = source.fProdTrackTPCNCrossedRowsRatioMin;
   fProdTrackTPCsignalNMin = source.fProdTrackTPCsignalNMin;
   fPriTrackChi2perNDFMax = source.fPriTrackChi2perNDFMax;
   fPriTrackITSNclsMin = source.fPriTrackITSNclsMin;
-
+  fWeight = source.fWeight;
+  fWeight_up = source.fWeight_up;
+  fWeight_dw = source.fWeight_dw;
 
   return *this;
 }
@@ -311,7 +349,7 @@ AliRDHFCutsKFP::~AliRDHFCutsKFP() {
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t nvars, Int_t *pdgdaughters) {
+void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t nvars, Int_t *pdgdaughters, AliAODEvent *aod) {
   //
   // Fills in vars the values of the variables
   //
@@ -328,6 +366,20 @@ void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t
     AliError("AliRDHFCutsKFP wrong number of variables\n");
     return;
   }
+
+  Bool_t cleanvtx = kFALSE;
+  AliAODVertex *origownvtx = 0x0;
+  if(fRemoveDaughtersFromPrimary && aod) {
+     if (dd->GetOwnPrimaryVtx()) origownvtx = new AliAODVertex(*dd->GetOwnPrimaryVtx());
+     cleanvtx = kTRUE;
+     if(!RecalcOwnPrimaryVtx(dd,aod)) {
+         CleanOwnPrimaryVtx(dd,aod,origownvtx);
+         cleanvtx = kFALSE;
+     }
+  }
+
+  
+
 
   //Double_t ptD=d->Pt();
   //Int_t ptbin=PtBin(ptD);
@@ -390,11 +442,11 @@ void AliRDHFCutsKFP::GetCutVarsForOpt(AliAODRecoDecayHF *d, Float_t *vars, Int_t
     iter++;
     vars[iter]= dd->PtProng(0);
   }
-
+  if(cleanvtx) CleanOwnPrimaryVtx(dd,aod,origownvtx);
   return;
 }
 //---------------------------------------------------------------------------
-Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel) 
+Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent *aod) 
 {
   //
   // Apply selection
@@ -431,6 +483,18 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
       return 0;
     }
     Bool_t okcand=kTRUE;
+
+    Bool_t cleanvtx = kFALSE;
+    AliAODVertex *origownvtx = 0x0;
+    if(fRemoveDaughtersFromPrimary && aod) {
+       if(d->GetOwnPrimaryVtx()) origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
+       cleanvtx = kTRUE;
+       if(!RecalcOwnPrimaryVtx(d,aod)) {
+          CleanOwnPrimaryVtx(d,aod,origownvtx);
+          cleanvtx = kFALSE;
+          return 0;
+       }
+    }
 
     Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
@@ -490,8 +554,12 @@ Int_t AliRDHFCutsKFP::IsSelected(TObject* obj,Int_t selectionLevel)
 	okcand = kFALSE;
       }
 
-    if(!okcand)  return 0;
+    if(!okcand) { 
+      if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
     returnvalueCuts = 1;
+    if(cleanvtx) CleanOwnPrimaryVtx(d,aod,origownvtx);
   }
 
   Int_t returnvaluePID=1;
@@ -599,7 +667,7 @@ Bool_t AliRDHFCutsKFP::SingleTrkCuts(AliAODTrack *trk)
   if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
   //	if(!fAnalCuts->IsDaughterSelected(trk,fV1,esdTrackCuts)) return kFALSE;
   if(fabs(trk->Eta())>fProdTrackEtaRange) return kFALSE;
-  if(trk->Pt()<fPtMinPiFromXic0) return kFALSE;
+  if(trk->Pt()<fPtMinPiFromPrimary) return kFALSE;
 
   return kTRUE;
 }
@@ -612,7 +680,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
   if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
 
   // Kinematic Cuts & Acceptance
-  if ( trk->Pt()<=fPtMinPiFromXic0 || trk->Pt()>=100.0 ) return kFALSE;
+  if ( trk->Pt()<=fPtMinPiFromPrimary || trk->Pt()>=100.0 ) return kFALSE;
   if ( TMath::Abs(trk->Eta()) >= 0.8 ) return kFALSE;
 
   // Track Selection Cuts (TPC)
@@ -641,7 +709,17 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
     Int_t isPion = fPidObjPiFromXic0->MakeRawPid(trk, 2);
     if (isPion<1) return kFALSE;
   }
-  
+  if(fUseXicPlusPID || fUseXiccPPPID) {
+    if(fPidObjPiFromXicPlus->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjPiFromXicPlus->SetPidResponse(pidResp);
+    }
+    Int_t isPion = fPidObjPiFromXicPlus->MakeRawPid(trk, 2);
+    if (isPion<1) return kFALSE;
+  }
+
   return kTRUE;
 }
 
@@ -668,7 +746,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_SecondaryPion(AliAODTrack *trk)
   // PID
 //  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
-  if(fUseXic0PID) {
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -688,7 +766,7 @@ Bool_t AliRDHFCutsKFP::SinglePionPoolCuts(AliAODTrack *trk)
 {
   if ( !trk ) return kFALSE;
   if ( trk->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin ) return kFALSE;
-  if(fUseXic0PID) {
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -761,7 +839,7 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
 
 //  if ( v0->DcaV0Daughters() > fProdDcaV0DaughtersMax ) return kFALSE;
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -788,12 +866,18 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
 //________________________________________________________________________
 Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
 {
-  // Pre-selection for Lc
+  // Pre-selection for Lc->pKs0
   //
   AliAODv0 *v0part = dynamic_cast<AliAODv0*>(Lc2pKs0->Getv0());
   AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(Lc2pKs0->GetBachelor());
   AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2pKs0->Getv0PositiveTrack());
   AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2pKs0->Getv0NegativeTrack());
+
+  if ( !v0part || !bachPart || !v0Pos || !v0Neg ) return kFALSE;
+
+  // check charge of v0
+  Int_t Charge_V0 = v0Pos->Charge() + v0Neg->Charge();
+  if ( Charge_V0!=0 ) return kFALSE;
 
 // === selection for Ks0 daughter tracks ===
   // Kinematic Cuts & Acceptance for Ks0 daughter tracks
@@ -841,6 +925,90 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
     Int_t isPiMinus = fPidObjDau->MakeRawPid(v0Neg, 2);
     Int_t isProton  = fPidObjDau->MakeRawPid(bachPart, 4); // proton
     if (isPiPlus<1 || isPiMinus<1 || isProton<1) return kFALSE;
+  }
+
+  return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliRDHFCutsKFP::PreSelForLc2Lpi(AliAODRecoCascadeHF *Lc2Lpi)
+{
+  // Pre-selection for Lc->Lpi
+  //
+  AliAODv0 *v0part = dynamic_cast<AliAODv0*>(Lc2Lpi->Getv0());
+  AliAODTrack *bachPart = dynamic_cast<AliAODTrack*>(Lc2Lpi->GetBachelor());
+  AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0PositiveTrack());
+  AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0NegativeTrack());
+
+  if ( !v0part || !bachPart || !v0Pos || !v0Neg ) return kFALSE;
+
+  // check charge of v0
+  Int_t Charge_V0 = v0Pos->Charge() + v0Neg->Charge();
+  if ( Charge_V0!=0 ) return kFALSE;
+
+  // check charge of the first daughter, if negative, exchange
+  if ( v0Pos->Charge()<0 ) {
+    v0Pos = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0NegativeTrack());
+    v0Neg = dynamic_cast<AliAODTrack*>(Lc2Lpi->Getv0PositiveTrack());;
+  }
+
+// === selection for Lambda daughter tracks ===
+  // Kinematic Cuts & Acceptance for Lambda daughter tracks
+  if ( TMath::Abs(v0Pos->Eta()) >= 0.8 || TMath::Abs(v0Neg->Eta()) >= 0.8 ) return kFALSE;
+  // Track Selection Cuts (TPC)
+//  if ( v0Pos->GetTPCNcls() <= 70 ) return kFALSE;
+  if ( v0Pos->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
+  if ( v0Pos->GetTPCNclsF()==0 ) return kFALSE;
+  if ( static_cast<Double_t>(v0Pos->GetTPCNCrossedRows())/static_cast<Double_t>(v0Pos->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( v0Pos->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+
+//  if ( v0Neg->GetTPCNcls() <= 70 ) return kFALSE;
+  if ( v0Neg->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
+  if ( v0Neg->GetTPCNclsF()==0 ) return kFALSE;
+  if ( static_cast<Double_t>(v0Neg->GetTPCNCrossedRows())/static_cast<Double_t>(v0Neg->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( v0Neg->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+// ==============================
+
+// === selection for bachlor ===
+  // Kinematic Cuts & Acceptance for the bachelor
+  if ( bachPart->Pt()<=fPtMinPiFromLc || bachPart->Pt()>=100.0 ) return kFALSE;
+  if ( TMath::Abs(bachPart->Eta()) >= 0.8 ) return kFALSE;
+
+  // Track Selection Cuts (TPC)
+//  if ( bachPart->GetTPCNcls() <= 70 ) return kFALSE;
+  if ( bachPart->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
+  if ( bachPart->GetTPCNclsF()==0 ) return kFALSE;
+  if ( static_cast<Double_t>(bachPart->GetTPCNCrossedRows())/static_cast<Double_t>(bachPart->GetTPCNclsF()) <= fProdTrackTPCNCrossedRowsRatioMin ) return kFALSE;
+  if ( bachPart->GetTPCsignalN() <= fProdTrackTPCsignalNMin ) return kFALSE;
+//  if ( bachPart->Chi2perNDF() >= 5) return kFALSE;
+// ==============================
+
+  // PID
+//  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
+//  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
+
+  if (fUseLcPID) {
+    if(fPidObjDau->GetPidResponse()==0x0){
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+      AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+      fPidObjDau->SetPidResponse(pidResp);
+    }
+    Int_t isPiFromLc = fPidObjDau->MakeRawPid(bachPart, 2); // pion
+    if ( isPiFromLc<1 ) return kFALSE;
+
+    Int_t isProton  = fPidObjDau->MakeRawPid(v0Pos, 4); // proton
+    Int_t isPiMinus = fPidObjDau->MakeRawPid(v0Neg, 2); // pion-
+
+    Int_t isPiPlus     = fPidObjDau->MakeRawPid(v0Pos, 2); // pion+
+    Int_t isAntiProton = fPidObjDau->MakeRawPid(v0Neg, 4); // anti-proton
+
+    if (bachPart->Charge()>0) { // Bachlor is pion+
+      if ( isProton<1 || isPiMinus<1 ) return kFALSE;
+    }
+    if (bachPart->Charge()<0) { // Bachlor is pion-
+      if ( isPiPlus<1 || isAntiProton<1 ) return kFALSE;
+    }
   }
 
   return kTRUE;
@@ -924,7 +1092,7 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc, Bool_t IsAnaOmegac0)
 //  Double_t nsigmaTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 //  if (TMath::Abs(nsigmaTPC) > 3) return kFALSE;
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if(fPidObjPiFromXi->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -984,7 +1152,7 @@ Bool_t AliRDHFCutsKFP::LambdaPIDCuts(AliAODv0 *v0)
     trackN = (AliAODTrack*)v0->GetDaughter(0);
   }
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1022,7 +1190,7 @@ Bool_t AliRDHFCutsKFP::AntiLambdaPIDCuts(AliAODv0 *v0)
     trackN = (AliAODTrack*)v0->GetDaughter(0);
   }
 
-  if (fUseXic0PID) {
+  if (fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID) {
     if (fPidObjPrFromV0->GetPidResponse()==0x0) {
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1125,8 +1293,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCuts(AliAODcascade *casc,Double_t *primvert,
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
-  if(fUseXic0PID)
-  {
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID){
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -1249,8 +1416,7 @@ Bool_t AliRDHFCutsKFP::SingleCascadeCutsRef(AliAODcascade *casc, Double_t *primv
 	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
 	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
-  if(fUseXic0PID)
-  {
+  if(fUseXic0PID || fUseXicPlusPID || fUseXiccPPPID){
     if(fPidObjPiFromXi->GetPidResponse()==0x0){
       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();

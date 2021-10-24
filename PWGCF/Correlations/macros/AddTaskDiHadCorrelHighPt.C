@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString taskName = "name", Bool_t analysisMC = kFALSE, TString container_name_extension = "",TString fileName_extension = "",Bool_t useEff = kFALSE, TString EffFileName = "eff")
+AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString taskName = "name", Bool_t analysisMC = kFALSE, TString container_name_extension = "",TString fileName_extension = "",Bool_t useEff = kFALSE, TString EffFileNameWithPath = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -37,17 +37,19 @@ AliAnalysisTaskDiHadCorrelHighPt* AddTaskDiHadCorrelHighPt(TString taskName = "n
      TList * effList = 0x0;
 
      if(useEff){
-        cinput1 =  mgr->CreateContainer(Form("Efficiency"),
+        TString eff_container_name = "Efficiency";
+        eff_container_name+=container_name_extension.Data();
+        cinput1 =  mgr->CreateContainer(Form("%s",eff_container_name.Data()),
                                     TList::Class(),
                                     AliAnalysisManager::kInputContainer);
-        TFile * file = TFile::Open(Form("alien://alice/cern.ch/user/l/lhusova/Efficiency/%s.root",EffFileName.Data()));
+        TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/%s.root",EffFileNameWithPath.Data()));
         if(!cinput1) printf("ERROR: Input container not created!\n");
         if(!file) {
-            printf("ERROR: efficiency file %s.root is not available!\n",EffFileName.Data());
+            printf("ERROR: efficiency file %s.root is not available!\n",EffFileNameWithPath.Data());
         }
         effList = (TList*)file->Get(Form("fListEffHistos"));
         if(!effList){
-            printf("ERROR: no efficiency list %s available\n", EffFileName.Data());
+            printf("ERROR: no efficiency list in %s available\n", EffFileNameWithPath.Data());
         }
     }
     // your task needs input: here we connect the manager to your task

@@ -194,6 +194,8 @@ Bool_t                          AliReducedVarManager::fgOptionRecenterVZEROqVec 
 Bool_t                          AliReducedVarManager::fgOptionRecenterTPCqVec = kFALSE;
 Bool_t                          AliReducedVarManager::fgOptionEventRes = kFALSE;
 TH1F*                           AliReducedVarManager::fgReweightMCpt=0x0;
+TH3F*                           AliReducedVarManager::fgLegEfficiency=0x0;
+Bool_t                          AliReducedVarManager::fgUsePinForLegEffPropagation = kFALSE;
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
   TObject()
@@ -385,6 +387,24 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kNTracksTPCoutFromPileup]) {
     fgUsedVars[kNTracksTPCoutBeforeClean] = kTRUE;
     fgUsedVars[kVZEROTotalMultFromChannels] = kTRUE;
+  }
+  if(fgUsedVars[kPairEffDown_weight] || fgUsedVars[kPairEffUp_weight]) {
+    fgUsedVars[kPairEff_weight] = kTRUE;
+  }
+  if(fgUsedVars[kPtTimesPairEffDown_weight] || fgUsedVars[kPtTimesPairEffUp_weight]) {
+    fgUsedVars[kPtTimesPairEff_weight] = kTRUE;
+  }
+  if(fgUsedVars[kPairEff_weight]) {
+    fgUsedVars[kPairEffUp_weight] = kTRUE;
+    fgUsedVars[kPairEffDown_weight] = kTRUE;
+  }
+  if(fgUsedVars[kPtTimesPairEff_weight]) {
+    fgUsedVars[kPt_weight] = kTRUE;
+    fgUsedVars[kPairEff_weight] = kTRUE;
+    fgUsedVars[kPairEffUp_weight] = kTRUE;
+    fgUsedVars[kPairEffDown_weight] = kTRUE;
+    fgUsedVars[kPtTimesPairEffUp_weight] = kTRUE;
+    fgUsedVars[kPtTimesPairEffDown_weight] = kTRUE;
   }
 }
 
@@ -2211,7 +2231,31 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      values[kPzMC] = pMC.Pz();
      values[kPt_weight]=0.0;
      if(fgUsedVars[kPt_weight]) values[kPt_weight] =  CalculateWeightFactor(values[kPtMC],values[kCentVZERO]);
-     
+
+     if(fgUsedVars[kPairEff_weight]){
+       if(pinfo1 && pinfo2 && !pinfo1->IsMCTruth() && !pinfo2->IsMCTruth()){
+         if(fgUsePinForLegEffPropagation == kTRUE){
+           values[kPairEffDown_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->Pin(), pinfo2->Pin(), pinfo1->Eta(), pinfo2->Eta(), 0);
+           values[kPairEff_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->Pin(), pinfo2->Pin(), pinfo1->Eta(), pinfo2->Eta(), 1);
+           values[kPairEffUp_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->Pin(), pinfo2->Pin(), pinfo1->Eta(), pinfo2->Eta(), 2);
+         }else{
+           values[kPairEffDown_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->P(), pinfo2->P(), pinfo1->Eta(), pinfo2->Eta(), 0);
+           values[kPairEff_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->P(), pinfo2->P(), pinfo1->Eta(), pinfo2->Eta(), 1);
+           values[kPairEffUp_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->P(), pinfo2->P(), pinfo1->Eta(), pinfo2->Eta(), 2);
+         }
+       }else{
+         values[kPairEffDown_weight]=0.;
+         values[kPairEff_weight]=0.;
+         values[kPairEffUp_weight]=0.;
+       }
+     }
+
+     if(fgUsedVars[kPtTimesPairEff_weight]){
+       values[kPtTimesPairEffDown_weight] = values[kPt_weight]*values[kPairEffDown_weight];
+       values[kPtTimesPairEff_weight] = values[kPt_weight]*values[kPairEff_weight];
+       values[kPtTimesPairEffUp_weight] = values[kPt_weight]*values[kPairEffUp_weight];
+     }
+ 
      if(fgUsedVars[kThetaMC]) values[kThetaMC] = pMC.Theta();
      if(fgUsedVars[kEtaMC]) values[kEtaMC] = pMC.Eta();
      if(fgUsedVars[kPhiMC]) values[kPhiMC] = pMC.Phi();
@@ -4037,6 +4081,18 @@ void AliReducedVarManager::SetWeightSpectrum(TH1F *pTspectrum)
       cout<< "There is no pT reweight spectra, please double check !!!"<<endl;
     }
 }
+//___________________________________________________________________________________
+void AliReducedVarManager::SetLegEfficiency(TH3F *LegPIDEfficiency, Bool_t usePin)
+{
+  if(LegPIDEfficiency){
+    fgLegEfficiency=LegPIDEfficiency;
+    fgUsePinForLegEffPropagation = usePin;
+  }
+  else
+  {
+      cout<< "Leg efficiency was not loaded. "<<endl;
+  }
+}
 //____________________________________________________________________________________
 Double_t AliReducedVarManager::CalculateWeightFactor( Double_t McpT, Double_t Centrality)
 {
@@ -4057,6 +4113,75 @@ Double_t AliReducedVarManager::CalculateWeightFactor( Double_t McpT, Double_t Ce
       cout<< " pt out the range of the reweight "<<endl;
       return 0.0;
     }
+}
+//____________________________________________________________________________________
+Float_t AliReducedVarManager::GetPairEffWeightFactor(Float_t Cent, Float_t P1, Float_t P2, Float_t Eta1, Float_t Eta2, Int_t type)// type 1 is for standard propagation, type 0 returns weight when setting leg PID efficiency to its value - 1 sigma, type 2 returns weight when setting leg PID efficiency to its value + 1 sigma
+{
+  if(!fgLegEfficiency){
+    cout<< "No leg PID efficiency!"<<endl;
+    return 0.0;
+  }
+
+  if((type != 0) && (type != 1) && (type != 2)){
+    cout<< "Wrong type! It is not standard case nor any case for propgation of statistical leg PID efficiency."<<endl;
+    return 0.0;
+  }
+
+  Int_t binX1 = 0;
+  binX1 = fgLegEfficiency->GetXaxis()->FindBin(Cent);
+  if(binX1==0) binX1 = 1;
+  if(binX1==fgLegEfficiency->GetXaxis()->GetNbins()+1) binX1 -= 1;
+
+  Int_t binX2 = 0;
+  binX2 = fgLegEfficiency->GetXaxis()->FindBin(Cent);
+  if(binX2==0) binX2 = 1;
+  if(binX2==fgLegEfficiency->GetXaxis()->GetNbins()+1) binX2 -= 1;
+
+  Int_t binY1 = 0;
+  binY1 = fgLegEfficiency->GetYaxis()->FindBin(P1);
+  if(binY1==0) binY1 = 1;
+  if(binY1==fgLegEfficiency->GetXaxis()->GetNbins()+1) binY1 -= 1;
+
+  Int_t binY2 = 0;
+  binY2 = fgLegEfficiency->GetYaxis()->FindBin(P2);
+  if(binY2==0) binY2 = 1;
+  if(binY2==fgLegEfficiency->GetXaxis()->GetNbins()+1) binY2 -= 1;
+
+  Int_t binZ1 = 0;
+  binZ1 = fgLegEfficiency->GetZaxis()->FindBin(Eta1);
+  if(binZ1==0) binZ1 = 1;
+  if(binZ1==fgLegEfficiency->GetZaxis()->GetNbins()+1) binZ1 -= 1;
+
+  Int_t binZ2 = 0;
+  binZ2 = fgLegEfficiency->GetZaxis()->FindBin(Eta2);
+  if(binZ2==0) binZ2 = 1;
+  if(binZ2==fgLegEfficiency->GetZaxis()->GetNbins()+1) binZ2 -= 1;
+
+
+  Float_t pairEff = 0.;
+
+  Float_t legEffDown1 = TMath::Max(0., fgLegEfficiency->GetBinContent(binX1,binY1,binZ1) - fgLegEfficiency->GetBinError(binX1,binY1,binZ1));
+  Float_t legEff1 = fgLegEfficiency->GetBinContent(binX1,binY1,binZ1);
+  Float_t legEffUp1 = TMath::Min(1., fgLegEfficiency->GetBinContent(binX1,binY1,binZ1) + fgLegEfficiency->GetBinError(binX1,binY1,binZ1));
+  Float_t legEffError1 = fgLegEfficiency->GetBinError(binX1,binY1,binZ1);
+
+
+  Float_t legEffDown2 = TMath::Max(0., fgLegEfficiency->GetBinContent(binX2,binY2,binZ2) - fgLegEfficiency->GetBinError(binX2,binY2,binZ2));
+  Float_t legEff2 = fgLegEfficiency->GetBinContent(binX2,binY2,binZ2);
+  Float_t legEffUp2 = TMath::Min(1., fgLegEfficiency->GetBinContent(binX2,binY2,binZ2) + fgLegEfficiency->GetBinError(binX2,binY2,binZ2));
+  Float_t legEffError2 = fgLegEfficiency->GetBinError(binX2,binY2,binZ2);
+
+
+
+  if(type == 0){
+    pairEff = gRandom->Gaus(legEffDown1, legEffError1)*gRandom->Gaus(legEffDown2, legEffError2);
+  }else if(type == 1){
+    pairEff = gRandom->Gaus(legEff1, legEffError1)*gRandom->Gaus(legEff2, legEffError2);
+  }else if(type == 2){
+    pairEff = gRandom->Gaus(legEffUp1, legEffError1)*gRandom->Gaus(legEffUp2, legEffError2);
+  }
+
+  return pairEff;
 }
 //____________________________________________________________________________________
 void AliReducedVarManager::SetMultiplicityProfile(TH2* profile, Int_t estimator) {

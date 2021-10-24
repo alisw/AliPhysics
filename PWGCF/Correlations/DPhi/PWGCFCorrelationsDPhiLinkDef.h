@@ -45,6 +45,10 @@
 #pragma link C++ class AliV0XiParticle+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelationpp+;
 #pragma link C++ class AliV0hParticle+;
+#pragma link C++ class AliAnalysisTaskV0ChCorrelationppsys+;
+#pragma link C++ class AliV0hParticles+;
+#pragma link C++ class AliAnalysisTaskV0ChCorrelationsys+;
+#pragma link C++ class AliV0XiParticles+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
 #pragma link C++ class AliAnalysisTaskLongFluctuations2PC+;
 #pragma link C++ class LRCParticle;
@@ -76,14 +80,21 @@
 #pragma link C++ class AliCorrelationAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsYS+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsMCYS+;
+#pragma link C++ class AliAnalysisTaskSEpPbCorrelationsMCLEGOYS+;
 #pragma link C++ class AliAssociatedTrackYS+;
 #pragma link C++ class AliMixTrackYS+;
 #pragma link C++ class AliAssociatedVZEROYS+;
 #pragma link C++ class AliAssociatedTrackYSMC+;
 #pragma link C++ class AliMixTrackYSMC+;
 #pragma link C++ class AliAssociatedVZEROYSMC+;
+#pragma link C++ class AliAssociatedTrackYSLEGOMC+;
+#pragma link C++ class AliMixTrackYSLEGOMC+;
+#pragma link C++ class AliAssociatedVZEROYSLEGOMC+;
+#pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsJetV2+;
 #pragma link C++ class AliTrigAssoPairST+;
+#pragma link C++ class AliAnalysisTaskSEPbPbCorrelationsJetV2+;
+#pragma link C++ class AliBasicParticleST+;
 #pragma link C++ class AliAnalysisTaskCorrelationsStudies+;
 #pragma link C++ class AliCSAnalysisCutsBase+;
 #pragma link C++ class AliCSEventCuts+;
@@ -93,7 +104,10 @@
 #pragma link C++ class AliCSTrackCuts+;
 #pragma link C++ class AliCSTrackMaps+;
 #pragma link C++ class AliCSTrackSelection+;
+#pragma link C++ class AliTwoParticleCorrelationsBase+;
 #pragma link C++ class AliDptDptCorrelations+;
+#pragma link C++ class Ali2PCorrelations+;
 #pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;
 #pragma link C++ class AliV0ChParticle+;
+#pragma link C++ class AliAnalysisTaskR2P2+;
 #endif

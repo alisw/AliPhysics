@@ -87,6 +87,9 @@ private:
 
   AliESDtrackCuts         *fTrackCuts;      ///< Underlying track cuts object
 
+  AliEmcalESDtrackCutsWrapper(AliEmcalESDtrackCutsWrapper &);
+  AliEmcalESDtrackCutsWrapper &operator=(const AliEmcalESDtrackCutsWrapper &);
+
   /// \cond CLASSIMP
   ClassDef(AliEmcalESDtrackCutsWrapper, 1);
   /// \endcond

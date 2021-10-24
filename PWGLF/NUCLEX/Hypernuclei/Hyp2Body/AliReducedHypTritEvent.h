@@ -36,7 +36,9 @@ class AliReducedHypTritTrack : public TObject {
   Float_t DedxSigma() const {return fDedxSigma;}
   Float_t DedxSigmaTriton() const {return fDedxSigmaTriton;}
   Float_t TpcNcls() const {return fTpcNClusters;}
-
+  Float_t TpcChi2() const {return fTpcChi2;}
+  Int_t 	Kink() const {return fKink;}
+  Int_t 	TPCrefit() const {return fTPCrefit;}
 private:
   TLorentzVector fP;               //< 4 momentum of track
   Float_t        fPtrack;          //< Total momentum of Track
@@ -47,11 +49,22 @@ private:
   Float_t        fEta;             //< eta of track
   Float_t        fPhi;             //< phi of track
   Float_t        fTpcNClusters;    //< number of clusters
+  Float_t	 			 fTpcChi2;	   		 //< chi2 of TPC fit
+  Int_t					 fKink;						 //< kink doughters
+  Int_t					 fTPCrefit;				 //< TPC refit
   Float_t        fGeoLength;       //< geometric length cut
-
+	Int_t					 fTRDvalid;	       //< has valid TRD track
+	Int_t					 fTRDtrigHNU;	     //< HNU fired by track
+	Int_t					 fTRDtrigHQU;			 //< HQU fired by track
+	Int_t					 fTRDPid;					 //< PID value of TRD track
+	Int_t	 				 fTRDnTracklets;	 //< number of TRD tracklets
+	Int_t	         fTRDPt;           //< Pt of TRD track
+	Int_t	         fTRDLayerMask;		 //< TRD track layer mask
+	Float_t	       fTRDSagitta;			 //< sagitta value of TRD track
+	
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
 AliReducedHypTritTrack &operator = (const AliReducedHypTritTrack&);
-ClassDef(AliReducedHypTritTrack, 4)
+ClassDef(AliReducedHypTritTrack, 6)
 };
 
 class AliReducedHypTritV0 : public TObject {
@@ -117,6 +130,13 @@ class AliReducedHypTritEvent : public TObject {
   Float_t  Centrality() const {return fCentrality;}
   UShort_t NumberV0s() const {return fNumberV0s;}
   UShort_t Trigger() const {return fTrigger;}
+  UShort_t IsMBtriggered() const {return fTrigMB;}
+  UShort_t IsHNUtriggered() const {return fTrigHNU;}
+  UShort_t IsHQUtriggered() const {return fTrigHQU;}
+  UShort_t IsHJTtriggered() const {return fTrigHJT;}
+  UShort_t IsHSEtriggered() const {return fTrigHSE;}
+  UShort_t IsV0triggered() const {return fTrigV0;}
+  UShort_t IsSPDtriggered() const {return fTrigSPD;}
   TString TriggerClasses() const {return fTriggerClasses;}
   Int_t    RunNumber() const {return fRunNumber;}
 	Float_t	SPDFiredChips0() const {return fSPDFiredChips0;}
@@ -139,6 +159,14 @@ private:
   Float_t       fCentrality;     //< centrality of event
   Int_t         fRunNumber;      //< number of run
   UShort_t      fTrigger;        //< array of Triggers
+  UShort_t      fTrigMB;         //< Flag for MB trigger
+  UShort_t      fTrigHNU;        //< Flag for TRD-HNU trigger
+  UShort_t      fTrigHQU;        //< Flag for TRD-HQU trigger
+  UShort_t      fTrigHJT;        //< Flag for TRD-HJT trigger
+  UShort_t      fTrigHSE;        //< Flag for TRD-HSE trigger
+  UShort_t      fTrigV0;         //< Flag for HM-V0 trigger
+  UShort_t      fTrigSPD;        //< Flag for HM-SPD trigger
+  
   TString 	    fTriggerClasses; //< fired trigger classes
 
 	Float_t					fSPDFiredChips0;	// multiplicity triggers
@@ -156,7 +184,7 @@ private:
 		
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);
-  ClassDef(AliReducedHypTritEvent, 5);
+  ClassDef(AliReducedHypTritEvent, 6);
 };
 
 #endif

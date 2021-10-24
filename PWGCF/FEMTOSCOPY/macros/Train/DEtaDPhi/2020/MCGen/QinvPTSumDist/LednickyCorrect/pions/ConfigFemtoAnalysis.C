@@ -535,7 +535,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::PionPlusPionMinus());
 			  tWeight[aniter]->SetCoulOn();
 			  tWeight[aniter]->SetQuantumOff();
-			  tWeight[aniter]->SetStrongOn();
+			  tWeight[aniter]->SetStrongOff();
 			  tModelManager[aniter]->AcceptWeightGenerator(tWeight[aniter]);
 			  // Now we can create the model correlation function
 			  tModelCFNonIdDR[aniter] = new AliFemtoModelCorrFctnNonIdDR(Form("cModelNonId%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax); //model correlation function
@@ -571,7 +571,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
 			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
-		      if(ichg==3)
+		      if(ichg==2)
 			{
 			  //weights PAP
 			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());

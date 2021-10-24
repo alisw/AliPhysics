@@ -1,7 +1,31 @@
+/**************************************************************************************
+ * Copyright (C) 2014, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #ifndef ALIEMCALTRIGGERMAKERTASK_H
 #define ALIEMCALTRIGGERMAKERTASK_H
-/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliAnalysisTaskEmcal.h"
@@ -209,48 +233,38 @@ public:
   void SetUseL0Amplitudes(Bool_t b)        { fUseL0Amplitudes = b           ; }
 
   /**
-   * @brief Switch for smearing mode
+   * @brief Switch for smearing mode (default: enabled)
    * @param doRun If true also the smeared patch energy is calculated
    */
   void SetRunSmearing(Bool_t doRun) { fRunSmearing = doRun; }
 
-protected:
-
-#if !(defined(__CINT__) || defined(__MAKECINT__))
   /**
-   * @brief Create functor handling the conversion between reg mask and channel
-   * 
-   * Closure producing a handler converting a set of mask / bit number into a channel
-   * ID. In case the mask / bit number is invalid the function will return -1
-   * @return function that converts a set of mask / bit number into a channel ID
-   * 
-   * The handling is different for LHC run1 and LHC run2 due to different TRU geometry:
-   * - In run1 a linear indexing was applied
-   * - In run2 the indexing is not linear for the TRUs in the full and DCAL supermodules,
-   *   while it follows the linear indexing for the 1/3rd supermodules
-   * Due to run2 definitions the handlers are created based on the index of the TRU
-   * using L0 convention.
-   * 
-   * @param[in] itru Index of the TRU (L0 convention, without remapping)
+   * @brief Switch for simulating noise in MC mode (default: enabled)
+   * @param doSimulate If true noise is simulated when calculating the smeared FastOR energies
    */
-  std::function<int (unsigned int, unsigned int)> GetMaskHandler(int itru) const;
-#endif
+  void SetSimulateNoise(Bool_t doSimulate) { fSimulateNoise = doSimulate; }
 
- /**
-  * @brief Fix mapping in TRU index
-  * 
-  * In run 2 the index of the TRU is different between
-  * TRU indexing and STU indexing:
-  * - STU indexing: Linear, including PHOS region
-  * - TRU indexing: Out to in in eta (C-side mirrored), no PHOS region
-  * Obviously the mapping uses the STU indexing. This function
-  * remaps the TRU indexing (used in the DCS configuration) to the
-  * STU indexing
-  * 
-  * @param itru TRU index in TRU convention 
-  * @return int TRU index in STU convention
-  */
-  int RemapTRUIndex(int itru) const;
+  /**
+   * @brief Use bad FastORs from OADB (default: false)
+   * @param doUse If true bad fastors from the OADB are used 
+   * 
+   * Only has an impact in case the OADB container is specified and
+   * the OADB container is of the new format AliEmcalFastorMaskContainer
+   * which separates dead and bad FastORs
+   */
+  void SetUseBadFastorsOADB(Bool_t doUse) { fUseBadFastORsOADB = doUse; }
+
+  /**
+   * @brief Use dead FastORs from OADB (default: false)
+   * @param doUse If true bad fastors from the OADB are used 
+   * 
+   * Only has an impact in case the OADB container is specified and
+   * the OADB container is of the new format AliEmcalFastorMaskContainer
+   * which separates dead and bad FastORs
+   */
+  void SetUseDeadFastorsOADB(Bool_t doUse) { fUseDeadFastORsOADB = doUse; }
+
+protected:
 
   /**
    * @brief Internal QA handler for trigger pathches of given type
@@ -282,8 +296,9 @@ protected:
 
   /**
    * @brief Initialize the FastOR masking from the OCDB
+   * @brief Run number for which to load the FastOR mask
    */
-  void InitializeFastORMaskingFromOCDB();
+  void InitializeFastORMaskingFromOCDB(int runnumber);
 
   /**
    * @brief Initialize the FastOR masking from the OADB
@@ -312,9 +327,12 @@ protected:
   TString                                 fMaskedFastorOADB;          ///< name of the OADB container containing fastors to be masked inside the trigger maker
   Bool_t                                  fUseL0Amplitudes;           ///< Use L0 amplitudes instead of L1 time sum (useful for runs where STU was not read)
   Bool_t                                  fLoadFastORMaskingFromOCDB; ///< Load FastOR masking from the OCDB
+  Bool_t                                  fUseDeadFastORsOADB;        ///< Use dead FastORs from OADB (in case an OADB container of new format AliEmcalFastorMaskContainer is specified)
+  Bool_t                                  fUseBadFastORsOADB;         ///< Use bad FastORs from OADB (in case an OADB container of new format AliEmcalFastorMaskContainer is specified)
   TClonesArray                            *fCaloTriggersOut;          //!<! trigger array out
 
   Bool_t                                  fRunSmearing;               ///< Also calculate smeared patch energy based on FastOR energy resolution
+  Bool_t                                  fSimulateNoise;             ///< Simulate noise
   Bool_t                                  fDoQA;                      ///< Fill QA histograms
   THistManager                            *fQAHistos;                 //!<! Histograms for QA
 
@@ -322,9 +340,7 @@ private:
   AliEmcalTriggerMakerTask(const AliEmcalTriggerMakerTask &);
   AliEmcalTriggerMakerTask &operator=(const AliEmcalTriggerMakerTask &);
 
-  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerMakerTask, 2);
-  /// \endcond
 };
 
 #endif

@@ -60,6 +60,18 @@ public:
   bool IsSelected(double binvar, std::vector<double> variables);
   /// overload for getting the model score too
   template <typename F> bool IsSelected(double binvar, std::vector<double> variables, F &score);
+  /// return the ML model predicted scores (raw or proba, depending on useraw)
+  bool PredictMultiClass(double binvar, std::map<std::string, double> varmap, std::vector<double> &outScores);
+  /// overload to pass directly a vector of variables
+  bool PredictMultiClass(double binvar, std::vector<double> variables, std::vector<double> &outScores);
+  /// return true if predicted score for map is above the threshold given in the config
+  bool IsSelectedMultiClass(double binvar, std::map<std::string, double> varmap);
+  /// overload for getting the model score too
+  template <typename F> bool IsSelectedMultiClass(double binvar, std::map<std::string, double> varmap, std::vector<F> &outScores);
+  /// overload to pass directly a vector of variables
+  bool IsSelectedMultiClass(double binvar, std::vector<double> variables);
+  /// overload for getting the model score too
+  template <typename F> bool IsSelectedMultiClass(double binvar, std::vector<double> variables, std::vector<F> &outScores);
 
 protected:
   std::string fConfigFilePath;    /// path of the config file
@@ -86,7 +98,7 @@ template <typename F> bool AliMLResponse::IsSelected(double binvar, std::map<std
   if (bin < 0)
     return false;
   score = Predict(binvar, varmap);
-  return score >= fModels.at(bin - 1).GetScoreCut();
+  return score >= fModels.at(bin - 1).GetScoreCut()[0];
 }
 
 template <typename F> bool AliMLResponse::IsSelected(double binvar, std::vector<double> variables, F &score) {
@@ -94,7 +106,45 @@ template <typename F> bool AliMLResponse::IsSelected(double binvar, std::vector<
   if (bin < 0)
     return false;
   score = Predict(binvar, variables);
-  return score >= fModels.at(bin - 1).GetScoreCut();
+  return score >= fModels.at(bin - 1).GetScoreCut()[0];
+}
+
+template <typename F> bool AliMLResponse::IsSelectedMultiClass(double binvar, std::map<std::string, double> varmap, std::vector<F> &outScores) {
+  int bin = FindBin(binvar);
+  if (bin < 0)
+    return false;
+
+  bool predict = PredictMultiClass(binvar, varmap, outScores);
+  if(!predict)
+    return false;
+
+  for(std::size_t iScore=0; iScore < outScores.size(); iScore++) {
+    if(fModels.at(bin - 1).GetScoreCutOpt()[iScore] == AliMLModelHandler::kLowerCut && outScores[iScore] < fModels.at(bin - 1).GetScoreCut()[iScore])
+      return false;
+    if(fModels.at(bin - 1).GetScoreCutOpt()[iScore] == AliMLModelHandler::kUpperCut && outScores[iScore] > fModels.at(bin - 1).GetScoreCut()[iScore])
+      return false;
+  }
+
+  return true;
+}
+
+template <typename F> bool AliMLResponse::IsSelectedMultiClass(double binvar, std::vector<double> variables, std::vector<F> &outScores) {
+  int bin = FindBin(binvar);
+  if (bin < 0)
+    return false;
+
+  bool predict = PredictMultiClass(binvar, variables, outScores);
+  if(!predict)
+    return false;
+
+  for(std::size_t iScore=0; iScore < outScores.size(); iScore++) {
+    if(fModels.at(bin - 1).GetScoreCutOpt()[iScore] == AliMLModelHandler::kLowerCut && outScores[iScore] < fModels.at(bin - 1).GetScoreCut()[iScore])
+      return false;
+    if(fModels.at(bin - 1).GetScoreCutOpt()[iScore] == AliMLModelHandler::kUpperCut && outScores[iScore] > fModels.at(bin - 1).GetScoreCut()[iScore])
+      return false;
+  }
+
+  return true;
 }
 
 #endif

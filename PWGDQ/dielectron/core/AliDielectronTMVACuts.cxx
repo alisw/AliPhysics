@@ -25,6 +25,7 @@ Detailed description
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TObjString.h>
 #include "TSystem.h"
 
 #include "TMVA/Tools.h"

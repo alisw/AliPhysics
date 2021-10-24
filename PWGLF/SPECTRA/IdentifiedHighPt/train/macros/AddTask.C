@@ -1,4 +1,4 @@
-
+  
 AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typerun, UInt_t kTriggerInt, Float_t minc, Float_t maxc, Bool_t CentFrameworkAliCen)
 {
 
@@ -133,9 +133,14 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     
   }
   
-if(typerun==3){//pp analysis
+  if(typerun==3){//pp analysis
   
-  AliAnalysisTaskHighPtDeDx* taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx("taskHighPtDeDx");
+    AliAnalysisTaskHighPtDeDx* taskHighPtDeDx;
+    
+    taskHighPtDeDx = 0;
+    Char_t TaskName[256] = {0};
+    sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc,maxc);
+    taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx(TaskName);
 
     //Set analysis details
     taskHighPtDeDx->SetAnalysisType("AOD");
@@ -158,15 +163,15 @@ if(typerun==3){//pp analysis
     taskHighPtDeDx->SetVtxR2Cut(10.); //use 10. for no cut
     
     //Set trigger particle tracks, v0s and daughter track details
-    taskHighPtDeDx->SetMinPt(5.0); //trigger tracks
+    taskHighPtDeDx->SetMinPt(1.0); //trigger tracks
     taskHighPtDeDx->SetLowPtFraction(0.0); //keep x.x% of tracks below min pt
     taskHighPtDeDx->SetEtaCut(0.8); 
     taskHighPtDeDx->SetCrossedRowsCut(70.); //use 0. for no cut
     taskHighPtDeDx->SetCrossedOverFindableCut(0.8); //use 0. for no cut
-    taskHighPtDeDx->SetCosPACut(0.95);
-    taskHighPtDeDx->SetDecayRCut(0.0);
+    taskHighPtDeDx->SetCosPACut(0.96);
+    taskHighPtDeDx->SetDecayRCut(0.3);
     taskHighPtDeDx->SetMinPtV0(1.0);
-    taskHighPtDeDx->SetMassCut(0.1); 
+    taskHighPtDeDx->SetMassCut(0.08); 
     taskHighPtDeDx->SetRejectKinks(kTRUE);
     taskHighPtDeDx->SetSigmaDedxCut(kFALSE);
     

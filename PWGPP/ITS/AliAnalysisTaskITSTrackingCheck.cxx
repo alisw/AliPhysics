@@ -3069,6 +3069,7 @@ Double_t AliAnalysisTaskITSTrackingCheck::ParticleImpParMC(TParticle *part,
 
 
   if(TMath::Abs(px)<0.000001) px=0.000001;     
+  if(pt<0.000001) return -999999.;
   Double_t rAnd=((10./2.99792458)*pt/bzT)*100.;
   Double_t center[3],d0;
   center[0]=vx-(1./charge)*rAnd*(py/pt);

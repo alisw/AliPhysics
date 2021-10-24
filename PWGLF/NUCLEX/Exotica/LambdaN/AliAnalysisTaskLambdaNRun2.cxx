@@ -68,7 +68,6 @@ void AliAnalysisTaskLambdaNRun2::UserExec(Option_t *)
 	fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 	if (!fAOD) return;
 
-
 	TClonesArray* AODMCParticlesArray = NULL;
 	if(fMC){
 		// MCEvent

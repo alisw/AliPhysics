@@ -11,6 +11,7 @@
 #include "AliAODVertex.h"
 #include "AliVTrack.h"
 #include "AliVEvent.h"
+#include "AliAODTrack.h"
 #include <TMatrixDSym.h>
 #include <TMath.h>
 #include "AliVMultiplicity.h"
@@ -293,15 +294,13 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, Al
   // returns kTRUE if a particle is produced in a pileup event in case of MC with pileup
 
   // check if the event header is that of a cocktail (AliGenPileup creates a cocktail):
-  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
-  if (cocktailHeader == nullptr) return kFALSE;
   
   Int_t totPrimaries=mcEv->GetNumberOfPrimaries();
   if(index>=totPrimaries){
     // particles from the transport, get mother
     while(index>=totPrimaries) index=mcEv->GetLabelOfParticleMother(index);
   }
-  TList *lgen = cocktailHeader->GetHeaders();
+  TList *lgen = mcEv->GetCocktailList();
   if(!lgen) return kFALSE;
   return IsParticleFromOutOfBunchPileupCollision(index,lgen);
 }
@@ -330,7 +329,6 @@ Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, Al
       index=mcPart->GetMother();
     }
   }
-  
   return IsParticleFromOutOfBunchPileupCollision(index,lgen);
 }
 //______________________________________________________________________
@@ -456,6 +454,27 @@ Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname, 
   return kFALSE;
 }
 
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsKinkMother(AliAODTrack* track, AliAODEvent* aod){
+  // returns kTRUE if a track enters in a kink (kink mother)
+  for(Int_t jv=0; jv<aod->GetNumberOfVertices(); jv++){
+    AliAODVertex *v=(AliAODVertex*)aod->GetVertex(jv);
+    Int_t vtyp=v->GetType();
+    if(vtyp==AliAODVertex::kKink){
+      AliAODTrack* mothKink=dynamic_cast<AliAODTrack*>(v->GetParent());
+      if(!mothKink) continue;
+      if(mothKink->GetID()==track->GetID()) return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsKinkDaughter(AliAODTrack* track){
+  // returns kTRUE if a track is produced in a kink (kink daughter)
+  AliAODVertex* av=track->GetProdVertex();
+  if(av && av->GetType()==AliAODVertex::kKink) return kTRUE;
+  return kFALSE;
+}
 //______________________________________________________________________
 AliESDtrackCuts* AliAnalysisUtils::GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries, Int_t clusterCut)
 {

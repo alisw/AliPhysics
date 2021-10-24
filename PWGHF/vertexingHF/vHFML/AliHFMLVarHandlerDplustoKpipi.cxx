@@ -60,6 +60,8 @@ TTree* AliHFMLVarHandlerDplustoKpipi::BuildTree(TString name, TString title)
 
     //set common variables
     AddCommonDmesonVarBranches();
+    //set global event variables
+    AddGlobalEventVarBranches();
     //set single-track variables
     if(fAddSingleTrackVar)
         AddSingleTrackBranches();
@@ -70,6 +72,11 @@ TTree* AliHFMLVarHandlerDplustoKpipi::BuildTree(TString name, TString title)
     //set D+ variables
     fTreeVar->Branch("sig_vert", &fSigmaVertex);
     fTreeVar->Branch("max_norm_d0d0exp", &fNormd0MeasMinusExp);
+
+    if(fAddImpParProdProngs) {
+        fTreeVar->Branch("d0K_times_d0pi1", &fImpParProdProngs[0]);
+        fTreeVar->Branch("d0K_times_d0pi2", &fImpParProdProngs[1]);
+    }
 
     if(fAddSingleTrackVar) {
         for(unsigned int iProng = 0; iProng < fNProngs; iProng++)
@@ -85,7 +92,7 @@ bool AliHFMLVarHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float 
     if(!cand) 
         return false;
     if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
-        if(!(fCandType&kSignal)) 
+        if(!(fCandType & kSignal)) 
             return true;
     }
     
@@ -110,7 +117,12 @@ bool AliHFMLVarHandlerDplustoKpipi::SetVariables(AliAODRecoDecayHF* cand, float 
     AliAODRecoDecayHF3Prong* cand3p = (AliAODRecoDecayHF3Prong*)cand;
     fInvMass = cand3p->InvMassDplus();
     fSigmaVertex = cand3p->GetSigmaVert();
-        
+
+    if(fAddImpParProdProngs) {
+        fImpParProdProngs[0] = cand->Getd0Prong(1) * cand->Getd0Prong(0);
+        fImpParProdProngs[1] = cand->Getd0Prong(1) * cand->Getd0Prong(2);
+    }
+
     //single track variables
     AliAODTrack* prongtracks[3];
     for(unsigned int iProng = 0; iProng < fNProngs; iProng++) 

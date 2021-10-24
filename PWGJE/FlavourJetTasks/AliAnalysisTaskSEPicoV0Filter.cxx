@@ -1,3 +1,4 @@
+#include <TObjString.h>
 #include <TClonesArray.h>
 
 #include "AliAnalysisManager.h"

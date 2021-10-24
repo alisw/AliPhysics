@@ -62,13 +62,13 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 AliCaloTrackReader  * ConfigureReader        (TString col,           Bool_t simulation,
                                               TString clustersArray, Bool_t tender,
-                                              TString calorimeter,   Bool_t nonLinOn,
+                                              TString calorimeter,   Int_t nonLinOn,
                                               TString trigger,       Bool_t rejectEMCTrig,
                                               Int_t   minCen,        Int_t  maxCen,
                                               Bool_t  printSettings, Int_t  debug       );
 AliCalorimeterUtils * ConfigureCaloUtils     (TString col,           Bool_t simulation,
                                               Bool_t tender,         TString calorimeter,
-                                              Bool_t  nonLinOn,      Int_t  year,
+                                              Int_t  nonLinOn,       Int_t  year,
                                               Bool_t  printSettings, Int_t  debug            );
 AliAnaPhoton        * ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
                                               TString calorimeter,   Int_t  year,  Int_t tm,
@@ -124,7 +124,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An integer to set the use of the non linearity correction
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param isoCone : A float setting the isolation cone size
 /// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
@@ -151,7 +151,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = 0,
  Float_t  shshMax       = 0.27,
  Float_t  isoCone       = 0.4,
  Float_t  isoPtTh       = 0.5,
@@ -383,7 +383,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 ///
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString clustersArray, Bool_t tender,
-                                     TString calorimeter,   Bool_t nonLinOn,
+                                     TString calorimeter,   Int_t nonLinOn,
                                      TString trigger,       Bool_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
                                      Bool_t  printSettings, Int_t  debug         )
@@ -617,7 +617,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,    Bool_t simulation,
                                         Bool_t  tender, TString calorimeter,
-                                        Bool_t nonLinOn,      
+                                        Int_t nonLinOn,      
                                         Int_t   year,   Bool_t printSettings, 
                                         Int_t   debug)
 {

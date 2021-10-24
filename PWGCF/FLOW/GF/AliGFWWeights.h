@@ -1,6 +1,8 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the non-uniform acceptance correction.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #ifndef ALIGFWWEIGHTS__H
 #define ALIGFWWEIGHTS__H
@@ -11,6 +13,7 @@ Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
 #include "TH1D.h"
 #include "TFile.h"
 #include "TCollection.h"
+#include "TString.h"
 
 class AliGFWWeights: public TNamed
 {
@@ -36,7 +39,7 @@ class AliGFWWeights: public TNamed
   Double_t GetIntegratedEfficiency(Double_t pt);
   void SetDataFilled(Bool_t newval) { fDataFilled=newval; };
   void SetMCFilled(Bool_t newval) { fMCFilled = newval; };
-  void ReadAndMerge(const char *filelinks);
+  void ReadAndMerge(TString filelinks, TString listName="OutputList", Bool_t addData=kTRUE, Bool_t addRec=kTRUE, Bool_t addGen=kTRUE);
   void SetPtBins(Int_t Nbins, Double_t *bins);
   Long64_t Merge(TCollection *collist);
   void RebinNUA(Int_t nX=1, Int_t nY=2, Int_t nZ=5);

@@ -1,8 +1,8 @@
 #include "AliEMCalTriggerAnaTriggerDecisionConfig.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaTriggerDecisionConfig)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Default constructor
@@ -13,6 +13,4 @@ AliEMCalTriggerAnaTriggerDecisionConfig::AliEMCalTriggerAnaTriggerDecisionConfig
 	fEnergyType(kAmplitudeOnline)
 {
 	memset(fEnergyThresholds, 0, sizeof(double) * 4);
-}
-
 }

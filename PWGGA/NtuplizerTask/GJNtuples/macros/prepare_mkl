@@ -1,0 +1,69 @@
+#!/bin/bash
+
+get_yum() {
+    r="${1}"
+    shift
+    # Extract package URLs from the repository
+    x="$(curl ${r}/repodata/primary.xml.gz | \
+gzip -dc | sed "/<location/!d;s/.*href=\"//;s/\".*//")"
+    #echo "${x}" 1>&2
+    for p in "$@"; do
+	# Use the last entry (most recent version), and avoid suffixes
+	# such as -32bit and -l in the package name
+	u="$(echo "${x}" | sed -n "/${p}-[0-9\\.]\\{4\\}/h;\$!b;g;p")"
+	b="$(basename "${u}")"
+	[[ -f "${b}" ]] || curl "-RO" "${r}/${u}"
+	echo "${b}"
+    done
+}
+
+builtin_rpm2cpio() {
+    # Skip the 96 byte RPM header and search for a payload with xz
+    # magic bytes, similar to https://github.com/ruda/rpm2cpio .
+    # Beginning with Intel MKL 2019.4, the RPMs use xz compression.
+    python -c "import sys;i=getattr(sys.stdin,'buffer',sys.stdin);\
+o=getattr(sys.stdout,'buffer',sys.stdout);d=i.read()[96:];\
+o.write(d[d.index(b'\\xfd7zXZ\\x00'):])" | xz -dc
+}
+
+cleanup() {
+    rm -rf opt
+}
+
+# Do nothing if everything exists
+[[ -f libiomp5_so && -f libmkl_avx2_so && -f libmkl_avx_so && \
+    -f libmkl_core_so && -f libmkl_def_so && \
+    -f libmkl_intel_lp64_so && -f libmkl_intel_thread_so && \
+    -f libmkl_vml_avx2_so && -f libmkl_vml_avx_so && \
+    -f libmkl_vml_def_so ]] && exit 0
+
+# Download using Intel's YUM repository (https://software.intel.com/
+# en-us/articles/installing-intel-free-libs-and-python-yum-repo)
+rpm_list="$(get_yum https://yum.repos.intel.com/mkl \
+    intel-mkl-core-rt intel-openmp)"
+
+if [[ -d opt ]]; then
+    echo "$(basename "$0"): error: a directory \`opt' is in the way"
+    exit 1
+fi
+trap cleanup 0 1 2 15
+for p in mkl-core-rt openmp; do
+    cat $(echo "${rpm_list}" | grep "^intel-${p}-.*.rpm\$") | \
+	builtin_rpm2cpio | cpio -idm
+done
+p=$(echo opt/intel/compilers_and_libraries_*/linux | sed "s/ .*//")
+for f in \
+    "${p}/compiler/lib/intel64_lin/libiomp5.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_avx.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_avx2.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_core.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_def.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_intel_lp64.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_intel_thread.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_vml_avx.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_vml_avx2.so" \
+    "${p}/mkl/lib/intel64_lin/libmkl_vml_def.so" \
+    ; do
+    mv -f "${f}" "$(basename "${f}" .so)_so"
+done
+cleanup

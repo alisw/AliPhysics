@@ -44,14 +44,15 @@
 
 #include "AliMultSelection.h"
 #include "AliVertexingHFUtils.h"
-
-#include "AliAnalysisTaskSEHFTenderQnVectors.h"
-#include "AliAnalysisTaskSECharmHadronvn.h"
+#include "AliDataFile.h"
 
 #include "AliAODPidHF.h"
 #include "AliHFMLResponseDstoKKpi.h"
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "AliHFMLResponseLctoV0bachelor.h"
+
+#include "AliAnalysisTaskSEHFTenderQnVectors.h"
+#include "AliAnalysisTaskSECharmHadronvn.h"
 
 ClassImp(AliAnalysisTaskSECharmHadronvn)
 
@@ -69,7 +70,7 @@ AliAnalysisTaskSE(),
     fTenderTaskName("HFTenderQnVectors"),
     fMinCentr(0.),
     fMaxCentr(100.),
-    fAODProtection(1),
+    fAODProtection(0),
     fHarmonic(2),
     fCalibType(AliHFQnVectorHandler::kQnFrameworkCalib),
     fNormMethod(AliHFQnVectorHandler::kQoverM),
@@ -125,7 +126,7 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fTenderTaskName("HFTenderQnVectors"),
     fMinCentr(0.),
     fMaxCentr(100.),
-    fAODProtection(1),
+    fAODProtection(0),
     fHarmonic(2),
     fCalibType(AliHFQnVectorHandler::kQnFrameworkCalib),
     fNormMethod(AliHFQnVectorHandler::kQoverM),
@@ -1469,10 +1470,12 @@ bool AliAnalysisTaskSECharmHadronvn::LoadSplinesForqnPercentile()
 
     TString listname[6] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta", "SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
 
-    if (!gGrid) {
-        TGrid::Connect("alien://");
-    }
-    TFile* splinesfile = TFile::Open(fqnSplineFileName.Data());
+    TString pathToFileCMVFNS = AliDataFile::GetFileName(fqnSplineFileName.Data());
+    // Check access to CVMFS (will only be displayed locally)
+    if (pathToFileCMVFNS.IsNull())
+        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+
+    TFile* splinesfile = TFile::Open(pathToFileCMVFNS.Data());
     if(!splinesfile) {
         AliFatal("File with splines for qn percentiles not found!");
         return false;

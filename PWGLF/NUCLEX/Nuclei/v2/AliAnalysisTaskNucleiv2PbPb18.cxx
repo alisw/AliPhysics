@@ -83,7 +83,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   fQxnsV0C(0),
   fQynsV0C(0),
   fRecPass(0),
-  fCenCalV0(0), //da qui --> centrality selection
+  fCenCalV0(0), // here is centrality selection
   fFilterBit(4),
   fptc(1),     
   fVzmax(10),
@@ -96,10 +96,14 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   fHistTrackMultiplicity(0),
   fhBB(0),
   fhBBDeu(0),
+  fhBBDeuSel(0),
   fhTOF(0),
   fhMassTOF(0),
   EPVzAvsCentrality(0), 
   EPVzCvsCentrality(0), 
+  q2TPCvsCentrality(0), 
+  q2V0AvsCentrality(0), 
+  q2V0CvsCentrality(0), 
   hQVzAQVzCvsCentrality(0),
   hQVzAQTPCvsCentrality(0),
   hQVzCQTPCvsCentrality(0),
@@ -115,7 +119,9 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18():
   hCos2DeltaVzCVzAvsCentrality(0),
   eventtype(-999),
   ftree(0),           
-  tCentrality(0),     
+  tCentrality(0),        
+  tq2TPC(0),     
+  tq2V0C(0),     
   tType(0),  
   tHasTOF(0),    
   tpT(0),  
@@ -152,7 +158,7 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     fQxnsV0C(0),
     fQynsV0C(0),
     fRecPass(0),
-    fCenCalV0(0), //da qui
+    fCenCalV0(0), //centrality selections
     fFilterBit(4),
     fptc(1),     
     fVzmax(10),
@@ -165,10 +171,14 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     fHistTrackMultiplicity(0),
     fhBB(0),
     fhBBDeu(0),
+    fhBBDeuSel(0),
     fhTOF(0),
     fhMassTOF(0),
     EPVzAvsCentrality(0), 
     EPVzCvsCentrality(0), 
+    q2TPCvsCentrality(0), 
+    q2V0AvsCentrality(0), 
+    q2V0CvsCentrality(0), 
     hQVzAQVzCvsCentrality(0),
     hQVzAQTPCvsCentrality(0),
     hQVzCQTPCvsCentrality(0),
@@ -185,6 +195,8 @@ AliAnalysisTaskNucleiv2PbPb18::AliAnalysisTaskNucleiv2PbPb18(const char *name):
     eventtype(-999),
     ftree(0),           
     tCentrality(0),     
+    tq2TPC(0),  
+    tq2V0C(0),  
     tType(0),  
     tHasTOF(0),    
     tpT(0),  
@@ -231,7 +243,7 @@ Float_t AliAnalysisTaskNucleiv2PbPb18::GetPhi0Pi(Float_t phi){
 // Double_t paramHe3mc[5]     = { 20.1533, 2.58127, 0.00114169,  2.03730, 0.502123};
 //________________________________________________________________________
 Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPC3He (AliAODTrack *track)  {
-  Double_t fParamHe3[5]   = { 1.74962, 27.4992, 4.00313e-15, 2.48485, 8.31768};
+  Double_t fParamHe3[5]   =  {1.48718, 27.4992, 4.00313e-15, 2.48485, 8.31768};
   //Variables
   Double_t p = track->GetTPCmomentum();
   Double_t mass = AliPID::ParticleMass (AliPID::kHe3);
@@ -244,7 +256,7 @@ Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPC3He (AliAODTrack *track)  {
 }
 //---------------------------------------------------
 Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPCdandt (AliAODTrack *track)  {
-  Double_t paramDandTdata[5] = { 6.70549, 6.11866, 8.86205e-15, 2.34059, 1.07029};
+  Double_t paramDandTdata[5] = {6.70549, 6.11866, 8.86205e-15, 2.34059, 1.07029};
   //Variables
   Double_t p = track->GetTPCmomentum();
   Double_t mass = 0;
@@ -252,7 +264,7 @@ Float_t AliAnalysisTaskNucleiv2PbPb18::nSigmaTPCdandt (AliAODTrack *track)  {
   else if(fptc == 2) mass = AliPID::ParticleMass(AliPID::kTriton);
   Double_t dEdx_au = track->GetTPCsignal();
   //Expected dE/dx for d and t 
-  Float_t dandtExp = 1.0*AliExternalTrackParam::BetheBlochAleph(p/mass,paramDandTdata[0],paramDandTdata[1],paramDandTdata[2],paramDandTdata[3],paramDandTdata[4]);
+  Float_t dandtExp = AliExternalTrackParam::BetheBlochAleph(p/mass,paramDandTdata[0],paramDandTdata[1],paramDandTdata[2],paramDandTdata[3],paramDandTdata[4]);
   Double_t sigma = 0.07;//dE/dx Resolution for 3He (7%)
   Double_t nSigma  = (dEdx_au - dandtExp)/(sigma*dandtExp);
   return nSigma;
@@ -306,6 +318,10 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
     fhBBDeu = new TH2F( "fhBBDeu" , "BetheBlochTPC - Deuteron" , 240,-10,10,250,0,1000);
     fListHist->Add(fhBBDeu);
   }
+  if(! fhBBDeuSel ){
+    fhBBDeuSel = new TH2F( "fhBBDeuSel" , "BetheBlochTPC - DeuSelteron" , 240,-10,10,250,0,1000);
+    fListHist->Add(fhBBDeuSel);
+  }
  
   if(! fhTOF ){
     fhTOF = new TH2F( "fhTOF" , "Scatter Plot TOF" , 240,-10,10,500,0,1.2);
@@ -323,6 +339,14 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
   fListHist->Add(EPVzCvsCentrality);
   
 
+  q2TPCvsCentrality = new TH2D("q2TPCvsCentrality" , "q2TPCvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2TPCvsCentrality);
+  q2V0AvsCentrality = new TH2D("q2V0AvsCentrality" , "q2V0AvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2V0AvsCentrality);
+  q2V0CvsCentrality = new TH2D("q2V0CvsCentrality" , "q2V0CvsCentrality", 105,0,105 , 2000,0,20);
+  fListHist->Add(q2V0CvsCentrality);
+
+    
   // if(fNHarm < 3){
   //   hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-100,100,105,0,105);
   //   hQVzAQTPCvsCentrality = new TH2F("hQVzAQTPCvsCentrality","hQVzAQTPCvsCentrality",1000,-100,100,105,0,105);
@@ -372,9 +396,11 @@ void AliAnalysisTaskNucleiv2PbPb18::UserCreateOutputObjects()
   
   if(!ftree){
    
-    ftree = new TTree("ftree","ftree");
+    ftree = new TTree(Form("ftree_%i",fptc),Form("ftree_%i",fptc));
  
     ftree->Branch("tCentrality"      ,&tCentrality      ,"tCentrality/D"    );
+    ftree->Branch("tq2TPC"           ,&tq2TPC           ,"tq2TPC/D"         );
+    ftree->Branch("tq2V0C"           ,&tq2V0C           ,"tq2V0C/D"         );
     ftree->Branch("tType"            ,&tType            ,"tType/D"          );
     ftree->Branch("tHasTOF"          ,&tHasTOF          ,"tHasTOF/D"        );
     ftree->Branch("tpT"              ,&tpT              ,"tpT/D"            );
@@ -516,7 +542,7 @@ void AliAnalysisTaskNucleiv2PbPb18::UserExec(Option_t *)
   UInt_t fSelectMask = inputHandler->IsEventSelected();
   
 
-  Bool_t isTriggerSelected = kFALSE;
+  //  Bool_t isTriggerSelected = kFALSE;
  
   Bool_t isSelectedINT7        = fSelectMask& AliVEvent::kINT7;
   Bool_t isSelectedCentral     = fSelectMask& AliVEvent::kCentral;
@@ -609,7 +635,7 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   AliAODVZERO* aodV0 = (AliAODVZERO*)aod->GetVZEROData();
   Float_t multV0a = aodV0->GetMTotV0A();
   Float_t multV0c = aodV0->GetMTotV0C();
-  Float_t multV0Tot = multV0a + multV0c;
+  //  Float_t multV0Tot = multV0a + multV0c;
   
   if (fCenCalV0 == 1)
     v0Centr = cl0Centr;
@@ -763,10 +789,30 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
  
   EPVzAvsCentrality  ->Fill(evPlAngV0A  , iCen); 
   EPVzCvsCentrality  ->Fill(evPlAngV0C  , iCen); 
+
+  /*
+    Qxcn += TMath::Cos(fNHarm*phiV0) * multCorC;
+    Qycn += TMath::Sin(fNHarm*phiV0) * multCorC;
+    sumMc = sumMc + multCorC;
+    Double_t QxanCor = Qxan;
+    Double_t QyanCor = (Qyan - fQynmV0A->GetBinContent(iCen+1))/fQynsV0A->GetBinContent(iCen+1);
+    Double_t QxcnCor = Qxcn;
+    Double_t QycnCor = (Qycn - fQynmV0C->GetBinContent(iCen+1))/fQynsV0C->GetBinContent(iCen+1);
+  */
+
+  Double_t q2v0c = 0.;
+  if(sumMc >0) q2v0c = TMath::Sqrt(QxcnCor*QxcnCor+QycnCor*QycnCor)/TMath::Sqrt(sumMc );
+  Double_t q2v0a = 0.;
+  if(sumMa >0) q2v0a = TMath::Sqrt(QxanCor*QxanCor+QyanCor*QyanCor)/TMath::Sqrt(sumMa );
+
+  q2V0CvsCentrality  ->Fill( iCen, q2v0c); 
+  q2V0AvsCentrality  ->Fill( iCen, q2v0a); 
   
   const Int_t nTracks = aod->GetNumberOfTracks();
   // cout<<"TPC ev plane "<<nTracks<<endl;
   Double_t Qxtn = 0, Qytn = 0;
+   Double_t q2Vec[2] = {0.,0.};
+  Int_t multQvec=0;
   
   for (Int_t it1 = 0; it1 < nTracks; it1++) {
     AliAODTrack* aodTrk1 = (AliAODTrack*)aod->GetTrack(it1);
@@ -775,13 +821,29 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       delete aodTrk1;
       continue;
     }
-    
+
     if (aodTrk1->TestFilterBit(768) && TMath::Abs(aodTrk1->Eta()) < 0.8 && aodTrk1->GetTPCNcls() >= 70 && aodTrk1->Pt() >= 0.2 && aodTrk1->Pt() < 3.){
       
       Qxtn += TMath::Cos(fNHarm*aodTrk1->Phi());
       Qytn += TMath::Sin(fNHarm*aodTrk1->Phi());
     }
-  }
+
+    //q2
+    if(aodTrk1->TestFilterBit(BIT(8))||aodTrk1->TestFilterBit(BIT(9))  && TMath::Abs(aodTrk1->Eta()) < 0.8 && aodTrk1->GetTPCNcls() >= 70 && aodTrk1->Pt() >= 0.2 && aodTrk1->Pt() < 3.) {
+      
+      Double_t qx=TMath::Cos(fNHarm*aodTrk1->Phi());
+      Double_t qy=TMath::Sin(fNHarm*aodTrk1->Phi());
+      
+      q2Vec[0]+=qx;
+      q2Vec[1]+=qy;
+      multQvec++;
+    }
+  }//track loop
+
+  Double_t q2 = 0.;
+  if(multQvec>0) q2 = TMath::Sqrt(q2Vec[0]*q2Vec[0]+q2Vec[1]*q2Vec[1])/TMath::Sqrt(multQvec);
+  
+  q2TPCvsCentrality  ->Fill( iCen, q2); 
   // TBC
   Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
 
@@ -827,7 +889,10 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   Double_t ptmax = 8.2;
   if(fptc == 2)
     ptmax = 3.5;
-  Double_t ptcExp  = -999;
+  else if(fptc == 3)
+    ptmax = 10;
+
+  // Double_t ptcExp  = -999;
   Double_t pullTPC = -999;
   //  Double_t expbeta = -999;
   //  Double_t pullTOF = -999;
@@ -835,10 +900,14 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
   Float_t deltaphiV0A = -3;
   Float_t deltaphiV0C = -3;
 
-  Double_t massd   = 1.875612859;
-  Double_t masst   = 2.808938914;
-  Double_t mass3he = 2.808409385;
-    
+  // Double_t massd   = 1.875612859;
+  // Double_t masst   = 2.808938914;
+  // Double_t mass3he = 2.808409385;
+  
+  // const Double_t massd = AliPID::ParticleMass(AliPID::kDeuteron);
+  // const Double_t masst = AliPID::ParticleMass(AliPID::kTriton);
+  // const Double_t mass3he = AliPID::ParticleMass(AliPID::kHe3);
+ 
   Float_t  uqV0A = -999;
   Float_t  uqV0C = -999; 
 
@@ -855,28 +924,35 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       continue;
     
     Bool_t trkFlag = ((AliAODTrack*)atrack)->TestFilterBit(fFilterBit);
-      
+    
     if(!trkFlag)continue;
-      
+    
+    if(atrack->GetTPCsignalN()<50)continue;
+  
     status  = (ULong_t)atrack->GetStatus();
     
-    Bool_t hasTOFout  = status&AliVTrack::kTOFout; 
     Bool_t hasTOF     = kFALSE;
-    if (hasTOFout) hasTOF = kTRUE;
+    Bool_t hasTOFout  = status&AliVTrack::kTOFout;
+    Bool_t hasTOFtime = status&AliVTrack::kTIME;
     Float_t length = atrack->GetIntegratedLength(); 
-    if (length < 350.) hasTOF = kFALSE;
-	
+    //if (hasTOFout) hasTOF = kTRUE;
+    if (length > 350. && hasTOFout && hasTOFtime) hasTOF = kTRUE;
+    
     TPCSignal=atrack->GetTPCsignal(); 
-	
-    if(TPCSignal<10)continue;
-    if(TPCSignal>1000)continue;
-	
+    
+    if(fptc==1 || fptc==2 ){
+      if(TPCSignal<10)continue;
+      if(TPCSignal>1000)continue;
+    }
+    
     Double_t ptot = atrack->GetTPCmomentum(); // momentum for dEdx determination
-    Double_t pt  = atrack->Pt();
-	
-    if(ptot<0.60)continue;
-    if(pt<0.60)continue;
-	
+    Double_t pt   = atrack->Pt();
+    
+    if(fptc==1 || fptc==2 ){
+      //      if(ptot<0.60)continue;
+      if(pt<0.60)continue;
+    }
+
     fhBB->Fill(ptot*atrack->Charge(),TPCSignal);
 
     Double_t d[2], covd[3];
@@ -905,8 +981,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     }
     
     
-    Double_t p    = atrack->P();
-    Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
+    // Double_t p    = atrack->P();
+    Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(atrack->P()); //time
     Double_t tPhi = atrack->Phi();
 
     
@@ -927,7 +1003,7 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
     if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax && TMath::Abs(pullTPC) <= fNsigma ){
       
       if (hasTOF) {
-	beta = length / (2.99792457999999984e-02 * tof);
+	beta = length / (TMath::C() * 1e-10 * tof);
 	
 	if(beta>=1) continue;
 
@@ -950,8 +1026,11 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
 
       fhBBDeu->Fill(ptot*atrack->Charge(),TPCSignal);
       	    
-      deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0A));
-      deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0C));
+      // deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0A));
+      // deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0C));
+      //301120 : Use delta --> Usefull for in-plane out-of-plane method
+      deltaphiV0A=(fNHarm*GetPhi0Pi(tPhi-evPlAngV0A)); 
+      deltaphiV0C=(fNHarm*GetPhi0Pi(tPhi-evPlAngV0C));
       
       // Scalar Product
       
@@ -959,6 +1038,8 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
       uqV0C = TMath::Cos(fNHarm*tPhi)*QxcnCor+TMath::Sin(fNHarm*tPhi)*QycnCor;
 	  
       tCentrality      = iCen;
+      tq2TPC           = q2;
+      tq2V0C           = q2v0c;
       tType            = eventtype;
       tHasTOF          = hasTOF;
       tpT              = pt;
@@ -976,16 +1057,21 @@ void AliAnalysisTaskNucleiv2PbPb18::Analyze(AliVEvent* aod)
 
       if(fptc < 3){
       
-	if(pt<1.5)   
+	if(pt<1.5) {  
 	  ftree->Fill();
-	else
-	  if(hasTOF==1)
-	    ftree->Fill();
+	  fhBBDeuSel->Fill(ptot*atrack->Charge(),TPCSignal);
+	}
+	else if(hasTOF==1){
+	  ftree->Fill();
+	  fhBBDeuSel->Fill(ptot*atrack->Charge(),TPCSignal);
+	}
       }
-      else
+      else{
 	ftree->Fill();
+	fhBBDeuSel->Fill(ptot*atrack->Charge(),TPCSignal);
+      }
     }//POI selection
-	
+    
   }//track loop
   
   PostData(1, fListHist);
@@ -1002,12 +1088,16 @@ void AliAnalysisTaskNucleiv2PbPb18::OpenInfoCalbration(Int_t run )
   TFile* foadb = 0;
   if (!gGrid) TGrid::Connect("alien");
 
-  if (fPeriod == 0)
-    foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118q.root");
-  //TFile::Open("calibV0Run2Vtx10P118q.root");
-  else
-    foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118r.root");
-  //foadb = TFile::Open("calibV0Run2Vtx10P118r.root");
+  TString fV0CalibrationFile="alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118";
+  
+  foadb = TFile::Open((fV0CalibrationFile + (run < 296624 ? "q" : "r") + ".root").Data());
+  
+  // if (fPeriod == 0)
+  //   foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118q.root");
+  // //TFile::Open("calibV0Run2Vtx10P118q.root");
+  // else
+  //   foadb = TFile::Open("alien:///alice/cern.ch/user/l/lramona/CalibPbPb2018/calibV0Run2Vtx10P118r.root");
+  // //foadb = TFile::Open("calibV0Run2Vtx10P118r.root");
   
   
   if(!foadb){

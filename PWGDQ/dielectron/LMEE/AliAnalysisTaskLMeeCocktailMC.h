@@ -18,16 +18,27 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
- 
-    // Configuration functions   
+
+    // Configuration functions
     void SetCollisionSystem(Int_t collisionSystem){fcollisionSystem = collisionSystem;}
     void SetWriteTTree(Bool_t WriteTTree){fWriteTTree = WriteTTree;}
     void SetMaxEta(Float_t maxEta = 0.8){fMaxEta = maxEta;}
     void SetMinPt(Float_t MinPt = 0.2){fMinPt = MinPt;}
     void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
+    void SetNBinsMee(Float_t val = 1200) {fNBinsMee = val;}
+    void SetMinMee(Float_t val = 0.0) {fMinMee = val;}
+    void SetMaxMee(Float_t val = 6.) {fMaxMee = val;}
+    void SetNBinsPtee(Float_t val = 400) {fNBinsPtee = val;}
+    void SetMinPtee(Float_t val = 0.0) {fMinPtee = val;}
+    void SetMaxPtee(Float_t val = 10.0) {fMaxPtee = val;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
-    void SetResFileName(TString name){ fResolDataSetName = name; }
+    void SetResFileName(TString name);
+    void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
+    void SetEffFileName(TString name);
+
+    TH1F *GetEffHisto() {return fhwEffpT;}
+
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -43,11 +54,11 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     AliVEvent*            fInputEvent;                // current event
     AliMCEvent*           fMCEvent;                   // corresponding MC event
     TList*                fOutputContainer;           // Output container
-    
+
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
 
-    const Int_t nInputParticles = 14;
+    const Int_t nInputParticles = 17;
 
     // Event histograms
     TH1F*                 fHistNEvents;               // number of events histo
@@ -93,7 +104,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TH2F* fULS;
     TH2F* fLSpp;
     TH2F* fLSmm;
-    
+
     //TTree:
     Float_t fd1DCA;
     Float_t fd2DCA;
@@ -148,29 +159,39 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TFile*      fFile;        //! Pointer to input file
     TString     fFileNameDCA;    // Name of the input file (DCA)
     TFile*      fFileDCA;        //! Pointer to input file
-    TString     fFileNameEff;    // Name of the input file (Eff weight)
+    TString     fFileNameEff;    // Name of the input file (Eff)
+    TString     fFileNameEffLocal;    // Name of the input file (Eff)
     TFile*      fFileEff;        //! Pointer to input file
+    TString     fFileNameWM;    // Name of the input file (weight multiplicity)
+    TFile*      fFileWM;        //! Pointer to input file
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
     TString     fResolDataSetName; //Specify multiplicity class and data set for Run 2 data
+    Bool_t      fLocalRes;         // Local resolution file
 
     //tree
-    TTree*               teeTTree; 
+    TTree*               teeTTree;
 
     Int_t                 fIsMC;                      // MC flag
     Float_t              fMaxEta;                     // Max single electron Eta
     Float_t              fMinPt;                      // Min single electron Pt
     Float_t              fMaxPt;                      // Max single electron Pt
+    Float_t              fNBinsMee;                   // number of bins in mass
+    Float_t              fMinMee;                     // minimum mass
+    Float_t              fMaxMee;                     // max mass
+    Float_t              fNBinsPtee;                  // number of bins in pair pt
+    Float_t              fMinPtee;                    // minimum pair pt
+    Float_t              fMaxPtee;                    // minimum pair pt
     Bool_t               fWriteTTree;
     Int_t              fcollisionSystem;
     Int_t                fResolType;
     Int_t               fALTweightType;
-    
+
   private:
     AliAnalysisTaskLMeeCocktailMC(const AliAnalysisTaskLMeeCocktailMC&); // Prevent copy-construction
     AliAnalysisTaskLMeeCocktailMC &operator=(const AliAnalysisTaskLMeeCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskLMeeCocktailMC, 1);
+    ClassDef(AliAnalysisTaskLMeeCocktailMC, 4);
 };
 
 #endif

@@ -5,7 +5,7 @@
 #include "TObject.h"
 #include "TLorentzVector.h"
 
-class TParticle;
+class AliMCParticle;
 
 class AliAnalysisPIDCascadeParticle :
 public TObject
@@ -32,7 +32,7 @@ public TObject
   Double_t GetMass() const; // get mass
 
   void Reset(); // reset
-  void Update(TParticle *particle, Int_t label, Int_t MotherPDG, Bool_t PrimCheck); // update
+  void Update(AliMCParticle *particle, Int_t label, Int_t MotherPDG, Bool_t PrimCheck); // update
 
  private:
 
@@ -46,7 +46,7 @@ public TObject
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
 
-  ClassDef(AliAnalysisPIDCascadeParticle, 3);
+  ClassDef(AliAnalysisPIDCascadeParticle, 4);
 
 };
 

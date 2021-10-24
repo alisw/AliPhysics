@@ -15,10 +15,9 @@
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //
-// Modified version of AliAnalysisTaskCheckCascade.h
-// Used bits of code from AliAnalysisTaskCheckPerformanceStrange
+// Modified version of AliAnalysisTaskStrangenessVsMultiplicityMCRun2.h
 //
-// --- David Dobrigkeit Chinellato
+// --- Francesca Ercolessi: francesca.ercolessi@cern.ch
 //
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -39,6 +38,7 @@ class TProfile;
 
 class AliESDpid;
 class AliESDtrackCuts;
+class AliPPVsMultUtils;
 class AliAnalysisUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
@@ -114,6 +114,9 @@ public:
     }
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
+    }
+    void SetApplySPDClsVsTrackletsCut(Bool_t lSPDClsVsTrk = kTRUE) {
+        fkApplyTrackletsVsClustersCut = lSPDClsVsTrk;
     }
     void SetHypertritonMode ( Bool_t lOpt = kTRUE) {
         fkHypertritonMode = lOpt;
@@ -312,6 +315,7 @@ private:
     AliESDtrackCuts *fESDtrackCutsITSsa2010;  // ESD track cuts used for ITSsa track definition
     AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
+    AliPPVsMultUtils *fPPVsMultUtils;  // analysis utils for multiplicity studies
     
     AliEventCuts fEventCuts;                 /// Event cuts class
     AliEventCuts fEventCutsStrictAntipileup; /// Event cuts class
@@ -369,6 +373,7 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
     
     Bool_t fkHypertritonMode; //if true, save everything in hypertriton mass window
     Bool_t fkHeavyDaughterPID; //if true, save everything that has perfect PID in heavy daughters (akin to dedx)
@@ -389,14 +394,33 @@ private:
     //   Variables for Event Tree
     //===========================================================================================
     Int_t fRun;//!
-    Float_t fCentrality; //!
+    Float_t fCentrality_V0M; //!
+    Float_t fCentrality_ZDC; //!
+    Float_t fCentrality_ZDCFired; //!
+    Float_t fCentrality_RefMult05; //!
+    Float_t fCentrality_RefMult08; //!
+    Float_t fCentrality_SPDClusters; //!
+    Float_t fCentrality_SPDTracklets; //!
     Bool_t fMVPileupFlag; //!
     Bool_t fOOBPileupFlag; //!
+    Bool_t  fEvSel_INELgtZEROtrue; //!
+    Bool_t  fEvSel_INELgtZERO; //!
+    Bool_t  fEvSel_AllSelections; //!
+    Bool_t  fEvSel_SelectedTrigger; //!
+    Bool_t  fEvSel_zVtxZMC; //!
+    Bool_t  fEvSel_AcceptedVertexPosition; //!
+    Bool_t  fEvSel_NotIncDAQ; //!
+    Bool_t  fEvSel_NotPileupSPDInMultBins; //!
+    Bool_t  fEvSel_NoInconsSPDandTrackVrtx; //!
+    Bool_t  fEvSel_PassSPDClsVsTrackletsCut; //!
     
     //TOF info for OOB pileuo study
     Int_t  fNTOFClusters;  //!
     Int_t  fNTOFMatches;   //!
     Int_t  fNTracksITSsa2010; //!
+    Int_t  fSPDtracklets; //!
+    Int_t  fSPDtrackletsA; //!
+    Int_t  fSPDtrackletsC; //!
     Int_t  fNTracksGlobal2015; //!
     Int_t  fNTracksGlobal2015TriggerPP; //!
     
@@ -414,6 +438,7 @@ private:
     //   Variables for V0 Tree
     //===========================================================================================
     Int_t fTreeVariableRun;  //!
+    Bool_t fTreeVariableEvSel_AllSelections; //!
     Float_t fTreeVariableChi2V0;         //!
     Float_t fTreeVariableDcaV0Daughters; //!
     Float_t fTreeVariableDcaV0ToPrimVertex; //!
@@ -509,7 +534,13 @@ private:
     Float_t fTreeVariableZPCpp;//!
     
     //Event Multiplicity Variables
-    Float_t fTreeVariableCentrality; //!
+    Float_t fTreeVariableCentrality_V0M; //!
+    Float_t fTreeVariableCentrality_ZDC; //!
+    Float_t fTreeVariableCentrality_ZDCFired; //!
+    Float_t fTreeVariableCentrality_RefMult05; //!
+    Float_t fTreeVariableCentrality_RefMult08; //!
+    Float_t fTreeVariableCentrality_SPDClusters; //!
+    Float_t fTreeVariableCentrality_SPDTracklets; //!
     Bool_t fTreeVariableMVPileupFlag; //!
     Bool_t fTreeVariableOOBPileupFlag; //!
     
@@ -578,6 +609,7 @@ private:
     //   Variables for Cascade Candidate Tree
     //===========================================================================================
     Int_t fTreeCascVarRun;            //!
+    Bool_t fTreeCascVarEvSel_AllSelections; //!
     Int_t fTreeCascVarCharge;         //!
     Float_t fTreeCascVarMassAsXi;     //!
     Float_t fTreeCascVarMassAsOmega;  //!
@@ -762,7 +794,13 @@ private:
     Float_t fTreeCascVarZPCpp;//!
     
     //Event Multiplicity Variables
-    Float_t fTreeCascVarCentrality; //!
+    Float_t fTreeCascVarCentrality_V0M; //!
+    Float_t fTreeCascVarCentrality_ZDC; //!
+    Float_t fTreeCascVarCentrality_ZDCFired; //!
+    Float_t fTreeCascVarCentrality_RefMult05; //!
+    Float_t fTreeCascVarCentrality_RefMult08; //!
+    Float_t fTreeCascVarCentrality_SPDClusters; //!
+    Float_t fTreeCascVarCentrality_SPDTracklets; //!
     Bool_t fTreeCascVarMVPileupFlag; //!
     Bool_t fTreeCascVarOOBPileupFlag; //!
     
@@ -911,6 +949,22 @@ private:
     TH1D *fHistEventCounter; //!
     TH1D *fHistCentrality; //!
     
+    //---> MC Generated Histo (analysis level)
+    TH1D *fHistPt_GenK0Short;
+    TH1D *fHistPt_GenLambda;
+    TH1D *fHistPt_GenAntiLambda;
+    TH1D *fHistPt_GenXiMinus;
+    TH1D *fHistPt_GenXiPlus;
+    TH1D *fHistPt_GenOmegaMinus;
+    TH1D *fHistPt_GenOmegaPlus;
+    TH2D *fHistPtVsCentV0M_GenK0Short;
+    TH2D *fHistPtVsCentV0M_GenLambda;
+    TH2D *fHistPtVsCentV0M_GenAntiLambda;
+    TH2D *fHistPtVsCentV0M_GenXiMinus;
+    TH2D *fHistPtVsCentV0M_GenXiPlus;
+    TH2D *fHistPtVsCentV0M_GenOmegaMinus;
+    TH2D *fHistPtVsCentV0M_GenOmegaPlus;
+
     //Histograms for efficiency denominators (at final analysis level selections)
     //V0s
     TH3D *fHistGeneratedPtVsYVsCentralityK0Short;
@@ -926,6 +980,48 @@ private:
     //Hypertriton
     TH3D *fHistGeneratedPtVsYVsCentralityHypertriton;
     TH3D *fHistGeneratedPtVsYVsCentralityAntihypertriton;
+
+    //Effective energy analysis
+    TH2D *fHistPtVsZDC_GenK0Short;
+    TH2D *fHistPtVsZDC_GenLambda;
+    TH2D *fHistPtVsZDC_GenAntiLambda;
+    TH2D *fHistPtVsZDC_GenXiMinus;
+    TH2D *fHistPtVsZDC_GenXiPlus;
+    TH2D *fHistPtVsZDC_GenOmegaMinus;
+    TH2D *fHistPtVsZDC_GenOmegaPlus;
+
+    //Histograms for efficiency denominators (at final analysis level selections)
+    //V0s
+    TH2D *fHistGeneratedPtVsZDCK0Short;
+    TH2D *fHistGeneratedPtVsZDCLambda;
+    TH2D *fHistGeneratedPtVsZDCAntiLambda;
+    
+    //Cascades
+    TH2D *fHistGeneratedPtVsZDCXiMinus;
+    TH2D *fHistGeneratedPtVsZDCXiPlus;
+    TH2D *fHistGeneratedPtVsZDCOmegaMinus;
+    TH2D *fHistGeneratedPtVsZDCOmegaPlus;
+
+    //Double differential
+    TH3D *fHistPtVsZDCVsCentV0M_GenK0Short;
+    TH3D *fHistPtVsZDCVsCentV0M_GenLambda;
+    TH3D *fHistPtVsZDCVsCentV0M_GenAntiLambda;
+    TH3D *fHistPtVsZDCVsCentV0M_GenXiMinus;
+    TH3D *fHistPtVsZDCVsCentV0M_GenXiPlus;
+    TH3D *fHistPtVsZDCVsCentV0M_GenOmegaMinus;
+    TH3D *fHistPtVsZDCVsCentV0M_GenOmegaPlus;
+
+    //Histograms for efficiency denominators (at final analysis level selections)
+    //V0s
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MK0Short;
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MLambda;
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MAntiLambda;
+    
+    //Cascades
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MXiMinus;
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MXiPlus;
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MOmegaMinus;
+    TH3D *fHistGeneratedPtVsZDCVsCentV0MOmegaPlus;
     
     AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2(const AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityEEMCRun2&); // not implemented

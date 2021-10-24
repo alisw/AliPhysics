@@ -4,8 +4,9 @@
 
 AliMultDepSpecAnalysisTaskUE* AddTask_mkrueger_MultDepSpecUEMC(
   const string& dataSet, int cutModeLow = 100, int cutModeHigh = 119, TString options = "",
-  bool isUE = true, double ptLeadMIN = 0.01)
+  AliMultDepSpecAnalysisTaskUE::PhiRange phiRange = AliMultDepSpecAnalysisTaskUE::PhiRange::full,
+  double ptLeadMIN = 0.01, const char* suffix = "")
 {
   return AliMultDepSpecAnalysisTaskUE::AddTaskMultDepSpecUE(dataSet, cutModeLow, cutModeHigh,
-                                                            options, true, isUE, ptLeadMIN);
+                                                            options, true, phiRange, ptLeadMIN, suffix);
 }

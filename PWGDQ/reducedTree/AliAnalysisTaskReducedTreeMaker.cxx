@@ -123,6 +123,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fFillK0s(kTRUE),
   fFillLambda(kTRUE),
   fFillALambda(kTRUE),
+  fWriteEventsWithOnlyV0s(kFALSE),
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
@@ -200,6 +201,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fFillK0s(kTRUE),
   fFillLambda(kTRUE),
   fFillALambda(kTRUE),
+  fWriteEventsWithOnlyV0s(kFALSE),
   fFillCaloClusterInfo(kTRUE),
   fFillFMDInfo(kFALSE),
   fFillEventPlaneInfo(kFALSE),
@@ -374,40 +376,46 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   fEventsList->SetOwner();
 
   // event statistics histogram
-  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 13, -0.5,12.5,34,-2.5,31.5);
-  const Char_t* offlineTriggerNames[34] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
+  const Int_t kNEventSelectionNames = 14;
+  const Int_t kNOfflineTriggerAliases = 34;
+  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", kNEventSelectionNames, -0.5, -0.5+kNEventSelectionNames,
+                                                                     kNOfflineTriggerAliases,-2.5, -2.5+ kNOfflineTriggerAliases);
+  const Char_t* offlineTriggerNames[kNOfflineTriggerAliases] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
      "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
      "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
      "TRD", "MuonCalo/CaloOnly", "FastOnly", "N/A"
   };  
-  const Char_t* selectionNames[13] = {"All events", 
+  const Char_t* selectionNames[kNEventSelectionNames] = {"All events", 
      "TR and Physics Selection events (PS)", "Rejected due to PS",
      "PS and Trigger Selected (TS)", "Rejected due to TS",
      "TS and Pileup Checked (PC)", "Rejected due to PC",
      "PC and Event cuts Checked (EC)", "Rejected due to EC",
      "EC and Time Range accepted events (TR)", "Rejected due to TR",
-     "Written ev. (track filters passed)", "Written ev. (unbiased)"};
-  for(Int_t i=1;i<=34;++i)
+     "Written ev. (track filters passed)", "Written ev. (unbiased)", "Written ev. (has V0s)"};
+  for(Int_t i=1;i<=kNOfflineTriggerAliases;++i)
      fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
-  for(Int_t i=1;i<=13;++i)
+  for(Int_t i=1;i<=kNEventSelectionNames;++i)
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   fEventsList->Add(fEventsHistogram);
 
   // TRD event statistics histogram
-  const Char_t* offlineTRDTriggerNames[7] = {"Total", "No Phys Sel", "HQU | HSE", "HQU", "HSE", "Nuclei", "Jet"};
-  fTRDEventsHistogram = new TH2I("TRDEventStatistics", "TRD Event statistics", 13, -0.5,12.5,12,-2.5,9.5);
-  for(Int_t i=1;i<=7;++i)  fTRDEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTRDTriggerNames[i-1]);
-  for(Int_t i=1;i<=13;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  const Int_t kNOfflineTRDtrigNames = 7;
+  const Char_t* offlineTRDTriggerNames[kNOfflineTRDtrigNames] = {"Total", "No Phys Sel", "HQU | HSE", "HQU", "HSE", "Nuclei", "Jet"};
+  fTRDEventsHistogram = new TH2I("TRDEventStatistics", "TRD Event statistics", kNEventSelectionNames, -0.5,-0.5+kNEventSelectionNames, kNOfflineTRDtrigNames,-2.5,-2.5+kNOfflineTRDtrigNames);
+  for(Int_t i=1;i<=kNOfflineTRDtrigNames;++i)  fTRDEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTRDTriggerNames[i-1]);
+  for(Int_t i=1;i<=kNEventSelectionNames;++i) fTRDEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
 	fEventsList->Add(fTRDEventsHistogram);
 
   // EMCal event statistics histogram
-  const Char_t* offlineEMCalTriggerNames[22] = {"Total", "No Phys Sel", 
+  const Int_t kNOfflineEMCALtrigNames = 22;
+  const Char_t* offlineEMCalTriggerNames[kNOfflineEMCALtrigNames] = {"Total", "No Phys Sel", 
     "EMC7 | DMC7", "EMC7", "DMC7", "EMC1 | DMC1", "EMC1", "DMC1", "EMCEGA", "EG1 | DG1", "EG2 | DG2", "EG1", 
     "EG2", "DG1", "DG2", "EMCEJE", "EJ1 | DJ1", "EJ2 | DJ2", "EJ1", "EJ2", "DJ1", "DJ2"};
-  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", 13,-0.5,12.5, 22,-2.5,19.5);
-  for(Int_t i=1;i<=22;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
-  for(Int_t i=1;i<=13;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
+  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", kNEventSelectionNames,-0.5,-0.5+kNEventSelectionNames, 
+                                   kNOfflineEMCALtrigNames,-2.5, -2.5+kNOfflineEMCALtrigNames);
+  for(Int_t i=1;i<=kNOfflineEMCALtrigNames;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
+  for(Int_t i=1;i<=kNEventSelectionNames;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   fEventsList->Add(fEMCalEventsHistogram);
 
   // Event Centrality statistics list of histograms (for the provided trigger mask)
@@ -418,8 +426,8 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   const Char_t* estimatorNames[nCentEstimators] = {"V0M", "ZNA", "CL1"};
   TH2I *centEventsHistogram[nCentEstimators];
   for(Int_t i=0; i<nCentEstimators; ++i) {
-    centEventsHistogram[i] = new TH2I(estimatorNames[i], Form("%s estimator",estimatorNames[i]), 13, -0.5,12.5,120,-5.,115.);
-    for(Int_t xi=1;xi<=13;++xi) 
+    centEventsHistogram[i] = new TH2I(estimatorNames[i], Form("%s estimator",estimatorNames[i]), kNEventSelectionNames, -0.5,-0.5+kNEventSelectionNames,120,-5.,115.);
+    for(Int_t xi=1;xi<=kNEventSelectionNames;++xi) 
       centEventsHistogram[i]->GetXaxis()->SetBinLabel(xi, selectionNames[xi-1]);
     fCentEventsList->Add(centEventsHistogram[i]);
   }
@@ -488,6 +496,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //
   // Main loop. Called for every event
   //
+  cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  IN" << endl;  
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
@@ -501,6 +510,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     AliDielectronVarManager::SetPIDResponse(inputHandler->GetPIDResponse());
   else
     AliFatal("This task needs the PID response attached to the input event handler!");
+  
+  cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  1" << endl;  
   
   // Was event selected ?
   UInt_t isPhysSel = AliVEvent::kAny;
@@ -644,7 +655,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   AliKFParticle::SetField(bz);
   
   //Fill event wise information
-  fReducedEvent->ClearEvent();  
+  fReducedEvent->ClearEvent();
   FillEventInfo();
   if(fFillCaloClusterInfo) FillCaloClusters();
   if(fFillFMDInfo) FillFMDInfo(isAOD);
@@ -676,7 +687,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 12.0, percentileEstimators, nCentEstimators);
     }
     
-    // if the event was not already selected to be written, check that it fullfills the conditions
+    // check that the event fulfills the event criteria based on track filters
     Bool_t trackFilterAccepted = kTRUE;
     for(Int_t i=0; i<fTrackFilter.GetEntries(); ++i) {
       if(fMinSelectedTracks[i]>=0 && (fNSelectedFullTracks[i]+fNSelectedBaseTracks[i])<fMinSelectedTracks[i]) {
@@ -689,7 +700,20 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
     if(trackFilterAccepted) 
       FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 11., percentileEstimators, nCentEstimators);
     
-    if(trackFilterAccepted || unbiasedEvent) {
+    // check whether the event has to be written because it contains V0s
+    Bool_t hasV0s = kFALSE;
+    if(fWriteEventsWithOnlyV0s) {
+      for(Int_t itype=0;itype<4;++itype) {
+        if(fNSelectedFullTracks[fTrackFilter.GetEntries()+itype]>0) {
+          hasV0s = kTRUE;
+          break;
+        }
+      }
+    }
+    if(fWriteEventsWithOnlyV0s && hasV0s)
+      FillStatisticsHistograms(Bool_t(isPhysSel), isPhysSel, trdtrgtype, emcaltrgtype, 13., percentileEstimators, nCentEstimators);
+    
+    if(trackFilterAccepted || unbiasedEvent || (fWriteEventsWithOnlyV0s && hasV0s)) {
       fTree->Fill();
       FillTrackStatisticsHistogram();
     }
@@ -1976,6 +2000,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTPCNclsShared = (UChar_t)values[AliDielectronVarManager::kNclsSTPC];
     trackInfo->fTPCCrossedRows = values[AliDielectronVarManager::kNFclsTPCr];
     trackInfo->fTPCsignal    = values[AliDielectronVarManager::kTPCsignal];
+    trackInfo->fTPCsignalTunedOnData    = values[AliDielectronVarManager::kTPCsignalTunedOnData];
     trackInfo->fTPCsignalN   = values[AliDielectronVarManager::kTPCsignalN];
     trackInfo->fTPCnSig[0]   = values[AliDielectronVarManager::kTPCnSigmaEle];
     trackInfo->fTPCnSig[1]   = values[AliDielectronVarManager::kTPCnSigmaPio];

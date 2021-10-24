@@ -65,25 +65,24 @@ public:
   void SetMinCentrality(Float_t t) { fCentMin = t; }
   void SetMaxCentrality(Float_t t) { fCentMax = t; }
   void SetDerivativeSubtractionOrder(Int_t c) { fDerivSubtrOrder = c; }
-
-
+  void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
+  void SetDoSubJetStudy(Bool_t t) { fDoSubJet = t; }
+  void SetDoFlow(Bool_t t) { fDoFlow = t; }
 
 protected:
   Bool_t RetrieveEventObjects();
   Bool_t Run();
   Bool_t FillHistograms();
 
-  
+  Double_t CalculatePull(fastjet::PseudoJet jet1,fastjet::PseudoJet jet2);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
   void IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
-                                 Double_t &aver2, Double_t &aver3,
-                                 Double_t &aver4);
+                                 Double_t &aver2, Double_t &aver3);
   void IterativeParentsMCAveragePP(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
-                                 Double_t &aver2, Double_t &aver3,
-                                 Double_t &aver4);
+                                 Double_t &aver2, Double_t &aver3);
  
   Int_t fContainer; ///< jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t fMinFractionShared; ///< only fill histos for jets if shared fraction
@@ -91,7 +90,7 @@ protected:
   JetShapeType fJetShapeType; ///< jet type to be used
   JetShapeSub fJetShapeSub;   ///< jet subtraction to be used
   JetSelectionType fJetSelection; ///< Jet selection: inclusive/recoil jet
-  Float_t fShapesVar[10];         ///< jet shapes used for the tagging
+  Float_t fShapesVar[15];         ///< jet shapes used for the tagging
   Float_t fPtThreshold; ///<
   Float_t fRMatching; ///<
 
@@ -115,6 +114,7 @@ protected:
   Int_t fDerivSubtrOrder; ///<
   Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
   Bool_t fDoSubJet; ///< store the detector level jet quantities
+  Bool_t fDoFlow; ///< store the event plane
 
 
   TH1F *fPtJet; ///<
@@ -122,7 +122,9 @@ protected:
   THnSparse *fHLundIterative;      ///<       iterative declustering
   THnSparse *fHLundIterativeMC;    ///<       iterative declustering
   THnSparse *fHLundIterativeMCDet; ///<       iterative declustering
- 
+  THnSparse
+      *fHCheckResolutionSubjets; ///<     to evaluate energy resolution of subjets
+                                 ///<     as function fo apperture angle
 
   TTree *fTreeSubstructure; ///< Tree with tagging variables subtracted MC or true
                             // MC or raw
@@ -133,6 +135,6 @@ private:
   AliAnalysisTaskJetPull &
   operator=(const AliAnalysisTaskJetPull &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetPull, 10)
+  ClassDef(AliAnalysisTaskJetPull, 11)
 };
 #endif

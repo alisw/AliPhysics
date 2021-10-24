@@ -17,6 +17,7 @@
 #pragma link C++ class AliVertexingHFUtils+;
 #pragma link C++ class AliHFSystErr+;
 #pragma link C++ class AliRDHFCutsD0toKpi+;
+#pragma link C++ class AliRDHFCutsD0toKpiBDT+;
 #pragma link C++ class AliRDHFCutsB0toDPi+;
 #pragma link C++ class AliRDHFCutsB0toDStarPi+;
 #pragma link C++ class AliRDHFCutsBPlustoD0Pi+;
@@ -79,6 +80,7 @@
 #pragma link C++ class AliCFTaskForDStarAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEDStarJets+;
 #pragma link C++ class AliAnalysisTaskSEDStarSpectra+;
+#pragma link C++ class AliAnalysisTaskSEDStarEMCALProductionCheck+;
 #pragma link C++ class AliAnalysisTaskSEDStarCharmFraction+;
 #pragma link C++ class AliAnalysisTaskSESignificance+;
 #pragma link C++ class AliAnalysisTaskSEHFQA+;
@@ -134,6 +136,7 @@
 #pragma link C++ class Beauty3Prong+;
 #pragma link C++ class Beauty4Prong+;
 #pragma link C++ class GenHadron+;
+#pragma link C++ class Track+;
 #pragma link C++ class std::vector<Charm2Prong>+;
 #pragma link C++ class std::vector<Charm3Prong>+;
 #pragma link C++ class std::vector<Dstar>+;
@@ -141,11 +144,21 @@
 #pragma link C++ class std::vector<Beauty3Prong>+;
 #pragma link C++ class std::vector<Beauty4Prong>+;
 #pragma link C++ class std::vector<GenHadron>+;
+#pragma link C++ class std::vector<Track>+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvnTMVA+;
 #pragma link C++ class AliRDHFCutsKFP+;
 #pragma link C++ class AliAnalysisTaskSEXicZero2XiPifromKFP+;
 #pragma link C++ class AliAnalysisTaskSESigmacTopK0Spi+;
 #pragma link C++ class AliAnalysisTaskSEXic0Semileptonic+;
 #pragma link C++ class AliAnalysisTaskSELc2pKs0fromKFP+;
+#pragma link C++ class AliAnalysisTaskCheckAODdAODMatching+;
+#pragma link C++ class AliAnalysisTaskSEXicPlusToXi2PifromKFP+;
+#pragma link C++ class AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP+;
+#pragma link C++ class AliAnalysisTaskSESemileptonicOmegac0KFP+;
+#pragma link C++ class AliRDHFCutsOmegactoeleOmegafromKFP+;
+/// ROOT6 tasks
+#ifdef __CLING__
+#pragma link C++ class AliAnalysisTaskHFSimpleVertices+;
+#endif
 
 #endif

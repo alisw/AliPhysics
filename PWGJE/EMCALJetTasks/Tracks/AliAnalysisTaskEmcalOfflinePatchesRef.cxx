@@ -27,21 +27,11 @@
 
 #include "AliAnalysisTaskEmcalOfflinePatchesRef.h"
 
-#if __cplusplus < 201103L
-/*
- * Old C++
- */
-#ifndef nullptr
-#define nullptr NULL
-#endif
-#include <vector>
-#else
 #include <array>
-#endif
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOfflinePatchesRef)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalOfflinePatchesRef::AliAnalysisTaskEmcalOfflinePatchesRef():
   AliAnalysisTaskSE(),
@@ -72,26 +62,11 @@ void AliAnalysisTaskEmcalOfflinePatchesRef::UserCreateOutputObjects(){
   // Energy vs. supermodule
   // Energy vs. eta (all sectors)
   // Energy vs. eta for sector
-#if __cplusplus >= 201103L
-  /*
-   * Version for beautifull C++11
-   */
   std::array<TString, 3> patchnames = {
       "EL0", "EG1", "EG2"
   };
   for(auto mytrg : patchnames){
     triggername = mytrg;
-#else
-  /*
-   * Backward compatible version for the ancient technology
-   */
-  std::vector<TString> patchnames;
-  patchnames.push_back("EL0");
-  patchnames.push_back("EG1");
-  patchnames.push_back("EG2");
-  for(std::vector<TString>::iterator mytrg = patchnames.begin(); mytrg != patchnames.end(); ++mytrg){
-    triggername = *mytrg;
-#endif
     fHistos->CreateTH1(Form("hEventCount%s", triggername.Data()), Form("Event counter for trigger type %s", triggername.Data()), 1, 0.5, 1.5);
     fHistos->CreateTH2(Form("hPatchEnergy%s", triggername.Data()), Form("Patch energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
     fHistos->CreateTH2(Form("hPatchET%s", triggername.Data()), Form("Patch transverse energy versus supermodule for trigger %s", triggername.Data()), 12, -0.5, 11.5, 200, 0., 200.);
@@ -210,5 +185,3 @@ void AliAnalysisTaskEmcalOfflinePatchesRef::FillTriggerPatchHistos(const char *p
     fHistos->FillTH2(Form("%sPatchADCEta%sSM%d", fbase.Data(), patchtype, supermoduleID), recpatch->GetEtaCM(), recpatch->GetADCAmp());
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

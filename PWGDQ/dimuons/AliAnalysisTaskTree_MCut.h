@@ -15,7 +15,7 @@ class AliMuonTrackCuts;
 
 //class TList;
 
-class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
+class AliAnalysisTaskTree_MCut: public AliAnalysisTaskSE {
   public:
 
   AliAnalysisTaskTree_MCut();
@@ -28,6 +28,7 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   virtual void NotifyRun(); 
   
   void SetBeamEnergy(Double_t en) {fBeamEnergy=en;}
+  void SetMassCut(Double_t MassCut) {fMassCut=MassCut;}
   void SetAnalysisType(const char* type) {fkAnalysisType=type;}
   void SetPeriod(TString period) {fPeriod=period;}
     
@@ -39,8 +40,10 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
      
   TTree         *fOutputTree	;      //! tree output
   Double_t      fNevt		;      // event counter
+  TH1D          *fhNEv          ;      //! histo
 
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)    
+  Double_t fMassCut;   //  Mass Cut    
   const char* fkAnalysisType; //ESD or AOD based analysis
   TString fPeriod; //period
   Int_t fCountTotEv;   // counter
@@ -52,6 +55,7 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   Int_t fCountCMSH7; //counter
   
   Int_t		fNMuons;		// muon tracks in the event
+  Int_t		fNTracks;		// tracks in the event
   Int_t		fNTracklets;		// spd tracklets
   Int_t		fNContributors;		// n contributors
   Int_t		fNDimu;			// dimuons in the event
@@ -69,6 +73,7 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   Double_t	fPz[1500];		// single mu pz
   Double_t	fY[1500];		// single mu y
   Double_t	fEta[1500];		// single mu eta
+  Double_t	fPhi[1500];		// single mu phi
   Int_t		fMatchTrig[1500];		// single mu match trigger
   Double_t	fTrackChi2[1500];		// single mu chi2 track
   Double_t	fMatchTrigChi2[1500];	// single mu chi2 of match trigger
@@ -93,9 +98,8 @@ class AliAnalysisTaskTree_MCut : public AliAnalysisTaskSE {
   Int_t		fDimuMu[400][2];	// reference to single mus
   
   
-//  TList *fOutput;  //!< List of histograms for data
   
- ClassDef(AliAnalysisTaskTree_MCut,2);
+ ClassDef(AliAnalysisTaskTree_MCut,3);
 };
 
 #endif

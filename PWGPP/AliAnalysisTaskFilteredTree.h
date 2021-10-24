@@ -49,6 +49,7 @@ class AliESDtools;
 
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisTaskSE.h"
+#include <TObjString.h>
 
 class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
  public:

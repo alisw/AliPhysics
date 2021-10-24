@@ -27,6 +27,7 @@
 
 #include <TDatabasePDG.h>
 #include <TMath.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -50,18 +51,22 @@ ClassImp(AliRDHFCutsOmegactoeleOmegafromAODtracks);
 
 //--------------------------------------------------------------------------
 AliRDHFCutsOmegactoeleOmegafromAODtracks::AliRDHFCutsOmegactoeleOmegafromAODtracks(const char* name) :
-AliRDHFCuts(name),
+  AliRDHFCuts(name),
   fPIDStrategy(kNSigmaCuts),
   fCombinedPIDThreshold(0.),
   fUseCascadePID(kFALSE),
   fPidObjCascPi(0),
   fPidObjCascPr(0),
   fPidObjCascKa(0),
+  fUseV0Topology(0),
+  fBzkG(0),
   fProdTrackTPCNclsPIDMin(0),
   fProdTrackTPCNclsRatioMin(0.0),
   fProdUseAODFilterBit(kTRUE),
+  fProdAODFilterBit(4),
   fProdMassTolLambda(0.010),
   fProdMassTolOmega(0.008),
+  fProdMassTolOmegaRough(0.025),
   fProdMassRejXi(0.008),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
@@ -77,27 +82,37 @@ AliRDHFCuts(name),
   fProdXiCosineOfPoiningAngleMin(-1.),
   fProdV0CosineOfPoiningAngleXiMin(-1.),
   fProdCascNTPCClustersMin(0.0),
+  fProdCascCutMinNCrossedRowsTPC(0.0),
+  fProdCascratioCrossedRowsOverFindableClusterTPC(0.0),
   fProdCascEtaMin(-9999.),
   fProdCascEtaMax(9999.),
   fProdCascRapMin(-9999.),
   fProdCascRapMax(9999.),
-	fProdRoughMassTol(0.25),
-	fProdRoughPtMin(0.0),
-	fExcludePionTPC(kFALSE),
-	fExcludeProtonTPC(kFALSE),
-	fExcludeKaonTPC(kFALSE),
-	fExcludenSigmaPionTPC(3.),
-	fExcludenSigmaProtonTPC(3.),
-	fExcludenSigmaKaonTPC(3.),
-	fSigmaElectronTPCMin(-9999.),
-	fSigmaElectronTPCMax(9999.),
-	fSigmaElectronTOFMin(-9999.),
-	fSigmaElectronTOFMax(9999.)
+  fProdRoughMassTol(0.25),
+  fProdRoughPtMin(0.0),
+  fExcludePionTPC(kFALSE),
+  fExcludeProtonTPC(kFALSE),
+  fExcludeKaonTPC(kFALSE),
+  fExcludenSigmaPionTPC(3.),
+  fExcludenSigmaProtonTPC(3.),
+  fExcludenSigmaKaonTPC(3.),
+  fSigmaElectronTPCMin(-9999.),
+  fSigmaElectronTPCPtDepPar0(-9999.),
+  fSigmaElectronTPCPtDepPar1(-9999.),
+  fSigmaElectronTPCPtDepPar2(0.),
+  fSigmaElectronTPCMax(9999.),
+  fSigmaElectronTOFMin(-9999.),
+  fSigmaElectronTOFMax(9999.),
+  fConversionMassMax(-1.),
+  fEleOmegaMassMax(2.7)
 {
   //
   // Default Constructor
   //
-
+    for(Int_t i =0; i<3;i++){
+        fPrimVert[i] =0.;
+    }
+    
   const Int_t nvars=2;
   SetNVars(nvars);
   TString varNames[nvars]={
@@ -131,8 +146,10 @@ AliRDHFCutsOmegactoeleOmegafromAODtracks::AliRDHFCutsOmegactoeleOmegafromAODtrac
   fProdTrackTPCNclsPIDMin(source.fProdTrackTPCNclsPIDMin),
   fProdTrackTPCNclsRatioMin(source.fProdTrackTPCNclsRatioMin),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
+  fProdAODFilterBit(source.fProdAODFilterBit),
   fProdMassTolLambda(source.fProdMassTolLambda),
   fProdMassTolOmega(source.fProdMassTolOmega),
+  fProdMassTolOmegaRough(source.fProdMassTolOmegaRough),
   fProdMassRejXi(source.fProdMassRejXi),
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
@@ -148,26 +165,36 @@ AliRDHFCutsOmegactoeleOmegafromAODtracks::AliRDHFCutsOmegactoeleOmegafromAODtrac
   fProdXiCosineOfPoiningAngleMin(source.fProdXiCosineOfPoiningAngleMin),
   fProdV0CosineOfPoiningAngleXiMin(source.fProdV0CosineOfPoiningAngleXiMin),
   fProdCascNTPCClustersMin(source.fProdCascNTPCClustersMin),
+  fProdCascCutMinNCrossedRowsTPC(source.fProdCascCutMinNCrossedRowsTPC),
+  fProdCascratioCrossedRowsOverFindableClusterTPC(source.fProdCascratioCrossedRowsOverFindableClusterTPC),
   fProdCascEtaMin(source.fProdCascEtaMin),
   fProdCascEtaMax(source.fProdCascEtaMax),
   fProdCascRapMin(source.fProdCascRapMin),
   fProdCascRapMax(source.fProdCascRapMax),
   fProdRoughMassTol(source.fProdRoughMassTol),
   fProdRoughPtMin(source.fProdRoughPtMin),
-	fExcludePionTPC(source.fExcludePionTPC),
-	fExcludeProtonTPC(source.fExcludeProtonTPC),
-	fExcludeKaonTPC(source.fExcludeKaonTPC),
-	fExcludenSigmaPionTPC(source.fExcludenSigmaPionTPC),
-	fExcludenSigmaProtonTPC(source.fExcludenSigmaProtonTPC),
-	fExcludenSigmaKaonTPC(source.fExcludenSigmaKaonTPC),
-	fSigmaElectronTPCMin(source.fSigmaElectronTPCMin),
-	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
-	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
-	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax)
+  fExcludePionTPC(source.fExcludePionTPC),
+  fExcludeProtonTPC(source.fExcludeProtonTPC),
+  fExcludeKaonTPC(source.fExcludeKaonTPC),
+  fExcludenSigmaPionTPC(source.fExcludenSigmaPionTPC),
+  fExcludenSigmaProtonTPC(source.fExcludenSigmaProtonTPC),
+  fExcludenSigmaKaonTPC(source.fExcludenSigmaKaonTPC),
+  fSigmaElectronTPCMin(source.fSigmaElectronTPCMin),
+  fSigmaElectronTPCPtDepPar0(source.fSigmaElectronTPCPtDepPar0),
+  fSigmaElectronTPCPtDepPar1(source.fSigmaElectronTPCPtDepPar1),
+  fSigmaElectronTPCPtDepPar2(source.fSigmaElectronTPCPtDepPar2),
+  fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
+  fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
+  fSigmaElectronTOFMax(source.fSigmaElectronTOFMax),
+  fConversionMassMax(source.fConversionMassMax),
+  fEleOmegaMassMax(source.fEleOmegaMassMax)
 {
   //
   // Copy constructor
   //
+    for(Int_t i=0;i<3;i++){
+        fPrimVert[i] = source.fPrimVert[i];
+    }
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsOmegactoeleOmegafromAODtracks &AliRDHFCutsOmegactoeleOmegafromAODtracks::operator=(const AliRDHFCutsOmegactoeleOmegafromAODtracks &source)
@@ -186,11 +213,15 @@ AliRDHFCutsOmegactoeleOmegafromAODtracks &AliRDHFCutsOmegactoeleOmegafromAODtrac
   fPidObjCascPi = source.fPidObjCascPi;
   fPidObjCascPr = source.fPidObjCascPr;
   fPidObjCascKa = source.fPidObjCascKa;
+  fUseV0Topology = source.fUseV0Topology;
+  fBzkG = source.fBzkG;
   fProdTrackTPCNclsPIDMin = source.fProdTrackTPCNclsPIDMin;
   fProdTrackTPCNclsRatioMin = source.fProdTrackTPCNclsRatioMin;
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
+  fProdAODFilterBit = source.fProdAODFilterBit;
   fProdMassTolLambda = source.fProdMassTolLambda;
   fProdMassTolOmega = source.fProdMassTolOmega;
+  fProdMassTolOmegaRough = source.fProdMassTolOmegaRough;
   fProdMassRejXi = source.fProdMassRejXi;
   fProdRfidMinV0 = source.fProdRfidMinV0;
   fProdRfidMaxV0 = source.fProdRfidMaxV0;
@@ -212,18 +243,26 @@ AliRDHFCutsOmegactoeleOmegafromAODtracks &AliRDHFCutsOmegactoeleOmegafromAODtrac
   fProdCascRapMax = source.fProdCascRapMax;
   fProdRoughMassTol = source.fProdRoughMassTol;
   fProdRoughPtMin = source.fProdRoughPtMin;
-	fExcludePionTPC = source.fExcludePionTPC;
-	fExcludeProtonTPC = source.fExcludeProtonTPC;
-	fExcludeKaonTPC = source.fExcludeKaonTPC;
-	fExcludenSigmaPionTPC = source.fExcludenSigmaPionTPC;
-	fExcludenSigmaProtonTPC = source.fExcludenSigmaProtonTPC;
-	fExcludenSigmaKaonTPC = source.fExcludenSigmaKaonTPC;
-	fSigmaElectronTPCMin = source.fSigmaElectronTPCMin;
-	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
-	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
-	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
+  fExcludePionTPC = source.fExcludePionTPC;
+  fExcludeProtonTPC = source.fExcludeProtonTPC;
+  fExcludeKaonTPC = source.fExcludeKaonTPC;
+  fExcludenSigmaPionTPC = source.fExcludenSigmaPionTPC;
+  fExcludenSigmaProtonTPC = source.fExcludenSigmaProtonTPC;
+  fExcludenSigmaKaonTPC = source.fExcludenSigmaKaonTPC;
+  fSigmaElectronTPCMin = source.fSigmaElectronTPCMin;
+  fSigmaElectronTPCPtDepPar0 = source.fSigmaElectronTPCPtDepPar0;
+  fSigmaElectronTPCPtDepPar1 = source.fSigmaElectronTPCPtDepPar1;
+  fSigmaElectronTPCPtDepPar2 = source.fSigmaElectronTPCPtDepPar2;
+  fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
+  fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
+  fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
+  fConversionMassMax = source.fConversionMassMax;
+  fEleOmegaMassMax = source.fEleOmegaMassMax;
   
-  
+    for(Int_t i=0;i<3;i++){
+        fPrimVert[i] = source.fPrimVert[i];
+    }
+    
   return *this;
 }
 
@@ -259,19 +298,19 @@ void AliRDHFCutsOmegactoeleOmegafromAODtracks::GetCutVarsForOpt(AliAODRecoDecayH
   Int_t iter=-1;
 
   if(fVarsForOpt[0]){
-    iter++;
+        iter++;
 		UInt_t pdgdg[2]={11,3334};
-    vars[iter]= dd->InvMass(2,pdgdg);
+        vars[iter]= dd->InvMass(2,pdgdg);
   }
   if(fVarsForOpt[1]){
     iter++;
 		Double_t xipx = dd->PxProng(1);
 		Double_t xipy = dd->PyProng(1);
 		Double_t xipz = dd->PzProng(1);
-		Double_t epx = dd->PxProng(0);
-		Double_t epy = dd->PyProng(0);
-		Double_t epz = dd->PzProng(0);
-    vars[iter]=  (xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz);
+		Double_t epx  = dd->PxProng(0);
+		Double_t epy  = dd->PyProng(0);
+		Double_t epz  = dd->PzProng(0);
+        vars[iter]    =  (xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz);
   }
   
   return;
@@ -326,6 +365,7 @@ Int_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsSelected(TObject* obj, Int_t s
 		Double_t epz = d->PzProng(0);
 		Double_t cosoa = (xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz);
     
+
     if(InvMassEleOmega > fCutsRD[GetGlobalIndex(0,ptbin)])
       {
 	okcand = kFALSE;
@@ -397,51 +437,107 @@ Int_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsSelectedCombinedPID(AliAODReco
 }
 
 //________________________________________________________________________
-Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleTrkCuts(AliAODTrack *trk, AliAODVertex *primVert)
+Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid, AliAODVertex *primVert)
 {
   //
   // Single Track Cut to be applied before object creation
   //
 
-  if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
-  if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
-  if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
+ // if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
+  //if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
+  //if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
 
-	Double_t pos[3]; primVert->GetXYZ(pos);
-	Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
-	const AliESDVertex vESD(pos,cov,100.,100);
-	if(fTrackCuts&&!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
-
-	if(trk->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
-	if(trk->GetTPCNclsF()>0){
+	//Double_t pos[3]; primVert->GetXYZ(pos);
+	//Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
+	//const AliESDVertex vESD(pos,cov,100.,100);
+	//if(fTrackCuts&&!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+    
+    if(fTrackCuts){
+        if(fProdAODFilterBit==7){
+            Float_t ptmin, ptmax, etamin, etamax;
+            fTrackCuts->GetPtRange(ptmin,ptmax);
+            fTrackCuts->GetEtaRange(etamin,etamax);
+            if(trk->Pt()<ptmin || trk->Pt()>ptmax) return kFALSE;
+            if(trk->Eta()<etamin || trk->Eta()>etamax) return kFALSE;
+        }else{
+            Double_t pos[3]; primVert->GetXYZ(pos);
+            Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
+            const AliESDVertex vESD(pos,cov,100.,100);
+            if(!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+        }
+    }
+    
+	if(trkpid->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
+    if(trk->GetTPCNclsF()>0){
 		Float_t tpcratio = (Float_t)trk->GetTPCncls()/(Float_t)trk->GetTPCNclsF();
 		if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
 	}
-
+    
   if(fUsePID)
     {
       if(fPidHF->GetPidResponse()==0x0){
-	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-	AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-	AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-	fPidHF->SetPidResponse(pidResp);
+          AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+          AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+          AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+          fPidHF->SetPidResponse(pidResp);
       }
 
-			switch(fPIDStrategy){
-					case kNSigmaCuts:
-						return IsSelectedeID(trk);
-						break;
-					case kNSigmaCustomizedCuts:
-						return IsSelectedCustomizedeID(trk);
-						break;
-					case kCombinedCuts:
-						return IsSelectedCombinedeID(trk);
-						break;
+    switch(fPIDStrategy){
+            case kNSigmaCuts:
+                return IsSelectedeID(trk);
+                break;
+            case kNSigmaCustomizedCuts:
+                return IsSelectedCustomizedeID(trk);
+                break;
+            case kNSigmaCustomizedPtDepCuts:
+                return IsSelectedCustomizedPtDepeID(trk,trkpid);
+                break;
+            case kCombinedCuts:
+                return IsSelectedCombinedeID(trk);
+                break;
 			}
-
     }
 
   return kTRUE;
+}
+//__________________________________________________________________________
+Bool_t  AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleTrkCutsNoPID(AliAODTrack *trk, AliAODTrack *trkpid,AliAODVertex *primVert)
+{
+    //
+    // Single Track Cut to be applied before object creation
+    //
+    
+   // if(trk->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
+   // if(!(trk->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
+   // if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
+    
+    //Double_t pos[3]; primVert->GetXYZ(pos);
+    //Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
+    //const AliESDVertex vESD(pos,cov,100.,100);
+    //if(fTrackCuts&&!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+    
+    if(fTrackCuts){
+        if(fProdAODFilterBit==7){
+            Float_t ptmin, ptmax, etamin, etamax;
+            fTrackCuts->GetPtRange(ptmin,ptmax);
+            fTrackCuts->GetEtaRange(etamin,etamax);
+            if(trk->Pt()<ptmin || trk->Pt()>ptmax) return kFALSE;
+            if(trk->Eta()<etamin || trk->Eta()>etamax) return kFALSE;
+        }else{
+            Double_t pos[3]; primVert->GetXYZ(pos);
+            Double_t cov[6]; primVert->GetCovarianceMatrix(cov);
+            const AliESDVertex vESD(pos,cov,100.,100);
+            if(!IsDaughterSelected(trk,&vESD,fTrackCuts)) return kFALSE;
+        }
+    }
+    
+    if(trkpid->GetTPCsignalN()<fProdTrackTPCNclsPIDMin) return kFALSE;
+    if(trk->GetTPCNclsF()>0){
+        Float_t tpcratio = (Float_t)trk->GetTPCncls()/(Float_t)trk->GetTPCNclsF();
+        if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
+    }
+    
+    return kTRUE;
 }
 //________________________________________________________________________
 Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsSelectedeID(AliAODTrack *trk)
@@ -509,10 +605,35 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsSelectedCustomizedeID(AliAODT
 
 	if(nSigmaTPCele<fSigmaElectronTPCMin) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
-	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
-	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
-
+	//if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
+    //if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+    
+    if(fabs(fSigmaElectronTOFMin)<10.&&fabs(fSigmaElectronTOFMax)<10.){
+        if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
+        if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+    }
+  
 	return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsSelectedCustomizedPtDepeID(AliAODTrack *trk , AliAODTrack *trkpid)
+{
+    //electron ID pt dependent
+
+    Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
+    Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
+    
+    if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
+    if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+    
+    Double_t pte = trk->Pt();
+    Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
+    if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
+    if(nSigmaTPCele<nsigmamin) return kFALSE;
+    if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
+    
+    return kTRUE;
+
 }
 //________________________________________________________________________
 Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsSelectedCombinedeID(AliAODTrack *trk)
@@ -531,8 +652,8 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   //
 	
   if(!casc) return kFALSE;
-	if(!(casc->GetSecondaryVtx())) return kFALSE;
-	if(!(casc->GetDecayVertexXi())) return kFALSE;
+  if(!(casc->GetSecondaryVtx())) return kFALSE;
+  if(!(casc->GetDecayVertexXi())) return kFALSE;
 
   AliAODTrack *ptrack = (AliAODTrack*) (casc->GetDaughter(0));
   AliAODTrack *ntrack = (AliAODTrack*) (casc->GetDaughter(1));
@@ -549,7 +670,33 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   if(ntrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
   if(btrack->GetTPCClusterInfo(2,1)<fProdCascNTPCClustersMin) return kFALSE;
 
-
+ //------- add the CrossedRows and Ratio cut on the daughters ===
+  float nCrossedRowsTPCp = ptrack -> GetTPCCrossedRows();
+  float nCrossedRowsTPCn = ntrack -> GetTPCCrossedRows();
+  float nCrossedRowsTPCb = btrack -> GetTPCCrossedRows();
+  float ratioCrossedRowsOverFindableClusterTPCp = 1.0;
+  float ratioCrossedRowsOverFindableClusterTPCn = 1.0;
+  float ratioCrossedRowsOverFindableClusterTPCb = 1.0;
+  if (ptrack->GetTPCNclsF()>0){
+       ratioCrossedRowsOverFindableClusterTPCp = nCrossedRowsTPCp/ptrack->GetTPCNclsF();
+    }
+    
+  if (ntrack->GetTPCNclsF()>0){
+        ratioCrossedRowsOverFindableClusterTPCn = nCrossedRowsTPCn/ntrack->GetTPCNclsF();
+    }
+    
+  if (btrack->GetTPCNclsF()>0){
+        ratioCrossedRowsOverFindableClusterTPCb = nCrossedRowsTPCb/btrack->GetTPCNclsF();
+    }
+    
+  if(nCrossedRowsTPCp < fProdCascCutMinNCrossedRowsTPC) return kFALSE;
+  if(nCrossedRowsTPCn < fProdCascCutMinNCrossedRowsTPC) return kFALSE;
+  if(nCrossedRowsTPCb < fProdCascCutMinNCrossedRowsTPC) return kFALSE;
+    
+  if(ratioCrossedRowsOverFindableClusterTPCp < fProdCascratioCrossedRowsOverFindableClusterTPC) return kFALSE;
+  if(ratioCrossedRowsOverFindableClusterTPCn < fProdCascratioCrossedRowsOverFindableClusterTPC) return kFALSE;
+  if(ratioCrossedRowsOverFindableClusterTPCb < fProdCascratioCrossedRowsOverFindableClusterTPC) return kFALSE;
+    
   Double_t mLPDG =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
   Double_t mxiPDG =  TDatabasePDG::Instance()->GetParticle(3312)->Mass();
   Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
@@ -557,7 +704,7 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   Double_t massLambda = casc->MassLambda();
   Double_t massAntiLambda = casc->MassAntiLambda();
   if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
-    return kFALSE;
+     return kFALSE;
 
   Bool_t isparticle = kTRUE;
   if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
@@ -566,10 +713,10 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   Double_t massOmega = casc->MassOmega();
 
   if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmega)
-    return kFALSE;
+     return kFALSE;
 
   if(TMath::Abs(massXi-mxiPDG)<fProdMassRejXi)
-    return kFALSE;
+  return kFALSE;
   
   Double_t lPosXi[3];
   lPosXi[0] = casc->DecayVertexXiX();
@@ -589,30 +736,28 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   Double_t properdl = casc->DecayLengthXi(primvert[0],primvert[1],primvert[2])*mxiPDG/ptotxi;
   if(properdl>fProdCascProperDecayLengthMax) return kFALSE;
 
-	Double_t lDcaXiDaughters = casc->DcaXiDaughters();
-	Double_t lDcaV0Daughters = casc->DcaV0Daughters();
-	if(lDcaXiDaughters > fProdDcaOmegaDaughtersMax) return kFALSE;
-	if(lDcaV0Daughters > fProdDcaV0DaughtersMax) return kFALSE;
-
-	Double_t lDcaBachToPrimVertex = casc->DcaBachToPrimVertex();
-	Double_t lDcaV0ToPrimVertex = casc->DcaV0ToPrimVertex();
-	Double_t lDcaPosToPrimVertex = casc->DcaPosToPrimVertex();
-	Double_t lDcaNegToPrimVertex = casc->DcaNegToPrimVertex();
-	if(lDcaBachToPrimVertex < fProdDcaBachToPrimVertexMin) return kFALSE;
-	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
+  Double_t lDcaXiDaughters = casc->DcaXiDaughters();
+  Double_t lDcaV0Daughters = casc->DcaV0Daughters();
+  if(lDcaXiDaughters > fProdDcaOmegaDaughtersMax) return kFALSE;
+  if(lDcaV0Daughters > fProdDcaV0DaughtersMax) return kFALSE;
+  Double_t lDcaBachToPrimVertex = casc->DcaBachToPrimVertex();
+  Double_t lDcaV0ToPrimVertex = casc->DcaV0ToPrimVertex();
+  Double_t lDcaPosToPrimVertex = casc->DcaPosToPrimVertex();
+  Double_t lDcaNegToPrimVertex = casc->DcaNegToPrimVertex();
+  if(lDcaBachToPrimVertex < fProdDcaBachToPrimVertexMin) return kFALSE;
+  if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
   if(isparticle){
-    if(lDcaPosToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
-    if(lDcaNegToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
-  }else{
-    if(lDcaPosToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
-    if(lDcaNegToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
-  }
+      if(lDcaPosToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
+      if(lDcaNegToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
+    }else{
+        if(lDcaPosToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
+        if(lDcaNegToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
+    }
 
-	Double_t lXiCosineOfPointingAngle = casc->CosPointingAngleXi(primvert[0],primvert[1],primvert[2]);
-	Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
-
-	if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
-	if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
+  Double_t lXiCosineOfPointingAngle = casc->CosPointingAngleXi(primvert[0],primvert[1],primvert[2]);
+  Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
+  if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
+  if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
 
   if(fUseCascadePID)
   {
@@ -657,7 +802,6 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
 	Double_t EtaOmega = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
 	if(EtaOmega<fProdCascEtaMin || EtaOmega>fProdCascEtaMax) return kFALSE;
 
-  
   return kTRUE;
 }
 
@@ -673,4 +817,169 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SelectWithRoughCuts(AliAODcasca
 
 	return kTRUE;
 
+}
+//________________________________________________________________________
+Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::IsPeakRegion(AliAODcascade *casc)
+{
+    Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
+    Double_t massOmega = casc->MassOmega();
+    if(TMath::Abs(massOmega-momegaPDG)<fProdMassTolOmega)
+        return kTRUE;
+    return kFALSE;
+}
+//________________________________________________________________________
+Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::TagConversions(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
+{
+    //
+    // Tag conversion electron tracks
+    //
+    if(fConversionMassMax<0.) return kFALSE;
+    
+    Bool_t isconv = kFALSE;
+    minmass = 9999.;
+    
+    Int_t trkid = etrk->GetID();
+    Double_t px1 = etrk->Px();
+    Double_t py1 = etrk->Py();
+    Double_t pz1 = etrk->Pz();
+    Double_t E1 = sqrt(px1*px1+py1*py1+pz1*pz1+0.000511*0.000511);
+    
+    for(Int_t it=0;it<ntrk;it++){
+        AliAODTrack *trk2 = (AliAODTrack*) evt->GetTrack(it);
+        if(!trk2) continue;
+        Int_t trkid2 = trk2->GetID();
+        if(abs(trkid)==abs(trkid2)) continue;
+        if(etrk->Charge()*trk2->Charge()>0) continue;
+        
+        if(fProdAODFilterBit==7){
+            if(!trk2->TestFilterBit(BIT(fProdAODFilterBit))) continue;
+        }else{
+            if(!trk2->TestFilterMask(BIT(fProdAODFilterBit))) continue;
+        }
+        
+        Double_t nSigmaTPCele = 9999.;
+        if(fProdAODFilterBit==7){
+            if(-trkid2-1>=19000) continue;
+            if(-trkid2-1<0) continue;
+            Int_t index = id2index[-trkid2-1];
+            AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
+            nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+        }else{
+            nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+        }
+        if(fabs(nSigmaTPCele)>5.) continue;
+        
+        Double_t px2 = trk2->Px();
+        Double_t py2 = trk2->Py();
+        Double_t pz2 = trk2->Pz();
+        Double_t E2 = sqrt(px2*px2+py2*py2+pz2*pz2+0.000511*0.000511);
+        
+        Double_t mass = sqrt(pow(E1+E2,2)-pow(px1+px2,2)-pow(py1+py2,2)-pow(pz1+pz2,2));
+        if(mass<minmass) minmass = mass;
+    }
+    
+    if(minmass<fConversionMassMax) isconv = kTRUE;
+    
+    return isconv;
+}
+//________________________________________________________________________
+Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::TagConversionsSameSign(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass)
+{
+    //
+    // Tag conversion electron tracks
+    //
+    if(fConversionMassMax<0.) return kFALSE;
+    
+    Bool_t isconv = kFALSE;
+    minmass = 9999.;
+    
+    Int_t trkid = etrk->GetID();
+    Double_t px1 = etrk->Px();
+    Double_t py1 = etrk->Py();
+    Double_t pz1 = etrk->Pz();
+    Double_t E1 = sqrt(px1*px1+py1*py1+pz1*pz1+0.000511*0.000511);
+    
+    for(Int_t it=0;it<ntrk;it++){
+        AliAODTrack *trk2 = (AliAODTrack*) evt->GetTrack(it);
+        if(!trk2) continue;
+        Int_t trkid2 = trk2->GetID();
+        if(abs(trkid)==abs(trkid2)) continue;
+        if(etrk->Charge()*trk2->Charge()<0) continue;
+        
+        if(fProdAODFilterBit==7){
+            if(!trk2->TestFilterBit(BIT(fProdAODFilterBit))) continue;
+        }else{
+            if(!trk2->TestFilterMask(BIT(fProdAODFilterBit))) continue;
+        }
+        
+        Double_t nSigmaTPCele = 9999.;
+        if(fProdAODFilterBit==7){
+            if(-trkid2-1>=19000) continue;
+            if(-trkid2-1<0) continue;
+            Int_t index = id2index[-trkid2-1];
+            AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
+            nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+        }else{
+            nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+        }
+        if(fabs(nSigmaTPCele)>5.) continue;
+        
+        Double_t px2 = trk2->Px();
+        Double_t py2 = trk2->Py();
+        Double_t pz2 = trk2->Pz();
+        Double_t E2 = sqrt(px2*px2+py2*py2+pz2*pz2+0.000511*0.000511);
+        
+        Double_t mass = sqrt(pow(E1+E2,2)-pow(px1+px2,2)-pow(py1+py2,2)-pow(pz1+pz2,2));
+        if(mass<minmass) minmass = mass;
+    }
+    
+    if(minmass<fConversionMassMax) isconv = kTRUE;
+    
+    return isconv;
+}
+//________________________________________________________________________
+Double_t AliRDHFCutsOmegactoeleOmegafromAODtracks::DeltaPhi(AliAODcascade *casc, AliAODTrack *trk)
+{
+    //
+    // Calculate Delta phi
+    //
+    Double_t phiv = atan2(casc->MomXiY(),casc->MomXiX());
+    if(phiv<-M_PI) phiv += 2 *M_PI;
+    if(phiv> M_PI) phiv -= 2 *M_PI;
+    Double_t phie = trk->Phi();
+    if(phie<-M_PI) phie += 2 *M_PI;
+    if(phie> M_PI) phie -= 2 *M_PI;
+    Double_t dphi = phiv - phie;
+    if(dphi<-M_PI) dphi += 2 *M_PI;
+    if(dphi> M_PI) dphi -= 2 *M_PI;
+    return dphi;
+}
+//_____________________________________________________________________
+Double_t AliRDHFCutsOmegactoeleOmegafromAODtracks::DeltaEta(AliAODcascade *casc, AliAODTrack *trk)
+{
+    //
+    // Calculate Delta Eta
+    //
+    Double_t ptotxi = TMath::Sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)+pow(casc->MomXiZ(),2));
+    Double_t etav = 0.5*TMath::Log((ptotxi+casc->MomXiZ())/(ptotxi-casc->MomXiZ()));
+    Double_t etae = trk->Eta();
+    Double_t deta = etav - etae;
+    return deta;
+}
+
+//________________________________________________________________________
+Double_t AliRDHFCutsOmegactoeleOmegafromAODtracks::CosOpeningAngle(AliAODcascade *casc, AliAODTrack *trk)
+{
+    //
+    // Calculate Cosine of opening angle
+    //
+    
+    Double_t xipx = casc->MomXiX();
+    Double_t xipy = casc->MomXiY();
+    Double_t xipz = casc->MomXiZ();
+    Double_t epx = trk->Px();
+    Double_t epy = trk->Py();
+    Double_t epz = trk->Pz();
+    Double_t cosoa = (xipx*epx+xipy*epy+xipz*epz)/sqrt(xipx*xipx+xipy*xipy+xipz*xipz)/sqrt(epx*epx+epy*epy+epz*epz);
+    return cosoa;
 }

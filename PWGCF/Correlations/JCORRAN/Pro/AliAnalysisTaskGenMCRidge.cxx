@@ -132,6 +132,8 @@ void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 	fHistos = new THistManager("Ridgehists");
 	
 	Double1D varmultbin = {0, 35, 80, 105, 1000};
+	Double1D varmultbin_Fine = {0, 8, 12, 17, 23, 35, 80, 105, 140, 1000};
+
 	Double1D ptbin = {0.1,0.2,0.5,1.0,1.5,2.0,2.5,3.0,4.0,6.0,14.0,100};
 	Double1D ltpttrackbin = {0.2, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 13.0, 20.0};
 	Double1D jetptbin = {0, 10, 20, 30, 40, 50, 60, 80, 100, 1e5 };
@@ -149,6 +151,9 @@ void AliAnalysisTaskGenMCRidge::UserCreateOutputObjects()
 	}
 
 	binCent = AxisVar("Cent",varmultbin);
+	if( fOption.Contains("LMSUB") ){
+		binCent = AxisVar("Cent",varmultbin_Fine);
+	}
 	binTPt = AxisVar("TPt",ptbin);
         binAPt = AxisVar("APt",ptbin);
 	binLHPt = AxisVar("LHPT",ltpttrackbin);

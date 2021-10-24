@@ -27,7 +27,7 @@ public TObject
 
   AliAnalysisPIDCascadeTrack();//default constructor
   AliAnalysisPIDCascadeTrack(const AliAnalysisPIDCascadeTrack &source); //copy constructor
-  AliAnalysisPIDCascadeTrack &operator=(const AliAnalysisPIDCascadeTrack &source);
+  /* AliAnalysisPIDCascadeTrack &operator=(const AliAnalysisPIDCascadeTrack &source); */
   virtual ~AliAnalysisPIDCascadeTrack(); //default destructor.
 
   
@@ -44,6 +44,9 @@ public TObject
   //TPC Info
   Float_t GetTPCdEdx() const {return fTPCdEdx;}; // get TPC dEdx
   UShort_t GetTPCdEdxN() const {return fTPCdEdxN;}; // get TPC dEdx clusters
+  UShort_t GetTPCNcls() const {return fTPCNcls;}; // get number of clusters TPC
+  UShort_t GetTPCNclsF() const {return fTPCNclsF;}; // get number of findable clusters TPC
+   Float_t GetTPCnc() const {return fTPCNcr;}; // get number of crossed rows TPC
 
   //TOF Info
   Int_t GetTOFIndex() const {return fTOFIndex;}; // get TOF index
@@ -71,7 +74,7 @@ public TObject
 
 
   void Reset(); // reset
-  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag); // update
+  void Update(AliESDtrack *track, AliMCEvent *mcevent, AliPIDResponse *PIDRes, Int_t TrackCutFlag, Double_t TPCLength); // update
   Bool_t HasTOFMatch() const {return (fStatus & AliESDtrack::kTOFout);}; // has TOF match
   Bool_t HasTPCPID() const; // has TPC PID
   Bool_t HasTOFPID(TH1 *henabled = NULL) const; // has TOF PID
@@ -87,6 +90,7 @@ public TObject
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
   Float_t GetNSigmaElectronTOF() {return nSigmaElectronTOF;};
   Int_t GetTrackCutFlag() {return fTrackCutFlag; };
+  Int_t GetTPCLength() {return fTPCLength; };
 
   // Bool_t IsAcceptedByTrackCuts(Int_t CutFlag) { return GetTrackCutFlag()&CutFlag;};
 
@@ -119,6 +123,9 @@ public TObject
   /*** TPC PID info ***/
   Float_t fTPCdEdx; // dEdx
   UShort_t fTPCdEdxN; // dEdx clusters
+  UShort_t fTPCNcls; // number of clusters TPC
+  UShort_t fTPCNclsF; // number of findable clusters TPC
+  Float_t fTPCNcr; // number of crossed rows TPC
   /*** TOF PID info ***/
   Int_t fTOFIndex; // index
   Float_t fTOFLength; // track length
@@ -151,6 +158,7 @@ public TObject
   Float_t nSigmaElectronTOF;
 
   Int_t fTrackCutFlag;
+  Double_t fTPCLength;
 
   /*** cut paramters */
   static Float_t fgMatchTrackDeltaX; // match track deltaX
@@ -165,7 +173,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDCascadeTrack, 2);
+  ClassDef(AliAnalysisPIDCascadeTrack, 4);
  
 };
 

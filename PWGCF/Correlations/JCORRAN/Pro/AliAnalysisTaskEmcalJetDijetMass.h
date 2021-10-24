@@ -13,11 +13,21 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <iomanip>
+#include <TDirectory.h>
+#include <TComplex.h>
+#include <AliLog.h>
+#include <AliAnalysisTaskSE.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
 //#include "AliAnalysisTaskEmcalJetDijetMassHisto.h"
 #include "AliJCDijetHistos.h"
-#include "AliJCDijetAna.h"
+#include "AliJEmcalDijetAna.h"
+//#include "AliAnalysisTaskEmcalJetDijetMassHistos.h"
 
 /**
  * \class AliAnalysisTaskEmcalJetDijetMass
@@ -54,7 +64,7 @@ class AliAnalysisTaskEmcalJetDijetMass : public AliAnalysisTaskEmcalJet {
   //    fMinJetPt = minJetPt;
  // }
 
-AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
+static AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
                                     const char *ntracks,
                                     const char *nclusters,
                                     const char* ncells,
@@ -96,15 +106,38 @@ AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
 //void                        DoClusterLoop()                                   ;
 //void                        DoCellLoop()                                      ;
 
-//THistManager                fHistManager                                      ;///< Histogram manager
+  THistManager                fHistManager                                      ;///< Histogram manager
 //AliAnalysisTaskEmcalJetDijetMassHisto *fhistos;
-  AliJCDijetAna *fana;
-  AliJCDijetAna *fanaMC;
-  AliJCDijetHistos *fhistos;
+  AliJEmcalDijetAna *fana;
+  //AliJCDijetAna *fanaMC;
+  //AliJCDijetHistos *fhistos;  ///<
+  //AliAnalysisTaskEmcalJetDijetMassHistos *fEmcalHistos; ///<
+  TH1D* hTest; ///<
+  //AliJCDijetHistos *fhistosDetMC;
 
  private:
   AliAnalysisTaskEmcalJetDijetMass(const AliAnalysisTaskEmcalJetDijetMass&)           ; // not implemented
   AliAnalysisTaskEmcalJetDijetMass &operator=(const AliAnalysisTaskEmcalJetDijetMass&); // not implemented
+  TDirectory *fJOutput; // Output directory
+  double fjetCone;
+  double fktJetCone;
+  int  fktScheme;
+  int  fantiktScheme;
+  Bool_t fusePionMass;
+  Bool_t fuseDeltaPhiBGSubtr;
+  Bool_t fIsMC;       // MC data or real data
+  double fparticleEtaCut;
+  double fparticlePtCut;
+  double fleadingJetCut;
+  double fsubleadingJetCut;
+  double fMinJetPt;
+  double fconstituentCut;
+  double fdeltaPhiCut;
+  double fmatchingR;
+  double ftrackingIneff;
+  //TH1F *hBinning;
+  //TH1F *hBinningALICE;
+
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalJetDijetMass, 7);

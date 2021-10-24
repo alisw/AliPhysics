@@ -43,6 +43,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    void SetNMassBins(Int_t nbins) {fNMassBins = nbins;}
    Int_t GetNMassBins() const {return fNMassBins;}
    
+   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
    void SetReadMC(Bool_t readMC=kTRUE) {fReadMC = readMC;}
    void SetMCOption(Int_t option=0)    {fMCOption = option;}
    void SetLctoV0(Bool_t option=kTRUE) {fLctoV0 = option;}
@@ -90,7 +91,16 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fGlobalRT;        //!<! hist for RT distribution without D-meson selection
    TH1F *fHistPtLead;      //!<! hist for pT distribution of leading track
    TH3F *fRTvsZvtxvsMult;        //!<! distribution of RT as function of z of primary vertex and tracklet multiplicity
-   
+   TH1F *fNChargedInTrans; //!<! hist for NChargedDistribution
+   TH1F *fNChargedInToward; //!<! hist for NChargedDistribution
+   TH1F *fNChargedInAway; //!<! hist for NChargedDistribution
+   TH1F *fNCharged; //!<! hist for NChargedDistribution
+   TH1F *fPhiDistribution; //!<! hist for Phi distribution of charged particles
+   TH1F *fEtaDistribution; //!<! hist for Eta distribution of charged particles
+   TH1F *fPTDistributionInToward; //!<! hist for Pt distribution of charged particles in Toward region
+   TH1F *fPTDistributionInTransverse; //!<! hist for Pt distribution of charged particles in Transverse region
+   TH1F *fPTDistributionInAway; //!<! hist for Pt distribution of charged particles in Away region
+   TH1F *fPTDistributionGlobal; //!<! hist for Pt distribution of charged particles in all regions
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC
@@ -119,7 +129,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,2); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,4); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

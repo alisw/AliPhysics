@@ -1,7 +1,7 @@
-
 AliAnalysisTaskTwoMultiCorrelations* AddTaskTwoMultiCorrelations(
     const char* trigger = "MB",
-    const char* mainTask = "LHC10h-SCs-0080",
+    const char* weightFile = "",
+    const char* mainTask = "LHC10h-SCs-0070",
     const char* suffix = "")
 {
 // Get the pointer to the existing analysis manager via the static access method.
@@ -35,8 +35,8 @@ AliAnalysisTaskTwoMultiCorrelations* AddTaskTwoMultiCorrelations(
 // Analysis parameters: Full analysis (= Not kine), Get SCs (= Not ACs), Full writing
 //    (= Not minimal output), AC(1,2,3) 
   myTask->SetAnalysisParameters(kFALSE, kFALSE, kFALSE, 1, 2, 3);
-// Centrality: 0-80%, 9 bins, 1st estimator: CL1, 2nd estimrator: V0M, No correlation TH2F.
-  myTask->SetCentrality(1, 0., 80., 9, "CL1", "V0M", kFALSE);
+// Centrality: 0-70%, 8 bins, 1st estimator: CL1, 2nd estimrator: V0M, No correlation TH2F.
+  myTask->SetCentrality(1, 0., 70., 8, "CL1", "V0M", kFALSE);
 
 // PV_x: No selection.
   myTask->SetPVxSelection(kFALSE, -44., 44.);
@@ -54,8 +54,8 @@ AliAnalysisTaskTwoMultiCorrelations* AddTaskTwoMultiCorrelations(
   myTask->SetEtaSelection(kTRUE, -0.8, 0.8);
 // Number of TPC clusters > 70.
   myTask->SetNTPCSelection(kTRUE, 70);
-// chi^2/NDF in [0.1, 4.0].
-  myTask->SetChiSelection(kTRUE, 0.1, 4.);
+// chi^2/NDF in [0.1, 4.0], with personal selection (1).
+  myTask->SetChiSelection(1, kTRUE, 0.1, 4.);
 // Number of ITS clusters: no selection (we use TPConly).
   myTask->SetNITSSelection(kFALSE, 2);
 // DCAxy < 2.4cm.
@@ -71,9 +71,10 @@ AliAnalysisTaskTwoMultiCorrelations* AddTaskTwoMultiCorrelations(
   myTask->SetParticleWeights(kFALSE, kTRUE, kTRUE, kFALSE, kFALSE);
 // Data period for the list of runs.
   myTask->SetListOfRuns("LHC10h");
-// Path to the weight.root file.
-  //myTask->SetInputParticleWeights("alien:///alice/cern.ch/user/c/cimordas/Weights/LHC11a10a_bis_v2/Weights.root");
-  myTask->SetInputParticleWeights("Weights.root");
+// Path to the weight.root file given as argument of the macros.
+  TString inputWeightFile;
+  inputWeightFile.Form("%s", weightFile);
+  myTask->SetInputParticleWeights(inputWeightFile);
 // Don't use JEfficiency; 0: index for TPConly.
   myTask->SetJWeights(kFALSE, 0);
 
@@ -106,5 +107,3 @@ AliAnalysisTaskTwoMultiCorrelations* AddTaskTwoMultiCorrelations(
 
 } // End: AliAnalysisTaskTwoMultiCorrelations *AddTaskTwoMultiCorrelations().
 // End of file.
-
-

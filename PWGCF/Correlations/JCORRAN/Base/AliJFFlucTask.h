@@ -21,9 +21,11 @@
 
 #include <AliAnalysisTaskSE.h>
 #include <AliAODMCParticle.h>
+#include <TGraphErrors.h>
 #include "AliJHistManager.h"
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
+#include "AliJCorrectionMapTask.h"
 
 //==============================================================
 
@@ -33,6 +35,7 @@ using namespace std;
 class TH1D;
 class TH2D;
 class TH3D;
+class TAxis;
 class TList;
 class TTree;
 class TRandom;
@@ -44,6 +47,7 @@ class AliAnalysisFilter;
 class AliJTrack;
 class AliJEventHeader;
 class TParticle;
+class TGraphErrors;
 
 class AliJFFlucTask : public AliAnalysisTaskSE {
 public:
@@ -87,11 +91,8 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliAODMCParticle *thisGuy);
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetEffConfig( UInt_t effMode, UInt_t FilterBit );
-	UInt_t ConnectInputContainer(const TString, const TString);
-	void EnablePhiCorrection(const TString);
-	void EnableCentFlattening(const TString);
-	TH1 * GetCorrectionMap(UInt_t, UInt_t);
-	TH1 * GetCentCorrection();
+	void SetPhiCorrectionIndex(UInt_t id){phiMapIndex = id;} // need for subwagon
+	
 	//void SetIsPhiModule( Bool_t isphi){ IsPhiModule = isphi ;
 					//cout << "setting phi modulation = " << isphi << endl; }
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
@@ -101,6 +102,8 @@ public:
 					//cout << "setting : SCpt dep = " << isSCptdep << endl;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
 					cout << "setting particle charge = " << charge << endl;}
+	void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
+					cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
 	//void SetSCwithQC( Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC;
 					//cout << "setting : SC with QC = " << isSCwithQC << endl;}
 	//void SetEbEWeight( Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted;
@@ -132,38 +135,54 @@ public:
 	}
 
 	enum{
-		FLUC_MC = 0x1,
-		FLUC_EXCLUDEWDECAY = 0x2,
-		FLUC_KINEONLY = 0x4,
-		//FLUC_PHI_MODULATION = 0x8,
-		FLUC_MULT_BINS = 0x8,
-		FLUC_PHI_CORRECTION = 0x10,
-		//FLUC_PHI_REJECTION = 0x20,
-		FLUC_SCPT = 0x40,
-		FLUC_EBE_WEIGHTING = 0x80,
-		FLUC_CENT_FLATTENING = 0x100,
-		FLUC_CUT_OUTLIERS = 0x200,
-		FLUC_ALICE_IPINFO = 0x400,
+		FLUC_MC              = 0x1,
+		FLUC_EXCLUDEWDECAY   = 0x2,
+		FLUC_KINEONLY        = 0x4,
+		FLUC_MULT_BINS       = 0x8,
+		FLUC_PHI_CORRECTION  = 0x10,
+		FLUC_SCPT            = 0x20,
+		FLUC_EBE_WEIGHTING   = 0x40,
+		FLUC_CENT_FLATTENING = 0x80,
+		FLUC_CUT_OUTLIERS    = 0x100,
+		FLUC_ALICE_IPINFO    = 0x200,
 	};
 	void AddFlags(UInt_t nflags){
 		flags |= nflags;
+	}
+
+// Methods to provide additional selection cuts.
+  void SetChi2Cuts(double chiMin, double chiMax) {
+		fChi2perNDF_min = chiMin; fChi2perNDF_max = chiMax;
+		cout << "setting chi2perNDF cuts, min = " << fChi2perNDF_min << " and max = " << fChi2perNDF_max << endl;
+	}
+	void SetDCAxyCut(double DCAxyMax) {fDCAxy_max = DCAxyMax;
+		cout << "setting DCAxy cut = " << fDCAxy_max << endl;
+	}
+	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
+		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
 
 private:
 	TClonesArray *fInputList;  // tracklist
 	TDirectory *fOutput;     // output
 	AliJFFlucAnalysis *fFFlucAna; // analysis code
-	std::map<UInt_t, TH1 *> PhiWeightMap[96];
-
+	AliJCorrectionMapTask *fJCorMapTask; // Correction Map task
+	TString fJCorMapTaskName;
+	TH1 *pPhiWeights;
+	TGraphErrors *grEffCor; // for one cent
+	TAxis *fCentBinEff; // for different cent bin for MC eff
 	TString fTaskName;
 	TString fCentDetName;
 	UInt_t fEvtNum;
+	int fcBin;
+	Double_t fVertex[3];
 	UInt_t fFilterBit;
-	UInt_t fNumTPCClusters;
 	UInt_t fEffMode;
 	UInt_t fEffFilterBit;
+	UInt_t phiMapIndex;
 	int fPcharge;
 	int fRunNum;
+	UInt_t fNumTPCClusters;
 	UInt_t GlobTracks;
 	UInt_t TPCTracks;
 	UInt_t FB32Tracks;
@@ -175,14 +194,18 @@ private:
 	double fPt_min;
 	double fPt_max;
 	double fzvtxCut;
+	Bool_t fremovebadarea;
 
 	UInt_t subeventMask;
 	BINNING binning;
 
 	UInt_t flags;
-	UInt_t inputIndex;
-	UInt_t phiInputIndex;
-	UInt_t centInputIndex;
+
+// Additional cuts for the selection criteria.
+  double fChi2perNDF_min;	// Minimum requirement for chi2/ndf for TPC
+	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
+	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
+	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.	
 
 	ClassDef(AliJFFlucTask, 1);
 

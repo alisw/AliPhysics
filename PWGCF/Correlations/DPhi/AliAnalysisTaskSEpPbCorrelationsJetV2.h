@@ -55,25 +55,28 @@ public:
   // configration
   virtual void SetAnalysisMode(TString mode) { fAnaMode = mode; }
   virtual void SetAssociatedTrack(TString mode) { fasso = mode; }
-  virtual void SetPID(Bool_t mode) { fPID = mode; }
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
   virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetFMDcutpar(Int_t mode){fFMDcutmode=mode;}
-  virtual void SetPtdiff(Bool_t mode){fptdiff=mode;}
   virtual void SetReduceDphi(Double_t mode){fReduceDphi=mode;}
   virtual void SetSymmetricFMD(Bool_t mode){fSymmetricFMD=mode;}
-  virtual void SetPtMax(Float_t mode){fPtMax=mode;}
-  virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
+  virtual void SetLikeSign(Bool_t mode){fLikeSign=mode;}
+  virtual void SetPtMax(Float_t mode)   {fPtMax=mode;}
+  virtual void SetPtMin(Float_t mode)   {fPtMin=mode;}
+  virtual void SetAssoCut(Float_t mode) {fAsscoptCut=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
+  virtual void SetmcprimFMD(Bool_t mode){fprimFMD=mode;}
+  virtual void SetmcprimTPC(Bool_t mode){fprimTPC=mode;}
+  virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
+
 
   void SetMaxNEventsInPool(Int_t events) { fPoolMaxNEvents = events; }
   void SetMinNTracksInPool(Int_t tracks) { fPoolMinNTracks = tracks; }
   void SetMinEventsToMix(Int_t events) { fMinEventsToMix = events; }
   void SetCentrality(Double_t cenMin, Double_t cenMax) {fCenMin = cenMin; fCenMax = cenMax;}
-  void SetTPCTPCList(TList *list) {fTPCTPClist = list;}
   void SetPoolPVzBinLimits(Int_t Nzvtxbins, const Double_t *ZvtxBins) {
     fNzVtxBins = Nzvtxbins;
     for (int ix = 0; ix < fNzVtxBins + 1; ix++) {
@@ -123,19 +126,17 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
   Bool_t NotSPDClusterVsTrackletBG() {return !fUtils.IsSPDClusterVsTrackletBG(this->InputEvent());};
 
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray, 
-                             TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step, TObjArray *select_TPCPairs);
+                             TObjArray *selectedTrackArray, TObjArray *selectedTrackArray_TPC, AliTHn *triggerHist, AliTHn *associateHist, Float_t bSign, Int_t step, TObjArray *select_TPCPairs);
 
   void FillCorrelationTracksMixing(Double_t MultipOrCentMix, Double_t pvxMix,
-                                   Double_t poolmax, Double_t poolmin,
                                    TObjArray *triggerArray,
                                    TObjArray *selectedTrackArray,
                                    TObjArray *selectedTrackArray_TPC,
                                    AliTHn *triggerHist, AliTHn *associateHist,
-                                   Bool_t, Float_t, Float_t, Float_t, Int_t, TObjArray *select_TPCPairs);
+                                   Float_t, Int_t, TObjArray *select_TPCPairs);
 
 
 
@@ -149,17 +150,16 @@ private:
   Bool_t fQA;
   Bool_t fFMDcut;
   Int_t fFMDcutmode;
-  Bool_t fptdiff;
   Double_t fReduceDphi;
-  Bool_t fmakehole;
-  Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;
-  Bool_t fPID;
   Bool_t fSymmetricFMD;
+  Bool_t fLikeSign;
 
   TString fCentType;
-  
+  Bool_t fprimTPC;
+  Bool_t fprimFMD;
+  Bool_t fcentcalib;
   Int_t fNEntries;
   
   Double_t lCentrality;
@@ -169,7 +169,6 @@ private:
   Float_t bSign;
   Double_t fZVertex;
 
-  TList *fTPCTPClist;  // TPCTPC Fit
   TList *fOutputList;  // Output list
   TList *fOutputList1; // Output list
   TList *fOutputList2; // Output list
@@ -182,56 +181,18 @@ private:
   Float_t fCutChargedDCAxyMax;  
   Double_t fPtMin;
   Double_t fPtMax;
+  Double_t fAsscoptCut;
   Double_t fEtaMax;
   Double_t fEtaMaxExtra;
   Double_t fEtaMinExtra;
   // V0 particles
-  Double_t fEtaMaxV0;
-  Double_t fEtaMinV0;
-  Double_t fdcaDaughtersToPrimVtx;
-  Double_t fdcaBetweenDaughters;
-  Double_t fRadiMin;
-  Double_t fRadiMax;
-  Double_t fcutcTauLam;
-  Double_t fcutcTauK0;
-  Double_t fcosMinK0s;
-  Double_t fcosMinLambda;
-  Double_t fMaxnSigmaTPCV0;
   // V0 daughter cut
-  TH1D *hv0dcharge;
-  Double_t fclustermin;
-  Double_t fratiocluster;
-  Double_t fEtaMaxDaughter;
-  Double_t fEtaMinDaughter;
-  THnSparseF *fHistMass_K0s;
-  THnSparseF *fHistMass_K0s_MC;
-  THnSparseF *fHistMass_Lambda;
-  THnSparseF *fHistMass_ALambda;
-  THnSparseF *fHistMass_ALambda_MC;
-  THnSparseF *fHistMassXiMinus;
-  THnSparseF *fHistMassXiPlus;
-  THnSparseF *fHistMassOmegaMinus;
-  THnSparseF *fHistMassOmegaPlus;
-  TH2D *fHistMass_bumpcorr;
-  THnSparseF *fHist_V0QA;
-  THnSparseF *fHist_CascadeQA;
-  TH2D *fHist_AP[6];
-  TH2D *fHistPosNsig[6];
-  TH2D *fHistNsig[6];
-  TH2D *fHistNsigcorr[6];
-  TH2D *fHistNegNsig[6];
-  TH2D *fHistPosNsigQA[6];
-  TH3D* fh3NegNsig[3];
-  TH3D* fh3PosNsig[3];
-
-  THnSparseF *fHistMass_Lambda_MC;
-
+  
   AliEventCuts fEventCuts; 
   AliAnalysisUtils fUtils;
   AliAODEvent *fEvent; //  AOD Event
   AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
-  Double_t tPrimaryVtxPosition[3];
   Double_t fPrimaryZVtx;
 
   AliAODVZERO *fvzero;
@@ -239,8 +200,6 @@ private:
   // Event Pool for mixing
   AliEventPoolManager *fPoolMgr;  //  event pool manager for Event Mixing
   AliEventPoolManager *fPoolMgr1; //  event pool manager for Event Mixing
-  Double_t poolmin;
-  Double_t poolmax;
   Int_t fPoolMaxNEvents;   // set maximum number of events in the pool
   Int_t fPoolMinNTracks;   // set minimum number of tracks in the pool
   Int_t fMinEventsToMix;   // set the minimum number of events want to mix
@@ -249,7 +208,6 @@ private:
   Int_t fNCentBins;        // number of centrality bins
   Double_t fCentBins[100]; // [fNCentBinsDim]
   // Track cuts
-  Double_t fMaxnSigmaTPCTOF;
 
   // Globaal Histograms
   TH1F *fHistzvertex;
@@ -258,13 +216,12 @@ private:
   TH1F *fHistCentrality_beforeFMDMulcut;
   TH2F* fHistCentzvertex;
   TH2F* fHistCentV0vsTracklets;
-  TH2F* fHistCentV0vsTrackletsbefore;
+  TH2F* fHistCentvsTrackletsbefore;
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
   
   //AliTHn *fHistLeadQA;
-  AliTHn *fHistPIDQA;
 
   AliTHn* fhistmcprim;
   TH2D*fhmcprimvzeta;
@@ -272,14 +229,12 @@ private:
   TH1F*frefetac;
   TH1F*frefetaa;
   TH1F*frefvz;
-  TH2D*fhcorr[10];
+  TH1D*fhcorr[10];
 
-  TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
 
   TH2D*  fh2_pt_trig_asso;
-  TH2D*  fh2_FMD_acceptance_prim;
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_ITS_acceptance;
@@ -288,6 +243,7 @@ private:
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+  TH2D*  fh2_FMD_eta_phi_afterCut;
   TH1F* fHist_NeventRun;
   TH1F* fHist_V0AMultRun;
   TH1F* fHist_V0CMultRun;
@@ -318,21 +274,8 @@ private:
   TH2F*fFMDV0Csame;
   TH2F*fFMDV0Csame_post;
 
-  TH2F *fHist_vzeromult;
-  TH2F *fHist_vzeromultEqweighted;
-  TH3F *fHist2dmult;
-  AliTHn *fHistVZERO;
 
   TH1F *fHist_Stat;
-  TH1F *fHist_V0Stat;
-
-  // QA histograms
-  TH2D *fHistPhiDTPCNSig;
-  TH2D *fHistPhiDTOFNSig;
-  TH2D *fHistPhiDTPCTOFNSig;
-  THnSparseF *fHistMass_PhiMeson;
-  THnSparseF *fHistMass_PhiMeson_MIX;
-  THnSparseF *fHist_PhiQA;
 
   AliTHn *fHistTriggerTrack;
   AliTHn *fHistReconstTrack;
@@ -340,7 +283,7 @@ private:
   AliTHn *fHistReconstTrackMix;
 
   // only for test of dphi
-  TH2D *fTPCTPCdphi_deta_4_2;
+//  TH2D *fTPCTPCdphi_deta_4_2;
 /*
   TH1D *fTPCTPCdphi_deta_4_1;
   TH1D *fTPCTPCdphi_deta_4_0;
@@ -349,43 +292,6 @@ private:
   TH1D *fTPCTPCdphi_deta_3_0;
   TH1D *fTPCTPCdphi_deta_2_2;
 */
-
-  TH2D* fHistQna;
-  TH2D* fHistQnc;
-  TH2D* fHistCorrQna[4];
-  TH2D* fHistCorrQnc[4];
-  TH2D* fHistQn;
-  TH2D* fHistQna_VZERO;
-  TH2D* fHistQnc_VZERO;
-  TH2D* fHistQn_VZERO;
-  TH1D* fHistVn;
-  TH1D* fHistQAQB[4];
-  TH1D* fHistQAQB_VZERO[4];
-  TProfile* SP_TPCATPCC;
-  TProfile* SP_TPCATPCC_default;
-  TProfile* SP_V0AV0C_default;
-  TProfile* SP_V0ATPC_default;
-  TProfile* SP_V0CTPC_default;
-  TH1F* fHist_V0AV0C;
-  TH1F* fHist_V0ATPC;
-  TH1F* fHist_V0CTPC;
-  TProfile* SP_uTPCA;
-  TProfile* SP_uTPCC;
-  TProfile* SP_uTPC_PP[8];
-  TProfile* SP_uTPC[8];
-  TProfile* SP_uTPC1[8];
-  TProfile* SP_uTPC2[8];
-  TProfile* SP_uTPC3[8];
-  TProfile* SP_uVZEROA_PP[8];
-  TProfile* SP_uVZEROA[8];
-  TProfile* SP_uVZEROA1[8];
-  TProfile* SP_uVZEROA2[8];
-  TProfile* SP_uVZEROA3[8];
-  TProfile* SP_uVZEROC_PP[8];
-  TProfile* SP_uVZEROC[8];
-  TProfile* SP_uVZEROC1[8];
-  TProfile* SP_uVZEROC2[8];
-  TProfile* SP_uVZEROC3[8];
 
   ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2, 2);
 };
@@ -413,116 +319,5 @@ Float_t AliAnalysisTaskSEpPbCorrelationsJetV2::GetDPhiStar(
 
   return dphistar;
 }
-/*
-class AliAssociatedTPCPairs : public AliVParticle {
-public:
-  AliAssociatedTPCPairs(Short_t charge, Float_t eta, Float_t phi, Float_t pt, Float_t pt2,
-                       Int_t ID, Int_t ID1, Int_t ID2, Short_t candidate,
-                       Double_t multiplicity, Double_t deta_pairs, Double_t dphi_pairs)
-      : fCharge(charge), fEta(eta), fPhi(phi), fpT(pt), fpT_Asso(pt2), fID(ID), fID1(ID1),
-        fID2(ID2), fCandidate(candidate), fMultiplicity(multiplicity), fdeta_pairs(deta_pairs), fdphi_pairs(dphi_pairs) {}
-  virtual ~AliAssociatedTPCPairs() {}
-
-  virtual Double_t Px() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Py() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Pz() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Pt() const { return fpT; }
-  virtual Double_t P() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Bool_t PxPyPz(Double_t[3]) const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Xv() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Yv() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Zv() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Bool_t XvYvZv(Double_t[3]) const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t OneOverPt() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Phi() const { return fPhi; }
-  virtual Double_t Theta() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t E() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t M() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Double_t Eta() const { return fEta; }
-  virtual Double_t Y() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Short_t Charge() const { return fCharge; }
-  virtual Int_t GetLabel() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual Int_t PdgCode() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  virtual const Double_t *PID() const {
-    AliFatal("Not implemented");
-    return 0;
-  }
-  
-  virtual Short_t WhichCandidate() const { return fCandidate; }
-  virtual Int_t GetID() const { return fID; }
-  virtual Int_t GetIDFirstDaughter() const { return fID1; }
-  virtual Int_t GetIDSecondDaughter() const { return fID2; }
-  virtual Double_t Multiplicity() const { return fMultiplicity; }
-  virtual Double_t Getdeta_pairs() const { return fdeta_pairs; }
-  virtual Double_t Getdphi_pairs() const { return fdphi_pairs; }
-  virtual Double_t Pt_Asso() const { return fpT_Asso; }
-private:
-  // 
-  
-  Short_t fCharge;    // Charge
-  Float_t fEta;       // Eta
-  Float_t fPhi;       // Phi
-  Float_t fpT;        // pT
-  Float_t fpT_Asso;        // Associate pT
-  Float_t fdeta_pairs;        // dEta_Pairs
-  Float_t fdphi_pairs;        // dPhi_Pairs
-  Int_t fID;          // ID
-  Short_t fCandidate; // 1-pi,2-K,3-p
-  Double_t fMultiplicity;
-  Int_t fID1;
-  Int_t fID2;
-  ClassDef(AliAssociatedTPCPairs, 1);
-};
-*/
-
-
 
 #endif

@@ -46,6 +46,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskGFWFlow();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
+  virtual void NotifyRun();
   virtual void Terminate(Option_t *);
   Bool_t AcceptEvent();
   Bool_t AcceptAODVertex(AliAODEvent*);
@@ -56,15 +57,16 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
-  void SetTriggerType(AliVEvent::EOfflineTriggerTypes newval) { fTriggerType = newval; };
+  void SetTriggerType(UInt_t newval) { fTriggerType = newval; };
   Bool_t CheckTriggerVsCentrality(Double_t l_cent); //Hard cuts on centrality for special triggers
   void SetBypassCalculations(Bool_t newval) { fBypassCalculations = newval; };
+  void SetCollisionSystem(Int_t newval) { fCollisionsSystem = newval; };
  protected:
   AliEventCuts fEventCuts, fEventCutsForPU;
  private:
   AliAnalysisTaskGFWFlow(const AliAnalysisTaskGFWFlow&);
   AliAnalysisTaskGFWFlow& operator=(const AliAnalysisTaskGFWFlow&);
-  AliVEvent::EOfflineTriggerTypes fTriggerType; //Need to store this for it to be able to work on trains
+  UInt_t fTriggerType; //Need to store this for it to be able to work on trains
   Bool_t fProduceWeights;
   AliGFWCuts **fSelections; //! Selection array; not store
   TList *fWeightList; //! Stored via PostData
@@ -94,6 +96,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t fBypassCalculations; //Flag to bypass all the calculations, so only event selection is performed (for QA)
   Int_t AcceptedEventCount;
   TH1D *fMultiDist;
+  Int_t fCollisionsSystem; //0 for pp, 1 for pPb, 2 for PbPb
   Int_t GetVtxBit(AliAODEvent *mev);
   Int_t GetParticleBit(AliVParticle *mpa);
   Int_t GetTrackBit(AliAODTrack *mtr, Double_t *lDCA);

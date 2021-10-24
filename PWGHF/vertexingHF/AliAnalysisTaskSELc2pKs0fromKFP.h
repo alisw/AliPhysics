@@ -27,6 +27,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODInputHandler.h"
 #include "AliVertexingHFUtils.h"
+#include "AliVVertex.h"
 
 // includes added to play with KFParticle
 #include <vector>
@@ -39,6 +40,12 @@
 class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
 {
     public:
+
+        enum EAnalysisType { /// enum for setting analysis system/year (for loading profile histograms for multiplicity correction)
+           kpPb2016,
+           kpp2016
+           };
+  
                                 AliAnalysisTaskSELc2pKs0fromKFP();
                                 AliAnalysisTaskSELc2pKs0fromKFP(const char *name, AliRDHFCutsKFP* cuts);
         virtual                 ~AliAnalysisTaskSELc2pKs0fromKFP();
@@ -50,12 +57,15 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         void                    SetMC(Bool_t IsMC) {fIsMC=IsMC;}
+        void                    SetAnaLc2Lpi(Bool_t IsAnaLc2Lpi) {fIsAnaLc2Lpi=IsAnaLc2Lpi;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
-        Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
-        void                    MakeAnaLcFromCascadeHF(TClonesArray *arrayLc2pKs0, AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV);
+        Bool_t                  MakeMCAnalysis(TClonesArray *mcArray, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
+        void                    MakeAnaLcFromCascadeHF(TClonesArray *arrayLc2pKs0orLpi, AliAODEvent *aodEvent, TClonesArray *mcArray, KFParticle PV);
         Double_t                InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2);
         Int_t                   MatchToMCKs0(AliAODTrack *v0Pos, AliAODTrack *v0Neg, TClonesArray *mcArray);
-        Int_t                   MatchToMCLc(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray);
+        Int_t                   MatchToMCLam(AliAODTrack *v0Pos, AliAODTrack *v0Neg, TClonesArray *mcArray, Bool_t IsParticle);
+        Int_t                   MatchToMCLc2pKs0(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray);
+        Int_t                   MatchToMCLc2Lpi(AliAODTrack *v0Pos, AliAODTrack *v0Neg, AliAODTrack *bachPart, TClonesArray *mcArray, Bool_t IsParticle);
 
         /// set MC usage
         void SetWriteLcMCGenTree(Bool_t a) {fWriteLcMCGenTree = a;}
@@ -66,10 +76,48 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
 
         void SetWriteLcQATree(Bool_t a) {fWriteLcQATree = a;}
         Bool_t GetWriteLcQATree() const {return fWriteLcQATree;}
-        void FillEventROOTObjects();
-        void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin);
-        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0, KFParticle kfpLc, AliAODTrack *trackPr, KFParticle kfpPr, KFParticle kfpKs0, KFParticle kfpKs0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_Ks0, Int_t lab_Lc, KFParticle kfpLc_woKs0MassConst);
+        void FillEventROOTObjects(AliAODEvent* aodEvent);
+        void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
+        void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent, AliAODVertex *ownPVtx);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
+
+        void SetUseWeights(Bool_t opt) { fUseWeights = opt;}
+        void SetUseMult(Bool_t opt) { fUseMult = opt;}
+        void SetKeepOnlyMCSignal(Bool_t opt) {fKeepOnlyMCSignal = opt;}
+        void SetKeepAllVariables (Bool_t opt) {fKeepAllVariables = opt;}
+        void SetAnalysisType(Int_t opt) { fAnalysisType = opt;}
+        void SetReferenceMultiplicity(Double_t opt) {fRefMult = opt;}
+        void SetMultVsZProfileLHC16qt1stBunch(TProfile* hprof){
+          if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+          fMultEstimatorAvg[0]=new TProfile(*hprof);
+        }
+        void SetMultVsZProfileLHC16qt2ndBunch(TProfile* hprof){
+          if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+          fMultEstimatorAvg[1]=new TProfile(*hprof);
+        }
+        void SetMultVsZProfileLHC16qt3rdBunch(TProfile* hprof){
+          if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+          fMultEstimatorAvg[2]=new TProfile(*hprof);
+        }
+        void SetMultVsZProfileLHC16qt4thBunch(TProfile* hprof){
+          if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+          fMultEstimatorAvg[3]=new TProfile(*hprof);
+        }
+
+        void SetMultVsZProfileLHC16j(TProfile* hprof){
+          if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+          fMultEstimatorAvg[0]=new TProfile(*hprof);
+        }
+        void SetMultVsZProfileLHC16k(TProfile* hprof){
+          if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+          fMultEstimatorAvg[1]=new TProfile(*hprof);
+        }
+        void SetMultVsZProfileLHC16l(TProfile* hprof){
+          if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+          fMultEstimatorAvg[2]=new TProfile(*hprof);
+        }
+
+        TProfile* GetEstimatorHistogram(const AliVEvent* event);
 
     private:
         void                    DefineEvent();
@@ -78,8 +126,10 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void                    DefineTreeLc_Gen();
         void                    DefineAnaHist();
         AliPIDResponse*         fPID;                 ///<
+        AliPIDCombined*         fPIDCombined;         //!<! combined PID response object
         AliRDHFCutsKFP*         fAnaCuts;             ///< Cuts
         AliAODVertex*           fpVtx;                //!<! primary vertex
+        AliVVertex*           fpVtxOff;                //!<! primary vertex const off
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
         Double_t                fBzkG;                ///< magnetic field value [kG]
         Float_t                 fCentrality;           ///< Centrality
@@ -98,6 +148,10 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
+        Bool_t                  fUseWeights; ///< Flag to use pT weight functions
+        Bool_t                  fKeepOnlyMCSignal; ///< flag to keep only signal candidates
+        Bool_t                  fKeepAllVariables; ///<flag to keep all possible variables that were removed to reduce the tree size
+        Bool_t                  fIsAnaLc2Lpi; ///< Flag of Lc->Lpi analysis
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
 
@@ -109,11 +163,19 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TF1*                    fWeight; ///< weight of Data/MC_gen
         TH1D*                   fHistMCGen_LcPt_weight; //!<! pt of Lc after weight at gen. level
         TH2D*                   f2DHistMCRec_LcPt_weight; //!<! pt of Lc after weight at rec. level
+        TF1*                    fFuncWeightPythia; ///<flat pT weight vs pythia
+        TF1*                    fFuncWeightFONLL5overLHC13d3; ///< pT weight vs FONLL (D meson case)
+        TF1*                    fFuncWeightFONLL5overLHC13d3Lc; ///< pT weight vs FONLL (Lc case)
+        
+        Bool_t                  fUseMult; /// switch for multiplicity in tree 
+        TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+        Double_t                fRefMult;      ///reference multiplicity for ntrk correction
+        Int_t                   fAnalysisType; ///< switch for analysis period (for multiplicity corrections)
 
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 3);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 8);
 };
 
 #endif

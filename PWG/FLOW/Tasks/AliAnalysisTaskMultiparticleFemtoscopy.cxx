@@ -32,7 +32,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliAnalysisManager.h"
-#include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliStack.h"
 #include "TFile.h"
 
@@ -683,10 +683,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
  // e) Dump the results:
  //TDirectoryFile *df = new TDirectoryFile("outputMPFanalysis","");
  //df->Add(fHistList);
- TFile *f = new TFile("AnalysisResults.root","RECREATE");
- fHistList->Write(fHistList->GetName(),TObject::kSingleKey);
-
- delete f;
 
 } // end of void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
 
@@ -919,10 +915,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
   fGetNumberOfCascadesHist->Fill(aAOD->GetNumberOfCascades()); // TBI not validated
   fGetMagneticFieldHist->Fill(aAOD->GetMagneticField()); // TBI not validated
   fGetEventTypeHist->Fill(aAOD->GetEventType()); // TBI not validated
-  if(aAOD->GetCentrality())
-  {
-   fGetCentralityHist->Fill(aAOD->GetCentrality()->GetCentralityPercentile("V0M")); // TBI not validated
-  }
+  AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
+  if(!ams){cout<<__LINE__<<endl;exit(1);}
+  fGetCentralityHist->Fill(ams->GetMultiplicityPercentile("V0M")); 
+
   // AOD primary vertex:
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
   fVertexXYZ[0]->Fill(avtx->GetX());
@@ -2204,7 +2200,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
 
  // d) PID:
  // For pT < 0.75 use only TPC
- if(gtrack->GetTPCmomentum() < 0.75) // TBI hardwired 0.75
+ if(gtrack->GetTPCmomentum() < 0.75) // TBI hardwired 0.75, add setter for this
  {
   AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,gtrack);
   if(!statusTPC) return kFALSE;
@@ -2226,7 +2222,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
  {
   if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
   AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
-  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Pion(...)! gtrack = "<<gtrack<<endl; return kFALSE; } // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. if I get too many warnings, that purity estimation will be affected
+  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Pion(...)! gtrack = "<<gtrack<<endl; return kFALSE;} // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. if I get too many warnings, then purity estimation will be affected
   if(charge < 0 && mcParticle->GetPdgCode() == -211) return kTRUE;
   else if(charge > 0 && mcParticle->GetPdgCode() == 211) return kTRUE;
   else return kFALSE;
@@ -2235,7 +2231,6 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
  return kTRUE;
 
 } // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t charge, Bool_t bPrimary)
-
 
 //=======================================================================================================================
 
@@ -2275,7 +2270,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
 
  // d) PID:
  // For pT < 0.75 use only TPC
- if(gtrack->GetTPCmomentum() < 0.75) // TBI hardwired 0.75
+ if(gtrack->GetTPCmomentum() < 0.75) // TBI hardwired 0.75 => add setter for this
  {
   AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,gtrack);
   if(!statusTPC) return kFALSE;
@@ -2297,7 +2292,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
  {
   if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
   AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
-  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Kaon(...)! gtrack = "<<gtrack<<endl; return kFALSE; } // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. if I get too many warnings, that purity estimation will be affected
+  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Kaon(...)! gtrack = "<<gtrack<<endl; return kFALSE; } // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. If I get too many warnings, that purity estimation will be affected
   if(charge < 0 && mcParticle->GetPdgCode() == -321) return kTRUE;
   else if(charge > 0 && mcParticle->GetPdgCode() == 321) return kTRUE;
   else return kFALSE;
@@ -2345,7 +2340,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t
 
  // d) PID:
  // For pT < 0.75 use only TPC
- if(gtrack->GetTPCmomentum() < 0.75) // TBI hardwired 0.75
+ if(gtrack->GetTPCmomentum() < 0.75) // TBI hardwired 0.75 => add setter for this
  {
   AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,gtrack);
   if(!statusTPC) return kFALSE;
@@ -2527,7 +2522,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackground()
 
  for(Int_t bs=0;bs<3;bs++)
  {
-  fBackgroundSublist[bs] = NULL;        // lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
+  fBackgroundSublist[bs] = NULL; 
  }
 
  for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -3204,7 +3199,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForMPDF()
 
  } // if(fCalculateMPDF2p) 
 
- // c) Book THnSparse for 3p correlations:
+ // c) Book THnSparse for 3p correlations: 
  if(fCalculateMPDF3p)
  {
   // 3D:
@@ -3377,7 +3372,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 
 void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
 {
- // Book all unclassified objects temporary here. TBI
+ // Book all unclassified objects temporary here.
 
  fAnalysisType = new TString();
 

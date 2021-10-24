@@ -10,11 +10,13 @@
 
 AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t AnalysisMC = kFALSE,
-		Int_t system =1, // 0 for pp and 1 for Pb-Pb
+		////		Int_t system =1, // 0 for pp and 1 for Pb-Pb
 		Bool_t PostCalib = kFALSE,
-		Bool_t LowpT = kFALSE,
-		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		////		Bool_t LowpT = kFALSE,
+		////		Bool_t MakePid = kFALSE,
+		const char* Period  = "16g",
+		int Ncl = 70,
+		int TrkCutMode = 0
 		)   
 {
 
@@ -31,18 +33,9 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		return 0x0;
 	}
 
-	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	trackFilterGolden->AddCuts(esdTrackCutsGolden);
-
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
 	AliESDtrackCuts* esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 	trackFilterTPC->AddCuts(esdTrackCutsTPC);
-
-	AliAnalysisFilter* trackFilterGolden2015PbPb = new AliAnalysisFilter("trackFilter2015PbPb");
-  	AliESDtrackCuts* esdTrackCutsGolden2015PbPb = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,1,kTRUE ,kFALSE);
-  	trackFilterGolden2015PbPb->AddCuts(esdTrackCutsGolden2015PbPb);
-
 
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -55,41 +48,44 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	if(!task) return 0x0;
 
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-//	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+	//	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
-	task->SetAddLowPt(LowpT);
-	task->SetPeriod(LHC16l);
+	/////	task->SetAddLowPt(LowpT);
+	task->SetPeriod(Period);
 
-	if(system==1){
-		task->SetAnalysisPbPb(kTRUE);
-		task->SetMinCent(0.0);
-		task->SetMaxCent(90.0);
-//		task->SetCentralityEstimator(centralityEstimator);
-	}
-	else
-		task->SetAnalysisPbPb(kFALSE);
-	
-	task->SetNcl(70);
+	//	if(system==1){
+	//		task->SetAnalysisPbPb(kTRUE);
+	//		task->SetMinCent(0.0);
+	//		task->SetMaxCent(90.0);
+	//		task->SetCentralityEstimator(centralityEstimator);
+	//	}
+	//	else
+	//		task->SetAnalysisPbPb(kFALSE);
+
+	task->SetNcl(Ncl);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-//	task->SetVtxCut(10.0);
-//	task->SetTrigger(AliVEvent::kINT7);
-//	task->SetPileUpRej(ispileuprej);
+	//	task->SetVtxCut(10.0);
+	//	task->SetTrigger(AliVEvent::kINT7);
+	//	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
-	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
-	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
-//	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
+	//	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
 	task->SetAnalysisTask(PostCalib);
-	task->SetAnalysisPID(MakePid);
+	///	task->SetAnalysisPID(MakePid);
+	task->SetTrackCutsSystVars(TrkCutMode);
+
+	std::string buf("MyOutputContainer");
+
+        if(Ncl==90) buf.append("_Ncl_90");
 
 	// add your task to the manager
 	mgr->AddTask(task);
 	// your task needs input: here we connect the manager to your task
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	// same for the output
-	mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+	mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("%s_TrkCutMode_%d",buf.c_str(),TrkCutMode), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 	// in the end, this macro returns a pointer to your task. this will be convenient later on
 	// when you will run your analysis in an analysis train on grid
 	return task;

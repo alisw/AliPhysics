@@ -921,7 +921,6 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
     
     Float_t xsection    = 0;
     Float_t trials      = 0;
-    Int_t   pthardbin   = 0;
     
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
@@ -932,7 +931,7 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
     TChain *chain = dynamic_cast<TChain*>(tree);
     if (chain) tree = chain->GetTree();
     
-    PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+    PythiaInfoFromFile(curfile->GetName(), xsection, trials);
     
     fHistManager.FillTH1("hNtrials", "#sum{ntrials}", trials);
     fHistManager.FillTH1("hXsec", "<#sigma>", xsection);

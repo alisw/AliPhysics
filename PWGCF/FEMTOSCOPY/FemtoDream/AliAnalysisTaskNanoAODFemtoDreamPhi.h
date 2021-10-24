@@ -13,7 +13,6 @@
 #include "AliFemtoDreamv0.h"
 #include "AliFemtoDreamv0Cuts.h"
 #include "AliFemtoDreamControlSample.h"
-#include "AliFemtoDreamBaseDump.h"
 
 
 class AliVParticle;
@@ -46,13 +45,33 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
     fConfig = config;
   }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
-  void SetUseDumpster(bool use) {  fUseDumpster = use; }
   void SetOEventMixing(bool mix) {  fUseOMixing = mix; }
   void SetMCTruth(bool mct) {  fIsMCTruth = mct; }
+  void SetmixTRUTHREAL(bool mct) {  fIsmixTRUTHREAL = mct; }
+  void SetmixTRUTFAKE(bool mct) {  fIsmixTRUTHFAKE = mct; }
+  void SetmixREC(bool mct) {  fIsmixREC = mct; }
+
   void SetCutWindowMCTRUTH(float down, float up) {
     fInvMassCutSBdown = down;
     fInvMassCutSBup = up;
   }
+
+  void SetpTprotonMCTRUTH(float pT) {
+    fprotonpT = pT;
+  }
+
+  void SetetaprotonMCTRUTH(float eta) {
+    fprotoneta = eta;
+  }
+
+  void SetpTkaonMCTRUTH(float pT) {
+    fkaonpT = pT;
+  }
+
+  void SetetakaonMCTRUTH(float eta) {
+    fkaoneta = eta;
+  }
+
 
  private:
   AliAnalysisTaskNanoAODFemtoDreamPhi(const AliAnalysisTaskNanoAODFemtoDreamPhi &);
@@ -61,13 +80,18 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   void StoreGlobalTrackReference(AliVTrack *track);
   bool fIsMC;                            //
   bool fIsMCTruth;                       //
-  bool fUseDumpster;                     //
-  bool fUseOMixing;                     //
+  bool fIsmixTRUTHREAL;                  //
+  bool fIsmixTRUTHFAKE;                  //
+  bool fIsmixREC;                        //
+  bool fUseOMixing;                      //
   float fInvMassCutSBdown;               //
   float fInvMassCutSBup;                 //
+  float fprotonpT;                       //
+  float fprotoneta;                      //
+  float fkaonpT;                         //
+  float fkaoneta;                        //
   UInt_t fTrigger;                       //
   TList *fOutput;                        //!
-  TList *fDumpster;                //!
   AliVEvent *fInputEvent;                //! current event
   AliFemtoDreamEvent *fEvent;            //!
   AliFemtoDreamTrack *fTrack;            //!
@@ -82,13 +106,9 @@ class AliAnalysisTaskNanoAODFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamPairCleaner *fPairCleaner;  //!
   AliFemtoDreamPartCollection *fPartColl;  //!
   AliFemtoDreamControlSample *fSample;   //!  
-  AliFemtoDreamDump *fProtonPhiDump;               //!
-  AliFemtoDreamDump *fAntiProtonPhiDump;       //!
-  AliFemtoDreamDump *fProtonPhiTRUTHDump;               //!
-  AliFemtoDreamDump *fAntiProtonPhiTRUTHDump;       //!
   AliVTrack **fGTI;                        //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 7)
+  ClassDef(AliAnalysisTaskNanoAODFemtoDreamPhi, 9)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskNanoAODFemtoDreamPhi_H_ */

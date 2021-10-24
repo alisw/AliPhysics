@@ -385,9 +385,13 @@ AliJEventHeader* AliJFilter::ReadCommonHeader(AliAODEvent *event){
 
 	float fcent = -999;
 	// centrality
-	if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
+	if(fRunTable->IsHeavyIon()){
 		AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
 		fcent = pms->GetMultiplicityPercentile("V0M");
+	} else if(fRunTable->IsPA()) {
+		//AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
+		//fcent = pms->GetMultiplicityPercentile("ZNA"); // or V0A
+		fcent = -1; // need to check why it doesn\t work for MC here
 	} else {
 		fcent = -1;
 		//cout<<"warning: centrality unavailable";

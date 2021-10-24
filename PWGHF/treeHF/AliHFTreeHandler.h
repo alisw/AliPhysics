@@ -85,7 +85,7 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo, AliAODPidHF* pidhf) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, AliAODMCParticle* mcpart);
@@ -194,7 +194,7 @@ class AliHFTreeHandler : public TObject
     void AddGenJetBranches();
     void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
-    bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
+    bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF, AliAODPidHF* pidhf);
   
     //utils methods
     double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
@@ -282,6 +282,16 @@ class AliHFTreeHandler : public TObject
     float fNTracksGenJet;  //number of tracks in the gen jet
     float fZJet; // fragmentation function in jet
     float fZGenJet; //fragmentation function in gen jet
+    float fAngularityk1B1Jet; // Angularity with kappa = 1 and beta =1 in jet
+    float fAngularityk1B1GenJet; // Angularity with kappa = 1 and beta =1 in gen jet  
+    float fpTDispersionJet; // pT dispersion in jet
+    float fpTDispersionGenJet; // pT dispersion in gen jet
+    float fChargek03Jet; // jet charge with kappa = 0.3 in jet
+    float fChargek03GenJet; // jet charge with kappa = 0.3 in gen jet
+    float fChargek05Jet; // jet charge with kappa = 0.5 in jet
+    float fChargek05GenJet; // jet charge with kappa = 0.5 in gen jet
+    float fChargek07Jet; // jet charge with kappa = 0.7 in jet
+    float fChargek07GenJet; // jet charge with kappa = 0.7 in gen jet
     float fZgJet; //zg
     float fZgGenJet; //gen zg
     float fRgJet; //Rg

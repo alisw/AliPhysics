@@ -10,8 +10,7 @@
 #include "TObject.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
-#include "AliKFParticle.h"
-#include "TParticle.h"
+#include "AliGAKFParticle.h"
 #include <iterator>
 #include <vector>
 #include "AliESDpid.h"
@@ -164,7 +163,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     Bool_t             GetProduceImpactParamHistograms()                {return fProduceImpactParamHistograms;}
     TList*             GetImpactParamHistograms()                       {return fImpactParamHistograms;}
 
-    Bool_t             ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax);
+    Bool_t             ParticleIsConvertedPhoton(AliMCEvent *mcEvent, AliMCParticle *particle, Double_t etaMax, Double_t rMax, Double_t zMax);
     void               CreatePureMCHistosForV0FinderEffiESD();
     void               FillRecMCHistosForV0FinderEffiESD( AliESDv0* currentV0);
     void               FillImpactParamHistograms(AliVTrack *ptrack, AliVTrack* ntrack, AliESDv0 *fCurrentV0, AliKFConversionPhoton *fCurrentMotherKF);
@@ -191,10 +190,10 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     const AliExternalTrackParam*   GetExternalTrackParam(AliESDv0 *fCurrentV0, Int_t &tracklabel, Int_t charge);
     const AliExternalTrackParam*   GetExternalTrackParamP(AliESDv0 *fCurrentV0, Int_t &tracklabel) {return GetExternalTrackParam(fCurrentV0,tracklabel,1);}
     const AliExternalTrackParam*   GetExternalTrackParamN(AliESDv0 *fCurrentV0, Int_t &tracklabel) {return GetExternalTrackParam(fCurrentV0,tracklabel,-1);}
-    AliKFParticle*                 GetPositiveKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
-    AliKFParticle*                 GetNegativeKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
-    AliKFParticle*                 GetPositiveKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
-    AliKFParticle*                 GetNegativeKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetPositiveKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetNegativeKFParticle(AliAODv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetPositiveKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
+    AliGAKFParticle*                 GetNegativeKFParticle(AliESDv0 *fCurrentV0, Int_t fTrackLabel[2]);
 
     Bool_t               GetConversionPoint(const AliExternalTrackParam *pparam, const AliExternalTrackParam *nparam, Double_t convpos[3], Double_t dca[2]);
     Bool_t               GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2]);
@@ -205,8 +204,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TBits		   *fPCMv0BitField;               //! Pointer to bitfield of PCM v0s
     AliConversionPhotonCuts  *fConversionCuts;    //-> Pointer to the ConversionCut Selection
     AliConvEventCuts         *fEventCuts;         //-> Pointer to the EventCut Selection
-    TClonesArray             *fInputGammas;       //! TClonesArray holding input gammas
-    TClonesArray             *fConversionGammas;  //! TClonesArray holding the reconstructed photons
+    TClonesArray             *fInputGammas;       // TClonesArray holding input gammas
+    TClonesArray             *fConversionGammas;  // TClonesArray holding the reconstructed photons
     Bool_t         fUseImprovedVertex;            // set flag to improve primary vertex estimation by adding photons
     Bool_t         fUseOwnXYZCalculation;         //flag that determines if we use our own calculation of xyz (markus)
     Bool_t         fUseConstructGamma;            //flag that determines if we use ConstructGamma method from AliKF
@@ -294,7 +293,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 24)
+    ClassDef(AliV0ReaderV1, 25)
 
 };
 

@@ -1,5 +1,5 @@
 /**
- * Hardest kt jet substructure task. Adapted from AliAnalysisTaskJetHardestKt
+ * Hardest kt jet substructure task. Adapted from AliAnalysisTaskJetDynamicalGrooming
  */
 
 #include "AliAnalysisTaskJetHardestKt.h"
@@ -37,6 +37,7 @@
 #include <AliVCluster.h>
 #include <AliVTrack.h>
 
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
 #include "AliEmcalPythiaInfo.h"
@@ -80,6 +81,13 @@ const std::map<std::string, AliAnalysisTaskJetHardestKt::DerivSubtrOrder_t> AliA
   { "kSecondOrder", AliAnalysisTaskJetHardestKt::kSecondOrder },
   { "kFirstOrder", AliAnalysisTaskJetHardestKt::kFirstOrder }
 };
+const std::map<std::string, AliAnalysisTaskJetHardestKt::GroomingMethod_t> AliAnalysisTaskJetHardestKt::fgkGroomingMethodMap = {
+  { "kLeadingKt", AliAnalysisTaskJetHardestKt::kLeadingKt },
+  { "kDynamicalZ", AliAnalysisTaskJetHardestKt::kDynamicalZ },
+  { "kDynamicalKt", AliAnalysisTaskJetHardestKt::kDynamicalKt },
+  { "kDynamicalTime", AliAnalysisTaskJetHardestKt::kDynamicalTime },
+  { "kDynamicalCore", AliAnalysisTaskJetHardestKt::kDynamicalCore }
+};
 
 /**
  * Default constructor.
@@ -100,6 +108,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt()
   fCheckResolution(kFALSE),
   fSubjetCutoff(0.1),
   fMinPtConst(1),
+  fGroomingMethod(GroomingMethod_t::kLeadingKt),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fCutDoubleCounts(kTRUE),
@@ -108,6 +117,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt()
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
+  fStoreEventPlane(false),
   fEnableSubjetMatching(false),
   fSubstructureVariables(),
   fPtJet(nullptr),
@@ -138,6 +148,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(const char* name)
   fCheckResolution(kFALSE),
   fSubjetCutoff(0.1),
   fMinPtConst(1),
+  fGroomingMethod(GroomingMethod_t::kLeadingKt),
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fCutDoubleCounts(kTRUE),
@@ -146,6 +157,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(const char* name)
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fStoreDetLevelJets(kFALSE),
+  fStoreEventPlane(false),
   fEnableSubjetMatching(false),
   fSubstructureVariables(),
   fPtJet(nullptr),
@@ -180,6 +192,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(
   fCheckResolution(other.fCheckResolution),
   fSubjetCutoff(other.fSubjetCutoff),
   fMinPtConst(other.fMinPtConst),
+  fGroomingMethod(other.fGroomingMethod),
   fHardCutoff(other.fHardCutoff),
   fDoTwoTrack(other.fDoTwoTrack),
   fCutDoubleCounts(other.fCutDoubleCounts),
@@ -188,6 +201,7 @@ AliAnalysisTaskJetHardestKt::AliAnalysisTaskJetHardestKt(
   fMagFieldPolarity(other.fMagFieldPolarity),
   fDerivSubtrOrder(other.fDerivSubtrOrder),
   fStoreDetLevelJets(other.fStoreDetLevelJets),
+  fStoreEventPlane(other.fStoreEventPlane),
   fEnableSubjetMatching(other.fEnableSubjetMatching),
   fSubstructureVariables(other.fSubstructureVariables),
   fPtJet(nullptr),
@@ -248,6 +262,11 @@ void AliAnalysisTaskJetHardestKt::RetrieveAndSetTaskPropertiesFromYAMLConfig()
   fYAMLConfig.GetProperty({baseName, "checkSubjetResolution"}, fCheckResolution, false);
   fYAMLConfig.GetProperty({baseName, "angularSubjetResolutionCutoff"}, fSubjetCutoff, false);
   fYAMLConfig.GetProperty({baseName, "constituentPtCutoff"}, fMinPtConst, false);
+  // Grooming properties
+  res = fYAMLConfig.GetProperty({baseName, "groomingMethod"}, tempStr, false);
+  if (res) {
+    fGroomingMethod = fgkGroomingMethodMap.at(tempStr);
+  }
   fYAMLConfig.GetProperty({baseName, "hardCutoff"}, fHardCutoff, false);
   fYAMLConfig.GetProperty({baseName, "considerTwoTrackEffects"}, fDoTwoTrack, false);
   // Default is true
@@ -266,6 +285,7 @@ void AliAnalysisTaskJetHardestKt::RetrieveAndSetTaskPropertiesFromYAMLConfig()
     fDerivSubtrOrder = fgkDerivSubtrOrderMap.at(tempStr);
   }
   fYAMLConfig.GetProperty({baseName, "storeDetLevelJets"}, fStoreDetLevelJets, false);
+  fYAMLConfig.GetProperty({baseName, "storeEventPlane"}, fStoreEventPlane, false);
   fYAMLConfig.GetProperty({baseName, "subjetMatching"}, fEnableSubjetMatching, false);
 }
 
@@ -303,7 +323,25 @@ bool AliAnalysisTaskJetHardestKt::Initialize()
 
 std::string AliAnalysisTaskJetHardestKt::GroomingMethodName() const
 {
-  std::string groomingMethod = "leading_kt";
+  // Retrieve the base name from the enumeration map. In principle, this isn't the fastest thing,
+  // but it should be good enough.
+  std::string tempGroomingMethod = GetKeyFromMapValue(fGroomingMethod, fgkGroomingMethodMap);
+  // Transform name, removing the leading "k" and adding underscores at capitals.
+  // ie: "kLeadingKt" -> "leading_kt"
+  tempGroomingMethod = tempGroomingMethod.substr(1);
+  std::string groomingMethod = "";
+  // There's probably a much better way to do this, but it's quick and easy.
+  for (std::size_t i = 0; i < tempGroomingMethod.size(); i++)
+  {
+    // We skip for the first letter because we don't want a leading "_"
+    if (isupper(tempGroomingMethod[i]) && i != 0) {
+      groomingMethod += "_";
+    }
+    // We use tolower() for everything just in case. It simplifies the logic and shouldn't hurt anything.
+    groomingMethod += tolower(tempGroomingMethod[i]);
+  }
+
+  // Now determine the rest of the name.
   if (fHardCutoff > 0) {
     // Includes leading zero
     groomingMethod += "_z_cut_0";
@@ -354,6 +392,23 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
       AddSubstructureVariablesToMap("det_level");
     }
   }
+  // Add pythia info from embedding.
+  // We don't need this anymore. But I leave the code here commented on the off chance we need to cross check again.
+  /*if (fJetShapeType == kDetEmbPartPythia) {
+    fSubstructureVariables["pt_hard_bin"] = -1;
+    fSubstructureVariables["pt_hard"] = -1;
+    fSubstructureVariables["cross_section"] = -1;
+    fSubstructureVariables["n_trials"] = -1;
+  }*/
+  // Alternatively if in pythia, we'll fill it out directly from the variables that are already available.
+  if (fIsPythia) {
+    // Will be automatically filled by AliAnalysisTaskEmcal.
+    fTreeSubstructure->Branch("pt_hard_bin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
+    fTreeSubstructure->Branch("pt_hard", &fPtHard);
+  }
+  if (fStoreEventPlane) {
+    fTreeSubstructure->Branch("event_plane_angle", &fEPV0);
+  }
 
   // Add appropriate subjet matching fields.
   std::string groomingMethod = GroomingMethodName();
@@ -363,20 +418,20 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
       // to get the matching arguments correct).
       std::string name = groomingMethod;
       name += "_hybrid_det_level_matching_";
-      fSubstructureVariables[name + "leading"];
-      fSubstructureVariables[name + "subleading"];
+      fSubstructureVariables[name + "leading"] = -1;
+      fSubstructureVariables[name + "subleading"] = -1;
 
       // Momentum fraction of det level subjets contained in the hybrid jet.
-      fSubstructureVariables[name + "leading_pt_fraction_in_hybrid_jet"];
-      fSubstructureVariables[name + "subleading_pt_fraction_in_hybrid_jet"];
+      fSubstructureVariables[name + "leading_pt_fraction_in_hybrid_jet"] = -1;
+      fSubstructureVariables[name + "subleading_pt_fraction_in_hybrid_jet"] = -1;
     }
     if (fJetShapeType == kDetEmbPartPythia || fJetShapeType == kPythiaDef) {
       // det level-true level matching (true level will be labeled as "matched" usually, but we specialize here because we already have to specialize
       // to get the matching arguments correct).
       std::string name = groomingMethod;
       name += "_det_level_true_matching_";
-      fSubstructureVariables[name + "leading"];
-      fSubstructureVariables[name + "subleading"];
+      fSubstructureVariables[name + "leading"] = -1;
+      fSubstructureVariables[name + "subleading"] = -1;
     }
   }
 
@@ -385,12 +440,6 @@ void AliAnalysisTaskJetHardestKt::SetupTree()
     // NOTE: We access the value via the map (even though we have access in the iterator) to ensure
     //       we get the right memory address (instead of the iterator memory address).
     fTreeSubstructure->Branch(p.first.c_str(), &fSubstructureVariables[p.first], TString::Format("%s/F", p.first.c_str()));
-  }
-
-  if (fIsPythia) {
-    // Will be automatically filled by AliAnalysisTaskEmcal.
-    fTreeSubstructure->Branch("ptHardBin", fPtHardInitialized ? &fPtHardBinGlobal : &fPtHardBin);
-    fTreeSubstructure->Branch("ptHard", &fPtHard);
   }
 
   // Print out substructure variables that were added. This is generally for debugging, but is also good for logging purposes.
@@ -465,37 +514,49 @@ double AliAnalysisTaskJetHardestKt::DynamicalGrooming(const fastjet::PseudoJet& 
                                const double a) const
 {
   double deltaR = subjet1.delta_R(subjet2);
-  double z = subjet1.pt() / parent.pt();
+  double z = 0;
+  if (parent.pt() > 0) {
+    z = subjet1.pt() / parent.pt();
+  }
   return z * (1 - z) * parent.pt() * std::pow(deltaR / R, a);
 }
 
-double AliAnalysisTaskJetHardestKt::CalculateZDrop(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::CalculateDynamicalZ(const fastjet::PseudoJet& subjet1,
                               const fastjet::PseudoJet& subjet2,
                               const fastjet::PseudoJet& parent, const double R) const
 {
   return DynamicalGrooming(subjet1, subjet2, parent, R, 0.1);
 }
 
-double AliAnalysisTaskJetHardestKt::CalculateKtDrop(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::CalculateDynamicalKt(const fastjet::PseudoJet& subjet1,
                               const fastjet::PseudoJet& subjet2,
                               const fastjet::PseudoJet& parent, const double R) const
 {
   return DynamicalGrooming(subjet1, subjet2, parent, R, 1);
 }
 
-double AliAnalysisTaskJetHardestKt::CalculateTimeDrop(const fastjet::PseudoJet& subjet1,
+double AliAnalysisTaskJetHardestKt::CalculateDynamicalTime(const fastjet::PseudoJet& subjet1,
                                const fastjet::PseudoJet& subjet2,
                                const fastjet::PseudoJet& parent, const double R) const
 {
   return DynamicalGrooming(subjet1, subjet2, parent, R, 2);
 }
 
+double AliAnalysisTaskJetHardestKt::CalculateDynamicalCore(const fastjet::PseudoJet& subjet1,
+                               const fastjet::PseudoJet& subjet2,
+                               const fastjet::PseudoJet& parent, const double R) const
+{
+  return DynamicalGrooming(subjet1, subjet2, parent, R, 0.5);
+}
+
 Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
 {
-  AliJetContainer* jetCont = GetJetContainer(0);
-  // container zero is always the base container: the data container, the
+  // Container zero is always the base container: the data container, the
   // embedded subtracted in the case of embedding or the detector level in case
   // of pythia
+  AliJetContainer* jetCont = GetJetContainer(0);
+  // The jetR must be the same for jet collections that we consider, so we just retrieve it once.
+  double jetR = jetCont->GetJetRadius();
 
   if (fCentSelectOn) {
     if ((fCent > fCentMax) || (fCent < fCentMin)) {
@@ -596,6 +657,16 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
         if (fraction < fMinFractionShared) {
           continue;
         }
+
+        // Lastly, add the pythia information from the embedding helper if available.
+        // See the definition above for why this is commented
+        /*const AliAnalysisTaskEmcalEmbeddingHelper * embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+        if (embeddingHelper) {
+          fSubstructureVariables["pt_hard_bin"] = embeddingHelper->GetPtHardBin();
+          fSubstructureVariables["pt_hard"] = embeddingHelper->GetPythiaPtHard();
+          fSubstructureVariables["cross_section"] = embeddingHelper->GetPythiaXSection();
+          fSubstructureVariables["n_trials"] = embeddingHelper->GetPythiaTrials();
+        }*/
       }
 
       // this is the mode to run over pythia to produce a det-part response
@@ -684,9 +755,9 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
 
       // The double counting cut should be applied to the unsubtracted hybrid max track pt. Confusingly,
       // MaxTrackPt() called on the constituent subtracted jet returns the _unsubtracted_ jet pt. Here, we
-      // store the unsubtracted max track pt. Then, during setup for declustering, we'll store the leading subtracted
-      // constituent. That way, we'll be able to apply the double counting cut offline, regardless of the
-      // whether we want to use the subtracted or unsubtracted case.
+      // store the unsubtracted max track pt. Then, during setup for declustering, we'll store the leading
+      // subtracted constituent. That way, we'll be able to apply the double counting cut offline, regardless
+      // of the whether we want to use the subtracted or unsubtracted case.
       //
       // We also maintain the ability to apply the double counting cut during analysis.
       fSubstructureVariables["data_leading_track_pt"] = jet1->MaxTrackPt();
@@ -698,7 +769,7 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
       }
 
       // Determine the splittings of the main (data) jet.
-      std::shared_ptr<SelectedSubjets> dataSubjets = IterativeParents(jet1, "data", true);
+      std::shared_ptr<SelectedSubjets> dataSubjets = IterativeParents(jet1, "data", true, jetR);
 
       // If appropriate, then fill the matched and/or detector level jets.
       std::shared_ptr<SelectedSubjets> matchedSubjets = nullptr;
@@ -708,7 +779,7 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
         // NOTE: For the embedded cases, this uses the unsubtracted max track pt even though
         //       the jet pt is constituent subtracted.
         fSubstructureVariables["matched_leading_track_pt"] = jet3->MaxTrackPt();
-        matchedSubjets = IterativeParents(jet3, "matched", false);
+        matchedSubjets = IterativeParents(jet3, "matched", false, jetR);
       }
 
       if (fJetShapeType == kDetEmbPartPythia) {
@@ -716,13 +787,13 @@ Bool_t AliAnalysisTaskJetHardestKt::FillHistograms()
         // NOTE: For the embedded cases, this uses the unsubtracted max track pt even though
         //       the jet pt is constituent subtracted.
         fSubstructureVariables["matched_leading_track_pt"] = jet3->MaxTrackPt();
-        matchedSubjets = IterativeParents(jet3, "matched", false);
+        matchedSubjets = IterativeParents(jet3, "matched", false, jetR);
         if (fStoreDetLevelJets) {
           fSubstructureVariables["det_level_jet_pt"] = jet2->Pt();
           // NOTE: For the embedded cases, this uses the unsubtracted max track pt even though
           //       the jet pt is constituent subtracted.
           fSubstructureVariables["det_level_leading_track_pt"] = jet2->MaxTrackPt();
-          detLevelSubjets = IterativeParents(jet2, "det_level", false);
+          detLevelSubjets = IterativeParents(jet2, "det_level", false, jetR);
         }
       }
 
@@ -952,7 +1023,7 @@ int AliAnalysisTaskJetHardestKt::GetConstituentID(int constituentIndex, AliVPart
  * @param[in] prefix Prefix under which the jet splitting properties will be stored.
  * @param[in] isData If True, treat the splitting as coming from data. This means that ghosts are utilized and track resolution may be considered.
  */
-std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData)
+std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData, double jetR)
 {
   AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   std::vector<fastjet::PseudoJet> inputVectors;
@@ -981,12 +1052,13 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
   }
 
   // Define substructure variables.
+  float hardnessMeasure = -0.005;
   float kt = -0.005;
   float zg = -0.005;
   float rg = -0.005;
-  int nToSplit = -0.005;
-  int nGroomedToSplit = -0.005;
-  int nPassedGrooming = -0.005;
+  int nToSplit = 0;
+  int nGroomedToSplit = 0;
+  int nPassedGrooming = 0;
 
   std::shared_ptr<SelectedSubjets> selectedSubjets;
   try {
@@ -1027,10 +1099,37 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
       double xdeltaR = j1.delta_R(j2);
       double xkt = j2.perp() * sin(xdeltaR);
 
+      // First check the hard cutoff. This lets us combine it with dynamical grooming if desired.
       if (xz > fHardCutoff) {
+        // If we pass any hard cutoff that we've set, then we will always find a splitting,
+        // so we already increment the count.
         nPassedGrooming += 1;
+
+        // Determine if we've found a new hardest splitting according to our hardness measure.
+        double xHardnessMeasure = -0.05;
+        switch (fGroomingMethod) {
+          case kLeadingKt:
+            xHardnessMeasure = xkt;
+            break;
+          case kDynamicalZ:
+            xHardnessMeasure = CalculateDynamicalZ(j1, j2, jj, jetR);
+            break;
+          case kDynamicalKt:
+            xHardnessMeasure = CalculateDynamicalKt(j1, j2, jj, jetR);
+            break;
+          case kDynamicalTime:
+            xHardnessMeasure = CalculateDynamicalTime(j1, j2, jj, jetR);
+            break;
+          case kDynamicalCore:
+            xHardnessMeasure = CalculateDynamicalCore(j1, j2, jj, jetR);
+            break;
+          default:
+            AliFatalF("Unrecognized grooming method %s", GroomingMethodName().c_str());
+            break;
+        }
         // Update all of the properties if selected.
-        if (xkt > kt) {
+        if (xHardnessMeasure > hardnessMeasure) {
+          hardnessMeasure = xHardnessMeasure;
           zg = xz;
           rg = xdeltaR;
           kt = xkt;
@@ -1296,9 +1395,9 @@ AliAnalysisTaskJetHardestKt* AliAnalysisTaskJetHardestKt::AddTaskJetHardestKt(
     trackContPartLevel = task->AddParticleContainer(ntracksPartLevel);
   } else
     trackContPartLevel = task->AddMCParticleContainer(ntracksPartLevel);
-  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia)
+  if (jetShapeType == AliAnalysisTaskJetHardestKt::kDetEmbPartPythia) {
     trackContPartLevel->SetIsEmbedding(true);
-  // Printf("ntracksPartLevel() = %s, trackContPartLevel=%p ", ntracksPartLevel, trackContPartLevel);
+  }
 
   AliClusterContainer* clusterCont = task->AddClusterContainer(nclusters);
 
@@ -1476,7 +1575,9 @@ std::string AliAnalysisTaskJetHardestKt::toString() const
   tempSS << "\tCheck subjet resolution: " << fCheckResolution << "\n";
   tempSS << "\tSubjet cutoff: " << fSubjetCutoff << "\n";
   tempSS << "\tConstituent pt cutoff: " << fMinPtConst << " GeV/c\n";
+  tempSS << "\tGrooming method: " << GetKeyFromMapValue(fGroomingMethod, fgkGroomingMethodMap) << "\n";
   tempSS << "\tHard cutoff: " << fHardCutoff << "\n";
+  tempSS << "\tGrooming method output name: " << GroomingMethodName() << "\n";
   tempSS << "\tConsider two track effects: " << fDoTwoTrack << "\n";
   tempSS << "\tCut double counting: " << fCutDoubleCounts << "\n";
   tempSS << "Two track effects settings:\n";
@@ -1486,6 +1587,7 @@ std::string AliAnalysisTaskJetHardestKt::toString() const
   tempSS << "Miscellaneous:\n";
   tempSS << "\tDerivative subtracter order: " << fDerivSubtrOrder << "\n";
   tempSS << "\tStore detector level jets: " << fStoreDetLevelJets << "\n";
+  tempSS << "\tStore event plane: " << fStoreEventPlane << "\n";
   tempSS << "\tEnable subjet matching: " << fEnableSubjetMatching << "\n";
   // Substructure variables:
   tempSS << "Substructure variables:\n";
@@ -1565,6 +1667,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt& first,
   swap(first.fCheckResolution, second.fCheckResolution);
   swap(first.fSubjetCutoff, second.fSubjetCutoff);
   swap(first.fMinPtConst, second.fMinPtConst);
+  swap(first.fGroomingMethod, second.fGroomingMethod);
   swap(first.fHardCutoff, second.fHardCutoff);
   swap(first.fDoTwoTrack, second.fDoTwoTrack);
   swap(first.fCutDoubleCounts, second.fCutDoubleCounts);
@@ -1573,6 +1676,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskJetHardestKt& first,
   swap(first.fMagFieldPolarity, second.fMagFieldPolarity);
   swap(first.fDerivSubtrOrder, second.fDerivSubtrOrder);
   swap(first.fStoreDetLevelJets, second.fStoreDetLevelJets);
+  swap(first.fStoreEventPlane, second.fStoreEventPlane);
   swap(first.fSubstructureVariables, second.fSubstructureVariables);
   swap(first.fPtJet, second.fPtJet);
   swap(first.fHCheckResolutionSubjets, second.fHCheckResolutionSubjets);

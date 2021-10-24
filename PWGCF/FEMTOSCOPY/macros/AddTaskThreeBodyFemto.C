@@ -11,12 +11,16 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = true,
-                                     bool isMC = false, bool isNano = true, bool triggerOn = false,
-                                     const char *cutVariation = "0") {
+                                     bool isMC = false, bool isNano = true, bool triggerOn = false, 
+                                     int mixingDepthFromTask = 20,
+                                     float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
+                                     const char *cutVariation = "0", bool ClosePairRejectionForAll = "false", 
+                                     const char *triggerVariation = "0") {
 
 
 
   TString suffix = TString::Format("%s", cutVariation);
+  TString suffixTrigger = TString::Format("%s", triggerVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -86,7 +90,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
 
-  // If  cut variations needed
+  // If  cut variations eta
   if(suffix=="3" || suffix=="6" || suffix=="7" || suffix=="8"){
     v0Cuts->SetCutInvMass(0.006);
     Antiv0Cuts->SetCutInvMass(0.006);
@@ -120,128 +124,1970 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   AliFemtoDreamTrackCuts *PosAntiv0DaugTrigger;
   AliFemtoDreamTrackCuts *NegAntiv0DaugTrigger;
 
+  bool TriggerOnSample = false;
+
   if(triggerOn){
-    evtCutsTrigger = new AliFemtoDreamEventCuts();
-    evtCutsTrigger->UseDontWorryEvtCuts(false);
-    evtCutsTrigger->SetZVtxPosition(-15., 15.);
-    //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+    if(suffixTrigger=="0"){
+      Q3Limit = 3.0;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-15., 15.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
 
-    TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
-    TrackCutsTrigger->SetPlotDCADist(true);
-    TrackCutsTrigger->SetIsMonteCarlo(isMC);
-    
-    TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
-    TrackCutsTrigger->SetCutCharge(1);
-    TrackCutsTrigger->SetPtRange(0.3, 100000.);
-    TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
-    TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
-    //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
-    TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,5., false, 5.);  
-    TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
-    TrackCutsTrigger->SetDCAVtxZ(0.8);
-    TrackCutsTrigger->SetDCAVtxXY(0.4);
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 100000.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,5., false, 5.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
 
-    AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
-    AntiTrackCutsTrigger->SetPlotDCADist(true);
-    AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
 
-    AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
-    AntiTrackCutsTrigger->SetCutCharge(-1);
-    AntiTrackCutsTrigger->SetPtRange(0.3, 100000.);
-    AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
-    AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
-    //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
-    AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,5., false, 5.); 
-    AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
-    AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
-    AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 100000.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,5., false, 5.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
 
-    v0CutsTrigger = new AliFemtoDreamv0Cuts();
-    v0CutsTrigger->SetIsMonteCarlo(isMC);
-    v0CutsTrigger->SetPlotCPADist(true);
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
 
-    Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
-    Posv0DaugTrigger->SetIsMonteCarlo(isMC);
-    Posv0DaugTrigger->SetFillQALater(true);
-    Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
 
-    Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
-    Negv0DaugTrigger->SetIsMonteCarlo(isMC);
-    Negv0DaugTrigger->SetFillQALater(true);
-    Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
 
-    v0CutsTrigger->SetCutCharge(0);
-    v0CutsTrigger->SetPtRange(0., 999.);
-    v0CutsTrigger->SetCutCPA(0.9);
-    v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
-    v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
-    v0CutsTrigger->SetKaonRejection(0.49, 0.505);
-    v0CutsTrigger->SetCutMaxDecayVtx(150);
-    v0CutsTrigger->SetCutTransverseRadius(0.1, 150);
-    v0CutsTrigger->SetCutInvMass(0.010);
-    v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(150);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 150);
+      v0CutsTrigger->SetCutInvMass(0.010);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
 
-    Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
-    Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
-    Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
-    Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
-    Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
-    Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
-    Negv0DaugTrigger->SetDCAReCalculation(true);
-    Posv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
 
-    v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
-    v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
-    v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
-    v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
-    v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
 
-    Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
-    Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
-    Antiv0CutsTrigger->SetPlotCPADist(true);
-    Antiv0CutsTrigger->SetPlotContrib(false);
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
 
-    PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
-    PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
-    PosAntiv0DaugTrigger->SetFillQALater(true);
-    PosAntiv0DaugTrigger->SetCutCharge(1);
-    NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
-    NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
-    NegAntiv0DaugTrigger->SetFillQALater(true);
-    NegAntiv0DaugTrigger->SetCutCharge(-1);
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
 
-    Antiv0CutsTrigger->SetCutCharge(0);
-    Antiv0CutsTrigger->SetPtRange(0., 999.);
-    Antiv0CutsTrigger->SetCutCPA(0.9);
-    Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
-    Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
-    Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
-    Antiv0CutsTrigger->SetCutMaxDecayVtx(150);
-    Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 150);
-    Antiv0CutsTrigger->SetCutInvMass(0.010);
-    Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(150);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 150);
+      Antiv0CutsTrigger->SetCutInvMass(0.010);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
 
-    PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
-    NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
-    PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
-    NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
-    PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
-    NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
-    PosAntiv0DaugTrigger->SetDCAReCalculation(true);
-    NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
 
-    Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
-    Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
-    Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
-    Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
-    Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
-    if (!fullBlastQA) {
-      evtCutsTrigger->SetMinimalBooking(true);
-      TrackCutsTrigger->SetMinimalBooking(true);
-      AntiTrackCutsTrigger->SetMinimalBooking(true);
-      v0CutsTrigger->SetMinimalBooking(true);
-      Antiv0CutsTrigger->SetMinimalBooking(true);
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
     }
+
+    if(suffixTrigger=="1"){
+      Q3Limit = 1.5;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-15., 15.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 100000.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,5., false, 5.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 100000.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,5., false, 5.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(150);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 150);
+      v0CutsTrigger->SetCutInvMass(0.010);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(150);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 150);
+      Antiv0CutsTrigger->SetCutInvMass(0.010);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+
+    if(suffixTrigger=="2"){
+      Q3Limit = 1.5;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-15., 15.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+
+    if(suffixTrigger=="3"){
+      Q3Limit = 1.5;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-15., 15.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="4"){
+      Q3Limit = 3.;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-15., 15.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+if(suffixTrigger=="5"){
+      Q3Limit = 3.;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-15., 15.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="6"){
+      Q3Limit = 1.5;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-12., 12.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.8);
+      TrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.8);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.4);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.9);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.9);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(3.);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="7"){
+      Q3Limit = 1.5;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-12., 12.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.4);
+      TrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.4);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.95);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.95);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="8"){
+      Q3Limit = 1.;
+      TriggerOnSample = true;
+      Q3LimitSample = 1.5;
+            evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-12., 12.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.4);
+      TrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.4);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.95);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.95);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+
+     if(suffixTrigger=="9"){
+      Q3Limit = 1.;
+      TriggerOnSample = false;
+      Q3LimitSample = 1.5;
+            evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-12., 12.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.4);
+      TrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.4);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.95);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.95);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="10"){
+      Q3Limit = 0.;
+      TriggerOnSample = true;
+      Q3LimitSample = 1.;
+            evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-12., 12.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.3, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.4);
+      TrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.3, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.9, 0.9);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 60., 0.);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.4);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.2);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.95);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(120);
+      v0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Negv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.95);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.02);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(2.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(120);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.1, 120);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.9, 0.9);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 7.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 7.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="11"){
+      Q3Limit = 1.5;
+      TriggerOnSample = false;
+      //Q3LimitSample = 1.;
+            evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-10., 10.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.5, 4.05);
+      TrackCutsTrigger->SetEtaRange(-0.8, 0.8);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,3., false, 3.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.2);
+      TrackCutsTrigger->SetDCAVtxXY(0.1);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.5, 4.05);
+      AntiTrackCutsTrigger->SetEtaRange(-0.8, 0.8);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,3., false, 3.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.2);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.1);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0.3, 999.);
+      v0CutsTrigger->SetCutCPA(0.99);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.05);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(1.5);
+      v0CutsTrigger->SetKaonRejection(0.48, 0.515);
+      v0CutsTrigger->SetCutMaxDecayVtx(100);
+      v0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      v0CutsTrigger->SetCutInvMass(0.004);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      Negv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 5.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 5.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0.3, 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.99);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.05);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(1.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.48, 0.515);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(100);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      Antiv0CutsTrigger->SetCutInvMass(0.004);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 5.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 5.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+    if(suffixTrigger=="12"){
+      Q3Limit = 0.6;
+      TriggerOnSample = false;
+      //Q3LimitSample = 1.;
+            evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-10., 10.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.5, 4.05);
+      TrackCutsTrigger->SetEtaRange(-0.8, 0.8);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,3., false, 3.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.2);
+      TrackCutsTrigger->SetDCAVtxXY(0.1);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.5, 4.05);
+      AntiTrackCutsTrigger->SetEtaRange(-0.8, 0.8);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,3., false, 3.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.2);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.1);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0.3, 999.);
+      v0CutsTrigger->SetCutCPA(0.99);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.05);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(1.5);
+      v0CutsTrigger->SetKaonRejection(0.48, 0.515);
+      v0CutsTrigger->SetCutMaxDecayVtx(100);
+      v0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      v0CutsTrigger->SetCutInvMass(0.004);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      Negv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 5.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 5.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0.3, 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.99);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.05);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(1.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.48, 0.515);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(100);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      Antiv0CutsTrigger->SetCutInvMass(0.004);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 5.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 5.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+    if(suffixTrigger=="13"){
+
+
+      TriggerOnSample = true;
+
+      //Q3LimitSample = 1.;
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-10., 10.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.5, 4.05);
+      TrackCutsTrigger->SetEtaRange(-0.8, 0.8);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,3., false, 3.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.2);
+      TrackCutsTrigger->SetDCAVtxXY(0.1);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.5, 4.05);
+      AntiTrackCutsTrigger->SetEtaRange(-0.8, 0.8);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,3., false, 3.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.2);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.1);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0.3, 999.);
+      v0CutsTrigger->SetCutCPA(0.99);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.05);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(1.5);
+      v0CutsTrigger->SetKaonRejection(0.48, 0.515);
+      v0CutsTrigger->SetCutMaxDecayVtx(100);
+      v0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      v0CutsTrigger->SetCutInvMass(0.004);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      Posv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Negv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      Posv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      Negv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 5.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 5.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0.3, 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.99);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.05);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(1.5);
+      Antiv0CutsTrigger->SetKaonRejection(0.48, 0.515);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(100);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      Antiv0CutsTrigger->SetCutInvMass(0.004);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+
+      PosAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      NegAntiv0DaugTrigger->SetCutTPCCrossedRows(true, 60, 0.);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.8, 0.8);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 5.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 5.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+
+    if(suffixTrigger=="14"){
+      evtCutsTrigger = new AliFemtoDreamEventCuts();
+      evtCutsTrigger->UseDontWorryEvtCuts(false);
+      evtCutsTrigger->SetZVtxPosition(-12., 12.);
+      //evtCutsTrigger->CleanUpMult(false, false, false, true); will I have this in Run3 for trigger???
+
+      TrackCutsTrigger =  new AliFemtoDreamTrackCuts();
+      TrackCutsTrigger->SetPlotDCADist(true);
+      TrackCutsTrigger->SetIsMonteCarlo(isMC);
+      
+      TrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetCutCharge(1);
+      TrackCutsTrigger->SetPtRange(0.35, 5.);
+      TrackCutsTrigger->SetEtaRange(-0.85, 0.85);
+      TrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      TrackCutsTrigger->SetNClsTPC(65);
+      //TrackCutsTrigger->SetNClsTPC(60);// for now use only crossed pad rows
+      TrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.);  
+      TrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      TrackCutsTrigger->SetDCAVtxZ(0.3);
+      TrackCutsTrigger->SetDCAVtxXY(0.15);
+      TrackCutsTrigger->SetRejLowPtPionsTOF(true);
+      TrackCutsTrigger->SetCutSmallestSig(true);
+
+      AntiTrackCutsTrigger = new AliFemtoDreamTrackCuts();
+      AntiTrackCutsTrigger->SetPlotDCADist(true);
+      AntiTrackCutsTrigger->SetIsMonteCarlo(isMC);
+
+      AntiTrackCutsTrigger->SetFilterBit(128); //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetCutCharge(-1);
+      AntiTrackCutsTrigger->SetPtRange(0.35, 5.);
+      AntiTrackCutsTrigger->SetEtaRange(-0.85, 0.85);
+      AntiTrackCutsTrigger->SetCutTPCCrossedRows(true, 70., 0.83);
+      AntiTrackCutsTrigger->SetNClsTPC(65);
+      //AntiTrackCutsTrigger->SetNClsTPC(60); // for now use only crossed pad rows
+      AntiTrackCutsTrigger->SetPID(AliPID::kProton, 0.75,4., false, 4.); 
+      AntiTrackCutsTrigger->SetDCAReCalculation(true);  //will I have this in Run3 for trigger???
+      AntiTrackCutsTrigger->SetDCAVtxZ(0.3);
+      AntiTrackCutsTrigger->SetDCAVtxXY(0.15);
+      AntiTrackCutsTrigger->SetRejLowPtPionsTOF(true);
+      AntiTrackCutsTrigger->SetCutSmallestSig(true);
+
+      v0CutsTrigger = new AliFemtoDreamv0Cuts();
+      v0CutsTrigger->SetIsMonteCarlo(isMC);
+      v0CutsTrigger->SetPlotCPADist(true);
+
+      Posv0DaugTrigger = new AliFemtoDreamTrackCuts(); // proton
+      Posv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Posv0DaugTrigger->SetFillQALater(true);
+      Posv0DaugTrigger->SetCutCharge(1);
+      Posv0DaugTrigger->SetCheckPileUp(true);
+
+      Negv0DaugTrigger = new AliFemtoDreamTrackCuts(); //pion
+      Negv0DaugTrigger->SetIsMonteCarlo(isMC);
+      Negv0DaugTrigger->SetFillQALater(true);
+      Negv0DaugTrigger->SetCutCharge(-1);
+      Negv0DaugTrigger->SetCheckPileUp(true);
+
+      v0CutsTrigger->SetCutCharge(0);
+      v0CutsTrigger->SetPtRange(0., 999.);
+      v0CutsTrigger->SetCutCPA(0.985);
+      v0CutsTrigger->SetCutDCADaugToPrimVtx(0.04);
+      v0CutsTrigger->SetCutDCADaugTov0Vtx(1.8);
+      v0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      v0CutsTrigger->SetCutMaxDecayVtx(100);
+      v0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      v0CutsTrigger->SetCutInvMass(0.006);
+      v0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+      Posv0DaugTrigger->SetNClsTPC(60);
+      Negv0DaugTrigger->SetNClsTPC(60);
+      Posv0DaugTrigger->SetEtaRange(-0.85, 0.85);
+      Negv0DaugTrigger->SetEtaRange(-0.85, 0.85);
+      Posv0DaugTrigger->SetPID(AliPID::kProton, 999., 6.);
+      Negv0DaugTrigger->SetPID(AliPID::kPion, 999., 6.);
+      Negv0DaugTrigger->SetDCAReCalculation(true);
+      Posv0DaugTrigger->SetDCAReCalculation(true);
+
+      v0CutsTrigger->SetPosDaugterTrackCuts(Posv0DaugTrigger);
+      v0CutsTrigger->SetNegDaugterTrackCuts(Negv0DaugTrigger);
+      v0CutsTrigger->SetPDGCodePosDaug(2212);  //Proton
+      v0CutsTrigger->SetPDGCodeNegDaug(211);  //Pion
+      v0CutsTrigger->SetPDGCodev0(3122);  //Lambda
+
+      Antiv0CutsTrigger = new AliFemtoDreamv0Cuts();
+      Antiv0CutsTrigger->SetIsMonteCarlo(isMC);
+      Antiv0CutsTrigger->SetPlotCPADist(true);
+      Antiv0CutsTrigger->SetPlotContrib(false);
+
+      PosAntiv0DaugTrigger = new AliFemtoDreamTrackCuts();
+      PosAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      PosAntiv0DaugTrigger->SetFillQALater(true);
+      PosAntiv0DaugTrigger->SetCutCharge(1);
+      PosAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      NegAntiv0DaugTrigger =new AliFemtoDreamTrackCuts();
+      NegAntiv0DaugTrigger->SetIsMonteCarlo(isMC);
+      NegAntiv0DaugTrigger->SetFillQALater(true);
+      NegAntiv0DaugTrigger->SetCutCharge(-1);
+      NegAntiv0DaugTrigger->SetCheckPileUp(true);
+
+      Antiv0CutsTrigger->SetCutCharge(0);
+      Antiv0CutsTrigger->SetPtRange(0., 999.);
+      Antiv0CutsTrigger->SetCutCPA(0.985);
+      Antiv0CutsTrigger->SetCutDCADaugToPrimVtx(0.04);
+      Antiv0CutsTrigger->SetCutDCADaugTov0Vtx(1.8);
+      Antiv0CutsTrigger->SetKaonRejection(0.49, 0.505);
+      Antiv0CutsTrigger->SetCutMaxDecayVtx(100);
+      Antiv0CutsTrigger->SetCutTransverseRadius(0.2, 100);
+      Antiv0CutsTrigger->SetCutInvMass(0.006);
+      Antiv0CutsTrigger->SetAxisInvMassPlots(400, 1.0, 1.2);
+      PosAntiv0DaugTrigger->SetNClsTPC(60);
+      NegAntiv0DaugTrigger->SetNClsTPC(60);
+      PosAntiv0DaugTrigger->SetEtaRange(-0.85, 0.85);
+      NegAntiv0DaugTrigger->SetEtaRange(-0.85, 0.85);
+      PosAntiv0DaugTrigger->SetPID(AliPID::kPion, 999., 6.);
+      NegAntiv0DaugTrigger->SetPID(AliPID::kProton, 999., 6.);
+      PosAntiv0DaugTrigger->SetDCAReCalculation(true);
+      NegAntiv0DaugTrigger->SetDCAReCalculation(true);
+
+      Antiv0CutsTrigger->SetPosDaugterTrackCuts(PosAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetNegDaugterTrackCuts(NegAntiv0DaugTrigger);
+      Antiv0CutsTrigger->SetPDGCodePosDaug(211);  //Pion
+      Antiv0CutsTrigger->SetPDGCodeNegDaug(2212);  //Proton
+      Antiv0CutsTrigger->SetPDGCodev0(-3122);  //Lambda
+
+      if (!fullBlastQA) {
+        evtCutsTrigger->SetMinimalBooking(true);
+        TrackCutsTrigger->SetMinimalBooking(true);
+        AntiTrackCutsTrigger->SetMinimalBooking(true);
+        v0CutsTrigger->SetMinimalBooking(true);
+        Antiv0CutsTrigger->SetMinimalBooking(true);
+      }
+    }
+
+
+
 
   }
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -283,7 +2129,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(mixingDepthFromTask);
   config->SetUseEventMixing(true);
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
@@ -353,26 +2199,25 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   TString addon = "PL";
   TString file = AliAnalysisManager::GetCommonFileName();
 
-  TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
+  TString EvtCutsName = Form("%sEvtCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
 
-  TString TrackCutsName = Form("%sTrackCuts%s", addon.Data(), suffix.Data());
+  TString TrackCutsName = Form("%sTrackCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
 
-  TString AntiTrackCutsName = Form("%sAntiTrackCuts%s", addon.Data(),
-                                   suffix.Data());
+  TString AntiTrackCutsName = Form("%sAntiTrackCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
 
   AliAnalysisDataContainer *coutputv0Cuts;
-  TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
+  TString v0CutsName = Form("%sv0Cuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   coutputv0Cuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       v0CutsName.Data(),
@@ -380,7 +2225,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       Form("%s:%s", file.Data(), v0CutsName.Data()));
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
-  TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
+  TString Antiv0CutsName = Form("%sAntiv0Cuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   coutputAntiv0Cuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       Antiv0CutsName.Data(),
@@ -389,7 +2234,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString ResultsName = Form("%sResults_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsName.Data(),
@@ -397,7 +2242,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       Form("%s:%s", file.Data(), ResultsName.Data()));
 
   AliAnalysisDataContainer *coutputResultsQA;
-  TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
+  TString ResultsQAName = Form("%sResultsQA_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   coutputResultsQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsQAName.Data(),
@@ -406,8 +2251,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
 
   AliAnalysisDataContainer *coutputResultsSample;
-  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(),
-                                   suffix.Data());
+  TString ResultsSampleName = Form("%sResultsSample_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   coutputResultsSample = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsSampleName.Data(),
@@ -416,8 +2260,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       Form("%s:%s", file.Data(), ResultsSampleName.Data()));
 
   AliAnalysisDataContainer *coutputResultsSampleQA;
-  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(),
-                                     suffix.Data());
+  TString ResultsSampleQAName = Form("%sResultsSampleQA_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   coutputResultsSampleQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsSampleQAName.Data(),
@@ -430,7 +2273,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   AliAnalysisDataContainer *coutputv0CutsMC;
   AliAnalysisDataContainer *coutputAntiv0CutsMC;
   if (isMC) {
-    TString TrkCutsMCName = Form("%sTrkCutsMC%s", addon.Data(), suffix.Data());
+    TString TrkCutsMCName = Form("%sTrkCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         TrkCutsMCName.Data(),
@@ -438,8 +2281,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
 
-    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s", addon.Data(),
-                                     suffix.Data());
+    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         AntiTrkCutsMCName.Data(),
@@ -447,7 +2289,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
 
-    TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
+    TString v0CutsMCName = Form("%sv0CutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         v0CutsMCName.Data(),
@@ -455,8 +2297,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
 
-    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s", addon.Data(),
-                                    suffix.Data());
+    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputAntiv0CutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         Antiv0CutsMCName.Data(),
@@ -466,7 +2307,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
 
   }
 
-  TString ThreeBodyName = Form("%sThreeBody%s", addon.Data(), suffix.Data());
+  TString ThreeBodyName = Form("%sThreeBody_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputThreeBody = mgr->CreateContainer(
     //@suppress("Invalid arguments") it works ffs
     ThreeBodyName.Data(),
@@ -480,26 +2321,25 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
   AliAnalysisDataContainer *coutputv0CutsTrigger;
   AliAnalysisDataContainer *coutputAntiv0CutsTrigger;
   if(triggerOn){
-    TString EvtCutsTriggerName = Form("%sEvtCutsTrigger%s", addon.Data(), suffix.Data());
+    TString EvtCutsTriggerName = Form("%sEvtCutsTrigger_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputEvtCutsTrigger = mgr->CreateContainer(
         EvtCutsTriggerName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), EvtCutsTriggerName.Data()));
 
-    TString TrackCutsTriggerName = Form("%sTrackCutsTrigger%s", addon.Data(), suffix.Data());
+    TString TrackCutsTriggerName = Form("%sTrackCutsTrigger_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     couputTrkCutsTrigger = mgr->CreateContainer(
         TrackCutsTriggerName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsTriggerName.Data()));
 
-    TString AntiTrackCutsTriggerName = Form("%sAntiTrackCutsTrigger%s", addon.Data(),
-                                     suffix.Data());
+    TString AntiTrackCutsTriggerName = Form("%sAntiTrackCutsTrigger_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputAntiTrkCutsTrigger = mgr->CreateContainer(
         AntiTrackCutsTriggerName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsTriggerName.Data()));
 
     
-    TString v0CutsTriggerName = Form("%sv0CutsTrigger%s", addon.Data(), suffix.Data());
+    TString v0CutsTriggerName = Form("%sv0CutsTrigger_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputv0CutsTrigger = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         v0CutsTriggerName.Data(),
@@ -507,7 +2347,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
         Form("%s:%s", file.Data(), v0CutsTriggerName.Data()));
 
     
-    TString Antiv0CutsTriggerName = Form("%sAntiv0CutsTrigger%s", addon.Data(), suffix.Data());
+    TString Antiv0CutsTriggerName = Form("%sAntiv0CutsTrigger_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputAntiv0CutsTrigger = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         Antiv0CutsTriggerName.Data(),
@@ -538,6 +2378,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
     taskNano->SetAntiv0Cuts(Antiv0Cuts);  
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
@@ -581,11 +2422,28 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
       taskAOD->SetAntiProtonCutsTrigger(AntiTrackCutsTrigger); 
       taskAOD->Setv0CutsTrigger(v0CutsTrigger);  
       taskAOD->SetAntiv0CutsTrigger(Antiv0CutsTrigger);  
+      taskAOD->SetQ3Limit(Q3Limit);
+      if(TriggerOnSample){
+        taskAOD->SetQ3LimitSample(Q3LimitSample);
+        taskAOD->SetTriggerOnSample(TriggerOnSample);
+      }
     }
     taskAOD->SetCorrelationConfig(config); 
     taskAOD->SetRunThreeBodyHistograms(true);
     taskAOD->SetTriggerOn(triggerOn);
     taskAOD->SetIsMC(isMC);
+
+
+
+
+    taskAOD->SetQ3Limit(Q3Limit);
+    taskAOD->SetQ3LimitSample(Q3LimitSample) ;
+    taskAOD->SetQ3LimitSample2(Q3LimitSample2) ;
+    taskAOD->SetQ3LimitSampleFraction( Q3LimitSampleFraction) ;
+    taskAOD->SetQ3LimitSampleFraction2( Q3LimitSampleFraction2) ;
+    taskAOD->SetQ3LimitFraction( Q3LimitFraction) ;
+
+
     mgr->AddTask(taskAOD); 
     
     mgr->ConnectInput(taskAOD, 0, cinput); 

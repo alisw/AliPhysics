@@ -34,8 +34,8 @@ namespace JETFW {
 
 AliEmcalJetConstituent::AliEmcalJetConstituent() :
   TObject(),
-  fGlobalIndex(0),
-  fIsFromEmbeddedEvent(false)
+  fIsFromEmbeddedEvent(false),
+  fGlobalIndex(0)
 {
 
 }

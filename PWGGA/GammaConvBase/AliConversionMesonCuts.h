@@ -19,7 +19,7 @@
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
-class AliKFVertex;
+class AliGAKFVertex;
 class TH1F;
 class TH2F;
 class AliPIDResponse;
@@ -111,25 +111,26 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     // Cut Selection
     Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE, Double_t fRapidityShift=0., Int_t leadingCellID1 = 0, Int_t leadingCellID2 = 0, Char_t recoMeth1 = 0, Char_t  recoMeth2 = 0);
-    Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Double_t fRapidityShift=0.);
+    Bool_t MesonIsSelectedMC(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMC(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCAODESD(AliDalitzAODESDMC *fMCMother,AliDalitzEventMC *mcEvent, Double_t fRapidityShift=0.) const;
-    Bool_t MesonIsSelectedMCDalitz(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
+    Bool_t MesonIsSelectedMCDalitz(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedAODMCDalitz(AliAODMCParticle *MCMother,TClonesArray *AODMCArray, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.);
     Bool_t MesonIsSelectedMCDalitzAODESD(AliDalitzAODESDMC* fMCMother,AliDalitzEventMC *mcEvent, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma,Double_t fRapidityShift=0.) const;
-    Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedMCEtaPiPlPiMiGamma(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedAODMCEtaPiPlPiMiGamma(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift=0);
-    Bool_t MesonIsSelectedMCPiPlPiMiEta(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedMCPiPlPiMiEta(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedAODMCPiPlPiMiEta(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
-    Bool_t MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedMCPiPlPiMiPiZero(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedAODMCPiPlPiMiPiZero(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelNeutPion, Double_t fRapidityShift=0);
-    Bool_t MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliMCEvent *mcEvent, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
+    Bool_t MesonIsSelectedMCPiZeroGamma(AliMCParticle *fMCMother, AliMCEvent *mcEvent, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
     Bool_t MesonIsSelectedAODMCPiZeroGamma(AliAODMCParticle *fMCMother, TClonesArray *AODMCArray, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift=0);
-    Bool_t MesonIsSelectedMCChiC(TParticle *fMCMother,AliMCEvent *mcEvent, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
+    Bool_t MesonIsSelectedMCChiC(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
     Bool_t MesonIsSelectedAODMCChiC(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. );
     Bool_t MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fMCMother,AliDalitzEventMC *mcEvent, Int_t &, Int_t &, Int_t &, Double_t fRapidityShift=0. ) const;
     Bool_t MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma,
-                                           Bool_t DoPiZeroAngleCut, TF1 *maxfit, Double_t lowerFactor, Double_t upperFactor);
+                                           Bool_t DoPiZeroAngleCut, TF1 *maxfit, TF1 *minfit);
+    Bool_t MesonIsSelectedPiZeroGammaOAC(AliAODConversionMother *omega, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1, AliAODConversionPhoton *gamma2);
     void   PrintCuts();
     void   PrintCutsWithValues();
 
@@ -142,7 +143,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void    SmearVirtualPhoton(AliAODConversionPhoton* photon);
     TLorentzVector SmearElectron(TLorentzVector particle);
 
-    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1.;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
+    void    SetDefaultSmearing(Double_t p0, Double_t p1, Double_t p2){fUseMCPSmearing=1;fPBremSmearing=p0;fPSigSmearing=p1;fPSigSmearingCte=p2;return;}
 
     //Cut functions
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
@@ -198,22 +199,25 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   DoJetRotateMixing() {return fDoJetRotateMixing;}
     Bool_t   DoJetPtMixing() {return fDoJetPtMixing;}
     Bool_t   DoSphericityMixing(){return fDoSphericityMixing;}
-    Bool_t   DoGammaSwappForBg(){return fDoGammaSwappForBg;}
+    Int_t    DoGammaSwappForBg(){return fDoGammaSwappForBg;}
     Bool_t   DoWeightingInSwappBg(){return fDoWeightingInSwappBg;}
     Int_t    GammaSwappMethodBg(){return fGammaSwappMethodBg;}
     Int_t    GetNumberOfSwappsForBg(){return fNumberOfSwappsForBg;}
+    Int_t    GetDistanceToBorderForBg(){return fDistanceToBorderSwappBG;}
     Bool_t   DoJetAnalysis(){return fDoJetAnalysis;}
     Bool_t   DoJetQA(){return fDoJetQA;}
+    Int_t    DoOutOfJet(){return fDoOutOfJet;}
     Bool_t   DoIsolatedAnalysis(){return fDoIsolatedAnalysis;}
     Bool_t   DoHighPtHadronAnalysis(){return fDoHighPtHadronAnalysis;}
     Bool_t   UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t   UseToCloseV0sCut(){return fDoToCloseV0sCut;}
-    Bool_t   UseMCPSmearing(){return fUseMCPSmearing;}
+    Bool_t   UseMCPSmearing(){if (fUseMCPSmearing > 0) return kTRUE; else return kFALSE;}
     Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
     Double_t GetAcceptMassFlag() const {return fAcceptMesonMass;}
     Double_t GetMinPt() const {return fMinPt;}
+    Double_t GetMaxPt() const {return fMaxPt;}
     Bool_t   UseLikeSignMixing() {return fBackgroundUseLikeSign;}
     Bool_t   UseSidebandMixing() {return fBackgroundUseSideband;}
     Bool_t   UseSidebandMixingBothSides() {return fBackgroundUseSidebandBothSides;}
@@ -228,6 +232,10 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
+    Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+
+    // Jet specific function
+    Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
 
   protected:
     TRandom3    fRandom;                        ///<
@@ -254,6 +262,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     Double_t    fMaxR;                          ///< max r cut
     Double_t    fMinPt;                         ///< min pT cut
+    Double_t    fMaxPt;                         ///< max pT cut
     Double_t    fSelectionLow;                  ///< lower meson inv mass window for further selection
     Double_t    fSelectionHigh;                 ///< higher meson inv mass window for further selection
     Double_t    fSelectionNSigmaLow;            ///< N of sigma for ptdep selection window cut min
@@ -268,6 +277,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fPBremSmearing;                 ///
     Double_t    fPSigSmearing;                  ///
     Double_t    fPSigSmearingCte;               ///
+    Double_t    fPSigSmearingRatio;             ///
     Double_t    fDCAGammaGammaCut;              ///< cut value for the maximum distance between the two photons [cm]
     Double_t    fDCAZMesonPrimVtxCut;           ///< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
     Double_t    fDCARMesonPrimVtxCut;           ///< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
@@ -294,9 +304,11 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t*      fElectronLabelArray;            //[fElectronLabelArraySize] Array with elec/pos v0 label
     Int_t       fBackgroundHandler;             ///<
     Int_t       fMassParamFunction;             ///< flag to set the functions that should be used to paramterize NDM mass and width
+    Int_t       fAlphaInTaskMode;               ///<
 
     Int_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Bool_t      fDoMinPtCut;                    ///< do min pT cut
+    Bool_t      fDoMaxPtCut;                    ///< do max pT cut
     Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
     Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis
     Bool_t      fUseRotationMethodInBG;         ///< flag to apply rotation method for meson bg estimation
@@ -311,17 +323,18 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoJetPtMixing;                 ///< flag to enbale mixing by jet pt bins
     Bool_t      fDoSphericityMixing;            ///< flag to enable Sphericitymixing for meson bg estimation
     Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
-    Bool_t      fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
+    Int_t       fDoGammaSwappForBg;             ///< flag to use cluster swapping for background estimation
     Bool_t      fDoWeightingInSwappBg;          ///< flag to use multiplicity weighting for cluster swapping for background estimation
     Int_t       fGammaSwappMethodBg;            ///< flag to switch between different methods for cluster swapping: 0= 90 degree; 1=random angle
     Int_t       fNumberOfSwappsForBg;           ///< flag to enable multiple rotations for 1 photon pair for cluster swapping Bg
+    Int_t       fDistanceToBorderSwappBG;       ///< flag to enable minimum distance of EMCal cluster to SuperModule border
     Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
     Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
     Bool_t      fAllowCombOnlyInSameRecMethod;  ///< flag to disable inv mass pairing among different calo's
     Bool_t      fDoToCloseV0sCut;               ///<
     Bool_t      fDoSharedElecCut;               ///<
     Bool_t      fDoMesonQualitySelection;       ///< flag to enable the meson selection based on the quality.
-    Bool_t      fUseMCPSmearing;                ///< flag
+    Int_t       fUseMCPSmearing;                ///< flag
     Bool_t      fAlphaPtDepCut;                 ///<
     Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
     Bool_t      fDCAZMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
@@ -334,6 +347,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fBackgroundMode;                ///< default is 4: all pions from different event
     Bool_t      fDoJetAnalysis;                 ///< switch to run a jet analysis
     Bool_t      fDoJetQA;                       ///< switch to run a jet QA analysis
+    Int_t       fDoOutOfJet;                    ///< switch to Analyse mesons out of jet (0 = switched off, 1 = all mesons out of jet, 2 = mesons on away side of jet, 3 = mesons in "donut shape" around jet)
     Bool_t      fDoIsolatedAnalysis;            ///< switch to run a isolated pi0 analysis
     Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
     Bool_t      fEnableOmegaAPlikeCut;          ///< falg to enable the overloaded to close to V0 cut as cut inside an AP like plot
@@ -345,7 +359,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,44)
+    ClassDef(AliConversionMesonCuts,52)
     /// \endcond
 };
 

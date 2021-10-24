@@ -12,12 +12,17 @@
 
 #include <cmath>
 #include <limits>
+
+#include "TMath.h"
+#include "TFile.h"
+
 #include "AliHFTreeHandlerApply.h"
 #include "AliPID.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrack.h"
-#include "TMath.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandlerApply);
@@ -206,7 +211,7 @@ void AliHFTreeHandlerApply::AddCommonDmesonVarBranches(Bool_t HasSecVtx) {
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);
-  fTreeVar->Branch("pt_gen_cand",&fPtGen);
+  if(fFillOnlySignal) fTreeVar->Branch("pt_gen_cand",&fPtGen);
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
@@ -244,6 +249,10 @@ void AliHFTreeHandlerApply::AddSingleTrackBranches() {
       fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
       fTreeVar->Branch(Form("nTPCclspid_prong%d",iProng),&fNTPCclsPidProng[iProng]);
     }
+    else if(fSingleTrackOpt==kRedSingleTrackVarsPbPbExtreme) {
+      fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
+      fTreeVar->Branch(Form("spdhits_prong%d",iProng),&fSPDhitsProng[iProng]);
+    }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fTreeVar->Branch(Form("pt_prong%d",iProng),&fPtProng[iProng]);
       fTreeVar->Branch(Form("eta_prong%d",iProng),&fEtaProng[iProng]);
@@ -261,7 +270,7 @@ void AliHFTreeHandlerApply::AddSingleTrackBranches() {
 }
 
 //________________________________________________________________
-void AliHFTreeHandlerApply::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
+void AliHFTreeHandlerApply::AddPidBranches(bool prongusepid[], bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
 {
   
   if(fPidOpt==kNoPID) return;
@@ -277,6 +286,7 @@ void AliHFTreeHandlerApply::AddPidBranches(bool usePionHypo, bool useKaonHypo, b
   TString rawPidName[knMaxDet4Pid] = {"dEdxTPC","ToF"};
   
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
+    if(!prongusepid[iProng]) continue;
     if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaPIDfloatandint) || fPidOpt>=kRawAndNsigmaPID) {
       for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
         if(!useDet[iDet]) continue;
@@ -344,6 +354,9 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
       fPProng[iProng]=prongtracks[iProng]->P();
       fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
       fNTPCclsPidProng[iProng]=prongtracks[iProng]->GetTPCsignalN();
+    } else if(fSingleTrackOpt==kRedSingleTrackVarsPbPbExtreme){
+      fPtProng[iProng]=prongtracks[iProng]->Pt();
+      fSPDhitsProng[iProng] = prongtracks[iProng]->GetITSClusterMap() & 0x3;
     }
     else if(fSingleTrackOpt==kAllSingleTrackVars) {
       fPtProng[iProng]=prongtracks[iProng]->Pt();
@@ -364,7 +377,7 @@ bool AliHFTreeHandlerApply::SetSingleTrackVars(AliAODTrack* prongtracks[]) {
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF)
+bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF, AliAODPidHF* pidhf)
 {
   if(!pidrespo) return false;
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
@@ -388,15 +401,24 @@ bool AliHFTreeHandlerApply::SetPidVars(AliAODTrack* prongtracks[], AliPIDRespons
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(useHypo[iPartHypo]) {
           if(useTPC) {
-            float nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
-            if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
-              float sigma=1., mean=0.;
-              GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
-              nSigmaTPC = (nSigmaTPC-mean)/sigma;
+            double nSigmaTPC = -999;
+            if(pidhf) pidhf->GetnSigmaTPC(prongtracks[iProng],parthypo[iPartHypo],nSigmaTPC);
+            else {
+              nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
+              if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
+                float sigma=1., mean=0.;
+                GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
+                nSigmaTPC = (nSigmaTPC-mean)/sigma;
+              }
             }
             sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
           }
-          if(useTOF) sig[iProng][kTOF][iPartHypo] = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
+          if(useTOF){
+            double nSigmaTOF = -999;
+            if(pidhf) pidhf->GetnSigmaTOF(prongtracks[iProng],parthypo[iPartHypo],nSigmaTOF);
+            else nSigmaTOF = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
+            sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
+          }
           if(((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) && useTPC && useTOF) {
             sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo],sig[iProng][kTOF][iPartHypo]);
           }
@@ -586,11 +608,21 @@ float AliHFTreeHandlerApply::GetTOFmomentum(AliAODTrack* track, AliPIDResponse* 
 //________________________________________________________________
 void AliHFTreeHandlerApply::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
   
-  if(fRunNumber!=fRunNumberPrevCand)
+  if(fRunNumber!=fRunNumberPrevCand) {
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    Bool_t isPass1 = kFALSE;
+    TTree *treeAOD = inputHandler->GetTree();
+    TString currentFile = treeAOD->GetCurrentFile()->GetName();
+    if((currentFile.Contains("LHC18q") || currentFile.Contains("LHC18r")) && currentFile.Contains("pass1"))
+      isPass1 = kTRUE;
+
     AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr,
                                                   fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData,
-                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
-  
+                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData, isPass1);
+  }
+
   int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
   else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value

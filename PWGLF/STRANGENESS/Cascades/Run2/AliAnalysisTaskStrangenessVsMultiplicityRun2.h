@@ -50,6 +50,7 @@ class AliExternalTrackParam;
 //#include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
@@ -78,7 +79,9 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-
+  void SetSaveEverything           (Bool_t lSaveEverything   = kTRUE ) {
+    fkSaveEverything = lSaveEverything; //danger ... use cautiously
+  }
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -96,6 +99,9 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+  void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
+    fkDoStrangenessTracking = lOpt;
+  }
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -220,6 +226,11 @@ public:
     void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
     void AddCascadeConfigurationPreliminaryCrosscheck(); //
+  Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, Double_t b);
+  void Evaluate(const Double_t *h, Double_t t,
+                Double_t r[3],  //radius vector
+                Double_t g[3],  //first defivatives
+                Double_t gg[3]); //second derivatives
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -229,7 +240,10 @@ public:
         fkSaveSpecificConfig = kTRUE; 
     }
 //---------------------------------------------------------------------------------------
-    
+
+    Double_t MLCascadeNeuralNetworkForward(Double_t v[11], Float_t lpT);
+
+//---------------------------------------------------------------------------------------
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
     // your data member object is created on the worker nodes and streaming is not needed.
@@ -264,6 +278,7 @@ private:
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
+  Bool_t fkSaveEverything;
     Bool_t fkPreselectDedx;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
@@ -284,7 +299,9 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-    
+  Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
+  AliAnalysisTaskWeakDecayVertexer *fWDV; //helper 
+  
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
@@ -476,6 +493,11 @@ private:
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!
 
+    //-------------------------------------------
+    //ML Prediction
+    Double_t fTreeCascVarMLCascadeNNPrediction; //!
+    //-------------------------------------------
+
     //TPC dEdx
     Float_t fTreeCascVarNegNSigmaPion;   //!
     Float_t fTreeCascVarNegNSigmaProton; //!
@@ -662,6 +684,7 @@ private:
     TH1D *fHistEventCounterDifferential; //!
     TH1D *fHistCentrality; //!
     TH2D *fHistEventMatrix; //!
+  TH1D *fRecPointRadii; 
 
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented

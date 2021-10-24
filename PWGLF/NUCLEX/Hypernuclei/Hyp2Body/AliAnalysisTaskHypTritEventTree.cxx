@@ -148,7 +148,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistNumEvents->GetXaxis()->SetBinLabel(1,"before PhysSel");
   fHistNumEvents->GetXaxis()->SetBinLabel(2,"after PhysSel");
 
-  fHistTrigger = new TH1F("fHistTrigger","Trigger",7,0,7);
+  fHistTrigger = new TH1F("fHistTrigger","Trigger",8,0,8);
   fHistTrigger->GetXaxis()->SetBinLabel(1,"other");
   fHistTrigger->GetXaxis()->SetBinLabel(2,"kINT7");
   fHistTrigger->GetXaxis()->SetBinLabel(3,"kHighMultV0");
@@ -156,7 +156,8 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistTrigger->GetXaxis()->SetBinLabel(5,"HNU");
   fHistTrigger->GetXaxis()->SetBinLabel(6,"HQU");
   fHistTrigger->GetXaxis()->SetBinLabel(7,"HJT");
-  fHistV0 = new TH1F("fHistV0","Trigger V0s",7,0,7);
+  fHistTrigger->GetXaxis()->SetBinLabel(8,"HSE");
+  fHistV0 = new TH1F("fHistV0","Trigger V0s",8,0,8);
   fHistV0->GetXaxis()->SetBinLabel(1,"other");
   fHistV0->GetXaxis()->SetBinLabel(2,"kINT7");
   fHistV0->GetXaxis()->SetBinLabel(3,"kHighMultV0");
@@ -164,6 +165,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistV0->GetXaxis()->SetBinLabel(5,"HNU");
   fHistV0->GetXaxis()->SetBinLabel(6,"HQU");
   fHistV0->GetXaxis()->SetBinLabel(7,"HJT");
+  fHistV0->GetXaxis()->SetBinLabel(8,"HSE");
 
   fHistMcGen = new TH1F("fHistMcGen","mc generated; ct (cm);counts",40,0,40);
   fHistMcRec = new TH1F("fHistMcRec","mc reconstructed; ct (cm);counts",40,0,40);
@@ -267,7 +269,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 
   Int_t runNumber = fESDevent->GetRunNumber();
   SetBetheBlochParams(runNumber);
-  TriggerSelection();
+  TriggerSelection(mcEvent);
   SetMultiplicity();
   fHistNumEvents->Fill(1);
   fReducedEvent->fCentrality = centrality;
@@ -285,7 +287,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     trackCutsV0.SetEtaRange(-0.9,0.9);
     trackCutsV0.SetAcceptKinkDaughters(kFALSE);
     trackCutsV0.SetRequireTPCRefit(kTRUE);
-    trackCutsV0.SetMaxChi2PerClusterTPC(5);
+    trackCutsV0.SetMaxChi2PerClusterTPC(6);
     trackCutsV0.SetMinNClustersTPC(60);
   } else {
       trackCutsV0.SetAcceptKinkDaughters(kFALSE);
@@ -374,11 +376,11 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     }
     if (helium3Positive && pionNegative) {
       SetMomentum( 2, v0ChargeCorrect);
-      CalculateV0(*trackN, *trackP,  AliPID::kPion, AliPID::kHe3);
+      CalculateV0(*trackN, *trackP,  AliPID::kPion, AliPID::kHe3, mcEvent);
     }
     if (helium3Negative && pionPositive) {
       SetMomentum(-2, v0ChargeCorrect);
-      CalculateV0(*trackN, *trackP, AliPID::kHe3, AliPID::kPion);
+      CalculateV0(*trackN, *trackP, AliPID::kHe3, AliPID::kPion, mcEvent);
     }
   }
   fReducedEvent->fNumberV0s = (fNV0Cand);
@@ -387,7 +389,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   if (fMCtrue) {
     const AliMCVertex* mcVertex = (const AliMCVertex*) mcEvent->GetPrimaryVertex();
     fPrimaryVertex.SetXYZ(mcVertex->GetX(), mcVertex->GetY(), mcVertex->GetZ());
-    MCStackLoop(fStack);
+    MCStackLoop(mcEvent);
   }
   PostData(1, fHistogramList);
   PostData(2, fTree);
@@ -433,7 +435,7 @@ void AliAnalysisTaskHypTritEventTree::SetMomentum(Int_t charge, Bool_t v0ChargeC
 /// \param trackP  track with positive charge
 /// \param typeNeg Particle type hypothesis of negative particle used in calculation
 /// \param typePos Particle type hypothesis of positive particle used in calculation
-void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos) {
+void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos, AliMCEvent* mcEvent) {
   fMomPos.SetE(TMath::Sqrt(AliPID::ParticleMass(typePos) * AliPID::ParticleMass(typePos) + fMomPos.Vect().Mag2()));
   fMomNeg.SetE(TMath::Sqrt(AliPID::ParticleMass(typeNeg) * AliPID::ParticleMass(typeNeg) + fMomNeg.Vect().Mag2()));
   Double_t v0M  = (fMomNeg + fMomPos).M();
@@ -489,6 +491,12 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fPtrack = trackP.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackN.GetTPCNcls();
     reducedPi->fTpcNClusters = trackP.GetTPCNcls();
+    reducedHe->fTpcChi2 = trackN.GetTPCchi2() / (Float_t) trackN.GetTPCclusters(0);
+    reducedPi->fTpcChi2 = trackP.GetTPCchi2() / (Float_t) trackP.GetTPCclusters(0);
+    reducedHe->fKink = trackN.GetKinkIndex(0) > 0;
+    reducedPi->fKink = trackP.GetKinkIndex(0) > 0;
+    reducedHe->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;
+    reducedPi->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;
   }
   if (charge > 0) {
     reducedHe->fP = fMomPos;
@@ -519,75 +527,84 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fPtrack = trackN.GetInnerParam()->GetP();
     reducedHe->fTpcNClusters = trackP.GetTPCNcls();
     reducedPi->fTpcNClusters = trackN.GetTPCNcls();
+    reducedHe->fTpcChi2 = trackP.GetTPCchi2() / (Float_t) trackP.GetTPCclusters(0);
+    reducedPi->fTpcChi2 = trackN.GetTPCchi2() / (Float_t) trackN.GetTPCclusters(0);
+    reducedHe->fKink = trackP.GetKinkIndex(0) > 0;
+    reducedPi->fKink = trackN.GetKinkIndex(0) > 0;
+    reducedHe->fTPCrefit = (trackP.GetStatus() & AliESDtrack::kTPCrefit) != 0;
+    reducedPi->fTPCrefit = (trackN.GetStatus() & AliESDtrack::kTPCrefit) != 0;
   }
+
   if (fMCtrue && ((typePos == AliPID::kHe3 && typeNeg == AliPID::kPion) || (typePos == AliPID::kPion && typeNeg == AliPID::kHe3))) {
-    Int_t labelP = trackP.GetLabel();
-    Int_t labelN = trackN.GetLabel();
-    TParticle *daughterParticleP = fStack->Particle(TMath::Abs(labelP));
-    TParticle *daughterParticleN = fStack->Particle(TMath::Abs(labelN));
-    TParticle *particleMotherP = fStack->Particle(TMath::Abs(daughterParticleP->GetFirstMother()));
-    TParticle *particleMotherN = fStack->Particle(TMath::Abs(daughterParticleN->GetFirstMother()));
-    Int_t labelMotherP = daughterParticleP->GetFirstMother();
-    Int_t labelMotherN = daughterParticleN->GetFirstMother();
-    if (((particleMotherN->GetPdgCode() == 1010010030 && particleMotherP->GetPdgCode() == 1010010030)   ||
-          (particleMotherN->GetPdgCode() == -1010010030 && particleMotherP->GetPdgCode() == -1010010030)) &&
-        (labelMotherN == labelMotherP)) {
-      reducedV0->fMcTruth = 1;
-      fMCGenRecArray->AddAtAndExpand(reducedV0, fMcGenRecCounter);
-      fMCGenRec[fMcGenRecCounter] = labelMotherP;
-      fMcGenRecCounter++;
-      //if (McCuts(*reducedV0, *reducedHe, *reducedPi)) 
-		fHistMcRec->Fill(reducedV0->fDecayLength);
+    Int_t labelP = TMath::Abs(trackP.GetLabel());
+    Int_t labelN = TMath::Abs(trackN.GetLabel());
+    if (!mcEvent->IsPhysicalPrimary(labelP) && !mcEvent->IsPhysicalPrimary(labelN) && !mcEvent->IsSecondaryFromMaterial(labelP) && !mcEvent->IsSecondaryFromMaterial(labelN)) {
+			AliMCParticle *daughterParticleP = (AliMCParticle*) mcEvent->GetTrack(labelP);
+			AliMCParticle *daughterParticleN = (AliMCParticle*) mcEvent->GetTrack(labelN);
+    	Int_t labelMotherP = TMath::Abs(daughterParticleP->GetMother());
+    	Int_t labelMotherN = TMath::Abs(daughterParticleN->GetMother());
+			AliMCParticle *particleMotherP = (AliMCParticle*) mcEvent->GetTrack(labelMotherP);
+			AliMCParticle *particleMotherN = (AliMCParticle*) mcEvent->GetTrack(labelMotherN);
+
+    	if (((particleMotherN->PdgCode() == 1010010030 && particleMotherP->PdgCode() == 1010010030)   ||
+      (particleMotherN->PdgCode() == -1010010030 && particleMotherP->PdgCode() == -1010010030)) &&
+      (labelMotherN == labelMotherP)) {
+      	reducedV0->fMcTruth = 1;
+      	fMCGenRecArray->AddAtAndExpand(reducedV0, fMcGenRecCounter);
+      	fMCGenRec[fMcGenRecCounter] = labelMotherP;
+      	fMcGenRecCounter++;
+      	fHistMcRec->Fill(reducedV0->fDecayLength);
+    	}
     }
   }
 }
 //_____________________________________________________________________________
 /// Loops over MC stack and matches generated particles with reconstructed particles
 /// \param stack MC stack
-void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
+void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliMCEvent* mcEvent) {
   TClonesArray *v0Array = (TClonesArray*) fReducedEventMCGen->fV0s;
-  Int_t nV0Gen = 0;
-  for (Int_t istack = 0; istack < stack->GetNtrack(); istack++) {
-    const TParticle *tparticleMother = stack->Particle(istack);
-    Long_t pdgCodeMother = tparticleMother->GetPdgCode();
-    if (pdgCodeMother == 1010010030 || pdgCodeMother == -1010010030) {
-      TLorentzVector momentumDaughter1;
-      TLorentzVector momentumDaughter2;
-      Int_t labelSecondDaughter = tparticleMother->GetDaughter(1);
-      Int_t labelFirstDaughter  = labelSecondDaughter - 1;
-      TParticle *daughterparticle1 = stack->Particle(TMath::Abs(labelFirstDaughter));
-      TParticle *daughterparticle2 = stack->Particle(TMath::Abs(labelSecondDaughter));
-      if ((daughterparticle1->GetPdgCode() == 1000020030  /*Helium3*/     &&
-            daughterparticle2->GetPdgCode() == -211)        /*PionMinus*/   ||
-          (daughterparticle1->GetPdgCode() == -1000020030 /*AntiHelium3*/ &&
-           daughterparticle2->GetPdgCode() == 211))        /*PionPlus*/    {
-        momentumDaughter1.SetPxPyPzE(daughterparticle1->Px(), daughterparticle1->Py(),
-            daughterparticle1->Pz(), daughterparticle1->Energy());
-        momentumDaughter2.SetPxPyPzE(daughterparticle2->Px(), daughterparticle2->Py(),
-            daughterparticle2->Pz(), daughterparticle2->Energy());
-        AliReducedHypTritV0 *reducedV0 = (AliReducedHypTritV0*)v0Array->ConstructedAt(nV0Gen);
-        AliReducedHypTritTrack *reducedPi = reducedV0->Pi();
-        AliReducedHypTritTrack *reducedHe = reducedV0->He();
-        Double_t posx = daughterparticle1->Vx();
-        Double_t posy = daughterparticle1->Vy();
-        Double_t posz = daughterparticle1->Vz();
-        Double_t disx = posx - fPrimaryVertex.X();
-        Double_t disy = posy - fPrimaryVertex.Y();
-        Double_t disz = posz - fPrimaryVertex.Z();
-        Double_t distance = TMath::Sqrt(disx*disx + disy*disy + disz*disz );
-        reducedV0->fM = tparticleMother->GetCalcMass();
-        reducedV0->fP = tparticleMother->P();
-        reducedV0->fPt = tparticleMother->Pt();
-		reducedV0->fRapidity = (momentumDaughter1 + momentumDaughter2).Rapidity();
-        reducedV0->fDecayLength = distance * tparticleMother->GetCalcMass() / tparticleMother->P();
-        reducedV0->fMcTruth = 0;
-		reducedV0->fCharge = -1;
-		if (pdgCodeMother == 1010010030) 
-			reducedV0->fCharge = 1;
-        fHistMcGen->Fill(reducedV0->fDecayLength);
-        nV0Gen = nV0Gen +1;
-      }
-		}
+
+  fReducedEventMCGen->fRunNumber = fReducedEvent->fRunNumber;
+  fReducedEventMCGen->fTrigger = fReducedEvent->fTrigger;
+
+	Int_t nV0Gen = 0;
+  for (Int_t istack = 0; istack < mcEvent->GetNumberOfTracks(); istack++) {
+		AliMCParticle *tparticleMother = (AliMCParticle*) mcEvent->GetTrack(istack);
+		if (!tparticleMother) continue;
+		Long_t pdgCodeMother = tparticleMother->PdgCode();
+    if (TMath::Abs(pdgCodeMother) != 1010010030) continue;
+
+    AliMCParticle *he3 = 0, *pi = 0;
+  	for (int daughteriD = tparticleMother->GetDaughterFirst(); daughteriD <= tparticleMother->GetDaughterLast(); daughteriD++) {
+  		AliMCParticle *tparticleDaughter = (AliMCParticle*) mcEvent->GetTrack(daughteriD);
+  		if (!(tparticleDaughter && mcEvent->IsSecondaryFromWeakDecay(daughteriD))) continue;
+  		if (TMath::Abs(tparticleDaughter->PdgCode()) == 1000020030)
+  			he3 = tparticleDaughter;
+   		if (TMath::Abs(tparticleDaughter->PdgCode()) == 211)
+  			pi = tparticleDaughter;
+  	}
+
+    if (!he3 || !pi) continue;
+
+    AliReducedHypTritV0 *reducedV0 = (AliReducedHypTritV0*)v0Array->ConstructedAt(nV0Gen);
+    Double_t posx = he3->Xv();
+    Double_t posy = he3->Yv();
+    Double_t posz = he3->Zv();
+    Double_t disx = posx - fPrimaryVertex.X();
+    Double_t disy = posy - fPrimaryVertex.Y();
+    Double_t disz = posz - fPrimaryVertex.Z();
+    Double_t distance = TMath::Sqrt(disx*disx + disy*disy + disz*disz );
+    reducedV0->fM = tparticleMother->M();
+    reducedV0->fP = tparticleMother->P();
+    reducedV0->fPt = tparticleMother->Pt();
+		reducedV0->fRapidity = tparticleMother->Y();
+	  reducedV0->fDecayLength = distance * tparticleMother->M() / tparticleMother->P();
+    reducedV0->fMcTruth = 0;
+    reducedV0->fCharge = 2;
+    if (pdgCodeMother == -1010010030)
+    	reducedV0->fCharge = -2;
+    fHistMcGen->Fill(reducedV0->fDecayLength);
+    nV0Gen = nV0Gen +1;
 	}
 	fReducedEventMCGen->fNumberV0s = nV0Gen;
 	fTreeMCGen->Fill();
@@ -595,63 +612,110 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
 	fMCGenRecArray->Clear();
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
+Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
   fReducedEvent->fTrigger = 0;
-  if (!fMCtrue){
-  TString classes = fESDevent->GetFiredTriggerClasses();
-  fReducedEvent->fTriggerClasses = classes;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fReducedEvent->fTrigger = 1;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)) fReducedEvent->fTrigger = 2;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kHighMultSPD)) fReducedEvent->fTrigger = 3;
-  if (classes.Contains("HNU")) fReducedEvent->fTrigger = 4;
-  if (classes.Contains("HQU")) fReducedEvent->fTrigger = 5;
-  if (classes.Contains("HJT")) fReducedEvent->fTrigger = 6;
-  fHistTrigger->Fill(fReducedEvent->fTrigger);
-  } else {
-  	// MC: simulate TRD trigger
-		Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+  fReducedEvent->fTrigMB = 0;
+  fReducedEvent->fTrigV0 = 0;
+  fReducedEvent->fTrigSPD = 0;
+  fReducedEvent->fTrigHNU = 0;
+  fReducedEvent->fTrigHQU = 0;
+  fReducedEvent->fTrigHJT = 0;
+  fReducedEvent->fTrigHSE = 0;
+
+	if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) {
+		fReducedEvent->fTrigMB = 1;
+		fReducedEvent->fTrigger = 1;
+	}
+	if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0) {
+		fReducedEvent->fTrigV0 = 1;
+		fReducedEvent->fTrigger = 2;
+	}
+	if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultSPD) {
+		fReducedEvent->fTrigSPD = 1;
+		fReducedEvent->fTrigger = 3;
+		}
+
+	Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+	if (!fMCtrue){
+		// Data: get TRD trigger information from trigger classes
+		TString classes = fESDevent->GetFiredTriggerClasses();
+		if (classes.Contains("HNU")) {fReducedEvent->fTrigHNU = 1; fReducedEvent->fTrigger = 4;}
+		if (classes.Contains("HQU")) {fReducedEvent->fTrigHQU = 1; fReducedEvent->fTrigger = 5;}
+		if (classes.Contains("HJT")) {fReducedEvent->fTrigHJT = 1; fReducedEvent->fTrigger = 6;}
+		if (classes.Contains("HSE")) {fReducedEvent->fTrigHSE = 1; fReducedEvent->fTrigger = 7;}
+
+	} else {
+		// MC: simulate TRD trigger
+		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE, secHeHSE = kFALSE;
+
 		if (nTrdTracks > 0) {
 			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
 				AliESDTrdTrack* trdTrack = fESDevent->GetTrdTrack(iTrack);
 				if (!trdTrack) continue;
+
+				Int_t label = trdTrack->GetLabel();
+				AliMCParticle *particle = new AliMCParticle(mcEvent->GetTrack(TMath::Abs(label))->Particle());
+
 				// simulate HNU
-				if((trdTrack->GetPID() >= 255 && trdTrack->GetNTracklets() == 4) || 
+				if((trdTrack->GetPID() >= 255 && trdTrack->GetNTracklets() == 4) ||
 					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {
-					fReducedEvent->fTrigger = 4;
+						fReducedEvent->fTrigHNU = 1;
+						fReducedEvent->fTrigger = 4;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHNU = kTRUE;
+						}
 				}
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
-					trdTrack->GetPID() >= 130 && 
-					trdTrack->GetNTracklets() >= 5 && 
-					(trdTrack->GetLayerMask() & 1) ){	
-						Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
-						if (sag < 0.2 && sag > -0.2) {
-							fReducedEvent->fTrigger = 5;
+					trdTrack->GetPID() >= 135 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						fReducedEvent->fTrigHQU = 1;
+						fReducedEvent->fTrigger = 5;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHQU = kTRUE;
 						}
+					}
+        }
+				// simulate HSE
+				if (TMath::Abs(trdTrack->GetPt()) >= 384 &&
+					trdTrack->GetPID() >= 120 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						fReducedEvent->fTrigHSE = 1;
+						fReducedEvent->fTrigger = 7;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHSE = kTRUE;
+						}
+					}
 				}
 			}
+		if (secHeHNU) fReducedEvent->fTrigHNU = 2;
+		if (secHeHQU) fReducedEvent->fTrigHQU = 2;
+		if (secHeHSE) fReducedEvent->fTrigHSE = 2;
 		}
+	}
 	fHistTrigger->Fill(fReducedEvent->fTrigger);
-	}	
-	// additional information for high multiplicity trigger 
+
+	// additional information for high multiplicity trigger
 	AliESDVZERO *vzero = fESDevent->GetVZEROData();
 	fReducedEvent->fV0Multiplicity = 0;
 	for (Int_t ii = 0; ii < 64; ii++){
 		fReducedEvent->fV0Multiplicity += vzero->GetMultiplicity(ii);
-	}	
+	}
 	AliMultiplicity *multSPD = fESDevent->GetMultiplicity();
 	fReducedEvent->fSPDCluster	= multSPD->GetNumberOfSPDClusters();
 	fReducedEvent->fSPDTracklets = multSPD->GetNumberOfTracklets();
 	fReducedEvent->fSPDFiredChips0 = multSPD->GetNumberOfFiredChips(0);
 	fReducedEvent->fSPDFiredChips1 = multSPD->GetNumberOfFiredChips(1);
-  
+
   Bool_t isTriggered = kTRUE;
   if (fReducedEvent->fTrigger == 0) isTriggered = kFALSE;
   return isTriggered;
 }
 //_____________________________________________________________________________
 Float_t AliAnalysisTaskHypTritEventTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
-	//returns d(1/Pt) in c/GeV 
+	//returns d(1/Pt) in c/GeV
 	//in case of no gtu simulation -> return maximum 0.5
 	if(b==0 && c==0) return 0.5;
 	Int_t tmp = (((b & 0xfff) << 12) ^ 0x800000) - 0x800000;
@@ -704,17 +768,18 @@ Double_t AliAnalysisTaskHypTritEventTree::GeoLength(const AliESDtrack& track) {
 //_____________________________________________________________________________
 void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 252235 && runNumber <= 264347 ) { // 2016 pp
+  return;
+	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
 		if(!fMCtrue) { // Data
 			// LHC16 + LHC18
-			// He3
+			// Triton
 			fBetheParamsT[0] = 0.427978;
 			fBetheParamsT[1] = 105.46;
 			fBetheParamsT[2] =-7.08642e-07;
 			fBetheParamsT[3] = 2.23332;
 			fBetheParamsT[4] = 18.8231;
 			fBetheParamsT[5] = 0.06;
-			// Triton
+			// He3
 			fBetheParamsHe[0] = 1.81085;
 			fBetheParamsHe[1] = 29.4656;
 			fBetheParamsHe[2] = 0.0458225;
@@ -723,61 +788,61 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 			fBetheParamsHe[5] = 0.06;
 		} else { // MC
 			if (runNumber >= 262424 || runNumber <= 256418 ) {
-				//LHC18a2b (->LHC16)
+				//LHC20l7c (-> LHC16)
 				// He3
-				fBetheParamsHe[0] = 3.05245;
-				fBetheParamsHe[1] = 15.7252;
-				fBetheParamsHe[2] = -0.00453331;
-				fBetheParamsHe[3] = 2.17241;
-				fBetheParamsHe[4] = 2.88422;
-				fBetheParamsHe[5] = 0.0834274;
+				fBetheParamsHe[0] = 2.74996;
+				fBetheParamsHe[1] = 13.98;
+				fBetheParamsHe[2] = 0.0251843;
+				fBetheParamsHe[3] = 2.04678;
+				fBetheParamsHe[4] = 1.37379;
+				fBetheParamsHe[5] = 0.06;
 				// Triton
-				fBetheParamsT[0] = 2.74259;
-				fBetheParamsT[1] = 18.3295;
-				fBetheParamsT[2] = 5.91594;
-				fBetheParamsT[3] = 1.93471;
-				fBetheParamsT[4] = 0.292147;
-				fBetheParamsT[5] = 0.0728241;
+				fBetheParamsT[0] = 1.80227;
+				fBetheParamsT[1] = 16.8019;
+				fBetheParamsT[2] = 2.22419;
+				fBetheParamsT[3] = 2.30938;
+				fBetheParamsT[4] = 3.52324;
+				fBetheParamsT[5] = 0.06;
 			}
-			if (runNumber >= 256941 && runNumber <= 258537 ) { 
-				// LHC18a2b2 (LHC16k)
+			if (runNumber >= 256941 && runNumber <= 258537 ) {
+				//LHC20l7c (-> LHC16)
 				// He3
-				fBetheParamsHe[0] = 2.80527;
-				fBetheParamsHe[1] = 14.2379;
-				fBetheParamsHe[2] = 0.0232811;
-				fBetheParamsHe[3] = 2.11464;
-				fBetheParamsHe[4] = 1.615;
-				fBetheParamsHe[5] = 0.0815227;
+				fBetheParamsHe[0] = 2.74996;
+				fBetheParamsHe[1] = 13.98;
+				fBetheParamsHe[2] = 0.0251843;
+				fBetheParamsHe[3] = 2.04678;
+				fBetheParamsHe[4] = 1.37379;
+				fBetheParamsHe[5] = 0.06;
 				// Triton
-				fBetheParamsT[0] = 1.31603;
-				fBetheParamsT[1] = 36.1798;
-				fBetheParamsT[2] = 493.036;
-				fBetheParamsT[3] = 2.10841;
-				fBetheParamsT[4] = 7.43391;
-				fBetheParamsT[5] = 0.0769041;
+				fBetheParamsT[0] = 1.80227;
+				fBetheParamsT[1] = 16.8019;
+				fBetheParamsT[2] = 2.22419;
+				fBetheParamsT[3] = 2.30938;
+				fBetheParamsT[4] = 3.52324;
+				fBetheParamsT[5] = 0.06;
 			}
 			if (runNumber >= 258962 && runNumber <= 259888 ) {
-				//LHC18a2b3 (->LHC16l)
+				//LHC20l7c (-> LHC16)
 				// He3
-				fBetheParamsHe[0] = 2.80121;
-				fBetheParamsHe[1] = 14.2397;
-				fBetheParamsHe[2] = 0.0100894;
-				fBetheParamsHe[3] = 2.10396;
-				fBetheParamsHe[4] = 1.41608;
-				fBetheParamsHe[5] = 0.0817429;
+				fBetheParamsHe[0] = 2.74996;
+				fBetheParamsHe[1] = 13.98;
+				fBetheParamsHe[2] = 0.0251843;
+				fBetheParamsHe[3] = 2.04678;
+				fBetheParamsHe[4] = 1.37379;
+				fBetheParamsHe[5] = 0.06;
 				// Triton
-				fBetheParamsT[0] = 4.80597;
-				fBetheParamsT[1] = 13.8813;
-				fBetheParamsT[2] = 189.651;
-				fBetheParamsT[3] = 2.05969;
-				fBetheParamsT[4] = 4.38013;
-				fBetheParamsT[5] = 0.077593;
-			} 
+				fBetheParamsT[0] = 1.80227;
+				fBetheParamsT[1] = 16.8019;
+				fBetheParamsT[2] = 2.22419;
+				fBetheParamsT[3] = 2.30938;
+				fBetheParamsT[4] = 3.52324;
+				fBetheParamsT[5] = 0.06;
+			}
 		}
 	}
 	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
 		if(!fMCtrue) {
-			//LHC17
+			//LHC17 Data
 			// He3
 			fBetheParamsHe[0] = 3.20025;
 			fBetheParamsHe[1] = 16.4971;
@@ -791,23 +856,23 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 			fBetheParamsT[2] = -3.15587e-07;
 			fBetheParamsT[3] = 2.32499;
 			fBetheParamsT[4] = 21.3439;
-			fBetheParamsT[5] = 0.06;	
+			fBetheParamsT[5] = 0.06;
 		} else {
-			// LHC18a2a (->LHC17)
+			//LHC20l7b (-> LHC17)
 			// He3
-			fBetheParamsHe[0] = 3.12796;
-			fBetheParamsHe[1] = 16.1359;
-			fBetheParamsHe[2] = -0.00682978;
-			fBetheParamsHe[3] = 2.26624;
-			fBetheParamsHe[4] = 2.58652;
-			fBetheParamsHe[5] = 0.0847009;
+			fBetheParamsHe[0] = 3.14546;
+			fBetheParamsHe[1] = 16.2277;
+			fBetheParamsHe[2] = -0.000523081;
+			fBetheParamsHe[3] = 2.28248;
+			fBetheParamsHe[4] = 2.60465;
+			fBetheParamsHe[5] = 0.06;
 			// Triton
-			fBetheParamsT[0] = 2.8303;
-			fBetheParamsT[1] = 15.4337;
-			fBetheParamsT[2] = 3.18352;
-			fBetheParamsT[3] = 2.20975;
-			fBetheParamsT[4] = 0.218244;
-			fBetheParamsT[5] = 0.0780191;	
+			fBetheParamsT[0] = 2.88676;
+			fBetheParamsT[1] = 15.3823;
+			fBetheParamsT[2] = 0.580675;
+			fBetheParamsT[3] = 2.28551;
+			fBetheParamsT[4] = 2.47351;
+			fBetheParamsT[5] = 0.06;
 		}
 	}
 	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
@@ -828,21 +893,21 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 			fBetheParamsHe[4] = 2.28772;
 			fBetheParamsHe[5] = 0.06;
 		} else {
-			//LHC18a2d (->LHC18)
+			//LHC20l7a (-> LHC18)
 			// He3
-			fBetheParamsHe[0] = 3.07104;
-			fBetheParamsHe[1] = 15.8085;
-			fBetheParamsHe[2] = 0.0150992;
-			fBetheParamsHe[3] = 2.13909;
-			fBetheParamsHe[4] = 2.59495;
-			fBetheParamsHe[5] = 0.0865179;
+			fBetheParamsHe[0] = 3.07067;
+			fBetheParamsHe[1] = 15.8069;
+			fBetheParamsHe[2] = -0.0142383;
+			fBetheParamsHe[3] = 2.15513;
+			fBetheParamsHe[4] = 2.5192;
+			fBetheParamsHe[5] = 0.06;
 			// Triton
-			fBetheParamsT[0] = 2.54486;
-			fBetheParamsT[1] = 17.1203;
-			fBetheParamsT[2] = -0.0452007;
-			fBetheParamsT[3] = 2.00988;
-			fBetheParamsT[4] = 0.849292;
-			fBetheParamsT[5] = 0.0768715;		
+			fBetheParamsT[0] = 2.95171;
+			fBetheParamsT[1] = 17.7223;
+			fBetheParamsT[2] = 37.7979;
+			fBetheParamsT[3] = 2.03313;
+			fBetheParamsT[4] = 0.730268;
+			fBetheParamsT[5] = 0.06;
 		}
 	}
 }

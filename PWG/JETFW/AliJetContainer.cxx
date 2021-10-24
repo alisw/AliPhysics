@@ -12,8 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
+#include <memory>
 
 #include <TClonesArray.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -179,6 +183,18 @@ void AliJetContainer::SetArray(const AliVEvent *event)
   // Set jet array
 
   AliEmcalContainer::SetArray(event);
+}
+
+void AliJetContainer::UpdateArrayName(){
+  TString tag = "Jet";
+  if(fClArrayName.Length()) {
+    // obtain tag from previous name
+    std::unique_ptr<TObjArray> arrnametoks(fClArrayName.Tokenize("_")); 
+    tag = static_cast<TObjString *>(arrnametoks->At(0))->String();
+  }
+  TString updateName = GenerateJetName(fJetType, fJetAlgorithm, fRecombinationScheme, fJetRadius, fParticleContainer, fClusterContainer, tag);
+  std::cout << "[AliJetContainer] Update collection name of the jet container to " << updateName << std::endl;
+  SetArrayName(updateName);
 }
 
 /**

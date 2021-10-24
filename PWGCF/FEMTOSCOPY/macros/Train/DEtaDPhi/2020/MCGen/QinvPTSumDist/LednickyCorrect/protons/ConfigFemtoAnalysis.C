@@ -571,7 +571,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 			  tModelCFDEtaDPhi[aniter]->ConnectToManager(tModelManager[aniter]);
 			  anetaphitpc[aniter]->AddCorrFctn(tModelCFDEtaDPhi[aniter]);
 			}
-		      if(ichg==3)
+		      if(ichg==2)
 			{
 			  //weights PAP
 			  tWeight[aniter]->SetPairType(AliFemtoModelWeightGenerator::ProtonAntiproton());

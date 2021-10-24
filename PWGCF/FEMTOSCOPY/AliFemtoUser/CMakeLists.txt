@@ -52,7 +52,12 @@ set(SRCS
    AliFemtoModelCorrFctn3DKKGR.cxx
    AliFemtoModelCorrFctn3DKKGRQinv.cxx
    AliFemtoModelGausLCMSFreezeOutGeneratorGR.cxx
-#   
+   AliFemtoModelCorrFctn3DKKGR1.cxx
+#  Ludmila
+   AliFemtoCutMonitorDphiDeta1.cxx
+   AliFemtoESDTrackCutPlusJets25.cxx
+   AliFemtoESDTrackCutMinusJets.cxx
+#
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
   AliFemtoModelCorrFctnDEtaDPhiStar.cxx
@@ -134,6 +139,7 @@ set(SRCS
   AliFemtoPairCutRadialDistanceAsymmetric.cxx
   AliFemtoPairCutGeneralizedRadialDistance.cxx
   AliFemtoPairCutMergedFraction.cxx
+  AliFemtoPairCutMergedFraction_pik.cxx
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
@@ -162,6 +168,8 @@ set(SRCS
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
   AliFemtoWRzTrackCut.cxx
+  AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
+  AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   )
 
 

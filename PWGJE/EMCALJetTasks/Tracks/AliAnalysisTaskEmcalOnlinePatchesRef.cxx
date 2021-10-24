@@ -118,8 +118,7 @@ void AliAnalysisTaskEmcalOnlinePatchesRef::UserCreateOutputObjects(){
                  *binningFastorEnergy[6] = {&fastorIDbinning, &fastorenergybinning, &fastoradcbinning, &fastorenergybinning, &ncellbinning, &onlinepatchbinning},
                  *binningPatchResiduals[4] = {&patchenergybinning, &patchresidualsbinning, &nfastorbinning, &nfastorbinning},
                  *binningPatchResidualsNormalized[4] = {&patchenergybinning, &residualsbinningNormalized, &nfastorbinning, &nfastorbinning},
-                 *binningFastorResiduals[6] = {&fastorIDbinning, &fastorenergybinning, &fastorenergybinning, &fastorresidualsbinning, &ncellbinning, &onlinepatchbinning},
-                 *binningFastorResidualsNormalized[6] = {&fastorIDbinning, &fastorenergybinning, &fastorenergybinning, &residualsbinningNormalized, &ncellbinning, &onlinepatchbinning};
+                 *binningFastorResiduals[6] = {&fastorIDbinning, &fastorenergybinning, &fastorenergybinning, &fastorresidualsbinning, &ncellbinning, &onlinepatchbinning};
   fHistos->CreateTHnSparse("hPatchEnergy", "Patch Energy; energy; ADC; Energy from FastOR; #eta; #phi; nFastorOnline; nFastorOffline", 7, binningPatchEnergy);
   fHistos->CreateTHnSparse("hFastorEnergy", "FastOR Energy; ID; energy; ADC; Energy from FastOR; ncell; online patch status", 6, binningFastorEnergy);
   fHistos->CreateTHnSparse("hPatchResiduals", "Patch energy residual binning; energy; residuals; nFastorsOnline; nFastorsOffline", 4, binningPatchResiduals);

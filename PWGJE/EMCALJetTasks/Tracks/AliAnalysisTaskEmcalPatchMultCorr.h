@@ -34,7 +34,9 @@ class AliEMCALTriggerPatchInfo;
 class TClonesArray;
 class THistManager;
 
-namespace EmcalTriggerJets {
+namespace PWGJE { 
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalPatchMultCorr : public AliAnalysisTaskEmcal {
 public:
@@ -61,6 +63,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalPatchMultCorr, 1)
 };
+
+}
 
 }
 #endif

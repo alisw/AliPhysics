@@ -214,9 +214,9 @@ void AliEmcalCorrectionComponent::UpdateCells()
       Short_t currentParIndex = 0;
       ULong64_t globalEventID = (ULong64_t)bunchCrossNo + (ULong64_t)fEventManager.InputEvent()->GetOrbitNumber() * (ULong64_t)3564 + (ULong64_t)fEventManager.InputEvent()->GetPeriodNumber() * (ULong64_t)59793994260;
       for(Short_t ipar=0;ipar<fRecoUtils->GetNPars();ipar++){
-	if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
-	  currentParIndex++;
-	}
+        if(globalEventID >= fRecoUtils->GetGlobalIDPar(ipar)) {
+          currentParIndex++;
+        }
       }
       fRecoUtils->SetCurrentParNumber(currentParIndex);      
     }

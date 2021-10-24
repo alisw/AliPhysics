@@ -20,6 +20,8 @@
 #include <TH1F.h>
 #include <TDatabasePDG.h>
 #include <TObjArray.h>
+#include <Math/GenVector/LorentzVector.h>
+#include <Math/Vector4D.h>
 
 #include "AliAnalysisTaskSECharmTriggerStudy.h"
 #include "AliAnalysisManager.h"
@@ -34,6 +36,7 @@
 #include "AliLog.h"
 #include "AliVertexerTracks.h"
 #include "AliESDVertex.h"
+#include "AliInputEventHandler.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSECharmTriggerStudy);
@@ -51,10 +54,15 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fHistNEvents(nullptr),
                                                                                                            fRecoTree(nullptr),
                                                                                                            fGenTree(nullptr),
+                                                                                                           fHistGenPromptVsPtVsY{},
+                                                                                                           fHistGenFDVsPtVsY{},
+                                                                                                           fHistTrakNsigmaTPCVsP{},
+                                                                                                           fHistTrakNsigmaTOFVsP{},
                                                                                                            fEventCuts{},
                                                                                                            fSystem(kpp),
                                                                                                            fAOD(nullptr),
-                                                                                                           fAODProtection(1),
+                                                                                                           fPIDresp(nullptr),
+                                                                                                           fAODProtection(0),
                                                                                                            fMCArray(nullptr),
                                                                                                            fRecoZvtx(-999.),
                                                                                                            fGenZvtx(-999.),
@@ -65,6 +73,7 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fCharmCascade{},
                                                                                                            fBeauty3Prong{},
                                                                                                            fBeauty4Prong{},
+                                                                                                           fTracks{},
                                                                                                            fGenHadron{},
                                                                                                            fEnable2Prongs(true),
                                                                                                            fEnable3Prongs(0),
@@ -72,8 +81,14 @@ AliAnalysisTaskSECharmTriggerStudy::AliAnalysisTaskSECharmTriggerStudy(const cha
                                                                                                            fEnableCascades(false),
                                                                                                            fEnableBeauty3Prongs(false),
                                                                                                            fEnableBeauty4Prongs(false),
+                                                                                                           fEnableTracks(0),
+                                                                                                           fKeepTracksWithMinPt(-1.),
+                                                                                                           fNsigmaTPCThreshold(5.),
+                                                                                                           fNsigmaTOFThreshold(5.),
+                                                                                                           fFilterBitTracks(4),
                                                                                                            fFillOnlySignal(false),
-                                                                                                           fFillGenTree(true),
+                                                                                                           fFillGenTree(false),
+                                                                                                           fFillGenHistos(true),
                                                                                                            fReadMC(true),
                                                                                                            fCutsD0toKpi(nullptr),
                                                                                                            fCutsDplustoKpipi(nullptr),
@@ -199,13 +214,110 @@ void AliAnalysisTaskSECharmTriggerStudy::UserCreateOutputObjects()
         fRecoTree->Branch("Beauty3Prong", &fBeauty3Prong);
     if (fEnableBeauty4Prongs)
         fRecoTree->Branch("Beauty4Prong", &fBeauty4Prong);
+    if (fEnableTracks)
+        fRecoTree->Branch("Tracks", &fTracks);
 
     fGenTree = new TTree("fGenTree", "Generate charm hadrons");
     fGenTree->SetMaxVirtualSize(1.e+8);
-    if(fReadMC && fFillGenTree)
+    if(fReadMC)
     {
-        fGenTree->Branch("zVtxGen", &fGenZvtx);
-        fGenTree->Branch("GenHadron", &fGenHadron);
+        if(fFillGenTree)
+        {
+            fGenTree->Branch("zVtxGen", &fGenZvtx);
+            fGenTree->Branch("GenHadron", &fGenHadron);
+        }
+        if(fFillGenHistos)
+        {
+            if(fEnable2Prongs) // D0
+            {
+                fHistGenPromptVsPtVsY["Dzero"] = new TH2F("fHistGenPromptVsPtVsYDzero", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+                fHistGenFDVsPtVsY["Dzero"] = new TH2F("fHistGenFDVsPtVsYDzero", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if(fEnable3Prongs >> 0 & 1) // D+
+            {
+                fHistGenPromptVsPtVsY["Dplus"] = new TH2F("fHistGenPromptVsPtVsYDplus", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+                fHistGenFDVsPtVsY["Dplus"] = new TH2F("fHistGenFDVsPtVsYDplus", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if(fEnable3Prongs >> 1 & 1) // Ds
+            {
+                fHistGenPromptVsPtVsY["Ds"] = new TH2F("fHistGenPromptVsPtVsYDs", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+                fHistGenFDVsPtVsY["Ds"] = new TH2F("fHistGenFDVsPtVsYDs", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if(fEnable3Prongs >> 2 & 1) // Lc->pKpi
+            {
+                fHistGenPromptVsPtVsY["LctopKpi"] = new TH2F("fHistGenPromptVsPtVsYLc2pKpi", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+                fHistGenFDVsPtVsY["LctopKpi"] = new TH2F("fHistGenFDVsPtVsYLc2pKpi", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if (fEnableDstars) // D*+
+            {
+                fHistGenPromptVsPtVsY["Dstar"] = new TH2F("fHistGenPromptVsPtVsYDstar", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+                fHistGenFDVsPtVsY["Dstar"] = new TH2F("fHistGenFDVsPtVsYDstar", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if (fEnableCascades) // Lc->pK0s
+            {
+                fHistGenPromptVsPtVsY["LctopK0s"] = new TH2F("fHistGenPromptVsPtVsYLc2pK0s", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+                fHistGenFDVsPtVsY["LctopK0s"] = new TH2F("fHistGenFDVsPtVsYLc2pK0s", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if (fEnableBeauty3Prongs) // B+
+            {
+                fHistGenPromptVsPtVsY["Bplus"] = new TH2F("fHistGenPromptVsPtVsYBplus", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if (fEnableBeauty4Prongs >> 0 & 1) // B0
+            {
+                fHistGenPromptVsPtVsY["Bzero"] = new TH2F("fHistGenPromptVsPtVsYBzero", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if (fEnableBeauty4Prongs >> 1 & 1) // Bs
+            {
+                fHistGenPromptVsPtVsY["Bs"] = new TH2F("fHistGenPromptVsPtVsYBs", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+            if (fEnableBeauty4Prongs >> 2 & 1) // Lb
+            {
+                fHistGenPromptVsPtVsY["Lb"] = new TH2F("fHistGenPromptVsPtVsYLb", ";#it{p}_{T} (GeV/#it{c});#it{y}", 100, 0., 50., 200., -1., 1.);
+            }
+        }
+    }
+
+    for(auto &histo: fHistGenPromptVsPtVsY)
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
+    for(auto &histo: fHistGenFDVsPtVsY)
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
+
+    if(fEnableTracks >> 0 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["pi"] = new TH2F("fHistTrakNsigmaTPCVsP_pi", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(#pi)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["pi"] = new TH2F("fHistTrakNsigmaTOFVsP_pi", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(#pi)", 200, 0., 10., 200., -10., 10.);
+    }
+    if(fEnableTracks >> 1 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["K"] = new TH2F("fHistTrakNsigmaTPCVsP_K", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(K)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["K"] = new TH2F("fHistTrakNsigmaTOFVsP_K", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(K)", 200, 0., 10., 200., -10., 10.);
+    }
+    if(fEnableTracks >> 2 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["p"] = new TH2F("fHistTrakNsigmaTPCVsP_p", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(p)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["p"] = new TH2F("fHistTrakNsigmaTOFVsP_p", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(p)", 200, 0., 10., 200., -10., 10.);
+    }
+    if(fEnableTracks >> 3 & 1)
+    {
+        fHistTrakNsigmaTPCVsP["e"] = new TH2F("fHistTrakNsigmaTPCVsP_e", ";#it{p} (GeV/#it{c});N_{#sigma}^{TPC}(e)", 200, 0., 10., 200., -10., 10.);
+        fHistTrakNsigmaTOFVsP["e"] = new TH2F("fHistTrakNsigmaTOFVsP_e", ";#it{p} (GeV/#it{c});N_{#sigma}^{TOF}(e)", 200, 0., 10., 200., -10., 10.);
+    }
+
+    for(auto &histo: fHistTrakNsigmaTPCVsP)
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
+    }
+    for(auto &histo: fHistTrakNsigmaTOFVsP)
+    {
+        if(histo.second)
+           fOutput->Add(histo.second);
     }
 
     PostData(1, fOutput);
@@ -422,7 +534,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
     }
 
     //loop on generated particles
-    if(fReadMC && fFillGenTree)
+    if(fReadMC && (fFillGenTree || fFillGenHistos))
     {
         for (int iPart = 0; iPart < fMCArray->GetEntriesFast(); iPart++)
         {
@@ -451,10 +563,20 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         continue;
                     dauInAcc = AreDauInAcc(2, labDau);
                     pdgCodeDau0 = (dynamic_cast<AliAODMCParticle *>(fMCArray->UncheckedAt(labDau[0])))->GetPdgCode();
-                    if (TMath::Abs(pdgCodeDau0) == 321)
-                        FillGenerated(part, origin, kDzerotoKpi, dauInAcc);
-                    else
-                        FillGenerated(part, origin, kDzerotopiK, dauInAcc);
+                    if(fFillGenTree)
+                    {
+                        if (TMath::Abs(pdgCodeDau0) == 321)
+                            FillGenerated(part, origin, kDzerotoKpi, dauInAcc);
+                        else
+                            FillGenerated(part, origin, kDzerotopiK, dauInAcc);
+                    }
+                    if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                    {
+                        if(origin == 4)
+                            fHistGenPromptVsPtVsY["Dzero"]->Fill(part->Pt(), part->Y());
+                        else if(origin == 5)
+                            fHistGenFDVsPtVsY["Dzero"]->Fill(part->Pt(), part->Y());
+                    }
                 }
                 else if (pdgCode == 411 && fEnable3Prongs >> 0 & 1) //D+
                 {
@@ -462,7 +584,15 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     if (decay >= 1 && labDau[0] >= 0 && labDau[1] >= 0)
                     {
                         dauInAcc = AreDauInAcc(3, labDau);
-                        FillGenerated(part, origin, kDplustoKpipi, dauInAcc);
+                        if(fFillGenTree)
+                            FillGenerated(part, origin, kDplustoKpipi, dauInAcc);
+                        if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                        {
+                            if(origin == 4)
+                                fHistGenPromptVsPtVsY["Dplus"]->Fill(part->Pt(), part->Y());
+                            else if(origin == 5)
+                                fHistGenFDVsPtVsY["Dplus"]->Fill(part->Pt(), part->Y());
+                        }
                         continue;
                     }
                 }
@@ -478,18 +608,31 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     pdgCodeDau0 = (dynamic_cast<AliAODMCParticle *>(fMCArray->UncheckedAt(labDau[0])))->GetPdgCode();
                     if(decay == 1)
                     {
-                        if (TMath::Abs(pdgCodeDau0) == 321)
-                            FillGenerated(part, origin, kDstoKKpi, dauInAcc);
-                        else
-                            FillGenerated(part, origin, kDstopiKK, dauInAcc);
+                        if(fFillGenTree)
+                        {
+                            if (TMath::Abs(pdgCodeDau0) == 321)
+                                FillGenerated(part, origin, kDstoKKpi, dauInAcc);
+                            else
+                                FillGenerated(part, origin, kDstopiKK, dauInAcc);
+                        }
+                        if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                        {
+                            if(origin == 4)
+                                fHistGenPromptVsPtVsY["Ds"]->Fill(part->Pt(), part->Y());
+                            else if(origin == 5)
+                                fHistGenFDVsPtVsY["Ds"]->Fill(part->Pt(), part->Y());
+                        }
                         continue;
                     }
                     if(decayDplus == 1)
                     {
-                        if (TMath::Abs(pdgCodeDau0) == 321)
-                            FillGenerated(part, origin, kDplustoKKpi, dauInAcc);
-                        else
-                            FillGenerated(part, origin, kDplustopiKK, dauInAcc);
+                        if(fFillGenTree)
+                        {
+                            if (TMath::Abs(pdgCodeDau0) == 321)
+                                FillGenerated(part, origin, kDplustoKKpi, dauInAcc);
+                            else
+                                FillGenerated(part, origin, kDplustopiKK, dauInAcc);
+                        }
                     }
                 }
                 else if (pdgCode == 413 && fEnableDstars) //Dstar
@@ -498,7 +641,15 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     if (decay != 1 || labDau[0] < 0 || labDau[1] < 0)
                         continue;
                     dauInAcc = AreDauInAcc(3, labDau);
-                    FillGenerated(part, origin, kDstartoKpipi, dauInAcc);
+                    if(fFillGenTree)
+                        FillGenerated(part, origin, kDstartoKpipi, dauInAcc);
+                    if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                    {
+                        if(origin == 4)
+                            fHistGenPromptVsPtVsY["Dstar"]->Fill(part->Pt(), part->Y());
+                        else if(origin == 5)
+                            fHistGenFDVsPtVsY["Dstar"]->Fill(part->Pt(), part->Y());
+                    }
                 }
                 else if (pdgCode == 4122) //Lc
                 {
@@ -509,10 +660,20 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         if (decay >= 1 && labDau[0] >= 0 && labDau[1] >= 0)
                         {
                             pdgCodeDau0 = (dynamic_cast<AliAODMCParticle *>(fMCArray->UncheckedAt(labDau[0])))->GetPdgCode();
-                            if (TMath::Abs(pdgCodeDau0) == 2212)
-                                FillGenerated(part, origin, kLctopKpi, dauInAcc);
-                            else
-                                FillGenerated(part, origin, kLctopiKp, dauInAcc);
+                            if(fFillGenTree)
+                            {
+                                if (TMath::Abs(pdgCodeDau0) == 2212)
+                                    FillGenerated(part, origin, kLctopKpi, dauInAcc);
+                                else
+                                    FillGenerated(part, origin, kLctopiKp, dauInAcc);
+                            }
+                            if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                            {
+                                if(origin == 4)
+                                    fHistGenPromptVsPtVsY["LctopKpi"]->Fill(part->Pt(), part->Y());
+                                else if(origin == 5)
+                                    fHistGenFDVsPtVsY["LctopKpi"]->Fill(part->Pt(), part->Y());
+                            }
                             continue;
                         }
                     }
@@ -522,10 +683,21 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         dauInAcc = AreDauInAcc(3, labDau);
                         if (labDau[0] >= 0 && labDau[1] >= 0)
                         {
-                            if (decay == 1)
-                                FillGenerated(part, origin, kLctopiLambda, dauInAcc);
-                            else if (decay == 2)
-                                FillGenerated(part, origin, kLctopK0s, dauInAcc);
+                            if(fFillGenTree)
+                            {
+                                if (decay == 1)
+                                    FillGenerated(part, origin, kLctopiLambda, dauInAcc);
+                                else if (decay == 2)
+                                    FillGenerated(part, origin, kLctopK0s, dauInAcc);
+                            }
+                            if(fFillGenHistos && decay == 2 && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                            {
+                                if(origin == 4)
+                                    fHistGenPromptVsPtVsY["LctopK0s"]->Fill(part->Pt(), part->Y());
+                                else if(origin == 5)
+                                    fHistGenFDVsPtVsY["LctopK0s"]->Fill(part->Pt(), part->Y());
+                            }
+
                         }
                     }
                 }
@@ -536,7 +708,11 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         continue;
 
                     dauInAcc = AreDauInAcc(3, labDau);
-                    FillGenerated(part, origin, kBplustoD0pi, dauInAcc);
+                    if(fFillGenTree)
+                        FillGenerated(part, origin, kBplustoD0pi, dauInAcc);
+                    if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                        fHistGenPromptVsPtVsY["Bplus"]->Fill(part->Pt(), part->Y());
+                    continue;
                 }
                 if(pdgCode == 511 && fEnableBeauty4Prongs >> 0 & 1) //B0
                 {
@@ -545,7 +721,11 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         continue;
 
                     dauInAcc = AreDauInAcc(4, labDau);
-                    FillGenerated(part, origin, kB0toDminuspi, dauInAcc);
+                    if(fFillGenTree)
+                        FillGenerated(part, origin, kB0toDminuspi, dauInAcc);
+                    if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                        fHistGenPromptVsPtVsY["Bzero"]->Fill(part->Pt(), part->Y());
+                    continue;
                 }
                 if(pdgCode == 531 && fEnableBeauty4Prongs >> 1 & 1) //Bs
                 {
@@ -554,7 +734,11 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         continue;
 
                     dauInAcc = AreDauInAcc(4, labDau);
-                    FillGenerated(part, origin, kBstoDsminuspi, dauInAcc);
+                    if(fFillGenTree)
+                        FillGenerated(part, origin, kBstoDsminuspi, dauInAcc);
+                    if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                        fHistGenPromptVsPtVsY["Bs"]->Fill(part->Pt(), part->Y());
+                    continue;
                 }
                 if(pdgCode == 5122 && fEnableBeauty4Prongs >> 2 & 1) //Lb
                 {
@@ -563,7 +747,11 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                         continue;
 
                     dauInAcc = AreDauInAcc(4, labDau);
-                    FillGenerated(part, origin, kLbtoLcpluspi, dauInAcc);
+                    if(fFillGenTree)
+                        FillGenerated(part, origin, kLbtoLcpluspi, dauInAcc);
+                    if(fFillGenHistos && TMath::Abs(part->Y()) < 0.5 && TMath::Abs(fGenZvtx) < 10)
+                        fHistGenPromptVsPtVsY["Lb"]->Fill(part->Pt(), part->Y());
+                    continue;
                 }
             }
         }
@@ -613,7 +801,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 {
                     CleanOwnPrimaryVertex(d, origownvtx);
                 }
-                unsetvtx = true;                
+                unsetvtx = true;
             }
 
             //fill vector of 2prongs
@@ -638,6 +826,15 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     unsigned short idD0dau[2] = {static_cast<unsigned short>(D0dau[0]->GetID()), static_cast<unsigned short>(D0dau[1]->GetID())};
                     if (track->GetID() != idD0dau[0] && track->GetID() != idD0dau[1])
                     {
+                        double massD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+                        double massPiPDG = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+                        ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double> > vecPi, vecD, vecB;
+                        vecPi.SetCoordinates(track->Px(), track->Py(), track->Pz(), massPiPDG);
+                        vecD.SetCoordinates(d->Px(), d->Py(), d->Pz(), massD0PDG);
+                        vecB = vecPi + vecD;
+                        double invMassNoVtxB = vecB.M();
+
                         AliExternalTrackParam piTrackParams;
                         piTrackParams.CopyFromVTrack(track);
                         AliExternalTrackParam DTrackParams;
@@ -684,7 +881,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             Bplus.GetSecondaryVtx()->AddDaughter(d); //then the D
                             Bplus.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             Bplus.SetProngIDs(2, id);
-                            FillBeauty3Prong(&Bplus, d, true);
+                            FillBeauty3Prong(&Bplus, d, true, invMassNoVtxB);
 
                             delete vertexBplus;
                             vertexBplus = nullptr;
@@ -696,7 +893,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             if (isvtxrecalc)
             {
                 CleanOwnPrimaryVertex(d, origownvtx);
-                unsetvtx = true;                
+                unsetvtx = true;
             }
             if (unsetvtx)
                 d->UnsetOwnPrimaryVtx();
@@ -731,7 +928,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     isselLc = fCutsLctopKpi->IsSelected(d, AliRDHFCuts::kAll, fAOD);
             }
 
-            if (!d || (!isselDplus && !isselDs && !isselLc))
+            if (!d || (!isselDplus && isselDs<=0 && isselLc<=0))
                 continue;
 
             if (!(fEnable3Prongs >> 0 & 1) && !(fEnableBeauty4Prongs >> 0 & 1) && (!isselDs && !isselLc))
@@ -765,7 +962,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 {
                     CleanOwnPrimaryVertex(d, origownvtx);
                 }
-                unsetvtx = true;                
+                unsetvtx = true;
             }
 
             //fill vector of 3prongs
@@ -775,13 +972,13 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             if (fEnableBeauty4Prongs)
             {
                 if( (!(fEnableBeauty4Prongs >> 0 & 1) || ((fEnableBeauty4Prongs >> 0 & 1) && !isselDplus)) &&
-                (!(fEnableBeauty4Prongs >> 1 & 1) || ((fEnableBeauty4Prongs >> 1 & 1) && (!(isselDs & 4) && !(isselDs & 8))) ) && 
+                (!(fEnableBeauty4Prongs >> 1 & 1) || ((fEnableBeauty4Prongs >> 1 & 1) && (!(isselDs & 4) && !(isselDs & 8))) ) &&
                 (!(fEnableBeauty4Prongs >> 2 & 1) || ((fEnableBeauty4Prongs >> 2 & 1) && !isselLc)))
                 {
                     if (isvtxrecalc)
                     {
                         CleanOwnPrimaryVertex(d, origownvtx);
-                        unsetvtx = true;                
+                        unsetvtx = true;
                     }
                     if (unsetvtx)
                         d->UnsetOwnPrimaryVtx();
@@ -811,6 +1008,24 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                     unsigned short idDdau[3] = {static_cast<unsigned short>(Ddau[0]->GetID()), static_cast<unsigned short>(Ddau[1]->GetID()), static_cast<unsigned short>(Ddau[2]->GetID())};
                     if (track->GetID() != idDdau[0] && track->GetID() != idDdau[1] && track->GetID() != idDdau[2])
                     {
+
+                        double massDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
+                        double massDsPDG = TDatabasePDG::Instance()->GetParticle(431)->Mass();
+                        double massLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+                        double massPiPDG = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+                        ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double> > vecPi, vecDplus, vecDs, vecLc, vecBzero, vecBs, vecLb;
+                        vecPi.SetCoordinates(track->Px(), track->Py(), track->Pz(), massPiPDG);
+                        vecDplus.SetCoordinates(d->Px(), d->Py(), d->Pz(), massDplusPDG);
+                        vecDs.SetCoordinates(d->Px(), d->Py(), d->Pz(), massDsPDG);
+                        vecLc.SetCoordinates(d->Px(), d->Py(), d->Pz(), massLcPDG);
+                        vecBzero = vecPi + vecDplus;
+                        vecBs = vecPi + vecDs;
+                        vecLb = vecPi + vecLc;
+                        double invMassNoVtxBzero = vecBzero.M();
+                        double invMassNoVtxBs = vecBs.M();
+                        double invMassNoPropLb = vecLb.M();
+
                         AliExternalTrackParam piTrackParams;
                         piTrackParams.CopyFromVTrack(track);
                         AliExternalTrackParam DTrackParams;
@@ -858,7 +1073,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                             B.SetPrimaryVtxRef((AliAODVertex *)fAOD->GetPrimaryVertex());
                             B.SetProngIDs(2, id);
 
-                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc);
+                            FillBeauty4Prong(&B, d, isselB0, isselBs, isselLb, isselDs, isselLc, invMassNoVtxBzero, invMassNoVtxBs, invMassNoPropLb);
 
                             delete vertexB;
                             vertexB = nullptr;
@@ -870,7 +1085,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             if (isvtxrecalc)
             {
                 CleanOwnPrimaryVertex(d, origownvtx);
-                unsetvtx = true;                
+                unsetvtx = true;
             }
             if (unsetvtx)
                 d->UnsetOwnPrimaryVtx();
@@ -922,7 +1137,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 {
                     CleanOwnPrimaryVertex(d, origownvtx);
                 }
-                unsetvtx = true;                
+                unsetvtx = true;
             }
 
             //fill vector of dstars
@@ -931,7 +1146,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             if (isvtxrecalc)
             {
                 CleanOwnPrimaryVertex(d, origownvtx);
-                unsetvtx = true;                
+                unsetvtx = true;
             }
             if (unsetvtx)
                 d->UnsetOwnPrimaryVtx();
@@ -987,7 +1202,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
                 {
                     CleanOwnPrimaryVertex(lc, origownvtx);
                 }
-                unsetvtx = true;                
+                unsetvtx = true;
             }
 
             //fill vector of cascades
@@ -996,10 +1211,94 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
             if (isvtxrecalc)
             {
                 CleanOwnPrimaryVertex(lc, origownvtx);
-                unsetvtx = true;                
+                unsetvtx = true;
             }
             if (unsetvtx)
                 lc->UnsetOwnPrimaryVtx();
+        }
+    }
+
+    //get pid response
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if(!fPIDresp)
+        fPIDresp = inputHandler->GetPIDResponse();
+
+    // loop on tracks
+    int nTracks = fAOD->GetNumberOfTracks();
+    for(int iTrack = 0; iTrack < nTracks; iTrack++) {
+        AliAODTrack* trackAOD = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        if(!trackAOD || !trackAOD->TestFilterBit(BIT(fFilterBitTracks)) || TMath::Abs(trackAOD->Eta())>0.8)
+            continue;
+        Track track;
+        track.fPt = trackAOD->Pt();
+        track.fPx = trackAOD->Px();
+        track.fPy = trackAOD->Py();
+        track.fPz = trackAOD->Pz();
+        track.fIdx = trackAOD->GetID();
+        track.fSpecies = 0;
+        double NsigmaTPCPi = -999., NsigmaTPCK = -999., NsigmaTPCPr = -999., NsigmaTPCEl = -999.;
+        double NsigmaTOFPi = -999., NsigmaTOFK = -999., NsigmaTOFPr = -999., NsigmaTOFEl = -999.;
+        bool isTPCok = (fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC, trackAOD) == AliPIDResponse::kDetPidOk);
+        bool isTOFok = (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF, trackAOD) == AliPIDResponse::kDetPidOk);
+        if(isTPCok)
+        {
+            NsigmaTPCPi = fPIDresp->NumberOfSigmasTPC(trackAOD, AliPID::kPion);
+            NsigmaTPCK = fPIDresp->NumberOfSigmasTPC(trackAOD, AliPID::kKaon);
+            NsigmaTPCPr = fPIDresp->NumberOfSigmasTPC(trackAOD, AliPID::kProton);
+            NsigmaTPCEl = fPIDresp->NumberOfSigmasTPC(trackAOD, AliPID::kElectron);
+        }
+        if(isTOFok)
+        {
+            NsigmaTOFPi = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kPion);
+            NsigmaTOFK = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kKaon);
+            NsigmaTOFPr = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kProton);
+            NsigmaTOFEl = fPIDresp->NumberOfSigmasTOF(trackAOD, AliPID::kElectron);
+        }
+
+        track.fNsigmaTPCPr = NsigmaTPCPr;
+        track.fNsigmaTOFPr = NsigmaTOFPr;
+
+        if(TMath::Abs(NsigmaTPCPi) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFPi) < fNsigmaTOFThreshold || NsigmaTOFPi == -999.))
+            track.fSpecies |= kPion;
+        if(TMath::Abs(NsigmaTPCK) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFK) < fNsigmaTOFThreshold || NsigmaTOFK == -999.))
+            track.fSpecies |= kKaon;
+        if(TMath::Abs(NsigmaTPCPr) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFPr) < fNsigmaTOFThreshold || NsigmaTOFPr == -999.))
+            track.fSpecies |= kProton;
+        if(TMath::Abs(NsigmaTPCEl) < fNsigmaTPCThreshold && (TMath::Abs(NsigmaTOFEl) < fNsigmaTOFThreshold || NsigmaTOFEl == -999.))
+            track.fSpecies |= kElectron;
+
+        bool isSpeciesSelected = false;
+        if(((fEnableTracks >> 0 & 1) && (track.fSpecies >> 0 & 1)) ||
+           ((fEnableTracks >> 1 & 1) && (track.fSpecies >> 1 & 1)) ||
+           ((fEnableTracks >> 2 & 1) && (track.fSpecies >> 2 & 1)) ||
+           ((fEnableTracks >> 3 & 1) && (track.fSpecies >> 3 & 1)))
+        {
+            isSpeciesSelected = true;
+            fTracks.push_back(track);
+        }
+
+        if(!isSpeciesSelected && fKeepTracksWithMinPt > 0 && track.fPt > fKeepTracksWithMinPt)
+            fTracks.push_back(track);
+
+        if(((fEnableTracks >> 0 & 1) && (track.fSpecies >> 0 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["pi"]->Fill(trackAOD->P(), NsigmaTPCPi);
+            fHistTrakNsigmaTOFVsP["pi"]->Fill(trackAOD->P(), NsigmaTOFPi);
+        }
+        if(((fEnableTracks >> 1 & 1) && (track.fSpecies >> 1 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["K"]->Fill(trackAOD->P(), NsigmaTPCK);
+            fHistTrakNsigmaTOFVsP["K"]->Fill(trackAOD->P(), NsigmaTOFK);
+        }
+        if(((fEnableTracks >> 2 & 1) && (track.fSpecies >> 2 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["p"]->Fill(trackAOD->P(), NsigmaTPCPr);
+            fHistTrakNsigmaTOFVsP["p"]->Fill(trackAOD->P(), NsigmaTOFPr);
+        }
+        if(((fEnableTracks >> 3 & 1) && (track.fSpecies >> 3 & 1)))
+        {
+            fHistTrakNsigmaTPCVsP["e"]->Fill(trackAOD->P(), NsigmaTPCEl);
+            fHistTrakNsigmaTOFVsP["e"]->Fill(trackAOD->P(), NsigmaTOFEl);
         }
     }
 
@@ -1017,6 +1316,7 @@ void AliAnalysisTaskSECharmTriggerStudy::UserExec(Option_t * /*option*/)
     fCharmCascade.clear();
     fBeauty3Prong.clear();
     fBeauty4Prong.clear();
+    fTracks.clear();
     fGenHadron.clear();
 
     return;
@@ -1027,6 +1327,9 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharm2Prong(AliAODRecoDecayHF2Prong
 {
     Charm2Prong ch2Prong;
     ch2Prong.fPt = cand->Pt();
+    ch2Prong.fPx = cand->Px();
+    ch2Prong.fPy = cand->Py();
+    ch2Prong.fPz = cand->Pz();
     ch2Prong.fY = cand->Y(421);
     ch2Prong.fInvMassD0 = cand->InvMassD0();
     ch2Prong.fInvMassD0bar = cand->InvMassD0bar();
@@ -1073,6 +1376,9 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharm3Prong(AliAODRecoDecayHF3Prong
 {
     Charm3Prong ch3Prong;
     ch3Prong.fPt = cand->Pt();
+    ch3Prong.fPx = cand->Px();
+    ch3Prong.fPy = cand->Py();
+    ch3Prong.fPz = cand->Pz();
     ch3Prong.fInvMassDplus = cand->InvMassDplus();
     ch3Prong.fInvMassDstoKKpi = cand->InvMassDsKKpi();
     ch3Prong.fInvMassDstopiKK = cand->InvMassDspiKK();
@@ -1155,6 +1461,9 @@ void AliAnalysisTaskSECharmTriggerStudy::FillDstar(AliAODRecoCascadeHF *cand, Al
     dstar.fInvMass = cand->InvMassDstarKpipi();
     dstar.fInvMassD0 = cand->InvMassD0();
     dstar.fPt = cand->Pt();
+    dstar.fPx = cand->Px();
+    dstar.fPy = cand->Py();
+    dstar.fPz = cand->Pz();
     dstar.fY = cand->Y(413);
     dstar.fCosPD0 = dau->CosPointingAngle();
     dstar.fCosPXYD0 = dau->CosPointingAngleXY();
@@ -1310,7 +1619,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillCharmCascade(AliAODRecoCascadeHF *c
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF2Prong *dau, bool issel, double massNoVtxB)
 {
     Beauty3Prong b3Prong;
     unsigned int pdgDgBplustoD0pi[2] = {211, 421};
@@ -1321,6 +1630,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
         return;
 
     b3Prong.fInvMassBplustoD0pi = invmassBplus;
+    b3Prong.fInvMassNoPropBplustoD0pi = massNoVtxB;
     b3Prong.fPt = cand->Pt();
     b3Prong.fY = cand->Y(521);
     b3Prong.fDecayLength = cand->DecayLength();
@@ -1389,7 +1699,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty3Prong(AliAODRecoDecayHF2Pron
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc)
+void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Prong *cand, AliAODRecoDecayHF3Prong *dau, bool isselB0, bool isselBs, bool isselLb, int isselDs, int isselLc, double massNoVtxB0, double massNoVtxBs, double massNoVtxLb)
 {
     Beauty4Prong b4Prong;
     unsigned int pdgDgB0toDminuspi[2] = {211, 411};
@@ -1409,6 +1719,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     {
         double invmassB0 = cand->InvMass(2, pdgDgB0toDminuspi);
         b4Prong.fInvMassB0toDminuspi = invmassB0;
+        b4Prong.fInvMassNoPropB0toDminuspi = massNoVtxB0;
         if (TMath::Abs(massB0PDG - invmassB0) > 0.4) //check mass
             isselB0 = false;
     }
@@ -1416,6 +1727,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     {
         double invmassBs = cand->InvMass(2, pdgDgBstoDsminuspi);
         b4Prong.fInvMassBstoDsminuspi = invmassBs;
+        b4Prong.fInvMassNoPropBstoDsminuspi = massNoVtxBs;
         if (TMath::Abs(massBsPDG - invmassBs) > 0.4) //check mass
             isselBs = false;
     }
@@ -1423,6 +1735,7 @@ void AliAnalysisTaskSECharmTriggerStudy::FillBeauty4Prong(AliAODRecoDecayHF2Pron
     {
         double invmassLb = cand->InvMass(2, pdgDgLbtoLcpi);
         b4Prong.fInvMassLbtoLcpluspi = invmassLb;
+        b4Prong.fInvMassNoPropLbtoLcpluspi = massNoVtxLb;
         if (TMath::Abs(massLbPDG - invmassLb) > 0.4) //check mass
             isselLb = false;
     }

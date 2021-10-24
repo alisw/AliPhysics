@@ -748,32 +748,32 @@ void AliAnalysisTaskEMCALPhotonTagged::FillClusHists()
     AliVCluster *c = static_cast<AliVCluster*>(clusters->At(ic));
     if(!c){
       if(fDebug)
-	printf("cluster pointer does not exist! xxxx\n");
+        printf("cluster pointer does not exist! xxxx\n");
       continue;
     }
     if(!c->IsEMCAL()){
       if(fDebug)
-	printf("cluster is not EMCAL! xxxx\n");
+        printf("cluster is not EMCAL! xxxx\n");
       continue;
     }
     if(c->E()<fECut){
       if(fDebug)
-	printf("cluster has E<%1.1f! xxxx\n", fECut);
+        printf("cluster has E<%1.1f! xxxx\n", fECut);
       continue;
     }
     if(fCpvFromTrack && fClusIdFromTracks.Contains(Form("%d",ic))){
       if(fDebug)
-	printf("cluster does not pass CPV criterion! xxxx\n");
+        printf("cluster does not pass CPV criterion! xxxx\n");
        continue;
     }
     if(IsExotic(c)){
       if(fDebug)
-	printf("cluster is exotic! xxxx\n");
+        printf("cluster is exotic! xxxx\n");
       continue;
     }
     if(c->GetDistanceToBadChannel()<fDistToBadChan){
       if(fDebug)
-	printf("cluster distance to bad channel is %1.1f (<%1.1f) xxxx\n",c->GetDistanceToBadChannel(),fDistToBadChan);
+        printf("cluster distance to bad channel is %1.1f (<%1.1f) xxxx\n",c->GetDistanceToBadChannel(),fDistToBadChan);
       continue;
     }
     Short_t id;
@@ -789,11 +789,7 @@ void AliAnalysisTaskEMCALPhotonTagged::FillClusHists()
       printf("\tcluster eta=%1.1f,phi=%1.1f,E=%1.1f\n",clsVec.Eta(),clsVec.Phi(),c->E());
     if(Et>10)
       nclus10++;
-    Bool_t isCPV = kFALSE;
-    if(TMath::Abs(c->GetTrackDx())>0.03 || TMath::Abs(c->GetTrackDz())>0.02)
-      isCPV = kTRUE;
-
-
+    
     Int_t clusNLM = GetNumberOfLocalMaxima(c,fVCells);
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
@@ -914,31 +910,28 @@ void AliAnalysisTaskEMCALPhotonTagged ::FillMcHists()
     for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
       TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
       if(!mcp)
-	continue;  
+        continue;  
       Int_t pdg = mcp->GetPdgCode();
       if(pdg!=22)
-	continue;
+        continue;
       if(TMath::Abs(mcp->Eta())>0.7 ||mcp->Phi()<1.4 || mcp->Phi()>3.2)
-	continue;
+        continue;
       Int_t imom = mcp->GetMother(0);
       if(imom<0 || imom>nTracks)
-	continue;
+        continue;
       TParticle *mcmom = static_cast<TParticle*>(fStack->Particle(imom));  
       if(!mcmom)
-	continue;
+        continue;
       Int_t pdgMom = mcmom->GetPdgCode();
-      Double_t mcphi = mcp->Phi();
-      Double_t mceta = mcp->Eta();
       if((imom==6 || imom==7) && pdgMom==22) {
-	fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	if(fDebug){
-	  printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
-	  printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
-	}
-      }
-      else{
-	if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
-	  fDecayPhotonPtMC->Fill(mcp->Pt());
+        fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        if(fDebug){
+          printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatusCode());
+          printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatusCode());
+        }
+      } else{
+        if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
+          fDecayPhotonPtMC->Fill(mcp->Pt());
       }
     }
   }
@@ -950,31 +943,28 @@ void AliAnalysisTaskEMCALPhotonTagged ::FillMcHists()
     for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
       AliAODMCParticle *mcp = dynamic_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
       if(!mcp)
-	continue;
+        continue;
       Int_t pdg = mcp->GetPdgCode();
       if(pdg!=22)
-	continue;
+        continue;
       if(TMath::Abs(mcp->Eta())>0.7 ||mcp->Phi()<1.4 || mcp->Phi()>3.2)
-	continue;
+        continue;
       Int_t imom = mcp->GetMother();
       if(imom<0 || imom>nTracks)
-	continue;
+        continue;
       AliAODMCParticle *mcmom = static_cast<AliAODMCParticle*>(fAODMCParticles->At(imom));
       if(!mcmom)
-	continue;
+        continue;
       Int_t pdgMom = mcmom->GetPdgCode();
-      Double_t mcphi = mcp->Phi();
-      Double_t mceta = mcp->Eta();
       if((imom==6 || imom==7) && pdgMom==22) {
-	fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-	if(fDebug){
-	  printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatus());
-	  printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%d\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatus());
-	}
-      }
-      else{
-	if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
-	  fDecayPhotonPtMC->Fill(mcp->Pt());
+        fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+        if(fDebug){
+          printf("Found \"photonic\" parton at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%llu,\n",imom,mcmom->Pt(), mcmom->Eta(), mcmom->Phi(), mcmom->GetStatus());
+          printf("with a final photon at position %d, with pt=%1.1f, eta=%1.1f and phi=%1.1f, and status=%llu\n",iTrack,mcp->Pt(), mcp->Eta(), mcp->Phi(),mcp->GetStatus());
+        }
+      } else{
+        if(TMath::Abs(pdgMom)>100 && TMath::Abs(pdgMom)<1000)
+          fDecayPhotonPtMC->Fill(mcp->Pt());
       }
     }
   }
@@ -1026,7 +1016,7 @@ Float_t AliAnalysisTaskEMCALPhotonTagged::GetClusSource(const AliVCluster *c)
     }
     else{
       if(fDebug)
-	printf("Warning: daughter of photon parton is not a photon\n");
+        printf("Warning: daughter of photon parton is not a photon\n");
       return -0.1;
     }
   }
@@ -1075,7 +1065,7 @@ void AliAnalysisTaskEMCALPhotonTagged::FollowGamma()
     if(mcp->GetPdgCode()!=22){
       mcp = static_cast<TParticle*>(fStack->Particle(++selfid));
       if(!mcp)
-	return;
+        return;
     }  
     daug0f =  mcp->GetFirstDaughter();
     daug0l =  mcp->GetLastDaughter();
@@ -1101,7 +1091,7 @@ void AliAnalysisTaskEMCALPhotonTagged::FollowGamma()
     if(mcp->GetPdgCode()!=22){
       mcp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(++selfid));
       if(!mcp)
-	return;
+        return;
     }  
     daug0f =  mcp->GetDaughterLabel(0);
     daug0l =  mcp->GetDaughterLabel(mcp->GetNDaughters()-1);
@@ -1141,13 +1131,13 @@ void AliAnalysisTaskEMCALPhotonTagged::GetDaughtersInfo(int firstd, int lastd, i
     for(int id=firstd; id<lastd+1; id++){
       dp =  static_cast<TParticle*>(fStack->Particle(id));
       if(!dp)
-	continue;
+        continue;
       Int_t dfd = dp->GetFirstDaughter(); 
       Int_t dld = dp->GetLastDaughter();
       Int_t dnd =  dld - dfd + 1;
       Float_t vr = TMath::Sqrt(dp->Vx()*dp->Vx()+dp->Vy()*dp->Vy());
       if(fDebug)
-	printf("\t%sParticle daughter(%d) eta=%1.1f,phi=%1.1f,E=%1.1f, vR=%1.1f, pdgcode=%d, n-daug=%d(%d,%d)\n", indenter.Data(),id, dp->Eta(), dp->Phi(), dp->Energy(), vr, dp->GetPdgCode(), dnd, dfd, dld);
+        printf("\t%sParticle daughter(%d) eta=%1.1f,phi=%1.1f,E=%1.1f, vR=%1.1f, pdgcode=%d, n-daug=%d(%d,%d)\n", indenter.Data(),id, dp->Eta(), dp->Phi(), dp->Energy(), vr, dp->GetPdgCode(), dnd, dfd, dld);
       fMcIdFamily += Form("%d,",id);
       GetDaughtersInfo(dfd,dld,id,indenter.Data());
     }
@@ -1169,13 +1159,13 @@ void AliAnalysisTaskEMCALPhotonTagged::GetDaughtersInfo(int firstd, int lastd, i
     for(int id=firstd; id<lastd+1; id++){
       dp =  static_cast<AliAODMCParticle*>(fAODMCParticles->At(id));
       if(!dp)
-	continue;
+        continue;
       Int_t dfd = dp->GetDaughterLabel(0); 
       Int_t dld = dp->GetDaughterLabel(dp->GetNDaughters()-1);
       Int_t dnd =  dld - dfd + 1;
       Float_t vr = TMath::Sqrt(dp->Xv()*dp->Xv()+dp->Xv()*dp->Xv());
       if(fDebug)
-	printf("\t%sParticle daughter(%d) eta=%1.1f,phi=%1.1f,E=%1.1f, vR=%1.1f, pdgcode=%d, n-daug=%d(%d,%d)\n", indenter.Data(),id, dp->Eta(), dp->Phi(), dp->E(), vr, dp->GetPdgCode(), dnd, dfd, dld);
+        printf("\t%sParticle daughter(%d) eta=%1.1f,phi=%1.1f,E=%1.1f, vR=%1.1f, pdgcode=%d, n-daug=%d(%d,%d)\n", indenter.Data(),id, dp->Eta(), dp->Phi(), dp->E(), vr, dp->GetPdgCode(), dnd, dfd, dld);
       fMcIdFamily += Form("%d,",id);
       GetDaughtersInfo(dfd,dld,id,indenter.Data());
     }
@@ -1398,7 +1388,7 @@ void AliAnalysisTaskEMCALPhotonTagged::CheckTriggerPatch()
       TString oname = Form("%s",obj->GetName());
       //printf("\t object %d named %s\n",il,oname.Data());
       if((oname.Contains("Emc") || oname.Contains("EMC")) && (oname.Contains("rigg")))
-	trigname = oname;
+        trigname = oname;
     }
   }
   //printf("\t\t trigger name  =  %s\n",trigname.Data()); 
@@ -1724,7 +1714,6 @@ Int_t AliAnalysisTaskEMCALPhotonTagged::TagEvent(Int_t idMax)
   if(fDebug)
     printf("Getting Tag Candidates...");
   Int_t candStatus = 0; //0=no cand, 1=photon, 2=pi0 (merged)
-  Bool_t hasPi0InvMass = kFALSE;
   TObjArray *clusters = fESDClusters;
   if (!clusters){
     clusters = fAODClusters;
@@ -1733,7 +1722,6 @@ Int_t AliAnalysisTaskEMCALPhotonTagged::TagEvent(Int_t idMax)
     return kFALSE;
   } 
   fMaxEtSpecCut->Fill(fEtMax);
-  Int_t nc = clusters->GetEntriesFast();
   AliVCluster *c = static_cast<AliVCluster*>(clusters->At(idMax));
   if(!c)
     return 0;

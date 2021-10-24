@@ -212,6 +212,7 @@ fMCcheckPi0decay(0),
 fMCcheckEtadecay(0),
 fHistWpos(0), 
 fHistWele(0), 
+fHistTrCutChecker(0), 
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -370,6 +371,7 @@ fMCcheckPi0decay(0),
 fMCcheckEtadecay(0),
 fHistWpos(0), 
 fHistWele(0), 
+fHistTrCutChecker(0), 
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -768,6 +770,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fOutputList->Add(fHistWpos);
     fHistWele = new TH1F("fHistWele","W->ele",100,0,100);
     fOutputList->Add(fHistWele);
+
+    fHistTrCutChecker = new TH2D("fHistTrCutChecker","track cut checker",10,-0.5,9.5,300,0,30);
+    fOutputList->Add(fHistTrCutChecker);
 
     if(fFlagSparse){
     Int_t bins[9]=      {8, 280, 160, 40, 200, 200, 10, 20,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
@@ -1181,6 +1186,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
         GetRawTrackInfo(atrack);
   
+        Double_t TrkPt = -999;
+        TrkPt = track->Pt();
+        fHistTrCutChecker->Fill(0.0,TrkPt);
+
         ///////////////////////
         // Get MC information//
         ///////////////////////
@@ -1220,6 +1229,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         if(fESD)
             if(!esdTrackCutsH->AcceptTrack(etrack))continue;
         
+        fHistTrCutChecker->Fill(1.0,TrkPt);
+
         //reject kink
         if(IsAODanalysis()){
             Bool_t kinkmotherpass = kTRUE;
@@ -1235,14 +1246,20 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             if(etrack->GetKinkIndex(0) != 0) continue;
         }
         
+        fHistTrCutChecker->Fill(2.0,TrkPt);
+
         //other cuts
         Double_t d0z0[2]={-999,-999}, cov[3];
         Double_t DCAxyCut = 2.4, DCAzCut = 3.2;
         if(fAOD){
             if(atrack->GetTPCNcls() < 80) continue;
+               fHistTrCutChecker->Fill(3.0,TrkPt);
             if(atrack->GetITSNcls() < 3) continue;
+               fHistTrCutChecker->Fill(4.0,TrkPt);
             if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+               fHistTrCutChecker->Fill(5.0,TrkPt);
             if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
+               fHistTrCutChecker->Fill(6.0,TrkPt);
             
             double phiMatchIts = atrack->Phi();
             if(atrack->HasPointOnITSLayer(0))fITShitPhi->Fill(0.0,phiMatchIts);
@@ -1251,6 +1268,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
                 if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
             //To be done : Add cuts to apply Chi2PerITSCls < 6 and N shared Cls ITS < 4
+               fHistTrCutChecker->Fill(7.0,TrkPt);
         }
   
         if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fMCcheckHFdecay->Fill(2,MCinfo[4]);
@@ -1259,12 +1277,13 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         //Track properties//
         ///////////////////
         Double_t dEdx =-999, fTPCnSigma=-999, fTPCnSigma_Pi=-999;
-        Double_t TrkPhi=-999, TrkPt=-999, TrkEta=-999, TrkP = -999;
+        //Double_t TrkPhi=-999, TrkPt=-999, TrkEta=-999, TrkP = -999;
+        Double_t TrkPhi=-999, TrkEta=-999, TrkP = -999;
         dEdx = track->GetTPCsignal();
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         fTPCnSigma_Pi = fpidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         TrkPhi = track->Phi();
-        TrkPt = track->Pt();
+        //TrkPt = track->Pt();
         TrkEta = track->Eta();
         TrkP = track->P();
         

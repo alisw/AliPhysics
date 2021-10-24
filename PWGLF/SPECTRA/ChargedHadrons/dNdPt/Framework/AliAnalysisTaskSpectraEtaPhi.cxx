@@ -77,16 +77,16 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
         }
     }
 
-    const int nCuts = 8;
+    const int nCuts = 23;
     Axis cutAxis = {"cut", "cut setting", {-1.5, nCuts - 0.5}, nCuts + 1};
     Axis centAxis = {"cent", "centrality", centBins};
     Axis ptAxis = {"pt", "#it{p}_{T} (GeV/c)", ptBins};
-    Axis etaAxis = {"eta", "#eta", {-0.8, 0.8}, 8};
+    Axis etaAxis = {"eta", "#eta", {-1, 1}, 20};
     Axis phiAxis = {
         "phi", "#phi", {0., 2. * M_PI}, 36}; // 36 to see tpc sectors
     Axis mcInfoAxis = {"mcInfo", "mcInfo", {-0.3, 3.5}, 4};
     Axis nClusterAxis = {"NClusterPID", "N_{Cluster}^{PID}", {-0.5, 160.5}, 20};
-    Axis zInnerAxis = {"ZInnerParam", "Z_{Inner}", {-30.5, 29.5}, 60};
+    Axis zInnerAxis = {"ZInnerParam", "Z_{Inner}", {-90.5, 90.5}, 180};
     Axis chargeQAxis = {"MCQ", "Q", {-1.5, 1.5}, 3};
     Axis multAxis = {"mult", "#it{N}_{ch}", multBins};
     Axis zVrtAxis = {"zV", "vertex_{Z}", {-20, 20}, 8};
@@ -106,6 +106,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     fHistEffContZ.AddAxis(zInnerAxis);
     fHistEffContZ.AddAxis(cutAxis);
     fHistEffContZ.AddAxis(mcInfoAxis);
+    fHistEffContZ.AddAxis(etaAxis);
     fOutputList->Add(fHistEffContZ.GenerateHist("fHistEffContZ"));
     requiredMemory += fHistEffContZ.GetSize();
 
@@ -138,6 +139,7 @@ void AliAnalysisTaskSpectraEtaPhi::AddOutput() {
     fHistTrackZ.AddAxis(ptAxis);
     fHistTrackZ.AddAxis(zInnerAxis);
     fHistTrackZ.AddAxis(cutAxis);
+    fHistTrackZ.AddAxis(etaAxis);
     fOutputList->Add(fHistTrackZ.GenerateHist("fHistTrackZ"));
     requiredMemory += fHistTrackZ.GetSize();
 
@@ -188,10 +190,10 @@ void AliAnalysisTaskSpectraEtaPhi::AnaEvent() {
 
 void AliAnalysisTaskSpectraEtaPhi::AnaTrack(Int_t flag) {
     //    if (!fAcceptTrackM) return;
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 23; ++i) {
         if (fAcceptTrack[i]) {
             fHistTrackNCluster.Fill(fMultPercentileV0M, fPt, fTPCSignalN, i);
-            fHistTrackZ.Fill(fMultPercentileV0M, fPt, fZInner, i);
+            fHistTrackZ.Fill(fMultPercentileV0M, fPt, fZInner, i, fEta);
             fHistTrackEta.Fill(fMultPercentileV0M, fPt, fEta, i, fChargeSign);
             fHistTrackPhi.Fill(fMultPercentileV0M, fPt, fPhi, i);
         }
@@ -209,13 +211,16 @@ void AliAnalysisTaskSpectraEtaPhi::AnaTrackMC(Int_t flag) {
     if (TMath::Abs(fMCQ > 1)) {
         Log("RecTrack.Q>1.PDG.", fMCPDGCode);
     }
+    if(fMCPileUpTrack){ // reject pileup tracks
+        return;
+    }
 
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 23; ++i) {
         if (fAcceptTrack[i]) {
             fHistEffContNCluster.Fill(fMultPercentileV0M, fPt, fTPCSignalN, i,
                                       fMCProdcutionType);
             fHistEffContZ.Fill(fMultPercentileV0M, fPt, fZInner, i,
-                               fMCProdcutionType);
+                               fMCProdcutionType, fEta);
             fHistEffContEta.Fill(fMultPercentileV0M, fPt, fEta, i,
                                  fMCProdcutionType, fChargeSign);
             fHistEffContPhi.Fill(fMultPercentileV0M, fPt, fPhi, i,
@@ -231,8 +236,11 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag) {
         return;
     if (!fMCIsCharged)
         return;
-    if (TMath::Abs(fMCEta) > 0.8)
+    if (TMath::Abs(fMCEta) > 1.0)
         return;
+    if(fMCPileUpTrack){ // reject pileup tracks
+        return;
+    }
 
     if (fMCParticleType == AlidNdPtTools::kOther) {
         Log("GenPrim.PDG.", fMCPDGCode);
@@ -242,7 +250,7 @@ void AliAnalysisTaskSpectraEtaPhi::AnaParticleMC(Int_t flag) {
     }
 
     fHistEffContNCluster.Fill(fMultPercentileV0M, fMCPt, fTPCSignalN, -1., 3.);
-    fHistEffContZ.Fill(fMultPercentileV0M, fMCPt, fZInner, -1., 3.);
+    fHistEffContZ.Fill(fMultPercentileV0M, fMCPt, fZInner, -1., 3., fMCEta);
     fHistEffContEta.Fill(fMultPercentileV0M, fMCPt, fMCEta, -1., 3., fChargeSign);
     fHistEffContPhi.Fill(fMultPercentileV0M, fMCPt, fMCPhi, -1., 3.);
 }
@@ -286,7 +294,7 @@ AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const char* name,
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaulteta10"));
     // default, nogeo, nogeonogold, geoCut116, geoCut117, geoCut118 geoCut119,
     // tpconlyminimal
     task->SetESDtrackCuts(0, AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
@@ -303,7 +311,12 @@ AliAnalysisTaskSpectraEtaPhi::AddTaskSpectra(const char* name,
     task->SetESDtrackCuts(
         6, AlidNdPtTools::CreateESDtrackCuts("defaultEta08", 119));
     task->SetESDtrackCuts(
-        7, AlidNdPtTools::CreateESDtrackCuts("tpconlyminimalEta08"));
+        7, AlidNdPtTools::CreateESDtrackCuts("defaulteta10"));
+    for(int i=1; i<16; ++i){
+        task->SetESDtrackCuts(
+                              i+7,AlidNdPtTools::CreateESDtrackCuts("defaultEta10", i+100));
+    }
+
     task->SetNeedEventMult(kTRUE);
     task->SetNeedTrackIP(kTRUE);
 

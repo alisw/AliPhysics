@@ -18,8 +18,11 @@
 #include <TProfile.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
+#include <TH1D.h>
+#include <TH2D.h>
 #include <TH2F.h>
 #include <TF1.h>
+#include <TFile.h>
 #include <TParticle.h>
 #include <TLorentzVector.h>
 #include "AliMCEvent.h"
@@ -866,6 +869,35 @@ Bool_t AliVertexingHFUtils::IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* t
     }
   }
   return kFALSE;
+}
+//____________________________________________________________________________
+Double_t AliVertexingHFUtils::GetBeautyMotherPt(AliMCEvent* mcEvent, AliMCParticle *mcPart){
+  /// get the pt of the beauty hadron (feed-down case), returns negative value for prompt (ESD case)
+
+  Int_t pdgGranma = 0;
+  Int_t mother = 0;
+  mother = mcPart->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma =0;
+  while (mother >=0 ){
+    istep++;
+    AliMCParticle* mcGranma = (AliMCParticle*)mcEvent->GetTrack(mother);
+    if (mcGranma){
+      TParticle* partGranma = mcGranma->Particle();
+      if(partGranma) pdgGranma = partGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	return mcGranma->Pt();
+      }
+      if(abspdgGranma==4) return -999.;
+      if(abspdgGranma==5) return -1.;
+      mother = mcGranma->GetMother();
+    }else{
+      printf("AliVertexingHFUtils::GetBeautyMotherPt: Failed casting the mother particle!");
+      break;
+    }
+  }
+  return -999.;
 }
 //____________________________________________________________________________
 Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart){
@@ -3695,6 +3727,28 @@ Double_t AliVertexingHFUtils::CosPointingAngleFromKF(KFParticle kfp, KFParticle 
 }
 
 //______________________________________________________________________
+Double_t AliVertexingHFUtils::CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother)
+{
+  Double_t v[2];
+  v[0] = kfp.GetX() - kfpmother.GetX();
+  v[1] = kfp.GetY() - kfpmother.GetY();
+
+  Double_t p[2];
+  p[0] = kfp.GetPx();
+  p[1] = kfp.GetPy();
+
+  Double_t ptimesv2 = (p[0]*p[0]+p[1]*p[1])*(v[0]*v[0]+v[1]*v[1]);
+
+  if ( ptimesv2<=0 ) return 0.0;
+  else {
+    Double_t cos = (v[0]*p[0]+v[1]*p[1]) / TMath::Sqrt(ptimesv2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
+}
+
+//______________________________________________________________________
 Double_t AliVertexingHFUtils::CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1)
 {
   Double_t massvtx = TDatabasePDG::Instance()->GetParticle(pdgvtx)->Mass();
@@ -3945,6 +3999,25 @@ KFParticle AliVertexingHFUtils::CreateKFParticleCasc(KFParticle kfpV0, AliAODTra
 }
 
 //______________________________________________________________________
+Double_t AliVertexingHFUtils::DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t dz_particle = PV.GetZ()-kfpParticle.GetZ();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle + dz_particle*dz_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  return l_particle;
+}
+
+//______________________________________________________________________
 Double_t AliVertexingHFUtils::ldlFromKF(KFParticle kfpParticle, KFParticle PV)
 {
   Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
@@ -3956,4 +4029,87 @@ Double_t AliVertexingHFUtils::ldlFromKF(KFParticle kfpParticle, KFParticle PV)
   dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
   if ( dl_particle==0. ) return 9999.;
   return l_particle/dl_particle;
+}
+
+//______________________________________________________________________
+Double_t AliVertexingHFUtils::ldlXYFromKF(KFParticle kfpParticle, KFParticle PV)
+{
+  Double_t dx_particle = PV.GetX()-kfpParticle.GetX();
+  Double_t dy_particle = PV.GetY()-kfpParticle.GetY();
+  Double_t l_particle = TMath::Sqrt(dx_particle*dx_particle + dy_particle*dy_particle);
+  Double_t dl_particle = (PV.GetCovariance(0)+kfpParticle.GetCovariance(0))*dx_particle*dx_particle + (PV.GetCovariance(2)+kfpParticle.GetCovariance(2))*dy_particle*dy_particle + 2*( (PV.GetCovariance(1)+kfpParticle.GetCovariance(1))*dx_particle*dy_particle );
+  if ( fabs(l_particle)<1.e-8f ) l_particle = 1.e-8f;
+  dl_particle = dl_particle<0. ? 1.e8f : sqrt(dl_particle)/l_particle;
+  if ( dl_particle==0. ) return 9999.;
+  return l_particle/dl_particle;
+}
+//______________________________________________________________________
+TH1D* AliVertexingHFUtils::ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput,
+						      Int_t nPtBins, Double_t* binLims,
+						      Bool_t useSimpleFormula){
+  // method to propagate the uncertainty on the ratio GenAcc/GenLimAcc
+  // starting from ToyMC output file
+  
+  TH2D* hPtVsYGenAccToy=(TH2D*)fileToyMCoutput->Get("hPtVsYGenAcc");
+  TH2D* hPtVsYGenLimAccToy=(TH2D*)fileToyMCoutput->Get("hPtVsYGenLimAcc");
+  ComputeGenAccOverGenLimAcc(hPtVsYGenAccToy,hPtVsYGenLimAccToy,nPtBins,binLims,useSimpleFormula);
+}
+//______________________________________________________________________
+TH1D* AliVertexingHFUtils::ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy,
+						      Int_t nPtBins, Double_t* binLims,
+						      Bool_t useSimpleFormula){
+
+  // method to propagate the uncertainty on the ratio GenAcc/GenLimAcc
+  // starting from the 2D histos (pt,y) of the ToyMC
+  
+  Int_t iybin1=hPtVsYGenAccToy->GetYaxis()->FindBin(-0.499999);
+  Int_t iybin2=hPtVsYGenAccToy->GetYaxis()->FindBin(0.499999);
+  TH1D* hptga=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga");
+  TH1D* hptgay05=(TH1D*)hPtVsYGenAccToy->ProjectionX("hptga05",iybin1,iybin2);
+  TH1D* hptgla=(TH1D*)hPtVsYGenLimAccToy->ProjectionX("hptgla");
+  TH1D* hptgaR=0x0;
+  TH1D* hptglaR=0x0;
+  TH1D* hptgay05R=0x0;
+  Bool_t shouldDelete=kFALSE;
+  if(nPtBins>0 && binLims){
+    hptgaR=(TH1D*)hptga->Rebin(nPtBins,"hptgaR",binLims);
+    hptglaR=(TH1D*)hptgla->Rebin(nPtBins,"hptglaR",binLims);
+    hptgay05R=(TH1D*)hptgay05->Rebin(nPtBins,"hptgay05R",binLims);
+  }else{
+    hptgaR=(TH1D*)hptga->Clone("hptgaR");
+    hptglaR=(TH1D*)hptgla->Clone("hptglaR");
+    hptgay05R=(TH1D*)hptgay05->Clone("hptgay05R");
+    nPtBins=hptgay05R->GetNbinsX();
+    binLims=new Double_t[nPtBins+1];
+    for(Int_t ib=0; ib<nPtBins; ib++) binLims[ib]=hptgay05R->GetBinLowEdge(ib+1);
+    binLims[nPtBins]=hptgay05R->GetBinLowEdge(nPtBins+1);
+    shouldDelete=kTRUE;
+  }
+  TH1D* hGenAccOverGenLimAcc = new TH1D("hGenAccOverGenLimAcc",";p_{T} (GeV/c); GenAcc/GenLimAcc",nPtBins,binLims);
+  for(Int_t ib=1; ib<=nPtBins; ib++){
+    Double_t countGenAcc=hptgaR->GetBinContent(ib);
+    Double_t countGenAccY05=hptgay05R->GetBinContent(ib);
+    Double_t countGenLimAcc=hptglaR->GetBinContent(ib);
+    Double_t yfid=0.8;
+    Double_t ptcent=hptgaR->GetBinCenter(ib);
+    if(ptcent<5) yfid=-0.2/15*ptcent*ptcent+1.9/15*ptcent+0.5;
+    Double_t acc=0;
+    Double_t erracc=0;
+    if(countGenAcc>0 && countGenLimAcc>0){
+      acc=countGenAcc/countGenLimAcc;
+      Double_t rho=TMath::Sqrt(countGenAccY05*countGenAccY05/(countGenAcc*countGenLimAcc));
+      if(useSimpleFormula) rho=TMath::Sqrt(0.5/yfid*acc/1.6);
+      erracc=acc*TMath::Sqrt(1./countGenAcc+1./countGenLimAcc-2*rho*1/TMath::Sqrt(countGenAcc*countGenLimAcc));
+    }
+    hGenAccOverGenLimAcc->SetBinContent(ib,acc);
+    hGenAccOverGenLimAcc->SetBinError(ib,erracc);
+  }
+  delete hptga;
+  delete hptgay05;
+  delete hptgla;
+  delete hptgaR;
+  delete hptgay05R;
+  delete hptglaR;
+  if(shouldDelete) delete binLims;
+  return hGenAccOverGenLimAcc;
 }

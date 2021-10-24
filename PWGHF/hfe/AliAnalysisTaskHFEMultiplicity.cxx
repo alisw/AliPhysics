@@ -104,12 +104,15 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
 //Event Cut
 fCutNcontV(2),
 //Track Cut
-fCutTPCMaxCls(100.),
+fRatioCrossedRowOverFindable(0.8),
+fCutTPCCrossRows(100.),
 fCutTPCchi2perNDF(4.),
 fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fCutTrackEta(0.7),
 fCutpTMin(1.),
 //PID Cut
@@ -117,8 +120,8 @@ fCutEopEMin(0.8),
 fCutEopEMax(1.2),
 fCutNsigmaEMin(-1.),
 fCutNsigmaEMax(3.),
-fCutM20Min(0.02),
-fCutM20Max(0.35),
+fCutM02Min(0.02),
+fCutM02Max(0.35),
 //Loose cuts for photonic electron pair
 fAssoTPCCluster(80.),
 fAssoITSCluster(3.),
@@ -224,6 +227,10 @@ fInclseDCALElecPtReco(0),
 // hfe e-
 fHFElecPtAll(0),
 fHFElecPtReco_wtrkcuts(0),
+fHFElecPtReco_wtrkmatch(0),
+fHFElecPtReco_wtrkmatchEop(0),
+fHFElecPtReco_wtrkmatchEopTPC(0),
+fHFElecPtReco_wtrkmatchEopTPCM02(0),
 fHFElecPtReco_wTPCPID(0),
 fHFElecPtReco_wtrkCalocuts(0),
 fHFElecPtReco_wTPCCaloPID(0),
@@ -293,12 +300,15 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
 //Event Cut
 fCutNcontV(2),
 //Track Cut
-fCutTPCMaxCls(100.),
+fRatioCrossedRowOverFindable(0.8),
+fCutTPCCrossRows(100.),
 fCutTPCchi2perNDF(4.),
 fCutTPCNCls(80.),
 fCutITSNCls(3.),
 fCutDCAxy(2.4),
 fCutDCAz(3.2),
+fCutDeltaEta(0.01),
+fCutDeltaPhi(0.01),
 fCutTrackEta(0.7),
 fCutpTMin(1),
 //PID Cut
@@ -306,8 +316,8 @@ fCutEopEMin(0.8),
 fCutEopEMax(1.2),
 fCutNsigmaEMin(-1.),
 fCutNsigmaEMax(3.),
-fCutM20Min(0.02),
-fCutM20Max(0.35),
+fCutM02Min(0.02),
+fCutM02Max(0.35),
 //Loose cuts for photonic electron pair
 fAssoTPCCluster(80.),
 fAssoITSCluster(3.),
@@ -412,6 +422,10 @@ fInclseDCALElecPtReco(0),
 // hfe e-
 fHFElecPtAll(0),
 fHFElecPtReco_wtrkcuts(0),
+fHFElecPtReco_wtrkmatch(0),
+fHFElecPtReco_wtrkmatchEop(0),
+fHFElecPtReco_wtrkmatchEopTPC(0),
+fHFElecPtReco_wtrkmatchEopTPCM02(0),
 fHFElecPtReco_wTPCPID(0),
 fHFElecPtReco_wtrkCalocuts(0),
 fHFElecPtReco_wTPCCaloPID(0),
@@ -547,14 +561,20 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     fOutputList->SetOwner(kTRUE);
     
     
-    fNevents = new TH1F ("fNevents","Number of events",6,-0.5,5.5);
-    fNevents->GetYaxis()->SetTitle("counts");
-    fNevents->GetXaxis()->SetBinLabel(1,"nEvents Total");
-    fNevents->GetXaxis()->SetBinLabel(2,"nEvents With Zvtx cut");
-    fNevents->GetXaxis()->SetBinLabel(3,"nEvents with pileup cut");
-    fNevents->GetXaxis()->SetBinLabel(4,"nEvents with n contributor");
-    fNevents->GetXaxis()->SetBinLabel(5,"nEvents with zvtxQA cut");
-    fNevents->GetXaxis()->SetBinLabel(6,"nEvents with vertex cut");
+    fNevents = new TH1F ("fNevents","Number of events",12,-0.5,11.5);
+       fNevents->GetYaxis()->SetTitle("counts");
+       fNevents->GetXaxis()->SetBinLabel(1,"nEvents Total");
+       fNevents->GetXaxis()->SetBinLabel(2,"nEvents With Zvtx cut");
+       fNevents->GetXaxis()->SetBinLabel(3,"nEvents with pileup cut");
+       fNevents->GetXaxis()->SetBinLabel(4,"nEvents with n contributor");
+       fNevents->GetXaxis()->SetBinLabel(5,"nEvents with zvtxQA cut");
+       fNevents->GetXaxis()->SetBinLabel(6,"nEvents with vertex cut");
+       fNevents->GetXaxis()->SetBinLabel(7,"GA1");
+       fNevents->GetXaxis()->SetBinLabel(8,"GA2");
+       fNevents->GetXaxis()->SetBinLabel(9,"EMC_GA1");
+       fNevents->GetXaxis()->SetBinLabel(10,"EMC_GA2");
+       fNevents->GetXaxis()->SetBinLabel(11,"DMC_GA1");
+       fNevents->GetXaxis()->SetBinLabel(12,"DMC_GA2");
     
     
     fClusPhi            = new TH1F("fClusPhi", "Cluster Phi distribution; #phi ; counts",100,0.,7);
@@ -597,7 +617,7 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     
     
     
-    Int_t bins[9]        =          {250,200,100,400,400, 1000, 350,500,300};
+    Int_t bins[9]        =          {250,200,200,400,400, 1000, 350,500,300};
     Double_t xmin[9]    =    {  0, -10,0, 0,0,0, 0,0,-15};
     Double_t xmax[9]    =    {  50,10, 2,2,2, 2000, 350,50,15};
     
@@ -635,6 +655,14 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         fHFElecPtAll     = new TH2F("fHFElecPtAll","p_{T} distribution of all HFe ;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
         
         fHFElecPtReco_wtrkcuts = new TH2F("fHFElecPtReco_wtrkcuts","p_{T} distribution of HF electrons with track cuts;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatch = new TH2F("fHFElecPtReco_wtrkmatch","p_{T} distribution of HF electrons with track match cuts;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatchEop = new TH2F("fHFElecPtReco_wtrkmatchEop","p_{T} distribution of HF electrons with track match Eop;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatchEopTPC = new TH2F("fHFElecPtReco_wtrkmatchEopTPC","p_{T} distribution of HF electrons with track match Eop TPC nsigma cut;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
+        
+        fHFElecPtReco_wtrkmatchEopTPCM02 = new TH2F("fHFElecPtReco_wtrkmatchEopTPCM02","p_{T} distribution of HF electrons with track match Eop TPC nsigma cut;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
         
         fHFElecPtReco_wTPCPID = new TH2F("fHFElecPtReco_wTPCPID","p_{T} distribution of all HF electrons with TPC PID;p_{T} (GeV/c);counts;SPDTracklets",250,0,50,350,0,350);
         
@@ -738,8 +766,8 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         
         fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
         
-        fPi0Weight->SetParameters( 1.46837e+03,-1.02586e-01, 1.18596e-03,1.73410,5.06623);
-        fEtaWeight->SetParameters(   3.67328e+02,-5.34727e-02,2.39322e-05,1.96562,5.23828);
+        fPi0Weight->SetParameters( 1.62474e+03,-1.17372e-01,1.42964e-03,1.64427e+00,4.93761e+00);
+        fEtaWeight->SetParameters(   3.67236e+02,-5.41467e-02,3.76799e-05,1.96809e+00,5.23929e+00);
     }
     fTrkMatchTrkPt->Sumw2();
     fSparseElectron->Sumw2();
@@ -752,6 +780,10 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     if(fReadMC){
         fHFElecPtAll->Sumw2();
         fHFElecPtReco_wtrkcuts->Sumw2();
+        fHFElecPtReco_wtrkmatch->Sumw2();
+        fHFElecPtReco_wtrkmatchEop->Sumw2();
+        fHFElecPtReco_wtrkmatchEopTPC->Sumw2();
+        fHFElecPtReco_wtrkmatchEopTPCM02->Sumw2();
         fHFElecPtReco_wTPCPID->Sumw2();
         fHFElecPtReco_wtrkCalocuts->Sumw2();
         fHFElecPtReco_wTPCCaloPID->Sumw2();
@@ -832,6 +864,10 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
         fOutputList->Add(fInclseDCALElecPtReco);
         fOutputList->Add(fHFElecPtAll);
         fOutputList->Add(fHFElecPtReco_wtrkcuts);
+        fOutputList->Add(fHFElecPtReco_wtrkmatch);
+        fOutputList->Add(fHFElecPtReco_wtrkmatchEop);
+        fOutputList->Add(fHFElecPtReco_wtrkmatchEopTPC);
+        fOutputList->Add(fHFElecPtReco_wtrkmatchEopTPCM02);
         fOutputList->Add(fHFElecPtReco_wTPCPID);
         fOutputList->Add(fHFElecPtReco_wtrkCalocuts);
         fOutputList->Add(fHFElecPtReco_wTPCCaloPID);
@@ -893,8 +929,40 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
     
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) return;
-    
+   fNevents->Fill(0);
     if(!PassEventSelect(fAOD)) return;
+    
+    Double_t Zvertex1 = -100;
+       const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
+       Zvertex1 =pVtx->GetZ();
+       if(fzvtxcut){
+           if(TMath::Abs(Zvertex1)>10.0) return;}
+       fNevents->Fill(1);
+       
+       
+       //--------------------vertex selection cuts-----------------------
+       if(fzvtxQA){
+           
+           
+           if (fRejectPUFromSPD && fAOD->IsPileupFromSPDInMultBins()) return; // pile-up cut
+           fNevents->Fill(2);
+           
+           Double_t NContV = pVtx->GetNContributors();
+           
+           if(NContV<fCutNcontV) return; // n contributor
+           fNevents->Fill(3);
+           
+           AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
+           
+           if (!vtxSPD || vtxSPD->GetNContributors() < 1) return;
+           Double_t cov[6]={0};
+           vtxSPD->GetCovarianceMatrix(cov);
+           if (TMath::Sqrt(cov[5]) > 0.25) return;
+           if (TMath::Abs(vtxSPD->GetZ() - pVtx->GetZ())>0.5) return;
+           fNevents->Fill(4);
+       }
+       
+        
     
     
     if(fUseTender){
@@ -922,55 +990,37 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
     
     if(fFlagClsTypeEMC && fFlagClsTypeDCAL)
     {
-        if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
-        if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+        
+        if(fEMCEG1 && fDCalDG1) {if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return; fNevents->Fill(6);}
+        
+        if(fEMCEG2 && fDCalDG2) {if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return; fNevents->Fill(7);}
     }
     // --- separate EMCAL and DCAL --- //
     else
     {
-        if(fEMCEG1) if(!firedTrigger.Contains(TriggerEG1)) return;
-        if(fEMCEG2) if(!firedTrigger.Contains(TriggerEG2)) return;
-        if(fDCalDG1) if(!firedTrigger.Contains(TriggerDG1)) return;
-        if(fDCalDG2) if(!firedTrigger.Contains(TriggerDG2)) return;
+        if(fEMCEG1) {
+            if(!firedTrigger.Contains(TriggerEG1)) return;
+                    fNevents->Fill(8);
+            
+        }
+        
+        if(fEMCEG2) {
+            if(!firedTrigger.Contains(TriggerEG2)) return;
+                    fNevents->Fill(9);
+            
+        }
+        if(fDCalDG1){
+            if(!firedTrigger.Contains(TriggerDG1)) return;
+                    fNevents->Fill(10);
+            
+        }
+        if(fDCalDG2) {
+            if(!firedTrigger.Contains(TriggerDG2)) return;
+                        fNevents->Fill(11);
+            
+        }
+        
     }
-    
-    
-    fNevents->Fill(1);
-    
-    
-    //////////////////
-    // Multiplicity //
-    /////////////////
-    Double_t Zvertex1 = -100;
-    const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-    Zvertex1 =pVtx->GetZ();
-    if(fzvtxcut){
-        if(TMath::Abs(Zvertex1)>10.0) return;}
-    fNevents->Fill(2);
-    
-    
-    //--------------------vertex selection cuts-----------------------
-    if(fzvtxQA){
-        
-        
-        if (fRejectPUFromSPD && fAOD->IsPileupFromSPDInMultBins()) return; // pile-up cut
-        fNevents->Fill(3);
-        
-        Double_t NContV = pVtx->GetNContributors();
-        
-        if(NContV<fCutNcontV) return; // n contributor
-        fNevents->Fill(4);
-        
-        AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
-        
-        if (!vtxSPD || vtxSPD->GetNContributors() < 1) return;
-        Double_t cov[6]={0};
-        vtxSPD->GetCovarianceMatrix(cov);
-        if (TMath::Sqrt(cov[5]) > 0.25) return;
-        if (TMath::Abs(vtxSPD->GetZ() - pVtx->GetZ())>0.5) return;
-    }
-    
-    fNevents->Fill(5);
     
     //----------V0M Multiplicity------------------
     AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
@@ -1107,6 +1157,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
         if(!fUseTender) clu  = (AliAODCaloCluster*)fAOD->GetCaloCluster(index) ;
         if(fUseTender) clu = dynamic_cast<AliAODCaloCluster*>(fCaloClusters_tender->At(index));
         if(!clu) continue;
+       
         
         fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
         if (clu->IsEMCAL()){
@@ -1129,8 +1180,14 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            clut = clu->GetTOF()*1e9 ;
+            clut = clu->GetTOF()*1e+9; // ns
             energy = clu->E();
+              
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+            if(TMath::Abs(clut) > 50) continue;
+            if(clu->GetIsExotic()) continue; //remove exotic clusters
+            }
+            
             ncells= clu->GetNCells();
             fClusPhi->Fill(cluphi);
             fClusEtaPhi->Fill(clueta,cluphi);
@@ -1216,7 +1273,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatchcluster->Fill(fPhiDiff,fEtaDiff);
-            if(TMath::Abs(fPhiDiff) > 0.06 || TMath::Abs(fEtaDiff)> 0.06) continue;
+            if(TMath::Abs(fPhiDiff) > fCutDeltaPhi || TMath::Abs(fEtaDiff)> fCutDeltaEta) continue;
             
             Float_t EMCalpos[3];
             clustMatch -> GetPosition(EMCalpos);
@@ -1234,10 +1291,30 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
+            Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
+            if (!fReadMC) { //should not be applied in MC since it is not implemented
+                if(TMath::Abs(clustTime) > 50) continue; //50ns time cut to remove pileup
+                if(clustMatch->GetIsExotic()) continue; //remove exotic clusters
+            }
             fTrkMatchTrkPt->Fill(TrkPt);
             fTrkMatchTrketa->Fill(TrkEta);
             fTrkMatchTrkphi->Fill(TrkPhi);
             fTrkMatchClusetaphi->Fill(emceta,emcphi);
+            
+            
+            if(fReadMC){
+                Int_t iTrklabel = TMath::Abs(track->GetLabel());
+                if(iTrklabel == 0) continue;
+                AliAODMCParticle *MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
+                if(TMath::Abs(MCPart->Eta()) > fCutTrackEta) continue;
+                if(!MCPart->IsPhysicalPrimary()) continue;
+                if(TMath::Abs(MCPart->GetPdgCode())==11) { //only electrons
+                    Int_t IsElecHf=GetHFE(MCPart,fMCArray);
+                    if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){ //HF electrons
+                        fHFElecPtReco_wtrkmatch -> Fill(TrkPt,correctednAcc1);
+                    }
+                }
+            }
             
             Double_t Etrkmatch = -999.0, Eoptrk = -999.0 , M02trkmatch = -999.0, M20trkmatch = -999.0;
             
@@ -1270,27 +1347,25 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Int_t iMCmom=-999, MomPDG = -999;
             Double_t MomPt =-999;
             
-            if(fReadMC){Int_t iTrklabel = TMath::Abs(track->GetLabel());
+            if(fReadMC){
+                
+                Int_t iTrklabel = TMath::Abs(track->GetLabel());
                 if(iTrklabel == 0) continue;
                 AliAODMCParticle *MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
                 if(TMath::Abs(MCPart->GetPdgCode())!=11) continue;
-                fInclsElecPt->Fill(TrkPt);
-                if(fElectTrack){
-                    fInclsElecPtReco->Fill(TrkPt);
-                    if(fClsTypeEMC) fInclseEMCALElecPtReco->Fill(TrkPt);
-                    if(fClsTypeDCAL) fInclseDCALElecPtReco->Fill(TrkPt);
-                }
-                
-                
+                if(Eoptrk > fCutEopEMin && Eoptrk < fCutEopEMax) {
                 
                 Int_t IsElecHf=GetHFE(MCPart,fMCArray);
                 if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
-                    fHFElecPtReco_wtrkCalocuts -> Fill(TrkPt,correctednAcc1);
-                    if (fElectTrack){
-                        fHFElecPtReco_wTPCCaloPID -> Fill(TrkPt,correctednAcc1); }
+                    fHFElecPtReco_wtrkmatchEop -> Fill(TrkPt,correctednAcc1);
+                    if(nsigma > fCutNsigmaEMin && nsigma < fCutNsigmaEMax) {
+                    fHFElecPtReco_wtrkmatchEopTPC -> Fill(TrkPt,correctednAcc1);
+                        if(M02trkmatch > fCutM02Min && M02trkmatch < fCutM02Max) {
+                    fHFElecPtReco_wtrkmatchEopTPCM02 -> Fill(TrkPt,correctednAcc1);
+                            }
+                        }
+                    }
                 }
-                
-                
                 //----------photon tagging efficiency by invariant mass method-------------------------------
                 //   if(!fCalculateNonHFEEffi) continue;
                 
@@ -1305,9 +1380,9 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
                 Bool_t fFromHijing = kTRUE;
                 
                 Bool_t fNonHFE = IsNonHFE(MCPart, fFromHijing, ftype, iMCmom, MomPDG, MomPt);
-                
                 if(!fNonHFE) continue;
                 fNonHFeTrkPt->Fill(TrkPt);
+                
                 if(fElectTrack){ fNonHFewPIDTrkPt->Fill(TrkPt);    }
                 ///////////////////////////////////////
                 // Check for pi0/eta from embbedding //
@@ -1486,10 +1561,12 @@ Bool_t AliAnalysisTaskHFEMultiplicity::PassEIDCuts(AliAODTrack *track, AliAODCal
     if(track->P()>0)eop = clustE/track->P();
     
     m20 =clust->GetM20();
+    m02 =clust->GetM02();
     
     if(nsigma_ele < fCutNsigmaEMin || nsigma_ele > fCutNsigmaEMax) return kFALSE;
     
-    if(m20 < fCutM20Min || m20 > fCutM20Max) return kFALSE;
+    //if(m20 < fCutM20Min || m20 > fCutM20Max) return kFALSE;
+    if(m02 < fCutM02Min || m02 > fCutM02Max) return kFALSE;
     if(eop < fCutEopEMin || eop > fCutEopEMax) return kFALSE;
     
     return kTRUE;
@@ -1502,6 +1579,7 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
     Double_t dEdx =-999;
     Double_t TrkPhi=-999, TrkPt=-999, TrkEta=-999, TrkP = -999;
     
+    TrkEta=atrack->Eta();
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     
@@ -1534,13 +1612,30 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
     
     //other cuts
     if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE; //minimum cuts- filter bit 4
-    if(atrack->GetTPCCrossedRows() < fCutTPCMaxCls) return kFALSE;
-    if(atrack->Chi2perNDF() >= fCutTPCchi2perNDF) return kFALSE;
-    if(atrack->GetTPCNcls() < fCutTPCNCls) return kFALSE;
-    if(atrack->GetITSNcls() < fCutITSNCls) return kFALSE;
-    if((!(atrack->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrack->GetStatus()&AliAODTrack::kTPCrefit)))) return kFALSE;
-    if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
+    if (TMath::Abs(TrkEta)>fCutTrackEta) return kFALSE;
     
+    
+    Double_t nclusF = atrack->GetTPCNclsF(); // TPC cluster information findable
+    Double_t nclusN = atrack->GetTPCsignalN();
+    
+    if(nclusF>0.){
+        Double_t RatioTPCclusters= (Double_t)atrack->GetTPCCrossedRows()/nclusF;
+        if(RatioTPCclusters < fRatioCrossedRowOverFindable) return kFALSE;
+    }
+    //=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster=============
+   
+    if(atrack->GetTPCCrossedRows() < fCutTPCCrossRows) return kFALSE; //TPC N crossedRows
+    if(nclusN< fCutTPCNCls) return kFALSE ; //NclusPID
+    if(atrack->GetITSNcls() < fCutITSNCls) return kFALSE;
+   
+    //==========chi2Ndf=================
+    if(atrack->Chi2perNDF() >= fCutTPCchi2perNDF) return kFALSE;
+    
+    //=========ITS TPC Refit=============
+    if((!(atrack->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrack->GetStatus()&AliAODTrack::kTPCrefit)))) return kFALSE;
+    //=====Hits on SPD layers=============
+    if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
+    //=========DCA Cut ==================
     if(atrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
     
@@ -1552,7 +1647,7 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
 Bool_t AliAnalysisTaskHFEMultiplicity::PassEventSelect(AliAODEvent *fAOD)
 {
     Int_t ntracks = -999;
-    fNevents->Fill(0);
+   
     Double_t Zvertex=-100, Xvertex=-100, Yvertex=-100;
     
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
@@ -1560,14 +1655,14 @@ Bool_t AliAnalysisTaskHFEMultiplicity::PassEventSelect(AliAODEvent *fAOD)
     // Double_t NContV = pVtx->GetNContributors();
     
     // if(NContV<fCutNcontV) return kFALSE;
-    //fNevents->Fill(1);
+   
     
     Zvertex =pVtx->GetZ();
     Yvertex =pVtx->GetY();
     Xvertex =pVtx->GetX();
     
     //if(TMath::Abs(Zvertex)>10.0) return kFALSE;
-    //fNevents->Fill(2);
+  
     
     
     fVtxZ->Fill(Zvertex);
@@ -1618,13 +1713,9 @@ void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTra
         if(!atrackAsso) continue;
         
         if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        if(atrackAsso->GetTPCCrossedRows() < fCutTPCMaxCls) continue;
-        if(atrackAsso->Chi2perNDF() >= fCutTPCchi2perNDF) continue;
-        if(atrackAsso->GetTPCNcls() < fCutTPCNCls) continue;
-        if(atrackAsso->GetITSNcls() < fCutITSNCls) continue;
+        if(atrackAsso->GetTPCNcls() < 60.) continue;
         if((!(atrackAsso->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliAODTrack::kTPCrefit)))) continue; //refit required
-        if(!(atrackAsso->HasPointOnITSLayer(0) || atrackAsso->HasPointOnITSLayer(1))) continue;
-        
+    
         
         nsigmaAsso = fpidResponse->NumberOfSigmasTPC(atrackAsso, AliPID::kElectron);
         ptAsso = atrackAsso->Pt();
@@ -1635,10 +1726,7 @@ void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTra
         if(atrackAsso->Eta()<-fCutAssoEEta || atrackAsso->Eta()>fCutAssoEEta) continue;
         if(nsigmaAsso < -fCutAssoENsigma || nsigmaAsso > fCutAssoENsigma) continue;
         
-        
-        if(atrackAsso->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
-            if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
-        
+
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
         if(chargeAsso>0) fPDGe2 = -11;

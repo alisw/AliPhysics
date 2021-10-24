@@ -52,6 +52,13 @@ public:
   AliAnalysisTaskEmcalSoftDropResponse(const char *name);
   virtual ~AliAnalysisTaskEmcalSoftDropResponse();
 
+  AliJetContainer *GetPartLevelJetContainer() const { return GetJetContainer(fNamePartLevelJetContainer); }
+  AliJetContainer *GetDetLevelJetContainer() const { return GetJetContainer(fNameDetLevelJetContainer); }
+  AliJetContainer *GetUnsubJetContainer() const { return GetJetContainer(fNameUnSubLevelJetContainer); }
+  const TString &GetNamePartLevelLets() const { return fNamePartLevelJetContainer; }
+  const TString &GetNameDetLevelJets() const { return fNameDetLevelJetContainer; }
+  const TString &GetNameUnsubJets() const { return fNameUnSubLevelJetContainer; }
+
   void SetHasResponseMatrixSparse(Bool_t doUse) { fHasResponseMatrixSparse = doUse; }
   void SetHasResponseMatrixRooUnfold(Bool_t doUse) { fHasResponseMatrixRooUnfold = doUse; }
   void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
@@ -72,13 +79,19 @@ public:
   void SetIsEmbeddedEvent(bool isEmbedded) {fIsEmbeddedEvent = isEmbedded; }
   void SetUseStandardOutlierRejection(bool doUse) { fUseStandardOutlierRejection = doUse; }
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
+  void SetRequirePartLevelJetInAcceptance(bool doRequest) { fRequirePartJetInAcceptance = doRequest; }
+  void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
 
   // Switches for histogram groups
   void SetFillPlotsResiduals(Bool_t doFill) { fFillPlotsResiduals = doFill; }
   void SetFillPlotsQAGeneral(Bool_t doFill) { fFillPlotsQAGeneral = doFill; }
   void SetFillPlotsQAConstituents(Bool_t doFill) { fFillPlotsQAConstituents = doFill; }
 
-  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, bool ifembed, const char *namepartcont, const char *trigger);
+  void ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
+  void ConfigureMinBias(MCProductionType_t mcprodtype);
+  void ConfigureJetSelection(Double_t minJetPtPart, Double_t minJetPtDet, Double_t maxTrackPtPart, Double_t maxTrackPtDet, Double_t maxClusterPt, Double_t minAreaPerc);
+
+  static AliAnalysisTaskEmcalSoftDropResponse *AddTaskEmcalSoftDropResponse(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, bool ifembed, const char *namepartcont, const char *trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -103,6 +116,7 @@ private:
   Bool_t                        fUseChargedConstituents;    ///< Use charged constituents for softdrop
   Bool_t                        fUseNeutralConstituents;    ///< Use neutral constituents for softdrop
   Bool_t                        fUseStandardOutlierRejection; ///< Use standard outlier rejection (from AliAnalysisTaskEmcal)
+  Bool_t                        fDropMass0Jets;             ///< Drop jets with mass 0
   EJetTypeOutliers_t            fJetTypeOutliers;           ///< Jet type used for outlier detection
   TString                       fNameMCParticles;           ///< Name of the MC particle container
   TRandom                       *fSampleSplitter;           ///< Sample splitter
@@ -110,6 +124,7 @@ private:
   TBinning                      *fPartLevelPtBinning;       ///< Particle level pt binning
   TBinning                      *fDetLevelPtBinning;        ///< Detector level pt binning
   Bool_t                        fIsEmbeddedEvent;           ///< true if the event is an embedded event       
+  Bool_t                        fRequirePartJetInAcceptance; ///< Require both part. and det. level jets in same acceptance
   Bool_t                        fFillPlotsResiduals;        ///< Fill residuals plots
   Bool_t                        fFillPlotsQAGeneral;        ///< Fill general QA plots
   Bool_t                        fFillPlotsQAConstituents;   ///< Fill constituent QA plots

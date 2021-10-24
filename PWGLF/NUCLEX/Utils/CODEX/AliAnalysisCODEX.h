@@ -76,7 +76,9 @@ namespace AliAnalysisCODEX {
     kMCevent = BIT(0),
     kNegativeB = BIT(1),
     kInelGt0 = BIT(2),
-    kTriggerClasses = BIT(3)
+    kTriggerClasses = BIT(3),
+    kCentral = BIT(4),
+    kSemiCentral = BIT(5)
   };
 
   enum ITSbits {

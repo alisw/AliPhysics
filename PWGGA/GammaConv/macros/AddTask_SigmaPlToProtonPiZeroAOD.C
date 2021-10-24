@@ -126,20 +126,42 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   // *****************************************************************************************************
   // ******************** pp 13 TeV cuts             *****************************************************
   // *****************************************************************************************************
-  if (trainConfig == 1){   // EDC
-    cuts.AddCutCalo("00010113","4117912067032230000","0163103100000050");
-  } else if (trainConfig == 2){   // PHOS
-    cuts.AddCutCalo("00010113","24466190ra09cc00000","0163103100000010");
+  if (trainConfig == 1){   // PHOS Standard
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311021"); 
+  } else if (trainConfig == 2){   // PHOS PID
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20220003211311021"); // NCluster TPC 50
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20320003211311021"); // NCluster TPC 65
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20110003211311021"); // Nchi2 TPC 4
   } else if (trainConfig == 3){   // PHOS
-    cuts.AddCutCalo("00010113","24466190ra09cc00000","0163103100000010");
-    cuts.AddCutCalo("00010113","244661907a09cc00000","0163103100000010");
-    cuts.AddCutCalo("00010113","244661904a09cc00000","0163103100000010");
-    cuts.AddCutCalo("00010113","24466190ra01cc00000","0163103100000010");
-    cuts.AddCutCalo("00010113","24466190ra07cc00000","0163103100000010");
-  } else if (trainConfig == 10){    // PHI7
-    cuts.AddCutCalo("00062113","24466190pa01cc00000","0163103100000010");
-    cuts.AddCutCalo("0008e113","4117912067032230000","0163103100000010");
-    cuts.AddCutCalo("0008d113","4117912067032230000","0163103100000010");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190sa09cc00000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("00010113","244661904a09cc00000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra01cc00000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra07cc00000","0163103100000010","20120003211311021");
+  } else if (trainConfig == 4){   // PHOS DCA-Variation
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120002211311021"); // DCAXY 0.02
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120004211311021"); // DCAXY 0.015
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003411311021"); // DCAZ 0.015
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003511311021"); // DCAZ 0.025
+  } else if (trainConfig == 5){   // PHOS Pion mass-Variation
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211322021"); // tighter mass cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211342021"); // on left side tighter
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211333021"); // looser mass cut
+  } else if (trainConfig == 6){   // PHOS Opening angle-Variation
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311011"); // tight cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311031"); // tighter cut
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311051"); // wider cut
+  } else if (trainConfig == 7){   // Background describtion
+    cuts.AddCutHeavyMesonSigma("00010113","24466190ra09cc00000","0163103100000010","20120003211311020"); // changed to pion rotation  
+  } else if (trainConfig == 10){    // PHI 7
+    cuts.AddCutHeavyMesonSigma("00062113","24466190sa09cc00000","0163103100000010","20120003211311021");
+
+
+
+  } else if (trainConfig == 100){    // EDC
+    cuts.AddCutHeavyMesonSigma("00010113","4117912067032230000","0163103100000050","20120003211311021");
+  } else if (trainConfig == 101){    // PHI7
+    cuts.AddCutHeavyMesonSigma("0008e113","4117912067032230000","0163103100000010","20120003211311021");
+    cuts.AddCutHeavyMesonSigma("0008d113","4117912067032230000","0163103100000010","20120003211311021");
   }
 
   if(!cuts.AreValid()){
@@ -154,6 +176,7 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   TList *EventCutList = new TList();
   TList *ClusterCutList = new TList();
   TList *MesonCutList = new TList();
+  TList *SigmaCutList = new TList();
 
   TList *HeaderList = new TList();
 
@@ -173,6 +196,8 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
   AliCaloPhotonCuts **analysisClusterCuts = new AliCaloPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+  SigmaCutList->SetOwner(kTRUE);
+  AliCaloSigmaCuts **analysisSigmaCuts = new AliCaloSigmaCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     //create AliCaloTrackMatcher instance, if there is none present
@@ -255,18 +280,27 @@ void AddTask_SigmaPlToProtonPiZeroAOD(
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    // analysisMesonCuts[i]->SetEnableSigmaOpenCut(kTRUE);                       // enables the overloaded DCAGammaGamma to work as an AP like cut
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
+
+
+    analysisSigmaCuts[i] = new AliCaloSigmaCuts();
+    analysisSigmaCuts[i]->InitializeCutsFromCutString((cuts.GetSigmaCut(i)).Data());
+    SigmaCutList->Add(analysisSigmaCuts[i]);
+    analysisSigmaCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
+
+   
   }
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
+  task->SetSigmaCutList(numberOfCuts,SigmaCutList);
   // task->SetCorrectionTaskSetting(corrTaskSetting);
-  task->SetQTUpperCutPodolanskiPlot(0.3);
 
 
   //connect containers

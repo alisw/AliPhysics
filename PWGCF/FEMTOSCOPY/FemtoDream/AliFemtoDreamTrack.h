@@ -18,11 +18,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
-  void SetTrack(AliAODTrack *track, const int multiplicity = -1);
-  void SetTrack(AliVTrack *track, AliVEvent *event,
-                const int multiplicity = -1);
+  void SetTrack(AliAODTrack *track);
+  void SetTrack(AliVTrack *track, AliVEvent *event);
   void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
-                const int multiplicity = -1, const bool TPCOnlyTrack = true,
+                const bool TPCOnlyTrack = true,
                 const bool IsOmegaTrack = false);
   UInt_t GetFilterMap() const {
     return fFilterMap;

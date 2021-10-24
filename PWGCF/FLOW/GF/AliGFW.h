@@ -1,6 +1,9 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+Class steers the initialization and calculation of n-particle correlations. Uses recursive function, all terms are calculated only once.
+Latest version includes the calculation of any number of gaps and any combination of harmonics (including eg symmetric cumulants, etc.)
+If used, modified, or distributed, please aknowledge the author of this code.
 */
 #ifndef AliGFW__H
 #define AliGFW__H
@@ -38,12 +41,15 @@ class AliGFW {
     void PrintStructure() {printf("%s: eta [%f.. %f].",rName.Data(),EtaMin,EtaMax); };
   };
   struct CorrConfig {
-    vector<Int_t> Regs {};
+    vector<vector<Int_t>> Regs {};
+    vector<vector<Int_t>> Hars {};
+    vector<Int_t> Overlap;
+    /*vector<Int_t> Regs {};
     vector<Int_t> Hars {};
     vector<Int_t> Regs2 {};
     vector<Int_t> Hars2 {};
     Int_t Overlap1=-1;
-    Int_t Overlap2=-1;
+    Int_t Overlap2=-1;*/
     Bool_t pTDif=kFALSE;
     TString Head="";
   };
@@ -66,7 +72,8 @@ class AliGFW {
   void SplitRegions();
   AliGFWCumulant fEmptyCumulant;
   TComplex TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, AliGFWCumulant*, AliGFWCumulant*, AliGFWCumulant*);
-  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> hars, vector<Int_t> pows={}); //POI, Ref. flow, overlapping region
+  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars, vector<Int_t> &pows); //POI, Ref. flow, overlapping region
+  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars); //POI, Ref. flow, overlapping region
   //Deprecated and not used (for now):
   void AddRegion(Region inreg) { fRegions.push_back(inreg); };
   Region GetRegion(Int_t index) { return fRegions.at(index); };

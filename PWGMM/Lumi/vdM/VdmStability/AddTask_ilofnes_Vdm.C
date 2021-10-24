@@ -1,4 +1,4 @@
-AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *year = "16") {
+AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *year = "16", Bool_t fillTTree = false, Float_t diffMin = 5.5, Float_t diffMax = 11.5, Float_t sumMin = 11.5, Float_t sumMax = 17.5) {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
@@ -8,9 +8,14 @@ AliAnalysisTaskVdmStability* AddTask_ilofnes_Vdm(TString name = "name", char *ye
     
     // now we create an instance of your task
     AliAnalysisTaskVdmStability* task = new AliAnalysisTaskVdmStability(name.Data());
-    if (year == "16") task->SetNRuns(627);
-    if (year == "17") task->SetNRuns(816);
-    task->SetNCases(20);
+    if (year == "16") task->SetNRuns(650);//max
+    if (year == "17") task->SetNRuns(864);//max
+    if (year == "18") task->SetNRuns(1000);//790 CB
+    task->SetNCases(25);
+    task->SetFillTTree(fillTTree);
+    
+    task->SetDiffTimingCut(diffMin,diffMax);
+    task->SetSumTimingCut(sumMin,sumMax);
 
     // add your task to the manager
     mgr->AddTask(task);

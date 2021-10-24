@@ -1,6 +1,6 @@
 /*=================================================================================
  Dukhishyam Mallick - last modified 01 April 2019 (mallick.dukhishyam@cern.ch)
-
+ Prottay das   -last modified on 31 August 2020
  *** Configuration script for K*+-->K0Short-Pi analysis ***
  =======================================================================================*/
 // A configuration script for RSN package needs to define the followings:
@@ -14,17 +14,15 @@ Bool_t ConfigKStarPlusMinusPbPb2018
 (
  AliRsnMiniAnalysisTask *task,
  Bool_t                  isMC,
- Bool_t                  isPP,
- Bool_t                  isGT,
-  Bool_t                 isRotate,
  Float_t                 piPIDCut,
  Float_t                 nsigmaTOF,
  Int_t                   customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
  Float_t                 pi_k0s_PIDCut,
- Int_t                   aodFilterBit,
- Bool_t                  enableMonitor=kTRUE  ,
+ Bool_t                  enableMonitor=kTRUE,
  TString                 monitorOpt="",
+ Bool_t                  UseArmentousCut,
+ Float_t                 ArmentousParameter,
  Float_t                 massTol,
  Float_t                 massTolVeto,
  Int_t 			 tol_switch,
@@ -42,16 +40,35 @@ Bool_t ConfigKStarPlusMinusPbPb2018
  Float_t                 DCAxy,
  Bool_t                  enableSys,
  Float_t                 crossedRows,
- Float_t                 rowsbycluster,
- Float_t		 v0rapidity,
- Int_t                   Sys
+ Float_t                rowsbycluster,
+ Int_t                   Sys,
+ Int_t                    imbin,
+ Float_t                  limbin,
+ Float_t                  himbin,
+ Int_t                    ptbin,
+ Float_t                  lptbin,
+ Float_t                  hptbin,
+ Int_t                    multbin,
+ Float_t                  lmultbin,
+ Float_t                  hmultbin
+
  //UInt_t      triggerMask=AliVEvent::kINT7
  )
 //kTPCpidphipp2015
 {
   // manage suffix
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
-  
+ 
+  Bool_t isRotate=1;
+  Int_t aodFilterBit=0; 
+  Float_t  v0rapidity=0.5;
+   
+
+ if (isMC)
+    Bool_t isDATA=kFALSE;
+  else
+    Bool_t isDATA=kTRUE;
+
   /////////////////////////////////////////////////////
   // selections for the pion from the decay of KStarPlusMinus*
     /////////////////////////////////////////////////////
@@ -103,19 +120,23 @@ Bool_t ConfigKStarPlusMinusPbPb2018
     cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
     cutK0s->SetMaxDCAVertex(k0sDCA);
     cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
-    cutK0s->SetTolerance(massTol);
-    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
-    cutK0s->SetSwitch(Switch);
     cutK0s->SetfLife(pLife);
     cutK0s->SetfLowRadius(radiuslow);
     cutK0s->SetfHighRadius(100);
     cutK0s->SetMaxRapidity(v0rapidity);
+    if (!UseArmentousCut)
+      {
+    cutK0s->SetTolerance(massTol);
+    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
+    cutK0s->SetSwitch(Switch);
     cutK0s->SetpT_Tolerance(tol_switch);
     cutK0s->SetMassTolSigma(tol_sigma);
-    //cutK0s->SetArmentousCut(2.0);
-
-    //cout<<"Get Input Value Of Armentous cut-------->:"<<cutK0s->GetArmentousCut()<<endl;
-
+      }
+    else
+      {
+    cutK0s->SetMaxArmentousCut(ArmentousParameter);
+    cout<<"Get Input Value Of Armentous cut-------->:"<<cutK0s->GetMaxArmentousCut()<<endl;
+      }
     
 
     
@@ -152,6 +173,8 @@ Bool_t ConfigKStarPlusMinusPbPb2018
     cutSetK0s->SetCutScheme(cutK0s->GetName());
     Int_t iCutK0s = task->AddTrackCuts(cutSetK0s);
     //
+
+
     if(enableMonitor){
         Printf("======== Cut monitoring enabled");
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
@@ -188,37 +211,29 @@ Bool_t ConfigKStarPlusMinusPbPb2018
     // -- Create all needed outputs -----------------------------------------------------------------
     //
 
-    // use an array for more compact writing, which are different on mixing and charges
-    // [0] = unlike
-    // [1] = mixing
-    // [2] = like ++
-    // [3] = like --
-    Bool_t  use     [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 };
-    Bool_t  useIM   [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 };
-    TString name    [6] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust"};
-    TString comp    [7] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE","SINGLE"            };
-    TString output  [7] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE","SPARSE"            };
-    
-    Char_t  charge1 [6] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'               };
-    Char_t  charge2 [6] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'               };
-    // Int_t   cutID1  [6] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s             };
-    Int_t   cutID1  [7] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s, iCutK0s             };
-    Int_t   cutID2  [6] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi            };
-    Int_t   ipdg    [6] = {323             ,-323             ,323                ,-323                ,323              ,-323              };
-    Double_t mass   [6] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166           };
-    AliRsnCutSet* paircuts[6] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame              };
+
+    Bool_t  use     [10] = {isDATA               ,isDATA                ,isDATA                  ,isDATA                   ,isMC                ,isMC       ,isMC       , isMC          ,isMC         ,isMC};
+    Bool_t  useIM   [10] = {1               ,1                ,1                  ,1                   ,1                ,1    ,1    ,1   ,1     ,1                  };
+    TString name    [10] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust",   "KStarPlusMinusMotherMC", "AKStarPlusMinusMotherMC", "KStarPlusMinusMotherMCNOPU", "AKStarPlusMinusMotherMCNOPU"  };
+    TString comp    [10] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE", "MOTHER", "MOTHER", "MOTHER_NO_PILEUP", "MOTHER_NO_PILEUP"  };
+    TString output  [10] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE"    ,"SPARSE"    ,"SPARSE"         , "SPARSE"        ,"SPARSE" };
+    Char_t  charge1 [10] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'    ,'0'      ,'0'      ,'0'         ,'0'};
+    Char_t  charge2 [10] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'    , '+'        ,'-'       , '+'      ,'-'};
+    Int_t   cutID1  [10] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s     ,iCutK0s     ,iCutK0s         ,iCutK0s        ,iCutK0s};
+    Int_t   cutID2  [10] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi         ,iCutPi      ,iCutPi      ,iCutPi           ,iCutPi            };
+    Int_t   ipdg    [10] = {323             ,-323             ,323                ,-323                ,323              ,-323      ,323           ,-323         ,323           ,-323        };
+    Double_t mass   [10] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166         ,0.89166       ,0.89166         ,0.89166                  ,0.89166    };
+    AliRsnCutSet* paircuts[10] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame         ,PairCutsSame         ,PairCutsSame           ,PairCutsSame            ,PairCutsSame  };
 
 
-    
-    for (Int_t i = 0; i < 7; i++) {
+
+    for (Int_t i = 0; i < 10; i++) {
       if (!use[i]) continue;
-      //if (collSyst) output[i] = "SPARSE";
+
       // create output
       AliRsnMiniOutput *out = task->CreateOutput(Form("ChargeKstar_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
       // selection settings
 
-      if (i<6)
-	{
       out->SetCutID(0, cutID1[i]);
       out->SetCutID(1, cutID2[i]);
       out->SetDaughter(0, AliRsnDaughter::kKaon0);
@@ -234,31 +249,22 @@ Bool_t ConfigKStarPlusMinusPbPb2018
       out->SetPairCuts(paircuts[i]);
       // axis X: invmass
       if (useIM[i])
-	out->AddAxis(imID, 90, 0.6, 1.5);
-      //  out->AddAxis(imID, 700, 1.2, 4.0);
-      // axis Y: transverse momentum
-      out->AddAxis(ptID, 300, 0.0, 30.0);
-      //  out->AddAxis(k0sDCA, 10, 0.0, 1.0);
+	out->AddAxis(imID, imbin, limbin, himbin);
       
-      // axis W: Centrality                                                                                                                                   //if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-        if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-        else out->AddAxis(centID, 100, 0.0, 100.);
-        if(isGT) out->AddAxis(sdpt,100,0.,10.);
-	}
-
-      else if (i==6)
-	{
-	  out->SetCutID(0, cutID1[i]);
-	  out->AddAxis(imID, 90, 0.2, 1.1);
-	  out->AddAxis(ptID, 300, 0.0, 30.0);
-	  out->AddAxis(centID, 100, 0.0, 100.);
-    }
+      // axis Y: transverse momentum
+      out->AddAxis(ptID, ptbin, lptbin, hptbin);
+      
+      // axis W: Centrality                                                                                                                         
+      out->AddAxis(centID, multbin, lmultbin, hmultbin);
+        
     }
 
 
     // AddMonitorOutput_K0sP(cutSetK0s->GetMonitorOutput());
     /*******************commentout*******************************/
-      AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
+    if (!isMC)
+      {
+    AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sNegDaughPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sPosDaughPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sMass(cutSetK0s->GetMonitorOutput());
@@ -280,13 +286,14 @@ Bool_t ConfigKStarPlusMinusPbPb2018
     //    AddMonitorOutput_MinDCAToVertexXYPtDep(cutSetK0s->GetMonitorOutput());
     //AddMonitorOutput_MinDCAToVertexXY(cutSetK0s->GetMonitorOutput());     //Uncomment if fixed value Cut used
 
-
+      }
 
 
 
     //cutK0s->Print();
 
-    
+    if (isDATA)
+      {    
     if(isRotate){
       
       for (Int_t i = 0; i < 2; i++)
@@ -304,24 +311,20 @@ Bool_t ConfigKStarPlusMinusPbPb2018
 	  // pair cuts                                                                                                                 
 	  out->SetPairCuts(PairCutsSame);
 	  
-	  if (useIM[i]) out->AddAxis(imID, 90, 0.6, 1.5);
-	  out->AddAxis(ptID, 300, 0.0, 30.0);
-	  //if (collSyst) out->AddAxis(centID, 100, 0.0, 100.0); 
-	  if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
-	  else out->AddAxis(centID, 100, 0.0, 100.); 
+	  if (useIM[i]) out->AddAxis(imID, imbin, limbin, himbin);
+	  out->AddAxis(ptID, ptbin, lptbin, hptbin);
+	  out->AddAxis(centID, multbin, lmultbin, hmultbin); 
 	}
     }
+      }
 
     
     if (isMC) {
-      
+      /*  
       TString mode = "SPARSE";
-        //TString mode = "HIST";
-        //if (collSyst) mode = "SPARSE";
-
-        // create output
-        AliRsnMiniOutput *out = task->CreateOutput(Form("KStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
-        // selection settings
+      // create output
+      AliRsnMiniOutput *out = task->CreateOutput(Form("KStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
+      // selection settings
         out->SetDaughter(0, AliRsnDaughter::kKaon0);
         out->SetDaughter(1, AliRsnDaughter::kPion);
         out->SetMotherPDG(323);
@@ -365,9 +368,9 @@ Bool_t ConfigKStarPlusMinusPbPb2018
         if(isPP) out->AddAxis(centID, 400, 0.5, 400.5);
         else out->AddAxis(centID, 100, 0.0, 100.);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
+      */
 	
-	
-	
+		
         AliRsnMiniOutput* outps=task->CreateOutput(Form("K*_phaseSpace%s", suffix),"HIST","TRUE");
         outps->SetDaughter(0,AliRsnDaughter::kKaon0);
         outps->SetDaughter(1,AliRsnDaughter::kPion);
@@ -376,28 +379,18 @@ Bool_t ConfigKStarPlusMinusPbPb2018
         outps->SetMotherPDG(323);
         outps->SetMotherMass(0.89166);
         outps->SetPairCuts(PairCutsSame);
-        outps->AddAxis(fdpt,100,0.,10.);
-        outps->AddAxis(sdpt,100,0.,10.);
+        outps->AddAxis(fdpt,200,0.,20.);
+        outps->AddAxis(sdpt,200,0.,20.);
         outps->AddAxis(ptID,200,0.,20.);
 
-        AliRsnMiniOutput* outpsf=task->CreateOutput(Form("K*_phaseSpaceFine%s", suffix),"HIST","TRUE");
-        outpsf->SetDaughter(0,AliRsnDaughter::kKaon0);
-        outpsf->SetDaughter(1,AliRsnDaughter::kPion);
-        outpsf->SetCutID(0,iCutK0s);
-        outpsf->SetCutID(1,iCutPi);
-        outpsf->SetMotherPDG(323);
-        outpsf->SetMotherMass(0.89166);
-        outpsf->SetPairCuts(PairCutsSame);
-        outpsf->AddAxis(fdpt,30,0.,3.);
-        outpsf->AddAxis(sdpt,30,0.,3.);
-        outpsf->AddAxis(ptID,300,0.,3.);
-
+        
 
     }
-
+    
     
     return kTRUE;
 }
+
 
 void AddMonitorOutput_PionPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ppt=0)
 {

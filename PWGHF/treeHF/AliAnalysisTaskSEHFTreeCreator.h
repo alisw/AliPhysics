@@ -113,7 +113,7 @@ public:
     
     void SetReadMC(Bool_t opt=kFALSE){fReadMC=opt;}
     void SetSystem(Int_t opt){fSys=opt;}
-    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+    void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
     void SetWriteOnlySignalTree(Bool_t opt){fWriteOnlySignal=opt;}
     void SetFillD0Tree(Int_t opt){fWriteVariableTreeD0=opt;}
     void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}
@@ -193,7 +193,7 @@ public:
     void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessInclusiveJet(AliAODEvent *aod, TClonesArray *arrMC);
-    void ProcessMCGen(TClonesArray *mcarray);
+    void ProcessMCGen(TClonesArray *mcarray, AliAODMCHeader *mcHeader);
     void ProcessMCGenInclusiveJet(TClonesArray *mcarray);
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
@@ -232,10 +232,10 @@ public:
     AliJetContainer* AddJetContainer(AliJetContainer::EJetType_t jetType, AliJetContainer::EJetAlgo_t jetAlgo, AliJetContainer::ERecoScheme_t recoScheme, Double_t radius, UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
     AliJetContainer* AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius);
     AliJetContainer* GetJetContainer(Int_t i=0) const;
-    void FillJetTree();
+    void FillJetTree(AliAODMCHeader* mcHeader);
   
     
-    unsigned long GetEvID();
+    unsigned int GetEvID();
     
 private:
     

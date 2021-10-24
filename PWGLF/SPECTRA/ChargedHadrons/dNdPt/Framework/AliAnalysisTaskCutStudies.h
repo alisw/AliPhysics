@@ -19,7 +19,7 @@ class AliMCParticle;
 
 class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
 {
- public:
+public:
   static AliESDtrackCuts* GetCutSetting(const std::string& identifier);
 
   AliAnalysisTaskCutStudies();
@@ -35,7 +35,7 @@ class AliAnalysisTaskCutStudies : public AliAnalysisTaskMKBase
 
   static AliAnalysisTaskCutStudies* AddTaskCutStudies(const char* name = "TaskCutStudies");
 
- private:
+private:
   AliAnalysisTaskCutStudies(const AliAnalysisTaskCutStudies&);            // not implemented
   AliAnalysisTaskCutStudies& operator=(const AliAnalysisTaskCutStudies&); // not implemented
 

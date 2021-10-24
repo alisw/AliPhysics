@@ -11,11 +11,12 @@
 #include "TBits.h"
 #include "TArrayI.h"
 #include "TArrayF.h"
+#include <TObjString.h>
+
 class TList;
 class TTree;
 class TH1D;
 class TH2D;
-class TObjString;
 class TClonesArray;
 class AliESDtrackCuts;
 

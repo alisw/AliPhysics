@@ -35,11 +35,9 @@
 #include "AliVMultiplicity.h"
 #include "AliVVZERO.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerMultiplicity)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerMultiplicity)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerMultiplicity::AliAnalysisTaskEmcalTriggerMultiplicity():
     AliAnalysisTaskEmcalTriggerBase(),
@@ -193,5 +191,3 @@ AliAnalysisTaskEmcalTriggerMultiplicity *AliAnalysisTaskEmcalTriggerMultiplicity
 
   return task;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

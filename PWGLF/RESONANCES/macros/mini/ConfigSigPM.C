@@ -4,7 +4,7 @@ other scripts in the repo.
 Configuration script for SigmaStar(9801385) analysis
 ****************************************************************************/
 
-Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task, 
+Bool_t ConfigSigPM (AliRsnMiniAnalysisTask *task, 
 		Bool_t                 isMC, 
 		AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2
 		AliRsnCutSet           *cutsPair,             //cuts on the pair
@@ -28,7 +28,8 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
                 Bool_t                 doCustomDCAcuts=kTRUE,   //custom dca cuts for V0 daughters
                 Double_t               dcaProton=0.1,           // proton dca
 		Double_t               dcaPion=0.1,             //pion dca
-		Int_t                  pidCUT=1)             //pion PID cut set, 1 for nominal, 2 for systematic check
+		Int_t                  pidCUT=1,             //pion PID cut set, 1 for nominal, 2 for systematic check
+		Double_t               pTpionCut=0.)           // low pT cut for pions
 {
   //-----------------------
   //General 
@@ -49,6 +50,7 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 
   AliRsnCutTrackQuality * fCutQuality = new AliRsnCutTrackQuality("CutQuality");
   fCutQuality->SetDefaults2011(useCrossedRows, kFALSE);
+  fCutQuality->SetPtRange(pTpionCut, 20.);
   
   AliRsnCutTOFMatch  *iCutTOFMatch     = new AliRsnCutTOFMatch("CutTOFMatch");
   AliRsnCutPIDNSigma *iCutTPCNSigma    = new AliRsnCutPIDNSigma("CutTPCNSigma", AliPID::kPion, AliRsnCutPIDNSigma::kTPC);//, AliRsnCutPIDNSigma::kTPCinnerP );
@@ -532,6 +534,48 @@ Bool_t ConfigSigPM(AliRsnMiniAnalysisTask *task,
 
     output[5] = "HIST";
     AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaMbarpt_%s", name[5].Data()), output[5].Data(),"MOTHER");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(-3114);
+    outm->SetMotherMass(1.3872);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    // 31 August 2020, remove pileup from generated pairs
+
+    output[0] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaPptNoPileup_%s", name[0].Data()), output[0].Data(),"MOTHER_NO_PILEUP");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(3224);
+    outm->SetMotherMass(1.3828);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    output[1] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaMptNoPileup_%s", name[1].Data()), output[1].Data(),"MOTHER_NO_PILEUP");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(3114);
+    outm->SetMotherMass(1.3872);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    output[4] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaPbarptNoPileup_%s", name[4].Data()), output[4].Data(),"MOTHER_NO_PILEUP");
+    outm->SetDaughter(0, AliRsnDaughter::kLambda);
+    outm->SetDaughter(1, AliRsnDaughter::kPion);
+    outm->SetMotherPDG(-3224);
+    outm->SetMotherMass(1.3828);
+    outm->SetPairCuts(cutsPairY);
+    outm->AddAxis(ptIDgen, 150, 0.0, 15.0);
+    if (enaMultSel) outm->AddAxis(multID, 100, 0.0, 100.0);
+
+    output[5] = "HIST";
+    AliRsnMiniOutput * outm = task->CreateOutput(Form("motherSigmaMbarptNoPileup_%s", name[5].Data()), output[5].Data(),"MOTHER_NO_PILEUP");
     outm->SetDaughter(0, AliRsnDaughter::kLambda);
     outm->SetDaughter(1, AliRsnDaughter::kPion);
     outm->SetMotherPDG(-3114);

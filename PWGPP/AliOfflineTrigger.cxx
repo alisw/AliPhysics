@@ -61,6 +61,7 @@
 
 #include <fstream>  
 #include <iostream>
+#include <TObjString.h>
 #include "TError.h"
 #include "TSystem.h"
 #include "TFile.h"

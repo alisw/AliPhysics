@@ -10,7 +10,5 @@
 #pragma link C++ class AliAnalysisTaskSigma0Corr+;
 #pragma link C++ class AliCaloParticle+;
 
-#pragma link C++ class AliSigma0AODPhotonMotherCuts+;
-#pragma link C++ class AliSigma0PhotonCuts+;
 
 #endif

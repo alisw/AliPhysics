@@ -1,4 +1,12 @@
-Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaPart1 = -1, Double_t nSigmaPart2 = -1)
+Bool_t ConfigKstarLeading(
+    AliRsnMiniAnalysisTask *task, 
+    Bool_t isMC = kFALSE, 
+    Bool_t isPP = kFALSE, 
+    Double_t nSigmaPart1TPC = -1, 
+    Double_t nSigmaPart2TPC = -1,
+    Double_t nSigmaPart1TOF = -1, 
+    Double_t nSigmaPart2TOF = -1
+    )
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -7,6 +15,10 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
     /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
+    /* delta eta  */ Int_t detaID  = task->CreateValue(AliRsnMiniValue::kDeltaEta, kFALSE);
+    /* phi of leading    */ Int_t philID = task->CreateValue(AliRsnMiniValue::kLeadingPhi, kFALSE);
+   /* phi angle         */ Int_t phiID = task->CreateValue(AliRsnMiniValue::kPhi, kFALSE);
+
 
    
    // set daughter cuts
@@ -19,15 +31,19 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
      AliRsnCutTrackQuality *fQualityTrackCutK = new AliRsnCutTrackQuality("AliRsnCutTrackQuality");
     fQualityTrackCutK->SetDefaults2011(kTRUE, kTRUE);
 
-  cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2);
-  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1);
+  cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,nSigmaPart2TPC),fQualityTrackCutPi,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kPion,nSigmaPart2TPC);
+  cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, nSigmaPart1TPC),fQualityTrackCutK,AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,AliPID::kKaon,nSigmaPart1TPC);
   
+//cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate,nsigmaPi),trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaPi, nsigmaTOF);
+//cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaK),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaK, nsigmaTOF);
+  
+
   Int_t iCutPi = task->AddTrackCuts(cutSetPi);
   Int_t iCutK  = task->AddTrackCuts(cutSetK);
 
     // Defining output objects
     const Int_t dims = 8;
-    Int_t useIM[dims] = {          1,           1,          1,          1,               1,          1,           isMC,          isMC};
+    Int_t useIM[dims] = {          1,           1,          1,          1,               0,          0,           isMC,          isMC};
     TString name[dims] = {        "UnlikePM", "UnlikeMP", "MixingPM",   "MixingMP",   "LikePP",   "LikeMM",    "True",       "Mother"};
     TString comp[dims] = {        "PAIR",     "PAIR",      "MIX",      "MIX",         "PAIR",     "PAIR",      "TRUE",       "MOTHER"};
     TString output[dims] = {      "SPARSE",   "SPARSE",   "SPARSE",   "SPARSE",       "SPARSE",   "SPARSE",    "SPARSE",     "SPARSE"};
@@ -50,14 +66,17 @@ Bool_t ConfigKstarLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bo
         out->SetMotherPDG(pdgCode[i]);
         out->SetMotherMass(motherMass[i]);
 
-        out->AddAxis(imID, 200, 0.8, 1.0);
-        out->AddAxis(ptID, 40, 0., 20.);
-        if(!isPP ) out->AddAxis(multID,100,0.,100.);
-        else out->AddAxis(multID, 20, 0., 200.); 
+        out->AddAxis(imID, 85, 0.77, 1.20);
+        out->AddAxis(ptID, 1, 2., 10.);
+        if(!isPP ) out->AddAxis(multID,5,0.,50.);
+        else out->AddAxis(multID, 10, 0., 100.); 
 
-        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
-        out->AddAxis(ptlID, 40, 0., 20.); 
-        
+
+       // out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(ptlID, 1, 4., 30.); 
+       //  out->AddAxis(detaID, 16, -1.6, 1.6);   
+        out->AddAxis(philID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+        out->AddAxis(phiID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
     }
     return kTRUE;
 }

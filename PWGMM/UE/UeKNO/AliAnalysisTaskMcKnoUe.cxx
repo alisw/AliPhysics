@@ -101,7 +101,7 @@ using std::endl;
 
 #include "AliAnalysisTaskMcKnoUe.h"
 
-TF1* f_Eff;// efficiency for charged particles (2015 AA cuts) 
+TF1* f_Eff = 0;// efficiency for charged particles (2015 AA cuts)
 const Char_t * nameReg[3]={"NS","AS","TS"};
 const Int_t nchNbins = 100;
 Double_t nchbins[nchNbins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
@@ -132,7 +132,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKnoUe) // classimp: necessary for root
 
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
-	fESD(0), fIsPythia(kTRUE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchTSData(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0)   
+	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),fRefmult08std(0),fpercentileV0M(0),fMultSelection(0x0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSRec(0), hNchResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hNchTSData(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0), hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0), hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSminData(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0), hNchTSmaxData(0), hPhiData_TS1(0), hPhiData_TS2(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0),hRefMult08std(0),hMultV0M(0),hRefMultvsMultV0M(0)
 
 {
 	for(Int_t i=0;i<3;++i){ 
@@ -196,7 +196,7 @@ AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKnoUe::AliAnalysisTaskMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-	fESD(0), fIsPythia(kTRUE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSGenTest(0), hNchTSRec(0), hNchTSRecTest(0), hNchTSData(0), hNchResponse(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0)   
+	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),fRefmult08std(0),fpercentileV0M(0),fMultSelection(0x0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSRec(0), hNchResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hNchTSData(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0), hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0), hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSminData(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0), hNchTSmaxData(0), hPhiData_TS1(0), hPhiData_TS2(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0),hRefMult08std(0),hMultV0M(0),hRefMultvsMultV0M(0)
 {
 	for(Int_t i=0;i<3;++i){
 
@@ -273,20 +273,38 @@ AliAnalysisTaskMcKnoUe::~AliAnalysisTaskMcKnoUe()
 //_____________________________________________________________________________
 void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 {
-
+    if(fUseMC){
 	// parametrization of efficiency
-	f_Eff = 0;
+	//f_Eff = 0;
 	if(fIsPythia){
+        Printf("Efficiency parametrization for Pythia");
 		f_Eff = new TF1("ch_Eff",
 				"(x>=0.15&&x<[0])*([1]+x*[2])+(x>=[0]&&x<[3])*([4]+[5]*x*x+[6]*x*x*x+[7]*x)+(x>=[3])*([8])", 0.0, 1e2);
 		f_Eff->SetParameters(9.00000e-01,9.30176e-01,-4.29864e-01,4.90000e+00,3.89778e-01,-5.81233e-02,5.41373e-03,2.20377e-01,7.10559e-01);
 	}
 	else{// epos lhc
+        Printf("Efficiency parametrization for EPOS LHC");
 		f_Eff = new TF1("ch_Eff",
 				"(x>=0.15&&x<[0])*([1]+x*[2])+(x>=[0]&&x<[3])*([4]*x^[5]+exp([6]-[7]*x))+(x>=[3])*([8])", 0.0, 1e2);
 		f_Eff->SetParameters(8.91265e-01,9.35736e-01,-4.45849e-01,9.50001e+00,-1.10333e-01,-1.02772e+00,-4.26261e-01,-7.56957e-03,7.13602e-01);
 	}
+    }
+    else if (fIsppData){
+        Printf("Efficiency parametrization for ppdata");
+       // TF1 * f_Eff = 0;
+        f_Eff = new TF1("fpara","(x<0.22)*([0]+[1]*x)+(x>=0.22&&x<0.4)*([2]+[3]*x+[4]*x*x)+(x>=0.4&&x<1.0)*([5]+[6]*x+[7]*x*x)+(x>=1.0&&x<5.5)*([8]+[9]*x)+(x>=5.5)*([10])",0.15,50);
+        f_Eff->SetParameters(-7.70334e-01,6.32178e+00,3.10721e-01,2.02610e+00,-2.25005e+00,1.21232e+00,-1.27511e+00,5.88435e-01,5.02911e-01,4.16893e-02,7.09143e-01);
 
+    }
+    else if (fIspPbData){
+        Printf("Efficiency parametrization for pPbdata");
+      //  TF1 * f_Eff = 0;
+        f_Eff = new TF1("fpara","(x<0.22)*([0]+[1]*x)+(x>=0.22&&x<0.4)*([2]+[3]*x+[4]*x*x)+(x>=0.4&&x<1.0)*([5]+[6]*x+[7]*x*x)+(x>=1.0&&x<5.5)*([8]+[9]*x)+(x>=5.5)*([10])",0.15,50);
+        f_Eff->SetParameters(-7.68538e-01,6.33204e+00,3.46746e-01,1.92593e+00,-2.18512e+00,1.21339e+00,-1.25542e+00,5.69288e-01,5.20687e-01,3.01151e-02,6.92933e-01);
+    }
+    else{
+        Printf("No parametrization");
+    }
 	// fCuts *** leading particle ***
 	if(!fLeadingTrackFilter){
 		fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
@@ -356,11 +374,43 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 	// at the end of the analysis, the contents of this list are written  to the output file
 	fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects and will delete them if requested
 
+        
+        hCounter = new TH1D("hCounter","Counter; sel; Nev",3,0,3);
+        fOutputList->Add(hCounter);
+        
+        hNchTSData = new TH1D("hNchTSData","",100,-0.5,99.5);
+        fOutputList->Add(hNchTSData);
+        
+        hNchTSminData = new TH1D("hNchTSminData","",100,-0.5,99.5);
+        fOutputList->Add(hNchTSminData);
+        hNchTSmaxData = new TH1D("hNchTSmaxData","",100,-0.5,99.5);
+        fOutputList->Add(hNchTSmaxData);
+        
+        hPhiData_TS1= new TH1D("hPhiData_TS1","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+        fOutputList->Add(hPhiData_TS1);
+        hPhiData_TS2= new TH1D("hPhiData_TS2","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+        fOutputList->Add(hPhiData_TS2);
 
 	if(fUseMC)
 	{
+                for(Int_t i=0;i<3;++i){
+                        hPhiGen[i]= new TH1D(Form("hPhiGen_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                        fOutputList->Add(hPhiGen[i]);
+                }
+                
+                for(Int_t i=0;i<3;++i){
+                        hPhiRec[i]= new TH1D(Form("hPhiRec_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                        fOutputList->Add(hPhiRec[i]);
+                }
+                
 		hNchTSGen = new TH1D("hNchTSGen","",100,-0.5,99.5);
 		fOutputList->Add(hNchTSGen);
+                
+                hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSRec);
+                
+                hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
+                fOutputList->Add(hNchResponse);
 
 		hNchTSGenTest = new TH1D("hNchTSGenTest","",100,-0.5,99.5); 
 		fOutputList->Add(hNchTSGenTest);
@@ -368,13 +418,47 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 		hNchTSRecTest = new TH1D("hNchTSRecTest","",100,-0.5,99.5); 
 		fOutputList->Add(hNchTSRecTest);
 
-		for(Int_t i=0;i<3;++i){
-			hPhiGen[i]= new TH1D(Form("hPhiGen_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
-			fOutputList->Add(hPhiGen[i]);
-		}
+                hPhiGen_TS1 = new TH1D("hPhiGen_TS1","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiGen_TS1);
+                hPhiGen_TS2 = new TH1D("hPhiGen_TS2","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiGen_TS2);
+                hPhiRec_TS1 = new TH1D("hPhiRec_TS1","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiRec_TS1);
+                hPhiRec_TS2 = new TH1D("hPhiRec_TS2","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiRec_TS2);
+                hPhiGenTest_TS1 = new TH1D("hPhiGenTest_TS1","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiGenTest_TS1);
+                hPhiGenTest_TS2 = new TH1D("hPhiGenTest_TS2","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiGenTest_TS2);
+                hPhiRecTest_TS1 = new TH1D("hPhiRecTest_TS1","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiRecTest_TS1);
+                hPhiRecTest_TS2 = new TH1D("hPhiRecTest_TS2","",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+                fOutputList->Add(hPhiRecTest_TS2);
+                
+                
+                hNchTSminGen = new TH1D("hNchTSminGen","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSminGen);
+                hNchTSminRec = new TH1D("hNchTSminRec","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSminRec);
+                hNchTSminResponse = new TH2D("hNchTSminResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
+                fOutputList->Add(hNchTSminResponse);
+                hNchTSminGenTest = new TH1D("hNchTSminGenTest","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSminGenTest);
+                hNchTSminRecTest = new TH1D("hNchTSminRecTest","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSminRecTest);
+                
+                hNchTSmaxGen = new TH1D("hNchTSmaxGen","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSmaxGen);
+                hNchTSmaxRec = new TH1D("hNchTSmaxRec","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSmaxRec);
+                hNchTSmaxResponse = new TH2D("hNchTSmaxResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
+                fOutputList->Add(hNchTSmaxResponse);
+                hNchTSmaxGenTest = new TH1D("hNchTSmaxGenTest","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSmaxGenTest);
+                hNchTSmaxRecTest = new TH1D("hNchTSmaxRecTest","",100,-0.5,99.5);
+                fOutputList->Add(hNchTSmaxRecTest);
+                
 
-		hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
-		fOutputList->Add(hNchResponse);
 
 		// UE analysis
 		hPtInPrim = new TH1D("hPtInPrim","pT prim true; pT; Nch",ptNbins,ptbins1);
@@ -505,16 +589,21 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 	}
 
-	hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
-	fOutputList->Add(hNchTSRec);
+	
 
-	hNchTSData = new TH1D("hNchTSData","",100,-0.5,99.5); 
-	fOutputList->Add(hNchTSData);
-
-	for(Int_t i=0;i<3;++i){
-		hPhiRec[i]= new TH1D(Form("hPhiRec_%s",nameReg[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
-		fOutputList->Add(hPhiRec[i]);
-	}
+    hRefMult08std = 0;
+    hRefMult08std = new TH1D("hRefMult08std","Multiplicity (-0.8 < #eta < 0.8);N_{ch};count",3000,-0.5,2999.5);
+    fOutputList->Add(hRefMult08std);
+    
+    hMultV0M = 0;
+    hMultV0M = new TH1D("hMultV0M","V0M ;V0M percentile;count",100,0,100);
+    fOutputList->Add(hMultV0M);
+    
+    hRefMultvsMultV0M = 0;
+    hRefMultvsMultV0M = new TH2D("hRefMultvsMultV0M","N_{ch} vs V0M percentile;N_{ch}; v0M percentile",3000,-0.5,2999.5,100,0,100);
+    fOutputList->Add(hRefMultvsMultV0M);
+    
+	
 	for(Int_t i=0;i<3;++i){
 
 		hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",nameReg[i]),"rec pT vs nch_transverse",nchNbins,nchbins,ptNbins,ptbins1);
@@ -522,8 +611,7 @@ void AliAnalysisTaskMcKnoUe::UserCreateOutputObjects()
 
 	}
 
-	hCounter = new TH1D("hCounter","Counter; sel; Nev",3,0,3);
-	fOutputList->Add(hCounter);
+	
 
 	// Data driven
 	for(Int_t i=0;i<3;++i){
@@ -679,9 +767,8 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 
 	// Trigger selection
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
-	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
-	if(!isINT7selected)
-		return;
+	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7||fSelectMask&AliVEvent::kMB;
+	if(!isINT7selected)  return;
 	hCounter->Fill(1);
 
 
@@ -703,6 +790,26 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 	hasRecVertex=HasRecVertex();
 	if(!hasRecVertex)return;
 
+    
+    fRefmult08std = -999;
+    fpercentileV0M = -999;
+      
+    fRefmult08std=AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);     //tracklets
+    hRefMult08std->Fill(fRefmult08std);
+
+    fMultSelection = (AliMultSelection*) fESD->FindListObject("MultSelection");
+    //if (!fMultSelection)
+    //cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+   // if (fIspPb) {fpercentileV0M = fMultSelection->GetMultiplicityPercentile("V0A");}
+    //else {
+        fpercentileV0M = fMultSelection->GetMultiplicityPercentile("V0M");//}
+        
+    hMultV0M->Fill(fpercentileV0M);
+
+    //cout<<"------- V0M mult ==  "<<fpercentileV0M<<"--------"<<endl;
+      
+    hRefMultvsMultV0M->Fill(fRefmult08std,fpercentileV0M);
+    
 	hPtLeadingRecPSV->Fill(fRecLeadPt);
 	if(isGoodVtxPosMC)
 		hPtLeadingGenPSV->Fill(fGenLeadPt);
@@ -745,7 +852,7 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 					GetDetectorResponse();
 
 				// UE analysis
-				if(fGenLeadPt>=fPtMin){
+				if(fGenLeadPt>=fPtMin && fRecLeadPt>=fPtMin){
 					GetBinByBinCorrections();
 					GetPtLeadingMisRecCorrection();
 				}
@@ -771,7 +878,7 @@ void AliAnalysisTaskMcKnoUe::UserExec(Option_t *)
 					GetDetectorResponse();
 
 				// UE analysis
-				if(fGenLeadPt>=fPtMin){
+				if(fGenLeadPt>=fPtMin && fRecLeadPt>=fPtMin){
 					GetBinByBinCorrections();
 					GetPtLeadingMisRecCorrection();
 				}
@@ -1108,8 +1215,8 @@ void AliAnalysisTaskMcKnoUe::GetBinByBinCorrections(){
 
 void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 
-	Int_t multTSgen=0;
-	Int_t multTSrec=0;
+	Int_t multTSgen=0, multTS1gen=0, multTS2gen=0, multTSmin_gen=0, multTSmax_gen=0;
+        Int_t multTSrec=0, multTS1rec=0, multTS2rec=0, multTSmin_rec=0, multTSmax_rec=0;
 
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
@@ -1136,11 +1243,27 @@ void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 		else{// transverse side
 			multTSgen++;
 			hPhiGen[2]->Fill(DPhi);
+                        
+                        if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+                            multTS1gen++;
+                            hPhiGen_TS1->Fill(DPhi);
+                        } else {
+                            multTS2gen++;
+                            hPhiGen_TS2->Fill(DPhi);
+                        }
 		}
-
-
 	}
 	hNchTSGen->Fill(multTSgen);
+        if (multTS2gen>=multTS1gen) {
+            multTSmin_gen = multTS1gen;
+            multTSmax_gen = multTS2gen;
+        } else {
+            multTSmin_gen = multTS2gen;
+            multTSmax_gen = multTS1gen;
+        }
+        hNchTSminGen->Fill(multTSmin_gen);
+        hNchTSmaxGen->Fill(multTSmax_gen);
+        
 
 	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
 	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
@@ -1172,14 +1295,31 @@ void AliAnalysisTaskMcKnoUe::GetDetectorResponse() {
 		else{// transverse side
 			multTSrec++;
 			hPhiRec[2]->Fill(DPhi);
+                        
+                        if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+                            multTS1rec++;
+                            hPhiRec_TS1->Fill(DPhi);
+                        } else {
+                            multTS2rec++;
+                            hPhiRec_TS2->Fill(DPhi);
+                        }
 		}
 
 	}
-	hNchTSRec->Fill(multTSrec); 
-
+	hNchTSRec->Fill(multTSrec);
+        if (multTS2rec>=multTS1rec) {
+            multTSmin_rec = multTS1rec;
+            multTSmax_rec = multTS2rec;
+        } else {
+            multTSmin_rec = multTS2rec;
+            multTSmax_rec = multTS1rec;
+        }
+        hNchTSminRec->Fill(multTSmin_rec);
+        hNchTSmaxRec->Fill(multTSmax_rec);
+        
 	hNchResponse->Fill(multTSrec,multTSgen);
-
-
+        hNchTSminResponse->Fill(multTSmin_rec,multTSmin_gen);
+        hNchTSmaxResponse->Fill(multTSmax_rec,multTSmax_gen);
 }
 
 void AliAnalysisTaskMcKnoUe::GetMeanUEObservables(vector<Double_t> &genArray, vector<Double_t> &recArray){
@@ -1476,7 +1616,7 @@ void AliAnalysisTaskMcKnoUe::GetUEObservables(){
 //______________________________________________________________
 void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributionsData(){
 
-	Int_t multTSrec=0;
+	Int_t multTSrec=0, multTS1rec=0, multTS2rec=0, multTSmin_rec=0, multTSmax_rec=0;
 
 	Int_t iTracks(fESD->GetNumberOfTracks());           // see how many tracks there are in the event
 	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
@@ -1507,10 +1647,28 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributionsData(){
 		}
 		else{// transverse side
 			multTSrec++;
+                        
+                        if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+                            multTS1rec++;
+                            hPhiData_TS1->Fill(DPhi);
+                        } else {
+                            multTS2rec++;
+                            hPhiData_TS2->Fill(DPhi);
+                        }
 		}
-
 	}
-	hNchTSData->Fill(multTSrec); 
+	hNchTSData->Fill(multTSrec);
+        
+        if (multTS2rec>=multTS1rec) {
+            multTSmin_rec = multTS1rec;
+            multTSmax_rec = multTS2rec;
+        } else {
+            multTSmin_rec = multTS2rec;
+            multTSmax_rec = multTS1rec;
+        }
+        hNchTSminData->Fill(multTSmin_rec);
+        hNchTSmaxData->Fill(multTSmax_rec);
+        
 
 	// Filling rec pT vs UE (for pT I use 2015 track cuts, UE uses TPC-only)
 	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks
@@ -1552,8 +1710,8 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributionsData(){
 void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
 
 
-	Int_t multTSgen=0;
-	Int_t multTSrec=0;
+	Int_t multTSgen=0, multTS1gen=0, multTS2gen=0, multTSmin_gen=0, multTSmax_gen=0;
+        Int_t multTSrec=0, multTS1rec=0, multTS2rec=0, multTSmin_rec=0, multTSmax_rec=0;
 
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
@@ -1579,11 +1737,28 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
 		}
 		else{// transverse side
 			multTSgen++;
+                        
+                        if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+                            multTS1gen++;
+                            hPhiGenTest_TS1->Fill(DPhi);
+                        } else {
+                            multTS2gen++;
+                            hPhiGenTest_TS2->Fill(DPhi);
+                        }
 		}
-
-
 	}
 	hNchTSGenTest->Fill(multTSgen);
+        
+        if (multTS2gen>=multTS1gen) {
+            multTSmin_gen = multTS1gen;
+            multTSmax_gen = multTS2gen;
+        } else {
+            multTSmin_gen = multTS2gen;
+            multTSmax_gen = multTS1gen;
+        }
+        hNchTSminGenTest->Fill(multTSmin_gen);
+        hNchTSmaxGenTest->Fill(multTSmax_gen);
+        
 
 	// Filling pT vs UE activity
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
@@ -1642,10 +1817,28 @@ void AliAnalysisTaskMcKnoUe::GetMultiplicityDistributions(){
 		}
 		else{// transverse side
 			multTSrec++;
+                        
+                        if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+                            multTS1rec++;
+                            hPhiRecTest_TS1->Fill(DPhi);
+                        } else {
+                            multTS2rec++;
+                            hPhiRecTest_TS2->Fill(DPhi);
+                        }
 		}
-
 	}
-	hNchTSRecTest->Fill(multTSrec); 
+	hNchTSRecTest->Fill(multTSrec);
+        
+        if (multTS2rec>=multTS1rec) {
+            multTSmin_rec = multTS1rec;
+            multTSmax_rec = multTS2rec;
+        } else {
+            multTSmin_rec = multTS2rec;
+            multTSmax_rec = multTS1rec;
+        }
+        hNchTSminRecTest->Fill(multTSmin_rec);
+        hNchTSmaxRecTest->Fill(multTSmax_rec);
+        
 
 	// Filling rec pT vs UE (for pT I use 2015 track cuts, UE uses TPC-only)
 	for(Int_t i=0; i < iTracks; i++) {                 // loop over all these tracks

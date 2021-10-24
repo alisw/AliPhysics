@@ -18,6 +18,9 @@ class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
+#include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
@@ -45,7 +48,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     kStdITSTPCTrkCuts2009,
     kStdITSTPCTrkCuts2010,
     kStdITSTPCTrkCuts2011,
-    kStdITSTPCTrkCuts2015PbPb
+    kStdITSTPCTrkCuts2015PbPb,
+    kStdITSTPCTrkCuts2011TightChi2TPC
     // to be implemented, if needed
     //kStdITSSATrkCuts2009,
     //kStdITSSATrkCuts2010,
@@ -103,6 +107,19 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
 
+  // set event selections for Pb-Pb2018
+  void SetUsePbPb2018EvSel(Bool_t flag, Int_t which_PileUpcut, Bool_t keep_only_pileup){
+    fUsePbPb2018EvSel  = flag;
+    fPileUpPbPb2018cut = which_PileUpcut;
+    fKeepOnlyPileUp    = keep_only_pileup;
+  }
+  
+  // number of bins for histTpcItsMatch
+  void SetnBinsDCAxy_histTpcItsMatch(Int_t n)  {fnBinsDCAxy_histTpcItsMatch = n;}
+
+  // switch on/off MC spectra weights
+  void SetUseMCWeights()  {fUseMCWeights = kTRUE;}
+
  private:
     
   void   BinLogAxis(const THnSparseF *h, Int_t axisNumber);
@@ -138,6 +155,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
   TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
   TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
+  TH2F *fHistMCWeights;             //! histo of MC weights per particle type
 
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
@@ -169,10 +187,23 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   UInt_t fWhichCuts;  ///
   UInt_t fTPCclstCut; /// 0: cut on TPC clusters; 1: cuts on the number of crossed rows and on the ration crossed rows/findable clusters
 
+  /// event-cut object for centrality correlation event cuts
+  //  used for Pb-Pb2018
+  Bool_t       fUsePbPb2018EvSel;   ///
+  Bool_t       fKeepOnlyPileUp;     ///
+  Int_t        fPileUpPbPb2018cut;  /// option for additional out-of-bunch pileup cut based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
+  AliEventCuts fAliEventCuts;       ///
+
+  // number of bins for histTpcItsMatch
+  Int_t fnBinsDCAxy_histTpcItsMatch; ///
+
+  // switch on (if set) MC spectra weights
+  Bool_t       fUseMCWeights;     ///
+
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 11);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 13);
 };
 
 #endif

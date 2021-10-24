@@ -44,7 +44,16 @@ public:
   void SetPtHardRange(double pmin, double pmax){
     fSelectPtHardRange=kTRUE; fMinPtHard=pmin; fMaxPtHard=pmax;
   }
-
+  void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
+    fRejectGeneratedEventsWithPileup=opt;
+  }
+  void SetRejectSignalsFromOOBPileupEvents(Bool_t opt=kTRUE){
+    fRejectSignalsFromOOBPileupEvents=opt;
+  }
+  void SetTrackletEta1MultiplicityEstimatorForMC(){fMultEstimMC=0;}
+  void SetTrackletFullEtaMultiplicityEstimatorForMC(){fMultEstimMC=1;}
+  void SetCentralityPercMultiplicityEstimatorForMC(){fMultEstimMC=2;}
+  void SetTPCClustersMultiplicityEstimatorForMC(){fMultEstimMC=3;}
   
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
@@ -77,6 +86,9 @@ public:
   }
   void EnableHistosVsCosThetaStar(Bool_t opt){
     fFillHistosVsCosThetaStar=opt;
+  }
+  void SetUseDzeroTopologicalCuts(Bool_t opt){
+    fUseDzeroTopologicalCuts=opt;
   }
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
@@ -118,14 +130,16 @@ public:
   void SetMaxPforIDPion(Double_t maxpIdPion){fmaxPforIDPion=maxpIdPion;}
   void SetMaxPforIDKaon(Double_t maxpIdKaon){fmaxPforIDKaon=maxpIdKaon;}
   void SetPIDselCaseZero(Int_t strat){fPIDselCaseZero=strat;}
-  void SetBayesThres(Double_t thresKaon, Double_t thresPion){
+  void SetBayesThres(Double_t thresKaon, Double_t thresPion, Double_t thresProton=0.4){
     fBayesThresKaon=thresKaon;
     fBayesThresPion=thresPion;
+    fBayesThresProton=thresProton;
   }
   
   Bool_t IsTrackSelected(AliAODTrack* track);
   Bool_t IsKaon(AliAODTrack* track);
   Bool_t IsPion(AliAODTrack* track);
+  Bool_t IsProton(AliAODTrack* track);
   Bool_t SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts);
   
   Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t* dgLabels);
@@ -139,7 +153,7 @@ public:
   void DoMixingWithPools(Int_t poolIndex);
   void DoMixingWithCuts();
   Bool_t CanBeMixed(Double_t zv1, Double_t zv2, Double_t mult1, Double_t mult2);
-  enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
+  enum EMesonSpecies {kDzero, kDplus, kDstar, kDs, kJpsi, kEtac};
   enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
   enum EPIDstrategy {knSigma, kBayesianMaxProb, kBayesianThres};
   
@@ -154,39 +168,62 @@ private:
 
   TList *fOutput;                       //!<! list with output histograms
   TList *fListCuts;                     //!<! list with cut values 
-  TH1F *fHistNEvents;                   //!<!hist. for No. of events
-  TH2F *fHistEventMultCent;             //!<!hist. for evnt Mult vs. centrality (all)
-  TH2F *fHistEventMultCentEvSel;        //!<!hist. for evnt Mult vs. centrality (sel)
-  TH2F *fHistEventMultZv;               //!<!hist. of evnt Mult vs. Zv for all events
-  TH2F *fHistEventMultZvEvSel;          //!<!hist. of evnt Mult vs. Zv for selected ev
-  TH1F *fHistXsecVsPtHard;              //!<!hist. of xsec vs pthard (MC)
-  TH1F *fHistTrackStatus;               //!<!hist. of status of tracks
-  TH3F *fHistTrackEtaMultZv;            // track distribution vs. eta z vertex and mult
-  TH2F *fHistSelTrackPhiPt;                // track distribution vs. phi and pt
-  TH2F *fHistCheckOrigin;               //!<!hist. of origin (c/b) of D meson (gen)
-  TH2F *fHistCheckOriginRecoD;          //!<!hist. of origin (c/b) of D meson (reco)
-  TH2F *fHistCheckOriginRecoVsGen;      //!<!hist. of origin (c/b) of D meson
-  TH1F *fHistCheckDecChan;              //!<!hist. of decay channel of D meson
-  TH1F *fHistCheckDecChanAcc;           //!<!hist. of decay channel of D meson in acc.
+  TH1F *fHistNEvents;                   //!<! hist. for N of events
+  TH1F *fHistNEventsMCCharmInj;         //!<! hist. for N of events with ccbar
+  TH1F *fHistNEventsMCBeautyInj;        //!<! hist. for N of events with bbbar
+  TH2F *fHistEventMultCent;             //!<! hist. for evnt Mult vs. centrality (all)
+  TH2F *fHistEventMultCentEvSel;        //!<! hist. for evnt Mult vs. centrality (sel)
+  TH2F *fHistEventMultZv;               //!<! hist. of evnt Mult vs. Zv for all events
+  TH2F *fHistEventMultZvEvSel;          //!<! hist. of evnt Mult vs. Zv for selected ev
+  TH2F *fHistEventTrackletCent;             //!<! hist. for evnt Tracklet vs. centrality (all)
+  TH2F *fHistEventTrackletCentEvSel;        //!<! hist. for evnt Tracklet vs. centrality (sel)
+  TH2F *fHistEventTrackletZv;               //!<! hist. of evnt Tracklet vs. Zv for all events
+  TH2F *fHistEventTrackletZvEvSel;          //!<! hist. of evnt Tracklet vs. Zv for selected ev
+  TH1F *fHistXsecVsPtHard;              //!<! hist. of xsec vs pthard (MC)
+  TH1F *fHistTrackStatus;               //!<! hist. of status of tracks
+  TH3F *fHistTrackEtaMultZv;            //!<! track distribution vs. eta z vertex and mult
+  TH3F *fHistTrackEtaTrackletZv;            //!<! track distribution vs. eta z vertex and mult
+  TH1D* fHistTrackSelSteps;             //!<! track cuts statistics
+  TH2F *fHistSelTrackPhiPt;             //!<! track distribution vs. phi and pt
+  TH2F *fHistSelTrackChi2ClusPt;        //!<! track chi2 distribution vs. pt
+  TH2F *fHistSelTrackDCAxyPt;           //!<! impact patamter histos
+  TH2F *fHistSelTrackFineDCAxyPt;           //!<! impact patamter histos
+  TH2F *fHistSelTrackDCAzPt;            //!<! impact patamter histos
+  TH2F *fHistSelTrackDCAxyPtAfterProp;  //!<! impact patamter histos
+  TH2F *fHistSelTrackFineDCAxyPtAfterProp;  //!<! impact patamter histos
+  TH2F *fHistSelTrackDCAzPtAfterProp;   //!<! impact patamter histos
+  TH2F *fHistCheckOrigin;               //!<! hist. of origin (c/b) of D meson (gen)
+  TH2F *fHistCheckOriginRecoD;          //!<! hist. of origin (c/b) of D meson (reco)
+  TH2F *fHistCheckOriginRecoVsGen;      //!<! hist. of origin (c/b) of D meson
+  TH1F *fHistCheckDecChan;              //!<! hist. of decay channel of D meson
+  TH1F *fHistCheckDecChanAcc;           //!<! hist. of decay channel of D meson in acc.
   TH3F *fPtVsYVsMultGenPrompt;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsMultGenLargeAccPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
   TH3F *fPtVsYVsMultGenLimAccPrompt;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
   TH3F *fPtVsYVsMultGenAccPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
   TH3F *fPtVsYVsMultGenAccEvSelPrompt;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultRecoPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsPhiVsMultGenPrompt;        //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenLimAccPrompt;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenAccPrompt;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultRecoPrompt;       //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fPtVsYVsMultGenFeeddw;          //!<! hist. of Y vs. Pt vs. Mult generated (all D)
   TH3F *fPtVsYVsMultGenLargeAccFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
   TH3F *fPtVsYVsMultGenLimAccFeeddw;    //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
   TH3F *fPtVsYVsMultGenAccFeeddw;       //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
   TH3F *fPtVsYVsMultGenAccEvSelFeeddw;  //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
   TH3F *fPtVsYVsMultRecoFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
-  TH3F *fPtVsYVsPtBGenFeeddw;           //!<! hist. of Y vs. Pt vs. PtB generated (all D)
-  TH3F *fPtVsYVsPtBGenLargeAccFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.9)
-  TH3F *fPtVsYVsPtBGenLimAccFeeddw;     //!<! hist. of Y vs. Pt vs. PtB generated (|y|<0.5)
-  TH3F *fPtVsYVsPtBGenAccFeeddw;        //!<! hist. of Y vs. Pt vs. PtB generated (D in acc)
-  TH3F *fPtVsYVsPtBGenAccEvSelFeeddw;   //!<! hist. of Y vs. Pt vs. PtB generated (D in acc, sel ev.)
-  TH3F *fPtVsYVsPtBRecoFeeddw;          //!<! hist. of Y vs. Pt vs. PtB generated (Reco D)
-  TH3F *fMassVsPtVsY;     //!<! hist. of Y vs. Pt vs. Mass (all cand)
+  TH3F *fPtVsPhiVsMultGenFeeddw;        //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenLimAccFeeddw;  //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultGenAccFeeddw;     //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPhiVsMultRecoFeeddw;       //!<! hist. of Phi vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsPtBVsMultGenFeeddw;           //!<! hist. of Pt vs. PtB generated (all D)
+  TH3F *fPtVsPtBVsMultGenLargeAccFeeddw;   //!<! hist. of Pt vs. PtB generated (|y|<0.9)
+  TH3F *fPtVsPtBVsMultGenLimAccFeeddw;     //!<! hist. of Pt vs. PtB generated (|y|<0.5)
+  TH3F *fPtVsPtBVsMultGenAccFeeddw;        //!<! hist. of Pt vs. PtB generated (D in acc)
+  TH3F *fPtVsPtBVsMultGenAccEvSelFeeddw;   //!<! hist. of Pt vs. PtB generated (D in acc, sel ev.)
+  TH3F *fPtVsPtBVsMultRecoFeeddw;          //!<! hist. of Pt vs. PtB generated (Reco D)
+  TH3F *fMassVsPtVsY;      //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
   TH3F *fMassVsPtVsYLSmm;  //!<! hist. of Y vs. Pt vs. Mass (like sign --)
@@ -219,8 +256,16 @@ private:
   TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTPCKaonGoodTOF; //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
+  TH2F *fHistonSigmaTPCProton;        //!<! hist. of nSigmaTPC proton
+  TH2F *fHistonSigmaTPCProtonGoodTOF; //!<! hist. of nSigmaTPC proton
+  TH2F *fHistonSigmaTOFProton;        //!<! hist. of nSigmaTOF proton
   TH3F *fHistoPtKPtPiPtD;           //!<! hist. for propagation of tracking unc
   TH3F *fHistoPtKPtPiPtDSig;        //!<! hist. for propagation of tracking unc
+  TH1F *fHistd0xd0;                 //!<! hist. to check topological cuts
+  TH1F *fHistCosPoint;              //!<! hist. to check topological cuts
+  TH1F *fHistCosPointXY;            //!<! hist. to check topological cuts
+  TH1F *fHistDecLen;                //!<! hist. to check topological cuts
+  TH1F *fHistNormDecLenXY;          //!<! hist. to check topological cuts
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
@@ -229,6 +274,7 @@ private:
   Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
   Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
   Double_t fCutCosThetaStar;    /// cos(theta*) cut
+  Bool_t fUseDzeroTopologicalCuts;  /// flag to eanble D0 topological cuts
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
   Double_t fCutCos3PiKPhiRFrame; // cut on the Ds decay angles
   Double_t fCutCosPiDsLabFrame;  // cut on the Ds decay angles
@@ -252,6 +298,7 @@ private:
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   
   Int_t fMeson;                    /// mesonSpecies (see enum)
+  Double_t fMassMeson;             /// mass of the selected meson
   Bool_t  fReadMC;                 ///  flag for access to MC
   Bool_t  fEnforceMBTrigMaskInMC;  /// if true force the MC to use
   Bool_t fGoUpToQuark;             /// flag for definition of c,b origin
@@ -260,6 +307,8 @@ private:
   Bool_t   fSelectPtHardRange;     /// flag to select specific phard range in MC
   Double_t fMinPtHard;             /// minimum pthard
   Double_t fMaxPtHard;             /// maximum pthard
+  Bool_t fRejectGeneratedEventsWithPileup;  /// reject events with generated pileup
+  Bool_t fRejectSignalsFromOOBPileupEvents; /// reject signals from OOB pileup
   
   Int_t    fPIDstrategy;           /// knSigma, kBayesianMaxProb, kBayesianThres
   Double_t fmaxPforIDPion;         /// flag for upper p limit for id band for pion
@@ -268,6 +317,7 @@ private:
   Int_t    fPIDselCaseZero;        /// flag to change PID strategy
   Double_t fBayesThresKaon;        /// threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;        /// threshold for pion identification via Bayesian PID
+  Double_t fBayesThresProton;      /// threshold for proton identification via Bayesian PID
   Int_t  fOrigContainer[200000];   /// container for checks
 
   Int_t fDoEventMixing;            /// flag for event mixing
@@ -284,7 +334,9 @@ private:
   TTree** fEventBuffer;            //!<! structure for event mixing
   TObjString* fEventInfo;          /// unique event Id for event mixing checks
   Double_t fVtxZ;                  /// zVertex
-  Double_t fMultiplicity;          /// multiplicity
+  Double_t fMultiplicityEM;        /// multiplicity for ev mix pools
+  Double_t fMultiplicityMC;        /// multiplicity for MC efficiencies
+  Int_t fMultEstimMC;              /// multiplicity estimator (0=tracklets in eta<1)
   Int_t fNumOfMultBins;            /// number of bins for multiplcities in MC histos
   Double_t fMinMultiplicity;       /// lower limit for multiplcities in MC histos
   Double_t fMaxMultiplicity;       /// upper limit for multiplcities in MC histos
@@ -292,7 +344,7 @@ private:
   TObjArray* fPionTracks;          /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,31); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,42); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

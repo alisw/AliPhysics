@@ -51,7 +51,7 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   fMinPt(0.),
   fMaxPt(16.),
   fEnableExtraHistos(kFALSE),
-  fAODProtection(1),
+  fAODProtection(0),
   fRDHFCuts(0x0),
   fRDHFCutsDplus(0x0)
 {

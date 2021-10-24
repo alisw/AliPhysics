@@ -71,7 +71,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fAddQA(kFALSE),
   fQAList(0),
   fBypassCalculations(kFALSE),
-  fMultiDist(0)
+  fMultiDist(0),
+  fCollisionsSystem(2)
 {
 };
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t IsTrain, Bool_t AddQA):
@@ -102,7 +103,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fAddQA(AddQA),
   fQAList(0),
   fBypassCalculations(kFALSE),
-  fMultiDist(0)
+  fMultiDist(0),
+  fCollisionsSystem(2)
 {
   if(!fProduceWeights) {
     if(fIsTrain) DefineInput(1,TH1D::Class());
@@ -296,7 +298,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
-  fMultiDist = new TH1D("Multiplicity_distribution","Multiplicity distribution",100, 0, 100);
+  fMultiDist = new TH1D(Form("Multiplicity_distribution%s",fSelections[fCurrSystFlag]->GetSystPF()),"Multiplicity distribution",100, 0, 100);
   PostData(2,fMultiDist);
   if(fAddQA) {
     fQAList = new TList();
@@ -386,8 +388,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  Double_t cent = lMultSel->GetMultiplicityPercentile("V0M");
-  if(!CheckTriggerVsCentrality(cent)) return;
+  Double_t cent = lMultSel->GetMultiplicityPercentile(fCollisionsSystem==1?"V0A":"V0M");
+  if(fCollisionsSystem==2) if(!CheckTriggerVsCentrality(cent)) return;
   if(!fProduceWeights)
     if(!InitRun()) return;
   if(!AcceptEvent()) return;
@@ -400,8 +402,10 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   };
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
-  if(cent<5) return; //Do not consider 0-5%
-  if(cent>70) return; //Also, peripheral cutoff
+  if(fCollisionsSystem==2) { //only for Pb-Pb, because of the PU
+    if(cent<5) return; //Do not consider 0-5%
+    if(cent>70) return; //Also, peripheral cutoff
+  };
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
@@ -433,13 +437,14 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     AliAODTrack *lTrack;
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
+      if(lTrack->Pt() < fRFpTMin || lTrack->Pt() > fRFpTMax) continue;
       Double_t POStrk[] = {0.,0.,0.};
       lTrack->GetXYZ(POStrk);
       Double_t DCA[] = {0.,0.,0.};
       for(Int_t i=0;i<3;i++) DCA[i] = POSvtx[i]-POStrk[i];
-      Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
-      Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
-      Int_t trackbit = GetTrackBit(lTrack,lDCA);
+      // Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
+      // Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
+      Int_t trackbit = GetTrackBit(lTrack,DCA);
       if(!trackbit) continue; //if no track bit is set, no need to continue
       Int_t combinedbit = CombineBits(vtxb,trackbit);
       if(fIsMC) {
@@ -479,8 +484,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       for(Int_t i=0;i<3;i++) DCA[i] = POSvtx[i]-POStrk[i];
       Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
       Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
-      if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA) &&
-      	 !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
+      if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA)) continue; //Removing the ITS track selection (syst)
+        // && !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
 
       Double_t l_pT=lTrack->Pt();
       Bool_t WithinPtPOI = (fPOIpTMin<l_pT) && (l_pT<fPOIpTMax); //within POI pT range
@@ -529,7 +534,7 @@ void AliAnalysisTaskGFWFlow::SetPtBins(Int_t nBins, Double_t *bins, Double_t RFp
 
 Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
   if(!fEventCuts.AcceptEvent(fInputEvent)) return 0;
-  if(fCurrSystFlag==15) if(!fEventCutsForPU.AcceptEvent(fInputEvent)) return 0; //For a tight PU cut, an additional selection
+  if(fCurrSystFlag==22) if(!fEventCutsForPU.AcceptEvent(fInputEvent)) return 0; //For a tight PU cut, an additional selection
   return kTRUE;
 };
 Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
@@ -593,9 +598,9 @@ Int_t AliAnalysisTaskGFWFlow::GetParticleBit(AliVParticle *mpa) {
 Int_t AliAnalysisTaskGFWFlow::GetTrackBit(AliAODTrack* mtr, Double_t *lDCA) {
   Int_t retbit=0;
   for(Int_t i=1;i<=fTotTrackFlags; i++) //track flags are 1-8
-    retbit+=fSelections[i]->AcceptTrack(mtr,lDCA,i);
+    retbit+=fSelections[i]->AcceptTrack(mtr,lDCA,i,kFALSE);
   //Nominal (TPC) tracks:
-  retbit+=fSelections[0]->AcceptTrack(mtr,lDCA);
+  retbit+=fSelections[0]->AcceptTrack(mtr,lDCA,0,kFALSE);
   //Also, add the ITS tracks:
   //retbit+=fSelections[12]->AcceptTrack(mtr,lDCA,12); //
   return retbit;
@@ -659,6 +664,18 @@ Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when 
 
   return kTRUE;
 };
+void AliAnalysisTaskGFWFlow::NotifyRun() {
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  //Reinitialize AliEventCuts (done automatically on check):
+  Bool_t dummy = fEventCuts.AcceptEvent(fAOD);
+  fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  dummy = fEventCutsForPU.AcceptEvent(fAOD);
+  //Then override PU cut if required:
+  fEventCuts.fUseVariablesCorrelationCuts = kTRUE; //By default this is not used (for some reason?)
+  //Also for the PU systematics:
+  fEventCutsForPU.fUseVariablesCorrelationCuts = kTRUE;
+  fEventCutsForPU.fESDvsTPConlyLinearCut[0] = 1500; //Cut for systematic (nominal is 15 000)
+}
 Bool_t AliAnalysisTaskGFWFlow::InitRun() {
   if(!fInputEvent) return kFALSE;
   Int_t runno = fInputEvent->GetRunNumber();
@@ -796,5 +813,4 @@ void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("MidGapNV52","poiGapNeg refGapNeg | olGapNeg {5} refGapPos {-5}", kTRUE));
   corrconfigs.push_back(GetConf("MidGapPV52","refGapPos {5} refGapNeg {-5}", kFALSE));
   corrconfigs.push_back(GetConf("MidGapPV52","poiGapPos refGapPos | olGapPos {5} refGapNeg {-5}", kTRUE));
-
 }

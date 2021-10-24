@@ -24,8 +24,8 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 
-#include "../AliJConst.h"
-#include "../AliJHistogramInterface.h"
+#include <AliJConst.h>
+#include <AliJHistogramInterface.h>
 
 class AliJCard;
 class AliJBaseTrack;

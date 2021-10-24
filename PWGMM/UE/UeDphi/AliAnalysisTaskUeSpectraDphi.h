@@ -42,6 +42,7 @@ class AliAnalysisTaskUeSpectraDphi : public AliAnalysisTaskSE {
 		virtual void     SetTrackCutsDCA(AliAnalysisFilter* fTrackFilterDCA);
 		virtual Double_t DeltaPhi(Double_t phia, Double_t phib,
 				 Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
+		virtual Double_t DeltaPhiOA(Double_t phia, Double_t phib, Double_t range = TMath::Pi());
 
 		Double_t GetVtxCut() { return fVtxCut; }
 		Double_t GetEtaCut() { return fEtaCut; }
@@ -101,7 +102,9 @@ class AliAnalysisTaskUeSpectraDphi : public AliAnalysisTaskSE {
 		TH1D * fVtxBeforeCuts;                      //! Vertex z dist before cuts
 		TH1D * fVtxAfterCuts;                       //! Vertex z dist after cuts
 		TH1D * hSelEv;                              //! No of accepted events
-		TH1D * hINEL0;
+		TH1D * hINEL0;                              //!
+		TH1D * hEvMultSel;                          //!
+		TH1D * hEvDphiSel;                          //!
 
 		TH1D * hPS;	                	    //!		
 		TH1D * hVtxPS;	                	    //!				
@@ -129,7 +132,28 @@ class AliAnalysisTaskUeSpectraDphi : public AliAnalysisTaskSE {
 		TH2D * hMultvsDphiOA;	                    //!
 		TH2D * hMultvsDphiSA;	                    //!
 		TH3D * hMultvspTvsDphi;	                    //!
-		TH3D * hMultvspTvsDphiWLP;	                    //! With leading particle
+		TH3D * hMultvspTvsDphiWLP;	            //! With leading particle
+
+
+		TH1D  *hDPhiNchTSGT12;                       //!  NchTS > 12 in both Left and Right
+		TH1D  *hDPhiNchTSLT8;                        //!  NchTS <  8 in both Left and Right
+		TH1D  *hDPhiNchTSGT12LT12;                   //!  NchTS > 12 in Left or Right  and < 12 in left or Right
+		TH1D  *hDPhiNchTSGT12LT8;                    //!  NchTS > 12 in Left or Right  and < 8 in left or Right
+		TH1D  *hDPhiNchTSGT12GT0;                    //!  NchTS > 12 in Left or Right  and > 0 in left or Right
+		
+		TH2D  *hMultTSNchTSGT12;                     //!  NchTS > 12 in both Left and Right
+		TH2D  *hMultTSNchTSLT8;                      //!  NchTS <  8 in both Left and Right
+		TH2D  *hMultTSNchTSGT12GT0;                  //!  NchTS > 12 in Left or Right  and > 0 in left or Right
+		TH2D  *hMultTSNchTSGT12LT12;                 //!  NchTS > 12 in Left or Right  and < 12 in left or Right
+		TH2D  *hMultTSDNchTSGT12LT8;                 //!  NchTS > 12 in Left or Right  and < 8 in left or Right
+
+		TH1D * hNchTSLeft[10];                       //!
+		TH1D * hNchTSRight[10];                      //!
+		TH1D * hSumptTSLeft[10];                     //!
+		TH1D * hSumptTSRight[10];                    //!
+		TH2D * hNchTSLeftvsNchTSRight[10];           //!
+		TH2D * hSumptTSLeftvsSumptTSRight[10];       //!
+		TH3D * hNchTSLeftvsNchTSRightvsDphi;        //!
 	
 		//MC....
 		TH1D * hINEL0MCTrig;	                    //!

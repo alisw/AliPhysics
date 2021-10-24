@@ -27,6 +27,7 @@
 #include "AliAnalysisMuonUtility.h"
 
 // ROOT includes
+#include <TObjString.h>
 #include "TAxis.h"
 #include "TMath.h"
 #include "TLorentzVector.h"

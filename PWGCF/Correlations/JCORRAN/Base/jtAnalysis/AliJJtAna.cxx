@@ -18,26 +18,26 @@
 
 #include <TH1D.h>
 #include <TRandom3.h>
-#include "AliJJtAna.h"
+#include <AliJJtAna.h>
 
-#include "AliJTrackCounter.h"
+#include <AliJTrackCounter.h>
 #include <TClonesArray.h>
 
-#include "../AliJCard.h"
-#include "AliJJtHistograms.h"
-#include "AliJJtCorrelations.h"
-#include "../AliJEventPool.h"
+#include <AliJCard.h>
+#include <AliJJtHistograms.h>
+#include <AliJJtCorrelations.h>
+#include <AliJEventPool.h>
 
-#include "../AliJEventHeader.h"
-#include "../AliJRunHeader.h"
-#include "../AliJTrack.h"
-#include "../AliJPhoton.h"
-#include "../AliJMCTrack.h"
-#include "../AliJAcceptanceCorrection.h"
+#include <AliJEventHeader.h>
+#include <AliJRunHeader.h>
+#include <AliJTrack.h>
+#include <AliJPhoton.h>
+#include <AliJMCTrack.h>
+#include <AliJAcceptanceCorrection.h>
 
 
 
-#include "../AliJEfficiency.h"
+#include <AliJEfficiency.h>
 #include <iostream>
 
 ClassImp(AliJJtAna)

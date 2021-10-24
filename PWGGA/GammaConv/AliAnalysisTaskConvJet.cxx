@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <TObjString.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>

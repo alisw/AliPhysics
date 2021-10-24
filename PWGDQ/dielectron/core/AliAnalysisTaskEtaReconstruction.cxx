@@ -4106,7 +4106,7 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
       double weight = 1.;
 
 
-      // if(fdebug) {
+      if(fdebug) {
         // // Use to investigate Generated FourPair History
         // if(mass<0.13){
         //   if (CaseRec == kFALSE && CaseSmearing == kFALSE) {
@@ -4211,57 +4211,57 @@ void AliAnalysisTaskEtaReconstruction::DoFourPairing(std::vector<TwoPair> fPairV
         //     std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
         //   }
         // }
-        // if (CaseRec == kTRUE && PrimSecPairing == kTRUE) {
-        //   if (0.06 < mass && mass < 0.2) {
-        //     Int_t      iV0Candidate   = fPairVec_secondary[sec_i].GetV0ID(); //  i-th V0 in the Event
-        //     AliAODv0*  fV0Candidate   = ((AliAODEvent*) fEvent)->GetV0(iV0Candidate); // select i-th V0 in the Event
-        //     AliVParticle* track1 = fEvent->GetTrack(fPairVec_primary[prim_i].GetFirstDaughter());  // primary eletrons, neg, first Daughter
-        //     AliVParticle* track2 = fEvent->GetTrack(fPairVec_primary[prim_i].GetSecondDaughter());  // primary eletrons, pos, second Daughter
-        //     AliAODTrack*  track3 = (AliAODTrack *) (fV0Candidate->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
-        //     AliAODTrack*  track4 = (AliAODTrack *) (fV0Candidate->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
-        //
-        //     Int_t Track1Label = TMath::Abs(track1->GetLabel());     AliVParticle* daughter1 = fMC->GetTrack(Track1Label);     Int_t labelD1 = -1;   labelD1 = TMath::Abs(daughter1->GetLabel());     Int_t pdgD1 = daughter1->PdgCode();
-        //     Int_t Track2Label = TMath::Abs(track2->GetLabel());     AliVParticle* daughter2 = fMC->GetTrack(Track2Label);     Int_t labelD2 = -1;   labelD2 = TMath::Abs(daughter2->GetLabel());     Int_t pdgD2 = daughter2->PdgCode();
-        //     Int_t Track3Label = TMath::Abs(track3->GetLabel());     AliVParticle* daughter3 = fMC->GetTrack(Track3Label);     Int_t labelD3 = -1;   labelD3 = TMath::Abs(daughter3->GetLabel());     Int_t pdgD3 = daughter3->PdgCode();
-        //     Int_t Track4Label = TMath::Abs(track4->GetLabel());     AliVParticle* daughter4 = fMC->GetTrack(Track4Label);     Int_t labelD4 = -1;   labelD4 = TMath::Abs(daughter4->GetLabel());     Int_t pdgD4 = daughter4->PdgCode();
-        //     Int_t labelM1 = -1;   labelM1 = TMath::Abs(daughter1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
-        //     Int_t labelM2 = -1;   labelM2 = TMath::Abs(daughter2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
-        //     Int_t labelM3 = -1;   labelM3 = TMath::Abs(daughter3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
-        //     Int_t labelM4 = -1;   labelM4 = TMath::Abs(daughter4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
-        //
-        //     Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
-        //     Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
-        //     Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
-        //     Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
-        //
-        //     std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
-        //     std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
-        //     std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
-        //     std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
-        //     std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
-        //     std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
-        //     std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
-        //     std::cout << "    -----------" << std::endl;
-        //     std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
-        //     std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
-        //     std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
-        //     std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
-        //     std::cout << "    -----------" << std::endl;
-        //     std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
-        //     std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
-        //     std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
-        //     std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
-        //     std::cout << "    -----------" << std::endl;
-        //     TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
-        //     fLVPart1.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
-        //     fLVPart2.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
-        //     fLVPart3.SetPtEtaPhiM(daughter3->Pt(), daughter3->Eta(), daughter3->Phi(), daughter3->M());
-        //     fLVPart4.SetPtEtaPhiM(daughter4->Pt(), daughter4->Eta(), daughter4->Phi(), daughter4->M());
-        //     fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
-        //     std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
-        //   }
-        // }
-      // }
+        if (CaseRec == kTRUE && PrimSecPairing == kTRUE) {
+          if (0.06 < mass && mass < 0.2) {
+            Int_t      iV0Candidate   = fPairVec_secondary[sec_i].GetV0ID(); //  i-th V0 in the Event
+            AliAODv0*  fV0Candidate   = ((AliAODEvent*) fEvent)->GetV0(iV0Candidate); // select i-th V0 in the Event
+            AliVParticle* track1 = fEvent->GetTrack(fPairVec_primary[prim_i].GetFirstDaughter());  // primary eletrons, neg, first Daughter
+            AliVParticle* track2 = fEvent->GetTrack(fPairVec_primary[prim_i].GetSecondDaughter());  // primary eletrons, pos, second Daughter
+            AliAODTrack*  track3 = (AliAODTrack *) (fV0Candidate->GetSecondaryVtx()->GetDaughter(0));  // secondary electron, neg, first Daughter from V0
+            AliAODTrack*  track4 = (AliAODTrack *) (fV0Candidate->GetSecondaryVtx()->GetDaughter(1));  // secondary electron, pos, second Daughter from V0
+
+            Int_t Track1Label = TMath::Abs(track1->GetLabel());     AliVParticle* daughter1 = fMC->GetTrack(Track1Label);     Int_t labelD1 = -1;   labelD1 = TMath::Abs(daughter1->GetLabel());     Int_t pdgD1 = daughter1->PdgCode();
+            Int_t Track2Label = TMath::Abs(track2->GetLabel());     AliVParticle* daughter2 = fMC->GetTrack(Track2Label);     Int_t labelD2 = -1;   labelD2 = TMath::Abs(daughter2->GetLabel());     Int_t pdgD2 = daughter2->PdgCode();
+            Int_t Track3Label = TMath::Abs(track3->GetLabel());     AliVParticle* daughter3 = fMC->GetTrack(Track3Label);     Int_t labelD3 = -1;   labelD3 = TMath::Abs(daughter3->GetLabel());     Int_t pdgD3 = daughter3->PdgCode();
+            Int_t Track4Label = TMath::Abs(track4->GetLabel());     AliVParticle* daughter4 = fMC->GetTrack(Track4Label);     Int_t labelD4 = -1;   labelD4 = TMath::Abs(daughter4->GetLabel());     Int_t pdgD4 = daughter4->PdgCode();
+            Int_t labelM1 = -1;   labelM1 = TMath::Abs(daughter1->GetMother());    AliVParticle* mother1 = fMC->GetTrack(labelM1);       Int_t pdgM1 = mother1->PdgCode();
+            Int_t labelM2 = -1;   labelM2 = TMath::Abs(daughter2->GetMother());    AliVParticle* mother2 = fMC->GetTrack(labelM2);       Int_t pdgM2 = mother2->PdgCode();
+            Int_t labelM3 = -1;   labelM3 = TMath::Abs(daughter3->GetMother());    AliVParticle* mother3 = fMC->GetTrack(labelM3);       Int_t pdgM3 = mother3->PdgCode();
+            Int_t labelM4 = -1;   labelM4 = TMath::Abs(daughter4->GetMother());    AliVParticle* mother4 = fMC->GetTrack(labelM4);       Int_t pdgM4 = mother4->PdgCode();
+
+            Int_t labelG1 = -1;   labelG1 = TMath::Abs(mother1->GetMother());   AliVParticle* grandmother1 = fMC->GetTrack(labelG1);     Int_t pdgG1 = grandmother1->PdgCode();       Int_t nDaughtersG1 =fMC->GetTrack(labelG1)->GetNDaughters();
+            Int_t labelG2 = -1;   labelG2 = TMath::Abs(mother2->GetMother());   AliVParticle* grandmother2 = fMC->GetTrack(labelG2);     Int_t pdgG2 = grandmother2->PdgCode();       Int_t nDaughtersG2 =fMC->GetTrack(labelG2)->GetNDaughters();
+            Int_t labelG3 = -1;   labelG3 = TMath::Abs(mother3->GetMother());   AliVParticle* grandmother3 = fMC->GetTrack(labelG3);     Int_t pdgG3 = grandmother3->PdgCode();       Int_t nDaughtersG3 =fMC->GetTrack(labelG3)->GetNDaughters();
+            Int_t labelG4 = -1;   labelG4 = TMath::Abs(mother4->GetMother());   AliVParticle* grandmother4 = fMC->GetTrack(labelG4);     Int_t pdgG4 = grandmother4->PdgCode();       Int_t nDaughtersG4 =fMC->GetTrack(labelG4)->GetNDaughters();
+
+            std::cout << "DEBUG_AnalysisTask: Line cout " << std::endl;
+            std::cout << "DEBUG_AnalysisTask: Mass = " << mass << ", pair_pT = " << pairpt << std::endl;
+            std::cout << "   List Labels of the four paring particles and their mother as well as grand mother" << std::endl;
+            std::cout << "    Label D1 = " << labelD1 << " pdgD1 = " << pdgD1 << std::endl;
+            std::cout << "    Label D2 = " << labelD2 << " pdgD1 = " << pdgD2 << std::endl;
+            std::cout << "    Label D3 = " << labelD3 << " pdgD1 = " << pdgD3 << std::endl;
+            std::cout << "    Label D4 = " << labelD4 << " pdgD1 = " << pdgD4 << std::endl;
+            std::cout << "    -----------" << std::endl;
+            std::cout << "    Label M1 = " << labelM1 << " pdgM1 = " << pdgM1 << " Mass of particle " << mother1->M() << std::endl;
+            std::cout << "    Label M2 = " << labelM2 << " pdgM1 = " << pdgM2 << " Mass of particle " << mother2->M() << std::endl;
+            std::cout << "    Label M3 = " << labelM3 << " pdgM1 = " << pdgM3 << " Mass of particle " << mother3->M() << std::endl;
+            std::cout << "    Label M4 = " << labelM4 << " pdgM1 = " << pdgM4 << " Mass of particle " << mother4->M() << std::endl;
+            std::cout << "    -----------" << std::endl;
+            std::cout << "    Label G1 = " << labelG1 << " pdgG1 = " << pdgG1 << " nDaughtersG1 = " << nDaughtersG1 << " Mass of particle " << grandmother1->M() << std::endl;
+            std::cout << "    Label G2 = " << labelG2 << " pdgG1 = " << pdgG2 << " nDaughtersG2 = " << nDaughtersG2 << " Mass of particle " << grandmother2->M() << std::endl;
+            std::cout << "    Label G3 = " << labelG3 << " pdgG1 = " << pdgG3 << " nDaughtersG3 = " << nDaughtersG3 << " Mass of particle " << grandmother3->M() << std::endl;
+            std::cout << "    Label G4 = " << labelG4 << " pdgG1 = " << pdgG4 << " nDaughtersG4 = " << nDaughtersG4 << " Mass of particle " << grandmother4->M() << std::endl;
+            std::cout << "    -----------" << std::endl;
+            TLorentzVector fLVPart1; TLorentzVector fLVPart2; TLorentzVector fLVPart3; TLorentzVector fLVPart4; TLorentzVector fLVMother;
+            fLVPart1.SetPtEtaPhiM(daughter1->Pt(), daughter1->Eta(), daughter1->Phi(), daughter1->M());
+            fLVPart2.SetPtEtaPhiM(daughter2->Pt(), daughter2->Eta(), daughter2->Phi(), daughter2->M());
+            fLVPart3.SetPtEtaPhiM(daughter3->Pt(), daughter3->Eta(), daughter3->Phi(), daughter3->M());
+            fLVPart4.SetPtEtaPhiM(daughter4->Pt(), daughter4->Eta(), daughter4->Phi(), daughter4->M());
+            fLVMother = fLVPart1+fLVPart2+fLVPart3+fLVPart4;
+            std::cout << "   Recombine 4 particles to mother: mass = " << fLVMother.M() << std::endl;
+          }
+        }
+      }
 
 
 

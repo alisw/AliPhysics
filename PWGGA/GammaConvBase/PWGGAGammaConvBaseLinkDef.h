@@ -5,6 +5,10 @@
 #pragma link off all functions;
 
 // Base classes
+#ifdef PWGGAUSEKFPARTICLE
+#pragma link C++ class AliGAKFParticle+;
+#pragma link C++ class AliGAKFVertex+;
+#endif // PWGGAUSEKFPARTICLE
 #pragma link C++ class AliConversionPhotonBase+;
 #pragma link C++ class AliAODConversionParticle+;
 #pragma link C++ class AliAODConversionMother+;
@@ -31,6 +35,6 @@
 #pragma link C++ class AliDalitzAODESDMC+;
 #pragma link C++ class AliDalitzEventMC+;
 #pragma link C++ class AliDalitzData+;
-
+#pragma link C++ class AliCaloSigmaCuts+;
 
 #endif

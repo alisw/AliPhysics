@@ -56,6 +56,11 @@ public:
   void  SaveConversionPhotons(Bool_t var, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveConversionPhotons(var); fReplicator->SetConversionPhotonCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
   void  SaveConversionPhotonsFromDelta(Bool_t var, TString name, AliAnalysisCuts* cuts = 0) { fReplicator->SetSaveConversionPhotons(var); fReplicator->SetPhotonDeltaBranchName(name); fReplicator->SetConversionPhotonCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
   void  FilterMCStack(AliAnalysisCuts* cuts = nullptr) { fReplicator->SetMCParticleCuts(cuts); if (fSaveCutsFlag && cuts) fQAOutput->Add(cuts); }
+  void  SetNormalisationMultBinning(int nbins, float min, float max) {
+    fNmultBins = nbins;
+    fMinMult = min;
+    fMaxMult = max;
+  }
   
   AliNanoAODReplicator* GetReplicator() { return fReplicator; }
 
@@ -79,6 +84,10 @@ protected:
   TString fOutputArrayName; // name of TObjectArray of AliNanoAODTracks
 
   AliNanoFilterNormalisation* fNormalisation;          //!<! Normalisation object
+
+  Int_t fNmultBins;     // number of binning of normalisation historgram
+  Float_t fMinMult;     // min value of the axis of normalisation historgram
+  Float_t fMaxMult;     // min value of the axis of normalisation historgram
 
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented

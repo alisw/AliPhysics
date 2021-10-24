@@ -7,6 +7,7 @@
 //#include "AliFemtoDreamCascadeCuts.h"
 //#include "AliFemtoDreamCollConfig.h"
 
+//#define MONTECARLO
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
 		                         bool isMC=false,
@@ -30,40 +31,58 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
 
-
 //v0 Cuts (Georgios)
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+  Posv0Daug->SetNClsTPC(60); //openen for systematic variation
+  Negv0Daug->SetNClsTPC(60); //opened for systematic variation
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
   v0Cuts->SetPDGCodeNegDaug(-211);  //Pion
   v0Cuts->SetPDGCodev0(3122);  //Lambda
   v0Cuts->SetCutInvMass(0.03); //include Background
+  v0Cuts->SetCutCPA(0.9); //include this for the CPA template fits
 //Anti v0 Cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, false);
   AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
+  PosAntiv0Daug->SetNClsTPC(60); //openen for systematic variation
+  NegAntiv0Daug->SetNClsTPC(60); //opened for systematic variation
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
   Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
   Antiv0Cuts->SetPDGCodeNegDaug(-2212);  //Proton
   Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
   Antiv0Cuts->SetCutInvMass(0.03); //include Background
+  Antiv0Cuts->SetCutCPA(0.9); //include this for the CPA template fits
 
+  //Systematic variations for v0
+  v0Cuts->SetCutDCADaugTov0Vtx(1.65);
+  Antiv0Cuts->SetCutDCADaugTov0Vtx(1.65);
+  v0Cuts->SetCutDCADaugToPrimVtx(0.027); //0.05
+  Antiv0Cuts->SetCutDCADaugToPrimVtx(0.027);
+  v0Cuts->SetPtRange(0.22,999.);
+  Antiv0Cuts->SetPtRange(0.22,999.);
 
   //Cascade Cuts (Background)
   AliFemtoDreamCascadeCuts* CascadeXiBGRCuts = AliFemtoDreamCascadeCuts::XiCuts(isMC, false);
   CascadeXiBGRCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiBGRNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
   XiBGRNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
+  XiBGRNegCuts->SetCheckPileUp(false);  //release timing information 
   AliFemtoDreamTrackCuts *XiBGRPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
   XiBGRPosCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *XiBGRBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
   XiBGRBachCuts->SetCheckTPCRefit(false);
+  //systematics of the Xi's tracks 
+  XiBGRNegCuts->SetEtaRange(-0.91, 0.91);
+  XiBGRPosCuts->SetEtaRange(-0.91, 0.91);
+  XiBGRBachCuts->SetEtaRange(-0.91, 0.91);
+  
   CascadeXiBGRCuts->Setv0Negcuts(XiBGRNegCuts);
   CascadeXiBGRCuts->Setv0PosCuts(XiBGRPosCuts);
   CascadeXiBGRCuts->SetBachCuts(XiBGRBachCuts);
@@ -72,6 +91,7 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   CascadeXiBGRCuts->SetPDGCodePosDaug(2212);
   CascadeXiBGRCuts->SetPDGCodeNegDaug(-211);
   CascadeXiBGRCuts->SetPDGCodeBach(-211);
+ 
   //AntiCascade cuts (Background)
   AliFemtoDreamCascadeCuts* AntiCascadeXiBGRCuts = AliFemtoDreamCascadeCuts::XiCuts(isMC, false);
   AntiCascadeXiBGRCuts->SetXiCharge(1);
@@ -81,9 +101,15 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   AliFemtoDreamTrackCuts *AntiXiBGRPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
   AntiXiBGRPosCuts->SetCutCharge(1);
   AntiXiBGRPosCuts->SetCheckTPCRefit(false);
+  AntiXiBGRPosCuts->SetCheckPileUp(false);  //release timing information 
   AliFemtoDreamTrackCuts *AntiXiBGRBachCuts =AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
   AntiXiBGRBachCuts->SetCutCharge(1);
   AntiXiBGRBachCuts->SetCheckTPCRefit(false);
+  //systematics of the Xi's tracks 
+  AntiXiBGRNegCuts->SetEtaRange(-0.91, 0.91);
+  AntiXiBGRPosCuts->SetEtaRange(-0.91, 0.91);
+  AntiXiBGRBachCuts->SetEtaRange(-0.91, 0.91);
+  
   AntiCascadeXiBGRCuts->Setv0Negcuts(AntiXiBGRNegCuts);
   AntiCascadeXiBGRCuts->Setv0PosCuts(AntiXiBGRPosCuts);
   AntiCascadeXiBGRCuts->SetBachCuts(AntiXiBGRBachCuts);
@@ -98,10 +124,16 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   CascadeXiCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
   XiNegCuts->SetCheckTPCRefit(false);
+  XiNegCuts->SetCheckPileUp(false);  //release timing information 
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(isMC, true, false);
   XiPosCuts->SetCheckTPCRefit(false);
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
   XiBachCuts->SetCheckTPCRefit(false);
+  //systematics of the Xi's tracks 
+  XiNegCuts->SetEtaRange(-0.91, 0.91);
+  XiPosCuts->SetEtaRange(-0.91, 0.91);
+  XiBachCuts->SetEtaRange(-0.91, 0.91);
+  
   CascadeXiCuts->Setv0Negcuts(XiNegCuts);
   CascadeXiCuts->Setv0PosCuts(XiPosCuts);
   CascadeXiCuts->SetBachCuts(XiBachCuts);
@@ -122,9 +154,15 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(isMC, true, false);
   AntiXiPosCuts->SetCutCharge(1);
   AntiXiPosCuts->SetCheckTPCRefit(false);
+  AntiXiPosCuts->SetCheckPileUp(false);  //release timing information 
   AliFemtoDreamTrackCuts *AntiXiBachCuts =AliFemtoDreamTrackCuts::XiBachPionCuts(isMC, true, false);
   AntiXiBachCuts->SetCutCharge(1);
   AntiXiBachCuts->SetCheckTPCRefit(false);
+  //systematics of the Xi's tracks 
+  AntiXiNegCuts->SetEtaRange(-0.91, 0.91);
+  AntiXiPosCuts->SetEtaRange(-0.91, 0.91);
+  AntiXiBachCuts->SetEtaRange(-0.91, 0.91);
+  
   AntiCascadeXiCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeXiCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeXiCuts->SetBachCuts(AntiXiBachCuts);
@@ -134,6 +172,38 @@ AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
   AntiCascadeXiCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeXiCuts->SetPDGCodeBach(211);
   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.06); //include Background
+
+  //systematics for Xis
+  CascadeXiCuts->SetCutXiDaughterDCA(1.6);
+  AntiCascadeXiCuts->SetCutXiDaughterDCA(1.6);
+  CascadeXiCuts->SetCutXiMinDistBachToPrimVtx(0.03);
+  AntiCascadeXiCuts->SetCutXiMinDistBachToPrimVtx(0.03);
+  CascadeXiCuts->SetCutv0MinDistToPrimVtx(0.06);
+  AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(0.06);
+  CascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(0.03);
+  AntiCascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(0.03);
+  CascadeXiCuts->SetCutXiCPA(0.97);
+  AntiCascadeXiCuts->SetCutXiCPA(0.97);
+  CascadeXiCuts->SetCutXiTransverseRadius(0.6, 200);
+  AntiCascadeXiCuts->SetCutXiTransverseRadius(0.6, 200);
+  CascadeXiCuts->SetCutv0TransverseRadius(1.0, 200);
+  AntiCascadeXiCuts->SetCutv0TransverseRadius(1.0, 200);
+
+  //BGR 
+  CascadeXiBGRCuts->SetCutXiDaughterDCA(1.6);
+  AntiCascadeXiBGRCuts->SetCutXiDaughterDCA(1.6);
+  CascadeXiBGRCuts->SetCutXiMinDistBachToPrimVtx(0.03);
+  AntiCascadeXiBGRCuts->SetCutXiMinDistBachToPrimVtx(0.03);
+  CascadeXiBGRCuts->SetCutv0MinDistToPrimVtx(0.06);
+  AntiCascadeXiBGRCuts->SetCutv0MinDistToPrimVtx(0.06);   
+  CascadeXiBGRCuts->SetCutv0MinDaugDistToPrimVtx(0.03);
+  AntiCascadeXiBGRCuts->SetCutv0MinDaugDistToPrimVtx(0.03);
+  CascadeXiBGRCuts->SetCutXiCPA(0.97);
+  AntiCascadeXiBGRCuts->SetCutXiCPA(0.97);
+  CascadeXiBGRCuts->SetCutXiTransverseRadius(0.6, 200);
+  AntiCascadeXiBGRCuts->SetCutXiTransverseRadius(0.6, 200);
+  CascadeXiBGRCuts->SetCutv0TransverseRadius(1.0, 200);
+  AntiCascadeXiBGRCuts->SetCutv0TransverseRadius(1.0, 200);
 
 
   if (suffix != "0" && suffix != "999") {

@@ -1,46 +1,86 @@
 /***************************************************************************
-fbellini@cern.ch - last modified on 23/03/2018
-Configuration script forphi analysis with 2017 XeXe runs
+fbellini@cern.ch - last modified on 16/04/2020
+Configuration script for Phi analysis with 2017 Xe-Xe runs
 ****************************************************************************/
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AddMonitorOutput.C"
 #endif
 
-Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut = NULL, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
+Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut = NULL, Int_t customQualityCutsID = -1, Int_t customFilterBit = 0);
+Bool_t UseCustomQualityCutsESD(AliRsnCutTrackQuality * trkQualityCut = NULL, Bool_t useGeoCut = 0, 
+                              Bool_t useLowBcuts = 0, Bool_t useLooseDCAXYcut = 0, Bool_t useLooseDCAZcut = 0, 
+                              Bool_t useLooseXRcut = 0, Bool_t useTightXEcut = 0, Bool_t useLooseXR2Cls =0, 
+                              Bool_t useTightXR2Cls = 0, Bool_t useClsCut = 0, Bool_t useLooseChi2cut = 0);
 
 Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0, 
 		     Bool_t                 isMC = kFALSE, 
 		     TString                suffix = "",
 		     AliRsnCutSet           *cutsPair = 0x0,
 		     Int_t                  aodFilterBit = 5,
+		     Int_t                  customQualityCutsID = -1, //AliRsnCutSetDaughterParticle::kDisableCustom,
 		     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPid = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s, // pid cut set
 		     Float_t                nsigmaTPC = 2.0,          //nsigma of TPC PID cut
 		     Float_t                nsigmaTOF = 3.0,          //nsigma of TOF PID cut
-		     Float_t                ptMax = 15.0,
+		     Float_t                ptMax = 12.0,
 		     Bool_t                 enableMonitor = kTRUE,
 		     Bool_t                 useMixLS = kFALSE,
 		     Bool_t                 checkReflex = kFALSE)
 {
 
-  //use default quality cuts std 2010 with crossed rows TPC
-  Bool_t useCrossedRows = 1; 
-  AliRsnCutSetDaughterParticle * cutSetKa = new AliRsnCutSetDaughterParticle("cutKa", cutPid, AliPID::kKaon, nsigmaTPC, nsigmaTOF, aodFilterBit, useCrossedRows);
-  cutSetKa->SetUse2011StdQualityCuts(kTRUE);
+  AliRsnCutSetDaughterParticle * cutSetQuality = NULL;
+  AliRsnCutSetDaughterParticle * cutSetKa = NULL;
+
+  AliRsnCutTrackQuality * trkQualityCut =  new AliRsnCutTrackQuality(Form("quality%i", customQualityCutsID));
+
+  //Set custom quality cuts for systematic checks
+  //use default quality cuts (std 2011)
+  
+  if (customQualityCutsID<0) {
+    Printf("::::: ConfigPhiXeXe ::: Custom quality cuts disabled - using default");
+    cutSetQuality  = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit, kTRUE);
+    cutSetKa  = new AliRsnCutSetDaughterParticle("cutKa", cutPid, AliPID::kKaon, nsigmaTPC, nsigmaTOF, aodFilterBit, kTRUE);
+    cutSetQuality->SetUse2011StdQualityCuts(kTRUE);
+    cutSetKa->SetUse2011StdQualityCuts(kTRUE);
+  }  else {
+    if (customQualityCutsID>=100) {
+      //Use ESD custom cuts -- since analysis releoad for final results
+      Printf(Form("::::: ConfigPhiXeXe ::: Custom quality cuts enabled - using %i", customQualityCutsID));
+      UseCustomQualityCutsESD(trkQualityCut, 
+                              (customQualityCutsID==102 || customQualityCutsID == 103), //useGeoCut
+                              (customQualityCutsID==101 || customQualityCutsID == 103), //useLowBcuts
+                              !(customQualityCutsID%104), //useLooseDCAXYcut
+                              !(customQualityCutsID%105), //useLooseDCAZcut
+                              !(customQualityCutsID%106), //useLooseXRcut
+                              !(customQualityCutsID%107), //useTightXRcut
+                              !(customQualityCutsID%108), //useLooseXR2Cls
+                              !(customQualityCutsID%109), //useTightXR2Cls
+                              !(customQualityCutsID%110), //useClsCut
+                              !(customQualityCutsID%111)); //useLooseChi2cut                           
+    } else {
+      //Use 2018 way of setting custom cuts -- used for preliminary QM2018, kept for bookeeping
+      Printf(Form("::::: ConfigPhiXeXe ::: Custom quality cuts enabled (the OLD way) - using %i", customQualityCutsID));
+      SetCustomQualityCut(trkQualityCut, customQualityCutsID, aodFilterBit);
+    }
+    cutSetQuality = new AliRsnCutSetDaughterParticle(trkQualityCut->GetName(), trkQualityCut, AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, -1.0);
+    cutSetKa = new AliRsnCutSetDaughterParticle("cutKa", trkQualityCut, cutPid, AliPID::kKaon, nsigmaTPC, nsigmaTOF);
+  }
+
+  if (!cutSetQuality || !cutSetKa) {
+    Printf("ERROR: INVALID CUT SET in Configuration!");
+    return kFALSE;
+  }
+  
   Int_t icutKa = task->AddTrackCuts(cutSetKa);
+  Int_t icutQuality = task->AddTrackCuts(cutSetQuality);
   
   //set daughter cuts
   Int_t iCut1 = icutKa;
   Int_t iCut2 = icutKa;
   
-  //monitor single-track selection based on track quality cuts only
-  AliRsnCutSetDaughterParticle * cutSetQuality = new AliRsnCutSetDaughterParticle("cutQuality", AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, 10.0, 10.0, aodFilterBit, useCrossedRows);
-  Int_t icutQuality = task->AddTrackCuts(cutSetQuality);
-  
 #if defined (__CINT__) || !defined (__CLING__)
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-  //gROOT->LoadMacro("./AddMonitorOutput.C");
+  //gROOT->LoadMacro("./AddMonitorOutputPhiXeXe.C");
 #endif
-    
   //QA plots
   TString monitorOpt = "NoSIGN";
   if (enableMonitor){
@@ -66,7 +106,7 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
   const Int_t nptbins = ptMax/0.1;
   
   // -- Create all needed outputs -----------------------------------------------------------------
-  Bool_t  use     [8] = {   !isMC,    !isMC,    !isMC,    !isMC,   isMC,    isMC,   useMixLS, useMixLS};
+  Bool_t  use     [8] = {   !isMC,    !isMC,    !isMC,    !isMC,   isMC,    isMC,   (!isMC & useMixLS), (!isMC & useMixLS)};
   TString name    [8] = {"Unlike", "Mixing", "LikePP", "LikeMM", "True", "TrueY", "MixingPP", "MixingMM"};
   TString comp    [8] = {"PAIR"  , "MIX"   , "PAIR"  , "PAIR"  , "TRUE", "TRUE" , "MIX"     , "MIX"};
   Int_t   pdgCode [8] = {333     , 333     , 333     , 333     , 333   , 333    , 333       , 333  };
@@ -111,11 +151,13 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
   TString nameR[4]    = {"Res", "ResCent", "ResPt", "ResY"};
   TString compR[4]    = {"TRUE" , "TRUE", "TRUE", "TRUE"};
   TString outputR[4]  = {"HIST", "HIST","HIST", "HIST"};
+  Bool_t  usemc[4]     = {false, true, false, false};
   Int_t   pdgCodeR[4] = {333, 333, 333, 333};
   Char_t  charge1R[4] = {'+', '+', '+', '+'};
   Char_t  charge2R[4] = {'-', '-', '-', '-'};
 
   for (Int_t j = 0; j < 4; j++) {
+    if (!usemc[j]) continue;
     AliRsnMiniOutput *outR = task->CreateOutput(Form("%s%s", nameR[j].Data(), suffix.Data()), outputR[j].Data(), compR[j].Data());
     outR->SetCutID(0, iCut1);
     outR->SetCutID(1, iCut2);
@@ -208,6 +250,59 @@ Bool_t ConfigPhiXeXe(AliRsnMiniAnalysisTask *task = 0x0,
   return kTRUE;
 }
 
+//-------------------------------------
+Bool_t UseCustomQualityCutsESD(AliRsnCutTrackQuality * trkQualityCut, 
+                              Bool_t useGeoCut, 
+                              Bool_t useLowBcuts, 
+                              Bool_t useLooseDCAXYcut,
+                              Bool_t useLooseDCAZcut, 
+                              Bool_t useLooseXRcut,
+                              Bool_t useTightXRcut,
+                              Bool_t useLooseXR2Cls,
+                              Bool_t useTightXR2Cls,
+                              Bool_t useClsCut,
+                              Bool_t useLooseChi2cut)
+{
+  //Sets configuration for track quality object different from std quality cuts.
+  //Returns kTRUE if track quality cut object is successfully defined,
+  //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
+  //object to be configured does not exist.
+  if (!trkQualityCut){
+    Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+    return kFALSE;
+  }
+  //apply all other cuts "by hand"
+  trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
+  trkQualityCut->SetMinNCrossedRowsTPC(70, kTRUE);
+  trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.8, kTRUE);
+  trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);//used for ESD only - for AOD does not correspond to any cut
+  trkQualityCut->SetTPCmaxChi2(4.0); //already in filter bit 0
+  trkQualityCut->SetRejectKinkDaughters(kTRUE); //already in filter bit 0
+  trkQualityCut->SetSPDminNClusters(AliESDtrackCuts::kAny);
+  trkQualityCut->SetITSmaxChi2(36);
+  trkQualityCut->AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);//already in defaults 2011
+  trkQualityCut->AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);//already in defaults 2011
+  trkQualityCut->AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);//already in defaults 2011
+  trkQualityCut->SetDCARPtFormula("0.0105+0.0350/pt^1.1");
+  trkQualityCut->SetDCAZmax(2.0); 
+  if (useLowBcuts) trkQualityCut->SetDCARPtFormula("0.0119+0.049/pt"); // As in XeXe All Charged AN
+  if (useLowBcuts & useGeoCut) ((AliESDtrackCuts  *)trkQualityCut->GetESDtrackCuts())->SetCutGeoNcrNcl(3, 130, 0.7, 0.85, 0.7); // As in XeXe All Charged AN
+  if (useGeoCut) ((AliESDtrackCuts  *)trkQualityCut->GetESDtrackCuts())->SetCutGeoNcrNcl(3, 130, 0.7, 0.85, 0.7);  
+  if (useLooseDCAXYcut) trkQualityCut->SetDCARmax(2.4);
+  if (useLooseDCAZcut) trkQualityCut->SetDCAZmax(3.2);
+  if (useLooseXRcut) trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);
+  if (useTightXRcut) trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE); 
+  if (useLooseXR2Cls) trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.75, kTRUE);
+  if (useTightXR2Cls) trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85, kTRUE);  
+  if (useClsCut) trkQualityCut->SetTPCminNClusters(70);
+  if (useLooseChi2cut) trkQualityCut->SetTPCmaxChi2(3.5);
+  trkQualityCut->SetPtRange(0.15, 20.0);
+  trkQualityCut->SetEtaRange(-0.8, 0.8);  
+  Printf("::::: SetCustomQualityCut:: using custom track quality cuts:");
+  trkQualityCut->Print();
+  return kTRUE;
+}
+
 //-------------------------------------------------------  
 Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID, Int_t customFilterBit)
 {
@@ -215,31 +310,22 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   //Returns kTRUE if track quality cut object is successfully defined,
   //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
   //object to be configured does not exist.
-  
-  /* NOTES FROM PRODUCTION LHC13b pass3 - AOD filtered with v5-03-Rev-20
-  //(http://svnweb.cern.ch/world/wsvn/AliRoot/tags/v5-03-Rev-20/ANALYSIS/macros/AddTaskESDFilter.C)
-
   //filter bit 0: Cuts on primary tracks
   // AliESDtrackCuts* esdTrackCutsL = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-
   //filter bit 4: std but looser dca cut
   // AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
   // esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
   // esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
   // esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-
   //filter bit 5:  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
-
   //filter bit 10: standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
   //AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
-  */
 
   if ((!trkQualityCut) || (customQualityCutsID<=0) || (customQualityCutsID>=AliRsnCutSetDaughterParticle::kNcustomQualityCuts)){
     Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
     return kFALSE;
   }
-  //for pA 2013
-  //trkQualityCut->SetDefaults2011();//with filter bit=10
+
   //reset filter bit to very loose cuts 
   trkQualityCut->SetAODTestFilterBit(customFilterBit); 
   //apply all other cuts "by hand"

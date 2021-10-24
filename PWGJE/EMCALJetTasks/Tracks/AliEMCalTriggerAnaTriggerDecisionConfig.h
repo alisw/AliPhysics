@@ -6,7 +6,9 @@
 #include <TObject.h>
 #include "AliEMCalTriggerAnaHelper.h"
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerAnaTriggerDecisionConfig : public TObject {
 public:
@@ -86,10 +88,10 @@ private:
   Double_t                      fEnergyThresholds[4];                       ///< Energy thresholds applied in the analysis
   EPatchEnergyType_t            fEnergyType;                                ///< Energy type from patch used for the patch energy selection
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaTriggerDecisionConfig, 1);
-  /// \endcond
 };
+
+}
 
 }
 #endif /* */

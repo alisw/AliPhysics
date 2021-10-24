@@ -25,21 +25,28 @@ include_directories(
 # Additional includes - alphabetical order except ROOT
 include_directories(
     ${ROOT_INCLUDE_DIRS}
+    ${AliPhysics_SOURCE_DIR}/CORRFW
     ${AliPhysics_SOURCE_DIR}/OADB
-	${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+	  ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+    ${AliPhysics_SOURCE_DIR}/PWG/Tools
     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF
+    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
+		${AliPhysics_SOURCE_DIR}/EVENTMIX
 )
 
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+  AliAnalysisTaskCorrForFlow.cxx
+  AliAnalysisTaskCorrForFlowFMD.cxx
+  AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
-  AliAnalysisTaskMeanPtV2Corr.cxx
   AliAnalysisTaskUniFlow.cxx
+  AliAnalysisTaskUniFlowWithSphericity.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
   AliDecorrFlowCorrTask.cxx
   AliGFW.cxx
@@ -47,12 +54,21 @@ set(SRCS
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
+  AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
+  AliProfileBS.cxx
+  AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
   )
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
+  list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
+  list(APPEND SRCS CorrelationCalculator.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

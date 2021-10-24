@@ -134,7 +134,7 @@ void CalibratePeriod_LHC18q(TString lPeriodName = "LHC18q"){
     // --- Definition of Estimators ---
     //============================================================
 
-    AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "((fAmplitude_V0A)+(fAmplitude_V0C))/((((9.19807e+03)+(1.13465e+01)*(fEvSel_VtxZ)+(-2.66087e-01)*TMath::Power((fEvSel_VtxZ),2)+(2.15205e-02)*TMath::Power((fEvSel_VtxZ),3))/(9.19807e+03)))");
+    AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
   
   /*
   FCN=22.7833 FROM MINOS     STATUS=SUCCESSFUL     42 CALLS         273 TOTAL
@@ -181,14 +181,14 @@ void CalibratePeriod_LHC18q(TString lPeriodName = "LHC18q"){
   
   
   //Config central CL0
-  AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)/(1 + ((fEvSel_VtxZ)-1.2)*(0.0092 + ((fEvSel_VtxZ)-1.2)*(-0.0018)))");
+  AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)");
   fEstCL0 -> SetUseAnchor        ( kTRUE  ) ;
   fEstCL0 -> SetAnchorPoint      ( lDefaultCL0Anchor   ) ;
   fEstCL0 -> SetAnchorPercentile ( lDefaultCL0Percentile  ) ;
   lMultSelDefault -> AddEstimator( fEstCL0 );
   
   //Config central CL1
-  AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)/(1 + ((fEvSel_VtxZ)-1.2)*(0.0057 - ((fEvSel_VtxZ)-1.2)*(-0.0013)))");
+  AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)");
   fEstCL1 -> SetUseAnchor        ( kTRUE   ) ;
   fEstCL1 -> SetAnchorPoint      ( lDefaultCL1Anchor    ) ;
   fEstCL1 -> SetAnchorPercentile ( lDefaultCL1Percentile  ) ;
@@ -259,7 +259,7 @@ void CalibratePeriod_LHC18q(TString lPeriodName = "LHC18q"){
     //============================================================
     //lCalib -> SetInputFile  ( "~/Dropbox/MultSelCalib/LHC15o/MergedLHC15o.root");
     //lCalib -> SetInputFile  ( "/hera/alice/alberica/centrality/Trees/Singles/LHC15o/muon_calo_pass1_1301/files/AnalysisResults_244918.root");
-    lCalib -> SetInputFile  ( "LHC18q.root");
+    lCalib -> SetInputFile  ( "/storage1/grgarcia/alice/ServiceTask/LHC18q.root");
     //lCalib -> SetInputFile  ( "~/Dropbox/MultSelCalib/LHC15o/files/AnalysisResults_245064.root");
     
     lCalib -> SetBufferFile ( "buffer-LHC18q.root" );

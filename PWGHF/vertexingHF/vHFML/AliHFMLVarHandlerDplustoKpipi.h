@@ -27,13 +27,17 @@ class AliHFMLVarHandlerDplustoKpipi : public AliHFMLVarHandler
         virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
         virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliAODPidHF *pidrespo = nullptr);
 
+        void SetAddImpParProdProngs(bool add = true) {fAddImpParProdProngs = add;}
+
     private:
-        float fImpParProng[knMaxProngs] = {-999., -999., -999., -999.};  ///prong impact parameter
+        bool fAddImpParProdProngs = false;                               /// add d0K*d0pi1 and d0K*d0pi2 variables
+        float fImpParProng[knMaxProngs] = {-999., -999., -999., -999.};  /// prong impact parameter
         float fSigmaVertex = -999.;                                      /// candidate sigma vertex
-        float fNormd0MeasMinusExp = -999.;                               ///candidate topomatic variable
+        float fNormd0MeasMinusExp = -999.;                               /// candidate topomatic variable
+        float fImpParProdProngs[2] = {-999., -999.};                     /// d0K*d0pi1 and d0K*d0pi2 products
 
         /// \cond CLASSIMP
-        ClassDef(AliHFMLVarHandlerDplustoKpipi, 1); /// 
+        ClassDef(AliHFMLVarHandlerDplustoKpipi, 2); /// 
         /// \endcond
 };
 #endif

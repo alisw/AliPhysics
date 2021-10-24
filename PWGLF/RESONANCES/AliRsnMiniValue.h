@@ -24,6 +24,7 @@ public:
       kTracklets,     // event tracklets
       kPlaneAngle,    // event reaction plane angle
       kLeadingPt,     // event leading particle momentum
+      kLeadingPhi,     // event leading particle phi angle
       kEventCuts,     // -- limit of event cuts ----------------------------------------------------
       kPt,            // pair transverse momentum
       kPz,            // pair longitudinal momentum
@@ -31,6 +32,7 @@ public:
       kInvMassMother, // pair invariant mass, always returns mass of mother
       kInvMassRes,    // pair invariant mass resolution
       kInvMassDiff,   // pair invariant mass difference (MC - reconstructed)
+      kPhi,           // pair angle phi
       kEta,           // pair pseudo-rapidity
       kMt,            // pair transverse mass (need a reference mass)
       kY,             // pair rapidity (need a reference mass)
@@ -40,8 +42,13 @@ public:
       kCosThetaStarAbs,  // polarization angle
       kCosThetaJackson,  // polarization angle in Jackson frame
       kCosThetaTransversity, // polarization angle in transversity frame
+      kCosThetaHe,     //polarisation angle in HE frame
+      kCosThetaHeAbs,  //polarisation angle in HE frame
+      kPhiHePbPb5,     //angle[phi] in HE frame
+      kPhiHePP5,       //angle[phi] in HE frame
       kCosThetaToEventPlane, // polarization angle with respect to Event Plane
       kAngleLeading,  // angle to leading particle
+      kDeltaEta,      // delta eta between particle and leading
       kFirstDaughterPt,  //pt of the first daughter of the pair
       kSecondDaughterPt, //pt of the second daughter of the pair
       kFirstDaughterP,   //p of the first daughter of the pair

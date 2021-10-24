@@ -47,11 +47,9 @@
 #include <array>
 #include <iostream>
 
-/// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJetsIDcorr)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerJetsIDcorr)
 
-namespace EmcalTriggerJets {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerJetsIDcorr::AliAnalysisTaskEmcalTriggerJetsIDcorr():
     AliAnalysisTaskEmcalJet(),
@@ -79,8 +77,6 @@ void AliAnalysisTaskEmcalTriggerJetsIDcorr::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
   const std::array<TString, 3> kEmcalTriggers = {"INT7", "EJ1", "EJ2"};
-  const int kNJetPtBins = 9;
-  const int kNJetRadiusBins = 7;
 
   TLinearBinning jetptbinning(9, 20, 200), pbinning(300, 0., 30.), massbinning(600., 0., 6.), radiusBinning(10, 0., 1.);
   const TBinning *binningPID[4] = {&jetptbinning, &pbinning, &radiusBinning, &massbinning};
@@ -258,5 +254,3 @@ AliAnalysisTaskEmcalTriggerJetsIDcorr *AliAnalysisTaskEmcalTriggerJetsIDcorr::Ad
 
   return task;
 }
-
-} /* namespace EmcalTriggerJets */

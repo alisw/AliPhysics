@@ -105,13 +105,13 @@ public:
   }
   
   /**
-   * @brief Set accepted cell time range for FEE energies
-   * @param mintime Min. cell time
-   * @param maxtime Max. cell time
+   * @brief Set accepted cell time range (in ns) for FEE energies
+   * @param mintime Min. cell time (in ns)
+   * @param maxtime Max. cell time (in ns)
    */
-  void SetCellTimeRange(double mintime, double maxtime) {
-    fMinCellTime = mintime;
-    fMaxCellTime = maxtime;
+  void SetCellTimeRangeNS(double mintimens, double maxtimens) {
+    fMinCellTimeNS = mintimens;
+    fMaxCellTimeNS = maxtimens;
   }
 
   /**
@@ -223,10 +223,10 @@ protected:
   ULong_t                                 fRequestTrigger;    ///< Trigger selection bits
   TString                                 fTriggerPattern;    ///< Trigger string pattern used in addition to the trigger selection bits
 
-  AliEMCALTriggerDataGrid<double>         fCellData;          ///< Grid with summed cell data
+  AliEMCALTriggerDataGrid<double>         fCellData;          //!<! Grid with summed cell data
   std::vector<int>                        fMaskedFastors;     ///< List of masked fastors
-  Double_t                                fMinCellTime;       ///< Min. cell time for time cut
-  Double_t                                fMaxCellTime;       ///< Max. cell time for time cut
+  Double_t                                fMinCellTimeNS;     ///< Min. cell time for time cut (in ns)
+  Double_t                                fMaxCellTimeNS;     ///< Max. cell time for time cut (in ns)
 
   TString                                 fNameMaskedFastorOADB; ///< Name of the OADB container with masked fastors
   TString                                 fNameMaskedCellOADB;   ///< Name of the OADB container with masked cells
@@ -234,9 +234,10 @@ protected:
   AliOADBContainer                        *fMaskedCellOADB;   //!<! OADB container with masked cells
   AliEMCALRecoUtils                       *fRecoUtils;        //!<! EMCAL reco utils (for bad channel handling)
 
-  /// \cond CLASSIMP
+  AliEmcalFastOrMonitorTask(const AliEmcalFastOrMonitorTask &);
+  AliEmcalFastOrMonitorTask &operator=(const AliEmcalFastOrMonitorTask &);
+
   ClassDef(AliEmcalFastOrMonitorTask, 1);
-  /// \endcond
 };
 
 } /* namespace EMCAL */

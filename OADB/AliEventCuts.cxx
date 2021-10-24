@@ -6,6 +6,7 @@ using std::array;
 #include <memory>
 using std::string;
 using std::vector;
+#include <numeric>
 
 #include <TClonesArray.h>
 #include <TH1D.h>
@@ -72,7 +73,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
-  fUseITSTPCCluCorrelationCut{false},
+  fUseITSTPCCluCorrelationCut{0},
   fUseTPCTracklCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
   fEstimatorsSigmaPars{10000.,0.,0.,0.},
@@ -252,7 +253,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
   const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
   const double fb128 = fContainer.fMultTrkTPC;
-  if(((!fUseITSTPCCluCorrelationCut || (nCluSDDSSD > its_tpcclus_limit)) && 
+  if(((fUseITSTPCCluCorrelationCut<=0 || (nCluSDDSSD > its_tpcclus_limit)) && 
       (!fUseStrongVarCorrelationCut || (fContainer.fMultVZERO > vzero_tpcout_limit)) &&
       (!fUseTPCTracklCorrelationCut || (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl)))
      || fMC ) fFlag |= BIT(kTPCPileUp);
@@ -447,12 +448,25 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
   qaList->Add(fNormalisationHist);
 
   string titles[2] = {"before event cuts","after event cuts"};
+
+  int nBins{100};
+  std::array<double, 120> centBins;
+  centBins.fill(0);
+  if (fOverrideAutoTriggerMask && fTriggerMask & AliVEvent::kHighMultV0) {
+    nBins = 119;
+    for (int i = 0; i < 20; ++i)
+      centBins[i+1] = centBins[i] + 0.01;
+    std::iota(centBins.begin() + 20, centBins.end(), 1);
+  } else {
+    std::iota(centBins.begin(), centBins.end(), 0);
+  }
+
   for (int iS = 0; iS < 2; ++iS) {
     fVtz[iS] = new TH1D(Form("Vtz_%s",fkLabels[iS].data()),Form("Vertex z %s; #it{v_{z}} (cm); Events",titles[iS].data()),400,-20.,20.);
     fDeltaTrackSPDvtz[iS] = new TH1D(Form("DeltaVtz_%s",fkLabels[iS].data()),Form("Vertex tracks - Vertex SPD %s; #Delta#it{v_{z}} (cm); Events",titles[iS].data()),400,-2.,2.);
-    fCentrality[iS] = new TH1D(Form("Centrality_%s",fkLabels[iS].data()),Form("Centrality percentile %s; Centrality (%%); Events",titles[iS].data()),100,0.,100.);
-    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fkLabels[iS].data()),Form("Correlation estimators %s;%s;%s",titles[iS].data(),fCentEstimators[1].data(),fCentEstimators[0].data()),100,0.,100.,100,0.,100.);
-    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Percentile of %s; Number of tracklets",titles[iS].data(),fCentEstimators[0].data()),100,0.,100.,2000,0.,10000.);
+    fCentrality[iS] = new TH1D(Form("Centrality_%s",fkLabels[iS].data()),Form("Centrality percentile %s; Centrality (%%); Events",titles[iS].data()), nBins, centBins.data());
+    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fkLabels[iS].data()),Form("Correlation estimators %s;%s;%s",titles[iS].data(),fCentEstimators[1].data(),fCentEstimators[0].data()), nBins, centBins.data(), nBins, centBins.data());
+    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Percentile of %s; Number of tracklets",titles[iS].data(),fCentEstimators[0].data()), nBins, centBins.data(),2000,0.,10000.);
 
     qaList->Add(fVtz[iS]);
     qaList->Add(fDeltaTrackSPDvtz[iS]);
@@ -813,6 +827,9 @@ void AliEventCuts::SetupPbPb2018() {
   std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
   
   array<double,3> its_tpcclus_polcut = {-3000.,0.0099,9.426e-10};
+  if(fUseITSTPCCluCorrelationCut==2) its_tpcclus_polcut[0]=-8000.;
+  else if(fUseITSTPCCluCorrelationCut==3) its_tpcclus_polcut[0]=-12000.;
+  else if(fUseITSTPCCluCorrelationCut>3) its_tpcclus_polcut[0]=-16000.;
   std::copy(its_tpcclus_polcut.begin(),its_tpcclus_polcut.end(),fITSvsTPCcluPolCut);
   
   if (fCentralityFramework != 0) {
@@ -915,11 +932,13 @@ void AliEventCuts::SetupRun1PbPb() {
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
 
-  fCentralityFramework = 2;
-  fCentEstimators[0] = "V0M";
-  fCentEstimators[1] = "CL0";
-  fMinCentrality = 0.f;
-  fMaxCentrality = 90.f;
+  if (!fOverrideCentralityFramework) {
+    fCentralityFramework = 2; // FIXME: for the pass3 (and maybe also previous passes?) we might want to use the AliMultSelection
+    fCentEstimators[0] = "V0M";
+    fCentEstimators[1] = "CL0";
+    fMinCentrality = 0.f;
+    fMaxCentrality = 90.f;
+  }
 
   fUseEstimatorsCorrelationCut = false;
   array<double,5> vzero_tpcout_polcut{-1391.46,1.44779,4.78352e-05,-5.96914e-10,0.0};

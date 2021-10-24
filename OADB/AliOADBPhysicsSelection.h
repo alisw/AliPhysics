@@ -23,6 +23,7 @@
 #include "AliVEvent.h"
 #include "TList.h"
 #include "TMap.h"
+#include <TObjString.h>
 
 class TObjArray;
 class TArrayI;

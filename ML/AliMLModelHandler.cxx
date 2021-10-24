@@ -18,6 +18,7 @@
 #include <TFile.h>
 #include <TGrid.h>
 #include <TSystem.h>
+#include <AliDataFile.h>
 #include "AliLog.h"
 #include "AliExternalBDT.h"
 
@@ -26,7 +27,7 @@ ClassImp(AliMLModelHandler);
 /// \endcond
 
 //_______________________________________________________________________________
-AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{} {
+AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLibrary{}, fScoreCut{}, fScoreCutOpt{} {
   //
   // Default constructor
   //
@@ -35,10 +36,42 @@ AliMLModelHandler::AliMLModelHandler() : TNamed(), fModel{nullptr}, fPath{}, fLi
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const YAML::Node &node)
     : TNamed(), fModel{nullptr}, fPath{node["path"].as<std::string>()},
-      fLibrary{node["library"].as<std::string>()}, fScoreCut{node["cut"].as<double>()} {
+      fLibrary{node["library"].as<std::string>()}, fScoreCut{}, fScoreCutOpt{} {
   //
   // Standard constructor
   //
+  if(node["cut"].IsSequence())
+    fScoreCut = node["cut"].as<std::vector<double> >();
+  else
+    fScoreCut.push_back(node["cut"].as<double>());
+
+  if(node["cut_opt"]) {
+    if(node["cut_opt"].IsSequence()) {
+      if(fScoreCut.size() != node["cut_opt"].as<std::vector<std::string> >().size())
+        AliFatal("Number of score cuts different from number of score cut options! Exit");
+      for (const auto &cutOpt: node["cut_opt"].as<std::vector<std::string> >()) {
+        if(cutOpt == "lower")
+          fScoreCutOpt.push_back(kLowerCut);
+        else if(cutOpt == "upper")
+          fScoreCutOpt.push_back(kUpperCut);
+        else
+          AliFatal("Only upper or lower cuts on output scores possible, check your yaml config file! Exit");        
+      }
+    }
+    else {
+      if(node["cut_opt"].as<std::string>() == "lower")
+        fScoreCutOpt.push_back(kLowerCut);
+      else if(node["cut_opt"].as<std::string>() == "upper")
+        fScoreCutOpt.push_back(kUpperCut);
+      else
+        AliFatal("Only upper or lower cuts on output scores possible, check your yaml config file! Exit");        
+    }
+  }
+  else { // if not specified it assumes that is always lower cut
+    for (unsigned int iCut=0; iCut<fScoreCut.size(); iCut++)
+      fScoreCutOpt.push_back(kLowerCut);
+  }
+
   fModel = new AliExternalBDT();
 }
 
@@ -53,7 +86,7 @@ AliMLModelHandler::~AliMLModelHandler() {
 //_______________________________________________________________________________
 AliMLModelHandler::AliMLModelHandler(const AliMLModelHandler &source)
     : TNamed(source.GetName(), source.GetTitle()), fModel{nullptr}, fPath{source.fPath},
-      fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut} {
+      fLibrary{source.fLibrary}, fScoreCut{source.fScoreCut}, fScoreCutOpt{source.fScoreCutOpt} {
   //
   // Copy constructor
   //
@@ -72,9 +105,10 @@ AliMLModelHandler &AliMLModelHandler::operator=(const AliMLModelHandler &source)
     delete fModel;
   fModel = new AliExternalBDT(*source.fModel);
 
-  fPath      = source.fPath;
-  fLibrary   = source.fLibrary;
-  fScoreCut  = source.fScoreCut;
+  fPath        = source.fPath;
+  fLibrary     = source.fLibrary;
+  fScoreCut    = source.fScoreCut;
+  fScoreCutOpt = source.fScoreCutOpt;
 
   return *this;
 }
@@ -119,6 +153,35 @@ std::string AliMLModelHandler::ImportFile(std::string path) {
       AliFatalClass(Form("Error file %s not found! Exit", path.data()));
     }
     return path;
+  }
+
+  // check if file is on cvmfs
+  if (path.find("/cvmfs") != std::string::npos) {
+    bool checkFile = gSystem->AccessPathName(path.c_str());
+    if (checkFile) {
+      AliFatalClass(Form("Error file %s not found on CVMFS! Exit", path.data()));
+    }
+    // only skip copying for certain file types
+    std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
+    if(fileform == "so" || fileform == "yml" || fileform ==  "yaml"){
+      return path;
+    }
+  }
+
+  // check if file is on cvmfs, but still requires to set the full path (so starts with PWG or AODB)
+  if (path.rfind("PWG", 0) != std::string::npos || path.rfind("AODB", 0) != std::string::npos) {
+    std::string path_cvmfs = AliDataFile::GetFileName(path);
+    if (path_cvmfs == "") {
+      AliFatalClass(Form("Error file %s not found on CVMFS! \n  When running locally, "
+                         "please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data"
+                         "\n  or use a different folder structure in case a path on CVMFS was not intended. Exit", path.data()));
+    }
+    // only skip copying for certain file types
+    std::string fileform = path.substr(path.find_last_of(".")+1,path.size());
+    if(path.find("root:") == std::string::npos && (fileform == "so" || fileform == "yml" || fileform ==  "yaml")){
+      return path_cvmfs;
+    }
+    path = path_cvmfs;
   }
     
   // check if file is on alien

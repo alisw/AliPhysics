@@ -39,7 +39,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 AliCaloTrackReader * ConfigureReader
 (TString  inputDataType = "AOD"   , TString  calorimeter = "EMCAL"  ,
  Bool_t   useKinematics = kFALSE  , Bool_t   simulation = kFALSE    ,
- Bool_t   eventsel      = kFALSE  , Bool_t   nonlin = kTRUE         , Bool_t  timecut = kFALSE,
+ Bool_t   eventsel      = kFALSE  , Int_t    nonlin = 2             , Bool_t  timecut = kFALSE,
  TString  collision     = "pp"    , TString  trigger="MB"           , TString firedTrigger="EG1",
  TString  clustersArray = "V1"    , TString  jetBranchName = "jets" , TString jetBkgBranchName = "jets",
  Bool_t   mix           = kFALSE  , Float_t  minCen = -1            , Float_t  maxCen = -1,
@@ -47,7 +47,7 @@ AliCaloTrackReader * ConfigureReader
 
 AliCalorimeterUtils* ConfigureCaloUtils
  (TString clustersArray = "V1"  , TString collision     = "pp"  ,
-  Bool_t  nonlin        = kTRUE , Bool_t  exotic        = kTRUE ,
+  Int_t  nonlin         = 2 ,     Bool_t  exotic        = kTRUE ,
   Bool_t simulation     = kFALSE, Bool_t  timecut       = kFALSE,
   Int_t  debug          = -1    , Bool_t  printSettings = kFALSE );
 
@@ -113,7 +113,7 @@ TString kGammaJetCorrelationName = "";
 /// \param simulation : A bool identifying the data as simulation
 /// \param eventsel : reject bad events (pile-up ...)
 /// \param exotic : reject exotic clusters
-/// \param nonlin : A bool to set the use of the non linearity correction
+/// \param nonlin : An int to set the use of the non linearity correction
 /// \param collision : A string with the colliding system
 /// \param trigger : A string with the trigger class, abbreviated, defined in method belowSetTriggerMaskFromName()
 /// \param firedTrigger : In case of events with 2 L1 triggers, specify which one
@@ -143,7 +143,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
 								const Bool_t   simulation    = kFALSE,
 								const Bool_t   eventsel      = kFALSE,
 								const Bool_t   exotic        = kTRUE,
-								const Bool_t   nonlin        = kFALSE,
+								const Int_t   nonlin         = 0,
 								const TString  collision     = "pp",
 								const TString  trigger       = "MB",
 								const TString  firedTrigger  = "EG1",
@@ -283,7 +283,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskGammaJetCorrelation (
 ///
 AliCaloTrackReader * ConfigureReader
 (TString inputDataType, TString calorimeter , Bool_t  useKinematics, Bool_t   simulation,
- Bool_t  eventsel     , Bool_t nonlin       , Bool_t  timecut      , TString  collision ,
+ Bool_t  eventsel     , Int_t nonlin       , Bool_t  timecut      , TString  collision ,
  TString trigger      , TString firedTrigger, TString clustersArray, 
  TString jetBranchName, TString jetBkgBranchName,
  Bool_t  mix          , Float_t minCen      , Float_t maxCen,
@@ -553,7 +553,7 @@ AliCaloTrackReader * ConfigureReader
 ///
 AliCalorimeterUtils* ConfigureCaloUtils
  ( TString clustersArray, TString collision, 
-   Bool_t  nonlin       , Bool_t  exotic, 
+   Int_t  nonlin       , Bool_t  exotic, 
    Bool_t  simulation   , Bool_t  timecut  , 
    Int_t   debug        , Bool_t  printSettings)
 {

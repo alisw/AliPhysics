@@ -684,6 +684,61 @@ Int_t AliRDHFCutsXictopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
     
     return returnvalue;
 }
+
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsXictopKpi::IsSelectedCombinedPIDOnlyProton(AliAODRecoDecayHF* obj) {
+
+  //
+  //  Bayesian PID checked only for proton hypothesis
+  //
+    
+    if(!fUsePID || !obj) {return 3;}
+    Int_t okXicpKpi=0,okXicpiKp=0;
+    Int_t returnvalue=0;
+    Bool_t isPeriodd=fPidHF->GetOnePad();
+    Bool_t isMC=fPidHF->GetMC();
+
+    if(isPeriodd) {
+	    fPidObjprot->SetOnePad(kTRUE);
+	    fPidObjpion->SetOnePad(kTRUE);
+    }
+    if(isMC) {
+	    fPidObjprot->SetMC(kTRUE);
+	    fPidObjpion->SetMC(kTRUE);
+    }
+
+    AliVTrack *track0=dynamic_cast<AliVTrack*>(obj->GetDaughter(0));
+    AliVTrack *track2=dynamic_cast<AliVTrack*>(obj->GetDaughter(2));
+    if (!track0 || !track2) return 0;
+    Double_t prob0[AliPID::kSPECIES];
+    Double_t prob2[AliPID::kSPECIES];
+    if(obj->Pt()<3. && track0->P()<1.) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+    if(obj->Pt()<3. && track0->P()<1.) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+
+    if(obj->Pt()<3. && track2->P()<1.) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+    if(obj->Pt()<3. && track2->P()<1.) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+
+    // check only proton
+    if(fPIDThreshold[AliPID::kProton]>0.){  // threshold probability criterion
+      okXicpiKp= prob2[AliPID::kProton]>fPIDThreshold[AliPID::kProton];
+      okXicpKpi= prob0[AliPID::kProton]>fPIDThreshold[AliPID::kProton];
+    }
+    else{ // maximum probability criterion		    
+      if(TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton]) okXicpKpi = 1;  
+      if(TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton]) okXicpiKp = 1; 
+	  }
+    
+    if(okXicpKpi) returnvalue=1; //cuts passed as Xic->pKpi
+    if(okXicpiKp) returnvalue=2; //cuts passed as Xic->piKp
+    if(okXicpKpi && okXicpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
+    
+    return returnvalue;
+}
+
+
 //-----------------------
 Int_t AliRDHFCutsXictopKpi::CombinePIDCuts(Int_t returnvalue, Int_t returnvaluePID) const {
 
@@ -1559,6 +1614,17 @@ void AliRDHFCutsXictopKpi::ExplorePID(AliPIDResponse* pid_resp, AliAODRecoDecayH
     if( -3< nSigma_TPC_prot_0 && nSigma_TPC_prot_0<3 && func_TOFprot_down(pt_prong0)<nSigma_TOF_prot_0 && nSigma_TOF_prot_0<func_TOFprot_up(pt_prong0) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_pKpi_passed = kTRUE;
     if( -3< nSigma_TPC_prot_2 && nSigma_TPC_prot_2<3 && func_TOFprot_down(pt_prong2)<nSigma_TOF_prot_2 && nSigma_TOF_prot_2<func_TOFprot_up(pt_prong2) && func_TPCkaon_down(pt_prong1)<nSigma_TPC_kaon_1 && nSigma_TPC_kaon_1<func_TPCkaon_up(pt_prong1) && func_TOFkaon_down(pt_prong1)<nSigma_TOF_kaon_1 && nSigma_TOF_kaon_1<func_TOFkaon_up(pt_prong1) )   is_piKp_passed = kTRUE;
     break;
+  // Bayes PID only for proton hypothesis on 1st and 3rd prong
+  case 11:{
+    Int_t isSelPID = IsSelectedCombinedPIDOnlyProton(cand);
+    if(isSelPID==1)           is_pKpi_passed = kTRUE;   // pKpi
+    else if(isSelPID==2)      is_piKp_passed = kTRUE;   // pikp
+    else if(isSelPID==3){ // both possible
+      is_pKpi_passed = kTRUE;
+      is_piKp_passed = kTRUE;
+    }
+    break;
+  }
 
   default:
     break;

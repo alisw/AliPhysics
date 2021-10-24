@@ -1,11 +1,12 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+Class steers the initialization and calculation of n-particle correlations. Uses recursive function, all terms are calculated only once.
+Latest version includes the calculation of any number of gaps and any combination of harmonics (including eg symmetric cumulants, etc.)
+If used, modified, or distributed, please aknowledge the author of this code.
 */
+
 #include "AliGFW.h"
-/*TODOs:
-need to add flags to have control over what is added, e.g. what happens, when I have several overlapping regions of different types: reference, pT-diff unID and pT-diff. ID?
-*/
 AliGFW::AliGFW():
   fInitialized(kFALSE)
 {
@@ -105,10 +106,14 @@ TComplex AliGFW::TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, Ali
   TComplex formula = part1*part2-part3;
   return formula;
 };
-TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> hars, vector<Int_t> pows) {
-  if(pows.size()==0) //if powers are not initialized, initialize them to 1
-    for(Int_t i=0; i<(Int_t)hars.size(); i++)
-      pows.push_back(1);
+TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars) {
+  vector<Int_t> pows;
+  for(Int_t i=0; i<(Int_t)hars.size(); i++)
+    pows.push_back(1);
+  return RecursiveCorr(qpoi, qref, qol, ptbin, hars, pows);
+};
+
+TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars, vector<Int_t> &pows) {
   if((pows.at(0)!=1) && qol) qpoi=qol; //if the power of POI is not unity, then always use overlap (if defined).
   //Only valid for 1 particle of interest though!
   if(hars.size()<2) return qpoi->Vec(hars.at(0),pows.at(0),ptbin);
@@ -118,17 +123,32 @@ TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGF
   hars.erase(hars.end()-1);
   pows.erase(pows.end()-1);
   TComplex formula = RecursiveCorr(qpoi, qref, qol, ptbin, hars, pows)*qref->Vec(harlast,powlast);
-  for(Int_t i=0;i<(Int_t)hars.size();i++) {
-    vector<Int_t> lhars = hars;
-    vector<Int_t> lpows = pows;
-    lhars.at(i)+=harlast;
-    lpows.at(i)+=powlast;
+  Int_t lDegeneracy=1;
+  Int_t harSize = (Int_t)hars.size();
+  for(Int_t i=harSize-1;i>=0;i--) {
+  //checking if current configuration is a permutation of the next one.
+  //Need to have more than 2 harmonics though, otherwise it doesn't make sense.
+    if(i>2) { //only makes sense when we have more than two harmonics remaining
+      if(hars.at(i) == hars.at(i-1) && pows.at(i) == pows.at(i-1)) {//if it is a permutation, then increase degeneracy and continue;
+        lDegeneracy++;
+        continue;
+      };
+    }
+    hars.at(i)+=harlast;
+    pows.at(i)+=powlast;
     //The issue is here. In principle, if i=0 (dif), then the overlap is only qpoi (0, if no overlap);
     //Otherwise, if we are not working with the 1st entry (dif.), then overlap will always be from qref
     //One should thus (probably) make a check if i=0, then qovl=qpoi, otherwise qovl=qref. But need to think more
     //-- This is not aplicable anymore, since the overlap is explicitly specified
-    formula-=RecursiveCorr(qpoi, qref, qol, ptbin, lhars, lpows);
+    TComplex subtractVal = RecursiveCorr(qpoi, qref, qol, ptbin, hars, pows);
+    if(lDegeneracy>1) { subtractVal *= lDegeneracy; lDegeneracy=1; };
+    formula-=subtractVal;
+    hars.at(i)-=harlast;
+    pows.at(i)-=powlast;
+
   };
+  hars.push_back(harlast);
+  pows.push_back(powlast);
   return formula;
 };
 void AliGFW::Clear() {
@@ -146,11 +166,6 @@ TComplex AliGFW::Calculate(TString config, Bool_t SetHarmsToZero) {
   TComplex ret(1,0);
   while(config.Tokenize(tmp,sz1,"}")) {
     if(SetHarmsToZero) SetHarmonicsToZero(tmp);
-    /*Int_t ind=FindCalculated(tmp);
-    if(ind>=0) {
-      ret*=fCalculatedQs.at(ind);
-      continue;
-    };*/
     TComplex val=CalculateSingle(tmp);
     ret*=val;
     fCalculatedQs.push_back(val);
@@ -227,6 +242,9 @@ AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config, TString head, Boo
   Int_t counter=0;
   while(config.Tokenize(ts,szend,"{")) {
     counter++;
+    ReturnConfig.Regs.push_back(vector<Int_t> {});
+    ReturnConfig.Hars.push_back(vector<Int_t> {});
+    ReturnConfig.Overlap.push_back(-1); //initially, assume no overlap
     sz1=0;
     //Fetch regions
     while(ts.Tokenize(ts2,sz1," ")) {
@@ -239,24 +257,15 @@ AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config, TString head, Boo
         printf("Could not find region named %s!\n",ts2.Data());
         break;
       };
-      if(counter==1) {
-        if(!isOverlap)
-          ReturnConfig.Regs.push_back(ind);
-        else ReturnConfig.Overlap1 = ind;
-      } else {
-        if(!isOverlap)
-          ReturnConfig.Regs2.push_back(ind);
-        else ReturnConfig.Overlap2 = ind;
-      }
+      if(!isOverlap)
+        ReturnConfig.Regs.at(counter-1).push_back(ind);
+      else ReturnConfig.Overlap.at((int)ReturnConfig.Overlap.size()-1) = ind;
     };
     TString harstr;
     config.Tokenize(harstr,szend,"}");
     Ssiz_t dummys=0;
     //Fetch harmonics
-    if(counter==1)
-      while(harstr.Tokenize(ts,dummys," ")) ReturnConfig.Hars.push_back(ts.Atoi());
-    else
-      while(harstr.Tokenize(ts,dummys," ")) ReturnConfig.Hars2.push_back(ts.Atoi());
+    while(harstr.Tokenize(ts,dummys," ")) ReturnConfig.Hars.at(counter-1).push_back(ts.Atoi());
   };
   ReturnConfig.Head = head;
   ReturnConfig.pTDif = ptdif;
@@ -270,29 +279,31 @@ TComplex AliGFW::Calculate(Int_t poi, Int_t ref, vector<Int_t> hars, Int_t ptbin
   return RecursiveCorr(qpoi, qref, qovl, ptbin, hars);
 };
 TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap) {
-  if(corconf.Regs.size()==0) return TComplex(0,0);
-  Int_t poi = corconf.Regs.at(0);
-  Int_t ref = (corconf.Regs.size()>1)?corconf.Regs.at(1):corconf.Regs.at(0);
-  AliGFWCumulant *qref = &fCumulants.at(ref);
-  AliGFWCumulant *qpoi = &fCumulants.at(poi);
-  AliGFWCumulant *qovl=0;
-  if(corconf.Overlap1 > -1)
-    qovl = DisableOverlap?0:(&fCumulants.at(corconf.Overlap1));//;DisableOverlap?0:qpoi;
-  else if(ref==poi) qovl = qref; //If ref and poi are the same, then the same is for overlap. Only, when OL not explicitly defined
-  if(!qpoi->IsPtBinFilled(ptbin)) return TComplex(0,0);
-  //if(!qref->IsPtBinFilled(ptbin)) return TComplex(0,0);
-  if(SetHarmsToZero) for(Int_t i=0;i<(Int_t)corconf.Hars.size();i++) corconf.Hars.at(i) = 0;
-  TComplex retval = RecursiveCorr(qpoi, qref, qovl, ptbin, corconf.Hars);
-  if(corconf.Regs2.size()==0) return retval;
-  poi = corconf.Regs2.at(0);
-  ref = (corconf.Regs2.size()>1)?corconf.Regs2.at(1):corconf.Regs2.at(0);
-  qref = &fCumulants.at(ref);
-  qpoi = &fCumulants.at(poi);
-  if(corconf.Overlap2 > -1)
-    qovl = DisableOverlap?0:(&fCumulants.at(corconf.Overlap2));//;DisableOverlap?0:qpoi;
-  else if(ref==poi) qovl = qref; //Only when OL is not explicitly defined, then set it to ref/POI if they are the same
-  if(SetHarmsToZero) for(Int_t i=0;i<(Int_t)corconf.Hars2.size();i++) corconf.Hars2.at(i) = 0;
-  retval*=RecursiveCorr(qpoi, qref, qovl, 0, corconf.Hars2);
+  if(corconf.Regs.size()==0) return TComplex(0,0); //Check if we have any regions at all
+  TComplex retval(1,0);
+  for(Int_t i=0;i<(Int_t)corconf.Regs.size();i++) { //looping over all regions
+    if(corconf.Regs.at(i).size()==0)  return TComplex(0,0); //again, if no regions in the current subevent, then quit immediatelly
+    //picking up the indecies of regions...
+    Int_t poi = corconf.Regs.at(i).at(0);
+    Int_t ref = (corconf.Regs.at(i).size()>1)?corconf.Regs.at(i).at(1):corconf.Regs.at(i).at(0);
+    Int_t ovl = corconf.Overlap.at(i);
+    //and regions themselves
+    AliGFWCumulant *qref = &fCumulants.at(ref);
+    AliGFWCumulant *qpoi = &fCumulants.at(poi);
+    if(!qref->IsPtBinFilled(ptbin)) return TComplex(0,0); //if REF is not filled, don't even continue. Could be redundant, but should save little CPU time
+    if(!qpoi->IsPtBinFilled(ptbin)) return TComplex(0,0);//if POI is not filled, don't even continue. Could be redundant, but should save little CPU time
+    AliGFWCumulant *qovl=0;
+    //Check if in the ref. region we have enough particles (no. of particles in the region >= no of harmonics for subevent)
+    Int_t sz1 = corconf.Hars.at(i).size();
+    if(poi!=ref) sz1--;
+    if(qref->GetN() < sz1) return TComplex(0,0);
+    //Then, figure the overlap
+    if(ovl > -1) //if overlap is defined, then (unless it's explicitly disabled)
+      qovl = DisableOverlap?0:&fCumulants.at(ovl);
+    else if(ref==poi) qovl = qref; //If ref and poi are the same, then the same is for overlap. Only, when OL not explicitly defined
+    if(SetHarmsToZero) for(Int_t j=0;j<(Int_t)corconf.Hars.at(i).size();j++) corconf.Hars.at(i).at(j) = 0;
+    retval *= RecursiveCorr(qpoi, qref, qovl, ptbin, corconf.Hars.at(i));
+  }
   return retval;
 };
 

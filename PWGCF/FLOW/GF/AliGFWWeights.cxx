@@ -1,6 +1,8 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the non-uniform acceptance correction.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #include "AliGFWWeights.h"
 #include "TMath.h"
@@ -221,8 +223,8 @@ void AliGFWWeights::CreateNUE(Bool_t IntegrateOverCentrality) {
     return;
   };
 };
-void AliGFWWeights::ReadAndMerge(const char *filelinks) {
-  FILE *flist = fopen(filelinks,"r");
+void AliGFWWeights::ReadAndMerge(TString filelinks, TString listName, Bool_t addData, Bool_t addRec, Bool_t addGen) {
+  FILE *flist = fopen(filelinks.Data(),"r");
   char str[150];
   Int_t nFiles=0;
   while(fscanf(flist,"%s\n",str)==1) nFiles++;
@@ -231,17 +233,17 @@ void AliGFWWeights::ReadAndMerge(const char *filelinks) {
     printf("No files to read!\n");
     return;
   };
-  if(!fW_data) {
+  if(!fW_data && addData) {
     fW_data = new TObjArray();
     fW_data->SetName("Weights_Data");
     fW_data->SetOwner(kTRUE);
   };
-  if(!fW_mcrec) {
+  if(!fW_mcrec && addRec) {
     fW_mcrec = new TObjArray();
     fW_mcrec->SetName("Weights_MCRec");
     fW_mcrec->SetOwner(kTRUE);
   };
-  if(!fW_mcgen) {
+  if(!fW_mcgen && addGen) {
     fW_mcgen = new TObjArray();
     fW_mcgen->SetName("Weights_MCGen");
     fW_mcgen->SetOwner(kTRUE);
@@ -257,16 +259,16 @@ void AliGFWWeights::ReadAndMerge(const char *filelinks) {
       tf->Close();
       continue;
     };
-    TList *tl = (TList*)tf->Get("OutputList");
+    TList *tl = (TList*)tf->Get(listName.Data());
     AliGFWWeights *tw = (AliGFWWeights*)tl->FindObject(this->GetName());
     if(!tw) {
       printf("Could not fetch weights object from %s\n",str);
       tf->Close();
       continue;
     };
-    AddArray(fW_data,tw->GetDataArray());
-    AddArray(fW_mcrec,tw->GetRecArray());
-    AddArray(fW_mcgen,tw->GetGenArray());
+    if(addData) AddArray(fW_data,tw->GetDataArray());
+    if(addRec) AddArray(fW_mcrec,tw->GetRecArray());
+    if(addGen) AddArray(fW_mcgen,tw->GetGenArray());
     tf->Close();
     delete tw;
   };

@@ -6,6 +6,7 @@
 // Authors: Svein Lindal, Daniel Lohner												*
 // Authors: Ana Marin for Identified charged
 
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
@@ -19,8 +20,8 @@
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
-class AliKFVertex;
-class AliKFParticle;
+class AliGAKFVertex;
+class AliGAKFParticle;
 class TH1F;
 class TH2F;
 class AliPIDResponse;

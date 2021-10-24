@@ -31,6 +31,7 @@
 
 /// \file AliQnCorrectionsInputGainEqualization.cxx
 /// \brief Implementation of procedures for gain equalization on input data.
+#include <TObjString.h>
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileChannelizedIngress.h"
 #include "AliQnCorrectionsProfileChannelized.h"

@@ -28,7 +28,7 @@
 //  (a) CNS, the University of Tokyo
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp
 //-------------------------------------------------------------------------
-
+#include <TObjString.h>
 #include <TSystem.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -75,7 +75,7 @@
 #include "AliVertexerTracks.h"
 #include "AliEventPoolManager.h"
 #include "AliNormalizationCounter.h"
-
+#include "AliVertexingHFUtils.h"  // new
 using std::cout;
 using std::endl;
 
@@ -102,6 +102,9 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fEleVariablesTree(0),
   fCascVariablesTree(0),
   fMCVariablesTree(0),
+  fCorrelationVariablesTree(0),
+  fMCEleVariablesTree(0),
+  fMCCascVariablesTree(0),
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
@@ -112,6 +115,9 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fCandidateEleVariables(),
   fCandidateCascVariables(),
   fCandidateMCVariables(),
+  fCorrelationVariables(),
+  fCandidateMCEleVariables(),
+  fCandidateMCCascVariables(),
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
@@ -171,18 +177,40 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
-	fCounter(0),
-	fHistonEvtvsRunNumber(0),
-	fHistonElevsRunNumber(0),
-	fHistonOmegavsRunNumber(0),
+  fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
+  fHistoMassConversionsMin(0),
+  fHistoMassConversionsSameSignMin(0),
+  fHistoOmegacMCGen(0),
+  fHistoOmegacMCS(0),
+  fHistoResponseEleOmegaPt(0),
+  fHistoOmegaMCGen(0),
+  fHistoOmegaMCS(0),
+  fHistoCascOmegaMCGen(0),
+  fHistoCascOmegaMCGen1(0),
+  fHistoCascOmegaMCGen2(0),
+  fHistoCascOmegaMCS(0),
+  fHistoCascOmegaMCS1(0),
+  fHistoCascOmegaMCS2(0),
+  fHistoElectronMCGen(0),
+  fHistoElectronMCS(0),
+  fHistoOmegacElectronMCGen(0),
+  fHistoOmegacElectronMCGen1(0),
+  fHistoOmegacElectronMCGen2(0),
+  fHistoOmegacElectronMCS(0),
+  fHistoOmegacElectronMCS1(0),
+  fHistoOmegacElectronMCS2(0),
+  fCounter(0),
+  fHistonEvtvsRunNumber(0),
+  fHistonElevsRunNumber(0),
+  fHistonOmegavsRunNumber(0),
   fDoEventMixing(0),
-	fNumberOfEventsForMixing		(5),
-	fNzVtxBins					(0), 
-	fNCentBins					(0),
-	fNOfPools(1),
-	fEventBuffer(0x0),
-	fEventInfo(0x0),
-	fElectronTracks(0x0)
+  fNumberOfEventsForMixing(5),
+  fNzVtxBins(0),
+  fNCentBins(0),
+  fNOfPools(1),
+  fEventBuffer(0x0),
+  fEventInfo(0x0),
+  fElectronTracks(0x0)
 {
   //
   // Default Constructor. 
@@ -191,7 +219,7 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
 
 //___________________________________________________________________________
 AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegafromAODtracks(const Char_t* name,
-									     AliRDHFCutsOmegactoeleOmegafromAODtracks* analCuts, 
+									     AliRDHFCutsOmegactoeleOmegafromAODtracks* analCuts,
 									     Bool_t writeVariableTree) :
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
@@ -210,6 +238,9 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fEleVariablesTree(0),
   fCascVariablesTree(0),
   fMCVariablesTree(0),
+  fCorrelationVariablesTree(0),
+  fMCEleVariablesTree(0),
+  fMCCascVariablesTree(0),
   fReconstructPrimVert(kFALSE),
   fIsMB(kFALSE),
   fIsSemi(kFALSE),
@@ -220,6 +251,9 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fCandidateEleVariables(),
   fCandidateCascVariables(),
   fCandidateMCVariables(),
+  fCorrelationVariables(),
+  fCandidateMCEleVariables(),
+  fCandidateMCCascVariables(),
   fVtx1(0),
   fV1(0),
   fVtxZ(0),
@@ -279,18 +313,40 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   fHistoElectronTPCPIDSelTOF(0),
   fHistoElectronTPCPIDSelTOFSmallEta(0),
   fHistoElectronTPCPIDSelTOFLargeEta(0),
-	fCounter(0),
-	fHistonEvtvsRunNumber(0),
-	fHistonElevsRunNumber(0),
-	fHistonOmegavsRunNumber(0),
+  fGTI(0),fGTIndex(0), fTrackBuffSize(19000),
+  fHistoMassConversionsMin(0),
+  fHistoMassConversionsSameSignMin(0),
+  fHistoOmegacMCGen(0),
+  fHistoOmegacMCS(0),
+  fHistoResponseEleOmegaPt(0),
+  fHistoOmegaMCGen(0),
+  fHistoOmegaMCS(0),
+  fHistoCascOmegaMCGen(0),
+  fHistoCascOmegaMCGen1(0),
+  fHistoCascOmegaMCGen2(0),
+  fHistoCascOmegaMCS(0),
+  fHistoCascOmegaMCS1(0),
+  fHistoCascOmegaMCS2(0),
+  fHistoElectronMCGen(0),
+  fHistoElectronMCS(0),
+  fHistoOmegacElectronMCGen(0),
+  fHistoOmegacElectronMCGen1(0),
+  fHistoOmegacElectronMCGen2(0),
+  fHistoOmegacElectronMCS(0),
+  fHistoOmegacElectronMCS1(0),
+  fHistoOmegacElectronMCS2(0),
+  fCounter(0),
+  fHistonEvtvsRunNumber(0),
+  fHistonElevsRunNumber(0),
+  fHistonOmegavsRunNumber(0),
   fDoEventMixing(0),
-	fNumberOfEventsForMixing		(5),
-	fNzVtxBins					(0), 
-	fNCentBins					(0),
-	fNOfPools(1),
-	fEventBuffer(0x0),
-	fEventInfo(0x0),
-	fElectronTracks(0x0)
+  fNumberOfEventsForMixing(5),
+  fNzVtxBins(0),
+  fNCentBins(0),
+  fNOfPools(1),
+  fEventBuffer(0x0),
+  fEventInfo(0x0),
+  fElectronTracks(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -305,6 +361,9 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::AliAnalysisTaskSEOmegac2eleOmegaf
   DefineOutput(6,TTree::Class());  //My private output
   DefineOutput(7,TTree::Class());  //My private output
   DefineOutput(8,AliNormalizationCounter::Class());
+  DefineOutput(9,TTree::Class()); // My private output
+  DefineOutput(10,TTree::Class()); // My private output
+  DefineOutput(11,TTree::Class()); // My private output
 }
 
 //___________________________________________________________________________
@@ -351,8 +410,23 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::~AliAnalysisTaskSEOmegac2eleOmega
     delete fMCVariablesTree;
     fMCVariablesTree = 0;
   }
-
-
+ if (fCorrelationVariablesTree) {
+    delete fCorrelationVariablesTree;
+    fCorrelationVariablesTree = 0;
+    }
+ if (fMCEleVariablesTree) {
+    delete fMCEleVariablesTree;
+    fMCEleVariablesTree = 0;
+    }
+ if (fMCCascVariablesTree) {
+    delete fMCCascVariablesTree;
+    fMCCascVariablesTree = 0;
+    }
+    
+ if(fCounter){
+    delete fCounter;
+    fCounter = 0;
+    }
 }
 
 //_________________________________________________
@@ -389,6 +463,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
 
   fCEvents->Fill(1);
+  fEvNumberCounter++;
 
   //------------------------------------------------
   // First check if the event has proper vertex and B
@@ -434,7 +509,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
       fCEvents->Fill(17); // in case of MC events
     }
     if ((TMath::Abs(zMCVertex) < fAnalCuts->GetMaxVtxZ()) && (!fAnalCuts->IsEventRejectedDuePhysicsSelection()) && (!fAnalCuts->IsEventRejectedDueToTrigger())) {
-			MakeMCAnalysis(mcArray);
+            Bool_t selevt = MakeMCAnalysis(mcArray);
+            if(!selevt) return;
 		}
   }
 
@@ -450,12 +526,19 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
   fV1 = new AliESDVertex(pos,cov,100.,100,fVtx1->GetName());
 	fVtxZ = pos[2];
 
-  Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
-  if(!fIsTriggerNotOK) fCEvents->Fill(3);
-  if(!fIsEventSelected) {
+ // Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
+ // if(!fIsTriggerNotOK) fCEvents->Fill(3);
+  
+    Bool_t fIsTriggerNotOK = fAnalCuts->IsEventRejectedDueToTrigger();
+    Bool_t fIsPhysSelNotOK = fAnalCuts->IsEventRejectedDuePhysicsSelection();
+    Bool_t fIsNoVertex = fAnalCuts->IsEventRejectedDueToNotRecoVertex();
+    if(!fIsTriggerNotOK && !fIsPhysSelNotOK && !fIsNoVertex && fabs(fVtx1->GetZ())<fAnalCuts->GetMaxVtxZ()) fCEvents->Fill(3);
+    
+    if(!fIsEventSelected) {
     delete fV1;
     return;
   }
+    
   fCEvents->Fill(4);
 
   fIsMB=(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
@@ -475,6 +558,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
   if(fIsMB&fIsCent) fHTrigger->Fill(11);
   if(fIsINT7&fIsEMC7) fHTrigger->Fill(12);
 
+ 
 	if(fUseCentralityV0M){
 		AliCentrality *cent = aodEvent->GetCentrality();
 		fCentrality = cent->GetCentralityPercentile("V0M");
@@ -485,8 +569,9 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
     delete fV1;
     return;
   }
+   
   fHCentrality->Fill(fCentrality);
-	fEvNumberCounter++;
+  fEvNumberCounter++;
 
 	Int_t runnumber_offset = 0;
 	Int_t runnumber = aodEvent->GetRunNumber();
@@ -511,15 +596,17 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
   // Check if the event has v0 candidate
   //------------------------------------------------
   //Int_t nv0 = aodEvent->GetNumberOfV0s();
+
   fCEvents->Fill(5);
-
-
+   
   //------------------------------------------------
   // Main analysis done in this function
   //------------------------------------------------
+ 
+  fAnalCuts->SetMagneticField(fBzkG);
+  fAnalCuts->SetPrimaryVertex(pos);
   MakeAnalysis(aodEvent,mcArray);
-
-
+   
   PostData(1,fOutput);
   PostData(3,fOutputAll);
   PostData(4,fVariablesTree);
@@ -527,7 +614,10 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserExec(Option_t *)
   PostData(6,fCascVariablesTree);
   PostData(7,fMCVariablesTree);
   PostData(8,fCounter);    
-
+  PostData(9,fCorrelationVariablesTree);
+  PostData(10,fMCEleVariablesTree);
+  PostData(11,fMCCascVariablesTree);
+    
   fIsEventSelected=kFALSE;
 
   delete fV1;
@@ -593,6 +683,15 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserCreateOutputObjects()
 
   DefineMCTreeVariables();
   PostData(7,fMCVariablesTree);
+    
+  DefineCorrelationTreeVariables();
+  PostData(9,fCorrelationVariablesTree); // new
+    
+  DefineMCEleTreeVariables();
+  PostData(10,fMCEleVariablesTree);
+ 
+  DefineMCCascTreeVariables();
+  PostData(11,fMCCascVariablesTree);
 
   //Counter for Normalization
   TString normName="NormalizationCounter";
@@ -602,8 +701,12 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserCreateOutputObjects()
   fCounter->Init();
   PostData(8,fCounter);
 
-	if(fDoEventMixing){
-		fElectronTracks = new TObjArray();
+  fGTI = new AliAODTrack *[fTrackBuffSize];
+  fGTIndex = new Int_t [fTrackBuffSize];
+
+   /*
+    if(fDoEventMixing){
+		fElectronTracks = new TObjArray();    //TObjArray* fElectronTracks; /// array of electron-compatible tracks
 		fElectronTracks->SetOwner();
 
 		fNOfPools=fNCentBins*fNzVtxBins;
@@ -616,8 +719,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::UserCreateOutputObjects()
 			fEventBuffer[i]->Branch("earray", "TObjArray", &fElectronTracks);
 		}
 	}
-
-
+*/
+    
   return;
 }
 
@@ -633,19 +736,20 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeAnalysis
   //------------------------------------------------
   // Select good track before hand to save time
   //------------------------------------------------
-	if(fDoEventMixing && fElectronTracks) fElectronTracks->Delete();
-
+	
+  if (fDoEventMixing && fElectronTracks) fElectronTracks->Delete();
   Int_t nCascs= aodEvent->GetNumberOfCascades();
   Int_t nTracks= aodEvent->GetNumberOfTracks();
-
+    
   Bool_t  seleTrkFlags[nTracks];
-  Int_t nSeleTrks=0;
+  Int_t   nSeleTrks=0;
   SelectTrack(aodEvent,nTracks,nSeleTrks,seleTrkFlags,mcArray);
 
   Bool_t  seleCascFlags[nCascs];
-  Int_t     nSeleCasc=0;
+  Int_t   nSeleCasc=0;
   SelectCascade(aodEvent,nCascs,nSeleCasc,seleCascFlags,mcArray);
 
+ 
 	Int_t runnumber_offset = 0;
 	Int_t runnumber = aodEvent->GetRunNumber();
 	if(runnumber<=117222&&runnumber>=114931){
@@ -666,6 +770,22 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeAnalysis
 	fHistonElevsRunNumber->Fill(runnumber-runnumber_offset,nSeleTrks);
 	fHistonOmegavsRunNumber->Fill(runnumber-runnumber_offset,nSeleCasc);
 
+    //------------------------------------------------
+    // Fill pool and single tree
+    //------------------------------------------------
+    for (Int_t itrk = 0; itrk<nTracks; itrk++) {
+        if(!seleTrkFlags[itrk]) continue;
+        AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
+        
+        FillElectronROOTObjects(trk,aodEvent,mcArray);
+    }
+    for (Int_t icasc = 0; icasc<nCascs; icasc++) {
+        if(!seleCascFlags[icasc]) continue;
+        AliAODcascade *casc = aodEvent->GetCascade(icasc);
+        if(!casc) continue;
+        
+        FillCascROOTObjects(casc,aodEvent,mcArray);
+    }
   //------------------------------------------------
   // Cascade loop 
   //------------------------------------------------
@@ -677,41 +797,43 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeAnalysis
     AliAODTrack *cptrack =  (AliAODTrack*)(casc->GetDaughter(0));
     AliAODTrack *cntrack =  (AliAODTrack*)(casc->GetDaughter(1));
     AliAODTrack *cbtrack =  (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
-
+     
     //------------------------------------------------
     // track loop 
     //------------------------------------------------
     for (Int_t itrk = 0; itrk<nTracks; itrk++) {
-      if(!seleTrkFlags[itrk]) continue;
-      AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
-      if(trk->GetID()<0) continue;
+        if(!seleTrkFlags[itrk]) continue;
+        AliAODTrack *trk = (AliAODTrack*)aodEvent->GetTrack(itrk);
+        
+        AliAODTrack *trkpid = 0;
+        if(fAnalCuts->GetProdAODFilterBit()==7){
+            trkpid = fGTI[-trk->GetID()-1];
+        }else{
+            trkpid = trk;
+        }
+        Int_t cpid = cptrack->GetID();
+        Int_t cnid = cntrack->GetID();
+        Int_t cbid = cbtrack->GetID();
+        Int_t lpid = trkpid->GetID();
+        if((cpid==lpid)||(cnid==lpid)||(cbid==lpid)) continue;
+        
+        AliAODVertex *secVert = ReconstructSecondaryVertex(casc,trk,aodEvent);
+        if(!secVert) continue;
 
-      Int_t cpid = cptrack->GetID();
-      Int_t cnid = cntrack->GetID();
-      Int_t cbid = cbtrack->GetID();
-      Int_t lpid = trk->GetID();
-      if((cpid==lpid)||(cnid==lpid)||(cbid==lpid)) continue;
-
-      //if(!fAnalCuts->SelectWithRoughCuts(v0,trk)) continue;
-
-      AliAODVertex *secVert = ReconstructSecondaryVertex(casc,trk,aodEvent);//Fake, prim vertex is just used as secondary vertex. place holder for future
-      if(!secVert) continue;
-
-      AliAODRecoCascadeHF *exobj = MakeCascadeHF(casc,trk,aodEvent,secVert,false);
-      if(!exobj) {
-	continue;
-      }
-
-      FillROOTObjects(exobj, casc,trk,mcArray,false);
-
+        AliAODRecoCascadeHF *exobj = MakeCascadeHF(casc,trk,trkpid,aodEvent,secVert);
+        if(!exobj) {
+            continue;
+        }
+      FillROOTObjects(exobj, casc,trk,trkpid,aodEvent,mcArray);
+        
       exobj->GetSecondaryVtx()->RemoveDaughters();
       exobj->UnsetOwnPrimaryVtx();
       delete exobj;exobj=NULL;
       delete secVert;
-    }
+    } // track loop end
   }
-
-  if(fDoEventMixing){
+ /*
+    if(fDoEventMixing){
 		fEventInfo->SetString(Form("Ev%d_esd%d_E%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fElectronTracks->GetEntries()));
     Int_t ind=GetPoolIndex(fVtxZ,fCentrality);
     if(ind>=0 && ind<fNOfPools){
@@ -722,9 +844,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeAnalysis
       fEventBuffer[ind]->Fill();
     }
   }
+*/
 }
-
-
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineTreeVariables() 
 {
@@ -808,19 +929,19 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[63]="EvNumber";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
 }
-
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *exobj, AliAODcascade *casc, AliAODTrack *trk, TClonesArray *mcArray, Bool_t mixing_flag) 
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCascadeHF *exobj, AliAODcascade *casc, AliAODTrack *trk, AliAODTrack *trkpid,AliAODEvent *event, TClonesArray *mcArray)
 {
   //
-  // Fill histograms or tree depending on fWriteVariableTree 
-  //
+  // Fill histograms or tree depending on fWriteVariableTree
+    
 	if(!trk) return;
+    if(!trkpid) return;
 	if(!casc) return;
 
 	for(Int_t i=0;i<64;i++){
@@ -831,12 +952,17 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
   AliAODTrack *cptrack =  (AliAODTrack*)(casc->GetDaughter(0));
   AliAODTrack *cntrack =  (AliAODTrack*)(casc->GetDaughter(1));
   AliAODTrack *cbtrack =  (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
+ 
+    Double_t minmass_ee = 9999.;
+    Bool_t isconv = fAnalCuts->TagConversions(trk,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmass_ee);
+    Double_t minmasslike_ee = 9999.;
+    Bool_t isconv_like = fAnalCuts->TagConversionsSameSign(trk,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmasslike_ee);
+    
   Double_t posVtx[3] = {0.,0.,0.};
   fVtx1->GetXYZ(posVtx);
-
-
+    
   fCandidateVariables[ 0] = fCentrality;
-	UInt_t pdgdg[2]={11,3334};
+  UInt_t pdgdg[2]={11,3334};
   fCandidateVariables[ 1] = exobj->InvMass(2,pdgdg);
   fCandidateVariables[ 2] = exobj->Pt();
   fCandidateVariables[ 3] = exobj->Px();
@@ -857,28 +983,27 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
   fCandidateVariables[15] = exobj->Getd0Prong(0);
   fCandidateVariables[16] = exobj->Getd0Prong(1);
 
-  if(fAnalCuts->GetIsUsePID()&&!mixing_flag)
+  if(fAnalCuts->GetIsUsePID())
   {
-		Double_t nSigmaTPCele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
-		Double_t nSigmaTOFele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
-    fCandidateVariables[17] = nSigmaTPCele;
-    fCandidateVariables[18] = nSigmaTOFele;
+		Double_t nSigmaTPCele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
+		Double_t nSigmaTOFele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
+        fCandidateVariables[17] = nSigmaTPCele;
+        fCandidateVariables[18] = nSigmaTOFele;
 
-		Double_t nSigmaTPCpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kProton);
-		Double_t nSigmaTOFpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kProton);
-		Double_t nSigmaTPCka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kKaon);
-		Double_t nSigmaTOFka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kKaon);
-		Double_t nSigmaTPCpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kPion);
-		Double_t nSigmaTOFpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kPion);
-    fCandidateVariables[19] = nSigmaTPCpr_etrk;
-    fCandidateVariables[20] = nSigmaTOFpr_etrk;
-    fCandidateVariables[21] = nSigmaTPCka_etrk;
-    fCandidateVariables[22] = nSigmaTOFka_etrk;
-    fCandidateVariables[60] = nSigmaTPCpi_etrk;
-    fCandidateVariables[61] = nSigmaTOFpi_etrk;
+		Double_t nSigmaTPCpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kProton);
+		Double_t nSigmaTOFpr_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kProton);
+		Double_t nSigmaTPCka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kKaon);
+		Double_t nSigmaTOFka_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kKaon);
+		Double_t nSigmaTPCpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kPion);
+		Double_t nSigmaTOFpi_etrk = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kPion);
+        fCandidateVariables[19] = nSigmaTPCpr_etrk;
+        fCandidateVariables[20] = nSigmaTOFpr_etrk;
+        fCandidateVariables[21] = nSigmaTPCka_etrk;
+        fCandidateVariables[22] = nSigmaTOFka_etrk;
+        fCandidateVariables[60] = nSigmaTPCpi_etrk;
+        fCandidateVariables[61] = nSigmaTOFpi_etrk;
   }
-
-	if(fAnalCuts->GetUseCascadePID()&&!mixing_flag)
+	if(fAnalCuts->GetUseCascadePID())
 	{
 		Double_t nSigmaTPCv0pr=-9999.;
 		Double_t nSigmaTOFv0pr=-9999.;
@@ -909,7 +1034,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
       fCandidateVariables[28] = nSigmaTOFbachka;
   }
   fCandidateVariables[29] = trk->Charge();
-  fCandidateVariables[30] = (Float_t) mixing_flag;
+  fCandidateVariables[30] = 0.;
   fCandidateVariables[31] = casc->DcaXiDaughters();
   fCandidateVariables[32] = casc->DcaV0Daughters();
   fCandidateVariables[33] = casc->DecayLengthXi(posVtx[0],posVtx[1],posVtx[2]);
@@ -920,17 +1045,17 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
   fCandidateVariables[38] = casc->DcaBachToPrimVertex();
   fCandidateVariables[39] = casc->DecayLengthV0();
   fCandidateVariables[40] = casc->CosPointingAngle(casc->GetDecayVertexXi());
-
+    
   AliAODMCParticle *mcomegac = 0;
   AliAODMCParticle *mcele = 0;
   AliAODMCParticle *mccasc = 0;
   Int_t mclabomegac = 0;
-	Int_t mcpdgele_array[100];
-	Int_t mcpdgcasc_array[100];
-	Int_t mclabelele_array[100];
-	Int_t mclabelcasc_array[100];
-	Int_t mcngen_ele = -9999;
-	Int_t mcngen_casc = -9999;
+  Int_t mcpdgele_array[100];
+  Int_t mcpdgcasc_array[100];
+  Int_t mclabelele_array[100];
+  Int_t mclabelcasc_array[100];
+  Int_t mcngen_ele = -9999;
+  Int_t mcngen_casc = -9999;
 
 	if(fUseMCInfo && mcArray){
 
@@ -973,12 +1098,9 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
   fCandidateVariables[62] = casc->MassXi();
   fCandidateVariables[63] = fEvNumberCounter;
 
-
-  if(fWriteVariableTree)
-    fVariablesTree->Fill();
-
-	if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate))
-	{
+  //if(fWriteVariableTree)
+  //fVariablesTree->Fill();
+ 
 		Double_t cont[3];
 		cont[0] = exobj->InvMass(2,pdgdg);
 		cont[1] = exobj->Pt();
@@ -1004,8 +1126,10 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 		cont_eleptvsd0[0] = trk->Pt();
 		cont_eleptvsd0[1] = exobj->Getd0Prong(0);
 		cont_eleptvsd0[2] = fCentrality;
-
-		if(mixing_flag){
+ /*
+//________________________________________________
+   
+        if(mixing_flag){
 			if(trk->Charge()*casc->ChargeXi()<0){
 				fHistoEleOmegaMassRSMix->Fill(cont);
 				fHistoEleOmegaMassvsElePtRSMix->Fill(cont2);
@@ -1046,27 +1170,128 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillROOTObjects(AliAODRecoCa
 				}
 			}
 		}
-
-		if(fUseMCInfo){
-			if(mcomegac){
-				Int_t pdgcode = mcomegac->GetPdgCode();
-				if(abs(pdgcode)==4332 && abs(mcpdgele_array[1])==4332 && abs(mcpdgcasc_array[1])==4332){
-						fHistoEleOmegaMassMCS->Fill(cont);
-						fHistoEleOmegaMassvsElePtMCS->Fill(cont2);
-						if(cont[0]<2.7){
-							fHistoElePtMCS->Fill(trk->Pt(),fCentrality);
-							fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
-							fHistoElePtvsOmegaPtMCS->Fill(cont_eleptvsomegapt);
-							fHistoElePtvsd0MCS->Fill(cont_eleptvsd0);
-						}
-				}
-			}
-		}
-	}
-
-  return;
+    */
+    
+    if(fAnalCuts -> IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(casc)){
+        if(trk->Charge()*casc->ChargeXi()<0){
+            fHistoEleOmegaMassRS->Fill(cont);
+            fHistoEleOmegaMassvsElePtRS->Fill(cont2);
+            if(cont[0]<fAnalCuts->GetEleOmegaMassMax()){
+                fHistoElePtRS->Fill(trk->Pt(),fCentrality);
+                fHistoElePtvsEtaRS->Fill(cont_eleptvseta);
+                fHistoElePtvsOmegaPtRS->Fill(cont_eleptvsomegapt);
+                fHistoElePtvsd0RS->Fill(cont_eleptvsd0);
+            }
+        if(fUseMCInfo){
+            if(mcomegac){
+                Int_t pdgcode = mcomegac->GetPdgCode();
+                if(abs(pdgcode)==4332 && abs(mcpdgele_array[1])==4332 && abs(mcpdgcasc_array[1])==4332){
+                    fHistoEleOmegaMassMCS->Fill(cont);
+                    fHistoEleOmegaMassvsElePtMCS->Fill(cont2);
+                    if(cont[0]< fAnalCuts->GetEleOmegaMassMax()){
+                        fHistoElePtMCS->Fill(trk->Pt(),fCentrality);
+                        fHistoElePtvsEtaMCS->Fill(cont_eleptvseta);
+                        fHistoElePtvsOmegaPtMCS->Fill(cont_eleptvsomegapt);
+                        fHistoElePtvsd0MCS->Fill(cont_eleptvsd0);
+                        
+                        Double_t cont_omegac[3];
+                        cont_omegac[0] = mcomegac -> Pt();
+                        cont_omegac[1] = mcomegac -> Y();
+                        cont_omegac[2] = fCentrality;
+                        fHistoOmegacMCS -> Fill(cont_omegac);
+                        // ---- to add response matrix --
+                        fHistoResponseEleOmegaPt -> Fill(mcomegac->Pt(),exobj->Pt());
+                        
+                        // -- ele
+                        Double_t cont_mcele[3];
+                        cont_mcele[0] = mcele->Pt();
+                        cont_mcele[1] = mcele->Y();
+                        cont_mcele[2] = fCentrality;
+                        
+                        fHistoOmegacElectronMCS->Fill(cont_mcele);
+                        if(trk->Charge()>0) fHistoOmegacElectronMCS1->Fill(cont_mcele);
+                        else fHistoOmegacElectronMCS->Fill(cont_mcele);
+                        
+                        // -- cascade: omega
+                        Double_t cont_mcomega[3];
+                        cont_mcomega[0] = mccasc->Pt();
+                        cont_mcomega[1] = mccasc->Y();
+                        cont_mcomega[2] = fCentrality;
+                        
+                        fHistoCascOmegaMCS -> Fill(cont_mcomega);
+                        if(casc->ChargeXi()>0)  fHistoCascOmegaMCS1 -> Fill(cont_mcomega);
+                        if(casc->ChargeXi()<0)  fHistoCascOmegaMCS2 -> Fill(cont_mcomega);
+                        
+                    }
+                }
+            }
+        }
+    }
 }
+// New strategy: Fully analysis correlation
+        for(Int_t iv =0; iv<13;iv++){
+            fCorrelationVariables[iv] = -9999.;
+        }
+        
+        Double_t cont_cor_nd[7];
+        for(Int_t iv=0; iv<7; iv++){
+            cont_cor_nd[iv] = -9999.;
+        }
+        Double_t cont_mass_nd[8];
+        for(Int_t iv = 0; iv<8; iv++){
+            cont_mass_nd[iv] = -9999.;
+        }
+        
+        fCorrelationVariables[0] = sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2));
+        fCorrelationVariables[1] = trk->Pt();
+        fCorrelationVariables[2] = fAnalCuts->DeltaPhi(casc,trk);
+        fCorrelationVariables[3] = fAnalCuts->DeltaEta(casc,trk);
+        
+        if(trk->Charge()>0){
+            if(casc->ChargeXi()<0) fCorrelationVariables[4] = 0;
+            else fCorrelationVariables[4] = 2;
+        }else if(trk->Charge()<0){
+            if(casc->ChargeXi()<0) fCorrelationVariables[4] = 1;
+            else fCorrelationVariables[4] = 3;
+        }
+        fCorrelationVariables[5] = (Int_t)isconv + 2 * (Int_t)isconv_like;
+        fCorrelationVariables[6] = fCentrality;
+        fCorrelationVariables[7] = exobj->Pt();
+        fCorrelationVariables[8] = exobj->InvMass(2,pdgdg);
+        fCorrelationVariables[9] = fAnalCuts->CosOpeningAngle(casc,trk);
+        
+        cont_cor_nd[0] = exobj->Pt();
+        cont_cor_nd[1] = fAnalCuts->DeltaPhi(casc,trk);
+        cont_cor_nd[2] = 1.;
+        if(trk->Charge()>0){
+            if(casc->ChargeXi()<0) cont_cor_nd[3] = 0;
+            else cont_cor_nd[3] = 2;
+        }else if(trk->Charge()<0){
+            if(casc->ChargeXi()<0) cont_cor_nd[3] = 3;
+            else cont_cor_nd[3] = 1;
+        }
+        cont_cor_nd[4] = fCorrelationVariables[5];
+        cont_cor_nd[5] = 0;
+        cont_cor_nd[6] = fCentrality;
+        
+        fCorrelationVariables[10] = casc -> MassOmega();
+        if(casc->ChargeXi()<0)
+            fCandidateVariables[11] = casc->MassLambda();
+        else
+            fCandidateVariables[11] = casc->MassAntiLambda();
+        
+        fCorrelationVariables[12] = casc->CosPointingAngle(casc->GetDecayVertexXi());
+    
+    
+    
+        if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(casc)){
+        
+            if(fWriteVariableTree)
+              fCorrelationVariablesTree->Fill();
+        }
+  return;
 
+}
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineEleTreeVariables() 
 {
@@ -1101,17 +1326,17 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineEleTreeVariables()
   fCandidateVariableNames[18]="Centrality";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fEleVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateEleVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fEleVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateEleVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
 }
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliAODTrack *trk, TClonesArray *mcArray) 
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliAODTrack *trk,AliAODEvent *event, TClonesArray *mcArray)
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
-  //
+    //  Bool_t fWriteVariableTree; flag to decide whether to write the candidate varibale on tree variables.
 
 	if(!trk) return;
 
@@ -1122,16 +1347,45 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillElectronROOTObjects(AliA
 		Int_t labEle = trk->GetLabel();
 		if(labEle>=0){
 			AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
-			if(mcetrk){
+            if(!mcetrk) return;
+            
+            Bool_t hfe_flag = kFALSE;
+            Int_t labelemother = mcetrk -> GetMother();
+            Int_t pdgmotherele = -9999;
+            if(labelemother>=0){
+                AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labelemother);
+                pdgmotherele = motherele -> GetPdgCode();
+                
+                if(abs(pdgmotherele)== 4332 && (abs(pdgmotherele) != 22) ){
+                    hfe_flag = kTRUE;
+                }
+            } //labelemother>=0
+            
+            if(!hfe_flag) return;
+                
+                Double_t contmc[3];
+                contmc[0] = mcetrk->Pt();
+                contmc[1] = mcetrk->Eta();
+                contmc[2] = fCentrality;
+                fHistoElectronMCS -> Fill(contmc);
+                
 				Int_t pdgEle = mcetrk->GetPdgCode();
 				if(abs(pdgEle)==11){
 					fHistoBachPtMCS->Fill(trk->Pt());
 				}
-			}
-		}
-	}
+            }
+        }
 
-	if(!fWriteEachVariableTree) return;
+    Double_t minmass_ee = 9999.;
+    Double_t minmasslike_ee = 9999.;
+    Bool_t isconv = fAnalCuts->TagConversions(trk,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmass_ee);
+    Bool_t isconv_like = fAnalCuts->TagConversionsSameSign(trk,fGTIndex,(AliAODEvent*)event,event->GetNumberOfTracks(),minmasslike_ee);
+    fHistoMassConversionsMin->Fill(minmass_ee);
+    fHistoMassConversionsSameSignMin->Fill(minmasslike_ee);
+    
+    
+    
+	if(fWriteEachVariableTree) return;
 
 	for(Int_t i=0;i<19;i++){
 		fCandidateEleVariables[i] = -9999.;
@@ -1189,7 +1443,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineCascTreeVariables()
 
   const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
   fCascVariablesTree = new TTree(nameoutput,"cascade variables tree");
-  Int_t nVar = 17;
+  Int_t nVar = 18;
   fCandidateCascVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -1210,24 +1464,35 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineCascTreeVariables()
   fCandidateVariableNames[14]="DecayLengthV0";
   fCandidateVariableNames[15]="CosPointingAngleV0";
   fCandidateVariableNames[16]="OmegaCharge";
+  fCandidateVariableNames[17]="InvMassXi";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fCascVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateCascVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fCascVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateCascVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
 
   return;
 }
 
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODcascade *casc, TClonesArray *mcArray) 
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODcascade *casc,AliAODEvent *event, TClonesArray *mcArray)
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree (tree not implemented yet)
   //
 	if(!casc) return;
+    AliAODTrack *cptrack =  (AliAODTrack*)(casc->GetDaughter(0));
+    AliAODTrack *cntrack =  (AliAODTrack*)(casc->GetDaughter(1));
+    AliAODTrack *cbtrack =  (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
+    if(!cptrack) return;
+    if(!cntrack) return;
+    if(!cbtrack) return;
+
 	fHistoXiMassvsPt->Fill(casc->MassXi(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 	fHistoOmegaMassvsPt->Fill(casc->MassOmega(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 
+    Int_t omegapdgcode = -9999;
+    Int_t omegamotherpdgcode = -9999;
+    
 	if(fUseMCInfo){
 		Int_t pdgDgcasc[2]={321,3122};
 		Int_t pdgDgv0[2]={2212,211};
@@ -1235,12 +1500,35 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODca
 		if(labcasc>=0){
 			fHistoOmegaMassvsPtMCS->Fill(casc->MassOmega(),sqrt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY()));
 		}
-	}
+        
+        AliAODMCParticle *mccasctrk = (AliAODMCParticle*)mcArray->At(labcasc);
+        if(!mccasctrk) return;
+        
+        Bool_t hfomega_flag = kFALSE;
+        omegapdgcode = mccasctrk->GetPdgCode();
+        Int_t labcascmother = mccasctrk->GetMother();
+        if(labcascmother>=0){
+            AliAODMCParticle *mothercasc = (AliAODMCParticle*)mcArray->At(labcascmother);
+            if(mothercasc){
+                omegamotherpdgcode = mothercasc->GetPdgCode();
+               // if(abs(omegamotherpdgcode)>4000&&abs(omegamotherpdgcode)<4400){
+                if(abs(omegamotherpdgcode)==4332){
+                    hfomega_flag = kTRUE;
+                }
+            }
+        }
+        if(!hfomega_flag) return;
+	
+        Double_t contmc[3];
+        contmc[0] = mccasctrk->Pt();
+        contmc[1] = mccasctrk->Y();
+        contmc[2] = fCentrality;
+        fHistoOmegaMCS->Fill(contmc);
+    }
 
-	if(!fWriteEachVariableTree) return;
+	if(fWriteEachVariableTree) return;
 
-
-	for(Int_t i=0;i<16;i++){
+	for(Int_t i=0;i<17;i++){
 		fCandidateCascVariables[i] = -9999.;
 	}
   Double_t posVtx[3] = {0.,0.,0.};
@@ -1267,9 +1555,10 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillCascROOTObjects(AliAODca
   fCandidateCascVariables[14] = casc->DecayLengthV0();
   fCandidateCascVariables[15] = casc->CosPointingAngle(casc->GetDecayVertexXi());
   fCandidateCascVariables[16] = casc->ChargeXi();
+  fCandidateCascVariables[17] = casc->MassXi();
 
 
-	fCascVariablesTree->Fill();
+	   fCascVariablesTree->Fill();
 }
 ////-------------------------------------------------------------------------------
 void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineMCTreeVariables() 
@@ -1300,12 +1589,12 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineMCTreeVariables()
   fCandidateVariableNames[13]="CascPdgCode";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fMCVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateMCVariables[ivar],Form("%s/f",fCandidateVariableNames[ivar].Data()));
+    fMCVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateMCVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
   return;
 }
 ////-------------------------------------------------------------------------------
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCParticle *mcpart, AliAODMCParticle *mcepart, AliAODMCParticle *mccascpart, Int_t decaytype) 
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCParticle *mcpart, AliAODMCParticle *mcepart, AliAODMCParticle *mccascpart, Int_t decaytype ,TClonesArray *mcArray)
 {
   //
   // Fill histograms or tree depending on fWriteMCVariableTree 
@@ -1361,12 +1650,37 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCPa
 	cont_eleptvsomegapt[1] = mccascpart->Pt();
 	cont_eleptvsomegapt[2] = fCentrality;
 
+    Double_t contmc[3];
+    contmc[0] = mcpart->Pt();
+    contmc[1] = mcpart->Y();
+    contmc[2] = fCentrality;
+    
+    Double_t contmcele[3];
+    contmcele[0] = mcepart->Pt();
+    contmcele[1] = mcepart->Y();
+    contmcele[2] = fCentrality;
+    
+    Double_t contmcomega[3];
+    contmcomega[0] = mccascpart->Pt();
+    contmcomega[1] = mccascpart->Y();
+    contmcomega[2] = fCentrality;
+    
 	AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
 	Float_t etamin, etamax;
 	esdcuts->GetEtaRange(etamin,etamax);
 
 	if(decaytype==0){
 		fHistoEleOmegaMassMCGen->Fill(cont);
+        fHistoOmegacMCGen -> Fill(contmc);
+        
+        fHistoOmegacElectronMCGen->Fill(contmcele);
+        if(mcepart->GetPdgCode()<0) fHistoOmegacElectronMCGen1->Fill(contmcele);//-11 is positron
+        if(mcepart->GetPdgCode()>0) fHistoOmegacElectronMCGen2->Fill(contmcele);//11 is electron
+        
+        fHistoCascOmegaMCGen->Fill(contmcomega);
+        if(mccascpart->GetPdgCode()<0) fHistoCascOmegaMCGen1->Fill(contmcomega); // -3334  Omega
+        if(mccascpart->GetPdgCode()>0) fHistoCascOmegaMCGen2->Fill(contmcomega);  // 3334  Omega
+        
 		if(fabs(mcepart->Eta())<etamax){
 			fHistoEleOmegaMassvsElePtMCGen->Fill(cont2);
 			if(InvMassEleOmega<2.7){
@@ -1376,10 +1690,149 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCROOTObjects(AliAODMCPa
 			}
 		}
 	}
-
 	if(fWriteMCVariableTree)
 		fMCVariablesTree->Fill();
 }
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineMCEleTreeVariables()
+{
+    //
+    // Define mc gen electron tree variables
+    //
+    
+    const char* nameoutput = GetOutputSlot(10)->GetContainer()->GetName();
+    fMCEleVariablesTree = new TTree(nameoutput,"MC Ele variables tree");
+    Int_t nVar = 6;
+    fCandidateMCEleVariables = new Float_t [nVar];
+    TString * fCandidateVariableNames = new TString[nVar];
+    
+    fCandidateVariableNames[ 0]="Centrality";
+    fCandidateVariableNames[ 1]="ElePx";
+    fCandidateVariableNames[ 2]="ElePy";
+    fCandidateVariableNames[ 3]="ElePz";
+    fCandidateVariableNames[ 4]="ElePdgCode";
+    fCandidateVariableNames[ 5]="EleMotherPdgCode";
+  
+    for (Int_t ivar=0; ivar<nVar; ivar++) {
+        fMCEleVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateMCEleVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
+    }
+    return;
+}
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCEleROOTObjects(AliAODMCParticle *mcepart, TClonesArray *mcArray)
+{
+    //
+    // Fill tree depending on fWriteMCVariableTree
+    //
+    if(!mcepart) return;
+  
+    Double_t contmc[3];
+    contmc[0] = mcepart->Pt();
+    contmc[1] = mcepart->Eta();
+    contmc[2] = fCentrality;
+    
+    Bool_t hfe_flag = kFALSE;
+    Int_t labemother = mcepart->GetMother();
+    Int_t pdgmotherele = -9999;
+    if(labemother>=0){
+        AliAODMCParticle *motherele = (AliAODMCParticle*)mcArray->At(labemother);
+        pdgmotherele = motherele->GetPdgCode();
+        if(abs(pdgmotherele)>4000&&abs(pdgmotherele)<4400){
+            hfe_flag = kTRUE;
+        }
+    }
+    if(!hfe_flag) return;
+    
+    fHistoElectronMCGen->Fill(contmc);
+    
+    for(Int_t i=0;i<6;i++){
+        fCandidateMCEleVariables[i] = -9999.;
+    }
+    
+    fCandidateMCEleVariables[ 0] = fCentrality;
+    fCandidateMCEleVariables[ 1] = mcepart->Px();
+    fCandidateMCEleVariables[ 2] = mcepart->Py();
+    fCandidateMCEleVariables[ 3] = mcepart->Pz();
+    fCandidateMCEleVariables[ 4] = mcepart->GetPdgCode();
+    fCandidateMCEleVariables[ 5] = pdgmotherele;
+   
+    // This function makes output too heavy  (do not use if you have output size limitation)
+    //if(fWriteMCVariableTree && fWriteEachVariableTree && mcepart->Pt()>0.4 && fabs(mcepart->Eta())<1.0)
+    //fMCEleVariablesTree->Fill();
+}
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineMCCascTreeVariables()
+{
+    //
+    // Define Mc cascade tree variables
+    //
+    
+    const char* nameoutput = GetOutputSlot(11)->GetContainer()->GetName();
+    fMCCascVariablesTree = new TTree(nameoutput,"MC cascade variables tree");
+    Int_t nVar = 6;
+    fCandidateMCCascVariables = new Float_t [nVar];
+    TString * fCandidateVariableNames = new TString[nVar];
+    
+    fCandidateVariableNames[ 0]="Centrality";
+    fCandidateVariableNames[ 1]="CascPx";
+    fCandidateVariableNames[ 2]="CascPy";
+    fCandidateVariableNames[ 3]="CascPz";
+    fCandidateVariableNames[ 4]="CascPdgCode";
+    fCandidateVariableNames[ 5]="CascMotherPdgCode";
+   
+    
+    for (Int_t ivar=0; ivar<nVar; ivar++) {
+        fMCCascVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateMCCascVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
+    }
+    return;
+}
+////__________________________________________________________________________
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::FillMCCascROOTObjects(AliAODMCParticle *mccascpart, TClonesArray *mcArray)
+{
+    //
+    // Fill histograms or tree depending on fWriteMCVariableTree
+    //
+    if(!mccascpart) return;
+    
+    for(Int_t i=0;i<6;i++){
+        fCandidateMCCascVariables[i] = -9999.;
+    }
+    
+    Bool_t hfomega_flag = kFALSE;
+    Int_t labcascmother = mccascpart->GetMother();
+    Int_t pdgmothercasc = -9999;
+    if(labcascmother>=0){
+        AliAODMCParticle *mothercasc = (AliAODMCParticle*)mcArray->At(labcascmother);
+        if(mothercasc){
+            pdgmothercasc = mothercasc->GetPdgCode();
+          //  if(abs(pdgmothercasc)>4000&&abs(pdgmothercasc)<4400){
+            if(abs(pdgmothercasc)==4332){
+                hfomega_flag = kTRUE;
+            }
+        }
+    }
+    if(!hfomega_flag) return;
+    
+    Double_t contmc[3];
+    contmc[0] = mccascpart->Pt();
+    contmc[1] = mccascpart->Y();
+    contmc[2] = fCentrality;
+    fHistoOmegaMCGen->Fill(contmc);
+    
+    fCandidateMCCascVariables[ 0] = fCentrality;
+    fCandidateMCCascVariables[ 1] = mccascpart->Px();
+    fCandidateMCCascVariables[ 2] = mccascpart->Py();
+    fCandidateMCCascVariables[ 3] = mccascpart->Pz();
+    fCandidateMCCascVariables[ 4] = mccascpart->GetPdgCode();
+    fCandidateMCCascVariables[ 5] = pdgmothercasc;
+  
+    
+    // This function makes output too heavy  (do not use if you have output size limitation)
+    //if(fWriteMCVariableTree && fWriteEachVariableTree && mccascpart->Pt()>0.4 && fabs(mccascpart->Eta())<1.0)
+    //fMCCascVariablesTree->Fill();
+}
+
+
 
 ////__________________________________________________________________________
 void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineGeneralHistograms() {
@@ -1443,9 +1896,68 @@ void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineAnalysisHistograms()
   //------------------------------------------------
   // Basic histogram
   //------------------------------------------------
-  Int_t bins_base[3]=		{16				,100		,10};
-  Double_t xmin_base[3]={1.6,0		,0.00};
-  Double_t xmax_base[3]={3.6,10.	,100};
+    //------- new histograms --
+    fHistoMassConversionsMin=new TH1F("fHistoMassConversionsMin","",500,0,0.5);
+    fOutputAll->Add(fHistoMassConversionsMin);
+    fHistoMassConversionsSameSignMin=new TH1F("fHistoMassConversionsSameSignMin","",500,0,0.5);
+    fOutputAll->Add(fHistoMassConversionsSameSignMin);
+
+    Int_t bins_xicmcgen[3]=    {200 ,20    ,10};
+    Double_t xmin_xicmcgen[3]={0.,-1.0    ,0.0};
+    Double_t xmax_xicmcgen[3]={20.,1.0    ,100};
+    fHistoOmegacMCGen = new THnSparseF("fHistoOmegacMCGen","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoOmegacMCGen);
+    fHistoOmegacMCS = new THnSparseF("fHistoOmegacMCS","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoOmegacMCS);
+    
+    fHistoResponseEleOmegaPt = new TH2D("fHistoResponseEleOmegaPt","",200,0.,20.,200,0.,20.);
+    fOutputAll->Add(fHistoResponseEleOmegaPt);
+    
+    // -- Omega
+    fHistoOmegaMCGen =  new THnSparseF("fHistoOmegaMCGen","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+     fOutputAll->Add(fHistoOmegaMCGen);
+    fHistoOmegaMCS =  new THnSparseF("fHistoOmegaMCS","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoOmegaMCS);
+
+    fHistoCascOmegaMCGen =  new THnSparseF("fHistoCascOmegaMCGen","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoCascOmegaMCGen);
+    fHistoCascOmegaMCGen1 =  new THnSparseF("fHistoCascOmegaMCGen1","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoCascOmegaMCGen1);
+    fHistoCascOmegaMCGen2 =  new THnSparseF("fHistoCascOmegaMCGen2","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoCascOmegaMCGen2);
+    fHistoCascOmegaMCS  =  new THnSparseF("fHistoCascOmegaMCS","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoCascOmegaMCS);
+    fHistoCascOmegaMCS1  =  new THnSparseF("fHistoCascOmegaMCS1","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoCascOmegaMCS1);
+    fHistoCascOmegaMCS2  =  new THnSparseF("fHistoCascOmegaMCS2","",3,bins_xicmcgen,xmin_xicmcgen,xmax_xicmcgen);
+    fOutputAll->Add(fHistoCascOmegaMCS2);
+    
+    // --  electron
+    Int_t bins_elemcgen[3]=    {100 ,20    ,10};
+    Double_t xmin_elemcgen[3]={0.,-1.0    ,0.0};
+    Double_t xmax_elemcgen[3]={10.,1.0    ,100};
+    fHistoElectronMCGen = new THnSparseF("fHistoElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoElectronMCGen);
+    fHistoElectronMCS = new THnSparseF("fHistoElectronMCS","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoElectronMCS);
+    
+    fHistoOmegacElectronMCGen = new THnSparseF("fHistoOmegacElectronMCGen","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoOmegacElectronMCGen);
+    fHistoOmegacElectronMCGen1 = new THnSparseF("fHistoOmegacElectronMCGen1","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoOmegacElectronMCGen1);
+    fHistoOmegacElectronMCGen2 = new THnSparseF("fHistoOmegacElectronMCGen2","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoOmegacElectronMCGen2);
+    fHistoOmegacElectronMCS = new THnSparseF("fHistoOmegacElectronMCS","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoOmegacElectronMCS);
+    fHistoOmegacElectronMCS1 = new THnSparseF("fHistoOmegacElectronMCS1","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoOmegacElectronMCS1);
+    fHistoOmegacElectronMCS2 = new THnSparseF("fHistoOmegacElectronMCS2","",3,bins_elemcgen,xmin_elemcgen,xmax_elemcgen);
+    fOutputAll->Add(fHistoOmegacElectronMCS2);
+    
+    
+  Int_t bins_base[3]={16,100,10};
+  Double_t xmin_base[3]={1.6,0.,0.00};
+  Double_t xmax_base[3]={3.6,10.,100};
   fHistoEleOmegaMass = new THnSparseF("fHistoEleOmegaMass","",3,bins_base,xmin_base,xmax_base);
   fOutputAll->Add(fHistoEleOmegaMass);
   fHistoEleOmegaMassRS = new THnSparseF("fHistoEleOmegaMassRS","",3,bins_base,xmin_base,xmax_base);
@@ -1583,7 +2095,7 @@ void  AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineAnalysisHistograms()
 }
 
 //________________________________________________________________________
-AliAODRecoCascadeHF* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeCascadeHF(AliAODcascade *casc, AliAODTrack *part, AliAODEvent * aod, AliAODVertex *secVert, Bool_t mixing) 
+AliAODRecoCascadeHF* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeCascadeHF(AliAODcascade *casc, AliAODTrack *part, AliAODTrack *partpid,AliAODEvent *aod, AliAODVertex *secVert)
 {
   //
   // Create AliAODRecoCascadeHF object from the argument
@@ -1614,7 +2126,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeCascadeH
   //------------------------------------------------
   // DCA between tracks
   //------------------------------------------------
-  AliESDtrack *esdtrack = new AliESDtrack((AliVTrack*)part);
+  AliESDtrack *esdtrack = new AliESDtrack((AliVTrack*)partpid);
 
   Double_t xyz[3], pxpypz[3], cv[21]; Short_t sign;
   xyz[0]=casc->DecayVertexXiX();
@@ -1671,7 +2183,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeCascadeH
   AliAODRecoCascadeHF *theCascade = new AliAODRecoCascadeHF(secVert,charge,px,py,pz,d0,d0err,dca);
   if(!theCascade)  
     {
-      if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
+      if(unsetvtx) delete primVertexAOD;  // primVertexAOD=NULL;
       if(esdtrack) delete esdtrack;
       if(trackCasc) delete trackCasc;
       return 0x0;
@@ -1679,13 +2191,10 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeCascadeH
   theCascade->SetOwnPrimaryVtx(primVertexAOD);
   UShort_t id[2]={(UShort_t)part->GetID(),(UShort_t)trackCasc->GetID()};
   theCascade->SetProngIDs(2,id);
-
-	if(!mixing){
-		theCascade->GetSecondaryVtx()->AddDaughter(part);
-		theCascade->GetSecondaryVtx()->AddDaughter(casc);
-	}
-
-  if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
+  theCascade->GetSecondaryVtx()->AddDaughter(part);
+  theCascade->GetSecondaryVtx()->AddDaughter(casc);
+	
+  if(unsetvtx) delete primVertexAOD; // primVertexAOD=NULL;
   if(esdtrack) delete esdtrack;
   if(trackCasc) delete trackCasc;
 
@@ -1726,8 +2235,7 @@ AliAODVertex* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::CallPrimaryVertex(A
 }
 
 //________________________________________________________________________
-AliAODVertex* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::PrimaryVertex(const TObjArray *trkArray,
-								   AliVEvent *event)
+AliAODVertex* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::PrimaryVertex(const TObjArray *trkArray,AliVEvent *event)
 {
   //
   //Used only for pp
@@ -1741,7 +2249,6 @@ AliAODVertex* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::PrimaryVertex(const
   AliAODVertex *vertexAOD = 0;
   
   //vertexESD = new AliESDVertex(*fV1);
-  
 
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) { 
     // primary vertex from the input event
@@ -1757,36 +2264,36 @@ AliAODVertex* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::PrimaryVertex(const
     if(fRecoPrimVtxSkippingTrks) { 
       // recalculating the vertex
       
-      if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraint")) {
-	Float_t diamondcovxy[3];
-	event->GetDiamondCovXY(diamondcovxy);
-	Double_t pos[3]={event->GetDiamondX(),event->GetDiamondY(),0.};
-	Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
-	AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
-	vertexer->SetVtxStart(diamond);
-	delete diamond; diamond=NULL;
-	if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraintOnlyFitter")) 
-	  vertexer->SetOnlyFitter();
+        if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraint")) {
+            Float_t diamondcovxy[3];
+            event->GetDiamondCovXY(diamondcovxy);
+            Double_t pos[3]={event->GetDiamondX(),event->GetDiamondY(),0.};
+            Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+            AliESDVertex *diamond = new AliESDVertex(pos,cov,1.,1);
+            vertexer->SetVtxStart(diamond);
+            delete diamond; diamond=NULL;
+            if(strstr(fV1->GetTitle(),"VertexerTracksWithConstraintOnlyFitter"))
+                vertexer->SetOnlyFitter();
       }
       Int_t skipped[1000];
       Int_t nTrksToSkip=0,id;
       AliExternalTrackParam *t = 0;
       for(Int_t i=0; i<nTrks; i++) {
-	t = (AliExternalTrackParam*)trkArray->UncheckedAt(i);
-	id = (Int_t)t->GetID();
-	if(id<0) continue;
-	skipped[nTrksToSkip++] = id;
+          t = (AliExternalTrackParam*)trkArray->UncheckedAt(i);
+          id = (Int_t)t->GetID();
+          if(id<0) continue;
+          skipped[nTrksToSkip++] = id;
       }
       // TEMPORARY FIX
       // For AOD, skip also tracks without covariance matrix
       Double_t covtest[21];
       for(Int_t j=0; j<event->GetNumberOfTracks(); j++) {
-	AliVTrack *vtrack = (AliVTrack*)event->GetTrack(j);
-	if(!vtrack->GetCovarianceXYZPxPyPz(covtest)) {
-	  id = (Int_t)vtrack->GetID();
-	  if(id<0) continue;
-	  skipped[nTrksToSkip++] = id;
-	}
+          AliVTrack *vtrack = (AliVTrack*)event->GetTrack(j);
+          if(!vtrack->GetCovarianceXYZPxPyPz(covtest)) {
+              id = (Int_t)vtrack->GetID();
+              if(id<0) continue;
+              skipped[nTrksToSkip++] = id;
+          }
       }
       for(Int_t ijk=nTrksToSkip; ijk<1000; ijk++) skipped[ijk]=-1;
       //
@@ -1801,14 +2308,14 @@ AliAODVertex* AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::PrimaryVertex(const
       AliESDtrack *esdTrack = 0;
       AliESDtrack *t = 0;
       for(Int_t i=0; i<nTrks; i++) {
-	t = (AliESDtrack*)trkArray->UncheckedAt(i);
-	esdTrack = new AliESDtrack(*t);
-	rmArray.AddLast(esdTrack);
-	if(esdTrack->GetID()>=0) {
-	  rmId[i]=(UShort_t)esdTrack->GetID();
-	} else {
-	  rmId[i]=9999;
-	}
+          t = (AliESDtrack*)trkArray->UncheckedAt(i);
+          esdTrack = new AliESDtrack(*t);
+          rmArray.AddLast(esdTrack);
+          if(esdTrack->GetID()>=0) {
+              rmId[i]=(UShort_t)esdTrack->GetID();
+          } else {
+              rmId[i]=9999;
+          }
       }
       Float_t diamondxy[2]={static_cast<Float_t>(event->GetDiamondX()),static_cast<Float_t>(event->GetDiamondY())};
       vertexESD = vertexer->RemoveTracksFromVertex(fV1,&rmArray,rmId,diamondxy);
@@ -1920,7 +2427,7 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMC(AliAODRecoCascade
 	Int_t pdgDgcasc[2]={321,3122};
 	Int_t pdgDgv0[2]={2212,211};
   Int_t labcasc = MatchToMCCascade(theCascade,3334,pdgDgcasc,pdgDgv0,mcArray); // the cascade
-  if(labcasc<0) return -1;
+   if(labcasc<0) return -1;
 
 	AliAODMCParticle *mccasc = (AliAODMCParticle*)mcArray->At(labcasc);
 	if(!mccasc) return -1;
@@ -1982,7 +2489,7 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMCCascade(AliAODcasc
 	AliAODTrack *cbtrack = (AliAODTrack*) theCascade->GetDecayVertexXi()->GetDaughter(0);
 	if(!cbtrack) return -1;
 
-	Int_t label_b = cbtrack->GetLabel();
+    Int_t label_b = cbtrack->GetLabel();
 	if(label_b<0) return -1;
 
 	AliAODMCParticle *mcpartb= (AliAODMCParticle*) mcArray->At(label_b);
@@ -2025,7 +2532,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectTrack( const AliVEvent
   //
   // Select good tracks using fAnalCuts (AliRDHFCuts object) and return the array of their ids
   //
-  
+    
   //const Int_t entries = event->GetNumberOfTracks();
   if(trkEntries==0) return;
   
@@ -2036,39 +2543,55 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectTrack( const AliVEvent
     AliVTrack *track;
     track = (AliVTrack*)event->GetTrack(i);
     
-    if(track->GetID()<0) continue;
+  //  if(track->GetID()<0) continue;
     Double_t covtest[21];
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
+    if(!fAnalCuts) continue;
     
     AliAODTrack *aodt = (AliAODTrack*)track;
+    
+      if(fAnalCuts->GetProdUseAODFilterBit()){
+          Int_t filterbit = fAnalCuts->GetProdAODFilterBit();
+          if(filterbit==7){
+              if(!aodt->TestFilterBit(BIT(filterbit))) continue;
+          }else{
+              if(!aodt->TestFilterMask(BIT(filterbit))) continue;
+          }
+      }
+      
+      AliAODTrack *aodtpid = 0;
+      if(fAnalCuts->GetProdAODFilterBit()==7){
+          aodtpid = fGTI[-aodt->GetID()-1];
+      }else{
+          aodtpid = aodt;
+      }
 		Double_t nsigma_tpcele = -9999;
 		Double_t nsigma_tofele = -9999;
 		if(fAnalCuts->GetIsUsePID()){
-			nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodt,AliPID::kElectron);
-			nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodt,AliPID::kElectron);
+			nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
+			nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
 		}
 
-    if(!fAnalCuts) continue;
-    if(fAnalCuts->SingleTrkCuts(aodt,fVtx1)){
-      seleFlags[i]=kTRUE;
-      nSeleTrks++;
+       if(fAnalCuts->SingleTrkCutsNoPID(aodt,aodtpid,fVtx1)){
+           fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
+           fHistoElectronTOFPID->Fill(aodt->Pt(),nsigma_tofele);
+           if(fabs(nsigma_tofele)<3.){
+               fHistoElectronTPCPIDSelTOF->Fill(aodt->Pt(),nsigma_tpcele);
+               Double_t eleeta = aodt->Eta();
+               if(fabs(eleeta)<0.6)
+                   fHistoElectronTPCPIDSelTOFSmallEta->Fill(aodt->Pt(),nsigma_tpcele);
+               if(fabs(eleeta)>0.6 && fabs(eleeta)<0.8)
+                   fHistoElectronTPCPIDSelTOFLargeEta->Fill(aodt->Pt(),nsigma_tpcele);
+           }
+           
+       }
+      if(fAnalCuts->SingleTrkCuts(aodt,aodtpid,fVtx1)){
+            seleFlags[i]=kTRUE;
+            nSeleTrks++;
 			fHistoElectronTPCSelPID->Fill(aodt->Pt(),nsigma_tpcele);
 			fHistoElectronTOFSelPID->Fill(aodt->Pt(),nsigma_tofele);
-			FillElectronROOTObjects(aodt,mcArray);
-			if(fDoEventMixing){
-				fElectronTracks->AddLast(new AliAODTrack(*aodt));
-			}
     }
-		fHistoElectronTPCPID->Fill(aodt->Pt(),nsigma_tpcele);
-		fHistoElectronTOFPID->Fill(aodt->Pt(),nsigma_tofele);
-		if(fabs(nsigma_tofele)<3.){
-			fHistoElectronTPCPIDSelTOF->Fill(aodt->Pt(),nsigma_tpcele);
-			Double_t eleeta = aodt->Eta();
-			if(fabs(eleeta)<0.6)
-				fHistoElectronTPCPIDSelTOFSmallEta->Fill(aodt->Pt(),nsigma_tpcele);
-			if(fabs(eleeta)>0.6 && fabs(eleeta)<0.8)
-				fHistoElectronTPCPIDSelTOFLargeEta->Fill(aodt->Pt(),nsigma_tpcele);
-		}
+		
   } // end loop on tracks
 }
 //________________________________________________________________________
@@ -2077,7 +2600,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectCascade( const AliVEve
   //
   // Select good Casc using fAnalCuts (AliRDHFCuts object) and return the array of their ids
   //
-
+    
 	Double_t primVtx[3];
 	fVtx1->GetXYZ(primVtx);
 
@@ -2091,8 +2614,6 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::SelectCascade( const AliVEve
       if(fAnalCuts->SingleCascadeCuts(casc,primVtx)){
 				seleCascFlags[icasc] = kTRUE;
 				nSeleCasc++;
-
-				FillCascROOTObjects(casc, mcArray);
       }
     }
 }
@@ -2124,6 +2645,8 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::ResetPool(Int_t poolIndex){
 
   return;
 }
+
+/*
 //_________________________________________________________________
 void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DoEventMixingWithPools(Int_t poolIndex,AliAODEvent *aodEvent, Bool_t *seleFlags)
 {
@@ -2169,13 +2692,13 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DoEventMixingWithPools(Int_t
 				AliAODVertex *secVert = ReconstructSecondaryVertex(casc,trk1,aodEvent);//Fake, prim vertex is just used as secondary vertex. place holder for future
 				if(!secVert) continue;
 
-				AliAODRecoCascadeHF *exobj = MakeCascadeHF(casc,trk1,aodEvent,secVert,true);
+				AliAODRecoCascadeHF *exobj = MakeCascadeHF(casc,trk1,aodEvent,secVert);
 				if(!exobj) {
 						continue;
 				}
 
 				TClonesArray *fake = 0;
-				FillROOTObjects(exobj,casc,trk1,fake,true);
+				FillROOTObjects(exobj,casc,trk1,aodEvent,mcArray);
 
 				exobj->GetSecondaryVtx()->RemoveDaughters();
 				exobj->UnsetOwnPrimaryVtx();
@@ -2188,8 +2711,10 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DoEventMixingWithPools(Int_t
 		
 	}//v0 loop
 }
+*/
+
 //_________________________________________________________________
-void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
+Bool_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArray *mcArray)
 {
 	//
   // Analyze AliAODmcparticle
@@ -2201,7 +2726,7 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArray 
 		AliAODMCParticle *mcpart = (AliAODMCParticle*) mcArray->At(i);
 		if(TMath::Abs(mcpart->GetPdgCode())==4332){
 			Bool_t e_flag = kFALSE;
-			Bool_t xi_flag = kFALSE;
+			Bool_t omega_flag = kFALSE;
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mccascpart = 0;
 			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
@@ -2214,23 +2739,33 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArray 
 					mcepart = mcdau;
 				}
 				if(TMath::Abs(mcdau->GetPdgCode())==3334){
-					xi_flag = kTRUE;
+					omega_flag = kTRUE;
 					mccascpart = mcdau;
 				}
 			}
 
 			Int_t decaytype = -9999;
-			if(e_flag && xi_flag) decaytype = 0;
+			if(e_flag && omega_flag) decaytype = 0;
 
-			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype);
+			FillMCROOTObjects(mcpart,mcepart,mccascpart,decaytype,mcArray);
 		}
-		if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
-			AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
-			Float_t etamin, etamax;
-			esdcuts->GetEtaRange(etamin,etamax);
-			if(fabs(mcpart->Eta())<etamax)
-				fHistoBachPtMCGen->Fill(mcpart->Pt());
-		}
+       /*
+        if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
+            AliESDtrackCuts *esdcuts = fAnalCuts->GetTrackCuts();
+            Float_t etamin, etamax;
+            esdcuts->GetEtaRange(etamin,etamax);
+            if(fabs(mcpart->Eta())<etamax){
+                Bool_t gamma_flag = kFALSE;
+                Int_t labmother = mcpart->GetMother();
+                if(labmother>=0){
+                    AliAODMCParticle *mcmother = (AliAODMCParticle*) mcArray->At(labmother);
+                    Int_t pdgmother = mcmother->GetPdgCode();
+                    if(TMath::Abs(pdgmother)==22) gamma_flag = kTRUE;
+                }
+                if(!gamma_flag) fHistoBachPtMCGen->Fill(mcpart->Pt());
+            }
+            FillMCEleROOTObjects(mcpart, mcArray);
+        }
 		if(TMath::Abs(mcpart->GetPdgCode())==3334){
 			Double_t etamin, etamax, rapmin, rapmax;
 			fAnalCuts->GetProdCascEtaRange(etamin,etamax);
@@ -2239,6 +2774,86 @@ void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MakeMCAnalysis(TClonesArray 
 			if((fabs(mcpart->Y())<rapmax) && (fabs(mcpart->Eta())<etamax))
 				fHistoOmegaMassvsPtMCGen->Fill(1.67245, mcpart->Pt());
 		}
-	}
-	return;
+            FillMCCascROOTObjects(mcpart, mcArray);
+    */
+        //---- electron match
+        if(TMath::Abs(mcpart->GetPdgCode())==11 && mcpart->GetStatus()==1){
+            Bool_t gamma_flag = kFALSE;
+            Int_t labmother = mcpart->GetMother();
+            if(labmother>=0){
+                AliAODMCParticle *mcmother = (AliAODMCParticle*) mcArray->At(labmother);
+                Int_t pdgmother = mcmother->GetPdgCode();
+                if(TMath::Abs(pdgmother)==22) gamma_flag = kTRUE;
+            }
+            if(!gamma_flag) fHistoBachPtMCGen->Fill(mcpart->Pt());
+            
+            FillMCEleROOTObjects(mcpart, mcArray);
+        }
+        
+        //---- cascade Omega match
+        Int_t NDaughters = 2;
+        if( TMath::Abs(mcpart->GetPdgCode())==3334 && mcpart->GetNDaughters()==NDaughters ){
+            Bool_t kaonfromOmega_flag = kFALSE;
+            Bool_t v0_flag = kFALSE;
+            Bool_t pifromLam_flag = kFALSE;
+            Bool_t prfromLam_flag = kFALSE;
+            
+            AliAODMCParticle *mcv0part = NULL;
+            for(Int_t idau =mcpart->GetDaughterFirst(); idau <= mcpart->GetDaughterLast();idau++ ){
+                if(idau<0) break;
+                AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
+                if(TMath::Abs(mcdau->GetPdgCode()==321)){
+                    kaonfromOmega_flag = kTRUE;
+                }// bachelor: kaon 321
+                if( TMath::Abs(mcdau->GetPdgCode()==3122 && mcdau->GetNDaughters()==NDaughters) ){
+                    v0_flag = kTRUE;
+                    mcv0part = mcdau;
+                    for( Int_t idau = mcv0part->GetDaughterFirst(); idau<=mcv0part->GetDaughterLast(); idau++){
+                        if(idau<0) break;
+                        AliAODMCParticle *mcdau_lam = (AliAODMCParticle*)mcArray->At(idau);
+                        if(TMath::Abs(mcdau_lam->GetPdgCode()==211)) pifromLam_flag = kTRUE;
+                        if(TMath::Abs(mcdau_lam->GetPdgCode()==2212)) prfromLam_flag = kTRUE;
+                    }
+                }// loop for V0: Lambda:3122
+                
+            }//loop for cascade
+            
+            FillMCCascROOTObjects(mcpart, mcArray);
+        }
+
+    }
+	return kTRUE;
+}
+////-------------------------------------------------------------------------------
+void AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::DefineCorrelationTreeVariables()
+{
+            //
+            // Define mc pair tree variables
+            //
+            
+    const char* nameoutput = GetOutputSlot(9)->GetContainer()->GetName();
+    fCorrelationVariablesTree = new TTree(nameoutput,"Correlation variables tree");
+    Int_t nVar = 13;
+    fCorrelationVariables = new Float_t [nVar];
+    TString * fCandidateVariableNames = new TString[nVar];
+            
+    fCandidateVariableNames[0] = "OmegaPt";
+    fCandidateVariableNames[1] = "ElePt";
+    fCandidateVariableNames[2] = "DeltaPhi";
+    fCandidateVariableNames[3] = "DeltaEta";
+    fCandidateVariableNames[4] = "SignType";
+    fCandidateVariableNames[5] = "Convtype";
+    fCandidateVariableNames[6] = "Centrality";
+    fCandidateVariableNames[7] = "EleOmegaPt";
+    fCandidateVariableNames[8] = "EleOmegaMass";
+    fCandidateVariableNames[9] = "EleOmegaCosOA";
+    fCandidateVariableNames[10] = "MassOmega";
+    fCandidateVariableNames[11] = "MassLambda";
+    fCandidateVariableNames[12] = "CosPointingAngleV0";
+            
+            
+    for (Int_t ivar=0; ivar<nVar; ivar++) {
+        fCorrelationVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCorrelationVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
+    }
+    return;
 }

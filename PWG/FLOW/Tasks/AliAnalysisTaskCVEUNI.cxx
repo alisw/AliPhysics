@@ -100,6 +100,9 @@ AliAnalysisTaskCVEUNI::AliAnalysisTaskCVEUNI(const char *name): AliAnalysisTaskS
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fPileUpSlopeParm(3.43),
+  fPileUpConstParm(43),
+  bSkipPileUpCut(kFALSE),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -123,8 +126,22 @@ AliAnalysisTaskCVEUNI::AliAnalysisTaskCVEUNI(const char *name): AliAnalysisTaskS
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),      
   fHistAChrgVsCent(NULL),
-  
-  fHistEventCount(NULL)
+
+  fHistTPConlyVsCL1Before(NULL),
+  fHistTPConlyVsV0MBefore(NULL),
+  fHistTPConlyVsCL1After(NULL),
+  fHistTPConlyVsV0MAfter(NULL),
+  fHistGlobalVsV0MBefore(NULL),
+  fHistGlobalVsV0MAfter(NULL),
+  fTPCvsGlobalTrkBefore(NULL),
+  fTPCvsGlobalTrkAfter(NULL),
+  fHistTPCVsESDTrkBefore(NULL),
+  fHistTPCVsESDTrkAfter(NULL),
+
+  fHistPileUpCount(NULL),
+  fHistEventCount(NULL),
+  fHCorrectEVNTWGTChrg(NULL)
+
 {
 
   for(int i=0;i<2;i++){
@@ -197,6 +214,9 @@ AliAnalysisTaskCVEUNI::AliAnalysisTaskCVEUNI():
   fNSigmaTOFCut(2.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
+  fPileUpSlopeParm(3.43),
+  fPileUpConstParm(43),
+  bSkipPileUpCut(kFALSE),
   fEtaGapNeg(-0.1),
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
@@ -220,8 +240,22 @@ AliAnalysisTaskCVEUNI::AliAnalysisTaskCVEUNI():
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),    
   fHistAChrgVsCent(NULL),
-  
-  fHistEventCount(NULL)
+
+  fHistTPConlyVsCL1Before(NULL),
+  fHistTPConlyVsV0MBefore(NULL),
+  fHistTPConlyVsCL1After(NULL),
+  fHistTPConlyVsV0MAfter(NULL),
+  fHistGlobalVsV0MBefore(NULL),
+  fHistGlobalVsV0MAfter(NULL),
+  fTPCvsGlobalTrkBefore(NULL),
+  fTPCvsGlobalTrkAfter(NULL),
+  fHistTPCVsESDTrkBefore(NULL),
+  fHistTPCVsESDTrkAfter(NULL),
+
+  fHistPileUpCount(NULL),
+  fHistEventCount(NULL),
+  fHCorrectEVNTWGTChrg(NULL)
+
 {
   for(int i=0;i<2;i++){
     for(int j=0;j<10;j++){
@@ -331,6 +365,52 @@ void AliAnalysisTaskCVEUNI::UserCreateOutputObjects()
   fHistEtaPhiAfterCut = new TH2F("fHistPhiEtaAfterCut","#phi vs #eta (with Wgts)",50,0,6.2835,24,-1.2,1.2);
   fListHist->Add(fHistEtaPhiAfterCut);
   
+
+  Int_t gMaxGlobalmult  = 4000;
+  Int_t gMaxTPCcorrmult = 5000;
+  Int_t gMaxESDtracks   = 20000;
+
+
+
+
+  fHistGlobalVsV0MBefore = new TH2F("fHistGlobalVsV0MBefore","Before;Cent(V0M);Global",100,0,100,500,0,gMaxGlobalmult);
+  fListHist->Add(fHistGlobalVsV0MBefore);
+  fHistGlobalVsV0MAfter  = new TH2F("fHistGlobalVsV0MAfter"," After; Cent(V0M);Global",100,0,100,500,0,gMaxGlobalmult);
+  fListHist->Add(fHistGlobalVsV0MAfter);
+
+  fHistTPConlyVsCL1Before = new TH2F("fHistTPConlyVsCL1Before","Before;Cent(CL1); TPC(FB128)",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsCL1Before);
+  fHistTPConlyVsCL1After  = new TH2F("fHistTPConlyVsCL1After","After; Cent(CL1); TPC(FB128) ",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsCL1After);
+
+  fHistTPConlyVsV0MBefore = new TH2F("fHistTPConlyVsV0MBefore","Before;Cent(V0M); TPC(FB128)",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsV0MBefore);
+  fHistTPConlyVsV0MAfter  = new TH2F("fHistTPConlyVsV0MAfter","After; Cent(V0M); TPC(FB128) ",100,0,100,250,0,gMaxTPCcorrmult);
+  fListHist->Add(fHistTPConlyVsV0MAfter);
+
+
+  fTPCvsGlobalTrkBefore = new TH2F("fTPCvsGlobalTrkBefore","Global(FB32) vs TPC(FB128)",250,0,5000,250,0,5000);
+  fListHist->Add(fTPCvsGlobalTrkBefore);
+  fTPCvsGlobalTrkAfter = new TH2F("fTPCvsGlobalTrkAfter","Global(FB32) vs TPC(FB128)",250,0,5000,250,0,5000);
+  fListHist->Add(fTPCvsGlobalTrkAfter);
+
+  fHistTPCVsESDTrkBefore = new TH2F("fHistTPCVsESDTrkBefore","Before; TPC1; ESD trk",500,0,gMaxTPCcorrmult,200,0,gMaxESDtracks);
+  fListHist->Add(fHistTPCVsESDTrkBefore);
+  fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",500,0,gMaxTPCcorrmult,200,0,gMaxESDtracks);
+  fListHist->Add(fHistTPCVsESDTrkAfter);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   
   //----------- User's histograms: --------------
@@ -472,6 +552,16 @@ void AliAnalysisTaskCVEUNI::UserCreateOutputObjects()
     std::cout<<"\n\n ******* WARNING No TList NUA Correction!!\n using NUAWgt = 1.0 \n "<<std::endl;
   }
 
+   if(fListV0MCorr){
+    std::cout<<"\n UserCreateOutputObject::Info() Tlist for EVNTWGT Correction Found.!!\n"<<std::endl;
+    //fListV0MCorr->ls();                                                                                                                      
+
+}
+  else{
+    std::cout<<"\n\n ******* WARNING No TList EVNTWGT Correction!!\n using EVNTWGTWgt = 1.0 \n "<<std::endl;
+  }
+
+
   //fParticle = 3;
   
   std::cout<<"\n UserCreateOutputObject; PID = "<<fParticle<<" FB = "<<fFilterBit<<" harmonic = "<<gHarmonic<<"...\n"<<endl;
@@ -581,6 +671,18 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
 
   
   fCentDistBeforCut->Fill(centrality);
+
+
+
+
+ Bool_t kPileupEvent = kFALSE;
+  kPileupEvent = CheckEventIsPileUp(fAOD);
+  if (!bSkipPileUpCut)
+    if(kPileupEvent)  return;
+
+
+
+
   
   if(centrality<fCentralityMin || centrality>fCentralityMax){ 
     return;
@@ -658,6 +760,15 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
     //GetNUACorrectionHist(runNumber,2);
     //GetNUACorrectionHist(runNumber,3); 
   }
+
+
+  if(fListV0MCorr){
+     GetV0MCorrectionHist(runNumber,0);         //Charge                                                                                       
+     //GetEVNTWGTCorrectionHist(runNumber,fParticle); //1=pion, 2=kaon, 3=proton                                                               
+  }
+
+
+
 
 
 
@@ -818,7 +929,7 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
 
 
 
-    
+    /*
     ///------- For Pile-UP removal Purpose only-----
     if(AODtrack->TestFilterBit(128))      fMultTPCFull++; // A. Dobrin TPC vs ESD PileUp Cut.
     if(!AODtrack->TestFilterBit(16) || AODtrack->Chi2perNDF() < 0.1) continue;
@@ -828,7 +939,7 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
     if(copy.PropagateToDCA(fVevent->GetPrimaryVertex(), fVevent->GetMagneticField(), 100., bval, bCov) && TMath::Abs(bval[0]) < 0.3 && TMath::Abs(bval[1]) < 0.3){
       fMultGlobal++;
     }///MultGlobal Condition
-    
+    */
   }///------> 1st Track loop Ends here.<--------
 
 
@@ -1320,22 +1431,31 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
   /// Charge All(+-):
 
 
+
+  Float_t eventwgtcharge=1.0;
+  if(fHCorrectEVNTWGTChrg){
+    eventwgtcharge=fHCorrectEVNTWGTChrg->GetBinContent(fHCorrectEVNTWGTChrg->GetXaxis()->FindBin(centrality));
+  }
+
+
+
+  
   Double_t c2WeightChrg     = fSumWgtEtaPos*fSumWgtEtaNeg;
   Double_t c2cumulantChrg   = (fSumTPCQn2xPos*fSumTPCQn2xNeg + fSumTPCQn2yPos*fSumTPCQn2yNeg)/c2WeightChrg;
-  fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg);   /// for denominator
+  fHistv2cumAchChrgAll[iCent]->Fill(fAchrgNet, c2cumulantChrg, c2WeightChrg*eventwgtcharge);   /// for denominator
   
   if(NumOfChrgPosEtaPos>0){
     ///Chrg+:  
     Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
     Double_t c2cumulantChrgPos =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNeg + sumQ2yChrgPosEtaPos*fSumTPCQn2yNeg)/c2WeightChrgPos;
-    fHistv2AchChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos);   /// for denominator
+    fHistv2AchChrgPos[1][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos*eventwgtcharge);   /// for denominator
   }
   
   if(NumOfChrgNegEtaPos>0){  
     ///Chrg-:  
     Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNeg;
     Double_t c2cumulantChrgNeg =  (sumQ2xChrgNegEtaPos*fSumTPCQn2xNeg + sumQ2yChrgNegEtaPos*fSumTPCQn2yNeg)/c2WeightChrgNeg;
-    fHistv2AchChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNeg, c2WeightChrgNeg);   /// for denominator
+    fHistv2AchChrgNeg[1][iCent]->Fill(fAchrgNet, c2cumulantChrgNeg, c2WeightChrgNeg*eventwgtcharge);   /// for denominator
   }
   
 
@@ -1350,13 +1470,13 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
       ///Pion+:  
       Double_t c2WeightPionPos   =  NumOfPionPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantPionPos =  (sumQ2xPionPosEtaPos*fSumTPCQn2xNeg + sumQ2yPionPosEtaPos*fSumTPCQn2yNeg)/c2WeightPionPos;
-      fHistv2AchPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionPos, c2WeightPionPos);   /// for denominator
+      fHistv2AchPionPos[1][iCent]->Fill(fAchrgNet, c2cumulantPionPos, c2WeightPionPos*eventwgtcharge);   /// for denominator
     }
     if(NumOfPionNegEtaPos>0){  
       ///Pion-:  
       Double_t c2WeightPionNeg   =  NumOfPionNegEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantPionNeg =  (sumQ2xPionNegEtaPos*fSumTPCQn2xNeg + sumQ2yPionNegEtaPos*fSumTPCQn2yNeg)/c2WeightPionNeg;
-      fHistv2AchPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionNeg, c2WeightPionNeg);   /// for denominator
+      fHistv2AchPionNeg[1][iCent]->Fill(fAchrgNet, c2cumulantPionNeg, c2WeightPionNeg*eventwgtcharge);   /// for denominator
     }
   }
 
@@ -1365,13 +1485,13 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
       ///Kaon+:  
       Double_t c2WeightKaonPos   =  NumOfKaonPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantKaonPos =  (sumQ2xKaonPosEtaPos*fSumTPCQn2xNeg + sumQ2yKaonPosEtaPos*fSumTPCQn2yNeg)/c2WeightKaonPos;
-      fHistv2AchKaonPos[1][iCent]->Fill(fAchrgNet, c2cumulantKaonPos, c2WeightKaonPos);   /// for denominator
+      fHistv2AchKaonPos[1][iCent]->Fill(fAchrgNet, c2cumulantKaonPos, c2WeightKaonPos*eventwgtcharge);   /// for denominator
     }
     if(NumOfKaonNegEtaPos>0){
       ///Kaon-:  
       Double_t c2WeightKaonNeg   =  NumOfKaonNegEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantKaonNeg =  (sumQ2xKaonNegEtaPos*fSumTPCQn2xNeg + sumQ2yKaonNegEtaPos*fSumTPCQn2yNeg)/c2WeightKaonNeg;
-      fHistv2AchKaonNeg[1][iCent]->Fill(fAchrgNet, c2cumulantKaonNeg, c2WeightKaonNeg);   /// for denominator
+      fHistv2AchKaonNeg[1][iCent]->Fill(fAchrgNet, c2cumulantKaonNeg, c2WeightKaonNeg*eventwgtcharge);   /// for denominator
     }
   }
 
@@ -1380,14 +1500,14 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
       ///Prot+:  
       Double_t c2WeightProtPos   =  NumOfProtPosEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantProtPos =  (sumQ2xProtPosEtaPos*fSumTPCQn2xNeg + sumQ2yProtPosEtaPos*fSumTPCQn2yNeg)/c2WeightProtPos;
-      fHistv2AchProtPos[1][iCent]->Fill(fAchrgNet, c2cumulantProtPos, c2WeightProtPos);   /// for denominator
+      fHistv2AchProtPos[1][iCent]->Fill(fAchrgNet, c2cumulantProtPos, c2WeightProtPos*eventwgtcharge);   /// for denominator
     }
 
     if(NumOfProtNegEtaPos>0){
       ///Prot-:  
       Double_t c2WeightProtNeg   =  NumOfProtNegEtaPos*fSumWgtEtaNeg;
       Double_t c2cumulantProtNeg =  (sumQ2xProtNegEtaPos*fSumTPCQn2xNeg + sumQ2yProtNegEtaPos*fSumTPCQn2yNeg)/c2WeightProtNeg;
-      fHistv2AchProtNeg[1][iCent]->Fill(fAchrgNet, c2cumulantProtNeg, c2WeightProtNeg);   /// for denominator
+      fHistv2AchProtNeg[1][iCent]->Fill(fAchrgNet, c2cumulantProtNeg, c2WeightProtNeg*eventwgtcharge);   /// for denominator
     }
   }
   
@@ -1410,11 +1530,315 @@ void AliAnalysisTaskCVEUNI::UserExec(Option_t*) {
 
 
 
+Bool_t AliAnalysisTaskCVEUNI::CheckEventIsPileUp(AliAODEvent *faod) {
+
+  Bool_t BisPileup=kFALSE;
+
+
+  Double_t centrV0M=300;
+  Double_t centrCL1=300;
+  Double_t centrCL0=300;
+  Double_t centrTRK=300;
+
+  fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+
+  if(!fMultSelection) {
+    printf("\n\n **WARNING** ::UserExec() AliMultSelection object not found.\n\n");
+    exit(1);
+  }
+
+
+  centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+  centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+  centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
+  centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
+
+
+  //-- pile-up a la Dobrin for LHC15o -----                                                                                                    
+  if(PileUpMultiVertex(faod)) {
+    fHistPileUpCount->Fill(0.5);
+    BisPileup=kTRUE;
+  }
+  Int_t isPileup = faod->IsPileupFromSPD(3);
+  if(isPileup != 0) {
+    fHistPileUpCount->Fill(1.5);
+    BisPileup=kTRUE;
+  }
+  if(((AliAODHeader*)faod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+    fHistPileUpCount->Fill(2.5);
+    BisPileup=kTRUE;
+  }
+   if(faod->IsIncompleteDAQ())  {
+    fHistPileUpCount->Fill(3.5);
+    BisPileup=kTRUE;
+  }
+  if(fabs(centrV0M-centrCL1)> 5.0)  {//default: 7.5                                                                                            
+    fHistPileUpCount->Fill(4.5);
+    BisPileup=kTRUE;
+  }
+
+
+
+  // check vertex consistency                                                                                                                  
+  const AliAODVertex* vtTrc = faod->GetPrimaryVertex();
+  const AliAODVertex* vtSPD = faod->GetPrimaryVertexSPD();
+
+  if(vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1) {
+    fHistPileUpCount->Fill(5.5);
+    BisPileup=kTRUE;
+  }
+
+  double covTrc[6], covSPD[6];
+  vtTrc->GetCovarianceMatrix(covTrc);
+vtSPD->GetCovarianceMatrix(covSPD);
+
+  double dz = vtTrc->GetZ() - vtSPD->GetZ();
+
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]);
+  double nsigTot = dz/errTot;
+  double nsigTrc = dz/errTrc;
+
+  if(TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+    fHistPileUpCount->Fill(6.5);
+    BisPileup=kTRUE;
+  }
+
+
+
+Int_t multTPC = 0;
+  Int_t multTPCAll = 0;
+  Int_t multITSfb96 = 0;
+  Int_t multITSfb32 = 0;
+
+  Int_t multTPCFE = 0;
+  Int_t multGlobal = 0;
+  Int_t multTPCuncut = 0;
+
+  Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+
+  const Int_t nTracks = faod->GetNumberOfTracks();
+
+  for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
+    //AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(faod->GetTrack(iTracks));                                                        
+    AliAODTrack* track = (AliAODTrack*)faod->GetTrack(iTracks);
+    if(!track)  continue;
+
+    //---------- old method -----------                                                                                                        
+    if(track->TestFilterBit(128))
+      multTPCAll++;
+ //if(track->TestFilterBit(96))                                                                                                             
+    //multITSfb96++;                                                                                                                           
+
+
+    //----------------------------------                                                                                                       
+    if(track->TestFilterBit(1))  multTPCuncut++;
+    if(track->TestFilterBit(32)) multITSfb32++;
+
+
+    if(track->Pt()<0.2 || track->Pt()>10.0 || TMath::Abs(track->Eta())>0.8 || track->GetTPCNcls()<fTPCclustMin || track->GetTPCsignal()<10.0)
+      continue;
+    if(track->GetDetPid() && track->Chi2perNDF() > 0.2) multTPC++;
+    if(track->TestFilterBit(1) && track->Chi2perNDF()>0.2)  multTPCFE++;
+    if(!track->TestFilterBit(16) || track->Chi2perNDF()<0.1)   continue;
+
+    Double_t b[2]    = {-99., -99.};
+    Double_t bCov[3] = {-99., -99., -99.};
+
+    AliAODTrack copy(*track);
+    Double_t magField = faod->GetMagneticField();
+ if(magField!=0){
+      if(track->PropagateToDCA(faod->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3)
+        multGlobal++;
+    }
+  }
+
+
+
+
+  //fixed for test:                                                                                                                            
+  // Double_t fPileUpSlopeParm = 3.43;                                                                                                         
+  //Double_t fPileUpConstParm = 43;                                                                                                            
+
+  Double_t multESDTPCDif  = multEsd  - fPileUpSlopeParm*multTPCAll;
+
+
+  Bool_t  bIsOutLier=kFALSE;
+  if(multTPC < (-20.0+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) { bIsOutLier = kTRUE;}
+
+  //  fHistEventCount->Fill(stepCount); //4                                                                                                    
+  //stepCount++;
+
+   fTPCvsGlobalTrkBefore->Fill(multGlobal,multTPC);
+  fHistTPCVsESDTrkBefore->Fill(multTPCAll,multEsd);   //A. Dobrin                                                                              
+  fHistTPConlyVsCL1Before->Fill(centrCL1,multTPCAll);
+  fHistTPConlyVsV0MBefore->Fill(centrV0M,multTPCAll);
+  fHistGlobalVsV0MBefore->Fill(centrV0M, multGlobal);
+
+
+
+  if(multESDTPCDif > fPileUpConstParm) {
+    fHistPileUpCount->Fill(7.5);
+    BisPileup=kTRUE;
+  }
+ if(BisPileup==kFALSE) {
+    if(!fMultSelection->GetThisEventIsNotPileup())  BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+    if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+    if(BisPileup)     fHistPileUpCount->Fill(9.5);
+  }
+
+
+  if (!bIsOutLier){
+    fTPCvsGlobalTrkAfter->Fill(multGlobal,multTPC);
+
+    //fHistEventCount->Fill(stepCount); //5                                                                                                    
+    //stepCount++;                                                                                                                             
+
+  }
+  if(!BisPileup){
+    fHistTPCVsESDTrkAfter->Fill(multTPCAll,multEsd);
+    fHistTPConlyVsCL1After->Fill(centrCL1,multTPCAll);
+    fHistTPConlyVsV0MAfter->Fill(centrV0M,multTPCAll);
+    fHistGlobalVsV0MAfter->Fill(centrV0M, multGlobal);
+
+    //fHistEventCount->Fill(stepCount); //6                                                                                                    
+    //stepCount++                                                                                                                              
+}
+
+
+  return BisPileup;
+} //-------pile up function ------                                                                                                             
+
+
+
+Bool_t AliAnalysisTaskCVEUNI::PileUpMultiVertex(const AliAODEvent* faod)
+{  // check for multi-vertexer pile-up                                                                                                         
+  const int    kMinPlpContrib = 5;
+  const double kMaxPlpChi2    = 5.0;
+  const double kMinWDist      = 15;
+
+  const AliVVertex* vtPrm = 0;
+  const AliVVertex* vtPlp = 0;
+
+  int nPlp = 0;
+
+  if(!(nPlp=faod->GetNumberOfPileupVerticesTracks()))
+    return kFALSE;
+
+  vtPrm = faod->GetPrimaryVertex();
+  if(vtPrm == faod->GetPrimaryVertexSPD())
+    return kTRUE;  // there are pile-up vertices but no primary                                                                                
+
+  //int bcPrim = vtPrm->GetBC();                                                                                                               
+
+for(int ipl=0;ipl<nPlp;ipl++) {
+    vtPlp = (const AliVVertex*)faod->GetPileupVertexTracks(ipl);
+    if (vtPlp->GetNContributors() < kMinPlpContrib) continue;
+    if (vtPlp->GetChi2perNDF()    > kMaxPlpChi2)    continue;
+    //int bcPlp = vtPlp->GetBC();                                                                                                              
+    //if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2)                                                                            
+    // return kTRUE; // pile-up from other BC                                                                                                  
+
+    double wDst = GetWDist(vtPrm,vtPlp);
+    if (wDst<kMinWDist)        continue;
+
+    return kTRUE; // pile-up: well separated vertices                                                                                          
+  }
+  return kFALSE;
+}
+
+
+
+
+double AliAnalysisTaskCVEUNI::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+{
+
+
+ // calculate sqrt of weighted distance to other vertex                                                                                       
+  if (!v0 || !v1) {
+    AliDebug(2,"\n\n ::GetWDist => One of vertices is not valid\n\n");
+    return 0;
+  }
+  static TMatrixDSym vVb(3);
+  double dist = -1;
+  double dx = v0->GetX()-v1->GetX();
+  double dy = v0->GetY()-v1->GetY();
+  double dz = v0->GetZ()-v1->GetZ();
+  double cov0[6],cov1[6];
+  v0->GetCovarianceMatrix(cov0);
+  v1->GetCovarianceMatrix(cov1);
+  vVb(0,0) = cov0[0]+cov1[0];
+  vVb(1,1) = cov0[2]+cov1[2];
+  vVb(2,2) = cov0[5]+cov1[5];
+  vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
+  vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+  vVb.InvertFast();
+  if (!vVb.IsValid()) {
+    AliDebug(2,"Singular Matrix\n");
+  return dist;
+  }
+  dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+    +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+  return dist>0 ? TMath::Sqrt(dist) : -1;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 
 void AliAnalysisTaskCVEUNI::SetupEventAndTaskConfigInfo(){
+
+
+
+fHistPileUpCount = new TH1F("fHistPileUpCount", "fHistPileUpCount", 15, 0., 15.);
+  fHistPileUpCount->GetXaxis()->SetBinLabel(1,"plpMV");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(2,"fromSPD");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(3,"RefMultComb08");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(4,"IncompleteDAQ");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>5.0");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
+  fHistPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
+  Int_t puConst = fPileUpConstParm;
+  //Int_t puConst = 3.0;                                                                                                                       
+  fHistPileUpCount->GetXaxis()->SetBinLabel(8,Form("multESDTPCDif>%d",puConst));
+  fHistPileUpCount->GetXaxis()->SetBinLabel(9,Form("multGlobTPCDif>%d",puConst));
+  fHistPileUpCount->GetXaxis()->SetBinLabel(10,"PileUpMultSelTask");
+  fListHist->Add(fHistPileUpCount);
+
+
+
+
+
+
+
+
+
+
+
   fHistEventCount = new TH1F("fHistEventCount","Event counts",15,0,15);
   fHistEventCount->GetXaxis()->SetBinLabel(1,"Called UserExec()");
   fHistEventCount->GetXaxis()->SetBinLabel(2,"Called Exec()");
@@ -1527,3 +1951,27 @@ void AliAnalysisTaskCVEUNI::GetMCCorrectionHist(Int_t run){
   //   std::cout<<"\n\n !!!!**** Warning : No FB Efficiency Correction, run = "<<run<<"..!!!**** \n using MC TrkWgt = 1.0 \n"<<std::endl;
   // }
 }
+
+
+
+
+void AliAnalysisTaskCVEUNI::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
+{
+
+  if(fListV0MCorr){
+    //cout<<"*****************AT LAST I GOT INTO EVNTWGT CORRECTION FUNCTION******************************"<<endl;                             
+    if(kParticleID==0){ //charge                                                                                                               
+    fHCorrectEVNTWGTChrg = (TH1F *) fListV0MCorr->FindObject(Form("hwgtCharge_Run%d",run));
+
+
+    //cout<<"Run no:"<<run<<endl;                                                                                                              
+
+}
+  }
+    else{
+      // cout<<"*****************AT LAST I GOT INTO EVNTWGT CORRECTION FUNCTION BUT LIST NOT PRESENT******************************"<<endl;     
+      fHCorrectEVNTWGTChrg=NULL;
+    }
+}
+
+

@@ -1,5 +1,4 @@
-/*************************************************************************
- * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+/*opyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -73,6 +72,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fDoOnlyMtxAna(kFALSE),
   fUseTriggerData(kFALSE),
   fEmbeddPerpendicular(kFALSE), //EMB_clus
+  fDoStrangeAna(kFALSE), //StrangeAna 
   fRecJetsBranch(),
   fGenJetsBranch(),
   fPtHardName("pthard"),
@@ -96,6 +96,9 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fInitialized(kFALSE),
   fOutputList(NULL),
   fhJetVtxSim(NULL),
+  fhJetVtxSimFromK0Lambda(NULL),  //StrangeAna
+  fhJetVtxSimFromSigmaXi(NULL),   //StrangeAna
+  fhJetVtxSimFromOther(NULL),     //StrangeAna
   fhJetVtxData(NULL),
   fhQaVtx(NULL),
   fhEntries(NULL),
@@ -175,6 +178,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fDoOnlyMtxAna(kFALSE),
   fUseTriggerData(kFALSE),
   fEmbeddPerpendicular(kFALSE), //EMB_clus
+  fDoStrangeAna(kFALSE), //StrangeAna 
   fRecJetsBranch(),
   fGenJetsBranch(),
   fPtHardName("pthard"),
@@ -198,6 +202,9 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fInitialized(kFALSE),
   fOutputList(NULL),
   fhJetVtxSim(NULL),
+  fhJetVtxSimFromK0Lambda(NULL),  //StrangeAna
+  fhJetVtxSimFromSigmaXi(NULL),   //StrangeAna
+  fhJetVtxSimFromOther(NULL),     //StrangeAna
   fhJetVtxData(NULL),
   fhQaVtx(NULL),
   fhEntries(NULL),
@@ -309,6 +316,17 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
 
   // vertices within the jet - Correction Mode (MC)
   if (fCorrMode) {
+
+    if (fDoStrangeAna){
+          fhJetVtxSimFromK0Lambda=new AliHFJetsContainerVertex("kJetVtxSimFromK0Lambda", AliHFJetsContainerVertex::kJetVtxSim);  //StrangeAna
+          fhJetVtxSimFromSigmaXi=new AliHFJetsContainerVertex("kJetVtxSimFromSigmaXi", AliHFJetsContainerVertex::kJetVtxSim);   //StrangeAna
+          fhJetVtxSimFromOther=new AliHFJetsContainerVertex("kJetVtxSimFromOther", AliHFJetsContainerVertex::kJetVtxSim);     //StrangeAna 
+          fOutputList->Add(fhJetVtxSimFromK0Lambda);
+          fOutputList->Add(fhJetVtxSimFromSigmaXi);
+          fOutputList->Add(fhJetVtxSimFromOther);
+    }
+
+
     if (!fDoOnlyMtxAna) {
       fhJetVtxSim = new AliHFJetsContainerVertex("kJetVtxSim", AliHFJetsContainerVertex::kJetVtxSim);
       fOutputList->Add(fhJetVtxSim);
@@ -946,7 +964,6 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseDataMode()
         for(Int_t iq=0; iq < hyjet->GetNumberOfTracks(); iq++) {
            hytrk = static_cast<AliVParticle*> (hyjet->Track(iq));
            if(!hytrk) continue;
-           //cout<<"HYTRACK "<<hytrk->Pt()<<"   "<< hytrk->Eta()<<"   "<< hytrk->Phi()<<"  " <<hytrk->Charge()<<endl;
            if(hytrk->Charge()==3) sumTrkEmbeddedPt += hytrk->Pt();
         }
 
@@ -1039,6 +1056,7 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
 
     Double_t ptJetGen_wBkgRej = jetMC->Pt() - (jetMC->Area() * rhoMC);
 
+
     if (!fDoOnlyMtxAna) {
       // Fill container tagger
       // At this point we do not need to fill the secondary vertex QA container
@@ -1097,6 +1115,117 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
       }  
       //-------------------------------------------------
       // Fill jet-with-vertex container
+   
+
+      //-----------------------StrangeAna
+
+      if (fDoStrangeAna && nVtx>0){
+
+          //-------search for the most displaced vertex
+          Double_t *decLenXY= new Double_t[nVtx];
+          Int_t *idVertex = new Int_t[nVtx];
+          for (Int_t vtxID = 0; vtxID < nVtx; ++vtxID) {
+             AliAODVertex *svtx = (AliAODVertex *)fHFvertexing->UncheckedAt(vtxID);  
+             decLenXY[vtxID] = pVtx->DistanceXYToVertex(svtx);
+          }
+          TMath::Sort(nVtx, decLenXY, idVertex);
+
+          //---------------------------Search for lambda / sigma mother particles
+          AliAODVertex *svtx = (AliAODVertex *)fHFvertexing->UncheckedAt(idVertex[0]);
+          if (!svtx) continue;
+
+          Int_t nProngTrk = svtx->GetNDaughters();
+          Int_t searchResultK0Lamda=0;
+          Int_t searchResultSigmaXi=0;
+
+          for ( Int_t jp = 0; jp < nProngTrk; jp++ ) {
+               AliAODTrack* tr = (AliAODTrack*)svtx->GetDaughter(jp);               
+               Int_t label = TMath::Abs(tr->GetLabel());
+           
+           
+               Int_t labelfound=0;
+               
+               AliAODMCParticle* mcPart = NULL;
+               for(Int_t it = 0; it < fMCPartArray->GetEntries(); it++) { 
+                   mcPart   = (AliAODMCParticle*) fMCPartArray->At(it);
+                   Int_t labelMC = TMath::Abs(mcPart->GetLabel());
+                   if(labelMC==label){
+                       labelfound=1;
+                       break;
+                   }
+               }
+
+               if (labelfound==0) continue;
+                         
+               Int_t motherID = mcPart->GetMother();
+               AliAODMCParticle *mother = ( motherID > -1 ) ? (AliAODMCParticle*)fMCPartArray->At(motherID) : 0;
+               if (!mother) continue;
+                
+               Int_t motherPDG = TMath::Abs( mother->GetPdgCode() );   
+               
+               if(motherPDG==310 || motherPDG==3122) {
+                   searchResultK0Lamda++;
+        	   continue; 
+               }
+               if(motherPDG==3212 || motherPDG==3222 || motherPDG==3112 || motherPDG==3322 || motherPDG==3312|| motherPDG==3334 ){
+                   searchResultSigmaXi++;
+                   continue;
+               }                             
+           }
+      
+           if (searchResultK0Lamda>0){
+               fhJetVtxSimFromK0Lambda->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco,
+                                     nVtx,
+                                     fZNApercentile,
+                                     ptJet_wBkgRej,
+                                     aVtxDisp,
+                                     fHFvertexing,
+                                     pVtx,
+                                     jet,
+                                     fMCPartArray,
+                                     partonnat,
+                                     ptpart,
+                                     fMCWeight);
+           }
+             else if (searchResultSigmaXi>0){
+               fhJetVtxSimFromSigmaXi->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco,
+                                     nVtx,
+                                     fZNApercentile,
+                                     ptJet_wBkgRej,
+                                     aVtxDisp,
+                                     fHFvertexing,
+                                     pVtx,
+                                     jet,
+                                     fMCPartArray,
+                                     partonnat,
+                                     ptpart,
+                                     fMCWeight);
+              }
+               else{
+                 fhJetVtxSimFromOther->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco,
+                                     nVtx,
+                                     fZNApercentile,
+                                     ptJet_wBkgRej,
+                                     aVtxDisp,
+                                     fHFvertexing,
+                                     pVtx,
+                                     jet,
+                                     fMCPartArray,
+                                     partonnat,
+                                     ptpart,
+                                     fMCWeight);
+                }
+
+        
+
+       delete [] decLenXY;
+       delete [] idVertex;
+
+      }
+
+
+     //-----------------------end of StrangeAna
+
       fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepReco,
                                      nVtx,
                                      fZNApercentile,
@@ -1333,7 +1462,7 @@ void AliAnalysisTaskEmcalJetBtagSV::GetFlavour2Methods(AliEmcalJet* jet,
     ptpart[0] = parton[0]->Pt();
   } else {
 
-    AliWarning(MSGWARNING("No parton method output"));
+   // AliWarning(MSGWARNING("No parton method output"));
   }
 
   if (!parton[1])
@@ -1678,7 +1807,6 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
 		//----------------Generating NEW perpendicular track
 		
 		Double_t gen_pt = fTrackGenerator->Uniform(0,100);
-		cout<<"!!!!!!!!!!!!!!!!!! gen_pt = "<<gen_pt<<endl;
            	TLorentzVector lVec;
                 lVec.SetPtEtaPhiM(gen_pt,signalEta,signalPhi + TMath::Pi()/2,0);
 		fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E(), -99999);
@@ -1729,7 +1857,6 @@ Int_t AliAnalysisTaskEmcalJetBtagSV::FillDeltaPt(Double_t rho,
 			}
 
 		 }
-		cout<<" All is done, default delPt: " << GetDeltaPtRandomConeWithoutSignalPt(fTaggingRadius,rho, signalEta, signalPhi) << " Updated One : " << deltaPtEmb<<endl;
 	}
 
 //----------------------------------------------------------
@@ -1788,3 +1915,5 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetDeltaPtRandomConeWithoutSignalPt (Dou
   return conePt - jetradius*jetradius*TMath::Pi() * rhovalue;
     
 }   
+
+   

@@ -21,30 +21,31 @@ class AliMCEvent;
 
 class AlidNdPtTools : public TObject
 {
- public:
+public:
   virtual ~AlidNdPtTools() = 0;
 
- public:
+public:
   enum ParticleType
   {
     kUndefined = -1,
-    kEl = 0,
-    kMu = 1,
-    kPi = 2,
-    kKa = 3,
-    kPr = 4,
-    kOther = 5,
-    kSigmaP = 6,
-    kSigmaM = 7,
-    kXi = 8,
-    kOmega = 9
+    kPi = 0,
+    kKa = 1,
+    kPr = 2,
+    kSigmaP = 3,
+    kSigmaM = 4,
+    kEl = 5,
+    kMu = 6,
+    kXi = 7,
+    kOmega = 8,
+    kOther = 9
   };
   enum ProductionType
   {
     kUnknown = -1,
     kPrim = 0,
     kSecDecay = 1,
-    kSecMaterial = 2
+    kSecMaterial = 2,
+    kPileUpTrack = 3
   };
   enum EventType
   {
@@ -122,7 +123,7 @@ class AlidNdPtTools : public TObject
   static AliESDtrackCuts* CreateESDtrackCuts(const char* option, int _cutMode = 100,
                                              bool _SaveHistos = false); // options
 
- private:
+private:
   static THnSparseF* fSparseTmp; //! temporary histogram for internal use only
   static TGraph* fGsscale;       // graph with scaling factors (nominal)
   static TGraph* fGsscale1;      // graph with scaling factors (syst up)

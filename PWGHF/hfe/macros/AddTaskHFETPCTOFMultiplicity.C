@@ -6,15 +6,17 @@ AliAnalysisTask* AddTaskHFETPCTOFMultiplicity(TString suffixName = "",
                                               TString estimatorFilename="",
                                               Double_t refMult=61.2,
                                               Int_t NcontV =2,
-                                              Int_t MaxTPCclus = 100.,
-                                              Int_t TPCNclus =80.,
-                                              Int_t ITSNclus =3.,
                                               Bool_t SPDBoth= kTRUE ,
                                               Bool_t SPDAny= kFALSE ,
                                               Bool_t SPDFirst= kFALSE ,
+                                              Double_t RatioCrossedRowOverFindable=0.8,
+                                              Int_t NTPCCrossRows = 100.,
+                                              Int_t TPCNclus =80.,
+                                              Int_t ITSNclus =3.,
                                               Double_t DCAxyCut =2.4,
                                               Double_t DCAzCut =3.2,
                                               Double_t Etarange = 0.7,
+                                              Double_t TrackPtMin = 2.,
                                               Double_t CutNsigmaTOF = 3.,
                                               Double_t TPCNSigMin = -1.,
                                               Double_t TPCNSigMax = 3.,
@@ -55,9 +57,11 @@ AliAnalysisTask* AddTaskHFETPCTOFMultiplicity(TString suffixName = "",
         HFEtaskINT7->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
         HFEtaskINT7->SetNcontVCut(NcontV);
         HFEtaskINT7->SetEtaRange(Etarange);
-        HFEtaskINT7->SetMaxTPCCluster(MaxTPCclus);
+        HFEtaskINT7->SetRatioCrossedRowOverFindable(RatioCrossedRowOverFindable);
+        HFEtaskINT7->SetNTPCCrossRows(NTPCCrossRows);
         HFEtaskINT7->SetNTPCCluster(TPCNclus);
         HFEtaskINT7->SetNITSCluster(ITSNclus);
+        HFEtaskINT7->SetTrackpTMin(TrackPtMin);
         HFEtaskINT7->SetTOFNSigmaCut(CutNsigmaTOF);
         HFEtaskINT7->SetDCACut(DCAxyCut,DCAzCut);
         HFEtaskINT7->SetTPCnsigma(TPCNSigMin,TPCNSigMax);

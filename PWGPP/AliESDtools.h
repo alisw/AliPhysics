@@ -35,6 +35,7 @@ class AliESDtools : public TNamed {
   void   ProcessITSTPCmatchOut(AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, TTreeStream *pcstream);
   Double_t CachePileupVertexTPC(Int_t entry, Int_t doReset=0, Int_t verbose=0);
   //
+  void FindTPCSPDtracks(Float_t dcaCut, Float_t dcaCutZ, Float_t dcaChi2Cut);
   Int_t DumpEventVariables();
   static Int_t SDumpEventVariables(){return fgInstance->DumpEventVariables();}
   // static functions for querying cached variables in TTree formula

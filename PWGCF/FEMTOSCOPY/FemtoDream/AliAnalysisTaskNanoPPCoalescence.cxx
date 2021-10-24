@@ -7,29 +7,9 @@
 ClassImp(AliAnalysisTaskNanoPPCoalescence)
 AliAnalysisTaskNanoPPCoalescence::AliAnalysisTaskNanoPPCoalescence()
   : AliAnalysisTaskSE(),
-    fInputEvent(nullptr),
-    fEvent(nullptr),
-    fEvtCuts(nullptr),
-    fTrack(nullptr),
-    fProtonTrack(nullptr),
-    fAntiProtonTrack(nullptr),
-    fConfig(nullptr),
+    fTrackBufferSize(2500),
     fIsMC(false),
     fIsMCTruth(false),
-    fEvtList(nullptr),
-    fProtonList(nullptr),
-    fProtonMCList(nullptr),
-    fAntiProtonList(nullptr),
-    fAntiProtonMCList(nullptr),
-    fGTI(nullptr),
-    fPairCleaner(nullptr),
-    fPartColl(nullptr),
-    fResults(nullptr),
-    fTrackBufferSize(2500) {
-}
-
-AliAnalysisTaskNanoPPCoalescence::AliAnalysisTaskNanoPPCoalescence(const char *name, const bool isMC)
-  : AliAnalysisTaskSE(name),
     fInputEvent(nullptr),
     fEvent(nullptr),
     fEvtCuts(nullptr),
@@ -37,19 +17,39 @@ AliAnalysisTaskNanoPPCoalescence::AliAnalysisTaskNanoPPCoalescence(const char *n
     fProtonTrack(nullptr),
     fAntiProtonTrack(nullptr),
     fConfig(nullptr),
-    fIsMC(isMC),
-    fIsMCTruth(false),
+    fPairCleaner(nullptr),
+    fPartColl(nullptr),
+    fGTI(nullptr),
     fEvtList(nullptr),
     fProtonList(nullptr),
     fProtonMCList(nullptr),
     fAntiProtonList(nullptr),
     fAntiProtonMCList(nullptr),
-    fGTI(nullptr),
+    fResults(nullptr),
+    fResultsQA(nullptr) {
+}
+AliAnalysisTaskNanoPPCoalescence::AliAnalysisTaskNanoPPCoalescence(const char *name, const bool isMC)
+  : AliAnalysisTaskSE(name),
+    fTrackBufferSize(2500),
+    fIsMC(isMC),
+    fIsMCTruth(false),
+    fInputEvent(nullptr),
+    fEvent(nullptr),
+    fEvtCuts(nullptr),
+    fTrack(nullptr),
+    fProtonTrack(nullptr),
+    fAntiProtonTrack(nullptr),
+    fConfig(nullptr),
     fPairCleaner(nullptr),
     fPartColl(nullptr),
+    fGTI(nullptr),
+    fEvtList(nullptr),
+    fProtonList(nullptr),
+    fProtonMCList(nullptr),
+    fAntiProtonList(nullptr),
+    fAntiProtonMCList(nullptr),
     fResults(nullptr),
-    fResultsQA(nullptr),
-    fTrackBufferSize(2500) {
+    fResultsQA(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -60,9 +60,6 @@ AliAnalysisTaskNanoPPCoalescence::AliAnalysisTaskNanoPPCoalescence(const char *n
     DefineOutput(7, TList::Class());  //Output for the AntiProton MC
   }
 }
-
-//---------------------------------------------------------------------------------------------------------------------------
-
 AliAnalysisTaskNanoPPCoalescence::~AliAnalysisTaskNanoPPCoalescence() {
   delete fEvent;
   delete fTrack;
@@ -81,7 +78,6 @@ void AliAnalysisTaskNanoPPCoalescence::UserCreateOutputObjects() {
   } else {
     fEvtCuts->InitQA();
   }
-
   if (!fProtonTrack) {
     AliError("No Proton cuts \n");
   } else {
@@ -91,7 +87,6 @@ void AliAnalysisTaskNanoPPCoalescence::UserCreateOutputObjects() {
       fProtonMCList = fProtonTrack->GetMCQAHists();
     }
   }
-
   if (!fAntiProtonTrack) {
     AliError("No AntiProton cuts \n");
   } else {
@@ -101,19 +96,16 @@ void AliAnalysisTaskNanoPPCoalescence::UserCreateOutputObjects() {
       fAntiProtonMCList = fAntiProtonTrack->GetMCQAHists();
     }
   }
-
   if (!fConfig) {
-    AliError("No Correlation Config \n");
+    AliError("LOL No Correlation Config \n");
+
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
-    std::cout<<fConfig->GetMinimalBookingME()<<endl;
-    fPairCleaner = new AliFemtoDreamPairCleaner(0,0,fConfig->GetMinimalBookingME());
+    fPairCleaner = new AliFemtoDreamPairCleaner(2,2,fConfig->GetMinimalBookingME());
   }
-
   fEvent = new AliFemtoDreamEvent(false, true, GetCollisionCandidates(), false);
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(fIsMC);
-
   if (!fEvtCuts->GetMinimalBooking()) {
     fEvtList = fEvtCuts->GetHistList();
   } else {
@@ -121,11 +113,9 @@ void AliAnalysisTaskNanoPPCoalescence::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-
   if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
     if (!fConfig->GetMinimalBookingME()) {
@@ -137,26 +127,21 @@ void AliAnalysisTaskNanoPPCoalescence::UserCreateOutputObjects() {
     fResults->SetOwner();
     fResults->SetName("Results");
   }
-
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
   PostData(4, fResults);
   PostData(5, fResultsQA);
-
-
   if (fProtonTrack->GetIsMonteCarlo()) {
     PostData(6, fProtonMCList);
   }
   if (fAntiProtonTrack->GetIsMonteCarlo()) {
     PostData(7, fAntiProtonMCList);
   }
-
 }
 
 void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
   AliVEvent *fInputEvent = InputEvent();
-
   if (!fInputEvent) {
     AliError("No Input event");
     return;
@@ -173,13 +158,9 @@ void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
     AliError("Proton Cuts missing");
     return;
   }
-
-  // EVENT SELECTION
   fEvent->SetEvent(fInputEvent);
   if (!fEvtCuts->isSelected(fEvent))
     return;
-
-  // PROTON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
@@ -187,23 +168,19 @@ void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
       AliFatal("No Standard NanoAOD");
       return;
     }
-
     StoreGlobalTrackReference(track);
   }
-
   static std::vector<AliFemtoDreamBasePart> Proton;
   Proton.clear();
   static std::vector<AliFemtoDreamBasePart> AntiProton;
   AntiProton.clear();
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
     if (!track)
       continue;
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
-
+    fTrack->SetTrack(track, fInputEvent);
     if (fIsMCTruth && fIsMC) {
       int mcpdg;
       mcpdg = fTrack->GetMCPDGCode();
@@ -222,13 +199,11 @@ void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
       }
     }
   }
-  //loop once over the MC stack to calculate Efficiency/Purity
   if (fIsMC) {
     AliAODInputHandler *eventHandler =
       dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
                                         ->GetInputEventHandler());
     AliMCEvent* fMC = eventHandler->MCEvent();
-
     for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
       if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
@@ -240,7 +215,6 @@ void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
       }
     }
   }
-
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Proton, &AntiProton, 0);
   fPairCleaner->StoreParticle(Proton);
@@ -248,20 +222,17 @@ void AliAnalysisTaskNanoPPCoalescence::UserExec(Option_t *option) {
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
-
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
   PostData(4, fResults);
   PostData(5, fResultsQA);
-
   if (fProtonTrack->GetIsMonteCarlo()) {
     PostData(6, fProtonMCList);
   }
   if (fAntiProtonTrack->GetIsMonteCarlo()) {
     PostData(7, fAntiProtonMCList);
   }
-
 }
 
 void AliAnalysisTaskNanoPPCoalescence::ResetGlobalTrackReference() {
@@ -282,7 +253,6 @@ void AliAnalysisTaskNanoPPCoalescence::StoreGlobalTrackReference(AliVTrack *trac
     return;
   }
   if (fGTI[trackID]) {
-
     if ((!nanoTrack->GetFilterMap()) && (!track->GetTPCNcls())) {
       return;
     }

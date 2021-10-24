@@ -36,6 +36,8 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
+#include "AliESDUtils.h"
 #include <TDatabasePDG.h>
 #include <THnSparse.h>
 #include "AliVertexingHFUtils.h"
@@ -98,11 +100,12 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fFillSubSampleHist(kFALSE),
   fEventCounter(0),
   fUseSelectionBit(kTRUE),
-  fAODProtection(1),
+  fAODProtection(0),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
+  fHistNtrCorrEvSel(0),
   fSelectTrueD0(kFALSE),
   fUsedMassWindow(kFALSE),
   fPIDCheck(kFALSE),
@@ -129,10 +132,27 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
   fListBDTResp(0),
   fBDTSidebandSamplingFraction(0.1),
   fSampleSideband(kFALSE),
-  fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
-  fBDTClassifierVarString("")
+fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi:multiplicity"),
+  fBDTClassifierVarString(""),
+  fIsSelectedCandidateBDT(0),
+fSubtractTrackletsFromDau(kFALSE),
+fRefMult(9.26),
+fMultiplicityEstimator(kNtrk10),
+fMCPrimariesEstimator(kEta10),
+fListProfiles(0),
+fmultiana(0),
+fCounterC(0),
+fDoVZER0ParamVertexCorr(1),
+fYearNumber(16)
 {
   /// Default constructor
+    for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
+    for(Int_t i=0; i<8; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_1029[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19999[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_6099[i]=0x0;
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
@@ -141,7 +161,7 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT():
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toKpi* cuts):
+AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toKpiBDT* cuts):
   AliAnalysisTaskSE(name),
   fOutputMass(0),
   fOutputMassPt(0),
@@ -167,13 +187,14 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fFillVarHists(kTRUE),
   fSys(0),
   fIsRejectSDDClusters(0),
+  fHistNtrCorrEvSel(0),
   fFillPtHist(kTRUE),
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fFillSubSampleHist(kFALSE),
   fEventCounter(0),
   fUseSelectionBit(kTRUE),
-  fAODProtection(1),
+  fAODProtection(0),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
@@ -204,10 +225,27 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   fListBDTResp(0),
   fBDTSidebandSamplingFraction(0.1),
   fSampleSideband(kFALSE),
-  fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"),
-  fBDTClassifierVarString("")
+fBDTFullVarString("ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi:multiplicity"),
+  fBDTClassifierVarString(""),
+  fIsSelectedCandidateBDT(0),
+fSubtractTrackletsFromDau(kFALSE),
+fRefMult(9.26),
+fmultiana(0),
+fMultiplicityEstimator(kNtrk10),
+fMCPrimariesEstimator(kEta10),
+fListProfiles(0),
+fCounterC(0),
+fDoVZER0ParamVertexCorr(1),
+fYearNumber(16)
 {
   /// Default constructor
+    for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
+    for(Int_t i=0; i<8; i++) h3Invmass[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_1029[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_3059[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_19999[i]=0x0;
+    for(Int_t i=0; i<8; i++) h3Invmass_6099[i]=0x0;
   fBDTPtCut[0]=0; fBDTPtCut[1]=1e9;
   //~ fBDTSidebandSamplingFraction=0.01;
   //~ fBDTFullVarString="ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
@@ -225,18 +263,23 @@ AliAnalysisTaskSED0BDT::AliAnalysisTaskSED0BDT(const char *name,AliRDHFCutsD0toK
   // Output slot #3 writes into a TH1F container (number of events)
   DefineOutput(3,TH1F::Class());  //My private output
   // Output slot #4 writes into a TList container (cuts)
-  DefineOutput(4,AliRDHFCutsD0toKpi::Class());  //My private output
+  DefineOutput(4,AliRDHFCutsD0toKpiBDT::Class());  //My private output
   // Output slot #5 writes Normalization Counter
   DefineOutput(5,AliNormalizationCounter::Class());
   // Output slot #6 
   DefineOutput(6,TList::Class());
   DefineOutput(7,TList::Class());
-
+    DefineOutput(8,TList::Class());
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
 {
+    for(Int_t i=0; i<14; i++) {
+      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
+    }
+    delete fListProfiles;
+    delete fCounterC;
   if (fOutputMass) {
     delete fOutputMass;
     fOutputMass = 0;
@@ -272,6 +315,25 @@ AliAnalysisTaskSED0BDT::~AliAnalysisTaskSED0BDT()
     delete fVariablesTree;
     fVariablesTree = 0;
   }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass[i]) delete h3Invmass[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_19[i]) delete h3Invmass_19[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_1029[i]) delete h3Invmass_1029[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_3059[i]) delete h3Invmass_3059[i];
+    }
+    //pxy_new
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_19999[i]) delete h3Invmass_19999[i];
+    }
+    for(Int_t i=0; i<8; i++){
+      if(h3Invmass_6099[i]) delete h3Invmass_6099[i];
+    }
   if (fDetSignal) {
     delete fDetSignal;
     fDetSignal = 0;
@@ -327,9 +389,68 @@ void AliAnalysisTaskSED0BDT::Init()
   if(fDebug > 1) printf("AnalysisTaskSED0Mass::Init() \n");
 
 
-  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(*fCuts);
+  AliRDHFCutsD0toKpiBDT* copyfCuts=new AliRDHFCutsD0toKpiBDT(*fCuts);
   const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
   copyfCuts->SetName(nameoutput);
+    fListProfiles = new TList();
+    fListProfiles->SetOwner();
+    TString period[14];
+    Int_t nProfiles=14;
+    if(fYearNumber == 10){
+    period[0]="LHC10b";
+    period[1]="LHC10c";
+    period[2]="LHC10d";
+    period[3]="LHC10e";
+    nProfiles = 4;
+  }else if(fYearNumber == 16){
+     period[0]="LHC16d";
+     period[1]="LHC16e";
+     period[2]="LHC16g";
+     period[3]="LHC16h1";
+     period[4]="LHC16h2";
+     period[5]="LHC16j";
+     period[6]="LHC16k";
+     period[7]="LHC16l";
+     period[8]="LHC16o";
+     period[9]="LHC16p";
+     nProfiles = 10;
+  }else if(fYearNumber == 17){
+    period[0]="LHC17e";
+    period[1]="LHC17f";
+    period[2]="LHC17h";
+    period[3]="LHC17i";
+    period[4]="LHC17j";
+    period[5]="LHC17k";
+    period[6]="LHC17l";
+    period[7]="LHC17m";
+    period[8]="LHC17o";
+    period[9]="LHC17r";
+    nProfiles = 10;
+  }else if(fYearNumber == 18){
+    period[0]="LHC18b";
+    period[1]="LHC18d";
+    period[2]="LHC18e";
+    period[3]="LHC18f";
+    period[4]="LHC18g";
+    period[5]="LHC18h";
+    period[6]="LHC18i";
+    period[7]="LHC18j";
+    period[8]="LHC18k";
+    period[9]="LHC18l";
+    period[10]="LHC18m";
+    period[11]="LHC18n";
+    period[12]="LHC18o";
+    period[13]="LHC18p";
+    nProfiles = 14;
+   }
+    for(Int_t i=0; i<nProfiles; i++){
+      if(fMultEstimatorAvg[i]){
+        TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
+        hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
+        fListProfiles->Add(hprof);
+      }
+    }
+    PostData(8,fListProfiles);
   // Post the data
   PostData(4,copyfCuts);
 
@@ -1179,6 +1300,8 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
   if(fFillSparses){
 	//"ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi"
 	// MC !NOT TESTED YET!
+      fHistNtrCorrEvSel = new TH1F("hNtrCorrEvSel",Form("Corrected  multiplicity for selected events ; Entries"),200,0,200);
+      fOutputMass->Add(fHistNtrCorrEvSel);
 	if(fReadMC){
 		TNtuple *NtupleD0C = new TNtuple("NtupleD0C", "MC Prompt D0", fBDTFullVarString);
 		TNtuple *NtupleD0B = new TNtuple("NtupleD0B", "MC Non-prompt D0", fBDTFullVarString);
@@ -1191,23 +1314,49 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
 	}
 	else if(fSampleSideband){
 		TNtuple *NtupleSB = new TNtuple("NtupleSB","Sideband",fBDTFullVarString);
+		TNtuple *NtupleResp = new TNtuple("NtupleResp","BDT Response","BDTResp");
 		fListBDTNtuple->Add(NtupleSB);
+		fListBDTNtuple->Add(NtupleResp);
 	}
 	else{
-		fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
-		for(Int_t ii=0;ii<fCut4BDTptbin->GetNPtBins();ii++){
-			const Int_t NBDT = fListBDTNames->GetEntries() - 1;
-			TH3F *h3Invmass[NBDT];
-			for(Int_t jj=0;jj<NBDT;jj++){
-				TString BDT1Name = fListBDTNames->At(0)->GetName();
-				TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
-				h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
-				//h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
-				fListBDTResp->Add(h3Invmass[jj]);
+		//~ fListRDHFBDT->SetOwner(); fListBDTNtuple->SetName("BDTList");
+		for(Int_t ii=0;ii<fCuts->GetNPtBinsBDT();ii++){
+            const Int_t NBDT = fCuts->GetNBDTOpt();
+            if(NBDT>1){
+				for(Int_t jj=1;jj<NBDT;jj++){
+					h3Invmass[jj-1] = new TH3F(Form("h3MassRespPt%d_BDT1_BDT2_%d",ii,jj),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+					fListBDTResp->Add(h3Invmass[jj-1]);
+				}
 			}
-		}
+			else{
+				h3Invmass[0] = new TH3F(Form("h3MassRespPt%d_BDT1",ii),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+				fListBDTResp->Add(h3Invmass[0]);
+			}
+            //~ for(Int_t jj=0;jj<NBDT;jj++){
+            //~ TString BDT1Name = fListBDTNames->At(0)->GetName();
+            //~ TString BDT2Name = fListBDTNames->At(jj+1)->GetName();
+            //~ h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+            //~ h3Invmass_19[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+            //~ h3Invmass_1029[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_1029",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+            //~ h3Invmass_3059[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_3059",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                //~ h3Invmass_19999[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_19999",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+                //~ h3Invmass_6099[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s_6099",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.6248,2.2248,80,-0.15,0.25,60,-0.05,0.25);
+
+            //~ //h3Invmass[jj] = new TH3F(Form("h3MassRespPt%d_%s_%s",ii,BDT1Name.Data(),BDT2Name.Data()),"Invmass",100,1.68,2.10,200,-1,1,200,-1,1);
+            //~ fListBDTResp->Add(h3Invmass[jj]);
+            //~ fListBDTResp->Add(h3Invmass_19[jj]);
+            //~ fListBDTResp->Add(h3Invmass_1029[jj]);
+            //~ fListBDTResp->Add(h3Invmass_3059[jj]);
+                //~ fListBDTResp->Add(h3Invmass_19999[jj]);
+                //~ fListBDTResp->Add(h3Invmass_6099[jj]);
+        //~ }
 	}
   }
+  }
+    fCounterC = new AliNormalizationCounter("NormCounterCorrMult");
+    fCounterC->SetStudyMultiplicity(kTRUE,1.);
+    fCounterC->Init();
+    fDistr->Add(fCounterC);
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
@@ -1216,8 +1365,8 @@ void AliAnalysisTaskSED0BDT::UserCreateOutputObjects()
   PostData(6,fListBDTNtuple);
   PostData(7,fListBDTResp);
   return;
-}
 
+}
 //________________________________________________________________________
 void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
 
@@ -1287,6 +1436,92 @@ void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
+    Float_t countCorr = -99999;
+    if(fmultiana){
+    Int_t countTreta1=0, countTreta03=0, countTreta05=0, countTreta16=0;
+    AliAODTracklets* tracklets=aod->GetTracklets();
+    Int_t nTr=tracklets->GetNumberOfTracklets();
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=tracklets->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      if(eta>-0.3 && eta<0.3) countTreta03++;
+      if(eta>-0.5 && eta<0.5) countTreta05++;
+      if(eta>-1.0 && eta<1.0) countTreta1++;
+      if(eta>-1.6 && eta<1.6) countTreta16++;
+    }
+    
+    Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
+    Int_t vzeroMultEq=0, vzeroMultAEq=0, vzeroMultCEq=0;
+    AliAODVZERO *vzeroAOD = (AliAODVZERO*)aod->GetVZEROData();
+    if(vzeroAOD) {
+      vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+      vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+      vzeroMult = vzeroMultA + vzeroMultC;
+      vzeroMultAEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROAEqualizedMultiplicity(aod));
+      vzeroMultCEq = static_cast<Int_t>(AliVertexingHFUtils::GetVZEROCEqualizedMultiplicity(aod));
+      vzeroMultEq = vzeroMultAEq + vzeroMultCEq;
+    }
+
+    Int_t countMult = countTreta1;
+    if(fMultiplicityEstimator==kNtrk03) { countMult = countTreta03; }
+    else if(fMultiplicityEstimator==kNtrk05) { countMult = countTreta05; }
+    else if(fMultiplicityEstimator==kNtrk10to16) { countMult = countTreta16 - countTreta1; }
+    else if(fMultiplicityEstimator==kVZERO) { countMult = vzeroMult; }
+    else if(fMultiplicityEstimator==kVZEROA) { countMult = vzeroMultA; }
+    else if(fMultiplicityEstimator==kVZEROEq) { countMult = vzeroMultEq; }
+    else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
+    
+    Double_t countTreta1corr=countTreta1;
+    countCorr=countMult;
+    AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
+    // In case of VZERO multiplicity, consider the zvtx correction flag
+    //  fDoVZER0ParamVertexCorr: 0= none, 1= usual d2h, 2=AliESDUtils
+    Bool_t isDataDrivenZvtxCorr=kTRUE;
+    Bool_t isVtxOk=kFALSE;
+    Int_t vzeroMultACorr=vzeroMultA, vzeroMultCCorr=vzeroMultC, vzeroMultCorr=vzeroMult;
+    Int_t vzeroMultAEqCorr=vzeroMultAEq, vzeroMultCEqCorr=vzeroMultCEq, vzeroMultEqCorr=vzeroMultEq;
+
+    if(isVtxOk){
+      if( (fMultiplicityEstimator==kVZERO) || (fMultiplicityEstimator==kVZEROA) ||
+      (fMultiplicityEstimator==kVZEROEq) || (fMultiplicityEstimator==kVZEROAEq) ){
+        if(fDoVZER0ParamVertexCorr==0){
+      // do not correct
+      isDataDrivenZvtxCorr=kFALSE;
+        } else if (fDoVZER0ParamVertexCorr==2){
+      // use AliESDUtils correction
+      Float_t zvtx = vtx1->GetZ();
+      isDataDrivenZvtxCorr=kFALSE;
+      vzeroMultACorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultA,zvtx));
+      vzeroMultCCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0C(vzeroMultC,zvtx));
+      vzeroMultCorr = vzeroMultACorr + vzeroMultCCorr;
+      vzeroMultAEqCorr = static_cast<Int_t>(AliESDUtils::GetCorrV0A(vzeroMultAEq,zvtx));
+      vzeroMultCEqCorr =static_cast<Int_t>( AliESDUtils::GetCorrV0C(vzeroMultCEq,zvtx));
+      vzeroMultEqCorr = vzeroMultAEqCorr + vzeroMultCEqCorr;
+      if(fMultiplicityEstimator==kVZERO) { countCorr = vzeroMultCorr; }
+      else if(fMultiplicityEstimator==kVZEROA) { countCorr = vzeroMultACorr; }
+      else if(fMultiplicityEstimator==kVZEROEq) { countCorr = vzeroMultEqCorr; }
+      else if(fMultiplicityEstimator==kVZEROAEq) { countCorr = vzeroMultAEqCorr; }
+        }
+      }
+    }
+    // Data driven multiplicity z-vertex correction
+    if(isVtxOk && isDataDrivenZvtxCorr){
+      TProfile* estimatorAvg = GetEstimatorHistogram(aod);
+      if(estimatorAvg){
+        countTreta1corr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countTreta1,vtx1->GetZ(),fRefMult));
+        // vzeroMultACorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultA,vtx1->GetZ(),fRefMult));
+        // vzeroMultCorr= vzeroMultACorr + static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultC,vtx1->GetZ(),fRefMult));
+        // vzeroMultAEqCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultAEq,vtx1->GetZ(),fRefMult));
+        // vzeroMultEqCorr= vzeroMultAEqCorr + static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,vzeroMultCEq,vtx1->GetZ(),fRefMult));
+        countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,vtx1->GetZ(),fRefMult));
+      }
+    }
+
+    }
+    fCounterC->StoreEvent(aod,fCuts,fReadMC,countCorr);
+    Float_t multForCand = countCorr;
+    fHistNtrCorrEvSel->Fill(countCorr,1);
+    
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
@@ -1420,79 +1655,80 @@ void AliAnalysisTaskSED0BDT::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
   for (Int_t iD0toKpi = 0; iD0toKpi < nInD0toKpi; iD0toKpi++) {
-    AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
-
-    if(fUseSelectionBit && d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
-	fNentries->Fill(2);
-	continue; //skip the D0 from Dstar
+	  AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
+      if(fSubtractTrackletsFromDau){
+		  // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+		  for(Int_t iDau=0; iDau<2; iDau++){
+			  AliAODTrack *t = NULL;
+			  t = (AliAODTrack*)d->GetDaughter(iDau);
+			  if(!t) continue;
+			  if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1))
+				  if(multForCand>0) multForCand-=1;
+		  }
       }
-    if(d->GetIsFilled()==0)fNentries->Fill(19);//tmp check
-    if(d->GetIsFilled()==1)fNentries->Fill(20);//tmp check
-    TObjArray arrTracks(2);
-    for(Int_t ipr=0;ipr<2;ipr++){
-      AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
-      arrTracks.AddAt(tr,ipr);
-    }
-
-    if(!fCuts->PreSelect(arrTracks)){
-      fNentries->Fill(23);
-      continue;
-    }
-    if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
-      fNentries->Fill(18); //monitor how often this fails
-      continue;
-    }
-
-    if ( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
-      nSelectedloose++;
-      nSelectedtight++;
-      if(fSys==0){
-	if(fCuts->IsSelected(d,AliRDHFCuts::kTracks,aod))fNentries->Fill(6);
+      if(fUseSelectionBit && d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
+		  fNentries->Fill(2);
+		  continue; //skip the D0 from Dstar
       }
-      Int_t ptbin=fCuts->PtBin(d->Pt());
-      if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
-      fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
-
-      if(fUseRejectionMethod){
-        if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor)
-        continue;
+      if(d->GetIsFilled()==0)fNentries->Fill(19);//tmp check
+      if(d->GetIsFilled()==1)fNentries->Fill(20);//tmp check
+      TObjArray arrTracks(2);
+      for(Int_t ipr=0;ipr<2;ipr++){
+		  AliAODTrack *tr=vHF->GetProng(aod,d,ipr);
+		  arrTracks.AddAt(tr,ipr);
+	  }
+	  if(!fCuts->PreSelect(arrTracks)){
+		  fNentries->Fill(23);
+		  continue;
+	  }
+	  if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.
+		  fNentries->Fill(18); //monitor how often this fails
+		  continue;
+	  }
+	  if( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
+		  nSelectedloose++;
+		  nSelectedtight++;
+		  if(fSys==0)
+			  if(fCuts->IsSelected(d,AliRDHFCuts::kTracks,aod))fNentries->Fill(6);
+		  Int_t ptbin=fCuts->PtBin(d->Pt());
+          if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
+          fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
+          if(fUseRejectionMethod){
+			  if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor)
+			  continue;
+		  }
+		  if(fFillVarHists) {
+			  //if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
+			  fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(0),0);
+			  fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(1),1);
+			  //check daughters
+			  if(!fDaughterTracks.UncheckedAt(0) || !fDaughterTracks.UncheckedAt(1)) {
+				  AliDebug(1,"at least one daughter not found!");
+				  fNentries->Fill(5);
+				  fDaughterTracks.Clear();
+				  continue;
+			  }
+	          //}
+	          FillVarHists(aod,d,mcArray,fCuts,fDistr);
+	      }
+	      if (fDrawDetSignal) DrawDetSignal(d, fDetSignal);
       }
-
-      if(fFillVarHists) {
-        //if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
-        fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(0),0);
-	      fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(1),1);
-	      //check daughters
-	      if(!fDaughterTracks.UncheckedAt(0) || !fDaughterTracks.UncheckedAt(1)) {
-	      AliDebug(1,"at least one daughter not found!");
-	      fNentries->Fill(5);
-	      fDaughterTracks.Clear();
-	      continue;
-      }
-	    //}
-	    FillVarHists(aod,d,mcArray,fCuts,fDistr);
-    }
-
-      if (fDrawDetSignal) {
-        DrawDetSignal(d, fDetSignal);
-      }
-
-      FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
-      FillCandVariables(aod,d,mcArray,mcHeader,fCuts);
-      if(fFillSparses) ProcessBDT(aod, d,mcArray);
-      if (fPIDCheck) {
-        Int_t isSelectedPIDfill = 3;
+      ProcessBDT2(aod, d,mcArray, multForCand);
+      //~ FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
+      //~ FillCandVariables(aod,d,mcArray,mcHeader,fCuts);
+      //~ if(fFillSparses)  ProcessBDT2(aod, d,mcArray, multForCand);
+      if (fPIDCheck){
+		  Int_t isSelectedPIDfill = 3;
 	      if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
 	      if (isSelectedPIDfill == 0)fNentries->Fill(7);
-        if (isSelectedPIDfill == 1)fNentries->Fill(8);
+	      if (isSelectedPIDfill == 1)fNentries->Fill(8);
 	      if (isSelectedPIDfill == 2)fNentries->Fill(9);
 	      if (isSelectedPIDfill == 3)fNentries->Fill(10);
-      }
-    }
-
-    fDaughterTracks.Clear();
-    //if(unsetvtx) d->UnsetOwnPrimaryVtx();
-  } //end for prongs
+      } 
+	  fDaughterTracks.Clear();
+  }
+  //if(unsetvtx) d->UnsetOwnPrimaryVtx();
+  //end for prongs
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);
   delete vHF;
@@ -1546,7 +1782,7 @@ void AliAnalysisTaskSED0BDT::DrawDetSignal(AliAODRecoDecayHF2Prong *part, TList 
 }
 
 //____________________________________________________________________________
-void AliAnalysisTaskSED0BDT::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout){
+void AliAnalysisTaskSED0BDT::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpiBDT *cuts, TList *listout){
   //
   /// function used in UserExec to fill variable histograms:
   //
@@ -2291,7 +2527,7 @@ void AliAnalysisTaskSED0BDT::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pro
 }
 
 //____________________________________________________________________________
-void AliAnalysisTaskSED0BDT::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi* cuts, TList *listout){
+void AliAnalysisTaskSED0BDT::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpiBDT* cuts, TList *listout){
   //
   /// function used in UserExec to fill mass histograms:
   //
@@ -2359,7 +2595,7 @@ void AliAnalysisTaskSED0BDT::FillMassHists(AliAODRecoDecayHF2Prong *part, TClone
 
   Double_t weigD0=1.;
   Double_t weigD0bar=1.;
-  if (fCuts->GetCombPID() && (fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeight || fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpi::kBayesWeightNoFilter)) {
+  if (fCuts->GetCombPID() && (fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpiBDT::kBayesWeight || fCuts->GetBayesianStrategy() == AliRDHFCutsD0toKpiBDT::kBayesWeightNoFilter)) {
     weigD0=fCuts->GetWeightsNegative()[AliPID::kKaon] * fCuts->GetWeightsPositive()[AliPID::kPion];
     weigD0bar=fCuts->GetWeightsPositive()[AliPID::kKaon] * fCuts->GetWeightsNegative()[AliPID::kPion];
     if (weigD0 < 0. || weigD0 > 1.0) {weigD0 = 0.;}
@@ -2608,7 +2844,7 @@ void AliAnalysisTaskSED0BDT::FillMassHists(AliAODRecoDecayHF2Prong *part, TClone
 }
 
 //__________________________________________________________________________
-void AliAnalysisTaskSED0BDT::FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi *cuts){
+void AliAnalysisTaskSED0BDT::FillCandVariables(AliAODEvent *aodev, AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpiBDT *cuts){
   // Fill candidate variables for cut study
 
   if(fWriteVariableTree && fWriteProtosgnVar){
@@ -2834,7 +3070,7 @@ void AliAnalysisTaskSED0BDT::Terminate(Option_t */*option*/)
     printf("ERROR: fNEntries not available\n");
     return;
   }
-  fCuts = dynamic_cast<AliRDHFCutsD0toKpi*>(GetOutputData(4));
+  fCuts = dynamic_cast<AliRDHFCutsD0toKpiBDT*>(GetOutputData(4));
   if(!fCuts){
     printf("ERROR: fCuts not available\n");
     return;
@@ -3152,7 +3388,7 @@ Bool_t AliAnalysisTaskSED0BDT::CheckAcc(TClonesArray* arrayMC,Int_t nProng, Int_
   return kTRUE;
 }
 //________________________________________
-void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC){
+void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi){
     fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(0), 0);
     fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(1), 1);
     AliAODTrack *prong2=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
@@ -3188,7 +3424,7 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
     cosThetaStarD0bar = part->CosThetaStarD0bar();
     //  if (part->Pt() > 10) return;
     // DCA part->GetDCA();
-    Float_t tmp[22];
+    Float_t tmp[23];
     tmp[8]= -99;                                // Invariant Mass
     tmp[18] = -99;                                 // ptB (if accessible)
     tmp[19] = 0;                                 // PDGCode
@@ -3210,6 +3446,7 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
     tmp[16] = d0Prong[1];                         // d02
     tmp[20] = part->YD0();
     tmp[21] = part->Phi();
+    tmp[22] = multi;
     
     if(tmp[0]<fBDTPtCut[0]||tmp[0]>=fBDTPtCut[1]) return;		// Global pT cut
     // PID and Cuts
@@ -3280,19 +3517,23 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 		if(!fIsSelectedCandidate) return;
 
 		std::vector<Double_t> BDTClsVar;// BDT cls input
-		BDTClsVar.resize(10);
+        if(fSys == 0)    BDTClsVar.resize(11);
+        if(fSys == 1)    BDTClsVar.resize(10);
  
         if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){  
             tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
-            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[4])
+            if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
+                BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+                BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
+				TNtuple *NtupleResp = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
 				NtupleSB->Fill(tmp);
 			}
 			else{ // Data application
@@ -3309,8 +3550,18 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 					TString BDT2Name = fListBDTNames->At(ii)->GetName();
 					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
 					Float_t bdt2resp = thisbdt2->GetResponse(BDTClsVar);
-					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
-					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_1029 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_1029",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_3059 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_3059",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19999 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19999",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_6099 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_6099",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10) thish3_19->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=10&&tmp[22]<30) thish3_1029->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=30&&tmp[22]<60) thish3_3059->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=60&&tmp[22]<100) thish3_6099->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10000) thish3_19999->Fill(tmp[8],bdt1resp,bdt2resp);
 					// Test output info
 					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
 					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
@@ -3324,9 +3575,11 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
             if(tmp[8]>2.12||tmp[8]<1.65) return;
             
             // Link variables to be used as classifier
-            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[3])
-            BDTClsVar[0] = tmp[1]; 	BDTClsVar[1] = tmp[2]; 	BDTClsVar[2] = tmp[3]; 	BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9]; 	BDTClsVar[5] = tmp[10];
-            BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];
+            // NOTE: for 2018 Pb-Pb the decay length lxy was not applied(tmp[4])
+            if(fSys == 0){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];     BDTClsVar[3] = tmp[4];  BDTClsVar[4] = tmp[9];     BDTClsVar[5] = tmp[10];
+                BDTClsVar[6] = tmp[11]; BDTClsVar[7] = tmp[14]; BDTClsVar[8] = tmp[15]; BDTClsVar[9] = tmp[16]; BDTClsVar[10] = tmp[17];}
+            if(fSys == 1){      BDTClsVar[0] = tmp[1];     BDTClsVar[1] = tmp[2];     BDTClsVar[2] = tmp[3];      BDTClsVar[3] = tmp[9];     BDTClsVar[4] = tmp[10];
+                BDTClsVar[5] = tmp[11]; BDTClsVar[6] = tmp[14]; BDTClsVar[7] = tmp[15]; BDTClsVar[8] = tmp[16]; BDTClsVar[9] = tmp[17];}
 			    
             if(fSampleSideband){ // Sideband sampling
 				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
@@ -3346,8 +3599,19 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
 					TString BDT2Name = fListBDTNames->At(ii)->GetName();
 					AliRDHFBDT *thisbdt2   = (AliRDHFBDT*)fListRDHFBDT->FindObject(Form("pT_%d_%s",thisptbin,BDT2Name.Data()));
 					Float_t bdt2resp = thisbdt2->GetResponse(BDTClsVar);
-					TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
-					thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_1029 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_1029",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_3059 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_3059",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_19999 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_19999",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    TH3F *thish3_6099 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_%s_%s_6099",thisptbin,BDT1Name.Data(),BDT2Name.Data()));
+                    thish3->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10) thish3_19->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=10&&tmp[22]<30) thish3_1029->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=30&&tmp[22]<60) thish3_3059->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=60&&tmp[22]<100) thish3_6099->Fill(tmp[8],bdt1resp,bdt2resp);
+                    if(tmp[22]>=1&&tmp[22]<10000) thish3_19999->Fill(tmp[8],bdt1resp,bdt2resp);
+
 					// Test output info
 					//~ cout<<"INFO: "<<BDT1Name.Data()<<" = "<<bdt1resp<<", "<<BDT2Name.Data()<<" = "<<bdt2resp<<endl;
 					//~ cout<<"INFO: Filling TH3F "<<thish3->GetName()<<endl;
@@ -3357,4 +3621,257 @@ void AliAnalysisTaskSED0BDT::ProcessBDT(AliAODEvent *aod, AliAODRecoDecayHF2Pron
         }
     }
     
+}
+void AliAnalysisTaskSED0BDT::ProcessBDT2(AliAODEvent *aod, AliAODRecoDecayHF2Prong *part,TClonesArray *arrMC, Float_t multi){
+    fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(0), 0);
+    fDaughterTracks.AddAt((AliAODTrack*)part->GetDaughter(1), 1);
+    AliAODTrack *prong2=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
+    AliAODTrack *prong3=(AliAODTrack*)fDaughterTracks.UncheckedAt(1);
+    
+    Double_t normIP[2];
+    Double_t d0Prong[2];
+    Double_t ptProng[2];
+    
+    Double_t invmassD0 = part->InvMassD0(); Double_t invmassD0bar = part->InvMassD0bar();
+    Double_t ptB;
+    
+    Double_t cosPointingAngle;
+    Double_t cosThetaStarD0 = 99;
+    Double_t cosThetaStarD0bar = 99;
+    
+    Double_t diffIP[2], errdiffIP[2];
+    part->Getd0MeasMinusExpProng(0,aod->GetMagneticField(),diffIP[0],errdiffIP[0]);
+    part->Getd0MeasMinusExpProng(1,aod->GetMagneticField(),diffIP[1],errdiffIP[1]);
+    normIP[0]=diffIP[0]/errdiffIP[0];
+    normIP[1]=diffIP[1]/errdiffIP[1];
+    
+    AliAODVertex *secvtx  = part->GetSecondaryVtx();
+    AliAODVertex *primvtx = part->GetPrimaryVtx();
+    Double_t err2decaylength = secvtx->Error2DistanceXYToVertex(primvtx);
+    Double_t lxy = part->AliAODRecoDecay::DecayLengthXY(primvtx);
+    Bool_t isusepid = fCuts->GetIsUsePID();
+    //peng
+    d0Prong[0]=part->Getd0Prong(0); d0Prong[1]=part->Getd0Prong(1); //d0*d0 d0Prong[1]*d0Prong[0]
+    cosPointingAngle = part->CosPointingAngle();
+    ptProng[0]=part->Pt2Prong(0); ptProng[1]=part->Pt2Prong(1);
+    cosThetaStarD0 = part->CosThetaStarD0();
+    cosThetaStarD0bar = part->CosThetaStarD0bar();
+    //  if (part->Pt() > 10) return;
+    // DCA part->GetDCA();
+    Float_t tmp[23];
+    tmp[8]= -99;                                // Invariant Mass
+    tmp[18] = -99;                                 // ptB (if accessible)
+    tmp[19] = 0;                                 // PDGCode
+    tmp[20] = -99;                                // Rapidity YD0
+    tmp[21] = -99;                                // Azimuthal Phi
+    
+    tmp[0] = part->Pt();                         // ptD
+    tmp[1] = normIP[0];                         // Normalized d0N-<d0N> (topo1)
+    tmp[2] = normIP[1];                         // Normalized d0P-<d0P> (topo2)
+    tmp[3] = lxy;                                 // Decay length
+    tmp[4] = lxy/TMath::Sqrt(err2decaylength);     // Normalized decay length
+    tmp[9] = d0Prong[0]*d0Prong[1];             // d0N*d0P
+    tmp[10] = cosPointingAngle;                 // CosThetaPointing
+    tmp[11] = part->GetDCA();                     // DCAtracks
+    tmp[12] = prong2->Pt();                     // pt1
+    tmp[13] = prong3->Pt();                     // pt2
+    tmp[14] = part->CosPointingAngleXY();         // CosThetaPointingXY
+    tmp[15] = d0Prong[0];                         // d01
+    tmp[16] = d0Prong[1];                         // d02
+    tmp[20] = part->YD0();
+    tmp[21] = part->Phi();
+    tmp[22] = multi;
+    
+    if(tmp[0]<fBDTPtCut[0]||tmp[0]>=fBDTPtCut[1]) return;		// Global pT cut
+    // PID and Cuts
+	if(isusepid)fCuts->SetUsePID(kFALSE);// if PID on, switch it off
+	Int_t isCuts=fCuts->IsSelected(part,AliRDHFCuts::kAll,aod);
+	if(isusepid)fCuts->SetUsePID(kTRUE);//if PID was on, switch it on
+	Int_t isPid= fCuts->IsSelectedPID(part);
+	tmp[5] = (Double_t)isCuts;
+	tmp[6] = (Double_t)isPid;
+    
+    if(fReadMC){  // MC THnSparse
+        Int_t pdgDgD0toKpi[2]={321,211};
+        Int_t lab=-9999;
+        // MC fill this
+        TNtuple *NtupleD0C = (TNtuple*)fListBDTNtuple->FindObject("NtupleD0C");
+        TNtuple *NtupleD0B = (TNtuple*)fListBDTNtuple->FindObject("NtupleD0B");
+        TNtuple *NtupleRefl = (TNtuple*)fListBDTNtuple->FindObject("NtupleRefl");
+        lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+        if(lab>=0){
+            AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(lab);
+            if(!isCuts) return;
+            
+            // PDGCode
+            Int_t pdgcode = partD0->GetPdgCode();
+            tmp[19] = (Float_t)pdgcode;
+            if (pdgcode == 421) {tmp[17] = cosThetaStarD0; tmp[8] = invmassD0;}
+            else if (pdgcode == -421) {tmp[17] = cosThetaStarD0bar; tmp[8] = invmassD0bar;}
+            
+            // Check feed down or prompt
+            Int_t orig=AliVertexingHFUtils::CheckOrigin(arrMC,partD0,fUseQuarkTagInKine);
+            if(orig==4)           tmp[7] = 4; //prompt
+            else if(orig==5)       tmp[7] = 5; //feed down
+            else tmp[7] = 0;
+            
+            // pT of Bmother if Accessible
+            ptB=AliVertexingHFUtils::GetBeautyMotherPt(arrMC,partD0);
+            tmp[18] = ptB;
+            
+            if(tmp[7]==4)         NtupleD0C->Fill(tmp);
+            else if(tmp[7]==5)     NtupleD0B->Fill(tmp);
+            
+            // Check reflection
+            if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){
+                tmp[8] = invmassD0;
+                if(pdgcode!=421) NtupleRefl->Fill(tmp); // Reflection
+            }
+            if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
+                tmp[8] = invmassD0bar;
+                if(pdgcode!=-421) NtupleRefl->Fill(tmp); // Reflection
+            }
+        }
+    }
+    else  // data
+    {
+		if(fSampleSideband && gRandom->Rndm()>fCuts->GetRejFraction(tmp[0])) // Sideband sampling
+			return;
+			
+		if(!fIsSelectedCandidate) return;
+		fIsSelectedCandidateBDT = fCuts->IsSelectedBDT(part,aod);
+ 
+        if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){  
+            tmp[7] = 1; tmp[8] = invmassD0; tmp[17] = cosThetaStarD0;
+            if(tmp[8]>2.12||tmp[8]<1.65) return;
+            
+            if(fSampleSideband){ // Sideband sampling
+				if(fIsSelectedCandidateBDT!=1||fIsSelectedCandidateBDT!=3) return;
+				
+				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
+				TNtuple *NtupleResp = (TNtuple*)fListBDTNtuple->FindObject("NtupleResp");
+				Float_t bdtresp = fCuts->GetBDTResponse(part,aod,0,0); // 0 for D0
+				NtupleSB->Fill(tmp);
+				NtupleResp->Fill(bdtresp);
+			}
+			else{ // Data application
+				if(fIsSelectedCandidateBDT==1 || fIsSelectedCandidateBDT==3){
+					Int_t thisptbin = fCuts->PtBinBDT(tmp[0]); if(thisptbin<0) return;
+					Float_t *ptbin = fCuts->GetPtBinLimitsBDT();
+					TString ptstring = Form("_%.0f_%.0f",ptbin[thisptbin],ptbin[thisptbin+1]);
+					Int_t NBDT = fCuts->GetNBDTOpt();
+					if(NBDT>1){
+						Float_t *bdtresp = new Float_t[NBDT];
+						bdtresp[0] = fCuts->GetBDTResponse(part,aod,0,0);
+						for(Int_t ii=1;ii<NBDT;ii++){
+							bdtresp[ii] = fCuts->GetBDTResponse(part,aod,ii,0); // 0 for D0
+							TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_BDT1_BDT2_%d",thisptbin,ii));
+							thish3->Fill(tmp[8],bdtresp[0],bdtresp[ii]);
+						}
+					}
+					else if(NBDT==1){
+						Float_t bdtresp = fCuts->GetBDTResponse(part,aod,0,0);
+						TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_BDT1",thisptbin));
+						thish3->Fill(tmp[8],bdtresp,-1);
+					}
+				}
+			}
+        }
+        if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){  
+            tmp[7] = 2; tmp[8] = invmassD0bar; tmp[17] = cosThetaStarD0bar;
+            if(tmp[8]>2.12||tmp[8]<1.65) return;
+            
+            if(fSampleSideband){ // Sideband sampling
+				if(fIsSelectedCandidateBDT<=1) return;
+				TNtuple *NtupleSB = (TNtuple*)fListBDTNtuple->FindObject("NtupleSB");
+				TNtuple *NtupleResp = (TNtuple*)fListBDTNtuple->FindObject("NtupleResp");
+				Float_t bdtresp = fCuts->GetBDTResponse(part,aod,0,1); // 1 for D0bar
+				NtupleSB->Fill(tmp);
+				NtupleResp->Fill(bdtresp);
+			}
+			else{ // Data application
+				if(fIsSelectedCandidateBDT==2 || fIsSelectedCandidateBDT==3){
+					Int_t thisptbin = fCuts->PtBinBDT(tmp[0]); if(thisptbin<0) return;
+					Float_t *ptbin = fCuts->GetPtBinLimitsBDT();
+					TString ptstring = Form("_%.0f_%.0f",ptbin[thisptbin],ptbin[thisptbin+1]);
+					Int_t NBDT = fCuts->GetNBDTOpt();
+					if(NBDT>1){
+						Float_t *bdtresp = new Float_t[NBDT];
+						bdtresp[0] = fCuts->GetBDTResponse(part,aod,0,0);
+						for(Int_t ii=1;ii<NBDT;ii++){
+							bdtresp[ii] = fCuts->GetBDTResponse(part,aod,ii,1); // 1 for D0bar
+							TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_BDT1_BDT2_%d",thisptbin,ii));
+							thish3->Fill(tmp[8],bdtresp[0],bdtresp[ii]);
+						}
+					}
+					else if(NBDT==1){
+						Float_t bdtresp = fCuts->GetBDTResponse(part,aod,0,0);
+						TH3F *thish3 = (TH3F*)fListBDTResp->FindObject(Form("h3MassRespPt%d_BDT1",thisptbin));
+						thish3->Fill(tmp[8],bdtresp,-1);
+					}
+				}
+			}
+        }
+    }
+    
+}
+//_________________________________________________________________________
+TProfile* AliAnalysisTaskSED0BDT::GetEstimatorHistogram(const AliVEvent* event){
+  /// Get Estimator Histogram from period event->GetRunNumber();
+  ///
+  /// If you select SPD tracklets in |eta|<1 you should use type == 1
+  ///
+    
+  Int_t runNo  = event->GetRunNumber();
+  Int_t period = -1;   // pp: 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+  // pPb 2013: 0-LHC13b, 1-LHC13c
+  // pPb 2016: 0-LHC16q: 265499->265525; 265309->265387, 1-LHC16q:265435, 2-LHC16q:265388->265427, LHC16t: 267163->267166
+
+
+    if(fYearNumber==10){
+    if(runNo>114930 && runNo<117223) period = 0;
+    if(runNo>119158 && runNo<120830) period = 1;
+    if(runNo>122373 && runNo<126438) period = 2;
+    if(runNo>127711 && runNo<130851) period = 3;
+    if(period<0 || period>3) return 0;
+    }else if(fYearNumber==16){
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378  && runNo<=255469 )period = 3;//16h_1
+    if(runNo>=254418  && runNo<=254422 )period = 4;//16h_2 negative mag
+    if(runNo>=256146  && runNo<=256420 )period = 5;//16j
+    if(runNo>=256504  && runNo<=258537 )period = 6;//16k
+    if(runNo>=258883  && runNo<=260187)period = 7;//16l
+    if(runNo>=262395  && runNo<=264035 )period = 8;//16o
+    if(runNo>=264076  && runNo<=264347 )period = 9;//16p
+    }else if(fYearNumber==17){
+    if(runNo>=270822 && runNo<=270830)period = 0;//17e
+    if(runNo>=270854 && runNo<=270865)period = 1;//17f
+    if(runNo>=271868 && runNo<=273103)period = 2;//17h
+    if(runNo>=273591  && runNo<=274442)period = 3;//17i
+    if(runNo>=274593  && runNo<=274671)period = 4;//17j
+    if(runNo>=274690  && runNo<=276508)period = 5;//17k
+    if(runNo>=276551  && runNo<=278216)period = 6;//17l
+    if(runNo>=278914  && runNo<=280140)period = 7;//17m
+    if(runNo>=280282   && runNo<=281961)period = 8;//17o
+    if(runNo>=282504  && runNo<=282704)period = 9;//17r
+    }else if(fYearNumber==18){
+      if(runNo>=285008 && runNo<=285447)period = 0;//18b
+    if(runNo>=285978 && runNo<=286350)period = 1;//18d
+    if(runNo>=286380 && runNo<=286937)period = 2;//18e
+    if(runNo>=287000  && runNo<=287977)period = 3;//18f
+    if(runNo>=288619  && runNo<=288750)period = 4;//18g
+    if(runNo>=288804  && runNo<=288806)period = 5;//18h
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
+    if(runNo==288943)period = 7;//18j
+    if(runNo>=289165   && runNo<=289201)period = 8;//18k
+    if(runNo>=289240  && runNo<=289971)period = 9;//18l
+    if(runNo>=290222  && runNo<=292839)period = 10;//18m
+    if(runNo>=293357   && runNo<=293359)period = 11;//18n
+    if(runNo>=293368   && runNo<=293898)period = 12;//18o
+    if(runNo>=294009  && runNo<=294925)period = 13;//18p
+  }
+  
+  return fMultEstimatorAvg[period];
 }

@@ -37,11 +37,11 @@ class AliFemtoDreamHigherPairMath {
   bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
   void RecalculatePhiStar(AliFemtoDreamBasePart &part);
   float FillSameEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart& part1,
-                      int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2);
-  void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1,
-              AliFemtoDreamBasePart &part2);
-  void MEMassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1,
-              AliFemtoDreamBasePart &part2);
+                      int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2, float PartSumPtLimit1, float PartSumPtLimit2);
+  void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1, int PDGPart1,
+              AliFemtoDreamBasePart &part2, int PDGPart2);
+  void MEMassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1, int PDGPart1,
+              AliFemtoDreamBasePart &part2, int PDGPart2);
   void SEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
                             AliFemtoDreamBasePart* part2, int PDGPart2,
                             float RelativeK);

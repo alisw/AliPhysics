@@ -18,6 +18,7 @@ AliAnalysisTaskLambdaNRun2* AddMyTaskLNRun2(Bool_t isMC=kFALSE)
 	// now we create an instance of your task
 	AliAnalysisTaskLambdaNRun2* task = new AliAnalysisTaskLambdaNRun2("LambdaNRun2Ntuple",isMC);
 	if (!task) return 0x0;
+	//	task->SetMC(isMC);
 	//task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	//task->SelectCollisionCandidates(AliVEvent::kAny);
 	// add your task to the manager

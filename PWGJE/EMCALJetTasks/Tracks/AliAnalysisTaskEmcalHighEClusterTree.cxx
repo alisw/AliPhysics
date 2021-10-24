@@ -90,10 +90,11 @@ bool AliAnalysisTaskEmcalHighEClusterTree::Run(){
         datapoint[2] = emaxcell; 
         fOutputTree->Fill(datapoint);
     }   
+    return true;
 }
 
 bool AliAnalysisTaskEmcalHighEClusterTree::IsTriggerSelected() {
-    return ((fInputHandler->IsEventSelected() && AliVEvent::kINT7) || (fInputHandler->IsEventSelected() && AliVEvent::kEMCEJE));
+    return ((fInputHandler->IsEventSelected() & AliVEvent::kINT7) || (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE));
 }
 
 AliAnalysisTaskEmcalHighEClusterTree *AliAnalysisTaskEmcalHighEClusterTree::AddTaskEmcalHighClusterE(const char *name) {
@@ -102,8 +103,6 @@ AliAnalysisTaskEmcalHighEClusterTree *AliAnalysisTaskEmcalHighEClusterTree::AddT
         AliErrorGeneralStream("AliAnalysisTaskEmcalHighEClusterTree::AddTaskEmcalHighClusterE") << "No analysis manager available" << std::endl;
         return nullptr; 
     }    
-
-    bool isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
 
     auto task = new AliAnalysisTaskEmcalHighEClusterTree(name);
     mgr->AddTask(task);

@@ -16,6 +16,8 @@ class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliEMCALTriggerPatchInfo;
 class AliMultSelection;
+class AliAnalysisUtils;
+
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskHFEBESpectraEMC : public AliAnalysisTaskSE {
@@ -31,7 +33,10 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     
+    Bool_t  PassEventSelect(AliVEvent *fVevent, const AliVVertex *pVtx);
+    
     void IsAnalysispp(Bool_t isPP) {fIsAnapp = isPP;};
+    void IsMC(Bool_t isMC) {fIsMC = isMC;};
     
     Bool_t GetEMCalTriggerEG1() { return fEMCEG1; };
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
@@ -41,7 +46,7 @@ public:
     Bool_t GetEMCalTriggerDG2() { return fDCalDG2; };
     void SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; fDCalDG2=kFALSE;};
     void SetEMCalTriggerDG2(Bool_t flagTr2) { fDCalDG2=flagTr2; fDCalDG1=kFALSE;};
-    
+        
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
@@ -55,6 +60,7 @@ public:
     
     Bool_t GetTenderSwitch() {return fUseTender;};
     void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+    void SetCorrectionTaskCont(TString ClsName, TString TrkName) {fCorrTaskClusCont = ClsName; fCorrTaskTrackCont = TrkName;};
     
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
@@ -94,8 +100,8 @@ public:
     void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates = fSwitch;};
 
     void    GetElectronFromStack();
-    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
-    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
+    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCPPEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
+    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
 
     void    GetMCTemplateWeight();
     Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
@@ -132,6 +138,9 @@ private:
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
     
+    TString        fCorrTaskClusCont;//
+    TString        fCorrTaskTrackCont;//
+
     TClonesArray  *fTracks_tender;//Tender tracks
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     
@@ -146,6 +155,7 @@ private:
     
     AliAODMCParticle  *fMCparticle;//! MC particle
     TClonesArray  *fMCArray;//! MC array
+    Bool_t          fIsMC;// Is MC
     
     AliMultSelection *fMultSelection;
     Bool_t  fIsAnapp;// Is analysis pp
@@ -159,6 +169,8 @@ private:
     
     Bool_t              fRecalIP;//
     
+    Int_t               fTPCNCrossR;// track TPC NClusters
+    Double_t            fRatioTPCNCrossROvrFind;//
     Int_t               fITSNCls;//
     Double_t            fDeltaEta;//
     Double_t            fDeltaPhi;//
@@ -175,6 +187,8 @@ private:
     Int_t               fNEle;//!
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//
+    Int_t               fAssoTPCNCrossR;// track TPC NClusters
+    Double_t            fAssoRatioTPCNCrossROvrFind;//
     Double_t            fInvmassCut;//
     
     Bool_t              fCalculateWeight;//
@@ -336,6 +350,10 @@ private:
     TH1F                *fHFEPhysPriTrkCuts;//!
     TH1F                *fBEPhysPriTrkCuts;//!
     TH1F                *fDEPhysPriTrkCuts;//!
+    TH1F                *fInclElePhysPriOnlyTPCnsig;//!
+    TH1F                *fHFEPhysPriOnlyTPCnsig;//!
+    TH1F                *fBEPhysPriOnlyTPCnsig;//!
+    TH1F                *fDEPhysPriOnlyTPCnsig;//!
     TH1F                *fInclElePhysPriEMCMatch;//!
     TH1F                *fHFEPhysPriEMCMatch;//!
     TH1F                *fBEPhysPriEMCMatch;//!

@@ -10,7 +10,7 @@
 / experimental Pb-Pb data.                                                    /
 /                                                                             /
 / Author: Cindy Mordasini (cindy.mordasini@cern.ch)                           /
-/ Version 19 from the 01.07.2020.                                             /
+/ Version 21 from the 04.12.2020.                                             /
 / -------------------------------------------------------------------------- */
 
 #ifndef ALIANALYSISTASKTWOMULTICORRELATIONS_H
@@ -133,12 +133,13 @@ public:
     this->fNTPCMin      = minNTPC;
   } // End: void SetNTPCSelection(Bool_t, Int_t).
 
-  void SetChiSelection(Bool_t cutChi, Float_t minChi, Float_t maxChi)
+  void SetChiSelection(Int_t chooseChi, Bool_t cutChi, Float_t minChi, Float_t maxChi)
   {
+    this->fPersoChiSquare = chooseChi;
     this->fCutOnChi   = cutChi;
     this->fChiMin     = minChi;
     this->fChiMax     = maxChi;
-  } // End: void SetChiSelection(Bool_t, Float_t, Float_t).
+  } // End: void SetChiSelection(Bool_t, Bool_t, Float_t, Float_t).
 
   void SetNITSSelection(Bool_t cutNITS, Int_t minNITS)
   {
@@ -331,6 +332,7 @@ private:
   Float_t fEtaMax;        // Maximum eta.
   Bool_t fCutOnNTPC;      // kTRUE: apply the cut on the number of TPC clusters.
   Int_t fNTPCMin;         // Minimum N_TPC.
+  Int_t fPersoChiSquare;  // Choose the method for chi^2 per tpc cluster.
   Bool_t fCutOnChi;       // kTRUE: apply the cuts on chi^2 of the track momentum in TPC.
   Float_t fChiMin;        // Minimum chi^2.
   Float_t fChiMax;        // Maximum chi^2.
@@ -379,10 +381,10 @@ private:
   TH1F *fHistoEffInverse;   //! Distribution of the inverse of the efficiency correction.
 
 // 7. Parameters related to the multi-particle correlations.
-  Int_t fHighestHarmonic;       // Largest order of flow amplitude to compute.
-  Int_t fLargestCorrelators;    // Maximum number of particles in the correlators.
+  Int_t fHighestHarmonic;       // Largest order of flow amplitude to compute (default: 8).
+  Int_t fLargestCorrelators;    // Maximum number of particles in the correlators (default: 10).
   Int_t fReducedQPower;         // Power k for the reduced Q-vectors (default: 0).
-  TComplex fQvectors[65][9];    // All the needed combinations of Q-vectors.
+  TComplex fQvectors[81][11];    // All the needed combinations of Q-vectors.
     // Size: [(fHighestHarmonic*fLargestCorrelators)+1][fLargestCorrelators+1].
   TList *fMPCList;              //! Daughter list for the multi-particle correlations techniques.
   TH1F *fHistoReducedQvectors[9][8];     //! Modulus of the reduced Q-vectors distributions for a given k.
@@ -400,9 +402,7 @@ private:
 
 /* ----------------------------------------------------------------------------------------- */
 /* Version number to handle the objects through the iterations of the code.                  */
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 19);
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 21);
 };  // End of the class.
 
 #endif
-
-

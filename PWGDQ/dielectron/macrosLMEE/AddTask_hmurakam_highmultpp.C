@@ -1,4 +1,6 @@
 AliAnalysisTask *AddTask_hmurakam_highmultpp(Bool_t getFromAlien=kFALSE,
+					     TString year ="16",
+					     Bool_t hasSpline =kFALSE,
 					     TString cFileName = "Config_hmurakam_pp.C",
 					     Char_t* outputFileName="LMEE.root",
 					     ULong64_t triggerMask = AliVEvent::kHighMultV0,
@@ -56,7 +58,7 @@ AliAnalysisTask *AddTask_hmurakam_highmultpp(Bool_t getFromAlien=kFALSE,
     //add dielectron analysis with different cuts to the task
     for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
         
-        AliDielectron *diele = Config_hmurakam_pp(i, kFALSE); // second flag - min.bias analysis?
+        AliDielectron *diele = Config_hmurakam_pp(i,year.Data(),hasSpline);
         if(!diele)continue;
         task->AddDielectron(diele);
     }
@@ -64,7 +66,6 @@ AliAnalysisTask *AddTask_hmurakam_highmultpp(Bool_t getFromAlien=kFALSE,
     mgr->AddTask(task);
     
     //=== create output containers ===========================
-    
     AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("tree_lowmass_hm",
                          TTree::Class(),

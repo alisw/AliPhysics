@@ -4,9 +4,8 @@
 
 AliMultDepSpecAnalysisTask* AddTask_mkrueger_MultDepSpecMC(const string& dataSet,
                                                            int cutModeLow = 100,
-                                                           int cutModeHigh = 119,
+                                                           int cutModeHigh = 122,
                                                            TString options = "")
 {
-  return AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(dataSet, cutModeLow, cutModeHigh, options,
-                                                        true);
+  return AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(dataSet, cutModeLow, cutModeHigh, options, true);
 }

@@ -1,8 +1,11 @@
 ///*******************************************************
-///Config Description
-/// August 23, 2020 - Cristiane Jahnke
+/// Config Description
+/// March 30, 2021 - Cristiane Jahnke
 /// cristiane.jahnke@cern.ch
+/// Few checks on event selection
 ///*******************************************************
+
+//isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_ESparseTPC, is_EventsEG1, is_EventsEG2, isMultiAnalysis, is_MSparse, is_TPCcalibration
 
 AliAnalysisTask_JPsi_EMCal* Config_JPsi_EMCal(
 											
@@ -13,12 +16,14 @@ Int_t trigger_index=0,
 Int_t config=0,
 Bool_t isTender,
 Bool_t is_ESparse,
-Bool_t is_MSparse,
+Bool_t is_ESparseTPC,
 Bool_t is_EventsEG1,
 Bool_t is_EventsEG2,
-Bool_t isMultiAnalysis
+Bool_t isMultiAnalysis,
+Bool_t is_MSparse,
+Bool_t is_TPCcalibration,
+Bool_t is_Trigger_sim
                                             
-                                              
 )
 
 {
@@ -31,13 +36,22 @@ Bool_t isMultiAnalysis
 	
 	task->SetAODanalysis(isAOD);
 
-	if(period == "11d")task->SetPeriod2011();
+    task->SetSysHistos();
+    
+    task->SetNewClustersCut();
+    
+    if(!isMC)task->SetNewEventSelection();//use also vertex from SPD
+    
+    if(is_Trigger_sim)task->DoTriggerSimulation();
     
     if(isTender) task->SetUseTender();
     if(isMultiAnalysis) task->SetMultiAnalysis();
     
     if(is_ESparse)task->Set_Fill_ESparse();
+    if(is_ESparseTPC)task->Set_Fill_ESparseTPC();
     if(is_MSparse)task->Set_Fill_MSparse();
+    
+    if(is_TPCcalibration)task->Set_TPCCalibration();
     
     if(is_EventsEG1)task->Set_Select_trigger_events1();
     if(is_EventsEG2)task->Set_Select_trigger_events2();
@@ -64,7 +78,10 @@ Bool_t isMultiAnalysis
     task->SetRejectKinkMother(kTRUE);
     task->SetTPCandITSrefit(kTRUE);
     task->SetTPCnclsPID(85);//not used inside the task
+    
+    
     task->SetTPCchi2(4.0);
+    task->SetITSchi2(36.0);
     
     
     if(config==1)task->SetEtaCut(-0.8,0.8);
@@ -81,14 +98,20 @@ Bool_t isMultiAnalysis
     else if(config==6)task->SetITSpixel(3); //1 kAny, 2 kBoth, 3 kFirst
     else task->SetITSpixel(1); //1 kAny, 2 kBoth, 3 kFirst
     
-    if(config==7)task->SetTPCncls(70);
+   /* if(config==7)task->SetTPCncls(70);
     else if(config==8)task->SetTPCncls(80);
     else if(config==9)task->SetTPCncls(90);
-    else if(config==10)task->SetTPCncls(110);
-    else task->SetTPCncls(85);
-
+    else if(config==10)task->SetTPCncls(110);*/
     
-    if(config==11)task->SetDCACut(2.0,3.0); //xy, z
+    task->SetTPCncls(85);//not used anymore
+    //now we are using TPCncrossed rows
+    if(config==7)task->SetTPCnCrossedRows(60);
+    else if(config==8)task->SetTPCnCrossedRows(75);
+    else if(config==9)task->SetTPCnCrossedRows(80);
+    else if(config==10)task->SetTPCnCrossedRows(90);
+    else task->SetTPCnCrossedRows(70);
+    
+    if(config==11)task->SetDCACut(1.5,3.0); //xy, z
     else if(config==12)task->SetDCACut(0.5,3.0); //xy, z
     else if(config==13)task->SetDCACut(1.0,4.0); //xy, z
     else if(config==14)task->SetDCACut(1.0,2.0); //xy, z
@@ -99,18 +122,18 @@ Bool_t isMultiAnalysis
     if(config==15)task->SetTPCnsigmaCut(-3.0,3.0);
     else if(config==16)task->SetTPCnsigmaCut(-2.5,3.0);
     else if(config==17)task->SetTPCnsigmaCut(-2.0,3.0);
-    else if(config==18)task->SetTPCnsigmaCut(-1.0,3.0);
-    else if(config==19)task->SetTPCnsigmaCut(0,3.0);
-    else if(config==20)task->SetTPCnsigmaCut(1.0,3.0);
+    else if(config==18)task->SetTPCnsigmaCut(-1.75,3.0);
+    else if(config==19)task->SetTPCnsigmaCut(-1.5,3.0);
+    else if(config==20)task->SetTPCnsigmaCut(-1.25,3.0);
     
-    else if(config==21)task->SetTPCnsigmaCut(-2.25,2.5);
-    else if(config==22)task->SetTPCnsigmaCut(-2.25,4.0);
+    else if(config==21)task->SetTPCnsigmaCut(-2.25,2.75);
+    else if(config==22)task->SetTPCnsigmaCut(-2.25,3.25);
     else task->SetTPCnsigmaCut(-2.25,3.0);
     
-	if(config==23)task->SetEoverPCut(0.75,1.3);
+	if(config==23)task->SetEoverPCut(0.78,1.3);
     else if(config==24)task->SetEoverPCut(0.85,1.3);
     else if(config==25)task->SetEoverPCut(0.9,1.3);
-    else if(config==26)task->SetEoverPCut(0.8,1.4);
+    else if(config==26)task->SetEoverPCut(0.8,1.35);
     else task->SetEoverPCut(0.8,1.3);
     
     
@@ -120,14 +143,24 @@ Bool_t isMultiAnalysis
     
     if(trigger_index==4 || trigger_index==8 || trigger_index==11){
         
-        if(config==27)task->SetEnergyCut(4.5);//eg2
-        else if(config==28)task->SetEnergyCut(5.5);//eg2
-        else task->SetEnergyCut(5);//eg2
+        if(config==27)task->SetEnergyCut(4.7);//eg2
+        else if(config==28)task->SetEnergyCut(5.3);//eg2
+        else if(config==40)task->SetEnergyCut(7.5);//eg2
+        else if(config==41)task->SetEnergyCut(8.0);//eg2
+        else if(config==42)task->SetEnergyCut(8.5);//eg2
+        else if(config==43)task->SetEnergyCut(9.0);//eg2
+        else if(config==44)task->SetEnergyCut(9.5);//eg2
+        else task->SetEnergyCut(9.0);//eg2
     }
     if(trigger_index==6 || trigger_index==7 || trigger_index==10){
-        if(config==29)task->SetEnergyCut(9.5);//eg1
-        else if(config==30)task->SetEnergyCut(10.5);//eg1
-        else task->SetEnergyCut(10);//eg1
+        if(config==29)task->SetEnergyCut(9.7);//eg1
+        else if(config==30)task->SetEnergyCut(10.3);//eg1
+        else if(config==50)task->SetEnergyCut(12.5);//eg1
+        else if(config==51)task->SetEnergyCut(13.0);//eg1
+        else if(config==52)task->SetEnergyCut(13.5);//eg1
+        else if(config==53)task->SetEnergyCut(14.0);//eg1
+        else if(config==54)task->SetEnergyCut(14.5);//eg1
+        else task->SetEnergyCut(14.0);//eg1
     }
     
    // if(period=="17h2h")task->SetEnergyCut(7);//eg1 16l to test
@@ -139,7 +172,14 @@ Bool_t isMultiAnalysis
     
     //Jpsi analysis (cut online only for efficiencies in MC)
     //For data, cut is applied offline
-    task->SetMassCut(2.92, 3.16);
+    if(config==60)task->SetMassCut(2.76, 3.16);
+    else if(config==61)task->SetMassCut(2.80, 3.16);
+    else if(config==62)task->SetMassCut(2.84, 3.16);
+    else if(config==63)task->SetMassCut(2.88, 3.16);
+    else if(config==64)task->SetMassCut(2.92, 3.20);
+    else task->SetMassCut(2.92, 3.16);
+    
+    //task->SetMassCut(2.92, 3.16);
     
     
 //______________________________________

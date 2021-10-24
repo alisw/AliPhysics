@@ -104,7 +104,7 @@
 
 #include <TProfile.h>
 #include "AliKFParticle.h"
-#include "AliVertexingHFUtils.h"
+
 #include "AliAnalysisUtils.h"
 #include "AliESDUtils.h"
 #include "TRandom.h"
@@ -305,7 +305,7 @@ fRecoEtaULSeEmbWeightTrkPt(0)
 	{
 	  fvalueElectron = new Double_t[9];
 	  fPID = new AliHFEpid("hfePid");
-	  for(Int_t i=0; i<5; i++) fMultEstimatorAvg[i]=0;
+	  fMultEstimatorAvg=0;
 	}
 
 
@@ -502,7 +502,7 @@ fRecoEtaULSeEmbWeightTrkPt(0)
   DefineInput(0, TChain::Class());  
   DefineOutput(1, TList::Class());
   DefineOutput(2, TH1F::Class());
-  for(Int_t i=0; i<5; i++) fMultEstimatorAvg[i]=0;
+  fMultEstimatorAvg=0;
 }
 
 //_________________________Destructer_____________________________________
@@ -516,9 +516,9 @@ AliAnalysisTaskHFEmultTPCEMCAL::~AliAnalysisTaskHFEmultTPCEMCAL()
   if (fNentries){ delete fNentries; fNentries = 0;}
   if (fNentries2){ delete fNentries2; fNentries2 = 0;}
   
-     for(Int_t i=0; i<5; i++) {
-      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
-  }
+    
+      if (fMultEstimatorAvg) delete fMultEstimatorAvg;
+  
 }
 
 //_______________________________________________________________________
@@ -626,9 +626,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(fEMCTPCnsig);
 
   fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0);
+  fClsEAftMatch->Sumw2();  
   fOutputList->Add(fClsEAftMatch);
   
    fClsEAftMatch_SPD = new TH2F("fClsEAftMatch_SPD", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0,300,-0.5,299.5);
+  fClsEAftMatch_SPD->Sumw2();
   fOutputList->Add(fClsEAftMatch_SPD);
   
   fClsEopAftMatch = new TH1F("fClsEopAftMatch", "EMCAL cluster energy over p distribution after track matching; Cluster E/p;counts", 100, 0.0, 2.0);
@@ -1414,6 +1416,9 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 				  energy = clu->E();
 				  ncells= clu->GetNCells();
 				  
+				  //if(clu->GetIsExotic()) continue; //remove exotic clusters
+				  //if(fEMCClsTimeCut) if(TMath::Abs(clut) > 50) continue;
+				  
 				  //fClusPhi->Fill(cluphi);
 				  //fClusEta->Fill(clueta);
 				  fClusEtaPhi->Fill(clueta,cluphi); 
@@ -1513,7 +1518,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
     	if(clustMatch && clustMatch->IsEMCAL())
     	{
     	 
-    	 	
+    	 	  //if(clustMatch->GetIsExotic()) continue;
 		  Double_t fPhiDiff = -999, fEtaDiff = -999;
 		  GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 		  fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
@@ -2739,8 +2744,8 @@ Bool_t AliAnalysisTaskHFEmultTPCEMCAL::GetNonHFEEffiULSLS(AliVTrack *track, AliV
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
 
-  if (fPeriod < 0 || fPeriod > 5) return 0;   
-  return fMultEstimatorAvg[fPeriod];
+  if (fPeriod < 0 || fPeriod > 15) return 0;   
+  return fMultEstimatorAvg;
 }
 /*
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
@@ -2815,5 +2820,6 @@ void AliAnalysisTaskHFEmultTPCEMCAL::Terminate(Option_t *)
 	if (!fOutputList)return;
 
 }
+
 
 

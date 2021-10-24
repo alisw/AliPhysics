@@ -17,14 +17,13 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
-#include "AliFemtoDreamBaseDump.h"
 
 class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFemtoDreamDeuteron();
   AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC);
   virtual ~AliAnalysisTaskFemtoDreamDeuteron();
-  Float_t GetMass2sq(AliFemtoDreamTrack *track);
+  Float_t GetMass2sq(AliFemtoDreamTrack *track)const;
   void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName);
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -37,32 +36,31 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void SetTrackCutsProtonDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsProtonDCA = trkCuts;};
   void SetTrackCutsAntiProtonDCA(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiProtonDCA = trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig = config;};
-  void SetUseDumpster(bool use) {
-    fUseDumpster = use;
+  void SetRunTaskLightWeight(bool light) {
+    fisLightWeight = light;
   }
-  void SetMCTruth(bool mct) {
-    fIsMCTruth = mct;
-  }
+
   private:
-  AliAnalysisTaskFemtoDreamDeuteron(
-    const AliAnalysisTaskFemtoDreamDeuteron &task);
-  AliAnalysisTaskFemtoDreamDeuteron &operator=(
-    const AliAnalysisTaskFemtoDreamDeuteron &task);
+  AliAnalysisTaskFemtoDreamDeuteron(const AliAnalysisTaskFemtoDreamDeuteron &task);
+  AliAnalysisTaskFemtoDreamDeuteron &operator=(const AliAnalysisTaskFemtoDreamDeuteron &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
+  bool fisLightWeight;                      //
+  int fTrackBufferSize;                     //
   bool fIsMC;                               //
-  bool fIsMCTruth;                          //
-  bool fUseDumpster;  //
-  bool fUseDumpsterRestPairs;  //
-  AliFemtoDreamEvent *fEvent;               //!  on Runtime
+  AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
-  AliFemtoDreamEventCuts *fEventCuts;       //   Stream these bad boys
+  AliFemtoDreamEventCuts *fEventCuts;       //
   AliFemtoDreamTrackCuts *fTrackCutsDeuteronDCA;  //
   AliFemtoDreamTrackCuts *fTrackCutsDeuteronMass;  //
   AliFemtoDreamTrackCuts *fTrackCutsAntiDeuteronDCA;  //
   AliFemtoDreamTrackCuts *fTrackCutsAntiDeuteronMass;  //
   AliFemtoDreamTrackCuts *fTrackCutsProtonDCA;  //
   AliFemtoDreamTrackCuts *fTrackCutsAntiProtonDCA;  //
+  AliFemtoDreamCollConfig *fConfig;         //
+  AliFemtoDreamPairCleaner *fPairCleaner;   //!
+  AliFemtoDreamPartCollection *fPartColl;   //!
+  AliAODTrack** fGTI;           //!
   TList *fEvtList;//!
   TList *fProtonList;//!
   TList* fProtonMCList;//!
@@ -76,23 +74,12 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   TList* fDeuteronMCNoTOFList;//!
   TList *fAntiDeuteronNoTOFList;//!
   TList* fAntiDeuteronMCNoTOFList;//!
-  AliFemtoDreamCollConfig *fConfig;         //
-  AliFemtoDreamPairCleaner *fPairCleaner;   //!
-  AliFemtoDreamPartCollection *fPartColl;   //!
   TList *fResults;                          //!
   TList *fResultsQA;                        //!
-  AliAODTrack** fGTI;           //!
-
   TH2F  *fDeuteronRestMass;                 //!
   TH2F  *fAntiDeuteronRestMass;             //!
   TH2F  *fDeuteronRestMassNoTOF;            //!
   TH2F  *fAntiDeuteronRestMassNoTOF;        //!
-
-  AliFemtoDreamDump *fProtonDeuteronDump;   //!
-  AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
-  TList* fDumpster; //!
-  int fTrackBufferSize;                     //
   ClassDef(AliAnalysisTaskFemtoDreamDeuteron, 6)
 };
-
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOTUTORIAL_H_ */

@@ -204,7 +204,6 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   } else if (trainConfig == 27) {  // to calculate MBW for PHOS pi0 region
     cuts.AddCutPCMMaterial("00010103", "0700bb09266300008884404000"); 
     cuts.AddCutPCMMaterial("00010103", "0800bb09266300008850404000");
-
   } else if (trainConfig == 28) {   // new Cuts on Psi pair, chi2, to calculate MBW for PHOS pi0 region
     cuts.AddCutPCMMaterial("00010103", "0800bb0929730000dgd0404000");
     cuts.AddCutPCMMaterial("00010103", "0800bb0926630000dgd0404000");
@@ -212,6 +211,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   } else if (trainConfig == 29) {  // to calculate MBW for PHOS pi0,eta region
     cuts.AddCutPCMMaterial("00010103", "0e00cc09266300008884404000");  //pi0
     cuts.AddCutPCMMaterial("00010103", "0d00dd09266300008850404000");  //eta
+ } else if (trainConfig == 30) {   // use u,v RDep pT cut
+    cuts.AddCutPCMMaterial("00010103", "0d0000t9266300008850404000");
+    cuts.AddCutPCMMaterial("00010103", "0d0000u9266300008850404000");
 
 
 
@@ -305,6 +307,9 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   } else if (trainConfig == 129) {  // to calculate MBW for PHOS pi0,eta region
     cuts.AddCutPCMMaterial("00010103", "1e00cc09266300008884404000");  //pi0
     cuts.AddCutPCMMaterial("00010103", "1d00dd09266300008850404000");  //eta
+ } else if (trainConfig == 130) {
+    cuts.AddCutPCMMaterial("00010103", "1d0000t9266300008850404000");
+    cuts.AddCutPCMMaterial("00010103", "1d0000u9266300008850404000");
 
 
 
@@ -424,6 +429,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
+    if  (trainConfig == 30  || trainConfig == 130 ) {
+      analysisCuts[i]->SetPtCutArraySize(6);
+      analysisCuts[i]->SetRArraySize(7);
+    }
 
     if (enableMatBudWeightsPi0 > 0){
       cout<< "Material budget weigthing enabled"<< endl;

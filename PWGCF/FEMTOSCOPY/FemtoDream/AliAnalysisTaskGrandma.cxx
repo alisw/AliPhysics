@@ -334,7 +334,7 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
           AliFatal("No Standard AOD");
           return;
         }
-        fFemtoTrack->SetTrack(track, fEvent->GetMultiplicity());
+        fFemtoTrack->SetTrack(track);
         if (fTrackCuts->isSelected(fFemtoTrack)) {
           Particles.push_back(*fFemtoTrack);
         }
@@ -354,7 +354,7 @@ void AliAnalysisTaskGrandma::UserExec(Option_t *) {
       int entriesV0 = v01->GetEntriesFast();
       for (int iv0 = 0; iv0 < entriesV0; iv0++) {
         AliAODv0 *v0 = Event->GetV0(iv0);
-        fFemtov0->Setv0(Event, v0, fEvent->GetMultiplicity());
+        fFemtov0->Setv0(Event, v0);
         if (fv0Cuts->isSelected(fFemtov0)) {
           Decays.push_back(*fFemtov0);
         }
