@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
                                       Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                       Bool_t setDoAdditionalQA = kFALSE,
                                       Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
-                                      Bool_t usePhiCut = kFALSE
+                                      Bool_t usePhiCut = kFALSE,
                                       Bool_t useFilteredTreeCuts = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
