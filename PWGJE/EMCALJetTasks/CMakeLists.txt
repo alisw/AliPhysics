@@ -238,7 +238,8 @@ set(SRCS
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
-    UserTasks/AliMCParticleContainerToyModel.cxx)
+    UserTasks/AliMCParticleContainerToyModel.cxx
+    UserTasks/AliAnalysisTaskRawJetWithEP.cxx)
 
 # Tasks that need direct access to RooUnfold
 if(RooUnfold_FOUND)
