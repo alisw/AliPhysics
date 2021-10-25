@@ -28,7 +28,8 @@ AliJHOCFATask::AliJHOCFATask():
 	fHOCFATask(NULL),
 	fHOCFANCentralityBins(9),
   fHOCFAMultiplicityMin(10),
-  fHOCFAUseWeights(kTRUE),
+  fHOCFAUseWeightsNUE(kTRUE),
+  fHOCFAUseWeightsNUA(kFALSE),
   fHOCFANCombi(6),
   fHOCFAvalues(0),
   fHOCFAcombi(0)
@@ -45,7 +46,8 @@ AliJHOCFATask::AliJHOCFATask(const char *name):
 	fHOCFATask(NULL),
 	fHOCFANCentralityBins(9),
   fHOCFAMultiplicityMin(10),
-  fHOCFAUseWeights(kTRUE),
+  fHOCFAUseWeightsNUE(kTRUE),
+  fHOCFAUseWeightsNUA(kFALSE),
   fHOCFANCombi(6),
   fHOCFAvalues(0),
   fHOCFAcombi(0)
@@ -64,7 +66,8 @@ AliJHOCFATask::AliJHOCFATask(const AliJHOCFATask& ap):
 	fHOCFATask(ap.fHOCFATask),
 	fHOCFANCentralityBins(ap.fHOCFANCentralityBins),
   fHOCFAMultiplicityMin(ap.fHOCFAMultiplicityMin),
-  fHOCFAUseWeights(ap.fHOCFAUseWeights),
+  fHOCFAUseWeightsNUE(ap.fHOCFAUseWeightsNUE),
+  fHOCFAUseWeightsNUA(ap.fHOCFAUseWeightsNUA),
   fHOCFANCombi(ap.fHOCFANCombi),
   fHOCFAvalues(ap.fHOCFAvalues),
   fHOCFAcombi(ap.fHOCFAcombi)
@@ -107,7 +110,7 @@ void AliJHOCFATask::UserCreateOutputObjects()
   fHOCFATask->SetCentralityBinning(fHOCFANCentralityBins);
   fHOCFATask->SetCentralityArray(fHOCFAvalues);
   fHOCFATask->SetMinMultiplicity(fHOCFAMultiplicityMin);
-  fHOCFATask->SetParticleWeights(fHOCFAUseWeights);
+  fHOCFATask->SetParticleWeights(fHOCFAUseWeightsNUE, fHOCFAUseWeightsNUA);
   fHOCFATask->SetNumberCombi(fHOCFANCombi);
   fHOCFATask->SetHarmoArray(fHOCFAcombi);
 	OpenFile(1);

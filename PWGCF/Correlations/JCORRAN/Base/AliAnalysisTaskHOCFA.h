@@ -50,7 +50,7 @@ public:
   virtual void BookFinalResults();
 
   void SetMinMultiplicity(Int_t minMult) {fMultiplicityMin = minMult;}
-  void SetParticleWeights(Bool_t weights) {fUseWeights = weights;}
+  void SetParticleWeights(Bool_t weightsNUE, Bool_t weightsNUA) {fUseWeightsNUE = weightsNUE; fUseWeightsNUA = weightsNUA;}
   void SetNumberCombi(Int_t combi) {fNCombi = combi;}
   virtual void SetHarmoArray(TString combiString);
 
@@ -76,7 +76,8 @@ private:
 
   Long64_t fMultiplicity; //! Multiplicity of the event after full selection.
   Int_t fMultiplicityMin; // Minimum multiplicity to calculate the correlators.
-  Bool_t fUseWeights; // kTrue: Enable the non-unit NUE/NUA corrections.
+  Bool_t fUseWeightsNUE; // kTrue: Enable the non-unit NUE corrections.
+  Bool_t fUseWeightsNUA; // kTrue: Enable the non-unit NUA corrections.
   Int_t fNCombi;  // Number of combinations of harmonics (max 6).
   Int_t fHarmoArray[6][3];  // Combinations of harmonics for the SCs/ACs.
     // 6: max number of possible observables, 3: number of harmonics.
@@ -95,7 +96,7 @@ private:
     // 6: Max number of SCs/ACs, 16: Max number of centrality bins.
   TProfile *fErrorTerms[6][16]; //! Terms for the error propagation for NSC(k,l,m).
 
-  ClassDef(AliAnalysisTaskHOCFA, 2);
+  ClassDef(AliAnalysisTaskHOCFA, 3);
 };
 
 #endif

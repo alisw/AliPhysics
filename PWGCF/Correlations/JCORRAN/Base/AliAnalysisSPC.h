@@ -82,7 +82,7 @@ public:
 
   void SetSaveAllQA(Bool_t SaveQA){this->bSaveAllQA=SaveQA;}
 
-  void SetUseWeights(Bool_t Weights){this->bUseWeights = Weights;}
+  void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
 
   void SetFisherYates(Bool_t DoFY, Float_t CutOff)
   { this->bDoFisherYates=DoFY; this->fFisherYatesCutOff=CutOff; } 
@@ -160,7 +160,8 @@ private:
   Float_t fFisherYatesCutOff;		//How much percentage of the orginal particles are kept, e.g. if 0.7 only 70% of the current particles are kept for analysis
 
   //Weights
-  Bool_t bUseWeights; 
+  Bool_t bUseWeightsNUE; 
+  Bool_t bUseWeightsNUA; 
 
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          	// maximum of correlation   
@@ -203,7 +204,7 @@ private:
   TProfile *fProfileTrackCuts;  	//! Profile to save the cut values for track selection
   TList *fFinalResultsList[16];      	//! List to hold all histograms with final results for a specific centrality bin. Up to 16 centraliy bins possible
 
-  ClassDef(AliAnalysisSPC,1); 
+  ClassDef(AliAnalysisSPC,2); 
 };
 
 //================================================================================================================
