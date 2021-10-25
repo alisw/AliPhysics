@@ -27,20 +27,26 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         float fNsigmaHe3;
 
         float fNsigmaRejection;
+        
+        // 10.24
+        float SwitchMom_p;
+        float SwitchMom_d;
+        float SwitchMom_t;
+        float SwitchMom_He3;
+    
 
-
-        bool IsProtonNSigma(float mom, float fNsigma, float nsigmaTPCP, float nsigmaTOFP);
-        bool IsDeuteronNSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
-        bool IsTritonNSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
-        bool IsHe3NSigma(float mom, float fNsigma, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
+        bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
+        bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
+        bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
+        bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
         // dE/dx
         bool IsDeuteronTPCdEdx(float mom, float dEdx, float maxmom);
 
         // reject
-        bool IsElectronNSigmaRejection(float mom, float nsigmaTPCE);
-        bool IsPionNSigmaRejection(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
-        bool IsKaonNSigmaRejection(float mom, float nsigmaTPCK, float nsigmaTOFK);
-        bool IsProtonNSigmaRejection(float mom, float nsigmaTPCP, float nsigmaTOFP);
+        bool IsElectronNSigmaRejection( float mom, float nsigmaTPCE);
+        bool IsPionNSigmaRejection(     float mom, float nsigmaTPCPi, float nsigmaTOFPi);
+        bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
+        bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
         
 
 };
