@@ -4,6 +4,7 @@
 //
 // Author: S. Sakai
 
+#include <TGrid.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -12,6 +13,7 @@
 #include <TList.h>
 #include <TRandom.h>
 #include <TLorentzVector.h>
+#include "TFile.h"
 
 //
 #include "AliAODEvent.h"
@@ -192,6 +194,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   HFjetCorr2(0),
   HFjetCorr3(0),
   HFjetCorrUE(0),
+  HFjetCorrUE_bgfrac(0),
   HFjetParticle(0),
   HFjetDCA_c(0),
   HFjetDCA_b(0),
@@ -275,11 +278,13 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fNtrklEopHad(0),
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
-	fNtrklRhoarea(0),	
+  fNtrklRhoarea(0),
+  fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
+  fDelta_pT(0),	
   //======parameter============
   fNref(0),
   Nch(0),
-	correctednAcc(-999)
+  correctednAcc(-999)
   //fmcData(kFALSE)
 {
   // Default constructor.
@@ -432,6 +437,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	HFjetCorr2(0),
 	HFjetCorr3(0),
         HFjetCorrUE(0),
+        HFjetCorrUE_bgfrac(0),
 	HFjetParticle(0),
 	HFjetDCA_c(0),
 	HFjetDCA_b(0),
@@ -516,6 +522,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistphoPi0MC(0),//photonic e from pi0 without emb
 	fHistphoEtaMC(0),//photonic e from eta without emb
 	fNtrklRhoarea(0),
+        fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
+        fDelta_pT(0),	
 
 //======parameter============
         fNref(0),
@@ -950,6 +958,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   HFjetCorrUE->Sumw2();
   fOutput->Add(HFjetCorrUE);
 
+  HFjetCorrUE_bgfrac = new THnSparseD("HFjetCorrUE_bgfrac","HF MC Corr (UE sub);p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
+  HFjetCorrUE_bgfrac->Sumw2();
+  fOutput->Add(HFjetCorrUE_bgfrac);
+
   HFjetParticle = new THnSparseD("HFjetParticle","HF particle;p_{T}^{reco}; p_{T}^{MC}; jet_{reco}; jet_{MC};  jet_{particle}; R match; pThard;", 7, nBine, mimHFj, maxHFj);
   HFjetParticle->Sumw2();
   fOutput->Add(HFjetParticle);
@@ -1041,7 +1053,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistBGrandHFEev = new TH1F("fHistBGrandHFEev", "BG rand; #Delta p_{T}(GeV/c)", 300, -100.0, 200.0);
   fOutput->Add(fHistBGrandHFEev);
 
-	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,600,-100.0,500.0);
+	fHistNtrBGfrac = new TH2D("fHistNtrBGfrac","N_{tracklet} vs BG frac",301,-0.5,300.5,6000,-100.0,500.0);
 	fOutput->Add(fHistNtrBGfrac);
 
   fHistUE_org = new TH1F("fHistUE_org", "UE from EPOS in generated level; p_{T}(GeV/c)", 100, 0.0, 10.0);
@@ -1376,6 +1388,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             cout << "fptAssocut = " << fptAssocut << endl;
            }
 
+	if(!gGrid){
+                cout << "no Grid connection, connecting to the Grid ..." << endl; 
+		TGrid::Connect("alien//");
+	}   
+
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
   fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -1490,6 +1507,39 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	  }
   }
 
+  //cout << "fDelta_pT = " << fDelta_pT << endl;
+
+  if(!ippcoll)
+    {
+     if(fMCarray && !fDelta_pT)
+        {
+            //cout << " get delta pT " << endl;
+            //cout << " fJetEtaCut = " << fJetEtaCut << endl;
+            TFile* fBGgrac = TFile::Open(fbgfracFile.Data());
+            //cout << " fBGgrac = " << fBGgrac << endl;
+            if(fJetEtaCut>0.69 && fJetEtaCut<0.71) // R=0.2
+               {
+               fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR02");
+              }           
+            else if(fJetEtaCut>0.59 && fJetEtaCut<0.61) // R=0.3
+               {  
+                //cout << "get bgfrac for 0.3 " << endl;
+                fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR03");
+                //cout << "check fDelta_pT = " << fDelta_pT << endl;
+               }           
+            else if(fJetEtaCut>0.49 && fJetEtaCut<0.51) // R=0.4
+              {
+               fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR04");  
+              }         
+            else if(fJetEtaCut>0.29 && fJetEtaCut<0.31) // R=0.6
+              {
+               fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR06");
+              } 
+            else fDelta_pT = 0x0;          
+        }
+    }
+
+  //cout << "fDelta_pT = " << fDelta_pT << endl;
 
   // track
   //ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
@@ -2284,7 +2334,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        double corrPt_UE = pTeJet - pTeJet_UE;
                        HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
                        HFjetCorrUE->Fill(HFjetVals4); 
-                      
+ 
+                       double HFjetVals5[7]; // sub UE in reco jet
+                       double bgfrac = fDelta_pT->GetRandom();
+                       if(bgfrac>=0 && bgfrac<1.0)bgfrac=0.0;
+                       double corrPt_UE_fbg = pTeJet - pTeJet_UE - bgfrac;
+                       HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE_fbg; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
+                       HFjetCorrUE_bgfrac->Fill(HFjetVals4); 
+                     
                        double HFjetRap1[6];
                        double dphi_jet_e = atan2(sin(jetPhi - phi),cos(jetPhi - phi));
                        HFjetRap1[0] = pTeJetTrue; HFjetRap1[1] = jetEta; HFjetRap1[2] = eta; HFjetRap1[3] = jetEta - eta; HFjetRap1[4] = dphi_jet_e; HFjetRap1[5] = sqrt(pow(jetEta - eta,2) + pow(dphi_jet_e,2)); 

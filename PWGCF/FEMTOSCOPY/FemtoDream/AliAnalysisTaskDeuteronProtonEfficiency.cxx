@@ -105,8 +105,8 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistSEDAntiPairGen(0),
   fHistPtProtonRecPDG(0),
   fHistPtProtonRecPrimary(0),
-  fHistPtProtonRecPairPtCut(0),
   fHistPtProtonRecTrackCuts(0),
+  fHistPtProtonRecPairPtCut(0),
   fHistEtaProtonRecPDG(0),
   fHistEtaProtonRecPrimary(0),
   fHistEtaProtonRecTrackCuts(0),
@@ -143,6 +143,10 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistEtaAntiHelium3RecPairPtCut(0),
   fHistPtAntiParticlesRec(0),
   fHistSEDAntiPairRec(0),
+  fHistdEdx_LHC18a2a(0),
+  fHistdEdx_LHC18a2b(0),
+  fHistdEdx_LHC18a2b4(0),
+  fHistdEdx_LHC20l7a(0),
   fHistEventCounter(0),
   fPIDResponse(0)
 {
@@ -207,8 +211,8 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistPtProtonRecPairPtCut(0),
   fHistEtaProtonRecPDG(0),
   fHistEtaProtonRecPrimary(0),
-  fHistEtaProtonRecPairPtCut(0),
   fHistEtaProtonRecTrackCuts(0),
+  fHistEtaProtonRecPairPtCut(0),
   fHistPtAntiProtonRecPDG(0),
   fHistPtAntiProtonRecPrimary(0),
   fHistPtAntiProtonRecTrackCuts(0),
@@ -241,6 +245,10 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistEtaAntiHelium3RecPairPtCut(0),
   fHistPtAntiParticlesRec(0),
   fHistSEDAntiPairRec(0),
+  fHistdEdx_LHC18a2a(0),
+  fHistdEdx_LHC18a2b(0),
+  fHistdEdx_LHC18a2b4(0),
+  fHistdEdx_LHC20l7a(0),
   fHistEventCounter(0),
   fPIDResponse(0)
 {
@@ -258,19 +266,16 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fESDtrackCutsProton->SetMinNCrossedRowsTPC(70);
   fESDtrackCutsProton->SetMinRatioCrossedRowsOverFindableClustersTPC(0.83);
   fESDtrackCutsProton->SetAcceptSharedTPCClusters(false);
-//  fESDtrackCutsProton->SetMaxDCAToVertexXY(0.1);
-//  fESDtrackCutsProton->SetMaxDCAToVertexZ(0.2);
 
   // Deuteron cuts
   fESDtrackCutsDeuteron = new AliESDtrackCuts("AliESDtrackCutsDeuteron","AliESDtrackCutsDeuteron");
+//  fESDtrackCutsDeuteron = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); // FilterBit 128
   fESDtrackCutsDeuteron->SetEtaRange(-0.8,0.8);
   fESDtrackCutsDeuteron->SetPtRange(0.4,4.0);
   fESDtrackCutsDeuteron->SetMinNClustersTPC(80);
   fESDtrackCutsDeuteron->SetMinNCrossedRowsTPC(70);
   fESDtrackCutsDeuteron->SetMinRatioCrossedRowsOverFindableClustersTPC(0.83);
   fESDtrackCutsDeuteron->SetAcceptSharedTPCClusters(false);
-//  fESDtrackCutsDeuteron->SetMaxDCAToVertexXY(0.1);
-//  fESDtrackCutsDeuteron->SetMaxDCAToVertexZ(0.2);
   fESDtrackCutsDeuteron->SetRequireITSPid(true); // FilterBit 256
   fESDtrackCutsDeuteron->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);	// FilterBit 256
 
@@ -645,6 +650,23 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserCreateOutputObjects()
   fHistEventCounter->GetXaxis()->SetBinLabel(1,"number of events");
   fHistEventCounter->GetYaxis()->SetTitle("entries");
 
+  // dE/dx for reconstructed particles and antiparticles
+  fHistdEdx_LHC18a2a = new TH2F("fHistdEdx_LHC18a2a","reconstructed particles and antiparticles in LHC18a2a",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC18a2a->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC18a2a->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
+  fHistdEdx_LHC18a2b = new TH2F("fHistdEdx_LHC18a2b","reconstructed particles and antiparticles in LHC18a2b",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC18a2b->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC18a2b->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
+  fHistdEdx_LHC18a2b4 = new TH2F("fHistdEdx_LHC18a2b4","reconstructed particles and antiparticles in LHC18a2b4",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC18a2b4->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC18a2b4->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
+  fHistdEdx_LHC20l7a = new TH2F("fHistdEdx_LHC20l7a","reconstructed particles and antiparticles in LHC20l7a",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC20l7a->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC20l7a->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
   // generated protons
   fHistList->Add(fHistPtProtonGenPDG);
   fHistList->Add(fHistPtProtonGenPrimary);
@@ -749,6 +771,12 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserCreateOutputObjects()
   fHistList->Add(fHistPtAntiParticlesRec);
   fHistList->Add(fHistSEDAntiPairRec);
 
+  // dE/dx for particles and antiparticles
+  fHistList->Add(fHistdEdx_LHC18a2a);
+  fHistList->Add(fHistdEdx_LHC18a2b);
+  fHistList->Add(fHistdEdx_LHC18a2b4);
+  fHistList->Add(fHistdEdx_LHC20l7a);
+
   // event counter
   fHistList->Add(fHistEventCounter);
 
@@ -826,8 +854,6 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double EtaLimit2 = +0.8;
   double PairPtLimit1 = 1.0;
   double PairPtLimit2 = 2.0;
-  double ProtonPtLimit1 = 0.0;
-  double DeuteronPtLimit1 = 0.0;
   double ProtonpTPCThreshold = 0.7;
   double DeuteronpTPCThreshold = 1.4;
 
@@ -851,6 +877,24 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double PtDeuteronRec	 = 0.0;
   double PtHelium3Rec	 = 0.0;
 
+  double fBetheParametersDeuteron[6];
+
+  // DCA calculation
+  Float_t xv_Proton[2];
+  Float_t yv_Proton[3];
+  Float_t xv_Deuteron[2];
+  Float_t yv_Deuteron[3];
+  
+  Float_t ProtonDCAxy;
+  Float_t ProtonDCAz;
+  Float_t DeuteronDCAxy;
+  Float_t DeuteronDCAz;
+
+  double ProtonDCAxyMax = 0.1;
+  double ProtonDCAzMax	= 0.2;
+  double DeuteronDCAxyMax = 0.1;
+  double DeuteronDCAzMax  = 0.2;
+
   double RelativeMomentum = 0.0;
 
   int nStackLoop1 = 0;
@@ -870,7 +914,70 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   bool TOF2_OK = false;
 
 
+  int RunNumber = fESD->GetRunNumber();
+
+  bool LHC18a2a = false;
+  bool LHC18a2b = false;
+  bool LHC18a2b4 = false;
+  bool LHC20l7a = false;
+
+
   if(fMCtrue){
+
+
+    // set the appropriate Bethe-Bloch parameters for deuterons for the individual productions
+
+    if(RunNumber >= 270581 && RunNumber <= 282704){
+    // LHC18a2a (anchored to 2017 data)
+
+	LHC18a2a = true;
+	fBetheParametersDeuteron[0] = 2.63655; 
+	fBetheParametersDeuteron[1] = 16.8483;
+	fBetheParametersDeuteron[2] = 0.0854068; 
+	fBetheParametersDeuteron[3] = 2.03083;
+	fBetheParametersDeuteron[4] = -1.90682;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }else if(RunNumber >= 256504 && RunNumber <= 259888){
+    // LHC18a2b4 (anchored to 2016 k/l pass2)
+
+	LHC18a2b4 = true;
+	// parameters taken from LHC18a2a
+	fBetheParametersDeuteron[0] = 2.63655; 
+	fBetheParametersDeuteron[1] = 16.8483;
+	fBetheParametersDeuteron[2] = 0.0854068; 
+	fBetheParametersDeuteron[3] = 2.03083;
+	fBetheParametersDeuteron[4] = -1.90682;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }else if(RunNumber >= 252235 && RunNumber <= 264347){
+    // LHC18a2b (anchored to 2016 data)
+
+	LHC18a2b = true;
+	fBetheParametersDeuteron[0] = 3.74652; 
+	fBetheParametersDeuteron[1] = 12.159;
+	fBetheParametersDeuteron[2] = 0.0332405; 
+	fBetheParametersDeuteron[3] = 1.77673;
+	fBetheParametersDeuteron[4] = -2.31179;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }else if(RunNumber >= 285009 && RunNumber <= 294925){
+    // LHC20l7a (anchored to 2018 data)
+
+	LHC20l7a = true;
+	// parameters taken from LHC18a2a
+	fBetheParametersDeuteron[0] = 2.63655; 
+	fBetheParametersDeuteron[1] = 16.8483;
+	fBetheParametersDeuteron[2] = 0.0854068; 
+	fBetheParametersDeuteron[3] = 2.03083;
+	fBetheParametersDeuteron[4] = -1.90682;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }
+
+
+
+
 
     // loop for the generated particles
     for(nStackLoop1 = 0; nStackLoop1 < stack->GetNtrack(); nStackLoop1++) // proton loop
@@ -1093,6 +1200,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	if(!fESDtrackCutsProton->AcceptTrack(Track1)) continue;
 	if(Track1->GetSign() < 1) continue;
 
+	// nsigma cuts
 	AliPIDResponse::EDetPidStatus status1TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track1);
 	AliPIDResponse::EDetPidStatus status1TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track1);
 
@@ -1117,6 +1225,13 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
         }
 
+	// DCA cuts
+	Track1->GetImpactParameters(xv_Proton,yv_Proton);
+	ProtonDCAxy = xv_Proton[0];
+	ProtonDCAz  = xv_Proton[1];
+	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
+
+
 	fHistPtProtonRecTrackCuts->Fill(PtProtonRec);
 	fHistEtaProtonRecTrackCuts->Fill(EtaProtonRec);
 
@@ -1140,11 +1255,13 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    PtDeuteronRec = LorentzVectorDeuteronRec.Pt();
 	    EtaDeuteronRec = LorentzVectorDeuteronRec.Eta();
 
+
 	    // check if particle is a deuteron
 	    if(!(Particle2PDG == DeuteronPDG))	continue;
 
 	    fHistPtDeuteronRecPDG->Fill(PtDeuteronRec);
 	    fHistEtaDeuteronRecPDG->Fill(EtaDeuteronRec);
+
 
 	    // check if deuteron is a primary particle
 	    if((!Particle2->IsPhysicalPrimary())) continue;
@@ -1152,9 +1269,29 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    fHistPtDeuteronRecPrimary->Fill(PtDeuteronRec);
 	    fHistEtaDeuteronRecPrimary->Fill(EtaDeuteronRec);
 
+
 	    // apply track cuts
 	    if(!fESDtrackCutsDeuteron->AcceptTrack(Track2)) continue;
 	    if(Track2->GetSign() < 1) continue;
+
+	    // fill dE/dx with particles and antiparticles according to the production period
+	    if(LHC18a2a == true){
+
+	      fHistdEdx_LHC18a2a->Fill(Track2->GetInnerParam()->GetP() * Track2->GetSign(),Track2->GetTPCsignal());
+
+	      }else if(LHC18a2b == true){
+
+		fHistdEdx_LHC18a2b->Fill(Track2->GetInnerParam()->GetP() * Track2->GetSign(),Track2->GetTPCsignal());
+
+		}else if(LHC18a2b4 == true){
+
+		  fHistdEdx_LHC18a2b4->Fill(Track2->GetInnerParam()->GetP() * Track2->GetSign(),Track2->GetTPCsignal());
+
+		  }else if(LHC20l7a == true){
+
+		    fHistdEdx_LHC20l7a->Fill(Track2->GetInnerParam()->GetP() * Track2->GetSign(),Track2->GetTPCsignal());
+
+		    }
 
 	    AliPIDResponse::EDetPidStatus status2TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track2);
 	    AliPIDResponse::EDetPidStatus status2TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track2);
@@ -1165,7 +1302,9 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    if(!(TPC2_OK)) continue;
 	    if(!(TOF2_OK)) continue;
 
-	    nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
+	    //if(splines)
+	    //nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
+	    nSigmaTPCdeuteron = Bethe(*Track2,AliPID::ParticleMass(AliPID::kDeuteron),1,fBetheParametersDeuteron);
 	    nSigmaTOFdeuteron = fPIDResponse->NumberOfSigmasTOF(Track2,AliPID::kDeuteron);
 	    nSigmaTPCTOFdeuteron = TMath::Sqrt(pow(nSigmaTPCdeuteron,2.) + pow(nSigmaTOFdeuteron,2.));
 
@@ -1181,27 +1320,14 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
 	    }
 
+	    // DCA cuts
+	    Track2->GetImpactParameters(xv_Deuteron,yv_Deuteron);
+	    DeuteronDCAxy = xv_Deuteron[0];
+	    DeuteronDCAz  = xv_Deuteron[1];
+	    if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
+
 	    fHistPtDeuteronRecTrackCuts->Fill(PtDeuteronRec);
 	    fHistEtaDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
-
-/*
-	    if((Particle1PDG == TritonPDG)	|| (Particle1PDG == -TritonPDG))      continue;
-	    if((Particle1PDG == Helium3PDG)	|| (Particle1PDG == -Helium3PDG))     continue;
-	    if((Particle1PDG == HypertritonPDG) || (Particle1PDG == -HypertritonPDG)) continue;
-	    if((Particle1PDG == PionPDG)	|| (Particle1PDG == -PionPDG))	      continue;
-	    if((Particle1PDG == KaonPDG)	|| (Particle1PDG == -KaonPDG))	      continue;
-	    if((Particle1PDG == ElectronPDG)	|| (Particle1PDG == -ElectronPDG))    continue;
-	    if((Particle1PDG == MyonPDG)	|| (Particle1PDG == -MyonPDG))	      continue;
-
-	    if((Particle2PDG == TritonPDG)	|| (Particle2PDG == -TritonPDG))      continue;
-	    if((Particle2PDG == Helium3PDG)	|| (Particle2PDG == -Helium3PDG))     continue;
-	    if((Particle2PDG == HypertritonPDG) || (Particle2PDG == -HypertritonPDG)) continue;
-	    if((Particle2PDG == PionPDG)	|| (Particle2PDG == -PionPDG))	      continue;
-	    if((Particle2PDG == KaonPDG)	|| (Particle2PDG == -KaonPDG))	      continue;
-	    if((Particle2PDG == ElectronPDG)	|| (Particle2PDG == -ElectronPDG))    continue;
-	    if((Particle2PDG == MyonPDG)	|| (Particle2PDG == -MyonPDG))	      continue;
-*/
-
 
 
 	    TLorentzVector LorentzVectorHelium3Rec;
@@ -1295,6 +1421,13 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
         }
 
+	// DCA cuts
+	Track1->GetImpactParameters(xv_Proton,yv_Proton);
+	ProtonDCAxy = xv_Proton[0];
+	ProtonDCAz  = xv_Proton[1];
+	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
+
+
 	fHistPtAntiProtonRecTrackCuts->Fill(PtProtonRec);
 	fHistEtaAntiProtonRecTrackCuts->Fill(EtaProtonRec);
 
@@ -1343,7 +1476,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    if(!(TPC2_OK)) continue;
 	    if(!(TOF2_OK)) continue;
 
-	    nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
+	    //nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
+	    nSigmaTPCdeuteron = Bethe(*Track2,AliPID::ParticleMass(AliPID::kDeuteron),1,fBetheParametersDeuteron);
 	    nSigmaTOFdeuteron = fPIDResponse->NumberOfSigmasTOF(Track2,AliPID::kDeuteron);
 	    nSigmaTPCTOFdeuteron = TMath::Sqrt(pow(nSigmaTPCdeuteron,2.) + pow(nSigmaTOFdeuteron,2.));
 
@@ -1359,27 +1493,14 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
 	    }
 
+	    // DCA cuts
+	    Track2->GetImpactParameters(xv_Deuteron,yv_Deuteron);
+	    DeuteronDCAxy = xv_Deuteron[0];
+	    DeuteronDCAz  = xv_Deuteron[1];
+	    if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
+
 	    fHistPtAntiDeuteronRecTrackCuts->Fill(PtDeuteronRec);
 	    fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
-
-/*
-	    if((Particle1PDG == TritonPDG)	|| (Particle1PDG == -TritonPDG))      continue;
-	    if((Particle1PDG == Helium3PDG)	|| (Particle1PDG == -Helium3PDG))     continue;
-	    if((Particle1PDG == HypertritonPDG) || (Particle1PDG == -HypertritonPDG)) continue;
-	    if((Particle1PDG == PionPDG)	|| (Particle1PDG == -PionPDG))	      continue;
-	    if((Particle1PDG == KaonPDG)	|| (Particle1PDG == -KaonPDG))	      continue;
-	    if((Particle1PDG == ElectronPDG)	|| (Particle1PDG == -ElectronPDG))    continue;
-	    if((Particle1PDG == MyonPDG)	|| (Particle1PDG == -MyonPDG))	      continue;
-
-	    if((Particle2PDG == TritonPDG)	|| (Particle2PDG == -TritonPDG))      continue;
-	    if((Particle2PDG == Helium3PDG)	|| (Particle2PDG == -Helium3PDG))     continue;
-	    if((Particle2PDG == HypertritonPDG) || (Particle2PDG == -HypertritonPDG)) continue;
-	    if((Particle2PDG == PionPDG)	|| (Particle2PDG == -PionPDG))	      continue;
-	    if((Particle2PDG == KaonPDG)	|| (Particle2PDG == -KaonPDG))	      continue;
-	    if((Particle2PDG == ElectronPDG)	|| (Particle2PDG == -ElectronPDG))    continue;
-	    if((Particle2PDG == MyonPDG)	|| (Particle2PDG == -MyonPDG))	      continue;
-*/
-
 
 
 	    TLorentzVector LorentzVectorHelium3Rec;
@@ -1429,6 +1550,20 @@ void AliAnalysisTaskDeuteronProtonEfficiency::Terminate(Option_t *)
 
 
 } // end of Terminate
+
+
+
+// Calculates number of sigma deviation from expected dE/dx in TPC
+double AliAnalysisTaskDeuteronProtonEfficiency::Bethe(const AliESDtrack &track, double mass, int charge, double *params){
+
+  double expected = charge*charge*AliExternalTrackParam::BetheBlochAleph(charge*track.GetInnerParam()->GetP()/mass,params[0],params[1],params[2],params[3],params[4]);
+  double sigma = expected * params[5];
+
+  if(TMath::IsNaN(expected)) return -999;
+  return (track.GetTPCsignal() - expected) / sigma;
+
+
+} // end of Bethe
 
 
 

@@ -22,6 +22,8 @@
 
 /* $Id: */
 
+#include <vector>
+
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -34,6 +36,7 @@
 #include "TRandom3.h"
 #include "TAxis.h"
 #include "TVector3.h"
+#include "TDatime.h"
 
 #include "AliAODInputHandler.h" 
 #include "AliAODHandler.h" 
@@ -53,9 +56,16 @@
 #include "AliVParticle.h"
 #include "AliVEvent.h"
 
+#include "FJ_includes.h"
+#include "AliFJWrapper.h"
+
 #include "AliAnalysisTaskPID.h"
 #include "AliPIDResponse.h"
 
+#include "AliESDtrackCuts.h"
+
+#include "AliPieceWisePoly.h"
+#include "AliHelperClassFastSimulation.h"
 
 #include "AliAnalysisTaskIDFragmentationFunction.h"
 using std::cout;
@@ -73,6 +83,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fAODExtension(0)
    ,fNonStdFile("")
    ,fCentralityEstimator("V0M")
+   ,fMinMultiplicity(-1)
+   ,fMaxMultiplicity(-1)
    ,fNameTrackContainer("Tracks")
    ,fNameTrackContainerEfficiency("")
    ,fNameMCParticleContainer("")
@@ -88,7 +100,6 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fFFMaxTrackPt(-1)
    ,fFFMinnTracks(0)   
    ,fAvgTrials(0)
-   ,fStoreXi(0)
    ,fStudyTransversalJetStructure(kFALSE)
    ,fCommonHistList(0)
    ,fh1EvtSelection(0)
@@ -103,13 +114,18 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fh1PtHardTrials(0)
    ,fh1EvtsPtHardCut(0)
    ,fh1nRecJetsCuts(0)
+   ,fh1nRecJetsCutsGroomed(0x0)
+   ,fh1nRecJetsCuts2(0)
+   ,fh1nRCinUnderground(0)
    ,fh1nGenJets(0)
+   ,fh1TotJetEnergy(0)
    ,fhDCA_XY(0)
    ,fhDCA_Z(0)
    ,fhJetPtRefMultEta5(0)
    ,fhJetPtRefMultEta8(0)
    ,fhJetPtMultPercent(0)
-
+   ,fh2TrackDef(0x0)
+   ,fh3trackDensity(0x0)
    ,fRandom(0)
    
    ,fOnlyLeadingJets(kFALSE)
@@ -132,8 +148,18 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fUseJetUEPIDtask(kFALSE)
    ,fIsPP(kFALSE)
    ,fFillDCA(kFALSE)
+   ,fDoGroomedJets(kFALSE)
+   ,fBetaSoftDrop(0.0)
+   ,fZSoftDrop(0.1)
+   ,fUseFastSimulations(kFALSE)
+   ,fEffFunctions(0x0)
+   ,fFastSimEffFactor(1.0)
+   ,fFastSimRes(0.002)
+   ,fFastSimResFactor(1.0)
+	 ,fFFChange(0)
    ,fRCTrials(1)
    ,fUEMethods(0x0)
+   ,fUseRealJetArea(kTRUE)
 {
    // default constructor
   
@@ -158,6 +184,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fAODExtension(0)
   ,fNonStdFile("")
   ,fCentralityEstimator("V0M")
+  ,fMinMultiplicity(-1)
+  ,fMaxMultiplicity(-1)
   ,fNameTrackContainer("Tracks")
   ,fNameTrackContainerEfficiency("")
   ,fNameMCParticleContainer("")
@@ -173,7 +201,6 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fFFMaxTrackPt(-1)
   ,fFFMinnTracks(0)  
   ,fAvgTrials(0)
-  ,fStoreXi(0)  
   ,fStudyTransversalJetStructure(kFALSE)
   ,fCommonHistList(0)
   ,fh1EvtSelection(0)
@@ -188,12 +215,18 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fh1PtHardTrials(0)
   ,fh1EvtsPtHardCut(0)
   ,fh1nRecJetsCuts(0)
+  ,fh1nRecJetsCutsGroomed(0x0)
+  ,fh1nRecJetsCuts2(0)
+  ,fh1nRCinUnderground(0)
   ,fh1nGenJets(0)
+  ,fh1TotJetEnergy(0x0)
   ,fhDCA_XY(0)
   ,fhDCA_Z(0)
   ,fhJetPtRefMultEta5(0)
   ,fhJetPtRefMultEta8(0)
   ,fhJetPtMultPercent(0)
+  ,fh2TrackDef(0x0)
+  ,fh3trackDensity(0x0)
   ,fRandom(0)
   ,fOnlyLeadingJets(kFALSE)
   ,fMCPtHardCut(-1.)
@@ -213,8 +246,18 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fUseJetUEPIDtask(kFALSE)
   ,fIsPP(kFALSE)
   ,fFillDCA(kFALSE)
+  ,fDoGroomedJets(kFALSE)
+  ,fBetaSoftDrop(0.0)
+  ,fZSoftDrop(0.1)
+  ,fUseFastSimulations(kFALSE) 
+  ,fEffFunctions(0x0)
+  ,fFastSimEffFactor(1.0)
+  ,fFastSimRes(0.002)
+  ,fFastSimResFactor(1.0)  
+	,fFFChange(0)
   ,fRCTrials(1)
   ,fUEMethods(0x0)
+  ,fUseRealJetArea(kTRUE)
 {
   // constructor
   
@@ -237,7 +280,7 @@ AliAnalysisTaskIDFragmentationFunction::~AliAnalysisTaskIDFragmentationFunction(
 {
   // destructor
 
-  if(fRandom)               delete fRandom;
+  delete fRandom;
   
   delete [] fNameInclusivePIDtask;
   fNameInclusivePIDtask = 0x0;
@@ -312,7 +355,10 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::Notify()
   // Set seed for backg study
   delete fRandom;
   fRandom = new TRandom3();
-  fRandom->SetSeed(0);
+  TDatime* date = new TDatime();
+  fRandom->SetSeed(date->Get());
+  
+  delete date;
 
   return kTRUE;
 }
@@ -359,9 +405,15 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 2500,-.5, 2499.5);
   fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
-  fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",120,0.,12000.);
+  fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",40,0.,200.);
   fh1EvtCent 	             = new TH1F("fh1EvtCent","centrality",100,0.,100.);
-
+  
+  
+//   fh3trackDensity            = new TH3F("fh3TrackDensity", "Overview of Tracks in the TPC",161,85.0,246.0,90,TMath::Pi()/4.0,3.0*TMath::Pi()/4.0,360,-TMath::Pi(),TMath::Pi());
+//   fh3trackDensity->GetXaxis()->SetTitle("Radial Distance");
+//   fh3trackDensity->GetYaxis()->SetTitle("#theta");
+//   fh3trackDensity->GetZaxis()->SetTitle("#phi");
+  
   fh1Xsec                    = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
   fh1Trials                  = new TH1F("fh1Trials","trials from pyxsec.root",1,0,1);
@@ -374,8 +426,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fh1EvtsPtHardCut->GetXaxis()->SetBinLabel(2, "#it{p}_{T,hard}");
   
 
-  fh1nRecJetsCuts            = new TH1F("fh1nRecJetsCuts","reconstructed jets per event",10,-0.5,9.5);
-  fh1nGenJets                = new TH1F("fh1nGenJets","generated jets per event",10,-0.5,9.5);
+  fh1nRecJetsCuts            = new TH1F("fh1nRecJetsCuts","reconstructed jets charged",240,-0.5,59.5);
+  fh1nRecJetsCuts->GetXaxis()->SetTitle("p_{T}^{jet}");
+  fh1nRecJetsCutsGroomed            = new TH1F("fh1nRecJetsCutsGroomed","reconstructed jets charged and groomed",240,-0.5,59.5);
+  fh1nRecJetsCutsGroomed->GetXaxis()->SetTitle("p_{T}^{jet}");  
+  fh1nRecJetsCuts2            = new TH1F("fh1nRecJetsCuts2","reconstructed jets full",40,-0.5,39.5);
+  fh1nRecJetsCuts2->GetXaxis()->SetTitle("p_{T}^{jet}");
+  fh1nRCinUnderground        = new TH1F("fh1nRCinUnderground", "random cones in the underground",240,-0.5,59.5);
+  fh1nRCinUnderground->GetXaxis()->SetTitle("p_{T}^{jet}");
+  fh1nGenJets                = new TH1F("fh1nGenJets","generated jets",40,-0.5,39.5);
+  fh1nGenJets->GetXaxis()->SetTitle("p_{T}^{jet}");
+  fh1TotJetEnergy            = new TH1F("fh1TotJetEnergy", "Total Jet Energy",1,0,1);
+  fh2TrackDef                = new TH2F("fh2TrackDef","Comparison of Track definitions",50,0,400,50,0,2500);
   
  
   // ____________ define histograms ___________________
@@ -387,13 +449,20 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fCommonHistList->Add(fh1VertexNContributors);
   fCommonHistList->Add(fh1VertexZ);    
   fCommonHistList->Add(fh1nRecJetsCuts);
+  fCommonHistList->Add(fh1nRecJetsCutsGroomed);
+  fCommonHistList->Add(fh1nRecJetsCuts2);
+  fCommonHistList->Add(fh1nRCinUnderground);
+  fCommonHistList->Add(fh1TotJetEnergy);
   fCommonHistList->Add(fh1Xsec);
   fCommonHistList->Add(fh1Trials);
   fCommonHistList->Add(fh1PtHard);
   fCommonHistList->Add(fh1PtHardTrials);
   fCommonHistList->Add(fh1EvtsPtHardCut);
+//   fCommonHistList->Add(fh3trackDensity);
  
   if(GetJetContainer(GetNameMCParticleJetContainer())) fCommonHistList->Add(fh1nGenJets);
+                                        
+  fCommonHistList->Add(fh2TrackDef);
   
   // Default analysis utils
   fAnaUtils = new AliAnalysisUtils();
@@ -571,13 +640,55 @@ void AliAnalysisTaskIDFragmentationFunction::Init()
 {
   // Initialization
   if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::Init()");
+  
+  if (fUseFastSimulations && !fEffFunctions) {
+    fEffFunctions = new TF1*[2*AliPID::kSPECIES];
+    
+    //For electrons
+    const Int_t parts_e = 4;
+    Double_t cuts_e[parts_e-1] = {0.6,3.2,8.0};
+    Int_t nparameters_e[parts_e] = {7,5,3,2};
+    AliPieceWisePoly* pwp_e = new AliPieceWisePoly(parts_e,cuts_e,nparameters_e,0,50,0x0,2);
+    TF1* func_e = new TF1("func_e",pwp_e,0,50,pwp_e->GetNOfParam());
+    Double_t parameters_e[11] = {-1.22427e+00, 2.25003e+01, -9.00154e+01, 1.42536e+02, 1.98605e+00, -2.33708e+02, 1.74505e+02, -4.40750e-01, 1.43504e-01, -1.59226e-02, -6.14939e-04};
+    func_e->SetParameters(parameters_e);
+    fEffFunctions[2*AliPID::kElectron] = fEffFunctions[2*AliPID::kElectron+1] = func_e;
+    
+    //For protons
+    const Int_t parts_p = 6;
+    Double_t cuts_p[parts_p-1] = {0.4,1.6,2.5,8.0,12.0};
+    Int_t nparameters_p[parts_p] = {5,4,4,2,5,2};
+    AliPieceWisePoly* pwp_p = new AliPieceWisePoly(parts_p,cuts_p,nparameters_p,0,50,0x0,2);
+    TF1* func_p = new TF1("func_p",pwp_p,0,50,pwp_p->GetNOfParam());
+    Double_t parameters_p[12] = {-1.04124e+01, 1.72024e+02, -1.02722e+03, 2.61164e+03, -2.35742e+03, -6.20212e-01, 1.47330e-01, 8.64180e-02, -5.27106e-03, -1.91588e-01, 1.21507e-02, -2.85315e-04};
+    func_p->SetParameters(parameters_p);  
+    fEffFunctions[2*AliPID::kProton] = fEffFunctions[2*AliPID::kProton+1] = func_p;   
 
+    //For kaons
+    const Int_t parts_k = 5;
+    Double_t cuts_k[parts_k-1] = {0.4,1.2,6,15};
+    Int_t nparameters_k[parts_k] = {3,3,5,4,2};  
+    AliPieceWisePoly* pwp_k = new AliPieceWisePoly(parts_k,cuts_k,nparameters_k,0,50,0x0,2);
+    TF1* func_k = new TF1("func_k",pwp_k,0,50,pwp_k->GetNOfParam());
+    Double_t parameters_k[9] = {-7.18856e-01, 5.10339e+00, -5.44263e+00, -4.80959e-01, 9.57122e-02, -1.80916e-02, 1.15958e-03, -6.17673e-03, 1.66119e-04};
+    func_k->SetParameters(parameters_k);   
+    fEffFunctions[2*AliPID::kKaon] = fEffFunctions[2*AliPID::kKaon+1] = func_k;
+
+  //   For pions
+    const Int_t parts_pi = 6;
+    Double_t cuts_pi[parts_pi-1] = {0.8,1.6,3.0,10.0,12.0};
+    Int_t nparameters_pi[parts_pi] = {9,4,4,3,3,2};   
+    AliPieceWisePoly* pwp_pi = new AliPieceWisePoly(parts_pi,cuts_pi,nparameters_pi,0,50,0x0,2);
+    TF1* func_pi = new TF1("func_pi",pwp_pi,0,50,pwp_pi->GetNOfParam());
+    Double_t parameters_pi[15] = {-1.87482e-01, 8.99878e+00, -3.34776e+01, 5.73258e+01, -2.41936e+01, -4.02440e+01, 1.61212e+01, 5.09543e+01, -3.49975e+01, 7.70485e-02, -4.42996e-02, 3.16051e-01, -3.93133e-02, -5.79754e-04, 1.34446e-04};
+    func_pi->SetParameters(parameters_pi);   
+    fEffFunctions[2*AliPID::kPion] = fEffFunctions[2*AliPID::kPion+1] = func_pi;                                                              
+  }
 }
 
 //_____________________________________________________________
 Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms() 
-{
-  
+{	
   if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::FillHistograms()");
   
   
@@ -587,7 +698,6 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   if(!fMCEvent){
     if(fDebug>3) Printf("%s:%d MCEvent not found in the input", (char*)__FILE__,__LINE__);
   }
-   
   
   // Extract pThard and nTrials in case of MC. 
   
@@ -595,10 +705,10 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   Double_t nTrials = 1; // trials for MC trigger weight for real data
   Bool_t pythiaGenHeaderFound = kFALSE;
 
-  if(fMCEvent){
+  if(fMCEvent && kFALSE){
     AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
-    
     if(genHeader){
+      
       AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
       AliGenHijingEventHeader*  hijingGenHeader = 0x0;
       
@@ -693,6 +803,8 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     if(fDebug>3) Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
   }
   
+  
+  
   // get AOD event from input/ouput
   TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if( handler && handler->InheritsFrom("AliAODInputHandler") ) {
@@ -740,6 +852,17 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   // event selection **************************************************
   // *** event class ***
   AliVEvent* evtForCentDetermination = handler->InheritsFrom("AliAODInputHandler") ? fAOD : InputEvent();
+  
+  Int_t multiplicity;
+  if (evtForCentDetermination->ClassName() == "AliESDEvent")
+    multiplicity = ((AliESDEvent*)evtForCentDetermination)->GetNumberOfTPCTracks();
+  else
+    multiplicity = evtForCentDetermination->GetNumberOfESDTracks();
+  
+  if (GetMaxMultiplicity() != -1) {
+    if (multiplicity < GetMinMultiplicity() || multiplicity > GetMaxMultiplicity())
+      return kFALSE;
+  }
   
   Double_t centPercent = -1;
   
@@ -1032,10 +1155,30 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     trackEtaMin = trackContainer->GetParticleEtaMin();
     trackEtaMax = trackContainer->GetParticleEtaMax();
   }
+  
+  //Prepare V0 Indexes
+  
+  AliAnalysisTaskPIDV0base* pidTaskWithV0Indexes = 0x0;
+  
+//   if (fUseInclusivePIDtask && fInclusivePIDtask[0]->GetDoTPCclusterStudies()) {
+//     fInclusivePIDtask[0]->FillV0PIDlist(fESD);
+//     pidTaskWithV0Indexes=fInclusivePIDtask[0];
+//   }
+//   
+//   if (!pidTaskWithV0Indexes && fUseJetPIDtask && fJetPIDtask[0]->GetDoTPCclusterStudies()) {
+//     fJetPIDtask[0]->FillV0PIDlist(fESD);
+//     pidTaskWithV0Indexes=fJetPIDtask[0];    
+//   }
+//   
+//   if (!pidTaskWithV0Indexes && fUseJetUEPIDtask && fJetUEPIDtask[0]->GetDoTPCclusterStudies()) {
+//     fJetUEPIDtask[0]->FillV0PIDlist(fESD);
+//     pidTaskWithV0Indexes=fJetUEPIDtask[0];    
+//   } 
       
   // Fill efficiency for generated primaries and also fill histos for generated yields (primaries + all)
   // Efficiency, inclusive - particle level
   if(fDebug>2)Printf("%s:%d Starting Inclusive Efficiency...",(char*)__FILE__,__LINE__);
+  
   if (fUseInclusivePIDtask && mcParticleContainer && !isPileUpForAllInclusivePIDTasks) {
     for (auto part : mcParticleContainer->accepted()) {
 
@@ -1059,11 +1202,6 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
       
       if (!part->IsPhysicalPrimary())
         continue;
-      /*
-      Int_t iMother = part->GetMother();
-      if (iMother >= 0)
-        continue; // Not a physical primary
-      */
 
       Double_t pT = part->Pt();
       
@@ -1090,140 +1228,199 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
         if (!isPileUpInclusivePIDtask[i])
           fInclusivePIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
       }
-    }
-  }
-  
-  AliTrackContainer* trackContainerEfficiency = GetTrackContainer(GetNameTrackContainerEfficiency());
-  if (fUseInclusivePIDtask && mcParticleContainer && !isPileUpForAllInclusivePIDTasks) {
-    //Efficiency, inclusive - detector level
-    for(auto inclusiveaod : trackContainerEfficiency->accepted()) {
-      // fill inclusive tracks XXX, they have the same track cuts!
-
-      if(inclusiveaod){
-        Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod) 
-                                          : inclusiveaod->GetTPCsignal();
-        
-        if (dEdxTPC <= 0)
+      if (fUseFastSimulations) { 
+        //Fast simulations for inclusive particles - only used to check the parametrization
+        if (mcID == AliPID::kMuon || mcID >= AliPID::kSPECIES)
           continue;
         
-        Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(inclusiveaod, InputEvent());
-        Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(inclusiveaod);
+        Bool_t posCharge = chargeMC > 0.0;
         
-        Int_t label = TMath::Abs(inclusiveaod->GetLabel());
-        
-        // find MC track in our list, if available
-        AliAODMCParticle* gentrack = mcParticleContainer->GetMCParticleWithLabel(label);
-        Int_t pdg = 0;
-        
-        if (gentrack)
-          pdg = gentrack->GetPdgCode();
-        
-        // For efficiency: Reconstructed track has survived all cuts on the detector level (no cut on eta acceptance)
-        // and has an associated MC track
-        // -> Check whether associated MC track belongs to the clean MC sample defined above,
-        //    i.e. survives the particle level track cuts
-        if (gentrack) {
-          Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdg);
-          
-          // Following lines are not needed - just keep other species (like casecades) - will end up in overflow bin
-          // and only affect the efficiencies for all (i.e. not identified) what is desired!
-          //if (mcID == AliPID::kUnknown)
-          //  continue;
-          
-          // Fill efficiency for reconstructed primaries
-          if (!gentrack->IsPhysicalPrimary())
-            continue;
-          /*
-            *     Int_t iMother = gentrack->GetMother();
-            *     if (iMother >= 0)
-            *       continue; // Not a physical primary
-            */
-            
-          if (gentrack->Eta() > trackEtaMax || gentrack->Eta() < trackEtaMin)
-            continue;
-            
-          // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-          // Always store the charge for the efficiency (needed for geant-fluka correction)
-          Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), gentrack->Pt(), gentrack->Eta(),
-                                                              gentrack->Charge() / 3., centPercent, -1, -1, -1, -1, -1 };// no jet pT etc since inclusive spectrum 
-          for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-            if (!isPileUpInclusivePIDtask[i] &&
-                ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
-                (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
-              fInclusivePIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
-          }
-              
-          Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), inclusiveaod->Pt(), inclusiveaod->Eta(),
-                                                                  static_cast<Double_t>(inclusiveaod->Charge()), centPercent,
-                                                                  -1, -1, -1, -1, -1 };// no jet pT etc since inclusive spectrum 
-          for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-            if (!isPileUpInclusivePIDtask[i] &&
-                ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
-                (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
-              fInclusivePIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
+        Double_t xeff = fFastSimEffFactor * fEffFunctions[2*mcID+(Int_t)posCharge]->Eval(pT);
+        Double_t x = fRandom->Rndm();
+        if (x > xeff)
+          continue;
+
+        Double_t smearedPt = 1.0/(fRandom->Gaus(1.0/pT,fFastSimResFactor * fFastSimRes));
+
+        Double_t valuesEffFastMeasObs[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), smearedPt, part->Eta(), chargeMC,
+                                                                centPercent, -1, -1, -1, -1, -1 };// no jet pT etc since inclusive spectrum                                                                   
+        for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+          if (!isPileUpInclusivePIDtask[i]) {
+            fInclusivePIDtask[i]->FillEfficiencyContainer(valuesEffFastMeasObs, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
           }
         }
       }
     }
+  }
+  
+  AliTrackContainer* trackContainerEfficiency = GetTrackContainer(GetNameTrackContainerEfficiency());
+  if (fUseInclusivePIDtask && mcParticleContainer && trackContainerEfficiency && !isPileUpForAllInclusivePIDTasks) {
+    //Efficiency, inclusive - detector level
+    for(auto inclusiveaod : trackContainerEfficiency->accepted()) {
+      // fill inclusive tracks XXX, they have the same track cuts!
+
+      if(!inclusiveaod)
+        continue;
+      
+      Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod) 
+                                        : inclusiveaod->GetTPCsignal();
+      
+      if (dEdxTPC <= 0)
+        continue;      
+      
+      Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(inclusiveaod, InputEvent());
+      Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(inclusiveaod);        //Included in the cut above
+      
+      Int_t label = TMath::Abs(inclusiveaod->GetLabel());
+      
+      // find MC track in our list, if available
+      AliAODMCParticle* gentrack = mcParticleContainer->GetMCParticleWithLabel(label);
+
+      // For efficiency: Reconstructed track has survived all cuts on the detector level (no cut on eta acceptance)
+      // and has an associated MC track
+      // -> Check whether associated MC track belongs to the clean MC sample defined above,
+      //    i.e. survives the particle level track cuts
+      if (gentrack && !fUseFastSimulations) {
+        Int_t pdg = gentrack->GetPdgCode();
+        Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdg);
+        
+        // Following lines are not needed - just keep other species (like casecades) - will end up in overflow bin
+        // and only affect the efficiencies for all (i.e. not identified) what is desired!
+        //if (mcID == AliPID::kUnknown)
+        //  continue;
+        
+        // Fill efficiency for reconstructed primaries
+        if (!gentrack->IsPhysicalPrimary())
+          continue;
+          
+        if (gentrack->Eta() > trackEtaMax || gentrack->Eta() < trackEtaMin)
+          continue;
+          
+        // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
+        // Always store the charge for the efficiency (needed for geant-fluka correction)
+        Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), gentrack->Pt(), gentrack->Eta(),
+                                                            gentrack->Charge() / 3., centPercent, -1, -1, -1, -1, -1 };// no jet pT etc since inclusive spectrum 
+        for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+          if (!isPileUpInclusivePIDtask[i] && (!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!fInclusivePIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut))
+            fInclusivePIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
+        }
+            
+        Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), inclusiveaod->Pt(), inclusiveaod->Eta(),
+                                                                static_cast<Double_t>(inclusiveaod->Charge()), centPercent,
+                                                                -1, -1, -1, -1, -1 };// no jet pT etc since inclusive spectrum 
+        for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
+          if (!isPileUpInclusivePIDtask[i] && (!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!fInclusivePIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut))
+            fInclusivePIDtask[i]->FillEfficiencyContainer(valueMeas, AliAnalysisTaskPID::kStepRecWithGenCutsMeasuredObs);
+        }
+      }
+    }
   }  
+  
+  AliTrackContainer* v0TrackContainer = GetTrackContainer("V0TrackContainer"); 
+  
+  if (trackContainer) {
+    Int_t accTracks = trackContainer->GetNAcceptedTracks();
+    
+    fh2TrackDef->Fill(accTracks, multiplicity);
+    
+    fh1EvtMult->Fill(accTracks);
+  }
+  
+  if (fUseInclusivePIDtask && v0TrackContainer && !isPileUpForAllInclusivePIDTasks) {
+    for (auto part : v0TrackContainer->accepted()) {
+      if (!part)
+        continue;
+      Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(part)
+                                        : part->GetTPCsignal();    
+                                        
+      if (dEdxTPC <= 0)
+        continue;  
+
+//       if (part->GetTPCsignalN() < 120)
+//         continue;
+      
+      Int_t v0tag = (Int_t)pidTaskWithV0Indexes->GetV0tag(part->GetID());
+      
+      for (Int_t i=0;i<fNumInclusivePIDtasks;++i) {
+        if (!isPileUpInclusivePIDtask[i]) {
+          if (OverlapsWithAnyRecJet(part)) {
+//             if (fJetPIDtask[i])
+//               fJetPIDtask[i]->DoTPCclusterStudies(part, v0tag, multiplicity, dEdxTPC, 1, fNumInclusivePIDtasks > 1 ? trackContainer : 0x0);
+          }
+          else {
+            fInclusivePIDtask[i]->DoTPCclusterStudies(part, v0tag, multiplicity, dEdxTPC, 1, 0x0);
+          }
+        }
+      }      
+    }
+  }
   
   if(fDebug>2)Printf("%s:%d Process inclusive tracks...",(char*)__FILE__,__LINE__);
   if (fUseInclusivePIDtask && trackContainer && !isPileUpForAllInclusivePIDTasks) {
     for(auto part : trackContainer->accepted()) {
       if (!part) 
         continue;
-
-      Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(part)
-                                        : part->GetTPCsignal();
-      
-      if (dEdxTPC <= 0)
-        continue;
-      
-      Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(part, InputEvent());
-      Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(part);
       
       Int_t label = TMath::Abs(part->GetLabel());
 
-      // find MC track in our list, if available
+//       find MC track in our list, if available
       AliAODMCParticle* gentrack = mcParticleContainer ? mcParticleContainer->GetMCParticleWithLabel(label) : 0x0;
       Int_t pdg = 0;
       
       if (gentrack)
-        pdg = gentrack->GetPdgCode();
+        pdg = gentrack->GetPdgCode();      
+      
+      Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(part)
+                                        : part->GetTPCsignal();
+      
+      if (dEdxTPC <= 0)
+        continue;   
+      
+//       if (part->GetTPCsignalN() < 120)
+//         continue;
+      
+//       for (Int_t i=0;i<fNumInclusivePIDtasks;++i) {
+//         if (!isPileUpInclusivePIDtask[i]) {
+//           if (fJetPIDtask[i]) {
+//             if (fJetPIDtask[i])
+//               fJetPIDtask[i]->DoTPCclusterStudies(part, 0, multiplicity, dEdxTPC, 0, fNumInclusivePIDtasks > 1 ? trackContainer : 0x0);
+//           }
+//           else {
+//             fInclusivePIDtask[i]->DoTPCclusterStudies(part, 0, multiplicity, dEdxTPC, 0, 0x0);
+//           }
+//         }
+//       }
+      
+      //ATTENTION: Only here for the TPCcluster studies, comment out or delete otherwise
+      //continue; 
+     
+      Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(part, InputEvent());
+      Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(part);   //Included above
       
       for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-        if (!isPileUpInclusivePIDtask[i] &&
-            ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
-            (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-            (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))) {
+        if (!isPileUpInclusivePIDtask[i] && (!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!fInclusivePIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut)) {
               if (fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta())))
-                fInclusivePIDtask[i]->ProcessTrack(part, pdg, centPercent, -1, kFALSE, kTRUE, fStoreXi, -1, -1); // no jet pT etc since inclusive spectrum 
+                fInclusivePIDtask[i]->ProcessTrack(part, pdg, centPercent, -1, kFALSE, kTRUE, -1, -1); // no jet pT etc since inclusive spectrum 
+                fInclusivePIDtask[i]->FillDCA(part, dEdxTPC, primVtx, fMCEvent, -1.0);
         }
       }
       
-      if (gentrack) {
+      if (gentrack && !fUseFastSimulations) {
         Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdg);
         // Always store the charge for the efficiency (needed for geant-fluka correction)
         Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), part->Pt(), part->Eta(), 
                                                                       static_cast<Double_t>(part->Charge()), centPercent,
                                                                       -1, -1, -1, -1, -1 };
         for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-          if (!isPileUpInclusivePIDtask[i] &&
-              ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
-              (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-              (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
-            fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
+          if (!isPileUpInclusivePIDtask[i] && (!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!fInclusivePIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut))
+            if (!fUseFastSimulations) 
+              fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObs);
         }
         
         Double_t weight = IsSecondaryWithStrangeMotherMC(gentrack, mcParticleContainer)
                             ? GetMCStrangenessFactorCMS(gentrack, mcParticleContainer) : 1.0;
         for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-          if (!isPileUpInclusivePIDtask[i] &&
-              ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
-              (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-              (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut())))
+          if (!isPileUpInclusivePIDtask[i] && (!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!fInclusivePIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut))
             fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                           AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsStrangenessScaled,
                                                           weight);
@@ -1239,10 +1436,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
                                                                             gentrack->Charge() / 3., centPercent };
         
           for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
-            if (!isPileUpInclusivePIDtask[i] &&
-                ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
-                (survivedTPCCutMIGeo && fInclusivePIDtask[i]->GetUseTPCCutMIGeo()) ||
-                (survivedTPCnclCut && fInclusivePIDtask[i]->GetUseTPCnclCut()))) {
+            if (!isPileUpInclusivePIDtask[i] && (!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!fInclusivePIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut)) {
               fInclusivePIDtask[i]->FillEfficiencyContainer(valueRecAllCuts, 
                                                             AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
               fInclusivePIDtask[i]->FillEfficiencyContainer(valueGenAllCuts, 
@@ -1256,14 +1450,19 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     }    
   }
   
-  if(fDebug>2)Printf("%s:%d Process Jets - efficiency, particle level..",(char*)__FILE__,__LINE__);
-  AliJetContainer* mcJetContainer = GetJetContainer(GetNameMCParticleJetContainer());
-  if (fOnlyLeadingJets)
-    mcJetContainer->SortArray();
+  if(fDebug>2)Printf("%s:%d Process jets...",(char*)__FILE__,__LINE__);  
   
-  if (fUseJetPIDtask && mcJetContainer && !isPileUpForAllJetPIDTasks) {
+  if(fDebug>2)Printf("%s:%d Process Jets - efficiency, particle level..",(char*)__FILE__,__LINE__);
+  
+  AliJetContainer* mcJetContainer = GetJetContainer(GetNameMCParticleJetContainer()); 
+  
+  if (fUseJetPIDtask && mcJetContainer && !isPileUpForAllJetPIDTasks && !fUseFastSimulations) {
+    
+    if (fOnlyLeadingJets)
+      mcJetContainer->SortArray();    
     
     for (Int_t i=0;i<fNumJetPIDtasks;i++) {
+      
       if (!isPileUpJetPIDtask[i]) {
 
         for(auto jet : mcJetContainer->accepted()) {
@@ -1272,80 +1471,278 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
             continue;
           
           Float_t jetPt   = jet->Pt();
+          
           if (mcJetContainer->GetRhoParameter())
-            jetPt = jetPt - mcJetContainer->GetRhoVal() * jet->Area();          
+            jetPt = jetPt - mcJetContainer->GetRhoVal() * jet->Area();  
+          
+          fh1nGenJets->Fill(jetPt);
           
           fJetPIDtask[i]->FillGenJets(centPercent, jetPt);
-        
-          TClonesArray *arrayWithTracks = mcParticleContainer ? mcParticleContainer->GetArray() : 0x0;
-  
-          for(Int_t it=0; it<jet->GetNumberOfTracks(); ++it) {
-        
-            AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jet->TrackAt(it,arrayWithTracks));
-            PerformJetMonteCarloAnalysisGeneratedYield(jet, trackVP, fJetPIDtask[i], centPercent);
-          }
+					
+					for(Int_t it=0; it<jet->GetNumberOfTracks(); ++it) {
+						AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jet->Track(it));
+						PerformJetMonteCarloAnalysisGeneratedYield(jet, trackVP, fJetPIDtask[i], centPercent);
+					}
+					
           
           if (fOnlyLeadingJets)
             break;
-        }
+        }    
       }
     }
   }
   
-  if(fDebug>2)Printf("%s:%d Process jets...",(char*)__FILE__,__LINE__);
-  AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
-  if (fOnlyLeadingJets)
-    jetContainer->SortArray();
-  
-  if (fUseJetPIDtask && jetContainer && !isPileUpForAllJetPIDTasks) {
+  //   Fast simulations //TODO: Extend code so it can run all fast simulations in the same train (reducing output numbers and complexity)
+  if (fUseJetPIDtask && mcJetContainer && !isPileUpForAllJetPIDTasks && fUseFastSimulations) {
+    
+    for (Int_t i=0;i<fNumJetPIDtasks;i++) {
+      
+      if (!isPileUpJetPIDtask[i]) {
+				
+				AliFJWrapper* wrapper = new AliFJWrapper("wrapper", "wrapper");        
+				SetUpFastJetWrapperWithOriginalValues(wrapper);  
+				Double_t jetMinPt = mcJetContainer->GetMinPt();
+				Double_t jetMaxEta = mcJetContainer->GetMaxEta() - mcJetContainer->GetJetRadius();
+				Double_t jetMinEta = mcJetContainer->GetMinEta() + mcJetContainer->GetJetRadius(); 
+				AliHelperClassFastSimulation* fastSimulation = new AliHelperClassFastSimulation(fEffFunctions, fFastSimEffFactor, fFastSimResFactor, fFastSimRes, jetMinPt, jetMaxEta, jetMinEta, wrapper);
+				
+				Int_t maxLabel = 0;
+
+        for(auto jet : mcJetContainer->accepted()) {
+            
+          if(!jet) 
+            continue;
           
+          Double_t jetPt   = jet->Pt();
+          
+          if (mcJetContainer->GetRhoParameter())
+            jetPt = jetPt - mcJetContainer->GetRhoVal() * jet->Area();  
+          
+          fh1nGenJets->Fill(jetPt);
+          
+          fJetPIDtask[i]->FillGenJets(centPercent, jetPt);
+					
+					AliAODMCParticle* leadingTrack = dynamic_cast<AliAODMCParticle*>(jet->GetLeadingTrack());
+					
+					Double_t leadingTrackPt = leadingTrack->Pt();
+					Double_t smallestTrackPt = leadingTrackPt;
+					
+					for(Int_t it=0; it<jet->GetNumberOfTracks(); ++it) {
+						AliAODMCParticle*   track = dynamic_cast<AliAODMCParticle*>(jet->Track(it));
+						if (track != leadingTrack && fFFChange == 2) {
+							//Low pT depletion
+							if (fRandom->Rndm() > 0.75)
+								continue;
+						}
+						FillEfficiencyContainerFromTrack(track, jet, centPercent, AliAnalysisTaskPID::kStepGenWithGenCuts);
+						
+						fastSimulation->AddParticle(track);
+						
+						if (fFFChange == 1) {
+							smallestTrackPt = TMath::Min(track->Pt(), smallestTrackPt);	
+							maxLabel = TMath::Max(maxLabel, track->GetLabel());
+						}
+					}
+															
+					if (fFFChange == 1) {
+						Double_t jetPhi = jet->Phi();
+						Double_t jetTheta = jet->Theta();
+						
+						Int_t current_index = maxLabel + 1;
+				
+						for(Int_t it=0; it<jet->GetNumberOfTracks(); ++it) {
+							AliAODMCParticle *track  = dynamic_cast<AliAODMCParticle*>(jet->Track(it));
+								
+							if (!track || jet->Track(it) == leadingTrack)
+								continue;  
+							
+							Double_t pt = track->Pt();
+	// 					Low pT enhancement
+							Double_t survivalChance = 0.25 + 0.5 * (pt - smallestTrackPt)/(leadingTrackPt - smallestTrackPt);
+							if (fRandom->Rndm() > survivalChance)
+								continue;
+							
+							Double_t phi = track->Phi();
+							Double_t theta = track->Theta();
+							Double_t momentum = track->P();	
+							
+	// 					Rotate 180° around jet axis
+							phi = 2.0 * jetPhi - phi;
+							theta = 2.0 * jetTheta - theta;
+							Double_t eta = -TMath::Log(TMath::Tan(0.5 * theta));
+							
+							Double_t px = pt * TMath::Cos(phi);
+							Double_t py = pt * TMath::Sin(phi);
+							Double_t pz = pt * TMath::SinH(eta);
+							Double_t mass = track->M();
+							Double_t energy = TMath::Sqrt(pt * pt + pz * pz + mass*mass);
+							
+							TParticle* tpart = new TParticle(track->GetPdgCode(), 0, 0, 0, 0, 0, px, py, pz, energy, 0.0, 0.0, 0.0, 0.0);
+							AliMCParticle* mcParticle = new AliMCParticle(tpart);
+							AliAODMCParticle* doubled_part = new AliAODMCParticle(mcParticle, current_index);
+
+							FillEfficiencyContainerFromTrack(doubled_part, jet, centPercent, AliAnalysisTaskPID::kStepGenWithGenCuts);
+							fastSimulation->AddParticle(doubled_part);
+							
+							current_index++;	
+						}
+					}
+        }  
+        
+				fastSimulation->Run();
+
+				for (UInt_t j=0;j<fastSimulation->GetNJets();++j) {
+					
+					AliEmcalJet *jet = fastSimulation->GetJet(j);
+				
+					Double_t jetPt = jet->Pt();
+					
+					for (Int_t i=0;i<fNumJetPIDtasks;++i) {
+						fJetPIDtask[i]->FillRecJets(centPercent, jetPt);
+					}    
+
+					for (UInt_t ic = 0;ic<fastSimulation->GetNParticlesOfJet(j);++ic) {
+						AliAODMCParticle* part = fastSimulation->GetTrackOfJet(ic, j);
+						
+						if (!part)
+							continue;
+						
+						FillEfficiencyContainerFromTrack(part, jet, centPercent, AliAnalysisTaskPID::kStepRecWithRecCutsMeasuredObsPrimaries);
+					}
+				}
+        
+				delete fastSimulation;
+				fastSimulation = 0x0;
+      }
+    }
+  }
+  
+  if (trackContainer) {
+    for (Int_t i=0;i<20;i++) {
+      Double_t Eta = (trackContainer->GetMaxEta() - (GetFFRadius()/2.0)) * (2 * fRandom->Rndm() - 1.0);    //random eta value in range: [-dEtaMax+R/2,+dEtaConeMax-R/2]
+      Double_t Phi = TMath::TwoPi() * fRandom->Rndm();        //random phi value in range: [0,2*Pi]
+      
+      Double_t jetPt = 0.0;
+      for (auto track : trackContainer->accepted()) {
+        if(!track)
+          continue;
+        
+        Double_t dEta = track->Eta() - Eta;
+        Double_t dPhi = track->Phi() - Phi;
+        Double_t angulardistance = TMath::Sqrt(dEta * dEta + dPhi * dPhi); 
+        if (angulardistance < TMath::Abs(GetFFRadius())) {
+          jetPt += track->Pt();
+        }
+      }
+      fh1nRCinUnderground->Fill(jetPt);  
+    }
+  }
+
+  AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
+  
+//   printf("Own Jet finder:\n");
+  if (GetDoGroomedJets() && trackContainer && kFALSE /*ATTENTION Deactivated*/) {
+    AliFJWrapper* wrapper = new AliFJWrapper("wrapper","wrapper");
+    SetUpFastJetWrapperWithOriginalValues(wrapper);    
+    AliTrackIterableMomentumContainer itcont = trackContainer->accepted_momentum();
+    for (AliTrackIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+      TLorentzVector pvec(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E());
+      wrapper->AddInputVector(pvec.Px(), pvec.Py(), pvec.Pz(), pvec.E(), it.current_index());
+    }
+    wrapper->Run();
+    wrapper->DoSoftDrop();
+    std::vector<fastjet::PseudoJet> jets = wrapper->GetInclusiveJets();
+    std::vector<fastjet::PseudoJet> groomedJets = wrapper->GetGroomedJets();
+    for (UInt_t j=0;j<jets.size();++j) {
+      if (jets[j].perp() < 5.0 || TMath::Abs(jets[j].eta()) > 0.5)
+        continue;
+      else {
+        fh1nRecJetsCuts->Fill(jets[j].perp());
+      }
+    }
+    for (UInt_t j=0;j<groomedJets.size();++j) {
+      if (groomedJets[j].perp() < 5.0 || TMath::Abs(groomedJets[j].eta()) > 0.5)
+        continue;
+      else {
+        fh1nRecJetsCutsGroomed->Fill(groomedJets[j].perp());
+//         std::vector<fastjet::PseudoJet> constituents = groomedJets[j].constituents();
+//         cout << "Groomed Jet: " << jets[j].perp() << " " << constituents.size() << endl;
+/*        for (Int_t i=0;i<constituents.size();++i) {
+          Int_t uid = constituents[i].user_index();
+          if (uid == -1)    //Ghost particle
+            continue;
+          cout << uid << endl;
+        }  */      
+      }
+    }    
+  }
+  
+  
+  if (jetContainer && !fUseFastSimulations) { 
+    if (fOnlyLeadingJets)
+      jetContainer->SortArray();
     for (auto jet : jetContainer->accepted()) {
       if (!jet)
         continue;
-
+      
       Float_t jetPt   = jet->Pt();
+      
       if (jetContainer->GetRhoParameter())
         jetPt = jetPt - jetContainer->GetRhoVal() * jet->Area();
-    
-      for (Int_t i=0;i<fNumJetPIDtasks;++i) {
-        if (!isPileUpJetPIDtask[i])
-          fJetPIDtask[i]->FillRecJets(centPercent, jetPt);
-      }
+      
+//       fh1nRecJetsCuts->Fill(jetPt);
+      
+      fh1TotJetEnergy->Fill(0.5,jetPt);
       
       fhJetPtRefMultEta5->Fill(refMult5, jetPt);
       fhJetPtRefMultEta8->Fill(refMult8, jetPt);
       fhJetPtMultPercent->Fill(centPercentPP, jetPt);
       
-      TClonesArray *arrayWithTracks = trackContainer->GetArray();
-
+      if (!(fUseJetPIDtask && !isPileUpForAllJetPIDTasks))
+        continue;
+      
+      for (Int_t i=0;i<fNumJetPIDtasks;++i) {
+        if (!isPileUpJetPIDtask[i])
+          fJetPIDtask[i]->FillRecJets(centPercent, jetPt);
+      }
+      
       for(Int_t j=0; j<jet->GetNumberOfTracks(); ++j) {
-
-        AliVTrack *track  = dynamic_cast<AliVTrack*>(jet->TrackAt(j,arrayWithTracks));
+        AliVTrack *track  = dynamic_cast<AliVTrack*>(jet->Track(j));
+        if (!track)
+          continue;        
         Bool_t trackRejectedByTask[arrSizeJet];
-        Bool_t trackRejectedByAllTasks = kTRUE;
+        Bool_t trackRejectedByAllTasks = kFALSE;
         if (track) {
           Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(track, InputEvent());
-          Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(track); 
+          Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(track);    //Included above
           Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
+          if (dEdxTPC < 0)
+            continue;
+          
           for (Int_t i=0;i<fNumJetPIDtasks;++i) {
-            trackRejectedByTask[i] = isPileUpJetPIDtask[i] || !((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) || (survivedTPCCutMIGeo && fJetPIDtask[i]->GetUseTPCCutMIGeo()) || (survivedTPCnclCut && fJetPIDtask[i]->GetUseTPCnclCut()) && fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(track->Eta())) && (dEdxTPC > 0.0));
+            trackRejectedByTask[i] = isPileUpJetPIDtask[i] || !(!fJetPIDtask[i]->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) || !(!fJetPIDtask[i]->GetUseTPCnclCut() || survivedTPCnclCut) || !(fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(track->Eta())));
             trackRejectedByAllTasks = trackRejectedByAllTasks && trackRejectedByTask[i];
           }
-        
+
           if (!trackRejectedByAllTasks) {
             AnalyseJetTrack(track, jet, 0x0, trackRejectedByTask, centPercent, mcParticleContainer);
             FillDCA(track, mcParticleContainer);
+//             for (Int_t i=0;i<fNumJetPIDtasks;++i) {
+//               if (!trackRejectedByTask[i]) {
+//                 fJetPIDtask[i]->FillDCA(track, dEdxTPC, primVtx, fMCEvent, jetPt);
+//               }
+//             }
           }
         }
-        
-        if (fOnlyLeadingJets)
-          break;   
       }
+      
+      if (fOnlyLeadingJets)
+        break;         
     }
   }
   
   if(fDebug>2)Printf("%s:%d Process Underlying event...",(char*)__FILE__,__LINE__);
-  if (fUseJetUEPIDtask && jetContainer && !isPileUpForAllJetUEPIDTasks) {
+  if (fUseJetUEPIDtask && jetContainer && !isPileUpForAllJetUEPIDTasks && !fUseFastSimulations) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
       if (!isPileUpJetUEPIDtask[i]) {
         TString method = fUEMethods[i];
@@ -1403,12 +1800,13 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
               
               if (UEtrack) {        
                 Bool_t survivedTPCCutMIGeo = AliAnalysisTaskPID::TPCCutMIGeo(UEtrack, InputEvent());
-                Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(UEtrack); 
+                Bool_t survivedTPCnclCut = AliAnalysisTaskPID::TPCnclCut(UEtrack);   //Included above
                 Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(UEtrack) : UEtrack->GetTPCsignal();
                 
-                if ((!task->GetUseTPCCutMIGeo() && !task->GetUseTPCnclCut()) || (survivedTPCCutMIGeo && task->GetUseTPCCutMIGeo()) || (survivedTPCnclCut && task->GetUseTPCnclCut()) && task->IsInAcceptedEtaRange(TMath::Abs(UEtrack->Eta())) && (dEdxTPC > 0.0))
+                if ((!task->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!task->GetUseTPCnclCut() || survivedTPCnclCut) && task->IsInAcceptedEtaRange(TMath::Abs(UEtrack->Eta())) && (dEdxTPC > 0.0)) {
                   AnalyseJetTrack(UEtrack, jet, task, 0x0, centPercent, mcParticleContainer);
-                
+//                   task->FillDCA(UEtrack, dEdxTPC, primVtx, fMCEvent, jetPt);
+                }
                 UEPtDensity += UEtrack->Pt();
               }
             }
@@ -1441,6 +1839,9 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     }
   }
   //End of underlying event        
+  
+  if (pidTaskWithV0Indexes)
+    pidTaskWithV0Indexes->ClearV0PIDlist();
   
   //___________________
   
@@ -1521,25 +1922,6 @@ void AliAnalysisTaskIDFragmentationFunction::SetProperties(TH1* h,const char* x,
 }
 
 
-//_______________________________________________________
-Double_t AliAnalysisTaskIDFragmentationFunction::GetDistanceJetTrack(const AliEmcalJet* jet, const AliVParticle* track,
-                                                                     Bool_t useInternalFlag) const
-{
-  // Calculate the distance between jet and track in the eta-phi-plane. If useInternalFlag is on and fStudyTransversalJetStructure is kFALSE,
-  // the function just returns -1
-  
-  if (useInternalFlag && !fStudyTransversalJetStructure)
-    return -1;
-  
-  if (!jet || !track)
-    return -1.;
-  
-  TVector3 v_track(track->Px(), track->Py(), track->Pz());
-  TVector3 v_jet(jet->Px(), jet->Py(), jet->Pz());
-  
-  return v_track.DeltaR(v_jet);
-}
-
 
 //_______________________________________________________
 Double_t AliAnalysisTaskIDFragmentationFunction::GetMCStrangenessFactor(Double_t pt) const
@@ -1616,15 +1998,29 @@ Double_t AliAnalysisTaskIDFragmentationFunction::GetMCStrangenessFactorCMS(AliAO
   return AliAnalysisTaskPID::GetMCStrangenessFactorCMS(motherPDG, motherGenPt);
 }
 
+//_______________________________________________________
+Double_t AliAnalysisTaskIDFragmentationFunction::GetDistanceJetTrack(const AliEmcalJet* jet, const AliVParticle* track) const
+{
+  // Calculate the distance between jet and track in the eta-phi-plane.
+
+  if (!fStudyTransversalJetStructure)
+    return -1;  
+  
+  if (!jet || !track)
+    return -1.;
+  
+  TVector3 v_track(track->Px(), track->Py(), track->Pz());
+  TVector3 v_jet(jet->Px(), jet->Py(), jet->Pz());
+  
+  return v_track.DeltaR(v_jet);
+}
 
 //_______________________________________________________
-Double_t AliAnalysisTaskIDFragmentationFunction::GetPerpendicularMomentumTrackJet(const AliEmcalJet* jet, const AliVParticle* track,
-                                                                                  Bool_t useInternalFlag) const
+Double_t AliAnalysisTaskIDFragmentationFunction::GetPerpendicularMomentumTrackJet(const AliEmcalJet* jet, const AliVParticle* track) const
 {
-  // Calculate the momentum of the track perpendicular to the jet axis. If useInternalFlag is on and fStudyTransversalJetStructure is kFALSE,
-  // the function just returns -1
+  // Calculate the momentum of the track perpendicular to the jet axis.
   
-  if (useInternalFlag && !fStudyTransversalJetStructure)
+  if (!fStudyTransversalJetStructure)
     return -1;
   
   if (!jet || !track)
@@ -1725,15 +2121,15 @@ AliEmcalJet* AliAnalysisTaskIDFragmentationFunction::GetRandomCone(AliEmcalJet* 
     jetRC = new AliEmcalJet(jetPt, dEta, dPhi, jetM);             //new RC candidate
     ++i;          
   }
-  while (i<fRCTrials && IsRCJCOverlap(jetRC,dDistance));   
+  while (i<fRCTrials && OverlapsWithAnyRecJet(jetRC,dDistance));   
   
   //If the last jet is also overlapping, delete it and set pointer to zero
-  if(IsRCJCOverlap(jetRC,dDistance)) {
+  if(OverlapsWithAnyRecJet(jetRC,dDistance)) {
     delete jetRC;
     jetRC = 0x0;
   }
   
-  if (jetRC)
+  if (GetUseRealJetArea() && jetRC)
     jetRC->SetArea(processedJet->Area());
   
   return jetRC;
@@ -1747,24 +2143,27 @@ AliEmcalJet* AliAnalysisTaskIDFragmentationFunction::GetPerpendicularCone(AliEmc
   
   AliEmcalJet* perpJet = new AliEmcalJet(processedJet->Pt(), processedJet->Eta(), processedJet->Phi()+perpAngle, processedJet->M());
   
-  perpJet->SetArea(processedJet->Area());
+  if (GetUseRealJetArea())
+    perpJet->SetArea(processedJet->Area());
   
-  if (!IsParticleInCone(processedJet,perpJet,dDistance))
-    return perpJet;
-  else
-    return 0x0;
+  return perpJet;
 }
 
-Bool_t AliAnalysisTaskIDFragmentationFunction::IsRCJCOverlap(const AliVParticle* part, Double_t dDistance) const {
+Bool_t AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet(const AliVParticle* part, Double_t dDistance) const {
   
   if(!part) return kFALSE;
-  if(!dDistance) return kFALSE;
   
   AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
   
+  if (dDistance < 0.0)
+    dDistance = jetContainer->GetJetRadius();
+  
+  if (!jetContainer)
+    return kFALSE;
+  
   for(auto jet : jetContainer->accepted()){   //loop over all reconstructed jets in events      
     if(!jet){
-      if (fDebug>2) std::cout << "AliAnalysisTaskJetChem::IsRCJCOverlap jet pointer invalid!" << std::endl; 
+      if (fDebug>2) std::cout << "AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet jet pointer invalid!" << std::endl; 
       continue;
     }
     if(IsParticleInCone(jet, part, dDistance) == kTRUE) return kTRUE;//RC and JC are overlapping
@@ -1781,9 +2180,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::IsParticleInCone(const AliVPartic
   TVector3 vecMom2(part2->Px(),part2->Py(),part2->Pz());
   TVector3 vecMom1(part1->Px(),part1->Py(),part1->Pz());
   Double_t dR = vecMom2.DeltaR(vecMom1); // = sqrt(dEta*dEta+dPhi*dPhi)
-  if(dR < dRMax) // momentum vectors of part1 and part2 are closer than dRMax
-    return kTRUE;
-  return kFALSE;
+  return (dR < dRMax); // momentum vectors of part1 and part2 are closer than dRMax
 }
 
 TList* AliAnalysisTaskIDFragmentationFunction::GetTracksInCone(const AliEmcalJet* jet, AliParticleContainer* particleContainer) const {
@@ -1795,12 +2192,18 @@ TList* AliAnalysisTaskIDFragmentationFunction::GetTracksInCone(const AliEmcalJet
   if (!particleContainer)
     particleContainer = GetTrackContainer(GetNameTrackContainer());
   
+  Double_t radius = TMath::Abs(GetFFRadius());
+  
+  if (GetUseRealJetArea() && jet->Area() > 0.0)
+    radius = TMath::Sqrt(jet->Area()/TMath::Pi());
+    
+  
   for (auto track : particleContainer->accepted()) {
 
     if(!track)
       continue;
 
-    if (IsParticleInCone(track,jet,TMath::Abs(GetFFRadius()))) {
+    if (IsParticleInCone(track,jet,radius)) {
       jetTrackList->Add(track);
     }
   }
@@ -1845,15 +2248,15 @@ void AliAnalysisTaskIDFragmentationFunction::PerformJetMonteCarloAnalysisGenerat
   if (part->Eta() > trackEtaMax || part->Eta() < trackEtaMin)
     return;
   
-  Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(part->GetPdgCode());
+  if (!part->IsPhysicalPrimary())
+    return;
   
+  Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(part->GetPdgCode());
+
   // Following lines are not needed - just keep other species (like casecades) - will end up in overflow bin
   // and only affect the efficiencies for all (i.e. not identified) what is desired!
   //if (mcID == AliPID::kUnknown)
   //  continue;
-  
-  if (!part->IsPhysicalPrimary())
-    return;
   //
   //   Int_t iMother = part->GetMother();      
   //   if (iMother >= 0)
@@ -1861,7 +2264,7 @@ void AliAnalysisTaskIDFragmentationFunction::PerformJetMonteCarloAnalysisGenerat
   //
   
   Double_t z = -1., xi = -1.;
-  AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, z, xi, fStoreXi);
+  AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, z, xi);
   Double_t distance = GetDistanceJetTrack(jet, trackVP);
   Double_t jT = GetPerpendicularMomentumTrackJet(jet, trackVP);
   
@@ -1881,7 +2284,7 @@ void AliAnalysisTaskIDFragmentationFunction::PerformJetMonteCarloAnalysisGenerat
   
   // Always store the charge for the efficiency (needed for geant-fluka correction)
   Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), trackPt, part->Eta(), chargeMC,
-                                                          centPercent, jetPt, z, xi, distance, jT };
+                                                          centPercent, jetPt, z, xi, distance, jT };                                                     
   task->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
 }
   
@@ -1909,7 +2312,7 @@ void AliAnalysisTaskIDFragmentationFunction::AnalyseJetTrack(AliVTrack* track, A
   Int_t mcID = AliPID::kUnknown;
   
   Double_t z = -1., xi = -1.;
-  AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, z, xi, fStoreXi);
+  AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, z, xi);
   Double_t distance = GetDistanceJetTrack(jet, track);
   Double_t jT = GetPerpendicularMomentumTrackJet(jet, track); 
   
@@ -1922,19 +2325,18 @@ void AliAnalysisTaskIDFragmentationFunction::AnalyseJetTrack(AliVTrack* track, A
   if (gentrack) {
     pdg = gentrack->GetPdgCode();
   }
-  
+ 
   if (task)
-    task->ProcessTrack(track, pdg, centPercent, jetPt, kFALSE, kTRUE, fStoreXi, distance, jT);
+    task->ProcessTrack(track, pdg, centPercent, jetPt, kFALSE, kTRUE, distance, jT);
   else {
     for (Int_t i=0;i<fNumJetPIDtasks;++i) {
       if (!trackRejectedByTask[i])
-        fJetPIDtask[i]->ProcessTrack(track, pdg, centPercent, jetPt, kFALSE, kTRUE, fStoreXi, distance, jT);
+        fJetPIDtask[i]->ProcessTrack(track, pdg, centPercent, jetPt, kFALSE, kTRUE, distance, jT);
     }
   }
   
   //Process 
-  if (gentrack) {
-    
+  if (gentrack && !fUseFastSimulations) {
     // Secondaries, jets
     mcID = AliAnalysisTaskPID::PDGtoMCID(pdg);
     
@@ -1962,7 +2364,7 @@ void AliAnalysisTaskIDFragmentationFunction::AnalyseJetTrack(AliVTrack* track, A
     if (gentrack->IsPhysicalPrimary()) {
       Double_t genPt = gentrack->Pt();
       Double_t genZ = -1., genXi = -1.;
-      AliAnalysisTaskPID::GetJetTrackObservables(genPt, jetPt, genZ, genXi, fStoreXi);
+      AliAnalysisTaskPID::GetJetTrackObservables(genPt, jetPt, genZ, genXi);
       Double_t genDistance = GetDistanceJetTrack(jet, gentrack);
       Double_t genJt = GetPerpendicularMomentumTrackJet(jet, gentrack);
       
@@ -1997,22 +2399,22 @@ void AliAnalysisTaskIDFragmentationFunction::AnalyseJetTrack(AliVTrack* track, A
         trackEtaMin = -1.0 * (fJetPIDtask[0]->GetEtaAbsCutUp());
         trackEtaMax = fJetPIDtask[0]->GetEtaAbsCutUp();
       }        
-      AliMCParticleContainer* mcParticleContainer = GetMCParticleContainer(GetNameTrackContainerEfficiency());
-      if (mcParticleContainer) {
-        trackEtaMin = mcParticleContainer->GetParticleEtaMin();
-        trackEtaMax = mcParticleContainer->GetParticleEtaMax();
+      AliMCParticleContainer* trackContainerEfficiency = GetMCParticleContainer(GetNameTrackContainerEfficiency());
+      if (trackContainerEfficiency) {
+        trackEtaMin = trackContainerEfficiency->GetParticleEtaMin();
+        trackEtaMax = trackContainerEfficiency->GetParticleEtaMax();
       } 
       
       if (gentrack->Eta() <= trackEtaMax || gentrack->Eta() >= trackEtaMin) {
         
         Double_t genZ = -1., genXi = -1.;
         Double_t genPt = gentrack->Pt();
-        AliAnalysisTaskPID::GetJetTrackObservables(genPt, jetPt, genZ, genXi, fStoreXi);
+        AliAnalysisTaskPID::GetJetTrackObservables(genPt, jetPt, genZ, genXi);
         Double_t genDistance = GetDistanceJetTrack(jet, gentrack);
         Double_t genJt = GetPerpendicularMomentumTrackJet(jet, gentrack);
         
         Double_t measZ = -1., measXi = -1.;
-        AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, measZ, measXi, fStoreXi);
+        AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, measZ, measXi);
         Double_t measDistance = GetDistanceJetTrack(jet, track);
         Double_t measJt = GetPerpendicularMomentumTrackJet(jet, track);
         
@@ -2092,4 +2494,36 @@ void AliAnalysisTaskIDFragmentationFunction::FillDCA(AliVTrack* track, AliMCPart
       fhDCA_Z_sec_MCID[mcID]->Fill(trackPt, dca[1]);
     }
   } 
+}
+
+void AliAnalysisTaskIDFragmentationFunction::SetUpFastJetWrapperWithOriginalValues(AliFJWrapper* wrapper) {
+  wrapper->SetAreaType(fastjet::active_area_explicit_ghosts);
+  wrapper->SetGhostArea(0.005);
+  wrapper->SetR(TMath::Abs(GetFFRadius()));
+  //Currently not working, including AliEmcalJetTask fails
+//         wrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetContainer->GetJetAlgorithm()));
+//         wrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetContainer->GetRecombinationScheme()));
+  wrapper->SetAlgorithm(fastjet::antikt_algorithm);
+  wrapper->SetRecombScheme(fastjet::pt_scheme);
+  wrapper->SetMaxRap(1);    
+}
+
+void AliAnalysisTaskIDFragmentationFunction::FillEfficiencyContainerFromTrack(AliAODMCParticle* part, AliEmcalJet* jet, Double_t centPercent, AliAnalysisTaskPID::EffSteps step) {
+	
+	if (!part || !jet)
+		return;
+	
+	Double_t jetPt = jet->Pt();
+	Double_t trackPt = part->Pt();
+
+	Double_t z = -1., xi = -1.;
+	AliAnalysisTaskPID::GetJetTrackObservables(trackPt, jetPt, z, xi);
+	Double_t distance = GetDistanceJetTrack(jet, part);
+	Double_t jT = GetPerpendicularMomentumTrackJet(jet, part);   
+	
+	Double_t values[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(AliAnalysisTaskPID::PDGtoMCID(part->GetPdgCode())), trackPt, part->Eta(), part->Charge() / 3., centPercent, jetPt, z, xi, distance, jT}; 
+	
+	for (Int_t i=0;i<fNumJetPIDtasks;++i) {
+		fJetPIDtask[i]->FillEfficiencyContainer(values, step);
+	}	
 }

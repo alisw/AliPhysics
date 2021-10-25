@@ -40,7 +40,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
 
     // getters
     Int_t   GetParticlePosLocal(Int_t pdg);
-    Float_t GetDecayChannel(AliMCEvent* mcEvent, TParticle* part);
+    Float_t GetDecayChannel(AliMCEvent* mcEvent, AliVParticle* part);
     void    GetAndSetPtParametrizations(AliGenEMCocktailV2* mcCocktailGen);
     void    GetAndSetPtYDistributions(AliGenEMCocktailV2* mcCocktailGen);
 

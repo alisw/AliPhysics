@@ -47,13 +47,15 @@ void AliMEStender::AliMESconfigTender::Print(Option_t *) const
   printf("MES TENDER CONFIGURATION\n   Event cuts : ");
   switch(fEventCuts){
     case kNoEC: printf("No\n"); break;
-    case kStandard: printf("Trigger[MB, HM], Vertex[Yes]\n"); break;
+		case k7TeV: printf("Trigger[MB, HM], Vertex[Yes]\n"); break;
+    case k13TeV: printf("13TeV: Trigger[MB, HM], Vertex[Yes]\n"); break;
     default: printf("Not defined [%d]\n", fEventCuts); break;
   }
   printf("   Track cuts : ");
   switch(fTrackCuts){
     case kNoTC: printf("No\n"); break;
-    case kStandardITSTPCTrackCuts2010: printf("StandardITSTPCTrackCuts2010\n"); break;
+		case kStandardITSTPCTrackCuts2010: printf("StandardITSTPCTrackCuts2010\n"); break;
+    case kStandardITSTPCTrackCuts2011: printf("StandardITSTPCTrackCuts2011\n"); break;
     default: printf("Not defined [%d]\n", fTrackCuts); break;
   }
   printf("   PID priors : ");
@@ -158,16 +160,20 @@ void AliMEStender::UserCreateOutputObjects()
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
   switch(fConfig.fTrackCuts){
-  case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
-    lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
-    // lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
-    fTrackFilter->AddCuts(lTrackCuts);
-    break;
-  case AliMESconfigTender::kNoTC:
-  default:
-    AliDebug(2, "No track cuts selected");
-    break;
+	  case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
+	    lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
+	    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
+	    fTrackFilter->AddCuts(lTrackCuts);
+	    break;
+		case AliMESconfigTender::kStandardITSTPCTrackCuts2011:
+	    lTrackCuts = new AliESDtrackCuts("std11TC", "Standard 2011");
+	    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
+	    fTrackFilter->AddCuts(lTrackCuts);
+	    break;
+	  case AliMESconfigTender::kNoTC:
+	  default:
+	    AliDebug(2, "No track cuts selected");
+	    break;
   }
 
   // PID priors
@@ -267,13 +273,24 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 
   // TRIGGER SELECTION
   // MB & HM triggers
-  Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
-  // Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kINT7),
-         triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
+	Bool_t triggerMB = 0;
+	Bool_t triggerHM = 0;
+	switch(fConfig.fEventCuts){
+	  case AliMESconfigTender::k7TeV:
+			triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
+	    triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
+			break;
+		case AliMESconfigTender::k13TeV:
+			triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kINT7),
+			triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);	// to be checked
+			break;
+		default:
+			AliDebug(2, "No event cuts selected");
+	}
+
   if(!triggerHM && !triggerMB){
     AliDebug(2, "Miss trigger");
 //     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
-//     return;
   }
   if(triggerMB) fEvInfo->SetTriggerMB();
   if(triggerHM) fEvInfo->SetTriggerHM();

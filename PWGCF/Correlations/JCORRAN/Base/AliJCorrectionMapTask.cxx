@@ -126,6 +126,8 @@ UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname, const T
 		TGrid::Connect("alien:");
 		TFile *pfile = TFile::Open(fname);
 		TList *plist = (TList*)pfile->Get(listName);
+		if(!plist)
+			cout<<"ERROR: Correction map TList does not exists: "<<listName.Data()<<endl;
 		pCorrMapCont = mgr->CreateContainer(containerName,
 			TList::Class(),AliAnalysisManager::kInputContainer);
 		pCorrMapCont->SetData(plist);
@@ -137,8 +139,8 @@ UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname, const T
 }
 
 void AliJCorrectionMapTask::EnablePhiCorrection(UInt_t id, const TString fname){
-	phiInputIndex[id] = ConnectInputContainer(fname,Form("PhiWeights_%u",id));
-	cout<<"Phi correction enabled: "<<fname.Data()<<" (index "<<phiInputIndex[id]<<")"<<endl;
+	phiInputIndex[id] = ConnectInputContainer(fname,"PhiWeights");
+	cout<<"Phi correction enabled: "<<fname.Data()<<" (id "<<id<<", index "<<phiInputIndex[id]<<")"<<endl;
 }
 
 void AliJCorrectionMapTask::EnableCentFlattening(const TString fname){
@@ -148,7 +150,7 @@ void AliJCorrectionMapTask::EnableCentFlattening(const TString fname){
 
 void AliJCorrectionMapTask::EnableEffCorrection(const TString fname){
 	effInputIndex = ConnectInputContainer(fname,"EffCorrections");//inputIndex++;
-	cout<<"Efficiency Correction enabled: "<<fname.Data()<<" (index "<<effInputIndex<<")"<<endl;
+	cout<<"Efficiency correction enabled: "<<fname.Data()<<" (index "<<effInputIndex<<")"<<endl;
 }
 
 TH1 * AliJCorrectionMapTask::GetCorrectionMap(UInt_t it, UInt_t run, UInt_t cbin){ // mapID, run#, cent

@@ -42,14 +42,12 @@ set(SRCS
 	AliJEbECORRTask.cxx
 	AliJEbeHistos.cxx
 	AliJEbePercentile.cxx
-	AliJHSInterplayTask.cxx
 	AliJJetAnalysis.cxx
 	AliJJetCORRAnalysis.cxx
 	AliJJetCORRTask.cxx
 	AliJJetJtAnalysis.cxx
 	AliJJetJtTask.cxx
 	AliJJetTask.cxx
-	AliAnalysisTaskGenMCRidge.cxx
 	AliAnalysisTaskRidge.cxx
 	AliJPtHardXection.cxx
 	AliJJetQAAna.cxx
@@ -61,7 +59,10 @@ if(FASTJET_FOUND)
         AliJCDijetHistos.cxx
         AliJCDijetTask.cxx
         AliJCDijetAna.cxx
+        AliJHSInterplayTask.cxx
+        AliAnalysisTaskGenMCRidge.cxx
         AliAnalysisTaskEmcalJetDijetMass.cxx
+        AliJEmcalDijetAna.cxx
         AliJFJTask.cxx
         )
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})

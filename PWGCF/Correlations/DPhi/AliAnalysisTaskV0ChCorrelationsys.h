@@ -41,7 +41,8 @@ public:
    virtual void     UserCreateOutputObjects();
    virtual void     UserExec(Option_t *option);
    virtual void     Terminate(Option_t *);
-   
+
+   void SetData2018(Bool_t Data2018 = kTRUE) {fData2018 = Data2018;}
    void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
    void SetTrackPileUpCut(Bool_t RejectTrackPileUp = kTRUE) {fRejectTrackPileUp = RejectTrackPileUp;}
    void SetV0PileUpCut(Bool_t RejectV0PileUp = kTRUE) {fRejectV0PileUp = RejectV0PileUp;}
@@ -235,7 +236,7 @@ private:
  
   Int_t           fOStatus;   // checks for online and offline V0s 
 
-
+   Bool_t            fData2018;//
    Bool_t            fAnalysisMC;
    Bool_t            fRejectTrackPileUp;// 
    Bool_t            fRejectV0PileUp;// 

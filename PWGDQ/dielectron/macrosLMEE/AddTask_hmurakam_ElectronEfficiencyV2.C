@@ -5,16 +5,17 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
                                                                            TString configFile  = "./Config_hmurakam_ElectronEfficiencyV2.C",
                                                                            Bool_t tofcor       = kFALSE,
                                                                            TString year        = "16",
-                                                                           Bool_t usePhiV      = kTRUE,
-                                                                           Double_t maxMee     = 0.14,
-                                                                           Double_t minphiv    = 2.0,
                                                                            Bool_t DeactivateLS = kFALSE,
                                                                            TString outputFileName="LMEE.root",
+                                                                           Bool_t usePhiV      = kTRUE,
+                                                                           Double_t maxMee     = 0.04,
+                                                                           Double_t minphiv    = 2.0,
                                                                            TString suffix="")
+
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-
+  
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -57,7 +58,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
       task->SetGeneratorULSSignalName("Pythia CC_0;Pythia BB_0;Pythia B_0");
     }
   } else if(whichGen == 2){
-    //not used so far
     std::cout << "Generator names specified -> Jpsi2ee_1 and B2Jpsi2ee_1" << std::endl;
     task->SetGeneratorMCSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
     task->SetGeneratorULSSignalName("Jpsi2ee_1;B2Jpsi2ee_1");
@@ -73,7 +73,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(SetupEventCuts(isAOD)); //returns eventCuts from Config.
   task->SetCentrality(centMin, centMax);
-  
+
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   // Do not set here your analysis pt-cuts
   task->SetMinPtGen(minGenPt);
@@ -88,7 +88,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   // Pt
   if (usePtVector == true) {
     std::vector<double> ptBinsVec;
-    for (unsigned int i = 0; i < nBinsPt+1; ++i){
+    for (Int_t i = 0; i < nBinsPt+1; ++i){
       ptBinsVec.push_back(ptBins[i]);
     }
     task->SetPtBins(ptBinsVec);
@@ -97,27 +97,39 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetEtaBinsLinear  (minEtaBin, maxEtaBin, stepsEtaBin);
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
-  // Mass
-  if (useMassVector == true) {
-    std::vector<double> massBinsVec;
-    for (unsigned int i = 0; i < nBinsPt+1; ++i){
-      massBinsVec.push_back(massBins[i]);
-    }
-    task->SetMassBins(massBinsVec);
-  }
-  else task->SetMassBinsLinear (minMassBin, maxMassBin, stepsMassBin);
-  // PairPt
-  if(usePairPtVector == true){
-    std::vector<double> pairptBinsVec;
-    for (unsigned int i = 0; i < nBinsPairPt+1; ++i){
-      pairptBinsVec.push_back(pairptBins[i]);
-    }
-    task->SetPairPtBins(pairptBinsVec);
-  }
-  else task->SetPairPtBinsLinear(minPairPtBin, maxPairPtBin, stepsPairPtBin);
+
+  // mee
+  const Int_t Nmee = 1391;
+  Double_t mee[Nmee];  //  Double_t mee[Nmee] = {};
+  for(Int_t j=0;j<1100 ;j++) mee[j] = 0.001 * (j-  0)  +  0.0;//from 0 to 1.1 GeV/c2, every 1 MeV/c2
+  for(Int_t k=1100;k<Nmee;k++) mee[k] = 0.01  * (k-1100) +  1.1;//from 1.1 to 4 GeV/c2, evety 10 MeV/c2
+  //  TVectorD *v_mee = new TVectorD(Nmee);
+  //  for(Int_t k=0;k<Nmee;k++) (*v_mee)[k] = mee[k];
+  //  task->SetMassBins(v_mee);
+  std::vector<double> massBinsVec;
+  for (Int_t l = 0; l < Nmee; ++l) massBinsVec.push_back(mee[l]);
+  task->SetMassBins(massBinsVec);
+  
+  // ptee
+  const Int_t Nptee = 47;
+  Double_t ptee[Nptee] = {0.0,
+    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+    2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0,
+    5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+
+  //  TVectorD *v_ptee = new TVectorD(Nptee);
+  //  for(Int_t m=0;m<Nptee;m++) (*v_ptee)[m] = ptee[m];
+  //  task->SetPairPtBins(v_pTee);
+  std::vector<double> pteeBinsVec;
+  for (Int_t l = 0; l < Nptee; ++l) pteeBinsVec.push_back(ptee[l]);
+  task->SetPairPtBins(pteeBinsVec);
 
   // Resolution File, If resoFilename = "" no correction is applied
-  SetResolutionFile(year);
+  //  SetResolutionFile(year);
+  std::string resoFilename = Form("%s.root",year.Data());
+  std::string resoFilenameFromAlien = Form("/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/%s.root",year.Data());
+  //  printf(Form("%s.root\n",year.Data()));
+
   cout << resoFilename << endl;
   //  task->SetResolutionFile(resoFilename);
   //  task->SetResolutionFileFromAlien(resoFilenameFromAlien);
@@ -136,15 +148,76 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
   task->SetDeactivateLS(DeactivateLS);
-
   task->SetPhiVBinsLinear(minPhiVBin, maxPhiVBin, stepsPhiVBin);
   task->SetFillPhiV(kFALSE);
+
+  //Set Phiv Cut
   task->SetPhiVCut(usePhiV,maxMee,minphiv);
 
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  //  AddSingleLegMCSignal(task);
+  AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
+  eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
+  eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  task->AddSingleLegMCSignal(eleFinalState);
+
+  //
+  AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
+  eleFinalStateFromD.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
+  eleFinalStateFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalStateFromD.SetMotherPDGs(402, 402); // open charm mesons and baryons together
+  eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
+  task->AddSingleLegMCSignal(eleFinalStateFromD);
+  //
+  AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
+  eleFinalStateFromB.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
+  eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
+  eleFinalStateFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+  eleFinalStateFromB.SetMotherPDGs(502, 502); // open charm mesons and baryons together
+  eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
+  task->AddSingleLegMCSignal(eleFinalStateFromB);
+
+  // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
+  // ordering is according to MCSignals of single legs
+  printf("Init the DielectronsPairNotFromSameMother vector\n");
+  std::vector<bool> DielectronsPairNotFromSameMother;
+  DielectronsPairNotFromSameMother.push_back(false);
+  DielectronsPairNotFromSameMother.push_back(false);
+  DielectronsPairNotFromSameMother.push_back(false);
+  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
+  if(whichGen == 0 || whichGen == 2){
+    //    AddPairMCSignalLFJPsi(task);
+    AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
+    pair_sameMother.SetLegPDGs(11,-11);
+    pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
+    AliDielectronSignalMC eleFromJPsi("eleFromJPsi", "eleFromJPsi");
+    eleFromJPsi.SetLegPDGs(11,-11);
+    eleFromJPsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    eleFromJPsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    eleFromJPsi.SetMotherPDGs(443, 443);
+    eleFromJPsi.SetMothersRelation(AliDielectronSignalMC::kSame);
+    eleFromJPsi.SetCheckBothChargesMothers(kTRUE,kTRUE);
+    task->AddPairMCSignal(pair_sameMother);
+    task->AddPairMCSignal(eleFromJPsi);
+  }else if(whichGen == 1){
+    //    AddPairMCSignalHF(task);
+    AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
+    pair_sameMother.SetLegPDGs(11,-11);
+    pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
+    pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+    pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
+    pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
+    task->AddPairMCSignal(pair_sameMother);
+  }else {
+    printf("no PairMCSignal added\n");
+  };
 
   // Adding cutsettings
   TObjArray*  arrNames=names.Tokenize(";");
@@ -162,4 +235,5 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(outlistname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return task;
+  
 }

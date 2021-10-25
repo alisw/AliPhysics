@@ -865,7 +865,7 @@ const Float_t multmax_100_400 = 400;
 	// ----- output data -----
 
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="", output4name="", output5name="";
+	TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	output5name= "coutProfDp";
@@ -890,11 +890,14 @@ const Float_t multmax_100_400 = 400;
 		output4name= "Cuts_DplustoKpipi_All";
 		output5name+="_All";
 	}
+	output6name = "checkRT";
+	
 	outputfile += suffixName.Data();
 	output1name += suffixName.Data();
 	output4name += suffixName.Data();
 	output5name += suffixName.Data();
-
+	output6name += suffixName.Data();
+	
 	//now comes user's output objects :
 	// output TH1I for event counting
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(output1name, TH1I::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
@@ -905,7 +908,8 @@ const Float_t multmax_100_400 = 400;
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 	// estimators list
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-
+	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	
 	mgr->AddTask(task);
 
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -914,6 +918,7 @@ const Float_t multmax_100_400 = 400;
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
 	mgr->ConnectOutput(task,5,coutput5);
+	mgr->ConnectOutput(task,6,coutput6);
 
 	return task;
 }

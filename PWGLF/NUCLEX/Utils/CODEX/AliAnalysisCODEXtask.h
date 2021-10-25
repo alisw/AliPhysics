@@ -10,6 +10,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
 
+class AliInputEventHandler;
 class AliPIDResponse;
 class TList;
 class TTree;
@@ -55,6 +56,7 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     TList*   mOutput; //!
     TTree*   mTree;   //!
 
+    AliInputEventHandler* mEventHandler; //!
     AliPIDResponse* mPIDresponse; //!
 
     //

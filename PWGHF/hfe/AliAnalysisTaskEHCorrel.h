@@ -131,6 +131,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t  GetNonHFEEffiRecoTag(AliVTrack *track);
     Bool_t  IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMom, Int_t &MomPDG, Double_t &MomPt);
     Int_t   GetPi0EtaType(AliAODMCParticle *part);
+    
+    void    RemovePileUpInMCGen(Bool_t fSwitch) {fRemovePileUpinMCGen = fSwitch;};
 
   private:
     Bool_t GetNMCPartProduced();
@@ -204,6 +206,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fWeight;//!
     Bool_t              fCalcHadronTrackEffi;//
     Bool_t              fFillEHCorrel;//
+    Bool_t              fRemovePileUpinMCGen;//
 
     //Non-HFE
     Bool_t              fCalculateNonHFEEffi;//

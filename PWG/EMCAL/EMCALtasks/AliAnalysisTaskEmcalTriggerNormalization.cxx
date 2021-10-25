@@ -86,6 +86,15 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
 
   fHistos = new THistManager("HistosTriggerNorm");
 
+  // Histograms for metadata: year and datatype
+  fHistos->CreateTH1("hYear", "Year of the data", 10, 2008.5, 2018.5);
+  std::array<std::string, 5> collisionsystems = {{"pp, 13 TeV", "pp, 5.02 TeV", "p-Pb, 5.02 TeV", "p-Pb, 8.16 TeV", "Pb-Pb, 5.02 TeV"}};
+  fHistos->CreateTH1("hCollisionSystem", "Collision system", collisionsystems.size(), -0.5, collisionsystems.size() - 0.5);
+  auto collsyshist = static_cast<TH1 *>(fHistos->FindObject("hCollisionSystem"));
+  for(decltype(collisionsystems.size()) ib = 0; ib < collisionsystems.size(); ib++) {
+    collsyshist->GetXaxis()->SetBinLabel(ib+1, collisionsystems[ib].data());
+  }
+
   fHistos->CreateTH2("hTriggerNorm", "Histogram for the trigger normalization", 16, -0.5, 15.5, 100, 0., 100.);
   fHistos->CreateTH2("hTriggerLuminosity", "Histogram for the trigger luminosity (INT7-triggered cluster)", 16, -0.5, 15.5, 100, 0., 100.);
   auto normhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject("hTriggerNorm"));
@@ -100,6 +109,16 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
     auto triggercluserhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject(Form("hClusterCounter%s", triggers[ib].data())));
     for(auto clusterindex = 0; clusterindex < TriggerCluster_t::kTrgClusterN; clusterindex++) {
       triggercluserhist->GetXaxis()->SetBinLabel(clusterindex+1, GetTriggerClusterLabels(clusterindex).data());
+    }
+  }
+
+  // Histograms for trigger correlation
+  for(auto clust : fgkTriggerClusterLabels) {
+    fHistos->CreateTH2(Form("hTriggerCorrelation%s", clust.data()), Form("Correlation selected trigger classes for cluster %s", clust.data()), triggers.size(), -0.5, triggers.size() - 0.5, triggers.size(), -0.5, triggers.size() - 0.5);
+    TH1 *correlationHist = static_cast<TH1 *>(fHistos->FindObject(Form("hTriggerCorrelation%s", clust.data())));
+    for(decltype(triggers.size()) ib = 0; ib < triggers.size(); ib++){
+      correlationHist->GetXaxis()->SetBinLabel(ib+1, triggers[ib].data());
+      correlationHist->GetYaxis()->SetBinLabel(ib+1, triggers[ib].data());
     }
   }
 
@@ -164,10 +183,11 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   auto normhist = static_cast<TH2 *>(fHistos->FindObject("hTriggerNorm")),
        luminosityHist = static_cast<TH2 *>(fHistos->FindObject("hTriggerLuminosity")); 
   
-  std::array<std::string, 5> mixedtriggers = {"EDMC7", "EDG1", "EDG2", "EDJ1", "EDJ2"};
+  std::vector<std::string> selectedTriggerClasses;
 
   // Min. bias trigger (reference trigger)
   if(fInputHandler->IsEventSelected() & AliVEvent::kINT7) {
+    selectedTriggerClasses.push_back("INT7");
     auto match_triggerclass = MatchTrigger(triggerstring, fMBTriggerClasses);
     AliDebugStream(2) << "Matched trigger: " << match_triggerclass << std::endl;
     if(match_triggerclass.length()){
@@ -182,6 +202,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
 
       if(fCacheTriggerClasses.size()) {
         // Run contains EMCAL trigger, fill normhist and luminosities for EMCAL trigger
+        // Cache including also mixed trigger classes
         double mbweight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(match_triggerclass.data());
         normhist->Fill(normhist->GetXaxis()->GetBinCenter(mbbin), centralitypercentile, mbweight);
       
@@ -192,29 +213,6 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
           auto triggerbin = luminosityHist->GetXaxis()->FindBin(emcaltrigger.first.data());
           auto triggerweight = emcaltrigger.second * mbweight;
           luminosityHist->Fill(luminosityHist->GetXaxis()->GetBinCenter(triggerbin), centralitypercentile, triggerweight);
-        }
-
-        // fill luminosity
-        for(auto edtrigger : mixedtriggers) {
-          std::string emcaltriggerclass = "E" + edtrigger.substr(2),
-                      dcaltriggerclass = "D" + edtrigger.substr(2);
-          auto emcaltriggerEnabled = fCacheTriggerClasses.find(emcaltriggerclass),
-               dcaltriggerEnabled = fCacheTriggerClasses.find(dcaltriggerclass);
-          if((emcaltriggerEnabled != fCacheTriggerClasses.end()) || (dcaltriggerEnabled != fCacheTriggerClasses.end())) {
-            // Either EMCAL or DCAL trigger enabled, get downscale factor
-            // If EMCAL trigger enabled perfer this (covers practically all cases)
-            double downscaleTrigger = 0.;
-            if(emcaltriggerEnabled != fCacheTriggerClasses.end()) {
-              downscaleTrigger = fCacheDownscaleFactors[emcaltriggerclass];
-            } else {
-              // Only DCAL triggers would enabled
-              // this should never happen
-              downscaleTrigger = fCacheDownscaleFactors[dcaltriggerclass];
-            }
-            auto triggerbin = luminosityHist->GetXaxis()->FindBin(edtrigger.data());
-            auto triggerweight = downscaleTrigger * mbweight;
-            luminosityHist->Fill(luminosityHist->GetXaxis()->GetBinCenter(triggerbin), centralitypercentile, triggerweight);
-          }
         }
       }
     }
@@ -231,14 +229,14 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   if(hasEMCALtrigger) {
     AliDebugStream(2) << "Found EMCAL trigger: "  << triggerstring << std::endl;
   }
-  for(Int_t i = 0; i < NEMCAL_TRIGGERS; i++) {      
-    auto &triggerclass = EMCAL_TRIGGERS[i];
+  for(Int_t trgID = 0; trgID < NEMCAL_TRIGGERS; trgID++) {      
+    auto &triggerclass = EMCAL_TRIGGERS[trgID];
     auto emctriggerfound = fCacheTriggerClasses.find(triggerclass);
     if(emctriggerfound == fCacheTriggerClasses.end()) {
       AliDebugStream(2) << "Trigger " << triggerclass << " not found in the list of supported triggers" << std::endl;
       continue;     // trigger class was not enabled in the run
     } 
-    if(!(fInputHandler->IsEventSelected() & EMCAL_TRIGGERBITS[i])) continue;
+    if(!(fInputHandler->IsEventSelected() & EMCAL_TRIGGERBITS[trgID])) continue;
     // check if it is a mixed trigger
     if(triggerclass.find("ED") != std::string::npos){
       // mixed trigger class, check if either the EMCAL or the DCAL trigger is selectged
@@ -246,6 +244,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
                   dcaltriggerclass = "D" + triggerclass.substr(2);
       if(fInputEvent->GetFiredTriggerClasses().Contains(emcaltriggerclass.data()) ||
          fInputEvent->GetFiredTriggerClasses().Contains(dcaltriggerclass.data())) {
+        selectedTriggerClasses.push_back(EMCAL_TRIGGERS[trgID]);
         // Mixed trigger, downscaled in sync, use trigger weight for the EMCAL trigger
         double triggerweight = 1./fCacheDownscaleFactors[emcaltriggerclass];
         auto triggerbin = normhist->GetXaxis()->FindBin(triggerclass.data());
@@ -260,6 +259,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
     } else {
       // Single detector trigger, either EMCAL or DCAL
       if(fInputEvent->GetFiredTriggerClasses().Contains(triggerclass.data())) {
+        selectedTriggerClasses.push_back(EMCAL_TRIGGERS[trgID]);
         double triggerweight = 1./fCacheDownscaleFactors[triggerclass];
         auto triggerbin = normhist->GetXaxis()->FindBin(triggerclass.data());
         normhist->Fill(normhist->GetXaxis()->GetBinCenter(triggerbin), centralitypercentile, triggerweight);
@@ -270,6 +270,24 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
           triggerclusterhist->Fill(triggercluster);
         }
       } 
+    }
+  }
+
+  // trigger correlation histograms, mainly used to cross check the downscaling
+  // self-correlations include
+  // distinguish between trigger classes
+  for(auto clust : triggerclusters) {
+    auto *corrhist = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject(Form("hTriggerCorrelation%s", fgkTriggerClusterLabels[clust].data())));
+    for(int itrg = 0; itrg < corrhist->GetXaxis()->GetNbins(); itrg++){
+      const char *xlabel = corrhist->GetXaxis()->GetBinLabel(itrg+1);
+      bool hasTriggerA = (std::find(selectedTriggerClasses.begin(), selectedTriggerClasses.end(), xlabel) != selectedTriggerClasses.end());
+      if(hasTriggerA) {
+        for(int jtrg = 0; jtrg < corrhist->GetYaxis()->GetNbins(); jtrg++){
+          const char *ylabel = corrhist->GetYaxis()->GetBinLabel(jtrg+1);
+          bool hasTriggerB = (std::find(selectedTriggerClasses.begin(), selectedTriggerClasses.end(), ylabel) != selectedTriggerClasses.end());
+          if(hasTriggerB) corrhist->Fill(xlabel, ylabel, 1.);
+        }
+      }
     }
   }
   return true;
@@ -353,6 +371,22 @@ std::vector<AliAnalysisTaskEmcalTriggerNormalization::TriggerCluster_t> AliAnaly
 }
 
 void AliAnalysisTaskEmcalTriggerNormalization::RunChanged(int newrun){
+  auto year = getYear(newrun);
+  if(year > -1) fHistos->FillTH1("hYear", year);
+  int collsysbin = -1;
+  if(IsRun2pp13TeV(newrun)) {
+    collsysbin = 0;
+  } else if(IsRun2pp5TeV(newrun)) {
+    collsysbin = 1;
+  } else if(IsRun1pPb5TeV(newrun) || IsRun2pPb5TeV(newrun)) {
+    collsysbin = 2;
+  } else if(IsRun2pPb8TeV(newrun)) {
+    collsysbin = 3;
+  } else if(IsRun2PbPb5TeV2015(newrun)) {
+    collsysbin = 4;
+  }
+  if(collsysbin > -1) fHistos->FillTH1("hCollisionSystem", collsysbin);
+
   PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
 
   fCacheTriggerClasses.clear();

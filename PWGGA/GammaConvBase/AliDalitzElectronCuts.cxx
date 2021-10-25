@@ -147,6 +147,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   fIsRecalibDepTPCClPrimaryPair(kTRUE),
   fRecalibCurrentRunPrimaryPair(-1),
   fnRBinsPrimaryPair(4),
+  fDoLightVersion(kFALSE),
   fHistoEleMapRecalibPrimaryPair(NULL),
   fHistoPosMapRecalibPrimaryPair(NULL),
   fCutString(NULL),
@@ -257,6 +258,7 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const AliDalitzElectronCuts &ref) :
   fIsRecalibDepTPCClPrimaryPair(ref.fIsRecalibDepTPCClPrimaryPair),
   fRecalibCurrentRunPrimaryPair(ref.fRecalibCurrentRunPrimaryPair),
   fnRBinsPrimaryPair(ref.fnRBinsPrimaryPair),
+  fDoLightVersion(ref.fDoLightVersion),
   fHistoEleMapRecalibPrimaryPair(NULL),
   fHistoPosMapRecalibPrimaryPair(NULL),
   fCutString(NULL),
@@ -364,7 +366,7 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
     if(fITSCut==1){//At list on hit any layer of SPD point
         if (!aliaodtrack->HasPointOnITSLayerG(0)) return kFALSE;
     }
-    if(fITSCut==2){//At list on hit any layer of SPD point
+    if(fITSCut==2){//At list  hits on in the first layer and the second one SPD
         if ((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1))) return kFALSE;
     }
     if(fITSCut==3){//At list on hit any layer of SPD point
@@ -387,6 +389,18 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
     }
     if(fITSCut==9){//At list on hit any layer of SPD point
         if ((!aliaodtrack->HasPointOnITSLayerG(0))||((!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4))) return kFALSE;
+    }
+    if(fITSCut==10){//At list on hit in the first layer or the second layer of SPD (kAny), and shared with layer one
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(0))) return kFALSE;
+    }
+    if(fITSCut==11){//At list on hit in the first layer or the second layer of SPD (kAny), and shared with layer two
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))&&(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(1))) return kFALSE;
+    }
+    if(fITSCut==12){//Two hits one in the first layer of SPD and in the second one (kBoth) and shared with layer one.
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(0))) return kFALSE;
+    }
+    if(fITSCut==13){//Two hits one in the first layer of SPD and in the second one (kBoth) and shared with layer two.
+        if (((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1)))&&(!aliaodtrack->HasSharedPointOnITSLayerG(1))) return kFALSE;
     }
 
     //DCAcut
@@ -428,6 +442,12 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     delete fHistograms;
     fHistograms=NULL;
   }
+
+  if(fDoLightVersion==kTRUE) {
+      AliInfo("Minimal output chosen");
+      return;
+  }
+
   if(fHistograms==NULL){
     fHistograms=new TList();
     if(name=="")fHistograms->SetName(Form("ElectronCuts_%s",cutName.Data()));
@@ -480,6 +500,8 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
   hdEdxCuts->GetXaxis()->SetBinLabel(9,"TOFelectron");
   hdEdxCuts->GetXaxis()->SetBinLabel(10,"out");
   fHistograms->Add(hdEdxCuts);
+
+  if (!fDoLightVersion){
 
   TAxis *AxisBeforeITS  = NULL;
   TAxis *AxisBeforedEdx = NULL;
@@ -569,7 +591,7 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     AxisBeforeTOF->Set(bins, newBins);
   }
   delete [] newBins;
-
+  }
   TH1::AddDirectory(kTRUE);
 
   // Event Cuts and Info
@@ -726,7 +748,7 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEven
   if( labelParticle < 0 || labelParticle >= mcESDEvent->GetNumberOfTracks() ) return kFALSE;
   //if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE; //Ask Ana
   std::unique_ptr<AliDalitzAODESDMC> particle = std::unique_ptr<AliDalitzAODESDMC>(mcAODESDEvent->Particle(labelParticle));
-  //TParticle* particle = mcEvent->Particle(labelParticle);
+  //AliMCParticle* particle = mcEvent->GetTrack(labelParticle);
 
   if( TMath::Abs( particle->GetPdgCodeG() ) != 11 )  return kFALSE;
 
@@ -1585,10 +1607,27 @@ fITSCut=clsITSCut;//Important to update AOD, if yoy modifiy this options, please
       break;
     case 8:
       fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+      //2 hit in any layer of SPD
       break;
     case 9: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
       fesdTrackCuts->SetMinNClustersITS(4);
       break;
+    case 10:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+//       lTrack->HasSharedPointOnITSLayer(0);//ALERT Alternative way, define varible and use in the Track.
+      break; //1 hit in any layer of SPD with not shared
+    case 11:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+//       lTrack->HasSharedPointOnITSLayer(1);
+      break; //1 hit in any layer of SPD with one shared
+    case 12:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+//       lTrack->HasSharedPointOnITSLayer(0);
+      break; //2 hit in any layer of SPD with not shared
+    case 13:
+      fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+//       lTrack->HasSharedPointOnITSLayer(1);
+      break; //2 hit in any layer of SPD with one shared
 
     default:
       cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
@@ -1844,6 +1883,10 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
       break;
     case 8:
       fPtMinCut = 1.1;
+      fPtMaxCut = 9999;
+      break;
+    case 9:
+      fPtMinCut = 0.02;
       fPtMaxCut = 9999;
       break;
     default:

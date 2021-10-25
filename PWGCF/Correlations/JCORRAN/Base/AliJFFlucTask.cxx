@@ -73,7 +73,12 @@ AliJFFlucTask::AliJFFlucTask():
 	fremovebadarea(kFALSE),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	binning(BINNING_CENT_PbPb),
-	flags(0)
+	flags(0),
+// Additional selection criteria.
+ 	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
+	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
+	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
 	//DefineOutput(1, TDirectory::Class());
 }
@@ -110,9 +115,14 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fremovebadarea(kFALSE),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	binning(BINNING_CENT_PbPb),
-	flags(0)
+	flags(0),
+// Additional selection criteria.
+ 	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
+	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
+	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
-	DefineOutput(1, TDirectory::Class());
+	DefineOutput(1, TDirectory::Class());	// TBC: shall we pass to a TList like for the catalyst?
 }
 
 //____________________________________________________________________________
@@ -246,6 +256,7 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 
 		if(!IsGoodEvent( currentEvent ))
 			return;
+
 		fcBin = (binning != BINNING_CENT_PbPb)?
 				AliJFFlucAnalysis::GetBin((double)fInputList->GetEntriesFast(),(AliJFFlucAnalysis::BINNING)binning):
 				AliJFFlucAnalysis::GetBin(fCent,(AliJFFlucAnalysis::BINNING)binning);
@@ -256,8 +267,9 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION)
 			pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
 
-		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
+		//ReadAODTracks depends on the vertex info for phi and efficiency weight
 		ReadVertexInfo( currentEvent, fVertex); // read vertex info
+		ReadAODTracks( currentEvent, fInputList ) ; // read tracklist
 		// Analysis Part
 		fFFlucAna->Init();
 		fFFlucAna->SetInputList( fInputList );
@@ -369,17 +381,46 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				itrack->SetWeight(1.0); // phi weight
 			}
 		}
-	}else{
+	}else {
 		UInt_t nt = aod->GetNumberOfTracks();
 		UInt_t ntrack =0;
+
 		for( UInt_t it=0; it<nt ; it++){
 			AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
 			if(!track){
 				Error("ReadEventAOD", "Could not read particle %d", (int) it);
 				continue;
 			}
+
 			if(track->GetTPCNcls() < fNumTPCClusters)
 				continue;
+
+			// New: Get the values of the DCA according to the type of tracks.
+			/*Double_t DCAxy = 0.;	// DCA in the transverse plane.
+			Double_t DCAz = 0.;		// DCA along the beam axis.
+			if(fFilterBit == 128) {	// Constrained TPC-only tracks.
+				DCAxy = track->DCA();
+				DCAz = track->ZAtDCA();
+
+			}else {	// For the unconstrained tracks. TBC!
+				AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
+				Double_t v[3];    // Coordinates of the PV
+				Double_t pos[3];  // Coordinates of the track closest to PV
+
+				primaryVertex->GetXYZ(v);
+				track->GetXYZ(pos);
+				DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
+				DCAz = pos[2] - v[2];
+			}
+
+		  // New: Apply the cuts on the DCA values of the track.
+			if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
+			if(TMath::Abs(DCAz) > fDCAz_max) {continue;}
+
+			// New: Apply the cut on the chi2 per ndf for the TPC tracks.
+			Double_t chi2NDF = track->Chi2perNDF();	// TBC: is this 100% the right one?
+			if((chi2NDF < fChi2perNDF_min) || (chi2NDF > fChi2perNDF_max)) {continue;}*/
+
 			if(track->TestFilterBit( fFilterBit )){ //
 				Double_t pt = track->Pt();
 				if( fPt_min > 0){
@@ -401,13 +442,13 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 				Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
 				if(fremovebadarea) {
 					if(isBadArea) continue;
-				} 
+				}
 		
 				AliJBaseTrack *itrack = new( (*TrackList)[ntrack++]) AliJBaseTrack;
 				itrack->SetID( TrackList->GetEntriesFast() );
 				itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 				itrack->SetParticleType(kJHadron);
-				itrack->SetCharge(track->Charge() );
+				itrack->SetCharge(ch);
 				itrack->SetStatus(track->GetStatus() );
 				//
 				//double fCent = ReadCentrality(aod,fCentDetName);
@@ -434,6 +475,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList)
 			}
 		}
 	} //read aod reco track done.
+	// LOKI: Add multiplicity qa histo.
 }
 //______________________________________________________________________________
 Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
@@ -552,7 +594,20 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
 				return kFALSE;
 
-		}else{
+		}		else if (fperiod == AliJRunTable::kLHC10h) {	// New: High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
+			UInt_t MTPC = 0;
+			UInt_t Mglobal = 0;
+			for(int it = 0; it < nTracks; it++){
+				AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+				if (!trackAOD) {continue;}
+				if (trackAOD->TestFilterBit(128)) {MTPC++;}
+				if (trackAOD->TestFilterBit(256)) {Mglobal++;}
+			}
+			if(!((double)MTPC > (-65.0 + 1.54*Mglobal) && (double)MTPC < (90.0 + 2.30*Mglobal))) {
+				return kFALSE;
+			}
+		}
+		else {
 			if(!((double)TPCTracks > (-40.3+1.22*GlobTracks) && (double)TPCTracks < (32.1+1.59*GlobTracks)))
 				return kFALSE;
 		}
@@ -683,5 +738,3 @@ double AliJFFlucTask::GetCentralityFromImpactPar(double ip) {
 	}
 	return 0.0;
 }
-
-

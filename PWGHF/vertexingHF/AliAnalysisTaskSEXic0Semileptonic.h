@@ -122,6 +122,11 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		AliNormalizationCounter *fCounter_MB_0p1to30 = nullptr;
 		AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
 		AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
+		//Add new counters for INEL>0: kimc, June 23, 2021
+		AliNormalizationCounter *fCntINEL0_MB_0to100  = nullptr;
+		AliNormalizationCounter *fCntINEL0_MB_0p1to30 = nullptr;
+		AliNormalizationCounter *fCntINEL0_MB_30to100 = nullptr;
+		AliNormalizationCounter *fCntINEL0_HMV0_0to0p1 = nullptr;
 
 		TString fOption; //!
 		Bool_t  IsMC = kTRUE;

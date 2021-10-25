@@ -119,6 +119,7 @@ set(SRCS
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
   LongAsymmetry/AliAnalysisTaskLongFluctuations.cxx
   LongAsymmetry/AliAnalysisTaskLegendreCoef.cxx
+  LongAsymmetry/AliAnalysisTaskEtaDist.cxx
   StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
   FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   )

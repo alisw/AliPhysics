@@ -90,6 +90,7 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisHe3MC.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3_ESD.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskNuclei.cxx
   Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx
@@ -98,6 +99,7 @@ set(SRCS
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronCoalescence.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
@@ -126,6 +128,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
 	  ${SRCS}
       Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piAOD.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx

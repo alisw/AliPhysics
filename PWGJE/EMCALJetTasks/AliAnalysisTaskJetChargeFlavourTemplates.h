@@ -146,6 +146,11 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
 
   TH2F                                *Pt2DCompare;                         //!
   TH2F                                *JC2DCompare;                         //!
+  TH2F                                *JC2DCompareUp;                         //!
+  TH2F                                *JC2DCompareDown;                         //!
+  TH2F                                *JC2DCompareGluon;                         //!
+  TH2F                                *JC2DCompareOther;                         //!
+  TH2F                                *JC2DCompareUnmatched;                         //!
 
   TH2F                                *PtComparisonVsJCDiff;                      //!
 

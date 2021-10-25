@@ -1,3 +1,10 @@
+/*
+Author: Vytautas Vislavicius
+Container to store the terms required to calculate higher order moments of the pT spectrum.
+Extra layer to calculate the moments. Current implementation supports only the first and second moments.
+If used, modified, or distributed, please aknowledge the original author of this code.
+*/
+
 #include "AliCkContainer.h"
 AliCkContainer::AliCkContainer():
   fObsList(0),
@@ -91,6 +98,8 @@ void AliCkContainer::CalculateCks() {
   if(fCkList) delete fCkList;
   fCkList = new TList();
   fCkList->SetOwner(kTRUE);
+  //Override mpt temporarily override mpt weights:
+  ((AliProfileBS*)fObsList->At(2))->PresetWeights((AliProfileBS*)fObsList->At(0));
   for(Int_t i=-1;i<((AliProfileBS*)fObsList->At(0))->getNSubs();i++) {
     TH1 *hTs[3];
     for(Int_t j=0;j<3;j++) {
@@ -102,6 +111,8 @@ void AliCkContainer::CalculateCks() {
     fCkList->Add(hCkRec);
     for(Int_t j=0;j<3;j++) delete hTs[j];
   };
+  //reset mpt weights
+  ((AliProfileBS*)fObsList->At(2))->PresetWeights(0);
 }
 TH1 *AliCkContainer::getHist(Int_t ind) {
   if(!fCkList) CalculateCks();

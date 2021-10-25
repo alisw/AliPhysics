@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCFMDA")
+AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -18,7 +18,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   task->SetAssocPtBinning(nBinAssocPt, assocPtLimits);
 
   task->SetAnaMode(sMode);
-  task->SetAssoCut(1.5);
+  task->SetAssoCut(1.0);
  
   task->SetPtMin(0.5);
   task->SetPtMax(10.);

@@ -499,6 +499,7 @@ void AliMultDepSpecAnalysisTaskOLD::LoopTrue(bool count)
   if(count)
   {
     fMultTrue = 0;
+    fSumPtTrue = 0;
   }
 
   for(int i = 0; i < fMCEvent->GetNumberOfTracks(); i++)
@@ -520,6 +521,7 @@ void AliMultDepSpecAnalysisTaskOLD::LoopTrue(bool count)
       if(fMCIsChargedPrimary)
       {
         fMultTrue += fNRepetitions;
+        fSumPtTrue += fMCPt;
       }
     }
     else

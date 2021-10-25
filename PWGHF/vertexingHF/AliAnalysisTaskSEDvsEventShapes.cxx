@@ -1092,9 +1092,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         fWeight = nchWeight*ptWeight;
         
         if(fSubtractTrackletsFromDau){
-            // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+            // For the D* case, subtract both D0 daughter and soft pions tracks
             AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
-            if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+            AliAODTrack* softpifromDstar = NULL;
+            if(fPdgMeson==413){ 
+                d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+                softpifromDstar = (AliAODTrack*)dCascade->GetBachelor();
+            }
             
             for(Int_t iDau=0; iDau<nDau; iDau++){
                 AliAODTrack *t = NULL;
@@ -1104,6 +1108,12 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
                     if(multForCand>0) multForCand-=1;
                 }
+            }
+
+            if(fPdgMeson==413){
+                if(softpifromDstar->HasPointOnITSLayer(0) && softpifromDstar->HasPointOnITSLayer(1)){
+                    if(multForCand>0) multForCand-=1;
+                }            
             }
         }
         

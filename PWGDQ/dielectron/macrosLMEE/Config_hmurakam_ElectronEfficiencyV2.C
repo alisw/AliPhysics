@@ -1,17 +1,6 @@
-//TString names("cutTPC3sigma;cutTPChr;cutTOF;cutpid;cutTPC3sigma_itss;cutTPChr_itss;cutTOF_itss;cutpid_itss");
-//TString names("cutTPC3sigma;cutTPChr;cutTOF;cutpid");
-//TString names("TOF;TPCHadRej;TPCPiRej;TPC3sigma;pt200_TPCTOFcombITSshared;TPCTOFreq;TPCHadRejTOFif;Comb_TPCHadRejTPCTOFreq");
-TString names("cut0;cut1;cut2;cut3;cut4;cut5;cut6;cut7;cut8");
+TString names("NewPid_Phiv");
 bool DoPairing = kTRUE;
 bool DoULSLS = kTRUE;
-
-bool GetResolutionFromAlien = kTRUE;
-std::string resoFilename = "";
-std::string resoFilenameFromAlien = "";
-
-bool GetCentralityFromAlien = kFALSE;
-std::string centralityFilename = "";
-std::string centralityFilenameFromAlien = "";
 
 const Int_t triggerNames = AliVEvent::kINT7;
 
@@ -32,8 +21,6 @@ const double maxPtCut = 15.0;
 const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
-
-
 // binning of single leg histograms
 bool usePtVector = true;
 /* const Double_t ptBins[] = { */
@@ -47,40 +34,11 @@ const Double_t ptBins[] = {
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,10.0,20.0
 };
-
+const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
 
 // Ivan's ptee bins
 //const Double_t PteeBins[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0};
 //const Int_t nBinsPtee = ( sizeof(PteeBins) / sizeof(PteeBins[0]) )-1;
-
-
-bool usePairPtVector = true;
-
-//too fine -> change coarse binning
-/* const Double_t pairptBins[] = { */
-/*   0.00,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.22,0.24,0.26,0.28,0.30, */
-/*   0.32,0.34,0.36,0.38,0.40,0.42,0.44,0.46,0.48,0.50,0.52,0.54,0.56,0.58,0.60,0.62, */
-/*   0.64,0.66,0.68,0.70,0.72,0.74,0.76,0.78,0.80,0.82,0.84,0.86,0.88,0.90,0.92,0.94, */
-/*   0.96,0.98,1.00,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.20,2.30, */
-/*   2.40,2.50,2.60,2.70,2.80,2.90,3.00,3.10,3.20,3.30,3.40,3.50,3.60,3.70,3.80,3.90, */
-/*   4.00,4.10,4.20,4.30,4.40,4.50,4.60,4.70,4.80,4.90,5.00,5.10,5.20,5.30,5.40,5.50, */
-/*   5.60,5.70,5.80,5.90,6.00,6.20,6.40,6.60,6.80,7.00,7.20,7.40,7.60,7.80,8.00,8.20, */
-/*   8.40,8.60,8.80,9.00,9.20,9.40,9.60,9.80,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0 */
-/* }; */
-const Double_t pairptBins[] = {
-  0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0
-};
-
-bool useMassVector = false;
-const Double_t massBins[] = {
-  0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18,
-  0.2, 0.22, 0.24, 0.26, 0.28, 0.32, 0.38, 0.54, 0.66, 0.72,
-  0.76, 0.78, 0.86, 0.98, 1.00, 1.02, 1.1, 1.2, 1.4, 1.64,
-  1.96, 2.34, 2.84, 2.95, 3.05, 3.1, 3.15, 3.3, 3.5, 3.75, 4.0};
-
-const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
-const Int_t nBinsPairPt =  ( sizeof(pairptBins) / sizeof(pairptBins[0]) )-1;
-const Int_t nBinsMass =  ( sizeof(massBins) / sizeof(massBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
@@ -102,42 +60,31 @@ const double minMassBin = 0;
 const double maxMassBin =  4.;//4.
 const int    stepsMassBin = 400;//400
 
-const double minPairPtBin = 0;
-const double maxPairPtBin =  10;
-const int    stepsPairPtBin = 400;
-
 const double minPhiVBin = 0;
 const double maxPhiVBin =  TMath::Pi();
-const int    stepsPhiVBin = 90;
+const int    stepsPhiVBin = 180;
 
 // Binning of resolution histograms
-const int    NbinsDeltaMom    = 1200;
+const int    NbinsDeltaMom    = 1;
 const double DeltaMomMin   =-10.0;
 const double DeltaMomMax   =  2.0;
-const int    NbinsRelMom      = 400;
+const int    NbinsRelMom      = 1;
 const double RelMomMin     =  0.0;
 const double RelMomMax     =  2.0;
-const int    NbinsDeltaEta    = 200;
+const int    NbinsDeltaEta    = 1;
 const double DeltaEtaMin   = -0.4;
 const double DeltaEtaMax   =  0.4;
-const int    NbinsDeltaTheta  = 200;
+const int    NbinsDeltaTheta  = 1;
 const double DeltaThetaMin = -0.4;
 const double DeltaThetaMax =  0.4;
-const int    NbinsDeltaPhi    = 200;
+const int    NbinsDeltaPhi    = 1;
 const double DeltaPhiMin   = -0.4;
 const double DeltaPhiMax   =  0.4;
 
-AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition);
 AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isAOD);
+AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition);
 AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition);
 AliAnalysisCuts* SetupEventCuts(Bool_t isAOD);
-void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
-void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task);
-void SetEtaCorrectionTOFMean(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim);
-void SetEtaCorrectionTOFRMS(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim); 
-void SetResolutionFile(TString year);
-// #########################################################
-// #########################################################
 
 //________________________________________________________________
 AliAnalysisFilter* SetupTrackCutsAndSettings(Int_t cutDefinition, Bool_t isAOD)
@@ -209,16 +156,24 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,         3.0, 100.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,       0.0,   4.5);
 
+  //  if(cutDefinition==1){
   printf("Add shared cluster cut\n");
-  if(cutDefinition==8){
-    trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 6.0, 6.0, kTRUE);
-  }else{
-    trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE);//accept no shared cls hit (default)
-  }
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE);//accept no shared cls hit (default)
+  //  }
 
+  // AliDielectronVarCuts *pairCutsPhiV(0x0);//Does not work
+  // if(cutDefinition==1 || cutDefinition==3){
+  //   pairCutsPhiV = new AliDielectronVarCuts("PhiV","PhiV");//mass and Phiv together
+  //   pairCutsPhiV->AddCut(AliDielectronVarManager::kPhivPair, 2.0 , 3.2,kTRUE);
+  //   pairCutsPhiV->AddCut(AliDielectronVarManager::kM, 0.0 , 0.040,kTRUE);
+  //   pairCutsPhiV->SetCutType(1);
+  //   //    die->GetPairFilter().AddCuts(pairCutsPhiV);              //PhiV cut
+  // }
+  
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("Trackcuts","Trackcuts",AliDielectronCutGroup::kCompAND);
   trackCuts->AddCut(trackCutsAOD);
   trackCuts->AddCut(trackCutsDiel);
+  //  trackCuts->AddCut(pairCutsPhiV);//Does not work
 
   trackCuts->Print();
 
@@ -232,79 +187,42 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
 
   std::cout << "SetupPIDcuts()" <<std::endl;
 
-  AliDielectronPID *pidTPC = new AliDielectronPID("pidTPC","pidTPC");
-  pidTPC->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3.,  3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
+  //PID1
+  AliDielectronPID *pidTPCTOFreq = new AliDielectronPID("pidTPCTOFreq","pidTPCTOFreq");//<--> same as recoverTOF
+  pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3. , 3., 0.0, 1e30, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100. , 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCTOFreq->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,      -3., 3., 0.4, 1e30, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kP);// TOF required
+  //PID2
+  AliDielectronPID *pidTPCHadRej = new AliDielectronPID("pidTPCHadRej","pidTPCHadRej");//pure TPC pid
+  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,  -3., 3., 0.0, 1e30, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kPion,    -100., 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kKaon,      -4., 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kProton,    -4., 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  //PID3
+  AliDielectronPID *pidTPCHadRejTOFif = new AliDielectronPID("pidTPCHadRejTOFif","pidTPCHadRejTOFif");//pure TPC pid + TOF cut if avilable
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,  -3., 3., 0.0, 1e30, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kPion,    -100., 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kKaon,      -4., 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kProton,    -4., 4., 0.0, 1e30, kTRUE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);//TPC
+  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,  -3., 3., 0.4, 1e30, kFALSE,  AliDielectronPID::kIfAvailable, AliDielectronVarManager::kP);// TOF if available
 
-  AliDielectronPID *pidTPCPiRej = new AliDielectronPID("pidTPCPiRej","pidTPCPiRej");
-  pidTPCPiRej->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3.,  3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
-  pidTPCPiRej->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100.,  4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
-
-  AliDielectronPID *pidTPCHadRej = new AliDielectronPID("pidTPCHadRej","pidTPCHadRej");
-  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3.,  3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
-  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100.,  4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
-  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kKaon,       -4., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-  pidTPCHadRej->AddCut(AliDielectronPID::kTPC, AliPID::kProton,     -4., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-
-  AliDielectronPID *pidTPCTOFreq = new AliDielectronPID("pidTPCTOFreq","pidTPCTOFreq");
-  pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,     -3.,  3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
-  pidTPCTOFreq->AddCut(AliDielectronPID::kTPC, AliPID::kPion,       -100.,  4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire, AliDielectronVarManager::kPt);
-  pidTPCTOFreq->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3.,  3., 0.4, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kP);
-
-  AliDielectronPID *pidTPCHadRejTOFif = new AliDielectronPID("pidTPCHadRejTOFif","pidTPCHadRejTOFif");
-  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kElectron,   -3., 3., 0.0, 1e30,  kFALSE,  AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kKaon,       -4., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTPC, AliPID::kProton,     -4., 4., 0.0, 1e30,  kTRUE,   AliDielectronPID::kRequire,     AliDielectronVarManager::kPt);
-  pidTPCHadRejTOFif->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,   -3., 3., 0.4, 1e30,  kFALSE,  AliDielectronPID::kIfAvailable, AliDielectronVarManager::kP);
-
-  AliDielectronPID *pidTOF = new AliDielectronPID("pidTOF","pidTOF");
-  pidTOF->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3.,  3., 0.4, 1e30,  kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kP);
-
-  AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
   AliAnalysisCuts* fancyCut=0x0;
-  if(cutDefinition==0){
-    printf("pt200_TPCTOFcombITSshared\n");// combine 2 cut sets with OR option
-    combinedPIDcuts->AddCut(pidTPCTOFreq);
-    combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
+  // combine 2 cut sets with OR option
+  if(cutDefinition==0){//New pid
+    AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
+    combinedPIDcuts->AddCut(pidTPCTOFreq);//PID1
+    combinedPIDcuts->AddCut(pidTPCHadRej);//PID2
     fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==1){
-    printf("TPCTOFreq\n");
-    combinedPIDcuts->AddCut(pidTPCTOFreq);
-    fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==2){
-    printf("TPCHadRejTOFif\n");
-    combinedPIDcuts->AddCut(pidTPCHadRejTOFif);
-    fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==3){
-    printf("pidTPC\n");//TPC nSigma simple 3sigma cut
-    combinedPIDcuts->AddCut(pidTPC);
-    fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==4){
-    printf("pidTPCPiRej\n");//TPC nSigma simple 3sigma cut + pion rejection
-    combinedPIDcuts->AddCut(pidTPCPiRej);
-    fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==5){
-    printf("pidTPCHadRej\n");//TPC hadron rejection
-    combinedPIDcuts->AddCut(pidTPCHadRej);
-    fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==6){
-    printf("pidTOF\n");//TOF req
-    combinedPIDcuts->AddCut(pidTOF);
-    fancyCut = combinedPIDcuts;
-  }else if(cutDefinition==7){
-    printf("Comb_TPCHadRejTPCTOFreq\n");// combine 2 cut sets with OR option
-    combinedPIDcuts->AddCut(pidTPCHadRej);
-    combinedPIDcuts->AddCut(pidTPCTOFreq);
-    fancyCut = combinedPIDcuts;
-  }else{
-    printf("no cutDefinition.");
+  }else if (cutDefinition==1){// Old pid
+    AliDielectronCutGroup* combinedPIDcuts2 = new AliDielectronCutGroup("combinedPIDcuts2","combinedPIDcuts2", AliDielectronCutGroup::kCompOR);
+    combinedPIDcuts2->AddCut(pidTPCTOFreq);//PID1
+    combinedPIDcuts2->AddCut(pidTPCHadRejTOFif);//PID3
+    fancyCut = combinedPIDcuts2;
   }
+
   return fancyCut;
 
 }
-
-// #########################################################
-// #########################################################
 
 AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
 {
@@ -322,94 +240,8 @@ AliAnalysisCuts* SetupEventCuts(Bool_t isAOD)
   //  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTracksOrSPD);
   //  eventCuts->SetRequireV0and();
   return eventCuts;
-}
-
-// #########################################################
-// #########################################################
-void AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
-  //std::vector<Bool_t> AddSingleLegMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
-
-  AliDielectronSignalMC eleFinalState("eleFinalState","eleFinalState");
-  eleFinalState.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-  eleFinalState.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalState.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  task->AddSingleLegMCSignal(eleFinalState);
-
-  //
-  AliDielectronSignalMC eleFinalStateFromD("eleFinalStateFromD","eleFinalStateFromD");
-  eleFinalStateFromD.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-  eleFinalStateFromD.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalStateFromD.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalStateFromD.SetMotherPDGs(402, 402); // open charm mesons and baryons together
-  eleFinalStateFromD.SetCheckBothChargesMothers(kTRUE,kTRUE);
-  task->AddSingleLegMCSignal(eleFinalStateFromD);
-  //
-  AliDielectronSignalMC eleFinalStateFromB("eleFinalStateFromB","eleFinalStateFromB");
-  eleFinalStateFromB.SetLegPDGs(11,1);//dummy second leg (never MCtrue)\n"
-  eleFinalStateFromB.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFinalStateFromB.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFinalStateFromB.SetMotherPDGs(502, 502); // open charm mesons and baryons together
-  eleFinalStateFromB.SetCheckBothChargesMothers(kTRUE,kTRUE);
-  task->AddSingleLegMCSignal(eleFinalStateFromB);
-
-  // This is used to get electrons not from same mother for pair efficiency.
-  // Needed to look at D and B meson electrons as functionality to pair those is
-  // not implemented in the framework. Instead, use all final start electrons
-  // from D or B decays for efficiency correction, for example.
-  // The ordering must match the ordering of the added signals above*.
-  /* std::vector<Bool_t> DielectronsPairNotFromSameMother; */
-  /* DielectronsPairNotFromSameMother.push_back(kFALSE); */
-  /* DielectronsPairNotFromSameMother.push_back(kTRUE); */
-  /* DielectronsPairNotFromSameMother.push_back(kTRUE); */
-
-  /* return DielectronsPairNotFromSameMother;   */
-}
-
-
-// #########################################################
-// #########################################################
-void AddPairMCSignal(AliAnalysisTaskElectronEfficiencyV2* task){
-
-  AliDielectronSignalMC pair_sameMother("sameMother","sameMother");
-  pair_sameMother.SetLegPDGs(11,-11);
-  pair_sameMother.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  pair_sameMother.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  // Set mother properties
-  pair_sameMother.SetMothersRelation(AliDielectronSignalMC::kSame);
-  pair_sameMother.SetMotherPDGs(22,22,kTRUE,kTRUE); // exclude conversion electrons. should have no effect on final state ele.
-  task->AddPairMCSignal(pair_sameMother);
-  
-  // Used pdg codes (defined in AliDielectronMC::ComparePDG)
-  // 401: open charm meson
-  // 404: charged open charmed mesons NO s quark
-  // 405: neutral open charmed mesons
-  // 406: charged open charmed mesons with s quark
-  // 501: open beauty mesons
-  // 503: all beauty hadrons
-  // 504: charged open beauty mesons NO s quark
-  // 505: neutral open beauty mesons
-  // 506: charged open beauty mesons with s quark
-  // all D mesons
-
-  // decay channels
-  // (1) D -> e X
-  // (1) B -> e X
-  // (2) B -> D X -> e X Y
-  // (3) B -> e D X -> ee X Y always produces ULS pair
-
-  AliDielectronSignalMC eleFromJPsi("eleFromJPsi", "eleFromJPsi");
-  eleFromJPsi.SetLegPDGs(11,-11);
-  eleFromJPsi.SetCheckBothChargesLegs(kTRUE,kTRUE);
-  eleFromJPsi.SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
-  eleFromJPsi.SetMotherPDGs(443, 443);
-  eleFromJPsi.SetMothersRelation(AliDielectronSignalMC::kSame);
-  eleFromJPsi.SetCheckBothChargesMothers(kTRUE,kTRUE);
-
-  task->AddPairMCSignal(pair_sameMother);
-  task->AddPairMCSignal(eleFromJPsi);
 
 }
-
 //______________________________________________________________________________________
 void SetTOFSigmaEleCorrection(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t corrXdim, Int_t corrYdim, TString year) {
   //
@@ -460,26 +292,5 @@ void SetTOFSigmaEleCorrection(AliAnalysisTaskElectronEfficiencyV2 *task, Int_t c
 
   task->SetWidthCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histWidth2DTOF, corrXdim, corrYdim);
   task->SetCentroidCorrFunction(AliAnalysisTaskElectronEfficiencyV2::kTOF, histMean2DTOF,  corrXdim, corrYdim);
-
-}
-
-//___________________________________________________________________________________________
-void SetResolutionFile(TString year){
-
-  if(year == "16"){
-    resoFilename = "16.root";
-    resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/16.root";
-    printf("16.root\n");
-  }else if(year == "17"){
-    resoFilename = "17.root";
-    resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/17.root";
-    printf("17.root\n");
-  }else if(year == "18"){
-    resoFilename = "18.root";
-    resoFilenameFromAlien = "/alice/cern.ch/user/h/hmurakam/PWGDQ/dielectron/resolution/18.root";
-    printf("18.root\n");
-  }else{
-    printf("year is not set\n");
-  }
 
 }

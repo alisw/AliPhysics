@@ -134,7 +134,7 @@ AliAnalysisTaskStrangenessVsMultiplicityEERun2::AliAnalysisTaskStrangenessVsMult
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
-fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
+fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fESDtrackCutsStandardITSTPC2011pp(0),
 fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
@@ -194,9 +194,15 @@ fTestVariable(0),
 fSPDtracklets(-1),
 fSPDtrackletsA(-1),
 fSPDtrackletsC(-1),
+fNTracksGlobal(-1),
+fpTSum(0.),
+fNtrk_pTgt2(-1),
+fNtrk_pTgt3(-1),
+fNtrk_pTgt5(-1),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
+fNTOFtrgPads(-1),
 fNTOFMatches(-1),
 fNTracksITSsa2010(-1),
 fNTracksGlobal2015(-1),
@@ -253,6 +259,10 @@ fTreeVariableNegTrackStatus(0),
 fTreeVariablePosTrackStatus(0),
 fTreeVariableNegDCAz(-1),
 fTreeVariablePosDCAz(-1),
+
+fTreeVariableNTOFClusters(-1),
+fTreeVariableNTOFtrgPads(-1),
+fTreeVariableNTOFMatches(-1),
 
 fTreeVariablePosITSClusters0(0),
 fTreeVariablePosITSClusters1(0),
@@ -403,6 +413,10 @@ fTreeCascVarBachDCAz(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
 
+fTreeCascVarNTOFClusters(-1),
+fTreeCascVarNTOFtrgPads(-1),
+fTreeCascVarNTOFMatches(-1),
+
 fTreeCascVarPosITSClusters0(0),
 fTreeCascVarPosITSClusters1(0),
 fTreeCascVarPosITSClusters2(0),
@@ -528,7 +542,7 @@ AliAnalysisTaskStrangenessVsMultiplicityEERun2::AliAnalysisTaskStrangenessVsMult
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
-fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
+fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fESDtrackCutsStandardITSTPC2011pp(0),
 fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
@@ -588,9 +602,15 @@ fZPCpp(0),
 fSPDtracklets(-1),
 fSPDtrackletsA(-1),
 fSPDtrackletsC(-1),
+fNTracksGlobal(-1),
+fpTSum(0.),
+fNtrk_pTgt2(-1),
+fNtrk_pTgt3(-1),
+fNtrk_pTgt5(-1),
 fMVPileupFlag(kFALSE),
 fOOBPileupFlag(kFALSE),
 fNTOFClusters(-1),
+fNTOFtrgPads(-1),
 fNTOFMatches(-1),
 fNTracksITSsa2010(-1),
 fNTracksGlobal2015(-1),
@@ -647,6 +667,10 @@ fTreeVariableNegTrackStatus(0),
 fTreeVariablePosTrackStatus(0),
 fTreeVariableNegDCAz(-1),
 fTreeVariablePosDCAz(-1),
+
+fTreeVariableNTOFClusters(-1),
+fTreeVariableNTOFtrgPads(-1),
+fTreeVariableNTOFMatches(-1),
 
 fTreeVariablePosITSClusters0(0),
 fTreeVariablePosITSClusters1(0),
@@ -792,6 +816,10 @@ fTreeCascVarBachDCAz(-1),
 //fTreeCascVarPosTotMom(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
+
+fTreeCascVarNTOFClusters(-1),
+fTreeCascVarNTOFtrgPads(-1),
+fTreeCascVarNTOFMatches(-1),
 
 fTreeCascVarPosITSClusters0(0),
 fTreeCascVarPosITSClusters1(0),
@@ -1047,6 +1075,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
         fTreeEvent->Branch("fCentrality_RefMult08",&fCentrality_RefMult08,"fCentrality_RefMult08/F");
         fTreeEvent->Branch("fCentrality_SPDClusters",&fCentrality_SPDClusters,"fCentrality_SPDClusters/F");
         fTreeEvent->Branch("fCentrality_SPDTracklets",&fCentrality_SPDTracklets,"fCentrality_SPDTracklets/F");
+        fTreeEvent->Branch("fNtrk_pTgt2",&fNtrk_pTgt2,"fNtrk_pTgt2/I");
+        fTreeEvent->Branch("fNtrk_pTgt3",&fNtrk_pTgt3,"fNtrk_pTgt3/I");
+        fTreeEvent->Branch("fNtrk_pTgt5",&fNtrk_pTgt5,"fNtrk_pTgt5/I");
+        fTreeEvent->Branch("fpTSum",&fpTSum,"fpTSum/F");
         if (fkDebugZDCInfo){
 	    fTreeEvent->Branch("fZNApp", &fZNApp,"fZNApp/F");
 	    fTreeEvent->Branch("fZNCpp", &fZNCpp,"fZNCpp/F");
@@ -1063,8 +1095,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
         if ( fkDebugOOBPileup ){
             fTreeEvent->Branch("fOOBPileupFlag",&fOOBPileupFlag,"fOOBPileupFlag/O");
             fTreeEvent->Branch("fNTOFClusters",&fNTOFClusters,"fNTOFClusters/I");
+            fTreeEvent->Branch("fNTOFtrgPads",&fNTOFtrgPads,"fNTOFtrgPads/I");
             fTreeEvent->Branch("fNTOFMatches",&fNTOFMatches,"fNTOFMatches/I");
             fTreeEvent->Branch("fNTracksITSsa2010",&fNTracksITSsa2010,"fNTracksITSsa2010/I");
+            fTreeEvent->Branch("fNTracksGlobal",&fNTracksGlobal,"fNTracksGlobal/I");
             fTreeEvent->Branch("fNTracksGlobal2015",&fNTracksGlobal2015,"fNTracksGlobal2015/I");
             fTreeEvent->Branch("fNTracksGlobal2015TriggerPP",&fNTracksGlobal2015TriggerPP,"fNTracksGlobal2015TriggerPP/I");
             fTreeEvent->Branch("fAmplitudeV0A",&fAmplitudeV0A,"fAmplitudeV0A/F");
@@ -1124,6 +1158,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableZPCpp", &fTreeVariableZPCpp,"fTreeVariableZPCpp/F");
         }
         fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
+        fTreeV0->Branch("fTreeVariableNTOFClusters",&fTreeVariableNTOFClusters,"fTreeVariableNTOFClusters/I");
+        fTreeV0->Branch("fTreeVariableNTOFtrgPads",&fTreeVariableNTOFtrgPads,"fTreeVariableNTOFtrgPads/I");
+        fTreeV0->Branch("fTreeVariableNTOFMatches",&fTreeVariableNTOFMatches,"fTreeVariableNTOFMatches/I");
         //------------------------------------------------
         fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
         if ( fkDebugWrongPIDForTracking ){
@@ -1276,6 +1313,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarPosITSNSigmaProton",&fTreeCascVarPosITSNSigmaProton,"fTreeCascVarPosITSNSigmaProton/F");
         fTreeCascade->Branch("fTreeCascVarBachITSNSigmaPion",&fTreeCascVarBachITSNSigmaPion,"fTreeCascVarBachITSNSigmaPion/F");
         fTreeCascade->Branch("fTreeCascVarBachITSNSigmaKaon",&fTreeCascVarBachITSNSigmaKaon,"fTreeCascVarBachITSNSigmaKaon/F");
+
+        fTreeCascade->Branch("fTreeCascVarNTOFClusters",&fTreeCascVarNTOFClusters,"fTreeCascVarNTOFClusters/I");
+        fTreeCascade->Branch("fTreeCascVarNTOFtrgPads",&fTreeCascVarNTOFtrgPads,"fTreeCascVarNTOFtrgPads/I");
+        fTreeCascade->Branch("fTreeCascVarNTOFMatches",&fTreeCascVarNTOFMatches,"fTreeCascVarNTOFMatches/I");
         
         //------------------------------------------------
         fTreeCascade->Branch("fTreeCascVarChiSquareV0",&fTreeCascVarChiSquareV0,"fTreeCascVarChiSquareV0/F");
@@ -1451,6 +1492,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserCreateOutputObjects()
         fESDtrackCutsITSsa2010 = AliESDtrackCuts::GetStandardITSSATrackCuts2010();
     }
     
+    fESDtrackCutsStandardITSTPC2011pp = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
+
     //------------------------------------------------
     // V0 Multiplicity Histograms
     //------------------------------------------------
@@ -1911,10 +1954,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
     //Save info for pileup study (high multiplicity triggers pp 13 TeV - 2016 data)
     if( fkDebugOOBPileup ) {
         fOOBPileupFlag     = !fUtils->IsOutOfBunchPileUp(ev);
-        fNTOFClusters      = lESDevent->GetESDTOFClusters()->GetEntriesFast();
+        fNTOFClusters      = lESDevent->GetTOFHeader()->GetNumberOfTOFclusters(); //before lESDevent->GetESDTOFClusters()->GetEntriesFast();
+        fNTOFtrgPads       = lESDevent->GetTOFHeader()->GetNumberOfTOFtrgPads();
         fNTOFMatches       = lESDevent->GetESDTOFMatches()->GetEntriesFast();
         fNTracksITSsa2010  = 0;
         fNTracksGlobal2015 = 0;
+        fNTracksGlobal = 0;
+        fpTSum = 0;
+        fNtrk_pTgt2 = 0;
+        fNtrk_pTgt3 = 0;
+        fNtrk_pTgt5 = 0;
         fNTracksGlobal2015TriggerPP = 0;
         //Count tracks with various selections
         for(Long_t itrack = 0; itrack<lESDevent->GetNumberOfTracks(); itrack++) {
@@ -1922,6 +1971,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
             if( !track ) continue;
             //Only ITSsa tracks
             if( fESDtrackCutsITSsa2010->AcceptVTrack(track) ) fNTracksITSsa2010++;
+            //
+            //Tracks for s-fragmentation vs hadronization investigation (effective energy analysis)
+            double pt = track->Pt();
+            double eta =  track->Eta(); 
+            
+            if( fESDtrackCutsStandardITSTPC2011pp->AcceptVTrack(track) ){
+                if (TMath::Abs(eta)<0.5){
+                    fNTracksGlobal++;
+                    fpTSum += pt;
+                    if (pt>2.)fNtrk_pTgt2++;
+                    if (pt>3.)fNtrk_pTgt3++;
+                    if (pt>5.)fNtrk_pTgt5++;
+                }    
+            }     
+            //
             if( !fESDtrackCutsGlobal2015->AcceptVTrack(track) ) continue;
             //Only for accepted tracks
             fNTracksGlobal2015++;
@@ -2113,6 +2177,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
         fTreeVariableNegITSSharedClusters3 = nTrack->HasSharedPointOnITSLayer(3);
         fTreeVariableNegITSSharedClusters4 = nTrack->HasSharedPointOnITSLayer(4);
         fTreeVariableNegITSSharedClusters5 = nTrack->HasSharedPointOnITSLayer(5);
+
+        //TOF Clusters
+        fTreeVariableNTOFClusters = fNTOFClusters;
+        fTreeVariableNTOFtrgPads = fNTOFtrgPads;
+        fTreeVariableNTOFMatches = fNTOFMatches;
         
         const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
         const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
@@ -2756,6 +2825,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityEERun2::UserExec(Option_t *)
         fTreeCascVarBachITSSharedClusters3 = bachTrackXi->HasSharedPointOnITSLayer(3);
         fTreeCascVarBachITSSharedClusters4 = bachTrackXi->HasSharedPointOnITSLayer(4);
         fTreeCascVarBachITSSharedClusters5 = bachTrackXi->HasSharedPointOnITSLayer(5);
+
+        //TOF Clusters
+        fTreeCascVarNTOFClusters = fNTOFClusters;
+        fTreeCascVarNTOFtrgPads = fNTOFtrgPads;
+        fTreeCascVarNTOFMatches = fNTOFMatches;
         
         //GetKinkIndex condition
         if( bachTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarBachIsKink = kTRUE;

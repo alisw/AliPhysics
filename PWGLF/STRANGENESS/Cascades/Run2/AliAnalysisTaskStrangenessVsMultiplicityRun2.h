@@ -79,7 +79,9 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-
+  void SetSaveEverything           (Bool_t lSaveEverything   = kTRUE ) {
+    fkSaveEverything = lSaveEverything; //danger ... use cautiously
+  }
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -276,6 +278,7 @@ private:
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
+  Bool_t fkSaveEverything;
     Bool_t fkPreselectDedx;
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging

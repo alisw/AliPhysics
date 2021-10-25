@@ -1,6 +1,9 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the calculated n-particle correlations, both pT-integrated and differential.
+An extra layer to calculate multiparticle cummulants and flow coefficients.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #include "AliGFWFlowContainer.h"
 
