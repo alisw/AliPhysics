@@ -1013,6 +1013,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 	//-----------Tracklet correction-------------------------
 
+        cout << "check ; estimatorAvg = " << estimatorAvg << endl;
+
         if(!estimatorAvg || !estimatorV0Avg)
           {
             cout << "No estimatorAvg and get one " << endl;
@@ -2350,7 +2352,6 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
   } 
 
 
-  cout << "<------------------ estimator name = "<< periodNames  << endl;
 
   //TFile* fEstimator = TFile::Open(festimatorFile.Data());
   //fMultEstimatorAvg = (TProfile*)(fEstimator->Get(periodNames))->Clone(periodNames);
@@ -2359,14 +2360,16 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogramMC(TFile* fEstimator, c
 	AliFatal("File with estimator not found!");
 	}
 
+  //cout << "========== runNo check ====" << runNo << endl;
   if(runNo>=265309 && runNo<=267166){   // pPb 16qt
-	AliFatal("estimator not found in the run!");
-	AliFatal("set LHC16 one");
+	//cout << "estimator not found in the run!" << endl;
+	//cout << "set LHC16 one" << endl;
 	sprintf(periodNames, "SPDTrklMC_LHC16");  //LHC16
 	}
 
+  //cout << "<------------------ estimator name = "<< periodNames  << endl;
 
-  cout << "fEstimator = " << fEstimator << endl;
+  //cout << "fEstimator = " << fEstimator << endl;
 
   if(!fEstimator->Get(periodNames))cout << "no estimator !" << endl;
 
