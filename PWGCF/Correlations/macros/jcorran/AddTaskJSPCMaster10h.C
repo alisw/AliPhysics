@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = kTRUE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE)
+AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -141,7 +141,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
       	myTask[i][j]->JSPCSetSaveAllQA(kTRUE);
       	myTask[i][j]->JSPCSetMinNuPar(14.);
       	myTask[i][j]->JSPCSetFisherYates(kFALSE, 1.); 
-      	myTask[i][j]->JSPCSetUseWeights(useWeights);
+      	myTask[i][j]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
 
       	if(j==0){
       	  myTask[i][j]->JSPCSetCorrSet1(4., 6.,-2.,-2.,-2., 0., 0.,0.);
@@ -188,7 +188,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
       myTask[i][0]->JSPCSetSaveAllQA(kTRUE);
       myTask[i][0]->JSPCSetMinNuPar(14.);
       myTask[i][0]->JSPCSetFisherYates(kFALSE, 1.); 
-      myTask[i][0]->JSPCSetUseWeights(useWeights);
+      myTask[i][0]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
 
       myTask[i][0]->JSPCSetCorrSet1(2., -2., 2., 0., 0., 0., 0.,0.);
       myTask[i][0]->JSPCSetCorrSet2(4., -2., 2, -3., 3., 0., 0.,0.);

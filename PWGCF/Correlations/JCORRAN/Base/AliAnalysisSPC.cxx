@@ -59,7 +59,8 @@ AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights):
  bDoFisherYates(kFALSE),
  fFisherYatesCutOff(1.),
  //Weights
- bUseWeights(kFALSE),
+ bUseWeightsNUE(kTRUE),
+ bUseWeightsNUA(kFALSE),
  //Variables for the correlation
  fMaxCorrelator(14),
  fNumber(0),  		//number of correlation first correlator
@@ -117,7 +118,8 @@ AliAnalysisSPC::AliAnalysisSPC():
  bDoFisherYates(kFALSE),
  fFisherYatesCutOff(1.),
  //Weights
- bUseWeights(kFALSE),
+ bUseWeightsNUE(kTRUE),
+ bUseWeightsNUA(kFALSE),
  //Variables for the correlation
  fMaxCorrelator(14),
  fNumber(0),  		//number of correlation first correlator
@@ -188,6 +190,8 @@ void AliAnalysisSPC::UserCreateOutputObjects()
  // d) Save cut values 
  if(bDoFisherYates){ fProfileTrackCuts->Fill(0.5, 1); fProfileTrackCuts->Fill(1.5, fFisherYatesCutOff); } 
  fProfileTrackCuts->Fill(2.5, fMinNumberPart);
+ if(bUseWeightsNUE){ fProfileTrackCuts->Fill(3.5, 1); } 
+ if(bUseWeightsNUA){ fProfileTrackCuts->Fill(4.5, 1); } 
 
  // *) Trick to avoid name clashes, part 2:
  //TH1::AddDirectory(oldHistAddStatus);
@@ -357,12 +361,25 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
     eta = aTrack->Eta();
     charge = aTrack->GetCharge(); // charge
 
-    if (bUseWeights)
+    if (bUseWeightsNUE || bUseWeightsNUA)
     {
-      Double_t iEffCorr = aTrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-      Double_t iEffInverse = 1.0/iEffCorr;
-      Double_t phi_module_corr = aTrack->GetWeight();// doing it in AliJCatalyst while filling track information.
+      Double_t iEffCorr = 1.;//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+      Double_t iEffInverse = 1.;
+      Double_t phi_module_corr = 1.;// doing it in AliJCatalyst while filling track information.
+
+
+      if(bUseWeightsNUE)
+      {
+  	iEffCorr = aTrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+        iEffInverse = 1.0/iEffCorr;
+      }
+      if(bUseWeightsNUA)
+      {
+  	phi_module_corr = aTrack->GetWeight();// doing it in AliJCatalyst while filling track information.
+      }
+      
       weight = iEffInverse/phi_module_corr;
+
     } // End: if (fUseJEfficiency).
 
      if(!bDoMixed)
@@ -723,13 +740,15 @@ void AliAnalysisSPC::BookFinalResultsHistograms()
 
 
  //Profile to save the cut values for track selection
-  fProfileTrackCuts = new TProfile("", "", 3, 0., 3.);
+  fProfileTrackCuts = new TProfile("", "", 5, 0., 5.);
   fProfileTrackCuts->SetName("fProfileTrackCuts");
   fProfileTrackCuts->SetTitle("Configuration of the track selection");
   fProfileTrackCuts->SetStats(kFALSE);
   fProfileTrackCuts->GetXaxis()->SetBinLabel(1, "Fisher Yates?"); 
   fProfileTrackCuts->GetXaxis()->SetBinLabel(2, "Keeping Percentage");
   fProfileTrackCuts->GetXaxis()->SetBinLabel(3, "Multiplicity min");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(4, "NUE-Weights");
+  fProfileTrackCuts->GetXaxis()->SetBinLabel(5, "NUA-Weights");
   fHistList->Add(fProfileTrackCuts);
 
  
@@ -806,12 +825,12 @@ void AliAnalysisSPC::CalculateQvectors(Int_t CalculateQvectors_nParticles, Doubl
  for(Int_t i=0;i<CalculateQvectors_nParticles;i++) // loop over particles
  {
   dPhi2 = CalculateQvectors_angles[i];
-  if(bUseWeights){wPhi = CalculateQvectors_weights[i];} //Change some point
+  if(bUseWeightsNUE || bUseWeightsNUA){wPhi = CalculateQvectors_weights[i];} //Change some point
   for(Int_t h=0;h<113;h++)
   {
    for(Int_t p=0;p<15;p++)
    {
-    if(bUseWeights){wPhiToPowerP = pow(wPhi,p);}
+    if(bUseWeightsNUE || bUseWeightsNUA){wPhiToPowerP = pow(wPhi,p);}
     fQvector[h][p] += TComplex(wPhiToPowerP*TMath::Cos(h*dPhi2),wPhiToPowerP*TMath::Sin(h*dPhi2));
    } //  for(Int_t p=0;p<kMaxPower;p++)
   } // for(Int_t h=0;h<kMaxHarmonic;h++)
