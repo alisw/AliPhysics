@@ -2601,12 +2601,18 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790109fe30220000","0w631031000000d0"); // EG1 NL 12 + TB
     cuts.AddCutCalo("0008d113","411790109fe30220000","0x631031000000d0"); // EG1 NL 12 + TB
 
-  } else if (trainConfig == 2086){  // EMCAL+DCAL clusters standard cuts, no NonLin
-    cuts.AddCutCalo("00010113","411790009fe32220000","0r631031000000d0"); // INT7
-  } else if (trainConfig == 2087){ // EMCAL+DCAL clusters standard cuts, no NonLin
-    cuts.AddCutCalo("0008e113","411790009fe32220000","0r631031000000d0"); // EG2
-  } else if (trainConfig == 2088){ // EMCAL+DCAL clusters standard cuts, no NonLin
-    cuts.AddCutCalo("0008d113","411790009fe32220000","0r631031000000d0"); // EG1
+  } else if (trainConfig == 2086){  // EMCAL+DCAL clusters standard cuts, M02 var
+    cuts.AddCutCalo("00010113","411790109fe30230000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.5
+    cuts.AddCutCalo("00010113","411790109fe302t0000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.5 - 0.7 (interpolation)
+    cuts.AddCutCalo("00010113","411790109fe302u0000","0r631031000000d0"); // INT7 NL 12 + TB dir. gamma M02 < 0.5 - 0.7 (interpolation)
+  } else if (trainConfig == 2087){  // EMCAL+DCAL clusters standard cuts, M02 var
+    cuts.AddCutCalo("0008e113","411790109fe30230000","0r631031000000d0"); // EG2 NL 12 + TB dir. gamma M02 < 0.5
+    cuts.AddCutCalo("0008e113","411790109fe302t0000","0r631031000000d0"); // EG2 NL 12 + TB dir. gamma M02 < 0.5 - 0.7 (interpolation)
+    cuts.AddCutCalo("0008e113","411790109fe302u0000","0r631031000000d0"); // EG2 NL 12 + TB dir. gamma M02 < 0.5 - 0.7 (interpolation)
+  } else if (trainConfig == 2088){  // EMCAL+DCAL clusters standard cuts, M02 var
+    cuts.AddCutCalo("0008d113","411790109fe30230000","0r631031000000d0"); // EG2 NL 12 + TB dir. gamma M02 < 0.5
+    cuts.AddCutCalo("0008d113","411790109fe302t0000","0r631031000000d0"); // EG2 NL 12 + TB dir. gamma M02 < 0.5 - 0.7 (interpolation)
+    cuts.AddCutCalo("0008d113","411790109fe302u0000","0r631031000000d0"); // EG2 NL 12 + TB dir. gamma M02 < 0.5 - 0.7 (interpolation)
 
   } else if (trainConfig == 2090){  // EMCAL+DCAL EMCal Jet Triggers
     cuts.AddCutCalo("0009c113","411790109f032220000","0r631031000000d0"); // EJ2 NL 12 + TB
