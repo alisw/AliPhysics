@@ -676,6 +676,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
   //
 
   // Create the output container
+  //Adding the V0Reader here.
+  printf("V0 Reader new part");
+  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
+  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
+
   if(fOutputContainer != NULL){
     delete fOutputContainer;
     fOutputContainer = NULL;
@@ -1758,9 +1763,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////AOD and ESD class (fAODESDEvent)//////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-    fAODESDEvent = new AliDalitzData();
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
+  fAODESDEvent = new AliDalitzData();
 
   if(fV0Reader)
     if((AliConvEventCuts*)fV0Reader->GetEventCuts())
@@ -1821,8 +1824,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
   // Execute analysis for current event //
   ////////////////////////////////////////
 
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
   ////////////////////////////////////////
   //          Event Quality             //
   ////////////////////////////////////////
@@ -1874,10 +1875,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
     fiCut = iCut;
     fNVirtualGammas = 0;
 
-    //ALERT Cross Check for the Vertex on the event.
-    if(!(fAODESDEvent->GetPrimaryVertex())){
-        continue;
-    }
     Int_t eventNotAccepted = ((AliConvEventCuts*)fCutEventArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 
     ////////////////////////////////////////
@@ -2361,7 +2358,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
   vector<Int_t> lGoodPositronIndexPrev(0);
 
   for(UInt_t i = 0; i < fSelectorElectronIndex.size(); i++){
-    std::unique_ptr<AliDalitzAODESD> electronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(fSelectorElectronIndex[i])); 
+    std::unique_ptr<AliDalitzAODESD> electronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(fSelectorElectronIndex[i]));
     //NOTE Find a better way to cast the candidates
 
     //cout<<"Electron Candidates"<< ->GetPtG()<<endl;

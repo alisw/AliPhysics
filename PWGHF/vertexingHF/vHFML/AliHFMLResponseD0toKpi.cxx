@@ -86,7 +86,7 @@ void AliHFMLResponseD0toKpi::SetMapOfVariables(AliAODRecoDecayHF *cand, double b
     fVars["max_norm_d0d0exp"] = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(cand, bfield);
 
     AliAODRecoDecayHF2Prong* cand2p = (AliAODRecoDecayHF2Prong*)cand;
-    fVars["imp_par_prod"] = cand->Prodd0d0();
+    fVars["imp_par_prod"] = cand2p->Prodd0d0();
     if(masshypo == AliHFMLVarHandlerD0toKpi::kD0)
         fVars["cos_t_star"] = cand2p->CosThetaStarD0();
     else

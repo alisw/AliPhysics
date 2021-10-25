@@ -137,6 +137,8 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<unsigned int>       fVTrueClusterPi0DaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother pi0 for true information
     std::vector<unsigned int>       fVTrueClusterEtaDaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother eta for true information
     std::vector<Short_t>            fVTrueClusterMCId;                             //!<! vector buffer   store the MC stack ID of mother eta for true information
+    std::vector<Float_t>            fVTrueClusterMCTrueEnergy;                     //!<! vector buffer   store the true MC energy info
+    std::vector<Bool_t>             fVTrueClusterMCIsMerged;                       //!<! vector buffer   store the info if cluster is merged cluster
 
     std::vector<Float_t>            fVBuffer_Conv_px;                              //!<! vector buffer  Conversion photon px
     std::vector<Float_t>            fVBuffer_Conv_py;                              //!<! vector buffer  Conversion photon py
@@ -158,6 +160,10 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<unsigned int>       fVTrueConvPi0DaughterIndex;                    //!<! vector buffer   store the MC stack ID of mother pi0 for true information
     std::vector<unsigned int>       fVTrueConvEtaDaughterIndex;                    //!<! vector buffer   store the MC stack ID of mother pi0 for true information
 
+    std::vector<float>              fVTrueConvMCTruePx;                            //!<! vector buffer   store the MC true px
+    std::vector<float>              fVTrueConvMCTruePy;                            //!<! vector buffer   store the MC true py
+    std::vector<float>              fVTrueConvMCTruePz;                            //!<! vector buffer   store the MC true pz
+
     std::vector<Short_t>                 fVBuffer_Track_px;                         //!<! vector buffer: track px (*100)
     std::vector<Short_t>                 fVBuffer_Track_py;                         //!<! vector buffer: track py (*100)
     std::vector<Short_t>                 fVBuffer_Track_pz;                         //!<! vector buffer: track pz (*100)
@@ -165,7 +171,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 5);
+    ClassDef(AliAnalysisTaskConvCaloTree, 6);
 };
 
 

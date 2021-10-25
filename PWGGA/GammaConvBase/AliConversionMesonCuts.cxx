@@ -160,6 +160,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoWeightingInSwappBg(kFALSE),
   fGammaSwappMethodBg(0),
   fNumberOfSwappsForBg(1),
+  fDistanceToBorderSwappBG(0),
   fEnableMinOpeningAngleCut(kTRUE),
   fEnableOneCellDistCut(kFALSE),
   fAllowCombOnlyInSameRecMethod(kFALSE),
@@ -285,6 +286,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoWeightingInSwappBg(ref.fDoWeightingInSwappBg),
   fGammaSwappMethodBg(ref.fGammaSwappMethodBg),
   fNumberOfSwappsForBg(ref.fNumberOfSwappsForBg),
+  fDistanceToBorderSwappBG(ref.fDistanceToBorderSwappBG),
   fEnableMinOpeningAngleCut(ref.fEnableMinOpeningAngleCut),
   fEnableOneCellDistCut(ref.fEnableOneCellDistCut),
   fAllowCombOnlyInSameRecMethod(ref.fAllowCombOnlyInSameRecMethod),
@@ -1946,6 +1948,7 @@ void AliConversionMesonCuts::PrintCutsWithValues() {
     if (fDoGammaSwappForBg && fGammaSwappMethodBg == 0) printf("\t BG scheme: new in event rotation with 90 degree rotation \n");
     if (fDoGammaSwappForBg && fGammaSwappMethodBg == 1) printf("\t BG scheme: new in event rotation with random rotation: %d rotations \n", fNumberOfSwappsForBg);
     if (fDoGammaSwappForBg && fGammaSwappMethodBg == 10) printf("\t BG scheme: new in event rotation with TGPS: %d rotations \n", fNumberOfSwappsForBg);
+    if (fDoGammaSwappForBg) printf("\t BG scheme: using %d cells distance to EMCal SM border \n", fDistanceToBorderSwappBG);
   }
 }
 
@@ -3538,14 +3541,16 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     fBackgroundMode             = 7;
     break;
-  case 28: // s cluster swapping method with 90 degree rotation angle with weighting
+  case 28: // s cluster swapping method with 90 degree rotation angle border criterium
     fDoGammaSwappForBg          = 1;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
   case 29: // t cluster swapping method with random (between 60 & 120 + 240 & 300) rotation angle
@@ -3553,12 +3558,14 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 1;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
   case 30: // u cluster swapping method with 4 random (between 60 & 120 + 240 & 300) rotation angle
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 1;
     fNumberOfSwappsForBg        = 4;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
   case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
@@ -3566,6 +3573,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
   case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
@@ -3573,6 +3581,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
   case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
@@ -3580,6 +3589,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
     fNumberOfSwappsForBg        = 20;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
   case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
@@ -3587,6 +3597,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
   case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting (around Pi0 for the omega analyses)
@@ -3594,6 +3605,7 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 10;
     fNumberOfSwappsForBg        = 20;
+    fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
   default:

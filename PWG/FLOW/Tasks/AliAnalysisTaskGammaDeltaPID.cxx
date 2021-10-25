@@ -917,9 +917,29 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   Double_t fSelectedV0PsiN = 0;
   Double_t fSelectedV0Psi3 = 0;
-  
+  Double_t fSelectedTPCPsiN = 0;
+  Double_t fSelectedTPCPsi3 = 0;
+  Int_t gEPeta = 0;
 
-  if(sDetectorForEP.Contains("V0C")){
+  if(sDetectorForEP.Contains("TPCPos")||sDetectorForEP.Contains("TPCpos")){
+    gEPeta = 1;
+    bUseV0EventPlane = kFALSE;
+    fSelectedTPCPsiN  = fPsiNTPCPos;
+    fSelectedTPCPsi3  = fPsi3TPCPos;    
+  }
+  else if(sDetectorForEP.Contains("TPCNeg")||sDetectorForEP.Contains("TPCneg")){
+    gEPeta = -1;
+    bUseV0EventPlane = kFALSE;
+    fSelectedTPCPsiN  = fPsiNTPCNeg;
+    fSelectedTPCPsi3  = fPsi3TPCNeg;
+  }
+  else if(sDetectorForEP.Contains("TPC")){
+    gEPeta = 1;
+    bUseV0EventPlane = kFALSE;
+    fSelectedTPCPsiN  = fPsiNTPCPos;
+    fSelectedTPCPsi3  = fPsi3TPCPos;
+  }
+  else if(sDetectorForEP.Contains("V0C")){
     bUseV0EventPlane = kTRUE;
     fSelectedV0PsiN  = fPsiNV0C;
     fSelectedV0Psi3  = fPsi3V0C;
@@ -988,7 +1008,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   Double_t localSumQ2x =0,localSumQ2y=0;
   Double_t localSumQ3x =0,localSumQ3y=0;
-  Double_t localMultTPC=0; 
+  Double_t localSumQ2xs =0,localSumQ2ys=0;
+  Double_t localSumQ3xs =0,localSumQ3ys=0;  
+  
+  Double_t localMultTPC=0,localMultTPCs=0; 
 
 
   // Chun Zheng: vectors to contain information for Lambda-x pairing..
@@ -1091,7 +1114,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
 	
 	
-	/// Rihan: The part below is only relevant for CME Analysis Only (no Lambda):
+	/// Rihan: The part below is only relevant for CME Analysis (no Lambda):
 	
 	bPIDoktrk1=kFALSE;
 	bPIDoktrk2=kFALSE;
@@ -1113,18 +1136,32 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	  fPsi3Event = fSelectedV0Psi3;
 	}
 	else{ 
-	  if(trk1Eta >= 0){
-	    fPsiNEvent = fPsiNTPCNeg;
-	    fPsi3Event = fPsi3TPCNeg;	    
-	  }
-	  else{
-	    fPsiNEvent = fPsiNTPCPos;
-	    fPsi3Event = fPsi3TPCPos;
-	  }
+	  fPsiNEvent = fSelectedTPCPsiN;
+	  fPsi3Event = fSelectedTPCPsi3;	    
 	}
 
-
-
+	///remove Autocorrelation for track-1 only if both EP and track1 are on the same eta side.
+	if(!bUseV0EventPlane && trk1Pt < 2.0 && (gEPeta*trk1Eta) > 0){   /// we used pT<2.0 tracks for EP.
+	  if(gEPeta < 0){
+	    localSumQ2x = fSumQnxNeg[0];            /// We need the full Q-sum. Then remove only qx,qy for current track
+	    localSumQ2y = fSumQnyNeg[0];
+	    localSumQ3x = fSumQnxNeg[1];
+	    localSumQ3y = fSumQnyNeg[1];
+	    localMultTPC= fMultNeg;
+	  }
+	  else{
+	    localSumQ2x = fSumQnxPos[0];
+	    localSumQ2y = fSumQnyPos[0];
+	    localSumQ3x = fSumQnxPos[1];
+	    localSumQ3y = fSumQnyPos[1];
+	    localMultTPC= fMultPos;
+	  }
+	  localSumQ2x -= WgtNUAChtrk1*TMath::Cos(2*trk1Phi);   /// wgts and phi of track1
+	  localSumQ2y -= WgtNUAChtrk1*TMath::Sin(2*trk1Phi);
+	  localSumQ3x -= WgtNUAChtrk1*TMath::Cos(3*trk1Phi);
+	  localSumQ3y -= WgtNUAChtrk1*TMath::Sin(3*trk1Phi);
+	  localMultTPC-= WgtNUAChtrk1; 	  
+	}
 
 
 	
@@ -1191,41 +1228,34 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	   
 
 
-	      //Remove EP-POIs AutoCorrelation: only for TPC EP
-	      if(!bUseV0EventPlane  && trk2Eta*trk1Eta < 0){
-		
-		if(trk1Eta >= 0){
-		  localSumQ2x = fSumQnxNeg[0]; /// We need the full Q-sum. Then remove only current track-2
-		  localSumQ2y = fSumQnyNeg[0];
-		  localSumQ3x = fSumQnxNeg[1];
-		  localSumQ3y = fSumQnyNeg[1];
-		  localMultTPC= fMultNeg;
-		}
-		else{
-		  localSumQ2x = fSumQnxPos[0];
-		  localSumQ2y = fSumQnyPos[0];
-		  localSumQ3x = fSumQnxPos[1];
-		  localSumQ3y = fSumQnyPos[1];
-		  localMultTPC= fMultPos;
-		}
-		
-		if(trk2Pt < 2.0){
-		  localSumQ2x -= WgtNUAChtrk2*trk2Pt*TMath::Cos(2*trk2Phi);
-		  localSumQ2y -= WgtNUAChtrk2*trk2Pt*TMath::Sin(2*trk2Phi);
-		  localSumQ3x -= WgtNUAChtrk2*trk2Pt*TMath::Cos(3*trk2Phi);
-		  localSumQ3y -= WgtNUAChtrk2*trk2Pt*TMath::Sin(3*trk2Phi);
-		  localMultTPC-= WgtNUAChtrk2*trk2Pt;                        /// Rihan Todo: Remove PtWeights from Q sum and MultSum!
+	      ///remove Autocorrelation for track-2 only if both EP and track2 are on the same eta side.
+	      if(!bUseV0EventPlane && trk2Pt < 2.0 && (gEPeta*trk2Eta) > 0){   /// We used pT<2.0 tracks for EP.
+
+		localSumQ2xs = localSumQ2x;                          /// We need the the Qsum (with first track q removed), For Each track-2 
+		localSumQ2ys = localSumQ2y;                          /// Otherwise we reduce the sum to zero in this 2nd loop.!!
+		localSumQ3xs = localSumQ3x;
+		localSumQ3ys = localSumQ3y;
+		localMultTPCs = localMultTPC;
+		localSumQ2xs -= WgtNUAChtrk2*TMath::Cos(2*trk2Phi);  /// wgts and phi of track2
+		localSumQ2ys -= WgtNUAChtrk2*TMath::Sin(2*trk2Phi);
+		localSumQ3xs -= WgtNUAChtrk2*TMath::Cos(3*trk2Phi);
+		localSumQ3ys -= WgtNUAChtrk2*TMath::Sin(3*trk2Phi);
+		localMultTPCs-= WgtNUAChtrk2; 	  
+	      }
+
+	      if(!bUseV0EventPlane){
+ 		
+		if(localMultTPCs>0){
+		  localSumQ2xs = localSumQ2xs/localMultTPCs;
+		  localSumQ2ys = localSumQ2ys/localMultTPCs;
+		  localSumQ3xs = localSumQ3xs/localMultTPCs;
+		  localSumQ3ys = localSumQ3ys/localMultTPCs;
 		}
 		
-		if(localMultTPC>0){
-		  localSumQ2x = localSumQ2x/localMultTPC;
-		  localSumQ2y = localSumQ2y/localMultTPC;
-		}
-		
-		fPsiNTPCPos = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
-		if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;
-		fPsi3TPCPos = (1./3)*TMath::ATan2(localSumQ3y,localSumQ3x);
-		if(fPsi3TPCPos < 0) fPsi3TPCPos += TMath::TwoPi()/3;
+		fPsiNEvent = (1./2)*TMath::ATan2(localSumQ2ys,localSumQ2xs);
+		if(fPsiNEvent < 0) fPsiNEvent += TMath::TwoPi()/2;		
+		fPsi3Event = (1./3)*TMath::ATan2(localSumQ3ys,localSumQ3xs);
+		if(fPsi3Event < 0) fPsi3Event += TMath::TwoPi()/3;
 		//fPsi4TPCPos = (1./4)*TMath::ATan2(fQ4yPos,fQ4xPos);
 		//if(fPsi4TPCPos < 0) fPsi4TPCPos += TMath::TwoPi()/4;  		
 	      }
@@ -1241,7 +1271,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		hAvgDelta3vsCentOS->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2part);
 		hAvgDelta4vsCentOS->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2part);		
 	      }		
-	      else if(trk1Chrg > 0 && trk2Chrg > 0){		      
+	      else if(trk1Chrg > 0 && trk2Chrg > 0){ ///pos-pos	      
 		hAvg3pC112vsCentPP->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2part);
 		hAvg3pC123vsCentPP->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb2part);
 				
@@ -1250,7 +1280,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		hAvgDelta3vsCentPP->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2part);
 		hAvgDelta4vsCentPP->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2part);		
 	      }
-	      //else if(trk1Chrg < 0 && trk2Chrg < 0){  ///this is obvious!
+	      //else if(trk1Chrg < 0 && trk2Chrg < 0){  ///this is obviously last option (and every microseconds counts!)
 	      else{
 		hAvg3pC112vsCentNN->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2part);
 		hAvg3pC123vsCentNN->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb2part);
@@ -1262,14 +1292,14 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	      }
 	      
 	      
-	    }//j-track cuts
+	    }//j-track trackCuts applied
 	  }//j-track FB validated
-	}///j-track loop
+	}///j-track loop ends
 	
 
-      }//----> i-track loop => All trackCuts applied.     
-    }//-----> i-track loop => FB is validated.    
-  }///-----> i-track loop Ends here.<--------
+      }//----> i-track => All trackCuts applied.     
+    }//-----> i-track => FB is validated.    
+  }///-----> i-track loop Ends <--------
  
 
 

@@ -70,37 +70,40 @@ private:
     void CreateEffSparses();
     void CreateRecoSparses();
 
-    AliAODEvent* fAOD = nullptr;                                                /// AOD event
+    AliAODEvent* fAOD = nullptr;                                                    /// AOD event
 
-    TList *fOutput = nullptr;                                                   //!<! list send on output slot 0
-    TH1F *fHistNEvents = nullptr;                                               //!<! hist. for No. of events
-    THnSparseF *fnSparseMC[2] = {nullptr, nullptr};                             //!<! THnSparse for MC
-                                                                                ///[0]: Acc step prompt D
-                                                                                ///[1]: Acc step FD D
+    TList *fOutput = nullptr;                                                       //!<! list send on output slot 0
+    TH1F *fHistNEvents = nullptr;                                                   //!<! hist. for No. of events
+    THnSparseF *fnSparseMC[2] = {nullptr, nullptr};                                 //!<! THnSparse for MC
+    THnSparseF *fnSparseMCThetaPhiStar[2] = {nullptr, nullptr};                     //!<! THnSparse for MC
+                                                                                    ///[0]: Acc step prompt D
+                                                                                    ///[1]: Acc step FD D
 
-    bool fReadMC = false;                                                       /// flag for access to MC
-    bool  fFillAcceptanceLevel = true;                                          /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
-    int fAODProtection = 0;                                                     /// flag to activate protection against AOD-dAOD mismatch.
-                                                                                /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-    TList *fListCuts = nullptr;                                                 /// list of cuts
-    AliRDHFCuts *fRDCuts = nullptr;                                             /// Cuts for Analysis
-    bool fUseFinPtBinsForSparse = true;                                         /// flag to fill pt axis of sparse with 0.1 GeV/c wide bins
+    bool fReadMC = false;                                                           /// flag for access to MC
+    bool  fFillAcceptanceLevel = true;                                              /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
+    int fAODProtection = 0;                                                         /// flag to activate protection against AOD-dAOD mismatch.
+                                                                                    /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+    TList *fListCuts = nullptr;                                                     /// list of cuts
+    AliRDHFCuts *fRDCuts = nullptr;                                                 /// Cuts for Analysis
+    bool fUseFinPtBinsForSparse = true;                                             /// flag to fill pt axis of sparse with 0.1 GeV/c wide bins
                     
     // ML tree application
-    THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};         //!<! THnSparse for reco candidates
-    bool fApplyML = false;                                                      /// flag to enable ML application
-    bool fMultiClass = false;                                                   /// flag to enable multi-class models (Bkg, Prompt, FD)
-    std::string fConfigPath = "";                                               /// path to ML config file
-    AliHFMLResponseDstartoD0pi* fMLResponse = nullptr;                          //!<! object to handle ML response
+    THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};             //!<! THnSparse for reco candidates
+    THnSparseF* fnSparseRecoThetaPhiStar[4] = {nullptr, nullptr, nullptr, nullptr}; //!<! THnSparse for reco candidates
 
-    ROOT::Math::PxPyPzMVector fourVecDstar{};                                   /// four vector for reconstructed D* in the lab
-    ROOT::Math::PxPyPzMVector fourVecD0{};                                      /// four vector for reconstructed D0 in the lab
-    ROOT::Math::PxPyPzMVector fourVecPi{};                                      /// four vector for reconstructed pion in the lab
-    ROOT::Math::PxPyPzMVector fourVecD0CM{};                                    /// four vector for reconstructed D0 in the D* RF
-    ROOT::Math::PxPyPzMVector fourVecPiCM{};                                    /// four vector for reconstructed pion in the D* RF
+    bool fApplyML = false;                                                          /// flag to enable ML application
+    bool fMultiClass = false;                                                       /// flag to enable multi-class models (Bkg, Prompt, FD)
+    std::string fConfigPath = "";                                                   /// path to ML config file
+    AliHFMLResponseDstartoD0pi* fMLResponse = nullptr;                              //!<! object to handle ML response
+
+    ROOT::Math::PxPyPzMVector fourVecDstar{};                                       /// four vector for reconstructed D* in the lab
+    ROOT::Math::PxPyPzMVector fourVecD0{};                                          /// four vector for reconstructed D0 in the lab
+    ROOT::Math::PxPyPzMVector fourVecPi{};                                          /// four vector for reconstructed pion in the lab
+    ROOT::Math::PxPyPzMVector fourVecD0CM{};                                        /// four vector for reconstructed D0 in the D* RF
+    ROOT::Math::PxPyPzMVector fourVecPiCM{};                                        /// four vector for reconstructed pion in the D* RF
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 2); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 3); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

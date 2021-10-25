@@ -262,20 +262,22 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
   fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
   //read PHOS trigger bad map
-  AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
-  phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),              
-                                   "phosTriggerBadMap");
-  TObjArray *maps = (TObjArray*)phosBadmapContainer.GetObject(fCurrentRunNumber,"phosTriggerBadMap");
-  if(!maps){
-    AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;    
-  }
-  else{
-    for(Int_t mod=0; mod<5;mod++){
-      if(fPHOSBadMap[mod]) 
-        delete fPHOSBadMap[mod] ;
-      TH2I * h = (TH2I*)maps->At(mod) ;      
-      if(h)
-        fPHOSBadMap[mod]=new TH2I(*h) ;
+  if (fUsePHOSBadMap){
+    AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
+    phosBadmapContainer.InitFromFile(Form("%s/PHOS/PHOSTrigBadMaps.root", AliAnalysisManager::GetOADBPath()),              
+                                      "phosTriggerBadMap");
+    TObjArray *maps = (TObjArray*)phosBadmapContainer.GetObject(fCurrentRunNumber,"phosTriggerBadMap");
+    if(!maps){
+      AliFatal(Form("Can not read PHOS Trigger Bad map for run %d. \n",fCurrentRunNumber)) ;    
+    }
+    else{
+      for(Int_t mod=0; mod<5;mod++){
+        if(fPHOSBadMap[mod]) 
+          delete fPHOSBadMap[mod] ;
+        TH2I * h = (TH2I*)maps->At(mod) ;      
+        if(h)
+          fPHOSBadMap[mod]=new TH2I(*h) ;
+      }
     }
   }
     
@@ -2045,11 +2047,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     //here absId is normal Run2 readout absId
     //Remove noisy triggers
     Int_t phosmodulenumber = TMath:: Ceil(float(absId)/3584) ; 
-    int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
-    int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
-    int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
-    if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
-      continue ;
+    if (fUsePHOSBadMap)
+    {    
+      int id = absId - ( phosmodulenumber - 1 ) * 3584 ; 
+      int ix = (Int_t)TMath::Ceil( float(id) / 64 )  ;
+      int iz = (Int_t)( id - ( ix - 1 ) * 64 ) ; 
+      if(fPHOSBadMap[phosmodulenumber] != nullptr && fPHOSBadMap[phosmodulenumber]->GetBinContent(ix,iz)>0) { //bad channel
+        continue ;
+      }
     }
     //transform to Run3 truID
     absId--;
@@ -2319,30 +2324,32 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   //---------------------------------------------------------------------------
   // AD (FDD)
-  fdd.fIndexBCs = fBCCount;
-  if (fESD) {
-    AliESDAD *esdad = fESD->GetADData();
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeA[ich] = 0; // not filled for the moment
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeC[ich] = 0; // not filled for the moment
-    fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(), mADTime);
-    fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(), mADTime);
-    fdd.fTriggerMask = 0; // not filled for the moment
+  if (fVEvent->GetADData()) {
+    fdd.fIndexBCs = fBCCount;
+    if (fESD) {
+      AliESDAD *esdad = fESD->GetADData();
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeA[ich] = 0; // not filled for the moment
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeC[ich] = 0; // not filled for the moment
+      fdd.fTimeA = AliMathBase::TruncateFloatFraction(esdad->GetADATime(), mADTime);
+      fdd.fTimeC = AliMathBase::TruncateFloatFraction(esdad->GetADCTime(), mADTime);
+      fdd.fTriggerMask = 0; // not filled for the moment
+    }
+    else {
+      AliAODAD *aodad = fAOD->GetADData();
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeA[ich] = 0; // not filled for the moment
+      for (Int_t ich = 0; ich < 4; ++ich)
+        fdd.fAmplitudeC[ich] = 0; // not filled for the moment
+      fdd.fTimeA = AliMathBase::TruncateFloatFraction(aodad->GetADATime(), mADTime);
+      fdd.fTimeC = AliMathBase::TruncateFloatFraction(aodad->GetADCTime(), mADTime);
+      fdd.fTriggerMask = 0; // not filled for the moment
+    }
+    FillTree(kFDD);
+    if (fTreeStatus[kFDD])
+      eventextra.fNentries[kFDD] = 1;
   }
-  else {
-    AliAODAD *aodad = fAOD->GetADData();
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeA[ich] = 0; // not filled for the moment
-    for (Int_t ich = 0; ich < 4; ++ich)
-      fdd.fAmplitudeC[ich] = 0; // not filled for the moment
-    fdd.fTimeA = AliMathBase::TruncateFloatFraction(aodad->GetADATime(), mADTime);
-    fdd.fTimeC = AliMathBase::TruncateFloatFraction(aodad->GetADCTime(), mADTime);
-    fdd.fTriggerMask = 0; // not filled for the moment
-  }
-  FillTree(kFDD);
-  if (fTreeStatus[kFDD])
-    eventextra.fNentries[kFDD] = 1;
 
   Int_t nv0_filled = 0; // total number of v0's filled per event
   if (fillCollision)
