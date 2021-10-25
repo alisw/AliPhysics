@@ -46,7 +46,8 @@ AliAnalysisTaskHOCFA::AliAnalysisTaskHOCFA():
   fMainList(0),
   fNCentralityBins(9), fCentrality(-1.), fCentralityBin(-1),
   fMultiplicity(0), fMultiplicityMin(6),
-  fUseWeights(kTRUE),
+  fUseWeightsNUE(kTRUE),
+  fUseWeightsNUA(kFALSE),
   fNCombi(6)
 {
 // Dummy constructor of the class.
@@ -61,7 +62,8 @@ AliAnalysisTaskHOCFA::AliAnalysisTaskHOCFA(const char *name, Bool_t useWeights):
   fMainList(0),
   fNCentralityBins(9), fCentrality(-1.), fCentralityBin(-1),
   fMultiplicity(0), fMultiplicityMin(6),
-  fUseWeights(kTRUE),
+  fUseWeightsNUE(kTRUE),
+  fUseWeightsNUA(kFALSE),
   fNCombi(6)
 {
 // Constructor of the class.
@@ -120,10 +122,17 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     fHistoPhi[fCentralityBin]->Fill(iPhi[iTrack]);
     fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
 
-    if (fUseWeights) {  // Get the NUE/NUA corrections.
-      iEffCorr = aTrack->GetTrackEff();
-      iPhiModuleCorr = aTrack->GetWeight();
+
+
+    if(fUseWeightsNUE)
+    {
+ 	iEffCorr = aTrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
     }
+    if(fUseWeightsNUA)
+    {
+  	iPhiModuleCorr = aTrack->GetWeight();// doing it in AliJCatalyst while filling track information.
+    }
+
     iWeights[iTrack] = (1.0/iEffCorr)/iPhiModuleCorr;
   }
 

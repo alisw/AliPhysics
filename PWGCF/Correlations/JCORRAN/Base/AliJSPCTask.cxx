@@ -41,7 +41,8 @@ AliJSPCTask::AliJSPCTask() :
   bJSPCDoFisherYates(kFALSE),
   fJSPCFisherYatesCutOff(1.),
   fJSPCMinNumberPart(14),
-  bJSPCUseWeights(kFALSE),
+  bJSPCUseWeightsNUE(kTRUE),
+  bJSPCUseWeightsNUA(kFALSE),
   fJSPCNumber(0),  		//number of correlation first correlator
   fJSPCNumberSecond(0), 	//number of correlation second correlator
   fJSPCNumberThird(0),	//number of correlation second correlator
@@ -78,7 +79,8 @@ AliJSPCTask::AliJSPCTask(const char *name):
   bJSPCDoFisherYates(kFALSE),
   fJSPCFisherYatesCutOff(1.),
   fJSPCMinNumberPart(14),
-  bJSPCUseWeights(kFALSE),
+  bJSPCUseWeightsNUE(kTRUE),
+  bJSPCUseWeightsNUA(kFALSE),
   fJSPCNumber(0),  		//number of correlation first correlator
   fJSPCNumberSecond(0), 	//number of correlation second correlator
   fJSPCNumberThird(0),	//number of correlation second correlator
@@ -118,7 +120,7 @@ AliJSPCTask::AliJSPCTask(const AliJSPCTask& ap) :
   bJSPCDoFisherYates(ap.bJSPCDoFisherYates),
   fJSPCFisherYatesCutOff(ap.fJSPCFisherYatesCutOff),
   fJSPCMinNumberPart(ap.fJSPCMinNumberPart),
-  bJSPCUseWeights(ap.bJSPCUseWeights),
+  bJSPCUseWeightsNUE(ap.bJSPCUseWeightsNUE), bJSPCUseWeightsNUA(ap.bJSPCUseWeightsNUA),
   fJSPCNumber(ap.fJSPCNumber),     //number of correlation first correlator
   fJSPCNumberSecond(ap.fJSPCNumberSecond),   //number of correlation second correlator
   fJSPCNumberThird(ap.fJSPCNumberThird),  //number of correlation second correlator
@@ -182,7 +184,7 @@ void AliJSPCTask::UserCreateOutputObjects()
   fSPC->SetMinNuPar(fJSPCMinNumberPart);
   fSPC->SetFisherYates(bJSPCDoFisherYates, fJSPCFisherYatesCutOff); 
 
-  fSPC->SetUseWeights(bJSPCUseWeights);
+  fSPC->SetUseWeights(bJSPCUseWeightsNUE, bJSPCUseWeightsNUA);
 
   fSPC->SetCorrSet1(fJSPCNumber, fJSPCa1, fJSPCa2, fJSPCa3, fJSPCa4, fJSPCa5, fJSPCa6, fJSPCa7);
   fSPC->SetCorrSet2(fJSPCNumberSecond, fJSPCb1, fJSPCb2, fJSPCb3, fJSPCb4, fJSPCb5, fJSPCb6, fJSPCb7);
