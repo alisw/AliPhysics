@@ -3905,7 +3905,10 @@ Bool_t Config_Xik0(
         multbins[nmult]=15.; nmult++;
         for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
     }else{
-        multbins[nmult]=0.; nmult++;
+        multbins[nmult]=0.01; nmult++;
+        multbins[nmult]=0.02; nmult++;
+        multbins[nmult]=0.03; nmult++;
+        multbins[nmult]=0.04; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.06; nmult++;
         multbins[nmult]=0.07; nmult++;
@@ -3932,13 +3935,11 @@ Bool_t Config_Xik0(
         multbins[nmult]=0.28; nmult++;
         multbins[nmult]=0.29; nmult++;
         multbins[nmult]=0.3; nmult++;
-        multbins[nmult]=1.; nmult++;
     }
     
     // pT binning
     Double_t ptbins[200];
     int npt=0;
-    ptbins[npt]=0; npt++;
     ptbins[npt]=2; npt++;
     ptbins[npt]=2.2; npt++;
     ptbins[npt]=2.4; npt++;
@@ -3956,7 +3957,7 @@ Bool_t Config_Xik0(
     ptbins[npt]=5; npt++;
     ptbins[npt]=5.5; npt++;
     ptbins[npt]=6; npt++;
-    ptbins[npt]=8; npt++;
+    ptbins[npt]=7; npt++;
     ptbins[npt]=10; npt++;
     
     // -- Values ------------------------------------------------------------------------------------
