@@ -1,3 +1,11 @@
+/*
+  Container to calculate charged-particle efficiencies with PCC and also record DCAxy distributions for feed-down estimation.
+  The PCC framework (AliMCSpectraWeights) used here is written by Patrick Huhn.
+  For postprocessing of output to get efficiencies and feed-down corrections, use the
+  postprocessing macro at: https://github.com/vvislavi/Feeddown
+  If used, please acknowledge the authors of AliMCSpectraWeights as well as myself
+  Author: Vytautas Vislavicius
+*/
 #ifndef ALIEFFFDCONTAINER__H
 #define ALIEFFFDCONTAINER__H
 #include "TH3D.h"
@@ -18,24 +26,32 @@
 class AliEffFDContainer: public TNamed {
   public:
     AliEffFDContainer();
-    AliEffFDContainer(TString lName, TString lTitle);
-    ~AliEffFDContainer() {};
-    TList *fOutList;
-    TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise
-    Double_t fChi2Cut;
-    TF1 *fDCAXYPtCut;
-    Bool_t fIsMC;
+    AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC=kFALSE);
+    ~AliEffFDContainer();
+    Long64_t Merge(TCollection *collist);
     //Initialization settings
     void SetCentralityEstimator(TString newEst) { fCentEst=newEst; };
     void SetCentralityBins(Int_t nBins, Double_t *lbins) { StoreBins(nBins,lbins,fNCentBins, fCentBins); };
     void SetPtBins(Int_t nBins, Double_t *lbins) { StoreBins(nBins,lbins,fNPtBins, fPtBins); fPtMin=fPtBins[0]; fPtMax=fPtBins[fNPtBins];};
     void SetEta(Double_t newval) {fEta = newval; };
     void AddCut(AliESDtrackCuts *inCuts);
-    void NewEvent(AliVEvent &InputEventAddress, AliMCEvent &MCEventAddress);
-    void Fill(AliVEvent &InputEventAddress, AliMCEvent &MCEventAddress);
-    void SetTest(TH1D &hadd) { htmp=&hadd; };
-    void PrintHName() {printf("%s\n",htmp->GetName()); };
+    void AddCut(Int_t lFilterBit);
+    void Fill(AliESDEvent &inputESD, AliMCEvent &inputMC);
+    void Fill(AliESDEvent &inputESD);
   // private:
+    //Helper functions
+    void NewEvent(AliESDEvent &inputESD);
+    void NewEvent(AliMCEvent &inputMC);
+    void StoreBins(Int_t nBins, Double_t *lBins, Int_t &tNBins, Double_t *&tBins);
+    void CreateHistograms(Bool_t forceRecreate=kFALSE);
+    Double_t GetChi2TPCConstrained(const AliESDtrack *l_Tr);
+    //Members
+    TList *fOutList;
+    TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise
+    Double_t fChi2Cut;
+    TF1 *fDCAXYPtCut;
+    Bool_t fIsMC;
+    Bool_t fInitialized;
     AliMCEvent *flMCEvent; //! fetched runtime, no need to store
     AliESDEvent *flESDEvent; //! cast at NewEvent(), so that we don't need to do that multiple times
     AliMultSelection *flMultSel;//! do not store
@@ -57,12 +73,6 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMin;
     Double_t fPtMax;
     Double_t fEta;
-    //Helper functions
-    void StoreBins(Int_t nBins, Double_t *lBins, Int_t &tNBins, Double_t *&tBins);
-    void CreateHistograms();
-    Double_t GetChi2TPCConstrained(const AliESDtrack *l_Tr);
-    //Testing
-    TH1D *htmp; //! written by the list
     ClassDef(AliEffFDContainer,1);
 };
 #endif
