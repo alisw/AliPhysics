@@ -44,6 +44,7 @@ class AliGFWCuts;
 class AliGFWFlowContainer;
 class AliPIDResponse;
 class AliPIDCombined;
+class AliEffFDContainer;
 
 class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
  public:
@@ -184,6 +185,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
   Bool_t fRequireReloadOnRunChange;
+  AliEffFDContainer *fEfFd;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskMeanPtV2Corr,1);
 };
