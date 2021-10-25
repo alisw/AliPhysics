@@ -325,7 +325,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
-    set(ROOT_DEPENDENCIES PyROOT)
+    set(ROOT_DEPENDENCIES ROOTTPython)
 else()
     set(ROOT_DEPENDENCIES)
 endif()
