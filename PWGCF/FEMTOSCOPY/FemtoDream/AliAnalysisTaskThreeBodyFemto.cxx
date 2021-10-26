@@ -41,6 +41,10 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fMixedEventMult(nullptr), 
       fSameEventPhiTheta(nullptr), 
       fMixedEventPhiTheta(nullptr), 
+      fSameEventTripletResolution(nullptr), 
+      fSameEventTripletResolutionAll(nullptr), 
+      fMixedEventTripletResolution(nullptr), 
+      fMixedEventTripletResolutionAll(nullptr), 
       fQ3Vskq12(nullptr), 
       fQ3Vskq12Mixed(nullptr), 
       fQ3Vskq23(nullptr), 
@@ -57,10 +61,13 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fClosePairRejectionForAll(false),
       fturnoffClosePairRejectionCompletely(false),
       fClosePairRejectionPPPorPPL(false),
+      fisMC(false),
       fQ3LimitForDeltaPhiDeltaEta(0.4),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
+      fSameEventTripletArrayResolution(nullptr),
+      fSameEventTripletArrayResolutionAll(nullptr),
       fPartContainer(0),
       fPartContainerTEST(0),
       fPartContainerTESTppL(0),
@@ -68,6 +75,8 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fMixedEventTripletArray(nullptr),
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
+      fMixedEventTripletArrayResolution(nullptr),
+      fMixedEventTripletArrayResolutionAll(nullptr),
       fQ3VskDistributionsArrayq12(nullptr),
       fQ3VskDistributionsArrayq12Mixed(nullptr),
       fQ3VskDistributionsArrayq23(nullptr),
@@ -122,6 +131,10 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fMixedEventMult(nullptr), 
       fSameEventPhiTheta(nullptr), 
       fMixedEventPhiTheta(nullptr), 
+      fSameEventTripletResolution(nullptr), 
+      fSameEventTripletResolutionAll(nullptr), 
+      fMixedEventTripletResolution(nullptr), 
+      fMixedEventTripletResolutionAll(nullptr), 
       fQ3Vskq12(nullptr), 
       fQ3Vskq12Mixed(nullptr), 
       fQ3Vskq23(nullptr), 
@@ -138,10 +151,13 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fClosePairRejectionForAll(false),
       fturnoffClosePairRejectionCompletely(false),
       fClosePairRejectionPPPorPPL(false),
+      fisMC(isMC),
       fQ3LimitForDeltaPhiDeltaEta(0.4),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
+      fSameEventTripletArrayResolution(nullptr),
+      fSameEventTripletArrayResolutionAll(nullptr),
       fPartContainer(0),
       fPartContainerTEST(0),
       fPartContainerTESTppL(0),
@@ -149,6 +165,8 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fMixedEventTripletArray(nullptr),
       fMixedEventTripletMultArray(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
+      fMixedEventTripletArrayResolution(nullptr),
+      fMixedEventTripletArrayResolutionAll(nullptr),
       fQ3VskDistributionsArrayq12(nullptr),
       fQ3VskDistributionsArrayq12Mixed(nullptr),
       fQ3VskDistributionsArrayq23(nullptr),
@@ -181,10 +199,10 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
         DefineOutput(9, TList::Class());  //Output for the Results QA
         DefineOutput(10, TList::Class());  //Output for the Results Three body
         if (isMC) {
-          DefineOutput(16, TList::Class());  //Output for the Track MC
-          DefineOutput(17, TList::Class());  //Output for the Anti Track MC
-          DefineOutput(18, TList::Class());  //Output for the V0 MC
-          DefineOutput(19, TList::Class());  //Output for the Anti V0 MC
+          DefineOutput(11, TList::Class());  //Output for the Track MC
+          DefineOutput(12, TList::Class());  //Output for the Anti Track MC
+          DefineOutput(13, TList::Class());  //Output for the V0 MC
+          DefineOutput(14, TList::Class());  //Output for the Anti V0 MC
         }
       }
 
@@ -435,10 +453,58 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
       fMixedEventMult->Add(fMixedEventTripletMultArray[i]);
      }
 
+    // Mixed event resolution Matrix 
+    fMixedEventTripletResolution = new TList();
+    fMixedEventTripletResolution->SetOwner();
+    fMixedEventTripletResolution->SetName("MixedEventResolution");
+
+    fMixedEventTripletResolutionAll = new TList();
+    fMixedEventTripletResolutionAll->SetOwner();
+    fMixedEventTripletResolutionAll->SetName("MixedEventResolutionAll");
+
+    fMixedEventTripletArrayResolution = new TH2F*[4];
+    fMixedEventTripletArrayResolutionAll = new TH2F*[4];
+    TString histTitlesMixedResolution[4] ={"mixedEventResolutionPPP","mixedEventResolutionAPAPAP","mixedEventResolutionPPL","mixedEventResolutionAPAPAL"};
+    TString histTitlesMixedResolutionAll[4] ={"mixedEventResolutionPPPAll","mixedEventResolutionAPAPAPAll","mixedEventResolutionPPLAll","mixedEventResolutionAPAPALAll"};
+    for (int i = 0; i < 4; ++i) {
+      fMixedEventTripletArrayResolution[i] = new TH2F(histTitlesMixedResolution[i],histTitlesMixedResolution[i], 1000, 0, 1, 1000, 0, 1);
+      fMixedEventTripletArrayResolutionAll[i] = new TH2F(histTitlesMixedResolution[i],histTitlesMixedResolution[i], 1000, 0, 1, 1000, 0, 1);
+      fMixedEventTripletResolution->Add(fMixedEventTripletArray[i]);
+      fMixedEventTripletResolutionAll->Add(fMixedEventTripletArrayResolutionAll[i]);
+     }
+
+    // Same event resolution Matrix 
+    fSameEventTripletResolution = new TList();
+    fSameEventTripletResolution->SetOwner();
+    fSameEventTripletResolution->SetName("SameEventResolution");
+
+    fSameEventTripletResolutionAll = new TList();
+    fSameEventTripletResolutionAll->SetOwner();
+    fSameEventTripletResolutionAll->SetName("SameEventResolutionAll");
+
+    fSameEventTripletArrayResolution = new TH2F*[4];
+    fSameEventTripletArrayResolutionAll = new TH2F*[4];
+    TString histTitlesSameResolution[4] ={"sameEventResolutionPPP","sameEventResolutionAPAPAP","sameEventResolutionPPL","sameEventResolutionAPAPAL"};
+    TString histTitlesSameResolutionAll[4] ={"sameEventResolutionPPPAll","sameEventResolutionAPAPAPAll","sameEventResolutionPPLAll","sameEventResolutionAPAPALAll"};
+    for (int i = 0; i < 4; ++i) {
+      fSameEventTripletArrayResolution[i] = new TH2F(histTitlesSameResolution[i],histTitlesSameResolution[i], 1000, 0, 1, 1000, 0, 1);
+      fSameEventTripletArrayResolutionAll[i] = new TH2F(histTitlesSameResolution[i],histTitlesSameResolution[i], 1000, 0, 1, 1000, 0, 1);
+      fSameEventTripletResolution->Add(fSameEventTripletArray[i]);
+      fSameEventTripletResolutionAll->Add(fSameEventTripletArrayResolutionAll[i]);
+     }
+
+    // end mixed event resolution matrix
+
     fResultsThreeBody->Add(fSameEvent);
     fResultsThreeBody->Add(fMixedEvent);
     fResultsThreeBody->Add(fSameEventMult);
     fResultsThreeBody->Add(fMixedEventMult);
+
+    fResultsThreeBody->Add(fMixedEventTripletResolution);
+    fResultsThreeBody->Add(fMixedEventTripletResolutionAll);
+
+    fResultsThreeBody->Add(fSameEventTripletResolution);
+    fResultsThreeBody->Add(fSameEventTripletResolutionAll);
 
     // Same event phi theta distribution
     fSameEventPhiTheta = new TList();
@@ -801,14 +867,14 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     // pp
     //FillPairDistributionPP(ParticleVector,fSameEventTripletArray[12],  fSameEventTripletPhiThetaArray, *fConfig);
     // proton proton lambda
-    FillTripletDistribution( ParticleVector, 2, 0, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig);//, fInvMassSame[0]);
+    FillTripletDistribution( ParticleVector, 2, 0, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig, fSameEventTripletArrayResolution[2],fSameEventTripletArrayResolutionAll[2] , fisMC);//, fInvMassSame[0]);
     // antiproton antiproton antilambad
-    FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig);//, fInvMassSame[1]);
+    FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig, fSameEventTripletArrayResolution[3],fSameEventTripletArrayResolutionAll[3] , fisMC);//, fInvMassSame[1]);
     // proton proton proton 
-    FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,2, *fConfig);//, fInvMassSame[2]);
+    FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,2, *fConfig, fSameEventTripletArrayResolution[0],fSameEventTripletArrayResolutionAll[0] , fisMC);//, fInvMassSame[2]);
     // antiproton antiproton antiproton 
-    FillTripletDistribution( ParticleVector, 1, 1, 1, fSameEventTripletArray[4],PDGCodes, bins[1],fSameEventTripletMultArray[4], fSameEventTripletPhiThetaArray,3, *fConfig);//, fInvMassSame[3]);
-    // proton lambda lambda 
+    FillTripletDistribution( ParticleVector, 1, 1, 1, fSameEventTripletArray[4],PDGCodes, bins[1],fSameEventTripletMultArray[4], fSameEventTripletPhiThetaArray,3, *fConfig, fSameEventTripletArrayResolution[1],fSameEventTripletArrayResolutionAll[1] , fisMC);//, fInvMassSame[3]);
+    /*// proton lambda lambda 
     FillTripletDistribution( ParticleVector, 0, 2, 2, fSameEventTripletArray[5],PDGCodes, bins[1],fSameEventTripletMultArray[5], fSameEventTripletPhiThetaArray,4, *fConfig);//, fInvMassSame[4]);
     // antiproton antilambda antilambda 
     FillTripletDistribution( ParticleVector, 1, 3, 3, fSameEventTripletArray[6],PDGCodes, bins[1],fSameEventTripletMultArray[6], fSameEventTripletPhiThetaArray,5, *fConfig);//, fInvMassSame[5]);
@@ -816,7 +882,7 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     FillTripletDistribution( ParticleVector, 2, 2, 2, fSameEventTripletArray[7],PDGCodes, bins[1],fSameEventTripletMultArray[7], fSameEventTripletPhiThetaArray,6, *fConfig);//, fInvMassSame[6]);
     // antilambda antilambda antilambda 
     FillTripletDistribution( ParticleVector, 3, 3, 3, fSameEventTripletArray[8],PDGCodes, bins[1],fSameEventTripletMultArray[8], fSameEventTripletPhiThetaArray,7, *fConfig);//, fInvMassSame[7]);
-
+    */
 
      // Mixed event distribution
 
@@ -826,14 +892,14 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
       auto itZVtx = fPartContainer.begin()+ bins[0];
       auto itMult = itZVtx->begin() + bins[1];
 
-      auto itZVtxTEST = fPartContainerTEST.begin()+ bins[0];
+      /*auto itZVtxTEST = fPartContainerTEST.begin()+ bins[0];
       auto itMultTEST = itZVtxTEST->begin() + bins[1];
 
       auto itZVtxTESTppL = fPartContainerTESTppL.begin()+ bins[0];
       auto itMultTESTppL = itZVtxTESTppL->begin() + bins[1];
 
       auto itZVtxTESTppp = fPartContainerTESTppp.begin()+ bins[0];
-      auto itMultTESTppp = itZVtxTESTppp->begin() + bins[1];
+      auto itMultTESTppp = itZVtxTESTppp->begin() + bins[1];*/
 
       // Same2Mixed1
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 0, 2, fSameEventTripletArray[9], PDGCodes, bins[1],fSameEventTripletMultArray[9], fSameEventTripletPhiThetaArray, 8, *fConfig);//, fQ3VskDistributionsArrayq12[0],fQ3VskDistributionsArrayq23[0]);
@@ -842,13 +908,14 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 1, 3, fSameEventTripletArray[13], PDGCodes, bins[1],fSameEventTripletMultArray[12], fSameEventTripletPhiThetaArray, 11, *fConfig);//, fQ3VskDistributionsArrayq12[3],fQ3VskDistributionsArrayq23[3]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 3, 1, fSameEventTripletArray[14], PDGCodes, bins[1],fSameEventTripletMultArray[13], fSameEventTripletPhiThetaArray, 12, *fConfig);//, fQ3VskDistributionsArrayq12[4],fQ3VskDistributionsArrayq23[4]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 1, 1, fSameEventTripletArray[15], PDGCodes, bins[1],fSameEventTripletMultArray[14], fSameEventTripletPhiThetaArray, 13, *fConfig);//, fQ3VskDistributionsArrayq12[5],fQ3VskDistributionsArrayq23[5]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 2, 2, fSameEventTripletArray[16], PDGCodes, bins[1],fSameEventTripletMultArray[15], fSameEventTripletPhiThetaArray, 14, *fConfig);//, fQ3VskDistributionsArrayq12[6],fQ3VskDistributionsArrayq23[6]);
+      
+      /*FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 2, 2, fSameEventTripletArray[16], PDGCodes, bins[1],fSameEventTripletMultArray[15], fSameEventTripletPhiThetaArray, 14, *fConfig);//, fQ3VskDistributionsArrayq12[6],fQ3VskDistributionsArrayq23[6]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 2, 2, 0, fSameEventTripletArray[17], PDGCodes, bins[1],fSameEventTripletMultArray[16], fSameEventTripletPhiThetaArray, 15, *fConfig);//, fQ3VskDistributionsArrayq12[7],fQ3VskDistributionsArrayq23[7]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 3, 3, fSameEventTripletArray[18], PDGCodes, bins[1],fSameEventTripletMultArray[17], fSameEventTripletPhiThetaArray, 16, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 3, 3, 1, fSameEventTripletArray[19], PDGCodes, bins[1],fSameEventTripletMultArray[18], fSameEventTripletPhiThetaArray, 17, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 2, 2, 2, fSameEventTripletArray[20], PDGCodes, bins[1],fSameEventTripletMultArray[19], fSameEventTripletPhiThetaArray, 18, *fConfig);//, fQ3VskDistributionsArrayq12[10],fQ3VskDistributionsArrayq23[10]);
       FillTripletDistributionSE2ME1(ParticleVector, *itMult, 3, 3, 3, fSameEventTripletArray[21], PDGCodes, bins[1],fSameEventTripletMultArray[20], fSameEventTripletPhiThetaArray, 19, *fConfig);//, fQ3VskDistributionsArrayq12[11],fQ3VskDistributionsArrayq23[11]);
-
+      */
 
 
       //Test what happens with SE2ME1 if we use only events that have triplets
@@ -899,16 +966,16 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
     */
     
       // Normal mixing
-      FillTripletDistributionME(ParticleVector, *itMult, 2, 0, 0, fMixedEventTripletArray[1], PDGCodes, bins[1],fMixedEventTripletMultArray[1], fMixedEventTripletPhiThetaArray,0, *fConfig);//, fInvMassMixed[0], fQ3VskDistributionsArrayq12Mixed[0], fQ3VskDistributionsArrayq23Mixed[0]);
-      FillTripletDistributionME(ParticleVector, *itMult, 3, 1, 1, fMixedEventTripletArray[2], PDGCodes, bins[1],fMixedEventTripletMultArray[2], fMixedEventTripletPhiThetaArray,1, *fConfig);//, fInvMassMixed[1], fQ3VskDistributionsArrayq12Mixed[1], fQ3VskDistributionsArrayq23Mixed[1]);
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 0, 0, fMixedEventTripletArray[3], PDGCodes, bins[1],fMixedEventTripletMultArray[3], fMixedEventTripletPhiThetaArray,2, *fConfig);//, fInvMassMixed[2], fQ3VskDistributionsArrayq12Mixed[2], fQ3VskDistributionsArrayq23Mixed[2]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 1, 1, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPhiThetaArray,3, *fConfig);//, fInvMassMixed[3], fQ3VskDistributionsArrayq12Mixed[3], fQ3VskDistributionsArrayq23Mixed[3]);
+      FillTripletDistributionME(ParticleVector, *itMult, 2, 0, 0, fMixedEventTripletArray[1], PDGCodes, bins[1],fMixedEventTripletMultArray[1], fMixedEventTripletPhiThetaArray,0, *fConfig, fMixedEventTripletArrayResolution[2],fMixedEventTripletArrayResolutionAll[2] , fisMC);//, fInvMassMixed[0], fQ3VskDistributionsArrayq12Mixed[0], fQ3VskDistributionsArrayq23Mixed[0]);
+      FillTripletDistributionME(ParticleVector, *itMult, 3, 1, 1, fMixedEventTripletArray[2], PDGCodes, bins[1],fMixedEventTripletMultArray[2], fMixedEventTripletPhiThetaArray,1, *fConfig, fMixedEventTripletArrayResolution[3],fMixedEventTripletArrayResolutionAll[3] , fisMC);//, fInvMassMixed[1], fQ3VskDistributionsArrayq12Mixed[1], fQ3VskDistributionsArrayq23Mixed[1]);
+      FillTripletDistributionME(ParticleVector, *itMult, 0, 0, 0, fMixedEventTripletArray[3], PDGCodes, bins[1],fMixedEventTripletMultArray[3], fMixedEventTripletPhiThetaArray,2, *fConfig, fMixedEventTripletArrayResolution[0],fMixedEventTripletArrayResolutionAll[0] , fisMC);//, fInvMassMixed[2], fQ3VskDistributionsArrayq12Mixed[2], fQ3VskDistributionsArrayq23Mixed[2]);
+      FillTripletDistributionME(ParticleVector, *itMult, 1, 1, 1, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPhiThetaArray,3, *fConfig, fMixedEventTripletArrayResolution[1],fMixedEventTripletArrayResolutionAll[1] , fisMC);//, fInvMassMixed[3], fQ3VskDistributionsArrayq12Mixed[3], fQ3VskDistributionsArrayq23Mixed[3]);
 
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 2, 2, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPhiThetaArray,4, *fConfig);//, fInvMassMixed[4], fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 3, 3, fMixedEventTripletArray[6], PDGCodes, bins[1],fMixedEventTripletMultArray[6], fMixedEventTripletPhiThetaArray,5, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
-      FillTripletDistributionME(ParticleVector, *itMult, 2, 2, 2, fMixedEventTripletArray[7], PDGCodes, bins[1],fMixedEventTripletMultArray[7], fMixedEventTripletPhiThetaArray,6, *fConfig);//, fInvMassMixed[6], fQ3VskDistributionsArrayq12Mixed[6], fQ3VskDistributionsArrayq23Mixed[6]);
-      FillTripletDistributionME(ParticleVector, *itMult, 3, 3, 3, fMixedEventTripletArray[8], PDGCodes, bins[1],fMixedEventTripletMultArray[8], fMixedEventTripletPhiThetaArray,7, *fConfig);//, fInvMassMixed[7], fQ3VskDistributionsArrayq12Mixed[7], fQ3VskDistributionsArrayq23Mixed[7]);
-
+      /*FillTripletDistributionME(ParticleVector, *itMult, 0, 2, 2, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPhiThetaArray,4, *fConfig, fMixedEventTripletArrayResolution[4],fMixedEventTripletArrayResolutionAll[4] , isMC);//, fInvMassMixed[4], fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4]);
+      FillTripletDistributionME(ParticleVector, *itMult, 1, 3, 3, fMixedEventTripletArray[6], PDGCodes, bins[1],fMixedEventTripletMultArray[6], fMixedEventTripletPhiThetaArray,5, *fConfig, fMixedEventTripletArrayResolution[4],fMixedEventTripletArrayResolutionAll[4] , isMC);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+      FillTripletDistributionME(ParticleVector, *itMult, 2, 2, 2, fMixedEventTripletArray[7], PDGCodes, bins[1],fMixedEventTripletMultArray[7], fMixedEventTripletPhiThetaArray,6, *fConfig, fMixedEventTripletArrayResolution[4],fMixedEventTripletArrayResolutionAll[4] , isMC);//, fInvMassMixed[6], fQ3VskDistributionsArrayq12Mixed[6], fQ3VskDistributionsArrayq23Mixed[6]);
+      FillTripletDistributionME(ParticleVector, *itMult, 3, 3, 3, fMixedEventTripletArray[8], PDGCodes, bins[1],fMixedEventTripletMultArray[8], fMixedEventTripletPhiThetaArray,7, *fConfig, fMixedEventTripletArrayResolution[4],fMixedEventTripletArrayResolutionAll[4] , isMC);//, fInvMassMixed[7], fQ3VskDistributionsArrayq12Mixed[7], fQ3VskDistributionsArrayq23Mixed[7]);
+      */
       // Proton Lambda mixing for both proton and lambda used from same event [lambda_same, proton_mixed, proton_mixed]
       //  and [proton_same, lambda_mixed, proton_mixed]
       /*FillTripletDistributionMETEST(ParticleVector, *itMultTEST, 2, 0, 0, fMixedEventTripletArray[9], PDGCodes, bins[1],fMixedEventTripletMultArray[9], fMixedEventTripletPhiThetaArray,8, *fConfig);
@@ -1034,7 +1101,7 @@ TLorentzVector AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(
 }
 
 
-void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* InvMassSame){
+void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll , bool isMC){
   // This function creates a triplet distribution in Q3 bins (defined lower).
   // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
   // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just 
@@ -1150,6 +1217,9 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
         hist->Fill(Q3); 
         hist2d->Fill(Q3,mult+1); 
 
+        if(isMC){
+          MomentumResolution(ResAll, Res, *iPart1, *itPDGPar1, massparticle1,*iPart2, *itPDGPar2, massparticle2, *iPart3,*itPDGPar3, massparticle3, Q3) ;
+        }
         /*if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
         if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
         if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());*/
@@ -1362,7 +1432,7 @@ void AliAnalysisTaskThreeBodyFemto::SetMixedEventOnlyPPPTEST(
 }
 
 
-void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
+void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll, bool isMC ){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
   // Description of function given in AliAnalysisTaskThreeBodyFemto::FillTripletDistribution
   // In this function, only one particle is used from current event, and the other two - from other two events
 
@@ -1479,6 +1549,10 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
 
             hist->Fill(Q3); 
             hist2d->Fill(Q3,mult+1); 
+
+            if(isMC){
+              MomentumResolution(ResAll, Res, *iPart1, *itPDGParSE, massParticleSE,*iPart2, *itPDGParME1, massParticleME1, *iPart3,*itPDGParME2, massParticleME2, Q3) ;
+            }
             /*
             if(fRunPlotQ3Vsq){
               float qSame12= sqrt(-q12*q12);
@@ -2081,3 +2155,38 @@ void AliAnalysisTaskThreeBodyFemto::FillPDGPairInvMass( AliFemtoDreamBasePart &p
 }
 
 
+void AliAnalysisTaskThreeBodyFemto::MomentumResolution( TH2F* histAll, TH2F* hist,
+    AliFemtoDreamBasePart& part1, int PDGPart1, float mass1,
+    AliFemtoDreamBasePart& part2, int PDGPart2, float mass2,
+    AliFemtoDreamBasePart& part3, int PDGPart3, float mass3,
+    float Q3Reconstructed) {
+
+  TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+
+  float mom1 = sqrt(part1.GetMCMomentum().X()*part1.GetMCMomentum().X()+part1.GetMCMomentum().Y()*part1.GetMCMomentum().Y()+part1.GetMCMomentum().Z()*part1.GetMCMomentum().Z());
+  float mom2 = sqrt(part2.GetMCMomentum().X()*part2.GetMCMomentum().X()+part2.GetMCMomentum().Y()*part2.GetMCMomentum().Y()+part2.GetMCMomentum().Z()*part2.GetMCMomentum().Z());
+  float mom3 = sqrt(part3.GetMCMomentum().X()*part3.GetMCMomentum().X()+part3.GetMCMomentum().Y()*part3.GetMCMomentum().Y()+part3.GetMCMomentum().Z()*part3.GetMCMomentum().Z());
+  
+  part1_LorVec.SetPxPyPzE(part1.GetMCMomentum().X(), part1.GetMCMomentum().Y(), 
+  part1.GetMCMomentum().Z(), sqrt(pow(mom1,2)+pow(mass1,2)));
+  part2_LorVec.SetPxPyPzE(part2.GetMCMomentum().X(), part2.GetMCMomentum().Y(), 
+  part2.GetMCMomentum().Z(), sqrt(pow(mom2,2)+pow(mass2,2)));
+  part3_LorVec.SetPxPyPzE(part3.GetMCMomentum().X(), part3.GetMCMomentum().Y(), 
+  part3.GetMCMomentum().Z(), sqrt(pow(mom3,2)+pow(mass3,2)));
+
+  TLorentzVector q12 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part1_LorVec,part2_LorVec);
+  TLorentzVector q23 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part2_LorVec,part3_LorVec);
+  TLorentzVector q31 = AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(part3_LorVec,part1_LorVec);
+  float Q32 = q12*q12+q23*q23+q31*q31;
+  float Q3Real = sqrt(-Q32); 
+          
+
+  // check if particles are identified correctly
+
+  histAll->Fill(Q3Real, Q3Reconstructed);
+  if ((TMath::Abs(PDGPart1) == TMath::Abs(part1.GetMCPDGCode()))
+      && ((TMath::Abs(PDGPart2) == TMath::Abs(part2.GetMCPDGCode())))
+      && ((TMath::Abs(PDGPart3) == TMath::Abs(part3.GetMCPDGCode())))) {
+      hist->Fill(Q3Real, Q3Reconstructed);
+  }
+}
