@@ -990,7 +990,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
     AliAODTrack* AODtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
     if(!AODtrack) continue;
     
-    if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
+    // if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
+    if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
 
       trkPt    = AODtrack->Pt();
       trkPhi   = AODtrack->Phi();
@@ -1008,7 +1009,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       
 
 
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
 
 	  
@@ -1069,7 +1072,11 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  fNumOfNeg += 1;
 	}
 	
-       
+
+
+	//used this section in 2nd for loop as in this loop for Ach calculation all variables are hardcoded
+	/*
+	
 	if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
 	  {
 	  
@@ -1130,6 +1137,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 	  }
 
+	*/
+
 	
 	
 	//<---------- User track analysis Done---------------
@@ -1150,7 +1159,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   stepCount++;
 
 
-  if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
+  //if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
   
   fHistEventCount->Fill(stepCount); //9
   stepCount++;
@@ -1442,11 +1451,79 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
+	//event plane calculation from 1st for loop
+
+		if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
+	  {
+	  
+
+
+	if(trkEta < fEtaGapNeg){
+	  fSumTPCQn2xNegWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegWhole  += trkWgt;
+	}
+	else if(trkEta > fEtaGapPos){
+	  fSumTPCQn2xPosWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPosWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPosWhole  += trkWgt;
+	}
+
+
+
+
+  if(trkEta < fEtaGapNeg){
+	  if (trkChrg>0) //added by me for trivial term correction
+	  {
+	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNeg  += trkWgt;
+	  }
+	  
+	  //added by me for trivial term correction
+	else if (trkChrg<0)
+	  {
+	  fSumTPCQn2xNegChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegChNeg  += trkWgt;
+	  }
+	  ///////////////////////////////
+	
+	}
+	else if(trkEta > fEtaGapPos){
+	  
+	  if (trkChrg>0)  //added by me for trivial term correction
+	    {
+	  fSumTPCQn2xPos += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPos  += trkWgt;
+	    }
+	  
+	   //added by me for trivial term correction
+	  else if (trkChrg<0) 
+	    {
+	      fSumTPCQn2xPosChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	      fSumTPCQn2yPosChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	      fSumWgtEtaPosChNeg  += trkWgt;
+	    }
+	  ////////////////////////////////////////
+	  
+	}
+
+
+	  }
+
+
+
+
+	
     
 	uqRe = TMath::Cos(gPsiN*trkPhi);
 	uqIm = TMath::Sin(gPsiN*trkPhi);
 
 
+
+	
 
 
 	
@@ -1602,6 +1679,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   }///------> 2nd Track loop Ends here.<--------
  
 
+  if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
+  
   /// For cumulant method:
 
 
