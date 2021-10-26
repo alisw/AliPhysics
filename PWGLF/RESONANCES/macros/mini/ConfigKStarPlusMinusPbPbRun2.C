@@ -1,6 +1,6 @@
 /*=================================================================================
  Dukhishyam Mallick - last modified 01 April 2019 (mallick.dukhishyam@cern.ch)
- Prottay das   -last modified on 31 August 2020
+                    --last modified 25th oct 2021
  *** Configuration script for K*+-->K0Short-Pi analysis ***
  =======================================================================================*/
 // A configuration script for RSN package needs to define the followings:
@@ -9,15 +9,20 @@
 //     true pairs and to assign the right mass to all candidate daughters
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
-//
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
 Bool_t ConfigKStarPlusMinusPbPbRun2
 (
  AliRsnMiniAnalysisTask *task,
  Bool_t                  isMC,
+ Int_t                   aodFilterBit,
  Float_t                 piPIDCut,
  Float_t                 nsigmaTOF,
  Int_t                   customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
+ Float_t                ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
  Float_t                 pi_k0s_PIDCut,
  Bool_t                  enableMonitor=kTRUE,
  TString                 monitorOpt="",
@@ -33,14 +38,11 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
  Float_t                 k0sDCA,
  Float_t                 k0sCosPoinAn,
  Float_t                 k0sDaughDCA,
- Int_t                   NTPCcluster,
  const char             *suffix,
  AliRsnCutSet           *PairCutsSame,
  AliRsnCutSet           *PairCutsMix,
  Float_t                 DCAxy,
  Bool_t                  enableSys,
- Float_t                 crossedRows,
- Float_t                rowsbycluster,
  Int_t                   Sys,
  Int_t                    imbin,
  Float_t                  limbin,
@@ -51,7 +53,6 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
  Int_t                    multbin,
  Float_t                  lmultbin,
  Float_t                  hmultbin
-
  //UInt_t      triggerMask=AliVEvent::kINT7
  )
 //kTPCpidphipp2015
@@ -60,9 +61,11 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
  
   Bool_t isRotate=1;
-  Int_t aodFilterBit=0; 
   Float_t v0rapidity=0.5;
-   
+  Float_t crossedRows=70;
+  Float_t rowsbycluster=0.8;
+  Int_t   NTPCcluster=70; 
+
 
  if (isMC)
     Bool_t isDATA=kFALSE;
@@ -135,7 +138,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
     else
       {
     cutK0s->SetMaxArmentousCut(ArmentousParameter);
-    cout<<"Get Input Value Of Armentous cut-------->:"<<cutK0s->GetMaxArmentousCut()<<endl;
+    //   cout<<"Get Input Value Of Armentous cut-------->:"<<cutK0s->GetMaxArmentousCut()<<endl;
       }
        
     if(enableSys)
@@ -174,7 +177,12 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
 
     if(enableMonitor){
         Printf("======== Cut monitoring enabled");
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+	//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+
+     #ifdef __CINT__
+	gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+      #endif
+	
         //AddMonitorOutput(isMC, cutPi->GetMonitorOutput(), monitorOpt.Data());
         //AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), monitorOpt.Data());
         AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
@@ -196,12 +204,12 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
 
     if(isMC==1)
      {
-     /* CosThetaStar     */ Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
+     /* CosThetaStar     */ Int_t cosThSID = task->CreateValue(ThetaStar, kTRUE);
      }
 
     else
       {
-     /* CosThetaStar     */  Int_t cosThSID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kFALSE);
+     /* CosThetaStar     */  Int_t cosThSID = task->CreateValue(ThetaStar, kFALSE);
      }
 
     
@@ -266,7 +274,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun2
       out->AddAxis(centID, multbin, lmultbin, hmultbin);
       
       // axis J: CosThetaStar
-      out->AddAxis(cosThSID, 10, 0.0, 1.0);
+      out->AddAxis(cosThSID,10, 0.0, 1.0);
 	   
       
     }
