@@ -577,7 +577,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
         fnSparseMCThetaPhiStar[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
         fnSparseMCThetaPhiStar[iHist]->GetAxis(1)->SetTitle("#theta* (beam)");
         fnSparseMCThetaPhiStar[iHist]->GetAxis(2)->SetTitle("#varphi* (beam)");
-        fOutput->Add(fnSparseMC[iHist]);
+        fOutput->Add(fnSparseMCThetaPhiStar[iHist]);
     }
 }
 
