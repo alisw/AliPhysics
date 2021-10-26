@@ -1608,14 +1608,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Gen()
   fVarNames[ 1] = "LcY";
   fVarNames[ 2] = "LcPt";
   fVarNames[ 3] = "LcSource";
-  fVarNames[ 4] = "nTrackletsCorr"; // corrected Ntrk
-  fVarNames[ 5] = "Vertex_X"; //Primary vertex X position
-  fVarNames[ 6] = "Vertex_Y"; //Primary vertex Y position
-  fVarNames[ 7] = "Vertex_Z"; //Primary vertex Z position
-  fVarNames[ 8] = "weightPtFlat"; // flat pT weight for MC
-  fVarNames[ 9] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-  fVarNames[10] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
-  fVarNames[11] = "nTrackletsRaw"; // raw Ntrk
+  fVarNames[ 4] = "Vertex_X"; //Primary vertex X position
+  fVarNames[ 5] = "Vertex_Y"; //Primary vertex Y position
+  fVarNames[ 6] = "Vertex_Z"; //Primary vertex Z position
+  fVarNames[ 7] = "weightPtFlat"; // flat pT weight for MC
+  fVarNames[ 8] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+  fVarNames[ 9] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+  fVarNames[10] = "nTrackletsRaw"; // raw Ntrk
+    fVarNames[11] = "nTrackletsCorr"; // corrected Ntrk
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
