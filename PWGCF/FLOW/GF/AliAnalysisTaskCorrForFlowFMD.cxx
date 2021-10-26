@@ -714,17 +714,17 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end TPC - FMD
   else if(fAnalType == eFMDAFMDC){
     // Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
-    Int_t iTrackBin_fmdAfmdC[] = {48, 20, 10};
+    Int_t iTrackBin_fmdAfmdC[] = {24, 20, 10};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     for(Int_t i(0); i < 4; i++){
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
-      fhSE[i]->SetBinLimits(0, 3.4,8.2);
-      fhSE[i]->SetBinLimits(1,-0.5*TMath::Pi(), (3./2.)*TMath::Pi());
+      fhSE[i]->SetBinLimits(0,3.4,8.2);
+      fhSE[i]->SetBinLimits(1,-0.55*TMath::Pi(), 1.45*TMath::Pi());
 
       fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
-      fhME[i]->SetBinLimits(0, 3.4,8.2);
-      fhME[i]->SetBinLimits(1,-0.5*TMath::Pi(), (3./2.)*TMath::Pi());
+      fhME[i]->SetBinLimits(0,3.4,8.2);
+      fhME[i]->SetBinLimits(1,-0.55*TMath::Pi(), 1.45*TMath::Pi());
 
       if(!fDoPID) break;
     }
