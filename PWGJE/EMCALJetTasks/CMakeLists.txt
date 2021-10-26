@@ -245,11 +245,9 @@ set(SRCS
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx
-<<<<<<< HEAD
     UserTasks/AliAnalysisTaskRawJetWithEP.cxx)
-=======
     UserTasks/AliPieceWisePoly.cxx)
->>>>>>> dfdd1daecb0f126536689581d243fe2595f3a817
+
 
 # Tasks that need direct access to RooUnfold
 if(RooUnfold_FOUND)
