@@ -420,8 +420,7 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     fEfFd->SetCentralityBins(l_NV0MBinsDefault,l_V0MBinsDefault);
     fEfFd->SetPtBins(fNPtBins,fPtBins);
     fEfFd->SetEta(fEta);
-    AliESDtrackCuts *tc = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
-    fEfFd->AddCut(tc);
+    fEfFd->AddCut(32);
     PostData(1,fEfFd);
   };
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
