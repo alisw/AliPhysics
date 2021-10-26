@@ -180,6 +180,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fDoOutOfJet(0),
+  fJetMinPt(0),
   fDoIsolatedAnalysis(kFALSE),
   fDoHighPtHadronAnalysis(kFALSE),
   fEnableOmegaAPlikeCut(kFALSE),
