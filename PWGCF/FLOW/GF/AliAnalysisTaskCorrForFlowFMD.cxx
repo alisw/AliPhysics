@@ -478,7 +478,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assMult = trackAss->Multiplicity();
 
         binscont[0] = trigEta - assEta;
-        binscont[1] = RangePhi(trigPhi - assPhi);
+        binscont[1] = RangePhiFMD(trigPhi - assPhi);
 
         fhSE[spec]->Fill(binscont,0,assMult*trigMult);
       }
@@ -607,7 +607,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assMult = trackAss->Multiplicity();
 
             binscont[0] = trigEta - assEta;
-            binscont[1] = RangePhi(trigPhi - assPhi);
+            binscont[1] = RangePhiFMD(trigPhi - assPhi);
 
             fhME[spec]->Fill(binscont,0,(trigMult*assMult)/(Double_t)nMix);
           }
