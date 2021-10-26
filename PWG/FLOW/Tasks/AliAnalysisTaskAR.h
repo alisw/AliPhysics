@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 18.10.2021
+ * Last Modified Date: 26.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -29,7 +29,7 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
-// #include <THnSparse.h>
+#include <TMap.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -130,6 +130,7 @@ public:
   virtual void InitializeArraysForWeights();
   virtual void InitializeArraysForQvectors();
   virtual void InitializeArraysForFinalResultHistograms();
+  // virtual void InitializeArraysForSymmetricCumulants();
   virtual void InitializeArraysForMCAnalysis();
 
   // methods called in UserCreateOutputObjects()
@@ -179,8 +180,9 @@ public:
                           Int_t n6);
 
   // methods for calculating symmetric cumulants
-  void SC2(kFinalResultProfile rp);
-  void SC3(kFinalResultProfile rp);
+  void SC2(std::vector<Int_t> sc, Int_t index);
+  void SC3(std::vector<Int_t> sc, Int_t index);
+  std::vector<std::vector<Int_t>> MapSCToCor(std::vector<Int_t> sc);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
@@ -493,7 +495,7 @@ public:
   }
 
   // set symmetric cumulant to be computed
-  void SetSymmetricCumulant(std::vector<Int_t> SC) {
+  void SetSymmetricCumulants(std::vector<std::vector<Int_t>> SC) {
     this->fSymmetricCumulants = SC;
   }
 
@@ -674,7 +676,9 @@ private:
   Bool_t fUseWeights[kKinematic];
   Bool_t fUseWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
-  std::vector<Int_t> fSymmetricCumulants;
+  std::vector<std::vector<Int_t>> fSymmetricCumulants;
+  std::map<std::vector<Int_t>, std::vector<std::vector<Int_t>>> fMapSCtoCor;
+  std::map<std::vector<Int_t>, Int_t> fMapCorToIndex;
 
   // increase this counter in each new version
   ClassDef(AliAnalysisTaskAR, 17);
