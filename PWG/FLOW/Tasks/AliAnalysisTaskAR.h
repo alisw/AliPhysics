@@ -244,6 +244,17 @@ public:
       cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
     }
   }
+  TList *GetFinalResultSymmetricCumulantsList() const {
+    return this->fFinalResultSymmetricCumulantsList;
+  }
+  void GetSymmetricCumulantValues(std::vector<Double_t> *cor) {
+    cor->clear();
+    TList *list;
+    for (auto List : *fFinalResultSymmetricCumulantsList) {
+      list = dynamic_cast<TList *>(List);
+      cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
+    }
+  }
 
   // setters for QA histograms
   void SetFillQAHistograms(Bool_t option) { fFillQAHistograms = option; }
