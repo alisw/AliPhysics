@@ -2024,7 +2024,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   // Trigger data for EMCAL:
   // - For full payload (monitoring) events store all non-0 L1 ADCs
   // - For regular events store non-0 L1 ADCs of the 3 leading Gamma patches
-  AliEMCALGeometry *geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
+  auto geo = AliEMCALGeometry::GetInstance();
+  if(!geo) {
+    // singleton not yet initialized - initialize it for the first time
+    // based on the current run number expecting data from different years
+    // will not be mixed in the same job
+    geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
+  }
   AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
   Bool_t fullPayload = gRandom->Uniform() < fFractionL1MonitorEventsEMCAL;
   calotrigger.fIndexBCs = fBCCount;
