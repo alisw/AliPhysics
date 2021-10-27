@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 26.10.2021
+ * Last Modified Date: 27.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -24,12 +24,10 @@
 #include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
-#include <TExMap.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
-#include <TMap.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -130,7 +128,6 @@ public:
   virtual void InitializeArraysForWeights();
   virtual void InitializeArraysForQvectors();
   virtual void InitializeArraysForFinalResultHistograms();
-  // virtual void InitializeArraysForSymmetricCumulants();
   virtual void InitializeArraysForMCAnalysis();
 
   // methods called in UserCreateOutputObjects()
@@ -669,7 +666,7 @@ private:
   TF1 *fMCMultiplicity;
 
   // Look up tabel between MC and data particles
-  TExMap *fLookUpTable;
+  std::map<Int_t, Int_t> fLookUpTable;
 
   // use Fisher-Yates algorithm to randomize tracks
   Bool_t fUseFisherYates;

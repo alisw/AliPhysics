@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 26.10.2021
+ * Last Modified Date: 27.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,7 +37,6 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TMap.h>
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -104,7 +103,7 @@ ClassImp(AliAnalysisTaskAR)
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
-      fMCMultiplicity(nullptr), fLookUpTable(nullptr), fUseFisherYates(kFALSE),
+      fMCMultiplicity(nullptr), fLookUpTable({}), fUseFisherYates(kFALSE),
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
       fFixedMultiplicy(2),
       // qvectors
@@ -176,7 +175,7 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
-      fMCMultiplicity(nullptr), fLookUpTable(nullptr), fUseFisherYates(kFALSE),
+      fMCMultiplicity(nullptr), fLookUpTable({}), fUseFisherYates(kFALSE),
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
       fFixedMultiplicy(2),
       // qvectors
@@ -194,11 +193,6 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
   // recursively delete all other objects associative with this object
   if (fHistList) {
     delete fHistList;
-  }
-
-  // delete lookuptable
-  if (fLookUpTable) {
-    delete fLookUpTable;
   }
 
   // delete RNG
@@ -230,7 +224,6 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   this->BookFinalResultHistograms();
   this->BookFinalResultSymmetricCumulants();
   this->BookFinalResultCorrelators();
-  this->fLookUpTable = new TExMap();
 
   // seed RNG
   delete gRandom;
@@ -1350,10 +1343,7 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
 }
 
 void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
-  // book histogram holding symmetric cumulant
-  // at the moment you can only compute one symmetric cumulant per task
-  // these cumulants are computed from multi paritcle correlators during
-  // Terminate, therefore we have histograms
+  // book histograms holding symmetric cumulants
 
   TH1D *Hist[LAST_EFINALRESULTPROFILE];
   Double_t bins[LAST_EBINS][LAST_EFINALRESULTPROFILE] = {
@@ -1693,7 +1683,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   AliAODMCParticle *MCParticle = nullptr;
   Int_t Counter = 0;
 
-  for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
 
     // break loop if we hit fixed multiplicity
     if (fUseFixedMultplicity) {
@@ -1711,7 +1701,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       }
       // and get corresponding AODTrack, if it exists
       track = dynamic_cast<AliAODTrack *>(
-          aAOD->GetTrack(fLookUpTable->GetValue(Int_t(iTrack))));
+          aAOD->GetTrack(fLookUpTable[MCParticle->GetLabel()]));
       // if running over AOD only
     } else if (aAOD && !aMC) {
       // get AODtrack directly
@@ -1818,7 +1808,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 void AliAnalysisTaskAR::ClearVectors() {
   // clear vectors holding kinematics and weights of an event
   fWeightsAggregated.clear();
-  for (int k = 0; k < kKinematic; ++k) {
+  for (Int_t k = 0; k < kKinematic; ++k) {
     fKinematics[k].clear();
     fKinematicWeights[k].clear();
   }
@@ -1902,7 +1892,7 @@ void AliAnalysisTaskAR::AggregateWeights() {
 
   for (std::size_t i = 0; i < fKinematics[kPHI].size(); ++i) {
     tmp = 1.;
-    for (int k = 0; k < kKinematic; ++k) {
+    for (Int_t k = 0; k < kKinematic; ++k) {
       w[k] = 1.;
       if (fUseWeights[k] && !fKinematicWeights[k].empty()) {
         w[k] *= fKinematicWeights[k].at(i);
@@ -2829,13 +2819,11 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
   Int_t tmp = 0;
 
   // reset lookuptable
-  if (0 != fLookUpTable->GetSize()) {
-    fLookUpTable->Delete();
-  }
+  fLookUpTable.clear();
 
   AliAODTrack *aTrack = nullptr;
 
-  for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
 
     // compute randomized index if necessary using Fisher-Yates shuffel
     // pseudo-code taken from
@@ -2887,7 +2875,7 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
     // we also have a monte carlo event
     if (aMC) {
       // "key" = label, "value" = iTrack
-      fLookUpTable->Add(aTrack->GetLabel(), iTrack);
+      fLookUpTable.insert({aTrack->GetLabel(), iTrack});
     }
   }
 }
