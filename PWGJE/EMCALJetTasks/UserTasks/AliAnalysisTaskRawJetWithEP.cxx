@@ -75,11 +75,6 @@ AliAnalysisTaskRawJetWithEP::~AliAnalysisTaskRawJetWithEP()
 void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> dfdd1daecb0f126536689581d243fe2595f3a817
   AllocateTrackHistograms();
   AllocateJetHistograms();
 
@@ -88,11 +83,6 @@ void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
   while ((obj = next())) {
     fOutput->Add(obj);
   }
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> dfdd1daecb0f126536689581d243fe2595f3a817
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -265,11 +255,6 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
   while ((jetCont = static_cast<AliJetContainer*>(next()))) {
     groupname = jetCont->GetName();
     UInt_t count = 0;
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> dfdd1daecb0f126536689581d243fe2595f3a817
     Double_t jetR = jetCont->GetJetRadius();
 
     Double_t rhoVal = 0;
@@ -282,11 +267,7 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
     for(auto jet : jetCont->accepted()) {
       if (!jet) continue;
       count++;
-<<<<<<< HEAD
 
-=======
-      
->>>>>>> dfdd1daecb0f126536689581d243fe2595f3a817
       histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, jet->Pt());
 
@@ -544,9 +525,3 @@ AliAnalysisTaskRawJetWithEP * AliAnalysisTaskRawJetWithEP::AddTaskRawJetWithEP(
 
   return rawJetTask;
 }
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> dfdd1daecb0f126536689581d243fe2595f3a817
