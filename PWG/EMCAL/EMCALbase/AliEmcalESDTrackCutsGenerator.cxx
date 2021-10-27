@@ -571,13 +571,13 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod.BeginsWith("lhc19a1")) {
     dataSet = kLHC11h;
-  } else if (strPeriod.BeginsWith("lhc15o")) {
+  } else if (strPeriod == ("lhc15o")) {
     dataSet = kLHC11h;
-  } else if (strPeriod.BeginsWith("lhc15n")) {
+  } else if (strPeriod == ("lhc15n")) {
     dataSet = kLHC11h;
-  } else if (strPeriod.BeginsWith("lhc18q")) {
+  } else if (strPeriod == ("lhc18q")) {
     dataSet = kLHC11h;
-  } else if (strPeriod.BeginsWith("lhc18r")) {
+  } else if (strPeriod == ("lhc18r")) {
     dataSet = kLHC11h;
   }
   else {
