@@ -689,7 +689,7 @@ private:
   std::map<std::vector<Int_t>, Int_t> fMapCorToIndex;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 17);
+  ClassDef(AliAnalysisTaskAR, 18);
 };
 
 #endif
