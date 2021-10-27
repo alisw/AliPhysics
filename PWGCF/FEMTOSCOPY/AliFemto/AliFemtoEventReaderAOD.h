@@ -28,6 +28,7 @@
 #include "AliAODHeader.h"
 #include "AliAnalysisUtils.h"
 #include "AliEventCuts.h"
+#include "AliMultSelection.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -139,6 +140,9 @@ public:
   //    return fPtmax;
   //  } 
 
+    // dowang femto
+    void Set15oPass2EventReject(Int_t EventReject);
+    bool Reject15oPass2Event(AliAODEvent *fAOD);
   //---
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
@@ -218,7 +222,13 @@ protected:
 //ML -- calculate ptmax,phimax,etamax of event
   Int_t           fjets; //0-no calc., 1-same, 2-diff
   Double_t         fPtmax; //max pT in event
-
+    // dowang femto
+    Int_t fEventReject;
+    TF1 *fCenCutLowPU;
+    TF1 *fCenCutHighPU;
+    TF1 *fSPDCutPU;
+    TF1 *fV0CutPU;
+    TF1 *fMultCutPU;
 private:
 
   AliAODMCParticle *GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel);

@@ -3093,6 +3093,14 @@ if(fEffCorr){
                   ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk, 1/weight);
                 }
 
+else{
+
+ Double_t spSigMixTrk[7] = {dPhiMix, dEtaMix, atrTrig->Pt(), atr->Pt(),lCent, lPVz, 1.};
+                  ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk);
+
+}
+
+
 
 }}
 
