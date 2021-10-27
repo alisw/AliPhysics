@@ -20,6 +20,7 @@
 class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
+class AliGRPObject;
 class TFile;
 class TDirectory;
 class TParticle;
@@ -178,6 +179,7 @@ private:
   Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
   AliEventCuts fEventCuts;      //! Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
+  AliGRPObject *fGRP;           //! Global run parameters
   AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
   AliESDEvent *fESD  = nullptr; //! input ESD event
   AliAODEvent *fAOD  = nullptr; //! input AOD event
