@@ -52,23 +52,23 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
 		bool       HasRecVertex();
 		//Systematic ============================
-		void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
-		void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
+// 		void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
+// 		void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}
 		void       SetNcrVar1(Bool_t NcrVar1 = kFALSE) {fNcrVar1 = NcrVar1;}
 		void       SetNcrVar2(Bool_t NcrVar2 = kFALSE) {fNcrVar2 = NcrVar2;}
 		void       SetChisqTPCVar1(Bool_t ChisqTPCVar1 = kFALSE) {fChisqTPCVar1 = ChisqTPCVar1;}
 		void       SetChisqTPCVar2(Bool_t ChisqTPCVar2 = kFALSE) {fChisqTPCVar2 = ChisqTPCVar2;}
 		void       SetChisqITSVar1(Bool_t ChisqITSVar1 = kFALSE) {fChisqITSVar1 = ChisqITSVar1;}
 		void       SetChisqITSVar2(Bool_t ChisqITSVar2 = kFALSE) {fChisqITSVar2 = ChisqITSVar2;}
-		void       SetChisqITSmTPCVar1(Bool_t ChisqITSmTPCVar1 = kFALSE) {fChisqITSmTPCVar1 = ChisqITSmTPCVar1;}
-		void       SetChisqITSmTPCVar2(Bool_t ChisqITSmTPCVar2 = kFALSE) {fChisqITSmTPCVar2 = ChisqITSmTPCVar2;}
+// 		void       SetChisqITSmTPCVar1(Bool_t ChisqITSmTPCVar1 = kFALSE) {fChisqITSmTPCVar1 = ChisqITSmTPCVar1;}
+// 		void       SetChisqITSmTPCVar2(Bool_t ChisqITSmTPCVar2 = kFALSE) {fChisqITSmTPCVar2 = ChisqITSmTPCVar2;}
 		void       SetDcazVar1(Bool_t DcazVar1 = kFALSE) {fDcazVar1 = DcazVar1;}
 		void       SetDcazVar2(Bool_t DcazVar2 = kFALSE) {fDcazVar2 = DcazVar2;}
 		void       SetGeoTPCVar1(Bool_t GeoTPCVar1 = kFALSE) {fGeoTPCVar1 = GeoTPCVar1;}
 		void       SetGeoTPCVar2(Bool_t GeoTPCVar2 = kFALSE) {fGeoTPCVar2 = GeoTPCVar2;}
 		void       SetGeoTPCVar3(Bool_t GeoTPCVar3 = kFALSE) {fGeoTPCVar3 = GeoTPCVar3;}
 		void       SetGeoTPCVar4(Bool_t GeoTPCVar4 = kFALSE) {fGeoTPCVar4 = GeoTPCVar4;}
-		void       SetSPDreqVar1(Bool_t SPDreqVar1 = kFALSE) {fSPDreqVar1 = SPDreqVar1;}
+// 		void       SetSPDreqVar1(Bool_t SPDreqVar1 = kFALSE) {fSPDreqVar1 = SPDreqVar1;}
 		//Systematic ============================
 		virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,
 				Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
@@ -91,8 +91,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		Int_t        fnRecHyWoDCA;
 		Int_t        fnGen;
 		// Systematic------------------------------------
-		Bool_t       fTPCclustersVar1;
-		Bool_t       fTPCclustersVar2;
 		Bool_t       fNcrVar1;
 		Bool_t       fNcrVar2;
 		Bool_t       fGeoTPCVar1;
@@ -103,22 +101,16 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		Bool_t       fChisqTPCVar2;
 		Bool_t       fChisqITSVar1;
 		Bool_t       fChisqITSVar2;
-		Bool_t       fChisqITSmTPCVar1;
-		Bool_t       fChisqITSmTPCVar2;
 		Bool_t       fDcazVar1;
 		Bool_t       fDcazVar2;
-		Bool_t       fSPDreqVar1;
 		// Systematic------------------------------------
 		AliPIDResponse*     fPIDResponse;
-		AliAnalysisFilter*  fTrackFilterTPC;
-		AliAnalysisFilter*  fTrackFilter2015;
-		AliAnalysisFilter*  fTrackFilter2015woDCA;
+		AliAnalysisFilter*  fTrackFilter;
+		AliAnalysisFilter*  fTrackFilterwoDCA;
 		AliAnalysisFilter*  fTrackFilterHybrid0;
 		AliAnalysisFilter*  fTrackFilterHybrid1;
-		AliAnalysisFilter*  fTrackFilterHybrid2;
 		AliAnalysisFilter*  fTrackFilterHybrid0woDCA;
 		AliAnalysisFilter*  fTrackFilterHybrid1woDCA;
-		AliAnalysisFilter*  fTrackFilterHybrid2woDCA;
 		TList*              fOutputList;                                      //! output list in the root file
 		Double_t fEtaCut;
 		Double_t fPtMin;	
@@ -148,7 +140,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		TH1F * hPhiTotal;
 		TH1F * hPhiStandard;
 		TH1F * hPhiHybrid1;
-		TH1F * hPhiHybrid2;
 		TH2D * hNchResponse;
 		TH1D * hNchRec;
 		TH1D * hNchRecTest;

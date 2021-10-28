@@ -68,7 +68,7 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
   void SetVzRangeMax(Double_t vzMax)                {this->fMaxVzCut       =  vzMax;}
 
   void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-  void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipPileUpCut  = b;}
+  void SetPolarity(Int_t b)        {this->pol  = b;}
 
   /******* Track Cut Ranges ******/
   void SetNSigmaCutTPC(Double_t     nSigTPC)     {this->fNSigmaTPCCut  =  nSigTPC;}
@@ -137,7 +137,7 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
   Float_t                 fChi2; 
   Double_t         fPileUpSlopeParm;  //
   Double_t         fPileUpConstParm;  //
-  Bool_t             bSkipPileUpCut;  //
+  Int_t             pol;  //
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
@@ -160,11 +160,7 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
   //QA histograms:
   TH1F                  *fCentDistBeforCut;    //! Cent before Any Cut
   TH1F                  *fCentDistAfterCut;    //! Cent After All Cuts
-  TH2F                  *fHistEtaPtBeforCut;   //! Eta-Pt before Any Cut
-  TH2F                  *fHistEtaPhiBeforCut;  //! Eta-Phi before Any Cut
-  TH2F                  *fHistEtaPhiAfterCut;  //! Eta-Phi after trk Cut    
  
-
 
   
   //User Defined Histograms: 
@@ -206,24 +202,24 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
 
 
   ///v2 vs Ach (Results)
-  TProfile     *fHistv2AchChrgPos[2][9];
-  TProfile     *fHistv2AchPionPos[2][9]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPos[2][9]; //!
-  TProfile     *fHistv2AchProtPos[2][9]; //!
-  TProfile     *fHistv2AchChrgNeg[2][9];
-  TProfile     *fHistv2AchPionNeg[2][9]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNeg[2][9]; //!
-  TProfile     *fHistv2AchProtNeg[2][9]; //!
+  TProfile     *fHistv2AchChrgPos[1][9];
+  TProfile     *fHistv2AchPionPos[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPos[1][9]; //!
+  TProfile     *fHistv2AchProtPos[1][9]; //!
+  TProfile     *fHistv2AchChrgNeg[1][9];
+  TProfile     *fHistv2AchPionNeg[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNeg[1][9]; //!
+  TProfile     *fHistv2AchProtNeg[1][9]; //!
 
-  TProfile     *fHistv2AchChrgPosChrgNeg[2][9];
-  TProfile     *fHistv2AchPionPosPionNeg[2][9]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPosKaonNeg[2][9]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchProtPosProtNeg[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgPosChrgNeg[1][9];
+  TProfile     *fHistv2AchPionPosPionNeg[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPosKaonNeg[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchProtPosProtNeg[1][9]; //! [1st] = method, [2nd] = centrality.
     
-  TProfile     *fHistv2AchChrgNegChrgPos[2][9];
-  TProfile     *fHistv2AchPionNegPionPos[2][9]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNegKaonPos[2][9];
-  TProfile     *fHistv2AchProtNegProtPos[2][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchChrgNegChrgPos[1][9];
+  TProfile     *fHistv2AchPionNegPionPos[1][9]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNegKaonPos[1][9];
+  TProfile     *fHistv2AchProtNegProtPos[1][9]; //! [1st] = method, [2nd] = centrality.
     
 
 
@@ -238,16 +234,9 @@ class AliAnalysisTaskCMWPUeqAch : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAnegProt[5];   //! 
 
 
-  /// TO fill NUA for new Cut:
-  TH3F          *fHFillNUAPosPID[5];    //! 
-  TH3F          *fHFillNUANegPID[5];    //! 
 
  
   
-  TProfile      *fHistEPResolution[2];       //! EP resolution vs Cent
-  TH1D          *fHistNumChrgPos[9];       //! No. of positive charges
-  TH1D          *fHistNumChrgNeg[9];       //! No. of negative charges
-  TProfile      *fHistEPResolutionAch[9];   //! EP resolution vs Ach 
   TProfile      *fHistv2cumAchChrgAll[9];  //! Charge inclusive
 
 

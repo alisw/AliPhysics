@@ -1,10 +1,10 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+A helper class to deal with subsets of 2D profiles. Primarily used in <AliGFWFlowContainer>
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #ifndef ALIPROFILESUBSET__H
 #define ALIPROFILESUBSET__H
-//Helper function to select a subrange of a TProfile
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TError.h"

@@ -19,6 +19,7 @@
 #include "AliPID.h"
 #include "AliESDtrack.h"
 #include "AliVertexingHFUtils.h"
+#include "AliMultSelection.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFMLVarHandler);
@@ -107,7 +108,14 @@ void AliHFMLVarHandler::SetIsSignalWoQuark(bool isSignalWoQuark) {
 
 void AliHFMLVarHandler::SetGlobalEventVariables(AliAODEvent* event) {
     if(fEnableNtracklets)
-        fNtracklets = static_cast<int>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(event,-1.,1.));
+        fNtracklets = static_cast<int>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(event, -1., 1.));
+    if(fEnableCentPercentile) {
+        AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+        if(!multSelection)
+            fCentPercentile = -999.;
+        else
+            fCentPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
+    }
 }
 
 //________________________________________________________________
@@ -208,6 +216,8 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
 void AliHFMLVarHandler::AddGlobalEventVarBranches() {
     if(fEnableNtracklets)
         fTreeVar->Branch("n_trkl", &fNtracklets);
+    if(fEnableCentPercentile)
+        fTreeVar->Branch("cent_perc", &fCentPercentile);
 }
 
 //________________________________________________________________

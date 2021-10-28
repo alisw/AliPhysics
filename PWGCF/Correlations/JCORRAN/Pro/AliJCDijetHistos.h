@@ -93,12 +93,14 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_ptHard; //! // for pt_hard
 
         AliJTH1D fh_dijetInvM;                     //! // for dijet invariant mass
+        AliJTH1D fh_dijetInvMLin;                     //! // for dijet invariant mass
         AliJTH1D fh_dijetInvMTrunc;                //! // for dijet invariant mass truncated above and below
         AliJTH1D fh_dijetInvMTrunc2;                //! // for dijet invariant mass truncated above and below
         AliJTH1D fh_dijetPtPair;                   //! // for dijet pt
         AliJTH1D fh_dijetDeltaPhi;                 //! // for dijet deltaPhi
         AliJTH1D fh_dijetPtPairDeltaPhiCut;        //! // for dijet pt after deltaPhi cut
         AliJTH1D fh_dijetInvMDeltaPhiCut;          //! // for dijet invariant mass after deltaPhi cut
+        AliJTH1D fh_dijetInvMDeltaPhiCutLin;          //! // for dijet invariant mass after deltaPhi cut
         AliJTH1D fh_dijetInvMDeltaPhiCutTrunc;     //! // for dijet invariant mass after deltaPhi cut truncated above and below
         AliJTH1D fh_dijetInvMDeltaPhiCutTrunc2;     //! // for dijet invariant mass after deltaPhi cut truncated above and below
         AliJTH1D fh_dijetDeltaPhiWithCut;          //! // for dijet delta phi after deltaPhi cut
@@ -116,9 +118,20 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH2D fh_deltaPtResponseEvery;          //! // delta-pt response matrix, filled for every true bin
         AliJTH2D fh_deltaPtResponseEvery_ALICE;    //! // delta-pt response matrix with ALICE bin, filled for every true bin
         AliJTH2D fh_dijetResponse;                 //! // Dijet response matrix
+        AliJTH2D fh_dijetResponseLin;                 //! // Dijet response matrix
+
+        AliJTH1D fh_doubleConeM;              //! // Double cone invariant mass
+        AliJTH1D fh_dijetdeltaM1;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM2;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM3;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM4;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM5;             //! // Dijet deltaM
+        AliJTH2D fh_deltaMResponse;           //! // deltaM response matrix 
+        AliJTH2D fh_deltaMResponseEvery;      //! // deltaM response matrix 
         AliJTH2D fh_dijetResponseTrunc;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseTrunc2;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseDeltaPhiCut;      //! // Dijet response matrix with deltaPhi cut
+        AliJTH2D fh_dijetResponseDeltaPhiCutLin;      //! // Dijet response matrix with deltaPhi cut
         AliJTH2D fh_dijetResponseDeltaPhiCutTrunc; //! // Dijet response matrix with deltaPhi cut truncated from above and below
         AliJTH2D fh_dijetResponseDeltaPhiCutTrunc2; //! // Dijet response matrix with deltaPhi cut truncated from above and below
 };

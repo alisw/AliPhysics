@@ -175,7 +175,7 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys()
      fHistMCtruthK0sPt(0),
      fHistMCtruthLambdaPt(0),
      fHistMCtruthAntiLambdaPt(0),
-
+     fData2018(kFALSE),
      fAnalysisMC(kFALSE),
      fRejectTrackPileUp(kTRUE),
      fRejectV0PileUp(kTRUE),
@@ -317,7 +317,7 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys(const char 
      fHistMCtruthK0sPt(0),
      fHistMCtruthLambdaPt(0),
      fHistMCtruthAntiLambdaPt(0),
-    
+     fData2018(kFALSE),
      fAnalysisMC(kFALSE),
      fRejectTrackPileUp(kTRUE),
      fRejectV0PileUp(kTRUE),
@@ -738,7 +738,7 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
   tQAEvent->Add(fHistCentVtx);
 
  // TH1F *fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 2000, 0, 2000);
-  TH1F *fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 4, 0, 4);
+  TH1F *fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 5, 0, 5);
   tQAEvent->Add(fHistMultiMain);
 
   TH1F *fhEventCentAfterPilp = new TH1F( "fhEventCentAfterPilp","Event distribution to centrality after pile up remove ; Centrality ; Number of Events",90, 0., 90); 
@@ -1756,8 +1756,19 @@ void AliAnalysisTaskV0ChCorrelationsys::UserExec(Option_t *)
 
     // physics selection
     UInt_t maskIsSelected= inEvMain->IsEventSelected();
-    Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
-    if (!isINT7selected) return;
+   // Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
+   // if (!isINT7selected) return;
+
+ if(!fData2018){if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
+
+ if(fData2018){
+ if(!(maskIsSelected & (AliVEvent::kCentral |AliVEvent::kINT7))) {
+  return; }
+
+else{
+    {if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
+   }
+  }
 
     AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());
   
@@ -1813,6 +1824,7 @@ if( !MultSelection) {
     ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(lCent);
     ((TH2F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistCentVtx"))->Fill(lCent,lPVz);
     ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fhEventCentAfterPilp"))->Fill(lCent);
+    ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(4.5);;
    
 
 //here is the =TObjArray for Mc Closure test  
@@ -3080,6 +3092,14 @@ if(fEffCorr){
                   Double_t spSigMixTrk[7] = {dPhiMix, dEtaMix, atrTrig->Pt(), atr->Pt(),lCent, lPVz, 1.};
                   ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk, 1/weight);
                 }
+
+else{
+
+ Double_t spSigMixTrk[7] = {dPhiMix, dEtaMix, atrTrig->Pt(), atr->Pt(),lCent, lPVz, 1.};
+                  ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk);
+
+}
+
 
 
 }}

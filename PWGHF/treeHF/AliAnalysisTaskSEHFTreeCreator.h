@@ -232,7 +232,7 @@ public:
     AliJetContainer* AddJetContainer(AliJetContainer::EJetType_t jetType, AliJetContainer::EJetAlgo_t jetAlgo, AliJetContainer::ERecoScheme_t recoScheme, Double_t radius, UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
     AliJetContainer* AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius);
     AliJetContainer* GetJetContainer(Int_t i=0) const;
-    void FillJetTree();
+    void FillJetTree(AliAODMCHeader* mcHeader);
   
     
     unsigned int GetEvID();

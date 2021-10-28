@@ -112,7 +112,7 @@ private:
     AliAODTrack* fAODtrack;
     Double_t b[2];
     Double_t bCov[3];
-    ClassDef( AliDalitzAODESD, 1 );
+    ClassDef( AliDalitzAODESD, 2 );
     };
 
 

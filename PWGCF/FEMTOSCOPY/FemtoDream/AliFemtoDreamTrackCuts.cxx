@@ -1168,7 +1168,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kDeuteron, 1.4);
-  trackCuts->SetCutITSPID(1.4, -2., 1e30); 
+  //trackCuts->SetCutITSPID(1.4, -2., 1e30); 
   trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
   return trackCuts;

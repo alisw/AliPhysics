@@ -42,6 +42,7 @@ set(SRCS
   Cascades/AliAnalysisTaskCheckCascadePbPb.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascade.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascadePbPb.cxx
+  Cascades/AliAnalysisTaskXiNucleusInteraction.cxx
   LambdaK0PbPb/AliAnalysisCentralitySelector.cxx
   LambdaK0PbPb/AliAnalysisTaskCTauPbPb.cxx
   LambdaK0PbPb/AliAnalysisTaskCTauPbPbaod.cxx
@@ -56,7 +57,6 @@ set(SRCS
   LambdaK0/AliAnalysisTaskExtractPerformanceV0.cxx
   LambdaK0/AliAnalysisTaskExtractPerformanceV0pPb.cxx
   LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
-  Lifetimes/AliAnalysisTaskStrangenessLifetimes.cxx
   Cascades/AliAnalysisTaskExtractCascade.cxx
   Cascades/AliAnalysisTaskExtractCascadePbPbRun2.cxx
   Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
@@ -97,6 +97,7 @@ set(SRCS
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
+  HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_SelectionStudies.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
   StrPDF/AliAnalysisTaskV0multspec.cxx
@@ -111,16 +112,6 @@ endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-
-# Add header only files
-set(HDRS
-  ${HDRS}
-  Lifetimes/MiniEvent.h
-  Lifetimes/HyperTriton2Body.h
-  Lifetimes/MCparticle.h
-  Lifetimes/MiniV0.h
-  Lifetimes/Utils.h
-)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -180,7 +171,6 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY Cascades/macros DESTINATION PWGLF/STRANGENESS/Cascades)
 install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Run2)
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
-install(DIRECTORY Lifetimes/macros DESTINATION PWGLF/STRANGENESS/Lifetimes)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)

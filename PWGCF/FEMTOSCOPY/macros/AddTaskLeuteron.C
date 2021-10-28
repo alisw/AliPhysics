@@ -310,8 +310,16 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   if(isHighPt){
 
     // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(1.4,4.0);
-    TrackCuts4->SetPtRange(1.4,4.0);
+    TrackCuts3->SetPtRange(1.4,2.0);
+    TrackCuts4->SetPtRange(1.4,2.0);
+
+  }
+
+
+  if(isSidebandSignal ==true || isUpperSideband == true || isLowerSideband == true){
+
+    TrackCuts3->SetPID(AliPID::kDeuteron,1.4,60.0);
+    TrackCuts4->SetPID(AliPID::kDeuteron,1.4,60.0);
 
   }
 

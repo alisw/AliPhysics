@@ -47,7 +47,7 @@ class AliCFContainer;
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskMCPredictions();
-  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 4000, Int_t lRebinFactor = 1);
+  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 2000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 1 );
   virtual ~AliAnalysisTaskMCPredictions();
   
   virtual void   UserCreateOutputObjects();
@@ -65,6 +65,12 @@ public:
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
+  void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
+  
+  void SetDoImpactParameterStudy ( Bool_t lOpt = kTRUE) { fkDoImpactParameterStudy = lOpt; }
+  void SetDoNpartStudy ( Bool_t lOpt = kTRUE) { fkDoNpartStudy = lOpt; }
+  void SetDoNMPIStudy ( Bool_t lOpt = kTRUE) { fkDoNMPIStudy = lOpt; }
+  void SetDoRapidityStudy ( Bool_t lOpt = kTRUE) { fkDoRapidityStudy = lOpt; }
   
   //---------------------------------------------------------------------------------------
   
@@ -81,39 +87,52 @@ private:
   Int_t fSmallMultRange;
   Int_t fLargeMultRange;
   Int_t fRebinFactor;
+  
+  Int_t fkNBBins;
+  Int_t fkNNpartBins;
+  Int_t fkNEtaBins;
+  
   Bool_t fkSelectINELgtZERO;
   Bool_t fkALICE3SiliconMode; //if true, SPD multiplicity == full |eta|<4.0
+  Bool_t fkWideRapiditySpeciesStudy; //if true, |y|<4.0 instead of |y|<0.5 for PID
+  
+  Bool_t fkDoImpactParameterStudy;
+  Bool_t fkDoNpartStudy;
+  Bool_t fkDoNMPIStudy;
+  Bool_t fkDoRapidityStudy;
   
   //Basic Histograms for counting events as a function of V0M percentiles...
-  TH1D *fHistV0MMult;
-  TH1D *fHistSPDMult;
-  TH2D *fHistNchVsV0MMult;
-  TH2D *fHistNchVsSPDMult;
-  TH1D *fHistNpart;
-  TH2D *fHistNchVsNpart;
-  TH1D *fHistB;
-  TH2D *fHistNchVsB;
-  TH1D *fHistNMPI;
-  TH2D *fHistNchVsNMPI;
+  TH1D *fHistV0MMult; //!
+  TH1D *fHistSPDMult; //!
+  TH2D *fHistNchVsV0MMult; //!
+  TH2D *fHistNchVsSPDMult; //!
+  TH1D *fHistNpart; //!
+  TH2D *fHistNchVsNpart; //!
+  TH1D *fHistB; //!
+  TH2D *fHistNchVsB; //!
+  TH1D *fHistNMPI; //!
+  TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[52];              //! for keeping track of base spectra
-  TH1D *fHistEta[52];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[52];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[52];     //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[52];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[52];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[52];       //! for keeping track of base spectra
+  TH1D *fHistPt[64];              //! for keeping track of base spectra
+  TH1D *fHistEta[64];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[64];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[64];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[64];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[64];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[64];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[64];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[64];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
   Float_t fMinPtTriggerCharged; //for charged trigger
   Float_t fMinPtTriggerXi; //for xi trigger
   Float_t fMinPtTriggerPhi; //for phi trigger
-  TH1D *fEtaTriggerCharged;
-  TH1D *fEtaTriggerXi;
-  TH1D *fEtaTriggerPhi;
-  //TH3D *fHist3d2pcSE[52]; //!
-  //TH3D *fHist3d2pcXiSE[52]; //!
-  //TH3D *fHist3d2pcPhiSE[52]; //!
+  TH1D *fEtaTriggerCharged; //!
+  TH1D *fEtaTriggerXi; //!
+  TH1D *fEtaTriggerPhi; //!
+  //TH3D *fHist3d2pcSE[64]; //!
+  //TH3D *fHist3d2pcXiSE[64]; //!
+  //TH3D *fHist3d2pcPhiSE[64]; //!
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented

@@ -21,11 +21,12 @@ const Int_t numSpecies = AliPID::kSPECIES;
 enum resultType { kFraction = 0, kYield = 1, kToPiRatio = 2 };
 
 //________________________________________________________
-TCanvas* DrawFractionHistos(TString canvName, TString canvTitle, Double_t pLow, Double_t pHigh, TGraphAsymmErrors** gr,  TH1F** histRef, 
-                            Int_t resultType, Int_t mode)
+TCanvas* DrawFractionHistos(TString canvName, TString canvTitle, Double_t pLow, Double_t pHigh, TGraphAsymmErrors** gr,  TH1** histRef, 
+                            Int_t resultType, Int_t mode, Bool_t useelectrons = kTRUE, Bool_t usemuons = kFALSE)
 {
   if (!histRef || !gr)
     return 0x0;
+  
   
   TCanvas* canv = new TCanvas(canvName.Data(), canvTitle.Data(),100,10,1200,800);
   canv->SetGridx(1);
@@ -36,7 +37,7 @@ TCanvas* DrawFractionHistos(TString canvName, TString canvTitle, Double_t pLow, 
     canv->SetLogy(1);
   
   for (Int_t i = 0; i < numSpecies; i++) {
-    if (!histRef[i])
+    if (!histRef[i] || (resultType == kToPiRatio && i == AliPID::kPion) || (i == AliPID::kElectron && !useelectrons) || (i == AliPID::kElectron && !usemuons))
       continue;
     if (resultType == kYield) {
       if (mode < 0)
@@ -47,6 +48,7 @@ TCanvas* DrawFractionHistos(TString canvName, TString canvTitle, Double_t pLow, 
     else
       histRef[i]->GetYaxis()->SetRangeUser(0.0, 1.0);
     //histRef[i]->GetYaxis()->SetTitle(canvTitle.Data());
+    
     if (mode <= 0)
       histRef[i]->GetXaxis()->SetRangeUser(pLow, pHigh);
     //histRef[i]->SetFillStyle(3004 + i);
@@ -55,28 +57,39 @@ TCanvas* DrawFractionHistos(TString canvName, TString canvTitle, Double_t pLow, 
     histRef[i]->SetFillColor(histRef[i]->GetMarkerColor());
     histRef[i]->SetLineColor(histRef[i]->GetMarkerColor());
   }
+  
   if (resultType != kToPiRatio) {
     histRef[AliPID::kPion]->SetMarkerStyle(20);
     histRef[AliPID::kPion]->Draw("e p");
   }
-  histRef[AliPID::kElectron]->SetMarkerStyle(21);
-  histRef[AliPID::kElectron]->Draw(Form("e p%s", (resultType == kToPiRatio) ? "" : " same"));
+  if (useelectrons) {
+    histRef[AliPID::kElectron]->SetMarkerStyle(21);
+    histRef[AliPID::kElectron]->Draw(Form("e p%s", (resultType == kToPiRatio) ? "" : " same"));
+  }
   histRef[AliPID::kKaon]->SetMarkerStyle(22);
   histRef[AliPID::kKaon]->Draw("e p same");
   histRef[AliPID::kProton]->SetMarkerStyle(29);
   histRef[AliPID::kProton]->Draw("e p same");
-  histRef[AliPID::kMuon]->SetMarkerStyle(30);
-  histRef[AliPID::kMuon]->Draw("e p same");
+  if (usemuons) {
+    histRef[AliPID::kMuon]->SetMarkerStyle(30);
+    histRef[AliPID::kMuon]->Draw("e p same");
+  }
   
-  if (mode <= 0)
-    gr[AliPID::kElectron]->GetHistogram()->GetXaxis()->SetRangeUser(pLow, pHigh);
-  gr[AliPID::kElectron]->GetHistogram()->GetYaxis()->SetRangeUser(0., 1.0);
-  gr[AliPID::kElectron]->Draw("2 same");
+  if (useelectrons) {
+    if (mode <= 0)
+      gr[AliPID::kElectron]->GetHistogram()->GetXaxis()->SetRangeUser(pLow, pHigh);
+
+    gr[AliPID::kElectron]->GetHistogram()->GetYaxis()->SetRangeUser(0., 1.0);
+    gr[AliPID::kElectron]->Draw("2 same");
+  }
   gr[AliPID::kKaon]->Draw("2 same");
   if (resultType != kToPiRatio)
     gr[AliPID::kPion]->Draw("2 same");
+  
   gr[AliPID::kProton]->Draw("2 same");
-  gr[AliPID::kMuon]->Draw("2 same");
+  if (usemuons)
+    gr[AliPID::kMuon]->Draw("2 same");
+  
   
   TLegend* legend = new TLegend(0.622126, 0.605932, 0.862069, 0.855932);    
   legend->SetBorderSize(0);
@@ -85,14 +98,16 @@ TCanvas* DrawFractionHistos(TString canvName, TString canvTitle, Double_t pLow, 
   TString suffix = (resultType == kToPiRatio) ? "/#pi" : "";
   if (resultType != kToPiRatio)
     legend->AddEntry(histRef[AliPID::kPion], Form("#pi%s", suffix.Data()), "flp");
-  legend->AddEntry(histRef[AliPID::kElectron], Form("e%s", suffix.Data()), "flp");
+  if (useelectrons)
+    legend->AddEntry(histRef[AliPID::kElectron], Form("e%s", suffix.Data()), "flp");
   legend->AddEntry(histRef[AliPID::kKaon], Form("K%s", suffix.Data()), "flp");
   legend->AddEntry(histRef[AliPID::kProton], Form("p%s", suffix.Data()), "flp");
-  legend->AddEntry(histRef[AliPID::kMuon], Form("#mu%s", suffix.Data()), "flp");
+  if (usemuons)
+    legend->AddEntry(histRef[AliPID::kMuon], Form("#mu%s", suffix.Data()), "flp");
   legend->Draw();
   
   ClearTitleFromHistoInCanvas(canv);
-  
+
   return canv;
 }
 
@@ -116,14 +131,14 @@ TGraphAsymmErrors* loadGraph(const TString graphName, TFile* f)
 
 
 //________________________________________________________
-TH1F* loadHisto(const TString histName, TFile* f)
+TH1* loadHisto(const TString histName, TFile* f)
 {
   if (!f) {
     std::cout << "No file. Cannot load hist \"" << histName.Data() << "\n!" << std::endl;
     return 0x0;
   }
   
-  TH1F* hTemp = (TH1F*)(f->Get(histName.Data()));
+  TH1* hTemp = (TH1*)(f->Get(histName.Data()));
   if (!hTemp) {
     std::cout << "Failed to load histo \"" << histName.Data() << "\"!" << std::endl;
     return 0x0;
@@ -212,7 +227,7 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
     f[iFile] = TFile::Open(fileNames[iFile].Data());
     if (!f[iFile])  {
       std::cout << "Failed to open file \"" << fileNames[iFile].Data() << "\"!" << std::endl;
-      return -1;
+      continue;
     }
         
     // Extract the data graphs
@@ -252,9 +267,9 @@ Int_t AddUpSystematicErrors(const TString path, const TString outFileTitle, cons
     return -1;
   }
     
-  TH1F* hReferenceFractions[numSpecies] = { 0x0, };
-  TH1F* hReferenceToPiRatios[numSpecies] = { 0x0, };
-  TH1F* hReferenceYields[numSpecies] = { 0x0, };
+  TH1* hReferenceFractions[numSpecies] = { 0x0, };
+  TH1* hReferenceToPiRatios[numSpecies] = { 0x0, };
+  TH1* hReferenceYields[numSpecies] = { 0x0, };
   
   for (Int_t i = 0; i < numSpecies; i++) {
     hReferenceFractions[i] = loadHisto(histNames[i], fReferenceData);

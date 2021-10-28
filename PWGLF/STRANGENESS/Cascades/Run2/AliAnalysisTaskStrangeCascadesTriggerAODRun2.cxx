@@ -27,7 +27,6 @@
 #include "TTree.h"
 #include "TObjString.h"
 
-
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliMultEstimator.h"
@@ -2918,7 +2917,6 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
         Bool_t lHasAtLeastOneResonance = kFALSE;
         
         Int_t lCutIDrsn;       // ID of cut set that identifies the resonance candidates
-        fTreeRsnVarEventNumber = fTreeCascVarEventNumber;
         
         for (Int_t i = 0 ; i < fResonanceFinders.GetEntries() ; i++)
         {
@@ -2961,6 +2959,8 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                 fTreeRsnVarInvMass             = lPair->InvMass(kFALSE);
                 
                 fTreeRsnVarPassesOOBPileupCut  = lPair->PassesOOBPileupCut();
+                
+                fTreeRsnVarEventNumber         = fTreeCascVarEventNumber;
                 
                 //------------------------------------------------
                 // Fill Tree!
@@ -3177,30 +3177,30 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2::UserExec(Option_t *)
                 if( lMinDCAXYFormula.CompareTo("") )
                 {
                     lMinDCAXYFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMinDCAToVertexXYPtDep = new TFormula("lCutMinDCAToVertexXYPtDep", lMinDCAXYFormula.Data());
+                    TFormula lCutMinDCAToVertexXYPtDep("lCutMinDCAToVertexXYPtDep", lMinDCAXYFormula.Data());
                     
-                    lCutMinDCAToVertexXY = lCutMinDCAToVertexXYPtDep->Eval(fTreePrimVarPt);
+                    lCutMinDCAToVertexXY = lCutMinDCAToVertexXYPtDep.Eval(fTreePrimVarPt);
                 }
                 if( lMinDCAZFormula.CompareTo("") )
                 {
                     lMinDCAZFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMinDCAToVertexZPtDep = new TFormula("lCutMinDCAToVertexZPtDep", lMinDCAZFormula.Data());
+                    TFormula lCutMinDCAToVertexZPtDep("lCutMinDCAToVertexZPtDep", lMinDCAZFormula.Data());
                     
-                    lCutMinDCAToVertexZ = lCutMinDCAToVertexZPtDep->Eval(fTreePrimVarPt);
+                    lCutMinDCAToVertexZ = lCutMinDCAToVertexZPtDep.Eval(fTreePrimVarPt);
                 }
                 if( lMaxDCAXYFormula.CompareTo(""))
                 {
                     lMaxDCAXYFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMaxDCAToVertexXYPtDep = new TFormula("lCutMaxDCAToVertexXYPtDep", lMaxDCAXYFormula.Data());
+                    TFormula lCutMaxDCAToVertexXYPtDep("lCutMaxDCAToVertexXYPtDep", lMaxDCAXYFormula.Data());
                     
-                    lCutMaxDCAToVertexXY = lCutMaxDCAToVertexXYPtDep->Eval(fTreePrimVarPt);
+                    lCutMaxDCAToVertexXY = lCutMaxDCAToVertexXYPtDep.Eval(fTreePrimVarPt);
                 }
                 if( lMaxDCAZFormula.CompareTo("") )
                 {
                     lMaxDCAZFormula.ReplaceAll("pt","x");
-                    TFormula* lCutMaxDCAToVertexZPtDep = new TFormula("lCutMaxDCAToVertexZPtDep", lMaxDCAZFormula.Data());
+                    TFormula lCutMaxDCAToVertexZPtDep("lCutMaxDCAToVertexZPtDep", lMaxDCAZFormula.Data());
                     
-                    lCutMaxDCAToVertexZ = lCutMaxDCAToVertexZPtDep->Eval(fTreePrimVarPt);
+                    lCutMaxDCAToVertexZ = lCutMaxDCAToVertexZPtDep.Eval(fTreePrimVarPt);
                 }
                 
                 Float_t lCutMinPtTracks     = 0.;
@@ -3887,6 +3887,9 @@ Int_t AliAnalysisTaskStrangeCascadesTriggerAODRun2::FillPair(AliRsnMiniEvent *mi
             
             lPairList.AddLast( new AliRsnMiniPair() );
             ( (AliRsnMiniPair*)lPairList.Last() )->Fill(p1, p2, m1, m2, fMotherMass);
+            // do rotation if needed
+            if( lcompType == "ROTATE1" ) ( (AliRsnMiniPair*)lPairList.Last() )->InvertP(kTRUE);
+            if( lcompType == "ROTATE2" ) ( (AliRsnMiniPair*)lPairList.Last() )->InvertP(kFALSE);
             nadded++;
         }
         

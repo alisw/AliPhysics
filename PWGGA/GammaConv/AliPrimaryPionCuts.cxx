@@ -383,9 +383,9 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEv
     if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
 // 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
-    TParticle* particle = mcEvent->Particle(labelParticle);
+    AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(labelParticle);
 
-	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
+    if( TMath::Abs( particle->PdgCode() ) != 211 )  return kFALSE;
 	
 	if( fDoEtaCut ){
 	if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
@@ -1178,6 +1178,28 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fMaxSharedClsTPCFrac=0.4;
             break;
+        case 16:  //g 70 + refit
+            fMinClsTPC= 70.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+        case 17:  //h 100 + refit
+            fMinClsTPC= 100.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+        case 18:  //i 80 + refit, 35% of findable clusters
+            fMinClsTPC = 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMinClsTPCToF= 0.35;
+            fUseCorrectedTPCClsInfo=0;
+            break;
+        case 19:  //j 80 + refit, 60% of findable clusters
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMinClsTPCToF= 0.6;
+            fUseCorrectedTPCClsInfo=0;
+            break;
 				default:
 						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
 						return kFALSE;
@@ -1489,8 +1511,12 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 0.520;
             break;
-		default:
-			cout<<"Warning: MassCut not defined "<<massCut<<endl;
+	case 22: //m cut at eta prime mass
+		fDoMassCut = kTRUE;
+		fMassCut = 0.95778;
+		break;
+	default:
+		cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
     } 
     return kTRUE;

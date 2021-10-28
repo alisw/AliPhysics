@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
   UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE,
   Bool_t saveCatalystQA = kFALSE, Int_t Nsets = 5, TString configArray = "0 1 3 4 6",
-  Int_t Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+  Int_t Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5", Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE)
 {
 // Load Custom Configuration and parameters.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
@@ -131,7 +131,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster",
     myTask[i]->HOCFASetCentralityBinning(9);
     myTask[i]->HOCFASetCentralityArray("0. 5. 10. 20. 30. 40. 50. 60. 70. 80.");
     myTask[i]->HOCFASetMinMultiplicity(10);
-    myTask[i]->HOCFASetParticleWeights(kTRUE);
+    myTask[i]->HOCFASetParticleWeights(useWeightsNUE, useWeightsNUA);
     myTask[i]->HOCFASetNumberCombi(Ncombi);
     myTask[i]->HOCFASetHarmoArray(Form("%s", combiArray.Data())); // 6 combis.
     mgr->AddTask((AliAnalysisTask *) myTask[i]);

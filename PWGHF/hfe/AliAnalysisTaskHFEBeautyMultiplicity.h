@@ -61,9 +61,20 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 	void SetWeightDmeson(TGraphErrors* WeightPt_Dmeson){ pTWeight_D = WeightPt_Dmeson; };
 	void SetWeightLc(TGraphErrors* WeightPt_Lc){ pTWeight_Lc = WeightPt_Lc; };
-	//void SetWeightBmeson(TF1* WeightPt_Bmeson){ pTWeight_B = WeightPt_Bmeson; };
+	void SetWeightBmeson(TGraphErrors* WeightPt_Bmeson){ pTWeight_B = WeightPt_Bmeson; };
 	//void SetWeightPi0(TF1* WeightPt_Pi0){ pTWeight_Pi0 = WeightPt_Pi0; };
 	//void SetWeightEta(TF1* WeightPt_Eta){ pTWeight_Eta = WeightPt_Eta; };
+	
+
+	void SetTrackEta(Double_t etaMin, Double_t etaMax) {TrackEtaMin = etaMin, TrackEtaMax = etaMax;};
+	void SetNsigma(Double_t NsigMin, Double_t NsigMax, Double_t HadNsig) {NsigmaMin = NsigMin, NsigmaMax = NsigMax, HadNsigma = HadNsig;};
+	void SetM20(Double_t m20Min, Double_t m20Max) {M20Min = m20Min, M20Max = m20Max;};
+	void SetEop(Double_t eopMin, Double_t eopMax) {EopMin = eopMin, EopMax = eopMax;};
+	void SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
+	void SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed, Double_t dEdx) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed, TPCdEdx = dEdx;};
+	void SetDiff(Double_t diff) {EtaPhiDiff = diff;};
+	void SetMass(Double_t invmass, Double_t photPt) {PhotInvMass = invmass, PhotMinPt = photPt;};
+	
 
 
 
@@ -91,7 +102,29 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         Bool_t              fUseTender;             // switch to add tender
         TClonesArray*       fTracks_tender;         // Tender tracks
         TClonesArray*       fCaloClusters_tender;   // Tender cluster
-        
+
+	//---- Cut Parameter ----//
+	
+	Double_t TrackEtaMin;
+	Double_t TrackEtaMax;
+	Double_t NsigmaMin;
+	Double_t NsigmaMax;
+	Double_t HadNsigma;
+	Double_t M20Min;
+	Double_t M20Max;
+	Double_t EopMin;
+	Double_t EopMax;
+	Int_t NTPCClust;
+	Int_t NITSClust;
+	Double_t TPCdEdx;
+	Double_t DCAxy;
+	Double_t DCAz;
+	Int_t NCrossedRow;
+	Double_t EtaPhiDiff;
+	Double_t PhotInvMass;
+	Double_t PhotMinPt;
+
+
     
         TH1F* fNevents;
         TH1F* fCent;
@@ -190,6 +223,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
     	TH2F* fHadronEtaPhi;	    // eta vs. phi (hadron)
         
     	TH1F* fHist_Tracklet;
+
+	TH2F *fNsigma_Electron;
+	TH2F *fNsigma_Hadron;
     
     
         //---- MC output ----//
@@ -233,15 +269,21 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         TH1F*	fHistPt_HFE_MC_Lc;
 
 	TH2F*	fDCAxy_MC_B;
+	TH2F*	fDCAxy_MC_B_weight;
 	TH2F*	fDCAxy_MC_D;
 	TH2F*	fDCAxy_MC_Dpm;
+	TH2F*	fDCAxy_MC_Dpm_weight;
 	TH2F*	fDCAxy_MC_D0;
+	TH2F*	fDCAxy_MC_D0_weight;
 	TH2F*	fDCAxy_MC_Ds;
+	TH2F*	fDCAxy_MC_Ds_weight;
 	TH2F*	fDCAxy_MC_Lc;
+	TH2F*	fDCAxy_MC_Lc_weight;
 
 	TH2F*	fDCAxy_MC_ele;
 	TH2F*	fDCAxy_MC_Phot;
     	
+	TH1F*	fHistPt_B_TrkCut;
 	TH1F*	fHistPt_B_TrkCut0;
 	TH1F*	fHistPt_B_TrkCut1;
 	TH1F*	fHistPt_B_TrkCut2;
@@ -252,7 +294,11 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_B_TrkCut7;
 	TH1F*	fHistPt_B_TrkCut8;
 	TH1F*	fHistPt_B_TrkCut9;
+	TH1F*	fHistPt_B_TrkCut10;
+	TH1F*	fHistPt_B_TrkCut11;
+	TH1F*	fHistPt_B_TrkCut12;
 
+	TH1F*	fHistPt_D_TrkCut;
 	TH1F*	fHistPt_D_TrkCut0;
 	TH1F*	fHistPt_D_TrkCut1;
 	TH1F*	fHistPt_D_TrkCut2;
@@ -263,6 +309,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_D_TrkCut7;
 	TH1F*	fHistPt_D_TrkCut8;
 	TH1F*	fHistPt_D_TrkCut9;
+	TH1F*	fHistPt_D_TrkCut10;
+	TH1F*	fHistPt_D_TrkCut11;
+	TH1F*	fHistPt_D_TrkCut12;
 
 	TH2F*	fNtrkletNch;
 	TH2F*	fNtrkletNch_Corr;
@@ -300,7 +349,8 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1D*		fweightNtrkl;
 	TGraphErrors* pTWeight_D;
 	TGraphErrors* pTWeight_Lc;
-	TF1* pTWeight_B;
+	TGraphErrors* pTWeight_B;
+	//TF1* pTWeight_B;
 	TF1* pTWeight_Pi0;
 	TF1* pTWeight_Eta;
 

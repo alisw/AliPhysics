@@ -37,6 +37,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliESDtrack.h"
+#include "AliVertexerTracks.h"
 #include "AliCentrality.h"
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSELc2pKs0fromKFP.h"
@@ -49,7 +50,7 @@
 
 // includes added to play with KFParticle
 #ifndef HomogeneousField
-#define HomogeneousField 
+#define HomogeneousField
 #endif
 
 class AliAnalysisTaskSELc2pKs0fromKFP;    // your analysis class
@@ -62,6 +63,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fPIDCombined(0),
   fAnaCuts(0),
   fpVtx(0),
+  fpVtxOff(0),
   fMCEvent(0),
   fBzkG(0),
   fCentrality(0),
@@ -80,6 +82,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fIsMC(kFALSE),
   fUseWeights(kFALSE),
   fKeepOnlyMCSignal(kTRUE),
+  fKeepAllVariables(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fCounter(0),
   fHistEvents(0),
@@ -109,6 +112,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fPIDCombined(0),
   fAnaCuts(cuts),
   fpVtx(0),
+  fpVtxOff(0),
   fMCEvent(0),
   fBzkG(0),
   fCentrality(0),
@@ -127,6 +131,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fIsMC(kFALSE),
   fUseWeights(kFALSE),
   fKeepOnlyMCSignal(kTRUE),
+  fKeepAllVariables(kFALSE),
   fIsAnaLc2Lpi(kFALSE),
   fCounter(0),
   fHistEvents(0),
@@ -147,9 +152,9 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
     // constructor
     for (Int_t i=0; i<4; i++) fMultEstimatorAvg[i] = 0;
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
-                                        // this chain is created by the analysis manager, so no need to worry about it, 
+                                        // this chain is created by the analysis manager, so no need to worry about it,
                                         // it does its work automatically
-  DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
+  DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
                                         // you can add more output objects by calling DefineOutput(2, classname::Class())
                                         // if you add more output objects, make sure to call PostData for all of them, and to
                                         // make changes to your AddTask macro!
@@ -178,12 +183,12 @@ AliAnalysisTaskSELc2pKs0fromKFP::~AliAnalysisTaskSELc2pKs0fromKFP()
       delete fPID;
       fPID = 0;
     }
-    
+
     if (fPIDCombined) {
        delete fPIDCombined;
        fPIDCombined = 0;
     }
-       
+
 
     if (fListCuts) {
       delete fListCuts;
@@ -239,7 +244,7 @@ AliAnalysisTaskSELc2pKs0fromKFP::~AliAnalysisTaskSELc2pKs0fromKFP()
       delete fCounter;
       fCounter = 0;
     }
-    
+
     if (fFuncWeightPythia) {
       delete fFuncWeightPythia;
       fFuncWeightPythia = 0;
@@ -277,7 +282,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
     // create output objects
     //
     // this function is called ONCE at the start of your analysis (RUNTIME)
-    // here you ceate the histograms that you want to use 
+    // here you ceate the histograms that you want to use
     //
     // the histograms are in this case added to a tlist, this list is in the end saved
     // to an output file
@@ -313,7 +318,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
   fHistEvents->GetXaxis()->SetBinLabel(18,Form("zVtxMC<=%2.0fcm",fAnaCuts->GetMaxVtxZ()));
   fHistEvents->GetYaxis()->SetTitle("counts");
 
-  fHTrigger = new TH1F("fHTrigger", "counter", 18, -0.5, 17.5);                                      
+  fHTrigger = new TH1F("fHTrigger", "counter", 18, -0.5, 17.5);
   fHTrigger->SetStats(kTRUE);
   fHTrigger->GetXaxis()->SetBinLabel(1,"X1");
   fHTrigger->GetXaxis()->SetBinLabel(2,"kMB");
@@ -339,7 +344,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
   fCounter->Init();
   PostData(2, fCounter);
   DefineEvent();
-  PostData(3, fTree_Event);  // postdata will notify the analysis manager of changes / updates to the 
+  PostData(3, fTree_Event);  // postdata will notify the analysis manager of changes / updates to the
 
   DefineTreeLc_Rec();
   PostData(4, fTree_Lc);
@@ -357,7 +362,8 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserCreateOutputObjects()
 
   DefineTreeLc_Rec_QA();
   PostData(7, fTree_Lc_QA);
-  
+
+
   //initialise AliPIDCombined object for Bayesian PID
   fPIDCombined = new AliPIDCombined;
   fPIDCombined->SetDefaultTPCPriors();
@@ -389,8 +395,8 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 {
   // user exec
   // this function is called once for each event
-  // the manager will take care of reading the events from file, and with the static function InputEvent() you 
-  // have access to the current event. 
+  // the manager will take care of reading the events from file, and with the static function InputEvent() you
+  // have access to the current event.
   // once you return from the UserExec function, the manager will retrieve the next event from the chain
 
   if (!fInputEvent) { // if the event is empty (getting it failed) skip this event
@@ -403,7 +409,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 
   fHistEvents->Fill(1);
 
-  
+
   TClonesArray *arrayLc2pKs0orLpi = NULL;
   if (!aodEvent && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -437,8 +443,14 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 
   fCounter->StoreEvent(aodEvent,fAnaCuts,fIsMC);
 
+  /// Recalculate PV with diamond constraint off
+  AliVertexerTracks *vertexer = new AliVertexerTracks(aodEvent->GetMagneticField());
+  vertexer->SetConstraintOff();
+  fpVtxOff = vertexer->FindPrimaryVertex(aodEvent);
+
+
   //------------------------------------------------
-  // MC analysis setting                                                                    
+  // MC analysis setting
   //------------------------------------------------
 
   TClonesArray *mcArray = 0;
@@ -535,12 +547,12 @@ void AliAnalysisTaskSELc2pKs0fromKFP::UserExec(Option_t *)
 
   if(!fAnaCuts) return;
 
-  FillEventROOTObjects();
+  FillEventROOTObjects(aodEvent);
 
 //------------------------------------------------
 // Main analysis done in this function
 //------------------------------------------------
-  
+
   fPID = fInputHandler->GetPIDResponse();
   MakeAnaLcFromCascadeHF(arrayLc2pKs0orLpi, aodEvent, mcArray, PV);
 
@@ -711,7 +723,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
 
   if(!mcpart) return;
 
-  for(Int_t i=0;i<9;i++){
+  for(Int_t i=0;i<12;i++){
     fVar_LcMCGen[i] = -9999.;
   }
 
@@ -724,19 +736,24 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
   fVar_LcMCGen[ 1] = mcpart->Y();
   fVar_LcMCGen[ 2] = mcpart->Pt();
   fVar_LcMCGen[ 3] = CheckOrigin;
+  fVar_LcMCGen[4] = mcpart->Xv();
+  fVar_LcMCGen[5] = mcpart->Yv();
+  fVar_LcMCGen[6] = mcpart->Zv();
   if (fUseWeights && CheckOrigin>=0) { //add branches for MC pT weights
-    fVar_LcMCGen[4] = fFuncWeightPythia->Eval(mcpart->Pt()); // weight pT flat 
-    fVar_LcMCGen[5] = fFuncWeightFONLL5overLHC13d3->Eval(mcpart->Pt()); // weight pT flat 
-    fVar_LcMCGen[6] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcpart->Pt()); // weight pT flat 
+    fVar_LcMCGen[7] = fFuncWeightPythia->Eval(mcpart->Pt()); // weight pT flat
+    fVar_LcMCGen[8] = fFuncWeightFONLL5overLHC13d3->Eval(mcpart->Pt()); // weight pT flat
+    fVar_LcMCGen[9] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcpart->Pt()); // weight pT flat
+
   }
-  if (fUseMult) { // add multiplicity branches for MC gen 
+  if (fUseMult) { // add multiplicity branches for MC gen
     Double_t zPrimVertex = mcHeader->GetVtxZ();
     TProfile *estimatorAvg = GetEstimatorHistogram(aodEvent);
     Double_t nTrackletsEta10 = static_cast<Double_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
     Double_t nTrackletsEta10Corr = static_cast<Double_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult));
-    
-    fVar_LcMCGen[7] = nTrackletsEta10;
-    fVar_LcMCGen[8] = nTrackletsEta10Corr;
+
+    fVar_LcMCGen[10] = nTrackletsEta10;
+    fVar_LcMCGen[11] = nTrackletsEta10Corr;
+
   }
 
   if (fWriteLcMCGenTree) fTree_LcMCGen->Fill();
@@ -757,7 +774,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
   Double_t covP[21], covN[21], covB[21];
   const Int_t NDaughters = 2;
   const Float_t massKs0_PDG = TDatabasePDG::Instance()->GetParticle(310)->Mass();
-  const Float_t massLc_PDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+  //const Float_t massLc_PDG  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   const Float_t massLam_PDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
 
   for (UInt_t iCasc=0; iCasc<nCasc; iCasc++) {
@@ -818,7 +835,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
       AliDebug(2,Form("V0 by cascade %d has charge: IMPOSSIBLE!",iCasc));
       continue;
     }
-    
+
     // check charge of the first daughter, if negative, define it as the second one
     if (v0Pos->Charge()<0) {
       v0Pos = (AliAODTrack*) (Lc2pKs0orLpi->Getv0NegativeTrack());
@@ -846,18 +863,18 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
     //// Recalculate primary vertex without daughter tracks, if requested
     /// IMPORTANT: Own primary vertex must be unset before continue/return, else memory leak
     bool recVtx = false;
-    AliAODVertex *origOwnVtx = 0x0; // event primary vtx before daughter subtraction
+    AliAODVertex *origOwnVtx = 0x0;
     AliAODVertex *ownPVtx = 0x0; // recalculated primary vertex for candidate
     if (fAnaCuts->GetIsPrimaryWithoutDaughters())
     {
-      if (Lc2pKs0orLpi->GetOwnPrimaryVtx() ) 
-         origOwnVtx = new AliAODVertex(*Lc2pKs0orLpi->GetOwnPrimaryVtx());
+      if (Lc2pKs0orLpi->GetOwnPrimaryVtx() )
+               origOwnVtx = new AliAODVertex(*Lc2pKs0orLpi->GetOwnPrimaryVtx());
       if (fAnaCuts->RecalcOwnPrimaryVtx(Lc2pKs0orLpi,aodEvent)) {
          ownPVtx = Lc2pKs0orLpi->GetOwnPrimaryVtx();
          recVtx = true;
          KFPVertex pVertex;
          Double_t pos[3],cov[6];
-         ownPVtx->GetXYZ(pos);        
+         ownPVtx->GetXYZ(pos);
          if ( fabs(pos[2])>10. ) {Lc2pKs0orLpi->UnsetOwnPrimaryVtx(); fAnaCuts->CleanOwnPrimaryVtx(Lc2pKs0orLpi,aodEvent,origOwnVtx); continue;} // vertex cut on z-axis direction
          ownPVtx->GetCovarianceMatrix(cov);
          //  if ( !AliVertexingHFUtils::CheckAODvertexCov(fpVtx) ) cout << "Vertex Cov. is wrong!!!" << endl;
@@ -950,7 +967,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
       kfpLc.GetMass(massLc_rec, err_massLc_rec);
       if (err_massLc_rec <= 1.e-10 ) isRej = kTRUE;
       // ===================================
-      
+
       // === for Lc without mass constraint ===
       // check rapidity of Lc
       if ( TMath::Abs(kfpLc_woKs0MassConst.GetE())<=TMath::Abs(kfpLc_woKs0MassConst.GetPz()) ) isRej = kTRUE;
@@ -984,7 +1001,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
           lab_Ks0 = MatchToMCKs0(v0Pos, v0Neg, mcArray);
           lab_Lc  = MatchToMCLc2pKs0(v0Pos, v0Neg, bachPart, mcArray);
         }
-        FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpLc, bachPart, kfpBach, kfpKs0, kfpKs0_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Ks0, lab_Lc, kfpLc_woKs0MassConst, aodEvent);
+        FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpLc, bachPart, kfpBach, kfpKs0, kfpKs0_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Ks0, lab_Lc, kfpLc_woKs0MassConst, aodEvent, ownPVtx);
       }
       kfpLc.Clear();
       kfpKs0_massConstraint.Clear();
@@ -1099,7 +1116,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
             lab_Lam = MatchToMCLam(v0Pos, v0Neg, mcArray, kTRUE);
             lab_Lc  = MatchToMCLc2Lpi(v0Pos, v0Neg, bachPart, mcArray, kTRUE);
           }
-          FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpLc, bachPart, kfpBach, kfpLam, kfpLam_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Lam, lab_Lc, kfpLc_woLamMassConst, aodEvent);
+          FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpLc, bachPart, kfpBach, kfpLam, kfpLam_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_Lam, lab_Lc, kfpLc_woLamMassConst, aodEvent, ownPVtx);
         }
         kfpLc_woLamMassConst.Clear();
         kfpLc.Clear();
@@ -1199,7 +1216,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
         kfpAntiLc_woAntiLamMassConst.GetMass(massAntiLc_woAntiLamMassConst_rec, err_massAntiLc_woAntiLamMassConst_rec);
         if (err_massAntiLc_woAntiLamMassConst_rec <= 1.e-10 ) isRej = kTRUE;
         // ===================================
-        
+
         if (isRej) {
            if (recVtx) {
               Lc2pKs0orLpi->UnsetOwnPrimaryVtx();
@@ -1214,7 +1231,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
             lab_AntiLam = MatchToMCLam(v0Pos, v0Neg, mcArray, kFALSE);
             lab_AntiLc  = MatchToMCLc2Lpi(v0Pos, v0Neg, bachPart, mcArray, kFALSE);
           }
-          FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpAntiLc, bachPart, kfpBach, kfpAntiLam, kfpAntiLam_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_AntiLam, lab_AntiLc, kfpAntiLc_woAntiLamMassConst, aodEvent);
+          FillTreeRecLcFromCascadeHF(Lc2pKs0orLpi, kfpAntiLc, bachPart, kfpBach, kfpAntiLam, kfpAntiLam_massConstraint, v0Pos, v0Neg, PV, mcArray, lab_AntiLam, lab_AntiLc, kfpAntiLc_woAntiLamMassConst, aodEvent, ownPVtx);
         }
         kfpAntiLc_woAntiLamMassConst.Clear();
         kfpAntiLc.Clear();
@@ -1230,7 +1247,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
        fAnaCuts->CleanOwnPrimaryVtx(Lc2pKs0orLpi,aodEvent,origOwnVtx);
     }
   }
-  
+
   delete vHF;
   return;
 
@@ -1242,17 +1259,17 @@ void AliAnalysisTaskSELc2pKs0fromKFP::SelectTrack(AliVEvent *event, Int_t trkEnt
   // Select good tracks using fAnaCuts (AliRDHFCuts object)
   if(trkEntries==0) return;
 
-  nSeleTrks=0;                                                                                                 
+  nSeleTrks=0;
   for(Int_t i=0; i<trkEntries; i++) {
     seleFlags[i] = kFALSE;
-    
+
     AliVTrack *track;
     track = (AliVTrack*)event->GetTrack(i);
-    
+
 //    if(track->GetID()<0) continue;
     Double_t covtest[21];
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
-    
+
 //    AliAODTrack *aodt = (AliAODTrack*)track;
 
 /*
@@ -1273,17 +1290,24 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineEvent()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fTree_Event = new TTree(nameoutput, "Event");
-  Int_t nVar = 7;
+  Int_t nVar = 13;
   fVar_Event = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
   fVarNames[0]  = "centrality";
-  fVarNames[1]  = "z_vtx_reco";
-  fVarNames[2]  = "n_vtx_contributors";
-  fVarNames[3]  = "n_tracks";
-  fVarNames[4]  = "is_ev_rej";
-  fVarNames[5]  = "run_number";
-  fVarNames[6]  = "ev_id";
+  fVarNames[1]  = "x_vtx_reco";
+  fVarNames[2]  = "y_vtx_reco";
+  fVarNames[3]  = "z_vtx_reco";
+  fVarNames[4]  = "n_vtx_contributors";
+  fVarNames[5]  = "n_tracks";
+  fVarNames[6]  = "is_ev_sel";
+  fVarNames[7]  = "run_number";
+  fVarNames[8]  = "ev_id";
+  fVarNames[9]  = "x_vtx_reco_constOff";
+  fVarNames[10]  = "y_vtx_reco_constOff";
+  fVarNames[11]  = "z_vtx_reco_constOff";
+  fVarNames[12]  = "n_vtx_contributors_constOff";
+
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -1300,9 +1324,33 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_Lc = new TTree(nameoutput, "Lc variables tree");
-  Int_t nVar = 41;
-  fVar_Lc = new Float_t[nVar];
-  TString *fVarNames = new TString[nVar];
+  Int_t nVar = 0;
+  TString *fVarNames;
+  if (!fIsAnaLc2Lpi){
+    if (!fKeepAllVariables){
+      if (fIsMC){
+        nVar = 35;
+        fVar_Lc = new Float_t[nVar];
+        fVarNames = new TString[nVar];
+      }
+      else{
+        nVar = 31;
+        fVar_Lc = new Float_t[nVar];
+        fVarNames = new TString[nVar];
+      }
+    }
+    if (fKeepAllVariables){
+      nVar = 48;
+      fVar_Lc = new Float_t[nVar];
+      fVarNames = new TString[nVar];
+    }
+  }
+  if (fIsAnaLc2Lpi) {
+    nVar = 41;
+    fVar_Lc = new Float_t[nVar];
+    fVarNames = new TString[nVar];
+  }
+
 
   if (!fIsAnaLc2Lpi) {
     fVarNames[0]  = "nSigmaTPC_PiPlus"; //TPC nsigma for pion+ coming from K0s
@@ -1311,46 +1359,60 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     fVarNames[3]  = "nSigmaTOF_PiPlus"; //TOF nsigma for pion+ coming from K0s
     fVarNames[4]  = "nSigmaTOF_PiMinus"; //TOF nsigma for pion coming from K0s
     fVarNames[5]  = "nSigmaTOF_Pr"; //TOF nsigma for proton
+    fVarNames[6]  = "chi2topo_Ks0_PV"; //chi2_topological of K0s (with mass constraint) to PV
+    fVarNames[7]  = "ldl_Ks0"; //l/dl of K0s
+    fVarNames[8] = "chi2topo_Lc"; //chi2_topological of Lc (with mass const. of Ks0) to PV
+    fVarNames[9] = "ldl_Lc"; //l/dl of Lc (with mass const. of Ks0)
+    fVarNames[10] = "DecayLxy_Ks0"; //decay length of Ks0 in x-y plane
+    fVarNames[11] = "ct_Ks0"; // life time of Ks0
+    fVarNames[12] = "DecayLxy_Lc"; //decay length of Lc in x-y plane
+    fVarNames[13] = "PA_Ks0"; //pointing angle of Ks0 (pointing back to Lc)
+    fVarNames[14] = "PA_Lc"; //pointing angle of Lc (pointing back to PV)
+    fVarNames[15] = "pt_Lc"; //pt of Lc (with mass const. of Ks0 and with PV const.)
+    fVarNames[16] = "rap_Lc"; //rapidity of Lc (with mass const. of Ks0 and with PV const.)
+    fVarNames[17] = "mass_Lc"; //mass of Lc (with mass const. of Ks0 and with PV const.)
+    fVarNames[18] = "pt_Pr"; //pt of proton
+    fVarNames[19] = "d0_PrToPV"; //rphi impact params of proton w.r.t. Primary Vtx [cm]
+    fVarNames[20] = "nTrackletsCorr"; // corrected Ntrk
+    fVarNames[21] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
+    fVarNames[22] = "CombinedPIDProb_Pr_TPCOnly"; // Bayesian PID probability of proton for bachelor track
+    fVarNames[23] = "nSigmaCombined_Pr"; // nSigma-combined for proton
+    fVarNames[24] = "nSigmaCombined_Pi_bach"; // nSigma-combined for proton from pions (for exclusion)
+    fVarNames[25] = "AODVertex_X"; //Primary vertex from AOD X position
+    fVarNames[26] = "AODVertex_Y"; //Primary vertex from AOD Y position
+    fVarNames[27] = "AODVertex_Z"; //Primary vertex from AOD Z position
+    fVarNames[28] = "AODVertex_X_pRemoved"; //Primary vertex from AOD X position after proton removal
+    fVarNames[29] = "AODVertex_Y_pRemoved"; //Primary vertex from AOD Y position after proton removal
+    fVarNames[30] = "AODVertex_Z_pRemoved"; //Primary vertex from AOD Z position after proton removal
+    if (fIsMC && !fKeepAllVariables) {
+      ///Only needed in MC
+      fVarNames[31] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
+      fVarNames[32] = "weightPtFlat"; // flat pT weight for MC
+      fVarNames[33] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+      fVarNames[34] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+    }
+    if (fKeepAllVariables){
+      fVarNames[31] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
+      fVarNames[32] = "weightPtFlat"; // flat pT weight for MC
+      fVarNames[33] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+      fVarNames[34] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+      /// Additional variables
+      fVarNames[35]  = "DCA_Ks0Dau"; //Distance between pions coming from K0s (calculated from AOD v0)
+      fVarNames[36]  = "chi2geo_Ks0"; //chi2_geometry of K0s (without mass constraint)
+      fVarNames[37] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Ks0)
+      fVarNames[38] = "pt_Ks0"; //pt of Ks0 (without mass const.)
+      fVarNames[39] = "mass_Ks0"; //mass of Ks0 (without mass const.)
+      fVarNames[40] = "pt_PiPlus"; //pt of pion+
+      fVarNames[41] = "pt_PiMinus"; //pt of pion-
+      fVarNames[42] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
+      fVarNames[43] = "cosThetaStar"; //cos-thetastar of decay
+      fVarNames[44] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
+      fVarNames[45] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
+      fVarNames[46] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
+      fVarNames[47] = "nTrackletsRaw"; // raw Ntrk
 
-    fVarNames[6]  = "DCA_Ks0Dau"; //Distance between pions coming from K0s (calculated from AOD v0)
+    }
 
-    fVarNames[7]  = "chi2geo_Ks0"; //chi2_geometry of K0s (without mass constraint)
-    fVarNames[8]  = "chi2topo_Ks0_PV"; //chi2_topological of K0s (with mass constraint) to PV
-    fVarNames[9]  = "ldl_Ks0"; //l/dl of K0s
-
-    fVarNames[10] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Ks0)
-    fVarNames[11] = "chi2topo_Lc"; //chi2_topological of Lc (with mass const. of Ks0) to PV
-    fVarNames[12] = "ldl_Lc"; //l/dl of Lc (with mass const. of Ks0)
-
-    fVarNames[13] = "DecayLxy_Ks0"; //decay length of Ks0 in x-y plane
-    fVarNames[14] = "ct_Ks0"; // life time of Ks0
-    fVarNames[15] = "DecayLxy_Lc"; //decay length of Lc in x-y plane
-    fVarNames[16] = "PA_Ks0"; //pointing angle of Ks0 (pointing back to Lc)
-    fVarNames[17] = "PA_Lc"; //pointing angle of Lc (pointing back to PV)
-
-    fVarNames[18] = "pt_Ks0"; //pt of Ks0 (without mass const.)
-    fVarNames[19] = "mass_Ks0"; //mass of Ks0 (without mass const.)
-    fVarNames[20] = "pt_Lc"; //pt of Lc (with mass const. of Ks0 and with PV const.)
-    fVarNames[21] = "rap_Lc"; //rapidity of Lc (with mass const. of Ks0 and with PV const.)
-    fVarNames[22] = "mass_Lc"; //mass of Lc (with mass const. of Ks0 and with PV const.)
-    fVarNames[23] = "pt_Pr"; //pt of proton
-    fVarNames[24] = "pt_PiPlus"; //pt of pion+
-    fVarNames[25] = "pt_PiMinus"; //pt of pion-
-    fVarNames[26] = "d0_PrToPV"; //rphi impact params of proton w.r.t. Primary Vtx [cm]
-    fVarNames[27] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
-    fVarNames[28] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
-    fVarNames[29] = "cosThetaStar"; //cos-thetastar of decay
-    fVarNames[30] = "CombinedPIDProb_Pr"; // Bayesian PID probability of proton for bachelor track
-    fVarNames[31] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
-    fVarNames[32] = "nSigmaCombined_Pr"; // nSigma-combined for proton
-    fVarNames[33] = "nSigmaCombined_Pi_bach"; // nSigma-combined for proton from pions (for exclusion)
-    fVarNames[34] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
-    fVarNames[35] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
-    fVarNames[36] = "weightPtFlat"; // flat pT weight for MC
-    fVarNames[37] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-    fVarNames[38] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
-    fVarNames[39] = "nTrackletsRaw"; // raw Ntrk
-    fVarNames[40] = "nTrackletsCorr"; // corrected Ntrk
 
   }
   if (fIsAnaLc2Lpi) {
@@ -1403,7 +1465,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
 
 
   }
-  
+
 //  fVarNames[]  = "chi2geo_Ks0_wMassConst"; //chi2_geometry of K0s (with mass constraint)
 //  fVarNames[] = "DecayL_Ks0"; //decay length of K0s in 3D
 //  fVarNames[] = "DecayL_Lc"; //decay length of Lc in 3D
@@ -1538,7 +1600,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Gen()
 {
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   fTree_LcMCGen = new TTree(nameoutput,"Lc MC variables tree");
-  Int_t nVar = 9;
+  Int_t nVar = 12;
   fVar_LcMCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1546,11 +1608,15 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Gen()
   fVarNames[ 1] = "LcY";
   fVarNames[ 2] = "LcPt";
   fVarNames[ 3] = "LcSource";
-  fVarNames[ 4] = "weightPtFlat"; // flat pT weight for MC
-  fVarNames[ 5] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-  fVarNames[ 6] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
-  fVarNames[ 7] = "nTrackletsRaw"; // raw Ntrk
-  fVarNames[ 8] = "nTrackletsCorr"; // corrected Ntrk
+  fVarNames[ 4] = "Vertex_X"; //Primary vertex X position
+  fVarNames[ 5] = "Vertex_Y"; //Primary vertex Y position
+  fVarNames[ 6] = "Vertex_Z"; //Primary vertex Z position
+  fVarNames[ 7] = "weightPtFlat"; // flat pT weight for MC
+  fVarNames[ 8] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+  fVarNames[ 9] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+  fVarNames[10] = "nTrackletsRaw"; // raw Ntrk
+    fVarNames[11] = "nTrackletsCorr"; // corrected Ntrk
+
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_LcMCGen->Branch(fVarNames[ivar].Data(),&fVar_LcMCGen[ivar],Form("%s/F",fVarNames[ivar].Data()));
@@ -1562,7 +1628,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Gen()
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskSELc2pKs0fromKFP::InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2)
 {
-  
+
   Double_t mass1 = TDatabasePDG::Instance()->GetParticle(pdg1)->Mass();
   Double_t mass2 = TDatabasePDG::Instance()->GetParticle(pdg2)->Mass();
   Double_t E1 = TMath::Sqrt(mass1*mass1 + trk1->P()*trk1->P());
@@ -1579,17 +1645,30 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineAnaHist()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
+void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects(AliAODEvent* aodEvent)
 {
 
-  for (Int_t i=0; i<7; i++) {
+  for (Int_t i=0; i<9; i++) {
     fVar_Event[i] = 0.;
   }
 
   Double_t pos[3];
   fpVtx->GetXYZ(pos);
 
-  fVar_Event[1] = pos[2];
+
+  fVar_Event[1] = pos[0];
+  fVar_Event[2] = pos[1];
+  fVar_Event[3] = pos[2];
+  fVar_Event[4] = fpVtx->GetNContributors();
+  fVar_Event[5] = aodEvent->GetNumberOfTracks();
+  fVar_Event[7] = aodEvent->GetRunNumber();
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(aodEvent->GetHeader());
+  ULong64_t eventId = header->GetEventIdAsLong();
+  fVar_Event[8] = eventId;
+  fVar_Event[9] = fpVtxOff->GetX();
+  fVar_Event[10] = fpVtxOff->GetY();
+  fVar_Event[11] = fpVtxOff->GetZ();
+  fVar_Event[12] = fpVtxOff->GetNContributors();
 
   fTree_Event->Fill();
 
@@ -1598,31 +1677,53 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillEventROOTObjects()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent)
+void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent, AliAODVertex *ownPVtx)
 {
-  
-  for (Int_t i=0; i<40; i++) {
-    fVar_Lc[i] = -9999.;
+
+  if (!fIsAnaLc2Lpi){
+    if (!fKeepAllVariables){
+      if (fIsMC){
+        for (Int_t i=0; i<35; i++) {
+          fVar_Lc[i] = -9999.;
+        }
+      }
+      else{
+        for (Int_t i=0; i<31; i++) {
+          fVar_Lc[i] = -9999.;
+        }
+      }
+    }
+    if (fKeepAllVariables){
+      for (Int_t i=0; i<48; i++) {
+        fVar_Lc[i] = -9999.;
+      }
+    }
+  }
+  if (fIsAnaLc2Lpi) {
+    for (Int_t i=0; i<41; i++) {
+      fVar_Lc[i] = -9999.;
+    }
   }
 
   for (Int_t i=0; i<26; i++) {
     fVar_Lc_QA[i] = -9999.;
   }
-
+  /// KF particle Lambda_c
   KFParticle kfpLc_PV = kfpLc;
   kfpLc_PV.SetProductionVertex(PV);
 
-  // pt cut for Lc
-  fVar_Lc[20] = kfpLc_PV.GetPt(); //pt of Lc (with mass const. of Ks0 and with PV const.)
-  if ( fVar_Lc[20] <= fAnaCuts->GetPtMinLc() ) return;
+  /// pt cut for Lc
+  Float_t pT_Lc=0.;
+  pT_Lc = kfpLc_PV.GetPt();
+  if ( pT_Lc <= fAnaCuts->GetPtMinLc() ) return;
 
-  // mass window cut for Lc
+  /// mass window cut for Lc
   const Float_t massLc_PDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
   Float_t massLc_rec=0., err_massLc_rec=0.;
   kfpLc_PV.GetMass(massLc_rec, err_massLc_rec);
   if ( fabs(massLc_rec-massLc_PDG) > fAnaCuts->GetProdMassTolLc() ) return;
-  fVar_Lc[22] = massLc_rec; //mass of Lc (with mass const. of Ks0 and with PV const.)
 
+  /// Partice Identification
   Float_t nSigmaTPC_v0Pos = 0.;
   Float_t nSigmaTPC_v0Neg = 0.;
   Float_t nSigmaTPC_v0Pos_excl = 0.;
@@ -1671,32 +1772,18 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
       nSigmaTOF_v0Neg = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kProton);
       nSigmaTOF_v0Pos_excl = fPID->NumberOfSigmasTOF(v0Pos, AliPID::kProton);
       nSigmaTOF_v0Neg_excl = fPID->NumberOfSigmasTOF(v0Neg, AliPID::kPion);
-        
+
     }
   }
-
+  /// apply 4 sigma cut for TPC
   if ( fabs(nSigmaTPC_v0Pos)>=4. || fabs(nSigmaTPC_v0Neg)>=4. || fabs(nSigmaTPC_bach)>=4. ) return;
 
-
-
-  fVar_Lc[0]  = nSigmaTPC_v0Pos;
-  fVar_Lc[1]  = nSigmaTPC_v0Neg;
-  fVar_Lc[2]  = nSigmaTPC_bach;
-  fVar_Lc[3]  = nSigmaTOF_v0Pos;
-  fVar_Lc[4]  = nSigmaTOF_v0Neg;
-  fVar_Lc[5]  = nSigmaTOF_bach;
-
-  if (fIsAnaLc2Lpi && trackBach->Charge()<0) {
-    fVar_Lc[0]  = nSigmaTPC_v0Neg; // Anti-Proton
-    fVar_Lc[1]  = nSigmaTPC_v0Pos; // Pion+
-    fVar_Lc[3]  = nSigmaTOF_v0Neg; // Anti-Proton
-    fVar_Lc[4]  = nSigmaTOF_v0Pos; // Pion+
-  }
-  
+  /// KF particle V0 constrained with Lc vertex as production vertex
   KFParticle kfpV0_Lc = kfpV0_massConstraint;
   kfpV0_Lc.SetProductionVertex(kfpLc);
 //  if ( kfpV0_Lc.GetChi2()/kfpV0_Lc.GetNDF() >= fAnaCuts->GetKFPKs0_Chi2topoMax() ) return;
 
+  /// KF particle V0 constrained with primary vertex as production vertex
   KFParticle kfpV0_PV = kfpV0_massConstraint;
   kfpV0_PV.SetProductionVertex(PV);
 //  if ( kfpV0_PV.GetChi2()/kfpV0_PV.GetNDF() >= fAnaCuts->GetKFPKs0_Chi2topoMax() ) return;
@@ -1730,79 +1817,39 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   kfpGamma.GetMass(massGamma_rec, err_massGamma);
   */
 
+  /// KF particle bachelor
   KFParticle kfpBach_Lc = kfpBach;
   kfpBach_Lc.SetProductionVertex(kfpLc);
 
-  // calculate CosPointingAngle
+  /// calculate CosPointingAngle
   Double_t cosPA_V0 = AliVertexingHFUtils::CosPointingAngleFromKF(kfpV0_massConstraint, kfpLc);
   Double_t cosPA_Lc  = AliVertexingHFUtils::CosPointingAngleFromKF(kfpLc, PV);
 
   AliAODv0 *v0 = dynamic_cast<AliAODv0*>(Lc2pKs0orLpi->Getv0());
-  fVar_Lc[6]  = v0->GetDCA(); // DCA_V0Dau
-  fVar_Lc[7]  = kfpV0.GetChi2()/kfpV0.GetNDF(); //chi2_geometry of V0 (without mass constraint)
-  fVar_Lc[8]  = kfpV0_PV.GetChi2()/kfpV0_PV.GetNDF(); //chi2_topological of V0 (with mass constraint) to PV
-  fVar_Lc[9]  = AliVertexingHFUtils::ldlFromKF(kfpV0, PV); // ldl_V0
-  fVar_Lc[10] = kfpLc.GetChi2()/kfpLc.GetNDF(); // chi2geo_Lc
-  fVar_Lc[11] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF(); // chi2topo_Lc
-  fVar_Lc[12] = AliVertexingHFUtils::ldlFromKF(kfpLc, PV); // ldl_Lc
 
-//  Float_t DecayL_Ks0=0., err_DecayL_Ks0=0.;
-//  kfpV0_Lc.GetDecayLength(DecayL_Ks0, err_DecayL_Ks0);
-//  fVar_Lc[13] = DecayL_Ks0;
+  /// Decay length, lifetime V0 candidate
   Float_t DecayLxy_V0=0., err_DecayLxy_V0=0.;
   kfpV0_Lc.GetDecayLengthXY(DecayLxy_V0, err_DecayLxy_V0);
-  fVar_Lc[13] = DecayLxy_V0;
   Float_t ct_V0=0., err_ct_V0=0.;
   kfpV0_Lc.GetLifeTime(ct_V0, err_ct_V0);
-  fVar_Lc[14] = ct_V0;
 
-//  Float_t DecayL_Lc=0., err_DecayL_Lc=0.;
-//  kfpLc_PV.GetDecayLength(DecayL_Lc, err_DecayL_Lc);
-//  fVar_Lc[15] = DecayL_Lc;
+  /// Decay length, lifetime Lc candidate
   Float_t DecayLxy_Lc=0., err_DecayLxy_Lc=0.;
   kfpLc_PV.GetDecayLengthXY(DecayLxy_Lc, err_DecayLxy_Lc);
-  fVar_Lc[15] = DecayLxy_Lc;
-
-  fVar_Lc[16] = TMath::ACos(cosPA_V0); // PA_V0
-  fVar_Lc[17] = TMath::ACos(cosPA_Lc);  // PA_Lc
-
-  fVar_Lc[18] = kfpV0.GetPt();
   Float_t mass_V0_rec=0., err_mass_V0_rec=0.;
   kfpV0.GetMass(mass_V0_rec, err_mass_V0_rec);
-  fVar_Lc[19] = mass_V0_rec;
+  //  fVar_Lc[] = kfpPr.GetDistanceFromVertex(PV); //DCA of proton to PV from KF in 3D
 
-  if ( TMath::Abs(kfpLc_PV.GetE())>TMath::Abs(kfpLc_PV.GetPz()) ) {
-    fVar_Lc[21] = kfpLc_PV.GetRapidity();
-  }
+  if ( TMath::Abs(kfpLc_PV.GetE())<TMath::Abs(kfpLc_PV.GetPz()) ) return;
 
-  fVar_Lc[23] = kfpBach.GetPt();
-
-  fVar_Lc[24] = v0Pos->Pt(); // proton
-  fVar_Lc[25] = v0Neg->Pt(); // pion-
-
-  if (fIsAnaLc2Lpi && trackBach->Charge()<0) {
-    fVar_Lc[24] = v0Neg->Pt(); // anti-proton
-    fVar_Lc[25] = v0Pos->Pt(); // pion+
-  }
-
-  fVar_Lc[26] = Lc2pKs0orLpi->Getd0Prong(0); //rphi impact params of bachlor w.r.t. Primary Vtx [cm]
-  fVar_Lc[27] = Lc2pKs0orLpi->Getd0Prong(1); ////rphi impact params of V0 w.r.t. Primary Vtx [cm]
-  fVar_Lc[28] = lab_Lc;
-
+  /// Combined PID response (Bayesian probability)
+  Double_t probProton = -1.;
+  Double_t probProtonTPC = -1.;
   if (!fIsAnaLc2Lpi) {
-    fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
-  }
-  if (fIsAnaLc2Lpi) {
-    fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 211, 3122, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
-  }
-
-//  fVar_Lc[] = kfpPr.GetDistanceFromVertex(PV); //DCA of proton to PV from KF in 3D
-
-  if (!fIsAnaLc2Lpi) {
-    // Combined PID response (Bayesian probability) [30]
     Double_t probTPCTOF[AliPID::kSPECIES] = {-1.};
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
     UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackBach, fPID, probTPCTOF);
-    Double_t probProton = -1.;
+
     if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
       probProton = probTPCTOF[AliPID::kProton];
     }
@@ -1815,7 +1862,6 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
       //Reset detector mask for PIDCombined object to TPC+TOF
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
     }
-    fVar_Lc[30] = probProton;
   }
   if (fIsAnaLc2Lpi) {
     // Combined PID response (Bayesian probability) [30]
@@ -1823,7 +1869,6 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
     UInt_t detUsed = 0;
     if (trackBach->Charge()>0) fPIDCombined->ComputeProbabilities(v0Pos, fPID, probTPCTOF);
     if (trackBach->Charge()<0) fPIDCombined->ComputeProbabilities(v0Neg, fPID, probTPCTOF);
-    Double_t probProton = -1.;
     if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) { //TPC+TOF both present
       probProton = probTPCTOF[AliPID::kProton];
     }
@@ -1837,52 +1882,170 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
       //Reset detector mask for PIDCombined object to TPC+TOF
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
     }
-    fVar_Lc[30] = probProton;
   }
-  
-  //armenteros qT/|alpha|: [31]
-  fVar_Lc[31] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0());
-  
+
   if (!fIsAnaLc2Lpi) {
-  // nsigma_combined for proton bachelor from Lc
-   fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach,nSigmaTOF_bach);
-   fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach_pi,nSigmaTOF_bach_pi);
-  } else {  // combined nsigma for proton from Lam decay 
-      if( trackBach->Charge()>0) {
-        fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos, nSigmaTOF_v0Pos);
-        fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos_excl, nSigmaTOF_v0Pos_excl);
-      }
-      if (trackBach->Charge()<0) {
-        fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg, nSigmaTOF_v0Neg);
-        fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg_excl, nSigmaTOF_v0Neg_excl);
-      }
+    // Combined PID response (Bayesian probability) using only TPC
+    Double_t probTPC[AliPID::kSPECIES] = {-1.};
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+    UInt_t detUsed = fPIDCombined->ComputeProbabilities(trackBach, fPID, probTPC);
+    if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {// Check that TPC-only worked. If not, then return -1 as probability
+      probProtonTPC = probTPC[AliPID::kProton];
+    }
+    //Reset detector mask for PIDCombined object to TPC+TOF
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   }
 
-  fVar_Lc[34] = cosPA_V0;
-  fVar_Lc[35] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
-
+  AliAODMCParticle *mcProton;
+  AliAODMCParticle *mcLc;
   if (fIsMC && fUseWeights && lab_Lc >= 0) { //add branches for MC pT weights
     Int_t labelProton = fabs(trackBach->GetLabel());
-    AliAODMCParticle *mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
+    mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
     Int_t IndexLc = mcProton->GetMother();
-    AliAODMCParticle *mcLc = static_cast<AliAODMCParticle*>(mcArray->At(IndexLc));
-    fVar_Lc[36] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat
-    fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat
-    fVar_Lc[38] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat
+    mcLc = static_cast<AliAODMCParticle*>(mcArray->At(IndexLc));
   }
 
-
+  Double_t nTrackletsEta10 = 0.;
+  Double_t nTrackletsEta10Corr = 0.;
   if (fUseMult) {
     AliAODVertex *aodVtx = (AliAODVertex*)aodEvent->GetPrimaryVertex();
     Double_t zPrimVertex = aodVtx->GetZ();
     TProfile *estimatorAvg = GetEstimatorHistogram(aodEvent);
-    Double_t nTrackletsEta10 = static_cast<Double_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
-    Double_t nTrackletsEta10Corr = static_cast<Double_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult));
-    
-    fVar_Lc[39] = nTrackletsEta10;
-    fVar_Lc[40] = nTrackletsEta10Corr;
+    nTrackletsEta10 = static_cast<Double_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aodEvent,-1.,1.));
+    nTrackletsEta10Corr = static_cast<Double_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nTrackletsEta10,zPrimVertex,fRefMult));
   }
-  
+
+  if (!fIsAnaLc2Lpi){
+    fVar_Lc[0]  = nSigmaTPC_v0Pos;
+    fVar_Lc[1]  = nSigmaTPC_v0Neg;
+    fVar_Lc[2]  = nSigmaTPC_bach;
+    fVar_Lc[3]  = nSigmaTOF_v0Pos;
+    fVar_Lc[4]  = nSigmaTOF_v0Neg;
+    fVar_Lc[5]  = nSigmaTOF_bach;
+    fVar_Lc[6]  = kfpV0_PV.GetChi2()/kfpV0_PV.GetNDF(); //chi2_topological of V0 (with mass constraint) to PV
+    fVar_Lc[7]  = AliVertexingHFUtils::ldlFromKF(kfpV0, PV); // ldl_V0
+    fVar_Lc[8]  = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF(); // chi2topo_Lc
+    fVar_Lc[9]  = AliVertexingHFUtils::ldlFromKF(kfpLc, PV); // ldl_Lc
+    fVar_Lc[10] = DecayLxy_V0;
+    fVar_Lc[11] = ct_V0;
+    fVar_Lc[12] = DecayLxy_Lc;
+    fVar_Lc[13] = TMath::ACos(cosPA_V0); // PA_V0
+    fVar_Lc[14] = TMath::ACos(cosPA_Lc);  // PA_Lc
+    fVar_Lc[15] = pT_Lc; //pt of Lc (with mass const. of Ks0 and with PV const.)
+    fVar_Lc[16] = kfpLc_PV.GetRapidity();
+    fVar_Lc[17] = massLc_rec; //mass of Lc (with mass const. of Ks0 and with PV const.)
+    fVar_Lc[18] = kfpBach.GetPt();
+    fVar_Lc[19] = Lc2pKs0orLpi->Getd0Prong(0); //rphi impact params of bachlor w.r.t. Primary Vtx [cm]
+    if (fUseMult){
+      fVar_Lc[20] = nTrackletsEta10Corr;
+    }
+    fVar_Lc[21] = probProton;
+    fVar_Lc[22] = probProtonTPC;
+    fVar_Lc[23] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach,nSigmaTOF_bach); // nsigma_combined for proton bachelor from Lc
+    fVar_Lc[24] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_bach_pi,nSigmaTOF_bach_pi);
+    fVar_Lc[25] = fpVtx->GetX();
+    fVar_Lc[26] = fpVtx->GetY();
+    fVar_Lc[27] = fpVtx->GetZ();
+    fVar_Lc[28] = ownPVtx->GetX();
+    fVar_Lc[29] = ownPVtx->GetY();
+    fVar_Lc[30] = ownPVtx->GetZ();
+    if (fIsMC && lab_Lc >= 0){
+      fVar_Lc[31] = lab_Lc;
+      if (fUseWeights) {
+        fVar_Lc[32] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat
+        fVar_Lc[33] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat
+        fVar_Lc[34] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat
+      }
+    }
+    if (fKeepAllVariables) {
+      fVar_Lc[35]  = v0->GetDCA(); // DCA_V0Dau
+      fVar_Lc[36]  = kfpV0.GetChi2()/kfpV0.GetNDF(); //chi2_geometry of V0 (without mass constraint)
+      fVar_Lc[37] = kfpLc.GetChi2()/kfpLc.GetNDF(); // chi2geo_Lc
+      fVar_Lc[38] = kfpV0.GetPt();
+      fVar_Lc[39] = mass_V0_rec;
+      fVar_Lc[40] = v0Pos->Pt(); // pion+
+      fVar_Lc[41] = v0Neg->Pt(); // pion-
+      fVar_Lc[42] = Lc2pKs0orLpi->Getd0Prong(1); ////rphi impact params of V0 w.r.t. Primary Vtx [cm]
+      fVar_Lc[43] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
+      fVar_Lc[44] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0()); //armenteros qT/|alpha|
+      fVar_Lc[45] = cosPA_V0;
+      fVar_Lc[46] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
+      if (fUseMult){
+        fVar_Lc[47] = nTrackletsEta10;
+      }
+    }
+  }
+  if (fIsAnaLc2Lpi){
+    if (trackBach->Charge()>0) {
+      fVar_Lc[0]  = nSigmaTPC_v0Pos;
+      fVar_Lc[1]  = nSigmaTPC_v0Neg;
+      fVar_Lc[2]  = nSigmaTPC_bach;
+      fVar_Lc[3]  = nSigmaTOF_v0Pos;
+      fVar_Lc[4]  = nSigmaTOF_v0Neg;
+      fVar_Lc[5]  = nSigmaTOF_bach;
+    }
+    else {
+      fVar_Lc[0]  = nSigmaTPC_v0Neg; // Anti-Proton
+      fVar_Lc[1]  = nSigmaTPC_v0Pos; // Pion+
+      fVar_Lc[2]  = nSigmaTPC_bach;
+      fVar_Lc[3]  = nSigmaTOF_v0Neg; // Anti-Proton
+      fVar_Lc[4]  = nSigmaTOF_v0Pos; // Pion+
+      fVar_Lc[5]  = nSigmaTOF_bach;
+    }
+    fVar_Lc[6]  = v0->GetDCA(); // DCA_V0Dau
+    fVar_Lc[7]  = kfpV0.GetChi2()/kfpV0.GetNDF(); //chi2_geometry of V0 (without mass constraint)
+    fVar_Lc[8]  = kfpV0_PV.GetChi2()/kfpV0_PV.GetNDF(); //chi2_topological of V0 (with mass constraint) to PV
+    fVar_Lc[9]  = AliVertexingHFUtils::ldlFromKF(kfpV0, PV); // ldl_V0
+    fVar_Lc[10] = kfpLc.GetChi2()/kfpLc.GetNDF(); // chi2geo_Lc
+    fVar_Lc[11] = kfpLc_PV.GetChi2()/kfpLc_PV.GetNDF(); // chi2topo_Lc
+    fVar_Lc[12] = AliVertexingHFUtils::ldlFromKF(kfpLc, PV); // ldl_Lc
+    fVar_Lc[13] = DecayLxy_V0;
+    fVar_Lc[14] = ct_V0;
+    fVar_Lc[15] = DecayLxy_Lc;
+    fVar_Lc[16] = TMath::ACos(cosPA_V0); // PA_V0
+    fVar_Lc[17] = TMath::ACos(cosPA_Lc);  // PA_Lc
+    fVar_Lc[18] = kfpV0.GetPt();
+    fVar_Lc[19] = mass_V0_rec;
+    fVar_Lc[20] = pT_Lc; //pt of Lc (with mass const. of Ks0 and with PV const.)
+    fVar_Lc[21] = kfpLc_PV.GetRapidity();
+    fVar_Lc[22] = massLc_rec; //mass of Lc (with mass const. of Ks0 and with PV const.)
+    fVar_Lc[23] = kfpBach.GetPt();
+    if (trackBach->Charge()>0){
+      fVar_Lc[24] = v0Pos->Pt(); // proton
+      fVar_Lc[25] = v0Neg->Pt(); // pion-
+    }
+    else {
+      fVar_Lc[24] = v0Neg->Pt(); // anti-proton
+      fVar_Lc[25] = v0Pos->Pt(); // pion+
+    }
+    fVar_Lc[26] = Lc2pKs0orLpi->Getd0Prong(0); //rphi impact params of bachlor w.r.t. Primary Vtx [cm]
+    fVar_Lc[27] = Lc2pKs0orLpi->Getd0Prong(1); ////rphi impact params of V0 w.r.t. Primary Vtx [cm]
+    fVar_Lc[28] = lab_Lc;
+    fVar_Lc[29] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 211, 3122, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
+    fVar_Lc[30] = probProton;
+    fVar_Lc[31] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0()); //armenteros qT/|alpha|
+    if( trackBach->Charge()>0) {
+      fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos, nSigmaTOF_v0Pos);
+      fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Pos_excl, nSigmaTOF_v0Pos_excl);
+    }
+    else {
+      fVar_Lc[32] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg, nSigmaTOF_v0Neg);
+      fVar_Lc[33] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_v0Neg_excl, nSigmaTOF_v0Neg_excl);
+    }
+    fVar_Lc[34] = cosPA_V0;
+    fVar_Lc[35] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
+    if (fIsMC && fUseWeights && lab_Lc >= 0){
+      fVar_Lc[36] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat
+      fVar_Lc[37] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat
+      fVar_Lc[38] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat
+    }
+    if (fUseMult) {
+      fVar_Lc[39] = nTrackletsEta10;
+      fVar_Lc[40] = nTrackletsEta10Corr;
+    }
+  }
+
+
   // === QA tree ===
   fVar_Lc_QA[0]  = kfpV0.GetRapidity(); //rapidity of v0 (without mass const.)
   fVar_Lc_QA[1]  = kfpV0_massConstraint.GetPt(); //pt of V0 (with mass const.)
@@ -2058,7 +2221,7 @@ Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCLam(AliAODTrack *v0Pos, AliAODTr
   // Check if all of the tracks is matched to a MC signal
   // If no, return -1;
   // If yes, return label (>=0) of the AliAODMCParticle
-  
+
   Int_t labelPos = fabs(v0Pos->GetLabel());
   if (labelPos<=0) return -1;
   AliAODMCParticle *mcPos = static_cast<AliAODMCParticle*>(mcArray->At(labelPos));
@@ -2138,7 +2301,7 @@ Int_t AliAnalysisTaskSELc2pKs0fromKFP::MatchToMCLc2Lpi(AliAODTrack *v0Pos, AliAO
 
 TProfile* AliAnalysisTaskSELc2pKs0fromKFP::GetEstimatorHistogram(const AliVEvent* event)  {
 
-  
+
   Int_t runNo = event->GetRunNumber();
   Int_t period = -1;
   switch (fAnalysisType) {    // flag to set which system and year is being used
@@ -2163,4 +2326,3 @@ TProfile* AliAnalysisTaskSELc2pKs0fromKFP::GetEstimatorHistogram(const AliVEvent
   return fMultEstimatorAvg[period];
 
 }
-

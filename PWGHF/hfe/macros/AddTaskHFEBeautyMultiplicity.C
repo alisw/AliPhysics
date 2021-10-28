@@ -8,12 +8,31 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 	TString name = "name",
+	Double_t EtaMin = -0.6,
+	Double_t EtaMax = 0.6,
+	Double_t NsigmaMin = -1.0,
+	Double_t NsigmaMax = 3.0,
+	Double_t HadNsigma = -3.5,
+	Double_t M20Min = 0.015,
+	Double_t M20Max = 0.3,
+	Double_t EopMin = 0.8,
+	Double_t EopMax = 1.2,
+	Double_t DCAxy = 2.4,
+	Double_t DCAz = 3.2,
+	Double_t Diff = 0.05,
+	Int_t NTPCClust = 100,
+	Int_t NITSClust = 3,
+	Int_t NCrossedRow = 100,
+	Double_t TPCdEdx = 80.0,
+	Double_t PhotInvMass = 0.15,
+	Double_t PhotMinPt = 0.1,
 	Double_t nref = 30.1,
 	Double_t minNtrklet = 0,
 	Double_t maxNtrklet = 9999,
 	Bool_t   iGPMC = kFALSE,
 	TString estimatorFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/estimatorAvg.root",
-	TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight.root"
+	//TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight.root"
+	TString pTWeightFilename = "alien:///alice/cern.ch/user/s/schiba/Mult_pPb16qt/pTWeight_Fix.root"
 
 	)
 {
@@ -41,6 +60,14 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
 
     //---- my task
     AliAnalysisTaskHFEBeautyMultiplicity* task = new AliAnalysisTaskHFEBeautyMultiplicity(name.Data());
+    task->SetTrackEta(EtaMin, EtaMax);
+    task->SetNsigma(NsigmaMin, NsigmaMax, HadNsigma);
+    task->SetM20(M20Min, M20Max);
+    task->SetEop(EopMin, EopMax);
+    task->SetDCA(DCAxy, DCAz);
+    task->SetTrackClust(NTPCClust, NITSClust, NCrossedRow, TPCdEdx);
+    task->SetDiff(Diff);
+    task->SetMass(PhotInvMass, PhotMinPt);
     task->SetNref(nref);
     task->SetNtrkletMin(minNtrklet);
     task->SetNtrkletMax(maxNtrklet);
@@ -80,13 +107,14 @@ AliAnalysisTask* AddTaskHFEBeautyMultiplicity(
     }
     TGraphErrors* WeightPt_Dmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Dmeson")->Clone("WeightPt_Dmeson");
     TGraphErrors* WeightPt_Lc     = (TGraphErrors*)fpTWeight->Get("pTWeight_Lc")->Clone("WeightPt_Lc");
+    TGraphErrors* WeightPt_Bmeson = (TGraphErrors*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
     //TF1* 	  WeightPt_Bmeson = (TF1*)fpTWeight->Get("pTWeight_Bmeson")->Clone("WeightPt_Bmeson");
     //TF1* 	  WeightPt_Pi0 	  = (TF1*)fpTWeight->Get("pTWeight_Pi0")->Clone("WeightPt_Pi0");
     //TF1* 	  WeightPt_Eta    = (TF1*)fpTWeight->Get("pTWeight_Eta")->Clone("WeightPt_Eta");
 
     task->SetWeightDmeson(WeightPt_Dmeson);
     task->SetWeightLc(WeightPt_Lc);
-    //task->SetWeightBmeson(WeightPt_Bmeson);
+    task->SetWeightBmeson(WeightPt_Bmeson);
     //task->SetWeightPi0(WeightPt_Pi0);
     //task->SetWeightEta(WeightPt_Eta);
 

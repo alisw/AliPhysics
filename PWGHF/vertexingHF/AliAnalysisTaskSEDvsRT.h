@@ -95,6 +95,12 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fNChargedInToward; //!<! hist for NChargedDistribution
    TH1F *fNChargedInAway; //!<! hist for NChargedDistribution
    TH1F *fNCharged; //!<! hist for NChargedDistribution
+   TH1F *fPhiDistribution; //!<! hist for Phi distribution of charged particles
+   TH1F *fEtaDistribution; //!<! hist for Eta distribution of charged particles
+   TH1F *fPTDistributionInToward; //!<! hist for Pt distribution of charged particles in Toward region
+   TH1F *fPTDistributionInTransverse; //!<! hist for Pt distribution of charged particles in Transverse region
+   TH1F *fPTDistributionInAway; //!<! hist for Pt distribution of charged particles in Away region
+   TH1F *fPTDistributionGlobal; //!<! hist for Pt distribution of charged particles in all regions
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC
@@ -123,7 +129,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,3); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,4); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

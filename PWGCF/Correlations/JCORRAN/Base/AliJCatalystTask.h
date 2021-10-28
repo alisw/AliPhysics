@@ -121,7 +121,7 @@ public:
 	void SetNoCentralityBin( bool nocent) { fnoCentBin = nocent;}
 	AliJCorrectionMapTask *GetAliJCorrectionMapTask() {return fJCorMapTask;}
 
-// Methods to provide QA output.
+// Methods to provide QA output and additional selection cuts.
   TList* GetCataList() const {return fMainList;}
   virtual void InitializeArrays();
   virtual void BookControlHistograms();
@@ -131,6 +131,16 @@ public:
   Int_t GetCentralityBin(Float_t cent);
   void SetCentrality(Float_t cen0, Float_t cen1, Float_t cen2, Float_t cen3, Float_t cen4, Float_t cen5, Float_t cen6, Float_t cen7, Float_t cen8, Float_t cen9, Float_t cen10, Float_t cen11, Float_t cen12, Float_t cen13, Float_t cen14, Float_t cen15, Float_t cen16 ) {fcent_0 = cen0; fcent_1 = cen1; fcent_2 = cen2; fcent_3 = cen3; fcent_4 = cen4; fcent_5 = cen5; fcent_6 = cen6; fcent_7 = cen7; fcent_8 = cen8; fcent_9 = cen9; fcent_10 = cen10; fcent_11 = cen11; fcent_12 = cen12; fcent_13 = cen13; fcent_14 = cen14; fcent_15 = cen15; fcent_16 = cen16;}
   void SetInitializeCentralityArray(); //Set Centrality array inside the task. Must be called in addTask.
+  	void SetChi2Cuts(double chiMin, double chiMax) {
+		fChi2perNDF_min = chiMin; fChi2perNDF_max = chiMax;
+		cout << "setting chi2perNDF cuts, min = " << fChi2perNDF_min << " and max = " << fChi2perNDF_max << endl;
+	}
+	void SetDCAxyCut(double DCAxyMax) {fDCAxy_max = DCAxyMax;
+		cout << "setting DCAxy cut = " << fDCAxy_max << endl;
+	}
+	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
+		cout << "setting DCAz cut = " << fDCAz_max << endl;
+	}
 
 
 private:
@@ -180,6 +190,10 @@ private:
 	Float_t fcent_0, fcent_1, fcent_2, fcent_3, fcent_4, fcent_5, fcent_6, fcent_7, fcent_8, fcent_9, fcent_10, fcent_11, fcent_12, fcent_13, fcent_14, fcent_15, fcent_16;
   		// fcent_i holds the edge of a centrality bin.
   Float_t fcentralityArray[17];		// Number of centrality bins for the control histograms.
+  double fChi2perNDF_min;	// Minimum requirement for chi2/ndf for TPC
+	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
+	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
+	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
 
 	TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
   TH1F *fPTHistogram[16][2];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection.

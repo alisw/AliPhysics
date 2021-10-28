@@ -101,17 +101,20 @@ Bool_t AliDalitzElectronSelector::ProcessEvent(AliVEvent *inputEvent,AliMCEvent 
 
 
   //if(fInputEvent->IsA()==AliESDEvent::Class()){
-    ProcessESDs();
-  //}
+  //This function will create the current tracks
+  //But we have to cross check that the Vertex info is in the event
+  if (ProcessAODESDEvent()){
+    return kTRUE;
+  }
 
   //if(fInputEvent->IsA()==AliAODEvent::Class()){
   //GetAODConversionGammas();
   //}
-  return kTRUE;
+  return kFALSE;
 }
 
 ///________________________________________________________________________
-Bool_t AliDalitzElectronSelector::ProcessESDs(){
+Bool_t AliDalitzElectronSelector::ProcessAODESDEvent(){
   // Process ESD V0s for conversion photon reconstruction
     AliAODEvent *fAODEvent=0;
     AliESDEvent *fESDEvent=0;
@@ -133,7 +136,14 @@ Bool_t AliDalitzElectronSelector::ProcessESDs(){
             fCurrentTrack->ComputeImpactParameter();
       }
       else {fCurrentTrack= new AliDalitzAODESD((AliAODTrack*)(fAODEvent->GetTrack(currentTrackIndex)));
-        fCurrentTrack->ComputeImpactParameter(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField());
+        TString title=(fAODEvent->GetPrimaryVertex())->GetTitle();
+        if(!title.Contains("VertexerTracks")) {
+           delete fCurrentTrack;
+           return kFALSE;
+         }
+         else {
+           fCurrentTrack->ComputeImpactParameter(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField());
+         }
       }
 
       if(!fCurrentTrack){

@@ -417,7 +417,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   Double_t centRange[10] = {0,5,10,20,30,40,50,60,80,90};
 
 
-
+  //18q
   // Acharge Binning with Equal Event per bin:
   //Cent 0-5
   Double_t fAchBinCent0[11] = {-0.074, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
@@ -439,26 +439,27 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   Double_t fAchBinCent8[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
     
 
+  //18r
   // Acharge Binning with Equal Event per bin:
   //Cent 0-5
-  Double_t fAchBinCent00[11] = {-0.074, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
+  Double_t fAchBinCent00[11] = {-0.078, -0.022, -0.014, -0.01, -0.004, 0, 0.004, 0.008, 0.014, 0.02, 1};
   //Cent 5-10
-  Double_t fAchBinCent11[11] = {-0.09, -0.02, -0.012, -0.006, 0, 0.004, 0.008, 0.014, 0.018, 0.026, 1};
+  Double_t fAchBinCent11[11] = {-0.088, -0.024, -0.016, -0.01, -0.004, 0, 0.004, 0.01, 0.016, 0.024, 1 };
   //Cent 10-20 
-  Double_t fAchBinCent22[11] = {-0.108, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.022, 0.03, 1};
+  Double_t fAchBinCent22[11] = {-0.11, -0.026, -0.018, -0.01, -0.006, 0, 0.006, 0.012, 0.018, 0.028, 1 };
   //Cent 20-30 
-  Double_t fAchBinCent33[11] = {-0.134, -0.03, -0.018, -0.01, -0.002, 0.004, 0.01, 0.018, 0.026, 0.036, 1};
+  Double_t fAchBinCent33[11] = {-0.13, -0.032, -0.022, -0.012, -0.006, 0.002, 0.008, 0.014, 0.022, 0.034, 1};
   //Cent 30-40 
-  Double_t fAchBinCent44[11] = {-0.174, -0.038, -0.024, -0.014, -0.004, 0.004, 0.012, 0.02, 0.03, 0.046, 1};
+  Double_t fAchBinCent44[11] = {-0.182, -0.04, -0.026, -0.016, -0.008, 0.002, 0.01, 0.018, 0.028, 0.042, 1 };
   //Cent 40-50 
-  Double_t fAchBinCent55[11] = {-0.242, -0.05, -0.032, -0.018, -0.008, 0.004, 0.014, 0.026, 0.038, 0.058, 1};
+  Double_t fAchBinCent55[11] = {-0.24, -0.054, -0.034, -0.022, -0.01, 0.002, 0.012, 0.022, 0.036, 0.054, 1 };
   //Cent 50-60 
-  Double_t fAchBinCent66[11] = {-0.41, -0.07, -0.044, -0.026, -0.01, 0.002, 0.018, 0.034, 0.052, 0.076, 1};
+  Double_t fAchBinCent66[11] = {-0.338, -0.072, -0.046, -0.028, -0.014, 0.002, 0.016, 0.03, 0.048, 0.074, 1};  
   //Cent 60-80 
-  Double_t fAchBinCent77[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
-  //Cent 80-90
-  Double_t fAchBinCent88[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
-
+  Double_t fAchBinCent77[11] = {-0.996, -0.13, -0.082, -0.05, -0.024, 0.002, 0.026, 0.052, 0.084, 0.132, 1};
+  //Cent 80-90 
+  Double_t fAchBinCent88[11] = {-0.996, -0.13, -0.082, -0.05, -0.024, 0.002, 0.026, 0.052, 0.084, 0.132, 1};
+  
 
 
 
@@ -989,7 +990,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
     AliAODTrack* AODtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
     if(!AODtrack) continue;
     
-    if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
+    // if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
+    if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
 
       trkPt    = AODtrack->Pt();
       trkPhi   = AODtrack->Phi();
@@ -1007,7 +1009,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       
 
 
-      if((trkPt <= 10) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
 
 	  
@@ -1068,7 +1072,11 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  fNumOfNeg += 1;
 	}
 	
-       
+
+
+	//used this section in 2nd for loop as in this loop for Ach calculation all variables are hardcoded
+	/*
+	
 	if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
 	  {
 	  
@@ -1129,6 +1137,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 	  }
 
+	*/
+
 	
 	
 	//<---------- User track analysis Done---------------
@@ -1149,7 +1159,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   stepCount++;
 
 
-  if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
+  //if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
   
   fHistEventCount->Fill(stepCount); //9
   stepCount++;
@@ -1247,7 +1257,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
       
       //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+
+	if((trkPt <= 3.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 
@@ -1429,8 +1441,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	/// infinity Weight protection:
 	if(WgtNUA>1e3)     WgtNUA = 1.0;
 	if(WgtNUAPion>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAKaon>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAProt>1e3) WgtNUAPion = 1.0;
+	if(WgtNUAKaon>1e3) WgtNUAKaon = 1.0;
+	if(WgtNUAProt>1e3) WgtNUAProt = 1.0;
 
 	
 	
@@ -1441,11 +1453,81 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-    
+	//event plane calculation from 1st for loop
+
+		if(trkPt < 2.0)  ///// *********  Trk cut for Event Plane: 0.2 < pT < 2.0; *********
+	  {
+	  
+
+
+	if(trkEta < fEtaGapNeg){
+	  fSumTPCQn2xNegWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegWhole  += trkWgt;
+	}
+	else if(trkEta > fEtaGapPos){
+	  fSumTPCQn2xPosWhole += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPosWhole += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPosWhole  += trkWgt;
+	}
+
+
+
+
+  if(trkEta < fEtaGapNeg){
+	  if (trkChrg>0) //added by me for trivial term correction
+	  {
+	  fSumTPCQn2xNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNeg  += trkWgt;
+	  }
+	  
+	  //added by me for trivial term correction
+	else if (trkChrg<0)
+	  {
+	  fSumTPCQn2xNegChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yNegChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaNegChNeg  += trkWgt;
+	  }
+	  ///////////////////////////////
+	
+	}
+	else if(trkEta > fEtaGapPos){
+	  
+	  if (trkChrg>0)  //added by me for trivial term correction
+	    {
+	  fSumTPCQn2xPos += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	  fSumTPCQn2yPos += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	  fSumWgtEtaPos  += trkWgt;
+	    }
+	  
+	   //added by me for trivial term correction
+	  else if (trkChrg<0) 
+	    {
+	      fSumTPCQn2xPosChNeg += trkWgt*TMath::Cos(gPsiN*trkPhi);
+	      fSumTPCQn2yPosChNeg += trkWgt*TMath::Sin(gPsiN*trkPhi);
+	      fSumWgtEtaPosChNeg  += trkWgt;
+	    }
+	  ////////////////////////////////////////
+	  
+	}
+
+
+	  }
+
+
+
+
+		if (trkPt <= fMaxPtCut)
+
+		  {
+		  
 	uqRe = TMath::Cos(gPsiN*trkPhi);
 	uqIm = TMath::Sin(gPsiN*trkPhi);
 
 
+
+	
 
 
 	
@@ -1594,13 +1676,15 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	
        
        
-
-      }//with all trackCuts applied      
+		  }
+	}//with all trackCuts applied      
     }//-------> if FB is validated
     
   }///------> 2nd Track loop Ends here.<--------
  
 
+  if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
+  
   /// For cumulant method:
 
 
