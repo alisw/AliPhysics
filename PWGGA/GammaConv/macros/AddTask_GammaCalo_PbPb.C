@@ -260,6 +260,11 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("50900013","1111100053032230000","0163103100000050"); // 0-90%
   } else if (trainConfig == 14){ // EMCAL clusters no timing cut
     cuts.AddCutCalo("50900013","1111100003032230000","0163103100000050"); // 0-90%
+  } else if (trainConfig == 15){ // EMCAL clusters
+    cuts.AddCutCalo("50100013","1111100053032230000","0163103100000050"); // 0-90%
+    cuts.AddCutCalo("51300013","1111100053032230000","0163103100000050"); // 0-90%
+    cuts.AddCutCalo("53500013","1111100053032230000","0163103100000050"); // 0-90%
+    cuts.AddCutCalo("55900013","1111100053032230000","0163103100000050"); // 0-90%
 
     // EMC triggers LHC15o
   } else if (trainConfig == 20){ //MB
