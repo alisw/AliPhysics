@@ -48,7 +48,7 @@ private:
 		TTree *tPID;    //!
 
 		Double_t  fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4];
-		TClonesArray *vParticle;
+		TClonesArray *fESDtracks;
 		Float_t fPIDTPC[5][2], fPIDTOF[5][2];
 		Int_t fRunNumber, fADAdecision, fADCdecision, fV0Adecision, fV0Cdecision, fSign;
 		Int_t fTrackPIDid[2];
@@ -61,7 +61,7 @@ private:
 		AliAnalysisTaskCentralTau(const AliAnalysisTaskCentralTau&); //not implemented
 		AliAnalysisTaskCentralTau& operator =(const AliAnalysisTaskCentralTau&); //not implemented
 
-ClassDef(AliAnalysisTaskCentralTau, 29);
+ClassDef(AliAnalysisTaskCentralTau, 30);
 };
 
 #endif
