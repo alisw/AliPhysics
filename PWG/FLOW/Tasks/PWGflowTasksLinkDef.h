@@ -71,5 +71,6 @@
 #pragma link C++ class AliAnalysisTaskAR+;
 #pragma link C++ class AliAnalysisTaskGammaDeltaPID+;
 #pragma link C++ class AliAnalysisTaskCMWESE+;
+#pragma link C++ class AliAnalysisTaskEPCalib+;
 #endif
 
