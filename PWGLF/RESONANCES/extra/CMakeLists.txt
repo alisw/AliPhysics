@@ -53,6 +53,7 @@ set(SRCS
   AliAnalysisTaskPPVsMultMCRSN.cxx
   AliAnalysisTaskEffMatrix.cxx
   RESOSA/AliAnalysisTaskPhiSA.cxx
+  RESOSA/AliAnalysisTaskPhiSAR.cxx
   AliAnalysisTaskPhiCount.cxx
   )
 
