@@ -234,7 +234,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   }
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
-  fSampleSplitter = new TRandom;
+  fSampleSplitter = new TRandom(0);
 
   PostData(1, fOutput);
 }
