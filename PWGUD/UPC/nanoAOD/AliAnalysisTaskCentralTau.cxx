@@ -52,8 +52,8 @@ using std::endl;
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
 		: AliAnalysisTaskSE(),
 		  fPIDResponse(nullptr), fTrackCutsBit0(nullptr), fTrackCutsBit1(nullptr), fTrackCutsBit4(nullptr), fOutputList(nullptr),
-		  fOutputPID(nullptr), tTwoTracks(nullptr), tPID(nullptr), hTriggerCounter(nullptr), hParticleTypeCounter(nullptr), fSign(0),
-		  fZNAenergy(0), fZNCenergy(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
+		  fOutputPID(nullptr), tTwoTracks(nullptr), tPID(nullptr), hTriggerCounter(nullptr), hParticleTypeCounter(nullptr), vParticle(nullptr),
+			fSign(0), fZNAenergy(0), fZNCenergy(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
 //Dummy constructor
 
@@ -64,14 +64,15 @@ AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau()
 AliAnalysisTaskCentralTau::AliAnalysisTaskCentralTau(const char *name)
 		: AliAnalysisTaskSE(name),
 		  fPIDResponse(nullptr), fTrackCutsBit0(nullptr), fTrackCutsBit1(nullptr), fTrackCutsBit4(nullptr), fOutputList(nullptr),
-		  fOutputPID(nullptr), tTwoTracks(nullptr),tPID(nullptr), hTriggerCounter(nullptr), hParticleTypeCounter(nullptr), fSign(0),
-		  fZNAenergy(0), fZNCenergy(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
+		  fOutputPID(nullptr), tTwoTracks(nullptr),tPID(nullptr), hTriggerCounter(nullptr), hParticleTypeCounter(nullptr), vParticle(nullptr),
+			fSign(0), fZNAenergy(0), fZNCenergy(0), fRunNumber(0), fADAdecision(0), fADCdecision(0), fV0Adecision(0), fV0Cdecision(0)
 {
 	for(bool & fTrigger : fTriggers)          fTrigger = false;
 	for(bool & fTriggerClas : fTriggerClass) fTriggerClas = false;
 	for (int it(0);it<2;it++) {
 		fTrackPIDid[it] = -1;
 		fPIDpt[it] = -999;
+		fPIDmomentum[it] = -999;
 		fTPCsignal[it] = -999;
 		fTOFsignal[it] = -999;
 		fTPCmostProbableTrackType[it] = -1;
@@ -119,11 +120,13 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 	fTrackCutsBit1 = AliESDtrackCuts::GetStandardITSSATrackCuts2010(kFALSE,kTRUE);
 	fTrackCutsBit4 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
 
+	vParticle = new TClonesArray("AliESDtrack", 2);
+
 	fOutputList = new TList();
 	fOutputList ->SetOwner();
 
 	tTwoTracks = new TTree("tTwoTracks", "tTwoTracks");
-	tTwoTracks ->Branch("fVectParticle", &vParticle[0][0],"vParticle[5][2]/O");
+	tTwoTracks ->Branch("fVectParticle", &vParticle);
 	tTwoTracks ->Branch("fPIDTPC", &fPIDTPC[0][0],"fPIDTPC[5][2]/F");
 	tTwoTracks ->Branch("fPIDTOF", &fPIDTOF[0][0],"fPIDTOF[5][2]/F");
 	tTwoTracks ->Branch("fZNAenergy", &fZNAenergy,"fZNAenergy/D");
@@ -138,6 +141,7 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 	tTwoTracks ->Branch("fV0Adecision", &fV0Adecision, "fV0Adecision/I");
 	tTwoTracks ->Branch("fV0Cdecision", &fV0Cdecision, "fV0Cdecision/I");
 	tTwoTracks ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/D");
+	tTwoTracks ->Branch("fPIDmomentum", &fPIDmomentum[0], "fPIDmomentum[2]/D");
 	tTwoTracks ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/D");
 	tTwoTracks ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/D");
 	tTwoTracks ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
@@ -154,6 +158,7 @@ void AliAnalysisTaskCentralTau::UserCreateOutputObjects()
 
 	tPID = new TTree("tPID", "tPID");
 	tPID ->Branch("fPIDpt", &fPIDpt[0], "fPIDpt[2]/D");
+	tPID ->Branch("fPIDmomentum", &fPIDmomentum[0], "fPIDmomentum[2]/D");
 	tPID ->Branch("fTPCsignal", &fTPCsignal[0], "fTPCsignal[2]/D");
 	tPID ->Branch("fTOFsignal", &fTOFsignal[0], "fTOFsignal[2]/D");
 	tPID ->Branch("fTPCmostProbableTrackType", &fTPCmostProbableTrackType[0], "fTPCmostProbableTrackType[2]/I");
@@ -290,18 +295,12 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 	//
 	// TRACKS SETTING
 	//
-	TDatabasePDG *pdgdat = TDatabasePDG::Instance();
-	const Double_t mass_muon = pdgdat->GetParticle( 13 )->Mass();
-	const Double_t mass_electron = pdgdat->GetParticle( 11 )->Mass();
-	const Double_t mass_pion = pdgdat->GetParticle(211 )->Mass();
-	const Double_t mass_proton = pdgdat->GetParticle( 2212 )->Mass();
-	const Double_t mass_kaon = pdgdat->GetParticle( 321 )->Mass();
-
 	Short_t qTrack[2];
 
 	//
 	// SELECT TWO TRACKS
 	//
+	vParticle->Clear("C");
 	if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2){
 		fFOCrossedChips.ResetAllBits(kFALSE);
 
@@ -330,11 +329,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 
 			qTrack[iTrack] = trk->Charge();
 
-			vParticle[P_ELECTRON][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_electron);
-			vParticle[P_MUON][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_muon);
-			vParticle[P_PION][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_pion);
-			vParticle[P_KAON][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_kaon);
-			vParticle[P_PROTON][iTrack].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), mass_proton);
+			new((*vParticle)[iTrack]) AliESDtrack(*trk);
 
 			fPIDTPC[P_ELECTRON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron));
 			fPIDTPC[P_MUON][iTrack] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon));
@@ -352,6 +347,7 @@ void AliAnalysisTaskCentralTau::UserExec(Option_t *)
 			fTOFsignal[iTrack] = trk->GetTOFsignal();
 			fTrackPIDid[iTrack] = TestPIDhypothesis(trk);
 			fPIDpt[iTrack] = trk->Pt();
+			fPIDmomentum[iTrack] = trk->P();
 			hParticleTypeCounter->Fill(fTrackPIDid[iTrack]);
 
 		}//Two tracks loop
