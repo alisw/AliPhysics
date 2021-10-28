@@ -162,9 +162,9 @@ void AliAnalysisTaskEmcalSoftDropResponse::UserCreateOutputObjects()
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
   double R = double(int(GetJetContainer(fNameDetLevelJetContainer.Data())->GetJetRadius() * 1000.))/1000.;  // Save cast from float to double truncating after 3rd decimal digit
 
-  fSampleSplitter = new TRandom;
+  fSampleSplitter = new TRandom(0);
   if (fSampleFraction < 1.)
-    fSampleTrimmer = new TRandom;
+    fSampleTrimmer = new TRandom(0);
 
   if (!fPartLevelPtBinning)
     fPartLevelPtBinning = GetDefaultPartLevelPtBinning(fBinningMode);
