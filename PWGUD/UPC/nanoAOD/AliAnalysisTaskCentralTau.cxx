@@ -102,6 +102,8 @@ AliAnalysisTaskCentralTau::~AliAnalysisTaskCentralTau()
 		fOutputList = nullptr;
 		delete fOutputPID;
 		fOutputPID = nullptr;
+		delete fESDtracks;
+		fESDtracks = nullptr;
 	}
 
 }//~AliAnalysisTaskCentralTau
