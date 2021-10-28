@@ -115,6 +115,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fCorrelationsList(NULL),        
  fCorrelationsFlagsPro(NULL), 
  fCalculateCorrelations(kTRUE),
+ fCalculatePtCorrelations(kFALSE),
+ fCalculateEtaCorrelations(kFALSE),
 
  // Nested loops:
  fNestedLoopsList(NULL),        
@@ -283,6 +285,8 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fCorrelationsList(NULL),        
  fCorrelationsFlagsPro(NULL), 
  fCalculateCorrelations(kTRUE),
+ fCalculatePtCorrelations(kFALSE),
+ fCalculateEtaCorrelations(kFALSE),
 
  // Nested loops:
  fNestedLoopsList(NULL),        
@@ -460,7 +464,9 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // l) Calculate correlations;
  // m) Calculate nested loops;
  // n) Calculate Test0;
- // o) Reset event-by-event objects;
+ // o) Kine correlations;
+ // p) Kine Test0 correlations;
+ // r) Reset event-by-event objects;
  // *) PostData.
 
  Green(__PRETTY_FUNCTION__); 
@@ -602,12 +608,64 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
+  if(fCalculatePtCorrelations)
+  {
+   Int_t bin = fCorrelationsPro[0][0][PTKINE]->FindBin(dPt);
+   if(0>=bin || fCorrelationsPro[0][0][PTKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+   {
+    Red(Form("dPt = %f, bin = %d",dPt,bin));
+    cout<<__LINE__<<endl;exit(1);
+   }
+   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+   {
+    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+    {
+     fqvector[PTq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); // wToPowerP is calculated above  
+    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
+   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
+
+   if(fCalculateCustomNestedLoop)
+   {    
+    ftaNestedLoopsKine[PTq][bin-1][0]->AddAt(dPhi,fqVectorEntries[PTq][bin-1]);
+    ftaNestedLoopsKine[PTq][bin-1][1]->AddAt(wPhi*wPt*wEta,fqVectorEntries[PTq][bin-1]);
+   }
+
+   fqVectorEntries[PTq][bin-1]++; // count number of particles in this pt bin in this event
+
+  } // if(fCalculatePtCorrelations)
+
+  if(fCalculateEtaCorrelations)
+  {
+   Int_t bin = fCorrelationsPro[0][0][ETAKINE]->FindBin(dEta);
+   if(0>=bin || fCorrelationsPro[0][0][ETAKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+   {
+    Red(Form("dEta = %f, bin = %d",dEta,bin));
+    cout<<__LINE__<<endl;exit(1);
+   }
+   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+   {
+    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+    {
+     fqvector[ETAq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); // wToPowerP is calculated above  
+    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
+   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
+
+   if(fCalculateCustomNestedLoop)
+   {    
+    ftaNestedLoopsKine[ETAq][bin-1][0]->AddAt(dPhi,fqVectorEntries[ETAq][bin-1]);
+    ftaNestedLoopsKine[ETAq][bin-1][1]->AddAt(wPhi*wPt*wEta,fqVectorEntries[ETAq][bin-1]);
+   }
+
+   fqVectorEntries[ETAq][bin-1]++; // count number of particles in this pt bin in this event
+
+  } // if(fCalculateEtaCorrelations)
+
   // Nested loops containers:
   if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
   {
    if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,nSelectedTracksCounter);} 
    if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,nSelectedTracksCounter);} 
-  }
+  } // if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
 
   // Sum of particle weights:
   fMultiplicity += wPhi*wPt*wEta; // only if weights are unit, fMultiplicity = fSelectedTracks
@@ -679,7 +737,15 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // n) Calculate Test0:
  if(fCalculateTest0){this->CalculateTest0();}
 
- // o) Reset event-by-event objects:
+ // o) Calculate kine correlations:
+ if(fCalculatePtCorrelations){this->CalculateKineCorrelations("pt");}
+ if(fCalculateEtaCorrelations){this->CalculateKineCorrelations("eta");}
+
+ // p) Kine Test0 correlations:
+ if(fCalculateTest0 && fCalculatePtCorrelations){this->CalculateKineTest0("pt");}  
+ if(fCalculateTest0 && fCalculateEtaCorrelations){this->CalculateKineTest0("eta");} 
+
+ // r) Reset event-by-event objects:
  this->ResetEventByEventQuantities();
 
  // *) PostData:
@@ -724,13 +790,29 @@ void AliAnalysisTaskMuPa::Terminate(Option_t *)
 
 //================================================================================================================
 
+void AliAnalysisTaskMuPa::ResetQ()
+{
+ // Reset the components of generic Q-vectors. Use it whenever you call the standard functions for correlations, for some custom Q-vectors.
+
+ for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+ {
+  for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+  {
+   fQ[h][wp] = TComplex(0.,0.); 
+  }
+ }
+
+} // void AliAnalysisTaskMuPa::ResetQ()
+
+//================================================================================================================
+
 void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
 {
  // Reset all global event-by-event quantities here:
 
  // a) Multiplicities;
  // b) Centrality;
- // c) Q-vector;
+ // c) Q-vectors;
  // d) Reset ebe containers for nested loops;
  // e) Fisher-Yates algorithm.
  
@@ -741,24 +823,71 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // b) Centrality:
  fCentrality = 0.;
 
- // c) Q-vector:
+ // c) Q-vectors:
  if(fCalculateQvector)
  {
   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
   {
    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
    {
+    fQ[h][wp] = TComplex(0.,0.); 
     fQvector[h][wp] = TComplex(0.,0.); 
    }
   }
  } // if(fCalculateQvector)
 
+ if(fCalculatePtCorrelations)
+ {
+  for(Int_t b=0;b<fCorrelationsPro[0][0][PTKINE]->GetNbinsX();b++)
+  {
+   fqVectorEntries[PTq][b] = 0;
+   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+   {
+    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+    {
+     fqvector[PTq][b][h][wp] = TComplex(0.,0.); 
+    }
+   }
+  } // for(Int_t b=0;b<this->fKinematicsBins[PT][0];b++)
+ } // if(fCalculatePtCorrelations)
+
+ if(fCalculateEtaCorrelations)
+ {
+  for(Int_t b=0;b<fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();b++)
+  {
+   fqVectorEntries[ETAq][b] = 0;
+   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+   {
+    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+    {
+     fqvector[ETAq][b][h][wp] = TComplex(0.,0.); 
+    }
+   }
+  } // for(Int_t b=0;b<this->fKinematicsBins[ETA][0];b++)
+ } // if(fCalculateEtaCorrelations)
+
  // d) Reset ebe containers for nested loops:
  if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
  {
   if(ftaNestedLoops[0]){ftaNestedLoops[0]->Reset();} 
-  if(ftaNestedLoops[1]){ftaNestedLoops[1]->Reset();}  
- }
+  if(ftaNestedLoops[1]){ftaNestedLoops[1]->Reset();}
+  if(fCalculatePtCorrelations)
+  {
+   for(Int_t b=0;b<fCorrelationsPro[0][0][PTKINE]->GetNbinsX();b++)
+   {
+    ftaNestedLoopsKine[PTq][b][0]->Reset();
+    ftaNestedLoopsKine[PTq][b][1]->Reset();
+   }
+  } // if(fCalculatePtCorrelations)
+  if(fCalculateEtaCorrelations)
+  {
+   for(Int_t b=0;b<fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();b++)
+   {
+    ftaNestedLoopsKine[ETAq][b][0]->Reset();
+    ftaNestedLoopsKine[ETAq][b][1]->Reset();  
+   }
+  } // if(fCalculateEtaCorrelations)  
+ } // if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
 
  // e) Fisher-Yates algorithm:
  if(fUseFisherYates)
@@ -879,11 +1008,26 @@ void AliAnalysisTaskMuPa::InitializeArraysForQvectors()
  {
   for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
   {
+   fQ[h][wp] = TComplex(0.,0.);
    fQvector[h][wp] = TComplex(0.,0.);
   }
  }
 
-} // void AliAnalysisTaskMuPa::InitializeArraysForQvectors()
+ for(Int_t b=0;b<gMaxNoBinsKine;b++)
+ {
+  fqVectorEntries[PTq][b] = 0;
+  fqVectorEntries[ETAq][b] = 0;  
+  for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+  {
+   for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+   {
+    fqvector[PTq][b][h][wp] = TComplex(0.,0.); 
+    fqvector[ETAq][b][h][wp] = TComplex(0.,0.); 
+   }
+  }
+ } // for(Int_t b=0;b<this->fKinematicsBins[PT][0];b++)
+
+} // for(Int_t b=0;b<gMaxNoBinsKine;b++)
 
 //================================================================================================================
 
@@ -920,15 +1064,23 @@ void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
   { 
    for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
    {
-    for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+    for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
     {
      fNestedLoopsPro[k][n][v] = NULL;
-    } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality] 
+    } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality] 
    } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
   } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
 
  ftaNestedLoops[0] = NULL;
  ftaNestedLoops[1] = NULL;
+
+ for(Int_t b=0;b<gMaxNoBinsKine;b++)
+ {
+  ftaNestedLoopsKine[PTq][b][0] = NULL;
+  ftaNestedLoopsKine[PTq][b][1] = NULL;
+  ftaNestedLoopsKine[ETAq][b][0] = NULL;
+  ftaNestedLoopsKine[ETAq][b][1] = NULL;
+ }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
 
@@ -971,7 +1123,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForTest0()
   for(Int_t mi=0;mi<gMaxIndex;mi++) 
   { 
    fTest0Labels[mo][mi] = NULL;
-   for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
    { 
     fTest0Pro[mo][mi][v] = NULL;
    } 
@@ -991,13 +1143,20 @@ void AliAnalysisTaskMuPa::InitializeArraysForCorrelationsHistograms()
   { 
    for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
    {
-    for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+    for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
     {
      fCorrelationsPro[k][n][v] = NULL;
      //fNestedLoopsPro[k][n][v] = NULL;
-    } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality] 
+    } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
    } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
   } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+
+
+ for(Int_t v=0;v<gKineDependenceVariables;v++)
+ {
+  fUseCustomKineDependenceBins[v] = kFALSE;
+  fKineDependenceBins[v] = NULL;
+ }
 
 } // void AliAnalysisTaskMuPa::InitializeArraysForCorrelationsHistograms()
 
@@ -1234,7 +1393,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  // e) Supported triggers;
  // f) Internal validation;
  // g) Primaries;
- // h) Fisher-Yates + max random selection.
+ // h) Fisher-Yates + max random selection;
+ // i) Custom binning.
 
  Green(__PRETTY_FUNCTION__);
 
@@ -1297,8 +1457,8 @@ void AliAnalysisTaskMuPa::InsanityChecks()
 
   if(!fCalculateQvector){cout<<__LINE__<<endl;exit(1);} 
 
-  if(!fCalculateCorrelations){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateCorrelations is kFALSE.\n      Fine if you validate only Test0...\n");sleep(10.44);} 
-  if(!fCalculateTest0){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n      Fine if you validate only standard isotropic correlations...\n");sleep(10.44);} 
+  if(!fCalculateCorrelations){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateCorrelations is kFALSE.\n      Fine if you validate only Test0...\n");sleep(1.44);} 
+  if(!fCalculateTest0){Yellow("\nINFO: fUseInternalValidation is kTRUE and fCalculateTest0 is kFALSE.\n      Fine if you validate only standard isotropic correlations...\n");sleep(1.44);} 
  } 
 
  // g) Primaries:
@@ -1323,6 +1483,18 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   cout<<__LINE__<<endl;exit(1);
  }
  
+ // i) Custom binning:
+ if(fUseCustomKineDependenceBins[PTq]) 
+ {
+  if(!fKineDependenceBins[PTq]){cout<<__LINE__<<endl;exit(1);}
+  if(fKineDependenceBins[PTq]->GetSize()<2){cout<<__LINE__<<endl;exit(1);}
+ }
+ if(fUseCustomKineDependenceBins[ETAq]) 
+ {
+  if(!fKineDependenceBins[ETAq]){cout<<__LINE__<<endl;exit(1);}
+  if(fKineDependenceBins[ETAq]->GetSize()<2){cout<<__LINE__<<endl;exit(1);}
+ }
+
  //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
@@ -1998,11 +2170,15 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","flags for correlations",1,0.,1.);
+ fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","flags for correlations",3,0.,3.);
  fCorrelationsFlagsPro->SetStats(kFALSE);
  fCorrelationsFlagsPro->GetXaxis()->SetLabelSize(0.05); 
  fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateCorrelations");  
  fCorrelationsFlagsPro->Fill(0.5,fCalculateCorrelations);
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(2,"fCalculatePtCorrelations");  
+ fCorrelationsFlagsPro->Fill(1.5,fCalculatePtCorrelations);
+ fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(3,"fCalculateEtaCorrelations");  
+ fCorrelationsFlagsPro->Fill(2.5,fCalculateEtaCorrelations);
  fCorrelationsList->Add(fCorrelationsFlagsPro);
 
  if(!fCalculateCorrelations){return;}
@@ -2011,20 +2187,41 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
  TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}-#varphi_{4}-#varphi_{5}-#varphi_{6}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}+#varphi_{4}-#varphi_{5}-#varphi_{6}-#varphi_{7}-#varphi_{8}"};
- Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
- Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
-                                    {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
-                                    {fCentralityBins[1],fCentralityBins[2]} // centrality
+ Int_t vvvariableNBins[5] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
+                             fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
+                             fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
+ Double_t vvvariableMinMax[5][2] = { {0.,1.}, // integrated 
+                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                     {fCentralityBins[1],fCentralityBins[2]}, // centrality
+                                     {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
+                                     {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
                                    };
- TString vvVariable[3] = {"integrated","multiplicity","centrality"};
+ TString vvVariable[5] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
 
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
  {  
   for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
   {
-   for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
    {
-    fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+    if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
+    if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
+  
+    // per demand, custom meeting for kine dependence:
+    if(PTKINE == v  && fUseCustomKineDependenceBins[PTq])
+    {
+     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());     
+    }
+    else if(ETAKINE == v  && fUseCustomKineDependenceBins[ETAq])
+    {
+     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());     
+    }
+    else
+    {
+     // the default binning:
+     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+    } // if(PTKINE == v  && fUseCustomKineDependenceBins[PTq])
+
     fCorrelationsPro[k][n][v]->SetStats(kFALSE);
     fCorrelationsPro[k][n][v]->Sumw2();
     fCorrelationsPro[k][n][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
@@ -2035,7 +2232,7 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
     //fCorrelationsPro[k][n][v]->SetFillColor(colorsW[v]-10);
     //fCorrelationsPro[k][n][v]->SetLineColor(colorsW[v]);
     fCorrelationsList->Add(fCorrelationsPro[k][n][v]);
-   } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
 
@@ -2064,9 +2261,28 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
 
  if(!(fCalculateNestedLoops||fCalculateCustomNestedLoop)){return;}
 
- const Int_t maxSize = 20000;
- ftaNestedLoops[0] = new TArrayD(maxSize); // ebe container for azimuthal angles 
- ftaNestedLoops[1] = new TArrayD(maxSize); // ebe container for particle weights (product of all)  
+ const Int_t iMaxSize = 2e4;
+ ftaNestedLoops[0] = new TArrayD(iMaxSize); // ebe container for azimuthal angles 
+ ftaNestedLoops[1] = new TArrayD(iMaxSize); // ebe container for particle weights (product of all)  
+
+ if(fCalculatePtCorrelations)
+ {
+  if(!fCorrelationsPro[0][0][PTKINE]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
+  for(Int_t b=0;b<fCorrelationsPro[0][0][PTKINE]->GetNbinsX();b++)
+  {
+   ftaNestedLoopsKine[PTq][b][0] = new TArrayD(iMaxSize);
+   ftaNestedLoopsKine[PTq][b][1] = new TArrayD(iMaxSize);
+  }
+ }
+ if(fCalculateEtaCorrelations)
+ {
+  if(!fCorrelationsPro[0][0][ETAKINE]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
+  for(Int_t b=0;b<fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();b++)
+  {
+   ftaNestedLoopsKine[ETAq][b][0] = new TArrayD(iMaxSize);
+   ftaNestedLoopsKine[ETAq][b][1] = new TArrayD(iMaxSize);
+  }
+ }
 
  if(!fCalculateNestedLoops){return;} // TBI this is safe enough, I think?
 
@@ -2074,20 +2290,41 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}-#varphi_{4}-#varphi_{5}-#varphi_{6}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}+#varphi_{4}-#varphi_{5}-#varphi_{6}-#varphi_{7}-#varphi_{8}"};
- Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
- Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
-                                    {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
-                                    {fCentralityBins[1],fCentralityBins[2]} // centrality
+ Int_t vvvariableNBins[5] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
+                             fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
+                             fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
+ Double_t vvvariableMinMax[5][2] = { {0.,1.}, // integrated 
+                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                     {fCentralityBins[1],fCentralityBins[2]}, // centrality
+                                     {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
+                                     {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
                                    };
- TString vvVariable[3] = {"integrated","multiplicity","centrality"};
+ TString vvVariable[5] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
 
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
  {  
   for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
   {
-   for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
    {
-    fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+
+    if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
+    if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
+
+    // per demand, custom meeting for kine dependence:
+    if(PTKINE == v  && fUseCustomKineDependenceBins[PTq])
+    {
+     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
+    }
+    else if(ETAKINE == v  && fUseCustomKineDependenceBins[ETAq])
+    {
+     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
+    }
+    else
+    {
+     // the default binning:
+     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+    }
     fNestedLoopsPro[k][n][v]->SetStats(kFALSE);
     fNestedLoopsPro[k][n][v]->Sumw2();
     fNestedLoopsPro[k][n][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
@@ -2097,8 +2334,9 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
     {
      fNestedLoopsPro[k][n][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
     }
+     
     fNestedLoopsList->Add(fNestedLoopsPro[k][n][v]);
-   } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+   } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
 
@@ -2214,12 +2452,16 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  if(!(this->RetrieveCorrelationsLabels())){cout<<__LINE__<<endl;exit(1);}
 
  // d) Book what needs to be booked:
- Int_t vvvariableNBins[3] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0]};
- Double_t vvvariableMinMax[3][2] = { {0.,1.}, // integrated 
-                                    {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
-                                    {fCentralityBins[1],fCentralityBins[2]} // centrality
+ Int_t vvvariableNBins[5] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
+                             fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
+                             fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
+ Double_t vvvariableMinMax[5][2] = { {0.,1.}, // integrated 
+                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                     {fCentralityBins[1],fCentralityBins[2]}, // centrality
+                                     {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
+                                     {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
                                    };
- TString vvVariable[3] = {"integrated","multiplicity","centrality"};
+ TString vvVariable[5] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
 
  for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
  { 
@@ -2227,9 +2469,27 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
   { 
    if(!fTest0Labels[mo][mi]){continue;} 
    {
-    for(Int_t v=0;v<3;v++) 
+    for(Int_t v=0;v<5;v++) 
     { 
-     fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+
+     if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
+     if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
+
+     // per demand, custom meeting for kine dependence:
+     if(PTKINE == v && fUseCustomKineDependenceBins[PTq])
+     {
+      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
+     }
+     else if(ETAKINE == v && fUseCustomKineDependenceBins[ETAq])
+     {
+      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
+     }
+     else
+     {
+      // the default binning:
+      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+     }
+
      fTest0Pro[mo][mi][v]->SetStats(kFALSE);
      fTest0Pro[mo][mi][v]->Sumw2();
      fTest0Pro[mo][mi][v]->GetXaxis()->SetTitle(vvVariable[v].Data());
@@ -2238,7 +2498,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
       fTest0Pro[mo][mi][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
      }
      fTest0List->Add(fTest0Pro[mo][mi][v]); // yes, this has to be here
-    } // for(Int_t v=0;v<3;v++) 
+    } // for(Int_t v=0;v<5;v++) 
    } // if(fTest0Labels[mo][mi]) 
   } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
  } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
@@ -3774,8 +4034,8 @@ TComplex AliAnalysisTaskMuPa::Q(Int_t n, Int_t wp)
 {
  // Using the fact that Q{-n,p} = Q{n,p}^*. 
  
- if(n>=0){return fQvector[n][wp];} 
- return TComplex::Conjugate(fQvector[-n][wp]);
+ if(n>=0){return fQ[n][wp];} 
+ return TComplex::Conjugate(fQ[-n][wp]);
  
 } // TComplex AliAnalysisTaskMuPa::Q(Int_t n, Int_t wp)
 
@@ -4112,8 +4372,23 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
  // Calculate analytically multiparticle correlations from Q-vectors. 
  // By default, only correlations for which all harmonics are the same are evaluated. 
 
+ // a) Flush 'n' fill the generic Q-vectors;
+ // b) Calculate correlations;
+ // c) Flush the generic Q-vectors.
+
  // TBI 20210909 optimize that 2x I do not call e.g. Two(0,0).Re(), etc.
 
+ // a) Flush 'n' fill the generic Q-vectors:
+ this->ResetQ();
+ for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+ {
+  for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+  {
+   fQ[h][wp] = fQvector[h][wp];
+  }
+ } 
+
+ // b) Calculate correlations:
  for(Int_t h=1;h<=fMaxHarmonic;h++) // harmonic
  {
   // 2p:
@@ -4128,7 +4403,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    TArrayI *harmonics = new TArrayI(2);
    harmonics->SetAt(h,0);
    harmonics->SetAt(-h,1);
-   if(TMath::Abs(twoC.Re() - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+   Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
+   if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(twoC.Re() - nestedLoopValue)>1.e-5)
    {          
     cout<<__LINE__<<endl; exit(1);
    } 
@@ -4162,7 +4438,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    harmonics->SetAt(h,1);
    harmonics->SetAt(-h,2);
    harmonics->SetAt(-h,3);
-   if(TMath::Abs(fourC.Re() - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+   Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
+   if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(fourC.Re() - nestedLoopValue)>1.e-5)
    {          
     cout<<__LINE__<<endl; exit(1);
    }
@@ -4198,7 +4475,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    harmonics->SetAt(-h,3);
    harmonics->SetAt(-h,4);
    harmonics->SetAt(-h,5);
-   if(TMath::Abs(sixC.Re() - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+   Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
+   if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(sixC.Re() - nestedLoopValue)>1.e-5)
    {          
     cout<<__LINE__<<endl; exit(1);
    }
@@ -4236,7 +4514,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    harmonics->SetAt(-h,5);
    harmonics->SetAt(-h,6);
    harmonics->SetAt(-h,7);
-   if(TMath::Abs(eightC.Re() - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+   Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
+   if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(eightC.Re() - nestedLoopValue)>1.e-5)
    {          
     cout<<__LINE__<<endl; exit(1);
    }
@@ -4257,6 +4536,9 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   if(fCorrelationsPro[3][h-1][2]){fCorrelationsPro[3][h-1][2]->Fill(fCentrality,eightC,wEight);}
 
  } // for(Int_t h=1;h<=fMaxHarmonic;h++) // harmonic
+
+ // c) Flush the generic Q-vectors:
+ this->ResetQ();
 
 } // void AliAnalysisTaskMuPa::CalculateCorrelations() 
 
@@ -4658,6 +4940,233 @@ Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
  return finalValue;
  
 } // Double_t AliAnalysisTaskMuPa::CalculateCustomNestedLoop(TArrayI *harmonics)
+
+//=======================================================================================================================
+
+Double_t AliAnalysisTaskMuPa::CalculateKineCustomNestedLoop(TArrayI *harmonics, const char* kc, Int_t bin)
+{
+ // For the specified harmonics, kine. variable, and bin, get the correlation from nested loops.
+ // Order of correlator is the number of harmonics, i.e. the number of elements in an array.
+
+ // a) Determine the order of correlator;
+ // b) Custom nested loop;
+ // c) Return value. 
+
+ if(!harmonics){cout<<__LINE__<<endl;exit(1);}
+
+ Int_t kb = -1; // which kine bin
+ Int_t qv = -1; // which component of q-vector
+ if(TString(kc).EqualTo("pt"))
+ {
+  kb = PTKINE;
+  qv = PTq;
+ } 
+ else if(TString(kc).EqualTo("eta"))
+ {
+  kb = ETAKINE;
+  qv = ETAq;  
+ } 
+ else
+ {
+  cout<<__LINE__<<endl;exit(1); 
+ }
+
+ if(0>bin || fCorrelationsPro[0][0][kb]->GetNbinsX()<bin){Red(Form("bin = %d",bin));cout<<__LINE__<<endl;exit(1);} 
+
+ // Get the number of particles in this kine bin:
+ Int_t nParticles = 0;
+ for(Int_t i=0;i<ftaNestedLoopsKine[qv][bin][0]->GetSize();i++)
+ {
+  if(TMath::Abs(ftaNestedLoopsKine[qv][bin][0]->GetAt(i)) > 0. && TMath::Abs(ftaNestedLoopsKine[qv][bin][0]->GetAt(i)) > 0.){nParticles++;}
+ }
+
+ Blue(Form("kine: nParticles = %d, bin range = [%f,%f)",nParticles,fCorrelationsPro[0][0][kb]->GetBinLowEdge(bin+1),fCorrelationsPro[0][0][kb]->GetBinLowEdge(bin+2)));
+
+ // a) Determine the order of correlator;
+ Int_t order = harmonics->GetSize();
+ if(0==order||order>fMaxCorrelator){cout<<__LINE__<<endl;exit(1);}
+
+ if(order>nParticles){return 0.;} // there is no enough particles in this kine bin to calculate requested correlator
+
+ // b) Custom nested loop:
+ TProfile *profile = new TProfile("profile","",1,0.,1.); // helper profile to get all averages automatically
+ //profile->Sumw2();
+ Double_t value = 0.; // cos of current multiplet
+ Double_t weight = 1.; // weight of current multiplet
+ for(int i1=0; i1<nParticles; i1++)
+ {
+  Double_t dPhi1 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i1);
+  Double_t dW1 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i1);
+  if(1==order)
+  {
+   value = TMath::Cos(harmonics->GetAt(0)*dPhi1);   
+   weight = dW1;
+   profile->Fill(0.5,value,weight);
+   continue;
+  }
+  for(int i2=0; i2<nParticles; i2++)
+  {
+   if(i2==i1){continue;}
+   Double_t dPhi2 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i2);
+   Double_t dW2 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i2);
+   if(2==order)
+   {
+    value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2);   
+    weight = dW1*dW2;
+    profile->Fill(0.5,value,weight);
+    continue;
+   }
+   for(int i3=0; i3<nParticles; i3++)
+   {
+    if(i3==i1||i3==i2){continue;}
+    Double_t dPhi3 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i3);
+    Double_t dW3 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i3);
+    if(3==order)
+    {
+     value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3);   
+     weight = dW1*dW2*dW3;
+     profile->Fill(0.5,value,weight);
+     continue;
+    }
+    for(int i4=0; i4<nParticles; i4++)
+    {
+     if(i4==i1||i4==i2||i4==i3){continue;}
+     Double_t dPhi4 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i4);
+     Double_t dW4 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i4);
+     if(4==order)
+     {
+      value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4);   
+      weight = dW1*dW2*dW3*dW4;
+      profile->Fill(0.5,value,weight);
+      continue;
+     }
+     for(int i5=0; i5<nParticles; i5++)
+     {
+      if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
+      Double_t dPhi5 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i5);
+      Double_t dW5 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i5);
+      if(5==order)
+      {
+       value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5);   
+       weight = dW1*dW2*dW3*dW4*dW5;
+       profile->Fill(0.5,value,weight);
+       continue;
+      }
+      for(int i6=0; i6<nParticles; i6++)
+      {
+       if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
+       Double_t dPhi6 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i6);
+       Double_t dW6 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i6);
+       if(6==order)
+       {
+        value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                         + harmonics->GetAt(5)*dPhi6);   
+        weight = dW1*dW2*dW3*dW4*dW5*dW6;
+        profile->Fill(0.5,value,weight);
+        continue;
+       }
+       for(int i7=0; i7<nParticles; i7++)
+       {
+        if(i7==i1||i7==i2||i7==i3||i7==i4||i7==i5||i7==i6){continue;}
+        Double_t dPhi7 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i7);
+        Double_t dW7 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i7);
+        if(7==order)
+        {
+         value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                          + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7);   
+         weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7;
+         profile->Fill(0.5,value,weight);
+         continue;
+        }
+        for(int i8=0; i8<nParticles; i8++)
+        {
+         if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
+         Double_t dPhi8 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i8);
+         Double_t dW8 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i8);
+         if(8==order)
+         {
+          value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                           + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8);   
+          weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8;
+          profile->Fill(0.5,value,weight);
+          continue;
+         }
+         for(int i9=0; i9<nParticles; i9++)
+         {
+          if(i9==i1||i9==i2||i9==i3||i9==i4||i9==i5||i9==i6||i9==i7||i9==i8){continue;}
+          Double_t dPhi9 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i9);
+          Double_t dW9 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i9);
+          if(9==order)
+          {
+           value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                            + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9);   
+           weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9;
+           profile->Fill(0.5,value,weight);
+           continue;
+          }
+          for(int i10=0; i10<nParticles; i10++)
+          {
+           if(i10==i1||i10==i2||i10==i3||i10==i4||i10==i5||i10==i6||i10==i7||i10==i8||i10==i9){continue;}
+           Double_t dPhi10 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i10);
+           Double_t dW10 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i10);
+           if(10==order)
+           {
+            value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                             + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9 + harmonics->GetAt(9)*dPhi10);   
+            weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9*dW10;
+            profile->Fill(0.5,value,weight);
+            continue;
+           }
+           for(int i11=0; i11<nParticles; i11++)
+           {
+            if(i11==i1||i11==i2||i11==i3||i11==i4||i11==i5||i11==i6||i11==i7||i11==i8||i11==i9||i11==i10){continue;}
+            Double_t dPhi11 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i11);
+            Double_t dW11 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i11);
+            if(11==order)
+            {
+             value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                              + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9 + harmonics->GetAt(9)*dPhi10
+                              + harmonics->GetAt(10)*dPhi11);   
+             weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9*dW10*dW11;
+             profile->Fill(0.5,value,weight);
+             continue;
+            }
+            for(int i12=0; i12<nParticles; i12++)
+            {
+             if(i12==i1||i12==i2||i12==i3||i12==i4||i12==i5||i12==i6||i12==i7||i12==i8||i12==i9||i12==i10||i12==i11){continue;}
+             Double_t dPhi12 = ftaNestedLoopsKine[qv][bin][0]->GetAt(i12);
+             Double_t dW12 = ftaNestedLoopsKine[qv][bin][1]->GetAt(i12);
+             if(12==order)
+             {
+              value = TMath::Cos(harmonics->GetAt(0)*dPhi1 + harmonics->GetAt(1)*dPhi2 + harmonics->GetAt(2)*dPhi3 + harmonics->GetAt(3)*dPhi4 + harmonics->GetAt(4)*dPhi5
+                               + harmonics->GetAt(5)*dPhi6 + harmonics->GetAt(6)*dPhi7 + harmonics->GetAt(7)*dPhi8 + harmonics->GetAt(8)*dPhi9 + harmonics->GetAt(9)*dPhi10
+                               + harmonics->GetAt(10)*dPhi11 + harmonics->GetAt(11)*dPhi12);   
+              weight = dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8*dW9*dW10*dW11*dW12;
+              profile->Fill(0.5,value,weight);
+              continue;
+             }
+
+             // ... it's easy to continue the above pattern here
+
+            } // for(int i12=0; i12<nParticles; i12++)
+           } // for(int i11=0; i11<nParticles; i11++)
+          } // for(int i10=0; i10<nParticles; i10++)
+         } // for(int i9=0; i9<nParticles; i9++)
+        } // for(int i8=0; i8<nParticles; i8++)
+       } // for(int i7=0; i7<nParticles; i7++)
+      } // for(int i6=0; i6<nParticles; i6++)
+     } // for(int i5=0; i5<nParticles; i5++)
+    } // for(int i4=0; i4<nParticles; i4++)   
+   } // for(int i3=0; i3<nParticles; i3++)
+  } // for(int i2=0; i2<nParticles; i2++)
+ } // for(int i1=0; i1<nParticles; i1++)
+
+ // c) Return value:
+ Double_t finalValue = profile->GetBinContent(1);
+ delete profile; profile = NULL;
+ return finalValue;
+ 
+} // Double_t AliAnalysisTaskMuPa::CalculateKineCustomNestedLoop(TArrayI *harmonics, const char* kc, Int_t bin)
 
 //=======================================================================================================================
 
@@ -5525,6 +6034,21 @@ void AliAnalysisTaskMuPa::CalculateTest0()
 {
  // Calculate Test0.
 
+ // a) Flush 'n' fill the generic Q-vectors;
+ // b) Calculate correlations;
+ // c) Flush the generic Q-vectors.
+
+ // a) Flush 'n' fill the generic Q-vectors:
+ this->ResetQ();
+ for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+ {
+  for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+  {
+   fQ[h][wp] = fQvector[h][wp];
+  }
+ } 
+
+ // b) Calculate correlations:
  Double_t correlation = 0.;
  Double_t weight = 0.;
  Int_t n[gMaxCorrelator] = {0}; // array holding harmonics
@@ -5538,7 +6062,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
    // Sanitize the labels (If necessary. Locally this is irrelevant): 
    if(!fTest0Labels[mo][mi]) // I do not stream them, so trying to get them from the booked profiles, where they are stored in the titles
    {
-    for(Int_t v=0;v<3;v++) 
+    for(Int_t v=0;v<5;v++) 
     {
      if(fTest0Pro[mo][mi][v])
      {
@@ -5684,6 +6208,9 @@ void AliAnalysisTaskMuPa::CalculateTest0()
   } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
  } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
 
+ // c) Flush the generic Q-vectors:
+ this->ResetQ();
+
 } // void AliAnalysisTaskMuPa::CalculateTest0()
 
 //=======================================================================================
@@ -5760,7 +6287,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   Int_t nMult = gRandom->Uniform(fMultRangeInternalValidation[0],fMultRangeInternalValidation[1]);
   Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
   fPhiPDF->SetParameter(12,fReactionPlane);
-  cout<<"nMult = "<<nMult<<endl;
+  //cout<<"nMult = "<<nMult<<endl;
 
   // b2) Loop over particles:
   Double_t dPhi = 0.;
@@ -5810,19 +6337,20 @@ void AliAnalysisTaskMuPa::InternalValidation()
  //    d0) Standard isotropic:
  if(fCalculateCorrelations && !fCalculateNestedLoops)
  {
-  Int_t nBinsQV = fCorrelationsPro[0][0][0]->GetNbinsX();
+  Int_t var = 0; // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  Int_t nBinsQV = fCorrelationsPro[0][0][var]->GetNbinsX();
   Double_t valueQV = 0.;
   for(Int_t o=0;o<4;o++)
   {
-   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
+   cout<<Form("   ==== <<%d>>-particle correlations (var = %d) ====",2*(o+1),var)<<endl;
    for(Int_t h=0;h<6;h++)
    {
     for(Int_t b=1;b<=nBinsQV;b++)
     {
-     if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
+     if(fCorrelationsPro[o][h][var]){valueQV = fCorrelationsPro[o][h][var]->GetBinContent(b);}
      if(TMath::Abs(valueQV)>0.)
      {
-      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][0]->GetBinError(1)<<endl; 
+      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][var]->GetBinError(1)<<endl; 
      } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
     } // for(Int_t b=1;b<=nBinsQV;b++) 
    } // for(Int_t h=0;h<6;h++)
@@ -5834,13 +6362,16 @@ void AliAnalysisTaskMuPa::InternalValidation()
  //    d1) Test0:
  if(fCalculateTest0)
  {
+  Int_t var = 0; // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  Int_t nBinsQV = fTest0Pro[0][0][var]->GetNbinsX();
   for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
   { 
    for(Int_t mi=0;mi<gMaxIndex;mi++) 
    { 
-    if(fTest0Pro[mo][mi][0])
+    cout<<Form("   %s (var = %d) ====",fTest0Pro[mo][mi][var]->GetTitle(),var)<<endl;
+    for(Int_t b=1;b<=nBinsQV;b++)
     {
-     cout<<fTest0Pro[mo][mi][0]->GetTitle()<<" = "<<fTest0Pro[mo][mi][0]->GetBinContent(1)<<" +/- "<<fTest0Pro[mo][mi][0]->GetBinError(1)<<endl;
+     cout<<" = "<<fTest0Pro[mo][mi][var]->GetBinContent(b)<<" +/- "<<fTest0Pro[mo][mi][var]->GetBinError(b)<<endl;
     } 
    }
   } 
@@ -6317,4 +6848,368 @@ void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
  } // switch(fCentralityCorrelationCutVersion)  
 
 } // void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::CalculateKineCorrelations(const char* kc)
+{
+ // Calculate analytically kine multiparticle correlations from Q-vectors. 
+ // By default, only correlations for which all harmonics are the same are evaluated. 
+
+ Int_t kb = -1; // which kine bin
+ Int_t qv = -1; // which component of q-vector
+ Int_t nBins = -1;
+ if(TString(kc).EqualTo("pt"))
+ {
+  kb = PTKINE;
+  qv = PTq;
+  nBins = fCorrelationsPro[0][0][PTKINE]->GetNbinsX();
+ } 
+ else if(TString(kc).EqualTo("eta"))
+ {
+  kb = ETAKINE;
+  qv = ETAq;  
+  nBins = fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();
+ } 
+
+ // Flush the generic Q-vectors:
+ this->ResetQ();
+
+ // Uniform loop over bin for all kine variables:
+ for(Int_t b=0;b<nBins;b++)
+ {
+
+  // Fill the generic Q-vectors for this bin:
+  for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
+  {
+   for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+   {
+    fQ[h][wp] = fqvector[qv][b][h][wp]; 
+   }
+  }
+ 
+  // Calculate correlations: 
+  for(Int_t h=1;h<=fMaxHarmonic;h++) // harmonic
+  {
+   // 2p:
+   //cout<<"   => CalculateCorrelations(void), 2p .... "<<endl;
+   if(fqVectorEntries[qv][b]<2){continue;} // yes, continue, not break
+   TComplex twoC = Two(h,-h);
+   Double_t wTwo = Two(0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+   twoC /= wTwo;
+   if(fCalculateCustomNestedLoop)
+   {
+    // e-b-e sanity check:
+    TArrayI *harmonics = new TArrayI(2);
+    harmonics->SetAt(h,0);
+    harmonics->SetAt(-h,1);
+    Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b);  
+    if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(twoC.Re() - nestedLoopValue)>1.e-5)
+    {          
+     cout<<__LINE__<<endl; exit(1);
+    } 
+    else
+    {
+     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 2-p, harmonic %d, bin = %d",h,b+1)<<endl;
+     //cout<<Form("   value = %f",twoC.Re())<<endl;
+    }
+    delete harmonics; harmonics = NULL;
+   } // if(fCalculateCustomNestedLoop)
+   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+     TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){twoC/=pow(fInternalValidationAmplitudes->GetAt(h-1),2.);}
+   // kine:
+   if(fCorrelationsPro[0][h-1][kb]){fCorrelationsPro[0][h-1][kb]->Fill(fCorrelationsPro[0][h-1][kb]->GetXaxis()->GetBinCenter(b+1),twoC,wTwo);} // fill in the bin center
+
+   // 4p:
+   //cout<<"   => CalculateCorrelations(void), 4p .... "<<endl;
+   if(fqVectorEntries[qv][b]<4){continue;} // yes, continue, not break
+   TComplex fourC = Four(h,h,-h,-h);
+   Double_t wFour = Four(0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+   fourC /= wFour;
+   if(fCalculateCustomNestedLoop)
+   {
+    // e-b-e sanity check:
+    TArrayI *harmonics = new TArrayI(4);
+    harmonics->SetAt(h,0);
+    harmonics->SetAt(h,1);
+    harmonics->SetAt(-h,2);
+    harmonics->SetAt(-h,3);
+    Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b); 
+    if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(fourC.Re() - nestedLoopValue)>1.e-5)
+    {          
+     cout<<__LINE__<<endl; exit(1);
+    }
+    else
+    {
+     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 4-p, harmonic %d, bin = %d",h,b+1)<<endl;
+     //cout<<Form("   value = %f",fourC.Re())<<endl;
+    }
+    delete harmonics; harmonics = NULL;
+   } // if(fCalculateCustomNestedLoop)
+   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){fourC/=pow(fInternalValidationAmplitudes->GetAt(h-1),4.);}
+   // kine:
+   if(fCorrelationsPro[1][h-1][kb]){fCorrelationsPro[1][h-1][kb]->Fill(fCorrelationsPro[1][h-1][kb]->GetXaxis()->GetBinCenter(b+1),fourC,wFour);} // fill in the bin center
+
+   // 6p:
+   //cout<<"   => CalculateCorrelations(void), 6p .... "<<endl;
+   if(fqVectorEntries[qv][b]<6){continue;} // yes, continue, not break
+   TComplex sixC = Six(h,h,h,-h,-h,-h);
+   Double_t wSix = Six(0,0,0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+   sixC /= wSix;
+   if(fCalculateCustomNestedLoop)
+   {
+    // e-b-e sanity check:
+    TArrayI *harmonics = new TArrayI(6);
+    harmonics->SetAt(h,0);
+    harmonics->SetAt(h,1);
+    harmonics->SetAt(h,2);
+    harmonics->SetAt(-h,3);
+    harmonics->SetAt(-h,4);
+    harmonics->SetAt(-h,5);
+    Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b); 
+    if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(sixC.Re() - nestedLoopValue)>1.e-5)
+    {          
+     cout<<__LINE__<<endl; exit(1);
+    }
+    else
+    {
+     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 6-p, harmonic %d, bin = %d",h,b+1)<<endl;
+    // cout<<Form("   value = %f",sixC.Re())<<endl;
+    }
+    delete harmonics; harmonics = NULL;
+   } // if(fCalculateCustomNestedLoop)
+   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){sixC/=pow(fInternalValidationAmplitudes->GetAt(h-1),6.);}
+   // kine:
+   if(fCorrelationsPro[2][h-1][kb]){fCorrelationsPro[2][h-1][kb]->Fill(fCorrelationsPro[2][h-1][kb]->GetXaxis()->GetBinCenter(b+1),sixC,wSix);} // fill in the bin center
+
+   // 8p:
+   //cout<<"   => CalculateCorrelations(void), 8p .... "<<endl;
+   if(fqVectorEntries[qv][b]<8){continue;} // yes, continue, not break
+   TComplex eightC = Eight(h,h,h,h,-h,-h,-h,-h);
+   Double_t wEight = Eight(0,0,0,0,0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+   eightC /= wEight;
+   if(fCalculateCustomNestedLoop)
+   {
+    // e-b-e sanity check:
+    TArrayI *harmonics = new TArrayI(8);
+    harmonics->SetAt(h,0);
+    harmonics->SetAt(h,1);
+    harmonics->SetAt(h,2);
+    harmonics->SetAt(h,3);
+    harmonics->SetAt(-h,4);
+    harmonics->SetAt(-h,5);
+    harmonics->SetAt(-h,6);
+    harmonics->SetAt(-h,7);
+    Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b);
+    if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(eightC.Re() - nestedLoopValue)>1.e-5)
+    {          
+     cout<<__LINE__<<endl; exit(1);
+    }
+    else
+    {
+     cout<<Form("=> e-b-e check with CustomNestedLoop is OK for isotropic 8-p, harmonic %d, bin = %d",h,b+1)<<endl;
+     //cout<<Form("   value = %f",eightC.Re())<<endl;
+    }
+    delete harmonics; harmonics = NULL;
+   } // if(fCalculateCustomNestedLoop)
+   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
+      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){eightC/=pow(fInternalValidationAmplitudes->GetAt(h-1),8.);}
+   // kine:
+   if(fCorrelationsPro[3][h-1][kb]){fCorrelationsPro[3][h-1][kb]->Fill(fCorrelationsPro[3][h-1][kb]->GetXaxis()->GetBinCenter(b+1),eightC,wEight);} // fill in the bin center
+
+  } // for(Int_t h=1;h<=fMaxHarmonic;h++) // harmonic
+
+ } // for(Int_t b=0;b<nBins;b++)
+
+ // Flush the generic Q-vectors:
+ this->ResetQ();
+
+} // void AliAnalysisTaskMuPa::CalculateKineCorrelations(const char* kc)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
+{
+ // Calculate analytically kine Test0 from Q-vectors. 
+
+ Int_t kb = -1; // which kine bin
+ Int_t qv = -1; // which component of q-vector
+ Int_t nBins = -1;
+ if(TString(kc).EqualTo("pt"))
+ {
+  kb = PTKINE;
+  qv = PTq;
+  nBins = fKinematicsBins[PT][0];
+ } 
+ else if(TString(kc).EqualTo("eta"))
+ {
+  kb = ETAKINE;
+  qv = ETAq;  
+  nBins = fKinematicsBins[ETA][0];
+ } 
+
+ // Uniform loop over bin for all kine variables:
+ for(Int_t b=0;b<nBins;b++)
+ {
+  // Re-initialize Q-vector to be q-vector in this bin:
+  // After that, I can call all standard Q-vector functions again:
+  for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
+  {
+   for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+   {
+    fQ[h][wp] = fqvector[qv][b][h][wp]; 
+   }
+  }
+
+  Double_t correlation = 0.;
+  Double_t weight = 0.;
+  Int_t n[gMaxCorrelator] = {0}; // array holding harmonics
+
+  for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+  { 
+   for(Int_t mi=0;mi<gMaxIndex;mi++) 
+   { 
+    // TBI 20210913 I do not have to loop each time all the way up to gMaxCorrelator and gMaxIndex, but nevermind now, it's not a big efficiency loss.
+
+    if(fTest0Labels[mo][mi])
+    {
+     // Extract harmonics from TString, FS is " ": 
+     for(Int_t h=0;h<=mo;h++)
+     {
+      //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
+      n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
+     }
+
+     if(fqVectorEntries[qv][b]<mo+1){continue;} // TBI 20211026 is this really safe
+
+     switch(mo+1) // which order? yes, mo+1
+     {
+      case 1:
+       correlation = One(n[0]).Re();
+       weight = One(0).Re();
+      break;
+
+      case 2:  
+       correlation = Two(n[0],n[1]).Re();
+       weight = Two(0,0).Re();
+      break;
+
+      case 3: 
+       correlation = Three(n[0],n[1],n[2]).Re();
+       weight = Three(0,0,0).Re();
+      break;
+ 
+      case 4: 
+       correlation = Four(n[0],n[1],n[2],n[3]).Re();
+       weight = Four(0,0,0,0).Re();
+      break;
+
+      case 5: 
+       correlation = Five(n[0],n[1],n[2],n[3],n[4]).Re();
+       weight = Five(0,0,0,0,0).Re();
+      break;
+
+      case 6: 
+       correlation = Six(n[0],n[1],n[2],n[3],n[4],n[5]).Re();
+       weight = Six(0,0,0,0,0,0).Re();
+      break;
+
+      case 7: 
+       correlation = Seven(n[0],n[1],n[2],n[3],n[4],n[5],n[6]).Re();
+       weight = Seven(0,0,0,0,0,0,0).Re();
+      break;
+
+      case 8: 
+       correlation = Eight(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]).Re();
+       weight = Eight(0,0,0,0,0,0,0,0).Re();
+      break;
+
+      case 9: 
+       correlation = Nine(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8]).Re();
+       weight = Nine(0,0,0,0,0,0,0,0,0).Re();
+      break;
+
+      case 10: 
+       correlation = Ten(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],n[9]).Re();
+       weight = Ten(0,0,0,0,0,0,0,0,0,0).Re();
+      break;
+
+      case 11: 
+       correlation = Eleven(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],n[9],n[10]).Re();
+       weight = Eleven(0,0,0,0,0,0,0,0,0,0,0).Re();
+      break;
+
+      case 12: 
+       correlation = Twelve(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],n[9],n[10],n[11]).Re();
+       weight = Twelve(0,0,0,0,0,0,0,0,0,0,0,0).Re();
+      break;
+
+      default:
+       cout<<fTest0Labels[mo][mi]->Data()<<endl;
+       cout<<"not supported yet"<<endl;
+       return; // TBI 20210907 or continue?
+     } // switch(mo+1)
+
+     // e-b-e sanity check:
+     if(fCalculateCustomNestedLoop)
+     {
+      TArrayI *harmonics = new TArrayI(mo+1);
+      for(Int_t i=0;i<mo+1;i++)
+      {
+       harmonics->SetAt(n[i],i);
+      }
+      if(!(weight>0.))
+      {
+       cout<<fTest0Labels[mo][mi]->Data()<<endl;
+       Red("Is perhaps order of some requested correlator bigger than the number of particles?");   
+       cout<<__LINE__<<endl; exit(1); 
+      }
+      if(TMath::Abs(correlation/weight - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+      {       
+       cout<<fTest0Labels[mo][mi]->Data()<<endl;   
+       cout<<"correlation: "<<correlation/weight<<endl;   
+       cout<<"custom loop: "<<this->CalculateCustomNestedLoop(harmonics)<<endl;   
+       cout<<__LINE__<<endl; exit(1);
+      }
+      else
+      {
+       cout<<Form("=> e-b-e check with CustomNestedLoop is OK for %d-p Test0 corr. %s",mo+1,fTest0Labels[mo][mi]->Data())<<endl;
+      }
+      delete harmonics; harmonics = NULL;
+     } // if(fCalculateCustomNestedLoop)
+  
+     // To ease comparison, rescale with theoretical value. Now all Test0 results shall be at 1:
+     if(fUseInternalValidation && fInternalValidationAmplitudes && fInternalValidationPlanes && fRescaleWithTheoreticalInput)
+     {
+      TArrayI *harmonics = new TArrayI(mo+1);
+      for(Int_t i=0;i<mo+1;i++)
+      {
+       harmonics->SetAt(n[i],i);
+      }
+      TComplex theoreticalValue = TheoreticalValue(harmonics,fInternalValidationAmplitudes,fInternalValidationPlanes);
+      if(TMath::Abs(theoreticalValue.Re()) > 0.)
+      {     
+       correlation /= theoreticalValue.Re();
+      }
+      delete harmonics; harmonics = NULL;
+     } // if(fUseInternalValidation && fRescaleWithTheoreticalInput)
+
+     // Finally, fill:
+     if(!(weight > 0.)){cout<<__LINE__<<endl;exit(1);}
+
+     if(fTest0Pro[mo][mi][kb]){fTest0Pro[mo][mi][kb]->Fill(fTest0Pro[mo][mi][kb]->GetXaxis()->GetBinCenter(b+1),correlation/weight,weight);} // fill in the bin center
+
+    } // if(fTest0Labels[mo][mi])
+   } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
+  } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
+
+ } // for(Int_t b=0;b<nBins;b++)
+
+} // void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
+
+//=======================================================================================================================
+
+
 
