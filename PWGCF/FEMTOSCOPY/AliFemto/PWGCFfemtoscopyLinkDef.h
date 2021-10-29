@@ -119,6 +119,8 @@
 #pragma link C++ class AliFemtoSimpleAnalysisOnlyMixP1+;
 #pragma link C++ class AliFemtoVertexMultAnalysisOnlyMixP1+;
 
+#pragma link C++ class AliFemtokTPairCut+;
+
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;
 #pragma link C++ class AliFemtoConfigObject::BuildMap;
