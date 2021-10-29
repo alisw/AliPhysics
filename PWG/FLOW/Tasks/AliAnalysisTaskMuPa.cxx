@@ -5801,7 +5801,10 @@ Bool_t AliAnalysisTaskMuPa::RetrieveCorrelationsLabels()
  Int_t order = -44;
  for(Int_t b=1;b<=nBins;b++)
  {
-  order = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ")->GetEntries();
+  TObjArray *oa = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ");
+  if(!oa){cout<<__LINE__<<endl;exit(1);}
+  order = oa->GetEntries();
+  delete oa; 
   if(0 == order){continue;} // empty lines, or the label format which is not supported
   // 1-p => 0, 2-p => 1, etc.:
   fTest0Labels[order-1][counter[order-1]] = new TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)); // okay...  
@@ -5844,7 +5847,10 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
   Int_t order = -44;
   while (getline(myfile,line))
   { 
-   order = TString(line).Tokenize(" ")->GetEntries();
+   TObjArray *oa = TString(line).Tokenize(" ");
+   if(!oa){cout<<__LINE__<<endl;exit(1);}
+   order = oa->GetEntries();
+   delete oa;
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
    fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
@@ -6078,7 +6084,10 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     for(Int_t h=0;h<=mo;h++)
     {
      //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
-     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
+     TObjArray *oa = fTest0Labels[mo][mi]->Tokenize(" ");
+     if(!oa){cout<<__LINE__<<endl;exit(1);}
+     n[h] = TString(oa->At(h)->GetName()).Atoi();
+     delete oa; // yes, otherwise it's a memory leak
     }
 
     switch(mo+1) // which order? yes, mo+1
@@ -7079,7 +7088,10 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
      for(Int_t h=0;h<=mo;h++)
      {
       //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
-      n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
+      TObjArray *oa = fTest0Labels[mo][mi]->Tokenize(" ");
+      if(!oa){cout<<__LINE__<<endl;exit(1);}
+      n[h] = TString(oa->At(h)->GetName()).Atoi();
+      delete oa; // yes, otherwise it's a memory leak
      }
 
      if(fqVectorEntries[qv][b]<mo+1){continue;} // TBI 20211026 is this really safe
