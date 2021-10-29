@@ -78,7 +78,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
   fRand(0),
-  fClusEnergy(0),fAccClusEtaPhi(0),fAccClusEtaPhiZvtx(0),bEnableClusPairRot(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),
+  fClusEnergy(0),fAccClusEtaPhi(0),fAccClusEtaPhiZvtx(0),bEnableClusPairRot(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),fHistEventHashVsMixingAngle(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
   fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
@@ -129,7 +129,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
   fRand(0),
-  fClusEnergy(0),fAccClusEtaPhi(0),fAccClusEtaPhiZvtx(0),bEnableClusPairRot(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),
+  fClusEnergy(0),fAccClusEtaPhi(0),fAccClusEtaPhiZvtx(0),bEnableClusPairRot(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),fHistEventHash(0),fHistEventHashVsMixingAngle(0),
   bEnablePosSwapHists(false),bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
   fEMCalMultvZvtx(0),
   fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
@@ -674,6 +674,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   // Event Hash tracking histogram
   fHistEventHash = new TH1F("HistEventHash","Event Hash Value;Hash Value",11,-0.5,10.5);
   fOutput->Add(fHistEventHash);
+
+  // Event Hash vs EventMixing Angle Histogram for checking code for checking code for checking code for checking code
+  fHistEventHashVsMixingAngle = new TH2F("HistEventHashVsMixingAngle","Event Hash vs Mixing angle;Mixing Angle;Event Hash",24,-1.5*TMath::Pi(),1.5*TMath::Pi(),5,0,5);
+  fOutput->Add(fHistEventHashVsMixingAngle);
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   THn Sparse for the 2D histograms
@@ -1384,6 +1388,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     		fOutput->Add(fClusterProp);
     }
 
+
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//    Histograms for common use
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1807,12 +1812,26 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 	// using evtPlaneArray [nEvtPlaneBins]
 //	const Int_t nUsedEvtPlaneBins = 3;
 //	Double_t fEventPlaneArray[nUsedEvtPlaneBins+1] = {0,1,2,3}; // In Plane, MP, Out of Plane}
-	// Fake event plane array:
+
+	// Fake event plane array: (Old method for separating even/odd events)
 	//const Int_t nUsedEvtPlaneBins = 1;
 
-	Double_t fEventPlaneArray[3] = {-0.5,0.5,1.5}; //0 and 1 used for even/odd events
-  Int_t nUsedEvtPlaneBins = 1;
-  if (bEnableEventHashMixing) nUsedEvtPlaneBins = 2;
+	//Double_t fEventPlaneArray[3] = {-0.5,0.5,1.5}; //0 and 1 used for even/odd events
+
+  Double_t fEventPlaneArray[2*kNEPMixingBins];
+
+  Double_t fEventPlaneMixingMin = 0;
+  Double_t fEventPlaneMixingMax = TMath::Pi();
+
+  Int_t nUsedEvtPlaneBins = kNEPMixingBins;
+  if (bEnableEventHashMixing) {
+    nUsedEvtPlaneBins = 2 * kNEPMixingBins;
+    //fEventPlaneMixingMin = -TMath::Pi(); //[-pi,0) stores even event triggers, [0,pi) stores odd triggers
+
+    fEventPlaneMixingMin = -GetEventMixingAngle(TMath::PiOver2()); // - (pi + epsilon)
+    fEventPlaneMixingMax = GetEventMixingAngle(TMath::PiOver2()); // (pi + epsilon)
+  }
+  GenerateFixedBinArray(nUsedEvtPlaneBins,fEventPlaneMixingMin,fEventPlaneMixingMax,fEventPlaneArray);
 
 	//..Pt Pools
 	// using fArray_G_BinsValue [5+1]
@@ -1822,7 +1841,7 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 	if(!fPoolMgr)
 	{
 		if (MixMode == 0) {
-			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin);
+			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray);
 			AliInfo("....  Pool Manager Created for Mixed Tracks ....");
 		} else { //MixMode == 1
 			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray, kUsedPi0TriggerPtBins, fArray_G_Bins);
@@ -1873,7 +1892,8 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
             */
 		    //If the pool fulfills the given criteria the saveflag is set to true
 			//the flag is used in the ClearPools function to not delete the pool content
-			fPoolMgr->SetSaveFlag(-1, 10000, -10000, 100000, 0, 0, -1, 10000000);
+			fPoolMgr->SetSaveFlag(-1, 10000, -10000, 100000, -100, 100, -1, 10000000);
+//SetSaveFlag(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPsi, Double_t maxPsi, Double_t minPt, Double_t maxPt)
 
 			/*
 			In case you don't want to store all pools but only the ones specified above
@@ -2999,8 +3019,15 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
     // Use event hash to split data set, avoid autocorrelation
     Int_t iEventHash = CalculateEventHash();
     if (bEnableEventHashMixing) {
-      EventPlaneAngle = (Double_t) !(iEventHash); // use pool 0 for 1, pool 1 for 0
+      // Old method
+      //EventPlaneAngle = (Double_t) !(iEventHash); // use pool 0 for 1, pool 1 for 0
+
+      EventPlaneAngle = GetEventMixingAngle(fQnCorrEventPlaneAngle);
+      // Use negative angles (odd) for even events
+      // Use positive angles (even) for odd events
+      if (iEventHash == 0) EventPlaneAngle = -EventPlaneAngle;
     }
+    fHistEventHashVsMixingAngle->Fill(EventPlaneAngle,(double) iEventHash);
 
 		for (Int_t PtIndex = 0; PtIndex < kUsedPi0TriggerPtBins; PtIndex++) {
 			pool = fPoolMgr->GetEventPool(fCent, zVertex,EventPlaneAngle,PtIndex);
@@ -3117,8 +3144,13 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
           Int_t iEventHash = CalculateEventHash();
           if (bEnableEventHashMixing) {
-            evtPlaneCategory = (Double_t) iEventHash; // are you a 1 or a 0?
+            //evtPlaneCategory = (Double_t) iEventHash; // are you a 1 or a 0?
+
+            evtPlaneCategory = GetEventMixingAngle(fQnCorrEventPlaneAngle);
+            if (iEventHash == 1) evtPlaneCategory = - evtPlaneCategory;
           }
+
+          fHistEventHashVsMixingAngle->Fill(evtPlaneCategory,(double) iEventHash);
 /*
 					Double_t angleFromAxis;
 					//..fold around 0 axis
@@ -4058,6 +4090,20 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,Doubl
 
 	return dPhi;
 }
+//
+// Function of event plane angle to be used for accessing event pool
+// Maps the angle to a strictly positive range
+//
+//________________________________________________________________________
+Double_t AliAnalysisTaskGammaHadron::GetEventMixingAngle(Double_t fRawEventPlaneAngle)
+{
+  double epsilon = TMath::Pi()/6.;
+  double fEventMixingAngle = fRawEventPlaneAngle + (TMath::PiOver2() + epsilon);
+
+  return fEventMixingAngle;
+}
+
+
 //________________________________________________________________________
 Int_t AliAnalysisTaskGammaHadron::FindMCPartForClus(AliVCluster * caloCluster) {
 	if (!fMCParticles) {
