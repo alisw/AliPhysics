@@ -2471,7 +2471,6 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
    {
     for(Int_t v=0;v<5;v++) 
     { 
-
      if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
      if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
 
@@ -5801,7 +5800,10 @@ Bool_t AliAnalysisTaskMuPa::RetrieveCorrelationsLabels()
  Int_t order = -44;
  for(Int_t b=1;b<=nBins;b++)
  {
-  order = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ")->GetEntries();
+  TObjArray *oa = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ");
+  if(!oa){cout<<__LINE__<<endl;exit(1);}
+  order = oa->GetEntries();
+  delete oa; 
   if(0 == order){continue;} // empty lines, or the label format which is not supported
   // 1-p => 0, 2-p => 1, etc.:
   fTest0Labels[order-1][counter[order-1]] = new TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)); // okay...  
@@ -5844,7 +5846,10 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
   Int_t order = -44;
   while (getline(myfile,line))
   { 
-   order = TString(line).Tokenize(" ")->GetEntries();
+   TObjArray *oa = TString(line).Tokenize(" ");
+   if(!oa){cout<<__LINE__<<endl;exit(1);}
+   order = oa->GetEntries();
+   delete oa;
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
    fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
@@ -6078,7 +6083,10 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     for(Int_t h=0;h<=mo;h++)
     {
      //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
-     n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
+     TObjArray *oa = fTest0Labels[mo][mi]->Tokenize(" ");
+     if(!oa){cout<<__LINE__<<endl;exit(1);}
+     n[h] = TString(oa->At(h)->GetName()).Atoi();
+     delete oa; // yes, otherwise it's a memory leak
     }
 
     switch(mo+1) // which order? yes, mo+1
@@ -6163,7 +6171,8 @@ void AliAnalysisTaskMuPa::CalculateTest0()
       Red("Is perhaps order of correlator bigger than the number of particles?");   
       cout<<__LINE__<<endl; exit(1); 
      }
-     if(TMath::Abs(correlation/weight - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+     Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
+     if(TMath::Abs(nestedLoopValue)>0. && TMath::Abs(correlation/weight - nestedLoopValue)>1.e-5)
      {       
       cout<<fTest0Labels[mo][mi]->Data()<<endl;   
       cout<<"correlation: "<<correlation/weight<<endl;   
@@ -6291,10 +6300,14 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
   // b2) Loop over particles:
   Double_t dPhi = 0.;
+  Double_t dPt = 0.;
+  Double_t dEta = 0.;
   for(Int_t p=0;p<nMult;p++) 
   {   
    // Particle angle:
    dPhi = fPhiPDF->GetRandom(); 
+   if(fCalculatePtCorrelations){dPt = gRandom->Uniform(fKinematicsCuts[PT][0],fKinematicsCuts[PT][1]);}
+   if(fCalculateEtaCorrelations){dEta = gRandom->Uniform(fKinematicsCuts[ETA][0],fKinematicsCuts[ETA][1]);}
    // Fill Q-vector (simplified version, without weights):
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
@@ -6310,13 +6323,70 @@ void AliAnalysisTaskMuPa::InternalValidation()
     if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,p);} 
     if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(1.,p);} // yes, otherwise weights are automatically set to 0.
    }
+
+   if(fCalculatePtCorrelations)
+   {
+    Int_t bin = fCorrelationsPro[0][0][PTKINE]->FindBin(dPt);
+    if(0>=bin || fCorrelationsPro[0][0][PTKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    {
+     Red(Form("dPt = %f, bin = %d",dPt,bin));
+     cout<<__LINE__<<endl;exit(1);
+    }
+    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+    {
+     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+     {
+      fqvector[PTq][bin-1][h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // no weights
+     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
+    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
+
+    if(fCalculateCustomNestedLoop)
+    {    
+     ftaNestedLoopsKine[PTq][bin-1][0]->AddAt(dPhi,fqVectorEntries[PTq][bin-1]);
+     ftaNestedLoopsKine[PTq][bin-1][1]->AddAt(1.,fqVectorEntries[PTq][bin-1]);
+    }
+
+    fqVectorEntries[PTq][bin-1]++; // count number of particles in this pt bin in this event
+
+   } // if(fCalculatePtCorrelations)
+
+   if(fCalculateEtaCorrelations)
+   {
+    Int_t bin = fCorrelationsPro[0][0][ETAKINE]->FindBin(dEta);
+    if(0>=bin || fCorrelationsPro[0][0][ETAKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    {
+     Red(Form("dEta = %f, bin = %d",dEta,bin));
+     cout<<__LINE__<<endl;exit(1);
+    }
+    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
+    { 
+     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
+     {
+      fqvector[ETAq][bin-1][h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // wToPowerP is calculated above  
+     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
+    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
+
+    if(fCalculateCustomNestedLoop)
+    {    
+     ftaNestedLoopsKine[ETAq][bin-1][0]->AddAt(dPhi,fqVectorEntries[ETAq][bin-1]);
+     ftaNestedLoopsKine[ETAq][bin-1][1]->AddAt(1.,fqVectorEntries[ETAq][bin-1]);
+    }
+
+    fqVectorEntries[ETAq][bin-1]++; // count number of particles in this eta bin in this event
+
+   } // if(fCalculateEtaCorrelations)
+
   } // for(Int_t p=0;p<nMult;p++) 
 
   // b3) Calculate correlations:
   fSelectedTracks = nMult;
   fCentrality = gRandom->Uniform(0.,100.); // in any case it's meaningless in this exercise
   if(fCalculateCorrelations){this->CalculateCorrelations();}
+  if(fCalculatePtCorrelations){this->CalculateKineCorrelations("pt");}
+  if(fCalculateEtaCorrelations){this->CalculateKineCorrelations("eta");}
   if(fCalculateTest0){this->CalculateTest0();}
+  if(fCalculateTest0 && fCalculatePtCorrelations){this->CalculateKineTest0("pt");}  
+  if(fCalculateTest0 && fCalculateEtaCorrelations){this->CalculateKineTest0("eta");} 
 
   // b4) Optionally, cross-check with nested loops:
   if(fCalculateNestedLoops){this->CalculateNestedLoops();}
@@ -6337,24 +6407,27 @@ void AliAnalysisTaskMuPa::InternalValidation()
  //    d0) Standard isotropic:
  if(fCalculateCorrelations && !fCalculateNestedLoops)
  {
-  Int_t var = 0; // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  Int_t nBinsQV = fCorrelationsPro[0][0][var]->GetNbinsX();
-  Double_t valueQV = 0.;
-  for(Int_t o=0;o<4;o++)
+  for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
   {
-   cout<<Form("   ==== <<%d>>-particle correlations (var = %d) ====",2*(o+1),var)<<endl;
-   for(Int_t h=0;h<6;h++)
+   if(!fCorrelationsPro[0][0][var]){continue;}
+   Int_t nBinsQV = fCorrelationsPro[0][0][var]->GetNbinsX();
+   Double_t valueQV = 0.;
+   for(Int_t o=0;o<4;o++)
    {
-    for(Int_t b=1;b<=nBinsQV;b++)
+    cout<<Form("   ==== <<%d>>-particle correlations (var = %d) ====",2*(o+1),var)<<endl;
+    for(Int_t h=0;h<6;h++)
     {
-     if(fCorrelationsPro[o][h][var]){valueQV = fCorrelationsPro[o][h][var]->GetBinContent(b);}
-     if(TMath::Abs(valueQV)>0.)
+     for(Int_t b=1;b<=nBinsQV;b++)
      {
-      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][var]->GetBinError(1)<<endl; 
-     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-    } // for(Int_t b=1;b<=nBinsQV;b++) 
-   } // for(Int_t h=0;h<6;h++)
-  } // for(Int_t o=0;o<4;o++) 
+      if(fCorrelationsPro[o][h][var]){valueQV = fCorrelationsPro[o][h][var]->GetBinContent(b);}
+      if(TMath::Abs(valueQV)>0.)
+      {
+       cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][var]->GetBinError(1)<<endl; 
+      } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+     } // for(Int_t b=1;b<=nBinsQV;b++) 
+    } // for(Int_t h=0;h<6;h++)
+   } // for(Int_t o=0;o<4;o++)
+  } // for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta] 
  } // if(fCalculateCorrelations && !fCalculateNestedLoops)
 
  cout<<"\n=============================\n"<<endl;
@@ -6362,19 +6435,26 @@ void AliAnalysisTaskMuPa::InternalValidation()
  //    d1) Test0:
  if(fCalculateTest0)
  {
-  Int_t var = 0; // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  Int_t nBinsQV = fTest0Pro[0][0][var]->GetNbinsX();
   for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
   { 
    for(Int_t mi=0;mi<gMaxIndex;mi++) 
    { 
-    cout<<Form("   %s (var = %d) ====",fTest0Pro[mo][mi][var]->GetTitle(),var)<<endl;
-    for(Int_t b=1;b<=nBinsQV;b++)
+    for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
     {
-     cout<<" = "<<fTest0Pro[mo][mi][var]->GetBinContent(b)<<" +/- "<<fTest0Pro[mo][mi][var]->GetBinError(b)<<endl;
-    } 
-   }
-  } 
+     if(!fTest0Pro[mo][mi][var]){continue;} 
+     Int_t nBinsQV = fTest0Pro[mo][mi][var]->GetNbinsX();
+     cout<<Form(" ====  %s (mo = %d, mi = %d, var = %d) ====",fTest0Pro[mo][mi][var]->GetTitle(),mo,mi,var)<<endl;
+     for(Int_t b=1;b<=nBinsQV;b++)
+     {
+      Double_t value = fTest0Pro[mo][mi][var]->GetBinContent(b); 
+      if(TMath::Abs(value)>0.)
+      {
+       cout<<Form(" bin = (%.2f,%.2f) , value = ",fTest0Pro[mo][mi][var]->GetBinLowEdge(b),fTest0Pro[mo][mi][var]->GetBinLowEdge(b+1))<<value<<" +/- "<<fTest0Pro[mo][mi][var]->GetBinError(b)<<endl;
+      }
+     } 
+    }
+   } 
+  } // for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
  } // if(fCalculateTest0)
 
  // e) Hasta la vista:
@@ -7079,7 +7159,10 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
      for(Int_t h=0;h<=mo;h++)
      {
       //cout<<Form("h = %d, fTest0Labels[%d][%d] = ",h,mo,mi)<<fTest0Labels[mo][mi]->Data()<<endl;
-      n[h] = TString(fTest0Labels[mo][mi]->Tokenize(" ")->At(h)->GetName()).Atoi();
+      TObjArray *oa = fTest0Labels[mo][mi]->Tokenize(" ");
+      if(!oa){cout<<__LINE__<<endl;exit(1);}
+      n[h] = TString(oa->At(h)->GetName()).Atoi();
+      delete oa; // yes, otherwise it's a memory leak
      }
 
      if(fqVectorEntries[qv][b]<mo+1){continue;} // TBI 20211026 is this really safe
@@ -7166,7 +7249,8 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
        Red("Is perhaps order of some requested correlator bigger than the number of particles?");   
        cout<<__LINE__<<endl; exit(1); 
       }
-      if(TMath::Abs(correlation/weight - this->CalculateCustomNestedLoop(harmonics))>1.e-5)
+      Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b);
+      if(TMath::Abs(nestedLoopValue)>0. && TMath::Abs(correlation/weight - nestedLoopValue)>1.e-5)
       {       
        cout<<fTest0Labels[mo][mi]->Data()<<endl;   
        cout<<"correlation: "<<correlation/weight<<endl;   
@@ -7175,7 +7259,7 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
       }
       else
       {
-       cout<<Form("=> e-b-e check with CustomNestedLoop is OK for %d-p Test0 corr. %s",mo+1,fTest0Labels[mo][mi]->Data())<<endl;
+       cout<<Form("=> e-b-e check with CustomNestedLoop is OK for %d-p Test0 corr. %s, bin = %d",mo+1,fTest0Labels[mo][mi]->Data(),b+1)<<endl;
       }
       delete harmonics; harmonics = NULL;
      } // if(fCalculateCustomNestedLoop)
