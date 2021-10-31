@@ -1257,7 +1257,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
       
       //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+
+	if((trkPt <= 3.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
 
 
@@ -1439,8 +1441,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	/// infinity Weight protection:
 	if(WgtNUA>1e3)     WgtNUA = 1.0;
 	if(WgtNUAPion>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAKaon>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAProt>1e3) WgtNUAPion = 1.0;
+	if(WgtNUAKaon>1e3) WgtNUAKaon = 1.0;
+	if(WgtNUAProt>1e3) WgtNUAProt = 1.0;
 
 	
 	
@@ -1516,8 +1518,10 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
-	
-    
+		if (trkPt <= fMaxPtCut)
+
+		  {
+		  
 	uqRe = TMath::Cos(gPsiN*trkPhi);
 	uqIm = TMath::Sin(gPsiN*trkPhi);
 
@@ -1672,8 +1676,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	
        
        
-
-      }//with all trackCuts applied      
+		  }
+	}//with all trackCuts applied      
     }//-------> if FB is validated
     
   }///------> 2nd Track loop Ends here.<--------
