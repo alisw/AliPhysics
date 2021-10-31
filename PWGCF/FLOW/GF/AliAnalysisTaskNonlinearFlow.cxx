@@ -51,6 +51,7 @@
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliVVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
@@ -80,6 +81,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     fAliTrigger(0),
     fNUE(0),
     fNUA(0),
+    fIsMC(0),
     fNtrksName("Mult"),
     //....
     fPeriod("LHC15o"),
@@ -172,6 +174,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fAliTrigger(0),
   fNUE(_fNUE),
   fNUA(_fNUA),
+  fIsMC(0),
   fNtrksName("Mult"),
   //....
   fPeriod("LHC15o"),
@@ -803,8 +806,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
   for(Int_t nt = 0; nt < nAODTracks; nt++) {
 
     AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
-    AliAODMCParticle *trk = (AliAODMCParticle*) farray->At(TMath::Abs(label));
-
 
     if (!aodTrk) {
       continue;
@@ -1146,7 +1147,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
   //........................................
   for(Int_t nt = 0; nt < nAODTracks; nt++) {
 
-    AliAODMCParticle *track = (AliAODMCParticle*) farray->At(TMath::Abs(label));
+    AliAODMCParticle *track = (AliAODMCParticle*) farray->At(TMath::Abs(nt));
 
     if (!track) {
       continue;
@@ -2231,13 +2232,13 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
   return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 }
 
-Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtr) {
+Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) {
   // Pt cut
-  if(mtr->Pt() < fMinPt) return kFALSE;
-  if(mtr->Pt() > fMaxPt) return kFALSE;
+  if(mtrk->Pt() < fMinPt) return kFALSE;
+  if(mtrk->Pt() > fMaxPt) return kFALSE;
 
-  if (!(trk->IsPhysicalPrimary())) return kFALSE;
-  if (trk->Charge() == 0) return kFALSE;
+  if (!(mtrk->IsPhysicalPrimary())) return kFALSE;
+  if (mtrk->Charge() == 0) return kFALSE;
   return kTRUE;
 }
 

@@ -22,6 +22,7 @@
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
+#include "AliAODMCParticle.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
 
@@ -205,7 +206,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
     virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
     virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
-    virtual void   SetLSFlag(Bool_t LS){fLS = LS;}
+    // virtual void   SetLSFlag(Bool_t LS){fLS = LS;}
     virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
     virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
     virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
@@ -239,7 +240,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void            NTracksCalculation(AliVEvent* aod);
     Bool_t                  AcceptAOD(AliAODEvent *inEv);
     Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
-    Bool_t                  AcceptMCTruthTrack(AliMCParticle *mtr);
+    Bool_t                  AcceptMCTruthTrack(AliAODMCParticle *mtr);
     Short_t			GetCentrCode(AliVEvent* ev);
     bool 			CheckPrimary(AliVEvent *aod, double label);
     bool			IsGoodPSEvent(AliVEvent *aod);
@@ -280,7 +281,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     Int_t			fSample;				// number of sample
     Int_t			fTrigger;				// flag for trigger
     Int_t			fAliTrigger;				// name for trigger
-    Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
+    // Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
     Bool_t			fNUE;					// flag for NUE correction
     Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
     bool        fIsMC;        // The observable for MonteCarlo truth
