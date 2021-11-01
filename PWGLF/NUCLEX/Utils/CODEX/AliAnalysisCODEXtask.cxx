@@ -162,6 +162,8 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kCentral;
   if (mEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     mHeader.mEventMask |= kSemiCentral;
+  if (mEventHandler->IsEventSelected() & AliVEvent::kINT7)
+    mHeader.mEventMask |= kINT7;
 
   bool EventWithPOI = !bool(mEventPOI);
 
