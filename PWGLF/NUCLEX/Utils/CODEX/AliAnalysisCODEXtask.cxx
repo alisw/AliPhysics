@@ -104,6 +104,11 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   mTimeChan = new TH2I("mTimeChan", "Histogram with Channel/Time correlation;Channel;TOF (ps)", 3276, 0. -.5, 157248. -.5, 5000, 10000, 80000);
   mOutput->AddLast(mTimeChan);
 
+  mCounterINT7 = new TH1D("mCounterINT7", ";Centrality (V0M percentile);",100,0,100);
+  mCounter = new TH1D("mCounter", ";Centrality (V0M percentile);",100,0,100);
+  mOutput->Add(mCounter);
+  mOutput->Add(mCounterINT7);
+
   mEventCuts.AddQAplotsToList(mOutput);
   PostData(2,mOutput);
 
@@ -162,8 +167,11 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     mHeader.mEventMask |= kCentral;
   if (mEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
     mHeader.mEventMask |= kSemiCentral;
-  if (mEventHandler->IsEventSelected() & AliVEvent::kINT7)
+  if (mEventHandler->IsEventSelected() & AliVEvent::kINT7) {
     mHeader.mEventMask |= kINT7;
+    mCounterINT7->Fill(mEventCuts.GetCentrality());
+  }
+  mCounter->Fill(mEventCuts.GetCentrality());
 
   bool EventWithPOI = !bool(mEventPOI);
 
