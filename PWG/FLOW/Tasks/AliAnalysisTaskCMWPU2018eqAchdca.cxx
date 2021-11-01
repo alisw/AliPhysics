@@ -72,16 +72,16 @@
 #include "AliPhysicsSelection.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskCMWPU2018eqAch.h"
+#include "AliAnalysisTaskCMWPU2018eqAchdca.h"
 
 using std::cout;
 using std::endl;
 using std::vector;
 
 
-ClassImp(AliAnalysisTaskCMWPU2018eqAch)
+ClassImp(AliAnalysisTaskCMWPU2018eqAchdca)
 
-AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): AliAnalysisTaskSE(name),
+AliAnalysisTaskCMWPU2018eqAchdca::AliAnalysisTaskCMWPU2018eqAchdca(const char *name): AliAnalysisTaskSE(name),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -209,7 +209,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
 }
 
 //_______________________empty constructor_______________________
-AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
+AliAnalysisTaskCMWPU2018eqAchdca::AliAnalysisTaskCMWPU2018eqAchdca():
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -337,7 +337,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
 }
   
 //__________________ destructor ___________________
-AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
+AliAnalysisTaskCMWPU2018eqAchdca::~AliAnalysisTaskCMWPU2018eqAchdca()
 {
   if(fListHist)      delete fListHist;  
   if(fAnalysisUtil)  delete fAnalysisUtil;   // because its 'new' !!
@@ -369,7 +369,7 @@ AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
 
 
 //________________ Define Histograms _______________
-void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
+void AliAnalysisTaskCMWPU2018eqAchdca::UserCreateOutputObjects()
 {
   //std::cout<<"\n UserCreateOutputObject: function begins...\n"<<endl; 
   //Get The Input Hander:
@@ -462,51 +462,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   
 
 
-  //15op2 pospol                                                                                                                             
-  // Acharge Binning with Equal Event per bin:                                                                                               
-  //Cent 0-5                                                                                                                                 
-  Double_t fAchBinCent000[11] = {-0.09, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
-  //Cent 5-10                                                                                                                                
-  Double_t fAchBinCent111[11] = {-0.1, -0.02, -0.012, -0.006, -0.002, 0.004, 0.008, 0.012, 0.018, 0.026, 1};
-  //Cent 10-20                                                                                                                               
-  Double_t fAchBinCent222[11] = {-0.146, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.02, 0.03, 1};
-  //Cent 20-30                                                                                                                               
-  Double_t fAchBinCent333[11] = {-0.144, -0.03, -0.018, -0.01, -0.004,  0.004, 0.01, 0.016, 0.024, 0.036, 1};
-  //Cent 30-40                                                                                                                               
-  Double_t fAchBinCent444[11] = {-0.186, -0.038, -0.024, -0.014, -0.006, 0.002, 0.012, 0.02, 0.03, 0.044, 1};
-  //Cent 40-50                                                                                                                               
-  Double_t fAchBinCent555[11] = {-0.23, -0.052, -0.032, -0.018, -0.008, 0.004, 0.014, 0.024, 0.038, 0.058, 1};
-  //Cent 50-60                                                                                                                               
-  Double_t fAchBinCent666[11] = {-0.332, -0.07, -0.044, -0.026, -0.012, 0.002, 0.018, 0.032, 0.05, 0.076, 1};
-  //Cent 60-80                                                                                                                               
-  Double_t fAchBinCent777[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
-  //Cent 80-90                                                                                                                               
-  Double_t fAchBinCent888[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
-
-
-  //15op2 negpol                                                                                                                             
-  // Acharge Binning with Equal Event per bin:                                                                                               
-  //Cent 0-5                                                                                                                                 
-  Double_t fAchBinCent0000[11] = {-0.148, -0.022, -0.014, -0.01, -0.006, -0.002, 0.002, 0.008, 0.012, 0.02, 1};
-  //Cent 5-10                                                                                                                                
-  Double_t fAchBinCent1111[11] = {-0.132, -0.024, -0.016, -0.01, -0.006, 0, 0.004, 0.008, 0.014, 0.022, 1};
-  //Cent 10-20                                                                                                                               
-  Double_t fAchBinCent2222[11] = {-0.166, -0.028, -0.018, -0.012, -0.006, 0, 0.004, 0.01, 0.016, 0.026, 1};
-  //Cent 20-30                                                                                                                               
-  Double_t fAchBinCent3333[11] = {-0.182, -0.034, -0.022, -0.014, -0.008, 0, 0.006, 0.012, 0.022, 0.032, 1};
-  //Cent 30-40                                                                                                                               
-  Double_t fAchBinCent4444[11] = {-0.216, -0.042, -0.028, -0.018, -0.008, 0, 0.008, 0.016, 0.026, 0.042, 1};
-  //Cent 40-50                                                                                                                              
-  Double_t fAchBinCent5555[11] = {-0.246, -0.054, -0.036, -0.022, -0.012, -0.002, 0.01, 0.022, 0.034, 0.054, 1};
-  //Cent 50-60                                                                                                                               
-  Double_t fAchBinCent6666[11] = {-0.372, -0.074, -0.048, -0.03, -0.014, 0.002, 0.014, 0.03, 0.048, 0.072, 1};
-  //Cent 60-80                                                                                                                               
-  Double_t fAchBinCent7777[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
-  //Cent 80-90                                                                                                                               
-  Double_t fAchBinCent8888[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
-
-
-
 
   Double_t fAchBinSelect[11] = {0.0};
  
@@ -555,35 +510,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 	  if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
 	  
 	}   
-
-      else if (bdataset==2)
-	{
-          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
-          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
-          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
-          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
-          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
-          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555[k]; } }
-          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666[k]; } }
-          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777[k]; } }
-          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888[k]; } }
-
-        }
-
-      else if (bdataset==3)
-	{
-          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
-          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
-          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
-          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
-          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
-          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5555[k]; } }
-          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6666[k]; } }
-          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7777[k]; } }
-          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8888[k]; } }
-
-        }
-
       
 
       ////Charge:
@@ -735,31 +661,6 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
     if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
     }
     
-    else if (bdataset==2)
-      {
-	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
-	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
-	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
-	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
-	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
-	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555[k]; } }
-	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666[k]; } }
-	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777[k]; } }
-	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888[k]; } }
-      }
-
-    else if (bdataset==3)
-      {
-	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
-	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
-	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
-	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
-	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
-	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5555[k]; } }
-	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6666[k]; } }
-	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7777[k]; } }
-	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8888[k]; } }
-      }
 
 
     ////Charge:
@@ -838,7 +739,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
 
 //____________________________ Call Event by Event ___________________________________
-void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
+void AliAnalysisTaskCMWPU2018eqAchdca::UserExec(Option_t*) {
  
   //std::cout<<" Info:UserExec() called ..!!!\n";
 
@@ -1052,13 +953,14 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   Float_t fMultGlobal  = 0;  // global track multiplicity
   
   
-  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
+  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0, trkDCAxyA=0.0, trkDCAzA=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
   ////PID variables:
   Double_t nSigTOFpion=-99, nSigTPCpion=-99;
   Double_t nSigTOFkaon=-99, nSigTPCkaon=-99;
   Double_t nSigTOFprot=-99, nSigTPCprot=-99;  
+  Double_t dcaxys=0.0;
   //Bool_t   bTOFmatch= kFALSE;
   Bool_t   isItPion = kFALSE, isItKaon= kFALSE, isItProt= kFALSE;
 	  
@@ -1112,6 +1014,31 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
       if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
+
+	if ((TMath::Abs(trkDCAxy)==999)||(TMath::Abs(trkDCAz)==999))
+	  {
+	    Double_t    bval[2] = {-99., -99.};
+	    Double_t    bCov[3] = {-99., -99., -99.};
+	    AliAODTrack copy(*AODtrack);
+	    if(copy.PropagateToDCA(fVevent->GetPrimaryVertex(), fVevent->GetMagneticField(), 100., bval, bCov) && TMath::Abs(bval[0]) < 0.3 &&  TMath::Abs(bval[1]) < 0.3){
+	      fMultGlobal++;
+	    }
+
+	    trkDCAzA = bval[1];
+	    trkDCAxyA = bval[0];
+          }
+	else
+	  {
+            trkDCAzA=trkDCAz;
+            trkDCAxyA=trkDCAxy;
+	  }
+
+	dcaxys=7*(0.0026+(0.005/(TMath::Power(trkPt,1.01))));
+
+
+	if (TMath::Abs(trkDCAzA)<fDCAzMax && TMath::Abs(trkDCAxyA)<dcaxys)
+
+	  {
 
 	  
 
@@ -1245,7 +1172,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       }// when all trackCuts applied      
     }//-------> when FB is validated
 
-
+    }
   
   }///------> 1st Track loop Ends here.<--------
 
@@ -1362,6 +1289,30 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 
 
 
+if ((TMath::Abs(trkDCAxy)==999)||(TMath::Abs(trkDCAz)==999))
+	  {
+	    Double_t    bval[2] = {-99., -99.};
+	    Double_t    bCov[3] = {-99., -99., -99.};
+	    AliAODTrack copy(*AODtrack);
+	    if(copy.PropagateToDCA(fVevent->GetPrimaryVertex(), fVevent->GetMagneticField(), 100., bval, bCov) && TMath::Abs(bval[0]) < 0.3 &&  TMath::Abs(bval[1]) < 0.3){
+	      fMultGlobal++;
+	    }
+
+	    trkDCAzA = bval[1];
+	    trkDCAxyA = bval[0];
+          }
+	else
+	  {
+            trkDCAzA=trkDCAz;
+            trkDCAxyA=trkDCAxy;
+	  }
+
+	dcaxys=7*(0.0026+(0.005/(TMath::Power(trkPt,1.01))));
+
+
+	if (TMath::Abs(trkDCAzA)<fDCAzMax && TMath::Abs(trkDCAxyA)<dcaxys)
+
+	  {
         
 	//---------->  Here I do All my track level analysis:
 
@@ -1781,7 +1732,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
     
   }///------> 2nd Track loop Ends here.<--------
  
-
+  }
   if(fSumWgtEtaNeg <= 0 || fSumWgtEtaPos <= 0) return;
   
   /// For cumulant method:
@@ -1994,7 +1945,7 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskCMWPU2018eqAchdca::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
 
   /*
@@ -2174,7 +2125,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) 
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskCMWPU2018eqAchdca::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
@@ -2365,7 +2316,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::PileUpMultiVertex(const AliAODEvent* faod)
+Bool_t AliAnalysisTaskCMWPU2018eqAchdca::PileUpMultiVertex(const AliAODEvent* faod)
 {  // check for multi-vertexer pile-up
   const int    kMinPlpContrib = 5;
   const double kMaxPlpChi2    = 5.0;
@@ -2404,7 +2355,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::PileUpMultiVertex(const AliAODEvent* faod)
 
 
 
-double AliAnalysisTaskCMWPU2018eqAch::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+double AliAnalysisTaskCMWPU2018eqAchdca::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 {
   // calculate sqrt of weighted distance to other vertex
   if (!v0 || !v1) {
@@ -2445,7 +2396,7 @@ double AliAnalysisTaskCMWPU2018eqAch::GetWDist(const AliVVertex* v0, const AliVV
 
 
 
-void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
+void AliAnalysisTaskCMWPU2018eqAchdca::SetupEventAndTaskConfigInfo(){
 
 
 
@@ -2472,7 +2423,7 @@ void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
 
 
 
-Int_t AliAnalysisTaskCMWPU2018eqAch::GetCentralityScaled0to10(Double_t fCent){
+Int_t AliAnalysisTaskCMWPU2018eqAchdca::GetCentralityScaled0to10(Double_t fCent){
 
  Int_t cIndex = 0;
 
@@ -2489,7 +2440,7 @@ Int_t AliAnalysisTaskCMWPU2018eqAch::GetCentralityScaled0to10(Double_t fCent){
  
 }//------------GetCentralityScaled0to10------------
 
-void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
+void AliAnalysisTaskCMWPU2018eqAchdca::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
 {
 
   if(fListNUACorr){
@@ -2564,7 +2515,7 @@ void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParti
 
 
 
-void AliAnalysisTaskCMWPU2018eqAch::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
+void AliAnalysisTaskCMWPU2018eqAchdca::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
 {
 
   if(fListV0MCorr){
@@ -2589,7 +2540,7 @@ void AliAnalysisTaskCMWPU2018eqAch::GetV0MCorrectionHist(Int_t run, Int_t kParti
 
 ////---------- SetUp Tracking Efficiency Correction Map ---------------
 
-void AliAnalysisTaskCMWPU2018eqAch::GetMCCorrectionHist(Int_t run,Float_t centr){
+void AliAnalysisTaskCMWPU2018eqAchdca::GetMCCorrectionHist(Int_t run,Float_t centr){
 
   if(fListTRKCorr) {
     //cout<<"\n =========> Info: Found TList with MC Tracking Corr Histograms <=========== "<<endl;
