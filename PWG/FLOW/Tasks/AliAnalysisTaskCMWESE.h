@@ -232,10 +232,10 @@ private:
     TProfile3D*     pV0YMeanRead[3];
     // Run2 A.Dorbin
     TH1D*             hMultV0[138]; //Dobrin
-    TH1D*             hQx2mV0[138][2];
-    TH1D*             hQy2mV0[138][2];
-    TH1D*             hQx2sV0[138][2];
-    TH1D*             hQy2sV0[138][2];
+    TH1D*             hQxnmV0[138][2];
+    TH1D*             hQynmV0[138][2];
+    TH1D*             hQxnsV0[138][2];
+    TH1D*             hQynsV0[138][2];
     double             fMultV0Ch[64];
     double             fV0XMean[3];
     double             fV0YMean[3];
@@ -249,7 +249,8 @@ private:
     TH2D*             hCentQA[8];
     TH2D*             hMultCentQA[2];
     TH2D*             hMultMultQA[6];
-
+    TProfile*          pV2pT[NCENTBINS];
+    
     // track-wise QA
     TH1D*             hEta[2];
     TH1D*             hPhi[2];
