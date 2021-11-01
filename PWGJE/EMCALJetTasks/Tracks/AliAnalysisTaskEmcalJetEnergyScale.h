@@ -78,6 +78,17 @@ public:
     Double_t                          radius,
     Bool_t                            useDCAL,
     const char *                      namepartcont,
+    const char *                      trigger,
+    const char *                      suffix
+  );
+
+  static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScaleBkgSub(
+    AliJetContainer::EJetType_t       jetType,
+    AliJetContainer::ERecoScheme_t    recoscheme,
+    AliVCluster::VCluUserDefEnergy_t  energydef,
+    Double_t                          radius,
+    Bool_t                            useDCAL,
+    const char *                      namepartcont,
     const char *                      nRho,
     const char *                      nRhoMC,
     const char *                      trigger,

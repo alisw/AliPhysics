@@ -101,10 +101,22 @@ public:
     AliVCluster::VCluUserDefEnergy_t energydef, 
     double radius,
     EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSub(
+    Bool_t isMC, 
+    AliJetContainer::EJetType_t jettype, 
+    AliJetContainer::ERecoScheme_t recoscheme, 
+    AliVCluster::VCluUserDefEnergy_t energydef, 
+    double radius,
+    EMCAL_STRINGVIEW namepartcont, 
     EMCAL_STRINGVIEW nRho, 
     EMCAL_STRINGVIEW trigger, 
     EMCAL_STRINGVIEW suffix = ""
   );
+
 
 protected:
   virtual void UserCreateOutputObjects();

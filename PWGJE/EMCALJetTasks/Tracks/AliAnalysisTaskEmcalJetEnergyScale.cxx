@@ -346,7 +346,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       detjetpt += fScaleShift * detjetpt;
     }
 
-    if (!(detjets->GetRhoParameter() == 0x0) && fDoBkgSub){
+    if (fDoBkgSub && detjets->GetRhoParameter()){
       detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
       partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
     }
@@ -525,7 +525,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
   for(auto partjet : partjets->accepted()){
     Double_t partjetpt = partjet->Pt();
-    if (!(partjets->GetRhoParameter() == 0x0) && fDoBkgSub){
+    if (fDoBkgSub && partjets->GetRhoParameter()){
       partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
     }
 
@@ -549,7 +549,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     fHistos->FillTH2("hJetfindingEfficiencyCore", partjetpt, tagstatus);
     if(fFillHSparse){
       Double_t detjetpt = detjet->Pt();
-      if (!(detjets->GetRhoParameter() == 0x0) && fDoBkgSub){
+      if (fDoBkgSub && detjets->GetRhoParameter()){
         detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
       }
       double effvec[3] = {partjetpt, 0.,static_cast<double>(tagstatus)};
@@ -615,7 +615,90 @@ void AliAnalysisTaskEmcalJetEnergyScale::ConfigureJetSelection(Double_t minJetPt
   }
 }
 
-AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *trigger, const char *suffix) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr){
+    ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
+    return nullptr;
+  }
+
+  auto inputhandler = mgr->GetInputEventHandler();
+  auto isAOD = inputhandler->IsA() == AliAODInputHandler::Class();
+
+  std::string jettypename;
+  AliJetContainer::JetAcceptanceType acceptance(AliJetContainer::kTPCfid);
+  AliJetContainer::EJetType_t mcjettype(jettype);
+  bool addClusterContainer(false), addTrackContainer(false);
+  switch(jettype){
+    case AliJetContainer::kFullJet:
+        jettypename = "FullJet";
+        acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
+        addClusterContainer = addTrackContainer = true;
+        break;
+    case AliJetContainer::kChargedJet:
+        jettypename = "ChargedJet";
+        acceptance = AliJetContainer::kTPCfid;
+        addTrackContainer = true;
+        mcjettype = AliJetContainer::kChargedJet;
+        break;
+    case AliJetContainer::kNeutralJet:
+        jettypename = "NeutralJet";
+        acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
+        addClusterContainer = true;
+        break;
+    case AliJetContainer::kUndefinedJetType:
+        break;
+  };
+
+  std::stringstream taskname, tag;
+  tag << jettypename << "_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  if(strlen(suffix)) tag << "_" << suffix;
+  taskname << "EnergyScaleTask_" << tag.str();
+  AliAnalysisTaskEmcalJetEnergyScale *energyscaletask = new AliAnalysisTaskEmcalJetEnergyScale(taskname.str().data());
+  mgr->AddTask(energyscaletask);
+  energyscaletask->SetTriggerName(trigger);
+
+  TString partcontname(namepartcont);
+  if(partcontname == "usedefault") partcontname = "mcparticles";
+  auto partcont = energyscaletask->AddMCParticleContainer(partcontname.Data());
+  partcont->SetMinPt(0.);
+
+  AliClusterContainer *clusters(nullptr);
+  if(addClusterContainer) {
+    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters->SetDefaultClusterEnergy(energydef);
+    clusters->SetClusUserDefEnergyCut(energydef, 0.3);
+  }
+  AliTrackContainer *tracks(nullptr);
+  if(addTrackContainer) {
+    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+  }
+
+  const std::string kNameJetsPart = "particleLevelJets",
+                    kNameJetsDet = "detectorLevelJets";
+
+  auto contpartjet = energyscaletask->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
+                                                      acceptance, partcont, nullptr);
+  contpartjet->SetName(kNameJetsPart.data());
+  energyscaletask->SetNamePartJetContainer(kNameJetsPart.data());
+  std::cout << "Adding particle-level jet container with underling array: " << contpartjet->GetArrayName() << std::endl;
+
+  auto contdetjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
+                                                     acceptance, tracks, clusters);
+  contdetjet->SetName(kNameJetsDet.data());
+  energyscaletask->SetNameDetJetContainer(kNameJetsDet.data());
+  std::cout << "Adding detector-level jet container with underling array: " << contdetjet->GetArrayName() << std::endl;
+
+  std::stringstream outnamebuilder, listnamebuilder;
+  listnamebuilder << "EnergyScaleHists_" << tag.str();
+  outnamebuilder << mgr->GetCommonFileName() << ":EnergyScaleResults_" << tag.str();
+
+  mgr->ConnectInput(energyscaletask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(energyscaletask, 1, mgr->CreateContainer(listnamebuilder.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, outnamebuilder.str().data()));
+  return energyscaletask;
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");

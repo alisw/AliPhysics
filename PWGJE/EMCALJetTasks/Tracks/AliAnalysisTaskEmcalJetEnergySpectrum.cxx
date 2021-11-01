@@ -328,7 +328,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     Double_t ptjet = j->Pt();
 
-    if (!(datajets->GetRhoParameter() == 0x0) && fDoBkgSub){
+    if (fDoBkgSub && datajets->GetRhoParameter()){
       ptjet = ptjet - datajets->GetRhoVal() * j->Area();
     }
 
@@ -708,7 +708,99 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
     return deltaPtEmb;
 }
 
-AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW suffix){
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr) {
+    std::cerr << "Analysis manager not initialized" << std::endl;
+    return nullptr;
+  }
+
+  Bool_t isAOD(kFALSE);
+  AliInputEventHandler *inputhandler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+  if(inputhandler) {
+    if(inputhandler->IsA() == AliAODInputHandler::Class()){
+      std::cout << "Analysing AOD events\n";
+      isAOD = kTRUE;
+    } else {
+      std::cout << "Analysing ESD events\n";
+    }
+  }
+
+  std::string jettypestring;
+  UInt_t acctype(AliJetContainer::kTPCfid);
+  switch(jettype){
+    case AliJetContainer::kChargedJet:  jettypestring = "ChargedJets"; acctype = AliJetContainer::kTPCfid; break;
+    case AliJetContainer::kFullJet:     jettypestring = "FullJets";    acctype = AliJetContainer::kEMCALfid; break;
+    case AliJetContainer::kNeutralJet:  jettypestring = "NeutralJets"; acctype = AliJetContainer::kEMCALfid; break;
+    case AliJetContainer::kUndefinedJetType: break;
+  };
+
+  std::stringstream tag, outfilename;
+  tag << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(radius * 10.) << "_" << trigger;
+  if(suffix.length()) {
+    tag << "_" << suffix;
+  }
+  auto task = new AliAnalysisTaskEmcalJetEnergySpectrum(Form("JetEnergySpectrum_%s", tag.str().data()));
+  task->SetIsMC(isMC);
+  mgr->AddTask(task);
+
+  auto contains = [](EMCAL_STRINGVIEW str, EMCAL_STRINGVIEW test) {
+    return str.find(test) != std::string::npos;
+  };
+
+  std::string trgstr(trigger);
+  if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EMC7")) task->SetTriggerSelection(AliVEvent::kEMC7, "EMC7");
+  else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
+  else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
+  else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
+  else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG1");
+  else if(contains(trgstr, "EG2")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG2");
+
+  // Connect particle and cluster container
+  AliTrackContainer *tracks(nullptr);
+  AliClusterContainer *clusters(nullptr);
+  if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
+    tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks->SetMinPt(0.15);
+  }
+  if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
+    clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters->SetDefaultClusterEnergy(energydef);
+    clusters->SetClusUserDefEnergyCut(energydef, 0.3);
+  }
+
+
+  // Create proper jet container
+  auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, radius, acctype, tracks, clusters);
+  jetcont->SetName("datajets");
+  task->SetNameJetContainer("datajets");
+  std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
+
+  if(isMC){
+    // Create also particle and particle level jet container for outlier rejection
+    TString partcontname = namepartcont.data();
+    if(partcontname == "usedefault") partcontname = "mcparticles";
+    auto partcont = task->AddMCParticleContainer(partcontname.Data());
+    partcont->SetMinPt(0.);
+
+    //AliJetContainer::EJetType_t mcjettype = (jettype == AliJetContainer::kNeutralJet) ? AliJetContainer::kFullJet : jettype;
+    AliJetContainer::EJetType_t mcjettype = AliJetContainer::kFullJet;
+    auto pjcont = task->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
+    pjcont->SetName("partjets");
+    pjcont->SetMinPt(0);
+    pjcont->SetMaxTrackPt(1000.);
+  }
+
+  // Link input and output container
+  outfilename << mgr->GetCommonFileName() << ":JetSpectrum_" << tag.str().data();
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("JetSpectrum_%s", tag.str().data()), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename.str().data()));
+
+  return task;
+}
+
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSub(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "Analysis manager not initialized" << std::endl;
