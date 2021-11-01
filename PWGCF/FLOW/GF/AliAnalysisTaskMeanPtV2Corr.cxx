@@ -416,13 +416,11 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(4,fQAList);
   }
   if(fStageSwitch==10) {
-    fEfFd = new AliEffFDContainer("EffAndFD","EffAndFD");
+    fEfFd = new AliEffFDContainer("EffAndFD","EffAndFD",fIsMC);
     fEfFd->SetCentralityBins(l_NV0MBinsDefault,l_V0MBinsDefault);
     fEfFd->SetPtBins(fNPtBins,fPtBins);
     fEfFd->SetEta(fEta);
-    fEfFd->CreateHistograms();
-    AliESDtrackCuts *tc = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
-    fEfFd->AddCut(tc);
+    fEfFd->AddCut(32);
     PostData(1,fEfFd);
   };
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -502,9 +500,8 @@ void AliAnalysisTaskMeanPtV2Corr::UserExec(Option_t*) {
       fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
       if (!fMCEvent) return;
     }
-    AliMCSpectraWeightsHandler *flmcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fESD->FindListObject("fMCSpectraWeights"));
-    // printf("Updating event....\n");
-    fEfFd->Fill(*fESD, *fMCEvent);
+    if(fIsMC) fEfFd->Fill(*fESD, *fMCEvent);
+    else fEfFd->Fill(*fESD);
     PostData(1,fEfFd);
     return;
   }

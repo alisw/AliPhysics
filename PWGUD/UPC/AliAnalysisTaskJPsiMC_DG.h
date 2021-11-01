@@ -103,11 +103,19 @@ class AliAnalysisTaskJPsiMC_DG : public AliAnalysisTaskSE
         Double_t    fYGen;
         Double_t    fMGen;
         Double_t    fPhiGen;
+	Double_t    fPt1Gen;  
+        Double_t    fPt2Gen;
+        Double_t    fEta1Gen; 
+        Double_t    fEta2Gen;
+        Double_t    fPhi1Gen; 
+        Double_t    fPhi2Gen;
+        Double_t    fQ1Gen;   
+        Double_t    fQ2Gen;
 
         AliAnalysisTaskJPsiMC_DG(const AliAnalysisTaskJPsiMC_DG&); // not implemented
         AliAnalysisTaskJPsiMC_DG& operator=(const AliAnalysisTaskJPsiMC_DG&); // not implemented
 
-        ClassDef(AliAnalysisTaskJPsiMC_DG, 1);
+        ClassDef(AliAnalysisTaskJPsiMC_DG, 2);
 };
 
 #endif

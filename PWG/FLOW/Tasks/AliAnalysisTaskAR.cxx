@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 11.10.2021
+ * Last Modified Date: 27.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -37,7 +37,6 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
-// #include <THnSparse.h>
 #include <TMath.h>
 #include <TRandom3.h>
 #include <TSystem.h>
@@ -97,16 +96,19 @@ ClassImp(AliAnalysisTaskAR)
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
       fFinalResultHistogramsListName("FinalResultHistograms"),
-      fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("FinalResultProfiles"),
+      fFinalResultCorrelatorsList(nullptr),
+      fFinalResultCorrelatorsListName("FinalResultCorrelator"),
+      fFinalResultSymmetricCumulantsList(nullptr),
+      fFinalResultSymmetricCumulantsListName("FinalResultSymmetricCumulant"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
-      fMCMultiplicity(nullptr), fLookUpTable(nullptr), fUseFisherYates(kFALSE),
+      fMCMultiplicity(nullptr), fLookUpTable({}), fUseFisherYates(kFALSE),
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
       fFixedMultiplicy(2),
       // qvectors
-      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
+      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}),
+      fSymmetricCumulants({}), fMapSCtoCor({}), fMapCorToIndex({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name");
   // create base list
@@ -166,16 +168,19 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
       fFinalResultHistogramsListName("FinalResultHistograms"),
-      fFinalResultProfilesList(nullptr),
-      fFinalResultProfilesListName("FinalResultProfiles"),
+      fFinalResultCorrelatorsList(nullptr),
+      fFinalResultCorrelatorsListName("FinalResultCorrelator"),
+      fFinalResultSymmetricCumulantsList(nullptr),
+      fFinalResultSymmetricCumulantsListName("FinalResultSymmetricCumulant"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
-      fMCMultiplicity(nullptr), fLookUpTable(nullptr), fUseFisherYates(kFALSE),
+      fMCMultiplicity(nullptr), fLookUpTable({}), fUseFisherYates(kFALSE),
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
       fFixedMultiplicy(2),
       // qvectors
-      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}) {
+      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}),
+      fSymmetricCumulants({}), fMapSCtoCor({}), fMapCorToIndex({}) {
   // initialize arrays
   this->InitializeArrays();
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR()");
@@ -188,11 +193,6 @@ AliAnalysisTaskAR::~AliAnalysisTaskAR() {
   // recursively delete all other objects associative with this object
   if (fHistList) {
     delete fHistList;
-  }
-
-  // delete lookuptable
-  if (fLookUpTable) {
-    delete fLookUpTable;
   }
 
   // delete RNG
@@ -222,8 +222,8 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   }
   this->BookControlHistograms();
   this->BookFinalResultHistograms();
-  this->BookFinalResultProfiles();
-  this->fLookUpTable = new TExMap();
+  this->BookFinalResultSymmetricCumulants();
+  this->BookFinalResultCorrelators();
 
   // seed RNG
   delete gRandom;
@@ -263,7 +263,7 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   fFinalResultHistograms[kAVGCEN]->SetBinContent(
       1, fEventControlHistograms[kRECO][kCEN][kAFTER]->GetMean());
   // get minimum multiplicity
-  // need when running with fixed multiplicity and fischer-yates in later
+  // needed when running with fixed multiplicity and fischer-yates in later
   // analysis
   Int_t MinMulBin = 1;
   for (int i = 1;
@@ -282,6 +282,11 @@ void AliAnalysisTaskAR::Terminate(Option_t *) {
   // count number of tracks, needed for statistics in the end
   fFinalResultHistograms[kNUMBEROFTRACKS]->SetBinContent(
       1, fTrackControlHistograms[kRECO][kPHI][kAFTER]->GetEntries());
+
+  // compute symmetric cumulant
+  if (!fSymmetricCumulants.empty()) {
+    FillSymmetricCumulant();
+  }
 }
 
 void AliAnalysisTaskAR::InitializeArrays() {
@@ -293,6 +298,7 @@ void AliAnalysisTaskAR::InitializeArrays() {
   InitializeArraysForWeights();
   InitializeArraysForQvectors();
   InitializeArraysForFinalResultHistograms();
+  // InitializeArraysForSymmetricCumulants();
   InitializeArraysForMCAnalysis();
 }
 
@@ -915,11 +921,18 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
   fFinalResultHistogramsList->SetOwner(kTRUE);
   fFinalResultsList->Add(fFinalResultHistogramsList);
 
-  // final result profiles
-  fFinalResultProfilesList = new TList();
-  fFinalResultProfilesList->SetName(fFinalResultProfilesListName);
-  fFinalResultProfilesList->SetOwner(kTRUE);
-  fFinalResultsList->Add(fFinalResultProfilesList);
+  // final result profiles of correlators
+  fFinalResultCorrelatorsList = new TList();
+  fFinalResultCorrelatorsList->SetName(fFinalResultCorrelatorsListName);
+  fFinalResultCorrelatorsList->SetOwner(kTRUE);
+  fFinalResultsList->Add(fFinalResultCorrelatorsList);
+
+  // final result histograms of symmetric cummulants
+  fFinalResultSymmetricCumulantsList = new TList();
+  fFinalResultSymmetricCumulantsList->SetName(
+      fFinalResultSymmetricCumulantsListName);
+  fFinalResultSymmetricCumulantsList->SetOwner(kTRUE);
+  fFinalResultsList->Add(fFinalResultSymmetricCumulantsList);
 }
 
 void AliAnalysisTaskAR::BookQAHistograms() {
@@ -1264,8 +1277,6 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 void AliAnalysisTaskAR::BookFinalResultHistograms() {
   // Book final result histograms
 
-  Color_t colorFinalResult = kBlue - 10;
-
   // book final result histograms
   for (int var = 0; var < LAST_EFINALHIST; ++var) {
     fFinalResultHistograms[var] =
@@ -1274,23 +1285,23 @@ void AliAnalysisTaskAR::BookFinalResultHistograms() {
                  fFinalResultHistogramBins[var][kBIN],
                  fFinalResultHistogramBins[var][kLEDGE],
                  fFinalResultHistogramBins[var][kUEDGE]);
-    fFinalResultHistograms[var]->SetFillColor(colorFinalResult);
+    fFinalResultHistograms[var]->SetFillColor(kcolorFinalResult);
     fFinalResultHistograms[var]->GetXaxis()->SetTitle(
         fFinalResultHistogramNames[var][2]);
     fFinalResultHistogramsList->Add(fFinalResultHistograms[var]);
   }
 }
 
-void AliAnalysisTaskAR::BookFinalResultProfiles() {
-  // Book final result profiles
-  // 6 profiles for each correlator
+void AliAnalysisTaskAR::BookFinalResultCorrelators() {
+  // Book final result profiles holding correlators
+  // 3 profiles for each correlator
   //  - integrated
   //  - as a function of centrality
   //  - as a function of multiplicity
 
   TList *corList;
-  TProfile *corProfile[3];
-  Double_t bins[3][3] = {
+  TProfile *corProfile[LAST_EFINALRESULTPROFILE];
+  Double_t bins[LAST_EBINS][LAST_EFINALRESULTPROFILE] = {
       {1, 0, 1},
       {fEventControlHistogramBins[kCEN][kBIN],
        fEventControlHistogramBins[kCEN][kLEDGE],
@@ -1299,8 +1310,10 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
        fEventControlHistogramBins[kMULQ][kLEDGE],
        fEventControlHistogramBins[kMULQ][kUEDGE]},
   };
-  TString Names[3] = {"integrated", "(CP)", "(M)"};
-  TString xaxis[3] = {"", "Centrality Percentile", "Multiplicity"};
+  TString Names[LAST_EFINALRESULTPROFILE] = {"[kINTEGRATED]", "[kCENDEP]",
+                                             "[kMULDEP]"};
+  TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
+                                             "Multiplicity"};
   TString corListName;
   TString corName;
   for (std::size_t i = 0; i < fCorrelators.size(); i++) {
@@ -1317,9 +1330,9 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
     corList = new TList();
     corList->SetName(corListName);
     corList->SetOwner(kTRUE);
-    fFinalResultProfilesList->Add(corList);
+    fFinalResultCorrelatorsList->Add(corList);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
       corProfile[i] = new TProfile(corListName + Names[i],
                                    corListName + TString(" ") + Names[i],
                                    bins[i][0], bins[i][1], bins[i][2]);
@@ -1327,6 +1340,97 @@ void AliAnalysisTaskAR::BookFinalResultProfiles() {
       corList->Add(corProfile[i]);
     }
   }
+}
+
+void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
+  // book histograms holding symmetric cumulants
+
+  TH1D *Hist[LAST_EFINALRESULTPROFILE];
+  Double_t bins[LAST_EBINS][LAST_EFINALRESULTPROFILE] = {
+      {1, 0, 1},
+      {fEventControlHistogramBins[kCEN][kBIN],
+       fEventControlHistogramBins[kCEN][kLEDGE],
+       fEventControlHistogramBins[kCEN][kUEDGE]},
+      {fEventControlHistogramBins[kMULQ][kBIN],
+       fEventControlHistogramBins[kMULQ][kLEDGE],
+       fEventControlHistogramBins[kMULQ][kUEDGE]},
+  };
+  TString Names[LAST_EFINALRESULTPROFILE] = {"[kINTEGRATED]", "[kCENDEP]",
+                                             "[kMULDEP]"};
+  TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
+                                             "Multiplicity"};
+  TString Name;
+  TList *List;
+  std::vector<std::vector<Int_t>> correlators;
+
+  Int_t Index = 0;
+  for (std::size_t j = 0; j < fSymmetricCumulants.size(); j++) {
+    Name = "SC(";
+    for (std::size_t i = 0; i < fSymmetricCumulants.at(j).size(); i++) {
+      Name += Form("%d", fSymmetricCumulants.at(j).at(i));
+      if (i < fSymmetricCumulants.at(j).size() - 1) {
+        Name += ",";
+      }
+    }
+    Name += ")";
+
+    List = new TList();
+    List->SetName(Name);
+    List->SetOwner(kTRUE);
+    fFinalResultSymmetricCumulantsList->Add(List);
+
+    for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
+      Hist[i] = new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
+                         bins[i][0], bins[i][1], bins[i][2]);
+      Hist[i]->GetXaxis()->SetTitle(xaxis[i]);
+      Hist[i]->SetFillColor(kcolorFinalResult);
+      List->Add(Hist[i]);
+    }
+
+    correlators = MapSCToCor(fSymmetricCumulants.at(j));
+    fMapSCtoCor.insert({fSymmetricCumulants.at(j), correlators});
+    for (auto cor : correlators) {
+      if (std::find(fCorrelators.begin(), fCorrelators.end(), cor) !=
+          fCorrelators.end()) {
+        continue;
+      } else {
+        fCorrelators.push_back(cor);
+        fMapCorToIndex.insert({cor, Index});
+        Index++;
+      }
+    }
+  }
+}
+
+std::vector<std::vector<Int_t>>
+AliAnalysisTaskAR::MapSCToCor(std::vector<Int_t> sc) {
+  // map symmetric cumulant to the correlators needed for its computation
+
+  std::vector<std::vector<Int_t>> correlators;
+  switch (sc.size()) {
+  case 2:
+    correlators = {
+        {-sc.at(0), -sc.at(1), sc.at(1), sc.at(0)}, // <4>_{-l,-k,k,l}
+        {-sc.at(0), sc.at(0)},                      // <2> _{-k, k}
+        {-sc.at(1), sc.at(1)}                       // <2> _{-l, l}
+    };
+    break;
+  case 3:
+    correlators = {
+        {-sc.at(0), -sc.at(1), -sc.at(2), sc.at(2), sc.at(1),
+         sc.at(0)},                                 // <6>_{-k,-l,-n,n,l,k}
+        {-sc.at(0), -sc.at(1), sc.at(1), sc.at(0)}, // <4>_{-k,-l,l,k}
+        {-sc.at(0), -sc.at(2), sc.at(2), sc.at(0)}, // <4>_{-k,-n,n,k}
+        {-sc.at(1), -sc.at(2), sc.at(2), sc.at(1)}, // <4>_{-l,-n,n,l}
+        {-sc.at(0), sc.at(0)},                      // <2> _{-k, k}
+        {-sc.at(1), sc.at(1)},                      // <2> _{-l, l}
+        {-sc.at(2), sc.at(2)}};                     // <2> _ { -n, n }
+    break;
+  default:
+    std::cout << "higher order symmetric cumulants are not implemented (yet)"
+              << std::endl;
+  }
+  return correlators;
 }
 
 void AliAnalysisTaskAR::SetDefaultConfiguration() {
@@ -1579,7 +1683,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   AliAODMCParticle *MCParticle = nullptr;
   Int_t Counter = 0;
 
-  for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
 
     // break loop if we hit fixed multiplicity
     if (fUseFixedMultplicity) {
@@ -1597,7 +1701,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       }
       // and get corresponding AODTrack, if it exists
       track = dynamic_cast<AliAODTrack *>(
-          aAOD->GetTrack(fLookUpTable->GetValue(Int_t(iTrack))));
+          aAOD->GetTrack(fLookUpTable[MCParticle->GetLabel()]));
       // if running over AOD only
     } else if (aAOD && !aMC) {
       // get AODtrack directly
@@ -1696,7 +1800,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
   CalculateQvectors();
 
   // fill final result profile
-  FillFinalResultProfile();
+  FillFinalResultCorrelators();
 
   PostData(1, fHistList);
 }
@@ -1704,7 +1808,7 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 void AliAnalysisTaskAR::ClearVectors() {
   // clear vectors holding kinematics and weights of an event
   fWeightsAggregated.clear();
-  for (int k = 0; k < kKinematic; ++k) {
+  for (Int_t k = 0; k < kKinematic; ++k) {
     fKinematics[k].clear();
     fKinematicWeights[k].clear();
   }
@@ -1788,7 +1892,7 @@ void AliAnalysisTaskAR::AggregateWeights() {
 
   for (std::size_t i = 0; i < fKinematics[kPHI].size(); ++i) {
     tmp = 1.;
-    for (int k = 0; k < kKinematic; ++k) {
+    for (Int_t k = 0; k < kKinematic; ++k) {
       w[k] = 1.;
       if (fUseWeights[k] && !fKinematicWeights[k].empty()) {
         w[k] *= fKinematicWeights[k].at(i);
@@ -2715,13 +2819,11 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
   Int_t tmp = 0;
 
   // reset lookuptable
-  if (0 != fLookUpTable->GetSize()) {
-    fLookUpTable->Delete();
-  }
+  fLookUpTable.clear();
 
   AliAODTrack *aTrack = nullptr;
 
-  for (int iTrack = 0; iTrack < nTracks; ++iTrack) {
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
 
     // compute randomized index if necessary using Fisher-Yates shuffel
     // pseudo-code taken from
@@ -2773,7 +2875,7 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
     // we also have a monte carlo event
     if (aMC) {
       // "key" = label, "value" = iTrack
-      fLookUpTable->Add(aTrack->GetLabel(), iTrack);
+      fLookUpTable.insert({aTrack->GetLabel(), iTrack});
     }
   }
 }
@@ -2809,7 +2911,7 @@ void AliAnalysisTaskAR::CalculateQvectors() {
   }
 }
 
-void AliAnalysisTaskAR::FillFinalResultProfile() {
+void AliAnalysisTaskAR::FillFinalResultCorrelators() {
   // fill final result profiles
 
   Double_t corr = 0.0;
@@ -2918,16 +3020,115 @@ void AliAnalysisTaskAR::FillFinalResultProfile() {
     // fill final result profiles
     // integrated correlator
     dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(0))
+        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(0))
         ->Fill(0.5, corr, weight);
     // correlator as a function of centrality
     dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(1))
+        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(1))
         ->Fill(fCentrality[fCentralityEstimator], corr, weight);
     // correlator as a function of multiplicity
     dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultProfilesList->At(i))->At(2))
+        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(2))
         ->Fill(fMultiplicity[kMULQ], corr, weight);
+  }
+}
+
+void AliAnalysisTaskAR::FillSymmetricCumulant() {
+  // fill symmetric cumulant
+
+  for (std::size_t i = 0; i < fSymmetricCumulants.size(); i++) {
+
+    switch (fSymmetricCumulants.at(i).size()) {
+    case 2:
+      SC2(fSymmetricCumulants.at(i), i);
+      break;
+    case 3:
+      SC3(fSymmetricCumulants.at(i), i);
+      break;
+    default:
+      std::cout << "Not implemented" << std::endl;
+      break;
+    }
+  }
+}
+
+void AliAnalysisTaskAR::SC2(std::vector<Int_t> sc, Int_t index) {
+
+  TList *listSC_kl =
+      dynamic_cast<TList *>(fFinalResultSymmetricCumulantsList->At(index));
+
+  std::vector<std::vector<Int_t>> correlators = fMapSCtoCor.at(sc);
+
+  TList *listC_kl = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(0))));
+  TList *listC_k = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(1))));
+  TList *listC_l = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(2))));
+
+  TH1D *sc_kl;
+  TProfile *c_kl, *c_k, *c_l;
+
+  for (Int_t i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
+
+    sc_kl = dynamic_cast<TH1D *>(listSC_kl->At(i));
+    c_kl = dynamic_cast<TProfile *>(listC_kl->At(i));
+    c_k = dynamic_cast<TProfile *>(listC_k->At(i));
+    c_l = dynamic_cast<TProfile *>(listC_l->At(i));
+
+    for (Int_t bin = 1; bin <= sc_kl->GetNbinsX(); bin++) {
+      sc_kl->SetBinContent(bin, c_kl->GetBinContent(bin) -
+                                    c_k->GetBinContent(bin) *
+                                        c_l->GetBinContent(bin));
+    }
+  }
+}
+
+void AliAnalysisTaskAR::SC3(std::vector<Int_t> sc, Int_t index) {
+
+  TList *listSC_kln =
+      dynamic_cast<TList *>(fFinalResultSymmetricCumulantsList->At(index));
+
+  std::vector<std::vector<Int_t>> correlators = fMapSCtoCor.at(sc);
+
+  TList *listC_kln = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(0))));
+  TList *listC_kl = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(1))));
+  TList *listC_kn = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(2))));
+  TList *listC_ln = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(3))));
+  TList *listC_k = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(4))));
+  TList *listC_l = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(5))));
+  TList *listC_n = dynamic_cast<TList *>(
+      fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(6))));
+
+  TH1D *sc_kln;
+  TProfile *c_kln, *c_kl, *c_kn, *c_ln, *c_k, *c_l, *c_n;
+
+  for (Int_t i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
+
+    sc_kln = dynamic_cast<TH1D *>(listSC_kln->At(i));
+    c_kln = dynamic_cast<TProfile *>(listC_kln->At(i));
+    c_kl = dynamic_cast<TProfile *>(listC_kl->At(i));
+    c_kn = dynamic_cast<TProfile *>(listC_kn->At(i));
+    c_ln = dynamic_cast<TProfile *>(listC_ln->At(i));
+    c_k = dynamic_cast<TProfile *>(listC_k->At(i));
+    c_l = dynamic_cast<TProfile *>(listC_l->At(i));
+    c_n = dynamic_cast<TProfile *>(listC_n->At(i));
+
+    for (Int_t bin = 1; bin <= sc_kln->GetNbinsX(); bin++) {
+      sc_kln->SetBinContent(
+          bin, c_kln->GetBinContent(bin) -
+                   c_kl->GetBinContent(bin) * c_n->GetBinContent(bin) -
+                   c_kn->GetBinContent(bin) * c_l->GetBinContent(bin) -
+                   c_ln->GetBinContent(bin) * c_k->GetBinContent(bin) +
+                   2 * c_k->GetBinContent(bin) * c_l->GetBinContent(bin) *
+                       c_n->GetBinContent(bin));
+    }
   }
 }
 
@@ -3950,10 +4151,10 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   }
 
   // get pointers for fFinalResultProfilesList
-  fFinalResultProfilesList = dynamic_cast<TList *>(
-      fFinalResultsList->FindObject(fFinalResultProfilesListName));
-  if (!fFinalResultProfilesList) {
-    std::cout << __LINE__ << ": Did not get " << fFinalResultProfilesListName
+  fFinalResultCorrelatorsList = dynamic_cast<TList *>(
+      fFinalResultsList->FindObject(fFinalResultCorrelatorsListName));
+  if (!fFinalResultCorrelatorsList) {
+    std::cout << __LINE__ << ": Did not get " << fFinalResultCorrelatorsListName
               << std::endl;
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }

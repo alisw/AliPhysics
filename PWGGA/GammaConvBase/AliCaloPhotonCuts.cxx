@@ -6656,6 +6656,30 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       fMinM02CutNr=9;
       fMaxM02=0.5;
       break;
+    case 29:  // t
+      // linear interpolation between 0.7 (low pT) and 0.5 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 30:  // u
+      // linear interpolation between 0.7 (low pT) and 0.5 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 31:  // v
+      // linear interpolation between 0.7 (low pT) and 0.4 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 32:  // w
+      // linear interpolation between 0.7 (low pT) and 0.4 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
     default:
       AliError(Form("Max M02 Cut not defined %d",maxM02));
       return kFALSE;
@@ -6741,6 +6765,22 @@ Float_t AliCaloPhotonCuts::CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy){
     case 28:  // s
       if( (0.32 + 0.0238 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
       else return (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
+    case 29: // t, linear interpolation between M02 = 0.7 (low pT) and 0.5 (high pT)
+      if(clusEnergy < 10) return 0.7;
+      else if(clusEnergy < 15) return -0.04*clusEnergy + 1.1;
+      else return 0.5;
+    case 30: // u, linear interpolation between M02 = 0.7 (low pT) and 0.5 (high pT)
+      if(clusEnergy < 5) return 0.7;
+      else if(clusEnergy < 10) return  -0.04*clusEnergy + 0.9;
+      else return 0.5;
+    case 31: // v, linear interpolation between M02 = 0.7 (low pT) and 0.4 (high pT)
+      if(clusEnergy < 10) return 0.7;
+      else if(clusEnergy < 17.5) return -0.04*clusEnergy + 1.1;
+      else return 0.4;
+    case 32: // w, linear interpolation between M02 = 0.7 (low pT) and 0.4 (high pT)
+      if(clusEnergy < 5) return 0.7;
+      else if(clusEnergy < 12.5) return  -0.04*clusEnergy + 0.9;
+      else return 0.4;
 
     default:
       AliError(Form("Max M02 for merged cluster Cut not defined %d",maxM02));

@@ -53,7 +53,7 @@ class AliJSPCTask : public AliAnalysisTaskSE {
 
   //Task Specific Setters
   void JSPCSetSaveAllQA(Bool_t SaveQA){bJSPCSaveAllQA=SaveQA;}
-  void JSPCSetUseWeights(Bool_t Weights){bJSPCUseWeights = Weights;}
+  void JSPCSetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){bJSPCUseWeightsNUE = WeightsNUE; bJSPCUseWeightsNUA = WeightsNUA; }
   void JSPCSetFisherYates(Bool_t DoFY, Float_t CutOff)
   { bJSPCDoFisherYates=DoFY; fJSPCFisherYatesCutOff=CutOff; } 
   void JSPCSetMinNuPar(Int_t top){fJSPCMinNumberPart = top;} 
@@ -107,7 +107,8 @@ class AliJSPCTask : public AliAnalysisTaskSE {
   Int_t fJSPCMinNumberPart;
 
   //Weights
-  Bool_t bJSPCUseWeights; 
+  Bool_t bJSPCUseWeightsNUE; 
+  Bool_t bJSPCUseWeightsNUA;
  
   //Correlators
   Int_t fJSPCNumber;              // Number of correlation first correlator
@@ -137,6 +138,6 @@ class AliJSPCTask : public AliAnalysisTaskSE {
   Bool_t bJSPCSetSameChargePositive;     // used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fJSPCMixedHarmonic;     // Harmonic of special mixed particle analysis
 
-  ClassDef(AliJSPCTask, 1); 
+  ClassDef(AliJSPCTask, 2); 
 };
 #endif // AliJSPCTask_H

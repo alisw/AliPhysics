@@ -133,6 +133,9 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   if (fTOFParticle == 2) tTOF = aTrack->TOFprotonTime();
   if (fTOFParticle == 3) {tTOF = aTrack->TOFdeuteronTime();
   }
+  // 10.24 dowang p-d/t/He3 femto
+  if (fTOFParticle == 4) tTOF = aTrack->TOFtritonTime();
+  if (fTOFParticle == 5) tTOF = aTrack->TOFhe3Time();
 
   fTPCdEdx->Fill(tMom, tdEdx);
   fTOFTime->Fill(tMom, tTOF);
@@ -173,7 +176,18 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     if (fTOFParticle == 2) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP());
     if (fTOFParticle == 3) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCD(), aTrack->NSigmaTOFD());
 
-
+    // 10.24 dowang p-d/t/He3 femto
+    if (fTOFParticle == 4) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFT());
+    if (fTOFParticle == 5) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFH());
+    
+    if (fTOFParticle == 4) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCT());
+    if (fTOFParticle == 5) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCH());
+    
+    if (fTOFParticle == 4) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCT(), aTrack->NSigmaTOFT() ) );
+    if (fTOFParticle == 5) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCH(), aTrack->NSigmaTOFH() ) );
+    
+    if (fTOFParticle == 4) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCT(), aTrack->NSigmaTOFT());
+    if (fTOFParticle == 5) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCH(), aTrack->NSigmaTOFH()); 
 }
 
 void AliFemtoCutMonitorParticlePID::Write()

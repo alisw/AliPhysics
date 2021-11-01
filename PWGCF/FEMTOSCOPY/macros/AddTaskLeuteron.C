@@ -316,6 +316,14 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   }
 
 
+  if(isSidebandSignal ==true || isUpperSideband == true || isLowerSideband == true){
+
+    TrackCuts3->SetPID(AliPID::kDeuteron,1.4,60.0);
+    TrackCuts4->SetPID(AliPID::kDeuteron,1.4,60.0);
+
+  }
+
+
   if(isSystematics){
 
     if(suffix == "1"){
