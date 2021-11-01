@@ -167,9 +167,9 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 
     TString fConfigPath;                    /// path to ML config file
     AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
-    int fNMLBins[3] = {1000, 100, 100};     /// number of bins for ML output axis in THnSparse
-    double fMLOutputMin[3] = {0., 0., 0.};  /// min for ML output axis in THnSparse
-    double fMLOutputMax[3] = {1., 1., 1.};  /// max for ML output axis in THnSparse
+    int fNMLBins[3];                        /// number of bins for ML output axis in THnSparse
+    double fMLOutputMin[3];                 /// min for ML output axis in THnSparse
+    double fMLOutputMax[3];                 /// max for ML output axis in THnSparse
 
     ClassDef(AliAnalysisTaskSECharmHadronvn,7); // AliAnalysisTaskSE for the HF vn analysis
 };
