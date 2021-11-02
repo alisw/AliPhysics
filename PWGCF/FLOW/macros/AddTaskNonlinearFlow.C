@@ -63,28 +63,10 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 
 	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp", fNUA, fNUE);
 	taskFlowEp->SetDebugLevel(3);
-	taskFlowEp->SetFilterbit(fFilterbit); // For systematics
-	taskFlowEp->SetFilterbitDefault(fFilterbit);
 	taskFlowEp->SetEtaCut(fEtaCut);
-	taskFlowEp->SetVtxCut(fVtxCut); // For systematics
-	taskFlowEp->SetVtxCutDefault(fVtxCut);
 	taskFlowEp->SetMinPt(fMinPt);
 	taskFlowEp->SetMaxPt(fMaxPt);
-	taskFlowEp->SetTPCclusters(TPCclusters); // For systematics
-	taskFlowEp->SetTPCclustersDefault(TPCclusters);
-	taskFlowEp->SetChi2PerTPCcluster(chi2PerTPCcluster); // max. chi2 per TPC cluster
-	taskFlowEp->SetMinITSClusters(fMinITSClus);
-	taskFlowEp->SetMaxChi2(fMaxChi2);
-	taskFlowEp->SetUseDCAzCut(fUseDCAzCut);
-	taskFlowEp->SetDCAzCut(fDCAz); // For systematics
-	taskFlowEp->SetDCAzCutDefault(fDCAz); 
-	taskFlowEp->SetUseDCAxyCut(fUseDCAxyCut);
-	taskFlowEp->SetDCAxyCut(fDCAxy); // For systematics
-	taskFlowEp->SetDCAxyCutDefault(fDCAxy); 
-	taskFlowEp->SetIsSample(IsSample);
-	taskFlowEp->SetCentFlag(nCentFl);
 	taskFlowEp->SetTrigger(trigger);
-	taskFlowEp->SetLSFlag(fLS);
 	taskFlowEp->SetNUEFlag(fNUE);
 	taskFlowEp->SetNUA(fNUA);
 	taskFlowEp->SetNtrksName(fNtrksName);
