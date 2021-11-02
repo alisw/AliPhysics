@@ -98,20 +98,21 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   //V0 Chun zheng: Cuts on V0 and its daughters
   void SetV0PtMin(Double_t v0PtMin)                                    {this->fV0PtMin                                   = v0PtMin;}
   void SetV0CPAMin(Double_t v0CPAMin)                                  {this->fV0CPAMin                                 = v0CPAMin;}
-  void SetMassMean(Double_t massMean)                                  {this->fMassMean                                 = massMean;}
-  void SetLambdaMassCut(Double_t lambdaMassCut)                        {this->fLambdaMassCut                       = lambdaMassCut;}
   void SetV0RapidityMax(Double_t v0RapidityMax)                        {this->fV0RapidityMax                       = v0RapidityMax;}
   void SetV0DecayLengthMax(Double_t v0DecayLengthMax)                  {this->fV0DecayLengthMax                 = v0DecayLengthMax;}
   void SetV0DecayLengthMin(Double_t v0DecayLengthMin)                  {this->fV0DecayLengthMin                 = v0DecayLengthMin;}
   void SetV0DCAToPrimVtxMax(Double_t v0DCAToPrimVtxMax)                {this->fV0DCAToPrimVtxMax               = v0DCAToPrimVtxMax;}
   void SetV0DcaBetweenDaughtersMax(Double_t v0DcaBetweenDaughtersMax)  {this->fV0DcaBetweenDaughtersMax = v0DcaBetweenDaughtersMax;}
   //V0 Daughter Cut
+  void SetDaughtersPIDUseTOF(Bool_t daughterPIDUseTOF)                 {this->fV0DaughterUseTOF                = daughterPIDUseTOF;}
   void SetDaughtersPtMax(Double_t daughtersPtMax)                      {this->fDaughtersPtMax                     = daughtersPtMax;}
   void SetDaughtersEtaMax(Double_t daughtersEtaMax)                    {this->fDaughtersEtaMax                   = daughtersEtaMax;}
   void SetDaughtersNsigma(Double_t daughtersNsigma)                    {this->fDaughtersNsigma                   = daughtersNsigma;}
   void SetDaughtersTPCNclsMin(Double_t daughtersTPCNclsMin)            {this->fDaughtersTPCNclsMin           = daughtersTPCNclsMin;}
   void SetDaughtersDCAToPrimVtxMin(Double_t daughtersDCAToPrimVtxMin)  {this->fDaughtersDCAToPrimVtxMin = daughtersDCAToPrimVtxMin;}
   //Lambda Mass Cut
+  void SetMassMean(Double_t massMean)                                  {this->fMassMean                                 = massMean;}
+  void SetLambdaMassCut(Double_t lambdaMassCut)                        {this->fLambdaMassCut                       = lambdaMassCut;}
 
 
 
@@ -192,6 +193,15 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   Double_t           fDaughtersEtaMax; //!
   Double_t       fDaughtersTPCNclsMin; //!
   Double_t  fDaughtersDCAToPrimVtxMin; //!
+  Float_t       fV0PosProtonTPCNsigma; //!
+  Float_t         fV0NegPionTPCNsigma; //!
+  Float_t       fV0NegProtonTPCNsigma; //!
+  Float_t         fV0PosPionTPCNsigma; //!
+  Bool_t            fV0DaughterUseTOF; //!
+  Float_t       fV0PosProtonTOFNsigma; //!
+  Float_t         fV0NegPionTOFNsigma; //!
+  Float_t       fV0NegProtonTOFNsigma; //!
+  Float_t         fV0PosPionTOFNsigma; //!
   //Lambda Mass
   Double_t                  fMassMean; //!
   Double_t             fLambdaMassCut; //!
@@ -340,7 +350,15 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TH1D           *fHistV0DecayLength;     //! Raw V0s' DecayLength
 
   ///Lambda-X correlators: Naming Style for Histograms ->
-  /// Lambda = L-capital, Proton = P-capital, Anti= A-capital.  
+  /// Lambda = L-capital, Proton = P-capital, Anti= A-capital.
+  TProfile       *fProfileDelta_Lambda_hPos; //!
+  TProfile       *fProfileDelta_Lambda_hNeg; //!
+  TProfile       *fProfileDelta_Lambda_Proton;     //!
+  TProfile       *fProfileDelta_Lambda_AntiProton; //!
+  TProfile       *fProfileDelta_AntiLambda_hPos; //!
+  TProfile       *fProfileDelta_AntiLambda_hNeg; //!
+  TProfile       *fProfileDelta_AntiLambda_Proton;     //!
+  TProfile       *fProfileDelta_AntiLambda_AntiProton; //!
   TProfile       *fProfileGammaTPC_Lambda_hPos; //!
   TProfile       *fProfileGammaTPC_Lambda_hNeg; //!
   TProfile       *fProfileGammaTPC_Lambda_Proton;     //!
@@ -350,6 +368,24 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TProfile       *fProfileGammaTPC_AntiLambda_Proton;     //!
   TProfile       *fProfileGammaTPC_AntiLambda_AntiProton; //!
   
+  TProfile       *fProfileGammaV0C_Lambda_hPos; //!
+  TProfile       *fProfileGammaV0C_Lambda_hNeg; //!
+  TProfile       *fProfileGammaV0C_Lambda_Proton;     //!
+  TProfile       *fProfileGammaV0C_Lambda_AntiProton; //!
+  TProfile       *fProfileGammaV0C_AntiLambda_hPos; //!
+  TProfile       *fProfileGammaV0C_AntiLambda_hNeg; //!
+  TProfile       *fProfileGammaV0C_AntiLambda_Proton;     //!
+  TProfile       *fProfileGammaV0C_AntiLambda_AntiProton; //!
+
+  TProfile       *fProfileGammaV0A_Lambda_hPos; //!
+  TProfile       *fProfileGammaV0A_Lambda_hNeg; //!
+  TProfile       *fProfileGammaV0A_Lambda_Proton;     //!
+  TProfile       *fProfileGammaV0A_Lambda_AntiProton; //!
+  TProfile       *fProfileGammaV0A_AntiLambda_hPos; //!
+  TProfile       *fProfileGammaV0A_AntiLambda_hNeg; //!
+  TProfile       *fProfileGammaV0A_AntiLambda_Proton;     //!
+  TProfile       *fProfileGammaV0A_AntiLambda_AntiProton; //!
+  
   TH1F          *hEmptyPointerFortheList;  //!  
 
   Double_t           fCurrentVtx[3];//!
@@ -357,12 +393,14 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   /// chunzheng: Lambda QA Info
   TH1D             *fHistLambdaPt[2];      //! [0]:Before the Mass Cut [1]:After the Mass Cut
   TH1D             *fHistLambdaEta[2];     //!
+  TH1D             *fHistLambdaPhi[2];
   TH1D             *fHistLambdaDcaToPrimVertex[2]; //!
   TH1D             *fHistLambdaCPA[2];     //!
   TH1D             *fHistLambdaDecayLength[2];     //!
   TH1D             *fHistLambdaMass[2];    //!
   TH1D             *fHistAntiLambdaPt[2];  //!
   TH1D             *fHistAntiLambdaEta[2]; //!
+  TH1D             *fHistAntiLambdaPhi[2];
   TH1D             *fHistAntiLambdaDcaToPrimVertex[2]; //!
   TH1D             *fHistAntiLambdaCPA[2]; //!
   TH1D             *fHistAntiLambdaDecayLength[2]; //!
@@ -397,6 +435,7 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   Double_t GetNUAWeightForTrack(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
   Double_t GetNUAWeightForTrackPID(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
   Double_t GetMCEfficiencyWeightForTrack(Double_t fPt=1.0,Int_t gChrg=1,Int_t kPID=0);
+  Int_t    GetLambdaCode(const AliAODTrack *pTrack, const AliAODTrack *ntrack); 
 
 
 
