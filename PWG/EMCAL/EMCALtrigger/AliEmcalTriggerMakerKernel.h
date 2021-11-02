@@ -36,6 +36,7 @@
 //#include <AliEMCALTriggerPatchInfoV1.h>
 
 class TF1;
+class TRandom;
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
 class AliEMCALTriggerRawPatch;
@@ -579,6 +580,7 @@ protected:
 
   AliEMCALTriggerPatchFinder<double>       *fPatchFinder;                 ///< The actual patch finder
   AliEMCALTriggerAlgorithm<double>         *fLevel0PatchFinder;           ///< Patch finder for Level0 patches
+  TRandom                                  *fSmearEngine;                 ///< Random engine for energy smearing
   Int_t                                     fL0MinTime;                   ///< Minimum L0 time
   Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
   Bool_t                                    fApplyL0TimeCut;              ///< Apply time cut (L0 time between fL0MinTime and fL0MaxTime) for L0 patch selection

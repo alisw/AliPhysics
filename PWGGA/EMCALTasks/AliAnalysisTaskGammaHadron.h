@@ -152,6 +152,9 @@ public:
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
+
+  Double_t                    GetEventMixingAngle(Double_t fRawEventPlaneAngle);
+
   Double_t                    GetTrackEff(Double_t pT, Double_t eta)                        ;
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
@@ -182,6 +185,7 @@ public:
  // static const Int_t          kNvertBins=20;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNvertBins=10;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
+  static const Int_t          kNEPMixingBins=7;             ///< Event bins in which the ME are mixed
   static const Int_t          kNClusVertBins=7;             ///< vertex bins in which the clusters are mixed
   static const Int_t          kNEMCalMultBins=4;              ///< EMCal multiplicity bins in which the clusters are mixed
   static const Int_t          kUsedPi0TriggerPtBins = 5; ///< Number of Bins used for Pi0 Triggers in Correlation mode
@@ -360,6 +364,7 @@ public:
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
 
   TH1F           *fHistEventHash;            //!<! Histogram tracking the event hash for dividing data
+  TH2F           *fHistEventHashVsMixingAngle; //!<! Histogram tracking event hash (even or odd) vs event plane angle used in mixing.
 
   // Position Swap Correction Histograms
   Bool_t          bEnablePosSwapHists;  ///<  Whether to produce the following histograms for investigating the position swap method (very memory intensive, should have high cluster cut)

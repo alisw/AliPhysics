@@ -1203,10 +1203,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   bc.fRunNumber = fVEvent->GetRunNumber();
 
   ULong64_t evtid = GetGlobalBC(fVEvent->GetHeader());
-  if (!evtid)
-  {
-    evtid = (ULong64_t(fVEvent->GetTimeStamp()) << 32) + ULong64_t((fVEvent->GetNumberOfTPCClusters() << 5) | (fVEvent->GetNumberOfTPCTracks()));
-  }
   bc.fGlobalBC = evtid;
   bc.fTriggerMask = fVEvent->GetTriggerMask();
   // NOTE upper 64 bit of trigger classes stored few lines below in run2bcinfo.fTriggerMaskNext50
