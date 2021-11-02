@@ -247,6 +247,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          if (l) {
              if (pair->ContainsIndex(l->Index())) return 1E20;
             l->Set4Vector(v,-1.0,fUseMCInfo);
+            if (pair->Pt(fUseMCInfo) > v.Pt()) return 1E20;
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
 
             //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
