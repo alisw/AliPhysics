@@ -9,94 +9,102 @@
 /                                                                             /
 / Author: Cindy Mordasini (cindy.mordasini@cern.ch)                           /
 / -------------------------------------------------------------------------- */
-
 #include "TSystem.h"
-#include "TDirectoryFile.h"
-#include "TFile.h"
 #include "TList.h"
+#include "TString.h"
 #include "TComplex.h"
-#include "AliJEfficiency.h"
+#include "TH1I.h"
 #include "TH1F.h"
 #include "TH1D.h"
-#include "TH1I.h"
 #include "TProfile.h"
-#include <TExMap.h>
+#include "AliJEfficiency.h"
+
 #include <sstream>
 
 class TClonesArray;
 
 class AliAnalysisTaskHOCFA {
-public:
+ public:
 // Methods inherited from AliAnalysisTaskSE.
   AliAnalysisTaskHOCFA();
-  AliAnalysisTaskHOCFA(const char *name, Bool_t useWeights=kFALSE);
+  AliAnalysisTaskHOCFA(const char *name);
   virtual ~AliAnalysisTaskHOCFA();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
 
-// Methods specific for this class.
+// Methods specific to this class.
   void SetInputList(TClonesArray *inputArray) {fInputList = inputArray;}
   TClonesArray *GetInputList() const {return fInputList;}
-  void SetDebugLevel(Int_t debug) {fDebugLevel = debug;}
+  void SetDebugLevel(int debug) {fDebugLevel = debug;}
   TList *GetCFAlist() const {return fMainList;}
   virtual void InitialiseArrayMembers();
 
-  void SetCentralityBinning(Int_t nBins) {fNCentralityBins = nBins;}
+  void SetCentralityBinning(int nBins) {fNCentralityBins = nBins;}
   virtual void SetCentralityArray(TString values);
-  void SetEventCentrality(Float_t cent) {fCentrality = cent;}
-  Int_t GetCentralityBin(Float_t cent);
+  void SetEventCentrality(float cent) {fCentrality = cent;}
+  int GetCentralityBin(float cent);
 
   virtual void BookFinalResults();
 
-  void SetMinMultiplicity(Int_t minMult) {fMultiplicityMin = minMult;}
-  void SetParticleWeights(Bool_t weightsNUE, Bool_t weightsNUA) {fUseWeightsNUE = weightsNUE; fUseWeightsNUA = weightsNUA;}
-  void SetNumberCombi(Int_t combi) {fNCombi = combi;}
+  void SetMinMultiplicity(int minMult) {fMultiplicityMin = minMult;}
+  void SetPtRange(double minPt, double maxPt) {fPtMin = minPt; fPtMax = maxPt;}
+  void SetParticleWeights(bool weightsNUE, bool weightsNUA) {
+    fUseWeightsNUE = weightsNUE; fUseWeightsNUA = weightsNUA;
+  }
+  void SetObservable(bool observ) {fGetSC3h = observ;}
+  void SetNumberCombi(int combi) {fNCombi = combi;}
   virtual void SetHarmoArray(TString combiString);
 
-  virtual void CalculateQvectors(Long64_t multiplicity, Double_t angles[], Double_t pWeights[]);
-  TComplex Q(Int_t n, Int_t p);
-  TComplex CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult=1, Int_t skip=0);
-  virtual void ComputeAllTerms(); // TBC: Do I need to pass the angles and weights?
-  virtual void CalculateCorrelator(Int_t combi, Int_t bin, Int_t nParticles, Int_t harmonics[], Double_t *errorTerms);
+  virtual void CalculateQvectors(Long64_t multiplicity, double angles[], double pWeights[]);
+  TComplex Q(int n, int p);
+  TComplex CalculateRecursion(int n, int *harmonic, int mult=1, int skip=0);
+  virtual void ComputeAllTerms();
+  virtual void CalculateCorrelator(int combi, int bin, int nParticles, int harmonics[], double *errorTerms);
 
 
 private:
   AliAnalysisTaskHOCFA(const AliAnalysisTaskHOCFA& aat);
   AliAnalysisTaskHOCFA& operator=(const AliAnalysisTaskHOCFA& aat);
-  TClonesArray *fInputList; // List of selected tracks.
-  Int_t fDebugLevel;  // Choose the quantity of terminal outputs for debugging.
-  TList *fMainList; // Main TList where all results for this analysis are saved.
-  TList *fCentralityList[16]; //! TLists for the results per each centrality bin.
+  TClonesArray *fInputList;     // List of selected tracks.
+  int fDebugLevel;              // Select how much is printed in the terminal.
+  TList *fMainList;             // Main list for all the results.
+  TList *fCentralityList[16];   //! Results per each centrality bin.
 
-  Int_t fNCentralityBins; //! Number of centrality bins in the division (Size(array)-1).
-  Float_t fCentralityArray[17]; //! Edges for the centrality division (0-80% with 5% width).
-  Float_t fCentrality;  // Centrality of the current event.
-  Int_t fCentralityBin; //! Corresponding centrality bin.
+  int fNCentralityBins;         //! Number of centrality bins (Size(array)-1).
+  float fCentralityArray[17];   //! Edges for the centrality division.
+    // (0-80% with 5% width).
+  float fCentrality;            // Centrality of the current event.
+  int fCentralityBin;           //! Corresponding centrality bin.
 
-  Long64_t fMultiplicity; //! Multiplicity of the event after full selection.
-  Int_t fMultiplicityMin; // Minimum multiplicity to calculate the correlators.
-  Bool_t fUseWeightsNUE; // kTrue: Enable the non-unit NUE corrections.
-  Bool_t fUseWeightsNUA; // kTrue: Enable the non-unit NUA corrections.
-  Int_t fNCombi;  // Number of combinations of harmonics (max 6).
-  Int_t fHarmoArray[6][3];  // Combinations of harmonics for the SCs/ACs.
+  Long64_t fMultiplicity;       //! Multiplicity after full selection.
+  int fMultiplicityMin;         // Minimum multiplicity to have valid events.
+  double fPtMin;                // Minimum transverse momentum.
+  double fPtMax;                // Maximum transverse momentum.
+  bool fUseWeightsNUE;          // kTRUE: Enable the non-unit NUE corrections.
+  bool fUseWeightsNUA;          // kTRUE: Enable the non-unit NUA corrections.
+  bool fGetSC3h;                // kTRUE: Calculate SC(k,l,m), else AC(m,n).
+  int fNCombi;                  // Number of combinations of harmonics (max 6).
+  int fHarmoArray[6][3];        // Combinations of harmonics for the CFA.
     // 6: max number of possible observables, 3: number of harmonics.
-  Int_t fPowers[15][3]; // List of terms by their power.
+  int fPowers[15][3];           // List of terms by their power.
     // 15 terms, 3 harmonics.
-  TComplex fQvectors[81][11]; // Needed combinations of Q-vectors.
+  TComplex fQvectors[81][11];   // Needed combinations of Q-vectors.
     // Size: [(v8*10part)+1][10part+1].
 
-  TH1F *fHistoCent[16]; //! Centrality distribution of the trimmed tracks.
-  TH1I *fHistoMulti[16];  //! Multiplicity distribution of the trimmed tracks.
-  TH1D *fHistoPt[16]; //! pT distribution of the trimmed tracks.
-  TH1D *fHistoEta[16];  //! eta distribution of the trimmed tracks.
-  TH1D *fHistoPhi[16];  //! phi distribution of the trimmed tracks.
-  TH1I *fHistoCharge[16]; //! Charge distribution of the trimmed tracks.
-  TProfile *fCorrelTerms[6][16];  //! Combinations of correlators for SCs/ACs.
+  TProfile *fHistoConfig;       //! Configuration of the analysis.
+  TH1F *fHistoCent[16];         //! Centrality distribution of trimmed tracks.
+  TH1I *fHistoMulti[16];        //! Multiplicity of the trimmed tracks.
+  TH1D *fHistoPt[16];           //! pT distribution of the trimmed tracks.
+  TH1D *fHistoEta[16];          //! eta distribution of the trimmed tracks.
+  TH1D *fHistoPhi[16];          //! phi distribution of the trimmed tracks.
+  TH1I *fHistoCharge[16];       //! Charge distribution of the trimmed tracks.
+  TProfile *fCorrelTerms[6][16];      //! Combinations of correlators for CFA.
     // 6: Max number of SCs/ACs, 16: Max number of centrality bins.
-  TProfile *fErrorTerms[6][16]; //! Terms for the error propagation for NSC(k,l,m).
+  TProfile *fErrorTermsSC3h[6][16];   //! Error propagation (SC(k,l,m).
+  TProfile *fErrorTermsAC41[6][16];   //! Error propagation (AC_41(m,n)).
 
-  ClassDef(AliAnalysisTaskHOCFA, 3);
+  ClassDef(AliAnalysisTaskHOCFA, 4);
 };
 
 #endif
