@@ -1461,9 +1461,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                          32c51070a
     //                                                                  |
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070f","0103103100000000","0453503000000000"); // INT7, Ch.Pi<650MeV
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070l","0103103100000000","0453503000000000"); // INT7, Ch.Pi<520MeV
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070k","0103103100000000","0453503000000000"); // INT7, Ch.Pi<480MeV
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070j","0103103100000000","0453503000000000"); // INT7, Ch.Pi<460MeV
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070m","0103103100000000","0453503000000000"); // INT7, Ch.Pi<1000MeV
     //-----
     //INT7: Neutral Meson (Pi0) Cut Variations
     //-----
@@ -1626,9 +1625,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                          32c51070a
     //                                                                  |
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070f","01031v3100000000","0453503000000000"); // EG2, Ch.Pi<650MeV
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070l","01031v3100000000","0453503000000000"); // EG2, Ch.Pi<520MeV
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070k","01031v3100000000","0453503000000000"); // EG2, Ch.Pi<480MeV
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070j","01031v3100000000","0453503000000000"); // EG2, Ch.Pi<460MeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070m","01031v3100000000","0453503000000000"); // EG2, Ch.Pi<1000MeV
     //-----
     //EG2: Neutral Meson (Pi0) Cut Variations
     //-----
@@ -1798,9 +1796,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                          32c51070a
     //                                                                  |
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070f","01031v3100000000","0453503000000000"); // EG1, Ch.Pi<650MeV
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070l","01031v3100000000","0453503000000000"); // EG1, Ch.Pi<520MeV
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070k","01031v3100000000","0453503000000000"); // EG1, Ch.Pi<480MeV
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070j","01031v3100000000","0453503000000000"); // EG1, Ch.Pi<460MeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070m","01031v3100000000","0453503000000000"); // EG1, Ch.Pi<1000MeV
     //-----
     //EG1: Neutral Meson (Pi0) Cut Variations
     //-----
