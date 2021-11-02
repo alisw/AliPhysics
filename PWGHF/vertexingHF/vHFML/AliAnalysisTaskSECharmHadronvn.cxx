@@ -95,6 +95,7 @@ AliAnalysisTaskSE(),
     fEnableDownsamplqn(false),
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
+    fMultiClass(false),
     fConfigPath(""),
     fMLResponse(nullptr)
 {
@@ -148,6 +149,7 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fEnableDownsamplqn(false),
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
+    fMultiClass(false),
     fConfigPath(""),
     fMLResponse(nullptr)
 {
@@ -979,7 +981,7 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
             fHistMassPtPhiqnCentr->Fill(var4nSparse.data());
             break;
         }
-        else if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
+        if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
         {
             var4nSparse = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
             var4nSparse.insert(var4nSparse.end(), scoresSecond.begin(), scoresSecond.end());
