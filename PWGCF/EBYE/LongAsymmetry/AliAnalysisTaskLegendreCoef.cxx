@@ -194,9 +194,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
         return;
       }
-      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
-      isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(-1, mcHeader, stack);
-      if(isParticleFromOutOfBunchPileUpEvent) return;
+        Bool_t isPileupInGeneratedEvent = kFALSE;
+        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+        if(isPileupInGeneratedEvent) return;
     }
     
     for (Int_t i(0); i < nMCTracks; i++) {
@@ -361,6 +361,10 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   char histname[50];
   double intb = background->Integral();
 
+  //normalizing signal hist 
+  signal->Divide(background);
+  //printf("signal before scale to 16/signal normal is %f\n",signal->Integral());
+
   for (int s=0; s<5; s++){//5 random histograms
     n = sprintf (histname, "RanHist%i", s+1);
     RanHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
@@ -378,16 +382,11 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
       RanHist[s]->Fill(ran->Uniform(-fEta,fEta));
       RanDistHist[s]->Fill(background->GetRandom());
     }
-    RanHist[s]->Scale(16.0/(double)intb);
-    RanDistHist[s]->Divide(background);
-    //printf("ranhist normal is %f\n",RanHist[s]->Integral());
-    //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+    RanHist[s]->Scale(signal->Integral()/(double)ntracks);
+    RanDistHist[s]->Divide(background); 
+    // printf("ranhist normal is %f\n",RanHist[s]->Integral());
+    // printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
   }
-
-  //normalizing signal hist
-  signal->Divide(background);
-  //printf("signal before scale to 16/signal normal is %f\n",signal->Integral());
-
 
   //calculating the an coefficients  
   n = sprintf (histname, "a1%s", type);
