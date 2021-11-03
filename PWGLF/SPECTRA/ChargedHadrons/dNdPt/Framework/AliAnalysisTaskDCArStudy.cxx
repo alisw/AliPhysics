@@ -177,7 +177,7 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
         if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
             fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
 
-            N.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCParticle->Particle()));
+            fHistSecWeights.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCParticle->Particle()));
 
         }
         fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
