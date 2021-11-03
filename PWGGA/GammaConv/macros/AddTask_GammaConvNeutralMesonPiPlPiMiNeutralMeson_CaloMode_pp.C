@@ -1406,14 +1406,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30230000","32c51070a","0103103100000000","0453503000000000"); // INT7 M02 0.5
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30210000","32c51070a","0103103100000000","0453503000000000"); // INT7 M02 1.0
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe302k0000","32c51070a","0103103100000000","0453503000000000"); // INT7 M02 E dep
-  } else if(trainConfig == 2106)  { //EMCal + DCal INT7, Calo cut var. TM, Std f
+  } else if(trainConfig == 2106)  { //EMCal + DCal INT7, Calo cut var. TM, Std f,
+    //  [1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2]; Eta (0.04, 0.010, 2.5); Phi (0.09, 0.015, 2.); EoverP 1.75
     //                                    411790109fe30220000
     //                                             |
-    cuts.AddCutHeavyMesonCalo("00010113","411790109ee30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var
-    cuts.AddCutHeavyMesonCalo("00010113","411790109ge30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var
-    cuts.AddCutHeavyMesonCalo("00010113","411790109he30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var
-    cuts.AddCutHeavyMesonCalo("00010113","4117901097e30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var
-    cuts.AddCutHeavyMesonCalo("00010113","4117901090e30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var, no TM
+    cuts.AddCutHeavyMesonCalo("00010113","411790109ee30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var EoverP 2.00
+    cuts.AddCutHeavyMesonCalo("00010113","411790109ge30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var EoverP 1.5
+    cuts.AddCutHeavyMesonCalo("00010113","4117901097e30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var no EoverP
+    cuts.AddCutHeavyMesonCalo("00010113","411790109ne30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var, Eta (0.035, 0.010, 2.5); Phi (0.085, 0.015, 2.)
+    cuts.AddCutHeavyMesonCalo("00010113","411790109oe30220000","32c51070a","0103103100000000","0453503000000000"); // INT7 TM var, Eta (0.045, 0.010, 2.5); Phi (0.095, 0.015, 2.)
   } else if(trainConfig == 2107)  { //EMCal + DCal INT7, Calo cut var. Exotics, Std e, active F+ < 0.97
     //                                    411790109fe30220000
     //                                              |
@@ -1570,14 +1571,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30230000","32c51070a","01031v3100000000","0453503000000000"); // EG2 M02 0.5
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30210000","32c51070a","01031v3100000000","0453503000000000"); // EG2 M02 1.0
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe302k0000","32c51070a","01031v3100000000","0453503000000000"); // EG2 M02 E dep
-  } else if(trainConfig == 3106)  { //EMCal + DCal EG2, Calo cut var. TM, Std f
+  } else if(trainConfig == 3106)  { //EMCal + DCal EG2, Calo cut var. TM, Std f,
+    //  [1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2]; Eta (0.04, 0.010, 2.5); Phi (0.09, 0.015, 2.); EoverP 1.75
     //                                    411790109fe30220000
     //                                             |
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109ee30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109ge30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109he30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var
-    cuts.AddCutHeavyMesonCalo("0008e113","4117901097e30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var
-    cuts.AddCutHeavyMesonCalo("0008e113","4117901090e30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var, no TM
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109ee30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var EoverP 2.00
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109ge30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var EoverP 1.5
+    cuts.AddCutHeavyMesonCalo("0008e113","4117901097e30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var no EoverP
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109ne30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var, Eta (0.035, 0.010, 2.5); Phi (0.085, 0.015, 2.)
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109oe30220000","32c51070a","01031v3100000000","0453503000000000"); // EG2 TM var, Eta (0.045, 0.010, 2.5); Phi (0.095, 0.015, 2.)
   } else if(trainConfig == 3107)  { //EMCal + DCal EG2, Calo cut var. Exotics, Std e, active F+ < 0.97
     //                                    411790109fe30220000
     //                                              |
@@ -1741,14 +1743,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30230000","32c51070a","01031v3100000000","0453503000000000"); // EG1 M02 0.5
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30210000","32c51070a","01031v3100000000","0453503000000000"); // EG1 M02 1.0
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe302k0000","32c51070a","01031v3100000000","0453503000000000"); // EG1 M02 E dep
-  } else if(trainConfig == 4106)  { //EMCal + DCal EG1, Calo cut var. TM, Std f
+  } else if(trainConfig == 4106)  { //EMCal + DCal EG1, Calo cut var. TM, Std f,
+    //  [1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2]; Eta (0.04, 0.010, 2.5); Phi (0.09, 0.015, 2.); EoverP 1.75
     //                                    411790109fe30220000
     //                                             |
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109ee30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109ge30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109he30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var
-    cuts.AddCutHeavyMesonCalo("0008d113","4117901097e30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var
-    cuts.AddCutHeavyMesonCalo("0008d113","4117901090e30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var, no TM
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109ee30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var EoverP 2.00
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109ge30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var EoverP 1.50
+    cuts.AddCutHeavyMesonCalo("0008d113","4117901097e30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var no EoverP
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109ne30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var, Eta (0.035, 0.010, 2.5); Phi (0.085, 0.015, 2.)
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109oe30220000","32c51070a","01031v3100000000","0453503000000000"); // EG1 TM var, Eta (0.045, 0.010, 2.5); Phi (0.095, 0.015, 2.)
   } else if(trainConfig == 4107)  { //EMCal + DCal EG1, Calo cut var. Exotics, Std e, active F+ < 0.97
     //                                    411790109fe30220000
     //                                              |
