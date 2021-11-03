@@ -93,6 +93,8 @@ fTree_Omegac0_QA(0),
 fVar_Omegac0_QA(0),
 fTree_Omegac0MCGen(0),
 fVar_Omegac0MCGen(0),
+fTree_Electron(0),
+fVar_Electron(0),
 fListCuts(0),
 fUseMCInfo(kFALSE),
 fCounter(0),
@@ -104,7 +106,8 @@ fHistoElectronTPCPIDSelTOF(0),
 fHistoMassConversions(0),
 fWriteOmegac0Tree(kFALSE),
 fWriteOmegac0QATree(kFALSE),
-fWriteOmegac0MCGenTree(kFALSE)
+fWriteOmegac0MCGenTree(kFALSE),
+fWriteElectronTree(kFALSE)
 
 {
  //
@@ -129,6 +132,8 @@ fTree_Omegac0_QA(0),
 fVar_Omegac0_QA(0),
 fTree_Omegac0MCGen(0),
 fVar_Omegac0MCGen(0),
+fTree_Electron(0),
+fVar_Electron(0),
 fListCuts(0),
 fUseMCInfo(kFALSE),
 fCounter(0),
@@ -140,7 +145,8 @@ fHistoElectronTPCPIDSelTOF(0),
 fHistoMassConversions(0),
 fWriteOmegac0Tree(kFALSE),
 fWriteOmegac0QATree(kFALSE),
-fWriteOmegac0MCGenTree(kFALSE)
+fWriteOmegac0MCGenTree(kFALSE),
+fWriteElectronTree(kFALSE)
 
 {
     //
@@ -155,6 +161,7 @@ fWriteOmegac0MCGenTree(kFALSE)
     DefineOutput(5, TTree::Class()); //Omegac0
     DefineOutput(6, TTree::Class()); //Omegac0 MC Gen
     DefineOutput(7, TTree::Class()); //Omegac0 QA Tree
+    DefineOutput(8, TTree::Class()); //Electron Tree
 
 }
 //------------------------------------------------------------------------------------------------
@@ -221,6 +228,16 @@ AliAnalysisTaskSESemileptonicOmegac0KFP :: ~ AliAnalysisTaskSESemileptonicOmegac
         delete fVar_Omegac0_QA;
         fVar_Omegac0_QA = 0;
     }
+    
+    if (fTree_Electron){
+        delete fTree_Electron;
+        fTree_Electron = 0;
+    }
+    
+    if(fVar_Electron){
+        delete fVar_Electron;
+        fVar_Electron = 0;
+    }
    
 }
 
@@ -272,6 +289,10 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: UserCreateOutputObjects()
     
     DefineTreeRecoOmegac0_QA();
     PostData(7,fTree_Omegac0_QA); // used for QA check
+    
+    DefineTreeElectron();
+    PostData(8, fTree_Electron);
+    
     
     return;
     
@@ -431,6 +452,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: UserExec(Option_t *)
     PostData(5, fTree_Omegac0); // used for Reco. level
     PostData(6, fTree_Omegac0MCGen); // used for Gen. level
     PostData(7, fTree_Omegac0_QA); // used for QA check
+    PostData(8, fTree_Electron); // used for electron
 
     return;
     
@@ -588,7 +610,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: SelectTrack(const AliVEvent *eve
             Ele_TPCPIDSelCombinedTPCTOF[1] = aodt->Pt();
             Ele_TPCPIDSelCombinedTPCTOF[2] = nsigma_tpcele;
             
-            fHistoElectronTPCPIDSelTOF -> Fill(Ele_TPCPIDSelCombinedTPCTOF);
+        //    fHistoElectronTPCPIDSelTOF -> Fill(Ele_TPCPIDSelCombinedTPCTOF);
     
         }
         
@@ -604,7 +626,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: SelectTrack(const AliVEvent *eve
             ElePID_TPC_TOF[2] = nsigma_tofele;
             ElePID_TPC_TOF[3] = aodt->Pt();
             
-            fHistoElectronTPCTOFSelPID -> Fill(ElePID_TPC_TOF);
+       //     fHistoElectronTPCTOFSelPID -> Fill(ElePID_TPC_TOF);
            
       }
     } // end loop on tracks
@@ -732,7 +754,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
     Bool_t  seleCascFlags[nCascs];
     Int_t   nSeleCasc=0;
     SelectCascade(aodEvent,nCascs,nSeleCasc,seleCascFlags,mcArray);
-    
+  
+    /*
     Double_t mass; Double_t mass_ss; Double_t nSigmaCombined_Ele;
     for(Int_t itrk =0; itrk<nTracks; itrk++){
         if(!seleTrkFlags[itrk]) continue;
@@ -751,8 +774,18 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
        
         
     } // nTracks: e+/e-
-        
-    //--------------------- Omega candidates ------------------------------------
+    */
+    
+    for(Int_t itrk =0; itrk<nTracks; itrk++){
+        AliAODTrack *trk = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
+        if(!trk->TestFilterMask(BIT(fAnalCuts->GetProdAODFilterBit()))) continue;
+        Double_t covtest[21];
+        if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !AliVertexingHFUtils::CheckAODtrackCov(trk)) continue;
+       
+        FillTreeElectron(trk, aodEvent, mcArray);
+    } // nTracks
+    
+            //--------------------- Omega candidates ------------------------------------
  
     for(Int_t iCasc =0; iCasc<nCascs; iCasc++){
         // cascade cut
@@ -1452,6 +1485,54 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP::FillEventROOTObjects()
 
 }  // FillEventROOTObjects
 //------------------------------------------------------------------------------------------------
+void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *trk, AliAODEvent *aodEvent, TClonesArray *mcArray )
+{
+    if (!trk) return;
+  
+    for (Int_t i = 0; i<10; i++){
+        fVar_Electron[i] = -9999.;
+    }
+ 
+    AliAODTrack *aodt = (AliAODTrack*)trk;
+    AliAODTrack *aodtpid = 0;
+    if(fAnalCuts->GetProdAODFilterBit()==4){
+        aodtpid = aodt;
+    }
+    
+    Double_t nsigma_tpcele = -9999.;
+    Double_t nsigma_tofele = -9999.;
+    Double_t nsigma_combinedtoftpcele = -9999.;
+    
+    if(fAnalCuts->GetIsUsePID()){
+        nsigma_tpcele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(aodtpid,AliPID::kElectron);
+        nsigma_tofele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(aodtpid,AliPID::kElectron);
+        nsigma_combinedtoftpcele = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigma_tpcele, nsigma_tofele);
+    }
+
+    Bool_t TrkWoPID = fAnalCuts->SingleTrkCutsNoPID(aodt,aodtpid,fpVtx);
+    Bool_t TrkWithPID = fAnalCuts->SingleTrkCuts(aodt,aodtpid,fpVtx);
+    
+    fVar_Electron[0] = aodt -> Charge();
+    fVar_Electron[1] = nsigma_tpcele;
+    fVar_Electron[2] = nsigma_tofele;
+    fVar_Electron[3] = nsigma_combinedtoftpcele;
+    fVar_Electron[4] = (Int_t)TrkWoPID;
+    fVar_Electron[5] = (Int_t)TrkWithPID;
+    fVar_Electron[6] = aodt->Pt();
+    
+    Double_t mass; Double_t mass_ss;
+    Bool_t Convee_LS =  (PrefilterElectronLS(aodt, aodEvent, mass_ss));
+    Bool_t Convee_ULS = (PrefilterElectronULS(aodt, aodEvent, mass));
+    
+    fVar_Electron[7] = mass_ss;
+    fVar_Electron[8] = mass;
+    fVar_Electron[9] = (Int_t) Convee_ULS + 2 *  (Int_t)Convee_LS;
+    
+    if(fWriteElectronTree)
+        fTree_Electron -> Fill();
+    
+} // FillTreeElectron
+//------------------------------------------------------------------------------------------------
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m,  KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
@@ -1755,6 +1836,33 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineEvent()
     return;
 
 }  // DefineEvent()
+//____________________________________________________________________________
+void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeElectron()
+{
+  // This is to define the electron variables
+    const char* nameoutput = GetOutputSlot(8)->GetContainer()->GetName();
+    fTree_Electron = new TTree(nameoutput, "Electron variables tree");
+    Int_t nVar = 10;
+    fVar_Electron = new Float_t[nVar];
+    TString *fVarNames_Ele = new TString[nVar];
+
+    fVarNames_Ele[0] = "Ele_pdgcode";
+    fVarNames_Ele[1] = "nSigmaTPC_Ele";
+    fVarNames_Ele[2] = "nSigmaTOF_Ele";
+    fVarNames_Ele[3] = "nSigmaCombinedTOFTPC_Ele";
+    fVarNames_Ele[4] = "Select_NoPID";
+    fVarNames_Ele[5] = "Select_WithPID";
+    fVarNames_Ele[6] = "Ele_pT";
+    fVarNames_Ele[7] = "mass_ss_ee";
+    fVarNames_Ele[8] = "mass_ee";
+    fVarNames_Ele[9] = "ConvType";
+
+    for (Int_t ivar = 0; ivar<nVar ; ivar++){
+        fTree_Electron->Branch(fVarNames_Ele[ivar].Data(), &fVar_Electron[ivar], Form("%s/F", fVarNames_Ele[ivar].Data()));
+    }
+
+    return;
+} // DefineTreeElectron
 //____________________________________________________________________________
 void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
 {
