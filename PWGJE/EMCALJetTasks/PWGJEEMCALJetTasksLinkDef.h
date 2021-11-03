@@ -108,6 +108,7 @@
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskIDFragmentationFunction+;
 #pragma link C++ class AliHelperClassFastSimulation+;
+#pragma link C++ class AliJEQnVectorHandler;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
 #pragma link C++ class AliAnalysisTaskJetShapeBase+;
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
@@ -275,6 +276,7 @@
 #pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskCheckDeadCone+;
+#pragma link C++ class AliAnalysisTaskJetQnVectors+;
 #pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ class AliAnalysisTaskJetCharge+;
