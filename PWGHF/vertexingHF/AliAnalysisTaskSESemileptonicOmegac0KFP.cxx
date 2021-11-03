@@ -1846,7 +1846,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeElectron()
     fVar_Electron = new Float_t[nVar];
     TString *fVarNames_Ele = new TString[nVar];
 
-    fVarNames_Ele[0] = "Ele_pdgcode";
+    fVarNames_Ele[0] = "Ele_Charge";
     fVarNames_Ele[1] = "nSigmaTPC_Ele";
     fVarNames_Ele[2] = "nSigmaTOF_Ele";
     fVarNames_Ele[3] = "nSigmaCombinedTOFTPC_Ele";
