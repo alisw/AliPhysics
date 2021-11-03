@@ -15,6 +15,7 @@
 #include "TMath.h"
 #include "THnSparse.h"
 #include "TString.h"
+#include "TRandom.h"
 #include <vector>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -60,10 +61,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
+        void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
         void                    SetAnaType(AnaType type) { fAnalType = type; }
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void                    SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
+        void                    SetFMDacceptanceCut(Double_t cut) { fFMDacceptanceCut = cut; }
 
 
     private:
@@ -124,14 +127,17 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   fNofTracks;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
+        Int_t                   fNOfSamples; //[1]
+        Int_t                   fSampleIndex; //[0]
         Double_t                fPtMinTrig;
         Double_t                fPtMaxTrig;
         Double_t                fPtMinAss;
         Double_t                fPtMaxAss;
-        Double_t                fFMDcutapar0;
-        Double_t                fFMDcutapar1;
-        Double_t                fFMDcutcpar0;
-        Double_t                fFMDcutcpar1;
+        Double_t                fFMDcutapar0; // [1.64755]
+        Double_t                fFMDcutapar1; // [119.602]
+        Double_t                fFMDcutcpar0; // [2.73426]
+        Double_t                fFMDcutcpar1;  // [150.31]
+        Double_t                fFMDacceptanceCut; // [1.8]
         std::vector<Double_t>   fPtBinsTrigCharged;
         std::vector<Double_t>   fPtBinsAss;
         Double_t                fCentMin;
@@ -152,7 +158,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 2);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 3);
 };
 
 #endif
