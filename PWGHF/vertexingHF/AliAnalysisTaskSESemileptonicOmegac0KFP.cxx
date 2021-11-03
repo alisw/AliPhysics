@@ -1455,7 +1455,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP::FillEventROOTObjects()
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m,  KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 39 ; i++){
+    for (Int_t i=0; i< 40 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -1636,9 +1636,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     Float_t mass_OmegaMinus_PV, err_mass_OmegaMinus_PV;
     kfpOmegaMinus_PV.GetMass(mass_OmegaMinus_PV, err_mass_OmegaMinus_PV);
     fVar_Omegac0[36] = mass_OmegaMinus_PV;
-    
-    fVar_Omegac0[37] = nSigmaTOF_EleFromOmegac0;
-    fVar_Omegac0[38] = nSigmaTPC_EleFromOmegac0;
+    fVar_Omegac0[37] = casc -> MassOmega();
+    fVar_Omegac0[38] = nSigmaTOF_EleFromOmegac0;
+    fVar_Omegac0[39] = nSigmaTPC_EleFromOmegac0;
     
     
     if (fWriteOmegac0Tree)
@@ -1763,7 +1763,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 39;
+    Int_t nVar = 40;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -1804,8 +1804,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[34] = "DecayType";  // flags for WS and RS of EleOmega_pairs
     fVarNames[35] = "Omega_MassConst"; // Omega with mass const
     fVarNames[36] = "Omega_MassWithTopo_2Constraints"; // Omega with mass and topological 2 constraints
-    fVarNames[37] = "nSigmaTOF_Ele";
-    fVarNames[38] = "nSigmaTPC_Ele";
+    fVarNames[37] = "Mass_Omega_Casc"; //
+    fVarNames[38] = "nSigmaTOF_Ele";
+    fVarNames[39] = "nSigmaTPC_Ele";
     
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
