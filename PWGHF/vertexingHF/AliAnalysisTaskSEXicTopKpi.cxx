@@ -215,6 +215,13 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fnKaon(999)
   ,fnPion(999)
   ,fRejEvWoutpKpi(kFALSE)
+  ,fUseMinPtSingleDaughter(kFALSE)
+  ,fMinPtProton(0.)
+  ,fMinPtKaon(0.)
+  ,fMinPtPion(0.)
+  ,fHistoPtSelProton(0x0)
+  ,fHistoPtSelKaon(0x0)
+  ,fHistoPtSelPion(0x0)
 {
   /// Default constructor
 
@@ -348,6 +355,13 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fnKaon(999)
   ,fnPion(999)
   ,fRejEvWoutpKpi(kFALSE)
+  ,fUseMinPtSingleDaughter(kFALSE)
+  ,fMinPtProton(0.)
+  ,fMinPtKaon(0.)
+  ,fMinPtPion(0.)
+  ,fHistoPtSelProton(0x0)
+  ,fHistoPtSelKaon(0x0)
+  ,fHistoPtSelPion(0x0)
 {
   /// Default constructor
 
@@ -581,6 +595,13 @@ void AliAnalysisTaskSEXicTopKpi::Init()
   if(fSwitchOffTopCuts) printf("\t===> Topological selections not applied!\n");
   printf("\n\n##### fSwitchOffPIDafterFilt: %d\n",fSwitchOffPIDafterFilt);
   if(fSwitchOffTopCuts && fSwitchOffPIDafterFilt) printf("===> PID selections after filtering not applied!\n");
+
+  if(fUseMinPtSingleDaughter){
+    printf("\n\n===> Using minimum pT cut for Lc candidate daughters (independent selections for p, K, pi)\n");
+    printf("\t\tpt(proton)>%f\n",fMinPtProton);
+    printf("\t\tpt(kaon)>%f\n",fMinPtKaon);
+    printf("\t\tpt(pion)>%f\n",fMinPtPion);
+  }
 
   return;
 }
@@ -910,6 +931,11 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   // pT distribution of soft pion candidate tracks before SigmaC loop
   fPtSoftPionCand_insideScLoop = new TH1F("fPtSoftPionCand_insideScLoop","soft pion candidates inside SigmaC loop;#it{p}_{T} (GeV/#it{c});",1000,0,0.2);
 
+  // pt distribution of tracks flagged as candidate p, K, pi
+  fHistoPtSelProton = new TH1D("fHistoPtSelProton","flagged protons (track cuts + n#sigma PID);#it{p}_{T} (GeV/#it{c})",200,0,10);
+  fHistoPtSelKaon = new TH1D("fHistoPtSelKaon","flagged kaons (track cuts + n#sigma PID),#it{p}_{T} (GeV/#it{c})",200,0,10);
+  fHistoPtSelPion = new TH1D("fHistoPtSelPion","flagged pions (track cuts + n#sigma PID);#it{p}_{T} (GeV/#it{c})",200,0,10);
+
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
   fOutput->Add(fDist12All);
@@ -956,6 +982,9 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   if(fStudyScPeakMC)  fOutput->Add(fhsparseMC_ScPeak);
   fOutput->Add(fPtSoftPionCand);
   fOutput->Add(fPtSoftPionCand_insideScLoop);
+  fOutput->Add(fHistoPtSelProton);
+  fOutput->Add(fHistoPtSelKaon);
+  fOutput->Add(fHistoPtSelPion);
 
 
   // Post the data
@@ -3246,14 +3275,31 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     // PID SELECTION
     IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kTRUE);
     //    if(itrack%50==0)Printf("Track %d, pt: %f",itrack,track->Pt());
+
+    /// further cut on minimum track pt (useful if tighter than that in the cut object)
+    if(fUseMinPtSingleDaughter){
+      if(iSelProton>0 && track->Pt()<fMinPtProton)  iSelProton=-1;  // not passing the pt cut: reject it
+      if(iSelKaon>0 && track->Pt()<fMinPtKaon)  iSelKaon=-1;  // not passing the pt cut: reject it
+      if(iSelPion>0 && track->Pt()<fMinPtPion)  iSelPion=-1;  // not passing the pt cut: reject it
+    }
+
     ftrackSelStatusProton->AddAt(iSelProton,fnSel);
-    if(iSelProton>0)fhistMonitoring->Fill(7);
+    if(iSelProton>0){
+      fhistMonitoring->Fill(7);
+      fHistoPtSelProton->Fill(track->Pt());
+    }
     
     ftrackSelStatusKaon->AddAt(iSelKaon,fnSel);
-    if(iSelKaon>0)fhistMonitoring->Fill(6);
+    if(iSelKaon>0){
+      fhistMonitoring->Fill(6);
+      fHistoPtSelKaon->Fill(track->Pt());
+    }
     
     ftrackSelStatusPion->AddAt(iSelPion,fnSel);
-    if(iSelPion>0)fhistMonitoring->Fill(5);
+    if(iSelPion>0){
+      fhistMonitoring->Fill(5);
+      fHistoPtSelPion->Fill(track->Pt());
+    }
     
     fnSel++;
 
