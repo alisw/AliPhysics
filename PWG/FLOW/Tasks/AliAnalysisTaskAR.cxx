@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 28.10.2021
+ * Last Modified Date: 03.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -1105,8 +1105,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 
   // book histogram holding values of all track cuts
   fTrackCutsValues =
-      new TH1D(fTrackCutsValuesName, fTrackCutsValuesName,
-               2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
+      new TProfile(fTrackCutsValuesName, fTrackCutsValuesName,
+                   2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
   fTrackCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_ETRACK; ++bin) {
@@ -1208,8 +1208,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   //                                              cecxmax);
   // fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
   // book histogram holding values of all event cuts
-  fEventCutsValues = new TH1D(fEventCutsValuesName, fEventCutsValuesName,
-                              2 * LAST_EEVENT + 6, 0, 2 * LAST_EEVENT + 6);
+  fEventCutsValues = new TProfile(fEventCutsValuesName, fEventCutsValuesName,
+                                  2 * LAST_EEVENT + 6, 0, 2 * LAST_EEVENT + 6);
   fEventCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_EEVENT; ++bin) {
@@ -4057,7 +4057,7 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
         fTrackControlHistogramsList->FindObject(fTrackCutsCounterNames[mode]));
   }
 
-  fTrackCutsValues = dynamic_cast<TH1D *>(
+  fTrackCutsValues = dynamic_cast<TProfile *>(
       fTrackControlHistogramsList->FindObject(fTrackCutsValuesName));
 
   // fTrackCutsCounterCumulative = dynamic_cast<THnSparseD *>(
@@ -4095,7 +4095,7 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
         fEventControlHistogramsList->FindObject(fEventCutsCounterNames[mode]));
   }
 
-  fEventCutsValues = dynamic_cast<TH1D *>(
+  fEventCutsValues = dynamic_cast<TProfile *>(
       fEventControlHistogramsList->FindObject(fEventCutsValuesName));
 
   // fEventCutsCounterCumulative = dynamic_cast<THnSparseD *>(
