@@ -8,7 +8,7 @@
 #ifndef __AliMCSpectraWeights__
 #define __AliMCSpectraWeights__
 
-#define __AliMCSpectraWeights_DebugPCC__
+//#define __AliMCSpectraWeights_DebugPCC__
 //#define __AliMCSpectraWeights_DebugTiming__
 
 class TParticle;
