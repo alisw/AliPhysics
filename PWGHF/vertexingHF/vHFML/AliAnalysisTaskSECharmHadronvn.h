@@ -163,7 +163,7 @@ class AliAnalysisTaskSECharmHadronvn : public AliAnalysisTaskSE
 
     /// variables for ML application
     bool fApplyML;                          /// flag to enable ML application
-    bool fMultiClass = false;               /// flag to enable multi-class models (Bkg, Prompt, FD)
+    bool fMultiClass;                       /// flag to enable multi-class models (Bkg, Prompt, FD)
 
     TString fConfigPath;                    /// path to ML config file
     AliHFMLResponse* fMLResponse;           //!<! object to handle ML response
