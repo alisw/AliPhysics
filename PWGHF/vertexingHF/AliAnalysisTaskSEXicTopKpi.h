@@ -180,6 +180,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fMinPtPion = minPtPion;
   }
 
+  // avoid SigmaC analysis
+  void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
+
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -462,8 +465,11 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   TH1D* fHistoPtSelKaon; //!<!
   TH1D* fHistoPtSelPion; //!<!
 
+  // avoid SigmaC analysis
+  Bool_t fDisableSigmaCLoop; //
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,22); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,23); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

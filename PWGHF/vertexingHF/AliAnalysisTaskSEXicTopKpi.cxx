@@ -222,6 +222,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fHistoPtSelProton(0x0)
   ,fHistoPtSelKaon(0x0)
   ,fHistoPtSelPion(0x0)
+  ,fDisableSigmaCLoop(kFALSE)
 {
   /// Default constructor
 
@@ -362,6 +363,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fHistoPtSelProton(0x0)
   ,fHistoPtSelKaon(0x0)
   ,fHistoPtSelPion(0x0)
+  ,fDisableSigmaCLoop(kFALSE)
 {
   /// Default constructor
 
@@ -1886,7 +1888,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	}
 	
 	fhistMonitoring->Fill(10);
-	if((fAnalysisType==0 || fAnalysisType ==3)&&fSigmaCfromLcOnTheFly){
+	if((fAnalysisType==0 || fAnalysisType ==3)&&fSigmaCfromLcOnTheFly && (!fDisableSigmaCLoop)){
 	  if(!fReadMC){
 	    if(fExplore_PIDstdCuts)SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,arrayPIDpkpi,arrayPIDpikp,itrack1,itrack2,itrackThird);
 	    else SigmaCloop(io3Prong,aod,massHypothesis,mass1,mass2,point,resp_onlyPID,0x0,0x0,itrack1,itrack2,itrackThird);
