@@ -1427,16 +1427,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 2201)  { //EMCal + DCal INT7, Ch.Pi cut var. Ch.Pi ITS Requirement, Std 2 -> first or second SPD cluster required
     //                                                          32c51070a
     //                                                           |
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","30c51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi ITS, no SPD cluster requirement
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","31c51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi ITS, first SPD cluster required
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","34c51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 3
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","35c51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 4
   } else if(trainConfig == 2202)  { //EMCal + DCal INT7, Ch.Pi cut var. Ch.Pi Cls TPC, Std c -> MinClsTPC 80. + Refit
     //                                                          32c51070a
     //                                                            |
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32251070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 80. + no Refit
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32g51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 70. + Refit
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32h51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 100. + Refit
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32i51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 80. + Refit, 35% find. cls
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32j51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 80. + Refit, 60% find. cls
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32e51070a","0103103100000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 80. + Refit MaxSharedClsTPCFrac=0.
   } else if(trainConfig == 2203)  { //EMCal + DCal INT7, Ch.Pi cut var. Ch.Pi pT, Std 1 -> pt>0.1
     //                                                          32c51070a
     //                                                              |
@@ -1592,16 +1588,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 3201)  { //EMCal + DCal EG2, Ch.Pi cut var. Ch.Pi ITS Requirement, Std 2 -> first or second SPD cluster required
     //                                                          32c51070a
     //                                                           |
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","30c51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi ITS, no SPD cluster requirement
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","31c51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi ITS, first SPD cluster required
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","34c51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 3
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","35c51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 4
   } else if(trainConfig == 3202)  { //EMCal + DCal EG2, Ch.Pi cut var. Ch.Pi Cls TPC, Std c -> MinClsTPC 80. + Refit
     //                                                          32c51070a
     //                                                            |
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32251070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi, MinClsTPC 80. + no Refit
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32g51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi, MinClsTPC 70. + Refit
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32h51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi, MinClsTPC 100. + Refit
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32i51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi, MinClsTPC 80. + Refit, 35% find. cls
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32j51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi, MinClsTPC 80. + Refit, 60% find. cls
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32e51070a","01031v3100000000","0453503000000000"); // EG2, Ch.Pi, MinClsTPC 80. + Refit MaxSharedClsTPCFrac=0.
   } else if(trainConfig == 3203)  { //EMCal + DCal EG2, Ch.Pi cut var. Ch.Pi pT, Std 1 -> pt>0.1
     //                                                          32c51070a
     //                                                              |
@@ -1764,16 +1756,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   } else if(trainConfig == 4201)  { //EMCal + DCal EG1, Ch.Pi cut var. Ch.Pi ITS Requirement, Std 2 -> first or second SPD cluster required
     //                                                          32c51070a
     //                                                           |
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","30c51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi ITS, no SPD cluster requirement
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","31c51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi ITS, first SPD cluster required
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","34c51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 3
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","35c51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi ITS, ffirst or second SPD cluster required, min number of ITS clusters = 4
   } else if(trainConfig == 4202)  { //EMCal + DCal EG1, Ch.Pi cut var. Ch.Pi Cls TPC, Std c -> MinClsTPC 80. + Refit
     //                                                          32c51070a
     //                                                            |
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32251070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi, MinClsTPC 80. + no Refit
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32g51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi, MinClsTPC 70. + Refit
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32h51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi, MinClsTPC 100. + Refit
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32i51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi, MinClsTPC 80. + Refit, 35% find. cls
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32j51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi, MinClsTPC 80. + Refit, 60% find. cls
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32e51070a","01031v3100000000","0453503000000000"); // EG1, Ch.Pi, , MinClsTPC 80. + Refit MaxSharedClsTPCFrac=0.
   } else if(trainConfig == 4203)  { //EMCal + DCal EG1, Ch.Pi cut var. Ch.Pi pT, Std 1 -> pt>0.1
     //                                                          32c51070a
     //                                                              |
