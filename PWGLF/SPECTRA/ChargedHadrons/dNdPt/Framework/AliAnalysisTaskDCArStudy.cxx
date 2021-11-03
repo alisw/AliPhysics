@@ -105,7 +105,8 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     // 0=none, 1=weighted 2=weightedRandom, 3=weightSys,
     // 4=weightSysRandom
     //    Axis mcWeightAxis{"weight", "weight", {-0.5, 4.5}, 5};
-
+    Axis weightValues{"weight", "weight", {0.,5.}, 50};
+    Axis secLambdaKaon{"SecDecayType", "SecDecayType", {-1.5, 2.5}, 4};//0=lambda, 1=kaon, 2=other
 
     // ------
     // hists
@@ -127,6 +128,13 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCAPCC.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCAPCC.GenerateHist("fHistDCAPCC"));
     requiredMemory += fHistDCAPCC.GetSize();
+
+
+    fHistSecWeights.AddAxis(ptAxis);
+    fHistSecWeights.AddAxis(weightValues);
+    fHistSecWeights.AddAxis(secLambdaKaon);
+    fOutputList->Add(fHistSecWeights.GenerateHist("fHistSecWeights"));
+    requiredMemory += fHistSecWeights.GetSize();
 
     AliError(Form("Estimated memory usage of histograms: %.0f Bytes (%f MiB)",
                   requiredMemory, requiredMemory / 1048576));
@@ -168,9 +176,15 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
         }
         if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
             fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
+
+            N.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCParticle->Particle()));
+
         }
         fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
         fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
+
+
+
     }
 }
 

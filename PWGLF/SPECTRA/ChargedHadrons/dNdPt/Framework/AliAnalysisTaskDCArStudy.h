@@ -36,6 +36,7 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
     protected:
         Hist::Hist<THnF>        fHistDCA; //!<! hist for DCA distros
         Hist::Hist<THnF>        fHistDCAPCC; //!<! hist for DCA distros with PCC scaling
+        Hist::Hist<THnF>        fHistSecWeights;//!
         AliMCSpectraWeights*    fMCSpectraWeights; //!<! object to determine efficiency scaling
         
     private:
