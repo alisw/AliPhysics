@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.11.2021
+ * Last Modified Date: 04.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -689,7 +689,7 @@ private:
   std::map<std::vector<Int_t>, Int_t> fMapCorToIndex;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 18);
+  ClassDef(AliAnalysisTaskAR, 19);
 };
 
 #endif
