@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 03.11.2021
+ * Last Modified Date: 04.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -41,7 +41,6 @@
 #include <TRandom3.h>
 #include <TSystem.h>
 #include <algorithm>
-#include <boost/algorithm/string.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <numeric>
@@ -4170,7 +4169,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   }
 
   // initialize vectors
-  std::string name;
+  TString name;
   std::vector<Int_t> sc;
   fSymmetricCumulants.clear();
   fCorrelators.clear();
@@ -4178,12 +4177,12 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   // initalize vectors for computation of symmetric cumulants
   for (auto list : *fFinalResultSymmetricCumulantsList) {
     sc.clear();
-    name = std::string(list->GetName());
-    boost::erase_all(name, "SC(");
-    boost::erase_all(name, ")");
-    boost::erase_all(name, ",");
-    for (char c : name) {
-      sc.push_back(std::atoi(&c));
+    name = TString(list->GetName());
+    name.ReplaceAll("SC(", "");
+    name.ReplaceAll(")", "");
+    name.ReplaceAll(",", "");
+    for (int i = 0; i < name.Length(); i++) {
+      sc.push_back(std::atoi(&name[i]));
     }
     fSymmetricCumulants.push_back(sc);
   }
