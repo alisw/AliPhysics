@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.10.2021
+ * Last Modified Date: 03.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -41,6 +41,7 @@
 #include <TRandom3.h>
 #include <TSystem.h>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <numeric>
@@ -1104,8 +1105,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 
   // book histogram holding values of all track cuts
   fTrackCutsValues =
-      new TH1D(fTrackCutsValuesName, fTrackCutsValuesName,
-               2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
+      new TProfile(fTrackCutsValuesName, fTrackCutsValuesName,
+                   2 * LAST_ETRACK + AddBins, 0, 2 * LAST_ETRACK + AddBins);
   fTrackCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_ETRACK; ++bin) {
@@ -1207,8 +1208,8 @@ void AliAnalysisTaskAR::BookControlHistograms() {
   //                                              cecxmax);
   // fEventControlHistogramsList->Add(fEventCutsCounterCumulative);
   // book histogram holding values of all event cuts
-  fEventCutsValues = new TH1D(fEventCutsValuesName, fEventCutsValuesName,
-                              2 * LAST_EEVENT + 6, 0, 2 * LAST_EEVENT + 6);
+  fEventCutsValues = new TProfile(fEventCutsValuesName, fEventCutsValuesName,
+                                  2 * LAST_EEVENT + 6, 0, 2 * LAST_EEVENT + 6);
   fEventCutsValues->SetFillColor(kFillColor[kAFTER]);
 
   for (int bin = 0; bin < LAST_EEVENT; ++bin) {
@@ -4056,7 +4057,7 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
         fTrackControlHistogramsList->FindObject(fTrackCutsCounterNames[mode]));
   }
 
-  fTrackCutsValues = dynamic_cast<TH1D *>(
+  fTrackCutsValues = dynamic_cast<TProfile *>(
       fTrackControlHistogramsList->FindObject(fTrackCutsValuesName));
 
   // fTrackCutsCounterCumulative = dynamic_cast<THnSparseD *>(
@@ -4094,7 +4095,7 @@ void AliAnalysisTaskAR::GetPointersForControlHistograms() {
         fEventControlHistogramsList->FindObject(fEventCutsCounterNames[mode]));
   }
 
-  fEventCutsValues = dynamic_cast<TH1D *>(
+  fEventCutsValues = dynamic_cast<TProfile *>(
       fEventControlHistogramsList->FindObject(fEventCutsValuesName));
 
   // fEventCutsCounterCumulative = dynamic_cast<THnSparseD *>(
@@ -4150,12 +4151,57 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
     }
   }
 
-  // get pointers for fFinalResultProfilesList
+  // get pointers for fFinalResultCorrelatorsList
   fFinalResultCorrelatorsList = dynamic_cast<TList *>(
       fFinalResultsList->FindObject(fFinalResultCorrelatorsListName));
   if (!fFinalResultCorrelatorsList) {
     std::cout << __LINE__ << ": Did not get " << fFinalResultCorrelatorsListName
               << std::endl;
     Fatal("GetPointersForFinalResults", "Invalid Pointer");
+  }
+
+  // get pointers for fFinalResultCorrelatorsList
+  fFinalResultSymmetricCumulantsList = dynamic_cast<TList *>(
+      fFinalResultsList->FindObject(fFinalResultSymmetricCumulantsListName));
+  if (!fFinalResultSymmetricCumulantsList) {
+    std::cout << __LINE__ << ": Did not get "
+              << fFinalResultSymmetricCumulantsListName << std::endl;
+    Fatal("GetPointersForFinalResults", "Invalid Pointer");
+  }
+
+  // initialize vectors
+  std::string name;
+  std::vector<Int_t> sc;
+  fSymmetricCumulants.clear();
+  fCorrelators.clear();
+  fMapSCtoCor.clear();
+  // initalize vectors for computation of symmetric cumulants
+  for (auto list : *fFinalResultSymmetricCumulantsList) {
+    sc.clear();
+    name = std::string(list->GetName());
+    boost::erase_all(name, "SC(");
+    boost::erase_all(name, ")");
+    boost::erase_all(name, ",");
+    for (char c : name) {
+      sc.push_back(std::atoi(&c));
+    }
+    fSymmetricCumulants.push_back(sc);
+  }
+
+  Int_t Index = 0;
+  std::vector<std::vector<Int_t>> correlators;
+  for (std::size_t j = 0; j < fSymmetricCumulants.size(); j++) {
+    correlators = MapSCToCor(fSymmetricCumulants.at(j));
+    fMapSCtoCor.insert({fSymmetricCumulants.at(j), correlators});
+    for (auto cor : correlators) {
+      if (std::find(fCorrelators.begin(), fCorrelators.end(), cor) !=
+          fCorrelators.end()) {
+        continue;
+      } else {
+        fCorrelators.push_back(cor);
+        fMapCorToIndex.insert({cor, Index});
+        Index++;
+      }
+    }
   }
 }

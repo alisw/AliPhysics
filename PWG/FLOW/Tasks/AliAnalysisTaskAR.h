@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.10.2021
+ * Last Modified Date: 03.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -608,7 +608,7 @@ private:
   TString fTrackCutsCounterCumulativeName;
   // THnSparseD *fTrackCutsCounterCumulative;
   TString fTrackCutsValuesName;
-  TH1D *fTrackCutsValues;
+  TProfile *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
@@ -617,7 +617,7 @@ private:
   TString fEventCutsCounterCumulativeName;
   // THnSparseD *fEventCutsCounterCumulative;
   TString fEventCutsValuesName;
-  TH1D *fEventCutsValues;
+  TProfile *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
