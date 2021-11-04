@@ -412,8 +412,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
 {
 // Compute all the terms needed for the ACs/SCs for all the observables.
   if (fDebugLevel > 5) {printf("Compute all the needed correlators.\n");}
-  int nTerms = 9;    // Number of terms in the CFA (9 for AC(m,n).)
-  if (fGetSC3h) {nTerms = 7;}
+  const int nTerms = 9;    // Number of terms in the CFA (9 for AC(m,n).)
   int nHarmos = 3;    // Total number of harmonics in an observable.
   //if (fGetSC3h) {nHarmos = 3;}
   //Int_t powers[nTerms][nHarmos] = { {2,0,0}, {0,2,0}, {0,0,2}, {4,0,0}, {2,2,0}, {2,0,2}, {0,2,2}, {2,2,2}, {4,2,0}, {4,0,2}, {6,0,0}, {4,2,2}, {6,2,0}, {8,0,0}, {8,2,0} };
@@ -470,20 +469,20 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
     if (fDebugLevel > 5) {printf("Fill the output arrays.\n");}
     // Fill the output array and profiles (always for non-normalised.)
     // The lists for 'normalised' contain permutations of the same elements.
-    int outputSize = 54;
-    if (fGetSC3h) {outputSize = 35;}
+    const int outputSize = 54;
     double outputArray[outputSize] = {0.};
     double outputWeights[outputSize] = {0.};
 
+    int last_element_nTerm = (fGetSC3h) ? 7 : nTerms;
     int nOut = nTerms;
-    for (int iOut = 0; iOut < nTerms; iOut++) {
+    for (int iOut = 0; iOut < last_element_nTerm; iOut++) {
       // Fill the nTerms first elements.
       outputArray[iOut] = inputArray[iOut];
       outputWeights[iOut] = inputWeights[iOut];
     }
-    for (int iOut = 0; iOut < nTerms; iOut++) {
+    for (int iOut = 0; iOut < last_element_nTerm; iOut++) {
       // Fill the combinations of single-event correlators.
-      for (int jOut = iOut; jOut < nTerms; jOut++) {
+      for (int jOut = iOut; jOut < last_element_nTerm; jOut++) {
         outputArray[nOut] = inputArray[iOut]*inputArray[jOut];
         outputWeights[nOut] = inputWeights[iOut]*inputWeights[jOut];
         nOut++;
@@ -491,7 +490,8 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
     }
 
     if (fDebugLevel > 5) {printf("Fill the output profiles.\n");}
-    for (int iO = 0; iO < outputSize; iO++) {
+    int last_element_output = (fGetSC3h) ? 35 : outputSize;
+    for (int iO = 0; iO < last_element_output; iO++) {
       if (fGetSC3h) {
         fErrorTermsSC3h[iCombi][fCentralityBin]->Fill((float)iO + 0.5, outputArray[iO], outputWeights[iO]);
         fErrorTermsSC3h[iCombi][fCentralityBin]->GetXaxis()->SetBinLabel(iO+1, Form("corr%d", iO+1));
