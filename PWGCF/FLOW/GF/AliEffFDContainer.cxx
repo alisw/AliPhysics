@@ -23,6 +23,7 @@ AliEffFDContainer::AliEffFDContainer():
   fEff(0),
   fDCA(0),
   fWithinDCA(0),
+  fIdentifier(new TNamed("Identifier","")),
   fPtBins(0),
   fNPtBins(0),
   fCentBins(0),
@@ -31,7 +32,8 @@ AliEffFDContainer::AliEffFDContainer():
   fCent(-999),
   fPtMin(0.2),
   fPtMax(3.0),
-  fEta(0.8)
+  fEta(0.8),
+  fEtaLow(-9999)
 {
   fOutList = new TList();
   fOutList->SetOwner(kTRUE);
@@ -54,6 +56,7 @@ AliEffFDContainer::AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC
   fEff(0),
   fDCA(0),
   fWithinDCA(0),
+  fIdentifier(new TNamed("Identifier","")),
   fPtBins(0),
   fNPtBins(0),
   fCentBins(0),
@@ -62,7 +65,8 @@ AliEffFDContainer::AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC
   fCent(-999),
   fPtMin(0.2),
   fPtMax(3.0),
-  fEta(0.8)
+  fEta(0.8),
+  fEtaLow(-9999)
 {
   fOutList = new TList();
   fOutList->SetOwner(kTRUE);
@@ -128,7 +132,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if(!lPart->IsPhysicalPrimary()) continue;
     if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
-    if(TMath::Abs(eta)>fEta) continue;
+    if(!CheckEta(eta)) continue;
     pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
@@ -147,7 +151,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     Float_t dcaXY, dcaZ;
     lTrack->GetImpactParameters(dcaXY,dcaZ);
     eta = lTrack->Eta();
-    if(TMath::Abs(eta)>fEta) continue;
+    if(!CheckEta(eta)) continue;
     pt  = lTrack->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     for(Int_t iTC=0;iTC<fCutList->GetEntries();iTC++) {
@@ -167,7 +171,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if(!lPart) continue;
     if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
-    if(TMath::Abs(eta)>fEta) continue;
+    if(!CheckEta(eta)) continue;
     pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
@@ -219,7 +223,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD) {
     Float_t dcaXY, dcaZ;
     lTrack->GetImpactParameters(dcaXY,dcaZ);
     eta = lTrack->Eta();
-    if(TMath::Abs(eta)>fEta) continue;
+    if(!CheckEta(eta)) continue;
     pt  = lTrack->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     for(Int_t iTC=0;iTC<fCutList->GetEntries();iTC++) {
@@ -263,29 +267,32 @@ void AliEffFDContainer::CreateHistograms(Bool_t forceRecreate) {
     SetPtBins(10,ptBins);
   }
   //Setting up DCAs
-  Double_t binsDCA[79] = {-3.00, -2.90, -2.80, -2.70, -2.60, -2.50, -2.40, -2.30, -2.20, -2.10, -2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10, -1.00, -0.90, -0.80, -0.70, -0.60, -0.50, -0.40, -0.30, -0.20, -0.10, -0.09, -0.08, -0.07, -0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.10, 2.20, 2.30, 2.40, 2.50, 2.60, 2.70, 2.80, 2.90, 3.00};
-  Int_t NbinsDCA = 78;
+  Double_t binsDCA[61] = {-3.00, -2.90, -2.80, -2.70, -2.60, -2.50, -2.40, -2.30, -2.20, -2.10, -2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10, -1.00, -0.90, -0.80, -0.70, -0.60, -0.50, -0.40, -0.30, -0.20, -0.10, 0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00, 1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.10, 2.20, 2.30, 2.40, 2.50, 2.60, 2.70, 2.80, 2.90, 3.00};
+  Int_t NbinsDCA = 60;
+  Double_t binsDCAFine[301] = {-1.50, -1.49, -1.48, -1.47, -1.46, -1.45, -1.44, -1.43, -1.42, -1.41, -1.40, -1.39, -1.38, -1.37, -1.36, -1.35, -1.34, -1.33, -1.32, -1.31, -1.30, -1.29, -1.28, -1.27, -1.26, -1.25, -1.24, -1.23, -1.22, -1.21, -1.20, -1.19, -1.18, -1.17, -1.16, -1.15, -1.14, -1.13, -1.12, -1.11, -1.10, -1.09, -1.08, -1.07, -1.06, -1.05, -1.04, -1.03, -1.02, -1.01, -1.00, -0.99, -0.98, -0.97, -0.96, -0.95, -0.94, -0.93, -0.92, -0.91, -0.90, -0.89, -0.88, -0.87, -0.86, -0.85, -0.84, -0.83, -0.82, -0.81, -0.80, -0.79, -0.78, -0.77, -0.76, -0.75, -0.74, -0.73, -0.72, -0.71, -0.70, -0.69, -0.68, -0.67, -0.66, -0.65, -0.64, -0.63, -0.62, -0.61, -0.60, -0.59, -0.58, -0.57, -0.56, -0.55, -0.54, -0.53, -0.52, -0.51, -0.50, -0.49, -0.48, -0.47, -0.46, -0.45, -0.44, -0.43, -0.42, -0.41, -0.40, -0.39, -0.38, -0.37, -0.36, -0.35, -0.34, -0.33, -0.32, -0.31, -0.30, -0.29, -0.28, -0.27, -0.26, -0.25, -0.24, -0.23, -0.22, -0.21, -0.20, -0.19, -0.18, -0.17, -0.16, -0.15, -0.14, -0.13, -0.12, -0.11, -0.10, -0.09, -0.08, -0.07, -0.06, -0.05, -0.04, -0.03, -0.02, -0.01, -0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 0.30, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39, 0.40, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.69, 0.70, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79, 0.80, 0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89, 0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.00, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.09, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18, 1.19, 1.20, 1.21, 1.22, 1.23, 1.24, 1.25, 1.26, 1.27, 1.28, 1.29, 1.30, 1.31, 1.32, 1.33, 1.34, 1.35, 1.36, 1.37, 1.38, 1.39, 1.40, 1.41, 1.42, 1.43, 1.44, 1.45, 1.46, 1.47, 1.48, 1.49, 1.50};
+  Int_t NbinsDCAFine = 300;
   Double_t binsType[4] = {-0.5,0.5,1.5,2.5};
   Int_t NbinsType = 3;
   Double_t *lYAxis = fIsMC?binsType:fCentBins;
   Int_t     nYAxis = fIsMC?NbinsType:fNCentBins;
   fDCA = new TH3D*[2];
   fWithinDCA = new TH2D*[2];
-  fDCA[0] = new TH3D("DCAxy_noChi2","DCAxy_noChi2; pt; type; dcaxy", fNPtBins, fPtBins, nYAxis, lYAxis, NbinsDCA, binsDCA);
-  fDCA[1] = new TH3D("DCAxy_withChi2","DCAxy_withChi2; pt; type; dcaxy", fNPtBins, fPtBins, nYAxis, lYAxis, NbinsDCA, binsDCA);
-  fWithinDCA[0] = new TH2D("WithinDCA_noChi2","WithinDCA_noChi2; pt; type", fNPtBins, fPtBins, nYAxis, lYAxis);
-  fWithinDCA[1] = new TH2D("WithinDCA_withChi2","WithinDCA_withChi2; pt; type", fNPtBins, fPtBins, nYAxis, lYAxis);
-  for(Int_t i=0;i<2;i++) { fOutList->Add(fDCA[i]); };
-  for(Int_t i=0;i<2;i++) { fOutList->Add(fWithinDCA[i]); };
+  fDCA[0] = new TH3D(makeName("DCAxy_noChi2"),"DCAxy_noChi2; pt; type; dcaxy", fNPtBins, fPtBins, nYAxis, lYAxis, NbinsDCA, binsDCA);
+  fDCA[1] = new TH3D(makeName("DCAxy_withChi2"),"DCAxy_withChi2; pt; type; dcaxy", fNPtBins, fPtBins, nYAxis, lYAxis, NbinsDCAFine, binsDCAFine);
+  fWithinDCA[0] = new TH2D(makeName("WithinDCA_noChi2"),"WithinDCA_noChi2; pt; type", fNPtBins, fPtBins, nYAxis, lYAxis);
+  fWithinDCA[1] = new TH2D(makeName("WithinDCA_withChi2"),"WithinDCA_withChi2; pt; type", fNPtBins, fPtBins, nYAxis, lYAxis);
+  for(Int_t i=0;i<2;i++) { fDCA[i]->SetDirectory(0); fOutList->Add(fDCA[i]); };
+  for(Int_t i=0;i<2;i++) { fWithinDCA[i]->SetDirectory(0); fOutList->Add(fWithinDCA[i]); };
   fInitialized=kTRUE;
   if(!fIsMC) return; //If running on data, no need to fill in efficiencies
   //Setting up efficiencies
   fEff = new TH2D*[4];
-  fEff[0] = new TH2D("nChGen_Weighted","ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-  fEff[1] = new TH2D("nChRec_Weighted","ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-  fEff[2] = new TH2D("nChGen_Uneighted","ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-  fEff[3] = new TH2D("nChRec_Uneighted","ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-  for(Int_t i=0;i<4;i++) { fOutList->Add(fEff[i]); };
+  fEff[0] = new TH2D(makeName("nChGen_Weighted"),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+  fEff[1] = new TH2D(makeName("nChRec_Weighted"),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+  fEff[2] = new TH2D(makeName("nChGen_Uneighted"),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+  fEff[3] = new TH2D(makeName("nChRec_Uneighted"),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+  for(Int_t i=0;i<4;i++) { fEff[i]->SetDirectory(0); fOutList->Add(fEff[i]); };
+
 
 };
 void AliEffFDContainer::AddCut(AliESDtrackCuts *inCut) {
