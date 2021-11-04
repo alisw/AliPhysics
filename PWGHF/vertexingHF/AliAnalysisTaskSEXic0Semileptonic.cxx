@@ -21,44 +21,44 @@
 
 #include "AliAnalysisTaskSEXic0Semileptonic.h"
 
-#include <TSystem.h>
-#include <TParticle.h>
-#include <TParticlePDG.h>
+#include "AliAODcascade.h"
+#include "AliAODHandler.h"
+#include "AliAODInputHandler.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
+#include "AliAODPidHF.h"
+#include "AliAODRecoCascadeHF.h"
+#include "AliAODRecoDecay.h"
+#include "AliAODRecoDecayHF.h"
+#include "AliAODVertex.h"
+#include "AliAODTrack.h"
+#include <AliAnalysisDataContainer.h>
+#include <AliAnalysisDataSlot.h>
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDVertex.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
+#include "AliExternalTrackParam.h"
+#include "AliInputEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMultSelection.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+#include "AliPPVsMultUtils.h"
+#include "AliRDHFCuts.h"
+#include "AliTOFPIDResponse.h"
+
+#include <TDatabasePDG.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <THnSparse.h>
 #include <TLorentzVector.h>
-#include <TTree.h>
+#include <TParticle.h>
+#include <TParticlePDG.h>
 #include "TROOT.h"
-#include <TDatabasePDG.h>
-#include <AliAnalysisDataSlot.h>
-#include <AliAnalysisDataContainer.h>
-#include "AliMCEvent.h"
-#include "AliAnalysisManager.h"
-#include "AliAODMCHeader.h"
-#include "AliAODHandler.h"
-#include "AliExternalTrackParam.h"
-#include "AliAODVertex.h"
-#include "AliESDVertex.h"
-#include "AliRDHFCuts.h"
-#include "AliAODRecoDecay.h"
-#include "AliAODRecoDecayHF.h"
-#include "AliAODRecoCascadeHF.h"
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
-#include "AliAODcascade.h"
-#include "AliAODMCParticle.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
-#include "AliTOFPIDResponse.h"
-#include "AliAODPidHF.h"
-#include "AliInputEventHandler.h"
-#include "AliPPVsMultUtils.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDtrack.h"
-#include "AliAODInputHandler.h"
-#include "AliMultSelection.h"
+#include <TSystem.h>
+#include <TTree.h>
 
 const Double_t pi = TMath::Pi();
 enum {kPN=1, kPP, kNN, kMixing, kAllType}; //P=Positive charge, N=Negative
@@ -100,12 +100,11 @@ AliAnalysisTaskSEXic0Semileptonic::AliAnalysisTaskSEXic0Semileptonic() :
 	DefineOutput(6, TTree::Class());
 	DefineOutput(7, AliNormalizationCounter::Class());
 
-	//kimc, Mar. 18
 	DefineOutput( 8, AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0;
 	DefineOutput( 9, AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0;
 	DefineOutput(10, AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0;
 	DefineOutput(11, AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0;
-	//kimc, June 23
+
 	DefineOutput(12, AliNormalizationCounter::Class()); fCntINEL0_MB_0to100 = 0;
 	DefineOutput(13, AliNormalizationCounter::Class()); fCntINEL0_MB_0p1to30 = 0;
 	DefineOutput(14, AliNormalizationCounter::Class()); fCntINEL0_MB_30to100 = 0;
@@ -135,12 +134,11 @@ AliAnalysisTaskSEXic0Semileptonic::AliAnalysisTaskSEXic0Semileptonic(const char 
 	DefineOutput(6, TTree::Class());
 	DefineOutput(7, AliNormalizationCounter::Class());
 
-	//kimc, Mar. 18
 	DefineOutput( 8, AliNormalizationCounter::Class()); fCounter_MB_0to100 = 0;
 	DefineOutput( 9, AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0;
 	DefineOutput(10, AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0;
 	DefineOutput(11, AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0;
-	//kimc, June 23
+
 	DefineOutput(12, AliNormalizationCounter::Class()); fCntINEL0_MB_0to100 = 0;
 	DefineOutput(13, AliNormalizationCounter::Class()); fCntINEL0_MB_0p1to30 = 0;
 	DefineOutput(14, AliNormalizationCounter::Class()); fCntINEL0_MB_30to100 = 0;
@@ -184,11 +182,11 @@ AliAnalysisTaskSEXic0Semileptonic::~AliAnalysisTaskSEXic0Semileptonic()
 	delete fMCTreeVariable;
 	delete fEventTreeVariable;
 
-    delete fEvtCuts_HMV0;
-    delete fCounter_MB_0to100;
-    delete fCounter_MB_0p1to30;
-    delete fCounter_MB_30to100;
-    delete fCounter_HMV0_0to0p1;
+	delete fEvtCuts_HMV0;
+	delete fCounter_MB_0to100;
+	delete fCounter_MB_0p1to30;
+	delete fCounter_MB_30to100;
+	delete fCounter_HMV0_0to0p1;
 	delete fCntINEL0_MB_0to100;
 	delete fCntINEL0_MB_0p1to30;
 	delete fCntINEL0_MB_30to100;
@@ -219,10 +217,8 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fEvtCuts->SetUseInt7TriggerPP2012();
 	fEvtCuts->SetTriggerMask(AliVEvent::kINT7);
 	fEvtCuts->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); // multi vertexer pileup rejection
-	
 	//fEvtCuts->ResetMaskAndEnableMBTrigger();
 
-	//kimc, Mar. 18
 	fEvtCuts_HMV0 = new AliRDHFCutsXictoeleXifromAODtracks();
 	fEvtCuts_HMV0->SetUsePhysicsSelection(kTRUE);
 	fEvtCuts_HMV0->SetTriggerClass(""); //kimc: keep this - otherwise floating point exception occur
@@ -231,7 +227,6 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 
 	//*******************************************
 
-	//kimc
 	cout <<endl;
 	fTargetTriggers.clear();
 	if (fUsekINT7)
@@ -256,14 +251,18 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 
 	fHistos = new THistManager("histogram");
 
-	vector<TString> Event = {"All","ProperB","RDHCCutsSel","Sel","MB","PSpileup_SPD","PSpileup_MV","Goodz","Goodzcut", "HMV0","HMSPD"};
+	vector<TString> Event =
+	{
+		"All", "ProperB", "RDHCCutsSel", "Sel", "MB",
+		"PSpileup_SPD", "PSpileup_MV", "Goodz","Goodzcut", "HMV0", "HMSPD"
+	};
 	auto hEventCount = fHistos->CreateTH1("hEventNumbers", "", Event.size(), 0, Event.size());
-	for (auto i=0u; i<Event.size(); i++) hEventCount->GetXaxis()->SetBinLabel(i+1,Event.at(i).Data());
+	for (auto i=0u; i<Event.size(); i++) hEventCount->GetXaxis()->SetBinLabel(i+1, Event.at(i).Data());
 
 	Double_t bin[8]      = {1, 2, 3, 4, 5, 6, 8, 12};
 	Double_t bin_old[8]  = {0, 1, 2, 3.2, 4.4, 6, 8, 12};
 	Double_t rapbin[21]  = {-1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1,
-		                   	0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,	1};
+		0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,	1};
 	Double_t widebin[11] = {0, 1, 2, 3, 4, 5, 6, 8, 12, 16, 20};
 
 	fHistos->CreateTH1("Centrality","",100,0,100,"s");
@@ -276,8 +275,21 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	if (IsMC == false) fHistos->CreateTH1("hINELLgt0_0", "", 6, 0, 6, "s");
 	if (IsMC == false) fHistos->CreateTH1("hINELLgt0_1", "", 6, 0, 6, "s");
 
-	//Check yield by trigger: all (0), kINT7 (1), kHMV0 (2), and kHMSPD (3)
-	if (IsMC == false) fHistos->CreateTH2("hNorm_multV0", ";Mult;Trig", 1000,0,100, 4,0,4, "s");
+	//kimc, check pileup cuts' effect on combinations: 3 cuts x 5 cases (Oct. 6, 2021)
+	//3 cuts: oldSPD (fixed SPD contributors), newSPD (varying SPD contributors), and MV
+	if (IsMC == false)
+	{
+		vector<const char*> hPUCut =
+		{
+			"MB_old",          "MB_new",          "MB_MV",
+			"MB_old_0to100",   "MB_new_0to100",   "MB_MV_0to100",
+			"MB_old_0p1to30",  "MB_new_0p1to30",  "MB_MV_0p1to30",
+			"MB_old_30to100",  "MB_new_30to100",  "MB_MV_30to100",
+			"HMV0_old_0to0p1", "HMV0_new_0to0p1", "HMV0_MV_0to0p1"
+		};
+		auto hPileupEffect = fHistos->CreateTH1("hPileupEffect", "", hPUCut.size(), 0, hPUCut.size(), "s");
+		for (UInt_t a=0; a<hPUCut.size(); a++) hPileupEffect->GetXaxis()->SetBinLabel(a+1, hPUCut[a]);
+	}
 
 	fHistos->CreateTH1("hNonPromptXicRap","",500,-5,5,"s");
 	fHistos->CreateTH1("hPromptXicRap","",500,-5,5,"s");
@@ -409,41 +421,41 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	fCounter->Init();
 	PostData(7, fCounter);
 
-    //kimc, Mar. 18, 2021
-    fCounter_MB_0to100   = new AliNormalizationCounter("ANC_MB_0to100");
-    fCounter_MB_0p1to30  = new AliNormalizationCounter("ANC_MB_0p1to30");
-    fCounter_MB_30to100  = new AliNormalizationCounter("ANC_MB_30to100");
-    fCounter_HMV0_0to0p1 = new AliNormalizationCounter("ANC_HMV0_0to0p1");
-    fCounter_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
-    fCounter_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
-    fCounter_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
-    fCounter_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
-    fCounter_MB_0to100  ->Init();
-    fCounter_MB_0p1to30 ->Init();
-    fCounter_MB_30to100 ->Init();
-    fCounter_HMV0_0to0p1->Init();
-    PostData( 8, fCounter_MB_0to100);
-    PostData( 9, fCounter_MB_0p1to30);
-    PostData(10, fCounter_MB_30to100);
-    PostData(11, fCounter_HMV0_0to0p1);
+	//kimc, Mar. 18, 2021
+	fCounter_MB_0to100   = new AliNormalizationCounter("ANC_MB_0to100");
+	fCounter_MB_0p1to30  = new AliNormalizationCounter("ANC_MB_0p1to30");
+	fCounter_MB_30to100  = new AliNormalizationCounter("ANC_MB_30to100");
+	fCounter_HMV0_0to0p1 = new AliNormalizationCounter("ANC_HMV0_0to0p1");
+	fCounter_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
+	fCounter_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
+	fCounter_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
+	fCounter_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
+	fCounter_MB_0to100  ->Init();
+	fCounter_MB_0p1to30 ->Init();
+	fCounter_MB_30to100 ->Init();
+	fCounter_HMV0_0to0p1->Init();
+	PostData( 8, fCounter_MB_0to100);
+	PostData( 9, fCounter_MB_0p1to30);
+	PostData(10, fCounter_MB_30to100);
+	PostData(11, fCounter_HMV0_0to0p1);
 
-    //kimc, Mar. 18, 2021
-    fCntINEL0_MB_0to100   = new AliNormalizationCounter("ANCINEL0_MB_0to100");
-    fCntINEL0_MB_0p1to30  = new AliNormalizationCounter("ANCINEL0_MB_0p1to30");
-    fCntINEL0_MB_30to100  = new AliNormalizationCounter("ANCINEL0_MB_30to100");
-    fCntINEL0_HMV0_0to0p1 = new AliNormalizationCounter("ANCINEL0_HMV0_0to0p1");
-    fCntINEL0_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
-    fCntINEL0_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
-    fCntINEL0_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
-    fCntINEL0_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
-    fCntINEL0_MB_0to100  ->Init();
-    fCntINEL0_MB_0p1to30 ->Init();
-    fCntINEL0_MB_30to100 ->Init();
-    fCntINEL0_HMV0_0to0p1->Init();
-    PostData(12, fCntINEL0_MB_0to100);
-    PostData(13, fCntINEL0_MB_0p1to30);
-    PostData(14, fCntINEL0_MB_30to100);
-    PostData(15, fCntINEL0_HMV0_0to0p1);
+	//kimc, Mar. 18, 2021
+	fCntINEL0_MB_0to100   = new AliNormalizationCounter("ANCINEL0_MB_0to100");
+	fCntINEL0_MB_0p1to30  = new AliNormalizationCounter("ANCINEL0_MB_0p1to30");
+	fCntINEL0_MB_30to100  = new AliNormalizationCounter("ANCINEL0_MB_30to100");
+	fCntINEL0_HMV0_0to0p1 = new AliNormalizationCounter("ANCINEL0_HMV0_0to0p1");
+	fCntINEL0_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
+	fCntINEL0_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
+	fCntINEL0_MB_30to100 ->SetStudyMultiplicity(kTRUE, 1.);
+	fCntINEL0_HMV0_0to0p1->SetStudyMultiplicity(kTRUE, 1.);
+	fCntINEL0_MB_0to100  ->Init();
+	fCntINEL0_MB_0p1to30 ->Init();
+	fCntINEL0_MB_30to100 ->Init();
+	fCntINEL0_HMV0_0to0p1->Init();
+	PostData(12, fCntINEL0_MB_0to100);
+	PostData(13, fCntINEL0_MB_0p1to30);
+	PostData(14, fCntINEL0_MB_30to100);
+	PostData(15, fCntINEL0_HMV0_0to0p1);
 
 	return;
 }//UserCreateOutputObjects
@@ -453,28 +465,23 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 {
 	//Pointer to a event
 	AliVEvent *event = InputEvent();
-	if (!event)
-	{
-		Printf("ERROR: Could not retrieve event");
-		return;
-	}
+	if (!event) { Printf("ERROR: Could not retrieve event"); return; } //Return 1
 
 	//AOD Analysis Start
-	Int_t runnumber;
 	event->IsA()==AliESDEvent::Class()
 		? fEvt = dynamic_cast<AliESDEvent*>(event)
 		: fEvt = dynamic_cast<AliAODEvent*>(event);
-	if (!fEvt) return;
+	if (!fEvt) return; //Return 2
 	fHistos->FillTH1("hEventNumbers", "All", 1);
 
 	//Check B-field
 	fBzkG = (Double_t)fEvt->GetMagneticField();
-	if (TMath::Abs(fBzkG )< 0.001) return;
+	if (TMath::Abs(fBzkG) < 0.001) return; //Return 3
 	fHistos->FillTH1("hEventNumbers", "ProperB", 1);
 
-	//Check collision type?
+	//Check run #
 	fRunNumber = fEvt->GetRunNumber();
-    if (fRunNumber<252000 || fRunNumber>295000) return; //Mar. 18: discard events w/ invalid run numbers (RUN2)
+	if (fRunNumber<252000 || fRunNumber>295000) return; //Discard events w/ invalid run numbers (RUN2), Return 4
 	fRunTable = new AliAnalysisTaskSEXic0RunTable(fRunNumber);
 
 	//Retrieve centrality info
@@ -500,7 +507,11 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 		if ( fCentralSPD == 0. && fNSPDTracklets == 0. ) fCentralSPD = fNSPDTracklets = -999;
 	}
 
-	//-----------------------------------------------------
+	//AliRDHFCuts check: by doing this the cut is being activated (Oct. 15, 2021, kimc)
+	bool IsValid_MB   = fEvtCuts     ->IsEventSelected(fEvt);
+	bool IsValid_HMV0 = fEvtCuts_HMV0->IsEventSelected(fEvt);
+
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//Load InputHandler for each event
 	AliInputEventHandler* inputHandler =
@@ -514,66 +525,79 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	//kimc: "flag for event selected" - is this an event-wise cut?
 	if (fEvtCuts->IsEventSelected(fEvt)) fHistos->FillTH1("hEventNumbers", "RDHCCutsSel", 1);
 
-	//Physics Selectio
-	if (!(inputHandler->IsEventSelected())) return;
-	fHistos->FillTH1("hEventNumbers","Sel",1);
+	//Physics Selection
+	if (!(inputHandler->IsEventSelected())) return; //Return 5
+	fHistos->FillTH1("hEventNumbers", "Sel", 1);
 
+	//Check trigger
 	//*****************************************************
 
-	//kimc
-	Bool_t IsTrigFired = kFALSE;
 	if (fTargetTriggers.size() == 0) AliFatal("WARNING: target trigger container is empty! Stop.");
 
+	Bool_t IsTrigFired      = false;
+	Bool_t IsTrigFired_MB   = false;
+	Bool_t IsTrigFired_HMV0 = false;
 	for (unsigned int a=0; a<fTargetTriggers.size(); a++)
 	{
-		if (inputHandler->IsEventSelected() & fTargetTriggers[a]) IsTrigFired = kTRUE;
+		if (inputHandler->IsEventSelected() & fTargetTriggers[a]) IsTrigFired = true;
 
 		//LHC16k and l are CD dedicated runs! CD-online-trigger is used
 		if (fOption.Contains("LHC16k") || fOption.Contains("LHC16l"))
 		{
 			TString firedTriggerClasses = fEvt->GetFiredTriggerClasses();
 			if ( (fTargetTriggers[a] == AliVEvent::kINT7) &&
-				 (firedTriggerClasses.Contains("CINT7-B-NOPF-CENT")) ) IsTrigFired = kTRUE;
+			     (firedTriggerClasses.Contains("CINT7-B-NOPF-CENT")) ) IsTrigFired = true;
 		}
 	}
 
-	if (IsTrigFired == kFALSE) return;
-	if (inputHandler->IsEventSelected() & AliVEvent::kINT7)        fHistos->FillTH1("hEventNumbers", "MB", 1);
-	if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0)  fHistos->FillTH1("hEventNumbers", "HMV0", 1);
-	if (inputHandler->IsEventSelected() & AliVEvent::kHighMultSPD) fHistos->FillTH1("hEventNumbers", "HMSPD", 1);
+	if (IsTrigFired == false) return; //No trigger fired, Return 6
+	else
+	{
+		if (inputHandler->IsEventSelected() & AliVEvent::kINT7)
+		{
+			IsTrigFired_MB = true;
+			fHistos->FillTH1("hEventNumbers", "MB", 1);
+		}
+		if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0) 
+		{
+			IsTrigFired_HMV0 = true;
+			fHistos->FillTH1("hEventNumbers", "HMV0", 1);
+		}
+	}
 
-    //Judge if this event is INEL > 0, for data - kimc
-	//2nd updated at June 22, position moved to check INEL>0 effect unbiased
-    fIsINELLgtZERO = false;
-    if (IsMC==false && AliPPVsMultUtils::IsINELgtZERO(fEvt)==true) fIsINELLgtZERO = true;
+	//INEL > 0 check, for data
+	//*****************************************************
+
+	fIsINELLgtZERO = false;
+	if (IsMC==false && AliPPVsMultUtils::IsINELgtZERO(fEvt)==true) fIsINELLgtZERO = true;
 
 	//INEL>0 effect check histograms
 	if (IsMC == false)
 	{
-        for (int a=0; a<2; a++)
-        {
-            const char* fHistName = Form("hINELLgt0_%i", a);
-            if (a==1 && fIsINELLgtZERO==false) continue;
+		for (int a=0; a<2; a++)
+		{
+			const char* fHistName = Form("hINELLgt0_%i", a);
+			if (a==1 && fIsINELLgtZERO==false) continue;
 
-            if (inputHandler->IsEventSelected() & AliVEvent::kINT7)
-            {
-                fHistos->FillTH1(fHistName, 0.);
-                if (fCentrality >=  0.0 && fCentrality <= 100.0) fHistos->FillTH1(fHistName, 1.);
-                if (fCentrality >=  0.1 && fCentrality <=  30.0) fHistos->FillTH1(fHistName, 2.);
-                if (fCentrality >= 30.0 && fCentrality <= 100.0) fHistos->FillTH1(fHistName, 3.);
-            }
-            if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
-            {
-                fHistos->FillTH1(fHistName, 4.);
-                if (fCentrality >= 0.0 && fCentrality <= 0.1) fHistos->FillTH1(fHistName, 5.);
-            }
-        }//a, trig and trig+INEL>0
+			if (IsTrigFired_MB)
+			{
+				fHistos->FillTH1(fHistName, 0.);
+				if (fCentrality >=  0.0 && fCentrality <= 100.0) fHistos->FillTH1(fHistName, 1.);
+				if (fCentrality >=  0.1 && fCentrality <=  30.0) fHistos->FillTH1(fHistName, 2.);
+				if (fCentrality >= 30.0 && fCentrality <= 100.0) fHistos->FillTH1(fHistName, 3.);
+			}
+			if (IsTrigFired_HMV0)
+			{
+				fHistos->FillTH1(fHistName, 4.);
+				if (fCentrality >= 0.0 && fCentrality <= 0.1) fHistos->FillTH1(fHistName, 5.);
+			}
+		}//a, trig and trig+INEL>0
 	}//data only
 
+	//Pileup check
 	//*****************************************************
 
-	//Reject pile-up events: updated at Sep.17, 2021. Referred below link
-	//https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsPileup
+	//Reject pile-up events by using SPD ( https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsPileup )
 	Int_t nContributor = -999;
 	if (IsPA) nContributor = 5; //For pA, but there's a NOTE at above link - PLEASE CHECK
 	else
@@ -585,61 +609,112 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	if (nContributor == -999) cout <<"ERROR in pileup cut!\n";
 	//if (!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.)) return;
 	//if (!IsMC && fEvt->IsPileupFromSPD(3.,0.8,3.,2.,5.)) return; //Conventional setting before Sep. 17, 2021
-	
-	 if (!(!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.))) fHistos->FillTH1("hEventNumbers", "PSpileup_SPD", 1);
+
+	//Old pileup cuts based on SPD: true means this event is piled up
+	bool pileup_SPD_old = (!IsMC && fEvt->IsPileupFromSPD(3,            0.8, 3., 2., 5.)) ? true:false;
+	bool pileup_SPD_new = (!IsMC && fEvt->IsPileupFromSPD(nContributor, 0.8, 3., 2., 5.)) ? true:false;
+
+	//New pileup cuts based on multi vertex: depends on trigger, true means piled up
+	bool pileup_MV_MB   = fEvtCuts     ->IsEventRejectedDueToPileup();
+	bool pileup_MV_HMV0 = fEvtCuts_HMV0->IsEventRejectedDueToPileup();
+
+	//xCheck
+	if (IsMC == false)
+	{
+		if (IsTrigFired_MB)
+		{
+			//Jinjoo's xCheck
+			if (pileup_SPD_new == false) fHistos->FillTH1("hEventNumbers", "PSpileup_SPD", 1);
+			if (pileup_MV_MB   == false) fHistos->FillTH1("hEventNumbers", "PSpileup_MV",  1);
+
+			//kimc
+			if (pileup_SPD_old == false)
+			{
+				fHistos->FillTH1("hPileupEffect", "MB_old", 1);
+				if (fCentrality>= 0.0 && fCentrality<=100.0) fHistos->FillTH1("hPileupEffect", "MB_old_0to100", 1);
+				if (fCentrality>= 0.1 && fCentrality<= 30.0) fHistos->FillTH1("hPileupEffect", "MB_old_0p1to30", 1);
+				if (fCentrality>=30.0 && fCentrality<=100.0) fHistos->FillTH1("hPileupEffect", "MB_old_30to100", 1);
+			}
+			if (pileup_SPD_new == false)
+			{
+				fHistos->FillTH1("hPileupEffect", "MB_new", 1);
+				if (fCentrality>= 0.0 && fCentrality<=100.0) fHistos->FillTH1("hPileupEffect", "MB_new_0to100", 1);
+				if (fCentrality>= 0.1 && fCentrality<= 30.0) fHistos->FillTH1("hPileupEffect", "MB_new_0p1to30", 1);
+				if (fCentrality>=30.0 && fCentrality<=100.0) fHistos->FillTH1("hPileupEffect", "MB_new_30to100", 1);
+			}
+			if (pileup_MV_MB == false)
+			{
+				fHistos->FillTH1("hPileupEffect", "MB_MV", 1);
+				if (fCentrality>= 0.0 && fCentrality<=100.0) fHistos->FillTH1("hPileupEffect", "MB_MV_0to100", 1);
+				if (fCentrality>= 0.1 && fCentrality<= 30.0) fHistos->FillTH1("hPileupEffect", "MB_MV_0p1to30", 1);
+				if (fCentrality>=30.0 && fCentrality<=100.0) fHistos->FillTH1("hPileupEffect", "MB_MV_30to100", 1);
+			}
+		}//MB trigger fired
+
+		//kimc
+		if (IsTrigFired_HMV0 && fCentrality>=0.0 && fCentrality<=0.1)
+		{
+			if (pileup_SPD_old == false) fHistos->FillTH1("hPileupEffect", "HMV0_old_0to0p1", 1);
+			if (pileup_SPD_new == false) fHistos->FillTH1("hPileupEffect", "HMV0_new_0to0p1", 1);
+			if (pileup_MV_HMV0 == false) fHistos->FillTH1("hPileupEffect", "HMV0_MV_0to0p1", 1);
+		}
+	}//Pileup QA
+
+	fPileupStat = 9999;
+	if (!IsMC && pileup_MV_MB==true && pileup_MV_HMV0==true) return; //Pileup in both triggers: discard it, Return 7
+	else
+	{
+		if (!IsMC && pileup_MV_MB==false && pileup_MV_HMV0==false) fPileupStat = 0;
+		if (!IsMC && pileup_MV_MB==false && pileup_MV_HMV0==true)  fPileupStat = 1;
+		if (!IsMC && pileup_MV_MB==true  && pileup_MV_HMV0==false) fPileupStat = 2;
+	}
+
+	//*****************************************************
 
 	//Primary Vertex Selection
 	fVtxZ = 9999; //kimc
 	const AliVVertex* Vtx = fEvt->GetPrimaryVertex();
-	if (!Vtx || Vtx->GetNContributors() < 1) return;
+	if (!Vtx || Vtx->GetNContributors() < 1) return; //Return 8
 	fHistos->FillTH1("hEventNumbers", "Goodz", 1);
 
-	//! Mar. 22
-	//AliNormalizationCounter: store events for later normalization (* original invoke position)
-	fCounter->StoreEvent(fEvt, fEvtCuts, IsMC);
-
-    //kimc, Mar. 18
-    if (fCentrality >=  0.0 && fCentrality <= 100.0) fCounter_MB_0to100  ->StoreEvent(fEvt, fEvtCuts, IsMC);
-    if (fCentrality >=  0.1 && fCentrality <=  30.0) fCounter_MB_0p1to30 ->StoreEvent(fEvt, fEvtCuts, IsMC);
-    if (fCentrality >= 30.0 && fCentrality <= 100.0) fCounter_MB_30to100 ->StoreEvent(fEvt, fEvtCuts, IsMC);
-    if (fCentrality >=  0.0 && fCentrality <=   0.1) fCounter_HMV0_0to0p1->StoreEvent(fEvt, fEvtCuts_HMV0, IsMC);
-	
-	fHistos->FillTH1("hEventNumbers", "PSpileup_MV", 1);
-
-	//kimc, June 23
-	if (fIsINELLgtZERO)
+	//AliNormalizationCounter: store events for later normalization
+	if (IsTrigFired_MB && pileup_MV_MB==false)
 	{
-		if (fCentrality >=  0.0 && fCentrality <= 100.0) fCntINEL0_MB_0to100  ->StoreEvent(fEvt,fEvtCuts,IsMC);
-		if (fCentrality >=  0.1 && fCentrality <=  30.0) fCntINEL0_MB_0p1to30 ->StoreEvent(fEvt,fEvtCuts,IsMC);
-		if (fCentrality >= 30.0 && fCentrality <= 100.0) fCntINEL0_MB_30to100 ->StoreEvent(fEvt,fEvtCuts,IsMC);
-		if (fCentrality >=  0.0 && fCentrality <=   0.1) fCntINEL0_HMV0_0to0p1->StoreEvent(fEvt,fEvtCuts_HMV0,IsMC);
-	}
-	//!
+		fCounter->StoreEvent(fEvt, fEvtCuts, IsMC); //Original, by Jinjoo
 
-	if (!(fabs(Vtx->GetZ())<10.)) return;
+		if (fCentrality >= 0.0 && fCentrality <= 100.0)
+		{
+			fCounter_MB_0to100->StoreEvent(fEvt, fEvtCuts, IsMC);
+			if (fIsINELLgtZERO) fCntINEL0_MB_0to100->StoreEvent(fEvt, fEvtCuts, IsMC);
+		}
+		if (fCentrality >= 0.1 && fCentrality <= 30.0)
+		{
+			fCounter_MB_0p1to30->StoreEvent(fEvt, fEvtCuts, IsMC);
+			if (fIsINELLgtZERO) fCntINEL0_MB_0p1to30->StoreEvent(fEvt, fEvtCuts, IsMC);
+		}
+		if (fCentrality >= 30.0 && fCentrality <= 100.0)
+		{
+			fCounter_MB_30to100->StoreEvent(fEvt, fEvtCuts, IsMC);
+			if (fIsINELLgtZERO) fCntINEL0_MB_30to100->StoreEvent(fEvt, fEvtCuts, IsMC);
+		}
+	}//MB triggered, w/o pileup
+	if (IsTrigFired_HMV0 && pileup_MV_HMV0==false && fCentrality >= 0.0 && fCentrality <= 0.1)
+	{
+		fCounter_HMV0_0to0p1->StoreEvent(fEvt, fEvtCuts_HMV0, IsMC);
+		if (fIsINELLgtZERO) fCntINEL0_HMV0_0to0p1->StoreEvent(fEvt, fEvtCuts_HMV0, IsMC);
+	}//HMV0, w/o pileup, 0 <= Centrality <= 0.1
+
+	//*****************************************************
+
+	//Apply vtx Z cut
+	if (!(fabs(Vtx->GetZ())<10.)) return; //Retun 9
 	fHistos->FillTH1("hEventNumbers", "Goodzcut", 1);
 	fVtxZ = Vtx->GetZ(); //kimc
-
-    //Manual # of entries container: updated again at Mar. 18, 2021 (kimc)
-    if (IsMC == false)
-    {
-        fHistos->FillTH2("hNorm_multV0", fCentrality, 0);
-        if (inputHandler->IsEventSelected())
-        {
-            if (AliVEvent::kINT7)        fHistos->FillTH2("hNorm_multV0", fCentrality, 1);
-            if (AliVEvent::kHighMultV0)  fHistos->FillTH2("hNorm_multV0", fCentrality, 2);
-            if (AliVEvent::kHighMultSPD) fHistos->FillTH2("hNorm_multV0", fCentrality, 3);
-        }
-    }
-
-    //Judge if this event is INEL > 0, for data - original position
-    //fIsINELLgtZERO = false;
-    //if (IsMC==false && AliPPVsMultUtils::IsINELgtZERO(fEvt)==true) fIsINELLgtZERO = true;
 
 	if (IsHighMul)
 	{
 		if (!AliPPVsMultUtils::IsMinimumBias(fEvt)) return;
-		if (!AliPPVsMultUtils::IsINELgtZERO(fEvt)) return; //INEL >0
+		if (!AliPPVsMultUtils::IsINELgtZERO(fEvt)) return; //INEL>0
 		if (!AliPPVsMultUtils::IsAcceptedVertexPosition(fEvt)) return;
 		if (!AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt)) return;
 		if (!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fEvt)) return;
@@ -670,10 +745,10 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 			FillMCXic0(MCparticle);
 			if (FillMCXib(MCparticle)) continue;
 
-            //INEL > 0 judgment for MC - kimc, update at Mar. 18, 2021
-            if ( MCparticle->IsPhysicalPrimary() &&
-                 MCparticle->Charge() != 0 &&
-                 fabs(MCparticle->Eta() < 1.0) ) fIsINELLgtZERO = true;
+			//INEL > 0 judgment for MC - kimc, update at Mar. 18, 2021
+			if ( MCparticle->IsPhysicalPrimary() &&
+					MCparticle->Charge() != 0 &&
+					fabs(MCparticle->Eta() < 1.0) ) fIsINELLgtZERO = true;
 		}
 	}
 
@@ -704,22 +779,24 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 
 			if (!trk) continue;
 			if (!(FilterTrack(trk,1))) continue;  //track cut
-			FillPairEleXi(casc, trk);
 
 			//*****************************************************
 
 			//Fill event tree, rearranged variables' order by kimc - updated at Sep. 2
-			for (int a=0; a<6; a++) fEventTreeVariable[a] = -999; //Reset
+			for (int a=0; a<7; a++) fEventTreeVariable[a] = -999; //Reset
 			fEventTreeVariable[0] = fRunNumber;
 			fEventTreeVariable[1] = fCentrality;
 			fEventTreeVariable[2] = fCentralSPD;
 			fEventTreeVariable[3] = (Float_t)fNSPDTracklets;
 			fEventTreeVariable[4] = (Float_t)fNeXiPair;
 			fEventTreeVariable[5] = (Float_t)fVtxZ;
+			fEventTreeVariable[6] = (Float_t)fPileupStat;
 
 			fEventTreeVarTrig = 0; //Reset
 			if (!IsMC) fEventTreeVarTrig = inputHandler->IsEventSelected();
 			//fEventTree->Fill(); //Move this inside FillPairEleXi, to sync entries
+
+			FillPairEleXi(casc, trk);
 		}
 	}
 
@@ -731,11 +808,15 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 	PostData(6, fEventTree);
 	PostData(7, fCounter);
 
-	//kimc, Mar. 18
-    PostData( 8, fCounter_MB_0to100);
-    PostData( 9, fCounter_MB_0p1to30);
-    PostData(10, fCounter_MB_30to100);
-    PostData(11, fCounter_HMV0_0to0p1);
+	PostData( 8, fCounter_MB_0to100);
+	PostData( 9, fCounter_MB_0p1to30);
+	PostData(10, fCounter_MB_30to100);
+	PostData(11, fCounter_HMV0_0to0p1);
+
+	PostData(12, fCntINEL0_MB_0to100);
+	PostData(13, fCntINEL0_MB_0p1to30);
+	PostData(14, fCntINEL0_MB_30to100);
+	PostData(15, fCntINEL0_HMV0_0to0p1);
 
 	return;
 }//UserExec
@@ -1909,7 +1990,7 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineEventTree()
 {
 	fEventTree = new TTree("EventTree", "EventTree");
 
-	const Int_t nVar = 6;
+	const Int_t nVar = 7;
 	fEventTreeVariable = new Float_t[nVar];
 	TString * fTreeVariableNames = new TString[nVar];
 
@@ -1919,6 +2000,7 @@ void AliAnalysisTaskSEXic0Semileptonic::DefineEventTree()
 	fTreeVariableNames[3] = "fNSPDTracklets"; //# of SPD tracklets
 	fTreeVariableNames[4] = "fNeXiPair";      //# of saved pairs for the event: NOT 0 if more than pair saved
 	fTreeVariableNames[5] = "fVtxZ";
+	fTreeVariableNames[6] = "fPileup"; //pileup in both MB/HMV0), 1 (MB pileup, HMV0 ok), and 2 (MB ok, HMV0 pileup)
 
 	for (Int_t iVar=0; iVar<nVar; iVar++)
 	{

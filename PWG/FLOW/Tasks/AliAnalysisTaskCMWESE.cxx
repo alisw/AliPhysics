@@ -168,10 +168,10 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
 
   for (int i = 0; i < 138; ++i){
     hMultV0[i]=NULL; //Dobrin
-    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQxnmV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQynmV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQxnsV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQynsV0[i][j]=NULL;
   }
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
@@ -187,6 +187,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
   for (int i = 0; i < 2; ++i) hMultCentQA[i]=NULL;
   for (int i = 0; i < 6; ++i) hMultMultQA[i]=NULL;
+  for (int i = 0; i < NCENTBINS; ++i) pV2pT[i]=NULL;
 
   for (int i = 0; i < 2; ++i) hEta[i]=NULL;
   for (int i = 0; i < 2; ++i) hPhi[i]=NULL;
@@ -309,10 +310,10 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
 
   for (int i = 0; i < 138; ++i){
     hMultV0[i]=NULL; //Dobrin
-    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQxnmV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQynmV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQxnsV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQynsV0[i][j]=NULL;
   }
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
@@ -328,6 +329,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
   for (int i = 0; i < 2; ++i) hMultCentQA[i]=NULL;
   for (int i = 0; i < 6; ++i) hMultMultQA[i]=NULL;
+  for (int i = 0; i < NCENTBINS; ++i) pV2pT[i]=NULL;
 
   for (int i = 0; i < 2; ++i) hEta[i]=NULL;
   for (int i = 0; i < 2; ++i) hPhi[i]=NULL;
@@ -491,10 +493,10 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
 
   for (int i = 0; i < 138; ++i){
     hMultV0[i]=NULL; //Dobrin
-    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQxnmV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQynmV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQxnsV0[i][j]=NULL;
+    for (int j = 0; j < 2; ++j)   hQynsV0[i][j]=NULL;
   }
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
@@ -510,6 +512,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
   for (int i = 0; i < 2; ++i) hMultCentQA[i]=NULL;
   for (int i = 0; i < 6; ++i) hMultMultQA[i]=NULL;
+  for (int i = 0; i < NCENTBINS; ++i) pV2pT[i]=NULL;
 
   for (int i = 0; i < 2; ++i) hEta[i]=NULL;
   for (int i = 0; i < 2; ++i) hPhi[i]=NULL;
@@ -636,58 +639,58 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
       }
   
       // V0C Qx Mean 
-      AliOADBContainer* contQx2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2m");
-      if(!contQx2cm){
-          printf("OADB object fqxc2m is not available in the file\n");
+      AliOADBContainer* contQxncm = (AliOADBContainer*) fileV0Calib15o->Get("fqxc3m");
+      if(!contQxncm){
+          printf("OADB object fqxcnm is not available in the file\n");
           return;
       }
   
       // V0C Qy Mean 
-      AliOADBContainer* contQy2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2m");
-      if(!contQy2cm){
-          printf("OADB object fqyc2m is not available in the file\n");
+      AliOADBContainer* contQyncm = (AliOADBContainer*) fileV0Calib15o->Get("fqyc3m");
+      if(!contQyncm){
+          printf("OADB object fqycnm is not available in the file\n");
           return;
       }
   
       // V0A Qx Mean 
-      AliOADBContainer* contQx2am = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2m");
-      if(!contQx2am){
-          printf("OADB object fqxa2m is not available in the file\n");
+      AliOADBContainer* contQxnam = (AliOADBContainer*) fileV0Calib15o->Get("fqxa3m");
+      if(!contQxnam){
+          printf("OADB object fqxanm is not available in the file\n");
           return;
       }
   
       // V0A Qy Mean 
-      AliOADBContainer* contQy2am = (AliOADBContainer*) fileV0Calib15o->Get("fqya2m");
-      if(!contQy2am){
-          printf("OADB object fqya2m is not available in the file\n");
+      AliOADBContainer* contQynam = (AliOADBContainer*) fileV0Calib15o->Get("fqya3m");
+      if(!contQynam){
+          printf("OADB object fqyanm is not available in the file\n");
           return;
       }
   
       // V0C Qx Sigma
-      AliOADBContainer* contQx2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2s");
-      if(!contQx2cs){
-          printf("OADB object fqxc2s is not available in the file\n");
+      AliOADBContainer* contQxncs = (AliOADBContainer*) fileV0Calib15o->Get("fqxc3s");
+      if(!contQxncs){
+          printf("OADB object fqxcns is not available in the file\n");
           return;
       }
   
       // V0C Qy Sigma
-      AliOADBContainer* contQy2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2s");
-      if(!contQy2cs){
-          printf("OADB object fqyc2s is not available in the file\n");
+      AliOADBContainer* contQyncs = (AliOADBContainer*) fileV0Calib15o->Get("fqyc3s");
+      if(!contQyncs){
+          printf("OADB object fqycns is not available in the file\n");
           return;
       }
   
        // V0A Qx Sigma
-      AliOADBContainer* contQx2as = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2s");
-      if(!contQx2as){
-          printf("OADB object fqxa2s is not available in the file\n");
+      AliOADBContainer* contQxnas = (AliOADBContainer*) fileV0Calib15o->Get("fqxa3s");
+      if(!contQxnas){
+          printf("OADB object fqxans is not available in the file\n");
           return;
       }
   
       // V0A Qy Sigma
-      AliOADBContainer* contQy2as = (AliOADBContainer*) fileV0Calib15o->Get("fqya2s");
-      if(!contQy2as){
-          printf("OADB object fqya2s is not available in the file\n");
+      AliOADBContainer* contQynas = (AliOADBContainer*) fileV0Calib15o->Get("fqya3s");
+      if(!contQynas){
+          printf("OADB object fqyans is not available in the file\n");
           return;
       }
   
@@ -701,60 +704,60 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
         hMultV0[iRun] = ((TH1D*) contMult->GetObject(runNumList[iRun].Atoi()));
   
         // V0C Qx Mean 
-        if(!(contQx2cm->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxc2m is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQxncm->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxcnm is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQx2mV0[iRun][0] = ((TH1D*) contQx2cm->GetObject(runNumList[iRun].Atoi() ) );
+        hQxnmV0[iRun][0] = ((TH1D*) contQxncm->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0C Qy Mean 
-        if(!(contQy2cm->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqyc2m is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQyncm->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqycnm is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQy2mV0[iRun][0] = ((TH1D*) contQy2cm->GetObject(runNumList[iRun].Atoi() ) );
+        hQynmV0[iRun][0] = ((TH1D*) contQyncm->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0A Qx Mean
-        if(!(contQx2am->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxa2m is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQxnam->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxanm is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQx2mV0[iRun][1] = ((TH1D*) contQx2am->GetObject(runNumList[iRun].Atoi() ) );
+        hQxnmV0[iRun][1] = ((TH1D*) contQxnam->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0A Qy Mean
-        if(!(contQy2am->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqya2m is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQynam->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqyanm is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQy2mV0[iRun][1] = ((TH1D*) contQy2am->GetObject(runNumList[iRun].Atoi() ) );
+        hQynmV0[iRun][1] = ((TH1D*) contQynam->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0C Qx Sigma
-        if(!(contQx2cs->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxc2s is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQxncs->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxcns is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQx2sV0[iRun][0] = ((TH1D*) contQx2cs->GetObject(runNumList[iRun].Atoi() ) );
+        hQxnsV0[iRun][0] = ((TH1D*) contQxncs->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0C Qy Sigma
-        if(!(contQy2cs->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqyc2s is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQyncs->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqycns is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQy2sV0[iRun][0] = ((TH1D*) contQy2cs->GetObject(runNumList[iRun].Atoi() ) );
+        hQynsV0[iRun][0] = ((TH1D*) contQyncs->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0A Qx Sigma
-        if(!(contQx2as->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxa2s is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQxnas->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqxans is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQx2sV0[iRun][1] = ((TH1D*) contQx2as->GetObject(runNumList[iRun].Atoi() ) );
+        hQxnsV0[iRun][1] = ((TH1D*) contQxnas->GetObject(runNumList[iRun].Atoi() ) );
   
         // V0A Qy Sigma
-        if(!(contQy2as->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqya2s is not available for run %i\n", runNumList[iRun].Atoi() );
+        if(!(contQynas->GetObject(runNumList[iRun].Atoi() ) ) ){
+            printf("OADB object fqyans is not available for run %i\n", runNumList[iRun].Atoi() );
             return;
         }
-        hQy2sV0[iRun][1] = ((TH1D*) contQy2as->GetObject(runNumList[iRun].Atoi() ) );    
+        hQynsV0[iRun][1] = ((TH1D*) contQynas->GetObject(runNumList[iRun].Atoi() ) );    
       }
   }
 
@@ -841,7 +844,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
               return;
             };
             //TSplines in 1% centralicities
-            for (Int_t isp = 0; isp < 90; isp++) splQ2c[isp] = (TSpline3*)fListVZEROCALIB->FindObject(Form("sp_q2V0C_%d", isp));
+            for (Int_t isp = 0; isp < 80; isp++) splQ2c[isp] = (TSpline3*)fListVZEROCALIB->FindObject(Form("sp_q3V0C_%d", isp));
       }
   }
 
@@ -921,6 +924,10 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     fOutputList->Add(hMultMultQA[4]);
     fOutputList->Add(hMultMultQA[5]);
   }
+  for (int i = 0 ; i < NCENTBINS; ++i){
+    pV2pT[i] = new TProfile(Form("d2VsptCent%i",i),";p_{T};d_{2}", 31, 0.2, 2.0);
+  }
+  for (int i = fCbinLo; i < fCbinHg+1; ++i) {fOutputList->Add(pV2pT[i]);}
 
   for (int i = 0; i < NCENTBINS+1; ++i) {
     for (int j = 0; j < NQNBINS; ++j){
@@ -1057,7 +1064,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   fMultCutPU->SetParameters(parFB32);
 
 
-  // Rihan Pile-up function 18
+  // Rihan Pile-up function 18?
   // fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   // Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -1399,6 +1406,7 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
     // if (pt<1 && fabs(nSigmaTPCDe)<=2.) isDe = true; 
     // if (pt>1 && pt<5 &&fabs(nSigmaTPCDe)<=2.5 && fabs(nSigmaTOFDe)<=2. ) isDe = true; 
     double phi    = track->Phi();
+    double pt      = track->Pt();
     double eta    = track->Eta();
     int charge     = track->Charge(); 
     double weight1 = weightTrk[iTrk];
@@ -1420,6 +1428,10 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
       d2_iTrk = ((p_iTrk*fNegEtaQStar).Re()) / mM;
     } 
 
+    // Fill differential pT
+    pV2pT[fCentBin]->Fill(pt, d2_iTrk, mM);
+
+    // Fill Int Cov in Qn bins
     if (charge>0){
       pIntd2_thisEvt->Fill((double)(2*fQnBin+0.5), d2_iTrk, weight1); 
       pAch[fCentBin]->Fill((double)(2*fQnBin+0.5), mAch, weight1);
@@ -2036,10 +2048,10 @@ bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVt
       fV0XMean[0] = -999.; fV0YMean[0] = -999.; 
       fV0XSigma[0] = -999.; fV0YSigma[0] = -999.; 
       for(int i = 0; i < 2; ++i) {   // [1]: C; [2]: A;
-        fV0XMean[i+1] = hQx2mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-        fV0YMean[i+1] = hQy2mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-        fV0XSigma[i+1] = hQx2sV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-        fV0YSigma[i+1] = hQy2sV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0XMean[i+1] = hQxnmV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0YMean[i+1] = hQynmV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0XSigma[i+1] = hQxnsV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0YSigma[i+1] = hQynsV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
       }   
   }
   else return false;

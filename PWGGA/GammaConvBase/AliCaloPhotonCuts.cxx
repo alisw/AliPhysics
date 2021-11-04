@@ -1364,7 +1364,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistCellEnergyHG->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyHG->GetYaxis()->SetTitle("counts");
         fHistExtQA->Add(fHistCellEnergyHG);
-        
+
         fHistCellTimevsCellID           = new TH2F(Form("CellTimeVsCellID %s",GetCutNumber().Data()),"CellTimeVsCellID",600,-timeMax,timeMax, nMaxCellsDCAL, nCellsStart,
                                                    nMaxCellsDCAL+nCellsStart);
         fHistCellTimevsCellID->GetXaxis()->SetTitle("t_{cell} (GeV)");
@@ -3993,7 +3993,7 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
 }
 
 //________________________________________________________________________
-Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, Double_t phiCluster, AliVEvent* event)
+Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, AliVEvent* event, const Int_t DistanceToBorder)
 {
   if(CellID < 0) return kTRUE;
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
@@ -4010,6 +4010,24 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannelSwapping(const Int_t CellID, 
     } else if(fEMCALBadChannelsMap){
         fGeomEMCAL->GetCellIndex(CellID, iSupMod, iMod, iPhi, iEta);
         if(iSupMod >= 0 && iSupMod < 20) iBadCell = (Int_t) ((TH2I*)fEMCALBadChannelsMap->At(iSupMod))->GetBinContent(iPhi,iEta);
+    }
+
+    // check distance to border in case the cell is okay
+    if(DistanceToBorder > 0 && iBadCell == 0){
+      Int_t irow, icol;
+      fGeomEMCAL->GetCellIndex(CellID, iSupMod, iMod, iPhi, iEta);
+      fGeomEMCAL->GetCellPhiEtaIndexInSModule(iSupMod,iMod,iPhi, iEta,irow,icol);
+
+      // Check rows/phi
+      Int_t iRowLast = 24;
+      if      ( fGeomEMCAL->GetSMType(iSupMod) == AliEMCALGeometry::kEMCAL_Half ) iRowLast /= 2;
+      else if ( fGeomEMCAL->GetSMType(iSupMod) == AliEMCALGeometry::kEMCAL_3rd  ) iRowLast /= 3;// 1/3 sm case
+      else if ( fGeomEMCAL->GetSMType(iSupMod) == AliEMCALGeometry::kDCAL_Ext   ) iRowLast /= 3;// 1/3 sm case
+
+      if(irow < DistanceToBorder || (iRowLast - irow) <=  DistanceToBorder){
+        iBadCell = 1;
+      }
+
     }
 
   } else if( fClusterType == 2){ // PHOS case
@@ -5804,11 +5822,33 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       fDoSecondaryTrackMatching = kTRUE;
       break;
-    case 22: // very loose cuts for further processing
+    case 22: // very loose cuts for further processing, cut char 'm'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fMaxDistTrackToClusterEta = 0.1;//0.015;
       fMinDistTrackToClusterPhi = -0.1;//-0.01;
       fMaxDistTrackToClusterPhi = 0.1;//0.03;//0.04;
+      break;
+    case 23: // cut char 'n'
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta23", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.035, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi23", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.085, 0.015, 2.);
+
+      fEOverPMax = 1.75;
+      break;
+    case 24: // cut char 'o'
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta24", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.045, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi24", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.095, 0.015, 2.);
+
+      fEOverPMax = 1.75;
       break;
 
     default:
@@ -6638,6 +6678,30 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
       fMinM02CutNr=9;
       fMaxM02=0.5;
       break;
+    case 29:  // t
+      // linear interpolation between 0.7 (low pT) and 0.5 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 30:  // u
+      // linear interpolation between 0.7 (low pT) and 0.5 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 31:  // v
+      // linear interpolation between 0.7 (low pT) and 0.4 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
+    case 32:  // w
+      // linear interpolation between 0.7 (low pT) and 0.4 (high pT)
+      fUseM02=2;
+      fMinM02CutNr=9;
+      fMaxM02=0.7;
+      break;
     default:
       AliError(Form("Max M02 Cut not defined %d",maxM02));
       return kFALSE;
@@ -6723,6 +6787,22 @@ Float_t AliCaloPhotonCuts::CalculateMaxM02 (Int_t maxM02, Float_t clusEnergy){
     case 28:  // s
       if( (0.32 + 0.0238 * TMath::Power(clusEnergy,2)) >= 0.5) return 0.5;
       else return (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
+    case 29: // t, linear interpolation between M02 = 0.7 (low pT) and 0.5 (high pT)
+      if(clusEnergy < 10) return 0.7;
+      else if(clusEnergy < 15) return -0.04*clusEnergy + 1.1;
+      else return 0.5;
+    case 30: // u, linear interpolation between M02 = 0.7 (low pT) and 0.5 (high pT)
+      if(clusEnergy < 5) return 0.7;
+      else if(clusEnergy < 10) return  -0.04*clusEnergy + 0.9;
+      else return 0.5;
+    case 31: // v, linear interpolation between M02 = 0.7 (low pT) and 0.4 (high pT)
+      if(clusEnergy < 10) return 0.7;
+      else if(clusEnergy < 17.5) return -0.04*clusEnergy + 1.1;
+      else return 0.4;
+    case 32: // w, linear interpolation between M02 = 0.7 (low pT) and 0.4 (high pT)
+      if(clusEnergy < 5) return 0.7;
+      else if(clusEnergy < 12.5) return  -0.04*clusEnergy + 0.9;
+      else return 0.4;
 
     default:
       AliError(Form("Max M02 for merged cluster Cut not defined %d",maxM02));

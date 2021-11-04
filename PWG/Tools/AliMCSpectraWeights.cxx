@@ -1235,6 +1235,109 @@ AliMCSpectraWeights::GetMCSpectraWeight(TParticle* mcGenParticle,
     }
 }
 
+/**
+ *  @brief identify secondary particle depending on mother pid
+ *  @param[in] part
+ *  @return -1 for error; 0 from lambda, 1 from kaon0Short, 2 other
+ */
+int const AliMCSpectraWeights::IdentifySecondaryType(TParticle* part){
+    if(!part){
+        std::cerr << "AliMCSpectraWeights::Error: particle pointer zero\n";
+        return -1;
+    }
+    // two possible cases:
+    // 1) if a proton or a pi- check if mother is a Lambda (and check that it's a physical primary)
+    // 2) K0short case: if a pi+ check if mother is a K0short and assign the weight of K+, the same way as for Lambda's
+
+    auto const absPDG = TMath::Abs(part->GetPdgCode());
+    auto motherPartLabel = part->GetMother(0);
+    if (motherPartLabel<0) {
+        std::cerr << "AliMCSpectraWeights::Error: mother label negative\n";
+        return -1;
+    }
+    auto const motherPart =  (AliMCParticle*)fMCEvent->GetTrack(motherPartLabel);
+    auto const motherPDG = motherPart->PdgCode();
+
+    if(absPDG == 2212 || absPDG == 211){
+        // it's a proton or pi- (or antiparticles) --> case 1
+            //
+            //  if it's a Lambda physical primary...
+            //
+            if (TMath::Abs(motherPDG) == 3122 && motherPart->IsPhysicalPrimary()) {
+                //
+                // get weight of sigma+ (since sigma0 was not measured, yet)
+                //
+                DebugPCC("\t\t mother is lambda\n");
+                return 0;
+        }// end if primary lambda
+
+    }// end if proton or pi-
+
+    // ------------------------
+
+    // Climb decay tree if particle is a pi+/- to verify if it comes from K0short
+    if (absPDG == 211) {
+            //
+            //  if it's a K0short physical primary...
+            //
+            if (TMath::Abs(motherPDG) == 310 && motherPart->IsPhysicalPrimary()) {
+                //
+                // create a K+ TParticle with same momentum and status code as this K0short - because weight is not defined for neutrals (yet)
+                //
+                DebugPCC("\t\t mother is from K0short\n");
+                return 1;
+            }// end if primary K0short
+    }// end of K0short case
+
+    return 2;
+}
+
+/**
+ *  @brief weight factor dependent of mother particle
+ *  @param[in] mcGenParticle
+ *  @return weight factor for secondary particle
+ */
+float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenParticle){
+    DebugPCC("GetWeightForSecondaryParticle\n");
+
+    float weight = 1;
+    if (fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
+        DebugPCC("Warning: Status not kMCWeightCalculated\n");
+        return 1;
+    }
+
+    auto const _SecondaryID = IdentifyMCParticle(mcGenParticle);
+    if(_SecondaryID < 0){
+        std::cerr << "AliMCSpectraWeights::Error: secondary ID error\n";
+        return 1;
+    }
+    auto motherPartLabel = mcGenParticle->GetMother(0);
+    if (motherPartLabel<0) {
+        std::cerr << "AliMCSpectraWeights::Error: mother label negative\n";
+        return 1;
+    }
+    auto const motherPart =  (AliMCParticle*)fMCEvent->GetTrack(motherPartLabel);
+    int _iBin = -1;
+    switch (_SecondaryID) {
+        case 0: // Lambda case
+            _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kSigmaPlus);
+            break;
+        case 1: // Kaon0Short case
+            _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kKaon);
+            break;
+        default:
+            break;
+    }
+    if (_iBin < 0) {
+        DebugPCC("Can't find bin\n");
+        return 1;
+    }
+    weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+
+    DebugPCC("\t final weight is " << weight << "\n");
+    return weight;
+}
+
 void AliMCSpectraWeights::StartNewEvent() {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();

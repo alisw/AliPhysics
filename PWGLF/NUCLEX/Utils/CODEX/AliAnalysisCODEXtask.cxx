@@ -91,10 +91,10 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(!man)
   AliFatal("Could not find manager");
-  AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (man->GetInputEventHandler());
-  if(!handler)
+  mEventHandler = dynamic_cast<AliInputEventHandler*> (man->GetInputEventHandler());
+  if(!mEventHandler)
   AliFatal("No input event handler");
-  mPIDresponse = dynamic_cast<AliPIDResponse*>(handler->GetPIDResponse());
+  mPIDresponse = dynamic_cast<AliPIDResponse*>(mEventHandler->GetPIDResponse());
   if (!mPIDresponse)
   AliFatal("PIDResponse object was not created"); // Escalated to fatal. Task is unusable without PID response.
 
@@ -103,6 +103,11 @@ void AliAnalysisCODEXtask::UserCreateOutputObjects() {
   //
   mTimeChan = new TH2I("mTimeChan", "Histogram with Channel/Time correlation;Channel;TOF (ps)", 3276, 0. -.5, 157248. -.5, 5000, 10000, 80000);
   mOutput->AddLast(mTimeChan);
+
+  mCounterINT7 = new TH1D("mCounterINT7", ";Centrality (V0M percentile);",100,0,100);
+  mCounter = new TH1D("mCounter", ";Centrality (V0M percentile);",100,0,100);
+  mOutput->Add(mCounter);
+  mOutput->Add(mCounterINT7);
 
   mEventCuts.AddQAplotsToList(mOutput);
   PostData(2,mOutput);
@@ -136,16 +141,17 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
   if (event->GetMagneticField() < 0) mHeader.mEventMask |= kNegativeB;
 
   /// Check Monte Carlo information and other access first:
-  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  if (!eventHandler) {
+  AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!mcEventHandler) {
     if (mMCtrue)
     AliFatal("You asked for MC analysis, but I don't find any MCEventHandler... did you forget to add it to your analysis manager?");
   }
   //
   AliMCEvent* mcEvent = nullptr;
-  if (eventHandler) mcEvent = eventHandler->MCEvent();
-  if (!mcEvent && mMCtrue)
-  AliFatal("Missing MC event");
+  if (mcEventHandler) mcEvent = mcEventHandler->MCEvent();
+  if (!mcEvent && mMCtrue) {
+    AliFatal("Missing MC event");
+  }
   if (mMCtrue) {
     mHeader.mEventMask |= kMCevent;
   }
@@ -156,6 +162,16 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
 
   if (mEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
     mHeader.mEventMask |= kTriggerClasses;
+
+  if (mEventHandler->IsEventSelected() & AliVEvent::kCentral)
+    mHeader.mEventMask |= kCentral;
+  if (mEventHandler->IsEventSelected() & AliVEvent::kSemiCentral)
+    mHeader.mEventMask |= kSemiCentral;
+  if (mEventHandler->IsEventSelected() & AliVEvent::kINT7) {
+    mHeader.mEventMask |= kINT7;
+    mCounterINT7->Fill(mEventCuts.GetCentrality());
+  }
+  mCounter->Fill(mEventCuts.GetCentrality());
 
   bool EventWithPOI = !bool(mEventPOI);
 
@@ -273,7 +289,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.mask = standard_mask | kIsReconstructed;
 
     if (track->GetStatus() & AliVTrack::kTRDrefit) t.mask |= AliAnalysisCODEX::kTRDrefit;
-    
+
     /// Binned information
     float cov[3],dca[2];
     double ITSsamp[4];

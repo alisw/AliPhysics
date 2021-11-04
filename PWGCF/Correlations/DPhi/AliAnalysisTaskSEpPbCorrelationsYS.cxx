@@ -1,3 +1,4 @@
+
 /**************************************************************************************************
 *      Leading Charged Track+V0 Correlations.(Works for Real  Data)                               *
 *      Yuko Sekiguchi * Center for Nuclear Study(CNS) , University of Tokyo                       *
@@ -184,7 +185,6 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
-      fHistptreco(0),
       fHistPIDQA(0),
       fhistmcprim(0),
       fhmcprimvzeta(0),
@@ -377,7 +377,6 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
-      fHistptreco(0),
       fHistPIDQA(0),
       fhistmcprim(0),
       fhmcprimvzeta(0),
@@ -774,7 +773,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 						  1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,
 						  2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,
 						  6.0,6.5,7.0,8.0};
-   fHistptreco=new TH2D("fHistptreco","fHistptreco",sizeof(ptspectrum)/sizeof(Double_t)-1,ptspectrum,12,binning_cent_leadQA);
+   TH2F* fHistptreco;
+   if(fCentType=="Manual") fHistptreco=new TH2F("fHistptreco","fHistptreco",sizeof(ptspectrum)/sizeof(Double_t)-1,ptspectrum,200,0,200);
+   else fHistptreco=new TH2F("fHistptreco","fHistptreco",sizeof(ptspectrum)/sizeof(Double_t)-1,ptspectrum,12,binning_cent_leadQA);
    fOutputList1->Add(fHistptreco);
 			
    const Int_t imcprimbin[4]={11,55,30,10};
@@ -2114,7 +2115,14 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        selectedTracksLeading->SetOwner(kTRUE);
        selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
        Int_t nTracks=selectedTracksLeading->GetEntriesFast();
-       lCentrality=nTracks;
+	   Float_t nefficorrTrack=0;
+	   for(Int_t n = 0; n< nTracks; n++){
+		 AliAssociatedTrackYS* track = (AliAssociatedTrackYS*) selectedTracksLeading->At(n);
+		 Float_t corrected_multi=track->Multiplicity();
+		 nefficorrTrack+=corrected_multi;
+	   }
+	   //       lCentrality=nTracks;
+	   lCentrality=nefficorrTrack;
        selectedTracksLeading->Clear();
        delete selectedTracksLeading;
      }else{
@@ -2128,7 +2136,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      poolmax = CentBins[fNCentBins];
      fHist_Stat->Fill(4);
 
-   
      //   fHistCentV0vsTrackletsbefore->Fill(lCentrality,nTracklets);
    
        
@@ -2484,6 +2491,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    }
    
    if(hphiacceptance) delete hphiacceptance;
+
+
 
    Double_t vzeroqa[3];
    for (Int_t imod = 0; imod < 64; imod++) {
@@ -2926,7 +2935,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
       pidqa[3]=lCentrality;
       pidqa[4]=fPrimaryZVtx;
       fHistLeadQA->Fill(pidqa,0,1./efficiency);
-      fHistptreco->Fill(trackpt,lCentrality,1./efficiency);
+	  dynamic_cast<TH2F*>(fOutputList1->FindObject("fHistptreco"))->Fill(trackpt,lCentrality,1./efficiency);
     }
     Int_t SpAsso=0;
     tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), tracketa, trackphi, trackpt, aodTrack->GetID(), -999, -999, SpAsso, 1./efficiency));

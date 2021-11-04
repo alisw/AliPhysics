@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 18.10.2021
+ * Last Modified Date: 27.10.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -24,12 +24,10 @@
 #include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
-#include <TExMap.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
-// #include <THnSparse.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -179,8 +177,9 @@ public:
                           Int_t n6);
 
   // methods for calculating symmetric cumulants
-  void SC2(kFinalResultProfile rp);
-  void SC3(kFinalResultProfile rp);
+  void SC2(std::vector<Int_t> sc, Int_t index);
+  void SC3(std::vector<Int_t> sc, Int_t index);
+  std::vector<std::vector<Int_t>> MapSCToCor(std::vector<Int_t> sc);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
@@ -238,6 +237,17 @@ public:
     cor->clear();
     TList *list;
     for (auto List : *fFinalResultCorrelatorsList) {
+      list = dynamic_cast<TList *>(List);
+      cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
+    }
+  }
+  TList *GetFinalResultSymmetricCumulantsList() const {
+    return this->fFinalResultSymmetricCumulantsList;
+  }
+  void GetSymmetricCumulantValues(std::vector<Double_t> *cor) {
+    cor->clear();
+    TList *list;
+    for (auto List : *fFinalResultSymmetricCumulantsList) {
       list = dynamic_cast<TList *>(List);
       cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
     }
@@ -493,7 +503,7 @@ public:
   }
 
   // set symmetric cumulant to be computed
-  void SetSymmetricCumulant(std::vector<Int_t> SC) {
+  void SetSymmetricCumulants(std::vector<std::vector<Int_t>> SC) {
     this->fSymmetricCumulants = SC;
   }
 
@@ -656,7 +666,7 @@ private:
   TF1 *fMCMultiplicity;
 
   // Look up tabel between MC and data particles
-  TExMap *fLookUpTable;
+  std::map<Int_t, Int_t> fLookUpTable;
 
   // use Fisher-Yates algorithm to randomize tracks
   Bool_t fUseFisherYates;
@@ -674,10 +684,12 @@ private:
   Bool_t fUseWeights[kKinematic];
   Bool_t fUseWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
-  std::vector<Int_t> fSymmetricCumulants;
+  std::vector<std::vector<Int_t>> fSymmetricCumulants;
+  std::map<std::vector<Int_t>, std::vector<std::vector<Int_t>>> fMapSCtoCor;
+  std::map<std::vector<Int_t>, Int_t> fMapCorToIndex;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 17);
+  ClassDef(AliAnalysisTaskAR, 18);
 };
 
 #endif

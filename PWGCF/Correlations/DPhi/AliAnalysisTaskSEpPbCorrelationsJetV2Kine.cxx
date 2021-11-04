@@ -143,6 +143,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserCreateOutputObjects()
   fListOutput->Add(new TH2D("hEta_Phi",  "", 80, -2.5, 5.5, 72, 0 ,2.*TMath::Pi()));
 
   fListOutput->Add(new TH2D("hPt_Cen","", 40, 0., 20., 100, 0., 100.));
+  fListOutput->Add(new TH2D("hPt_Cen_mid","", 40, 0., 20., 100, 0., 100.));
  /*
   TObject *p(nullptr);
   TIter next(fListOutput);
@@ -487,6 +488,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   const auto dEtappt(mcTrack->Pt());
  
   (static_cast<TH2D*>(fListOutput->FindObject("hPt_Cen")))->Fill(dEtappt,fCentrality);
+  if(dEtapp>-0.8 && dEtapp<0.8) (static_cast<TH2D*>(fListOutput->FindObject("hPt_Cen_mid")))->Fill(dEtappt,fCentrality);
  } 
 
  if(fMode == "RCP") return;
