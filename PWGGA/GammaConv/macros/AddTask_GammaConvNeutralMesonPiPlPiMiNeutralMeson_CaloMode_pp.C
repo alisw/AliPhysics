@@ -1477,7 +1477,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                                      0103103100000000
     //                                                                            |
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103105100000000","0453503000000000"); // INT7 alpha 0-0.75
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103108100000000","0453503000000000"); // INT7 alpha 0-0.6
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103106100000000","0453503000000000"); // INT7 alpha 0-0.8
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103107100000000","0453503000000000"); // INT7 alpha 0-0.85
   } else if(trainConfig == 2305)  { //EMCal + DCal INT7, N.Pi cut var. Selection Window, Std 1 -> 2 sigma
     //                                                                      0103103100000000
     //                                                                             |
@@ -1684,7 +1685,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                                                         0453503000000000
     //                                                                                               |
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","01031v3100000000","0453505000000000"); // EG2 alpha 0-0.75
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","01031v3100000000","0453508000000000"); // EG2 alpha 0-0.6
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","01031v3100000000","0453506000000000"); // EG2 alpha 0-0.8
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070a","01031v3100000000","0453507000000000"); // EG2 alpha 0-0.85
   } else if(trainConfig == 3410)  { //EMCal + DCal EG2, Omega cut var. Background Scheme single cfg, Std 4 -> off, EventMixing
     //                                                                                         0453503000000000
     //                                                                                          |
@@ -1857,7 +1859,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                                                         0453503000000000
     //                                                                                               |
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","01031v3100000000","0453505000000000"); // EG1 alpha 0-0.75
-    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","01031v3100000000","0453508000000000"); // EG1 alpha 0-0.6
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","01031v3100000000","0453506000000000"); // EG1 alpha 0-0.8
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070a","01031v3100000000","0453507000000000"); // EG1 alpha 0-0.85
   } else if(trainConfig == 4410)  { //EMCal + DCal EG1, Omega cut var. Background Scheme single cfg, Std 4 -> off, EventMixing
     //                                                                                         0453503000000000
     //                                                                                          |
