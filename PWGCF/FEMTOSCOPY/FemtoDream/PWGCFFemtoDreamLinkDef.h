@@ -58,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskNanoLX+;
 #pragma link C++ class AliAnalysisTaskOtonOmegaNanoAOD+;
 #pragma link C++ class AliAnalysisTaskOtonkd+;
+#pragma link C++ class AliAnalysisTaskOtonkdAOD+;
 #pragma link C++ class AliAnalysisTaskGeorgiosNTuple+;
 #pragma link C++ class AliAnalysisTaskNanoPt+;
 #pragma link C++ class AliAnalysisTaskPOmegaPenne+;

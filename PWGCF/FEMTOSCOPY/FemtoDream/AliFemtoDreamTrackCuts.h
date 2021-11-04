@@ -216,11 +216,12 @@ class AliFemtoDreamTrackCuts {
   }
   ;
 
-  void SetPIDkaon(float COMBsKaon = 4., float TPCsKaon = 3., float EXCLUSIONs = 3.) {
-    fPIDkaon = true;
-    fCOMBsKaon = COMBsKaon;
-    fTPCsKaon = TPCsKaon;
-    fEXCLUSIONs = EXCLUSIONs;
+  void SetPIDkd(bool iskaon = true, float COMBcut = 4., float TPCcut = 3., float EXCLUSIONcut = 3.) {
+    fPIDkd = true;
+    fIsKaon = iskaon;
+    fcutCOMBkd = COMBcut;
+    fcutTPCkd = TPCcut;
+    fcutEXCLUSIONkd= EXCLUSIONcut;
   }
   ;
 
@@ -309,7 +310,7 @@ class AliFemtoDreamTrackCuts {
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDCuts(AliFemtoDreamTrack *Track);
   bool ITSPIDAODCuts(AliFemtoDreamTrack *Track);
-  bool PIDkaon(AliFemtoDreamTrack *Track, bool TPCyes, bool TOFyes);
+  bool PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool TOFyes);
   bool SmallestNSig(AliFemtoDreamTrack *Track);
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
@@ -372,16 +373,17 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITSmin;             // defaults to -3
   float fNSigValueITSmax;             // defaults to +3
   float fdoITSnSigmaCut;              // defaults is false
-  float fCOMBsKaon;                // defaults to 4
-  float fTPCsKaon;                // defaults to 3
-  float fEXCLUSIONs;                // defaults to 3
+  float fcutCOMBkd;                // defaults to 4
+  float fcutTPCkd;                // defaults to 3
+  float fcutEXCLUSIONkd;         // defaults to 3
+  bool fIsKaon;                // defaults to 3
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
   float fMultDCAmin;            //
   float fMultDCAmax;            //
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
   bool fTOFInvMassCut;                   //
-  bool fPIDkaon;                   //
+  bool fPIDkd;                   //
   float fTOFInvMassCutUp;            //
   float fTOFInvMassCutLow;            //
   bool fCutArroundPeakTOFInvMass;            //
