@@ -101,6 +101,7 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoAOD.cxx
   AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
   AliAnalysisTaskThreeBodyFemtoPionProton.cxx
+  AliAnalysisTaskThreeBodyProtonPrimary.cxx
   AliSigma0AODPhotonMotherCuts.cxx;
   AliSigma0PhotonCuts.cxx;
   )
