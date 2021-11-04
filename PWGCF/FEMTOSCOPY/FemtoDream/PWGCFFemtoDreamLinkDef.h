@@ -69,6 +69,7 @@
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoAOD+;
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoAODPionProton+;
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoPionProton+;
+#pragma link C++ class AliAnalysisTaskThreeBodyProtonPrimary+;
 
 #pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
