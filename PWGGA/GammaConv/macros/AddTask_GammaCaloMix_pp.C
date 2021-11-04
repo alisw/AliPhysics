@@ -206,26 +206,26 @@ void AddTask_GammaCaloMix_pp(
   // PHOS STD: 24466190sa01cc00000
   // EDC STD: 411790109fe30220000
   if (trainConfig == 1){
-    cuts.AddCutCaloCalo("00010113","244661904a09cc00000","411790109fe10220000","0163103100000010");
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe10220000","0163103100000010");
 } else if (trainConfig == 2){  //    Timing Variations   Std s: +- 30 ns + TC effi
 //                                          |
-    cuts.AddCutCaloCalo("00010113","244661905a01cc00000","411790109fe10220000","0163103100000010");  // 50 ns
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe10220000","0163103100000010");  // 50 ns
     cuts.AddCutCaloCalo("00010113","24466190sa01cc00000","411790109fe10220000","0163103100000010");  // std phos analysis
 } else if (trainConfig == 3){  //    Clus Energy Phos  Variations
 //                                             |         
-    cuts.AddCutCaloCalo("00010113","24466190sa01cc00000","411790109fe10220000","0163103100000010");  // PHOS energy cut 0.5
-    cuts.AddCutCaloCalo("00010113","24466190sa07cc00000","411790109fe10220000","0163103100000010");  // PHOS energy cut 0.2
-    cuts.AddCutCaloCalo("00010113","24466190sa09cc00000","411790109fe30220000","0163103100000010");    // 0.7 EMCal energy cut
+    cuts.AddCutCaloCalo("00010113","244661905a01cc00000","411790109fe10220000","0163103100000010");  // PHOS energy cut 0.5
+    cuts.AddCutCaloCalo("00010113","244661905a07cc00000","411790109fe10220000","0163103100000010");  // PHOS energy cut 0.2
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe30220000","0163103100000010");    // 0.7 EMCal energy cut
   } else if (trainConfig == 4){
 //                                                        |||||         
-    cuts.AddCutCaloCalo("00010113","24466190sa09cc00000","111110109fe10220000","0163103100000010");    // PHOS EMCAL
-    cuts.AddCutCaloCalo("00010113","24466190sa09cc00000","388550109fe10220000","0163103100000010");    // PHOS DCAL
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","111110109fe10220000","0163103100000010");    // PHOS EMCAL
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","388550109fe10220000","0163103100000010");    // PHOS DCAL
 
 } else if ( trainConfig == 5){ // EMCAL clusters
 //                                                                               |         
-    cuts.AddCutCaloCalo("00010113","24466190sa09cc00000","411790109fe10220000","0r63103100b00010"); // 90 degree rotation wo evt. weight
-    cuts.AddCutCaloCalo("00010113","24466190sa09cc00000","411790109fe10220000","0t63103100b00010"); // random angle with evt. weight
-    cuts.AddCutCaloCalo("00010113","24466190sa09cc00000","411790109fe10220000","0163103100b00050"); // mixed evt with OA cut
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe10220000","0r63103100b00010"); // 90 degree rotation wo evt. weight
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe10220000","0t63103100b00010"); // random angle with evt. weight
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe10220000","0163103100b00050"); // mixed evt with OA cut
     // ******************** pp 13 TeV Triggered Data        *****************************************
   } else if (trainConfig == 10){
 //                          ||         
