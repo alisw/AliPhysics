@@ -126,6 +126,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, flMCEvent)) continue;
     lPart = (AliMCParticle*)flMCEvent->GetTrack(i);
     if(!lPart->IsPhysicalPrimary()) continue;
+    if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
     if(TMath::Abs(eta)>fEta) continue;
     pt = lPart->Pt();
@@ -164,11 +165,13 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if (index < 0) continue;
     lPart = (AliMCParticle*)flMCEvent->GetTrack(index);
     if(!lPart) continue;
+    if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
     if(TMath::Abs(eta)>fEta) continue;
     pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
+    Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(lPart->Particle());
     if(lPart->IsPhysicalPrimary()) {
       fDCA[0]->Fill(pt,0.,dcaXY,CompWeight);
       if(passChi2) fDCA[1]->Fill(pt,0.,dcaXY,CompWeight);
@@ -182,17 +185,17 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
       };
     } else if(lPart->IsSecondaryFromWeakDecay()) {
       fDCA[0]->Fill(pt,1.,dcaXY,CompWeight);
-      if(passChi2) fDCA[1]->Fill(pt,1.,dcaXY,CompWeight);
+      if(passChi2) fDCA[1]->Fill(pt,1.,dcaXY,secWeight);
       if(passDCA) {
-        fWithinDCA[0]->Fill(pt,1.,CompWeight);
-        if(passChi2) fWithinDCA[1]->Fill(pt,1.,CompWeight);
+        fWithinDCA[0]->Fill(pt,1.,secWeight);
+        if(passChi2) fWithinDCA[1]->Fill(pt,1.,secWeight);
       };
     } else if(lPart->IsSecondaryFromMaterial()) {
-      fDCA[0]->Fill(pt,2.,dcaXY,CompWeight);
-      if(passChi2) fDCA[1]->Fill(pt,2.,dcaXY,CompWeight);
+      fDCA[0]->Fill(pt,2.,dcaXY,1);
+      if(passChi2) fDCA[1]->Fill(pt,2.,dcaXY,1);
       if(passDCA) {
-        fWithinDCA[0]->Fill(pt,2.,CompWeight);
-        if(passChi2) fWithinDCA[1]->Fill(pt,2.,CompWeight);
+        fWithinDCA[0]->Fill(pt,2.,1);
+        if(passChi2) fWithinDCA[1]->Fill(pt,2.,1);
       };
     };
   };

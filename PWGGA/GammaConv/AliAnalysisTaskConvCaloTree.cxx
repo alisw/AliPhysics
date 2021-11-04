@@ -93,7 +93,9 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVTrueClusterPi0DaughterIndex(),
   fVTrueClusterEtaDaughterIndex(),
   fVTrueClusterMCId(),
+  fVTrueClusterMCId2(),
   fVTrueClusterMCTrueEnergy(),
+  fVTrueClusterMCTrueEnergy2(),
   fVTrueClusterMCIsMerged(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
@@ -179,7 +181,9 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVTrueClusterPi0DaughterIndex(),
   fVTrueClusterEtaDaughterIndex(),
   fVTrueClusterMCId(),
+  fVTrueClusterMCId2(),
   fVTrueClusterMCTrueEnergy(),
+  fVTrueClusterMCTrueEnergy2(),
   fVTrueClusterMCIsMerged(),
   fVBuffer_Conv_px(),
   fVBuffer_Conv_py(),
@@ -294,7 +298,9 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Cluster_MotherPi0",      &fVTrueClusterPi0DaughterIndex);
       fPhotonTree->Branch("Cluster_MotherEta",      &fVTrueClusterEtaDaughterIndex);
       fPhotonTree->Branch("Cluster_MCId",           &fVTrueClusterMCId);
+      fPhotonTree->Branch("Cluster_MCId2",          &fVTrueClusterMCId2);
       fPhotonTree->Branch("Cluster_MCTrueEnergy",   &fVTrueClusterMCTrueEnergy);
+      fPhotonTree->Branch("Cluster_MCTrueEnergy2",  &fVTrueClusterMCTrueEnergy2);
       fPhotonTree->Branch("Cluster_MCTrueIsMerged", &fVTrueClusterMCIsMerged);
     }
   }
@@ -532,11 +538,15 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
 
 
     if(fIsMC > 0){// MC info
+
+
       if(!PhotonCandidate){
         fVTrueClusterPi0DaughterIndex.push_back(0);
         fVTrueClusterEtaDaughterIndex.push_back(0);
         fVTrueClusterMCId.push_back(0);
+        fVTrueClusterMCId2.push_back(0);
         fVTrueClusterMCTrueEnergy.push_back(0);
+        fVTrueClusterMCTrueEnergy2.push_back(0);
         fVTrueClusterMCIsMerged.push_back(kFALSE);
         delete clus;
         continue;
@@ -558,14 +568,30 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
 
       PhotonCandidate->SetCaloPhotonMCFlagsAOD(fAODMCTrackArray, kTRUE);
 
+      // get true MC id labels
+
+      const int NLabels = 2;
+      std::vector<Short_t> arrMCID = {0, 0};
+      std::vector<Float_t> arrMCEnergy = {0, 0};
+      for(Int_t i = 0; i < NLabels; ++i){
+        Int_t gammaMCLabel          = PhotonCandidate->GetCaloPhotonMCLabel(i);   // get most probable MC label
+        if(gammaMCLabel != -1){
+          AliAODMCParticle *gammaMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMCLabel));
+          arrMCID[i] = (Short_t) gammaMC->GetPdgCode();
+          arrMCEnergy[i] = (Float_t) gammaMC->E();
+        }
+      }
+      fVTrueClusterMCId.push_back(arrMCID[0]);
+      fVTrueClusterMCId2.push_back(arrMCID[1]);
+      fVTrueClusterMCTrueEnergy.push_back(arrMCEnergy[0]);
+      fVTrueClusterMCTrueEnergy2.push_back(arrMCEnergy[1]);
+
       Int_t gammaMCLabel          = PhotonCandidate->GetCaloPhotonMCLabel(0);   // get most probable MC label
       Int_t gammaMotherLabel      = -1;
 
       AliAODMCParticle * gammaMC = 0x0;
       if(gammaMCLabel != -1){
         gammaMC = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gammaMCLabel));
-        fVTrueClusterMCId.push_back((Short_t) gammaMC->GetPdgCode());
-        fVTrueClusterMCTrueEnergy.push_back((Short_t) gammaMC->E());
         if (PhotonCandidate->IsLargestComponentPhoton() || PhotonCandidate->IsLargestComponentElectron()){    // largest component is electron
           if (PhotonCandidate->IsLargestComponentPhoton()){                                        // for photons its the direct mother
               gammaMotherLabel=gammaMC->GetMother();
@@ -582,8 +608,6 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD(){
           fVTrueClusterMCIsMerged.push_back(kFALSE);
         }
       } else {
-        fVTrueClusterMCId.push_back(0);
-        fVTrueClusterMCTrueEnergy.push_back(0);
         fVTrueClusterMCIsMerged.push_back(kFALSE);
       }
       if(gammaMotherLabel > -1){
@@ -926,7 +950,9 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVTrueClusterPi0DaughterIndex.clear();
   fVTrueClusterEtaDaughterIndex.clear();
   fVTrueClusterMCId.clear();
+  fVTrueClusterMCId2.clear();
   fVTrueClusterMCTrueEnergy.clear();
+  fVTrueClusterMCTrueEnergy2.clear();
   fVTrueClusterMCIsMerged.clear();
 
   fVBuffer_Conv_px.clear();

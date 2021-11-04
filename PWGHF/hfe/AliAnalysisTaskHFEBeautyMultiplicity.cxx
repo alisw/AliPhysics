@@ -199,6 +199,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fNsigma_Electron(0),
     fNsigma_Hadron(0),
 
+    fHistPt_BeforePID(0),
+
     //---- MC data ----//
     fMCcheckMother(0),
     fMCarray(0),
@@ -462,6 +464,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
 
     fNsigma_Electron(0),
     fNsigma_Hadron(0),
+
+    fHistPt_BeforePID(0),
 
 
     //---- MC data ----//
@@ -846,19 +850,19 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fTPCCrossedRow_2);
     
   //M02
-    fM02_1 = new TH2F("fM02_1","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse : M02 [cm]",400,0,20,800,0,4);
+    fM02_1 = new TH2F("fM02_1","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse : M02 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM02_1);
 
   //M20
-    fM20_1 = new TH2F("fM20_1","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse : M20 [cm]",400,0,20,800,0,4);
+    fM20_1 = new TH2F("fM20_1","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse : M20 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM20_1);
     
   //M02 (after PID)
-    fM02_2 = new TH2F("fM02_2","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse (after PID) : M02 [cm]",400,0,20,800,0,4);
+    fM02_2 = new TH2F("fM02_2","M02 vs p_{T} distribution;p_{T} [GeV/c];long axis of ellipse (after PID) : M02 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM02_2);
 
   //M20 (after PID)
-    fM20_2 = new TH2F("fM20_2","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse (after PID) : M20 [cm]",400,0,20,800,0,4);
+    fM20_2 = new TH2F("fM20_2","M20 vs p_{T} distribution;p_{T} [GeV/c];short axis of ellipse (after PID) : M20 [cm]",600,0,30,800,0,4);
     fOutputList -> Add(fM20_2);
 
   //Track Eta vs. Phi (after Track cut)
@@ -1003,7 +1007,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNsigma_Hadron = new TH2F("fNsigma_Hadron","fNsigma_Hadron;p_{T} [GeV/c];n^{TPC}_{#sigma}",600,0,30,200,-10,10);
     fOutputList->Add(fNsigma_Hadron);
 
-
+  //Track Pt (Before PID cut)
+    fHistPt_BeforePID = new TH1F("fHistPt_BeforePID","fHistPt_BeforePID;p_{T} [GeV/c];",600,0,30);
+    fOutputList->Add(fHistPt_BeforePID);
 
     
 //************************************ MC data ************************************//
@@ -1312,13 +1318,13 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 	  
 	//Pi0
 	  pTWeight_Pi0 = new TF1("pTWeight_Pi0", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
-	  //pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
-	  pTWeight_Pi0->SetParameters(7.27836e-02,1.96082e+06,3.89361e+01,5.35823e+00,-4.07299e+00);
+	  pTWeight_Pi0->SetParameters(9.64967e-02,1.38490e+06,6.58746e+01,4.98144e+00,-4.51193e+00);
+	  //pTWeight_Pi0->SetParameters(7.27836e-02,1.96082e+06,3.89361e+01,5.35823e+00,-4.07299e+00);
 
 	//Eta
 	  pTWeight_Eta = new TF1("pTWeight_Eta", "([0]*exp((-x/[1]) - (x*x/[2])) + x/[3])^[4]");
-	  //pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
-	  pTWeight_Eta->SetParameters(2.24285e-01,1.00307e+02,4.85372e+01,4.60808e+00,-4.80392e+00);
+	  pTWeight_Eta->SetParameters(2.96266e-01,8.86671e+05,8.01783e+01,4.82405e+00,-5.81330e+00);
+	  //pTWeight_Eta->SetParameters(2.24285e-01,1.00307e+02,4.85372e+01,4.60808e+00,-4.80392e+00);
 	  
 	  
 
@@ -1935,7 +1941,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         //    Electron Identification    //
         //*******************************//
 
-	//cout << CutTrackEta[0] << " , " << CutTrackEta[1] << endl;
 
             //---- 10.Eta cut ----
             if(TrkEta > CutTrackEta[1] || TrkEta < CutTrackEta[0]) continue;
@@ -1948,7 +1953,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             
             Bool_t fFlagNonHFE = kFALSE;    // photonic electron identification
-            
+
+
+
+	    fHistPt_BeforePID->Fill(TrkPt);
 
             //========== Electron E/p ==========//
             //if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]))  // TPC nsigma & shower shape cut

@@ -33,75 +33,75 @@ class TF1;
 class AliMCSpectraWeights : public TNamed {
   public:
     enum ParticleType {
-      kPion = 0,
-      kProtons = 1,
-      kKaon = 2,
-      kSigmaMinus = 3,
-      kSigmaPlus = 4,
-      kRest = 5,
-      kLambda = 6
+        kPion = 0,
+        kProtons = 1,
+        kKaon = 2,
+        kSigmaMinus = 3,
+        kSigmaPlus = 4,
+        kRest = 5,
+        kLambda = 6
     }; /*!< enumerator of different particle types. */
     enum TaskState {
-      kAllEmpty = 0,
-      kMCSpectraObtained,
-      kDataFractionLoaded,
-      kMCWeightCalculated
+        kAllEmpty = 0,
+        kMCSpectraObtained,
+        kDataFractionLoaded,
+        kMCWeightCalculated
     }; /*!< counter for the status of the task. */
     enum SysFlag {
-      kNominal = 0,
-      kPionUp,
-      kPionDown,
-      kProtonUp,
-      kProtonDown,
-      kKaonUp,
-      kKaonDown,
-      kSigmaPlusUp,
-      kSigmaPlusDown,
-      kSigmaMinusUp,
-      kSigmaMinusDown,
-      kBylinkin,
-      kBylinkinUpper,
-      kBylinkinLower,
-      kHagedorn,
-      kHagedornUpper,
-      kHagedornLower,
-      kExponential,
-      kExponentialUpper,
-      kExponentialLower,
-      kBlastwave,
-      kBlastwaveUpper,
-      kBlastwaveLower
+        kNominal = 0,
+        kPionUp,
+        kPionDown,
+        kProtonUp,
+        kProtonDown,
+        kKaonUp,
+        kKaonDown,
+        kSigmaPlusUp,
+        kSigmaPlusDown,
+        kSigmaMinusUp,
+        kSigmaMinusDown,
+        kBylinkin,
+        kBylinkinUpper,
+        kBylinkinLower,
+        kHagedorn,
+        kHagedornUpper,
+        kHagedornLower,
+        kExponential,
+        kExponentialUpper,
+        kExponentialLower,
+        kBlastwave,
+        kBlastwaveUpper,
+        kBlastwaveLower
     }; /*!< enumerator for systematic variations */
 
   private:
     std::string fstCollisionSystem; /*!< collision system */
     std::string
-      fstFileMCSpectra; /*!< path to previous train output of MC fractions */
+        fstFileMCSpectra; /*!< path to previous train output of MC fractions */
     std::string fstFilePublished; /*!< path to calculated fractions from
-                                    published spectra */
+                                     published spectra */
     std::string fstSavedObjName;
     std::string fstSavedListName;
     std::vector<std::string>
-      fstPartTypes; /*!< Array of used particle species */
+        fstPartTypes; /*!< Array of used particle species */
     std::vector<std::string> fstCentralities;
     std::vector<float> fBinsMultCent; /*!< centrality or multiplicity binning */
     std::vector<float> fBinsPt;       /*!< pT binning */
     std::vector<AliMCSpectraWeights::SysFlag> fAllSystematicFlags;
     std::map<AliMCSpectraWeights::SysFlag, TH3F*>
-      fHistMCWeightsSys; /*!< Histograms for systematic variations of weight
-                           factors */
+        fHistMCWeightsSys; /*!< Histograms for systematic variations of weight
+                              factors */
     TRandom3 frndGen;
     TH3F* fHistMCGenPrimTrackParticle; /*!< Histogram for MC particle
-                                         information*/
+                                          information*/
     TH3F* fHistDataFractions; /*!< Histogram for particle abundances from
-                                published data */
+                                 published data */
     TH3F* fHistMCFractions;   /*!< Histogram for particle abundances from MC */
     TH3F* fHistMCWeights;     /*!< Histogram for weight factors to re-weight
-                                MCabundances to data ones. */
+                                 MCabundances to data ones. */
     TH3F* fHistMCWeightsSysUp; /*!< Histograms for average systematic of weight
-                                 factors  moved up*/
+                                factors  moved up*/
     TH3F* fHistMCWeightsSysDown; /*!< Histograms for average systematic of weight
-                                   factors  moved down*/
+                                  factors  moved down*/
     AliMCEvent* fMCEvent;     /*!< MC event */
     int         fNPrimaries;   /*!< MC primaries from last event*/
     float fMultOrCent;        /*!< counted multiplicity or centrality class */
@@ -111,9 +111,9 @@ class AliMCSpectraWeights : public TNamed {
     TaskState fbTaskStatus;   /*!< controls internal status of class */
     SysFlag fFlag;            /*!< enum flag for systematic variation */
     bool fUseMultiplicity;    /*!< switch to use multiplicity instead of
-                                centrality*/
+                                 centrality*/
     bool fUseMBFractions;     /*!< switch to use MB fractions instead of mult.
-                                dependent ones*/
+                                 dependent ones*/
     bool fDoSystematics;
 
     // functions
@@ -136,11 +136,11 @@ class AliMCSpectraWeights : public TNamed {
     bool CalcMCFractions();                                    //!
     bool CorrectFractionsforRest();                            //!
     bool CalculateSystematicUncertainties(); //!
-
+    
 
     int const CheckAndIdentifyParticle(TParticle* part);
     int const FindBinEntry(float pt, int const part);
-
+    
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
     AliMCSpectraWeights& operator=(const AliMCSpectraWeights&);//copy assign
@@ -150,32 +150,33 @@ class AliMCSpectraWeights : public TNamed {
     AliMCSpectraWeights(
         std::string const &collisionSystem, std::string const &stName,
         AliMCSpectraWeights::SysFlag flag); /*!< constructor to be used.*/
-    //    AliMCSpectraWeights(const AliMCSpectraWeights& org); // copy constructor
-    //    AliMCSpectraWeights(AliMCSpectraWeights* org); // copy constructor
+//    AliMCSpectraWeights(const AliMCSpectraWeights& org); // copy constructor
+//    AliMCSpectraWeights(AliMCSpectraWeights* org); // copy constructor
     ~AliMCSpectraWeights();
 
     void Init(); /*!< Function to start initalizing after all setters are made. */
     float const
-      GetMCSpectraWeight(TParticle* mcGenParticle,
-          AliMCEvent* mcEvent); /*!< old; should not be used */
+    GetMCSpectraWeight(TParticle* mcGenParticle,
+                       AliMCEvent* mcEvent); /*!< old; should not be used */
 
     float const
-      GetMCSpectraWeight(TParticle* mcGenParticle,
-          Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
+    GetMCSpectraWeight(TParticle* mcGenParticle,
+                       Int_t SysCase=0); /*!< way to go; SysCase = 0 --> nominal; -1 --> sys. moved down; +1 --> sys. moved up */
 
     float const
-      GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
-                                                            deliver correct weights to
-                                                            re-weight the abundances of
-                                                            different particle species */
+    GetMCSpectraWeightNominal(TParticle* mcGenParticle);/*!< main function to use. Will
+                                                         deliver correct weights to
+                                                         re-weight the abundances of
+                                                         different particle species */
     float const
-      GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
+    GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
 
+    int const IdentifySecondaryType(TParticle* part);
     float const GetWeightForSecondaryParticle(TParticle* mcGenParticle);
 
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for
-                                calculation of weight factors*/
+                                 calculation of weight factors*/
     void StartNewEvent();
 
     // Setter
@@ -188,10 +189,10 @@ class AliMCSpectraWeights : public TNamed {
     void SetSavedListName(const char* name) { fstSavedListName = name; }
     void SetSysFlag(SysFlag flag) { fFlag = flag; }
     void SetCurrentEvent(AliMCEvent* event) {
-      if (event != fMCEvent) {
-        fMCEvent = event;
-        CountEventMult();
-      }
+        if (event != fMCEvent) {
+            fMCEvent = event;
+            CountEventMult();
+        }
     }
     void SetDoSystematics(bool doSys = true) { fDoSystematics = doSys; }
 
@@ -215,16 +216,16 @@ class AliMCSpectraWeights : public TNamed {
 };
 
 struct AliMCSpectraWeightsHandler : public TNamed {
-  AliMCSpectraWeightsHandler(); //default for ROOT
-  AliMCSpectraWeightsHandler(AliMCSpectraWeights* fMCWeight, const char* name); // to be used
-  ~AliMCSpectraWeightsHandler(){}
+    AliMCSpectraWeightsHandler(); //default for ROOT
+    AliMCSpectraWeightsHandler(AliMCSpectraWeights* fMCWeight, const char* name); // to be used
+    ~AliMCSpectraWeightsHandler(){}
 
-  AliMCSpectraWeights* fMCSpectraWeight = 0;
-  private:
-  AliMCSpectraWeightsHandler(const AliMCSpectraWeightsHandler&);//copy
-  AliMCSpectraWeightsHandler& operator=(const AliMCSpectraWeightsHandler&);//copy assign
+    AliMCSpectraWeights* fMCSpectraWeight = 0;
+private:
+    AliMCSpectraWeightsHandler(const AliMCSpectraWeightsHandler&);//copy
+    AliMCSpectraWeightsHandler& operator=(const AliMCSpectraWeightsHandler&);//copy assign
 
-  ClassDef(AliMCSpectraWeightsHandler, 1);
+    ClassDef(AliMCSpectraWeightsHandler, 1);
 };
 
 #endif /* __AliMCSpectraWeights__ */

@@ -469,7 +469,7 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     for (int i = 0; i < 4; ++i) {
       fMixedEventTripletArrayResolution[i] = new TH2F(histTitlesMixedResolution[i],histTitlesMixedResolution[i], 1000, 0, 1, 1000, 0, 1);
       fMixedEventTripletArrayResolutionAll[i] = new TH2F(histTitlesMixedResolution[i],histTitlesMixedResolution[i], 1000, 0, 1, 1000, 0, 1);
-      fMixedEventTripletResolution->Add(fMixedEventTripletArray[i]);
+      fMixedEventTripletResolution->Add(fMixedEventTripletArrayResolution[i]);
       fMixedEventTripletResolutionAll->Add(fMixedEventTripletArrayResolutionAll[i]);
      }
 
@@ -489,7 +489,7 @@ void AliAnalysisTaskThreeBodyFemto::UserCreateOutputObjects() {
     for (int i = 0; i < 4; ++i) {
       fSameEventTripletArrayResolution[i] = new TH2F(histTitlesSameResolution[i],histTitlesSameResolution[i], 1000, 0, 1, 1000, 0, 1);
       fSameEventTripletArrayResolutionAll[i] = new TH2F(histTitlesSameResolution[i],histTitlesSameResolution[i], 1000, 0, 1, 1000, 0, 1);
-      fSameEventTripletResolution->Add(fSameEventTripletArray[i]);
+      fSameEventTripletResolution->Add(fSameEventTripletArrayResolution[i]);
       fSameEventTripletResolutionAll->Add(fSameEventTripletArrayResolutionAll[i]);
      }
 

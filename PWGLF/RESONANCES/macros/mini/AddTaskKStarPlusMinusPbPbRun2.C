@@ -142,9 +142,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
     //trigger 
     if (!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
     else task->SelectCollisionCandidates(triggerMask); //AOD
-    if (isPP)
-      task->UseMultiplicity("QUALITY");
-    else
+    //    if (isPP)
+    // task->UseMultiplicity("QUALITY");
+    // else
       task->UseMultiplicity("AliMultSelection_V0M");//Only for RunII        
     // set event mixing options
      task->UseContinuousMix();
@@ -152,7 +152,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
      task->SetNMix(nmix);
      task->SetMaxDiffVz(maxDiffVzMix);
      task->SetMaxDiffMult(maxDiffMultMix);
-     if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
+     task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
     //task->SetUseTimeRangeCut(timeRangeCut);
      task->UseMC(isMC);    
      
@@ -186,9 +186,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
     //multiplicity
     Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
-    if(isPP)
-    outMult->AddAxis(multID,400,0.5,400.5);
-    else outMult->AddAxis(multID,100,0.,100.);
+     outMult->AddAxis(multID,100,0.,100.);
     
     TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 240,-12.0,12.0);
     task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
@@ -229,9 +227,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
     } else
        Printf("========================== DATA analysis - PID cuts used");
 
-  #ifdef__CINT__
+
+ #ifdef __CINT__
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun2.C");
   #endif 
+
   if(!ConfigKStarPlusMinusPbPbRun2(task, isMC, aodFilterBit,piPIDCut,ThetaStar,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, 
   monitorOpt.Data(), UseArmentousCut,ArmentousParameter,massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn,
   k0sDaughDCA,"", PairCutsSame,PairCutsMix, DCAxy, enableSys, Sys, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin)) return 0x0;
