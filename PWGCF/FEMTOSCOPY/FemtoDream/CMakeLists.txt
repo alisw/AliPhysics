@@ -92,6 +92,7 @@ set(SRCS
   AliAnalysisTaskNanoLX.cxx
   AliAnalysisTaskOtonOmegaNanoAOD.cxx
   AliAnalysisTaskOtonkd.cxx
+  AliAnalysisTaskOtonkdAOD.cxx
   AliAnalysisTaskGeorgiosNTuple.cxx
   AliAnalysisTaskPOmegaPenne.cxx
   AliFemtoDreamBaseDump.cxx
