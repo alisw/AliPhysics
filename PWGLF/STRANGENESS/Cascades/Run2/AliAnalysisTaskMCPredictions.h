@@ -124,15 +124,21 @@ private:
   TH2D *fHistPtVsNMPI[64];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
-  Float_t fMinPtTriggerCharged; //for charged trigger
-  Float_t fMinPtTriggerXi; //for xi trigger
-  Float_t fMinPtTriggerPhi; //for phi trigger
+  Float_t fMinPtTrigger; //for xi trigger
+  Float_t fMaxPtTrigger; //for xi trigger
   TH1D *fEtaTriggerCharged; //!
   TH1D *fEtaTriggerXi; //!
   TH1D *fEtaTriggerPhi; //!
   //TH3D *fHist3d2pcSE[64]; //!
   //TH3D *fHist3d2pcXiSE[64]; //!
   //TH3D *fHist3d2pcPhiSE[64]; //!
+  
+  TH3D *fHist3d2pcXiCProton;
+  TH3D *fHist3d2pcXiCAntiProton;
+  TH3D *fHist3d2pcXiCD0;
+  TH3D *fHist3d2pcXiCD0bar;
+  TH3D *fHist3d2pcXiCKMinus;
+  TH3D *fHist3d2pcXiCKPlus;
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
