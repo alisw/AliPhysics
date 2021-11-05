@@ -11,7 +11,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA = true, bool isMC = false, bool isNano = true, float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01, const char *cutVariation = "0", bool ClosePairRejectionForAll = false, bool UseSphericityCut = false){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProtonPion", int trigger = 0, bool fullBlastQA = true, bool isMC = false, bool isNano = true, float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01, const char *cutVariation = "0", bool ClosePairRejectionForAll = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = true){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -227,25 +227,25 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
   TString addon = "PPion";
   TString file = AliAnalysisManager::GetCommonFileName();
 
-  TString EvtCutsName = Form("%sEvtCuts_%s", addon.Data(), suffix.Data());
+  TString EvtCutsName = Form("%s_EvtCuts_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
 
-  TString TrackCutsName = Form("%sTrackCuts_%s", addon.Data(), suffix.Data());
+  TString TrackCutsName = Form("%s_TrackCuts_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
 
-  TString AntiTrackCutsName = Form("%sAntiTrackCuts_%s", addon.Data(), suffix.Data());
+  TString AntiTrackCutsName = Form("%s_AntiTrackCuts_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
 
   AliAnalysisDataContainer *coutputPionCuts;
-  TString PionCutsName = Form("%sPionCuts_%s", addon.Data(), suffix.Data());
+  TString PionCutsName = Form("%s_PionCuts_%s", addon.Data(), suffix.Data());
   coutputPionCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       PionCutsName.Data(),
@@ -253,7 +253,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
       Form("%s:%s", file.Data(), PionCutsName.Data()));
 
   AliAnalysisDataContainer *coutputAntiPionCuts;
-  TString AntiPionCutsName = Form("%sAntiPionCuts_%s", addon.Data(), suffix.Data());
+  TString AntiPionCutsName = Form("%s_AntiPionCuts_%s", addon.Data(), suffix.Data());
   coutputAntiPionCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       AntiPionCutsName.Data(),
@@ -262,7 +262,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
       Form("%s:%s", file.Data(), AntiPionCutsName.Data()));
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("%sResults_%s", addon.Data(), suffix.Data());
+  TString ResultsName = Form("%s_Results_%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsName.Data(),
@@ -270,7 +270,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
       Form("%s:%s", file.Data(), ResultsName.Data()));
 
   AliAnalysisDataContainer *coutputResultsQA;
-  TString ResultsQAName = Form("%sResultsQA_%s", addon.Data(), suffix.Data());
+  TString ResultsQAName = Form("%s_ResultsQA_%s", addon.Data(), suffix.Data());
   coutputResultsQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsQAName.Data(),
@@ -279,7 +279,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
 
   AliAnalysisDataContainer *coutputResultsSample;
-  TString ResultsSampleName = Form("%sResultsSample_%s", addon.Data(), suffix.Data());
+  TString ResultsSampleName = Form("%s_ResultsSample_%s", addon.Data(), suffix.Data());
   coutputResultsSample = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsSampleName.Data(),
@@ -288,7 +288,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
       Form("%s:%s", file.Data(), ResultsSampleName.Data()));
 
   AliAnalysisDataContainer *coutputResultsSampleQA;
-  TString ResultsSampleQAName = Form("%sResultsSampleQA_%s", addon.Data(), suffix.Data());
+  TString ResultsSampleQAName = Form("%s_ResultsSampleQA_%s", addon.Data(), suffix.Data());
   coutputResultsSampleQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsSampleQAName.Data(),
@@ -301,7 +301,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
   AliAnalysisDataContainer *coutputPionCutsMC;
   AliAnalysisDataContainer *coutputAntiPionCutsMC;
   if (isMC) {
-    TString TrkCutsMCName = Form("%sTrkCutsMC_%s", addon.Data(), suffix.Data());
+    TString TrkCutsMCName = Form("%s_TrkCutsMC_%s", addon.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         TrkCutsMCName.Data(),
@@ -309,7 +309,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
 
-    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC_%s", addon.Data(), suffix.Data());
+    TString AntiTrkCutsMCName = Form("%s_AntiTrkCutsMC_%s", addon.Data(), suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         AntiTrkCutsMCName.Data(),
@@ -317,7 +317,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
 
-    TString PionCutsMCName = Form("%sPionCutsMC_%s", addon.Data(), suffix.Data());
+    TString PionCutsMCName = Form("%s_PionCutsMC_%s", addon.Data(), suffix.Data());
     coutputPionCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         PionCutsMCName.Data(),
@@ -325,7 +325,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), PionCutsMCName.Data()));
 
-    TString AntiPionCutsMCName = Form("%sAntiPionCutsMC_%s", addon.Data(), suffix.Data());
+    TString AntiPionCutsMCName = Form("%s_AntiPionCutsMC_%s", addon.Data(), suffix.Data());
     coutputAntiPionCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         AntiPionCutsMCName.Data(),
@@ -335,7 +335,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
 
   }
 
-  TString ThreeBodyName = Form("%sThreeBodyProtonPion_%s", addon.Data(), suffix.Data());
+  TString ThreeBodyName = Form("%s_ThreeBodyProtonPion_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputThreeBody = mgr->CreateContainer(
     //@suppress("Invalid arguments") it works ffs
     ThreeBodyName.Data(),
@@ -348,7 +348,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
   AliAnalysisTaskThreeBodyProtonPrimary* taskNano;
 //  AliAnalysisTaskThreeBodyProtonPrimaryAOD* taskAOD;
   if(isNano){
-    taskNano= new AliAnalysisTaskThreeBodyProtonPrimary("femtoNanoThreeBodyProtonPion", isMC);
+    taskNano= new AliAnalysisTaskThreeBodyProtonPrimary(Form("femtoNanoThreeBodyProtonPion_%s", taskName.Data()), isMC);
     if (!fullBlastQA)
     {
       taskNano->SetRunTaskLightWeight(true);
@@ -363,6 +363,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(int trigger = 0, bool fullBlastQA 
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetCleanWithLambdas(false);
+    taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
+    
     mgr->AddTask(taskNano);
 
     mgr->ConnectInput(taskNano, 0, cinput);

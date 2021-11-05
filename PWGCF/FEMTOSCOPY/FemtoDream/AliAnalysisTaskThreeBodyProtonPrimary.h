@@ -129,10 +129,13 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
     fQ3LimitForDeltaPhiDeltaEta=Q3LimitForDeltaPhiDeltaEta;
   }
   
-    void SetCleanWithLambdas(bool CleanWithLambdas) {
+  void SetCleanWithLambdas(bool CleanWithLambdas) {
     fCleanWithLambdas=CleanWithLambdas;
   }
-
+  
+  void SetDoOnlyThreeBody(bool DoOnlyThreeBody) {
+    fDoOnlyThreeBody=DoOnlyThreeBody;
+  }
   
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
@@ -198,6 +201,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   double fQ3LimitForDeltaPhiDeltaEta;
 
   bool fCleanWithLambdas; //if kTRUE: reject Proton + Pi- / Antiproton + Pi+ from Lambda/AntiLambda
+  bool fDoOnlyThreeBody; //if kTRUE: 3 Body analysis, else 2 Body
 
   TH1F **fSameEventTripletArray;
   TH2F **fSameEventTripletMultArray;
@@ -246,7 +250,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskThreeBodyProtonPrimary,1)
+  ClassDef(AliAnalysisTaskThreeBodyProtonPrimary,2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKTHREEBODYPROTONPRIMARY_H_ */
