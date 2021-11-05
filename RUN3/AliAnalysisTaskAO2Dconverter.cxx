@@ -2392,8 +2392,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       //Fill cascades in order
       Int_t ncas = fVEvent->GetNumberOfCascades();
       Int_t ncastosort = 0;
-      ULong64_t *packedV0indices       = new ULong64_t[ncas];
-      ULong64_t *packedbachelorindices = new ULong64_t[ncas];
+      Int_t *packedV0indices       = new Int_t[ncas];
+      Int_t *packedbachelorindices = new Int_t[ncas];
       Int_t *sortV0Idx = new Int_t[ncas];
 
       //Don't forget that OTF V0s might exist
