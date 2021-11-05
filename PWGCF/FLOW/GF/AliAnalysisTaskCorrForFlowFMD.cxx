@@ -211,8 +211,6 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    printf("CHECK 2 \n");
-
     fNofTracks = 0;
     for(Int_t i(0); i < iTracks; i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -245,13 +243,10 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       fhEventCounter->Fill("Nch cut ok ",1);
     }
 
-    printf("CHECK 3\n");
-
     // fSampleIndex = (Int_t) gRandom->Uniform(0,fNOfSamples);
 
     if(!fTracksAss->IsEmpty()){
       for(Int_t i(0); i < 4; i++){
-        printf("CHECK ... %d \n", i);
         FillCorrelations(i);
         FillCorrelationsMixed(i);
 
@@ -261,8 +256,6 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
         if(!fDoPID) break;
       }
     }
-
-    printf("CHECK 3\n");
 
     fTracksAss->Clear();
 	  delete fTracksAss;
@@ -385,8 +378,6 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
   if(!fTracksTrig[spec] || !fhTrigTracks[spec] || !fTracksAss) { AliError("Necessary inputs missing, terminating!"); return; }
   if(!fhSE[spec]) { AliError(Form("Output AliTHn missing for %d , terminating!", spec)); return; }
 
-  printf("Fill corr...  \n");
-
   if(fAnalType == eTPCTPC){
     Double_t binscont[6];
     binscont[2] = fPVz;
@@ -481,8 +472,6 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
     binscont[2] = fPVz;
     binscont[3] = fSampleIndex;
 
-    printf("CHECK 1 \n");
-
     for(Int_t iTrig(0); iTrig < fTracksTrig[spec]->GetEntriesFast(); iTrig++){
       AliPartSimpleForCorr* track = (AliPartSimpleForCorr*)fTracksTrig[spec]->At(iTrig);
       if(!track) continue;
@@ -501,8 +490,6 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhiFMD(trigPhi - assPhi);
-
-        printf("**filling**\n");
 
         fhSE[spec]->Fill(binscont,0,assMult*trigMult);
       }
