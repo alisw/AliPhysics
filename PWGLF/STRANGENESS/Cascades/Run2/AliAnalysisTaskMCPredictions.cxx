@@ -447,27 +447,27 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   }
   
   if(! fHist3d2pcXiCProton ) {
-    fHist3d2pcXiCProton = new TH3D("fHist3d2pcXiCProton","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fHist3d2pcXiCProton = new TH3D("fHist3d2pcXiCProton","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
     fListHist->Add(fHist3d2pcXiCProton);
   }
   if(! fHist3d2pcXiCAntiProton ) {
-    fHist3d2pcXiCAntiProton = new TH3D("fHist3d2pcXiCAntiProton","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fHist3d2pcXiCAntiProton = new TH3D("fHist3d2pcXiCAntiProton","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
     fListHist->Add(fHist3d2pcXiCAntiProton);
   }
   if(! fHist3d2pcXiCD0 ) {
-    fHist3d2pcXiCD0 = new TH3D("fHist3d2pcXiCD0","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fHist3d2pcXiCD0 = new TH3D("fHist3d2pcXiCD0","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
     fListHist->Add(fHist3d2pcXiCD0);
   }
   if(! fHist3d2pcXiCD0bar ) {
-    fHist3d2pcXiCD0bar = new TH3D("fHist3d2pcXiCD0bar","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fHist3d2pcXiCD0bar = new TH3D("fHist3d2pcXiCD0bar","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
     fListHist->Add(fHist3d2pcXiCD0bar);
   }
   if(! fHist3d2pcXiCKMinus ) {
-    fHist3d2pcXiCKMinus = new TH3D("fHist3d2pcXiCKMinus","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fHist3d2pcXiCKMinus = new TH3D("fHist3d2pcXiCKMinus","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
     fListHist->Add(fHist3d2pcXiCKMinus);
   }
   if(! fHist3d2pcXiCKPlus ) {
-    fHist3d2pcXiCKPlus = new TH3D("fHist3d2pcXiCKPlus","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fHist3d2pcXiCKPlus = new TH3D("fHist3d2pcXiCKPlus","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
     fListHist->Add(fHist3d2pcXiCKPlus);
   }
   
