@@ -43,36 +43,39 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 
 		void       GetGenLeadingObject();
 		void       GetGenUEObservables();
-		virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2, Double_t rangeMax = 3*TMath::Pi()/2 );
-		void       SetPtMin(Double_t val)              {fPtMin = val;}   // use differnet ptcuts
+		void       MakeALICE3Analysis();
+		virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2.0, Double_t rangeMax = 3.0*TMath::Pi()/2.0 );
+		void       SetPtMin(Double_t val){fPtMin = val;}
+		void       SetIsPP(Bool_t val){fIsPP = val;}
 
 	protected:
 
-
-
 	private:
 
-
-		AliMCEvent*  fMC;                                               //! MC Event
+		AliMCEvent*  fMC;                     //! MC Event
 		AliInputEventHandler*    fMcHandler;  //!<!
-		AliStack*    fMCStack;                                                 //! MC stack
+		AliStack*    fMCStack;                //! MC stack
 		Double_t fEtaCut;
+		Bool_t fIsPP;
 		Double_t fPtMin;
-		TList*                  fOutputList;                                      //! output list in the root file
-
-		// TString     fGenerator;
+		TList*  fOutputList;  //! output list in the root file
 
 		Double_t fGenLeadPhi; 
 		Double_t fGenLeadPt;
 		Int_t    fGenLeadIn;
-
 		// UE 
 		TH1D * hPtLeadingTrue;
 		TH2D * hPtLVsV0A;
+		TH2D * hetaphi;
+		TH2D * hnchmpi;
+		TH3D * hnchmpirho;
+		TH2D * hnchrho;
+		TH2D * hmpirho;
+
 		TH3D * hPtVsPtLeadingTrue[3];
 
-		AliAnalysisTaskGenMcKnoUe(const AliAnalysisTaskGenMcKnoUe&);                  // not implemented
-		AliAnalysisTaskGenMcKnoUe& operator=(const AliAnalysisTaskGenMcKnoUe&);       // not implemented
+		AliAnalysisTaskGenMcKnoUe(const AliAnalysisTaskGenMcKnoUe&);
+		AliAnalysisTaskGenMcKnoUe& operator=(const AliAnalysisTaskGenMcKnoUe&);
 
 		ClassDef(AliAnalysisTaskGenMcKnoUe, 3);
 };

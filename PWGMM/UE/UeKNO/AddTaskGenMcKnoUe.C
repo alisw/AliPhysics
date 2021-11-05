@@ -1,19 +1,13 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-//            AddTaskMcKnoUe Macro to run on grids               //
-//                                                               //
+//            AddTaskGenMcKnoUe Macro to run on grids            //
+//            Last update: 5/11/2021                             //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-//AliAnalysisTaskGenMcKnoUe* AddTaskGenMcKnoUe(const Char_t* taskname="McKnoUe",Bool_t isPythia=kFALSE,Bool_t isEPOS=kFALSE,Bool_t isAnyGen=kFALSE, Double_t minpT=0.5)
-
-AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5,TString suffixName ="")
+AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5, Bool_t isPP=kTRUE, TString suffixName ="")
 {
-    // get the manager via the static access member. since it's static, you don't need
-    // an instance of the class to call the function
-
     AliAnalysisTaskGenMcKnoUe* taskUE = new AliAnalysisTaskGenMcKnoUe("taskKno");
-
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         Printf("AliAnalysisTaskSimSpectraLF: No analysis manager to connect to.");
@@ -26,16 +20,11 @@ AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5,TString suffixName ="")
     }
 
     // now you create an instance of your task
-    
     if(!taskUE) return 0x0;
-   
-    // add your task to the manager
-    //taskUE -> SetGenerator("Pythia8");
     taskUE->SetPtMin(minpT);
-    
+    taskUE->SetIsPP(isPP); 
     mgr->AddTask(taskUE);
 
-    
     // Create containers for input/output
 
     TString finDirname    = "";
@@ -45,7 +34,6 @@ AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5,TString suffixName ="")
     finDirname    += suffixName.Data();
     inname    += finDirname.Data();
     outBasic    += finDirname.Data();
-
 
     // Input and Output Slots
     //===========================================================================

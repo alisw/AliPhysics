@@ -54,25 +54,28 @@
 #include <TBits.h>
 #include <AliAnalysisFilter.h>
 #include "AliAnalysisManager.h"
+#include "AliAnalysisTaskGenMcKnoUe.h"
 using std::cout;
 using std::endl;
+using namespace std;
 
-#include "AliAnalysisTaskGenMcKnoUe.h"
-
+class AliAnalysisTaskGenMcKnoUe;
 
 const Char_t * NameOfRegion[3]={"NS","AS","TS"};
 const Int_t NchNBins = 2000;
-
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
-class AliAnalysisTaskGenMcKnoUe;    // your analysis class
+const Double_t  ptamin = 0.15;
+const Double_t  ptamax = 20.0;
+const Double_t  etamax = 4.0;
+const Int_t nEtaBins = 10;
+const Int_t nPhiBins = 10;
+Double_t Nmpi = -1;
 
-using namespace std;            // std namespace: so you can do things like 'cout' etc
-
-ClassImp(AliAnalysisTaskGenMcKnoUe) // classimp: necessary for root
+ClassImp(AliAnalysisTaskGenMcKnoUe)
 
 	AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
 
-	fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0), hPtLeadingTrue(0),hPtLVsV0A(0)
+	fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fIsPP(kTRUE),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0), hPtLeadingTrue(0),hPtLVsV0A(0),hetaphi(0),hnchmpi(0),hnchmpirho(0),hnchrho(0),hmpirho(0)
 
 {
 	for(Int_t i=0;i<3;++i) 
@@ -82,24 +85,22 @@ ClassImp(AliAnalysisTaskGenMcKnoUe) // classimp: necessary for root
 //_____________________________________________________________________________
 AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
 
-	fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0), hPtLeadingTrue(0),hPtLVsV0A(0)
+	fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fIsPP(kTRUE),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0), hPtLeadingTrue(0),hPtLVsV0A(0),hetaphi(0),hnchmpi(0),hnchmpirho(0),hnchrho(0),hmpirho(0)
 
 {
 	for(Int_t i=0;i<3;++i)
 		hPtVsPtLeadingTrue[i]=0;
 
 	// constructor
-	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
-	// this chain is created by the analysis manager, so no need to worry about it, does its work automatically
-	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
-
+	DefineInput(0, TChain::Class());
+	DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskGenMcKnoUe::~AliAnalysisTaskGenMcKnoUe()
 {
 	// destructor
 	if(fOutputList) {
-		delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+		delete fOutputList;
 		fOutputList = 0x0;
 	}
 
@@ -131,9 +132,8 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 	};
 
 	OpenFile(1);
-	fOutputList = new TList();          // this is a list which will contain all of your histograms
-	// at the end of the analysis, the contents of this list are written  to the output file
-	fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects and will delete them if requested
+	fOutputList = new TList();
+	fOutputList->SetOwner(kTRUE);
 
 	hPtLVsV0A = 0;
 	hPtLVsV0A = new TH2D("hPtLVsV0A","",pTNBinsL,pTNBins1L,NchNBins,NchBins);
@@ -145,13 +145,53 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 	// UE analysis
 	for(Int_t i=0;i<3;++i){
 
-
 		hPtVsPtLeadingTrue[i] = new TH3D(Form("hPtVsPtLeadingTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,pTNBins,pTNBins1,NchNBins,NchBins);
 		fOutputList->Add(hPtVsPtLeadingTrue[i]);
 
 	}
 
-	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
+	// Define array nch
+	Double_t EtaBins[nEtaBins+1];
+	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
+	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+		EtaBins[i_eta]=0;
+		if(i_eta<nEtaBins)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		else
+			EtaBins[i_eta]= 1.0*etamax;
+	}
+	Double_t PhiBins[nPhiBins+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
+	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+		PhiBins[i_phi]=0;
+		if(i_phi<nPhiBins)
+			PhiBins[i_phi]=i_phi*deltaPhi - 1.0*pi;
+		else
+			PhiBins[i_phi]= 1.0*pi;
+	}
+
+	hetaphi = 0;
+	hetaphi = new TH2D("hetaphi","; #eta; #phi (rad)",nEtaBins,EtaBins,nPhiBins,PhiBins);
+	fOutputList->Add(hetaphi);
+
+	hnchmpi = 0;
+	hnchmpi = new TH2D("hnchmpi","; #it{N}_{ch}; #it{N}_{mpi}",600,-0.5,599.5,600,-0.5,599.5);
+	fOutputList->Add(hnchmpi);
+
+
+	hnchmpirho = 0;
+	hnchmpirho = new TH3D("hnchmpirho","; #it{N}_{ch}; #it{N}_{mpi}; #rho",600,-0.5,599.5,600,-0.5,599.5,1000,0.0,5.0);
+	fOutputList->Add(hnchmpirho);
+
+	hnchrho = 0;
+	hnchrho = new TH2D("hnchrho","; #it{N}_{ch}; #rho",600,-0.5,599.5,1000,0,5.0);
+	fOutputList->Add(hnchrho);
+
+	hmpirho = 0;
+	hmpirho = new TH2D("hmpirho","; #it{N}_{mpi}; #rho",600,-0.5,599.5,1000,0,5.0);
+	fOutputList->Add(hmpirho);
+
+	PostData(1, fOutputList);
 
 }
 //_____________________________________________________________________________
@@ -180,7 +220,7 @@ void AliAnalysisTaskGenMcKnoUe::UserExec(Option_t *)
 
 	if (!fMCStack) {
 		Printf("ERROR: Could not retrieve MC stack \n");
-		cout << "Name of the file with pb :" << endl; //fInputHandler->GetTree()->GetCurrentFile()->GetName() << 
+		cout << "Name of the file with pb :" << endl; 
 		return;
 	}
 
@@ -202,20 +242,18 @@ void AliAnalysisTaskGenMcKnoUe::UserExec(Option_t *)
 	}
 	if(TMath::Abs(vtxMC[2])<=10)
 		isGoodVtxPosMC = kTRUE;
-
+	Nmpi = genHeader->NProduced();
 	// Before trigger selection
-
 	GetGenLeadingObject();// leading particle at gen level
-	
-	if(isGoodVtxPosMC){
-		// UE analysis
-		if(fGenLeadPt>=fPtMin){
+
+	if(fIsPP)
+		MakeALICE3Analysis();
+
+	if(isGoodVtxPosMC)
+		if(fGenLeadPt>=fPtMin)
 			GetGenUEObservables();
-		}
 
-	}
-
-	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
+	PostData(1, fOutputList);
 
 }
 
@@ -245,12 +283,11 @@ void AliAnalysisTaskGenMcKnoUe::GetGenLeadingObject() {
 	Double_t flPhi = 0;
 	Int_t flIndex = 0;
 
-
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
 		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
 		if (!particle) continue;
-		if (!fMC->IsPhysicalPrimary(i)) continue;  //  Particles produced including products of strong and electromagnetic decays but excluding feed-down from weak decays of strange particles like Ks,Lambda etc)
+		if (!fMC->IsPhysicalPrimary(i)) continue;
 		if (particle->Charge() == 0) continue;
 		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
 		if( particle->Pt() < fPtMin)continue;
@@ -276,6 +313,7 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 		if (!particle) continue;
 		if (!fMC->IsPhysicalPrimary(i)) continue;
 		if (particle->Charge() == 0) continue;
+		if(particle->Pt()<=0)continue;
 		if ( particle->Eta() > 2.8 && particle->Eta()<5.1 )
 			multV0Aeta++;
 		else
@@ -311,6 +349,108 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 
 	}
 	hPtLeadingTrue->Fill(fGenLeadPt);
+}
+//_______________________________________________________
+void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
+
+	Double_t EtaBins[nEtaBins+1];
+	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
+	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+		EtaBins[i_eta]=0;
+		if(i_eta<nEtaBins)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		else
+			EtaBins[i_eta]= 1.0*etamax;
+	}
+	Double_t PhiBins[nPhiBins+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
+	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+		PhiBins[i_phi]=0;
+		if(i_phi<nPhiBins)
+			PhiBins[i_phi]=i_phi*deltaPhi - 1.0*pi;
+		else
+			PhiBins[i_phi]= 1.0*pi;
+	}
+
+	Int_t NchLattice[nEtaBins][nPhiBins];
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+			NchLattice[i_eta][i_phi]=0;
+	Double_t MpTLattice[nEtaBins][nPhiBins];
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+			MpTLattice[i_eta][i_phi]=0;
+
+	Double_t totalpt=0;
+	Int_t totalnch_forpt=0;
+	Int_t nchtotal=0;
+
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+		Float_t eta_a = particle->Eta();
+		Float_t phi_a = particle->Phi();
+		Float_t pt_a  = particle->Pt();
+
+		if (!fMC->IsPhysicalPrimary(i)) continue;
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(eta_a) > etamax )continue;
+		if ( pt_a <= 0 )continue;
+		nchtotal++;
+		if(pt_a<ptamin||pt_a>ptamax)continue;
+		totalpt+=pt_a;
+		totalnch_forpt++;
+		// loop over all eta and phi intervals
+		for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+			for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+				if(eta_a>=EtaBins[i_eta]&&eta_a<EtaBins[i_eta+1]&&phi_a>=PhiBins[i_phi]&&phi_a<PhiBins[i_phi+1]){
+					NchLattice[i_eta][i_phi]++;
+					MpTLattice[i_eta][i_phi]+=pt_a;
+				}
+			}
+		}
+		hetaphi->Fill(eta_a,phi_a);
+	}
+	// analyzing array
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+			if(NchLattice[i_eta][i_phi]>0)
+				MpTLattice[i_eta][i_phi]/=(1.0*NchLattice[i_eta][i_phi]);
+			else
+				MpTLattice[i_eta][i_phi]=0.0;
+		}
+	}
+	Double_t mNch=0;
+	Double_t mMpT=0;
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+			mMpT+=MpTLattice[i_eta][i_phi];
+			mNch+=1.0*NchLattice[i_eta][i_phi];
+		}
+	}
+	// average activity per cell
+	mMpT/=(1.0*nEtaBins*nPhiBins);
+	mNch/=(1.0*nEtaBins*nPhiBins);
+	// get sigma
+	Double_t sNch_tmp=0;
+	Double_t sMpT_tmp=0;
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+			sMpT_tmp+=TMath::Power(MpTLattice[i_eta][i_phi]-mMpT,2);
+			sNch_tmp+=TMath::Power(1.0*NchLattice[i_eta][i_phi]-mNch,2);
+		}
+	}
+	sMpT_tmp/=(1.0*nEtaBins*nPhiBins);
+	sNch_tmp/=(1.0*nEtaBins*nPhiBins);
+	//Double_t sNch=TMath::Sqrt(sNch_tmp);
+	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
+
+	hnchmpi->Fill(nchtotal,Nmpi);
+	hnchmpirho->Fill(nchtotal,Nmpi,sMpT/mMpT);
+	hnchrho->Fill(nchtotal,sMpT/mMpT);
+	hmpirho->Fill(Nmpi,sMpT/mMpT);
+
 }
 
 //____________________________________________________________
