@@ -316,9 +316,6 @@ private:
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
   
-  Int_t        fNTrigPtBins ;                            ///<  Number of bins for deltaEta-deltaPhi histogram.
-  Float_t      fTrigPtBinLimit[20] ;                     ///<  Trigger pT bins for deltaEta-deltaPhi histogram.
-  
   Bool_t       fCorrelVzBin ;                            ///<  Fill one histogram per vz bin.
   
   /// Containers for tracks in stored events for mixing.
@@ -705,7 +702,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,38) ;
+  ClassDef(AliAnaParticleHadronCorrelation,39) ;
   /// \endcond
   
 } ;

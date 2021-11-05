@@ -69,7 +69,6 @@ fMakeAbsoluteLeading(0),        fMakeNearSideLeading(0),
 fLeadingTriggerIndex(-1),       fHMPIDCorrelation(0),  
 fFillBradHisto(0),              fFillDeltaPhiDeltaEtaAssocPt(0),
 fNAssocPtBins(0),               fAssocPtBinLimit(),
-fNTrigPtBins(0),                fTrigPtBinLimit(),
 fCorrelVzBin(0),
 fListMixTrackEvents(),          fListMixCaloEvents(),
 fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
@@ -1661,10 +1660,6 @@ TObjString* AliAnaParticleHadronCorrelation::GetAnalysisCuts()
     snprintf(onePar,buffersize,"assoc bin %d = [%2.1f,%2.1f];", ibin, fAssocPtBinLimit[ibin], fAssocPtBinLimit[ibin+1]) ;
   }
   parList+=onePar ; 
-  for (Int_t ibin = 0; ibin<fNTrigPtBins; ibin++) {
-    snprintf(onePar,buffersize,"trig bin %d = [%2.1f,%2.1f];", ibin, fTrigPtBinLimit[ibin], fTrigPtBinLimit[ibin+1]) ;
-  }
-  parList+=onePar ; 
   
   //Get parameters set in base class.
   parList += GetBaseParametersList() ;
@@ -1684,14 +1679,31 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ;
   outputContainer->SetName("CorrelationHistos") ;
   
-  Int_t   nptbins = GetHistogramRanges()->GetHistoPtBins(); Int_t  nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins();
-  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax();
-  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin();
-  
-  Int_t  ndeltaphibins = GetHistogramRanges()->GetHistoDeltaPhiBins(); Int_t   ndeltaetabins = GetHistogramRanges()->GetHistoDeltaEtaBins();
-  Float_t deltaphimax  = GetHistogramRanges()->GetHistoDeltaPhiMax();  Float_t deltaetamax   = GetHistogramRanges()->GetHistoDeltaEtaMax();
-  Float_t deltaphimin  = GetHistogramRanges()->GetHistoDeltaPhiMin();  Float_t deltaetamin   = GetHistogramRanges()->GetHistoDeltaEtaMin();
-  
+  InitHistoRangeArrays();
+
+  Int_t   nptbins = GetHistogramRanges()->GetHistoPtBins();
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();
+  TArrayD ptBinsArray = GetHistogramRanges()->GetHistoPtArr();
+
+  Int_t   nphibins = GetHistogramRanges()->GetHistoPhiBins();
+  Float_t phimax   = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t phimin   = GetHistogramRanges()->GetHistoPhiMin();
+
+  Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin();
+
+  Int_t   ndeltaphibins = GetHistogramRanges()->GetHistoDeltaPhiBins();
+  Float_t deltaphimax   = GetHistogramRanges()->GetHistoDeltaPhiMax();
+  Float_t deltaphimin   = GetHistogramRanges()->GetHistoDeltaPhiMin();
+  TArrayD dphiBinsArray = GetHistogramRanges()->GetHistoDeltaPhiArr();
+
+  Int_t   ndeltaetabins = GetHistogramRanges()->GetHistoDeltaEtaBins();
+  Float_t deltaetamax   = GetHistogramRanges()->GetHistoDeltaEtaMax();
+  Float_t deltaetamin   = GetHistogramRanges()->GetHistoDeltaEtaMin();
+  TArrayD detaBinsArray = GetHistogramRanges()->GetHistoDeltaEtaArr();
+
   Int_t ntrbins = GetHistogramRanges()->GetHistoTrackMultiplicityBins(); Int_t nclbins = GetHistogramRanges()->GetHistoNClustersBins();
   Int_t trmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();  Int_t clmax   = GetHistogramRanges()->GetHistoNClustersMax();
   Int_t trmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();  Int_t clmin   = GetHistogramRanges()->GetHistoNClustersMin();
@@ -2901,13 +2913,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
          Form("#Delta #varphi vs #Delta #eta vs #it{p}_{T}^{trig} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-         fNTrigPtBins, fTrigPtBinLimit[0], fTrigPtBinLimit[fNTrigPtBins-1], 
-         ndeltaphibins,deltaphimin,deltaphimax,
-         ndeltaetabins,deltaetamin,deltaetamax);
+           ptBinsArray.GetSize() - 1,     ptBinsArray.GetArray(),
+         dphiBinsArray.GetSize() - 1,   dphiBinsArray.GetArray(),
+         detaBinsArray.GetSize() - 1,   detaBinsArray.GetArray());
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetZTitle("#Delta #eta");
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
-        fhDeltaPhiDeltaEtaAssocPtBin[bin]->GetXaxis()->Set(fNTrigPtBins,fTrigPtBinLimit);
         
         outputContainer->Add(fhDeltaPhiDeltaEtaAssocPtBin[bin]) ;
         
@@ -3884,13 +3895,12 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
                 fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
            Form("Mixed event #Delta #eta vs #Delta #varphi vs #it{p}_{T trigger} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
                 fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-           fNTrigPtBins  ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins-1],
-           ndeltaphibins ,deltaphimin,deltaphimax,
-           ndeltaetabins ,deltaetamin,deltaetamax);
+             ptBinsArray.GetSize() - 1,     ptBinsArray.GetArray(),
+           dphiBinsArray.GetSize() - 1,   dphiBinsArray.GetArray(),
+           detaBinsArray.GetSize() - 1,   detaBinsArray.GetArray());
           fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");
           fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetZTitle("#Delta #eta");
           fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
-          fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]->GetXaxis()->Set(fNTrigPtBins,fTrigPtBinLimit);
           
           outputContainer->Add(fhMixDeltaPhiDeltaEtaChargedAssocPtBin[bin]);
         }
@@ -4147,25 +4157,6 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[17]  = 40.0 ;
   fAssocPtBinLimit[18]  = 50.0 ;
   fAssocPtBinLimit[19]  = 100.0 ;
-  
-  fNTrigPtBins         = 8   ;
-  fTrigPtBinLimit[0]   = 8.  ;
-  fTrigPtBinLimit[1]   = 10. ;
-  fTrigPtBinLimit[2]   = 12. ;
-  fTrigPtBinLimit[3]   = 16. ;
-  fTrigPtBinLimit[4]   = 20. ;
-  fTrigPtBinLimit[5]   = 25. ;
-  fTrigPtBinLimit[6]   = 30. ;
-  fTrigPtBinLimit[7]   = 40. ;
-  fTrigPtBinLimit[8]   = 50. ;
-  fTrigPtBinLimit[9]   = 60. ;
-  fTrigPtBinLimit[10]  = 80. ;
-  fTrigPtBinLimit[11]  = 100.;
-  fTrigPtBinLimit[11]  = 125.;
-  fTrigPtBinLimit[12]  = 150.;
-  fTrigPtBinLimit[13]  = 175.;
-  fTrigPtBinLimit[14]  = 200.;
-
   
   fUseMixStoredInReader = kTRUE;
   
@@ -5775,38 +5766,3 @@ void AliAnaParticleHadronCorrelation::SetAssocPtBinLimit(Int_t ibin, Float_t pt)
     AliWarning(Form("Associated pT Bin number too large %d > %d or small, nothing done", ibin, fNAssocPtBins)) ;
   }
 }
-
-
-//____________________________________________________________
-/// Set number of associated charged (neutral) hadrons pT bins.
-//____________________________________________________________
-void AliAnaParticleHadronCorrelation::SetNTriggerPtBins(Int_t n)
-{
-  fNTrigPtBins  = n ;
-  
-  if ( n < 20 && n > 0 )
-  {
-    fNTrigPtBins  = n ;
-  }
-  else
-  {
-    AliWarning("n = larger than 19 or too small, set to 19");
-    fNTrigPtBins = 19;
-  }
-}
-
-//______________________________________________________________________________
-/// Set the list of pT limits for the of associated charged (neutral) hadrons.
-//______________________________________________________________________________
-void AliAnaParticleHadronCorrelation::SetTriggerPtBinLimit(Int_t ibin, Float_t pt)
-{
-  if ( ibin <= fNTrigPtBins || ibin >= 0 )
-  {
-    fTrigPtBinLimit[ibin] = pt  ;
-  }
-  else
-  {
-    AliWarning(Form("Trigger pT Bin number too large %d > %d or small, nothing done", ibin, fNTrigPtBins)) ;
-  }
-}
-
