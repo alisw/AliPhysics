@@ -137,12 +137,13 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib() :
   };
   for (int iRun = 0; iRun < NRUNNUM; ++iRun){
     hMultV0Fill[iRun]=NULL;
+    hMultV0GE[iRun]=NULL;
     hMultV0Read[iRun]=NULL;
     for (int i = 0; i < 3; ++i){
       pV0XMeanFill[iRun][i]=NULL;
       pV0YMeanFill[iRun][i]=NULL;
-      hQx3mV0[iRun][i]=NULL;
-      hQy3mV0[iRun][i]=NULL;
+      hQxnmV0[iRun][i]=NULL;
+      hQynmV0[iRun][i]=NULL;
     }
   };
   for (int i = 0; i < 3; ++i){
@@ -257,12 +258,13 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib(const char *name) :
   };
   for (int iRun = 0; iRun < NRUNNUM; ++iRun){
     hMultV0Fill[iRun]=NULL;
+    hMultV0GE[iRun]=NULL;
     hMultV0Read[iRun]=NULL;
     for (int i = 0; i < 3; ++i){
       pV0XMeanFill[iRun][i]=NULL;
       pV0YMeanFill[iRun][i]=NULL;
-      hQx3mV0[iRun][i]=NULL;
-      hQy3mV0[iRun][i]=NULL;
+      hQxnmV0[iRun][i]=NULL;
+      hQynmV0[iRun][i]=NULL;
     }
   };
   for (int i = 0; i < 3; ++i){
@@ -320,7 +322,7 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
 
   // Run Info 10h
   if (fPeriod.EqualTo("LHC10h")){
-    TString RunList[NRUNNUM]={
+    TString RunList[90]={
       "139510","139507","139505","139503","139465","139438","139437","139360","139329","139328","139314","139310",
       "139309","139173","139107","139105","139038","139037","139036","139029","139028","138872","138871","138870",
       "138837","138732","138730","138666","138662","138653","138652","138638","138624","138621","138583","138582",
@@ -328,7 +330,7 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
       "138197","138192","138190","137848","137844","137752","137751","137724","137722","137718","137704","137693",
       "137692","137691","137686","137685","137639","137638","137608","137595","137549","137546","137544","137541",
       "137539","137531","137530","137443","137441","137440","137439","137434","137432","137431","137430","137243",
-      "137236","137235","137232","137231","137230","137162","137161"};
+      "137236","137235","137232","137231","137162","137161"};
       hRunNumBin = new TH1I("runNumBin","",100,0,100);
       for (int i=0; i<NRUNNUM; ++i) {    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,RunList[i].Data());
@@ -338,7 +340,7 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
   };
   // Run Info 11h
   if (fPeriod.EqualTo("LHC11h")){
-    TString RunList[NRUNNUM]={"170387","170040","170268","170228","170207","169838","170159","170204","170311","170084",
+    TString RunList[39]={"170387","170040","170268","170228","170207","169838","170159","170204","170311","170084",
       "169835","170088","170593","170203","170270","169846","170163","170388","170155","170083",
       "170572","169837","169855","170306","170269","170089","170309","170091","170081","170230",
       "170085","170315","170027","170193","170312","170313","170308","169858","169859"};
@@ -351,7 +353,7 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
   };
   // Run Info 15o
   if (fPeriod.EqualTo("LHC15o") ){
-    TString RunList[NRUNNUM]={
+    TString RunList[138]={
          "246994","246991","246989","246984","246982","246948","246945","246928","246871","246870","246867","246865", 
          "246864","246859","246858","246851","246847","246846","246845","246844","246810","246809","246808","246807", 
          "246805","246804","246766","246765","246763","246760","246759","246758","246757","246751","246750","246434", 
@@ -450,34 +452,39 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
 
   // track-wise
   hPt = new TH1D("hPt", "", 200, 0., 20.);
-  fOutputList->Add(hPt);
   hEta[0] = new TH1D("hEtaBeforeCut", "", 200, -10., 10.);
   hEta[1] = new TH1D("hEtaAfterCut",  "", 200, -10., 10.);
-  fOutputList->Add(hEta[0]);
-  fOutputList->Add(hEta[1]);
   hPhi[0] = new TH1D("hPhiBeforeCor", "", 50, 0, 6.283185);
   hPhi[1] = new TH1D("hPhiAfterCor", "", 50, 0, 6.283185);
-  fOutputList->Add(hPhi[0]);
-  fOutputList->Add(hPhi[1]);
   hEtaPhi[0] = new TH2D("hEtaPhiBeforeCor", "", 50, 0, 6.283185, 16,-0.8,0.8);
   hEtaPhi[1] = new TH2D("hEtaPhiAfterCor", "", 50, 0, 6.283185, 16,-0.8,0.8);
-  fOutputList->Add(hEtaPhi[0]);
-  fOutputList->Add(hEtaPhi[1]);
   hNhits[0] = new TH1D("hNhitsBeforeCut", "", 200, 0., 200.);
   hNhits[1] = new TH1D("hNhitsAfterCut",  "", 200, 0., 200.);
-  fOutputList->Add(hNhits[0]);
-  fOutputList->Add(hNhits[1]);
   hPDedx = new TH2D("hPDedx", "", 400, -10., 10., 400, 0, 1000);
-  fOutputList->Add(hPDedx);
   if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
     hDcaXy[0] = new TH1D("hDcaXyBeforeCut", "", 100, 0., 10.);
     hDcaXy[1] = new TH1D("hDcaXyAfterCut",  "", 100, 0., 10.);
-    fOutputList->Add(hDcaXy[0]);
-    fOutputList->Add(hDcaXy[1]);
     hDcaZ[0] = new TH1D("hDcaZBeforeCut", "", 100, 0., 10.);
     hDcaZ[1] = new TH1D("hDcaZAfterCut",  "", 100, 0., 10.);
-    fOutputList->Add(hDcaZ[0]);
-    fOutputList->Add(hDcaZ[1]);
+  }
+
+  if (fTPCEstOn){
+    fOutputList->Add(hPt);
+    fOutputList->Add(hEta[0]);
+    fOutputList->Add(hEta[1]);
+    fOutputList->Add(hPhi[0]);
+    fOutputList->Add(hPhi[1]);
+    fOutputList->Add(hEtaPhi[0]);
+    fOutputList->Add(hEtaPhi[1]);
+    fOutputList->Add(hNhits[0]);
+    fOutputList->Add(hNhits[1]);
+    fOutputList->Add(hPDedx);
+    if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
+      fOutputList->Add(hDcaXy[0]);
+      fOutputList->Add(hDcaXy[1]);
+      fOutputList->Add(hDcaZ[0]);
+      fOutputList->Add(hDcaZ[1]);
+    }
   }
 
   // V0 Calib
@@ -498,17 +505,17 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
         hMultV0Fill[iRun] = new TH1D(Form("hMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
         contMult->AppendObject(hMultV0Fill[iRun], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());      
       } 
-      contMult->WriteToFile("calibV015oP2.root");
+      fOutputList->Add(contMult);
     };
 
     // Fill Mean for recenter
     if (fFillVZEROQMean) {
-      AliOADBContainer* contQx3mm = new AliOADBContainer("fqxm3m");
-      AliOADBContainer* contQy3mm = new AliOADBContainer("fqym3m");
-      AliOADBContainer* contQx3cm = new AliOADBContainer("fqxc3m");
-      AliOADBContainer* contQy3cm = new AliOADBContainer("fqyc3m");
-      AliOADBContainer* contQx3am = new AliOADBContainer("fqxa3m");
-      AliOADBContainer* contQy3am = new AliOADBContainer("fqya3m");
+      AliOADBContainer* contQxnmm = new AliOADBContainer(Form("fqxm%im",(int)fHarmonic));
+      AliOADBContainer* contQynmm = new AliOADBContainer(Form("fqym%im",(int)fHarmonic));
+      AliOADBContainer* contQxncm = new AliOADBContainer(Form("fqxc%im",(int)fHarmonic));
+      AliOADBContainer* contQyncm = new AliOADBContainer(Form("fqyc%im",(int)fHarmonic));
+      AliOADBContainer* contQxnam = new AliOADBContainer(Form("fqxa%im",(int)fHarmonic));
+      AliOADBContainer* contQynam = new AliOADBContainer(Form("fqya%im",(int)fHarmonic));
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
         pV0XMeanFill[iRun][0] = new TProfile(Form("hV0QxMeanMRun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
         pV0YMeanFill[iRun][0] = new TProfile(Form("hV0QyMeanMRun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
@@ -516,19 +523,19 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
         pV0YMeanFill[iRun][1] = new TProfile(Form("hV0QyMeanCRun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
         pV0XMeanFill[iRun][2] = new TProfile(Form("hV0QxMeanARun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
         pV0YMeanFill[iRun][2] = new TProfile(Form("hV0QyMeanARun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
-        contQx3mm->AppendObject(pV0XMeanFill[iRun][0], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQy3mm->AppendObject(pV0YMeanFill[iRun][0], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQx3cm->AppendObject(pV0XMeanFill[iRun][1], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQy3cm->AppendObject(pV0YMeanFill[iRun][1], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQx3am->AppendObject(pV0XMeanFill[iRun][2], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQy3am->AppendObject(pV0YMeanFill[iRun][2], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        contQxnmm->AppendObject(pV0XMeanFill[iRun][0], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        contQynmm->AppendObject(pV0YMeanFill[iRun][0], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        contQxncm->AppendObject(pV0XMeanFill[iRun][1], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        contQyncm->AppendObject(pV0YMeanFill[iRun][1], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        contQxnam->AppendObject(pV0XMeanFill[iRun][2], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        contQynam->AppendObject(pV0YMeanFill[iRun][2], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
       }
-      contQx3mm->WriteToFile("calibV015oP2.root");
-      contQx3mm->WriteToFile("calibV015oP2.root");
-      contQx3cm->WriteToFile("calibV015oP2.root");
-      contQy3cm->WriteToFile("calibV015oP2.root");
-      contQy3am->WriteToFile("calibV015oP2.root");
-      contQy3am->WriteToFile("calibV015oP2.root");
+      fOutputList->Add(contQxnmm);
+      fOutputList->Add(contQynmm);
+      fOutputList->Add(contQxncm);
+      fOutputList->Add(contQyncm);
+      fOutputList->Add(contQxnam);
+      fOutputList->Add(contQynam);
     };
 
     // Read Mean & Calib
@@ -537,20 +544,14 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
           TGrid::Connect("alien://");
       }
       
-      TFile* fileV0Calib15o = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibV015oP2.root");
-      if(!fileV0Calib15o){
+      TFile* fileV0Calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibV011h_2P2.root");
+      if(!fileV0Calib){
           printf("OADB V0 calibration file cannot be opened\n");
           return;
       }
 
-      // TFile* fileV0Calib15o = TFile::Open("~/alice/LEGOTrainTest/refData/refLHC15o/calibV015oP2.root");
-      // if(!fileV0Calib15o){
-      //     printf("OADB V0 calibration file cannot be opened\n");
-      //     return;
-      // }
-
       // Mult
-      AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib15o->Get("hMultV0BefCorPfpx");
+      AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib->Get("hMultV0BefCorPfpx");
       if(!contMult){
           printf("OADB object hMultV0BefCorr is not available in the file\n");
           return;
@@ -562,64 +563,69 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
         }
         hMultV0Read[iRun] = ((TH1D*) contMult->GetObject(fRunNumList[iRun].Atoi()));
       }
-  
+      // Mult Aft GE
+      for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
+        hMultV0GE[iRun] =  new TH1D(Form("hMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
+        fOutputList->Add(hMultV0GE[iRun]);      
+      } 
+
       if (fVZEROCalib){
         // V0C Qx Mean 
-       AliOADBContainer* contQx3cm = (AliOADBContainer*) fileV0Calib15o->Get("fqxc3m");
-       if(!contQx3cm){
+       AliOADBContainer* contQxncm = (AliOADBContainer*) fileV0Calib->Get(Form("fqxc%im",(int)fHarmonic));
+       if(!contQxncm){
            printf("OADB object fqxc2m is not available in the file\n");
            return;
        }
        
        // V0C Qy Mean 
-       AliOADBContainer* contQy3cm = (AliOADBContainer*) fileV0Calib15o->Get("fqyc3m");
-       if(!contQy3cm){
+       AliOADBContainer* contQyncm = (AliOADBContainer*) fileV0Calib->Get(Form("fqyc%im",(int)fHarmonic));
+       if(!contQyncm){
            printf("OADB object fqyc2m is not available in the file\n");
            return;
        }
        
        // V0A Qx Mean 
-       AliOADBContainer* contQx3am = (AliOADBContainer*) fileV0Calib15o->Get("fqxa3m");
-       if(!contQx3am){
+       AliOADBContainer* contQxnam = (AliOADBContainer*) fileV0Calib->Get(Form("fqxa%im",(int)fHarmonic));
+       if(!contQxnam){
            printf("OADB object fqxa2m is not available in the file\n");
            return;
        }
        
        // V0A Qy Mean 
-       AliOADBContainer* contQy3am = (AliOADBContainer*) fileV0Calib15o->Get("fqya3m");
-       if(!contQy3am){
+       AliOADBContainer* contQynam = (AliOADBContainer*) fileV0Calib->Get(Form("fqya%im",(int)fHarmonic));
+       if(!contQynam){
            printf("OADB object fqya2m is not available in the file\n");
            return;
        }
   
        for (int iRun = 0; iRun < NRUNNUM; ++iRun){
          // V0C Qx Mean 
-         if(!(contQx3cm->GetObject(fRunNumList[iRun].Atoi() ) ) ){
-             printf("OADB object fqxc3m is not available for run %i\n", fRunNumList[iRun].Atoi() );
+         if(!(contQxncm->GetObject(fRunNumList[iRun].Atoi() ) ) ){
+             printf("OADB objectForm fqxcnm ,fHarmonic)is not available for run %i\n", fRunNumList[iRun].Atoi() );
              return;
          }
-         hQx3mV0[iRun][1] = ((TH1D*) contQx3cm->GetObject(fRunNumList[iRun].Atoi() ) );
+         hQxnmV0[iRun][1] = ((TH1D*) contQxncm->GetObject(fRunNumList[iRun].Atoi() ) );
          
          // V0C Qy Mean 
-         if(!(contQy3cm->GetObject(fRunNumList[iRun].Atoi() ) ) ){
-             printf("OADB object fqyc2m is not available for run %i\n", fRunNumList[iRun].Atoi() );
+         if(!(contQyncm->GetObject(fRunNumList[iRun].Atoi() ) ) ){
+             printf("OADB object fqycnm is not available for run %i\n", fRunNumList[iRun].Atoi() );
              return;
          }
-         hQy3mV0[iRun][1] = ((TH1D*) contQy3cm->GetObject(fRunNumList[iRun].Atoi() ) );
+         hQynmV0[iRun][1] = ((TH1D*) contQyncm->GetObject(fRunNumList[iRun].Atoi() ) );
          
          // V0A Qx Mean
-         if(!(contQx3am->GetObject(fRunNumList[iRun].Atoi() ) ) ){
-             printf("OADB object fqxa2m is not available for run %i\n", fRunNumList[iRun].Atoi() );
+         if(!(contQxnam->GetObject(fRunNumList[iRun].Atoi() ) ) ){
+             printf("OADB object fqxanm is not available for run %i\n", fRunNumList[iRun].Atoi() );
              return;
          }
-         hQx3mV0[iRun][2] = ((TH1D*) contQx3am->GetObject(fRunNumList[iRun].Atoi() ) );
+         hQxnmV0[iRun][2] = ((TH1D*) contQxnam->GetObject(fRunNumList[iRun].Atoi() ) );
          
          // V0A Qy Mean
-         if(!(contQy3am->GetObject(fRunNumList[iRun].Atoi() ) ) ){
-             printf("OADB object fqya2m is not available for run %i\n", fRunNumList[iRun].Atoi() );
+         if(!(contQynam->GetObject(fRunNumList[iRun].Atoi() ) ) ){
+             printf("OADB object fqyanm is not available for run %i\n", fRunNumList[iRun].Atoi() );
              return;
          }
-         hQy3mV0[iRun][2] = ((TH1D*) contQy3am->GetObject(fRunNumList[iRun].Atoi() ) );
+         hQynmV0[iRun][2] = ((TH1D*) contQynam->GetObject(fRunNumList[iRun].Atoi() ) );
        }
       }
     };
@@ -1218,7 +1224,9 @@ bool AliAnalysisTaskEPCalib::RemovalForRun1(AliAODEvent* fAOD, AliAnalysisUtils*
   fUtils->SetUseOutOfBunchPileUp(true);
   fUtils->SetUseMVPlpSelection(true);
   // fUtils->SetMinPlpContribMV(5);
-  bool isPileup = fUtils->IsPileUpEvent(fAOD);
+  bool isPileup = false;
+  if (fPeriod.EqualTo("LHC10h")) isPileup = fUtils->IsPileUpEvent(fAOD);
+  if (fPeriod.EqualTo("LHC11h")) isPileup = fAOD->IsPileupFromSPD();
   // bool isPileup = fUtils->IsPileUpMV(fAOD); // pp, p-Pb
   if (isPileup) return false;
   return true;   
@@ -1522,6 +1530,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         qxGE[0] += multCorGEC*TMath::Cos(fHarmonic*phi);
         qyGE[0] += multCorGEC*TMath::Sin(fHarmonic*phi); 
         multRingGE[0] += multCorGEC;
+        hMultV0GE[fRunNumBin]->Fill(iCh, multCorGEC);
       }    
     } else if (iCh>=32 && iCh<64) { // A
       qx[2] += mult*TMath::Cos(fHarmonic*phi);
@@ -1547,6 +1556,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         qxGE[0] += multCorGEA*TMath::Cos(fHarmonic*phi);
         qyGE[0] += multCorGEA*TMath::Sin(fHarmonic*phi); 
         multRingGE[0] += multCorGEA;
+        hMultV0GE[fRunNumBin]->Fill(iCh, multCorGEA);
       }
     }
   };
@@ -1564,14 +1574,14 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
     // Fill Qx Qy Mean
     if (fFillVZEROQMean){
       pV0XMeanFill[fRunNumBin][i]->Fill(iCentSPD,qxGE[i]);
-      pV0XMeanFill[fRunNumBin][i]->Fill(iCentSPD,qyGE[i]);      
+      pV0YMeanFill[fRunNumBin][i]->Fill(iCentSPD,qyGE[i]);      
     }
 
     // Calib
     if (fVZEROCalib) {
       // Qn distribution
-      double qxMean = hQx3mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-      double qyMean = hQy3mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+      double qxMean = hQxnmV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+      double qyMean = hQynmV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
 
       qxRecenter[i] = qxGE[i] - qxMean;
       qyRecenter[i] = qyGE[i] - qyMean;
