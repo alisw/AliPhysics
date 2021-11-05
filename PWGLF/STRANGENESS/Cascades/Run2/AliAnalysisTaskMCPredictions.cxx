@@ -104,7 +104,7 @@ fLargeMultRange(2000),
 fRebinFactor(1),
 fkNBBins(1),
 fkNNpartBins(1),
-fkNEtaBins(1),
+fkNEtaBins(800),
 fkSelectINELgtZERO(kTRUE),
 fkALICE3SiliconMode(kTRUE),
 fkWideRapiditySpeciesStudy(kFALSE),
@@ -123,12 +123,17 @@ fHistNchVsB(0),
 fHistNMPI(0),
 fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
-fMinPtTriggerCharged(0.15),
-fMinPtTriggerXi(0.8),
-fMinPtTriggerPhi(0.4),
+fMinPtTrigger(2.0),
+fMaxPtTrigger(4.0),
 fEtaTriggerCharged(0),
 fEtaTriggerXi(0),
-fEtaTriggerPhi(0)
+fEtaTriggerPhi(0),
+fHist3d2pcXiCProton(0),
+fHist3d2pcXiCAntiProton(0),
+fHist3d2pcXiCD0(0),
+fHist3d2pcXiCD0bar(0),
+fHist3d2pcXiCKMinus(0),
+fHist3d2pcXiCKPlus(0)
 {
   for(Int_t ih=0; ih<64; ih++){
     fHistPt[ih]          = 0x0;
@@ -175,12 +180,17 @@ fHistNchVsB(0),
 fHistNMPI(0),
 fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
-fMinPtTriggerCharged(0.15),
-fMinPtTriggerXi(0.8),
-fMinPtTriggerPhi(0.4),
+fMinPtTrigger(2.0),
+fMaxPtTrigger(4.0),
 fEtaTriggerCharged(0),
 fEtaTriggerXi(0),
-fEtaTriggerPhi(0)
+fEtaTriggerPhi(0),
+fHist3d2pcXiCProton(0),
+fHist3d2pcXiCAntiProton(0),
+fHist3d2pcXiCD0(0),
+fHist3d2pcXiCD0bar(0),
+fHist3d2pcXiCKMinus(0),
+fHist3d2pcXiCKPlus(0)
 {
   for(Int_t ih=0; ih<64; ih++){
     fHistPt[ih]          = 0x0;
@@ -227,7 +237,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   Double_t lMaxPt = 20.0;
   
   Int_t lNEtaBins = fkNEtaBins;
-  Double_t lMaxAbsEta = 2;
+  Double_t lMaxAbsEta = 4;
   
   //Settings for charged particle counters (integers!)
   Int_t lNNchBins = fSmallMultRange/fRebinFactor;
@@ -370,13 +380,13 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistEtaVsSPDMult[ih] && fkDoRapidityStudy ) {
-      fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
+      fHistEtaVsSPDMult[ih] = new TH2D(Form("fHistEtaVsSPDMult_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,1,-10,10);
       fListHist->Add(fHistEtaVsSPDMult[ih]);
     }
   }
   for(Int_t ih=0; ih<64; ih++){
     if(! fHistYVsSPDMult[ih] && fkDoRapidityStudy ) {
-      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,lNEtaBins,-10,10);
+      fHistYVsSPDMult[ih] = new TH2D(Form("fHistYVsSPDMult%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNNchBinsV0M,lLowNchBoundV0M,lHighNchBoundV0M,1,-10,10);
       fListHist->Add(fHistYVsSPDMult[ih]);
     }
   }
@@ -434,6 +444,31 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     //Histogram Output: Event-by-Event
     fEtaTriggerPhi = new TH1D( "fEtaTriggerPhi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
     fListHist->Add(fEtaTriggerPhi);
+  }
+  
+  if(! fHist3d2pcXiCProton ) {
+    fHist3d2pcXiCProton = new TH3D("fHist3d2pcXiCProton","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fListHist->Add(fHist3d2pcXiCProton);
+  }
+  if(! fHist3d2pcXiCAntiProton ) {
+    fHist3d2pcXiCAntiProton = new TH3D("fHist3d2pcXiCAntiProton","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fListHist->Add(fHist3d2pcXiCAntiProton);
+  }
+  if(! fHist3d2pcXiCD0 ) {
+    fHist3d2pcXiCD0 = new TH3D("fHist3d2pcXiCD0","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fListHist->Add(fHist3d2pcXiCD0);
+  }
+  if(! fHist3d2pcXiCD0bar ) {
+    fHist3d2pcXiCD0bar = new TH3D("fHist3d2pcXiCD0bar","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fListHist->Add(fHist3d2pcXiCD0bar);
+  }
+  if(! fHist3d2pcXiCKMinus ) {
+    fHist3d2pcXiCKMinus = new TH3D("fHist3d2pcXiCKMinus","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fListHist->Add(fHist3d2pcXiCKMinus);
+  }
+  if(! fHist3d2pcXiCKPlus ) {
+    fHist3d2pcXiCKPlus = new TH3D("fHist3d2pcXiCKPlus","",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
+    fListHist->Add(fHist3d2pcXiCKPlus);
   }
   
   //List of Histograms: Normal
@@ -503,9 +538,6 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
-    
-    //keep track of base eta distribution
-    if ( gpt > fMinPtTriggerCharged && fHistChargedEta ) fHistChargedEta->Fill( geta );
     
     if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
     if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
@@ -738,6 +770,140 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     }
   }//End of loop on tracks
   //----- End Loop on Stack ----------------------
+  
+  //===== Start 2pc =================
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  // step 1: find particles to be correlated
+  //         looking for XiC, antiprotons, D0bar, K+
+  Long_t lNXiC=0;
+  Long_t lNProtons=0, lNAntiProtons=0;
+  Long_t lND0=0, lND0bar=0;
+  Long_t lNKMinus=0, lNKPlus=0;
+  
+  TArrayI lXiC( lMCstack->GetNtrack() );
+  TArrayI lProtons( lMCstack->GetNtrack() );
+  TArrayI lAntiProtons( lMCstack->GetNtrack() );
+  TArrayI lD0( lMCstack->GetNtrack() );
+  TArrayI lD0bar( lMCstack->GetNtrack() );
+  TArrayI lKMinus( lMCstack->GetNtrack() );
+  TArrayI lKPlus( lMCstack->GetNtrack() );
+  
+  for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
+  {
+    // Determine if within acceptance, otherwise fully reject from list
+    // done such that this check is done O(N) and not O(N^2)
+    TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
+    AliMCParticle* lMCPart = (AliMCParticle*)lMCevent->GetTrack(iCurrentLabelStack);
+    if(!lThisParticle) continue;
+    lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(iCurrentLabelStack);
+    Double_t geta = lThisParticle -> Eta();
+    if( TMath::Abs(geta)<4.0 ){
+      if(lThisParticle->GetPdgCode()==4232) {
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+        lXiC[lNXiC++] = iCurrentLabelStack;
+      }
+      if(lThisParticle->GetPdgCode()== 2212 && lIsPhysicalPrimary ) lProtons[lNProtons++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()==-2212 && lIsPhysicalPrimary ) lAntiProtons[lNAntiProtons++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()==  421 && lIsPhysicalPrimary && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0[lND0++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()== -421 && lIsPhysicalPrimary && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0bar[lND0bar++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()==  321 && lIsPhysicalPrimary ) lKMinus[lNKMinus++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()== -321 && lIsPhysicalPrimary ) lKPlus[lNKPlus++] = iCurrentLabelStack;
+    }
+  }
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  Actually correlate stuff with stuff
+      //----- Loop on Stack ----------------------------------------------------------------
+  for (Int_t iTrigger = 0;  iTrigger < lNXiC; iTrigger++){   // trigger loop
+    TParticle* lTriggerParticle = lMCstack->Particle(lXiC[iTrigger]);
+    
+    Double_t geta = lTriggerParticle -> Eta();
+    Double_t gphi = lTriggerParticle -> Phi();
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    for (Int_t iassoc = 0;  iassoc < lNProtons; iassoc++){   // associated loop
+      TParticle* lAssociatedParticle = 0x0;
+      lAssociatedParticle = lMCstack->Particle( lProtons[iassoc] );
+      if(!lAssociatedParticle) {
+        Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
+        continue;
+      }
+            
+      Double_t geta2 = lAssociatedParticle -> Eta();
+      Double_t gphi2 = lAssociatedParticle -> Phi();
+      lThisPt    = lAssociatedParticle->Pt();
+      fHist3d2pcXiCProton->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+    }
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    for (Int_t iassoc = 0;  iassoc < lNAntiProtons; iassoc++){   // associated loop
+      TParticle* lAssociatedParticle = 0x0;
+      lAssociatedParticle = lMCstack->Particle( lAntiProtons[iassoc] );
+      if(!lAssociatedParticle) {
+        Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
+        continue;
+      }
+            
+      Double_t geta2 = lAssociatedParticle -> Eta();
+      Double_t gphi2 = lAssociatedParticle -> Phi();
+      lThisPt    = lAssociatedParticle->Pt();
+      fHist3d2pcXiCAntiProton->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+    }
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    for (Int_t iassoc = 0;  iassoc < lND0; iassoc++){   // associated loop
+      TParticle* lAssociatedParticle = 0x0;
+      lAssociatedParticle = lMCstack->Particle( lD0[iassoc] );
+      if(!lAssociatedParticle) {
+        Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
+        continue;
+      }
+            
+      Double_t geta2 = lAssociatedParticle -> Eta();
+      Double_t gphi2 = lAssociatedParticle -> Phi();
+      lThisPt    = lAssociatedParticle->Pt();
+      fHist3d2pcXiCD0->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+    }
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    for (Int_t iassoc = 0;  iassoc < lND0bar; iassoc++){   // associated loop
+      TParticle* lAssociatedParticle = 0x0;
+      lAssociatedParticle = lMCstack->Particle( lD0bar[iassoc] );
+      if(!lAssociatedParticle) {
+        Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
+        continue;
+      }
+            
+      Double_t geta2 = lAssociatedParticle -> Eta();
+      Double_t gphi2 = lAssociatedParticle -> Phi();
+      lThisPt    = lAssociatedParticle->Pt();
+      fHist3d2pcXiCD0bar->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+    }
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    for (Int_t iassoc = 0;  iassoc < lNKMinus; iassoc++){   // associated loop
+      TParticle* lAssociatedParticle = 0x0;
+      lAssociatedParticle = lMCstack->Particle( lKMinus[iassoc] );
+      if(!lAssociatedParticle) {
+        Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
+        continue;
+      }
+            
+      Double_t geta2 = lAssociatedParticle -> Eta();
+      Double_t gphi2 = lAssociatedParticle -> Phi();
+      lThisPt    = lAssociatedParticle->Pt();
+      fHist3d2pcXiCKMinus->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+    }
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    for (Int_t iassoc = 0;  iassoc < lNKPlus; iassoc++){   // associated loop
+      TParticle* lAssociatedParticle = 0x0;
+      lAssociatedParticle = lMCstack->Particle( lKPlus[iassoc] );
+      if(!lAssociatedParticle) {
+        Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
+        continue;
+      }
+            
+      Double_t geta2 = lAssociatedParticle -> Eta();
+      Double_t gphi2 = lAssociatedParticle -> Phi();
+      lThisPt    = lAssociatedParticle->Pt();
+      fHist3d2pcXiCKPlus->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+    }
+    //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  }
   
   //===== Start 2pc nested loops =================
 //  if( fkDo2pc ) {
