@@ -126,12 +126,7 @@ private:
   Bool_t fkDo2pc;
   Float_t fMinPtTrigger; //for xi trigger
   Float_t fMaxPtTrigger; //for xi trigger
-  TH1D *fEtaTriggerCharged; //!
-  TH1D *fEtaTriggerXi; //!
-  TH1D *fEtaTriggerPhi; //!
-  //TH3D *fHist3d2pcSE[64]; //!
-  //TH3D *fHist3d2pcXiSE[64]; //!
-  //TH3D *fHist3d2pcPhiSE[64]; //!
+  TH1D *fHistPtTrigger;
   
   TH3D *fHist3d2pcXiCProton;
   TH3D *fHist3d2pcXiCAntiProton;
