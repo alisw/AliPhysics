@@ -1654,13 +1654,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //  ana->SetAssocPtBinLimit(6, 10) ;
   //  ana->SetAssocPtBinLimit(7, 100);
   
-  ana->SetNTriggerPtBins(8); // set first bin [10,12] GeV/c and last bin [40,50] GeV/c
-  // See AliAnaParticleCorrelation::InitParameters();
-  // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
-  // If you want to change it:
-  //  ana->SetTriggerPtBinLimit(0,  5) ;
-  //  ana->SetTriggerPtBinLimit(1, 10) ;
-  
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
   // Mixing with own pool

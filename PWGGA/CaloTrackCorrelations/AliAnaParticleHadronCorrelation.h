@@ -220,9 +220,6 @@ public:
   void         SetNAssocPtBins(Int_t n) ;
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
   
-  void         SetNTriggerPtBins(Int_t n) ;
-  void         SetTriggerPtBinLimit(Int_t ibin, Float_t pt) ;
-  
   Bool_t       IsMixStoredInReaderOn()     const { return fUseMixStoredInReader  ; }
   void         SwitchOnUseMixStoredInReader()    { fUseMixStoredInReader = kTRUE ; }
   void         SwitchOffUseMixStoredInReader()   { fUseMixStoredInReader = kFALSE; }
