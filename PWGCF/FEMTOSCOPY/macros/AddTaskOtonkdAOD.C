@@ -227,7 +227,7 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,//1
   }
 
   //Define here the analysis task
-  AliAnalysisTaskOtonkdAOD *task = new AliAnalysisTaskOtonkdAOD("FemtoDreamDefault", isMC);
+  AliAnalysisTaskOtonkdAOD *task = new AliAnalysisTaskOtonkdAOD("ThisNameApparentlyUseless", isMC);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);

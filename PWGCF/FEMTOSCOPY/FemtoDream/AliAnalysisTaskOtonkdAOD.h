@@ -121,6 +121,7 @@ class AliAnalysisTaskOtonkdAOD : public AliAnalysisTaskSE {
   Int_t fTRunNumber;
   Float_t fTVz;
   Int_t fTMult;
+  Float_t fTSpher;
 
   const Int_t MAXKaonS = 150;
   Int_t fTnKaon;

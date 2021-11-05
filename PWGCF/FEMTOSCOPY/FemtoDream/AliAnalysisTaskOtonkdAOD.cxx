@@ -314,6 +314,7 @@ void AliAnalysisTaskOtonkdAOD::UserCreateOutputObjects() {
 //  fTree->Branch("RunNumber",&fTRunNumber,"fTRunNumber/I");
   fTree->Branch("Vz",&fTVz,"fTVz/F");
   fTree->Branch("Mult",&fTMult,"fTMult/I");
+  fTree->Branch("Spher",&fTSpher,"fTSpher/F");
   //Kaons:
   fTree->Branch("nKaon",&fTnKaon,"fTnKaon/I");
   fTree->Branch("KaonPx",&fTKaonPx,"fTKaonPx[fTnKaon]/F");
@@ -452,6 +453,7 @@ void AliAnalysisTaskOtonkdAOD::UserExec(Option_t*) {
 
   fTVz = PrimVtx[2];
   fTMult = fEvent->GetMultiplicity();
+  fTSpher = fEvent->GetSpher();
 
 //init tree
   for(int ii=0;ii<MAXKaonS;ii++){
