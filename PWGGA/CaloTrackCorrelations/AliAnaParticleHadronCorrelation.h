@@ -634,7 +634,11 @@ private:
   TH2F *       fhMixXECharged;                           //!<! xE for mixed event.
   TH2F *       fhMixXEUeCharged;                         //!<! xE for mixed event in Ue region.
   TH2F *       fhMixHbpXECharged;                        //!<! ln(1/xE) for mixed event.
-  
+  TH2F *       fhMixZTCharged;                           //!<! zT for mixed event.
+  TH2F *       fhMixZTUeCharged;                         //!<! zT for mixed event in Ue region.
+  TH2F *       fhMixHbpZTCharged;                        //!<! ln(1/zT) for mixed event.
+  TH2F *       fhMixPtTrigPout  ;                        //!<! Pout =associated pt*sin(delta phi) distribution vs trigger pt
+  TH2F *       fhMixPtTrigCharged ;                      //!<! trigger and correlated particl pt, to be used for mean value for kt
   /// Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins.
   TH2F **      fhMixDeltaPhiChargedAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()]
   
