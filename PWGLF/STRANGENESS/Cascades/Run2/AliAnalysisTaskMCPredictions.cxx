@@ -361,7 +361,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
   }
   for(Int_t ih=0; ih<72; ih++){
-    if(! fHistEta[ih] && fkDoRapidityStudy ) {
+    if(! fHistEta[ih] ) {
       fHistEta[ih] = new TH1D(Form("fHistEta_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
       fListHist->Add(fHistEta[ih]);
     }
