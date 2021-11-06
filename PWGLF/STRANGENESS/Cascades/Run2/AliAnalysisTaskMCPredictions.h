@@ -47,7 +47,7 @@ class AliCFContainer;
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskMCPredictions();
-  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 2000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 1 );
+  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 2000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 800 );
   virtual ~AliAnalysisTaskMCPredictions();
   
   virtual void   UserCreateOutputObjects();
@@ -114,15 +114,15 @@ private:
   TH1D *fHistNMPI; //!
   TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[64];              //! for keeping track of base spectra
-  TH1D *fHistEta[64];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[64];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[64];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[64];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[64];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[64];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[64];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[64];       //! for keeping track of base spectra
+  TH1D *fHistPt[72];              //! for keeping track of base spectra
+  TH1D *fHistEta[72];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[72];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[72];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[72];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[72];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[72];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[72];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
   Float_t fMinPtTrigger; //for xi trigger
