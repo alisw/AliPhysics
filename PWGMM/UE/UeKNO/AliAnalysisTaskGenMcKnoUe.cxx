@@ -16,50 +16,56 @@
  *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
  *         Last modification: 03/11/2021                                  * 
  **************************************************************************/
-
-#include <Riostream.h>
+//_____ ROOT headers
+#include <TList.h>
+#include <TTree.h>
+#include <TMath.h>
+#include <TFile.h>
+#include <TF1.h>
+#include <TRandom.h>
+#include <TTreeStream.h>
 #include "TChain.h"
+#include <THnSparse.h>
+#include <TDatabasePDG.h>
+#include "TObjArray.h"
+#include <TClonesArray.h>
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TProfile.h"
-#include "THnSparse.h"
-#include "TVector3.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TLegend.h"
-#include "TList.h"
-
-#include "AliLog.h"
-#include "AliVEvent.h"
-#include "AliVVertex.h"
-#include "AliVTrack.h"
+//_____ ALIROOT headers
 #include "AliAnalysisTask.h"
-#include "AliMCEventHandler.h"
-#include "AliInputEventHandler.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliStack.h"
-#include "TParticle.h"
-#include <AliHeader.h>
-#include "AliGenEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-#include "AliEventCuts.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisUtils.h"
-#include <TTree.h>
-#include <TMath.h>
-#include <TRandom.h>
-#include <TDirectory.h>
-#include <TBits.h>
-#include <AliAnalysisFilter.h>
+#include "AliAnalysisFilter.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+#include "AliLog.h"
+#include "AliVParticle.h"
+#include "AliStack.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliAODInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliAODMCHeader.h"
+#include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
+//_____ Additional includes
+#include "AliVEvent.h"
+#include "AliGenEventHeader.h"
+// #include "AliAnalysisUtils.h"
+
+//_____ AnalysisTask headers
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskGenMcKnoUe.h"
-using std::cout;
-using std::endl;
+//_____ STL includes
+#include <iostream>
 using namespace std;
 
-class AliAnalysisTaskGenMcKnoUe;
+//using std::cout;
+//using std::endl;
+//using namespace std;
 
 const Char_t * NameOfRegion[3]={"NS","AS","TS"};
 const Int_t NchNBins = 2000;
@@ -73,10 +79,8 @@ Double_t Nmpi = -1;
 
 ClassImp(AliAnalysisTaskGenMcKnoUe)
 
-	AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
-
-	fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fIsPP(kTRUE),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0), hPtLeadingTrue(0),hPtLVsV0A(0),hetaphi(0),hnchmpi(0),hnchmpirho(0),hnchrho(0),hmpirho(0)
-
+AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
+	fMC(0x0),fMcHandler(0x0),fMCStack(0x0),fEtaCut(0.8),fIsPP(kTRUE),fPtMin(0.5),fGenLeadPhi(0x0),fGenLeadPt(0x0),fGenLeadIn(0x0),hPtLeadingTrue(0x0),hPtLVsV0A(0x0),hetaphi(0x0),hnchmpi(0x0),hnchmpirho(0x0),hnchrho(0x0),hmpirho(0x0),fOutputList(0)
 {
 	for(Int_t i=0;i<3;++i) 
 		hPtVsPtLeadingTrue[i]=0;
@@ -84,9 +88,7 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 }
 //_____________________________________________________________________________
 AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-
-	fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fIsPP(kTRUE),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0), hPtLeadingTrue(0),hPtLVsV0A(0),hetaphi(0),hnchmpi(0),hnchmpirho(0),hnchrho(0),hmpirho(0)
-
+	fMC(0x0),fMcHandler(0x0),fMCStack(0x0),fEtaCut(0.8),fIsPP(kTRUE),fPtMin(0.5),fGenLeadPhi(0x0),fGenLeadPt(0x0),fGenLeadIn(0x0),hPtLeadingTrue(0x0),hPtLVsV0A(0x0),hetaphi(0x0),hnchmpi(0x0),hnchmpirho(0x0),hnchrho(0x0),hmpirho(0x0),fOutputList(0)
 {
 	for(Int_t i=0;i<3;++i)
 		hPtVsPtLeadingTrue[i]=0;
@@ -131,7 +133,7 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 		20.0, 25.0, 30.0, 40.0, 50.0
 	};
 
-	OpenFile(1);
+	//OpenFile(1);
 	fOutputList = new TList();
 	fOutputList->SetOwner(kTRUE);
 
@@ -254,7 +256,7 @@ void AliAnalysisTaskGenMcKnoUe::UserExec(Option_t *)
 			GetGenUEObservables();
 
 	PostData(1, fOutputList);
-
+	return;
 }
 
 //______________________________________________________________________________
