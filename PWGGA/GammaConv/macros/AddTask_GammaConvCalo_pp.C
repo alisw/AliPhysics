@@ -3694,35 +3694,35 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 3310) {  //   (fPSigSmearing, fPSigSmearingCte)
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901067032230000","0r63103100b00010"); // smearing (0.025,  0.030)
     // Variations of EDC Part
-   } else if (trainConfig == 3503){ // timing Cut variation  std -20    +25   ns
+   } else if (trainConfig == 3310){ // timing Cut variation  std -20    +25   ns
   //                                                                    /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790107fe30230000","0r63103100000010"); //     -30    +30   ns
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790106fe30230000","0r63103100000010"); //     -50    +30ns
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","41179010afe30230000","0r63103100000010"); //     -12.5  +13   ns
     cuts.AddCutPCMCalo("0008e113","0dm00089f9730000iih0404000","41179010lfe30230000","0r63103100000010"); //     -12.5  +13   ns + timing effi
-  } else if (trainConfig == 3504){ // track matching variation
+  } else if (trainConfig == 3311){ // track matching variation
   //                                                                     /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901090e30230000","0r63103100000010"); //
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901091e30230000","0r63103100000010"); //
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901096e30230000","0r63103100000010"); //
-  } else if (trainConfig == 3505){ // min nCells  std: min nCells = 1
+  } else if (trainConfig == 3312){ // min nCells  std: min nCells = 1
   //                                                                        /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe37230000","0r63103100000010"); //   min nCells = 2, E > 3
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe38230000","0r63103100000010"); //   min nCells = 2, E > 2
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe39230000","0r63103100000010"); //   min nCells = 2, E > 1
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3a230000","0r63103100000010"); //   min nCells = 2, E > 5
-  } else if (trainConfig == 3506){ // min energy variation std 0.7 GeV/c
+  } else if (trainConfig == 3313){ // min energy variation std 0.7 GeV/c
   //                                                                       /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe10230000","0r63103100000010"); //     0.5 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe20230000","0r63103100000010"); //     0.6 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe40230000","0r63103100000010"); //     0.8 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe50230000","0r63103100000010"); //     0.9 GeV/c
-  } else if (trainConfig == 3507){ // min nCells & M02 variation  // std: M02 max=0.5, min=0.1
+  } else if (trainConfig == 3314){ // min nCells & M02 variation  // std: M02 max=0.5, min=0.1
   //                                                                          /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe30210000","0r63103100000010"); //   max M02    = 1
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe30240000","0r63103100000010"); //   max M02    = 0.4
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe30230000","0r63103100000010"); //   max M02    = 0.7
-  } else if (trainConfig == 3508){ // exotic cluster
+  } else if (trainConfig == 3315){ // exotic cluster
   //                                                                      /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109f530230000","0r63103100000010"); // ExC 97
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109f830230000","0r63103100000010"); // ExC 95
