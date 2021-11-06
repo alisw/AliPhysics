@@ -98,31 +98,29 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_hmurakam_ElectronEfficiencyV2(TStri
   task->SetPhiBinsLinear  (minPhiBin, maxPhiBin, stepsPhiBin);
   task->SetThetaBinsLinear(minThetaBin, maxThetaBin, stepsThetaBin);
 
-  // mee
-  const Int_t Nmee = 1391;
-  Double_t mee[Nmee];  //  Double_t mee[Nmee] = {};
-  for(Int_t j=0;j<1100 ;j++) mee[j] = 0.001 * (j-  0)  +  0.0;//from 0 to 1.1 GeV/c2, every 1 MeV/c2
-  for(Int_t k=1100;k<Nmee;k++) mee[k] = 0.01  * (k-1100) +  1.1;//from 1.1 to 4 GeV/c2, evety 10 MeV/c2
-  //  TVectorD *v_mee = new TVectorD(Nmee);
-  //  for(Int_t k=0;k<Nmee;k++) (*v_mee)[k] = mee[k];
-  //  task->SetMassBins(v_mee);
-  std::vector<double> massBinsVec;
-  for (Int_t l = 0; l < Nmee; ++l) massBinsVec.push_back(mee[l]);
-  task->SetMassBins(massBinsVec);
-  
-  // ptee
-  const Int_t Nptee = 47;
-  Double_t ptee[Nptee] = {0.0,
-    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
-    2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0,
-    5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+  // Mass
+  if (useMassVector == true) {
+    std::vector<double> massBinsVec;
+    for (Int_t i = 0; i < nBinsMass+1; ++i){
+      massBinsVec.push_back(massBins[i]);
+    }
+    task->SetMassBins(massBinsVec);
+  }
+  else task->SetMassBinsLinear   (minMass,  maxMassBin, stepsMassBin);
 
-  //  TVectorD *v_ptee = new TVectorD(Nptee);
-  //  for(Int_t m=0;m<Nptee;m++) (*v_ptee)[m] = ptee[m];
+  if (usePteeVector == true) {
+    std::vector<double> pteeBinsVec;
+    for (Int_t i = 0; i < nBinsPtee+1; ++i){
+      pteeBinsVec.push_back(pteeBins[i]);
+    }
+    task->SetPairPtBins(pteeBinsVec);
+  }
+  else task->SetPairPtBinsLinear   (minPtee,  maxPteeBin, stepsPteeBin);
+
+
+
+
   //  task->SetPairPtBins(v_pTee);
-  std::vector<double> pteeBinsVec;
-  for (Int_t l = 0; l < Nptee; ++l) pteeBinsVec.push_back(ptee[l]);
-  task->SetPairPtBins(pteeBinsVec);
 
   // Resolution File, If resoFilename = "" no correction is applied
   //  SetResolutionFile(year);
