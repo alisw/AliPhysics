@@ -63,6 +63,7 @@ public:
   Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
   
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
+  void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
@@ -126,12 +127,7 @@ private:
   Bool_t fkDo2pc;
   Float_t fMinPtTrigger; //for xi trigger
   Float_t fMaxPtTrigger; //for xi trigger
-  TH1D *fEtaTriggerCharged; //!
-  TH1D *fEtaTriggerXi; //!
-  TH1D *fEtaTriggerPhi; //!
-  //TH3D *fHist3d2pcSE[64]; //!
-  //TH3D *fHist3d2pcXiSE[64]; //!
-  //TH3D *fHist3d2pcPhiSE[64]; //!
+  TH1D *fHistPtTrigger;
   
   TH3D *fHist3d2pcXiCProton;
   TH3D *fHist3d2pcXiCAntiProton;

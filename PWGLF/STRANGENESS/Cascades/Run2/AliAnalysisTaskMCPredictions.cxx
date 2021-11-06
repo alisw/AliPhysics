@@ -125,9 +125,7 @@ fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTrigger(2.0),
 fMaxPtTrigger(4.0),
-fEtaTriggerCharged(0),
-fEtaTriggerXi(0),
-fEtaTriggerPhi(0),
+fHistPtTrigger(0),
 fHist3d2pcXiCProton(0),
 fHist3d2pcXiCAntiProton(0),
 fHist3d2pcXiCD0(0),
@@ -182,9 +180,7 @@ fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTrigger(2.0),
 fMaxPtTrigger(4.0),
-fEtaTriggerCharged(0),
-fEtaTriggerXi(0),
-fEtaTriggerPhi(0),
+fHistPtTrigger(0),
 fHist3d2pcXiCProton(0),
 fHist3d2pcXiCAntiProton(0),
 fHist3d2pcXiCD0(0),
@@ -409,41 +405,10 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
   }
   
-//  //2pc histograms
-//  for(Int_t ih=0; ih<52; ih++){
-//    if(! fHist3d2pcSE[ih] ) {
-//      fHist3d2pcSE[ih] = new TH3D(Form("fHist3d2pcSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
-//      fListHist->Add(fHist3d2pcSE[ih]);
-//    }
-//  }
-//  //2pc histograms
-//  for(Int_t ih=0; ih<52; ih++){
-//    if(! fHist3d2pcPhiSE[ih] ) {
-//      fHist3d2pcPhiSE[ih] = new TH3D(Form("fHist3d2pcPhiSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
-//      fListHist->Add(fHist3d2pcPhiSE[ih]);
-//    }
-//  }
-//  //2pc histograms
-//  for(Int_t ih=0; ih<52; ih++){
-//    if(! fHist3d2pcXiSE[ih] ) {
-//      fHist3d2pcXiSE[ih] = new TH3D(Form("fHist3d2pcXiSE_%s",lPartNames[ih].Data()),"",64,-1.6,1.6,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),lNPtBins,0,lMaxPt);
-//      fListHist->Add(fHist3d2pcXiSE[ih]);
-//    }
-//  }
-  if(! fEtaTriggerCharged ) {
+  if(! fHistPtTrigger ) {
     //Histogram Output: Event-by-Event
-    fEtaTriggerCharged = new TH1D( "fEtaTriggerCharged", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
-    fListHist->Add(fEtaTriggerCharged);
-  }
-  if(! fEtaTriggerXi ) {
-    //Histogram Output: Event-by-Event
-    fEtaTriggerXi = new TH1D( "fEtaTriggerXi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
-    fListHist->Add(fEtaTriggerXi);
-  }
-  if(! fEtaTriggerPhi ) {
-    //Histogram Output: Event-by-Event
-    fEtaTriggerPhi = new TH1D( "fEtaTriggerPhi", ";#eta;Count",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
-    fListHist->Add(fEtaTriggerPhi);
+    fHistPtTrigger = new TH1D( "fHistPtTrigger", ";#eta;Count",200,0,20);
+    fListHist->Add(fHistPtTrigger);
   }
   
   if(! fHist3d2pcXiCProton ) {
@@ -804,8 +769,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
       }
       if(lThisParticle->GetPdgCode()== 2212 && lIsPhysicalPrimary ) lProtons[lNProtons++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==-2212 && lIsPhysicalPrimary ) lAntiProtons[lNAntiProtons++] = iCurrentLabelStack;
-      if(lThisParticle->GetPdgCode()==  421 && lIsPhysicalPrimary && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0[lND0++] = iCurrentLabelStack;
-      if(lThisParticle->GetPdgCode()== -421 && lIsPhysicalPrimary && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0bar[lND0bar++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()==  421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0[lND0++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()== -421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0bar[lND0bar++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==  321 && lIsPhysicalPrimary ) lKMinus[lNKMinus++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()== -321 && lIsPhysicalPrimary ) lKPlus[lNKPlus++] = iCurrentLabelStack;
     }
@@ -818,6 +783,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
+    fHistPtTrigger->Fill( lTriggerParticle -> Pt() );
     //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     for (Int_t iassoc = 0;  iassoc < lNProtons; iassoc++){   // associated loop
       TParticle* lAssociatedParticle = 0x0;
