@@ -73,6 +73,8 @@ public:
   void SetDoNMPIStudy ( Bool_t lOpt = kTRUE) { fkDoNMPIStudy = lOpt; }
   void SetDoRapidityStudy ( Bool_t lOpt = kTRUE) { fkDoRapidityStudy = lOpt; }
   
+  void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
+  
   //---------------------------------------------------------------------------------------
   
 private:
@@ -101,6 +103,7 @@ private:
   Bool_t fkDoNpartStudy;
   Bool_t fkDoNMPIStudy;
   Bool_t fkDoRapidityStudy;
+  Long_t fkMinimumMultiplicity; 
   
   //Basic Histograms for counting events as a function of V0M percentiles...
   TH1D *fHistV0MMult; //!
@@ -116,6 +119,8 @@ private:
   
   TH1D *fHistPt[72];              //! for keeping track of base spectra
   TH1D *fHistEta[72];              //! for keeping track of base spectra
+  TH1D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
+  TH1D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
   TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
   TH2D *fHistPtVsSPDMult[72];     //! for keeping track of base spectra
   TH2D *fHistEtaVsSPDMult[72];    //! for keeping track of base spectra
@@ -135,6 +140,13 @@ private:
   TH3D *fHist3d2pcXiCD0bar;
   TH3D *fHist3d2pcXiCKMinus;
   TH3D *fHist3d2pcXiCKPlus;
+
+  TH3D *fHist3d2pcXiBProton;
+  TH3D *fHist3d2pcXiBAntiProton;
+  TH3D *fHist3d2pcXiBBMinus;
+  TH3D *fHist3d2pcXiBBPlus;
+  TH3D *fHist3d2pcXiBKMinus;
+  TH3D *fHist3d2pcXiBKPlus;
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
