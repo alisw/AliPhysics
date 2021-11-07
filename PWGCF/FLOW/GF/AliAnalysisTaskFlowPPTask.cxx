@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* AliAnaysisTaskFlowTask
- *
- * empty task which can serve as a starting point for building an analysis
- * as an example, one histogram is filled
- */
-
 #include "TChain.h"
 #include "TH1F.h"
 #include "TList.h"
@@ -257,18 +251,16 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	MyEventNumber(0)
 {
     // constructor
-    //设定AliAOD.root组成的TChain为输入数据
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
                                         // this chain is created by the analysis manager, so no need to worry about it, 
                                         // it does its work automatically
     
 	
-	//可能的第二个输入，为效率，接受度的权重
-	//注意和AddTask文件中的ConnectInput数目对应
+	//the number of DefineInput should be in line with NUE,NUA
+	//use NUA only--> One DefineInput 
 	DefineInput(1, TFile::Class());
 	//DefineInput(2, TFile::Class());
 
-    //通过TList输出
     DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
                                         // you can add more output objects by calling DefineOutput(2, classname::Class())
                                         // if you add more output objects, make sure to call PostData for all of them, and to
@@ -312,7 +304,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	// Distance between track and SPD vertex < 0.2 cm
 	fEventCuts.fPileUpCutMV = true;
 
-    if (fNtrksName == "Mult") {//multiplicity和centrality的x轴分bin数不同
+    if (fNtrksName == "Mult") {//Bin Numbers are different between multiplicity and centrality 
 	    nn = 3000;
             for (int i = 0; i <= 3000; i++) {
                 xbins[i] = i;
@@ -388,9 +380,8 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
   
     bootstrap_value = rand.Integer(10);
 	//..apply physics selection
-	//表示是否选择事件的位掩码
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-	//检测事件是否正确触发，否则退出程序
+	//trigger & mask
 	Bool_t isTrigselected = false;
         if (fTrigger == 0) {
 	    isTrigselected = fSelectMask&AliVEvent::kINT7;
@@ -412,7 +403,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	}
 
 	
-	//构造函数内赋值了fPeriod为LHC15o
+	//fPeriod is set in AddTask
 	if (fPeriod.EqualTo("LHC15o")) {
 		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
 			PostData(1,fListOfObjects);
@@ -421,10 +412,10 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	} else {
 		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
 
-		//获取MultSelection对象
+		//Get MultSelection Object
 		AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
 		if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
-		//使用MultSelection进行筛选
+		//Use MultSelection cut
 		if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
 	
 		Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
@@ -435,15 +426,15 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	//..filling Vz distribution
 	AliVVertex *vtx = fAOD->GetPrimaryVertex();
 	float fVtxZ = vtx->GetZ();
-	//对于主顶点位置的筛选，要求|Vz|<10.0 cm
+	//use |Vz|<10.0 cm cut
 	if(TMath::Abs(fVtxZ) > fVtxCut) return;
-	//对每个事件计算Ntraks，影响Profile的计算
-	//即进行轨道的筛选，最后统计符合要求的轨道数。在fNtrksName设定为Mult时表示多重数，否则表示中心度
+	//calculate Ntraks for every event
+	//When(Mult)fNtrksName is multiplicity, in opposite is centrality
 	NTracksCalculation(fInputEvent);
 	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
 	fVtxAfterCuts->Fill(fVtxZ);
 
-	//记录Run Number
+	//Record Run Number
 	MyEventNumber->Fill(fCurrentRunNumber);
 
 	//..standard event plots (cent. percentiles, mult-vs-percentile)
@@ -477,8 +468,9 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 
 
 	//..all charged particles
-	//AnalyzeAOD为自定义分析函数，函数内计算了Q vector以及一系列的Profile。
-	//计算出来的Profile都存进fListOfObjects，最后由下面的PostData进行输出
+	//AnalyzeAOD calculate Q vector and Profile。
+	//All the Profiles are stored in fListOfObjects 
+	//Output in PostData
 	if(fLS == true){
 		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
 		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, true);
@@ -514,7 +506,7 @@ void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 
 		double pos[3];
 		aodTrk->GetXYZ(pos);
-		//最近接近距离(DCA)
+		//(DCA)
 		double dcaZ = 100;
 		double dcaX = 100;
 		double dcaY = 100;
@@ -530,18 +522,18 @@ void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
 		if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
-		//全局轨道的过滤位，设置为96
+		//Global track Filter
 		if (fFilterbitDefault == 96) {
-			//DCAZ的要求是<2cm
+			//DCAZ<2cm
 			if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
 		}
-		//对轨道进行PT筛选 0.2<pT<3.0
+		//pt cut  0.2<pT<3.0
 		if(aodTrk->Pt() < fMinPt) continue;
 		if(aodTrk->Pt() > fMaxPt) continue;
-		//赝快度的筛选|η|<0.8
+		//eta cut |η|<0.8
 		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
-		//给所有符合要求的轨道计数
+		//Count track
 		NtrksCounter += 1;
 	} // end loop of all track
 }
@@ -565,7 +557,6 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 
 
 	//..for DCA
-	//最近接近距离(DCA)
 	double pos[3], vz, vx, vy;
 	vz = aod->GetPrimaryVertex()->GetZ();
 	vx = aod->GetPrimaryVertex()->GetX();
@@ -999,9 +990,9 @@ int AliAnalysisTaskFlowPPTask::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+	//Not use in this task
     return 1;
-	//获取横动量的权重
-	//从下面的计算方式可以看出，横动量的权重主要依据探测效率得到
+	//Pt Weight is extract from Efficiency
 	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
 	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
 	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
@@ -1026,7 +1017,8 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber)
 {
-	//获取方位角的权重
+	//NUA
+	//Phi Weight
 	TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
         // cout << "weights_list" << weights_list << endl;
         // weights_list->ls();
@@ -1157,7 +1149,7 @@ Double_t AliAnalysisTaskFlowPPTask::GetFlowWeight(const AliVParticle* track, dou
 //============================================================================
 const char* AliAnalysisTaskFlowPPTask::ReturnPPperiod(const Int_t runNumber) const
 {
-	//根据RunNumber返回不同的Period字符串
+	//ReturnPPperiod according RunNumber
   Bool_t isHM = kFALSE;
   if(fAliTrigger == AliVEvent::kHighMultV0) isHM = kTRUE;
 
@@ -1241,12 +1233,13 @@ void AliAnalysisTaskFlowPPTask::Terminate(Option_t *)
 
 }
 //=============================================================================
-void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfile_SelfDefine& multProfile, TString label) {
+void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, TString label) {
 
 	
 	for(int h=0; h<6; h++)
 	{
-		//填充两粒子关联量。fChcn2[i]表示v_(i+2){2}
+		//Fill 2 correlation. 
+		//fChcn2[i]: v_(i+2){2}
 		multProfile.fChcn2[h] = new TProfile(Form("fChc%d{2}%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn2[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn2[h]);
@@ -1388,7 +1381,7 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfile_SelfDefine& multProfi
 	multProfile.fChsc4242_3subRRMLB->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc4242_3subRRMLB);
 
-	//五、六粒子关联
+	//5,6 correlation
 	multProfile.fChc5_A42222 = new TProfile("fChc5_A42222", "<<5>> Re; # of tracks", nn, xbins);
 	multProfile.fChc5_A42222->Sumw2();
 	fListOfObjects->Add(multProfile.fChc5_A42222);
@@ -1405,7 +1398,7 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfile_SelfDefine& multProfi
 	multProfile.fChc6_322322->Sumw2();
 	fListOfObjects->Add(multProfile.fChc6_322322);
 
-	//添加本来没有的3,4粒子关联
+	//Additional 3,4 correlation
 	multProfile.fChsc6222_Gap10 = new TProfile(Form("fChsc6222_Gap10%s", label.Data()), "# of tracks", nn, xbins);
 	multProfile.fChsc6222_Gap10->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc6222_Gap10);
@@ -1416,7 +1409,7 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfile_SelfDefine& multProfi
 
 }
 
-void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfile_SelfDefine& profile, double Ntrks) {
+void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks) {
 	//..calculate 2-particle correlations
 	//..................................
 	double Dn2 = correlator.Two(0, 0).Re();
@@ -1426,13 +1419,14 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfile_SelfDefine& prof
 	double Dn2_3subRM = correlator.Two_3SubRM(0, 0).Re();
 	double Dn2_3subLR = correlator.Two_3SubLR(0, 0).Re();
 
-	//计算无赝快度分隔gap的椭圆流v2，存在gap=1.0,1.4的椭圆流，3事件分隔的椭圆流
+	//calculate no eta-gap, gap1.0, gap1.4, 3subevent v2
 	if(NtrksAfter > 1 && Dn2 != 0) {
 		//..v2{2} = <cos2(phi1 - phi2)>
 		TComplex v22 = correlator.Two(2, -2);
 		double v22Re = v22.Re()/Dn2;
-		//Ntrks即满足要求的径迹数，代表多重数或中心度。v22Re为v2{2}的实部，Dn2为Generic framework中的分母项
-		//按以下方式填入Profile histogram表示：采用Dn2为权重，显示每个多重数对应的v22Re的平均值和误差
+		//v22Re is the Real of v2{2}
+		//Dn2 is the denominator of Generic framework
+		//Profile histogram use Dn2 as weight
 		profile.fChcn2[0]->Fill(Ntrks, v22Re, Dn2);
 
 		//..v3{2} = <cos3(phi1 - phi2)>
@@ -1446,12 +1440,12 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfile_SelfDefine& prof
 		profile.fChcn2[2]->Fill(Ntrks, v42Re, Dn2);
 
 		
-		//填充v5{2}=<cos4(phi1 - phi2)>
+		//v5{2}=<cos4(phi1 - phi2)>
 		TComplex v52 = correlator.Two(5, -5);
 		double v52Re = v52.Re()/Dn2;
 		profile.fChcn2[3]->Fill(Ntrks, v52Re, Dn2);
 
-		//填充v6{2}=<cos4(phi1 - phi2)>
+		//v6{2}=<cos4(phi1 - phi2)>
 		TComplex v62 = correlator.Two(6, -6);
 		double v62Re = v62.Re()/Dn2;
 		profile.fChcn2[4]->Fill(Ntrks, v62Re, Dn2);
@@ -1570,7 +1564,7 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfile_SelfDefine& prof
 
 	if(NtrksAfter > 2 && Dn3 != 0 )
 	{
-		//..v4{psi2} 只是填3粒子关联量
+		//..v4{psi2}
 		TComplex v422 = correlator.Three(4, -2, -2);
 		double v422Re = v422.Re()/Dn3;
 		profile.fChc422->Fill(Ntrks, v422Re, Dn3);
@@ -1814,8 +1808,8 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfile_SelfDefine& prof
 
 
 //_____________________________________________________________________________
-ClassImp(PhysicsProfile_SelfDefine);
-PhysicsProfile_SelfDefine::PhysicsProfile_SelfDefine() :
+ClassImp(PhysicsProfilePPTask);
+PhysicsProfilePPTask::PhysicsProfilePPTask() :
 		fChsc4242(nullptr),
 		fChsc4242_Gap0(nullptr),
 		fChsc4242_Gap2(nullptr),
@@ -1883,7 +1877,7 @@ PhysicsProfile_SelfDefine::PhysicsProfile_SelfDefine() :
 		fChsc6222_Gap10(nullptr),
 		fChsc633_Gap10A(nullptr)
 {
-		//初始化TProfile数组
+		//Initial TProfile memory
 		memset(fChcn2, 0, sizeof(fChcn2));
 		memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
 		memset(fChcn2_Gap2, 0, sizeof(fChcn2_Gap2));

@@ -35,12 +35,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 	Int_t		IsSample			= 10;
 	Short_t		nCentFl				= 0;
 	Bool_t		fLS				= false;
-	// ！！！ 
-	//注意AliAnalysisTaskFlowPPTask含参构造函数中DefineInput的数目需要与fNUE,fNUA的数目对应
-	// ！！！
 	Bool_t		fNUE 				= false;
 	Bool_t		fNUA				= true;
-	// 将fNUE,fNUA更改成false时，表示全效率和均匀探测器，不使用权重
 	
 
 
@@ -58,7 +54,6 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
         return 0x0;
     }
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-	//数据类型要么是ESD，要么是AOD。一个是事件的总结信息，一个是事件的详细信息
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
@@ -145,10 +140,10 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
     // when you will run your analysis in an analysis train on grid
 
 
-	//设置权重文件的输入
+	//Config Weights Input
 	Int_t inSlotCounter=1;
 	if(fNUA || fNUE)TGrid::Connect("alien:");
-	//使用权重进行接受度修正
+	//NUA
 	if(fNUA) {
 		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
                
@@ -205,11 +200,11 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 			weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
 		}
 		cin_NUA->SetData(weight_list);
-		//将权重数据链接到任务的输入中
+		//Connect the weight input with task
 		mgr->ConnectInput(task,inSlotCounter,cin_NUA);
 		inSlotCounter++;
 	}
-	//类似地使用权重进行效率修正
+	//NUE
 	if(fNUE) {
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
 		TFile *inNUE = (fFilterbit==96)?TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR.root"): TFile::Open("alien:///alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2015/TrackingEfficiency_PbPb5TeV_LHC15o_HIR_FB768.root");

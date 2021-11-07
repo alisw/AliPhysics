@@ -30,7 +30,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
 #include <THnSparse.h>
-// 预先加载类，提高运行速度
+// Preload to boost program
 class TList;
 class TF1;
 class TH1;
@@ -52,11 +52,9 @@ class AliAODITSsaTrackCuts;
 class AliInputEventHandler;
 
 
-//之前只在alien产生crash的原因在于PhysicsProfile在alien的lib里面已经存在了，所以无法修改命名为PhysicsProfile的类
-//所以需要自己新建一个类PhysicsProfile_SelfDefine
-class PhysicsProfile_SelfDefine : public TObject {
+class PhysicsProfilePPTask : public TObject {
 	public:
-        PhysicsProfile_SelfDefine();
+        PhysicsProfilePPTask();
 		// Physics profiles
 		TProfile*	 fChsc4242;		             	//! SC(4,2)
 		TProfile*	 fChsc4242_Gap0;			//! SC(4,2) |#Delta#eta| > 0.0
@@ -151,18 +149,18 @@ class PhysicsProfile_SelfDefine : public TObject {
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
 
-		//5,6粒子关联
+		//5,6 particle corrlation
 		TProfile* fChc5_A42222;  		//! <<5>> |#Delta#eta| > 1.0
 		TProfile* fChc5_A52322;  		//! <<5>> |#Delta#eta| > 1.0
 		TProfile* fChc6_222222;  		//! <<6>> |#Delta#eta| > 1.0
 		TProfile* fChc6_322322;  		//! <<6>> |#Delta#eta| > 1.0
 
-		//添加本来没有的3，4粒子关联
+		//Addtional 6 particle corrlation
 		TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
 		TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
 
 		private:
-		ClassDef(PhysicsProfile_SelfDefine, 1);    //Analysis task
+		ClassDef(PhysicsProfilePPTask, 1);    //Analysis task
 };
 
 
@@ -178,8 +176,6 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
 
-        //===================================================================================
-        //自定义函数
         
         virtual void   SetFilterbit(Int_t bit){fFilterbit = bit;}
 		virtual void   SetFilterbitDefault(Int_t bit){fFilterbitDefault = bit;}
@@ -216,16 +212,10 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         //===================================================================================
 
     private:
-        //AliAODEvent*            fAOD;           //! input event
-        //TList*                  fOutputList;    //! output list
-        //TH1F*                   fHistPhi[3];       //! dummy histogram
-        //如果要让一次Output储存多个run的weight，考虑指针数组，不同的run填入不同的直方图中
 
         AliAnalysisTaskFlowPPTask(const AliAnalysisTaskFlowPPTask&); // not implemented
         AliAnalysisTaskFlowPPTask& operator=(const AliAnalysisTaskFlowPPTask&); // not implemented
 
-        //===================================================================================
-        //自定义函数
         
         virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
@@ -394,8 +384,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter3subM = 0;            //!
 		int NtrksAfter3subR = 0;            //!
         
-		PhysicsProfile_SelfDefine multProfile;          //!
-		PhysicsProfile_SelfDefine multProfile_bin[10];  //!
+		PhysicsProfilePPTask multProfile;          //!
+		PhysicsProfilePPTask multProfile_bin[10];  //!
         
 		TRandom3 rand;                      //!
 		Int_t bootstrap_value;              //!
@@ -406,8 +396,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int nn;                             //!
 		TH1F* MyEventNumber;					//!
         
-		void CalculateProfile(PhysicsProfile_SelfDefine& profile, double Ntrks);
-		void InitProfile(PhysicsProfile_SelfDefine& profile, TString);
+		void CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks);
+		void InitProfile(PhysicsProfilePPTask& profile, TString);
         
         //===================================================================================
 
