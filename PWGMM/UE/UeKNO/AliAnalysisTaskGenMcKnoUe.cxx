@@ -133,25 +133,6 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 		20.0, 25.0, 30.0, 40.0, 50.0
 	};
 
-	//OpenFile(1);
-	fOutputList = new TList();
-	fOutputList->SetOwner(kTRUE);
-
-	hPtLVsV0A = 0;
-	hPtLVsV0A = new TH2D("hPtLVsV0A","",pTNBinsL,pTNBins1L,NchNBins,NchBins);
-	fOutputList->Add(hPtLVsV0A);
-
-	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",pTNBinsL,pTNBins1L);
-	fOutputList->Add(hPtLeadingTrue);
-
-	// UE analysis
-	for(Int_t i=0;i<3;++i){
-
-		hPtVsPtLeadingTrue[i] = new TH3D(Form("hPtVsPtLeadingTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,pTNBins,pTNBins1,NchNBins,NchBins);
-		fOutputList->Add(hPtVsPtLeadingTrue[i]);
-
-	}
-
 	// Define array nch
 	Double_t EtaBins[nEtaBins+1];
 	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
@@ -171,6 +152,17 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 		else
 			PhiBins[i_phi]= 1.0*pi;
 	}
+
+	//OpenFile(1);
+	fOutputList = new TList();
+	fOutputList->SetOwner(kTRUE);
+
+	hPtLVsV0A = 0;
+	hPtLVsV0A = new TH2D("hPtLVsV0A","",pTNBinsL,pTNBins1L,NchNBins,NchBins);
+	fOutputList->Add(hPtLVsV0A);
+
+	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",pTNBinsL,pTNBins1L);
+	fOutputList->Add(hPtLeadingTrue);
 
 	hetaphi = 0;
 	hetaphi = new TH2D("hetaphi","; #eta; #phi (rad)",nEtaBins,EtaBins,nPhiBins,PhiBins);
@@ -192,6 +184,14 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 	hmpirho = 0;
 	hmpirho = new TH2D("hmpirho","; #it{N}_{mpi}; #rho",600,-0.5,599.5,1000,0,5.0);
 	fOutputList->Add(hmpirho);
+
+	// UE analysis
+	for(Int_t i=0;i<3;++i){
+
+		hPtVsPtLeadingTrue[i] = new TH3D(Form("hPtVsPtLeadingTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,pTNBins,pTNBins1,NchNBins,NchBins);
+		fOutputList->Add(hPtVsPtLeadingTrue[i]);
+
+	}
 
 	PostData(1, fOutputList);
 
