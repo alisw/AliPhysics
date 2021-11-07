@@ -346,7 +346,7 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   
   //Identified Particles
   TString lPartNames[72] = {
-    "PiPlus", "PiMinus", "KaPlus", "KaMinus", "Proton", "AntiProton",
+    "PiPlus", "PiMinus", "KPlus", "KMinus", "Proton", "AntiProton",
     "K0Short", "Lambda", "AntiLambda",
     "XiMinus", "XiPlus", "OmegaMinus", "OmegaPlus",
     "Phi", "KStar", "AntiKStar",
