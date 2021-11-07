@@ -2,63 +2,73 @@
 /* See cxx source for full Copyright notice */
 /* Add a description of your MPI analysis */
 
-#ifndef AliAnalysisTaskGenMcKnoUe_H
-#define AliAnalysisTaskGenMcKnoUe_H
+#ifndef ALIANALYSISTASKGENMCKNOUE_H
+#define ALIANALYSISTASKGENMCKNOUE_H
+// ROOT includes
 
-class AliESDtrackCuts;
-class AliESDEvent;
+#include <TObject.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TNtuple.h>
+#include <TH1F.h>
+#include <THnSparse.h>
+#include <TArrayD.h>
+#include <TParticle.h>
+#include <TClonesArray.h>
+#include <TList.h>
+#include <TObjArray.h>
+
+// AliRoot includes
+
+#include <AliAnalysisTaskSE.h>
+#include <AliMCEvent.h>
+#include <AliStack.h>
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliInputEventHandler.h"
+
 class TList;
-class TH1D;
+class TH1F;
+class TH1I;
 class TH2D;
 class TH3D;
-class TH1I;
-class TProfile;
-class THnSparse;
-
-#include "AliAnalysisTaskSE.h"
-
-
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliStack.h"
-#include "TParticle.h"
-#include "AliGenEventHeader.h"
-
+class TParticle;
+class AliStack;
+class AliVVertex;
+class AliVParticle;
 
 
 class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 {
 	public:
+
 		AliAnalysisTaskGenMcKnoUe();
 		AliAnalysisTaskGenMcKnoUe(const char *name);
 
-		virtual                 ~AliAnalysisTaskGenMcKnoUe();
+		virtual      ~AliAnalysisTaskGenMcKnoUe();
+		virtual void UserCreateOutputObjects();
+		virtual void UserExec(Option_t* option);
+		virtual void Terminate(Option_t* option);
+		virtual void SetPtMin(Double_t val){fPtMin = val;}
+		virtual void SetIsPP(Bool_t val){fIsPP = val;}
 
-		virtual void            UserCreateOutputObjects();
-		virtual void            UserExec(Option_t* option);
-		virtual void            Terminate(Option_t* option);
-
-		Bool_t IsMCEventSelected(TObject* obj);
+	private:
 
 		void       GetGenLeadingObject();
 		void       GetGenUEObservables();
 		void       MakeALICE3Analysis();
-		virtual    Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2.0, Double_t rangeMax = 3.0*TMath::Pi()/2.0 );
-		void       SetPtMin(Double_t val){fPtMin = val;}
-		void       SetIsPP(Bool_t val){fIsPP = val;}
+		Double_t DeltaPhi(Double_t phia, Double_t phib,Double_t rangeMin = -TMath::Pi()/2.0, Double_t rangeMax = 3.0*TMath::Pi()/2.0 );
 
 	protected:
 
-	private:
+		Bool_t IsMCEventSelected(TObject* obj);
+		AliMCEvent*  fMC;                   //!<! MC event
+		AliInputEventHandler*  fMcHandler;  //!<! MCEventHandler
+		AliStack*  fMCStack;
 
-		AliMCEvent*  fMC;                     //! MC Event
-		AliInputEventHandler*    fMcHandler;  //!<!
-		AliStack*    fMCStack;                //! MC stack
 		Double_t fEtaCut;
-		Bool_t fIsPP;
+		Bool_t   fIsPP;
 		Double_t fPtMin;
-		TList*  fOutputList;  //! output list in the root file
 
 		Double_t fGenLeadPhi; 
 		Double_t fGenLeadPt;
@@ -71,8 +81,8 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		TH3D * hnchmpirho;
 		TH2D * hnchrho;
 		TH2D * hmpirho;
-
 		TH3D * hPtVsPtLeadingTrue[3];
+		TList*  fOutputList;    //!<! Output list of objects
 
 		AliAnalysisTaskGenMcKnoUe(const AliAnalysisTaskGenMcKnoUe&);
 		AliAnalysisTaskGenMcKnoUe& operator=(const AliAnalysisTaskGenMcKnoUe&);
