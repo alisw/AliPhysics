@@ -367,3 +367,13 @@ Double_t AliEffFDContainer::GetChi2TPCConstrained(const AliESDtrack *l_Tr) {
   if (vertex->GetStatus()) chi2TPCConstrainedVsGlobal = l_Tr->GetChi2TPCConstrainedVsGlobal(vertex);
   return chi2TPCConstrainedVsGlobal;
 }
+Bool_t AliEffFDContainer::AddContainer(AliEffFDContainer *target) {
+  TList *tlist = target->GetOutList();
+  if(tlist->GetEntries() != fOutList->GetEntries()) { printf("Containers have different number of contents!\n"); return 0;};
+  for(Int_t i=0;i<tlist->GetEntries();i++) {
+    TH1 *h1 = (TH1*)fOutList->At(i);
+    TH1 *h2 = (TH1*)tlist->At(i);
+    h1->Add(h2);
+  }
+  return 1;
+}
