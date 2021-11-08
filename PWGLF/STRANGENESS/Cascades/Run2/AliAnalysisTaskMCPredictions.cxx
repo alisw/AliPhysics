@@ -786,6 +786,17 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if(!lThisParticle) continue;
     lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(iCurrentLabelStack);
     Double_t geta = lThisParticle -> Eta();
+    
+    //gotta reject any and all offspring of decays
+    //simplest implementation: reject based on decay position
+    Double_t lDistanceFromZero = TMath::Sqrt(
+                                             TMath::Power( lThisParticle->Vx() , 2) +
+                                             TMath::Power( lThisParticle->Vy() , 2) +
+                                             TMath::Power( lThisParticle->Vz() , 2)
+                                             );
+    
+    if(lDistanceFromZero>1e-12) continue; //remove everything outside of zero, should remove decay daus
+    
     if( TMath::Abs(geta)<4.0 ){
       if(lThisParticle->GetPdgCode()==4232) {
         if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
