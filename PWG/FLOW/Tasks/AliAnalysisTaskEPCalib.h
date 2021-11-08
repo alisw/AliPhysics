@@ -102,7 +102,7 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
  private:
 
   static const int NCENTBINS = 10;
-  static const int NRUNNUM=39;
+  static const int NRUNNUM=68;
 
   int                     GetRunNumBin(int runNum);
   // pile-up        
