@@ -386,13 +386,13 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   }
   for(Int_t ih=0; ih<72; ih++){
     if(! fHistEtaTriggeredCharm[ih] ) {
-      fHistEtaTriggeredCharm[ih] = new TH1D(Form("fHistEtaTriggeredCharm_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+      fHistEtaTriggeredCharm[ih] = new TH2D(Form("fHistEtaTriggeredCharm_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredCharm[ih]);
     }
   }
   for(Int_t ih=0; ih<72; ih++){
     if(! fHistEtaTriggeredBeauty[ih] ) {
-      fHistEtaTriggeredBeauty[ih] = new TH1D(Form("fHistEtaTriggeredBeauty_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta);
+      fHistEtaTriggeredBeauty[ih] = new TH2D(Form("fHistEtaTriggeredBeauty_%s",lPartNames[ih].Data()),    "Generated;#eta",lNEtaBins,-lMaxAbsEta,+lMaxAbsEta, 10,0,10);
       fListHist->Add(fHistEtaTriggeredBeauty[ih]);
     }
   }
@@ -852,8 +852,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
         //Fill Histograms
         if(fHistEta[ih]) fHistEta[ih] -> Fill ( lPart -> Eta() );
-        if(fHistEtaTriggeredCharm[ih] && lNXiC > 0) fHistEtaTriggeredCharm[ih] -> Fill ( lPart -> Eta() );
-        if(fHistEtaTriggeredBeauty[ih] && lNXiB > 0) fHistEtaTriggeredBeauty[ih] -> Fill ( lPart -> Eta() );
+        if(fHistEtaTriggeredCharm[ih] && lNXiC > 0) fHistEtaTriggeredCharm[ih] -> Fill ( lPart -> Eta(), lThisPt );
+        if(fHistEtaTriggeredBeauty[ih] && lNXiB > 0) fHistEtaTriggeredBeauty[ih] -> Fill ( lPart -> Eta(), lThisPt );
         if(fHistEtaVsSPDMult[ih]) fHistEtaVsSPDMult[ih] -> Fill( lNchEtaWide, lPart -> Eta() );
         if(fHistYVsSPDMult[ih]) fHistYVsSPDMult[ih] -> Fill( lNchEtaWide, lThisRap );
         if( TMath::Abs(lThisRap) < 0.5 && !fkWideRapiditySpeciesStudy ) {

@@ -119,8 +119,8 @@ private:
   
   TH1D *fHistPt[72];              //! for keeping track of base spectra
   TH1D *fHistEta[72];              //! for keeping track of base spectra
-  TH1D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
-  TH1D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
   TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
   TH2D *fHistPtVsSPDMult[72];     //! for keeping track of base spectra
   TH2D *fHistEtaVsSPDMult[72];    //! for keeping track of base spectra
