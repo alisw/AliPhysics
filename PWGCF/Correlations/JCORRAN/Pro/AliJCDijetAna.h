@@ -37,8 +37,8 @@ class AliJCDijetAna : public TObject
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<vector<fastjet::PseudoJet>> GetJets() { return jets; }
         vector<vector<vector<fastjet::PseudoJet>>> GetDijets() { return dijets; }
-        bool HasDijet() { return bHasDijet; }
-        bool HasDeltaPhiDijet() { return bHasDeltaPhiDijet; }
+        bool HasDijet(int iSet) { return bHasDijet.at(iSet); }
+        bool HasDeltaPhiDijet(int iSet) { return bHasDeltaPhiDijet.at(iSet); }
         void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins);
 
         void SetSettings(int    lDebug,
@@ -62,6 +62,7 @@ class AliJCDijetAna : public TObject
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
         void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
+        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos);
         void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
@@ -69,7 +70,7 @@ class AliJCDijetAna : public TObject
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
 
-        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
+        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, iBGSubtrCutsRaw, iBGSubtrConstCutCutsRaw, jetClassesSize};
 #endif
 
     private:
@@ -98,8 +99,8 @@ class AliJCDijetAna : public TObject
         bool removed;
         //For loops:
         unsigned utrack, uktjet, ujet, ujet2, uconst, udijet, ujetDetMC;
-        bool bHasDijet;
-        bool bHasDeltaPhiDijet;
+        std::vector<bool> bHasDijet;
+        std::vector<bool> bHasDeltaPhiDijet;
         bool bHasDeltaPhiSubLeadJet;
         TRandom3 *randomGenerator;
         double fDeltaPt;
