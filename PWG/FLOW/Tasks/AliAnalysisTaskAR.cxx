@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 04.11.2021
+ * Last Modified Date: 08.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -1110,40 +1110,40 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 
   for (int bin = 0; bin < LAST_ETRACK; ++bin) {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
-      fTrackCutsValues->SetBinContent(2 * bin + mm + 1, fTrackCuts[bin][mm]);
+      fTrackCutsValues->Fill(2 * bin + mm, fTrackCuts[bin][mm]);
       fTrackCutsValues->GetXaxis()->SetBinLabel(
           2 * bin + mm + 1, fTrackCutsCounterBinNames[bin][mm]);
     }
   }
   if (fUseFilterbit) {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 1, fFilterbit);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK, fFilterbit);
   } else {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 1, -99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK, -99);
   }
   fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 1, "Filterbit");
   if (fChargedOnly) {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 2, 99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 1, 99);
   } else {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 2, -99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 1, -99);
   }
   fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 2, "ChargedOnly");
   if (fPrimaryOnly) {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 3, 99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 2, 99);
   } else {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 3, -99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 2, -99);
   }
   fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 3, "PrimaryOnly");
   if (fGlobalTracksOnly) {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 4, 99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 3, 99);
   } else {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 4, -99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 3, -99);
   }
   fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 4,
                                             "GlobalTracksOnly");
   if (fMCClosure) {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 5, 99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 4, 99);
   } else {
-    fTrackCutsValues->SetBinContent(2 * LAST_ETRACK + 5, -99);
+    fTrackCutsValues->Fill(2 * LAST_ETRACK + 4, -99);
   }
   fTrackCutsValues->GetXaxis()->SetBinLabel(2 * LAST_ETRACK + 5, "MC Closure");
   fTrackControlHistogramsList->Add(fTrackCutsValues);
@@ -1213,26 +1213,26 @@ void AliAnalysisTaskAR::BookControlHistograms() {
 
   for (int bin = 0; bin < LAST_EEVENT; ++bin) {
     for (int mm = 0; mm < LAST_EMINMAX; ++mm) {
-      fEventCutsValues->SetBinContent(2 * bin + mm + 1, fEventCuts[bin][mm]);
+      fEventCutsValues->Fill(2 * bin + mm, fEventCuts[bin][mm]);
       fEventCutsValues->GetXaxis()->SetBinLabel(
           2 * bin + mm + 1, fEventCutsCounterBinNames[bin][mm]);
     }
   }
   if (fUseCenCorCuts) {
-    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 1, fCenCorCut[0]);
-    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 2, fCenCorCut[1]);
+    fEventCutsValues->Fill(2 * LAST_EEVENT + 0, fCenCorCut[0]);
+    fEventCutsValues->Fill(2 * LAST_EEVENT + 1, fCenCorCut[1]);
   } else {
-    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 1, -999);
-    fEventCutsValues->SetBinContent(2 * LAST_EEVENT + 2, -999);
+    fEventCutsValues->Fill(2 * LAST_EEVENT + 0, -999);
+    fEventCutsValues->Fill(2 * LAST_EEVENT + 1, -999);
   }
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * LAST_EEVENT + 1, "m_{CEN}");
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * LAST_EEVENT + 2, "t_{CEN}");
   if (fUseMulCorCuts) {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 1, fMulCorCut[0]);
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 2, fMulCorCut[1]);
+    fEventCutsValues->Fill(2 * (LAST_EEVENT + 1) + 0, fMulCorCut[0]);
+    fEventCutsValues->Fill(2 * (LAST_EEVENT + 1) + 1, fMulCorCut[1]);
   } else {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 1, -999);
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 1) + 2, -999);
+    fEventCutsValues->Fill(2 * (LAST_EEVENT + 1) + 0, -999);
+    fEventCutsValues->Fill(2 * (LAST_EEVENT + 1) + 1, -999);
   }
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 1) + 1,
                                             "m_{MUL}");
@@ -1240,12 +1240,11 @@ void AliAnalysisTaskAR::BookControlHistograms() {
                                             "t_{MUL}");
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 1,
                                             "CentralityEstimator");
-  fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 1,
-                                  fCentralityEstimator);
+  fEventCutsValues->Fill(2 * (LAST_EEVENT + 2) + 0, fCentralityEstimator);
   if (fUseCenFlatten) {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 2, 999);
+    fEventCutsValues->Fill(2 * (LAST_EEVENT + 2) + 1, 999);
   } else {
-    fEventCutsValues->SetBinContent(2 * (LAST_EEVENT + 2) + 2, -999);
+    fEventCutsValues->Fill(2 * (LAST_EEVENT + 2) + 1, -999);
   }
   fEventCutsValues->GetXaxis()->SetBinLabel(2 * (LAST_EEVENT + 2) + 2,
                                             "fUseCenFlatten");
