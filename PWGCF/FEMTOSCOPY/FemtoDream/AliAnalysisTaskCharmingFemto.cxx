@@ -334,8 +334,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
 
-   static float DmesonBuddyMass =
-      TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
+  float DmesonBuddyMass =
+    TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
 
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(DmesonBuddyMass);
