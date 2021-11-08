@@ -125,7 +125,9 @@ public:
     // NOTE Highest 4 bits reservd for PID hypothesis
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
-    ProducedInTransport = 1 // Bit 0: 0 = from generator; 1 = from transport
+    ProducedInTransport = 0x1, // Bit 0: 0 = from generator; 1 = from transport
+    FromBackgroundEvent = 0x2, // Particle from background event (may have been used several times)
+    PhysicalPrimary = 0x4      // Particle is a physical primary according to ALICE definition
   };
   //Aliases for multiplicity selection criteria
   enum EventSelectionCut {
