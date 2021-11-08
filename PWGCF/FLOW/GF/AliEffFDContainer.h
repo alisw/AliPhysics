@@ -40,6 +40,8 @@ class AliEffFDContainer: public TNamed {
     void AddCut(Int_t lFilterBit);
     void Fill(AliESDEvent &inputESD, AliMCEvent &inputMC);
     void Fill(AliESDEvent &inputESD);
+    TList *GetOutList() { return fOutList; };
+    Bool_t AddContainer(AliEffFDContainer *target);
   // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);

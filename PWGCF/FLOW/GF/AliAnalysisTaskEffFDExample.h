@@ -28,12 +28,18 @@ class AliEffFDContainer;
 class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskEffFDExample();
-  AliAnalysisTaskEffFDExample(const char *name, Bool_t IsMC=kTRUE);
+  AliAnalysisTaskEffFDExample(const char *name, Bool_t IsMC=kTRUE, TString pf="");
   virtual ~AliAnalysisTaskEffFDExample();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
+  virtual void NotifyRun();
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
+  void SetEta(Double_t etaMin, Double_t etaMax) { fEtaMin=etaMin; fEtaMax = etaMax; };
+  void SetContPF(TString newval) { fContPF = newval; };
+  void SetPtBins(Int_t nBins, Double_t *ptbins) { if(fPtAxis) delete fPtAxis; fPtAxis = new TAxis(nBins,ptbins); };
+  void SetMultiBins(Int_t nBins, Double_t *multibins) { if(fMultiAxis) delete fMultiAxis; fMultiAxis = new TAxis(nBins,multibins); };
+  void SetCentEstimator(TString newval) {fCentEst = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -43,6 +49,17 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   AliMCEvent *fMCEvent; //! MC event
   UInt_t fTriggerType;
   AliEffFDContainer *fEfFd;
+  Double_t fEtaMin;
+  Double_t fEtaMax;
+  TString fContPF;
+  TAxis *fPtAxis; //for storing pT axis
+  TAxis *fMultiAxis; //for storing cent/multi axis
+  Double_t *fPtBins; //!
+  Int_t fNPtBins; //!
+  Double_t *fMultiBins; //!
+  Int_t fNMultiBins; //!
+  TString fCentEst;
+  Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskEffFDExample,1);
 };
 
