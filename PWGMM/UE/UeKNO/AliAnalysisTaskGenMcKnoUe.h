@@ -76,9 +76,8 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		// UE 
 		TH1D * hPtLeadingTrue;
 		TH2D * hPtLVsV0A;
-		TH2D * hetaphi;
 		TH2D * hnchmpi;
-		TH3D * hnchmpirho;
+		TH3F * hnchmpirho;
 		TH2D * hnchrho;
 		TH2D * hmpirho;
 		TH3D * hPtVsPtLeadingTrue[3];
@@ -87,7 +86,7 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		AliAnalysisTaskGenMcKnoUe(const AliAnalysisTaskGenMcKnoUe&);
 		AliAnalysisTaskGenMcKnoUe& operator=(const AliAnalysisTaskGenMcKnoUe&);
 
-		ClassDef(AliAnalysisTaskGenMcKnoUe, 3);
+		ClassDef(AliAnalysisTaskGenMcKnoUe, 1);
 };
 
 #endif
