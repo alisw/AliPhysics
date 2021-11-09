@@ -51,6 +51,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetFillRecoilTree(Bool_t b){fFillRecoilTree=b;}
 	virtual void		 SetFillResponseInclusiveTHnSparse(Bool_t b){fFillResponseInclusiveTHnSparse=b;}
 	virtual void		 SetFillResponseRecoilTHnSparse(Bool_t b){fFillResponseRecoilTHnSparse=b;}
+	virtual void		 SetFillDataTree(Bool_t b){fFillDataTree=b;}
 	virtual void		 SetPtHardBin(Int_t bin){fPtHardBin=bin;}
 	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
 	virtual void		 SetRejectionFactorRecoilJets(Int_t f){fRejectionFactorRecoilJets=f;}
@@ -130,6 +131,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
 	Bool_t fFillResponseInclusiveTHnSparse; ///< switch to fill embedding THnSparse with inclusive jet info
 	Bool_t fFillResponseRecoilTHnSparse; ///< switch to fill embedding THnSparse with recoil jet info
+	Bool_t fFillDataTree; ///< switch to fill data tree
 	Bool_t fMoreTreeVars; ///< add more variables to the output tree
 	Bool_t fDoDeltaPtInclusive; ///< calculate delta pT for inclusive jets
 	Bool_t fDoDeltaPtRecoil; ///< calculate delta pT for recoil jets 
@@ -144,6 +146,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fTreeVarsInclusiveMoreVars[13]; ///<
 	Float_t fTreeVarsRecoil[8]; ///<
 	Float_t fTreeVarsRecoilMoreVars[14]; ///<
+	Float_t fTreeVarsData[6]; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
@@ -209,13 +212,14 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	// embedding trees
 	TTree *fTreeEmbInclusive; //!<!
 	TTree *fTreeEmbRecoil; //!<!
+	TTree *fTreeData; //!<!
 
  private:
   AliAnalysisTaskJetCoreEmcal(const AliAnalysisTaskJetCoreEmcal&)           ; // not implemented
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 16);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 17);
   /// \endcond
 };
 #endif
