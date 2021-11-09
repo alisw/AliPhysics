@@ -363,7 +363,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 	//AliJTH1D set done.
 
 	fHMG->Print();
-	fHMG->WriteConfig();
+	//fHMG->WriteConfig();
 
 }
 
