@@ -35,7 +35,9 @@ AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample():
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
-  fCentEst("V0M")
+  fCentEst("V0M"),
+  fTCtoAdd(0),
+  fFBtoAdd(0)
 {
 };
 AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample(const char *name, Bool_t IsMC, TString pf):
@@ -53,11 +55,14 @@ AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample(const char *name, Bool_
   fNPtBins(0),
   fMultiBins(0),
   fNMultiBins(0),
-  fCentEst("V0M")
+  fCentEst("V0M"),
+  fTCtoAdd(0),
+  fFBtoAdd(0)
 {
   DefineOutput(1,AliEffFDContainer::Class());//AliEffFDContainer::Class());
 };
 AliAnalysisTaskEffFDExample::~AliAnalysisTaskEffFDExample() {
+  if(fTCtoAdd) { fTCtoAdd->Clear(); delete fTCtoAdd; };
 };
 void AliAnalysisTaskEffFDExample::NotifyRun() {
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -90,7 +95,8 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
   AliESDtrackCuts *tc = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   fEfFd->AddCut(tc); */
   //Instead, filter bits 32, 64, 256, and 512 are implemented:
-  fEfFd->AddCut(96);
+  if(fTCtoAdd) for(Int_t i=0;i<fTCtoAdd->GetEntries();i++) fEfFd->AddCut((AliESDtrackCuts*)fTCtoAdd->At(i));
+  if(fFBtoAdd) fEfFd->AddCut(fFBtoAdd);
   PostData(1,fEfFd);
 };
 void AliAnalysisTaskEffFDExample::UserExec(Option_t*) {
