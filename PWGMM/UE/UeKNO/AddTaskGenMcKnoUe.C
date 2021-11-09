@@ -7,44 +7,43 @@
 
 AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5, Bool_t isPP=kTRUE, TString suffixName ="")
 {
-    AliAnalysisTaskGenMcKnoUe* taskUE = new AliAnalysisTaskGenMcKnoUe("taskKno");
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        Printf("AliAnalysisTaskSimSpectraLF: No analysis manager to connect to.");
-        return 0x0;
-    }
-    // get the input event handler this handler is part of the managing system and feeds events to your task
-    if (!mgr->GetMCtruthEventHandler()) {
-        Printf("AliAnalysisTaskSimSpectraLF: This task requires an input MC event handler.");
-        return 0x0;
-    }
+	AliAnalysisTaskGenMcKnoUe* taskUE = new AliAnalysisTaskGenMcKnoUe("taskKno");
+	taskUE->SetPtMin(minpT);
+	taskUE->SetIsPP(isPP); 
 
-    // now you create an instance of your task
-    if(!taskUE) return 0x0;
-    taskUE->SetPtMin(minpT);
-    taskUE->SetIsPP(isPP); 
-    mgr->AddTask(taskUE);
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr) {
+		Printf("AliAnalysisTaskSimSpectraLF: No analysis manager to connect to.");
+		return 0x0;
+	}
+	// get the input event handler this handler is part of the managing system and feeds events to your task
+	if (!mgr->GetMCtruthEventHandler()) {
+		Printf("AliAnalysisTaskSimSpectraLF: This task requires an input MC event handler.");
+		return 0x0;
+	}
 
-    // Create containers for input/output
+	mgr->AddTask(taskUE);
 
-    TString finDirname    = "";
-    TString inname    = "cinput";
-    TString outBasic    = "cList";
+	// Create containers for input/output
 
-    finDirname    += suffixName.Data();
-    inname    += finDirname.Data();
-    outBasic    += finDirname.Data();
+	TString finDirname    = "";
+	TString inname    = "cinput";
+	TString outBasic    = "cList";
 
-    // Input and Output Slots
-    //===========================================================================
+	finDirname    += suffixName.Data();
+	inname    += finDirname.Data();
+	outBasic    += finDirname.Data();
 
-    TString outputfile = AliAnalysisManager::GetCommonFileName();
-    outputfile += Form(":PWGMM_GenKnoUe_%1.2f",minpT);
+	// Input and Output Slots
+	//===========================================================================
 
-    AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+	TString outputfile = AliAnalysisManager::GetCommonFileName();
+	outputfile += Form(":PWGMM_GenKnoUe_%1.2f",minpT);
 
-    mgr->ConnectInput (taskUE, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskUE, 1, coutSim);
+	AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
-    return taskUE;
+	mgr->ConnectInput (taskUE, 0, mgr->GetCommonInputContainer());
+	mgr->ConnectOutput(taskUE, 1, coutSim);
+
+	return taskUE;
 }
