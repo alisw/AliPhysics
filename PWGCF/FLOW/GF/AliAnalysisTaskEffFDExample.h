@@ -40,6 +40,9 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *ptbins) { if(fPtAxis) delete fPtAxis; fPtAxis = new TAxis(nBins,ptbins); };
   void SetMultiBins(Int_t nBins, Double_t *multibins) { if(fMultiAxis) delete fMultiAxis; fMultiAxis = new TAxis(nBins,multibins); };
   void SetCentEstimator(TString newval) {fCentEst = newval; };
+  void ClearTCList() { l_ClearTCList(); fFBtoAdd=0; };
+  void AddTrackCut(AliESDtrackCuts* incut) { l_CreateTCList(); fTCtoAdd->Add(incut); };
+  void AddTrackCut(Int_t fb) { fFBtoAdd+=fb; };
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -59,7 +62,11 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
   TString fCentEst;
+  TList *fTCtoAdd;
+  Int_t fFBtoAdd;
   Double_t *GetBinsFromAxis(TAxis *inax);
+  void l_CreateTCList() { if(fTCtoAdd) return; fTCtoAdd = new TList(); fTCtoAdd->SetOwner(kTRUE); };
+  void l_ClearTCList() { if(fTCtoAdd) fTCtoAdd->Clear(); };
   ClassDef(AliAnalysisTaskEffFDExample,1);
 };
 
