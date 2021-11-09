@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 11.10.2021
+ * Last Modified Date: 04.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -24,12 +24,10 @@
 #include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
-#include <TExMap.h>
 #include <TF1.h>
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
-// #include <THnSparse.h>
 #include <TProfile.h>
 #include <TRandom3.h>
 #include <TString.h>
@@ -85,13 +83,19 @@ enum kTrack {
 // kinematic variables
 const Int_t kKinematic = kETA + 1;
 // final result histograms
-enum kFinalHist {
+enum kFinalResultHist {
   kAVGPHI,
   kAVGCEN,
   kMINMUL,
   kNUMBEROFEVENTS,
   kNUMBEROFTRACKS,
   LAST_EFINALHIST
+};
+enum kFinalResultProfile {
+  kINTEGRATED,
+  kCENDEP,
+  kMULDEP,
+  LAST_EFINALRESULTPROFILE
 };
 // various gloabl objects
 enum kBins { kBIN, kLEDGE, kUEDGE, LAST_EBINS };
@@ -101,6 +105,7 @@ const TString kMMName[LAST_EMINMAX] = {"[kMIN]", "[kMAX]"};
 enum kBeforeAfter { kBEFORE, kAFTER, LAST_EBEFOREAFTER };
 const TString kBAName[LAST_EBEFOREAFTER] = {"[kBEFORE]", "[kAFTER]"};
 const Color_t kFillColor[LAST_EBEFOREAFTER] = {kRed - 10, kGreen - 10};
+const Color_t kcolorFinalResult = kBlue - 10;
 enum kMode { kRECO, kSIM, LAST_EMODE };
 const TString kModeName[LAST_EMODE] = {"[kRECO]", "[kSIM]"};
 enum kMCPrimaryDef { kMCPrim, kMCPhysicalPrim };
@@ -130,7 +135,8 @@ public:
   virtual void BookQAHistograms();
   virtual void BookControlHistograms();
   virtual void BookFinalResultHistograms();
-  virtual void BookFinalResultProfiles();
+  virtual void BookFinalResultCorrelators();
+  virtual void BookFinalResultSymmetricCumulants();
 
   // functions for setting default values for binning/cuts
   void SetDefaultConfiguration();
@@ -144,7 +150,8 @@ public:
   virtual void FillFBScanQAHistograms(AliAODTrack *track);
   virtual void FillEventControlHistograms(kBeforeAfter BA, AliVEvent *Event);
   virtual void FillTrackControlHistograms(kBeforeAfter BA, AliVParticle *track);
-  virtual void FillFinalResultProfile();
+  virtual void FillFinalResultCorrelators();
+  virtual void FillSymmetricCumulant();
   virtual Bool_t SurviveEventCut(AliAODEvent *aAOD);
   virtual Bool_t SurviveTrackCut(AliVParticle *aTrack, Bool_t FillCounter);
   virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
@@ -168,6 +175,11 @@ public:
   TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
                           Int_t n6);
+
+  // methods for calculating symmetric cumulants
+  void SC2(std::vector<Int_t> sc, Int_t index);
+  void SC3(std::vector<Int_t> sc, Int_t index);
+  std::vector<std::vector<Int_t>> MapSCToCor(std::vector<Int_t> sc);
 
   // GetPointers Methods in case we need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
@@ -216,15 +228,26 @@ public:
     return this->fFinalResultHistogramsList;
   }
   void SetFinalResultProfilesList(TList *const frl) {
-    this->fFinalResultProfilesList = frl;
+    this->fFinalResultCorrelatorsList = frl;
   };
   TList *GetFinalResultProfilesList() const {
-    return this->fFinalResultProfilesList;
+    return this->fFinalResultCorrelatorsList;
   }
   void GetCorrelatorValues(std::vector<Double_t> *cor) {
     cor->clear();
     TList *list;
-    for (auto List : *fFinalResultProfilesList) {
+    for (auto List : *fFinalResultCorrelatorsList) {
+      list = dynamic_cast<TList *>(List);
+      cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
+    }
+  }
+  TList *GetFinalResultSymmetricCumulantsList() const {
+    return this->fFinalResultSymmetricCumulantsList;
+  }
+  void GetSymmetricCumulantValues(std::vector<Double_t> *cor) {
+    cor->clear();
+    TList *list;
+    for (auto List : *fFinalResultSymmetricCumulantsList) {
       list = dynamic_cast<TList *>(List);
       cor->push_back(dynamic_cast<TProfile *>(list->At(0))->GetBinContent(1));
     }
@@ -479,6 +502,11 @@ public:
     this->fCorrelators = correlators;
   }
 
+  // set symmetric cumulant to be computed
+  void SetSymmetricCumulants(std::vector<std::vector<Int_t>> SC) {
+    this->fSymmetricCumulants = SC;
+  }
+
   // use nested loops for computation of correlators
   void SetUseNestedLoops(Bool_t option) { this->fUseNestedLoops = option; }
 
@@ -580,7 +608,7 @@ private:
   TString fTrackCutsCounterCumulativeName;
   // THnSparseD *fTrackCutsCounterCumulative;
   TString fTrackCutsValuesName;
-  TH1D *fTrackCutsValues;
+  TProfile *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
   Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
@@ -589,7 +617,7 @@ private:
   TString fEventCutsCounterCumulativeName;
   // THnSparseD *fEventCutsCounterCumulative;
   TString fEventCutsValuesName;
-  TH1D *fEventCutsValues;
+  TProfile *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
   TString fEventCutsCounterBinNames[LAST_EEVENT][LAST_EMINMAX];
   Int_t fFilterbit;
@@ -615,10 +643,12 @@ private:
   TH1D *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
   Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
-  // final result profiles
+  // final result correlators
   // will be generated by CreateUserObjects depending on the correlators we have
-  TList *fFinalResultProfilesList;
-  TString fFinalResultProfilesListName;
+  TList *fFinalResultCorrelatorsList;
+  TString fFinalResultCorrelatorsListName;
+  TList *fFinalResultSymmetricCumulantsList;
+  TString fFinalResultSymmetricCumulantsListName;
   // only fill control histograms
   Bool_t fFillControlHistogramsOnly;
   Bool_t fUseNestedLoops;
@@ -636,7 +666,7 @@ private:
   TF1 *fMCMultiplicity;
 
   // Look up tabel between MC and data particles
-  TExMap *fLookUpTable;
+  std::map<Int_t, Int_t> fLookUpTable;
 
   // use Fisher-Yates algorithm to randomize tracks
   Bool_t fUseFisherYates;
@@ -654,9 +684,12 @@ private:
   Bool_t fUseWeights[kKinematic];
   Bool_t fUseWeightsAggregated;
   std::vector<std::vector<Int_t>> fCorrelators;
+  std::vector<std::vector<Int_t>> fSymmetricCumulants;
+  std::map<std::vector<Int_t>, std::vector<std::vector<Int_t>>> fMapSCtoCor;
+  std::map<std::vector<Int_t>, Int_t> fMapCorToIndex;
 
   // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 15);
+  ClassDef(AliAnalysisTaskAR, 19);
 };
 
 #endif

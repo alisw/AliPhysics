@@ -12,173 +12,125 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  * Author: Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
- *         Feng Fan (Feng.Fan@cern.ch)				                                  *
+ *         Feng Fan (Feng.Fan@cern.ch)	                                  *
  *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
+ *         Last modification: 03/11/2021                                  * 
  **************************************************************************/
-
-/* AliAnaysisTaskMcKnoUe source code
- * The analysis task produce all the histos needed for MC closure test studies
- * Results include both KNO properties and traditional UE analysis
- */
-
-class TTree;
-
-class AliPPVsMultUtils;
-class AliESDtrackCuts;
-
-
-#include <Riostream.h>
-#include "TChain.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-#include "TProfile.h"
-#include "THnSparse.h"
-#include "TVector3.h"
-#include "TCanvas.h"
-#include "TMath.h"
-#include "TLegend.h"
-#include "TList.h"
-
-#include "AliLog.h"
-#include "AliVEvent.h"
-#include "AliVVertex.h"
-#include "AliVTrack.h"
-//#include "AliV0vertexer.h"
-
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliESDVZERO.h"
-
-#include "AliESDInputHandler.h"
-#include "AliMultiplicity.h"
-#include "AliPPVsMultUtils.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-#include "AliAnalysisTaskESDfilter.h"
-
-#include "AliMCEventHandler.h"
-#include "AliInputEventHandler.h"
-
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliStack.h"
-#include "TParticle.h"
-#include <AliHeader.h>
-
-#include "AliOADBContainer.h"
-#include "AliOADBMultSelection.h"
-#include "AliMultSelection.h"
-#include "AliMultEstimator.h"
-#include "AliMultInput.h"
-#include "AliMultVariable.h"
-#include "AliCentrality.h"
-#include "AliMultiplicity.h"
-
-#include "AliESDUtils.h"
-
-#include "AliGenEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-//#include "AliGenPythiaEventHeader.h"
-
-#include "AliEventCuts.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisUtils.h"
-#include "AliPPVsMultUtils.h"
-#include <AliESDVertex.h>
-#include <AliMultiplicity.h>
+//_____ ROOT headers
+#include <TList.h>
 #include <TTree.h>
 #include <TMath.h>
+#include <TFile.h>
+#include <TF1.h>
 #include <TRandom.h>
-#include <TDirectory.h>
-#include <TBits.h>
-#include <AliAnalysisFilter.h>
+#include <TTreeStream.h>
+#include "TChain.h"
+#include <THnSparse.h>
+#include <TDatabasePDG.h>
+#include "TObjArray.h"
+#include <TClonesArray.h>
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3D.h"
+//_____ ALIROOT headers
+#include "AliAnalysisTask.h"
+#include "AliAnalysisFilter.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+#include "AliLog.h"
+#include "AliVParticle.h"
+#include "AliStack.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliAODInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliAODMCHeader.h"
+#include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
+//_____ Additional includes
+#include "AliVEvent.h"
+#include "AliGenEventHeader.h"
 
-using std::cout;
-using std::endl;
-
+//_____ AnalysisTask headers
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisTaskGenMcKnoUe.h"
+//_____ STL includes
+#include <iostream>
+using namespace std;
 
- 
+
 const Char_t * NameOfRegion[3]={"NS","AS","TS"};
-const Int_t NchNBins = 100;
-Double_t NchBins[NchNBins+1]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5,12.5,13.5,14.5,15.5,16.5,17.5,18.5,19.5,20.5,21.5,22.5,23.5,24.5,25.5,26.5,27.5,28.5,29.5,30.5,31.5,32.5,33.5,34.5,35.5,36.5,37.5,38.5,39.5,40.5,41.5,42.5,43.5,44.5,45.5,46.5,47.5,48.5,49.5,50.5,51.5,52.5,53.5,54.5,55.5,56.5,57.5,58.5,59.5,60.5,61.5,62.5,63.5,64.5,65.5,66.5,67.5,68.5,69.5,70.5,71.5,72.5,73.5,74.5,75.5,76.5,77.5,78.5,79.5,80.5,81.5,82.5,83.5,84.5,85.5,86.5,87.5,88.5,89.5,90.5,91.5,92.5,93.5,94.5,95.5,96.5,97.5,98.5,99.5};
-
-const Int_t pTNBins = 36;
-Double_t pTNBins1[pTNBins+1] = {
-	0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0,    7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  25.0,  30.0,  40.0,  50.0
-};
-
-const Int_t pTNBinsL = 24;
-Double_t pTNBins1L[pTNBinsL+1] = {
-	0.15, 0.50, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50,
-	5.00, 6.00, 7.00, 8.00, 9.00, 10.0, 12.0, 14.0, 16.0, 18.0,
-	20.0, 25.0, 30.0, 40.0, 50.0
-};
-
-
-
+const Int_t NchNBins = 2000;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
-class AliAnalysisTaskGenMcKnoUe;    // your analysis class
+const Double_t  ptamin = 0.15;
+const Double_t  ptamax = 20.0;
+const Double_t  etamax = 4.0;
+const Int_t nEtaBins = 10;
+const Int_t nPhiBins = 10;
+Int_t Nmpi = -1;
 
-using namespace std;            // std namespace: so you can do things like 'cout' etc
+ClassImp(AliAnalysisTaskGenMcKnoUe)
 
-ClassImp(AliAnalysisTaskGenMcKnoUe) // classimp: necessary for root
-
-AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe() : AliAnalysisTaskSE(),
-    
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),  fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0)
-
+	AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(): 
+		AliAnalysisTaskSE(),
+		fMC(0x0),
+		fMcHandler(0x0),
+		fMCStack(0x0),
+		fEtaCut(0.8),
+		fIsPP(kTRUE),
+		fPtMin(0.5),
+		fGenLeadPhi(0x0),
+		fGenLeadPt(0x0),
+		fGenLeadIn(0x0),
+		hPtLeadingTrue(0x0),
+		hPtLVsV0A(0x0),
+		hnchmpi(0x0),
+		hnchmpirho(0x0),
+		hnchrho(0x0),
+		hmpirho(0x0),
+		fOutputList(0)
 {
-	for(Int_t i=0;i<3;++i){ 
-		
+	for(Int_t i=0;i<3;++i) 
 		hPtVsPtLeadingTrue[i]=0;
-		pNumDenTrueAll[i]=0;
-		pSumPtTrueAll[i]=0;
-        
-        hNumDen[i]=0;
-        hSumPt[i]=0;
-        
-		pNumDenTrue[i]=0;
-		pSumPtTrue[i]=0;
-	}
-	
-	// default constructor, don't allocate memory here!  this is used by root for IO purposes, it needs to remain empty
+
 }
 //_____________________________________________________________________________
-AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name) : AliAnalysisTaskSE(name),
-	
-    fMC(0x0),fMcHandler(0x0),fMCStack(0),fEtaCut(0.8),fPtMin(0.5),fOutputList(0),fGenLeadPhi(0),fGenLeadPt(0),fGenLeadIn(0),fHistEvt(0x0),hCounter(0),hPtLeadingGenAll(0),hPtLeadingTrue(0)
-
+AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name): 
+	AliAnalysisTaskSE(name),
+	fMC(0x0),
+	fMcHandler(0x0),
+	fMCStack(0x0),
+	fEtaCut(0.8),
+	fIsPP(kTRUE),
+	fPtMin(0.5),
+	fGenLeadPhi(0x0),
+	fGenLeadPt(0x0),
+	fGenLeadIn(0x0),
+	hPtLeadingTrue(0x0),
+	hPtLVsV0A(0x0),
+	hnchmpi(0x0),
+	hnchmpirho(0x0),
+	hnchrho(0x0),
+	hmpirho(0x0),
+	fOutputList(0)
 {
-	for(Int_t i=0;i<3;++i){
-
+	for(Int_t i=0;i<3;++i)
 		hPtVsPtLeadingTrue[i]=0;
-		pNumDenTrueAll[i]=0;
-		pSumPtTrueAll[i]=0;
-        
-        hNumDen[i]=0;
-        hSumPt[i]=0;
-    
-		pNumDenTrue[i]=0;
-		pSumPtTrue[i]=0;
 
-	}
-	
 	// constructor
-	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
-	// this chain is created by the analysis manager, so no need to worry about it, does its work automatically
-	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
-
+	DefineInput(0, TChain::Class());
+	DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskGenMcKnoUe::~AliAnalysisTaskGenMcKnoUe()
 {
 	// destructor
 	if(fOutputList) {
-		delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+		delete fOutputList;
 		fOutputList = 0x0;
 	}
 
@@ -186,59 +138,86 @@ AliAnalysisTaskGenMcKnoUe::~AliAnalysisTaskGenMcKnoUe()
 //_____________________________________________________________________________
 void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 {
-
+	// ### Analysis output
+	fOutputList = new TList();
+	fOutputList->SetOwner(kTRUE);
 	// create output objects
+	Double_t NchBins[NchNBins+1];
+	for(Int_t i_nch=0; i_nch<NchNBins+1; ++i_nch){
+		NchBins[i_nch]=0;
+		if(i_nch<NchNBins)
+			NchBins[i_nch]=i_nch*1.0-0.5;
+		else
+			NchBins[i_nch]=NchNBins*1.0+0.5;
+	}
 
-	OpenFile(1);
-	fOutputList = new TList();          // this is a list which will contain all of your histograms
-	// at the end of the analysis, the contents of this list are written  to the output file
-	fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects and will delete them if requested
+	const Int_t pTNBins = 36;
+	Double_t pTNBins1[pTNBins+1] = {
+		0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0,  1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0,    7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  25.0,  30.0,  40.0,  50.0
+	};
 
-    hCounter = new TH1D("hCounter","Counter; sel; Nev",3,0,3);
-    fOutputList->Add(hCounter);
-    
-    fHistEvt = new TH1I("fHistEvt","fHistEvt",2,0,2) ;
-    fHistEvt->GetXaxis()->SetBinLabel(1,"All events");
-    fHistEvt->GetXaxis()->SetBinLabel(2,"All particles");
-    fHistEvt->Sumw2();
-    fOutputList->Add(fHistEvt);
-    
-    hPtLeadingGenAll = new TH1D("hPtLeadingGenAll","gen pTleading before any selection",pTNBinsL,pTNBins1L);
-    fOutputList->Add(hPtLeadingGenAll);
-    
-    for(Int_t i=0;i<3;++i){
-    pNumDenTrueAll[i] = new TProfile(Form("pNumDenTrueAll_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L);
-               fOutputList->Add(pNumDenTrueAll[i]);
+	const Int_t pTNBinsL = 24;
+	Double_t pTNBins1L[pTNBinsL+1] = {
+		0.15, 0.50, 1.00, 1.50, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50,
+		5.00, 6.00, 7.00, 8.00, 9.00, 10.0, 12.0, 14.0, 16.0, 18.0,
+		20.0, 25.0, 30.0, 40.0, 50.0
+	};
 
-               pSumPtTrueAll[i] = new TProfile(Form("pSumPtTrueAll_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L);
-               fOutputList->Add(pSumPtTrueAll[i]);
-               
-    }
-               hPtLeadingTrue = new TH1D("hPtLeadingTrue","",pTNBinsL,pTNBins1L);
-               fOutputList->Add(hPtLeadingTrue);
+	// Define array nch
+	Double_t EtaBins[nEtaBins+1];
+	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
+	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+		EtaBins[i_eta]=0;
+		if(i_eta<nEtaBins)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		else
+			EtaBins[i_eta]= 1.0*etamax;
+	}
+	Double_t PhiBins[nPhiBins+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
+	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+		PhiBins[i_phi]=0;
+		if(i_phi<nPhiBins)
+			PhiBins[i_phi]=i_phi*deltaPhi;
+		else
+			PhiBins[i_phi]= 2.0*pi;
+	}
 
-		// UE analysis
-		for(Int_t i=0;i<3;++i){
-			
-            
-            hNumDen[i]= new TH2D(Form("hNumDen_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,NchNBins,NchBins);
-            fOutputList->Add(hNumDen[i]);
-            hSumPt[i]= new TH2D(Form("hSumPt_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,pTNBins,pTNBins1);
-            fOutputList->Add(hSumPt[i]);
-            
-			hPtVsPtLeadingTrue[i] = new TH2D(Form("hPtVsPtLeadingTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,pTNBins,pTNBins1);
-			fOutputList->Add(hPtVsPtLeadingTrue[i]);
 
-			pNumDenTrue[i] = new TProfile(Form("pNumDenTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L);
-			fOutputList->Add(pNumDenTrue[i]);
+	hPtLVsV0A = 0;
+	hPtLVsV0A = new TH2D("hPtLVsV0A","",pTNBinsL,pTNBins1L,NchNBins,NchBins);
+	fOutputList->Add(hPtLVsV0A);
 
-			pSumPtTrue[i] = new TProfile(Form("pSumPtTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L);
-			fOutputList->Add(pSumPtTrue[i]);
-		}
+	hPtLeadingTrue = new TH1D("hPtLeadingTrue","",pTNBinsL,pTNBins1L);
+	fOutputList->Add(hPtLeadingTrue);
+	if(fIsPP){
 
-   
-	//fEventCuts.AddQAplotsToList(fOutputList);
-	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
+		hnchmpi = 0;
+		hnchmpi = new TH2D("hnchmpi","; #it{N}_{ch}; #it{N}_{mpi}",600,-0.5,599.5,500,-0.5,4999.5);
+		fOutputList->Add(hnchmpi);
+
+		hnchmpirho = 0;
+		hnchmpirho = new TH3F("hnchmpirho","; #it{N}_{ch}; #it{N}_{mpi}; #rho",600,-0.5,599.5,500,-0.5,4999.5,500,0.0,5.0);
+		fOutputList->Add(hnchmpirho);
+
+		hnchrho = 0;
+		hnchrho = new TH2D("hnchrho","; #it{N}_{ch}; #rho",600,-0.5,599.5,1000,0,5.0);
+		fOutputList->Add(hnchrho);
+
+		hmpirho = 0;
+		hmpirho = new TH2D("hmpirho","; #it{N}_{mpi}; #rho",500,-0.5,4999.5,1000,0,5.0);
+		fOutputList->Add(hmpirho);
+
+	}
+	// UE analysis
+	for(Int_t i=0;i<3;++i){
+
+		hPtVsPtLeadingTrue[i] = new TH3D(Form("hPtVsPtLeadingTrue_%s",NameOfRegion[i]),"",pTNBinsL,pTNBins1L,pTNBins,pTNBins1,NchNBins,NchBins);
+		fOutputList->Add(hPtVsPtLeadingTrue[i]);
+
+	}
+
+	PostData(1, fOutputList);
 
 }
 //_____________________________________________________________________________
@@ -246,173 +225,76 @@ void AliAnalysisTaskGenMcKnoUe::UserExec(Option_t *)
 {
 
 	// ### Initialize
-    
-    fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    
-    // ### MC handler
-	
-        if(fMcHandler)
+
+	fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+
+	// ### MC handler
+
+
+	if(fMcHandler)
 		fMC = fMcHandler->MCEvent();
-    
-        else { if(fDebug > 1) printf("AliAnalysisTaskGenUeNchTS::Handler() fMcHandler = NULL\n"); return; }
-    
-    // ### MC event
-    
-		if(!fMC){
-			Printf("%s:%d MCEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-			this->Dump();
-			return;
-		}
-		fMCStack = ((AliMCEvent*)fMC)->Stack();
-    
-    if (!fMCStack) {
-        Printf("ERROR: Could not retrieve MC stack \n");
-        cout << "Name of the file with pb :" << endl; //fInputHandler->GetTree()->GetCurrentFile()->GetName() << 
-        return;
-    }
-	
-	hCounter->Fill(0);
 
-    // ### MC event selection
-    
-    Bool_t isEventMCSelected = IsMCEventSelected(fMC);
-    if( !isEventMCSelected )
-       // cout << " nnn 888888 888  88  Name of the file with pb :" << endl;
-        return;
+	else { if(fDebug > 1) printf("AliAnalysisTaskGenUeNchTS::Handler() fMcHandler = NULL\n"); return; }
 
-    AliHeader* headerMC = fMC->Header();
-    
-	Bool_t isGoodVtxPosMC = kFALSE;
-	
-		AliGenEventHeader* genHeader = headerMC->GenEventHeader();
-		TArrayF vtxMC(3); // primary vertex  MC 
-		vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
-		if (genHeader) {
-			genHeader->PrimaryVertex(vtxMC);
-		}
-		if(TMath::Abs(vtxMC[2])<=10)
-			isGoodVtxPosMC = kTRUE;
+	// ### MC event
 
-		// Before trigger selection
-	
-	GetGenLeadingObject();// leading particle at gen level
-	if(isGoodVtxPosMC)
-		hPtLeadingGenAll->Fill(fGenLeadPt);
-
-    // GENERATOR LEVEL
-    
-    vector<Double_t> ue_gen;// 0: nch_near, 1: nch_away, 2: nch_trans, 3: sumpt_near, ...
-	GetMeanGenUEObservables(ue_gen);
-
-	for(Int_t i=0;i<3;++i){
-		
-		if(isGoodVtxPosMC){
-			pNumDenTrueAll[i]->Fill(fGenLeadPt,ue_gen[i]);
-			pSumPtTrueAll[i]->Fill(fGenLeadPt,ue_gen[i+3]);
-            
-		}
+	if(!fMC){
+		Printf("%s:%d MCEvent not found in Input Manager",(char*)__FILE__,__LINE__);
+		this->Dump();
+		return;
 	}
-   
-    
-	hCounter->Fill(1);
+	fMCStack = ((AliMCEvent*)fMC)->Stack();
 
-	
-			if(isGoodVtxPosMC){
-				// UE analysis
-				if(fGenLeadPt>=fPtMin){
-				GetGenUEObservables();
-			}
+	if (!fMCStack) {
+		Printf("ERROR: Could not retrieve MC stack \n");
+		cout << "Name of the file with pb :" << endl; 
+		return;
+	}
 
-		}
-	
-	ue_gen.clear();
-	
-	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
+	// ### MC event selection
 
+	Bool_t isEventMCSelected = IsMCEventSelected(fMC);
+	if( !isEventMCSelected )
+		return;
+
+	AliHeader* headerMC = fMC->Header();
+
+	Bool_t isGoodVtxPosMC = kFALSE;
+
+	AliGenEventHeader* genHeader = headerMC->GenEventHeader();
+	TArrayF vtxMC(3); // primary vertex  MC 
+	vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
+	if (genHeader) {
+		genHeader->PrimaryVertex(vtxMC);
+	}
+	if(TMath::Abs(vtxMC[2])<=10)
+		isGoodVtxPosMC = kTRUE;
+	Nmpi = genHeader->NProduced();
+	// Before trigger selection
+	GetGenLeadingObject();// leading particle at gen level
+
+	if(fIsPP)
+		MakeALICE3Analysis();
+	if(isGoodVtxPosMC)
+		if(fGenLeadPt>=fPtMin)
+			GetGenUEObservables();
+	PostData(1, fOutputList);
+	return;
 }
 
-//______________________________________________________________________________
-void AliAnalysisTaskGenMcKnoUe::Terminate(Option_t *)
-{
-
-}
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGenMcKnoUe::IsMCEventSelected(TObject* obj){
 
-    Bool_t isSelected = kTRUE;
+	Bool_t isSelected = kTRUE;
 
-    AliMCEvent *event = 0x0;
-    event = dynamic_cast<AliMCEvent*>(obj);
-    if( !event )
-        isSelected = kFALSE;
+	AliMCEvent *event = 0x0;
+	event = dynamic_cast<AliMCEvent*>(obj);
+	if( !event )
+		isSelected = kFALSE;
 
-    if( isSelected )
-        FillHisto("fHistEvt",0.5);
+	return isSelected;
 
-    return isSelected;
-    
-}
-//---------------------------------------
-inline void AliAnalysisTaskGenMcKnoUe::FillHisto(const char* objkey, Double_t x)
-{
-    TH1* hTmp = 0;
-    hTmp = static_cast<TH1*>(fOutputList->FindObject(objkey));
-    if(!hTmp){
-        AliError(Form("Cannot find histogram: %s",objkey)) ;
-        return;
-    }
-    hTmp->Fill(x);
-}
-//------------------------------------------
-
-void AliAnalysisTaskGenMcKnoUe::GetMeanGenUEObservables(vector<Double_t> &genArray){
-
-    genArray.clear();
-    
-
-    Int_t nch_top[3];
-    Double_t sumpt_top[3];
-    for(Int_t i=0;i<3;++i){
-        nch_top[i]=0;
-        sumpt_top[i]=0;
-    }
-
-
-        for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
-
-            if(i==fGenLeadIn)
-                continue;
-
-            AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-            if (!particle) continue;
-            
-            if (!fMC->IsPhysicalPrimary(i)) continue;
-            if (particle->Charge() == 0) continue;
-            if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-            if( particle->Pt() < fPtMin)continue;
-
-            Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
-
-            // definition of the topological regions
-            if(TMath::Abs(DPhi)<pi/3.0){// near side
-                nch_top[0]++; sumpt_top[0]+=particle->Pt();
-            }
-            else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-                nch_top[1]++; sumpt_top[1]+=particle->Pt();
-            }
-            else{// transverse side
-                nch_top[2]++; sumpt_top[2]+=particle->Pt();
-            }
-
-        }
-    
-    
-        for(Int_t i=0;i<3;++i)
-            genArray.push_back(1.0*nch_top[i]);
-        for(Int_t i=0;i<3;++i)
-            genArray.push_back(sumpt_top[i]);
-    
 }
 //-------------------------------------------------
 void AliAnalysisTaskGenMcKnoUe::GetGenLeadingObject() {
@@ -421,86 +303,172 @@ void AliAnalysisTaskGenMcKnoUe::GetGenLeadingObject() {
 	Double_t flPhi = 0;
 	Int_t flIndex = 0;
 
-	
-		for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
-			AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-			if (!particle) continue;
-            
-            FillHisto("fHistEvt",1.5);
-            
-            
-			if (!fMC->IsPhysicalPrimary(i)) continue;  //  Particles produced including products of strong and electromagnetic decays but excluding feed-down from weak decays of strange particles like Ks,Lambda etc)
-			if (particle->Charge() == 0) continue;
-			if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-			if( particle->Pt() < fPtMin)continue;
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+		if (!fMC->IsPhysicalPrimary(i)) continue;
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
+		if( particle->Pt() < fPtMin)continue;
 
-			if (flPt<particle->Pt()){
-				flPt = particle->Pt();
-				flPhi = particle->Phi();
-				flIndex = i;
-                
-			}
+		if (flPt<particle->Pt()){
+			flPt = particle->Pt();
+			flPhi = particle->Phi();
+			flIndex = i;
+
 		}
+	}
 
-		fGenLeadPhi = flPhi;
-		fGenLeadPt  = flPt;
-		fGenLeadIn  = flIndex;
-        cout <<"Lead pt = %f  \n"<< fGenLeadPt;
+	fGenLeadPhi = flPhi;
+	fGenLeadPt  = flPt;
+	fGenLeadIn  = flIndex;
 }
 //----------------------
 void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 
-    Int_t nch_top[3];
-    Double_t sumpt_top[3];
-    for(Int_t i=0;i<3;++i){
-        nch_top[i]=0;
-        sumpt_top[i]=0;
-    }
+	Int_t multV0Aeta = 0;
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+		if (!fMC->IsPhysicalPrimary(i)) continue;
+		if (particle->Charge() == 0) continue;
+		if(particle->Pt()<=0)continue;
+		if ( particle->Eta() > 2.8 && particle->Eta()<5.1 )
+			multV0Aeta++;
+		else
+			continue;
+	}
+	hPtLVsV0A->Fill(fGenLeadPt,multV0Aeta*1.0);
 
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
-    for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
+		if(i==fGenLeadIn)
+			continue;
 
-        if(i==fGenLeadIn)
-            continue;
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
 
-        AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-        if (!particle) continue;
+		if (!fMC->IsPhysicalPrimary(i)) continue;
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
+		if( particle->Pt() < fPtMin)continue;
 
-        if (!fMC->IsPhysicalPrimary(i)) continue;
-        if (particle->Charge() == 0) continue;
-        if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;
-        if( particle->Pt() < fPtMin)continue;
+		Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
 
-        Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
+		// definition of the topological regions
+		if(TMath::Abs(DPhi)<pi/3.0){// near side
+			hPtVsPtLeadingTrue[0]->Fill(fGenLeadPt,particle->Pt(),multV0Aeta*1.0);
+		}
+		else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
+			hPtVsPtLeadingTrue[1]->Fill(fGenLeadPt,particle->Pt(),multV0Aeta*1.0);
+		}
+		else{// transverse side
+			hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt(),multV0Aeta*1.0);
+		}
 
-        // definition of the topological regions
-        if(TMath::Abs(DPhi)<pi/3.0){// near side
-            nch_top[0]++; sumpt_top[0]+=particle->Pt();
-            hPtVsPtLeadingTrue[0]->Fill(fGenLeadPt,particle->Pt());
-        }
-        else if(TMath::Abs(DPhi-pi)<pi/3.0){// away side
-            nch_top[1]++; sumpt_top[1]+=particle->Pt();
-            hPtVsPtLeadingTrue[1]->Fill(fGenLeadPt,particle->Pt());
-        }
-        else{// transverse side
-            nch_top[2]++; sumpt_top[2]+=particle->Pt();
-            hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt());
-        }
+	}
+	hPtLeadingTrue->Fill(fGenLeadPt);
+}
+//_______________________________________________________
+void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 
+	Double_t EtaBins[nEtaBins+1];
+	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
+	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+		EtaBins[i_eta]=0;
+		if(i_eta<nEtaBins)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		else
+			EtaBins[i_eta]= 1.0*etamax;
+	}
+	Double_t PhiBins[nPhiBins+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
+	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+		PhiBins[i_phi]=0;
+		if(i_phi<nPhiBins)
+			PhiBins[i_phi]=i_phi*deltaPhi;
+		else
+			PhiBins[i_phi]= 2.0*pi;
+	}
 
+	Int_t NchLattice[nEtaBins][nPhiBins];
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+			NchLattice[i_eta][i_phi]=0;
+	Double_t MpTLattice[nEtaBins][nPhiBins];
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+			MpTLattice[i_eta][i_phi]=0;
 
-    }
+	Double_t totalpt=0;
+	Int_t totalnch_forpt=0;
+	Int_t nchtotal=0;
 
-    for(Int_t i=0;i<3;++i){
-        
-        pNumDenTrue[i]->Fill(fGenLeadPt,nch_top[i]);
-        pSumPtTrue[i]->Fill(fGenLeadPt,sumpt_top[i]);
-        hNumDen[i]->Fill(fGenLeadPt,nch_top[i]);
-        hSumPt[i]->Fill(fGenLeadPt,sumpt_top[i]);
-    }
-    hPtLeadingTrue->Fill(fGenLeadPt);
+	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
+		AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+		if (!particle) continue;
+		Float_t eta_a = particle->Eta();
+		Float_t phi_a = particle->Phi();
+		Float_t pt_a  = particle->Pt();
+
+		if (!fMC->IsPhysicalPrimary(i)) continue;
+		if (particle->Charge() == 0) continue;
+		if ( TMath::Abs(eta_a) > etamax )continue;
+		if ( pt_a <= 0 )continue;
+		nchtotal++;
+		if(pt_a<ptamin||pt_a>ptamax)continue;
+		totalpt+=pt_a;
+		totalnch_forpt++;
+		// loop over all eta and phi intervals
+		for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+			for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+				if(eta_a>=EtaBins[i_eta]&&eta_a<EtaBins[i_eta+1]&&phi_a>=PhiBins[i_phi]&&phi_a<PhiBins[i_phi+1]){
+					NchLattice[i_eta][i_phi]++;
+					MpTLattice[i_eta][i_phi]+=pt_a;
+				}
+			}
+		}
+	}
+	// analyzing array
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+			if(NchLattice[i_eta][i_phi]>0)
+				MpTLattice[i_eta][i_phi]/=(1.0*NchLattice[i_eta][i_phi]);
+			else
+				MpTLattice[i_eta][i_phi]=0.0;
+		}
+	}
+	Double_t mNch=0;
+	Double_t mMpT=0;
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+			mMpT+=MpTLattice[i_eta][i_phi];
+			mNch+=1.0*NchLattice[i_eta][i_phi];
+		}
+	}
+	// average activity per cell
+	mMpT/=(1.0*nEtaBins*nPhiBins);
+	mNch/=(1.0*nEtaBins*nPhiBins);
+	// get sigma
+	Double_t sNch_tmp=0;
+	Double_t sMpT_tmp=0;
+	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
+		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+			sMpT_tmp+=TMath::Power(MpTLattice[i_eta][i_phi]-mMpT,2);
+			sNch_tmp+=TMath::Power(1.0*NchLattice[i_eta][i_phi]-mNch,2);
+		}
+	}
+	sMpT_tmp/=(1.0*nEtaBins*nPhiBins);
+	sNch_tmp/=(1.0*nEtaBins*nPhiBins);
+	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
+	hnchmpi->Fill(nchtotal,Nmpi);
+	if(mMpT>0){
+		hnchmpirho->Fill(1.0*nchtotal,1.0*Nmpi,sMpT/mMpT);
+		hnchrho->Fill(1.0*nchtotal,sMpT/mMpT);
+		hmpirho->Fill(1.0*Nmpi,sMpT/mMpT);
+	}
 }
 
 //____________________________________________________________
@@ -520,5 +488,13 @@ Double_t AliAnalysisTaskGenMcKnoUe::DeltaPhi(Double_t phia, Double_t phib,
 	else if (dphi > rangeMax) dphi -= 2*pi;
 
 	return dphi;
+}
+//______________________________________________________________________________
+void AliAnalysisTaskGenMcKnoUe::Terminate(Option_t *)
+{
+	fOutputList = dynamic_cast<TList*> (GetOutputData(1));
+	if (!fOutputList) { Printf("ERROR: Output list not available"); return; }
+
+	return;
 }
 

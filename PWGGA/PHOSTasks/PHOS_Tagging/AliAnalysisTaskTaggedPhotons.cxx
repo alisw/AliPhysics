@@ -1396,44 +1396,41 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	//--------consider pi0 decays--------------------
 	if(grandParentPDG==111){
 	  //First find which daughter is our cluster
-          //iparent - index of curent photon	  
-	  Int_t ipartner=grandParent->GetDaughterLabel(0) ;
-	  if(ipartner==iparent){//look for other
-  	    if(grandParent->GetNDaughters()>1){
-	      ipartner=grandParent->GetDaughterLabel(1);  
-	    }
-	    else{
-	      ipartner=-1 ;
-	    }
-	  }
  	  //There is no partner in stack
-	  if(ipartner==-1){
+	  if(grandParent->GetNDaughters()==1 && grandParent->GetDaughterLabel(0)==iparent){
             FillPIDHistogramsW("hMCDecWMisPartnStack",p,w1TOF) ;
 	  }
-          else{
-	    AliAODMCParticle * partner = (AliAODMCParticle *)fStack->At(ipartner);
+            
+          //iparent - index of curent photon	
+          for(int iPi0Partn=0; iPi0Partn<grandParent->GetNDaughters(); iPi0Partn++){  
+	    Int_t ipartner=grandParent->GetDaughterLabel(iPi0Partn) ;
+	    if(ipartner==iparent){//look for other
+              continue ;
+            }
+
+            AliAODMCParticle * partner = (AliAODMCParticle *)fStack->At(ipartner);
 	    //Check if partner is registered and made correct mass
 	    //If not - trace the reason
-	    AliCaloPhoton *pp = 0x0 ;
+	    AliCaloPhoton *pp = nullptr ;
 	  
 	    for(Int_t ii=0;ii<n;ii++){
 	      if(i==ii) continue; 
 	      AliCaloPhoton * tmp = static_cast<AliCaloPhoton*>(fPHOSEvent->At(ii));
-	      Int_t ipartnPrim = tmp->GetPrimary() ;
-	      while(ipartnPrim>-1){
-                if(ipartnPrim==ipartner){
+	      Int_t ipartnPrim2 = tmp->GetPrimary() ;
+	      while(ipartnPrim2>-1){
+                if(ipartnPrim2==ipartner){
 		  break ;
 		}
-	        ipartnPrim = ((AliAODMCParticle *)fStack->At(ipartnPrim))->GetMother();
+	        ipartnPrim2 = ((AliAODMCParticle *)fStack->At(ipartnPrim2))->GetMother();
 	      }
-	      if(ipartnPrim==ipartner){
+	      if(ipartnPrim2==ipartner){
 	        pp=tmp ;
 	        break ;
 	      }
 	    }
 	    if(pp){
 	      //Partner reconstructed, but did not pass cuts
-                FillPIDHistogramsW("hMCDecWRecUniqPartn",p,w1TOF) ;	
+              FillPIDHistogramsW("hMCDecWRecUniqPartn",p,w1TOF) ;	
 	    }
  	    //Partner not found. Check if it is not dominant contributor?
 	    if(!pp){
@@ -1483,30 +1480,31 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	    }	    
 
 	    if(pp){
-	      //Partner reconstructed, but did not pass cuts
-                FillPIDHistogramsW("hMCDecWRecPartn",p,w1TOF) ;	
-    	        Double_t invMass=(*p+ *pp).M() ;
-                for(Int_t eminType=0; eminType<3; eminType++){
-                  if(pp->E()>fEminCut+0.1*eminType){
-	             FillHistogram(Form("hMCmass%d_cent%d",eminType,fCentBin),invMass,p->Pt(),p->GetWeight()*w1TOF*TOFCutEff(pp->Pt())) ;
+	      //Partner reconstructed
+              double w2TOF= TOFCutEff(pp->Pt()) ; 
+              FillPIDHistogramsW("hMCDecWRecPartn",p,w1TOF*w2TOF) ;	
+              Double_t invMass=(*p+ *pp).M() ;
+              for(Int_t eminType=0; eminType<3; eminType++){
+                if(pp->E()>fEminCut+0.1*eminType){
+                  FillHistogram(Form("hMCmass%d_cent%d",eminType,fCentBin),invMass,p->Pt(),p->GetWeight()*w1TOF*w2TOF) ;
+                }
+              }
+              Double_t nSigma[3];
+              InPi0Band(invMass,p->Pt(),nSigma) ;
+              // analog to Tag
+              for(Int_t eminType=0; eminType<3; eminType++){
+                if(pp->E()>fEminCut+0.1*eminType){
+                  for(Int_t isigma=0; isigma<3; isigma++){
+                    if(nSigma[eminType]<1.+isigma){
+                      Int_t iType=3*eminType+isigma ;
+                      FillPIDHistogramsW(Form("hMCDecWithFoundPartnType%d",iType),p,w1TOF*w2TOF) ;
+                    }
                   }
                 }
-		Double_t nSigma[3];
-                InPi0Band(invMass,p->Pt(),nSigma) ;
-		// analog to Tag
-                for(Int_t eminType=0; eminType<3; eminType++){
-                  if(pp->E()>fEminCut+0.1*eminType){
-  	            for(Int_t isigma=0; isigma<3; isigma++){
-  	              if(nSigma[eminType]<1.+isigma){
-			 Int_t iType=3*eminType+isigma ;
-	                 FillPIDHistogramsW(Form("hMCDecWithFoundPartnType%d",iType),p,w1TOF*TOFCutEff(pp->Pt())) ;
-		      }
-		    }
-		  }
-	        }
-	        if(nSigma[2]>3.){
-	          FillPIDHistogramsW("hMCDecWithWrongMass",p,w1TOF) ;
-	        }
+              }
+              if(nSigma[2]>3.){
+                FillPIDHistogramsW("hMCDecWithWrongMass",p,w1TOF) ;
+              }
 	    }
 	    else{//Partner not reconstructed
 	      if(partner->GetPdgCode()==22){
@@ -1542,7 +1540,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 		  }
  		}
 		if(!isPartnerLost && 
-		   partner->E()<0.3){ //energy is not enough to be registered by PHOS
+		   partner->E()<0.1){ //energy is not enough to be registered by PHOS
 		  FillPIDHistogramsW("hMCDecWMisPartnEmin",p,w1TOF) ;  //Spectrum of tagged with missed partner
 		  isPartnerLost=kTRUE;
 		}
@@ -1579,8 +1577,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	      }//Partner - photon
 	      else{//partner not photon
 		FillPIDHistogramsW("hMCDecWMisPartnNPhot",p,w1TOF);                
-	      }
-	      
+	      }	      
 	    }//Partner not reconstructed
 	  }//Partner in stack
 	}//photon from pi0 decay
@@ -2221,11 +2218,11 @@ void AliAnalysisTaskTaggedPhotons::InPi0Band(Double_t m, Double_t pt, Double_t *
        mpi0sigma[0]= 1.80963e-03/pt-2.26438e-03/sqrt(pt)+6.06384e-03 -2.96752e-04*sqrt(pt)-1.88350e-05*pt ;
        mpi0sigma[1]= mpi0sigma[0] ;
        mpi0sigma[2]= 2.25872e-03/pt-4.32329e-03/sqrt(pt)+8.74958e-03 -1.68033e-03*sqrt(pt)+ 2.03470e-04*pt ; 
-       if(fMCType==kSinglePi0){ //width in single pi0 is smaller (fit simulations)
-          mpi0sigma[0]=0.90; 
-          mpi0sigma[1]=0.90; 
-          mpi0sigma[2]=0.90; 
-       }
+//        if(fMCType==kSinglePi0){ //width in single pi0 is smaller (fit simulations)
+//           mpi0sigma[0]=0.90; 
+//           mpi0sigma[1]=0.90; 
+//           mpi0sigma[2]=0.90; 
+//        }
      }
      
   }

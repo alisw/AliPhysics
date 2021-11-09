@@ -69,6 +69,7 @@ set(SRCS
     AliAnalysisTaskTOFTrigger.cxx
     AliAnalysisTaskZDCTree.cxx
     Polarization.cxx
+    AliAnalysisTaskUpcPhi0.cxx
    )
 
 # Headers from sources

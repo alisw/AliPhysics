@@ -124,13 +124,37 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fIsPionAnalysis(kFALSE),
   fIsElectronAnalysis(kFALSE),
   fjets(0), //ML
-  fPtmax(0)  //ML
+  fPtmax(0),  //ML
+  fEventReject(0), // begin dowang
+  fCenCutLowPU(NULL),
+  fCenCutHighPU(NULL),
+  fSPDCutPU(NULL),
+  fV0CutPU(NULL),
+  fMultCutPU(NULL)  // end dowang
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
   fAllFalse.ResetAllBits(kFALSE);
   fCentRange[0] = 0;
   fCentRange[1] = 1000;
+  // dowang 15o pass2 V0 Calib, follow Dobrin
+  // use TF1 to reject event 
+  fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
+    
+  Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
+  fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+  fV0CutPU->SetParameters(parV0);
+    
+  Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
+  fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutLowPU->SetParameters(parV0CL0);
+  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutHighPU->SetParameters(parV0CL0);
+    
+  Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
+  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+  fMultCutPU->SetParameters(parFB32);
+    
 }
 
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader):
@@ -210,7 +234,13 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fIsHe3Analysis(aReader.fIsHe3Analysis),
   fIsAlphaAnalysis(aReader.fIsAlphaAnalysis),
   fjets(aReader.fjets), //ML
-  fPtmax(aReader.fPtmax)  //ML
+  fPtmax(aReader.fPtmax),  //ML
+  fEventReject(aReader.fEventReject), // begin dowang
+  fCenCutLowPU(aReader.fCenCutLowPU),
+  fCenCutHighPU(aReader.fCenCutHighPU),
+  fSPDCutPU(aReader.fSPDCutPU),
+  fV0CutPU(aReader.fV0CutPU),
+  fMultCutPU(aReader.fMultCutPU)    // end dowang
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -316,6 +346,12 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fIsElectronAnalysis = aReader.fIsElectronAnalysis;
   fjets = aReader.fjets;  //ML
   fPtmax = aReader.fPtmax; //ML
+  fEventReject    = aReader.fEventReject; // begin dowang
+  fCenCutLowPU    = aReader.fCenCutLowPU;
+  fCenCutHighPU   = aReader.fCenCutHighPU;
+  fSPDCutPU       = aReader.fSPDCutPU;
+  fV0CutPU        = aReader.fV0CutPU;
+  fMultCutPU      = aReader.fMultCutPU; // end dowang
 
   return *this;
 }
@@ -450,6 +486,13 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return nullptr;
     }
   }
+
+    // LHC15o pass2 event cut dowang
+    if(fEventReject > 0){
+        if(!Reject15oPass2Event(fEvent)){
+            return nullptr;
+        }
+    }
   //**************************************
 
   // AliAnalysisUtils
@@ -2264,6 +2307,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
   {
     tTOF = tAodTrack->GetTOFsignal();
     tAodTrack->GetIntegratedTimes(aodpid);
+    
 
     tTOF -= fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
 
@@ -2272,9 +2316,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
 
   // tFemtoTrack->SetTOFsignal(tTOF);
   tFemtoTrack->SetTOFsignal(tAodTrack->GetTOFsignal());
-
   tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4], tTOF);
-
   //////  TPC ////////////////////////////////////////////
 
   const float nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kKaon);
@@ -2810,4 +2852,85 @@ void AliFemtoEventReaderAOD::SetCalcJets(Int_t ajets)
 void AliFemtoEventReaderAOD::SetPtmaxJets(Double_t aptmax)
 {
   fPtmax = aptmax;
+}
+void AliFemtoEventReaderAOD::Set15oPass2EventReject(Int_t EventReject)
+{
+  fEventReject = EventReject;   
+}
+bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD)
+{
+  // 0.0 refenrence 08 pileup
+  if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
+  if (fAOD->IsIncompleteDAQ()) return false;
+
+  // 1.0 trigger
+  // has been done in AliAnalysisTaskFemto.cxx
+
+  // 2.0 vertex
+  // 2.1 data point cut
+  AliAODVertex* fVtx  = fAOD->GetPrimaryVertex();
+  AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+  if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors()<1) return false;
+  
+  // 2.2 Vz, dVz
+  double covTrc[6],covSPD[6];
+  fVtx->GetCovarianceMatrix(covTrc);
+  fAOD->GetPrimaryVertexSPD()->GetCovarianceMatrix(covSPD);
+  double vz       = fVtx->GetZ();
+  double dz       = vz - fAOD->GetPrimaryVertexSPD()->GetZ();
+  double errTot   = TMath::Sqrt(covTrc[5] + covSPD[5]);
+  double errTrc   = TMath::Sqrt(covTrc[5]);
+  double nsigTot  = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  if (fabs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return false;
+  
+  // 3.0 centrality
+  AliMultSelection* fMultSel  = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+  float centV0M               = fMultSel->GetMultiplicityPercentile("V0M");
+  float centSPD1              = fMultSel->GetMultiplicityPercentile("CL1");
+  float fCent                 = centV0M;
+  float fCentCut              = 7.5;
+
+  if (fabs(fCent - centSPD1) > fCentCut) return false;
+  if (fCent < 0) return false;
+  
+  // 4.0 pile-up
+  // 4.1 CL0 pile-up
+  float centCL0 = fMultSel->GetMultiplicityPercentile("CL0");
+  if (centCL0 < fCenCutLowPU->Eval(centV0M)) return false;
+  // 4.2 ITS pile-up
+  Int_t nITSClsLy0          = fAOD->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1          = fAOD->GetNumberOfITSClusters(1);
+  Int_t nITSCls             = nITSClsLy0 + nITSClsLy1;
+  AliAODTracklets* aodTrkl  = (AliAODTracklets*)fAOD->GetTracklets();
+  Int_t nITSTrkls           = aodTrkl->GetNumberOfTracklets();
+  if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)) return false;
+
+  // 4.3 V0 pile-up
+  AliAODVZERO* aodV0    = fAOD->GetVZEROData();
+  Float_t multV0a       = aodV0->GetMTotV0A();
+  Float_t multV0c       = aodV0->GetMTotV0C();
+  Float_t multV0Tot     = multV0a + multV0c;
+  UShort_t multV0aOn    = aodV0->GetTriggerChargeA();
+  UShort_t multV0cOn    = aodV0->GetTriggerChargeC();
+  UShort_t multV0On     = multV0aOn + multV0cOn;
+
+  if (multV0On < fV0CutPU->Eval(multV0Tot)) return false;
+  
+  // 4.4 Mult(FB32) Vs Cent(V0M)
+  const Int_t nTracks = fAOD->GetNumberOfTracks();
+  Int_t multTrk = 0;
+  for (Int_t it = 0; it < nTracks; it++) {
+      AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
+      if (!aodTrk){
+          delete aodTrk;
+          continue;
+      }
+      if (aodTrk->TestFilterBit(32)){
+        if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+        multTrk++;
+      }
+  }
+  if (Float_t(multTrk) < fMultCutPU->Eval(centV0M)) return false;
+
+  return true;
 }

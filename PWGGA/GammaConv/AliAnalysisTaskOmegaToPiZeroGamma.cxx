@@ -4662,37 +4662,37 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateBackground(){
 //________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t iCurrentGamma, Int_t iCurrentPi0){
 
-  Double_t tempBGCandidateWeight       = fWeightJetJetMC;
-
-  Double_t rotationAngle = TMath::Pi()/2.0; // rotaion angle 90°
-
-  TLorentzVector lvRotationPhoton3;      // photon candidate from omega which gets rotated
-  TLorentzVector lvRotationPhoton2;      // photon candidate from pion which gets rotated
-  TLorentzVector lvRotationPhoton1;      // photon candidate from pion which gets rotated
-  TLorentzVector lvRotationPion;        // pion candidate which gets rotated
-  TVector3 lvRotationOmega;             // reconstructed mother particle from photon and pion
-  // Needed for TGenPhaseSpace
-  TVector3 tvEtaPhiGamma, tvEtaPhiPion, tvEtaPhiGammaDecay, tvEtaPhiPionDecay, tvNormBeforeDecay, tvNormAfterDecay;
-  Float_t asymBeforeDecay = 0.;
-  Float_t asymAfterDecay = 0.;
-  Double_t massPi0Gamma[2] = {0,((AliAODConversionMother*)(fPi0Candidates->At(iCurrentPi0)))->M()};
-  Double_t mass2Photons[2] = {0, 0};
-
-  Int_t cellIDRotatedPhoton3 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from omega)
-  Int_t cellIDRotatedPhoton2 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from pion)
-  Int_t cellIDRotatedPhoton1 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from pion)
-
-  std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
-  std::vector<std::array<Double_t, 2>> vSwappingInvMassPTAlphaCut;
-  vSwappingInvMassPT.clear();
-  vSwappingInvMassPTAlphaCut.clear();
-  vSwappingInvMassPT.resize(0);
-  vSwappingInvMassPTAlphaCut.resize(0);
-  Double_t tempMultWeightSwapping = 1; // weight taking multiplicity of event into account
-
-  // curcial requierment is that the event has at least 4 cluster candidates and one Pi0 candidate
-  if( (fClusterCandidates->GetEntries() > 3 ) &&  (fPi0Candidates->GetEntries() > 0) )
+  // curcial requierment is that the event has at least 5 cluster candidates and one Pi0 candidate
+  if( (fClusterCandidates->GetEntries() > 4 ) &&  (fPi0Candidates->GetEntries() > 0) )
   {
+    
+    Double_t tempBGCandidateWeight       = fWeightJetJetMC;
+
+    Double_t rotationAngle = TMath::Pi()/2.0; // rotaion angle 90°
+
+    TLorentzVector lvRotationPhoton3;      // photon candidate from omega which gets rotated
+    TLorentzVector lvRotationPhoton2;      // photon candidate from pion which gets rotated
+    TLorentzVector lvRotationPhoton1;      // photon candidate from pion which gets rotated
+    TLorentzVector lvRotationPion;        // pion candidate which gets rotated
+    TVector3 lvRotationOmega;             // reconstructed mother particle from photon and pion
+    // Needed for TGenPhaseSpace
+    TVector3 tvEtaPhiGamma, tvEtaPhiPion, tvEtaPhiGammaDecay, tvEtaPhiPionDecay, tvNormBeforeDecay, tvNormAfterDecay;
+    Float_t asymBeforeDecay = 0.;
+    Float_t asymAfterDecay = 0.;
+    Double_t massPi0Gamma[2] = {0,((AliAODConversionMother*)(fPi0Candidates->At(iCurrentPi0)))->M()};
+    Double_t mass2Photons[2] = {0, 0};
+
+    Int_t cellIDRotatedPhoton3 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from omega)
+    Int_t cellIDRotatedPhoton2 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from pion)
+    Int_t cellIDRotatedPhoton1 = -1; // cell ID of the theoretical cluster after rotation (photon candidate from pion)
+
+    std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
+    std::vector<std::array<Double_t, 2>> vSwappingInvMassPTAlphaCut;
+    vSwappingInvMassPT.clear();
+    vSwappingInvMassPTAlphaCut.clear();
+    vSwappingInvMassPT.resize(0);
+    vSwappingInvMassPTAlphaCut.resize(0);
+    Double_t tempMultWeightSwapping = 1; // weight taking multiplicity of event into account
 
     AliAODConversionPhoton* currentEventRotatedPhoton3 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrentGamma));
     if (currentEventRotatedPhoton3==NULL || !(currentEventRotatedPhoton3->GetIsCaloPhoton())) { return;}
@@ -4781,15 +4781,15 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
       std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
       std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
 
-      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, lvRotationPhoton3.Phi(), fInputEvent) ) || ( lvRotationPhoton3.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
+      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton3, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()) ) || ( lvRotationPhoton3.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
       {
         backClusterIndex[0] = -1;
       }
-      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent) ) || ( lvRotationPhoton2.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
+      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()) ) || ( lvRotationPhoton2.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
       {
         backClusterIndex[1] = -1;
       }
-      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent) ) || ( lvRotationPhoton1.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
+      if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()) ) || ( lvRotationPhoton1.E() <= ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut) )->GetMinClusterEnergy() ) )
       {
         backClusterIndex[2] = -1;
       }
@@ -5005,23 +5005,23 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
 //________________________________________________________________________
 void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
 
-  Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
-
-  TLorentzVector lvRotationPhoton1;   // photon candidates which get rotated
-  TLorentzVector lvRotationPhoton2;   // photon candidates which get rotated
-  TVector3 lvRotationPion;            // reconstructed mother particle from the two photons
-  // Needed for TGenPhaseSpace
-  TVector3 tvEtaPhigamma1, tvEtaPhigamma2, tvEtaPhigamma1Decay, tvEtaPhigamma2Decay, tvNormBeforeDecay, tvNormAfterDecay;
-  Float_t asymBeforeDecay = 0.;
-  Float_t asymAfterDecay = 0.;
-  Double_t massGamma[2] = {0,0};
-
-  Int_t cellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
-  Int_t cellIDRotatedPhoton2 = -1; // cell ID of the cluster after rotation
-
   // curcial requierment is that the event has at least 4 cluster candidates and
   // at least one pi0 candidate
-  if(fClusterCandidates->GetEntries() > 3) {
+  if( (fClusterCandidates->GetEntries() > 3) && (fPi0Candidates->GetEntries() > 0) ) {
+    
+    Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
+
+    TLorentzVector lvRotationPhoton1;   // photon candidates which get rotated
+    TLorentzVector lvRotationPhoton2;   // photon candidates which get rotated
+    TVector3 lvRotationPion;            // reconstructed mother particle from the two photons
+    // Needed for TGenPhaseSpace
+    TVector3 tvEtaPhigamma1, tvEtaPhigamma2, tvEtaPhigamma1Decay, tvEtaPhigamma2Decay, tvNormBeforeDecay, tvNormAfterDecay;
+    Float_t asymBeforeDecay = 0.;
+    Float_t asymAfterDecay = 0.;
+    Double_t massGamma[2] = {0,0};
+
+    Int_t cellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
+    Int_t cellIDRotatedPhoton2 = -1; // cell ID of the cluster after rotation
 
     for(Int_t iCurrent1=0;iCurrent1<fClusterCandidates->GetEntries();iCurrent1++){
       AliAODConversionPhoton* currentEventRotatedPhoton1 = (AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent1));
@@ -5089,11 +5089,11 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation1 (new AliAODConversionPhoton(&lvRotationPhoton1));
           std::unique_ptr<AliAODConversionPhoton> currentEventGoodPhotonRotation2 (new AliAODConversionPhoton(&lvRotationPhoton2));
 
-          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)) || ( lvRotationPhoton1.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
+          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) || ( lvRotationPhoton1.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
           {
             backClusterIndex[2] = -1;
           }
-          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent)) || ( lvRotationPhoton2.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
+          if( ( ( (AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) || ( lvRotationPhoton2.E() <= ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy() ) )
           {
             backClusterIndex[1] = -1;
           }

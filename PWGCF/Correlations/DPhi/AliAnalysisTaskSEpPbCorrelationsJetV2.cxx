@@ -369,6 +369,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2::~AliAnalysisTaskSEpPbCorrelationsJetV2()
   }
 }
 void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
+  
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
   fOutputList->SetName("global");
@@ -410,6 +411,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
   
   frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
+
+  fOutputList2->Add(new TH2D("hPt_Cen_mid","", 100, 0., 20., 100, 0., 100.));
  
    fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins, fNzVtxBins, fZvtxBins);
    if (!fPoolMgr)
@@ -468,7 +471,8 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    fOutputList->Add(fHistCentV0vsTracklets);
    
    fHistCentvsTrackletsbefore=new TH2F("fHistCentvsTrackletsbefore","fHistCentvsTrackletsbefore",100,0,100,1000,0,10000);
-   fOutputList->Add(fHistCentvsTrackletsbefore); 
+   fOutputList->Add(fHistCentvsTrackletsbefore);
+
   }
 
  void AliAnalysisTaskSEpPbCorrelationsJetV2::DefinedQAHistos() {
@@ -489,30 +493,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
    Double_t binning_pt_mcprim[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
 
    if(!fDataType && fprimFMD){
-/*
-     fhistmcprim=new AliTHn("fhistmcprim","fhistmcprim",1,4,imcprimbin);
-     fhistmcprim->SetBinLimits(0,binning_pt_mcprim);
-     fhistmcprim->SetBinLimits(1,-5.5,5.5);
-     fhistmcprim->SetBinLimits(2,0.,2*TMath::Pi());
-     fhistmcprim->SetBinLimits(3,0.,100.);
-     fhistmcprim->SetVarTitle(0,"pt");
-     fhistmcprim->SetVarTitle(1,"eta");
-     fhistmcprim->SetVarTitle(2,"phi");
-     fhistmcprim->SetVarTitle(3,"centrality");
-     //fOutputList2->Add(fhistmcprim);
-*/
      fhmcprimvzeta=new TH2D("fhmcprimvzeta","fhmcprimvzeta",200,-4,6,20,-10,10);
      fOutputList2->Add(fhmcprimvzeta);
      fh2_FMD_eta_phi_prim=new TH2D("fh2_FMD_eta_phi_prim","fh2_FMD_eta_phi_prim",200,-4,6,20,0,2*TMath::Pi());
      fOutputList2->Add(fh2_FMD_eta_phi_prim);
-/*     
-     for(Int_t i=0;i<4;i++){
-       fhrefetaFMD[i]=new TH1D(Form("fhrefetaFMD_%d",i),Form("fhrefetaFMD_%d",i),200,-4,6);
-       fhrefphiFMD[i]=new TH1D(Form("fhrefphiFMD_%d",i),Form("fhrefphiFMD_%d",i),100,0,2*TMath::Pi());
-      // fOutputList2->Add(fhrefetaFMD[i]);
-      // fOutputList2->Add(fhrefphiFMD[i]);
-     }
-*/
    }
 
 	 fHist_NeventRun=new TH1F("fHist_NeventRun","fHist_NeventRun",200,-0.5,199.5);
@@ -636,7 +620,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
  void AliAnalysisTaskSEpPbCorrelationsJetV2::DefineCorrOutput() {
 
 //========================= For Jet v2
-   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 200.};
+   Double_t binning_pt_assoc[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 200.};
    Int_t nbins_pt_assoc = sizeof(binning_pt_assoc) / sizeof(Double_t) - 1; // For TPC-TPC
 
    Double_t binning_pt_lead[] = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 8.0};
@@ -801,7 +785,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     	
   
      Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8};
-     //Double_t binning_detaFMDTPC[]={-6.,-5.6, -5.2, -4.8, -4.4, -4., -3.6, -3.2, -2.8, -2.4, -2., -1.6, -1.2, -0.8};
      Double_t binning_detaFMDCTPC[]={ 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
 
      Int_t ndetatpcfmd;
@@ -811,11 +794,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
        ndetatpcfmd = sizeof(binning_detaFMDCTPC)/sizeof(Double_t) - 1;
      }
 
-     //fh2_pt_trig_asso = new TH2D("fh2_pt_trig_asso","",nbins_pt_lead,binning_pt_lead,nbins_pt_assoc,binning_pt_assoc);
-
-          Int_t nCFStepstpcfmd=1;
-
-     
+     Int_t nCFStepstpcfmd=1;
      //Int_t iTrackBin_tpcfmd[7]={ndetatpctpc, nbins_pt_assoc, nbins_pt_lead, 10, ndetatpcfmd, nbinning_dphi_reduce, 24};
      Int_t iTrackBin_tpcfmd[6]={ndetatpctpc, nbins_pt_lead, 10, ndetatpcfmd, nbinning_dphi_reduce, 24};
 
@@ -916,7 +895,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 
     Int_t nCFStepstpcfmd=1;
 
-    Int_t iTrackBin_fmdAfmdC[] = {10, 48, 36};
+    Int_t iTrackBin_fmdAfmdC[] = {10, 24, 20};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     fHistReconstTrack = new AliTHn("fHistReconstTrack","fHistReconstTrack",nCFStepstpcfmd,nTrackBin_fmdAfmdC,iTrackBin_fmdAfmdC);
@@ -925,7 +904,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     fHistReconstTrack->SetBinLimits(0, -10, 10);
 //    fHistReconstTrack->SetBinLimits(1, binning_cent_fmdfmd);
     fHistReconstTrack->SetBinLimits(1, 3.4,8.2);
-    fHistReconstTrack->SetBinLimits(2, -0.5*TMath::Pi(),1.5*TMath::Pi());
+    fHistReconstTrack->SetBinLimits(2, -0.55*TMath::Pi(),1.45*TMath::Pi());
 
     fHistReconstTrack->SetVarTitle(0,"z vertex");
 //    fHistReconstTrack->SetVarTitle(1,"Centrality");
@@ -991,7 +970,12 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
 // The Vz cut for events
    lPrimaryBestVtx = fEvent->GetPrimaryVertex();
    fPrimaryZVtx = lPrimaryBestVtx->GetZ();
-
+/* 
+   if(lPrimaryBestVtx->IsFromVertexer3D()) cout << "It is 3D reconstruction" << endl;
+   if(lPrimaryBestVtx->IsFromVertexerZ())  cout << "It is Vz reconstruction" << endl;
+   if(!lPrimaryBestVtx->IsFromVertexer3D() && !lPrimaryBestVtx->IsFromVertexerZ()) cout << "It is TPC reconstruction" << endl; 
+*/
+   //lPrimaryBestVtx->Print();
    if((TMath::Abs(fPrimaryZVtx)) >= fZVertex)   
    {
     PostData(1, fOutputList);
@@ -999,9 +983,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     PostData(3, fOutputList2);
     return;
    }
-  //   tPrimaryVtxPosition[0] = lPrimaryBestVtx->GetX();
-  //   tPrimaryVtxPosition[1] = lPrimaryBestVtx->GetY();
-  //   tPrimaryVtxPosition[2] = lPrimaryBestVtx->GetZ();
    fHist_Stat->Fill(3);
 
 // Magnetic Field of the event
@@ -1050,8 +1031,6 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
     
     Int_t nMCAllTracks = mcArray->GetEntriesFast();
-    Int_t ntrackv0aprimary=0;
-    Int_t ntrackv0aprimaryall=0;
     for (Int_t i = 0; i < nMCAllTracks; i++)
     {
      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(i);
@@ -1062,14 +1041,32 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
      }
      Bool_t TrIsPrim=mcTrack->IsPhysicalPrimary();
      Float_t mcTrackEta = mcTrack->Eta();
+     Float_t mcTrackPt  = mcTrack->Pt();
      Bool_t TrCharge=mcTrack->Charge()!=0;
      if(!TrCharge)        continue;
-     if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimaryall++;
      if(!TrIsPrim)        continue;
-     if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimary++;
+     if(mcTrackEta<0.8 && mcTrackEta>-0.8) (static_cast<TH2D*>(fOutputList2 ->FindObject("hPt_Cen_mid")))->Fill(mcTrackPt,lCentrality);
     }
    }
-//=====================
+  //===================== For Rcp
+  Int_t nTracks = fEvent->GetNumberOfTracks();
+  for(Int_t i = 0; i < nTracks; i++)
+  {
+   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
+   if (!aodTrack)      continue;
+   if (!IsAcceptedTrack(aodTrack))      continue;
+   if (aodTrack->Charge() == 0)      continue; 
+   Double_t aodTrack_pt = aodTrack->Pt();
+   (static_cast<TH2D*>(fOutputList2 ->FindObject("hPt_Cen_mid")))->Fill(aodTrack_pt,lCentrality);
+  }
+  if(fAnaMode=="Rcp")
+  {
+   PostData(1, fOutputList);
+   PostData(2, fOutputList1);
+   PostData(3, fOutputList2);
+   return;
+  }
+  //=====================
 
    fHistCentvsTrackletsbefore->Fill(lCentrality,nTracklets);
    fHistCentrality_beforecut->Fill(lCentrality);
@@ -1121,6 +1118,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::MakeAna() {
 
    Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
    Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+   cout << "n eta "<< nEta << "n phi "<<nPhi << endl;
    Double_t pt = 0;
 
    for (Int_t iEta = 1; iEta <= nEta; iEta++) 

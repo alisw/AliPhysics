@@ -82,6 +82,7 @@
 #pragma link C++ class AliAnalysisFBMultFluct+;
 #pragma link C++ class AliAnalysisTaskLongFluctuations+;
 #pragma link C++ class AliAnalysisTaskLegendreCoef+;
+#pragma link C++ class AliAnalysisTaskEtaDist+;
 
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;

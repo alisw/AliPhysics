@@ -206,7 +206,12 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kEta:
          return pair->Eta(fUseMCInfo);
       case kPhi:
-         return pair->Sum(fUseMCInfo).Phi();
+          { 
+            Double_t angle1 = pair->Sum(fUseMCInfo).Phi();
+            while (angle1 >= 1.5 * TMath::Pi()) angle1 -= 2 * TMath::Pi();
+            while (angle1 < -0.5 * TMath::Pi()) angle1 += 2 * TMath::Pi();
+            return angle1;
+          }
       case kInvMassRes:
          return pair->InvMassRes();
       case kInvMassDiff:
@@ -242,6 +247,7 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          if (l) {
              if (pair->ContainsIndex(l->Index())) return 1E20;
             l->Set4Vector(v,-1.0,fUseMCInfo);
+            if (pair->Pt(fUseMCInfo) > v.Pt()) return 1E20;
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
 
             //return angle w.r.t. leading particle in the range -pi/2, 3/2pi

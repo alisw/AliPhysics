@@ -42,6 +42,7 @@ public:
         fMultHigh = multHigh;
     }
     
+    //Track Selection
     void SetTrackSelectionCriteria();
 
     //User Functions
@@ -49,9 +50,10 @@ public:
     Bool_t PassedTrackQualityCuts     (AliESDtrack *track);
     Bool_t PassedCascadeSelectionCuts (AliESDcascade *cascade);
     Bool_t PassedPIDSelection         (AliESDtrack *track, AliPID::EParticleType type);
-    Bool_t IsXiCandidate              (AliESDcascade *cascade, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, Double_t &p);
-    Bool_t IsAntiXiCandidate          (AliESDcascade *cascade, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, Double_t &p);
-
+    Bool_t IsXiCandidate              (AliESDcascade *cascade, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, TVector3 &momentum);
+    Bool_t IsAntiXiCandidate          (AliESDcascade *cascade, AliESDtrack *pos, AliESDtrack *neg, AliESDtrack *bac, Double_t &m, TVector3 &momentum);
+    TLorentzVector Boost              (TLorentzVector R, TVector3 beta_vect);
+    
     //Standard Pile-up Rejection & Event Cuts
     AliEventCuts fESDeventCuts;//
 
@@ -80,10 +82,13 @@ private:
     TH2F *hMassXi_vs_P[7];//!
     TH2F *hMassAntiXi_vs_P[7];//!
     
-    //Pointing Angle Xi
+    //Pointing Angle
     TH2F *hXiPointingAngle_vs_P[7];//!
     TH2F *hAntiXiPointingAngle_vs_P[7];//!
-
+    
+    //Scattering Angle
+    TH2F *hXiScatteringAngle_vs_P[7];//!
+    TH2F *hAntiXiScatteringAngle_vs_P[7];//!
 
     
     AliAnalysisTaskXiNucleusInteraction(const AliAnalysisTaskXiNucleusInteraction&);

@@ -234,7 +234,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
                 		TFile *qnSp;
                 		if(!AllContainers->FindObject("qnSp")) {
 				AliAnalysisDataContainer *cin_qnPercSp = mgr->CreateContainer(Form("qnPercSp"), TList::Class(), AliAnalysisManager::kInputContainer);                			
-                			qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibSpq2V0C15oP2.root");
+                			qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibSpq3V0C15oP2.root");
 				// Ref V0 qn percentail data copied from alien:////alice/cern.ch/user/a/adobrin/cmeESE15oP2/calibSpq2V0C15oP2.root
                 			TList* spperc_list = NULL;
 				spperc_list = dynamic_cast<TList*>(qnSp->Get("15olistspPerc"));
