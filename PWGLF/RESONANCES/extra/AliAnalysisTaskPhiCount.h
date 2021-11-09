@@ -38,6 +38,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetKaonFlag                 ( Bool_t    KaonFlag )          { kKaonbool = KaonFlag; };
     void                        SetSPCompute                ( Bool_t    SPFlag )            { kComputeSpherocity = SPFlag; };
     void                        SetSPWighted                ( Bool_t    SPWeightFlag )      { kSpherocityPTWeight = SPWeightFlag; };
+    void                        SetRTCompute                ( Bool_t    RTFlag )            { kComputeRT = RTFlag; };
     void                        SetFilterBit                ( Int_t     FilterBit )         { kFilterBit = FilterBit; };
     void                        SetVertexCut                ( Float_t   VertexCut )         { kVertexCut = VertexCut; };
     void                        SetDCAzCut                  ( Float_t   DCAzCut )           { kDCAzCut = DCAzCut; };
@@ -71,6 +72,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Bool_t                      kMCbool;                    //  MC Flag
     Bool_t                      kComputeSpherocity;         //  Spherocity Flag
     Bool_t                      kSpherocityPTWeight;        //  Spherocity PT Weighted Flag
+    Bool_t                      kComputeRT;                 //  RT Flag
     Bool_t                      kPhibool;                   //  Phi tree Flag
     Bool_t                      kKaonbool;                  //  Kaon tree Flag
     Float_t                     kVertexCut;                 //  VertexCut
@@ -102,6 +104,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        fFillEventEnumerate         ( Int_t iIndex );
     void                        fFillEventEnumerate         ( TString iBinName );
     void                        uCalculateSpherocity        ( );
+    void                        uCalculateRT                ( );
     //
     AliAODEvent                *fAOD;                       //! input event AOD Format
     AliESDEvent                *fESD;                       //! input event ESD Format
@@ -168,6 +171,10 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH2D                       *fQC_Event_Enum_V0T;         //! Event Multiplicity Counter w/ SPD Tracklets
     TH1F                       *fQC_Event_Vertex_Fll;       //! Event Vertex Position
     TH1F                       *fQC_Event_Vertex_Cut;       //! Event Vertex Position w/ Cuts
+    TH1F                       *fQC_Event_Spherocity;       //! Event Spherocity
+    TH1F                       *fQC_Event_FullRT;           //! Event R Transverse
+    TH1F                       *fQC_Event_FullRF;           //! Event R Forward
+    TH1F                       *fQC_Event_FullRB;           //! Event R Backward
     //
     //>->->     Tracks
     //
@@ -238,6 +245,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     fCurrent_SPH;               //! Event Spherocity
     Float_t                     fCurrent_V0M;               //! Event Multiplicity
     Float_t                     fCurrent_TRK;               //! Event Multiplicity
+    Float_t                     fCurrent_RT;                //! Event RTransverse
     Int_t                       fCurrent_Run;               //! Current Run Number
     Int_t                       fKaonLabels     [1024];     //! Kaon Labels
     Int_t                       fnPhiRec;                   //! Recordable Phi Number
@@ -257,17 +265,17 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //
     Bool_t                      fIsPhiCandidate             ( TLorentzVector fPhi );
     //
-    UChar_t                     fnPhi;                      //! Number of Phis produced found
+    Int_t                       fnPhi;                      //! Number of Phis produced found
     Float_t                     fInvMass        [1024];     //! Invariant Mass
     Float_t                     fPhiPx          [1024];     //! Phi Px
     Float_t                     fPhiPy          [1024];     //! Phi Py
     Float_t                     fPhiPz          [1024];     //! Phi Pz
-    UChar_t                     fiKaon          [1024];     //! iKaon
-    UChar_t                     fjKaon          [1024];     //! jKaon
+    Int_t                       fiKaon          [1024];     //! iKaon
+    Int_t                       fjKaon          [1024];     //! jKaon
     Float_t                     fTrueInvMass    [1024];     //! True Invariant Mass
     //
     TTree                      *fKaonCandidate;             //! output tree for Signal
-    UChar_t                     fnKaon;                     //! Number of Phis produced found
+    Int_t                       fnKaon;                     //! Number of Phis produced found
     Float_t                     fKaonPx         [1024];     //! Kaon Px
     Float_t                     fKaonPy         [1024];     //! Kaon Py
     Float_t                     fKaonPz         [1024];     //! Kaon Pz
@@ -276,14 +284,14 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Char_t                      fTPCSigma       [1024];     //! PID TPC
     //
     TTree                      *fPhiEfficiency;             //! output tree for MC Truth
-    UChar_t                     fnPhiTru;                   //! Number of Phis produced found
+    Int_t                       fnPhiTru;                   //! Number of Phis produced found
     Float_t                     fPhiTruPx       [1024];     //! Phi Px
     Float_t                     fPhiTruPy       [1024];     //! Phi Py
     Float_t                     fPhiTruPz       [1024];     //! Phi Pz
     UChar_t                     fSelection      [1024];     //! Selection integer
     //
     TTree                      *fKaonEfficiency;            //! output tree for MC Truth
-    UChar_t                     fnKaonTru;                  //! Number of Kaons produced found
+    Int_t                     fnKaonTru;                  //! Number of Kaons produced found
     //
     // List
     TList                      *fAnalysisOutputList;        //! Analysis output list
