@@ -690,6 +690,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     // Not needed if M02 cut is already strong or clusterizer V2
     ana->SetNLMCut(1, 2) ;
+    if ( kAnaCutsString.Contains("NLMCut3" ) ) ana->SetNLMCut(1, 3) ;
+    if ( kAnaCutsString.Contains("NLMCut4" ) ) ana->SetNLMCut(1, 4) ;
+    if ( kAnaCutsString.Contains("NLMCut10") ) ana->SetNLMCut(1, 10) ;
   }
   
   if ( kAnaCutsString.Contains("ShSh") )
@@ -963,7 +966,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     ana->SetNLMCut(1, 2) ;
-    
+    if ( kAnaCutsString.Contains("NLMCut3" ) ) ana->SetNLMCut(1, 3) ;
+    if ( kAnaCutsString.Contains("NLMCut4" ) ) ana->SetNLMCut(1, 4) ;
+    if ( kAnaCutsString.Contains("NLMCut10") ) ana->SetNLMCut(1, 10) ;
+
     //
     ana->SetMinDistanceToBadChannel(2, 4, 6);
     ana->SwitchOnSplitClusterDistToBad();
