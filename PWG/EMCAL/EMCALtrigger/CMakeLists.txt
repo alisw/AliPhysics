@@ -40,6 +40,7 @@ set(SRCS
   AliEmcalTriggerDecisionContainer.cxx
   AliEmcalTriggerSelectionCuts.cxx
   AliEmcalTriggerSelection.cxx
+  AliEmcalTriggerLuminosity.cxx
   AliEmcalTriggerQATask.cxx
   AliEmcalTriggerSimQATask.cxx
   AliEMCALTriggerOfflineQAPP.cxx

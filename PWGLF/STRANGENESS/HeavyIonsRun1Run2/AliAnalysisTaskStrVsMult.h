@@ -8,6 +8,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
   public:
@@ -16,8 +17,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     virtual ~AliAnalysisTaskStrVsMult();
 
     // enum and names.
-    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_LeastTPCcls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_ITSTOFtracks, kV0cutsnum}; 
-    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_LeastTPCcls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; // kCasc_etaPos, kCasc_etaNeg, kCasc_etaBac, kCasc_kinkidx,
+    enum cutnumb_V0{kV0_DcaV0Daught, kV0_DcaPosToPV, kV0_DcaNegToPV, kV0_V0CosPA, kV0_V0Rad, kV0_y, kV0_etaDaugh, kV0_LeastCRaws, kV0_LeastCRawsOvF, kV0_LeastTPCcls, kV0_MaxChi2perCls, kV0_NSigPID, kV0_PropLifetK0s, kV0_PropLifetLam, kV0_ITSTOFtracks, kV0cutsnum}; 
+    enum cutnumb_Casc{kCasc_DcaCascDaught, kCasc_CascCosPA, kCasc_CascRad, kCasc_NSigPID, kCasc_LeastCRaws, kCasc_LeastCRawsOvF, kCasc_LeastTPCcls, kCasc_MaxChi2perCls, kCasc_InvMassLam, kCasc_DcaV0Daught, kCasc_V0CosPA, kCasc_DcaV0ToPV, kCasc_DcaBachToPV, kCasc_ITSTOFtracks, kCasc_y, kCasc_etaDaugh, kCasc_PropLifetXi, kCasc_PropLifetOm, kCasc_V0Rad, kCasc_DcaMesToPV, kCasc_DcaBarToPV, kCasc_BacBarCosPA, kCasccutsnum}; 
     enum particles{kK0s, kLam, kXi, kOm, knumpart}; 
     enum signedparticles{kk0s, klam, kalam, kxip, kxim, komp, komm, ksignednumpart}; 
 
@@ -57,6 +58,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliPIDResponse *fPIDResponse;                             //!
     UInt_t fTriggerMask;                                      //!
 
+    //AliEventCuts object
+    AliEventCuts fEventCuts;                                  //!
+
     //MC-realted variables
     bool fisMC;                                               //
     bool fisMCassoc;                                          //
@@ -86,6 +90,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fV0_LeastCRaws;                                    //!
     double fV0_LeastCRawsOvF;                                 //!
     double fV0_LeastTPCcls;                                   //!
+    double fV0_MaxChi2perCls;                                 //!
     double fV0_NSigPosProton;                                 //!
     double fV0_NSigPosPion;                                   //!
     double fV0_NSigNegProton;                                 //!
@@ -113,6 +118,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fCasc_LeastCRaws;                                  //!
     double fCasc_LeastCRawsOvF;                               //!
     double fCasc_LeastTPCcls;                                 //!
+    double fCasc_MaxChi2perCls;                               //!
     double fCasc_InvMassLam;                                  //!
     double fCasc_DcaV0Daught;                                 //!
     double fCasc_V0CosPA;                                     //!
@@ -152,7 +158,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     //variables to handle binning
     int fncentbins[knumpart];                                 //
-    double fcentbinning[knumpart][50];                        //
+    double fcentbinning[knumpart][150];                       //
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
@@ -170,8 +176,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 6); 
-    //version 6: introduced variations for # of TPC PID clusters and # of ITS-TOF tracks
+    ClassDef(AliAnalysisTaskStrVsMult, 8); 
+    //version 8: introduced AliEventCuts
 };
 
 #endif

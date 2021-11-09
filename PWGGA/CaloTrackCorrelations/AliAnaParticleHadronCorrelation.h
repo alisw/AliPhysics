@@ -220,9 +220,6 @@ public:
   void         SetNAssocPtBins(Int_t n) ;
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
   
-  void         SetNTriggerPtBins(Int_t n) ;
-  void         SetTriggerPtBinLimit(Int_t ibin, Float_t pt) ;
-  
   Bool_t       IsMixStoredInReaderOn()     const { return fUseMixStoredInReader  ; }
   void         SwitchOnUseMixStoredInReader()    { fUseMixStoredInReader = kTRUE ; }
   void         SwitchOffUseMixStoredInReader()   { fUseMixStoredInReader = kFALSE; }
@@ -315,9 +312,6 @@ private:
   Bool_t       fFillDeltaPhiDeltaEtaAssocPt;             ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different associated pT bins, and do not fill other histograms to reduce output size.
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
-  
-  Int_t        fNTrigPtBins ;                            ///<  Number of bins for deltaEta-deltaPhi histogram.
-  Float_t      fTrigPtBinLimit[20] ;                     ///<  Trigger pT bins for deltaEta-deltaPhi histogram.
   
   Bool_t       fCorrelVzBin ;                            ///<  Fill one histogram per vz bin.
   
@@ -640,7 +634,11 @@ private:
   TH2F *       fhMixXECharged;                           //!<! xE for mixed event.
   TH2F *       fhMixXEUeCharged;                         //!<! xE for mixed event in Ue region.
   TH2F *       fhMixHbpXECharged;                        //!<! ln(1/xE) for mixed event.
-  
+  TH2F *       fhMixZTCharged;                           //!<! zT for mixed event.
+  TH2F *       fhMixZTUeCharged;                         //!<! zT for mixed event in Ue region.
+  TH2F *       fhMixHbpZTCharged;                        //!<! ln(1/zT) for mixed event.
+  TH2F *       fhMixPtTrigPout  ;                        //!<! Pout =associated pt*sin(delta phi) distribution vs trigger pt
+  TH2F *       fhMixPtTrigCharged ;                      //!<! trigger and correlated particl pt, to be used for mean value for kt
   /// Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins.
   TH2F **      fhMixDeltaPhiChargedAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()]
   
@@ -705,7 +703,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,38) ;
+  ClassDef(AliAnaParticleHadronCorrelation,39) ;
   /// \endcond
   
 } ;

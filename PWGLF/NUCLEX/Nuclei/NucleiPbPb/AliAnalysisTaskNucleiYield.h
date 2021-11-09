@@ -30,6 +30,7 @@
 #include <TLorentzVector.h>
 #include "AliESDtrack.h"
 #include "AliEventCuts.h"
+#include "AliAODTrack.h"
 #include <AliMCEvent.h>
 #include <AliAODMCParticle.h>
 
@@ -61,13 +62,17 @@ struct SLightNucleus {
   float pt;
   float eta;
   float absCt;
+  float xOrigin;
+  float yOrigin;
+  float zOrigin;
   int   pdg;
   int   flag;
   char  centrality;
+  bool  isReco;
 };
 
 struct RLightNucleus {
-  enum { 
+  enum {
     kT0fill = BIT(0),
     kPrimary = BIT(1),
     kSecondaryMaterial = BIT(2),
@@ -106,6 +111,8 @@ public:
   void SetIsMC (bool isMc) { fIsMC = isMc; }
   void SetFillOnlyEventHistos (bool onlyEventHistos) { fFillOnlyEventHistos = onlyEventHistos; }
 
+  void SetRequireITSrefit (bool refit = true) { fRequireITSrefit = refit; }
+  void SetRequireTPCrefit (bool refit = true) { fRequireTPCrefit = refit; }
   void SetRequireITSrecPoints (int rec = 4) { fRequireITSrecPoints = rec; }
   void SetRequireTPCrecPoints (int rec = 70) { fRequireTPCrecPoints = rec; }
   void SetRequireTPCfoundFraction (float rec = 0.8) { fRequireTPCfoundFraction = rec; }
@@ -116,13 +123,14 @@ public:
   void SetEtaRange (float emin, float emax) { fRequireEtaMin = emin; fRequireEtaMax = emax; }
   void SetYRange (float ymin, float ymax) { fRequireYmin = ymin; fRequireYmax = ymax; }
   void SetRequireMaxChi2 (float maxChi2 = 4.f) { fRequireMaxChi2 = maxChi2; }
+  void SetRequireMaxITSChi2 (float maxITSChi2 = 36.f) { fRequireMaxITSChi2 = maxITSChi2; }
   void SetRequireMaxDCAxy (float maxDCA) { fRequireMaxDCAxy = maxDCA; }
   void SetRequireMaxDCAz (float maxDCA) { fRequireMaxDCAz = maxDCA; }
   void SetRequireTPCpidSigmas (float sig) { fRequireTPCpidSigmas = (sig > 0) ? sig : -sig; }
   void SetRequireITSpidSigmas (float sig) { fRequireITSpidSigmas = sig; }
   void SetRequireTOFpidSigmas (float sig) { fRequireTOFpidSigmas = sig; }
   void SetRequireMinEnergyLoss (float ecut) { fRequireMinEnergyLoss = ecut; }
-  void SetTPCActiveLengthCut (bool apply = true, float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7) { 
+  void SetTPCActiveLengthCut (bool apply = true, float dzone = 3.0, float length = 130, float gcut1 = 1.5, float gcut2 = 0.85, float gcut3 = 0.7) {
     SetApplyTPCActiveLengthCut(apply);
     SetRequireDeadZoneWidth(dzone);
     SetRequireCutGeoNcrNclLength(length);
@@ -144,6 +152,10 @@ public:
   void SetFixForLHC14a6 (bool fix) { fFixForLHC14a6 = fix; }
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
   void SetITSelectronRejection(float nsigma = 2.) { fITSelectronRejectionSigma = nsigma; }
+
+  void SetRequireLongMCTracks(bool longMCTracks) { fRequireLongMCTracks = longMCTracks; }
+  void SetRequirePrimaryFromDistance(bool primaryFromDistance) { fRequirePrimaryFromDistance = primaryFromDistance; }
+  void SetDistCut(double distCut) { fDistCut = distCut; }
 
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
@@ -185,7 +197,7 @@ public:
   TArrayF             fPtCorrectionM;         ///<  Array containing the parametrisation of the \f$p_{T}\$ correction for matter
   double              fOptionalTOFcleanup;   ///<
 
-  std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers  
+  std::vector<float>  fINT7intervals;        ///< Array containing the centrality interval where we select only kINT7 triggers
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -207,6 +219,9 @@ private:
   Bool_t IsSelectedTPCGeoCut(AliAODTrack *track);
   Bool_t IsSelectedTPCGeoCut(AliNanoAODTrack *track);
 
+  Bool_t IsPrimaryFromDistance(const AliAODMCParticle *part);
+  Bool_t IsLongMCTrack(AliAODTrack *track);
+  Bool_t IsLongMCTrack(AliNanoAODTrack *track) { return false; };
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function
@@ -243,6 +258,8 @@ private:
   Float_t               fDisableITSatHighPt;    ///<  \f$p_{T}\f$ threshold for ITS cuts
   Float_t               fDisableTPCpidAtHighPt; ///<  \f$p_{T}\f$ threshold for TPC pid cut
   Bool_t                fEnablePtCorrection;    ///<  If true enables the MC based \f$p_{T}\f$ correction
+  Bool_t                fRequireITSrefit;       ///<  Cut on tracks: set true to require ITS refit
+  Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
   UShort_t              fRequireITSrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireTPCrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
@@ -254,6 +271,7 @@ private:
   Float_t               fRequireYmin;           ///<  Cut on tracks: mimimum y for the track (using PDG mass)
   Float_t               fRequireYmax;           ///<  Cut on tracks: maximum y for the track (using PDG mass)
   Float_t               fRequireMaxChi2;        ///<  Cut on tracks: maximum TPC \f$\chi^{2}/NDF\f$
+  Float_t               fRequireMaxITSChi2;     ///<  Cut on tracks: maximum ITS \f$\chi^{2}\f$
   Float_t               fRequireMaxDCAxy;       ///<  Cut on tracks: maximum \f$DCA_{xy}\f$ for the track
   Float_t               fRequireMaxDCAz;        ///<  Cut on tracks: maximum \f$DCA_{z}\f$ for the track
   Float_t               fRequireTPCpidSigmas;   ///<  Cut on TPC PID number of sigmas
@@ -276,13 +294,17 @@ private:
   Float_t               fBeamRapidity;          ///< Beam rapidity in case of asymmetric colliding systems
   Int_t                 fEstimator;             ///< Choose the centrality estimator from AliEventCuts
 
+  Bool_t                fRequireLongMCTracks;   ///<  Require MC tracks to reach TOF
+  Bool_t                fRequirePrimaryFromDistance;///<  Define primary particles in MC from production vertex
+  Double_t              fDistCut;               ///<  Cut on the distance between PV and particle vertex to define primaries
+
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
 
   Bool_t                fSaveTrees;             ///<  Switch on/off the output TTrees
   Float_t               fTOFminPtTrees;         ///<  Pt after which the TOF pid is required to save the tree
   RLightNucleus         fRecNucleus;            ///<  Reconstructed nucleus
   SLightNucleus         fSimNucleus;            ///<  Simulated nucleus
-
+  std::vector<int>      fRecoNucleiMCindex;     ///<  Index of the MC particle that are reconstructed
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins
@@ -357,6 +379,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       if (part) {
         good2save = std::abs(part->PdgCode()) == fPDG;
         SetSLightNucleus(part, fSimNucleus);
+        fRecoNucleiMCindex.emplace_back(mcId);
       } else
         good2save = false;
     }
@@ -394,7 +417,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   const int iTof = beta > EPS ? 1 : 0;
   float pT = track->Pt() * fCharge;
   float p_TPC = track->GetTPCmomentum() * fCharge;
-  float p = track->P(); 
+  float p = track->P();
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
@@ -417,20 +440,22 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        if (part->IsPhysicalPrimary()) {
-          if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
-              (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
-              (!iR || pid_check) && (iR || pid_mask & 8))
-            fReconstructed[iR][iC]->Fill(fCentrality,pT);
-          fDCAPrimary[iR][iC]->Fill(fCentrality,pT,dca[0]);
-          if (!iR) {
-            fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
-            fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
-            } // Fill it only once.
-        } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
-          fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
-        else
-          fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
+        if ( ( (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+              (!iR || pid_check) && (iR || pid_mask & 8)) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track))) ) {
+          bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(part));
+          if (isPrimary) {
+            if ( TMath::Abs(dca[0]) <= fRequireMaxDCAxy )
+              fReconstructed[iR][iC]->Fill(fCentrality,pT);
+            fDCAPrimary[iR][iC]->Fill(fCentrality,pT,dca[0]);
+            if (!iR) {
+              fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
+              fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
+              } // Fill it only once.
+          } else if ( (part->IsSecondaryFromMaterial() && !isFromHyperNucleus) || (!isPrimary && fRequirePrimaryFromDistance) )
+            fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
+          else
+            fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
+        }
       }
     }
   } else {
@@ -450,7 +475,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
       /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
-      if (tpc_n_sigma > -2. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
+      if (tpc_n_sigma > -3. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
         fDCAxy[iR][iC]->Fill(fCentrality, pT, dca[0]);
         fDCAz[iR][iC]->Fill(fCentrality, pT, dca[1]);
       }
@@ -476,7 +501,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fTOFT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
       fTOFT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
     }
-    else { 
+    else {
       fTOFNoT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
       fTOFNoT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
     }
@@ -493,7 +518,9 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 ///
 template<class track_t>
 bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
+  ULong_t status = track->GetStatus();
   fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
+  if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return false;
   if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return false;
   if (fCutVec.Rapidity() < fRequireYmin + fBeamRapidity || fCutVec.Rapidity() > fRequireYmax + fBeamRapidity) return false;
   if (track->Chi2perNDF() > fRequireMaxChi2) return false;
@@ -511,6 +538,8 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
   dca[1] = 0.;
   if (track->Pt() < fDisableITSatHighPt) {
     int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+    if (!(status & AliVTrack::kITSrefit) && fRequireITSrefit) return false;
+    if (track->GetITSchi2() > fRequireMaxITSChi2) return false;
     int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
     if (nITS < fRequireITSrecPoints) return false;
     if (nSPD < fRequireSPDrecPoints) return false;

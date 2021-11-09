@@ -164,6 +164,25 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // switch on/off the ev. sel ev. selection (useful to run on ITS2-ITS3 upgrade MC)
   void SetApplyEvSel(Bool_t flag){fApplyEvSel=flag;}
 
+  // switch off the topological selections
+  void SetSwitchOffTopCuts(){fSwitchOffTopCuts=kTRUE;}
+  // switch off the PID after filtering
+  void SetSwitchOffPIDafterFilt(){fSwitchOffPIDafterFilt=kTRUE;}
+
+  // reject events without a recognised p, K, pi
+  void SetRejEvWoutpKpi(){fRejEvWoutpKpi=kTRUE;}
+
+  // apply different pt cuts on candidate daughters
+  void SetMinPtSingleDaughter(Double_t minPtProton, Double_t minPtKaon, Double_t minPtPion){
+    fUseMinPtSingleDaughter = kTRUE;
+    fMinPtProton = minPtProton;
+    fMinPtKaon = minPtKaon;
+    fMinPtPion = minPtPion;
+  }
+
+  // avoid SigmaC analysis
+  void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
+
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -424,8 +443,33 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // integer to keep only SigmaC candidate with 0 or ++ charge
   Int_t fAbsValueScCharge;  // -1: keep both Sc0, Sc++;   0: keep only Sc0;   2: keep only Sc++
 
+  // bool to switch the topological selections off
+  Bool_t fSwitchOffTopCuts; //
+  // bool to switch the PID selection after filtering off
+  Bool_t fSwitchOffPIDafterFilt; //
+
+  // number of protons, kaons and pions in a single event
+  Int_t fnProt; //
+  Int_t fnKaon; //
+  Int_t fnPion; //
+
+  // bool to avoid processing events without recognised p, K, pi
+  Bool_t fRejEvWoutpKpi; //
+
+  // pT selections on daughters and candidate
+  Bool_t fUseMinPtSingleDaughter; // separated pt cut for daughters (NB: in cut object pt>300 MeV/c)
+  Double_t fMinPtProton;  // minimum pt for selected candidate protons
+  Double_t fMinPtKaon;    // minimum pt for selected candidate kaons
+  Double_t fMinPtPion;    // minimum pt for selected candidate pions
+  TH1D* fHistoPtSelProton; //!<!
+  TH1D* fHistoPtSelKaon; //!<!
+  TH1D* fHistoPtSelPion; //!<!
+
+  // avoid SigmaC analysis
+  Bool_t fDisableSigmaCLoop; //
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,20); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,23); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

@@ -73,6 +73,8 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s() :AliAnalysisT
   fEtaV0Assoc(0.8),
   fFilterBitValue(128),
   fYear(2016),
+  lPercentilesMin(0),
+  lPercentilesMax(0),
   fisHM(0),
   fHistPt(0), 
   fHistDCAxym1(0),
@@ -278,10 +280,11 @@ AliAnalysisTaskCorrelationhhK0s::AliAnalysisTaskCorrelationhhK0s(const char* nam
   fMaxSecondMult(150),
   fnEventsToMix(50),
   fEtaTrigger(0.8),
-  fEtahAssoc(0.8),
-										     fEtaV0Assoc(0.8),
+  fEtahAssoc(0.8),								      fEtaV0Assoc(0.8),
   fFilterBitValue(128),
   fYear(2016),
+  lPercentilesMin(0),
+  lPercentilesMax(0),
   fisHM(0),
   fHistPt(0), 
   fHistDCAxym1(0),
@@ -807,7 +810,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserCreateOutputObjects()
   fSignalTree->Branch("fTreeVariableZvertex",            &fTreeVariableZvertex  , "fTreeVariableZvertex/D");
   fSignalTree->Branch("fTreeVariablePDGCodeTrigger",     &fTreeVariablePDGCodeTrigger  , "fTreeVariablePDGCodeTrigger/I");
   fSignalTree->Branch("fTreeVariablePDGCodeAssoc",       &fTreeVariablePDGCodeAssoc  , "fTreeVariablePDGCodeAssoc/I");
-
 
   const char* nameoutputBkgTree = GetOutputSlot(3)->GetContainer()->GetName();
   fBkgTree= new TTree(nameoutputBkgTree,"fBkgTree");
@@ -1787,18 +1789,27 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
   
         
   if ( lPercentiles > 199 ){
-    PostData(1,fOutputList );
+    PostData(1, fOutputList );
     PostData(2, fSignalTree );
-    PostData(3,fBkgTree); 
+    PostData(3, fBkgTree); 
     PostData(4, fOutputList2); 
     PostData(5, fOutputList3);
     PostData(6, fOutputList4);     
     return;  
   }
   if (fisHM && lPercentiles > 0.1){
-    PostData(1,fOutputList );
+    PostData(1, fOutputList );
     PostData(2, fSignalTree );
-    PostData(3,fBkgTree); 
+    PostData(3, fBkgTree); 
+    PostData(4, fOutputList2); 
+    PostData(5, fOutputList3);
+    PostData(6, fOutputList4);     
+    return;  
+  }
+  if (lPercentiles < lPercentilesMin || lPercentiles > lPercentilesMax){
+    PostData(1, fOutputList );
+    PostData(2, fSignalTree );
+    PostData(3, fBkgTree); 
     PostData(4, fOutputList2); 
     PostData(5, fOutputList3);
     PostData(6, fOutputList4);     
@@ -1810,9 +1821,9 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
   Bool_t isPileUpSpd=kFALSE;
   isPileUpSpd=fAOD->IsPileupFromSPD();
   if(isPileUpSpd){ 
-    PostData(1,fOutputList );
+    PostData(1, fOutputList );
     PostData(2, fSignalTree );
-    PostData(3,fBkgTree); 
+    PostData(3, fBkgTree); 
     PostData(4, fOutputList2); 
     PostData(5, fOutputList3);     
     PostData(6, fOutputList4);     
@@ -3009,7 +3020,6 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	  }
 	}
 
-
 	if(!goodPiMinus || !goodPiPlus )             continue;
 	fHistEventV0->Fill(11);
 
@@ -3040,6 +3050,7 @@ void AliAnalysisTaskCorrelationhhK0s::UserExec(Option_t *)
 	if(v0->CosPointingAngle(lBestPrimaryVtxPos) < kMinCosAngle[ParticleType]) 	continue;
 	//    if(v0->DecayLengthV0(lBestPrimaryVtxPos) > kMaxDL)          	continue;
 	if(v0->DecayLengthV0(lBestPrimaryVtxPos) < kMinDL[ParticleType])	   	continue;
+	//if( lV0Radius < kMinDL[ParticleType]) continue;
 
 	double v0Dca = v0->DcaV0ToPrimVertex();
 	if(v0->DcaNegToPrimVertex() < kMinDCAPrimary[ParticleType])      continue;

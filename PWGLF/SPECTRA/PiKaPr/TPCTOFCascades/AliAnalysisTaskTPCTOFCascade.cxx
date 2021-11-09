@@ -939,20 +939,40 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
   Float_t RefMult08 = -1000;
   Float_t RefMult05 = -1000;
   Float_t SPDTracklets = -1000;
+  Float_t V0APercentile = -1000;
+  Float_t V0CPercentile = -1000;
+  Float_t V0ASignal=-1000;
+  Float_t V0CSignal=-1000;
+  
+  
   if(!ams){ 
    RefMult08 = -999;
    RefMult05 = -999;
    SPDTracklets = -999;
+   V0APercentile = -999;
+   V0CPercentile = -999;
+   V0ASignal = -999;
+   V0CSignal = -999;
+ 
   }
   if(ams){
     RefMult08 = ams->GetMultiplicityPercentile("RefMult08");
     RefMult05 = ams->GetMultiplicityPercentile("RefMult05");
     SPDTracklets = ams->GetMultiplicityPercentile("SPDTracklets");
+    V0APercentile = ams->GetMultiplicityPercentile("V0A");
+    V0CPercentile = ams->GetMultiplicityPercentile("V0C");
+    V0ASignal = ams->GetEstimator("V0A")->GetValue();
+    V0CSignal = ams->GetEstimator("V0C")->GetValue();
   }
 
   fAnalysisEvent->SetRefMult08(RefMult08);
   fAnalysisEvent->SetRefMult05(RefMult05);
   fAnalysisEvent->SetSPDTracklets(SPDTracklets);
+  fAnalysisEvent->SetV0Amultiplicity(V0APercentile);
+  fAnalysisEvent->SetV0Cmultiplicity(V0CPercentile);
+  fAnalysisEvent->SetV0Asignal(V0ASignal);
+  fAnalysisEvent->SetV0Csignal(V0CSignal);
+
   /*** MC PRIMARY PARTICLES ***/
 
   Int_t mcmulti = 0;

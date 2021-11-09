@@ -62,12 +62,14 @@ class AliJCDijetAna : public TObject
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
         void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
-        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos);
+        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         double DeltaR(double eta1, double eta2, double phi1, double phi2);
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
+
+        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
 #endif
 
     private:
@@ -90,7 +92,6 @@ class AliJCDijetAna : public TObject
         double ftrackingIneff;
         bool bEvtHasAreaInfo;
 
-        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
         double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, deltaRMin, deltaR;
         bool leadingTrackOverThreshold;
         unsigned noTracks;
@@ -106,6 +107,7 @@ class AliJCDijetAna : public TObject
         double randConePhi;
         double randConeEta;
         double randConePt;
+        double fDeltaM;
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;

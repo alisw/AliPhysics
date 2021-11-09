@@ -26,6 +26,7 @@ class AliAnalysisTaskDeuteronProtonEfficiency : public AliAnalysisTaskSE
     void UserCreateOutputObjects();
     void UserExec(Option_t *);
     void Terminate(Option_t *);
+    double Bethe(const AliESDtrack &track, double mass, int charge, double *params);
     double CalculateRelativeMomentum(TLorentzVector &Pair, TLorentzVector &Part1, TLorentzVector &Part2);
 
 
@@ -145,6 +146,12 @@ class AliAnalysisTaskDeuteronProtonEfficiency : public AliAnalysisTaskSE
     TH1F    *fHistEtaAntiHelium3RecPairPtCut;
     TH2F    *fHistPtAntiParticlesRec;
     TH1F    *fHistSEDAntiPairRec;
+
+    // reconstructed particles and antiparticles
+    TH2F    *fHistdEdx_LHC18a2a;
+    TH2F    *fHistdEdx_LHC18a2b;
+    TH2F    *fHistdEdx_LHC18a2b4;
+    TH2F    *fHistdEdx_LHC20l7a;
 
     // event counter
     TH1F    *fHistEventCounter;

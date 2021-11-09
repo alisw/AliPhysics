@@ -194,9 +194,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
         return;
       }
-      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
-      isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(-1, mcHeader, stack);
-      if(isParticleFromOutOfBunchPileUpEvent) return;
+        Bool_t isPileupInGeneratedEvent = kFALSE;
+        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+        if(isPileupInGeneratedEvent) return;
     }
     
     for (Int_t i(0); i < nMCTracks; i++) {
@@ -261,9 +261,6 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
     if(track->GetTPCNcls()<fTPCNcls || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls and chi2/dof   
     if(track->TestFilterBit(fBit)) {
-      // calculate signal    
-      //printf("filter bit is %i\n",fBit);
-
       chargedSignal->Fill(track->Eta());
       if(track->Charge() > 0) posSignal->Fill(track->Eta());
       if(track->Charge() < 0) negSignal->Fill(track->Eta());
@@ -273,8 +270,12 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   //calculate coefficients if histogram is full
   int ncentbin = centaxis->FindBin(Cent);
   int neventcent = fNeventCentHist->GetBinContent(ncentbin);
+  // printf("CENTRALITY  is %f\n",Cent);
+  //   printf("neventcent is %i\n",neventcent);
+
   if(chargedSignal->Integral()>0) {
     TH1D *chargedBG = fChargedBackgroundHist->ProjectionX("chargedbackground", ncentbin,ncentbin);
+    // printf("BACKGROUND normal is %f\n",chargedBG->Integral());
     chargedBG->Scale(1.0/neventcent);
     BuildCoefficients(chargedSignal, chargedBG, Cent, "");
   }
@@ -352,11 +353,18 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
 //_____________________________________________________________________________
 void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type)
 {
+
   TH1D *RanDistHist[5],*RanHist[5];//random distribution histograms
   TRandom2 *ran = new TRandom2();//random number for uniform distribution
   double ntracks = signal->Integral();
   int n; 
   char histname[50];
+  double intb = background->Integral();
+
+  //normalizing signal hist 
+  signal->Divide(background);
+  //printf("signal before scale to 16/signal normal is %f\n",signal->Integral());
+
   for (int s=0; s<5; s++){//5 random histograms
     n = sprintf (histname, "RanHist%i", s+1);
     RanHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
@@ -369,32 +377,23 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
   //generating random uniform distributions
   for (int s=0; s<5; s++){
     RanHist[s]->Reset("ICE");
-    for (int rn=0; rn<ntracks; rn++) {RanHist[s]->Fill(ran->Uniform(-fEta,fEta));}
-        //printf("first ranhist normal is %f\n",RanHist[s]->Integral());
-    RanHist[s]->Scale(16.0/(double)ntracks);
-    //printf("ranhist normal is %f\n",RanHist[s]->Integral());
-
-  }
-
-  //generating random sample distributions
-  for (int s=0; s<5; s++){
     RanDistHist[s]->Reset("ICE");
-    for (int rn=0; rn<ntracks; rn++) {RanDistHist[s]->Fill(background->GetRandom());}
-    RanDistHist[s]->Scale(16.0/(double)ntracks);   
-    //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+    for (int rn=0; rn<ntracks; rn++) {
+      RanHist[s]->Fill(ran->Uniform(-fEta,fEta));
+      RanDistHist[s]->Fill(background->GetRandom());
+    }
+    RanHist[s]->Scale(signal->Integral()/(double)ntracks);
+    RanDistHist[s]->Divide(background); 
+    // printf("ranhist normal is %f\n",RanHist[s]->Integral());
+    // printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
   }
-
-  //normalizing signal hist
-  signal->Divide(background);
-  signal->Scale(16.0/signal->Integral());
-
-  //printf("signal normal is %f\n",signal->Integral());
 
   //calculating the an coefficients  
   n = sprintf (histname, "a1%s", type);
   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,signal),2.0));
   n = sprintf (histname, "a2%s", type);
   ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,signal),2.0));
+
   for (int s=0; s<5; s++){
     n = sprintf (histname, "Ra1%s", type);
     ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));

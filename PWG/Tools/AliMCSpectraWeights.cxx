@@ -1235,6 +1235,125 @@ AliMCSpectraWeights::GetMCSpectraWeight(TParticle* mcGenParticle,
     }
 }
 
+/**
+ *  @brief identify secondary particle depending on mother pid
+ *  @param[in] part
+ *  @return -1 for error; 0 from lambda, 1 from kaon0Short, 2 other
+ */
+int const AliMCSpectraWeights::IdentifySecondaryType(TParticle* part){
+    if(!part){
+        std::cerr << "AliMCSpectraWeights::Error: particle pointer zero\n";
+        return -1;
+    }
+    // two possible cases:
+    // 1) if a proton or a pi- check if mother is a Lambda (and check that it's a physical primary)
+    // 2) K0short case: if a pi+ check if mother is a K0short and assign the weight of K+, the same way as for Lambda's
+
+    auto const absPDG = TMath::Abs(part->GetPdgCode());
+    auto motherPartLabel = part->GetFirstMother();
+    if (motherPartLabel<0) {
+        std::cerr << "AliMCSpectraWeights::Error: mother label negative\n";
+        return -1;
+    }
+    auto const motherPart =  (AliMCParticle*)fMCEvent->GetTrack(motherPartLabel);
+    auto const motherPDG = motherPart->PdgCode();
+
+    if ((TMath::Abs(motherPDG) == 3122 || TMath::Abs(motherPDG) == 3222 || TMath::Abs(motherPDG) == 3112 || TMath::Abs(motherPDG) == 3212) && motherPart->IsPhysicalPrimary()) { //&& motherPart->IsPhysicalPrimary()
+        DebugPCC("\t\t mother is lambda case\n");
+        return 0;
+    }// end if primary lambda
+
+    if ((TMath::Abs(motherPDG) == 310 || TMath::Abs(motherPDG) == 130 || TMath::Abs(motherPDG) == 311 || TMath::Abs(motherPDG) == 321) && motherPart->IsPhysicalPrimary()) {
+        DebugPCC("\t\t mother is from K0short case\n");
+        return 1;
+    }// end if primary K0short
+
+    if(TMath::Abs(motherPDG) == 211 && motherPart->IsPhysicalPrimary()){
+        DebugPCC("\t\t mother is from pion case\n");
+        return 2;
+    }
+    if((TMath::Abs(motherPDG) == 3122 && TMath::Abs(fMCEvent->MotherOfParticle(motherPartLabel)->PdgCode()) == 3312)){
+        DebugPCC("\t\t mother is from xi case");
+        return 3;
+    }
+
+    DebugPCC("\t particle PID: "+std::to_string(absPDG)+"\t mother: "+std::to_string(motherPDG)+"\n");
+#ifdef __AliMCSpectraWeights_DebugPCC__
+    std::cerr << "climbing up the tree\n";
+    bool hasMother=true;
+    while (hasMother) {
+        auto const _motherPart =  (AliMCParticle*)fMCEvent->MotherOfParticle(motherPartLabel);
+        if (!_motherPart) {
+            std::cerr << "\t no more mother\n";
+            hasMother = false;
+            break;
+        } else {
+            auto const _motherPDG = _motherPart->PdgCode();
+            std::cerr << "\t mother: " << std::to_string(_motherPDG);
+            motherPartLabel = _motherPart->GetLabel();
+        }
+    }
+#endif
+    return 4;
+}
+
+/**
+ *  @brief weight factor dependent of mother particle
+ *  @param[in] mcGenParticle
+ *  @return weight factor for secondary particle
+ */
+float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenParticle){
+    DebugPCC("GetWeightForSecondaryParticle\n");
+
+    float weight = 1;
+    if (fbTaskStatus < AliMCSpectraWeights::TaskState::kMCWeightCalculated) {
+        DebugPCC("Warning: Status not kMCWeightCalculated\n");
+        return 1;
+    }
+
+    auto const _SecondaryID = IdentifyMCParticle(mcGenParticle);
+    if(_SecondaryID < 0){
+        std::cerr << "AliMCSpectraWeights::Error: secondary ID error\n";
+        return 1;
+    }
+    auto motherPartLabel = mcGenParticle->GetMother(0);
+    if (motherPartLabel<0) {
+        std::cerr << "AliMCSpectraWeights::Error: mother label negative\n";
+        return 1;
+    }
+    auto const motherPart =  (AliMCParticle*)fMCEvent->GetTrack(motherPartLabel);
+    int _iBin = -1;
+    switch (_SecondaryID) {
+        case 0: // Lambda case
+            _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kSigmaPlus);
+            break;
+        case 1: // Kaon0Short case
+            _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kKaon);
+            break;
+        case 2: // electron from primary pion
+            _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kPion);
+            break;
+        case 3: // xi -> lambda -> proton
+            _iBin = AliMCSpectraWeights::FindBinEntry(motherPart->Pt(), AliMCSpectraWeights::ParticleType::kSigmaPlus);
+            break;
+        default:
+            break;
+    }
+    if (_iBin < 0) {
+        DebugPCC("Can't find bin\n");
+        return 1;
+    }
+    weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+
+    if(weight < 1e-2){
+        DebugPCC("AliMCSpectraWeights::WARNING: weight is too small -> set to 1 \n");
+        weight = 1;
+    }
+
+    DebugPCC("\t final weight is " << weight << "\n");
+    return weight;
+}
+
 void AliMCSpectraWeights::StartNewEvent() {
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t1 = std::chrono::high_resolution_clock::now();

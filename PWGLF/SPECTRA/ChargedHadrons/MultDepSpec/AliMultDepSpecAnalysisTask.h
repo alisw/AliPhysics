@@ -85,7 +85,7 @@ protected:
   bool InitCentrality();
 
   template <typename Particle_t>
-  bool InitParticle(Particle_t* particle);
+  bool InitParticle(int particleID);
   double GetSecScalingFactor(AliVParticle* particle);
   double GetParticleWeight(AliVParticle* particle);
   unsigned long GetSeed();
@@ -128,22 +128,22 @@ protected:
   Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
   Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
 
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};  //!<! measured primary charged particles as function of true properties (no contamination from background events)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};   //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
-  Hist::Hist<TH1D> fHist_multDist_evt_gen{};      //!<! generated event distribution  (from events within specified class and with proper vertex position)
-  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};  //!<! multilicity correlation of measured events (excluding background events)
-  Hist::Hist<THnSparseF> fHist_multCorrel_prim{}; //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
-  Hist::Hist<TH2D> fHist_ptCorrel_prim{};         //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_sigloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt
+  Hist::Hist<TH1D> fHist_multDist_evt_gen{};            //!<! generated event distribution  (from events within specified class and with proper vertex position)
+  Hist::Hist<THnSparseF> fHist_multCorrel_evt{};        //!<! multilicity correlation of measured events (excluding background events)
+  Hist::Hist<THnSparseF> fHist_multCorrel_prim{};       //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
+  Hist::Hist<TH2D> fHist_ptCorrel_prim{};               //!<! pT correlation of measured primary charged particles  (excluding particles from background events)
 
-  // special trigger bias histograms
-  Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{}; //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
-  Hist::Hist<TH1D> fHist_ptDist_prim_gen_trig{};  //!<! generated primary charged particles that fired the trigger as function of pt [to quantify trigger bias in fiducial or inelgt0 mode]
-  Hist::Hist<TH1D> fHist_ptDist_prim_gen_fidu{};  //!<! generated primary charged particles as function of pt in fiducial event class [to quantify trigger bias in triggered mode]
+  Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{};      //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_notrig{}; //!<! generated primary charged particles of events that did not fulfil physics selection and trigger condition as function of multiplicity and pt
 
   // QA histograms
-  Hist::Log<TH1I> fHist_trainInfo{};       //!<! train metadata string as bin lable and number of compute jobs as bin content
-  Hist::Log<TH1I> fHist_runStatistics{};   //!<! number of measured events per run (filled only for first event in job)
-  Hist::Hist<TH1D> fHist_eventSelection{}; //!<! logging histogram to for event selection steps (filled only for first event in job)
+  Hist::Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
+  Hist::Log<TH1I> fHist_runStatistics{};     //!<! number of measured events per run
+  Hist::Hist<TH1D> fHist_eventSelection{};   //!<! logging histogram to for event selection steps
+  Hist::Hist<TH1D> fHist_eventSelectionMC{}; //!<! logging histogram to for event selection steps in mc
 
   Hist::Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
   Hist::Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
@@ -184,6 +184,7 @@ protected:
   unsigned long fEventNumber{};  //!<! event number
   unsigned int fTimeStamp{};     //!<! event time stamp
   float fCent{};                 //!<! event centrality
+  bool fEventPassesPhysSel{};    //!<! event passes physics selection (usually also including pileup rejection)
   bool fMCIsGoodZPos{};          //!<! is mc event within acceptance (z<10)?
   bool fMCIsGoodEventClass{};    //!<! decision if current event is in specified baseline event class
   bool fAcceptEvent{};           //!<! decision if current event is selected

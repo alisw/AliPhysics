@@ -163,13 +163,13 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     // Cut Selection
     Bool_t TrackIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
-    Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
+    Bool_t PhotonIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedMCAODESD(AliDalitzAODESDMC *particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma) const;
-    //Bool_t ElectronIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
+    //Bool_t ElectronIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent);
     Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
     //Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
-    //Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
+    //Bool_t MesonIsSelectedMC(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
 
     void PrintCuts();
     void PrintCutsWithValues();
@@ -193,7 +193,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
     Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
     Bool_t AcceptanceCuts(AliConversionPhotonBase *photon);
-    Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
+    Bool_t AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
     //   Bool_t dEdxCuts(AliVTrack * track);
     Bool_t dEdxCuts(AliVTrack * track, AliConversionPhotonBase * photon);

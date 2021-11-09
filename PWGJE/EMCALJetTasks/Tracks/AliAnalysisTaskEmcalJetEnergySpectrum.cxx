@@ -33,6 +33,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TVariableBinning.h>
+#include <TRandom3.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -48,6 +49,7 @@
 #include "AliLog.h"
 #include "AliMultSelection.h"
 #include "AliVEvent.h"
+#include "AliFJWrapper.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergySpectrum);
 
@@ -74,6 +76,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
+  fDoBkgSub(false),
+  fFastJetWrapper(nullptr),
+  fTrackGenerator(nullptr),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
   fEMCALClusterBias(0.),
@@ -105,6 +110,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUseSumw2(false),
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
+  fDoBkgSub(false),
+  fFastJetWrapper(nullptr),
+  fTrackGenerator(nullptr),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
   fEMCALClusterBias(0.),
@@ -118,6 +126,10 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
 
 AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
   if(fHistos) delete fHistos;
+  if(fDoBkgSub){
+    delete fFastJetWrapper;
+    delete fTrackGenerator;
+  }
 }
 
 void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
@@ -149,6 +161,20 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetSpectrumAbs", "Jet pt spectrum (absolute counts)", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMax", "Max jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMaxAbs", "Max jet pt spectrum (absolute counts)", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
+
+  if(fDoBkgSub){
+    fHistos->CreateTH2("hRhoVsDeltaPtRC", "Rho Vs Delta Pt RC;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 170, -20, 150, 30, 0, 30, "s");
+    fHistos->CreateTH2("hRhoVsDeltaPtEmbed", "Rho Vs Delta Pt embedding;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 170, -20, 150, 30, 0, 30, "s");
+
+    fFastJetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
+    fFastJetWrapper->SetAreaType(fastjet::active_area);
+    fFastJetWrapper->SetGhostArea(0.005);
+    fFastJetWrapper->SetR(this->GetJetContainer(fNameJetContainer)->GetJetRadius());
+    fFastJetWrapper->SetAlgorithm(fastjet::antikt_algorithm);
+    fFastJetWrapper->SetRecombScheme(fastjet::pt_scheme);
+    fTrackGenerator = new TRandom(0);
+  }
+
   if(fFillHSparse) {
     TLinearBinning centralitybinning(100, 0., 100.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN, -0.5, kTrgClusterN -0.5);
     TVariableBinning jetptbinning(fUserPtBinning);
@@ -291,7 +317,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
   AliDebugStream(2) << "Found downscale weight " << weight << " for trigger " << fTriggerSelectionString << std::endl;
   fHistos->FillTH1("hEventCounterAbs", 1.);
-  fHistos->FillTH1("hEventCounter", weight);
+  fHistos->FillTH1("hEventCounter", 1., weight);
   fHistos->FillTH1("hEventCounterRun", fRunNumber);
   fHistos->FillTH1("hEventCounterRunWeighted", fRunNumber, weight);
   fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);
@@ -305,6 +331,11 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   for(auto j : datajets->accepted()){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     Double_t ptjet = j->Pt();
+
+    if (fDoBkgSub && datajets->GetRhoParameter()){
+      ptjet = ptjet - datajets->GetRhoVal() * j->Area();
+    }
+
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
       // Apply artificial (fixed) shift of the jet energy scale to det. level jets
       ptjet += fScaleShift * ptjet;
@@ -380,7 +411,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     }
     fHistos->FillTH2("hQANChPt", ptjet, j->GetNumberOfTracks(), weight);
     fHistos->FillTH2("hQANnePt", ptjet, j->GetNumberOfClusters(), weight);
-    fHistos->FillTH2("hQAJetAreaVsJetPt", j->Pt(), j->Area(), weight);
+    fHistos->FillTH2("hQAJetAreaVsJetPt", ptjet, j->Area(), weight);
     fHistos->FillTH2("hQAJetAreaVsNEF", j->NEF(), j->Area(), weight);
     fHistos->FillTH2("hQAJetAreaVsNConst", j->GetNumberOfClusters() + j->GetNumberOfTracks(), j->Area(), weight);
     // comparison to pt-hard
@@ -409,6 +440,14 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
       fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
     }
   }
+
+  if(fDoBkgSub){
+    Double_t randomConePt = GetDeltaPtRandomCone();
+    Double_t EmbeddingPt = GetDeltaPtEmbedding();
+    fHistos->FillTH2("hRhoVsDeltaPtRC", randomConePt, datajets->GetRhoVal());
+    fHistos->FillTH2("hRhoVsDeltaPtEmbed", EmbeddingPt, datajets->GetRhoVal());
+  }
+
 
   // outlier cut (MC only)
   if(fPtHard > 0.) {
@@ -497,6 +536,184 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureDetJetSelection(Double_t mi
   }
 }
 
+Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
+{
+    Double_t deltaPt = -1000.;
+
+    auto jetcont = this->GetJetContainer(fNameJetContainer);
+    auto partcont = this->GetTrackContainer(0);
+
+    Double_t jetradius = jetcont->GetJetRadius();
+    Double_t minEta = -0.5;
+    Double_t maxEta = 0.5;
+    Double_t tmpRandConeEta = -999;
+    Double_t tmpRandConePhi = -999;
+    Double_t tmpConePt = -1.;
+
+    AliEmcalJet *LeadingJet = NULL;
+    AliEmcalJet *SubLeadingJet = NULL;
+    Double_t LJeta = 999;
+    Double_t LJphi = 999;
+
+    Double_t SLJeta = 999;
+    Double_t SLJphi = 999;
+
+    if (jetcont)
+    {
+
+        Float_t maxJetPts[] = {0, 0};
+
+        jetcont->ResetCurrentID();
+
+        AliEmcalJet *jet = 0x0;
+
+        while ((jet = jetcont->GetNextAcceptJet()))
+        {
+
+            if (!jet)
+                continue;
+
+            if (jet->Pt() > maxJetPts[0])
+            {
+                maxJetPts[1] = maxJetPts[0];
+                SubLeadingJet = LeadingJet;
+                maxJetPts[0] = jet->Pt();
+                LeadingJet = jet;
+            }
+            else if (jet->Pt() > maxJetPts[1])
+            {
+                maxJetPts[1] = jet->Pt();
+                SubLeadingJet = jet;
+            }
+        }
+
+        if (LeadingJet)
+        {
+            LJeta = LeadingJet->Eta();
+            LJphi = LeadingJet->Phi();
+        }
+        if (SubLeadingJet)
+        {
+            SLJeta = SubLeadingJet->Eta();
+            SLJphi = SubLeadingJet->Phi();
+        }
+    }
+
+    Double_t dLJ = 0;
+    Double_t dSLJ = 0;
+    Int_t repeats = 0;
+
+    do
+    {
+        tmpRandConeEta = minEta + gRandom->Rndm() * (maxEta - minEta);
+        tmpRandConePhi = gRandom->Rndm() * TMath::TwoPi();
+        dLJ = TMath::Sqrt((LJeta - tmpRandConeEta) * (LJeta - tmpRandConeEta) + (LJphi - tmpRandConePhi) * (LJphi - tmpRandConePhi));
+        dSLJ = TMath::Sqrt((SLJeta - tmpRandConeEta) * (SLJeta - tmpRandConeEta) + (SLJphi - tmpRandConePhi) * (SLJphi - tmpRandConePhi));
+        repeats++;
+
+    } while (dLJ < 0.45 || dSLJ < 0.45);
+
+    AliVTrack *tmpTrack = 0x0;
+
+    for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
+    {
+
+        if (!partcont->GetParticle(i))
+            continue;
+        
+        tmpTrack = static_cast<AliVTrack *>(partcont->GetParticle(i));
+
+        if (fabs(tmpTrack->Eta()) > 0.9)
+            continue;
+
+        if (tmpTrack->Pt() < 0.15)
+            continue;
+
+        if (sqrt((tmpTrack->Eta() - tmpRandConeEta) * (tmpTrack->Eta() - tmpRandConeEta) +
+                 TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi)) *
+                     TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi))) < jetradius)
+        {
+            tmpConePt += tmpTrack->Pt();
+        }
+    }
+
+    if (tmpConePt > 0)
+    {
+        deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * jetcont->GetRhoVal();
+        return deltaPt;
+    }
+    return deltaPt;
+}
+
+Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
+{
+
+    fFastJetWrapper->Clear();
+    //----------------Generating NEW perpendicular track
+
+    auto partcont = this->GetTrackContainer(0);
+    auto jetcont = this->GetJetContainer(fNameJetContainer);
+
+    AliEmcalJet* leadingJet = jetcont->GetLeadingJet();
+
+    if(!leadingJet)
+      return -999;
+
+    Double_t signalEta = leadingJet->Eta();
+    Double_t signalPhi = leadingJet->Phi();
+
+    Double_t gen_pt = fTrackGenerator->Uniform(0, 100); //this will be pT of the track that you embedd
+    TLorentzVector lVec;
+    lVec.SetPtEtaPhiM(gen_pt, signalEta, signalPhi + TMath::Pi() / 2, 0);               //here ignalEta,signalPhi  are some directions that you choose
+    fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E(), -99999); //fill embedded track to the array of proto-jets
+
+    //-----Filling   fFastJetWrapper with tracks from track container
+    for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
+    {
+
+        if (!partcont->GetParticle(i))
+            continue;
+
+        AliVTrack *trk = static_cast<AliVTrack *>(partcont->GetParticle(i));
+
+        if (fabs(trk->Eta()) > 0.9)
+            continue;
+
+        if (trk->Pt() < 0.15)
+            continue;
+
+        fFastJetWrapper->AddInputVector(trk->Px(), trk->Py(), trk->Pz(), trk->P(), 1); //fill reconstructed tracks to the array of proto-jets
+    }
+
+    fFastJetWrapper->Run(); //this creates jets including the embedded track
+
+    //--------------- DelPt analysis of the new container
+    std::vector<fastjet::PseudoJet> jets_incl = fFastJetWrapper->GetInclusiveJets(); //this is the new jet array which included also the jet with embedded track
+    Double_t deltaPtEmb = -999;
+    Double_t sumTrkEmbeddedPt = 0;
+
+    for (UInt_t ijet = 0; ijet < jets_incl.size(); ++ijet)
+    {                                                                                            //loop over these jets and search for jet with embedded track.
+        std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet)); //get list of constituents of each jet
+        sumTrkEmbeddedPt = 0;
+        for (UInt_t ic = 0; ic < constituents.size(); ++ic)
+        { //loop over constituents
+            if (constituents[ic].user_index() == -99999)
+            {                                              //this is the constituent which was embedded
+                sumTrkEmbeddedPt += constituents[ic].pt(); // get pT of this embedded track
+                break;                                     //we have embedded just 1 track so we can break, there will be not other in this event
+            }
+        }
+
+        if (sumTrkEmbeddedPt > 0)
+        {                                                                                                                         //the jet with embedded track was found
+            deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * jetcont->GetRhoVal() - sumTrkEmbeddedPt; //calculate delta pT and subtract pT of embedded track
+            break;
+        }
+    }
+
+    return deltaPtEmb;
+}
 
 AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -564,6 +781,99 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   // Create proper jet container
   auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, radius, acctype, tracks, clusters);
   jetcont->SetName("datajets");
+  task->SetNameJetContainer("datajets");
+  std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
+
+  if(isMC){
+    // Create also particle and particle level jet container for outlier rejection
+    TString partcontname = namepartcont.data();
+    if(partcontname == "usedefault") partcontname = "mcparticles";
+    auto partcont = task->AddMCParticleContainer(partcontname.Data());
+    partcont->SetMinPt(0.);
+
+    //AliJetContainer::EJetType_t mcjettype = (jettype == AliJetContainer::kNeutralJet) ? AliJetContainer::kFullJet : jettype;
+    AliJetContainer::EJetType_t mcjettype = AliJetContainer::kFullJet;
+    auto pjcont = task->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
+    pjcont->SetName("partjets");
+    pjcont->SetMinPt(0);
+    pjcont->SetMaxTrackPt(1000.);
+  }
+
+  // Link input and output container
+  outfilename << mgr->GetCommonFileName() << ":JetSpectrum_" << tag.str().data();
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("JetSpectrum_%s", tag.str().data()), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename.str().data()));
+
+  return task;
+}
+
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSub(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW suffix){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr) {
+    std::cerr << "Analysis manager not initialized" << std::endl;
+    return nullptr;
+  }
+
+  Bool_t isAOD(kFALSE);
+  AliInputEventHandler *inputhandler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+  if(inputhandler) {
+    if(inputhandler->IsA() == AliAODInputHandler::Class()){
+      std::cout << "Analysing AOD events\n";
+      isAOD = kTRUE;
+    } else {
+      std::cout << "Analysing ESD events\n";
+    }
+  }
+
+  std::string jettypestring;
+  UInt_t acctype(AliJetContainer::kTPCfid);
+  switch(jettype){
+    case AliJetContainer::kChargedJet:  jettypestring = "ChargedJets"; acctype = AliJetContainer::kTPCfid; break;
+    case AliJetContainer::kFullJet:     jettypestring = "FullJets";    acctype = AliJetContainer::kEMCALfid; break;
+    case AliJetContainer::kNeutralJet:  jettypestring = "NeutralJets"; acctype = AliJetContainer::kEMCALfid; break;
+    case AliJetContainer::kUndefinedJetType: break;
+  };
+
+  std::stringstream tag, outfilename;
+  tag << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(radius * 10.) << "_" << trigger;
+  if(suffix.length()) {
+    tag << "_" << suffix;
+  }
+  auto task = new AliAnalysisTaskEmcalJetEnergySpectrum(Form("JetEnergySpectrum_%s", tag.str().data()));
+  task->SetIsMC(isMC);
+  mgr->AddTask(task);
+
+  auto contains = [](EMCAL_STRINGVIEW str, EMCAL_STRINGVIEW test) {
+    return str.find(test) != std::string::npos;
+  };
+
+  std::string trgstr(trigger);
+  if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EMC7")) task->SetTriggerSelection(AliVEvent::kEMC7, "EMC7");
+  else if(contains(trgstr, "EJE")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJE");
+  else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
+  else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
+  else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG1");
+  else if(contains(trgstr, "EG2")) task->SetTriggerSelection(AliVEvent::kEMCEGA, "EG2");
+
+  // Connect particle and cluster container
+  AliTrackContainer *tracks(nullptr);
+  AliClusterContainer *clusters(nullptr);
+  if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
+    tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks->SetMinPt(0.15);
+  }
+  if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
+    clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters->SetDefaultClusterEnergy(energydef);
+    clusters->SetClusUserDefEnergyCut(energydef, 0.3);
+  }
+
+
+  // Create proper jet container
+  auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, radius, acctype, tracks, clusters);
+  jetcont->SetName("datajets");
+  jetcont->SetRhoName(nrho.data());
   task->SetNameJetContainer("datajets");
   std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
 

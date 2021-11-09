@@ -1,3 +1,4 @@
+
 /**************************************************************************************************
 *      Leading Charged Track+V0 Correlations.(Works for Real  Data)                               *
 *      Yuko Sekiguchi * Center for Nuclear Study(CNS) , University of Tokyo                       *
@@ -116,6 +117,9 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fCentType("ZNA"),
       fNEntries(0),
       lCentrality(0),
+      calibmode(0),
+      fheffipt(0),
+      fheffipteta(0), 
       bSign(0),
       fZVertex(10.),
       fOutputList(0),
@@ -177,16 +181,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fNzVtxBins(0),
       fNCentBins(0),
       fMaxnSigmaTPCTOF(3.),
-      fHistzvertex(0),
-      fHistCentrality(0),
-      fHistCentrality_beforecut(0),
-      fHistV0vsTracks(0),
-      fHistCentvsNv0mult(0),
-      fHistV0multvsVz(0),
-      fHistCentzvertex(0),
-      fHistCentV0vsTracklets(0),
       fHistCentV0vsTrackletsbefore(0),
-      fHistTraksvsVz(0),
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
@@ -199,43 +194,13 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fhmcprimpdgcode(0),
       fh2_FMD_acceptance_prim(0),
       fh2_FMD_eta_phi_prim(0),
-      fh2_FMD_acceptance(0),
-      fh2_ITS_acceptance(0),
       fh2_SPD_multcorr(0),
-      fh2_SPDV0_multcorr(0),
       fh2_SPDtrack_multcorr(0),
-      fhtrackletsdphi(0),
-      fh2_FMD_eta_phi(0),
-      fh2_FMD_eta_phi_aftercut(0),
-      fHist_NeventRun(0),
-      fHist_V0AMultRun(0),
-      fHist_V0CMultRun(0),
-      fHist_FMDAMultRun(0),
-      fHist_FMDCMultRun(0),
       fhistfmdphiacc(0),  
-      fhFMDmultchannel(0),
-      fhistfmd(0),
       fhistits(0), 
       fhSecFMD(0),
       fOutliers(0),
-      fFMDV0(0),
-      fFMDV0_post(0),
-      fFMDV0A(0),
-      fFMDV0A_post(0),
-      fFMDV0C(0),
-      fFMDV0C_post(0),
-      fFMDV0same(0),
-      fFMDV0same_post(0),
-      fFMDV0Asame(0),
-      fFMDV0Asame_post(0),
-      fFMDV0Csame(0),
-      fFMDV0Csame_post(0),
-      fHist_vzeromult(0),
-      fHist_vzeromultEqweighted(0),
-      fHist2dmult(0),
-      fHistVZERO(0),
       fHist_Stat(0),
-      fHist_V0Stat(0),
       fHistPhiDTPCNSig(0),
       fHistPhiDTOFNSig(0),
       fHistPhiDTPCTOFNSig(0),
@@ -344,6 +309,9 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fCentType("ZNA"),
       fNEntries(0),
       lCentrality(0),
+	  calibmode(0),
+      fheffipt(0), 
+      fheffipteta(0), 
       bSign(0),
       fZVertex(10.),
       fOutputList(0),
@@ -405,16 +373,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fNzVtxBins(0),
       fNCentBins(0),
       fMaxnSigmaTPCTOF(3.),
-      fHistzvertex(0),
-      fHistCentrality(0),
-      fHistCentrality_beforecut(0),
-      fHistV0vsTracks(0),
-      fHistCentvsNv0mult(0),
-      fHistV0multvsVz(0),
-      fHistCentzvertex(0),
-      fHistCentV0vsTracklets(0),
       fHistCentV0vsTrackletsbefore(0),
-      fHistTraksvsVz(0),
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
@@ -427,43 +386,13 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fhmcprimpdgcode(0),
       fh2_FMD_acceptance_prim(0),
       fh2_FMD_eta_phi_prim(0),
-      fh2_FMD_acceptance(0),
-      fh2_ITS_acceptance(0),
       fh2_SPD_multcorr(0),
-      fh2_SPDV0_multcorr(0),
       fh2_SPDtrack_multcorr(0),
-      fhtrackletsdphi(0),
-      fh2_FMD_eta_phi(0),
-      fh2_FMD_eta_phi_aftercut(0),
-      fHist_NeventRun(0),
-      fHist_V0AMultRun(0),
-      fHist_V0CMultRun(0),
-      fHist_FMDAMultRun(0),
-      fHist_FMDCMultRun(0),
       fhistfmdphiacc(0),  
-      fhFMDmultchannel(0),
-      fhistfmd(0),
       fhistits(0), 
       fhSecFMD(0),
       fOutliers(0),
-      fFMDV0(0),
-      fFMDV0_post(0),
-      fFMDV0A(0),
-      fFMDV0A_post(0),
-      fFMDV0C(0),
-      fFMDV0C_post(0),
-      fFMDV0same(0),
-      fFMDV0same_post(0),
-      fFMDV0Asame(0),
-      fFMDV0Asame_post(0),
-      fFMDV0Csame(0),
-      fFMDV0Csame_post(0),
-      fHist_vzeromult(0),
-      fHist_vzeromultEqweighted(0),
-      fHist2dmult(0),
-      fHistVZERO(0),
       fHist_Stat(0),
-      fHist_V0Stat(0),
       fHistPhiDTPCNSig(0),
       fHistPhiDTOFNSig(0),
       fHistPhiDTPCTOFNSig(0),
@@ -594,17 +523,17 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
  
   fOutputList1 = new TList();
   fOutputList1->SetOwner(kTRUE);
- fOutputList1->SetName("anahistos");
+  fOutputList1->SetName("anahistos");
   DefineCorrOutput();
-
-  DefineVZEROOutput();
-  PostData(2, fOutputList1);
 
   fOutputList2 = new TList();
   fOutputList2->SetOwner(kTRUE);
   fOutputList2->SetName("QA");
   DefinedQAHistos();
-  PostData(3, fOutputList2);
+  DefineVZEROOutput();
+
+  PostData(2, fOutputList1);
+  
 
   //  fStorage = new AliForwardFlowResultStorage("freja", fOutputList3);
   /*
@@ -623,6 +552,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   
   frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
+  PostData(3, fOutputList2);
   ///    TGrid::Connect("alien://");
   //TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/correction.root");
   //  TFile*file=TFile::Open("/home/yuko/work/local_alicework/MCESDanalysis/draw_result/correction.root");
@@ -633,27 +563,34 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   // }
   
   if(fefficalib){
-  TGrid::Connect("alien://");
-  //TFile* file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
-  TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d_3D.root",fcollisiontype.Data(),ffilterbit));
-  
-  if(!file) AliError("No correction factor");
-  for(Int_t i=0;i<10;i++){
-    fhcorr[i]=(TH2D*)file->Get(Form("effi_%d",i));
+	TGrid::Connect("alien://");
+	//TFile* file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency.root");
+	//TFile*file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d_3D.root",fcollisiontype.Data(),ffilterbit));
+	TFile*file;
+	//	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb")file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb"){
+	  if(calibmode)file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	  else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	}else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_LHC18_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	
+	if(!file) AliError("No correction factor");
+
+	if(calibmode){
+	  fheffipteta=(TH2F*)file->Get("h_effi");
+	}else{
+	  fheffipt=(TH1F*)file->Get("fheffipt");
+	}
   }
 
-  }
+
+  fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins, fNzVtxBins, fZvtxBins);
+  if (!fPoolMgr)	return;
+  fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
   
-   fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins, fNzVtxBins, fZvtxBins);
-   if (!fPoolMgr)
-   return;
-   fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
-
-
-   fPoolMgr1 = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins, fNzVtxBins, fZvtxBins);
-   if (!fPoolMgr1)
-   return;
-   fPoolMgr1->SetTargetValues(fPoolMinNTracks, 0.1, 5);
+  
+  fPoolMgr1 = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins, fNzVtxBins, fZvtxBins);
+  if (!fPoolMgr1) return;
+  fPoolMgr1->SetTargetValues(fPoolMinNTracks, 0.1, 5);
  }
  void AliAnalysisTaskSEpPbCorrelationsYS::DefineGeneralOutput() {
    fHist_Stat = new TH1F("fHist_Stat", "Stat Histogram", 14, -0.5, 13.5);
@@ -667,23 +604,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHist_Stat->GetXaxis()->SetBinLabel(8, "FMD/V0 multi cut");
    fOutputList->Add(fHist_Stat);
 
-   fHist_V0Stat = new TH1F("fHist_V0Stat", "Stat Histogram", 16, -0.5, 15.5);
-   fHist_V0Stat->GetXaxis()->SetBinLabel(1, "all");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(2, "On-Fly");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(3, "Off-Fly");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(4, "V0 pseudorapidity");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(5, "DCA Dau. tracks to PV");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(6, "DCA dauthers");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(7, "Fiducial volume");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(8, "Pass IsAcceptedV0");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(9, "track cut");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(10, "charge");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(11, "PID for K0s");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(12, "ctau for k0s");
-   fHist_V0Stat->GetXaxis()->SetBinLabel(13, "AP cut for K0s");
-   fOutputList->Add(fHist_V0Stat);
-
-   fHistzvertex = new TH1F("fHistzvertex", ";VZ;count", 120, -15, 15);
+   TH1F* fHistzvertex = new TH1F("fHistzvertex", ";VZ;count", 120, -15, 15);
    fOutputList->Add(fHistzvertex);
 
    Double_t fmaxcent;
@@ -698,27 +619,29 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    }else{
 	if (fcollisiontype.Contains("HMPP")) fmaxcent=1.;
 	else fmaxcent=100.;
-      }
+   }
    
-     
-   fHistCentrality = new TH1F("fHistCentrality", ";centrality;count", 100, 0, fmaxcent);
+   TH2F* fhist_trackeffi=new TH2F("fhist_trackeffi","fhist_trackeffi",fmaxcent,0,fmaxcent,fmaxcent,0,fmaxcent);
+   fOutputList->Add(fhist_trackeffi);
+	  
+   TH1F* fHistCentrality = new TH1F("fHistCentrality", ";centrality;count", 100, 0, fmaxcent);
    fOutputList->Add(fHistCentrality);
 
-   fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 100, 0, fmaxcent);
+   TH1F* fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 100, 0, fmaxcent);
    fOutputList->Add(fHistCentrality_beforecut);
   
-   fHistCentzvertex = new TH2F("fHistCentzvertex", "Cent;VZ;count", 100,0, fmaxcent, 60, -15, 15);
+   TH2F* fHistCentzvertex = new TH2F("fHistCentzvertex", "Cent;VZ;count", 100,0, fmaxcent, 60, -15, 15);
    fOutputList->Add(fHistCentzvertex);
 
    Int_t nspdtracks;
    if(fcollisiontype.Contains("HMPP")|| fcollisiontype.Contains("MBPP")|| fcollisiontype.Contains("pPb")) nspdtracks=200;
    else nspdtracks=3500;
    
-   fHistCentV0vsTracklets=new TH2F("fHistCentV0vsTracklets","fHistCentV0vsTracklets",fncentbin,0,fmaxcent,nspdtracks,0,nspdtracks);
+   TH2F* fHistCentV0vsTracklets=new TH2F("fHistCentV0vsTracklets","fHistCentV0vsTracklets",fncentbin,0,fmaxcent,nspdtracks,0,nspdtracks);
    if(fAnaMode!="FMDFMD") fOutputList->Add(fHistCentV0vsTracklets);
 
-   fHistTraksvsVz=new TH2F("fHistTraksvsVz","fHistTraksvsVz",50,-10,10,nspdtracks,0,nspdtracks);
-   fOutputList->Add(fHistTraksvsVz);
+   TH2F* fHistTracksvsVz=new TH2F("fHistTracksvsVz","fHistTraksvsVz",50,-10,10,nspdtracks,0,nspdtracks);
+   if(fAnaMode!="FMDFMD")fOutputList->Add(fHistTracksvsVz);
 
    //fHistCentV0vsTrackletsbefore=new TH2F("fHistCentV0vsTrackletsbefore","fHistCentV0vsTrackletsbefore",100,0,100,nspdtracks,0,nspdtracks);
    //fOutputList->Add(fHistCentV0vsTrackletsbefore);
@@ -731,14 +654,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      nv0mult=5000;
    }  
    
-   fHistV0vsTracks=new TH2F("fHistV0vsTracks","fHistV0vsTracks",nbinv0mult,0,nv0mult,nspdtracks,0,nspdtracks);
+   TH2F* fHistV0vsTracks=new TH2F("fHistV0vsTracks","fHistV0vsTracks",nbinv0mult,0,nv0mult,nspdtracks,0,nspdtracks);
    if(fAnaMode!="FMDFMD") fOutputList->Add(fHistV0vsTracks);
    
-   fHistCentvsNv0mult=new TH2F("fHistCentvsNv0mult","fHistCentvsNv0mult",fncentbin,0,fmaxcent,nv0mult,0,nv0mult);
+   TH2F* fHistCentvsNv0mult=new TH2F("fHistCentvsNv0mult","fHistCentvsNv0mult",fncentbin,0,fmaxcent,nv0mult,0,nv0mult);
    fOutputList->Add(fHistCentvsNv0mult);
 
-
-   fHistV0multvsVz=new TH2F("fHistV0multvsVz","fHistV0multvsVz",50,-10,10,nv0mult,0,nv0mult);
+   TH2F* fHistV0multvsVz=new TH2F("fHistV0multvsVz","fHistV0multvsVz",50,-10,10,nv0mult,0,nv0mult);
    fOutputList->Add(fHistV0multvsVz);
 
    TTree *settingsTree = new TTree("UEAnalysisSettings", "Analysis Settings in UE estimation");
@@ -765,20 +687,22 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Double_t binning_phi_vzero[9] = {0., 0.7853, 1.5707, 2.3561, 3.1415, 3.9269, 4.7123, 5.4977, 6.2831};
    Double_t binning_cent[16] = {0., 0.1, 1.,  2.,  3.,   5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
 
-   fHist_vzeromult = new TH2F("fHist_vzeromult", "fHist_vzeromult", 64, -0.5, 63.5, 500, 0, 500);
-   fOutputList1->Add(fHist_vzeromult);
-   fHist_vzeromultEqweighted =  new TH2F("fHist_vzeromultEqweighted", "fHist_vzeromultEqweighted", 64, -0.5, 63.5, 500, 0, 500);
-   fOutputList1->Add(fHist_vzeromultEqweighted);
-   fHist2dmult = new TH3F("fHist2dmult", "fHist2dmult", 64, -0.5, 63.5, 500, 0, 500, 500, 0, 500);
-   fOutputList1->Add(fHist2dmult);
-   fHistVZERO = new AliTHn("fHistVZERO", "fHistVZERO", 1, 3, nVZEROBins);
+   TH2F* fHist_vzeromult = new TH2F("fHist_vzeromult", "fHist_vzeromult", 64, -0.5, 63.5, 500, 0, 500);
+   fOutputList2->Add(fHist_vzeromult);
+   TH2F* fHist_vzeromultEqweighted =  new TH2F("fHist_vzeromultEqweighted", "fHist_vzeromultEqweighted", 64, -0.5, 63.5, 500, 0, 500);
+   fOutputList2->Add(fHist_vzeromultEqweighted);
+   TH3F* fHist2dmult = new TH3F("fHist2dmult", "fHist2dmult", 64, -0.5, 63.5, 500, 0, 500, 500, 0, 500);
+   fOutputList2->Add(fHist2dmult);
+
+   
+   AliTHn* fHistVZERO = new AliTHn("fHistVZERO", "fHistVZERO", 1, 3, nVZEROBins);
    fHistVZERO->SetBinLimits(0, binning_eta_vzero);
    fHistVZERO->SetBinLimits(1, binning_phi_vzero);
    if(fCentType!="Manual") fHistVZERO->SetBinLimits(2, binning_cent);
    else fHistVZERO->SetBinLimits(2, 0, 200);
-   fOutputList1->Add(fHistVZERO);
-   
+   fOutputList2->Add(fHistVZERO);
  }
+
  void AliAnalysisTaskSEpPbCorrelationsYS::DefinedQAHistos() {
    Int_t ncentmax;
    if(fCentType=="Manual") ncentmax=200;
@@ -788,8 +712,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    mixedDist2=new TH2F("mixedDist2", ";centrality;events;events", 100, 0,ncentmax, 100, 0, 1000) ;
    fOutputList2->Add(mixedDist);
    fOutputList2->Add(mixedDist2);
-
-
+   
    const Int_t ipidBin[4] = {11, 40, 72, 15};
    Double_t binning_pt_lead[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
                                    2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
@@ -816,16 +739,16 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Double_t binning_cent[16] = {0., 0.1, 1., 2.,  3.,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
    Double_t binning_zvx[11] = {-10,-8,-6,-4,-2,0,2,4,6,8,10};
    if(fasso=="PID" && fQA){
-   fHistPIDQA = new AliTHn("fHistPIDQA", "fHistPIDQA", 3, 4, ipidBin);
-   fHistPIDQA->SetBinLimits(0, binning_pt_lead);
-   fHistPIDQA->SetBinLimits(1, binning_eta);
-   fHistPIDQA->SetBinLimits(2, binning_dphi);
-   fHistPIDQA->SetBinLimits(3, binning_cent);
-   fHistPIDQA->SetVarTitle(0, "pt");
-   fHistPIDQA->SetVarTitle(1, "eta");
-   fHistPIDQA->SetVarTitle(2, "phi");
-   fHistPIDQA->SetVarTitle(3, "centrality");
-   fOutputList1->Add(fHistPIDQA);
+	 fHistPIDQA = new AliTHn("fHistPIDQA", "fHistPIDQA", 3, 4, ipidBin);
+	 fHistPIDQA->SetBinLimits(0, binning_pt_lead);
+	 fHistPIDQA->SetBinLimits(1, binning_eta);
+	 fHistPIDQA->SetBinLimits(2, binning_dphi);
+	 fHistPIDQA->SetBinLimits(3, binning_cent);
+	 fHistPIDQA->SetVarTitle(0, "pt");
+	 fHistPIDQA->SetVarTitle(1, "eta");
+	 fHistPIDQA->SetVarTitle(2, "phi");
+	 fHistPIDQA->SetVarTitle(3, "centrality");
+	 fOutputList1->Add(fHistPIDQA);
    }
 
    Double_t binning_cent_leadQA[13] = {0., 0.1,  5.,  10., 20., 30., 40., 50., 60., 70., 80., 90., 100.1};
@@ -846,8 +769,17 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHistLeadQA->SetVarTitle(3, "centrality");
    fHistLeadQA->SetVarTitle(4, "vz");
    fOutputList1->Add(fHistLeadQA);
-
-
+   
+   Double_t ptspectrum[]={0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,
+						  0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,
+						  1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,
+						  2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,
+						  6.0,6.5,7.0,8.0};
+   TH2F* fHistptreco;
+   if(fCentType=="Manual") fHistptreco=new TH2F("fHistptreco","fHistptreco",sizeof(ptspectrum)/sizeof(Double_t)-1,ptspectrum,200,0,200);
+   else fHistptreco=new TH2F("fHistptreco","fHistptreco",sizeof(ptspectrum)/sizeof(Double_t)-1,ptspectrum,12,binning_cent_leadQA);
+   fOutputList1->Add(fHistptreco);
+			
    const Int_t imcprimbin[4]={11,55,30,10};
    Double_t binning_pt_mcprim[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
    if(!fDataType){
@@ -869,9 +801,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fOutputList2->Add(fh2_FMD_acceptance_prim);
      fh2_FMD_eta_phi_prim=new TH2D("fh2_FMD_eta_phi_prim","fh2_FMD_eta_phi_prim",200,-4,6,20,0,2*TMath::Pi());
      fOutputList2->Add(fh2_FMD_eta_phi_prim);
-
-     
-     
+	 
      for(Int_t i=0;i<4;i++){
        fhrefetaFMD[i]=new TH1D(Form("fhrefetaFMD_%d",i),Form("fhrefetaFMD_%d",i),200,-4,6);
        fhrefphiFMD[i]=new TH1D(Form("fhrefphiFMD_%d",i),Form("fhrefphiFMD_%d",i),100,0,2*TMath::Pi());
@@ -880,176 +810,173 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      }
    }
 
-	 fHist_NeventRun=new TH1F("fHist_NeventRun","fHist_NeventRun",200,-0.5,199.5);
-	 fOutputList2->Add(fHist_NeventRun);
+   TH1F* fHist_NeventRun=new TH1F("fHist_NeventRun","fHist_NeventRun",200,-0.5,199.5);
+   fOutputList2->Add(fHist_NeventRun);
+   
+   TH1F* fHist_V0AMultRun=new TH1F("fHist_V0AMultRun","fHist_V0AMultRun",200,-0.5,199.5);
+   fOutputList2->Add(fHist_V0AMultRun);
+   TH1F* fHist_V0CMultRun=new TH1F("fHist_V0CMultRun","fHist_V0CMultRun",200,-0.5,199.5);
+   fOutputList2->Add(fHist_V0CMultRun);
+   TH1F* fHist_FMDAMultRun=new TH1F("fHist_FMDAMultRun","fHist_FMDAMultRun",200,-0.5,199.5);
+   fOutputList2->Add(fHist_FMDAMultRun);
+   TH1F* fHist_FMDCMultRun=new TH1F("fHist_FMDCMultRun","fHist_FMDCMultRun",200,-0.5,199.5);
+   fOutputList2->Add(fHist_FMDCMultRun);
+   
 
-	 fHist_V0AMultRun=new TH1F("fHist_V0AMultRun","fHist_V0AMultRun",200,-0.5,199.5);
-	 fOutputList2->Add(fHist_V0AMultRun);
-	 fHist_V0CMultRun=new TH1F("fHist_V0CMultRun","fHist_V0CMultRun",200,-0.5,199.5);
-	 fOutputList2->Add(fHist_V0CMultRun);
-	 fHist_FMDAMultRun=new TH1F("fHist_FMDAMultRun","fHist_FMDAMultRun",200,-0.5,199.5);
-	 fOutputList2->Add(fHist_FMDAMultRun);
-	 fHist_FMDCMultRun=new TH1F("fHist_FMDCMultRun","fHist_FMDCMultRun",200,-0.5,199.5);
-	 fOutputList2->Add(fHist_FMDCMultRun);
-
-
-	 fOutliers = new TH2D("fOutliers","Maximum #sigma from mean N_{ch} pr. bin",100, 0., 100., 500, 0., 5.); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
-	 fOutputList2->Add(fOutliers);
-  
+   fOutliers = new TH2D("fOutliers","Maximum #sigma from mean N_{ch} pr. bin",100, 0., 100., 500, 0., 5.); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram
+   fOutputList2->Add(fOutliers);
+   
+   Float_t nmutFoward;
+   if(fcollisiontype=="PbPb"||fcollisiontype=="pPb") nmutFoward=2000.;
+   else nmutFoward=1000.;
+   
+   TH2F* fFMDV0 = new TH2F("fFMDV0", "FMD vs V0 pre cut;FMD;V0;",2000, 0, 2*nmutFoward, 2000, 0, 2*nmutFoward);
+   fOutputList2->Add(fFMDV0);
+   TH2F* fFMDV0_post=new TH2F("fFMDV0_post", "FMD vs V0 post cut;FMD;V0;",2000, 0, 2*nmutFoward, 2000, 0, 2*nmutFoward);
+   fOutputList2->Add(fFMDV0_post);
+   TH2F* fFMDV0A = new TH2F("fFMDV0A", "FMD vs V0A;FMD;V0A;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0A);
+   TH2F* fFMDV0A_post = new TH2F("fFMDV0A_post", "FMD vs V0A post cut;FMD;V0A;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0A_post);
+   TH2F* fFMDV0C = new TH2F("fFMDV0C", "FMD vs V0C;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0C);
+   TH2F* fFMDV0C_post = new TH2F("fFMDV0C_post", "FMD vs V0C post cut;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0C_post);
+   
+   TH2F* fFMDV0same = new TH2F("fFMDV0same", "FMD vs V0 pre cut;FMD;V0;",2000, 0, 2000, 2*nmutFoward, 0, 2*nmutFoward);
+   fOutputList2->Add(fFMDV0same);
+   TH2F* fFMDV0same_post=new TH2F("fFMDV0same_post", "FMD vs V0 post cut;FMD;V0;",2000, 0, 2000, 2*nmutFoward, 0, 2*nmutFoward);
+   fOutputList2->Add(fFMDV0same_post);
+   TH2F* fFMDV0Asame = new TH2F("fFMDV0Asame", "FMD vs V0A;FMD;V0A;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0Asame);
+   TH2F* fFMDV0Asame_post = new TH2F("fFMDV0Asame_post", "FMD vs V0A post cut;FMD;V0A;",2000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0Asame_post);
+   TH2F* fFMDV0Csame = new TH2F("fFMDV0Csame", "FMD vs V0C;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0Csame);
+   TH2F* fFMDV0Csame_post = new TH2F("fFMDV0Csame_post", "FMD vs V0C post cut;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
+   fOutputList2->Add(fFMDV0Csame_post);
+   
+   TH2F* fh2_ITS_acceptance=new TH2F("fh2_ITS_acceptance","fh2_ITS_acceptance",200,-10,10,200,-4,6);
+   fOutputList2->Add(fh2_ITS_acceptance);
+   
+   fh2_SPD_multcorr=new TH2F("fh2_SPD_multcorr","fh2_SPD_multcorr",400,0,400,2000,0,2000);
+   fOutputList2->Add(fh2_SPD_multcorr);
+   
+   TH2F* fh2_SPDV0_multcorr=new TH2F("fh2_SPDV0_multcorr","fh2_SPDV0_multcorr",400,0,400,2000,0,2000);
+   fOutputList2->Add(fh2_SPDV0_multcorr);
+   
+   fh2_SPDtrack_multcorr=new TH2F("fh2_SPDtrack_multcorr","fh2_SPDtrack_multcorr",400,0,400,400,0,400);
+   fOutputList2->Add(fh2_SPDtrack_multcorr);
+   
+   TH1F* fhtrackletsdphi=new TH1F("fhtrackletsdphi","dphi tracklets",100,-100,100);
+   fOutputList2->Add(fhtrackletsdphi);
+   
+   TH2F* fh2_FMD_acceptance=new TH2F("fh2_FMD_acceptance","fh2_FMD_acceptance",200,-4,6,200,-10,10);
+   fOutputList2->Add(fh2_FMD_acceptance);
+   
+   TH2F* fh2_FMD_eta_phi=new TH2F("fh2_FMD_eta_phi","fh2_FMD_eta_phi",200,-4,6,20,0,2*TMath::Pi());
+   fOutputList2->Add(fh2_FMD_eta_phi);
+   
+   TH2F* fh2_FMD_eta_phi_aftercut=new TH2F("fh2_FMD_eta_phi_aftercut","fh2_FMD_eta_phi_aftercut",200,-4,6,20,0,2*TMath::Pi());
+   fOutputList2->Add(fh2_FMD_eta_phi_aftercut);
+   
+   if(fCentType!="Manual")fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,15,binning_cent);
+   else fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,20,0,200);
+   fOutputList2->Add(fhistfmdphiacc);
+   
+   TH2F* fhFMDmultchannel=new TH2F("fhFMDmultchannel","fhFMDmultchannel",200,-4,6,100,0,100);
+   fOutputList2->Add(fhFMDmultchannel);
+   
+   for(Int_t i=0;i<31;i++){
+	 fhFMDmult_runbyrun_cside[i]=new TH2D(Form("fhFMDmult_runbyrun_cside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
+	 //     fOutputList2->Add(fhFMDmult_runbyrun_cside[i]);
+   }
+   for(Int_t i=0;i<65;i++){
+	 fhFMDmult_runbyrun_aside[i]=new TH2D(Form("fhFMDmult_runbyrun_aside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
+	 //     fOutputList2->Add(fhFMDmult_runbyrun_aside[i]);
+   }
+   
+   Int_t ncentbinfmd;
+   if(fCentType=="Manual") ncentbinfmd=20;
+   else ncentbinfmd=15;
+   const Int_t ifmdbin[4]={200,20,ncentbinfmd,10};
+   AliTHn* fhistfmd=new AliTHn("fhistfmd","fhistfmd",1,4,ifmdbin);
+   fhistfmd->SetBinLimits(0,-4.,6.);
+   fhistfmd->SetBinLimits(1,0.,2*TMath::Pi());
+   if(fCentType=="Manual")fhistfmd->SetBinLimits(2,0.,200.);
+   //	 else fhistfmd->SetBinLimits(2,0.,100.);
+   else fhistfmd->SetBinLimits(2,binning_cent);
+   fhistfmd->SetBinLimits(3,-10.,10.);
+   fhistfmd->SetVarTitle(0,"eta");
+   fhistfmd->SetVarTitle(1,"phi");
+   fhistfmd->SetVarTitle(2,"centrality");
+   fhistfmd->SetVarTitle(3,"vzy");
+   fOutputList2->Add(fhistfmd);
 	 
-	 Float_t nmutFoward;
-	 if(fcollisiontype=="PbPb"||fcollisiontype=="pPb") nmutFoward=2000.;
-	 else nmutFoward=1000.;
-	 
-	 fFMDV0 = new TH2F("FMDV0", "FMD vs V0 pre cut;FMD;V0;",2000, 0, 2*nmutFoward, 2000, 0, 2*nmutFoward);
-	 fOutputList2->Add(fFMDV0);
-	 fFMDV0_post=new TH2F("FMDV0_post", "FMD vs V0 post cut;FMD;V0;",2000, 0, 2*nmutFoward, 2000, 0, 2*nmutFoward);
-	 fOutputList2->Add(fFMDV0_post);
-	 fFMDV0A = new TH2F("FMDV0A", "FMD vs V0A;FMD;V0A;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0A);
-	 fFMDV0A_post = new TH2F("FMDV0A_post", "FMD vs V0A post cut;FMD;V0A;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0A_post);
-	 fFMDV0C = new TH2F("FMDV0C", "FMD vs V0C;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0C);
-	 fFMDV0C_post = new TH2F("FMDV0C_post", "FMD vs V0C post cut;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0C_post);
-	 
-	 fFMDV0same = new TH2F("FMDV0same", "FMD vs V0 pre cut;FMD;V0;",2000, 0, 2000, 2*nmutFoward, 0, 2*nmutFoward);
-	 fOutputList2->Add(fFMDV0same);
-	 fFMDV0same_post=new TH2F("FMDV0same_post", "FMD vs V0 post cut;FMD;V0;",2000, 0, 2000, 2*nmutFoward, 0, 2*nmutFoward);
-	 fOutputList2->Add(fFMDV0same_post);
-	 fFMDV0Asame = new TH2F("FMDV0Asame", "FMD vs V0A;FMD;V0A;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0Asame);
-	 fFMDV0Asame_post = new TH2F("FMDV0Asame_post", "FMD vs V0A post cut;FMD;V0A;",2000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0Asame_post);
-	 fFMDV0Csame = new TH2F("FMDV0Csame", "FMD vs V0C;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0Csame);
-	 fFMDV0Csame_post = new TH2F("FMDV0Csame_post", "FMD vs V0C post cut;FMD;V0C;",1000, 0, nmutFoward, 1000, 0, nmutFoward);
-	 fOutputList2->Add(fFMDV0Csame_post);
-	 
-	 fh2_ITS_acceptance=new TH2D("fh2_ITS_acceptance","fh2_ITS_acceptance",200,-10,10,200,-4,6);
-	 fOutputList2->Add(fh2_ITS_acceptance);
-	 
-	 fh2_SPD_multcorr=new TH2F("fh2_SPD_multcorr","fh2_SPD_multcorr",400,0,400,2000,0,2000);
-	 fOutputList2->Add(fh2_SPD_multcorr);
-	 
-	 fh2_SPDV0_multcorr=new TH2F("fh2_SPDV0_multcorr","fh2_SPDV0_multcorr",400,0,400,2000,0,2000);
-	 fOutputList2->Add(fh2_SPDV0_multcorr);
-	 
-	 fh2_SPDtrack_multcorr=new TH2F("fh2_SPDtrack_multcorr","fh2_SPDtrack_multcorr",400,0,400,400,0,400);
-	 fOutputList2->Add(fh2_SPDtrack_multcorr);
-	 
-	 fhtrackletsdphi=new TH1F("fhtrackletsdphi","dphi tracklets",100,-100,100);
-	 fOutputList2->Add(fhtrackletsdphi);
-	 
-	 
-	 fh2_FMD_acceptance=new TH2D("fh2_FMD_acceptance","fh2_FMD_acceptance",200,-4,6,200,-10,10);
-	 fOutputList2->Add(fh2_FMD_acceptance);
-	 
-	 
-	 fh2_FMD_eta_phi=new TH2D("fh2_FMD_eta_phi","fh2_FMD_eta_phi",200,-4,6,20,0,2*TMath::Pi());
-	 fOutputList2->Add(fh2_FMD_eta_phi);
-
-	 fh2_FMD_eta_phi_aftercut=new TH2D("fh2_FMD_eta_phi_aftercut","fh2_FMD_eta_phi_aftercut",200,-4,6,20,0,2*TMath::Pi());
-	 fOutputList2->Add(fh2_FMD_eta_phi_aftercut);
-	 
-	 if(fCentType!="Manual")fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,15,binning_cent);
-	 else fhistfmdphiacc=new TH2D("fhistfmdphiacc","fhistfmdphiacc",200,-4,6,20,0,200);
-	 fOutputList2->Add(fhistfmdphiacc);
-	 
-	 fhFMDmultchannel=new TH2F("fhFMDmultchannel","fhFMDmultchannel",200,-4,6,100,0,100);
-	 fOutputList2->Add(fhFMDmultchannel);
-	 
-	 for(Int_t i=0;i<31;i++){
-	   fhFMDmult_runbyrun_cside[i]=new TH2D(Form("fhFMDmult_runbyrun_cside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
-	   //     fOutputList2->Add(fhFMDmult_runbyrun_cside[i]);
+   const Int_t iitsbin[4]={200,20,20,40};
+   Double_t MinITS[4];//={-4,0.,0.,-10.};
+   MinITS[0]=-4.;
+   MinITS[1]=0.;
+   MinITS[2]=0.;
+   MinITS[3]=-10.;
+   
+   Double_t MaxITS[4];
+   MaxITS[0]=6.;
+   MaxITS[1]=2*TMath::Pi();
+   MaxITS[2]=100.;
+   MaxITS[3]=10.;
+   fhistits=new THnSparseF("fhistits","fhistits",4,iitsbin,MinITS,MaxITS);
+   //   fOutputList2->Add(fhistits);
+   
+   const Double_t binning_etafmd[51]={
+	 -3.4,-3.3,-3.2,-3.1,-3.0,
+	 -2.9,-2.8,-2.7,-2.6,-2.5,-2.4,-2.3,-2.2,-2.1,-2.0,
+	 -1.9,-1.8,-1.7,
+	 1.7,1.8,1.9,
+	 2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,
+	 3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,
+	 4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,4.8,4.9};
+   
+   const Int_t binfmdsec[5]={160,50,15,20,10};
+   fhSecFMD= new AliTHn("fhSecFMD","fhSecFMD",2,5,binfmdsec);
+   fhSecFMD->SetBinLimits(0,-4.025,3.975);
+   fhSecFMD->SetBinLimits(1,binning_etafmd);
+   fhSecFMD->SetBinLimits(2,binning_cent);
+   fhSecFMD->SetBinLimits(3,-0.55*TMath::Pi(),1.45*TMath::Pi());
+   fhSecFMD->SetBinLimits(4,binning_zvx);
+   fhSecFMD->SetVarTitle(0,"#Delta#eta");
+   fhSecFMD->SetVarTitle(1,"FMD Eta");
+   fhSecFMD->SetVarTitle(2,"centrality");
+   fhSecFMD->SetVarTitle(3,"#Delta#phi");
+   fhSecFMD->SetVarTitle(4,"z vertex");
+   fOutputList2->Add(fhSecFMD);
+   
+   if(fasso=="PID"){
+	 for(Int_t i=0;i<6;i++){
+	   fHistNsig[i]=new TH2D(Form("fHistNsig_%d",i),Form("HistNsig_%d",i), 160, 0., 8., 600, -30., 30);
+	   fOutputList2->Add(fHistNsig[i]);
+	   fHistNsigcorr[i]=new TH2D(Form("fHistNsigcorr_%d",i),"fHistNsigcorr",500,-10,10,500,-10,10);
+	   fOutputList2->Add(fHistNsigcorr[i]);
 	 }
-	 for(Int_t i=0;i<65;i++){
-	   fhFMDmult_runbyrun_aside[i]=new TH2D(Form("fhFMDmult_runbyrun_aside_%d",i),Form("fhFMDmult_runbyrun_%d",i),200,-0.5,199.5,100,0,100);
-	   //     fOutputList2->Add(fhFMDmult_runbyrun_aside[i]);
-	 }
-
-	 Int_t ncentbinfmd;
-	 if(fCentType=="Manual") ncentbinfmd=20;
-	 else ncentbinfmd=15;
-	 const Int_t ifmdbin[4]={200,20,ncentbinfmd,10};
-	 fhistfmd=new AliTHn("fhistfmd","fhistfmd",1,4,ifmdbin);
-	 fhistfmd->SetBinLimits(0,-4.,6.);
-	 fhistfmd->SetBinLimits(1,0.,2*TMath::Pi());
-	 if(fCentType=="Manual")fhistfmd->SetBinLimits(2,0.,200.);
-	 //	 else fhistfmd->SetBinLimits(2,0.,100.);
-	 else fhistfmd->SetBinLimits(2,binning_cent);
-	 fhistfmd->SetBinLimits(3,-10.,10.);
-	 fhistfmd->SetVarTitle(0,"eta");
-	 fhistfmd->SetVarTitle(1,"phi");
-	 fhistfmd->SetVarTitle(2,"centrality");
-	 fhistfmd->SetVarTitle(3,"vzy");
-	 fOutputList2->Add(fhistfmd);
-	 
-	 const Int_t iitsbin[4]={200,20,20,40};
-	 Double_t MinITS[4];//={-4,0.,0.,-10.};
- 	 MinITS[0]=-4.;
-	 MinITS[1]=0.;
-	 MinITS[2]=0.;
-	 MinITS[3]=-10.;
-	 
-	 Double_t MaxITS[4];
-	 MaxITS[0]=6.;
-	 MaxITS[1]=2*TMath::Pi();
-	 MaxITS[2]=100.;
-	 MaxITS[3]=10.;
-	 fhistits=new THnSparseF("fhistits","fhistits",4,iitsbin,MinITS,MaxITS);
-	 //   fOutputList2->Add(fhistits);
-	 
-	 const Double_t binning_etafmd[51]={
-					    -3.4,-3.3,-3.2,-3.1,-3.0,
-					    -2.9,-2.8,-2.7,-2.6,-2.5,-2.4,-2.3,-2.2,-2.1,-2.0,
-					    -1.9,-1.8,-1.7,
-					    1.7,1.8,1.9,
-					    2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,
-					    3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,
-					    4.0,4.1,4.2,4.3,4.4,4.5,4.6,4.7,4.8,4.9};
-	 
-	 const Int_t binfmdsec[5]={160,50,15,20,10};
-	 fhSecFMD= new AliTHn("fhSecFMD","fhSecFMD",2,5,binfmdsec);
-	 fhSecFMD->SetBinLimits(0,-4.025,3.975);
-	 fhSecFMD->SetBinLimits(1,binning_etafmd);
-	 fhSecFMD->SetBinLimits(2,binning_cent);
-	 fhSecFMD->SetBinLimits(3,-0.55*TMath::Pi(),1.45*TMath::Pi());
-	 fhSecFMD->SetBinLimits(4,binning_zvx);
-	 fhSecFMD->SetVarTitle(0,"#Delta#eta");
-	 fhSecFMD->SetVarTitle(1,"FMD Eta");
-	 fhSecFMD->SetVarTitle(2,"centrality");
-	 fhSecFMD->SetVarTitle(3,"#Delta#phi");
-	 fhSecFMD->SetVarTitle(4,"z vertex");
-	 fOutputList2->Add(fhSecFMD);
-	 
-	 if(fasso=="PID"){
-	   for(Int_t i=0;i<6;i++){
-	     fHistNsig[i]=new TH2D(Form("fHistNsig_%d",i),Form("HistNsig_%d",i), 160, 0., 8., 600, -30., 30);
-	     fOutputList2->Add(fHistNsig[i]);
-	     fHistNsigcorr[i]=new TH2D(Form("fHistNsigcorr_%d",i),"fHistNsigcorr",500,-10,10,500,-10,10);
-	     fOutputList2->Add(fHistNsigcorr[i]);
-	   }
-	 }
-	 
-	 if(fasso=="Phi"){
-	   fHistPhiDTPCNSig = new TH2D("fHistPhiDTPCNSig", "fHistPhiDTPCNSig", 150, 0.,15., 200, -10., 10);
-	   fOutputList2->Add(fHistPhiDTPCNSig);
-	   fHistPhiDTOFNSig = new TH2D("fHistPhiDTOFNSig", "fHistPhiDTOFNSig", 150, 0.,15., 200, -10., 10);
-	   fOutputList2->Add(fHistPhiDTOFNSig);
-	   fHistPhiDTPCTOFNSig = new TH2D("fHistPhiDTPCTOFNSig", "fHistPhiDTPCTOFNSig",150, 0., 15., 200, -10., 10);
-	   fOutputList2->Add(fHistPhiDTPCTOFNSig);
-	 }
-	 Int_t nBins = 400;
-	 Double_t mphiMin = 1.02 - 0.1;
-	 Double_t mphiMax = 1.02 + 0.1;
-	 
-	 Int_t nCentralityBins = 20;
-	 Double_t centBins1[16] = {0.,  1.,  2.,  3.,  4.,  5.,  10., 20.,
-				   30., 40., 50., 60., 70., 80., 90., 100.0};
-	 const Double_t *centralityBins = centBins1;
-
+   }
+   
+   if(fasso=="Phi"){
+	 fHistPhiDTPCNSig = new TH2D("fHistPhiDTPCNSig", "fHistPhiDTPCNSig", 150, 0.,15., 200, -10., 10);
+	 fOutputList2->Add(fHistPhiDTPCNSig);
+	 fHistPhiDTOFNSig = new TH2D("fHistPhiDTOFNSig", "fHistPhiDTOFNSig", 150, 0.,15., 200, -10., 10);
+	 fOutputList2->Add(fHistPhiDTOFNSig);
+	 fHistPhiDTPCTOFNSig = new TH2D("fHistPhiDTPCTOFNSig", "fHistPhiDTPCTOFNSig",150, 0., 15., 200, -10., 10);
+	 fOutputList2->Add(fHistPhiDTPCTOFNSig);
+   }
+   Int_t nBins = 400;
+   Double_t mphiMin = 1.02 - 0.1;
+   Double_t mphiMax = 1.02 + 0.1;
+   
+   Int_t nCentralityBins = 20;
+   Double_t centBins1[16] = {0.,  1.,  2.,  3.,  4.,  5.,  10., 20.,
+							 30., 40., 50., 60., 70., 80., 90., 100.0};
+   const Double_t *centralityBins = centBins1;
+   
    Int_t nPtBinsV0 = 150;
    const Double_t PtBinsV0[12] = {0,   0.5, 0.75, 1.0, 1.5, 2.0,
                                   2.5, 3.0, 3.5,  4.0, 8.0, 15.0};
@@ -1202,28 +1129,28 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        4.712389};
    //multiplicity
    //   const Double_t binning_mult_trig[10]={0,10,15,20,30,40,50,80,110,140};//multiplicity pp and pPb
-   const Double_t binning_mult_trig[]={0,10,15,20,30,40,60,140};//multiplicity pp and pPb
-   const Double_t binning_mult_pp[]={0,10,15,20,30,60,80,110};//multiplicity pp and pPb
-   const Double_t binning_mult_pbpb[]={0,30,60,150,300,1000,1500,2000,2500};//multiplicity pp and pPb
+   const Double_t binning_mult_trig[]={0,10,15,20,30,40,60,140,200};//multiplicity pp and pPb
+   const Double_t binning_mult_pp[]={0,10,15,20,30,60,80,110,200};//multiplicity pp and pPb
+   const Double_t binning_mult_pbpb[]={0,30,60,200,300,1000,1500,2000,2500};//multiplicity PbPb
 
    //centrality
    const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 5., 10.,  20., 30., 40., 50.,60.,70.};
    const Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};//MBpp centrality
-   const Double_t binning_cent_trig[8] = {0., 5.,  10., 20.,40., 60.,70.,100.1};//pPb centrality
+   const Double_t binning_cent_trig[9] = {0., 5.,  10., 20.,40., 60.,70.,80.,100.1};//pPb centrality
    //   const Double_t binning_cent_HMPP[12] = {0., 0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,1.};     
    const Double_t binning_cent_HMPP[8]={0.,0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5};
 
    //centrality bin
    Int_t ncentbin;
    if(fCentType=="Manual") {
-     if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) ncentbin=7;
+     if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) ncentbin=sizeof(binning_mult_pp)/sizeof(Double_t)-1;
      else if(fcollisiontype=="PbPb") ncentbin=8;
-     else ncentbin=7;//sizeof(binning_mult_trig)/sizeof(Double_t)-1;
+     else ncentbin=sizeof(binning_mult_trig)/sizeof(Double_t)-1;
    }else {
      if (fcollisiontype=="PbPb") ncentbin=8;
+	 else if(fcollisiontype=="pPb") ncentbin=sizeof(binning_cent_trig)/sizeof(Double_t)-1;													
      else ncentbin=7;
    }
-     
    
    //triggered
    const Int_t nEvtVars = 2;
@@ -1309,16 +1236,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC")	   netabin=4;
      else    netabin=18;
 
-     /*
-     Int_t ncentbin;
-     if(fCentType=="Manual") {
-       ncentbin=9;
-     }else {
-       if(fcollisiontype=="HMPP") ncentbin=11;
-       else if (fcollisiontype=="PbPb") ncentbin=8;
-       else ncentbin=7;
-     }
-     */
      Int_t ntpcpt;
      if(fptdiff) ntpcpt=8;
      else ntpcpt=1;
@@ -1366,8 +1283,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHistTriggerTrack->SetVarTitle(0, "leading p_{T} GeV/c");
      fHistTriggerTrack->SetVarTitle(1, "centrality");
      fHistTriggerTrack->SetVarTitle(2, "vz(cm)");
-     
-     
+
      fHistTriggerTrackMix = new AliTHn("fHistTriggerTrackMix", "fHistTriggerTrackMix", nCFStepstrig, nEvtVars, iEvtBin);
      fHistTriggerTrackMix->SetBinLimits(0, binning_pt_lead);
      fHistTriggerTrackMix->SetBinLimits(1, binning_cent);
@@ -1391,10 +1307,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    Double_t binning_dphi_vzero[9]={-1.178097,-0.392699,0.392699,1.178097,1.963495,2.748893,3.534291,4.319689,5.105088};
    if(fAnaMode=="TPCTPC") {
      Double_t binning_deta_tpctpc[33] = {-1.6, -1.5,
-					 -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
-					 -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5,
-					 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
-					 1.6};
+										 -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5,
+										 -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5,
+										 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5,
+										 1.6};
      const Double_t binning_cent_tpctpc[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
      const Int_t iTrackBin_TPCTPC[6] = {32, 11, 11, 7, 72, 10};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 6, iTrackBin_TPCTPC);
@@ -1978,10 +1894,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 
   DumpTObjTable("Start analysis");
+  
   AliAnalysisManager *mgr        = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inEvMain = (AliInputEventHandler *)(mgr->GetInputEventHandler());
   if (!inEvMain)    return; 
-
 
   if(fasso!="hadron"){
      fPIDResponse = inEvMain->GetPIDResponse();
@@ -1995,6 +1911,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
   }
 
   fHist_Stat->Fill(0);
+  
   if(fcollisiontype=="HMPPV0") fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,true);  
   if(fcollisiontype=="HMPPSPD") fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultSPD,true);  
   
@@ -2081,6 +1998,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    return;
    }
    */
+  
    //Pile up
    if(fcollisiontype.Contains("MBPP") || fcollisiontype.Contains("HMPP")){
      Bool_t IsNotPileup = kFALSE;
@@ -2094,7 +2012,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      fHist_Stat->Fill(8);
    }
 
-	 
    fHist_Stat->Fill(1);      
 
    AliMultSelection *multSelection =    (AliMultSelection *)fEvent->FindListObject("MultSelection");
@@ -2189,7 +2106,15 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        selectedTracksLeading->SetOwner(kTRUE);
        selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksLeading);
        Int_t nTracks=selectedTracksLeading->GetEntriesFast();
-       lCentrality=nTracks;
+	   Float_t nefficorrTrack=0;
+	   for(Int_t n = 0; n< nTracks; n++){
+		 AliAssociatedTrackYS* track = (AliAssociatedTrackYS*) selectedTracksLeading->At(n);
+		 Float_t corrected_multi=track->Multiplicity();
+		 nefficorrTrack+=corrected_multi;
+	   }
+	   //       lCentrality=nTracks;
+	   lCentrality=nefficorrTrack;
+	   dynamic_cast<TH2F*>(fOutputList->FindObject("fhist_trackeffi"))->Fill(nTracks,nefficorrTrack);
        selectedTracksLeading->Clear();
        delete selectedTracksLeading;
      }else{
@@ -2203,7 +2128,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      poolmax = CentBins[fNCentBins];
      fHist_Stat->Fill(4);
 
-   
      //   fHistCentV0vsTrackletsbefore->Fill(lCentrality,nTracklets);
    
        
@@ -2236,10 +2160,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      fHist_Stat->Fill(12);
    }
    */
+	 
+   dynamic_cast<TH1F*>(fOutputList->FindObject("fHistCentrality_beforecut"))->Fill(lCentrality);
    
-   fHistCentrality_beforecut->Fill(lCentrality);
-   
-   //   fHist_Stat->Fill(5);
    DumpTObjTable("After event selection");
    MakeAna();
       
@@ -2285,9 +2208,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      eta_ave = (eta_min + eta_max) / 2.;
      if(eta_ave>2.8 && eta_ave<5.03) nV0A_hits_fmdacc+=mult_vzero_eq;
      else if(eta_ave>-3.4 && eta_ave<-2.01) nV0C_hits_fmdacc+=mult_vzero_eq;
-     fHist_vzeromult->Fill(imod, mult_vzero);
-     fHist_vzeromultEqweighted->Fill(imod, mult_vzero_eq);
-     fHist2dmult->Fill(imod, mult_vzero_eq, mult_vzero);
+	 dynamic_cast<TH2F*>(fOutputList2->FindObject("fHist_vzeromult"))->Fill(imod, mult_vzero);
+	 dynamic_cast<TH2F*>(fOutputList2->FindObject("fHist_vzeromultEqweighted"))->Fill(imod, mult_vzero_eq);
+	 dynamic_cast<TH3F*>(fOutputList2->FindObject("fHist2dmult"))->Fill(imod, mult_vzero_eq, mult_vzero);
    }
    
    Float_t nFMD_fwd_hits=0;
@@ -2312,31 +2235,28 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    
    for (Int_t iEta = 1; iEta <= nEta; iEta++) {
      Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
-     if (!valid) {
-       continue;
-     }
+     if (!valid) continue;
        Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
        Float_t phiacc=hphiacceptance->GetBinContent(iEta);
-       fhistfmdphiacc->Fill(eta,lCentrality,phiacc);
        for (Int_t iPhi = 1; iPhi <= nPhi; iPhi++) {
-	 // Bin content is most likely number of particles!
-	 Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-	 
-	 Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
-	 fh2_FMD_acceptance->Fill(eta,tPrimaryVtxPosition[2],mostProbableN);
-
-	 if (mostProbableN > 0) {
-	   if(eta>0){
-	     nFMD_fwd_hits+=mostProbableN;
-	     if(2.8<eta && eta<5.03) nFMD_fwdV0acc_hits+=mostProbableN;
-	   }else{
-	     nFMD_bwd_hits+=mostProbableN;
-	     if(-3.4<eta && eta<-2.01) nFMD_bwdV0acc_hits+=mostProbableN;
-	   }
-	   fh2_FMD_eta_phi->Fill(eta,phi,mostProbableN);
-	 }
+		 // Bin content is most likely number of particles!
+		 Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
+		 
+		 Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+		 dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_FMD_acceptance"))->Fill(eta,tPrimaryVtxPosition[2],mostProbableN);
+		 
+		 if (mostProbableN > 0) {
+		   if(eta>0){
+			 nFMD_fwd_hits+=mostProbableN;
+			 if(2.8<eta && eta<5.03) nFMD_fwdV0acc_hits+=mostProbableN;
+		   }else{
+			 nFMD_bwd_hits+=mostProbableN;
+			 if(-3.4<eta && eta<-2.01) nFMD_bwdV0acc_hits+=mostProbableN;
+		   }
+		   dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_FMD_eta_phi"))->Fill(eta,phi,mostProbableN);
+		 }
        }
-     }
+   }
 
    Float_t nV0A_hits = fvzero->GetMTotV0A();
    Float_t nV0C_hits = fvzero->GetMTotV0C();
@@ -2350,17 +2270,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    }       
 
    fHist_Stat->Fill(6);
-   
-   fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
-   fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
-   fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-   
-   fFMDV0same->Fill(nFMD_bwdV0acc_hits + nFMD_fwdV0acc_hits, nV0C_hits_fmdacc + nV0A_hits_fmdacc);
-   fFMDV0Asame->Fill(nFMD_fwdV0acc_hits, nV0A_hits_fmdacc);
-   fFMDV0Csame->Fill(nFMD_bwdV0acc_hits, nV0C_hits_fmdacc);
-   
 
-
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0"))->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0A"))->Fill(nFMD_fwd_hits, nV0A_hits);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0C"))->Fill(nFMD_bwd_hits, nV0C_hits);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0same"))->Fill(nFMD_bwdV0acc_hits + nFMD_fwdV0acc_hits, nV0C_hits_fmdacc + nV0A_hits_fmdacc);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0Asame"))->Fill(nFMD_fwdV0acc_hits, nV0A_hits_fmdacc);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0Csame"))->Fill(nFMD_bwdV0acc_hits, nV0C_hits_fmdacc);
    
    if(fFMDaddcut && (fcollisiontype.Contains("HMPP")||fcollisiontype=="MBPP")){
      if(!HasValidFMDYS(d2Ndetadphi)){
@@ -2373,14 +2289,14 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      fHist_Stat->Fill(11);
    }
    
-   if(fCentType=="Manual")fh2_SPDV0_multcorr->Fill(lCentrality,nV0C_hits+nV0A_hits);
+   if(fCentType=="Manual")dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_SPDV0_multcorr"))->Fill(lCentrality,nV0C_hits+nV0A_hits);
    /*
      fHist_NeventRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()));
      fHist_V0AMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nV0A_hits);
      fHist_V0CMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nV0C_hits);
      fHist_FMDAMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nFMD_fwd_hits);
      fHist_FMDCMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nFMD_bwd_hits);
-     */
+   */
    if(fFMDcut){
      Double_t FMDcutapar0=0.;
      Double_t FMDcutapar1=0.;
@@ -2494,33 +2410,36 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      
      if(fcollisiontype=="PbPb" && fFMDcutmode<16) {
        if ((nV0A_hits_fmdacc + nV0C_hits_fmdacc) < 1.5*(nFMD_fwdV0acc_hits + nFMD_bwdV0acc_hits) - 20) {
-       //       if ((nV0A_hits_fmdacc < FMDcutapar0*nFMD_fwdV0acc_hits-FMDcutapar1)||(nV0C_hits_fmdacc<FMDcutcpar0*nFMD_bwdV0acc_hits-FMDcutcpar1) ){
-	 delete hphiacceptance;
-	 PostData(1, fOutputList);
-	 PostData(2, fOutputList1);
-	 PostData(3, fOutputList2);
-	 return;
+		 //       if ((nV0A_hits_fmdacc < FMDcutapar0*nFMD_fwdV0acc_hits-FMDcutapar1)||(nV0C_hits_fmdacc<FMDcutcpar0*nFMD_bwdV0acc_hits-FMDcutcpar1) ){
+		 delete hphiacceptance;
+		 PostData(1, fOutputList);
+		 PostData(2, fOutputList1);
+		 PostData(3, fOutputList2);
+		 return;
        }
      }
      else{
        if((nV0A_hits<(FMDcutapar0*nFMD_fwd_hits-FMDcutapar1)) || (nV0C_hits<(FMDcutcpar0*nFMD_bwd_hits-FMDcutcpar1)) ){
-	 delete hphiacceptance;
-	 PostData(1, fOutputList);
-	 PostData(2, fOutputList1);
-	 PostData(3, fOutputList2);
-	 return;
+		 delete hphiacceptance;
+		 PostData(1, fOutputList);
+		 PostData(2, fOutputList1);
+		 PostData(3, fOutputList2);
+		 return;
        }
      }
    }
-   fHist_Stat->Fill(7);
-   DumpTObjTable("End of FMD vs V0 cuts");
-   fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
-   fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
-   fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
-   fFMDV0same_post->Fill(nFMD_bwdV0acc_hits + nFMD_fwdV0acc_hits, nV0C_hits_fmdacc + nV0A_hits_fmdacc);
-   fFMDV0Asame_post->Fill(nFMD_fwdV0acc_hits, nV0A_hits_fmdacc);
-   fFMDV0Csame_post->Fill(nFMD_bwdV0acc_hits, nV0C_hits_fmdacc);
    
+   fHist_Stat->Fill(7);
+   
+   DumpTObjTable("End of FMD vs V0 cuts");
+
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0_post"))->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0A_post"))->Fill(nFMD_fwd_hits, nV0A_hits);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0C_post"))->Fill(nFMD_bwd_hits, nV0C_hits);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0same_post"))->Fill(nFMD_bwdV0acc_hits + nFMD_fwdV0acc_hits, nV0C_hits_fmdacc + nV0A_hits_fmdacc);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0Asame_post"))->Fill(nFMD_fwdV0acc_hits, nV0A_hits_fmdacc);
+   dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0Csame_post"))->Fill(nFMD_bwdV0acc_hits, nV0C_hits_fmdacc);
+
    TObjArray *selectedTracksLeading = new TObjArray;
    selectedTracksLeading->SetOwner(kTRUE);
    TObjArray *selectedTracksAssociated = new TObjArray;
@@ -2528,9 +2447,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
    
    for (Int_t iEta = 1; iEta <= nEta; iEta++) {
      Int_t valid = Int_t(d2Ndetadphi.GetBinContent(iEta, 0));
-     if (!valid) {
-       continue;
-     }
+     if (!valid)  continue;
      Float_t eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
      Float_t phiacc=hphiacceptance->GetBinContent(iEta);
      fhistfmdphiacc->Fill(eta,lCentrality,phiacc);
@@ -2540,33 +2457,34 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        
        Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
        if(fmakehole){
-	 if((eta>-2.9 && eta<-2.7) && (5*2*TMath::Pi()/20.<phi && 7*2*TMath::Pi()/20.>phi)) continue;
-	 if((eta>-2.7 && eta<-2.5) && (1*2*TMath::Pi()/20.<phi && 2*2*TMath::Pi()/20.>phi)) continue;
-	 if((eta>-2.1 && eta<-1.9) && (17*2*TMath::Pi()/20.<phi && 20*2*TMath::Pi()/20.>phi)) continue;
+		 if((eta>-2.9 && eta<-2.7) && (5*2*TMath::Pi()/20.<phi && 7*2*TMath::Pi()/20.>phi)) continue;
+		 if((eta>-2.7 && eta<-2.5) && (1*2*TMath::Pi()/20.<phi && 2*2*TMath::Pi()/20.>phi)) continue;
+		 if((eta>-2.1 && eta<-1.9) && (17*2*TMath::Pi()/20.<phi && 20*2*TMath::Pi()/20.>phi)) continue;
        }
        
        if (mostProbableN > 0) {
-	 if(eta>0){
-	   Int_t nfmdetabin1=frefetaa->FindBin(eta);
-	   if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));			
-	   else if(fAnaMode=="FMDFMD") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
-	   else if(fAnaMode=="FMDFMD_Ctrig")	       selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));			
-	   
-	 }else if(eta<0){
-	     Int_t nfmdetabin=frefetac->FindBin(eta);
-	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
-	     else if(fAnaMode=="FMDFMD_Ctrig") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
-	 }
-	 fhFMDmultchannel->Fill(eta,mostProbableN);
-	 
-	 Double_t cont[4]={eta,phi,lCentrality,fPrimaryZVtx};
-	 fhistfmd->Fill(cont,0,mostProbableN);
-	 fh2_FMD_eta_phi_aftercut->Fill(eta,phi,mostProbableN);
+		 if(eta>0){
+		   Int_t nfmdetabin1=frefetaa->FindBin(eta);
+		   if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	 
+		   else if(fAnaMode=="FMDFMD") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
+		   else if(fAnaMode=="FMDFMD_Ctrig") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));		
+		 }else if(eta<0){
+		   Int_t nfmdetabin=frefetac->FindBin(eta);
+		   if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
+		   else if(fAnaMode=="FMDFMD_Ctrig") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
+		 }
+		 dynamic_cast<TH2F*>(fOutputList2->FindObject("fhFMDmultchannel"))->Fill(eta,mostProbableN);
+		 
+		 Double_t cont[4]={eta,phi,lCentrality,fPrimaryZVtx};
+		 dynamic_cast<AliTHn*>(fOutputList2->FindObject("fhistfmd"))->Fill(cont,0,mostProbableN);
+		 dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_FMD_eta_phi_aftercut"))->Fill(eta,phi,mostProbableN);
        }
      }
    }
    
    if(hphiacceptance) delete hphiacceptance;
+
+
 
    Double_t vzeroqa[3];
    for (Int_t imod = 0; imod < 64; imod++) {
@@ -2579,17 +2497,18 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      vzeroqa[0] = eta_ave;
      vzeroqa[1] = phi_vzero;
      vzeroqa[2] = lCentrality;
-     fHistVZERO->Fill(vzeroqa, 0, (Double_t)mult_vzero_eq);
+     dynamic_cast<AliTHn*>(fOutputList2->FindObject("fHistVZERO"))->Fill(vzeroqa, 0, (Double_t)mult_vzero_eq);
    }
-
-   
    
    DumpTObjTable("End of fill fmd tracks");
    
-   fHistCentrality->Fill(lCentrality);
-   fHistzvertex->Fill(tPrimaryVtxPosition[2]);
-   fHistCentzvertex->Fill(lCentrality, tPrimaryVtxPosition[2]);
-   fHistCentvsNv0mult->Fill(lCentrality,nV0A_hits+nV0C_hits);
+   dynamic_cast<TH1F*>(fOutputList->FindObject("fHistCentrality"))->Fill(lCentrality);
+   dynamic_cast<TH1F*>(fOutputList->FindObject("fHistzvertex"))->Fill(tPrimaryVtxPosition[2]);
+   dynamic_cast<TH2F*>(fOutputList->FindObject("fHistCentzvertex"))->Fill(lCentrality, tPrimaryVtxPosition[2]);
+   Float_t ncent_mult;
+   if(fcollisiontype=="pPb") ncent_mult=nV0A_hits;
+   else ncent_mult=nV0A_hits+nV0C_hits;
+   dynamic_cast<TH2F*>(fOutputList->FindObject("fHistCentvsNv0mult"))->Fill(lCentrality,ncent_mult);
    
    if(fAnaMode=="TPCTPC"){
      if(fasso=="hadron") selectedTracksAssociated=GetAcceptedTracksLeading(fEvent,kFALSE,selectedTracksAssociated);
@@ -2598,84 +2517,80 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
      else if (fasso == "PID")    selectedTracksAssociated = GetAcceptedTracksPID(fEvent);
      else if (fasso == "Cascade")    selectedTracksAssociated = GetAcceptedCascadeTracks(fEvent);
    }
+
    // Leading Particle
    if(fAnaMode=="TPCFMD" || fAnaMode=="TPCTPC" || fAnaMode=="TPCFMDC"){
      selectedTracksLeading=GetAcceptedTracksLeading(fEvent,kTRUE,selectedTracksLeading);
-     }else if(fAnaMode=="ITSFMD" || fAnaMode=="ITSFMDC"){
-       //   AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
-       //    if (!tracklets) return;
-       //   Int_t nTracklets = tracklets->GetNumberOfTracklets();
+   }else if(fAnaMode=="ITSFMD" || fAnaMode=="ITSFMDC"){
+	 //   AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
+	 //    if (!tracklets) return;
+	 //   Int_t nTracklets = tracklets->GetNumberOfTracklets();
      AliVMultiplicity *tracklets = ((AliAODEvent*)fEvent)->GetTracklets();
      if (!tracklets) return;
      Int_t nTracklets = tracklets->GetNumberOfTracklets();
      
      Int_t nITScluster= tracklets->GetNumberOfITSClusters(0)+tracklets->GetNumberOfITSClusters(1);
      Int_t nTracks = fEvent->GetNumberOfTracks();
-
+	 
      //     fh2_SPD_multcorr->Fill(nTracklets,nITScluster);
      //     fh2_SPDV0_multcorr->Fill(nTracklets,fvzero->GetMTotV0A()+fvzero->GetMTotV0C());
      
      fh2_SPDtrack_multcorr->Fill(nTracklets,nTracks);
      
-       for (Int_t i = 0; i < nTracklets; i++) {
-	 Double_t dphi  = tracklets->GetDeltaPhi(i);
-	 
-	 fhtrackletsdphi->Fill(1000*dphi);
-	 
-	 if (TMath::Abs(dphi) * 1000 > 5.) {
-	   continue;
+	 for (Int_t i = 0; i < nTracklets; i++) {
+	   Double_t dphi  = tracklets->GetDeltaPhi(i);
+	   
+	   dynamic_cast<TH1F*>(fOutputList2->FindObject("fhtrackletsdphi"))->Fill(1000*dphi);
+	   
+	   if (TMath::Abs(dphi) * 1000 > 5.) continue;
+	   		 
+		 Double_t theta = tracklets->GetTheta(i);
+		 Double_t etaits   = -TMath::Log(TMath::Tan(theta/2));
+		 
+		 Double_t etalow=log(7.6)-log(sqrt((-13.8-fPrimaryZVtx)*(-13.8-fPrimaryZVtx)+7.6*7.6)-(-13.8-fPrimaryZVtx));
+		 Double_t etahigh=log(7.6)-log(sqrt((14.4-fPrimaryZVtx)*(14.4-fPrimaryZVtx)+7.6*7.6)-(14.4-fPrimaryZVtx));
+		 
+		 if(etaits<etalow || etaits>etahigh) continue;
+		 
+		 if (etaits < -1.7 || etaits > 1.7) continue;
+   	 
+		 Double_t phiits   = tracklets->GetPhi(i);
+		 phiits+=dphi*39./34.;//same value as Cvetan's analysis
+		 if (phiits<0) phiits+=TMath::TwoPi();
+		 if (phiits>TMath::TwoPi()) phiits-=TMath::TwoPi();
+		 
+		 dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_ITS_acceptance"))->Fill(tPrimaryVtxPosition[2],etaits);
+		 Double_t itsqa[4]={etaits,phiits,lCentrality,tPrimaryVtxPosition[2]};
+		 //     fhistits->Fill(itsqa);
+		 selectedTracksLeading->Add(new AliAssociatedTrackYS(-999, etaits, phiits, -999, 0, -999,-999, 0, 1));
 	 }
-	 
-	 Double_t theta = tracklets->GetTheta(i);
-	 Double_t etaits   = -TMath::Log(TMath::Tan(theta/2));
-	 
-	 Double_t etalow=log(7.6)-log(sqrt((-13.8-fPrimaryZVtx)*(-13.8-fPrimaryZVtx)+7.6*7.6)-(-13.8-fPrimaryZVtx));
-	 Double_t etahigh=log(7.6)-log(sqrt((14.4-fPrimaryZVtx)*(14.4-fPrimaryZVtx)+7.6*7.6)-(14.4-fPrimaryZVtx));
-	 
-	 if(etaits<etalow || etaits>etahigh) continue;
-	 
-	 if (etaits < -1.7 || etaits > 1.7) {
-	   continue;
-	 }
-	 
-	 Double_t phiits   = tracklets->GetPhi(i);
-	 phiits+=dphi*39./34.;//same value as Cvetan's analysis
-	 if (phiits<0) phiits+=TMath::TwoPi();
-	 if (phiits>TMath::TwoPi()) phiits-=TMath::TwoPi();
-	 
-	 fh2_ITS_acceptance->Fill(tPrimaryVtxPosition[2],etaits);
-	 Double_t itsqa[4]={etaits,phiits,lCentrality,tPrimaryVtxPosition[2]};
-	 //     fhistits->Fill(itsqa);
-	 selectedTracksLeading->Add(new AliAssociatedTrackYS(-999, etaits, phiits, -999, 0, -999,-999, 0, 1));
-       }
-     }
+   }
+					   
+   Int_t nTracks;
+   if(fAnaMode!="FMDFMD") {
+	 nTracks=selectedTracksLeading->GetEntriesFast();
+	 //    else  nTracks= fEvent->GetNumberOfTracks();
+	 dynamic_cast<TH2F*>(fOutputList->FindObject("fHistCentV0vsTracklets"))->Fill(lCentrality,nTracks);
+	 dynamic_cast<TH2F*>(fOutputList->FindObject("fHistV0vsTracks"))->Fill(nV0C_hits+nV0A_hits,nTracks);
+	 dynamic_cast<TH2F*>(fOutputList->FindObject("fHistTracksvsVz"))->Fill(fPrimaryZVtx,nTracks);
+	 dynamic_cast<TH2F*>(fOutputList->FindObject("fHistV0multvsVz"))->Fill(fPrimaryZVtx,nV0C_hits+nV0A_hits);
+   }
    
-     Int_t nTracks;
-     if(fAnaMode!="FMDFMD") {
-       nTracks=selectedTracksLeading->GetEntriesFast();
-       //    else  nTracks= fEvent->GetNumberOfTracks();
-       fHistCentV0vsTracklets->Fill(lCentrality,nTracks);
-       fHistV0vsTracks->Fill(nV0C_hits+nV0A_hits,nTracks);
-       fHistTraksvsVz->Fill(fPrimaryZVtx,nTracks);
-       fHistV0multvsVz->Fill(fPrimaryZVtx,nV0C_hits+nV0A_hits);
-     }
-     
-     DumpTObjTable("End of TPC/ITS track fill");
+   DumpTObjTable("End of TPC/ITS track fill");
    
-     if(ffillcorrelation){
-       FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+   if(ffillcorrelation){
+	 FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
      FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
-     }
-
-     
-     DumpTObjTable("End of fill  Correlation");
-     
-     selectedTracksLeading->Clear();
-     delete selectedTracksLeading;
-     selectedTracksAssociated->Clear();
-     delete selectedTracksAssociated;
-     DumpTObjTable("after delete TObjects");
-     fNEntries++;
+   }
+   
+   DumpTObjTable("End of fill  Correlation");
+   
+   selectedTracksLeading->Clear();
+   delete selectedTracksLeading;
+   selectedTracksAssociated->Clear();
+   delete selectedTracksAssociated;
+   DumpTObjTable("after delete TObjects");
+   fNEntries++;
  }
 
 TObjArray* AliAnalysisTaskSEpPbCorrelationsYS::GetFMDhitsYS(Bool_t Aside){
@@ -2708,9 +2623,9 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsYS::GetFMDhitsYS(Bool_t Aside){
 	  }
 	  tracks1->Add(new AliAssociatedVZEROYS(mostProbableN,eta,phi,0,0,0));
 	  Double_t cont[3]={eta,phi,lCentrality};
-	  fhistfmd->Fill(cont,0,mostProbableN);
-	  fh2_FMD_acceptance->Fill(eta,tPrimaryVtxPosition[2]);
-	  fh2_FMD_eta_phi->Fill(eta,phi,mostProbableN);
+	  //	  fhistfmd->Fill(cont,0,mostProbableN);
+	  //	  fh2_FMD_acceptance->Fill(eta,tPrimaryVtxPosition[2]);
+	  //	  fh2_FMD_eta_phi->Fill(eta,phi,mostProbableN);
 	}
       }
     }
@@ -2991,15 +2906,16 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
     Float_t efficiencyerr=-1;
     Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
     if(fefficalib){
-      Int_t iPt=fhcorr[ivzbin-1]->GetXaxis()->FindBin(trackpt);
-      Int_t iEta=fhcorr[ivzbin-1]->GetYaxis()->FindBin(tracketa);
-      //      Int_t iPhi=fhcorr[ivzbin-1]->GetZaxis()->FindBin(trackphi);
-      //      efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta,iPhi);
-      efficiency=fhcorr[ivzbin-1]->GetBinContent(iPt,iEta);
-      efficiencyerr=fhcorr[ivzbin-1]->GetBinError(iPt,iEta);
-      if(efficiency==0.) {
-	return 0;
-      }
+	  if(calibmode){
+		Int_t iPt=fheffipteta->GetXaxis()->FindBin(trackpt);
+		Int_t iEta=fheffipteta->GetYaxis()->FindBin(tracketa);
+		efficiency=fheffipteta->GetBinContent(iPt,iEta);
+		efficiencyerr=fheffipteta->GetBinError(iPt,iEta);
+		if(efficiency==0.) return 0;
+	  }else{
+		  Int_t iPt=fheffipt->GetXaxis()->FindBin(trackpt);
+		  efficiency=fheffipt->GetBinContent(iPt);
+	  }
     }else{
       efficiency=1.;
     }
@@ -3011,6 +2927,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedTracksLeading(AliAODEv
       pidqa[3]=lCentrality;
       pidqa[4]=fPrimaryZVtx;
       fHistLeadQA->Fill(pidqa,0,1./efficiency);
+	  dynamic_cast<TH2F*>(fOutputList1->FindObject("fHistptreco"))->Fill(trackpt,lCentrality,1./efficiency);
     }
     Int_t SpAsso=0;
     tracks->Add(new AliAssociatedTrackYS(aodTrack->Charge(), tracketa, trackphi, trackpt, aodTrack->GetID(), -999, -999, SpAsso, 1./efficiency));
@@ -3350,9 +3267,9 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
       AliError(Form("ERROR: Could not retrieve aodv0 %d", iv0));
       continue;
     }
-    fHist_V0Stat->Fill(0);
+
     if(!IsAcceptedV0(aodv0)) continue;
-    fHist_V0Stat->Fill(7);
+
     // c*taup;ppp;
     const Double_t kLambdaMass =  TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     const Double_t kK0Mass = TDatabasePDG::Instance()->GetParticle(311)->Mass();
@@ -3391,7 +3308,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
 
     Double_t alpha=aodv0->AlphaV0();
     Double_t qt = aodv0->PtArmV0();
-    fHist_V0Stat->Fill(8);
+
     if ((myTrackPosTest->Charge() == 1) && (myTrackNegTest->Charge() == -1)) {
       hv0dcharge->Fill(0);
       myTrackPos = myTrackPosTest;
@@ -3411,7 +3328,7 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
     }
 
     fHist_AP[0]->Fill(alpha,qt);
-    fHist_V0Stat->Fill(9);
+
     // PID Cut
     // Positive tracks
     Double_t nSigmaPosPionTPC   =  fPIDResponse->NumberOfSigmasTPC(myTrackPos, AliPID::kPion);
@@ -3519,17 +3436,15 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsYS::GetAcceptedV0Tracks(const AliAODE
     Bool_t cutMassK0 = (lInvMassK0 > 0.4) && (lInvMassK0 < 0.6);
 
     if(cutK0Pid){
-      fHist_V0Stat->Fill(10);
+
       if(cutK0ctau){
-        fHist_V0Stat->Fill(11);
-        if(k0APcut&&kGammaconvcut)  fHist_V0Stat->Fill(12);
+
+		//        if(k0APcut&&kGammaconvcut)  fHist_V0Stat->Fill(12);
       }
     }
     if(cutLambdaPid){
-      fHist_V0Stat->Fill(13);
       if(cutLambdactau){
-        fHist_V0Stat->Fill(14);
-        if(!k0APcut&&kGammaconvcut) fHist_V0Stat->Fill(15);
+		//        if(!k0APcut&&kGammaconvcut) fHist_V0Stat->Fill(15);
       }
     }
     /*
@@ -4087,8 +4002,8 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedV0(const AliAODv0 *aodV0) {
     V0 2D decay radius from 0.5cm to 200cm
   */
   if (!aodV0)  return kFALSE;
-  if(aodV0->GetOnFlyStatus()) fHist_V0Stat->Fill(1); //Onfly
-  else fHist_V0Stat->Fill(2); //Onfly
+  //  if(aodV0->GetOnFlyStatus()) fHist_V0Stat->Fill(1); //Onfly
+  //  else fHist_V0Stat->Fill(2); //Onfly
     if (fOnfly) {
       if (!aodV0->GetOnFlyStatus()) return kFALSE; // onfly reconstraction only
     } else {
@@ -4097,23 +4012,23 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedV0(const AliAODv0 *aodV0) {
   Double_t leta_v0 = aodV0->PseudoRapV0();
   if (TMath::Abs(leta_v0) > 0.8)  return kFALSE; // default 0.8
   //  if (leta_v0 < fEtaMinV0 || fEtaMaxV0<leta_v0)  return kFALSE; // default 0.8
-  else fHist_V0Stat->Fill(3);
+  //  else fHist_V0Stat->Fill(3);
 
   // DCA to primary vertex
   Float_t xyn = aodV0->DcaNegToPrimVertex();
   Float_t xyp = aodV0->DcaPosToPrimVertex();
-  if ((TMath::Abs(xyn) > fdcaDaughtersToPrimVtx)  || (TMath::Abs(xyp) > fdcaDaughtersToPrimVtx))  fHist_V0Stat->Fill(4);
+  //  if ((TMath::Abs(xyn) > fdcaDaughtersToPrimVtx)  || (TMath::Abs(xyp) > fdcaDaughtersToPrimVtx))  fHist_V0Stat->Fill(4);
   if (TMath::Abs(xyn) < fdcaDaughtersToPrimVtx)    return kFALSE; // default  0.06
   if (TMath::Abs(xyp) < fdcaDaughtersToPrimVtx)    return kFALSE; // default  0.06
   // DCA between dauther tracks
   Double_t dca = aodV0->DcaV0Daughters();
   if (dca > fdcaBetweenDaughters)  return kFALSE; // default 1.0
-  else 	 fHist_V0Stat->Fill(5);
+  //  else 	 fHist_V0Stat->Fill(5);
   // Fiducial volume
   Double_t xyz[3];
   aodV0->GetSecondaryVtx(xyz);
   Double_t r2 = xyz[0] * xyz[0] + xyz[1] * xyz[1];
-  if (r2 > fRadiMin * fRadiMin && r2 < fRadiMax * fRadiMax)  	 fHist_V0Stat->Fill(6);
+  //  if (r2 > fRadiMin * fRadiMin && r2 < fRadiMax * fRadiMax)  	 fHist_V0Stat->Fill(6);
   if (r2 < fRadiMin * fRadiMin)    return kFALSE; // default 0.5 cm
   if (r2 > fRadiMax * fRadiMax)    return kFALSE; // default 100cm
 

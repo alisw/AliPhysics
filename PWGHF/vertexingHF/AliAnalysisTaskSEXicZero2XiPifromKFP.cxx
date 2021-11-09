@@ -391,6 +391,10 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fHistMCpdg_All(0),
   fHistMCpdg_Dau_XicZero(0),
   fHistMCpdg_Dau_XicPM(0),
+  fHistPt_OmegaNotFromOmegac0_Rec(0),
+  fHistPt_OmegaNotFromOmegac0_Gen(0),
+  f2DHist_YvsPt_OmegaNotFromOmegac0_Rec(0),
+  f2DHist_YvsPt_OmegaNotFromOmegac0_Gen(0),
   fWriteXic0Tree(kFALSE),
   fWriteXic0MCGenTree(kFALSE)
 {
@@ -707,6 +711,10 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fHistMCpdg_All(0),
   fHistMCpdg_Dau_XicZero(0),
   fHistMCpdg_Dau_XicPM(0),
+  fHistPt_OmegaNotFromOmegac0_Rec(0),
+  fHistPt_OmegaNotFromOmegac0_Gen(0),
+  f2DHist_YvsPt_OmegaNotFromOmegac0_Rec(0),
+  f2DHist_YvsPt_OmegaNotFromOmegac0_Gen(0),
   fWriteXic0Tree(kFALSE),
   fWriteXic0MCGenTree(kFALSE)
 {
@@ -722,6 +730,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   DefineOutput(3, TTree::Class()); // event
   DefineOutput(4, TTree::Class()); // Xic0
   DefineOutput(5, TTree::Class()); // Xic0 MCGen
+  DefineOutput(6, TList::Class()); // Omega hist
 
 }
 //_____________________________________________________________________________
@@ -1254,8 +1263,18 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   fHistPVz              = new TH1F("fHistPVz", "fHistPVz", 400, -20., 20.);
   fHCentrality          = new TH1F("fHCentrality", "counter", 100, 0., 100.);
 
+  fHistPt_OmegaNotFromOmegac0_Rec = new TH1F("fHistPt_OmegaNotFromOmegac0_Rec", "fHistPt_OmegaNotFromOmegac0_Rec", 12, 0., 12.);
+  fHistPt_OmegaNotFromOmegac0_Gen = new TH1F("fHistPt_OmegaNotFromOmegac0_Gen", "fHistPt_OmegaNotFromOmegac0_Gen", 12, 0., 12.);
+  f2DHist_YvsPt_OmegaNotFromOmegac0_Rec = new TH2F ("f2DHist_YvsPt_OmegaNotFromOmegac0_Rec", "#Omega: Y vs. p_{T}", 12, 0., 12., 200, -10., 10.);
+  f2DHist_YvsPt_OmegaNotFromOmegac0_Gen = new TH2F ("f2DHist_YvsPt_OmegaNotFromOmegac0_Gen", "#Omega: Y vs. p_{T}", 12, 0., 12., 200, -10., 10.);
+
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file, so if you want
+  fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Rec);
+  fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Gen);
+  fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Rec);
+  fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Gen);
+  /*
   fOutputList->Add(fHTrigger);
   fOutputList->Add(fCounterGen_Cuts_Lambda);
   fOutputList->Add(fCounterGen_Cuts_AntiLambda);
@@ -1274,7 +1293,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   fOutputList->Add(fHistMassLambda_M);
   fOutputList->Add(fHistMassXiPlus_M);
   fOutputList->Add(fHistMassK0S);
-  /*
+
   fOutputList->Add(fGenHistRapidity_Lambda);
   fOutputList->Add(fRecHistRapidity_Lambda_offline);
   fOutputList->Add(fRecHistRapidity_Lambda_wSTD);
@@ -1564,6 +1583,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
 
   DefineTreeGenXic0();
   PostData(5, fTree_Xic0MCGen);
+  PostData(6, fOutputList);
 
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -1780,6 +1800,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
                                                         // it to a file
   PostData(4, fTree_Xic0);
   PostData(5, fTree_Xic0MCGen);
+  PostData(6, fOutputList);
 
   return;
 }
@@ -1879,6 +1900,40 @@ Bool_t AliAnalysisTaskSEXicZero2XiPifromKFP::MakeMCAnalysis(TClonesArray *mcArra
 
 //    if ( mcpart->GetNDaughters() != NDaughters ) continue;
 
+    // ======================================= Omega =================================================
+    if (fIsAnaOmegac0 && TMath::Abs(mcpart->GetPdgCode())==3334 && mcpart->GetNDaughters()==NDaughters) {
+      Int_t Lable_CascMother = mcpart->GetMother();
+      if (Lable_CascMother>=0) {
+        AliAODMCParticle *mothercasc = (AliAODMCParticle*)mcArray->At(Lable_CascMother);
+        if (mothercasc) {
+          if ( abs(mothercasc->GetPdgCode()) == 4332 ) continue;
+          Bool_t Kaon_flag = kFALSE;
+          Bool_t Lambda_flag = kFALSE;
+          Bool_t pifromLam_flag = kFALSE;
+          Bool_t prfromLam_flag = kFALSE;
+          for( Int_t idau=mcpart->GetDaughterFirst();idau<=mcpart->GetDaughterLast();idau++) {
+            if(idau<0) break;
+            AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
+            if(TMath::Abs(mcdau->GetPdgCode())==321) Kaon_flag = kTRUE;
+            if(TMath::Abs(mcdau->GetPdgCode())==3122) { // Lambda
+              Lambda_flag = kTRUE;
+              if(mcdau->GetNDaughters()==NDaughters) {
+                for(Int_t jdau=mcdau->GetDaughterFirst();jdau<=mcdau->GetDaughterLast();jdau++) {
+                  if (jdau<0) break;
+                  AliAODMCParticle *mcdau_Lam = (AliAODMCParticle*) mcArray->At(jdau);
+                  if(TMath::Abs(mcdau_Lam->GetPdgCode())==211) pifromLam_flag = kTRUE;
+                  if(TMath::Abs(mcdau_Lam->GetPdgCode())==2212) prfromLam_flag = kTRUE;
+                }
+              }
+            }
+          }
+          if (Kaon_flag && Lambda_flag && pifromLam_flag & prfromLam_flag) {
+            f2DHist_YvsPt_OmegaNotFromOmegac0_Gen->Fill(mcpart->Pt(), mcpart->Y());
+            if (fabs(mcpart->Y())<0.8) fHistPt_OmegaNotFromOmegac0_Gen->Fill(mcpart->Pt());
+          }
+        }
+      }
+    }
 
     // ======================================= Omegac0 =================================================
     if ( fIsAnaOmegac0 && TMath::Abs(mcpart->GetPdgCode())==4332 && mcpart->GetNDaughters()==NDaughters ) { // 4332: Omegac0
@@ -3672,6 +3727,18 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
       ntrack = (AliAODTrack*) (casc->GetDaughter(0));
     }
 
+    // === Check Omega efficiency (20211014) ===
+    if (fIsMC) {
+      Int_t lab_OmegaMother = -9999;
+      if (btrack->Charge()<0) lab_OmegaMother = MatchToMCOmegaMinus(ptrack, ntrack, btrack, mcArray);
+      if (btrack->Charge()>0) lab_OmegaMother = MatchToMCOmegaPlus(ntrack, ptrack, btrack, mcArray);
+      if (lab_OmegaMother>0 && lab_OmegaMother!=4332) {
+        f2DHist_YvsPt_OmegaNotFromOmegac0_Rec->Fill(casc->Pt(), casc->RapOmega());
+        if (fabs(casc->RapOmega())<0.8) fHistPt_OmegaNotFromOmegac0_Rec->Fill(casc->Pt());
+      }
+    }
+    // ==============================
+
     if ( !ptrack->GetCovarianceXYZPxPyPz(covP) || !ntrack->GetCovarianceXYZPxPyPz(covN) || !btrack->GetCovarianceXYZPxPyPz(covB) ) continue;
 
     if ( !AliVertexingHFUtils::CheckAODtrackCov(ptrack) || !AliVertexingHFUtils::CheckAODtrackCov(ntrack) || !AliVertexingHFUtils::CheckAODtrackCov(btrack) ) continue;
@@ -3811,15 +3878,44 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
            if (fIsMC) {
              if (!fIsAnaOmegac0) lab_Xic0 = MatchToMCXic0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
              if (fIsAnaOmegac0) lab_Xic0  = MatchToMCOmegac0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
-             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
+             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
            if (!fIsMC) {
-             FillTreeRecXic0FromCasc(kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
+             FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
          }
          kfpXic0.Clear();
          kfpBP.Clear();
       } // Loop for first bachelor pion+
+      // ----------------- Like-sign pairs -----------------
+      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkN; itrkBP_LS++) {
+        if ( trackN[itrkBP_LS]->GetID()==ntrack->GetID() || trackN[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_LS]) ) continue;
+        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_LS], -211);
+        // reconstruct Xic0 bkg (Like-sign pairs)
+        KFParticle kfpXic0_LS;
+        const KFParticle *vXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiMinus_m};
+        kfpXic0_LS.Construct(vXic0Ds_LS, NDaughters);
+        // chi2>0 && NDF>0
+        if ( kfpXic0_LS.GetNDF()<=0 || kfpXic0_LS.GetChi2()<=0 ) continue;
+        // Prefilter
+        if ( kfpXic0_LS.GetChi2()/kfpXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+        if ( kfpXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+        // check rapidity of Xic0
+        if ( TMath::Abs(kfpXic0_LS.GetE())<=TMath::Abs(kfpXic0_LS.GetPz()) ) continue;
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0_LS) ) continue;
+        // err_massXic0 > 0
+        Float_t massXic0_LS_Rec, err_massXic0_LS;
+        kfpXic0_LS.GetMass(massXic0_LS_Rec, err_massXic0_LS);
+        if ( err_massXic0_LS<=0 ) continue;
+        if (fWriteXic0Tree) {
+          Int_t lab_Xic0_LS = -9999;
+          FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS);
+        }
+        kfpXic0_LS.Clear();
+        kfpBP_LS.Clear();
+      }
       kfpXiMinus_m.Clear();
       kfpXiMinus.Clear();
       kfpPionOrKaon.Clear();
@@ -3943,15 +4039,44 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
           if (fIsMC) {
             if (!fIsAnaOmegac0) lab_AntiXic0 = MatchToMCAntiXic0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
             if (fIsAnaOmegac0)  lab_AntiXic0 = MatchToMCAntiOmegac0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
-            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
+            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
           if (!fIsMC) {
-            FillTreeRecXic0FromCasc(kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
+            FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
         }
         kfpAntiXic0.Clear();
         kfpBP.Clear();
       } // Loop for first bachelor pion-
+      // ----------------- Like-sign pairs -----------------
+      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkP; itrkBP_LS++) {
+        if ( trackP[itrkBP_LS]->GetID()==ptrack->GetID() || trackP[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_LS]) ) continue;
+        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_LS], 211);
+        // reconstruct Anti-Xic0 bkg (Like-sign pairs)
+        KFParticle kfpAntiXic0_LS;
+        const KFParticle *vAntiXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiPlus_m};
+        kfpAntiXic0_LS.Construct(vAntiXic0Ds_LS, NDaughters);
+        // chi2>0 && NDF>0
+        if ( kfpAntiXic0_LS.GetNDF()<=0 || kfpAntiXic0_LS.GetChi2()<=0 ) continue;
+        // Prefilter
+        if ( kfpAntiXic0_LS.GetChi2()/kfpAntiXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+        if ( kfpAntiXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+        // check rapidity of Xic0
+        if ( TMath::Abs(kfpAntiXic0_LS.GetE())<=TMath::Abs(kfpAntiXic0_LS.GetPz()) ) continue;
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0_LS) ) continue;
+        // err_massXic0 > 0
+        Float_t massAntiXic0_LS_Rec, err_massAntiXic0_LS;
+        kfpAntiXic0_LS.GetMass(massAntiXic0_LS_Rec, err_massAntiXic0_LS);
+        if ( err_massAntiXic0_LS<=0 ) continue;
+        if (fWriteXic0Tree) {
+          Int_t lab_AntiXic0_LS = -9999;
+          FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS);
+        }
+        kfpAntiXic0_LS.Clear();
+        kfpBP_LS.Clear();
+      }
       kfpXiPlus_m.Clear();
       kfpXiPlus.Clear();
       kfpPionOrKaon.Clear();
@@ -4212,6 +4337,82 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::SelectTrack(AliVEvent *event, Int_t t
     }
 */
   } // end loop on tracks
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskSEXicZero2XiPifromKFP::MatchToMCOmegaMinus(AliAODTrack *trackProton, AliAODTrack *trackPion, AliAODTrack *trackKaon, TClonesArray *mcArray)
+{
+  // Check if all of the tracks is matched to a MC signal
+  // If no, return -1;
+  // If yes, return label (>=0) of the AliAODMCParticle
+
+  Int_t labelProton = fabs(trackProton->GetLabel());
+  if (labelProton<0) return -1;
+  AliAODMCParticle* mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
+  Int_t labelPion  = fabs(trackPion->GetLabel());
+  if (labelPion<0) return -1;
+  AliAODMCParticle* mcPion = static_cast<AliAODMCParticle*>(mcArray->At(labelPion));
+  Int_t labelKaon  = fabs(trackKaon->GetLabel());
+  if (labelKaon<0) return -1;
+  AliAODMCParticle* mcKaon = static_cast<AliAODMCParticle*>(mcArray->At(labelKaon));
+
+  if ( mcProton->GetPdgCode() != 2212 || mcPion->GetPdgCode() != -211 || mcKaon->GetPdgCode() != -321 ) return -1; // check pdg
+
+  Int_t IndexMother[4];
+  IndexMother[0] = mcProton->GetMother();
+  IndexMother[1] = mcPion->GetMother();
+  if ( IndexMother[0]<0 || IndexMother[1]<0 ) return -1; // check mother exist
+  if ( IndexMother[0] != IndexMother[1] ) return -1; // check the same mother
+  AliAODMCParticle* mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
+  if ( mcMother->GetPdgCode() != 3122 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is lambda
+
+  IndexMother[2] = mcMother->GetMother(); // mother of lambda
+  IndexMother[3] = mcKaon->GetMother();
+  if ( IndexMother[2]<0 || IndexMother[3]<0 ) return -1; // check mother exist
+  if ( IndexMother[2] != IndexMother[3] ) return -1; // check the same mother
+  mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[2]));
+  if ( mcMother->GetPdgCode() != 3334 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Omega
+
+  mcMother = static_cast<AliAODMCParticle*>(mcArray->At(mcMother->GetMother()));
+  return abs(mcMother->GetPdgCode());
+}
+
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskSEXicZero2XiPifromKFP::MatchToMCOmegaPlus(AliAODTrack *trackProton, AliAODTrack *trackPion, AliAODTrack *trackKaon, TClonesArray *mcArray)
+{
+  // Check if all of the tracks is matched to a MC signal
+  // If no, return -1;
+  // If yes, return label (>=0) of the AliAODMCParticle
+
+  Int_t labelProton = fabs(trackProton->GetLabel());
+  if (labelProton<0) return -1;
+  AliAODMCParticle* mcProton = static_cast<AliAODMCParticle*>(mcArray->At(labelProton));
+  Int_t labelPion  = fabs(trackPion->GetLabel());
+  if (labelPion<0) return -1;
+  AliAODMCParticle* mcPion = static_cast<AliAODMCParticle*>(mcArray->At(labelPion));
+  Int_t labelKaon  = fabs(trackKaon->GetLabel());
+  if (labelKaon<0) return -1;
+  AliAODMCParticle* mcKaon = static_cast<AliAODMCParticle*>(mcArray->At(labelKaon));
+
+  if ( mcProton->GetPdgCode() != -2212 || mcPion->GetPdgCode() != 211 || mcKaon->GetPdgCode() != 321 ) return -1; // check pdg
+
+  Int_t IndexMother[4];
+  IndexMother[0] = mcProton->GetMother();
+  IndexMother[1] = mcPion->GetMother();
+  if ( IndexMother[0]<0 || IndexMother[1]<0 ) return -1; // check mother exist
+  if ( IndexMother[0] != IndexMother[1] ) return -1; // check the same mother
+  AliAODMCParticle* mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
+  if ( mcMother->GetPdgCode() != -3122 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is lambda
+
+  IndexMother[2] = mcMother->GetMother(); // mother of lambda
+  IndexMother[3] = mcKaon->GetMother();
+  if ( IndexMother[2]<0 || IndexMother[3]<0 ) return -1; // check mother exist
+  if ( IndexMother[2] != IndexMother[3] ) return -1; // check the same mother
+  mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[2]));
+  if ( mcMother->GetPdgCode() != -3334 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Omega
+
+  mcMother = static_cast<AliAODMCParticle*>(mcArray->At(mcMother->GetMother()));
+  return abs(mcMother->GetPdgCode());
 }
 
 //_____________________________________________________________________________
@@ -4556,7 +4757,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 47;
+  Int_t nVar = 48;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4612,6 +4813,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[41] = "PA_Xic0ToPV"; // pointing angle of Xic0 (pointing back to PV)
   fVarNames[42] = "ldl_Xic0"; // l/dl of Xic0
   fVarNames[43] = "ct_Xic0"; // lifetime of Xic0
+  fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
   }
 
   if (fIsAnaOmegac0) {
@@ -4664,10 +4866,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[41] = "PA_Omegac0ToPV"; // pointing angle of Omegac0 (pointing back to PV)
     fVarNames[42] = "ldl_Omegac0"; // ldl of Omegac0
     fVarNames[43] = "ct_Omegac0"; // lifetime of Omegac0
+    fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
   }
-  fVarNames[44] = "weight";
-  fVarNames[45] = "weight_up";
-  fVarNames[46] = "weight_dw";
+  fVarNames[45] = "weight";
+  fVarNames[46] = "weight_up";
+  fVarNames[47] = "weight_dw";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -4837,6 +5040,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineAnaHist()
   fHistMCpdg_Dau_XicZero = new TH1F("fHistMCpdg_Dau_XicZero", "PDG of daughters of Xic0 & anti-Xic0", 20000, -10000, 10000);
   fHistMCpdg_Dau_XicPM   = new TH1F("fHistMCpdg_Dau_XicPM", "PDG of daughters of Xic+ & Xic-", 20000, -10000, 10000);
 
+  /*
   fOutputList->Add(fHistMCGen_XicZeroTot);
   fOutputList->Add(fHistMCGen_XicZero);
   fOutputList->Add(fHistMCGen_AntiXicZero);
@@ -4859,6 +5063,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineAnaHist()
   fOutputList->Add(fHistMCpdg_All);
   fOutputList->Add(fHistMCpdg_Dau_XicZero);
   fOutputList->Add(fHistMCpdg_Dau_XicPM);
+  */
 
 }
 
@@ -5161,10 +5366,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
+void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<47; i++) {
+  for (Int_t i=0; i<48; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5363,9 +5568,9 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
       AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
-      fVar_Xic0[44] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
       fVar_Xic0[45] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
       fVar_Xic0[46] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[47] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
     }
   }
 
@@ -5387,6 +5592,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(KFParticle kf
   Float_t ct_Xic0=0., err_ct_Xic0=0.;
   kfpXic0_PV.GetLifeTime(ct_Xic0, err_ct_Xic0);
   fVar_Xic0[43] = ct_Xic0; // lifetime of Xic0
+
+  fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
   fTree_Xic0->Fill();
 

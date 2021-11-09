@@ -80,8 +80,8 @@ void AliHistogramRanges::InitParameters()
   fHistoPtBins           = 240 ;  fHistoPtMax           = 120   ; fHistoPtMin           = 0.  ;
   fHistoPhiBins          = 120 ;  fHistoPhiMax          = TMath::TwoPi(); fHistoPhiMin  = 0.  ;
   fHistoEtaBins          = 100 ;  fHistoEtaMax          = 1     ; fHistoEtaMin          = -1  ;
-  fHistoDeltaPhiBins     = 310 ;  fHistoDeltaPhiMax     = 4.8   ; fHistoDeltaPhiMin     = -1.7;
-  fHistoDeltaEtaBins     = 200 ;  fHistoDeltaEtaMax     = 2     ; fHistoDeltaEtaMin     = -2  ;
+  fHistoDeltaPhiBins     = 163 ;  fHistoDeltaPhiMax     = 4.8   ; fHistoDeltaPhiMin     = -1.7;
+  fHistoDeltaEtaBins     =  40 ;  fHistoDeltaEtaMax     = 2     ; fHistoDeltaEtaMin     = -2  ;
   fHistoMassBins         = 200 ;  fHistoMassMax         = 1.    ; fHistoMassMin         = 0.  ;
   fHistoAsymBins         = 10  ;  fHistoAsymMax         = 1.    ; fHistoAsymMin         = 0.  ;
   fHistoV0SBins          = 100 ;  fHistoV0SMax          = 10000 ; fHistoV0SMin          = 0   ;

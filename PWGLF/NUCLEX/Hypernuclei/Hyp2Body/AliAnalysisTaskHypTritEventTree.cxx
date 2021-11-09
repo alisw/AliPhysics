@@ -646,7 +646,7 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 
 	} else {
 		// MC: simulate TRD trigger
-		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE;
+		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE, secHeHSE = kFALSE;
 
 		if (nTrdTracks > 0) {
 			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
@@ -667,7 +667,7 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 				}
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
-					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					trdTrack->GetPID() >= 135 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
 					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
 					if (sag < 0.2 && sag > -0.2) {
 						fReducedEvent->fTrigHQU = 1;
@@ -676,10 +676,23 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHQU = kTRUE;
 						}
 					}
+        }
+				// simulate HSE
+				if (TMath::Abs(trdTrack->GetPt()) >= 384 &&
+					trdTrack->GetPID() >= 120 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						fReducedEvent->fTrigHSE = 1;
+						fReducedEvent->fTrigger = 7;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHSE = kTRUE;
+						}
+					}
 				}
 			}
 		if (secHeHNU) fReducedEvent->fTrigHNU = 2;
 		if (secHeHQU) fReducedEvent->fTrigHQU = 2;
+		if (secHeHSE) fReducedEvent->fTrigHSE = 2;
 		}
 	}
 	fHistTrigger->Fill(fReducedEvent->fTrigger);

@@ -22,12 +22,14 @@ ClassImp(AliAnalysisTaskCorrForFlow);
 AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fAOD(0),
     fOutputListCharged(0),
+    fInputListEfficiency(0),
     fTracksTrigCharged(0),
     fTracksAss(0),
     fPIDResponse(0),
     fPIDCombined(0),
     fPoolMgr(0),
     fhEventCounter(0),
+    fhEventMultiplicity(0),
     fHistPhiEta(0),
     fhTrigTracks(0),
     fhChargedSE(0),
@@ -35,8 +37,14 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fTrigger(AliVEvent::kINT7),
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
+    fUseNch(kFALSE),
+    fUseEfficiency(kFALSE),
+    fEfficiencyEtaDependent(kFALSE),
     fFilterBit(96),
     fbSign(0),
+    fNofTracks(0),
+    fNchMin(0),
+    fNchMax(100000),
     fPtMinTrig(0.5),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
@@ -44,7 +52,7 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fCentMin(0.0),
     fCentMax(10.0),
     fCentrality(-10.0),
-    fAbsEtaMax(1.0),
+    fAbsEtaMax(0.8),
     fPVz(100.0),
     fCentEstimator("V0M"),
     fPoolMaxNEvents(2000),
@@ -55,15 +63,17 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fMergingCut(0.0)
 {}
 //_____________________________________________________________________________
-AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name) : AliAnalysisTaskSE(name),
+AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t bUseEff) : AliAnalysisTaskSE(name),
     fAOD(0),
     fOutputListCharged(0),
+    fInputListEfficiency(0),
     fTracksTrigCharged(0),
     fTracksAss(0),
     fPIDResponse(0),
     fPIDCombined(0),
     fPoolMgr(0),
     fhEventCounter(0),
+    fhEventMultiplicity(0),
     fHistPhiEta(0),
     fhTrigTracks(0),
     fhChargedSE(0),
@@ -71,8 +81,14 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name) : AliAn
     fTrigger(AliVEvent::kINT7),
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
+    fUseNch(kFALSE),
+    fUseEfficiency(bUseEff),
+    fEfficiencyEtaDependent(kFALSE),
     fFilterBit(96),
     fbSign(0),
+    fNofTracks(0),
+    fNchMin(0),
+    fNchMax(100000),
     fPtMinTrig(0.5),
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
@@ -80,7 +96,7 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name) : AliAn
     fCentMin(0.0),
     fCentMax(10.0),
     fCentrality(-10.0),
-    fAbsEtaMax(1.0),
+    fAbsEtaMax(0.8),
     fPVz(100.0),
     fCentEstimator("V0M"),
     fPoolMaxNEvents(2000),
@@ -91,6 +107,7 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name) : AliAn
     fMergingCut(0.0)
 {
     DefineInput(0, TChain::Class());
+    if(bUseEff) { DefineInput(1, TList::Class()); }
     DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
@@ -100,12 +117,9 @@ AliAnalysisTaskCorrForFlow::~AliAnalysisTaskCorrForFlow()
 void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
 {
     OpenFile(1);
+    PrintSetup();
 
-    // //just for testing
-    // fPtBinsTrigCharged = {0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
-    // fPtBinsAss = {0.5, 1.0, 1.5, 2.0, 3.0};
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
-    fCentBins = {0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
 
     fOutputListCharged = new TList();
     fOutputListCharged->SetOwner(kTRUE);
@@ -113,7 +127,10 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",10,0,10);
     fOutputListCharged->Add(fhEventCounter);
 
-    fHistPhiEta = new TH2D("fHistPhiEta", "fHistPhiEta; phi; eta", 100, -0.5, 7, 100, -1.5, 1.5);
+    fhEventMultiplicity = new TH1D("fhEventMultiplicity","Event multiplicity; N_{ch}",200,0,200);
+    fOutputListCharged->Add(fhEventMultiplicity);
+
+    fHistPhiEta = new TH2D("fHistPhiEta", "fHistPhiEta; phi; eta", 100, 0.0, TMath::TwoPi(), 100, -1.0, 1.0);
     fOutputListCharged->Add(fHistPhiEta);
 
     fhTrigTracks = new TH2D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), 10, -10, 10);
@@ -207,6 +224,11 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
       }
     }
 
+    if(fUseEfficiency) {
+      fInputListEfficiency = (TList*) GetInputData(1);
+      if(fEfficiencyEtaDependent && fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
+    }
+
     PostData(1, fOutputListCharged);
 }
 //_____________________________________________________________________________
@@ -230,13 +252,19 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
       for(Int_t i(0); i < 3; i++){ fTracksTrigPID[i] = new TObjArray; }
     }
 
+    if(fUseEfficiency && !AreEfficienciesLoaded()) { return; }
+
+    fNofTracks = 0;
 
     for(Int_t i(0); i < iTracks; i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track || !IsTrackSelected(track)) { continue; }
 
         Double_t trackPt = track->Pt();
-        if(trackPt > fPtMinAss && trackPt < fPtMaxAss) fTracksAss->Add((AliAODTrack*)track);
+        if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
+          fTracksAss->Add((AliAODTrack*)track);
+          fNofTracks++;
+        }
         if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
           fTracksTrigCharged->Add((AliAODTrack*)track);
           fhTrigTracks->Fill(trackPt, fPVz);
@@ -253,11 +281,13 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
         //example histogram
         fHistPhiEta->Fill(track->Phi(), track->Eta());
     }
+    fhEventMultiplicity->Fill(fNofTracks);
+
+    if(fUseNch){
+      if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return; }
+    }
 
     if(!fTracksTrigCharged->IsEmpty()){
-      FillCorrelations();
-      FillCorrelationsMixed();
-
       if(fDoPID){
         for(Int_t i(0); i < 3; i++){
           if(!fTracksTrigPID[i]->IsEmpty()){
@@ -269,6 +299,8 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
           }
         }
       } // end do PID
+      FillCorrelations();
+      FillCorrelationsMixed();
     }
 
     fTracksTrigCharged->Clear();
@@ -284,6 +316,7 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 void AliAnalysisTaskCorrForFlow::Terminate(Option_t *)
 {
    if (fPoolMgr) delete fPoolMgr;
+   if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlow::IsEventSelected()
@@ -398,6 +431,8 @@ void AliAnalysisTaskCorrForFlow::FillCorrelations()
     Double_t trigEta = track->Eta();
     Double_t trigPhi = track->Phi();
     Double_t trigCharge = track->Charge();
+    Double_t trigEff = 1.0;
+    if(fUseEfficiency) trigEff = GetEff(trigPt, 0, trigEta);
 
     for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
       AliAODTrack* trackAss = (AliAODTrack*)fTracksAss->At(iAss);
@@ -407,6 +442,8 @@ void AliAnalysisTaskCorrForFlow::FillCorrelations()
       Double_t assEta = trackAss->Eta();
       Double_t assPhi = trackAss->Phi();
       Double_t assCharge = trackAss->Charge();
+      Double_t assEff = 1.0;
+      if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
 
       // if(trigPt < assPt) continue;
       if(track->GetID() == trackAss->GetID()) continue;
@@ -417,8 +454,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelations()
       if(TMath::Abs(binscont[0]) < fMergingCut){
         Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
         Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
-
-        if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
 
         const Double_t kLimit = 3.0*fMergingCut;
 
@@ -438,7 +473,7 @@ void AliAnalysisTaskCorrForFlow::FillCorrelations()
       binscont[2] = trigPt;
       binscont[3] = assPt;
 
-      fhChargedSE->Fill(binscont,0);
+      fhChargedSE->Fill(binscont,0,1./(trigEff*assEff));
     }
 
   }
@@ -488,8 +523,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixed()
             Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
             Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
 
-            if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
-
             const Double_t kLimit = 3.0*fMergingCut;
 
             if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
@@ -536,6 +569,8 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsPID(const Int_t pid)
     Double_t trigEta = track->Eta();
     Double_t trigPhi = track->Phi();
     Double_t trigCharge = track->Charge();
+    Double_t trigEff = 1.0;
+    if(fUseEfficiency) trigEff = GetEff(trigPt, pid+1, trigEta);
 
     for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
       AliAODTrack* trackAss = (AliAODTrack*)fTracksAss->At(iAss);
@@ -545,6 +580,8 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsPID(const Int_t pid)
       Double_t assEta = trackAss->Eta();
       Double_t assPhi = trackAss->Phi();
       Double_t assCharge = trackAss->Charge();
+      Double_t assEff = 1.0;
+      if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
 
       // if(trigPt < assPt) continue;
       if(track->GetID() == trackAss->GetID()) continue;
@@ -555,8 +592,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsPID(const Int_t pid)
       if(TMath::Abs(binscont[0]) < fMergingCut){
         Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
         Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
-
-        if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
 
         const Double_t kLimit = 3.0*fMergingCut;
 
@@ -576,7 +611,7 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsPID(const Int_t pid)
       binscont[2] = trigPt;
       binscont[3] = assPt;
 
-      fhPidSE[pid]->Fill(binscont,0);
+      fhPidSE[pid]->Fill(binscont,0,1./(trigEff*assEff));
     }
 
   }
@@ -626,8 +661,6 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixedPID(const Int_t pid)
             Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
             Double_t dPhiStarHigh = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 2.5);
 
-            if(TMath::Abs(dPhiStarLow) < fMergingCut || TMath::Abs(dPhiStarHigh) < fMergingCut) continue;
-
             const Double_t kLimit = 3.0*fMergingCut;
 
             if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
@@ -653,4 +686,58 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixedPID(const Int_t pid)
   }
 
   return;
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskCorrForFlow::AreEfficienciesLoaded()
+{
+  if(!fInputListEfficiency) {AliError("Efficiency input list not loaded"); return kFALSE; }
+  TString part[4] = {"ch", "pi", "ka", "pr"};
+  for(Int_t p(0); p < 4; p++){
+    if(!fEfficiencyEtaDependent){
+      fhEfficiency[p] = (TH1D*)fInputListEfficiency->FindObject(Form("EffRescaled_%s_eta0",part[p].Data()));
+      if(!fhEfficiency[p]) {AliError(Form("Efficiency (%s, not eta dependent) not loaded",part[p].Data())); return kFALSE; }
+    }
+    else{
+      Int_t etaReg[4] = {100, 101, 102, 103};
+      for(Int_t eta(0); eta < 4; eta++){
+        fhEfficiencyEta[p][eta] = (TH1D*)fInputListEfficiency->FindObject(Form("EffRescaled_%s_eta%d",part[p].Data(), etaReg[eta]));
+        if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %d) not loaded",part[p].Data(),etaReg[eta])); return kFALSE; }
+      }
+    }
+    if(!fDoPID) break;
+  }
+  return kTRUE;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskCorrForFlow::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
+{
+  if(!fUseEfficiency) return 1.0;
+  if(spec < 0 || spec > 3) { AliError("Efficiency loading -- species out of range! ");}
+  if(!fEfficiencyEtaDependent && !fhEfficiency[spec]) { AliFatal("Efficiency not loaded"); return 0.0; }
+  if(!fEfficiencyEtaDependent) return fhEfficiency[spec]->GetBinContent(fhEfficiency[spec]->FindFixBin(dPt));
+  else{
+    Int_t etaReg = -1;
+    if(dEta < -0.8) AliError("Efficiency loading -- eta out of range! ");
+    else if(dEta < -0.465) etaReg = 0;
+    else if(dEta < 0.0) etaReg = 1;
+    else if(dEta < 0.465) etaReg = 2;
+    else if(dEta < 0.8) etaReg = 3;
+    else AliError("Efficiency loading -- eta out of range! ");
+    if(!fhEfficiencyEta[spec][etaReg] || etaReg < 0) { AliFatal("Efficiency not loaded"); return 0.0; }
+    return fhEfficiencyEta[spec][etaReg]->GetBinContent(fhEfficiencyEta[spec][etaReg]->FindFixBin(dPt));
+  }
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskCorrForFlow::PrintSetup(){
+  printf("\n\n\n ************** Parameters ************** \n");
+  printf("\t fDoPID: (Bool_t) %s\n",    fDoPID ? "kTRUE" : "kFALSE");
+  printf("\t fUseNch: (Bool_t) %s\n",    fUseNch ? "kTRUE" : "kFALSE");
+  printf("\t fIsHMpp: (Bool_t) %s\n",    fIsHMpp ? "kTRUE" : "kFALSE");
+  printf("\t fUseEfficiency: (Bool_t) %s\n",    fUseEfficiency ? "kTRUE" : "kFALSE");
+  printf("\t fEfficiencyEtaDependent: (Bool_t) %s\n",    fEfficiencyEtaDependent ? "kTRUE" : "kFALSE");
+  printf("\n **************************** \n");
+  printf("\t fAbsEtaMax: (Double_t) %f\n",    fAbsEtaMax);
+  printf("\t fPtMinTrig -- fPtMaxTrig: (Double_t) %f -- %f\n",    fPtMinTrig, fPtMaxTrig);
+  printf("\t fPtMinAss -- fPtMaxAss: (Double_t) %f -- %f\n",    fPtMinAss, fPtMaxAss);
+  printf("\t fCentMin -- fCentMax: (Double_t) %f -- %f\n",    fCentMin, fCentMax);
 }

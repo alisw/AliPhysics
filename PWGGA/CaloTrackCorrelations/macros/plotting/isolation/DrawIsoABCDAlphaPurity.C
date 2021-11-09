@@ -341,7 +341,6 @@ void Exec( Int_t opt = 2,
       
       if ( period[iprod]!="Data" && (removeFragmentation || fragInBkg) )
       {
-        // A
         h3Fragment[iprod]->SetAxisRange(ptmin    , ptmax    -0.001,"X"); // pT trigger
 
         // A
@@ -357,7 +356,7 @@ void Exec( Int_t opt = 2,
           hAFragment[iprod] = M02PtDependentCut(h3Fragment[iprod],0x0,shSigMin,shSigAbsMax,0,1);
         }
         
-        hAFragment[iprod]->SetName(Form("A_%s",tag.Data()));
+        hAFragment[iprod]->SetName(Form("AFragment_%s",tag.Data()));
         
         // B
         h3Fragment[iprod]->SetAxisRange(sumSigMin, sumSigMax-0.001,"Z"); // Sum pt Cone
@@ -372,7 +371,7 @@ void Exec( Int_t opt = 2,
           hBFragment[iprod] = M02PtDependentCut(h3Fragment[iprod],0x0,shBkgMin,shBkgMax,1,0,0.0,0.1); // pT dep plus 0.1 gap in min limit
         }
         
-        hBFragment[iprod]->SetName(Form("B_%s",tag.Data()));
+        hBFragment[iprod]->SetName(Form("BFragment_%s",tag.Data()));
 
         // C
         h3Fragment[iprod]->SetAxisRange(sumBkgMin, sumBkgMax-0.001,"Z"); // Sum pt Cone
@@ -387,7 +386,7 @@ void Exec( Int_t opt = 2,
           hCFragment[iprod] = M02PtDependentCut(h3Fragment[iprod],0x0,shSigMin,shSigAbsMax,0,1);
         }
         
-        hCFragment[iprod]->SetName(Form("C_%s",tag.Data()));
+        hCFragment[iprod]->SetName(Form("CFragment_%s",tag.Data()));
         
         // D
         h3Fragment[iprod]->SetAxisRange(sumBkgMin, sumBkgMax-0.001,"Z"); // Sum pt Cone
@@ -402,7 +401,7 @@ void Exec( Int_t opt = 2,
           hDFragment[iprod] = M02PtDependentCut(h3Fragment[iprod],0x0,shBkgMin,shBkgMax,1,0,0.0,0.1); // pT dep plus 0.1 gap in min limit
         }
         
-        hDFragment[iprod]->SetName(Form("D_%s",tag.Data()));
+        hDFragment[iprod]->SetName(Form("DFragment_%s",tag.Data()));
       }
       else
       {
@@ -606,7 +605,7 @@ void Exec( Int_t opt = 2,
     ScaleBinBySize(hC[iprod]);
     ScaleBinBySize(hD[iprod]);
     
-    if ( period[iprod]!="Data" )
+    if ( period[iprod]!="Data"  && (removeFragmentation || fragInBkg) )
     {
       hAFragment[iprod] = (TH1F*) hAFragment[iprod]->Rebin(nBins,Form("AFragment_%s_rb",tag.Data()),edges);
       hBFragment[iprod] = (TH1F*) hBFragment[iprod]->Rebin(nBins,Form("BFragment_%s_rb",tag.Data()),edges);
@@ -1060,7 +1059,7 @@ void Exec( Int_t opt = 2,
     TString tag = Form("%s",period[iprod].Data());
 
     hACRatio[iprod] = (TH1F*) hA[iprod]->Clone(Form("hACRatio%s",tag.Data()));
-    hBDRatio[iprod] = (TH1F*) hB[iprod]->Clone(Form("hACRatio%s",tag.Data()));
+    hBDRatio[iprod] = (TH1F*) hB[iprod]->Clone(Form("hBDRatio%s",tag.Data()));
     
     hACRatio[iprod]->Divide(hACRatio[iprod],hC[iprod],1,1,"B");
     hBDRatio[iprod]->Divide(hBDRatio[iprod],hD[iprod],1,1,"B");
@@ -1548,10 +1547,9 @@ void DrawIsoABCDAlphaPurity()
  
   Float_t ptmin     = 10.0;  Float_t ptmax     = 200;
   Float_t sumSigMin = -200;  Float_t sumSigMax = 2;
-  Float_t sumBkgMin = 3 ;    Float_t sumBkgMax = 100;
+  Float_t sumBkgMin = 2.5 ;  Float_t sumBkgMax = 12.5;
   Float_t shSigMin  = 0.1 ;  Float_t shSigMax  = 0.3; // -1 for pT dependent cut
-  Float_t shBkgMin  = 0.4 ;  Float_t shBkgMax  = 1.6;
-  //Float_t shBkgMin  = 0.5 ;  Float_t shBkgMax  = 2;
+  Float_t shBkgMin  = 0.4 ;  Float_t shBkgMax  = 2.0;
   Float_t shSigAbsMax = 0.3 ; // when shSigMax = -1;
 
   Float_t scaleBiasedJJ = 1.; // Do not change
@@ -1569,5 +1567,5 @@ void DrawIsoABCDAlphaPurity()
        scaleBiasedJJ, scaleGJ,
        ptmin    , ptmax,
        sumSigMin, sumSigMax, sumBkgMin, sumBkgMax,
-       shSigMin , shSigMax , shBkgMin , shBkgMax, shSigAbsMax);
+        shSigMin,  shSigMax,  shBkgMin,  shBkgMax, shSigAbsMax);
 }

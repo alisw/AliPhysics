@@ -83,6 +83,7 @@ AliTPCPIDEtaTree::AliTPCPIDEtaTree(const char *name)
   , fStoreNumClustersInActiveVolume(kFALSE)
   , fDoAdditionalQA(kFALSE)
   , fPtpcPionCut(1.0)
+  , fUseFilteredTreeCuts(kFALSE)
   , fPtpc(0)
   , fPt(0)
   , fDeDx(0)
@@ -251,7 +252,11 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
     
   fMC = dynamic_cast<AliMCEvent*>(MCEvent());
   
-  fMultiplicity = fESD->GetNumberOfESDTracks(); 
+  if (fUseFilteredTreeCuts==kFALSE){
+  fMultiplicity = fESD->GetNumberOfESDTracks();
+  } else {
+  fMultiplicity = fESD->GetNTPCTrackBeforeClean();
+  }
     
   if (fDoAdditionalQA) {
     Int_t nTotTracks = fESD->GetNumberOfESDTracks();

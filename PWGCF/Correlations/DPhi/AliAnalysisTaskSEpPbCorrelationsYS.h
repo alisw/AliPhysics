@@ -69,6 +69,7 @@ public:
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
   virtual void SetFillCorrelation(Bool_t mode) { ffillcorrelation = mode; }
   virtual void SetEfficiencyCorrection(Bool_t mode) { fefficalib = mode; }
+  virtual void SetEfficiencyCorrectionmode(Int_t mode) { calibmode = mode; }
   virtual void SetHighmultcut(Float_t mode) { fcuthighmult = mode; }
   
   
@@ -171,6 +172,10 @@ private:
   Int_t fNEntries;
   
   Double_t lCentrality;
+
+  Int_t calibmode;
+  TH1F* fheffipt;
+  TH2F* fheffipteta;
   Float_t bSign;
   Double_t fZVertex;
 
@@ -259,17 +264,9 @@ private:
   Double_t fMaxnSigmaTPCTOF;
 
   // Globaal Histograms
-  TH1F *fHistzvertex;
-  TH1F *fHistCentrality;
-  TH1F *fHistCentrality_beforecut;
-  TH2F* fHistCentzvertex;
-  TH2F* fHistCentV0vsTracklets;
   
   TH2F* fHistCentV0vsTrackletsbefore;
-  TH2F*fHistTraksvsVz;
-  TH2F* fHistV0vsTracks;
-  TH2F* fHistCentvsNv0mult;
-  TH2F* fHistV0multvsVz;
+
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
@@ -291,51 +288,20 @@ private:
 
   TH2D*  fh2_FMD_acceptance_prim;
   TH2D*  fh2_FMD_eta_phi_prim;
-  TH2D*  fh2_FMD_acceptance;
-  TH2D*  fh2_ITS_acceptance;
   TH2F*  fh2_SPD_multcorr;
-  TH2F*  fh2_SPDV0_multcorr;
   TH2F*  fh2_SPDtrack_multcorr;
-  TH1F*  fhtrackletsdphi;
-  TH2D*  fh2_FMD_eta_phi;
-  TH2D*  fh2_FMD_eta_phi_aftercut;
-  TH1F* fHist_NeventRun;
-  TH1F* fHist_V0AMultRun;
-  TH1F* fHist_V0CMultRun;
-  TH1F* fHist_FMDAMultRun;
-  TH1F* fHist_FMDCMultRun;
-
+  
   TH2D*  fhistfmdphiacc;
-  TH2F* fhFMDmultchannel;
   TH2D* fhFMDmult_runbyrun_cside[31];
   TH2D* fhFMDmult_runbyrun_aside[65];
   
-  AliTHn* fhistfmd;
   THnSparseF* fhistits;
   AliTHn* fhSecFMD;
   //  const TH2D& d2Ndetadphi;
   TH2D*fOutliers;
-  TH2F*fFMDV0;
-  TH2F*fFMDV0_post;
-  TH2F*fFMDV0A;
-  TH2F*fFMDV0A_post;
-  TH2F*fFMDV0C;
-  TH2F*fFMDV0C_post;
 
-  TH2F*fFMDV0same;
-  TH2F*fFMDV0same_post;
-  TH2F*fFMDV0Asame;
-  TH2F*fFMDV0Asame_post;
-  TH2F*fFMDV0Csame;
-  TH2F*fFMDV0Csame_post;
-
-  TH2F *fHist_vzeromult;
-  TH2F *fHist_vzeromultEqweighted;
-  TH3F *fHist2dmult;
-  AliTHn *fHistVZERO;
 
   TH1F *fHist_Stat;
-  TH1F *fHist_V0Stat;
 
   // QA histograms
   TH2D *fHistPhiDTPCNSig;

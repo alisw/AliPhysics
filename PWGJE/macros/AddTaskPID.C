@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
                             Bool_t useConvolutedGauss = kTRUE, TString centralityEstimator = "V0A",
                             Bool_t considerJets = kTRUE, Bool_t overrideStoreCentralityPercentile = kFALSE,
                             Bool_t overrideStoreCentralityPercentileValue = kFALSE,
-                            TString listOfFiles = "")
+                            TString listOfFiles = "", Bool_t doEfficiency = kFALSE)
 {
   // Macro to set up and add PID task with default settings.
   //
@@ -110,6 +110,8 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   
   task->SetCentralityEstimator(centralityEstimator.Data());
   
+  task->SetDoEfficiency(doEfficiency);
+  
   task->SetUseMCidForGeneration(kTRUE);
   task->SetUseITS(kTRUE);
   task->SetUseTOF(kTRUE);
@@ -162,7 +164,11 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   }
   //connect containers
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer()); // comment to run local
+  
+  if (mgr->GetCommonOutputContainer()) {
+    //Not present for local runs
+    mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer());
+  }
   mgr->ConnectOutput (task,  1, coutput1);
 
   return task;

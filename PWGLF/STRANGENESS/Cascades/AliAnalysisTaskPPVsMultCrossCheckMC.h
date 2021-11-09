@@ -71,6 +71,10 @@ public:
     void SetInel10MCSelection ( Bool_t lInel10MCSelection = kTRUE) {
         fkInel10MCSelection = lInel10MCSelection;
     }
+    
+    void SetMultPercentileBinning (Int_t i=0) {
+        fMultPercentileBinning = i;
+    }
  
     Double_t GetV0MAmplitude ( AliESDEvent *lInputEvent ) const;
     
@@ -102,6 +106,8 @@ private:
   
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     TString   fTrigName; // trigger name (if it's not available in AliVEvent)
+    
+    Int_t fMultPercentileBinning; // 0: equal bins from 0-100; 1: finer bins at high multiplicity
  
     //Basic Histograms for counting events as a function of V0M percentiles...
     TH1F *fHistV0M_DataSelection; //!

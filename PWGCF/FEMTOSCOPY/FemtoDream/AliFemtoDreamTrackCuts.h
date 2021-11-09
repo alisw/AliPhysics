@@ -204,16 +204,27 @@ class AliFemtoDreamTrackCuts {
     fRatioCrossedRows = ratio;
   }
   ;
+
   void SetPID(AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3.,
-              bool AllowITSonly = false, float sigValITS = 3.) {
+                             bool AllowITSonly = false, float sigValITS = 3.) {
     fParticleID = pid;
     fPIDPTPCThreshold = pTPCThresh;
     fNSigValue = sigVal;
-    fAllowITSonly = AllowITSonly;
-    fNSigValueITS = sigValITS;
+    //fAllowITSonly = AllowITSonly; // the last two arguments are dummy now. oton.28.10.2021
+    //fNSigValueITS = sigValITS; // the last two arguments are dummy now. oton.28.10.2021
     fCutPID = kTRUE;
   }
   ;
+
+  void SetPIDkd(bool iskaon = true, float COMBcut = 4., float TPCcut = 3., float EXCLUSIONcut = 3.) {
+    fPIDkd = true;
+    fIsKaon = iskaon;
+    fcutCOMBkd = COMBcut;
+    fcutTPCkd = TPCcut;
+    fcutEXCLUSIONkd= EXCLUSIONcut;
+  }
+  ;
+
   void SetCutITSPID(float pITSThresh = 0.0, double sigValITSmin = -3., double sigValITSmax = 3.) {
     fPIDPITSThreshold = pITSThresh;
     fNSigValueITSmin = sigValITSmin;
@@ -299,6 +310,7 @@ class AliFemtoDreamTrackCuts {
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDCuts(AliFemtoDreamTrack *Track);
   bool ITSPIDAODCuts(AliFemtoDreamTrack *Track);
+  bool PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool TOFyes);
   bool SmallestNSig(AliFemtoDreamTrack *Track);
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
@@ -361,13 +373,17 @@ class AliFemtoDreamTrackCuts {
   float fNSigValueITSmin;             // defaults to -3
   float fNSigValueITSmax;             // defaults to +3
   float fdoITSnSigmaCut;              // defaults is false
-  float fNSigValueITS;                // defaults to 3
+  float fcutCOMBkd;                // defaults to 4
+  float fcutTPCkd;                // defaults to 3
+  float fcutEXCLUSIONkd;         // defaults to 3
+  bool fIsKaon;                // defaults to 3
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
   float fMultDCAmin;            //
   float fMultDCAmax;            //
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
   bool fTOFInvMassCut;                   //
+  bool fPIDkd;                   //
   float fTOFInvMassCutUp;            //
   float fTOFInvMassCutLow;            //
   bool fCutArroundPeakTOFInvMass;            //

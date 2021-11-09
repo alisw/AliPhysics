@@ -14,7 +14,9 @@ Bool_t ConfigPhiLeadingPb(
     /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
-    /* delta eta  */ Int_t detaID  = task->CreateValue(AliRsnMiniValue::kDeltaEta, kFALSE);
+    /* delta eta        */ Int_t detaID  = task->CreateValue(AliRsnMiniValue::kDeltaEta, kFALSE);
+   /* phi of leading    */ Int_t philID = task->CreateValue(AliRsnMiniValue::kLeadingPhi, kFALSE);
+   /* phi angle         */ Int_t phiID = task->CreateValue(AliRsnMiniValue::kPhi, kFALSE);
 
   // Cuts
     TString scheme;
@@ -67,12 +69,14 @@ Bool_t ConfigPhiLeadingPb(
 
         out->AddAxis(imID, 95, 0.985, 1.08);
         out->AddAxis(ptID, 8, 2., 10.);
-        if(!isPP ) out->AddAxis(multID,10,0.,100.);
+        if(!isPP ) out->AddAxis(multID,5,0.,50.);
         else out->AddAxis(multID, 10, 0., 100.); 
 
-        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
-        out->AddAxis(ptlID, 26, 4., 30.); 
-         out->AddAxis(detaID, 16, -1.6, 1.6);
+       out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
+        out->AddAxis(ptlID, 13, 4., 30.); 
+       //  out->AddAxis(detaID, 16, -1.6, 1.6);
+       // out->AddAxis(philID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
+       // out->AddAxis(phiID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
         
     }
     return kTRUE;

@@ -135,16 +135,25 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
     mask = ( AliVEvent::kEMCEGA );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
   }
+
   if ( trigger.Contains("CaloOnly") )
   {
     mask = AliVEvent::kCaloOnly;
     printf("\t If periods without TPC, change trigger mask %d!!!!\n",mask);
-    
-    if ( trigger.Contains("L0") )
-      triggerString = "CDMC7PER";
-    
-    if ( trigger.Contains("MB") )
-      triggerString = "CINT7-B-NOPF-CALOPLUS";
+
+    if ( year == 2018 )
+    {
+      if ( trigger.Contains("L0") )
+        triggerString = "CDMC7PER";
+
+      if ( trigger.Contains("MB") )
+        triggerString = "CINT7-B-NOPF-CALOPLUS";
+    }
+    else
+    {
+      if ( trigger.Contains("L0") )
+        triggerString = "MC7-B-NOPF-CALOFAST";
+    }
   }
   
   return mask;

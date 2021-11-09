@@ -115,6 +115,11 @@
 #pragma link C++ class AliFemtoEventReaderNanoAOD+;
 #pragma link C++ class AliFemtoEventReaderNanoAODChain+;
 #pragma link C++ class AliFemtoEventReaderAODKinematicsMultSelection+;
+// Dong-Fang: 2021.9.14
+#pragma link C++ class AliFemtoSimpleAnalysisOnlyMixP1+;
+#pragma link C++ class AliFemtoVertexMultAnalysisOnlyMixP1+;
+
+#pragma link C++ class AliFemtoPairkTPairCut+;
 
 #pragma link C++ class AliFemtoConfigObject-;
 #pragma link C++ class AliFemtoConfigObject::Painter;
@@ -125,6 +130,8 @@
 #pragma link C++ class std::vector<AliFemtoConfigObject>;
 #pragma link C++ class std::vector<AliFemtoConfigObject>::iterator;
 #pragma link C++ class std::vector<std::pair<double, double>>;
+
+
 // ^ these std:: classes required here for use in ROOT-5 macros (ROOT-6 should be ok)
 
 #endif
