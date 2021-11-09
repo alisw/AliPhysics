@@ -42,6 +42,8 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Int_t					tTrigHNU;
 		Int_t					tTrigHQU;
 		
+		Double_t			tMagField;
+		
 		Int_t					tTRDvalid;		// has valid TRD track
   	Int_t					tTRDtrigHNU;	// HNU fired by track
   	Int_t					tTRDtrigHQU;	// HQU fired by track
@@ -49,49 +51,58 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Int_t					tTRDnTracklets;
 		Int_t					tTRDPt;
 		Int_t					tTRDLayerMask;
-		Float_t				tTRDSagitta;
-		
-		Float_t					tnTPCcluster;
-		Float_t					tTPCchi2;
+		Double_t				tTRDSagitta;
+		Int_t 				tTRDStack;
+		Int_t 				tTRDSector;
+		UInt_t 				tTRDPID0;
+		UInt_t 				tTRDPID1;
+		UInt_t 				tTRDPID2;
+		UInt_t 				tTRDPID3;
+		UInt_t 				tTRDPID4;
+		UInt_t 				tTRDPID5;	
+			
+		Double_t					tnTPCcluster;
+		Double_t					tnITScluster;
+		Double_t					tTPCchi2;
 
-		Float_t					tSPDFiredChips0;	// multiplicity triggers
-		Float_t					tSPDFiredChips1;
-		Float_t 				tSPDTracklets;
-		Float_t 				tSPDCluster;
-		Float_t					tV0Multiplicity;
-		Float_t					tNTracks;
+		Double_t					tSPDFiredChips0;	// multiplicity triggers
+		Double_t					tSPDFiredChips1;
+		Double_t 				tSPDTracklets;
+		Double_t 				tSPDCluster;
+		Double_t					tV0Multiplicity;
+		Double_t					tNTracks;
 
-		Float_t 				tMultV0M;			// multiplicity estimators
-		Float_t 				tMultOfV0M;			
-		Float_t 				tMultSPDTracklet;	
-		Float_t 				tMultSPDCluster;	
-		Float_t 				tMultRef05;			
-		Float_t 				tMultRef08;			 
+		Double_t 				tMultV0M;			// multiplicity estimators
+		Double_t 				tMultOfV0M;			
+		Double_t 				tMultSPDTracklet;	
+		Double_t 				tMultSPDCluster;	
+		Double_t 				tMultRef05;			
+		Double_t 				tMultRef08;			 
 
-		Float_t 				tCharge;
+		Double_t 				tCharge;
 
-		Float_t					tPt;				// He3 track parameter
-		Float_t					tY;
-		Float_t					tEta;
-		Float_t					tPhi;
-		Float_t					tPx;				
-		Float_t					tPy;
-		Float_t					tPz;
-		Float_t					tE;
+		Double_t					tPt;				// He3 track parameter
+		Double_t					tY;
+		Double_t					tEta;
+		Double_t					tPhi;
+		Double_t					tPx;				
+		Double_t					tPy;
+		Double_t					tPz;
+		Double_t					tE;
 		Int_t		 				tKink;
 		Int_t						tTPCrefit;
-		
+		Int_t						tITSrefit;	
 
-		Float_t					tP;					// PID parameter 
-		Float_t					tHeDEdx;
-		Float_t					tHeSigma;
-		Float_t					tTOFSignalHe;
+		Double_t					tP;					// PID parameter 
+		Double_t					tHeDEdx;
+		Double_t					tHeSigma;
+		Double_t					tTOFSignalHe;
 
-		Float_t					tDcaXY;				// impact parameters
-		Float_t					tDcaZ;
-		Float_t					tSigmaYX;
-		Float_t					tSigmaXYZ;
-		Float_t					tSigmaZ;
+		Double_t					tDcaXY;				// impact parameters
+		Double_t					tDcaZ;
+		Double_t					tSigmaYX;
+		Double_t					tSigmaXYZ;
+		Double_t					tSigmaZ;
 
 		Int_t					tMCtrue;			// MC info
 		Int_t					tPrimary;
@@ -100,23 +111,23 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
 		Int_t					tHypertriton;
   		
 		TTree                  			*fTreeGen;           //< tree containing generated He3 information
-		Float_t 				tGenCharge;
-		Float_t					tGenPt;				// He3 track parameter
-		Float_t					tGenY;
+		Double_t 				tGenCharge;
+		Double_t					tGenPt;				// He3 track parameter
+		Double_t					tGenY;
 		Int_t					tGenPrimary;			
 		Int_t					tGenHypertriton;
 
 		void 					ProcessMCParticles();
-		Float_t 				GetInvPtDevFromBC(Int_t b, Int_t c);
+		Double_t 				GetInvPtDevFromBC(Int_t b, Int_t c);
 		Double_t 				Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
-		Float_t 				GetTOFSignalHe3(AliESDtrack& trackHe, Float_t tP);
+		Double_t 				GetTOFSignalHe3(AliESDtrack& trackHe, Double_t tP);
 		void SetBetheBlochParams(Int_t runNumber);
 		Double_t TRDtrack(AliESDtrack* esdTrack);
 		
         AliAnalysisTaskHe3EffTree(const AliAnalysisTaskHe3EffTree&); // not implemented
         AliAnalysisTaskHe3EffTree& operator=(const AliAnalysisTaskHe3EffTree&); // not implemented
 
-        ClassDef(AliAnalysisTaskHe3EffTree, 2);
+        ClassDef(AliAnalysisTaskHe3EffTree, 3);
 };
 
 #endif
