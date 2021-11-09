@@ -148,6 +148,30 @@ private:
   TH3D *fHist3d2pcXiBKMinus;
   TH3D *fHist3d2pcXiBKPlus;
   
+  //for event mixing
+  Bool_t fEMBufferFullXiC;
+  Long_t fEMBufferCycleXiC;
+  Double_t fEMBufferEtaXiC[10];
+  Double_t fEMBufferPhiXiC[10];
+  Bool_t fEMBufferFullXiB;
+  Long_t fEMBufferCycleXiB;
+  Double_t fEMBufferEtaXiB[10];
+  Double_t fEMBufferPhiXiB[10];
+  
+  TH3D *fHistMixed3d2pcXiCProton;
+  TH3D *fHistMixed3d2pcXiCAntiProton;
+  TH3D *fHistMixed3d2pcXiCD0;
+  TH3D *fHistMixed3d2pcXiCD0bar;
+  TH3D *fHistMixed3d2pcXiCKMinus;
+  TH3D *fHistMixed3d2pcXiCKPlus;
+
+  TH3D *fHistMixed3d2pcXiBProton;
+  TH3D *fHistMixed3d2pcXiBAntiProton;
+  TH3D *fHistMixed3d2pcXiBBMinus;
+  TH3D *fHistMixed3d2pcXiBBPlus;
+  TH3D *fHistMixed3d2pcXiBKMinus;
+  TH3D *fHistMixed3d2pcXiBKPlus;
+  
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented
   
