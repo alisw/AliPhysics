@@ -536,9 +536,6 @@ void AliHFSystErr::Init(Int_t decay){
         if (fRunNumber == 17 || fRunNumber == 2017){
           InitLctopK0S2017pp5TeV();
         }
-        else if (fRunNumber == 17 || fRunNumber == 2017){
-          InitNonPromptLctopK0s20161718pp13TeVML();
-        }
 	else if (fRunNumber == 18 || fRunNumber == 2018){
 	  if (fIsBDTAnalysis) InitLctopK0S20161718pp13TeVBDT();
     else if(fIsDataDrivenFDAnalysis) {InitNonPromptLctopK0s20161718pp13TeVML();}
