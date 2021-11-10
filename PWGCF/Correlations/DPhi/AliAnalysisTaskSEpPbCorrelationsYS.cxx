@@ -619,9 +619,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    }else{
 	if (fcollisiontype.Contains("HMPP")) fmaxcent=1.;
 	else fmaxcent=100.;
-      }
+   }
    
-     
+   TH2F* fhist_trackeffi=new TH2F("fhist_trackeffi","fhist_trackeffi",fmaxcent,0,fmaxcent,fmaxcent,0,fmaxcent);
+   fOutputList->Add(fhist_trackeffi);
+	  
    TH1F* fHistCentrality = new TH1F("fHistCentrality", ";centrality;count", 100, 0, fmaxcent);
    fOutputList->Add(fHistCentrality);
 
@@ -1127,28 +1129,28 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        4.712389};
    //multiplicity
    //   const Double_t binning_mult_trig[10]={0,10,15,20,30,40,50,80,110,140};//multiplicity pp and pPb
-   const Double_t binning_mult_trig[]={0,10,15,20,30,40,60,140};//multiplicity pp and pPb
-   const Double_t binning_mult_pp[]={0,10,15,20,30,60,80,110};//multiplicity pp and pPb
-   const Double_t binning_mult_pbpb[]={0,30,60,150,300,1000,1500,2000,2500};//multiplicity pp and pPb
+   const Double_t binning_mult_trig[]={0,10,15,20,30,40,60,140,200};//multiplicity pp and pPb
+   const Double_t binning_mult_pp[]={0,10,15,20,30,60,80,110,200};//multiplicity pp and pPb
+   const Double_t binning_mult_pbpb[]={0,30,60,200,300,1000,1500,2000,2500};//multiplicity PbPb
 
    //centrality
    const Double_t binning_cent_fmdfmd_PbPb[9] = {0., 5., 10.,  20., 30., 40., 50.,60.,70.};
    const Double_t binning_cent_MBPP[8]={0.,0.1,1.,10.,20.,40.,60.,100.1};//MBpp centrality
-   const Double_t binning_cent_trig[8] = {0., 5.,  10., 20.,40., 60.,70.,100.1};//pPb centrality
+   const Double_t binning_cent_trig[9] = {0., 5.,  10., 20.,40., 60.,70.,80.,100.1};//pPb centrality
    //   const Double_t binning_cent_HMPP[12] = {0., 0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8,1.};     
    const Double_t binning_cent_HMPP[8]={0.,0.01,0.05,0.1, 0.2, 0.3, 0.4, 0.5};
 
    //centrality bin
    Int_t ncentbin;
    if(fCentType=="Manual") {
-     if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) ncentbin=7;
+     if(fcollisiontype.Contains("HMPP")||fcollisiontype.Contains("MBPP")) ncentbin=sizeof(binning_mult_pp)/sizeof(Double_t)-1;
      else if(fcollisiontype=="PbPb") ncentbin=8;
-     else ncentbin=7;//sizeof(binning_mult_trig)/sizeof(Double_t)-1;
+     else ncentbin=sizeof(binning_mult_trig)/sizeof(Double_t)-1;
    }else {
      if (fcollisiontype=="PbPb") ncentbin=8;
+	 else if(fcollisiontype=="pPb") ncentbin=sizeof(binning_cent_trig)/sizeof(Double_t)-1;													
      else ncentbin=7;
    }
-     
    
    //triggered
    const Int_t nEvtVars = 2;
@@ -1234,16 +1236,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      if(fAnaMode=="TPCFMD"||fAnaMode=="TPCFMDC")	   netabin=4;
      else    netabin=18;
 
-     /*
-     Int_t ncentbin;
-     if(fCentType=="Manual") {
-       ncentbin=9;
-     }else {
-       if(fcollisiontype=="HMPP") ncentbin=11;
-       else if (fcollisiontype=="PbPb") ncentbin=8;
-       else ncentbin=7;
-     }
-     */
      Int_t ntpcpt;
      if(fptdiff) ntpcpt=8;
      else ntpcpt=1;
@@ -1291,8 +1283,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      fHistTriggerTrack->SetVarTitle(0, "leading p_{T} GeV/c");
      fHistTriggerTrack->SetVarTitle(1, "centrality");
      fHistTriggerTrack->SetVarTitle(2, "vz(cm)");
-     
-     
+
      fHistTriggerTrackMix = new AliTHn("fHistTriggerTrackMix", "fHistTriggerTrackMix", nCFStepstrig, nEvtVars, iEvtBin);
      fHistTriggerTrackMix->SetBinLimits(0, binning_pt_lead);
      fHistTriggerTrackMix->SetBinLimits(1, binning_cent);
@@ -2123,6 +2114,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
 	   }
 	   //       lCentrality=nTracks;
 	   lCentrality=nefficorrTrack;
+	   dynamic_cast<TH2F*>(fOutputList->FindObject("fhist_trackeffi"))->Fill(nTracks,nefficorrTrack);
        selectedTracksLeading->Clear();
        delete selectedTracksLeading;
      }else{
@@ -2347,13 +2339,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutcpar0=1.4;
        FMDcutcpar1=120;
        break;
-     case 7:
+     case 7://default
        FMDcutapar0=1.64755;
        FMDcutapar1=119.602;
        FMDcutcpar0=2.73426;
        FMDcutcpar1=150.31;
        break;
-     case 8:
+     case 8://loose cut
        FMDcutapar0=1.64755;
        FMDcutapar1=159.47;
        FMDcutcpar0=2.73426;
@@ -2395,11 +2387,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutcpar0=2.73426;
        FMDcutcpar1=86.6355;
        break;
-     case 15://pPb 2 sigma cut
+     case 15://pPb 5 sigma cut
        FMDcutapar0=1.64755;
-       FMDcutapar1=80.7744;
+       FMDcutapar1=199.33650;
        FMDcutcpar0=2.73426;
-       FMDcutcpar1=86.6355;
+       FMDcutcpar1=250.51668;
        break;
      case 16://PbPb 3sigma cut
        FMDcutapar0=1.26713;
@@ -2412,6 +2404,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutapar1=274.066;
        FMDcutcpar0=2.47928;
        FMDcutcpar1=338.14;
+       break;
+     case 18://pPb 1 sigma cut
+       FMDcutapar0=1.64755;
+       FMDcutapar1=39.867500;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=50.103335;
        break;
      default: break;
      }

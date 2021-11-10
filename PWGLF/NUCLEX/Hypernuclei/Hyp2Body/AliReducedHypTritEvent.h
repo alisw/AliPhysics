@@ -28,43 +28,78 @@ class AliReducedHypTritTrack : public TObject {
 
   // Getters
   TLorentzVector P() const {return fP;}
-  Float_t Ptrack() const {return fPtrack;}
-  Float_t Dca() const {return fDca;}
-  Float_t Phi() const {return fPhi;}
-  Float_t Eta() const {return fEta;}
-  Float_t Dedx() const {return fDedx;}
-  Float_t DedxSigma() const {return fDedxSigma;}
-  Float_t DedxSigmaTriton() const {return fDedxSigmaTriton;}
-  Float_t TpcNcls() const {return fTpcNClusters;}
-  Float_t TpcChi2() const {return fTpcChi2;}
-  Int_t 	Kink() const {return fKink;}
-  Int_t 	TPCrefit() const {return fTPCrefit;}
+  Double_t Ptrack() const {return fPtrack;}
+  Double_t Dca() const {return fDca;}
+  Double_t SignedDca() const {return fDcaSigned;}
+  Double_t Phi() const {return fPhi;}
+  Double_t Eta() const {return fEta;}
+  Double_t Dedx() const {return fDedx;}
+  Double_t DedxSigma() const {return fDedxSigma;}
+  Double_t DedxSigmaTriton() const {return fDedxSigmaTriton;}
+  
+  Double_t TpcNcls() const {return fTpcNClusters;}
+  Double_t ITSNcls() const {return fITSNClusters;}
+  Double_t TpcChi2() const {return fTpcChi2;}
+  Int_t    Kink() const {return fKink;}
+  Int_t    TPCrefit() const {return fTPCrefit;}
+  Int_t    ITSrefit() const {return fITSrefit;}
+  Double_t GeoLength() const {return fGeoLength;}
+
+  Int_t    TRDvalid() const {return fTRDvalid;}
+  Int_t    TRDtrigHNU() const {return fTRDtrigHNU;}
+  Int_t    TRDtrigHQU() const {return fTRDtrigHQU;}
+  Int_t    TRDPid() const {return fTRDPid;}
+  Int_t    TRDnTracklets() const {return fTRDnTracklets;}
+  Int_t    TRDPt() const {return fTRDPt;}
+  Int_t    TRDLayerMask() const {return fTRDLayerMask;}
+  Double_t TRDSagitta() const {return fTRDSagitta;}
+  Int_t    TRDStack() const {return fTRDStack;}
+  Int_t    TRDSector() const {return fTRDSector;}
+  UInt_t   TRDPID0() const {return fTRDPID0;} 
+  UInt_t   TRDPID1() const {return fTRDPID1;} 
+  UInt_t   TRDPID2() const {return fTRDPID2;} 
+  UInt_t   TRDPID3() const {return fTRDPID3;} 
+  UInt_t   TRDPID4() const {return fTRDPID4;} 
+  UInt_t   TRDPID5() const {return fTRDPID5;}    
 private:
-  TLorentzVector fP;               //< 4 momentum of track
-  Float_t        fPtrack;          //< Total momentum of Track
-  Float_t        fDca;             //< DCA to prim vertex
-  Float_t        fDedx;            //< specific energyloss in TPC of track
-  Float_t        fDedxSigma;       //< dEdx sigma
-  Float_t        fDedxSigmaTriton; //< dEdx sigma of triton hypothesis
-  Float_t        fEta;             //< eta of track
-  Float_t        fPhi;             //< phi of track
-  Float_t        fTpcNClusters;    //< number of clusters
-  Float_t	 			 fTpcChi2;	   		 //< chi2 of TPC fit
-  Int_t					 fKink;						 //< kink doughters
-  Int_t					 fTPCrefit;				 //< TPC refit
-  Float_t        fGeoLength;       //< geometric length cut
-	Int_t					 fTRDvalid;	       //< has valid TRD track
-	Int_t					 fTRDtrigHNU;	     //< HNU fired by track
-	Int_t					 fTRDtrigHQU;			 //< HQU fired by track
-	Int_t					 fTRDPid;					 //< PID value of TRD track
-	Int_t	 				 fTRDnTracklets;	 //< number of TRD tracklets
-	Int_t	         fTRDPt;           //< Pt of TRD track
-	Int_t	         fTRDLayerMask;		 //< TRD track layer mask
-	Float_t	       fTRDSagitta;			 //< sagitta value of TRD track
-	
+  TLorentzVector  fP;               //< 4 momentum of track
+  Double_t        fPtrack;          //< Total momentum of Track
+  Double_t        fDca;             //< DCA to prim vertex
+  Double_t        fDcaSigned;       //< DCA to prim vertex
+  Double_t        fDedx;            //< specific energyloss in TPC of track
+  Double_t        fDedxSigma;       //< dEdx sigma
+  Double_t        fDedxSigmaTriton; //< dEdx sigma of triton hypothesis
+  Double_t        fEta;             //< eta of track
+  Double_t        fPhi;             //< phi of track
+ 
+  Double_t        fTpcNClusters;    //< number of clusters
+  Double_t        fITSNClusters;    //< number of clusters
+  Double_t        fTpcChi2;         //< chi2 of TPC fit
+  Int_t           fKink;            //< kink doughters
+  Int_t           fTPCrefit;        //< TPC refit
+  Int_t           fITSrefit;        //< ITS refit
+  Double_t        fGeoLength;       //< geometric length cut
+  
+  Int_t           fTRDvalid;        //< has valid TRD track
+  Int_t           fTRDtrigHNU;      //< HNU fired by track
+  Int_t           fTRDtrigHQU;      //< HQU fired by track
+  Int_t           fTRDPid;          //< PID value of TRD track
+  Int_t           fTRDnTracklets;   //< number of TRD tracklets
+  Int_t           fTRDPt;           //< Pt of TRD track
+  Int_t           fTRDLayerMask;    //< TRD track layer mask
+  Double_t        fTRDSagitta;      //< sagitta value of TRD track
+  Int_t           fTRDStack;
+  Int_t           fTRDSector;
+  UInt_t          fTRDPID0;
+  UInt_t          fTRDPID1;
+  UInt_t          fTRDPID2;
+  UInt_t          fTRDPID3;
+  UInt_t          fTRDPID4;
+  UInt_t          fTRDPID5;
+
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
 AliReducedHypTritTrack &operator = (const AliReducedHypTritTrack&);
-ClassDef(AliReducedHypTritTrack, 6)
+ClassDef(AliReducedHypTritTrack, 7)
 };
 
 class AliReducedHypTritV0 : public TObject {
@@ -80,14 +115,14 @@ class AliReducedHypTritV0 : public TObject {
   TVector3 Pvect() const {return fPvect;}
   AliReducedHypTritTrack* Pi() const {return fPiTrack;}
   AliReducedHypTritTrack* He() const {return fHeTrack;}
-  Float_t M() const {return fM;}
-  Float_t Pt() const {return fPt;}
-  Float_t P() const {return fP;}
-  Float_t Dca() const {return fDcaV0;}
-  Float_t Ct() const {return fDecayLength;}
-  Float_t Cos() const {return fCosPointingAngle;}
+  Double_t M() const {return fM;}
+  Double_t Pt() const {return fPt;}
+  Double_t P() const {return fP;}
+  Double_t Dca() const {return fDcaV0;}
+  Double_t Ct() const {return fDecayLength;}
+  Double_t Cos() const {return fCosPointingAngle;}
   Bool_t  Mc() const {return fMcTruth;}
-  Float_t Y() const {return fRapidity;}
+  Double_t Y() const {return fRapidity;}
   Short_t Charge() const {return fCharge;}
   Short_t Species() const {return fParticleSpecies;}
   Bool_t  OnFlyStatus() const {return fOnFlyStatus;}
@@ -98,17 +133,17 @@ private:
   TVector3                fPvect;            //< Momentum vector of mother
   AliReducedHypTritTrack* fPiTrack;          //< positive daughter of v0
   AliReducedHypTritTrack* fHeTrack;          //< negative daughter of v0
-  Float_t                 fP;                //< momentum of mother
-  Float_t                 fPt;               //<  transverse momentum of mother
-  Float_t                 fM;                //< reconstructed invariant mass of mother
-  Float_t                 fDcaV0;            //< DCA of daughters
-  Float_t                 fCosPointingAngle; //< cosine of pointing angle of vertex
-  Float_t                 fDecayLength;      //< decay radius of mother particle
+  Double_t                fP;                //< momentum of mother
+  Double_t                fPt;               //<  transverse momentum of mother
+  Double_t                fM;                //< reconstructed invariant mass of mother
+  Double_t                fDcaV0;            //< DCA of daughters
+  Double_t                fCosPointingAngle; //< cosine of pointing angle of vertex
+  Double_t                fDecayLength;      //< decay radius of mother particle
   Bool_t                  fMcTruth;          //< Monte Carlo truth of mother type
-  Float_t                 fRapidity;         //< Rapidity of V0
+  Double_t                fRapidity;         //< Rapidity of V0
   Short_t                 fCharge;           //< anti or particle
   Short_t                 fParticleSpecies;  //< particle species
-  Bool_t                  fOnFlyStatus;       //< ontheflyStatus
+  Bool_t                  fOnFlyStatus;      //< ontheflyStatus
 
 
   AliReducedHypTritV0(const AliReducedHypTritV0&);
@@ -127,8 +162,9 @@ class AliReducedHypTritEvent : public TObject {
   AliReducedHypTritV0* V0(Int_t i) const
       {return (i < fNumberV0s ? (AliReducedHypTritV0*) fV0s->At(i) : 0x0);}
   TVector3 VertexPosition() const {return fVertexPosition;}
-  Float_t  Centrality() const {return fCentrality;}
+  Double_t  Centrality() const {return fCentrality;}
   UShort_t NumberV0s() const {return fNumberV0s;}
+ 
   UShort_t Trigger() const {return fTrigger;}
   UShort_t IsMBtriggered() const {return fTrigMB;}
   UShort_t IsHNUtriggered() const {return fTrigHNU;}
@@ -137,27 +173,31 @@ class AliReducedHypTritEvent : public TObject {
   UShort_t IsHSEtriggered() const {return fTrigHSE;}
   UShort_t IsV0triggered() const {return fTrigV0;}
   UShort_t IsSPDtriggered() const {return fTrigSPD;}
-  TString TriggerClasses() const {return fTriggerClasses;}
+  TString  TriggerClasses() const {return fTriggerClasses;}
+ 
   Int_t    RunNumber() const {return fRunNumber;}
-	Float_t	SPDFiredChips0() const {return fSPDFiredChips0;}
-	Float_t SPDFiredChips1() const {return fSPDFiredChips1;}
-	Float_t SPDTracklets() const {return fSPDTracklets;}
-	Float_t SPDCluster() const {return fSPDCluster;}
-	Float_t	V0Multiplicity() const {return fV0Multiplicity;}
-	Float_t MultV0M()	const {return fMultV0M;}	
-	Float_t MultOfV0M()	const {return fMultOfV0M;}		
-	Float_t MultSPDTracklet() const {return fMultSPDTracklet;}	
-	Float_t MultSPDCluster() const {return fMultSPDCluster;}
-	Float_t MultRef05()	const {return fMultRef05;}		
-	Float_t MultRef08()	const {return fMultRef08;}
+  Double_t MagField()const {return fMagField;}
+
+  Double_t SPDFiredChips0() const {return fSPDFiredChips0;}
+  Double_t SPDFiredChips1() const {return fSPDFiredChips1;}
+  Double_t SPDTracklets() const {return fSPDTracklets;}
+  Double_t SPDCluster() const {return fSPDCluster;}
+  Double_t V0Multiplicity() const {return fV0Multiplicity;}
+
+  Double_t MultV0M()const {return fMultV0M;}
+  Double_t MultOfV0M()const {return fMultOfV0M;}
+  Double_t MultSPDTracklet() const {return fMultSPDTracklet;}
+  Double_t MultSPDCluster() const {return fMultSPDCluster;}
+  Double_t MultRef05()const {return fMultRef05;}
+  Double_t MultRef08()const {return fMultRef08;}
   void ClearEvent();
 
 private:
   TVector3      fVertexPosition; //< position of primary vertex
   TClonesArray* fV0s;            //< array of v0s in event
   UShort_t      fNumberV0s;      //< number of v0s in event
-  Float_t       fCentrality;     //< centrality of event
-  Int_t         fRunNumber;      //< number of run
+  Double_t      fCentrality;     //< centrality of event
+
   UShort_t      fTrigger;        //< array of Triggers
   UShort_t      fTrigMB;         //< Flag for MB trigger
   UShort_t      fTrigHNU;        //< Flag for TRD-HNU trigger
@@ -166,22 +206,24 @@ private:
   UShort_t      fTrigHSE;        //< Flag for TRD-HSE trigger
   UShort_t      fTrigV0;         //< Flag for HM-V0 trigger
   UShort_t      fTrigSPD;        //< Flag for HM-SPD trigger
-  
-  TString 	    fTriggerClasses; //< fired trigger classes
+  TString       fTriggerClasses; //< fired trigger classes
 
-	Float_t					fSPDFiredChips0;	// multiplicity triggers
-	Float_t					fSPDFiredChips1;
-	Float_t 				fSPDTracklets;
-	Float_t 				fSPDCluster;
-	Float_t					fV0Multiplicity;
+  Int_t         fRunNumber;      //< number of run
+  Double_t      fMagField;
 
-	Float_t 				fMultV0M;			// multiplicity estimators
-	Float_t 				fMultOfV0M;			
-	Float_t 				fMultSPDTracklet;	
-	Float_t 				fMultSPDCluster;	
-	Float_t 				fMultRef05;			
-	Float_t 				fMultRef08;		
-		
+  Double_t      fSPDFiredChips0; // multiplicity triggers
+  Double_t      fSPDFiredChips1;
+  Double_t      fSPDTracklets;
+  Double_t      fSPDCluster;
+  Double_t      fV0Multiplicity;
+
+  Double_t      fMultV0M;// multiplicity estimators
+  Double_t      fMultOfV0M;
+  Double_t      fMultSPDTracklet;
+  Double_t      fMultSPDCluster;
+  Double_t      fMultRef05;
+  Double_t      fMultRef08;
+
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);
   ClassDef(AliReducedHypTritEvent, 6);

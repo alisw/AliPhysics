@@ -656,6 +656,9 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
 
     AliEmcalJet* leadingJet = jetcont->GetLeadingJet();
 
+    if(!leadingJet)
+      return -999;
+
     Double_t signalEta = leadingJet->Eta();
     Double_t signalPhi = leadingJet->Phi();
 

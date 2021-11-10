@@ -548,13 +548,14 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
     fHistos->FillTH2("hJetfindingEfficiencyCore", partjetpt, tagstatus);
     if(fFillHSparse){
-      Double_t detjetpt = detjet->Pt();
-      if (fDoBkgSub && detjets->GetRhoParameter()){
-        detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
-      }
       double effvec[3] = {partjetpt, 0.,static_cast<double>(tagstatus)};
       if(detjet) {
         // Found a match
+        Double_t detjetpt = detjet->Pt();
+        if (fDoBkgSub && detjets->GetRhoParameter()){
+          detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
+        }
+
         effvec[1] = detjetpt;
         if(TMath::Abs(fScaleShift) > DBL_EPSILON){
           effvec[1] += fScaleShift * effvec[1];

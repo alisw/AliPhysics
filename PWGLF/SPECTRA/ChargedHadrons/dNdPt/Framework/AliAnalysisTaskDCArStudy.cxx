@@ -106,7 +106,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     // 4=weightSysRandom
     //    Axis mcWeightAxis{"weight", "weight", {-0.5, 4.5}, 5};
     Axis weightValues{"weight", "weight", {0.,5.}, 50};
-    Axis secLambdaKaon{"SecDecayType", "SecDecayType", {-1.5, 2.5}, 4};//0=lambda, 1=kaon, 2=other
+    Axis secLambdaKaon{"SecDecayType", "SecDecayType", {-1.5, 4.5}, 6};//0=lambda, 1=kaon, 2=pion, 3=other
 
     // ------
     // hists

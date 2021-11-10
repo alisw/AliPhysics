@@ -136,9 +136,10 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib() :
     }     
   };
   for (int iRun = 0; iRun < NRUNNUM; ++iRun){
-    hMultV0Fill[iRun]=NULL;
-    hMultV0GE[iRun]=NULL;
+    pMultV0Fill[iRun]=NULL;
     hMultV0Read[iRun]=NULL;
+    hMultV0GE[iRun]=NULL;
+    hMultV0Raw[iRun]=NULL;
     for (int i = 0; i < 3; ++i){
       pV0XMeanFill[iRun][i]=NULL;
       pV0YMeanFill[iRun][i]=NULL;
@@ -150,6 +151,8 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib() :
     hQnCentCor[i]=NULL;
     hQxCentCor[i]=NULL;
     hQyCentCor[i]=NULL;
+    hQxCentRaw[i]=NULL;
+    hQyCentRaw[i]=NULL;
     hQxVtxCor[i]=NULL;
     hQyVtxCor[i]=NULL;
   }
@@ -257,9 +260,10 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib(const char *name) :
     }     
   };
   for (int iRun = 0; iRun < NRUNNUM; ++iRun){
-    hMultV0Fill[iRun]=NULL;
-    hMultV0GE[iRun]=NULL;
+    pMultV0Fill[iRun]=NULL;
     hMultV0Read[iRun]=NULL;
+    hMultV0GE[iRun]=NULL;
+    hMultV0Raw[iRun]=NULL;
     for (int i = 0; i < 3; ++i){
       pV0XMeanFill[iRun][i]=NULL;
       pV0YMeanFill[iRun][i]=NULL;
@@ -271,6 +275,8 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib(const char *name) :
     hQnCentCor[i]=NULL;
     hQxCentCor[i]=NULL;
     hQyCentCor[i]=NULL;
+    hQxCentRaw[i]=NULL;
+    hQyCentRaw[i]=NULL;
     hQxVtxCor[i]=NULL;
     hQyVtxCor[i]=NULL;
   }
@@ -340,10 +346,11 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
   };
   // Run Info 11h
   if (fPeriod.EqualTo("LHC11h")){
-    TString RunList[39]={"170387","170040","170268","170228","170207","169838","170159","170204","170311","170084",
-      "169835","170088","170593","170203","170270","169846","170163","170388","170155","170083",
-      "170572","169837","169855","170306","170269","170089","170309","170091","170081","170230",
-      "170085","170315","170027","170193","170312","170313","170308","169858","169859"};
+    TString RunList[68]={"167915", "168115", "168460", "169035", "169238", "169859", "170228 ", "167920", "168310", "168464", "169091", "169411", 
+      "169923", "170230", "167985", "168311", "168467", "169094", "169415", "170027", "170268", "167987", "168322", "168511", "169138", "169417", 
+      "170081", "170269", "167988", "168325", "168512", "169144", "169835", "170155", "170270", "168069", "168341", "168514", "169145", "169837", 
+      "170159", "170306", "168076", "168342", "168777", "169148", "169838", "170163", "170308", "168105", "168361", "168826", "169156", "169846", 
+      "170193", "170309", "168107", "168362", "168988", "169160", "169855", "170203", "168108 ", "168458", "168992", "169167", "169858", "170204"};
       hRunNumBin = new TH1I("runNumBin","",100,0,100);
       for (int i=0; i<NRUNNUM; ++i) {    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,RunList[i].Data());
@@ -502,8 +509,8 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
     if (fVZEROGainEq){
       AliOADBContainer* contMult = new AliOADBContainer("hMultV0BefCorPfpx");
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
-        hMultV0Fill[iRun] = new TH1D(Form("hMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
-        contMult->AppendObject(hMultV0Fill[iRun], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());      
+        pMultV0Fill[iRun] = new TProfile(Form("pMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
+        contMult->AppendObject(pMultV0Fill[iRun], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());      
       } 
       fOutputList->Add(contMult);
     };
@@ -565,9 +572,16 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
       }
       // Mult Aft GE
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
-        hMultV0GE[iRun] =  new TH1D(Form("hMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
+        hMultV0GE[iRun] =  new TH2D(Form("hMultV0GERun%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64, 450, 0, 900);
         fOutputList->Add(hMultV0GE[iRun]);      
       } 
+
+      if (fQAV0){      
+        for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
+          hMultV0Raw[iRun] =  new TH2D(Form("hMultV0RawRun%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64, 450, 0, 900);
+          fOutputList->Add(hMultV0Raw[iRun]);      
+        } 
+      }
 
       if (fVZEROCalib){
         // V0C Qx Mean 
@@ -657,17 +671,27 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
       hQyCentCor[0] = new TH2D("hQyCorV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
       hQyCentCor[1] = new TH2D("hQyCorV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
       hQyCentCor[2] = new TH2D("hQyCorV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
+
+      hQxCentRaw[0] = new TH2D("hQxRawV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQxCentRaw[1] = new TH2D("hQxRawV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQxCentRaw[2] = new TH2D("hQxRawV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQyCentRaw[0] = new TH2D("hQyRawV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQyCentRaw[1] = new TH2D("hQyRawV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQyCentRaw[2] = new TH2D("hQyRawV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
+
       hQxVtxCor[0] = new TH2D("hQxCorV0MvsVz","",20, -10, 10, 32, -600, 600);
       hQxVtxCor[1] = new TH2D("hQxCorV0CvsVz","",20, -10, 10, 32, -600, 600);
       hQxVtxCor[2] = new TH2D("hQxCorV0AvsVz","",20, -10, 10, 32, -600, 600);
       hQyVtxCor[0] = new TH2D("hQyCorV0MvsVz","",20, -10, 10, 32, -600, 600);
       hQyVtxCor[1] = new TH2D("hQyCorV0CvsVz","",20, -10, 10, 32, -600, 600);
       hQyVtxCor[2] = new TH2D("hQyCorV0AvsVz","",20, -10, 10, 32, -600, 600);
-      if (fVZEROCalib){
+      if (fVZEROCalib && fQAV0){
         for (int i = 0; i < 3; ++i) fOutputList->Add(hQxCentCor[i]); 
         for (int i = 0; i < 3; ++i) fOutputList->Add(hQyCentCor[i]); 
+        for (int i = 0; i < 3; ++i) fOutputList->Add(hQxCentRaw[i]); 
+        for (int i = 0; i < 3; ++i) fOutputList->Add(hQyCentRaw[i]); 
         for (int i = 0; i < 3; ++i) fOutputList->Add(hQxVtxCor[i]); 
-        for (int i = 0; i < 3; ++i) fOutputList->Add(hQyVtxCor[i]); 
+        for (int i = 0; i < 3; ++i) fOutputList->Add(hQyVtxCor[i]);     
       }
     }
   };
@@ -1171,7 +1195,7 @@ int AliAnalysisTaskEPCalib::GetRunNumBin(int runNum)
 {
   int runNBin=-1;
   if (fPeriod.EqualTo("LHC10h") ){
-      int fRunNumList[90]={
+      int IRunNumList[90]={
         139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310,
         139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870,
         138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582,
@@ -1181,21 +1205,23 @@ int AliAnalysisTaskEPCalib::GetRunNumBin(int runNum)
         137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243,
         137236, 137235, 137232, 137231, 137162, 137161};
       for (int i = 0; i < 90; ++i) {
-        if (runNum==fRunNumList[i]) {runNBin=i; break;}
+        if (runNum==IRunNumList[i]) {runNBin=i; break;}
         else continue;
       }
   } else if (fPeriod.EqualTo("LHC11h") ){
-      int fRunNumList[39]={
-        170387,170040,170268,170228,170207,169838,170159,170204,170311,170084,
-        169835,170088,170593,170203,170270,169846,170163,170388,170155,170083,
-        170572,169837,169855,170306,170269,170089,170309,170091,170081,170230,
-        170085,170315,170027,170193,170312,170313,170308,169858,169859};
-        for (int i = 0; i < 39; ++i) {
-          if (runNum==fRunNumList[i]) {runNBin=i; break;}
+      int IRunNumList[68]={
+        167915, 168115, 168460, 169035, 169238, 169859, 170228 , 167920, 168310, 168464, 169091, 169411, 
+        169923, 170230, 167985, 168311, 168467, 169094, 169415, 170027, 170268, 167987, 168322, 168511, 
+        169138, 169417, 170081, 170269, 167988, 168325, 168512, 169144, 169835, 170155, 170270, 168069, 
+        168341, 168514, 169145, 169837, 170159, 170306, 168076, 168342, 168777, 169148, 169838, 170163, 
+        170308, 168105, 168361, 168826, 169156, 169846, 170193, 170309, 168107, 168362, 168988, 169160, 
+        169855, 170203, 168108 , 168458, 168992, 169167, 169858, 170204};
+        for (int i = 0; i < 68; ++i) {
+          if (runNum==IRunNumList[i]) {runNBin=i; break;}
           else continue;
         }
   } else if (fPeriod.EqualTo("LHC15o") ){
-      int fRunNumList[138]={
+      int IRunNumList[138]={
         246994, 246991, 246989, 246984, 246982, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 
         246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 
         246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246434, 
@@ -1209,7 +1235,7 @@ int AliAnalysisTaskEPCalib::GetRunNumBin(int runNum)
         245343, 245259, 245233, 245232, 245231, 245152, 245151, 245146, 245145, 245068, 245066, 245064, 
         244983, 244982, 244980, 244975, 244918, 244917};
       for (int i = 0; i < 138; ++i) {
-        if (runNum==fRunNumList[i]) {runNBin=i; break;}
+        if (runNum==IRunNumList[i]) {runNBin=i; break;}
         else continue;
       }
   }
@@ -1504,7 +1530,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
     qx[0] += mult*TMath::Cos(fHarmonic*phi);
     qy[0] += mult*TMath::Sin(fHarmonic*phi);
     multRing[0] += mult;
-    if (fVZEROGainEq) hMultV0Fill[fRunNumBin]->Fill(iCh, mult);
+    if (fVZEROGainEq && mult>1e-6) pMultV0Fill[fRunNumBin]->Fill(iCh, mult);
 
     if (iCh<32) { // C
       qx[1] += mult*TMath::Cos(fHarmonic*phi);
@@ -1531,6 +1557,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         qyGE[0] += multCorGEC*TMath::Sin(fHarmonic*phi); 
         multRingGE[0] += multCorGEC;
         hMultV0GE[fRunNumBin]->Fill(iCh, multCorGEC);
+        if (fQAV0) hMultV0Raw[fRunNumBin]->Fill(iCh, mult);
       }    
     } else if (iCh>=32 && iCh<64) { // A
       qx[2] += mult*TMath::Cos(fHarmonic*phi);
@@ -1557,6 +1584,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         qyGE[0] += multCorGEA*TMath::Sin(fHarmonic*phi); 
         multRingGE[0] += multCorGEA;
         hMultV0GE[fRunNumBin]->Fill(iCh, multCorGEA);
+        if (fQAV0) hMultV0Raw[fRunNumBin]->Fill(iCh, mult);
       }
     }
   };
@@ -1596,6 +1624,8 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
       if (fQAV0){
         hQxCentCor[i]->Fill(iCentSPD, qxRecenter[i]);
         hQyCentCor[i]->Fill(iCentSPD, qyRecenter[i]);
+        hQxCentRaw[i]->Fill(iCentSPD, qxGE[i]);
+        hQyCentRaw[i]->Fill(iCentSPD, qyGE[i]);
         hQxVtxCor[i]->Fill(vz, qxRecenter[i]);
         hQyVtxCor[i]->Fill(vz, qyRecenter[i]);
       }

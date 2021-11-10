@@ -370,6 +370,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
 
   if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()");
 
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+  
   //
   // Create histograms / output container
   //
