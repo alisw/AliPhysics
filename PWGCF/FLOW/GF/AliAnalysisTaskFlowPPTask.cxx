@@ -359,7 +359,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
     // Physics profiles
 	//	NL response
 	InitProfile(multProfile, "");
-    for (int i = 0; i < 10; i++) InitProfile(multProfile_bin[i], Form("_%d", i));
+    for (int i = 0; i < 30; i++) InitProfile(multProfile_bin[i], Form("_%d", i));
                                         // don't forget to add it to the list! the list will be written to file, so if you want
                                         // your histogram in the output file, add it to the list!
     
@@ -378,7 +378,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
     // have access to the current event. 
     // once you return from the UserExec function, the manager will retrieve the next event from the chain   
   
-    bootstrap_value = rand.Integer(10);
+    bootstrap_value = rand.Integer(30);
 	//..apply physics selection
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	//trigger & mask
@@ -1288,6 +1288,22 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, T
 		multProfile.fChcn4_3subGap2[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn4_3subGap2[h]);
 
+		multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn6[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn6[h]);
+
+		multProfile.fChcn6_Gap10[h] = new TProfile(Form("fChc%d{6}_Gap10%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn6_Gap10[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn6_Gap10[h]);
+
+		multProfile.fChcn8[h] = new TProfile(Form("fChc%d{8}%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn8[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn8[h]);
+
+		multProfile.fChcn8_Gap0[h] = new TProfile(Form("fChc%d{8}_Gap0%s", h+2, label.Data()), "<<8>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn8_Gap0[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn8_Gap0[h]);
+
 	} // harmonics
 
 
@@ -1774,7 +1790,7 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Dn5Gap10B = correlator.FiveGap10B(0, 0, 0, 0, 0).Re();
 
 	// A type
-	if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 1 && Dn5Gap10A != 0)
+	if(NtrksAfterGap10M > 1 && NtrksAfterGap10P > 2 && Dn5Gap10A != 0)
 	{
 
 		TComplex v5_A42222 = correlator.FiveGap10A(4, 2, -2, -2, -2);
@@ -1791,8 +1807,21 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
 	double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
 
+	if(NtrksAfter > 5 && Dn6 != 0)
+	{
+		// v2{6}
+		TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
+		double v26Re = v26.Re()/Dn6;
+		profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
+	}
+
 	if(NtrksAfterGap10M > 2 && NtrksAfterGap10P > 2 && Dn6Gap10 !=0)
 	{
+		//..v2{6} with eta Gap > 1.0
+		TComplex v26Gap10 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
+		double v26ReGap10 = v26Gap10.Re()/Dn6Gap10;
+		profile.fChcn6_Gap10[0]->Fill(Ntrks, v26ReGap10, Dn6Gap10);
+
 		TComplex v6_222222 = correlator.SixGap10(2, 2, 2, -2, -2, -2);
 		double v6_222222Re = v6_222222.Re()/Dn6Gap10;
 		profile.fChc6_222222->Fill(Ntrks, v6_222222Re, Dn6Gap10);
@@ -1802,6 +1831,24 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		profile.fChc6_322322->Fill(Ntrks, v6_322322Re, Dn6Gap10);
 	}
 
+	double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	// Gap0 isn't calculated in this version
+	//double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+
+	if(NtrksAfter > 7 && Dn8 != 0)
+	{
+		// v2{8}
+		TComplex v28 = correlator.Eight(2, 2, 2, 2, -2, -2, -2, -2);
+		double v28Re = v28.Re()/Dn8;
+		profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
+	}
+
+	//if(NtrksAfterGap10M > 3 && NtrksAfterGap10P > 3 && Dn8Gap0 !=0){
+		//..v2{8} with eta Gap > 0.
+		//TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
+		//double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
+		//profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
+	//}
 
 
 }
@@ -1906,4 +1953,10 @@ PhysicsProfilePPTask::PhysicsProfilePPTask() :
 		memset(fChcn4_3subLLMR, 0, sizeof(fChcn4_3subLLMR));
 		memset(fChcn4_3subRRML, 0, sizeof(fChcn4_3subRRML));
 		memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
+
+		memset(fChcn6, 0, sizeof(fChcn6));
+		memset(fChcn6_Gap10, 0, sizeof(fChcn6_Gap10));
+
+		memset(fChcn8, 0, sizeof(fChcn8));
+		memset(fChcn8_Gap0, 0, sizeof(fChcn8_Gap0));
 }
