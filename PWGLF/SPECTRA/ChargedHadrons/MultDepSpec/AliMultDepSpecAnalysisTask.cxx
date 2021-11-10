@@ -726,7 +726,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
 
   fMCIsChargedPrimary = fMCEvent->IsPhysicalPrimary(particleID);
   bool isChargedSecondaryFromWeakDecay = (fMCIsChargedPrimary) ? false : fMCEvent->IsSecondaryFromWeakDecay(particleID);
-  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (isSecondaryFromWeakDecay || fMCEvent->IsSecondaryFromMaterial(particleID));
+  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (isChargedSecondaryFromWeakDecay || fMCEvent->IsSecondaryFromMaterial(particleID));
 
   // not interested in anything non-final
   if (!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
