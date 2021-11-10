@@ -457,7 +457,9 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
 //**************************************************************************************************
 double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 {
-  // FIXME: add PCC handler
+  if (fMCSpectraWeights) {
+    return fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle()); // TODO: syst var
+  }
   return 1.0;
 }
 
@@ -723,7 +725,8 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
   fMCIsChargedPrimary = fMCEvent->IsPhysicalPrimary(particleID);
-  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (fMCEvent->IsSecondaryFromWeakDecay(particleID) || fMCEvent->IsSecondaryFromMaterial(particleID));
+  bool isChargedSecondaryFromWeakDecay = (fMCIsChargedPrimary) ? false : fMCEvent->IsSecondaryFromWeakDecay(particleID);
+  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (isSecondaryFromWeakDecay || fMCEvent->IsSecondaryFromMaterial(particleID));
 
   // not interested in anything non-final
   if (!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
@@ -742,7 +745,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
     if (fMCIsChargedPrimary) {
       fMCParticleWeight = GetParticleWeight(static_cast<AliVParticle*>(particle));
       fNRepetitions = GetNRepetitons(fMCParticleWeight);
-    } else {
+    } else if (isChargedSecondaryFromWeakDecay) {
       fMCSecScaleWeight = GetSecScalingFactor(static_cast<AliVParticle*>(particle));
       fNRepetitions = GetNRepetitons(fMCSecScaleWeight);
     }
