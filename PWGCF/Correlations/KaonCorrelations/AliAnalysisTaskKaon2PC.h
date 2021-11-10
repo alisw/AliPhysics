@@ -44,13 +44,17 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
     AliAODVertex    *fPrimaryVtx;            //! AOD vertex
     AliPIDResponse	*fPIDResponse;	 // PID
     AliEventCuts    *fEventCuts;
-    TH2F            *fHistChKaons;
-    TH2F            *fHistEtaCuts;
-    TH2F            *fHistPosKaons;
-    TH2F            *fHistNegKaons;
+    TH2F            *fHistCFPhi;
+    TH2F            *fHistCFPhiCuts;
+    TH2F            *fHistCFPhiLCuts;
+    TH2F            *fHistK0Phi;
+    TH2F            *fHistKPosPhi;
+    TH2F            *fHistKNegPhi;
+    TH2F            *fHistCFEta;
+    TH2F            *fHistKPosEta;
+    TH2F            *fHistKNegEta;
+    TH2F            *fHistK0Eta;
     TH1F            *fHistV0M;
-//    TH1F            *fHistV0s;
-    TH2F            *fHistK0s;
     
     Double_t        fLpTCut;        //not a pointer???
 	Double_t        fUpTCut;

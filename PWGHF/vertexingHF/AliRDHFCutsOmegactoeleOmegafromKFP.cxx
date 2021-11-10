@@ -798,7 +798,7 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
       fPidObjCascKa->SetPidResponse(pidResp);
     }
       
-      if(isparticle){
+      if(btrack->Charge()<0){
         Int_t isProton = -9999;
         Int_t isPion = -9999;
         Int_t isKaon = -9999;

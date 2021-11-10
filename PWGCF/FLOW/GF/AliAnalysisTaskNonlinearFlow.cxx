@@ -2197,7 +2197,10 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   Double_t zRes = TMath::Sqrt(cov[5]);
   if ( vtxSPD->IsFromVertexerZ() && (zRes > dMaxResol)) return kFALSE;
 
-  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC15oKatarina")) {
+  if (fPeriod.EqualTo("LHC15o") || 
+      fPeriod.EqualTo("LHC15o_pass2") || 
+      fPeriod.EqualTo("LHC18qr_pass3") || 
+      fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
   } else {
     if(fAOD->IsPileupFromSPDInMultBins() ) { return false; }

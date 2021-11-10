@@ -1133,6 +1133,30 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     phiBinning.CreateBinEdges(phiBinsArray);
     GetHistogramRanges()->SetHistoPhiArr(phiBinsArray);
   }
+
+  if ( GetHistogramRanges()->GetHistoDeltaEtaArr().GetSize() == 0 )
+  {
+    TCustomBinning detaBinning;
+    detaBinning.SetMinimum(GetHistogramRanges()->GetHistoDeltaEtaMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoDeltaEtaMax() - GetHistogramRanges()->GetHistoDeltaEtaMin() ) / GetHistogramRanges()->GetHistoDeltaEtaBins();
+    detaBinning.AddStep(GetHistogramRanges()->GetHistoDeltaEtaMax(), binWidth);
+
+    TArrayD detaBinsArray;
+    detaBinning.CreateBinEdges(detaBinsArray);
+    GetHistogramRanges()->SetHistoDeltaEtaArr(detaBinsArray);
+  }
+
+  if ( GetHistogramRanges()->GetHistoDeltaPhiArr().GetSize() == 0 )
+  {
+    TCustomBinning dphiBinning;
+    dphiBinning.SetMinimum(GetHistogramRanges()->GetHistoDeltaPhiMin());
+    Float_t binWidth = ( GetHistogramRanges()->GetHistoDeltaPhiMax() - GetHistogramRanges()->GetHistoDeltaPhiMin() ) / GetHistogramRanges()->GetHistoDeltaPhiBins();
+    dphiBinning.AddStep(GetHistogramRanges()->GetHistoDeltaPhiMax(), binWidth);
+
+    TArrayD dphiBinsArray;
+    dphiBinning.CreateBinEdges(dphiBinsArray);
+    GetHistogramRanges()->SetHistoDeltaPhiArr(dphiBinsArray);
+  }
   
   if ( GetHistogramRanges()->GetHistoTrackResidualEtaArr().GetSize() == 0 )
   {

@@ -79,12 +79,16 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     void                    SetWriteOmegac0MCGenTree(Bool_t a) {fWriteOmegac0MCGenTree = a;}
     Bool_t                  GetWriteOmegac0MCGenTree() const {return fWriteOmegac0MCGenTree;}
     
+    void                    SetWriteElectronTree(Bool_t a ) {fWriteElectronTree = a;}
+    Bool_t                  GetWriteElectronTree() const {return fWriteElectronTree;}
+    
     void                    FillTreeGenOmegac0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLOverP);
     
     void                    FillEventROOTObjects();
 
     void                    FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype);
     
+    void                    FillTreeElectron(AliAODTrack* trk, AliAODEvent *aodEvent, TClonesArray * mcArray);
     
     //--- private
     
@@ -94,6 +98,7 @@ private:
     void                     DefineTreeRecoOmegac0_QA();
     void                     DefineTreeMCGenOmegac0();
     void                     DefineAnaHist();
+    void                     DefineTreeElectron();
   
     AliPIDResponse*          fPID; ///<
     AliRDHFCutsOmegactoeleOmegafromKFP*   fAnalCuts; /// !<! Cuts
@@ -110,12 +115,16 @@ private:
     Float_t*                fVar_Omegac0_QA;         //!<! QA check for the candidate variables
     TTree*                  fTree_Omegac0MCGen;        //!<! tree of the candidate variables after the track selection on output slot
     Float_t*                fVar_Omegac0MCGen;         //!<! variables of Omegac0 to be written to the tree
-   
+    TTree*                  fTree_Electron;           //!<! tree of event
+    Float_t*                fVar_Electron;             //!<! tree of the electron candidate variables
+    
     AliNormalizationCounter* fCounter; //!<! Counter for normalization
     Bool_t                  fUseMCInfo; ///< Flag of MC analysis
     Bool_t                  fWriteOmegac0Tree;   ///< flag to decide whether to write Omegac0 tree
     Bool_t                  fWriteOmegac0QATree; ///< flag to decide whether to write Omegac0QA tree
     Bool_t                  fWriteOmegac0MCGenTree;  ///<flag to decide whether to write the MC candidate variables on a tree variables
+    Bool_t                  fWriteElectronTree;   ///< flag to decide whether to write Electron tree
+    
     
     TH1F*                   fHistEvents;          //!<! Histogram of selected events
     TH1F*                   fHTrigger;            //!<! Histogram of trigger
@@ -127,7 +136,7 @@ private:
     THnSparse*              fHistoElectronTPCTOFSelPID;     //!<! TPC, TOF electron PID
     
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,1);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,2);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 

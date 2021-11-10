@@ -9,6 +9,7 @@
 class AliRDHFJetsCutsVertex;
 class AliEmcalJetTree;
 class AliHFJetsTaggingVertex;
+#include "AliAnalysisTaskJetQnVectors.h"
 
 /**
  * \class AliAnalysisTaskJetExtractor
@@ -49,6 +50,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSaveConstituentPID(Bool_t val) {fSaveConstituentPID = val; fInitialized = kFALSE;}
   void                        SetSaveJetShapes(Bool_t val) {fSaveJetShapes = val; fInitialized = kFALSE;}
   void                        SetSaveJetSplittings(Bool_t val) {fSaveJetSplittings = val; fInitialized = kFALSE;}
+  void                        SetSaveQVector(Bool_t val)  {fSaveQVector = val; fInitialized = kFALSE;}
   void                        SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
   void                        SetSaveSecondaryVertices(Bool_t val) {fSaveSecondaryVertices = val; fInitialized = kFALSE;}
   void                        SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val; fInitialized = kFALSE;}
@@ -102,6 +104,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Bool_t                      fSaveConstituentPID;                      ///< save arrays of constituent PID parameters
   Bool_t                      fSaveJetShapes;                           ///< save jet shapes
   Bool_t                      fSaveJetSplittings;                       ///< save jet splittings from iterative CA reclustering
+  Bool_t                      fSaveQVector;                             ///< save q vector
   Bool_t                      fSaveMCInformation;                       ///< save MC information
   Bool_t                      fSaveSecondaryVertices;                   ///< save reconstructed sec. vertex properties
   Bool_t                      fSaveTriggerTracks;                       ///< save event trigger track
@@ -150,6 +153,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   std::vector<SimpleSecondaryVertex> fSimpleSecVertices;  ///< Vector of secondary vertices
 
+  AliAnalysisTaskJetQnVectors* fqnVectorReader;                         ///< Reader for the Qn vector
+
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
   {
@@ -169,7 +174,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 10) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 11) // Jet extraction task
   /// \endcond
 };
 
@@ -202,10 +207,10 @@ class AliEmcalJetTree : public TNamed
     void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
     void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
 
-    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
+    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
 
     // ######################################
-    Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0);
+    Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Float_t QVector, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0);
     void            FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
     void            FillBuffer_JetShapes(AliEmcalJet* jet, Double_t leSub_noCorr, Double_t angularity, Double_t momentumDispersion, Double_t trackPtMean, Double_t trackPtMedian);
     void            FillBuffer_Splittings(std::vector<Float_t>& splittings_radiatorE, std::vector<Float_t>& splittings_kT, std::vector<Float_t>& splittings_theta, Bool_t saveSecondaryVertices, std::vector<Int_t>& splittings_secVtx_rank, std::vector<Int_t>& splittings_secVtx_index);
@@ -273,6 +278,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Event_PtHard;                 //!<! array buffer
     Float_t         fBuffer_Event_Weight;                 //!<! array buffer
     Float_t         fBuffer_Event_ImpactParameter;        //!<! array buffer
+    Float_t         fBuffer_Event_Q2Vector;               //!<! array buffer
 
     Float_t*        fBuffer_Track_Pt;                     //!<! array buffer
     Float_t*        fBuffer_Track_Eta;                    //!<! array buffer
@@ -333,7 +339,7 @@ class AliEmcalJetTree : public TNamed
     Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 13) // Jet tree class
+    ClassDef(AliEmcalJetTree, 14) // Jet tree class
     /// \endcond
 };
 

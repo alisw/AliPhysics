@@ -284,6 +284,7 @@ if(FASTJET_FOUND)
             UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
 	    UserTasks/AliAnalysisTaskJetPull.cxx
+	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
@@ -296,6 +297,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
         UserTasks/AliHelperClassFastSimulation.cxx
+        UserTasks/AliJEQnVectorHandler.cxx
         UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
@@ -343,7 +345,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
+  if(ROOT_VERSION_MINOR LESS_EQUAL 20)
     set(ROOT_DEPENDENCIES PyROOT)
+  else()
+    set(ROOT_DEPENDENCIES ROOTTPython)
+  endif()
 else()
     set(ROOT_DEPENDENCIES)
 endif()

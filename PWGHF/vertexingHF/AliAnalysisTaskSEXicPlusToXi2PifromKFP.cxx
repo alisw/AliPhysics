@@ -2032,9 +2032,6 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
     */
   }
 
-  // pt(XicPlus)>=1
-  if (fVar_XicPlus[26]>0.9999) fTree_XicPlus->Fill();
-
   KFParticle kfpPionOrKaon_Rej;
   kfpPionOrKaon_Rej = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromXiOrKaonFromOmega, -321); // -321 kaon- for Xi analysis
   KFParticle kfpCasc_Rej;
@@ -2045,6 +2042,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   fVar_XicPlus[50] = massCasc_Rej;
 
   fVar_XicPlus[49] = trackPiFromXiOrKaonFromOmega->Pt(); // pt of pion coming from Xi
+
+  // pt(XicPlus)>=1
+  if (fVar_XicPlus[26]>0.9999) fTree_XicPlus->Fill();
 
 //  fVar_XicPlus[10] = casc->DcaXiDaughters(); // DCA_XiDau
 //  fVar_XicPlus[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXicPlus, kfpBP_trk1, kfpXiMinus_m);

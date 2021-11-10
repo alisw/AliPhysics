@@ -255,7 +255,7 @@ void AliAnalysisTaskJPsiMC_DG::UserCreateOutputObjects()
     fTreeJPsiMCGen->Branch("fEta1Gen", &fEta1Gen, "fEta1Gen/D");
     fTreeJPsiMCGen->Branch("fEta2Gen", &fEta2Gen, "fEta2Gen/D");
     fTreeJPsiMCGen->Branch("fPhi1Gen", &fPhi1Gen, "fPhi1Gen/D");
-    fTreeJPsiMCGen->Branch("fPhi2", &fPhi2, "fPhi2/D");
+    fTreeJPsiMCGen->Branch("fPhi2Gen", &fPhi2Gen, "fPhi2Gen/D");
     fTreeJPsiMCGen->Branch("fQ1Gen", &fQ1Gen, "fQ1Gen/D");
     fTreeJPsiMCGen->Branch("fQ2Gen", &fQ2Gen, "fQ2Gen/D");
 
@@ -669,6 +669,19 @@ void AliAnalysisTaskJPsiMC_DG::RunMCGenerated()
                 TParticlePDG *partGen = pdgdat->GetParticle(mcPart->PdgCode());
                 vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
                 vGenerated += vDecayProduct;
+		if(nMuon == 0){
+		  fPt1Gen = mcPart->Pt(); 
+		  fEta1Gen = mcPart->Eta();
+		  fPhi1Gen = mcPart->Phi();
+		  fQ1Gen = mcPart->Charge();
+		  }
+		if(nMuon == 1){
+		  fPt2Gen = mcPart->Pt(); 
+		  fEta2Gen = mcPart->Eta();
+		  fPhi2Gen = mcPart->Phi();
+		  fQ2Gen = mcPart->Charge();
+		  }
+		nMuon++;
             } else { // this branch not needed for kTwoGammaToMuMedium
                 // with J/psi mother particle
                 AliMCParticle *mcMother = (AliMCParticle*) mc->GetTrack(mcPart->GetMother());
@@ -693,6 +706,7 @@ void AliAnalysisTaskJPsiMC_DG::RunMCGenerated()
 		  fQ2Gen = mcPart->Charge();
 		  }
 		nMuon++;
+		
             }
         }
     } // loop over mc particles
