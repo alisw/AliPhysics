@@ -136,9 +136,10 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib() :
     }     
   };
   for (int iRun = 0; iRun < NRUNNUM; ++iRun){
-    hMultV0Fill[iRun]=NULL;
-    hMultV0GE[iRun]=NULL;
+    pMultV0Fill[iRun]=NULL;
     hMultV0Read[iRun]=NULL;
+    hMultV0GE[iRun]=NULL;
+    hMultV0Raw[iRun]=NULL;
     for (int i = 0; i < 3; ++i){
       pV0XMeanFill[iRun][i]=NULL;
       pV0YMeanFill[iRun][i]=NULL;
@@ -150,6 +151,8 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib() :
     hQnCentCor[i]=NULL;
     hQxCentCor[i]=NULL;
     hQyCentCor[i]=NULL;
+    hQxCentRaw[i]=NULL;
+    hQyCentRaw[i]=NULL;
     hQxVtxCor[i]=NULL;
     hQyVtxCor[i]=NULL;
   }
@@ -257,9 +260,10 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib(const char *name) :
     }     
   };
   for (int iRun = 0; iRun < NRUNNUM; ++iRun){
-    hMultV0Fill[iRun]=NULL;
-    hMultV0GE[iRun]=NULL;
+    pMultV0Fill[iRun]=NULL;
     hMultV0Read[iRun]=NULL;
+    hMultV0GE[iRun]=NULL;
+    hMultV0Raw[iRun]=NULL;
     for (int i = 0; i < 3; ++i){
       pV0XMeanFill[iRun][i]=NULL;
       pV0YMeanFill[iRun][i]=NULL;
@@ -271,6 +275,8 @@ AliAnalysisTaskEPCalib::AliAnalysisTaskEPCalib(const char *name) :
     hQnCentCor[i]=NULL;
     hQxCentCor[i]=NULL;
     hQyCentCor[i]=NULL;
+    hQxCentRaw[i]=NULL;
+    hQyCentRaw[i]=NULL;
     hQxVtxCor[i]=NULL;
     hQyVtxCor[i]=NULL;
   }
@@ -503,8 +509,8 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
     if (fVZEROGainEq){
       AliOADBContainer* contMult = new AliOADBContainer("hMultV0BefCorPfpx");
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
-        hMultV0Fill[iRun] = new TH1D(Form("hMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
-        contMult->AppendObject(hMultV0Fill[iRun], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());      
+        pMultV0Fill[iRun] = new TProfile(Form("pMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
+        contMult->AppendObject(pMultV0Fill[iRun], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());      
       } 
       fOutputList->Add(contMult);
     };
@@ -566,9 +572,16 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
       }
       // Mult Aft GE
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
-        hMultV0GE[iRun] =  new TH1D(Form("hMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
+        hMultV0GE[iRun] =  new TH2D(Form("hMultV0GERun%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64, 450, 0, 900);
         fOutputList->Add(hMultV0GE[iRun]);      
       } 
+
+      if (fQAV0){      
+        for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
+          hMultV0Raw[iRun] =  new TH2D(Form("hMultV0RawRun%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64, 450, 0, 900);
+          fOutputList->Add(hMultV0Raw[iRun]);      
+        } 
+      }
 
       if (fVZEROCalib){
         // V0C Qx Mean 
@@ -658,17 +671,27 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
       hQyCentCor[0] = new TH2D("hQyCorV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
       hQyCentCor[1] = new TH2D("hQyCorV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
       hQyCentCor[2] = new TH2D("hQyCorV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
+
+      hQxCentRaw[0] = new TH2D("hQxRawV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQxCentRaw[1] = new TH2D("hQxRawV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQxCentRaw[2] = new TH2D("hQxRawV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQyCentRaw[0] = new TH2D("hQyRawV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQyCentRaw[1] = new TH2D("hQyRawV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
+      hQyCentRaw[2] = new TH2D("hQyRawV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
+
       hQxVtxCor[0] = new TH2D("hQxCorV0MvsVz","",20, -10, 10, 32, -600, 600);
       hQxVtxCor[1] = new TH2D("hQxCorV0CvsVz","",20, -10, 10, 32, -600, 600);
       hQxVtxCor[2] = new TH2D("hQxCorV0AvsVz","",20, -10, 10, 32, -600, 600);
       hQyVtxCor[0] = new TH2D("hQyCorV0MvsVz","",20, -10, 10, 32, -600, 600);
       hQyVtxCor[1] = new TH2D("hQyCorV0CvsVz","",20, -10, 10, 32, -600, 600);
       hQyVtxCor[2] = new TH2D("hQyCorV0AvsVz","",20, -10, 10, 32, -600, 600);
-      if (fVZEROCalib){
+      if (fVZEROCalib && fQAV0){
         for (int i = 0; i < 3; ++i) fOutputList->Add(hQxCentCor[i]); 
         for (int i = 0; i < 3; ++i) fOutputList->Add(hQyCentCor[i]); 
+        for (int i = 0; i < 3; ++i) fOutputList->Add(hQxCentRaw[i]); 
+        for (int i = 0; i < 3; ++i) fOutputList->Add(hQyCentRaw[i]); 
         for (int i = 0; i < 3; ++i) fOutputList->Add(hQxVtxCor[i]); 
-        for (int i = 0; i < 3; ++i) fOutputList->Add(hQyVtxCor[i]); 
+        for (int i = 0; i < 3; ++i) fOutputList->Add(hQyVtxCor[i]);     
       }
     }
   };
@@ -1507,7 +1530,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
     qx[0] += mult*TMath::Cos(fHarmonic*phi);
     qy[0] += mult*TMath::Sin(fHarmonic*phi);
     multRing[0] += mult;
-    if (fVZEROGainEq) hMultV0Fill[fRunNumBin]->Fill(iCh, mult);
+    if (fVZEROGainEq && mult>1e-6) pMultV0Fill[fRunNumBin]->Fill(iCh, mult);
 
     if (iCh<32) { // C
       qx[1] += mult*TMath::Cos(fHarmonic*phi);
@@ -1534,6 +1557,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         qyGE[0] += multCorGEC*TMath::Sin(fHarmonic*phi); 
         multRingGE[0] += multCorGEC;
         hMultV0GE[fRunNumBin]->Fill(iCh, multCorGEC);
+        if (fQAV0) hMultV0Raw[fRunNumBin]->Fill(iCh, mult);
       }    
     } else if (iCh>=32 && iCh<64) { // A
       qx[2] += mult*TMath::Cos(fHarmonic*phi);
@@ -1560,6 +1584,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         qyGE[0] += multCorGEA*TMath::Sin(fHarmonic*phi); 
         multRingGE[0] += multCorGEA;
         hMultV0GE[fRunNumBin]->Fill(iCh, multCorGEA);
+        if (fQAV0) hMultV0Raw[fRunNumBin]->Fill(iCh, mult);
       }
     }
   };
@@ -1599,6 +1624,8 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
       if (fQAV0){
         hQxCentCor[i]->Fill(iCentSPD, qxRecenter[i]);
         hQyCentCor[i]->Fill(iCentSPD, qyRecenter[i]);
+        hQxCentRaw[i]->Fill(iCentSPD, qxGE[i]);
+        hQyCentRaw[i]->Fill(iCentSPD, qyGE[i]);
         hQxVtxCor[i]->Fill(vz, qxRecenter[i]);
         hQyVtxCor[i]->Fill(vz, qyRecenter[i]);
       }
