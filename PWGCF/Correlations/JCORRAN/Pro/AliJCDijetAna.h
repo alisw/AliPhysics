@@ -70,8 +70,8 @@ class AliJCDijetAna : public TObject
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
 
-        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, iBGSubtrCutsRaw, iBGSubtrConstCutCutsRaw, jetClassesSize};
 #endif
+        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, iBGSubtrCutsRaw, iBGSubtrConstCutCutsRaw, jetClassesSize};
 
     private:
         int fDebug;
