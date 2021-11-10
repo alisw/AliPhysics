@@ -2339,13 +2339,13 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutcpar0=1.4;
        FMDcutcpar1=120;
        break;
-     case 7:
+     case 7://default
        FMDcutapar0=1.64755;
        FMDcutapar1=119.602;
        FMDcutcpar0=2.73426;
        FMDcutcpar1=150.31;
        break;
-     case 8:
+     case 8://loose cut
        FMDcutapar0=1.64755;
        FMDcutapar1=159.47;
        FMDcutcpar0=2.73426;
@@ -2387,11 +2387,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutcpar0=2.73426;
        FMDcutcpar1=86.6355;
        break;
-     case 15://pPb 2 sigma cut
+     case 15://pPb 5 sigma cut
        FMDcutapar0=1.64755;
-       FMDcutapar1=80.7744;
+       FMDcutapar1=199.33650;
        FMDcutcpar0=2.73426;
-       FMDcutcpar1=86.6355;
+       FMDcutcpar1=250.51668;
        break;
      case 16://PbPb 3sigma cut
        FMDcutapar0=1.26713;
@@ -2404,6 +2404,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserExec(Option_t *) {
        FMDcutapar1=274.066;
        FMDcutcpar0=2.47928;
        FMDcutcpar1=338.14;
+       break;
+     case 18://pPb 1 sigma cut
+       FMDcutapar0=1.64755;
+       FMDcutapar1=39.867500;
+       FMDcutcpar0=2.73426;
+       FMDcutcpar1=50.103335;
        break;
      default: break;
      }
