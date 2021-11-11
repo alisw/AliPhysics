@@ -243,7 +243,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       fhEventCounter->Fill("Nch cut ok ",1);
     }
 
-    // fSampleIndex = (Int_t) gRandom->Uniform(0,fNOfSamples);
+    fSampleIndex = (Int_t) gRandom->Uniform(0,fNOfSamples);
 
     if(!fTracksAss->IsEmpty()){
       for(Int_t i(0); i < 4; i++){
