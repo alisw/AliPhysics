@@ -64,6 +64,6 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
 
 
 
-  ClassDef(AliAnalysisTaskJetCharge, 4)
+  ClassDef(AliAnalysisTaskJetCharge, 5)
 };
 #endif

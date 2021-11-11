@@ -73,6 +73,6 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
 
 
 
-  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 4)
+  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 5)
 };
 #endif
