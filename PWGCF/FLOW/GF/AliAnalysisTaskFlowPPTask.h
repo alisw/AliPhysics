@@ -149,15 +149,21 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
 		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
 
-		//5,6 particle corrlation
+		//5,6 particle correlation
 		TProfile* fChc5_A42222;  		//! <<5>> |#Delta#eta| > 1.0
 		TProfile* fChc5_A52322;  		//! <<5>> |#Delta#eta| > 1.0
 		TProfile* fChc6_222222;  		//! <<6>> |#Delta#eta| > 1.0
 		TProfile* fChc6_322322;  		//! <<6>> |#Delta#eta| > 1.0
 
-		//Addtional 6 particle corrlation
+		//Addtional 6 particle correlation
 		TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
 		TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
+		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
+		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
+
+		// 8 particle correlation
+		TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
+		TProfile*   fChcn8_Gap0[6];               //! <<8>> |#Delta#eta| > 1.0
 
 		private:
 		ClassDef(PhysicsProfilePPTask, 1);    //Analysis task
@@ -385,7 +391,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter3subR = 0;            //!
         
 		PhysicsProfilePPTask multProfile;          //!
-		PhysicsProfilePPTask multProfile_bin[10];  //!
+		PhysicsProfilePPTask multProfile_bin[30];  //!
         
 		TRandom3 rand;                      //!
 		Int_t bootstrap_value;              //!
