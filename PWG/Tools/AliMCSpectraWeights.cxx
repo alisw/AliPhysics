@@ -1348,7 +1348,7 @@ float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenP
         weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
     } else if(SysCase<0){
         weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
-    } else (SysCase>0){
+    } else if(SysCase>0){
         weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
     }
 
