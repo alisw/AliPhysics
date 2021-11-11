@@ -48,9 +48,11 @@ public:
   virtual void   Terminate(Option_t* );
   virtual Bool_t Notify();
 
+  // Setters and Getters
   virtual void   SetNonStdFile(char* c){fNonStdFile = c;} 
   
   virtual void   SetCentralityEstimator(TString c){fCentralityEstimator = c;}
+  const TString  GetCentralityEstimator() const { return fCentralityEstimator; }
   
   virtual void   SetMinMaxMultiplicity(Int_t min, Int_t max) {fMinMultiplicity = min; fMaxMultiplicity = max;}
   virtual Int_t  GetMinMultiplicity() { return fMinMultiplicity; }
@@ -122,7 +124,11 @@ public:
   virtual Bool_t GetUseJetUEPIDtask() const {return fUseJetUEPIDtask; }
   virtual void SetUseJetUEPIDtask(Bool_t flag) {fUseJetUEPIDtask = flag; }
   
-  //Begin of underlying event calculations
+  // Helper functions
+  virtual void FillPIDTasksCutHisto(Double_t value, AliAnalysisTaskPID::CutHistoType histoType);
+  virtual void IncrementPIDTasksEventCounts(Double_t centPercent, AliAnalysisTaskPID::EventCounterType eventCounterType, Bool_t* isPileUpInclusivePIDtask = 0x0, Bool_t* isPileUpJetPIDtask = 0x0, Bool_t* isPileUpJetUEPIDtask = 0x0);
+  
+  // Begin of underlying event calculations
   virtual TList* GetUEJetsWithRandomConeMethod(AliJetContainer* jetContainer, Double_t coneRadius, Double_t maxEtaTrack);
   virtual TList* GetUEJetsWithPerpendicularConeMethod(AliJetContainer* jetContainer);
   virtual AliEmcalJet* GetRandomCone(AliEmcalJet* processedJet, Double_t dEtaConeMax, Double_t dDistance) const;
@@ -140,13 +146,10 @@ public:
   //Fill DCA
   virtual void FillDCA(AliVTrack* track, AliMCParticleContainer* mcParticleContainer); 
   
-  //End of underlying event calculations
-
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
   static  void   SetProperties(THnSparse* h,Int_t dim, const char** labels);
   
-  const TString  GetCentralityEstimator() const { return fCentralityEstimator; }
   Float_t  GetFFRadius() const { return fFFRadius; }
   Float_t  GetFFMinLTrackPt() const { return fFFMinLTrackPt; }
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
@@ -170,7 +173,6 @@ public:
   
   const TString* GetNamesOfJetUEPIDtasks() const { return fNameJetUEPIDtask; };
   void SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names, const TString* methods = 0x0);
-	
 	
   Bool_t GetIsPP() const { return fIsPP; };
   void SetIsPP(Bool_t flag) { fIsPP = flag; };
@@ -317,7 +319,7 @@ private:
   AliAnalysisTaskIDFragmentationFunction(const  AliAnalysisTaskIDFragmentationFunction&);   //Not implemented in AliAnalysisTaskEmcalJet
   AliAnalysisTaskIDFragmentationFunction& operator=(const  AliAnalysisTaskIDFragmentationFunction);   //Not implemented AliAnalysisTaskEmcalJet
   
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 24);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 25);
 };
 
 
@@ -429,5 +431,4 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetUEMethods(const TString* 
     fUEMethods[i] = names[i];
   }
 }
-
 #endif
