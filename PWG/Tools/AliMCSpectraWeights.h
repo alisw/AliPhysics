@@ -172,7 +172,7 @@ class AliMCSpectraWeights : public TNamed {
     GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
 
     int const IdentifySecondaryType(TParticle* part);
-    float const GetWeightForSecondaryParticle(TParticle* mcGenParticle);
+    float const GetWeightForSecondaryParticle(TParticle* mcGenParticle, Int_t SysCase=0);
 
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for
