@@ -58,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation>+;
 #pragma link C++ class AliNanoAODArrayMaker+;
 #pragma link C++ class AliPWGJETrainHelpers+;
+#pragma link C++ class AliAnalysisTaskFlowVectorCorrectionsPWGJE+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskEmcalJetEnergyFlow+;
