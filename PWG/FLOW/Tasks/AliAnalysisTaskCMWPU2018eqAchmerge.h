@@ -2,7 +2,7 @@
  * See cxx source for full Copyright notice */
 /* $Id: $ */
 
-/////////////////////////////////////////////////
+////////////////////////////////////////////////
 // AliAnalysisTaskCVE:
 // Simple CVE AnalysisTask
 // PA: Rihan Haque (mhaque@cern.ch, rihanphys@gmail.com)
@@ -12,8 +12,8 @@
 
 
 
-#ifndef ALIANALYSISTASKv2pt_H
-#define ALIANALYSISTASKv2pt_H
+#ifndef ALIANALYSISTASKCMWPU2018eqAchmerge_H
+#define ALIANALYSISTASKCMWPU2018eqAchmerge_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TH1F.h"
@@ -38,14 +38,15 @@ class    AliAnalysisUtils;
 
 
 
-class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
+
+class AliAnalysisTaskCMWPU2018eqAchmerge : public AliAnalysisTaskSE {
 
  public:
 
   //-----> Mandatory Functions:
-  AliAnalysisTaskv2pt();
-  AliAnalysisTaskv2pt(const char *name);
-  virtual ~AliAnalysisTaskv2pt();
+  AliAnalysisTaskCMWPU2018eqAchmerge();
+  AliAnalysisTaskCMWPU2018eqAchmerge(const char *name);
+  virtual ~AliAnalysisTaskCMWPU2018eqAchmerge();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t * /*option*/);
   
@@ -66,6 +67,11 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   void SetVzRangeMin(Double_t vzMin)                {this->fMinVzCut       =  vzMin;}
   void SetVzRangeMax(Double_t vzMax)                {this->fMaxVzCut       =  vzMax;}
 
+  void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
+  //void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipNUA  = b;}
+  void SetDataset(Int_t b)        {this->bdataset  = b;}
+  
+
   /******* Track Cut Ranges ******/
   void SetNSigmaCutTPC(Double_t     nSigTPC)     {this->fNSigmaTPCCut  =  nSigTPC;}
   void SetNSigmaCutTOF(Double_t     nSigTOF)     {this->fNSigmaTOFCut  =  nSigTOF;}
@@ -78,11 +84,12 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   void SetEtaRangeMin(Double_t emn)              {this->fMinEtaCut   = emn;}
   void SetEtaRangeMax(Double_t emx)              {this->fMaxEtaCut   = emx;}
   void SetPtRangeMin(Double_t ptL)               {this->fMinPtCut    = ptL;}
-  void SetPtRangeMax(Double_t ptH, Double_t maxevpt)               {this->fMaxPtCut    = ptH; this->fMaxevpt=maxevpt;}
+  void SetPtRangeMax(Double_t ptH)               {this->fMaxPtCut    = ptH;}
+  void SetDCAXYRangeMax(Double_t dcaxy)          {this->fDCAxyMax    = dcaxy;}
+  void SetDCAZRangeMax(Double_t dcaz)            {this->fDCAzMax    =  dcaz;}
+  void SetChi2Range(Double_t chi2)               {this->fChi2    =  chi2;}
   void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
   void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
-  void SetPileUpCutParam(Float_t m,Float_t c) {this->fPileUpSlopeParm = m;  this->fPileUpConstParm = c;}
-  void SetPileupswitch(Int_t p) {this->puswitch = p;}
 
   //------ End of user defined function -------
 
@@ -93,7 +100,7 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
 
 
   
-  // protected:
+ protected:
 
  private:
 
@@ -125,7 +132,13 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   Float_t           fNSigmaTOFCut;  //
   Float_t               fMinPtCut;  //
   Float_t               fMaxPtCut;  //
-  Float_t                fMaxevpt;  
+  Float_t               fDCAxyMax;  //                                                                                                        
+  Float_t               fDCAzMax;  // 
+  Float_t                 fChi2; 
+  Double_t         fPileUpSlopeParm;  //
+  Double_t         fPileUpConstParm;  //
+  //Bool_t             bSkipNUA;  //
+  Int_t             bdataset;  //
   Double_t              fEtaGapNeg;  //
   Double_t              fEtaGapPos;  //
   Float_t              fMinEtaCut;  //
@@ -135,10 +148,7 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   //Event Variables to be used:
   Float_t               fMinVzCut;  //
   Float_t               fMaxVzCut;  //
-
-  Double_t         fPileUpSlopeParm;  //
-  Double_t         fPileUpConstParm;  //
-  Int_t            puswitch;
+  
   TString         sCentrEstimator;  //
 
 
@@ -166,27 +176,6 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   TH1D          *fHCorrectMCnegKaon;
   TH1D          *fHCorrectMCnegProt;
 
-
-
-
-  
-  //QA and Stepcount 
-  TH2F            *fHistTPConlyVsCL1Before;   //!  
-  TH2F            *fHistTPConlyVsV0MBefore;   //!
-  TH2F            *fHistCL0VsV0MBefore;   //!       
-  TH2F            *fHistTPConlyVsCL1After;   //!    
-  TH2F            *fHistTPConlyVsV0MAfter;   //!   
-  TH2F            *fHistCL0VsV0MAfter;   //!   
-  TH2F            *fHistGlobalVsV0MBefore;   //!   
-  TH2F            *fHistGlobalVsV0MAfter;   //
-  TH2F            *fTPCvsGlobalTrkBefore; //!  Global vs TPC tracks for QA
-  TH2F            *fTPCvsGlobalTrkAfter; //!  Global vs TPC tracks for QA
-  TH2F            *fHistTPCVsESDTrkBefore;   //!  
-  TH2F            *fHistTPCVsESDTrkAfter;   //
-  TProfile        *fHistv2cumCentChrgAll;  //! Charge inclusive
-  TProfile        *fHistv2cumCentChrgAllNeg;  //! Charge inclusive
-  TH1F            *fHistPileUpCount;   //!
-
   TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins
   TH3F          *fHCorrectNUAnegChrg;   //! 
   TH3F          *fHCorrectNUAposPion;   //! 
@@ -196,7 +185,6 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAposProt;   //! 
   TH3F          *fHCorrectNUAnegProt;   //! 
 
-
   TF1           *fSPDCutPU;     //!
   TF1           *fV0CutPU;      //!
   TF1           *fMultCutPU;    //!
@@ -205,50 +193,87 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   
 
 
+
+  
+  //QA and Stepcount 
+
+  
   TH1F            *fHistEventCount;   //!
+  TH1F  	  *fHCorrectEVNTWGTChrg;   //!   //eventwgt for charge
+
 
 
   ///v2 vs Ach (Results)
-  //TProfile     *fHistv2AchChrgPos[2][2];
-  /*TProfile     *fHistv2AchPionPos[2][10][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonPos[2][10][10]; //!
-  TProfile     *fHistv2AchProtPos[2][10][10]; //!
-  TProfile     *fHistv2AchChrgNeg[2][10][10];
-  TProfile     *fHistv2AchPionNeg[2][10][10]; //! [1st] = method, [2nd] = centrality.
-  TProfile     *fHistv2AchKaonNeg[2][10][10]; //!
-  TProfile     *fHistv2AchProtNeg[2][10][10]; //!
+  TProfile     *fHistv2AchChrgPos[1][5];
+  TProfile     *fHistv2AchPionPos[1][5]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPos[1][5]; //!
+  TProfile     *fHistv2AchProtPos[1][5]; //!
+  TProfile     *fHistv2AchChrgNeg[1][5];
+  TProfile     *fHistv2AchPionNeg[1][5]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNeg[1][5]; //!
+  TProfile     *fHistv2AchProtNeg[1][5]; //!
+
+  TProfile     *fHistv2AchChrgPosChrgNeg[1][5];
+  TProfile     *fHistv2AchPionPosPionNeg[1][5]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonPosKaonNeg[1][5]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchProtPosProtNeg[1][5]; //! [1st] = method, [2nd] = centrality.
+    
+  TProfile     *fHistv2AchChrgNegChrgPos[1][5];
+  TProfile     *fHistv2AchPionNegPionPos[1][5]; //! [1st] = method, [2nd] = centrality.
+  TProfile     *fHistv2AchKaonNegKaonPos[1][5];
+  TProfile     *fHistv2AchProtNegProtPos[1][5]; //! [1st] = method, [2nd] = centrality.
+    
+
+
+  ///Used For NUA Corrections:
+  /*
+  TH3F          *fHCorrectNUAposChrg[5];   //! [5] = centrality bins
+  TH3F          *fHCorrectNUAnegChrg[5];   //! 
+  TH3F          *fHCorrectNUAposPion[5];   //! 
+  TH3F          *fHCorrectNUAnegPion[5];   //! 
+  TH3F          *fHCorrectNUAposKaon[5];   //! 
+  TH3F          *fHCorrectNUAnegKaon[5];   //! 
+  TH3F          *fHCorrectNUAposProt[5];   //! 
+  TH3F          *fHCorrectNUAnegProt[5];   //! 
+  */
+  /*
+  TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins
+  TH3F          *fHCorrectNUAnegChrg;   //! 
+  TH3F          *fHCorrectNUAposPion;   //! 
+  TH3F          *fHCorrectNUAnegPion;   //! 
+  TH3F          *fHCorrectNUAposKaon;   //! 
+  TH3F          *fHCorrectNUAnegKaon;   //! 
+  TH3F          *fHCorrectNUAposProt;   //! 
+  TH3F          *fHCorrectNUAnegProt;   //! 
   */
 
-TProfile     *fHistv2AchChrgPos[1][10];
-TProfile     *fHistv2AchPionPos[1][10]; //! [1st] = method, [2nd] = centrality.
-TProfile     *fHistv2AchKaonPos[1][10]; //!
-TProfile     *fHistv2AchProtPos[1][10]; //!
-TProfile     *fHistv2AchChrgNeg[1][10];
-TProfile     *fHistv2AchPionNeg[1][10]; //! [1st] = method, [2nd] = centrality.
-TProfile     *fHistv2AchKaonNeg[1][10]; //!
-TProfile     *fHistv2AchProtNeg[1][10]; //!
-  ///Used For NUA Corrections:
- 
-
   /// TO fill NUA for new Cut:
-  TProfile      *fHistv2cumAchChrgAll[10];  //! Charge inclusive
 
-
+ 
   
+  TProfile      *fHistv2cumAchChrgAll[5];  //! Charge inclusive
+
   
 
   ///Custom Functions:
   void  GetNUACorrectionHist(Int_t run=0,Int_t kParticleID=0);
-  void  GetV0MCorrectionHist(Int_t run=0);
-  void  GetMCCorrectionHist(Int_t run=0);
+  void  GetEVNTWGTCorrectionHist(Int_t run=0,Int_t kParticleID=0);
+  //void  GetV0MCorrectionHist(Int_t run=0);
+  void  GetV0MCorrectionHist(Int_t run=0,Int_t kParticleID=0);
+  //void  GetMCCorrectionHist(Int_t run=0);
+  void  GetMCCorrectionHist(Int_t run=0,Float_t centr=0);
+  
   Bool_t CheckEventIsPileUp(AliAODEvent* faod);
+  Bool_t CheckEventIsPileUp2018(AliAODEvent* faod);
   Bool_t PileUpMultiVertex(const AliAODEvent* faod);
   double GetWDist(const AliVVertex* v0, const AliVVertex* v1);
-  Bool_t CheckEventIsPileUp2018(AliAODEvent* faod);
-  
-  AliAnalysisTaskv2pt(const AliAnalysisTaskv2pt &other);
-  AliAnalysisTaskv2pt &operator=(const AliAnalysisTaskv2pt &other);    
-  ClassDef(AliAnalysisTaskv2pt, 1) 
+
+
+  AliAnalysisTaskCMWPU2018eqAchmerge(const AliAnalysisTaskCMWPU2018eqAchmerge &other);
+  AliAnalysisTaskCMWPU2018eqAchmerge &operator=(const AliAnalysisTaskCMWPU2018eqAchmerge &other);    
+  ClassDef(AliAnalysisTaskCMWPU2018eqAchmerge, 1) 
+
+
 
 };
 
