@@ -173,7 +173,6 @@ Bool_t AliAnalysisTaskJetChargeFlavourTemplates::FillHistograms()
 
   if(JetCont) {
     // Technical detail; fix possibly corrupted jet container ID
-    JetCont->ResetCurrentID();
     // Jet is acceptable?
     for (auto Jet1 : JetCont->accepted())
     {
