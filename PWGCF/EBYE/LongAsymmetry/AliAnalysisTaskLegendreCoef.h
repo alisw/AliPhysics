@@ -47,7 +47,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Double_t LegPol(int order, Double_t x);
     void    BuildBackground();
     void    BuildSignal();
-    void    BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type);
+    void    BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, TString type);
     AliAODEvent*    fAOD;                 //! input event
     TList*          fOutputList;          //! output list
 
