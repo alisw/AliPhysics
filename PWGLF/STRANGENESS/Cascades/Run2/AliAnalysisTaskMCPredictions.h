@@ -119,6 +119,7 @@ private:
   
   TH1D *fHistPt[72];              //! for keeping track of base spectra
   TH1D *fHistEta[72];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredMeson[72];              //! for keeping track of base spectra
   TH2D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
   TH2D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
   TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
@@ -134,6 +135,13 @@ private:
   Float_t fMaxPtTrigger; //for xi trigger
   TH1D *fHistPtTrigger;
   
+  TH3D *fHist3d2pcD0Proton;
+  TH3D *fHist3d2pcD0AntiProton;
+  TH3D *fHist3d2pcD0D0;
+  TH3D *fHist3d2pcD0D0bar;
+  TH3D *fHist3d2pcD0KMinus;
+  TH3D *fHist3d2pcD0KPlus;
+
   TH3D *fHist3d2pcXiCProton;
   TH3D *fHist3d2pcXiCAntiProton;
   TH3D *fHist3d2pcXiCD0;
@@ -149,6 +157,10 @@ private:
   TH3D *fHist3d2pcXiBKPlus;
   
   //for event mixing
+  Bool_t fEMBufferFullD0;
+  Long_t fEMBufferCycleD0;
+  Double_t fEMBufferEtaD0[10];
+  Double_t fEMBufferPhiD0[10];
   Bool_t fEMBufferFullXiC;
   Long_t fEMBufferCycleXiC;
   Double_t fEMBufferEtaXiC[10];
@@ -157,6 +169,13 @@ private:
   Long_t fEMBufferCycleXiB;
   Double_t fEMBufferEtaXiB[10];
   Double_t fEMBufferPhiXiB[10];
+  
+  TH3D *fHistMixed3d2pcD0Proton;
+  TH3D *fHistMixed3d2pcD0AntiProton;
+  TH3D *fHistMixed3d2pcD0D0;
+  TH3D *fHistMixed3d2pcD0D0bar;
+  TH3D *fHistMixed3d2pcD0KMinus;
+  TH3D *fHistMixed3d2pcD0KPlus;
   
   TH3D *fHistMixed3d2pcXiCProton;
   TH3D *fHistMixed3d2pcXiCAntiProton;
