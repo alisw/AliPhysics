@@ -60,6 +60,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetQAEvent(Bool_t QAinput) { IsQAEvent = QAinput; }
     void SetQAPID(Bool_t QAinput) { IsQAPID = QAinput; }
     void SetQAInvMass(Bool_t QAinput) { IsQAInvMass = QAinput; }
+    void SetUsePionSigmaCut(Bool_t QAinput) {fUseSigmaCut = QAinput;}
 
     void SetXiCPAstudy(Bool_t input) { fCPAstudy = input; }
     void SetINEL(Bool_t input) { isINEL = input; }
@@ -186,6 +187,60 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         if (fSysOption == 2)
             fXiMassWindowCut_tight = nXiMassWindowCut;
     }
+    void SetXi1530PionSigmaCut(Int_t fSysOption,
+                                   Double_t nSigmaCut) {
+        if (fSysOption == 0)
+            fXi1530PionVertexSigmaCut = nSigmaCut;
+        if (fSysOption == 1)
+            fXi1530PionVertexSigmaCut_loose = nSigmaCut;
+        if (fSysOption == 2)
+            fXi1530PionVertexSigmaCut_tight = nSigmaCut;
+    }
+    void SetDCADistLambdaProtonPVCut(Int_t fSysOption,
+                                   Double_t LambdaProtonPVCut) {
+        if (fSysOption == 0)
+            fDCADist_LambdaProton_PVCut = LambdaProtonPVCut;
+        if (fSysOption == 1)
+            fDCADist_LambdaProton_PVCut_loose = LambdaProtonPVCut;
+        if (fSysOption == 2)
+            fDCADist_LambdaProton_PVCut_tight = LambdaProtonPVCut;
+    }
+    void SetDCADistLambdaPionPVCut(Int_t fSysOption,
+                                   Double_t LambdaPionPVCut) {
+        if (fSysOption == 0)
+            fDCADist_LambdaPion_PVCut = LambdaPionPVCut;
+        if (fSysOption == 1)
+            fDCADist_LambdaPion_PVCut_loose = LambdaPionPVCut;
+        if (fSysOption == 2)
+            fDCADist_LambdaPion_PVCut_tight = LambdaPionPVCut;
+    }
+    void SetDCADistBachelorPionPVCut(Int_t fSysOption,
+                                   Double_t BachelorPionPVCut) {
+        if (fSysOption == 0)
+            fDCADist_BachelorPion_PVCut = BachelorPionPVCut;
+        if (fSysOption == 1)
+            fDCADist_BachelorPion_PVCut_loose = BachelorPionPVCut;
+        if (fSysOption == 2)
+            fDCADist_BachelorPion_PVCut_tight = BachelorPionPVCut;
+    }
+    void SetfV0FiducialRadiusCut(Int_t fSysOption,
+                                   Double_t FiducialRadiusCut) {
+        if (fSysOption == 0)
+            fV0FiducialRadiusCut = FiducialRadiusCut;
+        if (fSysOption == 1)
+            fV0FiducialRadiusCut_loose = FiducialRadiusCut;
+        if (fSysOption == 2)
+            fV0FiducialRadiusCut_tight = FiducialRadiusCut;
+    }
+    void SetfXiFiducialRadiusCut(Int_t fSysOption,
+                                   Double_t FiducialRadiusCut) {
+        if (fSysOption == 0)
+            fXiFiducialRadiusCut = FiducialRadiusCut;
+        if (fSysOption == 1)
+            fXiFiducialRadiusCut_loose = FiducialRadiusCut;
+        if (fSysOption == 2)
+            fXiFiducialRadiusCut_tight = FiducialRadiusCut;
+    }
     void SetXi1530RapidityCut_high(Double_t nXi1530RapidityCut) {
         fXi1530RapidityCut_high = nXi1530RapidityCut;
     }
@@ -302,6 +357,10 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fXi1530PionZVertexCut = 2.0;
     Double_t fXi1530PionZVertexCut_tight = 1.5;
 
+    Double_t fXi1530PionVertexSigmaCut_loose = 11.0;
+    Double_t fXi1530PionVertexSigmaCut = 10.0;
+    Double_t fXi1530PionVertexSigmaCut_tight = 9.0;
+
     Double_t fDCADist_LambdaDaughtersCut_loose = 1.5;
     Double_t fDCADist_LambdaDaughtersCut = 1.4;
     Double_t fDCADist_LambdaDaughtersCut_tight = 1.3;
@@ -314,9 +373,29 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fDCADist_Lambda_PVCut = 0.07;
     Double_t fDCADist_Lambda_PVCut_tight = 0.09;
 
+    Double_t fDCADist_LambdaProton_PVCut_loose = 0.1;
+    Double_t fDCADist_LambdaProton_PVCut = 0.11;
+    Double_t fDCADist_LambdaProton_PVCut_tight = 0.12;
+
+    Double_t fDCADist_LambdaPion_PVCut_loose = 0.1;
+    Double_t fDCADist_LambdaPion_PVCut = 0.11;
+    Double_t fDCADist_LambdaPion_PVCut_tight = 0.12;
+
+    Double_t fDCADist_BachelorPion_PVCut_loose = 0.03;
+    Double_t fDCADist_BachelorPion_PVCut = 0.035;
+    Double_t fDCADist_BachelorPion_PVCut_tight = 0.04;
+
     Double_t fV0CosineOfPointingAngleCut_loose = 0.96;
     Double_t fV0CosineOfPointingAngleCut = 0.97;
     Double_t fV0CosineOfPointingAngleCut_tight = 0.98;
+
+    Double_t fV0FiducialRadiusCut_loose = 120.0;
+    Double_t fV0FiducialRadiusCut = 100.0;
+    Double_t fV0FiducialRadiusCut_tight = 80.0
+    
+    Double_t fXiFiducialRadiusCut_loose = 120.0;
+    Double_t fXiFiducialRadiusCut = 100.0;
+    Double_t fXiFiducialRadiusCut_tight = 80.0;
 
     Double_t fCascadeCosineOfPointingAngleCut_loose = 0.96;
     Double_t fCascadeCosineOfPointingAngleCut = 0.97;
@@ -332,6 +411,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t fsetXiSysTrackCut = kFALSE;
     Bool_t fsetsystematics = kFALSE;
     Bool_t fsetmixing = kTRUE;
+    Bool_t fUseSigmaCut = kFALSE;
     Bool_t IsAA = kFALSE;
     Bool_t IsMC = kFALSE;
     Bool_t IsPS = kFALSE;
@@ -357,7 +437,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 33);
+    ClassDef(AliAnalysisTaskXi1530, 34);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -393,6 +473,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 31: Add option to remove PIDqa plots
     // 32: Add goodtrackfullindices for further trackloop
     // 33: Modify for the nanoCheck
+    // 34: Add additional cuts for PbPb Study
 };
 
 #endif
