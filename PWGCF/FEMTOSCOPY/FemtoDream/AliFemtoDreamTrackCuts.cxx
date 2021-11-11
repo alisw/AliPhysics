@@ -71,6 +71,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fcutTPCkd(3.),
       fcutEXCLUSIONkd(3.),
       fIsKaon(true),
+      fIsRamona(false),
       fPIDPTPCThreshold(0),
       fPIDPITSThreshold(0),
       fMultDCAmin(27),
@@ -151,6 +152,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fcutTPCkd(cuts.fcutTPCkd),
       fcutEXCLUSIONkd(cuts.fcutEXCLUSIONkd),
       fIsKaon(cuts.fIsKaon),
+      fIsRamona(cuts.fIsRamona),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fPIDPITSThreshold(cuts.fPIDPITSThreshold),
       fMultDCAmin(cuts.fMultDCAmin),
@@ -234,6 +236,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fcutTPCkd = cuts.fcutTPCkd;
   this->fcutEXCLUSIONkd = cuts.fcutEXCLUSIONkd;
   this->fIsKaon = cuts.fIsKaon;
+  this->fIsRamona = cuts.fIsRamona;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fPIDPITSThreshold = cuts.fPIDPITSThreshold;
   this->fMultDCAmin = cuts.fMultDCAmin;
@@ -651,12 +654,17 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
    float TOFd = fabs(Track->GetnSigmaTOF((int) (AliPID::kDeuteron)));
    float COMBd = sqrt(TPCd*TPCd+TOFd*TOFd);
   
-   if(fIsKaon){ //Kaon selection
-    if(
-     COMBk<fcutCOMBkd 
-     && COMBk<COMBpi && COMBk<COMBp
-    ) passTOF=true;
-   }else{//deuteron selection
+   if(fIsKaon){ //Kaon TOF selection
+    if(!fIsRamona){ // Oton Kaon TOF selection
+     if(
+      COMBk<fcutCOMBkd 
+      && COMBk<COMBpi && COMBk<COMBp
+     ) passTOF=true;
+    }else{ // Ramona Kaon TOF selection
+     if(p>0.4&&p<1.4&&TOFk<3&&TPCk<3
+      &&!(p>0.8&&TOFp<3&&TPCp<3)) passTOF=true;
+    }
+   }else{ //Deuteron TOF selection
     if(
      COMBd<fcutCOMBkd 
 //     && COMBd<COMBp && COMBd<COMBpi && COMBd<COMBe && COMBd<COMBk
@@ -666,17 +674,20 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
 
   }//TOFyes
 
-  if(fIsKaon){ //Kaon selection
-   passTPC = true;//for kaonstart with true and then exclude
-   if(p>.4&&p<.7&&TPCe<fcutEXCLUSIONkd) passTPC=false; // exclude TPC electrons
-   if(p>.5&&TPCpi<fcutEXCLUSIONkd) passTPC=false; // exclude TPC pions
-   if(p>1.5&&TPCp<fcutEXCLUSIONkd) passTPC=false; // exclude TPC protons
-   if(TPCk>fcutTPCkd) passTPC=false; // own TPC sigma kaon selection
-   if(p>1.) passTPC = false; //momentum threshold for TPC
-  }else{//deuteron selection
-   if(p<1.4&&TPCd<fcutTPCkd) passTPC = true; //momentum theshold and onw TPC deuteron kaon selection
+  if(fIsKaon){ //Kaon TPC selection
+   if(!fIsRamona){ // Oton Kaon TPC selection
+    passTPC = true;//for kaonstart with true and then exclude
+    if(p>.4&&p<.7&&TPCe<fcutEXCLUSIONkd) passTPC=false; // exclude TPC electrons
+    if(p>.5&&TPCpi<fcutEXCLUSIONkd) passTPC=false; // exclude TPC pions
+    if(p>1.5&&TPCp<fcutEXCLUSIONkd) passTPC=false; // exclude TPC protons
+    if(TPCk>fcutTPCkd) passTPC=false; // own TPC sigma kaon selection
+    if(p>1.) passTPC = false; //momentum threshold for TPC
+   }else{ // Ramona Kaon TPC selection
+    if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
+   }
+  }else{ // Deuteron TOF selection
+   if(p<1.4&&TPCd<fcutTPCkd) passTPC = true;//momentum theshold && own TPC deuteron kaon selection
   }
-
  }else{
   passTPC=false;
  }

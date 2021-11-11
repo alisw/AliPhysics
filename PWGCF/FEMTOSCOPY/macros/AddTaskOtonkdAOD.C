@@ -1,12 +1,12 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,//1
-    int KaonCut = 0,//2
-    int DeuteronCut = 0,//3
-    bool fullBlastQA = true//4
+AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,
+    int KaonCut = 0,
+    int DeuteronCut = 0
     ) {
-
+  
+  const char fullBlastQA = true; //moved from arguments
   const char *cutVariation = "0"; //moved from arguments, for the moment I don't use it
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -24,36 +24,58 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,//1
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-
-  AliFemtoDreamTrackCuts *TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC,true,false,false);
+ 
+  //kaons:
+  AliFemtoDreamTrackCuts *TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
+        isMC, true, false, false);
   TrackCutsKaon->SetCutCharge(1);
-  if(KaonCut==0){
+  TrackCutsKaon->SetFilterBit(128);
+  if(KaonCut==0){// cuts by Oton
    TrackCutsKaon->SetPIDkd();
-   TrackCutsKaon->SetFilterBit(128);
+  }else if(KaonCut==1){ // cuts by Ramona
+   TrackCutsKaon->SetPIDkd(true,true);
+   //TrackCutsKaon->SetNClsTPC(70);
+   //TrackCutsKaon->SetDCAVtxZ(0.1);
   }
-  AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC,true,false,false);
+
+  AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
+        isMC, true, false, false);
   TrackCutsAntiKaon->SetCutCharge(-1);
-  if(KaonCut==0){
+  TrackCutsAntiKaon->SetFilterBit(128);
+  if(KaonCut==0){ // cuts by Oton
    TrackCutsAntiKaon->SetPIDkd();
-   TrackCutsAntiKaon->SetFilterBit(128);
+  }else if(KaonCut==1){ // cuts by Ramona
+   TrackCutsAntiKaon->SetPIDkd(true,true);
+   //TrackCutsAntiKaon->SetNClsTPC(70);
+   //TrackCutsAntiKaon->SetDCAVtxZ(0.1);
+  }
+ 
+  //deuterons
+  AliFemtoDreamTrackCuts *TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, false, false);
+  TrackCutsDeuteron->SetCutCharge(1);
+  if(DeuteronCut==0){ // cuts by Oton
+   TrackCutsDeuteron->SetPIDkd(false);
+  }else if(DeuteronCut==1){ // cuts by FemtoDream
+   TrackCutsDeuteron->SetPtRange(0.5,1.4);
   }
 
-  AliFemtoDreamTrackCuts *TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC,true,false,false);
-   TrackCutsDeuteron->SetPIDkd(false);//false for deuterons
-  TrackCutsDeuteron->SetCutCharge(1);
-//  TrackCutsDeuteron->SetPID(AliPID::kDeuteron, 999., 4.);
-//  trackCuts->SetPtRange(0.5, 4.05);
-//  trackCuts->SetPID(AliPID::kDeuteron, 1.4);
-//  trackCuts->SetCutITSPID(1.4, -2., 1e30);
-
-  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC,true,false,false);
-   TrackCutsAntiDeuteron->SetPIDkd(false);//false for deuterons
-   TrackCutsAntiDeuteron->SetCutCharge(-1);
-
-  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC,true,false,false);
+  AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, false, false);
+  TrackCutsAntiDeuteron->SetCutCharge(-1);
+  if(DeuteronCut==0){ // cuts by Oton
+   TrackCutsAntiDeuteron->SetPIDkd(false);
+  }else if(DeuteronCut==1){ // cuts by FemtoDream
+   TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
+  }
+ 
+  //protons
+  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, false, false);
   TrackCutsProton->SetCutCharge(1);
 
-  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(isMC,true,false,false);
+  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+        isMC, true, false, false);
   TrackCutsAntiProton->SetCutCharge(-1);
 
 
@@ -227,7 +249,8 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,//1
   }
 
   //Define here the analysis task
-  AliAnalysisTaskOtonkdAOD *task = new AliAnalysisTaskOtonkdAOD("ThisNameApparentlyUseless", isMC);
+  AliAnalysisTaskOtonkdAOD *task = 
+   new AliAnalysisTaskOtonkdAOD("ThisNameApparentlyUseless", isMC);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
@@ -300,21 +323,6 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,//1
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsDeuteronName.Data()));
   mgr->ConnectOutput(task, 7, coutputAntiTrkCutsDeuteron);
-/*
-  TString TrackCutsDeuteronNoTOFName = Form("%sDeuteronMass%s", addon.Data(), suffix.Data());
-  AliAnalysisDataContainer *coutputTrkCutsDeuteronNoTOF = mgr->CreateContainer(
-        TrackCutsDeuteronNoTOFName.Data(), TList::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), TrackCutsDeuteronNoTOFName.Data()));
-  mgr->ConnectOutput(task, 6, coutputTrkCutsDeuteronNoTOF);
-
-  TString AntiTrackCutsDeuteronNoTOFName = Form("%sAntiDeuteronMass%s", addon.Data(), suffix.Data());
-  AliAnalysisDataContainer *coutputAntiTrkCutsDeuteronNoTOF = mgr->CreateContainer(
-        AntiTrackCutsDeuteronNoTOFName.Data(), TList::Class(),
-        AliAnalysisManager::kOutputContainer,
-        Form("%s:%s", file.Data(), AntiTrackCutsDeuteronNoTOFName.Data()));
-  mgr->ConnectOutput(task, 7, coutputAntiTrkCutsDeuteronNoTOF);
-*/
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());

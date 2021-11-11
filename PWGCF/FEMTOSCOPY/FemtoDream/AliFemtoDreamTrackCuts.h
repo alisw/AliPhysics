@@ -216,9 +216,11 @@ class AliFemtoDreamTrackCuts {
   }
   ;
 
-  void SetPIDkd(bool iskaon = true, float COMBcut = 4., float TPCcut = 3., float EXCLUSIONcut = 3.) {
-    fPIDkd = true;
+  void SetPIDkd(bool iskaon = true, bool isramona = false,
+                float COMBcut = 4., float TPCcut = 3., float EXCLUSIONcut = 3.) {
+    fPIDkd = true;//THIS WILL BE ALWAYS TRUE IF SETPIDKD IS CALLED FROM ADDTASK
     fIsKaon = iskaon;
+    fIsRamona = isramona;
     fcutCOMBkd = COMBcut;
     fcutTPCkd = TPCcut;
     fcutEXCLUSIONkd= EXCLUSIONcut;
@@ -376,7 +378,8 @@ class AliFemtoDreamTrackCuts {
   float fcutCOMBkd;                // defaults to 4
   float fcutTPCkd;                // defaults to 3
   float fcutEXCLUSIONkd;         // defaults to 3
-  bool fIsKaon;                // defaults to 3
+  bool fIsKaon;                // 
+  bool fIsRamona;                // 
   float fPIDPTPCThreshold;            // defaults to 0
   float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
   float fMultDCAmin;            //
