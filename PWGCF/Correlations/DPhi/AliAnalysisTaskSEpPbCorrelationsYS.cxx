@@ -569,7 +569,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	TFile*file;
 	//	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb")file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
 	if(fcollisiontype=="PbPb" || fcollisiontype=="pPb"){
-	  if(calibmode)file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	  if(calibmode==2)file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_particlecomp_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
+	  else if(calibmode==1) file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiency_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
 	  else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
 	}else file=TFile::Open(Form("alien:///alice/cern.ch/user/y/ysekiguc/corrections/fcorrection_efficiencyptonly_%s_LHC18_filterbit%d.root",fcollisiontype.Data(),ffilterbit));
 	
