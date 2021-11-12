@@ -1129,6 +1129,20 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
   }
 
+  for (int h = 0; h < 6; h++) {
+    QDis[h]->Fill(correlator.Q(h+2,1).Re(), correlator.Q(h+2,1).Im());
+    QDisGap0P[h]->Fill(correlator.QGap0P(h+2,1).Re(), correlator.QGap0P(h+2,1).Im());
+    QDisGap0M[h]->Fill(correlator.QGap0M(h+2,1).Re(), correlator.QGap0M(h+2,1).Im());
+    QDisGap10P[h]->Fill(correlator.QGap10P(h+2,1).Re(), correlator.QGap10P(h+2,1).Im());
+    QDisGap10M[h]->Fill(correlator.QGap10M(h+2,1).Re(), correlator.QGap10M(h+2,1).Im());
+    QDisGap14P[h]->Fill(correlator.QGap14P(h+2,1).Re(), correlator.QGap14P(h+2,1).Im());
+    QDisGap14M[h]->Fill(correlator.QGap14M(h+2,1).Re(), correlator.QGap14M(h+2,1).Im());
+    QDis3subL[h]->Fill(correlator.QsubL(h+2,1).Re(), correlator.QsubL(h+2,1).Im());
+    QDis3subM[h]->Fill(correlator.QsubM(h+2,1).Re(), correlator.QsubM(h+2,1).Im());
+    QDis3subR[h]->Fill(correlator.QsubR(h+2,1).Re(), correlator.QsubR(h+2,1).Im());
+  }
+
+
   if (fNtrksName == "Mult") {
     CalculateProfile(multProfile, NtrksCounter);
     CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter);
