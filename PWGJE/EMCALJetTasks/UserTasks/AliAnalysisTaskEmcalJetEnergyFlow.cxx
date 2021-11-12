@@ -400,7 +400,7 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
 
         for(Int_t i=0;i<Pair_number;i++){
        
-          histname = TString::Format("hJetPtDeltaPt_R%d",int(Rjet*(i+1)*100));
+          histname = TString::Format("hJetPtDeltaPt_R%d_%d",int(Rjet*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii;P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rjet*(i+1),Rjet*(i+2),Rjet*(i+1));
           fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDPtBins,fMinDPtBin,fMaxDPtBin);
   
@@ -775,7 +775,7 @@ else NumJet =fJetCollArray.GetEntries();
 //                      for(auto cont:dynamic_cast<AliEmcalJet*>(MatchGenDetList.At(j))->GetParticleConstituents()){
 //                       fHistManager.FillTH2(histname,pt_low,cont.Pt()/pt_low);}
   
-                      histname = TString::Format("hJetPtDeltaRDeltaPt_R%d_gen",int(Rjet*(i+1)*100));
+                      histname = TString::Format("hJetPtDeltaRDeltaPt_R%d_gen_%d",int(Rjet*(i+1)*100),fCentBin);
                       fHistManager.FillTH3(histname,pt_low,DeltaR,DeltaPt_gen);
 
 

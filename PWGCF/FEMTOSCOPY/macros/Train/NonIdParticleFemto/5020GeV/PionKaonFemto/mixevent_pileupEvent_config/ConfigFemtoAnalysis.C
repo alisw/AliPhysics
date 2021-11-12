@@ -444,7 +444,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   	      ktpcuts[ktm] = new AliFemtoPairkTPairCut(ktrng[ikt], ktrng[ikt + 1], PionMass, KaonMass);}        *
 	      
 	      if (runbetatylm) {
-		cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%iD%lfF%lfbetat%d", chrgs[ichg], imult, distance, fraction1, ikt),3,nbinssh, 0.0,shqmax, runshlcms);
+		cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%iD%lfF%lfbetat%d", chrgs[ichg], imult, distance, fraction1, ikt),lmax,nbinssh, 0.0,shqmax, runshlcms);
 		cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
 	      }

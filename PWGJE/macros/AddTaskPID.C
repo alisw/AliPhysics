@@ -2,7 +2,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
                             Bool_t useConvolutedGauss = kTRUE, TString centralityEstimator = "V0A",
                             Bool_t considerJets = kTRUE, Bool_t overrideStoreCentralityPercentile = kFALSE,
                             Bool_t overrideStoreCentralityPercentileValue = kFALSE,
-                            TString listOfFiles = "")
+                            TString listOfFiles = "", Bool_t doEfficiency = kFALSE)
 {
   // Macro to set up and add PID task with default settings.
   //
@@ -109,6 +109,8 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   }
   
   task->SetCentralityEstimator(centralityEstimator.Data());
+  
+  task->SetDoEfficiency(doEfficiency);
   
   task->SetUseMCidForGeneration(kTRUE);
   task->SetUseITS(kTRUE);

@@ -272,7 +272,6 @@ private:
   
   
   AliTHn *fHistLeadQA;
-  TH2D* fHistptreco;
   AliTHn *fHistPIDQA;
 
   AliTHn* fhistmcprim;

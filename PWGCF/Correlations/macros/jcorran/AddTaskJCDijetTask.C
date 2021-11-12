@@ -19,7 +19,9 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     double constituentCut     = 5.0,
                                     double deltaPhiCut        = 2.0,
                                     double matchingR          = 0.2,
-                                    double trackingIneff      = 0.0){
+                                    double trackingIneff      = 0.0,
+                                    AliJCDijetAna::jetClasses lUnfJetClassTrue = AliJCDijetAna::iAcc,
+                                    AliJCDijetAna::jetClasses lUnfJetClassDet = AliJCDijetAna::iAcc){
 
     // Load Custom Configuration and parameters
     // override values with parameters
@@ -89,6 +91,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetCentralityBins(vecCentBins);
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
     dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr);
+    dijetTask->SetUnfoldingJetSets(lUnfJetClassTrue, lUnfJetClassDet);
     dijetTask->SetIsMC(isMC);
     dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, trackingIneff, minJetPt);
     dijetTask->AddFlags(flags);

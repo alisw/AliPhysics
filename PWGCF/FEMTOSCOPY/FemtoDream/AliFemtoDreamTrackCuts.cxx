@@ -67,16 +67,18 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fNSigValueITSmin(-3.),
       fNSigValueITSmax(3.),
       fdoITSnSigmaCut(false),
-      fCOMBsKaon(4.),
-      fTPCsKaon(3.),
-      fEXCLUSIONs(3.),
+      fcutCOMBkd(4.),
+      fcutTPCkd(3.),
+      fcutEXCLUSIONkd(3.),
+      fIsKaon(true),
+      fIsRamona(false),
       fPIDPTPCThreshold(0),
       fPIDPITSThreshold(0),
       fMultDCAmin(27),
       fMultDCAmax(55),
       fRejectPions(false),
       fTOFInvMassCut(false),
-      fPIDkaon(false),
+      fPIDkd(false),
       fTOFInvMassCutUp(0),
       fTOFInvMassCutLow(0),
       fCutArroundPeakTOFInvMass(false),
@@ -146,16 +148,18 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fNSigValueITSmin(cuts.fNSigValueITSmin),
       fNSigValueITSmax(cuts.fNSigValueITSmax),
       fdoITSnSigmaCut(cuts.fdoITSnSigmaCut),
-      fCOMBsKaon(cuts.fCOMBsKaon),
-      fTPCsKaon(cuts.fTPCsKaon),
-      fEXCLUSIONs(cuts.fEXCLUSIONs),
+      fcutCOMBkd(cuts.fcutCOMBkd),
+      fcutTPCkd(cuts.fcutTPCkd),
+      fcutEXCLUSIONkd(cuts.fcutEXCLUSIONkd),
+      fIsKaon(cuts.fIsKaon),
+      fIsRamona(cuts.fIsRamona),
       fPIDPTPCThreshold(cuts.fPIDPTPCThreshold),
       fPIDPITSThreshold(cuts.fPIDPITSThreshold),
       fMultDCAmin(cuts.fMultDCAmin),
       fMultDCAmax(cuts.fMultDCAmax),
       fRejectPions(cuts.fRejectPions),
       fTOFInvMassCut(cuts.fTOFInvMassCut),
-      fPIDkaon(cuts.fPIDkaon),
+      fPIDkd(cuts.fPIDkd),
       fTOFInvMassCutUp(cuts.fTOFInvMassCutUp),
       fTOFInvMassCutLow(cuts.fTOFInvMassCutLow),
       fCutArroundPeakTOFInvMass(cuts.fCutArroundPeakTOFInvMass),
@@ -228,16 +232,18 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fNSigValueITSmin = cuts.fNSigValueITSmin;
   this->fNSigValueITSmax = cuts.fNSigValueITSmax;
   this->fdoITSnSigmaCut = cuts.fdoITSnSigmaCut;
-  this->fCOMBsKaon = cuts.fCOMBsKaon;
-  this->fTPCsKaon = cuts.fTPCsKaon;
-  this->fEXCLUSIONs = cuts.fEXCLUSIONs;
+  this->fcutCOMBkd = cuts.fcutCOMBkd;
+  this->fcutTPCkd = cuts.fcutTPCkd;
+  this->fcutEXCLUSIONkd = cuts.fcutEXCLUSIONkd;
+  this->fIsKaon = cuts.fIsKaon;
+  this->fIsRamona = cuts.fIsRamona;
   this->fPIDPTPCThreshold = cuts.fPIDPTPCThreshold;
   this->fPIDPITSThreshold = cuts.fPIDPITSThreshold;
   this->fMultDCAmin = cuts.fMultDCAmin;
   this->fMultDCAmax = cuts.fMultDCAmax;
   this->fRejectPions = cuts.fRejectPions;
   this->fTOFInvMassCut = cuts.fTOFInvMassCut;
-  this->fPIDkaon = cuts.fPIDkaon;
+  this->fPIDkd = cuts.fPIDkd;
   this->fTOFInvMassCutUp = cuts.fTOFInvMassCutUp;
   this->fTOFInvMassCutLow = cuts.fTOFInvMassCutLow;
   this->fCutArroundPeakTOFInvMass = cuts.fCutArroundPeakTOFInvMass;
@@ -503,8 +509,8 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
   }
 
   //Only for kaons for k-d, k-p-p (oton)
-  if(fPIDkaon){
-        if (!PIDkaon(Track,TPCisthere,TOFisthere)) {
+  if(fPIDkd){
+        if (!PIDkd(Track,TPCisthere,TOFisthere)) {
             pass = false; 
         } else {
             //if (!fMinimalBooking) fHists->FillTrackCounter(25);//don't know which number to use here (oton)
@@ -620,58 +626,74 @@ bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
   return pass;
 }
 
-bool AliFemtoDreamTrackCuts::PIDkaon(AliFemtoDreamTrack *Track, bool TPCyes, bool TOFyes) {
+bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool TOFyes) {
  //
  // by Oton, for K-d, K-p-p analysis
  //
- bool passTOF = false;//start TOF as not passed
- bool passTPC = true;//start TPC as passed
+ bool passTOF = false;
+ bool passTPC = false;
 
  float p = Track->GetMomTPC();
 
  if(TPCyes){
-
-  //get own nsigma
-  float TPCk = Track->GetnSigmaTPC((int) (AliPID::kKaon));
-  //get nsigmas for exclusion
-  float TPCe = Track->GetnSigmaTPC((int) (AliPID::kElectron));
-  float TPCpi = Track->GetnSigmaTPC((int) (AliPID::kPion));
-  float TPCp = Track->GetnSigmaTPC((int) (AliPID::kProton));
+  float TPCe = fabs(Track->GetnSigmaTPC((int) (AliPID::kElectron)));
+  float TPCpi = fabs(Track->GetnSigmaTPC((int) (AliPID::kPion)));
+  float TPCk = fabs(Track->GetnSigmaTPC((int) (AliPID::kKaon)));
+  float TPCp = fabs(Track->GetnSigmaTPC((int) (AliPID::kProton)));
+  float TPCd = fabs(Track->GetnSigmaTPC((int) (AliPID::kDeuteron)));
 
   if(TOFyes) {
-
-   //get own nsigma
-   float TOFk = Track->GetnSigmaTOF((int) (AliPID::kKaon));
-   float COMBk = sqrt(TPCk*TPCk+TOFk*TOFk);
-   //get nsigmas for exclusion
-   float TOFpi = Track->GetnSigmaTOF((int) (AliPID::kPion));
+   float TOFe = fabs(Track->GetnSigmaTOF((int) (AliPID::kElectron)));
+   float COMBe = sqrt(TPCe*TPCe+TOFe*TOFe);
+   float TOFpi = fabs(Track->GetnSigmaTOF((int) (AliPID::kPion)));
    float COMBpi = sqrt(TPCpi*TPCpi+TOFpi*TOFpi);
-   float TOFp = Track->GetnSigmaTOF((int) (AliPID::kProton));
+   float TOFk = fabs(Track->GetnSigmaTOF((int) (AliPID::kKaon)));
+   float COMBk = sqrt(TPCk*TPCk+TOFk*TOFk);
+   float TOFp = fabs(Track->GetnSigmaTOF((int) (AliPID::kProton)));
    float COMBp = sqrt(TPCp*TPCp+TOFp*TOFp);
+   float TOFd = fabs(Track->GetnSigmaTOF((int) (AliPID::kDeuteron)));
+   float COMBd = sqrt(TPCd*TPCd+TOFd*TOFd);
+  
+   if(fIsKaon){ //Kaon TOF selection
+    if(!fIsRamona){ // Oton Kaon TOF selection
+     if(
+      COMBk<fcutCOMBkd 
+      && COMBk<COMBpi && COMBk<COMBp
+     ) passTOF=true;
+    }else{ // Ramona Kaon TOF selection
+     if(p>0.4&&p<1.4&&TOFk<3&&TPCk<3
+      &&!(p>0.8&&TOFp<3&&TPCp<3)) passTOF=true;
+    }
+   }else{ //Deuteron TOF selection
+    if(
+     COMBd<fcutCOMBkd 
+//     && COMBd<COMBp && COMBd<COMBpi && COMBd<COMBe && COMBd<COMBk
+//     && TOFd<TOFp && TOFd<TOFpi && TOFd<TOFe && TOFd<TOFk
+    ) passTOF=true;
+   }
 
-   //TOF selection, standard comb sigma with comparison with proton and pion
-   if(COMBk<fCOMBsKaon && COMBk<COMBpi && COMBk<COMBp) passTOF=true;//  ATTENTION fNSigValue+1 
+  }//TOFyes
 
+  if(fIsKaon){ //Kaon TPC selection
+   if(!fIsRamona){ // Oton Kaon TPC selection
+    passTPC = true;//for kaonstart with true and then exclude
+    if(p>.4&&p<.7&&TPCe<fcutEXCLUSIONkd) passTPC=false; // exclude TPC electrons
+    if(p>.5&&TPCpi<fcutEXCLUSIONkd) passTPC=false; // exclude TPC pions
+    if(p>1.5&&TPCp<fcutEXCLUSIONkd) passTPC=false; // exclude TPC protons
+    if(TPCk>fcutTPCkd) passTPC=false; // own TPC sigma kaon selection
+    if(p>1.) passTPC = false; //momentum threshold for TPC
+   }else{ // Ramona Kaon TPC selection
+    if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
+   }
+  }else{ // Deuteron TOF selection
+   if(p<1.4&&TPCd<fcutTPCkd) passTPC = true;//momentum theshold && own TPC deuteron kaon selection
   }
-
-  //exclude TPC electrons
-  if(p>.4&&p<.7&&fabs(TPCe)<fEXCLUSIONs) passTPC=false; // TPC exclusion always at 3 sigma
-  //exclude TPC pions
-  if(p>.5&&fabs(TPCpi)<fEXCLUSIONs) passTPC=false; // TPC exclusion always at 3 sigma
-  //exclude TPC protons
-  if(p>1.5&&fabs(TPCp)<fEXCLUSIONs) passTPC=false; // TPC exclusion always at 3 sigma
-  //own sigma selection:
-  if(fabs(TPCk)>fTPCsKaon) passTPC=false; // fNSigValue
-  //momentum theshold for TPC
-  if(p>1.) passTPC = false;
-
  }else{
   passTPC=false;
  }
 
  //return an OR!
  return passTPC||passTOF;
-
 }
 
 bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {

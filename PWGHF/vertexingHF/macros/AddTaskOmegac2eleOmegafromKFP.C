@@ -11,7 +11,7 @@
 AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, TString cuttype="")
 
 {
-
+    Bool_t writeElectronTree = kTRUE;
     Bool_t writeOmegac0RecTree = kTRUE;
     Bool_t writeOmegac0MCGenTree = kFALSE;
     if(theMCon) writeOmegac0MCGenTree = kTRUE;
@@ -58,6 +58,7 @@ AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString f
    task->SetWriteOmegac0MCGenTree(writeOmegac0MCGenTree);
    task->SetWriteOmegac0Tree(writeOmegac0RecTree);
    task->SetWriteOmegac0QATree(writeQATree);
+   task->SetWriteElectronTree(writeElectronTree);
    mgr->AddTask(task);
     
 
@@ -74,6 +75,7 @@ AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString f
    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_Omegac0_%s",cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("tree_Omegac0_MCGen_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
    mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("tree_Omegac0_QA_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
+   mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("tree_Electron_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()));
 
  // in the end, this macro returns a pointer to your task. this will be convenient later on
  // when you will run your analysis in an analysis train on grid

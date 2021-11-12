@@ -312,14 +312,12 @@ public:
   UInt_t fRCTrials;
   TString* fUEMethods;                      //[fNumJetUEPIDtasks] Names for the underlying event methods
   Bool_t fUseRealJetArea;
-	
-  AliFJWrapper* 				fWrapper;
   
 private:
   AliAnalysisTaskIDFragmentationFunction(const  AliAnalysisTaskIDFragmentationFunction&);   //Not implemented in AliAnalysisTaskEmcalJet
   AliAnalysisTaskIDFragmentationFunction& operator=(const  AliAnalysisTaskIDFragmentationFunction);   //Not implemented AliAnalysisTaskEmcalJet
   
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 23);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 24);
 };
 
 

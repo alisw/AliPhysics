@@ -23,6 +23,7 @@
 #include "TString.h"
 #include "TF1.h"
 #include "AliESDVertex.h"
+#include "TMath.h"
 class AliEffFDContainer: public TNamed {
   public:
     AliEffFDContainer();
@@ -34,10 +35,13 @@ class AliEffFDContainer: public TNamed {
     void SetCentralityBins(Int_t nBins, Double_t *lbins) { StoreBins(nBins,lbins,fNCentBins, fCentBins); };
     void SetPtBins(Int_t nBins, Double_t *lbins) { StoreBins(nBins,lbins,fNPtBins, fPtBins); fPtMin=fPtBins[0]; fPtMax=fPtBins[fNPtBins];};
     void SetEta(Double_t newval) {fEta = newval; };
+    void SetEta(Double_t etaLow, Double_t etaHigh) {fEtaLow = etaLow, fEta = etaHigh; };
     void AddCut(AliESDtrackCuts *inCuts);
     void AddCut(Int_t lFilterBit);
     void Fill(AliESDEvent &inputESD, AliMCEvent &inputMC);
     void Fill(AliESDEvent &inputESD);
+    TList *GetOutList() { return fOutList; };
+    Bool_t AddContainer(AliEffFDContainer *target);
   // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
@@ -45,6 +49,9 @@ class AliEffFDContainer: public TNamed {
     void StoreBins(Int_t nBins, Double_t *lBins, Int_t &tNBins, Double_t *&tBins);
     void CreateHistograms(Bool_t forceRecreate=kFALSE);
     Double_t GetChi2TPCConstrained(const AliESDtrack *l_Tr);
+    Bool_t CheckEta(Double_t &lEta) { if(fEtaLow>-999) return ((lEta>fEtaLow) && (lEta<fEta)); else return (TMath::Abs(lEta)<fEta);  };
+    void SetIdentifier(TString newname) { fIdentifier->SetTitle(newname.Data()); };
+    TString makeName(TString pf) { return pf+fIdentifier->GetTitle(); };
     //Members
     TList *fOutList;
     TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise
@@ -61,6 +68,7 @@ class AliEffFDContainer: public TNamed {
     TH2D **fEff; //! Stored by TList
     TH3D **fDCA;//! Stored by TList
     TH2D **fWithinDCA;//! Stored by TList
+    TNamed *fIdentifier; //
     //Pointers to axes
     Double_t *fPtBins; //!
     Int_t fNPtBins; //!
@@ -73,6 +81,7 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMin;
     Double_t fPtMax;
     Double_t fEta;
-    ClassDef(AliEffFDContainer,1);
+    Double_t fEtaLow;
+    ClassDef(AliEffFDContainer,2);
 };
 #endif

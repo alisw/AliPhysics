@@ -226,6 +226,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 	TH2F *fNsigma_Electron;
 	TH2F *fNsigma_Hadron;
+
+	TH1F *fHistPt_BeforePID;
+    	TH2F *fdEdx_BeforePID;
     
     
         //---- MC output ----//

@@ -123,7 +123,11 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 if(ROOT_VERSION_MAJOR EQUAL 6)
+  if(ROOT_VERSION_MINOR LESS_EQUAL 20)
     set(ROOT_DEPENDENCIES PyROOT)
+  else()
+    set(ROOT_DEPENDENCIES ROOTTPython)
+  endif()
 else()
     set(ROOT_DEPENDENCIES)
 endif()

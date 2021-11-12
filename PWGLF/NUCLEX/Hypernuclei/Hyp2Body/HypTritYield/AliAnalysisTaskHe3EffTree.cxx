@@ -10,6 +10,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
+#include "AliESDTrdTracklet.h"
 #include "AliESDpid.h"
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
@@ -56,6 +57,7 @@ tTrigHMV0(-999),
 tTrigHMSPD(-999),
 tTrigHNU(0),
 tTrigHQU(0),
+tMagField(0),
 tTRDvalid(0),
 tTRDtrigHNU(0),
 tTRDtrigHQU(0),
@@ -64,7 +66,16 @@ tTRDnTracklets(0),
 tTRDPt(0),
 tTRDLayerMask(0),
 tTRDSagitta(-1),
+tTRDStack(0),
+tTRDSector(0),
+tTRDPID0(0),
+tTRDPID1(0),
+tTRDPID2(0),
+tTRDPID3(0),
+tTRDPID4(0),
+tTRDPID5(0),
 tnTPCcluster(0),
+tnITScluster(0),
 tTPCchi2(0),
 tSPDFiredChips0(-999),	
 tSPDFiredChips1(-999),
@@ -89,7 +100,8 @@ tPy(-999),
 tPz(-999),
 tE(-999),		
 tKink(-1),
-tTPCrefit(-1),			
+tTPCrefit(-1),	
+tITSrefit(-1),					
 tHeDEdx(-999),
 tHeSigma(-999),
 tTOFSignalHe(-999),
@@ -134,6 +146,7 @@ tTrigHMV0(-999),
 tTrigHMSPD(-999),
 tTrigHNU(0),
 tTrigHQU(0),
+tMagField(0),
 tTRDvalid(0),
 tTRDtrigHNU(0),
 tTRDtrigHQU(0),
@@ -142,7 +155,16 @@ tTRDnTracklets(0),
 tTRDPt(0),
 tTRDLayerMask(0),
 tTRDSagitta(-1),
+tTRDStack(0),
+tTRDSector(0),
+tTRDPID0(0),
+tTRDPID1(0),
+tTRDPID2(0),
+tTRDPID3(0),
+tTRDPID4(0),
+tTRDPID5(0),
 tnTPCcluster(0),
+tnITScluster(0),
 tTPCchi2(0),
 tSPDFiredChips0(-999),	
 tSPDFiredChips1(-999),
@@ -168,6 +190,7 @@ tPz(-999),
 tE(-999),		
 tKink(-1),
 tTPCrefit(-1),		
+tITSrefit(-1),					
 tHeDEdx(-999),
 tHeSigma(-999),
 tTOFSignalHe(-999),
@@ -235,7 +258,7 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fTree->Branch("tTrigHMSPD"      , &tTrigHMSPD      , "tTrigHMSPD/I");
 	fTree->Branch("tTrigHNU"        , &tTrigHNU        , "tTrigHNU/I");
 	fTree->Branch("tTrigHQU"        , &tTrigHQU        , "tTrigHQU/I");	
-	
+	fTree->Branch("tMagField"       , &tMagField       , "tMagField/D");
 	fTree->Branch("tTRDvalid"       , &tTRDvalid       , "tTRDvalid/I");
 	fTree->Branch("tTRDtrigHNU"     , &tTRDtrigHNU     , "tTRDtrigHNU/I");
 	fTree->Branch("tTRDtrigHQU"     , &tTRDtrigHQU     , "tTRDtrigHQU/I");	
@@ -243,42 +266,52 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fTree->Branch("tTRDnTracklets"  , &tTRDnTracklets  , "tTRDnTracklets/I");
 	fTree->Branch("tTRDPt"          , &tTRDPt          , "tTRDPt/I");
 	fTree->Branch("tTRDLayerMask"   , &tTRDLayerMask   , "tTRDLayerMask/I");
-	fTree->Branch("tTRDSagitta"     , &tTRDSagitta     , "tTRDSagitta/F");	
+	fTree->Branch("tTRDSagitta"     , &tTRDSagitta     , "tTRDSagitta/D");	
+	fTree->Branch("tTRDStack"     , &tTRDStack     , "tTRDStack/I");	
+	fTree->Branch("tTRDSector"     , &tTRDSector     , "tTRDSector/I");	
+	fTree->Branch("tTRDPID0"     , &tTRDPID0     , "tTRDPID0/i");	
+	fTree->Branch("tTRDPID1"     , &tTRDPID1     , "tTRDPID1/i");	
+	fTree->Branch("tTRDPID2"     , &tTRDPID2     , "tTRDPID2/i");	
+	fTree->Branch("tTRDPID3"     , &tTRDPID3     , "tTRDPID3/i");	
+	fTree->Branch("tTRDPID4"     , &tTRDPID4     , "tTRDPID4/i");
+	fTree->Branch("tTRDPID5"     , &tTRDPID5     , "tTRDPID5/i");	
 	
-	fTree->Branch("tnTPCcluster"    , &tnTPCcluster    , "tnTPCcluster/F");
-	fTree->Branch("tTPCchi2"        , &tTPCchi2        , "tTPCchi2/F");	
-	fTree->Branch("tSPDFiredChips0" , &tSPDFiredChips0 , "tSPDFiredChips0/F");
-	fTree->Branch("tSPDFiredChips1" , &tSPDFiredChips1 , "tSPDFiredChips1/F");
-	fTree->Branch("tSPDTracklets"   , &tSPDTracklets   , "tSPDTracklets/F");
-	fTree->Branch("tSPDCluster"     , &tSPDCluster     , "tSPDCluster/F");
-	fTree->Branch("tV0Multiplicity" , &tV0Multiplicity , "tV0Multiplicity/F");
-	fTree->Branch("tNTracks"        , &tNTracks        , "tNTracks/F");
-	fTree->Branch("tMultV0M"        , &tMultV0M        , "tMultV0M/F");
-	fTree->Branch("tMultOfV0M"      , &tMultOfV0M      , "tMultOfV0M/F");
-	fTree->Branch("tMultSPDTracklet", &tMultSPDTracklet, "tMultSPDTracklet/F");
-	fTree->Branch("tMultSPDCluster" , &tMultSPDCluster , "tMultSPDCluster/F");
-	fTree->Branch("tMultRef05"      , &tMultRef05      , "tMultRef05/F");
-	fTree->Branch("tMultRef08"      , &tMultRef08      , "tMultRef08/F");
-	fTree->Branch("tPt"             , &tPt             , "tPt/F");
-	fTree->Branch("tCharge"         , &tCharge         , "tCharge/F");
-	fTree->Branch("tY"              , &tY              , "tY/F");
-	fTree->Branch("tEta"            , &tEta            , "tEta/F");
-	fTree->Branch("tPhi"            , &tPhi            , "tPhi/F");
-	fTree->Branch("tP"              , &tP              , "tP/F");
-	fTree->Branch("tPx"             , &tPx             , "tPx/F");
-	fTree->Branch("tPy"             , &tPy             , "tPy/F");
-	fTree->Branch("tPz"             , &tPz             , "tPz/F");
-	fTree->Branch("tE"              , &tE              , "tE/F");
+	fTree->Branch("tnTPCcluster"    , &tnTPCcluster    , "tnTPCcluster/D");
+	fTree->Branch("tnITScluster"    , &tnITScluster    , "tnITScluster/D");
+	fTree->Branch("tTPCchi2"        , &tTPCchi2        , "tTPCchi2/D");	
+	fTree->Branch("tSPDFiredChips0" , &tSPDFiredChips0 , "tSPDFiredChips0/D");
+	fTree->Branch("tSPDFiredChips1" , &tSPDFiredChips1 , "tSPDFiredChips1/D");
+	fTree->Branch("tSPDTracklets"   , &tSPDTracklets   , "tSPDTracklets/D");
+	fTree->Branch("tSPDCluster"     , &tSPDCluster     , "tSPDCluster/D");
+	fTree->Branch("tV0Multiplicity" , &tV0Multiplicity , "tV0Multiplicity/D");
+	fTree->Branch("tNTracks"        , &tNTracks        , "tNTracks/D");
+	fTree->Branch("tMultV0M"        , &tMultV0M        , "tMultV0M/D");
+	fTree->Branch("tMultOfV0M"      , &tMultOfV0M      , "tMultOfV0M/D");
+	fTree->Branch("tMultSPDTracklet", &tMultSPDTracklet, "tMultSPDTracklet/D");
+	fTree->Branch("tMultSPDCluster" , &tMultSPDCluster , "tMultSPDCluster/D");
+	fTree->Branch("tMultRef05"      , &tMultRef05      , "tMultRef05/D");
+	fTree->Branch("tMultRef08"      , &tMultRef08      , "tMultRef08/D");
+	fTree->Branch("tPt"             , &tPt             , "tPt/D");
+	fTree->Branch("tCharge"         , &tCharge         , "tCharge/D");
+	fTree->Branch("tY"              , &tY              , "tY/D");
+	fTree->Branch("tEta"            , &tEta            , "tEta/D");
+	fTree->Branch("tPhi"            , &tPhi            , "tPhi/D");
+	fTree->Branch("tP"              , &tP              , "tP/D");
+	fTree->Branch("tPx"             , &tPx             , "tPx/D");
+	fTree->Branch("tPy"             , &tPy             , "tPy/D");
+	fTree->Branch("tPz"             , &tPz             , "tPz/D");
+	fTree->Branch("tE"              , &tE              , "tE/D");
 	fTree->Branch("tKink"           , &tKink           , "tKink/I");
 	fTree->Branch("tTPCrefit"       , &tTPCrefit       , "tTPCrefit/I");
-	fTree->Branch("tHeDEdx"         , &tHeDEdx         , "tHeDEdx/F");
-	fTree->Branch("tHeSigma"        , &tHeSigma        , "tHeSigma/F");
-	fTree->Branch("tTOFSignalHe"    , &tTOFSignalHe    , "tTOFSignalHe/F");
-	fTree->Branch("tDcaXY"          , &tDcaXY          , "tDcaXY/F");
-	fTree->Branch("tDcaZ"           , &tDcaZ           , "tDcaZ/F");
-	fTree->Branch("tSigmaYX"        , &tSigmaYX        , "tSigmaYX/F");
-	fTree->Branch("tSigmaXYZ"       , &tSigmaXYZ       , "tSigmaXYZ/F");
-	fTree->Branch("tSigmaZ"         , &tSigmaZ         , "tSigmaZ/F");
+	fTree->Branch("tITSrefit"       , &tITSrefit       , "tITSrefit/I");
+	fTree->Branch("tHeDEdx"         , &tHeDEdx         , "tHeDEdx/D");
+	fTree->Branch("tHeSigma"        , &tHeSigma        , "tHeSigma/D");
+	fTree->Branch("tTOFSignalHe"    , &tTOFSignalHe    , "tTOFSignalHe/D");
+	fTree->Branch("tDcaXY"          , &tDcaXY          , "tDcaXY/D");
+	fTree->Branch("tDcaZ"           , &tDcaZ           , "tDcaZ/D");
+	fTree->Branch("tSigmaYX"        , &tSigmaYX        , "tSigmaYX/D");
+	fTree->Branch("tSigmaXYZ"       , &tSigmaXYZ       , "tSigmaXYZ/D");
+	fTree->Branch("tSigmaZ"         , &tSigmaZ         , "tSigmaZ/D");
 	fTree->Branch("tMCtrue"         , &tMCtrue         , "tMCtrue/I");
 	fTree->Branch("tPrimary"        , &tPrimary        , "tPrimary/I");
 	fTree->Branch("tWeak"           , &tWeak           , "tWeak/I");
@@ -291,9 +324,10 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 	fTreeGen->Branch("tTrigHMSPD"     , &tTrigHMSPD     , "tTrigHMSPD/I");
 	fTreeGen->Branch("tTrigHNU"       , &tTrigHNU       , "tTrigHNU/I");
 	fTreeGen->Branch("tTrigHQU"       , &tTrigHQU       , "tTrigHQU/I");
-	fTreeGen->Branch("tGenCharge"     , &tGenCharge     , "tGenCharge/F");
-	fTreeGen->Branch("tGenPt"         , &tGenPt         , "tGenPt/F");
-	fTreeGen->Branch("tGenY"          , &tGenY          , "tGenY/F");
+	fTreeGen->Branch("tMagField"      , &tMagField      , "tMagField/D");
+	fTreeGen->Branch("tGenCharge"     , &tGenCharge     , "tGenCharge/D");
+	fTreeGen->Branch("tGenPt"         , &tGenPt         , "tGenPt/D");
+	fTreeGen->Branch("tGenY"          , &tGenY          , "tGenY/D");
 	fTreeGen->Branch("tGenPrimary"    , &tGenPrimary    , "tGenPrimary/I");
 	fTreeGen->Branch("tGenHypertriton", &tGenHypertriton, "tGenHypertriton/I");
 
@@ -336,8 +370,8 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	trackCutsV0.SetEtaRange(-0.9,0.9);
 	trackCutsV0.SetAcceptKinkDaughters(kTRUE);
 	trackCutsV0.SetRequireTPCRefit(kFALSE);
-	trackCutsV0.SetMaxChi2PerClusterTPC(6);
-	trackCutsV0.SetMinNClustersTPC(60);
+	trackCutsV0.SetMaxChi2PerClusterTPC(8);
+	trackCutsV0.SetMinNClustersTPC(40);
 
 	//******************************
 	//*   get trigger information  *
@@ -382,7 +416,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
 					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){	
-					Float_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
 					if (sag < 0.2 && sag > -0.2) {
 						HQU = 1;
 						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
@@ -420,7 +454,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 		tMultRef08 = MultSelection->GetMultiplicityPercentile("RefMult08");
 	}
 	
-	 
+	tMagField = fESDevent->GetMagneticField();
 
 	// fill histogram
 	fHistEvents->Fill(0);
@@ -430,7 +464,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	if (HNU) fHistEvents->Fill(4);
 	if (HQU) fHistEvents->Fill(5);
 	
-
+		
 	//***************************************
 	//* loop over all tracks, identify He3  *
 	//***************************************
@@ -443,10 +477,9 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
                  
 		if (track->GetTPCsignal() > 1500 || track->GetInnerParam()->GetP() > 5) continue;
 		tCharge = 2 * track->GetSign();
-		if (TMath::Abs(Bethe(*track, AliPID::ParticleMass(AliPID::kHe3), TMath::Abs(tCharge), fBetheParamsHe)) > 5)
+		if (TMath::Abs(Bethe(*track, AliPID::ParticleMass(AliPID::kHe3), TMath::Abs(tCharge), fBetheParamsHe)) > 5) {
 			continue;
-		        if(track->GetIntegratedLength()){       
-    		}	
+			}
 		        
 		tRunNumber = runNumber;
 		tTrigMB = MB;		
@@ -456,8 +489,9 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 		tTrigHQU = HQU;
 
 		tnTPCcluster = track->GetTPCNcls();
-		tTPCchi2 = track->GetTPCchi2() / (Float_t) track->GetTPCclusters(0);
-	
+		tTPCchi2 = track->GetTPCchi2() / (Double_t) track->GetTPCclusters(0);
+		tnITScluster = track->GetITSNcls();
+		
 		Double_t momvect[3];
 		track->PxPyPz(momvect);
 		TLorentzVector He3Vector(momvect[0],momvect[1],momvect[2],0);
@@ -475,7 +509,8 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 		
 		tKink = track->GetKinkIndex(0) > 0;
 		tTPCrefit = (track->GetStatus() & AliESDtrack::kTPCrefit) != 0;
-
+		tITSrefit = (track->GetStatus() & AliESDtrack::kITSrefit) != 0;
+		
 		tP = track->GetInnerParam()->GetP();
 		tHeDEdx =  track->GetTPCsignal();
 		tHeSigma = Bethe(*track, AliPID::ParticleMass(AliPID::kHe3), TMath::Abs(tCharge), fBetheParamsHe);
@@ -532,13 +567,13 @@ void AliAnalysisTaskHe3EffTree::ProcessMCParticles() {
 	}
 }
 //_____________________________________________________________________________
-Float_t AliAnalysisTaskHe3EffTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
+Double_t AliAnalysisTaskHe3EffTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
 	//returns d(1/Pt) in c/GeV 
 	//in case of no gtu simulation -> return maximum 0.5
 	if(b==0 && c==0) return 0.5;
 	Int_t tmp = (((b & 0xfff) << 12) ^ 0x800000) - 0x800000;
 	tmp += (c & 0xfff);
-	Float_t invPtDev = tmp * 0.000001;
+	Double_t invPtDev = tmp * 0.000001;
 	return invPtDev;
 }
 //_____________________________________________________________________________
@@ -554,9 +589,9 @@ Double_t AliAnalysisTaskHe3EffTree::Bethe(const AliESDtrack& track, Double_t mas
 	return (track.GetTPCsignal() - expected) / sigma;
 }
 //_____________________________________________________________________________
-Float_t AliAnalysisTaskHe3EffTree::GetTOFSignalHe3(AliESDtrack& trackHe, Float_t tP) {
+Double_t AliAnalysisTaskHe3EffTree::GetTOFSignalHe3(AliESDtrack& trackHe, Double_t tP) {
 	// returns the mass calculated from TOF Signal
-	Float_t mass = 0, time = -1, beta = 0, gamma = 0, length = 0, time0 = 0;
+	Double_t mass = 0, time = -1, beta = 0, gamma = 0, length = 0, time0 = 0;
 	length = trackHe.GetIntegratedLength();
 	time0 = fPIDResponse->GetTOFResponse().GetStartTime(trackHe.P());
     time = trackHe.GetTOFsignal() - time0;
@@ -728,7 +763,15 @@ Double_t AliAnalysisTaskHe3EffTree::TRDtrack(AliESDtrack* esdTrack) {
 		tTRDPt = 0;
 		tTRDLayerMask = 0;
 		tTRDSagitta = -1;
-
+		tTRDPID0 = 0;
+		tTRDStack = 0;
+		tTRDSector = 0;
+		tTRDPID1 = 0;
+		tTRDPID2 = 0;
+		tTRDPID3 = 0;
+		tTRDPID4 = 0;
+		tTRDPID5 = 0;
+	
     if(!esdTrack) {
         return 0;
     }
@@ -774,7 +817,29 @@ Double_t AliAnalysisTaskHe3EffTree::TRDtrack(AliESDtrack* esdTrack) {
 		tTRDPt = (TMath::Abs(bestGtuTrack->GetPt()));
 		tTRDLayerMask =  bestGtuTrack->GetLayerMask();
 		tTRDSagitta = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());	
-		
+		tTRDStack = bestGtuTrack->GetStack();
+		tTRDSector = bestGtuTrack->GetSector();
+
+		AliESDTrdTracklet *trk = 0;
+		trk = bestGtuTrack->GetTracklet(0);
+		if (trk) tTRDPID0 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(1);
+		if (trk) tTRDPID1 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(2);
+		if (trk) tTRDPID2 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(3);
+		if (trk) tTRDPID3 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(4);
+		if (trk) tTRDPID4 = trk->GetTrackletWord();
+		trk = 0;
+		trk = bestGtuTrack->GetTracklet(5);
+		if (trk) tTRDPID5 = trk->GetTrackletWord();		
+
+			
 		if((bestGtuTrack->GetPID() >= 255 && bestGtuTrack->GetNTracklets() == 4) || 
 			(bestGtuTrack->GetPID() >= 235 && bestGtuTrack->GetNTracklets() > 4)) {
 						tTRDtrigHNU = 1;
@@ -782,7 +847,7 @@ Double_t AliAnalysisTaskHe3EffTree::TRDtrack(AliESDtrack* esdTrack) {
 
 			if (TMath::Abs(bestGtuTrack->GetPt()) >= 256 &&
 				bestGtuTrack->GetPID() >= 130 && bestGtuTrack->GetNTracklets() >= 5 && (bestGtuTrack->GetLayerMask() & 1) ){	
-				Float_t sag = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());
+				Double_t sag = GetInvPtDevFromBC(bestGtuTrack->GetB(), bestGtuTrack->GetC());
 					if (sag < 0.2 && sag > -0.2) {
 							tTRDtrigHQU = 1;
 				 	}
