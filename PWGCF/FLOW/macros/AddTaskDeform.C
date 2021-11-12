@@ -24,7 +24,7 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
   if (!mgr->GetInputEventHandler())	return 0x0;
   // if(IsMC) {
   //   if(!mgr->GetMCtruthEventHandler()) {
-  //     Error("AddTaskMeanPtV2Corr","Could not get MC truth handler");
+  //     Error("AddTaskDeform","Could not get MC truth handler");
   //     return NULL;
   //   };
   //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
@@ -94,8 +94,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
 
   return 0;
 }
-AliAnalysisTaskDeform* AddTaskMeanPtV2Corr(TString name="name", Bool_t IsMC=kFALSE, TString stage="Efficiency",
+AliAnalysisTaskDeform* AddTaskDeform(TString name="name", Bool_t IsMC=kFALSE, TString stage="Efficiency",
                                                   TString efficiencyPath="", TString meanPtPath="", TString NUAPath="", TString subfix2="")
 {
-  return AddTaskMeanPtV2Corr(name,IsMC,stage,efficiencyPath,meanPtPath,NUAPath,"",subfix2);
+  return AddTaskDeform(name,IsMC,stage,efficiencyPath,meanPtPath,NUAPath,"",subfix2);
 }
