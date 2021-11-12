@@ -33,6 +33,11 @@
 #include <TF1.h>
 #include <TStopwatch.h>
 
+using std::cout;
+using std::endl;
+using std::string;
+using std::ifstream;
+
 // Global variables:
 const Int_t gCentralityEstimators = 4; // set here number of supported centrality estimators
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
@@ -46,10 +51,11 @@ const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
 const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
 const Int_t gGenericCorrelations = 5; // correlations between various quantities (see .cxx for documentation)
-const Int_t gMaxBins = 10000; // max number of kine bins
 const Int_t gMaxCorrelator = 12; // 
 const Int_t gMaxHarmonic = 6; // 
 const Int_t gMaxIndex = 300; // per order
+const Int_t gMaxNoBinsKine = 1000; 
+const Int_t gKineDependenceVariables = 2; // pt,eta
 
 // enums:
 enum eBins {nBins,min,max};
@@ -62,6 +68,8 @@ enum eDefaultColors { COLOR = kBlack, FILLCOLOR = kGray };
 enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF, HasPointOnITSLayer, IsGlobalConstrained };
 enum eEvent { MagneticField, PrimaryVertex };
 enum eCentralMultiplicity { RefMultComb08 };
+enum eKineCorrelations { PTKINE = 3, ETAKINE = 4 };
+enum eqvectorKine { PTq = 0, ETAq = 1 };
 
 //================================================================================================================
 
@@ -125,11 +133,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   void ParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
-  virtual Double_t CentralityWeight(const Double_t &value, const char *estimator);
+  virtual Double_t CentralityWeight(const Double_t &value);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops(); // calculate all standard isotropic correlations  
   virtual Double_t CalculateCustomNestedLoop(TArrayI *harmonics); // calculate nested loop for the specified harmonics
   virtual void ResetEventByEventQuantities();
+  virtual void ResetQ(); // reset the components of generic Q-vectors
   virtual void OnlineMonitoring();
   Bool_t SpecifiedEvent(AliVEvent *ave);
   virtual void MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC);
@@ -137,6 +146,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void CalculateTest0();
   virtual void StoreLabelsInPlaceholder(const char *source); 
   virtual Bool_t RetrieveCorrelationsLabels();
+  virtual void CalculateKineCorrelations(const char* kc); 
+  virtual void CalculateKineTest0(const char* kc);
+  virtual Double_t CalculateKineCustomNestedLoop(TArrayI *harmonics, const char* kc, Int_t bin); // calculate custom nested loop for the specified harmonics, kine. variable, and bin
 
   // 3) Methods called in Terminate(Option_t *):
   //    a) Get pointers:
@@ -218,6 +230,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fUseCentralityCuts = kTRUE;
   }
   void SetCentralityEstimator(const char *ce) {this->fCentralityEstimator = ce;};
+  TString GetCentralityEstimator() const {return this->fCentralityEstimator;};
   void SetTaskName(const char *tn) {this->fTaskName = tn;};
 
   void SetCentralityCorrelationsCuts(const char* firstEstimator, const char* secondEstimator, const Double_t cut, const int cutVersion)
@@ -329,7 +342,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetFilterGlobalTracksAOD(const Bool_t fgta){this->fFilterGlobalTracksAOD = fgta;}; 
 
   // Kinematics:
-  void SetKinematicsBins(const char* kv, const Double_t nbins, const Double_t min, const Double_t max)
+  void SetKinematicsBins(const char* kv, const Double_t nbins, const Double_t min, const Double_t max) // used for control histograms. See also SetKineDependenceBins(...)
   {
    Int_t var = -44;
    if(TString(kv).EqualTo("phi")){var = PHI;} 
@@ -343,7 +356,17 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fKinematicsBins[var][2] = max;
   }
 
-  void SetKinematicsCuts(const char* kc, const Double_t min, const Double_t max)
+  void SetKineDependenceBins(const char* kv, TArrayD *iva) // used for custom binning of all histos related to results. See also SetKinematicsBins(...)
+  {
+   Int_t var = -44;
+   if (TString(kv).EqualTo("pt")){var = PTq;} 
+   else if (TString(kv).EqualTo("eta")){var = ETAq;}
+   else{exit(1);}
+   this->fUseCustomKineDependenceBins[var] = kTRUE;
+   this->fKineDependenceBins[var] = iva;
+  }
+
+  void SetKinematicsCuts(const char* kc, const Double_t min, const Double_t max) // used for control histograms
   {
    Int_t var = -44;
    if(TString(kc).EqualTo("phi")){var = PHI;} 
@@ -424,12 +447,22 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateCorrelations(Bool_t cc) {this->fCalculateCorrelations = cc;};
   Bool_t GetCalculateCorrelations() const {return this->fCalculateCorrelations;};
 
+  void SetCalculateKineCorrelations(const char* kc)
+  {
+   if(TString(kc).EqualTo("pt")){fCalculatePtCorrelations = kTRUE;} 
+   if(TString(kc).EqualTo("eta")){fCalculateEtaCorrelations = kTRUE;} 
+  }
+
   void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
   Bool_t GetCalculateTest0() const {return this->fCalculateTest0;};
   void SetFileWithLabels(const char *externalFile) 
   {
    this->fFileWithLabels = new TString(externalFile); 
-   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)){exit(1);} // convention is opposite to Bash
+   if(gSystem->AccessPathName(fFileWithLabels->Data(),kFileExists)) // convention is opposite to Bash
+   {
+    cout<<Form("The file %s doesn't exist",externalFile)<<endl;
+    cout<<__LINE__<<endl; exit(1);
+   }
    this->StoreLabelsInPlaceholder("external");
   }
 
@@ -452,8 +485,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
  
   // Centrality weights:
-  void SetCentralityWeightsHist(TH1D* const hist, const char *estimator); // .cxx
-  TH1D* GetCentralityWeightsHist(const char *estimator); // . cxx
+  void SetCentralityWeightsHist(TH1D* const hist); // .cxx
+  TH1D* GetCentralityWeightsHist() const {return this->fCentralityWeightsHist;} 
   TH1D* GetHistogramWithCentralityWeights(const char *filePath, const char *estimator); // .cxx
 
   // Toy NUA:
@@ -646,11 +679,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 4) Q-vectors:
   TList *fQvectorList;        // list to hold all Q-vector objects       
   TProfile *fQvectorFlagsPro; // profile to hold all flags for Q-vector
-  Bool_t fCalculateQvector;   // to calculate or not to calculate Q-vector components, that's a Boolean...
+  Bool_t fCalculateQvector;   // to calculate or not to calculate Q-vectors, that's a Boolean...
   Int_t fMaxHarmonic;         // 6 (not going beyond v6, if you change this value, change also fQvector[49][9]) 
   Int_t fMaxCorrelator;       // 8 (not going beyond 8-p correlations, if you change this value, change also fQvector[49][9]) 
   //TComplex fQvector[49][9];   //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*8+1][8+1]  
-  TComplex fQvector[gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! Q-vector components [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
+  TComplex fQ[gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! generic Q-vector [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
+  TComplex fQvector[gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! "integrated" Q-vector [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
+  TComplex fqvector[2][gMaxNoBinsKine][gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! "differenttial" q-vector [kine var.][binNo][fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
+  Int_t fqVectorEntries[2][gMaxNoBinsKine]; // count number of entries in each differential q-vector
 
   // 5) Particle weights: 
   TList *fWeightsList;          // list to hold all Q-vector objects       
@@ -659,25 +695,30 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fWeightsHist[gWeights]; // histograms holding weights [phi,pt,eta]
 
   // 6) Centrality weights: 
-  TList *fCentralityWeightsList;                       // list to hold all Q-vector objects       
-  TProfile *fCentralityWeightsFlagsPro;                // profile to hold all flags for CentralityWeights
-  Bool_t fUseCentralityWeights[gCentralityEstimators]; // use centrality weights [V0M, SPDTracklets, CL0, CL1]
-  TH1D *fCentralityWeightsHist[gCentralityEstimators]; // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
+  TList *fCentralityWeightsList;        // list to hold all Q-vector objects       
+  TProfile *fCentralityWeightsFlagsPro; // profile to hold all flags for CentralityWeights
+  Bool_t fUseCentralityWeights;         // use centrality weights [V0M, SPDTracklets, CL0, CL1]
+  TH1D *fCentralityWeightsHist;         // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
 
   // 7) Correlations:
   TList *fCorrelationsList;            // list to hold all correlations objects
   TProfile *fCorrelationsFlagsPro;     // profile to hold all flags for correlations
-  Bool_t fCalculateCorrelations;       // calculate and store correlations
-  TProfile *fCorrelationsPro[4][6][3]; //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  Bool_t fCalculateCorrelations;       // calculate and store integrated correlations
+  Bool_t fCalculatePtCorrelations;     // calculate and store pt correlations
+  Bool_t fCalculateEtaCorrelations;    // calculate and store eta correlations
+  TProfile *fCorrelationsPro[4][6][5]; //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  Bool_t fUseCustomKineDependenceBins[gKineDependenceVariables]; // use or not custom binning for kine dependence => use setter SetKineDependenceBins(...)
+  TArrayD *fKineDependenceBins[gKineDependenceVariables]; // custom binning kine dependence, SetKineDependenceBins(...). By default the same binning is used as in the corresponding control histograms. 
 
   // 8) Nested loops:
   TList *fNestedLoopsList;                 // list to hold all nested loops objects
   TProfile *fNestedLoopsFlagsPro;          // profile to hold all flags for nested loops
   Bool_t fCalculateNestedLoops;            // calculate and store correlations with nested loops, as a cross-check
   Bool_t fCalculateCustomNestedLoop;       // validate e-b-e all correlations with custom nested loop
-  TProfile *fNestedLoopsPro[4][6][3];      //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TProfile *fNestedLoopsPro[4][6][5];      //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
   //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
   TArrayD *ftaNestedLoops[2];              //! e-b-e container for nested loops [0=angles;1=product of all weights]   
+  TArrayD *ftaNestedLoopsKine[gKineDependenceVariables][gMaxNoBinsKine][2]; //! e-b-e container for nested loops [0=pT,1=eta][kine.bin][0=angles;1=product of all weights]   
 
   // 9) Toy NUA:
   TList *fToyNUAList;                           // list to hold all Toy NUA objects
@@ -700,7 +741,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fTest0FlagsPro; // store all flags for Test0
   Bool_t fCalculateTest0; // calculate or not Test0 in general. Which one specifically, that's governed with fCalculateSpecificTest0[gMaxCorrelator][gMaxIndex]
   Bool_t fTest0LabelsWereStoredInPlaceholder; // Test0 labels were stored successfully in fTest0LabelsPlaceholder. From there, they will be extracted at run-time when booking
-  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][3]; //! [gMaxCorrelator][gMaxIndex][3] [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TProfile *fTest0Pro[gMaxCorrelator][gMaxIndex][5]; //! [gMaxCorrelator][gMaxIndex][3] [order][index][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
   TString *fFileWithLabels; // external file which specifies all labels of interest
   TString *fTest0Labels[gMaxCorrelator][gMaxIndex]; // all labels: k-p'th order is stored in k-1'th index. So yes, I also store 1-p
   TH1I *fTest0LabelsPlaceholder; // temporary workaround: store all Test0 labels in this histogram, until I find a better implementation
@@ -728,7 +769,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,27);
+  ClassDef(AliAnalysisTaskMuPa,29);
 
 };
 

@@ -126,6 +126,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, flMCEvent)) continue;
     lPart = (AliMCParticle*)flMCEvent->GetTrack(i);
     if(!lPart->IsPhysicalPrimary()) continue;
+    if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
     if(TMath::Abs(eta)>fEta) continue;
     pt = lPart->Pt();
@@ -164,6 +165,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if (index < 0) continue;
     lPart = (AliMCParticle*)flMCEvent->GetTrack(index);
     if(!lPart) continue;
+    if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
     if(TMath::Abs(eta)>fEta) continue;
     pt = lPart->Pt();
