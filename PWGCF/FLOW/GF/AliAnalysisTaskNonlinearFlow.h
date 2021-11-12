@@ -358,6 +358,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
     // Track histograms
     TH1F*				fPhiDis1D;		//! phi dis 1D
+    TH1F*				fPhiDis1DBefore;		//! phi dis 1D before track cuts
     TH3F*				fPhiDis;		//! phi dist
     TH1F*				fEtaDis;		//! eta dist
     TH1F*				fEtaBefore;		//! eta dist before track cuts

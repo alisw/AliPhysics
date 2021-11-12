@@ -531,6 +531,16 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 100, 0, 3000);
   fListOfObjects->Add(hNtrksVSmultPercentile);
 
+  fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 100, 0, 2*3.1415926);
+  fListOfObjects->Add(fPhiDis1DBefore);
+  fPhiDis1D  = new TH1D("hPhiDis", "phi distribution after the weight correction", 100, 0, 2*3.1415926);
+  fListOfObjects->Add(fPhiDis1D);
+  fEtaDis = new TH1D("hEtaDis", "eta distribution", 100, -2, 2);
+  fListOfObjects->Add(fEtaDis);
+  fPtDis = new TH1D("hPtDis", "pt distribution", 100, -2, 2);
+  fListOfObjects->Add(fPtDis);
+
+
   Int_t inSlotCounter=1;
   if(fNUA) {
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
@@ -835,6 +845,11 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
       if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
     }
     NtrksBefore += weightPt;
+
+    fPhiDis1DBefore->Fill(aodTrk->Phi());
+    fPtDis->Fill(aodTrk->Pt());
+    fEtaDis->Fill(aodTrk->Eta());
+    fPhiDis1D->Fill(aodTrk->Phi(), weight*weightPt);
 
     //..calculate Q-vectors
     //..no eta gap
@@ -2202,9 +2217,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   Double_t zRes = TMath::Sqrt(cov[5]);
   if ( vtxSPD->IsFromVertexerZ() && (zRes > dMaxResol)) return kFALSE;
 
-  if (fPeriod.EqualTo("LHC15o") || 
-      fPeriod.EqualTo("LHC15o_pass2") || 
-      fPeriod.EqualTo("LHC18qr_pass3") || 
+  if (fPeriod.EqualTo("LHC15o") ||
+      fPeriod.EqualTo("LHC15o_pass2") ||
+      fPeriod.EqualTo("LHC18qr_pass3") ||
       fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
   } else {
