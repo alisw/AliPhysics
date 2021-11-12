@@ -126,7 +126,9 @@ fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTrigger(2.0),
 fMaxPtTrigger(4.0),
-fHistPtTrigger(0),
+fHistPtTriggerD0(0),
+fHistPtTriggerXiC(0),
+fHistPtTriggerXiB(0),
 fHist3d2pcD0Proton(0),
 fHist3d2pcD0AntiProton(0),
 fHist3d2pcD0D0(0),
@@ -229,7 +231,9 @@ fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTrigger(2.0),
 fMaxPtTrigger(4.0),
-fHistPtTrigger(0),
+fHistPtTriggerD0(0),
+fHistPtTriggerXiC(0),
+fHistPtTriggerXiB(0),
 fHist3d2pcD0Proton(0),
 fHist3d2pcD0AntiProton(0),
 fHist3d2pcD0D0(0),
@@ -522,10 +526,20 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
     }
   }
   
-  if(! fHistPtTrigger ) {
+  if(! fHistPtTriggerD0 ) {
     //Histogram Output: Event-by-Event
-    fHistPtTrigger = new TH1D( "fHistPtTrigger", ";#eta;Count",200,0,20);
-    fListHist->Add(fHistPtTrigger);
+    fHistPtTriggerD0 = new TH1D( "fHistPtTriggerD0", ";#eta;Count",200,0,20);
+    fListHist->Add(fHistPtTriggerD0);
+  }
+  if(! fHistPtTriggerXiC ) {
+    //Histogram Output: Event-by-Event
+    fHistPtTriggerXiC = new TH1D( "fHistPtTriggerXiC", ";#eta;Count",200,0,20);
+    fListHist->Add(fHistPtTriggerXiC);
+  }
+  if(! fHistPtTriggerXiB ) {
+    //Histogram Output: Event-by-Event
+    fHistPtTriggerXiB = new TH1D( "fHistPtTriggerXiB", ";#eta;Count",200,0,20);
+    fListHist->Add(fHistPtTriggerXiB);
   }
   
   if(! fHist3d2pcD0Proton ) {
@@ -946,6 +960,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   Long_t lNXiC=0, lNXiB=0;
   Long_t lNProtons=0, lNAntiProtons=0;
   Long_t lND0=0, lND0bar=0;
+  Long_t lND0trigger=0, lND0bartrigger=0;
   Long_t lNBMinus=0, lNBPlus=0;
   Long_t lNKMinus=0, lNKPlus=0;
   
@@ -955,6 +970,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   TArrayI lAntiProtons( lMCstack->GetNtrack() );
   TArrayI lD0( lMCstack->GetNtrack() );
   TArrayI lD0bar( lMCstack->GetNtrack() );
+  TArrayI lD0trigger( lMCstack->GetNtrack() );
+  TArrayI lD0bartrigger( lMCstack->GetNtrack() );
   TArrayI lBMinus( lMCstack->GetNtrack() );
   TArrayI lBPlus( lMCstack->GetNtrack() );
   TArrayI lKMinus( lMCstack->GetNtrack() );
@@ -969,6 +986,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if(!lThisParticle) continue;
     lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(iCurrentLabelStack);
     Double_t geta = lThisParticle -> Eta();
+    Double_t gpt = lThisParticle -> Pt();
     
     //gotta reject any and all offspring of decays
     //simplest implementation: reject based on decay position
@@ -981,24 +999,20 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if(lDistanceFromZero>1e-12) continue; //remove everything outside of zero, should remove decay daus
     
     if( TMath::Abs(geta)<4.0 ){
+      if(lThisParticle->GetPdgCode()==421) {
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
+        lD0trigger[lND0trigger++] = iCurrentLabelStack;
+      }
       if(lThisParticle->GetPdgCode()==4232) {
         if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
         lXiC[lNXiC++] = iCurrentLabelStack;
-        //Add to buffer
-//        fEMBufferEtaXiC[ fEMBufferCycleXiC ] = lThisParticle->Eta();
-//        fEMBufferPhiXiC[ fEMBufferCycleXiC ] = lThisParticle->Phi();
-//        fEMBufferCycleXiC++;
-//        if(fEMBufferCycleXiC>=10) fEMBufferFullXiC = kTRUE;
-//        fEMBufferCycleXiC = fEMBufferCycleXiC%10;
       }
       if(lThisParticle->GetPdgCode()==5132) {
         if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
         lXiB[lNXiB++] = iCurrentLabelStack;
-//        fEMBufferEtaXiB[ fEMBufferCycleXiB ] = lThisParticle->Eta();
-//        fEMBufferPhiXiB[ fEMBufferCycleXiB ] = lThisParticle->Phi();
-//        fEMBufferCycleXiB++;
-//        if(fEMBufferCycleXiB>=10) fEMBufferFullXiB = kTRUE;
-//        fEMBufferCycleXiB = fEMBufferCycleXiB%10;
       }
       if(lThisParticle->GetPdgCode()== 2212 && lIsPhysicalPrimary ) lProtons[lNProtons++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==-2212 && lIsPhysicalPrimary ) lAntiProtons[lNAntiProtons++] = iCurrentLabelStack;
@@ -1080,12 +1094,12 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   //----- End Loop on Stack ----------------------
   
   //  Actually correlate stuff with stuff
-  for (Int_t iTrigger = 0;  iTrigger < lND0; iTrigger++){   // trigger loop
-    TParticle* lTriggerParticle = lMCstack->Particle(lD0[iTrigger]);
+  for (Int_t iTrigger = 0;  iTrigger < lND0trigger; iTrigger++){   // trigger loop
+    TParticle* lTriggerParticle = lMCstack->Particle(lD0trigger[iTrigger]);
     
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
-    fHistPtTrigger->Fill( lTriggerParticle -> Pt() );
+    fHistPtTriggerD0->Fill( lTriggerParticle -> Pt() );
     //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     for (Int_t iassoc = 0;  iassoc < lNProtons; iassoc++){   // associated loop
       TParticle* lAssociatedParticle = 0x0;
@@ -1116,7 +1130,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     }
     //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     for (Int_t iassoc = 0;  iassoc < lND0; iassoc++){   // associated loop
-      if (lD0[iassoc] == lD0[iTrigger]) continue;
+      if (lD0[iassoc] == lD0trigger[iTrigger]) continue;
       TParticle* lAssociatedParticle = 0x0;
       lAssociatedParticle = lMCstack->Particle( lD0[iassoc] );
       if(!lAssociatedParticle) {
@@ -1175,7 +1189,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
   }
   
   //Event mixing for D0
-  if( fEMBufferFullD0 && lND0>0 ){ //require also that a trigger exists
+  if( fEMBufferFullD0 && lND0trigger>0 ){ //require also that a trigger exists
     for (Int_t iTrigger = 0;  iTrigger < 10; iTrigger++){   // trigger loop
       Double_t geta = fEMBufferEtaD0[iTrigger]; //from previous events
       Double_t gphi = fEMBufferPhiD0[iTrigger]; //from previous events
@@ -1273,7 +1287,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
-    fHistPtTrigger->Fill( lTriggerParticle -> Pt() );
+    fHistPtTriggerXiC->Fill( lTriggerParticle -> Pt() );
     //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     for (Int_t iassoc = 0;  iassoc < lNProtons; iassoc++){   // associated loop
       TParticle* lAssociatedParticle = 0x0;
@@ -1460,7 +1474,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
-    fHistPtTrigger->Fill( lTriggerParticle -> Pt() );
+    fHistPtTriggerXiB->Fill( lTriggerParticle -> Pt() );
     //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     for (Int_t iassoc = 0;  iassoc < lNProtons; iassoc++){   // associated loop
       TParticle* lAssociatedParticle = 0x0;
@@ -1652,6 +1666,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if(!lThisParticle) continue;
     lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(iCurrentLabelStack);
     Double_t geta = lThisParticle -> Eta();
+    Double_t gpt = lThisParticle -> Pt();
     
     //gotta reject any and all offspring of decays
     //simplest implementation: reject based on decay position
@@ -1662,6 +1677,8 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
                                              );
     
     if(lDistanceFromZero>1e-12) continue; //remove everything outside of zero, should remove decay daus
+    
+    if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
     
     if( TMath::Abs(geta)<4.0 ){
       if(lThisParticle->GetPdgCode()==421) {
