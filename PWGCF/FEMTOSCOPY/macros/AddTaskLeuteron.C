@@ -640,6 +640,18 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       LambdaCuts5->SetPtRange(0.2,999.0);
       LambdaCuts6->SetPtRange(0.2,999.0);
     
+    }else if(suffix == "35"){
+      
+      // deuteron cuts tuned to match Bhawani's cut settings
+
+      TrackCuts3->SetPtRange(0.5,1.4);
+      TrackCuts4->SetPtRange(0.5,1.4);
+
+      TrackCuts3->SetRejLowPtPionsTOF(false);
+      TrackCuts4->SetRejLowPtPionsTOF(false);
+
+
+
     }
 
   } // end of systematics if statement
