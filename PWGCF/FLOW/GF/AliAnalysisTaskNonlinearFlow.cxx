@@ -86,6 +86,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     //....
     fPeriod("LHC15o"),
     fCurrSystFlag(0),
+    fSpringMode(false),
 
     fListOfObjects(0),
     fListOfProfile(0),
@@ -179,6 +180,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   //....
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
+  fSpringMode(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -290,6 +292,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   //....
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
+  fSpringMode(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
