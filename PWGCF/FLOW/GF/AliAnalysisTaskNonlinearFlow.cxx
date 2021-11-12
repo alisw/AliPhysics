@@ -400,13 +400,15 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fEventCuts.AddQAplotsToList(fListOfObjects);
   //..kINT7 is set in the class as default, if I want to have kHigHMultV0 in pp, I have to switch to manual mode
 
-  // fEventCuts.SetManualMode();
-  // fEventCuts.fRequireTrackVertex = false; // !!
-  // fEventCuts.fMinVtz = -10.f;
-  // fEventCuts.fMaxVtz = 10.f;
-  // fEventCuts.fMaxResolutionSPDvertex = 0.25f;
-  // Distance between track and SPD vertex < 0.2 cm
-  // fEventCuts.fPileUpCutMV = true;
+  if (fSpringMode) {
+    fEventCuts.SetManualMode();
+    fEventCuts.fRequireTrackVertex = false; // !!
+    fEventCuts.fMinVtz = -10.f;
+    fEventCuts.fMaxVtz = 10.f;
+    fEventCuts.fMaxResolutionSPDvertex = 0.25f;
+    Distance between track and SPD vertex < 0.2 cm
+    fEventCuts.fPileUpCutMV = true;
+  }
 
   fGFWSelection = new AliGFWCuts();
   fGFWSelection->PrintSetup();

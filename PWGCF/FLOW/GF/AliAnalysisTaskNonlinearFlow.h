@@ -216,6 +216,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void   SetPeriod(TString period) { fPeriod = period; }
     virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
     virtual int    GetSystFlag() { return fCurrSystFlag; }
+    virtual void   SetSpringMode(bool flag = true) { fSpringMode = flag; }
 
     // unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
     // unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
@@ -277,9 +278,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     Double_t		fVtxCutDefault;				// Vtx cut on z position in cm (for NtrksCounter)
     Double_t		fMinPt;					// Min pt - for histogram limits
     Double_t		fMaxPt;					// Max pt - for histogram limits
-    Int_t			fSample;				// number of sample
-    Int_t			fTrigger;				// flag for trigger
-    Int_t			fAliTrigger;				// name for trigger
+    Int_t			  fSample;				// number of sample
+    Int_t			  fTrigger;				// flag for trigger
+    Int_t			  fAliTrigger;				// name for trigger
     Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
     Bool_t			fNUE;					// flag for NUE correction
     Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
@@ -287,6 +288,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     TString                 fNtrksName;                             // Cent or Mult
     TString			fPeriod;				// period
     Int_t                   fCurrSystFlag;                          // Systematics flag
+    Bool_t      fSpringMode;  // The mode with spring cuts.
 
     // Output objects
     TList*			fListOfObjects;			//! Output list of objects
@@ -443,7 +445,7 @@ int nn = 0; //!
 void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-ClassDef(AliAnalysisTaskNonlinearFlow, 5);    //Analysis task
+ClassDef(AliAnalysisTaskNonlinearFlow, 6);    //Analysis task
 };
 
 #endif
