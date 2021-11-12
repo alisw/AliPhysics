@@ -57,7 +57,7 @@
 #include "AliAnalysisManager.h"
 #include "AliEmcalContainerUtils.h"
 #include "AliFJWrapper.h"
-
+#include "AliAnalysisTaskJetQnVectors.h"
 
 #include "AliGenHepMCEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -119,7 +119,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 }
 
 //________________________________________________________________________
-Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0)
+Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Float_t QVector, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0)
 {
   if(!fInitialized)
     AliFatal("Tree is not initialized.");
@@ -163,6 +163,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, 
   fBuffer_Event_Multiplicity                    = multiplicity;
   fBuffer_Event_ID                              = eventID;
   fBuffer_Event_MagneticField                   = magField;
+  fBuffer_Event_Q2Vector                        = QVector;   //retrieves qvector from JetQnVectors task
 
   // Extract basic constituent track properties directly from AliEmcalJet object
   fBuffer_NumTracks = 0;
@@ -327,7 +328,7 @@ void AliEmcalJetTree::FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
+void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveQVector, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
 {
   // Create the tree with active branches
 
@@ -358,6 +359,11 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
   fJetTree->Branch("Event_Multiplicity",&fBuffer_Event_Multiplicity,"Event_Multiplicity/I");
   fJetTree->Branch("Event_ID",&fBuffer_Event_ID,"Event_ID/L");
   fJetTree->Branch("Event_MagneticField",&fBuffer_Event_MagneticField,"Event_MagneticField/F");
+
+  if(saveQVector)
+  {
+    fJetTree->Branch("Event_Q2Vector",&fBuffer_Event_Q2Vector,"Event_Q2Vector/F");
+  }
 
   if(saveMCInformation)
   {
@@ -504,7 +510,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractor", kTRUE),
-  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveJetSplittings(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
+  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveJetSplittings(0), fSaveQVector(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
   fEventPercentage(1.0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
@@ -540,7 +546,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fIsEmbeddedEvent(kFALSE),
   fDoDetLevelMatching(kFALSE),
   fDoPartLevelMatching(kFALSE),
-  fSimpleSecVertices()
+  fSimpleSecVertices(),
+  fqnVectorReader(0)
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -553,7 +560,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveJetSplittings(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
+  fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveJetSplittings(0), fSaveQVector(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fSaveTriggerTracks(0), fSaveCaloClusters(0),
   fEventPercentage(1.0),
   fEventCut_TriggerTrackMinPt(0),
   fEventCut_TriggerTrackMaxPt(0),
@@ -589,7 +596,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fIsEmbeddedEvent(kFALSE),
   fDoDetLevelMatching(kFALSE),
   fDoPartLevelMatching(kFALSE),
-  fSimpleSecVertices()
+  fSimpleSecVertices(),
+  fqnVectorReader(0)
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -622,6 +630,11 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   fRandomGenerator->SetSeed(fRandomSeed);
   fRandomGeneratorCones->SetSeed(fRandomSeedCones);
 
+
+  if(fSaveQVector){
+    fqnVectorReader=(AliAnalysisTaskJetQnVectors*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
+    if(!fqnVectorReader){printf("Error: No AliAnalysisTaskJetQnVectors");return;} // GetQnVectorReader
+  }
   
   // Activate saving of trigger tracks if this is demanded
   if(fEventCut_TriggerTrackMinPt || fEventCut_TriggerTrackMaxPt)
@@ -636,7 +649,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   }
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetRandomGenerator(fRandomGenerator);
-  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fDoDetLevelMatching, fDoPartLevelMatching, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
+  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fDoDetLevelMatching, fDoPartLevelMatching, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveQVector, fSaveSecondaryVertices, fSaveTriggerTracks);
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 
@@ -906,8 +919,11 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       fJetTree->FillBuffer_Splittings(splittings_radiatorE, splittings_kT, splittings_theta, fSaveSecondaryVertices, splittings_secVtx_rank, splittings_secVtx_index);
     }
 
+    Float_t Q2VectorValue = 0;
+    if (fSaveQVector) Q2VectorValue = fqnVectorReader->Getq2V0();      
+
     // Fill jet to tree (here adding the minimum properties)
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPV0);
+    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, Q2VectorValue, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPV0);
     if(accepted)
       FillHistogram("hJetPtExtracted", jet->Pt() - GetJetContainer(0)->GetRhoVal()*jet->Area(), fCent);
     jetCount++;
@@ -920,6 +936,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     while(AliVTrack *track = static_cast<AliVTrack*>(GetParticleContainer(iCont)->GetNextAcceptParticle()))
       FillTrackControlHistograms(track);
   }
+
 
   // For debugging
   //elapsedTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - startTime).count();

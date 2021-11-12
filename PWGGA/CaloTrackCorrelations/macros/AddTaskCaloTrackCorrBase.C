@@ -962,7 +962,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
       // Reject MinBias or L0 trigger
       if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") || 
            caloTriggerString.Contains("G2") || caloTriggerString.Contains("J2") || 
-           caloTriggerString.Contains("EGA")) 
+           caloTriggerString.Contains("GA"))
       {
         maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
         maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
@@ -985,11 +985,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     {
       maker->GetReader()->SwitchOffEventTriggerAtSE();
       maker->GetReader()->SetEventTriggerMask(mask); 
-      // what to do with caloTriggerString?
       
-      // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
-      //reader->SetMixEventTriggerMask(AliVEvent::kMB); 
-      maker->GetReader()->SetMixEventTriggerMask(AliVEvent::kINT7); 
+      maker->GetReader()->SetMixEventTriggerMask( AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB );
       
       printf("AddTaskCaloTrackCorrBase::Main() << Trigger selection done in AliCaloTrackReader!!! >>> \n");
     }

@@ -334,8 +334,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
 
+  float DmesonBuddyMass =
+    TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
+
     fProtonTrack->SetTrack(track);
-    fProtonTrack->SetInvMass(0.938);
+    fProtonTrack->SetInvMass(DmesonBuddyMass);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       protons.push_back(*fProtonTrack);
     }

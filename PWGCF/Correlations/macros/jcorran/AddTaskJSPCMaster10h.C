@@ -6,10 +6,17 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = kTRUE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE)
+AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  //Explanation: 
+  //doSPC  	0: normal SPC
+  //		1: test v2 and SC
+  // 		2: test rho 
+
+  if(doSPC < 0 || doSPC > 2) return 0;
 
   //-------- Read in passed Variations -------- 
   std::istringstream iss(Variations);
@@ -132,7 +139,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
   AliJSPCTask *myTask[Nsets][SPCCombination];
 
   for (Int_t i = 0; i < PassedVariations; i++){
-    if (doSPC) {  
+    if (doSPC == 0) {  
       for(Int_t j = 0; j < SPCCombination; j++){
         myTask[i][j] = new AliJSPCTask(Form("%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[j].Data()));
       	myTask[i][j]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
@@ -141,7 +148,8 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
       	myTask[i][j]->JSPCSetSaveAllQA(kTRUE);
       	myTask[i][j]->JSPCSetMinNuPar(14.);
       	myTask[i][j]->JSPCSetFisherYates(kFALSE, 1.); 
-      	myTask[i][j]->JSPCSetUseWeights(useWeights);
+      	myTask[i][j]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
+        myTask[i][j]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
 
       	if(j==0){
       	  myTask[i][j]->JSPCSetCorrSet1(4., 6.,-2.,-2.,-2., 0., 0.,0.);
@@ -181,14 +189,14 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
         mgr->AddTask((AliAnalysisTask *) myTask[i][j]);
       }
     } // if (doSPC)
-    else {
+    else if (doSPC == 1){
       myTask[i][0] = new AliJSPCTask(Form("%s_%s_Flow", taskName.Data(), configNames[i].Data()));
       myTask[i][0]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
       myTask[i][0]->JSPCSetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
       myTask[i][0]->JSPCSetSaveAllQA(kTRUE);
       myTask[i][0]->JSPCSetMinNuPar(14.);
       myTask[i][0]->JSPCSetFisherYates(kFALSE, 1.); 
-      myTask[i][0]->JSPCSetUseWeights(useWeights);
+      myTask[i][0]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
 
       myTask[i][0]->JSPCSetCorrSet1(2., -2., 2., 0., 0., 0., 0.,0.);
       myTask[i][0]->JSPCSetCorrSet2(4., -2., 2, -3., 3., 0., 0.,0.);
@@ -200,10 +208,61 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
       myTask[i][0]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
 
       myTask[i][0]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+      myTask[i][0]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
 
       mgr->AddTask((AliAnalysisTask *) myTask[i][0]);
 
     }
+    else if (doSPC == 2){
+      myTask[i][0] = new AliJSPCTask(Form("%s_%s_RhoPart1", taskName.Data(), configNames[i].Data()));
+      myTask[i][0]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+      myTask[i][0]->JSPCSetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+      myTask[i][0]->JSPCSetSaveAllQA(kTRUE);
+      myTask[i][0]->JSPCSetMinNuPar(14.);
+      myTask[i][0]->JSPCSetFisherYates(kFALSE, 1.); 
+      myTask[i][0]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
+
+      myTask[i][0]->JSPCSetCorrSet1(3., -2., -3., 5., 0., 0., 0.,0.);
+      myTask[i][0]->JSPCSetCorrSet2(4., 2., -2, 3., -3., 0., 0.,0.);
+      myTask[i][0]->JSPCSetCorrSet3(2., -5., 5., 0, 0., 0., 0.,0.);
+      myTask[i][0]->JSPCSetCorrSet4(4., 6., -2., -2., -2., 0., 0.,0.);
+      myTask[i][0]->JSPCSetCorrSet5(6., 2., -2., 2., -2., 2., -2.,0.);
+      myTask[i][0]->JSPCSetCorrSet6(2., 6., -6., 0., 0., 0., 0.,0.);
+      myTask[i][0]->JSPCSetCorrSet7(0., 0., 0., 0., 0., 0., 0.,0.);
+      myTask[i][0]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
+
+      myTask[i][0]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+      myTask[i][0]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
+
+      mgr->AddTask((AliAnalysisTask *) myTask[i][0]);
+
+
+      myTask[i][1] = new AliJSPCTask(Form("%s_%s_RhoPart2", taskName.Data(), configNames[i].Data()));
+      myTask[i][1]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+      myTask[i][1]->JSPCSetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+      myTask[i][1]->JSPCSetSaveAllQA(kTRUE);
+      myTask[i][1]->JSPCSetMinNuPar(14.);
+      myTask[i][1]->JSPCSetFisherYates(kFALSE, 1.); 
+      myTask[i][1]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
+
+      myTask[i][1]->JSPCSetCorrSet1(3., -2., -2., 4., 0., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet2(4., 2., -2, 2., -2., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet3(2., -4., 4., 0, 0., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet4(3., 6., -3., -3., 0., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet5(4., 3., -3., 3., -3., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet6(2., 6., -6., 0., 0., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet7(0., 0., 0., 0., 0., 0., 0.,0.);
+      myTask[i][1]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
+
+      myTask[i][1]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+
+      myTask[i][1]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
+
+      mgr->AddTask((AliAnalysisTask *) myTask[i][1]);
+
+    }
+
+
   }
 
 // Connect the input and output.
@@ -213,7 +272,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
   for (Int_t i = 0; i < PassedVariations; i++) {
     mgr->ConnectInput(fJCatalyst[i], 0, cinput);
 
-    if (doSPC) {
+    if (doSPC == 0) {
       for(Int_t j = 0; j < SPCCombination; j++){
   	    mgr->ConnectInput(myTask[i][j], 0, cinput);
         jHist[i][j] = new AliAnalysisDataContainer();     
@@ -229,7 +288,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
           Form("%s", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][SPCCombination]);
     }
-    else {
+    else if (doSPC == 1) {
 
       mgr->ConnectInput(myTask[i][0], 0, cinput);
       jHist[i][0] = new AliAnalysisDataContainer();     
@@ -245,6 +304,24 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Bool_t doSPC = kTRUE, Bool_t useWeights = 
           Form("%s", AliAnalysisManager::GetCommonFileName()));
       mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][SPCCombination]);
     }
+    else if (doSPC == 2) {
+      for(Int_t j = 0; j < 2; j++){
+  	    mgr->ConnectInput(myTask[i][j], 0, cinput);
+        jHist[i][j] = new AliAnalysisDataContainer();     
+        jHist[i][j] = mgr->CreateContainer(Form ("%s", myTask[i][j]->GetName()),
+          TList::Class(), AliAnalysisManager::kOutputContainer,
+          Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
+        mgr->ConnectOutput(myTask[i][j], 1, jHist[i][j]);
+      }
+
+        jHist[i][SPCCombination] = new AliAnalysisDataContainer();
+      jHist[i][SPCCombination] = mgr->CreateContainer(Form ("%s", fJCatalyst[i]->GetName()),
+          TList::Class(), AliAnalysisManager::kOutputContainer,
+          Form("%s", AliAnalysisManager::GetCommonFileName()));
+      mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][SPCCombination]);
+    }
+
+
   }
 
   return myTask[0][0];

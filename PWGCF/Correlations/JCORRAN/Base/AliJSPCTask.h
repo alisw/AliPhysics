@@ -53,7 +53,7 @@ class AliJSPCTask : public AliAnalysisTaskSE {
 
   //Task Specific Setters
   void JSPCSetSaveAllQA(Bool_t SaveQA){bJSPCSaveAllQA=SaveQA;}
-  void JSPCSetUseWeights(Bool_t Weights){bJSPCUseWeights = Weights;}
+  void JSPCSetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){bJSPCUseWeightsNUE = WeightsNUE; bJSPCUseWeightsNUA = WeightsNUA; }
   void JSPCSetFisherYates(Bool_t DoFY, Float_t CutOff)
   { bJSPCDoFisherYates=DoFY; fJSPCFisherYatesCutOff=CutOff; } 
   void JSPCSetMinNuPar(Int_t top){fJSPCMinNumberPart = top;} 
@@ -82,6 +82,9 @@ class AliJSPCTask : public AliAnalysisTaskSE {
  {fJSPCcent_0 = cen0; fJSPCcent_1 = cen1; fJSPCcent_2 = cen2; fJSPCcent_3 = cen3; fJSPCcent_4 = cen4; fJSPCcent_5 = cen5; fJSPCcent_6 = cen6; fJSPCcent_7 = cen7; fJSPCcent_8 = cen8; fJSPCcent_9 = cen9; fJSPCcent_10 = cen10; fJSPCcent_11 = cen11; fJSPCcent_12 = cen12; fJSPCcent_13 = cen13; fJSPCcent_14 = cen14; fJSPCcent_15 = cen15; fJSPCcent_16 = cen16;} 
   void JSPCSetInitializeCentralityArray(); //Set Centrality array 
 
+  void JSPCSetEtaGaps(Bool_t ComputeEtaGap, Float_t EtaGap)
+  {this->bJSPCComputeEtaGap = ComputeEtaGap; this->fJSPCEtaGap = EtaGap; } 
+
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
   TString GetJCatalystTaskName(){ return fJCatalystTaskName; } // Setter for filter task name
@@ -107,7 +110,8 @@ class AliJSPCTask : public AliAnalysisTaskSE {
   Int_t fJSPCMinNumberPart;
 
   //Weights
-  Bool_t bJSPCUseWeights; 
+  Bool_t bJSPCUseWeightsNUE; 
+  Bool_t bJSPCUseWeightsNUA;
  
   //Correlators
   Int_t fJSPCNumber;              // Number of correlation first correlator
@@ -137,6 +141,9 @@ class AliJSPCTask : public AliAnalysisTaskSE {
   Bool_t bJSPCSetSameChargePositive;     // used if bDifferentCharge: if kTRUE use positiv, if kFALSE use negative (default kTRUE)
   Int_t fJSPCMixedHarmonic;     // Harmonic of special mixed particle analysis
 
-  ClassDef(AliJSPCTask, 1); 
+  Bool_t bJSPCComputeEtaGap;		// Do eta gap computation if kTRUE. Default kFALSE
+  Float_t fJSPCEtaGap;			// Value of eta gap
+
+  ClassDef(AliJSPCTask, 3); 
 };
 #endif // AliJSPCTask_H

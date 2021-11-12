@@ -47,7 +47,7 @@ class AliCFContainer;
 class AliAnalysisTaskMCPredictions : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskMCPredictions();
-  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 2000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 1 );
+  AliAnalysisTaskMCPredictions(const char *name, Int_t lNSmallBinning = 1000, Int_t lNLargeBinning = 2000, Int_t lRebinFactor = 1, Int_t lNBBins = 1, Int_t lNNpartBins = 1, Int_t lNEtaBins = 800 );
   virtual ~AliAnalysisTaskMCPredictions();
   
   virtual void   UserCreateOutputObjects();
@@ -63,6 +63,7 @@ public:
   Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
   
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
+  void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
@@ -71,6 +72,8 @@ public:
   void SetDoNpartStudy ( Bool_t lOpt = kTRUE) { fkDoNpartStudy = lOpt; }
   void SetDoNMPIStudy ( Bool_t lOpt = kTRUE) { fkDoNMPIStudy = lOpt; }
   void SetDoRapidityStudy ( Bool_t lOpt = kTRUE) { fkDoRapidityStudy = lOpt; }
+  
+  void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
   
   //---------------------------------------------------------------------------------------
   
@@ -100,6 +103,7 @@ private:
   Bool_t fkDoNpartStudy;
   Bool_t fkDoNMPIStudy;
   Bool_t fkDoRapidityStudy;
+  Long_t fkMinimumMultiplicity; 
   
   //Basic Histograms for counting events as a function of V0M percentiles...
   TH1D *fHistV0MMult; //!
@@ -113,26 +117,79 @@ private:
   TH1D *fHistNMPI; //!
   TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[64];              //! for keeping track of base spectra
-  TH1D *fHistEta[64];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[64];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[64];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[64];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[64];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[64];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[64];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[64];       //! for keeping track of base spectra
+  TH1D *fHistPt[72];              //! for keeping track of base spectra
+  TH1D *fHistEta[72];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredMeson[72];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[72];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[72];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[72];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[72];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[72];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[72];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
-  Float_t fMinPtTriggerCharged; //for charged trigger
-  Float_t fMinPtTriggerXi; //for xi trigger
-  Float_t fMinPtTriggerPhi; //for phi trigger
-  TH1D *fEtaTriggerCharged; //!
-  TH1D *fEtaTriggerXi; //!
-  TH1D *fEtaTriggerPhi; //!
-  //TH3D *fHist3d2pcSE[64]; //!
-  //TH3D *fHist3d2pcXiSE[64]; //!
-  //TH3D *fHist3d2pcPhiSE[64]; //!
+  Float_t fMinPtTrigger; //for xi trigger
+  Float_t fMaxPtTrigger; //for xi trigger
+  TH1D *fHistPtTrigger;
+  
+  TH3D *fHist3d2pcD0Proton;
+  TH3D *fHist3d2pcD0AntiProton;
+  TH3D *fHist3d2pcD0D0;
+  TH3D *fHist3d2pcD0D0bar;
+  TH3D *fHist3d2pcD0KMinus;
+  TH3D *fHist3d2pcD0KPlus;
+
+  TH3D *fHist3d2pcXiCProton;
+  TH3D *fHist3d2pcXiCAntiProton;
+  TH3D *fHist3d2pcXiCD0;
+  TH3D *fHist3d2pcXiCD0bar;
+  TH3D *fHist3d2pcXiCKMinus;
+  TH3D *fHist3d2pcXiCKPlus;
+
+  TH3D *fHist3d2pcXiBProton;
+  TH3D *fHist3d2pcXiBAntiProton;
+  TH3D *fHist3d2pcXiBBMinus;
+  TH3D *fHist3d2pcXiBBPlus;
+  TH3D *fHist3d2pcXiBKMinus;
+  TH3D *fHist3d2pcXiBKPlus;
+  
+  //for event mixing
+  Bool_t fEMBufferFullD0;
+  Long_t fEMBufferCycleD0;
+  Double_t fEMBufferEtaD0[10];
+  Double_t fEMBufferPhiD0[10];
+  Bool_t fEMBufferFullXiC;
+  Long_t fEMBufferCycleXiC;
+  Double_t fEMBufferEtaXiC[10];
+  Double_t fEMBufferPhiXiC[10];
+  Bool_t fEMBufferFullXiB;
+  Long_t fEMBufferCycleXiB;
+  Double_t fEMBufferEtaXiB[10];
+  Double_t fEMBufferPhiXiB[10];
+  
+  TH3D *fHistMixed3d2pcD0Proton;
+  TH3D *fHistMixed3d2pcD0AntiProton;
+  TH3D *fHistMixed3d2pcD0D0;
+  TH3D *fHistMixed3d2pcD0D0bar;
+  TH3D *fHistMixed3d2pcD0KMinus;
+  TH3D *fHistMixed3d2pcD0KPlus;
+  
+  TH3D *fHistMixed3d2pcXiCProton;
+  TH3D *fHistMixed3d2pcXiCAntiProton;
+  TH3D *fHistMixed3d2pcXiCD0;
+  TH3D *fHistMixed3d2pcXiCD0bar;
+  TH3D *fHistMixed3d2pcXiCKMinus;
+  TH3D *fHistMixed3d2pcXiCKPlus;
+
+  TH3D *fHistMixed3d2pcXiBProton;
+  TH3D *fHistMixed3d2pcXiBAntiProton;
+  TH3D *fHistMixed3d2pcXiBBMinus;
+  TH3D *fHistMixed3d2pcXiBBPlus;
+  TH3D *fHistMixed3d2pcXiBKMinus;
+  TH3D *fHistMixed3d2pcXiBKPlus;
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented

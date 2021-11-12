@@ -1133,14 +1133,13 @@ void AddTask_GammaConvV1_pp(
 
   } else if ( trainConfig == 550){ // Jet analysis pp 13TeV
     cuts.AddCutPCM("00010113","00200009227300008250404000","2152103500000000"); // standard cut Gamma Pi0 Eta pp 13TeV, V0AND
-	cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2152103500000000"); // MB
-	cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2l52103500000000"); // MB
-//	cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","2152103500000000"); // PHI1
-//	cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","2152103500000000"); // PHI7 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2l52103500000000"); // MB
+//  cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","2152103500000000"); // PHI1
+//  cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","2152103500000000"); // PHI7 
   } else if ( trainConfig == 551){
-	cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","3152103500000000"); // MB
-//	cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","3152103500000000"); // PHI1
-//	cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","3152103500000000"); // PHI7 
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","3152103500000000"); // MB
+//  cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","3152103500000000"); // PHI1
+//  cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","3152103500000000"); // PHI7 
    //----------------------Cuts by A. Marin for 13 TeV-----------------
 
  // Low B Field
@@ -2377,13 +2376,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("n1210113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 10 - 20% (V0M est.)
     cuts.AddCutPCM("n2310113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 20 - 30% (V0M est.)
     cuts.AddCutPCM("n3510113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 30 - 50% (V0M est.)
-    cuts.AddCutPCM("n5710113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 50 - 70% (V0M est.)
-    cuts.AddCutPCM("n7a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 70 - 100% (V0M est.)
   } else if (trainConfig == 2762) { // Multiplicity selection, ITS + TRD photons
     cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 0 - 1% (V0M est.)
     cuts.AddCutPCM("m1510113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 1 - 5% (V0M est.)
     cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 5 - 10% (V0M est.)
-
   } else if (trainConfig == 2763) { // Multiplicity selection, ITS + TRD photons // same mult selection as for V0M high mult trigger
     cuts.AddCutPCM("r0a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 0. - 0.1% (V0M est.)
     cuts.AddCutPCM("r0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 0. - 0.01% (V0M est.)
@@ -2394,6 +2390,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("r0176113", "0dm00009f9730000dge0474000", "0152103500000000"); // V0M high mult trigg., 0. - 0.01% (V0M est.)
     cuts.AddCutPCM("r1576113", "0dm00009f9730000dge0474000", "0152103500000000"); // V0M high mult trigg., 0.01 - 0.05% (V0M est.)
     cuts.AddCutPCM("r5a76113", "0dm00009f9730000dge0474000", "0152103500000000"); // V0M high mult trigg., 0.05 - 0.1% (V0M est.)
+  } else if (trainConfig == 2765) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("n5710113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 50 - 70% (V0M est.)
+    cuts.AddCutPCM("n7a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 70 - 100% (V0M est.)
 
     // ------------ Mult selection using SPD estimator --------
   } else if (trainConfig == 2770) { // Multiplicity selection, ITS + TRD photons

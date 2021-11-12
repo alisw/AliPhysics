@@ -47,6 +47,8 @@ DefineOutput(5, TTree::Class());
 DefineOutput(6, TTree::Class());
 }
 
+// 2015 PbPb track cut
+
 //_____________________________________________________________________________
 
             AliAnalysisTaskPhiCount::~AliAnalysisTaskPhiCount()                 {
@@ -127,6 +129,26 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Event_Vertex_Cut            ->  GetXaxis()  ->  SetTitle("Accepted Events");
     fQC_Event_Vertex_Cut            ->  GetYaxis()  ->  SetTitle("Vertex z-position (cm)");
     fQCOutputList->Add(fQC_Event_Vertex_Cut);
+    
+    fQC_Event_Spherocity            = new TH1F("fQC_Event_Spherocity",      "Event Spherocity",                                 410, -3, 1.1);
+    fQC_Event_Spherocity            ->  GetXaxis()  ->  SetTitle("Spherocity");
+    fQC_Event_Spherocity            ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_Spherocity);
+    
+    fQC_Event_FullRF                = new TH1F("fQC_Event_FullRF",          "Event RForward",                                   503, -3, 500);
+    fQC_Event_FullRF                ->  GetXaxis()  ->  SetTitle("RForward");
+    fQC_Event_FullRF                ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_FullRF);
+    
+    fQC_Event_FullRB                = new TH1F("fQC_Event_FullRB",          "Event RBackward",                                  503, -3, 500);
+    fQC_Event_FullRB                ->  GetXaxis()  ->  SetTitle("RBackward");
+    fQC_Event_FullRB                ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_FullRB);
+    
+    fQC_Event_FullRT                = new TH1F("fQC_Event_FullRT",          "Event RTransverse",                                503, -3, 500);
+    fQC_Event_FullRT                ->  GetXaxis()  ->  SetTitle("RTransverse");
+    fQC_Event_FullRT                ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_FullRT);
     
     //_____________________________________________________________________________
     //
@@ -421,13 +443,14 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiCandidate->Branch       ("EventMask",       &fEventMask,        "fEventMask/b");
     fPhiCandidate->Branch       ("Multiplicity",    &fCurrent_V0M,      "fMultiplicity/F");
     fPhiCandidate->Branch       ("Spherocity",      &fCurrent_SPH,      "fSpherocity/F");
-    fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/b");
+    fPhiCandidate->Branch       ("RTransverse",     &fCurrent_RT,       "fRTrasnverse/F");
+    fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/I");
     fPhiCandidate->Branch       ("Px",              &fPhiPx,            "fPhiPx[fnPhi]/F");
     fPhiCandidate->Branch       ("Py",              &fPhiPy,            "fPhiPy[fnPhi]/F");
     fPhiCandidate->Branch       ("Pz",              &fPhiPz,            "fPhiPz[fnPhi]/F");
     fPhiCandidate->Branch       ("InvMass",         &fInvMass,          "fInvMass[fnPhi]/F");
-    fPhiCandidate->Branch       ("iKaon",           &fiKaon,            "fiKaon[fnPhi]/b");
-    fPhiCandidate->Branch       ("jKaon",           &fjKaon,            "fjKaon[fnPhi]/b");
+    fPhiCandidate->Branch       ("iKaon",           &fiKaon,            "fiKaon[fnPhi]/I");
+    fPhiCandidate->Branch       ("jKaon",           &fjKaon,            "fjKaon[fnPhi]/I");
     if ( kMCbool )  fPhiCandidate->Branch   ("TrueInvMass",          &fTrueInvMass,           "fTrueInvMass[fnPhi]/F");
     
     if ( kPhibool )                 PostData(3, fPhiCandidate);
@@ -435,7 +458,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     // KaonCandidate Tree Set-Up
     fKaonCandidate = new TTree (Form("KaonCandidate_%s",fRunName.Data()),    "Data Tree for Kaon Candidates");
     fKaonCandidate->Branch     ("EventMask",        &fEventMask,        "fEventMask/b");
-    fKaonCandidate->Branch     ("Multiplicity",     &fCurrent_V0M,     "fMultiplicity/F");
+    fKaonCandidate->Branch     ("Multiplicity",     &fCurrent_V0M,      "fMultiplicity/F");
     fKaonCandidate->Branch     ("nKaon",            &fnKaon,            "fnKaon/b");
     fKaonCandidate->Branch     ("Px",               &fKaonPx,           "fKaonPx[fnKaon]/F");
     fKaonCandidate->Branch     ("Py",               &fKaonPy,           "fKaonPy[fnKaon]/F");
@@ -451,7 +474,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiEfficiency->Branch      ("TrueEventMask",   &fTrueEventMask,    "fTrueEventMask/b");
     fPhiEfficiency->Branch      ("Multiplicity",    &fCurrent_V0M,      "fMultiplicity/F");
     fPhiEfficiency->Branch      ("Spherocity",      &fCurrent_SPH,      "fSpherocity/F");
-    fPhiEfficiency->Branch      ("nPhi",            &fnPhiTru,          "fnPhiTru/b");
+    fPhiEfficiency->Branch      ("nPhi",            &fnPhiTru,          "fnPhiTru/I");
     fPhiEfficiency->Branch      ("EventMask",       &fEventMask,        "fEventMask/b");
     fPhiEfficiency->Branch      ("Px",              &fPhiTruPx,         "fPhiTruPx[fnPhiTru]/F");
     fPhiEfficiency->Branch      ("Py",              &fPhiTruPy,         "fPhiTruPy[fnPhiTru]/F");
@@ -478,6 +501,7 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
     fIsEventMultiplicityAvailable();
     fIsEventPileUp();
     uCalculateSpherocity();
+    uCalculateRT();
     //
     // Setting utility variables
     Int_t           nTrack(fAOD->GetNumberOfTracks());
@@ -761,6 +785,7 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
     // Recovering Multiplicity information
     AliMultSelection   *fMultSelectio2  = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     if ( !fMultSelection )  fCurrent_V0M    =   102.;
+    // if pPb should be V0A
     else                    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M",true);
     fCurrent_TRK    =   (dynamic_cast<AliAODHeader*>(fAOD->GetHeader()))->GetRefMultiplicityComb08();
     //
@@ -1267,5 +1292,65 @@ void        AliAnalysisTaskPhiCount::uCalculateSpherocity ( )                   
         auto    fCurrentSpherocity  =   TMath::Power( (fNumerator/fTotalTransMom),2 );
         if ( fCurrentSpherocity < fCurrent_SPH ) fCurrent_SPH =   fCurrentSpherocity;
     }
+    fQC_Event_Spherocity->Fill(fCurrent_SPH);
+    //
+    return;
+}
+
+//_____________________________________________________________________________
+
+void        AliAnalysisTaskPhiCount::uCalculateRT ( )                           {
+    //
+    fCurrent_RT                 =   -1.;
+    if ( !kComputeRT ) return;
+    auto    nTracks             =   fAOD->GetNumberOfTracks();
+    //
+    //  Find a suitable trigger particle
+    auto    fTriggerPT  =   -1.;
+    auto    fTriggerPhi =   -1.;
+    for ( Int_t iTrack = 0; iTrack < nTracks; iTrack++ )    {
+        fCurrent_Track  =   static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        //
+        //  Selecting Good tracks
+        if ( !fCurrent_Track->TestFilterBit(BIT(0)) )                   continue;
+        if ( !fCurrent_Track->IsOn(0x40) )                              continue; // ITS Refit
+        if ( !fCurrent_Track->IsOn(0x4) )                               continue; // TPC Refit
+        if ( TMath::Abs(fCurrent_Track->Eta()) > 0.8 )                  continue;
+        if ( fCurrent_Track->Pt() < 5. || fCurrent_Track->Pt() > 40. )  continue;
+        //
+        //  Storing necessary Info, choosing the highest pT particle
+        if ( fTriggerPT > fCurrent_Track->Pt() )                        continue;
+        fTriggerPT  = fCurrent_Track->Pt();
+        fTriggerPhi = fCurrent_Track->Phi();
+    }
+    if ( fTriggerPT == -1. ) return;
+    else    fCurrent_RT         =   -2.;
+    //
+    //  Calculate RT
+    auto    nRForward       =   0;
+    auto    nRBackward      =   0;
+    auto    nRTransverse    =   0;
+    for ( Int_t iTrack = 0; iTrack < nTracks; iTrack++ )    {
+        fCurrent_Track  =   static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        //
+        //  Selecting Good tracks
+        if ( !fCurrent_Track->TestFilterBit(BIT(0)) )   continue;
+        if ( !fCurrent_Track->IsOn(0x40) )              continue;
+        if ( !fCurrent_Track->IsOn(0x4) )               continue;
+        if ( TMath::Abs(fCurrent_Track->Eta()) > 0.8 )  continue;
+        if ( fCurrent_Track->Pt() < 0.15 )              continue;
+        //
+        //  Storing necessary Info
+        auto    kDeltaPhi   =   (fTriggerPhi - fCurrent_Track->Phi())*180/(TMath::Pi());
+        kDeltaPhi < 0 ? kDeltaPhi += 360 : kDeltaPhi += 0;
+        if      ( ( kDeltaPhi > 300. ) || ( kDeltaPhi < 60.  ) )    nRForward++;
+        else if ( ( kDeltaPhi > 120. ) && ( kDeltaPhi < 240. ) )    nRBackward++;
+        else                                                        nRTransverse++;
+    }
+    fQC_Event_FullRF    ->  Fill(nRForward);
+    fQC_Event_FullRB    ->  Fill(nRBackward);
+    fQC_Event_FullRT    ->  Fill(nRTransverse);
+    fCurrent_RT         =   nRTransverse;
+    //
     return;
 }

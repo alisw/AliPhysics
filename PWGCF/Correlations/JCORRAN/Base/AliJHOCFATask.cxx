@@ -13,9 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <AliAnalysisManager.h>
-#include <AliJBaseTrack.h>
 #include "AliJHOCFATask.h"
+#include "AliAnalysisManager.h"
+#include "AliJBaseTrack.h"
 
 /* -------------------------------------------------------------------------- /
 / Methods inherited from AliAnalysisTaskSE.                                   /
@@ -26,12 +26,12 @@ AliJHOCFATask::AliJHOCFATask():
 	fJCatalystTaskName("JCatalystTask"),
 	fIsMC(kFALSE),
 	fHOCFATask(NULL),
-	fHOCFANCentralityBins(9),
-  fHOCFAMultiplicityMin(10),
-  fHOCFAUseWeights(kTRUE),
-  fHOCFANCombi(6),
-  fHOCFAvalues(0),
-  fHOCFAcombi(0)
+	fHOCFADebugLevel(0),
+	fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
+	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
+  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
+  fHOCFAGetSC3h(kTRUE),
+  fHOCFANCombi(6), fHOCFAvalues(0), fHOCFAcombi(0)
 {
 // Dummy constructor of the class.
 }
@@ -43,12 +43,12 @@ AliJHOCFATask::AliJHOCFATask(const char *name):
 	fJCatalystTaskName("JCatalystTask"),
 	fIsMC(kFALSE),
 	fHOCFATask(NULL),
-	fHOCFANCentralityBins(9),
-  fHOCFAMultiplicityMin(10),
-  fHOCFAUseWeights(kTRUE),
-  fHOCFANCombi(6),
-  fHOCFAvalues(0),
-  fHOCFAcombi(0)
+	fHOCFADebugLevel(0),
+	fHOCFAnCentralityBins(9), fHOCFAMultiplicityMin(10),
+	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
+  fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
+  fHOCFAGetSC3h(kTRUE),
+  fHOCFANCombi(6), fHOCFAvalues(0), fHOCFAcombi(0)
 {
 // Constructor of the class.
 	AliInfo("AliJHOCFATask Constructor");
@@ -62,9 +62,14 @@ AliJHOCFATask::AliJHOCFATask(const AliJHOCFATask& ap):
 	fJCatalystTaskName(ap.fJCatalystTaskName),
   fIsMC(ap.fIsMC),
 	fHOCFATask(ap.fHOCFATask),
-	fHOCFANCentralityBins(ap.fHOCFANCentralityBins),
+	fHOCFADebugLevel(ap.fHOCFADebugLevel),
+	fHOCFAnCentralityBins(ap.fHOCFAnCentralityBins),
   fHOCFAMultiplicityMin(ap.fHOCFAMultiplicityMin),
-  fHOCFAUseWeights(ap.fHOCFAUseWeights),
+  fHOCFAPtMin(ap.fHOCFAPtMin),
+  fHOCFAPtMax(ap.fHOCFAPtMax),
+  fHOCFAUseWeightsNUE(ap.fHOCFAUseWeightsNUE),
+  fHOCFAUseWeightsNUA(ap.fHOCFAUseWeightsNUA),
+  fHOCFAGetSC3h(ap.fHOCFAGetSC3h),
   fHOCFANCombi(ap.fHOCFANCombi),
   fHOCFAvalues(ap.fHOCFAvalues),
   fHOCFAcombi(ap.fHOCFAcombi)
@@ -94,7 +99,7 @@ AliJHOCFATask::~AliJHOCFATask()
 // ------------------------------------------------------------------------- //
 void AliJHOCFATask::UserCreateOutputObjects()
 {  
-	if (fDebug > 1) {printf("AliJHOCFATask::UserCreateOutPutData() \n");}
+	if (fHOCFADebugLevel > 1) {printf("AliJHOCFATask::UserCreateOutPutData().\n");}
 
 // Create the jCorran output objects.
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
@@ -102,12 +107,14 @@ void AliJHOCFATask::UserCreateOutputObjects()
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask(fJCatalystTaskName));
 
 // Create an instance of the analysis task.
-	fHOCFATask = new AliAnalysisTaskHOCFA("HOCFA", kFALSE);
-	fHOCFATask->SetDebugLevel(fDebug);
-  fHOCFATask->SetCentralityBinning(fHOCFANCentralityBins);
+	fHOCFATask = new AliAnalysisTaskHOCFA("HOCFA");
+	fHOCFATask->SetDebugLevel(fHOCFADebugLevel);
+  fHOCFATask->SetCentralityBinning(fHOCFAnCentralityBins);
   fHOCFATask->SetCentralityArray(fHOCFAvalues);
   fHOCFATask->SetMinMultiplicity(fHOCFAMultiplicityMin);
-  fHOCFATask->SetParticleWeights(fHOCFAUseWeights);
+  fHOCFATask->SetPtRange(fHOCFAPtMin, fHOCFAPtMax);
+  fHOCFATask->SetParticleWeights(fHOCFAUseWeightsNUE, fHOCFAUseWeightsNUA);
+  fHOCFATask->SetObservable(fHOCFAGetSC3h);
   fHOCFATask->SetNumberCombi(fHOCFANCombi);
   fHOCFATask->SetHarmoArray(fHOCFAcombi);
 	OpenFile(1);
@@ -127,18 +134,18 @@ void AliJHOCFATask::Init()
 void AliJHOCFATask::UserExec(Option_t* /*option*/) 
 {
 // Processing of one event.
-	if (fDebug > 5) {printf("AliJHOCFATask::UserExec() \n");}
-	if (!((Entry()-1)%100)) {AliInfo(Form(" Processing event # %lld",  Entry()));}
+	if (fHOCFADebugLevel > 5) {printf("AliJHOCFATask::UserExec() \n");}
+	if (!((Entry()-1)%100)) {AliInfo(Form("Processing event # %lld",  Entry()));}
 
 	if (fJCatalystTask->GetJCatalystEntry() != fEntry) {return;}
 	if (fJCatalystTask->GetCentrality() > 80. || fJCatalystTask->GetCentrality() < 0.) {return;}
-	if (fDebug > 5) {
+	if (fHOCFADebugLevel > 5) {
 		cout << Form("Event %d:%d\n",fEntry, fJCatalystTask->GetJCatalystEntry()) << endl;
 		cout << Form("%s, Nch = %d, cent = %.0f\n", GetJCatalystTaskName().Data(), fJCatalystTask->GetInputList()->GetEntriesFast(), fJCatalystTask->GetCentrality()) << endl;
 	}
 
-	fHOCFATask->SetInputList( fJCatalystTask->GetInputList() );
-	fHOCFATask->SetEventCentrality( fJCatalystTask->GetCentrality() );
+	fHOCFATask->SetInputList(fJCatalystTask->GetInputList());
+	fHOCFATask->SetEventCentrality(fJCatalystTask->GetCentrality());
 	fHOCFATask->UserExec("");
 }
 

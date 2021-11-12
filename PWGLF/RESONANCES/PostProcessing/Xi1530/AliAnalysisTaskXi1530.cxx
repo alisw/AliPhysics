@@ -105,14 +105,26 @@ enum {
     kTPCNsigmaBachelorPionTight,
     kXi1530PionZVertexLoose,
     kXi1530PionZVertexTight,
+    kXi1530PionVertexSigmaLoose,
+    kXi1530PionVertexSigmaTight,
     kDCADistLambdaDaughtersLoose,
     kDCADistLambdaDaughtersTight,
     kDCADistLambdaPVLoose,
     kDCADistLambdaPVTight,
+    kDCADistLambdaProtonPVLoose,
+    kDCADistLambdaProtonPVTight,
+    kDCADistLambdaPionPVLoose,
+    kDCADistLambdaPionPVTight,
+    kDCADistBachelorPionPVLoose,
+    kDCADistBachelorPionPVTight,
     kV0CosineOfPointingAngleLoose,
     kV0CosineOfPointingAngleTight,
     kCascadeCosineOfPointingAngleLoose,
     kCascadeCosineOfPointingAngleTight,
+    kV0FiducialRadiusLoose,
+    kV0FiducialRadiusTight,
+    kXiFiducialRadiusLoose,
+    kXiFiducialRadiusTight,
     kXiMassWindowLoose,
     kXiMassWindowTight,
     kXiTrackCut
@@ -214,16 +226,28 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                 "TPCNsigmaXiTight",
                 "Xi1530PionZVertexLoose",
                 "Xi1530PionZVertexTight",
+                "Xi1530PionVertexSigmaLoose",
+                "Xi1530PionVertexSigmaTight",
                 "DCADistLambdaDaughtersLoose",
                 "DCADistLambdaDaughtersTight",
                 "DCADistXiDaughtersLoose",
                 "DCADistXiDaughtersTight",
                 "DCADistLambdaPVLoose",
                 "DCADistLambdaPVTight",
+                "DCADistLambdaProtonPVLoose",
+                "DCADistLambdaProtonPVTight",
+                "DCADistLambdaPionPVLoose",
+                "DCADistLambdaPionPVTight",
+                "DCADistBachelorPionPVLoose",
+                "DCADistBachelorPionPVTight",
                 "V0CosineOfPointingAngleLoose",
                 "V0CosineOfPointingAngleTight",
                 "CascadeCosineOfPointingAngleLoose",
                 "CascadeCosineOfPointingAngleTight",
+                "V0FiducialRadiusLoose",
+                "V0FiducialRadiusTight",
+                "XiFiducialRadiusLoose",
+                "XiFiducialRadiusTight",
                 "XiMassWindowLoose",
                 "XiMassWindowTight",
                 "XiTrackCut"};
@@ -758,7 +782,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     Float_t b[2];
     Float_t bCov[3];
     Double_t pionZ = -999;
-    Double_t pionPt, fEta, fTPCNSigPion;
+    Double_t pionPt, fEta, fTPCNSigPion, pionSigmaDCA_r, pionDCA_r;
 
     for (UInt_t it = 0; it < ntracks; it++) {
         track = (AliVTrack*)fEvt->GetTrack(it);
@@ -790,6 +814,8 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         pionZ = b[1];
         fEta = TMath::Abs(track->Eta());
         fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
+        pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
+        pionDCA_r = b[0];
 
         if (fEta > fXi1530PionEtaCut) {
             AliInfo(Form("Eta cut failed: track eta: %f, cut: %f",
@@ -808,10 +834,19 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
 
         goodtrackfullindices.push_back(it); // General pion track
         
-        if (pionZ > fXi1530PionZVertexCut_loose) {
-            AliInfo(Form("zVertex cut failed: track DCAz: %f, cut: %f",
-                            pionZ, fXi1530PionZVertexCut_loose));
-            continue;
+        if (!fUseSigmaCut){
+            if (pionZ > fXi1530PionZVertexCut_loose) {
+                AliInfo(Form("zVertex cut failed: track DCAz: %f, cut: %f",
+                                pionZ, fXi1530PionZVertexCut_loose));
+                continue;
+            }
+        }
+        else{ // PV sigmacut
+            if (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut_loose) {
+                AliInfo(Form("Pion rSigma cut failed: track DCAr: %f, cut: %f",
+                                pionDCA_r, pionSigmaDCA_r * fXi1530PionVertexSigmaCut_loose));
+                continue;
+            }
         }
         
         // if (TMath::Abs(track->M() - pionmass) > 0.007) continue;
@@ -861,7 +896,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
     // - Cosine Pointing Angle cut for Xi and Lamnbda
     // - Mass window cut for Xi
     // - Eta cut
-    // - XY Raidus cut(not applied), just for check
+    // - XY Raidus cut
 
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
@@ -1024,6 +1059,21 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                              fDCADist_Lambda_PV, fDCADist_Lambda_PVCut_loose));
                 StandardXi = kFALSE;  // DCA Lambda-vertex
             }
+            if (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut_loose) {
+                AliInfo(Form("DCA Lambda pV cut failed -  value: %f, cut: %f",
+                             fDCADist_LambdaProton_PV, fDCADist_LambdaProton_PVCut_loose));
+                StandardXi = kFALSE;  // DCA Proton of Lambda-vertex
+            }
+            if (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut_loose) {
+                AliInfo(Form("DCA Lambda pV cut failed -  value: %f, cut: %f",
+                             fDCADist_LambdaPion_PV, fDCADist_LambdaPion_PVCut_loose));
+                StandardXi = kFALSE;  // DCA Pion of Lambda-vertex
+            }
+            if (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut_loose) {
+                AliInfo(Form("DCA Lambda pV cut failed -  value: %f, cut: %f",
+                             fDCADist_BachelorPion_PV, fDCADist_BachelorPion_PVCut_loose));
+                StandardXi = kFALSE;  // DCA BachelorPion of Xi-vertex
+            }
 
             // CPA cut
             Xicandidate->GetXYZcascade(cX, cY, cZ);
@@ -1055,11 +1105,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             fMass_Xi = Xicandidate->GetEffMassXi();
             if (fQA)
                 fHistos->FillTH1("hMass_Xi", fMass_Xi);
-            /*
-            // Disable for Xi study
             if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
                 StandardXi = kFALSE;
-            */
+            
             // Eta cut
             if (TMath::Abs(Xicandidate->Eta()) > fXiEtaCut) {
                 AliInfo(Form("Eta cut failed -  value: %f, cut: %f",
@@ -1070,15 +1118,18 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 fHistos->FillTH2("hPhiEta_Xi", Xicandidate->Phi(),
                                  Xicandidate->Eta());
 
-            // XY Raidus cut(experiemntal)
+            // XY Raidus cut
             Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
-            if (fQA)
-                fHistos->FillTH2("hLambda_Rxy", LambdaX, LambdaY);
-            // if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100)
-            // StandardXi=kFALSE; // NOT USING
-
-            if (fQA)
+            if (fQA){
                 fHistos->FillTH2("hXi_Rxy", cX, cY);
+                fHistos->FillTH2("hLambda_Rxy", LambdaX, LambdaY);
+            }
+            if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut_loose)
+                StandardXi=kFALSE;
+            if(sqrt( pow(cX,2) + pow(cY,2) ) > fXiFiducialRadiusCut_loose)
+                StandardXi=kFALSE;
+            
+            // Exotic finder
             if ((sqrt(pow(cX, 2) + pow(cY, 2)) > 12) && fExoticFinder) {
                 AliInfo(Form("Exotic xy cut failed -  value: %f, cut: 12",
                              sqrt(pow(cX, 2) + pow(cY, 2))));
@@ -1263,6 +1314,21 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                              fDCADist_Lambda_PV, fDCADist_Lambda_PVCut_loose));
                 StandardXi = kFALSE;  // DCA Lambda-vertex
             }
+            if (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut_loose) {
+                AliInfo(Form("DCA Lambda pV cut failed -  value: %f, cut: %f",
+                             fDCADist_LambdaProton_PV, fDCADist_LambdaProton_PVCut_loose));
+                StandardXi = kFALSE;  // DCA Proton of Lambda-vertex
+            }
+            if (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut_loose) {
+                AliInfo(Form("DCA Lambda pV cut failed -  value: %f, cut: %f",
+                             fDCADist_LambdaPion_PV, fDCADist_LambdaPion_PVCut_loose));
+                StandardXi = kFALSE;  // DCA Pion of Lambda-vertex
+            }
+            if (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut_loose) {
+                AliInfo(Form("DCA Lambda pV cut failed -  value: %f, cut: %f",
+                             fDCADist_BachelorPion_PV, fDCADist_BachelorPion_PVCut_loose));
+                StandardXi = kFALSE;  // DCA BachelorPion of Xi-vertex
+            }
 
             // CPA cut
             lPosXi[0] = Xicandidate_aod->DecayVertexXiX();
@@ -1294,11 +1360,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             fMass_Xi = Xicandidate_aod->MassXi();
             if (fQA)
                 fHistos->FillTH1("hMass_Xi", fMass_Xi);
-            /*
-            // Disable for Xi study
             if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
                 StandardXi = kFALSE;
-            */
 
             // Eta cut
             // Eta: 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13))
@@ -1324,15 +1387,19 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // XY Raidus cut(experiemntal)
             // Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
-            if (fQA)
+            if (fQA){
                 fHistos->FillTH2("hLambda_Rxy",
                                  Xicandidate_aod->DecayVertexV0X(),
                                  Xicandidate_aod->DecayVertexV0Y());
-            // if(sqrt( Xicandidate->RadiusV0() ) > 100)
-            // StandardXi=kFALSE; // NOT USING
-
-            if (fQA)
                 fHistos->FillTH2("hXi_Rxy", lPosXi[0], lPosXi[1]);
+            }
+            if( Xicandidate_aod->RadiusV0() > fV0FiducialRadiusCut_loose)
+                StandardXi=kFALSE;
+            if( sqrt(TMath::Sqrt(TMath::Power(lPosXi[0], 2) +
+                                 TMath::Power(lPosXi[1], 2))) > fXiFiducialRadiusCut_loose)
+                StandardXi=kFALSE;
+            
+            // Exotic finder
             if ((sqrt(TMath::Sqrt(TMath::Power(lPosXi[0], 2) +
                                   TMath::Power(lPosXi[1], 2))) > 12) &&
                 fExoticFinder) {
@@ -1373,8 +1440,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
     TLorentzVector vecsum2;  // for
     Double_t LambdaX, LambdaY, LambdaZ;
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion,
-        fDCADist_Xi_PV, fDCADist_Lambda_PV;
-
+        fDCADist_Xi_PV, fDCADist_Lambda_PV, fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV,
+        fDCADist_BachelorPion_PV;
+    Double_t fTPCNSigPion, pionSigmaDCA_r, pionDCA_r, pionPt;
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
@@ -1438,7 +1506,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // PID Cut Systematic check
                 // -------------------------------------------------
-                Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
+                fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
@@ -1473,16 +1541,35 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi1530Pion DCA zVetex Check
                 GetImpactParam(track1, b, bCov);
+                pionPt = track1->Pt();
                 pionZ = b[1];
-                if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
-                    (pionZ > fXi1530PionZVertexCut)) {
-                    AliInfo(Form("pionZ! %f %s", pionZ,
-                                 (const char*)SysCheck.at(sys)));
-                    continue;
+                pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
+                pionDCA_r = b[0];
+                if (!fUseSigmaCut){
+                    if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
+                        (pionZ > fXi1530PionZVertexCut)) {
+                        AliInfo(Form("pionZ! %f %s", pionZ,
+                                    (const char*)SysCheck.at(sys)));
+                        continue;
+                    }
+                    if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
+                        (pionZ > fXi1530PionZVertexCut_tight))
+                        continue;
                 }
-                if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
-                    (pionZ > fXi1530PionZVertexCut_tight))
-                    continue;
+                else{
+                    if ((SysCheck.at(sys) != "Xi1530PionVertexSigmaLoose") &&
+                        (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut)) {
+                        AliInfo(Form("pionZ! %f %s", pionZ,
+                                    (const char*)SysCheck.at(sys)));
+                        continue;
+                    }
+                    if ((SysCheck.at(sys) == "Xi1530PionVertexSigmaTight") &&
+                        (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut_tight))
+                        continue;
+                }
+
+                
+                
 
                 // DCA between daughters Check
                 Double_t fDCADist_Lambda = TMath::Abs(Xicandidate->GetDcaV0Daughters());
@@ -1524,6 +1611,58 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if ((SysCheck.at(sys) == "DCADistLambdaPVTight") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut_tight))
                     continue;
+                
+                // DCA to PVs
+                if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                } else {
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                }
+                GetImpactParam(bTrackXi, b, bCov);
+                fDCADist_BachelorPion_PV = b[0];
+
+                // DCA Proton of Lambda to PV Check
+                if ((SysCheck.at(sys) != "DCADistLambdaProtonPVLoose") &&
+                    (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut)) {
+                    AliInfo(Form("DCADistLambdaProtonPV! %f %s", fDCADist_LambdaProton_PV,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+
+                if ((SysCheck.at(sys) == "DCADistLambdaProtonPVTight") &&
+                    (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut_tight))
+                    continue;
+
+                // DCA Pion of Lambda to PV Check 
+                if ((SysCheck.at(sys) != "DCADistLambdaPionPVLoose") &&
+                    (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut)) {
+                    AliInfo(Form("DCADistLambdaPionPV! %f %s", fDCADist_LambdaPion_PV,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+
+                if ((SysCheck.at(sys) == "DCADistLambdaPionPVTight") &&
+                    (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut_tight))
+                    continue;
+
+                // DCA Bachelor of Lambda to PV Check 
+                if ((SysCheck.at(sys) != "DCADistBachelorPionPVLoose") &&
+                    (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut)) {
+                    AliInfo(Form("DCADistBachelorPionPV! %f %s", fDCADist_BachelorPion_PV,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+
+                if ((SysCheck.at(sys) == "DCADistBachelorPionPVTight") &&
+                    (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut_tight))
+                    continue;
+                
 
                 // CPA Check
                 Double_t cX, cY, cZ;
@@ -1556,12 +1695,31 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if ((SysCheck.at(sys) == "CascadeCosineOfPointingAngleTight") &&
                     (fXiCPA < fCascadeCosineOfPointingAngleCut_tight))
                     continue;
+                
+                // Fiducial Raidus Cut
+                Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                if ((SysCheck.at(sys) != "V0FiducialRadiusLoose") &&
+                    (sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut)) {
+                    AliInfo(Form("V0FiducialRadius! %f %f %s", LambdaX, LambdaY,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+                if ((SysCheck.at(sys) == "V0FiducialRadiusTight") &&
+                    (sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut_tight))
+                    continue;
+
+                if ((SysCheck.at(sys) != "XiFiducialRadiusLoose") &&
+                    (sqrt( pow(cX,2) + pow(cY,2) ) > fXiFiducialRadiusCut)) {
+                    AliInfo(Form("XiFiducialRadius! %f %f %s", cX, cY,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+                if ((SysCheck.at(sys) == "XiFiducialRadiusTight") &&
+                    (sqrt( pow(cX,2) + pow(cY,2) ) > fXiFiducialRadiusCut_tight))
+                    continue;
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->GetEffMassXi();
-                if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
-                    continue;
-                }
                 if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
                     (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)) {
                     AliInfo(Form("XiMassWindow! %f %s", fMass_Xi,
@@ -1605,7 +1763,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
                         FillTHnSparse("hInvMass",
                                       {(double)sys, (double)kMCReco,
                                        (double)fCent, vecsum.Pt(), vecsum.M()});
-                        Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
 
                         if (fQA) {
                             fHistos->FillTH1("hMC_reconstructed_Y",
@@ -1967,9 +2124,19 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi1530Pion DCA zVetex Check
                 GetImpactParam(track1, b, bCov);
+                pionPt = track1->Pt();
                 pionZ = b[1];
-                if (pionZ > fXi1530PionZVertexCut)
-                    continue;
+                pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
+                pionDCA_r = b[0];
+                if(fUseSigmaCut){
+                    if (pionZ > fXi1530PionZVertexCut)
+                        continue;
+                }
+                else{
+                    if (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut)
+                        continue;
+                }
+                
 
                 // DCA between daughters Check
                 Double_t fDCADist_Lambda =
@@ -1984,6 +2151,28 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 fDCADist_Lambda_PV =
                     TMath::Abs(Xicandidate->GetD(lPosPV[0], lPosPV[1], lPosPV[2]));
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
+                    continue;
+                // DCA to PVs
+                if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                } else {
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                }
+                GetImpactParam(bTrackXi, b, bCov);
+                fDCADist_BachelorPion_PV = b[0];
+
+                // DCA Proton of Lambda to PV Check
+                if (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut)
+                    continue;
+                if (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut)
+                    continue;
+                if (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut)
                     continue;
 
                 // CPA Check
@@ -2003,6 +2192,14 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
                 if (fXiCPA < fCascadeCosineOfPointingAngleCut)
                     continue;
+
+                // Fiducial Raidus Cut
+                Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                if (sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut)
+                    continue;
+                if ((sqrt( pow(cX,2) + pow(cY,2) ) > fXiFiducialRadiusCut))
+                    continue;
+
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->GetEffMassXi();
                 if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)
@@ -2082,7 +2279,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     TLorentzVector vecsum;  // Xi1530 candidate
     TLorentzVector vecsum2; // for
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion,
-        fDCADist_Lambda_PV, fDCADist_Xi_PV;
+        fDCADist_Xi_PV, fDCADist_Lambda_PV, fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV,
+        fDCADist_BachelorPion_PV;
+    Double_t fTPCNSigPion, pionSigmaDCA_r, pionDCA_r, pionPt;
     Double_t LambdaX, LambdaY, LambdaZ;
 
     // for DCA value
@@ -2142,7 +2341,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // PID Cut Systematic check
                 // -------------------------------------------------
-                Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
+                fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
@@ -2177,18 +2376,35 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 }
 
                 // Xi1530Pion DCA zVetex Check
-                GetImpactParam(track1, b, bCov);
+                pionPt = track1->Pt();
                 pionZ = b[1];
-                if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
-                    (pionZ > fXi1530PionZVertexCut)){
-                    AliInfo(Form("pionZ! %f %s", pionZ,
-                                 (const char*)SysCheck.at(sys)));
-                    continue;
+                pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
+                pionDCA_r = b[0];
+                if (!fUseSigmaCut){
+                    if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
+                        (pionZ > fXi1530PionZVertexCut)) {
+                        AliInfo(Form("pionZ! %f %s", pionZ,
+                                    (const char*)SysCheck.at(sys)));
+                        continue;
+                    }
+                    if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
+                        (pionZ > fXi1530PionZVertexCut_tight))
+                        continue;
                 }
-                if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
-                    (pionZ > fXi1530PionZVertexCut_tight))
-                    continue;
+                else{
+                    if ((SysCheck.at(sys) != "Xi1530PionVertexSigmaLoose") &&
+                        (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut)) {
+                        AliInfo(Form("pionZ! %f %s", pionZ,
+                                    (const char*)SysCheck.at(sys)));
+                        continue;
+                    }
+                    if ((SysCheck.at(sys) == "Xi1530PionVertexSigmaTight") &&
+                        (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut_tight))
+                        continue;
+                }
 
+                
+                
                 // DCA between daughters Check
                 Double_t fDCADist_Lambda = TMath::Abs(Xicandidate->DcaV0Daughters());
                 Double_t fDCADist_Xi = TMath::Abs(Xicandidate->DcaXiDaughters());
@@ -2229,6 +2445,58 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 if ((SysCheck.at(sys) == "DCADistLambdaPVTight") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut_tight))
                     continue;
+                // DCA to PVs
+                if (Xicandidate->ChargeXi() == -1) {  // Xi- has +proton, -pion
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                } else {
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                }
+                GetImpactParam(bTrackXi, b, bCov);
+                fDCADist_BachelorPion_PV = b[0];
+
+                // DCA Proton of Lambda to PV Check
+                if ((SysCheck.at(sys) != "DCADistLambdaProtonPVLoose") &&
+                    (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut)) {
+                    AliInfo(Form("DCADistLambdaProtonPV! %f %s", fDCADist_LambdaProton_PV,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+
+                if ((SysCheck.at(sys) == "DCADistLambdaProtonPVTight") &&
+                    (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut_tight))
+                    continue;
+
+                // DCA Pion of Lambda to PV Check 
+                if ((SysCheck.at(sys) != "DCADistLambdaPionPVLoose") &&
+                    (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut)) {
+                    AliInfo(Form("DCADistLambdaPionPV! %f %s", fDCADist_LambdaPion_PV,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+
+                if ((SysCheck.at(sys) == "DCADistLambdaPionPVTight") &&
+                    (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut_tight))
+                    continue;
+
+                // DCA Bachelor of Lambda to PV Check 
+                if ((SysCheck.at(sys) != "DCADistBachelorPionPVLoose") &&
+                    (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut)) {
+                    AliInfo(Form("DCADistBachelorPionPV! %f %s", fDCADist_BachelorPion_PV,
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+
+                if ((SysCheck.at(sys) == "DCADistBachelorPionPVTight") &&
+                    (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut_tight))
+                    continue;
+                
+
 
                 // CPA Check
                 Double_t lPosXi[3];
@@ -2262,11 +2530,34 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     (fXiCPA < fCascadeCosineOfPointingAngleCut_tight))
                     continue;
 
-                // Xi Mass Window Check
-                Double_t fMass_Xi = Xicandidate->MassXi();
-                if (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
+                // Fiducial Raidus Cut
+                LambdaX = Xicandidate->DecayVertexV0X();
+                LambdaY = Xicandidate->DecayVertexV0Y();
+                LambdaZ = Xicandidate->DecayVertexV0Z();
+
+                if ((SysCheck.at(sys) != "V0FiducialRadiusLoose") &&
+                    (sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut)) {
+                    AliInfo(Form("V0FiducialRadius! %f %f %s", LambdaX, LambdaY,
+                                 (const char*)SysCheck.at(sys)));
                     continue;
                 }
+                if ((SysCheck.at(sys) == "V0FiducialRadiusTight") &&
+                    (sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut_tight))
+                    continue;
+
+                if ((SysCheck.at(sys) != "XiFiducialRadiusLoose") &&
+                    (sqrt( pow(lPosXi[0],2) + pow(lPosXi[1],2) ) > fXiFiducialRadiusCut)) {
+                    AliInfo(Form("XiFiducialRadius! %f %f %s", lPosXi[0], lPosXi[1],
+                                 (const char*)SysCheck.at(sys)));
+                    continue;
+                }
+                if ((SysCheck.at(sys) == "XiFiducialRadiusTight") &&
+                    (sqrt( pow(lPosXi[0],2) + pow(lPosXi[1],2) ) > fXiFiducialRadiusCut_tight))
+                    continue;
+                
+
+                // Xi Mass Window Check
+                Double_t fMass_Xi = Xicandidate->MassXi();
                 if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
                     (TMath::Abs(fMass_Xi - Ximass) > fXiMassWindowCut)){
                     AliInfo(Form("XiMassWindow! %f %s", fMass_Xi,
@@ -2311,10 +2602,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                                    (Xi_momsum - xiPz + 1.e-13));
                 Double_t Xi_phi = TMath::Pi() + TMath::ATan2(-xiPy, -xiPx);
 
-                LambdaX = Xicandidate->DecayVertexV0X();
-                LambdaY = Xicandidate->DecayVertexV0Y();
-                LambdaZ = Xicandidate->DecayVertexV0Z();
-
                 if (IsMC) {
                     if (IsTrueXi1530AOD(Xicandidate,
                                         track1)) {  // MC Association, if it
@@ -2333,7 +2620,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                 TMath::Abs(fDCADist_Lambda));
                             fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",
                                              TMath::Abs(fDCADist_Xi));
-                            if (Xicandidate->Charge() ==
+                            if (Xicandidate->ChargeXi() ==
                                 -1) {  // Xi- has +proton, -pion
                                 GetImpactParam(pTrackXi, b, bCov);
                                 fHistos->FillTH1(
@@ -2444,7 +2731,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                             fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
                                              track1->GetTPCmomentum(),
                                              track1->GetTPCsignal());
-                        if (Xicandidate->Charge() ==
+                        if (Xicandidate->ChargeXi() ==
                             -1) {  // Xi- has +proton, -pion
                             if (IsQAPID) {
                                 fHistos->FillTH2("hTPCPIDLambdaProton_cut",
@@ -2656,9 +2943,18 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi1530Pion DCA zVetex Check
                 GetImpactParam(track1, b, bCov);
+                pionPt = track1->Pt();
                 pionZ = b[1];
-                if (pionZ > fXi1530PionZVertexCut)
-                    continue;
+                pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
+                pionDCA_r = b[0];
+                if(fUseSigmaCut){
+                    if (pionZ > fXi1530PionZVertexCut)
+                        continue;
+                }
+                else{
+                    if (pionDCA_r > pionSigmaDCA_r * fXi1530PionVertexSigmaCut)
+                        continue;
+                }
 
                 // DCA between daughters Check
                 Double_t fDCADist_Lambda = TMath::Abs(Xicandidate->DcaV0Daughters());
@@ -2671,6 +2967,28 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 Double_t fDCADist_Lambda_PV =
                     TMath::Abs(Xicandidate->DcaV0ToPrimVertex());
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
+                    continue;
+                // DCA to PVs
+                if (Xicandidate->ChargeXi() == -1) {  // Xi- has +proton, -pion
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                } else {
+                    GetImpactParam(nTrackXi, b, bCov);
+                    fDCADist_LambdaProton_PV = b[0];
+                    GetImpactParam(pTrackXi, b, bCov);
+                    fDCADist_LambdaPion_PV = b[0];
+                }
+                GetImpactParam(bTrackXi, b, bCov);
+                fDCADist_BachelorPion_PV = b[0];
+
+                // DCA Proton of Lambda to PV Check
+                if (fDCADist_LambdaProton_PV < fDCADist_LambdaProton_PVCut)
+                    continue;
+                if (fDCADist_LambdaPion_PV < fDCADist_LambdaPion_PVCut)
+                    continue;
+                if (fDCADist_BachelorPion_PV < fDCADist_BachelorPion_PVCut)
                     continue;
 
                 // CPA Check
@@ -2690,6 +3008,16 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
                 if (fXiCPA < fCascadeCosineOfPointingAngleCut)
                     continue;
+                
+                // Fiducial Raidus Cut
+                LambdaX = Xicandidate->DecayVertexV0X();
+                LambdaY = Xicandidate->DecayVertexV0Y();
+                LambdaZ = Xicandidate->DecayVertexV0Z();
+                if (sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > fV0FiducialRadiusCut)
+                    continue;
+                if ((sqrt( pow(lPosXi[0],2) + pow(lPosXi[1],2) ) > fXiFiducialRadiusCut))
+                    continue;
+
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();

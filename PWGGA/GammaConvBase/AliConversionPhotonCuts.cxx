@@ -1669,7 +1669,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       //cout << "A and C side, eta=" << photon->GetPhotonEta() <<  endl;
       if(!(photonPhi>fMinPhiCut  && photonPhi<fMaxPhiCut )){
-	cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+	//cout  << "photonPhi=" << photonPhi << " excluded" << endl;
 	if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
 	return kFALSE;
       } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;

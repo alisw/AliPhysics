@@ -20,6 +20,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/FlowVectorCorrections
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -235,7 +236,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTrackSkim.cxx
-
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
@@ -245,7 +245,10 @@ set(SRCS
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx
-    UserTasks/AliPieceWisePoly.cxx)
+    UserTasks/AliAnalysisTaskRawJetWithEP.cxx
+    UserTasks/AliPieceWisePoly.cxx
+    FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
+)
 
 # Tasks that need direct access to RooUnfold
 if(RooUnfold_FOUND)
@@ -283,6 +286,7 @@ if(FASTJET_FOUND)
             UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
 	    UserTasks/AliAnalysisTaskJetPull.cxx
+	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
@@ -295,6 +299,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
         UserTasks/AliHelperClassFastSimulation.cxx
+        UserTasks/AliJEQnVectorHandler.cxx
         UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
@@ -342,7 +347,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
+  if(ROOT_VERSION_MINOR LESS_EQUAL 20)
     set(ROOT_DEPENDENCIES PyROOT)
+  else()
+    set(ROOT_DEPENDENCIES ROOTTPython)
+  endif()
 else()
     set(ROOT_DEPENDENCIES)
 endif()

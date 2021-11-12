@@ -464,6 +464,19 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
         return 0;
     }
 
+    recVtx = false;
+    origOwnVtx = nullptr;
+
+    if (fRDCuts->GetIsPrimaryWithoutDaughters())
+    {
+        if (chHad->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*chHad->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(chHad, fAOD))
+            recVtx = true;
+        else
+            fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+    }
+    
     // ML application
     AliAODPidHF *pidHF = fRDCuts->GetPidHF();
     int isMLsel = 0;
@@ -488,19 +501,6 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
             modelPred.push_back(-9999.);
 
     isSelected = isMLsel;
-
-    recVtx = false;
-    origOwnVtx = nullptr;
-
-    if (fRDCuts->GetIsPrimaryWithoutDaughters())
-    {
-        if (chHad->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*chHad->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(chHad, fAOD))
-            recVtx = true;
-        else
-            fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
-    }
 
     return isSelected;
 }

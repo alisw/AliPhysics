@@ -95,6 +95,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterBit(7);
   Reader->SetDCAglobalTrack(1);  
+  Reader->SetUseOutOfBunchPlpSelection(kTRUE);
 
   if(trackpileup == 1){
     Reader->SetTrackPileUpRemoval(kTRUE);} 

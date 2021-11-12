@@ -1645,7 +1645,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_XicPlus = new TTree(nameoutput, "XicPlus variables tree");
-  Int_t nVar = 50;
+  Int_t nVar = 52;
   fVar_XicPlus = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -1707,8 +1707,10 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[46] = "ldl_XicPlus"; // l/dl of XicPlus
   fVarNames[47] = "ct_XicPlus"; // lifetime of XicPlus
   fVarNames[48] = "PA_XiToXicPlus"; // pointing angle of Xi (pointing back to XicPlus)
+  fVarNames[49] = "pt_PiFromXi"; // pt of pion coming from Xi
+  fVarNames[50] = "mass_Omega"; // mass of Omega
 
-  fVarNames[49] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[51] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
 
 //  fVarNames[26] = "CosThetaStar_PiFromXicPlus"; // CosThetaStar of pion coming from XicPlus
 //  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from XicPlus
@@ -1815,7 +1817,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillEventROOTObjects()
 void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus)
 {
 
-  for (Int_t i=0; i<50; i++) {
+  for (Int_t i=0; i<52; i++) {
     fVar_XicPlus[i] = -9999.;
   }
 
@@ -2019,7 +2021,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
   fVar_XicPlus[48] = TMath::ACos(cosPA_XiToXicPlus); // pointing angle of Xi (pointing back to XicPlus)
 
   if (fIsMC) {
-    fVar_XicPlus[49] = lab_XicPlus;
+    fVar_XicPlus[51] = lab_XicPlus;
     // === weight ===
     /*
     if (lab_XicPlus>0) {
@@ -2030,10 +2032,19 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(KFPartic
     */
   }
 
+  KFParticle kfpPionOrKaon_Rej;
+  kfpPionOrKaon_Rej = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackPiFromXiOrKaonFromOmega, -321); // -321 kaon- for Xi analysis
+  KFParticle kfpCasc_Rej;
+  const KFParticle *vCasc_Rej_Ds[2] = {&kfpPionOrKaon_Rej, &kfpLambda_m};
+  kfpCasc_Rej.Construct(vCasc_Rej_Ds, 2);
+  Float_t massCasc_Rej, err_massCasc_Rej;
+  kfpCasc_Rej.GetMass(massCasc_Rej, err_massCasc_Rej);
+  fVar_XicPlus[50] = massCasc_Rej;
+
+  fVar_XicPlus[49] = trackPiFromXiOrKaonFromOmega->Pt(); // pt of pion coming from Xi
+
   // pt(XicPlus)>=1
   if (fVar_XicPlus[26]>0.9999) fTree_XicPlus->Fill();
-
-
 
 //  fVar_XicPlus[10] = casc->DcaXiDaughters(); // DCA_XiDau
 //  fVar_XicPlus[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXicPlus, kfpBP_trk1, kfpXiMinus_m);

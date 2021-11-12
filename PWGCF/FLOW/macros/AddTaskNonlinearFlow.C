@@ -25,18 +25,6 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 {
         // The common parameters
 	Double_t	fEtaCut 			= 0.8;
-	Double_t	fVtxCut				= 10.0;
-	Int_t		TPCclusters		        = 70;
-	Double_t        chi2PerTPCcluster               = 10000;
-	Int_t		fMinITSClus		        = 5;
-	Double_t	fMaxChi2			= 2.5;
-	Bool_t		fUseDCAzCut		        = false;
-	Double_t	fDCAz				= 1.0;
-	Bool_t		fUseDCAxyCut	                = false;
-	Double_t	fDCAxy				= 0.2;
-	Int_t		IsSample			= 10;
-	Short_t		nCentFl				= 0;
-	Bool_t		fLS				= false;
 
 	// Creates a pid task and adds it to the analysis manager
 	// Get the pointer to the existing analysis manager via the static
@@ -63,28 +51,10 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 
 	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp", fNUA, fNUE);
 	taskFlowEp->SetDebugLevel(3);
-	taskFlowEp->SetFilterbit(fFilterbit); // For systematics
-	taskFlowEp->SetFilterbitDefault(fFilterbit);
 	taskFlowEp->SetEtaCut(fEtaCut);
-	taskFlowEp->SetVtxCut(fVtxCut); // For systematics
-	taskFlowEp->SetVtxCutDefault(fVtxCut);
 	taskFlowEp->SetMinPt(fMinPt);
 	taskFlowEp->SetMaxPt(fMaxPt);
-	taskFlowEp->SetTPCclusters(TPCclusters); // For systematics
-	taskFlowEp->SetTPCclustersDefault(TPCclusters);
-	taskFlowEp->SetChi2PerTPCcluster(chi2PerTPCcluster); // max. chi2 per TPC cluster
-	taskFlowEp->SetMinITSClusters(fMinITSClus);
-	taskFlowEp->SetMaxChi2(fMaxChi2);
-	taskFlowEp->SetUseDCAzCut(fUseDCAzCut);
-	taskFlowEp->SetDCAzCut(fDCAz); // For systematics
-	taskFlowEp->SetDCAzCutDefault(fDCAz); 
-	taskFlowEp->SetUseDCAxyCut(fUseDCAxyCut);
-	taskFlowEp->SetDCAxyCut(fDCAxy); // For systematics
-	taskFlowEp->SetDCAxyCutDefault(fDCAxy); 
-	taskFlowEp->SetIsSample(IsSample);
-	taskFlowEp->SetCentFlag(nCentFl);
 	taskFlowEp->SetTrigger(trigger);
-	taskFlowEp->SetLSFlag(fLS);
 	taskFlowEp->SetNUEFlag(fNUE);
 	taskFlowEp->SetNUA(fNUA);
 	taskFlowEp->SetNtrksName(fNtrksName);
@@ -131,6 +101,12 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		} else if (fPeriod.EqualTo("LHC15o_pass2")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o_pass2.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		} else if (fPeriod.EqualTo("LHC18qr_pass3")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb18qr_pass3.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PhiWeight_Katarina.root");
@@ -200,6 +176,12 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                } else if (fPeriod.EqualTo("LHC15o_pass2")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/Efficiency_LHC20j6a_wSyst.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                } else if (fPeriod.EqualTo("LHC18qr_pass3")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/Efficiency_LHC20e3a_wSyst.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/TrackingEfficiency_Katarina.root");

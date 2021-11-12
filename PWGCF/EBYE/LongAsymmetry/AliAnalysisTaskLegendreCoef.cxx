@@ -26,7 +26,7 @@ ClassImp(AliAnalysisTaskLegendreCoef)
 
 AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE(),
   fAOD(0), fOutputList(0),
-  fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
+  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
@@ -37,7 +37,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
 //_____________________________________________________________________________
 AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0), fOutputList(0),
-  fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
+  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
@@ -194,9 +194,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
         return;
       }
-      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
-      isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(-1, mcHeader, stack);
-      if(isParticleFromOutOfBunchPileUpEvent) return;
+        Bool_t isPileupInGeneratedEvent = kFALSE;
+        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+        if(isPileupInGeneratedEvent) return;
     }
     
     for (Int_t i(0); i < nMCTracks; i++) {
@@ -351,15 +351,18 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   return;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type)
+void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, TString type)
 {
-
   TH1D *RanDistHist[5],*RanHist[5];//random distribution histograms
   TRandom2 *ran = new TRandom2();//random number for uniform distribution
-  double ntracks = signal->Integral();
+  int ntracks = signal->Integral();
   int n; 
   char histname[50];
-  double intb = background->Integral();
+    printf("tracks is %i\n",ntracks);
+
+  //normalizing signal hist 
+  signal->Divide(background);
+    // printf("signal normal is %f\n",signal->Integral());
 
   for (int s=0; s<5; s++){//5 random histograms
     n = sprintf (histname, "RanHist%i", s+1);
@@ -378,32 +381,23 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
       RanHist[s]->Fill(ran->Uniform(-fEta,fEta));
       RanDistHist[s]->Fill(background->GetRandom());
     }
-    RanHist[s]->Scale(16.0/(double)intb);
-    RanDistHist[s]->Divide(background);
-    //printf("ranhist normal is %f\n",RanHist[s]->Integral());
-    //printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+    RanHist[s]->Scale(signal->Integral()/(double)ntracks);
+    // printf("RanHist normal is %f\n",RanHist[s]->Integral());
+
+    RanDistHist[s]->Divide(background); 
+    // printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+
   }
 
-  //normalizing signal hist
-  signal->Divide(background);
-  //printf("signal before scale to 16/signal normal is %f\n",signal->Integral());
-
-
   //calculating the an coefficients  
-  n = sprintf (histname, "a1%s", type);
-  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,signal),2.0));
-  n = sprintf (histname, "a2%s", type);
-  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,signal),2.0));
+  ((TProfile*) fOutputList->FindObject("a1"+type))->Fill(centrality, pow(GetSingleAnCoef(1,signal),2.0));
+  ((TProfile*) fOutputList->FindObject("a2"+type))->Fill(centrality, pow(GetSingleAnCoef(2,signal),2.0));
 
   for (int s=0; s<5; s++){
-    n = sprintf (histname, "Ra1%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));
-    n = sprintf (histname, "RDa1%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanDistHist[s]),2.0));
-    n = sprintf (histname, "Ra2%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanHist[s]),2.0));
-    n = sprintf (histname, "RDa2%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanDistHist[s]),2.0));
+    ((TProfile*) fOutputList->FindObject("Ra1"+type))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));
+    ((TProfile*) fOutputList->FindObject("RDa1"+type))->Fill(centrality, pow(GetSingleAnCoef(1,RanDistHist[s]),2.0));
+    ((TProfile*) fOutputList->FindObject("Ra2"+type))->Fill(centrality, pow(GetSingleAnCoef(2,RanHist[s]),2.0));
+    ((TProfile*) fOutputList->FindObject("RDa2"+type))->Fill(centrality, pow(GetSingleAnCoef(2,RanDistHist[s]),2.0));
   }  
 
   for (int s=0; s<5; s++){

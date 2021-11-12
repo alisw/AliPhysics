@@ -58,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation>+;
 #pragma link C++ class AliNanoAODArrayMaker+;
 #pragma link C++ class AliPWGJETrainHelpers+;
+#pragma link C++ class AliAnalysisTaskFlowVectorCorrectionsPWGJE+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskEmcalJetEnergyFlow+;
@@ -108,6 +109,7 @@
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskIDFragmentationFunction+;
 #pragma link C++ class AliHelperClassFastSimulation+;
+#pragma link C++ class AliJEQnVectorHandler;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
 #pragma link C++ class AliAnalysisTaskJetShapeBase+;
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
@@ -128,6 +130,7 @@
 #pragma link C++ class AliEventTree+;
 #pragma link C++ class AliAnalysisTaskEventExtractor+;
 #pragma link C++ class AliEmcalTRDTrackingTask+;
+#pragma link C++ class AliAnalysisTaskRawJetWithEP+;
 
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
@@ -274,6 +277,7 @@
 #pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskCheckDeadCone+;
+#pragma link C++ class AliAnalysisTaskJetQnVectors+;
 #pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ class AliAnalysisTaskJetCharge+;
