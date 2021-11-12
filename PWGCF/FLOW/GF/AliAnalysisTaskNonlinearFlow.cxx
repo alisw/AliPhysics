@@ -412,7 +412,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fMinVtz = -10.f;
     fEventCuts.fMaxVtz = 10.f;
     fEventCuts.fMaxResolutionSPDvertex = 0.25f;
-    Distance between track and SPD vertex < 0.2 cm
+    // Distance between track and SPD vertex < 0.2 cm
     fEventCuts.fPileUpCutMV = true;
   }
 
