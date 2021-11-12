@@ -1080,7 +1080,7 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             break;
     }
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 100, 201, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 1000, 201, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., -0.5, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 2*ptLims[nPtBinsCutObj], 100., 200.5, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
     int nVars = 6;
