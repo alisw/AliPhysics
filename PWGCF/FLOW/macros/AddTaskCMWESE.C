@@ -31,6 +31,9 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
       bool                  QATPC=false,
       bool                  doNUE=true,
       bool                  doNUA=true,
+      bool                  diffv2QA=true,
+      bool                  calcv24ach=true,
+      bool                  doTrivalCor=false,
       float                  centcut=7.5 // centrality restriction for V0M and TRK
       )	
 {	
@@ -77,7 +80,10 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	task->SetV0QAOn(QAV0);
 	task->SetTPCQAOn(QATPC);
 	task->SetNUEOn(doNUE);
-	task->SetNUAOn(doNUA);	
+	task->SetNUAOn(doNUA);
+  	task->SetDiffV2QA(diffv2QA);
+  	task->SetCalcV24VsAch(calcv24ach);
+  	task->SetDoTrivalCor(doTrivalCor);
 	task->SetCentCut(centcut);
 	// task->SelectCollisionCandidates(AliVEvent::kINT7);
 	mgr->AddTask(task);
@@ -185,9 +191,21 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				inSlotCounter++;
 				printf("NUA3 already loaded\n");
 			}
-		} 
-
-		else if (period.EqualTo("LHC15o")) {
+		} else if (period.EqualTo("LHC11h")){
+    		  		if(!AllContainers->FindObject("NUA")) {
+				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
+    		    		if (task->GetFilterBit() ==1) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/wNUA/weightNUA_LHC11hMAX_ReBined.root");
+    		    		TList* wNUA_list = NULL;
+    		    		wNUA_list = dynamic_cast<TList*>(inNUA->Get("listNUA"));
+    		    		cin_NUA->SetData(wNUA_list);
+    		    		mgr->ConnectInput(task,inSlotCounter,cin_NUA);
+    		    		inSlotCounter++;
+    		  	} else {
+    		    		mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
+    		    		inSlotCounter++;
+    		    		printf("NUA already loaded\n");
+    		  	}
+    		} else if (period.EqualTo("LHC15o")) {
 			if(!AllContainers->FindObject("NUA")) {
 				if (task->GetFilterBit() ==768) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root");
 				// Ref NUA data from alien:///alice/cern.ch/user/p/prottay/nuarootfiles_p5_one_two_two_FB768_15op2_withpileup
@@ -229,12 +247,25 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				printf("V0Calib already loaded\n");
 			}
 		}else if (period.EqualTo("LHC11h")) {
-                			printf("lhc11h Calib not been calculated!\n");
+			TFile *qnSp;
+                    		if(!AllContainers->FindObject("qnSp")) {
+                    			AliAnalysisDataContainer *cin_qnPercSp = mgr->CreateContainer(Form("qnPercSp"), TList::Class(), AliAnalysisManager::kInputContainer);
+                      			qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibSpq2V0C11hP2.root");
+                      			TList* spperc_list = NULL;
+        				spperc_list = dynamic_cast<TList*>(qnSp->Get("11hlistspPerc"));
+                          		cin_qnPercSp->SetData(spperc_list);
+                          		mgr->ConnectInput(task,inSlotCounter,cin_qnPercSp);
+                          		inSlotCounter++;
+                    		}else {
+        				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("qnSp"));
+        				inSlotCounter++;
+        				printf("qnSp already loaded\n");
+      			}
                 	} else if (period.EqualTo("LHC15o")){
                 		TFile *qnSp;
                 		if(!AllContainers->FindObject("qnSp")) {
 				AliAnalysisDataContainer *cin_qnPercSp = mgr->CreateContainer(Form("qnPercSp"), TList::Class(), AliAnalysisManager::kInputContainer);                			
-                			qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibSpq3V0C15oP2.root");
+                			qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibSpq2V0C15oP2.root");
 				// Ref V0 qn percentail data copied from alien:////alice/cern.ch/user/a/adobrin/cmeESE15oP2/calibSpq2V0C15oP2.root
                 			TList* spperc_list = NULL;
 				spperc_list = dynamic_cast<TList*>(qnSp->Get("15olistspPerc"));
