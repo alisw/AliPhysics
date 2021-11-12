@@ -1393,7 +1393,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                  Xicandidate_aod->DecayVertexV0Y());
                 fHistos->FillTH2("hXi_Rxy", lPosXi[0], lPosXi[1]);
             }
-            if( Xicandidate->RadiusV0() > fV0FiducialRadiusCut_loose)
+            if( Xicandidate_aod->RadiusV0() > fV0FiducialRadiusCut_loose)
                 StandardXi=kFALSE;
             if( sqrt(TMath::Sqrt(TMath::Power(lPosXi[0], 2) +
                                  TMath::Power(lPosXi[1], 2))) > fXiFiducialRadiusCut_loose)

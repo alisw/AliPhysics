@@ -391,7 +391,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t fV0FiducialRadiusCut_loose = 120.0;
     Double_t fV0FiducialRadiusCut = 100.0;
-    Double_t fV0FiducialRadiusCut_tight = 80.0
+    Double_t fV0FiducialRadiusCut_tight = 80.0;
     
     Double_t fXiFiducialRadiusCut_loose = 120.0;
     Double_t fXiFiducialRadiusCut = 100.0;
