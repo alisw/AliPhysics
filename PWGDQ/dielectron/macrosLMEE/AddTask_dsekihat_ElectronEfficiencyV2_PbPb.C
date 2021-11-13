@@ -122,8 +122,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetEtaBinsLinear  (-1, +1, 20);
   task->SetPhiBinsLinear  (0, TMath::TwoPi(), 36);
   task->SetThetaBinsLinear(0, TMath::TwoPi(), 60);
-	
-  const Int_t Nmee = 197;
+
+  const Int_t Nmee = 195;
   Double_t mee[Nmee] = {};
   for(Int_t i=0  ;i<110; i++) mee[i] = 0.01 * (i-  0) + 0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
   for(Int_t i=110;i<126; i++) mee[i] = 0.1  * (i-110) + 1.1;//from 1.1 to 2.7 GeV/c2, every 0.1 GeV/c2
