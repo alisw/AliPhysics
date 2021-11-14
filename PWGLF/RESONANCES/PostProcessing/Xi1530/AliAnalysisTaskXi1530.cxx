@@ -2617,7 +2617,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                         FillTHnSparse("hInvMass",
                                       {(double)sys, (double)kMCReco,
                                        (double)fCent, vecsum.Pt(), vecsum.M()});
-                        fReconXi1530counts++;
+                        // fReconXi1530counts++;
                         if (fQA) {
                             fHistos->FillTH1("hMC_reconstructed_Y",
                                              vecsum.Rapidity());
@@ -3201,7 +3201,7 @@ void AliAnalysisTaskXi1530::FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check) {
                 {(double)kDefaultOption, (double)kMCTruePS, (double)fCent,
                  mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 4){
-            fTrueXi1530counts++;
+            // fTrueXi1530counts++;
             FillTHnSparse("hInvMass", {(double)kDefaultOption, (double)kMCTrue,
                                        (double)fCent, mcInputTrack->Pt(),
                                        mcInputTrack->GetCalcMass()});
