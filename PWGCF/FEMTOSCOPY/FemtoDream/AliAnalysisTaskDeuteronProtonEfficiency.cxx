@@ -1614,8 +1614,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	// check if antiproton is a primary particle
 	if(!AntiProton->IsPhysicalPrimary()) continue;
 
-	fHistPtAntiProtonRecPrimary->Fill(PtProton);
-	fHistEtaAntiProtonRecPrimary->Fill(EtaProton);
+	fHistPtAntiProtonRecPrimary->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecPrimary->Fill(EtaAntiProton);
 
 	// apply track cuts
 	if(!fESDtrackCutsProton->AcceptTrack(AntiProtonTrack)) continue;
@@ -1652,8 +1652,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
 
 
-	fHistPtAntiProtonRecTrackCuts->Fill(PtProton);
-	fHistEtaAntiProtonRecTrackCuts->Fill(EtaProton);
+	fHistPtAntiProtonRecTrackCuts->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecTrackCuts->Fill(EtaAntiProton);
 
       } // end of loop for reconstructed antiprotons
 
@@ -1686,8 +1686,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	  // check if antideuteron is a primary particle
 	  if((!AntiDeuteron->IsPhysicalPrimary())) continue;
 
-	  fHistPtAntiDeuteronRecPrimary->Fill(PtDeuteron);
-	  fHistEtaAntiDeuteronRecPrimary->Fill(EtaDeuteron);
+	  fHistPtAntiDeuteronRecPrimary->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecPrimary->Fill(EtaAntiDeuteron);
 
 	  // apply track cuts
 	  if(!fESDtrackCutsDeuteron->AcceptTrack(AntiDeuteronTrack)) continue;
@@ -1725,8 +1725,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	  DeuteronDCAz  = xv_Deuteron[1];
 	  if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
 
-	  fHistPtAntiDeuteronRecTrackCuts->Fill(PtDeuteron);
-	  fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaDeuteron);
+	  fHistPtAntiDeuteronRecTrackCuts->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaAntiDeuteron);
 
 	  ReconstructedAntiDeuteronArray->push_back(LabelAntiDeuteron);
 
