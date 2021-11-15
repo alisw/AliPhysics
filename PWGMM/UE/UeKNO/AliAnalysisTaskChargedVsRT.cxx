@@ -118,6 +118,7 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	fMCStack(0),
 	fMC(0),
 	fUseMC(kFALSE),
+    fUseData(kFALSE),
 	fIsMCclosure(kFALSE),
 	fIsHybAna(kFALSE),
 	fnRecHy(-1),
@@ -167,14 +168,13 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	hNchTSRecTest(0),
 	hNchData(0),
 	hNchTSData(0),
-	//Only with Hybrid Track Cuts
+    // To verify hybrid track cuts
 	hPhiTotal(0), //Sum of all the contributions
 	hPhiStandard(0), //Distribution of phi without corrections -w/ SPD & ITS-
 	hPhiHybrid1(0), // Correction of phi distribution -w/o SPD & w/ ITS-
-// // 	hPhiHybrid2(0), // Correction of phi distribution -no SPD req. & w/o ITS-
-	//
+    //hPhiHybrid2(0), // Correction of phi distribution -no SPD req. & w/o ITS-
+    //
 	hNchResponse(0),
-	hNchRec(0),
 	hNchRecTest(0),
 	hPtInPrim(0),
 	hPtInPrim_pion(0),
@@ -225,6 +225,7 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	fMCStack(0),
 	fMC(0),
 	fUseMC(kFALSE),
+    fUseData(kFALSE),
 	fIsMCclosure(kFALSE),
 	fIsHybAna(kFALSE),
 	fnRecHy(-1),
@@ -274,14 +275,11 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	hNchTSRecTest(0),
 	hNchData(0),
 	hNchTSData(0),
-	//Only with Hybrid Track Cuts
-	hPhiTotal(0), //Sum of all the contributions
-	hPhiStandard(0), //Distribution of phi without corrections -w/ SPD & ITS-
-	hPhiHybrid1(0), // Correction of phi distribution -w/o SPD & w/ ITS-
-// // 	hPhiHybrid2(0), // Correction of phi distribution -no SPD req. & w/o ITS-
-	//
+	hPhiTotal(0),
+	hPhiStandard(0),
+	hPhiHybrid1(0),
+    // hPhiHybrid2(0),
 	hNchResponse(0),
-	hNchRec(0),
 	hNchRecTest(0),
 	hPtInPrim(0),
 	hPtInPrim_pion(0),
@@ -397,10 +395,9 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 
     fTrackFilter->AddCuts(fCuts);
-
     
 	// Define Hybrid 0 (global, 2011 track cuts)
-    //
+    
     fTrackFilterHybrid0 = new AliAnalysisFilter("trackFilterHybrid0");
 	fTrackFilterHybrid0woDCA = new AliAnalysisFilter("trackFilterHybrid0woDCA");
 	AliESDtrackCuts * fCutsHybrid0 = new AliESDtrackCuts();
@@ -426,7 +423,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 	fTrackFilterHybrid0->AddCuts(fCutsHybrid0);
 
 	// Define Hybrid 1
-    //
+    
 	fTrackFilterHybrid1 = new AliAnalysisFilter("trackFilterHybrid1");
 	fTrackFilterHybrid1woDCA = new AliAnalysisFilter("trackFilterHybrid1woDCA");
 	AliESDtrackCuts * fCutsHybrid1 = new AliESDtrackCuts();
@@ -546,75 +543,76 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
 		hPtOutSec = new TH1D("hPtOutSec","pT sec rec; pT; Nch",ptNbins,ptbins1_3);
 		fOutputList->Add(hPtOutSec);
+        
+        hptvsdcaPrim = new TH2F("hptvsdcaPrim","pt vs dca Primaries",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+        fOutputList->Add(hptvsdcaPrim);
+
+        hptvsdcaDecs = new TH2F("hptvsdcaDecs","pt vs dca Decays",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+        fOutputList->Add(hptvsdcaDecs);
+
+        hptvsdcaMatl = new TH2F("hptvsdcaMatl","pt vs dca Material",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+        fOutputList->Add(hptvsdcaMatl);
+
+        hptvsdcaAll = new TH2F("hptvsdcaAll","pt vs dca all",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+        fOutputList->Add(hptvsdcaAll);
+        
+        hNchTSRec = new TH1D("hNchTSRec","",200,-0.5,199.5);
+        fOutputList->Add(hNchTSRec);
+        
+        for(Int_t i=0;i<3;++i){
+
+            hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            fOutputList->Add(hPtVsUEGenTest[i]);
+
+            hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            fOutputList->Add(hPtVsNchGenTest[i]);
+                
+            hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            fOutputList->Add(hPtVsUERecTest[i]);
+
+            hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            fOutputList->Add(hPtVsNchRecTest[i]);
+
+        }
+        
+        for(Int_t i=0;i<3;++i){
+            hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_3[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+            fOutputList->Add(hPhiRec[i]);
+        }
+        
 	}
+    
+    hPhiTotal = new TH1F("hPhiSum","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
+    fOutputList->Add(hPhiTotal);
 
-	hNchTSRec = new TH1D("hNchTSRec","",200,-0.5,199.5);
-	fOutputList->Add(hNchTSRec);
+    hPhiStandard = new TH1F("hPhiSPD&ITS","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
+    fOutputList->Add(hPhiStandard);
 
-	hNchRec = new TH1D("hNchRec","",200,-0.5,199.5);
-	fOutputList->Add(hNchTSRec);
+    hPhiHybrid1 = new TH1F("hPhiITS","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
+    fOutputList->Add(hPhiHybrid1);
+    
+    if(fUseData){
 
-	hNchTSData = new TH1D("hNchTSData","",200,-0.5,199.5); 
-	fOutputList->Add(hNchTSData);
+        hNchTSData = new TH1D("hNchTSData","",200,-0.5,199.5);
+        fOutputList->Add(hNchTSData);
 
-	hPhiTotal = new TH1F("hPhiSum","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
-	fOutputList->Add(hPhiTotal);
+        hNchData = new TH1D("hNchData","",200,-0.5,199.5);
+        fOutputList->Add(hNchData);
+	
+        hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+        fOutputList->Add(hPTVsDCAData);
+    
+        for(Int_t i=0;i<3;++i){
 
-	hPhiStandard = new TH1F("hPhiSPD&ITS","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
-	fOutputList->Add(hPhiStandard);
-
-	hPhiHybrid1 = new TH1F("hPhiITS","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
-	fOutputList->Add(hPhiHybrid1);
-
-	hNchData = new TH1D("hNchData","",200,-0.5,199.5); 
-	fOutputList->Add(hNchData);
-
-	for(Int_t i=0;i<3;++i){
-		hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_3[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
-		fOutputList->Add(hPhiRec[i]);
-	}
-
-	for(Int_t i=0;i<3;++i){
-
-		hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsUEGenTest[i]);
-
-		hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsUERecTest[i]);	  
-
-		hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsNchGenTest[i]);
-
-		hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsNchRecTest[i]);
-
-	}
-
-
-	for(Int_t i=0;i<3;++i){
-
-		hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsUEData[i]);
-
-		hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsNchData[i]);
-
-	}
-
-	hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hPTVsDCAData);
-
-	hptvsdcaPrim = new TH2F("hptvsdcaPrim","pt vs dca Primaries",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaPrim);
-
-	hptvsdcaDecs = new TH2F("hptvsdcaDecs","pt vs dca Decays",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaDecs);
-
-	hptvsdcaMatl = new TH2F("hptvsdcaMatl","pt vs dca Material",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaMatl);
-
-	hptvsdcaAll = new TH2F("hptvsdcaAll","pt vs dca all",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaAll);
+            hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            fOutputList->Add(hPtVsUEData[i]);
+            
+            hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+            fOutputList->Add(hPtVsNchData[i]);
+            
+        }
+    
+    }
 
 	fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
@@ -650,13 +648,16 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 		fMCStack = fMC->Stack();
 	}
 
-	AliHeader* headerMC = fMC->Header();
+    AliHeader* headerMC;
 	Bool_t isGoodVtxPosMC = kFALSE;
 
 	vector<Float_t> ptMc;
 	vector<Float_t> phiMc;
 	vector<Int_t> idMc;
 	if (fUseMC){
+        
+        headerMC = fMC->Header();
+        
 		AliGenEventHeader* genHeader = headerMC->GenEventHeader();
 		TArrayF vtxMC(3); // primary vertex  MC 
 		vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
@@ -749,24 +750,24 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 			}
 		}
 	}
-	else{
-		if(fUseMC){
-			if(isGoodVtxPosMC){
+    if(fUseMC){
+        if(isGoodVtxPosMC){
 				// KNO scaling
-				if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-				{
-					GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
-					GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
-					GetMultiplicityDistributions(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
-				}
-			}
-		}
-		else{
+            if( ( fGenLeadPt>=fLeadPtCutMin && fGenLeadPt<fLeadPtCutMax ) && ( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
+            {
+                GetDetectorResponse(phiMc,fnGen,phiHy,fnRecHy);
+                GetBinByBinCorrections(fnGen,fnRecHy,ptMc,ptHy,idMc,idHy,isprimHy);
+                GetMultiplicityDistributions(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,isprimHyWoDCA, fnRecHyWoDCA);
+            }
+        }
+    }
+    if(fUseData){
 			// KNO scaling
-			if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax ))
-				GetMultiplicityDistributionsData(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,fnRecHyWoDCA);
+        if(( fRecLeadPt>=fLeadPtCutMin && fRecLeadPt<fLeadPtCutMax )){
+            GetMultiplicityDistributionsData(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,fnRecHyWoDCA);
 		}
-	}
+        
+    }
 	//}
 
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
@@ -917,7 +918,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsData(const vector<F
 	hNchTSData->Fill(multTSrec);
 	hNchData->Fill(multRec);
 
-	// Filling rec pT vs UE (for pT *** considering the hybrid track cuts or the 2015 track cuts ***)
+	// Filling rec pT vs UE (for pT *** considering the hybrid track cuts ***)
 	for(Int_t i=0; i < multRec; ++i) {                 // loop over all these tracks
 
 		if(i==fRecLeadIn)continue;
@@ -1024,7 +1025,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributions(const vector<Float
 	hNchTSRecTest->Fill(multTSrec);
 	hNchRecTest->Fill(multRec);
 
-	// Filling rec pT vs UE (for pT *** considering the hybrid track cuts***)
+	// Filling rec pT vs UE (for pT *** considering the hybrid track cuts ***)
 
 	for(Int_t i=0; i < multRec; ++i) {                 // loop over all these tracks
 
@@ -1207,9 +1208,11 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 			Int_t isPrim = -1;
 			Int_t idTrack = -1;
 			Int_t mcLabel = -1;
+            TParticle *mcParticle = 0;
+            
 			if(fUseMC){// get label: 0: prim, 1: weak decays, 2: material
 				mcLabel = TMath::Abs(esdtrack->GetLabel());
-				TParticle *mcParticle = fMC->GetTrack(mcLabel)->Particle();
+				mcParticle = fMC->GetTrack(mcLabel)->Particle();
 				if(!mcParticle){
 					printf("----ERROR: mcParticle not available------------------\n");
 					continue;
@@ -1224,6 +1227,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				else if (partPDG_rec==3312) idTrack = 6; //Xi
 				else idTrack = 7; //rest of the charged particles
 			}
+            
 			Bool_t isHy0=kFALSE;
 			Bool_t isHy1=kFALSE;
 			if(useHy){
@@ -1265,7 +1269,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				if(esdtrack->GetConstrainedParam()){
 					const AliExternalTrackParam* constrainParam = esdtrack->GetConstrainedParam();
 					newTrack->Set(constrainParam->GetX(),constrainParam->GetAlpha(),constrainParam->GetParameter(),constrainParam->GetCovariance());
-					hPhiTotal->Fill(esdtrack->Phi());
+                    hPhiTotal->Fill(esdtrack->Phi());
 					hPhiHybrid1->Fill(newTrack->Phi());
 					newTrack->GetImpactParameters(fdcaxy,fdcaz);
 					ptArray.push_back(newTrack->Pt());
@@ -1304,6 +1308,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 			Int_t idTrack = -1;
 			Int_t mcLabel = -1;
 			TParticle *mcParticle = 0;
+            
 			if(fUseMC){// get label: 0: prim, 1: weak decays, 2: material
 				mcLabel = TMath::Abs(esdtrack->GetLabel());
 				mcParticle = fMC->GetTrack(mcLabel)->Particle();
@@ -1322,6 +1327,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				else if (partPDG_rec==3312) idTrack = 6; //Xi
 				else idTrack = 7; //rest of the charged particles
 			}
+            
 			Bool_t isHy0=kFALSE;
 			Bool_t isHy1=kFALSE;
 			if(useHy){

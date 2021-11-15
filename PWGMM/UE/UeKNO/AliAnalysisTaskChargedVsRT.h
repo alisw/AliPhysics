@@ -48,6 +48,7 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		void       SetLeadingPtMin(Double_t PtLmin)    {fLeadPtCutMin = PtLmin;}   // use differnet ptcuts
 		void       SetLeadingPtMax(Double_t PtLmax)    {fLeadPtCutMax = PtLmax;}   // use differnet ptcuts
 		void       SetUseMC(Bool_t mc = kFALSE)        {fUseMC = mc;}   // use to analyse MC data
+        void       SetUseData(Bool_t data = kFALSE)        {fUseData = data;}
 		void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
 		void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
 		bool       HasRecVertex();
@@ -84,7 +85,8 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		AliEventCuts        fEventCuts;
 		AliStack*    fMCStack;                                                 //! MC stack
 		AliMCEvent*  fMC;                                               //! MC Event
-		Bool_t       fUseMC;                // analyze MC events
+		Bool_t       fUseMC;// analyze MC events
+        Bool_t       fUseData;
 		Bool_t       fIsMCclosure;
 		Bool_t       fIsHybAna;
 		Int_t        fnRecHy;
@@ -141,7 +143,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		TH1F * hPhiStandard;
 		TH1F * hPhiHybrid1;
 		TH2D * hNchResponse;
-		TH1D * hNchRec;
 		TH1D * hNchRecTest;
 		TH1D * hPtInPrim;
 		TH1D * hPtInPrim_pion;
