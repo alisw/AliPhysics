@@ -153,6 +153,16 @@ class AliAnalysisTaskDeuteronProtonEfficiency : public AliAnalysisTaskSE
     TH2F    *fHistdEdx_LHC18a2b4;
     TH2F    *fHistdEdx_LHC20l7a;
 
+    std::vector<int>*    GeneratedProtonArray;
+    std::vector<int>*    GeneratedDeuteronArray;
+    std::vector<int>*    GeneratedAntiProtonArray;
+    std::vector<int>*    GeneratedAntiDeuteronArray;
+
+    std::vector<int>*    ReconstructedProtonArray;
+    std::vector<int>*    ReconstructedDeuteronArray;
+    std::vector<int>*    ReconstructedAntiProtonArray;
+    std::vector<int>*    ReconstructedAntiDeuteronArray;
+
     // event counter
     TH1F    *fHistEventCounter;
     AliPIDResponse *fPIDResponse;

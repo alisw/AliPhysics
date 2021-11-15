@@ -1356,7 +1356,11 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
     AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
     AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
     AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
-    if (aodt) if (!aodt->TestFilterBit(5)) continue;
+    if (aodt){
+      if (!aodt->TestFilterBit(1)) continue;
+      if ( !aodt->IsOn(0x40) ) continue;
+      if ( !aodt->IsOn(0x4) ) continue; 
+    }
     if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
     if (track->Pt() < 0.15) continue;
     if(TMath::Abs(track->Eta()) > 0.8) continue;
@@ -1379,7 +1383,11 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  AliVTrack   *track = (AliVTrack *)evTypeS->GetTrack(i1);
 	  AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
 	  AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
-	  if (aodt) if (!aodt->TestFilterBit(5)) continue;
+	  if (aodt){
+	    if (!aodt->TestFilterBit(1)) continue;
+	    if ( !aodt->IsOn(0x40) ) continue;
+	    if ( !aodt->IsOn(0x4) ) continue; 
+	  }
 	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
 	  if (track->Pt() < 0.15) continue;
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;

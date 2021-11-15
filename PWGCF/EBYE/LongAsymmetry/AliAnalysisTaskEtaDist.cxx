@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////
 // AliAnalysisTaskEtaDist:
+// Description: Analysis task 
 // Author: Raquel Quishpe (raquel.quishpe@cern.ch)
 ////////////////////////////////////////////////////////
 
@@ -208,9 +209,9 @@ void AliAnalysisTaskEtaDist::UserExec(Option_t *)
                 printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
                 return;
             }
-            Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
-            isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(-1, mcHeader, stack);
-            if(isParticleFromOutOfBunchPileUpEvent) return;
+            Bool_t isPileupInGeneratedEvent = kFALSE;
+            isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+            if(isPileupInGeneratedEvent) return;
         }
 
         mNMC  = 0;

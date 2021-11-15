@@ -15,6 +15,7 @@
 #include "TMath.h"
 #include "THnSparse.h"
 #include "TString.h"
+#include "TRandom.h"
 #include <vector>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -52,6 +53,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetPtRangeTrig(Double_t min, Double_t max) {fPtMinTrig = min; fPtMaxTrig = max; }
         void                    SetPtRangeAss(Double_t min, Double_t max) {fPtMinAss = min; fPtMaxAss = max; }
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
+        void                    SetPVZcut(Double_t cut) {fPVzCut = cut; }
+        void                    SetBayesPIDcut(Double_t pion, Double_t kaon, Double_t proton){ fPIDbayesPion = pion; fPIDbayesKaon = kaon; fPIDbayesProton = proton; }
         void                    SetPhiStarCur(Double_t phiStar) {fMergingCut = phiStar; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
@@ -60,10 +63,15 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
+        void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
+        void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
+
+        // FMD related
         void                    SetAnaType(AnaType type) { fAnalType = type; }
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void                    SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
+        void                    SetFMDacceptanceCuts(Double_t cutAlower, Double_t cutAupper, Double_t cutClower, Double_t cutCupper) { fFMDAacceptanceCutLower = cutAlower; fFMDAacceptanceCutUpper = cutAupper; fFMDCacceptanceCutLower = cutClower; fFMDCacceptanceCutUpper = cutCupper; }
 
 
     private:
@@ -103,12 +111,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
-        TH2D*                   fHistPhiEta; //!
         TH2D*                   fhTrigTracks[4]; //!
         AliTHn*                 fhSE[4]; //!
         AliTHn*                 fhME[4]; //!
         TH1D*                   fhEfficiency[4]; //! not eta dependent
         TH1D*                   fhEfficiencyEta[4][4]; //! eta dependent (4 sectors)
+        TH2D*                   fHistFMDeta; //! vs PVz
 
         //event and track selection
         AnaType                 fAnalType;
@@ -119,19 +127,26 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fEfficiencyEtaDependent; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
+        Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fNofTracks;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
+        Int_t                   fNOfSamples; //[1]
+        Int_t                   fSampleIndex; //[0]
         Double_t                fPtMinTrig;
         Double_t                fPtMaxTrig;
         Double_t                fPtMinAss;
         Double_t                fPtMaxAss;
-        Double_t                fFMDcutapar0;
-        Double_t                fFMDcutapar1;
-        Double_t                fFMDcutcpar0;
-        Double_t                fFMDcutcpar1;
+        Double_t                fFMDcutapar0; // [1.64755]
+        Double_t                fFMDcutapar1; // [119.602]
+        Double_t                fFMDcutcpar0; // [2.73426]
+        Double_t                fFMDcutcpar1;  // [150.31]
+        Double_t                fFMDAacceptanceCutLower; // [1.8]
+        Double_t                fFMDAacceptanceCutUpper; // [4.8]
+        Double_t                fFMDCacceptanceCutLower; // [1.8]
+        Double_t                fFMDCacceptanceCutUpper; // [3.2]
         std::vector<Double_t>   fPtBinsTrigCharged;
         std::vector<Double_t>   fPtBinsAss;
         Double_t                fCentMin;
@@ -139,6 +154,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fCentrality;
         Double_t                fAbsEtaMax;
         Double_t                fPVz;
+        Double_t                fPVzCut; // [10.]
+        Double_t                fPIDbayesPion; // [0.95]
+        Double_t                fPIDbayesKaon; // [0.85]
+        Double_t                fPIDbayesProton; // [0.85]
         TString                 fCentEstimator;
         AliEventCuts            fEventCuts;
 
@@ -152,7 +171,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 2);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 4);
 };
 
 #endif

@@ -275,6 +275,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         // actual analysis
         double mass = dStar->DeltaInvMass();
         double ptCand = dStar->Pt();
+        double yCand = dStar->Y(413);
         double pCand = dStar->P();
 
         AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dStar->GetBachelor());
@@ -299,7 +300,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
         double phiStarBeam = TMath::ATan2(threeVecPiCM.Y(), threeVecPiCM.X());
 
-        std::vector<double> var4nSparse = {mass, ptCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, centrality};
+        std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, centrality};
         std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
         if(!fReadMC) {
@@ -375,18 +376,9 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
     }
 
     double ptD = dStar->Pt();
-    double yD = dStar->Y(413);
 
     int ptBin = fRDCuts->PtBin(ptD);
     if (ptBin < 0)
-    {
-        if (unsetVtx)
-            dStar->UnsetOwnPrimaryVtx();
-        return 0;
-    }
-
-    bool isFidAcc = fRDCuts->IsInFiducialAcceptance(ptD, yD);
-    if (!isFidAcc)
     {
         if (unsetVtx)
             dStar->UnsetOwnPrimaryVtx();
@@ -472,7 +464,7 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                     isFidAcc = fRDCuts->IsInFiducialAcceptance(pt, rapid);
                     isDaugInAcc = CheckDaugAcc(arrayMC, nDau, labDau);
 
-                    if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 0.5))
+                    if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 1))
                     {
                         int labDauFirst = mcPart->GetDaughterFirst();
                         AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauFirst));
@@ -552,7 +544,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 5, 5, 5, 100};
+    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 100, 5, 5, 5, 100};
     double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0., 0., 0.};
     double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 1., 1., 100.};
 
@@ -595,9 +587,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 
     int nCosThetaBins = 5;
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 100};
-    double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., 0., 0.};
-    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 100.};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, 100};
+    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0.};
+    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 100.};
 
     int nBinsThetaPhiReco[4] = {nMassBins, nPtBins, 100, 100};
     double xminThetaPhiReco[4] = {massMin, 0., 0., 0.};
@@ -610,10 +602,11 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseReco, nBinsReco, xminReco, xmaxReco);
         fnSparseReco[iHist]->GetAxis(0)->SetTitle("#it{M}(K#pi#pi) #minus #it{M}(K#pi) (MeV/#it{c}^{2})");
         fnSparseReco[iHist]->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        fnSparseReco[iHist]->GetAxis(2)->SetTitle("|cos(#theta*)| (beam)");
-        fnSparseReco[iHist]->GetAxis(3)->SetTitle("|cos(#theta*)| (production)");
-        fnSparseReco[iHist]->GetAxis(4)->SetTitle("|cos(#theta*)| (helicity)");
-        fnSparseReco[iHist]->GetAxis(5)->SetTitle("centrality %");
+        fnSparseReco[iHist]->GetAxis(2)->SetTitle("#it{y}");
+        fnSparseReco[iHist]->GetAxis(3)->SetTitle("|cos(#theta*)| (beam)");
+        fnSparseReco[iHist]->GetAxis(4)->SetTitle("|cos(#theta*)| (production)");
+        fnSparseReco[iHist]->GetAxis(5)->SetTitle("|cos(#theta*)| (helicity)");
+        fnSparseReco[iHist]->GetAxis(6)->SetTitle("centrality %");
         fOutput->Add(fnSparseReco[iHist]);
 
         fnSparseRecoThetaPhiStar[iHist] = new THnSparseF(Form("fnSparseRecoThetaPhiStar_%s", label[iHist].Data()), titleSparse.Data(), 4, nBinsThetaPhiReco, xminThetaPhiReco, xmaxThetaPhiReco);

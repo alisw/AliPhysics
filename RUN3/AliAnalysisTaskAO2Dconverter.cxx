@@ -1488,6 +1488,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       Int_t nPrim = MCEvt ? MCEvt->Stack()->GetNprimary() : nMCprim;
       if (i >= nPrim)
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
+
+      if (MCEvt && MCEvt->IsPhysicalPrimary(i)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
+      if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
+        mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
+      
       mcparticle.fIndexMcParticles_Mother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
       if (mcparticle.fIndexMcParticles_Mother0 > -1)
         mcparticle.fIndexMcParticles_Mother0 = kineIndex[mcparticle.fIndexMcParticles_Mother0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Mother0] + fOffsetLabel : -1;

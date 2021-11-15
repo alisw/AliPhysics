@@ -56,7 +56,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
-  fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
+  fPoolMgr(0x0),fMETrackDepth(0),fMETargetEvents(1),fMETargetFraction(0.1),fMEClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
   fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
@@ -104,7 +104,7 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
-  fPoolMgr(0x0),fTrackDepth(0),fTargetFraction(0.1),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
+  fPoolMgr(0x0),fMETrackDepth(0),fMETargetEvents(1),fMETargetFraction(0.1),fMEClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),
   fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
@@ -222,10 +222,10 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 
 
 	//..Raymond/Megan gives more mixed event yield - don't know about the quality though
-	//fTrackDepth     = 100;      //Hanseul sets it to 100! Q:: is this good? Maximum number of tracks??
-	fTrackDepth     = 50000;    //Raymonds/Megans value
+	//fMETrackDepth     = 100;      //Hanseul sets it to 100! Q:: is this good? Maximum number of tracks??
+	fMETrackDepth     = 50000;    //Raymonds/Megans value
 
-	fClusterDepth   = 10000;
+	fMEClusterDepth   = 10000;
 
 	//..!!
 	//.. fPoolSize is an input that is ignored in the PoolManager Anyway
@@ -1783,7 +1783,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 {
 	if(fDebug==1){cout<<"Inside of: AliAnalysisTaskGammaHadron::InitEventMixer()"<<endl;
-		printf("Event pool parameters: fTrackDepth %d fTargetFraction: %f\n",fTrackDepth,fTargetFraction);
+		printf("Event pool parameters: fMETrackDepth %d fMETargetFraction: %f\n",fMETrackDepth,fMETargetFraction);
 	}
 	//--The effective pool size in events is set by trackDepth, so more
 	//--low-mult events are required to maintain the threshold than
@@ -1841,13 +1841,13 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 	if(!fPoolMgr)
 	{
 		if (MixMode == 0) {
-			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray);
+			fPoolMgr = new AliEventPoolManager(fPoolSize, fMETrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray);
 			AliInfo("....  Pool Manager Created for Mixed Tracks ....");
 		} else { //MixMode == 1
-			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray, kUsedPi0TriggerPtBins, fArray_G_Bins);
+			fPoolMgr = new AliEventPoolManager(fPoolSize, fMETrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray, kUsedPi0TriggerPtBins, fArray_G_Bins);
 			AliInfo("....  Pool Manager Created for Mixed Triggers ....");
 		}
-		fPoolMgr->SetTargetValues(fTrackDepth, fTargetFraction, 5);  //pool is ready at 0.1*fTrackDepth = 5000 or events =5
+		fPoolMgr->SetTargetValues(fMETrackDepth, fMETargetFraction, fMETargetEvents);  //pool is ready at 0.1*fMETrackDepth = 5000 or events =5
 		//save this pool by default
 	}
 	else
@@ -1907,8 +1907,7 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 	}
 
 	//..Basic checks and printing of pool properties
-
-	fPoolMgr->Validate();
+  if (fDebug==1) fPoolMgr->Validate();
 }
 
 //________________________________________________________________________
@@ -1941,14 +1940,14 @@ void AliAnalysisTaskGammaHadron::InitClusMixer()
 
 	//Using same trackdepth, etc., as mixed event mode.
 	AliInfo("....  Pool Manager Created for cluster mixing ....");
-	//fPoolMgr = new AliEventPoolManager(fPoolSize,fTrackDepth,nCentBins,centBins,nZvtxBins,zvtxbin);
-	fPoolMgr = new AliEventPoolManager(fPoolSize,fClusterDepth,nEMCalMultBins,emcalMultBins,nClusZvtxBins,zClusvtxbin);
-	fPoolMgr->SetTargetValues(fClusterDepth,0.05,5); //pool is ready at 0.05*fClusterDepth = 500 or events =5
+	//fPoolMgr = new AliEventPoolManager(fPoolSize,fMETrackDepth,nCentBins,centBins,nZvtxBins,zvtxbin);
+	fPoolMgr = new AliEventPoolManager(fPoolSize,fMEClusterDepth,nEMCalMultBins,emcalMultBins,nClusZvtxBins,zClusvtxbin);
+	fPoolMgr->SetTargetValues(fMEClusterDepth,fMETargetFraction,fMETargetEvents); //pool is ready at 0.05*fMEClusterDepth = 500 or events =5
 
 	// Can still add option to save event pools out.
 
 	//..Basic checks and printing of pool properties
-	fPoolMgr->Validate();
+  if (fDebug == 1) fPoolMgr->Validate();
 }
 
 ///

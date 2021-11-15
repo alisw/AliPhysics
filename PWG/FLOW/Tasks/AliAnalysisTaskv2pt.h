@@ -184,6 +184,7 @@ class AliAnalysisTaskv2pt : public AliAnalysisTaskSE {
   TH2F            *fHistTPCVsESDTrkBefore;   //!  
   TH2F            *fHistTPCVsESDTrkAfter;   //
   TProfile        *fHistv2cumCentChrgAll;  //! Charge inclusive
+  TProfile        *fHistv2cumCentChrgAllNeg;  //! Charge inclusive
   TH1F            *fHistPileUpCount;   //!
 
   TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins

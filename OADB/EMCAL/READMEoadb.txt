@@ -103,5 +103,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
             LHC17o,LHC17pq,LHC18b,LHC18c,LHC18def,LHC18ghijklm,LHC18nop,LHC18qr
             Energy dependent merged BC time calib was added for: LHC16l, LHC17r
 - 20210914: Update of EMCALTimeL1PhaseCalib.root for missing run 282504 in LHC17r
+- 20211015: Update of EMCALTimeL1PhaseCalib.root for missing run 280443, 280445, 280446, 280447 280448 in LHC17o
 
 */

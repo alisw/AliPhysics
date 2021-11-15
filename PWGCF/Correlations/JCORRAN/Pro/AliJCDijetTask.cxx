@@ -253,6 +253,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Dijet DeltaPhi cut:         pi/" << fdeltaPhiCut << endl;
     cout << "Matching R for MC:          " << fmatchingR << endl;
     cout << "Tracking ineff for DetMC:   " << ftrackingIneff << endl;
+    cout << "Unfolding with true MC set: " << iUnfJetClassTrue << endl;
+    cout << "Unfolding with det  MC set: " << iUnfJetClassDet << endl;
     cout << endl;
 
     if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
@@ -418,6 +420,14 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     if(fIsMC) {
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iAcc,AliJCDijetAna::iAcc);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtr,AliJCDijetAna::iBGSubtr);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCutsRaw,AliJCDijetAna::iBGSubtrCutsRaw);
+        //we can run custom configuration with an argument
+        if((iUnfJetClassTrue!=AliJCDijetAna::iAcc            && iUnfJetClassDet!=AliJCDijetAna::iAcc)
+        || (iUnfJetClassTrue!=AliJCDijetAna::iBGSubtr        && iUnfJetClassDet!=AliJCDijetAna::iBGSubtr)
+        || (iUnfJetClassTrue!=AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet!=AliJCDijetAna::iBGSubtrCutsRaw)) {
+            fana->CalculateResponse(fanaMC,fhistosDetMC,iUnfJetClassTrue,iUnfJetClassDet);
+        }
 #endif
     }
 

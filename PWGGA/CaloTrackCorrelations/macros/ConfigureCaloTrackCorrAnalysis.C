@@ -690,6 +690,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     // Not needed if M02 cut is already strong or clusterizer V2
     ana->SetNLMCut(1, 2) ;
+    if ( kAnaCutsString.Contains("NLMCut3" ) ) ana->SetNLMCut(1, 3) ;
+    if ( kAnaCutsString.Contains("NLMCut4" ) ) ana->SetNLMCut(1, 4) ;
+    if ( kAnaCutsString.Contains("NLMCut10") ) ana->SetNLMCut(1, 10) ;
   }
   
   if ( kAnaCutsString.Contains("ShSh") )
@@ -963,7 +966,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     ana->SetNLMCut(1, 2) ;
-    
+    if ( kAnaCutsString.Contains("NLMCut3" ) ) ana->SetNLMCut(1, 3) ;
+    if ( kAnaCutsString.Contains("NLMCut4" ) ) ana->SetNLMCut(1, 4) ;
+    if ( kAnaCutsString.Contains("NLMCut10") ) ana->SetNLMCut(1, 10) ;
+
     //
     ana->SetMinDistanceToBadChannel(2, 4, 6);
     ana->SwitchOnSplitClusterDistToBad();
@@ -1540,6 +1546,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 /// \param particle : Particle trigger name
 /// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
 /// \param bIsolated : Bool setting the analysis for previously isolated triggers
+/// \param shshMin: Minimum cluster shower shape, for photon analysis
+/// \param shshMax: Maximum cluster shower shape, for photon analysis
 /// \param partInCone : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
 /// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
 /// \param cone : A float setting the isolation cone size higher limit
@@ -1556,7 +1564,8 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
 AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString particle,      Int_t   leading,
-                                                                    Bool_t  bIsolated,     Float_t shshMax,
+                                                                    Bool_t  bIsolated,
+                                                                    Float_t shshMin,       Float_t shshMax,
                                                                     Int_t   partInCone,    Int_t   thresType,
                                                                     Float_t cone,          Float_t coneMin,
                                                                     Float_t pth,           Bool_t  mixOn,
@@ -1602,7 +1611,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     }
     
     //printf("ConfigureHadronCorrelationAnalysis() *** SET M02 limits in correlation task *** \n");
-    ana->SetM02Cut(0.10,shshMax);
+    ana->SetM02Cut(shshMin,shshMax);
   }
   
   if ( kAnaCutsString.Contains("PerSM") ) 
@@ -1651,13 +1660,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //  ana->SetAssocPtBinLimit(6, 10) ;
   //  ana->SetAssocPtBinLimit(7, 100);
   
-  ana->SetNTriggerPtBins(8); // set first bin [10,12] GeV/c and last bin [40,50] GeV/c
-  // See AliAnaParticleCorrelation::InitParameters();
-  // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
-  // If you want to change it:
-  //  ana->SetTriggerPtBinLimit(0,  5) ;
-  //  ana->SetTriggerPtBinLimit(1, 10) ;
-  
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
   // Mixing with own pool
@@ -1704,8 +1706,11 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //Set Histograms name tag, bins and ranges
   //
   //ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_TM%d_",particle.Data(),bIsolated,tm));
-  ana->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_",particle.Data(),bIsolated));
-  
+  TString histoStartName = Form("Ana%sHadronCorr_Iso%d_",particle.Data(),bIsolated);
+  if ( particle == "Photon" )
+    histoStartName+=Form("ShSh%1.2f-%1.2f_",shshMin,shshMax);
+  ana->AddToHistogramsName(histoStartName);
+
   SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
   if(particle=="Hadron"  || particle.Contains("CTS"))
@@ -2174,13 +2179,15 @@ void ConfigureCaloTrackCorrAnalysis
   
   // Check the passed variables
   //
+  Float_t shshMin = 0.1;
+
   printf("ConfigureCaloTrackCorrAnalysis() << Settings: Base string <%s>, Analysis string <%s>, "
          "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
-         "\n shshMax <%2.2f>, R <%1.2f>, Rmin <%1.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,"
+         "\n photon shsh <%2.2f-%2.2f>, R <%1.2f>, Rmin <%1.2f>, isoPtTh <%2.2f>, isoMethod <%d>,isoContent <%d>,"
          "\n leading <%d>, tm <%d>, mixOn <%d>, printSettings <%d>, debug <%d>\n",
          anaList->GetName(), analysisString.Data(), 
          calorimeter.Data(), simulation, year, col.Data(),
-         shshMax,isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,
+         shshMax,shshMin,isoCone,isoConeMin,isoPtTh,isoMethod,isoContent,
          leading,tm,mixOn,printSettings,debug);
   
   kAnaCutsString    = analysisString;
@@ -2439,7 +2446,7 @@ void ConfigureCaloTrackCorrAnalysis
       {
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,-1,isoPtTh,0,
-                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+                        col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
       }
       
     }
@@ -2451,15 +2458,29 @@ void ConfigureCaloTrackCorrAnalysis
       if ( !analysisString.Contains("MultiIso") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                       ("Photon", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                       ("Photon", leading, kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+
+        if ( !analysisString.Contains("Pi0Merged") )
+        {
+          anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                         ("Photon", leading, kFALSE, 0.4, 2.0, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       
       if ( analysisString.Contains("Isolation")  )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                       ("Photon", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                       ("Photon", leading, kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); 
+
+        if ( !analysisString.Contains("Pi0Merged") )
+        {
+          anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                         ("Photon", leading, kTRUE,  0.4, 2.0, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++);
+        }
       }
     } // correlation
     
@@ -2502,14 +2523,14 @@ void ConfigureCaloTrackCorrAnalysis
       if ( !analysisString.Contains("MultiIso") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                       ("Pi0SS", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                       ("Pi0SS", leading, kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);  
       }
       
       if ( analysisString.Contains("Isolation") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                       ("Pi0SS", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                       ("Pi0SS", leading, kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); 
       }
     } // correlation
@@ -2638,14 +2659,14 @@ void ConfigureCaloTrackCorrAnalysis
       if ( !analysisString.Contains("MultiIso") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                       ("Random", leading, kFALSE, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                       ("Random", leading, kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Gamma-hadron correlation
       }
       
       if ( analysisString.Contains("Isolation")  )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
-                       ("Random", leading, kTRUE,  shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                       ("Random", leading, kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); // Isolated gamma hadron correlation
       }
     } // correlation
