@@ -36,6 +36,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
+		virtual void            CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
 		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
