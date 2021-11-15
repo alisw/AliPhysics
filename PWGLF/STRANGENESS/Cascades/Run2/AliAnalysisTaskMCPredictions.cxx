@@ -1001,20 +1001,21 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if(lDistanceFromZero>1e-12) continue; //remove everything outside of zero, should remove decay daus
     
     if( TMath::Abs(geta)<4.0 ){
+      Bool_t lGoodD0 = kTRUE, lGoodXiC = kTRUE, lGoodXiB = kTRUE;
       if(lThisParticle->GetPdgCode()==421) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
-        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
-        lD0trigger[lND0trigger++] = iCurrentLabelStack;
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodD0 = kFALSE;
+        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) lGoodD0 = kFALSE;
+        if ( lGoodD0 ) lD0trigger[lND0trigger++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()==4232) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
-        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
-        lXiC[lNXiC++] = iCurrentLabelStack;
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodXiC = kFALSE;
+        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) lGoodXiC = kFALSE;
+        if ( lGoodXiC ) lXiC[lNXiC++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()==5132) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
-        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
-        lXiB[lNXiB++] = iCurrentLabelStack;
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodXiB = kFALSE;
+        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) lGoodXiB = kFALSE;
+        if ( lGoodXiB ) lXiB[lNXiB++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()== 2212 && lIsPhysicalPrimary ) lProtons[lNProtons++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==-2212 && lIsPhysicalPrimary ) lAntiProtons[lNAntiProtons++] = iCurrentLabelStack;
