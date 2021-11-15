@@ -452,8 +452,10 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     }else{
       fHistNParticles->Fill(2);
     }
-    if(fPrimarySelectionOpt==1 && !fMCEvent->IsPhysicalPrimary(iMC)) continue;
-    if(fPrimarySelectionOpt==2){
+    if(fPrimarySelectionOpt==1){
+      if(isAOD && !part->IsPhysicalPrimary()) continue;
+      if(!isAOD && !fMCEvent->IsPhysicalPrimary(iMC)) continue;
+    }else if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=part->Xv()*part->Xv()+part->Yv()*part->Yv();
       double distz=TMath::Abs(part->Zv()-zMCVertex);
@@ -523,8 +525,10 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       fHistNTracks->Fill(3);
     }
     
-    if (fPrimarySelectionOpt==1 && !fMCEvent->IsPhysicalPrimary(lab)) continue;
-    if(fPrimarySelectionOpt==2){
+    if (fPrimarySelectionOpt==1){
+      if(isAOD && !mcPart->IsPhysicalPrimary()) continue;
+      if(!isAOD && !fMCEvent->IsPhysicalPrimary(lab)) continue;
+    }else if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
       double pRad2=mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv();
       double distz=TMath::Abs(mcPart->Zv()-zMCVertex);
