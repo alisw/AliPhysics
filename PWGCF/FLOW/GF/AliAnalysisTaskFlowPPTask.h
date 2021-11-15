@@ -160,6 +160,7 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
 		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
 		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
+		TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
 
 		// 8 particle correlation
 		TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
@@ -290,9 +291,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TF1*			fMultCentLowCut;		// cut low for multiplicity centrality outliers
 
 		// NUE
-		TFile*			fTrackEfficiency;		//! file with tracking efficiency
-		TH3F*			hTrackEfficiency;		//! histogram with tracking efficiency
-		TH3F*			hTrackEfficiencyRun;            //! histogram with tracking efficiency
+		TList*			fTrackEfficiency;		//! file with tracking efficiency
+		TH1D*			hTrackEfficiency;		//! histogram with tracking efficiency
+		TH1D*			hTrackEfficiencyRun;            //! histogram with tracking efficiency
 
 		// NUA
 		bool fFlowRunByRunWeights;                              // flag of whether get the Run by run weight 
@@ -382,6 +383,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		// Global variables
 		int NtrksCounter = 0;               //!
 		int NtrksAfter = 0;                 //!
+		int NtrksAfterGap0M = 0;           //!
+		int NtrksAfterGap0P = 0;           //!
 		int NtrksAfterGap10M = 0;           //!
 		int NtrksAfterGap10P = 0;           //!
 		int NtrksAfterGap14M = 0;           //!
