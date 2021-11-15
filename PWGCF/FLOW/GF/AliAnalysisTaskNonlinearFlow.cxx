@@ -1137,9 +1137,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     QDisGap10M[h]->Fill(correlator.QGap10M(h+2,1).Re(), correlator.QGap10M(h+2,1).Im());
     QDisGap14P[h]->Fill(correlator.QGap14P(h+2,1).Re(), correlator.QGap14P(h+2,1).Im());
     QDisGap14M[h]->Fill(correlator.QGap14M(h+2,1).Re(), correlator.QGap14M(h+2,1).Im());
-    QDis3subL[h]->Fill(correlator.QsubL(h+2,1).Re(), correlator.QsubL(h+2,1).Im());
-    QDis3subM[h]->Fill(correlator.QsubM(h+2,1).Re(), correlator.QsubM(h+2,1).Im());
-    QDis3subR[h]->Fill(correlator.QsubR(h+2,1).Re(), correlator.QsubR(h+2,1).Im());
+    QDis3subL[h]->Fill(correlator.QsubLeft(h+2,1).Re(), correlator.QsubLeft(h+2,1).Im());
+    QDis3subM[h]->Fill(correlator.QsubMiddle(h+2,1).Re(), correlator.QsubMiddle(h+2,1).Im());
+    QDis3subR[h]->Fill(correlator.QsubRight(h+2,1).Re(), correlator.QsubRight(h+2,1).Im());
   }
 
 
