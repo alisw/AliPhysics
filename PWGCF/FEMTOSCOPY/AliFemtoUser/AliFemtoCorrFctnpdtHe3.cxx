@@ -156,7 +156,7 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
 {
-    cout<<"AliFemtoCorrFctnpdtHe3::Finish()"<<endl;
+    //cout<<"AliFemtoCorrFctnpdtHe3::Finish()"<<endl;
 }
 void AliFemtoCorrFctnpdtHe3::Write()
 {

@@ -267,7 +267,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
             
         }
         
-        cout<<"AliFemtoTrackCutPdtHe3 "<<track->ImpactD()<<" "<<track->ImpactZ()<<endl;
+        //cout<<"AliFemtoTrackCutPdtHe3 "<<track->ImpactD()<<" "<<track->ImpactZ()<<endl;
         fNTracksPassed++ ;
         return true;
     
@@ -403,6 +403,19 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigmaRejection(float mom, float nsigmaTPCP
  
   return false;
 }
+void AliFemtoTrackCutPdtHe3::SetProtonSwitchMom(float SwitchMom){
+	SwitchMom_p = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetDeuteronSwitchMom(float SwitchMom){
+	SwitchMom_d = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetTritonSwitchMom(float SwitchMom){
+	SwitchMom_t = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetHe3SwitchMom(float SwitchMom){
+	SwitchMom_He3 = SwitchMom;
+}
+
 
 
 
