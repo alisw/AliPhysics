@@ -1089,8 +1089,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
     AliAODTrack* AODtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
     if(!AODtrack) continue;
     
-    // if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
-    if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
+    if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
+    //if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
 
       trkPt    = AODtrack->Pt();
       trkPhi   = AODtrack->Phi();
@@ -1108,9 +1108,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       
 
 
-      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
+      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
 
 	  
