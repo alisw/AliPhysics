@@ -507,22 +507,14 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
       
     // Gain Eq
     if (fVZEROGainEq){
-      AliOADBContainer* contMult = new AliOADBContainer("hMultV0BefCorPfpx");
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
         pMultV0Fill[iRun] = new TProfile(Form("pMultV0Run%i", (int)fRunNumList[iRun].Atoi()), "", 64, 0, 64);
-        contMult->AppendObject(pMultV0Fill[iRun], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());      
-      } 
-      fOutputList->Add(contMult);
+        fOutputList->Add(pMultV0Fill[iRun]);
+      }
     };
 
     // Fill Mean for recenter
     if (fFillVZEROQMean) {
-      AliOADBContainer* contQxnmm = new AliOADBContainer(Form("fqxm%im",(int)fHarmonic));
-      AliOADBContainer* contQynmm = new AliOADBContainer(Form("fqym%im",(int)fHarmonic));
-      AliOADBContainer* contQxncm = new AliOADBContainer(Form("fqxc%im",(int)fHarmonic));
-      AliOADBContainer* contQyncm = new AliOADBContainer(Form("fqyc%im",(int)fHarmonic));
-      AliOADBContainer* contQxnam = new AliOADBContainer(Form("fqxa%im",(int)fHarmonic));
-      AliOADBContainer* contQynam = new AliOADBContainer(Form("fqya%im",(int)fHarmonic));
       for (int iRun = 0; iRun < NRUNNUM; ++iRun ){
         pV0XMeanFill[iRun][0] = new TProfile(Form("hV0QxMeanMRun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
         pV0YMeanFill[iRun][0] = new TProfile(Form("hV0QyMeanMRun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
@@ -530,19 +522,13 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
         pV0YMeanFill[iRun][1] = new TProfile(Form("hV0QyMeanCRun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
         pV0XMeanFill[iRun][2] = new TProfile(Form("hV0QxMeanARun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
         pV0YMeanFill[iRun][2] = new TProfile(Form("hV0QyMeanARun%i", (int)fRunNumList[iRun].Atoi()),"", 90,0,90);
-        contQxnmm->AppendObject(pV0XMeanFill[iRun][0], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQynmm->AppendObject(pV0YMeanFill[iRun][0], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQxncm->AppendObject(pV0XMeanFill[iRun][1], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQyncm->AppendObject(pV0YMeanFill[iRun][1], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQxnam->AppendObject(pV0XMeanFill[iRun][2], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
-        contQynam->AppendObject(pV0YMeanFill[iRun][2], fRunNumList[iRun].Atoi(), fRunNumList[iRun].Atoi());  
+        fOutputList->Add(pV0XMeanFill[iRun][0]);
+        fOutputList->Add(pV0YMeanFill[iRun][0]);
+        fOutputList->Add(pV0XMeanFill[iRun][1]);
+        fOutputList->Add(pV0YMeanFill[iRun][1]);
+        fOutputList->Add(pV0XMeanFill[iRun][2]);
+        fOutputList->Add(pV0YMeanFill[iRun][2]);
       }
-      fOutputList->Add(contQxnmm);
-      fOutputList->Add(contQynmm);
-      fOutputList->Add(contQxncm);
-      fOutputList->Add(contQyncm);
-      fOutputList->Add(contQxnam);
-      fOutputList->Add(contQynam);
     };
 
     // Read Mean & Calib

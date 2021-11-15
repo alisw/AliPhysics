@@ -43,7 +43,7 @@ const Int_t gCentralityEstimators = 4; // set here number of supported centralit
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
 const Int_t gFilterBits = 17; // number of filterbits to scan
 const Int_t gEventHistograms = 2; // total number of non-classified event histograms
-const Int_t gParticleHistograms = 12; // total number of non-classified particle histograms, keep in sync. with eParticle
+const Int_t gParticleHistograms = 12; // total number of non-classified particle histograms, keep in sync. with eParticle 
 const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
 const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 

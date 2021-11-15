@@ -23,6 +23,7 @@
 #include <AliAODEvent.h>
 #include <AliAODInputHandler.h>
 #include <TFile.h>
+#include <TRandom3.h>
 
 using std::cout;
 using std::endl;
@@ -36,6 +37,8 @@ ClassImp(AliAnalysisTaskEbECumulants)
 AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants(const char *name): 
  AliAnalysisTaskSE(name), 
  fHistList(NULL),
+ fUseFisherYates(kFALSE),
+ fRandomIndices(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
@@ -79,6 +82,8 @@ AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants(const char *name):
 AliAnalysisTaskEbECumulants::AliAnalysisTaskEbECumulants(): 
  AliAnalysisTaskSE(),
  fHistList(NULL),
+ fUseFisherYates(kFALSE),
+ fRandomIndices(NULL),
  // Control histograms:
  fControlHistogramsList(NULL),
  fPtHist(NULL),
@@ -101,6 +106,8 @@ AliAnalysisTaskEbECumulants::~AliAnalysisTaskEbECumulants()
  // Destructor.
 
  if(fHistList) delete fHistList;
+
+ if(fUseFisherYates) { delete fRandomIndices; fRandomIndices = NULL; }
   
 } // AliAnalysisTaskEbECumulants::~AliAnalysisTaskEbECumulants()
 
@@ -118,6 +125,11 @@ void AliAnalysisTaskEbECumulants::UserCreateOutputObjects()
  // a) Trick to avoid name clashes, part 1:
  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
  TH1::AddDirectory(kFALSE);
+
+ // *) Book random generator:
+ delete gRandom;
+  gRandom = new TRandom3(0); // if uiSeed is 0, the seed is determined uniquely in space and time via TUUID 
+ //gRandom = new TRandom3(fRandomSeed); // TBI 20211115 add setter for arbitrary seed 
 
  // b) Book and nest all lists:
  this->BookAndNestAllLists();
@@ -362,6 +374,67 @@ Int_t AliAnalysisTaskEbECumulants::NumberOfNonEmptyLines(const char *externalFil
  return nLines;
 
 } // Int_t AliAnalysisTaskEbECumulants::NumberOfNonEmptyLines(const char *externalFile)
+
+//=======================================================================================
+
+void AliAnalysisTaskEbECumulants::ResetEventByEventQuantities()
+{
+ // Reset all global event-by-event quantities here:
+
+ // *) Fisher-Yates algorithm:
+ if(fUseFisherYates)
+ {
+  delete fRandomIndices; fRandomIndices = NULL; 
+ }
+
+} // void AliAnalysisTaskEbECumulants::ResetEventByEventQuantities()
+
+//=======================================================================================
+
+void AliAnalysisTaskEbECumulants::RandomIndices(AliVEvent *ave)
+{
+ // Randomize indices using Fisher-Yates algorithm. 
+
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) Get total number of tracks;
+ // c) Fisher-Yates algorithm.
+
+ //if(fVerbose){Green(__PRETTY_FUNCTION__);} // TBI 20211115 add support for verbose mode eventually
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ // b) Get total number of tracks:
+ Int_t nTracks = 0;
+ if(aAOD)
+ {
+  nTracks = aAOD->GetNumberOfTracks();
+ }
+ else if(aMC)
+ {
+  nTracks = aMC->GetNumberOfTracks();
+ }
+
+ if(nTracks<1){return;}
+
+ // c) Fisher-Yates algorithm:
+ fRandomIndices = new TArrayI(nTracks);
+ fRandomIndices->Reset(); 
+ for(Int_t i=0;i<nTracks;i++)
+ {
+  fRandomIndices->AddAt(i,i);
+ }
+ for(Int_t i=nTracks-1;i>=1;i--)
+ {
+  Int_t j = gRandom->Integer(i+1);
+  Int_t temp = fRandomIndices->GetAt(j);
+  fRandomIndices->AddAt(fRandomIndices->GetAt(i),j);
+  fRandomIndices->AddAt(temp,i);
+ } // end of for(Int_t i=nTracks-1;i>=1;i--) 
+
+} // void AliAnalysisTaskEbECumulants::RandomIndices(AliVEvent *ave)
 
 //=======================================================================================
 

@@ -20,6 +20,13 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetMostProbableDeuteron();
         void SetMostProbableTriton();
         void SetMostProbableHe3();
+	
+	// at mom, need TOF
+	void SetProtonSwitchMom(float SwitchMom);
+        void SetDeuteronSwitchMom(float SwitchMom);
+        void SetTritonSwitchMom(float SwitchMom);
+        void SetHe3SwitchMom(float SwitchMom);
+
     private:
         float fNsigmaP;
         float fNsigmaD;

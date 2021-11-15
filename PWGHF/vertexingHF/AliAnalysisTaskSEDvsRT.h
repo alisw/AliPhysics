@@ -55,6 +55,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    void SetPtLeadMin(Double_t pt)         {fLeadMin = pt;}
    void SetAveMultiInTrans(Double_t mult) {fAveMultiInTrans = mult;}
    
+   void SetUseHybridTracks(Bool_t useHybrid) {fUseHybridTracks = useHybrid;}
    
    /// Implementation of interface methods
    virtual void UserCreateOutputObjects();
@@ -101,6 +102,8 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fPTDistributionInTransverse; //!<! hist for Pt distribution of charged particles in Transverse region
    TH1F *fPTDistributionInAway; //!<! hist for Pt distribution of charged particles in Away region
    TH1F *fPTDistributionGlobal; //!<! hist for Pt distribution of charged particles in all regions
+   TH1F *fPhiDistributionGlobalTracks; //!<! hist for Phi distribution of selected global tracks
+   TH1F *fPhiDistributionComplementaryTracks; //!<! hist for Phi distribution of selected complementary tracks
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC
@@ -124,12 +127,16 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH3D *fPtvsMassvsRTToward; //!<! output hist for mass vs RT (for candidates toward)
    TH3D *fPtvsMassvsRTAway;   //!<! output hist for mass vs RT (for candidates away)
    TH3D *fPtvsMassvsRTTrans;  //!<! output hist for mass vs RT (for transverse candidates)
-   AliAnalysisFilter* fTrackFilter[18]; //! track filter 
+   AliAnalysisFilter* fTrackFilter[18]; //! track filter
+   AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
+   AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
+   Bool_t fUseHybridTracks; /// flag to chose the tracks to use for RT calculation
+   
    Bool_t fUseNsparse;        /// switch to give nsparse in output
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,4); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,5); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

@@ -4,6 +4,7 @@
 //==============================================================\\
 
 #include "AliFemtoTrackCutPdtHe3.h"
+#include "TLorentzVector.h"
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3():
 AliFemtoESDTrackCut()
 {
@@ -15,7 +16,7 @@ AliFemtoESDTrackCut()
     
     SwitchMom_p = 0.5;
     SwitchMom_d = 0.8;
-    SwitchMom_t = 1.2;
+    SwitchMom_t = 999;
     SwitchMom_He3 = 999;
 }
 
@@ -127,38 +128,58 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
     Bool_t tTPCPidIn = (track->Flags() & AliFemtoTrack::kTPCpid) > 0;
     Bool_t tITSPidIn = (track->Flags() & AliFemtoTrack::kITSpid) > 0;
     Bool_t tTOFPidIn = (track->Flags() & AliFemtoTrack::kTOFpid) > 0;
+    
+    // no use!
+    //const double momentum = track->P().Mag();
+    
+    
+//    if (fMinPforTOFpid > 0
+//        && fMinPforTOFpid < momentum && momentum < fMaxPforTOFpid
+//        && !tTOFPidIn) {
+//        fNTracksFailed++;
+//        return false;
+//    }
+//
+//    if (fMinPforTPCpid > 0
+//        && fMinPforTPCpid < momentum && momentum < fMaxPforTPCpid
+//        && !tTPCPidIn) {
+//        fNTracksFailed++;
+//        return false;
+//    }
+//
+//    if (fMinPforITSpid > 0
+//        && fMinPforITSpid < momentum && momentum < fMaxPforITSpid
+//        && !tITSPidIn) {
+//        fNTracksFailed++;
+//        return false;
+//    }
 
-    const double momentum = track->P().Mag();
+    // dowang for He3, it needs change
+    float tEnergy = 0.;
+    float tRapidity = 0.;
+    float tPt = 0.;
+    float tEta = 0.;
 
-    if (fMinPforTOFpid > 0
-        && fMinPforTOFpid < momentum && momentum < fMaxPforTOFpid
-        && !tTOFPidIn) {
-        fNTracksFailed++;
-        return false;
+    if(fMostProbable == 15){
+        TLorentzVector thisTrackMom;
+        tEnergy = ::sqrt(track->P().Mag2() * 4. + fMass * fMass);
+        thisTrackMom.SetPxPyPzE(2.*track->P().x(),2.*track->P().y(),2.*track->P().z(),tEnergy);
+        if (tEnergy-2.*track->P().z() != 0 && (tEnergy + 2. * track->P().z()) / (tEnergy- 2. * track->P().z()) > 0)
+            //tRapidity = 0.5 * ::log((tEnergy + 2. * track->P().z())/(tEnergy- 2. * track->P().z()));
+            tRapidity = thisTrackMom.Rapidity();
+        tPt = thisTrackMom.Pt();
+        tEta = thisTrackMom.PseudoRapidity();
+
+    }
+    else{
+        tEnergy = ::sqrt(track->P().Mag2() + fMass * fMass);
+        if (tEnergy-track->P().z() != 0 && (tEnergy + track->P().z()) / (tEnergy-track->P().z()) > 0)
+            tRapidity = 0.5 * ::log((tEnergy + track->P().z())/(tEnergy-track->P().z()));
+        tPt = track->P().Perp();
+        tEta = track->P().PseudoRapidity();
     }
 
-    if (fMinPforTPCpid > 0
-        && fMinPforTPCpid < momentum && momentum < fMaxPforTPCpid
-        && !tTPCPidIn) {
-        fNTracksFailed++;
-        return false;
-    }
-
-    if (fMinPforITSpid > 0
-        && fMinPforITSpid < momentum && momentum < fMaxPforITSpid
-        && !tITSPidIn) {
-        fNTracksFailed++;
-        return false;
-    }
-
-
-    float tEnergy = ::sqrt(track->P().Mag2() + fMass * fMass);
-    float tRapidity = 0;
-    if (tEnergy-track->P().z() != 0 && (tEnergy + track->P().z()) / (tEnergy-track->P().z()) > 0)
-        tRapidity = 0.5 * ::log((tEnergy + track->P().z())/(tEnergy-track->P().z()));
-    float tPt = track->P().Perp();
-    float tEta = track->P().PseudoRapidity();
-
+    // not use
     if (fMaxImpactXYPtOff < 999.0) {
         if ((fMaxImpactXYPtOff + fMaxImpactXYPtNrm*TMath::Power(tPt, fMaxImpactXYPtPow)) < TMath::Abs(track->ImpactD())) {
         fNTracksFailed++;
@@ -206,7 +227,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
         if (!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP()))
             return false;
     
-    if (fMostProbable) {
+    if (fMostProbable!=15) {
         
         int imost=0;
         //****N Sigma Method****
@@ -226,33 +247,29 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
                 }
             }
             else if (fMostProbable == 14){   //cut on Nsigma triton
-                if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT())
-                    && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                    && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
-                    && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
-                    && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
+                if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT()) ){
+                // if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT())
+                //     && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                //     && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                //     && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                //     && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
                     imost = 14;
                 }
                    
             }
             else if (fMostProbable == 15){
-                if (IsHe3NSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH())
-                    && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                    && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
-                    && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
-                    && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
-                        imost = 15;
+                if (IsHe3NSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) )
+                { 
+                    imost = 15;
                 }
-
             }
-            if (imost != fMostProbable) {
-                return false;
-            }
+            if (imost != fMostProbable) return false;
             
         }
-    fNTracksPassed++ ;
-   
-    return true;
+        
+        //cout<<"AliFemtoTrackCutPdtHe3 "<<track->ImpactD()<<" "<<track->ImpactZ()<<endl;
+        fNTracksPassed++ ;
+        return true;
     
     }
     
@@ -386,6 +403,19 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigmaRejection(float mom, float nsigmaTPCP
  
   return false;
 }
+void AliFemtoTrackCutPdtHe3::SetProtonSwitchMom(float SwitchMom){
+	SwitchMom_p = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetDeuteronSwitchMom(float SwitchMom){
+	SwitchMom_d = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetTritonSwitchMom(float SwitchMom){
+	SwitchMom_t = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetHe3SwitchMom(float SwitchMom){
+	SwitchMom_He3 = SwitchMom;
+}
+
 
 
 
