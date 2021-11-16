@@ -2235,10 +2235,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00049f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // single pT 0.075 GeV/c
     cuts.AddCutPCMCalo("00010113","0dm00019f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // single pT 0.1   GeV/c
   } else if ( trainConfig == 863){ // Systematics (1/4) 2D triangular chi2 and psi pair, min TPC clusters
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000d250404000","24466520ga01ee00000","0h63103100000010"); // INT7 std cut
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000d880404000","24466520ga01ee00000","0h63103100000010"); // INT7 std cut
-    cuts.AddCutPCMCalo("00010113","0dm00000f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // INT7 std cut
-    cuts.AddCutPCMCalo("00010113","0dm00008f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // INT7 std cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000d250404000","24466520ga01ee00000","0h63103100000010"); // chi2 and psi pair
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000d880404000","24466520ga01ee00000","0h63103100000010"); // chi2 and psi pair
+    cuts.AddCutPCMCalo("00010113","0dm00000f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // min TPC clusters
+    cuts.AddCutPCMCalo("00010113","0dm00008f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // min TPC clusters
 
 
   //*************************************************************************************************
