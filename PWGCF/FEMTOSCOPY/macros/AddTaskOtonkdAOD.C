@@ -130,7 +130,7 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(bool isMC = false,
 
 //this shit is still all by hand and I want to die again:
 /////////////////////////////////////////////////////////
-  const int nPairs = 21;//for some shitty reason this runs to #pairs + 1. Die harder.
+  const int nPairs = 21;//
   for (int i = 0; i < nPairs; ++i) {
     closeRejection.push_back(false);
     pairQA.push_back(0);

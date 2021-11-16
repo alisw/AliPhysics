@@ -308,7 +308,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/F");
+  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
 
   //Deuterons:
   fTree->Branch("nDeuteron",&fTnDeuteron,"fTnDeuteron/I");
@@ -339,7 +339,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
 //  fTree->Branch("DeuteronTOFbeta",&fTDeuteronTOFbeta,"fTDeuteronTOFbeta[fTnDeuteron]/F");
 //  fTree->Branch("DeuteronITStime",&fTDeuteronITStime,"fTDeuteronITStime[fTnDeuteron]/O");
 //  fTree->Branch("DeuteronTOFtime",&fTDeuteronTOFtime,"fTDeuteronTOFtime[fTnDeuteron]/O");
-  fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/F");
+  fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/I");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -488,7 +488,6 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
       Protons.clear();
       static std::vector<AliFemtoDreamBasePart> AntiProtons;
       AntiProtons.clear();
-
 
       //Now we loop over all the tracks in the reconstructed event.
 /*
@@ -702,7 +701,7 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonITStime[fTnKaon] = TheTrack->GetHasITSHit();
  fTKaonTOFtime[fTnKaon] = TheTrack->GetTOFTimingReuqirement();
   fTKaonFilterBit[fTnKaon] = TheTrack->GetFilterMap();
- fTKaonPDG[fTnKaon] = TheTrack->GetMotherPDG();
+ fTKaonPDG[fTnKaon] = TheTrack->GetMCPDGCode();
 
  fTnKaon++;
  Filled = kTRUE;
@@ -743,7 +742,7 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack) {
  fTDeuteronTOFsigma_d[fTnDeuteron] = (TheTrack->GetnSigmaTOF((int) (AliPID::kDeuteron)));
  fTDeuteronITStime[fTnDeuteron] = TheTrack->GetHasITSHit();
  fTDeuteronTOFtime[fTnDeuteron] = TheTrack->GetTOFTimingReuqirement();
- fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMotherPDG();
+ fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMCPDGCode();
 
  fTnDeuteron++;
  Filled = kTRUE;
