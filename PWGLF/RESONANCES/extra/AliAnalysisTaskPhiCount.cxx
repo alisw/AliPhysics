@@ -104,8 +104,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQCOutputList->Add(fQC_Event_Enum_FLL);
     
     fQC_Event_Enum_V0M              = new TH1D("fQC_Event_Enum_V0M",        "Acc. Events in Mult.",                             202, -1., 201.);
-    if ( fIs_p_p || fIs_Pb_Pb )     fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("V0M Multiplicity");
-    else if ( fIs_p_Pb )            fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("V0A Multiplicity");
+    fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Event_Enum_V0M              ->  GetYaxis()  ->  SetTitle("Accepted Event");
     fQCOutputList->Add(fQC_Event_Enum_V0M);
     
@@ -115,8 +114,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQCOutputList->Add(fQC_Event_Enum_TRK);
     
     fQC_Event_Enum_V0T              = new TH2D("fQC_Event_Enum_V0T",        "Acc. Events in Mult.",                             100, 0., 100., 200, 0., 200.);
-    if ( fIs_p_p || fIs_Pb_Pb )     fQC_Event_Enum_V0T              ->  GetXaxis()  ->  SetTitle("V0M Multiplicity");
-    else if ( fIs_p_Pb )            fQC_Event_Enum_V0T              ->  GetXaxis()  ->  SetTitle("V0A Multiplicity");
+    fQC_Event_Enum_V0T              ->  GetXaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Event_Enum_V0T              ->  GetYaxis()  ->  SetTitle("Tracklets Multiplicity");
     fQC_Event_Enum_V0T              ->  GetZaxis()  ->  SetTitle("Accepted Event");
     fQCOutputList->Add(fQC_Event_Enum_V0T);
@@ -181,8 +179,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     fQC_Tracks_V0M                  = new TH2F("fQC_Tracks_V0M",            "Acc. Tracks in Mult.",                             2, -1., 1., 202, -1., 201.);
     fQC_Tracks_V0M                  ->  GetXaxis()  ->  SetTitle("Track Sign");
-    if ( fIs_p_p || fIs_Pb_Pb )     fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
-    else if ( fIs_p_Pb )            fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0A Multiplicity");
+    fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Tracks_V0M                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_V0M);
     
@@ -1448,5 +1445,8 @@ void        AliAnalysisTaskPhiCount::uGuessCollisionSystem ( )                  
         fIs_p_p     =   kFALSE;
         fIs_p_Pb    =   kTRUE;
         fIs_Pb_Pb   =   kFALSE;
+        fQC_Event_Enum_V0M          ->  GetXaxis()  ->  SetTitle("V0A Multiplicity");
+        fQC_Event_Enum_V0T          ->  GetXaxis()  ->  SetTitle("V0A Multiplicity");
+        fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0A Multiplicity");
     }
 }
