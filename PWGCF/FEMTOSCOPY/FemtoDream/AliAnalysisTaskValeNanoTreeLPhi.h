@@ -92,7 +92,26 @@ private:
   Int_t fTRunNumber;
   Float_t fTVz;
   Int_t fTMult;
-  
+  float fSpher;
+
+  /// Entries tree for Lambda and Daughters
+  static const int nMaxLambda = 100;
+  int fNumLambda;
+  float v0_pT[nMaxLambda];
+  float v0_decvtx[nMaxLambda];
+  float v0_tranrad[nMaxLambda];
+  float v0Daugh_dcaDecvtx[nMaxLambda];
+  float v0_cpa[nMaxLambda];
+  ///K0s rejection
+  ///IM cut around nom.mass
+  float Daugh_eta[nMaxLambda];
+  int Daugh_nTpcCls[nMaxLambda];
+  float Daugh_dca[nMaxLambda];
+  int Daugh_nSigma[nMaxLambda];
+/// Entries tree for Phi and Kaons
+  static const int nMaxPhi = 100;
+  int fNumPhi;
+
   ClassDef(AliAnalysisTaskValeNanoTreeLPhi, 1)
 };
 
