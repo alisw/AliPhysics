@@ -94,15 +94,22 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
         fReconstructedEtaPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("RecEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
           Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
         fOutputList->Add(fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]);
+        // Out-of-banch pile-up
+        fReconstructedYPhiPtOOBpileup[iSpecies][iCharge][iCut] = new TH3D(Form("Rec_%s_%s_%i_OOB",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
+          Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+        fOutputList->Add(fReconstructedYPhiPtOOBpileup[iSpecies][iCharge][iCut]);
+        fReconstructedEtaPhiPtOOBpileup[iSpecies][iCharge][iCut] = new TH3D(Form("RecEta_%s_%s_%i_OOB",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
+          Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
+        fOutputList->Add(fReconstructedEtaPhiPtOOBpileup[iSpecies][iCharge][iCut]);
       }
       fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",60,0.,6.,1001,-100.1,100.1);
       fOutputList->Add(fNsigmaTOFvsPt[iSpecies][iCharge]);
     }
   }
   fEventCut.AddQAplotsToList(fOutputList);
-  fRejectedForOOBPileUp = new TH1D("fRejectedFromPileUp",";Number of tracks;Number",16001,3999.5,20000.5);
+  fRejectedForOOBPileUp = new TH1D("fRejectedFromPileUp",";Number of tracks;Number",20001,-0.5,20000.5);
   fOutputList->Add(fRejectedForOOBPileUp);
-  fRejectedForOOBPileUpInPileUpFreeGeneratedEvents = new TH1D("fRejectedForOOBPileUpInPileUpFreeGeneratedEvents",";Number of tracks;Number",16001,3999.5,20000.5);
+  fRejectedForOOBPileUpInPileUpFreeGeneratedEvents = new TH1D("fRejectedForOOBPileUpInPileUpFreeGeneratedEvents",";Number of tracks;Number",20001,-0.5,20000.5);
   fOutputList->Add(fRejectedForOOBPileUpInPileUpFreeGeneratedEvents);
 
   const char*  event_labels[5] = {"Accepted", "OOB pile-up", "Generated with pile-up", "OOB pile-up in generated with pile-up", "OOB pile-up in generated without pile-up"};
@@ -237,6 +244,10 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
         fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(eta,phi,pt);
         if (iCut==5) {
           fNsigmaTOFvsPt[iSpecies][iCharge]->Fill(pt,nSigmaTOF);
+        }
+        if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, mcHeader, arrayMC)){
+          fReconstructedYPhiPtOOBpileup[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),phi,pt);
+          fReconstructedEtaPhiPtOOBpileup[iSpecies][iCharge][iCut]->Fill(eta,phi,pt);
         }
       }
     }
