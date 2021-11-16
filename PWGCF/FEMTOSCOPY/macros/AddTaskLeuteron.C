@@ -229,6 +229,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+
+
   // Proton
   TrackCuts5a->SetCutCharge(1);
   TrackCuts5a->SetEtaRange(-0.8,0.8);
@@ -776,7 +778,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
   config->SetSummedPtCut(0.0,999.0);
-  
+
+  if(isMC){
+    config->SetMomentumResolution(true);
+  }
+
+ 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Values handed over to the config\n");
   }
