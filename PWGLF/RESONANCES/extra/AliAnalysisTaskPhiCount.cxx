@@ -1441,7 +1441,7 @@ void        AliAnalysisTaskPhiCount::uGuessCollisionSystem ( )                  
     fIs_p_p     =   kTRUE;
     fIs_p_Pb    =   kFALSE;
     fIs_Pb_Pb   =   kFALSE;
-    if ( ( fCurrent_Run > 195344 && fCurrent_Run < 195677 ) || ( fCurrent_Run > 265309 && fCurrent_Run < 267166 ) ) {
+    if ( ( fCurrent_Run >= 195344 && fCurrent_Run <= 195677 ) || ( fCurrent_Run >= 265309 && fCurrent_Run <= 267166 ) ) {
         fIs_p_p     =   kFALSE;
         fIs_p_Pb    =   kTRUE;
         fIs_Pb_Pb   =   kFALSE;
