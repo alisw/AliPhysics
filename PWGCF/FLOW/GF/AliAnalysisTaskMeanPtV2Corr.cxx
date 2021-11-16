@@ -635,7 +635,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_
   AliAODTrack *lTrack;
   // AliVParticle *lPart;
   Double_t trackXYZ[3];
-  Double_t dummyDouble[] = {0.,0.};
+  Double_t dummyDouble[] = {0.,0.,0.};
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
   TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
