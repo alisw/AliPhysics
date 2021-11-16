@@ -26,7 +26,7 @@ AliGFWCuts::AliGFWCuts():
 };
 AliGFWCuts::~AliGFWCuts() {
 };
-Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, const Bool_t &lDisableDCAxyCheck) {
+Int_t AliGFWCuts::AcceptTrack(AliAODTrack *&l_Tr, Double_t *l_DCA, const Int_t &BitShift, const Bool_t &lDisableDCAxyCheck) {
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
@@ -48,9 +48,9 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, const Int_t &B
   // else DCAxycut = 0.0231+0.0315/TMath::Power(l_Tr->Pt(),1.3);
   // if(DCAxyValue>DCAxycut*(fDCAxyCut/7.))
   //   return 0;
-  return 1<<BitShift;
+  // return 1<<BitShift;
 };
-Int_t AliGFWCuts::AcceptTrack(AliESDtrack* l_Tr, Double_t* l_DCA, const Int_t &BitShift, UInt_t &PrimFlags) {
+Int_t AliGFWCuts::AcceptTrack(AliESDtrack *&l_Tr, Double_t *l_DCA, const Int_t &BitShift, UInt_t &PrimFlags) {
   //Initialize ESDtrackCuts if needed:
   if(!fTCFB32) fTCFB32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
   if(!fTCFB64) {
