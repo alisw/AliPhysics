@@ -128,7 +128,7 @@ private:
     AliAnalysisTaskSEDmesonTree(const AliAnalysisTaskSEDmesonTree &source);
     AliAnalysisTaskSEDmesonTree &operator=(const AliAnalysisTaskSEDmesonTree &source);
 
-    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, bool &isInSignalRegion);
+    int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx, bool &isInSignalRegion);
     void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, int Ntracklets);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
