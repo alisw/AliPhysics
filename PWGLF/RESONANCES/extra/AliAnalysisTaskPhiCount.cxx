@@ -950,8 +950,15 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
         Float_t fCutGeoNcrNclFractionNcr=0;
         Float_t fCutGeoNcrNclFractionNcl=0;
         //
-        AliExternalTrackParam*              fCurrentTrackExternalParameters;
-        fCurrentTrackExternalParameters ->  CopyFromVTrack(fCurrent_Track);
+        Double_t xyz[3],pxpypz[3],cv[21];
+        fCurrent_Track->GetXYZ(xyz);
+        pxpypz[0]=fCurrent_Track->Px();
+        pxpypz[1]=fCurrent_Track->Py();
+        pxpypz[2]=fCurrent_Track->Pz();
+        fCurrent_Track->GetCovarianceXYZPxPyPz(cv);
+        Short_t sign = (Short_t)fCurrent_Track->Charge();
+        //
+        AliExternalTrackParam*              fCurrentTrackExternalParameters = new AliExternalTrackParam (xyz,pxpypz,cv,sign);
         Float_t kTPCActiveLenght    =       uTrackLengthInActiveTPC( fCurrentTrackExternalParameters, fDeadZoneWidth, 220. );
         if ( fCutGeoNcrNclLength > 0 ) {
             fCutGeoNcrNclLength -=  TMath::Power(TMath::Abs(1./(fCurrent_Track_Momentum)),fCutGeoNcrNclGeom1Pt);
@@ -1393,6 +1400,7 @@ void        AliAnalysisTaskPhiCount::uCalculateRT ( )                           
 //_____________________________________________________________________________
 
 Float_t     AliAnalysisTaskPhiCount::uTrackLengthInActiveTPC ( AliExternalTrackParam* fCurrentTrackExternalParameters, Double_t deltaY, Double_t deltaZ ) {
+    return 131;
     const   Double_t    kInnerRadius    =   85;
     const   Double_t    kOuterRadius    =   245;
     const   Double_t    kMagField       =   fAOD->GetMagneticField();
@@ -1417,9 +1425,9 @@ Float_t     AliAnalysisTaskPhiCount::uTrackLengthInActiveTPC ( AliExternalTrackP
     Float_t     fCurrent_dPhiR0     =   -TMath::ASin((fCurrent_Track_DCAXY*fCurrent_Track_DCAXY-2*fCurrent_Track_DCAXY*fCurrent_Radius*fCurrent_Sign+fCurrent_R0*fCurrent_R0)/(2*fCurrent_R0*(fCurrent_Track_DCAXY-fCurrent_Radius*fCurrent_Sign)));
     Float_t     fCurrent_Phi0       =   fCurrent_PhiR0 - fCurrent_dPhiR0;
     //
-    for (Double_t uRadiusScan = kInnerRadius; uRadiusScan <= kOuterRadius; uRadiusScan++)  {
+    for ( Double_t uRadiusScan = kInnerRadius; uRadiusScan <= kOuterRadius; uRadiusScan++ )  {
         Float_t fSinPhi =   (fCurrent_Track_DCAXY*fCurrent_Track_DCAXY-2*fCurrent_Track_DCAXY*fCurrent_Radius*fCurrent_Sign+uRadiusScan*uRadiusScan)/(2*uRadiusScan*(fCurrent_Track_DCAXY-fCurrent_Radius*fCurrent_Sign));
-        if ( TMath::Abs( fSinPhi ) >= 1) continue;
+        if ( TMath::Abs( fSinPhi ) >= 1 ) continue;
         Float_t     fdPhi       =   -TMath::ASin(fSinPhi);
         Float_t     fPhi        =   fCurrent_Phi0 + fdPhi;
         Int_t       nSector     =   TMath::Nint(9*fPhi/(TMath::Pi()));
