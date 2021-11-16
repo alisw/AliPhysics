@@ -47,6 +47,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetChi2ITScluster           ( Float_t   Chi2ITScluster )    { kChi2ITScluster = Chi2ITScluster; };
     void                        SetNSigmaPtDepXYDCA         ( Float_t   NSigmaPtDepXYDCA )  { kNSigmaPtDepXYDCA = NSigmaPtDepXYDCA; };
     void                        SetChi2TPCGlobal            ( Float_t   Chi2TPCGlobal )     { kChi2TPCGlobal = Chi2TPCGlobal; };
+    void                        SetTPCClsOverFndbl          ( Float_t   TPCClsOverFndbl )   { kTPCClsOverFndbl = TPCClsOverFndbl; };
     void                        SetkSgTPC_Alone             ( Float_t   TPCSigma )          { kSgTPC_Alone = TPCSigma; };
     void                        SetkSgTPC_TOFVt             ( Float_t   TPCSigma )          { kSgTPC_TOFVt = TPCSigma; };
     void                        SetkSgTOF_Veto              ( Float_t   TOFSigma )          { kSgTOF_Veto = TOFSigma; };
@@ -83,6 +84,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     kChi2TPCcluster;            //  Maximum Chi2 per TPC cluster
     Float_t                     kChi2TPCGlobal;             //  Maximum Chi2 per TPC Global
     Float_t                     kChi2ITScluster;            //  Maximum Chi2 per ITS cluster
+    Float_t                     kTPCClsOverFndbl;           //  TPC Crossed Rows over findable
     TString                     fRunName;                   //  MultiRun name
     ULong64_t                   kTriggerMask;               //  TriggerMask
     //
@@ -105,6 +107,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        fFillEventEnumerate         ( TString iBinName );
     void                        uCalculateSpherocity        ( );
     void                        uCalculateRT                ( );
+    void                        uGuessCollisionSystem       ( );
+    Float_t                     uTrackLengthInActiveTPC     ( AliExternalTrackParam* fCurrentTrackExternalParameters, Double_t deltaY, Double_t deltaZ );
     //
     AliAODEvent                *fAOD;                       //! input event AOD Format
     AliESDEvent                *fESD;                       //! input event ESD Format
@@ -113,6 +117,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     AliPIDResponse             *fPIDResponse;               //! PID Response obj
     AliAODVertex               *fPrimaryVertex;             //! AOD Vertex obj
     AliPPVsMultUtils           *fMultSelection;             //! Multiplicity Utility
+    Bool_t                      fIs_p_p;                    //! Collision system flag for pp
+    Bool_t                      fIs_p_Pb;                   //! Collision system flag for pPb
+    Bool_t                      fIs_Pb_Pb;                  //! Collision system flag for PbPb
     //
     //>->->     Vertex Selection
     //
