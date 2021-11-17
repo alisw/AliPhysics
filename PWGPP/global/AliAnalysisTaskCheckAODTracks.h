@@ -24,6 +24,7 @@ class AliAODTrack;
 class AliESDVertex;
 
 #include "AliESDtrackCuts.h"
+#include <THn.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
 
@@ -40,7 +41,10 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
 
   void SetFillTree(Bool_t fill=kTRUE){
     fFillTree=fill;
-  }  
+  }
+  void SetFillMulDimK0s(Bool_t fill=kTRUE){
+    fFillMulDimK0s=fill;
+  }
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
@@ -246,8 +250,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH1F* fHistImpParV0DauAfterSel;       //!<! control histo of d0 of V0 daughters
   TH1F* fHistDCAV0DauBeforeSel;         //!<! control histo of DCA of V0 daughters
   TH1F* fHistDCAV0DauAfterSel;          //!<! control histo of DCA of V0 daughters
-
+  THnF* fHistMuldimK0s;                 //!<! multidim histo for K0s
   Bool_t   fFillTree;          // flag to control fill of tree
+  Bool_t   fFillMulDimK0s;     // flag to control fill of multidim histo
   TTree*   fTrackTree;         //!<! output tree
   Float_t* fTreeVarFloat;      //!<! variables to be written to the tree
   Int_t*   fTreeVarInt;        //!<! variables to be written to the tree
@@ -276,7 +281,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,24);
+  ClassDef(AliAnalysisTaskCheckAODTracks,25);
 };
 
 
