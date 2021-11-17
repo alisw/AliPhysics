@@ -50,7 +50,11 @@ ClassImp(AliAnalysisTaskLFefficiencies);
 AliAnalysisTaskLFefficiencies::AliAnalysisTaskLFefficiencies(TString taskname) :
   AliAnalysisTaskSE(taskname.Data()),
   fEventCut{false},
-  fUseMCtruthParams{false}
+  fUseMCtruthParams{false},
+  fCheckMultiplicity{false},
+  fEstimator{0},
+  fLowMultEdge{0.},
+  fHighMultEdge{1.}  
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -135,6 +139,13 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   if (!EventAccepted) {
     PostData(1, fOutputList);
     return;
+  }
+
+  if(fCheckMultiplicity){
+    float mult = fEventCut.GetCentrality(fEstimator);
+    if(mult < fLowMultEdge || mult > fHighMultEdge){
+      return;
+    }
   }
 
   fEventKind->Fill(kAcceptedEvent);
@@ -275,4 +286,24 @@ bool AliAnalysisTaskLFefficiencies::HasTOF(AliVTrack *track) {
   const bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
   const bool hasGoodLength = track->GetIntegratedLength() > 350.;
   return hasTOFout && hasTOFtime && hasGoodLength;
+}
+
+/// Set centrality framework for AliEventCuts.
+///
+/// \param centralityFramweork Centrality framework to be used in AliEventCuts
+///
+void AliAnalysisTaskLFefficiencies::SetCentralityFramework(int centralityFramework = 1) {
+  fEventCut.fCentralityFramework = centralityFramework;
+}
+
+/// This function set limits for multiplicity selection.
+///
+/// \param lowEdge Lower limit for multiplicity selection
+///
+/// \param upEdge Upper limit for multiplicity selection
+///
+void AliAnalysisTaskLFefficiencies::SetMultSelection(float lowEdge = 0., float upEdge = 1.) {
+  fCheckMultiplicity = true;
+  fLowMultEdge = lowEdge;
+  fHighMultEdge = upEdge;
 }
