@@ -15,7 +15,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
                                      const char *cutVariation = "0", bool ClosePairRejectionForAll = "false",
-                                     const char *triggerVariation = "0", bool UseSphericityCut = false, bool DoOnlyThreeBody = true) {
+                                     const char *triggerVariation = "0", bool UseSphericityCut = false, bool DoOnlyThreeBody = false, int KaonCut = 1) {
 
 
 
@@ -62,12 +62,22 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     isMC, true, false, false);
   KaonCuts->SetFilterBit(128);
   KaonCuts->SetCutCharge(1);
+  if(KaonCut==0){ // cuts by Oton
+   KaonCuts->SetPIDkd();
+  }else if(KaonCut==1){ // cuts by Ramona
+   KaonCuts->SetPIDkd(true,true);
+  }
 
   //AntiKaon Cuts
   AliFemtoDreamTrackCuts *AntiKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
   AntiKaonCuts->SetFilterBit(128);
   AntiKaonCuts->SetCutCharge(-1);
+  if(KaonCut==0){ // cuts by Oton
+   KaonCuts->SetPIDkd();
+  }else if(KaonCut==1){ // cuts by Ramona
+   KaonCuts->SetPIDkd(true,true);
+  }
 
 
   if (!fullBlastQA) {
