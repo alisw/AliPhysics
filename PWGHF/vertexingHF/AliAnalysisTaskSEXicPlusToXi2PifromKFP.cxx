@@ -22,11 +22,13 @@
 // E-mail: zjh@ccnu.edu.cn
 /////////////////////////////////////////////////////////////
 
+#include <TObjString.h>
 #include <iostream>
 #include <iomanip>
 #include <TDatabasePDG.h>
 #include <vector>
 #include <TVector3.h>
+#include <TFile.h>
 #include "TChain.h"
 #include "TCanvas.h"
 #include "TH1F.h"
@@ -89,6 +91,11 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP()
   fHPrimVtx_woDau_err_x(0),
   fHPrimVtx_woDau_err_y(0),
   fHPrimVtx_woDau_err_z(0),
+  fHNumOfCandidatePerEvent_In3sigma(0),
+  fCount_NumOfCandidatePerEvent_In3Sigma(0),
+  fFileName(""),
+  fDirNumber(0),
+  fEventNumber(0),
   fWriteXicPlusTree(kFALSE),
   fWriteXicPlusQATree(kFALSE),
   fWriteXicPlusMCGenTree(kFALSE)
@@ -129,6 +136,11 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP(c
   fHPrimVtx_woDau_err_x(0),
   fHPrimVtx_woDau_err_y(0),
   fHPrimVtx_woDau_err_z(0),
+  fHNumOfCandidatePerEvent_In3sigma(0),
+  fCount_NumOfCandidatePerEvent_In3Sigma(0),
+  fFileName(""),
+  fDirNumber(0),
+  fEventNumber(0),
   fWriteXicPlusTree(kFALSE),
   fWriteXicPlusQATree(kFALSE),
   fWriteXicPlusMCGenTree(kFALSE)
@@ -298,7 +310,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fHCountUsedForPrimVtxFit->GetXaxis()->SetBinLabel(5,"p");
   fHCountUsedForPrimVtxFit->GetXaxis()->SetBinLabel(6,"#Xi_{c}^{+}");
 
-  fHNumberOfCasc = new TH1F("fHNumberOfCasc", "counter", 20, -0.5, 19.5);
+  fHNumberOfCasc = new TH1F("fHNumberOfCasc", "counter", 21, -0.5, 20.5);
 
   fHPrimVtx_woDau_x = new TH1F("fHPrimVtx_woDau_x", "PV_woDau_x", 2000, -1, 1);
   fHPrimVtx_woDau_y = new TH1F("fHPrimVtx_woDau_y", "PV_woDau_y", 2000, -1, 1);
@@ -306,6 +318,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fHPrimVtx_woDau_err_x = new TH1F("fHPrimVtx_woDau_err_x", "PV_woDau_err_x", 1000, 0, 1);
   fHPrimVtx_woDau_err_y = new TH1F("fHPrimVtx_woDau_err_y", "PV_woDau_err_y", 1000, 0, 1);
   fHPrimVtx_woDau_err_z = new TH1F("fHPrimVtx_woDau_err_z", "PV_woDau_err_z", 10000, 0, 10);
+  fHNumOfCandidatePerEvent_In3sigma = new TH1F("fHNumOfCandidatePerEvent_In3sigma", "NumOfCandidatePerEvent_In3sigma", 101, -0.5, 100.5);
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file, so if you want
   fOutputList->Add(fHTrigger);
@@ -317,6 +330,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fOutputList->Add(fHPrimVtx_woDau_err_x);
   fOutputList->Add(fHPrimVtx_woDau_err_y);
   fOutputList->Add(fHPrimVtx_woDau_err_z);
+  fOutputList->Add(fHNumOfCandidatePerEvent_In3sigma);
 
   // Counter for Normalization
   TString normName="NormalizationCounter";
@@ -494,7 +508,10 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserExec(Option_t *)
 //------------------------------------------------
   
   fPID = fInputHandler->GetPIDResponse();
+
+  fCount_NumOfCandidatePerEvent_In3Sigma = 0;
   MakeAnaXicPlusFromCasc(AODEvent, mcArray, PV);
+  fHNumOfCandidatePerEvent_In3sigma->Fill(fCount_NumOfCandidatePerEvent_In3Sigma);
 
   PostData(2, fCounter);
   PostData(3, fTree_Event);                           // stream the results the analysis of this event to
@@ -844,8 +861,16 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
   AliAODTrack *trackP[nTracks], *trackN[nTracks];
   Int_t flag_trkP = 0, flag_trkN = 0;
 
+  Int_t count_ForPV = 0;
+  Int_t count_ForPV_AfterQAcheck = 0;
+  Int_t count_ForPV_wPosID = 0;
   for (UInt_t itrk=0; itrk<nTracks; itrk++) {
     AliAODTrack *trk = static_cast<AliAODTrack*>(AODEvent->GetTrack(itrk));
+
+    if (trk->GetUsedForPrimVtxFit()) count_ForPV++;
+
+    if (trk->GetID()>=-0.00001 && trk->GetUsedForPrimVtxFit()) count_ForPV_wPosID++;
+
     Double_t covtest[21];
     if ( !trk || trk->GetID()<0 || !trk->GetCovarianceXYZPxPyPz(covtest) || !AliVertexingHFUtils::CheckAODtrackCov(trk) ) continue;
 
@@ -857,7 +882,17 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
       trackN[flag_trkN] = trk;
       flag_trkN++;
     }
+    if (trk->GetUsedForPrimVtxFit()) count_ForPV_AfterQAcheck++;
   }
+  /*
+  cout << "===========================" << endl;
+  cout << "PV (GetNContributors): " << fpVtx->GetNContributors() << endl;
+  cout << "PV (GetNDaughters): " << fpVtx->GetNDaughters() << endl;
+  cout << "PV (CountRealContributors): " << fpVtx->CountRealContributors() << endl;
+  cout << "Number of AOD track used for PV fit: " << count_ForPV << endl;
+  cout << "Number of AOD track used for PV fit (w/ positive ID): " << count_ForPV_wPosID << endl;
+  cout << "Number of AOD track used for PV fit (w/ positive ID and good covariance): " << count_ForPV_AfterQAcheck << endl;
+  */
 
   for (UInt_t iCasc=0; iCasc<nCasc; iCasc++) {
     AliAODcascade *casc = AODEvent->GetCascade(iCasc);
@@ -1749,7 +1784,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
 {
   const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
   fTree_XicPlus_QA = new TTree(nameoutput, "XicPlus variables QA tree");
-  Int_t nVar = 76;
+  Int_t nVar = 77;
   fVar_XicPlus_QA = new Float_t[nVar];
   TString *fVarNames_QA = new TString[nVar];
 
@@ -1829,6 +1864,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   fVarNames_QA[73] = "pt_XicPlus_wTopoConst_recalPV_Minus_woTopoConst";
   fVarNames_QA[74] = "pt_XicPlus_wTopoConst_recalPV_Minus_wTopoConst";
   fVarNames_QA[75] = "PV_CountRealContributors";
+  fVarNames_QA[76] = "EventID";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_XicPlus_QA->Branch(fVarNames_QA[ivar].Data(), &fVar_XicPlus_QA[ivar], Form("%s/F", fVarNames_QA[ivar].Data()));
@@ -2257,10 +2293,11 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   if (fVar_XicPlus[26]>0.9999) fTree_XicPlus->Fill();
 
   //======= Fill QA tree =======
-  for (Int_t i=0; i<76; i++) {
+  for (Int_t i=0; i<77; i++) {
     fVar_XicPlus_QA[i] = -9999.;
   }
 
+  if (fIsMC) {
   Double_t PV_Gen[3]={0.};
   AliAODMCHeader *mcHeader = (AliAODMCHeader*)AODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   mcHeader->GetVertex(PV_Gen);
@@ -2312,6 +2349,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
     //cout << "recal_PV (NContributors): " << PV_woDau->GetNContributors() << endl;
     //cout << "recal_PV (NDaughters): " << PV_woDau->GetNDaughters() << endl;
     //cout << "recal_PV (CountRealContributors): " << PV_woDau->CountRealContributors() << endl;
+
     // set recalculated primary vertex to KF
     KFPVertex pVertex_recal;
     pVertex_recal.SetXYZ((Float_t)pos[0], (Float_t)pos[1], (Float_t)pos[2]);
@@ -2398,9 +2436,17 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fVar_XicPlus_QA[74] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[46]; // SV: pt diff of Xic+ (w/ topo. constraint recalPV - PV)
 
   fVar_XicPlus_QA[75] = fpVtx->CountRealContributors(); // PV: count daughter primary tracks
+  fVar_XicPlus_QA[76] = GetMCEventID(); // Event ID for MC
+  }
+  if (!fIsMC) {
+    fVar_XicPlus_QA[76] = GetEventIdAsLong(AODEvent->GetHeader()); // Event ID for Data
+    //fVar_XicPlus_QA[76] = AODEvent->GetHeader()->GetEventIdAsLong(); // Event ID for Data
+  }
 
   if (fWriteXicPlusQATree) fTree_XicPlus_QA->Fill();
   //============================
+
+  if ( fabs(fVar_XicPlus[28]-PDGmassXicPlus) < 0.03 ) fCount_NumOfCandidatePerEvent_In3Sigma++;
 
 //  fVar_XicPlus[10] = casc->DcaXiDaughters(); // DCA_XiDau
 //  fVar_XicPlus[32] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4132, 211, 3312, kfpXicPlus, kfpBP_trk1, kfpXiMinus_m);
@@ -2616,4 +2662,33 @@ AliAODVertex* AliAnalysisTaskSEXicPlusToXi2PifromKFP::CallPrimaryVertex(AliAODca
   delete twoTrackArrayPlusXi;
   
   return newVert;
+}
+
+ULong64_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::GetEventIdAsLong(AliVHeader* header)
+{
+	// To have a unique id for each event in a run!
+	// Modified from AliRawReader.h
+	return ((ULong64_t)header->GetBunchCrossNumber()+
+			(ULong64_t)header->GetOrbitNumber()*3564+
+			(ULong64_t)header->GetPeriodNumber()*16777215*3564);
+}
+
+unsigned int AliAnalysisTaskSEXicPlusToXi2PifromKFP::GetMCEventID()
+{
+  TString currentfilename = ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()))->GetName();
+  if(!fFileName.EqualTo(currentfilename)) {
+    fEventNumber = 0;
+    fFileName = currentfilename;
+    TObjArray *path = fFileName.Tokenize("/");
+    TString s = ((TObjString*)path->At( ((path->GetLast())-1) ))->GetString();
+    fDirNumber = (unsigned int)s.Atoi();
+    delete path;
+  }
+  Long64_t ev_number = Entry();
+  if(fIsMC){
+    ev_number = fEventNumber;
+  }
+  unsigned int evID = (unsigned int)ev_number + (unsigned int)(fDirNumber<<17);
+  fEventNumber++;
+  return evID;
 }
