@@ -1081,7 +1081,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
             Int_t lab_XicPlus = -9999;
             if (fIsMC) {
               lab_XicPlus = MatchToMCXicPlus(ptrack, ntrack, btrack, trackP[itrkBP_trk1], trackP[itrkBP_trk2], mcArray);
-              if (lab_XicPlus>=0) FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpXicPlus, trackPiFromXicPlus_LowPt, kfpBP_LowPt, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackPiFromXicPlus_HighPt, kfpBP_HighPt, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
+              //if (lab_XicPlus>=0) FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpXicPlus, trackPiFromXicPlus_LowPt, kfpBP_LowPt, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackPiFromXicPlus_HighPt, kfpBP_HighPt, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
+              FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpXicPlus, trackPiFromXicPlus_LowPt, kfpBP_LowPt, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackPiFromXicPlus_HighPt, kfpBP_HighPt, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
             }
             if (!fIsMC) {
              FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpXicPlus, trackPiFromXicPlus_LowPt, kfpBP_LowPt, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, trackPiFromXicPlus_HighPt, kfpBP_HighPt, kfpProton, kfpPionMinus, PV, mcArray, lab_XicPlus);
@@ -1242,7 +1243,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
             Int_t lab_AntiXicPlus = -9999.;
             if (fIsMC) {
               lab_AntiXicPlus = MatchToMCAntiXicPlus(ntrack, ptrack, btrack, trackN[itrkBP_trk1], trackN[itrkBP_trk2], mcArray);
-              if (lab_AntiXicPlus>=0) FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpAntiXicPlus, trackPiFromAntiXicPlus_LowPt, kfpBP_LowPt, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackPiFromAntiXicPlus_HighPt, kfpBP_HighPt, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
+              //if (lab_AntiXicPlus>=0) FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpAntiXicPlus, trackPiFromAntiXicPlus_LowPt, kfpBP_LowPt, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackPiFromAntiXicPlus_HighPt, kfpBP_HighPt, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
+              FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpAntiXicPlus, trackPiFromAntiXicPlus_LowPt, kfpBP_LowPt, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackPiFromAntiXicPlus_HighPt, kfpBP_HighPt, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
             }
             if (!fIsMC) {
               FillTreeRecXicPlusFromCasc(AODEvent, casc, kfpAntiXicPlus, trackPiFromAntiXicPlus_LowPt, kfpBP_LowPt, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, trackPiFromAntiXicPlus_HighPt, kfpBP_HighPt, kfpAntiProton, kfpPionPlus, PV, mcArray, lab_AntiXicPlus);
