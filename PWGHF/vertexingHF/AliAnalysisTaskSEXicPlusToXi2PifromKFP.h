@@ -62,6 +62,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         Int_t                   MatchToMCAntiLambdaFromXi(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, TClonesArray *mcArray);
         Int_t                   MatchToMCPion(AliAODTrack *track, TClonesArray *mcArray);
         Double_t                InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2);
+        ULong64_t               GetEventIdAsLong(AliVHeader* header);
 
         /// set MC usage
         void SetWriteXicPlusMCGenTree(Bool_t a) {fWriteXicPlusMCGenTree = a;}
@@ -78,6 +79,8 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         void FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus);
         AliAODVertex* PrimaryVertex(const TObjArray *trkArray, AliVEvent *event);
         AliAODVertex* CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *aodEvent);
+
+        unsigned int GetMCEventID();
 
     private:
         void                    DefineEvent();
@@ -102,6 +105,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         TTree*                  fTree_XicPlusMCGen;   //!<! tree of the candidate variables after track selection on output slot
         Float_t*                fVar_XicPlusMCGen;    //!<! variables to be written to the tree
         TList*                  fListCuts;            //!<! User output slot 3 // Cuts 
+        ULong64_t               fVar_XicPlus_EvtID;   //!<! Event ID
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
 
@@ -118,14 +122,19 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHPrimVtx_woDau_err_x; //!<! Histogram of PV after removing daughter tracks (err_x)
         TH1F*                   fHPrimVtx_woDau_err_y; //!<! Histogram of PV after removing daughter tracks (err_y)
         TH1F*                   fHPrimVtx_woDau_err_z; //!<! Histogram of PV after removing daughter tracks (err_z)
+        TH1F*                   fHNumOfCandidatePerEvent_In3sigma; //!<! Histogram of number of Xic+ candidate per event within 3 sigma (assuming sigma=0.01)
         Bool_t                  fWriteXicPlusMCGenTree; ///< flag to decide whether to write the MC candidate variables on a tree variables
         Bool_t                  fWriteXicPlusTree; ///< flag to decide whether to write Xic+ tree
         Bool_t                  fWriteXicPlusQATree; ///< flag to decide whether to write Xic+ QA tree
+        Int_t                   fCount_NumOfCandidatePerEvent_In3Sigma; ///< Count number of Xic+ candidate per event within 3 sigma (assuming sigma=0.01)
+        TString                 fFileName;
+        unsigned int            fEventNumber;
+        unsigned int            fDirNumber;
 
         AliAnalysisTaskSEXicPlusToXi2PifromKFP(const AliAnalysisTaskSEXicPlusToXi2PifromKFP &source); // not implemented
         AliAnalysisTaskSEXicPlusToXi2PifromKFP& operator=(const AliAnalysisTaskSEXicPlusToXi2PifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 2);
+        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 3);
 };
 
 #endif
