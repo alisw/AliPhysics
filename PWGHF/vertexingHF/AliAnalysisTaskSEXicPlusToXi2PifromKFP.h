@@ -105,6 +105,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         TTree*                  fTree_XicPlusMCGen;   //!<! tree of the candidate variables after track selection on output slot
         Float_t*                fVar_XicPlusMCGen;    //!<! variables to be written to the tree
         TList*                  fListCuts;            //!<! User output slot 3 // Cuts 
+        ULong64_t               fVar_XicPlus_EvtID;   //!<! Event ID
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
 

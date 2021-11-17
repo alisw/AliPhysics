@@ -77,6 +77,7 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP()
   fVar_XicPlus(0),
   fTree_XicPlus_QA(0),
   fVar_XicPlus_QA(0),
+  fVar_XicPlus_EvtID(0),
   fTree_XicPlusMCGen(0),
   fVar_XicPlusMCGen(0),
   fCounter(0),
@@ -122,6 +123,7 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP(c
   fVar_XicPlus(0),
   fTree_XicPlus_QA(0),
   fVar_XicPlus_QA(0),
+  fVar_XicPlus_EvtID(0),
   fTree_XicPlusMCGen(0),
   fVar_XicPlusMCGen(0),
   fCounter(0),
@@ -1787,7 +1789,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
   fTree_XicPlus_QA = new TTree(nameoutput, "XicPlus variables QA tree");
   Int_t nVar = 77;
-  fVar_XicPlus_QA = new Float_t[nVar];
+  fVar_XicPlus_QA = new Float_t[nVar-1];
   TString *fVarNames_QA = new TString[nVar];
 
   fVarNames_QA[0]  = "PV_X_MC";
@@ -1866,10 +1868,11 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   fVarNames_QA[73] = "pt_XicPlus_wTopoConst_recalPV_Minus_woTopoConst";
   fVarNames_QA[74] = "pt_XicPlus_wTopoConst_recalPV_Minus_wTopoConst";
   fVarNames_QA[75] = "PV_CountRealContributors";
-  fVarNames_QA[76] = "EventID";
+  fVarNames_QA[76] = "event_ID";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_XicPlus_QA->Branch(fVarNames_QA[ivar].Data(), &fVar_XicPlus_QA[ivar], Form("%s/F", fVarNames_QA[ivar].Data()));
+    if (ivar<(nVar-1))  fTree_XicPlus_QA->Branch(fVarNames_QA[ivar].Data(), &fVar_XicPlus_QA[ivar], Form("%s/F", fVarNames_QA[ivar].Data()));
+    if (ivar==(nVar-1)) fTree_XicPlus_QA->Branch(fVarNames_QA[ivar].Data(), &fVar_XicPlus_EvtID, Form("%s/l", fVarNames_QA[ivar].Data()));
   }
 
   return;
@@ -1882,8 +1885,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_XicPlus = new TTree(nameoutput, "XicPlus variables tree");
-  Int_t nVar = 52;
-  fVar_XicPlus = new Float_t[nVar];
+  Int_t nVar = 53;
+  fVar_XicPlus = new Float_t[nVar-1];
   TString *fVarNames = new TString[nVar];
 
   fVarNames[0]  = "nSigmaTPC_Pi0FromXicPlus"; // TPC nsigma for pion_0 coming from XicPlus
@@ -1946,8 +1949,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[48] = "PA_XiToXicPlus"; // pointing angle of Xi (pointing back to XicPlus)
   fVarNames[49] = "pt_PiFromXi"; // pt of pion coming from Xi
   fVarNames[50] = "mass_Omega"; // mass of Omega
-
   fVarNames[51] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[52] = "event_ID"; // event ID
 
 //  fVarNames[26] = "CosThetaStar_PiFromXicPlus"; // CosThetaStar of pion coming from XicPlus
 //  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from XicPlus
@@ -1960,7 +1963,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 //  fVarNames[40] = "DCA_XicPlusDau_KF"; // DCA of XicPlus's daughters (calculated from KF after Xi mass constraint)
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_XicPlus->Branch(fVarNames[ivar].Data(), &fVar_XicPlus[ivar], Form("%s/F", fVarNames[ivar].Data()));
+    if (ivar<(nVar-1))  fTree_XicPlus->Branch(fVarNames[ivar].Data(), &fVar_XicPlus[ivar], Form("%s/F", fVarNames[ivar].Data()));
+    if (ivar==(nVar-1)) fTree_XicPlus->Branch(fVarNames[ivar].Data(), &fVar_XicPlus_EvtID, Form("%s/l", fVarNames[ivar].Data()));
   }
 
   return;
@@ -2269,6 +2273,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fVar_XicPlus[48] = TMath::ACos(cosPA_XiToXicPlus); // pointing angle of Xi (pointing back to XicPlus)
 
   if (fIsMC) {
+    fVar_XicPlus_EvtID = GetMCEventID(); // Event ID for MC
     fVar_XicPlus[51] = lab_XicPlus;
     // === weight ===
     /*
@@ -2278,6 +2283,10 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
       AliAODMCParticle* mcXicPlus  = static_cast<AliAODMCParticle*>(mcArray->At(mcPion_trk1->GetMother()));
     }
     */
+  }
+  if (!fIsMC) {
+    fVar_XicPlus_EvtID = GetEventIdAsLong(AODEvent->GetHeader()); // Event ID for Data
+    //fVar_XicPlus_QA[76] = AODEvent->GetHeader()->GetEventIdAsLong(); // Event ID for Data
   }
 
   KFParticle kfpPionOrKaon_Rej;
@@ -2292,10 +2301,11 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fVar_XicPlus[49] = trackPiFromXiOrKaonFromOmega->Pt(); // pt of pion coming from Xi
 
   // pt(XicPlus)>=1
-  if (fVar_XicPlus[26]>0.9999) fTree_XicPlus->Fill();
+  //if (fVar_XicPlus[26]>0.9999) fTree_XicPlus->Fill();
+  fTree_XicPlus->Fill();
 
   //======= Fill QA tree =======
-  for (Int_t i=0; i<77; i++) {
+  for (Int_t i=0; i<76; i++) {
     fVar_XicPlus_QA[i] = -9999.;
   }
 
@@ -2438,11 +2448,6 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fVar_XicPlus_QA[74] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[46]; // SV: pt diff of Xic+ (w/ topo. constraint recalPV - PV)
 
   fVar_XicPlus_QA[75] = fpVtx->CountRealContributors(); // PV: count daughter primary tracks
-  fVar_XicPlus_QA[76] = GetMCEventID(); // Event ID for MC
-  }
-  if (!fIsMC) {
-    fVar_XicPlus_QA[76] = GetEventIdAsLong(AODEvent->GetHeader()); // Event ID for Data
-    //fVar_XicPlus_QA[76] = AODEvent->GetHeader()->GetEventIdAsLong(); // Event ID for Data
   }
 
   if (fWriteXicPlusQATree) fTree_XicPlus_QA->Fill();
