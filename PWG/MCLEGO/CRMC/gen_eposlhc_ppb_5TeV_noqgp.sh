@@ -15,6 +15,8 @@ eval $(alienv printenv CRMC::v1.5.4-3)
 # force path to requested output
 sed -e s#__CRMC_BASEDIR__#"$CRMC_ROOT"# ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template_ppb.param > crmc.param
 
+#disable the 'fusion' option in EPOS-LHC parameter file
+
 sed -i s/\!switch\ fusion\ off/switch\ fusion\ off/ crmc.param
 
 # ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template.param > crmc.param
