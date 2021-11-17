@@ -126,6 +126,8 @@ fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTrigger(2.0),
 fMaxPtTrigger(4.0),
+fMinEtaTrigger(-4.0),
+fMaxEtaTrigger(+4.0),
 fHistPtTriggerD0(0),
 fHistPtTriggerXiC(0),
 fHistPtTriggerXiB(0),
@@ -231,6 +233,8 @@ fHistNchVsNMPI(0),
 fkDo2pc(kTRUE),
 fMinPtTrigger(2.0),
 fMaxPtTrigger(4.0),
+fMinEtaTrigger(-4.0),
+fMaxEtaTrigger(+4.0),
 fHistPtTriggerD0(0),
 fHistPtTriggerXiC(0),
 fHistPtTriggerXiB(0),
@@ -1000,23 +1004,23 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     if(lDistanceFromZero>1e-12) continue; //remove everything outside of zero, should remove decay daus
     
-    if( TMath::Abs(geta)<4.0 ){
+    if( fMinPtTrigger < gpt &&  gpt < fMaxPtTrigger && fMinEtaTrigger < geta && geta < fMaxEtaTrigger){
       Bool_t lGoodD0 = kTRUE, lGoodXiC = kTRUE, lGoodXiB = kTRUE;
       if(lThisParticle->GetPdgCode()==421) {
         if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodD0 = kFALSE;
-        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) lGoodD0 = kFALSE;
         if ( lGoodD0 ) lD0trigger[lND0trigger++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()==4232) {
         if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodXiC = kFALSE;
-        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) lGoodXiC = kFALSE;
         if ( lGoodXiC ) lXiC[lNXiC++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()==5132) {
         if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodXiB = kFALSE;
-        if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) lGoodXiB = kFALSE;
         if ( lGoodXiB ) lXiB[lNXiB++] = iCurrentLabelStack;
       }
+    }
+    
+    if( TMath::Abs(geta)<4.0 ){
       if(lThisParticle->GetPdgCode()== 2212 && lIsPhysicalPrimary ) lProtons[lNProtons++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==-2212 && lIsPhysicalPrimary ) lAntiProtons[lNAntiProtons++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==  421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0[lND0++] = iCurrentLabelStack;
@@ -1681,147 +1685,36 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     
     if(lDistanceFromZero>1e-12) continue; //remove everything outside of zero, should remove decay daus
     
-    if( gpt < fMinPtTrigger || fMaxPtTrigger < gpt ) continue;
+    if( gpt  < fMinPtTrigger  || fMaxPtTrigger  < gpt  ) continue;
+    if( geta < fMinEtaTrigger || fMaxEtaTrigger < geta ) continue;
     
-    if( TMath::Abs(geta)<4.0 ){
-      if(lThisParticle->GetPdgCode()==421) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
-        //Add to buffer
-        fEMBufferEtaD0[ fEMBufferCycleD0 ] = lThisParticle->Eta();
-        fEMBufferPhiD0[ fEMBufferCycleD0 ] = lThisParticle->Phi();
-        fEMBufferCycleD0++;
-        if(fEMBufferCycleD0>=10) fEMBufferFullD0 = kTRUE;
-        fEMBufferCycleD0 = fEMBufferCycleD0%10;
-      }
-      if(lThisParticle->GetPdgCode()==4232) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
-        //Add to buffer
-        fEMBufferEtaXiC[ fEMBufferCycleXiC ] = lThisParticle->Eta();
-        fEMBufferPhiXiC[ fEMBufferCycleXiC ] = lThisParticle->Phi();
-        fEMBufferCycleXiC++;
-        if(fEMBufferCycleXiC>=10) fEMBufferFullXiC = kTRUE;
-        fEMBufferCycleXiC = fEMBufferCycleXiC%10;
-      }
-      if(lThisParticle->GetPdgCode()==5132) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
-        fEMBufferEtaXiB[ fEMBufferCycleXiB ] = lThisParticle->Eta();
-        fEMBufferPhiXiB[ fEMBufferCycleXiB ] = lThisParticle->Phi();
-        fEMBufferCycleXiB++;
-        if(fEMBufferCycleXiB>=10) fEMBufferFullXiB = kTRUE;
-        fEMBufferCycleXiB = fEMBufferCycleXiB%10;
-      }
+    if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+    
+    if(lThisParticle->GetPdgCode()==421) {
+      //Add to buffer
+      fEMBufferEtaD0[ fEMBufferCycleD0 ] = lThisParticle->Eta();
+      fEMBufferPhiD0[ fEMBufferCycleD0 ] = lThisParticle->Phi();
+      fEMBufferCycleD0++;
+      if(fEMBufferCycleD0>=10) fEMBufferFullD0 = kTRUE;
+      fEMBufferCycleD0 = fEMBufferCycleD0%10;
+    }
+    if(lThisParticle->GetPdgCode()==4232) {
+      //Add to buffer
+      fEMBufferEtaXiC[ fEMBufferCycleXiC ] = lThisParticle->Eta();
+      fEMBufferPhiXiC[ fEMBufferCycleXiC ] = lThisParticle->Phi();
+      fEMBufferCycleXiC++;
+      if(fEMBufferCycleXiC>=10) fEMBufferFullXiC = kTRUE;
+      fEMBufferCycleXiC = fEMBufferCycleXiC%10;
+    }
+    if(lThisParticle->GetPdgCode()==5132) {
+      fEMBufferEtaXiB[ fEMBufferCycleXiB ] = lThisParticle->Eta();
+      fEMBufferPhiXiB[ fEMBufferCycleXiB ] = lThisParticle->Phi();
+      fEMBufferCycleXiB++;
+      if(fEMBufferCycleXiB>=10) fEMBufferFullXiB = kTRUE;
+      fEMBufferCycleXiB = fEMBufferCycleXiB%10;
     }
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  
-  //===== Start 2pc nested loops =================
-  //  if( fkDo2pc ) {
-  //    //Apply the eta cut first or go home
-  //    Long_t lNValidParticles = 0;
-  //    TArrayI lValidParticles(lMCstack->GetNtrack());
-  //    Long_t lNValidPhi = 0;
-  //    TArrayI lValidPhi(lMCstack->GetNtrack());
-  //    Long_t lNValidXi = 0;
-  //    TArrayI lValidXi(lMCstack->GetNtrack());
-  //    //----- Determine valid triggers ----------------------------------------------------------------
-  //    for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
-  //    {
-  //      // Determine if within acceptance, otherwise fully reject from list
-  //      // done such that this check is done O(N) and not O(N^2)
-  //      TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
-  //      if(!lThisParticle) continue;
-  //      Double_t geta = lThisParticle -> Eta();
-  //      if( TMath::Abs(geta)<0.8 ) lValidParticles[lNValidParticles++]=iCurrentLabelStack;
-  //    }
-  //    //----- Loop on Stack ----------------------------------------------------------------
-  //    for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < lNValidParticles; iCurrentLabelStack++)
-  //    {   // This is the begining of the loop on tracks
-  //      TParticle* lTriggerParticle = lMCstack->Particle(lValidParticles[iCurrentLabelStack]);
-  //      if(!lTriggerParticle) continue;
-  //      if(!lTriggerParticle->GetPDG()) continue;
-  //      Double_t lThisCharge = lTriggerParticle->GetPDG()->Charge()/3.;
-  //      //if(TMath::Abs(lThisCharge)<0.001) continue;
-  //      //if(! (lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack])) ) continue;
-  //
-  //      Bool_t lTrigIsCharged = kTRUE;
-  //      if( TMath::Abs(lThisCharge)<0.001 ) lTrigIsCharged = kFALSE;
-  //      Bool_t lTrigIsPrimary = kTRUE;
-  //      if ( !lMCstack->IsPhysicalPrimary(lValidParticles[iCurrentLabelStack]) ) lTrigIsPrimary = kFALSE;
-  //      Bool_t lTrigIsPhi = kTRUE;
-  //      if (lTriggerParticle->GetPdgCode()!=333) lTrigIsPhi = kFALSE;
-  //
-  //      if( ((!lTrigIsCharged)||(!lTrigIsPrimary)) && !lTrigIsPhi ) continue;
-  //
-  //      Double_t geta = lTriggerParticle -> Eta();
-  //      Double_t gphi = lTriggerParticle -> Phi();
-  //
-  //      if( lTriggerParticle -> Pt() > fMinPtTriggerCharged && lTrigIsCharged && lTrigIsPrimary )
-  //        fEtaTriggerCharged -> Fill( geta );
-  //      if( lTriggerParticle -> Pt() > fMinPtTriggerXi && lTrigIsPrimary && TMath::Abs(lTriggerParticle->GetPdgCode())==3312 )
-  //        fEtaTriggerXi      -> Fill( geta );
-  //      if( lTriggerParticle -> Pt() > fMinPtTriggerPhi && TMath::Abs(lTriggerParticle->GetPdgCode())==333 )
-  //        fEtaTriggerPhi     -> Fill( geta );
-  //
-  //      for (Int_t ilab = 0;  ilab < lNValidParticles; ilab++)
-  //      {   // This is the begining of the loop on tracks
-  //
-  //        if(ilab == iCurrentLabelStack) continue; //remove auto-correlations
-  //        TParticle* lAssociatedParticle = 0x0;
-  //        lAssociatedParticle = lMCstack->Particle( lValidParticles[ilab] );
-  //        if(!lAssociatedParticle) {
-  //          Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
-  //          continue;
-  //        }
-  //
-  //        lThisPDG = lAssociatedParticle->GetPdgCode();
-  //
-  //        //Continue if this is not a particle of the right PDG Code (avoids y-calculation problems)
-  //        Bool_t lContinue = kTRUE;
-  //        for(Int_t ih=0; ih<52; ih++) if( lThisPDG == lPDGCodes[ih] ) lContinue = kFALSE;
-  //        if ( lContinue ) continue;
-  //
-  //        Double_t geta2 = lAssociatedParticle -> Eta();
-  //        Double_t gphi2 = lAssociatedParticle -> Phi();
-  //
-  //        lThisPt    = lAssociatedParticle->Pt();
-  //
-  //        lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(lValidParticles[ilab]);
-  //
-  //        if( lTrigIsCharged && lTrigIsPrimary ){
-  //          for(Int_t ih=0; ih<52; ih++){
-  //            if( lThisPDG == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
-  //              //Check if primary (if needed) and if not don't use this particle
-  //              if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
-  //              //Fill 2pc same-event histograms, please
-  //              fHist3d2pcSE[ih]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt) ;
-  //            }
-  //          }
-  //        }
-  //        if( lTriggerParticle->GetPdgCode() == 3312 ){
-  //          for(Int_t ih=0; ih<52; ih++){
-  //            if( lThisPDG == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
-  //              //Check if primary (if needed) and if not don't use this particle
-  //              if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
-  //              //Fill 2pc same-event histograms, please
-  //              fHist3d2pcXiSE[ih]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt) ;
-  //            }
-  //          }
-  //        }
-  //        if( TMath::Abs( lTriggerParticle->GetPdgCode() ) == 333 ){
-  //          for(Int_t ih=0; ih<52; ih++){
-  //            if( lThisPDG == lPDGCodes[ih] && TMath::Abs(geta2) < 0.8 ) {
-  //              //Check if primary (if needed) and if not don't use this particle
-  //              if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
-  //              //Fill 2pc same-event histograms, please
-  //              fHist3d2pcPhiSE[ih]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt) ;
-  //            }
-  //          }
-  //        }
-  //      }//End of loop on tracks
-  //    }//End of loop on tracks
-  //    //----- End Loop on Stack ------------------------------------------------------------
-  //  }
-  //===== End 2pc nested loops ===================
   
   // Post output data.
   PostData(1, fListHist);
