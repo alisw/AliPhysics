@@ -1,8 +1,4 @@
-AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFiles = kTRUE,
-                            Bool_t useConvolutedGauss = kTRUE, TString centralityEstimator = "V0A",
-                            Bool_t considerJets = kTRUE, Bool_t overrideStoreCentralityPercentile = kFALSE,
-                            Bool_t overrideStoreCentralityPercentileValue = kFALSE,
-                            TString listOfFiles = "", Bool_t doEfficiency = kFALSE)
+AliAnalysisTask *AddTaskPID(TString nameSuffix = "", Bool_t inputFromOtherTask = kFALSE, Bool_t writeOutputToSeparateFiles = kTRUE, Bool_t useConvolutedGauss = kTRUE, Bool_t storeJetInformation = kFALSE, TString listOfFiles = "", Bool_t doEfficiency = kFALSE)
 {
   // Macro to set up and add PID task with default settings.
   //
@@ -23,21 +19,18 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   
   //========= Add task to the ANALYSIS manager =====
   AliAnalysisTaskPID *task = new AliAnalysisTaskPID(taskName.Data());
-  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7);
   
-  
+  task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7 | AliVEvent::kINT8);
   
   printf("\nSetting up task %s:\n", taskName.Data());
   
-  if (!considerJets) {
-    //
+  if (!inputFromOtherTask) {
     // Add track filters
-    //
     
     AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
     AliESDtrackCuts* esdTrackCutsL = 0x0;
     
-    if (listOfFiles.Contains("LHC11") || listOfFiles.Contains("LHC12") || listOfFiles.Contains("LHC13")) {
+    if (listOfFiles.Contains("LHC11") || listOfFiles.Contains("LHC12") || listOfFiles.Contains("LHC13") || listOfFiles.Contains("LHC15")) {
       esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
       printf("Using standard ITS-TPC track cuts 2011\n");
       trackFilter->SetTitle("Standard ITS-TPC track cuts 2011");
@@ -73,20 +66,15 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   else  {
     task->SetIsPbpOrpPb(kFALSE);
     printf("Collision type different from pPb/Pbp detected -> Using standard vertex cuts!\n");
+    task->SetCentralityEstimator("V0M");
   }
   
-  // Do not store centrality percentile for pp (will be set to -1 for all events) - or use special centrality estimator and store
-  if (listOfFiles.Contains("pp")) {
-    //task->SetStoreCentralityPercentile(kFALSE);
-    
-    task->SetStoreCentralityPercentile(kTRUE);
-    task->SetCentralityEstimator("ITSTPCtracklets");
-  }
-  else
-    task->SetStoreCentralityPercentile(kTRUE);
+  task->SetStoreCentralityPercentile(kTRUE);
   
-  if (overrideStoreCentralityPercentile)
-    task->SetStoreCentralityPercentile(overrideStoreCentralityPercentileValue);
+//   if (listOfFiles.Contains("pp")) {
+//     task->SetCentralityEstimator("ITSTPCtracklets");
+//     task->SetCentralityEstimator("ppMultV0M");
+//   }
   
   task->SetEtaAbsCutRange(0.0, 0.9);
   task->SetUsePhiCut(kFALSE);
@@ -95,24 +83,22 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   if (useConvolutedGauss) {
     if ((listOfFiles.Contains("pPb") || listOfFiles.Contains("Pbp")) && listOfFiles.Contains("LHC13")) {
       printf("\n13* pPb @ 5.023 ATeV data detected -> Setting corresponding convolution parameters...\n");
-      task->SetConvolutedGaussLambdaParameter(3.0);
-    }
-    
-    if (listOfFiles.Contains("LHC11a_without_SDD")) {
+      task->SetConvolutedGaussLambdaParameter(2.6);
+    } else if (listOfFiles.Contains("LHC11a_without_SDD")) {
       printf("\n11a (pp 2.76 TeV) detected -> Setting corresponding convolution parameters...\n");
       task->SetConvolutedGaussLambdaParameter(3.0);
-    }
-    else {
+    } else if (listOfFiles.Contains("LHC15")) {
+      printf("\n15* (pp 13 TeV) detected -> Setting corresponding convolution parameters...\n");
+      task->SetConvolutedGaussLambdaParameter(2.2);
+    }  else {
       printf("\nUsing default convolution parameters...\n");
       task->SetConvolutedGaussLambdaParameter(2.0);
     }
   }
   
-  task->SetCentralityEstimator(centralityEstimator.Data());
-  
   task->SetDoEfficiency(doEfficiency);
   
-  task->SetUseMCidForGeneration(kTRUE);
+  task->SetUseMCidForGeneration(kFALSE); // Set to kFALSE on 2013-01-09
   task->SetUseITS(kTRUE);
   task->SetUseTOF(kTRUE);
   task->SetUsePriors(kTRUE);
@@ -120,8 +106,23 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   task->SetUseConvolutedGaus(useConvolutedGauss);
   task->SetTakeIntoAccountMuons(kTRUE);
   
-  task->SetInputFromOtherTask(considerJets);
-  task->SetStoreAdditionalJetInformation(considerJets);
+  task->SetStoreTOFInfo(kFALSE);
+  task->SetStoreCharge(kFALSE);
+  
+  task->SetInputFromOtherTask(inputFromOtherTask);
+  task->SetStoreAdditionalJetInformation(storeJetInformation);
+  
+  task->SetStorePt(kTRUE);
+  task->SetStoreZ(kTRUE && storeJetInformation);
+  task->SetStoreXi(kTRUE && storeJetInformation);
+  task->SetStoreRadialDistance(kTRUE && storeJetInformation);
+  task->SetStorejT(kTRUE && storeJetInformation);
+  
+  task->SetPileUpRejectionType(AliAnalysisTaskPIDV0base::kPileUpRejectionSPD);
+  
+  //Settings of AliAnalysisTaskPIDV0base
+  task->SetTPCcutType(AliAnalysisTaskPIDV0base::kTPCnclCut);
+  task->SetCutPureNcl(80);
   
   task->PrintSettings();
   
@@ -132,6 +133,14 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
   //              data containers
   //================================================
 
+  //connect containers
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  
+  if (mgr->GetCommonOutputContainer()) {
+    //Not present for local runs
+    mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
+  }
+  
   //define output containers
   AliAnalysisDataContainer *coutput1 = 
     mgr->CreateContainer(Form("%s", taskName.Data()),
@@ -140,6 +149,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
                          writeOutputToSeparateFiles
                           ? Form("%s.root", taskName.Data())
                           : Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskName.Data()));
+  mgr->ConnectOutput(task, 1, coutput1);
   
   if (task->GetDoEfficiency()) {
     AliAnalysisDataContainer *coutput2 = 
@@ -149,27 +159,19 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix, Bool_t writeOutputToSeparateFile
                             writeOutputToSeparateFiles
                               ? Form("%s_efficiency.root", taskName.Data())
                               : Form("%s:%s_efficiency", AliAnalysisManager::GetCommonFileName(), taskName.Data()));
-    mgr->ConnectOutput (task,  2, coutput2);
+    mgr->ConnectOutput (task, 2, coutput2);
   }
   
-  if (task->GetDoDeDxCheck() || task->GetDoPtResolution()) {
-    AliAnalysisDataContainer *coutput3 = 
-        mgr->CreateContainer(Form("%s_PtResolution", taskName.Data()),
-                            TObjArray::Class(),
-                            AliAnalysisManager::kOutputContainer,
-                            writeOutputToSeparateFiles
-                              ? Form("%s_PtResolution.root", taskName.Data())
-                              : Form("%s:%s_PtResolution", AliAnalysisManager::GetCommonFileName(), taskName.Data()));
-    mgr->ConnectOutput (task,  3, coutput3);
-  }
-  //connect containers
-  mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());
-  
-  if (mgr->GetCommonOutputContainer()) {
-    //Not present for local runs
-    mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer());
-  }
-  mgr->ConnectOutput (task,  1, coutput1);
+//   if (task->GetDoDeDxCheck() || task->GetDoPtResolution()) {
+//     AliAnalysisDataContainer *coutput3 = 
+//         mgr->CreateContainer(Form("%s_PtResolution", taskName.Data()),
+//                             TObjArray::Class(),
+//                             AliAnalysisManager::kOutputContainer,
+//                             writeOutputToSeparateFiles
+//                               ? Form("%s_PtResolution.root", taskName.Data())
+//                               : Form("%s:%s_PtResolution", AliAnalysisManager::GetCommonFileName(), taskName.Data()));
+//     mgr->ConnectOutput(task, 3, coutput3);
+//   }
 
   return task;
 }
