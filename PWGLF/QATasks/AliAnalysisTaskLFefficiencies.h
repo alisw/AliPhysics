@@ -45,6 +45,11 @@ public:
   static const std::string fPosNeg[2];
   static const int fNcuts;
   static const std::string fCutNames[8];
+
+  void SetCentralityFramework(int centralityFramework);
+  void SetCentralityEstimator(int est) { fEstimator = est; }
+  void SetMultSelection(float lowEdge, float upEdge);
+  
 private:
   AliAnalysisTaskLFefficiencies (const AliAnalysisTaskLFefficiencies &source);
   AliAnalysisTaskLFefficiencies &operator=(const AliAnalysisTaskLFefficiencies &source);
@@ -64,6 +69,11 @@ private:
   TH1D* fRejectedForOOBPileUp;                 //!<! Number of rejected particles coming from OOB pile-up
   TH1D* fRejectedForOOBPileUpInPileUpFreeGeneratedEvents;   //!<! Number of rejected particles coming from OOB pile-up in events with pile
   TH1D* fEventKind;                            //!<! Number of events kind
+
+  int fEstimator; ///< Choose the centrality estimator from AliEventCuts
+  bool fCheckMultiplicity;  ///< Set multiplicity selection 
+  float fLowMultEdge; ///< Lower limit for multiplicity selection
+  float fHighMultEdge; ///< Upper limit for multiplicity selection
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskLFefficiencies, 1);
