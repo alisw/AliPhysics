@@ -399,7 +399,11 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
 
     for (int iDau = 0; iDau < nDau; iDau++)
     {
-        AliAODTrack *track = vHF->GetProng(fAOD, chHad, iDau);
+        AliAODTrack *track;
+        if (fDecChannel != kDstartoD0pi || iDau == 0)
+            track = vHF->GetProng(fAOD, chHad, iDau);
+        else
+            track = vHF->GetProng(fAOD, chHadWithVtx, iDau-1); //D0<-D* daughters
         arrDauTracks.AddAt(track, iDau);
     }
 
