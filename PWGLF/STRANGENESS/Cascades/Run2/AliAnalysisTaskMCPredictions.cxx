@@ -1069,7 +1069,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
         if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
         //Fill Histograms
         if(fHistEta[ih] && lDistanceFromZero > 1e-12 ) fHistEta[ih] -> Fill ( lPart -> Eta() );
-        if(fHistEtaTriggeredMeson[ih] && lNXiC > 0 && lDistanceFromZero > 1e-12 ) fHistEtaTriggeredMeson[ih] -> Fill ( lPart -> Eta(), lThisPt );
+        if(fHistEtaTriggeredMeson[ih] && lND0trigger > 0 && lDistanceFromZero > 1e-12 ) fHistEtaTriggeredMeson[ih] -> Fill ( lPart -> Eta(), lThisPt );
         if(fHistEtaTriggeredCharm[ih] && lNXiC > 0 && lDistanceFromZero > 1e-12 ) fHistEtaTriggeredCharm[ih] -> Fill ( lPart -> Eta(), lThisPt );
         if(fHistEtaTriggeredBeauty[ih] && lNXiB > 0 && lDistanceFromZero > 1e-12 ) fHistEtaTriggeredBeauty[ih] -> Fill ( lPart -> Eta(), lThisPt );
         if(fHistEtaVsSPDMult[ih]) fHistEtaVsSPDMult[ih] -> Fill( lNchEtaWide, lPart -> Eta() );
