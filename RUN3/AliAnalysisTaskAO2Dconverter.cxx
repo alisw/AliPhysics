@@ -1635,8 +1635,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         const Float_t exp_beta = (track->GetIntegratedLength() / exp_time / cspeed);
 
         tracks.fTOFExpMom = exp_beta < 1.f ? AliMathBase::TruncateFloatFraction(
-                                               AliPID::ParticleMass(tof_pid) * exp_beta * cspeed /
-                                                 TMath::Sqrt(1. - (exp_beta * exp_beta)),
+                                               AliPID::ParticleMass(tof_pid) * exp_beta / TMath::Sqrt(1. - (exp_beta * exp_beta)),
                                                mTrack1Pt)
                                            : 0.f;
       } else {
@@ -1648,11 +1647,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (hasTOF) {
         if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15) {
           tracks.fTrackTimeRes = 200e-3;
-          const float tofExpMom = tracks.fTOFExpMom / cspeed;
           const float length = tracks.fLength;
           const float massZ = AliPID::ParticleMassZ(track->GetPIDForTracking());
-          const float energy = sqrt((massZ * massZ) + (tofExpMom * tofExpMom));
-          const float exp = length * energy / (cspeed * tofExpMom);
+          const float energy = sqrt((massZ * massZ) + (tracks.fTOFExpMom * tracks.fTOFExpMom));
+          const float exp = length * energy / (cspeed * tracks.fTOFExpMom);
           tracks.fTrackTime = (track->GetTOFsignal() - exp) * 1e-3; // tof time in ns, taken from the definition of Ruben scaled by 1000 to convert from mus to ns
         }
       }
