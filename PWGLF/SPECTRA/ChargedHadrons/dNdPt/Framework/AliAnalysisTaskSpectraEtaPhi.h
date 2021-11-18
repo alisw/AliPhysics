@@ -6,6 +6,7 @@
 
 #include "AliAnalysisTaskMKBase.h"
 #include "AliAnalysisHelpersHist.h"
+#include "AliMCSpectraWeights.h"
 #include "THn.h"
 
 class AliESDtrackCuts;
