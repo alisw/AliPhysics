@@ -74,9 +74,9 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   AntiKaonCuts->SetFilterBit(128);
   AntiKaonCuts->SetCutCharge(-1);
   if(KaonCut==0){ // cuts by Oton
-   KaonCuts->SetPIDkd();
+   AntiKaonCuts->SetPIDkd();
   }else if(KaonCut==1){ // cuts by Ramona
-   KaonCuts->SetPIDkd(true,true);
+   AntiKaonCuts->SetPIDkd(true,true);
   }
 
 
