@@ -1476,6 +1476,9 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
     FillHistogram("fHistSelectedV0DaughtPt",ptPos);
     FillHistogram("fHistSelectedV0DaughtPt",ptNeg);
 
+    if(aodV0->GetOnFlyStatus()) OnflyGamma++;
+    else OfflineGamma++;
+
     // Store Photon candidates after selection
     fConvPhotonArray->push_back(iV0);
     countPhotons++;
