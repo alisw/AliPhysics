@@ -9,11 +9,12 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskFemtoNanoLK(bool fullBlastQA = false,      //1
+AliAnalysisTaskSE *AddTaskFemtoNanoLK(bool fullBlastQA = false,           //1
                                            bool isMC = false,             //2
                                            int fFilterBit = 128,          //3
                                            TString triggerData = "kInt7", //4
                                            bool DodPhidEtaPlots = false,  //5
+                                           int WhichKaonCut = 0,          //6
                                            const char *cutVariation = "0")
 {
 
@@ -39,17 +40,30 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLK(bool fullBlastQA = false,      //1
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackPosKaonCuts->SetCutCharge(1);
-  TrackPosKaonCuts->SetFilterBit(128);
+  TrackPosKaonCuts->SetFilterBit(fFilterBit);
+  if(WhichKaonCut==0){
+    TrackPosKaonCuts->SetPIDkd();// Oton
+  } else if (WhichKaonCut==1){
+    TrackPosKaonCuts->SetPIDkd(true,true); //Ramona
+  }
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackNegKaonCuts->SetCutCharge(-1);
-  TrackNegKaonCuts->SetFilterBit(128);
+  TrackNegKaonCuts->SetFilterBit(fFilterBit);
+  if (WhichKaonCut == 0)
+  {
+    TrackNegKaonCuts->SetPIDkd(); // Oton
+  }
+  else if (WhichKaonCut == 1)
+  {
+    TrackNegKaonCuts->SetPIDkd(true, true); //Ramona
+  }
 
-  TrackPosKaonCuts->SetDCAVtxZ(0.4); ///to be checked with Ramona cuts
-  TrackNegKaonCuts->SetDCAVtxZ(0.4);
-  TrackPosKaonCuts->SetDCAVtxXY(0.8);
-  TrackNegKaonCuts->SetDCAVtxXY(0.8);
+  // TrackPosKaonCuts->SetDCAVtxZ(0.4); ///Emma´s cut optimized for φ reco
+  // TrackNegKaonCuts->SetDCAVtxZ(0.4);
+  // TrackPosKaonCuts->SetDCAVtxXY(0.8);
+  // TrackNegKaonCuts->SetDCAVtxXY(0.8);
 
   /// Lambda cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
@@ -128,6 +142,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLK(bool fullBlastQA = false,      //1
     pairQA[3] = 12;
     pairQA[5] = 12;
     pairQA[6] = 12;
+    pairQA[7] = 22;
+    pairQA[8] = 22;
+    pairQA[9] = 22;
   }
   else
   {

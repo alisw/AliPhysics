@@ -23,7 +23,6 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   //Connect weights to a container
   printf("Produce weights set to: %s\n",ProduceWeights?"true":"false");
   printf("Is train set to: %s\n",IsTrain?"true":"false");
-
   if(!ProduceWeights) {
     if(IsTrain) {
       if(centMap.IsNull()) return 0; //AliFatal("Centrality map not specified!\n");

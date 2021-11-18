@@ -157,9 +157,11 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     fOutputListCharged->Add(fhEventMultiplicity);
 
     TString pidName[4] = {"", "_Pion", "_Kaon", "_Proton"};
+    std::vector<Double_t> etaF = {1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0};
+    std::vector<Double_t> sampling = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.};
     for(Int_t i(0); i < 4; i++){
-      if(fAnalType != eFMDAFMDC) fhTrigTracks[i] = new TH2D(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s); pT (trig); PVz",pidName[i].Data()), fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), 10, -10, 10);
-      else fhTrigTracks[i] = new TH2D(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s); #eta; PVz",pidName[i].Data()), 15, 1, 4, 10, -10, 10);
+      if(fAnalType != eFMDAFMDC) fhTrigTracks[i] = new TH3D(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s); pT (trig); PVz; Sample ",pidName[i].Data()), fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), fzVtxBins.size() - 1, fzVtxBins.data(), sampling.size() - 1, sampling.data());
+      else fhTrigTracks[i] = new TH3D(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s); #eta; PVz; Sample",pidName[i].Data()), etaF.size() - 1, etaF.data(), fzVtxBins.size() - 1, fzVtxBins.data(), sampling.size() - 1, sampling.data());
       fOutputListCharged->Add(fhTrigTracks[i]);
     }
 
@@ -228,6 +230,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
+    fSampleIndex = (Int_t) gRandom->Uniform(0,fNOfSamples);
+
     fNofTracks = 0;
     for(Int_t i(0); i < iTracks; i++) {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -247,13 +251,13 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
             }
 
             fTracksTrig[0]->Add((AliAODTrack*)track);
-            fhTrigTracks[0]->Fill(trackPt, fPVz);
+            fhTrigTracks[0]->Fill(trackPt, fPVz, fSampleIndex);
 
             if(fDoPID){
               Int_t trackPid = IdentifyTrack(track);
               if(trackPid > 0 && trackPid < 4){
                 fTracksTrig[trackPid]->Add((AliAODTrack*)track);
-                fhTrigTracks[trackPid]->Fill(trackPt, fPVz);
+                fhTrigTracks[trackPid]->Fill(trackPt, fPVz, fSampleIndex);
               }
             }
           }
@@ -265,8 +269,6 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return; }
       fhEventCounter->Fill("Nch cut ok ",1);
     }
-
-    fSampleIndex = (Int_t) gRandom->Uniform(0,fNOfSamples);
 
     if(!fTracksAss->IsEmpty()){
       for(Int_t i(0); i < 4; i++){
@@ -850,7 +852,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
              }
              if(fAnalType == eFMDAFMDC) {
                fTracksTrig[0]->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
-               fhTrigTracks[0]->Fill(eta,fPVz,mostProbableN);
+               fhTrigTracks[0]->Fill(eta,fPVz,fSampleIndex,mostProbableN);
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
              }
            }

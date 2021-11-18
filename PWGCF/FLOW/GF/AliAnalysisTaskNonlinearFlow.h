@@ -217,6 +217,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void   SetPeriod(TString period) { fPeriod = period; }
     virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
     virtual int    GetSystFlag() { return fCurrSystFlag; }
+    virtual void   SetSpringMode(bool flag = true) { fSpringMode = flag; }
 
     // unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
     // unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
@@ -288,6 +289,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     TString                 fNtrksName;                             // Cent or Mult
     TString			fPeriod;				// period
     Int_t                   fCurrSystFlag;                          // Systematics flag
+    Bool_t      fSpringMode;  // The mode with spring cuts.
 
     // Output objects
     TList*			fListOfObjects;			//! Output list of objects
@@ -355,12 +357,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 
     // Track histograms
-    TH1F*				fPhiDis1D;		//! phi dis 1D
-    TH3F*				fPhiDis;		//! phi dist
-    TH1F*				fEtaDis;		//! eta dist
-    TH1F*				fEtaBefore;		//! eta dist before track cuts
-    TH1F*				fPtDis;			//! pt dist
-    TH1F*				fPtBefore;		//! pt dist before track cuts
+    TH1D*				fPhiDis1D;		//! phi dis 1D
+    TH1D*				fPhiDis1DBefore;		//! phi dis 1D before track cuts
+    TH3D*				fPhiDis;		//! phi dist
+    TH1D*				fEtaDis;		//! eta dist
+    TH1D*				fEtaBefore;		//! eta dist before track cuts
+    TH1D*				fPtDis;			//! pt dist
+    TH1D*				fPtBefore;		//! pt dist before track cuts
     TH1F*				hDCAxyBefore; 		//!
     TH1F*				hDCAzBefore; 		//!
     TH1F*				hITSclustersBefore; 	//!
@@ -369,6 +372,17 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     TH1F*				hDCAz; 			//!
     TH1F*				hITSclusters; 		//!
     TH1F*				hChi2; 			//!
+
+    TH2D* QDis[10];        // QDistribution for No gap
+    TH2D* QDisGap0P[10];        // QDistribution for gap 0
+    TH2D* QDisGap0M[10];        // QDistribution for gap 0
+    TH2D* QDisGap10P[10];        // QDistribution for gap 10
+    TH2D* QDisGap10M[10];        // QDistribution for gap 10
+    TH2D* QDisGap14P[10];        // QDistribution for gap 14
+    TH2D* QDisGap14M[10];        // QDistribution for gap 14
+    TH2D* QDis3subL[10];        // QDistribution for 3sub
+    TH2D* QDis3subM[10];        // QDistribution for 3sub
+    TH2D* QDis3subR[10];        // QDistribution for 3sub
 
     // Global variables
     int NtrksCounter = 0;        //!
@@ -444,7 +458,7 @@ int nn = 0; //!
 void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-ClassDef(AliAnalysisTaskNonlinearFlow, 5);    //Analysis task
+ClassDef(AliAnalysisTaskNonlinearFlow, 6);    //Analysis task
 };
 
 #endif

@@ -38,7 +38,7 @@ class AliGFWCumulant {
   void CreateComplexVectorArrayVarPower(Int_t N=1, vector<Int_t> Pvec={1}, Int_t Pt=1);
   Int_t PW(Int_t ind) { return fPowVec.at(ind); }; //No checks to speed up, be carefull!!!
   void DestroyComplexVectorArray();
-  Bool_t IsPtBinFilled(Int_t ptb) { if(!fFilledPts) return kFALSE; return fFilledPts[ptb]; };
+  Bool_t IsPtBinFilled(Int_t ptb);
 };
 
 #endif

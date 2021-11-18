@@ -25,6 +25,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODInputHandler.h"
 #include "AliVertexingHFUtils.h"
+#include "AliVertexerTracks.h"
 
 // includes added to play with KFParticle
 #include <vector>
@@ -61,6 +62,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         Int_t                   MatchToMCAntiLambdaFromXi(AliAODTrack *trackAntiProton, AliAODTrack *trackAntiPion3, TClonesArray *mcArray);
         Int_t                   MatchToMCPion(AliAODTrack *track, TClonesArray *mcArray);
         Double_t                InvMassV0atPV(AliAODTrack *trk1, AliAODTrack *trk2, Int_t pdg1, Int_t pdg2);
+        ULong64_t               GetEventIdAsLong(AliVHeader* header);
 
         /// set MC usage
         void SetWriteXicPlusMCGenTree(Bool_t a) {fWriteXicPlusMCGenTree = a;}
@@ -69,30 +71,41 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         void SetWriteXicPlusTree(Bool_t a) {fWriteXicPlusTree = a;}
         Bool_t GetWriteXicPlusTree() const {return fWriteXicPlusTree;}
 
+        void SetWriteXicPlusQATree(Bool_t a) {fWriteXicPlusQATree = a;}
+        Bool_t GetWriteXicPlusQATree() const {return fWriteXicPlusQATree;}
+
         void FillEventROOTObjects();
         void FillTreeGenXicPlus(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
-        void FillTreeRecXicPlusFromCasc(KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus);
+        void FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus);
+        AliAODVertex* PrimaryVertex(const TObjArray *trkArray, AliVEvent *event);
+        AliAODVertex* CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *aodEvent);
+
+        unsigned int GetMCEventID();
 
     private:
         void                    DefineEvent();
         void                    DefineTreeRecXicPlus();
         void                    DefineTreeGenXicPlus();
         void                    DefineAnaHist();
+        void                    DefineTreeQAXicPlus();
         AliPIDResponse*         fPID;                 ///<
         AliRDHFCutsKFP*         fAnaCuts;             ///< Cuts
         AliAODVertex*           fpVtx;                //!<! primary vertex
         AliMCEvent*             fMCEvent;             //!<! corresponding mc event
         Double_t                fBzkG;                ///< magnetic field value [kG]
-        Float_t                 fCentrality;           ///< Centrality
+        Float_t                 fCentrality;          ///< Centrality
         vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
         TList*                  fOutputList;          //!<! Output list
         TTree*                  fTree_Event;          //!<! tree of event
         Float_t*                fVar_Event;           //!<! variables of event to be written to the tree
-        TTree*                  fTree_XicPlus;             //!<! tree of the candidate variables
-        Float_t*                fVar_XicPlus;         //!<! variables of XicPlus to be written to the tree
-        TTree*                  fTree_XicPlusMCGen; //!<! tree of the candidate variables after track selection on output slot
-        Float_t*                fVar_XicPlusMCGen;   //!<! variables to be written to the tree
-        TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
+        TTree*                  fTree_XicPlus;        //!<! tree of the candidate variables
+        Float_t*                fVar_XicPlus;         //!<! variables of Xic+ to be written to the tree
+        TTree*                  fTree_XicPlus_QA;     //!<! QA tree of the candidate variables
+        Float_t*                fVar_XicPlus_QA;      //!<! variables of Xic+ to be written to the QA tree
+        TTree*                  fTree_XicPlusMCGen;   //!<! tree of the candidate variables after track selection on output slot
+        Float_t*                fVar_XicPlusMCGen;    //!<! variables to be written to the tree
+        TList*                  fListCuts;            //!<! User output slot 3 // Cuts 
+        ULong64_t               fVar_XicPlus_EvtID;   //!<! Event ID
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
 
@@ -101,13 +114,27 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHistEvents;          //!<! Histogram of selected events
         TH1F*                   fHTrigger;            //!<! Histogram of trigger
         TH1F*                   fHCentrality;          //!<! Histogram of centrality
+        TH1F*                   fHCountUsedForPrimVtxFit; //!<! Histogram of frequency of counting AOD track used for primary vertex fit
+        TH1F*                   fHNumberOfCasc; //!<! Histogram of frequency of number of cascade
+        TH1F*                   fHPrimVtx_woDau_x; //!<! Histogram of PV after removing daughter tracks (x)
+        TH1F*                   fHPrimVtx_woDau_y; //!<! Histogram of PV after removing daughter tracks (y)
+        TH1F*                   fHPrimVtx_woDau_z; //!<! Histogram of PV after removing daughter tracks (z)
+        TH1F*                   fHPrimVtx_woDau_err_x; //!<! Histogram of PV after removing daughter tracks (err_x)
+        TH1F*                   fHPrimVtx_woDau_err_y; //!<! Histogram of PV after removing daughter tracks (err_y)
+        TH1F*                   fHPrimVtx_woDau_err_z; //!<! Histogram of PV after removing daughter tracks (err_z)
+        TH1F*                   fHNumOfCandidatePerEvent_In3sigma; //!<! Histogram of number of Xic+ candidate per event within 3 sigma (assuming sigma=0.01)
         Bool_t                  fWriteXicPlusMCGenTree; ///< flag to decide whether to write the MC candidate variables on a tree variables
-        Bool_t                  fWriteXicPlusTree; ///< flag to decide whether to write XicZero tree
+        Bool_t                  fWriteXicPlusTree; ///< flag to decide whether to write Xic+ tree
+        Bool_t                  fWriteXicPlusQATree; ///< flag to decide whether to write Xic+ QA tree
+        Int_t                   fCount_NumOfCandidatePerEvent_In3Sigma; ///< Count number of Xic+ candidate per event within 3 sigma (assuming sigma=0.01)
+        TString                 fFileName;
+        unsigned int            fEventNumber;
+        unsigned int            fDirNumber;
 
         AliAnalysisTaskSEXicPlusToXi2PifromKFP(const AliAnalysisTaskSEXicPlusToXi2PifromKFP &source); // not implemented
         AliAnalysisTaskSEXicPlusToXi2PifromKFP& operator=(const AliAnalysisTaskSEXicPlusToXi2PifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 1);
+        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 3);
 };
 
 #endif

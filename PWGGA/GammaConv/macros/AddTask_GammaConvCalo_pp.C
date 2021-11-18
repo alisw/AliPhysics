@@ -2209,7 +2209,7 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 850){ // Default cut, with TM
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga012200000","0h63103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466510ga01ee00000","0h63103100000010"); // INT7
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // INT7 std cut
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga09ee00000","0h63103100000010"); // INT7
   } else if ( trainConfig == 851){ // V0M mult selection PCMPHOS
     cuts.AddCutPCMCalo("m0110113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 0-1%
@@ -2218,6 +2218,28 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("n2410113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 20-40%
     cuts.AddCutPCMCalo("n4710113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 40-70%
     cuts.AddCutPCMCalo("n7a10113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 70-100%
+  //PCM-PHOS pp HBT systematics studies <- without enabling extra HBT plots
+  } else if ( trainConfig == 860){ // Systematics (1/4) TM variations & opening angle
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520g101ee00000","0h63103100000010"); // TM stricter eta and phi
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520gb01ee00000","0h63103100000010"); // TM stricter phi
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000000"); // min opening angle 0
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000030"); // min opening angle 0.01 (2cell diag)
+  } else if ( trainConfig == 861){ // Systematics (1/4) rapidity variations & alpha meson
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63403100000010"); // rapidity variation  y<0.5
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63803100000010"); // rapidity variation  y<0.25
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63106100000010"); // alpha meson
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63105100000010"); // alpha meson
+  } else if ( trainConfig == 862){ // Systematics (1/4) dE/dx variations
+    cuts.AddCutPCMCalo("00010113","0dm0000919730000dge0404000","24466520ga01ee00000","0h63103100000010"); // -5 < sigma < 5
+    cuts.AddCutPCMCalo("00010113","0dm0000929730000dge0404000","24466520ga01ee00000","0h63103100000010"); // -3 < sigma < 5
+    cuts.AddCutPCMCalo("00010113","0dm00049f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // single pT 0.075 GeV/c
+    cuts.AddCutPCMCalo("00010113","0dm00019f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // single pT 0.1   GeV/c
+  } else if ( trainConfig == 863){ // Systematics (1/4) 2D triangular chi2 and psi pair, min TPC clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000d250404000","24466520ga01ee00000","0h63103100000010"); // chi2 and psi pair
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000d880404000","24466520ga01ee00000","0h63103100000010"); // chi2 and psi pair
+    cuts.AddCutPCMCalo("00010113","0dm00000f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // min TPC clusters
+    cuts.AddCutPCMCalo("00010113","0dm00008f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // min TPC clusters
+
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
