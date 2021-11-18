@@ -29,7 +29,7 @@
 class AliAnalysisH3MC;
 using namespace std;
 
-const char *GetID(int pdgCode);
+//const char *GetID(int pdgCode);
 ClassImp(AliAnalysisH3MC)
 
     //________________________________________________________________________
