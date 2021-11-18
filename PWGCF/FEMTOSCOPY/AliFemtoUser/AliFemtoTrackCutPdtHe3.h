@@ -50,7 +50,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
         bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
-        //\ for e+e femtoSetMostProbableHe3
+        //\ for e+e femto
         bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
         bool IsDeuteronTPCdEdx(float mom, float dEdx);

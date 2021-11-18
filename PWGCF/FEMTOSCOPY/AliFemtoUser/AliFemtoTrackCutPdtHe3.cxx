@@ -274,7 +274,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
                 //     && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
                 //     && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
                 //     && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) ){ 
-                cout<<"wdf "<<track->NSigmaTPCH()<<endl;    
+                //cout<<"wdf "<<track->NSigmaTPCH()<<endl;    
 		        imost = 15;
                 }
             }
@@ -450,7 +450,7 @@ void AliFemtoTrackCutPdtHe3::SetMostProbableElectron(){
 
     fMostProbable = 16; 
 }
-//\ follo wiola
+//\ follow wiola
 bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx)
 {
 
