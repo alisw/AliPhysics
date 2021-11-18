@@ -92,6 +92,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              primaryVtxPosY;             //Position of the primary Vertex of the Event
         Double_t              primaryVtxPosZ;             //Position of the primary Vertex of the Event
         Int_t                 nTracks;                    //Number of Tracks in the Event
+        Int_t                 Centrality;                 //Centrality of the Event
 
         //FillProtonArray Cuts
         Double_t              fMaxProtEta = 0.9;    
@@ -114,7 +115,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //FillV0PhotonArray Cuts
         Double_t              fMaxDaughtEta = 0.9;    
-        Double_t              fMinTPCClustDaught = 60;
+        Double_t              fMinTPCClustDaught = 40;
         Double_t              fMaxNsigDaughtTPC = 3;
         Double_t              fMaxalpha = 0.9;
         Double_t              fMaxqt = 0.04;
@@ -152,7 +153,12 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Branches of TTree "fSigmaCandTree"
         Bool_t                fIsMCSigma;
+        Bool_t                fIsV01Onthefly;
+        Bool_t                fIsV02Onthefly;
+        Float_t               fSigCentrality;               
+        Float_t               fSigBField;               
         Float_t               fInvSigMass;               
+        Float_t               fSigPA;               
         Float_t               fSigCharge;        
         Float_t               fSigPx;        
         Float_t               fSigPy;        
@@ -185,6 +191,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Branches of TTree "f4PartSigmaCandTree"
         Bool_t                f4PartIsMCSigma;
+        Bool_t                f4PartIsV0Onthefly;
         Float_t               f4PartInvSigMass;               
         Float_t               f4PartSigCharge;        
         Float_t               f4PartSigPx;        
