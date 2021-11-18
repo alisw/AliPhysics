@@ -230,7 +230,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fIDTracks(),
       fCharge(),
       fCPA(dmeson->Eta()),
-      fInvMass(dmeson->InvMass(pdgChildren.size(), &pdgChildren[0])),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(0),
       fMCPDGCode(0),
@@ -248,10 +248,21 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
   fTheta.push_back(dmeson->Theta());
   fPhi.push_back(dmeson->Phi());
   fCharge.push_back(dmeson->Charge());
+  if (pdgParent != 413) {
+    fInvMass = dmeson->InvMass(pdgChildren.size(), &pdgChildren[0]);
+  } else {
+    fInvMass = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->DeltaInvMass();
+  }
 
   std::vector<float> phiAtRadii;
   for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
-    AliAODTrack *track = (AliAODTrack *) dmeson->GetDaughter(iChild);
+    AliAODTrack *track;
+    if (pdgParent != 413 || iChild == 0) {
+      track = (AliAODTrack *) dmeson->GetDaughter(iChild);
+    } else {
+      AliAODRecoDecayHF2Prong *dzero = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->Get2Prong();
+      track = (AliAODTrack *) dzero->GetDaughter(iChild-1);
+    }
     SetMomentum(iChild + 1, { track->Px(), track->Py(), track->Pz() });
     fIDTracks.push_back(track->GetID());
     fEta.push_back(track->Eta());
@@ -268,12 +279,21 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       AliAODMCParticle::StdBranchName()));
   if (mcarray) {
     // dmeson->InvMass needs unsigned int*, this one needs a const int* (and does TMath::Abs() on that). Great.
-    int PDGDaug[pdgChildren.size()];
-    for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
-      PDGDaug[iChild] = pdgChildren.at(iChild);
+    int label;
+    if (pdgParent != 413) {
+      int PDGDaug[pdgChildren.size()];
+      for (size_t iChild = 0; iChild < pdgChildren.size(); iChild++) {
+        PDGDaug[iChild] = pdgChildren.at(iChild);
+      }
+      label = dmeson->MatchToMC(std::abs(pdgParent), mcarray,
+                                pdgChildren.size(), PDGDaug);
+    } else {
+      //easier to hardcode the Dstar PDG decay codes than to provide them as argument
+      int pdgD0Dau[2] = {321, 211};
+      int pdgDstarDau[2] = {421, 211};
+      label = dynamic_cast<const AliAODRecoCascadeHF *>(dmeson)->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, mcarray, false);
     }
-    const int label = dmeson->MatchToMC(std::abs(pdgParent), mcarray,
-                                        pdgChildren.size(), PDGDaug);
+
     if (label < 0) {
       this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
     } else {
