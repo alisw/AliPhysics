@@ -61,7 +61,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
     // now we create an instance of your task
     AliAnalysisTaskFlowPPTask* task = new AliAnalysisTaskFlowPPTask(name.Data());   
     if(!task) return 0x0;
-	task->SetDebugLevel(3);
+	//task->SetDebugLevel(3);
 	task->SetFilterbit(fFilterbit); // For systematics
 	task->SetFilterbitDefault(fFilterbit);
 	task->SetEtaCut(fEtaCut);
