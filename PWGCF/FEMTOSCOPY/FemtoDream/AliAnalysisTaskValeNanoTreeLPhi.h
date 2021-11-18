@@ -40,9 +40,8 @@ public:
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetRunTaskLightWeight(bool light){fisLightWeight = light;}
 
-  Bool_t FillKaon(AliFemtoDreamTrack *track);
-  Bool_t FillProton(AliFemtoDreamTrack *track);
   Bool_t FillLambda(AliFemtoDreamv0 *v0);
+  Bool_t FillPhi(AliFemtoDreamv0 *v0);
 
 private:
   AliAnalysisTaskValeNanoTreeLPhi(const AliAnalysisTaskValeNanoTreeLPhi &);
@@ -92,7 +91,7 @@ private:
   Int_t fTRunNumber;
   Float_t fTVz;
   Int_t fTMult;
-  float fSpher;
+  Float_t fSpher;
 
   /// Entries tree for Lambda and Daughters
   static const int nMaxLambda = 100;
@@ -107,8 +106,8 @@ private:
   float Daugh_eta[nMaxLambda];
   int Daugh_nTpcCls[nMaxLambda];
   float Daugh_dca[nMaxLambda];
-  int Daugh_nSigma[nMaxLambda];
-/// Entries tree for Phi and Kaons
+  float Daugh_nSigma[nMaxLambda];
+  /// Entries tree for Phi and Kaons
   static const int nMaxPhi = 100;
   int fNumPhi;
 

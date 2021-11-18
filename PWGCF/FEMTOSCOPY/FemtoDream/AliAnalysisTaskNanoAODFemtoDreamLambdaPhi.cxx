@@ -116,7 +116,6 @@ AliAnalysisTaskNanoAODFemtoDreamLambdaPhi::AliAnalysisTaskNanoAODFemtoDreamLambd
   {
 
     fEvent = new AliFemtoDreamEvent(true, true, fTrigger);
-    fEvent->SetCalcSpherocity(false);
 
     fTrack = new AliFemtoDreamTrack();
     fTrack->SetUseMCInfo(
