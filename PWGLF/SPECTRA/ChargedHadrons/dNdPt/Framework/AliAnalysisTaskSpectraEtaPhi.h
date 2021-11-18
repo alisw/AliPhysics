@@ -6,6 +6,7 @@
 
 #include "AliAnalysisTaskMKBase.h"
 #include "AliAnalysisHelpersHist.h"
+#include "AliMCSpectraWeights.h"
 #include "THn.h"
 
 class AliESDtrackCuts;
@@ -28,6 +29,7 @@ class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
     virtual void AddOutput();         // called at the beginning
     virtual Bool_t IsEventSelected(); // called for each event
     virtual void AnaEvent();          // called once for every selected event
+    virtual void AnaEventMC();      //called once for every track in MC event
     virtual void
     AnaTrack(Int_t flag = 0); // called once for every track in DATA+MC event
     virtual void
@@ -49,6 +51,7 @@ class AliAnalysisTaskSpectraEtaPhi : public AliAnalysisTaskMKBase {
     Hist::Hist<THnF> fHistTrackEta;        //!<!   histogram of pt spectra vs. mult and cent
     Hist::Hist<THnF> fHistTrackPhi;        //!<!   histogram of pt spectra vs. mult and cent
     Hist::Hist<TH3F> fHistEvent;           //!<!   histogram of event numbers etc.
+    AliMCSpectraWeights*    fMCSpectraWeights; //!<! object to determine efficiency scaling
 
   private:
     AliAnalysisTaskSpectraEtaPhi(
