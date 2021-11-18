@@ -3128,7 +3128,11 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
-  for(Int_t i=1;i<=16;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1;i<=2;i++) fMCPtShape->SetBinContent(i,1.00);
+  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,0.04);
+  for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,1.00);
 
   // FD
   fDataDrivenFD = new TH1F("fDataDrivenFD","fDataDrivenFD",16,0,16);

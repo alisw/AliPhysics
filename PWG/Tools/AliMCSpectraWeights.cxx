@@ -198,35 +198,35 @@ fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
     };
 
     if ("pp" == fstCollisionSystem) {
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     } else if ("ppb" == fstCollisionSystem) {
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     } else if ("pbpb" == fstCollisionSystem || "xexe" == fstCollisionSystem) {
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kBlastwaveUpper);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kBlastwaveLower);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kBlastwaveUpper);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kBlastwaveLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
-        fAllSystematicFlags.push_back(
-                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
+//        fAllSystematicFlags.push_back(
+//                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     }
 
     fNSysFlags = fAllSystematicFlags.size();
@@ -1302,7 +1302,7 @@ int const AliMCSpectraWeights::IdentifySecondaryType(TParticle* part){
  *  @param[in] mcGenParticle
  *  @return weight factor for secondary particle
  */
-float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenParticle){
+float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenParticle, Int_t SysCase){
     DebugPCC("GetWeightForSecondaryParticle\n");
 
     float weight = 1;
@@ -1343,7 +1343,14 @@ float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenP
         DebugPCC("Can't find bin\n");
         return 1;
     }
-    weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+
+    if(SysCase==0){
+        weight = fHistMCWeightsSys[AliMCSpectraWeights::SysFlag::kNominal]->GetBinContent(_iBin);
+    } else if(SysCase<0){
+        weight = fHistMCWeightsSysDown->GetBinContent(_iBin);
+    } else if(SysCase>0){
+        weight = fHistMCWeightsSysUp->GetBinContent(_iBin);
+    }
 
     if(weight < 1e-2){
         DebugPCC("AliMCSpectraWeights::WARNING: weight is too small -> set to 1 \n");

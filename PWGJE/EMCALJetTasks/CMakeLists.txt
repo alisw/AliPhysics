@@ -20,6 +20,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/FlowVectorCorrections
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -235,7 +236,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTrackSkim.cxx
-
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
@@ -246,7 +246,9 @@ set(SRCS
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx
     UserTasks/AliAnalysisTaskRawJetWithEP.cxx
-    UserTasks/AliPieceWisePoly.cxx)
+    UserTasks/AliPieceWisePoly.cxx
+    FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
+)
 
 # Tasks that need direct access to RooUnfold
 if(RooUnfold_FOUND)

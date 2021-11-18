@@ -775,7 +775,7 @@ else NumJet =fJetCollArray.GetEntries();
 //                      for(auto cont:dynamic_cast<AliEmcalJet*>(MatchGenDetList.At(j))->GetParticleConstituents()){
 //                       fHistManager.FillTH2(histname,pt_low,cont.Pt()/pt_low);}
   
-                      histname = TString::Format("hJetPtDeltaRDeltaPt_R%d_gen",int(Rjet*(i+1)*100));
+                      histname = TString::Format("hJetPtDeltaRDeltaPt_R%d_gen_%d",int(Rjet*(i+1)*100),fCentBin);
                       fHistManager.FillTH3(histname,pt_low,DeltaR,DeltaPt_gen);
 
 

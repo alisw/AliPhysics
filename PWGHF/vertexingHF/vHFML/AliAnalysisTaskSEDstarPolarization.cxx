@@ -588,7 +588,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
     int nCosThetaBins = 5;
 
     int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, 100};
-    double xminReco[knVarForSparseReco] = {massMin, -1., 0., 0., 0., 0., 0.};
+    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0.};
     double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 100.};
 
     int nBinsThetaPhiReco[4] = {nMassBins, nPtBins, 100, 100};
