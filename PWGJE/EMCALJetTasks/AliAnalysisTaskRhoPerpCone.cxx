@@ -36,6 +36,7 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliJetContainer.h"
+#include "AliAODTrack.h"
 
 ClassImp(AliAnalysisTaskRhoPerpCone);
 
@@ -125,9 +126,9 @@ Bool_t AliAnalysisTaskRhoPerpCone::Run()
     Double_t PerpendicularConeAxisPhi = 999;
     PerpendicularConeAxisPhi = ((LeadJet->Phi() + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? LeadJet->Phi() - ((3. / 2.) * TMath::Pi()) : LeadJet->Phi() + (TMath::Pi() / 2.);
     partCont->ResetCurrentID();
-    while (partCont->GetNextAcceptParticle())
+
+    while (auto part = partCont->GetNextAcceptParticle())
     {
-        auto part = partCont->GetParticle(partCont->GetCurrentID());
         if (!part)
             continue;
 
