@@ -458,7 +458,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
 double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 {
   if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCPCCMode);
+    return fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
   }
   return 1.0;
 }
@@ -471,7 +471,7 @@ double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 {
   if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCPCCMode);
+    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
   }
   return 1.0;
 }
@@ -993,11 +993,11 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
 
   // in MC we always apply data driven corrections to account for wrong particle composition in the generator
   if (isMC && fMCEnableDDC) {
-    fMCPCCMode = 0;
+    fMCDDCMode = 0;
     if (cutMode == 120) {
-      fMCPCCMode = 1; // shift correction factors up within their systematics
+      fMCDDCMode = 1;             // shift correction factors up within their systematics
     } else if (cutMode == 121) {
-      fMCPCCMode = -1; // shift correction factors down within their systematics
+      fMCDDCMode = -1;            // shift correction factors down within their systematics
     }
   }
   return true;
