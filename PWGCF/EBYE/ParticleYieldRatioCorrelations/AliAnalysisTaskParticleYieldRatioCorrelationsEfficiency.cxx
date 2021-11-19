@@ -276,7 +276,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
         fDeDx->Fill(Moment, DeDx);
         fTOF->Fill(Moment, track->GetTOFsignal());
 
-        if (MCGen && fMC)
+        if (IsMC && fMC)
         {
             int label = track->GetLabel();
             AliAODMCParticle *part = (AliAODMCParticle *)fMC->GetTrack(abs(label));
@@ -441,7 +441,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
 
     int nAcceptedGenTracks = 0;
 
-    if (MCGen && fMC)
+    if (IsMC && fMC)
     {
         //Generated particles track loop
         for (Int_t i(0); i < nMCTracks; i++)
