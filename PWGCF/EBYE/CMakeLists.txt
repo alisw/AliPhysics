@@ -174,4 +174,4 @@ install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeF
 install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)
 install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
 install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)
-install(DIRECTORY AngularRatiosCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
+install(DIRECTORY ParticleYieldRatioCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
