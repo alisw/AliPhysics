@@ -73,13 +73,28 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
     if(fTrCutsTPC) delete fTrCutsTPC;
     fTrCutsTPC=new AliESDtrackCuts(*cuts);
   }
+  void SetRun2Pass2TPCTrackCuts(){
+    fTrCutsTPC->SetMinNCrossedRowsTPC(70);
+    fTrCutsTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fTrCutsTPC->SetEtaRange(-0.8,0.8);
+    fTrCutsTPC->SetMaxChi2PerClusterTPC(2.5);
+    fTrCutsTPC->SetAcceptKinkDaughters(kFALSE);
+    fTrCutsTPC->SetRequireTPCRefit(kTRUE);
+    fTrCutsTPC->SetDCAToVertex2D(kFALSE);
+    fTrCutsTPC->SetRequireSigmaToVertex(kFALSE);
+    fTrCutsTPC->SetMaxDCAToVertexXY(2.);
+    fTrCutsTPC->SetMaxDCAToVertexZ(3.);
+  }
   void SeMinNumOfTPCPIDclu(Int_t minc){
     fMinNumOfTPCPIDclu=minc;
   }
-  void SetV0Cuts(Double_t imppardau, Double_t dcadau, Double_t cpa, Double_t minr, Double_t maxr){
+  void SetV0Cuts(Double_t imppardau, Double_t dcadau, Double_t cpa, Double_t minr, Double_t maxr, Double_t maxyV0=999.){
     fApplyV0Cuts=kTRUE;
     fV0CutArray[0]=imppardau; fV0CutArray[1]=dcadau; fV0CutArray[2]=cpa;
-    fV0CutArray[3]=minr; fV0CutArray[4]=maxr;
+    fV0CutArray[3]=minr; fV0CutArray[4]=maxr; fV0CutArray[5]=maxyV0;
+  }
+  void SetV0PbPbLooseCuts(){
+    SetV0Cuts(0.,1.,0.95,0.,100.,0.5);
   }
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
@@ -268,7 +283,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Double_t fMaxCentrality;     // centrality: upper limit
   TString fCentrEstimator;     // centrality: estimator
   Bool_t fApplyV0Cuts;         // flag to use/not use V0 cuts
-  Double_t fV0CutArray[5];     // Cut values for V0
+  Double_t fV0CutArray[6];     // Cut values for V0
   Int_t fNEtaBins;             // number of eta intervals in histos
   Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos
@@ -281,7 +296,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,25);
+  ClassDef(AliAnalysisTaskCheckAODTracks,26);
 };
 
 
