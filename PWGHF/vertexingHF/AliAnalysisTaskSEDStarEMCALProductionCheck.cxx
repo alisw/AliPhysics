@@ -257,6 +257,7 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
   TClonesArray *mcTrackArray = nullptr;
   Double_t crossSection = 0.0;
   Double_t ptHard = 0.0;
+  Int_t nTrials = 0;
 
   // Int_t nPtBins = fCuts->GetNPtBins();
   // const Int_t nPtBinLimits = nPtBins + 1;
@@ -277,6 +278,7 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
     }
     crossSection = pythiaHeader->GetXsection();
     ptHard = pythiaHeader->GetPtHard();
+    nTrials = pythiaHeader->Trials();
 
     mcTrackArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!mcTrackArray) {std::cout << "no track array" << std::endl; return;};
@@ -358,13 +360,14 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
             ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC);
             fillthis = "DStarPtTruePreEventSelectionWeighted";
             ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC, crossSection);
-            fillthis = "PtHardPreEventSelection";
-            ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard);
-            fillthis = "PtHardWeightedPreEventSelection";
-            ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard, crossSection);
-            fillthis = "WeightsPreEventSelection";
-            ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(crossSection);
-
+            // fillthis = "PtHardPreEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard);
+            // fillthis = "PtHardWeightedPreEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard, crossSection);
+            // fillthis = "WeightsPreEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(crossSection);
+            // fillthis = "TrialsPreEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->AddBinContent(1,nTrials);
             fillthis = "DStar_per_bin_true_PreEventSelection";
             ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC);
             fillthis = "DStar_per_bin_true_PreEventSelection_weighted";
@@ -375,6 +378,15 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
     }
   }
 
+  TString fillthishist = "";
+  fillthishist = "PtHardPreEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(ptHard);
+  fillthishist = "PtHardWeightedPreEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(ptHard, crossSection);
+  fillthishist = "WeightsPreEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(crossSection);
+  fillthishist = "TrialsPreEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->AddBinContent(1,nTrials);
 
 
 
@@ -404,7 +416,10 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
       AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;
       return;
     }
-    if (!triggercont->IsEventSelected(fTriggerSelectionString)) return;
+    if (fTriggerSelectionString == "EG1DG1")
+    {
+      if (!triggercont->IsEventSelected("EG1") && !triggercont->IsEventSelected("DG1")) return;
+    } else if (!triggercont->IsEventSelected(fTriggerSelectionString)) return;
   }
 
   // Get field for EMCAL acceptance and cut events
@@ -452,6 +467,27 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
   if (!vtx1) return;
   if (vtx1->GetNContributors() < 1) return;
   fCEvents->Fill(4);
+
+
+  //save cluster information for EMCal trigger selection check
+
+  Int_t numberOfCaloClustersEvent = aodEvent->GetNumberOfCaloClusters();
+
+  if (numberOfCaloClustersEvent >= 0)
+  {
+    for (Int_t iCluster = 0; iCluster < numberOfCaloClustersEvent; ++iCluster)
+    {
+      AliAODCaloCluster * trackEMCALCluster = (AliAODCaloCluster*)aodEvent->GetCaloCluster(iCluster);
+
+      //save cluster information
+      Float_t pos[3]={0};
+      trackEMCALCluster->GetPosition(pos);
+      TString fillthis = "";
+      fillthis = "fHistClusPosition";
+      ((TH3F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(pos[0], pos[1], pos[2]);
+    }
+  } 
+
 
   if (!arrayDStartoD0pi || !arrayD0toKpi) {
     AliInfo("Could not find array of HF vertices, skipping the event");
@@ -537,13 +573,14 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
             ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC);
             fillthis = "DStarPtTruePostEventSelectionWeighted";
             ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC, crossSection);
-            fillthis = "PtHardPostEventSelection";
-            ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard);
-            fillthis = "PtHardWeightedPostEventSelection";
-            ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard, crossSection);
-            fillthis = "WeightsPostEventSelection";
-            ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(crossSection);
-
+            // fillthis = "PtHardPostEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard);
+            // fillthis = "PtHardWeightedPostEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard, crossSection);
+            // fillthis = "WeightsPostEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(crossSection);
+            // fillthis = "TrialsPostEventSelection";
+            // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->AddBinContent(1,nTrials);
             fillthis = "DStar_per_bin_true_PostEventSelection";
             ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC);
             fillthis = "DStar_per_bin_true_PostEventSelection_weighted";
@@ -554,6 +591,15 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
     }
   }
 
+  fillthishist = "";
+  fillthishist = "PtHardPostEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(ptHard);
+  fillthishist = "PtHardWeightedPostEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(ptHard, crossSection);
+  fillthishist = "WeightsPostEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(crossSection);
+  fillthishist = "TrialsPostEventSelection";
+  ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->AddBinContent(1,nTrials);
 
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
@@ -871,13 +917,14 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
               ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC);
               fillthis = "DStarPtTruePostCutsWeighted";
               ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptMC, crossSection);
-              fillthis = "PtHardPostCuts";
-              ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard);
-              fillthis = "PtHardWeightedPostCuts";
-              ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard, crossSection);
-              fillthis = "WeightsPostCuts";
-              ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(crossSection);
-
+              // fillthis = "PtHardPostCuts";
+              // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard);
+              // fillthis = "PtHardWeightedPostCuts";
+              // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(ptHard, crossSection);
+              // fillthis = "WeightsPostCuts";
+              // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(crossSection);
+              // fillthis = "TrialsPostCuts";
+              // ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->AddBinContent(1,nTrials);
               fillthis = "DStarPtPostCuts";
               ((TH1F*)(fOutputProductionCheck->FindObject(fillthis)))->Fill(Dstarpt);
               fillthis = "DStarPtPostCutsWeighted";
@@ -898,6 +945,15 @@ void AliAnalysisTaskSEDStarEMCALProductionCheck::UserExec(Option_t *)
       }
     }
 
+    fillthishist = "";
+    fillthishist = "PtHardPostCuts";
+    ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(ptHard);
+    fillthishist = "PtHardWeightedPostCuts";
+    ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(ptHard, crossSection);
+    fillthishist = "WeightsPostCuts";
+    ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->Fill(crossSection);
+    fillthishist = "TrialsPostCuts";
+    ((TH1F*)(fOutputProductionCheck->FindObject(fillthishist)))->AddBinContent(1,nTrials);
 
 
     // fill PID
@@ -1565,6 +1621,35 @@ void  AliAnalysisTaskSEDStarEMCALProductionCheck::DefineHistograms() {
   TH1F* histogram_WeightsPostCuts = (TH1F*)hist_WeightsPostCuts->Clone();
   fOutputProductionCheck->Add(histogram_WeightsPostCuts);
 
+  TString name_TrialsPreEventSelection = "TrialsPreEventSelection";
+  TH1F* hist_TrialsPreEventSelection = new TH1F(name_TrialsPreEventSelection.Data(), "TrialsPreEventSelection; p_{T} [GeV/c]; Entries", 1, 0, 1);
+  hist_TrialsPreEventSelection->Sumw2();
+  hist_TrialsPreEventSelection->SetLineColor(6);
+  hist_TrialsPreEventSelection->SetMarkerStyle(20);
+  hist_TrialsPreEventSelection->SetMarkerSize(0.6);
+  hist_TrialsPreEventSelection->SetMarkerColor(6);
+  TH1F* histogram_TrialsPreEventSelection = (TH1F*)hist_TrialsPreEventSelection->Clone();
+  fOutputProductionCheck->Add(histogram_TrialsPreEventSelection);
+
+  TString name_TrialsPostEventSelection = "TrialsPostEventSelection";
+  TH1F* hist_TrialsPostEventSelection = new TH1F(name_TrialsPostEventSelection.Data(), "TrialsPostEventSelection; p_{T} [GeV/c]; Entries", 1, 0, 1);
+  hist_TrialsPostEventSelection->Sumw2();
+  hist_TrialsPostEventSelection->SetLineColor(6);
+  hist_TrialsPostEventSelection->SetMarkerStyle(20);
+  hist_TrialsPostEventSelection->SetMarkerSize(0.6);
+  hist_TrialsPostEventSelection->SetMarkerColor(6);
+  TH1F* histogram_TrialsPostEventSelection = (TH1F*)hist_TrialsPostEventSelection->Clone();
+  fOutputProductionCheck->Add(histogram_TrialsPostEventSelection);
+
+  TString name_TrialsPostCuts = "TrialsPostCuts";
+  TH1F* hist_TrialsPostCuts = new TH1F(name_TrialsPostCuts.Data(), "TrialsPostCuts; p_{T} [GeV/c]; Entries", 1, 0, 1);
+  hist_TrialsPostCuts->Sumw2();
+  hist_TrialsPostCuts->SetLineColor(6);
+  hist_TrialsPostCuts->SetMarkerStyle(20);
+  hist_TrialsPostCuts->SetMarkerSize(0.6);
+  hist_TrialsPostCuts->SetMarkerColor(6);
+  TH1F* histogram_TrialsPostCuts = (TH1F*)hist_TrialsPostCuts->Clone();
+  fOutputProductionCheck->Add(histogram_TrialsPostCuts);
 
   Int_t nPtBins = fCuts->GetNPtBins();
   // const Int_t nPtBinLimits = nPtBins + 1;
@@ -1609,6 +1694,12 @@ void  AliAnalysisTaskSEDStarEMCALProductionCheck::DefineHistograms() {
   TH1F* hist_DStar_per_bin_PostCuts_weighted = new TH1F(name_DStar_per_bin_PostCuts_weighted.Data(),"DStar_per_bin_PostCuts_weighted; Entries",nPtBins,PtBinLimits); 
   TH1F* histogram_DStar_per_bin_PostCuts_weighted = (TH1F*)hist_DStar_per_bin_PostCuts_weighted->Clone();
   fOutputProductionCheck->Add(histogram_DStar_per_bin_PostCuts_weighted);
+
+  TString name_fHistClusPosition ="fHistClusPosition";
+  TH3F* hist_fHistClusPosition = new TH3F(name_fHistClusPosition.Data(),";#it{x} (cm);#it{y} (cm);#it{z} (cm)", 50, -500, 500, 50, -500, 500, 50, -500, 500);
+  TH3F* histogram_fHistClusPosition = (TH3F*)hist_fHistClusPosition->Clone();
+  fOutputProductionCheck->Add(histogram_fHistClusPosition);
+
 
   return;
 }
