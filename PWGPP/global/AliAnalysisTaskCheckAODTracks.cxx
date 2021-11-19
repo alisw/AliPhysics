@@ -220,6 +220,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fV0CutArray[2]=-1.;
   fV0CutArray[3]=0.;
   fV0CutArray[4]=99999.;
+  fV0CutArray[5]=99999.;
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -541,7 +542,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   for(Int_t jjj=85; jjj<=90; jjj++) ptBins4ip[jjj]=ptBins4ip[84]+1.*(jjj-84);
   const Int_t nMultBins4ip=12;
   Double_t multBins4ip[nMultBins4ip+1]={0.,20.,50.,100.,500.,1000.,
-					1500.,2000.,3000.,4000.,5000.,7500.,10000.};
+                                        1500.,2000.,3000.,4000.,5000.,7500.,10000.};
   const Int_t nIPBins4ip=400;
   Double_t ipBins4ip[nIPBins4ip+1];
   for(Int_t jjj=0; jjj<=nIPBins4ip; jjj++) ipBins4ip[jjj]=-1500.+(3000./(Double_t)nIPBins4ip)*(Double_t)jjj;
@@ -901,15 +902,15 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     UChar_t clumap=track->GetITSClusterMap();
     if(itsRefit && !(statusTrack&AliESDtrack::kTPCin)){
       if(statusTrack&AliESDtrack::kITSpureSA){
-	fHistITSnClusITSPureSA->Fill(nITSclus);
-	for(Int_t layer=0; layer<6; layer++) {
-	  if(TESTBIT(clumap,layer)) fHistITSCluInLayITSPureSA->Fill(layer);
-	}
+        fHistITSnClusITSPureSA->Fill(nITSclus);
+        for(Int_t layer=0; layer<6; layer++) {
+          if(TESTBIT(clumap,layer)) fHistITSCluInLayITSPureSA->Fill(layer);
+        }
       }else{
-	fHistITSnClusITSsa->Fill(nITSclus);
-	for(Int_t layer=0; layer<6; layer++) {
-	  if(TESTBIT(clumap,layer)) fHistITSCluInLayITSsa->Fill(layer);
-	}
+        fHistITSnClusITSsa->Fill(nITSclus);
+        for(Int_t layer=0; layer<6; layer++) {
+          if(TESTBIT(clumap,layer)) fHistITSCluInLayITSsa->Fill(layer);
+        }
       }
     }
     Int_t nSPDclus=0;
@@ -957,9 +958,9 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if(pidResp){
       AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
       if (status == AliPIDResponse::kDetPidOk){
-	for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
-	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
-	}
+        for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
+          nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
+        }
       }
     }
     fTreeVarFloat[15]=dedx;
@@ -1015,16 +1016,16 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       if(track->TestFilterBit(1<<jb)){
-	fHistImpParXYPtMulFiltBit[jb]->Fill(pttrack,impactXY*10000.,ncl1);
-	fHistEtaPhiPtFiltBit[jb]->Fill(etatrack,phitrack,pttrack);
-	fHistITScluPtFiltBit[jb]->Fill(pttrack,nITSclus);
- 	fHistSPDcluPtFiltBit[jb]->Fill(pttrack,nSPDclus);
- 	fHistTPCcluPtFiltBit[jb]->Fill(pttrack,nTPCclus);
-	fHistTPCcrrowsPtFiltBit[jb]->Fill(pttrack,nCrossedRowsTPC);
-	fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
-	fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
-	fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
-	fHistSig1ptCovMatPtFiltBit[jb]->Fill(pttrack,curvrelerr);
+        fHistImpParXYPtMulFiltBit[jb]->Fill(pttrack,impactXY*10000.,ncl1);
+        fHistEtaPhiPtFiltBit[jb]->Fill(etatrack,phitrack,pttrack);
+        fHistITScluPtFiltBit[jb]->Fill(pttrack,nITSclus);
+        fHistSPDcluPtFiltBit[jb]->Fill(pttrack,nSPDclus);
+        fHistTPCcluPtFiltBit[jb]->Fill(pttrack,nTPCclus);
+        fHistTPCcrrowsPtFiltBit[jb]->Fill(pttrack,nCrossedRowsTPC);
+        fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
+        fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
+        fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
+        fHistSig1ptCovMatPtFiltBit[jb]->Fill(pttrack,curvrelerr);
       }
     }
 
@@ -1065,8 +1066,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
       fHistSig1ptCovMatPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
       if(spdAny){
-	fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
-	fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
+        fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
+        fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
       }
     }
 
@@ -1095,61 +1096,61 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       fHistPzResidVsPtTPCselAll->Fill(ptOnX,(track->Pz()-pzgen));
       fHistPzResidVsEtaTPCselAll->Fill(etatrack,(track->Pz()-pzgen));
       if (itsRefit){
-	fHistPtResidVsPtTPCselITSrefAll->Fill(ptOnX,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	fHistPzResidVsPtTPCselITSrefAll->Fill(ptOnX,(track->Pz()-pzgen));
-	fHistPzResidVsEtaTPCselITSrefAll->Fill(etatrack,(track->Pz()-pzgen));
+        fHistPtResidVsPtTPCselITSrefAll->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        fHistPzResidVsPtTPCselITSrefAll->Fill(ptOnX,(track->Pz()-pzgen));
+        fHistPzResidVsEtaTPCselITSrefAll->Fill(etatrack,(track->Pz()-pzgen));
       }
       if(isPhysPrim==1){
-	fHistPtResidVsPtTPCselPrim->Fill(ptOnX,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselPrim->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	if (itsRefit){
-	  fHistPtResidVsPtTPCselITSrefPrim->Fill(ptOnX,(pttrack-ptgen));
-	  fHistOneOverPtResidVsPtTPCselITSrefPrim->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	}
+        fHistPtResidVsPtTPCselPrim->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselPrim->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        if (itsRefit){
+          fHistPtResidVsPtTPCselITSrefPrim->Fill(ptOnX,(pttrack-ptgen));
+          fHistOneOverPtResidVsPtTPCselITSrefPrim->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        }
       }else if(isPhysPrim==0){
-	fHistPtResidVsPtTPCselSecDec->Fill(ptOnX,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselSecDec->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	if (itsRefit){
-	  fHistPtResidVsPtTPCselITSrefSecDec->Fill(ptOnX,(pttrack-ptgen));
-	  fHistOneOverPtResidVsPtTPCselITSrefSecDec->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	}
+        fHistPtResidVsPtTPCselSecDec->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselSecDec->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        if (itsRefit){
+          fHistPtResidVsPtTPCselITSrefSecDec->Fill(ptOnX,(pttrack-ptgen));
+          fHistOneOverPtResidVsPtTPCselITSrefSecDec->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        }
       }else if(isPhysPrim==-1){
-	fHistPtResidVsPtTPCselSecMat->Fill(ptOnX,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselSecMat->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	if (itsRefit){
-	  fHistPtResidVsPtTPCselITSrefSecMat->Fill(ptOnX,(pttrack-ptgen));
-	  fHistOneOverPtResidVsPtTPCselITSrefSecMat->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
-	}
+        fHistPtResidVsPtTPCselSecMat->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselSecMat->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        if (itsRefit){
+          fHistPtResidVsPtTPCselITSrefSecMat->Fill(ptOnX,(pttrack-ptgen));
+          fHistOneOverPtResidVsPtTPCselITSrefSecMat->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        }
       }
       if(isPhysPrim==1){
-	for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
-	  if (pid[iS]) {
-	    Double_t ptDiff=pttrack*AliPID::ParticleCharge(iS)-ptgen;
-	    Double_t oneOverPtDiff=0;
-	    if(AliPID::ParticleCharge(iS)>0) oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-invptgen);
-	    fHistPtResidVsPtTPCsel[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),ptDiff);
-	    fHistOneOverPtResidVsPtTPCsel[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),oneOverPtDiff);
-	    if (itsRefit){ 
-	      fHistPtResidVsPtTPCselITSref[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),ptDiff);
-	      fHistOneOverPtResidVsPtTPCselITSref[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),oneOverPtDiff);
-	    }
-	  }
-	}
+        for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
+          if (pid[iS]) {
+            Double_t ptDiff=pttrack*AliPID::ParticleCharge(iS)-ptgen;
+            Double_t oneOverPtDiff=0;
+            if(AliPID::ParticleCharge(iS)>0) oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-invptgen);
+            fHistPtResidVsPtTPCsel[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),ptDiff);
+            fHistOneOverPtResidVsPtTPCsel[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),oneOverPtDiff);
+            if (itsRefit){ 
+              fHistPtResidVsPtTPCselITSref[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),ptDiff);
+              fHistOneOverPtResidVsPtTPCselITSref[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),oneOverPtDiff);
+            }
+          }
+        }
       }
     
       if(trlabel>=0){
-	fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
-	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(ptOnX,impactXY*10000.,ncl1);
+        fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
+        if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(ptOnX,impactXY*10000.,ncl1);
       }else{
-	fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
-	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(ptOnX,impactXY*10000.,ncl1);
+        fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
+        if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(ptOnX,impactXY*10000.,ncl1);
       }
       
       if(itsRefit && spdAny){
-	if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(ptOnX,impactXY*10000.,ncl1);
-	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(ptOnX,impactXY*10000.,ncl1);
-	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(ptOnX,impactXY*10000.,ncl1);
+        if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(ptOnX,impactXY*10000.,ncl1);
+        else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(ptOnX,impactXY*10000.,ncl1);
+        else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(ptOnX,impactXY*10000.,ncl1);
       }
     }
   }
@@ -1246,16 +1247,16 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Bool_t keepAntiLambda=kTRUE;
     if(!fReadMC){
       if(pidResp){
-	Double_t nsigmap=-999.;
-	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
-	  nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
-	}
-	Double_t nsigman=-999.;
-	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
-	  nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
-	}
-	if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
-	if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
+        Double_t nsigmap=-999.;
+        if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
+          nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
+        }
+        Double_t nsigman=-999.;
+        if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
+          nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
+        }
+        if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
+        if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
       }
     }else{
       keepK0s=kFALSE;
@@ -1268,13 +1269,13 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(partPos && partNeg){
         Int_t labelMotherPos=partPos->GetMother();
         Int_t labelMotherNeg=partNeg->GetMother();
-	if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
-	  AliAODMCParticle* partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelMotherPos)));
- 	  Int_t pdgV0=partV0->GetPdgCode();
-	  if(TMath::Abs(pdgV0)==310) keepK0s=kTRUE;
-	  if(pdgV0==3122) keepLambda=kTRUE;
-	  if(pdgV0==-3122) keepAntiLambda=kTRUE;
-	}
+        if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
+          AliAODMCParticle* partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelMotherPos)));
+          Int_t pdgV0=partV0->GetPdgCode();
+          if(TMath::Abs(pdgV0)==310) keepK0s=kTRUE;
+          if(pdgV0==3122) keepLambda=kTRUE;
+          if(pdgV0==-3122) keepAntiLambda=kTRUE;
+        }
       }
     }
     if(TMath::Abs(invMassK0s-0.4976)<0.03){
@@ -1291,43 +1292,45 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
 
     if(keepK0s) {
-      fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
-      int statusp=0;
-      if(pTrack->GetStatus() & AliESDtrack::kITSrefit){
-	statusp=1;
-	if(pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1)) statusp=2;
-      }
-      int statusn=0;
-      if(nTrack->GetStatus() & AliESDtrack::kITSrefit){
-	statusn=1;
-	if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1)) statusn=2;
-      }
-      double arrK0s[5]={invMassK0s,ptv0,rv0,(double)statusp,(double)statusn};
-      if(fFillMulDimK0s && fHistMuldimK0s) fHistMuldimK0s->Fill(arrK0s);
-      if(inPeakK0s){
-	fHistDecayLengthVsPtK0s->Fill(dlen,ptv0);
-	fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);
-	fHistImpParZVsPtK0s->Fill(d0v0[1],ptv0);
-	fHistImpParXYVsPtK0sDau->Fill(d0p[0],ptv0);
-	fHistImpParXYVsPtK0sDau->Fill(d0n[0],ptv0);
+      if(!fApplyV0Cuts || TMath::Abs(v0->RapK0Short())<fV0CutArray[5]){
+        fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+        int statusp=0;
+        if(pTrack->GetStatus() & AliESDtrack::kITSrefit){
+          statusp=1;
+          if(pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1)) statusp=2;
+        }
+        int statusn=0;
+        if(nTrack->GetStatus() & AliESDtrack::kITSrefit){
+          statusn=1;
+          if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1)) statusn=2;
+        }
+        double arrK0s[5]={invMassK0s,ptv0,rv0,(double)statusp,(double)statusn};
+        if(fFillMulDimK0s && fHistMuldimK0s) fHistMuldimK0s->Fill(arrK0s);
+        if(inPeakK0s){
+          fHistDecayLengthVsPtK0s->Fill(dlen,ptv0);
+          fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);
+          fHistImpParZVsPtK0s->Fill(d0v0[1],ptv0);
+          fHistImpParXYVsPtK0sDau->Fill(d0p[0],ptv0);
+          fHistImpParXYVsPtK0sDau->Fill(d0n[0],ptv0);
+        }
       }
     }
     if(keepLambda){
       fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
       if(inPeakLambda){
-	fHistDecayLengthVsPtLambda->Fill(dlen,ptv0);
-	fHistImpParXYVsPtLambda->Fill(d0v0[0],ptv0);
-	fHistImpParXYVsPtLambdaDau->Fill(d0p[0],ptv0);
-	fHistImpParXYVsPtLambdaDau->Fill(d0n[0],ptv0);
+        fHistDecayLengthVsPtLambda->Fill(dlen,ptv0);
+        fHistImpParXYVsPtLambda->Fill(d0v0[0],ptv0);
+        fHistImpParXYVsPtLambdaDau->Fill(d0p[0],ptv0);
+        fHistImpParXYVsPtLambdaDau->Fill(d0n[0],ptv0);
       }
     }
     if(keepAntiLambda){
       fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
       if(inPeakAntiLambda){
-	fHistDecayLengthVsPtAntiLambda->Fill(dlen,ptv0);
-	fHistImpParXYVsPtAntiLambda->Fill(d0v0[0],ptv0);
-	fHistImpParXYVsPtAntiLambdaDau->Fill(d0p[0],ptv0);
-	fHistImpParXYVsPtAntiLambdaDau->Fill(d0n[0],ptv0);
+        fHistDecayLengthVsPtAntiLambda->Fill(dlen,ptv0);
+        fHistImpParXYVsPtAntiLambda->Fill(d0v0[0],ptv0);
+        fHistImpParXYVsPtAntiLambdaDau->Fill(d0p[0],ptv0);
+        fHistImpParXYVsPtAntiLambdaDau->Fill(d0n[0],ptv0);
       }
     }
   }
