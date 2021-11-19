@@ -7163,8 +7163,8 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
       delete oa; // yes, otherwise it's a memory leak
      }
 
-     if(fqVectorEntries[qv][b]<mo+1){continue;} // TBI 20211026 is this really safe
-
+     if(fqVectorEntries[qv][b]<mo+1){continue;}
+ 
      switch(mo+1) // which order? yes, mo+1
      {
       case 1:
@@ -7278,9 +7278,24 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
       delete harmonics; harmonics = NULL;
      } // if(fUseInternalValidation && fRescaleWithTheoreticalInput)
 
-     // Finally, fill:
-     if(!(weight > 0.)){cout<<__LINE__<<endl;exit(1);}
+     // Insanity check for the event weight:
+     if(!(weight > 0.))
+     {
+      // If it's negative, that means that sum of particle weights is smaller than "number of particles - 1"
+      // In that case, you can simpy rescale all particle weights, so that each of them is > 1, basically recalcute weights.root files with such a rescaling. 
+      cout<<Form("b = %d",b)<<endl;
+      cout<<Form("qv = %d",qv)<<endl;
+      cout<<Form("event weight = %e",weight)<<endl;
+      cout<<Form("sum of particle weights = %e",One(0).Re())<<endl;
+      cout<<Form("correlation = %f",correlation)<<endl;
+      cout<<Form("fTest0Pro[mo][mi][kb]->GetTitle() = %s",fTest0Pro[mo][mi][kb]->GetTitle())<<endl;      
+      cout<<Form("[mo][mi][kb] = [%d][%d][%d]",mo,mi,kb)<<endl;      
+      cout<<Form("fSelectedTracks = %d",fSelectedTracks)<<endl;
+      cout<<Form("fqVectorEntries[qv][b] = %d",fqVectorEntries[qv][b])<<endl;
+      cout<<__LINE__<<endl;exit(1);
+     }
 
+     // Finally, fill:
      if(fTest0Pro[mo][mi][kb]){fTest0Pro[mo][mi][kb]->Fill(fTest0Pro[mo][mi][kb]->GetXaxis()->GetBinCenter(b+1),correlation/weight,weight);} // fill in the bin center
 
     } // if(fTest0Labels[mo][mi])
