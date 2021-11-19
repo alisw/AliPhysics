@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAMaster10h(TString taskName = "JHOCFAMaster10h", double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 6 8 9 10 11 12 13 14 15 16", bool newWeightNaming = kTRUE, bool saveQA = kFALSE, bool saveHMOQA = kFALSE, bool applyHMOcut = kTRUE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool getSC3h = kTRUE, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+AliAnalysisTask *AddTaskJHOCFAMaster10h(TString taskName = "JHOCFAMaster10h", double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 6 8 9 10 11 12 13 14 15 16", bool newWeightNaming = kTRUE, bool saveQA = kFALSE, bool saveHMOQA = kFALSE, bool applyHMOcut = kTRUE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -187,6 +187,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster10h(TString taskName = "JHOCFAMaster10h", do
     myTask[i]->HOCFASetPtRange(ptMin, ptMax);
     myTask[i]->HOCFASetParticleWeights(useWeightsNUE, useWeightsNUA);
     myTask[i]->HOCFASetObservable(getSC3h);
+    myTask[i]->HOCFASetEtaGaps(getEtaGap, etaGap);
     myTask[i]->HOCFASetNumberCombi(Ncombi);
     myTask[i]->HOCFASetHarmoArray(Form("%s", combiArray.Data()));
     mgr->AddTask((AliAnalysisTask *)myTask[i]);
