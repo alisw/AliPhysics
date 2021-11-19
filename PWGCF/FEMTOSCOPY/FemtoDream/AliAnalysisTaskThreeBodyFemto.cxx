@@ -62,6 +62,7 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fturnoffClosePairRejectionCompletely(false),
       fClosePairRejectionPPPorPPL(false),
       fisMC(false),
+      fRun2Body(false),
       fQ3LimitForDeltaPhiDeltaEta(0.4),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -152,6 +153,7 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fturnoffClosePairRejectionCompletely(false),
       fClosePairRejectionPPPorPPL(false),
       fisMC(isMC),
+      fRun2Body(false),
       fQ3LimitForDeltaPhiDeltaEta(0.4),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -1006,16 +1008,19 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
   }
 
   
+  if(fRun2Body){
 
-  /*if (fPairCleaner->GetCounter() > 0) {
-    if (fConfig->GetUseEventMixing()) {
-      fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
-                          fEvent);
+    if (fPairCleaner->GetCounter() > 0) {
+      if (fConfig->GetUseEventMixing()) {
+        fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
+                            fEvent);
+      }
+      if (fConfig->GetUsePhiSpinning()) {
+        fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+      }
     }
-    if (fConfig->GetUsePhiSpinning()) {
-      fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
-    }
-  }*/
+  }
+    
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
