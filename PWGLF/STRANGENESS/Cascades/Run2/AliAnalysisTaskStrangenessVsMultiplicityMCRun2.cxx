@@ -329,6 +329,12 @@ fTreeVariablePosCreationX(0),
 fTreeVariablePosCreationY(0),
 fTreeVariablePosCreationZ(0),
 
+fTreeVariableNegPx(0),
+fTreeVariableNegPy(0),
+fTreeVariableNegPz(0),
+fTreeVariablePosPx(0),
+fTreeVariablePosPy(0),
+fTreeVariablePosPz(0),
 fTreeVariableNegPxMC(0),
 fTreeVariableNegPyMC(0),
 fTreeVariableNegPzMC(0),
@@ -876,6 +882,12 @@ fTreeVariablePosCreationX(0),
 fTreeVariablePosCreationY(0),
 fTreeVariablePosCreationZ(0),
 
+fTreeVariableNegPx(0),
+fTreeVariableNegPy(0),
+fTreeVariableNegPz(0),
+fTreeVariablePosPx(0),
+fTreeVariablePosPy(0),
+fTreeVariablePosPz(0),
 fTreeVariableNegPxMC(0),
 fTreeVariableNegPyMC(0),
 fTreeVariableNegPzMC(0),
@@ -1499,6 +1511,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
       fTreeV0->Branch("fTreeVariablePosCreationX",&fTreeVariablePosCreationX,"fTreeVariablePosCreationX/F");
       fTreeV0->Branch("fTreeVariablePosCreationY",&fTreeVariablePosCreationY,"fTreeVariablePosCreationY/F");
       fTreeV0->Branch("fTreeVariablePosCreationZ",&fTreeVariablePosCreationZ,"fTreeVariablePosCreationZ/F");
+      
+      fTreeV0->Branch("fTreeVariableNegPx",&fTreeVariableNegPx,"fTreeVariableNegPx/F");
+      fTreeV0->Branch("fTreeVariableNegPy",&fTreeVariableNegPy,"fTreeVariableNegPy/F");
+      fTreeV0->Branch("fTreeVariableNegPz",&fTreeVariableNegPz,"fTreeVariableNegPz/F");
+      fTreeV0->Branch("fTreeVariablePosPx",&fTreeVariablePosPx,"fTreeVariablePosPx/F");
+      fTreeV0->Branch("fTreeVariablePosPy",&fTreeVariablePosPy,"fTreeVariablePosPy/F");
+      fTreeV0->Branch("fTreeVariablePosPz",&fTreeVariablePosPz,"fTreeVariablePosPz/F");
       
       fTreeV0->Branch("fTreeVariableNegPxMC",&fTreeVariableNegPxMC,"fTreeVariableNegPxMC/F");
       fTreeV0->Branch("fTreeVariableNegPyMC",&fTreeVariableNegPyMC,"fTreeVariableNegPyMC/F");
@@ -2450,6 +2469,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
     Double_t lMomNeg[3];
     v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+    
+    fTreeVariableNegPx = lMomNeg[0];
+    fTreeVariableNegPy = lMomNeg[1];
+    fTreeVariableNegPz = lMomNeg[2];
+    fTreeVariablePosPx = lMomPos[0];
+    fTreeVariablePosPy = lMomPos[1];
+    fTreeVariablePosPz = lMomPos[2];
     
     //Provisions for cowboy/sailor check
     Double_t lModp1 = TMath::Sqrt( lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] );
