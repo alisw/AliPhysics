@@ -15,11 +15,8 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+
   //Analysis setters
-  virtual void SetFilterBit(UInt_t Bit)
-  {
-    filterBit = Bit;
-  }
   virtual void SetFilterBit(UInt_t Bit)
   {
     filterBit = Bit;
@@ -61,7 +58,7 @@ private:
   TH1F *fHistEventsCut;         //!
   TH1F *fHistTracksCut;         //!
   UInt_t filterBit;             //
-  Bool_t MCGen, pbpb;
+  Bool_t pbpb, IsMC;
   AliEventCuts *fAliEventCuts; //!
   int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nPhiWindows = 16, nSigma, nCrossedRows, movePhi;
   static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8;
