@@ -29,7 +29,7 @@
 class AliAnalysisH3MC;
 using namespace std;
 
-const char *GetID(int pdgCode);
+//const char *GetID(int pdgCode);
 ClassImp(AliAnalysisH3MC)
 
     //________________________________________________________________________
@@ -384,11 +384,11 @@ void AliAnalysisH3MC::UserExec(Option_t *)
   // only for cross-check: is kINT7 selected
   UInt_t fSelectMask = ((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isINT7selected = fSelectMask; // & AliVEvent::kINT7;
-  if (!isINT7selected)
+  /*if (!isINT7selected)
   {
     PostData(1, fOutputList);
     return;
-  }
+  }*/
   fEventStat->Fill(kINT7selected);
 
   // only for cross-check: Incomplete events from DAQ
@@ -1175,7 +1175,7 @@ void AliAnalysisH3MC::FillHistosMC(TList *list, AliAODMCParticle *part, AliAODEv
   }
 }
 
-const char *GetID(int pdgCode)
+/*const char *GetID(int pdgCode)
 {
   if (pdgCode == 111 or pdgCode == -111)
     return "Pi0";
@@ -1205,7 +1205,7 @@ const char *GetID(int pdgCode)
     return "AHe4";
 
   return (const char *)pdgCode;
-}
+}*/
 
 void AliAnalysisH3MC::FillNtuple(TNtuple *nt, AliAODMCParticle *part, AliAODEvent *fAODEvent, Int_t iMC)
 {
