@@ -1,16 +1,16 @@
-#ifndef AliAnalysisTaskParticleYieldRatioCorrelations_H
-#define AliAnalysisTaskParticleYieldRatioCorrelations_H
+#ifndef AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency_H
+#define AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency_H
 class AliPIDResponse;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
 #include "AliEventCuts.h"
-class AliAnalysisTaskParticleYieldRatioCorrelations : public AliAnalysisTaskSE
+class AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency : public AliAnalysisTaskSE
 {
 public:
-  AliAnalysisTaskParticleYieldRatioCorrelations();
-  AliAnalysisTaskParticleYieldRatioCorrelations(const char *name);
-  virtual ~AliAnalysisTaskParticleYieldRatioCorrelations();
+  AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency();
+  AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency(const char *name);
+  virtual ~AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -91,10 +91,10 @@ private:
 
   TH2D *fHistQASPDTrackletsvsV0MCent; //!
 
-  AliAnalysisTaskParticleYieldRatioCorrelations(const AliAnalysisTaskParticleYieldRatioCorrelations &);            // not implemented
-  AliAnalysisTaskParticleYieldRatioCorrelations &operator=(const AliAnalysisTaskParticleYieldRatioCorrelations &); // not implemented
+  AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency(const AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency &);            // not implemented
+  AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency &operator=(const AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency &); // not implemented
 
-  ClassDef(AliAnalysisTaskParticleYieldRatioCorrelations, 1);
+  ClassDef(AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency, 1);
 };
 
 #endif
