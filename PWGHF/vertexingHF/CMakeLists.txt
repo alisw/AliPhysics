@@ -105,13 +105,13 @@ set(SRCS
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
   AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
   AliCFVertexingHF.cxx
-  AliCFVertexingHFEMCal.cxx
   AliCFVertexingHF2Prong.cxx
   AliCFVertexingHF3Prong.cxx
   AliCFVertexingHFCascade.cxx
   AliCFVertexingHFLctoV0bachelor.cxx
   AliCFTaskVertexingHF.cxx
   AliCFTaskVertexingHFCutVarFDSub.cxx
+  AliCFTaskVertexingHFEMCal.cxx
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
   AliAnalysisTaskSEDStarSpectra.cxx
