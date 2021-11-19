@@ -1,24 +1,5 @@
 AliAnalysisTaskAngularRatiosCorrelation *AddTaskAngularRatiosCorrelation(
-    TString name = "name",
-    int iTask = 0,
-    Bool_t MCGen = kFALSE,
-    Bool_t pbpb = kTRUE,
-    int movePhi = 0,
-    int nPhiBins = 16,
-    int nVertexBins = 1,
-    int nPBins = 5,
-    int nTPCcrossedRows = 70,
-    int nSigma = 2,
-    int nCentrClasses = 4,
-    int nEtaClasses = 16,
-    int nSorts = 8,
-    int minCent = 0,
-    int maxCent = 80,
-    UInt_t filterbit = 96,
-    Float_t minP = 0.2,
-    Float_t maxP = 2.0,
-    Float_t Vertexmin = -8,
-    Float_t Vertexmax = 8)
+    TString name = "name", int iTask = 0, TString InputFileName = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr)
@@ -37,14 +18,23 @@ AliAnalysisTaskAngularRatiosCorrelation *AddTaskAngularRatiosCorrelation(
         return 0x0;
 
     task->SelectCollisionCandidates(AliVEvent::kINT7);
-    task->SetFilterBit(filterbit);
-    task->SetParams(iTask, nPhiBins, nVertexBins, nPBins, minCent, maxCent,
-                minP, maxP, Vertexmin, Vertexmax, MCGen, pbpb,
-                nSigma, nTPCcrossedRows, movePhi);
 
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    cout << "fileName: " << fileName << endl;
+
+    // in case of non-local run, establish connection to ALiEn for loading the file
+    if (InputFileName.Contains("alien://"))
+    {
+        gGrid->Connect("alien://");
+    }
+    TFile *InputFile = TFile::Open(InputFileName.Data());
+    if (!InputFile)
+        printf("Could not open input file\n");
+    TList *fList = (TList *)InputFile->Get(Form("List%d", iTask));
+    AliAnalysisDataContainer *cinput_list = mgr->CreateContainer("Efficiency", TList::Class(), AliAnalysisManager::kInputContainer);
+    cinput_list->SetData(fList);
+    mgr->ConnectInput(task, 1, cinput_list);
+
     AliAnalysisDataContainer *coutput_list = mgr->CreateContainer(name, TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
     mgr->ConnectOutput(task, 1, coutput_list);
 
