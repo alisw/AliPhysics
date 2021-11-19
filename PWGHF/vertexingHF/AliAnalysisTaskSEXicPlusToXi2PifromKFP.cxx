@@ -1788,7 +1788,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
 {
   const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
   fTree_XicPlus_QA = new TTree(nameoutput, "XicPlus variables QA tree");
-  Int_t nVar = 77;
+  Int_t nVar = 78;
   fVar_XicPlus_QA = new Float_t[nVar-1];
   TString *fVarNames_QA = new TString[nVar];
 
@@ -1868,7 +1868,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   fVarNames_QA[73] = "pt_XicPlus_wTopoConst_recalPV_Minus_woTopoConst";
   fVarNames_QA[74] = "pt_XicPlus_wTopoConst_recalPV_Minus_wTopoConst";
   fVarNames_QA[75] = "PV_CountRealContributors";
-  fVarNames_QA[76] = "event_ID";
+  fVarNames_QA[76] = "Source_XicPlus";
+  fVarNames_QA[77] = "event_ID";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     if (ivar<(nVar-1))  fTree_XicPlus_QA->Branch(fVarNames_QA[ivar].Data(), &fVar_XicPlus_QA[ivar], Form("%s/F", fVarNames_QA[ivar].Data()));
@@ -2305,7 +2306,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fTree_XicPlus->Fill();
 
   //======= Fill QA tree =======
-  for (Int_t i=0; i<76; i++) {
+  for (Int_t i=0; i<77; i++) {
     fVar_XicPlus_QA[i] = -9999.;
   }
 
@@ -2448,6 +2449,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fVar_XicPlus_QA[74] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[46]; // SV: pt diff of Xic+ (w/ topo. constraint recalPV - PV)
 
   fVar_XicPlus_QA[75] = fpVtx->CountRealContributors(); // PV: count daughter primary tracks
+  fVar_XicPlus_QA[76] = lab_XicPlus;
   }
 
   if (fWriteXicPlusQATree) fTree_XicPlus_QA->Fill();
