@@ -90,7 +90,7 @@ AliAnalysisTaskValeNanoTreeLPhi::AliAnalysisTaskValeNanoTreeLPhi(
   DefineOutput(7, TList::Class());  //Output for the Phi Cuts
   DefineOutput(8, TList::Class());  //Output for the Results
   DefineOutput(9, TList::Class());  //Output for the Results QA
-  DefineOutput(10, TList::Class()); //Output for Tree for Lambda
+  DefineOutput(10, TTree::Class()); //Output for Tree for Lambda
 }
 
 AliAnalysisTaskValeNanoTreeLPhi::~AliAnalysisTaskValeNanoTreeLPhi()
@@ -269,7 +269,7 @@ void AliAnalysisTaskValeNanoTreeLPhi::UserCreateOutputObjects()
   fTree->Branch("Daugh_eta", &Daugh_eta, "Daugh_eta[fNumLambda]/F");
   fTree->Branch("Daugh_nTpcCls", &Daugh_nTpcCls, "Daugh_nTpcCls[fNumLambda]/I");
   fTree->Branch("Daugh_dca", &Daugh_dca, "Daugh_dca[fNumLambda]/F");
-  fTree->Branch("Daugh_nSigma", &Daugh_nSigma, "Daugh_nSigma[fNumLambda]/");
+  fTree->Branch("Daugh_nSigma", &Daugh_nSigma, "Daugh_nSigma[fNumLambda]/F");
   ///Phi
   fTree->Branch("nPhi", &fNumPhi, "fNumPhi/I");
 
@@ -368,7 +368,9 @@ void AliAnalysisTaskValeNanoTreeLPhi::UserExec(Option_t *)
     }
 
     if (IsLambda || IsAntiLambda)
+    {
       FillLambda(fLambda);
+    }
   }
 
   static float massKaon =
@@ -501,9 +503,8 @@ Bool_t AliAnalysisTaskValeNanoTreeLPhi::FillLambda(AliFemtoDreamv0 *TheV0)
   v0_cpa[fNumLambda] = TheV0->GetCPA();
   AliFemtoDreamTrack *PosDaugh = TheV0->GetPosDaughter();
   AliFemtoDreamTrack *NegDaugh = TheV0->GetNegDaughter();
-
-  Daugh_eta[fNumLambda] = PosDaugh->GetEta().at(1);
-  Daugh_eta[fNumLambda] = NegDaugh->GetEta().at(2);
+  Daugh_eta[fNumLambda] = TheV0->GetEta().at(1);
+  Daugh_eta[fNumLambda] = TheV0->GetEta().at(2);
   Daugh_dca[fNumLambda] = TheV0->GetDaugDCA();
   Daugh_nSigma[fNumLambda] = PosDaugh->GetnSigmaTPC((int)(AliPID::kProton));
   Daugh_nSigma[fNumLambda] = NegDaugh->GetnSigmaTPC((int)(AliPID::kPion));
@@ -514,7 +515,8 @@ Bool_t AliAnalysisTaskValeNanoTreeLPhi::FillLambda(AliFemtoDreamv0 *TheV0)
   return Filled;
 }
 
-Bool_t AliAnalysisTaskValeNanoTreeLPhi::FillPhi(AliFemtoDreamv0 *TheV0) {
+Bool_t AliAnalysisTaskValeNanoTreeLPhi::FillPhi(AliFemtoDreamv0 *TheV0)
+{
   Bool_t Filled = kFALSE;
   fNumPhi++;
   Filled = kTRUE;

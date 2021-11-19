@@ -106,6 +106,7 @@ set(SRCS
   AliAnalysisTaskThreeBodyProtonPrimary.cxx
   AliSigma0AODPhotonMotherCuts.cxx;
   AliSigma0PhotonCuts.cxx;
+  AliAnalysisTaskValeNanoTreeLPhi.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
