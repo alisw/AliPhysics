@@ -15,41 +15,52 @@ public:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
+    //Analysis setters
     virtual void SetFilterBit(UInt_t Bit)
     {
         filterBit = Bit;
     }
-    virtual void SetParams(int f_iTask, int f_nPhiBins, int f_nVertexBins, int f_nPBins, int f_minCent, int f_maxCent,
-                           Float_t f_minP, Float_t f_maxP, Float_t f_Vertexmin, Float_t f_Vertexmax,
-                           Bool_t f_MCGen, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows, int f_movePhi)
+    virtual void SetNumbersOfBins(int f_nPhiBins, int f_nVertexBins, int f_nPBins)
     {
-        iTask = f_iTask;
         nPhiBins = f_nPhiBins;
         nVertexBins = f_nVertexBins;
         nPBins = f_nPBins;
+    }
+    virtual void SetCentLim(int f_minCent, int f_maxCent)
+    {
         minCent = f_minCent;
         maxCent = f_maxCent;
+    }
+    virtual void SetPLim(Float_t f_minP, Float_t f_maxP)
+    {
         minP = f_minP;
         maxP = f_maxP;
+    }
+    virtual void SetVertLim(Float_t f_Vertexmin, Float_t f_Vertexmax)
+    {
         Vertexmin = f_Vertexmin;
         Vertexmax = f_Vertexmax;
-        MCGen = f_MCGen;
-        pbpb = f_pbpb;
+    }
+    virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows, int f_movePhi)
+    {
+        IsMC = f_IsMC;
+        pbpb = f_pbpb; // pp if false
         nSigma = f_nSigma;
         nCrossedRows = f_nCrossedRows;
         movePhi = f_movePhi;
     }
-
+    
 private:
     AliAODEvent *fAOD;            //! input event
     AliPIDResponse *fPIDResponse; //! pid response object
     TList *fOutputList;           //! output list
+    TList *fInputList;           //! output list
     TH1F *fHistEventsCut;         //! QA events
     TH1F *fHistTracksCut;         //! QA tracks
     UInt_t filterBit;             //
-    Bool_t MCGen, pbpb;           // is MC or not; is Pb-Pb or pp
+    Bool_t IsMC, pbpb;           // is MC or not; is Pb-Pb or pp
     AliEventCuts *fAliEventCuts;  //!
-    int iTask, nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
+    int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
     static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
     Float_t minP, maxP, Vertexmin, Vertexmax;
     static const int SortPairs = 6 * (6 + 1) / 2;
@@ -108,7 +119,6 @@ private:
     TH1D *fHistMomentsInAllAccRecSub[nSubsamples][nCentrClasses]; //!
     TH1D *fHistMomentsInAllAccGenSub[nSubsamples][nCentrClasses]; //!
     TH1D *fHistMomentsInAllAccRegSub[nSubsamples][nCentrClasses]; //!
-
 
     //QA hists
     TH1D *fHistQAVx;                    //! Vx hist

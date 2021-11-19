@@ -15,29 +15,43 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-  //virtual void            SetFilterBit(UInt_t* FilterBit);
+  //Analysis setters
   virtual void SetFilterBit(UInt_t Bit)
   {
     filterBit = Bit;
   }
-  virtual void SetParams(int f_iTask, int f_nPhiBins, int f_nVertexBins, int f_nPBins, int f_minCent, int f_maxCent,
-                         Float_t f_minP, Float_t f_maxP, Float_t f_Vertexmin, Float_t f_Vertexmax,
-                         Bool_t f_MCGen, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows)
+  virtual void SetFilterBit(UInt_t Bit)
   {
-    iTask = f_iTask;
+    filterBit = Bit;
+  }
+  virtual void SetNumbersOfBins(int f_nPhiBins, int f_nVertexBins, int f_nPBins)
+  {
     nPhiBins = f_nPhiBins;
     nVertexBins = f_nVertexBins;
     nPBins = f_nPBins;
+  }
+  virtual void SetCentLim(int f_minCent, int f_maxCent)
+  {
     minCent = f_minCent;
     maxCent = f_maxCent;
+  }
+  virtual void SetPLim(Float_t f_minP, Float_t f_maxP)
+  {
     minP = f_minP;
     maxP = f_maxP;
+  }
+  virtual void SetVertLim(Float_t f_Vertexmin, Float_t f_Vertexmax)
+  {
     Vertexmin = f_Vertexmin;
     Vertexmax = f_Vertexmax;
-    MCGen = f_MCGen;
-    pbpb = f_pbpb;
+  }
+  virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows, int f_movePhi)
+  {
+    IsMC = f_IsMC;
+    pbpb = f_pbpb; // pp if false
     nSigma = f_nSigma;
     nCrossedRows = f_nCrossedRows;
+    movePhi = f_movePhi;
   }
 
 private:
@@ -49,7 +63,7 @@ private:
   UInt_t filterBit;             //
   Bool_t MCGen, pbpb;
   AliEventCuts *fAliEventCuts; //!
-  int iTask, nPhiBins, nVertexBins, nPBins, minCent, maxCent, nPhiWindows=16, nSigma, nCrossedRows;
+  int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nPhiWindows = 16, nSigma, nCrossedRows, movePhi;
   static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8;
   Float_t minP, maxP, Vertexmin, Vertexmax;
   Float_t PtCut[3] = {0.2, 0.5, 0.5};

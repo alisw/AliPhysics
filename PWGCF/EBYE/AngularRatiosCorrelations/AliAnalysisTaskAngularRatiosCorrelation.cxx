@@ -23,6 +23,7 @@ ClassImp(AliAnalysisTaskAngularRatiosCorrelation)
     : AliAnalysisTaskSE(),
       fAOD(0),
       fOutputList(0),
+      fInputList(0),
       NEvents(0),
       fAliEventCuts(0),
       fDeDx(0),
@@ -48,6 +49,7 @@ AliAnalysisTaskAngularRatiosCorrelation::AliAnalysisTaskAngularRatiosCorrelation
     : AliAnalysisTaskSE(name),
       fAOD(0),
       fOutputList(0),
+      fInputList(0),
       NEvents(0),
       fAliEventCuts(0),
       fDeDx(0),
@@ -66,6 +68,7 @@ AliAnalysisTaskAngularRatiosCorrelation::AliAnalysisTaskAngularRatiosCorrelation
 {
     // constructor
     DefineInput(0, TChain::Class());
+    DefineInput(1,TList::Class());
     DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
@@ -80,18 +83,18 @@ AliAnalysisTaskAngularRatiosCorrelation::~AliAnalysisTaskAngularRatiosCorrelatio
 //_____________________________________________________________________________
 void AliAnalysisTaskAngularRatiosCorrelation::UserCreateOutputObjects()
 {
-    //Open files with Efficiency maps for futher corrections
-    TFile *file_input = new TFile("Efficiency.root");
+    //Get Efficiency maps for futher corrections
+    fInputList = (TList*)GetInputData(1);
     for (int iCent = 0; iCent < nCentrClasses; iCent++)
     {
         for (int iEta = 0; iEta < nEtaClasses; iEta++)
         {
             for (int iSort = 0; iSort < nSorts; ++iSort)
             {
-                EfficiencyTracking[iCent][iEta][iSort] = (TH3D *)file_input->Get(Form("EfficiencyTrackingTask%dC%dEta%dSort%d", iTask, iCent, iEta, iSort));
-                ContaminationTracking[iCent][iEta][iSort] = (TH3D *)file_input->Get(Form("ContaminationTrackingTask%dC%dEta%dSort%d", iTask, iCent, iEta, iSort));
-                EfficiencyPID[iCent][iEta][iSort] = (TH3D *)file_input->Get(Form("EfficiencyPIDTask%dC%dEta%dSort%d", iTask, iCent, iEta, iSort));
-                ContaminationPID[iCent][iEta][iSort] = (TH3D *)file_input->Get(Form("ContaminationPIDTask%dC%dEta%dSort%d", iTask, iCent, iEta, iSort));
+                EfficiencyTracking[iCent][iEta][iSort] = (TH3D *)fInputList->FindObject(Form("EfficiencyTrackingC%dEta%dSort%d", iCent, iEta, iSort));
+                ContaminationTracking[iCent][iEta][iSort] = (TH3D *)fInputList->FindObject(Form("ContaminationTrackingC%dEta%dSort%d", iCent, iEta, iSort));
+                EfficiencyPID[iCent][iEta][iSort] = (TH3D *)fInputList->FindObject(Form("EfficiencyPIDC%dEta%dSort%d", iCent, iEta, iSort));
+                ContaminationPID[iCent][iEta][iSort] = (TH3D *)fInputList->FindObject(Form("ContaminationPIDC%dEta%dSort%d", iCent, iEta, iSort));
             }
         }
     }
@@ -550,7 +553,7 @@ void AliAnalysisTaskAngularRatiosCorrelation::UserExec(Option_t *)
     // end of track loop
 
     int nAcceptedGenTracks = 0, NAcceptedGenTracksinEta[nEtaClasses] = {0};
-    if (MCGen)
+    if (IsMC)
     {
         //MC track loop
         AliMCEvent *fMC = eventHandler->MCEvent();
@@ -654,7 +657,7 @@ void AliAnalysisTaskAngularRatiosCorrelation::UserExec(Option_t *)
         //fill hists for moments in eta
         for (int iEta = 0; iEta < nEtaClasses; iEta++)
         {
-            if (MCGen)
+            if (IsMC)
             {
                 fHistMomentsInEtaGen[CentrBin][iSort]->AddBinContent(iEta + 1, GenNParticlesEta[iEta][iSort]);
                 fHistMomentsInEtaGenSub[randomSubsample][CentrBin][iSort]->AddBinContent(iEta + 1, GenNParticlesEta[iEta][iSort]);
@@ -670,7 +673,7 @@ void AliAnalysisTaskAngularRatiosCorrelation::UserExec(Option_t *)
             {
                 for (int jSort = iSort; jSort < 6; jSort++)
                 {
-                    if (MCGen)
+                    if (IsMC)
                     {
                         fHistCrossMomentsInEtaGen[CentrBin][skipSort + jSort - iSort]->AddBinContent(1 + iEta * nEtaClasses + jEta, GenNParticlesEta[iEta][iSort] * GenNParticlesEta[jEta][jSort]);
                         fHistCrossMomentsInEtaGenSub[randomSubsample][CentrBin][skipSort + jSort - iSort]->AddBinContent(1 + iEta * nEtaClasses + jEta, GenNParticlesEta[iEta][iSort] * GenNParticlesEta[jEta][jSort]);
