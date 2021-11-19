@@ -91,7 +91,9 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisH3MC.cxx
   Nuclei/AbsorptionRatios/AliAnalysisHe3MC.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisH3MC.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3_ESD.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskNuclei.cxx
   Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx
