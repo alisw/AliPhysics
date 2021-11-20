@@ -3204,6 +3204,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kTPCxH2] = qvec[0];
   values[AliDielectronVarManager::kTPCyH2] = qvec[1];
   values[AliDielectronVarManager::kTPCrpH2] = qvec[2];
+  //printf("after GetTPCRP : TPC Qx2 = %f , TPC Qy2 = %f , TPC EP2 = %f\n", values[AliDielectronVarManager::kTPCxH2], values[AliDielectronVarManager::kTPCyH2], values[AliDielectronVarManager::kTPCrpH2]);
  
   // // event plane differences used for EP resolution calculation
   // values[AliDielectronVarManager::kV0ATPCDiffH2]   = TMath::Cos( 2.*(values[AliDielectronVarManager::kV0ArpH2] -
@@ -4266,14 +4267,31 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
 inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption) {
   Float_t DCAxy = 999.;
   Float_t DCAz  = 999.;
-  const Double_t absWeight = 1.0;
+  Double_t absWeight = 1.0;
   Double_t x = 1.0;
   Double_t y = 1.0;
   Double_t d0z0[2] = {-999.0,-999.0};
   Double_t dcaRes[3] = {-999.,-999.,-999.};
+  //printf("step 0 : TPC Qx2 = %f , TPC Qy2 = %f , TPC EP2 = %f\n", qvec[0], qvec[1], qvec[2]);
 
   const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(event);
   const AliAODEvent *aod = dynamic_cast<const AliAODEvent*>(event);
+
+  // get centrality and vertex for this event
+  Double_t centralityV0M = -1; Double_t vtxZ = -999.;
+  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+    centralityV0M = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  }
+  else{
+    centralityV0M = -1;
+    //printf("GetTPCRP: No centrality estimation avaible!\n");
+  }
+
+  const AliVVertex *primVtx = event->GetPrimaryVertex();
+  if(!primVtx) return;
+  vtxZ = primVtx->GetZ();
+  if(TMath::Abs(vtxZ)>10.) return;
+  if(centralityV0M < 0. || centralityV0M > 90.) return;
 
   const Int_t Ntrack = event->GetNumberOfTracks();
 
@@ -4291,6 +4309,8 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
       track->GetImpactParameters(DCAxy,DCAz);
       if(TMath::Abs(DCAxy) > 1.0) continue;
       if(TMath::Abs(DCAz)  > 3.0) continue;
+      //absWeight = track->Pt();
+      //if(absWeight>2.0) absWeight = 2.0;    // pt is the weight used for the event plane
 
       x = TMath::Cos(track->Phi());
       y = TMath::Sin(track->Phi());
@@ -4318,11 +4338,12 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
       d0z0[0] = -999.0; d0z0[1] = -999.0;
       dcaRes[0] = -999.; dcaRes[1] = -999.; dcaRes[2] = -999.;
       GetDCA(track, d0z0, dcaRes);
-
       //printf("DCAxy = %f , DCAz = %f , d0z0[0] = %f , d0z0[1] = %f\n",DCAxy,DCAz,d0z0[0],d0z0[1]);
-
       if(TMath::Abs(d0z0[0]) > 1.0) continue;
       if(TMath::Abs(d0z0[1]) > 3.0) continue;
+
+      //absWeight = track->Pt();
+      //if(absWeight>2.0) absWeight = 2.0;    // pt is the weight used for the event plane
 
       x = TMath::Cos(track->Phi());
       y = TMath::Sin(track->Phi());
@@ -4334,22 +4355,7 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   }//end of AOD event
 
   //printf("TPC: Qx = %f , Qy = %f\n",qvec[0],qvec[1]);
-
-  // get centrality and vertex for this event
-  Double_t centralityV0M = -1; Double_t vtxZ = -999.;
-  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
-    centralityV0M = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  }
-  else{
-    centralityV0M = -1;
-    //printf("GetTPCRP: No centrality estimation avaible!\n");
-  }
-
-  const AliVVertex *primVtx = event->GetPrimaryVertex();
-  if(!primVtx) return;
-  vtxZ = primVtx->GetZ();
-  if(TMath::Abs(vtxZ)>10.) return;
-  if(centralityV0M < 0. || centralityV0M > 90.) return;
+  //printf("step 1 : TPC Qx2 = %f , TPC Qy2 = %f , TPC EP2 = %f\n", qvec[0], qvec[1], qvec[2]);
 
   if(fgTPCRecentering[0]) {
     //     printf("TPC: %p\n",fgTPCRecentering[0]);
@@ -4362,18 +4368,21 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
 
     qvec[0] -= fgTPCRecentering[0]->GetBinContent(binCentRecenter, binVtxRecenter);
     qvec[1] -= fgTPCRecentering[1]->GetBinContent(binCentRecenter, binVtxRecenter);
+    //printf("step 2 after subtraction : TPC Qx2 = %f , TPC Qy2 = %f , TPC EP2 = %f\n", qvec[0], qvec[1], qvec[2]);
 
-    //widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
-    //widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
+    widthEqTPC_X = fgTPCRecentering[0]->GetBinError(binCentRecenter, binVtxRecenter);
+    widthEqTPC_Y = fgTPCRecentering[1]->GetBinError(binCentRecenter, binVtxRecenter);
 
-    //if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
-    //if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
+    if(widthEqTPC_X > 0.0) qvec[0] /= widthEqTPC_X;
+    if(widthEqTPC_Y > 0.0) qvec[1] /= widthEqTPC_Y;
+    //printf("step 3 after division : TPC Qx2 = %f , TPC Qy2 = %f , TPC EP2 = %f\n", qvec[0], qvec[1], qvec[2]);
 
   }
 
   // calculate the reaction plane
   if(TMath::Abs(qvec[0])>1.0e-10)
     qvec[2] = TMath::ATan2(qvec[1],qvec[0])/2.0;
+  //printf("step 4 : TPC Qx2 = %f , TPC Qy2 = %f , TPC EP2 = %f\n", qvec[0], qvec[1], qvec[2]);
 
 }
 inline void AliDielectronVarManager::GetZDCRP(const AliVEvent* event, Double_t qvec[][2]) {
