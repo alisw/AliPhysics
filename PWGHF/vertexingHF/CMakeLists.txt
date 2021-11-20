@@ -111,6 +111,7 @@ set(SRCS
   AliCFVertexingHFLctoV0bachelor.cxx
   AliCFTaskVertexingHF.cxx
   AliCFTaskVertexingHFCutVarFDSub.cxx
+  AliCFTaskVertexingHFEMCal.cxx
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
   AliAnalysisTaskSEDStarSpectra.cxx
