@@ -429,7 +429,12 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         AliAODRecoDecayHF *dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
         AliAODRecoDecayHF *dMesonWithVtx;
         if(fDecChannel == kDstartoD0pi)
-            dMesonWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+        {
+            if(dMeson->GetIsFilled()<1)
+                dMesonWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+            else
+                dMesonWithVtx = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
+        }
         else
             dMesonWithVtx = dMeson;
 

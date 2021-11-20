@@ -242,7 +242,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     for (int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
     {
         AliAODRecoCascadeHF *dStar = dynamic_cast<AliAODRecoCascadeHF *>(arrayCand->UncheckedAt(iCand));
-        AliAODRecoDecayHF2Prong *dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dStar->GetProngID(1)));
+        AliAODRecoDecayHF2Prong *dZeroDau = nullptr;
+        if(dStar->GetIsFilled()<1)
+            dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dStar->GetProngID(1)));
+        else
+            dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
 
         bool unsetVtx = false;
         bool recVtx = false;
