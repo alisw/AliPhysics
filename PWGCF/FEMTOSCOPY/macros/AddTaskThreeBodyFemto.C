@@ -2129,6 +2129,15 @@ if(suffixTrigger=="5"){
   config->SetClosePairRejection(closeRejection);
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
+
+  if(suffixTrigger=="699"){
+    config->SetDeltaEtaMax(0.02);
+    config->SetDeltaPhiMax(0.02);
+  }  
+  if(suffixTrigger=="669"){
+    config->SetDeltaEtaMax(0.03);
+    config->SetDeltaPhiMax(0.03);
+  }
   config->SetExtendedQAPairs(pairQA);
   config->SetMixingDepth(mixingDepthFromTask);
   config->SetUseEventMixing(true);
