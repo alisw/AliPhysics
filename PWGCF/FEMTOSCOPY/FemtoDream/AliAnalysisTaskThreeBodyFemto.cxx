@@ -64,6 +64,7 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto()
       fisMC(false),
       fRun2Body(false),
       fQ3LimitForDeltaPhiDeltaEta(0.4),
+      fMixingChoice(0),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -155,6 +156,7 @@ AliAnalysisTaskThreeBodyFemto::AliAnalysisTaskThreeBodyFemto(const char* name, b
       fisMC(isMC),
       fRun2Body(false),
       fQ3LimitForDeltaPhiDeltaEta(0.4),
+      fMixingChoice(0),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
@@ -999,7 +1001,13 @@ void AliAnalysisTaskThreeBodyFemto::UserExec(Option_t *option) {
 
 
       // Update the particle container with current event
-      SetMixedEvent(ParticleVector, &(*itMult));
+      if(fMixingChoice==0){
+        SetMixedEvent(ParticleVector, &(*itMult));
+      }else if(fMixingChoice==1){
+        SetMixedEventOnlyPLambdaTEST(ParticleVector, &(*itMult));
+      }else if(fMixingChoice==2){
+        SetMixedEventOnlyPPLambdaTEST(ParticleVector, &(*itMult));
+      }
       //SetMixedEventOnlyPLambdaTEST(ParticleVector, &(*itMultTEST));
       //SetMixedEventOnlyPPLambdaTEST( ParticleVector, &(*itMultTESTppL));
       //SetMixedEventOnlyPPPTEST( ParticleVector, &(*itMultTESTppp));
