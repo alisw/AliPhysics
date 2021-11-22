@@ -33,6 +33,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     Int_t     enableTriggerMimicking        = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection
     TString   settingMaxFacPtHard           = "3.",                     // maximum factor between hardest jet and ptHard generated
+    // settings for weights
+    // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights,  FMAW:fileNameMatBudWeights,  separate with ;
+    // Material Budget Weights file for Run 2
+    // FMAW:alien:///alice/cern.ch/user/a/amarin//MBW/MCInputFileMaterialBudgetWeightsLHC16_Pythia_00010103_0d000009266300008850404000_date181214.root
     TString   fileNameExternalInputs        = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                   = kFALSE,                   //enable Weighting
     Bool_t    enableElecDeDxPostCalibration = kFALSE,                   // enable post calibration of elec pos dEdX
@@ -43,12 +47,20 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     Bool_t    usePtDepSelectionWindowCut  = kFALSE,                   // use pt dependent meson selection window cut
     Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
+    Int_t     enableMatBudWeightsPi0      = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   AliCutHandlerPCM cuts(13);
-  TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
-  TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
+  TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp";
+  TString fileNamePtWeights                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights               = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameMatBudWeights             = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
+  TString fileNamedEdxPostCalib             = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
+  TString fileNameCustomTriggerMimicOADB    = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
+
+  if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
+    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   //parse additionalTrainConfig flag
@@ -1232,6 +1244,13 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009f9730000dgf0404000", "411790109fe30220000", "32c51070a", "0103103200000000", "0453503000000000"); // Psi pair 0.20 dep
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009f9730000dgg0404000", "411790109fe30220000", "32c51070a", "0103103200000000", "0453503000000000"); // Psi pair 0.30 dep
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009227300008250404000", "411790109fe30220000", "32c51070a", "0103103200000000", "0453503000000000"); // old cuts (run1)
+
+  } else if(trainConfig == 2511)  { //EMCal + DCal INT7 Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7 Standard
+  } else if(trainConfig == 2512)  { //EMCal + DCal INT7 Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7 Standard
+  } else if(trainConfig == 2513)  { //EMCal + DCal INT7 Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103200000000","0453503000000000"); // INT7 Standard
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Standard Cuts of Pi0 Analysis: ("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","0r631031000000d0")
     //MesonCut r63==Background->ignored, d==OpeningAngle for Background->ignored =>0453503000000000
@@ -1450,6 +1469,12 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009f9730000dgf0404000", "411790109fe30220000", "32c51070a", "01031v3200000000", "0453503000000000"); // Psi pair 0.20 dep
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009f9730000dgg0404000", "411790109fe30220000", "32c51070a", "01031v3200000000", "0453503000000000"); // Psi pair 0.30 dep
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009227300008250404000", "411790109fe30220000", "32c51070a", "01031v3200000000", "0453503000000000"); // old cuts (run1)
+  } else if(trainConfig == 3511)  { //EMCal + DCal EG2  Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // EG2 Standard
+  } else if(trainConfig == 3512)  { //EMCal + DCal EG2  Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // EG2 Standard
+  } else if(trainConfig == 3513)  { //EMCal + DCal EG2  Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // EG2 Standard
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Standard Cuts of Pi0 Analysis: ("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","0r631031000000d0")
     //MesonCut r63==Background->ignored, d==OpeningAngle for Background->ignored =>0453503000000000
@@ -1667,6 +1692,12 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009f9730000dgf0404000", "411790109fe30220000", "32c51070a", "01031v3200000000", "0453503000000000"); // Psi pair 0.20 dep
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009f9730000dgg0404000", "411790109fe30220000", "32c51070a", "01031v3200000000", "0453503000000000"); // Psi pair 0.30 dep
     cuts.AddCutHeavyMesonPCMCalo("00010113", "0dm00009227300008250404000", "411790109fe30220000", "32c51070a", "01031v3200000000", "0453503000000000"); // old cuts (run1)
+  } else if(trainConfig == 4511)  { //EMCal + DCal EG1  Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // EG1 Standard
+  } else if(trainConfig == 4512)  { //EMCal + DCal EG1  Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // EG1 Standard
+  } else if(trainConfig == 4513)  { //EMCal + DCal EG1  Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3200000000","0453503000000000"); // EG1 Standard
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   } else {
@@ -1709,6 +1740,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   PionCutList->SetOwner(kTRUE);
   AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
 
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
+
   for(Int_t i = 0; i<numberOfCuts; i++){
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
@@ -1747,6 +1780,20 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        Int_t FlagMatBudWeightsPi0=enableMatBudWeightsPi0;
+        if (enableMatBudWeightsPi0>=10){
+          FlagMatBudWeightsPi0-=10;
+        }
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(FlagMatBudWeightsPi0,fileNameMatBudWeights)){
+          initializedMatBudWeigths_existing = kTRUE;
+        }
+        else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+      }
+      else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
 
     // post calibration of dEdx energy loss
     if (enableElecDeDxPostCalibration){
@@ -1837,6 +1884,13 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetDoMesonQA(enableQAMesonTask );
 
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+      if (enableMatBudWeightsPi0>=10){
+          task->SetDoMaterialBudgetWeightingOfGammasForInvMassHistogram(kTRUE);
+      }
+  }
 
   //connect containers
   AliAnalysisDataContainer *coutput =

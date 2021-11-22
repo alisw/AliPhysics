@@ -72,6 +72,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TString GetPionSelectorName() {return fPionSelectorName;}
     // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels(Bool_t enableSort)  { fEnableSortForClusMC   = enableSort; }
+    void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    void SetDoMaterialBudgetWeightingOfGammasForInvMassHistogram(Bool_t flag) { fUseMatBudWeightsForInvMassHistogram = flag;}
 
 
   private:
@@ -88,8 +90,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void ProcessTrueCaloPhotonCandidates(AliAODConversionPhoton *TruePhotonCandidate);
     void ProcessTrueCaloPhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate);
 
-    void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
-    void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
+    void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate, Double_t weightMatBudget);
+    void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate, Double_t weightMatBudget);
     void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
     void FixPzToMatchPDGInvMassNDM(AliAODConversionMother* particle);
@@ -163,6 +165,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TList*                            fGoodConvGammas;                                    //!<! good conv gammas after selection
     TList*                            fClusterCandidates;                                 //!<! good calo gammas after selection
     TList*                            fNeutralDecayParticleCandidates;                    //!<! good neutral pion candidates
+    Bool_t                            fUseMatBudWeightsForInvMassHistogram;               //!<! use material budget weights for Invariant Mass Histograms, needed for rec. Eff
+    vector<Float_t>                   fNeutralDecayParticleCandidateMatBudWeights;        //!<! material budget weights for good neutral pion candidates
     TList*                            fNeutralDecayParticleSidebandCandidates;            //!<! good neutral pion candidates from sideband
     TList*                            fNeutralDecayParticleSwappCandidates;               //!<! good neutral pion candidates from Swapp method
     TList*                            fPosPionCandidates;                                 //!<! good positive pion candidates
@@ -496,6 +500,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
     Int_t                           fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
     Bool_t                          fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
+    Bool_t                          fDoMaterialBudgetWeightingOfGammasForTrueMesons;    // flag to set the usage of material budget weights
 
     TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling)
     TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
@@ -506,7 +511,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 25);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 26);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
