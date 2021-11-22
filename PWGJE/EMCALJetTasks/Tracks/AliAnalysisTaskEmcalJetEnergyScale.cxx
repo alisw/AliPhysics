@@ -137,8 +137,14 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAllClosure", "Part level jet pt spectrum for closure test", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAllNoClosure", "Part level jet pt spectrum (no-closure sample)", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hPurityDet", "Det. level purity", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
-  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Det. level purity", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hPurityDetClosure", "Det. level purity for closure test", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hPurityDetNoClosure", "Det. level purity (no-closure sample)", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Part. level efficiency", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCoreClosure", "Part. level efficiency for closure test", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCoreNoClosure", "Part. level efficiency (no-closure sample)", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
   if(fFillHSparse){
     TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
@@ -309,6 +315,9 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
   }
 
+  // SampleSplitting for closure test on event level
+  bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
+
   auto detjets = GetDetLevelJetContainer(),
        partjets = GetPartLevelJetContainer();
   if(!detjets || !partjets) {
@@ -328,18 +337,32 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     if(!partjet) {
       AliDebugStream(2) << "No tagged jet" << std::endl;
       fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
+      if(isClosure) {
+        fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 0);
+      } else {
+        fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 0);
+      }
       continue;
     } else {
       if(!(partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType())){
         // Acceptance not matching
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 1);
+        if(isClosure){
+          fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 1);
+        } else {
+          fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 1);
+        }
         if(fRequireSameAcceptance) continue;
       } else {
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
+        if(isClosure) {
+          fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 2);
+        } else {
+          fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 2);
+        }
       }
     }
     acceptedjets.push_back(detjet);
-    bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
     Double_t detjetpt = detjet->Pt();
     Double_t partjetpt = partjet->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
@@ -530,6 +553,11 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
 
     fHistos->FillTH1("hJetSpectrumPartAll", partjetpt);
+    if(isClosure) {
+      fHistos->FillTH1("hJetSpectrumPartAllClosure", partjetpt);
+    } else {
+      fHistos->FillTH1("hJetSpectrumPartAllNoClosure", partjetpt);
+    }
     for(auto itrk = 0; itrk < partjet->GetNumberOfTracks(); itrk++) {
       auto constituent = partjet->Track(itrk);
       switch(TMath::Abs(constituent->PdgCode())) {
@@ -547,6 +575,11 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       else tagstatus = 1;
     }
     fHistos->FillTH2("hJetfindingEfficiencyCore", partjetpt, tagstatus);
+    if(isClosure) {
+      fHistos->FillTH2("hJetfindingEfficiencyCoreClosure", partjetpt, tagstatus);
+    } else {
+      fHistos->FillTH2("hJetfindingEfficiencyCoreNoClosure", partjetpt, tagstatus);
+    }
     if(fFillHSparse){
       double effvec[3] = {partjetpt, 0.,static_cast<double>(tagstatus)};
       if(detjet) {
