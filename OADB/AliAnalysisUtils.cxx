@@ -447,7 +447,7 @@ Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname, 
     }
   }
   if(nCollis<1){
-    printf("AliAnalysisUtils::IsPileupInGeneratedEvent: ERROR: No collisions with %s generator found!",genname.Data());
+    printf("AliAnalysisUtils::IsPileupInGeneratedEvent: ERROR: No collisions with %s generator found!\n",genname.Data());
     return kFALSE;
   }
   if(nCollis>1) return kTRUE;

@@ -13,6 +13,7 @@
 #include "AliESDVertex.h"
 #include <AliAODMCParticle.h>
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include <TSystem.h>
 #include <TTree.h>
 #include <TTree.h>
@@ -168,6 +169,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fMinNumOfTPCPIDclu(0),
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
+  fUsePbPbOutOfBunchPileupCutsITSTPC(0),
   fTriggerMask(AliVEvent::kAnyINT),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
@@ -828,6 +830,16 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     utils.SetCheckPlpFromDifferentBCMV(kTRUE);
     Bool_t isPUMV = utils.IsPileUpMV(aod);
     if(isPUMV) return;
+  }
+  if(fUsePbPbOutOfBunchPileupCutsITSTPC){
+    AliEventCuts evc;
+    evc.SetManualMode();
+    Int_t runNumb=aod->GetRunNumber();
+    if(runNumb >= 244917 && runNumb <= 246994) evc.SetupRun2PbPb();
+    else if(runNumb >= 295369 && runNumb <= 297624) evc.SetupPbPb2018();
+    evc.SetRejectTPCPileupWithITSTPCnCluCorr(true, fUsePbPbOutOfBunchPileupCutsITSTPC);
+    evc.AcceptEvent(aod);
+    if(!evc.PassedCut(AliEventCuts::kTPCPileUp)) return;
   }
   fHistNEvents->Fill(6);
 
