@@ -204,6 +204,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         return;
     }
     TClonesArray *arrayCand = nullptr;
+    TClonesArray *arrayCandDDau = nullptr;
     int absPdgMom = 0;
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
@@ -227,6 +228,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
                     break;
                 case kDstartoD0pi:
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
+                    arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
                     break;
             }
         }
@@ -243,11 +245,12 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
                 break;
             case kDstartoD0pi:
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
+                arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
                 break;
         }
     }
 
-    if (!fAOD || !arrayCand)
+    if (!fAOD || !arrayCand || (fDecChannel == kDstartoD0pi && !arrayCandDDau))
     {
         AliWarning("Candidate branch not found!\n");
         PostData(1, fOutput);
@@ -319,6 +322,17 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
     {
         AliAODRecoDecayHF *chHad = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(iCand));
         AliAODRecoDecayHF *chHadWithVtx;
+        if(fDecChannel == kDstartoD0pi)
+        {
+            if(chHad->GetIsFilled()<1)
+                chHadWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(chHad->GetProngID(1)));
+            else
+                chHadWithVtx = dynamic_cast<AliAODRecoDecayHF *>(((AliAODRecoCascadeHF *)chHad)->Get2Prong());
+        }
+        else
+        {
+            chHadWithVtx = chHad;
+        }
 
         bool unsetVtx = false;
         bool recVtx = false;
@@ -388,7 +402,7 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
                                                                 int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx,
                                                                 std::vector<double> &modelPred, std::vector<double> &modelPredSecond)
 {
-    if(!chHad || !vHF )
+    if(!chHad || !chHadWithVtx || !vHF )
         return 0;
 
     //Preselection to speed up task
@@ -417,24 +431,20 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
             isSelBit = chHad->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF2Prong *>(chHad)))
                 return 0;
-            chHadWithVtx = chHad;
             break;
         case kDplustoKpipi:
             isSelBit = chHad->HasSelectionBit(AliRDHFCuts::kDplusCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(chHad)))
                 return 0;
-            chHadWithVtx = chHad;
             break;
         case kDstartoD0pi:
             if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(chHad), true))
                 return 0;
-            chHadWithVtx = dynamic_cast<AliAODRecoDecayHF*>(((AliAODRecoCascadeHF *)chHad)->Get2Prong());
             break;
         case kDstoKKpi:
             isSelBit = chHad->HasSelectionBit(AliRDHFCuts::kDsCuts);
             if (!isSelBit || !vHF->FillRecoCand(fAOD, dynamic_cast<AliAODRecoDecayHF3Prong *>(chHad)))
                 return 0;
-            chHadWithVtx = chHad;
             break;
 
     }
