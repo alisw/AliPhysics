@@ -1555,9 +1555,12 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trac
       AliAODMCParticle *mcMother_Xi  = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
       AliAODMCParticle *mcMother_Pi0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[1]));
       AliAODMCParticle *mcMother_Pi1 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[2]));
-      if ( mcMother_Xi->GetPdgCode() == 3324 && ( (mcMother_Pi0->GetPdgCode()==4232) || (mcMother_Pi1->GetPdgCode()==4232) ) ) return -2;
+      if ( mcMother_Xi->GetPdgCode() == 3324 && ( (mcMother_Pi0->GetPdgCode()==4232) || (mcMother_Pi1->GetPdgCode()==4232) ) ) {
+        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==4) return -4;
+        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==5) return -5;
+      }
     }
-    return -10; // check the same mother
+    return -8; // check the same mother
   }
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
   if ( mcMother->GetPdgCode() != 4232 || mcMother->GetNDaughters()!=3 ) {
@@ -1634,13 +1637,16 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *
       AliAODMCParticle *mcMother_Xi  = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
       AliAODMCParticle *mcMother_Pi0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[1]));
       AliAODMCParticle *mcMother_Pi1 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[2]));
-      if ( mcMother_Xi->GetPdgCode() == -3324 && ( (mcMother_Pi0->GetPdgCode()==-4232) || (mcMother_Pi1->GetPdgCode()==-4232) ) ) return -2;
+      if ( mcMother_Xi->GetPdgCode() == -3324 && ( (mcMother_Pi0->GetPdgCode()==-4232) || (mcMother_Pi1->GetPdgCode()==-4232) ) ) {
+        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==4) return -4;
+        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==5) return -5;
+      }
     }
     return -10; // check the same mother
   }
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
   if ( mcMother->GetPdgCode() != -4232 || mcMother->GetNDaughters()!=3 ) {
-    return -5; // check mother is Anti-XicPlus
+    return -8; // check mother is Anti-XicPlus
   }
 
 //  if ( mcMother->IsPrimary() ) return 1;
@@ -2139,7 +2145,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_XicPlus = new TTree(nameoutput, "XicPlus variables tree");
-  Int_t nVar = 59;
+  Int_t nVar = 63;
   fVar_XicPlus = new Float_t[nVar-1];
   TString *fVarNames = new TString[nVar];
 
@@ -2209,8 +2215,12 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[54] = "chi2topo_XicPlusToRecalPVfromKF"; // chi2_topo of XicPlus to recalPV from KF
   fVarNames[55] = "PA_XicPlusToRecalPV"; // pointing angle of XicPlus (pointing back to recalPV)
   fVarNames[56] = "chi2topo_XicPlusToRecalPV"; // chi2_topo of XicPlus to recalPV
-  fVarNames[57] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
-  fVarNames[58] = "event_ID"; // event ID
+  fVarNames[57] = "PAXY_XicPlusToPV"; // pointing angle (x-Y) of XicPlus (pointing back to PV)
+  fVarNames[58] = "PAXY_XicPlusToRecalPVKF_Refit"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV from KF) (Refit)
+  fVarNames[59] = "PAXY_XicPlusToRecalPVfromKF"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV from KF)
+  fVarNames[60] = "PAXY_XicPlusToRecalPV"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV)
+  fVarNames[61] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[62] = "event_ID"; // event ID
 
 //  fVarNames[26] = "CosThetaStar_PiFromXicPlus"; // CosThetaStar of pion coming from XicPlus
 //  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from XicPlus
@@ -2329,7 +2339,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillEventROOTObjects()
 void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, KFParticle PV_KF_Refit, TClonesArray *mcArray, Int_t lab_XicPlus)
 {
 
-  for (Int_t i=0; i<(59-1); i++) {
+  for (Int_t i=0; i<(63-1); i++) {
     fVar_XicPlus[i] = -9999.;
   }
 
@@ -2534,7 +2544,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
 
   if (fIsMC) {
     fVar_XicPlus_EvtID = GetMCEventID(); // Event ID for MC
-    fVar_XicPlus[57] = lab_XicPlus;
+    fVar_XicPlus[61] = lab_XicPlus;
     // === weight ===
     /*
     if (lab_XicPlus>0) {
@@ -2566,12 +2576,14 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   }
 
   if (fIsMC) {
-  Double_t PV_Gen[3]={0.};
-  AliAODMCHeader *mcHeader = (AliAODMCHeader*)AODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  mcHeader->GetVertex(PV_Gen);
-  fVar_XicPlus_QA[0] = PV_Gen[0]; // PV: X_{MC}
-  fVar_XicPlus_QA[1] = PV_Gen[1]; // PV: Y_{MC}
-  fVar_XicPlus_QA[2] = PV_Gen[2]; // PV: Z_{MC}
+    Double_t PV_Gen[3]={0.};
+    AliAODMCHeader *mcHeader = (AliAODMCHeader*)AODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    mcHeader->GetVertex(PV_Gen);
+    fVar_XicPlus_QA[0] = PV_Gen[0]; // PV: X_{MC}
+    fVar_XicPlus_QA[1] = PV_Gen[1]; // PV: Y_{MC}
+    fVar_XicPlus_QA[2] = PV_Gen[2]; // PV: Z_{MC}
+  }
+
   Double_t pos_PV[3],cov_PV[6];
   fpVtx->GetXYZ(pos_PV);
   fpVtx->GetCovarianceMatrix(cov_PV);
@@ -2610,7 +2622,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
       fHPrimVtx_woDau_err_y->Fill(sqrt(cov_recalPV[2]));
       fHPrimVtx_woDau_err_z->Fill(sqrt(cov_recalPV[5]));
     }
+    fVar_XicPlus_QA[27] = fpVtx->GetNContributors(); // PV: NContributors
     fVar_XicPlus_QA[28] = PV_woDau->GetNContributors(); // recal_PV: NContributors
+    fVar_XicPlus_QA[29] = fVar_XicPlus_QA[27] - fVar_XicPlus_QA[28]; // NContributors: PV - recal_PV
     //cout << "PV (NContributors): " << fpVtx->GetNContributors() << endl;
     //cout << "PV (NDaughters): " << fpVtx->GetNDaughters() << endl;
     //cout << "PV (CountRealContributors): " << fpVtx->CountRealContributors() << endl;
@@ -2648,76 +2662,6 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
     // --- chi2_topo ---
     fVar_XicPlus[56] = kfpXicPlus_recalPV.GetChi2()/kfpXicPlus_recalPV.GetNDF(); // chi2_topo of XicPlus to recalPV
     // ========================
-  }
-
-  fVar_XicPlus_QA[15] = fVar_XicPlus_QA[3] - fVar_XicPlus_QA[0]; // PV: X_{rec} - X_{MC}
-  fVar_XicPlus_QA[16] = fVar_XicPlus_QA[4] - fVar_XicPlus_QA[1]; // PV: Y_{rec} - Y_{MC}
-  fVar_XicPlus_QA[17] = fVar_XicPlus_QA[5] - fVar_XicPlus_QA[2]; // PV: Z_{rec} - Z_{MC}
-  fVar_XicPlus_QA[18] = fVar_XicPlus_QA[15]/fVar_XicPlus_QA[6]; // PV: PULL_X
-  fVar_XicPlus_QA[19] = fVar_XicPlus_QA[16]/fVar_XicPlus_QA[7]; // PV: PULL_Y
-  fVar_XicPlus_QA[20] = fVar_XicPlus_QA[17]/fVar_XicPlus_QA[8]; // PV: PULL_Z
-
-  fVar_XicPlus_QA[21] = fVar_XicPlus_QA[9] - fVar_XicPlus_QA[0]; // recal_PV: X_{rec} - X_{MC}
-  fVar_XicPlus_QA[22] = fVar_XicPlus_QA[10] - fVar_XicPlus_QA[1]; // recal_PV: Y_{rec} - Y_{MC}
-  fVar_XicPlus_QA[23] = fVar_XicPlus_QA[11] - fVar_XicPlus_QA[2]; // recal_PV: Z_{rec} - Z_{MC}
-  fVar_XicPlus_QA[24] = fVar_XicPlus_QA[21]/fVar_XicPlus_QA[12]; // recal_PV: PULL_X
-  fVar_XicPlus_QA[25] = fVar_XicPlus_QA[22]/fVar_XicPlus_QA[13]; // recal_PV: PULL_Y
-  fVar_XicPlus_QA[26] = fVar_XicPlus_QA[23]/fVar_XicPlus_QA[14]; // recal_PV: PULL_Z
-  fVar_XicPlus_QA[27] = fpVtx->GetNContributors(); // PV: NContributors
-  fVar_XicPlus_QA[29] = fVar_XicPlus_QA[27] - fVar_XicPlus_QA[28]; // NContributors: PV - recal_PV
-
-  // SV
-  Int_t labelPiFromXicPlus_trk1 = fabs(trackPiFromXicPlus_trk1->GetLabel());
-  AliAODMCParticle* mcPiFromXicPlus_trk1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXicPlus_trk1));
-  fVar_XicPlus_QA[30] = mcPiFromXicPlus_trk1->Xv(); // SV: X_{MC}
-  fVar_XicPlus_QA[31] = mcPiFromXicPlus_trk1->Yv(); // SV: Y_{MC}
-  fVar_XicPlus_QA[32] = mcPiFromXicPlus_trk1->Zv(); // SV: Z_{MC}
-  fVar_XicPlus_QA[33] = kfpXicPlus.GetX(); // SV: X_{rec}
-  fVar_XicPlus_QA[34] = kfpXicPlus.GetY(); // SV: Y_{rec}
-  fVar_XicPlus_QA[35] = kfpXicPlus.GetZ(); // SV: Z_{rec}
-  fVar_XicPlus_QA[36] = kfpXicPlus.GetErrX(); // SV: sigma_X^{rec}
-  fVar_XicPlus_QA[37] = kfpXicPlus.GetErrY(); // SV: sigma_Y^{rec}
-  fVar_XicPlus_QA[38] = kfpXicPlus.GetErrZ(); // SV: sigma_Z^{rec}
-  KFParticle kfpXicPlus_PV_DecayVtx = kfpXicPlus_PV;
-  kfpXicPlus_PV_DecayVtx.TransportToDecayVertex();
-  fVar_XicPlus_QA[39] = kfpXicPlus_PV_DecayVtx.GetX(); // SV: X_{rec} (w/ topo. constraint)
-  fVar_XicPlus_QA[40] = kfpXicPlus_PV_DecayVtx.GetY(); // SV: Y_{rec} (w/ topo. constraint)
-  fVar_XicPlus_QA[41] = kfpXicPlus_PV_DecayVtx.GetZ(); // SV: Z_{rec} (w/ topo. constraint)
-  fVar_XicPlus_QA[42] = kfpXicPlus_PV_DecayVtx.GetErrX(); // SV: sigma_X^{rec} (w/ topo. constraint)
-  fVar_XicPlus_QA[43] = kfpXicPlus_PV_DecayVtx.GetErrY(); // SV: sigma_Y^{rec} (w/ topo. constraint)
-  fVar_XicPlus_QA[44] = kfpXicPlus_PV_DecayVtx.GetErrZ(); // SV: sigma_Z^{rec} (w/ topo. constraint)
-  fVar_XicPlus_QA[45] = kfpXicPlus.GetPt(); // SV: pt of Xic+
-  fVar_XicPlus_QA[46] = kfpXicPlus_PV.GetPt(); // SV: pt of Xic+ (w/ topo. constraint)
-  fVar_XicPlus_QA[47] = fVar_XicPlus_QA[46] - fVar_XicPlus_QA[45]; // SV: pt diff of Xic+ (w/ - w/o topo. constraint)
-  fVar_XicPlus_QA[48] = fVar_XicPlus_QA[33] - fVar_XicPlus_QA[30]; // SV: X_{rec} - X_{MC}
-  fVar_XicPlus_QA[49] = fVar_XicPlus_QA[34] - fVar_XicPlus_QA[31]; // SV: Y_{rec} - Y_{MC}
-  fVar_XicPlus_QA[50] = fVar_XicPlus_QA[35] - fVar_XicPlus_QA[32]; // SV: Z_{rec} - Z_{MC}
-  fVar_XicPlus_QA[51] = fVar_XicPlus_QA[48]/fVar_XicPlus_QA[36]; // SV: PULL_X
-  fVar_XicPlus_QA[52] = fVar_XicPlus_QA[49]/fVar_XicPlus_QA[37]; // SV: PULL_Y
-  fVar_XicPlus_QA[53] = fVar_XicPlus_QA[50]/fVar_XicPlus_QA[38]; // SV: PULL_Z
-  fVar_XicPlus_QA[54] = fVar_XicPlus_QA[39] - fVar_XicPlus_QA[30]; // SV: X_{rec} - X_{MC} (w/ topo. constraint)
-  fVar_XicPlus_QA[55] = fVar_XicPlus_QA[40] - fVar_XicPlus_QA[31]; // SV: Y_{rec} - Y_{MC} (w/ topo. constraint)
-  fVar_XicPlus_QA[56] = fVar_XicPlus_QA[41] - fVar_XicPlus_QA[32]; // SV: Z_{rec} - Z_{MC} (w/ topo. constraint)
-  fVar_XicPlus_QA[57] = fVar_XicPlus_QA[54]/fVar_XicPlus_QA[42]; // SV: PULL_X (w/ topo. constraint)
-  fVar_XicPlus_QA[58] = fVar_XicPlus_QA[55]/fVar_XicPlus_QA[43]; // SV: PULL_Y (w/ topo. constraint)
-  fVar_XicPlus_QA[59] = fVar_XicPlus_QA[56]/fVar_XicPlus_QA[44]; // SV: PULL_Z (w/ topo. constraint)
-
-  fVar_XicPlus_QA[66] = fVar_XicPlus_QA[60] - fVar_XicPlus_QA[30]; // SV: X_{rec} - X_{MC} (w/ topo. constraint recalPV)
-  fVar_XicPlus_QA[67] = fVar_XicPlus_QA[61] - fVar_XicPlus_QA[31]; // SV: Y_{rec} - Y_{MC} (w/ topo. constraint recalPV)
-  fVar_XicPlus_QA[68] = fVar_XicPlus_QA[62] - fVar_XicPlus_QA[32]; // SV: Z_{rec} - Z_{MC} (w/ topo. constraint recalPV)
-  fVar_XicPlus_QA[69] = fVar_XicPlus_QA[66]/fVar_XicPlus_QA[63]; // SV: PULL_X (w/ topo. constraint recalPV)
-  fVar_XicPlus_QA[70] = fVar_XicPlus_QA[67]/fVar_XicPlus_QA[64]; // SV: PULL_Y (w/ topo. constraint recalPV)
-  fVar_XicPlus_QA[71] = fVar_XicPlus_QA[68]/fVar_XicPlus_QA[65]; // SV: PULL_Z (w/ topo. constraint recalPV)
-  fVar_XicPlus_QA[73] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[45]; // SV: pt diff of Xic+ (w/ - w/o topo. constraint recalPV)
-  fVar_XicPlus_QA[74] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[46]; // SV: pt diff of Xic+ (w/ topo. constraint recalPV - PV)
-
-  fVar_XicPlus_QA[75] = fpVtx->CountRealContributors(); // PV: count daughter primary tracks
-  fVar_XicPlus_QA[76] = PV_KF_Refit.GetX(); // PV_KF_Refit: X_{rec}
-  fVar_XicPlus_QA[77] = PV_KF_Refit.GetY(); // PV_KF_Refit: Y_{rec}
-  fVar_XicPlus_QA[78] = PV_KF_Refit.GetZ(); // PV_KF_Refit: Z_{rec}
-  fVar_XicPlus_QA[79] = PV_KF_Refit.GetErrX(); // PV_KF_Refit: sigma_X^{rec}
-  fVar_XicPlus_QA[80] = PV_KF_Refit.GetErrY(); // PV_KF_Refit: sigma_Y^{rec}
-  fVar_XicPlus_QA[81] = PV_KF_Refit.GetErrZ(); // PV_KF_Refit: sigma_Z^{rec}
 
   // === Recalculate PV after removing Xic+ daughters and adding Xic+ (Refit) ===
   KFParticle recalPV_KF_Refit = PV_KF_Refit;
@@ -2771,14 +2715,28 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fVar_XicPlus[54] = kfpXicPlus_recalPVKF.GetChi2()/kfpXicPlus_recalPVKF.GetNDF(); // chi2_topo of XicPlus to recalPV_KF
   // ============================================================================
 
+  // --- pointing angle (X-Y) ---
+  Double_t cosPAXY_XicPlusToRecalPVKF_Refit = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, recalPV_KF_Refit_AfterUsedForPVcheck);
+  fVar_XicPlus[58] = TMath::ACos(cosPAXY_XicPlusToRecalPVKF_Refit); // pointing angle (X-Y) of XicPlus (pointing back to recalPV_KF_Refit)
+  Double_t cosPAXY_XicPlusToRecalPVKF = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, recalPV_KF_AfterUsedForPVcheck);
+  fVar_XicPlus[59] = TMath::ACos(cosPAXY_XicPlusToRecalPVKF); // pointing angle (X-Y) of XicPlus (pointing back to recalPV_KF)
+  Double_t cosPAXY_XicPlusToRecalPV = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, PV_recal);
+  fVar_XicPlus[60] = TMath::ACos(cosPAXY_XicPlusToRecalPV); // pointing angle (X-Y) of XicPlus (pointing back to recalPV)
+  //-----------------------------
+
+  fVar_XicPlus_QA[76] = PV_KF_Refit.GetX(); // PV_KF_Refit: X_{rec}
+  fVar_XicPlus_QA[77] = PV_KF_Refit.GetY(); // PV_KF_Refit: Y_{rec}
+  fVar_XicPlus_QA[78] = PV_KF_Refit.GetZ(); // PV_KF_Refit: Z_{rec}
+  fVar_XicPlus_QA[79] = PV_KF_Refit.GetErrX(); // PV_KF_Refit: sigma_X^{rec}
+  fVar_XicPlus_QA[80] = PV_KF_Refit.GetErrY(); // PV_KF_Refit: sigma_Y^{rec}
+  fVar_XicPlus_QA[81] = PV_KF_Refit.GetErrZ(); // PV_KF_Refit: sigma_Z^{rec}
+
   fVar_XicPlus_QA[82] = recalPV_KF_Refit.GetX(); // recalPV_KF_Refit: X_{rec}
   fVar_XicPlus_QA[83] = recalPV_KF_Refit.GetY(); // recalPV_KF_Refit: Y_{rec}
   fVar_XicPlus_QA[84] = recalPV_KF_Refit.GetZ(); // recalPV_KF_Refit: Z_{rec}
   fVar_XicPlus_QA[85] = recalPV_KF_Refit.GetErrX(); // recalPV_KF_Refit: sigma_X^{rec}
   fVar_XicPlus_QA[86] = recalPV_KF_Refit.GetErrY(); // recalPV_KF_Refit: sigma_Y^{rec}
   fVar_XicPlus_QA[87] = recalPV_KF_Refit.GetErrZ(); // recalPV_KF_Refit: sigma_Z^{rec}
-
-  fVar_XicPlus_QA[88] = lab_XicPlus;
 
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_x->Fill(PV_KF_Refit.GetX()-pos_PV[0]);
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_y->Fill(PV_KF_Refit.GetY()-pos_PV[1]);
@@ -2792,42 +2750,116 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-recalPV_KF_Refit.GetX());
   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-recalPV_KF_Refit.GetY());
   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-recalPV_KF_Refit.GetZ());
-  fHPrimVtx_PVrec_Minus_PVgen_x->Fill(pos_PV[0]-PV_Gen[0]);
-  fHPrimVtx_PVrec_Minus_PVgen_y->Fill(pos_PV[1]-PV_Gen[1]);
-  fHPrimVtx_PVrec_Minus_PVgen_z->Fill(pos_PV[2]-PV_Gen[2]);
-  fHPrimVtx_PV_KF_Refit_Minus_PVgen_x->Fill(PV_KF_Refit.GetX()-PV_Gen[0]);
-  fHPrimVtx_PV_KF_Refit_Minus_PVgen_y->Fill(PV_KF_Refit.GetY()-PV_Gen[1]);
-  fHPrimVtx_PV_KF_Refit_Minus_PVgen_z->Fill(PV_KF_Refit.GetZ()-PV_Gen[2]);
-  fHPrimVtx_recalPV_Minus_PVgen_x->Fill(fVar_XicPlus_QA[9]-PV_Gen[0]);
-  fHPrimVtx_recalPV_Minus_PVgen_y->Fill(fVar_XicPlus_QA[10]-PV_Gen[1]);
-  fHPrimVtx_recalPV_Minus_PVgen_z->Fill(fVar_XicPlus_QA[11]-PV_Gen[2]);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x->Fill(recalPV_KF_Refit.GetX()-PV_Gen[0]);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y->Fill(recalPV_KF_Refit.GetY()-PV_Gen[1]);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z->Fill(recalPV_KF_Refit.GetZ()-PV_Gen[2]);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-PV_Gen[0]);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-PV_Gen[1]);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-PV_Gen[2]);
-  fHPrimVtx_PV_PULL_x->Fill((pos_PV[0]-PV_Gen[0])/fVar_XicPlus_QA[6]);
-  fHPrimVtx_PV_PULL_y->Fill((pos_PV[1]-PV_Gen[1])/fVar_XicPlus_QA[7]);
-  fHPrimVtx_PV_PULL_z->Fill((pos_PV[2]-PV_Gen[2])/fVar_XicPlus_QA[8]);
-  fHPrimVtx_PV_KF_PULL_x->Fill((PV.GetX()-PV_Gen[0])/PV.GetErrX());
-  fHPrimVtx_PV_KF_PULL_y->Fill((PV.GetY()-PV_Gen[1])/PV.GetErrY());
-  fHPrimVtx_PV_KF_PULL_z->Fill((PV.GetZ()-PV_Gen[2])/PV.GetErrZ());
-  fHPrimVtx_PV_KF_Refit_PULL_x->Fill((PV_KF_Refit.GetX()-PV_Gen[0])/PV_KF_Refit.GetErrX());
-  fHPrimVtx_PV_KF_Refit_PULL_y->Fill((PV_KF_Refit.GetY()-PV_Gen[1])/PV_KF_Refit.GetErrY());
-  fHPrimVtx_PV_KF_Refit_PULL_z->Fill((PV_KF_Refit.GetZ()-PV_Gen[2])/PV_KF_Refit.GetErrZ());
-  fHPrimVtx_recalPV_PULL_x->Fill((fVar_XicPlus_QA[9]-PV_Gen[0])/fVar_XicPlus_QA[12]);
-  fHPrimVtx_recalPV_PULL_y->Fill((fVar_XicPlus_QA[10]-PV_Gen[1])/fVar_XicPlus_QA[13]);
-  fHPrimVtx_recalPV_PULL_z->Fill((fVar_XicPlus_QA[11]-PV_Gen[2])/fVar_XicPlus_QA[14]);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-PV_Gen[0])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrX());
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-PV_Gen[1])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrY());
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-PV_Gen[2])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrZ());
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x->Fill(recalPV_KF_AfterUsedForPVcheck.GetX()-PV_Gen[0]);
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y->Fill(recalPV_KF_AfterUsedForPVcheck.GetY()-PV_Gen[1]);
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z->Fill(recalPV_KF_AfterUsedForPVcheck.GetZ()-PV_Gen[2]);
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_x->Fill((recalPV_KF_AfterUsedForPVcheck.GetX()-PV_Gen[0])/recalPV_KF_AfterUsedForPVcheck.GetErrX());
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_y->Fill((recalPV_KF_AfterUsedForPVcheck.GetY()-PV_Gen[1])/recalPV_KF_AfterUsedForPVcheck.GetErrY());
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_z->Fill((recalPV_KF_AfterUsedForPVcheck.GetZ()-PV_Gen[2])/recalPV_KF_AfterUsedForPVcheck.GetErrZ());
+
+  fHPrimVtx_PV_KF_Refit_Minus_PVgen_x->Fill(fVar_XicPlus_QA[76]-fVar_XicPlus_QA[0]);
+  fHPrimVtx_PV_KF_Refit_Minus_PVgen_y->Fill(fVar_XicPlus_QA[77]-fVar_XicPlus_QA[1]);
+  fHPrimVtx_PV_KF_Refit_Minus_PVgen_z->Fill(fVar_XicPlus_QA[78]-fVar_XicPlus_QA[2]);
+  fHPrimVtx_recalPV_Minus_PVgen_x->Fill(fVar_XicPlus_QA[9]-fVar_XicPlus_QA[0]);
+  fHPrimVtx_recalPV_Minus_PVgen_y->Fill(fVar_XicPlus_QA[10]-fVar_XicPlus_QA[1]);
+  fHPrimVtx_recalPV_Minus_PVgen_z->Fill(fVar_XicPlus_QA[11]-fVar_XicPlus_QA[2]);
+  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x->Fill(fVar_XicPlus_QA[82]-fVar_XicPlus_QA[0]);
+  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y->Fill(fVar_XicPlus_QA[83]-fVar_XicPlus_QA[1]);
+  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z->Fill(fVar_XicPlus_QA[84]-fVar_XicPlus_QA[2]);
+  fHPrimVtx_PV_PULL_x->Fill((pos_PV[0]-fVar_XicPlus_QA[0])/fVar_XicPlus_QA[6]);
+  fHPrimVtx_PV_PULL_y->Fill((pos_PV[1]-fVar_XicPlus_QA[1])/fVar_XicPlus_QA[7]);
+  fHPrimVtx_PV_PULL_z->Fill((pos_PV[2]-fVar_XicPlus_QA[2])/fVar_XicPlus_QA[8]);
+  fHPrimVtx_PV_KF_PULL_x->Fill((PV.GetX()-fVar_XicPlus_QA[0])/PV.GetErrX());
+  fHPrimVtx_PV_KF_PULL_y->Fill((PV.GetY()-fVar_XicPlus_QA[1])/PV.GetErrY());
+  fHPrimVtx_PV_KF_PULL_z->Fill((PV.GetZ()-fVar_XicPlus_QA[2])/PV.GetErrZ());
+  fHPrimVtx_PV_KF_Refit_PULL_x->Fill((PV_KF_Refit.GetX()-fVar_XicPlus_QA[0])/PV_KF_Refit.GetErrX());
+  fHPrimVtx_PV_KF_Refit_PULL_y->Fill((PV_KF_Refit.GetY()-fVar_XicPlus_QA[1])/PV_KF_Refit.GetErrY());
+  fHPrimVtx_PV_KF_Refit_PULL_z->Fill((PV_KF_Refit.GetZ()-fVar_XicPlus_QA[2])/PV_KF_Refit.GetErrZ());
+  fHPrimVtx_recalPV_PULL_x->Fill((fVar_XicPlus_QA[9]-fVar_XicPlus_QA[0])/fVar_XicPlus_QA[12]);
+  fHPrimVtx_recalPV_PULL_y->Fill((fVar_XicPlus_QA[10]-fVar_XicPlus_QA[1])/fVar_XicPlus_QA[13]);
+  fHPrimVtx_recalPV_PULL_z->Fill((fVar_XicPlus_QA[11]-fVar_XicPlus_QA[2])/fVar_XicPlus_QA[14]);
+  if (fIsMC) {
+    fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0]);
+    fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1]);
+    fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2]);
+    fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrX());
+    fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrY());
+    fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrZ());
+    fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x->Fill(recalPV_KF_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0]);
+    fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y->Fill(recalPV_KF_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1]);
+    fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z->Fill(recalPV_KF_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2]);
+    fHPrimVtx_recalPV_KF_AfterCheck_PULL_x->Fill((recalPV_KF_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0])/recalPV_KF_AfterUsedForPVcheck.GetErrX());
+    fHPrimVtx_recalPV_KF_AfterCheck_PULL_y->Fill((recalPV_KF_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1])/recalPV_KF_AfterUsedForPVcheck.GetErrY());
+    fHPrimVtx_recalPV_KF_AfterCheck_PULL_z->Fill((recalPV_KF_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2])/recalPV_KF_AfterUsedForPVcheck.GetErrZ());
+  }
+  }
+
+  // --- pointing angle (X-Y) ---
+  Double_t cosPAXY_XicPlusToPV = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, PV);
+  fVar_XicPlus[57] = TMath::ACos(cosPAXY_XicPlusToPV); // pointing angle (X-Y) of XicPlus (pointing back to PV)
+
+  fVar_XicPlus_QA[33] = kfpXicPlus.GetX(); // SV: X_{rec}
+  fVar_XicPlus_QA[34] = kfpXicPlus.GetY(); // SV: Y_{rec}
+  fVar_XicPlus_QA[35] = kfpXicPlus.GetZ(); // SV: Z_{rec}
+  fVar_XicPlus_QA[36] = kfpXicPlus.GetErrX(); // SV: sigma_X^{rec}
+  fVar_XicPlus_QA[37] = kfpXicPlus.GetErrY(); // SV: sigma_Y^{rec}
+  fVar_XicPlus_QA[38] = kfpXicPlus.GetErrZ(); // SV: sigma_Z^{rec}
+  KFParticle kfpXicPlus_PV_DecayVtx = kfpXicPlus_PV;
+  kfpXicPlus_PV_DecayVtx.TransportToDecayVertex();
+  fVar_XicPlus_QA[39] = kfpXicPlus_PV_DecayVtx.GetX(); // SV: X_{rec} (w/ topo. constraint)
+  fVar_XicPlus_QA[40] = kfpXicPlus_PV_DecayVtx.GetY(); // SV: Y_{rec} (w/ topo. constraint)
+  fVar_XicPlus_QA[41] = kfpXicPlus_PV_DecayVtx.GetZ(); // SV: Z_{rec} (w/ topo. constraint)
+  fVar_XicPlus_QA[42] = kfpXicPlus_PV_DecayVtx.GetErrX(); // SV: sigma_X^{rec} (w/ topo. constraint)
+  fVar_XicPlus_QA[43] = kfpXicPlus_PV_DecayVtx.GetErrY(); // SV: sigma_Y^{rec} (w/ topo. constraint)
+  fVar_XicPlus_QA[44] = kfpXicPlus_PV_DecayVtx.GetErrZ(); // SV: sigma_Z^{rec} (w/ topo. constraint)
+  fVar_XicPlus_QA[45] = kfpXicPlus.GetPt(); // SV: pt of Xic+
+  fVar_XicPlus_QA[46] = kfpXicPlus_PV.GetPt(); // SV: pt of Xic+ (w/ topo. constraint)
+  fVar_XicPlus_QA[47] = fVar_XicPlus_QA[46] - fVar_XicPlus_QA[45]; // SV: pt diff of Xic+ (w/ - w/o topo. constraint)
+
+  fVar_XicPlus_QA[73] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[45]; // SV: pt diff of Xic+ (w/ - w/o topo. constraint recalPV)
+  fVar_XicPlus_QA[74] = fVar_XicPlus_QA[72] - fVar_XicPlus_QA[46]; // SV: pt diff of Xic+ (w/ topo. constraint recalPV - PV)
+
+  fVar_XicPlus_QA[75] = fpVtx->CountRealContributors(); // PV: count daughter primary tracks
+
+  if (fIsMC) {
+  fVar_XicPlus_QA[15] = fVar_XicPlus_QA[3] - fVar_XicPlus_QA[0]; // PV: X_{rec} - X_{MC}
+  fVar_XicPlus_QA[16] = fVar_XicPlus_QA[4] - fVar_XicPlus_QA[1]; // PV: Y_{rec} - Y_{MC}
+  fVar_XicPlus_QA[17] = fVar_XicPlus_QA[5] - fVar_XicPlus_QA[2]; // PV: Z_{rec} - Z_{MC}
+  fVar_XicPlus_QA[18] = fVar_XicPlus_QA[15]/fVar_XicPlus_QA[6]; // PV: PULL_X
+  fVar_XicPlus_QA[19] = fVar_XicPlus_QA[16]/fVar_XicPlus_QA[7]; // PV: PULL_Y
+  fVar_XicPlus_QA[20] = fVar_XicPlus_QA[17]/fVar_XicPlus_QA[8]; // PV: PULL_Z
+
+  fVar_XicPlus_QA[21] = fVar_XicPlus_QA[9] - fVar_XicPlus_QA[0]; // recal_PV: X_{rec} - X_{MC}
+  fVar_XicPlus_QA[22] = fVar_XicPlus_QA[10] - fVar_XicPlus_QA[1]; // recal_PV: Y_{rec} - Y_{MC}
+  fVar_XicPlus_QA[23] = fVar_XicPlus_QA[11] - fVar_XicPlus_QA[2]; // recal_PV: Z_{rec} - Z_{MC}
+  fVar_XicPlus_QA[24] = fVar_XicPlus_QA[21]/fVar_XicPlus_QA[12]; // recal_PV: PULL_X
+  fVar_XicPlus_QA[25] = fVar_XicPlus_QA[22]/fVar_XicPlus_QA[13]; // recal_PV: PULL_Y
+  fVar_XicPlus_QA[26] = fVar_XicPlus_QA[23]/fVar_XicPlus_QA[14]; // recal_PV: PULL_Z
+
+  // SV
+  Int_t labelPiFromXicPlus_trk1 = fabs(trackPiFromXicPlus_trk1->GetLabel());
+  AliAODMCParticle* mcPiFromXicPlus_trk1 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXicPlus_trk1));
+  fVar_XicPlus_QA[30] = mcPiFromXicPlus_trk1->Xv(); // SV: X_{MC}
+  fVar_XicPlus_QA[31] = mcPiFromXicPlus_trk1->Yv(); // SV: Y_{MC}
+  fVar_XicPlus_QA[32] = mcPiFromXicPlus_trk1->Zv(); // SV: Z_{MC}
+  fVar_XicPlus_QA[48] = fVar_XicPlus_QA[33] - fVar_XicPlus_QA[30]; // SV: X_{rec} - X_{MC}
+  fVar_XicPlus_QA[49] = fVar_XicPlus_QA[34] - fVar_XicPlus_QA[31]; // SV: Y_{rec} - Y_{MC}
+  fVar_XicPlus_QA[50] = fVar_XicPlus_QA[35] - fVar_XicPlus_QA[32]; // SV: Z_{rec} - Z_{MC}
+  fVar_XicPlus_QA[51] = fVar_XicPlus_QA[48]/fVar_XicPlus_QA[36]; // SV: PULL_X
+  fVar_XicPlus_QA[52] = fVar_XicPlus_QA[49]/fVar_XicPlus_QA[37]; // SV: PULL_Y
+  fVar_XicPlus_QA[53] = fVar_XicPlus_QA[50]/fVar_XicPlus_QA[38]; // SV: PULL_Z
+  fVar_XicPlus_QA[54] = fVar_XicPlus_QA[39] - fVar_XicPlus_QA[30]; // SV: X_{rec} - X_{MC} (w/ topo. constraint)
+  fVar_XicPlus_QA[55] = fVar_XicPlus_QA[40] - fVar_XicPlus_QA[31]; // SV: Y_{rec} - Y_{MC} (w/ topo. constraint)
+  fVar_XicPlus_QA[56] = fVar_XicPlus_QA[41] - fVar_XicPlus_QA[32]; // SV: Z_{rec} - Z_{MC} (w/ topo. constraint)
+  fVar_XicPlus_QA[57] = fVar_XicPlus_QA[54]/fVar_XicPlus_QA[42]; // SV: PULL_X (w/ topo. constraint)
+  fVar_XicPlus_QA[58] = fVar_XicPlus_QA[55]/fVar_XicPlus_QA[43]; // SV: PULL_Y (w/ topo. constraint)
+  fVar_XicPlus_QA[59] = fVar_XicPlus_QA[56]/fVar_XicPlus_QA[44]; // SV: PULL_Z (w/ topo. constraint)
+
+  fVar_XicPlus_QA[66] = fVar_XicPlus_QA[60] - fVar_XicPlus_QA[30]; // SV: X_{rec} - X_{MC} (w/ topo. constraint recalPV)
+  fVar_XicPlus_QA[67] = fVar_XicPlus_QA[61] - fVar_XicPlus_QA[31]; // SV: Y_{rec} - Y_{MC} (w/ topo. constraint recalPV)
+  fVar_XicPlus_QA[68] = fVar_XicPlus_QA[62] - fVar_XicPlus_QA[32]; // SV: Z_{rec} - Z_{MC} (w/ topo. constraint recalPV)
+  fVar_XicPlus_QA[69] = fVar_XicPlus_QA[66]/fVar_XicPlus_QA[63]; // SV: PULL_X (w/ topo. constraint recalPV)
+  fVar_XicPlus_QA[70] = fVar_XicPlus_QA[67]/fVar_XicPlus_QA[64]; // SV: PULL_Y (w/ topo. constraint recalPV)
+  fVar_XicPlus_QA[71] = fVar_XicPlus_QA[68]/fVar_XicPlus_QA[65]; // SV: PULL_Z (w/ topo. constraint recalPV)
+
+  fVar_XicPlus_QA[88] = lab_XicPlus;
+  fHPrimVtx_PVrec_Minus_PVgen_x->Fill(pos_PV[0]-fVar_XicPlus_QA[0]);
+  fHPrimVtx_PVrec_Minus_PVgen_y->Fill(pos_PV[1]-fVar_XicPlus_QA[1]);
+  fHPrimVtx_PVrec_Minus_PVgen_z->Fill(pos_PV[2]-fVar_XicPlus_QA[2]);
   }
 
   // pt(XicPlus)>=1
