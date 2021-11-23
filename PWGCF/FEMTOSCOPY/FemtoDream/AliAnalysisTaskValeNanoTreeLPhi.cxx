@@ -6,6 +6,8 @@
 #include "TH1F.h"
 #include "TList.h"
 #include "AliAODMCParticle.h"
+// #include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisTaskValeNanoTreeLPhi)
     AliAnalysisTaskValeNanoTreeLPhi::AliAnalysisTaskValeNanoTreeLPhi()
@@ -506,6 +508,8 @@ Bool_t AliAnalysisTaskValeNanoTreeLPhi::FillLambda(AliFemtoDreamv0 *TheV0)
   Daugh_eta[fNumLambda] = TheV0->GetEta().at(1);
   Daugh_eta[fNumLambda] = TheV0->GetEta().at(2);
   Daugh_dca[fNumLambda] = TheV0->GetDaugDCA();
+  Daugh_nTpcCls[fNumLambda] = PosDaugh->GetNClsTPC();
+  Daugh_nTpcCls[fNumLambda] = NegDaugh->GetNClsTPC();
   Daugh_nSigma[fNumLambda] = PosDaugh->GetnSigmaTPC((int)(AliPID::kProton));
   Daugh_nSigma[fNumLambda] = NegDaugh->GetnSigmaTPC((int)(AliPID::kPion));
   Daugh_nSigma[fNumLambda] = NegDaugh->GetnSigmaTPC((int)(AliPID::kProton));

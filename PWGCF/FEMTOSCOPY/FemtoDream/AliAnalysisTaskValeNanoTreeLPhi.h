@@ -21,6 +21,7 @@
 #include "AliFemtoDreamPartCollection.h"
 #include "AliFemtoDreamControlSample.h"
 #include "AliFemtoDreamBaseDump.h"
+#include "TTree.h"
 
 class AliAnalysisTaskValeNanoTreeLPhi : public AliAnalysisTaskSE {
 public:
@@ -110,8 +111,7 @@ private:
   /// Entries tree for Phi and Kaons
   static const int nMaxPhi = 100;
   int fNumPhi;
-
-  ClassDef(AliAnalysisTaskValeNanoTreeLPhi, 1)
+  ClassDef(AliAnalysisTaskValeNanoTreeLPhi, 4)
 };
 
-#endif PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKVALENANOTREELPHI_H_
+#endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKVALENANOTREELPHI_H_ */
