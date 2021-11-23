@@ -1,4 +1,6 @@
 #ifndef __CINT__
+#include "TROOT.h"
+#include "TSystem.h"
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -10,9 +12,9 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
-                                           bool fullblastQA = false,
-                                           const char *cutVariation = "0")
+                                           bool fullblastQA = false)
 {
+  const char *cutVariation = "0";
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -99,11 +101,6 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
   TrackPosKaonCuts->SetDCAVtxXY(0.8);
   TrackNegKaonCuts->SetDCAVtxXY(0.8);
 
-  if (suffix != "0" && suffix != "999")
-  {
-    TrackPosKaonCuts->SetMinimalBooking(true);
-    TrackNegKaonCuts->SetMinimalBooking(true);
-  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -121,65 +118,12 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
 
   double Phimass = TDatabasePDG::Instance()->GetParticle(333)->Mass();
 
-  if (suffix != "0")
-  {
-    TrackCutsPhi->SetMinimalBooking(true);
-  }
-
   std::vector<int> PDGParticles;
   PDGParticles.push_back(3122); // 0 Lambda
   PDGParticles.push_back(3122); // 1 antiLambda
   PDGParticles.push_back(333);  // 2 Phi particle
   PDGParticles.push_back(321);  // 3 Kaon Plus
   PDGParticles.push_back(321);  // 4 Kaon Minus
-
-  // We need to set the ZVtx bins
-  std::vector<float> ZVtxBins;
-  ZVtxBins.push_back(-10);
-  ZVtxBins.push_back(-8);
-  ZVtxBins.push_back(-6);
-  ZVtxBins.push_back(-4);
-  ZVtxBins.push_back(-2);
-  ZVtxBins.push_back(0);
-  ZVtxBins.push_back(2);
-  ZVtxBins.push_back(4);
-  ZVtxBins.push_back(6);
-  ZVtxBins.push_back(8);
-  ZVtxBins.push_back(10);
-  // The Multiplicity bins are set here
-  std::vector<int> MultBins;
-  MultBins.push_back(0);
-  MultBins.push_back(4);
-  MultBins.push_back(8);
-  MultBins.push_back(12);
-  MultBins.push_back(16);
-  MultBins.push_back(20);
-  MultBins.push_back(24);
-  MultBins.push_back(28);
-  MultBins.push_back(32);
-  MultBins.push_back(36);
-  MultBins.push_back(40);
-  MultBins.push_back(44);
-  MultBins.push_back(48);
-  MultBins.push_back(52);
-  MultBins.push_back(56);
-  MultBins.push_back(60);
-  MultBins.push_back(64);
-  MultBins.push_back(68);
-  MultBins.push_back(72);
-  MultBins.push_back(76);
-  MultBins.push_back(80);
-  MultBins.push_back(84);
-  MultBins.push_back(88);
-  MultBins.push_back(92);
-  MultBins.push_back(96);
-  MultBins.push_back(100);
-
-  std::vector<int> NBins;
-  std::vector<float> kMin;
-  std::vector<float> kMax;
-  std::vector<int> pairQA;
-  std::vector<bool> closeRejection;
 
   /// Pairs
   /// ΛΛ          0
@@ -198,6 +142,12 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
   /// K+K-        13
   /// K-K-        14
 
+  std::vector<int> NBins;
+  std::vector<float> kMin;
+  std::vector<float> kMax;
+  std::vector<int> pairQA;
+  std::vector<bool> closeRejection;
+
   const int npairs = 15;
   for (int i = 0; i < npairs; i++)
   {
@@ -207,7 +157,6 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
     kMax.push_back(3.);
     pairQA.push_back(0);
   }
-
   if (suffix != "0")
   {
     pairQA[0] = 22;
@@ -234,26 +183,75 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
     pairQA[12] = 11;
     pairQA[13] = 11;
     pairQA[14] = 11;
+    // closeRejection[12] = true; /// \TODO check why it gives Nan
+    // closeRejection[14] = true;
   }
 
-  AliFemtoDreamCollConfig *config =
-      new AliFemtoDreamCollConfig("Femto", "Femto");
-  config->SetExtendedQAPairs(pairQA);
-  config->SetZBins(ZVtxBins);
-  config->SetMultBins(MultBins);
-  config->SetMultBinning(true);
-  config->SetPDGCodes(PDGParticles);
-  config->SetNBinsHist(NBins);
-  config->SetMinKRel(kMin);
-  config->SetMaxKRel(kMax);
-  config->SetUseEventMixing(true);
-  config->SetMixingDepth(30);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+    // We need to set the ZVtx bins
+    std::vector<float> ZVtxBins;
+    ZVtxBins.push_back(-10);
+    ZVtxBins.push_back(-8);
+    ZVtxBins.push_back(-6);
+    ZVtxBins.push_back(-4);
+    ZVtxBins.push_back(-2);
+    ZVtxBins.push_back(0);
+    ZVtxBins.push_back(2);
+    ZVtxBins.push_back(4);
+    ZVtxBins.push_back(6);
+    ZVtxBins.push_back(8);
+    ZVtxBins.push_back(10);
+    // The Multiplicity bins are set here
+    std::vector<int> MultBins;
+    MultBins.push_back(0);
+    MultBins.push_back(4);
+    MultBins.push_back(8);
+    MultBins.push_back(12);
+    MultBins.push_back(16);
+    MultBins.push_back(20);
+    MultBins.push_back(24);
+    MultBins.push_back(28);
+    MultBins.push_back(32);
+    MultBins.push_back(36);
+    MultBins.push_back(40);
+    MultBins.push_back(44);
+    MultBins.push_back(48);
+    MultBins.push_back(52);
+    MultBins.push_back(56);
+    MultBins.push_back(60);
+    MultBins.push_back(64);
+    MultBins.push_back(68);
+    MultBins.push_back(72);
+    MultBins.push_back(76);
+    MultBins.push_back(80);
+    MultBins.push_back(84);
+    MultBins.push_back(88);
+    MultBins.push_back(92);
+    MultBins.push_back(96);
+    MultBins.push_back(100);
 
-  if (fullblastQA) {
-    config->SetPtQA(true);
-    config->SetMassQA(true);
-  }
+    AliFemtoDreamCollConfig *config =
+        new AliFemtoDreamCollConfig("Femto", "Femto");
+    config->SetZBins(ZVtxBins);
+    config->SetMultBins(MultBins);
+    config->SetMultBinning(true);
+    config->SetPDGCodes(PDGParticles);
+    config->SetNBinsHist(NBins);
+    config->SetMinKRel(kMin);
+    config->SetMaxKRel(kMax);
+    config->SetClosePairRejection(closeRejection);
+    config->SetExtendedQAPairs(pairQA);
+    config->SetDeltaEtaMax(0.017); // and here you set the actual values
+    config->SetDeltaPhiMax(0.017); // and here you set the actual values
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(30);
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+
+    if (fullblastQA)
+    {
+      config->SetPtQA(true);
+      config->SetMassQA(true);
+    }
+
   if(!fullblastQA){
     evtCuts->SetMinimalBooking(true);
     v0Cuts->SetMinimalBooking(true);
@@ -265,9 +263,7 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
 
   AliAnalysisTaskValeNanoTreeLPhi *task =
       new AliAnalysisTaskValeNanoTreeLPhi("FemtoDreamLPhiTree", isMC);
-  task->SetTrigger(AliVEvent::kHighMultV0);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-
   if (!fullblastQA)
   {
     task->SetRunTaskLightWeight(true);
@@ -362,15 +358,15 @@ AliAnalysisTaskSE *AddTaskValeNanoTreeLPhi(bool isMC = false,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 9, coutputResultsQA);
 
-  AliAnalysisDataContainer *coutputResultsTree;
-  TString ResultsTreeName = Form("%sTree%s", addon.Data(), suffix.Data());
-  coutputResultsTree = mgr->CreateContainer(
+  AliAnalysisDataContainer *coutputTree;
+  TString ResultsTreeName = Form("%sTree", addon.Data());
+  coutputTree = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsTreeName.Data(),
       TTree::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), ResultsTreeName.Data()));
-  mgr->ConnectOutput(task, 10, coutputResultsTree);
+  mgr->ConnectOutput(task, 10, coutputTree);
 
   return task;
 }
