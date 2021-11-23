@@ -1677,9 +1677,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   }
   else
     ana->SwitchOffOwnMix();
-  
-  ana->SetNZvertBin(20);
-  
+
   // Acceptance cut on trigger particle
   // Avoid borders of calorimeter, same as for isolation
   //
