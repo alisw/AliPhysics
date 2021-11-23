@@ -212,6 +212,9 @@ private:
     Int_t               fnBinsDCAHisto;//!
     Double_t            fTrkDCA;//!
     
+    TF1                 *fFuncPtDepEta;//!
+    TF1                 *fFuncPtDepPhi;//!
+    
     TH1F                *fDcent;//
     TH1F                *fDUp;//
     TH1F                *fDDown;//
