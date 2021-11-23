@@ -64,7 +64,7 @@ public:
   
   // Filling histogram methods
   
-  void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin,
+  void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin, Int_t ztBin,
                                                          Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
                                                          Float_t etaAssoc, Float_t etaTrig,     Int_t   sm,
                                                          Int_t   decayTag, Float_t hmpidSignal, Int_t   outTOF,
@@ -209,6 +209,9 @@ public:
  
   void         SwitchOnFillDeltaEtaPhiPtTrigHistograms()  { fFillDeltaPhiDeltaEtaAssocPt = kTRUE  ; }
   void         SwitchOffFillDeltaEtaPhiPtTrigHistograms() { fFillDeltaPhiDeltaEtaAssocPt = kFALSE ; }
+
+  void         SwitchOnFillDeltaEtaPhiPtTrigZTHistograms()  { fFillDeltaPhiDeltaEtaZT = kTRUE  ; }
+  void         SwitchOffFillDeltaEtaPhiPtTrigZTHistograms() { fFillDeltaPhiDeltaEtaZT = kFALSE ; }
   
   Bool_t       OnlyIsolated()              const { return fSelectIsolated        ; }
   void         SelectIsolated(Bool_t s)          { fSelectIsolated   = s         ; }
@@ -310,6 +313,7 @@ private:
   
   Bool_t       fFillBradHisto ;                          ///<  DPhi histograms calculated differently.
   Bool_t       fFillDeltaPhiDeltaEtaAssocPt;             ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different associated pT bins, and do not fill other histograms to reduce output size.
+  Bool_t       fFillDeltaPhiDeltaEtaZT;                   ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different zT bins, and do not fill other histograms to reduce output size.
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
   
@@ -519,6 +523,9 @@ private:
   
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins.
   TH3F **      fhDeltaPhiDeltaEtaAssocPtBin;             //![fNAssocPtBins*GetNZvertBin()]
+
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins.
+  TH3F **      fhDeltaPhiDeltaEtaZTBin;                  //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()]
   
   /// Trigger pT vs dPhi for different associated pt and vz bins.
   TH2F **      fhDeltaPhiAssocPtBin;                     //![fNAssocPtBins*GetNZvertBin()]
@@ -650,6 +657,9 @@ private:
   
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins.
   TH3F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()]
+
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins.
+  TH3F **      fhMixDeltaPhiDeltaEtaChargedZTBin;        //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()]
   
   TH1I *       fhEventBin;                               //!<! Number of triggers in a particular event bin (cen,vz,rp).
   TH1I *       fhEventMixBin;                            //!<! Number of triggers mixed in a particular bin (cen,vz,rp).
@@ -703,7 +713,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,39) ;
+  ClassDef(AliAnaParticleHadronCorrelation,40) ;
   /// \endcond
   
 } ;
