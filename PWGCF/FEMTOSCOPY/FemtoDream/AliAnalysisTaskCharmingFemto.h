@@ -24,7 +24,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   enum DecChannel //more HF particles can be added in the future
   {
-    kDplustoKpipi
+    kDplustoKpipi,
+    kDstartoKpipi
   };
 
   enum CollSystem
@@ -81,6 +82,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
     fDecChannel = decayChannel;
     if (decayChannel == kDplustoKpipi) {
+      fDmesonPDGs.push_back(211);
+      fDmesonPDGs.push_back(321);
+      fDmesonPDGs.push_back(211);
+    } else if (decayChannel == kDstartoKpipi) {
       fDmesonPDGs.push_back(211);
       fDmesonPDGs.push_back(321);
       fDmesonPDGs.push_back(211);
@@ -148,7 +153,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       const AliAnalysisTaskCharmingFemto &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
-  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
+  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
   bool MassSelection(const double mass, const double pt, const int pdg);
 
   // Track / event selection objects

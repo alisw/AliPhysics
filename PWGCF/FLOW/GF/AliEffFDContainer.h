@@ -42,6 +42,7 @@ class AliEffFDContainer: public TNamed {
     void Fill(AliESDEvent &inputESD);
     TList *GetOutList() { return fOutList; };
     Bool_t AddContainer(AliEffFDContainer *target);
+    TH1* fetchObj(TString inname) { return (TH1*)fOutList->FindObject(makeName(inname).Data()); };
   // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);

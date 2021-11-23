@@ -97,8 +97,17 @@ public:
   void SetNUEOn(bool x){fDoNUE = x;}
 
   bool GetNUAOn(){return fDoNUA;}
-  void SetNUAOn(bool x){fDoNUA = x;}
-  
+  void SetNUAOn(bool x){fDoNUA = x;} 
+
+  bool GetDiffV2QA(){return fDiffV2QA;}
+  void SetDiffV2QA(bool x){fDiffV2QA = x;}
+
+  bool GetCalcV24VsAch(){return fCalcV24VsAch;}
+  void SetCalcV24VsAch(bool x){fCalcV24VsAch = x;}
+
+  bool GetDoTrivalCor(){return fDoTrivalCor;}
+  void SetDoTrivalCor(bool x){fDoTrivalCor = x;}
+
   float GetCentCut(){return fCentCut;}
   void SetCentCut(float x){fCentCut = x;}
 
@@ -109,14 +118,17 @@ private:
   static const int NCENTBINS = 10;
   static const int NPOIBINS  = 2;
   static const int NQNBINS  = 10;
-
+  static const int NACHBINS = 12;
+  static const int NRUNNUM=138;
   void          ResetHists();
-  bool          DoCumulants();
+  bool          DoCumulantswtGap();
+  bool          DoCumulantsDirect();
   void          CalcRefFlow();
   void          CalcIntCov();
   double      GetNUECor(int charge, double pt);
   double      GetNUACor(int charge, double phi, double eta, double vz);
   int             GetRunNumBin(int runNum);
+  int             GetAchBin(double mAch);
   // pile-up
   bool          RejectEvtMultComp      (AliAODEvent* fAOD);
   bool          RejectEvtTFFit(AliAODEvent* fAOD);
@@ -160,6 +172,9 @@ private:
     bool                  fQATPC; // flag for TPC qn QA
     bool                  fDoNUE; // switch for NUE
     bool                  fDoNUA; // switch for NUA
+    bool                  fDiffV2QA;
+    bool                  fCalcV24VsAch;
+    bool                  fDoTrivalCor;
     float                  fCentCut; // centrality restriction for V0M and TRK
     // Global Variables Unchanged in an Evt
     int                     fRunNum; // runnumber
@@ -168,6 +183,7 @@ private:
     int                     fCentBin; // centrality bin: 0-10
     double              fCent; // value of centrality 
     int                     fQnBin; // qn bin: 0-10
+    int                     fAchBin; // Ach bin : 0-12
     const float        fEtaCut; // eta cut
     const float        fDedxCut; //dedx cut
     const float        fZvtxCut; // z-vertex selection for collision  
@@ -210,38 +226,58 @@ private:
     TH2D*             hPDedx;
 
     // Update Evt-by-Evt, will not be saved
-    TH2D*             hReQ_thisEvt;
-    TH2D*             hImQ_thisEvt;
-    TH2D*             hReQ2_thisEvt;
-    TH2D*             hImQ2_thisEvt; 
+    TH2D*             hReQn_thisEvt;
+    TH2D*             hImQn_thisEvt;
+    TH2D*             hReQ2n_thisEvt;
+    TH2D*             hImQ2n_thisEvt; 
+    TH2D*             hReQ2nw2_thisEvt; // w^2
+    TH2D*             hImQ2nw2_thisEvt; 
+    TH2D*             hReQnw3_thisEvt; // w^3
+    TH2D*             hImQnw3_thisEvt;
     TH2D*             hMQ_thisEvt;
-    TH2D*             hMQ_weight_thisEvt;
+    TH2D*             hMQ_w1_thisEvt;
+    TH2D*             hMQ_w2_thisEvt;
+    TH2D*             hMQ_w3_thisEvt;
+    TH2D*             hMQ_w4_thisEvt;
     TH2D*             hReQPos_thisEvt;
     TH2D*             hImQPos_thisEvt;
     TH2D*             hMQPos_thisEvt;
-    TH2D*             hMQPos_weight_thisEvt;
+    TH2D*             hMQPos_w1_thisEvt;
     TH2D*             hReQNeg_thisEvt;
     TH2D*             hImQNeg_thisEvt;
     TH2D*             hMQNeg_thisEvt;
-    TH2D*             hMQNeg_weight_thisEvt;
+    TH2D*             hMQNeg_w1_thisEvt;
+    TH3D*             hRepnw1_thisEvt; // w^1
+    TH3D*             hImpnw1_thisEvt;
+    TH3D*             hRep2nw2_thisEvt; // w^2
+    TH3D*             hImp2nw2_thisEvt; 
+    TH3D*             hRepnw3_thisEvt; // w^3
+    TH3D*             hImpnw3_thisEvt;
+    TH3D*             hMp_thisEvt; 
+    TH3D*             hMp_w1_thisEvt;  
+    TH3D*             hMp_w2_thisEvt;  
+    TH3D*             hMp_w3_thisEvt;  
+    TH3D*             hMp_w4_thisEvt;  
     TProfile*          pRefFlow_thisEvt;
     TProfile*          pIntd2_thisEvt;
+    TProfile3D*     pDiffFlowpQStarGap_thisEvt;
+    TProfile3D*     pDiffFlowpQStarGapPos_thisEvt;
+    TProfile3D*     pDiffFlowpQStarGapNeg_thisEvt;
+    TProfile3D*     pDiffFlowpQStarDirect_thisEvt;
+    TProfile3D*     pDiffFlow4Direct_thisEvt;
 
+    TString            fRunNumList[NRUNNUM];
     // Read Files for V0Calib
     TProfile3D*     pV0XMeanRead[3]; 
     TProfile3D*     pV0YMeanRead[3];
     // Run2 A.Dorbin
-    TH1D*             hMultV0[138]; //Dobrin
-    TH1D*             hQxnmV0[138][2];
-    TH1D*             hQynmV0[138][2];
-    TH1D*             hQxnsV0[138][2];
-    TH1D*             hQynsV0[138][2];
+    TH1D*             hMultV0[NRUNNUM]; //Dobrin
+    TH1D*             hQxnmV0[NRUNNUM][2];
+    TH1D*             hQynmV0[NRUNNUM][2];
     double             fMultV0Ch[64];
     double             fV0XMean[3];
     double             fV0YMean[3];
-    double             fV0XSigma[3];
-    double             fV0YSigma[3];
-    TSpline3*        splQ2c[90]; //A.Dobrin
+    TSpline3*        splQ2c[80]; //A.Dobrin
 
     // Output QA
     TH1D*             hCent[2];
@@ -249,8 +285,7 @@ private:
     TH2D*             hCentQA[8];
     TH2D*             hMultCentQA[2];
     TH2D*             hMultMultQA[6];
-    TProfile*          pV2pT[NCENTBINS];
-    
+
     // track-wise QA
     TH1D*             hEta[2];
     TH1D*             hPhi[2];
@@ -274,7 +309,14 @@ private:
     TProfile*         pAch[NCENTBINS];
     TH1D*            hMult[NCENTBINS+1][NQNBINS];
     TH1D*            hAch[NCENTBINS+1][NQNBINS];
-
+    TProfile3D*    pDiffFlowpQStarGap[NCENTBINS];
+    TH3D*            hDiffFlowYield[NCENTBINS];
+    TProfile3D*    pDiffFlowpQStarGapPos[NCENTBINS];
+    TProfile3D*    pDiffFlowpQStarGapNeg[NCENTBINS];
+    TProfile*         pRefFlowAch[NCENTBINS][NACHBINS];
+    TProfile3D*    pDiffFlowpQStarAch[NCENTBINS][NACHBINS];
+    TProfile3D*    pDiffFlow4Ach[NCENTBINS][NACHBINS];
+    TH3D*            hDiffFlowYieldAch[NCENTBINS][NACHBINS];
     AliAnalysisTaskCMWESE(const AliAnalysisTaskCMWESE&);
     AliAnalysisTaskCMWESE& operator=(const AliAnalysisTaskCMWESE&);
 

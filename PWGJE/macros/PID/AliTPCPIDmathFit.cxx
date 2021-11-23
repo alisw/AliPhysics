@@ -781,7 +781,7 @@ Int_t AliTPCPIDmathFit::Fit(const Double_t *inPar, Double_t *covMatrix, const Do
   
   fMinuit->SetMaxIterations(10000);
   
-  Double_t arg[2] = {fMaxCalls, fEpsilon};
+  Double_t arg[2] = {(Double_t)fMaxCalls, fEpsilon};
   Int_t errFlag = 0;
   Int_t hesseFlag = -999;
   

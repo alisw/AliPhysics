@@ -178,6 +178,7 @@ class PhysicsProfile : public TObject {
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
+<<<<<<< HEAD
 	public:
 
 		enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kCharUnidentified, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter

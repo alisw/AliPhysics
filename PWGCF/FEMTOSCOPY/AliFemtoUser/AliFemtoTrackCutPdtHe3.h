@@ -20,6 +20,15 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetMostProbableDeuteron();
         void SetMostProbableTriton();
         void SetMostProbableHe3();
+	
+	    // at mom, need TOF
+	    void SetProtonSwitchMom(float SwitchMom);
+        void SetDeuteronSwitchMom(float SwitchMom);
+        void SetTritonSwitchMom(float SwitchMom);
+        void SetHe3SwitchMom(float SwitchMom);
+        void SetMostProbableElectron();
+        void SetdEdxcutLabel(int dEdxcutLabel);
+
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -34,13 +43,17 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         float SwitchMom_t;
         float SwitchMom_He3;
     
+        float fdEdxcut;
 
+        
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
         bool IsTritonNSigma(    float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCT, float nsigmaTOFT);
         bool IsHe3NSigma(       float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3);
+        //\ for e+e femto
+        bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
-        bool IsDeuteronTPCdEdx(float mom, float dEdx, float maxmom);
+        bool IsDeuteronTPCdEdx(float mom, float dEdx);
 
         // reject
         bool IsElectronNSigmaRejection( float mom, float nsigmaTPCE);
@@ -48,9 +61,14 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
         bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
         
+        
+
+        
+       
 
 };
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableTriton() { fMostProbable = 14; }
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableHe3() { fMostProbable = 15; }
+
 #endif

@@ -8,6 +8,7 @@
 #include "AliAnalysisTaskCharmingFemto.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
@@ -95,11 +96,18 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
 
   AliRDHFCuts *analysisCutsHF = nullptr;
   TString HFPartName = "";
+  Int_t pdgDmeson;
   switch(channelHF) {
     case AliAnalysisTaskCharmingFemto::kDplustoKpipi:
       HFPartName = "Dplus";
       analysisCutsHF = (AliRDHFCutsDplustoKpipi*)fileCuts->Get(cutObjHFName);
-    break;
+      pdgDmeson = 411;
+      break;
+    case AliAnalysisTaskCharmingFemto::kDstartoKpipi:
+      HFPartName = "Dstar";
+      analysisCutsHF = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjHFName);
+      pdgDmeson = 413;
+      break;
     default:
       Error("AddTaskAnyCharmingFemto()", "Wrong HF hadron setting, particle not implemented.");
       return nullptr;
@@ -111,8 +119,8 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   std::vector<int> PDGParticles;
   PDGParticles.push_back(pdgDmesonBuddy);  //
   PDGParticles.push_back(pdgDmesonBuddy);  //
-  PDGParticles.push_back(411);   // 2 - dplus
-  PDGParticles.push_back(411);   // 3 - dminus
+  PDGParticles.push_back(pdgDmeson);   // 2 - dplus or dstar+
+  PDGParticles.push_back(pdgDmeson);   // 3 - dminus or dstar-
 
   std::vector<float> ZVtxBins = AliFemtoDreamCollConfig::GetDefaultZbins();
 

@@ -555,6 +555,13 @@ private:
   Float_t fTreeVariablePosCreationY;
   Float_t fTreeVariablePosCreationZ;
   
+  Float_t fTreeVariableNegPx; //!
+  Float_t fTreeVariableNegPy; //!
+  Float_t fTreeVariableNegPz; //!
+  Float_t fTreeVariablePosPx; //!
+  Float_t fTreeVariablePosPy; //!
+  Float_t fTreeVariablePosPz; //!
+  
   Float_t fTreeVariableNegPxMC; //!
   Float_t fTreeVariableNegPyMC; //!
   Float_t fTreeVariableNegPzMC; //!

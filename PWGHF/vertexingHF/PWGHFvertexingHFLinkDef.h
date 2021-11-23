@@ -77,6 +77,7 @@
 #pragma link C++ class AliCFVertexingHFLctoV0bachelor+;
 #pragma link C++ class AliCFTaskVertexingHF+;
 #pragma link C++ class AliCFTaskVertexingHFCutVarFDSub+;
+#pragma link C++ class AliCFTaskVertexingHFEMCal+;
 #pragma link C++ class AliCFTaskForDStarAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEDStarJets+;
 #pragma link C++ class AliAnalysisTaskSEDStarSpectra+;

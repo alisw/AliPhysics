@@ -188,6 +188,12 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     
     if (fTOFParticle == 4) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCT(), aTrack->NSigmaTOFT());
     if (fTOFParticle == 5) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCH(), aTrack->NSigmaTOFH()); 
+
+    if (fTOFParticle == 6) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCE());
+    if (fTOFParticle == 6) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFE());
+    if (fTOFParticle == 6) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCE(), aTrack->NSigmaTOFE() ) );
+    if (fTOFParticle == 6) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCE(), aTrack->NSigmaTOFE());
+
 }
 
 void AliFemtoCutMonitorParticlePID::Write()

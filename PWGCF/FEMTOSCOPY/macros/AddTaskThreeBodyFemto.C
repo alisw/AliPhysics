@@ -15,6 +15,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
                                      int mixingDepthFromTask = 20,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
                                      const char *cutVariation = "0", bool ClosePairRejectionForAll = "false", 
+                                     bool run2Body = "false", int mixinfChoice = 0,
                                      const char *triggerVariation = "0") {
 
 
@@ -2128,6 +2129,15 @@ if(suffixTrigger=="5"){
   config->SetClosePairRejection(closeRejection);
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
+
+  if(suffixTrigger=="699"){
+    config->SetDeltaEtaMax(0.02);
+    config->SetDeltaPhiMax(0.02);
+  }  
+  if(suffixTrigger=="669"){
+    config->SetDeltaEtaMax(0.03);
+    config->SetDeltaPhiMax(0.03);
+  }
   config->SetExtendedQAPairs(pairQA);
   config->SetMixingDepth(mixingDepthFromTask);
   config->SetUseEventMixing(true);
@@ -2379,6 +2389,9 @@ if(suffixTrigger=="5"){
     taskNano->SetCorrelationConfig(config); 
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetRun2Body(run2Body);
+    taskNano->SetMixingChoice(mixinfChoice);
+
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 

@@ -136,7 +136,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
         return NULL;
     }
     // create the task and configure
-    TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
+    TString taskName = Form("KStarPlusMinus%s%s", (isAOD? "AOD" : "PbPb"), (isMC ? "MC" : "Data"));
     AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
    
     //trigger 

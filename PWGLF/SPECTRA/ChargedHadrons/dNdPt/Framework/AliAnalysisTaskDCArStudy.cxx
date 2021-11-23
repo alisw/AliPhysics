@@ -129,6 +129,21 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fOutputList->Add(fHistDCAPCC.GenerateHist("fHistDCAPCC"));
     requiredMemory += fHistDCAPCC.GetSize();
 
+    fHistDCAPCCSysUp.AddAxis(DCAaxis);
+    fHistDCAPCCSysUp.AddAxis(ptAxis);
+    fHistDCAPCCSysUp.AddAxis(multAxisNch);
+    fHistDCAPCCSysUp.AddAxis(centAxis);
+    fHistDCAPCCSysUp.AddAxis(mcInfoAxis);
+    fOutputList->Add(fHistDCAPCCSysUp.GenerateHist("fHistDCAPCCSysUp"));
+    requiredMemory += fHistDCAPCCSysUp.GetSize();
+
+    fHistDCAPCCSysDown.AddAxis(DCAaxis);
+    fHistDCAPCCSysDown.AddAxis(ptAxis);
+    fHistDCAPCCSysDown.AddAxis(multAxisNch);
+    fHistDCAPCCSysDown.AddAxis(centAxis);
+    fHistDCAPCCSysDown.AddAxis(mcInfoAxis);
+    fOutputList->Add(fHistDCAPCCSysDown.GenerateHist("fHistDCAPCCSysDown"));
+    requiredMemory += fHistDCAPCCSysDown.GetSize();
 
     fHistSecWeights.AddAxis(ptAxis);
     fHistSecWeights.AddAxis(weightValues);
@@ -171,20 +186,25 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
 {
     if (fAcceptTrack[0]) {
         double fMCweight = 1.0;
+        double fMCweightSysUp = 1.0;
+        double fMCweightSysDown = 1.0;
         if(fMCSpectraWeights && 0==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for primary particles
             fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
+            fMCweightSysUp = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
+            fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
         }
         if(fMCSpectraWeights && 1==fMCPrimSec && !fMCPileUpTrack && fMCParticle->Particle()){ // only for secondaries from decay
             fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
+            fMCweightSysUp = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
+            fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
 
             fHistSecWeights.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCParticle->Particle()));
 
         }
         fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
         fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
-
-
-
+        fHistDCAPCCSysUp.FillWeight(fMCweightSysUp, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
+        fHistDCAPCCSysDown.FillWeight(fMCweightSysDown, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
     }
 }
 
