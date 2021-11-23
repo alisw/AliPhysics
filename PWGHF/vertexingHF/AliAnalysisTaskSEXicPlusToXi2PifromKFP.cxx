@@ -756,10 +756,10 @@ Bool_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeMCAnalysis(TClonesArray *mcAr
       continue;
     }
     AliDebug(2, Form("Step 0 ok: MC particle %d is a Xic+: its pdg code is %d", iPart, pdg));
-    if ( mcPart->GetNDaughters()!=3 ) {
-      AliDebug(2, "Xic+ does not have 3 daughters");
-      continue;
-    }
+
+    // 3 daughters
+    if (mcPart->GetNDaughters()==3) {
+
     Int_t index_FirstDau = mcPart->GetDaughterFirst();
     if (index_FirstDau<0) continue;
     AliAODMCParticle* mcXicPlusDau_0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(index_FirstDau));
@@ -937,6 +937,57 @@ Bool_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeMCAnalysis(TClonesArray *mcAr
         }
       }
     } // Third is Xi
+    } // 3 daughters
+    if (mcPart->GetNDaughters()==2) {
+      Bool_t PifromXicPlus_flag = kFALSE;
+      Bool_t XiStar0_flag = kFALSE;
+      Bool_t PifromXiStar0_flag = kFALSE;
+      Bool_t Xi_flag = kFALSE;
+      Bool_t PifromXi_flag = kFALSE;
+      Bool_t Lam_flag = kFALSE;
+      Bool_t PifromLam_flag = kFALSE;
+      Bool_t PrfromLam_flag = kFALSE;
+      for(Int_t idau=mcPart->GetDaughterFirst();idau<=mcPart->GetDaughterLast();idau++) {
+        if (idau<0) break;
+        AliAODMCParticle *mcDau_XicPlus = dynamic_cast<AliAODMCParticle*>(mcArray->At(idau));
+        if (TMath::Abs(mcDau_XicPlus->GetPdgCode())==211) PifromXicPlus_flag = kTRUE;
+        if (TMath::Abs(mcDau_XicPlus->GetPdgCode())==3324 && mcDau_XicPlus->GetNDaughters()==2) { // Xi*0
+          XiStar0_flag = kTRUE;
+          for (Int_t jdau=mcDau_XicPlus->GetDaughterFirst();jdau<=mcDau_XicPlus->GetDaughterLast();jdau++) { // Xi*0 daughters
+            if (jdau<0) break;
+            AliAODMCParticle *mcDau_XiStar0 = (AliAODMCParticle*) mcArray->At(jdau);
+            if (TMath::Abs(mcDau_XiStar0->GetPdgCode())==211) PifromXiStar0_flag = kTRUE;
+            if (TMath::Abs(mcDau_XiStar0->GetPdgCode())==3312 && mcDau_XiStar0->GetNDaughters()==2) { // Xi-
+              Xi_flag = kTRUE;
+              for (Int_t kdau=mcDau_XiStar0->GetDaughterFirst();kdau<=mcDau_XiStar0->GetDaughterLast();kdau++) { // Xi- daughters
+                if (kdau<0) break;
+                AliAODMCParticle *mcDau_Xi = (AliAODMCParticle*) mcArray->At(kdau);
+                if (TMath::Abs(mcDau_Xi->GetPdgCode())==211) PifromXi_flag = kTRUE;
+                if (TMath::Abs(mcDau_Xi->GetPdgCode())==3122 && mcDau_Xi->GetNDaughters()==2) { // Lambda
+                  Lam_flag = kTRUE;
+                  for(Int_t ldau=mcDau_Xi->GetDaughterFirst();ldau<=mcDau_Xi->GetDaughterLast();ldau++) {
+                    if (ldau<0) break;
+                    AliAODMCParticle *mcDau_Lam = (AliAODMCParticle*) mcArray->At(ldau);
+                    if(TMath::Abs(mcDau_Lam->GetPdgCode())==211) PifromLam_flag = kTRUE;
+                    if(TMath::Abs(mcDau_Lam->GetPdgCode())==2212) PrfromLam_flag = kTRUE;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if ( PifromXicPlus_flag && XiStar0_flag && PifromXiStar0_flag && Xi_flag && PifromXi_flag && Lam_flag && PifromLam_flag && PrfromLam_flag ) {
+        if ( TMath::Abs(mcPart->Y()) < 0.8 ) { // Acceptance
+          Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
+          if (CheckOrigin==4) CheckOrigin=-4;
+          if (CheckOrigin==5) CheckOrigin=-5;
+          AliAODMCParticle *mcDau_0 = (AliAODMCParticle*) mcArray->At(mcPart->GetDaughterFirst());
+          Double_t MLoverP = sqrt( pow(mcPart->Xv()-mcDau_0->Xv(),2.)+pow(mcPart->Yv()-mcDau_0->Yv(),2.)+pow(mcPart->Zv()-mcDau_0->Zv(),2.) ) * mcPart->M() / mcPart->P()*1.e4; // c*(proper lifetime) in um
+          FillTreeGenXicPlus(mcPart, CheckOrigin, MLoverP);
+        }
+      }
+    } // 2 daughters
   }
 
   return kTRUE;
@@ -1550,21 +1601,25 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trac
   IndexMother_XicPlusDau[1] = mcPionPlus_trk1->GetMother();
   IndexMother_XicPlusDau[2] = mcPionPlus_trk2->GetMother();
   if ( IndexMother_XicPlusDau[0]<0 || IndexMother_XicPlusDau[1]<0 || IndexMother_XicPlusDau[2]<0 ) return -20; // check mother exist
-  if ( IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[1] || IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[2] ) {
-    if ( (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[1]) || (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[2]) ) {
+  if ( (IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[1]) || (IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[2]) ) { // come from different mother
+    if ( (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[1]) || (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[2]) ) { // Xi and Pi from same mother
       AliAODMCParticle *mcMother_Xi  = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
       AliAODMCParticle *mcMother_Pi0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[1]));
       AliAODMCParticle *mcMother_Pi1 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[2]));
       if ( mcMother_Xi->GetPdgCode() == 3324 && ( (mcMother_Pi0->GetPdgCode()==4232) || (mcMother_Pi1->GetPdgCode()==4232) ) ) {
-        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==4) return -4;
-        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==5) return -5;
+        Int_t Index_XiStar0_Mother = mcMother_Xi->GetMother();
+        AliAODMCParticle *mcMother_XiStar0 = static_cast<AliAODMCParticle*>(mcArray->At(Index_XiStar0_Mother));
+        if ( mcMother_XiStar0->GetPdgCode()==4232 && mcMother_XiStar0->GetNDaughters()==2 && (Index_XiStar0_Mother==IndexMother_XicPlusDau[0] || Index_XiStar0_Mother==IndexMother_XicPlusDau[1]) ) {
+          if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_XiStar0,kTRUE)==4) return -4;
+          if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_XiStar0,kTRUE)==5) return -5;
+        }
       }
     }
-    return -8; // check the same mother
+    return -10; // check the same mother
   }
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
   if ( mcMother->GetPdgCode() != 4232 || mcMother->GetNDaughters()!=3 ) {
-    return -5; // check mother is XicPlus
+    return -8; // check mother is XicPlus
   }
   // ==================
 
@@ -1632,14 +1687,18 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *
   IndexMother_XicPlusDau[2] = mcPionMinus_trk2->GetMother();
   // =======================
   if ( IndexMother_XicPlusDau[0]<0 || IndexMother_XicPlusDau[1]<0 || IndexMother_XicPlusDau[2]<0 ) return -20; // check mother exist
-  if ( IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[1] || IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[2] ) {
-    if ( (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[1]) || (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[2]) ) {
+  if ( (IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[1]) || (IndexMother_XicPlusDau[0] != IndexMother_XicPlusDau[2]) ) { // come from different mother
+    if ( (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[1]) || (IndexMother_XicPlusDau[0] == IndexMother_XicPlusDau[2]) ) { // Xi and Pi from same mother
       AliAODMCParticle *mcMother_Xi  = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[0]));
       AliAODMCParticle *mcMother_Pi0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[1]));
       AliAODMCParticle *mcMother_Pi1 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[2]));
       if ( mcMother_Xi->GetPdgCode() == -3324 && ( (mcMother_Pi0->GetPdgCode()==-4232) || (mcMother_Pi1->GetPdgCode()==-4232) ) ) {
-        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==4) return -4;
-        if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==5) return -5;
+        Int_t Index_XiStar0_Mother = mcMother_Xi->GetMother();
+        AliAODMCParticle *mcMother_XiStar0 = static_cast<AliAODMCParticle*>(mcArray->At(Index_XiStar0_Mother));
+        if ( mcMother_XiStar0->GetPdgCode()==-4232 && mcMother_XiStar0->GetNDaughters()==2 && (Index_XiStar0_Mother==IndexMother_XicPlusDau[0] || Index_XiStar0_Mother==IndexMother_XicPlusDau[1]) ) {
+          if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==4) return -4;
+          if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==5) return -5;
+        }
       }
     }
     return -10; // check the same mother
