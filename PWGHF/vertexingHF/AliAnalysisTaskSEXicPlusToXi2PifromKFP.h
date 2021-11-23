@@ -76,7 +76,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
 
         void FillEventROOTObjects();
         void FillTreeGenXicPlus(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
-        void FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, TClonesArray *mcArray, Int_t lab_XicPlus);
+        void FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, KFParticle PV_KF_Refit, TClonesArray *mcArray, Int_t lab_XicPlus);
         AliAODVertex* PrimaryVertex(const TObjArray *trkArray, AliVEvent *event);
         AliAODVertex* CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *aodEvent);
 
@@ -123,6 +123,54 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHPrimVtx_woDau_err_y; //!<! Histogram of PV after removing daughter tracks (err_y)
         TH1F*                   fHPrimVtx_woDau_err_z; //!<! Histogram of PV after removing daughter tracks (err_z)
         TH1F*                   fHNumOfCandidatePerEvent_In3sigma; //!<! Histogram of number of Xic+ candidate per event within 3 sigma (assuming sigma=0.01)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_Minus_PVrec_x; //!<! Histogram of difference between PV(rec) and PV(rec) from KF (x)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_Minus_PVrec_y; //!<! Histogram of difference between PV(rec) and PV(rec) from KF (y)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_Minus_PVrec_z; //!<! Histogram of difference between PV(rec) and PV(rec) from KF (z)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x; //!<! Histogram of difference between recalPV and PV from KF (x)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y; //!<! Histogram of difference between recalPV and PV from KF (y)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z; //!<! Histogram of difference between recalPV and PV from KF (z)
+        TH1F*                   fHPrimVtx_recalPV_Minus_PVrec_x; //!<! Histogram of difference between recalPV and PV(rec) (x)
+        TH1F*                   fHPrimVtx_recalPV_Minus_PVrec_y; //!<! Histogram of difference between recalPV and PV(rec) (y)
+        TH1F*                   fHPrimVtx_recalPV_Minus_PVrec_z; //!<! Histogram of difference between recalPV and PV(rec) (z)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x; //!<! Histogram of difference between recalPV from KF before and after checking track used for PV (x)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y; //!<! Histogram of difference between recalPV from KF before and after checking track used for PV (y)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z; //!<! Histogram of difference between recalPV from KF before and after checking track used for PV (z)
+        TH1F*                   fHPrimVtx_PVrec_Minus_PVgen_x; //!<! Histogram of difference between PV(rec) and PV(gen) (x)
+        TH1F*                   fHPrimVtx_PVrec_Minus_PVgen_y; //!<! Histogram of difference between PV(rec) and PV(gen) (y)
+        TH1F*                   fHPrimVtx_PVrec_Minus_PVgen_z; //!<! Histogram of difference between PV(rec) and PV(gen) (z)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_Minus_PVgen_x; //!<! Histogram of difference between PV(rec) from KF and PV(gen) (x)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_Minus_PVgen_y; //!<! Histogram of difference between PV(rec) from KF and PV(gen) (y)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_Minus_PVgen_z; //!<! Histogram of difference between PV(rec) from KF and PV(gen) (z)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x; //!<! Histogram of difference between recalPV(rec) from KF and PV(gen) (x) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y; //!<! Histogram of difference between recalPV(rec) from KF and PV(gen) (y) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z; //!<! Histogram of difference between recalPV(rec) from KF and PV(gen) (z) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_Minus_PVgen_x; //!<! Histogram of difference between recalPV(rec) and PV(gen) (x)
+        TH1F*                   fHPrimVtx_recalPV_Minus_PVgen_y; //!<! Histogram of difference between recalPV(rec) and PV(gen) (y)
+        TH1F*                   fHPrimVtx_recalPV_Minus_PVgen_z; //!<! Histogram of difference between recalPV(rec) and PV(gen) (z)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x; //!<! Histogram of difference between recalPV(rec) from KF after checking track used for PV and PV(gen) (x)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y; //!<! Histogram of difference between recalPV(rec) from KF after checking track used for PV and PV(gen) (y)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z; //!<! Histogram of difference between recalPV(rec) from KF after checking track used for PV and PV(gen) (z)
+        TH1F*                   fHPrimVtx_PV_PULL_x; //!<! Histogram of PULL of PV(rec) (x)
+        TH1F*                   fHPrimVtx_PV_PULL_y; //!<! Histogram of PULL of PV(rec) (y)
+        TH1F*                   fHPrimVtx_PV_PULL_z; //!<! Histogram of PULL of PV(rec) (z)
+        TH1F*                   fHPrimVtx_PV_KF_PULL_x; //!<! Histogram of PULL of PV(rec) from KF (x)
+        TH1F*                   fHPrimVtx_PV_KF_PULL_y; //!<! Histogram of PULL of PV(rec) from KF (y)
+        TH1F*                   fHPrimVtx_PV_KF_PULL_z; //!<! Histogram of PULL of PV(rec) from KF (z)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_PULL_x; //!<! Histogram of PULL of PV(rec) from KF (x) (w/ Refit)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_PULL_y; //!<! Histogram of PULL of PV(rec) from KF (y) (w/ Refit)
+        TH1F*                   fHPrimVtx_PV_KF_Refit_PULL_z; //!<! Histogram of PULL of PV(rec) from KF (z) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_PULL_x; //!<! Histogram of PULL of recalPV(rec) (x)
+        TH1F*                   fHPrimVtx_recalPV_PULL_y; //!<! Histogram of PULL of recalPV(rec) (y)
+        TH1F*                   fHPrimVtx_recalPV_PULL_z; //!<! Histogram of PULL of recalPV(rec) (z)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x; //!<! Histogram of PULL of recalPV(rec) from KF after checking track used for PV (x) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y; //!<! Histogram of PULL of recalPV(rec) from KF after checking track used for PV (y) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z; //!<! Histogram of PULL of recalPV(rec) from KF after checking track used for PV (z) (w/ Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x; //!<! Histogram of difference between recalPV(rec) from KF after checking track used for PV and PV(gen) (x) (w/o Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y; //!<! Histogram of difference between recalPV(rec) from KF after checking track used for PV and PV(gen) (y) (w/o Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z; //!<! Histogram of difference between recalPV(rec) from KF after checking track used for PV and PV(gen) (z) (w/o Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_AfterCheck_PULL_x; //!<! Histogram of PULL of recalPV(rec) from KF after checking track used for PV (x) (w/o Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_AfterCheck_PULL_y; //!<! Histogram of PULL of recalPV(rec) from KF after checking track used for PV (y) (w/o Refit)
+        TH1F*                   fHPrimVtx_recalPV_KF_AfterCheck_PULL_z; //!<! Histogram of PULL of recalPV(rec) from KF after checking track used for PV (z) (w/o Refit)
         Bool_t                  fWriteXicPlusMCGenTree; ///< flag to decide whether to write the MC candidate variables on a tree variables
         Bool_t                  fWriteXicPlusTree; ///< flag to decide whether to write Xic+ tree
         Bool_t                  fWriteXicPlusQATree; ///< flag to decide whether to write Xic+ QA tree
@@ -134,7 +182,7 @@ class AliAnalysisTaskSEXicPlusToXi2PifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicPlusToXi2PifromKFP(const AliAnalysisTaskSEXicPlusToXi2PifromKFP &source); // not implemented
         AliAnalysisTaskSEXicPlusToXi2PifromKFP& operator=(const AliAnalysisTaskSEXicPlusToXi2PifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 3);
+        ClassDef(AliAnalysisTaskSEXicPlusToXi2PifromKFP, 4);
 };
 
 #endif
