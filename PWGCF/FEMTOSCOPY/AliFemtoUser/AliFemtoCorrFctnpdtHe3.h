@@ -39,17 +39,27 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
         virtual void AddMixedPair(AliFemtoPair* aPair);
         void SetIsHe3Pair(int isOrNot);
         AliFemtoPair * ChangeP2Mom(AliFemtoPair* aPair);
+        int ReVelocityGate(AliFemtoPair* aPair);
+        void SetP1AndP2Mass(float p1Mass,float p2Mass);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
         TString fTitle;
         int fNbinsKStar;
         double fKStarLow, fKStarHigh;
+        float fP1Mass, fP2Mass;
         TH1D* fNumerator;          // numerator - real pairs
         TH1D* fDenominator;        // denominator - mixed pairs
 
         std::vector<TH1D*> fQANumerator;    // QA numerator [0]: for p1 pt > 0.2GeV/c; [1]: for p1 pt > 0.3GeV/c; [2]: for p1 pt > 0.4GeV/c
         std::vector<TH1D*> fQADenominator;  // QA denominator
+
+        // velocity gate 11.23
+        TH1D *fP1EarlierP2Num;
+        TH1D *fP1EarlierP2Dum;
+        TH1D *fP2EarlierP1Num;
+        TH1D *fP2EarlierP1Dum;
+
       
 };
 #endif
