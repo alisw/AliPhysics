@@ -87,6 +87,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     fPeriod("LHC15o"),
     fCurrSystFlag(0),
     fSpringMode(false),
+    fLowMultiplicityMode(false),
 
     fListOfObjects(0),
     fListOfProfile(0),
@@ -191,6 +192,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
   fSpringMode(false),
+  fLowMultiplicityMode(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -313,6 +315,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
   fSpringMode(false),
+  fLowMultiplicityMode(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -659,6 +662,21 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   if(!fAOD) {
     Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
     return;
+  }
+
+  if (fLowMultiplicityMode) {
+     // Number of AOD tracks before track cuts
+     const int nAODTracks = fAOD->GetNumberOfTracks();
+     if (nAODTracks > 200) {
+       PostData(1,fListOfObjects);
+       int outputslot = 2;
+       PostData(2, fListOfProfile);
+       for (int i = 0; i < 30; i++) {
+         outputslot++;
+         PostData(outputslot, fListOfProfiles[i]);
+       }
+       return;
+     }
   }
 
   if (!AcceptAOD(fAOD) ) {
