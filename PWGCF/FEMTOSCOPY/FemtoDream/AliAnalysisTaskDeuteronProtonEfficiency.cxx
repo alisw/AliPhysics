@@ -907,7 +907,6 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double EtaAntiDeuteron	  = 0.0;
   double PtAntiDeuteron		  = 0.0;
 
-  double MomentumPair[3]  = {0.0,0.0,0.0};
   double PtPair		  = 0.0;
   double EtaPair	  = 0.0;
   
@@ -1055,7 +1054,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
       {
 
 	AliMCParticle *Proton = (AliMCParticle*)(mcEvent->GetTrack(track));
-	LabelProton = Proton->GetLabel();
+	LabelProton = TMath::Abs(Proton->GetLabel());
 
 	MomentumProton[0] = Proton->Px();
 	MomentumProton[1] = Proton->Py();
@@ -1098,7 +1097,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
       {
 
 	AliMCParticle *Deuteron = (AliMCParticle*)(mcEvent->GetTrack(track));
-	LabelDeuteron = Deuteron->GetLabel();
+	LabelDeuteron = TMath::Abs(Deuteron->GetLabel());
 
 	MomentumDeuteron[0] = Deuteron->Px();
 	MomentumDeuteron[1] = Deuteron->Py();
@@ -1203,7 +1202,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
       {
 
 	AliMCParticle *AntiProton = (AliMCParticle*)(mcEvent->GetTrack(track));
-	LabelAntiProton = AntiProton->GetLabel();
+	LabelAntiProton = TMath::Abs(AntiProton->GetLabel());
 
 	MomentumAntiProton[0] = AntiProton->Px();
 	MomentumAntiProton[1] = AntiProton->Py();
@@ -1246,7 +1245,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
       {
 
 	AliMCParticle *AntiDeuteron = (AliMCParticle*)(mcEvent->GetTrack(track));
-	LabelAntiDeuteron = AntiDeuteron->GetLabel();
+	LabelAntiDeuteron = TMath::Abs(AntiDeuteron->GetLabel());
 
 	MomentumAntiDeuteron[0] = AntiDeuteron->Px();
 	MomentumAntiDeuteron[1] = AntiDeuteron->Py();
@@ -1356,9 +1355,9 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	LabelProton = TMath::Abs(ProtonTrack->GetLabel());
 	AliMCParticle *Proton = (AliMCParticle*)(mcEvent->GetTrack(LabelProton));
 
-	MomentumProton[0] = Proton->Px();
-	MomentumProton[1] = Proton->Py();
-	MomentumProton[2] = Proton->Pz();
+	MomentumProton[0] = ProtonTrack->Px();
+	MomentumProton[1] = ProtonTrack->Py();
+	MomentumProton[2] = ProtonTrack->Pz();
 
 	TLorentzVector LorentzVectorProton;
 	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],MassProton);
@@ -1383,11 +1382,11 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	if(ProtonTrack->GetSign() < 1) continue;
 
 	// nsigma cuts
-	AliPIDResponse::EDetPidStatus status1TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,ProtonTrack);
-	AliPIDResponse::EDetPidStatus status1TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,ProtonTrack);
+	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,ProtonTrack);
+	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,ProtonTrack);
 
-	if(status1TPC == AliPIDResponse::kDetPidOk) TPC_OK = true;
-	if(status1TOF == AliPIDResponse::kDetPidOk) TOF_OK = true;
+	if(statusTPC == AliPIDResponse::kDetPidOk) TPC_OK = true;
+	if(statusTOF == AliPIDResponse::kDetPidOk) TOF_OK = true;
 	if(!(TPC_OK)) continue;
 	if(!(TOF_OK)) continue;
 
@@ -1429,13 +1428,16 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
     for(int track = 0; track < fESD->GetNumberOfTracks(); track++)
       {
 
+	TPC_OK = false;
+	TOF_OK = false;
+
 	AliESDtrack *DeuteronTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(track));
 	LabelDeuteron = TMath::Abs(DeuteronTrack->GetLabel());
 	AliMCParticle *Deuteron = (AliMCParticle*)(mcEvent->GetTrack(LabelDeuteron));
 
-	MomentumDeuteron[0] = Deuteron->Px();
-	MomentumDeuteron[1] = Deuteron->Py();
-	MomentumDeuteron[2] = Deuteron->Pz();
+	MomentumDeuteron[0] = DeuteronTrack->Px();
+	MomentumDeuteron[1] = DeuteronTrack->Py();
+	MomentumDeuteron[2] = DeuteronTrack->Pz();
 
 	TLorentzVector LorentzVectorDeuteron;
 	LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],MassDeuteron);
@@ -1526,11 +1528,11 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
     for(int track1 = 0; track1 < ReconstructedProtonArray->size(); track1++)
       {
 
-	AliMCParticle *Proton = (AliMCParticle*)(mcEvent->GetTrack(ReconstructedProtonArray->at(track1)));
+	AliESDtrack *ProtonTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedProtonArray->at(track1)));
 
-	MomentumProton[0] = Proton->Px();
-	MomentumProton[1] = Proton->Py();
-	MomentumProton[2] = Proton->Pz();
+	MomentumProton[0] = ProtonTrack->Px();
+	MomentumProton[1] = ProtonTrack->Py();
+	MomentumProton[2] = ProtonTrack->Pz();
 
 	TLorentzVector LorentzVectorProton;
 	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],MassProton);
@@ -1540,11 +1542,11 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	for(int track2 = 0; track2 < ReconstructedDeuteronArray->size(); track2++)
 	  {
 
-	    AliMCParticle *Deuteron = (AliMCParticle*)(mcEvent->GetTrack(ReconstructedDeuteronArray->at(track2)));
+	    AliESDtrack *DeuteronTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedDeuteronArray->at(track2)));
 
-	    MomentumDeuteron[0] = Deuteron->Px();
-	    MomentumDeuteron[1] = Deuteron->Py();
-	    MomentumDeuteron[2] = Deuteron->Pz();
+	    MomentumDeuteron[0] = DeuteronTrack->Px();
+	    MomentumDeuteron[1] = DeuteronTrack->Py();
+	    MomentumDeuteron[2] = DeuteronTrack->Pz();
 
 	    TLorentzVector LorentzVectorDeuteron;
 	    LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],MassDeuteron);
@@ -1614,8 +1616,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	// check if antiproton is a primary particle
 	if(!AntiProton->IsPhysicalPrimary()) continue;
 
-	fHistPtAntiProtonRecPrimary->Fill(PtProton);
-	fHistEtaAntiProtonRecPrimary->Fill(EtaProton);
+	fHistPtAntiProtonRecPrimary->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecPrimary->Fill(EtaAntiProton);
 
 	// apply track cuts
 	if(!fESDtrackCutsProton->AcceptTrack(AntiProtonTrack)) continue;
@@ -1652,8 +1654,10 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
 
 
-	fHistPtAntiProtonRecTrackCuts->Fill(PtProton);
-	fHistEtaAntiProtonRecTrackCuts->Fill(EtaProton);
+	fHistPtAntiProtonRecTrackCuts->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecTrackCuts->Fill(EtaAntiProton);
+
+	ReconstructedAntiProtonArray->push_back(LabelAntiProton);
 
       } // end of loop for reconstructed antiprotons
 
@@ -1661,6 +1665,9 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
       // loop for reconstructed antideuterons
       for(int track = 0; track < fESD->GetNumberOfTracks(); track++)
 	{
+
+	  TPC_OK = false;
+	  TOF_OK = false;
 
 	  AliESDtrack *AntiDeuteronTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(track));
 	  LabelAntiDeuteron = TMath::Abs(AntiDeuteronTrack->GetLabel());
@@ -1686,8 +1693,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	  // check if antideuteron is a primary particle
 	  if((!AntiDeuteron->IsPhysicalPrimary())) continue;
 
-	  fHistPtAntiDeuteronRecPrimary->Fill(PtDeuteron);
-	  fHistEtaAntiDeuteronRecPrimary->Fill(EtaDeuteron);
+	  fHistPtAntiDeuteronRecPrimary->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecPrimary->Fill(EtaAntiDeuteron);
 
 	  // apply track cuts
 	  if(!fESDtrackCutsDeuteron->AcceptTrack(AntiDeuteronTrack)) continue;
@@ -1725,8 +1732,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	  DeuteronDCAz  = xv_Deuteron[1];
 	  if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
 
-	  fHistPtAntiDeuteronRecTrackCuts->Fill(PtDeuteron);
-	  fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaDeuteron);
+	  fHistPtAntiDeuteronRecTrackCuts->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaAntiDeuteron);
 
 	  ReconstructedAntiDeuteronArray->push_back(LabelAntiDeuteron);
 
@@ -1738,11 +1745,11 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
     for(int track1 = 0; track1 < ReconstructedAntiProtonArray->size(); track1++)
       {
 
-	AliMCParticle *AntiProton = (AliMCParticle*)(mcEvent->GetTrack(ReconstructedAntiProtonArray->at(track1)));
+	AliESDtrack *AntiProtonTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedAntiProtonArray->at(track1)));
 
-	MomentumAntiProton[0] = AntiProton->Px();
-	MomentumAntiProton[1] = AntiProton->Py();
-	MomentumAntiProton[2] = AntiProton->Pz();
+	MomentumAntiProton[0] = AntiProtonTrack->Px();
+	MomentumAntiProton[1] = AntiProtonTrack->Py();
+	MomentumAntiProton[2] = AntiProtonTrack->Pz();
 
 	TLorentzVector LorentzVectorAntiProton;
 	LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],MassProton);
@@ -1752,11 +1759,11 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	for(int track2 = 0; track2 < ReconstructedAntiDeuteronArray->size(); track2++)
 	  {
 
-	    AliMCParticle *AntiDeuteron = (AliMCParticle*)(mcEvent->GetTrack(ReconstructedAntiDeuteronArray->at(track2)));
+	    AliESDtrack *AntiDeuteronTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedAntiDeuteronArray->at(track2)));
 
-	    MomentumAntiDeuteron[0] = AntiDeuteron->Px();
-	    MomentumAntiDeuteron[1] = AntiDeuteron->Py();
-	    MomentumAntiDeuteron[2] = AntiDeuteron->Pz();
+	    MomentumAntiDeuteron[0] = AntiDeuteronTrack->Px();
+	    MomentumAntiDeuteron[1] = AntiDeuteronTrack->Py();
+	    MomentumAntiDeuteron[2] = AntiDeuteronTrack->Pz();
 
 	    TLorentzVector LorentzVectorAntiDeuteron;
 	    LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],MassDeuteron);

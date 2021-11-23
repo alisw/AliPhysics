@@ -258,8 +258,9 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	
 	//the number of DefineInput should be in line with NUE,NUA
 	//use NUA only--> One DefineInput 
+	//use NUE and NUA --> Two DefineInput
 	DefineInput(1, TFile::Class());
-	//DefineInput(2, TFile::Class());
+	DefineInput(2, TFile::Class());
 
     DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
                                         // you can add more output objects by calling DefineOutput(2, classname::Class())
@@ -352,7 +353,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 		inSlotCounter++;
 	};
 	if(fNUE) {
-		fTrackEfficiency = (TFile*)GetInputData(inSlotCounter);
+		fTrackEfficiency = (TList*)GetInputData(inSlotCounter);
 		inSlotCounter++;
 	};
 
@@ -458,12 +459,14 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 
         // checking the run number for aplying weights & loading TList with weights
         //
-        // if (fCurrSystFlag == 0) {
-        if ( !fPeriod.EqualTo("LHC15o") ) {
-		if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded! at pp"); return; }
-        } else {
-		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
-        }
+        // if (fCurrSystFlag == 0)
+		if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! NUA"); return; }
+
+        //if ( !fPeriod.EqualTo("LHC15o") ) {
+		//if (fNUA && !LoadWeights()) { AliFatal("Weights not loaded! at pp"); return; }
+        //} else {
+		//if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
+        //}
 
 
 
@@ -547,6 +550,8 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 	// Init the number of tracks
 	double NtrksBefore = 0;
         NtrksAfter = 0;
+	NtrksAfterGap0M = 0;
+	NtrksAfterGap0P = 0;	
 	NtrksAfterGap10M = 0;
 	NtrksAfterGap10P = 0;
 	NtrksAfterGap14M = 0;
@@ -564,6 +569,10 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 
 	double Qcos[20][20] = {0};
 	double Qsin[20][20] = {0};
+	double QcosGap0M[20][20] = {0};
+	double QsinGap0M[20][20] = {0};
+	double QcosGap0P[20][20] = {0};
+	double QsinGap0P[20][20] = {0};
 	double QcosGap10M[20][20] = {0};
 	double QsinGap10M[20][20] = {0};
 	double QcosGap10P[20][20] = {0};
@@ -637,12 +646,13 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		//..get phi-weight for NUA correction
 		double weight = 1;
 		if(fNUA == 1) {
+			weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
                         // if (fCurrSystFlag == 0) {
-			if ( !fPeriod.EqualTo("LHC15o") ) {
-				weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
-			} else {
-				weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
-			}
+			//if ( !fPeriod.EqualTo("LHC15o") ) {
+			//	weight = GetFlowWeight(aodTrk, fVtxZ, kRefs);
+			//} else {
+			//	weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
+			//}
 		}
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
@@ -658,6 +668,33 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 				Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
 			}
 		}
+
+		//..Gap > 0.
+		if(aodTrk->Eta() < 0.)
+		{
+			NtrksAfterGap0M++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+		if(aodTrk->Eta() > 0.)
+		{
+			NtrksAfterGap0P++;
+			for(int iharm=0; iharm<20; iharm++)
+			{
+				for(int ipow=0; ipow<20; ipow++)
+				{
+					QcosGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+					QsinGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+				}
+			}
+		}
+
 
 		//..Gap > 1.0
 		if(aodTrk->Eta() < -0.5)
@@ -757,6 +794,8 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 
 	//..calculate Q-vector for each harmonics n and power p
         correlator.FillQVector(correlator.Qvector, Qcos, Qsin); 
+		correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M); 
+        correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P); 
         correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M); 
         correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P); 
         correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M); 
@@ -990,16 +1029,18 @@ int AliAnalysisTaskFlowPPTask::GetRunPart(int run)
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
-	//Not use in this task
-    return 1;
 	//Pt Weight is extract from Efficiency
-	hTrackEfficiencyRun = (TH3F*)fTrackEfficiency->Get(Form("eff_LHC15o_HIJING_%.0lf", runNumber));
+	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject("EffRescaled_Cent0");
+	if(!hTrackEfficiencyRun){
+		printf("Can't get Track Efficiency\n");
+		return 1;
+	}
 	double binPt = hTrackEfficiencyRun->GetXaxis()->FindBin(pt);
-	double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
-	double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
+	//double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
+	//double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
 	//..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
-	double eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
-	double error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
+	double eff = hTrackEfficiencyRun->GetBinContent(binPt);
+	double error = hTrackEfficiencyRun->GetBinError(binPt);
 
 	double weight = 1;
 	if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
@@ -1291,6 +1332,10 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, T
 		multProfile.fChcn6[h] = new TProfile(Form("fChc%d{6}%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn6[h]->Sumw2();
 		fListOfObjects->Add(multProfile.fChcn6[h]);
+
+		multProfile.fChcn6_Gap0[h] = new TProfile(Form("fChc%d{6}_Gap0%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
+		multProfile.fChcn6_Gap0[h]->Sumw2();
+		fListOfObjects->Add(multProfile.fChcn6_Gap0[h]);
 
 		multProfile.fChcn6_Gap10[h] = new TProfile(Form("fChc%d{6}_Gap10%s", h+2, label.Data()), "<<6>> Re; # of tracks", nn, xbins);
 		multProfile.fChcn6_Gap10[h]->Sumw2();
@@ -1805,6 +1850,7 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 	//..calculate 6-particle correlations
 	//................................
 	double Dn6 = correlator.Six(0, 0, 0, 0, 0, 0).Re();
+	double Dn6Gap0 = correlator.SixGap0(0, 0, 0, 0, 0, 0).Re();
 	double Dn6Gap10 = correlator.SixGap10(0, 0, 0, 0, 0, 0).Re();
 
 	if(NtrksAfter > 5 && Dn6 != 0)
@@ -1813,6 +1859,12 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		TComplex v26 = correlator.Six(2, 2, 2, -2, -2, -2);
 		double v26Re = v26.Re()/Dn6;
 		profile.fChcn6[0]->Fill(Ntrks, v26Re, Dn6);
+	}
+
+	if(NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn6Gap0 !=0){
+		TComplex v26Gap0 = correlator.SixGap0(2, 2, 2, -2, -2, -2);
+		double v26ReGap0 = v26Gap0.Re()/Dn6Gap0;
+		profile.fChcn6_Gap0[0]->Fill(Ntrks, v26ReGap0, Dn6Gap0);
 	}
 
 	if(NtrksAfterGap10M > 2 && NtrksAfterGap10P > 2 && Dn6Gap10 !=0)
@@ -1833,7 +1885,7 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 
 	double Dn8 = correlator.Eight(0, 0, 0, 0, 0, 0, 0, 0).Re();
 	// Gap0 isn't calculated in this version
-	//double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
+	double Dn8Gap0 = correlator.EightGap0(0, 0, 0, 0, 0, 0, 0, 0).Re();
 
 	if(NtrksAfter > 7 && Dn8 != 0)
 	{
@@ -1843,12 +1895,12 @@ void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, 
 		profile.fChcn8[0]->Fill(Ntrks, v28Re, Dn8);
 	}
 
-	//if(NtrksAfterGap10M > 3 && NtrksAfterGap10P > 3 && Dn8Gap0 !=0){
+	if(NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 !=0){
 		//..v2{8} with eta Gap > 0.
-		//TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
-		//double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
-		//profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
-	//}
+		TComplex v28Gap0 = correlator.EightGap0(2, 2, 2, 2, -2, -2, -2, -2);
+		double v28ReGap0 = v28Gap0.Re()/Dn8Gap0;
+		profile.fChcn8_Gap0[0]->Fill(Ntrks, v28ReGap0, Dn8Gap0);
+	}
 
 
 }
@@ -1955,6 +2007,7 @@ PhysicsProfilePPTask::PhysicsProfilePPTask() :
 		memset(fChcn4_3subGap2, 0, sizeof(fChcn4_3subGap2));
 
 		memset(fChcn6, 0, sizeof(fChcn6));
+		memset(fChcn6_Gap0, 0, sizeof(fChcn6_Gap0));
 		memset(fChcn6_Gap10, 0, sizeof(fChcn6_Gap10));
 
 		memset(fChcn8, 0, sizeof(fChcn8));

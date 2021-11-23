@@ -315,6 +315,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     AliVEvent* fEvt = nullptr;               //!
     UInt_t fFilterBit = 32;
 
+    // Int_t fTrueXi1530counts = 0;
+    // Int_t fReconXi1530counts = 0;
+
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
     std::vector<UInt_t> goodtrackindices;    //!
@@ -437,7 +440,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Double_t lPosPV[3];
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 34);
+    ClassDef(AliAnalysisTaskXi1530, 35);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -474,6 +477,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 32: Add goodtrackfullindices for further trackloop
     // 33: Modify for the nanoCheck
     // 34: Add additional cuts for PbPb Study
+    // 35: Fix bug in PV cuts
 };
 
 #endif

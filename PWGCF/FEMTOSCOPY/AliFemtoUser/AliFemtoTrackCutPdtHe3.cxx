@@ -18,6 +18,8 @@ AliFemtoESDTrackCut()
     SwitchMom_d = 0.8;
     SwitchMom_t = 999;
     SwitchMom_He3 = 999;
+
+    fdEdxcut = 1;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -34,6 +36,8 @@ AliFemtoESDTrackCut(aCut)
     SwitchMom_d = aCut.SwitchMom_d;
     SwitchMom_t = aCut.SwitchMom_t;
     SwitchMom_He3 = aCut.SwitchMom_He3;
+
+    fdEdxcut = aCut.fdEdxcut;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -61,6 +65,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     SwitchMom_t = aCut.SwitchMom_t;
     SwitchMom_He3 = aCut.SwitchMom_He3;
 
+    fdEdxcut = aCut.fdEdxcut;
     return *this;
 }
 
@@ -227,7 +232,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
         if (!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP()))
             return false;
     
-    if (fMostProbable!=15) {
+    if (fMostProbable>0) {
         
         int imost=0;
         //****N Sigma Method****
@@ -245,33 +250,51 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track)
                     && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
                         imost = 13;
                 }
+                //\ dE/dx cut for low pt abnormal
+                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
+                    imost = 0;
+                }
             }
             else if (fMostProbable == 14){   //cut on Nsigma triton
                 if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT()) ){
-                // if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT())
-                //     && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                //     && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
-                //     && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
-                //     && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
+                    // if (IsTritonNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCT(), track->NSigmaTOFT())
+                    //     && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                    //     && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                    //     && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                    //     && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) ){
                     imost = 14;
                 }
                    
             }
             else if (fMostProbable == 15){
-                if (IsHe3NSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) )
-                { 
-                    imost = 15;
+		        //cout<<"enter He PID"<<endl;
+                if (IsHe3NSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) ){
+                // if (IsHe3NSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCH(), track->NSigmaTOFH()) 
+		        //     && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                //     && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                //     && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                //     && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) ){ 
+                //cout<<"wdf "<<track->NSigmaTPCH()<<endl;    
+		        imost = 15;
+                }
+            }
+            else if(fMostProbable == 16){
+                if (IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE()) ){
+                    imost = 16;
                 }
             }
             if (imost != fMostProbable) return false;
             
         }
         
-        cout<<"AliFemtoTrackCutPdtHe3 "<<track->ImpactD()<<" "<<track->ImpactZ()<<endl;
+        //cout<<"AliFemtoTrackCutPdtHe3 "<<track->ImpactD()<<" "<<track->ImpactZ()<<endl;
         fNTracksPassed++ ;
         return true;
     
     }
+
+    return false;
+
     
 }
 bool AliFemtoTrackCutPdtHe3::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
@@ -403,6 +426,62 @@ bool AliFemtoTrackCutPdtHe3::IsProtonNSigmaRejection(float mom, float nsigmaTPCP
  
   return false;
 }
+void AliFemtoTrackCutPdtHe3::SetProtonSwitchMom(float SwitchMom){
+	SwitchMom_p = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetDeuteronSwitchMom(float SwitchMom){
+	SwitchMom_d = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetTritonSwitchMom(float SwitchMom){
+	SwitchMom_t = SwitchMom;
+}
+void AliFemtoTrackCutPdtHe3::SetHe3SwitchMom(float SwitchMom){
+	SwitchMom_He3 = SwitchMom;
+}
 
+//\ for e+e femto
+bool AliFemtoTrackCutPdtHe3::IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE){
 
+    if(TMath::Abs(nsigmaTPCE) < 3.) return true;
+    return false;
+}
 
+void AliFemtoTrackCutPdtHe3::SetMostProbableElectron(){
+
+    fMostProbable = 16; 
+}
+//\ follow wiola
+bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx)
+{
+
+//   double a1 = -250.0,  b1 = 400.0;
+//   double a2 = -135.0,  b2 = 270.0;
+//   double a3 = -80,   b3 = 190.0;
+//   double a4 = 0.0,   b4 = 20.0;
+
+//   double a5 = 125.0,   b5 = -100.0; 
+
+//   if (mom < 1.1) {
+//     if (dEdx < a1*mom+b1) return false;
+//   }
+//   else if (mom < 1.4) {
+//     if (dEdx < a2*mom+b2) return false;
+//   }
+//   else if (mom < 2) {
+//     if (dEdx < a3*mom+b3) return false;
+//   }
+//   else if (mom >= 2) {
+//     if (dEdx < a4*mom+b4) return false;
+//   }
+
+    double a1 = -400./1.5,  b1 = 400.0;
+    if (mom < 1.5) {
+        if (dEdx < a1*mom+b1) return false;
+    }
+    return true;
+
+}
+void AliFemtoTrackCutPdtHe3::SetdEdxcutLabel(int dEdxcutLabel)
+{
+    fdEdxcut = dEdxcutLabel;
+}

@@ -7,11 +7,14 @@
 #include "AliMultSelection.h"
 #include "AliPIDResponse.h"
 #include "AliRDHFCutsDplustoKpipi.h"
+#include "AliRDHFCutsDStartoKpipi.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoCascadeHF.h"
 #include "AliHFMLResponse.h"
 #include "AliAODHandler.h"
 #include "AliHFMLResponseDplustoKpipi.h"
+#include "AliHFMLResponseDstartoD0pi.h"
 #include "AliAnalysisTaskSECharmHadronMLSelector.h"
 #include "AliMLModelHandler.h"
 #include "TDatabasePDG.h"
@@ -183,6 +186,11 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       DefineOutput(8, AliRDHFCutsDplustoKpipi::Class());
       break;
     }
+    case kDstartoKpipi:
+    {
+      DefineOutput(8, AliRDHFCutsDStartoKpipi::Class());
+      break;
+    }
     default:
     {
       AliFatal("Invalid HF channel.");
@@ -214,9 +222,17 @@ void AliAnalysisTaskCharmingFemto::LocalInit()
     // Initialization
     switch(fDecChannel) {
       case kDplustoKpipi:
-        AliRDHFCutsDplustoKpipi* copyCut = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
-        PostData(8, copyCut);
-      break;
+      {
+        AliRDHFCutsDplustoKpipi* copyCutDplus = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDHFCuts)));
+        PostData(8, copyCutDplus);
+        break;
+      }
+      case kDstartoKpipi:
+      {
+        AliRDHFCutsDStartoKpipi* copyCutDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDHFCuts)));
+        PostData(8, copyCutDstar);
+        break;
+      }
     }
   return;
 }
@@ -266,6 +282,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           mesonName = "Dplus";
           arrayHF = dynamic_cast<TClonesArray*>(aodFromExt->GetList()->FindObject("Charm3Prong"));
           break;
+        case kDstartoKpipi:
+          absPdgMom = 413;
+          mesonName = "DStar";
+          arrayHF = dynamic_cast<TClonesArray*>(aodFromExt->GetList()->FindObject("Dstar"));
+          break;
       }
     }
   }
@@ -275,6 +296,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         absPdgMom = 411;
         mesonName = "Dplus";
         arrayHF = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject("Charm3Prong"));
+        break;
+      case kDstartoKpipi:
+        absPdgMom = 413;
+        mesonName = "DStar";
+        arrayHF = dynamic_cast<TClonesArray*>(fInputEvent->GetList()->FindObject("Dstar"));
         break;
     }
   }
@@ -380,26 +406,38 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fRDHFCuts->IsEventSelected(fInputEvent);
 
   AliAODRecoDecayHF *dMeson = nullptr;
+  AliAODRecoDecayHF *dMesonWithVtx = nullptr;
   for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++) {
 
     dMeson = dynamic_cast<AliAODRecoDecayHF*>(arrayHF->UncheckedAt(chHadIdx[iCand]));
+    if(fDecChannel == kDstartoKpipi){
+      dMesonWithVtx = dynamic_cast<AliAODRecoDecayHF*>(((AliAODRecoCascadeHF *)dMeson)->Get2Prong());
+    } else {
+      dMesonWithVtx = dMeson;
+    }
 
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
 
-    int isSelected = IsCandidateSelected(dMeson, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
     if(!isSelected) {
       if (unsetVtx) {
-        dMeson->UnsetOwnPrimaryVtx();
+        dMesonWithVtx->UnsetOwnPrimaryVtx();
       }
       if (recVtx) {
-        fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
+        fRDHFCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fInputEvent, origOwnVtx);
       }
       continue;
     }
 
-    const double mass = dMeson->InvMass(fDmesonPDGs.size(), &fDmesonPDGs[0]);
+    double mass;
+    if(fDecChannel != kDstartoKpipi) {
+      mass = dMeson->InvMass(fDmesonPDGs.size(), &fDmesonPDGs[0]);
+    } else {
+      mass = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->DeltaInvMass();
+    }
+
     if (dMeson->Charge() > 0) {
       fHistDplusInvMassPt->Fill(dMeson->Pt(), mass);
     } else {
@@ -442,7 +480,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             }
           }
           for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
-            AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            AliAODTrack *track;
+            if (fDecChannel != kDstartoKpipi || iChild == 0) {
+              track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            } else {
+              track = (AliAODTrack *) dMesonWithVtx->GetDaughter(iChild-1); //D0<-D* daughters
+            }
             fHistDplusChildPt[iChild]->Fill(track->Pt());
             fHistDplusChildEta[iChild]->Fill(track->Eta());
             fHistDplusChildPhi[iChild]->Fill(track->Phi());
@@ -484,7 +527,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             }
           }
           for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); iChild++) {
-            AliAODTrack *track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            AliAODTrack *track;
+            if (fDecChannel != kDstartoKpipi || iChild == 0) {
+              track = (AliAODTrack *) dMeson->GetDaughter(iChild);
+            } else {
+              track = (AliAODTrack *) dMesonWithVtx->GetDaughter(iChild-1); //D0<-D* daughters
+            }
             fHistDminusChildPt[iChild]->Fill(track->Pt());
             fHistDminusChildEta[iChild]->Fill(track->Eta());
             fHistDminusChildPhi[iChild]->Fill(track->Phi());
@@ -633,41 +681,67 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fDChargedHistList->SetName("DChargedQA");
   fDChargedHistList->SetOwner(true);
 
+  TString nameD;
+  TString nameDminus;
+  TString nameInvMass;
+  Int_t InvMassBins;
+  Double_t LowerInvMass;
+  Double_t UpperInvMass;
+  switch (fDecChannel) {
+    case kDplustoKpipi:
+      nameD = "Dplus";
+      nameDminus = "Dminus";
+      nameInvMass = "#it{M}_{K#pi#pi}";
+      InvMassBins = 100;
+      LowerInvMass = 1.77;
+      UpperInvMass = 1.97;
+      break;
+    case kDstartoKpipi:
+      nameD = "Dstar";
+      nameDminus = "Dstarminus";
+      nameInvMass = "#it{M}_{K#pi#pi} - #it{M}(K#pi)";
+      InvMassBins = 500;
+      LowerInvMass = 0.138;
+      UpperInvMass = 0.160;
+      break;
+  }
+
   fHistDplusInvMassPt = new TH2F(
-      "fHistDplusInvMassPt",
-      "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-      10, 100, 1.77, 1.97);
+      TString::Format("fHist%sInvMassPt", nameD.Data()),
+      TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+      100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
   fDChargedHistList->Add(fHistDplusInvMassPt);
   if (!fIsLightweight) {
     fHistDplusInvMassPtSel = new TH2F(
-        "fHistDplusInvMassPtSel",
-        "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-        10, 100, 1.77, 1.97);
+        TString::Format("fHist%sInvMassPtSel", nameD.Data()),
+        TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+        100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
     fDChargedHistList->Add(fHistDplusInvMassPtSel);
-    fHistDplusEta = new TH1F("fHistDplusEta", ";#eta; Entries", 100, -1, 1);
+    fHistDplusEta = new TH1F(TString::Format("fHist%sEta", nameD.Data()),
+                             ";#eta; Entries", 100, -1, 1);
     fDChargedHistList->Add(fHistDplusEta);
-    fHistDplusPhi = new TH1F("fHistDplusPhi", ";#phi; Entries", 100, 0.,
-                             2. * TMath::Pi());
+    fHistDplusPhi = new TH1F(TString::Format("fHist%sPhi", nameD.Data()),
+                             ";#phi; Entries", 100, 0., 2. * TMath::Pi());
     fDChargedHistList->Add(fHistDplusPhi);
 
     if (fIsMC) {
-      fHistDplusMCPDGPt = new TH2F("fHistDplusMCPDGPt",
-                                   "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
-                                   250, 0, 25, 5000, 0, 5000);
-      fHistDplusMCPtRes =
-          new TH2F(
-              "fHistDplusMCPtRes",
-              "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
-              101, -0.5, 0.5, 100, 0, 10);
+      fHistDplusMCPDGPt = new TH2F(
+          TString::Format("fHist%sMCPDGPt", nameD.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+      fHistDplusMCPtRes = new TH2F(
+          TString::Format("fHist%sMCPtRes", nameD.Data()),
+          "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
+          101, -0.5, 0.5, 100, 0, 10);
       fHistDplusMCPhiRes = new TH2F(
-          "fHistDplusMCPhiRes",
+          TString::Format("fHist%sMCPhiRes", nameD.Data()),
           "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
           100, 0, 10);
       fHistDplusMCThetaRes = new TH2F(
-          "fHistDplusMCThetaRes",
+          TString::Format("fHist%sMCThetaRes", nameD.Data()),
           "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
           0.025, 100, 0, 10);
-      fHistDplusMCOrigin = new TH2F("fHistDplusMCOrigin",
+      fHistDplusMCOrigin = new TH2F(TString::Format("fHist%sMCOrigin", nameD.Data()),
                                     "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
                                     10, 7, 0, 7);
       fHistDplusMCOrigin->GetYaxis()->SetBinLabel(1, "kPhysPrimary");
@@ -686,40 +760,41 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   }
 
   fHistDminusInvMassPt = new TH2F(
-      "fHistDminusInvMassPt",
-      "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-      10, 100, 1.77, 1.97);
+      TString::Format("fHist%sInvMassPt", nameDminus.Data()),
+      TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+      100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
   fDChargedHistList->Add(fHistDminusInvMassPt);
   if (!fIsLightweight) {
     fHistDminusInvMassPtSel = new TH2F(
-        "fHistDminusInvMassPtSel",
-        "; #it{p}_{T} (GeV/#it{c}); #it{M}_{K#pi#pi} (GeV/#it{c}^{2})", 100, 0,
-        10, 100, 1.77, 1.97);
+        TString::Format("fHist%sInvMassPtSel", nameDminus.Data()),
+        TString::Format("; #it{p}_{T} (GeV/#it{c}); %s (GeV/#it{c}^{2})", nameInvMass.Data()),
+        100, 0, 10, InvMassBins, LowerInvMass, UpperInvMass);
     fDChargedHistList->Add(fHistDminusInvMassPtSel);
-    fHistDminusEta = new TH1F("fHistDminusEta", ";#eta; Entries", 100, -1, 1);
+    fHistDminusEta = new TH1F(TString::Format("fHist%sEta", nameDminus.Data()),
+                              ";#eta; Entries", 100, -1, 1);
     fDChargedHistList->Add(fHistDminusEta);
-    fHistDminusPhi = new TH1F("fHistDminusPhi", ";#phi; Entries", 100, 0.,
-                              2. * TMath::Pi());
+    fHistDminusPhi = new TH1F(TString::Format("fHist%sPhi", nameDminus.Data()),
+                              ";#phi; Entries", 100, 0., 2. * TMath::Pi());
     fDChargedHistList->Add(fHistDminusPhi);
 
     if (fIsMC) {
       fHistDminusMCPDGPt = new TH2F(
-          "fHistDminusMCPDGPt", "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          TString::Format("fHist%sMCPDGPt", nameDminus.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
           250, 0, 25, 5000, 0, 5000);
-      fHistDminusMCPtRes =
-          new TH2F(
-              "fHistDminusMCPtRes",
-              "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
-              101, -0.5, 0.5, 100, 0, 10);
+      fHistDminusMCPtRes = new TH2F(
+          TString::Format("fHist%sMCPtRes", nameDminus.Data()),
+          "; #it{p}_{T, rec} - #it{p}_{T, gen} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})",
+          101, -0.5, 0.5, 100, 0, 10);
       fHistDminusMCPhiRes = new TH2F(
-          "fHistDminusMCPhiRes",
+          TString::Format("fHist%sMCPhiRes", nameDminus.Data()),
           "; #phi_{rec} - #phi_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025, 0.025,
           100, 0, 10);
       fHistDminusMCThetaRes = new TH2F(
-          "fHistDminusMCThetaRes",
+          TString::Format("fHist%sMCThetaRes", nameDminus.Data()),
           "; #theta_{rec} - #theta_{gen}; #it{p}_{T} (GeV/#it{c})", 101, -0.025,
           0.025, 100, 0, 10);
-      fHistDminusMCOrigin = new TH2F("fHistDminusMCOrigin",
+      fHistDminusMCOrigin = new TH2F(TString::Format("fHist%sMCOrigin", nameDminus.Data()),
                                      "; #it{p}_{T} (GeV/#it{c}); Origin", 100,
                                      0, 10, 7, 0, 7);
       fHistDminusMCOrigin->GetYaxis()->SetBinLabel(1, "kPhysPrimary");
@@ -742,28 +817,30 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     std::vector<TString> nameVec;
     if (fDecChannel == kDplustoKpipi) {
       nameVec = { {"K", "Pi1", "Pi2"}};
+    } else if (fDecChannel == kDstartoKpipi) {
+      nameVec = { {"Pi1", "K", "Pi2"}};
     }
     for (unsigned int iChild = 0; iChild < fDmesonPDGs.size(); ++iChild) {
       fHistDplusChildPt[iChild] = new TH1F(
-          TString::Format("fHistDplusChildPt_%s", nameVec.at(iChild).Data()),
+          TString::Format("fHist%sChildPt_%s", nameD.Data(), nameVec.at(iChild).Data()),
           "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
       fHistDplusChildEta[iChild] = new TH1F(
-          TString::Format("fHistDplusChildEta_%s", nameVec.at(iChild).Data()),
+          TString::Format("fHist%sChildEta_%s", nameD.Data(), nameVec.at(iChild).Data()),
           "; #eta; Entries", 100, -1, 1);
       fHistDplusChildPhi[iChild] = new TH1F(
-          TString::Format("fHistDplusChildPhi_%s", nameVec.at(iChild).Data()),
+          TString::Format("fHist%sChildPhi_%s", nameD.Data(), nameVec.at(iChild).Data()),
           "; #phi; Entries", 100, 0, 2. * TMath::Pi());
       fDChargedHistList->Add(fHistDplusChildPt[iChild]);
       fDChargedHistList->Add(fHistDplusChildEta[iChild]);
       fDChargedHistList->Add(fHistDplusChildPhi[iChild]);
       fHistDminusChildPt[iChild] = new TH1F(
-          TString::Format("fHistDminusChildPt_%s", nameVec.at(iChild).Data()),
+          TString::Format("fHist%sChildPt_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
           "; #it{p}_{T} (GeV/#it{c}); Entries", 250, 0, 25);
       fHistDminusChildEta[iChild] = new TH1F(
-          TString::Format("fHistDminusChildEta_%s", nameVec.at(iChild).Data()),
+          TString::Format("fHist%sChildEta_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
           "; #eta; Entries", 100, -1, 1);
       fHistDminusChildPhi[iChild] = new TH1F(
-          TString::Format("fHistDminusChildPhi_%s", nameVec.at(iChild).Data()),
+          TString::Format("fHist%sChildPhi_%s", nameDminus.Data(), nameVec.at(iChild).Data()),
           "; #phi; Entries", 100, 0, 2. * TMath::Pi());
       fDChargedHistList->Add(fHistDminusChildPt[iChild]);
       fDChargedHistList->Add(fHistDminusChildEta[iChild]);
@@ -790,7 +867,11 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
         case kDplustoKpipi:
             fMLResponse = new AliHFMLResponseDplustoKpipi("DplustoKpipiMLResponse", "DplustoKpipiMLResponse", fConfigPath.Data());
             fMLResponse->MLResponseInit();
-        break;
+            break;
+        case kDstartoKpipi:
+            fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
+            fMLResponse->MLResponseInit();
+            break;
       }
     }
     else {
@@ -824,9 +905,9 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores) {
+int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores) {
 
-  if(!dMeson) {
+  if(!dMeson || !dMesonWithVtx) {
     return 0;
   }
 
@@ -838,12 +919,18 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
         return 0;
       }
       break;
+    case kDstartoKpipi:
+      isSelBit = dMeson->HasSelectionBit(AliRDHFCuts::kDstarCuts);
+      if(!isSelBit) {
+        return 0;
+      }
+      break;
   }
 
   unsetVtx = false;
-  if (!dMeson->GetOwnPrimaryVtx())
+  if (!dMesonWithVtx->GetOwnPrimaryVtx())
   {
-    dMeson->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fInputEvent->GetPrimaryVertex()));
+    dMesonWithVtx->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fInputEvent->GetPrimaryVertex()));
     unsetVtx = true;
     // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
     // Pay attention if you use continue inside this loop!!!
@@ -854,7 +941,7 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
   int ptbin = fRDHFCuts->PtBin(ptD);
   if(ptbin < 0) {
     if (unsetVtx) {
-      dMeson->UnsetOwnPrimaryVtx();
+      dMesonWithVtx->UnsetOwnPrimaryVtx();
     }
     return 0;
   }
@@ -862,7 +949,7 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
   bool isFidAcc = fRDHFCuts->IsInFiducialAcceptance(ptD, yD);
   if(!isFidAcc) {
     if (unsetVtx) {
-      dMeson->UnsetOwnPrimaryVtx();
+      dMesonWithVtx->UnsetOwnPrimaryVtx();
     }
     return 0;
   }
@@ -870,7 +957,7 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
   int isSelected = fRDHFCuts->IsSelected(dMeson, AliRDHFCuts::kAll, fInputEvent);
   if(!isSelected) {
     if (unsetVtx) {
-      dMeson->UnsetOwnPrimaryVtx();
+      dMesonWithVtx->UnsetOwnPrimaryVtx();
     }
     return 0;
   }
@@ -883,6 +970,12 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
       std::vector<double> modelPred{};
       switch(fDecChannel) {
         case kDplustoKpipi:
+          isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
+          if(!isMLsel) {
+            isSelected = 0;
+          }
+          break;
+        case kDstartoKpipi:
           isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fInputEvent->GetMagneticField(), pidHF);
           if(!isMLsel) {
             isSelected = 0;
@@ -911,14 +1004,14 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
 
   if (fRDHFCuts->GetIsPrimaryWithoutDaughters())
   {
-    if (dMeson->GetOwnPrimaryVtx()) {
-      origOwnVtx = new AliAODVertex(*dMeson->GetOwnPrimaryVtx());
+    if (dMesonWithVtx->GetOwnPrimaryVtx()) {
+      origOwnVtx = new AliAODVertex(*dMesonWithVtx->GetOwnPrimaryVtx());
     }
-    if (fRDHFCuts->RecalcOwnPrimaryVtx(dMeson, fInputEvent)) {
+    if (fRDHFCuts->RecalcOwnPrimaryVtx(dMesonWithVtx, fInputEvent)) {
       recVtx = true;
     }
     else {
-      fRDHFCuts->CleanOwnPrimaryVtx(dMeson, fInputEvent, origOwnVtx);
+      fRDHFCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fInputEvent, origOwnVtx);
     }
   }
 
@@ -941,6 +1034,20 @@ bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
         massWidth = 0.006758 + pt * 0.0005124;
       }
       break;
+    case kDstartoKpipi:
+      Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+      Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+      massMean = mDstarPDG-mD0PDG; // no extra mass shift because it is deltamass
+      if (fSystem == kpp5TeV) {
+        massWidth = 0.00105236 - pt * 0.000255556 + pt * pt * 3.2264e-05;
+        if(pt > 4 && pt < 5) massWidth = 0.000606852 - 0.000015123 * pt;
+        else if(pt >= 5) massWidth = 0.000476887 + pt * 1.087e-05;
+      } else if (fSystem == kpp13TeV) {
+        massWidth = 0.00124673 - pt * 0.000340426 + pt * pt * 4.40729e-05;
+        if(pt > 4 && pt < 5) massWidth = 0.00104329 - 0.000113275 * pt;
+        else if(pt >= 5) massWidth = 0.000519861 - 8.58874e-06 * pt;
+      }
+      break;
   }
 
   // select D mesons mass window
@@ -954,9 +1061,11 @@ bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
     fLowerMassSelection = massMean + fNSigmaOffsetSideband * massWidth;
     fUpperMassSelection = massMean + fNSigmaOffsetSideband * massWidth + fSidebandWidth;
 
-    // additional removal of D*
-    if ( mass > fLowerDstarRemoval && mass < fUpperDstarRemoval) {
-      return false;
+    if(fDecChannel == kDplustoKpipi){
+      // additional removal of D*
+      if ( mass > fLowerDstarRemoval && mass < fUpperDstarRemoval) {
+        return false;
+      }
     }
   }
 

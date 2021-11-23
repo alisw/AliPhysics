@@ -39,7 +39,8 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
   virtual void BookFinalResultsHistograms();
 
   // 2.) Methods called in UserExec(Option_t *):
-  // ...
+  virtual void RandomIndices(AliVEvent *ave);
+  virtual void ResetEventByEventQuantities();
 
   // 3.) Setters and getters:
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
@@ -68,7 +69,9 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
   
   // 0.) Base lists:
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
-
+  Bool_t fUseFisherYates; // use SetUseFisherYates(kTRUE); in the steering macro to randomize particle indices
+  TArrayI *fRandomIndices; // array to store random indices obtained from Fisher-Yates algorithm 
+  
   // 1.) Control histograms:  
   TList *fControlHistogramsList; // list to hold all control histograms
   TH1F *fPtHist;                 // atrack->Pt()

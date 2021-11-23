@@ -512,7 +512,7 @@ std::string AliAnalysisTaskTrackSkim::toString() const
     }
   }
   else {
-    std::cout << "\tDisabled\n";
+    tempSS << "\tDisabled\n";
   }
   return tempSS.str();
 }

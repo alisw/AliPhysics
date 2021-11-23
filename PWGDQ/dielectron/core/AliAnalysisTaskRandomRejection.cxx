@@ -451,7 +451,69 @@ void AliAnalysisTaskRandomRejection::CalcRandomPairs(AliDielectron* die)
     } // pairing main loop
     
   } // rejection passes
-  
+ 
+
+  for (Int_t iRP=0; iRP < nRejPasses; ++iRP) {
+    TObjArray *arrTracks1RP=arrTracks1;
+    TObjArray *arrTracks2RP=arrTracks2;
+    Bool_t *bTracks1RP = bTracks1;
+    Bool_t *bTracks2RP = bTracks2;
+    Int_t fPdgLeg1 = ((static_cast<AliVTrack*>((*arrTracks1RP).UncheckedAt(0)))->Charge() > 0.)?-11:+11;
+    Int_t fPdgLeg2 = -11;  //  0: Event1, positive particles
+    switch (iRP) {
+      case 1:
+				arrTracks1RP=arrTracks1; // stays the same
+				arrTracks2RP=arrTracks3;
+				bTracks1RP = bTracks1; // stays the same
+				bTracks2RP = bTracks3;
+        fPdgLeg2 = 11;  //  1: Event1, negative particles
+				break;
+      default: ;//nothing to do
+    }
+    
+    Int_t ntrack1RP=(*arrTracks1RP).GetEntriesFast();
+    Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
+    
+    if (ntrack1RP<nNeededTestPart) {
+      AliWarning(Form("WARNING: Size of testparticle array is smaller than needed (%i < %i). Using all available testparticles... (this should never happen, it will give less weight to high multiplicity events.)", ntrack1RP, nNeededTestPart));
+      nNeededTestPart = ntrack1RP;
+      //return;
+    }
+    //AliInfo(Form("RP %i: nNeededTestPart = %i", iRP, nNeededTestPart));
+    for (Int_t itrack1=0; itrack1<nNeededTestPart; ++itrack1){
+      
+      for (Int_t itrack2=0; itrack2<ntrack2RP; ++itrack2){
+        
+        TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
+        TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
+        if (!track1 || !track2) continue;
+        //create the pair
+        candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                            static_cast<AliVTrack*>(track2), fPdgLeg2);
+        
+        candidate.SetType(iRP); // could think of nicer/unique names for these pairs (instead of "ev1+_ev1+", "ev1+_ev1-")
+        //candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+        
+        Bool_t wasRejected=kFALSE;
+        // rejection occurs if the prefilter cuts are fulfilled!
+        // comment in AliDielectron::PairPreFilter(): // remove all tracks from the Single track arrays that pass the cuts in this filter
+        
+        if (bTracks1RP[itrack1]==kTRUE) {
+          //set flags for rejected tracks
+          wasRejected=kTRUE;
+        }
+        
+        //fill histograms
+        // currently we assume same behaviour for e- and e+, so all random pairs are filled into the same histograms.
+        FillHistogramsRandomRejectedPairs(die, &candidate, wasRejected);
+        
+      } // pairing nested loop
+      
+    } // pairing main loop
+    
+  } // rejection passes
+
+
   
   //fill track histograms
   FillHistogramsTestpart(die, arrTracks1, bTracks1, nNeededTestPart);
@@ -486,6 +548,30 @@ void AliAnalysisTaskRandomRejection::FillHistogramsRandomPairs(AliDielectron* di
       h->FillClass("Rand_Pair",AliDielectronVarManager::kNMaxValues,values);
       if (wasRejected) {
         h->FillClass("Rand_RejPair",AliDielectronVarManager::kNMaxValues,values);
+      }
+    }
+  }
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskRandomRejection::FillHistogramsRandomRejectedPairs(AliDielectron* die, AliDielectronPair* pair, Bool_t wasRejected)
+{
+  ///
+  /// Fill histograms from random pairing, mainly for curiosity and to double-check cuts.
+  /// The histogram classes "Rand_Pair" and "Rand_RejPair" must be available.
+  ///
+  //printf("FillHistogramsRandomPairs( wasRejected = %s ) \n", wasRejected?"kTRUE":"kFALSE");
+  
+  AliDielectronHistos *h=die->GetHistoManager();
+  if (h) {
+    if (h->GetHistogramList()->FindObject("RandRej_Pair")) {
+      Double_t values[AliDielectronVarManager::kNMaxValues]={0};
+      AliDielectronVarManager::SetFillMap(h->GetUsedVars()); // needs to be done before every filling!
+      AliDielectronVarManager::Fill(pair, values);
+      
+      h->FillClass("RandRej_Pair",AliDielectronVarManager::kNMaxValues,values);
+      if (wasRejected) {
+        h->FillClass("RandRej_RejPair",AliDielectronVarManager::kNMaxValues,values);
       }
     }
   }

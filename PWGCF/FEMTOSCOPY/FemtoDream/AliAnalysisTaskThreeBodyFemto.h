@@ -116,6 +116,14 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   }
   
 
+  void SetRun2Body(bool  Switch2Body) {
+    fRun2Body=Switch2Body;
+  }
+  
+
+  void SetMixingChoice(int  mix) {
+    fMixingChoice=mix;
+  }
   
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
@@ -176,7 +184,10 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   bool fClosePairRejectionPPPorPPL;
   bool fisMC;
 
+  bool fRun2Body;
+
   double fQ3LimitForDeltaPhiDeltaEta;
+  int fMixingChoice;
 
 
   TH1F **fSameEventTripletArray;

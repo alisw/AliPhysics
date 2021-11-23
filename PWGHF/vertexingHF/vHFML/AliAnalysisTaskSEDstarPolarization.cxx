@@ -139,6 +139,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     }
 
     TClonesArray *arrayCand = nullptr;
+    TClonesArray *arrayCandDDau = nullptr;
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
         // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -152,14 +153,16 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             AliAODExtension *ext = dynamic_cast<AliAODExtension *>(aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root"));
             AliAODEvent *aodFromExt = ext->GetAOD();
             arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
+            arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
         }
     }
     else if (fAOD)
     {
         arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
+        arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
     }
 
-    if (!fAOD || !arrayCand)
+    if (!fAOD || !arrayCand || !arrayCandDDau)
     {
         AliWarning("Candidate branch not found!\n");
         PostData(1, fOutput);
@@ -239,18 +242,23 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     for (int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
     {
         AliAODRecoCascadeHF *dStar = dynamic_cast<AliAODRecoCascadeHF *>(arrayCand->UncheckedAt(iCand));
+        AliAODRecoDecayHF2Prong *dZeroDau = nullptr;
+        if(dStar->GetIsFilled()<1)
+            dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dStar->GetProngID(1)));
+        else
+            dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
 
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
-        int isSelected = IsCandidateSelected(dStar, &vHF, unsetVtx, recVtx, origOwnVtx);
+        int isSelected = IsCandidateSelected(dStar, dZeroDau, &vHF, unsetVtx, recVtx, origOwnVtx);
         if (!isSelected)
         {
             if (unsetVtx)
-                dStar->UnsetOwnPrimaryVtx();
+                dZeroDau->UnsetOwnPrimaryVtx();
             if (recVtx)
-                fRDCuts->CleanOwnPrimaryVtx(dStar, fAOD, origOwnVtx);
+                fRDCuts->CleanOwnPrimaryVtx(dZeroDau, fAOD, origOwnVtx);
             continue;
         }
 
@@ -326,19 +334,19 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         }
 
         if (unsetVtx)
-            dStar->UnsetOwnPrimaryVtx();
+            dZeroDau->UnsetOwnPrimaryVtx();
         if (recVtx)
-            fRDCuts->CleanOwnPrimaryVtx(dStar, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dZeroDau, fAOD, origOwnVtx);
     }
 
     PostData(1, fOutput);
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF *&dStar, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx)
+int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF *&dStar, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx)
 {
 
-    if (!dStar || !vHF)
+    if (!dStar || !dZeroDau || !vHF)
         return 0;
     fHistNEvents->Fill(11);
 
@@ -348,8 +356,11 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
 
     for (int iDau = 0; iDau < nDau; iDau++)
     {
-        AliAODTrack *track = vHF->GetProng(fAOD, dStar, iDau);
-        arrDauTracks.AddAt(track, iDau);
+        AliAODTrack *track;
+        if (iDau == 0)
+            track = vHF->GetProng(fAOD, dStar, iDau);
+        else
+            track = vHF->GetProng(fAOD, dZeroDau, iDau-1); //D0<-D* daughters
     }
 
     if (!fRDCuts->PreSelect(arrDauTracks))
@@ -367,9 +378,9 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
     fHistNEvents->Fill(12);
 
     unsetVtx = false;
-    if (!dStar->GetOwnPrimaryVtx())
+    if (!dZeroDau->GetOwnPrimaryVtx())
     {
-        dStar->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
+        dZeroDau->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
         unsetVtx = true;
         // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
         // Pay attention if you use continue inside this loop!!!
@@ -381,7 +392,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
     if (ptBin < 0)
     {
         if (unsetVtx)
-            dStar->UnsetOwnPrimaryVtx();
+            dZeroDau->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -389,7 +400,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
     if (!isSelected)
     {
         if (unsetVtx)
-            dStar->UnsetOwnPrimaryVtx();
+            dZeroDau->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -398,12 +409,12 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoCascadeHF 
 
     if (fRDCuts->GetIsPrimaryWithoutDaughters())
     {
-        if (dStar->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*dStar->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(dStar, fAOD))
+        if (dZeroDau->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*dZeroDau->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(dZeroDau, fAOD))
             recVtx = true;
         else
-            fRDCuts->CleanOwnPrimaryVtx(dStar, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dZeroDau, fAOD, origOwnVtx);
     }
 
 

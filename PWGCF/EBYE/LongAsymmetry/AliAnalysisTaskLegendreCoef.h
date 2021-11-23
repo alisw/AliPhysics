@@ -41,6 +41,9 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            GetMCNegBackground(TH2D* hist) { fMCNegBackgroundHist = hist; }
     void            GetMCChargedBackground(TH2D* hist) { fMCChargedBackgroundHist = hist; }
     void            GetNeventsCentHist(TH1D* hist) { fNeventCentHist = hist; }
+    void            SetGeneratorName(TString generator) {fGenName = generator; }
+    void            SetPileUpLevel(Int_t level) {fPileUpLevel = level; }
+    void            SetTPCNCrossedRows(UShort_t crossedrows) { fTPCNCrossedRows = crossedrows; }
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -69,6 +72,9 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     TH2D* fMCNegBackgroundHist; //input MC background histogram for negative tracks (eta,cent)
     TH2D* fMCChargedBackgroundHist; //input MC background histogram for positive and negative tracks (eta,cent)
     TH1D* fNeventCentHist; //input Nevents vs centrality histogram 
+    TString fGenName; //MC generator name
+    Int_t fPileUpLevel;
+    UShort_t  fTPCNCrossedRows;  
     AliEventCuts fEventCuts;
 
     AliAnalysisTaskLegendreCoef(const AliAnalysisTaskLegendreCoef&); // not implemented

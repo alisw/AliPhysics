@@ -14,7 +14,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
                                      bool isMC = false, bool isNano = true,
                                      bool plotAdditionalPlots=true,  
                                      int mixingDepthFromTask = 20,
-                                     bool ClosePairRejectionForAll = "false", const char *cutVariation = "0") {
+                                     bool ClosePairRejectionForAll = "false", int mixinfChoice = 0,
+                                      const char *cutVariation = "0") {
 
 
 
@@ -1316,6 +1317,10 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemtoSystematics(int trigger = 0, bool fullBl
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetClosePairRejectionPPPorPPL(ClosePairRejectionPPPorPPL);
+
+
+    taskNano->SetMixingChoice(mixinfChoice);
+
     mgr->AddTask(taskNano); 
     
     mgr->ConnectInput(taskNano, 0, cinput); 
