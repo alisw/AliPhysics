@@ -88,6 +88,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     fCurrSystFlag(0),
     fSpringMode(false),
     fLowMultiplicityMode(false),
+    fUseCorrectedNTracks(false),
 
     fListOfObjects(0),
     fListOfProfile(0),
@@ -153,6 +154,8 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     hDCAz(0),
     hITSclusters(0),
     hChi2(0),
+    hTracksCorrection2d(0),
+    hnCorrectedTracks(0),
     multProfile(),
     correlator(),
     rand(32213)
@@ -193,6 +196,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fCurrSystFlag(0),
   fSpringMode(false),
   fLowMultiplicityMode(false),
+  fUseCorrectedNTracks(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -257,6 +261,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   hDCAz(0),
   hITSclusters(0),
   hChi2(0),
+  hTracksCorrection2d(0),
+  hnCorrectedTracks(0),
   multProfile(),
   correlator(),
   rand(32213) {
@@ -316,6 +322,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fCurrSystFlag(0),
   fSpringMode(false),
   fLowMultiplicityMode(false),
+  fUseCorrectedNTracks(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -383,6 +390,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   hDCAz(0),
   hITSclusters(0),
   hChi2(0),
+  hTracksCorrection2d(0),
+  hnCorrectedTracks(0),
   multProfile(),
   correlator(),
   rand(32213) {
