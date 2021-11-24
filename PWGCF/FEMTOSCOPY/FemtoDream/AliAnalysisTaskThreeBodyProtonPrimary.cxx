@@ -480,7 +480,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fSameEventTripletMultArray_TwoBody = new TH2F*[7];
     TString histTitlesSameMult_TwoBody[7] = {"sameEventDistributionMultPP","sameEventDistributionMultAPAP", "sameEventDistributionMultPPrim", "sameEventDistributionMultAPAPrim", "sameEventDistributionMultPAPrim", "sameEventDistributionMultAPPrim", "sameEventDistributionMultPrimAPrim"};
 
-    fPairTranverseMassVSkstar_TwoBody = new TH1F*[7]; // ADDED BY RAFFA
+    fPairTranverseMassVSkstar_TwoBody = new TH2F*[7]; // ADDED BY RAFFA
     TString histTitlesPairTranverseMassVSkstar_TwoBody[7] = {"PairTranverseMassVSkstarDistributionPP","PairTranverseMassVSkstarDistributionAPAP", "PairTranverseMassVSkstarDistributionPPrim", "PairTranverseMassVSkstarDistributionAPAPrim", "PairTranverseMassVSkstarDistributionPAPrim", "PairTranverseMassVSkstarDistributionAPPrim", "PairTranverseMassVSkstarDistributionPrimAPrim"}; // ADDED BY RAFFA
 
 
@@ -489,7 +489,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	      fSameEventTripletMultArray_TwoBody[i] =  new TH2F(histTitlesSameMult_TwoBody[i],histTitlesSameMult_TwoBody[i],8000, 0, 8,26,1,27);
 	      fSameEventMult->Add(fSameEventTripletMultArray_TwoBody[i]);
 	  
-        fPairTranverseMassVSkstar_TwoBody[i] =  new TH1F(histTitlesPairTranverseMassVSkstar_TwoBody[i],histTitlesPairTranverseMassVSkstar_TwoBody[i], 8000, 0, 8); // ADDED BY RAFFA
+        fPairTranverseMassVSkstar_TwoBody[i] =  new TH2F(histTitlesPairTranverseMassVSkstar_TwoBody[i],histTitlesPairTranverseMassVSkstar_TwoBody[i], 800, 0, 8, 800, 0, 8); // ADDED BY RAFFA
         fSameEvent->Add(fPairTranverseMassVSkstar_TwoBody[i]); // ADDED BY RAFFA
        }
     }
@@ -2175,11 +2175,18 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairTransverseMass(std::vector<s
 
         TLorentzVector trackSum_LV = Particle1_LV + Particle2_LV;
 
-        Double_t pairMT = TMath::Sqrt(pow(trackSum.Pt(),2.) + pow(trackSum.M(),2.));
+        Double_t pairMT = TMath::Sqrt(pow(trackSum_LV.Pt(),2.) + pow(trackSum_LV.M(),2.));
 
+        Double_t Energy1 = sqrt(pow(Particle1_LV.P(),2)+pow(Particle1_LV.M(),2));
+        Double_t Energy2 = sqrt(pow(Particle2_LV.P(),2)+pow(Particle2_LV.M(),2));
+        Double_t MinvByHand = sqrt(pow(Energy1+Energy2,2) - pow(Particle1_LV.P(),2) - pow(Particle2_LV.P(),2) - 2.*(Particle1_LV.Px()*Particle2_LV.Px() + Particle1_LV.Py()*Particle2_LV.Py() + Particle1_LV.Pz()*Particle2_LV.Pz()));
 
-        hist2->Fill(RelativeMomentum, trackSum.M());
-        hist1->Fill(trackSum.M());
+//        std::cout << "iPart1 " << "  Mass: " << Particle1_LV.M() << "   Mass2: " << massPart1 << "   Momentum: " << Particle1_LV.P() << "  Energy: " << Energy1 << std::endl;
+//        std::cout << "iPart2 " << "  Mass: " << Particle2_LV.M() << "   Mass2: " << massPart2 << "   Momentum: " << Particle2_LV.P() << "  Energy: " << Energy2 << std::endl;
+//        std::cout << "iPart1-iPart2: " << "   Pt: " << trackSum_LV.Pt() << "  Minv: " << trackSum_LV.M() << "  MinvByHand: " << MinvByHand << std::endl;
+
+        hist2->Fill(RelativeMomentum, pairMT);
+        hist1->Fill(pairMT);
 
 
 //        bool Pair12 = true;
