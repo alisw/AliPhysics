@@ -584,7 +584,10 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fListOfObjects->Add(fEtaDis);
   fPtDis = new TH1D("hPtDis", "pt distribution", 100, -2, 2);
   fListOfObjects->Add(fPtDis);
-
+  hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
+  fListOfObjects->Add(hTracksCorrection2d);
+  hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
+  fListOfObjects->Add(hnCorrectedTracks);
 
   Int_t inSlotCounter=1;
   if(fNUA) {
@@ -640,11 +643,19 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   }
 }
 
+//_________________________________________________________________
+void AliAnalysisTaskNonlinearFlow::NotifyRun() {
+    Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
+}
+
 //______________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
   bootstrap_value = rand.Integer(30);
 
+  // Check if it can pass the trigger
   //..apply physics selection
   UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isTrigselected = false;
@@ -679,6 +690,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
      }
   }
 
+  // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
     PostData(1,fListOfObjects);
     int outputslot = 2;
@@ -695,7 +707,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   //..filling Vz distribution
   AliVVertex *vtx = fAOD->GetPrimaryVertex();
   float fVtxZ = vtx->GetZ();
-  if(TMath::Abs(fVtxZ) > fVtxCutDefault) {
+  if (!fGFWSelection->AcceptVertex(fAOD)) {
     PostData(1,fListOfObjects);
     int outputslot = 2;
     PostData(2, fListOfProfile);
@@ -705,43 +717,11 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     }
     return;
   }
-  NTracksCalculation(fInputEvent);
-  if(TMath::Abs(fVtxZ) > fVtxCut) {
-    PostData(1,fListOfObjects);
-    int outputslot = 2;
-    PostData(2, fListOfProfile);
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      PostData(outputslot, fListOfProfiles[i]);
-    }
-    return;
-  }
-  fVtxAfterCuts->Fill(fVtxZ);
-
-  hMult->Fill(NtrksCounter);
-
-  //..standard event plots (cent. percentiles, mult-vs-percentile)
-  const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-  const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-  // float fMultV0Meq = 0;
-  // float fMultMeanV0M = 0;
-  // float fMultSPD = 0;
-  // float fMultMeanSPD = 0;
-  float centrV0 = 0;
-  float cent = dCentrality;
-  float centSPD = 0;
-  // float v0Centr = 0;
-  // float cl1Centr = 0;
-  // float cl0Centr = 0;
-
-  fCentralityDis->Fill(centrV0);
-  fV0CentralityDis->Fill(cent);
-
 
   // checking the run number for aplying weights & loading TList with weights
   //
-  // if (fCurrSystFlag == 0)
   if (lastRunNumber != fAOD->GetRunNumber()) {
+    lastRunNumber = fAOD->GetRunNumber();
     if (fPeriod.EqualTo("LHC15oKatarina")) {
       if (fNUA && !LoadWeightsKatarina()) {
         AliFatal("Trying to Load Systematics but weights not loaded!");
@@ -765,8 +745,35 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   }
 
+  NTracksCalculation(fInputEvent);
 
+  // Setup AliGFWCuts for a specific systematics
   fGFWSelection->SetupCuts(fCurrSystFlag);
+  if (!fGFWSelection->AcceptVertex(fAOD)) {
+    PostData(1,fListOfObjects);
+    int outputslot = 2;
+    PostData(2, fListOfProfile);
+    for (int i = 0; i < 30; i++) {
+      outputslot++;
+      PostData(outputslot, fListOfProfiles[i]);
+    }
+    return;
+  }
+  // Check the VtxZ distribution
+  fVtxAfterCuts->Fill(fVtxZ);
+
+  hMult->Fill(NtrksCounter);
+
+  //..standard event plots (cent. percentiles, mult-vs-percentile)
+  const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+  const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+  float centrV0 = 0;
+  float cent = dCentrality;
+  float centSPD = 0;
+
+  fCentralityDis->Fill(centrV0);
+  fV0CentralityDis->Fill(cent);
+
   //..all charged particles
   if (!fIsMC) {
      AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
@@ -788,6 +795,8 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
   const int nAODTracks = aod->GetNumberOfTracks();
   NtrksCounter = 0;
+  NTracksCorrected = 0;
+  NTracksUncorrected = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -795,6 +804,8 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
   vx = aod->GetPrimaryVertex()->GetX();
   vy = aod->GetPrimaryVertex()->GetY();
   double vtxp[3] = {vx, vy, vz};
+  float fVtxZ = vz;
+  double runNumber = fInputEvent->GetRunNumber();
 
   //..LOOP OVER TRACKS........
   //........................................
@@ -810,8 +821,30 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
-    NtrksCounter += 1;
+    //..get phi-weight for NUA correction
+    double weight = 1;
+    if (fPeriod.EqualTo("LHC15oKatarina") ) {
+      if(fNUA == 1) weight = GetWeightKatarina(aodTrk->Phi(), aodTrk->Eta(), fVtxZ);
+    } else {
+      if(fNUA == 1) weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
+    }
+    double weightPt = 1;
+    if (fPeriod.EqualTo("LHC15oKatarina") ) {
+      if(fNUE == 1) weightPt = GetPtWeightKatarina(aodTrk->Pt(), aodTrk->Eta(), fVtxZ);
+    } else {
+      if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
+    }
+
+    NTracksUncorrected += 1;
+    NTracksCorrected += weightPt;
   } // end loop of all track
+  if (!fUseCorrectedNTracks) {
+    NtrksCounter = NTracksUncorrected;
+  } else {
+    NtrksCounter = NTracksCorrected; 
+  }
+  hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
+  hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
 }
 
 //________________________________________________________________________
