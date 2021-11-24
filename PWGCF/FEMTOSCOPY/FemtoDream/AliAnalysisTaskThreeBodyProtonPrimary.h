@@ -136,7 +136,9 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void SetDoOnlyThreeBody(bool DoOnlyThreeBody) {
     fDoOnlyThreeBody=DoOnlyThreeBody;
   }
-  
+  void SetRunOfficialTwoBody(bool RunOfficialTwoBody){ // ADDED BY RAFFA
+    fRunOfficialTwoBody=RunOfficialTwoBody;
+  }
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -193,6 +195,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fRunPlotPhiTheta;
   bool fRunPlotOtherHistos;
   bool fRunPlotMult;
+  bool fRunOfficialTwoBody; // ADDED BY RAFFA
 
   bool fClosePairRejectionForAll; 
   bool fturnoffClosePairRejectionCompletely; 
