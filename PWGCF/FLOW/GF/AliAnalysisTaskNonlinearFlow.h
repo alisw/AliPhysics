@@ -197,6 +197,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t* option);
+                virtual void   NotifyRun();
 		virtual void   Terminate(Option_t* );
 
 		virtual void   SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
@@ -206,7 +207,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
-		// virtual void   SetLSFlag(Bool_t LS){fLS = LS;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
 		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
@@ -219,6 +219,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual int    GetSystFlag() { return fCurrSystFlag; }
 		virtual void   SetSpringMode(bool flag = true) { fSpringMode = flag; }
 		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
+		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
 		// unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
@@ -292,6 +293,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fCurrSystFlag;                              // Systematics flag
 		Bool_t      fSpringMode;                                            // The mode with spring cuts.
 		Bool_t      fLowMultiplicityMode;                                   // The mode to consider low-multiplicity region 
+		Bool_t      fUseCorrectedNTracks;                                   // Use corrected Ntracks in the filling of xbins;
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -375,6 +377,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1F*				hITSclusters; 		//!
 		TH1F*				hChi2; 			//!
 
+		TH2D*                           hTracksCorrection2d;    //! Corrected Tracks - v.s. uncorrected tracks
+		TProfile*                       hnCorrectedTracks;      //! Averaged number of corrected tracks in a specific bin;
+
 		TH2D* QDis[10];        // QDistribution for No gap
 		TH2D* QDisGap0P[10];        // QDistribution for gap 0
 		TH2D* QDisGap0M[10];        // QDistribution for gap 0
@@ -387,29 +392,31 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH2D* QDis3subR[10];        // QDistribution for 3sub
 
 		// Global variables
-		int NtrksCounter = 0;        //!
-		int NtrksAfter = 0;          //!
-		int NtrksAfterGap0M = 0;     //!
-		int NtrksAfterGap0P = 0;     //!
-		int NtrksAfterGap2M = 0;     //!
-		int NtrksAfterGap2P = 0;     //!
-		int NtrksAfterGap4M = 0;     //!
-		int NtrksAfterGap4P = 0;     //!
-		int NtrksAfterGap6M = 0;     //!
-		int NtrksAfterGap6P = 0;     //!
-		int NtrksAfterGap8M = 0;     //!
-		int NtrksAfterGap8P = 0;     //!
-		int NtrksAfterGap10M = 0;    //!
-		int NtrksAfterGap10P = 0;    //!
-		int NtrksAfterGap14M = 0;    //!
-		int NtrksAfterGap14P = 0;    //!
-		int NtrksAfter3subL = 0;     //!
-		int NtrksAfter3subM = 0;     //!
-		int NtrksAfter3subR = 0;     //!
+		double NtrksCounter = 0;       //!
+		double NTracksCorrected = 0;   //!
+		double NTracksUncorrected = 0; //!
+		int NtrksAfter = 0;            //!
+		int NtrksAfterGap0M = 0;       //!
+		int NtrksAfterGap0P = 0;       //!
+		int NtrksAfterGap2M = 0;       //!
+		int NtrksAfterGap2P = 0;       //!
+		int NtrksAfterGap4M = 0;       //!
+		int NtrksAfterGap4P = 0;       //!
+		int NtrksAfterGap6M = 0;       //!
+		int NtrksAfterGap6P = 0;       //!
+		int NtrksAfterGap8M = 0;       //!
+		int NtrksAfterGap8P = 0;       //!
+		int NtrksAfterGap10M = 0;      //!
+		int NtrksAfterGap10P = 0;      //!
+		int NtrksAfterGap14M = 0;      //!
+		int NtrksAfterGap14P = 0;      //!
+		int NtrksAfter3subL = 0;       //!
+		int NtrksAfter3subM = 0;       //!
+		int NtrksAfter3subR = 0;       //!
 
-		int lastRunNumber = 0;       //!
+		int lastRunNumber = 0;         //!
 
-		PhysicsProfile multProfile; //!
+		PhysicsProfile multProfile;    //!
 		PhysicsProfile multProfile_bin[30]; //!
 
 		CorrelationCalculator correlator; //!
@@ -460,7 +467,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 7);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 8);    //Analysis task
 };
 
 #endif
