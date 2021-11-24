@@ -2574,21 +2574,21 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 8;
       break;
-    case 23: // n// PCM-PCM 1 sigma
+    case 23: // n// PCM-PCM 13TeV 1.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
-      fSelectionNSigmaLow  = 1.;
-      fSelectionNSigmaHigh = 1.;
-      fMassParamFunction   = 9;
+      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaHigh = 1.5;
+      fMassParamFunction   = 4;
       break;
-    case 24: // o // PCM-PCM 3 sigma
+    case 24: // o // PCM-PCM 13TeV 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
-      fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
-      fMassParamFunction   = 9;
+      fSelectionNSigmaLow  = 2.5;
+      fSelectionNSigmaHigh = 2.5;
+      fMassParamFunction   = 4;
       break;
     case 25: // p // PCM-PCM 4 sigma
       fAcceptMesonMass     = kFALSE;
@@ -2627,7 +2627,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fMassParamFunction   = 3;
       break;
       // Varation for 13 TeV EDC
-    case 30: // u // EMC-EMC - 1 sigma - gamma selection
+    case 30: // u // EMC-EMC - 1.5 sigma - gamma selection
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
@@ -2635,7 +2635,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 1.5;
       fMassParamFunction   = 0;
       break;
-    case 31: // v // EMC-EMC - 3 sigma - gamma selection
+    case 31: // v // EMC-EMC - 2.5 sigma - gamma selection
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
@@ -4658,10 +4658,26 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 4: // PCM-PCM
-          mass = 0.134613 + (-0.000154418 * pt);
-          sigma =   0.00223215 + ( (0.000349362) * pt ) + (-1.13689e-05 * pt * pt);
-          if (sigma < 0.001 ) {sigma =0.001;}
-          else if (sigma > 0.007) {sigma =0.007;}
+          if ((meson->Pt())<0.4){
+              pt=0.4;
+          } else if ((meson->Pt())>12.0) {
+              pt=12.;
+          } else {
+              pt = (meson->Pt());
+          }
+          //"[0]+[1]*exp(-[2]*(x-[3]))+[4]*x+[5]*x*x"
+          //Parameter 0: 0.134825 +- 0.000262373
+          //Parameter 1: 0.000223328 +- 0.00268334
+          //Parameter 2: 1.67677 +- 0.855974
+          //Parameter 3: 1.39264 +- 7.19466
+          //Parameter 4: -4.90045e-05 +- 0.000100735
+          //Parameter 5: 1.5052e-06 +- 9.00314e-06
+
+          mass = (0.134825)+(0.000223328)*exp(-(1.67677)*(pt-(1.39264)))+(-4.90045e-05)*pt+(1.5052e-06)*pt*pt;
+          //pol1
+          //Parameter 0: 0.00377736 +- 2.1841e-05
+          //Parameter 1: 6.89211e-06 +- 1.41007e-05
+          sigma =   (0.00377736) + ( (6.89211e-06) * pt );
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
