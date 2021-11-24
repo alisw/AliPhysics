@@ -187,6 +187,8 @@ fvalueCluE(0),
 fTrkMatchTrkPt(0),
 fTrkMatchTrketa(0),
 fTrkMatchTrkphi(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
 fTrkMatchClusetaphi(0x0),
 fEMCTrkMatchcluster(0x0),
 // electron info
@@ -213,6 +215,10 @@ fNembMCeta(0),
 // enhance weight cal.
 ftype(-1),
 fWeight(1),
+
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
+
 fCalculateWeight(kFALSE),
 fCalculateElectronEffi(kTRUE),
 fSprsPi0EtaWeightCal(0),
@@ -382,6 +388,8 @@ fvalueCluE(0),
 fTrkMatchTrkPt(0),
 fTrkMatchTrketa(0),
 fTrkMatchTrkphi(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
 fTrkMatchClusetaphi(0x0),
 fEMCTrkMatchcluster(0x0),
 // electron info
@@ -408,6 +416,10 @@ fNembMCeta(0),
 // enhance weight cal.
 ftype(-1),
 fWeight(1),
+
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
+
 fCalculateWeight(kFALSE),
 fCalculateElectronEffi(kTRUE),
 fSprsPi0EtaWeightCal(0),
@@ -604,9 +616,16 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
     fULSElecPt          = new TH1F("fULSElecPt","p_{T} distribution of ULS electrons;p_{T} (GeV/c);counts",500,0,50);
     fLSElecPt         = new TH1F("fLSElecPt","p_{T} distribution of LS electrons;p_{T} (GeV/c);counts",500,0,50);
     
+    fEMCTrkMatch_Phi = new TH2F("fEMCTrkMatch_Phi","Distance of EMCAL cluster to its closest track in #Delta#phi vs p_{T};p_{T};#Delta#phi",500,0,50.0,100,-0.3,0.3);
+       fOutputList->Add(fEMCTrkMatch_Phi);
+       
+    fEMCTrkMatch_Eta = new TH2F("fEMCTrkMatch_Eta","Distance of EMCAL cluster to its closest track in #Delta#eta vs p_{T};p_{T};#Delta#eta",500,0,50.0,100,-0.3,0.3);
+       fOutputList->Add(fEMCTrkMatch_Eta);
     
-    
-    
+    fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+    fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
     
     //---------------THnSparse------------
     Int_t binsE[3]    =          {500, 1000, 350};
@@ -1273,7 +1292,16 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatchcluster->Fill(fPhiDiff,fEtaDiff);
+            
+            if(fCutDeltaPhi < 0)
+                fCutDeltaPhi = fFuncPtDepPhi->Eval(TrkPt);
+            if(fCutDeltaEta < 0)
+                fCutDeltaEta = fFuncPtDepEta->Eval(TrkPt);
+            
             if(TMath::Abs(fPhiDiff) > fCutDeltaPhi || TMath::Abs(fEtaDiff)> fCutDeltaEta) continue;
+            
+            fEMCTrkMatch_Phi->Fill(TrkPt,fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(TrkPt,fEtaDiff);
             
             Float_t EMCalpos[3];
             clustMatch -> GetPosition(EMCalpos);
