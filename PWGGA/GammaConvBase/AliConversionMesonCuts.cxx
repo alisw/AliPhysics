@@ -2532,19 +2532,19 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 6;
       break;
-    case 17: // h PHOS-PHOS 1 sigma
+    case 17: // h PHOS-PHOS 1.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.;
-      fSelectionNSigmaHigh = 1.;
-      fMassParamFunction   = 7;
+      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaHigh = 1.5;
+      fMassParamFunction   = 2;
       break;
-    case 18: // i PHOS-PHOS 3 sigma
+    case 18: // i PHOS-PHOS 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
-      fMassParamFunction   = 7;
+      fSelectionNSigmaLow  = 2.5;
+      fSelectionNSigmaHigh = 2.5;
+      fMassParamFunction   = 2;
       break;
     case 19: // j PHOS-PHOS 4 sigma
       fAcceptMesonMass     = kFALSE;
@@ -4636,8 +4636,27 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 2: // PHOS-PHOS
-          mass = 0.132298 + ( 9.84713e-05 * pt );
-          sigma =   4.15716e-03 + ( 3.35025e-03 / pt );
+          if ((meson->Pt())<0.8){
+              pt=0.8;
+          } else if ((meson->Pt())>45.0) {
+              pt=45.;
+          } else {
+              pt = (meson->Pt());
+          }
+          //pol4
+          //Parameter 0: 0.134655 +- 0.000271382
+          //Parameter 1: -3.36029e-05 +- 6.43544e-05
+          //Parameter 2: 1.12821e-05 +- 5.31143e-06
+          //Parameter 3: -2.95147e-07 +- 1.97866e-07
+          //Parameter 4: 2.15293e-09 +- 2.72161e-09
+          mass = (0.134655) + ((-3.36029e-05) * pt) + ((1.12821e-05) * pt * pt) + ((-2.95147e-07) * pt * pt * pt) + ((2.15293e-09) * pt * pt * pt * pt);
+          //pol4
+          //Parameter 0: 0.00959887 +- 0.000414761
+          //Parameter 1: -0.00100671 +- 0.000123867
+          //Parameter 2: 9.25995e-05 +- 1.2902e-05
+          //Parameter 3: -3.01397e-06 +- 5.36484e-07
+          //Parameter 4: 3.41454e-08 +- 7.5969e-09
+          sigma =   (0.00959887) + ((-0.00100671) * pt) + ((9.25995e-05) * pt * pt) + ((-3.01397e-06) * pt * pt * pt) + ((3.41454e-08) * pt * pt * pt * pt);
           if (pt>5.){
               sigma+=1.59496e-04*(pt-5);
           }
