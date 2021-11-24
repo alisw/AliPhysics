@@ -2553,19 +2553,19 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 7;
       break;
-    case 20: // k PCM-PHOS 1 sigma
+    case 20: // k PCM-PHOS 1.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.;
-      fSelectionNSigmaHigh = 1.;
-      fMassParamFunction   = 8;
+      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaHigh = 1.5;
+      fMassParamFunction   = 3;
       break;
-    case 21: // l PCM-PHOS 3 sigma
+    case 21: // l PCM-PHOS 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
-      fMassParamFunction   = 8;
+      fSelectionNSigmaLow  = 2.5;
+      fSelectionNSigmaHigh = 2.5;
+      fMassParamFunction   = 3;
       break;
     case 22: // m PCM-PHOS 4 sigma
       fAcceptMesonMass     = kFALSE;
@@ -4657,22 +4657,28 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //Parameter 3: -3.01397e-06 +- 5.36484e-07
           //Parameter 4: 3.41454e-08 +- 7.5969e-09
           sigma =   (0.00959887) + ((-0.00100671) * pt) + ((9.25995e-05) * pt * pt) + ((-3.01397e-06) * pt * pt * pt) + ((3.41454e-08) * pt * pt * pt * pt);
-          if (pt>5.){
-              sigma+=1.59496e-04*(pt-5);
-          }
-          if (sigma < 0.004 ) {sigma =0.004;}
-          else if (sigma > 0.02) {sigma =0.02;}
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 3: // PCM-PHOS
-          mass = 0.13344 - ( (-1.26101e-05) * pt );
-          sigma =   3.56197e-03 + ( 7.31591e-04 / pt );
-          if (pt>5.){
-              sigma+=4.77381e-04*(pt-5);
+
+          if ((meson->Pt())>45.0) {
+              pt=45.;
+          } else {
+              pt = (meson->Pt());
           }
-          if (sigma < 0.0025 ) {sigma =0.0025;}
-          else if (sigma > 0.02) {sigma =0.02;}
+          //pol2
+          //Parameter 0: 0.135236 +- 0.000260321
+          //Parameter 1: 1.48681e-05 +- 2.43058e-05
+          //Parameter 2: -2.35948e-07 +- 5.82098e-07
+
+          mass = (0.135236) + ((1.48681e-05) * pt) + ((-2.35948e-07) * pt * pt);
+          //pol2
+          //Parameter 0: 0.00557944 +- 0.000366616
+          //Parameter 1: 4.54711e-05 +- 6.08258e-05
+          //Parameter 2: 2.6983e-06 +- 2.10373e-06
+
+          sigma =   (0.00557944) + ((4.54711e-05) * pt) + ((2.6983e-06) * pt * pt);
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
