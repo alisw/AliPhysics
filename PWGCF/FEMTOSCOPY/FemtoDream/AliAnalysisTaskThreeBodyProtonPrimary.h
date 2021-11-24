@@ -60,8 +60,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
 
   //Two Body--------------------------------------------------------------------
   void FillPairDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
-
   void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
+  void FillPairTransverseMass(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies, int secondSpecies, TH1F* hist1, std::vector<int> PDGCodes, TH2F* hist2); // ADDED BY RAFFA
 
   //Setters --------------------------------------------------------------------
   void SetRunTaskLightWeight(bool light) {
@@ -136,7 +136,9 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void SetDoOnlyThreeBody(bool DoOnlyThreeBody) {
     fDoOnlyThreeBody=DoOnlyThreeBody;
   }
-  
+  void SetRunOfficialTwoBody(bool RunOfficialTwoBody){ // ADDED BY RAFFA
+    fRunOfficialTwoBody=RunOfficialTwoBody;
+  }
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -193,6 +195,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fRunPlotPhiTheta;
   bool fRunPlotOtherHistos;
   bool fRunPlotMult;
+  bool fRunOfficialTwoBody; // ADDED BY RAFFA
 
   bool fClosePairRejectionForAll; 
   bool fturnoffClosePairRejectionCompletely; 
@@ -210,6 +213,9 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TH1F **fSameEventTripletArray_TwoBody;
   TH2F **fSameEventTripletMultArray_TwoBody;
   TH2F **fSameEventTripletPhiThetaArray_TwoBody;
+  TH1F **fPairTranverseMass_TwoBody; // ADDED BY RAFFA
+  TH2F **fPairTranverseMassVSkstar_TwoBody; // ADDED BY RAFFA
+  
   // Three particles mixed events
   std::vector<std::vector<std::vector<AliFemtoDreamPartContainer>>> fPartContainer;
   std::vector<std::vector<std::vector<AliFemtoDreamPartContainer>>> fPartContainerTEST; 
