@@ -75,6 +75,8 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fSameEventTripletArray_TwoBody(nullptr),
       fSameEventTripletMultArray_TwoBody(nullptr),
       fSameEventTripletPhiThetaArray_TwoBody(nullptr),
+      fPairTranverseMass_TwoBody(nullptr), // ADDED BY RAFFA
+      fPairTranverseMassVSkstar_TwoBody(nullptr), // ADDED BY RAFFA
       fPartContainer(0),
       fPartContainerTEST(0),
       fPartContainerTESTppL(0),
@@ -172,6 +174,8 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fSameEventTripletArray_TwoBody(nullptr),
       fSameEventTripletMultArray_TwoBody(nullptr),
       fSameEventTripletPhiThetaArray_TwoBody(nullptr),
+      fPairTranverseMass_TwoBody(nullptr), // ADDED BY RAFFA
+      fPairTranverseMassVSkstar_TwoBody(nullptr), // ADDED BY RAFFA
       fPartContainer(0),
       fPartContainerTEST(0),
       fPartContainerTESTppL(0),
@@ -445,10 +449,16 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fSameEventTripletArray_TwoBody = new TH1F*[7];
     TString histTitlesSame_TwoBody[7] = {"sameEventDistributionPP","sameEventDistributionAPAP", "sameEventDistributionPPrim", "sameEventDistributionAPAPrim", "sameEventDistributionPAPrim", "sameEventDistributionAPPrim", "sameEventDistributionPrimAPrim"};
 
+    fPairTranverseMass_TwoBody = new TH1F*[7]; // ADDED BY RAFFA
+    TString histTitlesPairTranverseMass_TwoBody[7] = {"PairTranverseMassDistributionPP","PairTranverseMassDistributionAPAP", "PairTranverseMassDistributionPPrim", "PairTranverseMassDistributionAPAPrim", "PairTranverseMassDistributionPAPrim", "PairTranverseMassDistributionAPPrim", "PairTranverseMassDistributionPrimAPrim"}; // ADDED BY RAFFA
+
     if(!fDoOnlyThreeBody){
 	     for (int i = 0; i < 7; ++i) {
 	      fSameEventTripletArray_TwoBody[i] =  new TH1F(histTitlesSame_TwoBody[i],histTitlesSame_TwoBody[i], 8000, 0, 8);
 	      fSameEvent->Add(fSameEventTripletArray_TwoBody[i]);
+
+        fPairTranverseMass_TwoBody[i] =  new TH1F(histTitlesPairTranverseMass_TwoBody[i],histTitlesPairTranverseMass_TwoBody[i], 8000, 0, 8); // ADDED BY RAFFA
+        fSameEvent->Add(fPairTranverseMass_TwoBody[i]); // ADDED BY RAFFA
 	     }
     }
     // Same event multiplicity dist
@@ -470,11 +480,18 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fSameEventTripletMultArray_TwoBody = new TH2F*[7];
     TString histTitlesSameMult_TwoBody[7] = {"sameEventDistributionMultPP","sameEventDistributionMultAPAP", "sameEventDistributionMultPPrim", "sameEventDistributionMultAPAPrim", "sameEventDistributionMultPAPrim", "sameEventDistributionMultAPPrim", "sameEventDistributionMultPrimAPrim"};
 
+    fPairTranverseMassVSkstar_TwoBody = new TH1F*[7]; // ADDED BY RAFFA
+    TString histTitlesPairTranverseMassVSkstar_TwoBody[7] = {"PairTranverseMassVSkstarDistributionPP","PairTranverseMassVSkstarDistributionAPAP", "PairTranverseMassVSkstarDistributionPPrim", "PairTranverseMassVSkstarDistributionAPAPrim", "PairTranverseMassVSkstarDistributionPAPrim", "PairTranverseMassVSkstarDistributionAPPrim", "PairTranverseMassVSkstarDistributionPrimAPrim"}; // ADDED BY RAFFA
+
+
     if(!fDoOnlyThreeBody){
 	     for (int i = 0; i < 7; ++i) {
 	      fSameEventTripletMultArray_TwoBody[i] =  new TH2F(histTitlesSameMult_TwoBody[i],histTitlesSameMult_TwoBody[i],8000, 0, 8,26,1,27);
 	      fSameEventMult->Add(fSameEventTripletMultArray_TwoBody[i]);
-	     }
+	  
+        fPairTranverseMassVSkstar_TwoBody[i] =  new TH1F(histTitlesPairTranverseMassVSkstar_TwoBody[i],histTitlesPairTranverseMassVSkstar_TwoBody[i], 8000, 0, 8); // ADDED BY RAFFA
+        fSameEvent->Add(fPairTranverseMassVSkstar_TwoBody[i]); // ADDED BY RAFFA
+       }
     }
     // Mixed event -------------------------------------------------------------------------------
     fMixedEvent = new TList();
@@ -995,6 +1012,16 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
    //Primary Antiprimary
     FillPairDistribution( ParticleVector, 2, 3, fSameEventTripletArray_TwoBody[6],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[6], fSameEventTripletPhiThetaArray_TwoBody,6, *fConfig);
 
+
+    FillPairTransverseMass(ParticleVector, 0, 0, fPairTranverseMass_TwoBody[0], PDGCodes, fPairTranverseMassVSkstar_TwoBody[0]);
+    FillPairTransverseMass(ParticleVector, 1, 1, fPairTranverseMass_TwoBody[1], PDGCodes, fPairTranverseMassVSkstar_TwoBody[1]);
+    FillPairTransverseMass(ParticleVector, 0, 2, fPairTranverseMass_TwoBody[2], PDGCodes, fPairTranverseMassVSkstar_TwoBody[2]);
+    FillPairTransverseMass(ParticleVector, 1, 3, fPairTranverseMass_TwoBody[3], PDGCodes, fPairTranverseMassVSkstar_TwoBody[3]);
+    FillPairTransverseMass(ParticleVector, 0, 3, fPairTranverseMass_TwoBody[4], PDGCodes, fPairTranverseMassVSkstar_TwoBody[4]);
+    FillPairTransverseMass(ParticleVector, 1, 2, fPairTranverseMass_TwoBody[5], PDGCodes, fPairTranverseMassVSkstar_TwoBody[5]);
+    FillPairTransverseMass(ParticleVector, 2, 3, fPairTranverseMass_TwoBody[6], PDGCodes, fPairTranverseMassVSkstar_TwoBody[6]);
+
+  // Two Body Same Event
     }//else
 
     // c.1) Mixed event distribution --------------------------------
@@ -2094,5 +2121,77 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPDGPairInvMass( AliFemtoDreamBas
   TLorentzVector trackSum = track1 + track2 + track3;
 
   hist->Fill(Q3, trackSum.M());
+
+}
+
+void AliAnalysisTaskThreeBodyProtonPrimary::FillPairTransverseMass(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, 
+                        int firstSpecies, int secondSpecies, TH1F* hist1, std::vector<int> PDGCodes, TH2F* hist2) { // ADDED BY RAFFA
+
+  // Two Body Same Event
+
+  auto Particle1Vector = ParticleVector.begin()+firstSpecies;
+  auto Particle2Vector = ParticleVector.begin()+secondSpecies;
+
+  // Get the PID codes std::vector<int>
+  auto itPDGPar1 = PDGCodes.begin()+firstSpecies;
+  auto itPDGPar2 = PDGCodes.begin()+secondSpecies;
+
+  // Get particle masses
+  auto massPart1 = TDatabasePDG::Instance()->GetParticle(*itPDGPar1)->Mass();
+  auto massPart2 = TDatabasePDG::Instance()->GetParticle(*itPDGPar2)->Mass();
+
+
+//  TVector3 momPart1 = part1.GetMomentum();
+//  TVector3 momPart2 = part2.GetMomentum();
+//  TLorentzVector track1, track2;
+
+
+  unsigned int DaughterPart1 = 0;
+  unsigned int DaughterPart2 = 0;
+
+  if(abs(*itPDGPar1)==3122) DaughterPart1 = 2;
+  if(abs(*itPDGPar1)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGPar2)==3122) DaughterPart2 = 2;
+  if(abs(*itPDGPar2)==2212) DaughterPart2 = 1;
+
+  unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
+
+  // loop over first particle
+  for (auto iPart1 = Particle1Vector->begin(); iPart1 != Particle1Vector->end(); ++iPart1) {
+    // if second particle species is different than first - start with the first particle in the vector
+    auto iPart2 = Particle2Vector->begin();
+    // if second particle  and first are the species, start second loop from the next particle (to not double count)
+    if (firstSpecies==secondSpecies) iPart2 = iPart1+1;
+    // loop over second particle ...
+    for (; iPart2 != Particle2Vector->end(); ++iPart2) {
+
+        // Now we have the three particles, lets create their Lorentz vectors
+        TLorentzVector Particle1_LV, Particle2_LV;
+        Particle1_LV.SetXYZM(iPart1->GetMomentum().X(), iPart1->GetMomentum().Y(),iPart1->GetMomentum().Z(), massPart1);
+        Particle2_LV.SetXYZM(iPart2->GetMomentum().X(), iPart2->GetMomentum().Y(),iPart2->GetMomentum().Z(), massPart2);
+        // Get momentum
+        float RelativeMomentum = AliFemtoDreamHigherPairMath::RelativePairMomentum(Particle1_LV, Particle2_LV);
+
+
+        TLorentzVector trackSum_LV = Particle1_LV + Particle2_LV;
+
+        Double_t pairMT = TMath::Sqrt(pow(trackSum.Pt(),2.) + pow(trackSum.M(),2.));
+
+
+        hist2->Fill(RelativeMomentum, trackSum.M());
+        hist1->Fill(trackSum.M());
+
+
+//        bool Pair12 = true;
+
+//        if(!fturnoffClosePairRejectionCompletely){
+
+//            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+//        }
+
+//        if(!Pair12) {continue;}
+
+    }
+  }
 
 }
