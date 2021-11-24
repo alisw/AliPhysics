@@ -885,8 +885,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   // Single-particle and pair cuts
   double EtaLimit1 = -0.8;
   double EtaLimit2 = +0.8;
-  double PairPtLimit1 = 1.0;
-  double PairPtLimit2 = 2.0;
+  double PairPtLimit1 = 0.0;
+  double PairPtLimit2 = 999.0;
   double ProtonpTPCThreshold = 0.7;
   double DeuteronpTPCThreshold = 1.4;
 
