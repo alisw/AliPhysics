@@ -15,7 +15,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyFemto(int trigger = 0, bool fullBlastQA = tru
                                      int mixingDepthFromTask = 20,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
                                      const char *cutVariation = "0", bool ClosePairRejectionForAll = "false", 
-                                     bool run2Body = "false", int mixinfChoice = 0,
+                                     bool run2Body = "false", int mixinfChoice = 0, bool mix21 = false,
+                                     int whichTripletsToRun = 11,
                                      const char *triggerVariation = "0") {
 
 
@@ -2391,6 +2392,10 @@ if(suffixTrigger=="5"){
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetRun2Body(run2Body);
     taskNano->SetMixingChoice(mixinfChoice);
+    taskNano->SetSame2Mixed1Choice(mix21);
+    taskNano->SetWhichTripletsToRun(whichTripletsToRun);
+    
+    
 
     mgr->AddTask(taskNano); 
     
