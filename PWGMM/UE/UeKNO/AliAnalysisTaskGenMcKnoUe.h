@@ -50,6 +50,10 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		virtual void UserExec(Option_t* option);
 		virtual void Terminate(Option_t* option);
 		virtual void SetPtMin(Double_t val){fPtMin = val;}
+		virtual void SetEtaMax(Double_t val){fEtaCut = val;}
+		virtual void SetEtaRhoMax(Double_t val){fEtaCutRho = val;} 
+		virtual void SetnEtaBinsRho(Double_t val){fnEtaBinsRho = val;}
+		virtual void SetnPhiBinsRho(Double_t val){fnPhiBinsRho = val;}
 		virtual void SetIsPP(Bool_t val){fIsPP = val;}
 		virtual void SetGenerator(Int_t val){fGenerator = val;}
 		virtual void SetIsFirstPart(Bool_t val){fFirstPart = val;}
@@ -74,6 +78,9 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		Bool_t fFirstPart;
 		Int_t fGenerator;
 		Double_t fEtaCut;
+		Double_t fEtaCutRho;
+		Int_t fnEtaBinsRho;
+		Int_t fnPhiBinsRho;
 		Bool_t   fIsPP;
 		Double_t fPtMin;
 
