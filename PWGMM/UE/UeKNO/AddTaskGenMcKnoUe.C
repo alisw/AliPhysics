@@ -1,15 +1,19 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-//            AddTaskGenMcKnoUe Macro to run on grids            //
-//            Last update: 10/11/2021                            //
+//            AddTaskGenMcKnoUe                                  //
+//            Last update: 25/11/2021                            //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5, Bool_t isPP=kTRUE, Bool_t isFirstPart=kTRUE, Int_t inGenerator=0, TString suffixName ="")
+AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5, Double_t maxEta = 0.8, Double_t maxEtaRho = 0.8, Int_t fnEtaBinsRho = 1, Int_t fnPhiBinsRho = 1, Bool_t isPP=kTRUE, Bool_t isFirstPart=kTRUE, Int_t inGenerator=0, TString suffixName ="")
 {
 	// inGenerator: 0 (Monash), 1 (Monash NoCR), 2 (Monash Ropes), 3 (Epos LHC), 4 (Herwig), 5 (AMPT)
 	AliAnalysisTaskGenMcKnoUe* taskUE = new AliAnalysisTaskGenMcKnoUe("taskKno");
 	taskUE->SetPtMin(minpT);
+	taskUE->SetEtaMax(maxEta);
+	taskUE->SetEtaRhoMax(maxEtaRho);
+	taskUE->SetnEtaBinsRho(fnEtaBinsRho);
+	taskUE->SetnPhiBinsRho(fnPhiBinsRho);
 	taskUE->SetIsPP(isPP); 
 	taskUE->SetGenerator(inGenerator);
 	taskUE->SetIsFirstPart(isFirstPart);

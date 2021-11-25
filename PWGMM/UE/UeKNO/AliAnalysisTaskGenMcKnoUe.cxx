@@ -14,7 +14,7 @@
  * Author: Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
  *         Feng Fan (Feng.Fan@cern.ch)	                                  *
  *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
- *         Last modification: 10/11/2021                                  * 
+ *         Last modification: 25/11/2021                                  * 
  **************************************************************************/
 //_____ ROOT headers
 #include <TList.h>
@@ -73,9 +73,6 @@ const Int_t NchNBinsRho = 600;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Double_t  ptamin = 0.15;
 const Double_t  ptamax = 20.0;
-const Double_t  etamax = 4.0;
-const Int_t nEtaBins = 10;
-const Int_t nPhiBins = 10;
 Int_t Nmpi = -1;
 
 ClassImp(AliAnalysisTaskGenMcKnoUe)
@@ -88,6 +85,9 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		fFirstPart(kTRUE),
 		fGenerator(0),
 		fEtaCut(0.8),
+		fEtaCutRho(4.0),
+		fnEtaBinsRho(1),
+		fnPhiBinsRho(1),
 		fIsPP(kTRUE),
 		fPtMin(0.15),
 		fGenLeadPhi(0x0),
@@ -123,6 +123,9 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 	fFirstPart(kTRUE),
 	fGenerator(0),
 	fEtaCut(0.8),
+	fEtaCutRho(4.0),
+	fnEtaBinsRho(1),
+	fnPhiBinsRho(1),
 	fIsPP(kTRUE),
 	fPtMin(0.15),
 	fGenLeadPhi(0x0),
@@ -193,20 +196,20 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 	};
 
 	// Define array nch
-	Double_t EtaBins[nEtaBins+1];
-	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
-	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+	Double_t EtaBins[fnEtaBinsRho+1];
+	Double_t deltaEta = (2.0*fEtaCutRho)/(1.0*fnEtaBinsRho);
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho+1;++i_eta){
 		EtaBins[i_eta]=0;
-		if(i_eta<nEtaBins)
-			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		if(i_eta<fnEtaBinsRho)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*fEtaCutRho;
 		else
-			EtaBins[i_eta]= 1.0*etamax;
+			EtaBins[i_eta]= 1.0*fEtaCutRho;
 	}
-	Double_t PhiBins[nPhiBins+1];
-	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
-	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+	Double_t PhiBins[fnPhiBinsRho+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*fnPhiBinsRho);
+	for(Int_t i_phi=0;i_phi<fnPhiBinsRho+1;++i_phi){
 		PhiBins[i_phi]=0;
-		if(i_phi<nPhiBins)
+		if(i_phi<fnPhiBinsRho)
 			PhiBins[i_phi]=i_phi*deltaPhi;
 		else
 			PhiBins[i_phi]= 2.0*pi;
@@ -390,7 +393,7 @@ void AliAnalysisTaskGenMcKnoUe::GetGenLeadingObject() {
 		if(fFirstPart){
 			if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;}
 		else{
-			if ( TMath::Abs(particle->Eta()) > etamax )continue;}
+			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;}
 		if( particle->Pt() < fPtMin)continue;
 
 		if (flPt<particle->Pt()){
@@ -456,32 +459,32 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 //_______________________________________________________
 void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
-	Double_t EtaBins[nEtaBins+1];
-	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
-	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+	Double_t EtaBins[fnEtaBinsRho+1];
+	Double_t deltaEta = (2.0*fEtaCutRho)/(1.0*fnEtaBinsRho);
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho+1;++i_eta){
 		EtaBins[i_eta]=0;
-		if(i_eta<nEtaBins)
-			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		if(i_eta<fnEtaBinsRho)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*fEtaCutRho;
 		else
-			EtaBins[i_eta]= 1.0*etamax;
+			EtaBins[i_eta]= 1.0*fEtaCutRho;
 	}
-	Double_t PhiBins[nPhiBins+1];
-	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
-	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+	Double_t PhiBins[fnPhiBinsRho+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*fnPhiBinsRho);
+	for(Int_t i_phi=0;i_phi<fnPhiBinsRho+1;++i_phi){
 		PhiBins[i_phi]=0;
-		if(i_phi<nPhiBins)
+		if(i_phi<fnPhiBinsRho)
 			PhiBins[i_phi]=i_phi*deltaPhi;
 		else
 			PhiBins[i_phi]= 2.0*pi;
 	}
 
-	Int_t NchLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Int_t NchLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			NchLattice[i_eta][i_phi]=0;
-	Double_t MpTLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Double_t MpTLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			MpTLattice[i_eta][i_phi]=0;
 
 	Double_t totalpt=0;
@@ -498,15 +501,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
 		if (!fMC->IsPhysicalPrimary(i)) continue;
 		if (particle->Charge() == 0) continue;
-		if ( TMath::Abs(eta_a) > etamax )continue;
+		if ( TMath::Abs(eta_a) > fEtaCutRho )continue;
 		if ( pt_a <= 0 )continue;
 		nchtotal++;
 		if(pt_a<ptamin||pt_a>ptamax)continue;
 		totalpt+=pt_a;
 		totalnch_forpt++;
 		// loop over all eta and phi intervals
-		for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-			for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+		for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+			for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 				if(eta_a>=EtaBins[i_eta]&&eta_a<EtaBins[i_eta+1]&&phi_a>=PhiBins[i_phi]&&phi_a<PhiBins[i_phi+1]){
 					NchLattice[i_eta][i_phi]++;
 					MpTLattice[i_eta][i_phi]+=pt_a;
@@ -515,8 +518,8 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 		}
 	}
 	// analyzing array
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			if(NchLattice[i_eta][i_phi]>0)
 				MpTLattice[i_eta][i_phi]/=(1.0*NchLattice[i_eta][i_phi]);
 			else
@@ -525,26 +528,26 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 	}
 	Double_t mNch=0;
 	Double_t mMpT=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			mMpT+=MpTLattice[i_eta][i_phi];
 			mNch+=1.0*NchLattice[i_eta][i_phi];
 		}
 	}
 	// average activity per cell
-	mMpT/=(1.0*nEtaBins*nPhiBins);
-	mNch/=(1.0*nEtaBins*nPhiBins);
+	mMpT/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	mNch/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	// get sigma
 	Double_t sNch_tmp=0;
 	Double_t sMpT_tmp=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			sMpT_tmp+=TMath::Power(MpTLattice[i_eta][i_phi]-mMpT,2);
 			sNch_tmp+=TMath::Power(1.0*NchLattice[i_eta][i_phi]-mNch,2);
 		}
 	}
-	sMpT_tmp/=(1.0*nEtaBins*nPhiBins);
-	sNch_tmp/=(1.0*nEtaBins*nPhiBins);
+	sMpT_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	sNch_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
 
 	if( nchtotal > 100 && TMath::Abs(fGenLeadEta) < fEtaCut ){
@@ -573,7 +576,7 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
 			if (!fMC->IsPhysicalPrimary(i)) continue;
 			if (particle->Charge() == 0) continue;
-			if ( TMath::Abs(particle->Eta()) > etamax )continue;
+			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;
 			if( particle->Pt() < ptamin)continue;
 			Int_t pid = GetPidCode(particle->PdgCode());
 			Double_t Deta = fGenLeadEta-particle->Eta();
@@ -613,32 +616,31 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 //_______________________________________________________
 void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 
-	Double_t EtaBins[nEtaBins+1];
-	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
-	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+	Double_t EtaBins[fnEtaBinsRho+1];
+	Double_t deltaEta = (2.0*fEtaCutRho)/(1.0*fnEtaBinsRho);
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho+1;++i_eta){
 		EtaBins[i_eta]=0;
-		if(i_eta<nEtaBins)
-			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		if(i_eta<fnEtaBinsRho)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*fEtaCutRho;
 		else
-			EtaBins[i_eta]= 1.0*etamax;
+			EtaBins[i_eta]= 1.0*fEtaCutRho;
 	}
-	Double_t PhiBins[nPhiBins+1];
-	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
-	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+	Double_t PhiBins[fnPhiBinsRho+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*fnPhiBinsRho);
+	for(Int_t i_phi=0;i_phi<fnPhiBinsRho+1;++i_phi){
 		PhiBins[i_phi]=0;
-		if(i_phi<nPhiBins)
+		if(i_phi<fnPhiBinsRho)
 			PhiBins[i_phi]=i_phi*deltaPhi;
 		else
 			PhiBins[i_phi]= 2.0*pi;
 	}
-
-	Int_t NchLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Int_t NchLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			NchLattice[i_eta][i_phi]=0;
-	Double_t MpTLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Double_t MpTLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			MpTLattice[i_eta][i_phi]=0;
 
 	Double_t totalpt=0;
@@ -655,15 +657,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 
 		if (!fMC->IsPhysicalPrimary(i)) continue;
 		if (particle->Charge() == 0) continue;
-		if ( TMath::Abs(eta_a) > etamax )continue;
+		if ( TMath::Abs(eta_a) > fEtaCutRho )continue;
 		if ( pt_a <= 0 )continue;
 		nchtotal++;
 		if(pt_a<ptamin||pt_a>ptamax)continue;
 		totalpt+=pt_a;
 		totalnch_forpt++;
 		// loop over all eta and phi intervals
-		for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-			for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+		for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+			for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 				if(eta_a>=EtaBins[i_eta]&&eta_a<EtaBins[i_eta+1]&&phi_a>=PhiBins[i_phi]&&phi_a<PhiBins[i_phi+1]){
 					NchLattice[i_eta][i_phi]++;
 					MpTLattice[i_eta][i_phi]+=pt_a;
@@ -672,8 +674,8 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 		}
 	}
 	// analyzing array
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			if(NchLattice[i_eta][i_phi]>0)
 				MpTLattice[i_eta][i_phi]/=(1.0*NchLattice[i_eta][i_phi]);
 			else
@@ -682,26 +684,26 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 	}
 	Double_t mNch=0;
 	Double_t mMpT=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			mMpT+=MpTLattice[i_eta][i_phi];
 			mNch+=1.0*NchLattice[i_eta][i_phi];
 		}
 	}
 	// average activity per cell
-	mMpT/=(1.0*nEtaBins*nPhiBins);
-	mNch/=(1.0*nEtaBins*nPhiBins);
+	mMpT/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	mNch/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	// get sigma
 	Double_t sNch_tmp=0;
 	Double_t sMpT_tmp=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			sMpT_tmp+=TMath::Power(MpTLattice[i_eta][i_phi]-mMpT,2);
 			sNch_tmp+=TMath::Power(1.0*NchLattice[i_eta][i_phi]-mNch,2);
 		}
 	}
-	sMpT_tmp/=(1.0*nEtaBins*nPhiBins);
-	sNch_tmp/=(1.0*nEtaBins*nPhiBins);
+	sMpT_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	sNch_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
 	hnchmpi->Fill(nchtotal,Nmpi);
 	if(mMpT>0){
