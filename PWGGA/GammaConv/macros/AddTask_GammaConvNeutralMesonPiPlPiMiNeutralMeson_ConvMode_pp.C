@@ -598,6 +598,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dgg0404000", "32c51070a", "0103103500000000", "0453503000000000"); // Psi pair 0.30 dep
     cuts.AddCutHeavyMesonPCM("00010113", "0dm00009227300008250404000", "32c51070a", "0103103500000000", "0453503000000000"); // old cuts (run1)
 
+  } else if (trainConfig == 2506) {//TRD Variations, Standard 0 -> Off
+    //                                    0dm00009f9730000dge0404000
+    //                                                         |
+    cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dge0474000", "32c51070a", "0103103500000000", "0453503000000000"); // INT7 Standard
+
+
 
   } else if ( trainConfig == 2511) { //Standard 13TeV, Material Budget Studies
     cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dge0404000", "32c51070a", "0103103500000000", "0453503000000000");
