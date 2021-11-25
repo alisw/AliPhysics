@@ -161,19 +161,25 @@ AliAnalysisTask *AddTask_dsekihat_lowmass_PbPb(
           }
         }
 
-        if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
-          printf("No event mixing handler for post PID calibration/noPID\n");
-        }
-        else{
-          printf("Add event mixing handler\n");
-          AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
-          mix->SetMixType(AliDielectronMixingHandler::kAll);
-          mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
-          mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
-          mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
-          mix->SetDepth(Nmix);
-          if(!isMC) die->SetMixingHandler(mix);
-        }
+        //if(name.Contains("PIDCalib",TString::kIgnoreCase) || name.Contains("noPID",TString::kIgnoreCase)){
+        //  printf("No event mixing handler for post PID calibration/noPID\n");
+        //}
+        //else{
+        //  printf("Add event mixing handler\n");
+        //  AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
+        //  mix->SetMixType(AliDielectronMixingHandler::kAll);
+        //  mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -8., -6., -4., -2. , 0., 2., 4., 6., 8. , 10.");
+        //  mix->AddVariable(AliDielectronVarManager::kCentralityNew,"0,5,10,30,50,70,90,101");
+        //  mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
+        //  mix->SetDepth(Nmix);
+        //  if(!isMC) die->SetMixingHandler(mix);
+        //}
+
+        //mixing handler is added in Config.C
+        AliDielectronMixingHandler *mix = dynamic_cast<AliDielectronMixingHandler*>(die->GetMixingHandler());
+        if(mix) mix->SetDepth(Nmix);
+        else printf("No event mixing handler is found\n");
+
         task->AddDielectron(die);
       }//pid loop
     }//track loop
