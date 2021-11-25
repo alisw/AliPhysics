@@ -43,6 +43,7 @@ class AliEffFDContainer: public TNamed {
     TList *GetOutList() { return fOutList; };
     Bool_t AddContainer(AliEffFDContainer *target);
     TH1* fetchObj(TString inname) { return (TH1*)fOutList->FindObject(makeName(inname).Data()); };
+    void SetUseGenPt(Bool_t newval) { fUseGenPt = newval; };
   // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
@@ -59,6 +60,7 @@ class AliEffFDContainer: public TNamed {
     Double_t fChi2Cut;
     TF1 *fDCAXYPtCut;
     Bool_t fIsMC;
+    Bool_t fUseGenPt;
     Bool_t fInitialized;
     AliMCEvent *flMCEvent; //! fetched runtime, no need to store
     AliESDEvent *flESDEvent; //! cast at NewEvent(), so that we don't need to do that multiple times
@@ -83,6 +85,6 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMax;
     Double_t fEta;
     Double_t fEtaLow;
-    ClassDef(AliEffFDContainer,2);
+    ClassDef(AliEffFDContainer,3);
 };
 #endif

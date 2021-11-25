@@ -535,13 +535,11 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
 };
 Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  //if(!(fSelMask&fTriggerType)) return kFALSE;
-  Bool_t centTrigger = (fSelMask&(AliVEvent::kCentral)&fTriggerType) && l_cent>0 && l_cent<10; //fTriggerType& removed
-  Bool_t semiCentTri = (fSelMask&(AliVEvent::kSemiCentral)&fTriggerType) && l_cent>30 && l_cent<50; //fTriggerType& removed
-  Bool_t MBTrigger   = (fSelMask&(AliVEvent::kMB+AliVEvent::kINT7)&fTriggerType); //fTriggerType& removed
-  if(centTrigger || semiCentTri || MBTrigger) return kTRUE;
-  return kFALSE;
-
+  if(!(fTriggerType&fSelMask)) { return kFALSE; }; //printf("Returning from the generic check\n");
+  if(fSelMask&(fTriggerType&(AliVEvent::kINT7+AliVEvent::kMB))) {return kTRUE; }; //printf("Passed by MB trigger!\n");
+  if((fSelMask&fTriggerType&AliVEvent::kCentral) && l_cent>10) {return kFALSE; }; //printf("Returnning from kCent case\n");
+  if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (l_cent<30 || l_cent>50)) {return kFALSE; }; //printf("Returning from kSC case\n");
+  return kTRUE;
 }
 Bool_t AliAnalysisTaskGFWFlow::AcceptAODVertex(AliAODEvent *inEv) {
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertex());
