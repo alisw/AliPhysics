@@ -82,6 +82,7 @@ set(SRCS
   AliEmcalCorrectionClusterNonLinearity.cxx
   AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
   AliEmcalCorrectionClusterLowEnergyEfficiency.cxx
+  AliEmcalCorrectionClusterPositionCorrection.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx

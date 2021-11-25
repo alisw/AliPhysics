@@ -253,6 +253,16 @@ ClusterLowEnergyEfficiency:                         # Cluster number of cell eff
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterPositionCorrection:                          # Cluster position correction
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    setSMEtaValues: [0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.]      # eta position shifts per SM
+    setSMPhiValues: [0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.]      # phi position shifts per SM
+    applyToMC: true                                 # if set to true, data-MC position correction is used; if set to false MC-data position correction is used
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterTrackMatcher:                                # Cluster-track matcher component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -350,6 +360,7 @@ executionOrder:
     - ClusterNonLinearity
     - ClusterNonLinearityMCAfterburner
     - ClusterLowEnergyEfficiency
+    - ClusterPositionCorrection
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
     - ClusterEnergyVariation
