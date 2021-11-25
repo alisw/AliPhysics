@@ -14,6 +14,7 @@ AliEffFDContainer::AliEffFDContainer():
   fChi2Cut(1e10),
   fDCAXYPtCut(0),
   fIsMC(kFALSE),
+  fUseGenPt(kTRUE),
   fInitialized(kFALSE),
   flMCEvent(0),
   flESDEvent(0),
@@ -47,6 +48,7 @@ AliEffFDContainer::AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC
   fChi2Cut(1e10),
   fDCAXYPtCut(0),
   fIsMC(lIsMC),
+  fUseGenPt(kTRUE),
   fInitialized(kFALSE),
   flMCEvent(0),
   flESDEvent(0),
@@ -172,7 +174,7 @@ void AliEffFDContainer::Fill(AliESDEvent &inputESD, AliMCEvent &inputMC) {
     if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
     if(!CheckEta(eta)) continue;
-    pt = lPart->Pt();
+    if(fUseGenPt) pt = lPart->Pt();
     if(pt<fPtMin || pt>fPtMax) continue;
     CompWeight = flMCSpectraWeights->GetMCSpectraWeightNominal(lPart->Particle());
     Double_t secWeight = flMCSpectraWeights->GetWeightForSecondaryParticle(lPart->Particle());

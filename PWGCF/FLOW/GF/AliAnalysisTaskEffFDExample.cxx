@@ -23,6 +23,7 @@ ClassImp(AliAnalysisTaskEffFDExample);
 AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample():
   AliAnalysisTaskSE(),
   fIsMC(kFALSE),
+  fUseGenPt(kTRUE),
   fMCEvent(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fEfFd(0),
@@ -43,6 +44,7 @@ AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample():
 AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample(const char *name, Bool_t IsMC, TString pf):
   AliAnalysisTaskSE(name),
   fIsMC(IsMC),
+  fUseGenPt(kTRUE),
   fMCEvent(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fEfFd(0),
@@ -83,6 +85,7 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
   //Creating the EffFD Object
   fEfFd = new AliEffFDContainer(Form("%s_EffAndFD%s",this->GetName(), fContPF.Data()),Form("%s_EffAndFD%s",this->GetName(), fContPF.Data()),fIsMC);
   fEfFd->SetEta(fEtaMin,fEtaMax);
+  fEfFd->SetUseGenPt(fUseGenPt);
   if(!fContPF.IsNull()) fEfFd->SetIdentifier(fContPF);
   //Setting up centrality & pt bins
   Double_t *ptbins = GetBinsFromAxis(fPtAxis);

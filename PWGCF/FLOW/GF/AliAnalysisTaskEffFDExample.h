@@ -43,12 +43,14 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   void ClearTCList() { l_ClearTCList(); fFBtoAdd=0; };
   void AddTrackCut(AliESDtrackCuts* incut) { l_CreateTCList(); fTCtoAdd->Add(incut); };
   void AddTrackCut(Int_t fb) { fFBtoAdd+=fb; };
+  void SetUseGenPt(Bool_t newval) { fUseGenPt = newval; };
  protected:
   AliEventCuts fEventCuts;
  private:
   AliAnalysisTaskEffFDExample(const AliAnalysisTaskEffFDExample&);
   AliAnalysisTaskEffFDExample& operator=(const AliAnalysisTaskEffFDExample&);
   Bool_t fIsMC;
+  Bool_t fUseGenPt;
   AliMCEvent *fMCEvent; //! MC event
   UInt_t fTriggerType;
   AliEffFDContainer *fEfFd;
@@ -67,7 +69,7 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   Double_t *GetBinsFromAxis(TAxis *inax);
   void l_CreateTCList() { if(fTCtoAdd) return; fTCtoAdd = new TList(); fTCtoAdd->SetOwner(kTRUE); };
   void l_ClearTCList() { if(fTCtoAdd) fTCtoAdd->Clear(); };
-  ClassDef(AliAnalysisTaskEffFDExample,1);
+  ClassDef(AliAnalysisTaskEffFDExample,2);
 };
 
 #endif
