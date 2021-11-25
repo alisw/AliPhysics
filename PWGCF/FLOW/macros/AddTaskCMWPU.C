@@ -11,6 +11,7 @@ void AddTaskCMWPU(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=1
   printf("===================================================================================\n");
   printf("\n                PID: Initialising AliAnalysisTaskCMWPU                           \n");
   printf("===================================================================================\n");
+  printf("************************************************************************************\n");
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
