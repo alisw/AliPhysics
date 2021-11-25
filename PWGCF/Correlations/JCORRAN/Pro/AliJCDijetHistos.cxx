@@ -91,12 +91,15 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_doubleConeM(),
     fh_jet2Cone1Dist(),
     fh_jet1Cone2Dist(),
+    fh_jet1Cone2AltDist(),
     fh_localRho1(),
     fh_localRho2(),
     fh_deltaRho1(),
     fh_deltaRho2(),
     fh_deltaLocalRho(),
     fh_dijetdeltaM5(),
+    fh_dijetdeltaM5NearCone(),
+    fh_dijetdeltaM5NearConeAlt(),
     fh_deltaMResponse(),
     fh_dijetResponseTrunc(),
     fh_dijetResponseTrunc2(),
@@ -173,12 +176,15 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_doubleConeM(obj.fh_doubleConeM),
     fh_jet2Cone1Dist(obj.fh_jet2Cone1Dist),
     fh_jet1Cone2Dist(obj.fh_jet1Cone2Dist),
+    fh_jet1Cone2AltDist(obj.fh_jet1Cone2AltDist),
     fh_localRho1(obj.fh_localRho1),
     fh_localRho2(obj.fh_localRho2),
     fh_deltaRho1(obj.fh_deltaRho1),
     fh_deltaRho2(obj.fh_deltaRho2),
     fh_deltaLocalRho(obj.fh_deltaLocalRho),
     fh_dijetdeltaM5(obj.fh_dijetdeltaM5),
+    fh_dijetdeltaM5NearCone(obj.fh_dijetdeltaM5NearCone),
+    fh_dijetdeltaM5NearConeAlt(obj.fh_dijetdeltaM5NearConeAlt),
     fh_deltaMResponse(obj.fh_deltaMResponse),
     fh_dijetResponseTrunc(obj.fh_dijetResponseTrunc),
     fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
@@ -559,6 +565,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH1D("fh_jet1Cone2Dist", "fh_jet1Cone2Dist", 40, 0, 4)
         << "END" ;
 
+    fh_jet1Cone2AltDist
+        << TH1D("fh_jet1Cone2AltDist", "fh_jet1Cone2AltDist", 40, 0, 4)
+        << "END" ;
+
     fh_localRho1
         << TH1D("localRho1", "localRho1", 200, 0, 200)
         << "END" ;
@@ -581,6 +591,14 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     
     fh_dijetdeltaM5
         << TH1D("h_dijetdeltaM5", "h_dijetdeltaM5", 751, -250.5, 500.5)
+        << fJetBin << "END" ;
+
+    fh_dijetdeltaM5NearCone
+        << TH1D("h_dijetdeltaM5NearCone", "h_dijetdeltaM5NearCone", 751, -250.5, 500.5)
+        << fJetBin << "END" ;
+
+    fh_dijetdeltaM5NearConeAlt
+        << TH1D("h_dijetdeltaM5NearConeAlt", "h_dijetdeltaM5NearConeAlt", 751, -250.5, 500.5)
         << fJetBin << "END" ;
 
     fh_dijetMLocalRho

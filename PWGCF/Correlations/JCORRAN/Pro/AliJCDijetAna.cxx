@@ -668,15 +668,20 @@ void AliJCDijetAna::CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSuble
     double secndJetPhi = tempSubLead.phi() - TMath::Pi(); //-pi to pi
     double firstJetEta = tempLeading.eta();
     double secndJetEta = tempSubLead.eta();
-    double firstConePhi = firstJetPhi-TMath::Pi()/2.0 < -TMath::Pi() ? firstJetPhi+3.0*TMath::Pi()/2.0 : firstJetPhi-TMath::Pi()/2.0;
+    double firstConePhi = firstJetPhi-(TMath::Pi()/2.0) < -TMath::Pi() ? firstJetPhi+(3.0*TMath::Pi()/2.0) : firstJetPhi-(TMath::Pi()/2.0);
     double coneDeltaPhi = GetDeltaPhi(tempLeading, tempSubLead); // 0-2pi
-    double secondConePhi = firstConePhi+coneDeltaPhi > TMath::Pi() ? firstConePhi+coneDeltaPhi-2*TMath::Pi() : firstConePhi+coneDeltaPhi;
+    double secondConePhi = firstConePhi+coneDeltaPhi > TMath::Pi() ? firstConePhi+coneDeltaPhi-(2*TMath::Pi()) : firstConePhi+coneDeltaPhi;
+    double secondConePhiAlt = secndJetPhi-(TMath::Pi()/2.0) < -TMath::Pi() ? secndJetPhi+(3.0*TMath::Pi()/2.0) : secndJetPhi-(TMath::Pi()/2.0);
     double firstConeEta = firstJetEta;
     double secondConeEta = secndJetEta;
     double distanceBtwJet2Cone1 = DeltaR(firstConeEta, secndJetEta, firstConePhi, secndJetPhi);
     double distanceBtwJet1Cone2 = DeltaR(secondConeEta, firstJetEta, secondConePhi, firstJetPhi);
+    double distanceBtwJet1Cone2Alt = DeltaR(secondConeEta, firstJetEta, secondConePhiAlt, firstJetPhi);
+    bool bConeNearJet = distanceBtwJet2Cone1 < 2*fJetCone;
+    bool bConeNearJetAlt = (distanceBtwJet2Cone1 < 2*fJetCone) || (distanceBtwJet1Cone2Alt < 2*fJetCone);
     fhistos->fh_jet2Cone1Dist->Fill(distanceBtwJet2Cone1);
     fhistos->fh_jet1Cone2Dist->Fill(distanceBtwJet1Cone2);
+    fhistos->fh_jet1Cone2AltDist->Fill(distanceBtwJet1Cone2Alt);
     fastjet::PseudoJet holderJet;
     fastjet::PseudoJet firstConeP;
     fastjet::PseudoJet secondConeP;
@@ -725,6 +730,8 @@ void AliJCDijetAna::CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSuble
 
     fDeltaM=dijet.m()-doubleDeltaCone_fifth.m();
     fhistos->fh_dijetdeltaM5[iJetSet]->Fill(fDeltaM);
+    if(bConeNearJet)    fhistos->fh_dijetdeltaM5NearCone[iJetSet]->Fill(fDeltaM);
+    if(bConeNearJetAlt) fhistos->fh_dijetdeltaM5NearConeAlt[iJetSet]->Fill(fDeltaM);
     fhistos->fh_dijetMLocalRho[iJetSet]->Fill(doubleDeltaCone_fifth.m());
     fhistos->fh_deltaMResponse[iJetSet]->Fill(dijet.m()+fDeltaM, dijet.m());
 
