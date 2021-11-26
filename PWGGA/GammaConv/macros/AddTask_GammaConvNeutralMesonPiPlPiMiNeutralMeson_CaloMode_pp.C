@@ -1995,11 +1995,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                                      0103103300000000
     //                                                                             |
     cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103h00000000","0453503000000000"); // INT7, 1.5 sigma
-    cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103i00000000","0453503000000000"); // INT7, 2 sigma
+    cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103i00000000","0453503000000000"); // INT7, 2.5 sigma
   } else if(trainConfig == 6306)  { //PHOS INT7, N.Pi cut var. open. angle, Std 0 -> off
     //                                                                      0103103300000000
     //                                                                                    |
-    cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103300000010","0453503000000000"); // INT7 Op. Ang. var 0: min opening angle 0    -> open
+    cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103300000010","0453503000000000"); // INT7 Op. Ang. var 1: min opening angle 0.005
     cuts.AddCutHeavyMesonCalo("00010113","24466190sa01cc00000","32c51070a","0103103300000030","0453503000000000"); // INT7 Op. Ang. var 3: min opening angle 0.01 -> 2 cell
 
     //-----
