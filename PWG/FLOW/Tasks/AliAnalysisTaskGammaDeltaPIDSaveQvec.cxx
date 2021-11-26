@@ -1197,7 +1197,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
       trk1DCAz  = AODtrack1->ZAtDCA();            
       trk1dEdx  = AODtrack1->GetDetPid()->GetTPCsignal();  
      
-      //Apply track cuts here:
+      
+      //Apply track cuts for TPC EP here:
       if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
 
 	WgtNUAChtrk1  = 1.0;   
@@ -1348,7 +1349,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	
 
 	///---> 2nd track Loop   
-	for(Int_t jTrack = 0; jTrack < i; jTrack++) { 
+	for(Int_t jTrack = 0; jTrack < iTrack; jTrack++) { 
 
 	  /// skip autocorrelation:
 	  if(jTrack==iTrack) continue;

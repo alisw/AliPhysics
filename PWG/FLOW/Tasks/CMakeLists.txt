@@ -102,6 +102,8 @@ set(SRCS
   AliAnalysisTaskAR.cxx
   AliAnalysisTaskEbECumulants.cxx
   AliAnalysisTaskGammaDeltaPID.cxx
+  AliAnalysisTaskGammaDeltaPIDSaveQvecEvent.cxx
+  AliAnalysisTaskGammaDeltaPIDSaveQvec.cxx
   AliAnalysisTaskCMWESE.cxx
   AliAnalysisTaskEPCalib.cxx
 )
