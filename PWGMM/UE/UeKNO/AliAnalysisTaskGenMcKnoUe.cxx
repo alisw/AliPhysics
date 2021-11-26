@@ -100,6 +100,12 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		hnchmpirho(0x0),
 		hnchrho(0x0),
 		hmpirho(0x0),
+		hphiKNO(0x0),
+		hphiKNO1(0x0),
+		hphiKNO2(0x0),
+		hNchTforKNOana(0x0),
+		hNchTforKNOanaMin(0x0),
+		hNchTforKNOanaMax(0x0),
 		fOutputList(0)
 {
 	for(Int_t i=0;i<3;++i) 
@@ -138,6 +144,12 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 	hnchmpirho(0x0),
 	hnchrho(0x0),
 	hmpirho(0x0),
+	hphiKNO(0x0),
+	hphiKNO1(0x0),
+	hphiKNO2(0x0),
+	hNchTforKNOana(0x0),
+	hNchTforKNOanaMin(0x0),
+	hNchTforKNOanaMax(0x0),
 	fOutputList(0)
 {
 	for(Int_t i=0;i<3;++i)
@@ -242,6 +254,29 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 			fOutputList->Add(hmpirho);
 
 		}
+
+		hphiKNO = 0;
+		hphiKNO = new TH1D("hphiKNO","",64,-pi/2.0,3*pi/2.0);
+		fOutputList->Add(hphiKNO);
+		hphiKNO1 = 0;
+		hphiKNO1 = new TH1D("hphiKNO1","",64,-pi/2.0,3*pi/2.0);
+		fOutputList->Add(hphiKNO1);
+		hphiKNO2 = 0;
+		hphiKNO2 = new TH1D("hphiKNO2","",64,-pi/2.0,3*pi/2.0);
+		fOutputList->Add(hphiKNO2);
+		hNchTforKNOana = 0;
+		hNchTforKNOana = new TH1D("hNchTforKNOana","",100,-0.5,99.5);
+		fOutputList->Add(hNchTforKNOana);
+		hNchTforKNOanaMin = 0;
+		hNchTforKNOanaMin = new TH1D("hNchTforKNOanaMin","",100,-0.5,99.5);
+		fOutputList->Add(hNchTforKNOanaMin);
+		hNchTforKNOanaMax = 0;
+		hNchTforKNOanaMax = new TH1D("hNchTforKNOanaMax","",100,-0.5,99.5);
+		fOutputList->Add(hNchTforKNOanaMax);
+
+
+
+
 		// UE analysis
 		for(Int_t i=0;i<3;++i){
 
@@ -426,7 +461,9 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 			continue;
 	}
 	hPtLVsV0A->Fill(fGenLeadPt,multV0Aeta*1.0);
-
+	Int_t multForKNOana = 0;
+	Int_t multForKNOana1 = 0;
+	Int_t multForKNOana2 = 0;
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
 		if(i==fGenLeadIn)
@@ -451,10 +488,36 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 		}
 		else{// transverse side
 			hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt(),multV0Aeta*1.0);
+			if( particle->Pt() >= 0.5 ){
+				multForKNOana++;
+				hphiKNO->Fill(DPhi);
+				if(DPhi-pi>=pi/3.0 || DPhi<-pi/3.0){
+					multForKNOana2++;
+					hphiKNO2->Fill(DPhi);
+				}
+				else{
+					multForKNOana1++;
+					hphiKNO1->Fill(DPhi);
+				}
+			}
+
+
 		}
 
 	}
 	hPtLeadingTrue->Fill(fGenLeadPt);
+	if(fGenLeadPt>=5.0 && fGenLeadPt<40.0){
+		hNchTforKNOana->Fill(multForKNOana);
+		if(multForKNOana2>multForKNOana1){// multForKNOana1: max, multForKNOana1: min
+			hNchTforKNOanaMin->Fill(multForKNOana1);// hist min
+			hNchTforKNOanaMax->Fill(multForKNOana2);//hist max
+		}
+		else{
+			hNchTforKNOanaMin->Fill(multForKNOana2);// hist min
+			hNchTforKNOanaMax->Fill(multForKNOana1);//hist max
+		}
+	}
+
 }
 //_______________________________________________________
 void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){

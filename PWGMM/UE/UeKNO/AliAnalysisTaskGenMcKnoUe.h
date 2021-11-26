@@ -96,6 +96,12 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		TH2D * hnchrho;
 		TH2D * hmpirho;
 		TH3D * hPtVsPtLeadingTrue[3];
+		TH1D * hphiKNO;
+		TH1D * hphiKNO1;
+		TH1D * hphiKNO2;
+		TH1D * hNchTforKNOana;
+		TH1D * hNchTforKNOanaMin;
+		TH1D * hNchTforKNOanaMax;
 
 		TH1D * hPtLeadingRho[3];// 0: all, 1: low rho, 2: high rho
 		TH2D * hNchRho[3];
