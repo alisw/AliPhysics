@@ -1160,7 +1160,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
       trk1dEdx  = AODtrack1->GetDetPid()->GetTPCsignal();  
      
       //Apply track cuts here:
-      if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
+      if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
 
 	WgtNUAChtrk1  = 1.0;   
 	WgtNUAPIDtrk1 = 1.0;
@@ -1280,7 +1280,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	
 	
 	///---> 2nd track Loop   
-	for(Int_t jTrack = 0; jTrack < iTrack; jTrack++) { 
+	for(Int_t jTrack = 0; jTrack < ntracks; jTrack++) { 
 
 	  /// skip autocorrelation:
 	  if(jTrack==iTrack) continue;
@@ -1302,7 +1302,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	    trk2dEdx  = AODtrack2->GetDetPid()->GetTPCsignal();       
 
 	    //Apply track cuts for second track
-	    if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && !((trk2Eta >= fEtaGapNeg) && (trk2Eta <= fEtaGapPos)) && (trk2dEdx >= fTPCdEdxMin) && (trk2TpcNC >= fTPCclustMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
+	    if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && (trk2dEdx >= fTPCdEdxMin) && (trk2TpcNC >= fTPCclustMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
 
 
 	      if(bPIDoktrk1){
@@ -1349,11 +1349,11 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		localSumQ3xs = localSumQ3x;
 		localSumQ3ys = localSumQ3y;
 		localMultTPCs = localMultTPC;
-		localSumQ2xs -= WgtNUAChtrk2*trk2Pt*TMath::Cos(2*trk2Phi);  /// wgts and phi of track2
-		localSumQ2ys -= WgtNUAChtrk2*trk2Pt*TMath::Sin(2*trk2Phi);
-		localSumQ3xs -= WgtNUAChtrk2*trk2Pt*TMath::Cos(3*trk2Phi);
-		localSumQ3ys -= WgtNUAChtrk2*trk2Pt*TMath::Sin(3*trk2Phi);
-		localMultTPCs-= WgtNUAChtrk2*trk2Pt; 	  
+		localSumQ2xs -= WgtNUAChtrk2*TMath::Cos(2*trk2Phi);  /// wgts and phi of track2
+		localSumQ2ys -= WgtNUAChtrk2*TMath::Sin(2*trk2Phi);
+		localSumQ3xs -= WgtNUAChtrk2*TMath::Cos(3*trk2Phi);
+		localSumQ3ys -= WgtNUAChtrk2*TMath::Sin(3*trk2Phi);
+		localMultTPCs-= WgtNUAChtrk2; 	  
 	      }
 
 	      if(!bUseV0EventPlane){
@@ -3231,7 +3231,6 @@ void AliAnalysisTaskGammaDeltaPID::Terminate(Option_t *)  {
   //fOutputList = dynamic_cast<TList*> (GetOutputData(1));
   //if (!fOutputList) return;
 }
-
 
 
 
