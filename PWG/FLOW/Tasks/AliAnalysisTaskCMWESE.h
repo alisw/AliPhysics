@@ -39,8 +39,8 @@ public:
   int     GerHarmonic(){return fHarmonic;}
   void  SetHarmonic(double x)  {fHarmonic = x;}
 
-  int GetTrigger(){return fTrigger;}
-  void SetTrigger(int x){fTrigger = x;}
+ TString GetTrigger(){return fTrigger;}
+  void SetTrigger(TString x){fTrigger = x;}
 
   int    GetFilterBit(){return fFltbit;}
   void SetFilterBit(int x){fFltbit = x;}
@@ -99,6 +99,9 @@ public:
   bool GetNUAOn(){return fDoNUA;}
   void SetNUAOn(bool x){fDoNUA = x;} 
 
+  bool GetQnESEOn(){return fDoQnESE;}
+  void SetQnESEOn(bool x){fDoQnESE = x;} 
+
   bool GetDiffV2QA(){return fDiffV2QA;}
   void SetDiffV2QA(bool x){fDiffV2QA = x;}
 
@@ -119,7 +122,7 @@ private:
   static const int NPOIBINS  = 2;
   static const int NQNBINS  = 10;
   static const int NACHBINS = 12;
-  static const int NRUNNUM=138;
+  static const int NRUNNUM = 150;
   void          ResetHists();
   bool          DoCumulantswtGap();
   bool          DoCumulantsDirect();
@@ -152,7 +155,7 @@ private:
     // Cuts and options
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
-    int                     fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+    TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
     int                     fFltbit; // AOD filter bit selection
     int                     fNclsCut; // ncls cut for all tracks 
     float                  fChi2Hg; // upper limmit for chi2
@@ -172,6 +175,7 @@ private:
     bool                  fQATPC; // flag for TPC qn QA
     bool                  fDoNUE; // switch for NUE
     bool                  fDoNUA; // switch for NUA
+    bool                  fDoQnESE;
     bool                  fDiffV2QA;
     bool                  fCalcV24VsAch;
     bool                  fDoTrivalCor;

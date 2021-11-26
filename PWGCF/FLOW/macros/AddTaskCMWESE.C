@@ -11,7 +11,7 @@
 AliAnalysisTaskCMWESE* AddTaskCMWESE(
       int                     debug=0, // debug level controls amount of output statements
       double              Harmonic=2,
-      int                     trigger=1,
+      TString             trigger="kINT7",
       int                     filterBit=1, // AOD filter bit selection
       int                     nclscut=70, // ncls cut for all tracks 
       float                  chi2hg=4.0,
@@ -31,6 +31,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
       bool                  QATPC=false,
       bool                  doNUE=true,
       bool                  doNUA=true,
+      bool                  doqnese=true,
       bool                  diffv2QA=true,
       bool                  calcv24ach=true,
       bool                  doTrivalCor=false,
@@ -81,6 +82,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	task->SetTPCQAOn(QATPC);
 	task->SetNUEOn(doNUE);
 	task->SetNUAOn(doNUA);
+	task->SetQnESEOn(doqnese);
   	task->SetDiffV2QA(diffv2QA);
   	task->SetCalcV24VsAch(calcv24ach);
   	task->SetDoTrivalCor(doTrivalCor);
@@ -101,9 +103,11 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 
 
 	Int_t inSlotCounter=1;
+	
    	if (!gGrid) {
    	    TGrid::Connect("alien://");
    	}
+
         	TObjArray *AllContainers = mgr->GetContainers();
 
 	if(task->GetNUEOn() || doNUE) {
@@ -111,7 +115,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 			AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
                 		TFile *inNUE;
                 		if (period.EqualTo("LHC10h") || period.EqualTo("LHC11h")) {
-				inNUE = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/Run1NUE.root");
+				inNUE = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/Run1NUE.root");
 				TList* wNUE_list = NULL;
 				wNUE_list = dynamic_cast<TList*>(inNUE->Get("listNUE"));
 				if (!wNUE_list) printf("Read TList wrong!\n");
@@ -143,60 +147,27 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	if(task->GetNUAOn() ||doNUA) {
 		TFile *inNUA;
 		if (period.EqualTo("LHC10h") ) { // NUA for 10h is too large to read, we separate them into 3 TList*s.
-			if (task->GetFilterBit() ==1) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/10hNUAFB1.root");
-			else if (task->GetFilterBit() ==128) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/wNUA/weightNUA_LHC10hMAX_Cent_FB128.root");
-	    			
-			// Run 139510-138653
-			if(!AllContainers->FindObject("NUA1")) {
-				AliAnalysisDataContainer *cin_NUA1 = mgr->CreateContainer(Form("NUA1"), TList::Class(), AliAnalysisManager::kInputContainer);				
-	                		TList* wNUA_list1 = NULL;
-				wNUA_list1 = dynamic_cast<TList*>(inNUA->Get("listNUA_139510to138653"));
-		                	cin_NUA1->SetData(wNUA_list1); 
-				mgr->ConnectInput(task,inSlotCounter,cin_NUA1);
-				delete wNUA_list1;
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1.root");
+			if(!AllContainers->FindObject("NUA")) {
+				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
+	                		TList* wNUA_list = NULL;
+				wNUA_list = dynamic_cast<TList*>(inNUA->Get("10hListNUAFB1"));
+		                	cin_NUA->SetData(wNUA_list); 
+				mgr->ConnectInput(task,inSlotCounter,cin_NUA);
 				inSlotCounter++;
 				
 			} else {
-				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA1"));
+				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
 				inSlotCounter++;
-				printf("NUA1 already loaded\n");
+				printf("NUA already loaded\n");
 			}
 
-			// Run 138652-137693
-			if(!AllContainers->FindObject("NUA2")) {
-				AliAnalysisDataContainer *cin_NUA2 = mgr->CreateContainer(Form("NUA2"), TList::Class(), AliAnalysisManager::kInputContainer);		
-	                		TList* wNUA_list2 = NULL;
-				wNUA_list2 = dynamic_cast<TList*>(inNUA->Get("listNUA_138652to137693"));
-		                	cin_NUA2->SetData(wNUA_list2); 
-				mgr->ConnectInput(task,inSlotCounter,cin_NUA2);
-				inSlotCounter++;
-				delete wNUA_list2;
-			} else {
-				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA2"));
-				inSlotCounter++;
-				printf("NUA2 already loaded\n");
-			}
-
-			// Run 137692-137161
-			if(!AllContainers->FindObject("NUA3")) {		
-				AliAnalysisDataContainer *cin_NUA3 = mgr->CreateContainer(Form("NUA3"), TList::Class(), AliAnalysisManager::kInputContainer);
-	                		TList* wNUA_list3 = NULL;
-				wNUA_list3 = dynamic_cast<TList*>(inNUA->Get("listNUA_137692to137161"));
-		                	cin_NUA3->SetData(wNUA_list3); 
-				mgr->ConnectInput(task,inSlotCounter,cin_NUA3);
-				inSlotCounter++;
-				delete wNUA_list3;				
-			} else {
-				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA3"));
-				inSlotCounter++;
-				printf("NUA3 already loaded\n");
-			}
 		} else if (period.EqualTo("LHC11h")){
-    		  		if(!AllContainers->FindObject("NUA")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/11hNUAFB1.root");
+    		  	if(!AllContainers->FindObject("NUA")) {
 				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
-    		    		if (task->GetFilterBit() ==1) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/wNUA/weightNUA_LHC11hMAX_ReBined.root");
     		    		TList* wNUA_list = NULL;
-    		    		wNUA_list = dynamic_cast<TList*>(inNUA->Get("listNUA"));
+    		    		wNUA_list = dynamic_cast<TList*>(inNUA->Get("11hListNUAFB1"));
     		    		cin_NUA->SetData(wNUA_list);
     		    		mgr->ConnectInput(task,inSlotCounter,cin_NUA);
     		    		inSlotCounter++;
@@ -206,8 +177,8 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
     		    		printf("NUA already loaded\n");
     		  	}
     		} else if (period.EqualTo("LHC15o")) {
+    			inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root");
 			if(!AllContainers->FindObject("NUA")) {
-				if (task->GetFilterBit() ==768) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root");
 				// Ref NUA data from alien:///alice/cern.ch/user/p/prottay/nuarootfiles_p5_one_two_two_FB768_15op2_withpileup
 				// /wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root  (15o_pass2)
 				TDirectoryFile* wNUA_directoryfile = (TDirectoryFile*)inNUA->Get("ZDCgains");
@@ -235,7 +206,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
                 		TFile *v0calib;
                 		if(!AllContainers->FindObject("V0Calib")) {
 				AliAnalysisDataContainer *cin_V0Calib = mgr->CreateContainer(Form("V0Calib"), TList::Class(), AliAnalysisManager::kInputContainer);
-				v0calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/10hQnCalib.root");
+				v0calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hQnCalib.root");
                 			TList* qncalib_list = NULL;
 				qncalib_list = dynamic_cast<TList*>(v0calib->Get("10hlistqncalib"));
                 		    	cin_V0Calib->SetData(qncalib_list); 
@@ -250,8 +221,8 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 			TFile *qnSp;
                     		if(!AllContainers->FindObject("qnSp")) {
                     			AliAnalysisDataContainer *cin_qnPercSp = mgr->CreateContainer(Form("qnPercSp"), TList::Class(), AliAnalysisManager::kInputContainer);
-                      			qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibSpq2V0C11hP2.root");
-                      			TList* spperc_list = NULL;
+	                      		qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibSpq2V0C11hP2.root");
+                      			TList* spperc_list = NULL;                     			
         				spperc_list = dynamic_cast<TList*>(qnSp->Get("11hlistspPerc"));
                           		cin_qnPercSp->SetData(spperc_list);
                           		mgr->ConnectInput(task,inSlotCounter,cin_qnPercSp);
