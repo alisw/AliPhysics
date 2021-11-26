@@ -585,13 +585,13 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 100, 0, 3000);
   fListOfObjects->Add(hNtrksVSmultPercentile);
 
-  fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 100, 0, 2*3.1415926);
+  fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
   fListOfObjects->Add(fPhiDis1DBefore);
-  fPhiDis1D  = new TH1D("hPhiDis", "phi distribution after the weight correction", 100, 0, 2*3.1415926);
+  fPhiDis1D  = new TH1D("hPhiDis", "phi distribution after the weight correction", 60, 0, 2*3.1415926);
   fListOfObjects->Add(fPhiDis1D);
   fEtaDis = new TH1D("hEtaDis", "eta distribution", 100, -2, 2);
   fListOfObjects->Add(fEtaDis);
-  fPtDis = new TH1D("hPtDis", "pt distribution", 100, -2, 2);
+  fPtDis = new TH1D("hPtDis", "pt distribution", 100, 0, 5);
   fListOfObjects->Add(fPtDis);
   hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
   fListOfObjects->Add(hTracksCorrection2d);
@@ -635,6 +635,16 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     QDis3subL[h] = new TH2D(Form("Q%dDis3subL", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
     QDis3subM[h] = new TH2D(Form("Q%dDis3subM", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
     QDis3subR[h] = new TH2D(Form("Q%dDis3subR", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    fListOfObjects->Add(QDis[h]);
+    fListOfObjects->Add(QDisGap0P[h]);
+    fListOfObjects->Add(QDisGap0M[h]);
+    fListOfObjects->Add(QDisGap10P[h]);
+    fListOfObjects->Add(QDisGap10M[h]);
+    fListOfObjects->Add(QDisGap14P[h]);
+    fListOfObjects->Add(QDisGap14M[h]);
+    fListOfObjects->Add(QDis3subL[h]);
+    fListOfObjects->Add(QDis3subM[h]);
+    fListOfObjects->Add(QDis3subR[h]);
   }
 
   // Physics profiles
@@ -1761,7 +1771,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   double error = fPtWeightsSystematics->GetBinError(binPt);
   double weight = 1;
   //..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
-  if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
+  if((eff < 0.03) || ((error/eff) > 0.1)) error = 0.00001;
   else{
     TRandom3 r(0);
     double efficiency = 0;
@@ -1771,10 +1781,6 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   }
 
   return weight;
-  double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
-  double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
-  eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
-  error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
 
 }
 //____________________________________________________________________
