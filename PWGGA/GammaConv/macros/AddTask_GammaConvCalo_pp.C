@@ -3867,6 +3867,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113", "0dk00089f9730000iih0404000","24466190sa01cc00000", "0163103100000010"); // RBins    min = 55,     max = 72
     cuts.AddCutPCMCalo("00010113", "0dl00089f9730000iih0404000","24466190sa01cc00000", "0163103100000010"); // RBins    min = 72,     max = 95
     cuts.AddCutPCMCalo("00010113", "0dg00089f9730000iih0404000","24466190sa01cc00000", "0163103100000010"); // RBins    min = 95,     max = 180
+  } else if ( trainConfig == 3419){  // LOWB   R Bins // weights 1
+    cuts.AddCutPCMCalo("00010113", "0dd00089f9730000iih0404000","24466190sa01cc00000", "0163103100000010"); // RBins    min = 5,      max = 55 
 
 
     // Variations for systematics PCM-EDC 13 TeV MB
