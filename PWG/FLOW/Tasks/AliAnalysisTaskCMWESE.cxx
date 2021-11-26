@@ -84,7 +84,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   AliAnalysisTaskSE(), 
   fDebug(0),
   fHarmonic(2.),
-  fTrigger(1),
+  fTrigger("kINT7"),
   fFltbit(1),
   fNclsCut(70),
   fChi2Hg(4.0),
@@ -104,6 +104,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   fQATPC(false),
   fDoNUE(true),
   fDoNUA(true),
+  fDoQnESE(true),
   fDiffV2QA(true),
   fCalcV24VsAch(true),
   fDoTrivalCor(true),
@@ -260,7 +261,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   AliAnalysisTaskSE(name), 
   fDebug(0),
   fHarmonic(2.),
-  fTrigger(1),
+  fTrigger("kINT7"),
   fFltbit(1),
   fNclsCut(70),
   fChi2Hg(4.0),
@@ -280,6 +281,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   fQATPC(false),
   fDoNUE(_NUE),
   fDoNUA(_NUA),
+  fDoQnESE(true),
   fDiffV2QA(true),
   fCalcV24VsAch(true),
   fDoTrivalCor(true),
@@ -441,14 +443,6 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
       DefineInput(inputslot, TList::Class());
       inputslot++;
     }
-    if (fDoNUA) {
-      DefineInput(inputslot, TList::Class());
-      inputslot++;
-    }
-    if (fDoNUA) {
-      DefineInput(inputslot, TList::Class());
-      inputslot++;
-    }
     if (fV0CalibOn) {
       DefineInput(inputslot, TList::Class());
       inputslot++;
@@ -491,7 +485,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   AliAnalysisTaskSE(name), 
   fDebug(0),
   fHarmonic(2.),
-  fTrigger(1),
+  fTrigger("kINT7"),
   fFltbit(1),
   fNclsCut(70),
   fChi2Hg(4.0),
@@ -511,6 +505,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   fQATPC(false),
   fDoNUE(true),
   fDoNUA(true),
+  fDoQnESE(true),
   fDiffV2QA(true),
   fCalcV24VsAch(true),
   fDoTrivalCor(true),
@@ -702,7 +697,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
         "137539","137531","137530","137443","137441","137440","137439","137434","137432","137431","137430","137243",
         "137236","137235","137232","137231","137162","137161"};
       hRunNumBin = new TH1I("runNumBin","",100,0,100);
-      for (int i=0; i<NRUNNUM; ++i){    
+      for (int i=0; i<90; ++i){    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,RunList[i].Data());
         fRunNumList[i] = RunList[i];
       }
@@ -714,7 +709,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
       "170159", "170306", "168076", "168342", "168777", "169148", "169838", "170163", "170308", "168105", "168361", "168826", "169156", "169846", 
       "170193", "170309", "168107", "168362", "168988", "169160", "169855", "170203", "168108 ", "168458", "168992", "169167", "169858", "170204"};
       hRunNumBin = new TH1I("runNumBin","",100,0,100);
-      for (int i=0; i<NRUNNUM; ++i){    
+      for (int i=0; i<68; ++i){    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,RunList[i].Data());
         fRunNumList[i] = RunList[i];
       }
@@ -734,12 +729,13 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
        "245343","245259","245233","245232","245231","245152","245151","245146","245145","245068","245066","245064", 
        "244983","244982","244980","244975","244918","244917"};
       hRunNumBin = new TH1I("runNumBin","",150,0,150);
-      for (int i=0; i<NRUNNUM; ++i){    
+      for (int i=0; i<138; ++i){    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,RunList[i].Data());
         fRunNumList[i] = RunList[i];
       }
       fOutputList->Add(hRunNumBin);
   }
+  if (fDebug) Printf("runNum created!");
 
   if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC11h")){
 
@@ -749,14 +745,13 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
 
       TFile* fileV0Calib = NULL;
       if (fPeriod.EqualTo("LHC15o")) fileV0Calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibV015oP2.root");
-      if (fPeriod.EqualTo("LHC11h")) fileV0Calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibV011hP2.root");
+      if (fPeriod.EqualTo("LHC11h")) fileV0Calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibV011h_2P2.root");
 
       if(!fileV0Calib){
           printf("OADB V0 calibration file cannot be opened\n");
            return;
       }
 
-      if (fDebug) fileV0Calib->ls();
       // Mult
       AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib->Get("hMultV0BefCorPfpx");
       if(!contMult){
@@ -792,8 +787,12 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
           return;
       }
 
-      for (int iRun = 0; iRun < NRUNNUM; ++iRun){
-        
+      int nRunnumThisPeriod = -1;
+      if (fPeriod.EqualTo("LHC10h")) nRunnumThisPeriod = 90;
+      if (fPeriod.EqualTo("LHC11h")) nRunnumThisPeriod = 68;
+      if (fPeriod.EqualTo("LHC15o")) nRunnumThisPeriod = 138;
+      for (int iRun = 0; iRun < nRunnumThisPeriod; ++iRun){
+
         if(!(contMult->GetObject(fRunNumList[iRun].Atoi() ) ) ){
             printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", fRunNumList[iRun].Atoi() );
             return;
@@ -855,11 +854,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     if (fPeriod.EqualTo("LHC10h") ) {
       fListNUA1 = (TList*) GetInputData(inSlotCounter);
       inSlotCounter++;
-      fListNUA2 = (TList*) GetInputData(inSlotCounter);
-      inSlotCounter++;
-      fListNUA3 = (TList*) GetInputData(inSlotCounter);
-      inSlotCounter++;
-      if (!fListNUA1 || !fListNUA2 || !fListNUA3) {
+      if (!fListNUA1) {
         AliError(Form("%s: Wrong NUA file 10h.", GetName()));
         return;
       };
@@ -872,7 +867,6 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
       }
     } else if (fPeriod.EqualTo("LHC15o") ){ //Rihan's NUA
       fListNUA1 = (TList*) GetInputData(inSlotCounter);
-      if (fDebug) fListNUA1->ls();
       inSlotCounter++;
       if (!fListNUA1) {        
         AliError(Form("%s: Wrong NUA file 15o2.", GetName()));
@@ -889,24 +883,21 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
             if (!fListVZEROCALIB) {
              AliError(Form("%s: Wrong V0 Calib file 10h.", GetName()));
               return;
-            };
+            };      
             // Read GE Histo (x_y) : (iCh_runnumBin)
             hMultV0Read = (TH2D*)fListVZEROCALIB->FindObject("hMultV0");
 
             // Read Qx/y Mean Histo (x_y_z) : (runnumBin_centBin_vzBin)
-            pV0XMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MCosMean");
-            pV0YMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MSinMean");
             pV0XMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CCosMean");
             pV0YMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CSinMean"); 
             pV0XMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ACosMean");
             pV0YMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ASinMean");
 
             // Read Percentail histo (x_y) : (intCent_percentile)
-            hQnPercentile = (TH2D*)fListVZEROCALIB->FindObject("hQnPercentile");
+            hQnPercentile = (TH2D*)fListVZEROCALIB->FindObject("h_qnPercentile");
 
       } else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC11h")) {
             fListVZEROCALIB = (TList*) GetInputData(inSlotCounter);
-            if (fDebug) fListVZEROCALIB->ls();
             inSlotCounter++;
             if (!fListVZEROCALIB) {
              AliError(Form("%s: Spline list for 15o cannot be opened.", GetName()));
@@ -994,21 +985,23 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     fOutputList->Add(hMultMultQA[5]);
   }
 
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j){
-      if (i==0) {
-        hMult[i][j] = new TH1D(Form("hMultMbQn%i", j ), "", 100, 0., 5000.);
-        hAch[i][j] = new TH1D(Form("hAchMbQn%i", j ), "", 200, -1., 1.);             
-      }
-      else {
-        hMult[i][j] = new TH1D(Form("hMultCent%iQn%i", i-1, j ), "", 100, 0., 5000.);
-        hAch[i][j] = new TH1D(Form("hAchCent%iQn%i", i-1, j ), "", 200, -1., 1.);      
+  if (fDoQnESE){
+    for (int i = 0; i < NCENTBINS+1; ++i) {
+      for (int j = 0; j < NQNBINS; ++j){
+        if (i==0) {
+          hMult[i][j] = new TH1D(Form("hMultMbQn%i", j ), "", 100, 0., 5000.);
+          hAch[i][j] = new TH1D(Form("hAchMbQn%i", j ), "", 200, -1., 1.);             
+        }
+        else {
+          hMult[i][j] = new TH1D(Form("hMultCent%iQn%i", i-1, j ), "", 100, 0., 5000.);
+          hAch[i][j] = new TH1D(Form("hAchCent%iQn%i", i-1, j ), "", 200, -1., 1.);      
+        }
       }
     }
-  }
-  for (int i = fCbinLo; i < fCbinHg+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) fOutputList->Add(hMult[i][j]); 
-    for (int j = 0; j < NQNBINS; ++j) fOutputList->Add(hAch[i][j]); 
+    for (int i = fCbinLo; i < fCbinHg+1; ++i) {
+      for (int j = 0; j < NQNBINS; ++j) fOutputList->Add(hMult[i][j]); 
+      for (int j = 0; j < NQNBINS; ++j) fOutputList->Add(hAch[i][j]); 
+    }
   }
 
   // track-wise
@@ -1043,7 +1036,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     fOutputList->Add(hDcaZ[1]);
   }
 
-  if (fQAV0){
+  if (fDoQnESE || fQAV0){
     hQnCentRecenter[0] = new TH2D("hqnV0MRecenter","",100, 0, 100, 72, 0, 12); 
     hQnCentRecenter[1] = new TH2D("hqnV0CRecenter","",100, 0, 100, 72, 0, 12); 
     hQnCentRecenter[2] = new TH2D("hqnV0ARecenter","",100, 0, 100, 72, 0, 12); 
@@ -1081,85 +1074,103 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   //------------------
   TH1::SetDefaultSumw2(kTRUE);
 
-  hReQn_thisEvt            = new TH2D("ReQnthisEvt", "", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImQn_thisEvt             = new TH2D("ImQnthisEvt", "", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hReQ2n_thisEvt          = new TH2D("ReQ2nthisEvt", "", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImQ2n_thisEvt           = new TH2D("ImQ2nthisEvt", "", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hReQ2nw2_thisEvt      = new TH2D("ReQ2nWeight2thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImQ2nw2_thisEvt      = new TH2D("ImQ2nWeight2thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8); 
-  hReQnw3_thisEvt       = new TH2D("ReQ3nWeight2thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImQnw3_thisEvt        = new TH2D("ImQ3nWeight2thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQ_thisEvt                = new TH2D("MQthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQ_w1_thisEvt         = new TH2D("MQWeight1thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQ_w2_thisEvt         = new TH2D("MQWeight2thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQ_w3_thisEvt         = new TH2D("MQWeight3thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQ_w4_thisEvt         = new TH2D("MQWeight4thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hReQPos_thisEvt        = new TH2D("ReQPosthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImQPos_thisEvt         = new TH2D("ImQPosthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQPos_thisEvt          = new TH2D("MQPosthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQPos_w1_thisEvt   = new TH2D("MQPosWeight1thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hReQNeg_thisEvt       = new TH2D("ReQNegthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImQNeg_thisEvt        = new TH2D("ImQNegthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQNeg_thisEvt         = new TH2D("MQNegthisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMQNeg_w1_thisEvt  = new TH2D("MQNegWeight1thisEvt","", 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hRepnw1_thisEvt        =new TH3D("RepnWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImpnw1_thisEvt         =new TH3D("ImpnWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hRep2nw2_thisEvt       =new TH3D("Rep2nWeight2thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImp2nw2_thisEvt        =new TH3D("Imp2nWeight2thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8); 
-  hRepnw3_thisEvt         =new TH3D("RepnWeight3thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hImpnw3_thisEvt          =new TH3D("RepnWeight3thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  hMp_thisEvt                  =new TH3D("MpthisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8); 
-  hMp_w1_thisEvt           =new TH3D("MpWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);  
-  hMp_w2_thisEvt           =new TH3D("MpWeight2thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);  
-  hMp_w3_thisEvt           =new TH3D("MpWeight3thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);  
-  hMp_w4_thisEvt           =new TH3D("MpWeight4thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);  
-  pRefFlow_thisEvt         = new TProfile("pRefFlowthisEvt", "", 20, 0, 20, "s");  // as function of 
-  pIntd2_thisEvt              = new TProfile("pIntd2thisEvt", "", 30, 0, 30, "s");
-  pDiffFlowpQStarGap_thisEvt  = new TProfile3D("pDiffFlowpQStarGapthisEvt","",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-  pDiffFlowpQStarGapPos_thisEvt  = new TProfile3D("pDiffFlowpQStarGapPosthisEvt","",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-  pDiffFlowpQStarGapNeg_thisEvt  = new TProfile3D("pDiffFlowpQStarGapNegthisEvt","",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-  pDiffFlowpQStarDirect_thisEvt = new TProfile3D("pDiffFlowpQStarDirectthisEvt","",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-  pDiffFlow4Direct_thisEvt          = new TProfile3D("pDiffFlow4DirectthisEvt","",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+  if (fDoQnESE){
+    hReQn_thisEvt            = new TH2D("ReQnthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImQn_thisEvt             = new TH2D("ImQnthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_thisEvt                = new TH2D("MQthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_w1_thisEvt         = new TH2D("MQWeight1thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    pRefFlow_thisEvt         = new TProfile("pRefFlowthisEvt", "", 20, 0, 20, "s");
+    pIntd2_thisEvt              = new TProfile("pIntd2thisEvt", "", 30, 0, 30, "s");
+    for (int i = 0; i < NCENTBINS; ++i) {
+      pRefFlow[i]               = new TProfile(Form("pRefFlowCent%i",i), "", 20, 0, 20, "s");
+      pIntd2[i]                   = new TProfile(Form("pIntd2Cent%i",i), "", 30, 0, 30, "s");
+      pIntd2Ach[i]             = new TProfile(Form("pIntd2AchCent%i", i), "", 30, 0, 30, "s");
+      pAch[i]                     = new TProfile(Form("pAchCent%i", i), "", 30, 0, 30, "s");
+    }
+    for (int i = fCbinLo; i < fCbinHg; ++i) {
+      fOutputList->Add(pRefFlow[i]);
+      fOutputList->Add(pIntd2[i]);
+      fOutputList->Add(pIntd2Ach[i]);
+      fOutputList->Add(pAch[i]);
+    }
+  };
 
-  for (int i = 0; i < NCENTBINS; ++i) {
-    pRefFlow[i]               = new TProfile(Form("pRefFlowCent%i",i), "", 20, 0, 20, "s");
-    pIntd2[i]                   = new TProfile(Form("pIntd2Cent%i",i), "", 30, 0, 30, "s");
-    pIntd2Ach[i]             = new TProfile(Form("pIntd2AchCent%i", i), "", 30, 0, 30, "s");
-    pAch[i]                     = new TProfile(Form("pAchCent%i", i), "", 30, 0, 30, "s");
-  }
-  for (int i = fCbinLo; i < fCbinHg; ++i) {
-    fOutputList->Add(pRefFlow[i]);
-    fOutputList->Add(pIntd2[i]);
-    fOutputList->Add(pIntd2Ach[i]);
-    fOutputList->Add(pAch[i]);
-  }
-
-  for (int i = 0; i < NCENTBINS; ++i) {
-    pDiffFlowpQStarGap[i] = new TProfile3D(Form("pDiffFlowpQStarGapCent%i",i), "", NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-    hDiffFlowYield[i]           = new TH3D(Form("hDiffFlowYieldCent%i",i), "", NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-    pDiffFlowpQStarGapPos[i]  = new TProfile3D(Form("pDiffFlowpQStarGapPosCent%i", i), "", NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-    pDiffFlowpQStarGapNeg[i]  = new TProfile3D(Form("pDiffFlowpQStarGapNegCent%i", i), "", NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-  }
   if (fDiffV2QA){
+    hReQn_thisEvt            = new TH2D("ReQnthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImQn_thisEvt             = new TH2D("ImQnthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_thisEvt                = new TH2D("MQthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_w1_thisEvt         = new TH2D("MQWeight1thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    pRefFlow_thisEvt         = new TProfile("pRefFlowthisEvt", "", 20, 0, 20, "s");
+    hRepnw1_thisEvt        =new TH3D("RepnWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImpnw1_thisEvt         =new TH3D("ImpnWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMp_thisEvt                  =new TH3D("MpthisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8); 
+    hMp_w1_thisEvt           =new TH3D("MpWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);  
+    pDiffFlowpQStarGap_thisEvt  = new TProfile3D("pDiffFlowpQStarGapthisEvt","",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+    for (int i = fCbinLo; i < fCbinHg; ++i) {
+      pDiffFlowpQStarGap[i] = new TProfile3D(Form("pDiffFlowpQStarGapCent%i",i), "", NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+      hDiffFlowYield[i]           = new TH3D(Form("hDiffFlowYieldCent%i",i), "", NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    }
     for (int i = fCbinLo; i < fCbinHg; ++i) {
       fOutputList->Add(pDiffFlowpQStarGap[i]);
       fOutputList->Add(hDiffFlowYield[i]);
     }
+
     if (fDoTrivalCor){
+      hReQPos_thisEvt        = new TH2D("ReQPosthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hImQPos_thisEvt         = new TH2D("ImQPosthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hMQPos_thisEvt          = new TH2D("MQPosthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hMQPos_w1_thisEvt   = new TH2D("MQPosWeight1thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hReQNeg_thisEvt       = new TH2D("ReQNegthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hImQNeg_thisEvt        = new TH2D("ImQNegthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hMQNeg_thisEvt         = new TH2D("MQNegthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      hMQNeg_w1_thisEvt  = new TH2D("MQNegWeight1thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+      pDiffFlowpQStarGapPos_thisEvt  = new TProfile3D("pDiffFlowpQStarGapPosthisEvt","",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+      pDiffFlowpQStarGapNeg_thisEvt  = new TProfile3D("pDiffFlowpQStarGapNegthisEvt","",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+      for (int i = fCbinLo; i < fCbinHg; ++i) {
+        pDiffFlowpQStarGapPos[i]  = new TProfile3D(Form("pDiffFlowpQStarGapPosCent%i", i), "", NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+        pDiffFlowpQStarGapNeg[i]  = new TProfile3D(Form("pDiffFlowpQStarGapNegCent%i", i), "", NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+      }
       for (int i = fCbinLo; i < fCbinHg; ++i) {
         fOutputList->Add(pDiffFlowpQStarGapPos[i]);
         fOutputList->Add(pDiffFlowpQStarGapNeg[i]);
       }
-    }
+    } 
   };
 
-  for (int i = 0; i < NCENTBINS; ++i) {
-    for (int j = 0; j < NACHBINS; ++j) pRefFlowAch[i][j]            = new TProfile(Form("pRefFlowCent%iAch%i",i,j), "", 20, 0, 20, "s");
-    for (int j = 0; j < NACHBINS; ++j) pDiffFlowpQStarAch[i][j] = new TProfile3D(Form("pDiffFlowpQStarCent%iAch%i",i,j), "",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
-    for (int j = 0; j < NACHBINS; ++j) pDiffFlow4Ach[i][j]          = new TProfile3D(Form("pDiffFlow4Cent%iAch%i",i,j), "",NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8, "s"); 
-    for (int j = 0; j < NACHBINS; ++j) hDiffFlowYieldAch[i][j]    = new TH3D(Form("hDiffFlowYieldCent%iAch%i",i,j), "" ,NPOIBINS, 0, NPOIBINS, 100, fPtMin, fPtMax, 32, -0.8, 0.8);
-  }
   if (fCalcV24VsAch){
+    hReQn_thisEvt            = new TH2D("ReQnthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImQn_thisEvt             = new TH2D("ImQnthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hReQ2n_thisEvt          = new TH2D("ReQ2nthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImQ2n_thisEvt           = new TH2D("ImQ2nthisEvt", "", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hReQ2nw2_thisEvt      = new TH2D("ReQ2nWeight2thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImQ2nw2_thisEvt      = new TH2D("ImQ2nWeight2thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8); 
+    hReQnw3_thisEvt       = new TH2D("ReQ3nWeight2thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImQnw3_thisEvt        = new TH2D("ImQ3nWeight2thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_thisEvt                = new TH2D("MQthisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_w1_thisEvt         = new TH2D("MQWeight1thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_w2_thisEvt         = new TH2D("MQWeight2thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_w3_thisEvt         = new TH2D("MQWeight3thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMQ_w4_thisEvt         = new TH2D("MQWeight4thisEvt","", 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    pRefFlow_thisEvt         = new TProfile("pRefFlowthisEvt", "", 20, 0, 20, "s");
+    hRepnw1_thisEvt        =new TH3D("RepnWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImpnw1_thisEvt         =new TH3D("ImpnWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMp_thisEvt                 =new TH3D("MpthisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8); 
+    hMp_w1_thisEvt          =new TH3D("MpWeight1thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hRep2nw2_thisEvt       =new TH3D("Rep2nWeight2thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImp2nw2_thisEvt        =new TH3D("Imp2nWeight2thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8); 
+    hRepnw3_thisEvt         =new TH3D("RepnWeight3thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hImpnw3_thisEvt          =new TH3D("RepnWeight3thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    hMp_w2_thisEvt           =new TH3D("MpWeight2thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);  
+    hMp_w3_thisEvt           =new TH3D("MpWeight3thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);  
+    hMp_w4_thisEvt           =new TH3D("MpWeight4thisEvt", "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);  
+    pDiffFlowpQStarDirect_thisEvt = new TProfile3D("pDiffFlowpQStarDirectthisEvt","",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+    pDiffFlow4Direct_thisEvt          = new TProfile3D("pDiffFlow4DirectthisEvt","",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+    for (int i = fCbinLo; i < fCbinHg; ++i) {
+      for (int j = 0; j < NACHBINS; ++j) pRefFlowAch[i][j]            = new TProfile(Form("pRefFlowCent%iAch%i",i,j), "", 20, 0, 20, "s");
+      for (int j = 0; j < NACHBINS; ++j) pDiffFlowpQStarAch[i][j] = new TProfile3D(Form("pDiffFlowpQStarCent%iAch%i",i,j), "",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s");
+      for (int j = 0; j < NACHBINS; ++j) pDiffFlow4Ach[i][j]          = new TProfile3D(Form("pDiffFlow4Cent%iAch%i",i,j), "",NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8, "s"); 
+      for (int j = 0; j < NACHBINS; ++j) hDiffFlowYieldAch[i][j]    = new TH3D(Form("hDiffFlowYieldCent%iAch%i",i,j), "" ,NPOIBINS, 0, NPOIBINS, 50, fPtMin, fPtMax, 32, -0.8, 0.8);
+    }
     for (int i = fCbinLo; i < fCbinHg; ++i) {
       for (int j = 0; j < NACHBINS; ++j){
         fOutputList->Add(pRefFlowAch[i][j]);          
@@ -1255,11 +1266,11 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
   //----------------------------
   ULong64_t mask = handler->IsEventSelected();
   Bool_t isTrigselected = false;
-        if (fTrigger == 0) { // Run2
+        if (fTrigger.EqualTo("kINT7")) { // Run2
       isTrigselected = mask&AliVEvent::kINT7;
-        } else if (fTrigger == 1) {
+        } else if (fTrigger.EqualTo("kMB")) {
       isTrigselected = mask&AliVEvent::kMB; //10h
-        } else if (fTrigger == 2) {
+        } else if (fTrigger.EqualTo("kMB+kCentral+kSemiCentral")) {
       isTrigselected = mask&AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral; //11h
         }
   if(isTrigselected == false) return;
@@ -1372,45 +1383,69 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
 
 void AliAnalysisTaskCMWESE::ResetHists()
 {
-  hReQn_thisEvt->Reset();
-  hImQn_thisEvt->Reset();
-  hReQ2n_thisEvt->Reset();
-  hImQ2n_thisEvt->Reset();
-  hReQ2nw2_thisEvt->Reset();
-  hImQ2nw2_thisEvt->Reset(); 
-  hReQnw3_thisEvt->Reset();
-  hImQnw3_thisEvt->Reset();
-  hMQ_thisEvt->Reset();
-  hMQ_w1_thisEvt->Reset();
-  hMQ_w2_thisEvt->Reset();
-  hMQ_w3_thisEvt->Reset();
-  hMQ_w4_thisEvt->Reset();
-  hReQPos_thisEvt->Reset();
-  hImQPos_thisEvt->Reset();
-  hMQPos_thisEvt->Reset();
-  hMQPos_w1_thisEvt->Reset();
-  hReQNeg_thisEvt->Reset();
-  hImQNeg_thisEvt->Reset();
-  hMQNeg_thisEvt->Reset();
-  hMQNeg_w1_thisEvt->Reset();
-  hRepnw1_thisEvt->Reset();
-  hImpnw1_thisEvt->Reset();
-  hRep2nw2_thisEvt->Reset();
-  hImp2nw2_thisEvt->Reset(); 
-  hRepnw3_thisEvt->Reset();
-  hImpnw3_thisEvt->Reset();
-  hMp_thisEvt->Reset(); 
-  hMp_w1_thisEvt->Reset();  
-  hMp_w2_thisEvt->Reset();  
-  hMp_w3_thisEvt->Reset();  
-  hMp_w4_thisEvt->Reset();  
-  pRefFlow_thisEvt->Reset();
-  pIntd2_thisEvt->Reset();
-  pDiffFlowpQStarGap_thisEvt->Reset();
-  pDiffFlowpQStarGapPos_thisEvt->Reset();
-  pDiffFlowpQStarGapNeg_thisEvt->Reset();
-  pDiffFlowpQStarDirect_thisEvt->Reset();
-  pDiffFlow4Direct_thisEvt->Reset();
+  if (fDoQnESE){
+    hReQn_thisEvt->Reset();        
+    hImQn_thisEvt->Reset();        
+    hMQ_thisEvt->Reset();           
+    hMQ_w1_thisEvt->Reset();     
+    pRefFlow_thisEvt->Reset();    
+    pIntd2_thisEvt->Reset();         
+  };
+
+  if (fDiffV2QA){
+    hReQn_thisEvt->Reset();       
+    hImQn_thisEvt->Reset();       
+    hMQ_thisEvt->Reset();          
+    hMQ_w1_thisEvt->Reset();    
+    hRepnw1_thisEvt->Reset();   
+    hImpnw1_thisEvt->Reset();    
+    hMp_thisEvt->Reset();           
+    hMp_w1_thisEvt->Reset(); 
+    pDiffFlowpQStarGap_thisEvt->Reset();
+    pRefFlow_thisEvt->Reset();     
+    if (fDoTrivalCor){
+      hReQPos_thisEvt->Reset();      
+      hImQPos_thisEvt->Reset();       
+      hMQPos_thisEvt->Reset();        
+      hMQPos_w1_thisEvt->Reset(); 
+      hReQNeg_thisEvt->Reset();      
+      hImQNeg_thisEvt->Reset();      
+      hMQNeg_thisEvt->Reset();       
+      hMQNeg_w1_thisEvt->Reset(); 
+      pDiffFlowpQStarGapPos_thisEvt->Reset();
+      pDiffFlowpQStarGapNeg_thisEvt->Reset();
+    }
+  };
+
+  if (fCalcV24VsAch){
+    hReQn_thisEvt->Reset();        
+    hImQn_thisEvt->Reset();        
+    hReQ2n_thisEvt->Reset();      
+    hImQ2n_thisEvt->Reset();      
+    hReQ2nw2_thisEvt->Reset(); 
+    hImQ2nw2_thisEvt->Reset();  
+    hReQnw3_thisEvt->Reset();   
+    hImQnw3_thisEvt->Reset();    
+    hMQ_thisEvt->Reset();           
+    hMQ_w1_thisEvt->Reset();     
+    hMQ_w2_thisEvt->Reset();     
+    hMQ_w3_thisEvt->Reset();     
+    hMQ_w4_thisEvt->Reset();
+    pRefFlow_thisEvt->Reset();   
+    hRepnw1_thisEvt->Reset();    
+    hImpnw1_thisEvt->Reset();     
+    hMp_thisEvt->Reset();            
+    hMp_w1_thisEvt->Reset();      
+    hRep2nw2_thisEvt->Reset();  
+    hImp2nw2_thisEvt->Reset();   
+    hRepnw3_thisEvt->Reset();    
+    hImpnw3_thisEvt->Reset();     
+    hMp_w2_thisEvt->Reset();      
+    hMp_w3_thisEvt->Reset();      
+    hMp_w4_thisEvt->Reset();      
+    pDiffFlowpQStarDirect_thisEvt->Reset();
+    pDiffFlow4Direct_thisEvt->Reset();         
+  };
   fRunNum=-999;
   fRunNumBin=-999;
   fVzBin=-999;
@@ -1485,20 +1520,23 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
     // (Qx, Qy)
     hReQn_thisEvt            ->Fill(pt, eta, cosnphi); // w^1
     hImQn_thisEvt             ->Fill(pt, eta, sinnphi);
-    hReQ2n_thisEvt          ->Fill(pt,eta,cos2nphi); 
-    hImQ2n_thisEvt           ->Fill(pt, eta, sin2nphi); 
-    hReQ2nw2_thisEvt        ->Fill(pt,eta,cos2nphi *weight ); // w^2
-    hImQ2nw2_thisEvt         ->Fill(pt, eta, sin2nphi *weight ); 
-    hReQnw3_thisEvt          ->Fill(pt, eta, cosnphi *pow(weight,2.) ); // w^3
-    hImQnw3_thisEvt           ->Fill(pt, eta, sinnphi *pow(weight,2.) );
+    if (fCalcV24VsAch){
+      hReQ2n_thisEvt          ->Fill(pt,eta,cos2nphi); 
+      hImQ2n_thisEvt           ->Fill(pt, eta, sin2nphi); 
+      hReQ2nw2_thisEvt        ->Fill(pt,eta,cos2nphi *weight ); // w^2
+      hImQ2nw2_thisEvt         ->Fill(pt, eta, sin2nphi *weight ); 
+      hReQnw3_thisEvt          ->Fill(pt, eta, cosnphi *pow(weight,2.) ); // w^3
+      hImQnw3_thisEvt           ->Fill(pt, eta, sinnphi *pow(weight,2.) );
+    }
     //MQ
     hMQ_thisEvt               ->Fill(pt, eta);
     hMQ_w1_thisEvt        ->Fill(pt, eta, weight);               // w^1 
-    hMQ_w2_thisEvt        ->Fill(pt, eta, pow(weight,2.) ); // w^2
-    hMQ_w3_thisEvt        ->Fill(pt, eta, pow(weight,3.) ); // w^3
-    hMQ_w4_thisEvt        ->Fill(pt, eta, pow(weight,4.) ); // w^4
-
-    if (fDoTrivalCor){    
+    if (fCalcV24VsAch){
+      hMQ_w2_thisEvt        ->Fill(pt, eta, pow(weight,2.) ); // w^2
+      hMQ_w3_thisEvt        ->Fill(pt, eta, pow(weight,3.) ); // w^3
+      hMQ_w4_thisEvt        ->Fill(pt, eta, pow(weight,4.) ); // w^4
+    }
+    if (fDiffV2QA && fDoTrivalCor){    
       if (charge>0) {
         hReQPos_thisEvt              ->Fill(pt, eta, cosnphi);
         hImQPos_thisEvt               ->Fill(pt, eta, sinnphi);
@@ -1512,25 +1550,27 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
       }
     };
 
-    for (int iPOIBin = 0; iPOIBin < NPOIBINS; ++iPOIBin) {
-      bool isRightPID = false;
-      if (iPOIBin==0 && charge>0) isRightPID = true;
-      if (iPOIBin==1 && charge<0) isRightPID = true;
-      if (!isRightPID) continue;
-      // (px, py)           
-      hRepnw1_thisEvt                  ->Fill(iPOIBin, pt, eta, cosnphi); // w^1
-      hImpnw1_thisEvt                   ->Fill(iPOIBin, pt, eta, sinnphi);
-      hRep2nw2_thisEvt                ->Fill(iPOIBin, pt, eta, cos2nphi * weight); // w^2
-      hImp2nw2_thisEvt                 ->Fill(iPOIBin, pt, eta, sin2nphi * weight); 
-      hRepnw3_thisEvt                  ->Fill(iPOIBin, pt, eta, cosnphi *pow(weight,2.) ); // w^3
-      hImpnw3_thisEvt                   ->Fill(iPOIBin, pt, eta, sinnphi *pow(weight,2.) );
-      // Mp
-      hMp_thisEvt                     ->Fill(iPOIBin, pt, eta); 
-      hMp_w1_thisEvt              ->Fill(iPOIBin, pt, eta, weight);  
-      hMp_w2_thisEvt              ->Fill(iPOIBin, pt, eta, pow(weight,2.) );  
-      hMp_w3_thisEvt              ->Fill(iPOIBin, pt, eta, pow(weight,3.) );  
-      hMp_w4_thisEvt              ->Fill(iPOIBin, pt, eta, pow(weight,4.) );      
-    } 
+    if (fDiffV2QA || fCalcV24VsAch){
+      for (int iPOIBin = 0; iPOIBin < NPOIBINS; ++iPOIBin) {
+        bool isRightPID = false;
+        if (iPOIBin==0 && charge>0) isRightPID = true;
+        if (iPOIBin==1 && charge<0) isRightPID = true;
+        if (!isRightPID) continue;
+        // (px, py)           
+        hRepnw1_thisEvt                  ->Fill(iPOIBin, pt, eta, cosnphi); // w^1
+        hImpnw1_thisEvt                   ->Fill(iPOIBin, pt, eta, sinnphi);
+        hRep2nw2_thisEvt                ->Fill(iPOIBin, pt, eta, cos2nphi * weight); // w^2
+        hImp2nw2_thisEvt                 ->Fill(iPOIBin, pt, eta, sin2nphi * weight); 
+        hRepnw3_thisEvt                  ->Fill(iPOIBin, pt, eta, cosnphi *pow(weight,2.) ); // w^3
+        hImpnw3_thisEvt                   ->Fill(iPOIBin, pt, eta, sinnphi *pow(weight,2.) );
+        // Mp
+        hMp_thisEvt                     ->Fill(iPOIBin, pt, eta); 
+        hMp_w1_thisEvt              ->Fill(iPOIBin, pt, eta, weight);  
+        hMp_w2_thisEvt              ->Fill(iPOIBin, pt, eta, pow(weight,2.) );  
+        hMp_w3_thisEvt              ->Fill(iPOIBin, pt, eta, pow(weight,3.) );  
+        hMp_w4_thisEvt              ->Fill(iPOIBin, pt, eta, pow(weight,4.) );      
+      }      
+    };
 
     Mult++;
     isSltTrk[iTrk] = 1;
@@ -1540,8 +1580,21 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
   //------------------
   // Ref Cumulant
   //------------------
-  if (!DoCumulantswtGap()) return false;
-  hEvtCount->Fill(10);
+  if (fDoQnESE){
+    if (!DoCumulantswtGap()) return false;
+    hEvtCount->Fill(10);
+  };
+
+  if (fDiffV2QA){
+    if (!DoCumulantswtGap()) return false;
+    hEvtCount->Fill(10); 
+    pDiffFlowpQStarGap[fCentBin]                                     ->Add(pDiffFlowpQStarGap_thisEvt); 
+    hDiffFlowYield[fCentBin]                                               ->Add(hMp_w1_thisEvt); 
+    if (fDoTrivalCor) pDiffFlowpQStarGapPos[fCentBin]    ->Add(pDiffFlowpQStarGapPos_thisEvt); 
+    if (fDoTrivalCor) pDiffFlowpQStarGapNeg[fCentBin]    ->Add(pDiffFlowpQStarGapNeg_thisEvt); 
+    hEvtCount->Fill(14);
+    return true;
+  };
 
   //------------------
   // Ach
@@ -1553,115 +1606,110 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
   if (fAchBin < 0 ) return false;
   hEvtCount->Fill(11);
 
-  //------------------
-  // Qn vector
-  //------------------
-  if (!CalcQnVectorV0(fAOD, fVtx, mAch, Mult)) return false;
-  hEvtCount->Fill(12);
-
   //------------------------
   // Direct v2{2}/v2{4}
   //------------------------
-  if (!DoCumulantsDirect()) return false;
+  if (fCalcV24VsAch){
+    if (!DoCumulantsDirect()) return false;
+    hEvtCount->Fill(10);
+    pRefFlowAch[fCentBin][fAchBin]                          ->Add(pRefFlow_thisEvt);
+    pDiffFlowpQStarAch[fCentBin][fAchBin]               ->Add(pDiffFlowpQStarDirect_thisEvt); 
+    pDiffFlow4Ach[fCentBin][fAchBin]                        ->Add(pDiffFlow4Direct_thisEvt); 
+    hDiffFlowYieldAch[fCentBin][fAchBin]                  ->Add(hMp_w1_thisEvt);
+    hEvtCount->Fill(14);
+    return true;
+  };
 
   //------------------
-  // loop track again
+  // Qn vector
   //------------------
-  for (int iTrk = 0; iTrk < nTrk; ++iTrk) {
-    AliAODTrack* track = (AliAODTrack*)fAOD->GetTrack(iTrk);
-    if (!track) {
-      AliError(Form("%s: Could not get Track", GetName()));
-      continue;
-    }
-    if (!track->TestFilterBit(fFltbit)) continue; 
-    if (isSltTrk[iTrk] == 0) continue;
-
+  if (fDoQnESE){
+    if (!CalcQnVectorV0(fAOD, fVtx, mAch, Mult)) return false;
+    hEvtCount->Fill(12);  
+  
     //------------------
-    // PID
+    // loop track again
     //------------------
-    // double nSigmaTPCPi = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kPion);
-    // double nSigmaTPCK  = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kKaon);
-    // double nSigmaTPCP  = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kProton);
-    // double nSigmaTPCDe = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kDeuteron); 
-    // double nSigmaTOFPi = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kPion);
-    // double nSigmaTOFK  = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kKaon);
-    // double nSigmaTOFP  = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kProton);
-    // double nSigmaTOFDe = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kDeuteron); 
-    // bool isPi = false, isK = false, isP = false, isDe = false;
-    // // if (fabs(nSigmaTPCPi) <= 2. && fabs(nSigmaTOFPi) <= 2.) isPi = true;
-    // // if (fabs(nSigmaTPCK)  <= 2. && fabs(nSigmaTOFK)  <= 2.) isK  = true;
-    // // if (fabs(nSigmaTPCP)  <= 2. && fabs(nSigmaTOFP)  <= 2.) isP  = true;
-    // if (pt<0.6 && fabs(nSigmaTPCPi)<=2.) isPi = true;
-    // if (pt>0.6 && pt<2. && fabs(nSigmaTPCPi)<=2.5 && fabs(nSigmaTOFPi)<=2.) isPi = true;
-    // if (pt<0.6 && fabs(nSigmaTPCK)<=2.) isK = true;
-    // if (pt>0.6 && pt<2 && fabs(nSigmaTPCK)<=2.5 && fabs(nSigmaTOFK)<=2.) isK = true;
-    // if (pt<0.7 && fabs(nSigmaTPCP)<=2.) isP = true;
-    // if (pt>0.7 && pt<3 && fabs(nSigmaTPCP)<=2.5 && fabs(nSigmaTOFP)<=2.) isP = true;
-    // if (pt<1 && fabs(nSigmaTPCDe)<=2.) isDe = true; 
-    // if (pt>1 && pt<5 &&fabs(nSigmaTPCDe)<=2.5 && fabs(nSigmaTOFDe)<=2. ) isDe = true; 
-    double phi    = track->Phi();
-    double eta    = track->Eta();
-    int charge     = track->Charge(); 
-    double weight1 = weightTrk[iTrk];
-    double cosnphi = weight1 * TMath::Cos(fHarmonic*phi);
-    double sinnphi = weight1 * TMath::Sin(fHarmonic*phi);
-    double cos2nphi = weight1*weight1 * TMath::Cos(2*fHarmonic*phi); 
-    double sin2nphi = weight1*weight1 * TMath::Sin(2*fHarmonic*phi); 
-
-    // p pStar track-wise
-    TComplex p_iTrk(cosnphi, sinnphi);
-    TComplex pStar_iTrk = TComplex::Conjugate(p_iTrk);
-    double d2_iTrk = 0., mM = 0.;
-    if (eta < 0.) {
-      mM = weight1* fPosEtaMQ;
-      d2_iTrk = ((p_iTrk*fPosEtaQStar).Re()) / mM;
-    }
-    else{
-      mM = weight1* fNegEtaMQ;
-      d2_iTrk = ((p_iTrk*fNegEtaQStar).Re()) / mM;
-    } 
-
-    if (charge>0){
-      pIntd2_thisEvt->Fill((double)(2*fQnBin+0.5), d2_iTrk, weight1); 
-      pAch[fCentBin]->Fill((double)(2*fQnBin+0.5), mAch, weight1);
-      pIntd2_thisEvt->Fill(28.5, d2_iTrk, weight1); //unbiased
-      pAch[fCentBin]->Fill(28.5, mAch, weight1);
-      // keep Ach entries consistent with d2Ach & d2 etc.
-    } 
-    else{
-      pIntd2_thisEvt->Fill((double)(2*fQnBin+1.5), d2_iTrk, weight1); 
-      pAch[fCentBin]->Fill((double)(2*fQnBin+1.5), mAch, weight1);
-      pIntd2_thisEvt->Fill(29.5, d2_iTrk, weight1); //unbiased
-      pAch[fCentBin]->Fill(29.5, mAch, weight1);
-    } 
-
-  } // loop iTrk end
-  hEvtCount->Fill(13);
-
-  // Fill & Add
-  //------------------
-  // flow & flow vs ach
-  //------------------
-  if (fDiffV2QA) {
-    pDiffFlowpQStarGap[fCentBin]                                     ->Add(pDiffFlowpQStarGap_thisEvt); 
-    hDiffFlowYield[fCentBin]                                               ->Add(hMp_w1_thisEvt); 
-    if (fDoTrivalCor) pDiffFlowpQStarGapPos[fCentBin]    ->Add(pDiffFlowpQStarGapPos_thisEvt); 
-    if (fDoTrivalCor) pDiffFlowpQStarGapNeg[fCentBin]    ->Add(pDiffFlowpQStarGapNeg_thisEvt); 
-  } 
-  if (fCalcV24VsAch) {
-      pRefFlowAch[fCentBin][fAchBin]                          ->Add(pRefFlow_thisEvt);
-      pDiffFlowpQStarAch[fCentBin][fAchBin]               ->Add(pDiffFlowpQStarDirect_thisEvt); 
-      pDiffFlow4Ach[fCentBin][fAchBin]                        ->Add(pDiffFlow4Direct_thisEvt); 
-      hDiffFlowYieldAch[fCentBin][fAchBin]                  ->Add(hMp_w1_thisEvt);
+    for (int iTrk = 0; iTrk < nTrk; ++iTrk) {
+      AliAODTrack* track = (AliAODTrack*)fAOD->GetTrack(iTrk);
+      if (!track) {
+        AliError(Form("%s: Could not get Track", GetName()));
+        continue;
+      }
+      if (!track->TestFilterBit(fFltbit)) continue; 
+      if (isSltTrk[iTrk] == 0) continue;
+  
+      //------------------
+      // PID
+      //------------------
+      // double nSigmaTPCPi = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kPion);
+      // double nSigmaTPCK  = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kKaon);
+      // double nSigmaTPCP  = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kProton);
+      // double nSigmaTPCDe = fPID->NumberOfSigmasTPC(track, (AliPID::EParticleType)AliPID::kDeuteron); 
+      // double nSigmaTOFPi = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kPion);
+      // double nSigmaTOFK  = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kKaon);
+      // double nSigmaTOFP  = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kProton);
+      // double nSigmaTOFDe = fPID->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kDeuteron); 
+      // bool isPi = false, isK = false, isP = false, isDe = false;
+      // // if (fabs(nSigmaTPCPi) <= 2. && fabs(nSigmaTOFPi) <= 2.) isPi = true;
+      // // if (fabs(nSigmaTPCK)  <= 2. && fabs(nSigmaTOFK)  <= 2.) isK  = true;
+      // // if (fabs(nSigmaTPCP)  <= 2. && fabs(nSigmaTOFP)  <= 2.) isP  = true;
+      // if (pt<0.6 && fabs(nSigmaTPCPi)<=2.) isPi = true;
+      // if (pt>0.6 && pt<2. && fabs(nSigmaTPCPi)<=2.5 && fabs(nSigmaTOFPi)<=2.) isPi = true;
+      // if (pt<0.6 && fabs(nSigmaTPCK)<=2.) isK = true;
+      // if (pt>0.6 && pt<2 && fabs(nSigmaTPCK)<=2.5 && fabs(nSigmaTOFK)<=2.) isK = true;
+      // if (pt<0.7 && fabs(nSigmaTPCP)<=2.) isP = true;
+      // if (pt>0.7 && pt<3 && fabs(nSigmaTPCP)<=2.5 && fabs(nSigmaTOFP)<=2.) isP = true;
+      // if (pt<1 && fabs(nSigmaTPCDe)<=2.) isDe = true; 
+      // if (pt>1 && pt<5 &&fabs(nSigmaTPCDe)<=2.5 && fabs(nSigmaTOFDe)<=2. ) isDe = true; 
+      double phi    = track->Phi();
+      double eta    = track->Eta();
+      int charge     = track->Charge(); 
+      double weight1 = weightTrk[iTrk];
+      double cosnphi = weight1 * TMath::Cos(fHarmonic*phi);
+      double sinnphi = weight1 * TMath::Sin(fHarmonic*phi);
+      double cos2nphi = weight1*weight1 * TMath::Cos(2*fHarmonic*phi); 
+      double sin2nphi = weight1*weight1 * TMath::Sin(2*fHarmonic*phi); 
+  
+      // p pStar track-wise
+      TComplex p_iTrk(cosnphi, sinnphi);
+      TComplex pStar_iTrk = TComplex::Conjugate(p_iTrk);
+      double d2_iTrk = 0., mM = 0.;
+      if (eta < 0.) {
+        mM = weight1* fPosEtaMQ;
+        d2_iTrk = ((p_iTrk*fPosEtaQStar).Re()) / mM;
+      }
+      else{
+        mM = weight1* fNegEtaMQ;
+        d2_iTrk = ((p_iTrk*fNegEtaQStar).Re()) / mM;
+      } 
+  
+      if (charge>0){
+        pIntd2_thisEvt->Fill((double)(2*fQnBin+0.5), d2_iTrk, weight1); 
+        pAch[fCentBin]->Fill((double)(2*fQnBin+0.5), mAch, weight1);
+        pIntd2_thisEvt->Fill(28.5, d2_iTrk, weight1); //unbiased
+        pAch[fCentBin]->Fill(28.5, mAch, weight1);
+        // keep Ach entries consistent with d2Ach & d2 etc.
+      } 
+      else{
+        pIntd2_thisEvt->Fill((double)(2*fQnBin+1.5), d2_iTrk, weight1); 
+        pAch[fCentBin]->Fill((double)(2*fQnBin+1.5), mAch, weight1);
+        pIntd2_thisEvt->Fill(29.5, d2_iTrk, weight1); //unbiased
+        pAch[fCentBin]->Fill(29.5, mAch, weight1);
+      } 
+  
+    } // loop iTrk end
+    hEvtCount->Fill(13);
+    //------------------
+    // covariance
+    //------------------
+    pRefFlow[fCentBin]                                                  ->Add(pRefFlow_thisEvt);
+    pIntd2[fCentBin]                                                       ->Add(pIntd2_thisEvt);
+    pIntd2_thisEvt                                                          ->Scale(mAch); 
+    pIntd2Ach[fCentBin]                                                 ->Add(pIntd2_thisEvt);
+    hEvtCount->Fill(14);
+    return true;
   }
-  //------------------
-  // covariance
-  //------------------
-  pRefFlow[fCentBin]                                                  ->Add(pRefFlow_thisEvt);
-  pIntd2[fCentBin]                                                       ->Add(pIntd2_thisEvt);
-  pIntd2_thisEvt                                                          ->Scale(mAch); 
-  pIntd2Ach[fCentBin]                                                 ->Add(pIntd2_thisEvt);
-  hEvtCount->Fill(14);
   return true;
 }
 
@@ -1722,18 +1770,8 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
   double weightNUA = 1;
   if (fVzBin<0 || fCentBin<0 || fRunNum<0) return -1;
   if (fPeriod.EqualTo("LHC10h")){
-    if (fRunNumBin<30){
-      hNUAweightPlus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_plus",fRunNum,fCentBin,fVzBin));
-      hNUAweightMinus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_minus",fRunNum,fCentBin,fVzBin));
-    }
-    else if (fRunNumBin>=30 && fRunNumBin<60){
-      hNUAweightPlus = (TH2D*)fListNUA2->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_plus",fRunNum,fCentBin,fVzBin));
-      hNUAweightMinus = (TH2D*)fListNUA2->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_minus",fRunNum,fCentBin,fVzBin));
-    }
-    else if (fRunNumBin>60){
-      hNUAweightPlus = (TH2D*)fListNUA3->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_plus",fRunNum,fCentBin,fVzBin));
-      hNUAweightMinus = (TH2D*)fListNUA3->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_minus",fRunNum,fCentBin,fVzBin));
-    }
+    hNUAweightPlus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_plus",fRunNum, fVzBin));
+    hNUAweightMinus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_minus",fRunNum, fVzBin));
     if(!hNUAweightPlus || !hNUAweightMinus) return -1;
     if (charge>0){ 
       int phiBin = hNUAweightPlus->GetXaxis()->FindBin(phi);
@@ -1748,13 +1786,13 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
     } 
   } else if (fPeriod.EqualTo("LHC11h")){
     if (charge>0){ 
-      hNUAweightPlus = (TH2D*) fListNUA1->FindObject(Form("weightdPhidEta_run170163_cent%d_vz%d_plus",fCentBin,fVzBin));
+      hNUAweightPlus = (TH2D*) fListNUA1->FindObject(Form("weightdPhidEta_run170163_cent%i_vz%i_plus",fCentBin,fVzBin));
       if (!hNUAweightPlus) return -1;
       int iBinNUA = hNUAweightPlus->FindBin(phi,eta); 
       if (hNUAweightPlus->GetBinContent(iBinNUA)>0) weightNUA = (double)hNUAweightPlus->GetBinContent(iBinNUA);
       return  weightNUA;
     } else if (charge<0){
-      hNUAweightMinus = (TH2D*) fListNUA1->FindObject(Form("weightdPhidEta_run170163_cent%d_vz%d_minus",fCentBin,fVzBin));
+      hNUAweightMinus = (TH2D*) fListNUA1->FindObject(Form("weightdPhidEta_run170163_cent%i_vz%i_minus",fCentBin,fVzBin));
       if (!hNUAweightMinus) return -1;
       int iBinNUA = hNUAweightMinus->FindBin(phi,eta); 
       if (hNUAweightMinus->GetBinContent(iBinNUA)>0) weightNUA = (double)hNUAweightMinus->GetBinContent(iBinNUA);
@@ -1762,13 +1800,13 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
     } 
   } else if (fPeriod.EqualTo("LHC15o")){ // Rihan and Protty 's NUA Results
     if (charge>0){ 
-      hCorrectNUAPos = (TH3F*) fListNUA1->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%d",fRunNum));
+      hCorrectNUAPos = (TH3F*) fListNUA1->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%i",fRunNum));
       if (!hCorrectNUAPos) return -1;
       int iBinNUA = hCorrectNUAPos->FindBin(vz,phi,eta); 
       if (hCorrectNUAPos->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUAPos->GetBinContent(iBinNUA);
       return  weightNUA;
     } else if (charge<0){
-      hCorrectNUANeg = (TH3F*) fListNUA1->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%d",fRunNum));
+      hCorrectNUANeg = (TH3F*) fListNUA1->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%i",fRunNum));
       if (!hCorrectNUANeg) return -1;
       int iBinNUA = hCorrectNUANeg->FindBin(vz,phi,eta); 
       if (hCorrectNUANeg->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUANeg->GetBinContent(iBinNUA);
@@ -2364,36 +2402,36 @@ bool AliAnalysisTaskCMWESE::DoCumulantsDirect()
 bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVtx)
 {
   if (fPeriod.EqualTo("LHC10h") ){
-      // Gain Equalization
-      hMultV0Read = (TH2D*)fListVZEROCALIB->FindObject("hMultV0");
-      //Recenter
-      pV0XMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MCosMean");
-      pV0YMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MSinMean");
-      pV0XMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CCosMean");
-      pV0YMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CSinMean"); 
-      pV0XMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ACosMean");
-      pV0YMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ASinMean"); 
       for(int iCh = 0; iCh < 64; ++iCh) {
         fMultV0Ch[iCh] = hMultV0Read->GetBinContent(iCh+1, fRunNumBin+1);
       } 
-      for(int i = 0; i < 3; ++i) {   // [0]: M; [1]: C; [2]: A;
+      for(int i = 1; i < 3; ++i) {   // [0]: M; [1]: C; [2]: A;
         fV0XMean[i] = pV0XMeanRead[i]->GetBinContent(fRunNumBin+1, fCentBin+1, fVzBin+1);
         fV0YMean[i] = pV0YMeanRead[i]->GetBinContent(fRunNumBin+1, fCentBin+1, fVzBin+1);
       }    
       return true;
-  } else if (fPeriod.EqualTo("LHC15o") ){ // A.Dobrin's V0Calib; "calibV0HIR.root"
+  } else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC11h")){ // A.Dobrin's V0Calib; "calibV0HIR.root"
       for(int iCh = 0; iCh < 64; ++iCh) {
         fMultV0Ch[iCh] = hMultV0[fRunNumBin]->GetBinContent(iCh+1);
       } 
       // AliCentrality* centrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
       // Double_t centSPD = centrality->GetCentralityPercentile("CL1");
-      AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-      if(!fMultSelection) {
-        printf("\n\n **WARNING** ::UserExec() AliMultSelection object not found.\n\n");
-        exit(1);
+      
+      Int_t iCentSPD = -1;
+      if (fPeriod.EqualTo("LHC15o")){
+        AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+        if(!fMultSelection) {
+          printf("\n\n **WARNING** ::UserExec() AliMultSelection object not found.\n\n");
+          exit(1);
+        }
+        Double_t centCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+        iCentSPD = (Int_t)centCL1;
       }
-      Double_t centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-      Int_t iCentSPD = (Int_t)centrCL1;
+      else if (fPeriod.EqualTo("LHC11h")){
+        Double_t centCL1  =  fAOD->GetCentrality()->GetCentralityPercentile("CL1");
+        iCentSPD = (Int_t)centCL1;
+      }
+
       if (iCentSPD >= 90) return false;
       fV0XMean[0] = -999.; fV0YMean[0] = -999.; 
       for(int i = 0; i < 2; ++i) {   // [1]: C; [2]: A;
@@ -2417,10 +2455,13 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx
     if (TMath::IsNaN(fMultV0Ch[iCh]) || fMultV0Ch[iCh]<=0) continue;
 
     double phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
+    double multCh = 0.;
     // double multCh = fAOD->GetVZEROEqMultiplicity(iCh);
-    AliAODVZERO* aodV0 = fAOD->GetVZEROData();
-    double multCh = aodV0->GetMultiplicity(iCh);
-
+    if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC11h")) multCh= fAOD->GetVZEROEqMultiplicity(iCh);
+    else if (fPeriod.EqualTo("LHC15o")) {
+      AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+      multCh = aodV0->GetMultiplicity(iCh);
+    }
     if (iCh<32) { // C
       double multChGEC = -1;
       if (iCh < 8)
@@ -2461,7 +2502,7 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx
   }
   if (multRingGE[0] < 1e-6 || multRingGE[1] < 1e-6) return false;
   double Qn_thisEvt[3];
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 1; i < 3; ++i) {
       Qn_thisEvt[i] = -1;
       double qxMean = fV0XMean[i];
       double qyMean = fV0YMean[i];  
@@ -2478,8 +2519,14 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx
       hPsiV0Recenter[fCentBin][i]->Fill(psiRecenter); 
       if (fQAV0){
         double vz    = fVtx->GetZ();  
-        AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-        double centSPD = fMultSelection->GetMultiplicityPercentile("CL1");
+        double centSPD  =0.;
+        if (fPeriod.EqualTo("LHC15o")){
+          AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+          centSPD = fMultSelection->GetMultiplicityPercentile("CL1");
+        }
+        else if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h") ){
+          centSPD =  fAOD->GetCentrality()->GetCentralityPercentile("CL1");
+        }
         hQxCentRecenter[i]->Fill(centSPD, qxRecenter[i]);
         hQyCentRecenter[i]->Fill(centSPD, qyRecenter[i]);
         hQxVtxRecenter[i]->Fill(vz, qxRecenter[i]);
@@ -2507,6 +2554,7 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorTPC(AliAODEvent* fAOD)
 int AliAnalysisTaskCMWESE::GetQnPercV0(double qn_thisEvt, double mAch, double Mult)
 {
   if (fPeriod.EqualTo("LHC10h")){
+    int NbinX = hQnPercentile->GetNbinsX();
     hQnPercentile->GetXaxis()->SetRange((int)fCent+1,(int)fCent+1);  
     hQnPercentile_centThisEvt = (TH1D*)hQnPercentile->ProjectionY("qnPercentileCentiEvt", 0, -1, "e");
     sp = new TSpline3(hQnPercentile_centThisEvt);
@@ -2518,11 +2566,11 @@ int AliAnalysisTaskCMWESE::GetQnPercV0(double qn_thisEvt, double mAch, double Mu
     hAch[fCentBin+1][QnBin]->Fill(mAch);
     hMult[fCentBin+1][QnBin]->Fill(Mult);  
     
-    hQnPercentile->GetXaxis()->SetRange(1,100); 
+    hQnPercentile->GetXaxis()->SetRange(1,NbinX); 
     return QnBin;   
   } 
 
-  else if (fPeriod.EqualTo("LHC15o")){
+  else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC11h")){
     double pec = 100.* splQ2c[(int)fCent]->Eval(qn_thisEvt);
     int QnBin = GetPercCode(pec);
     hAch[0][QnBin]->Fill(mAch);
