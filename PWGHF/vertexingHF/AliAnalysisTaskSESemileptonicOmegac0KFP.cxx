@@ -883,6 +883,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
       
             //--------------------- reconstruct OmegaMinus------------------------------------
     
+            // ---------  with Lambda mass constraint
             KFParticle kfpOmegaMinus;
             const KFParticle *vOmegaDs[2] = {&kfpKaon, &kfpLambda_m};
             kfpOmegaMinus.Construct(vOmegaDs,NDaughters);
@@ -911,6 +912,30 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
             
             if( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaMinus_m) || TMath::Abs(kfpOmegaMinus_m.GetE()) <= TMath::Abs(kfpOmegaMinus_m.GetPz()) ) continue;
         
+            // --------- without Lambda mass constranit
+            KFParticle kfpOmegaMinus_woLMassConst;
+            const KFParticle *vOmegaDs_woLMassConst[2] = {&kfpKaon, &kfpLambda};
+            kfpOmegaMinus_woLMassConst.Construct(vOmegaDs_woLMassConst,NDaughters);
+         
+         
+            //check rapidity for Omega-
+            if( TMath::Abs(kfpOmegaMinus_woLMassConst.GetE()) <= TMath::Abs(kfpOmegaMinus_woLMassConst.GetPz()) ) continue;
+            //err_massOmega > 0
+            Float_t massOmegaMinus_Rec_woLMassConst, err_massOmegaMinus_woLMassConst;
+            kfpOmegaMinus_woLMassConst.GetMass(massOmegaMinus_Rec_woLMassConst,err_massOmegaMinus_woLMassConst);
+            if(err_massOmegaMinus_woLMassConst <= 0 ) continue;
+           
+            //chi2 >0 && NDF>0
+            if(kfpOmegaMinus_woLMassConst.GetNDF() <=0 || kfpOmegaMinus_woLMassConst.GetChi2() <=0) continue;
+               
+            //Chi2geo cut
+            if(kfpOmegaMinus_woLMassConst.GetChi2()/kfpOmegaMinus_woLMassConst.GetNDF() >= fAnalCuts->GetKFPOmega_Chi2geoMax() ) continue;
+            
+            //check covariance matrix
+            if( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaMinus_woLMassConst) )continue;
+               
+            //mass window cut of Omega-
+            if(TMath::Abs(massOmegaMinus_Rec_woLMassConst - massOmega) > (fAnalCuts->GetProdMassTolOmega() ) ) continue;
             
             //============================== reconstruct Omegac0 ( Omega+electron) ===============================
             
@@ -969,11 +994,11 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                         if(fUseMCInfo){
                             lab_Omegac0 = MatchToMCOmegac0(ptrack,ntrack,btrack,trkBE,mcArray);
                          
-                            if(lab_Omegac0>=0) FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+                            if(lab_Omegac0>=0) FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
                       
                         } //fUseMCInfo
                         if(!fUseMCInfo){
-                            FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+                            FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m,kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
                         } // !fUseMCInfo
                     } //fWriteOmegac0Tree
                     kfpOmegac0.Clear();
@@ -1022,11 +1047,12 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                         if(fUseMCInfo){
                             lab_Omegac0 = MatchToMCOmegac0(ptrack,ntrack,btrack,trkBE,mcArray);
                             
-                            if(lab_Omegac0>=0)   FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m,  kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+                          //  if(lab_Omegac0>=0)  // to keep the WS information
+                                FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
                         
                         } //fUseMCInfo
                         if(!fUseMCInfo){
-                            FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+                            FillTreeRecOmegac0FromCasc(kfpOmegac0,kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m,kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
                         } // !fUseMCInfo
                     } //fWriteOmegac0Tree
                     kfpOmegac0.Clear();
@@ -1035,6 +1061,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                 } // for electron_charge > 0 loop
             } // loop for nTracks: e+/e-
             kfpOmegaMinus_m.Clear();
+            kfpOmegaMinus_woLMassConst.Clear();
             kfpOmegaMinus.Clear();
             kfpKaon.Clear();
             kfpLambda_m.Clear();
@@ -1091,6 +1118,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         
         //======================== reconstruct OmegaPlus ==============================
         
+        //-------- with AntiLambda mass constraint
         KFParticle kfpOmegaPlus;
         const KFParticle *vOmegaDs[2] = {&kfpKaon, &kfpAntiLambda_m};
         kfpOmegaPlus.Construct(vOmegaDs, NDaughters);
@@ -1120,6 +1148,31 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                 
         if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaPlus_m) || TMath::Abs(kfpOmegaPlus_m.GetE()) <= TMath::Abs(kfpOmegaPlus_m.GetPz()) ) continue;
         
+       //----------- without AntiLambda mass constranit
+        KFParticle kfpOmegaPlus_woLMassConst;
+        const KFParticle *vOmegaDs_woLMassConst[2] = {&kfpKaon, &kfpAntiLambda};
+        kfpOmegaPlus_woLMassConst.Construct(vOmegaDs_woLMassConst, NDaughters);
+        
+        // check rapidity of Omega+
+        if ( TMath::Abs(kfpOmegaPlus_woLMassConst.GetE())<=TMath::Abs(kfpOmegaPlus_woLMassConst.GetPz()) ) continue;
+
+        // err_massXi > 0
+        Float_t massOmegaPlus_Rec_woLMassConst, err_massOmegaPlus_woLMassConst;
+        kfpOmegaPlus_woLMassConst.GetMass(massOmegaPlus_Rec_woLMassConst, err_massOmegaPlus_woLMassConst);
+        if ( err_massOmegaPlus_woLMassConst<=0 ) continue;
+
+        // chi2>0 && NDF>0
+        if ( kfpOmegaPlus_woLMassConst.GetNDF()<=0 || kfpOmegaPlus_woLMassConst.GetChi2()<=0 ) continue;
+
+        if ( kfpOmegaPlus_woLMassConst.GetChi2()/kfpOmegaPlus_woLMassConst.GetNDF() >= fAnalCuts->GetKFPOmega_Chi2geoMax() ) continue;
+
+        // check covariance matrix
+        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaPlus_woLMassConst) ) continue;
+                
+        // mass window cut of Omega
+        if ( (TMath::Abs(massOmegaPlus_Rec_woLMassConst-massOmega) > (fAnalCuts->GetProdMassTolOmega())) ) continue;
+        
+    
         //================================ reconstruct AntiOmegac0  ==================================================
         
         for ( Int_t itrkBE = 0; itrkBE < nTracks; itrkBE++){  // loop for nTracks: e+/e-
@@ -1182,10 +1235,10 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                         lab_AntiOmegac0 = MatchToMCAntiOmegac0(ntrack, ptrack, btrack, trkBE, mcArray);
                 
                     if (lab_AntiOmegac0>=0)
-                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m,  kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
+                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m, kfpOmegaPlus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
                     }
                     if (!fUseMCInfo) {
-                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
+                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m, kfpOmegaPlus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
                     }
                 }  //fWriteOmegac0Tree
                 kfpAntiOmegac0.Clear();
@@ -1237,11 +1290,11 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                     if (fUseMCInfo) {
                         lab_AntiOmegac0 = MatchToMCAntiOmegac0(ntrack, ptrack, btrack, trkBE, mcArray);
                         
-                    if (lab_AntiOmegac0>=0)
-                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m,  kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
+                    //if (lab_AntiOmegac0>=0)  // to keep the WS information
+                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m, kfpOmegaPlus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
                     }
                     if (!fUseMCInfo) {
-                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
+                        FillTreeRecOmegac0FromCasc(kfpAntiOmegac0, kfpAntiOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaPlus, kfpOmegaPlus_m,kfpOmegaPlus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray,aodEvent, lab_AntiOmegac0, decaytype);
                     }
                 }  //fWriteOmegac0Tree
                 kfpAntiOmegac0.Clear();
@@ -1250,6 +1303,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
             } // electron charge > 0: KFP_eOmega_WS pairs
         } // loop for nTracks: e+/e-
         kfpOmegaPlus_m.Clear();
+        kfpOmegaPlus_woLMassConst.Clear();
         kfpOmegaPlus.Clear();
         kfpKaon.Clear();
         kfpAntiLambda_m.Clear();
@@ -1288,7 +1342,7 @@ Int_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MatchToMCOmegac0(AliAODTrack* t
     if(labelElectron<0) return -1;
     AliAODMCParticle *mcElectron = static_cast<AliAODMCParticle*>(mcArray->At(labelElectron));
 
-    if(mcProton->GetPdgCode() != 2122 || mcPionMinus->GetPdgCode() != -211 || mcKaon->GetPdgCode() != -321 ||  TMath::Abs(mcElectron->GetPdgCode()) != 11 ) return -1;
+    if(mcProton->GetPdgCode() != 2212 || mcPionMinus->GetPdgCode() != -211 || mcKaon->GetPdgCode() != -321 ||  TMath::Abs(mcElectron->GetPdgCode()) != 11 ) return -1;
   
     //--------- check V0
     Int_t IndexMother[2];
@@ -1308,6 +1362,8 @@ Int_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MatchToMCOmegac0(AliAODTrack* t
     
     mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
     if( mcMother -> GetPdgCode() != 3334 || mcMother ->GetNDaughters() != 2) return -1; // check the mother of Lambda and Kaon is Omega-
+    
+    if(mcElectron->Charge()<0) return -2;
     
     //---------- check Omegac0
     IndexMother[0] = mcMother->GetMother();
@@ -1364,6 +1420,8 @@ Int_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MatchToMCAntiOmegac0(AliAODTrac
     if ( IndexMother[0] != IndexMother[1] ) return -1; // check they are from same mother
     mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
     if ( mcMother->GetPdgCode() != -3334 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Omega+
+    
+    if(mcElectron->Charge()<0) return -2;
  
     //---------- check Omegac0
     IndexMother[0] = mcMother->GetMother(); // mother of Omega+
@@ -1539,10 +1597,10 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
     
 } // FillTreeElectron
 //------------------------------------------------------------------------------------------------
-void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m,  KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
+void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 42 ; i++){
+    for (Int_t i=0; i< 44 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -1732,6 +1790,11 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     fVar_Omegac0[40] = kfpOmegaMinus_m.GetPt();
     fVar_Omegac0[41] = kfpOmegaMinus.GetPt();
     
+    Float_t mass_OmegaMinus_woLMassConst, err_mass_OmegaMinus_woLMassConst;
+    kfpOmegaMinus_woLMassConst.GetMass(mass_OmegaMinus_woLMassConst,err_mass_OmegaMinus_woLMassConst);
+    fVar_Omegac0[42] = mass_OmegaMinus_woLMassConst;
+    fVar_Omegac0[43] = kfpOmegaMinus_woLMassConst.GetPt();
+    
     
     if (fWriteOmegac0Tree)
     fTree_Omegac0 -> Fill();
@@ -1882,7 +1945,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 42;
+    Int_t nVar = 44;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -1901,7 +1964,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[12] = "PA_LamToOmega"; // pointing angle of Lmabda (pointing back to Omega) (with Lambda mass const.)
     fVarNames[13] = "PA_OmegaToPV"; // pointing angle of Omega (pointing back to PV) (with Omega mass const.)
     fVarNames[14] = "Mass_Lam"; // mass of Lambda (without Lambda mass const.)
-    fVarNames[15] = "Mass_Omega"; // mass of Omega (without Omega mass const.)
+    fVarNames[15] = "Mass_Omega"; // mass of Omega (without Omega mass const., with Lamda mass const.)
     fVarNames[16] = "Pt_EleFromOmegac0"; // pt of electron from Omegac0
     fVarNames[17] = "Pt_EleOmega_KF"; // pt of EleOmega_pairs (with Omega mass const. and with PV const.)
     fVarNames[18] = "Rap_EleOmega_KF"; // rapidity of EleOmega_pairs  (with Omega mass const. and with PV const.)
@@ -1921,7 +1984,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[32] = "EleOmegaOA";  // Calcualtion from AOD
     fVarNames[33] = "ConvType"; // ee pairs - - prefilter method
     fVarNames[34] = "DecayType";  // flags for WS and RS of EleOmega_pairs
-    fVarNames[35] = "Omega_MassConst"; // Omega with mass const
+    fVarNames[35] = "Omega_MassConst"; // Omega with Omega mass const
   //  fVarNames[36] = "Omega_MassWithTopo_2Constraints"; // Omega with mass and topological 2 constraints
     fVarNames[36] = "Mass_Omega_Casc"; //
     fVarNames[37] = "nSigmaTOF_Ele";
@@ -1929,7 +1992,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[39] = "casc_pT";
     fVarNames[40] = "OmegapT_MassConst";
     fVarNames[41] = "OmegapT_NoConts";
-    
+    fVarNames[42] = "OmegaMass_WoLMassConst"; // Omega without Lambda mass const
+    fVarNames[43] = "OmegapT_WoLMassConst";
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
      
