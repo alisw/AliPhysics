@@ -1828,9 +1828,6 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
                 0.5 * TMath::Log((lXimomsum + lMomXi[2]) /
                                  (lXimomsum - lMomXi[2] + 1.e-13));
 
-            xiESD->GetXYZ(lPosV0[0], lPosV0[1], lPosV0[2]);
-            xiESD->GetXYZcascade(lPosXi[0], lPosXi[1], lPosXi[2]);
-
             lPosV0[0] = xiAOD->DecayVertexV0X();
             lPosV0[1] = xiAOD->DecayVertexV0Y();
             lPosV0[2] = xiAOD->DecayVertexV0Z();
