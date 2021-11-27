@@ -217,7 +217,7 @@ private:
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
 
-  double GetWeight(Particle part1, Particle part2, double motherpt);
+  double GetWeight(Particle part1, Particle part2);
   double PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2);
   Double_t CalculateNbins();
 
@@ -401,7 +401,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 9);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 10);
 };
 
 
