@@ -29,6 +29,12 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetMostProbableElectron();
         void SetdEdxcutLabel(int dEdxcutLabel);
 
+        // set Nsigma 
+        void SetProtonNsigma(float Nsigma);
+        void SetDeuteronNsigma(float Nsigma);
+        void SetTritonNsigma(float Nsigma);
+        void SetHe3Nsigma(float Nsigma);
+        void SetRejectionNsigma(float Nsigma);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -54,7 +60,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsElectronNSigma(float mom, float nsigmaTPCE, float nsigmaTOFE);
         // dE/dx
         bool IsDeuteronTPCdEdx(float mom, float dEdx);
-
+        bool IsTritonTPCdEdx(float mom, float dEdx);
         // reject
         bool IsElectronNSigmaRejection( float mom, float nsigmaTPCE);
         bool IsPionNSigmaRejection(     float mom, float nsigmaTPCPi, float nsigmaTOFPi);

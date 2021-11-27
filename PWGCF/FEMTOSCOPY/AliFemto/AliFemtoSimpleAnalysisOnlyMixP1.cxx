@@ -178,11 +178,11 @@ AliFemtoSimpleAnalysisOnlyMixP1& AliFemtoSimpleAnalysisOnlyMixP1::operator=(cons
 }
 
 void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent){
-
     fPicoEvent = nullptr;
     AddEventProcessed();
     EventBegin(hbtEvent);
     bool tmpPassEvent = fEventCut->Pass(hbtEvent);
+	
     if (!tmpPassEvent) {
         fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
         EventEnd(hbtEvent);  // cleanup for EbyE
@@ -194,7 +194,6 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
      
     AliFemtoParticleCollection *collection1 = fPicoEvent->FirstParticleCollection(),
                                *collection2 = fPicoEvent->SecondParticleCollection();
-    
     // only collection1 == nullptr, we delete this event!
     if (collection1 == nullptr){
         cout << "E-AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent: new PicoEvent is missing particle collections!\n";
@@ -202,17 +201,6 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
         delete fPicoEvent;
         return;
     }
-    // if collection2 == nullptr, we also update this event, but not do make pair!
-    if (collection2 == nullptr ){
-        if ( MixingBufferFull() ) {
-            delete MixingBuffer()->back();
-            MixingBuffer()->pop_back();
-        }
-        MixingBuffer()->push_front(fPicoEvent);
-        EventEnd(hbtEvent);
-        return;  
-    }
-
     FillHbtParticleCollectionOnlyMixP1(fFirstParticleCut,
                             hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
@@ -228,46 +216,50 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
 
     const UInt_t coll_1_size = collection1->size(),
                  coll_2_size = collection2->size();
-    
     fEventCut->FillCutMonitor(collection1, collection2); //MJ!
     
     const bool coll_1_size_passes = (coll_1_size >= fMinSizePartCollection),
                coll_2_size_passes = (AnalyzeIdenticalParticles() || (coll_2_size >= fMinSizePartCollection));
 
     tmpPassEvent = tmpPassEvent && coll_1_size_passes && coll_2_size_passes;
-
     // fill the event cut monitor
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
     if (!tmpPassEvent) {
-        EventEnd(hbtEvent);
-        delete fPicoEvent;
-        return;
-    }
+	// if collection2 == nullptr, we also update this event, but not do make pair!	
+	if(coll_1_size!=0 && coll_2_size==0){
+        	if ( MixingBufferFull() ) {
+        		MixingBuffer()->pop_back();
+		}
+   	 	MixingBuffer()->push_front(fPicoEvent);
+	}
+	EventEnd(hbtEvent);
+    	fPicoEvent = nullptr;
+	return;
+    }// end only
+
     if (AnalyzeIdenticalParticles()) {
         collection2 = nullptr;
     }
 
     MakePairs("real", collection1, collection2, EnablePairMonitors());
     for (auto storedEvent : *fMixingBuffer) {
-        if (AnalyzeIdenticalParticles()) {
+	if (AnalyzeIdenticalParticles()) {
             MakePairs("mixed", collection1, storedEvent->FirstParticleCollection());
             // If non-identical - mix both combinations of first and second particles
         }else {
             // MakePairs("mixed", collection1,
             //                storedEvent->SecondParticleCollection());
             // dowang: only make first particle in pool with second particle in current event
-            MakePairs("mixed", storedEvent->FirstParticleCollection(),collection2);
-        }
-
+    		MakePairs("mixed", storedEvent->FirstParticleCollection(),collection2);
+	}
+	
     }
     if ( MixingBufferFull() ) {
-        delete MixingBuffer()->back();
         MixingBuffer()->pop_back();
     }
     MixingBuffer()->push_front(fPicoEvent);
-    EventEnd(hbtEvent);
-
-
+ EventEnd(hbtEvent);
+	return;
 
 }
 
