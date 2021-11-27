@@ -1894,7 +1894,8 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
             if (fIsMC) {
                 if (IsTrueXi1530(fGoodXiArray[i], fGoodTrackArray[j]))
                     tmp[25] = 1;  // MCflag Xi1530
-                tmp[25] = 2;      // MCflag -> not true
+                else
+                    tmp[25] = 2;  // MCflag -> not true
             } else
                 tmp[25] = 0;               // MCflag -> data
             tmp[26] = (isXiAnti) ? 1 : 0;  // Antiflag
