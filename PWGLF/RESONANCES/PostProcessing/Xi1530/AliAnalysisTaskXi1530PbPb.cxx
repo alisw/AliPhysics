@@ -357,6 +357,10 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
         fHistos->CreateTH1("hMultiplicity", "", 100, 0, 0.1, "s");
     else
         fHistos->CreateTH1("hMultiplicity", "", 101, -1, 100, "s");
+
+    fHistos->CreateTH1("hXi1530DataPt", "", 100, 0, 10, "s");
+    fHistos->CreateTH1("hXi1530LSPt", "", 100, 0, 10, "s");
+    fHistos->CreateTH1("hXi1530MixPt", "", 100, 0, 10, "s");
     if (fFillQAPlot) {
         // BEFORE CUT 	///////////////////////////////////
         // TPC PID dEdX
@@ -1529,10 +1533,14 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
             AliInfo("All cut passed!!");
             sign = kAllType;
             if (((isXiAnti) && (track1->Charge() < 0)) ||
-                ((!isXiAnti) && (track1->Charge() > 0)))
+                ((!isXiAnti) && (track1->Charge() > 0))) {
                 sign = kXiStar;
-            else
+                fHistos->FillTH1("hXi1530DataPt", vecXi1530.Pt());
+
+            } else {
                 sign = kXiStar_LS;
+                fHistos->FillTH1("hXi1530LSPt", vecXi1530.Pt());
+            }
 
             FillTHnSparse("Xi1530_data",
                           {(double)binAnti,
@@ -1612,6 +1620,8 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                 if (((isXiAnti) && (track_mix->Charge() < 0)) ||
                     ((!isXiAnti) && (track_mix->Charge() > 0))) {
                     sign = kXiStar_MIX;
+
+                    fHistos->FillTH1("hXi1530MixPt", vecXi1530.Pt());
 
                     FillTHnSparse("Xi1530_data",
                                   {(double)binAnti,
