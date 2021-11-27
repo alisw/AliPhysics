@@ -358,9 +358,9 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
     else
         fHistos->CreateTH1("hMultiplicity", "", 101, -1, 100, "s");
 
-    fHistos->CreateTH1("hXi1530DataPt", "", 100, 0, 10, "s");
-    fHistos->CreateTH1("hXi1530LSPt", "", 100, 0, 10, "s");
-    fHistos->CreateTH1("hXi1530MixPt", "", 100, 0, 10, "s");
+    fHistos->CreateTH1("hXi1530DataPt", "", 1000, 0, 10, "s");
+    fHistos->CreateTH1("hXi1530LSPt", "", 1000, 0, 10, "s");
+    fHistos->CreateTH1("hXi1530MixPt", "", 1000, 0, 10, "s");
     if (fFillQAPlot) {
         // BEFORE CUT 	///////////////////////////////////
         // TPC PID dEdX
@@ -388,8 +388,8 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
         fHistos->CreateTH1("QA/hDCALambdaPiontoPV", "", 50, 0, 5, "s");
         fHistos->CreateTH1("QA/hDCABachelorPiontoPV", "", 50, 0, 5, "s");
         // C P A
-        fHistos->CreateTH1("QA/hCPALambda", "", 150, 0.85, 1.0, "s");
-        fHistos->CreateTH1("QA/hCPAXi", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("QA/hCPALambda", "", 500, 0.95, 1.0, "s");
+        fHistos->CreateTH1("QA/hCPAXi", "", 500, 0.95, 1.0, "s");
         // E t a
         fHistos->CreateTH1("QA/hEtaXi1530Pion", "", 20, -1.0, 1.0);
         fHistos->CreateTH2("QA/hPhiEtaXi", "", 180, 0, 2 * pi, 40, -2, 2);
@@ -1046,6 +1046,9 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     fHistos->FillTH2("QAcut/hTPCPIDBachelorPion",
                                      bTrackXi->GetTPCmomentum(),
                                      bTrackXi->GetTPCsignal());
+                    fHistos->FillTH1("QAcut/hTPCPIDsignalLambdaProton", lTPCNSigProton);
+                    fHistos->FillTH1("QAcut/hTPCPIDsignalLambdaPion", lTPCNSigLambdaPion);
+                    fHistos->FillTH1("QAcut/hTPCPIDsignalBachelorPion", lTPCNSigBachelorPion);
                     fHistos->FillTH1("QAcut/hDCALambdaBTWDaughters", lDCALambdaDaughters);
                     fHistos->FillTH1("QAcut/hDCAXiBTWDaughters", lDCAXiDaughters);
                     fHistos->FillTH1("QAcut/hDCALambdatoPV", lDCALambdaPV);
@@ -1397,6 +1400,9 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     fHistos->FillTH2("QAcut/hTPCPIDBachelorPion",
                                      bTrackXi->GetTPCmomentum(),
                                      bTrackXi->GetTPCsignal());
+                    fHistos->FillTH1("QAcut/hTPCPIDsignalLambdaProton", lTPCNSigProton);
+                    fHistos->FillTH1("QAcut/hTPCPIDsignalLambdaPion", lTPCNSigLambdaPion);
+                    fHistos->FillTH1("QAcut/hTPCPIDsignalBachelorPion", lTPCNSigBachelorPion);
                     fHistos->FillTH1("QAcut/hDCALambdaBTWDaughters", lDCALambdaDaughters);
                     fHistos->FillTH1("QAcut/hDCAXiBTWDaughters", lDCAXiDaughters);
                     fHistos->FillTH1("QAcut/hDCALambdatoPV", lDCALambdaPV);
