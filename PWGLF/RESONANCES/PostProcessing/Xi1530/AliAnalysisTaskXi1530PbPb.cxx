@@ -1926,7 +1926,7 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
 
             sign = kXiStar_GEN + Fillbin;
             FillTHnSparse("Xi1530_mc",
-                          {(double)kAnti,
+                          {(double)binAnti,
                            (double)sign,
                            (double)fCent,
                            mcInputTrack->Pt(),
@@ -1959,7 +1959,7 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
 
             sign = kXiStar_GEN + Fillbin;
             FillTHnSparse("Xi1530_mc",
-                          {(double)kAnti,
+                          {(double)binAnti,
                            (double)sign,
                            (double)fCent,
                            mcInputTrack->Pt(),
