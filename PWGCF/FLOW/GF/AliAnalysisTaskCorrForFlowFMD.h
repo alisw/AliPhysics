@@ -9,6 +9,7 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "TObjArray.h"
 #include "TObject.h"
 #include "TList.h"
@@ -111,7 +112,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
-        TH2D*                   fhTrigTracks[4]; //!
+        TH3D*                   fhTrigTracks[4]; //!
         AliTHn*                 fhSE[4]; //!
         AliTHn*                 fhME[4]; //!
         TH1D*                   fhEfficiency[4]; //! not eta dependent

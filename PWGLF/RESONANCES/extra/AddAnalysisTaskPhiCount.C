@@ -2,7 +2,7 @@
 // TODO: Set fName as last par per Train set-up indications
 // TODO: Set Trigger Mask to be set from the AddAnalysisTask argument list
 
-AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, TString fName = "name", Int_t kFilterBit = -1., Float_t kVertexCut = 10., Float_t kDCAZcut = 2., Int_t kDCAXYcut = 7, Float_t kMinTPCclst = 70., Float_t kChi2TPCclst = 4., Float_t kChi2TPCglob = 36., Float_t kChi2ITSclst = 36., Float_t kSgTPC_Alone = 3., Float_t kSgTPC_TOFVt = 5., Float_t kSgTOF_Veto = 3. )
+AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag, Bool_t KaonFlag, TString fName = "name", Int_t kFilterBit = -1., Float_t kVertexCut = 10., Float_t kDCAZcut = 2., Int_t kDCAXYcut = 7, Float_t kMinTPCclst = 70., Float_t kChi2TPCclst = 4., Float_t kChi2TPCglob = 36., Float_t kChi2ITSclst = 36.,  Float_t kTPCClsOverFndbl = .8, Float_t kSgTPC_Alone = 3., Float_t kSgTPC_TOFVt = 5., Float_t kSgTOF_Veto = 3. )
 {
     // Analysis Manager
     AliAnalysisManager         *fAliAnlManager      =   AliAnalysisManager::GetAnalysisManager();
@@ -35,17 +35,18 @@ AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag,
     
     //  -   //  Track Selection
     //  -   //  -   //  General
-    fAliAnlTask ->  SetFilterBit(kFilterBit);       //  5   is Standard but it is custom made w/ differences
-    fAliAnlTask ->  SetDCAzCut(kDCAZcut);           //  2   is Standard
-    fAliAnlTask ->  SetNSigmaPtDepXYDCA(kDCAXYcut); //  7   is Standard
+    fAliAnlTask ->  SetFilterBit(kFilterBit);               //  5   is Standard but it is custom made w/ differences
+    fAliAnlTask ->  SetDCAzCut(kDCAZcut);                   //  2   is Standard
+    fAliAnlTask ->  SetNSigmaPtDepXYDCA(kDCAXYcut);         //  7   is Standard
     
     //  -   //  -   //  TPC
-    fAliAnlTask ->  SetMinTPCclusters(kMinTPCclst); //  70  is Standard
-    fAliAnlTask ->  SetChi2TPCcluster(kChi2TPCclst);//  4   is Standard
-    fAliAnlTask ->  SetChi2TPCGlobal(kChi2TPCglob); //  36  is Standard
+    fAliAnlTask ->  SetMinTPCclusters(kMinTPCclst);         //  70  is Standard
+    fAliAnlTask ->  SetChi2TPCcluster(kChi2TPCclst);        //  4   is Standard
+    fAliAnlTask ->  SetChi2TPCGlobal(kChi2TPCglob);         //  36  is Standard
+    fAliAnlTask ->  SetTPCClsOverFndbl(kTPCClsOverFndbl);   //  .8  is Standard
     
     //  -   //  -   //  ITS
-    fAliAnlTask ->  SetChi2ITScluster(kChi2ITSclst);//  36  is Standard
+    fAliAnlTask ->  SetChi2ITScluster(kChi2ITSclst);        //  36  is Standard
     
     //  -   //  -   //  PID
     fAliAnlTask ->  SetkSgTPC_Alone(kSgTPC_Alone);

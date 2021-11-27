@@ -655,15 +655,19 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
    float COMBd = sqrt(TPCd*TPCd+TOFd*TOFd);
   
    if(fIsKaon){ //Kaon TOF selection
+
     if(!fIsRamona){ // Oton Kaon TOF selection
-     if(
-      COMBk<fcutCOMBkd 
-      && COMBk<COMBpi && COMBk<COMBp
-     ) passTOF=true;
+     if(COMBk<fcutCOMBkd 
+      && COMBk<COMBpi && COMBk<COMBp) passTOF=true;
+     //reject pions extremely from 1.2GeV:
+     if(p>1.2&&COMBk>2) passTOF=false;
+     if(p>1.2&&COMBpi<6) passTOF=false;
+
     }else{ // Ramona Kaon TOF selection
      if(p>0.4&&p<1.4&&TOFk<3&&TPCk<3
       &&!(p>0.8&&TOFp<3&&TPCp<3)) passTOF=true;
     }
+
    }else{ //Deuteron TOF selection
     if(
      COMBd<fcutCOMBkd 
@@ -675,16 +679,19 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
   }//TOFyes
 
   if(fIsKaon){ //Kaon TPC selection
+  
    if(!fIsRamona){ // Oton Kaon TPC selection
     passTPC = true;//for kaonstart with true and then exclude
-    if(p>.4&&p<.7&&TPCe<fcutEXCLUSIONkd) passTPC=false; // exclude TPC electrons
+    if(p>.3&&p<.8&&TPCe<fcutEXCLUSIONkd) passTPC=false; // exclude TPC electrons
     if(p>.5&&TPCpi<fcutEXCLUSIONkd) passTPC=false; // exclude TPC pions
-    if(p>1.5&&TPCp<fcutEXCLUSIONkd) passTPC=false; // exclude TPC protons
     if(TPCk>fcutTPCkd) passTPC=false; // own TPC sigma kaon selection
-    if(p>1.) passTPC = false; //momentum threshold for TPC
+    if(p>.5&&p<.65) passTPC=false; //exclude gap
+    if(p>.85) passTPC = false; // momentum limit for TPC selectoin
+
    }else{ // Ramona Kaon TPC selection
     if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
    }
+  
   }else{ // Deuteron TOF selection
    if(p<1.4&&TPCd<fcutTPCkd) passTPC = true;//momentum theshold && own TPC deuteron kaon selection
   }
@@ -695,6 +702,7 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
  //return an OR!
  return passTPC||passTOF;
 }
+
 
 bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {
   bool pass = true;

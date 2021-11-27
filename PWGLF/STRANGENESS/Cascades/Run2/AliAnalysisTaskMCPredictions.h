@@ -64,6 +64,7 @@ public:
   
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
   void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
+  void SetEtaTrigger( Float_t lEta1, Float_t lEta2 ) { fMinEtaTrigger = lEta1; fMaxEtaTrigger = lEta2; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
@@ -133,6 +134,8 @@ private:
   Bool_t fkDo2pc;
   Float_t fMinPtTrigger; //for xi trigger
   Float_t fMaxPtTrigger; //for xi trigger
+  Float_t fMinEtaTrigger;
+  Float_t fMaxEtaTrigger;
   TH1D *fHistPtTriggerD0;
   TH1D *fHistPtTriggerXiC;
   TH1D *fHistPtTriggerXiB;

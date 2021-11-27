@@ -613,7 +613,7 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
 
     } while (dLJ < 0.45 || dSLJ < 0.45);
 
-    AliVTrack *tmpTrack = 0x0;
+    AliAODTrack *tmpTrack = 0x0;
 
     for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
     {
@@ -621,7 +621,11 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
         if (!partcont->GetParticle(i))
             continue;
         
-        tmpTrack = static_cast<AliVTrack *>(partcont->GetParticle(i));
+        //tmpTrack = static_cast<AliVTrack *>(partcont->GetParticle(i));
+        tmpTrack = (AliAODTrack *)partcont->GetParticle(i);
+
+        if (!tmpTrack->IsHybridGlobalConstrainedGlobal())
+            continue;
 
         if (fabs(tmpTrack->Eta()) > 0.9)
             continue;
@@ -674,7 +678,11 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
         if (!partcont->GetParticle(i))
             continue;
 
-        AliVTrack *trk = static_cast<AliVTrack *>(partcont->GetParticle(i));
+        //AliVTrack *trk = static_cast<AliVTrack *>(partcont->GetParticle(i));
+        AliAODTrack *trk = (AliAODTrack *)partcont->GetParticle(i);
+
+        if (!trk->IsHybridGlobalConstrainedGlobal())
+            continue;
 
         if (fabs(trk->Eta()) > 0.9)
             continue;

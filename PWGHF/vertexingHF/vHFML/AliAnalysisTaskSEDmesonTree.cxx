@@ -275,6 +275,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     }
 
     TClonesArray *arrayCand = nullptr;
+    TClonesArray *arrayCandDDau = nullptr;
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
         // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -297,6 +298,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     break;
                 case kDstartoD0pi:
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
+                    arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
                     break;
             }
         }
@@ -313,11 +315,12 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                 break;
             case kDstartoD0pi:
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
+                arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
                 break;
         }
     }
 
-    if (!fAOD || !arrayCand)
+    if (!fAOD || !arrayCand || (fDecChannel == kDstartoD0pi && !arrayCandDDau))
     {
         AliError("Candidate branch not found!\n");
         PostData(1, fOutput);
@@ -424,19 +427,24 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++)
     {
         AliAODRecoDecayHF *dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
+        AliAODRecoDecayHF *dMesonWithVtx;
+        if(fDecChannel == kDstartoD0pi)
+            dMesonWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+        else
+            dMesonWithVtx = dMeson;
 
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
         bool isInSignalRegion = false;
-        int isSelected = IsCandidateSelected(dMeson, &vHF, unsetVtx, recVtx, origOwnVtx, isInSignalRegion);
+        int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, &vHF, unsetVtx, recVtx, origOwnVtx, isInSignalRegion);
         if (!isSelected)
         {
             if (unsetVtx)
-                dMeson->UnsetOwnPrimaryVtx();
+                dMesonWithVtx->UnsetOwnPrimaryVtx();
             if (recVtx)
-                fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
+                fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
             continue;
         }
 
@@ -762,9 +770,9 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         }
 
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         if (recVtx)
-            fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
     }
 
     if(nSelected > 0)
@@ -781,10 +789,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, bool &isInSignalRegion)
+int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, bool &isInSignalRegion)
 {
 
-    if (!dMeson || !vHF)
+    if (!dMeson || !dMesonWithVtx || !vHF)
         return 0;
     fHistNEvents->Fill(11);
 
@@ -796,7 +804,11 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
 
     for (int iDau = 0; iDau < nDau; iDau++)
     {
-        AliAODTrack *track = vHF->GetProng(fAOD, dMeson, iDau);
+        AliAODTrack *track;
+        if ((fDecChannel != kDstartoD0pi) || (iDau == 0))
+            track = vHF->GetProng(fAOD, dMeson, iDau);
+        else
+            track = vHF->GetProng(fAOD, dMesonWithVtx, iDau-1); //D0<-D* daughters
         arrDauTracks.AddAt(track, iDau);
     }
 
@@ -837,9 +849,9 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     fHistNEvents->Fill(12);
 
     unsetVtx = false;
-    if (!dMeson->GetOwnPrimaryVtx())
+    if (!dMesonWithVtx->GetOwnPrimaryVtx())
     {
-        dMeson->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
+        dMesonWithVtx->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
         unsetVtx = true;
         // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
         // Pay attention if you use continue inside this loop!!!
@@ -854,7 +866,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
         if (pseudoRand > fFracCandToKeep && ptD < fMaxCandPtSampling)
         {
             if (unsetVtx)
-                dMeson->UnsetOwnPrimaryVtx();
+                dMesonWithVtx->UnsetOwnPrimaryVtx();
             return 0;
         }
     }
@@ -863,7 +875,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     if (ptBin < 0)
     {
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -871,7 +883,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     if (!isFidAcc)
     {
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -879,7 +891,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     if (!isSelected)
     {
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -888,12 +900,12 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
 
     if (fRDCuts->GetIsPrimaryWithoutDaughters())
     {
-        if (dMeson->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*dMeson->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(dMeson, fAOD))
+        if (dMesonWithVtx->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*dMesonWithVtx->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(dMesonWithVtx, fAOD))
             recVtx = true;
         else
-            fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
     }
 
     double mass = -1.;

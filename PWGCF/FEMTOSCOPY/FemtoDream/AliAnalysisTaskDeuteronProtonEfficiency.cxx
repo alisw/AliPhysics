@@ -907,7 +907,6 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double EtaAntiDeuteron	  = 0.0;
   double PtAntiDeuteron		  = 0.0;
 
-  double MomentumPair[3]  = {0.0,0.0,0.0};
   double PtPair		  = 0.0;
   double EtaPair	  = 0.0;
   
@@ -1654,6 +1653,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
 	fHistPtAntiProtonRecTrackCuts->Fill(PtAntiProton);
 	fHistEtaAntiProtonRecTrackCuts->Fill(EtaAntiProton);
+
+	ReconstructedAntiProtonArray->push_back(LabelAntiProton);
 
       } // end of loop for reconstructed antiprotons
 

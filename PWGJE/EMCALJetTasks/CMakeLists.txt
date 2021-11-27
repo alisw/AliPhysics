@@ -64,6 +64,7 @@ set(SRCS
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
     AliAnalysisTaskRhoTransDev.cxx
+    AliAnalysisTaskRhoPerpCone.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
     AliEmcalJetTaggerTaskFast.cxx

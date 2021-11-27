@@ -19,6 +19,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THn.h>
 #include <TChain.h>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskCheckAODTracks.h"
@@ -157,7 +158,9 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParV0DauAfterSel{nullptr},
   fHistDCAV0DauBeforeSel{nullptr},
   fHistDCAV0DauAfterSel{nullptr},
+  fHistMuldimK0s{nullptr},
   fFillTree(kFALSE),
+  fFillMulDimK0s(kFALSE),
   fTrackTree{nullptr},
   fTreeVarFloat{nullptr},
   fTreeVarInt{nullptr},
@@ -330,7 +333,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParV0DauAfterSel;
     delete fHistDCAV0DauBeforeSel;
     delete fHistDCAV0DauAfterSel;
-    
+    delete fHistMuldimK0s;
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       delete fHistImpParXYPtMulFiltBit[jb];
       delete fHistEtaPhiPtFiltBit[jb];
@@ -701,6 +704,19 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParV0DauAfterSel);
   fOutput->Add(fHistDCAV0DauBeforeSel);
   fOutput->Add(fHistDCAV0DauAfterSel);
+  // K0s THnF: mass, pt, R, status track+, status track-
+  if(fFillMulDimK0s){
+    int nbinsMuldimK0s[5]={200,200,100,3,3};
+    double xminMuldimK0s[5]={0.4,0., 0.,-0.5,-0.5};
+    double xmaxMuldimK0s[5]={0.6,10.,10.,2.5,2.5};
+    fHistMuldimK0s = new THnF("hMultiDimK0s","",5,nbinsMuldimK0s,xminMuldimK0s,xmaxMuldimK0s);
+    fHistMuldimK0s->GetAxis(0)->SetTitle("Inv.Mass (GeV/c^{2})");
+    fHistMuldimK0s->GetAxis(1)->SetTitle("p_{T}(K0s)");
+    fHistMuldimK0s->GetAxis(2)->SetTitle("R (cm)");
+    fHistMuldimK0s->GetAxis(3)->SetTitle("Status dau+");
+    fHistMuldimK0s->GetAxis(4)->SetTitle("Status dau-");
+    fOutput->Add(fHistMuldimK0s);
+  }
   
   PostData(1,fOutput);
   PostData(2,fTrackTree);
@@ -1276,6 +1292,18 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     if(keepK0s) {
       fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+      int statusp=0;
+      if(pTrack->GetStatus() & AliESDtrack::kITSrefit){
+	statusp=1;
+	if(pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1)) statusp=2;
+      }
+      int statusn=0;
+      if(nTrack->GetStatus() & AliESDtrack::kITSrefit){
+	statusn=1;
+	if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1)) statusn=2;
+      }
+      double arrK0s[5]={invMassK0s,ptv0,rv0,(double)statusp,(double)statusn};
+      if(fFillMulDimK0s && fHistMuldimK0s) fHistMuldimK0s->Fill(arrK0s);
       if(inPeakK0s){
 	fHistDecayLengthVsPtK0s->Fill(dlen,ptv0);
 	fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);

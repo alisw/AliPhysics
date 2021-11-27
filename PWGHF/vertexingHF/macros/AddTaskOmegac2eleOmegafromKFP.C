@@ -8,10 +8,10 @@
 #include "TFile.h"
 #endif
 
-AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, TString cuttype="")
+AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, Bool_t writeElectronTree = kFALSE, TString cuttype="")
 
 {
-    Bool_t writeElectronTree = kTRUE;
+    
     Bool_t writeOmegac0RecTree = kTRUE;
     Bool_t writeOmegac0MCGenTree = kFALSE;
     if(theMCon) writeOmegac0MCGenTree = kTRUE;

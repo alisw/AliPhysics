@@ -606,11 +606,11 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: SelectTrack(const AliVEvent *eve
             nSigmaCombined_Ele = AliVertexingHFUtils::CombineNsigmaTPCTOF(nsigma_tpcele, nsigma_tofele);
            
             Double_t Ele_TPCPIDSelCombinedTPCTOF[3];
-            Ele_TPCPIDSelCombinedTPCTOF[0] = nSigmaCombined_Ele;
+            Ele_TPCPIDSelCombinedTPCTOF[0] = nsigma_tofele;
             Ele_TPCPIDSelCombinedTPCTOF[1] = aodt->Pt();
             Ele_TPCPIDSelCombinedTPCTOF[2] = nsigma_tpcele;
             
-        //    fHistoElectronTPCPIDSelTOF -> Fill(Ele_TPCPIDSelCombinedTPCTOF);
+            fHistoElectronTPCPIDSelTOF -> Fill(Ele_TPCPIDSelCombinedTPCTOF);
     
         }
         
@@ -755,18 +755,24 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
     Int_t   nSeleCasc=0;
     SelectCascade(aodEvent,nCascs,nSeleCasc,seleCascFlags,mcArray);
   
-    /*
-    Double_t mass; Double_t mass_ss; Double_t nSigmaCombined_Ele;
+    
+    Double_t nSigmaCombined_Ele; Bool_t Convee_LS;  Bool_t Convee_ULS;
     for(Int_t itrk =0; itrk<nTracks; itrk++){
         if(!seleTrkFlags[itrk]) continue;
         AliAODTrack *trk = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
-       
+        if(!trk) continue;
+        
         Float_t nSigmaTOF_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk, AliPID::kElectron);
         Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);  // need to know the data type conversion
         nSigmaCombined_Ele = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_Ele, nSigmaTOF_Ele);
         
+        Double_t mass =9999.; Double_t mass_ss = 9999.;
+        Convee_LS =  (PrefilterElectronLS(trk, aodEvent, mass_ss));
+        Convee_ULS = (PrefilterElectronULS(trk, aodEvent, mass));
+        
         Double_t MassConversions[3];
-        MassConversions[0] = nSigmaCombined_Ele;
+      //  MassConversions[0] = nSigmaCombined_Ele;
+        MassConversions[0] = nSigmaTOF_Ele;
         MassConversions[1] = mass;
         MassConversions[2] = mass_ss;
  
@@ -774,7 +780,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
        
         
     } // nTracks: e+/e-
-    */
+    
     
     for(Int_t itrk =0; itrk<nTracks; itrk++){
         AliAODTrack *trk = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrk));
@@ -1422,8 +1428,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineAnaHist()
     fHistoElectronTOFPID = new TH2F("fHistoElectronTOFPID","",50,0.,5.,50,-20.,20.);
     fOutputList -> Add(fHistoElectronTOFPID);
     
-    Int_t bins_ele[3]    = {1000, 10, 500};
-    Double_t xmin_ele[3] = {0., 0., -10.};
+    Int_t bins_ele[3]    = {500, 10, 500};
+    Double_t xmin_ele[3] = {-10., 0., -10.};
     Double_t xmax_ele[3] = {10., 5., 10.};
     fHistoElectronTPCPIDSelTOF = new THnSparseF("fHistoElectronTPCPIDSelTOF","",3,bins_ele,xmin_ele,xmax_ele);
     fOutputList -> Add(fHistoElectronTPCPIDSelTOF);
@@ -1536,7 +1542,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m,  KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 40 ; i++){
+    for (Int_t i=0; i< 42 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -1714,12 +1720,17 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     kfpOmegaMinus_m.GetMass(mass_OmegaMinus_m,err_mass_OmegaMinus_m);
     fVar_Omegac0[35] = mass_OmegaMinus_m;
      
-    Float_t mass_OmegaMinus_PV, err_mass_OmegaMinus_PV;
-    kfpOmegaMinus_PV.GetMass(mass_OmegaMinus_PV, err_mass_OmegaMinus_PV);
-    fVar_Omegac0[36] = mass_OmegaMinus_PV;
-    fVar_Omegac0[37] = casc -> MassOmega();
-    fVar_Omegac0[38] = nSigmaTOF_EleFromOmegac0;
-    fVar_Omegac0[39] = nSigmaTPC_EleFromOmegac0;
+  //  Float_t mass_OmegaMinus_PV, err_mass_OmegaMinus_PV;
+  //  kfpOmegaMinus_PV.GetMass(mass_OmegaMinus_PV, err_mass_OmegaMinus_PV);
+  //  fVar_Omegac0[36] = mass_OmegaMinus_PV;
+    
+    fVar_Omegac0[36] = casc -> MassOmega();
+    fVar_Omegac0[37] = nSigmaTOF_EleFromOmegac0;
+    fVar_Omegac0[38] = nSigmaTPC_EleFromOmegac0;
+    
+    fVar_Omegac0[39] = casc -> Pt();
+    fVar_Omegac0[40] = kfpOmegaMinus_m.GetPt();
+    fVar_Omegac0[41] = kfpOmegaMinus.GetPt();
     
     
     if (fWriteOmegac0Tree)
@@ -1871,7 +1882,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 40;
+    Int_t nVar = 42;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -1911,10 +1922,13 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[33] = "ConvType"; // ee pairs - - prefilter method
     fVarNames[34] = "DecayType";  // flags for WS and RS of EleOmega_pairs
     fVarNames[35] = "Omega_MassConst"; // Omega with mass const
-    fVarNames[36] = "Omega_MassWithTopo_2Constraints"; // Omega with mass and topological 2 constraints
-    fVarNames[37] = "Mass_Omega_Casc"; //
-    fVarNames[38] = "nSigmaTOF_Ele";
-    fVarNames[39] = "nSigmaTPC_Ele";
+  //  fVarNames[36] = "Omega_MassWithTopo_2Constraints"; // Omega with mass and topological 2 constraints
+    fVarNames[36] = "Mass_Omega_Casc"; //
+    fVarNames[37] = "nSigmaTOF_Ele";
+    fVarNames[38] = "nSigmaTPC_Ele";
+    fVarNames[39] = "casc_pT";
+    fVarNames[40] = "OmegapT_MassConst";
+    fVarNames[41] = "OmegapT_NoConts";
     
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){

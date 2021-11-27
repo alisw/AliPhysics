@@ -638,9 +638,9 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::IsSelectedCustomizedPtDepeID(AliAODTr
     Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
     Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
     
- //   if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
- //   if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;  //using the CombinedTPCTOF instead
-    
+    if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
+    if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;  //using the CombinedTPCTOF instead later
+   
     Double_t pte = trk->Pt();
     Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
     if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
@@ -719,15 +719,16 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   Double_t momegaPDG =  TDatabasePDG::Instance()->GetParticle(3334)->Mass();
    
   Bool_t isparticle = kTRUE;
+  if(btrack->Charge() > 0) isparticle = kFALSE;
     
- /*
+ 
    // ====== follwing cuts will be replaced by KFP_Cuts
   Double_t massLambda = casc->MassLambda();
   Double_t massAntiLambda = casc->MassAntiLambda();
   if(TMath::Abs(massLambda-mLPDG)>fProdMassTolLambda && TMath::Abs(massAntiLambda-mLPDG)>fProdMassTolLambda) 
      return kFALSE;
   
-  if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
+//  if(TMath::Abs(massAntiLambda-mLPDG)<fProdMassTolLambda) isparticle = kFALSE;
   
   Double_t massXi = casc->MassXi();
   Double_t massOmega = casc->MassOmega();
@@ -775,7 +776,7 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   Double_t lV0CosineOfPointingAngleXi = casc->CosPointingAngle(lPosXi);
   if(lXiCosineOfPointingAngle < fProdXiCosineOfPoiningAngleMin) return kFALSE;
   if(lV0CosineOfPointingAngleXi < fProdV0CosineOfPoiningAngleXiMin) return kFALSE;
-*/
+
     
   if(fUseCascadePID)
   {
@@ -798,7 +799,7 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
       fPidObjCascKa->SetPidResponse(pidResp);
     }
       
-      if(btrack->Charge()<0){
+      if(isparticle){
         Int_t isProton = -9999;
         Int_t isPion = -9999;
         Int_t isKaon = -9999;

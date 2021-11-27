@@ -262,13 +262,12 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidGapPV52_pt_%i",i+1),"MidGapPV52_pTDiff"));
 
-
     //Multi bins:
-    Double_t multibins[] = {5,10,20,30,40,50,60,70};
+    Double_t multibins[] = {0,5,10,20,30,40,50,60,70};
     fFC = new AliGFWFlowContainer();
     fFC->SetName(Form("FC%s",fSelections[fCurrSystFlag]->GetSystPF()));
     fFC->SetXAxis(fPtAxis);
-    fFC->Initialize(OAforPt,7,multibins,10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
+    fFC->Initialize(OAforPt,8,multibins,10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
     //Powers per harmonic:
     Int_t NoGap[] = {9,0,8,4,7,2,6,0,5};
     Int_t WithGap[] = {5,0,2,2,3,2,4,0,5};
@@ -316,6 +315,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     };
     CreateCorrConfigs();
   };
+  fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
   // printf("\n******************\nStarting the watch\n*****************\n");
   // mywatchFill.Reset();
   // mywatchStore.Reset();
@@ -403,8 +403,8 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
   if(fCollisionsSystem==2) { //only for Pb-Pb, because of the PU
-    if(cent<5) return; //Do not consider 0-5%
-    if(cent>70) return; //Also, peripheral cutoff
+    if(cent<0) return; //Do not consider 0-5%
+    if(cent>70) return; //Also, peripheral cutoff //devel comm
   };
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
@@ -480,13 +480,9 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       //if(!AcceptAODTrack(lTrack,tca)) continue;
       Double_t POStrk[] = {0.,0.,0.};
       lTrack->GetXYZ(POStrk);
-      Double_t DCA[] = {0.,0.,0.};
-      for(Int_t i=0;i<3;i++) DCA[i] = POSvtx[i]-POStrk[i];
-      Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
-      Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
+      Double_t lDCA[] = {0.,0.,0.};
+      for(Int_t i=0;i<3;i++) lDCA[i] = POSvtx[i]-POStrk[i];
       if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA)) continue; //Removing the ITS track selection (syst)
-        // && !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
-
       Double_t l_pT=lTrack->Pt();
       Bool_t WithinPtPOI = (fPOIpTMin<l_pT) && (l_pT<fPOIpTMax); //within POI pT range
       Bool_t WithinPtRF  = (fRFpTMin <l_pT) && (l_pT<fRFpTMax);  //within RF pT range
