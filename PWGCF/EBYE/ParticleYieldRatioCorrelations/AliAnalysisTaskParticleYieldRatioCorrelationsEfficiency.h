@@ -69,27 +69,25 @@ private:
   AliEventCuts *fAliEventCuts; //!
   int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
   Float_t minP, maxP, Vertexmin, Vertexmax;
-  Float_t PtCut[3] = {0.2, 0.5, 0.5};
-  Float_t nSigmaBoundary[3] = {0.5, 0.32, 0.7};
-
+  static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8;
   //Efficiency Maps
   //Tracking:
-  TH3D *NGenTracks[4][16][8];            //!
-  TH3D *EfficiencyTracking[4][16][8];    //!
-  TH3D *ContaminationTracking[4][16][8]; //!
-  TH3D *NReconstTracks[4][16][8];        //!
+  TH3D *NGenTracks[nCentrClasses][nEtaClasses][nSorts];            //!
+  TH3D *EfficiencyTracking[nCentrClasses][nEtaClasses][nSorts];    //!
+  TH3D *ContaminationTracking[nCentrClasses][nEtaClasses][nSorts]; //!
+  TH3D *NReconstTracks[nCentrClasses][nEtaClasses][nSorts];        //!
   //PID:
-  TH3D *NTrueTracks[4][16][8];      //!
-  TH3D *EfficiencyPID[4][16][8];    //!
-  TH3D *ContaminationPID[4][16][8]; //!
-  TH3D *NTracksInCut[4][16][8];     //!
+  TH3D *NTrueTracks[nCentrClasses][nEtaClasses][nSorts];      //!
+  TH3D *EfficiencyPID[nCentrClasses][nEtaClasses][nSorts];    //!
+  TH3D *ContaminationPID[nCentrClasses][nEtaClasses][nSorts]; //!
+  TH3D *NTracksInCut[nCentrClasses][nEtaClasses][nSorts];     //!
 
   TH2D *fDeDx;         //!
   TH2D *fDeDxSorts[4]; //!
   TH2D *fTOF;          //!
   TH2D *fTOFSorts[4];  //!
 
-  TH1D *purityAll[8];      //!
+  TH1D *purityAll[8]; //!
   TH1D *purity[8][8]; //!
 
   TH2D *fHistQASPDTrackletsvsV0MCent; //!
