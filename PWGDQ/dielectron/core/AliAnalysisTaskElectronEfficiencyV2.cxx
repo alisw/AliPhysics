@@ -1035,8 +1035,6 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     AliVParticle* mcPart1  = (AliVParticle*)fMC->GetTrack(iPart);
     if (!mcPart1) continue;
 
-    //printf("iPart = %d , pdg = %d, mother id = %d , genID = %d, IsPhysicalPrimary = %d\n",iPart,mcPart1->PdgCode(),mcPart1->GetMother(), mcPart1->GetGeneratorIndex(), mcPart1->IsPhysicalPrimary());
-
     // ##########################################################
     // Checking minimum and maximum values for generated particles
     if (mcPart1->Pt()  < fPtMinGen  || mcPart1->Pt()  > fPtMaxGen)  continue;
@@ -1416,7 +1414,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 	    double weight = 1.;
 	    if (fCocktailFile) {
 	      if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-		weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i]);
+		double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
+		weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
 	      }
 	      else{
 		weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
@@ -1448,7 +1447,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 	  if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangleSmeared >= fOpMin) && (opangleSmeared < fOpMax))) {
 	    if (fCocktailFile) {
 	      if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-		weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i]);
+		double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
+		weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
 	      }
 	      else{
 		weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
@@ -1656,7 +1656,8 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         double weight = 1.;
         if (fCocktailFile) {
           if (fRecNegPart[neg_i].GetMotherID() == fRecPosPart[pos_i].GetMotherID()){
-            weight *= GetWeight(fRecNegPart[neg_i], fRecPosPart[pos_i]);
+            double motherpt = fMC->GetTrack(fRecNegPart[neg_i].GetMotherID())->Pt();
+            weight *= GetWeight(fRecNegPart[neg_i], fRecPosPart[pos_i], motherpt);
           }
           else{
             weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
@@ -2140,22 +2141,12 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::
   return false;
 }
 
-double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle part2){
+double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle part2, double motherpt){
   int pdgMother = 0;
   double weight = 0;
   int bin = -1;
 
-  AliMCParticle *p = (AliMCParticle*)fMC->GetTrack(part2.GetTrackID());
-  Int_t mother_id = part2.GetMotherID();
-  AliMCParticle *mp = 0x0;
-  while(mother_id > -1){
-      mp = (AliMCParticle*)fMC->GetTrack(mother_id);
-      mother_id = mp->GetMother();
-  }
-  if (mp == 0x0) return weight;
-  pdgMother = mp->PdgCode();
-  Double_t motherpt = mp->Pt();
-
+  pdgMother = fMC->GetTrack(part2.GetMotherID())->PdgCode();
   if      (pdgMother == 111) {
     if (fPtPion) {
       bin = fPtPion->FindBin(motherpt);
