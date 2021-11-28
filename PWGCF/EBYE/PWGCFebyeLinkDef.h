@@ -112,5 +112,6 @@
 #pragma link C++ class AliAnalysisTaskFluctMCTEPOS+;
 
 #pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency+;
+#pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelations+;
 
 #endif
