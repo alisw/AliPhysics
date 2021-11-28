@@ -79,7 +79,7 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecEvent::AliAnalysisTaskGammaDeltaPIDSaveQvecE
   fTowZNAraw3 = 0;
   fTowZNAraw4 = 0;
   
-  // TPC (|eta|<0.8)
+  // TPC (Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1, SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0)
   fTPCRePosChPosEta = 0; // w * cos(theta+) eta+
   fTPCImPosChPosEta = 0; // w * sin(theta+) eta+
   fTPCMPosChPosEta = 0;   // w eta+
@@ -114,7 +114,42 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecEvent::AliAnalysisTaskGammaDeltaPIDSaveQvecE
   fTPC2Im2NegChNegEta = 0; // w^2 * sin(2theta-) eta-
   fTPC2MNegChNegEta = 0;    // w^2 eta-
   
-  // TPC Pion (|eta|<0.8)
+  
+  fTPCRePosChSubPosEta = 0; // w * cos(theta+) eta+
+  fTPCImPosChSubPosEta = 0; // w * sin(theta+) eta+
+  fTPCMPosChSubPosEta = 0;   // w eta+
+  fTPCRePosChSubNegEta = 0; // w * cos(theta+) eta-
+  fTPCImPosChSubNegEta = 0; // w * sin(theta+) eta-
+  fTPCMPosChSubNegEta = 0;    // w eta-
+  fTPCReNegChSubPosEta = 0; // w * cos(theta-) eta+
+  fTPCImNegChSubPosEta = 0; // w * sin(theta-) eta+
+  fTPCMNegChSubPosEta = 0;    // w eta+
+  fTPCReNegChSubNegEta = 0; // w * cos(theta-) eta-
+  fTPCImNegChSubNegEta = 0; // w * sin(theta-) eta-
+  fTPCMNegChSubNegEta = 0;    // w eta-
+  
+  fTPC2RePosChSubPosEta = 0; // w * cos(2theta+) eta+
+  fTPC2ImPosChSubPosEta = 0; // w * sin(2theta+) eta+
+  fTPC2Re2PosChSubPosEta = 0; // w^2 * cos(2theta+) eta+
+  fTPC2Im2PosChSubPosEta = 0; // w^2 * sin(2theta+) eta+
+  fTPC2MPosChSubPosEta = 0;   // w^2 eta+
+  fTPC2RePosChSubNegEta = 0; // w * cos(2theta+) eta-
+  fTPC2ImPosChSubNegEta = 0; // w * sin(2theta+) eta-
+  fTPC2Re2PosChSubNegEta = 0; // w^2 * cos(2theta+) eta-
+  fTPC2Im2PosChSubNegEta = 0; // w^2 * sin(2theta+) eta-
+  fTPC2MPosChSubNegEta = 0;    // w^2 eta-
+  fTPC2ReNegChSubPosEta = 0; // w * cos(2theta-) eta+
+  fTPC2ImNegChSubPosEta = 0; // w * sin(2theta-) eta+
+  fTPC2Re2NegChSubPosEta = 0; // w^2 * cos(2theta-) eta+
+  fTPC2Im2NegChSubPosEta = 0; // w^2 * sin(2theta-) eta+
+  fTPC2MNegChSubPosEta = 0;    // w^2 eta+
+  fTPC2ReNegChSubNegEta = 0; // w * cos(2theta-) eta-
+  fTPC2ImNegChSubNegEta = 0; // w * sin(2theta-) eta-
+  fTPC2Re2NegChSubNegEta = 0; // w^2 * cos(2theta-) eta-
+  fTPC2Im2NegChSubNegEta = 0; // w^2 * sin(2theta-) eta-
+  fTPC2MNegChSubNegEta = 0;    // w^2 eta-
+  
+  // TPC Pion (Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1, SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0)
   fTPCPionRePosChPosEta = 0; // w * cos(theta+) eta+
   fTPCPionImPosChPosEta = 0; // w * sin(theta+) eta+
   fTPCPionMPosChPosEta = 0;   // w eta+
@@ -149,7 +184,42 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecEvent::AliAnalysisTaskGammaDeltaPIDSaveQvecE
   fTPCPion2Im2NegChNegEta = 0; // w^2 * sin(2theta-) eta-
   fTPCPion2MNegChNegEta = 0;    // w^2 eta-
   
-  // TPC Kaon (|eta|<0.8)
+  
+  fTPCPionRePosChSubPosEta = 0; // w * cos(theta+) eta+
+  fTPCPionImPosChSubPosEta = 0; // w * sin(theta+) eta+
+  fTPCPionMPosChSubPosEta = 0;   // w eta+
+  fTPCPionRePosChSubNegEta = 0; // w * cos(theta+) eta-
+  fTPCPionImPosChSubNegEta = 0; // w * sin(theta+) eta-
+  fTPCPionMPosChSubNegEta = 0;    // w eta-
+  fTPCPionReNegChSubPosEta = 0; // w * cos(theta-) eta+
+  fTPCPionImNegChSubPosEta = 0; // w * sin(theta-) eta+
+  fTPCPionMNegChSubPosEta = 0;    // w eta+
+  fTPCPionReNegChSubNegEta = 0; // w * cos(theta-) eta-
+  fTPCPionImNegChSubNegEta = 0; // w * sin(theta-) eta-
+  fTPCPionMNegChSubNegEta = 0;    // w eta-
+  
+  fTPCPion2RePosChSubPosEta = 0; // w * cos(2theta+) eta+
+  fTPCPion2ImPosChSubPosEta = 0; // w * sin(2theta+) eta+
+  fTPCPion2Re2PosChSubPosEta = 0; // w^2 * cos(2theta+) eta+
+  fTPCPion2Im2PosChSubPosEta = 0; // w^2 * sin(2theta+) eta+
+  fTPCPion2MPosChSubPosEta = 0;   // w^2 eta+
+  fTPCPion2RePosChSubNegEta = 0; // w * cos(2theta+) eta-
+  fTPCPion2ImPosChSubNegEta = 0; // w * sin(2theta+) eta-
+  fTPCPion2Re2PosChSubNegEta = 0; // w^2 * cos(2theta+) eta-
+  fTPCPion2Im2PosChSubNegEta = 0; // w^2 * sin(2theta+) eta-
+  fTPCPion2MPosChSubNegEta = 0;    // w^2 eta-
+  fTPCPion2ReNegChSubPosEta = 0; // w * cos(2theta-) eta+
+  fTPCPion2ImNegChSubPosEta = 0; // w * sin(2theta-) eta+
+  fTPCPion2Re2NegChSubPosEta = 0; // w^2 * cos(2theta-) eta+
+  fTPCPion2Im2NegChSubPosEta = 0; // w^2 * sin(2theta-) eta+
+  fTPCPion2MNegChSubPosEta = 0;    // w^2 eta+
+  fTPCPion2ReNegChSubNegEta = 0; // w * cos(2theta-) eta-
+  fTPCPion2ImNegChSubNegEta = 0; // w * sin(2theta-) eta-
+  fTPCPion2Re2NegChSubNegEta = 0; // w^2 * cos(2theta-) eta-
+  fTPCPion2Im2NegChSubNegEta = 0; // w^2 * sin(2theta-) eta-
+  fTPCPion2MNegChSubNegEta = 0;    // w^2 eta-
+  
+  // TPC Kaon (Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1, SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0)
   fTPCKaonRePosChPosEta = 0; // w * cos(theta+) eta+
   fTPCKaonImPosChPosEta = 0; // w * sin(theta+) eta+
   fTPCKaonMPosChPosEta = 0;   // w eta+
@@ -184,7 +254,42 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecEvent::AliAnalysisTaskGammaDeltaPIDSaveQvecE
   fTPCKaon2Im2NegChNegEta = 0; // w^2 * sin(2theta-) eta-
   fTPCKaon2MNegChNegEta = 0;    // w^2 eta-
   
-  // TPC Proton (|eta|<0.8)
+  
+  fTPCKaonRePosChSubPosEta = 0; // w * cos(theta+) eta+
+  fTPCKaonImPosChSubPosEta = 0; // w * sin(theta+) eta+
+  fTPCKaonMPosChSubPosEta = 0;   // w eta+
+  fTPCKaonRePosChSubNegEta = 0; // w * cos(theta+) eta-
+  fTPCKaonImPosChSubNegEta = 0; // w * sin(theta+) eta-
+  fTPCKaonMPosChSubNegEta = 0;    // w eta-
+  fTPCKaonReNegChSubPosEta = 0; // w * cos(theta-) eta+
+  fTPCKaonImNegChSubPosEta = 0; // w * sin(theta-) eta+
+  fTPCKaonMNegChSubPosEta = 0;    // w eta+
+  fTPCKaonReNegChSubNegEta = 0; // w * cos(theta-) eta-
+  fTPCKaonImNegChSubNegEta = 0; // w * sin(theta-) eta-
+  fTPCKaonMNegChSubNegEta = 0;    // w eta-
+  
+  fTPCKaon2RePosChSubPosEta = 0; // w * cos(2theta+) eta+
+  fTPCKaon2ImPosChSubPosEta = 0; // w * sin(2theta+) eta+
+  fTPCKaon2Re2PosChSubPosEta = 0; // w^2 * cos(2theta+) eta+
+  fTPCKaon2Im2PosChSubPosEta = 0; // w^2 * sin(2theta+) eta+
+  fTPCKaon2MPosChSubPosEta = 0;   // w^2 eta+
+  fTPCKaon2RePosChSubNegEta = 0; // w * cos(2theta+) eta-
+  fTPCKaon2ImPosChSubNegEta = 0; // w * sin(2theta+) eta-
+  fTPCKaon2Re2PosChSubNegEta = 0; // w^2 * cos(2theta+) eta-
+  fTPCKaon2Im2PosChSubNegEta = 0; // w^2 * sin(2theta+) eta-
+  fTPCKaon2MPosChSubNegEta = 0;    // w^2 eta-
+  fTPCKaon2ReNegChSubPosEta = 0; // w * cos(2theta-) eta+
+  fTPCKaon2ImNegChSubPosEta = 0; // w * sin(2theta-) eta+
+  fTPCKaon2Re2NegChSubPosEta = 0; // w^2 * cos(2theta-) eta+
+  fTPCKaon2Im2NegChSubPosEta = 0; // w^2 * sin(2theta-) eta+
+  fTPCKaon2MNegChSubPosEta = 0;    // w^2 eta+
+  fTPCKaon2ReNegChSubNegEta = 0; // w * cos(2theta-) eta-
+  fTPCKaon2ImNegChSubNegEta = 0; // w * sin(2theta-) eta-
+  fTPCKaon2Re2NegChSubNegEta = 0; // w^2 * cos(2theta-) eta-
+  fTPCKaon2Im2NegChSubNegEta = 0; // w^2 * sin(2theta-) eta-
+  fTPCKaon2MNegChSubNegEta = 0;    // w^2 eta-
+  
+  // TPC Proton (Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1, SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0)
   fTPCProtonRePosChPosEta = 0; // w * cos(theta+) eta+
   fTPCProtonImPosChPosEta = 0; // w * sin(theta+) eta+
   fTPCProtonMPosChPosEta = 0;   // w eta+
@@ -218,6 +323,41 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecEvent::AliAnalysisTaskGammaDeltaPIDSaveQvecE
   fTPCProton2Re2NegChNegEta = 0; // w^2 * cos(2theta-) eta-
   fTPCProton2Im2NegChNegEta = 0; // w^2 * sin(2theta-) eta-
   fTPCProton2MNegChNegEta = 0;    // w^2 eta-
+  
+  
+  fTPCProtonRePosChSubPosEta = 0; // w * cos(theta+) eta+
+  fTPCProtonImPosChSubPosEta = 0; // w * sin(theta+) eta+
+  fTPCProtonMPosChSubPosEta = 0;   // w eta+
+  fTPCProtonRePosChSubNegEta = 0; // w * cos(theta+) eta-
+  fTPCProtonImPosChSubNegEta = 0; // w * sin(theta+) eta-
+  fTPCProtonMPosChSubNegEta = 0;    // w eta-
+  fTPCProtonReNegChSubPosEta = 0; // w * cos(theta-) eta+
+  fTPCProtonImNegChSubPosEta = 0; // w * sin(theta-) eta+
+  fTPCProtonMNegChSubPosEta = 0;    // w eta+
+  fTPCProtonReNegChSubNegEta = 0; // w * cos(theta-) eta-
+  fTPCProtonImNegChSubNegEta = 0; // w * sin(theta-) eta-
+  fTPCProtonMNegChSubNegEta = 0;    // w eta-
+  
+  fTPCProton2RePosChSubPosEta = 0; // w * cos(2theta+) eta+
+  fTPCProton2ImPosChSubPosEta = 0; // w * sin(2theta+) eta+
+  fTPCProton2Re2PosChSubPosEta = 0; // w^2 * cos(2theta+) eta+
+  fTPCProton2Im2PosChSubPosEta = 0; // w^2 * sin(2theta+) eta+
+  fTPCProton2MPosChSubPosEta = 0;   // w^2 eta+
+  fTPCProton2RePosChSubNegEta = 0; // w * cos(2theta+) eta-
+  fTPCProton2ImPosChSubNegEta = 0; // w * sin(2theta+) eta-
+  fTPCProton2Re2PosChSubNegEta = 0; // w^2 * cos(2theta+) eta-
+  fTPCProton2Im2PosChSubNegEta = 0; // w^2 * sin(2theta+) eta-
+  fTPCProton2MPosChSubNegEta = 0;    // w^2 eta-
+  fTPCProton2ReNegChSubPosEta = 0; // w * cos(2theta-) eta+
+  fTPCProton2ImNegChSubPosEta = 0; // w * sin(2theta-) eta+
+  fTPCProton2Re2NegChSubPosEta = 0; // w^2 * cos(2theta-) eta+
+  fTPCProton2Im2NegChSubPosEta = 0; // w^2 * sin(2theta-) eta+
+  fTPCProton2MNegChSubPosEta = 0;    // w^2 eta+
+  fTPCProton2ReNegChSubNegEta = 0; // w * cos(2theta-) eta-
+  fTPCProton2ImNegChSubNegEta = 0; // w * sin(2theta-) eta-
+  fTPCProton2Re2NegChSubNegEta = 0; // w^2 * cos(2theta-) eta-
+  fTPCProton2Im2NegChSubNegEta = 0; // w^2 * sin(2theta-) eta-
+  fTPCProton2MNegChSubNegEta = 0;    // w^2 eta-
 	
 }
 

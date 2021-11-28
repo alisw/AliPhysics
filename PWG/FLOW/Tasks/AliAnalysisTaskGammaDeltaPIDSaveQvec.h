@@ -128,10 +128,10 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
     
   // variables for Qvec
   const static Int_t fCRCnHar = 2;
-  const static Int_t fCMEnEtaBin = 3;
+  const static Int_t fCMEnEtaBin = 4;
   Double_t fCRCEtaMin = -0.8;
   Double_t fCRCEtaMax = 0.8;
-  Double_t fCRCEtaBin[4] = {-0.8, -0.1, 0.1, 0.8};
+  Double_t fCRCEtaBin[5] = {-0.8, -0.1, 0, 0.1, 0.8};
   TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
@@ -264,7 +264,11 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAkPIDPos;    //!
   TH3F          *fHCorrectNUAkPIDNeg;    //!
 
-
+  //// V2 
+  TProfile      *hAvgV2TPCvsCent;  //!
+  TProfile      *hAvgV2TPCvsCentPion;  //!
+  TProfile      *hAvgV2TPCvsCentKaon;  //!
+  TProfile      *hAvgV2TPCvsCentProton;  //!
   
   //// Analysis Result Histograms:
   TProfile      *hAvg3pC112vsCentPP;  //!

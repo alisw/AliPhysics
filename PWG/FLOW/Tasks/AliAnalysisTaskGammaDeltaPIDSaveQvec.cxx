@@ -175,6 +175,11 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
   
+  hAvgV2TPCvsCent(NULL),
+  hAvgV2TPCvsCentPion(NULL),
+  hAvgV2TPCvsCentKaon(NULL),
+  hAvgV2TPCvsCentProton(NULL),
+  
   hAvg3pC112vsCentPP(NULL),
   hAvg3pC112vsCentNN(NULL),    
   hAvg3pC112vsCentOS(NULL),
@@ -459,6 +464,11 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
+  
+  hAvgV2TPCvsCent(NULL),
+  hAvgV2TPCvsCentPion(NULL),
+  hAvgV2TPCvsCentKaon(NULL),
+  hAvgV2TPCvsCentProton(NULL),
   
   hAvg3pC112vsCentPP(NULL),
   hAvg3pC112vsCentNN(NULL),    
@@ -1062,8 +1072,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   }
   else if(sDetectorForEP.Contains("V0")){ 
     bUseV0EventPlane = kTRUE;
-    fSelectedV0PsiN  = (fPsiNV0C+fPsiNV0A)/2;
-    fSelectedV0Psi3  = (fPsi3V0C+fPsi3V0A)/2;
+    fSelectedV0PsiN  = fPsiNV0A;
+    fSelectedV0Psi3  = fPsi3V0A;
   }
   else{ 
     bUseV0EventPlane = kFALSE;
@@ -1123,24 +1133,24 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 
   ///For single Identified cases:
   
-  if(gParticleID==10){
-    kPIDtrk1 = 0; //Ch
-    kPIDtrk2 = 1; //Pion
-  }
-  else if(gParticleID==20){
-    kPIDtrk1 = 0; //Ch
-    kPIDtrk2 = 2; //Kaon
-  }
-  else if(gParticleID==30){
-    kPIDtrk1 = 0; //Ch
-    kPIDtrk2 = 3; //P
-  }
+  //if(gParticleID==10){
+    //kPIDtrk1 = 0; //Ch
+    //kPIDtrk2 = 1; //Pion
+  //}
+  //else if(gParticleID==20){
+    //kPIDtrk1 = 0; //Ch
+    //kPIDtrk2 = 2; //Kaon
+  //}
+  //else if(gParticleID==30){
+    //kPIDtrk1 = 0; //Ch
+    //kPIDtrk2 = 3; //P
+  //}
 
 
 ///Track variables:
   Int_t   trk1Chrg=0, trk1TpcNC=0;
   Int_t   trk2Chrg=0, trk2TpcNC=0;
-  Bool_t  bPIDoktrk1=kFALSE, bPIDoktrk2=kFALSE;
+  //Bool_t  bPIDoktrk1=kFALSE, bPIDoktrk2=kFALSE;
 
   
   Double_t trk1Pt=0,trk1Phi=0,trk1Eta=0,trk1DCAxy=0.0, trk1DCAz=0.0,trk1Chi2=0,trk1dEdx=0,trk1Wgt=1.0;
@@ -1199,7 +1209,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
      
       
       //Apply track cuts for TPC EP here:
-      if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
+      //if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
+	  if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
 
 	WgtNUAChtrk1  = 1.0;   
 	WgtNUAPIDtrk1 = 1.0;
@@ -1239,7 +1250,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	
 	// proton
 	isTrk1Proton = kFALSE;
-	isTrk1Proton = CheckPIDofParticle(AODtrack1,3); // 2 for proton
+	isTrk1Proton = CheckPIDofParticle(AODtrack1,3); // 3 for proton
 	if (isTrk1Proton) {
 		ptWgtMCProtontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,3);
 		wgtComb1PIDProton = WgtNUAPIDtrk1*ptWgtMCProtontrk1;
@@ -1248,16 +1259,16 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	
 	/// Rihan: The part below is only relevant for CME Analysis Only (no Lambda):
 	
-	bPIDoktrk1=kFALSE;
-	bPIDoktrk2=kFALSE;
+	//bPIDoktrk1=kFALSE;
+	//bPIDoktrk2=kFALSE;
 	
-	bPIDoktrk1 = CheckPIDofParticle(AODtrack1,kPIDtrk1);   // check if track1 is of desired PID request #1,
+	//bPIDoktrk1 = CheckPIDofParticle(AODtrack1,kPIDtrk1);   // check if track1 is of desired PID request #1,
 
-	if(!bPIDoktrk1)
-	  bPIDoktrk2 = CheckPIDofParticle(AODtrack1,kPIDtrk2);  // if not request #1, then check if track satisfies request #2
+	//if(!bPIDoktrk1)
+	  //bPIDoktrk2 = CheckPIDofParticle(AODtrack1,kPIDtrk2);  // if not request #1, then check if track satisfies request #2
 
-	if(!bPIDoktrk1 && !bPIDoktrk2)    /// the track-1 is neither of the desired PIDs, then skip this track. 
-	  continue;
+	//if(!bPIDoktrk1 && !bPIDoktrk2)    /// the track-1 is neither of the desired PIDs, then skip this track. 
+	  //continue;
 
        
 	Double_t fPsiNEvent = 0, fPsi3Event = 0;
@@ -1278,6 +1289,53 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	  }
 	}
 
+	// save V2
+    //Remove EP-POIs AutoCorrelation: only for TPC EP
+	if(trk2Eta*trk1Eta < 0){
+		
+		if(trk1Eta >= 0){
+		  localSumQ2x = fSumQnxNeg[0]; /// We need the full Q-sum. Then remove only current track-2
+		  localSumQ2y = fSumQnyNeg[0];
+		  localSumQ3x = fSumQnxNeg[1];
+		  localSumQ3y = fSumQnyNeg[1];
+		  localMultTPC= fMultNeg;
+		}
+		else{
+		  localSumQ2x = fSumQnxPos[0];
+		  localSumQ2y = fSumQnyPos[0];
+		  localSumQ3x = fSumQnxPos[1];
+		  localSumQ3y = fSumQnyPos[1];
+		  localMultTPC= fMultPos;
+		}
+		
+		if(trk1Pt < 2.0 && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos))){ // trk pt less than 2 GeV ????????
+		  localSumQ2x -= WgtNUAChtrk1*trk1Pt*TMath::Cos(2*trk1Phi);
+		  localSumQ2y -= WgtNUAChtrk1*trk1Pt*TMath::Sin(2*trk1Phi);
+		  localSumQ3x -= WgtNUAChtrk1*trk1Pt*TMath::Cos(3*trk1Phi);
+		  localSumQ3y -= WgtNUAChtrk1*trk1Pt*TMath::Sin(3*trk1Phi);
+		  localMultTPC-= WgtNUAChtrk1*trk1Pt;                        /// Rihan Todo: Remove PtWeights from Q sum and MultSum!
+		}
+		
+		if(localMultTPC>0){
+		  localSumQ2x = localSumQ2x/localMultTPC;
+		  localSumQ2y = localSumQ2y/localMultTPC;
+		}
+		
+		fPsiNTPCPos = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
+		if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;	
+	}
+
+	// force using TPC to save the results
+	fPsiNEvent = fPsiNTPCPos;
+	
+	hAvgV2TPCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1Ch);
+	if (isTrk1Pion) {
+		hAvgV2TPCvsCentPion->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDPion);
+	} else if (isTrk1Kaon) {
+		hAvgV2TPCvsCentKaon->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDKaon);
+	} else if (isTrk1Proton) {
+		hAvgV2TPCvsCentProton->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDProton);
+	}
 
 	// ================================ save Qvec ===================================
 
@@ -1371,7 +1429,8 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	    trk2dEdx  = AODtrack2->GetDetPid()->GetTPCsignal();       
 
 	    //Apply track cuts for second track
-	    if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && !((trk2Eta >= fEtaGapNeg) && (trk2Eta <= fEtaGapPos)) && (trk2dEdx >= fTPCdEdxMin) && (trk2TpcNC >= fTPCclustMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
+	    //if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && !((trk2Eta >= fEtaGapNeg) && (trk2Eta <= fEtaGapPos)) && (trk2dEdx >= fTPCdEdxMin) && (trk2TpcNC >= fTPCclustMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
+	    if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && (trk2dEdx >= fTPCdEdxMin) && (trk2TpcNC >= fTPCclustMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
 
 
 		WgtNUAChtrk2  = 1.0;   
@@ -1397,7 +1456,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		
 		// pion 
 		isTrk2Pion = kFALSE;
-		isTrk2Pion = CheckPIDofParticle(AODtrack1,1); // 1 for pion
+		isTrk2Pion = CheckPIDofParticle(AODtrack2,1); // 1 for pion
 		if (isTrk2Pion) {
 			ptWgtMCPionTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,1);
 			wgtComb2PIDPion = WgtNUAPIDtrk2*ptWgtMCPionTrk2;
@@ -1405,7 +1464,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		
 		// kaon
 		isTrk2Kaon = kFALSE;
-		isTrk2Kaon = CheckPIDofParticle(AODtrack1,2); // 2 for kaon
+		isTrk2Kaon = CheckPIDofParticle(AODtrack2,2); // 2 for kaon
 		if (isTrk2Kaon) {
 			ptWgtMCKaonTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,2);
 			wgtComb2PIDKaon = WgtNUAPIDtrk2*ptWgtMCKaonTrk2;
@@ -1413,7 +1472,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		
 		// proton
 		isTrk2Proton = kFALSE;
-		isTrk2Proton = CheckPIDofParticle(AODtrack1,3); // 2 for proton
+		isTrk2Proton = CheckPIDofParticle(AODtrack2,3); // 2 for proton
 		if (isTrk2Proton) {
 			ptWgtMCProtonTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,3);
 			wgtComb2PIDProton = WgtNUAPIDtrk2*ptWgtMCProtonTrk2;
@@ -1425,7 +1484,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 
 
 	      //Remove EP-POIs AutoCorrelation: only for TPC EP
-	      if(!bUseV0EventPlane  && trk2Eta*trk1Eta < 0){
+	      if(trk2Eta*trk1Eta < 0){
 		
 		if(trk1Eta >= 0){
 		  localSumQ2x = fSumQnxNeg[0]; /// We need the full Q-sum. Then remove only current track-2
@@ -1442,7 +1501,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		  localMultTPC= fMultPos;
 		}
 		
-		if(trk2Pt < 2.0){ // trk pt less than 2 GeV ????????
+		if(trk2Pt < 2.0 && !((trk2Eta >= fEtaGapNeg) && (trk2Eta <= fEtaGapPos))){ // trk pt less than 2 GeV ????????
 		  localSumQ2x -= WgtNUAChtrk2*trk2Pt*TMath::Cos(2*trk2Phi);
 		  localSumQ2y -= WgtNUAChtrk2*trk2Pt*TMath::Sin(2*trk2Phi);
 		  localSumQ3x -= WgtNUAChtrk2*trk2Pt*TMath::Cos(3*trk2Phi);
@@ -1815,6 +1874,20 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::SetupAnalysisHistograms(){
   Double_t centRange[11] = {0,5,10,20,30,40,50,60,70,80,90}; // Usual Bins for Observables
   Char_t  name[100];
   Char_t title[100];
+
+  //// V2
+  hAvgV2TPCvsCent = new TProfile("hAvgV2TPCvsCent","v2",18,0,90);
+  hAvgV2TPCvsCent->Sumw2();
+  fListHist->Add(hAvgV2TPCvsCent);
+  hAvgV2TPCvsCentPion = new TProfile("hAvgV2TPCvsCentPion","v2 pion",18,0,90);
+  hAvgV2TPCvsCentPion->Sumw2();
+  fListHist->Add(hAvgV2TPCvsCentPion);
+  hAvgV2TPCvsCentKaon = new TProfile("hAvgV2TPCvsCentKaon","v2 kaon",18,0,90);
+  hAvgV2TPCvsCentKaon->Sumw2();
+  fListHist->Add(hAvgV2TPCvsCentKaon);
+  hAvgV2TPCvsCentProton = new TProfile("hAvgV2TPCvsCentProton","v2 proton",18,0,90);
+  hAvgV2TPCvsCentProton->Sumw2();
+  fListHist->Add(hAvgV2TPCvsCentProton);
 
   //// CME PID ANALYSIS Histograms/Profiles:
 
@@ -2365,7 +2438,11 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   Double_t uNReTPCProtonPosEta=0., uNImTPCProtonPosEta=0., uN2ReTPCProtonPosEta=0., uN2ImTPCProtonPosEta=0., uN2Re2TPCProtonPosEta=0., uN2Im2TPCProtonPosEta=0., uNMTPCProtonPosEta=0., uN2MTPCProtonPosEta=0.;
   
   Double_t uPReTPCProtonNegEta=0., uPImTPCProtonNegEta=0., uP2ReTPCProtonNegEta=0., uP2ImTPCProtonNegEta=0., uP2Re2TPCProtonNegEta=0., uP2Im2TPCProtonNegEta=0., uPMTPCProtonNegEta=0., uP2MTPCProtonNegEta=0.;
-  Double_t uNReTPCProtonNegEta=0., uNImTPCProtonNegEta=0., uN2ReTPCProtonNegEta=0., uN2ImTPCProtonNegEta=0., uN2Re2TPCProtonNegEta=0., uN2Im2TPCProtonNegEta=0., uNMTPCProtonNegEta=0., uN2MTPCProtonNegEta=0.;
+  Double_t uNReTPCProtonNegEta=0., uNImTPCProtonNegEta=0., uN2ReTPCProtonNegEta=0., uN2ImTPCProtonNegEta=0., uN2Re2TPCProtonNegEta=0., uN2Im2TPCProtonNegEta=0., uNMTPCProtonNegEta=0., uN2MTPCProtonNegEta=0.; 
+  
+  Double_t uPNReTPCSubPosEta = 0, uPNImTPCSubPosEta = 0, uPN2ReTPCSubPosEta = 0, uPN2ImTPCSubPosEta = 0, uPN2Re2TPCSubPosEta = 0, uPN2Im2TPCSubPosEta = 0, uPNMTPCSubPosEta = 0, uPN2MTPCSubPosEta = 0, uPReTPCSubPosEta = 0, uPImTPCSubPosEta = 0, uP2ReTPCSubPosEta = 0, uP2ImTPCSubPosEta = 0, uP2Re2TPCSubPosEta = 0, uP2Im2TPCSubPosEta = 0, uPMTPCSubPosEta = 0, uP2MTPCSubPosEta = 0, uNReTPCSubPosEta = 0, uNImTPCSubPosEta = 0, uN2ReTPCSubPosEta = 0, uN2ImTPCSubPosEta = 0, uN2Re2TPCSubPosEta = 0, uN2Im2TPCSubPosEta = 0, uNMTPCSubPosEta = 0, uN2MTPCSubPosEta = 0, uPNReTPCPionSubPosEta = 0, uPNImTPCPionSubPosEta = 0, uPN2ReTPCPionSubPosEta = 0, uPN2ImTPCPionSubPosEta = 0, uPN2Re2TPCPionSubPosEta = 0, uPN2Im2TPCPionSubPosEta = 0, uPNMTPCPionSubPosEta = 0, uPN2MTPCPionSubPosEta = 0, uPReTPCPionSubPosEta = 0, uPImTPCPionSubPosEta = 0, uP2ReTPCPionSubPosEta = 0, uP2ImTPCPionSubPosEta = 0, uP2Re2TPCPionSubPosEta = 0, uP2Im2TPCPionSubPosEta = 0, uPMTPCPionSubPosEta = 0, uP2MTPCPionSubPosEta = 0, uNReTPCPionSubPosEta = 0, uNImTPCPionSubPosEta = 0, uN2ReTPCPionSubPosEta = 0, uN2ImTPCPionSubPosEta = 0, uN2Re2TPCPionSubPosEta = 0, uN2Im2TPCPionSubPosEta = 0, uNMTPCPionSubPosEta = 0, uN2MTPCPionSubPosEta = 0, uPNReTPCKaonSubPosEta = 0, uPNImTPCKaonSubPosEta = 0, uPN2ReTPCKaonSubPosEta = 0, uPN2ImTPCKaonSubPosEta = 0, uPN2Re2TPCKaonSubPosEta = 0, uPN2Im2TPCKaonSubPosEta = 0, uPNMTPCKaonSubPosEta = 0, uPN2MTPCKaonSubPosEta = 0, uPReTPCKaonSubPosEta = 0, uPImTPCKaonSubPosEta = 0, uP2ReTPCKaonSubPosEta = 0, uP2ImTPCKaonSubPosEta = 0, uP2Re2TPCKaonSubPosEta = 0, uP2Im2TPCKaonSubPosEta = 0, uPMTPCKaonSubPosEta = 0, uP2MTPCKaonSubPosEta = 0, uNReTPCKaonSubPosEta = 0, uNImTPCKaonSubPosEta = 0, uN2ReTPCKaonSubPosEta = 0, uN2ImTPCKaonSubPosEta = 0, uN2Re2TPCKaonSubPosEta = 0, uN2Im2TPCKaonSubPosEta = 0, uNMTPCKaonSubPosEta = 0, uN2MTPCKaonSubPosEta = 0, uPNReTPCProtonSubPosEta = 0, uPNImTPCProtonSubPosEta = 0, uPN2ReTPCProtonSubPosEta = 0, uPN2ImTPCProtonSubPosEta = 0, uPN2Re2TPCProtonSubPosEta = 0, uPN2Im2TPCProtonSubPosEta = 0, uPNMTPCProtonSubPosEta = 0, uPN2MTPCProtonSubPosEta = 0, uPReTPCProtonSubPosEta = 0, uPImTPCProtonSubPosEta = 0, uP2ReTPCProtonSubPosEta = 0, uP2ImTPCProtonSubPosEta = 0, uP2Re2TPCProtonSubPosEta = 0, uP2Im2TPCProtonSubPosEta = 0, uPMTPCProtonSubPosEta = 0, uP2MTPCProtonSubPosEta = 0, uNReTPCProtonSubPosEta = 0, uNImTPCProtonSubPosEta = 0, uN2ReTPCProtonSubPosEta = 0, uN2ImTPCProtonSubPosEta = 0, uN2Re2TPCProtonSubPosEta = 0, uN2Im2TPCProtonSubPosEta = 0, uNMTPCProtonSubPosEta = 0, uN2MTPCProtonSubPosEta = 0;
+  
+  Double_t uPNReTPCSubNegEta = 0, uPNImTPCSubNegEta = 0, uPN2ReTPCSubNegEta = 0, uPN2ImTPCSubNegEta = 0, uPN2Re2TPCSubNegEta = 0, uPN2Im2TPCSubNegEta = 0, uPNMTPCSubNegEta = 0, uPN2MTPCSubNegEta = 0, uPReTPCSubNegEta = 0, uPImTPCSubNegEta = 0, uP2ReTPCSubNegEta = 0, uP2ImTPCSubNegEta = 0, uP2Re2TPCSubNegEta = 0, uP2Im2TPCSubNegEta = 0, uPMTPCSubNegEta = 0, uP2MTPCSubNegEta = 0, uNReTPCSubNegEta = 0, uNImTPCSubNegEta = 0, uN2ReTPCSubNegEta = 0, uN2ImTPCSubNegEta = 0, uN2Re2TPCSubNegEta = 0, uN2Im2TPCSubNegEta = 0, uNMTPCSubNegEta = 0, uN2MTPCSubNegEta = 0, uPNReTPCPionSubNegEta = 0, uPNImTPCPionSubNegEta = 0, uPN2ReTPCPionSubNegEta = 0, uPN2ImTPCPionSubNegEta = 0, uPN2Re2TPCPionSubNegEta = 0, uPN2Im2TPCPionSubNegEta = 0, uPNMTPCPionSubNegEta = 0, uPN2MTPCPionSubNegEta = 0, uPReTPCPionSubNegEta = 0, uPImTPCPionSubNegEta = 0, uP2ReTPCPionSubNegEta = 0, uP2ImTPCPionSubNegEta = 0, uP2Re2TPCPionSubNegEta = 0, uP2Im2TPCPionSubNegEta = 0, uPMTPCPionSubNegEta = 0, uP2MTPCPionSubNegEta = 0, uNReTPCPionSubNegEta = 0, uNImTPCPionSubNegEta = 0, uN2ReTPCPionSubNegEta = 0, uN2ImTPCPionSubNegEta = 0, uN2Re2TPCPionSubNegEta = 0, uN2Im2TPCPionSubNegEta = 0, uNMTPCPionSubNegEta = 0, uN2MTPCPionSubNegEta = 0, uPNReTPCKaonSubNegEta = 0, uPNImTPCKaonSubNegEta = 0, uPN2ReTPCKaonSubNegEta = 0, uPN2ImTPCKaonSubNegEta = 0, uPN2Re2TPCKaonSubNegEta = 0, uPN2Im2TPCKaonSubNegEta = 0, uPNMTPCKaonSubNegEta = 0, uPN2MTPCKaonSubNegEta = 0, uPReTPCKaonSubNegEta = 0, uPImTPCKaonSubNegEta = 0, uP2ReTPCKaonSubNegEta = 0, uP2ImTPCKaonSubNegEta = 0, uP2Re2TPCKaonSubNegEta = 0, uP2Im2TPCKaonSubNegEta = 0, uPMTPCKaonSubNegEta = 0, uP2MTPCKaonSubNegEta = 0, uNReTPCKaonSubNegEta = 0, uNImTPCKaonSubNegEta = 0, uN2ReTPCKaonSubNegEta = 0, uN2ImTPCKaonSubNegEta = 0, uN2Re2TPCKaonSubNegEta = 0, uN2Im2TPCKaonSubNegEta = 0, uNMTPCKaonSubNegEta = 0, uN2MTPCKaonSubNegEta = 0, uPNReTPCProtonSubNegEta = 0, uPNImTPCProtonSubNegEta = 0, uPN2ReTPCProtonSubNegEta = 0, uPN2ImTPCProtonSubNegEta = 0, uPN2Re2TPCProtonSubNegEta = 0, uPN2Im2TPCProtonSubNegEta = 0, uPNMTPCProtonSubNegEta = 0, uPN2MTPCProtonSubNegEta = 0, uPReTPCProtonSubNegEta = 0, uPImTPCProtonSubNegEta = 0, uP2ReTPCProtonSubNegEta = 0, uP2ImTPCProtonSubNegEta = 0, uP2Re2TPCProtonSubNegEta = 0, uP2Im2TPCProtonSubNegEta = 0, uPMTPCProtonSubNegEta = 0, uP2MTPCProtonSubNegEta = 0, uNReTPCProtonSubNegEta = 0, uNImTPCProtonSubNegEta = 0, uN2ReTPCProtonSubNegEta = 0, uN2ImTPCProtonSubNegEta = 0, uN2Re2TPCProtonSubNegEta = 0, uN2Im2TPCProtonSubNegEta = 0, uNMTPCProtonSubNegEta = 0, uN2MTPCProtonSubNegEta = 0;
   
   for(Int_t EBin=1; EBin<=fCMEQRe[0][0]->GetNbinsX(); EBin++) {
     // both charge all region [0][h]: first index is the power of weight, h is cos((h+1)phi)
@@ -2561,7 +2638,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2MTPCNegEta += fCMEMult[3][h]->GetBinContent(EBin);
 		
 		// ========================== Pion =======================
-		// both charge pos eta region
+		// both charge neg eta region
 		uPNReTPCPionNegEta += fCMEQRePionBothCharge[0][h]->GetBinContent(EBin);
 		uPNImTPCPionNegEta += fCMEQImPionBothCharge[0][h]->GetBinContent(EBin);
 		uPN2ReTPCPionNegEta += fCMEQRePionBothCharge[0][h+1]->GetBinContent(EBin);
@@ -2571,7 +2648,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCPionNegEta += fCMEMultPionBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCPionNegEta += fCMEMultPionBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge positive eta region
+		// positive charge negative eta region
 		uPReTPCPionNegEta += fCMEQRePion[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCPionNegEta += fCMEQImPion[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCPionNegEta += fCMEQRePion[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2581,7 +2658,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCPionNegEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
 		uP2MTPCPionNegEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge positive eta region
+		// negative charge negative eta region
 		uNReTPCPionNegEta += fCMEQRePion[1][h]->GetBinContent(EBin);
 		uNImTPCPionNegEta += fCMEQImPion[1][h]->GetBinContent(EBin);
 		uN2ReTPCPionNegEta += fCMEQRePion[1][h+1]->GetBinContent(EBin);
@@ -2592,7 +2669,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2MTPCPionNegEta += fCMEMultPion[3][h]->GetBinContent(EBin);
 		
 		// ========================== Kaon =======================
-		// both charge pos eta region
+		// both charge neg eta region
 		uPNReTPCKaonNegEta += fCMEQReKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPNImTPCKaonNegEta += fCMEQImKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2ReTPCKaonNegEta += fCMEQReKaonBothCharge[0][h+1]->GetBinContent(EBin);
@@ -2602,7 +2679,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCKaonNegEta += fCMEMultKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCKaonNegEta += fCMEMultKaonBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge positive eta region
+		// positive charge negative eta region
 		uPReTPCKaonNegEta += fCMEQReKaon[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCKaonNegEta += fCMEQImKaon[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCKaonNegEta += fCMEQReKaon[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2612,7 +2689,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCKaonNegEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
 		uP2MTPCKaonNegEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge positive eta region
+		// negative charge negative eta region
 		uNReTPCKaonNegEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
 		uNImTPCKaonNegEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
 		uN2ReTPCKaonNegEta += fCMEQReKaon[1][h+1]->GetBinContent(EBin);
@@ -2623,7 +2700,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2MTPCKaonNegEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
 		
 		// ========================== Proton =======================
-		// both charge pos eta region
+		// both charge neg eta region
 		uPNReTPCProtonNegEta += fCMEQReProtonBothCharge[0][h]->GetBinContent(EBin);
 		uPNImTPCProtonNegEta += fCMEQImProtonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2ReTPCProtonNegEta += fCMEQReProtonBothCharge[0][h+1]->GetBinContent(EBin);
@@ -2633,7 +2710,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCProtonNegEta += fCMEMultProtonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCProtonNegEta += fCMEMultProtonBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge positive eta region
+		// positive charge negative eta region
 		uPReTPCProtonNegEta += fCMEQReProton[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCProtonNegEta += fCMEQImProton[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCProtonNegEta += fCMEQReProton[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2643,7 +2720,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCProtonNegEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
 		uP2MTPCProtonNegEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge positive eta region
+		// negative charge negative eta region
 		uNReTPCProtonNegEta += fCMEQReProton[1][h]->GetBinContent(EBin);
 		uNImTPCProtonNegEta += fCMEQImProton[1][h]->GetBinContent(EBin);
 		uN2ReTPCProtonNegEta += fCMEQReProton[1][h+1]->GetBinContent(EBin);
@@ -2652,10 +2729,260 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCProtonNegEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
 		uNMTPCProtonNegEta += fCMEMultProton[1][h]->GetBinContent(EBin);
 		uN2MTPCProtonNegEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+	} else if (EBin == fCMEQRe[0][h]->FindBin(0.05)) { // sub pos eta region
+		// both charge pos eta region
+		uPNReTPCSubPosEta += fCMEQReBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCSubPosEta += fCMEQImBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCSubPosEta += fCMEQReBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCSubPosEta += fCMEQImBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCSubPosEta += fCMEQReBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCSubPosEta += fCMEQImBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCSubPosEta += fCMEMultBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCSubPosEta += fCMEMultBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge positive eta region
+		uPReTPCSubPosEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCSubPosEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCSubPosEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCSubPosEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCSubPosEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCSubPosEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCSubPosEta += fCMEMult[0][h]->GetBinContent(EBin); // w
+		uP2MTPCSubPosEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge positive eta region
+		uNReTPCSubPosEta += fCMEQRe[1][h]->GetBinContent(EBin);
+		uNImTPCSubPosEta += fCMEQIm[1][h]->GetBinContent(EBin);
+		uN2ReTPCSubPosEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCSubPosEta += fCMEQIm[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCSubPosEta += fCMEQRe[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCSubPosEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
+		uNMTPCSubPosEta += fCMEMult[1][h]->GetBinContent(EBin);
+		uN2MTPCSubPosEta += fCMEMult[3][h]->GetBinContent(EBin);
+		
+		// ========================== Pion =======================
+		// both charge pos eta region
+		uPNReTPCPionSubPosEta += fCMEQRePionBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCPionSubPosEta += fCMEQImPionBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCPionSubPosEta += fCMEQRePionBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCPionSubPosEta += fCMEQImPionBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCPionSubPosEta += fCMEQRePionBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCPionSubPosEta += fCMEQImPionBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCPionSubPosEta += fCMEMultPionBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCPionSubPosEta += fCMEMultPionBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge positive eta region
+		uPReTPCPionSubPosEta += fCMEQRePion[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCPionSubPosEta += fCMEQImPion[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCPionSubPosEta += fCMEQRePion[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCPionSubPosEta += fCMEQImPion[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCPionSubPosEta += fCMEQRePion[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCPionSubPosEta += fCMEQImPion[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCPionSubPosEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
+		uP2MTPCPionSubPosEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge positive eta region
+		uNReTPCPionSubPosEta += fCMEQRePion[1][h]->GetBinContent(EBin);
+		uNImTPCPionSubPosEta += fCMEQImPion[1][h]->GetBinContent(EBin);
+		uN2ReTPCPionSubPosEta += fCMEQRePion[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCPionSubPosEta += fCMEQImPion[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCPionSubPosEta += fCMEQRePion[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCPionSubPosEta += fCMEQImPion[3][h+1]->GetBinContent(EBin);
+		uNMTPCPionSubPosEta += fCMEMultPion[1][h]->GetBinContent(EBin);
+		uN2MTPCPionSubPosEta += fCMEMultPion[3][h]->GetBinContent(EBin);
+		
+		// ========================== Kaon =======================
+		// both charge pos eta region
+		uPNReTPCKaonSubPosEta += fCMEQReKaonBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCKaonSubPosEta += fCMEQImKaonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCKaonSubPosEta += fCMEQReKaonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCKaonSubPosEta += fCMEQImKaonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCKaonSubPosEta += fCMEQReKaonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCKaonSubPosEta += fCMEQImKaonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCKaonSubPosEta += fCMEMultKaonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCKaonSubPosEta += fCMEMultKaonBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge positive eta region
+		uPReTPCKaonSubPosEta += fCMEQReKaon[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCKaonSubPosEta += fCMEQImKaon[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCKaonSubPosEta += fCMEQReKaon[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCKaonSubPosEta += fCMEQImKaon[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCKaonSubPosEta += fCMEQReKaon[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCKaonSubPosEta += fCMEQImKaon[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCKaonSubPosEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
+		uP2MTPCKaonSubPosEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge positive eta region
+		uNReTPCKaonSubPosEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
+		uNImTPCKaonSubPosEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
+		uN2ReTPCKaonSubPosEta += fCMEQReKaon[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCKaonSubPosEta += fCMEQImKaon[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCKaonSubPosEta += fCMEQReKaon[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCKaonSubPosEta += fCMEQImKaon[3][h+1]->GetBinContent(EBin);
+		uNMTPCKaonSubPosEta += fCMEMultKaon[1][h]->GetBinContent(EBin);
+		uN2MTPCKaonSubPosEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
+		
+		// ========================== Proton =======================
+		// both charge pos eta region
+		uPNReTPCProtonSubPosEta += fCMEQReProtonBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCProtonSubPosEta += fCMEQImProtonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCProtonSubPosEta += fCMEQReProtonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCProtonSubPosEta += fCMEQImProtonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCProtonSubPosEta += fCMEQReProtonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCProtonSubPosEta += fCMEQImProtonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCProtonSubPosEta += fCMEMultProtonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCProtonSubPosEta += fCMEMultProtonBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge positive eta region
+		uPReTPCProtonSubPosEta += fCMEQReProton[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCProtonSubPosEta += fCMEQImProton[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCProtonSubPosEta += fCMEQReProton[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCProtonSubPosEta += fCMEQImProton[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCProtonSubPosEta += fCMEQReProton[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCProtonSubPosEta += fCMEQImProton[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCProtonSubPosEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
+		uP2MTPCProtonSubPosEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge positive eta region
+		uNReTPCProtonSubPosEta += fCMEQReProton[1][h]->GetBinContent(EBin);
+		uNImTPCProtonSubPosEta += fCMEQImProton[1][h]->GetBinContent(EBin);
+		uN2ReTPCProtonSubPosEta += fCMEQReProton[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCProtonSubPosEta += fCMEQImProton[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCProtonSubPosEta += fCMEQReProton[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCProtonSubPosEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
+		uNMTPCProtonSubPosEta += fCMEMultProton[1][h]->GetBinContent(EBin);
+		uN2MTPCProtonSubPosEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+	} else if (EBin == fCMEQRe[0][h]->FindBin(-0.05)) { // negative eta region
+		// both charge neg eta region
+		uPNReTPCSubNegEta += fCMEQReBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCSubNegEta += fCMEQImBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCSubNegEta += fCMEQReBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCSubNegEta += fCMEQImBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCSubNegEta += fCMEQReBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCSubNegEta += fCMEQImBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCSubNegEta += fCMEMultBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCSubNegEta += fCMEMultBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge negative eta region
+		uPReTPCSubNegEta += fCMEQRe[0][h]->GetBinContent(EBin);
+		uPImTPCSubNegEta += fCMEQIm[0][h]->GetBinContent(EBin);
+		uP2ReTPCSubNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin);
+		uP2ImTPCSubNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin);
+		uP2Re2TPCSubNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin);
+		uP2Im2TPCSubNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin);
+		uPMTPCSubNegEta += fCMEMult[0][h]->GetBinContent(EBin);
+		uP2MTPCSubNegEta += fCMEMult[2][h]->GetBinContent(EBin);
+		
+		// negative charge negative eta region
+		uNReTPCSubNegEta += fCMEQRe[1][h]->GetBinContent(EBin);
+		uNImTPCSubNegEta += fCMEQIm[1][h]->GetBinContent(EBin);
+		uN2ReTPCSubNegEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCSubNegEta += fCMEQIm[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCSubNegEta += fCMEQRe[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCSubNegEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
+		uNMTPCSubNegEta += fCMEMult[1][h]->GetBinContent(EBin);
+		uN2MTPCSubNegEta += fCMEMult[3][h]->GetBinContent(EBin);
+		
+		// ========================== Pion =======================
+		// both charge neg eta region
+		uPNReTPCPionSubNegEta += fCMEQRePionBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCPionSubNegEta += fCMEQImPionBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCPionSubNegEta += fCMEQRePionBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCPionSubNegEta += fCMEQImPionBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCPionSubNegEta += fCMEQRePionBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCPionSubNegEta += fCMEQImPionBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCPionSubNegEta += fCMEMultPionBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCPionSubNegEta += fCMEMultPionBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge negative eta region
+		uPReTPCPionSubNegEta += fCMEQRePion[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCPionSubNegEta += fCMEQImPion[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCPionSubNegEta += fCMEQRePion[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCPionSubNegEta += fCMEQImPion[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCPionSubNegEta += fCMEQRePion[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCPionSubNegEta += fCMEQImPion[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCPionSubNegEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
+		uP2MTPCPionSubNegEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge negative eta region
+		uNReTPCPionSubNegEta += fCMEQRePion[1][h]->GetBinContent(EBin);
+		uNImTPCPionSubNegEta += fCMEQImPion[1][h]->GetBinContent(EBin);
+		uN2ReTPCPionSubNegEta += fCMEQRePion[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCPionSubNegEta += fCMEQImPion[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCPionSubNegEta += fCMEQRePion[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCPionSubNegEta += fCMEQImPion[3][h+1]->GetBinContent(EBin);
+		uNMTPCPionSubNegEta += fCMEMultPion[1][h]->GetBinContent(EBin);
+		uN2MTPCPionSubNegEta += fCMEMultPion[3][h]->GetBinContent(EBin);
+		
+		// ========================== Kaon =======================
+		// both charge neg eta region
+		uPNReTPCKaonSubNegEta += fCMEQReKaonBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCKaonSubNegEta += fCMEQImKaonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCKaonSubNegEta += fCMEQReKaonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCKaonSubNegEta += fCMEQImKaonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCKaonSubNegEta += fCMEQReKaonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCKaonSubNegEta += fCMEQImKaonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCKaonSubNegEta += fCMEMultKaonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCKaonSubNegEta += fCMEMultKaonBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge negative eta region
+		uPReTPCKaonSubNegEta += fCMEQReKaon[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCKaonSubNegEta += fCMEQImKaon[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCKaonSubNegEta += fCMEQReKaon[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCKaonSubNegEta += fCMEQImKaon[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCKaonSubNegEta += fCMEQReKaon[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCKaonSubNegEta += fCMEQImKaon[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCKaonSubNegEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
+		uP2MTPCKaonSubNegEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge negative eta region
+		uNReTPCKaonSubNegEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
+		uNImTPCKaonSubNegEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
+		uN2ReTPCKaonSubNegEta += fCMEQReKaon[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCKaonSubNegEta += fCMEQImKaon[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCKaonSubNegEta += fCMEQReKaon[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCKaonSubNegEta += fCMEQImKaon[3][h+1]->GetBinContent(EBin);
+		uNMTPCKaonSubNegEta += fCMEMultKaon[1][h]->GetBinContent(EBin);
+		uN2MTPCKaonSubNegEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
+		
+		// ========================== Proton =======================
+		// both charge neg eta region
+		uPNReTPCProtonSubNegEta += fCMEQReProtonBothCharge[0][h]->GetBinContent(EBin);
+		uPNImTPCProtonSubNegEta += fCMEQImProtonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2ReTPCProtonSubNegEta += fCMEQReProtonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2ImTPCProtonSubNegEta += fCMEQImProtonBothCharge[0][h+1]->GetBinContent(EBin);
+		uPN2Re2TPCProtonSubNegEta += fCMEQReProtonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPN2Im2TPCProtonSubNegEta += fCMEQImProtonBothCharge[1][h+1]->GetBinContent(EBin);
+		uPNMTPCProtonSubNegEta += fCMEMultProtonBothCharge[0][h]->GetBinContent(EBin);
+		uPN2MTPCProtonSubNegEta += fCMEMultProtonBothCharge[1][h]->GetBinContent(EBin);
+		
+		// positive charge negative eta region
+		uPReTPCProtonSubNegEta += fCMEQReProton[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCProtonSubNegEta += fCMEQImProton[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCProtonSubNegEta += fCMEQReProton[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCProtonSubNegEta += fCMEQImProton[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCProtonSubNegEta += fCMEQReProton[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCProtonSubNegEta += fCMEQImProton[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCProtonSubNegEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
+		uP2MTPCProtonSubNegEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
+		
+		// negative charge negative eta region
+		uNReTPCProtonSubNegEta += fCMEQReProton[1][h]->GetBinContent(EBin);
+		uNImTPCProtonSubNegEta += fCMEQImProton[1][h]->GetBinContent(EBin);
+		uN2ReTPCProtonSubNegEta += fCMEQReProton[1][h+1]->GetBinContent(EBin);
+		uN2ImTPCProtonSubNegEta += fCMEQImProton[1][h+1]->GetBinContent(EBin);
+		uN2Re2TPCProtonSubNegEta += fCMEQReProton[3][h+1]->GetBinContent(EBin);
+		uN2Im2TPCProtonSubNegEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
+		uNMTPCProtonSubNegEta += fCMEMultProton[1][h]->GetBinContent(EBin);
+		uN2MTPCProtonSubNegEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+		
 	}
   }
   
   // set fpQvecEvent
+  // Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1
+  //cout<<"==> uPReTPCPosEta + uNReTPCPosEta = "<<uPReTPCPosEta + uNReTPCPosEta<<", uPNReTPCPosEta = "<<uPNReTPCPosEta<<endl;
+  //cout<<"==> uPNReTPC = "<<uPNReTPC<<", uPReTPCSubNegEta + uPReTPCNegEta + uPReTPCPosEta + uPReTPCSubPosEta + uNReTPCSubNegEta + uNReTPCNegEta + uNReTPCPosEta + uNReTPCSubPosEta = "<<uPReTPCSubNegEta + uPReTPCNegEta + uPReTPCPosEta + uPReTPCSubPosEta + uNReTPCSubNegEta + uNReTPCNegEta + uNReTPCPosEta + uNReTPCSubPosEta<<endl;
   fpQvecEvent->setTPCRePosChPosEta( uPReTPCPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCImPosChPosEta( uPImTPCPosEta ); // w * sin(theta+) eta+
   fpQvecEvent->setTPC2RePosChPosEta( uP2ReTPCPosEta ); // w * cos(2theta+) eta+
@@ -2802,6 +3129,157 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCProton2Im2NegChNegEta( uN2Im2TPCProtonNegEta ); // w^2 * sin(2theta-) eta-
   fpQvecEvent->setTPCProtonMNegChNegEta( uNMTPCProtonNegEta );   // w ch- eta-
   fpQvecEvent->setTPCProton2MNegChNegEta( uN2MTPCProtonNegEta );   // w^2 ch- eta-
+  
+  
+  
+  // SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0
+  fpQvecEvent->setTPCRePosChSubPosEta( uPReTPCSubPosEta ); // w * cos(theta+) eta+
+  fpQvecEvent->setTPCImPosChSubPosEta( uPImTPCSubPosEta ); // w * sin(theta+) eta+
+  fpQvecEvent->setTPC2RePosChSubPosEta( uP2ReTPCSubPosEta ); // w * cos(2theta+) eta+
+  fpQvecEvent->setTPC2ImPosChSubPosEta( uP2ImTPCSubPosEta ); // w * sin(2theta+) eta+
+  fpQvecEvent->setTPC2Re2PosChSubPosEta( uP2Re2TPCSubPosEta ); // w^2 * cos(2theta+) eta+
+  fpQvecEvent->setTPC2Im2PosChSubPosEta( uP2Im2TPCSubPosEta ); // w^2 * sin(2theta+) eta+
+  fpQvecEvent->setTPCMPosChSubPosEta( uPMTPCSubPosEta );   // w ch+ eta+
+  fpQvecEvent->setTPC2MPosChSubPosEta( uP2MTPCSubPosEta );   // w^2 ch+ eta+
+  
+  fpQvecEvent->setTPCRePosChSubNegEta( uPReTPCSubNegEta ); // w * cos(theta+) eta-
+  fpQvecEvent->setTPCImPosChSubNegEta( uPImTPCSubNegEta ); // w * sin(theta+) eta-
+  fpQvecEvent->setTPC2RePosChSubNegEta( uP2ReTPCSubNegEta ); // w * cos(2theta+) eta-
+  fpQvecEvent->setTPC2ImPosChSubNegEta( uP2ImTPCSubNegEta ); // w * sin(2theta+) eta-
+  fpQvecEvent->setTPC2Re2PosChSubNegEta( uP2Re2TPCSubNegEta ); // w^2 * cos(2theta+) eta-
+  fpQvecEvent->setTPC2Im2PosChSubNegEta( uP2Im2TPCSubNegEta ); // w^2 * sin(2theta+) eta-
+  fpQvecEvent->setTPCMPosChSubNegEta( uPMTPCSubNegEta );   // w ch+ eta-
+  fpQvecEvent->setTPC2MPosChSubNegEta( uP2MTPCSubNegEta );   // w^2 ch+ eta-
+  
+  fpQvecEvent->setTPCReNegChSubPosEta( uNReTPCSubPosEta ); // w * cos(theta-) eta+
+  fpQvecEvent->setTPCImNegChSubPosEta( uNImTPCSubPosEta ); // w * sin(theta-) eta+
+  fpQvecEvent->setTPC2ReNegChSubPosEta( uN2ReTPCSubPosEta ); // w * cos(2theta-) eta+
+  fpQvecEvent->setTPC2ImNegChSubPosEta( uN2ImTPCSubPosEta ); // w * sin(2theta-) eta+
+  fpQvecEvent->setTPC2Re2NegChSubPosEta( uN2Re2TPCSubPosEta ); // w^2 * cos(2theta-) eta+
+  fpQvecEvent->setTPC2Im2NegChSubPosEta( uN2Im2TPCSubPosEta ); // w^2 * sin(2theta-) eta+
+  fpQvecEvent->setTPCMNegChSubPosEta( uNMTPCSubPosEta );   // w ch- eta+
+  fpQvecEvent->setTPC2MNegChSubPosEta( uN2MTPCSubPosEta );   // w^2  h- eta+
+  
+  fpQvecEvent->setTPCReNegChSubNegEta( uNReTPCSubNegEta ); // w * cos(theta-) eta-
+  fpQvecEvent->setTPCImNegChSubNegEta( uNImTPCSubNegEta ); // w * sin(theta-) eta-
+  fpQvecEvent->setTPC2ReNegChSubNegEta( uN2ReTPCSubNegEta ); // w * cos(2theta-) eta-
+  fpQvecEvent->setTPC2ImNegChSubNegEta( uN2ImTPCSubNegEta ); // w * sin(2theta-) eta-
+  fpQvecEvent->setTPC2Re2NegChSubNegEta( uN2Re2TPCSubNegEta ); // w^2 * cos(2theta-) eta-
+  fpQvecEvent->setTPC2Im2NegChSubNegEta( uN2Im2TPCSubNegEta ); // w^2 * sin(2theta-) eta-
+  fpQvecEvent->setTPCMNegChSubNegEta( uNMTPCSubNegEta );   // w ch- eta-
+  fpQvecEvent->setTPC2MNegChSubNegEta( uN2MTPCSubNegEta );   // w^2 ch- eta-
+  
+  
+  fpQvecEvent->setTPCPionRePosChSubPosEta( uPReTPCPionSubPosEta ); // w * cos(theta+) eta+
+  fpQvecEvent->setTPCPionImPosChSubPosEta( uPImTPCPionSubPosEta ); // w * sin(theta+) eta+
+  fpQvecEvent->setTPCPion2RePosChSubPosEta( uP2ReTPCPionSubPosEta ); // w * cos(2theta+) eta+
+  fpQvecEvent->setTPCPion2ImPosChSubPosEta( uP2ImTPCPionSubPosEta ); // w * sin(2theta+) eta+
+  fpQvecEvent->setTPCPion2Re2PosChSubPosEta( uP2Re2TPCPionSubPosEta ); // w^2 * cos(2theta+) eta+
+  fpQvecEvent->setTPCPion2Im2PosChSubPosEta( uP2Im2TPCPionSubPosEta ); // w^2 * sin(2theta+) eta+
+  fpQvecEvent->setTPCPionMPosChSubPosEta( uPMTPCPionSubPosEta );   // w ch+ eta+
+  fpQvecEvent->setTPCPion2MPosChSubPosEta( uP2MTPCPionSubPosEta );   // w^2 ch+ eta+
+  
+  fpQvecEvent->setTPCPionRePosChSubNegEta( uPReTPCPionSubNegEta ); // w * cos(theta+) eta-
+  fpQvecEvent->setTPCPionImPosChSubNegEta( uPImTPCPionSubNegEta ); // w * sin(theta+) eta-
+  fpQvecEvent->setTPCPion2RePosChSubNegEta( uP2ReTPCPionSubNegEta ); // w * cos(2theta+) eta-
+  fpQvecEvent->setTPCPion2ImPosChSubNegEta( uP2ImTPCPionSubNegEta ); // w * sin(2theta+) eta-
+  fpQvecEvent->setTPCPion2Re2PosChSubNegEta( uP2Re2TPCPionSubNegEta ); // w^2 * cos(2theta+) eta-
+  fpQvecEvent->setTPCPion2Im2PosChSubNegEta( uP2Im2TPCPionSubNegEta ); // w^2 * sin(2theta+) eta-
+  fpQvecEvent->setTPCPionMPosChSubNegEta( uPMTPCPionSubNegEta );   // w ch+ eta-
+  fpQvecEvent->setTPCPion2MPosChSubNegEta( uP2MTPCPionSubNegEta );   // w^2 ch+ eta-
+  
+  fpQvecEvent->setTPCPionReNegChSubPosEta( uNReTPCPionSubPosEta ); // w * cos(theta-) eta+
+  fpQvecEvent->setTPCPionImNegChSubPosEta( uNImTPCPionSubPosEta ); // w * sin(theta-) eta+
+  fpQvecEvent->setTPCPion2ReNegChSubPosEta( uN2ReTPCPionSubPosEta ); // w * cos(2theta-) eta+
+  fpQvecEvent->setTPCPion2ImNegChSubPosEta( uN2ImTPCPionSubPosEta ); // w * sin(2theta-) eta+
+  fpQvecEvent->setTPCPion2Re2NegChSubPosEta( uN2Re2TPCPionSubPosEta ); // w^2 * cos(2theta-) eta+
+  fpQvecEvent->setTPCPion2Im2NegChSubPosEta( uN2Im2TPCPionSubPosEta ); // w^2 * sin(2theta-) eta+
+  fpQvecEvent->setTPCPionMNegChSubPosEta( uNMTPCPionSubPosEta );   // w ch- eta+
+  fpQvecEvent->setTPCPion2MNegChSubPosEta( uN2MTPCPionSubPosEta );   // w^2  h- eta+
+  
+  fpQvecEvent->setTPCPionReNegChSubNegEta( uNReTPCPionSubNegEta ); // w * cos(theta-) eta-
+  fpQvecEvent->setTPCPionImNegChSubNegEta( uNImTPCPionSubNegEta ); // w * sin(theta-) eta-
+  fpQvecEvent->setTPCPion2ReNegChSubNegEta( uN2ReTPCPionSubNegEta ); // w * cos(2theta-) eta-
+  fpQvecEvent->setTPCPion2ImNegChSubNegEta( uN2ImTPCPionSubNegEta ); // w * sin(2theta-) eta-
+  fpQvecEvent->setTPCPion2Re2NegChSubNegEta( uN2Re2TPCPionSubNegEta ); // w^2 * cos(2theta-) eta-
+  fpQvecEvent->setTPCPion2Im2NegChSubNegEta( uN2Im2TPCPionSubNegEta ); // w^2 * sin(2theta-) eta-
+  fpQvecEvent->setTPCPionMNegChSubNegEta( uNMTPCPionSubNegEta );   // w ch- eta-
+  fpQvecEvent->setTPCPion2MNegChSubNegEta( uN2MTPCPionSubNegEta );   // w^2 ch- eta-
+
+
+  fpQvecEvent->setTPCKaonRePosChSubPosEta( uPReTPCKaonSubPosEta ); // w * cos(theta+) eta+
+  fpQvecEvent->setTPCKaonImPosChSubPosEta( uPImTPCKaonSubPosEta ); // w * sin(theta+) eta+
+  fpQvecEvent->setTPCKaon2RePosChSubPosEta( uP2ReTPCKaonSubPosEta ); // w * cos(2theta+) eta+
+  fpQvecEvent->setTPCKaon2ImPosChSubPosEta( uP2ImTPCKaonSubPosEta ); // w * sin(2theta+) eta+
+  fpQvecEvent->setTPCKaon2Re2PosChSubPosEta( uP2Re2TPCKaonSubPosEta ); // w^2 * cos(2theta+) eta+
+  fpQvecEvent->setTPCKaon2Im2PosChSubPosEta( uP2Im2TPCKaonSubPosEta ); // w^2 * sin(2theta+) eta+
+  fpQvecEvent->setTPCKaonMPosChSubPosEta( uPMTPCKaonSubPosEta );   // w ch+ eta+
+  fpQvecEvent->setTPCKaon2MPosChSubPosEta( uP2MTPCKaonSubPosEta );   // w^2 ch+ eta+
+  
+  fpQvecEvent->setTPCKaonRePosChSubNegEta( uPReTPCKaonSubNegEta ); // w * cos(theta+) eta-
+  fpQvecEvent->setTPCKaonImPosChSubNegEta( uPImTPCKaonSubNegEta ); // w * sin(theta+) eta-
+  fpQvecEvent->setTPCKaon2RePosChSubNegEta( uP2ReTPCKaonSubNegEta ); // w * cos(2theta+) eta-
+  fpQvecEvent->setTPCKaon2ImPosChSubNegEta( uP2ImTPCKaonSubNegEta ); // w * sin(2theta+) eta-
+  fpQvecEvent->setTPCKaon2Re2PosChSubNegEta( uP2Re2TPCKaonSubNegEta ); // w^2 * cos(2theta+) eta-
+  fpQvecEvent->setTPCKaon2Im2PosChSubNegEta( uP2Im2TPCKaonSubNegEta ); // w^2 * sin(2theta+) eta-
+  fpQvecEvent->setTPCKaonMPosChSubNegEta( uPMTPCKaonSubNegEta );   // w ch+ eta-
+  fpQvecEvent->setTPCKaon2MPosChSubNegEta( uP2MTPCKaonSubNegEta );   // w^2 ch+ eta-
+  
+  fpQvecEvent->setTPCKaonReNegChSubPosEta( uNReTPCKaonSubPosEta ); // w * cos(theta-) eta+
+  fpQvecEvent->setTPCKaonImNegChSubPosEta( uNImTPCKaonSubPosEta ); // w * sin(theta-) eta+
+  fpQvecEvent->setTPCKaon2ReNegChSubPosEta( uN2ReTPCKaonSubPosEta ); // w * cos(2theta-) eta+
+  fpQvecEvent->setTPCKaon2ImNegChSubPosEta( uN2ImTPCKaonSubPosEta ); // w * sin(2theta-) eta+
+  fpQvecEvent->setTPCKaon2Re2NegChSubPosEta( uN2Re2TPCKaonSubPosEta ); // w^2 * cos(2theta-) eta+
+  fpQvecEvent->setTPCKaon2Im2NegChSubPosEta( uN2Im2TPCKaonSubPosEta ); // w^2 * sin(2theta-) eta+
+  fpQvecEvent->setTPCKaonMNegChSubPosEta( uNMTPCKaonSubPosEta );   // w ch- eta+
+  fpQvecEvent->setTPCKaon2MNegChSubPosEta( uN2MTPCKaonSubPosEta );   // w^2  h- eta+
+  
+  fpQvecEvent->setTPCKaonReNegChSubNegEta( uNReTPCKaonSubNegEta ); // w * cos(theta-) eta-
+  fpQvecEvent->setTPCKaonImNegChSubNegEta( uNImTPCKaonSubNegEta ); // w * sin(theta-) eta-
+  fpQvecEvent->setTPCKaon2ReNegChSubNegEta( uN2ReTPCKaonSubNegEta ); // w * cos(2theta-) eta-
+  fpQvecEvent->setTPCKaon2ImNegChSubNegEta( uN2ImTPCKaonSubNegEta ); // w * sin(2theta-) eta-
+  fpQvecEvent->setTPCKaon2Re2NegChSubNegEta( uN2Re2TPCKaonSubNegEta ); // w^2 * cos(2theta-) eta-
+  fpQvecEvent->setTPCKaon2Im2NegChSubNegEta( uN2Im2TPCKaonSubNegEta ); // w^2 * sin(2theta-) eta-
+  fpQvecEvent->setTPCKaonMNegChSubNegEta( uNMTPCKaonSubNegEta );   // w ch- eta-
+  fpQvecEvent->setTPCKaon2MNegChSubNegEta( uN2MTPCKaonSubNegEta );   // w^2 ch- eta-
+  
+  
+  fpQvecEvent->setTPCProtonRePosChSubPosEta( uPReTPCProtonSubPosEta ); // w * cos(theta+) eta+
+  fpQvecEvent->setTPCProtonImPosChSubPosEta( uPImTPCProtonSubPosEta ); // w * sin(theta+) eta+
+  fpQvecEvent->setTPCProton2RePosChSubPosEta( uP2ReTPCProtonSubPosEta ); // w * cos(2theta+) eta+
+  fpQvecEvent->setTPCProton2ImPosChSubPosEta( uP2ImTPCProtonSubPosEta ); // w * sin(2theta+) eta+
+  fpQvecEvent->setTPCProton2Re2PosChSubPosEta( uP2Re2TPCProtonSubPosEta ); // w^2 * cos(2theta+) eta+
+  fpQvecEvent->setTPCProton2Im2PosChSubPosEta( uP2Im2TPCProtonSubPosEta ); // w^2 * sin(2theta+) eta+
+  fpQvecEvent->setTPCProtonMPosChSubPosEta( uPMTPCProtonSubPosEta );   // w ch+ eta+
+  fpQvecEvent->setTPCProton2MPosChSubPosEta( uP2MTPCProtonSubPosEta );   // w^2 ch+ eta+
+  
+  fpQvecEvent->setTPCProtonRePosChSubNegEta( uPReTPCProtonSubNegEta ); // w * cos(theta+) eta-
+  fpQvecEvent->setTPCProtonImPosChSubNegEta( uPImTPCProtonSubNegEta ); // w * sin(theta+) eta-
+  fpQvecEvent->setTPCProton2RePosChSubNegEta( uP2ReTPCProtonSubNegEta ); // w * cos(2theta+) eta-
+  fpQvecEvent->setTPCProton2ImPosChSubNegEta( uP2ImTPCProtonSubNegEta ); // w * sin(2theta+) eta-
+  fpQvecEvent->setTPCProton2Re2PosChSubNegEta( uP2Re2TPCProtonSubNegEta ); // w^2 * cos(2theta+) eta-
+  fpQvecEvent->setTPCProton2Im2PosChSubNegEta( uP2Im2TPCProtonSubNegEta ); // w^2 * sin(2theta+) eta-
+  fpQvecEvent->setTPCProtonMPosChSubNegEta( uPMTPCProtonSubNegEta );   // w ch+ eta-
+  fpQvecEvent->setTPCProton2MPosChSubNegEta( uP2MTPCProtonSubNegEta );   // w^2 ch+ eta-
+  
+  fpQvecEvent->setTPCProtonReNegChSubPosEta( uNReTPCProtonSubPosEta ); // w * cos(theta-) eta+
+  fpQvecEvent->setTPCProtonImNegChSubPosEta( uNImTPCProtonSubPosEta ); // w * sin(theta-) eta+
+  fpQvecEvent->setTPCProton2ReNegChSubPosEta( uN2ReTPCProtonSubPosEta ); // w * cos(2theta-) eta+
+  fpQvecEvent->setTPCProton2ImNegChSubPosEta( uN2ImTPCProtonSubPosEta ); // w * sin(2theta-) eta+
+  fpQvecEvent->setTPCProton2Re2NegChSubPosEta( uN2Re2TPCProtonSubPosEta ); // w^2 * cos(2theta-) eta+
+  fpQvecEvent->setTPCProton2Im2NegChSubPosEta( uN2Im2TPCProtonSubPosEta ); // w^2 * sin(2theta-) eta+
+  fpQvecEvent->setTPCProtonMNegChSubPosEta( uNMTPCProtonSubPosEta );   // w ch- eta+
+  fpQvecEvent->setTPCProton2MNegChSubPosEta( uN2MTPCProtonSubPosEta );   // w^2  h- eta+
+  
+  fpQvecEvent->setTPCProtonReNegChSubNegEta( uNReTPCProtonSubNegEta ); // w * cos(theta-) eta-
+  fpQvecEvent->setTPCProtonImNegChSubNegEta( uNImTPCProtonSubNegEta ); // w * sin(theta-) eta-
+  fpQvecEvent->setTPCProton2ReNegChSubNegEta( uN2ReTPCProtonSubNegEta ); // w * cos(2theta-) eta-
+  fpQvecEvent->setTPCProton2ImNegChSubNegEta( uN2ImTPCProtonSubNegEta ); // w * sin(2theta-) eta-
+  fpQvecEvent->setTPCProton2Re2NegChSubNegEta( uN2Re2TPCProtonSubNegEta ); // w^2 * cos(2theta-) eta-
+  fpQvecEvent->setTPCProton2Im2NegChSubNegEta( uN2Im2TPCProtonSubNegEta ); // w^2 * sin(2theta-) eta-
+  fpQvecEvent->setTPCProtonMNegChSubNegEta( uNMTPCProtonSubNegEta );   // w ch- eta-
+  fpQvecEvent->setTPCProton2MNegChSubNegEta( uN2MTPCProtonSubNegEta );   // w^2 ch- eta-
+  
 }
 
 
