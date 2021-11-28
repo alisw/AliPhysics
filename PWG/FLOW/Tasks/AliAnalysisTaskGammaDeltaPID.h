@@ -113,6 +113,8 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   //Lambda Mass Cut
   void SetMassMean(Double_t massMean)                                  {this->fMassMean                                 = massMean;}
   void SetLambdaMassCut(Double_t lambdaMassCut)                        {this->fLambdaMassCut                       = lambdaMassCut;}
+  //Check PID Flow
+  void IsCheckPIDFlow(Bool_t checkPIDFlow)                             {this->bCheckPIDFlow                         = checkPIDFlow;}          
 
 
 
@@ -208,11 +210,13 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
 
   std::vector<Int_t>    vecPosEPTrkID; //!
   std::vector<Int_t>    vecNegEPTrkID; //!
+  std::vector<Double_t> vecPosEPTrkPhi; //!
+  std::vector<Double_t> vecNegEPTrkPhi; //!
+  std::vector<Double_t> vecPosEPTrkNUAWgt; //!
+  std::vector<Double_t> vecNegEPTrkNUAWgt; //!
 
 
 
-
-  
 
 
   //// Histograms:
@@ -407,7 +411,14 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TH1D             *fHistAntiLambdaMass[2];//!  
   TProfile         *fProfileLambdaMassVsPt[2];     //!
   TProfile         *fProfileAntiLambdaMassVsPt[2]; //!
-
+  ///Check PID Flow
+  Bool_t           bCheckPIDFlow;
+  TH3D             *fHist3DdNdPhiCentPthPos[3];
+  TH3D             *fHist3DdNdPhiCentPthNeg[3];  
+  TH3D             *fHist3DdNdPhiCentPtProton[3];
+  TH3D             *fHist3DdNdPhiCentPtAntiProton[3];
+  TH3D             *fHist3DdNdPhiCentPtLambda[4];
+  TH3D             *fHist3DdNdPhiCentPtAntiLambda[4];
 
   
   //// Some more functions:
@@ -415,6 +426,7 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   void  SetupAnalysisHistograms();
   void  SetupPileUpRemovalFunctions();
   void  SetupEventAndTaskConfigInfo();
+  void  SetupLambdaPIDFlowHistograms();
 
   void  GetMCCorrectionHist();
   void  GetV0MCorrectionHist(Int_t run=0);
@@ -436,7 +448,6 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   Double_t GetNUAWeightForTrackPID(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
   Double_t GetMCEfficiencyWeightForTrack(Double_t fPt=1.0,Int_t gChrg=1,Int_t kPID=0);
   Int_t    GetLambdaCode(const AliAODTrack *pTrack, const AliAODTrack *ntrack); 
-
 
 
   
