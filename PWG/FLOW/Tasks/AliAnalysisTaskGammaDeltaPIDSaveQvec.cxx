@@ -1290,51 +1290,41 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	}
 
 	// save V2
-    //Remove EP-POIs AutoCorrelation: only for TPC EP
-	if(trk2Eta*trk1Eta < 0){
-		
-		if(trk1Eta >= 0){
-		  localSumQ2x = fSumQnxNeg[0]; /// We need the full Q-sum. Then remove only current track-2
-		  localSumQ2y = fSumQnyNeg[0];
-		  localSumQ3x = fSumQnxNeg[1];
-		  localSumQ3y = fSumQnyNeg[1];
-		  localMultTPC= fMultNeg;
-		}
-		else{
-		  localSumQ2x = fSumQnxPos[0];
-		  localSumQ2y = fSumQnyPos[0];
-		  localSumQ3x = fSumQnxPos[1];
-		  localSumQ3y = fSumQnyPos[1];
-		  localMultTPC= fMultPos;
-		}
-		
-		if(trk1Pt < 2.0 && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos))){ // trk pt less than 2 GeV ????????
-		  localSumQ2x -= WgtNUAChtrk1*trk1Pt*TMath::Cos(2*trk1Phi);
-		  localSumQ2y -= WgtNUAChtrk1*trk1Pt*TMath::Sin(2*trk1Phi);
-		  localSumQ3x -= WgtNUAChtrk1*trk1Pt*TMath::Cos(3*trk1Phi);
-		  localSumQ3y -= WgtNUAChtrk1*trk1Pt*TMath::Sin(3*trk1Phi);
-		  localMultTPC-= WgtNUAChtrk1*trk1Pt;                        /// Rihan Todo: Remove PtWeights from Q sum and MultSum!
-		}
-		
-		if(localMultTPC>0){
-		  localSumQ2x = localSumQ2x/localMultTPC;
-		  localSumQ2y = localSumQ2y/localMultTPC;
-		}
-		
-		fPsiNTPCPos = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
-		if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;	
+	if(trk1Eta >= 0){
+	  localSumQ2x = fSumQnxNeg[0]; /// We need the full Q-sum. Then remove only current track-2
+	  localSumQ2y = fSumQnyNeg[0];
+	  localSumQ3x = fSumQnxNeg[1];
+	  localSumQ3y = fSumQnyNeg[1];
+	  localMultTPC= fMultNeg;
 	}
-
-	// force using TPC to save the results
-	fPsiNEvent = fPsiNTPCPos;
+	else{
+	  localSumQ2x = fSumQnxPos[0];
+	  localSumQ2y = fSumQnyPos[0];
+	  localSumQ3x = fSumQnxPos[1];
+	  localSumQ3y = fSumQnyPos[1];
+	  localMultTPC= fMultPos;
+	}
 	
-	hAvgV2TPCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1Ch);
-	if (isTrk1Pion) {
+	
+	if(localMultTPC>0){
+	  localSumQ2x = localSumQ2x/localMultTPC;
+	  localSumQ2y = localSumQ2y/localMultTPC;
+	
+	
+	  fPsiNTPCPos = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
+	  if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;	
+
+	  // force using TPC to save the results
+	  fPsiNEvent = fPsiNTPCPos;
+	
+	  hAvgV2TPCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1Ch);
+	  if (isTrk1Pion) {
 		hAvgV2TPCvsCentPion->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDPion);
-	} else if (isTrk1Kaon) {
+	  } else if (isTrk1Kaon) {
 		hAvgV2TPCvsCentKaon->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDKaon);
-	} else if (isTrk1Proton) {
+	  } else if (isTrk1Proton) {
 		hAvgV2TPCvsCentProton->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDProton);
+	  }
 	}
 
 	// ================================ save Qvec ===================================
