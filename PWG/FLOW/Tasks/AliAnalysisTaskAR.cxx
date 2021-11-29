@@ -33,7 +33,6 @@
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
-#include <RtypesCore.h>
 #include <TColor.h>
 #include <TFile.h>
 #include <TH1.h>
@@ -45,7 +44,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <numeric>
-#include <ostream>
 #include <vector>
 
 ClassImp(AliAnalysisTaskAR)

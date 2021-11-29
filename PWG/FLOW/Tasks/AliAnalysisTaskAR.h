@@ -21,7 +21,6 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
-#include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
 #include <TF1.h>
