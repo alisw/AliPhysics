@@ -1334,5 +1334,57 @@ AliAnalysisTaskSE *AddTaskFemtoDreamLambdaPhiNanoAOD(bool isMC = false,
   //                                  Form("%s:%s", file.Data(), QAName.Data()));
   // mgr->ConnectOutput(task, 1, coutputQA);
 
+  if(isMC) {
+    AliAnalysisDataContainer *coutputTrkCutsMC;
+    TString TrkCutsMCName = Form("%sTrkCutsMC%s", addon.Data(), suffix.Data());
+    coutputTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        TrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+    mgr->ConnectOutput(task, 10, coutputTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s", addon.Data(), suffix.Data());
+    coutputAntiTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        AntiTrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
+    mgr->ConnectOutput(task, 11, coutputAntiTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputv0CutsMC;
+    TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
+    coutputv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        v0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), v0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 12, coutputv0CutsMC);
+
+    AliAnalysisDataContainer *coutputAntiv0CutsMC;
+    TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
+    coutputAntiv0CutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        Antiv0CutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
+    mgr->ConnectOutput(task, 13, coutputAntiv0CutsMC);
+
+    AliAnalysisDataContainer *coutputPhiCutsMC;
+    TString PhiCutsMCName = Form("%sPhiCutsMC%s", addon.Data(), suffix.Data());
+    coutputPhiCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        PhiCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), PhiCutsMCName.Data()));
+    mgr->ConnectOutput(task, 14, coutputPhiCutsMC);
+  }
+
   return task;
 }

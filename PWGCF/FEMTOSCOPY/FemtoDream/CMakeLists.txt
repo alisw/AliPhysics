@@ -74,7 +74,6 @@ set(SRCS
   AliAnalysisTaskFemtoDreamPhi.cxx
   AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
   AliAnalysisTaskNanoAODFemtoDreamLambdaPhi.cxx
-  AliAnalysisTaskNanoLK.cxx
   AliAnalysisTaskFemtoDreamSigPi.cxx
   AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
@@ -106,7 +105,8 @@ set(SRCS
   AliAnalysisTaskThreeBodyProtonPrimary.cxx
   AliSigma0AODPhotonMotherCuts.cxx;
   AliSigma0PhotonCuts.cxx;
-  AliAnalysisTaskNanoTreeLPhi.cxx
+  AliAnalysisTaskNanoTreeLPhi.cxx;
+  AliAnalysisTaskNanoLambdaKaon.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
