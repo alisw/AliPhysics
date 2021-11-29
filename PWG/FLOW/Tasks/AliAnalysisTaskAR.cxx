@@ -21,12 +21,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliAnalysisTaskAR.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
+#include "AliAnalysisTaskAR.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
@@ -91,9 +91,9 @@ ClassImp(AliAnalysisTaskAR)
       fEventCutsValuesName("EventCutValues"), fEventCutsValues(nullptr),
       fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
       fPrimaryOnly(kFALSE), fMCPrimaryDef(kMCPhysicalPrim),
-      fGlobalTracksOnly(kFALSE), fCentralityEstimator(kV0M),
-      fUseCenCorCuts(kFALSE), fUseMulCorCuts(kFALSE), fUseCenFlatten(kFALSE),
-      fCenFlattenHist(nullptr),
+      fUseFakeTracks(kFALSE), fGlobalTracksOnly(kFALSE),
+      fCentralityEstimator(kV0M), fUseCenCorCuts(kFALSE),
+      fUseMulCorCuts(kFALSE), fUseCenFlatten(kFALSE), fCenFlattenHist(nullptr),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
@@ -163,9 +163,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fEventCutsValuesName("EventCutValues"), fEventCutsValues(nullptr),
       fFilterbit(128), fUseFilterbit(kFALSE), fChargedOnly(kFALSE),
       fPrimaryOnly(kFALSE), fMCPrimaryDef(kMCPhysicalPrim),
-      fGlobalTracksOnly(kFALSE), fCentralityEstimator(kV0M),
-      fUseCenCorCuts(kFALSE), fUseMulCorCuts(kFALSE), fUseCenFlatten(kFALSE),
-      fCenFlattenHist(nullptr),
+      fUseFakeTracks(kFALSE), fGlobalTracksOnly(kFALSE),
+      fCentralityEstimator(kV0M), fUseCenCorCuts(kFALSE),
+      fUseMulCorCuts(kFALSE), fUseCenFlatten(kFALSE), fCenFlattenHist(nullptr),
       // final results
       fFinalResultsList(nullptr), fFinalResultsListName("FinalResults"),
       fFinalResultHistogramsList(nullptr),
@@ -1492,6 +1492,9 @@ void AliAnalysisTaskAR::SetDefaultConfiguration() {
   fUseFisherYates = kFALSE;
   // needed in combination with fischer yates
   fUseFixedMultplicity = kFALSE;
+  // use fake tracks for weight computation
+  // i.e. misidentified tracks
+  fUseFakeTracks = kTRUE;
 }
 
 void AliAnalysisTaskAR::SetDefaultBinning() {
@@ -1742,6 +1745,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       // and get corresponding AODTrack, if it exists
       track = dynamic_cast<AliAODTrack *>(
           aAOD->GetTrack(fLookUpTable[MCParticle->GetLabel()]));
+      // maybe track was misidentify
+      if (!track && fUseFakeTracks) {
+        track = dynamic_cast<AliAODTrack *>(
+            aAOD->GetTrack(fLookUpTable[TMath::Abs(MCParticle->GetLabel())]));
+      }
       // if running over AOD only
     } else if (aAOD && !aMC) {
       // get AODtrack directly

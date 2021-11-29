@@ -440,6 +440,8 @@ public:
   void SetPrimaryDefinitionInMC(kMCPrimaryDef def) {
     this->fMCPrimaryDef = def;
   }
+  // use fake tracks for weight computation
+  void SetUseFakeTracks(Bool_t option) { this->fUseFakeTracks = option; }
   // cut all non-global track away
   void SetGlobalTracksOnlyCut(Bool_t option) {
     this->fGlobalTracksOnly = option;
@@ -630,6 +632,7 @@ private:
   Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
   kMCPrimaryDef fMCPrimaryDef;
+  Bool_t fUseFakeTracks;
   Bool_t fGlobalTracksOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
