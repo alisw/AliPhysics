@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 08.11.2021
+ * Last Modified Date: 27.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -33,6 +33,7 @@
 #include "AliVEvent.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
+#include <RtypesCore.h>
 #include <TColor.h>
 #include <TFile.h>
 #include <TH1.h>
@@ -44,6 +45,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <numeric>
+#include <ostream>
 #include <vector>
 
 ClassImp(AliAnalysisTaskAR)
@@ -105,10 +107,10 @@ ClassImp(AliAnalysisTaskAR)
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
       fMCMultiplicity(nullptr), fLookUpTable({}), fUseFisherYates(kFALSE),
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
-      fFixedMultiplicy(2),
+      fFixedMultiplicy(12),
       // qvectors
-      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}),
-      fSymmetricCumulants({}), fMapSCtoCor({}), fMapCorToIndex({}) {
+      fUseWeights(kFALSE), fCorrelators({}), fSymmetricCumulants({}),
+      fMapSCtoCor({}), fMapCorToIndex({}) {
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR(const "
               "char *name");
   // create base list
@@ -116,7 +118,7 @@ ClassImp(AliAnalysisTaskAR)
   fHistList->SetName(fHistListName);
   fHistList->SetOwner(kTRUE);
   // initialize all arrays
-  this->InitializeArrays();
+  InitializeArrays();
   DefineOutput(1, TList::Class());
 }
 
@@ -177,12 +179,12 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
       fMCMultiplicity(nullptr), fLookUpTable({}), fUseFisherYates(kFALSE),
       fRandomizedTrackIndices({}), fUseFixedMultplicity(kFALSE),
-      fFixedMultiplicy(2),
+      fFixedMultiplicy(12),
       // qvectors
-      fWeightsAggregated({}), fUseWeightsAggregated(kFALSE), fCorrelators({}),
-      fSymmetricCumulants({}), fMapSCtoCor({}), fMapCorToIndex({}) {
+      fUseWeights(kFALSE), fCorrelators({}), fSymmetricCumulants({}),
+      fMapSCtoCor({}), fMapCorToIndex({}) {
   // initialize arrays
-  this->InitializeArrays();
+  InitializeArrays();
   AliDebug(2, "AliAnalysisTaskAR::AliAnalysisTaskAR()");
 }
 
@@ -208,8 +210,6 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   // 2) Book and nest all lists
   // 3) Book all objects
   // *) Trick to avoid name clashes, part 2
-
-  // 1) Trick to avoid name clashes, part 1
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -222,20 +222,13 @@ void AliAnalysisTaskAR::UserCreateOutputObjects() {
   }
   this->BookControlHistograms();
   this->BookFinalResultHistograms();
+  this->BookTrackBinHistograms();
   this->BookFinalResultSymmetricCumulants();
   this->BookFinalResultCorrelators();
 
   // seed RNG
   delete gRandom;
   fUseCustomSeed ? gRandom = new TRandom3(fSeed) : gRandom = new TRandom3(0);
-
-  // if we use at least one kinematic weight aggregate that into one boolean for
-  // easier checking
-  for (int k = 0; k < kKinematic; ++k) {
-    if (fUseWeights[k]) {
-      fUseWeightsAggregated = kTRUE;
-    }
-  }
 
   // *) Trick to avoid name clashes, part
   TH1::AddDirectory(oldHistAddStatus);
@@ -455,8 +448,8 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   TString FBTrackScanQAHistogramNames[LAST_ETRACK][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fFBTrackScanQAHistogram[kPT]", "Filterbitscan p_{T}", "p_{t}", ""},
-      {"fFBTrackScanQAHistogram[kPHI]", "Filterbitscan #varphi", "#varphi", ""},
       {"fFBTrackScanQAHistogram[kETA]", "Filterbitscan #eta", "#eta", ""},
+      {"fFBTrackScanQAHistogram[kPHI]", "Filterbitscan #varphi", "#varphi", ""},
       {"fFBTrackScanQAHistogram[kCHARGE]", "Filterbitscan Charge", "Q", ""},
       {"fFBTrackScanQAHistogram[kTPCNCLS]",
        "Filterbitscan number of TPC clusters", "", ""},
@@ -493,8 +486,8 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   Double_t FBTrackScanHistogramBins[LAST_ETRACK][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {1000., 0., 10.},           // kPT
-      {360., 0., TMath::TwoPi()}, // kPHI
       {1000., -2., 2.},           // kETA
+      {360., 0., TMath::TwoPi()}, // kPHI
       {11., -5.5, 5.5},           // kCHARGE
       {200., 0., 200.},           // kTPCNCLS
       {200., 0., 200.},           // kTPCCROSSEDROWS
@@ -527,9 +520,9 @@ void AliAnalysisTaskAR::InitializeArraysForQAHistograms() {
   TString SelfCorQAHistogramNames[kKinematic][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fSelfCorQAHistograms[kPT]", "p_{T}^{1}-p_{T}^{2}", "#Delta p_{T}", ""},
+      {"fSelfCorQAHistograms[kETA]", "#eta_{1}-#eta_{2}", "#Delta #eta", ""},
       {"fSelfCorQAHistograms[kPHI]", "#varphi_{1}-#varphi_{2}",
        "#Delta #varphi", ""},
-      {"fSelfCorQAHistograms[kETA]", "#eta_{1}-#eta_{2}", "#Delta #eta", ""},
   };
 
   // initialize names
@@ -576,8 +569,8 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   TString TrackControlHistogramNames[LAST_ETRACK][LAST_ENAME] = {
       // NAME, TITLE, XAXIS, YAXIS
       {"fTrackControlHistograms[kPT]", "p_{T}", "p_{T} [GeV]", ""},
-      {"fTrackControlHistograms[kPHI]", "#varphi", "#varphi", ""},
       {"fTrackControlHistograms[kETA]", "#eta", "#eta", ""},
+      {"fTrackControlHistograms[kPHI]", "#varphi", "#varphi", ""},
       {"fTrackControlHistograms[kCHARGE]", "Charge", "Q [e]", ""},
       {"fTrackControlHistograms[kTPCNCLS]", "Number of clusters in TPC",
        "N_{TPCNCLS}"},
@@ -632,8 +625,8 @@ void AliAnalysisTaskAR::InitializeArraysForTrackControlHistograms() {
   // set bin names of track cuts counter histogram
   TString TrackCutsCounterBinNames[LAST_ETRACK] = {
       "kPT",
-      "kPHI",
       "kETA",
+      "kPHI",
       "kCHARGE",
       "kTPCNCLS",
       "kTPCCROSSEDROWS",
@@ -816,18 +809,23 @@ void AliAnalysisTaskAR::InitializeArraysForWeights() {
   // initialize all necessary components for weight and acceptance histograms
   for (int k = 0; k < kKinematic; ++k) {
     fWeightHistogram[k] = nullptr;
-    fUseWeights[k] = kFALSE;
-    fKinematics[k] = {};
-    fKinematicWeights[k] = {};
   }
 }
 
 void AliAnalysisTaskAR::InitializeArraysForQvectors() {
-  // initalize all arrays for Q-vectors
+  // initalize arrays for Q-vectors
   for (Int_t h = 0; h < kMaxHarmonic; h++) {
     for (Int_t p = 0; p < kMaxPower; p++) {
       fQvector[h][p] = TComplex(0., 0.);
     }
+  }
+  for (int i = 0; i < kKinematic - 1; i++) {
+    fTrackBinsHistogram[i] = nullptr;
+  }
+
+  for (int i = 0; i < kKinematic; i++) {
+    fKinematics[i] = {};
+    fKinematicWeights[i] = {};
   }
 }
 
@@ -1309,10 +1307,10 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
        fEventControlHistogramBins[kMULQ][kLEDGE],
        fEventControlHistogramBins[kMULQ][kUEDGE]},
   };
-  TString Names[LAST_EFINALRESULTPROFILE] = {"[kINTEGRATED]", "[kCENDEP]",
-                                             "[kMULDEP]"};
+  TString Names[LAST_EFINALRESULTPROFILE] = {
+      "[kINTEGRATED]", "[kCENDEP]", "[kMULDEP]", "[kPTDEP]", "[kETADEP]"};
   TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
-                                             "Multiplicity"};
+                                             "Multiplicity", "p_{T}", "#eta"};
   TString corListName;
   TString corName;
   for (std::size_t i = 0; i < fCorrelators.size(); i++) {
@@ -1332,13 +1330,46 @@ void AliAnalysisTaskAR::BookFinalResultCorrelators() {
     fFinalResultCorrelatorsList->Add(corList);
 
     for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
-      corProfile[i] = new TProfile(corListName + Names[i],
-                                   corListName + TString(" ") + Names[i],
-                                   bins[i][0], bins[i][1], bins[i][2]);
+      if (i == kPTDEP) {
+        corProfile[i] = new TProfile(
+            corListName + Names[i], corListName + TString(" ") + Names[i],
+            fTrackBins[kPT].size() - 1, fTrackBins[kPT].data());
+      } else if (i == kETADEP) {
+        corProfile[i] = new TProfile(
+            corListName + Names[i], corListName + TString(" ") + Names[i],
+            fTrackBins[kETA].size() - 1, fTrackBins[kETA].data());
+      } else
+        corProfile[i] = new TProfile(corListName + Names[i],
+                                     corListName + TString(" ") + Names[i],
+                                     bins[i][0], bins[i][1], bins[i][2]);
       corProfile[i]->GetXaxis()->SetTitle(xaxis[i]);
       corList->Add(corProfile[i]);
     }
   }
+}
+void AliAnalysisTaskAR::BookTrackBinHistograms() {
+  // book track bin histograms
+  TString Names[kKinematic - 1] = {"TrackBinHistogram[kPT]",
+                                   "TrackBinHistogram[kETA]"};
+
+  for (int i = 0; i < kKinematic - 1; i++) {
+    if (fTrackBins[i].empty()) {
+      fTrackBins[i].push_back(fTrackCuts[i][kMIN]);
+      fTrackBins[i].push_back(fTrackCuts[i][kMAX]);
+    }
+    fTrackBinsHistogram[i] = new TH1D(
+        Names[i], Names[i], fTrackBins[i].size() - 1, fTrackBins[i].data());
+
+    for (std::size_t j = 0; j < fTrackBins[i].size() - 1; j++) {
+      fKinematics[i].push_back({});
+      fKinematicWeights[i].push_back({});
+    }
+  }
+
+  fTrackBins[kPHI].push_back(0);
+  fTrackBins[kPHI].push_back(1);
+  fKinematics[kPHI].push_back({});
+  fKinematicWeights[kPHI].push_back({});
 }
 
 void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
@@ -1354,8 +1385,8 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
        fEventControlHistogramBins[kMULQ][kLEDGE],
        fEventControlHistogramBins[kMULQ][kUEDGE]},
   };
-  TString Names[LAST_EFINALRESULTPROFILE] = {"[kINTEGRATED]", "[kCENDEP]",
-                                             "[kMULDEP]"};
+  TString Names[LAST_EFINALRESULTPROFILE] = {
+      "[kINTEGRATED]", "[kCENDEP]", "[kMULDEP]", "[kPTDEP]", "[kETADEP]"};
   TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
                                              "Multiplicity"};
   TString Name;
@@ -1379,8 +1410,18 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
     fFinalResultSymmetricCumulantsList->Add(List);
 
     for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
-      Hist[i] = new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
-                         bins[i][0], bins[i][1], bins[i][2]);
+
+      if (i == kPTDEP) {
+        Hist[i] = new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
+                           fTrackBins[kPT].size() - 1, fTrackBins[kPT].data());
+      } else if (i == kETADEP) {
+        Hist[i] =
+            new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
+                     fTrackBins[kETA].size() - 1, fTrackBins[kETA].data());
+      } else {
+        Hist[i] = new TH1D(Name + Names[i], Name + TString(" ") + Names[i],
+                           bins[i][0], bins[i][1], bins[i][2]);
+      }
       Hist[i]->GetXaxis()->SetTitle(xaxis[i]);
       Hist[i]->SetFillColor(kcolorFinalResult);
       List->Add(Hist[i]);
@@ -1460,8 +1501,8 @@ void AliAnalysisTaskAR::SetDefaultBinning() {
   Double_t DefaultTrackBins[LAST_ETRACK][LAST_EBINS] = {
       // kBIN kLEDGE kUEDGE
       {1000., 0., 20},            // kPT
-      {360., 0., TMath::TwoPi()}, // kPHI
       {200., -1., 1.},            // kETA
+      {360., 0., TMath::TwoPi()}, // kPHI
       {21., -10.5, 10.5},         // kCHARGE
       {200., 0, 200},             // kTPCNCLS
       {200., 0, 200},             // kTPCCROSSEDROWS
@@ -1543,13 +1584,13 @@ void AliAnalysisTaskAR::SetDefaultCuts(Int_t Filterbit, Double_t cenMin,
   fTrackCuts[kPT][kMAX] = 5.;
   fUseTrackCuts[kPT] = kTRUE;
 
-  fTrackCuts[kPHI][kMIN] = 0.;
-  fTrackCuts[kPHI][kMAX] = TMath::TwoPi();
-  fUseTrackCuts[kPHI] = kTRUE;
-
   fTrackCuts[kETA][kMIN] = -0.8;
   fTrackCuts[kETA][kMAX] = 0.8;
   fUseTrackCuts[kETA] = kTRUE;
+
+  fTrackCuts[kPHI][kMIN] = 0.;
+  fTrackCuts[kPHI][kMAX] = TMath::TwoPi();
+  fUseTrackCuts[kPHI] = kTRUE;
 
   fTrackCuts[kCHARGE][kMIN] = -1.5;
   fTrackCuts[kCHARGE][kMAX] = 1.5;
@@ -1578,7 +1619,7 @@ void AliAnalysisTaskAR::SetDefaultCuts(Int_t Filterbit, Double_t cenMin,
   fUseEventCuts[kMULQ] = kTRUE;
 
   fEventCuts[kNCONTRIB][kMIN] = 2.;
-  fEventCuts[kNCONTRIB][kMAX] = 1e4;
+  fEventCuts[kNCONTRIB][kMAX] = 1e6;
   fUseEventCuts[kNCONTRIB] = kTRUE;
 
   // cut on multiplicity correlation
@@ -1716,11 +1757,11 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
       if (fMCKinematicPDFs[kPT]) {
         fMCKinematicVariables[kPT] = fMCKinematicPDFs[kPT]->GetRandom();
       }
-      if (fMCKinematicPDFs[kPHI]) {
-        fMCKinematicVariables[kPHI] = fMCKinematicPDFs[kPHI]->GetRandom();
-      }
       if (fMCKinematicPDFs[kETA]) {
         fMCKinematicVariables[kETA] = fMCKinematicPDFs[kETA]->GetRandom();
+      }
+      if (fMCKinematicPDFs[kPHI]) {
+        fMCKinematicVariables[kPHI] = fMCKinematicPDFs[kPHI]->GetRandom();
       }
     } else {
       std::cout << __LINE__ << ": did not get kinematic variables" << std::endl;
@@ -1769,7 +1810,6 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
     // fill kinematic variables and weights into track objects
     FillTrackObjects(track);
-
     // increase counter, in case we want to fix multiplicity
     Counter++;
   }
@@ -1779,24 +1819,17 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
     return;
   }
 
-  // aggregate weights
-  // i.e. multiply pt, phi and eta weights track by track and push it into one
-  // vector
-  AggregateWeights();
-
   // fill event control histograms for on the fly generated data
   // if we run over real data, we can do this step in the very beginning
   if (fMCOnTheFly) {
     fMultiplicity[kMUL] = nTracks;
-    fMultiplicity[kMULQ] = fKinematics[kPHI].size();
-    fMultiplicity[kMULW] = std::accumulate(fWeightsAggregated.begin(),
-                                           fWeightsAggregated.end(), 0);
+    fMultiplicity[kMULQ] = fKinematics[kPHI].at(0).size();
+    fMultiplicity[kMULW] =
+        std::accumulate(fKinematicWeights[kPHI].at(0).begin(),
+                        fKinematicWeights[kPHI].at(0).end(), 0);
     FillEventControlHistograms(kBEFORE, nullptr);
     FillEventControlHistograms(kAFTER, nullptr);
   }
-
-  // calculate qvectors
-  CalculateQvectors();
 
   // fill final result profile
   FillFinalResultCorrelators();
@@ -1806,101 +1839,114 @@ void AliAnalysisTaskAR::UserExec(Option_t *) {
 
 void AliAnalysisTaskAR::ClearVectors() {
   // clear vectors holding kinematics and weights of an event
-  fWeightsAggregated.clear();
-  for (Int_t k = 0; k < kKinematic; ++k) {
-    fKinematics[k].clear();
-    fKinematicWeights[k].clear();
+  for (int k = 0; k < kKinematic - 1; ++k) {
+    for (std::size_t i = 0; i < fTrackBins[k].size() - 1; i++) {
+      fKinematics[k].at(i).clear();
+      fKinematicWeights[k].at(i).clear();
+    }
   }
+  fKinematics[kPHI].at(0).clear();
+  fKinematicWeights[kPHI].at(0).clear();
 }
 
 void AliAnalysisTaskAR::FillTrackObjects(AliVParticle *avp) {
   // fill kinematic variables and weights into event objects
 
+  Double_t weight = 1.;
   // AOD track
   AliAODTrack *track = dynamic_cast<AliAODTrack *>(avp);
   if (track) {
-    fKinematics[kPT].push_back(track->Pt());
-    if (fWeightHistogram[kPT]) {
-      fKinematicWeights[kPT].push_back(fWeightHistogram[kPT]->GetBinContent(
-          fWeightHistogram[kPT]->FindBin(track->Pt())));
+    if (fUseWeights) {
+      if (fWeightHistogram[kPT]) {
+        weight *= fWeightHistogram[kPT]->GetBinContent(
+            fWeightHistogram[kPT]->FindBin(track->Pt()));
+      }
+      if (fWeightHistogram[kETA]) {
+        weight *= fWeightHistogram[kETA]->GetBinContent(
+            fWeightHistogram[kETA]->FindBin(track->Eta()));
+      }
+      if (fWeightHistogram[kPHI]) {
+        weight *= fWeightHistogram[kPHI]->GetBinContent(
+            fWeightHistogram[kPHI]->FindBin(track->Phi()));
+      }
     }
-    fKinematics[kPHI].push_back(track->Phi());
-    if (fWeightHistogram[kPHI]) {
-      fKinematicWeights[kPHI].push_back(fWeightHistogram[kPHI]->GetBinContent(
-          fWeightHistogram[kPHI]->FindBin(track->Phi())));
+    fKinematics[kPHI].at(0).push_back(track->Phi());
+    fKinematicWeights[kPHI].at(0).push_back(weight);
+
+    Int_t ptBin = fTrackBinsHistogram[kPT]->FindBin(track->Pt());
+    if (ptBin != 0 && ptBin <= fTrackBinsHistogram[kPT]->GetNbinsX()) {
+      fKinematics[kPT].at(ptBin - 1).push_back(track->Phi());
+      fKinematicWeights[kPT].at(ptBin - 1).push_back(weight);
     }
-    fKinematics[kETA].push_back(track->Eta());
-    if (fWeightHistogram[kETA]) {
-      fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
-          fWeightHistogram[kETA]->FindBin(track->Eta())));
+    Int_t etaBin = fTrackBinsHistogram[kETA]->FindBin(track->Eta());
+    if (etaBin != 0 && etaBin <= fTrackBinsHistogram[kETA]->GetNbinsX()) {
+      fKinematics[kETA].at(etaBin - 1).push_back(track->Phi());
+      fKinematicWeights[kETA].at(etaBin - 1).push_back(weight);
     }
   }
 
   // MC particles
   AliAODMCParticle *MCparticle = dynamic_cast<AliAODMCParticle *>(avp);
   if (MCparticle) {
-    fKinematics[kPT].push_back(MCparticle->Pt());
-    if (fWeightHistogram[kPT]) {
-      fKinematicWeights[kPT].push_back(fWeightHistogram[kPT]->GetBinContent(
-          fWeightHistogram[kPT]->FindBin(MCparticle->Pt())));
+    if (fUseWeights) {
+      if (fWeightHistogram[kPT]) {
+        weight *= fWeightHistogram[kPT]->GetBinContent(
+            fWeightHistogram[kPT]->FindBin(MCparticle->Pt()));
+      }
+      if (fWeightHistogram[kETA]) {
+        weight *= fWeightHistogram[kETA]->GetBinContent(
+            fWeightHistogram[kETA]->FindBin(MCparticle->Eta()));
+      }
+      if (fWeightHistogram[kPHI]) {
+        weight *= fWeightHistogram[kPHI]->GetBinContent(
+            fWeightHistogram[kPHI]->FindBin(MCparticle->Phi()));
+      }
     }
-    fKinematics[kPHI].push_back(MCparticle->Phi());
-    if (fWeightHistogram[kPHI]) {
-      fKinematicWeights[kPHI].push_back(fWeightHistogram[kPHI]->GetBinContent(
-          fWeightHistogram[kPHI]->FindBin(MCparticle->Phi())));
+    fKinematics[kPHI].at(0).push_back(MCparticle->Phi());
+    fKinematicWeights[kPHI].at(0).push_back(weight);
+
+    Int_t ptBin = fTrackBinsHistogram[kPT]->FindBin(MCparticle->Pt());
+    if (ptBin != 0 && ptBin <= fTrackBinsHistogram[kPT]->GetNbinsX()) {
+      fKinematics[kPT].at(ptBin - 1).push_back(MCparticle->Phi());
+      fKinematicWeights[kPT].at(ptBin - 1).push_back(weight);
     }
-    fKinematics[kETA].push_back(MCparticle->Eta());
-    if (fWeightHistogram[kETA]) {
-      fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
-          fWeightHistogram[kETA]->FindBin(MCparticle->Eta())));
+    Int_t etaBin = fTrackBinsHistogram[kETA]->FindBin(MCparticle->Eta());
+    if (etaBin != 0 && etaBin <= fTrackBinsHistogram[kETA]->GetNbinsX()) {
+      fKinematics[kETA].at(etaBin - 1).push_back(MCparticle->Phi());
+      fKinematicWeights[kETA].at(etaBin - 1).push_back(weight);
     }
   }
 
   // if neither, we run over on the fly generated data
   if (!track && !MCparticle && fMCOnTheFly) {
-    if (fMCKinematicPDFs[kPT]) {
-      fKinematics[kPT].push_back(fMCKinematicVariables[kPT]);
+    if (fUseWeights) {
       if (fWeightHistogram[kPT]) {
-        fKinematicWeights[kPT].push_back(fWeightHistogram[kPT]->GetBinContent(
-            fWeightHistogram[kPT]->FindBin(fMCKinematicVariables[kPT])));
+        weight *= fWeightHistogram[kPT]->GetBinContent(
+            fWeightHistogram[kPT]->FindBin(fMCKinematicVariables[kPT]));
       }
-    }
-    if (fMCKinematicPDFs[kPHI]) {
-      fKinematics[kPHI].push_back(fMCKinematicVariables[kPHI]);
-      if (fWeightHistogram[kPHI]) {
-        fKinematicWeights[kPHI].push_back(fWeightHistogram[kPHI]->GetBinContent(
-            fWeightHistogram[kPHI]->FindBin(fMCKinematicVariables[kPHI])));
-      }
-    }
-    if (fMCKinematicPDFs[kETA]) {
-      fKinematics[kETA].push_back(fMCKinematicVariables[kETA]);
       if (fWeightHistogram[kETA]) {
-        fKinematicWeights[kETA].push_back(fWeightHistogram[kETA]->GetBinContent(
-            fWeightHistogram[kETA]->FindBin(fMCKinematicVariables[kETA])));
+        weight *= fWeightHistogram[kETA]->GetBinContent(
+            fWeightHistogram[kETA]->FindBin(fMCKinematicVariables[kETA]));
+      }
+      if (fWeightHistogram[kPHI]) {
+        weight *= fWeightHistogram[kPHI]->GetBinContent(
+            fWeightHistogram[kPHI]->FindBin(fMCKinematicVariables[kPHI]));
       }
     }
-  }
-}
+    fKinematics[kPHI].at(0).push_back(fMCKinematicVariables[kPHI]);
+    fKinematicWeights[kPHI].at(0).push_back(weight);
 
-void AliAnalysisTaskAR::AggregateWeights() {
-  // aggregate all kinematic weights into one vector track by track
-
-  Double_t w[kKinematic];
-  Double_t tmp;
-  fWeightsAggregated.clear();
-
-  for (std::size_t i = 0; i < fKinematics[kPHI].size(); ++i) {
-    tmp = 1.;
-    for (Int_t k = 0; k < kKinematic; ++k) {
-      w[k] = 1.;
-      if (fUseWeights[k] && !fKinematicWeights[k].empty()) {
-        w[k] *= fKinematicWeights[k].at(i);
-      }
+    Int_t ptBin = fTrackBinsHistogram[kPT]->FindBin(fMCKinematicVariables[kPT]);
+    if (ptBin > 0 && ptBin <= fTrackBinsHistogram[kPT]->GetNbinsX()) {
+      fKinematics[kPT].at(ptBin - 1).push_back(fMCKinematicVariables[kPHI]);
+      fKinematicWeights[kPT].at(ptBin - 1).push_back(weight);
     }
-    for (int k = 0; k < kKinematic; ++k) {
-      tmp *= w[k];
+    Int_t etaBin =
+        fTrackBinsHistogram[kETA]->FindBin(fMCKinematicVariables[kETA]);
+    if (etaBin > 0 && etaBin <= fTrackBinsHistogram[kETA]->GetNbinsX()) {
+      fKinematics[kETA].at(etaBin - 1).push_back(fMCKinematicVariables[kPHI]);
+      fKinematicWeights[kETA].at(etaBin - 1).push_back(weight);
     }
-    fWeightsAggregated.push_back(tmp);
   }
 }
 
@@ -1981,8 +2027,8 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
   AliAODTrack *track = dynamic_cast<AliAODTrack *>(avp);
   if (track) {
     fTrackControlHistograms[kRECO][kPT][BA]->Fill(track->Pt());
-    fTrackControlHistograms[kRECO][kPHI][BA]->Fill(track->Phi());
     fTrackControlHistograms[kRECO][kETA][BA]->Fill(track->Eta());
+    fTrackControlHistograms[kRECO][kPHI][BA]->Fill(track->Phi());
     fTrackControlHistograms[kRECO][kCHARGE][BA]->Fill(track->Charge());
     fTrackControlHistograms[kRECO][kTPCNCLS][BA]->Fill(track->GetTPCNcls());
     fTrackControlHistograms[kRECO][kTPCCROSSEDROWS][BA]->Fill(
@@ -2003,16 +2049,16 @@ void AliAnalysisTaskAR::FillTrackControlHistograms(kBeforeAfter BA,
   AliAODMCParticle *MCParticle = dynamic_cast<AliAODMCParticle *>(avp);
   if (MCParticle) {
     fTrackControlHistograms[kSIM][kPT][BA]->Fill(MCParticle->Pt());
-    fTrackControlHistograms[kSIM][kPHI][BA]->Fill(MCParticle->Phi());
     fTrackControlHistograms[kSIM][kETA][BA]->Fill(MCParticle->Eta());
+    fTrackControlHistograms[kSIM][kPHI][BA]->Fill(MCParticle->Phi());
     fTrackControlHistograms[kSIM][kCHARGE][BA]->Fill(MCParticle->Charge() / 3.);
   }
 
   // MC on the fly
   if (!avp && fMCOnTheFly) {
     fTrackControlHistograms[kSIM][kPT][BA]->Fill(fMCKinematicVariables[kPT]);
-    fTrackControlHistograms[kSIM][kPHI][BA]->Fill(fMCKinematicVariables[kPHI]);
     fTrackControlHistograms[kSIM][kETA][BA]->Fill(fMCKinematicVariables[kETA]);
+    fTrackControlHistograms[kSIM][kPHI][BA]->Fill(fMCKinematicVariables[kPHI]);
   }
 }
 
@@ -2065,9 +2111,9 @@ void AliAnalysisTaskAR::FillEventQAHistograms(kBeforeAfter BA,
           continue;
         }
         // compute differences
-        fSelfCorQAHistograms[kPHI][BA]->Fill(aTrack1->Phi() - aTrack2->Phi());
         fSelfCorQAHistograms[kPT][BA]->Fill(aTrack1->Pt() - aTrack2->Pt());
         fSelfCorQAHistograms[kETA][BA]->Fill(aTrack1->Eta() - aTrack2->Eta());
+        fSelfCorQAHistograms[kPHI][BA]->Fill(aTrack1->Phi() - aTrack2->Phi());
       }
     }
   }
@@ -2093,8 +2139,8 @@ void AliAnalysisTaskAR::FillFBScanQAHistograms(AliAODTrack *track) {
   for (int fb = 0; fb < kNumberofTestFilterBit; ++fb) {
     if (track->TestFilterBit(kTestFilterbit[fb])) {
       fFBTrackScanQAHistograms[kPT][fb]->Fill(track->Pt());
-      fFBTrackScanQAHistograms[kPHI][fb]->Fill(track->Phi());
       fFBTrackScanQAHistograms[kETA][fb]->Fill(track->Eta());
+      fFBTrackScanQAHistograms[kPHI][fb]->Fill(track->Phi());
       fFBTrackScanQAHistograms[kCHARGE][fb]->Fill(track->Charge());
       fFBTrackScanQAHistograms[kTPCNCLS][fb]->Fill(track->GetTPCNcls());
       fFBTrackScanQAHistograms[kTPCCROSSEDROWS][fb]->Fill(
@@ -2362,23 +2408,6 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         Flag = kFALSE;
       }
     }
-    if (fUseTrackCuts[kPHI]) {
-      // cut PHI
-      if (aTrack->Phi() < fTrackCuts[kPHI][kMIN]) {
-        if (FillCounter) {
-          fTrackCutsCounter[kRECO]->Fill(2 * kPHI + kMIN + 0.5);
-        }
-        // CutBit += TMath::Power(2, kPHI);
-        Flag = kFALSE;
-      }
-      if (aTrack->Phi() > fTrackCuts[kPHI][kMAX]) {
-        if (FillCounter) {
-          fTrackCutsCounter[kRECO]->Fill(2 * kPHI + kMAX + 0.5);
-        }
-        // CutBit += TMath::Power(2, kPHI);
-        Flag = kFALSE;
-      }
-    }
     if (fUseTrackCuts[kETA]) {
       // cut ETA
       if (aTrack->Eta() < fTrackCuts[kETA][kMIN]) {
@@ -2393,6 +2422,23 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           fTrackCutsCounter[kRECO]->Fill(2 * kETA + kMAX + 0.5);
         }
         // CutBit += TMath::Power(2, kETA);
+        Flag = kFALSE;
+      }
+    }
+    if (fUseTrackCuts[kPHI]) {
+      // cut PHI
+      if (aTrack->Phi() < fTrackCuts[kPHI][kMIN]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kPHI + kMIN + 0.5);
+        }
+        // CutBit += TMath::Power(2, kPHI);
+        Flag = kFALSE;
+      }
+      if (aTrack->Phi() > fTrackCuts[kPHI][kMAX]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kRECO]->Fill(2 * kPHI + kMAX + 0.5);
+        }
+        // CutBit += TMath::Power(2, kPHI);
         Flag = kFALSE;
       }
     }
@@ -2632,9 +2678,9 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           Flag = kFALSE;
         }
       }
-      if (fAcceptanceHistogram[kPHI]) {
-        if (fAcceptanceHistogram[kPHI]->GetBinContent(
-                fAcceptanceHistogram[kPHI]->FindBin(aTrack->Phi())) <
+      if (fAcceptanceHistogram[kETA]) {
+        if (fAcceptanceHistogram[kETA]->GetBinContent(
+                fAcceptanceHistogram[kETA]->FindBin(aTrack->Eta())) <
             gRandom->Uniform()) {
           if (FillCounter) {
             fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 4.5);
@@ -2642,9 +2688,9 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
           Flag = kFALSE;
         }
       }
-      if (fAcceptanceHistogram[kETA]) {
-        if (fAcceptanceHistogram[kETA]->GetBinContent(
-                fAcceptanceHistogram[kETA]->FindBin(aTrack->Eta())) <
+      if (fAcceptanceHistogram[kPHI]) {
+        if (fAcceptanceHistogram[kPHI]->GetBinContent(
+                fAcceptanceHistogram[kPHI]->FindBin(aTrack->Phi())) <
             gRandom->Uniform()) {
           if (FillCounter) {
             fTrackCutsCounter[kRECO]->Fill(2 * LAST_ETRACK + 4.5);
@@ -2673,21 +2719,6 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         Flag = kFALSE;
       }
     }
-    if (fUseTrackCuts[kPHI]) {
-      // cut PHI
-      if (MCParticle->Phi() < fTrackCuts[kPHI][kMIN]) {
-        if (FillCounter) {
-          fTrackCutsCounter[kSIM]->Fill(2 * kPHI + kMIN + 0.5);
-        }
-        Flag = kFALSE;
-      }
-      if (MCParticle->Phi() > fTrackCuts[kPHI][kMAX]) {
-        if (FillCounter) {
-          fTrackCutsCounter[kSIM]->Fill(2 * kPHI + kMAX + 0.5);
-        }
-        Flag = kFALSE;
-      }
-    }
     if (fUseTrackCuts[kETA]) {
       // cut ETA
       if (MCParticle->Eta() < fTrackCuts[kETA][kMIN]) {
@@ -2699,6 +2730,21 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
       if (MCParticle->Eta() > fTrackCuts[kETA][kMAX]) {
         if (FillCounter) {
           fTrackCutsCounter[kSIM]->Fill(2 * kETA + kMAX + 0.5);
+        }
+        Flag = kFALSE;
+      }
+    }
+    if (fUseTrackCuts[kPHI]) {
+      // cut PHI
+      if (MCParticle->Phi() < fTrackCuts[kPHI][kMIN]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kSIM]->Fill(2 * kPHI + kMIN + 0.5);
+        }
+        Flag = kFALSE;
+      }
+      if (MCParticle->Phi() > fTrackCuts[kPHI][kMAX]) {
+        if (FillCounter) {
+          fTrackCutsCounter[kSIM]->Fill(2 * kPHI + kMAX + 0.5);
         }
         Flag = kFALSE;
       }
@@ -2752,17 +2798,17 @@ Bool_t AliAnalysisTaskAR::SurviveTrackCut(AliVParticle *avp,
         Flag = kFALSE;
       }
     }
-    if (fAcceptanceHistogram[kPHI]) {
-      if (fAcceptanceHistogram[kPHI]->GetBinContent(
-              fAcceptanceHistogram[kPHI]->FindBin(
-                  fMCKinematicVariables[kPHI])) < gRandom->Uniform()) {
-        Flag = kFALSE;
-      }
-    }
     if (fAcceptanceHistogram[kETA]) {
       if (fAcceptanceHistogram[kETA]->GetBinContent(
               fAcceptanceHistogram[kETA]->FindBin(
                   fMCKinematicVariables[kETA])) < gRandom->Uniform()) {
+        Flag = kFALSE;
+      }
+    }
+    if (fAcceptanceHistogram[kPHI]) {
+      if (fAcceptanceHistogram[kPHI]->GetBinContent(
+              fAcceptanceHistogram[kPHI]->FindBin(
+                  fMCKinematicVariables[kPHI])) < gRandom->Uniform()) {
         Flag = kFALSE;
       }
     }
@@ -2786,7 +2832,7 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
     fCentrality[cen] = aMS->GetMultiplicityPercentile(kCenEstimatorNames[cen]);
   }
 
-  // multiplicity as number of global tracks
+  // multiplicity as number of tracks
   fMultiplicity[kMUL] = 0.;
 
   // multiplicity as number of contributors to the primary vertex
@@ -2856,17 +2902,19 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
     fMultiplicity[kMULQ] += 1.;
 
     w = 1.;
-    if (fUseWeights[kPT] && fWeightHistogram[kPT]) {
-      w *= fWeightHistogram[kPT]->GetBinContent(
-          fWeightHistogram[kPT]->FindBin(aTrack->Pt()));
-    }
-    if (fUseWeights[kPHI] && fWeightHistogram[kPHI]) {
-      w *= fWeightHistogram[kPHI]->GetBinContent(
-          fWeightHistogram[kPHI]->FindBin(aTrack->Phi()));
-    }
-    if (fUseWeights[kETA] && fWeightHistogram[kETA]) {
-      w *= fWeightHistogram[kETA]->GetBinContent(
-          fWeightHistogram[kETA]->FindBin(aTrack->Eta()));
+    if (fUseWeights) {
+      if (fWeightHistogram[kPT]) {
+        w *= fWeightHistogram[kPT]->GetBinContent(
+            fWeightHistogram[kPT]->FindBin(aTrack->Pt()));
+      }
+      if (fWeightHistogram[kPHI]) {
+        w *= fWeightHistogram[kPHI]->GetBinContent(
+            fWeightHistogram[kPHI]->FindBin(aTrack->Phi()));
+      }
+      if (fWeightHistogram[kETA]) {
+        w *= fWeightHistogram[kETA]->GetBinContent(
+            fWeightHistogram[kETA]->FindBin(aTrack->Eta()));
+      }
     }
     fMultiplicity[kMULW] += w;
 
@@ -2879,7 +2927,8 @@ void AliAnalysisTaskAR::FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC) {
   }
 }
 
-void AliAnalysisTaskAR::CalculateQvectors() {
+void AliAnalysisTaskAR::CalculateQvectors(std::vector<Double_t> angles,
+                                          std::vector<Double_t> weights) {
   // Calculate all Q-vectors
 
   // Make sure all Q-vectors are initially zero
@@ -2893,16 +2942,12 @@ void AliAnalysisTaskAR::CalculateQvectors() {
   Double_t dPhi = 0.;
   Double_t wPhi = 1.;         // particle weight
   Double_t wPhiToPowerP = 1.; // particle weight raised to power p
-  for (std::size_t i = 0; i < fKinematics[kPHI].size(); i++) {
-    dPhi = fKinematics[kPHI].at(i);
-    if (fUseWeightsAggregated) {
-      wPhi = fWeightsAggregated.at(i);
-    }
+  for (std::size_t i = 0; i < angles.size(); i++) {
+    dPhi = angles.at(i);
+    wPhi = weights.at(i);
     for (Int_t h = 0; h < kMaxHarmonic; h++) {
       for (Int_t p = 0; p < kMaxPower; p++) {
-        if (fUseWeightsAggregated) {
-          wPhiToPowerP = pow(wPhi, p);
-        }
+        wPhiToPowerP = pow(wPhi, p);
         fQvector[h][p] += TComplex(wPhiToPowerP * TMath::Cos(h * dPhi),
                                    wPhiToPowerP * TMath::Sin(h * dPhi));
       }
@@ -2915,120 +2960,174 @@ void AliAnalysisTaskAR::FillFinalResultCorrelators() {
 
   Double_t corr = 0.0;
   Double_t weight = 0.0;
-  // loop over all correlators
-  for (std::size_t i = 0; i < fCorrelators.size(); i++) {
-    // protect against insufficient amount of statistics i.e. number of
-    // particles is lower then the order of correlator due to track cuts
-    if (fKinematics[kPHI].size() < fCorrelators.at(i).size()) {
-      std::cout << "Not enough tracks in this event to compute the correlator"
-                << std::endl;
-      continue;
-    }
 
-    // compute correlator
-    if (fUseNestedLoops) {
-      // using nested loops
-      switch (static_cast<int>(fCorrelators.at(i).size())) {
-      case 2:
-        corr =
-            TwoNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1))
-                .Re();
-        weight = TwoNestedLoops(0, 0).Re();
-        break;
-      case 3:
-        corr =
-            ThreeNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                             fCorrelators.at(i).at(2))
-                .Re();
-        weight = ThreeNestedLoops(0, 0, 0).Re();
-        break;
-      case 4:
-        corr =
-            FourNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                            fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
-                .Re();
-        weight = FourNestedLoops(0, 0, 0, 0).Re();
-        break;
-      case 5:
-        corr =
-            FiveNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                            fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
-                            fCorrelators.at(i).at(4))
-                .Re();
-        weight = FiveNestedLoops(0, 0, 0, 0, 0).Re();
-        break;
-      case 6:
-        corr =
-            SixNestedLoops(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                           fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
-                           fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
-                .Re();
-        weight = SixNestedLoops(0, 0, 0, 0, 0, 0).Re();
-        break;
-      default:
-        std::cout
-            << "Correlators of order >6 are not implemented with nested loops"
-            << std::endl;
+  for (Int_t kin = 0; kin < kKinematic; kin++) {
+    for (std::size_t Bin = 0; Bin < fTrackBins[kin].size() - 1; Bin++) {
+      CalculateQvectors(fKinematics[kin].at(Bin),
+                        fKinematicWeights[kin].at(Bin));
+      corr = 0.;
+      weight = 0.;
+
+      // loop over all correlators
+      for (std::size_t i = 0; i < fCorrelators.size(); i++) {
+        // protect against insufficient amount of statistics i.e. number of
+        // particles is lower then the order of correlator due to track cuts
+        if (fKinematics[kin].at(Bin).size() < fCorrelators.at(i).size()) {
+          std::cout
+              << "Not enough tracks in this event to compute the correlator"
+              << std::endl
+              << "Number of Tracks: " << fKinematics[kin].at(Bin).size()
+              << std::endl
+              << "Correlator: v_{";
+          for (auto e : fCorrelators.at(i)) {
+            std ::cout << e << ",";
+          }
+          std::cout << "}" << std::endl
+                    << "TrackBin: " << kin << std::endl
+                    << "Bin: " << Bin << std::endl;
+          continue;
+        }
+
+        // compute correlator
+        if (fUseNestedLoops) {
+          // using nested loops
+          switch (static_cast<int>(fCorrelators.at(i).size())) {
+          case 2:
+            corr = TwoNestedLoops(
+                       fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                       fKinematics[kin].at(Bin), fKinematicWeights[kin].at(Bin))
+                       .Re();
+            weight = TwoNestedLoops(0, 0, fKinematics[kin].at(Bin),
+                                    fKinematicWeights[kin].at(Bin))
+                         .Re();
+            break;
+          case 3:
+            corr = ThreeNestedLoops(
+                       fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                       fCorrelators.at(i).at(2), fKinematics[kin].at(Bin),
+                       fKinematicWeights[kin].at(Bin))
+                       .Re();
+            weight = ThreeNestedLoops(0, 0, 0, fKinematics[kin].at(Bin),
+                                      fKinematicWeights[kin].at(Bin))
+                         .Re();
+            break;
+          case 4:
+            corr = FourNestedLoops(
+                       fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                       fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                       fKinematics[kin].at(Bin), fKinematicWeights[kin].at(Bin))
+                       .Re();
+            weight = FourNestedLoops(0, 0, 0, 0, fKinematics[kin].at(Bin),
+                                     fKinematicWeights[kin].at(Bin))
+                         .Re();
+            break;
+          case 5:
+            corr = FiveNestedLoops(
+                       fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                       fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                       fCorrelators.at(i).at(4), fKinematics[kin].at(Bin),
+                       fKinematicWeights[kin].at(Bin))
+                       .Re();
+            weight = FiveNestedLoops(0, 0, 0, 0, 0, fKinematics[kin].at(Bin),
+                                     fKinematicWeights[kin].at(Bin))
+                         .Re();
+            break;
+          case 6:
+            corr = SixNestedLoops(
+                       fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                       fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                       fCorrelators.at(i).at(4), fCorrelators.at(i).at(5),
+                       fKinematics[kin].at(Bin), fKinematicWeights[kin].at(Bin))
+                       .Re();
+            weight = SixNestedLoops(0, 0, 0, 0, 0, 0, fKinematics[kin].at(Bin),
+                                    fKinematicWeights[kin].at(Bin))
+                         .Re();
+            break;
+          default:
+            std::cout << "Correlators of order >6 are not implemented with "
+                         "nested loops"
+                      << std::endl;
+          }
+        } else {
+          // using Qvectors
+          switch (static_cast<int>(fCorrelators.at(i).size())) {
+          case 2:
+            corr = Two(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1)).Re();
+            weight = Two(0, 0).Re();
+            break;
+          case 3:
+            corr = Three(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                         fCorrelators.at(i).at(2))
+                       .Re();
+            weight = Three(0, 0, 0).Re();
+            break;
+          case 4:
+            corr = Four(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                        fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
+                       .Re();
+            weight = Four(0, 0, 0, 0).Re();
+            break;
+          case 5:
+            corr = Five(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                        fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                        fCorrelators.at(i).at(4))
+                       .Re();
+            weight = Five(0, 0, 0, 0, 0).Re();
+            break;
+          case 6:
+            corr = Six(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
+                       fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
+                       fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
+                       .Re();
+            weight = Six(0, 0, 0, 0, 0, 0).Re();
+            break;
+          default:
+            corr =
+                Recursion(fCorrelators.at(i).size(), fCorrelators.at(i).data())
+                    .Re();
+            weight =
+                Recursion(
+                    fCorrelators.at(i).size(),
+                    std::vector<Int_t>(fCorrelators.at(i).size(), 0).data())
+                    .Re();
+          }
+        }
+
+        // correlators are not normalized yet
+        corr /= weight;
+
+        // fill final result profiles
+        // integrated correlator
+        if (kin == kPT) {
+          dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))
+                  ->At(kPTDEP))
+              ->Fill(fTrackBinsHistogram[kPT]->GetBinCenter(Bin + 1), corr,
+                     weight);
+        } else if (kin == kETA) {
+          dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))
+                  ->At(kETADEP))
+              ->Fill(fTrackBinsHistogram[kETA]->GetBinCenter(Bin + 1), corr,
+                     weight);
+        } else {
+          dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))
+                  ->At(kINTEGRATED))
+              ->Fill(0.5, corr, weight);
+          // correlator as a function of centrality
+          dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))
+                  ->At(kCENDEP))
+              ->Fill(fCentrality[fCentralityEstimator], corr, weight);
+          // correlator as a function of multiplicity
+          dynamic_cast<TProfile *>(
+              dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))
+                  ->At(kMULDEP))
+              ->Fill(fMultiplicity[kMULQ], corr, weight);
+        }
       }
-    } else {
-      // using Qvectors
-      switch (static_cast<int>(fCorrelators.at(i).size())) {
-      case 2:
-        corr = Two(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1)).Re();
-        weight = Two(0, 0).Re();
-        break;
-      case 3:
-        corr = Three(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                     fCorrelators.at(i).at(2))
-                   .Re();
-        weight = Three(0, 0, 0).Re();
-        break;
-      case 4:
-        corr = Four(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                    fCorrelators.at(i).at(2), fCorrelators.at(i).at(3))
-                   .Re();
-        weight = Four(0, 0, 0, 0).Re();
-        break;
-      case 5:
-        corr = Five(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                    fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
-                    fCorrelators.at(i).at(4))
-                   .Re();
-        weight = Five(0, 0, 0, 0, 0).Re();
-        break;
-      case 6:
-        corr = Six(fCorrelators.at(i).at(0), fCorrelators.at(i).at(1),
-                   fCorrelators.at(i).at(2), fCorrelators.at(i).at(3),
-                   fCorrelators.at(i).at(4), fCorrelators.at(i).at(5))
-                   .Re();
-        weight = Six(0, 0, 0, 0, 0, 0).Re();
-        break;
-      default:
-        corr = Recursion(fCorrelators.at(i).size(), fCorrelators.at(i).data())
-                   .Re();
-        weight =
-            Recursion(fCorrelators.at(i).size(),
-                      std::vector<Int_t>(fCorrelators.at(i).size(), 0).data())
-                .Re();
-      }
     }
-
-    // correlators are not normalized yet
-    corr /= weight;
-
-    // fill final result profiles
-    // integrated correlator
-    dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(0))
-        ->Fill(0.5, corr, weight);
-    // correlator as a function of centrality
-    dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(1))
-        ->Fill(fCentrality[fCentralityEstimator], corr, weight);
-    // correlator as a function of multiplicity
-    dynamic_cast<TProfile *>(
-        dynamic_cast<TList *>(fFinalResultCorrelatorsList->At(i))->At(2))
-        ->Fill(fMultiplicity[kMULQ], corr, weight);
   }
 }
 
@@ -3485,7 +3584,9 @@ TComplex AliAnalysisTaskAR::Recursion(Int_t n, Int_t *harmonic,
   return c - Double_t(mult) * c2;
 }
 
-TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
+TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2,
+                                           std::vector<Double_t> angles,
+                                           std::vector<Double_t> weights) {
   // Calculation of <cos(n1*phi1+n2*phi2)> and <sin(n1*phi1+n2*phi2)>
   // with two nested loops
 
@@ -3493,19 +3594,15 @@ TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
 
   Double_t phi1 = 0., phi2 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1.;     // particle weight
-  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
-    phi1 = fKinematics[kPHI].at(i1);
-    if (fUseWeightsAggregated) {
-      w1 = fWeightsAggregated.at(i1);
-    }
-    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+  for (std::size_t i1 = 0; i1 < angles.size(); i1++) {
+    phi1 = angles.at(i1);
+    w1 = weights.at(i1);
+    for (std::size_t i2 = 0; i2 < angles.size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fKinematics[kPHI].at(i2);
-      if (fUseWeightsAggregated) {
-        w2 = fWeightsAggregated.at(i2);
-      }
+      phi2 = angles.at(i2);
+      w2 = weights.at(i2);
       Two += TComplex(w1 * w2 * TMath::Cos(n1 * phi1 + n2 * phi2),
                       w1 * w2 * TMath::Sin(n1 * phi1 + n2 * phi2));
     }
@@ -3513,34 +3610,30 @@ TComplex AliAnalysisTaskAR::TwoNestedLoops(Int_t n1, Int_t n2) {
   return Two;
 }
 
-TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3) {
+TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3,
+                                             std::vector<Double_t> angles,
+                                             std::vector<Double_t> weights) {
   // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3)> and
   // <sin(n1*phi1+n2*phi2+n3*phi3)> with three nested loops.
 
   TComplex Q(0., 0.);
   Double_t phi1 = 0., phi2 = 0., phi3 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1., w3 = 1.;       // particle weight
-  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
-    phi1 = fKinematics[kPHI].at(i1);
-    if (fUseWeightsAggregated) {
-      w1 = fWeightsAggregated.at(i1);
-    }
-    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+  for (std::size_t i1 = 0; i1 < angles.size(); i1++) {
+    phi1 = angles.at(i1);
+    w1 = weights.at(i1);
+    for (std::size_t i2 = 0; i2 < angles.size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fKinematics[kPHI].at(i2);
-      if (fUseWeightsAggregated) {
-        w2 = fWeightsAggregated.at(i2);
-      }
-      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
+      phi2 = angles.at(i2);
+      w2 = weights.at(i2);
+      for (std::size_t i3 = 0; i3 < angles.size(); i3++) {
         if (i3 == i1 || i3 == i2) {
           continue;
         } // Get rid of autocorrelations
-        phi3 = fKinematics[kPHI].at(i3);
-        if (fUseWeightsAggregated) {
-          w3 = fWeightsAggregated.at(i3);
-        }
+        phi3 = angles.at(i3);
+        w3 = weights.at(i3);
         Q += TComplex(
             w1 * w2 * w3 * TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3),
             w1 * w2 * w3 * TMath::Sin(n1 * phi1 + n2 * phi2 + n3 * phi3));
@@ -3551,42 +3644,36 @@ TComplex AliAnalysisTaskAR::ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3) {
 }
 
 TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
-                                            Int_t n4) {
+                                            Int_t n4,
+                                            std::vector<Double_t> angles,
+                                            std::vector<Double_t> weights) {
   // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3+n4*phi4)> and
   // <sin(n1*phi1+n2*phi2+n3*phi3+n4*phi4)> with four nested loops.
 
   TComplex Q(0., 0.);
   Double_t phi1 = 0., phi2 = 0., phi3 = 0., phi4 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1., w3 = 1., w4 = 1.;         // particle weight
-  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
-    phi1 = fKinematics[kPHI].at(i1);
-    if (fUseWeightsAggregated) {
-      w1 = fWeightsAggregated.at(i1);
-    }
-    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+  for (std::size_t i1 = 0; i1 < angles.size(); i1++) {
+    phi1 = angles.at(i1);
+    w1 = weights.at(i1);
+    for (std::size_t i2 = 0; i2 < angles.size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fKinematics[kPHI].at(i2);
-      if (fUseWeightsAggregated) {
-        w2 = fWeightsAggregated.at(i2);
-      }
-      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
+      phi2 = angles.at(i2);
+      w2 = weights.at(i2);
+      for (std::size_t i3 = 0; i3 < angles.size(); i3++) {
         if (i3 == i1 || i3 == i2) {
           continue;
         } // Get rid of autocorrelations
-        phi3 = fKinematics[kPHI].at(i3);
-        if (fUseWeightsAggregated) {
-          w3 = fWeightsAggregated.at(i3);
-        }
-        for (std::size_t i4 = 0; i4 < fKinematics[kPHI].size(); i4++) {
+        phi3 = angles.at(i3);
+        w3 = weights.at(i3);
+        for (std::size_t i4 = 0; i4 < angles.size(); i4++) {
           if (i4 == i1 || i4 == i2 || i4 == i3) {
             continue;
           } // Get rid of autocorrelations
-          phi4 = fKinematics[kPHI].at(i4);
-          if (fUseWeightsAggregated) {
-            w4 = fWeightsAggregated.at(i4);
-          }
+          phi4 = angles.at(i4);
+          w4 = weights.at(i4);
           Q += TComplex(
               w1 * w2 * w3 * w4 *
                   TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3 + n4 * phi4),
@@ -3600,7 +3687,9 @@ TComplex AliAnalysisTaskAR::FourNestedLoops(Int_t n1, Int_t n2, Int_t n3,
 }
 
 TComplex AliAnalysisTaskAR::FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3,
-                                            Int_t n4, Int_t n5) {
+                                            Int_t n4, Int_t n5,
+                                            std::vector<Double_t> angles,
+                                            std::vector<Double_t> weights) {
   // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5)> and
   // <sin(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5)> with four nested loops.
 
@@ -3608,43 +3697,33 @@ TComplex AliAnalysisTaskAR::FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3,
   Double_t phi1 = 0., phi2 = 0., phi3 = 0., phi4 = 0.,
            phi5 = 0.;                                   // particle angle
   Double_t w1 = 1., w2 = 1., w3 = 1., w4 = 1., w5 = 1.; // particle weight
-  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
-    phi1 = fKinematics[kPHI].at(i1);
-    if (fUseWeightsAggregated) {
-      w1 = fWeightsAggregated.at(i1);
-    }
-    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+  for (std::size_t i1 = 0; i1 < angles.size(); i1++) {
+    phi1 = angles.at(i1);
+    w1 = weights.at(i1);
+    for (std::size_t i2 = 0; i2 < angles.size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fKinematics[kPHI].at(i2);
-      if (fUseWeightsAggregated) {
-        w2 = fWeightsAggregated.at(i2);
-      }
-      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
+      phi2 = angles.at(i2);
+      w2 = weights.at(i2);
+      for (std::size_t i3 = 0; i3 < angles.size(); i3++) {
         if (i3 == i1 || i3 == i2) {
           continue;
         } // Get rid of autocorrelations
-        phi3 = fKinematics[kPHI].at(i3);
-        if (fUseWeightsAggregated) {
-          w3 = fWeightsAggregated.at(i3);
-        }
-        for (std::size_t i4 = 0; i4 < fKinematics[kPHI].size(); i4++) {
+        phi3 = angles.at(i3);
+        w3 = weights.at(i3);
+        for (std::size_t i4 = 0; i4 < angles.size(); i4++) {
           if (i4 == i1 || i4 == i2 || i4 == i3) {
             continue;
           } // Get rid of autocorrelations
-          phi4 = fKinematics[kPHI].at(i4);
-          if (fUseWeightsAggregated) {
-            w4 = fWeightsAggregated.at(i4);
-          }
-          for (std::size_t i5 = 0; i5 < fKinematics[kPHI].size(); i5++) {
+          phi4 = angles.at(i4);
+          w4 = weights.at(i4);
+          for (std::size_t i5 = 0; i5 < angles.size(); i5++) {
             if (i5 == i1 || i5 == i2 || i5 == i3 || i5 == i4) {
               continue;
             } // Get rid of autocorrelations
-            phi5 = fKinematics[kPHI].at(i5);
-            if (fUseWeightsAggregated) {
-              w5 = fWeightsAggregated.at(i5);
-            }
+            phi5 = angles.at(i5);
+            w5 = weights.at(i5);
             Q += TComplex(w1 * w2 * w3 * w4 * w5 *
                               TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3 +
                                          n4 * phi4 + n5 * phi5),
@@ -3660,7 +3739,9 @@ TComplex AliAnalysisTaskAR::FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3,
 }
 
 TComplex AliAnalysisTaskAR::SixNestedLoops(Int_t n1, Int_t n2, Int_t n3,
-                                           Int_t n4, Int_t n5, Int_t n6) {
+                                           Int_t n4, Int_t n5, Int_t n6,
+                                           std::vector<Double_t> angles,
+                                           std::vector<Double_t> weights) {
   // Calculation of <cos(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5*n6*phi6)>
   // and <sin(n1*phi1+n2*phi2+n3*phi3+n4*phi4+n5*phi5+n6*phi6)> with four
   // nested loops.
@@ -3670,51 +3751,39 @@ TComplex AliAnalysisTaskAR::SixNestedLoops(Int_t n1, Int_t n2, Int_t n3,
            phi6 = 0.; // particle angle
   Double_t w1 = 1., w2 = 1., w3 = 1., w4 = 1., w5 = 1.,
            w6 = 1.; // particle weight
-  for (std::size_t i1 = 0; i1 < fKinematics[kPHI].size(); i1++) {
-    phi1 = fKinematics[kPHI].at(i1);
-    if (fUseWeightsAggregated) {
-      w1 = fWeightsAggregated.at(i1);
-    }
-    for (std::size_t i2 = 0; i2 < fKinematics[kPHI].size(); i2++) {
+  for (std::size_t i1 = 0; i1 < angles.size(); i1++) {
+    phi1 = angles.at(i1);
+    w1 = weights.at(i1);
+    for (std::size_t i2 = 0; i2 < angles.size(); i2++) {
       if (i2 == i1) {
         continue;
       } // Get rid of autocorrelations
-      phi2 = fKinematics[kPHI].at(i2);
-      if (fUseWeightsAggregated) {
-        w2 = fWeightsAggregated.at(i2);
-      }
-      for (std::size_t i3 = 0; i3 < fKinematics[kPHI].size(); i3++) {
+      phi2 = angles.at(i2);
+      w2 = weights.at(i2);
+      for (std::size_t i3 = 0; i3 < angles.size(); i3++) {
         if (i3 == i1 || i3 == i2) {
           continue;
         } // Get rid of autocorrelations
-        phi3 = fKinematics[kPHI].at(i3);
-        if (fUseWeightsAggregated) {
-          w3 = fWeightsAggregated.at(i3);
-        }
-        for (std::size_t i4 = 0; i4 < fKinematics[kPHI].size(); i4++) {
+        phi3 = angles.at(i3);
+        w3 = weights.at(i3);
+        for (std::size_t i4 = 0; i4 < angles.size(); i4++) {
           if (i4 == i1 || i4 == i2 || i4 == i3) {
             continue;
           } // Get rid of autocorrelations
-          phi4 = fKinematics[kPHI].at(i4);
-          if (fUseWeightsAggregated) {
-            w4 = fWeightsAggregated.at(i4);
-          }
-          for (std::size_t i5 = 0; i5 < fKinematics[kPHI].size(); i5++) {
+          phi4 = angles.at(i4);
+          w4 = weights.at(i4);
+          for (std::size_t i5 = 0; i5 < angles.size(); i5++) {
             if (i5 == i1 || i5 == i2 || i5 == i3 || i5 == i4) {
               continue;
             } // Get rid of autocorrelations
-            phi5 = fKinematics[kPHI].at(i5);
-            if (fUseWeightsAggregated) {
-              w5 = fWeightsAggregated.at(i5);
-            }
-            for (std::size_t i6 = 0; i6 < fKinematics[kPHI].size(); i6++) {
+            phi5 = angles.at(i5);
+            w5 = weights.at(i5);
+            for (std::size_t i6 = 0; i6 < angles.size(); i6++) {
               if (i6 == i1 || i6 == i2 || i6 == i3 || i6 == i4 || i6 == i5) {
                 continue;
               } // Get rid of autocorrelations
-              phi6 = fKinematics[kPHI].at(i6);
-              if (fUseWeightsAggregated) {
-                w6 = fWeightsAggregated.at(i6);
-              }
+              phi6 = angles.at(i6);
+              w6 = weights.at(i6);
               Q += TComplex(w1 * w2 * w3 * w4 * w5 * w6 *
                                 TMath::Cos(n1 * phi1 + n2 * phi2 + n3 * phi3 +
                                            n4 * phi4 + n5 * phi5 + n6 * phi6),
@@ -3867,7 +3936,7 @@ void AliAnalysisTaskAR::SetWeightHistogram(kTrack kinematic,
   // keeps the histogram in memory after we close the file
   this->fWeightHistogram[kinematic]->SetDirectory(0);
   file->Close();
-  this->fUseWeights[kinematic] = kTRUE;
+  this->fUseWeights = kTRUE;
 }
 
 void AliAnalysisTaskAR::SetCenFlattenHist(const char *Filename,
