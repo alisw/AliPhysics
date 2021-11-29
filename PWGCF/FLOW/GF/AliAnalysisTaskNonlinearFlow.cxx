@@ -666,7 +666,8 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 void AliAnalysisTaskNonlinearFlow::NotifyRun() {
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-    fEventCuts.fESDvsTPConlyLinearCut[0] = 500.;
+    if(fGFWSelection->GetSystFlagIndex()==22)
+      fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
 }
 
 //______________________________________________________________________________
