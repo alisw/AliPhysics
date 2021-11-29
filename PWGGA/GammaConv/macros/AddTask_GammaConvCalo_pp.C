@@ -3424,10 +3424,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","4117901096e30230000","0r63103100000010"); //
   } else if (trainConfig == 3105){ // min nCells  std: min nCells = 1
   //                                                                        /
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe37230000","0r63103100000010"); //   min nCells = 2, E > 3
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe38230000","0r63103100000010"); //   min nCells = 2, E > 2
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe39230000","0r63103100000010"); //   min nCells = 2, E > 1
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3a230000","0r63103100000010"); //   min nCells = 2, E > 5
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3r230000","0r63103100000010"); // r (estimated with EDC, applied on photon clusters only, gaussian fit)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // n (estimated with PCMEDC, applied on photon clusters, gaussian fit)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3m230000","0r63103100000010"); // m (estimated with PCMEDC, applied on all clusters, gaussian fit)
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3l230000","0r63103100000010"); // l (estimated with PCMEDC, applied on photon clusters, pol2 fit)
   } else if (trainConfig == 3106){ // min energy variation std 0.7 GeV/c
   //                                                                       /
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe10230000","0r63103100000010"); //     0.5 GeV/c
@@ -3557,10 +3557,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","4117901096e30230000","0r63103100000010"); //
   } else if (trainConfig == 3205){ // min nCells  std: min nCells = 1
   //                                                                        /
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe37230000","0r63103100000010"); //   min nCells = 2, E > 3
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe38230000","0r63103100000010"); //   min nCells = 2, E > 2
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe39230000","0r63103100000010"); //   min nCells = 2, E > 1
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3a230000","0r63103100000010"); //   min nCells = 2, E > 5
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3r230000","0r63103100000010"); // r (estimated with EDC, applied on photon clusters only, gaussian fit)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // n (estimated with PCMEDC, applied on photon clusters, gaussian fit)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3m230000","0r63103100000010"); // m (estimated with PCMEDC, applied on all clusters, gaussian fit)
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3l230000","0r63103100000010"); // l (estimated with PCMEDC, applied on photon clusters, pol2 fit)
   } else if (trainConfig == 3206){ // min energy variation std 0.7 GeV/c
   //                                                                       /
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe10230000","0r63103100000010"); //     0.5 GeV/c
@@ -3732,10 +3732,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","4117901096e30230000","0r63103100000010"); //
   } else if (trainConfig == 3312){ // min nCells  std: min nCells = 1
   //                                                                        /
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe37230000","0r63103100000010"); //   min nCells = 2, E > 3
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe38230000","0r63103100000010"); //   min nCells = 2, E > 2
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe39230000","0r63103100000010"); //   min nCells = 2, E > 1
-    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3a230000","0r63103100000010"); //   min nCells = 2, E > 5
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3s230000","0r63103100000010"); //
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3t230000","0r63103100000010"); //
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3u230000","0r63103100000010"); //
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe3v230000","0r63103100000010"); //
   } else if (trainConfig == 3313){ // min energy variation std 0.7 GeV/c
   //                                                                       /
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fe10230000","0r63103100000010"); //     0.5 GeV/c
@@ -3897,10 +3897,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901096e30230000","0r63103100000010"); //
   } else if (trainConfig == 3505){ // min nCells  std: min nCells = 1
   //                                                                        /
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe37230000","0r63103100000010"); //   min nCells = 2, E > 3
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe38230000","0r63103100000010"); //   min nCells = 2, E > 2
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe39230000","0r63103100000010"); //   min nCells = 2, E > 1
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3a230000","0r63103100000010"); //   min nCells = 2, E > 5
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r230000","0r63103100000010"); // r (estimated with EDC, applied on photon clusters only, gaussian fit)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // n (estimated with PCMEDC, applied on photon clusters, gaussian fit)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3m230000","0r63103100000010"); // m (estimated with PCMEDC, applied on all clusters, gaussian fit)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3l230000","0r63103100000010"); // l (estimated with PCMEDC, applied on photon clusters, pol2 fit)
   } else if (trainConfig == 3506){ // min energy variation std 0.7 GeV/c
   //                                                                       /
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe10230000","0r63103100000010"); //     0.5 GeV/c
