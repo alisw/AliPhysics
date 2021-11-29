@@ -416,10 +416,14 @@ void AliAnalysisTaskMeanPtV2Corr::UserCreateOutputObjects(){
     PostData(4,fQAList);
   }
   if(fStageSwitch==10) {
-    fEfFd = new AliEffFDContainer("EffAndFD","EffAndFD",fIsMC);
+    fEfFd = new AliEffFDContainer(Form("EffAndFD%s",fContSubfix->Data()),Form("EffAndFD%s",fContSubfix->Data()),fIsMC);
     fEfFd->SetCentralityBins(l_NV0MBinsDefault,l_V0MBinsDefault);
     fEfFd->SetPtBins(fNPtBins,fPtBins);
-    fEfFd->SetEta(fEta);
+    fEfFd->SetIdentifier(fContSubfix->Data());
+    if(fEtaLow>-999)
+      fEfFd->SetEta(fEtaLow,fEta);
+    else
+      fEfFd->SetEta(fEta);
     fEfFd->AddCut(32);
     PostData(1,fEfFd);
   };
@@ -631,7 +635,7 @@ void AliAnalysisTaskMeanPtV2Corr::FillWeightsMC(AliAODEvent *fAOD, const Double_
   AliAODTrack *lTrack;
   // AliVParticle *lPart;
   Double_t trackXYZ[3];
-  Double_t dummyDouble[] = {0.,0.};
+  Double_t dummyDouble[] = {0.,0.,0.};
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
   TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");

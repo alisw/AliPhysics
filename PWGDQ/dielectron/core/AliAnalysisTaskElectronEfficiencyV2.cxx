@@ -1051,12 +1051,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs);
-    bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs);
+    bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs, kTRUE);
+    bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs, kTRUE);
 
     if(fCheckGenID){
-      generatorForMCSignal  = CheckGeneratorIndex(iPart, fGeneratorMCSignalIndex);
-      generatorForULSSignal = CheckGeneratorIndex(iPart, fGeneratorULSSignalIndex);
+      generatorForMCSignal  = CheckGeneratorIndex(iPart, fGeneratorMCSignalIndex, kTRUE);
+      generatorForULSSignal = CheckGeneratorIndex(iPart, fGeneratorULSSignalIndex, kTRUE);
     }
 
     if (!generatorForMCSignal && !generatorForULSSignal) continue;
@@ -1145,12 +1145,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    bool generatorForMCSignal  = CheckGenerator(label, fGeneratorMCSignalHashs);
-    bool generatorForULSSignal = CheckGenerator(label, fGeneratorULSSignalHashs);
+    bool generatorForMCSignal  = CheckGenerator(label, fGeneratorMCSignalHashs, kFALSE);
+    bool generatorForULSSignal = CheckGenerator(label, fGeneratorULSSignalHashs, kFALSE);
 
     if(fCheckGenID){
-      generatorForMCSignal  = CheckGeneratorIndex(label, fGeneratorMCSignalIndex);
-      generatorForULSSignal = CheckGeneratorIndex(label, fGeneratorULSSignalIndex);
+      generatorForMCSignal  = CheckGeneratorIndex(label, fGeneratorMCSignalIndex, kFALSE);
+      generatorForULSSignal = CheckGeneratorIndex(label, fGeneratorULSSignalIndex, kFALSE);
     }
 
     // std::cout << "generatorForMCSignal = " << generatorForMCSignal << std::endl;
@@ -2066,7 +2066,7 @@ Double_t AliAnalysisTaskElectronEfficiencyV2::GetSmearing(TObjArray *arr, Double
   return smearing;
 }
 
-bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes){
+bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen){
   if (vecHashes.size() == 0) return true;
 
   if(isAOD){//for AOD
@@ -2080,10 +2080,10 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vecto
       AliError("Could not find MC array in AOD");
       return false;
     }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
   }
   else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
+    if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
   }
 
   TString genname="";
@@ -2107,7 +2107,7 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vecto
   return false; // should not happen
 }
 
-bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs){
+bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs, Bool_t isGen){
   if (vecGenIDs.size() == 0) return true;
 
   if(isAOD){//for AOD
@@ -2121,10 +2121,10 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGeneratorIndex(int trackID, std::
       AliError("Could not find MC array in AOD");
       return false;
     }
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
   }
   else{//for ESD
-    if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
+    if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
   }
 
   AliMCParticle* p = (AliMCParticle*)fMC->GetTrack(TMath::Abs(trackID));

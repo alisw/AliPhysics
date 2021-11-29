@@ -82,6 +82,8 @@ AliAnalysisSPC::AliAnalysisSPC(const char *name, Bool_t useParticleWeights):
  fi1(0), fi2(0), fi3(0), fi4(0), fi5(0), fi6(0), fi7(0),  //eighth set of harmonics 
  bDoMixed(kFALSE),
  bDifferentCharge(kTRUE),
+ bComputeEtaGap(kFALSE),
+ fEtaGap(0.8),
  bSetSameChargePositive(kTRUE),
  fMixedHarmonic(0),
  fCounterHistogram(NULL),  	
@@ -142,6 +144,8 @@ AliAnalysisSPC::AliAnalysisSPC():
  // Final results:
  bDoMixed(kFALSE),
  bDifferentCharge(kTRUE),
+ bComputeEtaGap(kFALSE),
+ fEtaGap(0.8),
  bSetSameChargePositive(kTRUE),
  fMixedHarmonic(0),
  fCounterHistogram(NULL),  	
@@ -468,7 +472,8 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
  //c) Calculus
  
  if(!bDoMixed)
- {
+ { 
+   //add boolean for two particle correlation for eta gaps + calculation alla cindy 
    this->MainTask(CentralityBin, Mult_A, angles_A,weights_A); //Actual Multi-Particle Correlation
  }//if(!bDoMixed)
  
@@ -477,6 +482,7 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
    this->MixedParticle(CentralityBin, fMixedHarmonic, Mult_A, angles_A, Mult_B, angles_B);
  }//if(bDoMixed)
  
+ if(bComputeEtaGap){ComputeTPCWithEtaGaps(CentralityBin, Mult_A, angles_A, weights_A, eta_A);} 
 
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  // d) Reset event-by-event objects:
@@ -545,6 +551,8 @@ void AliAnalysisSPC::InitializeArrays()
   	fJoinedCovResults[icent] = NULL; 
     fMixedParticleHarmonics[icent] = NULL;
 
+        fProfileTPCEta[icent] = NULL;
+        
   }
 
 } // void AliAnalysisSPC::InitializeArrays()
@@ -732,6 +740,16 @@ void AliAnalysisSPC::BookFinalResultsHistograms()
 	  fMixedParticleHarmonics[icent]->GetYaxis()->SetTitle("");
 	  fMixedParticleHarmonics[icent]->Sumw2(); 
 	  fFinalResultsList[icent]->Add(fMixedParticleHarmonics[icent]);
+
+
+          fProfileTPCEta[icent] = new TProfile("fProfileTPCEta","fProfileTPCEta",9,0.,9.,"s"); 
+	  fProfileTPCEta[icent]->GetXaxis()->SetTitle("");
+	  fProfileTPCEta[icent]->GetYaxis()->SetTitle("");
+	  fProfileTPCEta[icent]->Sumw2();
+	  if(bComputeEtaGap){fFinalResultsList[icent]->Add(fProfileTPCEta[icent]);} 
+         
+          
+          
   }
 
   // Book histogram to debug
@@ -1405,6 +1423,76 @@ void AliAnalysisSPC::MainTask(Int_t MainTask_CentBin, Int_t MainTask_Mult, Doubl
 
 //==========================================================================================================================================================================
 
+void AliAnalysisSPC::ComputeTPCWithEtaGaps(Int_t CentralityBin, Int_t numberOfParticles, Double_t* angles, Double_t* pWeights, Double_t* pseudorapidity)
+{
+/* Compute the 2-particle correlators using eta gaps for the current event. */
+  TComplex  Qminus[8]   = {TComplex(0., 0.)};   // Q-vectors for the negative subset of the eta range, for v_1 to v_8.
+  TComplex  Qplus[8]    = {TComplex(0., 0.)};   // Q-vectors for the positive subset of the eta range, for v_1 to v_8.
+  Float_t   Mminus[8]   = {0.};                 // Multiplicity in the negative subset of the eta range.
+  Float_t   Mplus[8]    = {0.};                 // Multiplicity in the positive subset of the eta range.
+  Float_t   iAngle          = 0.;                     // Azimuthal angle of the current particle.
+  Float_t   iWeight         = 1.;                     // Particle weight of the current particle (default: unit weight).
+  Float_t   iEta            = 0.;                     // Pseudorapidity of the current particle.
+  Float_t   iWeightToP      = 1.;                     // Particle weight rised to the power p.
+  TComplex  complexCorrel   = TComplex(0., 0.);       // Complex value of the 2-p correlator.
+  Double_t  realCorrel      = 0.;                     // Real value of the 2-p correlator.
+
+  fProfileTPCEta[CentralityBin]->Fill(8.5, fEtaGap,1.); //Fill Eta Gap for saving purpose
+
+// Compute the Q-vectors for the negative and positive subsets of the eta range.
+  for (Int_t iPart = 0; iPart < numberOfParticles; iPart++)
+  {
+  // Read the right elements in the provided arrays.
+    iAngle  = angles[iPart];
+    iWeight = pWeights[iPart];
+    iEta    = pseudorapidity[iPart];
+    if (bUseWeightsNUE || bUseWeightsNUA) {iWeightToP = iWeight;}   // All weights are multiplied to get the final one.
+
+  // Compute the Q-vectors.
+    if (iEta < 0.)    // Negative subset of the eta range.
+    {
+      for (Int_t iHarmo = 0; iHarmo < 8; iHarmo++)
+      {
+          if (iEta < ((-0.5)*fEtaGap))    // Compute only if the particle is in the range.
+          {
+            Qminus[iHarmo] += TComplex(iWeightToP*TMath::Cos((iHarmo+1)*iAngle), iWeightToP*TMath::Sin((iHarmo+1)*iAngle));
+            Mminus[iHarmo] += iWeightToP;
+          }
+          else {continue;}
+      }   // End of the loop over the harmonics.
+    }   // End of the condition "negative subset".
+    else if (iEta > 0.)   // Positive subset of the eta range.
+    {
+      for (Int_t iHarmo = 0; iHarmo < 8; iHarmo++)
+      {
+          if (iEta > (0.5*fEtaGap))   // Compute only if the particle is in the range.
+          {
+            Qplus[iHarmo] += TComplex(iWeightToP*TMath::Cos((iHarmo+1)*iAngle), iWeightToP*TMath::Sin((iHarmo+1)*iAngle));
+            Mplus[iHarmo] += iWeightToP;
+          } 
+      }   // End of the loop over the harmonics.
+    }   // End of the condition "positive subset".
+    else {continue;}    // Particle with iEta = 0.
+  }   // End of the loop over the particles for the Q-vectors.
+
+// Compute the 2-p correlators using Qminus and Qplus.
+  for (Int_t iHarmo = 0; iHarmo < 8; iHarmo++)
+  {
+
+      if (!( (Qminus[iHarmo].TComplex::Rho() > 0.) && (Qplus[iHarmo].TComplex::Rho() > 0.) )) {continue;}
+      if (!( (Mminus[iHarmo] > 0.) && (Mplus[iHarmo] > 0.) )) {continue;}
+
+      complexCorrel = Qminus[iHarmo]*TComplex::Conjugate(Qplus[iHarmo]);
+      realCorrel    = (complexCorrel.Re())/(Mminus[iHarmo]*Mplus[iHarmo]);
+      fProfileTPCEta[CentralityBin]->Fill(iHarmo + 0.5, realCorrel, Mminus[iHarmo]*Mplus[iHarmo]); //GANESHA declare
+
+    // Reset the 2-particle correlator.
+      complexCorrel = TComplex(0.,0.);
+      realCorrel    = 0.;
+    
+  }   // End of the loop over the harmonics.
+
+}   // End of "void ComputeTPCWithEtaGaps()".
 
 
 

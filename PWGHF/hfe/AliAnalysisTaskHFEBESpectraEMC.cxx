@@ -144,6 +144,8 @@ fPi0Weight(0),
 fEtaWeight(0),
 fnBinsDCAHisto(400),
 fTrkDCA(-999.0),
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
 fDcent(0),
 fDUp(0),
 fDDown(0),
@@ -413,6 +415,8 @@ fPi0Weight(0),
 fEtaWeight(0),
 fnBinsDCAHisto(400),
 fTrkDCA(-999.0),
+fFuncPtDepEta(0),
+fFuncPtDepPhi(0),
 fDcent(0),
 fDUp(0),
 fDDown(0),
@@ -661,6 +665,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
             fEtaWeight->SetParameters(3.23001e+02,-5.86318e-02,-2.14621e-04,1.90352e+00,5.26774e+00);
         }
     }
+    
+    fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+    fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+    fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
     
     ///////////////////////////
     //Histos for MC templates//
@@ -1627,10 +1636,15 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
-            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
-            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
+            
+            if(fDeltaPhi < 0)
+                fDeltaPhi = fFuncPtDepPhi->Eval(track->Pt());
+            if(fDeltaEta < 0)
+                fDeltaEta = fFuncPtDepEta->Eval(track->Pt());
             
             if(TMath::Abs(fPhiDiff) > fDeltaPhi || TMath::Abs(fEtaDiff)> fDeltaEta) continue;
+            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
             
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//

@@ -26,22 +26,22 @@ ClassImp(AliAnalysisTaskLegendreCoef)
 
 AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE(),
   fAOD(0), fOutputList(0),
-  fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
+  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fEventCuts(0)
 {
 
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0), fOutputList(0),
-  fIsMC(0), fChi2DoF(4), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
+  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -89,46 +89,34 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
     //for charged
     fOutputList->Add(new TProfile("a1","a1;centrality;",8,centbins, ""));//first order legendre cofficient - direct
     fOutputList->Add(new TProfile("Ra1","Ra1;centrality;",8,centbins, ""));//first order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-    fOutputList->Add(new TProfile("RDa1","RDa1;centrality;",8,centbins, ""));//first order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     fOutputList->Add(new TProfile("a2","a2;centrality;",8,centbins, ""));//second order legendre cofficient - direct
     fOutputList->Add(new TProfile("Ra2","Ra2;centrality;",8,centbins, ""));//second order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-    fOutputList->Add(new TProfile("RDa2","RDa2;centrality;",8,centbins, ""));//second order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     //for positive
     fOutputList->Add(new TProfile("a1pos","a1;centrality;",8,centbins, ""));//first order legendre cofficient - direct
     fOutputList->Add(new TProfile("Ra1pos","Ra1;centrality;",8,centbins, ""));//first order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-    fOutputList->Add(new TProfile("RDa1pos","RDa1;centrality;",8,centbins, ""));//first order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     fOutputList->Add(new TProfile("a2pos","a2;centrality;",8,centbins, ""));//second order legendre cofficient - direct
     fOutputList->Add(new TProfile("Ra2pos","Ra2;centrality;",8,centbins, ""));//second order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-    fOutputList->Add(new TProfile("RDa2pos","RDa2;centrality;",8,centbins, ""));//second order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     //for negative
     fOutputList->Add(new TProfile("a1neg","a1;centrality;",8,centbins, ""));//first order legendre cofficient - direct
     fOutputList->Add(new TProfile("Ra1neg","Ra1;centrality;",8,centbins, ""));//first order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-    fOutputList->Add(new TProfile("RDa1neg","RDa1;centrality;",8,centbins, ""));//first order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     fOutputList->Add(new TProfile("a2neg","a2;centrality;",8,centbins, ""));//second order legendre cofficient - direct
     fOutputList->Add(new TProfile("Ra2neg","Ra2;centrality;",8,centbins, ""));//second order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-    fOutputList->Add(new TProfile("RDa2neg","RDa2;centrality;",8,centbins, ""));//second order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     if(fIsMC) {
       //for charged
       fOutputList->Add(new TProfile("a1MC","a1;centrality;",8,centbins, ""));//first order legendre cofficient - direct
       fOutputList->Add(new TProfile("Ra1MC","Ra1;centrality;",8,centbins, ""));//first order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-      fOutputList->Add(new TProfile("RDa1MC","RDa1;centrality;",8,centbins, ""));//first order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
       fOutputList->Add(new TProfile("a2MC","a2;centrality;",8,centbins, ""));//second order legendre cofficient - direct
       fOutputList->Add(new TProfile("Ra2MC","Ra2;centrality;",8,centbins, ""));//second order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-      fOutputList->Add(new TProfile("RDa2MC","RDa2;centrality;",8,centbins, ""));//second order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
       //for positive
       fOutputList->Add(new TProfile("a1posMC","a1;centrality;",8,centbins, ""));//first order legendre cofficient - direct
       fOutputList->Add(new TProfile("Ra1posMC","Ra1;centrality;",8,centbins, ""));//first order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-      fOutputList->Add(new TProfile("RDa1posMC","RDa1;centrality;",8,centbins, ""));//first order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
       fOutputList->Add(new TProfile("a2posMC","a2;centrality;",8,centbins, ""));//second order legendre cofficient - direct
       fOutputList->Add(new TProfile("Ra2posMC","Ra2;centrality;",8,centbins, ""));//second order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-      fOutputList->Add(new TProfile("RDa2posMC","RDa2;centrality;",8,centbins, ""));//second order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
       //for negative
       fOutputList->Add(new TProfile("a1negMC","a1;centrality;",8,centbins, ""));//first order legendre cofficient - direct
       fOutputList->Add(new TProfile("Ra1negMC","Ra1;centrality;",8,centbins, ""));//first order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-      fOutputList->Add(new TProfile("RDa1negMC","RDa1;centrality;",8,centbins, ""));//first order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
       fOutputList->Add(new TProfile("a2negMC","a2;centrality;",8,centbins, ""));//second order legendre cofficient - direct
       fOutputList->Add(new TProfile("Ra2negMC","Ra2;centrality;",8,centbins, ""));//second order legendre cofficient - random Fill(ran->Uniform(-fEta,fEta))
-      fOutputList->Add(new TProfile("RDa2negMC","RDa2;centrality;",8,centbins, ""));//second order legendre cofficient - random sample Fill(etaBG[cb]->GetRandom())
     }
   }
 
@@ -142,9 +130,16 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
 
-  if(!fIsMC && fIsPileUpCuts){
-    fEventCuts.fUseITSTPCCluCorrelationCut = true;
+  if(fIsPileUpCuts){
+    fEventCuts.fUseITSTPCCluCorrelationCut = fPileUpLevel;
     if (!fEventCuts.AcceptEvent(fAOD)) return;
+  }
+
+  TClonesArray *stack =0;
+  if(fIsMC) {
+    TList *lst = fAOD->GetList();
+    stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
+    if(!stack) return;
   }
 
   //making a cut in pvz -8 to 8cm
@@ -166,23 +161,34 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
+
     if(fabs(track->Eta()) > fEta) continue;//eta cut
     if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-    if(track->GetTPCNcls()<fTPCNcls || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls and chi2/dof   
+    if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
     if(track->TestFilterBit(fBit)) {
-      //build background
-      //printf("filter bit is %i\n",fBit);
-
-      ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
-      if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
-      if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
+      if(!fIsMC){
+        //build background for raw data
+        //printf("filter bit is %i\n",fBit);
+        ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
+        if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
+        if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
+      }else{
+        //build background for MC reconstructed
+        int label = TMath::Abs(track->GetLabel());
+        AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
+        if (!mcTrack) continue;
+        if(!mcTrack->IsPrimary()) continue;
+        if(!mcTrack->IsPhysicalPrimary()) continue;    
+        if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
+          ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
+          if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
+          if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
+        }
+      }
     }
   }
   
   if(fIsMC){
-    TClonesArray *stack = 0;
-    TList *lst = fAOD->GetList();
-    stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
     int nMCTracks;
     if (!stack) nMCTracks = 0;
     else nMCTracks = stack->GetEntries();
@@ -195,7 +201,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         return;
       }
         Bool_t isPileupInGeneratedEvent = kFALSE;
-        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
         if(isPileupInGeneratedEvent) return;
     }
     
@@ -224,9 +230,16 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
 
-  if(!fIsMC && fIsPileUpCuts){
-    fEventCuts.fUseITSTPCCluCorrelationCut = true;
+  if(fIsPileUpCuts){
+    fEventCuts.fUseITSTPCCluCorrelationCut = fPileUpLevel;
     if (!fEventCuts.AcceptEvent(fAOD)) return;
+  }
+
+  TClonesArray *stack =0;
+  if(fIsMC) {
+    TList *lst = fAOD->GetList();
+    stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
+    if(!stack) return;
   }
 
   //making a cut in pvz -8 to 8cm
@@ -259,41 +272,51 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     if(!track) continue;
     if(fabs(track->Eta()) > fEta) continue;//eta cut
     if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
-    if(track->GetTPCNcls()<fTPCNcls || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls and chi2/dof   
+    if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof   
     if(track->TestFilterBit(fBit)) {
-      chargedSignal->Fill(track->Eta());
-      if(track->Charge() > 0) posSignal->Fill(track->Eta());
-      if(track->Charge() < 0) negSignal->Fill(track->Eta());
+      if(!fIsMC){
+        //build signal for raw data
+        chargedSignal->Fill(track->Eta());
+        if(track->Charge() > 0) posSignal->Fill(track->Eta());
+        if(track->Charge() < 0) negSignal->Fill(track->Eta());
+      }else{
+        //build signal for MC reconstructed
+        int label = TMath::Abs(track->GetLabel());
+        AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
+        if (!mcTrack) continue;
+        if(!mcTrack->IsPrimary()) continue;
+        if(!mcTrack->IsPhysicalPrimary()) continue;    
+        if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
+          chargedSignal->Fill(track->Eta());
+          if(track->Charge() > 0) posSignal->Fill(track->Eta());
+          if(track->Charge() < 0) negSignal->Fill(track->Eta());
+        }
+      }
     }
   }
   
   //calculate coefficients if histogram is full
   int ncentbin = centaxis->FindBin(Cent);
   int neventcent = fNeventCentHist->GetBinContent(ncentbin);
-  // printf("CENTRALITY  is %f\n",Cent);
-  //   printf("neventcent is %i\n",neventcent);
 
   if(chargedSignal->Integral()>0) {
     TH1D *chargedBG = fChargedBackgroundHist->ProjectionX("chargedbackground", ncentbin,ncentbin);
     // printf("BACKGROUND normal is %f\n",chargedBG->Integral());
     chargedBG->Scale(1.0/neventcent);
     BuildCoefficients(chargedSignal, chargedBG, Cent, "");
-  }
-  if(posSignal->Integral()>0) {
-    TH1D *posBG = fPosBackgroundHist->ProjectionX("posbackground", ncentbin,ncentbin);
-    posBG->Scale(1.0/neventcent);
-    BuildCoefficients(posSignal, posBG, Cent, "pos");   
-  }
-  if(negSignal->Integral()>0) {
-    TH1D *negBG = fNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
-    negBG->Scale(1.0/neventcent);
-    BuildCoefficients(negSignal, negBG, Cent, "neg");
+    if(posSignal->Integral()>0) {
+      TH1D *posBG = fPosBackgroundHist->ProjectionX("posbackground", ncentbin,ncentbin);
+      posBG->Scale(1.0/neventcent);
+      BuildCoefficients(posSignal, posBG, Cent, "pos");   
+    }
+    if(negSignal->Integral()>0) {
+      TH1D *negBG = fNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
+      negBG->Scale(1.0/neventcent);
+      BuildCoefficients(negSignal, negBG, Cent, "neg");
+    }
   }
 
   if(fIsMC){
-    TClonesArray *stack = 0;
-    TList *lst = fAOD->GetList();
-    stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
     int nMCTracks;
     if (!stack) nMCTracks = 0;
     else nMCTracks = stack->GetEntries();
@@ -305,9 +328,9 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
         printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
         return;
       }
-      Bool_t isParticleFromOutOfBunchPileUpEvent = kFALSE;
-      isParticleFromOutOfBunchPileUpEvent = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(-1, mcHeader, stack);
-      if(isParticleFromOutOfBunchPileUpEvent) return;
+      Bool_t isPileupInGeneratedEvent = kFALSE;
+      isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,fGenName);
+      if(isPileupInGeneratedEvent) return;
     }
   
     for (Int_t i(0); i < nMCTracks; i++) {
@@ -330,16 +353,16 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       TH1D *MCchargedBG = fMCChargedBackgroundHist->ProjectionX("MCchargedbackground", ncentbin,ncentbin);
       MCchargedBG->Scale(1.0/neventcent);
       BuildCoefficients(MCchargedSignal, MCchargedBG, Cent, "MC");
-    }
-    if(MCposSignal->Integral()>0) {
-      TH1D *MCposBG = fMCPosBackgroundHist->ProjectionX("MCposbackground", ncentbin,ncentbin);
-      MCposBG->Scale(1.0/neventcent);
-      BuildCoefficients(MCposSignal, MCposBG, Cent, "posMC");   
-    }
-    if(MCnegSignal->Integral()>0) {
-      TH1D *MCnegBG = fMCNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
-      MCnegBG->Scale(1.0/neventcent);
-      BuildCoefficients(MCnegSignal, MCnegBG, Cent, "negMC");
+      if(MCposSignal->Integral()>0) {
+        TH1D *MCposBG = fMCPosBackgroundHist->ProjectionX("MCposbackground", ncentbin,ncentbin);
+        MCposBG->Scale(1.0/neventcent);
+        BuildCoefficients(MCposSignal, MCposBG, Cent, "posMC");   
+      }
+      if(MCnegSignal->Integral()>0) {
+        TH1D *MCnegBG = fMCNegBackgroundHist->ProjectionX("negbackground", ncentbin,ncentbin);
+        MCnegBG->Scale(1.0/neventcent);
+        BuildCoefficients(MCnegSignal, MCnegBG, Cent, "negMC");
+      }
     }
   }
   delete (posSignal);
@@ -351,63 +374,44 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   return;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type)
+void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, TString type)
 {
-
-  TH1D *RanDistHist[5],*RanHist[5];//random distribution histograms
-  TRandom2 *ran = new TRandom2();//random number for uniform distribution
-  double ntracks = signal->Integral();
+  TH1D *RanHist[5];//random distribution histograms
+  int ntracks = signal->Integral();
   int n; 
   char histname[50];
-  double intb = background->Integral();
+    printf("tracks is %i\n",ntracks);
 
   //normalizing signal hist 
   signal->Divide(background);
-  //printf("signal before scale to 16/signal normal is %f\n",signal->Integral());
+    // printf("signal normal is %f\n",signal->Integral());
 
   for (int s=0; s<5; s++){//5 random histograms
     n = sprintf (histname, "RanHist%i", s+1);
     RanHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
     RanHist[s]->Sumw2();
-    n = sprintf (histname, "RanDistHist%i", s+1);
-    RanDistHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
-    RanDistHist[s]->Sumw2();
   }
 
   //generating random uniform distributions
   for (int s=0; s<5; s++){
     RanHist[s]->Reset("ICE");
-    RanDistHist[s]->Reset("ICE");
     for (int rn=0; rn<ntracks; rn++) {
-      RanHist[s]->Fill(ran->Uniform(-fEta,fEta));
-      RanDistHist[s]->Fill(background->GetRandom());
+      RanHist[s]->Fill(background->GetRandom());
     }
-    RanHist[s]->Scale(signal->Integral()/(double)ntracks);
-    RanDistHist[s]->Divide(background); 
-    // printf("ranhist normal is %f\n",RanHist[s]->Integral());
-    // printf("RanDistHist[s] normal is %f\n",RanDistHist[s]->Integral());
+    RanHist[s]->Divide(background); 
   }
 
   //calculating the an coefficients  
-  n = sprintf (histname, "a1%s", type);
-  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,signal),2.0));
-  n = sprintf (histname, "a2%s", type);
-  ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,signal),2.0));
+  ((TProfile*) fOutputList->FindObject("a1"+type))->Fill(centrality, pow(GetSingleAnCoef(1,signal),2.0));
+  ((TProfile*) fOutputList->FindObject("a2"+type))->Fill(centrality, pow(GetSingleAnCoef(2,signal),2.0));
 
   for (int s=0; s<5; s++){
-    n = sprintf (histname, "Ra1%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));
-    n = sprintf (histname, "RDa1%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(1,RanDistHist[s]),2.0));
-    n = sprintf (histname, "Ra2%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanHist[s]),2.0));
-    n = sprintf (histname, "RDa2%s", type);
-    ((TProfile*) fOutputList->FindObject(histname))->Fill(centrality, pow(GetSingleAnCoef(2,RanDistHist[s]),2.0));
+    ((TProfile*) fOutputList->FindObject("Ra1"+type))->Fill(centrality, pow(GetSingleAnCoef(1,RanHist[s]),2.0));
+    ((TProfile*) fOutputList->FindObject("Ra2"+type))->Fill(centrality, pow(GetSingleAnCoef(2,RanHist[s]),2.0));
   }  
 
   for (int s=0; s<5; s++){
     delete (RanHist[s]);
-    delete (RanDistHist[s]);    
   }
   return;
 }

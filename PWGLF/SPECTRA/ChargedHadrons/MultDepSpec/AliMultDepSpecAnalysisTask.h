@@ -108,8 +108,7 @@ protected:
   bool fIsNewReco{};                                ///< flag for new reconstructions (after mid 2020) where tighter chi2 cut has to be used and out-of-bunch pileup is simulated in MCs
   bool fIncludePeripheralEvents{};                  ///< include peripheral A-A events (cent>90)
   bool fMCEnableDDC{true};                          ///< flag for data driven corrections usage
-  int fMCPCCMode{0};                                ///< whether to run particle composition correction in nominal (0) or in systematic mode (-1,1)
-  int fMCSecScalingMode{0};                         ///< whether to run secondary scaling in nominal (0) or in systematic mode (1)
+  int fMCDDCMode{0};                                ///< whether to run data-driven corrections in nominal (0) or in systematic mode (-1,1)
   int fHighPtMode{0};                               ///< extend the binning and pt cuts for a high-pt analysis (mode 0: do not extend, mode 1: extend to 50, mode 2: extend to 100)
 
   // cuts

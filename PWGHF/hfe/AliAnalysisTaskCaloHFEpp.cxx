@@ -180,6 +180,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fcent_V0M(0),
 	fNchNtr(0),
 	fNchNtr_Corr(0),
+	fNchMC(0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	fDCAxy_Pt_LS(0),
@@ -365,10 +366,11 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fzvtx_Corr(0),
 	fNtrkl_Corr(0),
 	fNtrkl_noCorr(0),
-	fNchNtr(0),
-	fNchNtr_Corr(0),
 	fzvtx_V0M(0),
 	fcent_V0M(0),
+	fNchNtr(0),
+	fNchNtr_Corr(0),
+	fNchMC(0),
 	fDCAxy_Pt_ele(0),
 	fDCAxy_Pt_had(0),
 	fDCAxy_Pt_LS(0),
@@ -546,6 +548,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fNtrkl_noCorr = new TH1F("fNtrkl_noCorr","N_{tracklet} w.o. correction; zvtx; counts",1501,-0.5,1500.5);
 	fNchNtr = new TH2F("fNchNtr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",1501,-0.5,1500.5,301,-0.5,300.5);
 	fNchNtr_Corr = new TH2F("fNchNtr_Corr","N tracklet after correction vs N charged; n^{corr}_{trkl}; N_{ch}",1501,-0.5,1500.5,301,-0.5,300.5);
+	fNchMC = new TH2F("fNchMC","evtcut; N charged",10,-0.5,9.5,1501,-0.5,1500.5);
 
         fzvtx_V0M = new TH2F("fzvtx_V0M","Zvertex vs V0M; zvtx; V0M",400,-20.,20.,1501,-0.5,1500.5);
         fcent_V0M = new TH2F("fcent_V0M","cent vs V0M; zvtx; V0M",100,0.,100.,1501,-0.5,1500.5);
@@ -715,6 +718,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fcent_V0M);
 	fOutputList->Add(fNchNtr);
 	fOutputList->Add(fNchNtr_Corr);
+	fOutputList->Add(fNchMC);
 	fOutputList->Add(fDCAxy_Pt_ele);
 	fOutputList->Add(fDCAxy_Pt_had);
 	fOutputList->Add(fDCAxy_Pt_LS);
@@ -934,6 +938,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	Double_t NcontVSPD = pVtxSPD->GetNContributors();
 	Double_t cov[6]={0};
 	pVtxSPD->GetCovarianceMatrix(cov);
+
+        /*
 	// 1. remove pile up events
 	if(fVevent->IsPileupFromSPDInMultBins()) return;
 	fNevents->Fill(1); 
@@ -953,8 +959,38 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	if(TMath::Abs(Zvertex)>10.0)return;
 	fNevents->Fill(6); 
 	fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
+        */
 
+        // Get Nch 
+	if(fMCarray)CalNcharge(fMCheader,CutTrackEta[1]);
+        //fNchMC->Fill(0,Nch);
+        //cout << "N charge 0 = " << Nch << endl;
 
+	// 1. Z Vtx position cut 
+	if(TMath::Abs(Zvertex)>10.0)return;
+	fHist_VertexZ->Fill(Zvertex);                     // plot the pt value of the track in a histogram
+	fNevents->Fill(1); 
+        fNchMC->Fill(1,Nch);
+	// 2. remove pile up events
+	if(fVevent->IsPileupFromSPDInMultBins()) return;
+	fNevents->Fill(2); 
+        fNchMC->Fill(2,Nch);
+	// 3. Global contributiors cut
+	if(NcontV<2)return;
+	fNevents->Fill(3); 
+        fNchMC->Fill(3,Nch);
+	// 4. SPD contributiors cut
+	if(NcontVSPD<1)return;
+	fNevents->Fill(4); 
+        fNchMC->Fill(4,Nch);
+	// 5. select events where SPD and primary vertex match//
+	if(TMath::Abs(ZvertexSPD - Zvertex) > 0.5) return;
+	fNevents->Fill(5); 
+        fNchMC->Fill(5,Nch);
+	// 6. SPD vertex resolution cut //
+	if (TMath::Sqrt(cov[5]) > 0.25) return;
+	fNevents->Fill(6); 
+        fNchMC->Fill(6,Nch);
         
 	//////////////////////////////
 	// Get generated W
@@ -1021,11 +1057,16 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
             cout << "type =  " << fmult_type << endl;
             TFile* fEstimator = TFile::Open(festimatorFile.Data());
             cout << " fEstimator =  " <<  fEstimator << endl;
-	    if(!fMCarray)estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD,0);  // get SPD vs. Z
-	    if(!fMCarray)estimatorV0Avg = GetEstimatorHistogram(fEstimator,fAOD,1); // get V0 vs.Z
-	    //if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,fmult_type); 
-	    if(fMCarray)estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,0); 
-	    if(fMCarray)estimatorV0Avg = GetEstimatorHistogramMC(fEstimator,fAOD,1); 
+	    if(!fMCarray)  // data
+               {
+                estimatorAvg = GetEstimatorHistogram(fEstimator,fAOD,0);  // get SPD vs. Z
+	        estimatorV0Avg = GetEstimatorHistogram(fEstimator,fAOD,1); // get V0 vs.Z
+               }
+	    if(fMCarray)   // MC
+               {
+                estimatorAvg = GetEstimatorHistogramMC(fEstimator,fAOD,0); 
+	        estimatorV0Avg = GetEstimatorHistogramMC(fEstimator,fAOD,1); 
+               }
  
 	    if(fMCarray && !NtrkWeightMC)
 	    {
@@ -1033,6 +1074,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	    }
 
 	   }
+
+        //cout << "check ; estimatorAvg = " << estimatorAvg << endl;
+        //cout << "check ; estimatorV0Avg = " << estimatorV0Avg << endl;
 
 	Double_t correctednAcc   = nAcc;
 	Double_t correctedV0nAcc   = V0Mult;
@@ -1070,6 +1114,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		fNtrkl_noCorr->Fill(correctednAcc);
 		fNchNtr_Corr->Fill(correctednAcc,Nch,WeightNtrkl);
 		fzvtx_Nch->Fill(Zvertex,Nch,WeightZvtx);
+                fNchMC->Fill(7,Nch);
 	}
 
 
@@ -1789,7 +1834,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
  NpureMCproc = 0;
  NembMCpi0 = 0;
  NembMCeta = 0;
- Nch = 0;
+ //Nch = 0;
  TString MCgen;
  TString embpi0("pi");
  TString embeta("eta");
@@ -1801,7 +1846,8 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
          AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
          if(gh)
            {
-            MCgen =  gh->GetName();     
+            MCgen =  gh->GetName();  
+            //cout << "MCgen = " << MCgen << endl;    
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
            
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc;
@@ -1831,14 +1877,15 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
 
 	     //--------- Get N charged ----------------------
+             /*
 	     if(chargetrue!=0){
 		     if(TMath::Abs(pdgEta)<1.0){
 			     if(isPhysPrim){
 				     Nch++;
 			     }
 		     }
-	     }
-
+	      } 
+             */
 
 	     if(TMath::Abs(pdgEta)>CutEta)continue;
 
@@ -1886,6 +1933,60 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
  return;
 }
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta)
+{
+ TList *lh=fMCheader->GetCocktailHeaders();
+ NpureMC = 0;
+ NpureMCproc = 0;
+ Nch = 0;
+ TString MCgen;
+
+ if(lh)
+    {     
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            MCgen =  gh->GetName();     
+            if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+            NpureMCproc += gh->NProduced();  // generate by PYTHIA or HIJING
+           }
+        }
+    }
+
+
+ //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ for(int imc=0; imc<NpureMCproc; imc++)
+     {
+
+	     fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+             if(!fMCparticle)continue;
+	     Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+	     Double_t pdgEta = fMCparticle->Eta(); 
+	     Double_t pTtrue = fMCparticle->Pt(); 
+	     Int_t chargetrue = fMCparticle->Charge();
+	     Bool_t isPhysPrim = fMCparticle->IsPhysicalPrimary();
+
+
+	     //--------- Get N charged ----------------------
+	     if(chargetrue!=0){
+		     if(TMath::Abs(pdgEta)<1.0){
+			     if(isPhysPrim){
+				     Nch++;
+			     }
+		     }
+	     }
+
+        }
+
+ return;
+}
+
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskCaloHFEpp::GetMClevelWdecay(AliAODMCHeader* fMCheader, Double_t CutEta)

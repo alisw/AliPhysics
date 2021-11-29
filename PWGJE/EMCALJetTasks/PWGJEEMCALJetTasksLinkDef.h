@@ -18,6 +18,7 @@
 #pragma link C++ class AliAnalysisTaskRhoBaseDev+;
 #pragma link C++ class AliAnalysisTaskRhoDev+;
 #pragma link C++ class AliAnalysisTaskRhoTransDev+;
+#pragma link C++ class AliAnalysisTaskRhoPerpCone+;
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJetByJetCorrection+;
@@ -58,6 +59,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetTree<AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPPCharged, AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetEventInfoSummaryPPSimulation>+;
 #pragma link C++ class AliNanoAODArrayMaker+;
 #pragma link C++ class AliPWGJETrainHelpers+;
+#pragma link C++ class AliAnalysisTaskFlowVectorCorrectionsPWGJE+;
 
 // user task
 #pragma link C++ class AliAnalysisTaskEmcalJetEnergyFlow+;

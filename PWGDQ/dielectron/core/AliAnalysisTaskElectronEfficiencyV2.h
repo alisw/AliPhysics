@@ -203,8 +203,8 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
-  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes);
-  bool    CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs);
+  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen);
+  bool    CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs, Bool_t isGen);
   void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -401,7 +401,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 8);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 9);
 };
 
 

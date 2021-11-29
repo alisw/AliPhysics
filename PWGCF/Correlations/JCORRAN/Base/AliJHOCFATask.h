@@ -63,6 +63,9 @@ class AliJHOCFATask : public AliAnalysisTaskSE {
   void HOCFASetObservable(bool observ) {fHOCFAGetSC3h = observ;}
   void HOCFASetNumberCombi(int combi) {fHOCFANCombi = combi;}
   void HOCFASetHarmoArray(TString combiString) {fHOCFAcombi = combiString;}
+  void HOCFASetEtaGaps(bool etaGap, float myGap) {
+    fHOCFAGetEtaGap = etaGap; fHOCFAEtaGap = myGap;
+  }
 
 private:
   AliJCatalystTask *fJCatalystTask;   // Pointer to the catalyst task.
@@ -78,11 +81,13 @@ private:
   bool fHOCFAUseWeightsNUE;           // kTRUE: Enable the non-unit NUE corrections.
   bool fHOCFAUseWeightsNUA;           // kTRUE: Enable the non-unit NUA corrections.
   bool fHOCFAGetSC3h;                 // kTRUE: Calculate SC(k,l,m), else AC(m,n).
+  bool fHOCFAGetEtaGap;               // kTRUE: Get the 2p correlators with an eta gap.
+  float fHOCFAEtaGap;                 // Value of the gap (default: 0.).
   int fHOCFANCombi;                   // Number of combinations of harmonics (max 6).
   TString fHOCFAvalues;               // Values for the centrality edges (max 17).
   TString fHOCFAcombi;                // Values for the harmonics combinations.
 
-  ClassDef(AliJHOCFATask, 3);
+  ClassDef(AliJHOCFATask, 4);
 };
 
 #endif

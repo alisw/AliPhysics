@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE)
+AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -149,6 +149,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
       	myTask[i][j]->JSPCSetMinNuPar(14.);
       	myTask[i][j]->JSPCSetFisherYates(kFALSE, 1.); 
       	myTask[i][j]->JSPCSetUseWeights(useWeightsNUE, useWeightsNUA);
+        myTask[i][j]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
 
       	if(j==0){
       	  myTask[i][j]->JSPCSetCorrSet1(4., 6.,-2.,-2.,-2., 0., 0.,0.);
@@ -207,6 +208,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
       myTask[i][0]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
 
       myTask[i][0]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+      myTask[i][0]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
 
       mgr->AddTask((AliAnalysisTask *) myTask[i][0]);
 
@@ -230,6 +232,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
       myTask[i][0]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
 
       myTask[i][0]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+      myTask[i][0]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
 
       mgr->AddTask((AliAnalysisTask *) myTask[i][0]);
 
@@ -252,6 +255,8 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
       myTask[i][1]->JSPCSetCorrSet8(0., 0., 0., 0., 0., 0., 0.,0.);
 
       myTask[i][1]->JSPCSetMixed(kFALSE,2., kFALSE, kTRUE);
+
+      myTask[i][1]->JSPCSetEtaGaps(ComputeEtaGap, EtaGap);
 
       mgr->AddTask((AliAnalysisTask *) myTask[i][1]);
 

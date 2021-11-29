@@ -457,7 +457,9 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
 //**************************************************************************************************
 double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 {
-  // FIXME: add PCC handler
+  if (fMCSpectraWeights) {
+    return fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
+  }
   return 1.0;
 }
 
@@ -469,7 +471,7 @@ double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
 double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
 {
   if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCPCCMode);
+    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
   }
   return 1.0;
 }
@@ -723,7 +725,8 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
   fMCIsChargedPrimary = fMCEvent->IsPhysicalPrimary(particleID);
-  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (fMCEvent->IsSecondaryFromWeakDecay(particleID) || fMCEvent->IsSecondaryFromMaterial(particleID));
+  bool isChargedSecondaryFromWeakDecay = (fMCIsChargedPrimary) ? false : fMCEvent->IsSecondaryFromWeakDecay(particleID);
+  fMCIsChargedSecondary = (fMCIsChargedPrimary) ? false : (isChargedSecondaryFromWeakDecay || fMCEvent->IsSecondaryFromMaterial(particleID));
 
   // not interested in anything non-final
   if (!(fMCIsChargedPrimary || fMCIsChargedSecondary)) return false;
@@ -742,7 +745,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
     if (fMCIsChargedPrimary) {
       fMCParticleWeight = GetParticleWeight(static_cast<AliVParticle*>(particle));
       fNRepetitions = GetNRepetitons(fMCParticleWeight);
-    } else {
+    } else if (isChargedSecondaryFromWeakDecay) {
       fMCSecScaleWeight = GetSecScalingFactor(static_cast<AliVParticle*>(particle));
       fNRepetitions = GetNRepetitons(fMCSecScaleWeight);
     }
@@ -904,7 +907,7 @@ void AliMultDepSpecAnalysisTask::SaveTrainMetadata()
 //**************************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet, TString options, int cutMode)
 {
-  if ((!isMC && cutMode > 119) || cutMode < 100 || cutMode > 122) return false;
+  if ((!isMC && cutMode > 119) || cutMode < 100 || cutMode > 121) return false;
   if (cutMode == 100) fIsNominalSetting = true;
   fIsMC = isMC;
   fIsESD = !isAOD;
@@ -990,15 +993,11 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
 
   // in MC we always apply data driven corrections to account for wrong particle composition in the generator
   if (isMC && fMCEnableDDC) {
-    fMCPCCMode = 0;
-    fMCSecScalingMode = 0;
-
+    fMCDDCMode = 0;
     if (cutMode == 120) {
-      fMCPCCMode = 1; // shift correction factor up within its systematics
+      fMCDDCMode = 1;             // shift correction factors up within their systematics
     } else if (cutMode == 121) {
-      fMCPCCMode = -1; // shift correction factor down within its systematics
-    } else if (cutMode == 122) {
-      fMCSecScalingMode = 1; // use 3 template dca fits as variation
+      fMCDDCMode = -1;            // shift correction factors down within their systematics
     }
   }
   return true;

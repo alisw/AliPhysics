@@ -308,6 +308,11 @@ private:
     TH1F*                    fRecoNonHFeEmbWeightTrkPt;//!
     TH1F*                    fRecoPi0eEmbWeightTrkPt;//!
     TH1F*                    fRecoEtaeEmbWeightTrkPt;//!
+    TH2F*                    fEMCTrkMatch_Phi;//!
+    TH2F*                    fEMCTrkMatch_Eta;//!
+    
+    TF1*                     fFuncPtDepEta;//!
+    TF1*                     fFuncPtDepPhi;//!
     
     
     THnSparse*        fSprsPi0EtaWeightCal;//!

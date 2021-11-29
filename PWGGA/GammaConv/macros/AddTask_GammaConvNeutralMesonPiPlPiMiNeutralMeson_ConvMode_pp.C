@@ -30,7 +30,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     Int_t     selectHeavyNeutralMeson       = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask             = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
     Int_t     enableTriggerMimicking        = 0,                        // enable trigger mimicking
-    Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection
+    Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection    
+    // settings for weights
+    // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights,  FMAW:fileNameMatBudWeights,  separate with ;
+    // Material Budget Weights file for Run 2
+    // FMAW:alien:///alice/cern.ch/user/a/amarin//MBW/MCInputFileMaterialBudgetWeightsLHC16_Pythia_00010103_0d000009266300008850404000_date181214.root
     TString   fileNameExternalInputs        = "MCSpectraInput.root",    //
     Bool_t    doWeighting                   = kFALSE,                   //enable Weighting
     Bool_t    enableElecDeDxPostCalibration = kFALSE,                   // enable post calibration of elec pos dEdX
@@ -41,12 +45,20 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     Int_t     prefilterRunFlag              = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
     Bool_t    usePtDepSelectionWindowCut    = kFALSE,                   // use pt dependent meson selection window cut
     Bool_t    usePreSelection               = kTRUE,
+    Int_t     enableMatBudWeightsPi0        = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     TString   additionalTrainConfig         = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
   AliCutHandlerPCM cuts(13);
 
-  TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
-  TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
+  TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp";
+  TString fileNamePtWeights                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
+  TString fileNameMultWeights               = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameMatBudWeights             = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
+  TString fileNamedEdxPostCalib             = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
+  TString fileNameCustomTriggerMimicOADB    = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
+
+  if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
+    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -488,11 +500,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103105100000000","0453503000000000"); // INT7 alpha 0-0.75
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103108100000000","0453503000000000"); // INT7 alpha 0-0.6
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103101100000000","0453503000000000"); // alpha meson pT dependent
-  } else if(trainConfig == 2305)  { //PCM INT7, N.Pi cut var. Selection Window, Std 1 -> 2 sigma
+  } else if(trainConfig == 2305)  { //PCM INT7, N.Pi cut var. Selection Window, Std 5 -> 2 sigma
     //                                                                            0103103500000000
     //                                                                                   |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103u00000000","0453503000000000"); // INT7, 1 sigma, NEEDS CHANGE AS THIS IS EMCEMC
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103v00000000","0453503000000000"); // INT7, 3 sigma, NEEDS CHANGE AS THIS IS EMCEMC
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103n00000000","0453503000000000"); // INT7, 1 sigma, NEEDS CHANGE AS THIS IS EMCEMC
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103o00000000","0453503000000000"); // INT7, 3 sigma, NEEDS CHANGE AS THIS IS EMCEMC
   } else if(trainConfig == 2306)  { //PCM INT7, N.Pi cut var. open. angle, Std 0 -> off
     //                                                                            0103103500000000
     //                                                                                          |
@@ -586,6 +598,22 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dgg0404000", "32c51070a", "0103103500000000", "0453503000000000"); // Psi pair 0.30 dep
     cuts.AddCutHeavyMesonPCM("00010113", "0dm00009227300008250404000", "32c51070a", "0103103500000000", "0453503000000000"); // old cuts (run1)
 
+  } else if (trainConfig == 2506) {//TRD Variations, Standard 0 -> Off
+    //                                    0dm00009f9730000dge0404000
+    //                                                         |
+    cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dge0474000", "32c51070a", "0103103500000000", "0453503000000000"); // INT7 Standard
+
+
+
+  } else if ( trainConfig == 2511) { //Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dge0404000", "32c51070a", "0103103500000000", "0453503000000000");
+
+  } else if ( trainConfig == 2512) { //Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dge0404000", "32c51070a", "0103103500000000", "0453503000000000");
+
+  } else if ( trainConfig == 2513) { //Standard 13TeV, Material Budget Studies
+    cuts.AddCutHeavyMesonPCM("00010113", "0dm00009f9730000dge0404000", "32c51070a", "0103103500000000", "0453503000000000");
+
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -623,6 +651,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   AliConversionMesonCuts **analysisMesonCuts   = new AliConversionMesonCuts*[numberOfCuts];
   PionCutList->SetOwner(kTRUE);
   AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
 
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i] = new AliConvEventCuts();
@@ -640,6 +669,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
 
+
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        Int_t FlagMatBudWeightsPi0=enableMatBudWeightsPi0;
+        if (enableMatBudWeightsPi0>=10){
+          FlagMatBudWeightsPi0-=10;
+        }
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(FlagMatBudWeightsPi0,fileNameMatBudWeights)){
+          initializedMatBudWeigths_existing = kTRUE;
+          cout << "MBW properly initialized" << endl;
+        }
+        else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+      }
+      else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
     // post calibration of dEdx energy loss
     if (enableElecDeDxPostCalibration){
       if (isMC == 0){
@@ -713,6 +757,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask);
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+      if (enableMatBudWeightsPi0>=10){
+          task->SetDoMaterialBudgetWeightingOfGammasForInvMassHistogram(kTRUE);
+      }
+  }
 
   //connect containers
   AliAnalysisDataContainer *coutput =

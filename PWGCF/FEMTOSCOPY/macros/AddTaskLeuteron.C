@@ -229,6 +229,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+
+
   // Proton
   TrackCuts5a->SetCutCharge(1);
   TrackCuts5a->SetEtaRange(-0.8,0.8);
@@ -640,6 +642,18 @@ AliAnalysisTaskSE *AddTaskLeuteron(
       LambdaCuts5->SetPtRange(0.2,999.0);
       LambdaCuts6->SetPtRange(0.2,999.0);
     
+    }else if(suffix == "35"){
+      
+      // deuteron cuts tuned to match Bhawani's cut settings
+
+      TrackCuts3->SetPtRange(0.5,1.4);
+      TrackCuts4->SetPtRange(0.5,1.4);
+
+      TrackCuts3->SetRejLowPtPionsTOF(false);
+      TrackCuts4->SetRejLowPtPionsTOF(false);
+
+
+
     }
 
   } // end of systematics if statement
@@ -764,7 +778,12 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
   config->SetSummedPtCut(0.0,999.0);
-  
+
+  if(isMC){
+    config->SetMomentumResolution(true);
+  }
+
+ 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Values handed over to the config\n");
   }

@@ -119,8 +119,6 @@ void AliHelperClassFastSimulation::Run() {
 		
 		std::vector<fastjet::PseudoJet> constituents(fWrapper->GetJetConstituents(j));
 		
-		Double_t jetPt = jet->Pt();
-		
 		TObjArray* partArray = new TObjArray();
 		Int_t nOfParticles = 0;
 		
@@ -179,7 +177,7 @@ UInt_t AliHelperClassFastSimulation::GetNJets() {
 		return 0;
 }
 
-UInt_t AliHelperClassFastSimulation::GetNParticlesOfJet(Int_t jetNumber) {
+UInt_t AliHelperClassFastSimulation::GetNParticlesOfJet(UInt_t jetNumber) {
 	if (fParticlesArray && jetNumber <= GetNJets() - 1)
 		return ((TObjArray*)fParticlesArray->At(jetNumber))->GetEntriesFast();
 	else 

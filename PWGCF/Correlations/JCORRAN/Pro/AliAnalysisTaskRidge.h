@@ -209,6 +209,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         TAxis                           binZ; //!
 	TAxis				binTPt; //!
 	TAxis				binAPt; //!
+	TAxis				binTPt_forLP; //!
+	TAxis				binAPt_forLP; //!
 	TAxis				binPhi; //!
 	TAxis				binEta; //!
 	TAxis				binMCEta; //!
@@ -227,6 +229,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 
 	TAxis				binPhiTrack; //!
 	TAxis				binEtaTrack; //!
+
+	TAxis				binSubsample; //!
 
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
@@ -251,6 +255,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         Int_t                           bookingsize = 7;
         AliVMultiplicity*               fMultiplicity=nullptr;//!
 	Int_t				bookingsizeMC = 7;
+	Double_t			SubSampling;
 	std::vector< std::vector< double > > Eff;
 	std::vector< std::vector< std::vector< double > > > Eff3D;
 

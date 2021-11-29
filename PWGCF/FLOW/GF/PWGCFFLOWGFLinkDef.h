@@ -33,10 +33,13 @@
 #ifdef __CLING__
 
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
+#pragma link C++ class AliAnalysisTaskFlowPPTask+;
+#pragma link C++ class AliAnalysisTaskJetQ+;
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
 #pragma link C++ class AliEffFDContainer+;
 #pragma link C++ class CorrelationCalculator+;
 #pragma link C++ class PhysicsProfile+;
+#pragma link C++ class PhysicsProfilePPTask+;
 
 #endif

@@ -102,7 +102,7 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
  private:
 
   static const int NCENTBINS = 10;
-  static const int NRUNNUM=138;
+  static const int NRUNNUM=68;
 
   int                     GetRunNumBin(int runNum);
   // pile-up        
@@ -189,15 +189,19 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   //V0 Calib
   TH1D*             hPsiVZERODirectGet[NCENTBINS][3];
   TH1D*             hPsiV0Cor[NCENTBINS][3];
-  TH1D*             hMultV0Fill[NRUNNUM];
+  TProfile*          pMultV0Fill[NRUNNUM];
   TH1D*             hMultV0Read[NRUNNUM];
+  TH2D*             hMultV0Raw[NRUNNUM];
+  TH2D*             hMultV0GE[NRUNNUM];
   TProfile*          pV0XMeanFill[NRUNNUM][3];
   TProfile*          pV0YMeanFill[NRUNNUM][3];
-  TH1D*             hQx3mV0[NRUNNUM][3];
-  TH1D*             hQy3mV0[NRUNNUM][3];
+  TH1D*             hQxnmV0[NRUNNUM][3];
+  TH1D*             hQynmV0[NRUNNUM][3];
   TH2D*             hQnCentCor[3];
   TH2D*             hQxCentCor[3];
   TH2D*             hQyCentCor[3];
+  TH2D*             hQxCentRaw[3];
+  TH2D*             hQyCentRaw[3];
   TH2D*             hQxVtxCor[3];
   TH2D*             hQyVtxCor[3];
 

@@ -65,6 +65,7 @@
 #pragma link C++ class AliAnalysisTaskCMWPU2018dca+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAch+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAchdca+;
+#pragma link C++ class AliAnalysisTaskCMWPU2018eqAchmerge+;
 #pragma link C++ class AliAnalysisTaskCVEUNIpt+;
 #pragma link C++ class AliAnalysisTaskCMWPUeqAch+;
 #pragma link C++ class AliAnalysisTaskCMWPUuncAch+;

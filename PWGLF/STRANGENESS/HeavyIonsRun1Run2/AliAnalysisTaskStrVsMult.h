@@ -158,7 +158,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     //variables to handle binning
     int fncentbins[knumpart];                                 //
-    double fcentbinning[knumpart][50];                        //
+    double fcentbinning[knumpart][150];                       //
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //

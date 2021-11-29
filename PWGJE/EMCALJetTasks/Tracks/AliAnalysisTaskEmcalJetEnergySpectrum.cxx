@@ -77,6 +77,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
   fDoBkgSub(false),
+  fFastJetWrapper(nullptr),
+  fTrackGenerator(nullptr),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
   fEMCALClusterBias(0.),
@@ -109,6 +111,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUseMuonCalo(false),
   fUseStandardOutlierRejection(false),
   fDoBkgSub(false),
+  fFastJetWrapper(nullptr),
+  fTrackGenerator(nullptr),
   fJetTypeOutliers(kOutlierPartJet),
   fScaleShift(0.),
   fEMCALClusterBias(0.),
@@ -544,7 +548,7 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
     Double_t maxEta = 0.5;
     Double_t tmpRandConeEta = -999;
     Double_t tmpRandConePhi = -999;
-    Double_t tmpConePt = -1.;
+    Double_t tmpConePt = -0.;
 
     AliEmcalJet *LeadingJet = NULL;
     AliEmcalJet *SubLeadingJet = NULL;
@@ -609,21 +613,13 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
 
     } while (dLJ < 0.45 || dSLJ < 0.45);
 
-    AliVTrack *tmpTrack = 0x0;
+    AliAODTrack *tmpTrack = 0x0;
 
-    for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
+    partcont->ResetCurrentID();
+    while (AliAODTrack *tmpTrack = (AliAODTrack *)partcont->GetNextAcceptParticle())
     {
-
-        if (!partcont->GetParticle(i))
-            continue;
-        
-        tmpTrack = static_cast<AliVTrack *>(partcont->GetParticle(i));
-
-        if (fabs(tmpTrack->Eta()) > 0.9)
-            continue;
-
-        if (tmpTrack->Pt() < 0.15)
-            continue;
+        if (!tmpTrack)
+          continue;
 
         if (sqrt((tmpTrack->Eta() - tmpRandConeEta) * (tmpTrack->Eta() - tmpRandConeEta) +
                  TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi)) *
@@ -652,6 +648,9 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
 
     AliEmcalJet* leadingJet = jetcont->GetLeadingJet();
 
+    if(!leadingJet)
+      return -999;
+
     Double_t signalEta = leadingJet->Eta();
     Double_t signalPhi = leadingJet->Phi();
 
@@ -661,19 +660,11 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E(), -99999); //fill embedded track to the array of proto-jets
 
     //-----Filling   fFastJetWrapper with tracks from track container
-    for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
+    partcont->ResetCurrentID();
+    while (AliAODTrack *trk = (AliAODTrack *)partcont->GetNextAcceptParticle())
     {
-
-        if (!partcont->GetParticle(i))
-            continue;
-
-        AliVTrack *trk = static_cast<AliVTrack *>(partcont->GetParticle(i));
-
-        if (fabs(trk->Eta()) > 0.9)
-            continue;
-
-        if (trk->Pt() < 0.15)
-            continue;
+      if (!trk)
+        continue;
 
         fFastJetWrapper->AddInputVector(trk->Px(), trk->Py(), trk->Pz(), trk->P(), 1); //fill reconstructed tracks to the array of proto-jets
     }
