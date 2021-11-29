@@ -680,7 +680,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   // Create the output directory for the current time frame
   fOutputDir = fOutputFile->mkdir(Form("DF_%llu", tfId));
 
-  // Associate branches for Run 2 BC info
+  // Associate branches for origin table
   TTree* tOrigin = CreateTree(kOrigin);
   if (fTreeStatus[kOrigin]) {
     tOrigin->Branch("fDataframeID", &origin.fDataframeID, "fDataframeID/l");
