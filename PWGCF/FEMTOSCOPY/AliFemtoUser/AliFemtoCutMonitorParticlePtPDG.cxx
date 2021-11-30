@@ -4,6 +4,13 @@
 // the difference between reconstructed and true momentum                     //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoCutMonitorParticlePtPDG, 1);
+  /// \endcond
+#endif
+
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include <TH1D.h>
@@ -36,7 +43,7 @@ AliFemtoCutMonitorParticlePtPDG::AliFemtoCutMonitorParticlePtPDG(const char *aNa
   // Normal constructor
   char name[200];
   snprintf(name, 200, "PtPDG%s", aName);
-  fPtPDG = new TH2D(name, "PDG vs Pt", 10, 0.0, 5.0, 100, 0.1, 2.0);
+  fPtPDG = new TH2D(name, "PDG vs Pt", 14, -2.0, 5.0, 100, 0.1, 2.0);
   snprintf(name, 200, "tpcHist%s", aName);
   ftpcHist=new TH2D(name,"TPC dE/dX vs momentum",100,0.1,2.7,250, 0.0, 500.0/*100,0.,6.*/);
   snprintf(name, 200, "PtGoodPi%s", aName);
@@ -203,18 +210,20 @@ void AliFemtoCutMonitorParticlePtPDG::Fill(const AliFemtoTrack* aTrack)
   
    Int_t pdg1=0;
   AliFemtoModelHiddenInfo *info = ( AliFemtoModelHiddenInfo *) aTrack->GetHiddenInfo();
-  if(info)pdg1 = info->GetPDGPid();
+  if(info) pdg1 = info->GetPDGPid();
 
-
-//most probable particle  
-  fPtGoodPi->Fill(tPt);
-  fPtGoodP->Fill(tPt);
-  fPtGoodK->Fill(tPt);
-
-//contaminations 
-  if (abs(pdg1)!=321)fPtFakeK->Fill(tPt);
-  if (abs(pdg1)!=211)fPtFakePi->Fill(tPt);
-  if (abs(pdg1)!=2212)fPtFakeP->Fill(tPt);
+  if(pdg1){    
+    //most probable particle
+    fPtGoodPi->Fill(tPt);
+    fPtGoodP->Fill(tPt);
+    fPtGoodK->Fill(tPt);
+    
+    //contaminations
+    if (abs(pdg1)!=321)fPtFakeK->Fill(tPt);
+    if (abs(pdg1)!=211)fPtFakePi->Fill(tPt);
+    if (abs(pdg1)!=2212)fPtFakeP->Fill(tPt);
+  }
+  
 
                
 //contaminations for kaons 
@@ -241,6 +250,7 @@ void AliFemtoCutMonitorParticlePtPDG::Fill(const AliFemtoTrack* aTrack)
   
   if(abs(pdg1)==11)pdg=0.0; //+-electron
   if(abs(pdg1)==13)pdg=1.0;  //+-muon
+  if(!pdg1)pdg=-2.0;
   
   //cout<<"pdg from CutMonitor.."<<pdg1<<"pdg"<<pdg<<endl;
  
