@@ -43,7 +43,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskCharmingFemto();
-  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, bool isMCtruth);
+  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth);
   virtual ~AliAnalysisTaskCharmingFemto();
 
   virtual void LocalInit();
