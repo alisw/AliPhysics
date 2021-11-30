@@ -906,6 +906,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//Centarality
 	//////////////////////////////
 	Double_t centrality = -1;
+	Double_t centrality_mult = -1;
 	AliCentrality *fCentrality = (AliCentrality*)fAOD->GetCentrality();
 	//centrality = fCentrality->GetCentralityPercentile("V0M");
 	//cout << "Centrality == " << fCentrality->GetCentralityPercentile("V0M") << endl;
@@ -916,7 +917,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		centrality = fCentrality->GetCentralityPercentile("V0M");
 	}else{
 		//lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-		centrality = fMultSelection->GetMultiplicityPercentile("V0M"); 
+		centrality_mult = fMultSelection->GetMultiplicityPercentile("V0M"); 
 	}
 
         //cout << "++++++++ centrality = " << centrality << endl;
@@ -1045,7 +1046,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
         Int_t V0Mult=V0AMult+V0CMult;
 
 	fzvtx_V0M->Fill(Zvertex,V0Mult);
-	fcent_V0M->Fill(centrality,V0Mult);
+	fcent_V0M->Fill(centrality_mult,V0Mult);
 
 	//-----------Tracklet correction-------------------------
 
@@ -1123,7 +1124,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//////////////////////////////////
 
         //if(fmult_type==1) correctednAcc = correctedV0nAcc; // for V0 mult dep study
-        if(fmult_type==1) correctednAcc = centrality; // for V0 mult dep study
+        if(fmult_type==1) correctednAcc = centrality_mult; // for V0 mult dep study
 
 	if(correctednAcc<CutMinNtr || correctednAcc > CutMaxNtr) return;
 	fNevents->Fill(7); 
