@@ -248,10 +248,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			imost = 13;
 		}
                 if(fOtherNsigmacut){
-			if(!IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                    		|| !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
-                    		|| !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
-                    		|| !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
+			if(IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                    		|| IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                    		|| IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                    		|| IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
                         		imost = 0;
                 	}
 		}
