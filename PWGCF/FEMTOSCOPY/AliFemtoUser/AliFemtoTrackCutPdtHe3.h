@@ -35,6 +35,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetTritonNsigma(float Nsigma);
         void SetHe3Nsigma(float Nsigma);
         void SetRejectionNsigma(float Nsigma);
+	void SetOtherNsigmacutLabel(int OtherNsigmaLabel);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -49,8 +50,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         float SwitchMom_t;
         float SwitchMom_He3;
     
-        float fdEdxcut;
-
+        int fdEdxcut;
+	// 11.30
+	int fOtherNsigmacut;
         
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);

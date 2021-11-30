@@ -20,6 +20,7 @@ AliFemtoESDTrackCut()
     SwitchMom_He3 = 999;
 
     fdEdxcut = 1;
+    fOtherNsigmacut = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -38,6 +39,7 @@ AliFemtoESDTrackCut(aCut)
     SwitchMom_He3 = aCut.SwitchMom_He3;
 
     fdEdxcut = aCut.fdEdxcut;
+    fOtherNsigmacut = aCut.fOtherNsigmacut;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -66,6 +68,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     SwitchMom_He3 = aCut.SwitchMom_He3;
 
     fdEdxcut = aCut.fdEdxcut;
+    fOtherNsigmacut = aCut.fOtherNsigmacut;
     return *this;
 }
 
@@ -241,13 +244,17 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                 }
             }
             else if (fMostProbable == 13){   //cut on Nsigma deuteron
-                if (IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD())
-                    && !IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
-                    && !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
-                    && !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
-                    && !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
-                        imost = 13;
-                }
+                if (IsDeuteronNSigma(track->P().Mag(), track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD())){
+			imost = 13;
+		}
+                if(fOtherNsigmacut){
+			if(!IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())
+                    		|| !IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi())
+                    		|| !IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK())
+                    		|| !IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP())){
+                        		imost = 0;
+                	}
+		}
                 //\ dE/dx cut for low pt abnormal
                 if ( fdEdxcut && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
                     imost = 0;
@@ -505,4 +512,7 @@ void AliFemtoTrackCutPdtHe3::SetHe3Nsigma(float Nsigma){
 }
 void AliFemtoTrackCutPdtHe3::SetRejectionNsigma(float Nsigma){
     fNsigmaRejection = Nsigma;
+}
+void AliFemtoTrackCutPdtHe3::SetOtherNsigmacutLabel(int OtherNsigmaLabel){
+    fOtherNsigmacut = OtherNsigmaLabel;
 }
