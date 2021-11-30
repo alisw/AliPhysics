@@ -1334,10 +1334,13 @@ void AliAnalysisTaskRidge::FillTracks(){
 		FillTHnSparse("hTrackDataLTRaw",{fCent,MaxPt,MaxPhi,MaxEta,fZ},1.0);
 	}
         for(int i=0;i<binTPt.GetNbins();i++){
-//		if( NTracksPerPtBin[i] > 0.5 )
-		FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0},NTracksPerPtBin[i]);
-		FillTHnSparse("hNtrigLP",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPt,SubSampling},NTracksPerPtBin[i]);
-		FillTHnSparse("hNtrigJet",{fCent,binTPt.GetBinCenter(i+1),1.0,fJetPt,SubSampling},NTracksPerPtBin[i]);
+		if( NTracksPerPtBin[i] > 0.5 ){
+			FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0,SubSampling},NTracksPerPtBin[i]);
+			if( fOption.Contains("HighMult") ){
+				FillTHnSparse("hNtrigLT",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPt,SubSampling},NTracksPerPtBin[i] );
+				FillTHnSparse("hNtrigJet",{fCent,binTPt.GetBinCenter(i+1),1.0,fJetPt,SubSampling},NTracksPerPtBin[i] );
+			}
+		}
         }
 
 	double PhiThres = MaxPhi;
