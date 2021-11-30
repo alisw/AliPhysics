@@ -64,21 +64,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   else if(generators.Contains("pizero_0")) suffixgen = "_LF";
   else suffixgen = "";
 
-  // generator index
-  TString suffixgenID = "";
-  std::vector<UInt_t> genID;
-  const Int_t ngenID = (Int_t)gROOT->ProcessLine("GetGenID()");
-  if(ngenID > 0) {
-    for (unsigned int i = 0; i < ngenID+1; ++i){
-      UInt_t valuegenID = (UInt_t)(gROOT->ProcessLine(Form("GetGenID(%d)",i)));
-      genID.push_back(valuegenID);
-      suffixgenID += valuegenID;
-    }
-  }
   
   //create task and add it to the manager (MB)
   TString appendix;
-  appendix += TString::Format("Cen%d_%d_%s_%s_%s_Pileup%d_%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),suffixgenID.Data(),rejpileup,version);
+  appendix += TString::Format("Cen%d_%d_%s_%s_Pileup%d_%d",CenMin,CenMax,triggername.Data(),suffixgen.Data(),rejpileup,version);
   printf("appendix %s\n", appendix.Data());
 
   //##########################################################
@@ -118,8 +107,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   // #########################################################
   // Set minimum and maximum values for pairing
   task->SetKinematicCuts(PtMin, PtMax, EtaMin, EtaMax);
-
-
 
   // #########################################################
   // #########################################################
@@ -191,15 +178,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2_PbPb(
   task->SetGeneratorULSSignalName(generators);
 
 
-  //#################################################
-  //#################################################
-  // generator ID to select pile-up or not
-  if(ngenID > 0) {
-    task->SetGeneratorMCSignalIndex(genID);
-    task->SetGeneratorULSSignalIndex(genID);
-    task->SetCheckGenID(kTRUE);
-  }
-  
+ 
   //###############################################
   //##############################################
   if (cocktailFilename != "") task->SetDoCocktailWeighting(kTRUE);
