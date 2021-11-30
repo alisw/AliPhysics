@@ -1421,7 +1421,7 @@ Int_t AliAnalysisTaskSESemileptonicOmegac0KFP :: MatchToMCAntiOmegac0(AliAODTrac
     mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[0]));
     if ( mcMother->GetPdgCode() != -3334 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Omega+
     
-    if(mcElectron->Charge()<0) return -2;
+    if(mcElectron->Charge()>0) return -2;
  
     //---------- check Omegac0
     IndexMother[0] = mcMother->GetMother(); // mother of Omega+
