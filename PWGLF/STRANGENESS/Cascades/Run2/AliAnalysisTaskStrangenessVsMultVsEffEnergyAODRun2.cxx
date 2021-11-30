@@ -1863,13 +1863,14 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
         
         //CheckChargeV0( v0 ); //FIXME this won't work for AOD as is
         
-        Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0);
-        Double_t tV0mom[3]; v0->GetPxPyPz( tV0mom );
+        Double_t tV0mom[3]; 
+        tV0mom[0] = v0->Px();
+        tV0mom[1] = v0->Py();
+        tV0mom[2] = v0->Pz();
         
-        Double_t lV0TotalMomentum = TMath::Sqrt(
-                                                tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
+        Double_t lV0TotalMomentum = TMath::Sqrt( std::pow( v0->Px(),2)+ std::pow( v0->Py(),2) + std::pow(v0->Pz(),2));
         
-        lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+        lV0Radius =  v0->RadiusV0();
         
         lPt = v0->Pt();
         lRapK0Short = v0->RapK0Short();
@@ -2095,12 +2096,7 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
         fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
         
         //This requires an Invariant Mass Hypothesis afterwards
-        fTreeVariableDistOverTotMom = TMath::Sqrt(
-                                                  TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
-                                                  TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
-                                                  TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
-                                                  );
-        fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
+        fTreeVariableDistOverTotMom =  v0->DecayLengthV0(lBestPrimaryVtxPos) / (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
         
         //Copy Multiplicity information
         fTreeVariableRun = fRun;
