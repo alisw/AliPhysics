@@ -12,7 +12,7 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
-    bool isMC = false, bool fullBlastQA = true, TString trigger = "kINT7",
+    bool isMC = false, bool isMCtruth = false, bool fullBlastQA = true, TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
     TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
     TString cutHFsuffix = "", bool applyML = false, TString configML =
@@ -129,7 +129,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = 10;
+  const int nPairs = 21;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -182,7 +182,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetMinimalBookingME(false);
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
-      "AliAnalysisTaskCharmingFemto", isMC);
+      "AliAnalysisTaskCharmingFemto", isMC, isMCtruth);
   task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);

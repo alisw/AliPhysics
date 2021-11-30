@@ -43,7 +43,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskCharmingFemto();
-  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC);
+  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, bool isMCtruth);
   virtual ~AliAnalysisTaskCharmingFemto();
 
   virtual void LocalInit();
@@ -170,6 +170,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;            //!
 
   bool fIsMC;              //
+  bool fIsMCtruth;         //
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
   int fSystem;             //
@@ -244,7 +245,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 11)
+ClassDef(AliAnalysisTaskCharmingFemto, 12)
 };
 
 #endif

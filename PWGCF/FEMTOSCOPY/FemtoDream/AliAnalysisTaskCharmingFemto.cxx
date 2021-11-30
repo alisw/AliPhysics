@@ -35,6 +35,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(false),
+      fIsMCtruth(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -99,7 +100,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
-                                                           const bool isMC)
+                                                           const bool isMC,
+                                                           const bool isMCtruth)
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fEvent(nullptr),
@@ -111,6 +113,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(isMC),
+      fIsMCtruth(isMCtruth),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -346,8 +349,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
   static std::vector<AliFemtoDreamBasePart> protons;
   static std::vector<AliFemtoDreamBasePart> antiprotons;
+  
+  static std::vector<AliFemtoDreamBasePart> protonsTrue;
+  static std::vector<AliFemtoDreamBasePart> antiprotonsTrue;
   protons.clear();
   antiprotons.clear();
+
+  protonsTrue.clear();
+  antiprotonsTrue.clear();
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -360,19 +369,63 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
 
-  float DmesonBuddyMass =
-    TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
+    float DmesonBuddyMass =
+      TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
 
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(DmesonBuddyMass);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      protons.push_back(*fProtonTrack);
+      if (!fIsMCtruth) {
+        std::cout<<"FAIL"<<std::endl;        
+        protons.push_back(*fProtonTrack);
+      }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiprotons.push_back(*fProtonTrack);
+      if (!fIsMCtruth) {
+        std::cout<<"ANTI FAIL"<<std::endl;
+        antiprotons.push_back(*fProtonTrack);
+      }
     }
   }
 
+  int inili=0;
+  if (fIsMCtruth) {
+    TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    int noPart = fArrayMCAOD->GetEntriesFast();
+    AliFemtoDreamBasePart part;
+    // std::cout << "Nr particle:" << noPart << " PDG:"<<fTrackCutsPartProton->GetPDGCode()<< "PDG antiParts"<<fTrackCutsPartAntiProton->GetPDGCode() <<std::endl;
+    for (int iPart = 1; iPart < noPart; iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
+      if (!(mcPart)) {
+        std::cout << "NO MC particle" << std::endl;
+        continue;
+      }
+      double pt = mcPart->Pt();
+      double eta = mcPart->Eta();
+      if (mcPart->GetLabel() < 0) {
+        continue;
+      }
+      int mcpdg = mcPart->GetPdgCode();
+
+      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {
+        part.SetMCParticleRePart(mcPart);
+        // std::cout<<iPart<<": "<<pt<<" "<<eta<<"  "<< part.GetPt() << std::endl;
+        // protons.push_back(part);
+        protonsTrue.push_back(part);
+        inili++;
+      }
+
+      if (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
+        part.SetMCParticleRePart(mcPart);
+        // std::cout<<iPart<<": "<<pt<<" "<<eta<<"  "<< part.GetPt() << std::endl;
+        // antiprotons.push_back(part);
+        antiprotonsTrue.push_back(part);
+      }
+    }
+
+  }
+  // std::cout << "MC truth DONE: "<<inili << std::endl;
   // D MESON SELECTION
   int nCand = arrayHF->GetEntriesFast();
 
@@ -550,13 +603,19 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
 
   // PAIR CLEANING AND FEMTO
-  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
-  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
-  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
+  if (!fIsMCtruth) {
+    std::cout<<" PAIR CLEANING FAIL"<<std::endl;
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
+  }
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
+  fPairCleaner->StoreParticle(protonsTrue);
+  fPairCleaner->StoreParticle(antiprotonsTrue);
+
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
