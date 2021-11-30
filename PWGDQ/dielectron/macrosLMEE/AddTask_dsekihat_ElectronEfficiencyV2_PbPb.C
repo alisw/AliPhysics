@@ -85,6 +85,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetEnablePhysicsSelection(kTRUE);//always ON in Run2 analyses for both data and MC.
   task->SetTriggerMask(trigger);
   task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
+  task->SetRejectParticleFromOOB(kTRUE);
 
   //if(pileupcut == ""){
   //  printf("analyze all events in M.C.\n");
