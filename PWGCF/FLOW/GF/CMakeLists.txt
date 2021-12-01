@@ -65,12 +65,14 @@ set(SRCS
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
-list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
+  list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
   list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
   list(APPEND SRCS AliEffFDContainer.cxx)
+  list(APPEND SRCS AliGFWFilter.cxx)
+  list(APPEND SRCS AliGFWFilterTask.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
 endif()
 
