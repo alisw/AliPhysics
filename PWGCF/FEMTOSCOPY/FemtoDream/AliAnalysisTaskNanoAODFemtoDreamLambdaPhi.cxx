@@ -173,11 +173,11 @@ AliAnalysisTaskNanoAODFemtoDreamLambdaPhi::AliAnalysisTaskNanoAODFemtoDreamLambd
     fPosKaonCuts->Init();
     fPosKaonCuts->SetName("KaonPlus");
 
-    if (fPosKaonCuts->GetIsMonteCarlo())
-    {
-      fPosKaonCuts->SetMCName("MCParticle1");
-      fKaonPlusList->Add(fPosKaonCuts->GetMCQAHists());
-    }
+    // if (fPosKaonCuts->GetIsMonteCarlo())
+    // {
+    //   fPosKaonCuts->SetMCName("MCParticle1");
+    //   fKaonPlusList->Add(fPosKaonCuts->GetMCQAHists());
+    // }
 
     if (!fNegKaonCuts)
     {
@@ -185,11 +185,12 @@ AliAnalysisTaskNanoAODFemtoDreamLambdaPhi::AliAnalysisTaskNanoAODFemtoDreamLambd
     }
     fNegKaonCuts->Init();
     fNegKaonCuts->SetName("KaonMinus");
-    if (fNegKaonCuts->GetIsMonteCarlo())
-    {
-      fNegKaonCuts->SetMCName("MCParticle2");
-      fKaonMinusList->Add(fNegKaonCuts->GetMCQAHists());
-    }
+
+    // if (fNegKaonCuts->GetIsMonteCarlo())
+    // {
+    //   fNegKaonCuts->SetMCName("MCParticle2");
+    //   fKaonMinusList->Add(fNegKaonCuts->GetMCQAHists());
+    // }
 
     if (!fPhiCuts)
     {
@@ -197,11 +198,12 @@ AliAnalysisTaskNanoAODFemtoDreamLambdaPhi::AliAnalysisTaskNanoAODFemtoDreamLambd
     }
     fPhiCuts->Init();
     fPhiCuts->SetName("Phi");
-    if (fPhiCuts->GetIsMonteCarlo())
-    {
-      fPhiCuts->SetMCName("MCPhi");
-      fPhiList->Add(fPhiCuts->GetMCQAHists());
-    }
+
+    // if (fPhiCuts->GetIsMonteCarlo())
+    // {
+    //   fPhiCuts->SetMCName("MCPhi");
+    //   fPhiList->Add(fPhiCuts->GetMCQAHists());
+    // }
 
     if (!fLambdaCuts)
     {
@@ -209,11 +211,12 @@ AliAnalysisTaskNanoAODFemtoDreamLambdaPhi::AliAnalysisTaskNanoAODFemtoDreamLambd
     }
     fLambdaCuts->Init();
     fLambdaCuts->SetName("Lambda");
-    if (fLambdaCuts->GetIsMonteCarlo())
-    {
-      fLambdaCuts->SetMCName("MCLambda");
-      fLambdaList->Add(fLambdaCuts->GetMCQAHists());
-    }
+
+    // if (fLambdaCuts->GetIsMonteCarlo())
+    // {
+    //   fLambdaCuts->SetMCName("MCLambda");
+    //   fLambdaList->Add(fLambdaCuts->GetMCQAHists());
+    // }
 
     if (!fAntiLambdaCuts)
     {
@@ -221,11 +224,12 @@ AliAnalysisTaskNanoAODFemtoDreamLambdaPhi::AliAnalysisTaskNanoAODFemtoDreamLambd
     }
     fAntiLambdaCuts->Init();
     fAntiLambdaCuts->SetName("AntiLambda");
-    if (fAntiLambdaCuts->GetIsMonteCarlo())
-    {
-      fAntiLambdaCuts->SetMCName("MCAntiProton");
-      fAntiLambdaList->Add(fAntiLambdaCuts->GetMCQAHists());
-    }
+
+    // if (fAntiLambdaCuts->GetIsMonteCarlo())
+    // {
+    //   fAntiLambdaCuts->SetMCName("MCAntiProton");
+    //   fAntiLambdaList->Add(fAntiLambdaCuts->GetMCQAHists());
+    // }
 
     fKaonPlusList = fPosKaonCuts->GetQAHists();
     fKaonMinusList = fNegKaonCuts->GetQAHists();
