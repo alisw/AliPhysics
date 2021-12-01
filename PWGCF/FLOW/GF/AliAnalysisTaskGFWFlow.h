@@ -38,7 +38,7 @@ class TObjArray;
 class TNamed;
 class AliAODVertex;
 class AliAnalysisUtils;
-
+using namespace GFWFlags;
 class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
  public:
   Int_t debugpar;
@@ -110,7 +110,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t FillFCs(TString head, TString hn, Double_t cent, Bool_t diff, Double_t rndmn);
   AliMCEvent *FetchMCEvent(Double_t &impactParameter);
   Double_t GetCentFromIP(Double_t impactParameter) { return fCentMap->GetBinContent(fCentMap->FindBin(impactParameter)); };
- TStopwatch mywatch;
+ // TStopwatch mywatch;
  // TStopwatch mywatchFill;
  // TStopwatch mywatchStore;
   ClassDef(AliAnalysisTaskGFWFlow,1);

@@ -1,6 +1,4 @@
 #include "AliGFWFilter.h"
-const Int_t AliGFWFilter::fNTrackFlags=20;
-const Int_t AliGFWFilter::fNEventFlags=4;
 using namespace GFWFlags;
 AliGFWFilter::AliGFWFilter():
   fRetFlags(0),
@@ -119,7 +117,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
 //klTPCchi2PC25, klTPCchi2PC20, klTPCchi2PC30,
 //klNTPCcls70, klNTPCcls80, klNTPCcls90, klNTPCcls100
 void AliGFWFilter::CreateCutMasks() {
-  if(!fTrackMasks) fTrackMasks = new UInt_t[fNTrackFlags];
+  if(!fTrackMasks) fTrackMasks = new UInt_t[gNTrackFlags];
   //Standard cuts:
   //Nominal -- FB96:
   fTrackMasks[0] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70; //Temporary, for x-check with GFWCuts
@@ -164,7 +162,7 @@ void AliGFWFilter::CreateCutMasks() {
   fTrackMasks[19] = klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
 
   //Event cuts:
-  if(!fEventMasks) fEventMasks = new UInt_t[fNEventFlags];
+  if(!fEventMasks) fEventMasks = new UInt_t[gNEventFlags];
   //Nominal:
   fEventMasks[0] = klVtxZ10 + klEventCuts;
   //vtx z<9
@@ -176,11 +174,11 @@ void AliGFWFilter::CreateCutMasks() {
 };
 UInt_t AliGFWFilter::calculateEventFlag() {
   UInt_t retFlag = 0;
-  for(Int_t i=0;i<fNEventFlags;i++) if(EB(fEventMasks[i])) retFlag|=(1<<i);
+  for(Int_t i=0;i<gNEventFlags;i++) if(EB(fEventMasks[i])) retFlag|=(1<<i);
   return retFlag;
 };
 UInt_t AliGFWFilter::calculateTrackFlag() {
   UInt_t retFlag = 0;
-  for(Int_t i=0;i<fNTrackFlags;i++) if(TB(fTrackMasks[i])) retFlag|=(1<<i);
+  for(Int_t i=0;i<gNTrackFlags;i++) if(TB(fTrackMasks[i])) retFlag|=(1<<i);
   return retFlag;
 }

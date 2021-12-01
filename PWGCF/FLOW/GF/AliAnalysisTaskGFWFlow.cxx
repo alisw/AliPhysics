@@ -121,9 +121,9 @@ AliAnalysisTaskGFWFlow::~AliAnalysisTaskGFWFlow() {
 };
 void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   OpenFile(1);
-  fTotTrackFlags = AliGFWFilter::fNTrackFlags;//AliGFWCuts::fNTrackFlags;
-  fTotEvFlags    = AliGFWFilter::fNEventFlags;
-  fTotFlags = fTotEvFlags + fTotTrackFlags;//AliGFWCuts::fNEventFlags+1;
+  fTotTrackFlags = gNTrackFlags;//AliGFWCuts::fNTrackFlags;
+  fTotEvFlags    = gNEventFlags;
+  fTotFlags = fTotEvFlags + fTotTrackFlags;//AliGFWCuts::gNEventFlags+1;
   if(fProduceWeights) {
     //Initialize selection objects
     fWeightList = new TList();
@@ -311,7 +311,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   };
   // mywatchFill.Reset();
   // mywatchStore.Reset();
-  mywatch.Start(kTRUE);
+  // mywatch.Start(kTRUE);
 };
 
 AliMCEvent *AliAnalysisTaskGFWFlow::FetchMCEvent(Double_t &impactParameter) {
@@ -478,7 +478,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   };
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
-  printf("\n********* Time: %f\n**********",mywatch.RealTime());
+  // printf("\n********* Time: %f\n**********",mywatch.RealTime());
   // printf("Filling time: %f\n",mywatchFill.RealTime());
   // printf("Storing time: %f\n",mywatchStore.RealTime());
 };
