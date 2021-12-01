@@ -2087,7 +2087,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
     fListHist->Add(fHistLambdaCPA[i]);
     fHistLambdaDecayLength[i] = new TH1D(Form("hLambdaDecayLength_%sMassCut",name),"", 250, 0., 500.);
     fListHist->Add(fHistLambdaDecayLength[i]);
-    fHistLambdaMass[i] = new TH1D(Form("hLambdaMass_%sMassCut",name),"",250,1.,1.25); //  Current bin size = 0.001
+    fHistLambdaMass[i] = new TH1D(Form("hLambdaMass_%sMassCut",name),"",1000,1.,1.25); //  Current bin size = 0.00025
     fListHist->Add(fHistLambdaMass[i]);
     fProfileLambdaMassVsPt[i] = new TProfile(Form("pLambdaMassVsPt_%sMassCut",name),"",200,0,20);
     fListHist->Add(fProfileLambdaMassVsPt[i]);
@@ -2105,7 +2105,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
     fListHist->Add(fHistAntiLambdaCPA[i]);
     fHistAntiLambdaDecayLength[i] = new TH1D(Form("hAntiLambdaDecayLength_%sMassCut",name),"", 250, 0., 500.);
     fListHist->Add(fHistAntiLambdaDecayLength[i]);
-    fHistAntiLambdaMass[i] = new TH1D(Form("hAntiLambdaMass_%sMassCut",name),"",250,1.,1.25); // Current bin size = 0.001
+    fHistAntiLambdaMass[i] = new TH1D(Form("hAntiLambdaMass_%sMassCut",name),"",1000,1.,1.25); // Current bin size = 0.00025
     fListHist->Add(fHistAntiLambdaMass[i]);
     fProfileAntiLambdaMassVsPt[i] = new TProfile(Form("pAntiLambdaMassVsPt_%sMassCut",name),"",200,0,20);
     fListHist->Add(fProfileAntiLambdaMassVsPt[i]);    
