@@ -84,9 +84,6 @@ Bool_t AliEmcalCorrectionClusterPositionCorrection::Run()
 {
   AliEmcalCorrectionComponent::Run();
 
-  // only apply on MC clusters
-  if(!fMCEvent) return kTRUE;
-
   // loop over clusters
   AliVCluster *clus = 0;
   AliClusterContainer * clusCont = 0;
