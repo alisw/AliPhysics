@@ -176,7 +176,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
       fPionCuts->SetPrefilterRunFlag(prefilterRunFlag);
-      if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
+      if(runLightOutput>=1){
+          fPionCuts->SetLightOutput(kTRUE);
+      }
       fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
@@ -197,7 +199,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>1) task->SetLightOutput(kTRUE);
+  if(runLightOutput>=4) {
+      task->SetLightOutput(2);
+  } else if(runLightOutput>=2) {
+      task->SetLightOutput(1);
+  }
   task->SetTolerance(tolerance);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
@@ -2108,7 +2114,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
       analysisEventCuts[i]->SetUsePtHardBinFromFile(kTRUE);
     if(fUseAddOutlierRej)
       analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
-    if(runLightOutput>0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=1) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     EventCutList->Add(analysisEventCuts[i]);
@@ -2117,7 +2123,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
-    if(runLightOutput>0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=1) analysisClusterCuts[i]->SetLightOutput(kTRUE);
 
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
@@ -2132,7 +2138,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
-    if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=1) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
       return 0;
@@ -2142,7 +2148,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     }
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=1) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
       return 0;
@@ -2156,7 +2162,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     analysisPionCuts[i] = new AliPrimaryPionCuts();
     analysisPionCuts[i]->SetPrefilterRunFlag(prefilterRunFlag);
     analysisPionCuts[i]->SetPeriodName(periodNameV0Reader);
-    if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=1) analysisPionCuts[i]->SetLightOutput(kTRUE);
 
         if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       std::cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<std::endl;

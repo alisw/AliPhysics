@@ -212,6 +212,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                            fEnableNDMInputSpectrum;                            ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTreeTrueNDMFromHNM;                          ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt;    ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground;    ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlotCombCPionVsNPion;               ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableAsymmetryPlot_NotAccepted;                   ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzAllPt;                                  ///< Turn On or Off if Histograms are created and used
@@ -494,7 +495,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                          fAllowOverlapHeaders;                                 ///< enable overlapping headers for cluster selection
     Int_t                           fIsMC;                                                ///< Flag for MC
     Int_t                           fSelectedHeavyNeutralMeson;                           ///< Flag for running eta prime
-    Bool_t                          fDoLightOutput;                                       ///< Flag to turn on light output
+    Int_t                           fDoLightOutput;                                       ///< Flag to turn on light output
     Int_t                           fNDMRecoMode;                                         ///< Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           ///< tolerance in rad for angle cuts
     Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
