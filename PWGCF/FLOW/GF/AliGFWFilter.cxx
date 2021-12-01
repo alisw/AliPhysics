@@ -1,5 +1,5 @@
 #include "AliGFWFilter.h"
-const Int_t AliGFWFilter::fNTrackFlags=19;
+const Int_t AliGFWFilter::fNTrackFlags=20;
 const Int_t AliGFWFilter::fNEventFlags=4;
 using namespace GFWFlags;
 AliGFWFilter::AliGFWFilter():
@@ -107,7 +107,8 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(TSB(klFB96)&&TSB(klSharedClusters)) AddTr(klFB96Tuned); //Tuned to overlap with 768 (modified)
       if(TSB(klFB256)||TSB(klFB512)) AddTr(klFB768);
       if(TSB(klFB256)||TB(klFB512+klHitOnSDD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
-      fRetFlags->AddTrackFlags(i,calculateTrackFlag());
+      UInt_t flagToAdd = calculateTrackFlag();
+      if(flagToAdd) fRetFlags->AddTrackFlags(i,flagToAdd); //Only count ones that pass any cuts
     };
   };
 };
@@ -121,7 +122,7 @@ void AliGFWFilter::CreateCutMasks() {
   if(!fTrackMasks) fTrackMasks = new UInt_t[fNTrackFlags];
   //Standard cuts:
   //Nominal -- FB96:
-  fTrackMasks[0] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks[0] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70; //Temporary, for x-check with GFWCuts
   //FB768:
   fTrackMasks[1] = klFB768 + klTPCchi2PC25 + klNTPCcls70;
   //FB96, |dcaZ| < 1:
@@ -159,6 +160,8 @@ void AliGFWFilter::CreateCutMasks() {
   fTrackMasks[17] = klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70;
   //FB768tunes tuned, nTPC clusters >90
   fTrackMasks[18] = klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90;
+  //FB96 with 2010 AND 2011 DCAxy
+  fTrackMasks[19] = klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
 
   //Event cuts:
   if(!fEventMasks) fEventMasks = new UInt_t[fNEventFlags];

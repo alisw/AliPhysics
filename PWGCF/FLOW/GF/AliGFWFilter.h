@@ -55,6 +55,7 @@ class AliGFWFilter
     static const Int_t fNTrackFlags;
     static const Int_t fNEventFlags;
     static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
+    static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<fNEventFlags?ind:0; Int_t ltr=ind<fNEventFlags?0:ind-fNEventFlags; return GetSystPF(lev,ltr); };
   private:
     inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };
     inline Double_t f_DCAxy2011(Double_t &pt) { return (0.0015+0.0050/TMath::Power(pt,1.1)); };
@@ -124,7 +125,7 @@ namespace GFWFlags {
                     kFB768DCAxyLow,
                     kFB768DCAxyHigh,
                     kFB768ChiSq2, kFB768ChiSq3,
-                    kFB768nTPC,
+                    kFB768nTPC, kFB96MergedDCA,
                     kAllTrFlags
                   };
 };

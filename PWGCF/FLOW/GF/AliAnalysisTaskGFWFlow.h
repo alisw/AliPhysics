@@ -13,6 +13,7 @@ Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
 #include "TStopwatch.h"
 #include "AliGFW.h"
 #include "AliVEvent.h"
+#include "AliGFWFilter.h"
 
 
 class TList;
@@ -89,6 +90,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   //Double_t fPtBins; //! Not stored
   Int_t fTotFlags; //1 for normal, plus 1 per each flag
   Int_t fTotTrackFlags; //Total number of track flags
+  Int_t fTotEvFlags; //Total number of event flags
   Int_t fRunNo;
   Int_t fCurrSystFlag;
   Bool_t fAddQA; // Add AliEventSelection QA plots
@@ -108,7 +110,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Bool_t FillFCs(TString head, TString hn, Double_t cent, Bool_t diff, Double_t rndmn);
   AliMCEvent *FetchMCEvent(Double_t &impactParameter);
   Double_t GetCentFromIP(Double_t impactParameter) { return fCentMap->GetBinContent(fCentMap->FindBin(impactParameter)); };
- // TStopwatch mywatch;
+ TStopwatch mywatch;
  // TStopwatch mywatchFill;
  // TStopwatch mywatchStore;
   ClassDef(AliAnalysisTaskGFWFlow,1);
