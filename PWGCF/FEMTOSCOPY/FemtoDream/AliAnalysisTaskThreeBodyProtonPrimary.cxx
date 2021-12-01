@@ -449,16 +449,18 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fSameEventTripletArray_TwoBody = new TH1F*[7];
     TString histTitlesSame_TwoBody[7] = {"sameEventDistributionPP","sameEventDistributionAPAP", "sameEventDistributionPPrim", "sameEventDistributionAPAPrim", "sameEventDistributionPAPrim", "sameEventDistributionAPPrim", "sameEventDistributionPrimAPrim"};
 
-    fPairTranverseMass_TwoBody = new TH1F*[7]; // ADDED BY RAFFA
-    TString histTitlesPairTranverseMass_TwoBody[7] = {"PairTranverseMassDistributionPP","PairTranverseMassDistributionAPAP", "PairTranverseMassDistributionPPrim", "PairTranverseMassDistributionAPAPrim", "PairTranverseMassDistributionPAPrim", "PairTranverseMassDistributionAPPrim", "PairTranverseMassDistributionPrimAPrim"}; // ADDED BY RAFFA
+      fPairTranverseMass_TwoBody = new TH1F*[7]; // ADDED BY RAFFA
+      TString histTitlesPairTranverseMass_TwoBody[7] = {"PairTranverseMassDistributionPP","PairTranverseMassDistributionAPAP", "PairTranverseMassDistributionPPrim", "PairTranverseMassDistributionAPAPrim", "PairTranverseMassDistributionPAPrim", "PairTranverseMassDistributionAPPrim", "PairTranverseMassDistributionPrimAPrim"}; // ADDED BY RAFFA
 
     if(!fDoOnlyThreeBody){
 	     for (int i = 0; i < 7; ++i) {
 	      fSameEventTripletArray_TwoBody[i] =  new TH1F(histTitlesSame_TwoBody[i],histTitlesSame_TwoBody[i], 8000, 0, 8);
 	      fSameEvent->Add(fSameEventTripletArray_TwoBody[i]);
 
-        fPairTranverseMass_TwoBody[i] =  new TH1F(histTitlesPairTranverseMass_TwoBody[i],histTitlesPairTranverseMass_TwoBody[i], 8000, 0, 8); // ADDED BY RAFFA
-        fSameEvent->Add(fPairTranverseMass_TwoBody[i]); // ADDED BY RAFFA
+        if(fRunOfficialTwoBody){
+          fPairTranverseMass_TwoBody[i] =  new TH1F(histTitlesPairTranverseMass_TwoBody[i],histTitlesPairTranverseMass_TwoBody[i], 8000, 0, 8); // ADDED BY RAFFA
+          fSameEvent->Add(fPairTranverseMass_TwoBody[i]); // ADDED BY RAFFA
+        }
 	     }
     }
     // Same event multiplicity dist
@@ -473,24 +475,24 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     if(fDoOnlyThreeBody){
 	    for (int i = 0; i < 28; ++i) {
 	      fSameEventTripletMultArray[i] =  new TH2F(histTitlesSameMult[i],histTitlesSameMult[i], 8000, 0, 8,26,1,27);
-	      fSameEventMult->Add(fSameEventTripletMultArray[i]);
+              if(fRunPlotMult){fSameEventMult->Add(fSameEventTripletMultArray[i]);}
 	     }
     }
 
     fSameEventTripletMultArray_TwoBody = new TH2F*[7];
     TString histTitlesSameMult_TwoBody[7] = {"sameEventDistributionMultPP","sameEventDistributionMultAPAP", "sameEventDistributionMultPPrim", "sameEventDistributionMultAPAPrim", "sameEventDistributionMultPAPrim", "sameEventDistributionMultAPPrim", "sameEventDistributionMultPrimAPrim"};
 
-    fPairTranverseMassVSkstar_TwoBody = new TH2F*[7]; // ADDED BY RAFFA
-    TString histTitlesPairTranverseMassVSkstar_TwoBody[7] = {"PairTranverseMassVSkstarDistributionPP","PairTranverseMassVSkstarDistributionAPAP", "PairTranverseMassVSkstarDistributionPPrim", "PairTranverseMassVSkstarDistributionAPAPrim", "PairTranverseMassVSkstarDistributionPAPrim", "PairTranverseMassVSkstarDistributionAPPrim", "PairTranverseMassVSkstarDistributionPrimAPrim"}; // ADDED BY RAFFA
-
+        fPairTranverseMassVSkstar_TwoBody = new TH2F*[7]; // ADDED BY RAFFA
+        TString histTitlesPairTranverseMassVSkstar_TwoBody[7] = {"PairTranverseMassVSkstarDistributionPP","PairTranverseMassVSkstarDistributionAPAP", "PairTranverseMassVSkstarDistributionPPrim", "PairTranverseMassVSkstarDistributionAPAPrim", "PairTranverseMassVSkstarDistributionPAPrim", "PairTranverseMassVSkstarDistributionAPPrim", "PairTranverseMassVSkstarDistributionPrimAPrim"}; // ADDED BY RAFFA
 
     if(!fDoOnlyThreeBody){
 	     for (int i = 0; i < 7; ++i) {
 	      fSameEventTripletMultArray_TwoBody[i] =  new TH2F(histTitlesSameMult_TwoBody[i],histTitlesSameMult_TwoBody[i],8000, 0, 8,26,1,27);
-	      fSameEventMult->Add(fSameEventTripletMultArray_TwoBody[i]);
-	  
-        fPairTranverseMassVSkstar_TwoBody[i] =  new TH2F(histTitlesPairTranverseMassVSkstar_TwoBody[i],histTitlesPairTranverseMassVSkstar_TwoBody[i], 800, 0, 8, 800, 0, 8); // ADDED BY RAFFA
-        fSameEvent->Add(fPairTranverseMassVSkstar_TwoBody[i]); // ADDED BY RAFFA
+          if(fRunPlotMult){fSameEventMult->Add(fSameEventTripletMultArray_TwoBody[i]);}
+	      if(fRunOfficialTwoBody){
+            fPairTranverseMassVSkstar_TwoBody[i] =  new TH2F(histTitlesPairTranverseMassVSkstar_TwoBody[i],histTitlesPairTranverseMassVSkstar_TwoBody[i], 800, 0, 8, 800, 0, 8); // ADDED BY RAFFA
+            fSameEvent->Add(fPairTranverseMassVSkstar_TwoBody[i]); // ADDED BY RAFFA
+        }
        }
     }
     // Mixed event -------------------------------------------------------------------------------
@@ -528,7 +530,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     if(fDoOnlyThreeBody){
 	    for (int i = 0; i < 10; ++i) {
 	      fMixedEventTripletMultArray[i] = new TH2F(histTitlesMixedMult[i],histTitlesMixedMult[i], 8000, 0, 8,26,1,27);
-	      fMixedEventMult->Add(fMixedEventTripletMultArray[i]);
+          if(fRunPlotMult){fMixedEventMult->Add(fMixedEventTripletMultArray[i]);}
 	     }
     }
 
@@ -538,14 +540,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     if(!fDoOnlyThreeBody){
 	     for (int i = 0; i < 7; ++i) {
 	      fMixedEventTripletMultArray_TwoBody[i] =  new TH2F(histTitlesMixedMult_TwoBody[i],histTitlesMixedMult_TwoBody[i], 8000, 0, 8,26,1,27);
-	      fMixedEventMult->Add(fMixedEventTripletMultArray_TwoBody[i]);
+             if(fRunPlotMult){ fMixedEventMult->Add(fMixedEventTripletMultArray_TwoBody[i]); }
 	     }
     }
     fResultsThreeBody->Add(fSameEvent);
     fResultsThreeBody->Add(fMixedEvent);
+    if(fRunPlotMult){
     fResultsThreeBody->Add(fSameEventMult);
     fResultsThreeBody->Add(fMixedEventMult);
-
+    }
     // Same event phi theta distribution ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     fSameEventPhiTheta = new TList();
     fSameEventPhiTheta->SetOwner();
@@ -559,8 +562,11 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	    for(int i=0;i<28;i++){
 	      fSameEventTripletPhiThetaArray[i] = new TH2F(histTitlesSamePhiEta[i]+"Before",histTitlesSamePhiEta[i]+"Before", 500, -0.15,0.15,500,-0.15,0.15);
 	      fSameEventTripletPhiThetaArray[28+i] = new TH2F(histTitlesSamePhiEta[i]+"After",histTitlesSamePhiEta[i]+"After", 500, -0.15,0.15,500,-0.15,0.15);
-	      fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray[i]);
-	      fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray[28+i]);
+
+               if(fRunPlotPhiTheta){
+	        fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray[i]);
+	        fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray[28+i]);
+               }
 	    }
     }
 
@@ -571,8 +577,11 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	    for(int i=0;i<7;i++){
 	      fSameEventTripletPhiThetaArray_TwoBody[i] = new TH2F(histTitlesSamePhiEta_TwoBody[i]+"Before",histTitlesSamePhiEta_TwoBody[i]+"Before", 500, -0.15,0.15,500,-0.15,0.15);
 	      fSameEventTripletPhiThetaArray_TwoBody[7+i] = new TH2F(histTitlesSamePhiEta_TwoBody[i]+"After",histTitlesSamePhiEta_TwoBody[i]+"After", 500, -0.15,0.15,500,-0.15,0.15);
-	      fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray_TwoBody[i]);
-	      fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray_TwoBody[7+i]);
+
+              if(fRunPlotPhiTheta){
+	        fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray_TwoBody[i]);
+	        fSameEventPhiTheta->Add(fSameEventTripletPhiThetaArray_TwoBody[7+i]);
+              }
 	    }
     }
 
@@ -589,8 +598,11 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	    for(int i=0;i<10;i++){
 	      fMixedEventTripletPhiThetaArray[i] = new TH2F(histTitlesMixedPhiEta[i]+"Before",histTitlesMixedPhiEta[i]+"Before", 500, -0.15,0.15,500,-0.15,0.15);
 	      fMixedEventTripletPhiThetaArray[10+i] = new TH2F(histTitlesMixedPhiEta[i]+"After",histTitlesMixedPhiEta[i]+"After", 500, -0.15,0.15,500,-0.15,0.15);
-	      fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray[i]);
-	      fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray[10+i]);
+
+             if(fRunPlotPhiTheta){
+	        fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray[i]);
+	        fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray[10+i]);
+             }
 	    }
     }
 
@@ -601,12 +613,18 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	    for(int i=0;i<7;i++){
 	      fMixedEventTripletPhiThetaArray_TwoBody[i] = new TH2F(histTitlesMixedPhiEta_TwoBody[i]+"Before",histTitlesMixedPhiEta_TwoBody[i]+"Before", 500, -0.15,0.15,500,-0.15,0.15);
 	      fMixedEventTripletPhiThetaArray_TwoBody[7+i] = new TH2F(histTitlesMixedPhiEta_TwoBody[i]+"After",histTitlesMixedPhiEta_TwoBody[i]+"After", 500, -0.15,0.15,500,-0.15,0.15);
-	      fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray_TwoBody[i]);
-	      fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray_TwoBody[7+i]);
+
+              if(fRunPlotPhiTheta){
+                fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray_TwoBody[i]);
+	        fMixedEventPhiTheta->Add(fMixedEventTripletPhiThetaArray_TwoBody[7+i]);
+              }
 	    }
     }
+
+    if(fRunPlotPhiTheta){
     fResultsThreeBody->Add(fSameEventPhiTheta);
     fResultsThreeBody->Add(fMixedEventPhiTheta);
+    }
 
     // Q3 vs q12 plot for theory
     if(fRunPlotQ3Vsq){
@@ -1012,15 +1030,17 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
    //Primary Antiprimary
     FillPairDistribution( ParticleVector, 2, 3, fSameEventTripletArray_TwoBody[6],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[6], fSameEventTripletPhiThetaArray_TwoBody,6, *fConfig);
 
+    if(fRunOfficialTwoBody){
 
-    FillPairTransverseMass(ParticleVector, 0, 0, fPairTranverseMass_TwoBody[0], PDGCodes, fPairTranverseMassVSkstar_TwoBody[0]);
-    FillPairTransverseMass(ParticleVector, 1, 1, fPairTranverseMass_TwoBody[1], PDGCodes, fPairTranverseMassVSkstar_TwoBody[1]);
-    FillPairTransverseMass(ParticleVector, 0, 2, fPairTranverseMass_TwoBody[2], PDGCodes, fPairTranverseMassVSkstar_TwoBody[2]);
-    FillPairTransverseMass(ParticleVector, 1, 3, fPairTranverseMass_TwoBody[3], PDGCodes, fPairTranverseMassVSkstar_TwoBody[3]);
-    FillPairTransverseMass(ParticleVector, 0, 3, fPairTranverseMass_TwoBody[4], PDGCodes, fPairTranverseMassVSkstar_TwoBody[4]);
-    FillPairTransverseMass(ParticleVector, 1, 2, fPairTranverseMass_TwoBody[5], PDGCodes, fPairTranverseMassVSkstar_TwoBody[5]);
-    FillPairTransverseMass(ParticleVector, 2, 3, fPairTranverseMass_TwoBody[6], PDGCodes, fPairTranverseMassVSkstar_TwoBody[6]);
+      FillPairTransverseMass(ParticleVector, 0, 0, fPairTranverseMass_TwoBody[0], PDGCodes, fPairTranverseMassVSkstar_TwoBody[0]);
+      FillPairTransverseMass(ParticleVector, 1, 1, fPairTranverseMass_TwoBody[1], PDGCodes, fPairTranverseMassVSkstar_TwoBody[1]);
+      FillPairTransverseMass(ParticleVector, 0, 2, fPairTranverseMass_TwoBody[2], PDGCodes, fPairTranverseMassVSkstar_TwoBody[2]);
+      FillPairTransverseMass(ParticleVector, 1, 3, fPairTranverseMass_TwoBody[3], PDGCodes, fPairTranverseMassVSkstar_TwoBody[3]);
+      FillPairTransverseMass(ParticleVector, 0, 3, fPairTranverseMass_TwoBody[4], PDGCodes, fPairTranverseMassVSkstar_TwoBody[4]);
+      FillPairTransverseMass(ParticleVector, 1, 2, fPairTranverseMass_TwoBody[5], PDGCodes, fPairTranverseMassVSkstar_TwoBody[5]);
+      FillPairTransverseMass(ParticleVector, 2, 3, fPairTranverseMass_TwoBody[6], PDGCodes, fPairTranverseMassVSkstar_TwoBody[6]);
 
+    }
   // Two Body Same Event
     }//else
 
@@ -2124,7 +2144,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPDGPairInvMass( AliFemtoDreamBas
 
 }
 
-void AliAnalysisTaskThreeBodyProtonPrimary::FillPairTransverseMass(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, 
+void AliAnalysisTaskThreeBodyProtonPrimary::FillPairTransverseMass(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector,
                         int firstSpecies, int secondSpecies, TH1F* hist1, std::vector<int> PDGCodes, TH2F* hist2) { // ADDED BY RAFFA
 
   // Two Body Same Event
@@ -2175,7 +2195,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairTransverseMass(std::vector<s
 
         TLorentzVector trackSum_LV = Particle1_LV + Particle2_LV;
 
-        Double_t pairMT = TMath::Sqrt(pow(trackSum_LV.Pt(),2.) + pow(trackSum_LV.M(),2.));
+        Double_t pairMT = TMath::Sqrt(pow(0.5*trackSum_LV.Pt(),2.) + pow(0.5*(massPart1+massPart2),2.));
 
         Double_t Energy1 = sqrt(pow(Particle1_LV.P(),2)+pow(Particle1_LV.M(),2));
         Double_t Energy2 = sqrt(pow(Particle2_LV.P(),2)+pow(Particle2_LV.M(),2));
