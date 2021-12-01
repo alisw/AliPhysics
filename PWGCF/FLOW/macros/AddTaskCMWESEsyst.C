@@ -8,10 +8,10 @@
 #include "AliAnalysisDataContainer.h"
 #endif
 
-AliAnalysisTaskCMWESE* AddTaskCMWESE(
+AliAnalysisTaskCMWESEsyst* AddTaskCMWESEsyst(
       int                     debug=0, // debug level controls amount of output statements
       double              Harmonic=2,
-      int                     trigger=1,
+      TString             trigger="kINT7",
       int                     filterBit=1, // AOD filter bit selection
       int                     nclscut=70, // ncls cut for all tracks 
       float                  chi2hg=4.0,
@@ -20,18 +20,15 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
       float                  dcacutxy=2.4, // dcaxy cut for all tracks
       float                  ptmin=0.2, // minimum pt for Q-vector components
       float                  ptmax=5.0, // maximum pt for Q-vector components
-      int                     cbinlo=0, // lower centrality bin for histogram array
       int                     cbinhg=8, // higher centrality bin for histogram array
+      int                     cbinlo=0, // lower centrality bin for histogram array
       TString             period="LHC15o", // period
       TString             multComp="pileupByEDSTPC128", // multiplicity comparison
       double              etaGap=0.3,  
       bool                  v0calibOn=true,
-      bool                  tpccalibOn=false,
       bool                  QAV0=true,
-      bool                  QATPC=false,
       bool                  doNUE=true,
-      bool                  doNUA=true,
-      float                  centcut=7.5 // centrality restriction for V0M and TRK
+      bool                  doNUA=true
       )	
 {	
 	// Creates a pid task and adds it to the analysis manager
@@ -40,7 +37,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	//=========================================================================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
-		Error("AddTaskCMWESE.C", "No analysis manager to connect to.");
+		Error("AddTaskCMWESEsyst.C", "No analysis manager to connect to.");
 		return NULL;
 	}
 
@@ -49,15 +46,15 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	// checked here.
 	// =========================================================================
 	if (!mgr->GetInputEventHandler()) {
-		Error("AddTaskCMWESE.C", "This task requires an input event handler");
+		Error("AddTaskCMWESEsyst.C", "This task requires an input event handler");
 		return NULL;
 	}
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   	// --- instantiate analysis task
-  	AliAnalysisTaskCMWESE *task = new AliAnalysisTaskCMWESE("TaskCMWESE", period, doNUE, doNUA, v0calibOn);
+  	AliAnalysisTaskCMWESEsyst *task = new AliAnalysisTaskCMWESEsyst("TaskCMWESE", period, doNUE, doNUA, v0calibOn);
 	task->SetDebug(debug);
-	task-> SetHarmonic(Harmonic);
+	task->SetHarmonic(Harmonic);
 	task->SetTrigger(trigger);
 	task->SetFilterBit(filterBit);
 	task->SetNclsCut(nclscut);
@@ -67,18 +64,15 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	task->SetDCAcutXY(dcacutxy);
 	task->SetPtMin(ptmin);
 	task->SetPtMax(ptmax);
-	task->SetCentBinLow(cbinlo);
 	task->SetCentBinHigh(cbinhg);
+	task->SetCentBinLow(cbinlo);
 	task->SetPeriod(period);
 	task->SetMultComp(multComp);
 	task->SetEtaGap(etaGap);
 	task->SetV0CalibOn(v0calibOn);
-	task->SetTPCCalibOn(tpccalibOn);
 	task->SetV0QAOn(QAV0);
-	task->SetTPCQAOn(QATPC);
 	task->SetNUEOn(doNUE);
-	task->SetNUAOn(doNUA);	
-	task->SetCentCut(centcut);
+	task->SetNUAOn(doNUA);
 	// task->SelectCollisionCandidates(AliVEvent::kINT7);
 	mgr->AddTask(task);
 
@@ -95,7 +89,9 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 
 
 	Int_t inSlotCounter=1;
-	TGrid::Connect("alien://");
+	
+   	// TGrid::Connect("alien://");
+
         	TObjArray *AllContainers = mgr->GetContainers();
 
 	if(task->GetNUEOn() || doNUE) {
@@ -150,11 +146,23 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				printf("NUA already loaded\n");
 			}
 
-		} 
-
-		else if (period.EqualTo("LHC15o")) {
+		} else if (period.EqualTo("LHC11h")){
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/11hNUAFB1.root");
+    		  	if(!AllContainers->FindObject("NUA")) {
+				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
+    		    		TList* wNUA_list = NULL;
+    		    		wNUA_list = dynamic_cast<TList*>(inNUA->Get("11hListNUAFB1"));
+    		    		cin_NUA->SetData(wNUA_list);
+    		    		mgr->ConnectInput(task,inSlotCounter,cin_NUA);
+    		    		inSlotCounter++;
+    		  	} else {
+    		    		mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUA"));
+    		    		inSlotCounter++;
+    		    		printf("NUA already loaded\n");
+    		  	}
+    		} else if (period.EqualTo("LHC15o")) {
+    			inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root");
 			if(!AllContainers->FindObject("NUA")) {
-				if (task->GetFilterBit() ==768) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root");
 				// Ref NUA data from alien:///alice/cern.ch/user/p/prottay/nuarootfiles_p5_one_two_two_FB768_15op2_withpileup
 				// /wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root  (15o_pass2)
 				TDirectoryFile* wNUA_directoryfile = (TDirectoryFile*)inNUA->Get("ZDCgains");
@@ -194,7 +202,20 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				printf("V0Calib already loaded\n");
 			}
 		}else if (period.EqualTo("LHC11h")) {
-                			printf("lhc11h Calib not been calculated!\n");
+			TFile *qnSp;
+                    		if(!AllContainers->FindObject("qnSp")) {
+                    			AliAnalysisDataContainer *cin_qnPercSp = mgr->CreateContainer(Form("qnPercSp"), TList::Class(), AliAnalysisManager::kInputContainer);
+	                      		qnSp = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibSpq2V0C11hP2.root");
+                      			TList* spperc_list = NULL;                     			
+        				spperc_list = dynamic_cast<TList*>(qnSp->Get("11hlistspPerc"));
+                          		cin_qnPercSp->SetData(spperc_list);
+                          		mgr->ConnectInput(task,inSlotCounter,cin_qnPercSp);
+                          		inSlotCounter++;
+                    		}else {
+        				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("qnSp"));
+        				inSlotCounter++;
+        				printf("qnSp already loaded\n");
+      			}
                 	} else if (period.EqualTo("LHC15o")){
                 		TFile *qnSp;
                 		if(!AllContainers->FindObject("qnSp")) {

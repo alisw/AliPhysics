@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskCMWESE_cxx
-#define AliAnalysisTaskCMWESE_cxx
+#ifndef AliAnalysisTaskCMWESEsyst_cxx
+#define AliAnalysisTaskCMWESEsyst_cxx
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliAODTrack.h"
@@ -19,15 +19,15 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
-class AliAnalysisTaskCMWESE : public AliAnalysisTaskSE
+class AliAnalysisTaskCMWESEsyst : public AliAnalysisTaskSE
 {
 public:
 
-  AliAnalysisTaskCMWESE();
-  AliAnalysisTaskCMWESE(const char *name);
-  AliAnalysisTaskCMWESE(const char *name, TString PR, bool NUE, bool NUA, bool V0Calib);
+  AliAnalysisTaskCMWESEsyst();
+  AliAnalysisTaskCMWESEsyst(const char *name);
+  AliAnalysisTaskCMWESEsyst(const char *name, TString PR, bool NUE, bool NUA, bool V0Calib);
 
-  virtual ~AliAnalysisTaskCMWESE();
+  virtual ~AliAnalysisTaskCMWESEsyst();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -39,8 +39,8 @@ public:
   int     GerHarmonic(){return fHarmonic;}
   void  SetHarmonic(double x)  {fHarmonic = x;}
 
-  int GetTrigger(){return fTrigger;}
-  void SetTrigger(int x){fTrigger = x;}
+  TString GetTrigger(){return fTrigger;}
+  void SetTrigger(TString x){fTrigger = x;}
 
   int    GetFilterBit(){return fFltbit;}
   void SetFilterBit(int x){fFltbit = x;}
@@ -81,35 +81,24 @@ public:
   float   GetEtaGap(){return fEtaGap;}
   void   SetEtaGap(float x) { fEtaGap = x; }
 
-  bool  GetV0CalibOn(){return fV0CalibOn;}
+  bool GetV0CalibOn(){return fV0CalibOn;}
   void SetV0CalibOn(bool x){fV0CalibOn = x;}
-
-  bool   GetTPCCalibOn(){return fTPCCalibOn;}
-  void SetTPCCalibOn(bool x){fTPCCalibOn = x;}
 
   bool GetV0QAOn(){return fQAV0;}
   void SetV0QAOn(bool x){fQAV0 = x;}
-
-  bool GetTPCQAOn(){return fQATPC;}
-  void SetTPCQAOn(bool x){fQATPC = x;}
 
   bool GetNUEOn(){return fDoNUE;}
   void SetNUEOn(bool x){fDoNUE = x;}
 
   bool GetNUAOn(){return fDoNUA;}
   void SetNUAOn(bool x){fDoNUA = x;}
-  
-  float GetCentCut(){return fCentCut;}
-  void SetCentCut(float x){fCentCut = x;}
-
-
 
 private:
 
   static const int NCENTBINS = 10;
   static const int NPOIBINS  = 2;
   static const int NQNBINS  = 10;
-
+  static const int NRUNNUM = 68;
   void          ResetHists();
   bool          DoCumulants();
   void          CalcRefFlow();
@@ -131,7 +120,7 @@ private:
   bool          AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx);
   bool          CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx, double mAch, double Mult);
   bool          CalcQnVectorTPC(AliAODEvent* fAOD);
-  int             GetQnPercV0(double qn_thtsEvt, double mAch, double Mult);
+  int             GetQnPercV0(double qn_thtsEvt, double mAch, double Mult, int V0lb);
   bool          GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVtx);
   int             GetQnPercTPC(AliAODEvent* fAOD);
   double      GetEventPlane(double qx, double qy);
@@ -140,7 +129,7 @@ private:
     // Cuts and options
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
-    int                     fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+    TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
     int                     fFltbit; // AOD filter bit selection
     int                     fNclsCut; // ncls cut for all tracks 
     float                  fChi2Hg; // upper limmit for chi2
@@ -155,27 +144,24 @@ private:
     TString             fMultComp; // Multiplicity Comparison pile-up
     double              fEtaGap; // value for the Eta Gap in c2 calculation
     bool                  fV0CalibOn; // switch for v0 qn calib
-    bool                  fTPCCalibOn; // switch for tpc qn calib
     bool                  fQAV0; // flag for V0  qn QA
-    bool                  fQATPC; // flag for TPC qn QA
     bool                  fDoNUE; // switch for NUE
     bool                  fDoNUA; // switch for NUA
-    float                  fCentCut; // centrality restriction for V0M and TRK
     // Global Variables Unchanged in an Evt
     int                     fRunNum; // runnumber
     int                     fRunNumBin; // runnumer bin; 10:139510...; 11:170387...; 15HIR:246994...
     int                     fVzBin; // vertex z bin
-    int                     fCentBin; // centrality bin: 0-10
-    double              fCent; // value of centrality 
-    int                     fQnBin; // qn bin: 0-10
+    int                     fCentBinV0M; // centrality bin: 0-10
+    int                     fCentBinSPD1; // centrality bin: 0-10
+    double              fCentV0M; // value of centrality 
+    double              fCentSPD1; // value of centrality 
+    int                     fQnBinV0C; // qn bin: 0-10
+    int                     fQnBinV0A; // qn bin: 0-10
     const float        fEtaCut; // eta cut
-    const float        fDedxCut; //dedx cut
     const float        fZvtxCut; // z-vertex selection for collision  
     // Weight List   
     TList*                fListNUE; // read list for NUE
-    TList*                fListNUA1; // read lists for NUA
-    TList*                fListNUA2; // read lists for NUA
-    TList*                fListNUA3; // read lists for NUA
+    TList*                fListNUA; // read lists for NUA
     TList*                fListVZEROCALIB; // read list fpr V0 Calib
 
     // Q QStar event-wise
@@ -194,7 +180,8 @@ private:
     TH3F*              hCorrectNUAPos; // Protty
     TH3F*              hCorrectNUANeg; // Protty
     TH2D*             hMultV0Read;
-    TH2D*             hQnPercentile;
+    TH2D*             hQnV0CPercentile;
+    TH2D*             hQnV0APercentile;
     TH1D*             hQnPercentile_centThisEvt;
     TSpline3*        sp; 
     TF1*                fSPDCutPU;
@@ -212,39 +199,28 @@ private:
     // Update Evt-by-Evt, will not be saved
     TH2D*             hReQ_thisEvt;
     TH2D*             hImQ_thisEvt;
-    TH2D*             hReQ2_thisEvt;
-    TH2D*             hImQ2_thisEvt; 
     TH2D*             hMQ_thisEvt;
     TH2D*             hMQ_weight_thisEvt;
-    TH2D*             hReQPos_thisEvt;
-    TH2D*             hImQPos_thisEvt;
-    TH2D*             hMQPos_thisEvt;
-    TH2D*             hMQPos_weight_thisEvt;
-    TH2D*             hReQNeg_thisEvt;
-    TH2D*             hImQNeg_thisEvt;
-    TH2D*             hMQNeg_thisEvt;
-    TH2D*             hMQNeg_weight_thisEvt;
     TProfile*          pRefFlow_thisEvt;
-    TProfile*          pIntd2_thisEvt;
+    TProfile*          pIntd2q2c_thisEvt;
+    TProfile*          pIntd2q2a_thisEvt;
 
+    TString            fRunNumList[NRUNNUM];
     // Read Files for V0Calib
     TProfile3D*     pV0XMeanRead[3]; 
     TProfile3D*     pV0YMeanRead[3];
     // Run2 A.Dorbin
-    TH1D*             hMultV0[138]; //Dobrin
-    TH1D*             hQx2mV0[138][2];
-    TH1D*             hQy2mV0[138][2];
-    TH1D*             hQx2sV0[138][2];
-    TH1D*             hQy2sV0[138][2];
+    TH1D*             hMultV0[NRUNNUM]; //Dobrin
+    TH1D*             hQxnmV0[NRUNNUM][2];
+    TH1D*             hQynmV0[NRUNNUM][2];
     double             fMultV0Ch[64];
     double             fV0XMean[3];
     double             fV0YMean[3];
-    double             fV0XSigma[3];
-    double             fV0YSigma[3];
-    TSpline3*        splQ2c[90]; //A.Dobrin
-
+    TSpline3*        splQ2c[80]; //A.Dobrin
+    TSpline3*        splQ2a[80]; //A.Dobrin
     // Output QA
-    TH1D*             hCent[2];
+    TH1D*             hCentV0M[2];
+    TH1D*             hCentSPD1[2];
     TH1D*             hVz[2];
     TH2D*             hCentQA[8];
     TH2D*             hMultCentQA[2];
@@ -266,18 +242,30 @@ private:
     TH2D*             hQnCentRecenter[3];
     TH1D*             hPsiV0Recenter[NCENTBINS][3];
 
+    // physics 0 (Default)
+    TProfile*         pRefFlowCentdef[NCENTBINS];     
+    TProfile*         pIntd2CentdefQ2c[NCENTBINS];
+    TProfile*         pIntd2AchCentdefQ2c[NCENTBINS];
+    TProfile*         pAchCentdefQ2c[NCENTBINS];
+
+    // physics 1
+    TProfile*         pIntd2CentdefQ2a[NCENTBINS];
+    TProfile*         pIntd2AchCentdefQ2a[NCENTBINS];
+    TProfile*         pAchCentdefQ2a[NCENTBINS];
+
+    TH1D*            hMultCentdefQ2a[NQNBINS];
+    TH1D*            hAchCentdefQ2a[NQNBINS];
+
     // physics 
-    TProfile*         pRefFlow[NCENTBINS];     
-    TProfile*         pIntd2[NCENTBINS];
-    TProfile*         pIntd2Ach[NCENTBINS];
-    TProfile*         pAch[NCENTBINS];
-    TH1D*            hMult[NCENTBINS+1][NQNBINS];
-    TH1D*            hAch[NCENTBINS+1][NQNBINS];
+    TProfile*         pRefFlowCentspd[NCENTBINS];     
+    TProfile*         pIntd2CentspdQ2c[NCENTBINS];
+    TProfile*         pIntd2AchCentspdQ2c[NCENTBINS];
+    TProfile*         pAchCentspdQ2c[NCENTBINS];
 
-    AliAnalysisTaskCMWESE(const AliAnalysisTaskCMWESE&);
-    AliAnalysisTaskCMWESE& operator=(const AliAnalysisTaskCMWESE&);
+    AliAnalysisTaskCMWESEsyst(const AliAnalysisTaskCMWESEsyst&);
+    AliAnalysisTaskCMWESEsyst& operator=(const AliAnalysisTaskCMWESEsyst&);
 
-    ClassDef(AliAnalysisTaskCMWESE, 1);
+    ClassDef(AliAnalysisTaskCMWESEsyst, 1);
   };
 
 #endif
