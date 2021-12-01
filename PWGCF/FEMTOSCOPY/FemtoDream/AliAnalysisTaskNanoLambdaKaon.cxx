@@ -149,23 +149,12 @@ AliAnalysisTaskNanoLambdaKaon::AliAnalysisTaskNanoLambdaKaon(
     fPosKaonCuts->Init();
     fPosKaonCuts->SetName("KaonPlus");
 
-    if (fPosKaonCuts->GetIsMonteCarlo())
-    {
-      fPosKaonCuts->SetMCName("MCParticle1");
-      fKaonPlusList->Add(fPosKaonCuts->GetMCQAHists());
-    }
-
     if (!fNegKaonCuts)
     {
       AliFatal("Track Cuts for Particle One not set!");
     }
     fNegKaonCuts->Init();
     fNegKaonCuts->SetName("KaonMinus");
-    if (fNegKaonCuts->GetIsMonteCarlo())
-    {
-      fNegKaonCuts->SetMCName("MCParticle2");
-      fKaonMinusList->Add(fNegKaonCuts->GetMCQAHists());
-    }
 
     if (!fLambdaCuts)
     {
@@ -173,11 +162,6 @@ AliAnalysisTaskNanoLambdaKaon::AliAnalysisTaskNanoLambdaKaon(
     }
     fLambdaCuts->Init();
     fLambdaCuts->SetName("Lambda");
-    if (fLambdaCuts->GetIsMonteCarlo())
-    {
-      fLambdaCuts->SetMCName("MCLambda");
-      fLambdaList->Add(fLambdaCuts->GetMCQAHists());
-    }
 
     if (!fAntiLambdaCuts)
     {
@@ -185,11 +169,6 @@ AliAnalysisTaskNanoLambdaKaon::AliAnalysisTaskNanoLambdaKaon(
     }
     fAntiLambdaCuts->Init();
     fAntiLambdaCuts->SetName("AntiLambda");
-    if (fAntiLambdaCuts->GetIsMonteCarlo())
-    {
-      fAntiLambdaCuts->SetMCName("MCAntiProton");
-      fAntiLambdaList->Add(fAntiLambdaCuts->GetMCQAHists());
-    }
 
     fKaonPlusList = fPosKaonCuts->GetQAHists();
     fKaonMinusList = fNegKaonCuts->GetQAHists();
