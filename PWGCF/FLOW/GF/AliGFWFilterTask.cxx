@@ -39,6 +39,7 @@ void AliGFWFilterTask::UserCreateOutputObjects()
     if(fEmbedES) {
       fEventCuts = new AliEventCuts();
       fEventCuts->AddQAplotsToList(fOutList,kTRUE);
+      fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
       if(fTrigger) fEventCuts->OverrideCentralityFramework(fTrigger);
       if(fExtendV0MAcceptance) {
         fEventCuts->OverrideCentralityFramework(1);
@@ -51,8 +52,13 @@ void AliGFWFilterTask::UserCreateOutputObjects()
 }
 //_____________________________________________________________________________
 void AliGFWFilterTask::NotifyRun() {
-  if(fEmbedES && fTrigger) {
-    fEventCuts->OverrideCentralityFramework(fTrigger);
+  if(fEmbedES) {
+    AliAODEvent *lEv = dynamic_cast<AliAODEvent*>(InputEvent());
+    fEventCuts->AcceptEvent(lEv);
+    fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    if(fTrigger) {
+        fEventCuts->OverrideCentralityFramework(fTrigger);
+    };
   }
 }
 //_____________________________________________________________________________
@@ -70,18 +76,3 @@ void AliGFWFilterTask::UserExec(Option_t *)
 void AliGFWFilterTask::Terminate(Option_t *)
 {}
 //_____________________________________________________________________________
-AliGFWFilterTask *AddFilterTask(const char *name) {
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        return 0x0;
-    }
-    if (!mgr->GetInputEventHandler()) {
-        return 0x0;
-    }
-    AliGFWFilterTask* task = new AliGFWFilterTask("AliGFWFilter");
-    if(!task) return 0x0;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("GFWFilterQA", TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root:GFWTrackFilter"));
-    return task;
-}

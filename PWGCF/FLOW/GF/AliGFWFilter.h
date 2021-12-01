@@ -20,63 +20,6 @@
 #include "AliAODVertex.h"
 #include "AliEventCuts.h"
 using namespace std;
-class AliGFWFlags: public TNamed
-{
- public:
-  AliGFWFlags():TNamed("GFWFlags","GFWFlags"),fEventFlag(0),fTrFlags({}) {};
-  ~AliGFWFlags() {fTrFlags.clear(); };
-  void AddTrackFlags(const Int_t &trInd, const UInt_t &lFlag) {fTrFlags.push_back(make_pair(trInd,lFlag)); };
-  void SetEventFlags(const UInt_t &lFlag) { fEventFlag=lFlag; };
-  void CleanUp() { fEventFlag=0; fTrFlags.clear(); };
-  const UInt_t GetEventFlags() { return fEventFlag; };
-  const Int_t GetTrackIndex(const Int_t &ind) { return fTrFlags[ind].first; };
-  const UInt_t GetTrackFlag(const Int_t &ind) { return fTrFlags[ind].second; };
-  const Int_t GetNFiltered() { return (Int_t)fTrFlags.size(); };
-  Bool_t CheckEventFlag(const UInt_t &lFlag) { return (fEventFlag&lFlag)==lFlag; };
-  Bool_t CheckTrackFlag(const Int_t &ind, const UInt_t &lFlag) { return (fTrFlags[ind].second & lFlag)==lFlag; };
-  ClassDef(AliGFWFlags,1);
- private:
-   UInt_t fEventFlag;
-   vector< pair <Int_t,UInt_t> > fTrFlags;
-};
-class AliGFWFilter
-{
-  public:
-    AliGFWFilter();
-    ~AliGFWFilter();
-    void CleanUp();
-    void SetEventCuts(AliEventCuts *fEvCuts) {fEventCuts = fEvCuts; };
-    void CheckEvent(AliVEvent *inEv);
-    Bool_t AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ);
-    void CreateCutMasks();
-    AliGFWFlags *GetFlags() { return fRetFlags; };
-    void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };
-    void SetEtaMin(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
-    static const Int_t fNTrackFlags;
-    static const Int_t fNEventFlags;
-    static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
-  private:
-    inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };
-    inline Double_t f_DCAxy2011(Double_t &pt) { return (0.0015+0.0050/TMath::Power(pt,1.1)); };
-    void AddEv(const UInt_t &lFlag) {fEventFlag|=lFlag;};
-    void AddTr(const UInt_t &lFlag) {flTrFlag|=lFlag;};
-    Bool_t TSB(const UInt_t &lFlag) { return (flTrFlag&lFlag); }; //Test signle bit -- track
-    Bool_t TB(const UInt_t &lFlag) {return (flTrFlag&lFlag)==lFlag; }; //Track bit
-    Bool_t EB(const UInt_t &lFlag) {return (fEventFlag&lFlag)==lFlag; }; //Event bit
-    UInt_t calculateEventFlag();
-    UInt_t calculateTrackFlag();
-    AliGFWFlags *fRetFlags;
-    UInt_t flTrFlag;
-    UInt_t fEventFlag;
-    UInt_t *fTrackMasks; //!
-    UInt_t *fEventMasks; //!
-    AliAODTrack *fAODTrack; //!
-    AliEventCuts *fEventCuts; //!
-    Double_t fPtMin;
-    Double_t fPtMax;
-    Double_t fEtaMin;
-    Double_t fEtaMax;
-};
 namespace GFWFlags {
   enum kLocalEventFlags {
     klEventCuts =      BIT(0), //Event cuts (AliEventCuts)
@@ -124,8 +67,67 @@ namespace GFWFlags {
                     kFB768DCAxyLow,
                     kFB768DCAxyHigh,
                     kFB768ChiSq2, kFB768ChiSq3,
-                    kFB768nTPC,
+                    kFB768nTPC, kFB96MergedDCA,
                     kAllTrFlags
                   };
+  const Int_t gNTrackFlags=20;
+  const Int_t gNEventFlags=4;
+};
+using namespace GFWFlags;
+class AliGFWFlags: public TNamed
+{
+ public:
+  AliGFWFlags():TNamed("GFWFlags","GFWFlags"),fEventFlag(0),fTrFlags({}) {};
+  ~AliGFWFlags() {fTrFlags.clear(); };
+  void AddTrackFlags(const Int_t &trInd, const UInt_t &lFlag) {fTrFlags.push_back(make_pair(trInd,lFlag)); };
+  void SetEventFlags(const UInt_t &lFlag) { fEventFlag=lFlag; };
+  void CleanUp() { fEventFlag=0; fTrFlags.clear(); };
+  const UInt_t GetEventFlags() { return fEventFlag; };
+  const Int_t GetTrackIndex(const Int_t &ind) { return fTrFlags[ind].first; };
+  const UInt_t GetTrackFlag(const Int_t &ind) { return fTrFlags[ind].second; };
+  const Int_t GetNFiltered() { return (Int_t)fTrFlags.size(); };
+  Bool_t CheckEventFlag(const UInt_t &lFlag) { return (fEventFlag&lFlag)==lFlag; };
+  Bool_t CheckTrackFlag(const Int_t &ind, const UInt_t &lFlag) { return (fTrFlags[ind].second & lFlag)==lFlag; };
+  ClassDef(AliGFWFlags,1);
+ private:
+   UInt_t fEventFlag;
+   vector< pair <Int_t,UInt_t> > fTrFlags;
+};
+class AliGFWFilter
+{
+  public:
+    AliGFWFilter();
+    ~AliGFWFilter();
+    void CleanUp();
+    void SetEventCuts(AliEventCuts *fEvCuts) {fEventCuts = fEvCuts; };
+    void CheckEvent(AliVEvent *inEv);
+    Bool_t AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ);
+    void CreateCutMasks();
+    AliGFWFlags *GetFlags() { return fRetFlags; };
+    void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };
+    void SetEtaMin(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
+    static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
+    static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:ind-gNEventFlags; return GetSystPF(lev,ltr); };
+  private:
+    inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };
+    inline Double_t f_DCAxy2011(Double_t &pt) { return (0.0015+0.0050/TMath::Power(pt,1.1)); };
+    void AddEv(const UInt_t &lFlag) {fEventFlag|=lFlag;};
+    void AddTr(const UInt_t &lFlag) {flTrFlag|=lFlag;};
+    Bool_t TSB(const UInt_t &lFlag) { return (flTrFlag&lFlag); }; //Test signle bit -- track
+    Bool_t TB(const UInt_t &lFlag) {return (flTrFlag&lFlag)==lFlag; }; //Track bit
+    Bool_t EB(const UInt_t &lFlag) {return (fEventFlag&lFlag)==lFlag; }; //Event bit
+    UInt_t calculateEventFlag();
+    UInt_t calculateTrackFlag();
+    AliGFWFlags *fRetFlags;
+    UInt_t flTrFlag;
+    UInt_t fEventFlag;
+    UInt_t *fTrackMasks; //!
+    UInt_t *fEventMasks; //!
+    AliAODTrack *fAODTrack; //!
+    AliEventCuts *fEventCuts; //!
+    Double_t fPtMin;
+    Double_t fPtMax;
+    Double_t fEtaMin;
+    Double_t fEtaMax;
 };
 #endif

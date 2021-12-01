@@ -43,7 +43,6 @@ set(SRCS
   AliAnalysisTaskCorrForFlowFMD.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
-  AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowWithSphericity.cxx
@@ -67,6 +66,7 @@ set(SRCS
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
+  list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)
   list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
