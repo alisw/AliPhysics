@@ -199,7 +199,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>=4) {
+  if(runLightOutput>=3) {
       task->SetLightOutput(2);
   } else if(runLightOutput>=2) {
       task->SetLightOutput(1);
@@ -2123,7 +2123,12 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
-    if(runLightOutput>=1) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+
+    if(runLightOutput>=4) {
+        analysisClusterCuts[i]->SetLightOutput(2);
+    } else if(runLightOutput>=1) {
+        analysisClusterCuts[i]->SetLightOutput(1);
+    }
 
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
@@ -2138,7 +2143,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
-    if(runLightOutput>=1) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=4) {
+        analysisNeutralPionCuts[i]->SetLightOutput(2);
+    } else if(runLightOutput>=1) {
+        analysisNeutralPionCuts[i]->SetLightOutput(1);
+    }
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
       return 0;
@@ -2148,7 +2157,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     }
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if(runLightOutput>=1) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=4) {
+        analysisMesonCuts[i]->SetLightOutput(2);
+    } else if(runLightOutput>=1) {
+        analysisMesonCuts[i]->SetLightOutput(1);
+    }
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       std::cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<std::endl;
       return 0;

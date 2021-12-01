@@ -145,7 +145,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>=4) {
+  if(runLightOutput>=3) {
       task->SetLightOutput(2);
   } else if(runLightOutput>=2) {
       task->SetLightOutput(1);
@@ -748,7 +748,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
-    if(runLightOutput>=1) analysisCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=4) {
+        analysisCuts[i]->SetLightOutput(2);
+    } else if(runLightOutput>=1) {
+        analysisCuts[i]->SetLightOutput(1);
+    }
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
       return 0;
@@ -760,7 +764,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
-    if(runLightOutput>=1) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=4) {
+        analysisNeutralPionCuts[i]->SetLightOutput(2);
+    } else if(runLightOutput>=1) {
+        analysisNeutralPionCuts[i]->SetLightOutput(1);
+    }
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
       return 0;
@@ -770,7 +778,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     }
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if(runLightOutput>=1) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    if(runLightOutput>=4) {
+        analysisMesonCuts[i]->SetLightOutput(2);
+    } else if(runLightOutput>=1) {
+        analysisMesonCuts[i]->SetLightOutput(1);
+    }
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
       return 0;

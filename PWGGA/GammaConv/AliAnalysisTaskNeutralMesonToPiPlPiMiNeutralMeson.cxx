@@ -872,7 +872,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
   //Enable Histograms
   if(!fDoLightOutput){
-     fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt = kTRUE;
+    fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt = kTRUE;
   }
   if(fDoLightOutput<=1){
     fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground = kTRUE;
