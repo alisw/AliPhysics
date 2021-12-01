@@ -34,6 +34,9 @@
 
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
+#pragma link C++ class AliGFWFlags+;
+#pragma link C++ class AliGFWFilter+;
+#pragma link C++ class AliGFWFilterTask+;
 #pragma link C++ class AliAnalysisTaskJetQ+;
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
