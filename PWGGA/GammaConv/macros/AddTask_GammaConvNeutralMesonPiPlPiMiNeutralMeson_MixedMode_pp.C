@@ -184,9 +184,6 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
       fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
-        if(runLightOutput>=4){
-            fPionSelector->SetLightOutput(kTRUE);
-        }
         fPionCuts->SetFillCutHistograms("",kTRUE);
       }
     }

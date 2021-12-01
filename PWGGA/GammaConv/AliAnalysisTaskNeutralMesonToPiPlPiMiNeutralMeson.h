@@ -52,7 +52,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     }
 
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
-    void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
+    void SetLightOutput(Int_t flag){fDoLightOutput = flag;}
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
       fEventCutArray = CutArray;
