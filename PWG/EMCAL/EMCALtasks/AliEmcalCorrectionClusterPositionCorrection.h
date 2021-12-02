@@ -41,10 +41,10 @@ protected:
   TH1F                  *fClusterPositionDiffEta;         //!<! shift of cluster position  in eta
   TH1F                  *fClusterPositionDiffPhi;         //!<! shift of cluster position  in phi
 
-  std::vector<Double_t> fSMEtaValues;                     //!<! vector containing position shifts in eta
-  std::vector<Double_t> fSMPhiValues;                     //!<! vector containing position shifts in phi
+  std::vector<Double_t> fSMEtaValues;                     ///< vector containing position shifts in eta
+  std::vector<Double_t> fSMPhiValues;                     ///< vector containing position shifts in phi
 
-  Bool_t                fApplyToMC;                       //!<! switch if correction should be applied on data or MC
+  Bool_t                fApplyToMC;                       ///< switch if correction should be applied on data or MC
 
  private:
   AliEmcalCorrectionClusterPositionCorrection(const AliEmcalCorrectionClusterPositionCorrection &);               // Not implemented
@@ -54,7 +54,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterPositionCorrection> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterPositionCorrection, 1); // EMCal cluster low energy efficiency correction component
+  ClassDef(AliEmcalCorrectionClusterPositionCorrection, 2); // EMCal cluster low energy efficiency correction component
   /// \endcond
 };
 
