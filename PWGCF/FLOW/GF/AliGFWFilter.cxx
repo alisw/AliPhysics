@@ -4,8 +4,10 @@ AliGFWFilter::AliGFWFilter():
   fRetFlags(0),
   flTrFlag(0),
   fEventFlag(0),
-  fTrackMasks(0),
-  fEventMasks(0),
+  fTrackMasks({}),
+  fNTrMasks(0),
+  fEventMasks({}),
+  fNEvMasks(0),
   fAODTrack(0),
   fEventCuts(0),
   fPtMin(0.2),
@@ -34,10 +36,11 @@ Bool_t AliGFWFilter::AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ) {
 };
 void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(inEv);
-  AliESDEvent *fESD = dynamic_cast<AliESDEvent*>(inEv);
+  // AliESDEvent *fESD = dynamic_cast<AliESDEvent*>(inEv); //ESD not implemented yet
   if(!fRetFlags) {fRetFlags = new AliGFWFlags(); }
   else fRetFlags->CleanUp();
   if(fAOD) {
+    fEventFlag=0;
     //If event cuts are set, then only consider events that pass the event selection
     if(fEventCuts)  { if(fEventCuts->AcceptEvent(fAOD)) AddEv(klEventCuts); else return; }
     else AddEv(klEventCuts); //Otherwise, mark all as passed (assuming ES is done outside)
@@ -45,11 +48,12 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
     if(AcceptVertex(fAOD,vtxXYZ)) AddEv(klVtxOK);
     else return; //If vertex ain't accepted, no point to continue
     Double_t lvtxz = TMath::Abs(fAOD->GetPrimaryVertex()->GetZ());
-    if(lvtxz<5) AddEv(klVtxZ5);
-    if(lvtxz<7) AddEv(klVtxZ7);
-    if(lvtxz<9) AddEv(klVtxZ9);
+    if(lvtxz<5)  AddEv(klVtxZ5);
+    if(lvtxz<7)  AddEv(klVtxZ7);
+    if(lvtxz<9)  AddEv(klVtxZ9);
     if(lvtxz<10) AddEv(klVtxZ10);
-    fRetFlags->SetEventFlags(calculateEventFlag());
+    UInt_t evfl = calculateEventFlag();
+    fRetFlags->SetEventFlags(evfl);
     Double_t pt, eta, trXYZ[3], trDCAxy;
     Float_t nTPCCLSsh, nTPCcl;
     for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
@@ -116,69 +120,78 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
 //klDCAxy2010, klDCAxy2011, klDCAxy8Sigma, klDCAxy4Sigma, klDCAxy10Sigma,
 //klTPCchi2PC25, klTPCchi2PC20, klTPCchi2PC30,
 //klNTPCcls70, klNTPCcls80, klNTPCcls90, klNTPCcls100
-void AliGFWFilter::CreateCutMasks() {
-  if(!fTrackMasks) fTrackMasks = new UInt_t[gNTrackFlags];
+void AliGFWFilter::CreateStandardCutMasks() {
   //Standard cuts:
   //Nominal -- FB96:
-  fTrackMasks[0] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70; //Temporary, for x-check with GFWCuts
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
   //FB768:
-  fTrackMasks[1] = klFB768 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768 + klTPCchi2PC25 + klNTPCcls70);
   //FB96, |dcaZ| < 1:
-  fTrackMasks[2] = klFB96 + klDCAz10 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz10 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
   //FB96, |dcaZ| < 0.5:
-  fTrackMasks[3] = klFB96 + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
   //FB96, |DCAxy| 4 sigma:
-  fTrackMasks[4] = klFB96 + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70);
   //FB96, |DCAxy| 10 sigma:
-  fTrackMasks[5] = klFB96 + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70);
   //FB96, chi2 per cluster <2:
-  fTrackMasks[6] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70);
   //FB96, chi2 per cluster <3:
-  fTrackMasks[7] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70);
   //FB96, Ntpc clusters > 80:
-  fTrackMasks[8] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls80;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls80);
   //FB96, Ntpc clusters > 90:
-  fTrackMasks[9] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90);
   //FB96, Ntpc clusters > 100:
-  fTrackMasks[10] = klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls100;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls100);
   //More reasonable ones:
   //Nominal, tuned to overlap with 768
-  fTrackMasks[11] = klFB96Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
   //FB768 tuned to overlap with 96
-  fTrackMasks[12] = klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
   //FB768 tuned, smaller DCAz cut
-  fTrackMasks[13] = klFB768Tuned + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
   //FB768 tuned, DCAxy 4 sigma
-  fTrackMasks[14] = klFB768Tuned + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70);
   //FB768 tuned, DCAxy 10 sigma
-  fTrackMasks[15] = klFB768Tuned + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70);
   //FB768tunes tuned, TPC chi2 <2
-  fTrackMasks[16] = klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70);
   //FB768tunes tuned, TPC chi2 <3
-  fTrackMasks[17] = klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70);
   //FB768tunes tuned, nTPC clusters >90
-  fTrackMasks[18] = klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90;
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90);
   //FB96 with 2010 AND 2011 DCAxy
-  fTrackMasks[19] = klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70;
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
 
   //Event cuts:
-  if(!fEventMasks) fEventMasks = new UInt_t[gNEventFlags];
+  // if(!fEventMasks) fEventMasks = new UInt_t[gNEventFlags];
   //Nominal:
-  fEventMasks[0] = klVtxZ10 + klEventCuts;
+  fEventMasks.push_back(klVtxZ10 + klEventCuts);
   //vtx z<9
-  fEventMasks[1] = klVtxZ9 + klEventCuts;;
+  fEventMasks.push_back(klVtxZ9 + klEventCuts);
   //vtx z<7
-  fEventMasks[2] = klVtxZ7 + klEventCuts;;
+  fEventMasks.push_back(klVtxZ7 + klEventCuts);
   //vtx z<5
-  fEventMasks[3] = klVtxZ5 + klEventCuts;;
+  fEventMasks.push_back(klVtxZ5 + klEventCuts);
+
+  fNTrMasks = (Int_t)fTrackMasks.size(); //fetch number of track cuts actually added, also so that we don't need to check the size for each track
+  fNEvMasks = (Int_t)fEventMasks.size(); //same as above, but for events
 };
+void AliGFWFilter::AddCustomCuts(Bool_t cleanFirst, UInt_t lEv, UInt_t lTr) {
+  if(cleanFirst) {fEventMasks.clear(); fTrackMasks.clear(); };
+  fTrackMasks.push_back(lTr);
+  fEventMasks.push_back(lEv);
+  fNTrMasks = (Int_t)fTrackMasks.size(); //fetch number of track cuts actually added, also so that we don't need to check the size for each track
+  fNEvMasks = (Int_t)fEventMasks.size(); //same as above, but for events
+}
 UInt_t AliGFWFilter::calculateEventFlag() {
   UInt_t retFlag = 0;
-  for(Int_t i=0;i<gNEventFlags;i++) if(EB(fEventMasks[i])) retFlag|=(1<<i);
+  for(Int_t i=0;i<fNEvMasks;i++) if(EB(fEventMasks[i])) retFlag|=(1<<i);
   return retFlag;
 };
 UInt_t AliGFWFilter::calculateTrackFlag() {
   UInt_t retFlag = 0;
-  for(Int_t i=0;i<gNTrackFlags;i++) if(TB(fTrackMasks[i])) retFlag|=(1<<i);
+  for(Int_t i=0;i<fNTrMasks;i++) if(TB(fTrackMasks[i])) retFlag|=(1<<i);
   return retFlag;
 }

@@ -57,6 +57,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fMCEvent(0),
   fIsMC(kFALSE),
   fIsTrain(kFALSE),
+  fEvNomFlag(1),
+  fTrNomFlag(1),
   fPtAxis(0),
   fPOIpTMin(0.2),
   fPOIpTMax(20),
@@ -64,9 +66,9 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fRFpTMax(3.0),
   fWeightPath(""),
   fWeightDir(""),
-  fTotFlags(15), //Total number of flags: 1 (nominal) + fTotTrackFlags + N_Event flags
-  fTotTrackFlags(8), //Total number of track flags (without nominal)
-  fTotEvFlags(4),
+  fTotFlags(0), //Total number of flags: 1 (nominal) + fTotTrackFlags + N_Event flags
+  fTotTrackFlags(0), //Total number of track flags (without nominal)
+  fTotEvFlags(0),
   fRunNo(-1),
   fCurrSystFlag(0),
   fAddQA(kFALSE),
@@ -90,6 +92,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fOutputTree(0),
   fIsMC(IsMC),
   fIsTrain(IsTrain),
+  fEvNomFlag(1),
+  fTrNomFlag(1),
   fPtAxis(new TAxis()),
   fPOIpTMin(0.2),
   fPOIpTMax(20),
@@ -98,8 +102,8 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fWeightPath(""),
   fWeightDir(""),
   fTotFlags(15),
-  fTotTrackFlags(8),
-  fTotEvFlags(4),
+  fTotTrackFlags(0),
+  fTotEvFlags(0),
   fRunNo(-1),
   fCurrSystFlag(0),
   fAddQA(AddQA),
@@ -121,18 +125,18 @@ AliAnalysisTaskGFWFlow::~AliAnalysisTaskGFWFlow() {
 };
 void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   OpenFile(1);
-  fTotTrackFlags = gNTrackFlags;//AliGFWCuts::fNTrackFlags;
-  fTotEvFlags    = gNEventFlags;
+  if(!fTotTrackFlags) fTotTrackFlags = gNTrackFlags;//If not defined explicitly, use the global values
+  if(!fTotEvFlags) fTotEvFlags = gNEventFlags;//If not defined explicitly, use the global values
   fTotFlags = fTotEvFlags + fTotTrackFlags;//AliGFWCuts::gNEventFlags+1;
   if(fProduceWeights) {
     //Initialize selection objects
     fWeightList = new TList();
     fWeightList->SetName("WeightList");
     fWeightList->SetOwner(kTRUE);
-    for(Int_t i=0;i<fTotFlags;i++) {
+    for(Int_t i=0;i<fTotFlags-1;i++) { //One less needed, because otherwise "Nominal" would be recorded twice
       fWeightList->Add(new AliGFWWeights());
       fWeights = (AliGFWWeights*)fWeightList->Last();
-      fWeights->SetName(Form("weights_%s",AliGFWFilter::GetSystPF(i).Data()));
+      fWeights->SetName(Form("weights%s",AliGFWFilter::GetSystPF(i).Data()));
       fWeights->Init(!fIsMC,fIsMC); // AddData = !fIsMC; AddMC = fIsMC
     };
   } else {
@@ -421,17 +425,20 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       };*/
     };
     AliAODTrack *lTrack;
+    Double_t pt;
     UInt_t gTrackFlags=0;
     for(Int_t lTr=0;lTr<lFlags->GetNFiltered();lTr++) {
       gTrackFlags = lFlags->GetTrackFlag(lTr);
       Int_t trInd = lFlags->GetTrackIndex(lTr);
       lTrack = (AliAODTrack*)fAOD->GetTrack(trInd);
+      pt=lTrack->Pt();
+      if(pt<fRFpTMin || pt>fRFpTMax) continue; //NUAs just for RF
       //For event cuts, keep track cuts nominal:
-      if(gTrackFlags&1) for(Int_t jEv=0;jEv<fTotEvFlags;jEv++) if(gEventFlag&(1<<jEv))
-        ((AliGFWWeights*)fWeightList->At(jEv))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
+      if(gTrackFlags&fTrNomFlag) for(Int_t jEv=0;jEv<fTotEvFlags;jEv++) if(gEventFlag&(1<<jEv))
+        ((AliGFWWeights*)fWeightList->At(jEv))->Fill(lTrack->Phi(),lTrack->Eta(),vz,pt,cent,0);
       //For track cuts, keep event cuts nominal:
-      if(gEventFlag&1) for(Int_t jTr=1;jTr<fTotTrackFlags;jTr++) if(gTrackFlags&(1<<jTr)) //also, start track flag from 1, b/c 0 flag is nominal and already recorded with nominal ev cuts
-        ((AliGFWWeights*)fWeightList->At(fTotEvFlags+jTr))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
+      if(gEventFlag&fEvNomFlag) for(Int_t jTr=1;jTr<fTotTrackFlags;jTr++) if(gTrackFlags&(1<<jTr)) //also, start track flag from 1, b/c 0 flag is nominal and already recorded with nominal ev cuts
+        ((AliGFWWeights*)fWeightList->At(fTotEvFlags+jTr-1))->Fill(lTrack->Phi(),lTrack->Eta(),vz,pt,cent,0);
     };
     PostData(1,fWeightList);
     PostData(2,fMultiDist);
