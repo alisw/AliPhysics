@@ -104,7 +104,7 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge()
 	, fEMpooltracklet() 
 	, fEMpoolMCALICE ()
 	, fEMpoolMCCMS ()
-
+	, random_subsample ()
 {
 }
 //___________________________________________________________________
@@ -120,6 +120,7 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
 	, fEMpooltracklet() 
 	, fEMpoolMCALICE ()
 	, fEMpoolMCCMS ()
+	, random_subsample ()
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -134,6 +135,7 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
 	, fEMpooltracklet(ap.fEMpooltracklet) 
 	, fEMpoolMCALICE(ap.fEMpoolMCALICE)
 	, fEMpoolMCCMS(ap.fEMpoolMCCMS)
+	, random_subsample(ap.random_subsample)
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -260,7 +262,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
         CreateTHnSparse("hNtrig","hNtrig",4,{binCent,binTPt,binNtrig,binSubsample},"s");
 
 	if( fOption.Contains("HighMult") ){
-		CreateTHnSparse("hRidgeLT","RidgeLT",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt,binSubsample},"s");
+		CreateTHnSparse("hRidgeLT","RdgeLT",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt,binSubsample},"s");
 		CreateTHnSparse("hRidgeMixingSLT","RidgeMixingSLT",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt,binSubsample},"s");
 		CreateTHnSparse("hNtrigLT","hNtrigLT",5,{binCent,binTPt_forLP,binNtrig,binLtpt,binSubsample},"s");
 
@@ -425,14 +427,10 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                 if( cHeaderAOD ) fZ_gen = cHeaderAOD -> GetVtxZ();
         }
 
-	TRandom* random_subsample = new TRandom();
-	SubSampling = (int)random_subsample->Uniform(10);
-	if( SubSampling == 10 ) SubSampling = (int)random_subsample->Uniform(10);
-
 	if( IsFirstEvent ){
 		runnumber = fEvt->GetRunNumber();
         	fRunTable = new AliAnalysisTaskRidgeRunTable(runnumber);
-
+		random_subsample = new TRandom3();
 //		if( !fefficiencyFile ) return;
 
 		     if( runnumber >= 252235 && runnumber <= 252330 ) Period = "LHC16d";
@@ -569,6 +567,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}
 		IsFirstEvent = kFALSE;
         }
+
+	SubSampling = (int)random_subsample->Uniform(10);
+        if( SubSampling == 10 ) SubSampling = (int)random_subsample->Uniform(10);
 
 	fCent = 200.0;
 	fZ = 0.0;

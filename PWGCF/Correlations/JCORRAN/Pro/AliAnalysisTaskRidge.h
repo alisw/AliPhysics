@@ -25,6 +25,7 @@ class AliAnalysisUtils;
 class AliCalorimeterUtils;
 class AliMultSelection;
 class TLorentzVector;
+class TRandom3;
 
 #include "TFile.h"
 #include <TSystem.h>
@@ -178,6 +179,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
 	TFile*                          fefficiencyFilepPb= TFile::Open("EffOutpPb.root","read"); //
 	TFile*				fefficiency3DFile=nullptr; //
+	TRandom3*                       random_subsample; //
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
