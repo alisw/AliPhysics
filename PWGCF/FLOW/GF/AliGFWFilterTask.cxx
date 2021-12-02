@@ -35,7 +35,7 @@ void AliGFWFilterTask::UserCreateOutputObjects()
     fOutList = new TList();
     fOutList->SetOwner(kTRUE);
     fFilter = new AliGFWFilter();
-    fFilter->CreateCutMasks();
+    fFilter->CreateStandardCutMasks();
     if(fEmbedES) {
       fEventCuts = new AliEventCuts();
       fEventCuts->AddQAplotsToList(fOutList,kTRUE);

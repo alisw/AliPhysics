@@ -86,11 +86,16 @@ class AliGFWFlags: public TNamed
   const Int_t GetTrackIndex(const Int_t &ind) { return fTrFlags[ind].first; };
   const UInt_t GetTrackFlag(const Int_t &ind) { return fTrFlags[ind].second; };
   const Int_t GetNFiltered() { return (Int_t)fTrFlags.size(); };
+  //Keeping track of ev & tr flags. Not useful right now, so disabling
+  // void SetNFlags(Int_t lNEv, Int_t lNTr) {fFlagCount = (lNEv<<8)|lNTr;};
+  // Int_t GetNEventFlags() {return (fFlagCount&0xff00)>>8;};
+  // Int_t GetNTrackFlags() {return (fFlagCount&0xff); };
   Bool_t CheckEventFlag(const UInt_t &lFlag) { return (fEventFlag&lFlag)==lFlag; };
   Bool_t CheckTrackFlag(const Int_t &ind, const UInt_t &lFlag) { return (fTrFlags[ind].second & lFlag)==lFlag; };
   ClassDef(AliGFWFlags,1);
  private:
    UInt_t fEventFlag;
+   // char16_t fFlagCount;
    vector< pair <Int_t,UInt_t> > fTrFlags;
 };
 class AliGFWFilter
@@ -102,13 +107,14 @@ class AliGFWFilter
     void SetEventCuts(AliEventCuts *fEvCuts) {fEventCuts = fEvCuts; };
     void CheckEvent(AliVEvent *inEv);
     Bool_t AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ);
-    void CreateCutMasks();
+    void CreateStandardCutMasks();
+    void AddCustomCuts(Bool_t cleanFirst=kTRUE, UInt_t lEv=klVtxZ10+klEventCuts, UInt_t lTr=klFB96+klDCAz20+klDCAxy2011+klTPCchi2PC25+klNTPCcls70);
     AliGFWFlags *GetFlags() { return fRetFlags; };
     void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };
     void SetEtaMin(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
     static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
-    static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:ind-gNEventFlags; return GetSystPF(lev,ltr); };
-  private:
+    static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:(ind-gNEventFlags); return GetSystPF(lev,ltr); };
+  // private:
     inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };
     inline Double_t f_DCAxy2011(Double_t &pt) { return (0.0015+0.0050/TMath::Power(pt,1.1)); };
     void AddEv(const UInt_t &lFlag) {fEventFlag|=lFlag;};
@@ -121,8 +127,10 @@ class AliGFWFilter
     AliGFWFlags *fRetFlags;
     UInt_t flTrFlag;
     UInt_t fEventFlag;
-    UInt_t *fTrackMasks; //!
-    UInt_t *fEventMasks; //!
+    vector<UInt_t> fTrackMasks; //!
+    Int_t fNTrMasks; //Number of flags added to the filter
+    vector<UInt_t> fEventMasks; //!
+    Int_t fNEvMasks; //Number of flags added to the filter
     AliAODTrack *fAODTrack; //!
     AliEventCuts *fEventCuts; //!
     Double_t fPtMin;
