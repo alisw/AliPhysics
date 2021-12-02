@@ -133,10 +133,15 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fWeightList = new TList();
     fWeightList->SetName("WeightList");
     fWeightList->SetOwner(kTRUE);
-    for(Int_t i=0;i<fTotFlags-1;i++) { //One less needed, because otherwise "Nominal" would be recorded twice
+    for(Int_t i=0;i<fTotFlags;i++) { //One less needed, because otherwise "Nominal" would be recorded twice
+      //fEvNomFlag and fTrNomFlag are already in mask-format, so for those, need to fetch corresponding indeces
+      Int_t defEvInd = i<fTotEvFlags?i:BitIndex(fEvNomFlag);
+      Int_t defTrInd = (i-fTotEvFlags);
+      if(defTrInd<0) defTrInd=BitIndex(fTrNomFlag); //if index < 0, then we're still in the event flags. Thus, select the nominal here
+      else if(defTrInd==BitIndex(fTrNomFlag)) continue; //Otherwise, check if we are doing the nominal flag. If so, the skip this, b/c it's already done with nominal event selection
       fWeightList->Add(new AliGFWWeights());
       fWeights = (AliGFWWeights*)fWeightList->Last();
-      fWeights->SetName(Form("weights%s",AliGFWFilter::GetSystPF(i).Data()));
+      fWeights->SetName(Form("weights%s",GetSystPF(defEvInd,defTrInd).Data()));
       fWeights->Init(!fIsMC,fIsMC); // AddData = !fIsMC; AddMC = fIsMC
     };
   } else {

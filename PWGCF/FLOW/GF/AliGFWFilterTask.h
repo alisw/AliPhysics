@@ -33,6 +33,8 @@ class AliGFWFilterTask : public AliAnalysisTaskSE
         virtual void NotifyRun();
         void EmbedEventSelection(Bool_t newVal, Bool_t addQA, UInt_t lTrigger=0) {fEmbedES=newVal; fAddQA=addQA; fTrigger=lTrigger; };
         void SetExtentV0MAcceptance(Bool_t newVal) { fExtendV0MAcceptance=newVal; };
+        void AddCustomCuts(UInt_t lEvCuts, UInt_t lTrCuts) {fCustomCuts.push_back(make_pair(lEvCuts,lTrCuts)); };
+        void SetDisableDefaultCuts(Bool_t newval) {fDisableDefaultCuts=newval;};
     private:
         AliAODEvent *fAOD;
         TList *fOutList;
@@ -42,6 +44,8 @@ class AliGFWFilterTask : public AliAnalysisTaskSE
         Bool_t fAddQA;
         Bool_t fTrigger;
         Bool_t fExtendV0MAcceptance;
+        vector< pair<UInt_t, UInt_t> > fCustomCuts;
+        Bool_t fDisableDefaultCuts;
         ClassDef(AliGFWFilterTask, 1);
 };
 

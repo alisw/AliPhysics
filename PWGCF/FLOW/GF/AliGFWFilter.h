@@ -70,6 +70,12 @@ namespace GFWFlags {
                     kFB768nTPC, kFB96MergedDCA,
                     kAllTrFlags
                   };
+  static const Int_t BitIndex(const UInt_t &lFlag) {
+    if(lFlag==0) return -1;
+    for(Int_t i=0;i<sizeof(lFlag)*8;i++) if(lFlag&(1<<i)) return i;
+    return -1;
+  };
+  static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
   const Int_t gNTrackFlags=20;
   const Int_t gNEventFlags=4;
 };
@@ -112,9 +118,8 @@ class AliGFWFilter
     AliGFWFlags *GetFlags() { return fRetFlags; };
     void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };
     void SetEtaMin(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
-    static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
-    static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:(ind-gNEventFlags); return GetSystPF(lev,ltr); };
-  // private:
+    // static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:(ind-gNEventFlags); return GetSystPF(lev,ltr); };
+  private:
     inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };
     inline Double_t f_DCAxy2011(Double_t &pt) { return (0.0015+0.0050/TMath::Power(pt,1.1)); };
     void AddEv(const UInt_t &lFlag) {fEventFlag|=lFlag;};
