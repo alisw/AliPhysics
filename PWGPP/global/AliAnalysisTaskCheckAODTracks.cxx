@@ -170,6 +170,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
   fUsePbPbOutOfBunchPileupCutsITSTPC(0),
+  fRejectPbPbEventsWithGeneratedPileup(kFALSE),
   fTriggerMask(AliVEvent::kAnyINT),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
@@ -432,6 +433,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Reject generated pileup");
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
@@ -831,10 +833,10 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Bool_t isPUMV = utils.IsPileUpMV(aod);
     if(isPUMV) return;
   }
+  Int_t runNumb=aod->GetRunNumber();
   if(fUsePbPbOutOfBunchPileupCutsITSTPC){
     AliEventCuts evc;
     evc.SetManualMode();
-    Int_t runNumb=aod->GetRunNumber();
     if(runNumb >= 244917 && runNumb <= 246994) evc.SetupRun2PbPb();
     else if(runNumb >= 295369 && runNumb <= 297624) evc.SetupPbPb2018();
     evc.SetRejectTPCPileupWithITSTPCnCluCorr(true, fUsePbPbOutOfBunchPileupCutsITSTPC);
@@ -843,6 +845,13 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(6);
 
+  // in PbPb reject events with generated pileup
+  if(fMCEvent && ((runNumb >= 244917 && runNumb <= 246994) || (runNumb >= 295369 && runNumb <= 297624))){
+    if(fRejectPbPbEventsWithGeneratedPileup && AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ijing")) return;
+  }
+  fHistNEvents->Fill(7);
+  
+  
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
 
