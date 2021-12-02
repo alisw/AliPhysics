@@ -87,6 +87,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   task->SetEnablePhysicsSelection(kTRUE);
   task->SetTriggerMask(triggerNames);
   task->SetEventFilter(cutlib->GetEventCuts(kFALSE, kFALSE));
+  task->SetRejectParticleFromOOB(kTRUE);
 
   // Set centrality requirements
   // There is certainly a better way to do this next section....
