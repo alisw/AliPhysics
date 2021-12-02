@@ -8,7 +8,9 @@ AliGFWFilterTask::AliGFWFilterTask():
  fEmbedES(kTRUE),
  fAddQA(kTRUE),
  fTrigger(0),
- fExtendV0MAcceptance(kFALSE)
+ fExtendV0MAcceptance(kFALSE),
+ fCustomCuts({}),
+ fDisableDefaultCuts(kFALSE)
 {}
 //_____________________________________________________________________________
 AliGFWFilterTask::AliGFWFilterTask(const char* name):
@@ -19,7 +21,9 @@ AliGFWFilterTask::AliGFWFilterTask(const char* name):
  fEmbedES(kTRUE),
  fAddQA(kTRUE),
  fTrigger(0),
- fExtendV0MAcceptance(kFALSE)
+ fExtendV0MAcceptance(kFALSE),
+ fCustomCuts({}),
+ fDisableDefaultCuts(kFALSE)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -35,7 +39,8 @@ void AliGFWFilterTask::UserCreateOutputObjects()
     fOutList = new TList();
     fOutList->SetOwner(kTRUE);
     fFilter = new AliGFWFilter();
-    fFilter->CreateStandardCutMasks();
+    if(!fDisableDefaultCuts || !fCustomCuts.size()) fFilter->CreateStandardCutMasks(); //If no custom cuts are set, then create standard cuts nevertheless
+    for(auto lcut: fCustomCuts) fFilter->AddCustomCuts(kFALSE,lcut.first, lcut.second);
     if(fEmbedES) {
       fEventCuts = new AliEventCuts();
       fEventCuts->AddQAplotsToList(fOutList,kTRUE);
