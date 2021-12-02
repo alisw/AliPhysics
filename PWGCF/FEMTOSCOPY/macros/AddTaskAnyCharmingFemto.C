@@ -129,7 +129,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = 21;
+  const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -138,8 +138,14 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     kMax.push_back(3.);
   }
 
-  closeRejection[0] = true;  // pp
-  closeRejection[4] = true;  // barp barp
+  if (!isMCtruth) {
+    closeRejection[0] = true;  // pp
+    closeRejection[4] = true;  // barp barp
+  }
+  else {
+    closeRejection[0] = false;  // pp
+    closeRejection[4] = false;  // barp barp
+  }
 
   pairQA[0] = 11;   // light-light
   pairQA[4] = 11;   // antilight-antilight
@@ -207,6 +213,15 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
 
   if (isMC) {
     task->ScaleMCBeautyFraction(0.5, 0.05);
+  }
+
+  if (isMCtruth){
+    if (std::abs(pdgDmesonBuddy) == 321) {
+      task->SetBuddypTLowMCTRUTH(0.15);
+      task->SetBuddypTHighMCTRUTH(1.4);
+      task->SetBuddyEtaMCTRUTH(0.8);
+      task->SetBuddyOriginMCTRUTH(1);
+    }
   }
 
   mgr->AddTask(task);

@@ -90,6 +90,13 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fInvMassCutLow(0.),
+      fInvMassCutHigh(0.),
+      fBuddypTlow(0.),
+      fBuddypThigh(0.),
+      fBuddyeta(0.),
+      fBuddyOrigin(0),
+      fDmesonOrigin(0),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -168,6 +175,13 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fInvMassCutLow(0.),
+      fInvMassCutHigh(0.),
+      fBuddypTlow(0.),
+      fBuddypThigh(0.),
+      fBuddyeta(0.),
+      fBuddyOrigin(0),
+      fDmesonOrigin(0),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -349,14 +363,21 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
   static std::vector<AliFemtoDreamBasePart> protons;
   static std::vector<AliFemtoDreamBasePart> antiprotons;
-  
-  static std::vector<AliFemtoDreamBasePart> protonsTrue;
-  static std::vector<AliFemtoDreamBasePart> antiprotonsTrue;
+  static std::vector<AliFemtoDreamBasePart> pions;
+  static std::vector<AliFemtoDreamBasePart> antipions;
+  static std::vector<AliFemtoDreamBasePart> kaons;
+  static std::vector<AliFemtoDreamBasePart> antikaons;
+  static std::vector<AliFemtoDreamBasePart> dplus;
+  static std::vector<AliFemtoDreamBasePart> dminus;
   protons.clear();
   antiprotons.clear();
+  pions.clear();
+  antipions.clear();
+  kaons.clear();
+  antikaons.clear();
+  dplus.clear();
+  dminus.clear();
 
-  protonsTrue.clear();
-  antiprotonsTrue.clear();
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -376,55 +397,322 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fProtonTrack->SetInvMass(DmesonBuddyMass);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (!fIsMCtruth) {
-        std::cout<<"FAIL"<<std::endl;        
         protons.push_back(*fProtonTrack);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if (!fIsMCtruth) {
-        std::cout<<"ANTI FAIL"<<std::endl;
         antiprotons.push_back(*fProtonTrack);
       }
     }
   }
 
-  int inili=0;
   if (fIsMCtruth) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
-    AliFemtoDreamBasePart part;
-    // std::cout << "Nr particle:" << noPart << " PDG:"<<fTrackCutsPartProton->GetPDGCode()<< "PDG antiParts"<<fTrackCutsPartAntiProton->GetPDGCode() <<std::endl;
+    auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
+    float ptMin, ptMax, etaMin, etaMax;
+    trackCutsDdau->GetPtRange(ptMin, ptMax);
+    trackCutsDdau->GetEtaRange(etaMin, etaMax);
+    float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
+    //for (Int_t i=0;i<fRDHFCuts->GetNPtBins();i++) cout<<i<<" "<<DmesonPtBins[i]<<endl;
+    float DmesonPtMin=DmesonPtBins[0];
+    float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
+  
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
       if (!(mcPart)) {
         std::cout << "NO MC particle" << std::endl;
         continue;
       }
-      double pt = mcPart->Pt();
-      double eta = mcPart->Eta();
+
       if (mcPart->GetLabel() < 0) {
         continue;
       }
-      int mcpdg = mcPart->GetPdgCode();
 
-      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {
-        part.SetMCParticleRePart(mcPart);
-        // std::cout<<iPart<<": "<<pt<<" "<<eta<<"  "<< part.GetPt() << std::endl;
-        // protons.push_back(part);
-        protonsTrue.push_back(part);
-        inili++;
+      AliFemtoDreamBasePart part;
+
+      int mcpdg = mcPart->GetPdgCode();
+      double pt = mcPart->Pt();
+      double eta = mcPart->Eta();
+      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {        
+        if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
+          if(SelectBuddyOrigin(mcPart)){
+            part.SetMCParticleRePart(mcPart);
+            part.SetID(mcPart->GetLabel());
+            part.SetIDTracks(mcPart->GetLabel());
+            protons.push_back(part);
+          }
+        }
       }
 
       if (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
-        part.SetMCParticleRePart(mcPart);
-        // std::cout<<iPart<<": "<<pt<<" "<<eta<<"  "<< part.GetPt() << std::endl;
-        // antiprotons.push_back(part);
-        antiprotonsTrue.push_back(part);
+        if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
+          if(SelectBuddyOrigin(mcPart)){
+            part.SetMCParticleRePart(mcPart);
+            part.SetID(mcPart->GetLabel());
+            part.SetIDTracks(mcPart->GetLabel());
+            antiprotons.push_back(part);
+          }
+        }
+      }
+
+      if (mcpdg == 321) {
+        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
+          part.SetMCParticleRePart(mcPart);
+          part.SetID(mcPart->GetLabel());
+          // cout<<iPart<<" "<<mcPart->GetLabel()<<" "<<part.GetID()<<endl;
+          part.SetPDGCode(mcPart->GetPdgCode());
+
+          int motherID = mcPart->GetMother();
+
+          if (motherID <= noPart) {
+            AliAODMCParticle *mcMother = nullptr;
+
+            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
+
+            if (mcMother) {
+              if (mcMother->GetLabel() < 0) {
+                continue;
+              }
+              part.SetMotherID(motherID);
+              part.SetMotherPDG(mcMother->GetPdgCode());
+
+            } else {
+              part.SetMotherID(0);
+              part.SetMotherPDG(0);
+            }
+            
+            kaons.push_back(part);
+          }
+        }
+      }
+
+      if (mcpdg == -321) {
+        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
+          part.SetMCParticleRePart(mcPart);
+          part.SetID(mcPart->GetLabel());
+          part.SetPDGCode(mcPart->GetPdgCode());
+          int motherID = mcPart->GetMother();
+
+          if (motherID <= noPart) {
+            AliAODMCParticle *mcMother = nullptr;
+
+            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
+
+            if (mcMother) {
+              if (mcMother->GetLabel() < 0) {
+                continue;
+              }
+              part.SetMotherID(motherID);
+              part.SetMotherPDG(mcMother->GetPdgCode());
+
+            } else {
+              part.SetMotherID(0);
+              part.SetMotherPDG(0);
+            }
+
+            antikaons.push_back(part);
+          }
+        }
+      }
+    
+
+      if (mcpdg == 211) {
+        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
+          part.SetMCParticleRePart(mcPart);
+          part.SetID(mcPart->GetLabel());
+          part.SetPDGCode(mcPart->GetPdgCode());
+
+          int motherID = mcPart->GetMother();
+
+          if (motherID <= noPart) {
+            AliAODMCParticle *mcMother = nullptr;
+
+            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
+
+            if (mcMother) {
+              if (mcMother->GetLabel() < 0) {
+                continue;
+              }
+              part.SetMotherID(motherID);
+              part.SetMotherPDG(mcMother->GetPdgCode());
+
+            } else {
+              part.SetMotherID(0);
+              part.SetMotherPDG(0);
+            }
+
+            pions.push_back(part);
+          }
+        }
+      }
+
+      if (mcpdg == -211) {
+        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
+          part.SetMCParticleRePart(mcPart);
+          part.SetID(mcPart->GetLabel());
+          part.SetPDGCode(mcPart->GetPdgCode());
+          int motherID = mcPart->GetMother();
+
+          if (motherID <= noPart) {
+            AliAODMCParticle *mcMother = nullptr;
+
+            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
+
+            if (mcMother) {
+              if (mcMother->GetLabel() < 0) {
+                continue;
+              }
+              part.SetMotherID(motherID);
+              part.SetMotherPDG(mcMother->GetPdgCode());
+
+            } else {
+              part.SetMotherID(0);
+              part.SetMotherPDG(0);
+            }
+            
+            antipions.push_back(part);
+          }
+        }
+      }
+
+
+    }
+
+    for (const auto &posPi1Daughter : pions) {
+      int mcpdgm1 = posPi1Daughter.GetMotherPDG();
+      int motherIDPip1 = posPi1Daughter.GetMotherID();
+      int Pi1ID = posPi1Daughter.GetID();
+
+      for (const auto &posPi2Daughter : pions) {
+        int mcpdgm2 = posPi2Daughter.GetMotherPDG();
+        int motherIDPip2 = posPi2Daughter.GetMotherID();
+        int Pi2ID = posPi2Daughter.GetID();
+
+        for (const auto &negKDaughter : antikaons) {
+        int mcpdgm3 = negKDaughter.GetMotherPDG();
+        int motherIDKm = negKDaughter.GetMotherID();
+
+          if(Pi1ID != Pi2ID) {
+
+            float Pi1P[3], Pi2P[3], KP[3];
+            posPi1Daughter.GetMomentum().GetXYZ(Pi1P);
+            posPi2Daughter.GetMomentum().GetXYZ(Pi2P);
+            negKDaughter.GetMomentum().GetXYZ(KP);
+
+            TLorentzVector trackPi1, trackPi2, trackK;
+            float Kaonmass = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+            float Pionmass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+            trackPi1.SetXYZM(Pi1P[0], Pi1P[1], Pi1P[2], Pionmass);
+            trackPi2.SetXYZM(Pi2P[0], Pi2P[1], Pi2P[2], Pionmass);
+            trackK.SetXYZM(KP[0], KP[1], KP[2], Kaonmass);
+
+            TLorentzVector trackSum = trackPi1 + trackPi2 + trackK;
+            if ((trackSum.M() < fUpperMassSelection) &&
+                (trackSum.M() > fLowerMassSelection)) {
+              // cout << trackSum.M() <<" "<< mcpdgm1<<" "<< mcpdgm2 <<" "<< mcpdgm3 << endl;
+              if (((motherIDPip1 == motherIDPip2) && (motherIDPip1 == motherIDKm))) {
+                if ((mcpdgm1 == 411) && (mcpdgm2 == 411) && (mcpdgm3 == 411)) {
+                  // cout<<"DPLUSUSUSU"<<endl;
+                  AliAODMCParticle *mcMother = nullptr;
+                  mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherIDPip1);
+                  if((mcMother->Pt()>DmesonPtMin) && (mcMother->Pt()<DmesonPtMax)) {
+                    // AliFemtoDreamBasePart V0part;
+                    // V0part.SetMCParticleRePart(mcMother);
+                    // V0part.SetIDTracks(Pi1ID);
+                    // V0part.SetIDTracks(Pi2ID);
+                    // V0part.SetIDTracks(negKDaughter.GetID());
+                    // dplus.push_back(V0part);
+                    //int dmesonorigin=AliVertexingHFUtils::CheckOrigin(fArrayMCAOD, mcMother, false);
+                    if (SelectBuddyOrigin(fArrayMCAOD, mcMother)){
+                      AliFemtoDreamBasePart V0part;
+                      V0part.SetMCParticleRePart(mcMother);
+                      V0part.SetIDTracks(Pi1ID);
+                      V0part.SetIDTracks(Pi2ID);
+                      V0part.SetIDTracks(negKDaughter.GetID());
+                      dplus.push_back(V0part);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }          
       }
     }
 
+    for (const auto &negPi1Daughter : antipions) {
+      int mcpdgm1 = negPi1Daughter.GetMotherPDG();
+      int motherIDPip1 = negPi1Daughter.GetMotherID();
+      int Pi1ID = negPi1Daughter.GetID();
+
+      for (const auto &negPi2Daughter : antipions) {
+        int mcpdgm2 = negPi2Daughter.GetMotherPDG();
+        int motherIDPip2 = negPi2Daughter.GetMotherID();
+        int Pi2ID = negPi2Daughter.GetID();
+
+        for (const auto &posKDaughter : kaons) {
+        int mcpdgm3 = posKDaughter.GetMotherPDG();
+        int motherIDKm = posKDaughter.GetMotherID();
+
+          if(Pi1ID != Pi2ID) {
+
+            float Pi1P[3], Pi2P[3], KP[3];
+            negPi1Daughter.GetMomentum().GetXYZ(Pi1P);
+            negPi2Daughter.GetMomentum().GetXYZ(Pi2P);
+            posKDaughter.GetMomentum().GetXYZ(KP);
+
+            TLorentzVector trackPi1, trackPi2, trackK;
+            float Kaonmass = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+            float Pionmass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+            trackPi1.SetXYZM(Pi1P[0], Pi1P[1], Pi1P[2], Pionmass);
+            trackPi2.SetXYZM(Pi2P[0], Pi2P[1], Pi2P[2], Pionmass);
+            trackK.SetXYZM(KP[0], KP[1], KP[2], Kaonmass);
+
+            TLorentzVector trackSum = trackPi1 + trackPi2 + trackK;
+            if ((trackSum.M() < fUpperMassSelection) &&
+                (trackSum.M() > fLowerMassSelection)) {
+              if (((motherIDPip1 == motherIDPip2) && (motherIDPip1 == motherIDKm))) {
+                if ((mcpdgm1 == -411) && (mcpdgm2 == -411) && (mcpdgm3 == -411)) {
+                  // cout << trackSum.M() << endl;
+                  AliAODMCParticle *mcMother = nullptr;
+                  mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherIDPip1);
+                  if((mcMother->Pt()>DmesonPtMin) && (mcMother->Pt()<DmesonPtMax)) {
+                    // AliFemtoDreamBasePart V0part;
+                    // V0part.SetMCParticleRePart(mcMother);
+                    // V0part.SetIDTracks(Pi1ID);
+                    // V0part.SetIDTracks(Pi2ID);
+                    // V0part.SetIDTracks(posKDaughter.GetID());
+                    // std::vector<int> IDDaug = V0part.GetIDTracks();
+                    //   for (auto itIDs = IDDaug.begin(); itIDs != IDDaug.end(); ++itIDs) {
+                    //     std::cout <<" IDs of Daughter: "<<*itIDs<<'\n';
+                    //   }                                    
+                    // dminus.push_back(V0part);
+
+                    if (SelectBuddyOrigin(fArrayMCAOD, mcMother)){
+                      AliFemtoDreamBasePart V0part;
+                      V0part.SetMCParticleRePart(mcMother);
+                      V0part.SetIDTracks(Pi1ID);
+                      V0part.SetIDTracks(Pi2ID);
+                      V0part.SetIDTracks(negKDaughter.GetID());
+                      dminus.push_back(V0part);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }          
+      }
+    }
+
+
   }
+
   // std::cout << "MC truth DONE: "<<inili << std::endl;
   // D MESON SELECTION
   int nCand = arrayHF->GetEntriesFast();
@@ -449,11 +737,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       scoresFromMLSelector.push_back({});
     }
   }
-
-  static std::vector<AliFemtoDreamBasePart> dplus;
-  static std::vector<AliFemtoDreamBasePart> dminus;
-  dplus.clear();
-  dminus.clear();
 
   // needed to initialise PID response
   fRDHFCuts->IsEventSelected(fInputEvent);
@@ -511,7 +794,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             && std::abs(dplusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
-        dplus.push_back(dplusCand);
+        if (!fIsMCtruth) {
+          dplus.push_back(dplusCand);
+        }
         if (!fIsLightweight) {
           fHistDplusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDplusEta->Fill(dMeson->Eta());
@@ -557,7 +842,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
-        dminus.push_back(dminusCand);
+        if (!fIsMCtruth){
+          dminus.push_back(dminusCand);
+        }
         if (!fIsLightweight) {
           fHistDminusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDminusEta->Fill(dMeson->Eta());
@@ -603,18 +890,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
 
   // PAIR CLEANING AND FEMTO
-  if (!fIsMCtruth) {
-    std::cout<<" PAIR CLEANING FAIL"<<std::endl;
-    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
-    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
-    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
-    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
-  }
+  fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
+  fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
+  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
+  fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
-  fPairCleaner->StoreParticle(protonsTrue);
-  fPairCleaner->StoreParticle(antiprotonsTrue);
 
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
