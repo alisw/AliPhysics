@@ -62,21 +62,11 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetCutCharge(1);
-    TrackCuts->SetPtRange(0.15, 1.4);
-    TrackCuts->SetPtExclusion(0.3,0.4);
-    TrackCuts->SetNClsTPC(70);
-    TrackCuts->SetDCAVtxZ(1.0);
-    TrackCuts->SetDCAVtxXY(1.0);
-    TrackCuts->SetPID(AliPID::kKaon, 0.4, 3);
+    TrackCuts->SetPIDkd();
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(128);
     AntiTrackCuts->SetCutCharge(-1);
-    AntiTrackCuts->SetPtRange(0.15, 1.4);
-    AntiTrackCuts->SetPtExclusion(0.3,0.4);
-    AntiTrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetDCAVtxZ(1.0);
-    AntiTrackCuts->SetDCAVtxXY(1.0);
-    AntiTrackCuts->SetPID(AliPID::kKaon, 0.4, 3);
+    AntiTrackCuts->SetPIDkd();
   }
   else {
     Error("AddTaskAnyCharmingFemto()", "Particle not implemented.");
