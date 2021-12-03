@@ -537,9 +537,15 @@ private:
 
   struct {
     /// FT0 (12+12 channels in Run2, 96+112 channels in Run3)
-    Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for each A-side channel
-    Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for each C-side channel
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fChannelA_size = 0;         /// Size of fChannelA and fAmplitudeA
+    uint8_t fChannelA[96] = {0};      /// Channel indices of filled amplitudes on the A-side
+    Int_t fAmplitudeA_size = 0;       /// Size of fChannelA and fAmplitudeA
+    Float_t fAmplitudeA[96] = {0.f};  /// Multiplicity for A-side channels listed in fChannelA
+    Int_t fChannelC_size = 0;         /// Size of fChannelC and fAmplitudeC
+    uint8_t fChannelC[112] = {0};     /// Channel indices of filled amplitudes on the C-side
+    Int_t fAmplitudeC_size = 0;       /// Size of fChannelC and fAmplitudeC
+    Float_t fAmplitudeC[112] = {0.f}; /// Multiplicity for C-side channels listed in fChannelC
     Float_t fTimeA = 0.f;             /// Average A-side time
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
@@ -603,7 +609,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 23);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 24);
 };
 
 #endif
