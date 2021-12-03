@@ -12,7 +12,7 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
-    bool isMC = false, bool fullBlastQA = true, TString trigger = "kINT7",
+    bool isMC = false, bool useMCTruthReco = true, bool fullBlastQA = true, TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
     TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
     TString cutHFsuffix = "", bool applyML = false, TString configML =
@@ -62,11 +62,13 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetCutCharge(1);
-    TrackCuts->SetPIDkd();
+    if(useMCTruthReco)
+      TrackCuts->SetPIDkd();
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(128);
     AntiTrackCuts->SetCutCharge(-1);
-    AntiTrackCuts->SetPIDkd();
+    if(!useMCTruthReco)
+      AntiTrackCuts->SetPIDkd();
   }
   else {
     Error("AddTaskAnyCharmingFemto()", "Particle not implemented.");
@@ -182,6 +184,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   task->SetHFCuts(analysisCutsHF);
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
+  task->SetUseMCTruthReco(useMCTruthReco);
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
