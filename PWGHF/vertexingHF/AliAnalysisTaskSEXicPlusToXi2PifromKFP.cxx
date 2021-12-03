@@ -2229,7 +2229,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_XicPlus = new TTree(nameoutput, "XicPlus variables tree");
-  Int_t nVar = 65;
+  Int_t nVar = 66;
   fVar_XicPlus = new Float_t[nVar-1];
   TString *fVarNames = new TString[nVar];
 
@@ -2242,9 +2242,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[6]  = "nSigmaTPC_PiFromLam"; // TPC nsigma for pion coming from Lambda
   fVarNames[7]  = "nSigmaTPC_PrFromLam"; // TPC nsigma for proton coming from Lambda
 
-  fVarNames[8] = "chi2geo_Lam"; // chi2_geometry of Lambda (without mass constraint)
+  fVarNames[8]  = "chi2geo_Lam"; // chi2_geometry of Lambda (without mass constraint)
   fVarNames[9]  = "ldl_Lam"; // l/dl of Lambda
-  fVarNames[10]  = "chi2topo_LamToPV"; // chi2_topo of Lambda (with mass constraint) to PV
+  fVarNames[10] = "chi2topo_LamToPV"; // chi2_topo of Lambda (with mass constraint) to PV
 
   fVarNames[11] = "chi2geo_Xi"; // chi2_geometry of Xi (with Lambda mass const.)
   fVarNames[12] = "ldl_Xi"; // l/dl of Xi (with Lambda mass const.)
@@ -2305,8 +2305,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[60] = "PAXY_XicPlusToRecalPV"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV)
   fVarNames[61] = "PA_XicPlusToRecalPVfromKF_Refit_woAddMother"; // pointing angle of XicPlus
   fVarNames[62] = "chi2topo_XicPlusToRecalPVfromKF_Refit_woAddMother";
-  fVarNames[63] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
-  fVarNames[64] = "event_ID"; // event ID
+  fVarNames[63] = "PV_NContributors"; // number of tracks used for PV fit + 1
+  fVarNames[64] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[65] = "event_ID"; // event ID
 
 //  fVarNames[26] = "CosThetaStar_PiFromXicPlus"; // CosThetaStar of pion coming from XicPlus
 //  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from XicPlus
@@ -2425,7 +2426,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillEventROOTObjects()
 void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, KFParticle PV_KF_Refit, TClonesArray *mcArray, Int_t lab_XicPlus)
 {
 
-  for (Int_t i=0; i<(65-1); i++) {
+  for (Int_t i=0; i<(66-1); i++) {
     fVar_XicPlus[i] = -9999.;
   }
 
@@ -2628,9 +2629,11 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
 
   fVar_XicPlus[48] = TMath::ACos(cosPA_XiToXicPlus); // pointing angle of Xi (pointing back to XicPlus)
 
+  fVar_XicPlus[63] = fpVtx->GetNContributors();
+
   if (fIsMC) {
     fVar_XicPlus_EvtID = GetMCEventID(); // Event ID for MC
-    fVar_XicPlus[63] = lab_XicPlus;
+    fVar_XicPlus[64] = lab_XicPlus;
     // === weight ===
     /*
     if (lab_XicPlus>0) {
