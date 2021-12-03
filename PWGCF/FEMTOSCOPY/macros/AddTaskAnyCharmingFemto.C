@@ -221,6 +221,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
       task->SetBuddypTHighMCTRUTH(1.4);
       task->SetBuddyEtaMCTRUTH(0.8);
       task->SetBuddyOriginMCTRUTH(1);
+      task->SetBuddyOriginMCTRUTH(1);
     }
   }
 

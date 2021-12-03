@@ -20,6 +20,8 @@
 #include "TDatabasePDG.h"
 #include "TRandom.h"
 
+#include <array>
+
 ClassImp(AliAnalysisTaskCharmingFemto)
 
     //____________________________________________________________________________________________________
@@ -363,18 +365,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
   static std::vector<AliFemtoDreamBasePart> protons;
   static std::vector<AliFemtoDreamBasePart> antiprotons;
-  static std::vector<AliFemtoDreamBasePart> pions;
-  static std::vector<AliFemtoDreamBasePart> antipions;
-  static std::vector<AliFemtoDreamBasePart> kaons;
-  static std::vector<AliFemtoDreamBasePart> antikaons;
   static std::vector<AliFemtoDreamBasePart> dplus;
   static std::vector<AliFemtoDreamBasePart> dminus;
   protons.clear();
   antiprotons.clear();
-  pions.clear();
-  antipions.clear();
-  kaons.clear();
-  antikaons.clear();
   dplus.clear();
   dminus.clear();
 
@@ -458,259 +452,64 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
       }
 
-      if (mcpdg == 321) {
-        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
-          part.SetMCParticleRePart(mcPart);
-          part.SetID(mcPart->GetLabel());
-          // cout<<iPart<<" "<<mcPart->GetLabel()<<" "<<part.GetID()<<endl;
-          part.SetPDGCode(mcPart->GetPdgCode());
+      if (std::abs(mcpdg) == 411) {
+        if((pt>DmesonPtMin) && (pt<DmesonPtMax)) {
+          int NDDaughters=(const int)mcPart->GetNDaughters();
+          if (NDDaughters == 3) {
+            int labelFirstDau = mcPart->GetDaughterLabel(0);
+            int labelThirdDau = mcPart->GetDaughterLabel(1);
+            int labelSecondDau = labelThirdDau-1;
 
-          int motherID = mcPart->GetMother();
+            AliAODMCParticle *D1 = (AliAODMCParticle *)fArrayMCAOD->At(labelFirstDau);
+            AliAODMCParticle *D2 = (AliAODMCParticle *)fArrayMCAOD->At(labelSecondDau);
+            AliAODMCParticle *D3 = (AliAODMCParticle *)fArrayMCAOD->At(labelThirdDau);
 
-          if (motherID <= noPart) {
-            AliAODMCParticle *mcMother = nullptr;
+            std::vector<int> pdgvec = {D1->GetPdgCode(), D2->GetPdgCode(), D3->GetPdgCode()};
+            std::vector<double> pTvec = {D1->Pt(), D2->Pt(), D3->Pt()};
+            std::vector<double> etavec = {D1->Eta(), D2->Eta(), D3->Eta()};
+            int counter = 0;
 
-            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
-
-            if (mcMother) {
-              if (mcMother->GetLabel() < 0) {
-                continue;
+            for (int i = 0; i<NDDaughters; i++) {
+              if ((pTvec.at(i) < ptMax && pTvec.at(i) > ptMin) && (etavec.at(i) > etaMin && etavec.at(i) < etaMax)) {
+                counter++;
               }
-              part.SetMotherID(motherID);
-              part.SetMotherPDG(mcMother->GetPdgCode());
-
-            } else {
-              part.SetMotherID(0);
-              part.SetMotherPDG(0);
-            }
-            
-            kaons.push_back(part);
-          }
-        }
-      }
-
-      if (mcpdg == -321) {
-        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
-          part.SetMCParticleRePart(mcPart);
-          part.SetID(mcPart->GetLabel());
-          part.SetPDGCode(mcPart->GetPdgCode());
-          int motherID = mcPart->GetMother();
-
-          if (motherID <= noPart) {
-            AliAODMCParticle *mcMother = nullptr;
-
-            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
-
-            if (mcMother) {
-              if (mcMother->GetLabel() < 0) {
-                continue;
-              }
-              part.SetMotherID(motherID);
-              part.SetMotherPDG(mcMother->GetPdgCode());
-
-            } else {
-              part.SetMotherID(0);
-              part.SetMotherPDG(0);
             }
 
-            antikaons.push_back(part);
-          }
-        }
-      }
-    
-
-      if (mcpdg == 211) {
-        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
-          part.SetMCParticleRePart(mcPart);
-          part.SetID(mcPart->GetLabel());
-          part.SetPDGCode(mcPart->GetPdgCode());
-
-          int motherID = mcPart->GetMother();
-
-          if (motherID <= noPart) {
-            AliAODMCParticle *mcMother = nullptr;
-
-            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
-
-            if (mcMother) {
-              if (mcMother->GetLabel() < 0) {
-                continue;
-              }
-              part.SetMotherID(motherID);
-              part.SetMotherPDG(mcMother->GetPdgCode());
-
-            } else {
-              part.SetMotherID(0);
-              part.SetMotherPDG(0);
-            }
-
-            pions.push_back(part);
-          }
-        }
-      }
-
-      if (mcpdg == -211) {
-        if ((pt < ptMax && pt > ptMin) && (eta > etaMin && eta < etaMax)) {
-          part.SetMCParticleRePart(mcPart);
-          part.SetID(mcPart->GetLabel());
-          part.SetPDGCode(mcPart->GetPdgCode());
-          int motherID = mcPart->GetMother();
-
-          if (motherID <= noPart) {
-            AliAODMCParticle *mcMother = nullptr;
-
-            mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherID);
-
-            if (mcMother) {
-              if (mcMother->GetLabel() < 0) {
-                continue;
-              }
-              part.SetMotherID(motherID);
-              part.SetMotherPDG(mcMother->GetPdgCode());
-
-            } else {
-              part.SetMotherID(0);
-              part.SetMotherPDG(0);
-            }
-            
-            antipions.push_back(part);
-          }
-        }
-      }
-
-
-    }
-
-    for (const auto &posPi1Daughter : pions) {
-      int mcpdgm1 = posPi1Daughter.GetMotherPDG();
-      int motherIDPip1 = posPi1Daughter.GetMotherID();
-      int Pi1ID = posPi1Daughter.GetID();
-
-      for (const auto &posPi2Daughter : pions) {
-        int mcpdgm2 = posPi2Daughter.GetMotherPDG();
-        int motherIDPip2 = posPi2Daughter.GetMotherID();
-        int Pi2ID = posPi2Daughter.GetID();
-
-        for (const auto &negKDaughter : antikaons) {
-        int mcpdgm3 = negKDaughter.GetMotherPDG();
-        int motherIDKm = negKDaughter.GetMotherID();
-
-          if(Pi1ID != Pi2ID) {
-
-            float Pi1P[3], Pi2P[3], KP[3];
-            posPi1Daughter.GetMomentum().GetXYZ(Pi1P);
-            posPi2Daughter.GetMomentum().GetXYZ(Pi2P);
-            negKDaughter.GetMomentum().GetXYZ(KP);
-
-            TLorentzVector trackPi1, trackPi2, trackK;
-            float Kaonmass = TDatabasePDG::Instance()->GetParticle(321)->Mass();
-            float Pionmass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
-
-            trackPi1.SetXYZM(Pi1P[0], Pi1P[1], Pi1P[2], Pionmass);
-            trackPi2.SetXYZM(Pi2P[0], Pi2P[1], Pi2P[2], Pionmass);
-            trackK.SetXYZM(KP[0], KP[1], KP[2], Kaonmass);
-
-            TLorentzVector trackSum = trackPi1 + trackPi2 + trackK;
-            if ((trackSum.M() < fUpperMassSelection) &&
-                (trackSum.M() > fLowerMassSelection)) {
-              // cout << trackSum.M() <<" "<< mcpdgm1<<" "<< mcpdgm2 <<" "<< mcpdgm3 << endl;
-              if (((motherIDPip1 == motherIDPip2) && (motherIDPip1 == motherIDKm))) {
-                if ((mcpdgm1 == 411) && (mcpdgm2 == 411) && (mcpdgm3 == 411)) {
-                  // cout<<"DPLUSUSUSU"<<endl;
-                  AliAODMCParticle *mcMother = nullptr;
-                  mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherIDPip1);
-                  if((mcMother->Pt()>DmesonPtMin) && (mcMother->Pt()<DmesonPtMax)) {
-                    // AliFemtoDreamBasePart V0part;
-                    // V0part.SetMCParticleRePart(mcMother);
-                    // V0part.SetIDTracks(Pi1ID);
-                    // V0part.SetIDTracks(Pi2ID);
-                    // V0part.SetIDTracks(negKDaughter.GetID());
-                    // dplus.push_back(V0part);
-                    //int dmesonorigin=AliVertexingHFUtils::CheckOrigin(fArrayMCAOD, mcMother, false);
-                    if (SelectBuddyOrigin(fArrayMCAOD, mcMother)){
-                      AliFemtoDreamBasePart V0part;
-                      V0part.SetMCParticleRePart(mcMother);
-                      V0part.SetIDTracks(Pi1ID);
-                      V0part.SetIDTracks(Pi2ID);
-                      V0part.SetIDTracks(negKDaughter.GetID());
-                      dplus.push_back(V0part);
-                    }
-                  }
+            if(counter==3){
+              std::sort(pdgvec.begin(), pdgvec.end());
+              // cout<<"*** ";
+              // for (int i = 0; i<NDDaughters; i++) {
+              //   cout<<" "<<pdgvec[i];
+              // }
+              // cout<<" ***"<< endl;
+              if ((pdgvec.at(0)==-321) && (pdgvec.at(1)==211) && (pdgvec.at(2)==211) && (mcpdg == 411)) {
+                if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
+                  part.SetMCParticleRePart(mcPart);
+                  part.SetIDTracks(labelFirstDau);
+                  part.SetIDTracks(labelSecondDau);
+                  part.SetIDTracks(labelThirdDau);
+                  dplus.push_back(part);
                 }
+                
               }
-            }
-          }
-        }          
-      }
-    }
-
-    for (const auto &negPi1Daughter : antipions) {
-      int mcpdgm1 = negPi1Daughter.GetMotherPDG();
-      int motherIDPip1 = negPi1Daughter.GetMotherID();
-      int Pi1ID = negPi1Daughter.GetID();
-
-      for (const auto &negPi2Daughter : antipions) {
-        int mcpdgm2 = negPi2Daughter.GetMotherPDG();
-        int motherIDPip2 = negPi2Daughter.GetMotherID();
-        int Pi2ID = negPi2Daughter.GetID();
-
-        for (const auto &posKDaughter : kaons) {
-        int mcpdgm3 = posKDaughter.GetMotherPDG();
-        int motherIDKm = posKDaughter.GetMotherID();
-
-          if(Pi1ID != Pi2ID) {
-
-            float Pi1P[3], Pi2P[3], KP[3];
-            negPi1Daughter.GetMomentum().GetXYZ(Pi1P);
-            negPi2Daughter.GetMomentum().GetXYZ(Pi2P);
-            posKDaughter.GetMomentum().GetXYZ(KP);
-
-            TLorentzVector trackPi1, trackPi2, trackK;
-            float Kaonmass = TDatabasePDG::Instance()->GetParticle(321)->Mass();
-            float Pionmass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
-
-            trackPi1.SetXYZM(Pi1P[0], Pi1P[1], Pi1P[2], Pionmass);
-            trackPi2.SetXYZM(Pi2P[0], Pi2P[1], Pi2P[2], Pionmass);
-            trackK.SetXYZM(KP[0], KP[1], KP[2], Kaonmass);
-
-            TLorentzVector trackSum = trackPi1 + trackPi2 + trackK;
-            if ((trackSum.M() < fUpperMassSelection) &&
-                (trackSum.M() > fLowerMassSelection)) {
-              if (((motherIDPip1 == motherIDPip2) && (motherIDPip1 == motherIDKm))) {
-                if ((mcpdgm1 == -411) && (mcpdgm2 == -411) && (mcpdgm3 == -411)) {
-                  // cout << trackSum.M() << endl;
-                  AliAODMCParticle *mcMother = nullptr;
-                  mcMother = (AliAODMCParticle *)fArrayMCAOD->At(motherIDPip1);
-                  if((mcMother->Pt()>DmesonPtMin) && (mcMother->Pt()<DmesonPtMax)) {
-                    // AliFemtoDreamBasePart V0part;
-                    // V0part.SetMCParticleRePart(mcMother);
-                    // V0part.SetIDTracks(Pi1ID);
-                    // V0part.SetIDTracks(Pi2ID);
-                    // V0part.SetIDTracks(posKDaughter.GetID());
-                    // std::vector<int> IDDaug = V0part.GetIDTracks();
-                    //   for (auto itIDs = IDDaug.begin(); itIDs != IDDaug.end(); ++itIDs) {
-                    //     std::cout <<" IDs of Daughter: "<<*itIDs<<'\n';
-                    //   }                                    
-                    // dminus.push_back(V0part);
-
-                    if (SelectBuddyOrigin(fArrayMCAOD, mcMother)){
-                      AliFemtoDreamBasePart V0part;
-                      V0part.SetMCParticleRePart(mcMother);
-                      V0part.SetIDTracks(Pi1ID);
-                      V0part.SetIDTracks(Pi2ID);
-                      V0part.SetIDTracks(negKDaughter.GetID());
-                      dminus.push_back(V0part);
-                    }
-                  }
+              if ((pdgvec.at(0)==-211) && (pdgvec.at(1)==-211) && (pdgvec.at(2)==321) && (mcpdg == -411) ) {
+                if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
+                  part.SetMCParticleRePart(mcPart);
+                  part.SetIDTracks(labelFirstDau);
+                  part.SetIDTracks(labelSecondDau);
+                  part.SetIDTracks(labelThirdDau);
+                  dminus.push_back(part);
                 }
-              }
+              }            
             }
           }
-        }          
+        }
       }
+
+
     }
 
-
+ 
   }
 
   // std::cout << "MC truth DONE: "<<inili << std::endl;

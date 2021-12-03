@@ -192,7 +192,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     //0:no selection, 1:charm, 2:beauty
     fDmesonOrigin = origin;
   }
-  bool SelectBuddyOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+  bool SelectDmesonOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
     if(fDmesonOrigin==0) {
       return true;
     }
