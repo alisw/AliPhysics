@@ -194,6 +194,7 @@ private:
   // 4.) Final results:
    
   TProfile *fResults[16];         	//! final centrality result
+  TProfile *fResultsAlternativeError[16]; //! final centrality result
   TProfile *fCovResults[16];         	//! TProfile to store terms needed for Covariance 
   TProfile *fJoinedCovResults[16];      //! TProfile to store joined Covariance term calculated as one correlator <z> instead of product of two correlators <x*y> 
   TProfile *fMixedParticleHarmonics[16];//! Stores output for special mixed particle analysis
@@ -213,7 +214,7 @@ private:
   TProfile *fProfileTrackCuts;  	//! Profile to save the cut values for track selection
   TList *fFinalResultsList[16];      	//! List to hold all histograms with final results for a specific centrality bin. Up to 16 centraliy bins possible
 
-  ClassDef(AliAnalysisSPC,3); 
+  ClassDef(AliAnalysisSPC,4); 
 };
 
 //================================================================================================================
