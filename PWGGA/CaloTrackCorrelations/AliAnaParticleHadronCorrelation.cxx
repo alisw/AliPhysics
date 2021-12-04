@@ -73,6 +73,7 @@ fCorrelVzBin(0),
 fListMixTrackEvents(),          fListMixCaloEvents(),
 fUseMixStoredInReader(0),       fFillNeutralEventMixPool(0),
 fM02MaxCut(0),                  fM02MinCut(0),
+fUsePtDepM02MaxCut(0),          fUsePtDepM02MinCut(0),
 fSelectLeadingHadronAngle(0),   fFillLeadHadOppositeHisto(0),
 fMinLeadHadPhi(0),              fMaxLeadHadPhi(0),
 fMinLeadHadPt(0),               fMaxLeadHadPt(0),
@@ -1418,10 +1419,18 @@ void AliAnaParticleHadronCorrelation::FillChargedEventMixPool()
   
   TList * pool = fListMixTrackEvents[eventBin];
   
+  // In case of embedding, mix only with data  not MC
+  Bool_t embeddedEvent = kFALSE;
+  if ( GetReader()->IsEmbeddedMCEventUsed() && !GetReader()->IsEmbeddedInputEventUsed() )
+    embeddedEvent = kTRUE;
+
   for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ )
   {
     AliVTrack * track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ;
     
+    // In case of embedding, mix only with data tracks
+    if ( embeddedEvent && track->GetLabel() >=0 ) continue;
+
     fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
     Float_t pt   = fTrackVector.Pt();
     
@@ -1497,10 +1506,18 @@ void AliAnaParticleHadronCorrelation::FillNeutralEventMixPool()
   
   TList * poolCalo = fListMixCaloEvents[eventBin];
   
+  // In case of embedding, mix only with data  not MC
+  Bool_t embeddedEvent = kFALSE;
+  if ( GetReader()->IsEmbeddedMCEventUsed() && !GetReader()->IsEmbeddedInputEventUsed() )
+    embeddedEvent = kTRUE;
+
   for(Int_t ipr = 0;ipr <  pl->GetEntriesFast() ; ipr ++ )
   {
     AliVCluster * calo = (AliVCluster *) (pl->At(ipr)) ;
     
+    // In case of embedding, mix only with data tracks
+    if ( embeddedEvent && calo->GetLabel() >=0 ) continue;
+
     // Remove matched clusters
     if ( IsTrackMatched( calo, GetReader()->GetInputEvent() ) ) continue ;
     
@@ -4297,6 +4314,9 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fM02MinCut   = -1 ;
   fM02MaxCut   = -1 ;
   
+  fM02CutPtDep[0] = 0.6; // 0.7 for bkg window
+  fM02CutPtDep[1] =-0.016;
+
   fDecayTagsM02Cut = 0.27;
   
   fSelectLeadingHadronAngle = kFALSE;
@@ -4614,7 +4634,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     AliDebug(1,Form("%s Trigger : min %f, max %f, det %d",
                     GetInputAODName().Data(),fM02MinCut,fM02MaxCut,particle->GetDetectorTag()));
     
-    if ( fM02MaxCut > 0 && fM02MinCut > 0 ) //clID1 > 0 && clID2 < 0 &&
+    if ( (fM02MaxCut > 0 && fM02MinCut > 0) ||
+        fUsePtDepM02MaxCut || fUsePtDepM02MinCut ) //clID1 > 0 && clID2 < 0 &&
     {
       //      Int_t iclus = -1;
       //      TObjArray* clusters = 0x0;
@@ -4629,8 +4650,31 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
       //      }
       
       Float_t m02 = particle->GetM02();
+      Float_t ptDepCut = fM02CutPtDep[0] + pt*fM02CutPtDep[1];
+      //printf("pt %2.2f, M02 %2.3f, abs min %2.3f max %2.3f, pT dep %2.3f\n",
+      //       pt, m02,fM02MinCut,fM02MaxCut,ptDepCut);
+
+      if ( fUsePtDepM02MinCut )
+      {
+        if ( fM02MinCut > ptDepCut ) ptDepCut = fM02MinCut;
+        //printf("\t Use MIN pt cut M02 %f\n",ptDepCut);
+        if ( m02 <  ptDepCut ) continue;
+      }
+      else
+      {
+        if ( m02 < fM02MinCut ) continue ;
+      }
       
-      if ( m02 > fM02MaxCut || m02 < fM02MinCut ) continue ;
+      if ( fUsePtDepM02MaxCut )
+      {
+        if ( fM02MaxCut > ptDepCut ) ptDepCut = fM02MaxCut;
+        //printf("\t Use MAX pt cut M02 %f\n",ptDepCut);
+        if ( m02 >  ptDepCut ) continue;
+      }
+      else
+      {
+        if ( m02 > fM02MaxCut ) continue ;
+      }
       
       fhPtTriggerSSCut->Fill(pt, GetEventWeight());
       

@@ -231,7 +231,16 @@ public:
   void         SwitchOffFillNeutralInMixedEvent(){ fFillNeutralEventMixPool = kFALSE ; }
   
   void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
+
+  void         SwitchOnM02MaxPtDependentCut ()      { fUsePtDepM02MaxCut = kTRUE  ; }
+  void         SwitchOffM02MaxPtDependentCut()      { fUsePtDepM02MaxCut = kFALSE ; }
+
+  void         SwitchOnM02MinPtDependentCut ()      { fUsePtDepM02MinCut = kTRUE  ; }
+  void         SwitchOffM02MinPtDependentCut()      { fUsePtDepM02MinCut = kFALSE ; }
   
+  void         SetM02PtDependentCutParam(Float_t p0=0, Float_t p1=0)
+               { fM02CutPtDep[0]= p0 ; fM02CutPtDep[1]  = p1 ; }
+
   void         SwitchOnCorrelationVzBin()        { fCorrelVzBin          = kTRUE  ; }
   void         SwitchOffCorrelationVzBin()       { fCorrelVzBin          = kFALSE ; }
   
@@ -329,8 +338,11 @@ private:
   
   Bool_t       fFillNeutralEventMixPool;                 ///<  Add clusters to pool if requested.
   
-  Float_t      fM02MaxCut   ;                            ///<  Study photon clusters with l0 smaller than cut.
-  Float_t      fM02MinCut   ;                            ///<  Study photon clusters with l0 larger than cut.
+  Float_t      fM02MaxCut   ;                            ///<  Study photon clusters with M02 smaller than cut.
+  Float_t      fM02MinCut   ;                            ///<  Study photon clusters with M02 larger than cut.
+  Bool_t       fUsePtDepM02MaxCut ;                      ///< Use M02 maximum cut dependent on cluster pt  with param fM02CutPtDep[2]
+  Bool_t       fUsePtDepM02MinCut ;                      ///< Use M02 minimum cut dependent on cluster pt  with param fM02CutPtDep[2]
+  Float_t      fM02CutPtDep[2] ;                         ///< Cluster M02 pT dependent parameters (linear function)
   
   Bool_t       fSelectLeadingHadronAngle;                ///<  Select events with leading particle within a range.
   
@@ -713,7 +725,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,40) ;
+  ClassDef(AliAnaParticleHadronCorrelation,41) ;
   /// \endcond
   
 } ;
