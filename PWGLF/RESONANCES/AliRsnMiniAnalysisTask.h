@@ -181,6 +181,7 @@ private:
    AliAnalysisFilter   *fTrackFilter;       //!<! track filter for spherocity estimator 
    Double_t             fSpherocity;        ///< stores value of spherocity
    TObjArray            fResonanceFinders;  ///< list of AliRsnMiniResonanceFinder objects
+  
 
 /// \cond CLASSIMP
    ClassDef(AliRsnMiniAnalysisTask, 22);     

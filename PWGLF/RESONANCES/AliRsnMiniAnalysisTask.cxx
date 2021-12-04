@@ -117,6 +117,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fTrackFilter(0x0),
    fSpherocity(-10),
    fResonanceFinders(0)
+
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -188,7 +189,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fComputeSpherocity(kFALSE),
    fTrackFilter(0x0),
    fSpherocity(-10),
-   fResonanceFinders(0)
+   fResonanceFinders(0)   
 {
 //
 // Default constructor.
@@ -196,7 +197,6 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
 // Input slot #0 works with a TChain - it is connected to the default input container
 // Output slot #1 writes into a TH1 container
 //
-
    DefineOutput(1, TList::Class());
    if (fRsnTreeInFile) DefineOutput(2, TTree::Class());
 }
@@ -1361,6 +1361,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
       if ( !aodt->IsOn(0x40) ) continue;
       if ( !aodt->IsOn(0x4) ) continue; 
     }
+
     if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
     if (track->Pt() < 0.15) continue;
     if(TMath::Abs(track->Eta()) > 0.8) continue;
@@ -1373,7 +1374,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   //Getting thrust
   for(Int_t i = 0; i < 360/0.1; ++i){
 	Float_t numerador = 0;
-	Float_t phiparam  = 0;
+ehe	Float_t phiparam  = 0;
 	Float_t nx = 0;
 	Float_t ny = 0;
 	phiparam=( (TMath::Pi()) * i * 0.1 ) / 180; // parametrization of the angle
@@ -1393,6 +1394,10 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;
 	  //pt[i1] = track->Pt();
 	  pt[i1] = 1.0;
+
+
+
+
 	  phi[i1] = track->Phi();
 	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
 	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
@@ -2077,3 +2082,4 @@ void AliRsnMiniAnalysisTask::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
 	fTrackFilter->AddCuts(esdTrackCuts);
    return;
 }
+
