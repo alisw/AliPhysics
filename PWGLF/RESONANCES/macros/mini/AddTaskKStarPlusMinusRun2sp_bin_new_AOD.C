@@ -77,6 +77,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2sp_bin_new_AOD
  Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
  Float_t     pi_k0s_PIDCut = 5.0,
+ Float_t     massTolVeto = 0.0043,
  Int_t       tol_switch = 1,
  Double_t    tol_sigma = 6,
  Float_t     pLife = 20,
@@ -103,7 +104,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2sp_bin_new_AOD
   // event cuts
   //-------------------------------------------
   Float_t     massTol = 0.03;
-  Float_t     massTolVeto = 0.0043;
+  //Float_t     massTolVeto = 0.0043;
   //Int_t       evtCutSetID = 0;
   Int_t       pairCutSetID = 0;
   Int_t       mixingConfigID = 0;  
