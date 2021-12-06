@@ -274,6 +274,12 @@ public:
   void         SwitchOnFillHBPHistograms()       { fFillHBPHistograms = kTRUE  ; }
   void         SwitchOffFillHBPHistograms()      { fFillHBPHistograms = kFALSE ; }  
   
+  void         SwitchOnClusterRejectionBelowCaloTriggerThreshold () { fRejectClustersBelowTriggerThreshold = kTRUE ; }
+  void         SwitchOffClusterRejectionBelowCaloTriggerThreshold() { fRejectClustersBelowTriggerThreshold = kFALSE; }
+
+  void         SetMinimumCaloTriggerPt(Float_t th) { fMinCaloTriggerPt = th   ; }
+  Float_t      GetMinimumCaloTriggerPt()           { return fMinCaloTriggerPt ; }
+
 private:
   
   Bool_t       fFillAODWithReferences;                   ///<  Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
@@ -344,6 +350,9 @@ private:
   Bool_t       fUsePtDepM02MinCut ;                      ///< Use M02 minimum cut dependent on cluster pt  with param fM02CutPtDep[2]
   Float_t      fM02CutPtDep[2] ;                         ///< Cluster M02 pT dependent parameters (linear function)
   
+  Bool_t       fRejectClustersBelowTriggerThreshold;     ///< Reject clusters below hardware calorimeter trigger threshold
+  Float_t      fMinCaloTriggerPt;                        ///< Hardware calorimeter trigger threshold
+
   Bool_t       fSelectLeadingHadronAngle;                ///<  Select events with leading particle within a range.
   
   Bool_t       fFillLeadHadOppositeHisto;                ///<  Fill histograms for leading hadrons in opposite side of trigger.
@@ -389,6 +398,7 @@ private:
   
   // Trigger particles
   TH1F *       fhPtTriggerInput;                         //!<! pT distribution of trigger particles before selection.
+  TH1F *       fhPtTriggerCaloTriggerCut;                //!<! pT distribution of trigger particles before Calorimeter trigger selection.
   TH1F *       fhPtTriggerSSCut;                         //!<! pT distribution of trigger particles after shower shape selection.
   TH1F *       fhPtTriggerIsoCut;                        //!<! pT distribution of trigger particles after isolation cut selection.
   TH1F *       fhPtTriggerFidCut;                        //!<! pT distribution of trigger particles after fiducial selection.

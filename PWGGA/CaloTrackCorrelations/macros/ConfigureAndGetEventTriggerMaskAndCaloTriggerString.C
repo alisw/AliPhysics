@@ -43,6 +43,11 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
     mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central mask %d\n",mask);
   }
+  else if( trigger.Contains("AllMB_EMDCAL_L1") )
+  {
+    mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central | EMCEGA mask %d\n",mask);
+  }
   else if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
   {
     mask = ( AliVEvent::kINT7 | AliVEvent::kMB );
