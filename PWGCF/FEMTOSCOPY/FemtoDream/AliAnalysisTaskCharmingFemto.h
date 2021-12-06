@@ -53,6 +53,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetIsMC(bool isMC) {
     fIsMC = isMC;
   }
+  void SetUseMCTruthReco(bool useMCTruthReco) {
+    fUseMCTruthReco = useMCTruthReco;
+  }
   void SetLightweight(bool isLightweight) {
     fIsLightweight = isLightweight;
   }
@@ -170,6 +173,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;            //!
 
   bool fIsMC;              //
+  bool fUseMCTruthReco;    //
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
   int fSystem;             //

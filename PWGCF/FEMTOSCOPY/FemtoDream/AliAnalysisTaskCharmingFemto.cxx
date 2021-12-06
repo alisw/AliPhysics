@@ -35,6 +35,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(false),
+      fUseMCTruthReco(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -111,6 +112,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(isMC),
+      fUseMCTruthReco(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -359,17 +361,38 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         continue;
       }
     }
-
-  float DmesonBuddyMass =
-    TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
+    float DmesonBuddyMass =
+      TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
 
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(DmesonBuddyMass);
+
+    int mcpdg = 0;
+    if (fUseMCTruthReco && track->GetLabel() >= 0){ // Fake tracks have label < 0. Reject them.
+      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
+      if(mcPart){
+        mcpdg = mcPart->GetPdgCode();
+      }
+    }
+
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      protons.push_back(*fProtonTrack);
+      if(!fUseMCTruthReco) {
+        protons.push_back(*fProtonTrack);
+      }
+      else if (mcpdg == fTrackCutsPartProton->GetPDGCode()){
+        protons.push_back(*fProtonTrack);
+      }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiprotons.push_back(*fProtonTrack);
+      if(!fUseMCTruthReco) {
+        antiprotons.push_back(*fProtonTrack);
+      }
+      else if (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()){
+        antiprotons.push_back(*fProtonTrack);
+      }
     }
   }
 
@@ -419,8 +442,20 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
-
-    int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    
+    int pdgDplusDau[3] = {321, 211, 211};
+    if(fUseMCTruthReco){
+      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if(!dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau)){
+        continue;
+      }
+    }
+    
+    int isSelected = 1;
+    if (!fUseMCTruthReco)
+      isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    
     if(!isSelected) {
       if (unsetVtx) {
         dMesonWithVtx->UnsetOwnPrimaryVtx();
