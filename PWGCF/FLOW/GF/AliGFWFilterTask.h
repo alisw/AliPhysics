@@ -35,8 +35,8 @@ class AliGFWFilterTask : public AliAnalysisTaskSE
         void SetExtentV0MAcceptance(Bool_t newVal) { fExtendV0MAcceptance=newVal; };
         void AddCustomCuts(UInt_t lEvCuts, UInt_t lTrCuts) {fCustomCuts.push_back(make_pair(lEvCuts,lTrCuts)); };
         void SetDisableDefaultCuts(Bool_t newval) {fDisableDefaultCuts=newval;};
-        void SetPt(Double_t lPtMin, Double_t lPtMax);
-        void SetEta(Double_t lEtaMin, Double_t lEtaMax);
+        void SetPt(Double_t lPtMin, Double_t lPtMax) {fPtMin=lPtMin; fPtMax=lPtMax; };
+        void SetEta(Double_t lEtaMin, Double_t lEtaMax) {fEtaMin=lEtaMin; fEtaMax=lEtaMax; };
     private:
         AliAODEvent *fAOD;
         TList *fOutList;
