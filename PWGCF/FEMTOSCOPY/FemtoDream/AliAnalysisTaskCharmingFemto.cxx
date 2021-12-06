@@ -20,8 +20,6 @@
 #include "TDatabasePDG.h"
 #include "TRandom.h"
 
-#include <array>
-
 ClassImp(AliAnalysisTaskCharmingFemto)
 
     //____________________________________________________________________________________________________
@@ -452,7 +450,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         }
       }
 
-      if (std::abs(mcpdg) == 411) {
+      if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
         if((pt>DmesonPtMin) && (pt<DmesonPtMax)) {
           int NDDaughters=(const int)mcPart->GetNDaughters();
           if (NDDaughters == 3) {

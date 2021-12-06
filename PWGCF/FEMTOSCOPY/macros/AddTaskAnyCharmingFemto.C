@@ -18,8 +18,15 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TString cutHFsuffix = "", bool applyML = false, TString configML =
         "config_ML.yml",
     int useAODProtection = 0, int massSelection =
-        AliAnalysisTaskCharmingFemto::kSignal, int pdgDmesonBuddy = 2212) {
-  TString suffix = "0";
+        AliAnalysisTaskCharmingFemto::kSignal, int pdgDmesonBuddy = 2212, const char *cutVariation = "0") {
+  TString suffix = TString::Format("%s", cutVariation);
+
+  if (suffix == "0"){
+    cout<<"LALALALALALAL ZERO"<<endl;
+  }
+  else if (suffix == "1") {
+    cout<<"LALALALLALALALAL ONE"<<endl;
+  }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -218,10 +225,10 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   if (isMCtruth){
     if (std::abs(pdgDmesonBuddy) == 321) {
       task->SetBuddypTLowMCTRUTH(0.15);
-      task->SetBuddypTHighMCTRUTH(1.4);
+      task->SetBuddypTHighMCTRUTH(999);
       task->SetBuddyEtaMCTRUTH(0.8);
       task->SetBuddyOriginMCTRUTH(1);
-      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(0);
     }
   }
 
