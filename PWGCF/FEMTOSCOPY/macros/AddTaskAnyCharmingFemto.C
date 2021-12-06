@@ -21,13 +21,6 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
         AliAnalysisTaskCharmingFemto::kSignal, int pdgDmesonBuddy = 2212, const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
-  if (suffix == "0"){
-    cout<<"LALALALALALAL ZERO"<<endl;
-  }
-  else if (suffix == "1") {
-    cout<<"LALALALLALALALAL ONE"<<endl;
-  }
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskAnyCharmingFemto()", "No analysis manager found.");
