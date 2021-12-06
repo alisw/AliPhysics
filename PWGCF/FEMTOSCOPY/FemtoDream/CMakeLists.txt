@@ -106,7 +106,8 @@ set(SRCS
   AliSigma0AODPhotonMotherCuts.cxx;
   AliSigma0PhotonCuts.cxx;
   AliAnalysisTaskNanoTreeLPhi.cxx;
-  AliAnalysisTaskNanoLambdaKaon.cxx
+  AliAnalysisTaskNanoLambdaKaon.cxx;
+  AliAnalysisTaskNanoLKr.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -185,4 +186,3 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-

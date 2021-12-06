@@ -182,7 +182,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 
 	binCent = AxisVar("Cent",varcentbinHigh);
-	binSubsample = AxisFix("Subsamples",10,-0.5,9.5);
+	binSubsample = AxisFix("Subsamples",10,0.0,10.0);
 
 	if( IsAA ) binCent = AxisVar("Cent",varcentbinHeavy);
 	if( fOption.Contains("HighMult") ){ binCent = AxisVar("Cent",varcentbinHigh); }

@@ -954,25 +954,25 @@ void AliAnalysisTaskCMWESEsyst::UserCreateOutputObjects()
   pIntd2q2c_thisEvt            = new TProfile("pIntd2q2cthisEvt", "", 30, 0, 30, "s");
   pIntd2q2a_thisEvt            = new TProfile("pIntd2q2athisEvt", "", 30, 0, 30, "s");
 
-  for (int i = 0; i < NCENTBINS; ++i) {
-    pRefFlowCentdef[i]                    = new TProfile(Form("pRefFlowV0MCent%i",i), "", 10, 0, 10, "s");  // as function of delta eta
-    pIntd2CentdefQ2c[i]                   = new TProfile(Form("pIntd2V0Mq2cCent%i",i), "", 30, 0, 30, "s");
-    pIntd2AchCentdefQ2c[i]             = new TProfile(Form("pIntd2AchV0Mq2cCent%i", i), "", 30, 0, 30, "s");
-    pAchCentdefQ2c[i]                     = new TProfile(Form("pAchV0Mq2cCent%i", i), "", 30, 0, 30, "s");
-  }
-  for (int i = fCbinLo; i < fCbinHg; ++i) {
-    fOutputList->Add(pRefFlowCentdef[i]);
-    fOutputList->Add(pIntd2CentdefQ2c[i]);
-    fOutputList->Add(pIntd2AchCentdefQ2c[i]);
-    fOutputList->Add(pAchCentdefQ2c[i]);
-  }
+  // for (int i = 0; i < NCENTBINS; ++i) {
+  //   pIntd2CentdefQ2c[i]                   = new TProfile(Form("pIntd2V0Mq2cCent%i",i), "", 30, 0, 30, "s");
+  //   pIntd2AchCentdefQ2c[i]             = new TProfile(Form("pIntd2AchV0Mq2cCent%i", i), "", 30, 0, 30, "s");
+  //   pAchCentdefQ2c[i]                     = new TProfile(Form("pAchV0Mq2cCent%i", i), "", 30, 0, 30, "s");
+  // }
+  // for (int i = fCbinLo; i < fCbinHg; ++i) {
+  //   fOutputList->Add(pIntd2CentdefQ2c[i]);
+  //   fOutputList->Add(pIntd2AchCentdefQ2c[i]);
+  //   fOutputList->Add(pAchCentdefQ2c[i]);
+  // }
 
   for (int i = 0; i < NCENTBINS; ++i) {
+    pRefFlowCentdef[i]                    = new TProfile(Form("pRefFlowV0MCent%i",i), "", 10, 0, 10, "s");  // as function of delta eta
     pIntd2CentdefQ2a[i]                   = new TProfile(Form("pIntd2V0Mq2aCent%i",i), "", 30, 0, 30, "s");
     pIntd2AchCentdefQ2a[i]             = new TProfile(Form("pIntd2AchV0Mq2aCent%i", i), "", 30, 0, 30, "s");
     pAchCentdefQ2a[i]                     = new TProfile(Form("pAchV0Mq2aCent%i", i), "", 30, 0, 30, "s");
   }
   for (int i = fCbinLo; i < fCbinHg; ++i) {
+    fOutputList->Add(pRefFlowCentdef[i]);
     fOutputList->Add(pIntd2CentdefQ2a[i]);
     fOutputList->Add(pIntd2AchCentdefQ2a[i]);
     fOutputList->Add(pAchCentdefQ2a[i]);
@@ -1150,6 +1150,7 @@ void AliAnalysisTaskCMWESEsyst::UserExec(Option_t *)
   hCentQA[4]->Fill(centV0M,centSPD0);
   hCentQA[6]->Fill(centSPD1,centSPD0);
   if (fabs(centV0M-centSPD1)>7.5) return;
+  if (centV0M>80.0) return;
   hCentQA[1]->Fill(centV0M,centSPD1);
   hCentQA[3]->Fill(centV0M,centTRK);
   hCentQA[5]->Fill(centV0M,centSPD0);
@@ -1364,9 +1365,9 @@ bool AliAnalysisTaskCMWESEsyst::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx
       pIntd2q2c_thisEvt->Fill(28.5, d2_iTrk, weight1); //unbiased
       if (fCentV0M >= fCbinLo && fCentBinV0M < fCbinHg){
         pAchCentdefQ2a[fCentBinV0M]->Fill((double)(2*fQnBinV0A+0.5), mAch, weight1);
-        pAchCentdefQ2c[fCentBinV0M]->Fill((double)(2*fQnBinV0C+0.5), mAch, weight1);
+        // pAchCentdefQ2c[fCentBinV0M]->Fill((double)(2*fQnBinV0C+0.5), mAch, weight1);
         pAchCentdefQ2a[fCentBinV0M]->Fill(28.5, mAch, weight1);
-        pAchCentdefQ2c[fCentBinV0M]->Fill(28.5, mAch, weight1);
+        // pAchCentdefQ2c[fCentBinV0M]->Fill(28.5, mAch, weight1);
       };
       if (fCentBinSPD1 >= fCbinLo && fCentBinSPD1 < fCbinHg){
         pAchCentspdQ2c[fCentBinSPD1]->Fill((double)(2*fQnBinV0C+0.5), mAch, weight1);
@@ -1381,9 +1382,9 @@ bool AliAnalysisTaskCMWESEsyst::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx
       pIntd2q2c_thisEvt->Fill(29.5, d2_iTrk, weight1); //unbiased
       if (fCentV0M >= fCbinLo && fCentBinV0M < fCbinHg){
         pAchCentdefQ2a[fCentBinV0M]->Fill((double)(2*fQnBinV0A+1.5), mAch, weight1);
-        pAchCentdefQ2c[fCentBinV0M]->Fill((double)(2*fQnBinV0C+1.5), mAch, weight1);
+        // pAchCentdefQ2c[fCentBinV0M]->Fill((double)(2*fQnBinV0C+1.5), mAch, weight1);
         pAchCentdefQ2a[fCentBinV0M]->Fill(29.5, mAch, weight1);
-        pAchCentdefQ2c[fCentBinV0M]->Fill(29.5, mAch, weight1);
+        // pAchCentdefQ2c[fCentBinV0M]->Fill(29.5, mAch, weight1);
       };
       if (fCentBinSPD1 >= fCbinLo && fCentBinSPD1 < fCbinHg){
         pAchCentspdQ2c[fCentBinSPD1]->Fill((double)(2*fQnBinV0C+1.5), mAch, weight1);
@@ -1408,10 +1409,10 @@ bool AliAnalysisTaskCMWESEsyst::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx
     hMultCentdefQ2a[fQnBinV0A]->Fill(Mult); //mb
 
     // Cent : V0M, Q2 : V0C (Default)
-    pIntd2CentdefQ2c[fCentBinV0M]->Add(pIntd2q2c_thisEvt);
-    pIntd2q2c_thisEvt->Scale(mAch); 
-    pIntd2AchCentdefQ2c[fCentBinV0M]->Add(pIntd2q2c_thisEvt);
-    pIntd2q2c_thisEvt->Scale(1./mAch); 
+    // pIntd2CentdefQ2c[fCentBinV0M]->Add(pIntd2q2c_thisEvt);
+    // pIntd2q2c_thisEvt->Scale(mAch); 
+    // pIntd2AchCentdefQ2c[fCentBinV0M]->Add(pIntd2q2c_thisEvt);
+    // pIntd2q2c_thisEvt->Scale(1./mAch); 
     hEvtCount->Fill(14);
   }
   if (fCentBinSPD1 >= fCbinLo && fCentBinSPD1 < fCbinHg){
@@ -1974,7 +1975,7 @@ bool AliAnalysisTaskCMWESEsyst::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex*
         iCentSPD = (Int_t)centCL1;
       }
 
-      if (iCentSPD >= 90) return false;
+      if (iCentSPD >= 90 || iCentSPD < 0) return false;
       fV0XMean[0] = -999.; fV0YMean[0] = -999.; 
       for(int i = 0; i < 2; ++i) {   // [1]: C; [2]: A;
         fV0XMean[i+1] = hQxnmV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);

@@ -90,7 +90,7 @@ AliAnalysisTaskCMWESEsyst* AddTaskCMWESEsyst(
 
 	Int_t inSlotCounter=1;
 	
-   	// TGrid::Connect("alien://");
+   	TGrid::Connect("alien://");
 
         	TObjArray *AllContainers = mgr->GetContainers();
 

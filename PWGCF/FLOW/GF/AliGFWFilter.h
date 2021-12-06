@@ -117,7 +117,7 @@ class AliGFWFilter
     void AddCustomCuts(Bool_t cleanFirst=kTRUE, UInt_t lEv=klVtxZ10+klEventCuts, UInt_t lTr=klFB96+klDCAz20+klDCAxy2011+klTPCchi2PC25+klNTPCcls70);
     AliGFWFlags *GetFlags() { return fRetFlags; };
     void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };
-    void SetEtaMin(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
+    void SetEta(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
     // static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:(ind-gNEventFlags); return GetSystPF(lev,ltr); };
   private:
     inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };

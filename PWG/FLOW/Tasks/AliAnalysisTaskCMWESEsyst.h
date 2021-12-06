@@ -98,7 +98,7 @@ private:
   static const int NCENTBINS = 10;
   static const int NPOIBINS  = 2;
   static const int NQNBINS  = 10;
-  static const int NRUNNUM = 68;
+  static const int NRUNNUM = 138;
   void          ResetHists();
   bool          DoCumulants();
   void          CalcRefFlow();

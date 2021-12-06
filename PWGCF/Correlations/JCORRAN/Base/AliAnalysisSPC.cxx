@@ -547,6 +547,7 @@ void AliAnalysisSPC::InitializeArrays()
 
   	//Output Histograms
   	fResults[icent] = NULL;
+        fResultsAlternativeError[icent] = NULL; 
   	fCovResults[icent] = NULL; 
   	fJoinedCovResults[icent] = NULL; 
     fMixedParticleHarmonics[icent] = NULL;
@@ -722,6 +723,12 @@ void AliAnalysisSPC::BookFinalResultsHistograms()
 	  fResults[icent]->GetYaxis()->SetTitle("");
 	  fResults[icent]->Sumw2();
 	  fFinalResultsList[icent]->Add(fResults[icent]);
+
+	  fResultsAlternativeError[icent] = new TProfile("fResultsAlternativeError","Result Analysis First Set Correlators",16,0.,16.); //centrality dependent output
+	  fResultsAlternativeError[icent]->GetXaxis()->SetTitle("");
+	  fResultsAlternativeError[icent]->GetYaxis()->SetTitle("");
+	  fResultsAlternativeError[icent]->Sumw2();
+	  fFinalResultsList[icent]->Add(fResultsAlternativeError[icent]);
 
 	  fCovResults[icent] = new TProfile("fCovResults","Result for Covariance Terms",32,0.,32.,"s"); //centrality dependent output
 	  fCovResults[icent]->GetXaxis()->SetTitle("");
@@ -1348,6 +1355,9 @@ void AliAnalysisSPC::MainTask(Int_t MainTask_CentBin, Int_t MainTask_Mult, Doubl
    {
      fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+0.5,CorrelationNum[i],Weight_CorrelationNum[i]); //safe output first set of harmonics
      fResults[MainTask_CentBin]->Fill(2.*(Float_t)(i)+1.5,CorrelationDenom[i],Weight_CorrelationDenom[i]); //safe output first set of harmonics
+
+     fResultsAlternativeError[MainTask_CentBin]->Fill(2.*(Float_t)(i)+0.5,CorrelationNum[i],Weight_CorrelationNum[i]); //safe output first set of harmonics
+     fResultsAlternativeError[MainTask_CentBin]->Fill(2.*(Float_t)(i)+1.5,CorrelationDenom[i],Weight_CorrelationDenom[i]); //safe output first set of harmonics
 
      fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+0.5,CorrelationNum[i]*CorrelationDenom[i],Weight_CorrelationNum[i]*Weight_CorrelationDenom[i]); //w_D*N*w_D*D
      fCovResults[MainTask_CentBin]->Fill(4.*(Float_t)(i)+1.5,Weight_CorrelationNum[i]*Weight_CorrelationDenom[i],1.); //w_N*w_D

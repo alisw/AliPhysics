@@ -231,7 +231,16 @@ public:
   void         SwitchOffFillNeutralInMixedEvent(){ fFillNeutralEventMixPool = kFALSE ; }
   
   void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
+
+  void         SwitchOnM02MaxPtDependentCut ()      { fUsePtDepM02MaxCut = kTRUE  ; }
+  void         SwitchOffM02MaxPtDependentCut()      { fUsePtDepM02MaxCut = kFALSE ; }
+
+  void         SwitchOnM02MinPtDependentCut ()      { fUsePtDepM02MinCut = kTRUE  ; }
+  void         SwitchOffM02MinPtDependentCut()      { fUsePtDepM02MinCut = kFALSE ; }
   
+  void         SetM02PtDependentCutParam(Float_t p0=0, Float_t p1=0)
+               { fM02CutPtDep[0]= p0 ; fM02CutPtDep[1]  = p1 ; }
+
   void         SwitchOnCorrelationVzBin()        { fCorrelVzBin          = kTRUE  ; }
   void         SwitchOffCorrelationVzBin()       { fCorrelVzBin          = kFALSE ; }
   
@@ -265,6 +274,12 @@ public:
   void         SwitchOnFillHBPHistograms()       { fFillHBPHistograms = kTRUE  ; }
   void         SwitchOffFillHBPHistograms()      { fFillHBPHistograms = kFALSE ; }  
   
+  void         SwitchOnClusterRejectionBelowCaloTriggerThreshold () { fRejectClustersBelowTriggerThreshold = kTRUE ; }
+  void         SwitchOffClusterRejectionBelowCaloTriggerThreshold() { fRejectClustersBelowTriggerThreshold = kFALSE; }
+
+  void         SetMinimumCaloTriggerPt(Float_t th) { fMinCaloTriggerPt = th   ; }
+  Float_t      GetMinimumCaloTriggerPt()           { return fMinCaloTriggerPt ; }
+
 private:
   
   Bool_t       fFillAODWithReferences;                   ///<  Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
@@ -329,9 +344,15 @@ private:
   
   Bool_t       fFillNeutralEventMixPool;                 ///<  Add clusters to pool if requested.
   
-  Float_t      fM02MaxCut   ;                            ///<  Study photon clusters with l0 smaller than cut.
-  Float_t      fM02MinCut   ;                            ///<  Study photon clusters with l0 larger than cut.
+  Float_t      fM02MaxCut   ;                            ///<  Study photon clusters with M02 smaller than cut.
+  Float_t      fM02MinCut   ;                            ///<  Study photon clusters with M02 larger than cut.
+  Bool_t       fUsePtDepM02MaxCut ;                      ///< Use M02 maximum cut dependent on cluster pt  with param fM02CutPtDep[2]
+  Bool_t       fUsePtDepM02MinCut ;                      ///< Use M02 minimum cut dependent on cluster pt  with param fM02CutPtDep[2]
+  Float_t      fM02CutPtDep[2] ;                         ///< Cluster M02 pT dependent parameters (linear function)
   
+  Bool_t       fRejectClustersBelowTriggerThreshold;     ///< Reject clusters below hardware calorimeter trigger threshold
+  Float_t      fMinCaloTriggerPt;                        ///< Hardware calorimeter trigger threshold
+
   Bool_t       fSelectLeadingHadronAngle;                ///<  Select events with leading particle within a range.
   
   Bool_t       fFillLeadHadOppositeHisto;                ///<  Fill histograms for leading hadrons in opposite side of trigger.
@@ -377,6 +398,7 @@ private:
   
   // Trigger particles
   TH1F *       fhPtTriggerInput;                         //!<! pT distribution of trigger particles before selection.
+  TH1F *       fhPtTriggerCaloTriggerCut;                //!<! pT distribution of trigger particles before Calorimeter trigger selection.
   TH1F *       fhPtTriggerSSCut;                         //!<! pT distribution of trigger particles after shower shape selection.
   TH1F *       fhPtTriggerIsoCut;                        //!<! pT distribution of trigger particles after isolation cut selection.
   TH1F *       fhPtTriggerFidCut;                        //!<! pT distribution of trigger particles after fiducial selection.
@@ -713,7 +735,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,40) ;
+  ClassDef(AliAnaParticleHadronCorrelation,41) ;
   /// \endcond
   
 } ;
