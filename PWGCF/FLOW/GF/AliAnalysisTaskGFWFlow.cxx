@@ -276,7 +276,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
-  fMultiDist = new TH1D("Multiplicity_distribution","Multiplicity distribution",100, 0, 100);
+  fMultiDist = new TH1D(Form("Multiplicity_distribution%s",GetSystPF(BitIndex(fEvNomFlag),BitIndex(fTrNomFlag)).Data()),"Multiplicity distribution",100, 0, 100);
   PostData(2,fMultiDist);
   if(!fProduceWeights) {
     if(fIsTrain) {
@@ -586,4 +586,80 @@ void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("MidGapNV52","poiGapNeg refGapNeg | olGapNeg {5} refGapPos {-5}", kTRUE));
   corrconfigs.push_back(GetConf("MidGapPV52","refGapPos {5} refGapNeg {-5}", kFALSE));
   corrconfigs.push_back(GetConf("MidGapPV52","poiGapPos refGapPos | olGapPos {5} refGapNeg {-5}", kTRUE));
+}
+void AliAnalysisTaskGFWFlow::SetupFlagsByIndex(Int_t ind) {
+  fEvNomFlag=1<<kNominal;
+  fTrNomFlag=1<<kFB96;
+  switch(ind) {
+    default: // also 0
+      break;
+    //Event flags:
+    case 1:
+      fEvNomFlag = 1<<kVtx9;
+      break;
+    case 2:
+      fEvNomFlag = 1<<kVtx7;
+      break;
+    case 3:
+      fEvNomFlag = 1<<kVtx5;
+      break;
+    //Track flags:
+    case 4:
+      fTrNomFlag = 1<<kFB768;
+      break;
+    case 5:
+      fTrNomFlag = 1<<kDCAz10;
+      break;
+    case 6:
+      fTrNomFlag = 1<<kDCAz05;
+      break;
+    case 7:
+      fTrNomFlag = 1<<kDCA4Sigma;
+      break;
+    case 8:
+      fTrNomFlag = 1<<kDCA10Sigma;
+      break;
+    case 9:
+      fTrNomFlag = 1<<kChiSq2;
+      break;
+    case 10:
+      fTrNomFlag = 1<<kChiSq3;
+      break;
+    case 11:
+      fTrNomFlag = 1<<kNTPC80;
+      break;
+    case 12:
+      fTrNomFlag = 1<<kNTPC90;
+      break;
+    case 13:
+      fTrNomFlag = 1<<kNTPC100;
+      break;
+    case 14:
+      fTrNomFlag = 1<<kFB768Tuned;
+      break;
+    case 15:
+      fTrNomFlag = 1<<kFB96Tuned;
+      break;
+    case 16:
+      fTrNomFlag = 1<<kFB768DCAz;
+      break;
+    case 17:
+      fTrNomFlag = 1<<kFB768DCAxyLow;
+      break;
+    case 18:
+      fTrNomFlag = 1<<kFB768DCAxyHigh;
+      break;
+    case 19:
+      fTrNomFlag = 1<<kFB768ChiSq2;
+      break;
+    case 20:
+      fTrNomFlag = 1<<kFB768ChiSq3;
+      break;
+    case 21:
+      fTrNomFlag = 1<<kFB768nTPC;
+      break;
+    case 22:
+      fTrNomFlag = 1<<kFB96MergedDCA;
+      break;
+  }
 }

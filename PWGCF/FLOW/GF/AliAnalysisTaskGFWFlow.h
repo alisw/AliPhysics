@@ -50,6 +50,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   void SetPtBins(Int_t nBins, Double_t *bins, Double_t RFpTMin=-1, Double_t RFpTMax=-1); //Also set the RF pT acceptance
   //In case we want custom nominal flags (defaults are the first ones)
   void SetNominalFlags(Int_t lEvFlagIndex, Int_t lTrFlagIndex) { fEvNomFlag=(1<<lEvFlagIndex); fTrNomFlag=(1<<lTrFlagIndex); };
+  void SetupFlagsByIndex(Int_t ind); //Just a [hardcoded] helper, so that one doesn't have to manually go through all the flags
   void SetCustomNoFlags(Int_t nEvFlags, Int_t nTrFlags) {fTotTrackFlags=nTrFlags; fTotEvFlags=nEvFlags; };
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
