@@ -133,6 +133,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulTPCselSPDanyPrim{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecDec{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecMat{nullptr},
+  fHistGenK0s{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
   fHistInvMassAntiLambda{nullptr},
@@ -311,6 +312,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
     delete fHistImpParXYPtMulTPCselSPDanySecDec;
     delete fHistImpParXYPtMulTPCselSPDanySecMat;
+    delete fHistGenK0s;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
@@ -654,10 +656,11 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
-
+  fHistGenK0s = new TH2F("hGenK0s"," ; p_{T} ; y",200,0.,10.,20,-1.,1.);
   fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,50,0.,10.,50,0.,50.);
   fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
   fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
+  fOutput->Add(fHistGenK0s);
   fOutput->Add(fHistInvMassK0s);
   fOutput->Add(fHistInvMassLambda);
   fOutput->Add(fHistInvMassAntiLambda);
@@ -1175,7 +1178,18 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       }
     }
   }
-
+  // build generated spectrum of K0s in case of MC
+  if(fMCEvent){
+    for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
+      AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
+      if(part){
+	if(!part->IsPhysicalPrimary()) continue;
+	const int pdg = std::abs(part->PdgCode());
+	if(pdg==310) fHistGenK0s->Fill(part->Pt(),part->Y());
+      }
+    }
+  }
+  
   Int_t nv0s = aod->GetNumberOfV0s();
   for (Int_t iV0 = 0; iV0 < nv0s; iV0++){
     AliAODv0 *v0 = aod->GetV0(iV0);
