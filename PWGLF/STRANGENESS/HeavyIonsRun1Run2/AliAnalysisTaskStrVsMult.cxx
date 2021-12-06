@@ -289,9 +289,9 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   fHistos_eve = new THistManager("histos_eve");
 
   fHistos_eve->CreateTH1("hcent", "", 100, 0, 100, "s");  //storing #events in bins of centrality
-  fHistos_eve->CreateTH1("henum", "", 3, -0.5, 2.5);  //storing total #events
-  const char *labels[3] = {"Total", "MultSelection", "AliEventCuts"};
-  for (int iLab=1; iLab<=3; iLab++) ((TH1*)fHistos_eve->FindObject("henum"))->GetXaxis()->SetBinLabel(iLab, labels[iLab-1]);
+  fHistos_eve->CreateTH1("henum", "", 4, -0.5, 3.5);  //storing total #events
+  const char *labels[4] = {"Total", "MultSelection", "AliEventCuts", "Pile-up rejection"};
+  for (int iLab=1; iLab<=4; iLab++) ((TH1*)fHistos_eve->FindObject("henum"))->GetXaxis()->SetBinLabel(iLab, labels[iLab-1]);
 
   //histograms for V0 variables
   if (fParticleAnalysisStatus[kk0s]) {
@@ -438,12 +438,14 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   fHistos_eve->FillTH1("henum", 1.);
 
   if (!fEventCuts.AcceptEvent(lVevent)) {
+    if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) fHistos_eve->FillTH1("henum", 2.);
     DataPosting(); 
     return;
   }
 
-  //fill number of events after AliEventCuts
+  //fill number of events after pile-up rejection
   fHistos_eve->FillTH1("henum", 2.);
+  fHistos_eve->FillTH1("henum", 3.);
 
   //get run number
   int runNumber = (isESD) ? lESDevent->GetRunNumber() : lAODevent->GetRunNumber();
