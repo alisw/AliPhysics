@@ -451,8 +451,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         continue;
       }
     }
-
-    int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    
+    int isSelected = 1;
+    if (!fUseMCTruthReco)
+      isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    
     if(!isSelected) {
       if (unsetVtx) {
         dMesonWithVtx->UnsetOwnPrimaryVtx();
@@ -460,8 +463,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       if (recVtx) {
         fRDHFCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fInputEvent, origOwnVtx);
       }
-      if (!fUseMCTruthReco)
-        continue;
+      continue;
     }
 
     double mass;
