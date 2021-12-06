@@ -1393,6 +1393,25 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
   if ( GetReader()->GetGenPythiaEventHeader() ) 
     firstParticle = GetMCAnalysisUtils()->GetPythiaMaxPartParent();
   
+  // Get pT hard, used later to reject too high energy photons
+  Float_t pTHard = 0;
+  TString pyProcessName   = "";
+  if ( GetReader()->IsPythiaEventHeaderUsed() && GetReader()->GetGenPythiaEventHeader() )
+  {
+    TString pyGenName       = "";
+    Int_t   pyProcess       = 0;
+    Int_t   pyFirstGenPart  = 0;
+    Int_t   pythiaVersion   = 0;
+    GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),GetReader()->GetNameOfMCEventHederGeneratorToAccept() ,
+                                               pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+    //printf("process %d, name %s, version %d, first %d\n",
+    //       pyProcess,pyProcessName.Data(),pythiaVersion,pyFirstGenPart);
+
+    pTHard = (GetReader()->GetGenPythiaEventHeader())->GetPtHard();
+  }
+
+  //printf("pTHard %f process <%s> \n",pTHard,pyProcessName.Data());
+
   for(Int_t i = firstParticle ; i < nprim; i++)
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
@@ -1547,10 +1566,8 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
     if ( TMath::Abs(photonY) > 1.0 ) continue;
     
     // Avoid too large pT particle in pT hard binned productions
-    if ( GetReader()->IsPythiaEventHeaderUsed() && GetReader()->GetGenPythiaEventHeader() ) 
+    if (  pyProcessName == "Gamma-Jet" || pyProcessName == "Jet-Jet" )
     {
-      Float_t pTHard = (GetReader()->GetGenPythiaEventHeader())->GetPtHard();
-      
       if ( pTHard / photonPt < 0.5 ) 
       {
         AliInfo(Form("Reject primary particle pdg %d mcTag %d, pT %f larger than pT hard %f, ratio %f",
