@@ -122,6 +122,7 @@ class AliAODv0;
 #include "AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2.h"
 #include "AliNanoAODHeader.h"
 #include "AliPPVsMultUtils.h"
+#include "AliAODTracklets.h"
 
 using std::cout;
 using std::endl;
@@ -1782,11 +1783,6 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality_V0M);
     
-    //Random denial
-    Bool_t lKeepEventEntry = kTRUE;
-    if(fkDownScaleEvent && ( fRand->Uniform() > fDownScaleFactorEvent )) lKeepEventEntry = kFALSE;
-    if ( fkSaveEventTree && lKeepEventEntry ) fTreeEvent->Fill() ;
-    
     //------------------------------------------------
     //Raw Nch estimators 
     //------------------------------------------------
@@ -1832,6 +1828,11 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
             }     
     }
 
+    //Random denial
+    Bool_t lKeepEventEntry = kTRUE;
+    if(fkDownScaleEvent && ( fRand->Uniform() > fDownScaleFactorEvent )) lKeepEventEntry = kFALSE;
+    if ( fkSaveEventTree && lKeepEventEntry ) fTreeEvent->Fill() ;    
+    
     //STOP HERE if skipping event selections (no point in doing the rest...)
     //------------------------------------------------
     
