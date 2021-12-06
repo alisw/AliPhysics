@@ -59,7 +59,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     UInt_t fTriggerMask;                                      //!
 
     //AliEventCuts object
-    AliEventCuts fEventCuts;                                  //!
+    AliEventCuts fEventCuts;                                  //
 
     //MC-realted variables
     bool fisMC;                                               //
