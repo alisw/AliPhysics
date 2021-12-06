@@ -5,14 +5,6 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
   if (!mgr->GetInputEventHandler())	return 0x0;
-  // if(IsMC) {
-  //   if(!mgr->GetMCtruthEventHandler()) {
-  //     Error("AddTaskGFWFlow","Could not get MC truth handler");
-  //     return NULL;
-  //   };
-  //   AliMCEventHandler *handler = (AliMCEventHandler*)mgr->GetMCtruthEventHandler();
-  //   handler->SetReadTR(kTRUE);
-  // };
   TString fileName = AliAnalysisManager::GetCommonFileName();
   AliAnalysisTaskGFWFlow* task = new AliAnalysisTaskGFWFlow(Form("%s%s",name.Data(),subfx.Data()), ProduceWeights, IsMC, IsTrain);
   if(!task)
@@ -21,8 +13,8 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   mgr->AddTask(task); // add your task to the manager
 
   //Connect weights to a container
-  printf("Produce weights set to: %s\n",ProduceWeights?"true":"false");
-  printf("Is train set to: %s\n",IsTrain?"true":"false");
+  // printf("Produce weights set to: %s\n",ProduceWeights?"true":"false");
+  // printf("Is train set to: %s\n",IsTrain?"true":"false");
   if(!ProduceWeights) {
     if(IsTrain) {
       if(centMap.IsNull()) return 0; //AliFatal("Centrality map not specified!\n");
@@ -50,7 +42,7 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
         mgr->ConnectInput(task,1,cInWeights);
       } else {
         mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("InputWeights"));
-        printf("InputWeights already loaded\n");
+        // printf("InputWeights already loaded\n");
       };
     };
   };

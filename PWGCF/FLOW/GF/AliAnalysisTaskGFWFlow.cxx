@@ -605,63 +605,60 @@ void AliAnalysisTaskGFWFlow::SetupFlagsByIndex(Int_t ind) {
       break;
     //Track flags:
     case 4:
-      fTrNomFlag = 1<<kFB96;
-      break;
-    case 5:
       fTrNomFlag = 1<<kFB768;
       break;
-    case 6:
+    case 5:
       fTrNomFlag = 1<<kDCAz10;
       break;
-    case 7:
+    case 6:
       fTrNomFlag = 1<<kDCAz05;
       break;
-    case 8:
+    case 7:
       fTrNomFlag = 1<<kDCA4Sigma;
       break;
-    case 9:
+    case 8:
       fTrNomFlag = 1<<kDCA10Sigma;
       break;
-    case 10:
+    case 9:
       fTrNomFlag = 1<<kChiSq2;
       break;
-    case 11:
+    case 10:
       fTrNomFlag = 1<<kChiSq3;
       break;
-    case 12:
+    case 11:
       fTrNomFlag = 1<<kNTPC80;
       break;
-    case 13:
+    case 12:
       fTrNomFlag = 1<<kNTPC90;
       break;
-    case 14:
+    case 13:
       fTrNomFlag = 1<<kNTPC100;
       break;
-    case 15:
+    case 14:
       fTrNomFlag = 1<<kFB768Tuned;
       break;
-    case 16:
+    case 15:
       fTrNomFlag = 1<<kFB96Tuned;
       break;
-    case 17:
+    case 16:
       fTrNomFlag = 1<<kFB768DCAz;
       break;
-    case 18:
+    case 17:
       fTrNomFlag = 1<<kFB768DCAxyLow;
       break;
-    case 19:
+    case 18:
       fTrNomFlag = 1<<kFB768DCAxyHigh;
       break;
-    case 20:
+    case 19:
       fTrNomFlag = 1<<kFB768ChiSq2;
       break;
-    case 21:
+    case 20:
       fTrNomFlag = 1<<kFB768ChiSq3;
       break;
-    case 22:
+    case 21:
       fTrNomFlag = 1<<kFB768nTPC;
       break;
-    case 23:
+    case 22:
       fTrNomFlag = 1<<kFB96MergedDCA;
       break;
   }
