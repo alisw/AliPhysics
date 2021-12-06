@@ -368,11 +368,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fProtonTrack->SetInvMass(DmesonBuddyMass);
 
     int mcpdg = 0;
-    if (fUseMCTruthReco){
+    if (fUseMCTruthReco && track->GetLabel() >= 0){ // Fake tracks have label < 0. Reject them.
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
-      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(fProtonTrack->GetID());
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
       }
@@ -460,7 +460,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       if (recVtx) {
         fRDHFCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fInputEvent, origOwnVtx);
       }
-      continue;
+      if (!fUseMCTruthReco)
+        continue;
     }
 
     double mass;
