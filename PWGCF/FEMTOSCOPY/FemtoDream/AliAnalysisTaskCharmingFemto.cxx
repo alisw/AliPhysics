@@ -36,6 +36,7 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fPartColl(nullptr),
       fIsMC(false),
       fUseMCTruthReco(false),
+      fIsMCtruth(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -90,6 +91,13 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fInvMassCutLow(0.),
+      fInvMassCutHigh(0.),
+      fBuddypTlow(0.),
+      fBuddypThigh(0.),
+      fBuddyeta(0.),
+      fBuddyOrigin(0),
+      fDmesonOrigin(0),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -100,7 +108,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
-                                                           const bool isMC)
+                                                           const bool isMC,
+                                                           const bool isMCtruth)
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fEvent(nullptr),
@@ -113,6 +122,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fPartColl(nullptr),
       fIsMC(isMC),
       fUseMCTruthReco(false),
+      fIsMCtruth(isMCtruth),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -167,6 +177,13 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fInvMassCutLow(0.),
+      fInvMassCutHigh(0.),
+      fBuddypTlow(0.),
+      fBuddypThigh(0.),
+      fBuddyeta(0.),
+      fBuddyOrigin(0),
+      fDmesonOrigin(0),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -348,8 +365,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
   static std::vector<AliFemtoDreamBasePart> protons;
   static std::vector<AliFemtoDreamBasePart> antiprotons;
+  static std::vector<AliFemtoDreamBasePart> dplus;
+  static std::vector<AliFemtoDreamBasePart> dminus;
   protons.clear();
   antiprotons.clear();
+  dplus.clear();
+  dminus.clear();
+
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -379,21 +401,132 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
 
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      if(!fUseMCTruthReco) {
+      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode()){
         protons.push_back(*fProtonTrack);
       }
-      else if (mcpdg == fTrackCutsPartProton->GetPDGCode()){
+      else if (!fIsMCtruth) {
         protons.push_back(*fProtonTrack);
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      if(!fUseMCTruthReco) {
+      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
         antiprotons.push_back(*fProtonTrack);
       }
-      else if (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()){
+      else if (!fIsMCtruth) {
         antiprotons.push_back(*fProtonTrack);
-      }
+      }      
     }
+  }
+
+  if (fIsMCtruth) {
+    TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    int noPart = fArrayMCAOD->GetEntriesFast();
+    auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
+    float ptMin, ptMax, etaMin, etaMax;
+    trackCutsDdau->GetPtRange(ptMin, ptMax);
+    trackCutsDdau->GetEtaRange(etaMin, etaMax);
+    float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
+    //for (Int_t i=0;i<fRDHFCuts->GetNPtBins();i++) cout<<i<<" "<<DmesonPtBins[i]<<endl;
+    float DmesonPtMin=DmesonPtBins[0];
+    float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
+  
+    for (int iPart = 1; iPart < noPart; iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
+      if (!(mcPart)) {
+        std::cout << "NO MC particle" << std::endl;
+        continue;
+      }
+
+      if (mcPart->GetLabel() < 0) {
+        continue;
+      }
+
+      AliFemtoDreamBasePart part;
+
+      int mcpdg = mcPart->GetPdgCode();
+      double pt = mcPart->Pt();
+      double eta = mcPart->Eta();
+      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {        
+        if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
+          if(SelectBuddyOrigin(mcPart)){
+            part.SetMCParticleRePart(mcPart);
+            part.SetID(mcPart->GetLabel());
+            part.SetIDTracks(mcPart->GetLabel());
+            protons.push_back(part);
+          }
+        }
+      }
+
+      if (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
+        if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
+          if(SelectBuddyOrigin(mcPart)){
+            part.SetMCParticleRePart(mcPart);
+            part.SetID(mcPart->GetLabel());
+            part.SetIDTracks(mcPart->GetLabel());
+            antiprotons.push_back(part);
+          }
+        }
+      }
+
+      if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
+        if((pt>DmesonPtMin) && (pt<DmesonPtMax)) {
+          int NDDaughters=(const int)mcPart->GetNDaughters();
+          if (NDDaughters == 3) {
+            int labelFirstDau = mcPart->GetDaughterLabel(0);
+            int labelThirdDau = mcPart->GetDaughterLabel(1);
+            int labelSecondDau = labelThirdDau-1;
+
+            AliAODMCParticle *D1 = (AliAODMCParticle *)fArrayMCAOD->At(labelFirstDau);
+            AliAODMCParticle *D2 = (AliAODMCParticle *)fArrayMCAOD->At(labelSecondDau);
+            AliAODMCParticle *D3 = (AliAODMCParticle *)fArrayMCAOD->At(labelThirdDau);
+
+            std::vector<int> pdgvec = {D1->GetPdgCode(), D2->GetPdgCode(), D3->GetPdgCode()};
+            std::vector<double> pTvec = {D1->Pt(), D2->Pt(), D3->Pt()};
+            std::vector<double> etavec = {D1->Eta(), D2->Eta(), D3->Eta()};
+            int counter = 0;
+
+            for (int i = 0; i<NDDaughters; i++) {
+              if ((pTvec.at(i) < ptMax && pTvec.at(i) > ptMin) && (etavec.at(i) > etaMin && etavec.at(i) < etaMax)) {
+                counter++;
+              }
+            }
+
+            if(counter==3){
+              std::sort(pdgvec.begin(), pdgvec.end());
+              // cout<<"*** ";
+              // for (int i = 0; i<NDDaughters; i++) {
+              //   cout<<" "<<pdgvec[i];
+              // }
+              // cout<<" ***"<< endl;
+              if ((pdgvec.at(0)==-321) && (pdgvec.at(1)==211) && (pdgvec.at(2)==211) && (mcpdg == 411)) {
+                if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
+                  part.SetMCParticleRePart(mcPart);
+                  part.SetIDTracks(labelFirstDau);
+                  part.SetIDTracks(labelSecondDau);
+                  part.SetIDTracks(labelThirdDau);
+                  dplus.push_back(part);
+                }
+                
+              }
+              if ((pdgvec.at(0)==-211) && (pdgvec.at(1)==-211) && (pdgvec.at(2)==321) && (mcpdg == -411) ) {
+                if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
+                  part.SetMCParticleRePart(mcPart);
+                  part.SetIDTracks(labelFirstDau);
+                  part.SetIDTracks(labelSecondDau);
+                  part.SetIDTracks(labelThirdDau);
+                  dminus.push_back(part);
+                }
+              }            
+            }
+          }
+        }
+      }
+
+
+    }
+
+ 
   }
 
   // D MESON SELECTION
@@ -419,11 +552,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       scoresFromMLSelector.push_back({});
     }
   }
-
-  static std::vector<AliFemtoDreamBasePart> dplus;
-  static std::vector<AliFemtoDreamBasePart> dminus;
-  dplus.clear();
-  dminus.clear();
 
   // needed to initialise PID response
   fRDHFCuts->IsEventSelected(fInputEvent);
@@ -493,7 +621,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             && std::abs(dplusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
-        dplus.push_back(dplusCand);
+        if (!fIsMCtruth) {
+          dplus.push_back(dplusCand);
+        }
         if (!fIsLightweight) {
           fHistDplusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDplusEta->Fill(dMeson->Eta());
@@ -539,7 +669,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
-        dminus.push_back(dminusCand);
+        if (!fIsMCtruth){
+          dminus.push_back(dminusCand);
+        }
         if (!fIsLightweight) {
           fHistDminusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDminusEta->Fill(dMeson->Eta());
@@ -592,6 +724,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
+
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
