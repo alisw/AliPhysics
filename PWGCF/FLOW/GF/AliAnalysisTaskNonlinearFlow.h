@@ -219,6 +219,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual int    GetSystFlag() { return fCurrSystFlag; }
 		virtual void   SetSpringMode(bool flag = true) { fSpringMode = flag; }
 		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
+		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
@@ -293,6 +294,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fCurrSystFlag;                              // Systematics flag
 		Bool_t      fSpringMode;                                            // The mode with spring cuts.
 		Bool_t      fLowMultiplicityMode;                                   // The mode to consider low-multiplicity region 
+		Bool_t      fAddTPCPileupCuts;                                      // Additional TPC pileup cuts
 		Bool_t      fUseCorrectedNTracks;                                   // Use corrected Ntracks in the filling of xbins;
 
 		// Output objects

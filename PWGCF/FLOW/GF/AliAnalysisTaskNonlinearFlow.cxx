@@ -88,6 +88,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     fCurrSystFlag(0),
     fSpringMode(false),
     fLowMultiplicityMode(false),
+    fAddTPCPileupCuts(false),
     fUseCorrectedNTracks(false),
 
     fListOfObjects(0),
@@ -196,6 +197,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fCurrSystFlag(0),
   fSpringMode(false),
   fLowMultiplicityMode(false),
+  fAddTPCPileupCuts(false),
   fUseCorrectedNTracks(false),
 
   fListOfObjects(0),
@@ -322,6 +324,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fCurrSystFlag(0),
   fSpringMode(false),
   fLowMultiplicityMode(false),
+  fAddTPCPileupCuts(false),
   fUseCorrectedNTracks(false),
 
   fListOfObjects(0),
@@ -664,10 +667,12 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 
 //_________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::NotifyRun() {
+    if (fAddTPCPileupCuts) {
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
     if(fGFWSelection->GetSystFlagIndex()==22)
       fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+    }
 }
 
 //______________________________________________________________________________
