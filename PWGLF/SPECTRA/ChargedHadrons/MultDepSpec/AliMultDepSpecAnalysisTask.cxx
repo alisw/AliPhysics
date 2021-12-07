@@ -452,32 +452,6 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
 
 //**************************************************************************************************
 /**
- * Function to get data-driven secondary scaling weights.
- */
-//**************************************************************************************************
-double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
-{
-  if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
-  }
-  return 1.0;
-}
-
-//**************************************************************************************************
-/**
- * Function to get data-driven particle composition weights.
- */
-//**************************************************************************************************
-double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
-{
-  if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
-  }
-  return 1.0;
-}
-
-//**************************************************************************************************
-/**
  * Initialize event quantities. Sets fEvent, fMCEvent, fMeasMult, fTrueMult
  */
 //**************************************************************************************************
@@ -577,7 +551,6 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       } else {
         isValidParticle = InitParticle<AliAODMCParticle>(mcLabel);
       }
-      if (fMCIsPileupParticle) continue; // skip tracks from pileup in mc
     }
 
     if (count) {
@@ -662,15 +635,8 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
     AliFatal("Track not found\n");
     return false;
   }
-  // reset the two mc variables that have side effects on measured loop in mc
+  // reset the mc variable that has side effect on measured loop in mc
   fNRepetitions = 1;
-  fMCIsPileupParticle = false;
-
-  // temporary solution to remove tracks from background events (corresponds to fMCIsPileupParticle = true)
-  // FIXME: we may actually not want to reject those tracks but count them as contamination instead
-  if (fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) {
-    return false;
-  }
 
   fPt = track->Pt();
   fEta = track->Eta();
@@ -713,14 +679,8 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
     AliFatal("Particle not found\n");
     return false;
   }
-  // in case of enbedded pileup particleID will be different from the mc label stored in the particle
-  fMCLabel = particle->GetLabel();
-  fMCIsPileupParticle = false;
-  // reject all particles and tracks that come from simulated out-of-bunch pileup
-  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(particleID) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(particleID, fMCEvent))) {
-    fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
-    return false;
-  }
+
+  fMCLabel = particleID; // not particle->GetLabel(): in case of enbedded pileup particleID is different from the mc label stored in the particle
 
   if (!(TMath::Abs(particle->Charge()) > 0.01)) return false; // reject all neutral particles
 
@@ -737,18 +697,21 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   // event class is INEL>0 in case it has a charged particle in abs(eta) < 1
   fMCIsINELGT0 = fMCIsINELGT0 || (fMCIsChargedPrimary && (std::abs(fMCEta) < 1.));
 
-  fMCParticleWeight = 1.0;
-  fMCSecScaleWeight = 1.0;
+  fMCParticleWeight = 1.;
   fNRepetitions = 1;
 
-  if (fMCEnableDDC) {
+  if (fMCEnableDDC && fMCSpectraWeights) {
     if (fMCIsChargedPrimary) {
-      fMCParticleWeight = GetParticleWeight(static_cast<AliVParticle*>(particle));
-      fNRepetitions = GetNRepetitons(fMCParticleWeight);
+      fMCParticleWeight = fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
     } else if (isChargedSecondaryFromWeakDecay) {
-      fMCSecScaleWeight = GetSecScalingFactor(static_cast<AliVParticle*>(particle));
-      fNRepetitions = GetNRepetitons(fMCSecScaleWeight);
+      fMCParticleWeight = fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
     }
+    fNRepetitions = GetNRepetitons(fMCParticleWeight);
+  }
+
+  // reject all particles that come from simulated out-of-bunch pileup
+  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(particleID) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(particleID, fMCEvent))) {
+    return false;
   }
 
   if ((fMCPt <= fMinPt + PRECISION) || (fMCPt >= fMaxPt - PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
@@ -995,9 +958,9 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
   if (isMC && fMCEnableDDC) {
     fMCDDCMode = 0;
     if (cutMode == 120) {
-      fMCDDCMode = 1;             // shift correction factors up within their systematics
+      fMCDDCMode = -1; // shift correction factors down within their systematics
     } else if (cutMode == 121) {
-      fMCDDCMode = -1;            // shift correction factors down within their systematics
+      fMCDDCMode = 1; // shift correction factors up within their systematics
     }
   }
   return true;
@@ -1045,7 +1008,7 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
 
   // for reconstructions after mid 2020 chi2/clusterTPC cut moves from 4 -> 2.5 and MCs contain out-of-bunch pileup
   if (!options.Contains("oldReco") &&
-      (dataSet.find("pp_13TeV") != string::npos || dataSet.find("pPb") != string::npos || dataSet.find("PbPb_5TeV") != string::npos)) {
+      (dataSet.find("pp_5TeV") != string::npos || dataSet.find("pp_13TeV") != string::npos || dataSet.find("pPb") != string::npos || dataSet.find("PbPb_5TeV") != string::npos)) {
     SetIsNewReco();
   }
 
