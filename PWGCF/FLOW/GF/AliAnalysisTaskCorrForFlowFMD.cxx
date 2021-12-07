@@ -431,7 +431,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assEff = 1.0;
         if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
 
-        if(trigPt < assPt) continue;
+        // if(trigPt < assPt) continue;
         if(track->GetID() == trackAss->GetID()) continue;
 
         binscont[0] = trigEta - assEta;
@@ -560,7 +560,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assPhi = trackAss->Phi();
             Double_t assCharge = trackAss->Charge();
 
-            if(trigPt < assPt) continue;
+            // if(trigPt < assPt) continue;
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);

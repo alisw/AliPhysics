@@ -14,7 +14,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
     Int_t		fFilterbit 		= 96,
 		Double_t	fMinPt			= 0.2,
 		Double_t	fMaxPt			= 3.0,
-        Int_t           trigger                 = 0,
+        Int_t           trigger                 = 1,
         Int_t           fSystFlag               = 0,
         TString         fPeriod                 = "LHC17",
         TString         fNtrksName              = "Mult",
