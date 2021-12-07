@@ -176,8 +176,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 8); 
-    //version 8: introduced AliEventCuts
+    ClassDef(AliAnalysisTaskStrVsMult, 9); 
+    //version 9: fixed AliEventCuts streamer
 };
 
 #endif
