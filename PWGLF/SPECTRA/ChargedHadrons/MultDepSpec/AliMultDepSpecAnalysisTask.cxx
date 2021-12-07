@@ -680,7 +680,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   }
 
   // reject all particles that come from simulated out-of-bunch pileup
-  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(particleID) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(particleID, fMCEvent)) {
+  if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(particleID) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(particleID, fMCEvent))) {
     return false;
   }
 
