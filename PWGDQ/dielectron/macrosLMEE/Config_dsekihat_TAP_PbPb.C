@@ -5,7 +5,8 @@
 void Config_dsekihat_TAP_PbPb(
     AliAnalysisTaskTagAndProbe *task,
     const TString type,
-    const TString cutname
+    const TString cutname,
+    const Bool_t isMC
     )
 {
 
@@ -47,21 +48,21 @@ void Config_dsekihat_TAP_PbPb(
     task->GetPassingProbeFilter()->AddCuts(filter_track_passingprobe);//difference between probe and passingprobe should be only track cuts
     task->GetPassingProbeFilter()->AddCuts(filter_pid_passingprobe);
   }
+  if(!isMC){
+    if(cutname.Contains("pileup0")){
+      printf("apply pileup cut!\n");
+      TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
+      f1min->SetNpx(1000);
+      f1min->FixParameter(0,-3000);
+      f1min->FixParameter(1,0.0099);
+      f1min->FixParameter(2,9.42e-10);
 
-  if(cutname.Contains("pileup0")){
-    printf("apply pileup cut!\n");
-    TF1 *f1min = new TF1("f1min","pol2(0)",0,1e+8);
-    f1min->SetNpx(1000);
-    f1min->FixParameter(0,-3000);
-    f1min->FixParameter(1,0.0099);
-    f1min->FixParameter(2,9.42e-10);
-
-    AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
-    pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
-    pileupcuts->Print();
-    task->GetEventFilter()->AddCuts(pileupcuts);
+      AliDielectronEventCuts*  pileupcuts = new AliDielectronEventCuts("pileupcuts","pileupcuts");
+      pileupcuts->SetMinCorrCutFunction(f1min, AliDielectronVarManager::kNTPCclsEvent, AliDielectronVarManager::kNSDDSSDclsEvent);
+      pileupcuts->Print();
+      task->GetEventFilter()->AddCuts(pileupcuts);
+    }
   }
-
 }
 //______________________________________________________________________________________
 //______________________________________________________________________________________
