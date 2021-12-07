@@ -292,18 +292,19 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
     
 	
-    
+    //use the standard AliEventCuts,
+	//So I annotated the code of fEventCuts Settings
     //..Settings for AliEventCuts:
 	//..This adds QA plots to the output
-	fEventCuts.AddQAplotsToList(fListOfObjects);
+	//fEventCuts.AddQAplotsToList(fListOfObjects);
 	//..kINT7 is set in the class as default, if I want to have kHigHMultV0 in pp, I have to switch to manual mode
-    fEventCuts.SetManualMode();
-	fEventCuts.fRequireTrackVertex = false; // !!
-	fEventCuts.fMinVtz = -10.f;
-	fEventCuts.fMaxVtz = 10.f;
-	fEventCuts.fMaxResolutionSPDvertex = 0.25f;
+    //fEventCuts.SetManualMode();
+	//fEventCuts.fRequireTrackVertex = false; // !!
+	//fEventCuts.fMinVtz = -10.f;
+	//fEventCuts.fMaxVtz = 10.f;
+	//fEventCuts.fMaxResolutionSPDvertex = 0.25f;
 	// Distance between track and SPD vertex < 0.2 cm
-	fEventCuts.fPileUpCutMV = true;
+	//fEventCuts.fPileUpCutMV = true;
 
     if (fNtrksName == "Mult") {//Bin Numbers are different between multiplicity and centrality 
 	    nn = 3000;
@@ -411,6 +412,15 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 			return;
 		}
 	} else {
+		
+		//Standard AliEventCuts for events
+		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
+			PostData(1,fListOfObjects);
+			return;
+		}
+
+		//Additional Cuts
+
 		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
 
 		//Get MultSelection Object
