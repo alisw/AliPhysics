@@ -86,8 +86,6 @@ protected:
 
   template <typename Particle_t>
   bool InitParticle(int particleID);
-  double GetSecScalingFactor(AliVParticle* particle);
-  double GetParticleWeight(AliVParticle* particle);
   unsigned long GetSeed();
   int GetNRepetitons(double scalingFactor);
   AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&);            // not implemented
@@ -202,12 +200,10 @@ protected:
 
   int fMCLabel{}; //!<! mc label
 
-  bool fMCIsPileupParticle{};   //!<! is particle resp. track from out-of-bunch pileup?
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
   bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 
   double fMCParticleWeight{1.}; //!<! scaling factor of particle to match data
-  double fMCSecScaleWeight{1.}; //!<! scaling factor of secondary to match data
   int fNRepetitions{1};         //!<! how often to repeat this particle to match data
   bool fUseRandomSeed{};        ///<  use a random seed or a deterministic one (default)
 
