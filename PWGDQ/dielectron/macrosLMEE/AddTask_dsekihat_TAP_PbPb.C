@@ -72,7 +72,7 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
 
   task->GetEventFilter()->AddCuts(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
 
-  gROOT->ProcessLine(Form("Config_dsekihat_TAP_PbPb(%s,\"%s\",\"%s\")",task->GetName(),type.Data(),cutname.Data()));
+  gROOT->ProcessLine(Form("Config_dsekihat_TAP_PbPb(%s,\"%s\",\"%s\", %d)",task->GetName(),type.Data(),cutname.Data(),isMC));
 
   //PID calibration
   TFile *rootfile = 0x0;
