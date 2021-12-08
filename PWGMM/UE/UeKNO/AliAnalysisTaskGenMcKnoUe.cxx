@@ -827,10 +827,10 @@ void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 				frho->SetParameter(3,-0.51139756);
 				break;
 			case 4: // Herwig
-				frho->SetParameter(0,-7.8071100);
-				frho->SetParameter(1,-2.0788016);
-				frho->SetParameter(2,28.243893);
-				frho->SetParameter(3,-0.70047215);
+				frho->SetParameter(0,-1.5178880);
+				frho->SetParameter(1,-0.094629819);
+				frho->SetParameter(2,17.327223);
+				frho->SetParameter(3,-0.75409746);
 				break;
 			case 5: // AMPT
 				frho->SetParameter(0,-7.8071100);
