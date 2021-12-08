@@ -8,7 +8,6 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
     const Int_t CenMax = 10,
     const Int_t Nmix   = 10,
     const TString type = "PID",//what kind of efficiency do you want to measure by TAP?//PID, Tracking, etc
-    const TString cutname = "DefaultTrackCut_Nsc01_TPChadrejORTOFrec_Pair1",//same as real anslysis used in AliAnalysisTaskMultDielectron
     const TString outname = "LMEE.root",
     const Bool_t isMC = kFALSE
     )
@@ -55,7 +54,7 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral))                           triggername = "kCombinedCentral";
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
 
-  TString taskname = Form("TAP_%sEff_%s_Cen%d_%d_%s",type.Data(),cutname.Data(),CenMin,CenMax,triggername.Data());
+  TString taskname = Form("TAP_%sEff_Cen%d_%d_%s",type.Data(),CenMin,CenMax,triggername.Data());
   AliAnalysisTaskTagAndProbe* task = new AliAnalysisTaskTagAndProbe(taskname);
   gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(Config_dsekihat(taskname));
 
@@ -72,7 +71,7 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
 
   task->GetEventFilter()->AddCuts(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
 
-  gROOT->ProcessLine(Form("Config_dsekihat_TAP_PbPb(%s,\"%s\",\"%s\", %d)",task->GetName(),type.Data(),cutname.Data(),isMC));
+  gROOT->ProcessLine(Form("Config_dsekihat_TAP_PbPb(%s,\"%s\",%d)",task->GetName(),type.Data(),isMC));
 
   //PID calibration
   TFile *rootfile = 0x0;
