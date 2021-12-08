@@ -97,15 +97,15 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP()
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_x(0),
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_y(0),
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_z(0),
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x(0),
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y(0),
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z(0),
   fHPrimVtx_recalPV_Minus_PVrec_x(0),
   fHPrimVtx_recalPV_Minus_PVrec_y(0),
   fHPrimVtx_recalPV_Minus_PVrec_z(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z(0),
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x(0),
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y(0),
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z(0),
+  fHPrimVtx_recalPV_KF_Minus_PV_x(0),
+  fHPrimVtx_recalPV_KF_Minus_PV_y(0),
+  fHPrimVtx_recalPV_KF_Minus_PV_z(0),
   fHPrimVtx_PVrec_Minus_PVgen_x(0),
   fHPrimVtx_PVrec_Minus_PVgen_y(0),
   fHPrimVtx_PVrec_Minus_PVgen_z(0),
@@ -118,9 +118,6 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP()
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x(0),
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y(0),
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z(0),
   fHPrimVtx_PV_PULL_x(0),
   fHPrimVtx_PV_PULL_y(0),
   fHPrimVtx_PV_PULL_z(0),
@@ -133,15 +130,15 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP()
   fHPrimVtx_recalPV_PULL_x(0),
   fHPrimVtx_recalPV_PULL_y(0),
   fHPrimVtx_recalPV_PULL_z(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_x(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_y(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_z(0),
+  fHPrimVtx_recalPV_KF_Refit_PULL_x(0),
+  fHPrimVtx_recalPV_KF_Refit_PULL_y(0),
+  fHPrimVtx_recalPV_KF_Refit_PULL_z(0),
+  fHPrimVtx_recalPV_KF_Minus_PVgen_x(0),
+  fHPrimVtx_recalPV_KF_Minus_PVgen_y(0),
+  fHPrimVtx_recalPV_KF_Minus_PVgen_z(0),
+  fHPrimVtx_recalPV_KF_PULL_x(0),
+  fHPrimVtx_recalPV_KF_PULL_y(0),
+  fHPrimVtx_recalPV_KF_PULL_z(0),
   fFileName(""),
   fDirNumber(0),
   fEventNumber(0),
@@ -191,15 +188,15 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP(c
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_x(0),
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_y(0),
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_z(0),
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x(0),
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y(0),
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z(0),
   fHPrimVtx_recalPV_Minus_PVrec_x(0),
   fHPrimVtx_recalPV_Minus_PVrec_y(0),
   fHPrimVtx_recalPV_Minus_PVrec_z(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z(0),
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x(0),
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y(0),
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z(0),
+  fHPrimVtx_recalPV_KF_Minus_PV_x(0),
+  fHPrimVtx_recalPV_KF_Minus_PV_y(0),
+  fHPrimVtx_recalPV_KF_Minus_PV_z(0),
   fHPrimVtx_PVrec_Minus_PVgen_x(0),
   fHPrimVtx_PVrec_Minus_PVgen_y(0),
   fHPrimVtx_PVrec_Minus_PVgen_z(0),
@@ -212,9 +209,6 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP(c
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x(0),
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y(0),
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z(0),
   fHPrimVtx_PV_PULL_x(0),
   fHPrimVtx_PV_PULL_y(0),
   fHPrimVtx_PV_PULL_z(0),
@@ -227,15 +221,15 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP::AliAnalysisTaskSEXicPlusToXi2PifromKFP(c
   fHPrimVtx_recalPV_PULL_x(0),
   fHPrimVtx_recalPV_PULL_y(0),
   fHPrimVtx_recalPV_PULL_z(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y(0),
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_x(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_y(0),
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_z(0),
+  fHPrimVtx_recalPV_KF_Refit_PULL_x(0),
+  fHPrimVtx_recalPV_KF_Refit_PULL_y(0),
+  fHPrimVtx_recalPV_KF_Refit_PULL_z(0),
+  fHPrimVtx_recalPV_KF_Minus_PVgen_x(0),
+  fHPrimVtx_recalPV_KF_Minus_PVgen_y(0),
+  fHPrimVtx_recalPV_KF_Minus_PVgen_z(0),
+  fHPrimVtx_recalPV_KF_PULL_x(0),
+  fHPrimVtx_recalPV_KF_PULL_y(0),
+  fHPrimVtx_recalPV_KF_PULL_z(0),
   fFileName(""),
   fDirNumber(0),
   fEventNumber(0),
@@ -420,15 +414,15 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_x = new TH1F("fHPrimVtx_PV_KF_Refit_Minus_PVrec_x", "(PV_KF_Refit - PVrec) x", 2000, -0.1, 0.1);
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_y = new TH1F("fHPrimVtx_PV_KF_Refit_Minus_PVrec_y", "(PV_KF_Refit - PVrec) y", 2000, -0.1, 0.1);
   fHPrimVtx_PV_KF_Refit_Minus_PVrec_z = new TH1F("fHPrimVtx_PV_KF_Refit_Minus_PVrec_z", "(PV_KF_Refit - PVrec) z", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x", "(recalPV_KF_Refit - PV_KF_Refit) x", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y", "(recalPV_KF_Refit - PV_KF_Refit) y", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z", "(recalPV_KF_Refit - PV_KF_Refit) z", 2000, -0.1, 0.1);
   fHPrimVtx_recalPV_Minus_PVrec_x = new TH1F("fHPrimVtx_recalPV_Minus_PVrec_x", "(recalPV - PVrec) x", 2000, -0.1, 0.1);
   fHPrimVtx_recalPV_Minus_PVrec_y = new TH1F("fHPrimVtx_recalPV_Minus_PVrec_y", "(recalPV - PVrec) y", 2000, -0.1, 0.1);
   fHPrimVtx_recalPV_Minus_PVrec_z = new TH1F("fHPrimVtx_recalPV_Minus_PVrec_z", "(recalPV - PVrec) z", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x", "(recalPV_KF_Refit_AfterCheck - recalPV_KF_Refit) x", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y", "(recalPV_KF_Refit_AfterCheck - recalPV_KF_Refit) y", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z", "(recalPV_KF_Refit_AfterCheck - recalPV_KF_Refit) z", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x", "(recalPV_KF_Refit - PV_KF_Refit) x", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y", "(recalPV_KF_Refit - PV_KF_Refit) y", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z", "(recalPV_KF_Refit - PV_KF_Refit) z", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Minus_PV_x = new TH1F("fHPrimVtx_recalPV_KF_Minus_PV_x", "(recalPV_KF - PV) x", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Minus_PV_y = new TH1F("fHPrimVtx_recalPV_KF_Minus_PV_y", "(recalPV_KF - PV) y", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Minus_PV_z = new TH1F("fHPrimVtx_recalPV_KF_Minus_PV_z", "(recalPV_KF - PV) z", 2000, -0.1, 0.1);
   fHPrimVtx_PVrec_Minus_PVgen_x = new TH1F("fHPrimVtx_PVrec_Minus_PVgen_x", "(PVrec - PVgen) x", 2000, -0.1, 0.1);
   fHPrimVtx_PVrec_Minus_PVgen_y = new TH1F("fHPrimVtx_PVrec_Minus_PVgen_y", "(PVrec - PVgen) y", 2000, -0.1, 0.1);
   fHPrimVtx_PVrec_Minus_PVgen_z = new TH1F("fHPrimVtx_PVrec_Minus_PVgen_z", "(PVrec - PVgen) z", 2000, -0.1, 0.1);
@@ -441,9 +435,6 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x", "(recalPV_KF_Refit - PVgen) x", 2000, -0.1, 0.1);
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y", "(recalPV_KF_Refit - PVgen) y", 2000, -0.1, 0.1);
   fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z", "(recalPV_KF_Refit - PVgen) z", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x", "(recalPV_KF_Refit_AfterCheck - PVgen) x", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y", "(recalPV_KF_Refit_AfterCheck - PVgen) y", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z", "(recalPV_KF_Refit_AfterCheck - PVgen) z", 2000, -0.1, 0.1);
   fHPrimVtx_PV_PULL_x = new TH1F("fHPrimVtx_PV_PULL_x", "PV_PULL_x", 200, -10, 10);
   fHPrimVtx_PV_PULL_y = new TH1F("fHPrimVtx_PV_PULL_y", "PV_PULL_y", 200, -10, 10);
   fHPrimVtx_PV_PULL_z = new TH1F("fHPrimVtx_PV_PULL_z", "PV_PULL_z", 200, -10, 10);
@@ -456,15 +447,15 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fHPrimVtx_recalPV_PULL_x = new TH1F("fHPrimVtx_recalPV_PULL_x", "recalPV_PULL_x", 200, -10, 10);
   fHPrimVtx_recalPV_PULL_y = new TH1F("fHPrimVtx_recalPV_PULL_y", "recalPV_PULL_y", 200, -10, 10);
   fHPrimVtx_recalPV_PULL_z = new TH1F("fHPrimVtx_recalPV_PULL_z", "recalPV_PULL_z", 200, -10, 10);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x", "recalPV_KF_Refit_AfterCheck_PULL_x", 200, -10, 10);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y", "recalPV_KF_Refit_AfterCheck_PULL_y", 200, -10, 10);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z", "recalPV_KF_Refit_AfterCheck_PULL_z", 200, -10, 10);
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x = new TH1F("fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x", "(recalPV_KF_AfterCheck - PVgen) x", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y = new TH1F("fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y", "(recalPV_KF_AfterCheck - PVgen) y", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z = new TH1F("fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z", "(recalPV_KF_AfterCheck - PVgen) z", 2000, -0.1, 0.1);
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_x = new TH1F("fHPrimVtx_recalPV_KF_AfterCheck_PULL_x", "recalPV_KF_PULL_x", 200, -10, 10);
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_y = new TH1F("fHPrimVtx_recalPV_KF_AfterCheck_PULL_y", "recalPV_KF_PULL_y", 200, -10, 10);
-  fHPrimVtx_recalPV_KF_AfterCheck_PULL_z = new TH1F("fHPrimVtx_recalPV_KF_AfterCheck_PULL_z", "recalPV_KF_PULL_z", 200, -10, 10);
+  fHPrimVtx_recalPV_KF_Refit_PULL_x = new TH1F("fHPrimVtx_recalPV_KF_Refit_PULL_x", "recalPV_KF_Refit_PULL_x", 200, -10, 10);
+  fHPrimVtx_recalPV_KF_Refit_PULL_y = new TH1F("fHPrimVtx_recalPV_KF_Refit_PULL_y", "recalPV_KF_Refit_PULL_y", 200, -10, 10);
+  fHPrimVtx_recalPV_KF_Refit_PULL_z = new TH1F("fHPrimVtx_recalPV_KF_Refit_PULL_z", "recalPV_KF_Refit_PULL_z", 200, -10, 10);
+  fHPrimVtx_recalPV_KF_Minus_PVgen_x = new TH1F("fHPrimVtx_recalPV_KF_Minus_PVgen_x", "(recalPV_KF - PVgen) x", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Minus_PVgen_y = new TH1F("fHPrimVtx_recalPV_KF_Minus_PVgen_y", "(recalPV_KF - PVgen) y", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_Minus_PVgen_z = new TH1F("fHPrimVtx_recalPV_KF_Minus_PVgen_z", "(recalPV_KF - PVgen) z", 2000, -0.1, 0.1);
+  fHPrimVtx_recalPV_KF_PULL_x = new TH1F("fHPrimVtx_recalPV_KF_PULL_x", "recalPV_KF_PULL_x", 200, -10, 10);
+  fHPrimVtx_recalPV_KF_PULL_y = new TH1F("fHPrimVtx_recalPV_KF_PULL_y", "recalPV_KF_PULL_y", 200, -10, 10);
+  fHPrimVtx_recalPV_KF_PULL_z = new TH1F("fHPrimVtx_recalPV_KF_PULL_z", "recalPV_KF_PULL_z", 200, -10, 10);
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file, so if you want
   fOutputList->Add(fHTrigger);
@@ -480,15 +471,15 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fOutputList->Add(fHPrimVtx_PV_KF_Refit_Minus_PVrec_x);
   fOutputList->Add(fHPrimVtx_PV_KF_Refit_Minus_PVrec_y);
   fOutputList->Add(fHPrimVtx_PV_KF_Refit_Minus_PVrec_z);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z);
   fOutputList->Add(fHPrimVtx_recalPV_Minus_PVrec_x);
   fOutputList->Add(fHPrimVtx_recalPV_Minus_PVrec_y);
   fOutputList->Add(fHPrimVtx_recalPV_Minus_PVrec_z);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Minus_PV_x);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Minus_PV_y);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Minus_PV_z);
   fOutputList->Add(fHPrimVtx_PVrec_Minus_PVgen_x);
   fOutputList->Add(fHPrimVtx_PVrec_Minus_PVgen_y);
   fOutputList->Add(fHPrimVtx_PVrec_Minus_PVgen_z);
@@ -504,9 +495,6 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x);
   fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y);
   fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z);
   fOutputList->Add(fHPrimVtx_PV_PULL_x);
   fOutputList->Add(fHPrimVtx_PV_PULL_y);
   fOutputList->Add(fHPrimVtx_PV_PULL_z);
@@ -519,15 +507,15 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserCreateOutputObjects()
   fOutputList->Add(fHPrimVtx_recalPV_PULL_x);
   fOutputList->Add(fHPrimVtx_recalPV_PULL_y);
   fOutputList->Add(fHPrimVtx_recalPV_PULL_z);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_AfterCheck_PULL_x);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_AfterCheck_PULL_y);
-  fOutputList->Add(fHPrimVtx_recalPV_KF_AfterCheck_PULL_z);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_PULL_x);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_PULL_y);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Refit_PULL_z);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Minus_PVgen_x);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Minus_PVgen_y);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_Minus_PVgen_z);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_PULL_x);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_PULL_y);
+  fOutputList->Add(fHPrimVtx_recalPV_KF_PULL_z);
 
   // Counter for Normalization
   TString normName="NormalizationCounter";
@@ -584,6 +572,8 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::UserExec(Option_t *)
   fpVtx = (AliAODVertex*)AODEvent->GetPrimaryVertex();
   if (!fpVtx) return;
   fHistEvents->Fill(2);
+
+  //cout << "Title: " << fpVtx->GetTitle() << endl;
 
   fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC);
 
@@ -1134,13 +1124,28 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
     }
     if (trk->GetUsedForPrimVtxFit()) {
       Index_AODtrkUsedForPVfit[count_ForPV_AfterQAcheck] = itrk;
+      if (fIsMC) {
+        AliAODMCParticle* mcTrk = static_cast<AliAODMCParticle*>(mcArray->At(fabs(trk->GetLabel())));
+        //cout << "PDG: " << mcTrk->GetPdgCode() << endl;
+        AliAODMCParticle* mcTrk_Mother = static_cast<AliAODMCParticle*>(mcArray->At(mcTrk->GetMother()));
+        //cout << "Mother PDG: " << mcTrk_Mother->GetPdgCode() << endl;
+      }
       count_ForPV_AfterQAcheck++;
     }
   }
 
   // Rebuild PV with KF
   KFVertex PV_KF_Refit;
-  PV_KF_Refit.SetBeamConstraintOff();
+  if ( strstr(fpVtx->GetTitle(),"VertexerTracksWithConstraint") || strstr(fpVtx->GetTitle(),"VertexerTracksMVWithConstraint") ) {
+    Float_t diamondcovxy[3], sigma2DiamondZ;
+    AODEvent->GetDiamondCovXY(diamondcovxy);
+    sigma2DiamondZ = AODEvent->GetSigma2DiamondZ();
+    Double_t pos[3]={AODEvent->GetDiamondX(),AODEvent->GetDiamondY(),AODEvent->GetDiamondZ()};
+  	Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,sigma2DiamondZ};
+    PV_KF_Refit.SetBeamConstraint(pos[0], pos[1], pos[2], sqrt(cov[0]), sqrt(cov[2]), sqrt(cov[5]));
+  } else {
+    PV_KF_Refit.SetBeamConstraintOff();
+  }
   Bool_t vtxFlag[count_ForPV_AfterQAcheck];
   KFParticle PVdau_tmp[count_ForPV_AfterQAcheck];
   const KFParticle **PV_dau = new const KFParticle*[count_ForPV_AfterQAcheck+1];
@@ -1170,6 +1175,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
 
   for (UInt_t iCasc=0; iCasc<nCasc; iCasc++) {
     AliAODcascade *casc = AODEvent->GetCascade(iCasc);
+
     // cascade cut
     if ( !fAnaCuts->SingleCascCuts(casc, kFALSE) ) continue;
 
@@ -1178,6 +1184,25 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
     AliAODTrack *btrack = (AliAODTrack*) (casc->GetDecayVertexXi()->GetDaughter(0));
 
     if ( !ptrack||!ntrack||!btrack ) continue;
+
+    /*
+    if (nCasc>1) {
+      cout << "~~~~~~~~~~~~" << endl;
+      AliAODMCParticle* mcCasc_Dau = static_cast<AliAODMCParticle*>(mcArray->At(fabs(btrack->GetLabel())));
+      AliAODMCParticle* mcCasc = static_cast<AliAODMCParticle*>(mcArray->At(mcCasc_Dau->GetMother()));
+      AliAODMCParticle* mcCasc_Mother = static_cast<AliAODMCParticle*>(mcArray->At(mcCasc->GetMother()));
+      AliAODMCParticle* mcCasc_MoMother = static_cast<AliAODMCParticle*>(mcArray->At(mcCasc_Mother->GetMother()));
+      AliAODMCParticle* mc_ptrack = static_cast<AliAODMCParticle*>(mcArray->At(fabs(ptrack->GetLabel())));
+      AliAODMCParticle* mc_ntrack = static_cast<AliAODMCParticle*>(mcArray->At(fabs(ntrack->GetLabel())));
+      if ( fabs(mcCasc_Mother->GetPdgCode())==4232 ) {
+      cout << "Casc_MoMother PDG: " << mcCasc_MoMother->GetPdgCode() << ", Index: " << mcCasc_Mother->GetMother() << endl;
+      cout << "Casc_Mother PDG: " << mcCasc_Mother->GetPdgCode() << ", Index: " << mcCasc->GetMother() << endl;
+      cout << "btrack PDG: " << mcCasc_Dau->GetPdgCode() << ", ID: " << btrack->GetID() << endl;
+      cout << "ptrack PDG: " << mc_ptrack->GetPdgCode() << ", ID: " << ptrack->GetID() << endl;
+      cout << "ntrack PDG: " << mc_ntrack->GetPdgCode() << ", ID: " << ntrack->GetID() << endl;
+      }
+    }
+    */
 
     // check charge of the first daughter, if negative, define it as the second one
     if ( ptrack->Charge()<0 ) {
@@ -2098,9 +2123,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   fVar_XicPlus_QA = new Float_t[nVar-1];
   TString *fVarNames_QA = new TString[nVar];
 
-  fVarNames_QA[0]  = "PV_X_MC";
-  fVarNames_QA[1]  = "PV_Y_MC";
-  fVarNames_QA[2]  = "PV_Z_MC";
+  fVarNames_QA[0]  = "PV_X_MC"; // MC
+  fVarNames_QA[1]  = "PV_Y_MC"; // MC
+  fVarNames_QA[2]  = "PV_Z_MC"; // MC
   fVarNames_QA[3]  = "PV_X_rec";
   fVarNames_QA[4]  = "PV_Y_rec";
   fVarNames_QA[5]  = "PV_Z_rec";
@@ -2113,24 +2138,24 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   fVarNames_QA[12] = "recalPV_sigma_X_rec";
   fVarNames_QA[13] = "recalPV_sigma_Y_rec";
   fVarNames_QA[14] = "recalPV_sigma_Z_rec";
-  fVarNames_QA[15] = "PV_X_recMinusMC";
-  fVarNames_QA[16] = "PV_Y_recMinusMC";
-  fVarNames_QA[17] = "PV_Z_recMinusMC";
-  fVarNames_QA[18] = "PV_X_PULL";
-  fVarNames_QA[19] = "PV_Y_PULL";
-  fVarNames_QA[20] = "PV_Z_PULL";
-  fVarNames_QA[21] = "recalPV_X_recMinusMC";
-  fVarNames_QA[22] = "recalPV_Y_recMinusMC";
-  fVarNames_QA[23] = "recalPV_Z_recMinusMC";
-  fVarNames_QA[24] = "recalPV_X_PULL";
-  fVarNames_QA[25] = "recalPV_Y_PULL";
-  fVarNames_QA[26] = "recalPV_Z_PULL";
+  fVarNames_QA[15] = "PV_X_recMinusMC"; // MC
+  fVarNames_QA[16] = "PV_Y_recMinusMC"; // MC
+  fVarNames_QA[17] = "PV_Z_recMinusMC"; // MC
+  fVarNames_QA[18] = "PV_X_PULL"; // MC
+  fVarNames_QA[19] = "PV_Y_PULL"; // MC
+  fVarNames_QA[20] = "PV_Z_PULL"; // MC
+  fVarNames_QA[21] = "recalPV_X_recMinusMC"; // MC
+  fVarNames_QA[22] = "recalPV_Y_recMinusMC"; // MC
+  fVarNames_QA[23] = "recalPV_Z_recMinusMC"; // MC
+  fVarNames_QA[24] = "recalPV_X_PULL"; // MC
+  fVarNames_QA[25] = "recalPV_Y_PULL"; // MC
+  fVarNames_QA[26] = "recalPV_Z_PULL"; // MC
   fVarNames_QA[27] = "PV_NContributors";
   fVarNames_QA[28] = "recalPV_NContributors";
   fVarNames_QA[29] = "NContributors_PVminusRecalPV";
-  fVarNames_QA[30] = "SV_X_MC";
-  fVarNames_QA[31] = "SV_Y_MC";
-  fVarNames_QA[32] = "SV_Z_MC";
+  fVarNames_QA[30] = "SV_X_MC"; // MC
+  fVarNames_QA[31] = "SV_Y_MC"; // MC
+  fVarNames_QA[32] = "SV_Z_MC"; // MC
   fVarNames_QA[33] = "SV_X_rec";
   fVarNames_QA[34] = "SV_Y_rec";
   fVarNames_QA[35] = "SV_Z_rec";
@@ -2146,30 +2171,30 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus()
   fVarNames_QA[45] = "pt_XicPlus";
   fVarNames_QA[46] = "pt_XicPlus_wTopoConst";
   fVarNames_QA[47] = "pt_XicPlus_wTopoConst_Minus_woTopoConst";
-  fVarNames_QA[48] = "SV_X_recMinusMC";
-  fVarNames_QA[49] = "SV_Y_recMinusMC";
-  fVarNames_QA[50] = "SV_Z_recMinusMC";
-  fVarNames_QA[51] = "SV_X_PULL";
-  fVarNames_QA[52] = "SV_Y_PULL";
-  fVarNames_QA[53] = "SV_Z_PULL";
-  fVarNames_QA[54] = "SV_X_recMinusMC_wTopoConst";
-  fVarNames_QA[55] = "SV_Y_recMinusMC_wTopoConst";
-  fVarNames_QA[56] = "SV_Z_recMinusMC_wTopoConst";
-  fVarNames_QA[57] = "SV_X_PULL_wTopoConst";
-  fVarNames_QA[58] = "SV_Y_PULL_wTopoConst";
-  fVarNames_QA[59] = "SV_Z_PULL_wTopoConst";
+  fVarNames_QA[48] = "SV_X_recMinusMC"; // MC
+  fVarNames_QA[49] = "SV_Y_recMinusMC"; // MC
+  fVarNames_QA[50] = "SV_Z_recMinusMC"; // MC
+  fVarNames_QA[51] = "SV_X_PULL"; // MC
+  fVarNames_QA[52] = "SV_Y_PULL"; // MC
+  fVarNames_QA[53] = "SV_Z_PULL"; // MC
+  fVarNames_QA[54] = "SV_X_recMinusMC_wTopoConst"; // MC
+  fVarNames_QA[55] = "SV_Y_recMinusMC_wTopoConst"; // MC
+  fVarNames_QA[56] = "SV_Z_recMinusMC_wTopoConst"; // MC
+  fVarNames_QA[57] = "SV_X_PULL_wTopoConst"; // MC
+  fVarNames_QA[58] = "SV_Y_PULL_wTopoConst"; // MC
+  fVarNames_QA[59] = "SV_Z_PULL_wTopoConst"; // MC
   fVarNames_QA[60] = "SV_X_rec_wTopoConst_recalPV";
   fVarNames_QA[61] = "SV_Y_rec_wTopoConst_recalPV";
   fVarNames_QA[62] = "SV_Z_rec_wTopoConst_recalPV";
   fVarNames_QA[63] = "SV_sigma_X_rec_wTopoConst_recalPV";
   fVarNames_QA[64] = "SV_sigma_Y_rec_wTopoConst_recalPV";
   fVarNames_QA[65] = "SV_sigma_Z_rec_wTopoConst_recalPV";
-  fVarNames_QA[66] = "SV_X_recMinusMC_wTopoConst_recalPV";
-  fVarNames_QA[67] = "SV_Y_recMinusMC_wTopoConst_recalPV";
-  fVarNames_QA[68] = "SV_Z_recMinusMC_wTopoConst_recalPV";
-  fVarNames_QA[69] = "SV_X_PULL_wTopoConst_recalPV";
-  fVarNames_QA[70] = "SV_Y_PULL_wTopoConst_recalPV";
-  fVarNames_QA[71] = "SV_Z_PULL_wTopoConst_recalPV";
+  fVarNames_QA[66] = "SV_X_recMinusMC_wTopoConst_recalPV"; // MC
+  fVarNames_QA[67] = "SV_Y_recMinusMC_wTopoConst_recalPV"; // MC
+  fVarNames_QA[68] = "SV_Z_recMinusMC_wTopoConst_recalPV"; // MC
+  fVarNames_QA[69] = "SV_X_PULL_wTopoConst_recalPV"; // MC
+  fVarNames_QA[70] = "SV_Y_PULL_wTopoConst_recalPV"; // MC
+  fVarNames_QA[71] = "SV_Z_PULL_wTopoConst_recalPV"; // MC
   fVarNames_QA[72] = "pt_XicPlus_wTopoConst_recalPV";
   fVarNames_QA[73] = "pt_XicPlus_wTopoConst_recalPV_Minus_woTopoConst";
   fVarNames_QA[74] = "pt_XicPlus_wTopoConst_recalPV_Minus_wTopoConst";
@@ -2204,7 +2229,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fTree_XicPlus = new TTree(nameoutput, "XicPlus variables tree");
-  Int_t nVar = 63;
+  Int_t nVar = 67;
   fVar_XicPlus = new Float_t[nVar-1];
   TString *fVarNames = new TString[nVar];
 
@@ -2217,9 +2242,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[6]  = "nSigmaTPC_PiFromLam"; // TPC nsigma for pion coming from Lambda
   fVarNames[7]  = "nSigmaTPC_PrFromLam"; // TPC nsigma for proton coming from Lambda
 
-  fVarNames[8] = "chi2geo_Lam"; // chi2_geometry of Lambda (without mass constraint)
+  fVarNames[8]  = "chi2geo_Lam"; // chi2_geometry of Lambda (without mass constraint)
   fVarNames[9]  = "ldl_Lam"; // l/dl of Lambda
-  fVarNames[10]  = "chi2topo_LamToPV"; // chi2_topo of Lambda (with mass constraint) to PV
+  fVarNames[10] = "chi2topo_LamToPV"; // chi2_topo of Lambda (with mass constraint) to PV
 
   fVarNames[11] = "chi2geo_Xi"; // chi2_geometry of Xi (with Lambda mass const.)
   fVarNames[12] = "ldl_Xi"; // l/dl of Xi (with Lambda mass const.)
@@ -2278,8 +2303,12 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeRecXicPlus()
   fVarNames[58] = "PAXY_XicPlusToRecalPVKF_Refit"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV from KF) (Refit)
   fVarNames[59] = "PAXY_XicPlusToRecalPVfromKF"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV from KF)
   fVarNames[60] = "PAXY_XicPlusToRecalPV"; // pointing angle (X-Y) of XicPlus (pointing back to recalPV)
-  fVarNames[61] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
-  fVarNames[62] = "event_ID"; // event ID
+  fVarNames[61] = "PA_XicPlusToRecalPVfromKF_Refit_woAddMother"; // pointing angle of XicPlus without adding XicPlus into PV
+  fVarNames[62] = "chi2topo_XicPlusToRecalPVfromKF_Refit_woAddMother";
+  fVarNames[63] = "PV_NContributors"; // number of tracks used for PV fit + 1
+  fVarNames[64] = "PA_XicPlusToRecalPVfromKF_Refit_XicPlusDecayVtx"; // pointing angle of XicPlus decay vertex (pointing back to recalPV from KF) (Refit)
+  fVarNames[65] = "Source_XicPlus"; // flag for XicPlus MC truth (“4” prompt, "5" feed-down, “<0” background)
+  fVarNames[66] = "event_ID"; // event ID
 
 //  fVarNames[26] = "CosThetaStar_PiFromXicPlus"; // CosThetaStar of pion coming from XicPlus
 //  fVarNames[27] = "CosThetaStar_Xi"; // CosThetaStar of Xi coming from XicPlus
@@ -2398,7 +2427,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillEventROOTObjects()
 void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEvent *AODEvent, AliAODcascade *casc, KFParticle kfpXicPlus, AliAODTrack *trackPiFromXicPlus_trk1, KFParticle kfpBP_trk1, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, AliAODTrack *trackPiFromXicPlus_trk2, KFParticle kfpBP_trk2, KFParticle kfpProtonFromLam, KFParticle kfpPionFromLam, KFParticle PV, KFParticle PV_KF_Refit, TClonesArray *mcArray, Int_t lab_XicPlus)
 {
 
-  for (Int_t i=0; i<(63-1); i++) {
+  for (Int_t i=0; i<(67-1); i++) {
     fVar_XicPlus[i] = -9999.;
   }
 
@@ -2601,9 +2630,11 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
 
   fVar_XicPlus[48] = TMath::ACos(cosPA_XiToXicPlus); // pointing angle of Xi (pointing back to XicPlus)
 
+  fVar_XicPlus[63] = fpVtx->GetNContributors();
+
   if (fIsMC) {
     fVar_XicPlus_EvtID = GetMCEventID(); // Event ID for MC
-    fVar_XicPlus[61] = lab_XicPlus;
+    fVar_XicPlus[65] = lab_XicPlus;
     // === weight ===
     /*
     if (lab_XicPlus>0) {
@@ -2724,60 +2755,86 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
 
   // === Recalculate PV after removing Xic+ daughters and adding Xic+ (Refit) ===
   KFParticle recalPV_KF_Refit = PV_KF_Refit;
-  kfpBP_trk1.SubtractFromVertex(recalPV_KF_Refit);
-  kfpBP_trk2.SubtractFromVertex(recalPV_KF_Refit);
-  kfpPionOrKaon.SubtractFromVertex(recalPV_KF_Refit);
-  kfpProtonFromLam.SubtractFromVertex(recalPV_KF_Refit);
-  kfpPionFromLam.SubtractFromVertex(recalPV_KF_Refit);
+  if (trackPiFromXicPlus_trk1->GetUsedForPrimVtxFit()) kfpBP_trk1.SubtractFromVertex(recalPV_KF_Refit);
+  if (trackPiFromXicPlus_trk2->GetUsedForPrimVtxFit()) kfpBP_trk2.SubtractFromVertex(recalPV_KF_Refit);
+  if (trackPiFromXiOrKaonFromOmega->GetUsedForPrimVtxFit()) kfpPionOrKaon.SubtractFromVertex(recalPV_KF_Refit);
+  if (trkProton->GetUsedForPrimVtxFit()) kfpProtonFromLam.SubtractFromVertex(recalPV_KF_Refit);
+  if (trkPion->GetUsedForPrimVtxFit()) kfpPionFromLam.SubtractFromVertex(recalPV_KF_Refit);
+  // --- without adding mother particle ---
+  KFParticle recalPV_KF_Refit_woAddMother = recalPV_KF_Refit;
+  Double_t cosPA_XicPlusToRecalPVKF_Refit_woAddMother = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus, recalPV_KF_Refit_woAddMother);
+  fVar_XicPlus[61] = TMath::ACos(cosPA_XicPlusToRecalPVKF_Refit_woAddMother);
+  KFParticle kfpXicPlus_recalPVKF_Refit_woAddMother = kfpXicPlus;
+  kfpXicPlus_recalPVKF_Refit_woAddMother.SetProductionVertex(recalPV_KF_Refit_woAddMother);
+  fVar_XicPlus[62] = kfpXicPlus_recalPVKF_Refit_woAddMother.GetChi2()/kfpXicPlus_recalPVKF_Refit_woAddMother.GetNDF();
+  // --------------------------------------
+
   recalPV_KF_Refit.AddDaughter(kfpXicPlus);
 
-  KFParticle recalPV_KF_Refit_AfterUsedForPVcheck = PV_KF_Refit;
-  if (trackPiFromXicPlus_trk1->GetUsedForPrimVtxFit()) kfpBP_trk1.SubtractFromVertex(recalPV_KF_Refit_AfterUsedForPVcheck);
-  if (trackPiFromXicPlus_trk2->GetUsedForPrimVtxFit()) kfpBP_trk2.SubtractFromVertex(recalPV_KF_Refit_AfterUsedForPVcheck);
-  if (trackPiFromXiOrKaonFromOmega->GetUsedForPrimVtxFit()) kfpPionOrKaon.SubtractFromVertex(recalPV_KF_Refit_AfterUsedForPVcheck);
-  if (trkProton->GetUsedForPrimVtxFit()) kfpProtonFromLam.SubtractFromVertex(recalPV_KF_Refit_AfterUsedForPVcheck);
-  if (trkPion->GetUsedForPrimVtxFit()) kfpPionFromLam.SubtractFromVertex(recalPV_KF_Refit_AfterUsedForPVcheck);
-  recalPV_KF_Refit_AfterUsedForPVcheck.AddDaughter(kfpXicPlus);
-
   // --- CosPointingAngle ---
-  Double_t cosPA_XicPlusToRecalPVKF_Refit = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus, recalPV_KF_Refit_AfterUsedForPVcheck);
+  Double_t cosPA_XicPlusToRecalPVKF_Refit = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus, recalPV_KF_Refit);
   fVar_XicPlus[51] = TMath::ACos(cosPA_XicPlusToRecalPVKF_Refit); // pointing angle of XicPlus (pointing back to recalPV_KF_Refit)
   // --- chi2_topo ---
   KFParticle kfpXicPlus_recalPVKF_Refit = kfpXicPlus;
-  kfpXicPlus_recalPVKF_Refit.SetProductionVertex(recalPV_KF_Refit_AfterUsedForPVcheck);
+  kfpXicPlus_recalPVKF_Refit.SetProductionVertex(recalPV_KF_Refit);
   fVar_XicPlus[52] = kfpXicPlus_recalPVKF_Refit.GetChi2()/kfpXicPlus_recalPVKF_Refit.GetNDF(); // chi2_topo of XicPlus to recalPV_KF_Refit
+  // --- CosPointingAngle (TransportToDecayVertex) ---
+  /*
+  KFParticle kfpXiMinus_m_FullyFitted = kfpXiMinus_m;
+  kfpXiMinus_m_FullyFitted.SetProductionVertex(kfpXicPlus_recalPVKF_Refit);
+  KFParticle kfpBP_trk1_FullyFitted = kfpBP_trk1;
+  kfpBP_trk1_FullyFitted.SetProductionVertex(kfpXicPlus_recalPVKF_Refit);
+  KFParticle kfpBP_trk2_FullyFitted = kfpBP_trk2;
+  kfpBP_trk2_FullyFitted.SetProductionVertex(kfpXicPlus_recalPVKF_Refit);
+  cout << "-----------------------------" << endl;
+  cout << "kfpXiMinus_m: " << kfpXiMinus_m.GetX() << endl;
+  cout << "kfpXiMinus_m_FullyFitted: " <<  kfpXiMinus_m_FullyFitted.GetX() << endl;
+  cout << "kfpBP_trk1: " << kfpBP_trk1.GetX() << endl;
+  cout << "kfpBP_trk1_FullyFitted: " << kfpBP_trk1_FullyFitted.GetX() << endl;
+  cout << "kfpBP_trk2: " << kfpBP_trk2.GetX() << endl;
+  cout << "kfpBP_trk2_FullyFitted: " << kfpBP_trk2_FullyFitted.GetX() << endl;
+  cout << "kfpXicPlus_recalPVKF_Refit: " << kfpXicPlus_recalPVKF_Refit.GetX() << endl;
+  */
+  kfpXicPlus_recalPVKF_Refit.TransportToDecayVertex();
+  /*
+  cout << "kfpXicPlus_recalPVKF_Refit (TransportToDecayVertex): " << kfpXicPlus_recalPVKF_Refit.GetX() << endl;
+  cout << "kfpXicPlus: " << kfpXicPlus.GetX() << endl;
+  KFParticle kfpBP_trk1_FullyFitted_XicPlusDecayVertex = kfpBP_trk1;
+  kfpBP_trk1_FullyFitted_XicPlusDecayVertex.SetProductionVertex(kfpXicPlus_recalPVKF_Refit);
+  KFParticle kfpBP_trk2_FullyFitted_XicPlusDecayVertex = kfpBP_trk2;
+  kfpBP_trk2_FullyFitted_XicPlusDecayVertex.SetProductionVertex(kfpXicPlus_recalPVKF_Refit);
+  KFParticle kfpXiMinus_m_FullyFitted_XicPlusDecayVertex = kfpXiMinus_m;
+  kfpXiMinus_m_FullyFitted_XicPlusDecayVertex.SetProductionVertex(kfpXicPlus_recalPVKF_Refit);
+  cout << "kfpBP_trk1_FullyFitted_XicPlusDecayVertex: " << kfpBP_trk1_FullyFitted_XicPlusDecayVertex.GetX() << endl;
+  cout << "kfpBP_trk2_FullyFitted_XicPlusDecayVertex: " << kfpBP_trk2_FullyFitted_XicPlusDecayVertex.GetX() << endl;
+  cout << "kfpXiMinus_m_FullyFitted_XicPlusDecayVertex: " << kfpXiMinus_m_FullyFitted_XicPlusDecayVertex.GetX() << endl;
+  */
+  Double_t cosPA_XicPlusToRecalPVKF_Refit_XicPlusDecayVtx = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus_recalPVKF_Refit, recalPV_KF_Refit);
+  fVar_XicPlus[64] = TMath::ACos(cosPA_XicPlusToRecalPVKF_Refit_XicPlusDecayVtx); // pointing angle of XicPlus decay vertex (pointing back to recalPV_KF_Refit)
   // ============================================================================
-  
+
   // === Recalculate PV after removing Xic+ daughters and adding Xic+ (w/o Refit) ===
   KFParticle recalPV_KF = PV;
-  kfpBP_trk1.SubtractFromVertex(recalPV_KF);
-  kfpBP_trk2.SubtractFromVertex(recalPV_KF);
-  kfpPionOrKaon.SubtractFromVertex(recalPV_KF);
-  kfpProtonFromLam.SubtractFromVertex(recalPV_KF);
-  kfpPionFromLam.SubtractFromVertex(recalPV_KF);
+  if (trackPiFromXicPlus_trk1->GetUsedForPrimVtxFit()) kfpBP_trk1.SubtractFromVertex(recalPV_KF);
+  if (trackPiFromXicPlus_trk2->GetUsedForPrimVtxFit()) kfpBP_trk2.SubtractFromVertex(recalPV_KF);
+  if (trackPiFromXiOrKaonFromOmega->GetUsedForPrimVtxFit()) kfpPionOrKaon.SubtractFromVertex(recalPV_KF);
+  if (trkProton->GetUsedForPrimVtxFit()) kfpProtonFromLam.SubtractFromVertex(recalPV_KF);
+  if (trkPion->GetUsedForPrimVtxFit()) kfpPionFromLam.SubtractFromVertex(recalPV_KF);
   recalPV_KF.AddDaughter(kfpXicPlus);
 
-  KFParticle recalPV_KF_AfterUsedForPVcheck = PV;
-  if (trackPiFromXicPlus_trk1->GetUsedForPrimVtxFit()) kfpBP_trk1.SubtractFromVertex(recalPV_KF_AfterUsedForPVcheck);
-  if (trackPiFromXicPlus_trk2->GetUsedForPrimVtxFit()) kfpBP_trk2.SubtractFromVertex(recalPV_KF_AfterUsedForPVcheck);
-  if (trackPiFromXiOrKaonFromOmega->GetUsedForPrimVtxFit()) kfpPionOrKaon.SubtractFromVertex(recalPV_KF_AfterUsedForPVcheck);
-  if (trkProton->GetUsedForPrimVtxFit()) kfpProtonFromLam.SubtractFromVertex(recalPV_KF_AfterUsedForPVcheck);
-  if (trkPion->GetUsedForPrimVtxFit()) kfpPionFromLam.SubtractFromVertex(recalPV_KF_AfterUsedForPVcheck);
-  recalPV_KF_AfterUsedForPVcheck.AddDaughter(kfpXicPlus);
-
   // --- CosPointingAngle ---
-  Double_t cosPA_XicPlusToRecalPVKF = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus, recalPV_KF_AfterUsedForPVcheck);
+  Double_t cosPA_XicPlusToRecalPVKF = AliVertexingHFUtils::CosPointingAngleFromKF(kfpXicPlus, recalPV_KF);
   fVar_XicPlus[53] = TMath::ACos(cosPA_XicPlusToRecalPVKF); // pointing angle of XicPlus (pointing back to recalPV_KF)
   // --- chi2_topo ---
   KFParticle kfpXicPlus_recalPVKF = kfpXicPlus;
-  kfpXicPlus_recalPVKF.SetProductionVertex(recalPV_KF_AfterUsedForPVcheck);
+  kfpXicPlus_recalPVKF.SetProductionVertex(recalPV_KF);
   fVar_XicPlus[54] = kfpXicPlus_recalPVKF.GetChi2()/kfpXicPlus_recalPVKF.GetNDF(); // chi2_topo of XicPlus to recalPV_KF
   // ============================================================================
 
   // --- pointing angle (X-Y) ---
-  Double_t cosPAXY_XicPlusToRecalPVKF_Refit = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, recalPV_KF_Refit_AfterUsedForPVcheck);
+  Double_t cosPAXY_XicPlusToRecalPVKF_Refit = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, recalPV_KF_Refit);
   fVar_XicPlus[58] = TMath::ACos(cosPAXY_XicPlusToRecalPVKF_Refit); // pointing angle (X-Y) of XicPlus (pointing back to recalPV_KF_Refit)
-  Double_t cosPAXY_XicPlusToRecalPVKF = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, recalPV_KF_AfterUsedForPVcheck);
+  Double_t cosPAXY_XicPlusToRecalPVKF = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, recalPV_KF);
   fVar_XicPlus[59] = TMath::ACos(cosPAXY_XicPlusToRecalPVKF); // pointing angle (X-Y) of XicPlus (pointing back to recalPV_KF)
   Double_t cosPAXY_XicPlusToRecalPV = AliVertexingHFUtils::CosPointingAngleXYFromKF(kfpXicPlus, PV_recal);
   fVar_XicPlus[60] = TMath::ACos(cosPAXY_XicPlusToRecalPV); // pointing angle (X-Y) of XicPlus (pointing back to recalPV)
@@ -2806,9 +2863,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fHPrimVtx_recalPV_Minus_PVrec_x->Fill(fVar_XicPlus_QA[9]-pos_PV[0]);
   fHPrimVtx_recalPV_Minus_PVrec_y->Fill(fVar_XicPlus_QA[10]-pos_PV[1]);
   fHPrimVtx_recalPV_Minus_PVrec_z->Fill(fVar_XicPlus_QA[11]-pos_PV[2]);
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_x->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-recalPV_KF_Refit.GetX());
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_y->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-recalPV_KF_Refit.GetY());
-  fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_recalPV_KF_Refit_z->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-recalPV_KF_Refit.GetZ());
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_x->Fill(recalPV_KF_Refit.GetX()-PV_KF_Refit.GetX());
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_y->Fill(recalPV_KF_Refit.GetY()-PV_KF_Refit.GetY());
+  fHPrimVtx_recalPV_KF_Refit_Minus_PV_KF_Refit_z->Fill(recalPV_KF_Refit.GetZ()-PV_KF_Refit.GetZ());
 
   fHPrimVtx_PV_KF_Refit_Minus_PVgen_x->Fill(fVar_XicPlus_QA[76]-fVar_XicPlus_QA[0]);
   fHPrimVtx_PV_KF_Refit_Minus_PVgen_y->Fill(fVar_XicPlus_QA[77]-fVar_XicPlus_QA[1]);
@@ -2816,9 +2873,6 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fHPrimVtx_recalPV_Minus_PVgen_x->Fill(fVar_XicPlus_QA[9]-fVar_XicPlus_QA[0]);
   fHPrimVtx_recalPV_Minus_PVgen_y->Fill(fVar_XicPlus_QA[10]-fVar_XicPlus_QA[1]);
   fHPrimVtx_recalPV_Minus_PVgen_z->Fill(fVar_XicPlus_QA[11]-fVar_XicPlus_QA[2]);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x->Fill(fVar_XicPlus_QA[82]-fVar_XicPlus_QA[0]);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y->Fill(fVar_XicPlus_QA[83]-fVar_XicPlus_QA[1]);
-  fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z->Fill(fVar_XicPlus_QA[84]-fVar_XicPlus_QA[2]);
   fHPrimVtx_PV_PULL_x->Fill((pos_PV[0]-fVar_XicPlus_QA[0])/fVar_XicPlus_QA[6]);
   fHPrimVtx_PV_PULL_y->Fill((pos_PV[1]-fVar_XicPlus_QA[1])/fVar_XicPlus_QA[7]);
   fHPrimVtx_PV_PULL_z->Fill((pos_PV[2]-fVar_XicPlus_QA[2])/fVar_XicPlus_QA[8]);
@@ -2831,19 +2885,24 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
   fHPrimVtx_recalPV_PULL_x->Fill((fVar_XicPlus_QA[9]-fVar_XicPlus_QA[0])/fVar_XicPlus_QA[12]);
   fHPrimVtx_recalPV_PULL_y->Fill((fVar_XicPlus_QA[10]-fVar_XicPlus_QA[1])/fVar_XicPlus_QA[13]);
   fHPrimVtx_recalPV_PULL_z->Fill((fVar_XicPlus_QA[11]-fVar_XicPlus_QA[2])/fVar_XicPlus_QA[14]);
+
+  fHPrimVtx_recalPV_KF_Minus_PV_x->Fill(recalPV_KF.GetX()-PV.GetX());
+  fHPrimVtx_recalPV_KF_Minus_PV_y->Fill(recalPV_KF.GetY()-PV.GetY());
+  fHPrimVtx_recalPV_KF_Minus_PV_z->Fill(recalPV_KF.GetZ()-PV.GetZ());
+
   if (fIsMC) {
-    fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_x->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0]);
-    fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_y->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1]);
-    fHPrimVtx_recalPV_KF_Refit_AfterCheck_Minus_PVgen_z->Fill(recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2]);
-    fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_x->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrX());
-    fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_y->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrY());
-    fHPrimVtx_recalPV_KF_Refit_AfterCheck_PULL_z->Fill((recalPV_KF_Refit_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2])/recalPV_KF_Refit_AfterUsedForPVcheck.GetErrZ());
-    fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_x->Fill(recalPV_KF_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0]);
-    fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_y->Fill(recalPV_KF_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1]);
-    fHPrimVtx_recalPV_KF_AfterCheck_Minus_PVgen_z->Fill(recalPV_KF_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2]);
-    fHPrimVtx_recalPV_KF_AfterCheck_PULL_x->Fill((recalPV_KF_AfterUsedForPVcheck.GetX()-fVar_XicPlus_QA[0])/recalPV_KF_AfterUsedForPVcheck.GetErrX());
-    fHPrimVtx_recalPV_KF_AfterCheck_PULL_y->Fill((recalPV_KF_AfterUsedForPVcheck.GetY()-fVar_XicPlus_QA[1])/recalPV_KF_AfterUsedForPVcheck.GetErrY());
-    fHPrimVtx_recalPV_KF_AfterCheck_PULL_z->Fill((recalPV_KF_AfterUsedForPVcheck.GetZ()-fVar_XicPlus_QA[2])/recalPV_KF_AfterUsedForPVcheck.GetErrZ());
+    fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_x->Fill(recalPV_KF_Refit.GetX()-fVar_XicPlus_QA[0]);
+    fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_y->Fill(recalPV_KF_Refit.GetY()-fVar_XicPlus_QA[1]);
+    fHPrimVtx_recalPV_KF_Refit_Minus_PVgen_z->Fill(recalPV_KF_Refit.GetZ()-fVar_XicPlus_QA[2]);
+    fHPrimVtx_recalPV_KF_Refit_PULL_x->Fill((recalPV_KF_Refit.GetX()-fVar_XicPlus_QA[0])/recalPV_KF_Refit.GetErrX());
+    fHPrimVtx_recalPV_KF_Refit_PULL_y->Fill((recalPV_KF_Refit.GetY()-fVar_XicPlus_QA[1])/recalPV_KF_Refit.GetErrY());
+    fHPrimVtx_recalPV_KF_Refit_PULL_z->Fill((recalPV_KF_Refit.GetZ()-fVar_XicPlus_QA[2])/recalPV_KF_Refit.GetErrZ());
+    fHPrimVtx_recalPV_KF_Minus_PVgen_x->Fill(recalPV_KF.GetX()-fVar_XicPlus_QA[0]);
+    fHPrimVtx_recalPV_KF_Minus_PVgen_y->Fill(recalPV_KF.GetY()-fVar_XicPlus_QA[1]);
+    fHPrimVtx_recalPV_KF_Minus_PVgen_z->Fill(recalPV_KF.GetZ()-fVar_XicPlus_QA[2]);
+    fHPrimVtx_recalPV_KF_PULL_x->Fill((recalPV_KF.GetX()-fVar_XicPlus_QA[0])/recalPV_KF.GetErrX());
+    fHPrimVtx_recalPV_KF_PULL_y->Fill((recalPV_KF.GetY()-fVar_XicPlus_QA[1])/recalPV_KF.GetErrY());
+    fHPrimVtx_recalPV_KF_PULL_z->Fill((recalPV_KF.GetZ()-fVar_XicPlus_QA[2])/recalPV_KF.GetErrZ());
   }
   }
 
