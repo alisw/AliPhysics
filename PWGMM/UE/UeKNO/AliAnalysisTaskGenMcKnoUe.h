@@ -57,7 +57,7 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		virtual void SetIsPP(Bool_t val){fIsPP = val;}
 		virtual void SetGenerator(Int_t val){fGenerator = val;}
 		virtual void SetIsFirstPart(Bool_t val){fFirstPart = val;}
-		virtual void SetParametersRho(); 
+		virtual void SetParametersRho(Double_t etarange); 
 
 	private:
 
