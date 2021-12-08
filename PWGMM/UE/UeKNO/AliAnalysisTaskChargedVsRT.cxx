@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  * 
  *                                                                        *
- * Authors: Luz Tiscareño (luz.elena.tiscareno.montoya@cern.ch)           *
+ * Authors:       Luz Tiscareño (luz.elena.tiscareno.montoya@cern.ch)           *
  *          Paola Vargas (paola.vargas.torres@cern.ch)                    *
  *          Gyula Bencedi (Gyula.Bencedi@cern.ch)                         *
  *          Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)               *
@@ -647,13 +647,14 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 		fMCStack = fMC->Stack();
 	}
 
-	AliHeader* headerMC = fMC->Header();
+    AliHeader* headerMC;
 	Bool_t isGoodVtxPosMC = kFALSE;
 
 	vector<Float_t> ptMc;
 	vector<Float_t> phiMc;
 	vector<Int_t> idMc;
 	if (fUseMC){
+        headerMC = fMC->Header();
 		AliGenEventHeader* genHeader = headerMC->GenEventHeader();
 		TArrayF vtxMC(3); // primary vertex  MC 
 		vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
