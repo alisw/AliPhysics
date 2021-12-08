@@ -184,7 +184,7 @@ void AliAnalysisTaskDCArStudy::AnaEventMC() {
 
 void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
 {
-    if (fAcceptTrack[0]) {
+    if (fAcceptTrack[0] && !fMCPileUpTrack) {
         double fMCweight = 1.0;
         double fMCweightSysUp = 1.0;
         double fMCweightSysDown = 1.0;
