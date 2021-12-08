@@ -106,6 +106,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   fTagFilter(0x0),
   fProbeFilter(0x0),
   fPassingProbeFilter(0x0),
+  fListPassingProbeFilters(0x0),
   fMmax(-1),
   fPhiVmin(3.2),
   fESDtrackCutsGlobalNoDCA(0x0),
@@ -119,7 +120,6 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   // Constructor
 
   for(Int_t i=0;i<3;i++)  fVertex[i] = 0;
-
   for(Int_t i=0;i<2;i++){
     for(Int_t j=0;j<10;j++){
       fEventList[i][j] = 0x0;
@@ -166,6 +166,7 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fTagFilter(0x0),
   fProbeFilter(0x0),
   fPassingProbeFilter(0x0),
+  fListPassingProbeFilters(0x0),
   fMmax(-1),
   fPhiVmin(3.2),
   fESDtrackCutsGlobalNoDCA(0x0),
@@ -206,6 +207,10 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fProbeFilter = new AliAnalysisFilter("fProbeFilter","fProbeFilter");
   fPassingProbeFilter = new AliAnalysisFilter("fPassingProbeFilter"  ,"fPassingProbeFilter");
 
+  fListPassingProbeFilters = new TList();
+  fListPassingProbeFilters->SetName("fListPassingProbeFilters");
+  fListPassingProbeFilters->SetOwner(kTRUE);
+
   fESDtrackCutsGlobalNoDCA = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   fESDtrackCutsGlobalNoDCA->SetMaxDCAToVertexXY(2.4);
   fESDtrackCutsGlobalNoDCA->SetMaxDCAToVertexZ(3.2);
@@ -234,6 +239,7 @@ AliAnalysisTaskTagAndProbe::~AliAnalysisTaskTagAndProbe()
   delete fTagFilter;
   delete fProbeFilter;
   delete fPassingProbeFilter;
+  delete fListPassingProbeFilters;
   delete fTagTrackArray;
   delete fProbeTrackArray;
   delete fPassingProbeTrackArray;
@@ -369,18 +375,21 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 
   THnSparseF *hsAll_El_TAP = new THnSparseF("hsAll_El_TAP","hs all e^{#pm} for PID eff.",Ndim,Nbin,xmin,xmax);
   //hsAll_El_TAP->SetBinEdges(0,pinbin);
+  hsAll_El_TAP->Sumw2();
   hsAll_El_TAP->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
   hsAll_El_TAP->GetAxis(1)->SetTitle("#eta_{e}");
   hsAll_El_TAP->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
   fOutputContainer->Add(hsAll_El_TAP);
 
-  THnSparseF *hsSel_El_TAP = new THnSparseF("hsSel_El_TAP","hs all e^{#pm} for PID eff.",Ndim,Nbin,xmin,xmax);
-  //hsSel_El_TAP->SetBinEdges(0,pinbin);
-  hsSel_El_TAP->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
-  hsSel_El_TAP->GetAxis(1)->SetTitle("#eta_{e}");
-  hsSel_El_TAP->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
-  fOutputContainer->Add(hsSel_El_TAP);
-
+  for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+    THnSparseF *hsSel_El_TAP = new THnSparseF(Form("hsSel_El_TAP_%s",fListPassingProbeFilters->At(i)->GetName()),Form("hs all e^{#pm} for PID eff. %s",fListPassingProbeFilters->At(i)->GetName()),Ndim,Nbin,xmin,xmax);
+    //hsSel_El_TAP->SetBinEdges(0,pinbin);
+    hsSel_El_TAP->Sumw2();
+    hsSel_El_TAP->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
+    hsSel_El_TAP->GetAxis(1)->SetTitle("#eta_{e}");
+    hsSel_El_TAP->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
+    fOutputContainer->Add(hsSel_El_TAP);
+  }
   if(fIsMC){
     for(Int_t i=0;i<6;i++){
       if(parname[i].Contains("El_")) continue;
@@ -401,14 +410,28 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
     }
 
     //histograms for PID efficiency in MC
-    TH2F *hMCElall = new TH2F("hMCElall","all electron in M.C.;p_{T,e} (GeV/c);#eta_{e}",100,0,10,20,-1,+1);
-    hMCElall->Sumw2();
-    fOutputContainer->Add(hMCElall);
+    //TH2F *hMCElall = new TH2F("hMCElall","all electron in M.C.;p_{T,e} (GeV/c);#eta_{e}",100,0,10,20,-1,+1);
+    //hMCElall->Sumw2();
+    //fOutputContainer->Add(hMCElall);
+    THnSparseF *hsAll_El_TAP_MC = new THnSparseF("hsAll_El_TAP_MC","hs all e^{#pm} for PID eff. MC",Ndim,Nbin,xmin,xmax);
+    //hsAll_El_TAP->SetBinEdges(0,pinbin);
+    hsAll_El_TAP_MC->Sumw2();
+    hsAll_El_TAP_MC->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
+    hsAll_El_TAP_MC->GetAxis(1)->SetTitle("#eta_{e}");
+    hsAll_El_TAP_MC->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
+    fOutputContainer->Add(hsAll_El_TAP_MC);
 
-    TH2F *hMCElselected = new TH2F("hMCElselected","selected electron in M.C.;p_{T,e} (GeV/c);#eta_{e}",100,0,10,20,-1,+1);
-    hMCElselected->Sumw2();
-    fOutputContainer->Add(hMCElselected);
-
+  for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+    THnSparseF *hsSel_El_TAP_MC = new THnSparseF(Form("hsSel_El_TAP_MC_%s",fListPassingProbeFilters->At(i)->GetName()),Form("hs all e^{#pm} for PID eff. MC %s",fListPassingProbeFilters->At(i)->GetName()),Ndim,Nbin,xmin,xmax);
+    hsSel_El_TAP_MC->Sumw2();
+    hsSel_El_TAP_MC->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
+    hsSel_El_TAP_MC->GetAxis(1)->SetTitle("#eta_{e}");
+    hsSel_El_TAP_MC->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
+    fOutputContainer->Add(hsSel_El_TAP_MC);
+    //TH2F *hMCElselected = new TH2F("hMCElselected","selected electron in M.C.;p_{T,e} (GeV/c);#eta_{e}",100,0,10,20,-1,+1);
+    //hMCElselected->Sumw2();
+    //fOutputContainer->Add(hMCElselected);
+  }
   }
 
   AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
@@ -593,26 +616,27 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
   TrackQA();
   if(fESDEvent)      FillV0InfoESD();
   else if(fAODEvent) FillV0InfoAOD();
-  CutEfficiency();
 
-  //Now we either add current events to stack or remove
-  //If no electron in current event - no need to add it to mixed
-  if(fProbeTrackArray->GetEntriesFast() > 0){
-    prevEvent_p ->AddFirst(fProbeTrackArray->Clone());
-    prevEvent_pp->AddFirst(fPassingProbeTrackArray->Clone());
-
-    if(prevEvent_p->GetSize() > fNMixed){//Remove redundant events
-      TObjArray * tmp_p = static_cast<TObjArray*>(prevEvent_p->Last());
-      prevEvent_p->RemoveLast();
-      delete tmp_p;
-      tmp_p = NULL;
-
-      TObjArray * tmp_pp = static_cast<TObjArray*>(prevEvent_pp->Last());
-      prevEvent_pp->RemoveLast();
-      delete tmp_pp;
-      tmp_pp = NULL;
-    }
-  }
+//  CutEfficiency();
+//
+//  //Now we either add current events to stack or remove
+//  //If no electron in current event - no need to add it to mixed
+//  if(fProbeTrackArray->GetEntriesFast() > 0){
+//    prevEvent_p ->AddFirst(fProbeTrackArray->Clone());
+//    prevEvent_pp->AddFirst(fPassingProbeTrackArray->Clone());
+//
+//    if(prevEvent_p->GetSize() > fNMixed){//Remove redundant events
+//      TObjArray * tmp_p = static_cast<TObjArray*>(prevEvent_p->Last());
+//      prevEvent_p->RemoveLast();
+//      delete tmp_p;
+//      tmp_p = NULL;
+//
+//      TObjArray * tmp_pp = static_cast<TObjArray*>(prevEvent_pp->Last());
+//      prevEvent_pp->RemoveLast();
+//      delete tmp_pp;
+//      tmp_pp = NULL;
+//    }
+//  }
 
   if(fIsMC){
     if(fESDEvent) GetMCInfoESD();
@@ -681,7 +705,8 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
 
   const Int_t trackMult = fEvent->GetNumberOfTracks();
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
+  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
+  Double_t value3D[3] = {0,0,0};
 
   for(Int_t itrack=0;itrack<trackMult;itrack++){
     AliVParticle *particle = (AliVParticle*)fEvent->GetTrack(itrack);
@@ -721,12 +746,20 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
       value[7] = nsigma_El_TOF;
       FillSparse(fOutputContainer,"hsPID_MCEl",value);
 
+      value3D[0] = track->Pt();
+      value3D[1] = track->Eta();
+      value3D[2] = track->Phi();
+      if(value3D[2] < 0) value3D[2] += TMath::TwoPi();
+
       UInt_t cutmask_probe = fProbeFilter->IsSelected(particle);
-      if(cutmask_probe == selectedMask_probe) FillHistogramTH2(fOutputContainer,"hMCElall",track->Pt(),track->Eta());
+      if(cutmask_probe == selectedMask_probe) FillSparse(fOutputContainer,"hsAll_El_TAP_MC",value3D);
 
-      UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(particle);
-      if(cutmask_passingprobe == selectedMask_passingprobe) FillHistogramTH2(fOutputContainer,"hMCElselected",track->Pt(),track->Eta());
-
+      for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+          AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
+          UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
+          UInt_t cutmask_passingprobe = ppfilter->IsSelected(particle);
+          if(cutmask_passingprobe == selectedMask_passingprobe) FillSparse(fOutputContainer,Form("hsSel_El_TAP_MC_%s",ppfilter->GetName()),value3D);
+      }
     }
     else if(TMath::Abs(pdg) == 211){
       value[5] = nsigma_Pi_TPC;
@@ -1104,13 +1137,19 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTPCvsPin_v0_Probe",pin,nsigma_El_TPC_neg);
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsPin_v0_Probe",pin,nsigma_El_ITS_neg);
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTOFvsPin_v0_Probe",pin,nsigma_El_TOF_neg);
-              cutmask_passingprobe = fPassingProbeFilter->IsSelected(legNeg);
-              if(cutmask_passingprobe == selectedMask_passingprobe){
-                  value3D[0] = legNeg->Pt();
-                  value3D[1] = legNeg->Eta();
-                  value3D[2] = legNeg->Phi();
-                  FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
+
+              for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+                  AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
+                  UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
+                  UInt_t cutmask_passingprobe = ppfilter->IsSelected(legNeg);
+                  if(cutmask_passingprobe == selectedMask_passingprobe){
+                      value3D[0] = legNeg->Pt();
+                      value3D[1] = legNeg->Eta();
+                      value3D[2] = legNeg->Phi();
+                      FillSparse(fOutputContainer,Form("hsSel_El_TAP_%s",ppfilter->GetName()),value3D);
+                  }
               }
+
           }
       }
 
@@ -1145,13 +1184,19 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTPCvsPin_v0_Probe",pin,nsigma_El_TPC_pos);
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsPin_v0_Probe",pin,nsigma_El_ITS_pos);
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTOFvsPin_v0_Probe",pin,nsigma_El_TOF_pos);
-              cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
-              if(cutmask_passingprobe == selectedMask_passingprobe){
-                  value3D[0] = legPos->Pt();
-                  value3D[1] = legPos->Eta();
-                  value3D[2] = legPos->Phi();
-                  FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
+
+              for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+                  AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
+                  UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
+                  UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
+                  if(cutmask_passingprobe == selectedMask_passingprobe){
+                      value3D[0] = legPos->Pt();
+                      value3D[1] = legPos->Eta();
+                      value3D[2] = legPos->Phi();
+                      FillSparse(fOutputContainer,Form("hsSel_El_TAP_%s",ppfilter->GetName()),value3D);
+                  }
               }
+
           }
       }
 
@@ -1300,10 +1345,10 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
 
   UInt_t selectedMask_tag          = (1<<fTagFilter->GetCuts()->GetEntries())-1;
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
+  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
   UInt_t cutmask_tag = -1;
   UInt_t cutmask_probe = -1;
-  UInt_t cutmask_passingprobe = -1;
+  //UInt_t cutmask_passingprobe = -1;
 
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliAODv0 *v0 = (AliAODv0*)fAODEvent->GetV0(iv0);
@@ -1354,27 +1399,32 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
       //for PID efficiency by DDA
       cutmask_tag = fTagFilter->IsSelected(legPos);
       if(cutmask_tag == selectedMask_tag){
-          cutmask_probe = fProbeFilter->IsSelected(legNeg);
-          if(cutmask_probe == selectedMask_probe){
+        cutmask_probe = fProbeFilter->IsSelected(legNeg);
+        if(cutmask_probe == selectedMask_probe){
+          value3D[0] = legNeg->Pt();
+          value3D[1] = legNeg->Eta();
+          value3D[2] = legNeg->Phi();
+          FillSparse(fOutputContainer,"hsAll_El_TAP",value3D);
+          nsigma_El_TPC_neg = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
+          nsigma_El_ITS_neg = (fPIDResponse->NumberOfSigmasITS(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(legNeg,AliPID::kElectron);
+          nsigma_El_TOF_neg = (fPIDResponse->NumberOfSigmasTOF(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(legNeg,AliPID::kElectron);
+          pin = legNeg->GetTPCmomentum();
+          FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTPCvsPin_v0_Probe",pin,nsigma_El_TPC_neg);
+          FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsPin_v0_Probe",pin,nsigma_El_ITS_neg);
+          FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTOFvsPin_v0_Probe",pin,nsigma_El_TOF_neg);
+
+          for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+            AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
+            UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
+            UInt_t cutmask_passingprobe = ppfilter->IsSelected(legNeg);
+            if(cutmask_passingprobe == selectedMask_passingprobe){
               value3D[0] = legNeg->Pt();
               value3D[1] = legNeg->Eta();
               value3D[2] = legNeg->Phi();
-              FillSparse(fOutputContainer,"hsAll_El_TAP",value3D);
-              nsigma_El_TPC_neg = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
-              nsigma_El_ITS_neg = (fPIDResponse->NumberOfSigmasITS(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrITS(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrITS(legNeg,AliPID::kElectron);
-              nsigma_El_TOF_neg = (fPIDResponse->NumberOfSigmasTOF(legNeg,AliPID::kElectron) - AliDielectronPID::GetCntrdCorrTOF(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorrTOF(legNeg,AliPID::kElectron);
-              pin = legNeg->GetTPCmomentum();
-              FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTPCvsPin_v0_Probe",pin,nsigma_El_TPC_neg);
-              FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsPin_v0_Probe",pin,nsigma_El_ITS_neg);
-              FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTOFvsPin_v0_Probe",pin,nsigma_El_TOF_neg);
-              cutmask_passingprobe = fPassingProbeFilter->IsSelected(legNeg);
-              if(cutmask_passingprobe == selectedMask_passingprobe){
-                  value3D[0] = legNeg->Pt();
-                  value3D[1] = legNeg->Eta();
-                  value3D[2] = legNeg->Phi();
-                  FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
-              }
+              FillSparse(fOutputContainer,Form("hsSel_El_TAP_%s",ppfilter->GetName()),value3D);
+            }
           }
+        }
       }
 
       nsigma_El_TPC = (fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron) - AliDielectronPID::GetCorrVal() - AliDielectronPID::GetCntrdCorr(legNeg,AliPID::kElectron)) / AliDielectronPID::GetWdthCorr(legNeg,AliPID::kElectron);
@@ -1408,12 +1458,16 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTPCvsPin_v0_Probe",pin,nsigma_El_TPC_pos);
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsPin_v0_Probe",pin,nsigma_El_ITS_pos);
               FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTOFvsPin_v0_Probe",pin,nsigma_El_TOF_pos);
-              cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
-              if(cutmask_passingprobe == selectedMask_passingprobe){
-                  value3D[0] = legPos->Pt();
-                  value3D[1] = legPos->Eta();
-                  value3D[2] = legPos->Phi();
-                  FillSparse(fOutputContainer,"hsSel_El_TAP",value3D);
+              for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+                  AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
+                  UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
+                  UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
+                  if(cutmask_passingprobe == selectedMask_passingprobe){
+                      value3D[0] = legPos->Pt();
+                      value3D[1] = legPos->Eta();
+                      value3D[2] = legPos->Phi();
+                      FillSparse(fOutputContainer,Form("hsSel_El_TAP_%s",ppfilter->GetName()),value3D);
+                  }
               }
           }
       }

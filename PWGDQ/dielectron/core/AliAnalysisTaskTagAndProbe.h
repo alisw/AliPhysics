@@ -30,6 +30,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisFilter *GetTagFilter()       {return fTagFilter  ;}
     AliAnalysisFilter *GetProbeFilter(){return fProbeFilter;}
     AliAnalysisFilter *GetPassingProbeFilter()  {return fPassingProbeFilter;}
+    void AddPassingProbeFilter(AliAnalysisFilter *filter) {fListPassingProbeFilters->Add(filter);}
 
     void SetPIDCalibMode(Bool_t flag) {fPIDCalibMode = flag;}
     void SetPIDCalibinPU(Bool_t flag) {fPIDCalibinPU = flag;}
@@ -305,6 +306,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisFilter *fTagFilter;
     AliAnalysisFilter *fProbeFilter;
     AliAnalysisFilter *fPassingProbeFilter;
+    TList *fListPassingProbeFilters;
     Float_t fMmax;
     Float_t fPhiVmin;
     AliESDtrackCuts *fESDtrackCutsGlobalNoDCA;
@@ -319,7 +321,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 9);
+    ClassDef(AliAnalysisTaskTagAndProbe, 10);
 };
 
 
