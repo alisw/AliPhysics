@@ -304,6 +304,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kMCHerwig6,
     kMCHepMCPtHard,
     kMCHepMCMB,
+    kMCPythiaWeighted,
     kNoMC
   };
 
@@ -482,6 +483,18 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param i If true the production is handled as a pt-hard production
    */
   void                        SetIsHepMC(Bool_t i)                                 { fIsHepMC          = i                              ; }
+
+  /**
+   * @brief Define production as event-weighted production
+   * 
+   * Production is event weighted. In this case the pt-hard spectrum is biased
+   * as events with a high-pt hard are simulated with a higher probability than
+   * expected. In order to get the physical spectrum shape the histograms have
+   * to be filled with the event weight from the event header as weight.
+   * 
+   * @param isWeighted If true the production is an event-weighed production
+   */
+  void                        SetIsWeighted(Bool_t isWeighted)                     { fIsWeighted       = isWeighted                     ; }             
 
   /**
    * @brief Set type of the MC production
@@ -677,6 +690,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return Event weight (-1 if not a PPYTHIA- or HepMC-based production) 
    */
   double                      GetEventWeightFromHeader()                      const;
+
+  /**
+   * @brief Check whether the task was configured for running on an event-weighed sample
+   * @return true if the sample is event weighted, false otherwise 
+   */
+  bool                        IsWeighted()                                    const { return fIsWeighted; }
 
   /**
    * @brief Switch on pt-hard bin scaling
@@ -1362,6 +1381,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
   Bool_t                      fIsHepMC;                    ///< trigger, if it is a HepMC-based production
+  Bool_t                      fIsWeighted;                 ///< Weighted production, event weight in histograms
   Bool_t                      fGetPtHardBinFromName;       ///< Obtain pt-hard bin from file path
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
