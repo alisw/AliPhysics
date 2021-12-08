@@ -12,14 +12,14 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
-    bool isMC = false, bool useMCTruthReco = true, bool fullBlastQA = true, TString trigger = "kINT7",
+    bool isMC = false, bool useMCTruthReco = false, bool isMCtruth = false, bool fullBlastQA = true, TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
     TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
     TString cutHFsuffix = "", bool applyML = false, TString configML =
         "config_ML.yml",
     int useAODProtection = 0, int massSelection =
-        AliAnalysisTaskCharmingFemto::kSignal, int pdgDmesonBuddy = 2212) {
-  TString suffix = "0";
+        AliAnalysisTaskCharmingFemto::kSignal, int pdgDmesonBuddy = 2212, const char *cutVariation = "0") {
+  TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -62,13 +62,15 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetCutCharge(1);
-    if(!useMCTruthReco)
+    if(!useMCTruthReco) {
       TrackCuts->SetPIDkd();
+    }
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(128);
     AntiTrackCuts->SetCutCharge(-1);
-    if(!useMCTruthReco)
+    if(!useMCTruthReco) {
       AntiTrackCuts->SetPIDkd();
+    }
   }
   else {
     Error("AddTaskAnyCharmingFemto()", "Particle not implemented.");
@@ -130,8 +132,14 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     kMax.push_back(3.);
   }
 
-  closeRejection[0] = true;  // pp
-  closeRejection[4] = true;  // barp barp
+  if (!isMCtruth) {
+    closeRejection[0] = true;  // pp
+    closeRejection[4] = true;  // barp barp
+  }
+  else {
+    closeRejection[0] = false;  // pp
+    closeRejection[4] = false;  // barp barp
+  }
 
   pairQA[0] = 11;   // light-light
   pairQA[4] = 11;   // antilight-antilight
@@ -174,7 +182,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetMinimalBookingME(false);
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
-      "AliAnalysisTaskCharmingFemto", isMC);
+      "AliAnalysisTaskCharmingFemto", isMC, isMCtruth);
   task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
@@ -200,6 +208,62 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
 
   if (isMC) {
     task->ScaleMCBeautyFraction(0.5, 0.05);
+  }
+
+  if (isMCtruth){
+    if (std::abs(pdgDmesonBuddy) == 321) {
+      task->SetBuddypTLowMCTRUTH(0.15);
+      task->SetBuddypTHighMCTRUTH(999);
+      task->SetBuddyEtaMCTRUTH(0.8);
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(0);
+
+      if (suffix == "1") {
+        task->SetBuddyOriginMCTRUTH(1);
+        task->SetDmesonOriginMCTRUTH(0);
+      }
+      if (suffix == "2") {
+        task->SetBuddyOriginMCTRUTH(1);
+        task->SetDmesonOriginMCTRUTH(1);
+      }
+      if (suffix == "3") {
+        task->SetBuddyOriginMCTRUTH(1);
+        task->SetDmesonOriginMCTRUTH(2);
+      }
+      if (suffix == "4") {
+        task->SetBuddyOriginMCTRUTH(2);
+        task->SetDmesonOriginMCTRUTH(0);
+      }
+      if (suffix == "5") {
+        task->SetBuddyOriginMCTRUTH(2);
+        task->SetDmesonOriginMCTRUTH(1);
+      }
+      if (suffix == "6") {
+        task->SetBuddyOriginMCTRUTH(2);
+        task->SetDmesonOriginMCTRUTH(2);
+      }
+      if (suffix == "7") {
+        task->SetBuddyOriginMCTRUTH(3);
+        task->SetDmesonOriginMCTRUTH(0);
+      }
+      if (suffix == "8") {
+        task->SetBuddyOriginMCTRUTH(3);
+        task->SetDmesonOriginMCTRUTH(1);
+      }
+      if (suffix == "9") {
+        task->SetBuddyOriginMCTRUTH(3);
+        task->SetDmesonOriginMCTRUTH(2);
+      }
+      if (suffix == "10") {
+        task->SetBuddyOriginMCTRUTH(0);
+        task->SetDmesonOriginMCTRUTH(1);
+      }
+      if (suffix == "11") {
+        task->SetBuddyOriginMCTRUTH(0);
+        task->SetDmesonOriginMCTRUTH(2);
+      }         
+
+    }
   }
 
   mgr->AddTask(task);
