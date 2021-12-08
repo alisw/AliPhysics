@@ -75,6 +75,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(nTPCCLSsh/nTPCcl <= 0.4) AddTr(klSharedClusters);
       //Testing hit on first layer SDD
       if(fAODTrack->HasPointOnITSLayer(4)) AddTr(klHitOnSDD); //2xSPD, 2xSSD, 2xSDD
+      if(!fAODTrack->HasPointOnITSLayer(0) && !fAODTrack->HasPointOnITSLayer(1)) AddTr(klNoSPD); //No hits in SPD -> Necessary for FB 96<->768 overlap
       //Calculating DCAs:
       fAODTrack->GetXYZ(trXYZ);
       trXYZ[0] -= vtxXYZ[0];
@@ -108,7 +109,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(TSB(klFB32)||TSB(klFB64)) AddTr(klFB96);
       if(TSB(klFB96)&&TSB(klSharedClusters)) AddTr(klFB96Tuned); //Tuned to overlap with 768 (modified)
       if(TSB(klFB256)||TSB(klFB512)) AddTr(klFB768);
-      if(TSB(klFB256)||TB(klFB512+klHitOnSDD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
+      if(TSB(klFB256)||TB(klFB512+klHitOnSDD+klNoSPD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
       UInt_t flagToAdd = calculateTrackFlag();
       if(flagToAdd) fRetFlags->AddTrackFlags(i,flagToAdd); //Only count ones that pass any cuts
     };
