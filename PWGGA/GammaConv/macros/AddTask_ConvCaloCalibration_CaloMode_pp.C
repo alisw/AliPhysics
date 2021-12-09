@@ -437,6 +437,16 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("0008e113","411799909f032000000","0r631031000000d0");  // EG2 without M02/exotics cut
     cuts.AddCutCalo("0008d113","411799909f032000000","0r631031000000d0");  // EG1 without M02/exotics cut
 
+    // PCM-EMC peak width input
+  } else if (trainConfig == 110){
+    cuts.AddCutCalo("00010113","411790109fe30230000","0s631031000000d0");  // INT7 no TM
+  } else if (trainConfig == 111){
+    cuts.AddCutCalo("0008e113","411790109fe30230000","0s631031000000d0");  // EG2 no TM
+  } else if (trainConfig == 112){
+    cuts.AddCutCalo("0008d113","411790109fe30230000","0s631031000000d0");  // EG1 no TM
+
+
+
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

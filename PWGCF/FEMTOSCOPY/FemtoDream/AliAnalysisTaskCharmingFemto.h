@@ -15,6 +15,7 @@
 #include "AliAODVertex.h"
 #include "AliHFMLResponse.h"
 #include "TChain.h"
+#include "AliVertexingHFUtils.h"
 
 class AliVParticle;
 class AliVTrack;
@@ -24,7 +25,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   enum DecChannel //more HF particles can be added in the future
   {
-    kDplustoKpipi
+    kDplustoKpipi,
+    kDstartoKpipi
   };
 
   enum CollSystem
@@ -42,7 +44,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskCharmingFemto();
-  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC);
+  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth);
   virtual ~AliAnalysisTaskCharmingFemto();
 
   virtual void LocalInit();
@@ -51,6 +53,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   void SetIsMC(bool isMC) {
     fIsMC = isMC;
+  }
+  void SetUseMCTruthReco(bool useMCTruthReco) {
+    fUseMCTruthReco = useMCTruthReco;
   }
   void SetLightweight(bool isLightweight) {
     fIsLightweight = isLightweight;
@@ -81,6 +86,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetDecayChannel(int decayChannel=kDplustoKpipi) {
     fDecChannel = decayChannel;
     if (decayChannel == kDplustoKpipi) {
+      fDmesonPDGs.push_back(211);
+      fDmesonPDGs.push_back(321);
+      fDmesonPDGs.push_back(211);
+    } else if (decayChannel == kDstartoKpipi) {
       fDmesonPDGs.push_back(211);
       fDmesonPDGs.push_back(321);
       fDmesonPDGs.push_back(211);
@@ -141,6 +150,69 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void UseTrueDOnly() {
     fUseTrueDOnly = true;
   }
+  void SetCutWindowMCTRUTH(float low, float high) {
+    fInvMassCutLow = low;
+    fInvMassCutHigh = high;
+  }
+  void SetBuddypTLowMCTRUTH(float pT) {
+    fBuddypTlow = pT;
+  }
+  void SetBuddypTHighMCTRUTH(float pT) {
+    fBuddypThigh = pT;
+  }
+  void SetBuddyEtaMCTRUTH(float eta) {
+    fBuddyeta = eta;
+  }
+  void SetBuddyOriginMCTRUTH(int origin) {
+    //0:no selection, 1:Physical Primary, 2:Secondary From Weak Decay, 3:Secondary From Material
+    fBuddyOrigin = origin;
+  }
+  bool SelectBuddyOrigin(AliAODMCParticle *mcPart) {
+    if(fBuddyOrigin==0) {
+      return true;
+    }
+    else if(fBuddyOrigin==1){
+      if(mcPart->IsPhysicalPrimary())
+        return true;
+      else
+        return false;
+    }
+    else if(fBuddyOrigin==2){
+      if(mcPart->IsSecondaryFromWeakDecay())
+        return true;
+      else 
+        return false;
+    }
+    else if(fBuddyOrigin==3){
+      if(mcPart->IsSecondaryFromMaterial())
+        return true;
+      else 
+        return false;
+    }
+    return false;
+  }
+  void SetDmesonOriginMCTRUTH(int origin) {
+    //0:no selection, 1:charm, 2:beauty
+    fDmesonOrigin = origin;
+  }
+  bool SelectDmesonOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if(fDmesonOrigin==0) {
+      return true;
+    }
+    else if(fDmesonOrigin==1){
+      if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==4)
+        return true;
+      else
+        return false;
+    }
+    else if(fDmesonOrigin==2){
+      if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==5)
+        return true;
+      else 
+        return false;
+    }
+    return false;
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -148,11 +220,11 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       const AliAnalysisTaskCharmingFemto &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
-  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
+  int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scores);
   bool MassSelection(const double mass, const double pt, const int pdg);
 
   // Track / event selection objects
-  AliAODEvent* fInputEvent;                          //
+  AliAODEvent *fInputEvent;                          //
   AliFemtoDreamEvent *fEvent;                        //!
   AliFemtoDreamEventCuts *fEvtCuts;                  //
   AliFemtoDreamTrack *fProtonTrack;                  //!
@@ -165,6 +237,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;            //!
 
   bool fIsMC;              //
+  bool fUseMCTruthReco;    //
+  bool fIsMCtruth;         //
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
   int fSystem;             //
@@ -229,6 +303,15 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
   bool fUseTrueDOnly;
 
+  //MC Truth Stuff
+  float fInvMassCutLow;    //
+  float fInvMassCutHigh;   //
+  float fBuddypTlow;       //
+  float fBuddypThigh;      //
+  float fBuddyeta;         //
+  int fBuddyOrigin;        //
+  int fDmesonOrigin;       //
+
   // variables for ML application
   bool fApplyML;                                           // flag to enable ML application
   TString fConfigPath;                                     // path to ML config file
@@ -239,7 +322,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 11)
+ClassDef(AliAnalysisTaskCharmingFemto, 12)
 };
 
 #endif

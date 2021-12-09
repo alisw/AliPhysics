@@ -28,6 +28,9 @@
 #include "AliESDtrackCuts.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TPDGCode.h"
+#include "TMCProcess.h"
+#include "TDatabasePDG.h"
 
 class iostream;
 
@@ -1390,12 +1393,11 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
       Double_t mcProdVtxY   = primVtxMC->GetY();
       Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
-      AliVParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
-      AliVParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
+      AliMCParticle * posDaughter = (AliMCParticle*)gamma->GetPositiveMCDaughter(fMCEvent);
+      AliMCParticle * negDaughter = (AliMCParticle*)gamma->GetNegativeMCDaughter(fMCEvent);
       Double_t negDaughter_R = negDaughter->Particle()->R();
-      AliVParticle *Photon = gamma->GetMCParticle(fMCEvent);
-      //cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
-
+      AliMCParticle *Photon = (AliMCParticle*) gamma->GetMCParticle(fMCEvent);
+      
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
             Int_t isPosFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelPositive(), fMCEvent, fInputEvent);
             Int_t isNegFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma->GetMCLabelNegative(), fMCEvent, fInputEvent);
@@ -1410,7 +1412,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         fKind = 9; // garbage
 
       } else if(posDaughter->GetMother() != negDaughter->GetMother() || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)){
-
+       // cout<< " Not same mother"<< endl;
         fKind = 1; //Not Same Mother == Combinatorial Bck
         pdgCodePos = posDaughter->PdgCode();
         pdgCodeNeg = negDaughter->PdgCode();
@@ -1443,18 +1445,22 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
         if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11){
           fKind = 2; // combinatorics from hadronic decays
+       //   cout<< "combinatorics from hadronic decay fKind = "<< fKind<< endl; 
           hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
         }else if ( !(pdgCodeNeg==pdgCodePos)){
           Bool_t gammaIsPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
           if(pdgCode == 111) {
             fKind = 3; // pi0 Dalitz
+          //  cout<< "pi0 Dalitz fKind = "<< fKind<< endl; 
 	    // AM 20.06.29 Add weighted 
             hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC*weighted);  
           }else if (pdgCode == 221){
+           // cout<< "eta Dalitz fKind = "<< fKind<< endl; 
             fKind = 4; // eta Dalitz
 	    // AM 20.06.29  Add weighted 
             hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC*weighted);
-          }else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
+          }else if (!(negDaughter->Particle()->GetUniqueID() != 5 || posDaughter->Particle()->GetUniqueID() !=5)){
+           // cout<< "Photons"<< endl;
             if(pdgCode == 22 && gammaIsPrimary){
               fKind = 0; // primary photons
             } else if (pdgCode == 22){

@@ -59,7 +59,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     UInt_t fTriggerMask;                                      //!
 
     //AliEventCuts object
-    AliEventCuts fEventCuts;                                  //!
+    AliEventCuts fEventCuts;                                  //
 
     //MC-realted variables
     bool fisMC;                                               //
@@ -158,7 +158,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     //variables to handle binning
     int fncentbins[knumpart];                                 //
-    double fcentbinning[knumpart][50];                        //
+    double fcentbinning[knumpart][150];                       //
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
@@ -176,8 +176,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 8); 
-    //version 8: introduced AliEventCuts
+    ClassDef(AliAnalysisTaskStrVsMult, 9); 
+    //version 9: fixed AliEventCuts streamer
 };
 
 #endif

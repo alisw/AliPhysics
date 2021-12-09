@@ -137,7 +137,9 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<unsigned int>       fVTrueClusterPi0DaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother pi0 for true information
     std::vector<unsigned int>       fVTrueClusterEtaDaughterIndex;                 //!<! vector buffer   store the MC stack ID of mother eta for true information
     std::vector<Short_t>            fVTrueClusterMCId;                             //!<! vector buffer   store the MC stack ID of mother eta for true information
+    std::vector<Short_t>            fVTrueClusterMCId2;                            //!<! vector buffer  store the MC stack ID of MC Id of particle with 2nd most energy
     std::vector<Float_t>            fVTrueClusterMCTrueEnergy;                     //!<! vector buffer   store the true MC energy info
+    std::vector<Float_t>            fVTrueClusterMCTrueEnergy2;                    //!<! vector buffer   store the MC energy of MC Id of particle with 2nd most energy
     std::vector<Bool_t>             fVTrueClusterMCIsMerged;                       //!<! vector buffer   store the info if cluster is merged cluster
 
     std::vector<Float_t>            fVBuffer_Conv_px;                              //!<! vector buffer  Conversion photon px
@@ -171,7 +173,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 6);
+    ClassDef(AliAnalysisTaskConvCaloTree, 7);
 };
 
 

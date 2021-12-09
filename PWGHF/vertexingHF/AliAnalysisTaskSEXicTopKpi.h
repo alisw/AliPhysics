@@ -172,6 +172,17 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // reject events without a recognised p, K, pi
   void SetRejEvWoutpKpi(){fRejEvWoutpKpi=kTRUE;}
 
+  // apply different pt cuts on candidate daughters
+  void SetMinPtSingleDaughter(Double_t minPtProton, Double_t minPtKaon, Double_t minPtPion){
+    fUseMinPtSingleDaughter = kTRUE;
+    fMinPtProton = minPtProton;
+    fMinPtKaon = minPtKaon;
+    fMinPtPion = minPtPion;
+  }
+
+  // avoid SigmaC analysis
+  void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
+
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -445,8 +456,20 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // bool to avoid processing events without recognised p, K, pi
   Bool_t fRejEvWoutpKpi; //
 
+  // pT selections on daughters and candidate
+  Bool_t fUseMinPtSingleDaughter; // separated pt cut for daughters (NB: in cut object pt>300 MeV/c)
+  Double_t fMinPtProton;  // minimum pt for selected candidate protons
+  Double_t fMinPtKaon;    // minimum pt for selected candidate kaons
+  Double_t fMinPtPion;    // minimum pt for selected candidate pions
+  TH1D* fHistoPtSelProton; //!<!
+  TH1D* fHistoPtSelKaon; //!<!
+  TH1D* fHistoPtSelPion; //!<!
+
+  // avoid SigmaC analysis
+  Bool_t fDisableSigmaCLoop; //
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,21); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,23); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

@@ -78,7 +78,8 @@ namespace AliAnalysisCODEX {
     kInelGt0 = BIT(2),
     kTriggerClasses = BIT(3),
     kCentral = BIT(4),
-    kSemiCentral = BIT(5)
+    kSemiCentral = BIT(5),
+    kINT7 = BIT(6)
   };
 
   enum ITSbits {

@@ -58,13 +58,13 @@ private:
     enum
     {
         knVarForSparseAcc    = 6,
-        knVarForSparseReco   = 6,
+        knVarForSparseReco   = 7,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
     AliAnalysisTaskSEDstarPolarization &operator=(const AliAnalysisTaskSEDstarPolarization &source);
 
-    int IsCandidateSelected(AliAODRecoCascadeHF *&dStar, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx);
+    int IsCandidateSelected(AliAODRecoCascadeHF *&dStar, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx);
     void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, double centrality);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();

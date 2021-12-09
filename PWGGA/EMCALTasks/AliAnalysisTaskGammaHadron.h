@@ -56,7 +56,8 @@ public:
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetSaveTriggerPool(Bool_t input)                      { fSaveTriggerPool = input  ; }
   void                        SetDownScaleMixTrigger(Float_t input)                 { fDownScaleMT     = input  ; }
-  void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
+  void                        SetPoolTrackDepth(Int_t input)                        { fMETrackDepth    = input  ; }
+  void                        SetPoolTargetEvents(Int_t input)                      { fMETargetEvents  = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetPi0MassSelection(Int_t input);
@@ -83,7 +84,7 @@ public:
   void                        SetMakePSHists(Bool_t input)                          { bEnablePosSwapHists = input;}
   void                        SetPSCorrectionLogMode(Bool_t input)                  { bLogPSMod          = input;}
   void                        SetEnableClusPairRot(Bool_t input)                     { if (input) {fDoPosSwapMixing = 2; bEnableClusPairRot=input;} else bEnableClusPairRot = 0;}
-  void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
+  void                        SetClusterDepth(Int_t input)                          { fMEClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
   void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
@@ -225,9 +226,10 @@ public:
   TAxis                      *fMixBEMCalMult;            ///< TAxis for EMCAL Multiplicity bins for the mixed clusters
   TAxis                      *fMixBClusZvtx;             ///< TAxis for vertex bins for the mixed clusters
   AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
-  Int_t                       fTrackDepth;               ///<  #tracks to fill pool
-  Double_t                    fTargetFraction;           ///<  fraction of track depth before pool declared ready
-  Int_t                       fClusterDepth;             ///<  #clusters to fill cluster mixing pool
+  Int_t                       fMETrackDepth;             ///<  #tracks to fill pool
+  Int_t                       fMETargetEvents;           ///<  #events to fill pool
+  Double_t                    fMETargetFraction;         ///<  fraction of track depth before pool declared ready
+  Int_t                       fMEClusterDepth;             ///<  #clusters to fill cluster mixing pool
   Int_t                       fPoolSize;                 ///<  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
   //..Event selection types
@@ -419,6 +421,6 @@ public:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 12) // Class to analyse gamma hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 13) // Class to analyse gamma hadron correlations
 };
 #endif

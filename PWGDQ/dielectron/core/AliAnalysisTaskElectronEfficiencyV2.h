@@ -72,12 +72,7 @@ public:
    void   SetGeneratorName         (TString generatorName) { fGeneratorName = generatorName;}
    void   SetGeneratorMCSignalName (TString generatorName) { fGeneratorMCSignalName  = generatorName;}
    void   SetGeneratorULSSignalName(TString generatorName) { fGeneratorULSSignalName = generatorName;}
-
-   void   SetCheckGenID(Bool_t flag) { fCheckGenID = flag;}
-   void   SetGeneratorIndex         (std::vector<UInt_t> generatorIndex) { fGeneratorIndex = generatorIndex;}
-   void   SetGeneratorMCSignalIndex (std::vector<UInt_t> generatorIndex) { fGeneratorMCSignalIndex  = generatorIndex;}
-   void   SetGeneratorULSSignalIndex(std::vector<UInt_t> generatorIndex) { fGeneratorULSSignalIndex = generatorIndex;}
-
+   void SetRejectParticleFromOOB(Bool_t flag)             {fRejectParticleFromOOB = flag;}
 
    // Event setter
    void   SetEnablePhysicsSelection(Bool_t selectPhysics)   {fSelectPhysics = selectPhysics;}
@@ -203,8 +198,7 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
-  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes);
-  bool    CheckGeneratorIndex(int trackID, std::vector<unsigned int> vecGenIDs);
+  bool    CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen);
   void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -295,11 +289,7 @@ private:
   std::vector<unsigned int> fGeneratorHashs;
   std::vector<unsigned int> fGeneratorMCSignalHashs;
   std::vector<unsigned int> fGeneratorULSSignalHashs;
-
-  Bool_t fCheckGenID;
-  std::vector<UInt_t> fGeneratorIndex;
-  std::vector<UInt_t> fGeneratorMCSignalIndex;
-  std::vector<UInt_t> fGeneratorULSSignalIndex;
+  Bool_t fRejectParticleFromOOB;
 
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
@@ -401,7 +391,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 8);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 10);
 };
 
 

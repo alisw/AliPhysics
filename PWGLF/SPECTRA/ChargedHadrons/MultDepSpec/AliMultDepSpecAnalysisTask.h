@@ -86,8 +86,6 @@ protected:
 
   template <typename Particle_t>
   bool InitParticle(int particleID);
-  double GetSecScalingFactor(AliVParticle* particle);
-  double GetParticleWeight(AliVParticle* particle);
   unsigned long GetSeed();
   int GetNRepetitons(double scalingFactor);
   AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&);            // not implemented
@@ -108,8 +106,7 @@ protected:
   bool fIsNewReco{};                                ///< flag for new reconstructions (after mid 2020) where tighter chi2 cut has to be used and out-of-bunch pileup is simulated in MCs
   bool fIncludePeripheralEvents{};                  ///< include peripheral A-A events (cent>90)
   bool fMCEnableDDC{true};                          ///< flag for data driven corrections usage
-  int fMCPCCMode{0};                                ///< whether to run particle composition correction in nominal (0) or in systematic mode (-1,1)
-  int fMCSecScalingMode{0};                         ///< whether to run secondary scaling in nominal (0) or in systematic mode (1)
+  int fMCDDCMode{0};                                ///< whether to run data-driven corrections in nominal (0) or in systematic mode (-1,1)
   int fHighPtMode{0};                               ///< extend the binning and pt cuts for a high-pt analysis (mode 0: do not extend, mode 1: extend to 50, mode 2: extend to 100)
 
   // cuts
@@ -203,12 +200,10 @@ protected:
 
   int fMCLabel{}; //!<! mc label
 
-  bool fMCIsPileupParticle{};   //!<! is particle resp. track from out-of-bunch pileup?
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
   bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 
   double fMCParticleWeight{1.}; //!<! scaling factor of particle to match data
-  double fMCSecScaleWeight{1.}; //!<! scaling factor of secondary to match data
   int fNRepetitions{1};         //!<! how often to repeat this particle to match data
   bool fUseRandomSeed{};        ///<  use a random seed or a deterministic one (default)
 

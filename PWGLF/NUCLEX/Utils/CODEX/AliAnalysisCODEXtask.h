@@ -65,6 +65,8 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
 
     ///
     TH2I* mTimeChan;                                    //! 2D histogram with the Time/Channel correlation
+    TH1D* mCounter;     //!
+    TH1D* mCounterINT7; //!
     //
     TString mToDiscard; /// List of the branches to discard
 

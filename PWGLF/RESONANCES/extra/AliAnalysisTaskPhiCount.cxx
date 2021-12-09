@@ -30,7 +30,8 @@ using namespace std;
 ClassImp(AliAnalysisTaskPhiCount)
 
             AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), kDCAzCut(2.), kNSigmaPtDepXYDCA(7.), kMinTPCclusters(70.), kChi2TPCcluster(4.), kChi2TPCGlobal(36.), kChi2ITScluster(36.), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fMultSelection(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fRunName(0), kTriggerMask(0), kSgTPC_Alone(0), kSgTPC_TOFVt(0), kSgTOF_Veto(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_Run(0), fnPhiRec(0), fEventMask(0), fIsINELgt0(0), fTrueEventMask(0), fIsTrueINELgt0(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kVertexCut(0), /* fQC Histograms*/ fQC_Event_Enum_FLL(0), fQC_Event_Enum_V0M(0), fQC_Event_Enum_TRK(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Tracks_Momentum(0), fQC_Tracks_TMomentum(0), fQC_Tracks_Eta(0), fQC_Tracks_Phi(0), fQC_Tracks_V0M(0), fQC_Tracks_TRK(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAZ_PT(0), fQC_Tracks_TOF_P(0), fQC_Tracks_TOF_PT(0), fQC_Tracks_TPC_P(0), fQC_Tracks_TPC_PT(0), fQC_Kaons_Momentum(0), fQC_Kaons_TMomentum(0), fQC_Kaons_Eta(0), fQC_Kaons_Phi(0), fQC_Kaons_V0M(0), fQC_Kaons_TRK(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAZ_PT(0), fQC_Kaons_TOF_P(0), fQC_Kaons_TOF_PT(0), fQC_Kaons_TPC_P(0), fQC_Kaons_TPC_PT(0), fQC_PID_TOF_Kaons_P(0), fQC_PID_TOF_Kaons_PT(0), fQC_PID_TPC_Kaons_P(0), fQC_PID_TPC_Kaons_PT(0), fQC_PID_TPC_TOF_Kaons_PT(0), fQC_PID_TOF_NSig_SEL_Kaons_P(0), fQC_PID_TOF_NSig_SEL_Kaons_PT(0), fQC_PID_TPC_NSig_SEL_Kaons_P(0), fQC_PID_TPC_NSig_SEL_Kaons_PT(0), fQC_PID_TOF_Sgnl_SEL_Kaons_P(0), fQC_PID_TOF_Sgnl_SEL_Kaons_PT(0), fQC_PID_TPC_Sgnl_SEL_Kaons_P(0), fQC_PID_TPC_Sgnl_SEL_Kaons_PT(0), fQC_Event_Enum_V0T(0), fQC_Phi_InvMass_Rec(0), fQC_Phi_InvMass_Gen(0), fQC_Phi_InvMass_Eff(0) {
-    }
+                
+            }
 
 //_____________________________________________________________________________
 
@@ -128,6 +129,26 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Event_Vertex_Cut            ->  GetYaxis()  ->  SetTitle("Vertex z-position (cm)");
     fQCOutputList->Add(fQC_Event_Vertex_Cut);
     
+    fQC_Event_Spherocity            = new TH1F("fQC_Event_Spherocity",      "Event Spherocity",                                 410, -3, 1.1);
+    fQC_Event_Spherocity            ->  GetXaxis()  ->  SetTitle("Spherocity");
+    fQC_Event_Spherocity            ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_Spherocity);
+    
+    fQC_Event_FullRF                = new TH1F("fQC_Event_FullRF",          "Event RForward",                                   503, -3, 500);
+    fQC_Event_FullRF                ->  GetXaxis()  ->  SetTitle("RForward");
+    fQC_Event_FullRF                ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_FullRF);
+    
+    fQC_Event_FullRB                = new TH1F("fQC_Event_FullRB",          "Event RBackward",                                  503, -3, 500);
+    fQC_Event_FullRB                ->  GetXaxis()  ->  SetTitle("RBackward");
+    fQC_Event_FullRB                ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_FullRB);
+    
+    fQC_Event_FullRT                = new TH1F("fQC_Event_FullRT",          "Event RTransverse",                                503, -3, 500);
+    fQC_Event_FullRT                ->  GetXaxis()  ->  SetTitle("RTransverse");
+    fQC_Event_FullRT                ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    fQCOutputList->Add(fQC_Event_FullRT);
+    
     //_____________________________________________________________________________
     //
     //  TRACKS
@@ -158,7 +179,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     fQC_Tracks_V0M                  = new TH2F("fQC_Tracks_V0M",            "Acc. Tracks in Mult.",                             2, -1., 1., 202, -1., 201.);
     fQC_Tracks_V0M                  ->  GetXaxis()  ->  SetTitle("Track Sign");
-    fQC_Tracks_V0M                  ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
+    fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Tracks_V0M                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_V0M);
     
@@ -421,13 +442,14 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiCandidate->Branch       ("EventMask",       &fEventMask,        "fEventMask/b");
     fPhiCandidate->Branch       ("Multiplicity",    &fCurrent_V0M,      "fMultiplicity/F");
     fPhiCandidate->Branch       ("Spherocity",      &fCurrent_SPH,      "fSpherocity/F");
-    fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/b");
+    fPhiCandidate->Branch       ("RTransverse",     &fCurrent_RT,       "fRTrasnverse/F");
+    fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/I");
     fPhiCandidate->Branch       ("Px",              &fPhiPx,            "fPhiPx[fnPhi]/F");
     fPhiCandidate->Branch       ("Py",              &fPhiPy,            "fPhiPy[fnPhi]/F");
     fPhiCandidate->Branch       ("Pz",              &fPhiPz,            "fPhiPz[fnPhi]/F");
     fPhiCandidate->Branch       ("InvMass",         &fInvMass,          "fInvMass[fnPhi]/F");
-    fPhiCandidate->Branch       ("iKaon",           &fiKaon,            "fiKaon[fnPhi]/b");
-    fPhiCandidate->Branch       ("jKaon",           &fjKaon,            "fjKaon[fnPhi]/b");
+    fPhiCandidate->Branch       ("iKaon",           &fiKaon,            "fiKaon[fnPhi]/I");
+    fPhiCandidate->Branch       ("jKaon",           &fjKaon,            "fjKaon[fnPhi]/I");
     if ( kMCbool )  fPhiCandidate->Branch   ("TrueInvMass",          &fTrueInvMass,           "fTrueInvMass[fnPhi]/F");
     
     if ( kPhibool )                 PostData(3, fPhiCandidate);
@@ -435,7 +457,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     // KaonCandidate Tree Set-Up
     fKaonCandidate = new TTree (Form("KaonCandidate_%s",fRunName.Data()),    "Data Tree for Kaon Candidates");
     fKaonCandidate->Branch     ("EventMask",        &fEventMask,        "fEventMask/b");
-    fKaonCandidate->Branch     ("Multiplicity",     &fCurrent_V0M,     "fMultiplicity/F");
+    fKaonCandidate->Branch     ("Multiplicity",     &fCurrent_V0M,      "fMultiplicity/F");
     fKaonCandidate->Branch     ("nKaon",            &fnKaon,            "fnKaon/b");
     fKaonCandidate->Branch     ("Px",               &fKaonPx,           "fKaonPx[fnKaon]/F");
     fKaonCandidate->Branch     ("Py",               &fKaonPy,           "fKaonPy[fnKaon]/F");
@@ -451,7 +473,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiEfficiency->Branch      ("TrueEventMask",   &fTrueEventMask,    "fTrueEventMask/b");
     fPhiEfficiency->Branch      ("Multiplicity",    &fCurrent_V0M,      "fMultiplicity/F");
     fPhiEfficiency->Branch      ("Spherocity",      &fCurrent_SPH,      "fSpherocity/F");
-    fPhiEfficiency->Branch      ("nPhi",            &fnPhiTru,          "fnPhiTru/b");
+    fPhiEfficiency->Branch      ("nPhi",            &fnPhiTru,          "fnPhiTru/I");
     fPhiEfficiency->Branch      ("EventMask",       &fEventMask,        "fEventMask/b");
     fPhiEfficiency->Branch      ("Px",              &fPhiTruPx,         "fPhiTruPx[fnPhiTru]/F");
     fPhiEfficiency->Branch      ("Py",              &fPhiTruPy,         "fPhiTruPy[fnPhiTru]/F");
@@ -478,6 +500,8 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
     fIsEventMultiplicityAvailable();
     fIsEventPileUp();
     uCalculateSpherocity();
+    uCalculateRT();
+    uGuessCollisionSystem();
     //
     // Setting utility variables
     Int_t           nTrack(fAOD->GetNumberOfTracks());
@@ -508,7 +532,6 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
         fQC_PID_Sel_Kaons   ();
         
         // Filling the Kaon Tree
-        if ( fnKaon >= 100 ) break;
         fKaonPx[fnKaon] =   fCurrent_Track->Px();
         fKaonPy[fnKaon] =   fCurrent_Track->Py();
         fKaonPz[fnKaon] =   fCurrent_Track->Pz();
@@ -559,7 +582,6 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
             fnPhi++;
         }
     }
-    
     // Loop over all primary MC particle
     if ( kMCbool )
     {
@@ -761,7 +783,11 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
     // Recovering Multiplicity information
     AliMultSelection   *fMultSelectio2  = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     if ( !fMultSelection )  fCurrent_V0M    =   102.;
-    else                    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M",true);
+    // if pPb should be V0A
+    else {
+        if ( fIs_p_p )                  fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M",true);
+        if ( fIs_p_Pb || fIs_Pb_Pb )    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0A",true);
+    }
     fCurrent_TRK    =   (dynamic_cast<AliAODHeader*>(fAOD->GetHeader()))->GetRefMultiplicityComb08();
     //
     //  INELGT0 Check
@@ -861,12 +887,14 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     //  Kinematics Cuts
     if (  std::fabs(fCurrent_Track_TransMom) < 0.15 ||  std::fabs(fCurrent_Track_Eta) > 0.80 || std::fabs(fCurrent_Track_Charge) != 1 )  return false;
     
-    //  If a Filterbit is set use it
+    //  If a Filterbit is set, use it
     if ( kFilterBit != -1 ) {
         if ( !fCurrent_Track->TestFilterBit(BIT(kFilterBit)) )   return false;
         else return true;
     }
 
+    //  ------------------------ CUSTOM IMPLEMENTATION OF FILTERBIT 5 COMMON FOR ALL SYSTEMS
+    
     //  ------------------------ GENERAL
     
     //  -   //  KINK DAUGHTERS
@@ -880,17 +908,21 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
         
     //  ------------------------ TPC
     
-    //  -   //  REFIT
-    if ( fCurrent_Track->IsOn(0x4) == false )                                                                   return false;
-        
     //  -   //  TPC CLUSTERS
     if ( fCurrent_Track->GetTPCncls() < kMinTPCclusters )                                                       return false;
-        
+    
+    //  -   //  TPC CROSSED OVER FINDABLE
+    if ( fCurrent_Track->GetTPCFoundFraction() < kTPCClsOverFndbl )                                             return false;
+    
     //  -   //  CHI2 PER CLUSTER
     if ( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) > kChi2TPCcluster && fCurrent_Track->GetTPCNcls() !=0 && fCurrent_Track->GetTPCchi2() !=0 )  return false;
-        
+    
     //  -   //  CHI2 GLOBAL
     if ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() > kChi2TPCGlobal || fCurrent_Track->GetChi2TPCConstrainedVsGlobal() < 0. ) return false;
+
+    
+    //  -   //  REFIT
+    if ( fCurrent_Track->IsOn(0x4) == false )                                                                   return false;
     
     //  ------------------------ ITS
     
@@ -902,6 +934,39 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
         
     //  -   //  CHI2 PER CLUSTER
     if ( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) > kChi2ITScluster  && fCurrent_Track->GetITSNcls() !=0 && fCurrent_Track->GetITSchi2() !=0 ) return false;
+    
+    if ( fIs_p_p )  {
+        //  ------------------------ CUSTOM IMPLEMENTATION FOR pp
+        
+    }   else if ( fIs_p_Pb || fIs_Pb_Pb ) {
+        //  ------------------------ CUSTOM IMPLEMENTATION FOR pPb AND PbPb
+        
+        //  ------------------------ TPC
+        
+        //  -   //  ACCEPT EDGES
+        Float_t fDeadZoneWidth=2;
+        Float_t fCutGeoNcrNclLength=130.;
+        Float_t fCutGeoNcrNclGeom1Pt=1.5;
+        Float_t fCutGeoNcrNclFractionNcr=0;
+        Float_t fCutGeoNcrNclFractionNcl=0;
+        //
+        Double_t xyz[3],pxpypz[3],cv[21];
+        fCurrent_Track->GetXYZ(xyz);
+        pxpypz[0]=fCurrent_Track->Px();
+        pxpypz[1]=fCurrent_Track->Py();
+        pxpypz[2]=fCurrent_Track->Pz();
+        fCurrent_Track->GetCovarianceXYZPxPyPz(cv);
+        Short_t sign = (Short_t)fCurrent_Track->Charge();
+        //
+        AliExternalTrackParam*              fCurrentTrackExternalParameters = new AliExternalTrackParam (xyz,pxpypz,cv,sign);
+        Float_t kTPCActiveLenght    =       uTrackLengthInActiveTPC( fCurrentTrackExternalParameters, fDeadZoneWidth, 220. );
+        if ( fCutGeoNcrNclLength > 0 ) {
+            fCutGeoNcrNclLength -=  TMath::Power(TMath::Abs(1./(fCurrent_Track_Momentum)),fCutGeoNcrNclGeom1Pt);
+            if ( kTPCActiveLenght                       < fCutGeoNcrNclLength )                             return false;
+            if ( fCurrent_Track->GetTPCCrossedRows()    < fCutGeoNcrNclLength*fCutGeoNcrNclFractionNcr )    return false;
+            if ( fCurrent_Track->GetTPCncls()           < fCutGeoNcrNclLength*fCutGeoNcrNclFractionNcl )    return false;
+        }
+    }
     
     return  true;
 }
@@ -1056,6 +1121,8 @@ bool        AliAnalysisTaskPhiCount::fIsPhiCandidate ( TLorentzVector fPhi )    
 
 bool        AliAnalysisTaskPhiCount::fIsCandidateTruPhi ( AliAODMCParticle* piKaon, AliAODMCParticle* pjKaon )  {
     if ( !piKaon || !pjKaon ) return false;
+    if ( piKaon->GetMother() == -1 ) return false;
+    if ( pjKaon->GetMother() == -1 ) return false;
     auto    fiKaonMother    =   static_cast<AliAODMCParticle*>(AODMCTrackArray->At(piKaon->GetMother()));
     auto    fjKaonMother    =   static_cast<AliAODMCParticle*>(AODMCTrackArray->At(pjKaon->GetMother()));
     if  ( fiKaonMother->GetPdgCode() != fjKaonMother->GetPdgCode() || fjKaonMother->GetPdgCode() != 333 ) return false;
@@ -1267,5 +1334,127 @@ void        AliAnalysisTaskPhiCount::uCalculateSpherocity ( )                   
         auto    fCurrentSpherocity  =   TMath::Power( (fNumerator/fTotalTransMom),2 );
         if ( fCurrentSpherocity < fCurrent_SPH ) fCurrent_SPH =   fCurrentSpherocity;
     }
+    fQC_Event_Spherocity->Fill(fCurrent_SPH);
+    //
     return;
+}
+
+//_____________________________________________________________________________
+
+void        AliAnalysisTaskPhiCount::uCalculateRT ( )                           {
+    //
+    fCurrent_RT                 =   -1.;
+    if ( !kComputeRT ) return;
+    auto    nTracks             =   fAOD->GetNumberOfTracks();
+    //
+    //  Find a suitable trigger particle
+    auto    fTriggerPT  =   -1.;
+    auto    fTriggerPhi =   -1.;
+    for ( Int_t iTrack = 0; iTrack < nTracks; iTrack++ )    {
+        fCurrent_Track  =   static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        //
+        //  Selecting Good tracks
+        if ( !fCurrent_Track->TestFilterBit(BIT(0)) )                   continue;
+        if ( !fCurrent_Track->IsOn(0x40) )                              continue; // ITS Refit
+        if ( !fCurrent_Track->IsOn(0x4) )                               continue; // TPC Refit
+        if ( TMath::Abs(fCurrent_Track->Eta()) > 0.8 )                  continue;
+        if ( fCurrent_Track->Pt() < 5. || fCurrent_Track->Pt() > 40. )  continue;
+        //
+        //  Storing necessary Info, choosing the highest pT particle
+        if ( fTriggerPT > fCurrent_Track->Pt() )                        continue;
+        fTriggerPT  = fCurrent_Track->Pt();
+        fTriggerPhi = fCurrent_Track->Phi();
+    }
+    if ( fTriggerPT == -1. ) return;
+    else    fCurrent_RT         =   -2.;
+    //
+    //  Calculate RT
+    auto    nRForward       =   0;
+    auto    nRBackward      =   0;
+    auto    nRTransverse    =   0;
+    for ( Int_t iTrack = 0; iTrack < nTracks; iTrack++ )    {
+        fCurrent_Track  =   static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
+        //
+        //  Selecting Good tracks
+        if ( !fCurrent_Track->TestFilterBit(BIT(0)) )   continue;
+        if ( !fCurrent_Track->IsOn(0x40) )              continue;
+        if ( !fCurrent_Track->IsOn(0x4) )               continue;
+        if ( TMath::Abs(fCurrent_Track->Eta()) > 0.8 )  continue;
+        if ( fCurrent_Track->Pt() < 0.15 )              continue;
+        //
+        //  Storing necessary Info
+        auto    kDeltaPhi   =   (fTriggerPhi - fCurrent_Track->Phi())*180/(TMath::Pi());
+        kDeltaPhi < 0 ? kDeltaPhi += 360 : kDeltaPhi += 0;
+        if      ( ( kDeltaPhi > 300. ) || ( kDeltaPhi < 60.  ) )    nRForward++;
+        else if ( ( kDeltaPhi > 120. ) && ( kDeltaPhi < 240. ) )    nRBackward++;
+        else                                                        nRTransverse++;
+    }
+    fQC_Event_FullRF    ->  Fill(nRForward);
+    fQC_Event_FullRB    ->  Fill(nRBackward);
+    fQC_Event_FullRT    ->  Fill(nRTransverse);
+    fCurrent_RT         =   nRTransverse;
+    //
+    return;
+}
+
+//_____________________________________________________________________________
+
+Float_t     AliAnalysisTaskPhiCount::uTrackLengthInActiveTPC ( AliExternalTrackParam* fCurrentTrackExternalParameters, Double_t deltaY, Double_t deltaZ ) {
+    return 131;
+    const   Double_t    kInnerRadius    =   85;
+    const   Double_t    kOuterRadius    =   245;
+    const   Double_t    kMagField       =   fAOD->GetMagneticField();
+    const   Double_t    kB2C            =   0.299792458e-3;             //  Mistery variable...
+    Double_t            fResult         =   0;
+    Double_t            kXYZ[3];
+    Double_t            kPxPyPz[3];
+    //
+    //  Recover XYZ coordinates and momentum
+    if ( fCurrentTrackExternalParameters->GetXYZAt  ( kInnerRadius, kMagField, kXYZ ) ) {
+        fCurrentTrackExternalParameters->GetPxPyPzAt( kInnerRadius, kMagField, kPxPyPz );
+    } else {
+        fCurrentTrackExternalParameters->GetXYZ     ( kXYZ );
+        fCurrentTrackExternalParameters->GetPxPyPz  ( kPxPyPz );
+    }
+    //
+    Float_t     fCurrent_DCA        =   -fCurrentTrackExternalParameters->GetD(0,0,kMagField);
+    Float_t     fCurrent_Radius     =   TMath::Abs(1./( fCurrentTrackExternalParameters->GetC(kMagField) ));
+    Float_t     fCurrent_Sign       =   fCurrentTrackExternalParameters->GetSign()*TMath::Sign(1.,kMagField)*(-1.);
+    Float_t     fCurrent_R0         =   TMath::Sqrt(kXYZ[0]*kXYZ[0]+kXYZ[1]*kXYZ[1]);
+    Float_t     fCurrent_PhiR0      =   TMath::ATan2(kXYZ[1],kXYZ[0]);
+    Float_t     fCurrent_dPhiR0     =   -TMath::ASin((fCurrent_Track_DCAXY*fCurrent_Track_DCAXY-2*fCurrent_Track_DCAXY*fCurrent_Radius*fCurrent_Sign+fCurrent_R0*fCurrent_R0)/(2*fCurrent_R0*(fCurrent_Track_DCAXY-fCurrent_Radius*fCurrent_Sign)));
+    Float_t     fCurrent_Phi0       =   fCurrent_PhiR0 - fCurrent_dPhiR0;
+    //
+    for ( Double_t uRadiusScan = kInnerRadius; uRadiusScan <= kOuterRadius; uRadiusScan++ )  {
+        Float_t fSinPhi =   (fCurrent_Track_DCAXY*fCurrent_Track_DCAXY-2*fCurrent_Track_DCAXY*fCurrent_Radius*fCurrent_Sign+uRadiusScan*uRadiusScan)/(2*uRadiusScan*(fCurrent_Track_DCAXY-fCurrent_Radius*fCurrent_Sign));
+        if ( TMath::Abs( fSinPhi ) >= 1 ) continue;
+        Float_t     fdPhi       =   -TMath::ASin(fSinPhi);
+        Float_t     fPhi        =   fCurrent_Phi0 + fdPhi;
+        Int_t       nSector     =   TMath::Nint(9*fPhi/(TMath::Pi()));
+        Float_t     fdPhiEdge   =   fPhi-(nSector*TMath::Pi()/9);
+        Float_t     fX          =   fCurrent_Radius*TMath::Cos(fPhi) - kXYZ[0];
+        Float_t     fY          =   fCurrent_Radius*TMath::Sin(fPhi) - kXYZ[1];
+        Float_t     fdeltaPhi   =   2*TMath::ASin(0.5*TMath::Sqrt(fX*fX+fY*fY)/fCurrent_Radius);
+        Float_t     fZ          =   kXYZ[2]+fdeltaPhi*fCurrent_Radius*fCurrentTrackExternalParameters->GetTgl();
+        if ( TMath::Abs( fdPhiEdge*uRadiusScan ) > deltaY && TMath::Abs( fZ ) < deltaZ ) {
+            fResult++;
+        }
+    }
+    return fResult;
+}
+
+//_____________________________________________________________________________
+
+void        AliAnalysisTaskPhiCount::uGuessCollisionSystem ( )                  {
+    fIs_p_p     =   kTRUE;
+    fIs_p_Pb    =   kFALSE;
+    fIs_Pb_Pb   =   kFALSE;
+    if ( ( fCurrent_Run >= 195344 && fCurrent_Run <= 195677 ) || ( fCurrent_Run >= 265309 && fCurrent_Run <= 267166 ) ) {
+        fIs_p_p     =   kFALSE;
+        fIs_p_Pb    =   kTRUE;
+        fIs_Pb_Pb   =   kFALSE;
+        fQC_Event_Enum_V0M          ->  GetXaxis()  ->  SetTitle("V0A Multiplicity");
+        fQC_Event_Enum_V0T          ->  GetXaxis()  ->  SetTitle("V0A Multiplicity");
+        fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0A Multiplicity");
+    }
 }

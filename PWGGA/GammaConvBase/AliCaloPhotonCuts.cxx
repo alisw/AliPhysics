@@ -5822,11 +5822,33 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       fDoSecondaryTrackMatching = kTRUE;
       break;
-    case 22: // very loose cuts for further processing
+    case 22: // very loose cuts for further processing, cut char 'm'
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fMaxDistTrackToClusterEta = 0.1;//0.015;
       fMinDistTrackToClusterPhi = -0.1;//-0.01;
       fMaxDistTrackToClusterPhi = 0.1;//0.03;//0.04;
+      break;
+    case 23: // cut char 'n'
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta23", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.035, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi23", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.085, 0.015, 2.);
+
+      fEOverPMax = 1.75;
+      break;
+    case 24: // cut char 'o'
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta24", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.045, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi24", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.095, 0.015, 2.);
+
+      fEOverPMax = 1.75;
       break;
 
     default:

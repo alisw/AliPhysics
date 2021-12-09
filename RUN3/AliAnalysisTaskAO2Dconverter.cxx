@@ -680,7 +680,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   // Create the output directory for the current time frame
   fOutputDir = fOutputFile->mkdir(Form("DF_%llu", tfId));
 
-  // Associate branches for Run 2 BC info
+  // Associate branches for origin table
   TTree* tOrigin = CreateTree(kOrigin);
   if (fTreeStatus[kOrigin]) {
     tOrigin->Branch("fDataframeID", &origin.fDataframeID, "fDataframeID/l");
@@ -1488,6 +1488,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       Int_t nPrim = MCEvt ? MCEvt->Stack()->GetNprimary() : nMCprim;
       if (i >= nPrim)
         mcparticle.fFlags |= MCParticleFlags::ProducedInTransport;
+
+      if (MCEvt && MCEvt->IsPhysicalPrimary(i)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
+      if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
+        mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
+      
       mcparticle.fIndexMcParticles_Mother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
       if (mcparticle.fIndexMcParticles_Mother0 > -1)
         mcparticle.fIndexMcParticles_Mother0 = kineIndex[mcparticle.fIndexMcParticles_Mother0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Mother0] + fOffsetLabel : -1;

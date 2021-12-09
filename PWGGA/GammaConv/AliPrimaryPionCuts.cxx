@@ -1003,18 +1003,58 @@ Bool_t AliPrimaryPionCuts::SetTPCdEdxCutPionLine(Int_t ededxSigmaCut){
 			break;
         case 9: // -2.5, 2.5
             fDodEdxSigmaTPCCut = kTRUE;
-            fPIDnSigmaBelowPionLineTPC=-2;
-            fPIDnSigmaAbovePionLineTPC=3.;
+            fPIDnSigmaBelowPionLineTPC=-2.5;
+            fPIDnSigmaAbovePionLineTPC=2.5;
             break;
         case 10: //a -3.5, 3.5
             fDodEdxSigmaTPCCut = kTRUE;
-            fPIDnSigmaBelowPionLineTPC=-2;
-            fPIDnSigmaAbovePionLineTPC=3.;
+            fPIDnSigmaBelowPionLineTPC=-3.5;
+            fPIDnSigmaAbovePionLineTPC=3.5;
             break;
-        case 11: //b -2., 2.
+        case 11: //b -2., 2.0
             fDodEdxSigmaTPCCut = kTRUE;
             fPIDnSigmaBelowPionLineTPC=-2;
-            fPIDnSigmaAbovePionLineTPC=3.;
+            fPIDnSigmaAbovePionLineTPC=2.;
+            break;
+        case 12: //c -3.5,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.5;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 13: //d -3.25,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.25;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 14: //e -2.75,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2.75;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 15: //f -2.5,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2.5;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 16: //g -3.0,2.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=2.5;
+            break;
+        case 17: //h -3.0,2.75
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=2.75;
+            break;
+        case 18: //i -3.0,3.25
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=3.25;
+            break;
+        case 19: //j -3.0,3.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=3.5;
             break;
 		default:
 			cout<<"Warning: TPCdEdxCutPionLine not defined"<<ededxSigmaCut<<endl;
@@ -1511,10 +1551,15 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 0.520;
             break;
-	case 22: //m cut at eta prime mass
-		fDoMassCut = kTRUE;
-		fMassCut = 0.95778;
-		break;
+        case 22: //m cut at eta prime mass
+            fDoMassCut = kTRUE;
+            fMassCut = 0.95778;
+            break;
+        case 23: //n overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 1.000;
+            break;
 	default:
 		cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;

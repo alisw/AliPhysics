@@ -25,6 +25,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         virtual                 ~AliAnalysisDecorrTask();
 
         virtual void            UserCreateOutputObjects();
+        virtual void            NotifyRun();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
 
@@ -33,9 +34,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetFillQA(Bool_t fill = kTRUE) { fFillQA = fill; }
         void                    SetSmallSystem(Bool_t small = kTRUE) { fSmallSystem = small; }
         void                    SetFillAfterWeights(Bool_t fillAfter) { fFillAfterWeights = fillAfter; }
-        void                    Set2018(bool data) { bIs2018Data = data; }
         //event selection
-        void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
+        void                    SetTriggerType(UInt_t newval) { fTrigger = newval; }
         void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
         void                    SetPileupCut(Int_t cut) { fCentralPileupCut = cut; }
         void                    SetCentralityEst(TString est){ fCentEstimator = est; }
@@ -72,17 +72,18 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }  //outdated, derived from CorrTask
         void                    SetRequireTwoPart(Bool_t req) { fRequireTwoPart = req; }
         void                    SetOnTheFly(bool otf) { fOnTheFly = otf; }
+        void                    OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
     
     private:
-        static const Int_t      fNumHarms = 13;             // maximum harmonics length of flow vector array
-        static const Int_t      fNumPowers = 9;             // maximum weight power length of flow vector array
+        static const Int_t      fNumHarms = 8;             // Used to be 13 for 4-pc without gap. Reduced for cpu. Maximum harmonics length of flow vector array
+        static const Int_t      fNumPowers = 2;             // maximum weight power length of flow vector array
         static const Int_t      NcentBinMax = 11;           //
         static const Int_t      NPtBinMax = 30;             //
 
         TList*                  fFlowList;                //! output list
-        TList*                  fFlowWeights;             //! 
+        //TList*                fFlowWeights;             //! 
         TList*                  fQA;                      //!
-        TObjArray*              fTrackQA;                 //!
+        TList*                  lSampleList;                //!
 
 
         Bool_t                  InitTask();
@@ -90,12 +91,15 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Float_t                 GetNCharged();
         Bool_t                  LoadWeights();
         double                  GetWeights(double dPhi, double dEta, double dVz);
-        Bool_t                  IsEventSelected(TH1D* h = nullptr);
+        void                    CreateProfiles(AliDecorrFlowCorrTask* task, double* lCentEdges, double* lPtEdges);
+        Bool_t                  IsEventSelected(Double_t lCent);
+        Bool_t                  CheckTrigger(Double_t lCent);
         Bool_t                  IsMCEventSelected();
         Bool_t                  IsEventRejectedAddPileUp(const int fPileupCut) const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
         Int_t                   GetSamplingIndex() const;
         Double_t                GetCentralityFromImpactParameter();
+        double*                 GetBinsFromAxis(TAxis *inax);
         //Weights and QA hists
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
@@ -104,14 +108,16 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH3D*                   fhAfterWeights;             //!
         TH1D*                   fhChargedCounter;           //!
         TH2D*                   fhCentVsCharged;            //!  
+        TH1D*                   fV0MMulti;                  //!
+        TH1D*                   fMulti;                     //!
         TH1I*                   hITSclsB;                   //!
         TH1I*                   hTPCclsB;                   //!
         TH1D*                   hTPCchi2B;                  //!    
-        TH3D*                   hDCAB;                      //! 
+        TH2D*                   hDCAxyB;                      //! 
         TH1I*                   hITSclsA;                   //!
         TH1I*                   hTPCclsA;                   //!
         TH1D*                   hTPCchi2A;                  //!    
-        TH3D*                   hDCAA;                      //!    
+        TH2D*                   hDCAxyA;                      //!    
         TH3D*                   hPtPhiEtaB;                 //!
         TH3D*                   hPtPhiEtaA;                 //!
         TH1D*                   hNumTracksB;                //!
@@ -236,9 +242,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Bool_t                  fFillQA;        //Fill QA histograms
         Bool_t                  fSmallSystem;   //Analyse small system
         Bool_t                  fFillAfterWeights;
-        Bool_t                  bIs2018Data;
         //cuts & selection: events
-        AliVEvent::EOfflineTriggerTypes    fTrigger;
+        UInt_t                  fTrigger;
         Bool_t                  fEventRejectAddPileUp;
         Int_t                   fCentralPileupCut;
         Int_t                   fDefaultPileupCut;
@@ -248,8 +253,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TAxis*                  fCentAxis;                  //
         Int_t                   NcentBin;
         Int_t                   NPtBin;
-        Double_t                centEdges[NcentBinMax+1];
-        Double_t                PtEdges[NPtBinMax+1];
         Double_t                fCentMin;
         Double_t                fCentMax;
         Double_t                fPVtxCutX;

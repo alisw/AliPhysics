@@ -86,6 +86,10 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     //....
     fPeriod("LHC15o"),
     fCurrSystFlag(0),
+    fSpringMode(false),
+    fLowMultiplicityMode(false),
+    fAddTPCPileupCuts(false),
+    fUseCorrectedNTracks(false),
 
     fListOfObjects(0),
     fListOfProfile(0),
@@ -151,11 +155,23 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     hDCAz(0),
     hITSclusters(0),
     hChi2(0),
+    hTracksCorrection2d(0),
+    hnCorrectedTracks(0),
     multProfile(),
     correlator(),
     rand(32213)
 {
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
 }
 //______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int _fNUA, int _fNUE):
@@ -179,6 +195,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   //....
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
+  fSpringMode(false),
+  fLowMultiplicityMode(false),
+  fAddTPCPileupCuts(false),
+  fUseCorrectedNTracks(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -243,31 +263,43 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   hDCAz(0),
   hITSclusters(0),
   hChi2(0),
+  hTracksCorrection2d(0),
+  hnCorrectedTracks(0),
   multProfile(),
   correlator(),
   rand(32213) {
 
-    for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
+  for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
 
-    // Output slot #1 writes into a TList
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
-    int outputslot = 2;
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      DefineOutput(outputslot, TList::Class());
-    }
-    // DefineOutput(2, TList::Class());
-    int inputslot = 1;
-    if (fNUA) {
-      DefineInput(inputslot, TList::Class());
-      inputslot++;
-    }
-    if (fNUE) {
-      DefineInput(inputslot, TList::Class());
-      inputslot++;
-    }
+  // Output slot #1 writes into a TList
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  int outputslot = 2;
+  for (int i = 0; i < 30; i++) {
+    outputslot++;
+    DefineOutput(outputslot, TList::Class());
   }
+  // DefineOutput(2, TList::Class());
+  int inputslot = 1;
+  if (fNUA) {
+    DefineInput(inputslot, TList::Class());
+    inputslot++;
+  }
+  if (fNUE) {
+    DefineInput(inputslot, TList::Class());
+    inputslot++;
+  }
+}
 
 //______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
@@ -290,6 +322,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   //....
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
+  fSpringMode(false),
+  fLowMultiplicityMode(false),
+  fAddTPCPileupCuts(false),
+  fUseCorrectedNTracks(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -357,24 +393,37 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   hDCAz(0),
   hITSclusters(0),
   hChi2(0),
+  hTracksCorrection2d(0),
+  hnCorrectedTracks(0),
   multProfile(),
   correlator(),
   rand(32213) {
 
-    for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-    // Output slot #1 writes into a TList
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
-    int outputslot = 2;
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      DefineOutput(outputslot, TList::Class());
-    }
-    // DefineOutput(2, TList::Class());
-    // int inputslot = 1;
-    DefineInput(1, TList::Class());
-    DefineInput(2, TList::Class());
+  for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
+  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
+  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
+
+  // Output slot #1 writes into a TList
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  int outputslot = 2;
+  for (int i = 0; i < 30; i++) {
+    outputslot++;
+    DefineOutput(outputslot, TList::Class());
   }
+  // DefineOutput(2, TList::Class());
+  // int inputslot = 1;
+  DefineInput(1, TList::Class());
+  DefineInput(2, TList::Class());
+}
 
 //_____________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
@@ -387,6 +436,17 @@ AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
   for (int i = 0; i < 30; i++) {
     if (fListOfProfiles[i]) delete fListOfProfiles[i];
   }
+  for (int i = 0; i < 10; i++) if (QDis[i]) delete QDis[i];
+  for (int i = 0; i < 10; i++) if (QDisGap0P[i]) delete QDisGap0P[i];
+  for (int i = 0; i < 10; i++) if (QDisGap0M[i]) delete QDisGap0M[i];
+  for (int i = 0; i < 10; i++) if (QDisGap10P[i]) delete QDisGap10P[i];
+  for (int i = 0; i < 10; i++) if (QDisGap10M[i]) delete QDisGap10M[i];
+  for (int i = 0; i < 10; i++) if (QDisGap14P[i]) delete QDisGap14P[i];
+  for (int i = 0; i < 10; i++) if (QDisGap14M[i]) delete QDisGap14M[i];
+  for (int i = 0; i < 10; i++) if (QDis3subL[i]) delete QDis3subL[i];
+  for (int i = 0; i < 10; i++) if (QDis3subM[i]) delete QDis3subM[i];
+  for (int i = 0; i < 10; i++) if (QDis3subR[i]) delete QDis3subR[i];
+
   if (fGFWSelection) delete fGFWSelection;
 }
 
@@ -403,13 +463,15 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fEventCuts.AddQAplotsToList(fListOfObjects);
   //..kINT7 is set in the class as default, if I want to have kHigHMultV0 in pp, I have to switch to manual mode
 
-  // fEventCuts.SetManualMode();
-  // fEventCuts.fRequireTrackVertex = false; // !!
-  // fEventCuts.fMinVtz = -10.f;
-  // fEventCuts.fMaxVtz = 10.f;
-  // fEventCuts.fMaxResolutionSPDvertex = 0.25f;
-  // Distance between track and SPD vertex < 0.2 cm
-  // fEventCuts.fPileUpCutMV = true;
+  if (fSpringMode) {
+    fEventCuts.SetManualMode();
+    fEventCuts.fRequireTrackVertex = false; // !!
+    fEventCuts.fMinVtz = -10.f;
+    fEventCuts.fMaxVtz = 10.f;
+    fEventCuts.fMaxResolutionSPDvertex = 0.25f;
+    // Distance between track and SPD vertex < 0.2 cm
+    fEventCuts.fPileUpCutMV = true;
+  }
 
   fGFWSelection = new AliGFWCuts();
   fGFWSelection->PrintSetup();
@@ -526,6 +588,19 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 100, 0, 3000);
   fListOfObjects->Add(hNtrksVSmultPercentile);
 
+  fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
+  fListOfObjects->Add(fPhiDis1DBefore);
+  fPhiDis1D  = new TH1D("hPhiDis", "phi distribution after the weight correction", 60, 0, 2*3.1415926);
+  fListOfObjects->Add(fPhiDis1D);
+  fEtaDis = new TH1D("hEtaDis", "eta distribution", 100, -2, 2);
+  fListOfObjects->Add(fEtaDis);
+  fPtDis = new TH1D("hPtDis", "pt distribution", 100, 0, 5);
+  fListOfObjects->Add(fPtDis);
+  hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
+  fListOfObjects->Add(hTracksCorrection2d);
+  hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
+  fListOfObjects->Add(hnCorrectedTracks);
+
   Int_t inSlotCounter=1;
   if(fNUA) {
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
@@ -550,6 +625,31 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fListOfProfiles[i] = new TList();
     fListOfProfiles[i]->SetOwner();
   }
+
+  // Create Q Distribution
+  for (int h = 0; h < 6; h++) {
+    QDis[h] = new TH2D(Form("Q%dDis", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDisGap0P[h] = new TH2D(Form("Q%dDisGap0P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDisGap0M[h] = new TH2D(Form("Q%dDisGap0M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDisGap10P[h] = new TH2D(Form("Q%dDisGap10P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDisGap10M[h] = new TH2D(Form("Q%dDisGap10M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDisGap14P[h] = new TH2D(Form("Q%dDisGap14P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDisGap14M[h] = new TH2D(Form("Q%dDisGap14M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDis3subL[h] = new TH2D(Form("Q%dDis3subL", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDis3subM[h] = new TH2D(Form("Q%dDis3subM", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    QDis3subR[h] = new TH2D(Form("Q%dDis3subR", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
+    fListOfObjects->Add(QDis[h]);
+    fListOfObjects->Add(QDisGap0P[h]);
+    fListOfObjects->Add(QDisGap0M[h]);
+    fListOfObjects->Add(QDisGap10P[h]);
+    fListOfObjects->Add(QDisGap10M[h]);
+    fListOfObjects->Add(QDisGap14P[h]);
+    fListOfObjects->Add(QDisGap14M[h]);
+    fListOfObjects->Add(QDis3subL[h]);
+    fListOfObjects->Add(QDis3subM[h]);
+    fListOfObjects->Add(QDis3subR[h]);
+  }
+
   // Physics profiles
   //	NL response
   InitProfile(multProfile, "", fListOfProfile);
@@ -565,11 +665,22 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   }
 }
 
+//_________________________________________________________________
+void AliAnalysisTaskNonlinearFlow::NotifyRun() {
+    if (fAddTPCPileupCuts) {
+    Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    if(fGFWSelection->GetSystFlagIndex()==22)
+      fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+    }
+}
+
 //______________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
   bootstrap_value = rand.Integer(30);
 
+  // Check if it can pass the trigger
   //..apply physics selection
   UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isTrigselected = false;
@@ -589,6 +700,22 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     return;
   }
 
+  if (fLowMultiplicityMode) {
+     // Number of AOD tracks before track cuts
+     const int nAODTracks = fAOD->GetNumberOfTracks();
+     if (nAODTracks > 200) {
+       PostData(1,fListOfObjects);
+       int outputslot = 2;
+       PostData(2, fListOfProfile);
+       for (int i = 0; i < 30; i++) {
+         outputslot++;
+         PostData(outputslot, fListOfProfiles[i]);
+       }
+       return;
+     }
+  }
+
+  // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
     PostData(1,fListOfObjects);
     int outputslot = 2;
@@ -605,7 +732,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   //..filling Vz distribution
   AliVVertex *vtx = fAOD->GetPrimaryVertex();
   float fVtxZ = vtx->GetZ();
-  if(TMath::Abs(fVtxZ) > fVtxCutDefault) {
+  if (!fGFWSelection->AcceptVertex(fAOD)) {
     PostData(1,fListOfObjects);
     int outputslot = 2;
     PostData(2, fListOfProfile);
@@ -615,43 +742,11 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     }
     return;
   }
-  NTracksCalculation(fInputEvent);
-  if(TMath::Abs(fVtxZ) > fVtxCut) {
-    PostData(1,fListOfObjects);
-    int outputslot = 2;
-    PostData(2, fListOfProfile);
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      PostData(outputslot, fListOfProfiles[i]);
-    }
-    return;
-  }
-  fVtxAfterCuts->Fill(fVtxZ);
-
-  hMult->Fill(NtrksCounter);
-
-  //..standard event plots (cent. percentiles, mult-vs-percentile)
-  const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-  const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-  // float fMultV0Meq = 0;
-  // float fMultMeanV0M = 0;
-  // float fMultSPD = 0;
-  // float fMultMeanSPD = 0;
-  float centrV0 = 0;
-  float cent = dCentrality;
-  float centSPD = 0;
-  // float v0Centr = 0;
-  // float cl1Centr = 0;
-  // float cl0Centr = 0;
-
-  fCentralityDis->Fill(centrV0);
-  fV0CentralityDis->Fill(cent);
-
 
   // checking the run number for aplying weights & loading TList with weights
   //
-  // if (fCurrSystFlag == 0)
   if (lastRunNumber != fAOD->GetRunNumber()) {
+    lastRunNumber = fAOD->GetRunNumber();
     if (fPeriod.EqualTo("LHC15oKatarina")) {
       if (fNUA && !LoadWeightsKatarina()) {
         AliFatal("Trying to Load Systematics but weights not loaded!");
@@ -675,8 +770,35 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   }
 
+  NTracksCalculation(fInputEvent);
 
+  // Setup AliGFWCuts for a specific systematics
   fGFWSelection->SetupCuts(fCurrSystFlag);
+  if (!fGFWSelection->AcceptVertex(fAOD)) {
+    PostData(1,fListOfObjects);
+    int outputslot = 2;
+    PostData(2, fListOfProfile);
+    for (int i = 0; i < 30; i++) {
+      outputslot++;
+      PostData(outputslot, fListOfProfiles[i]);
+    }
+    return;
+  }
+  // Check the VtxZ distribution
+  fVtxAfterCuts->Fill(fVtxZ);
+
+  hMult->Fill(NtrksCounter);
+
+  //..standard event plots (cent. percentiles, mult-vs-percentile)
+  const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+  const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+  float centrV0 = 0;
+  float cent = dCentrality;
+  float centSPD = 0;
+
+  fCentralityDis->Fill(centrV0);
+  fV0CentralityDis->Fill(cent);
+
   //..all charged particles
   if (!fIsMC) {
      AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
@@ -698,6 +820,8 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
   const int nAODTracks = aod->GetNumberOfTracks();
   NtrksCounter = 0;
+  NTracksCorrected = 0;
+  NTracksUncorrected = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -705,6 +829,8 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
   vx = aod->GetPrimaryVertex()->GetX();
   vy = aod->GetPrimaryVertex()->GetY();
   double vtxp[3] = {vx, vy, vz};
+  float fVtxZ = vz;
+  double runNumber = fInputEvent->GetRunNumber();
 
   //..LOOP OVER TRACKS........
   //........................................
@@ -720,8 +846,30 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
-    NtrksCounter += 1;
+    //..get phi-weight for NUA correction
+    double weight = 1;
+    if (fPeriod.EqualTo("LHC15oKatarina") ) {
+      if(fNUA == 1) weight = GetWeightKatarina(aodTrk->Phi(), aodTrk->Eta(), fVtxZ);
+    } else {
+      if(fNUA == 1) weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
+    }
+    double weightPt = 1;
+    if (fPeriod.EqualTo("LHC15oKatarina") ) {
+      if(fNUE == 1) weightPt = GetPtWeightKatarina(aodTrk->Pt(), aodTrk->Eta(), fVtxZ);
+    } else {
+      if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
+    }
+
+    NTracksUncorrected += 1;
+    NTracksCorrected += weightPt;
   } // end loop of all track
+  if (!fUseCorrectedNTracks) {
+    NtrksCounter = NTracksUncorrected;
+  } else {
+    NtrksCounter = NTracksCorrected; 
+  }
+  hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
+  hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
 }
 
 //________________________________________________________________________
@@ -830,6 +978,11 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
       if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
     }
     NtrksBefore += weightPt;
+
+    fPhiDis1DBefore->Fill(aodTrk->Phi());
+    fPtDis->Fill(aodTrk->Pt());
+    fEtaDis->Fill(aodTrk->Eta());
+    fPhiDis1D->Fill(aodTrk->Phi(), weight*weightPt);
 
     //..calculate Q-vectors
     //..no eta gap
@@ -1051,6 +1204,20 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
   }
+
+  for (int h = 0; h < 6; h++) {
+    QDis[h]->Fill(correlator.Q(h+2,1).Re(), correlator.Q(h+2,1).Im());
+    QDisGap0P[h]->Fill(correlator.QGap0P(h+2,1).Re(), correlator.QGap0P(h+2,1).Im());
+    QDisGap0M[h]->Fill(correlator.QGap0M(h+2,1).Re(), correlator.QGap0M(h+2,1).Im());
+    QDisGap10P[h]->Fill(correlator.QGap10P(h+2,1).Re(), correlator.QGap10P(h+2,1).Im());
+    QDisGap10M[h]->Fill(correlator.QGap10M(h+2,1).Re(), correlator.QGap10M(h+2,1).Im());
+    QDisGap14P[h]->Fill(correlator.QGap14P(h+2,1).Re(), correlator.QGap14P(h+2,1).Im());
+    QDisGap14M[h]->Fill(correlator.QGap14M(h+2,1).Re(), correlator.QGap14M(h+2,1).Im());
+    QDis3subL[h]->Fill(correlator.QsubLeft(h+2,1).Re(), correlator.QsubLeft(h+2,1).Im());
+    QDis3subM[h]->Fill(correlator.QsubMiddle(h+2,1).Re(), correlator.QsubMiddle(h+2,1).Im());
+    QDis3subR[h]->Fill(correlator.QsubRight(h+2,1).Re(), correlator.QsubRight(h+2,1).Im());
+  }
+
 
   if (fNtrksName == "Mult") {
     CalculateProfile(multProfile, NtrksCounter);
@@ -1610,7 +1777,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   double error = fPtWeightsSystematics->GetBinError(binPt);
   double weight = 1;
   //..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
-  if((eff < 0.03) || ((error/eff) > 0.1)) weight = 1;
+  if((eff < 0.03) || ((error/eff) > 0.1)) error = 0.00001;
   else{
     TRandom3 r(0);
     double efficiency = 0;
@@ -1620,10 +1787,6 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   }
 
   return weight;
-  double binEta = hTrackEfficiencyRun->GetYaxis()->FindBin(eta);
-  double binVz = hTrackEfficiencyRun->GetZaxis()->FindBin(vz);
-  eff = hTrackEfficiencyRun->GetBinContent(binPt, binEta, binVz);
-  error = hTrackEfficiencyRun->GetBinError(binPt, binEta, binVz);
 
 }
 //____________________________________________________________________
@@ -2197,7 +2360,10 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   Double_t zRes = TMath::Sqrt(cov[5]);
   if ( vtxSPD->IsFromVertexerZ() && (zRes > dMaxResol)) return kFALSE;
 
-  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC15oKatarina")) {
+  if (fPeriod.EqualTo("LHC15o") ||
+      fPeriod.EqualTo("LHC15o_pass2") ||
+      fPeriod.EqualTo("LHC18qr_pass3") ||
+      fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
   } else {
     if(fAOD->IsPileupFromSPDInMultBins() ) { return false; }

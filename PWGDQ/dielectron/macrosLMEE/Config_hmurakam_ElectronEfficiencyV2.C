@@ -1,4 +1,4 @@
-TString names("NewPid_Phiv");
+TString names("default");
 bool DoPairing = kTRUE;
 bool DoULSLS = kTRUE;
 
@@ -21,28 +21,44 @@ const double maxPtCut = 15.0;
 const double minEtaCut = -0.8;
 const double maxEtaCut = 0.8;
 
-// binning of single leg histograms
-bool usePtVector = true;
 /* const Double_t ptBins[] = { */
 /*   0.00,0.10,0.11,0.12,0.13,0.14,0.15,0.155,0.16,0.165,0.17,0.175,0.18,0.185,0.19,0.195,0.20,0.205,0.21,0.215,0.22,0.225,0.23,0.235,0.24,0.245,0.25,0.255, */
 /*   0.26,0.265,0.27,0.275,0.28,0.285,0.29,0.295,0.30,0.32,0.34,0.36,0.38,0.40,0.43,0.46, */
 /*   0.49,0.52,0.55,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,1.20, */
 /*   1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,6.00,8.00,12.0 */
 /* }; */
+// binning of single leg histograms
+bool usePtVector = true;
 const Double_t ptBins[] = {
   0.000,0.050,0.100,0.150,0.200,0.250,0.300,0.350,0.400,0.450,0.500,0.550,0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,
   1.000,1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,2.10,2.30,2.50,3.00,3.50,
   4.00,5.0,6.0,7.0,10.0,20.0
 };
 const Int_t nBinsPt =  ( sizeof(ptBins) / sizeof(ptBins[0]) )-1;
-
-// Ivan's ptee bins
-//const Double_t PteeBins[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 20.0};
-//const Int_t nBinsPtee = ( sizeof(PteeBins) / sizeof(PteeBins[0]) )-1;
+// binning of pair mass 
+bool useMassVector = true;
+const Double_t massBins[] = {
+  0.0,   0.01,  0.02,  0.03,  0.04, 0.05,  0.06,  0.07,  0.08,  0.09,
+  0.1,   0.11,  0.12,  0.13,  0.14, 0.15,  0.16,  0.17,  0.18,  0.19,
+  0.2,   0.21,  0.22,  0.23,  0.24, 0.25,  0.26,  0.27,  0.29,  0.31,
+  0.33,  0.36,  0.4,   0.45,  0.52, 0.58,  0.63,  0.67,   0.7,  0.72,
+  0.74,  0.75,  0.76,  0.77,  0.78,  0.8,  0.84,   0.9,  0.95,  0.99,
+  1.01,  1.03,  1.11,  1.2,   1.28, 1.37,  1.47,  1.56,  1.67,  1.77,
+  1.88,  1.99,  2.12,  2.27,  2.43, 2.55,  2.67,  2.78,  2.86,  2.92,
+  2.96,  2.99,  3.02,  3.04,  3.06,  3.07, 3.08,  3.09,  3.11,  3.16,  4.0}; 
+const Int_t nBinsMass =  ( sizeof(massBins) / sizeof(massBins[0]) )-1;
+// binning of pair ptee 
+bool usePteeVector = true;
+const Double_t pteeBins[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 10.0};
+const Int_t nBinsPtee = ( sizeof(pteeBins) / sizeof(pteeBins[0]) )-1;
 
 const double minPtBin = 0;
 const double maxPtBin = 8;
 const int    stepsPtBin = 800;
+
+const double minPteeBin = 0;
+const double maxPteeBin = 10;
+const int    stepsPteeBin = 50;
 
 const double minEtaBin = -1.0;
 const double maxEtaBin =  1.0;
@@ -133,29 +149,34 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
 
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);
-  trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
-  trackCutsDiel->SetRequireITSRefit(kTRUE);
-  trackCutsDiel->SetRequireTPCRefit(kTRUE);
 
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
   // pT and eta
   trackCutsAOD->AddCut(AliDielectronVarManager::kPt, 0.2,   1e30);
   trackCutsAOD->AddCut(AliDielectronVarManager::kEta, -0.8,   0.8);
 
+  //TPC
+  trackCutsDiel->SetRequireTPCRefit(kTRUE);
+
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);//(1)
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,  0.8,   1.5);//(2)
+  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,       0.0,   4.0);//(3)
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);//(4)
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracTPC,    0.0,   0.4);//(5)
+
+  //ITS
+  trackCutsDiel->SetRequireITSRefit(kTRUE);
+  trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,         3.0, 100.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,       0.0,   4.5);
+
   //primary selection
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY,    -1.0,   1.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,     -3.0,   3.0);
 
-  //TPC
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,     100.0, 160.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,        80.0, 160.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,       0.0,   4.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,  0.8,   1.5);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracTPC,    0.0,   0.4);
-  //ITS
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,         3.0, 100.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,       0.0,   4.5);
 
+
+  
   //  if(cutDefinition==1){
   printf("Add shared cluster cut\n");
   trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSITS, 1.0, 6.0, kTRUE);//accept no shared cls hit (default)
@@ -208,17 +229,17 @@ AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition)
 
   AliAnalysisCuts* fancyCut=0x0;
   // combine 2 cut sets with OR option
-  if(cutDefinition==0){//New pid
-    AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
-    combinedPIDcuts->AddCut(pidTPCTOFreq);//PID1
-    combinedPIDcuts->AddCut(pidTPCHadRej);//PID2
-    fancyCut = combinedPIDcuts;
-  }else if (cutDefinition==1){// Old pid
-    AliDielectronCutGroup* combinedPIDcuts2 = new AliDielectronCutGroup("combinedPIDcuts2","combinedPIDcuts2", AliDielectronCutGroup::kCompOR);
-    combinedPIDcuts2->AddCut(pidTPCTOFreq);//PID1
-    combinedPIDcuts2->AddCut(pidTPCHadRejTOFif);//PID3
-    fancyCut = combinedPIDcuts2;
-  }
+  //  if(cutDefinition==0){//New pid
+  AliDielectronCutGroup* combinedPIDcuts = new AliDielectronCutGroup("combinedPIDcuts","combinedPIDcuts",AliDielectronCutGroup::kCompOR);
+  combinedPIDcuts->AddCut(pidTPCTOFreq);//PID1
+  combinedPIDcuts->AddCut(pidTPCHadRej);//PID2
+  fancyCut = combinedPIDcuts;
+  /* }else if (cutDefinition==1){// Old pid */
+  /*   AliDielectronCutGroup* combinedPIDcuts2 = new AliDielectronCutGroup("combinedPIDcuts2","combinedPIDcuts2", AliDielectronCutGroup::kCompOR); */
+  /*   combinedPIDcuts2->AddCut(pidTPCTOFreq);//PID1 */
+  /*   combinedPIDcuts2->AddCut(pidTPCHadRejTOFif);//PID3 */
+  /*   fancyCut = combinedPIDcuts2; */
+  /* } */
 
   return fancyCut;
 

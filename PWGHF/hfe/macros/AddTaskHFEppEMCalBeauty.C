@@ -17,8 +17,9 @@ Bool_t isMC=kFALSE,
 AliVEvent::EOfflineTriggerTypes trigger=AliVEvent::kINT7,
 Bool_t SwitchPi0EtaWeight=kTRUE,
 Bool_t SwitchNHFEeffi = kTRUE,
-Bool_t SwitchMCTempWeight= kFALSE,
-Bool_t SwitchFillMCTemp = kFALSE,
+Bool_t SwitchEleRecoEffi = kTRUE,
+Bool_t SwitchMCTempWeight= kTRUE,
+Bool_t SwitchFillMCTemp = kTRUE,
 Bool_t isEG1=kFALSE,
 Bool_t useTender = kTRUE,
 Bool_t ClsTypeEMC = kTRUE,
@@ -116,6 +117,7 @@ if(trigger==AliVEvent::kINT7)
 
     HFeTask->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeight);
     HFeTask->SetNonHFEEffi(SwitchNHFEeffi);
+    HFeTask->SetElecRecoEffi(SwitchEleRecoEffi);
     HFeTask->SwitchMCTemplateWeightCalc(SwitchMCTempWeight);
     HFeTask->SwitchFillMCTemplate(SwitchFillMCTemp);
 

@@ -10,19 +10,15 @@
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.     
+ * provided "as is" without express or implied warranty.                  * 
  *                                                                        *
- * Authors:       Luz Tiscareño (luz.elena.tiscareno.montoya@cern.ch)*
- *          Paola Vargas (paola.vargas.torres@cern.ch)*
- *          Gyula Bencedi (Gyula.Bencedi@cern.ch)*
- *          Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)         *
+ * Authors:       Luz Tiscareño (luz.elena.tiscareno.montoya@cern.ch)           *
+ *          Paola Vargas (paola.vargas.torres@cern.ch)                    *
+ *          Gyula Bencedi (Gyula.Bencedi@cern.ch)                         *
+ *          Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)               *
  *                                                                        *
  **************************************************************************/
 
-/* AliAnaysisTaskChargedVsRT source code
- * The analysis task produce all the histos needed for MC closure test studies
- * Results include only the KNO properties
- */
 
 class TTree;
 
@@ -45,7 +41,6 @@ class AliESDtrackCuts;
 #include "AliVEvent.h"
 #include "AliVVertex.h"
 #include "AliVTrack.h"
-//#include "AliV0vertexer.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -74,7 +69,6 @@ class AliESDtrackCuts;
 #include "AliESDUtils.h"
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
-//#include "AliGenPythiaEventHeader.h"
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
@@ -87,7 +81,6 @@ class AliESDtrackCuts;
 #include <TDirectory.h>
 #include <TBits.h>
 #include <AliAnalysisFilter.h>
-
 using std::cout;
 using std::endl;
 
@@ -105,8 +98,6 @@ double binsDCAxy3[nBinsDCAxy+1] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.
 
 
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
-Float_t MultV0M3, MultRef3;
-class AliAnalysisTaskChargedVsRT;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout' etc
 
@@ -171,8 +162,6 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 	hPhiTotal(0), //Sum of all the contributions
 	hPhiStandard(0), //Distribution of phi without corrections -w/ SPD & ITS-
 	hPhiHybrid1(0), // Correction of phi distribution -w/o SPD & w/ ITS-
-// // 	hPhiHybrid2(0), // Correction of phi distribution -no SPD req. & w/o ITS-
-	//
 	hNchResponse(0),
 	hNchRec(0),
 	hNchRecTest(0),
@@ -215,8 +204,6 @@ ClassImp(AliAnalysisTaskChargedVsRT) // classimp: necessary for root
 		hPhiRec[i]=0;
 	}
 
-
-	// default constructor, don't allocate memory here!  this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAnalysisTaskSE(name),
@@ -278,8 +265,6 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	hPhiTotal(0), //Sum of all the contributions
 	hPhiStandard(0), //Distribution of phi without corrections -w/ SPD & ITS-
 	hPhiHybrid1(0), // Correction of phi distribution -w/o SPD & w/ ITS-
-// // 	hPhiHybrid2(0), // Correction of phi distribution -no SPD req. & w/o ITS-
-	//
 	hNchResponse(0),
 	hNchRec(0),
 	hNchRecTest(0),
@@ -324,7 +309,6 @@ AliAnalysisTaskChargedVsRT::AliAnalysisTaskChargedVsRT(const char* name) : AliAn
 	}
 
 	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case you take a 'chain' of events
-	// this chain is created by the analysis manager, so no need to worry about it, does its work automatically
 	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
 
 }
@@ -341,33 +325,31 @@ AliAnalysisTaskChargedVsRT::~AliAnalysisTaskChargedVsRT()
 //_____________________________________________________________________________
 void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 {
-	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-	if(man){
-		AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-		if(inputHandler)fPIDResponse = inputHandler->GetPIDResponse();
-	}
+	//AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	//if(man){
+	//	AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+	//	if(inputHandler)fPIDResponse = inputHandler->GetPIDResponse();
+	//}
 
-
-    // Define Track Cuts
-
+	// Define Track Cuts
 	fTrackFilter = new AliAnalysisFilter("trackFilter");
 	fTrackFilterwoDCA = new AliAnalysisFilter("trackFilterwoDCA");// wo DCA cut
 	AliESDtrackCuts * fCuts = new AliESDtrackCuts();
 
-    fCuts->SetAcceptKinkDaughters(kFALSE);//
+	fCuts->SetAcceptKinkDaughters(kFALSE);//
 	fCuts->SetRequireTPCRefit(kTRUE);//
 	fCuts->SetRequireITSRefit(kTRUE);//
-    fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
+	fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);//
 	fCuts->SetDCAToVertex2D(kFALSE);//
 	fCuts->SetRequireSigmaToVertex(kFALSE);//
-    fCuts->SetEtaRange(-0.8,0.8);
+	fCuts->SetEtaRange(-0.8,0.8);
 
-    //to be considered for systematics...
-    fCuts->SetMinNCrossedRowsTPC(70);     // TBC
-    fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	//to be considered for systematics...
+	fCuts->SetMinNCrossedRowsTPC(70);     // TBC
+	fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 	fCuts->SetMaxChi2PerClusterTPC(4);
-    fCuts->SetMaxDCAToVertexZ(2);
-    fCuts->SetMaxChi2PerClusterITS(36);
+	fCuts->SetMaxDCAToVertexZ(2);
+	fCuts->SetMaxChi2PerClusterITS(36);
 
 	if (fGeoTPCVar1) {fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
 	else if (fGeoTPCVar2) {fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
@@ -375,7 +357,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 	else if (fGeoTPCVar4) {fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
 	else {fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
 
-    if (fNcrVar1) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+	if (fNcrVar1) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
 	else if (fNcrVar2) {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
 	else {fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
 
@@ -394,60 +376,60 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
 	fTrackFilterwoDCA->AddCuts(fCuts);
 
-    fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+	fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 
-    fTrackFilter->AddCuts(fCuts);
+	fTrackFilter->AddCuts(fCuts);
 
-    
+
 	// Define Hybrid 0 (global, 2011 track cuts)
-    //
-    fTrackFilterHybrid0 = new AliAnalysisFilter("trackFilterHybrid0");
+	//
+	fTrackFilterHybrid0 = new AliAnalysisFilter("trackFilterHybrid0");
 	fTrackFilterHybrid0woDCA = new AliAnalysisFilter("trackFilterHybrid0woDCA");
 	AliESDtrackCuts * fCutsHybrid0 = new AliESDtrackCuts();
-    fCutsHybrid0 = new AliESDtrackCuts("fCutsHybrid0");
+	fCutsHybrid0 = new AliESDtrackCuts("fCutsHybrid0");
 
-    //to be considered for systematics...
-    fCutsHybrid0->SetMinNCrossedRowsTPC(70);       // TBC
-    fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	//to be considered for systematics...
+	fCutsHybrid0->SetMinNCrossedRowsTPC(70);       // TBC
+	fCutsHybrid0->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 	fCutsHybrid0->SetMaxChi2PerClusterTPC(4);
-    fCutsHybrid0->SetMaxDCAToVertexZ(2);
-    fCutsHybrid0->SetMaxChi2PerClusterITS(36);
-    
+	fCutsHybrid0->SetMaxDCAToVertexZ(2);
+	fCutsHybrid0->SetMaxChi2PerClusterITS(36);
+
 	fCutsHybrid0->SetAcceptKinkDaughters(kFALSE);
 	fCutsHybrid0->SetRequireTPCRefit(kTRUE);
 	fCutsHybrid0->SetRequireITSRefit(kTRUE);
 	fCutsHybrid0->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
 	fCutsHybrid0->SetDCAToVertex2D(kFALSE);
 	fCutsHybrid0->SetRequireSigmaToVertex(kFALSE);
-    fCutsHybrid0->SetEtaRange(-0.8,0.8);
-    
+	fCutsHybrid0->SetEtaRange(-0.8,0.8);
+
 	fTrackFilterHybrid0woDCA->AddCuts(fCutsHybrid0);
 	fCutsHybrid0->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 	fTrackFilterHybrid0->AddCuts(fCutsHybrid0);
 
 	// Define Hybrid 1
-    //
+	//
 	fTrackFilterHybrid1 = new AliAnalysisFilter("trackFilterHybrid1");
 	fTrackFilterHybrid1woDCA = new AliAnalysisFilter("trackFilterHybrid1woDCA");
 	AliESDtrackCuts * fCutsHybrid1 = new AliESDtrackCuts();
 	fCutsHybrid1 = new AliESDtrackCuts("fCutsHybrid1");
-    
-    //to be considered for systematics...
-    fCutsHybrid1->SetMinNCrossedRowsTPC(70);            //TBC
-    fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+
+	//to be considered for systematics...
+	fCutsHybrid1->SetMinNCrossedRowsTPC(70);            //TBC
+	fCutsHybrid1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 	fCutsHybrid1->SetMaxChi2PerClusterTPC(4);
-    fCutsHybrid1->SetMaxDCAToVertexZ(2);
-    fCutsHybrid1->SetMaxChi2PerClusterITS(36);
-    
+	fCutsHybrid1->SetMaxDCAToVertexZ(2);
+	fCutsHybrid1->SetMaxChi2PerClusterITS(36);
+
 	fCutsHybrid1->SetAcceptKinkDaughters(kFALSE);
 	fCutsHybrid1->SetRequireTPCRefit(kTRUE);
 	fCutsHybrid1->SetRequireITSRefit(kFALSE);
-    fCutsHybrid1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+	fCutsHybrid1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
 	fCutsHybrid1->SetDCAToVertex2D(kFALSE);
 	fCutsHybrid1->SetRequireSigmaToVertex(kFALSE);
-    fCutsHybrid1->SetEtaRange(-0.8,0.8);
+	fCutsHybrid1->SetEtaRange(-0.8,0.8);
 
-    fTrackFilterHybrid1woDCA->AddCuts(fCutsHybrid1);
+	fTrackFilterHybrid1woDCA->AddCuts(fCutsHybrid1);
 	fCutsHybrid1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
 	fTrackFilterHybrid1->AddCuts(fCutsHybrid1);
 
@@ -461,6 +443,7 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
 	if(fUseMC)
 	{
+
 		hNchTSGen = new TH1D("hNchTSGen","",200,-0.5,199.5);
 		fOutputList->Add(hNchTSGen);
 
@@ -490,62 +473,90 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 		hPtInPrim = new TH1D("hPtInPrim","pT prim true; pT; Nch",ptNbins,ptbins1_3);
 		fOutputList->Add(hPtInPrim);
 
-		hPtInPrim_pion = new TH1D("hPtInPrim_pion","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_pion);
-
-		hPtInPrim_kaon = new TH1D("hPtInPrim_kaon","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_kaon);
-
-		hPtInPrim_proton = new TH1D("hPtInPrim_proton","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_proton);
-
-		hPtInPrim_sigmap = new TH1D("hPtInPrim_sigmap","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_sigmap);
-
-		hPtInPrim_sigmam = new TH1D("hPtInPrim_sigmam","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_sigmam);
-
-		hPtInPrim_omega = new TH1D("hPtInPrim_omega","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_omega);
-
-		hPtInPrim_xi = new TH1D("hPtInPrim_xi","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_xi);
-
-		hPtInPrim_rest = new TH1D("hPtInPrim_rest","pT prim true; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtInPrim_rest);
-
 		hPtOut = new TH1D("hPtOut","pT all rec; pT; Nch",ptNbins,ptbins1_3);
 		fOutputList->Add(hPtOut);
 
 		hPtOutPrim = new TH1D("hPtOutPrim","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
 		fOutputList->Add(hPtOutPrim);
 
-		hPtOutPrim_pion = new TH1D("hPtOutPrim_pion","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_pion);
-
-		hPtOutPrim_kaon = new TH1D("hPtOutPrim_kaon","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_kaon);
-
-		hPtOutPrim_proton = new TH1D("hPtOutPrim_proton","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_proton);
-
-		hPtOutPrim_sigmap = new TH1D("hPtOutPrim_sigmap","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_sigmap);
-
-		hPtOutPrim_sigmam = new TH1D("hPtOutPrim_sigmam","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_sigmam);
-
-		hPtOutPrim_omega = new TH1D("hPtOutPrim_omega","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_omega);
-
-		hPtOutPrim_xi = new TH1D("hPtOutPrim_xi","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_xi);
-
-		hPtOutPrim_rest = new TH1D("hPtOutPrim_rest","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
-		fOutputList->Add(hPtOutPrim_rest);
-
 		hPtOutSec = new TH1D("hPtOutSec","pT sec rec; pT; Nch",ptNbins,ptbins1_3);
 		fOutputList->Add(hPtOutSec);
+
+
+		if(!fIsMCclosure){
+			hPtInPrim_pion = new TH1D("hPtInPrim_pion","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_pion);
+
+			hPtInPrim_kaon = new TH1D("hPtInPrim_kaon","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_kaon);
+
+			hPtInPrim_proton = new TH1D("hPtInPrim_proton","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_proton);
+
+			hPtInPrim_sigmap = new TH1D("hPtInPrim_sigmap","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_sigmap);
+
+			hPtInPrim_sigmam = new TH1D("hPtInPrim_sigmam","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_sigmam);
+
+			hPtInPrim_omega = new TH1D("hPtInPrim_omega","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_omega);
+
+			hPtInPrim_xi = new TH1D("hPtInPrim_xi","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_xi);
+
+			hPtInPrim_rest = new TH1D("hPtInPrim_rest","pT prim true; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtInPrim_rest);
+
+
+			hPtOutPrim_pion = new TH1D("hPtOutPrim_pion","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_pion);
+
+			hPtOutPrim_kaon = new TH1D("hPtOutPrim_kaon","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_kaon);
+
+			hPtOutPrim_proton = new TH1D("hPtOutPrim_proton","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_proton);
+
+			hPtOutPrim_sigmap = new TH1D("hPtOutPrim_sigmap","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_sigmap);
+
+			hPtOutPrim_sigmam = new TH1D("hPtOutPrim_sigmam","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_sigmam);
+
+			hPtOutPrim_omega = new TH1D("hPtOutPrim_omega","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_omega);
+
+			hPtOutPrim_xi = new TH1D("hPtOutPrim_xi","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_xi);
+
+			hPtOutPrim_rest = new TH1D("hPtOutPrim_rest","pT prim rec; pT; Nch",ptNbins,ptbins1_3);
+			fOutputList->Add(hPtOutPrim_rest);
+		}
+
+		for(Int_t i=0;i<3;++i){
+
+			hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+			fOutputList->Add(hPtVsUEGenTest[i]);
+
+			hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+			fOutputList->Add(hPtVsNchGenTest[i]);
+
+		}
+
+		hptvsdcaPrim = new TH2F("hptvsdcaPrim","pt vs dca Primaries",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+		fOutputList->Add(hptvsdcaPrim);
+
+		hptvsdcaDecs = new TH2F("hptvsdcaDecs","pt vs dca Decays",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+		fOutputList->Add(hptvsdcaDecs);
+
+		hptvsdcaMatl = new TH2F("hptvsdcaMatl","pt vs dca Material",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+		fOutputList->Add(hptvsdcaMatl);
+
+		hptvsdcaAll = new TH2F("hptvsdcaAll","pt vs dca all",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+		fOutputList->Add(hptvsdcaAll);
+
+
 	}
 
 	hNchTSRec = new TH1D("hNchTSRec","",200,-0.5,199.5);
@@ -553,10 +564,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
 	hNchRec = new TH1D("hNchRec","",200,-0.5,199.5);
 	fOutputList->Add(hNchTSRec);
-
-	hNchTSData = new TH1D("hNchTSData","",200,-0.5,199.5); 
-	fOutputList->Add(hNchTSData);
-
 	hPhiTotal = new TH1F("hPhiSum","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
 	fOutputList->Add(hPhiTotal);
 
@@ -566,8 +573,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 	hPhiHybrid1 = new TH1F("hPhiITS","#varphi",50, -TMath::Pi()/2.0,5.0*TMath::Pi()/2.0);
 	fOutputList->Add(hPhiHybrid1);
 
-	hNchData = new TH1D("hNchData","",200,-0.5,199.5); 
-	fOutputList->Add(hNchData);
 
 	for(Int_t i=0;i<3;++i){
 		hPhiRec[i]= new TH1D(Form("hPhiRec_%s",NameReg_3[i]),"",64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
@@ -576,45 +581,37 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
 
 	for(Int_t i=0;i<3;++i){
 
-		hPtVsUEGenTest[i] = new TH2D(Form("hPtVsUEGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsUEGenTest[i]);
-
 		hPtVsUERecTest[i] = new TH2D(Form("hPtVsUERecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
 		fOutputList->Add(hPtVsUERecTest[i]);	  
-
-		hPtVsNchGenTest[i] = new TH2D(Form("hPtVsNchGenTest_%s",NameReg_3[i]),"gen pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsNchGenTest[i]);
 
 		hPtVsNchRecTest[i] = new TH2D(Form("hPtVsNchRecTest_%s",NameReg_3[i]),"rec pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
 		fOutputList->Add(hPtVsNchRecTest[i]);
 
 	}
 
+	if(!fUseMC){
+		hNchTSData = new TH1D("hNchTSData","",200,-0.5,199.5); 
+		fOutputList->Add(hNchTSData);
 
-	for(Int_t i=0;i<3;++i){
+		hNchData = new TH1D("hNchData","",200,-0.5,199.5); 
+		fOutputList->Add(hNchData);
 
-		hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsUEData[i]);
+		for(Int_t i=0;i<3;++i){
 
-		hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
-		fOutputList->Add(hPtVsNchData[i]);
+			hPtVsUEData[i] = new TH2D(Form("hPtVsUEData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+			fOutputList->Add(hPtVsUEData[i]);
+
+			hPtVsNchData[i] = new TH2D(Form("hPtVsNchData_%s",NameReg_3[i]),"data pT vs nch_transverse",200,-0.5,199.5,ptNbins,ptbins1_3);
+			fOutputList->Add(hPtVsNchData[i]);
+
+		}
+
+		hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
+		fOutputList->Add(hPTVsDCAData);
 
 	}
 
-	hPTVsDCAData = new TH2D("hPTVsDCAData","pT vs dcaxy",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hPTVsDCAData);
 
-	hptvsdcaPrim = new TH2F("hptvsdcaPrim","pt vs dca Primaries",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaPrim);
-
-	hptvsdcaDecs = new TH2F("hptvsdcaDecs","pt vs dca Decays",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaDecs);
-
-	hptvsdcaMatl = new TH2F("hptvsdcaMatl","pt vs dca Material",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaMatl);
-
-	hptvsdcaAll = new TH2F("hptvsdcaAll","pt vs dca all",ptNbins,ptbins1_3,nBinsDCAxy,binsDCAxy3);
-	fOutputList->Add(hptvsdcaAll);
 
 	fEventCuts.AddQAplotsToList(fOutputList);
 	PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the
@@ -637,7 +634,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 		this->Dump();
 		return;
 	}
-	
+
 	if (fUseMC) {
 
 		//      E S D
@@ -650,13 +647,14 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 		fMCStack = fMC->Stack();
 	}
 
-	AliHeader* headerMC = fMC->Header();
+    AliHeader* headerMC;
 	Bool_t isGoodVtxPosMC = kFALSE;
 
 	vector<Float_t> ptMc;
 	vector<Float_t> phiMc;
 	vector<Int_t> idMc;
 	if (fUseMC){
+        headerMC = fMC->Header();
 		AliGenEventHeader* genHeader = headerMC->GenEventHeader();
 		TArrayF vtxMC(3); // primary vertex  MC 
 		vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
@@ -727,7 +725,7 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 	if (!fMultSelection)
 		cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-	
+
 	if(fIsMCclosure){
 		Double_t randomUE = -1;
 		gRandom->SetSeed(0);
@@ -767,7 +765,6 @@ void AliAnalysisTaskChargedVsRT::UserExec(Option_t *)
 				GetMultiplicityDistributionsData(phiHy,ptHy,fnRecHy,ptHyWoDCA,dcaxyHyWoDCA,fnRecHyWoDCA);
 		}
 	}
-	//}
 
 	PostData(1, fOutputList); // stream the result of this event to the output manager which will write it to a file
 
@@ -813,29 +810,33 @@ void AliAnalysisTaskChargedVsRT::GetBinByBinCorrections( Int_t multGen, Int_t mu
 	// Histos for efficiencyxacceptance
 	for (Int_t i = 0; i < multGen; ++i) {
 		hPtInPrim->Fill(ptGen[i]);// inital pT distribution (MC gen)
-		if (idGen[i]==0) hPtInPrim_pion->Fill(ptGen[i]); //pions
-		else if (idGen[i]==1) hPtInPrim_kaon->Fill(ptGen[i]); //kaons
-		else if (idGen[i]==2) hPtInPrim_proton->Fill(ptGen[i]); //protons
-		else if (idGen[i]==3) hPtInPrim_sigmap->Fill(ptGen[i]); //sigma plus
-		else if (idGen[i]==4) hPtInPrim_sigmam->Fill(ptGen[i]); //sigma minus
-		else if (idGen[i]==5) hPtInPrim_omega->Fill(ptGen[i]); //Omega
-		else if (idGen[i]==6) hPtInPrim_xi->Fill(ptGen[i]); //Xi
-		else hPtInPrim_rest->Fill(ptGen[i]); //rest of the charged particles
+		if(!fIsMCclosure){
+			if (idGen[i]==0) hPtInPrim_pion->Fill(ptGen[i]); //pions
+			else if (idGen[i]==1) hPtInPrim_kaon->Fill(ptGen[i]); //kaons
+			else if (idGen[i]==2) hPtInPrim_proton->Fill(ptGen[i]); //protons
+			else if (idGen[i]==3) hPtInPrim_sigmap->Fill(ptGen[i]); //sigma plus
+			else if (idGen[i]==4) hPtInPrim_sigmam->Fill(ptGen[i]); //sigma minus
+			else if (idGen[i]==5) hPtInPrim_omega->Fill(ptGen[i]); //Omega
+			else if (idGen[i]==6) hPtInPrim_xi->Fill(ptGen[i]); //Xi
+			else hPtInPrim_rest->Fill(ptGen[i]); //rest of the charged particles
+		}
 	}
 
 
 	for(Int_t i=0; i < multRec; ++i) {  // loop over all these tracks
 		hPtOut->Fill(ptRec[i]);
-		if( isprimRec[i] == 0 ){
-			hPtOutPrim->Fill(ptRec[i]);
-			if (idRec[i]==0) hPtOutPrim_pion->Fill(ptRec[i]); //pions
-			else if (idRec[i]==1) hPtOutPrim_kaon->Fill(ptRec[i]); //kaons
-			else if (idRec[i]==2) hPtOutPrim_proton->Fill(ptRec[i]); //protons
-			else if (idRec[i]==3) hPtOutPrim_sigmap->Fill(ptRec[i]); //sigma plus
-			else if (idRec[i]==4) hPtOutPrim_sigmam->Fill(ptRec[i]); //sigma minus
-			else if (idRec[i]==5) hPtOutPrim_omega->Fill(ptRec[i]); //Omega
-			else if (idRec[i]==6) hPtOutPrim_xi->Fill(ptRec[i]); //Xi
-			else hPtOutPrim_rest->Fill(ptRec[i]); //rest of the charged particles
+		if(!fIsMCclosure){
+			if( isprimRec[i] == 0 ){
+				hPtOutPrim->Fill(ptRec[i]);
+				if (idRec[i]==0) hPtOutPrim_pion->Fill(ptRec[i]); //pions
+				else if (idRec[i]==1) hPtOutPrim_kaon->Fill(ptRec[i]); //kaons
+				else if (idRec[i]==2) hPtOutPrim_proton->Fill(ptRec[i]); //protons
+				else if (idRec[i]==3) hPtOutPrim_sigmap->Fill(ptRec[i]); //sigma plus
+				else if (idRec[i]==4) hPtOutPrim_sigmam->Fill(ptRec[i]); //sigma minus
+				else if (idRec[i]==5) hPtOutPrim_omega->Fill(ptRec[i]); //Omega
+				else if (idRec[i]==6) hPtOutPrim_xi->Fill(ptRec[i]); //Xi
+				else hPtOutPrim_rest->Fill(ptRec[i]); //rest of the charged particles
+			}
 		}
 		if( isprimRec[i] == 1 || isprimRec[i] == 2 ){
 			hPtOutSec->Fill(ptRec[i]);
@@ -973,6 +974,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsTrue(const vector<F
 
 	}
 
+	hNchGen->Fill(multGen);
 	hNchTSGenTest->Fill(multTSgen);
 	hNchGenTest->Fill(multGen);
 
@@ -1231,7 +1233,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 					isHy0 = kTRUE;
 				else if(fTrackFilterHybrid1->IsSelected(esdtrack))
 					isHy1 = kTRUE;
-            }
+			}
 			else{
 				if(fTrackFilter->IsSelected(esdtrack))
 					isHy0 = kTRUE;
@@ -1288,7 +1290,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-            delete newTrack;
+			delete newTrack;
 		}
 	}else{
 		for(Int_t iT = 0; iT < nTracks; ++iT) {
@@ -1382,7 +1384,7 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 				}
 			}
 
-            delete newTrack;
+			delete newTrack;
 		}
 	}
 	return nNchRec;

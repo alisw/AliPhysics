@@ -73,13 +73,17 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),
     fPrimaryVtx(0),
     fPIDResponse(0),
     fEventCuts(0),
-    fHistChKaons(0),
-    fHistEtaCuts(0),
-    fHistPosKaons(0),
-    fHistNegKaons(0),
-    fHistK0s(0),
+    fHistCFPhi(0),
+    fHistCFPhiCuts(0),
+    fHistCFPhiLCuts(0),
+    fHistK0Phi(0),
+    fHistKPosPhi(0),
+    fHistKNegPhi(0),
+    fHistCFEta(0),
+    fHistKPosEta(0),
+    fHistKNegEta(0),
+    fHistK0Eta(0),
     fHistV0M(0),
-    //fHistV0s(0),
     fLpTCut(0.4),
     fUpTCut(0.8),
     fEtaCut(0.8),
@@ -108,13 +112,17 @@ AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTa
     fPrimaryVtx(0),
     fPIDResponse(0),
     fEventCuts(0),
-    fHistChKaons(0),
-    fHistEtaCuts(0),
-    fHistPosKaons(0),
-    fHistNegKaons(0),
-    fHistK0s(0),
+    fHistCFPhi(0),
+    fHistCFPhiCuts(0),
+    fHistCFPhiLCuts(0),
+    fHistK0Phi(0),
+    fHistKPosPhi(0),
+    fHistKNegPhi(0),
+    fHistCFEta(0),
+    fHistKPosEta(0),
+    fHistKNegEta(0),
+    fHistK0Eta(0),
     fHistV0M(0),
-    //fHistV0s(0),
     fLpTCut(0.4),
     fUpTCut(0.8),
     fEtaCut(0.8),
@@ -164,46 +172,80 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     // create histograms
     
-    fHistChKaons = new TH2F("fHistChKaons","Number of pairs of K^{+/-} and K^{0} Vs Centrality and DeltaPhi",30,-0.5*TMath::Pi(),1.5*TMath::Pi(),100,0,100);
-    fHistChKaons->GetXaxis()->SetTitle("Delta Phi (in radians)");
-    fHistChKaons->GetYaxis()->SetTitle("Centrality");
-    fHistChKaons->SetOption("colz");
+    fHistCFPhi = new TH2F("fHistCFPhi","Number of pairs of K^{+/-} and K^{0} Vs #Delta#Phi",32,-0.5*TMath::Pi(),1.5*TMath::Pi(),100,0,100);
+    fHistCFPhi->GetXaxis()->SetTitle("#Delta#Phi (in radians)");
+    fHistCFPhi->GetYaxis()->SetTitle("Centrality");
+    fHistCFPhi->SetOption("colz");
     
-    fHistEtaCuts = new TH2F("fHistEtaCuts","Number of pairs of K^{+/-} and K^{0} Vs DeltaPhi and Centrality with EtaCuts",30,-0.5*TMath::Pi(),1.5*TMath::Pi(),100,0,100);
-    fHistEtaCuts->GetXaxis()->SetTitle("Delta Phi (in radians)");
-    fHistEtaCuts->GetYaxis()->SetTitle("Centrality");
-    fHistEtaCuts->SetOption("colz");
+    fHistCFPhiCuts = new TH2F("fHistCFPhiCuts","Number of pairs of K^{+/-} and K^{0} Vs #Delta#Phi with |#Delta#eta>0.5|",32,-0.5*TMath::Pi(),1.5*TMath::Pi(),100,0,100);
+    fHistCFPhiCuts->GetXaxis()->SetTitle("#Delta#Phi (in radians)");
+    fHistCFPhiCuts->GetYaxis()->SetTitle("Centrality");
+    fHistCFPhiCuts->SetOption("colz");
     
-    fHistPosKaons = new TH2F("fHistPosKaons", "Number of K^{+} Vs Track Phi; Centrality", 30,0,2*TMath::Pi(),100,0,100);
-    fHistPosKaons->GetXaxis()->SetTitle("Track Phi (in radians)");
-    fHistPosKaons->GetYaxis()->SetTitle("Centrality");
-    fHistPosKaons->SetOption("colz");
+    fHistCFPhiLCuts = new TH2F("fHistCFPhiLCuts","Number of pairs of K^{+/-} and K^{0} Vs #Delta#Phi with |#Delta#eta<0.5|",32,-0.5*TMath::Pi(),1.5*TMath::Pi(),100,0,100);
+    fHistCFPhiLCuts->GetXaxis()->SetTitle("#Delta#Phi (in radians)");
+    fHistCFPhiLCuts->GetYaxis()->SetTitle("Centrality");
+    fHistCFPhiLCuts->SetOption("colz");
+
+    fHistKPosPhi = new TH2F("fHistKPosPhi", "Number of K^{+} Vs Track Phi; Centrality", 32,0,2*TMath::Pi(),100,0,100);
+    fHistKPosPhi->GetXaxis()->SetTitle("Track Phi (in radians)");
+    fHistKPosPhi->GetYaxis()->SetTitle("Centrality");
+    fHistKPosPhi->SetOption("colz");
     
-    fHistNegKaons = new TH2F("fHistNegKaons", "Number of K^{-} Vs Track Phi; Centrality", 30,0,2*TMath::Pi(),100,0,100);
-    fHistNegKaons->GetXaxis()->SetTitle("Track Phi (in radians)");
-    fHistNegKaons->GetYaxis()->SetTitle("Centrality");
-    fHistNegKaons->SetOption("colz");
+    fHistKNegPhi = new TH2F("fHistKNegPhi", "Number of K^{-} Vs Track Phi; Centrality", 32,0,2*TMath::Pi(),100,0,100);
+    fHistKNegPhi->GetXaxis()->SetTitle("Track Phi (in radians)");
+    fHistKNegPhi->GetYaxis()->SetTitle("Centrality");
+    fHistKNegPhi->SetOption("colz");
+
+    fHistK0Phi = new TH2F("fHistK0Phi", "Number of K^{0}s Vs V0 Phi; Centrality",32,0,2*TMath::Pi(),100,0,100);
+    fHistK0Phi->GetXaxis()->SetTitle("V0 Phi (in radians)");
+    fHistK0Phi->GetYaxis()->SetTitle("Centrality");
+    fHistK0Phi->SetOption("colz");
     
-    fHistK0s = new TH2F("fHistK0s", "Number of V0s Vs V0 Phi; Centrality",30,0,2*TMath::Pi(),100,0,100);
-    fHistK0s->GetXaxis()->SetTitle("V0 Phi (in radians)");
-    fHistK0s->GetYaxis()->SetTitle("Centrality");
-    fHistK0s->SetOption("colz");
+    fHistCFEta = new TH2F("fHistCFEta","Number of pairs of K^{+/-} and K^{0} Vs #Delta#eta",32,-1.6, 1.6, 100,0,100);
+    fHistCFEta->GetXaxis()->SetTitle("#Delta#eta (in radians)");
+    fHistCFEta->GetYaxis()->SetTitle("Centrality");
+    fHistCFEta->SetOption("colz");
     
-    fHistV0M = new TH1F("fHistV0M", "Centrality Histogram", 100, 0, 100);
-    fHistV0M->GetXaxis()->SetTitle("centrality");
-    fHistV0M->GetYaxis()->SetTitle("frequency");
+    fHistKPosEta = new TH2F("fHistKPosEta", "Number of K^{+} Vs Track Eta; Centrality", 16,-0.8, 0.8,100,0,100);
+    fHistKPosEta->GetYaxis()->SetTitle("Centrality");
+    fHistKPosEta->GetXaxis()->SetTitle("Track Eta (in radians)");
+    fHistKPosEta->SetOption("colz");
+
+    fHistKNegEta = new TH2F("fHistKNegEta", "Number of K^{-} Vs Track Eta; Centrality", 16,-0.8, 0.8,100,0,100);
+    fHistKNegEta->GetYaxis()->SetTitle("Centrality");
+    fHistKNegEta->GetXaxis()->SetTitle("Track Eta (in radians)");
+    fHistKNegEta->SetOption("colz");
+
+    fHistK0Eta = new TH2F("fHistK0Eta", "Number of K^{0}s Vs V0 Eta; Centrality",16,-0.8,0.8,100,0,100);
+    fHistK0Eta->GetXaxis()->SetTitle("V0 Eta (in radians)");
+    fHistK0Eta->GetYaxis()->SetTitle("Centrality");
+    fHistK0Eta->SetOption("colz");
+
+    fHistV0M = new TH1F("fHistV0M", "Centrality Distribution", 100,0,100);
+    fHistV0M->GetXaxis()->SetTitle("Centrality");
+    fHistV0M->GetYaxis()->SetTitle("Frequency");
     fHistV0M->SetOption("colz");
     
-    //fHistV0s = new TH1F("fHistV0s", "Number of V0s",1000,0,1000);
+    /*
+    fHistV0MEta = new TH1F("fHistV0MEta", "Eta Distribution", 100,0,100);
+    fHistV0MEta->GetXaxis()->SetTitle("Centrality");
+    fHistV0MEta->GetYaxis()->SetTitle("Frequency");
+    fHistV0MEta->SetOption("colz");
+    */
     
-    
-    fOutput->Add(fHistChKaons);
-    fOutput->Add(fHistEtaCuts);
-    fOutput->Add(fHistPosKaons);
-    fOutput->Add(fHistNegKaons);
-    fOutput->Add(fHistK0s);
+    fOutput->Add(fHistCFPhi);
+    fOutput->Add(fHistCFPhiCuts);
+    fOutput->Add(fHistCFPhiLCuts);
+    fOutput->Add(fHistK0Phi);
+    fOutput->Add(fHistKPosPhi);
+    fOutput->Add(fHistKNegPhi);
+    fOutput->Add(fHistCFEta);
+    fOutput->Add(fHistKPosEta);
+    fOutput->Add(fHistKNegEta);
+    fOutput->Add(fHistK0Eta);
     fOutput->Add(fHistV0M);
-    //fOutput->Add(fHistV0s);
+    
     PostData(1, fOutput);               // postdata will notify the analysis manager of changes / updates to the
                                         // fOutputList object. the manager will in the end take care of writing your output to file
                                         // so it needs to know what's in the output
@@ -304,14 +346,12 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
     AliMultSelection* MultSelection =0x0;
     MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
 
-
     if (MultSelection) {
         centralityV0M = MultSelection->GetMultiplicityPercentile("V0M");
     } else {
         AliInfo("Didn't find MultSelection!");
         //centralityV0M = 999.;
     }
-    
     
     Double_t PVz = fAOD->GetPrimaryVertex()->GetZ();
     if(fabs(PVz) > 10) return;
@@ -324,31 +364,47 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!AcceptTrack(track)) continue;
         Double_t trackPhi = track->Phi();
+        Double_t trackEta = track->Eta();
         Int_t chtrack = track->Charge();
-        if (chtrack > 0) fHistPosKaons->Fill(trackPhi,centralityV0M);
-        if (chtrack < 0) fHistNegKaons->Fill(trackPhi,centralityV0M);
-        
+        if (chtrack > 0) {
+            fHistKPosPhi->Fill(trackPhi,centralityV0M);
+            fHistKPosEta->Fill(trackEta,centralityV0M);
+        }
+        if (chtrack < 0) {
+            fHistKNegPhi->Fill(trackPhi,centralityV0M);
+            fHistKNegEta->Fill(trackEta,centralityV0M);
+        }
         for(Int_t j(0); j < nv0s; j++) {
             AliAODv0 *v0=fAOD->GetV0(j);
             if(!v0) continue;
             if(v0->MassK0Short() < 0.49 || v0->MassK0Short() > 0.51) continue;
             if(!AcceptV0(v0, vertex)) continue;
             Double_t V0Phi = v0->Phi();
-            //fHistV0s->Fill(nv0s);
-            fHistK0s->Fill(V0Phi, centralityV0M);
+            Double_t V0Eta = v0->Eta();
+            fHistK0Phi->Fill(V0Phi, centralityV0M);
+            fHistK0Eta->Fill(V0Eta, centralityV0M);
+            Double_t deltaEta = fabs(trackEta- V0Eta);
             Double_t deltaPhi = trackPhi-V0Phi;
             if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
             if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
-            fHistChKaons->Fill(deltaPhi,centralityV0M);
-            if (deltaPhi < (0.5*TMath::Pi())) fHistChKaons->Fill(-deltaPhi,centralityV0M);
-            else fHistChKaons->Fill(2*TMath::Pi()-deltaPhi,centralityV0M);
-            Double_t deltaEta = fabs(track->Eta() - v0->Eta());
+            fHistCFPhi->Fill(deltaPhi,centralityV0M);
+            if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhi->Fill(-deltaPhi,centralityV0M);
+            else fHistCFPhi->Fill(2*TMath::Pi()-deltaPhi,centralityV0M);
+            fHistCFEta->Fill(deltaEta,centralityV0M);
+            fHistCFEta->Fill(-deltaEta,centralityV0M);
             if(deltaEta > 0.5) {
                 if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
                 if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
-                fHistEtaCuts->Fill(deltaPhi,centralityV0M);
-                if (deltaPhi < (0.5*TMath::Pi())) fHistEtaCuts->Fill(-deltaPhi,centralityV0M);
-                else fHistEtaCuts->Fill(2*TMath::Pi()-deltaPhi,centralityV0M);
+                fHistCFPhiCuts->Fill(deltaPhi,centralityV0M);
+                if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhiCuts->Fill(-deltaPhi,centralityV0M);
+                else fHistCFPhiCuts->Fill(2*TMath::Pi()-deltaPhi,centralityV0M);
+                }
+            if(deltaEta < 0.5) {
+                if (deltaPhi < 0) deltaPhi = V0Phi-trackPhi;
+                if (deltaPhi > TMath::Pi()) deltaPhi = TMath::Pi()-(deltaPhi-TMath::Pi());
+                fHistCFPhiLCuts->Fill(deltaPhi,centralityV0M);
+                if (deltaPhi < (0.5*TMath::Pi())) fHistCFPhiLCuts->Fill(-deltaPhi,centralityV0M);
+                else fHistCFPhiLCuts->Fill(2*TMath::Pi()-deltaPhi,centralityV0M);
                 }
             }
         }

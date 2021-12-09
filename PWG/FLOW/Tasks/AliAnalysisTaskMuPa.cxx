@@ -551,18 +551,16 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   if(!aodTrack){continue;}
  
   // Particle histograms and track cuts:
-  if(!aMC)
-  { 
-   // fill directly only reco:
-   this->FillControlParticleHistograms(aodTrack,BEFORE,RECO);
-   if(!SurvivesParticleCuts(aodTrack)){continue;}
-   this->FillControlParticleHistograms(aodTrack,AFTER,RECO);
-  }
+  // fill directly only reco:
+  this->FillControlParticleHistograms(aodTrack,BEFORE,RECO);
+  if(!SurvivesParticleCuts(aodTrack)){continue;}
+  this->FillControlParticleHistograms(aodTrack,AFTER,RECO);
+  // TBI 20211115 check if I need to generalize the 3 lines above to cut only on sim, i.e. on aodmcParticle like in efficiency calculus below. Most likely that's an overkill.
 
   // Finally, calculate Q-vectors:
   dPhi = aodTrack->Phi();
-  dPt = aodTrack->Pt(); dPt += 0.; // TBI 20210515 shut down the compiler warnings temporarily
-  dEta = aodTrack->Eta(); dEta += 0.; // TBI 20210515 shut down the compiler warnings temporarily
+  dPt = aodTrack->Pt();  
+  dEta = aodTrack->Eta(); 
 
   // Particle weights:
   if(fUseWeights[0])

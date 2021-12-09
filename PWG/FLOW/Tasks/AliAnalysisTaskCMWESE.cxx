@@ -371,14 +371,6 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
       DefineInput(inputslot, TList::Class());
       inputslot++;
     }
-    if (fDoNUA) {
-      DefineInput(inputslot, TList::Class());
-      inputslot++;
-    }
-    if (fDoNUA) {
-      DefineInput(inputslot, TList::Class());
-      inputslot++;
-    }
     if (fV0CalibOn) {
       DefineInput(inputslot, TList::Class());
       inputslot++;
@@ -763,6 +755,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   if(fDoNUE) {
     if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h") ) {
       fListNUE = (TList*) GetInputData(inSlotCounter);
+      if (fDebug) fListNUE->ls();
       inSlotCounter++;
       if (!fListNUE) {
         AliError(Form("%s: Wrong NUE file Run1.", GetName()));
@@ -782,12 +775,9 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   if(fDoNUA) {
     if (fPeriod.EqualTo("LHC10h") ) {
       fListNUA1 = (TList*) GetInputData(inSlotCounter);
+      if (fDebug) fListNUA1->ls();
       inSlotCounter++;
-      fListNUA2 = (TList*) GetInputData(inSlotCounter);
-      inSlotCounter++;
-      fListNUA3 = (TList*) GetInputData(inSlotCounter);
-      inSlotCounter++;
-      if (!fListNUA1 || !fListNUA2 || !fListNUA3) {
+      if (!fListNUA1) {
         AliError(Form("%s: Wrong NUA file 10h.", GetName()));
         return;
       };
@@ -813,6 +803,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   if (fV0CalibOn){
       if (fPeriod.EqualTo("LHC10h") ) {
             fListVZEROCALIB = (TList*) GetInputData(inSlotCounter);
+            if (fDebug) fListVZEROCALIB->ls();
             inSlotCounter++;
             if (!fListVZEROCALIB) {
              AliError(Form("%s: Wrong V0 Calib file 10h.", GetName()));
@@ -822,15 +813,13 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
             hMultV0Read = (TH2D*)fListVZEROCALIB->FindObject("hMultV0");
 
             // Read Qx/y Mean Histo (x_y_z) : (runnumBin_centBin_vzBin)
-            pV0XMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MCosMean");
-            pV0YMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MSinMean");
             pV0XMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CCosMean");
             pV0YMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CSinMean"); 
             pV0XMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ACosMean");
             pV0YMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ASinMean");
 
             // Read Percentail histo (x_y) : (intCent_percentile)
-            hQnPercentile = (TH2D*)fListVZEROCALIB->FindObject("hQnPercentile");
+            hQnPercentile = (TH2D*)fListVZEROCALIB->FindObject("h_qnPercentile");
 
       } else if (fPeriod.EqualTo("LHC15o") ) {
             fListVZEROCALIB = (TList*) GetInputData(inSlotCounter);
@@ -1504,19 +1493,9 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
 {
   double weightNUA = 1;
   if (fVzBin<0 || fCentBin<0 || fRunNum<0) return -1;
-  if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC11h")){
-    if (fRunNumBin<30){
-      hNUAweightPlus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_plus",fRunNum,fCentBin,fVzBin));
-      hNUAweightMinus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_minus",fRunNum,fCentBin,fVzBin));
-    }
-    else if (fRunNumBin>=30 && fRunNumBin<60){
-      hNUAweightPlus = (TH2D*)fListNUA2->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_plus",fRunNum,fCentBin,fVzBin));
-      hNUAweightMinus = (TH2D*)fListNUA2->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_minus",fRunNum,fCentBin,fVzBin));
-    }
-    else if (fRunNumBin>60){
-      hNUAweightPlus = (TH2D*)fListNUA3->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_plus",fRunNum,fCentBin,fVzBin));
-      hNUAweightMinus = (TH2D*)fListNUA3->FindObject(Form("weightdPhidEta_run%i_cent%i_vz%i_minus",fRunNum,fCentBin,fVzBin));
-    }
+  if (fPeriod.EqualTo("LHC10h")){
+    hNUAweightPlus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_plus",fRunNum, fVzBin));
+    hNUAweightMinus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_minus",fRunNum, fVzBin));
     if(!hNUAweightPlus || !hNUAweightMinus) return -1;
     if (charge>0){ 
       int phiBin = hNUAweightPlus->GetXaxis()->FindBin(phi);
@@ -2002,19 +1981,10 @@ bool AliAnalysisTaskCMWESE::DoCumulants()
 bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVtx)
 {
   if (fPeriod.EqualTo("LHC10h") ){
-      // Gain Equalization
-      hMultV0Read = (TH2D*)fListVZEROCALIB->FindObject("hMultV0");
-      //Recenter
-      pV0XMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MCosMean");
-      pV0YMeanRead[0] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0MSinMean");
-      pV0XMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CCosMean");
-      pV0YMeanRead[1] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0CSinMean"); 
-      pV0XMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ACosMean");
-      pV0YMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ASinMean"); 
       for(int iCh = 0; iCh < 64; ++iCh) {
         fMultV0Ch[iCh] = hMultV0Read->GetBinContent(iCh+1, fRunNumBin+1);
       } 
-      for(int i = 0; i < 3; ++i) {   // [0]: M; [1]: C; [2]: A;
+      for(int i = 1; i < 3; ++i) {   // [0]: M; [1]: C; [2]: A;
         fV0XMean[i] = pV0XMeanRead[i]->GetBinContent(fRunNumBin+1, fCentBin+1, fVzBin+1);
         fV0YMean[i] = pV0YMeanRead[i]->GetBinContent(fRunNumBin+1, fCentBin+1, fVzBin+1);
       }    
@@ -2058,10 +2028,13 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx
     if (TMath::IsNaN(fMultV0Ch[iCh]) || fMultV0Ch[iCh]<=0) continue;
 
     double phi = TMath::Pi()/8. + TMath::Pi()/4.*(iCh%8);
+    double multCh = 0.;
     // double multCh = fAOD->GetVZEROEqMultiplicity(iCh);
-    AliAODVZERO* aodV0 = fAOD->GetVZEROData();
-    double multCh = aodV0->GetMultiplicity(iCh);
-
+    if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC11h")) multCh= fAOD->GetVZEROEqMultiplicity(iCh);
+    else if (fPeriod.EqualTo("LHC15o")) {
+      AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+      multCh = aodV0->GetMultiplicity(iCh);
+    }
     if (iCh<32) { // C
       double multChGEC = -1;
       if (iCh < 8)
@@ -2102,27 +2075,31 @@ bool AliAnalysisTaskCMWESE::CalcQnVectorV0(AliAODEvent* fAOD, AliAODVertex* fVtx
   }
   if (multRingGE[0] < 1e-6 || multRingGE[1] < 1e-6) return false;
   double Qn_thisEvt[3];
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 1; i < 3; ++i) {
       Qn_thisEvt[i] = -1;
       double qxMean = fV0XMean[i];
-      double qyMean = fV0YMean[i];
-      double qxSigma = fV0XSigma[i];
-      double qySigma = fV0YSigma[i];      
-      if (TMath::IsNaN(qxMean) || TMath::IsNaN(qyMean) || TMath::IsNaN(qxSigma) || TMath::IsNaN(qySigma)) continue;
-      if (qyMean < -900 || qxMean < -900 || qySigma < -900 || qxSigma < -900) continue; 
+      double qyMean = fV0YMean[i];   
+      if (TMath::IsNaN(qxMean) || TMath::IsNaN(qyMean)) continue;
+      if (qyMean < -900 || qxMean < -900) continue; 
       // For 10 h, we've stored the qx/y of V0M, and they cannot been found in A.Dorbin's calib file for 15o period!
       qxRecenter[i] = qxGE[i] - qxMean;
       qyRecenter[i] = qyGE[i] - qyMean;
       Qn_thisEvt[i] = sqrt(qxRecenter[i]*qxRecenter[i] + qyRecenter[i]*qyRecenter[i])/ sqrt(multRingGE[i]);
       hQnCentRecenter[i]->Fill(fCent, Qn_thisEvt[i]);
       // psiRecenter
-      double psiRecenter = GetEventPlane(qxRecenter[i]/qxSigma, qyRecenter[i]/qySigma);
+      double psiRecenter = GetEventPlane(qxRecenter[i], qyRecenter[i]);
       if (psiRecenter>TMath::Pi())  psiRecenter -=TMath::Pi();
       hPsiV0Recenter[fCentBin][i]->Fill(psiRecenter); 
       if (fQAV0){
         double vz    = fVtx->GetZ();  
-        AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-        double centSPD = fMultSelection->GetMultiplicityPercentile("CL1");
+        double centSPD  =0.;
+        if (fPeriod.EqualTo("LHC15o")){
+          AliMultSelection* fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+          centSPD = fMultSelection->GetMultiplicityPercentile("CL1");
+        }
+        else if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h") ){
+          centSPD =  fAOD->GetCentrality()->GetCentralityPercentile("CL1");
+        }
         hQxCentRecenter[i]->Fill(centSPD, qxRecenter[i]);
         hQyCentRecenter[i]->Fill(centSPD, qyRecenter[i]);
         hQxVtxRecenter[i]->Fill(vz, qxRecenter[i]);

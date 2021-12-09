@@ -10,7 +10,7 @@ AliAnalysisTaskRidge* AddTaskRidge(
 
 	TGrid::Connect("alien://");
 	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root ."));
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root ."));
+	//gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root ."));
 
 	AliAnalysisTaskRidge* taskRidge =
 		new AliAnalysisTaskRidge(taskname, Form("%s_%s",taskname,option) );
@@ -22,6 +22,7 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	AliAnalysisDataContainer *coutputRidge = mgr->CreateContainer(Form("%s_%s",taskname,option),
 		AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
+	taskRidge->SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
 
 	mgr->ConnectInput(taskRidge, 0, cinput);
 	mgr->ConnectOutput(taskRidge,1,mgr->CreateContainer(Form("output%s%s",suffix,option), AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));

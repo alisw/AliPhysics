@@ -35,6 +35,12 @@ include_directories(${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
 endif()
 
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
+
 # Sources - alphabetical order
 set(SRCS
   AliFemtoDreamEvent.cxx
@@ -92,6 +98,7 @@ set(SRCS
   AliAnalysisTaskNanoLX.cxx
   AliAnalysisTaskOtonOmegaNanoAOD.cxx
   AliAnalysisTaskOtonkd.cxx
+  AliAnalysisTaskOtonkdAOD.cxx
   AliAnalysisTaskGeorgiosNTuple.cxx
   AliAnalysisTaskPOmegaPenne.cxx
   AliFemtoDreamBaseDump.cxx
@@ -101,8 +108,12 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoAOD.cxx
   AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
   AliAnalysisTaskThreeBodyFemtoPionProton.cxx
+  AliAnalysisTaskThreeBodyProtonPrimary.cxx
   AliSigma0AODPhotonMotherCuts.cxx;
   AliSigma0PhotonCuts.cxx;
+  AliAnalysisTaskNanoTreeLPhi.cxx;
+  AliAnalysisTaskNanoLambdaKaon.cxx;
+  AliAnalysisTaskNanoLKr.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -129,6 +140,11 @@ set(LIBDEPS ${LIBDEPS} PWGHFvertexingHF)
 if(ROOT_VERSION_MAJOR EQUAL 6)
 set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
 endif()
+
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
 
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
@@ -181,4 +197,3 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-

@@ -146,6 +146,7 @@ set(SRCS
   AliAnalysisTaskQAHFE.cxx
   AliAnalysisTask_QA_EMCALElectrons.cxx
   AliAnalysisTaskHFEmultTPCEMCAL.cxx
+  AliAnalysisTaskHFEmultTPCEMCAL_1.cxx
   AliAnalysisTaskHFEBeautyMultiplicity.cxx 
   AliAnalysisHFEppEMCalBeauty.cxx
   AliAnalysisTaskIPResolBeautyppCal.cxx
