@@ -253,6 +253,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multPtSpec_prim_meas, "multPtSpec_prim_meas", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
+    BookHistogram(fHist_multPtSpec_trk_meas_sigcont, "multPtSpec_trk_meas_sigcont", {mult_meas, pt_meas});
   }
 
   // check required memory
@@ -262,6 +263,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_zVtxMeas.GetSize() +
     fHist_multDist_evt_meas.GetSize() +
     fHist_multPtSpec_trk_meas.GetSize() +
+    fHist_multPtSpec_trk_meas_sigcont.GetSize() +
     fHist_sigmaPt.GetSize() +
     fHist_zVtxGen.GetSize() +
     fHist_multDist_evt_gen.GetSize() +
@@ -559,24 +561,35 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       if (fIsESD && fIsNominalSetting) FillTrackQA(dynamic_cast<AliESDtrack*>(track));
 
       for (int i = 0; i < fNRepetitions; ++i) {
+        if (fIsNominalSetting) {
+          // pt resolution (QA variable)
+          fHist_sigmaPt.Fill(fPt, fSigmaPt);
+        }
 
+        // fill all measured tracks (data and MC)
         fHist_multPtSpec_trk_meas.Fill(fMultMeas, fPt);
-        if (fIsNominalSetting) fHist_sigmaPt.Fill(fPt, fSigmaPt);
 
-        if (fIsMC && fMCAcceptEvent && isValidParticle) {
-
-          if (fIsNominalSetting) fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
-
-          if (fMCIsChargedPrimary) {
-            fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
-
-            fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
-
-            fHist_ptCorrel_prim.Fill(fPt, fMCPt);
-            fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
-
-          } else {
-            fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+        if (fIsMC) {
+          if (!fMCAcceptEvent) {
+            // contamination coming from undesired events (wrong event class or zvtex outside fiducial region)
+            fHist_multPtSpec_trk_meas_sigcont.Fill(fMultMeas, fPt);
+          } else if (isValidParticle) {
+            if (fIsNominalSetting) {
+              // true pt resolution (QA variable)
+              fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
+            }
+            if (fMCIsChargedPrimary) {
+              // part of measurement that comes from primaries (as function of measured quantities -> for contamination)
+              fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
+              // part of measurement that comes from primaries (as function of true quantities -> for efficiency)
+              fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
+              // correlation matrices used for the unfolding
+              fHist_ptCorrel_prim.Fill(fPt, fMCPt);
+              fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
+            } else {
+              // contamination from secondaries
+              fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+            }
           }
         }
       }
@@ -610,12 +623,15 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     } else {
       for (int i = 0; i < fNRepetitions; ++i) {
         if (fMCAcceptEvent) {
+          // all generated primaries that we want to measure
           fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
           if (!fAcceptEvent) {
+            // part of the generated primaries (signal) coming from events that are rejected by the event selection
             fHist_multPtSpec_prim_gen_sigloss.Fill(fMultTrue, fMCPt);
           }
         }
         if (fMCIsGoodZPos && !fIsTriggered) {
+          // additional info needed only for 'triggered' event class to correct for signal loss
           fHist_multPtSpec_prim_gen_notrig.Fill(fMultTrue, fMCPt);
         }
       }

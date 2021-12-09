@@ -122,8 +122,9 @@ protected:
   Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance and tracks originating from background events as defined above )
 
   // MC-only histograms
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{};    //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};     //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas_sigcont{}; //!<! tracks from events that are measured, but do not belong to the desired class of events
 
   Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
