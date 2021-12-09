@@ -145,7 +145,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     Bool_t                fDoLightOutput;          // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
 
     Double_t              fMassHypothesis;          // mass used for track propagation to calorimeter surface
-    ClassDef(AliCaloTrackMatcher,10)
+    ClassDef(AliCaloTrackMatcher,11)
 };
 
 #endif
