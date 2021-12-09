@@ -800,7 +800,7 @@ bool AliMultDepSpecAnalysisTask::InitCentrality()
  * Function to add this task to a train.
  */
 //**************************************************************************************************
-AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
+AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(const string& dataSet, TString options, int cutModeLow, int cutModeHigh, bool isMC)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
