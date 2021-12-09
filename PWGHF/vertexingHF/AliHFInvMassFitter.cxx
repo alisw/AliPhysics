@@ -103,7 +103,8 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fFixSecMass(kFALSE),
   fFixSecWidth(kFALSE),
   fSecFunc(0x0),
-  fTotFunc(0x0)
+  fTotFunc(0x0),
+  fIgnoreMinuit70(kFALSE)
 {
   /// default constructor
 }
@@ -166,7 +167,8 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fFixSecMass(kFALSE),
   fFixSecWidth(kFALSE),
   fSecFunc(0x0),
-  fTotFunc(0x0)
+  fTotFunc(0x0),
+  fIgnoreMinuit70(kFALSE)
 {
   /// standard constructor
   fHistoInvMass=(TH1F*)histoToFit->Clone("fHistoInvMass");
@@ -268,7 +270,7 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   }
   else status=fHistoInvMass->Fit("funcbkgsb",Form("R,%s,+,0",fFitOption.Data()));
   fBkgFuncSb->SetLineColor(kGray+1);
-  if (status != 0){
+  if (status != 0 && (!fIgnoreMinuit70 || (fIgnoreMinuit70 && (status%70 !=0)))){
     printf("   ---> Failed first fit with only background, minuit status = %d\n",status);
     return 0;
   }
@@ -312,7 +314,8 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
   if(doFinalFit){
     printf("\n--- Final fit with signal+background on the full range ---\n");
     status=fHistoInvMass->Fit("funcmass",Form("R,%s,+,0",fFitOption.Data()));
-    if (status != 0){
+    if(fIgnoreMinuit70) printf("[AliHFInvMassFitter] final fit status %d\n",status);
+    if (status != 0 && (!fIgnoreMinuit70 || (fIgnoreMinuit70 && (status%70 !=0)))){
       printf("   ---> Failed fit with signal+background, minuit status = %d\n",status);
       return 0;
     }
