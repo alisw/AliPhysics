@@ -61,9 +61,8 @@ public:
   }
 
   // Configure this object for a train run
-  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet,
-                                                        int cutModeLow = 100, int cutModeHigh = 119,
-                                                        TString options = "", bool isMC = false);
+  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, TString options,
+                                                        int cutModeLow, int cutModeHigh, bool isMC);
   void SaveTrainMetadata();
   bool SetupTask(std::string dataSet, TString options);
   bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
