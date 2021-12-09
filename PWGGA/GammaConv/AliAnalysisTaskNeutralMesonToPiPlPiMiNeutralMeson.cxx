@@ -2811,7 +2811,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
     AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
-    if(temp && (!fDoLightOutput)) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+    if(temp && (!fDoLightOutput)) {
+      if (!(temp->GetLightOutput())){
+        fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+      }
+    }
   }
 
   fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask(fPionSelectorName.Data());
