@@ -61,12 +61,14 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   else if(std::abs(pdgDmesonBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
+    TrackCuts->SetPtRange(0.15, 10.0);
     TrackCuts->SetCutCharge(1);
     if(!useMCTruthReco) {
       TrackCuts->SetPIDkd();
     }
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(128);
+    AntiTrackCuts->SetPtRange(0.15, 10.0);
     AntiTrackCuts->SetCutCharge(-1);
     if(!useMCTruthReco) {
       AntiTrackCuts->SetPIDkd();
@@ -213,57 +215,62 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   if (isMCtruth){
     if (std::abs(pdgDmesonBuddy) == 321) {
       task->SetBuddypTLowMCTRUTH(0.15);
-      task->SetBuddypTHighMCTRUTH(999);
-      task->SetBuddyEtaMCTRUTH(0.8);
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(0);
-
-      if (suffix == "1") {
-        task->SetBuddyOriginMCTRUTH(1);
-        task->SetDmesonOriginMCTRUTH(0);
-      }
-      if (suffix == "2") {
-        task->SetBuddyOriginMCTRUTH(1);
-        task->SetDmesonOriginMCTRUTH(1);
-      }
-      if (suffix == "3") {
-        task->SetBuddyOriginMCTRUTH(1);
-        task->SetDmesonOriginMCTRUTH(2);
-      }
-      if (suffix == "4") {
-        task->SetBuddyOriginMCTRUTH(2);
-        task->SetDmesonOriginMCTRUTH(0);
-      }
-      if (suffix == "5") {
-        task->SetBuddyOriginMCTRUTH(2);
-        task->SetDmesonOriginMCTRUTH(1);
-      }
-      if (suffix == "6") {
-        task->SetBuddyOriginMCTRUTH(2);
-        task->SetDmesonOriginMCTRUTH(2);
-      }
-      if (suffix == "7") {
-        task->SetBuddyOriginMCTRUTH(3);
-        task->SetDmesonOriginMCTRUTH(0);
-      }
-      if (suffix == "8") {
-        task->SetBuddyOriginMCTRUTH(3);
-        task->SetDmesonOriginMCTRUTH(1);
-      }
-      if (suffix == "9") {
-        task->SetBuddyOriginMCTRUTH(3);
-        task->SetDmesonOriginMCTRUTH(2);
-      }
-      if (suffix == "10") {
-        task->SetBuddyOriginMCTRUTH(0);
-        task->SetDmesonOriginMCTRUTH(1);
-      }
-      if (suffix == "11") {
-        task->SetBuddyOriginMCTRUTH(0);
-        task->SetDmesonOriginMCTRUTH(2);
-      }         
-
+      task->SetBuddypTHighMCTRUTH(10.0);
     }
+    if (std::abs(pdgDmesonBuddy) == 211) {
+      task->SetBuddypTLowMCTRUTH(0.14);
+      task->SetBuddypTHighMCTRUTH(4.0);
+    }
+
+    task->SetBuddyEtaMCTRUTH(0.8);
+    task->SetBuddyOriginMCTRUTH(0);
+    task->SetDmesonOriginMCTRUTH(0);
+
+    if (suffix == "1") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(0);
+    }
+    if (suffix == "2") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "3") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "4") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(0);
+    }
+    if (suffix == "5") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "6") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "7") {
+      task->SetBuddyOriginMCTRUTH(3);
+      task->SetDmesonOriginMCTRUTH(0);
+    }
+    if (suffix == "8") {
+      task->SetBuddyOriginMCTRUTH(3);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "9") {
+      task->SetBuddyOriginMCTRUTH(3);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "10") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "11") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+
   }
 
   mgr->AddTask(task);
