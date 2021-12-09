@@ -107,6 +107,7 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		TH2D * hNchRho[3];
 		TH1D * hEtaLeadingRho[3];
 		TH2D * hDetaDphiRho[3];
+		TH2D * hDetaDphiRhoWideEta[3];
 		TH3D * hNchPtPidRho[4][3]; // region, rho 
 
 		TList*  fOutputList;    //!<! Output list of objects

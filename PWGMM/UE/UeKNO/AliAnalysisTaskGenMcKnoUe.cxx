@@ -115,6 +115,7 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		hNchRho[i_rho]=0;
 		hEtaLeadingRho[i_rho]=0;
 		hDetaDphiRho[i_rho]=0;
+		hDetaDphiRhoWideEta[i_rho]=0;
 		for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi)
 			hNchPtPidRho[i_dphi][i_rho]=0; // region, rho 
 	}
@@ -159,6 +160,7 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 		hNchRho[i_rho]=0;
 		hEtaLeadingRho[i_rho]=0;
 		hDetaDphiRho[i_rho]=0;
+		hDetaDphiRhoWideEta[i_rho]=0;
 		for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi)
 			hNchPtPidRho[i_dphi][i_rho]=0; // region, rho 
 	}
@@ -315,6 +317,11 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 			hDetaDphiRho[i_rho]=0;
 			hDetaDphiRho[i_rho]=new TH2D(Form("hDetaDphi_%s",NameOfRegionRho[i_rho]),"",100,-5,5,64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 			fOutputList->Add(hDetaDphiRho[i_rho]);
+
+			hDetaDphiRhoWideEta[i_rho]=0;
+			hDetaDphiRhoWideEta[i_rho]=new TH2D(Form("hDetaDphiWideEta_%s",NameOfRegionRho[i_rho]),"",100,-5,5,64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+			fOutputList->Add(hDetaDphiRhoWideEta[i_rho]);
+
 
 			for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi){
 				hNchPtPidRho[i_dphi][i_rho]=0; // region, rho
@@ -642,11 +649,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
 			if (!fMC->IsPhysicalPrimary(i)) continue;
 			if (particle->Charge() == 0) continue;
-			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;
 			if( particle->Pt() < ptamin)continue;
-			Int_t pid = GetPidCode(particle->PdgCode());
 			Double_t Deta = fGenLeadEta-particle->Eta();
 			Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
+			hDetaDphiRhoWideEta[0]->Fill(Deta,DPhi);
+			if(indexrho>0){
+				hDetaDphiRhoWideEta[indexrho]->Fill(Deta,DPhi);
+			}
+			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;
+			Int_t pid = GetPidCode(particle->PdgCode());
 			hDetaDphiRho[0]->Fill(Deta,DPhi);
 			if(indexrho>0){
 				hDetaDphiRho[indexrho]->Fill(Deta,DPhi);
@@ -803,28 +814,28 @@ void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 		//cout<<"seting the case eta 0.8"<<endl;
 		switch(fGenerator){
 			case 0: // Monash
-				frho->SetParameter(0,-3.6843184);
-				frho->SetParameter(1,-1.0076172);
-				frho->SetParameter(2,6.9255011);
-				frho->SetParameter(3,-0.46424350);
+				frho->SetParameter(0,-1.2796503);
+				frho->SetParameter(1,-0.21406574);
+				frho->SetParameter(2,7.9576486);
+				frho->SetParameter(3,-0.50547998);
 				break;
 			case 1: // Monash NoCR
-				frho->SetParameter(0,-3.5952184);
-				frho->SetParameter(1,-0.73661844);
-				frho->SetParameter(2,7.6376280);
-				frho->SetParameter(3,-0.51250506);
+				frho->SetParameter(0,-0.62615697);
+				frho->SetParameter(1,-0.12906934);
+				frho->SetParameter(2,9.4532345);
+				frho->SetParameter(3,-0.57046898);
 				break;
 			case 2: // Monash Ropes
-				frho->SetParameter(0,-7.8071100);
-				frho->SetParameter(1,-1.1168320);
-				frho->SetParameter(2,14.480357);
-				frho->SetParameter(3,-0.52709865);
+				frho->SetParameter(0,-1.3036594);
+				frho->SetParameter(1,-0.18819465);
+				frho->SetParameter(2,8.2080068);
+				frho->SetParameter(3,-0.51231662);
 				break;
 			case 3: // Epos LHC
-				frho->SetParameter(0,-1891978.1);
-				frho->SetParameter(1,-1.8212843);
-				frho->SetParameter(2,13.573444);
-				frho->SetParameter(3,-0.51139756);
+				frho->SetParameter(0,-0.89774856);
+				frho->SetParameter(1,-0.15704294);
+				frho->SetParameter(2,8.7380225);
+				frho->SetParameter(3,-0.52647214);
 				break;
 			case 4: // Herwig
 				frho->SetParameter(0,-1.5178880);
@@ -833,10 +844,10 @@ void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 				frho->SetParameter(3,-0.75409746);
 				break;
 			case 5: // AMPT
-				frho->SetParameter(0,-7.8071100);
-				frho->SetParameter(1,-1.0183988);
-				frho->SetParameter(2,21.348248);
-				frho->SetParameter(3,-0.61011648);
+				frho->SetParameter(0,-1.8832819);
+				frho->SetParameter(1,-0.18063863);
+				frho->SetParameter(2,10.062015);
+				frho->SetParameter(3,-0.57335253);
 				break;
 			default:
 				frho->SetParameter(0,-2034448.6);
