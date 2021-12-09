@@ -360,7 +360,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   AliGFWFlags *lFlags = (AliGFWFlags*)fInputEvent->FindListObject("GFWFlags");
   if(!lFlags) { printf("GFWFlags not found!\n"); return; };
   UInt_t gEventFlag = lFlags->GetEventFlags();
-  if(fProduceWeights) if(!gEventFlag) return; //if producing weights, any flag is good flag
+  if(fProduceWeights) { if(!gEventFlag) return; }//if producing weights, any flag is good flag
   else if(!(gEventFlag&fEvNomFlag)) return; //otherwise, if not the selected event flag, then move on
   AliMultSelection *lMultSel = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
   Double_t cent = lMultSel->GetMultiplicityPercentile(fCollisionsSystem==1?"V0A":"V0M");
