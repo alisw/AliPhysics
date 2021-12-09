@@ -885,7 +885,11 @@ void AliMultDepSpecAnalysisTask::SaveTrainMetadata()
 //**************************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet, TString options, int cutMode)
 {
-  if ((!isMC && cutMode > 119) || cutMode < 100 || cutMode > 121) return false;
+  fMCEnableDDC = true;
+  if (options.Contains("noDDC")) {
+    fMCEnableDDC = false;
+  }
+  if (cutMode < 100 || cutMode > 121 || ((!isMC || !fMCEnableDDC) && cutMode > 119)) return false;
   if (cutMode == 100) fIsNominalSetting = true;
   fIsMC = isMC;
   fIsESD = !isAOD;
@@ -962,11 +966,6 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fTrackCuts->SetCutGeoNcrNcl(4, 130, 1.5, 0.85, 0.7);
   } else if (cutMode == 119) {
     fTrackCuts->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7);
-  }
-
-  fMCEnableDDC = true;
-  if (options.Contains("noDDC")) {
-    fMCEnableDDC = false;
   }
 
   // in MC we always apply data driven corrections to account for wrong particle composition in the generator
