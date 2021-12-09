@@ -154,6 +154,7 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   PartSum = PartOne + PartTwo;
   float PartSumPt = PartSum.Pt();
+
   float RelativeK = RelativePairMomentum(PartOne, PartTwo);
 
   if((PartSumPt > PartSumPtLimit1) && (PartSumPt < PartSumPtLimit2)){
@@ -217,6 +218,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     }
   }
   return RelativeK;
+  }
+  else {
+    return -1;
   }
 }
 
