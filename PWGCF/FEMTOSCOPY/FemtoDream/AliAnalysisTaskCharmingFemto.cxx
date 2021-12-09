@@ -418,18 +418,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
   }
 
+  auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
+  float ptMin, ptMax, etaMin, etaMax;
+  trackCutsDdau->GetPtRange(ptMin, ptMax);
+  trackCutsDdau->GetEtaRange(etaMin, etaMax);
+  float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
+  float DmesonPtMin=DmesonPtBins[0];
+  float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
+
   if (fIsMCtruth) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
-    auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
-    float ptMin, ptMax, etaMin, etaMax;
-    trackCutsDdau->GetPtRange(ptMin, ptMax);
-    trackCutsDdau->GetEtaRange(etaMin, etaMax);
-    float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
-    //for (Int_t i=0;i<fRDHFCuts->GetNPtBins();i++) cout<<i<<" "<<DmesonPtBins[i]<<endl;
-    float DmesonPtMin=DmesonPtBins[0];
-    float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
   
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
@@ -575,7 +575,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     if(fUseMCTruthReco){
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(!dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau)){
+      
+      int dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      if(dMesonLabel < 0){
+        continue;
+      }
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(dMesonLabel);
+      if(mcPart->Pt() < DmesonPtMin || mcPart->Pt() > DmesonPtMax) {
         continue;
       }
     }
