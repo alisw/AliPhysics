@@ -118,18 +118,18 @@ private:
   TH1D *fHistNMPI; //!
   TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[72];              //! for keeping track of base spectra
-  TH1D *fHistEta[72];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredMeson[72];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[72];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[72];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[72];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[72];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[72];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[72];       //! for keeping track of base spectra
+  TH1D *fHistPt[76];              //! for keeping track of base spectra
+  TH1D *fHistEta[76];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredMeson[76];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredCharm[76];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredBeauty[76];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[76];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[76];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[76];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[76];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[76];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[76];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[76];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
   Float_t fMinPtTrigger; //for xi trigger
