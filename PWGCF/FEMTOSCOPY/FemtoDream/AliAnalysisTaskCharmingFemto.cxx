@@ -374,6 +374,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  
+  if ((fIsMCtruth || fUseMCTruthReco) && fDecChannel != kDplustoKpipi)
+    AliFatal("MC truth only implemented for kDplustoKpipi decay channel.");
+    
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
@@ -572,6 +576,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     AliAODVertex *origOwnVtx = nullptr;
     
     int pdgDplusDau[3] = {321, 211, 211};
+    int isSelected = 1;
     if(fUseMCTruthReco){
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -584,11 +589,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       if(mcPart->Pt() < DmesonPtMin || mcPart->Pt() > DmesonPtMax) {
         continue;
       }
-    }
-    
-    int isSelected = 1;
-    if (!fUseMCTruthReco)
+    } else {
       isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    }
     
     if(!isSelected) {
       if (unsetVtx) {
