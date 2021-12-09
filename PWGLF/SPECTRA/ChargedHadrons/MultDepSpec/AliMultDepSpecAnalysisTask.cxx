@@ -120,7 +120,7 @@ void AliMultDepSpecAnalysisTask::FillTrackQA(AliESDtrack* track)
 
   fHist_tpcNClsFindable.Fill(track->GetTPCNclsF());
   fHist_tpcNClsFound.Fill(track->GetTPCclusters(0));
-  fHist_tpcNClsCrossedRows.Fill(track->GetTPCCrossedRows());
+  fHist_tpcCrossedRows.Fill(track->GetTPCCrossedRows());
   fHist_tpcCrossedRowsOverFindableCls.Fill((track->GetTPCNclsF() > 0) ? track->GetTPCCrossedRows() / track->GetTPCNclsF() : -1.);
   fHist_tpcChi2NCl.Fill((track->GetTPCclusters(0) > 0.) ? track->GetTPCchi2() / track->GetTPCclusters(0) : -1.);
   fHist_tpcGoldenChi2.Fill(track->GetChi2TPCConstrainedVsGlobal(static_cast<AliESDVertex*>(const_cast<AliVVertex*>(fEvent->GetPrimaryVertex()))));
@@ -215,8 +215,8 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_tpcNClsFound.AddAxis("tpcNClsFound", "# clusters TPC", 165, -0.5, 164.5);
     fQAList->Add(fHist_tpcNClsFound.GenerateHist("tpcNClsFound"));
 
-    fHist_tpcNClsCrossedRows.AddAxis("tpcNClsCrossedRows", "# crossed rows TPC", 165, -0.5, 164.5);
-    fQAList->Add(fHist_tpcNClsCrossedRows.GenerateHist("tpcNClsCrossedRows"));
+    fHist_tpcCrossedRows.AddAxis("tpcCrossedRows", "# crossed rows TPC", 165, -0.5, 164.5);
+    fQAList->Add(fHist_tpcCrossedRows.GenerateHist("tpcCrossedRows"));
 
     fHist_tpcCrossedRowsOverFindableCls.AddAxis("tpcCrossedRowsOverFindableCls", "crossed rows / findable clusters TPC", 60, 0.7, 1.3);
     fQAList->Add(fHist_tpcCrossedRowsOverFindableCls.GenerateHist("tpcCrossedRowsOverFindableCls"));
@@ -286,7 +286,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_itsChi2NCl.GetSize() +
     fHist_tpcNClsFindable.GetSize() +
     fHist_tpcNClsFound.GetSize() +
-    fHist_tpcNClsCrossedRows.GetSize() +
+    fHist_tpcCrossedRows.GetSize() +
     fHist_tpcCrossedRowsOverFindableCls.GetSize() +
     fHist_tpcChi2NCl.GetSize() +
     fHist_tpcGoldenChi2.GetSize() +
