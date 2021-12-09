@@ -666,7 +666,7 @@ bool        AliAnalysisTaskPhiCount::fIsEventCandidate ()                       
         return false;
     }
     //
-    if ( (kTriggerMask & ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) == 0 )  {
+    if ( ( ( kTriggerMask & ( fAOD->GetTriggerMask() ) ) == 0 ) )  {
         fFillEventEnumerate("NoTrigger");
         fStoreTruePhi(kTRU_NOTRG);
         fPostData();
@@ -674,7 +674,7 @@ bool        AliAnalysisTaskPhiCount::fIsEventCandidate ()                       
     }
     //
     // Define and Fetch PID with Manager
-    AliAnalysisManager *fAnalysisManager = AliAnalysisManager::GetAnalysisManager();
+    AliAnalysisManager* fAnalysisManager = AliAnalysisManager::GetAnalysisManager();
     if ( fAnalysisManager )    {
         AliInputEventHandler* fInputHandler = (AliInputEventHandler*)(fAnalysisManager->GetInputEventHandler());
         if (fInputHandler)   fPIDResponse = fInputHandler->GetPIDResponse();
@@ -888,7 +888,7 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     if (  std::fabs(fCurrent_Track_TransMom) < 0.15 ||  std::fabs(fCurrent_Track_Eta) > 0.80 || std::fabs(fCurrent_Track_Charge) != 1 )  return false;
     
     //  If a Filterbit is set, use it
-    if ( kFilterBit != -1 ) {
+    if ( kFilterBit >= 0 ) {
         if ( !fCurrent_Track->TestFilterBit(BIT(kFilterBit)) )   return false;
         else return true;
     }
@@ -915,10 +915,10 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     if ( fCurrent_Track->GetTPCFoundFraction() < kTPCClsOverFndbl )                                             return false;
     
     //  -   //  CHI2 PER CLUSTER
-    if ( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) > kChi2TPCcluster && fCurrent_Track->GetTPCNcls() !=0 && fCurrent_Track->GetTPCchi2() !=0 )  return false;
+    if ( ( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) > kChi2TPCcluster ) && ( fCurrent_Track->GetTPCNcls() !=0 ) && ( fCurrent_Track->GetTPCchi2() !=0 ) )  return false;
     
     //  -   //  CHI2 GLOBAL
-    if ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() > kChi2TPCGlobal || fCurrent_Track->GetChi2TPCConstrainedVsGlobal() < 0. ) return false;
+    if ( ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() > kChi2TPCGlobal ) || ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() < 0. ) ) return false;
 
     
     //  -   //  REFIT
@@ -933,10 +933,12 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     if ( !fCurrent_Track->HasPointOnITSLayer(0) && !fCurrent_Track->HasPointOnITSLayer(1) )                     return false;
         
     //  -   //  CHI2 PER CLUSTER
-    if ( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) > kChi2ITScluster  && fCurrent_Track->GetITSNcls() !=0 && fCurrent_Track->GetITSchi2() !=0 ) return false;
+    if ( ( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) > kChi2ITScluster ) && ( fCurrent_Track->GetITSNcls() !=0 ) && ( fCurrent_Track->GetITSchi2() !=0 ) ) return false;
     
     if ( fIs_p_p )  {
         //  ------------------------ CUSTOM IMPLEMENTATION FOR pp
+        
+        //  Nothing here
         
     }   else if ( fIs_p_Pb || fIs_Pb_Pb ) {
         //  ------------------------ CUSTOM IMPLEMENTATION FOR pPb AND PbPb
@@ -1400,7 +1402,6 @@ void        AliAnalysisTaskPhiCount::uCalculateRT ( )                           
 //_____________________________________________________________________________
 
 Float_t     AliAnalysisTaskPhiCount::uTrackLengthInActiveTPC ( AliExternalTrackParam* fCurrentTrackExternalParameters, Double_t deltaY, Double_t deltaZ ) {
-    return 131;
     const   Double_t    kInnerRadius    =   85;
     const   Double_t    kOuterRadius    =   245;
     const   Double_t    kMagField       =   fAOD->GetMagneticField();
