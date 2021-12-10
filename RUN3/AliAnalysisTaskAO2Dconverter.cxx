@@ -916,7 +916,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFV0A])
   {
     tFV0A->Branch("fIndexBCs", &fv0a.fIndexBCs, "fIndexBCs/I");
-    tFV0A->Branch("fAmplitude", fv0a.fAmplitude, "fAmplitude[48]/F");
+    tFV0A->Branch("fChannel_size", &fv0a.fChannel_size, "fChannel_size/I");
+    tFV0A->Branch("fChannel", fv0a.fChannel, "fChannel[fChannel_size]/b");
+    tFV0A->Branch("fAmplitude_size", &fv0a.fAmplitude_size, "fAmplitude_size/I");
+    tFV0A->Branch("fAmplitude", fv0a.fAmplitude, "fAmplitude[fAmplitude_size]/F");
     tFV0A->Branch("fTime", &fv0a.fTime, "fTime/F");
     tFV0A->Branch("fTriggerMask", &fv0a.fTriggerMask, "fTriggerMask/b");
     tFV0A->SetBasketSize("*", fBasketSizeEvents);
@@ -927,7 +930,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFV0C])
   {
     tFV0C->Branch("fIndexBCs", &fv0c.fIndexBCs, "fIndexBCs/I");
-    tFV0C->Branch("fAmplitude", fv0c.fAmplitude, "fAmplitude[32]/F");
+    tFV0C->Branch("fChannel_size", &fv0c.fChannel_size, "fChannel_size/I");
+    tFV0C->Branch("fChannel", fv0c.fChannel, "fChannel[fChannel_size]/b");
+    tFV0C->Branch("fAmplitude_size", &fv0c.fAmplitude_size, "fAmplitude_size/I");
+    tFV0C->Branch("fAmplitude", fv0c.fAmplitude, "fAmplitude[fAmplitude_size]/F");
     tFV0C->Branch("fTime", &fv0c.fTime, "fTime/F");
     tFV0C->SetBasketSize("*", fBasketSizeEvents);
   }
@@ -2289,10 +2295,22 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   AliVVZERO *vz = fVEvent->GetVZEROData();
   fv0a.fIndexBCs = fBCCount;
   fv0c.fIndexBCs = fBCCount;
-  for (Int_t ich = 0; ich < 32; ++ich)
-    fv0a.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0A(ich), mV0Amplitude);
-  for (Int_t ich = 0; ich < 32; ++ich)
-    fv0c.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0C(ich), mV0Amplitude);
+  fv0a.fAmplitude_size = 0;
+  fv0c.fAmplitude_size = 0;
+  fv0a.fChannel_size = 0;
+  fv0c.fChannel_size = 0;
+  for (Int_t ich = 0; ich < 32; ++ich) {
+    if (vz->GetMultiplicityV0A(ich) > 0) {
+      fv0a.fAmplitude[fv0a.fAmplitude_size++] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0A(ich), mV0Amplitude);
+      fv0a.fChannel[fv0a.fChannel_size++] = ich;
+    }
+  }
+  for (Int_t ich = 0; ich < 32; ++ich) {
+    if (vz->GetMultiplicityV0C(ich) > 0) {
+      fv0c.fAmplitude[fv0c.fAmplitude_size++] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0C(ich), mV0Amplitude);
+      fv0c.fChannel[fv0c.fChannel_size++] = ich;
+    }
+  }
   fv0a.fTime = AliMathBase::TruncateFloatFraction(vz->GetV0ATime(), mV0Time);
   fv0c.fTime = AliMathBase::TruncateFloatFraction(vz->GetV0CTime(), mV0Time);
   fv0a.fTriggerMask = 0; // not filled for the moment

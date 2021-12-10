@@ -522,15 +522,21 @@ private:
 
   struct {
     /// V0A  (32 cells in Run2, 48 cells in Run3)
-    Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each channel
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fChannel_size = 0;          /// Size of fChannel and fAmplitude
+    uint8_t fChannel[48] = {0};       /// Channel indices of filled amplitudes
+    Int_t fAmplitude_size = 0;        /// Size of fChannel and fAmplitude
+    Float_t fAmplitude[48] = {0.f};   /// Multiplicity for each filled channel listed in fChannel
     Float_t fTime = 0.f;              /// Average A-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
   } fv0a;                             //! structure to keep V0A information
 
   struct {
     /// V0C  (32 cells in Run2)
-    Int_t fIndexBCs = 0u;                /// Index to BC table
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fChannel_size = 0;          /// Size of fChannel and fAmplitude
+    uint8_t fChannel[32] = {0};       /// Channel indices of filled amplitudes
+    Int_t fAmplitude_size = 0;        /// Size of fChannel and fAmplitude
     Float_t fAmplitude[32] = {0.f};   /// Multiplicity for each channel
     Float_t fTime = 0.f;              /// Average C-side time
   } fv0c;                             //! structure to keep V0C information
