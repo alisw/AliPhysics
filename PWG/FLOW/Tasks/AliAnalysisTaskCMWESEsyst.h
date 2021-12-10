@@ -253,8 +253,8 @@ private:
     TProfile*         pIntd2AchCentdefQ2a[NCENTBINS];
     TProfile*         pAchCentdefQ2a[NCENTBINS];
 
-    TH1D*            hMultCentdefQ2a[NQNBINS];
-    TH1D*            hAchCentdefQ2a[NQNBINS];
+    TH1D*            hMultCentdefQ2c[NQNBINS];
+    TH1D*            hAchCentdefQ2c[NQNBINS];
 
     // physics 
     TProfile*         pRefFlowCentspd[NCENTBINS];     
