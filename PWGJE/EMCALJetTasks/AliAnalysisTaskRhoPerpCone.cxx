@@ -112,7 +112,8 @@ void AliAnalysisTaskRhoPerpCone::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskRhoPerpCone::Run()
 {
-    Double_t perpPtDensity = 0;
+    Double_t perpPtDensity1 = 0;
+    Double_t perpPtDensity2 = 0;
 
     AliJetContainer *jetCont = static_cast<AliJetContainer *>(fJetCollArray[0]);
     AliParticleContainer *partCont = static_cast<AliParticleContainer *>(fParticleCollArray[0]);
@@ -121,10 +122,12 @@ Bool_t AliAnalysisTaskRhoPerpCone::Run()
     if (!LeadJet)
         return kFALSE;
 
-    Double_t dPhi = 999.;
+    Double_t dPhi1 = 999.;
+    Double_t dPhi2 = 999.;
     Double_t dEta = 999.;
-    Double_t PerpendicularConeAxisPhi = 999;
-    PerpendicularConeAxisPhi = ((LeadJet->Phi() + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? LeadJet->Phi() - ((3. / 2.) * TMath::Pi()) : LeadJet->Phi() + (TMath::Pi() / 2.);
+    Double_t PerpendicularConeAxisPhi1 = 999, PerpendicularConeAxisPhi2 = 999;
+    PerpendicularConeAxisPhi1 = ((LeadJet->Phi() + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? LeadJet->Phi() - ((3. / 2.) * TMath::Pi()) : LeadJet->Phi() + (TMath::Pi() / 2.);
+    PerpendicularConeAxisPhi2 = ((LeadJet->Phi() - (TMath::Pi() / 2.)) < 0) ? LeadJet->Phi() + ((3. / 2.) * TMath::Pi()) : LeadJet->Phi() - (TMath::Pi() / 2.);
     partCont->ResetCurrentID();
 
     while (auto part = partCont->GetNextAcceptParticle())
@@ -132,14 +135,19 @@ Bool_t AliAnalysisTaskRhoPerpCone::Run()
         if (!part)
             continue;
 
-        dPhi = TMath::Abs(part->Phi() - PerpendicularConeAxisPhi);
-        dPhi = (dPhi > TMath::Pi()) ? 2 * TMath::Pi() - dPhi : dPhi;
+        dPhi1 = TMath::Abs(part->Phi() - PerpendicularConeAxisPhi1);
+        dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
+        dPhi2 = TMath::Abs(part->Phi() - PerpendicularConeAxisPhi2);
+        dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
         dEta = LeadJet->Eta() - part->Eta();
-        if (TMath::Sqrt(dPhi * dPhi + dEta * dEta) <= (Double_t)jetCont->GetJetRadius())
-            perpPtDensity += part->Pt();
+        if (TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) <= (Double_t)jetCont->GetJetRadius())
+            perpPtDensity1 += part->Pt();
+
+        if (TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) <= (Double_t)jetCont->GetJetRadius())
+            perpPtDensity2 += part->Pt();
     }
 
-    perpPtDensity = perpPtDensity / (TMath::Pi() * TMath::Power(jetCont->GetJetRadius(), 2));
+    Double_t perpPtDensity = (perpPtDensity1 + perpPtDensity2) / (2 * TMath::Pi() * TMath::Power(jetCont->GetJetRadius(), 2));
 
     fOutRho->SetVal(perpPtDensity);
 
