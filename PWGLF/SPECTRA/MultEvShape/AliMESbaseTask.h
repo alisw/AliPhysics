@@ -14,7 +14,7 @@
 #include <AliAnalysisTaskSE.h>
 #endif
 
-class AliMEStender;
+class AliMEStenderV2;
 class AliMESeventInfo;
 class TObjArray;
 class TTreeSRedirector;
@@ -22,6 +22,7 @@ class AliMESbaseTask : public AliAnalysisTaskSE
 {
 public:
   friend class AliMEStender;
+  friend class AliMEStenderV2;
   enum AliMESbaseSteering{
      kMCdata      = BIT(18)     // MC presence bit
     ,kPP          = BIT(19)     // pp/pA data
