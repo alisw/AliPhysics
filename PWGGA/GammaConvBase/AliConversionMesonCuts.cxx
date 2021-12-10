@@ -2567,12 +2567,12 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 2.5;
       fMassParamFunction   = 3;
       break;
-    case 22: // m PCM-PHOS 4 sigma
+    case 22: // m PCM-PHOS 3 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 4.;
-      fSelectionNSigmaHigh = 4.;
-      fMassParamFunction   = 8;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = 3.;
+      fMassParamFunction   = 3;
       break;
     case 23: // n// PCM-PCM 13TeV 1.5 sigma
       fAcceptMesonMass     = kFALSE;

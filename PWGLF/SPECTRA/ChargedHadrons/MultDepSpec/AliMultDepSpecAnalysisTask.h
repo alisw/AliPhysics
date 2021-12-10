@@ -61,9 +61,8 @@ public:
   }
 
   // Configure this object for a train run
-  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet,
-                                                        int cutModeLow = 100, int cutModeHigh = 119,
-                                                        TString options = "", bool isMC = false);
+  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, TString options,
+                                                        int cutModeLow, int cutModeHigh, bool isMC);
   void SaveTrainMetadata();
   bool SetupTask(std::string dataSet, TString options);
   bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
@@ -122,12 +121,13 @@ protected:
   Hist::Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance and tracks originating from background events as defined above )
 
   // MC-only histograms
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{}; //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
-  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};  //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_prim_meas{};    //!<! tracks from measured primaries (no contamination from secondaries, particles smeared into acceptance or background events)
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};     //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background events)  [for QA to disentangle secondaries from other contamination]
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_meas_evtcont{}; //!<! tracks from events that are measured, but do not belong to the desired class of events
 
   Hist::Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
-  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_sigloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt
+  Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_evtloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt
   Hist::Hist<TH1D> fHist_multDist_evt_gen{};            //!<! generated event distribution  (from events within specified class and with proper vertex position)
   Hist::Hist<THnSparseF> fHist_multCorrel_evt{};        //!<! multilicity correlation of measured events (excluding background events)
   Hist::Hist<THnSparseF> fHist_multCorrel_prim{};       //!<! multiplicity correlation of measured primary charged particles (excluding particles from background events)
@@ -151,20 +151,19 @@ protected:
   Hist::Hist<TH2D> fHist_dcaXY{}; //!<! dca in xy plane vs pt
   Hist::Hist<TH1D> fHist_dcaZ{};  //!<! dca along the beam line
 
-  Hist::Hist<TH1D> fHist_signed1Pt{};         //!<!  signed 1/pt (1/(GeV/c))
-  Hist::Hist<TH1D> fHist_eta{};               //!<!  pseudorapidity
-  Hist::Hist<TH1D> fHist_phi{};               //!<!  azimuthal angle phi
-  Hist::Hist<TH1D> fHist_itsFoundClusters{};  //!<!  found clusters ITS
-  Hist::Hist<TH1D> fHist_itsHits{};           //!<!  hitmap ITS
-  Hist::Hist<TH1D> fHist_itsChi2PerCluster{}; //!<!  chi2 per cluster ITS
-
-  Hist::Hist<TH1D> fHist_tpcFindableClusters{};                //!<!  findable clusters TPC
-  Hist::Hist<TH1D> fHist_tpcFoundClusters{};                   //!<!  found clusters TPC
-  Hist::Hist<TH1D> fHist_tpcCrossedRows{};                     //!<!  crossed rows in TPC
-  Hist::Hist<TH1D> fHist_tpcCrossedRowsOverFindableClusters{}; //!<!  rows / findable clusters TPC
-  Hist::Hist<TH1D> fHist_tpcChi2PerCluster{};                  //!<!  chi2 per cluster TPC
-  Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                      //!<! chi2 global vs tpc constrained track
-  Hist::Hist<TH1D> fHist_tpcGeomLength{};                      //!<! track length in active volume of the TPC
+  Hist::Hist<TH1D> fHist_signed1Pt{};                     //!<! signed 1/pt (1/(GeV/c))
+  Hist::Hist<TH1D> fHist_eta{};                           //!<! pseudorapidity distribution
+  Hist::Hist<TH1D> fHist_phi{};                           //!<! azimuthal angle phi
+  Hist::Hist<TH1D> fHist_itsNCls{};                       //!<! found clusters ITS
+  Hist::Hist<TH1D> fHist_itsHits{};                       //!<! hitmap ITS
+  Hist::Hist<TH1D> fHist_itsChi2NCl{};                    //!<! chi2 per cluster ITS
+  Hist::Hist<TH1D> fHist_tpcNClsFindable{};               //!<! findable clusters TPC
+  Hist::Hist<TH1D> fHist_tpcNClsFound{};                  //!<! found clusters TPC
+  Hist::Hist<TH1D> fHist_tpcCrossedRows{};                //!<! crossed rows in TPC
+  Hist::Hist<TH1D> fHist_tpcCrossedRowsOverFindableCls{}; //!<! rows / findable clusters TPC
+  Hist::Hist<TH1D> fHist_tpcChi2NCl{};                    //!<! chi2 per cluster TPC
+  Hist::Hist<TH1D> fHist_tpcGoldenChi2{};                 //!<! chi2 global vs tpc constrained track
+  Hist::Hist<TH1D> fHist_tpcGeomLength{};                 //!<! track length in active volume of the TPC
 
   // event related properties
   AliVEvent* fEvent{};                      //!<! event object

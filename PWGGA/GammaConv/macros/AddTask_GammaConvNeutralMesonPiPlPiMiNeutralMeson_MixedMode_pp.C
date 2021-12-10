@@ -672,7 +672,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","01031g3400000000","0453503000000000"); // PHI7, new Gamma Energy cut 6 GeV
   } else if(trainConfig == 406)  { //Standard PHOS 13TeV Trigger PHI7, GammaCut > 7.5GeV
     cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","01031f3400000000","0453503000000000"); // PHI7, new Gamma Energy cut 7.5 GeV
-
+  } else if(trainConfig == 407)  { //Standard PHOS Selection Window 3 Sigma
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 Selection Window 3 Sigma
   //QA Plots
   } else if(trainConfig == 415)  { // Standard PHOS MB, no shared TPC clusters, Shared cluster Fraction =0
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32e51070a","0103103400000000","0453503000000000"); // INT7

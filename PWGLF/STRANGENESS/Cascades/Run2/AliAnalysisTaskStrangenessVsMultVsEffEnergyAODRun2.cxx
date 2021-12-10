@@ -1944,23 +1944,26 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
         
         const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
         const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
-        Float_t lThisPosInnerP = -1;
-        Float_t lThisNegInnerP = -1;
-        Float_t lThisPosInnerPt = -1;
-        Float_t lThisNegInnerPt = -1;
-        if(innerposv0)  { lThisPosInnerP  = innerposv0 ->GetP(); }
-        if(innernegv0)  { lThisNegInnerP  = innernegv0 ->GetP(); }
-        if(innerposv0)  { lThisPosInnerPt  = innerposv0 ->Pt(); }
-        if(innernegv0)  { lThisNegInnerPt  = innernegv0 ->Pt(); }
+        Double_t lThisPosInnerP = -1;
+        Double_t lThisNegInnerP = -1;
+        Double_t lThisPosInnerPt = -1;
+        Double_t lThisNegInnerPt = -1;
+        if(innerposv0)  { lThisPosInnerP  = innerposv0->P(); }
+        if(innernegv0)  { lThisNegInnerP  = innernegv0->P(); }
+        if(innerposv0)  { lThisPosInnerPt  = innerposv0->Pt(); }
+        if(innernegv0)  { lThisNegInnerPt  = innernegv0->Pt(); }
         Float_t lThisPosdEdx = pTrack -> GetTPCsignal();
         Float_t lThisNegdEdx = nTrack -> GetTPCsignal();
         
         fTreeVariablePosdEdx = lThisPosdEdx;
         fTreeVariableNegdEdx = lThisNegdEdx;
         
-        fTreeVariablePosInnerP = lThisPosInnerP;
-        fTreeVariableNegInnerP = lThisNegInnerP;
-        
+        // fTreeVariablePosInnerP = lThisPosInnerP;
+        // fTreeVariableNegInnerP = lThisNegInnerP;
+
+        fTreeVariableNegInnerP = nTrack->GetTPCmomentum();
+        fTreeVariablePosInnerP = pTrack->GetTPCmomentum();
+
         //Daughter Eta for Eta selection, afterwards
         fTreeVariableNegEta = nTrack->Eta();
         fTreeVariablePosEta = pTrack->Eta();

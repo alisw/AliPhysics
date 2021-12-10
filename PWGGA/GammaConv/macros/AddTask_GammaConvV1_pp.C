@@ -2394,6 +2394,13 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("n5710113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 50 - 70% (V0M est.)
     cuts.AddCutPCM("n7a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // INT7, 70 - 100% (V0M est.)
 
+  } else if (trainConfig == 2766) { // selection of multipliicties for efficiency studies
+    cuts.AddCutPCM("m0110113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+    cuts.AddCutPCM("m5a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+    cuts.AddCutPCM("n2310113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+    cuts.AddCutPCM("n7a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+
+    
     // ------------ Mult selection using SPD estimator --------
   } else if (trainConfig == 2770) { // Multiplicity selection, ITS + TRD photons
     cuts.AddCutPCM("u0010113", "0dm00009f9730000dge0404000", "0152103500000000"); // default

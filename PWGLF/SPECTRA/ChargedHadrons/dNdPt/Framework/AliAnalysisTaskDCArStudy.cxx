@@ -64,11 +64,15 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 void AliAnalysisTaskDCArStudy::AddOutput()
 {
     //dcar:pt:mult:mcinfo
-    auto const DCAbins = 500;
+    auto const DCAbins = 250;
     auto const DCAbinWidth = 2./DCAbins;
     std::vector<double> centBins = {0.,  10., 20., 30., 40.,
         50., 60., 70., 80., 90.};
-    std::vector<double> ptBins = {0.0, 0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,10,13,20, 30, 50, 80, 100, 200};
+//    std::vector<double> ptBins = {0.0, 0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,5.5,6,6.5,7,8,10,13,20, 30, 50, 80, 100, 200};
+
+    std::vector<double> ptBins = {0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0};
+
+//    std::vector<double> ptBins = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,  0.8,  0.9,  1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0, 50.0, 200.0 };
     std::vector<double> multBins;
     {
         // variable mult binning total 0-6000
@@ -116,7 +120,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCA.AddAxis(DCAaxis);
     fHistDCA.AddAxis(ptAxis);
     fHistDCA.AddAxis(multAxisNch);
-    fHistDCA.AddAxis(centAxis);
+//    fHistDCA.AddAxis(centAxis);
     fHistDCA.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCA.GenerateHist("fHistDCA"));
     requiredMemory += fHistDCA.GetSize();
@@ -124,7 +128,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCAPCC.AddAxis(DCAaxis);
     fHistDCAPCC.AddAxis(ptAxis);
     fHistDCAPCC.AddAxis(multAxisNch);
-    fHistDCAPCC.AddAxis(centAxis);
+//    fHistDCAPCC.AddAxis(centAxis);
     fHistDCAPCC.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCAPCC.GenerateHist("fHistDCAPCC"));
     requiredMemory += fHistDCAPCC.GetSize();
@@ -132,7 +136,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCAPCCSysUp.AddAxis(DCAaxis);
     fHistDCAPCCSysUp.AddAxis(ptAxis);
     fHistDCAPCCSysUp.AddAxis(multAxisNch);
-    fHistDCAPCCSysUp.AddAxis(centAxis);
+//    fHistDCAPCCSysUp.AddAxis(centAxis);
     fHistDCAPCCSysUp.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCAPCCSysUp.GenerateHist("fHistDCAPCCSysUp"));
     requiredMemory += fHistDCAPCCSysUp.GetSize();
@@ -140,7 +144,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fHistDCAPCCSysDown.AddAxis(DCAaxis);
     fHistDCAPCCSysDown.AddAxis(ptAxis);
     fHistDCAPCCSysDown.AddAxis(multAxisNch);
-    fHistDCAPCCSysDown.AddAxis(centAxis);
+//    fHistDCAPCCSysDown.AddAxis(centAxis);
     fHistDCAPCCSysDown.AddAxis(mcInfoAxis);
     fOutputList->Add(fHistDCAPCCSysDown.GenerateHist("fHistDCAPCCSysDown"));
     requiredMemory += fHistDCAPCCSysDown.GetSize();
