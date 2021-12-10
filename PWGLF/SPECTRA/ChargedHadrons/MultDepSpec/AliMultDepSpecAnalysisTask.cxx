@@ -197,7 +197,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_eta.AddAxis("eta", "#eta", 180, -0.9, 0.9);
     fQAList->Add(fHist_eta.GenerateHist("eta"));
 
-    fHist_phi.AddAxis("phi", "#phi [rad]", 180, 0., 2 * M_PI); // 5 bins for each of the 18 sectors
+    fHist_phi.AddAxis("phi", "#phi [rad]", 180, 0., 2 * M_PI); // 18 tpc sectors
     fQAList->Add(fHist_phi.GenerateHist("phi"));
 
     fHist_itsNCls.AddAxis("itsNCls", "# clusters ITS", 8, -0.5, 7.5);
@@ -571,7 +571,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
 
         if (fIsMC) {
           if (!fMCAcceptEvent) {
-            // contamination coming from undesired events (wrong event class or zvtex outside fiducial region)
+            // contamination originating from undesired events (wrong event class or true zvtex outside fiducial region)
             fHist_multPtSpec_trk_meas_evtcont.Fill(fMultMeas, fPt);
           } else if (isValidParticle) {
             if (fIsNominalSetting) {
@@ -757,10 +757,6 @@ int AliMultDepSpecAnalysisTask::GetNRepetitons(double scalingFactor)
 //**************************************************************************************************
 unsigned long AliMultDepSpecAnalysisTask::GetSeed()
 {
-  if (fUseRandomSeed) {
-    return 0;
-  }
-
   unsigned long seed = fEventNumber;
   seed <<= 5;
   seed += fRunNumber;
