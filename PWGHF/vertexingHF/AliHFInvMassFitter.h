@@ -118,8 +118,6 @@ class AliHFInvMassFitter : public TNamed {
     fFixSecMass=fixm;  fFixSecWidth=fixw;
   }
   void SetCheckSignalCountsAfterFirstFit(Bool_t opt){fCheckSignalCountsAfterFirstFit=opt;}
-
-  void SetIgnoreMinuit70(){fIgnoreMinuit70=kTRUE;}
   
   Double_t GetRawYield()const {return fRawYield;}
   Double_t GetRawYieldError()const {return fRawYieldErr;}
@@ -259,7 +257,6 @@ class AliHFInvMassFitter : public TNamed {
   Bool_t    fFixSecWidth;          /// flag to fix the width of the 2nd peak
   TF1*      fSecFunc;              /// fit function for second peak
   TF1*      fTotFunc;              /// total fit function
-  Bool_t    fIgnoreMinuit70;       /// accept fits with Minuit status multiples of 70
 
   /// \cond CLASSIMP     
   ClassDef(AliHFInvMassFitter,8); /// class for invariant mass fit
