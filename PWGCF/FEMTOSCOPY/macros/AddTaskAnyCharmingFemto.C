@@ -61,14 +61,14 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   else if(std::abs(pdgDmesonBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
-    TrackCuts->SetPtRange(0.15, 10.0);
+    TrackCuts->SetPtRange(0.15, 4.0);
     TrackCuts->SetCutCharge(1);
     if(!useMCTruthReco) {
       TrackCuts->SetPIDkd();
     }
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(128);
-    AntiTrackCuts->SetPtRange(0.15, 10.0);
+    AntiTrackCuts->SetPtRange(0.15, 4.0);
     AntiTrackCuts->SetCutCharge(-1);
     if(!useMCTruthReco) {
       AntiTrackCuts->SetPIDkd();
@@ -215,7 +215,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   if (isMCtruth){
     if (std::abs(pdgDmesonBuddy) == 321) {
       task->SetBuddypTLowMCTRUTH(0.15);
-      task->SetBuddypTHighMCTRUTH(10.0);
+      task->SetBuddypTHighMCTRUTH(4.0);
     }
     if (std::abs(pdgDmesonBuddy) == 211) {
       task->SetBuddypTLowMCTRUTH(0.14);
