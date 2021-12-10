@@ -53,6 +53,8 @@ fPIDResponse(0),
 fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
+//pile-up rejection flag
+fRejectPileupEvts(kTRUE),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
@@ -151,6 +153,8 @@ fPIDResponse(0),
 fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
+//pile-up rejection flag
+fRejectPileupEvts(kTRUE),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
@@ -256,8 +260,6 @@ fCentLimit_BacBarCosPA(0)
     }
     SetPtbinning(ipart, nptbins[ipart], ptbins[ipart]);
   }
-  //set fEventCuts object to reject pile-up
-  fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
   //Standard output
   DefineOutput(1, TList::Class()); // Event Histograms
   DefineOutput(2, TList::Class()); // K0S Histograms
@@ -373,6 +375,9 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   fPIDResponse = inputHandler->GetPIDResponse();
   inputHandler->SetNeedField();
 
+  //fEventCuts Setup
+  if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+
   //Output posting
   DataPosting();
 
@@ -409,6 +414,24 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     }
   }
 
+  //get MC header and MC array
+  AliAODMCHeader* header = 0x0;
+  TClonesArray* MCTrackArray = 0x0;
+  if(!isESD && fisMC) {
+    header = static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
+    if (!header) {
+      AliWarning("No header found.");
+      DataPosting(); 
+      return;
+    } 
+    MCTrackArray = dynamic_cast<TClonesArray*>(lAODevent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (MCTrackArray == NULL){
+      AliWarning("No MC track array found.");
+      DataPosting(); 
+      return;
+    }  
+  }
+
   //fill total number of events
   fHistos_eve->FillTH1("henum", 0.);
 
@@ -437,14 +460,31 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   //fill number of events after AliMultSelection
   fHistos_eve->FillTH1("henum", 1.);
 
-  if (!fEventCuts.AcceptEvent(lVevent)) {
-    if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) fHistos_eve->FillTH1("henum", 2.);
+  bool isEvtAccepted = fEventCuts.AcceptEvent(lVevent);
+
+  if (!isEvtAccepted && fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
     DataPosting(); 
     return;
   }
 
   //fill number of events after pile-up rejection
   fHistos_eve->FillTH1("henum", 2.);
+  
+  if (fRejectPileupEvts) {
+    if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
+      DataPosting(); 
+      return;
+    }
+    if (fisMC) {
+      if ((isESD && AliAnalysisUtils::IsPileupInGeneratedEvent(lMCev, "")) ||
+          (!isESD && AliAnalysisUtils::IsPileupInGeneratedEvent(header, ""))) {
+        DataPosting(); 
+        return;
+      }
+    }
+  }
+
+  //fill number of events after pile-up rejection
   fHistos_eve->FillTH1("henum", 3.);
 
   //get run number
@@ -474,24 +514,6 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
       DataPosting(); 
       return; 
     }
-  }
-
-  //get MC header and MC array
-  AliAODMCHeader* header = 0x0;
-  TClonesArray* MCTrackArray = 0x0;
-  if(!isESD && fisMC) {
-      header = static_cast<AliAODMCHeader*>(lAODevent->FindListObject(AliAODMCHeader::StdBranchName()));
-      if (!header) {
-        AliWarning("No header found.");
-        DataPosting(); 
-        return;
-      } 
-      MCTrackArray = dynamic_cast<TClonesArray*>(lAODevent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (MCTrackArray == NULL){
-        AliWarning("No MC track array found.");
-        DataPosting(); 
-        return;
-      }  
   }
   
   //MC truth
