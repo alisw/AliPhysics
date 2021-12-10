@@ -37,6 +37,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 
 
+
         void SetAODAnalysis()   { SetBit(kAODanalysis, kTRUE); };
         void SetESDAnalysis()   { SetBit(kAODanalysis, kFALSE);};
         Bool_t IsAODanalysis()  const { return TestBit(kAODanalysis); };
