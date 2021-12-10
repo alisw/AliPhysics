@@ -42,6 +42,24 @@ namespace
     return x * x;
   }
 
+  Double_t AlphaV0(double p[3], double negP[3], double posP[3]) {
+    TVector3 momNeg(negP[0],negP[1],negP[2]);
+    TVector3 momPos(posP[0],posP[1],posP[2]);
+    TVector3 momTot(p[0],p[1],p[2]);
+
+    Double_t lQlNeg = momNeg.Dot(momTot)/momTot.Mag();
+    Double_t lQlPos = momPos.Dot(momTot)/momTot.Mag();
+
+    return (lQlPos - lQlNeg)/(lQlPos + lQlNeg);
+  }
+
+  Double_t PtArmV0(double p[3], double negP[3]) {
+    TVector3 momNeg(negP[0],negP[1],negP[2]);
+    TVector3 momTot(p[0],p[1],p[2]);
+
+    return momNeg.Perp(momTot);
+  }
+
   constexpr int kLambdaPdg{3122};
   constexpr double kLambdaMass{1.115683};
   constexpr int kXiPdg{3312};
@@ -233,8 +251,11 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       if (fOnlyTrueCandidates && fGenCascade.pdg == 0)
         continue;
     }
-
-    fRecCascade->matter = casc->AlphaV0() > 0;
+  
+    double *v0P, *negP, *posP;
+    casc->GetPxPyPz(v0P); nTrackCasc->GetPxPyPz(negP); pTrackCasc->GetPxPyPz(posP);
+    double alphaV0 = AlphaV0(v0P, negP, posP);
+    fRecCascade->matter = alphaV0 > 0;
     fRecCascade->tpcNsigmaV0Pi = fPID->NumberOfSigmasTPC(fRecCascade->matter ? nTrackCasc : pTrackCasc, AliPID::kPion);
     fRecCascade->tpcNsigmaV0Pr = fPID->NumberOfSigmasTPC(fRecCascade->matter ? pTrackCasc : nTrackCasc, AliPID::kProton);
 
@@ -382,7 +403,10 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           continue;
       }
 
-      fRecLambda->matter = v0->AlphaV0() > 0;
+      double *p, *negP, *posP;
+      v0->GetPxPyPz(p); nTrack->GetPxPyPz(negP); pTrack->GetPxPyPz(posP);
+      double alphaV0 = AlphaV0(p, negP, posP);
+      fRecLambda->matter = alphaV0 > 0;
       auto proton = fRecLambda->matter ? pTrack : nTrack;
       auto pion = fRecLambda->matter ? nTrack : pTrack;
 
