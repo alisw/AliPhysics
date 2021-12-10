@@ -3305,8 +3305,11 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2::UserExec(Option_t *)
         fTreeVariablePosdEdx = lThisPosdEdx;
         fTreeVariableNegdEdx = lThisNegdEdx;
         
-        fTreeVariablePosInnerP = lThisPosInnerP;
-        fTreeVariableNegInnerP = lThisNegInnerP;
+        //fTreeVariablePosInnerP = lThisPosInnerP;
+        //fTreeVariableNegInnerP = lThisNegInnerP;
+
+        fTreeVariableNegInnerP = nTrack->GetTPCmomentum();
+        fTreeVariablePosInnerP = pTrack->GetTPCmomentum();
         
         //Daughter Eta for Eta selection, afterwards
         fTreeVariableNegEta = nTrack->Eta();
