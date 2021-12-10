@@ -201,6 +201,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
 
     fHistPt_BeforePID(0),
     fdEdx_BeforePID(0),
+    fTPCnsig_BeforePID(0),
 
     //---- MC data ----//
     fMCcheckMother(0),
@@ -252,6 +253,18 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fDCAxy_MC_Ds_weight(0), // DCA from Ds+,D*+s with weight
     fDCAxy_MC_Lc(0),	    // DCA from Lambda
     fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
+
+    fDCA_B_total(0),
+    fDCA_B_total_weight(0),
+    fDCA_D_total(0),
+    fDCA_Dpm_total(0),
+    fDCA_Dpm_total_weight(0),
+    fDCA_D0_total(0),
+    fDCA_D0_total_weight(0),
+    fDCA_Ds_total(0),
+    fDCA_Ds_total_weight(0),
+    fDCA_Lc_total(0),
+    fDCA_Lc_total_weight(0),
 
     fDCAxy_MC_ele(0),       // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
@@ -468,6 +481,8 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
 
     fHistPt_BeforePID(0),
     fdEdx_BeforePID(0),
+    fTPCnsig_BeforePID(0),
+    
 
 
     //---- MC data ----//
@@ -520,6 +535,18 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fDCAxy_MC_Ds_weight(0), // DCA from Ds+,D*+s with weight
     fDCAxy_MC_Lc(0),	    // DCA from Lambda
     fDCAxy_MC_Lc_weight(0), // DCA from Lambda with weight
+
+    fDCA_B_total(0),
+    fDCA_B_total_weight(0),
+    fDCA_D_total(0),
+    fDCA_Dpm_total(0),
+    fDCA_Dpm_total_weight(0),
+    fDCA_D0_total(0),
+    fDCA_D0_total_weight(0),
+    fDCA_Ds_total(0),
+    fDCA_Ds_total_weight(0),
+    fDCA_Lc_total(0),
+    fDCA_Lc_total_weight(0),
 
     fDCAxy_MC_ele(0),	    // DCA True electron
     fDCAxy_MC_Phot(0),      // DCA True photonic electron
@@ -1017,6 +1044,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fdEdx_BeforePID = new TH2F("fdEdx_BeforePID","dE/dx distribution (before PID);P (GeV/c);dE/dx",600,0,30,2000,0,200);
     fOutputList->Add(fdEdx_BeforePID);
 
+  //TPC nsigma (before PID)
+    fTPCnsig_BeforePID = new TH2F("fTPCnsig_BeforePID","TPC Nsigma (before PID);P (GeV/c);n^{TPC}_{#sigma_{electron}}",600,0,30,200,-10,10);
+    fOutputList->Add(fTPCnsig_BeforePID);
+
     
 //************************************ MC data ************************************//
   //Number of B
@@ -1309,6 +1340,61 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
 
     fHistPt_ele_vs_Lc = new TH2F("fHistPt_ele_vs_Lc","electron p_{T} vs Mother #Lambda_{c} p_{T}; electron p_{T} [GeV/c]; #Lambda_{c} p_{T} [GeV/c]",1200,0,60,1200,0,60);
     fOutputList->Add(fHistPt_ele_vs_Lc);
+
+
+
+  //------------------//
+  //     total DCA    //
+  //------------------//
+  //DCA from B
+    fDCA_B_total = new TH2F("fDCA_B_total","Total DCA (MC : B-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_B_total);
+  
+  //DCA from B with weight
+    fDCA_B_total_weight = new TH2F("fDCA_B_total_weight","Total DCA (MC : B-meson with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_B_total_weight->Sumw2();
+    fOutputList->Add(fDCA_B_total_weight);
+  
+  //DCA from D
+    fDCA_D_total = new TH2F("fDCA_D_total","Total DCA (MC : D-meson);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_D_total);
+
+  //DCA from Dpm
+    fDCA_Dpm_total = new TH2F("fDCA_Dpm_total","Total DCA (MC : Dpm);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_Dpm_total);
+
+  //DCA from Dpm with weight
+    fDCA_Dpm_total_weight = new TH2F("fDCA_Dpm_total_weight","Total DCA (MC : Dpm with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_Dpm_total_weight->Sumw2();
+    fOutputList->Add(fDCA_Dpm_total_weight);
+
+  //DCA from D0
+    fDCA_D0_total = new TH2F("fDCA_D0_total","Total DCA (MC : D0);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_D0_total);
+
+  //DCA from Dpm with weight
+    fDCA_D0_total_weight = new TH2F("fDCA_D0_total_weight","Total DCA (MC : D0 with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_D0_total_weight->Sumw2();
+    fOutputList->Add(fDCA_D0_total_weight);
+
+  //DCA from Ds
+    fDCA_Ds_total = new TH2F("fDCA_Ds_total","Total DCA (MC : Ds);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_Ds_total);
+
+  //DCA from Ds with weight
+    fDCA_Ds_total_weight = new TH2F("fDCA_Ds_total_weight","Total DCA (MC : Ds with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_Ds_total_weight->Sumw2();
+    fOutputList->Add(fDCA_Ds_total_weight);
+
+  //DCA from Lc
+    fDCA_Lc_total = new TH2F("fDCA_Lc_total","Total DCA (MC : #Lambda_{c});p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fOutputList->Add(fDCA_Lc_total);
+
+  //DCA from Lc with weight
+    fDCA_Lc_total_weight = new TH2F("fDCA_Lc_total_weight","Total DCA (MC : #Lambda_{c} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
+    fDCA_Lc_total_weight->Sumw2();
+    fOutputList->Add(fDCA_Lc_total_weight);
+
 
 
 
@@ -1638,7 +1724,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 
 
-     
+
 //*********************//
 //        track        //
 //*********************//
@@ -1789,6 +1875,68 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         if(TrkPt>5.0)fTPCnsigEta2 -> Fill(TrkEta,TPCnSigma);    //track pT > 5 GeV/c
         
         
+
+            
+//---- for DCA Template ----
+    Bool_t fFlagTrkSelect_forDCA = kFALSE;
+    Double_t dca[2], CovaMatrix[3];
+    	track->PropagateToDCA(pVtx, fVevent->GetMagneticField(),20., dca, CovaMatrix);
+
+    SelectTrack_DCA(i, track, TPCCrossedRows, ITSchi2, TPCchi2NDF, dca[0], dca[1], TrkEta, fFlagTrkSelect_forDCA);
+
+    if(fFlagTrkSelect_forDCA)
+    {
+      //if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]) && (eop >= CutEop[0] && eop <= CutEop[1])) // PID
+      //{
+        if(pid_ele == 1.0)
+        {
+            if(pid_eleB)
+            {
+              fDCA_B_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+              fDCA_B_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_B->Eval(pTMom));
+            }
+
+            if(pid_eleD)
+            {
+              fDCA_D_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+
+              if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413)  // Dpm
+              {
+                fDCA_Dpm_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+                fDCA_Dpm_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+              }
+
+              if(TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423)  // D0
+              {
+                fDCA_D0_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+                fDCA_D0_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+              }
+
+              if(TMath::Abs(pidM)==431 || TMath::Abs(pidM)==433)  // Ds
+              {
+                fDCA_Ds_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+                fDCA_Ds_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_D->Eval(pTMom));
+              }
+
+              if(TMath::Abs(pidM)==4122)  //Lc
+						  {
+							  fDCA_Lc_total -> Fill(TrkPt, dca[0]*charge*Bsign);
+
+                if(pTMom < 10.0){
+                      fDCA_Lc_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_Lc->Eval(pTMom));
+                }else{
+                      fDCA_Lc_total_weight -> Fill(TrkPt, dca[0]*charge*Bsign, pTWeight_Lc->Eval(10));
+                }
+		    		  }
+
+            }
+
+        }
+      //}
+
+    }
+
+  
         
         
     //************************//
@@ -1964,6 +2112,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
 	    fHistPt_BeforePID->Fill(TrkPt);
             fdEdx_BeforePID -> Fill(TrkP,dEdx);
+            fTPCnsig_BeforePID -> Fill(TrkP,TPCnSigma);
 
             //========== Electron E/p ==========//
             //if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]))  // TPC nsigma & shower shape cut
@@ -2160,6 +2309,29 @@ void AliAnalysisTaskHFEBeautyMultiplicity::GetTrkClsEtaPhiDiff(AliVTrack *t, Ali
 	phidiff = TVector2::Phi_mpi_pi(vphi-cphi);
 
 }
+
+void AliAnalysisTaskHFEBeautyMultiplicity::SelectTrack_DCA(Int_t itrack, AliAODTrack *track, Double_t TPC_CrossedRows, Double_t ITS_chi2, Double_t TPC_chi2NDF, Double_t dca_xy, Double_t dca_z, Double_t track_Eta, Bool_t &fFlagTrkSelect_forDCA)
+{
+  Bool_t flagTrkSelect_forDCA = kFALSE;
+
+  if(
+    ( track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA) ) && // AOD standard
+    ( (track->GetStatus()&AliESDtrack::kITSrefit) && (track->GetStatus()&AliESDtrack::kTPCrefit) ) && // TPC& ITS refit
+    ( TPC_CrossedRows >= NCrossedRow ) && // TPC Crossed Rows
+    ( track->GetITSNcls() >= NITSClust ) && // ITS cluster
+    ( track->GetTPCsignalN() >= TPCdEdx ) && // dEdx
+    ( track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1) ) && // SPD hit
+    ( (ITS_chi2 < 25) && (TPC_chi2NDF < 4) ) && // chi2
+    ( (TMath::Abs(dca_xy) <= DCAxy) && (TMath::Abs(dca_z) <= DCAz) ) && // DCA
+    ( TMath::Abs(track_Eta) <= TrackEtaMax ) // Eta
+
+   ) flagTrkSelect_forDCA = kTRUE;
+
+
+  fFlagTrkSelect_forDCA = flagTrkSelect_forDCA;
+
+}
+
 
 //_________________________________________________________________________________________________
 void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
