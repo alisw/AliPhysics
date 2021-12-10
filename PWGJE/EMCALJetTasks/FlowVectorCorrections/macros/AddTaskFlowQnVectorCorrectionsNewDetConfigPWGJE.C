@@ -80,14 +80,14 @@ using std::endl;
 
 void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos* histos, TString histClass);
 
-void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
-void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
-void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
-void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
+void AddVZERO(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
+void AddTPC(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
+void AddTZERO(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
+void AddFMD(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
 void AddFMDTaskForESDanalysis();
-void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
-void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
-void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager);
+void AddRawFMD(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
+void AddZDC(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
+void AddSPD(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager);
 
 Int_t varForEventMultiplicity;
 
@@ -118,7 +118,8 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrectionsNewDetConfigPWGJE() {
   taskQnCorrections->SetIsUseAliEventCuts(bUseAliEventCuts);
 
   /* and the physics selection also */
-  if (!b2015DataSet) {
+  // if (!b2015DataSet) { //kuma
+  if (!bRun2DataSet) { //kuma
     taskQnCorrections->SelectCollisionCandidates(AliVEvent::kMB);  // Events passing trigger and physics selection for analysis
   }
   else {
@@ -171,23 +172,23 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrectionsNewDetConfigPWGJE() {
   TString inputCalibrationFilename = Form("%s/%s", szCorrectionsFilePath.Data(), szCorrectionsFileName.Data());
   if (szCorrectionsSource.EqualTo("local")) {
     cout << "\t File " << inputCalibrationFilename << endl << "\t being taken locally when building the task object" << endl;
-    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_local, inputCalibrationFilename.Data());
+    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrectionsPWGJE::CALIBSRC_local, inputCalibrationFilename.Data());
   }
   else if (szCorrectionsSource.EqualTo("aliensingle")) {
     cout << "\t File " << inputCalibrationFilename << " being taken from alien in the execution nodes" << endl;
-    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_aliensingle, inputCalibrationFilename.Data());
+    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrectionsPWGJE::CALIBSRC_aliensingle, inputCalibrationFilename.Data());
   }
   else if (szCorrectionsSource.EqualTo("alienmultiple")) {
     cout << "\t File " << inputCalibrationFilename << " being taken from alien in the execution nodes on a per run basis " << endl;
-    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_alienmultiple, inputCalibrationFilename.Data());
+    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrectionsPWGJE::CALIBSRC_alienmultiple, inputCalibrationFilename.Data());
   }
   else if (szCorrectionsSource.EqualTo("OADBsingle")) {
     cout << "\t File " << inputCalibrationFilename << " being taken from OADB in the execution nodes" << endl;
-    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_OADBsingle, inputCalibrationFilename.Data());
+    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrectionsPWGJE::CALIBSRC_OADBsingle, inputCalibrationFilename.Data());
   }
   else if (szCorrectionsSource.EqualTo("OADBmultiple")) {
     cout << "\t File " << inputCalibrationFilename << " being taken from OADB in the execution nodes on a per run basis " << endl;
-    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrections::CALIBSRC_OADBmultiple, inputCalibrationFilename.Data());
+    taskQnCorrections->SetCalibrationHistogramsFile(AliAnalysisTaskFlowVectorCorrectionsPWGJE::CALIBSRC_OADBmultiple, inputCalibrationFilename.Data());
   }
   else {
     Error("AddTaskFlowQnVectorCorrectionsNewDetConfig", "\t CALIBRATION FILE SOURCE NOT SUPPORTED. ABORTING!!!");
@@ -261,7 +262,7 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrectionsNewDetConfigPWGJE() {
   return cOutputQvecList;
 }
 
-void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddVZERO(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
 
 
   Bool_t VZEROchannels[4][64];
@@ -661,7 +662,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   QnManager->AddDetector(VZERO);
 }
 
-void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddTPC(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
 
   /////////////// Add TPC subdetectors ///////////////////
 
@@ -1146,7 +1147,7 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 }
 
 
-void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddSPD(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
 
   /////////////// Add SPD subdetectors ///////////////////
 
@@ -1191,7 +1192,7 @@ void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   QnManager->AddDetector(SPD);
 }
 
-void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddTZERO(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
 
   /////////////// Add TZERO subdetectors ///////////////////
 
@@ -1305,7 +1306,7 @@ void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
 }
 
 
-void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddZDC(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
   /////////////// Add ZDC subdetectors ///////////////////
 
   Bool_t ZDCchannels[2][10];
@@ -1415,7 +1416,7 @@ void AddFMDTaskForESDanalysis(){
 
 }
 
-void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddFMD(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
@@ -1509,7 +1510,7 @@ void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
 }
 
 
-void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager){
+void AddRawFMD(AliAnalysisTaskFlowVectorCorrectionsPWGJE *task, AliQnCorrectionsManager* QnManager){
 
   /////////////// Add FMD subdetectors ///////////////////
   /* FMD1 and FMD2 make FMDA and FMD3 make FMDC */
