@@ -2333,7 +2333,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::SelectTrack_DCA(Int_t itrack, AliAODT
 }
 
 
-
 //_________________________________________________________________________________________________
 void AliAnalysisTaskHFEBeautyMultiplicity::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign)
 {
