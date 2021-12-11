@@ -130,7 +130,8 @@ private:
     TH1F*                   fHTrigger;            //!<! Histogram of trigger
     TH2F*                   fHistoElectronTPCPID;     //!<! TPC electron PID
     TH2F*                   fHistoElectronTOFPID;     //!<! TOF electron PID
-       
+    TH2F*                   fHistoOmegaMassvspTKFP;  //!<!  Histogram of OmegaMass vs pT from KFP
+    
     THnSparse*              fHistoElectronTPCPIDSelTOF;     //!<! TPC electron PID
     THnSparse*              fHistoMassConversions;          //!<! electron-pairs mass conversion
     THnSparse*              fHistoElectronTPCTOFSelPID;     //!<! TPC, TOF electron PID
