@@ -1570,13 +1570,13 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut_byFunction = kTRUE;
             fMassCut = 0.85;
             fMassCut_FunctionNumber = 1;
-        case 24: //p use fMassCut function, 0<Mass<470 & 510<Mass<700
+        case 25: //p use fMassCut function, 0<Mass<470 & 510<Mass<700
             fUse4VecForMass = kTRUE;
             fDoMassCut = kTRUE;
             fDoMassCut_byFunction = kTRUE;
             fMassCut = 0.85;
             fMassCut_FunctionNumber = 1;
-        case 25: //q use fMassCut function, 0<Mass<470 & 510<Mass<850
+        case 26: //q use fMassCut function, 0<Mass<470 & 510<Mass<850
             fUse4VecForMass = kTRUE;
             fDoMassCut = kTRUE;
             fDoMassCut_byFunction = kTRUE;
@@ -1712,11 +1712,13 @@ if(fUsePtDepXYDCA) SetPtDepDCACuts(lTrack->Pt());
 	return kTRUE;
 }
 //--------------------------------------------------------------------------
-Bool_t MassCutFunction(Double_t MesonMass){
+Bool_t  AliPrimaryPionCuts::MassCutFunction(Double_t MesonMass){
+  Double_t LowerLimit=0;
+  Double_t UpperLimit=470;
   switch (fMassCut_FunctionNumber){
     case 1:
-      Double_t LowerLimit=0;
-      Double_t UpperLimit=470;
+      LowerLimit=0;
+      UpperLimit=470;
       if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
           return kTRUE;
       }
@@ -1728,8 +1730,8 @@ Bool_t MassCutFunction(Double_t MesonMass){
       return kFALSE;
       break;
     case 2:
-      Double_t LowerLimit=0;
-      Double_t UpperLimit=470;
+      LowerLimit=0;
+      UpperLimit=470;
       if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
         return kTRUE;
       }
@@ -1741,8 +1743,8 @@ Bool_t MassCutFunction(Double_t MesonMass){
       return kFALSE;
       break;
     case 3:
-        Double_t LowerLimit=0;
-        Double_t UpperLimit=470;
+        LowerLimit=0;
+        UpperLimit=470;
         if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
         return kTRUE;
         }
