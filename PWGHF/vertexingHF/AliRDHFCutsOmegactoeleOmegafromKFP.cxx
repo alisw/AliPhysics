@@ -733,7 +733,7 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromKFP::SingleCascadeCuts(AliAODcascade *casc
   Double_t massXi = casc->MassXi();
   Double_t massOmega = casc->MassOmega();
 
-  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmega)
+  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmegaRough)
      return kFALSE;
   
   Double_t lPosXi[3];
