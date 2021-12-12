@@ -1570,19 +1570,21 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut_byFunction = kTRUE;
             fMassCut = 0.85;
             fMassCut_FunctionNumber = 1;
+            break;
         case 25: //p use fMassCut function, 0<Mass<470 & 510<Mass<700
             fUse4VecForMass = kTRUE;
             fDoMassCut = kTRUE;
             fDoMassCut_byFunction = kTRUE;
             fMassCut = 0.85;
             fMassCut_FunctionNumber = 2;
+            break;
         case 26: //q use fMassCut function, 0<Mass<470 & 510<Mass<850
             fUse4VecForMass = kTRUE;
             fDoMassCut = kTRUE;
             fDoMassCut_byFunction = kTRUE;
             fMassCut = 0.85;
             fMassCut_FunctionNumber = 3;
-        break;
+            break;
 	default:
 		cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
