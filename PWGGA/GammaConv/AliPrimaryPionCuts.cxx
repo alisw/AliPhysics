@@ -90,8 +90,10 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fRequireTOF(kFALSE),
 	fDoMassCut(kFALSE),
     fDoMassCut_WithNDM(kFALSE),
+    fDoMassCut_byFunction(kFALSE),
 	fMassCut(10),
     fMassCut_WithNDM(10),
+    fMassCut_FunctionNumber(0),
 	fUse4VecForMass(kFALSE),
 	fRequireVertexConstrain(kFALSE),
 	fDoWeights(kFALSE),
@@ -165,8 +167,10 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fRequireTOF(ref.fRequireTOF),
 	fDoMassCut(ref.fDoMassCut),
     fDoMassCut_WithNDM(ref.fDoMassCut_WithNDM),
+    fDoMassCut_byFunction(ref.fDoMassCut_byFunction),
 	fMassCut(ref.fMassCut),
     fMassCut_WithNDM(ref.fMassCut_WithNDM),
+    fMassCut_FunctionNumber(ref.fMassCut_FunctionNumber),
 	fUse4VecForMass(ref.fUse4VecForMass),
 	fRequireVertexConstrain(ref.fRequireVertexConstrain),
 	fDoWeights(ref.fDoWeights),
@@ -1560,6 +1564,27 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 1.000;
             break;
+        case 24: //o use fMassCut function, 0<Mass<470 & 510<Mass<650
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_byFunction = kTRUE;
+            fMassCut = 0.85;
+            fMassCut_FunctionNumber = 1;
+            break;
+        case 25: //p use fMassCut function, 0<Mass<470 & 510<Mass<700
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_byFunction = kTRUE;
+            fMassCut = 0.85;
+            fMassCut_FunctionNumber = 2;
+            break;
+        case 26: //q use fMassCut function, 0<Mass<470 & 510<Mass<850
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_byFunction = kTRUE;
+            fMassCut = 0.85;
+            fMassCut_FunctionNumber = 3;
+            break;
 	default:
 		cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
@@ -1687,5 +1712,59 @@ if(fUsePtDepXYDCA) SetPtDepDCACuts(lTrack->Pt());
     return kFALSE;
 
 	return kTRUE;
+}
+//--------------------------------------------------------------------------
+Bool_t  AliPrimaryPionCuts::MassCutFunction(Double_t MesonMass){
+  Double_t LowerLimit=0;
+  Double_t UpperLimit=470;
+  switch (fMassCut_FunctionNumber){
+    case 1:
+      LowerLimit=0;
+      UpperLimit=470;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+          return kTRUE;
+      }
+      LowerLimit=510;
+      UpperLimit=650;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+          return kTRUE;
+      }
+      return kFALSE;
+      break;
+    case 2:
+      LowerLimit=0;
+      UpperLimit=470;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+      }
+      LowerLimit=510;
+      UpperLimit=700;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+      }
+      return kFALSE;
+      break;
+    case 3:
+        LowerLimit=0;
+        UpperLimit=470;
+        if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+        }
+        LowerLimit=510;
+        UpperLimit=850;
+        if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+        }
+        return kFALSE;
+        break;
+    case 0:
+    default:
+      if (MesonMass>fMassCut){
+          return kFALSE;
+      } else {
+          return kTRUE;
+      }
+      break;
+  }
 }
 
