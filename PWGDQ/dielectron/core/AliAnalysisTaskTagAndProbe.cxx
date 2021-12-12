@@ -761,19 +761,19 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
           if(cutmask_passingprobe == selectedMask_passingprobe) FillSparse(fOutputContainer,Form("hsSel_El_TAP_MC_%s",ppfilter->GetName()),value3D);
       }
     }
-    else if(TMath::Abs(pdg) == 211){
+    else if(TMath::Abs(pdg) == 211 && fPIDCalibMode){
       value[5] = nsigma_Pi_TPC;
       value[6] = nsigma_Pi_ITS;
       value[7] = nsigma_Pi_TOF;
       FillSparse(fOutputContainer,"hsPID_MCPi",value);
     }
-    else if(TMath::Abs(pdg) == 321){
+    else if(TMath::Abs(pdg) == 321 && fPIDCalibMode){
       value[5] = nsigma_Ka_TPC;
       value[6] = nsigma_Ka_ITS;
       value[7] = nsigma_Ka_TOF;
       FillSparse(fOutputContainer,"hsPID_MCKa",value);
     }
-    else if(TMath::Abs(pdg) == 2212){
+    else if(TMath::Abs(pdg) == 2212 && fPIDCalibMode){
       value[5] = nsigma_Pr_TPC;
       value[6] = nsigma_Pr_ITS;
       value[7] = nsigma_Pr_TOF;
