@@ -68,6 +68,7 @@ if(FASTJET_FOUND)
            AliDJetTTreeReader.cxx
            AliDJetTHnReader.cxx
            AliAnalysisTaskHFJetIPQA.cxx
+           AliAnalysisTaskbjets.cxx
            )
 endif(FASTJET_FOUND)
 
