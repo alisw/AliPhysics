@@ -26,10 +26,10 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
 
         virtual void            AddOutput();                     //called at the beginning
         virtual Bool_t          IsEventSelected();               //called for each event
-        virtual void            AnaEvent();                      //called once for every selected event
+        virtual void            AnaEventDATA();                  //called once for every selected DATA event
         virtual void            AnaEventMC();                    //called once for every selected mc event
-        virtual void            AnaTrackDATA(Int_t flag = 0);    //called once for every track in DATA event
-        virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in MC event
+        virtual void            AnaTrackDATA(Int_t flag = 0);    //called once for every track in DATA track
+        virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in MC track
         
         static AliAnalysisTaskDCArStudy* AddTaskDCArStudy(const char* name = "TaskDCArStudy", const char* outfile = 0);
 
@@ -39,6 +39,7 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
         Hist::Hist<THnF>        fHistDCAPCCSysUp; //!<! hist for DCA distros with PCC scaling                                    //!
         Hist::Hist<THnF>        fHistDCAPCCSysDown; //!<! hist for DCA distros with PCC scaling                                    //!
         Hist::Hist<THnF>        fHistSecWeights;//!
+        Hist::Hist<THnF>        fEventHist;//!
         AliMCSpectraWeights*    fMCSpectraWeights; //!<! object to determine efficiency scaling
         
     private:
