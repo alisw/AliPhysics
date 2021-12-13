@@ -595,12 +595,12 @@ Int_t  AliAnalysisTaskbjets::IsMCJetPartonFast(const AliEmcalJet *jet, Double_t 
                 AliError("AliVParticle associated to constituent not found");
                 continue;
               }
-             /* AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vp);
+              AliVTrack *vtrack = dynamic_cast<AliVTrack*>(vp);
               if (!vtrack) {
                 AliError(Form("Could not receive track%d\n", i));
                 continue;
               }
-              AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack); */
+              AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack); 
               
               Printf("Track pt=%f\n", vp->Pt());
               
@@ -627,11 +627,11 @@ Int_t  AliAnalysisTaskbjets::IsMCJetPartonFast(const AliEmcalJet *jet, Double_t 
 		Double_t etajet = part->Eta();		//jet-axis
 		Double_t phijet = part->Phi();		
 		
-		//Double_t etatrack = trackV->Eta();		//track-axis
-		//Double_t phitrack = trackV->Phi();
+		Double_t etatrack = trackV->Eta();		//track-axis
+		Double_t phitrack = trackV->Phi();
 		
-		Double_t etatrack = vp->Eta();		//track-axis
-		Double_t phitrack = vp->Phi();
+		//Double_t etatrack = vp->Eta();		//track-axis
+		//Double_t phitrack = vp->Phi();
 		
 		Int_t pdg = (abs(part->GetPdgCode()));
 		Double_t deta = etatrack - etajet;
