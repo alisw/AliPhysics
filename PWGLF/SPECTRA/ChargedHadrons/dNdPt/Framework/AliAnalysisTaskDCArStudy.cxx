@@ -111,7 +111,6 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     //    Axis mcWeightAxis{"weight", "weight", {-0.5, 4.5}, 5};
     Axis weightValues{"weight", "weight", {0.,5.}, 50};
     Axis secLambdaKaon{"SecDecayType", "SecDecayType", {-1.5, 4.5}, 6};//0=lambda, 1=kaon, 2=pion, 3=other
-    Axis eventAxis{"events", "events", {-0.5, 0.5}, 1}; //for event histogram
 
     // ------
     // hists
@@ -156,7 +155,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fOutputList->Add(fHistSecWeights.GenerateHist("fHistSecWeights"));
     requiredMemory += fHistSecWeights.GetSize();
 
-    fEventHist.AddAxis(eventAxis);
+    fEventHist.AddAxis(multAxisNch);
     fOutputList->Add(fEventHist.GenerateHist("fEventHist"));
     requiredMemory += fEventHist.GetSize();
 
@@ -175,10 +174,10 @@ Bool_t AliAnalysisTaskDCArStudy::IsEventSelected()
 //_____________________________________________________________________________
 
 
-void AliAnalysisTaskDCArStudy::AnaEvent()
+void AliAnalysisTaskDCArStudy::AnaEventDATA()
 {
     LoopOverAllTracks();
-    fEventHist.Fill(0);
+    fEventHist.Fill(fNTracksAcc);
 }
 
 void AliAnalysisTaskDCArStudy::AnaEventMC() {
@@ -188,7 +187,7 @@ void AliAnalysisTaskDCArStudy::AnaEventMC() {
     
 //    LoopOverAllParticles();
     LoopOverAllTracks();
-    fEventHist.Fill(0);
+    fEventHist.Fill(fNTracksAcc);
 }
 
 //_____________________________________________________________________________
@@ -212,7 +211,7 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
             fHistSecWeights.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCParticle->Particle()));
 
         }
-        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
+        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMCPrimSec);
         fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
         fHistDCAPCCSysUp.FillWeight(fMCweightSysUp, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
         fHistDCAPCCSysDown.FillWeight(fMCweightSysDown, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
