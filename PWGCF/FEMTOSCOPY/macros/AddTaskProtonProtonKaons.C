@@ -18,7 +18,6 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
                                      const char *triggerVariation = "0", bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false) {
 
 
-
   TString suffix = TString::Format("%s", cutVariation);
   TString suffixTrigger = TString::Format("%s", triggerVariation);
 
