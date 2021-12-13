@@ -102,7 +102,7 @@ void AliAnalysisTaskHOCFA::UserCreateOutputObjects()
   fHistoConfig->Fill(2.5, fMultiplicityMin);
   if (fUseWeightsNUE) {fHistoConfig->Fill(3.5, 1.);}
   if (fUseWeightsNUA) {fHistoConfig->Fill(4.5, 1.);}
-  if (fGetEtaGap) {fHistoConfig->Fill(5.5, 1.);}
+  if (fGetEtaGap) {fHistoConfig->Fill(5.5, fEtaGap);}
 }
 
 // ------------------------------------------------------------------------- //
