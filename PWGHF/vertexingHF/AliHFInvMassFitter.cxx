@@ -104,7 +104,8 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fFixSecMass(kFALSE),
   fFixSecWidth(kFALSE),
   fSecFunc(0x0),
-  fTotFunc(0x0)
+  fTotFunc(0x0),
+  fAcceptValidFit(kFALSE)
 {
   /// default constructor
 }
@@ -167,7 +168,8 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fFixSecMass(kFALSE),
   fFixSecWidth(kFALSE),
   fSecFunc(0x0),
-  fTotFunc(0x0)
+  fTotFunc(0x0),
+  fAcceptValidFit(kFALSE)
 {
   /// standard constructor
   fHistoInvMass=(TH1F*)histoToFit->Clone("fHistoInvMass");
@@ -275,7 +277,7 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
     isFitValid=resultptr_bkg->IsValid();
   }
   fBkgFuncSb->SetLineColor(kGray+1);
-  if (!isFitValid){
+  if ( (status!=0 && !fAcceptValidFit) || (fAcceptValidFit && !isFitValid) ){
     printf("   ---> Failed first fit with only background, minuit status = %d\n",status);
     return 0;
   }
@@ -323,7 +325,7 @@ Int_t AliHFInvMassFitter::MassFitter(Bool_t draw){
     status = (Int_t) resultptr;
     printf("[AliHFInvMassFitter] final fit status %d\n",status);
     printf("[AliHFInvMassFitter] IsValid() = %d\n",isFitValid);
-    if (!isFitValid){
+    if ( (status!=0 && !fAcceptValidFit) || (fAcceptValidFit && !isFitValid) ){
       printf("   ---> Failed fit with signal+background, minuit status = %d\n",status);
       return 0;
     }
