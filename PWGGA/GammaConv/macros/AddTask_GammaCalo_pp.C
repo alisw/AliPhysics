@@ -3618,6 +3618,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("s0076113","411790109fe30230000","0s631031000000d0"); // VOM HM trigg with SPD estimator
     cuts.AddCutCalo("r0075113","411790109fe30230000","0s631031000000d0"); // SPD HM with V0M estimator
 
+  // selected mult intervals for efficiency studies
+  } else if (trainConfig == 2460){ //
+    cuts.AddCutCalo("r0a10113","411790109fe30230000","0s631031000000d0"); // INT7, 0-0.1%
+    cuts.AddCutCalo("m0110113","411790109fe30230000","0s631031000000d0"); // INT7, 0-1%
+    cuts.AddCutCalo("m5a10113","411790109fe30230000","0s631031000000d0"); // INT7, 5-10%
+    cuts.AddCutCalo("n2310113","411790109fe30230000","0s631031000000d0"); // INT7, 20-30%
+    cuts.AddCutCalo("n7a10113","411790109fe30230000","0s631031000000d0"); // INT7, 50-70%
 
   //*************************************************************************************************
   // 13 TeV EMCal Sphericity differential cuts
