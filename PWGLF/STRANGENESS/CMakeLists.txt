@@ -101,6 +101,8 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
   StrPDF/AliAnalysisTaskV0multspec.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
