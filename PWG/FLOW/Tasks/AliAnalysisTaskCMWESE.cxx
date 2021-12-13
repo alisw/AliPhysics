@@ -961,9 +961,9 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   }
 
   if (fQAV0){
-    hQnCentRecenter[0] = new TH2D("hqnV0MRecenter","",100, 0, 100, 72, 0, 12); 
-    hQnCentRecenter[1] = new TH2D("hqnV0CRecenter","",100, 0, 100, 72, 0, 12); 
-    hQnCentRecenter[2] = new TH2D("hqnV0ARecenter","",100, 0, 100, 72, 0, 12); 
+    hQnCentRecenter[0] = new TH2D("hqnV0MRecenter","",100, 0, 100, 570, 0, 12); 
+    hQnCentRecenter[1] = new TH2D("hqnV0CRecenter","",100, 0, 100, 570, 0, 12); 
+    hQnCentRecenter[2] = new TH2D("hqnV0ARecenter","",100, 0, 100, 570, 0, 12); 
     fOutputList->Add(hQnCentRecenter[0]);
     fOutputList->Add(hQnCentRecenter[1]);
     fOutputList->Add(hQnCentRecenter[2]); 
