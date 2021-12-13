@@ -39,6 +39,7 @@ class AliAnalysisTaskDCArStudy : public AliAnalysisTaskMKBase
         Hist::Hist<THnF>        fHistDCAPCCSysUp; //!<! hist for DCA distros with PCC scaling                                    //!
         Hist::Hist<THnF>        fHistDCAPCCSysDown; //!<! hist for DCA distros with PCC scaling                                    //!
         Hist::Hist<THnF>        fHistSecWeights;//!
+        Hist::Hist<THnF>        fEventHist;//!
         AliMCSpectraWeights*    fMCSpectraWeights; //!<! object to determine efficiency scaling
         
     private:
