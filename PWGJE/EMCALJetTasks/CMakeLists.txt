@@ -435,3 +435,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWGJE/EMCALJetTasks)
+install (DIRECTORY FlowVectorCorrections/macros DESTINATION PWGJE/EMCALJetTasks/FlowVectorCorrections)
