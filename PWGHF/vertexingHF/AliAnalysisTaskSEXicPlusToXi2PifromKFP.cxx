@@ -1154,8 +1154,15 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
     PVdau_tmp[i] = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trk, 0);
     PV_dau[i] = &PVdau_tmp[i];
   }
-  PV_KF_Refit.ConstructPrimaryVertex(PV_dau, count_ForPV_AfterQAcheck, vtxFlag, 3.5);
+  PV_KF_Refit.ConstructPrimaryVertex(PV_dau, count_ForPV_AfterQAcheck, vtxFlag, 1.e9);
   delete [] PV_dau;
+
+  /*
+  cout << "===========================" << endl;
+  cout << "PV_KF_Refit.GetNContributors: " << PV_KF_Refit.GetNContributors()+2 << endl; // bug in KF, should be added by 2
+  cout << "count_ForPV_AfterQAcheck: " << count_ForPV_AfterQAcheck << endl;
+  cout << "===========================" << endl;
+  */
 
   /*
   cout << "===========================" << endl;
