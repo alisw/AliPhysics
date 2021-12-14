@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  * 
  *                                                                        *
- * Authors:       Luz Tiscareño (luz.elena.tiscareno.montoya@cern.ch)           *
+ * Authors: Luz Tiscareño (luz.elena.tiscareno.montoya@cern.ch)           *
  *          Paola Vargas (paola.vargas.torres@cern.ch)                    *
  *          Gyula Bencedi (Gyula.Bencedi@cern.ch)                         *
  *          Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)               *
@@ -825,19 +825,19 @@ void AliAnalysisTaskChargedVsRT::GetBinByBinCorrections( Int_t multGen, Int_t mu
 
 	for(Int_t i=0; i < multRec; ++i) {  // loop over all these tracks
 		hPtOut->Fill(ptRec[i]);
-		if(!fIsMCclosure){
 			if( isprimRec[i] == 0 ){
 				hPtOutPrim->Fill(ptRec[i]);
-				if (idRec[i]==0) hPtOutPrim_pion->Fill(ptRec[i]); //pions
-				else if (idRec[i]==1) hPtOutPrim_kaon->Fill(ptRec[i]); //kaons
-				else if (idRec[i]==2) hPtOutPrim_proton->Fill(ptRec[i]); //protons
-				else if (idRec[i]==3) hPtOutPrim_sigmap->Fill(ptRec[i]); //sigma plus
-				else if (idRec[i]==4) hPtOutPrim_sigmam->Fill(ptRec[i]); //sigma minus
-				else if (idRec[i]==5) hPtOutPrim_omega->Fill(ptRec[i]); //Omega
-				else if (idRec[i]==6) hPtOutPrim_xi->Fill(ptRec[i]); //Xi
-				else hPtOutPrim_rest->Fill(ptRec[i]); //rest of the charged particles
+                if(!fIsMCclosure){
+                    if (idRec[i]==0) hPtOutPrim_pion->Fill(ptRec[i]); //pions
+                    else if (idRec[i]==1) hPtOutPrim_kaon->Fill(ptRec[i]); //kaons
+                    else if (idRec[i]==2) hPtOutPrim_proton->Fill(ptRec[i]); //protons
+                    else if (idRec[i]==3) hPtOutPrim_sigmap->Fill(ptRec[i]); //sigma plus
+                    else if (idRec[i]==4) hPtOutPrim_sigmam->Fill(ptRec[i]); //sigma minus
+                    else if (idRec[i]==5) hPtOutPrim_omega->Fill(ptRec[i]); //Omega
+                    else if (idRec[i]==6) hPtOutPrim_xi->Fill(ptRec[i]); //Xi
+                    else hPtOutPrim_rest->Fill(ptRec[i]); //rest of the charged particles
+                }
 			}
-		}
 		if( isprimRec[i] == 1 || isprimRec[i] == 2 ){
 			hPtOutSec->Fill(ptRec[i]);
 		}

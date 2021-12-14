@@ -1874,7 +1874,13 @@ void AddTask_GammaCaloMerged_pp(
     cuts.AddCutMergedCalo("u0176113","411790109fe32200000","411790109fe22700001","0163300000000000"); // VOM HM trigg with SPD estimator, mult. dep 0% - 0.1%
     cuts.AddCutMergedCalo("q0175113","411790109fe32200000","411790109fe22700001","0163300000000000"); // SPD HM with V0M estimator, mult. dep 0% - 0.1%
 
-
+    // selected cuts for efficiency study
+  } else if (trainConfig == 1960){
+    cuts.AddCutMergedCalo("r0a10113","411790109fe32200000","411790109fe22700001","0163300000000000"); // 0-0.1%
+    cuts.AddCutMergedCalo("m0110113","411790109fe32200000","411790109fe22700001","0163300000000000"); // 0-1%
+    cuts.AddCutMergedCalo("m5a10113","411790109fe32200000","411790109fe22700001","0163300000000000"); // 5-10%
+    cuts.AddCutMergedCalo("n2310113","411790109fe32200000","411790109fe22700001","0163300000000000"); // 20-30%
+    cuts.AddCutMergedCalo("n7a10113","411790109fe32200000","411790109fe22700001","0163300000000000"); // 70-100%
 
 
   // systematics pp 8 TeV no TM

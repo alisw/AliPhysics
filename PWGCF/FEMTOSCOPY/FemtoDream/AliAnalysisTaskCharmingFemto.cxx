@@ -374,6 +374,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  
+  if ((fIsMCtruth || fUseMCTruthReco) && fDecChannel != kDplustoKpipi)
+    AliFatal("MC truth only implemented for kDplustoKpipi decay channel.");
+    
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
@@ -418,18 +422,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
   }
 
+  auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
+  float ptMin, ptMax, etaMin, etaMax;
+  trackCutsDdau->GetPtRange(ptMin, ptMax);
+  trackCutsDdau->GetEtaRange(etaMin, etaMax);
+  float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
+  float DmesonPtMin=DmesonPtBins[0];
+  float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
+
   if (fIsMCtruth) {
     TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
         fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
-    auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
-    float ptMin, ptMax, etaMin, etaMax;
-    trackCutsDdau->GetPtRange(ptMin, ptMax);
-    trackCutsDdau->GetEtaRange(etaMin, etaMax);
-    float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
-    //for (Int_t i=0;i<fRDHFCuts->GetNPtBins();i++) cout<<i<<" "<<DmesonPtBins[i]<<endl;
-    float DmesonPtMin=DmesonPtBins[0];
-    float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
   
     for (int iPart = 1; iPart < noPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
@@ -572,17 +576,22 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     AliAODVertex *origOwnVtx = nullptr;
     
     int pdgDplusDau[3] = {321, 211, 211};
+    int isSelected = 1;
     if(fUseMCTruthReco){
       TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if(!dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau)){
+      
+      int dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      if(dMesonLabel < 0){
         continue;
       }
-    }
-    
-    int isSelected = 1;
-    if (!fUseMCTruthReco)
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(dMesonLabel);
+      if(mcPart->Pt() < DmesonPtMin || mcPart->Pt() > DmesonPtMax) {
+        continue;
+      }
+    } else {
       isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    }
     
     if(!isSelected) {
       if (unsetVtx) {

@@ -2811,7 +2811,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
     AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
-    if(temp && (!fDoLightOutput)) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+    if(temp && (!fDoLightOutput)) {
+      if (!(temp->GetLightOutput())){
+        fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+      }
+    }
   }
 
   fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask(fPionSelectorName.Data());
@@ -4842,7 +4846,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
         if (fMCEvent &&(fDoMesonQA>0)){
           if (fPositiveMCParticle && fNegativeMCParticle ) {
             if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-              if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+              Bool_t passMassCut = kFALSE;
+              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                passMassCut = (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vParticle->GetMass()));
+              } else {
+                passMassCut = vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut();
+              }
+              if (passMassCut){
                 if(TMath::Abs(fNegativeMCParticle->PdgCode())==211 && TMath::Abs(fPositiveMCParticle->PdgCode())==211){  // Pions ...
                   fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                   fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
@@ -4937,7 +4947,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
       Bool_t survivesMassCut = kFALSE;
 
       if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-        if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+        Bool_t passMassCut = kFALSE;
+        if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+          passMassCut = (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vParticle->GetMass()));
+        } else {
+          passMassCut = vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut();
+        }
+        if (passMassCut){
           survivesMassCut = kTRUE;
         }
       } else{
@@ -5250,7 +5266,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         if (fMCEvent &&(fDoMesonQA>0)){
           if (fPositiveMCParticle && fNegativeMCParticle ) {
             if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-              if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+              Bool_t passMassCut = kFALSE;
+              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                passMassCut = (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vParticle->GetMass()));
+              } else {
+                passMassCut = vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut();
+              }
+              if (passMassCut){
                 if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                   fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                   fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2);
@@ -5344,7 +5366,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       Bool_t survivesMassCut = kFALSE;
 
       if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
-        if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+        Bool_t passMassCut = kFALSE;
+        if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+          passMassCut = (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vParticle->GetMass()));
+        } else {
+          passMassCut = vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut();
+        }
+        if (passMassCut){
           survivesMassCut = kTRUE;
         }
       } else{
@@ -6400,7 +6428,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               // Mass cut (pi+pi-)
               if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
                 TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
-                if (vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                Bool_t NotPassMassCut = kFALSE;
+                if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                  NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vec4PiPlusPiMinus.M()));
+                } else {
+                  NotPassMassCut = vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+                }
+                if (NotPassMassCut) {
                   continue;
                 }
               }
@@ -6507,7 +6541,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               // Mass cut (pi+pi-)
               if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
                 TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
-                if (vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                Bool_t NotPassMassCut = kFALSE;
+                if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                  NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vec4PiPlusPiMinus.M()));
+                } else {
+                  NotPassMassCut = vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+                }
+                if (NotPassMassCut) {
                   continue;
                 }
               }
@@ -6599,7 +6639,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Mass cut (pi+pi-)
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
-              if (vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+              Bool_t NotPassMassCut = kFALSE;
+              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vec4PiPlusPiMinus.M()));
+              } else {
+                NotPassMassCut = vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+              }
+              if (NotPassMassCut) {
                 continue;
               }
             }
@@ -6688,7 +6734,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Mass cut (pi+pi-)
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               TLorentzVector vec4PiPlusPiMinus = vec4PiPlus + vec4PiMinus;
-              if (vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+              Bool_t NotPassMassCut = kFALSE;
+              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(vec4PiPlusPiMinus.M()));
+              } else {
+                NotPassMassCut = vec4PiPlusPiMinus.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+              }
+              if (NotPassMassCut) {
                 continue;
               }
             }
@@ -6760,7 +6812,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Mass cut on pi+pi+
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               AliAODConversionMother backPiPlPiPlCandidate(&EventPiPlGoodMeson, &EventPiPlGoodMeson2);
-              if (backPiPlPiPlCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+              Bool_t NotPassMassCut = kFALSE;
+              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(backPiPlPiPlCandidate.M()));
+              } else {
+                NotPassMassCut = backPiPlPiPlCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+              }
+              if (NotPassMassCut) {
                 continue;
               }
             }
@@ -6833,7 +6891,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             // Mass cut on pi-pi-
             if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
               AliAODConversionMother backPiMiPiMiCandidate(&EventPiMiGoodMeson, &EventPiMiGoodMeson2);
-              if (backPiMiPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+              Bool_t NotPassMassCut = kFALSE;
+              if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(backPiMiPiMiCandidate.M()));
+              } else {
+                NotPassMassCut = backPiMiPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+              }
+              if (NotPassMassCut) {
                 continue;
               }
             }
@@ -6904,7 +6968,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
               // Mass cut on pi+pi-
               if (((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->DoMassCut()) {
                 AliAODConversionMother backPiPlPiMiCandidate(&EventPiPlGoodMeson, &EventPiMiGoodMeson);
-                if (backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut()) {
+                Bool_t NotPassMassCut = kFALSE;
+                if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut_byFunction()){
+                  NotPassMassCut = (!((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->MassCutFunction(backPiPlPiMiCandidate.M()));
+                } else {
+                  NotPassMassCut = backPiPlPiMiCandidate.M() >= ((AliPrimaryPionCuts *)fPionCutArray->At(fiCut))->GetMassCut();
+                }
+                if (NotPassMassCut) {
                   continue;
                 }
               }

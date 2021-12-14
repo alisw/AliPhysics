@@ -190,6 +190,10 @@ fCentrality_RefMult05(0),
 fCentrality_RefMult08(0),
 fCentrality_SPDClusters(0),
 fCentrality_SPDTracklets(0),
+fZNApp(0),
+fZNCpp(0),
+fZPApp(0),
+fZPCpp(0),
 fRun(0),
 fSPDtracklets(-1),
 fSPDtrackletsA(-1),
@@ -567,6 +571,10 @@ fCentrality_RefMult05(0),
 fCentrality_RefMult08(0),
 fCentrality_SPDClusters(0),
 fCentrality_SPDTracklets(0),
+fZNApp(0),
+fZNCpp(0),
+fZPApp(0),
+fZPCpp(0),
 fMVPileupFlag(kFALSE),
 fRun(0),
 fSPDtracklets(-1),
@@ -1021,6 +1029,10 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserCreateOutputObjects
         fTreeEvent->Branch("fCentrality_RefMult08",&fCentrality_RefMult08,"fCentrality_RefMult08/F");
         fTreeEvent->Branch("fCentrality_SPDClusters",&fCentrality_SPDClusters,"fCentrality_SPDClusters/F");
         fTreeEvent->Branch("fCentrality_SPDTracklets",&fCentrality_SPDTracklets,"fCentrality_SPDTracklets/F");
+        fTreeEvent->Branch("fZNApp", &fZNApp,"fZNApp/F");
+	    fTreeEvent->Branch("fZNCpp", &fZNCpp,"fZNCpp/F");
+	    fTreeEvent->Branch("fZPApp", &fZPApp,"fZPApp/F");
+	    fTreeEvent->Branch("fZPCpp", &fZPCpp,"fZPCpp/F");
         fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
         fTreeEvent->Branch("fRun",&fRun,"fRun/I");
         fTreeEvent->Branch("fSPDtracklets",&fSPDtracklets,"fSPDtracklets/I");
@@ -1828,6 +1840,17 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
             }     
     }
 
+    // ZDC info ==========================================================
+    // read adc of ZDC
+    const Double_t *aZDCN1 = lAODevent->GetZDCData()->GetZNCTowerEnergy();
+    fZNCpp = aZDCN1[0];
+    const Double_t *aZDCN2 = lAODevent->GetZDCData()->GetZNATowerEnergy();
+    fZNApp = aZDCN2[0];
+    const Double_t *aZDCP1 = lAODevent->GetZDCData()->GetZPCTowerEnergy();
+    fZPCpp = aZDCP1[0];  
+    const Double_t *aZDCP2 = lAODevent->GetZDCData()->GetZPATowerEnergy();
+    fZPApp = aZDCP2[0];
+
     //Random denial
     Bool_t lKeepEventEntry = kTRUE;
     if(fkDownScaleEvent && ( fRand->Uniform() > fDownScaleFactorEvent )) lKeepEventEntry = kFALSE;
@@ -1944,23 +1967,26 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
         
         const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
         const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
-        Float_t lThisPosInnerP = -1;
-        Float_t lThisNegInnerP = -1;
-        Float_t lThisPosInnerPt = -1;
-        Float_t lThisNegInnerPt = -1;
-        if(innerposv0)  { lThisPosInnerP  = innerposv0 ->GetP(); }
-        if(innernegv0)  { lThisNegInnerP  = innernegv0 ->GetP(); }
-        if(innerposv0)  { lThisPosInnerPt  = innerposv0 ->Pt(); }
-        if(innernegv0)  { lThisNegInnerPt  = innernegv0 ->Pt(); }
+        Double_t lThisPosInnerP = -1;
+        Double_t lThisNegInnerP = -1;
+        Double_t lThisPosInnerPt = -1;
+        Double_t lThisNegInnerPt = -1;
+        if(innerposv0)  { lThisPosInnerP  = innerposv0->P(); }
+        if(innernegv0)  { lThisNegInnerP  = innernegv0->P(); }
+        if(innerposv0)  { lThisPosInnerPt  = innerposv0->Pt(); }
+        if(innernegv0)  { lThisNegInnerPt  = innernegv0->Pt(); }
         Float_t lThisPosdEdx = pTrack -> GetTPCsignal();
         Float_t lThisNegdEdx = nTrack -> GetTPCsignal();
         
         fTreeVariablePosdEdx = lThisPosdEdx;
         fTreeVariableNegdEdx = lThisNegdEdx;
         
-        fTreeVariablePosInnerP = lThisPosInnerP;
-        fTreeVariableNegInnerP = lThisNegInnerP;
-        
+        // fTreeVariablePosInnerP = lThisPosInnerP;
+        // fTreeVariableNegInnerP = lThisNegInnerP;
+
+        fTreeVariableNegInnerP = nTrack->GetTPCmomentum();
+        fTreeVariablePosInnerP = pTrack->GetTPCmomentum();
+
         //Daughter Eta for Eta selection, afterwards
         fTreeVariableNegEta = nTrack->Eta();
         fTreeVariablePosEta = pTrack->Eta();

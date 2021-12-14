@@ -843,11 +843,17 @@ void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 				frho->SetParameter(2,17.327223);
 				frho->SetParameter(3,-0.75409746);
 				break;
-			case 5: // AMPT
+			case 5: // AMPT (to be checked)
 				frho->SetParameter(0,-1.8832819);
 				frho->SetParameter(1,-0.18063863);
 				frho->SetParameter(2,10.062015);
 				frho->SetParameter(3,-0.57335253);
+				break;
+			case 6: // AMPT no string melting
+				frho->SetParameter(0,-1.8299821);
+				frho->SetParameter(1,-0.17885455);
+				frho->SetParameter(2,10.072160);
+				frho->SetParameter(3,-0.57360867);
 				break;
 			default:
 				frho->SetParameter(0,-2034448.6);
@@ -888,7 +894,13 @@ void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 				frho->SetParameter(2,28.243893);
 				frho->SetParameter(3,-0.70047215);
 				break;
-			case 5:
+			case 5: // AMPT string melting (to be checked)
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.0183988);
+				frho->SetParameter(2,21.348248);
+				frho->SetParameter(3,-0.61011648);
+				break;
+			case 6: // AMPT no string melting (to be checked)
 				frho->SetParameter(0,-7.8071100);
 				frho->SetParameter(1,-1.0183988);
 				frho->SetParameter(2,21.348248);

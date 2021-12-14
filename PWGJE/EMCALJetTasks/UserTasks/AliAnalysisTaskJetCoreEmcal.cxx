@@ -592,13 +592,13 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 
 	// azimuthal correlation
 
-	fhDphiPtSigPi = new TH2F("hDphiPtSPi","recoil #Delta #phi vs jet pT signal",200,0,2*TMath::Pi(),25000,-50,200);  
+	fhDphiPtSigPi = new TH2F("hDphiPtSPi","recoil #Delta #phi vs jet pT signal",200,0,2*TMath::Pi(),30000,-100,200);  
 	fhDphiPtSigPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtSigPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),25000,-50,200);  
+	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),30000,-100,200);  
 	fhDphiPtRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",200,0,2*TMath::Pi(),250,-50,200,11,-0.5,0.6);
+  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",200,0,2*TMath::Pi(),300,-100,200,11,-0.5,0.6);
 	fhDphiPtShiftRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtShiftRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 	fhDphiPtShiftRefPi->GetZaxis()->SetTitle("#rho shift (GeV)"); 

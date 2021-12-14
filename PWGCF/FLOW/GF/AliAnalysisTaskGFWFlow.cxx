@@ -491,7 +491,8 @@ Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when 
 };
 void AliAnalysisTaskGFWFlow::NotifyRun() {
   Int_t runno = fInputEvent->GetRunNumber();
-  LoadWeights(runno);
+  if(!fProduceWeights)
+    LoadWeights(runno);
 }
 Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t DisableOverlap) {
   Double_t dnx, val;

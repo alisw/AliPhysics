@@ -11,7 +11,7 @@ grid
 real
 
 # SW versions, only valid in grid
-AliPhysicsVersion: vAN-20160629-1
+AliPhysicsVersion: vAN-20211112-1
 
 # tasks to incorporate
 # only valid if not in train execution scope
@@ -25,7 +25,7 @@ Use MultiplicityTask: yes
 
 # Execution conditions
 Use multiplicity: yes
-Is Run2 dataset: no
+Is Run2 dataset: yes
 Use ESD: no
 Use AOD: yes
 
@@ -45,10 +45,10 @@ end
 Detectors:
 # detectors to use
 Use TPC: yes
-Use SPD: yes
+Use SPD: no
 Use VZERO: yes
-Use TZERO: yes
-Use FMD: yes
+Use TZERO: no
+Use FMD: no
 Use rawFMD: no
 Use ZDC: yes
 
@@ -63,13 +63,14 @@ Corrections file:
 # source: alien
 # path: alien:///alice/cern.ch/user/v/victor/TESTS
 # filename: QnVectorCorrectionsHistograms.root
-source: OADBmultiple
-path: COMMON/EVENTPLANE/framework_v2_data
+
+source: local
+path: ./pass4
 filename: CalibrationHistograms.root
 
 # run the Qn vector analysis task
 Use QnVectorAnalysisTask: no
 # correction steps: raw, plain, rec, align, twist, scale, latest
-Expected correction step: align
-Alternative correction step: rec
+Expected correction step: raw
+Alternative correction step: raw
 
