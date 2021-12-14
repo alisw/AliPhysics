@@ -8,7 +8,6 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVsRT",
                                    Bool_t  useMC  = kTRUE,
-                                   Bool_t  useData  = kTRUE,
                                    Bool_t performMCclosuretest = kFALSE,
                                    Bool_t IsHyAna = kFALSE,
                                    Double_t minpT=0.5,
@@ -48,7 +47,6 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     AliAnalysisTaskChargedVsRT* taskKno = new AliAnalysisTaskChargedVsRT("taskKno");
     if(!taskKno) return 0x0;
     taskKno->SetUseMC(useMC);
-    taskKno->SetUseData(useData);
     taskKno->SetMCclosureTest(performMCclosuretest);
     // add your task to the manager
     taskKno->SetPtMin(minpT);
