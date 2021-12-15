@@ -252,8 +252,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         continue;
     }
   
-    double *v0P, *negP, *posP;
-    casc->GetPxPyPz(v0P); nTrackCasc->GetPxPyPz(negP); pTrackCasc->GetPxPyPz(posP);
+    double v0P[3], negP[3], posP[3];
+    casc->PxPyPz(v0P); nTrackCasc->PxPyPz(negP); pTrackCasc->PxPyPz(posP);
     double alphaV0 = AlphaV0(v0P, negP, posP);
     fRecCascade->matter = alphaV0 > 0;
     fRecCascade->tpcNsigmaV0Pi = fPID->NumberOfSigmasTPC(fRecCascade->matter ? nTrackCasc : pTrackCasc, AliPID::kPion);
@@ -403,8 +403,8 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           continue;
       }
 
-      double *p, *negP, *posP;
-      v0->GetPxPyPz(p); nTrack->GetPxPyPz(negP); pTrack->GetPxPyPz(posP);
+      double p[3], negP[3], posP[3];
+      v0->PxPyPz(p); nTrack->PxPyPz(negP); pTrack->PxPyPz(posP);
       double alphaV0 = AlphaV0(p, negP, posP);
       fRecLambda->matter = alphaV0 > 0;
       auto proton = fRecLambda->matter ? pTrack : nTrack;
