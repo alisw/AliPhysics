@@ -13,7 +13,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = false,		//2
 									 int fFilterBit = 128,  //3 type of tracks we select from raw data. TPC only track with 128. With 96 (for sanity check)
 									 TString triggerData = "kINT7",	//4 minimum bias  (for default is this) or sample with high multiplicity KHM
                    int CutKaon = 0, ///7 decide which cut use (Ramona s or Oton s)
-									 const char *sTcut = "0", ///6 ask
+									 const char *sTcut = "1", ///6 for the sphericity cuts. If it s 1, it does the sphericity cuts
 									 const char *cutVariation = "0") {  ///8 to set subwagon, and vary random combination of different cuts (systematic variation)
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -38,11 +38,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = false,		//2
   evtCuts->CleanUpMult(false, false, false, true); ///to select multiplicity estimator
 
 	///ask
-	if (sTsuffix == "1")
-  {
-    evtCuts->SetSphericityCuts(0.7, 1);
-  }
-
+	   if(sTsuffix=="1"){
+		   evtCuts->SetSphericityCuts(0.7, 1.0);
+	}
 	//Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
@@ -1160,33 +1158,33 @@ const float KaonPtMax = 999;
 
   TString addon = "";
   if (triggerData == "kINT7") {
-    addon += "Minimum Bias";
+    addon += "MB";
   } else if (triggerData == "kHM") {
-    addon += "High Multiplicity";
+    addon += "HM";
   }
 
   mgr->ConnectInput(task, 0, cinput);
 
-  TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
+  TString QAName = Form("%sQA%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
   AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
 		  QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
-  TString EvtCutsName = Form("%sEvtCuts%s", addon.Data(), suffix.Data());
+  TString EvtCutsName = Form("%sEvtCuts%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
   mgr->ConnectOutput(task, 2, coutputEvtCuts);
 
-	TString TrackCutsName = Form("%sPosKaonCuts%s", addon.Data(), suffix.Data());
+	TString TrackCutsName = Form("%sPosKaonCuts%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
 			TrackCutsName.Data(), TList::Class(),
 			AliAnalysisManager::kOutputContainer,
 			Form("%s:%s", file.Data(), TrackCutsName.Data()));
 	mgr->ConnectOutput(task, 3, couputTrkCuts);
 
-	TString AntiTrackCutsName = Form("%sNegKaonCuts%s", addon.Data(), suffix.Data());
+	TString AntiTrackCutsName = Form("%sNegKaonCuts%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	AliAnalysisDataContainer *couputAntiTrkCuts = mgr->CreateContainer(
 		AntiTrackCutsName.Data(), TList::Class(),
 		AliAnalysisManager::kOutputContainer,
@@ -1195,7 +1193,7 @@ const float KaonPtMax = 999;
 
 
 	AliAnalysisDataContainer *coutputv0Cuts;
-  TString v0CutsName = Form("%sLambdaCuts%s", addon.Data(), suffix.Data());
+  TString v0CutsName = Form("%sLambdaCuts%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	coutputv0Cuts = mgr->CreateContainer(
 	      //@suppress("Invalid arguments") it works ffs
 	      v0CutsName.Data(),
@@ -1204,7 +1202,7 @@ const float KaonPtMax = 999;
 	 mgr->ConnectOutput(task, 5, coutputv0Cuts);
 
 	 AliAnalysisDataContainer *coutputAntiv0Cuts;
-		TString Antiv0CutsName = Form("%sAntiLambdaCuts%s", addon.Data(), suffix.Data());
+		TString Antiv0CutsName = Form("%sAntiLambdaCuts%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	 coutputAntiv0Cuts = mgr->CreateContainer(
 				 //@suppress("Invalid arguments") it works ffs
 				 Antiv0CutsName.Data(),
@@ -1214,7 +1212,7 @@ const float KaonPtMax = 999;
 
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString ResultsName = Form("%sResults%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
   coutputResults = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsName.Data(),
@@ -1223,7 +1221,7 @@ const float KaonPtMax = 999;
   mgr->ConnectOutput(task, 7, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
-  TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
+  TString ResultsQAName = Form("%sResultsQA%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
   coutputResultsQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsQAName.Data(),
@@ -1236,7 +1234,7 @@ const float KaonPtMax = 999;
 	if (isMC){
 
   AliAnalysisDataContainer *coutputTrkCutsMC;
-	TString TrkCutsMCName = Form("%sTrkCutsMC%s", addon.Data(), suffix.Data());
+	TString TrkCutsMCName = Form("%sTrkCutsMC%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	coutputTrkCutsMC = mgr->CreateContainer(
 			//@suppress("Invalid arguments") it works ffs
 			TrkCutsMCName.Data(),
@@ -1246,7 +1244,7 @@ const float KaonPtMax = 999;
 	mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
 
 	AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-	TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s", addon.Data(), suffix.Data());
+	TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	coutputAntiTrkCutsMC = mgr->CreateContainer(
 			//@suppress("Invalid arguments") it works ffs
 			AntiTrkCutsMCName.Data(),
@@ -1256,7 +1254,7 @@ const float KaonPtMax = 999;
 	mgr->ConnectOutput(task, 10, coutputAntiTrkCutsMC);
 
 	AliAnalysisDataContainer *coutputv0CutsMC;
-	TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
+	TString v0CutsMCName = Form("%sv0CutsMC%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	coutputv0CutsMC = mgr->CreateContainer(
 			//@suppress("Invalid arguments") it works ffs
 			v0CutsMCName.Data(),
@@ -1266,7 +1264,7 @@ const float KaonPtMax = 999;
 	mgr->ConnectOutput(task, 11, coutputv0CutsMC);
 
 	AliAnalysisDataContainer *coutputAntiv0CutsMC;
-	TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
+	TString Antiv0CutsMCName = Form("%sAntiv0CutsMC%s%s", addon.Data(), suffix.Data(), sTsuffix.Data());
 	coutputAntiv0CutsMC = mgr->CreateContainer(
 			//@suppress("Invalid arguments") it works ffs
 			Antiv0CutsMCName.Data(),
