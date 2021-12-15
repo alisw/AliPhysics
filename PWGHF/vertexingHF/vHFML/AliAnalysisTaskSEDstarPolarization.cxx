@@ -854,6 +854,12 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 
     int nMassBins = 500;
     double massMin = 0.138, massMax = 0.160;
+    TString massTitle = "#it{M}(K#pi#pi) #minus #it{M}(K#pi)";
+    if(fDecChannel == kD0toKpi) {
+        massMin = 1.65;
+        massMax = 2.15;
+        massTitle = "#it{M}(K#pi)";
+    }
 
     int nCosThetaBins = 5;
 
@@ -870,7 +876,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
     {
         TString titleSparse = Form("Reco nSparse - %s", label[iHist].Data());
         fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseReco, nBinsReco, xminReco, xmaxReco);
-        fnSparseReco[iHist]->GetAxis(0)->SetTitle("#it{M}(K#pi#pi) #minus #it{M}(K#pi) (MeV/#it{c}^{2})");
+        fnSparseReco[iHist]->GetAxis(0)->SetTitle(Form("%s (GeV/#it{c}^{2})", massTitle.Data()));
         fnSparseReco[iHist]->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
         fnSparseReco[iHist]->GetAxis(2)->SetTitle("#it{y}");
         fnSparseReco[iHist]->GetAxis(3)->SetTitle("|cos(#theta*)| (beam)");
@@ -880,7 +886,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fOutput->Add(fnSparseReco[iHist]);
 
         fnSparseRecoThetaPhiStar[iHist] = new THnSparseF(Form("fnSparseRecoThetaPhiStar_%s", label[iHist].Data()), titleSparse.Data(), 4, nBinsThetaPhiReco, xminThetaPhiReco, xmaxThetaPhiReco);
-        fnSparseRecoThetaPhiStar[iHist]->GetAxis(0)->SetTitle("#it{M}(K#pi#pi) #minus #it{M}(K#pi) (MeV/#it{c}^{2})");
+        fnSparseRecoThetaPhiStar[iHist]->GetAxis(0)->SetTitle(Form("%s (GeV/#it{c}^{2})", massTitle.Data()));
         fnSparseRecoThetaPhiStar[iHist]->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
         fnSparseRecoThetaPhiStar[iHist]->GetAxis(2)->SetTitle("#theta* (beam)");
         fnSparseRecoThetaPhiStar[iHist]->GetAxis(3)->SetTitle("#varphi* (beam)");
