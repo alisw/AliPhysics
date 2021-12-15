@@ -490,6 +490,7 @@ Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when 
   };
 };
 void AliAnalysisTaskGFWFlow::NotifyRun() {
+  if(fIsTrain) return;
   Int_t runno = fInputEvent->GetRunNumber();
   if(!fProduceWeights)
     LoadWeights(runno);
