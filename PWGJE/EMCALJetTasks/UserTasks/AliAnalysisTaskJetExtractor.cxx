@@ -547,7 +547,10 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fDoDetLevelMatching(kFALSE),
   fDoPartLevelMatching(kFALSE),
   fSimpleSecVertices(),
-  fqnVectorReader(0)
+  fqnVectorReader(0),
+  fQ2VectorValue(0.),
+  fEPangleV0(0.)
+
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -597,7 +600,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fDoDetLevelMatching(kFALSE),
   fDoPartLevelMatching(kFALSE),
   fSimpleSecVertices(),
-  fqnVectorReader(0)
+  fqnVectorReader(0),
+  fQ2VectorValue(0.),
+  fEPangleV0(0.)
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -919,11 +924,14 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       fJetTree->FillBuffer_Splittings(splittings_radiatorE, splittings_kT, splittings_theta, fSaveSecondaryVertices, splittings_secVtx_rank, splittings_secVtx_index);
     }
 
-    Float_t Q2VectorValue = 0;
-    if (fSaveQVector) Q2VectorValue = fqnVectorReader->Getq2V0();      
+    if (fSaveQVector) {
+       fQ2VectorValue = fqnVectorReader->Getq2V0();      
+       fEPangleV0 = fqnVectorReader->GetEPangleCF();    //include calibrated V0 Event Plane
+       }
+    if (!fSaveQVector)   fEPangleV0 = fEPV0;           //use uncalibrated V0 Event Plane
 
     // Fill jet to tree (here adding the minimum properties)
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, Q2VectorValue, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPV0);
+    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, fQ2VectorValue, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPangleV0);
     if(accepted)
       FillHistogram("hJetPtExtracted", jet->Pt() - GetJetContainer(0)->GetRhoVal()*jet->Area(), fCent);
     jetCount++;
