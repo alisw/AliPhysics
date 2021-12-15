@@ -56,7 +56,6 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Bool_t FillKaon(AliFemtoDreamTrack *TheTrack);
   Bool_t FillProton(AliFemtoDreamTrack *TheTrack);
   Bool_t FillDeuteron(AliFemtoDreamTrack *TheTrack);
-  Bool_t FillDeuteronMCtruth( AliAODMCParticle *TheMCpart );
 
 
 

@@ -262,7 +262,13 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAChrgNeg;    //!
   TH3F          *fHCorrectNUAkPIDPos;    //!
   TH3F          *fHCorrectNUAkPIDNeg;    //!
-
+  TH3F          *fHCorrectNUAkPIDPosPion;    //!
+  TH3F          *fHCorrectNUAkPIDNegPion;    //!
+  TH3F          *fHCorrectNUAkPIDPosKaon;    //!
+  TH3F          *fHCorrectNUAkPIDNegKaon;    //!
+  TH3F          *fHCorrectNUAkPIDPosProton;    //!
+  TH3F          *fHCorrectNUAkPIDNegProton;    //!
+  
   //// V2 
   TProfile      *hAvgV2TPCvsCent;  //!
   TProfile      *hAvgV2TPCvsCentPion;  //!
@@ -470,6 +476,7 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
  
   Double_t GetNUAWeightForTrack(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
   Double_t GetNUAWeightForTrackPID(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
+  Double_t GetNUAWeightForTrackPID(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1,Int_t gPID=0);
   Double_t GetMCEfficiencyWeightForTrack(Double_t fPt=1.0,Int_t gChrg=1,Int_t kPID=0);
 
 

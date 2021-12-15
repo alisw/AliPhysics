@@ -1256,6 +1256,10 @@ int const AliMCSpectraWeights::IdentifySecondaryType(TParticle* part){
         return -1;
     }
     auto const motherPart =  (AliMCParticle*)fMCEvent->GetTrack(motherPartLabel);
+    if(!motherPart){
+        std::cerr << "AliMCSpectraWeights::Error: could not find mother\n";
+        return -1;
+    }
     auto const motherPDG = motherPart->PdgCode();
 
     if ((TMath::Abs(motherPDG) == 3122 || TMath::Abs(motherPDG) == 3222 || TMath::Abs(motherPDG) == 3112 || TMath::Abs(motherPDG) == 3212) && motherPart->IsPhysicalPrimary()) { //&& motherPart->IsPhysicalPrimary()
@@ -1311,7 +1315,7 @@ float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenP
         return 1;
     }
 
-    auto const _SecondaryID = IdentifyMCParticle(mcGenParticle);
+    auto const _SecondaryID = IdentifySecondaryType(mcGenParticle);
     if(_SecondaryID < 0){
         std::cerr << "AliMCSpectraWeights::Error: secondary ID error\n";
         return 1;
@@ -1322,6 +1326,10 @@ float const AliMCSpectraWeights::GetWeightForSecondaryParticle(TParticle* mcGenP
         return 1;
     }
     auto const motherPart =  (AliMCParticle*)fMCEvent->GetTrack(motherPartLabel);
+    if(!motherPart){
+        std::cerr << "AliMCSpectraWeights::Error: mother is not available\n";
+        return 1;
+    }
     int _iBin = -1;
     switch (_SecondaryID) {
         case 0: // Lambda case
