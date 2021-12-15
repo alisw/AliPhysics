@@ -29,13 +29,12 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskPhiCount)
 
-            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), kDCAzCut(2.), kNSigmaPtDepXYDCA(7.), kMinTPCclusters(70.), kChi2TPCcluster(4.), kChi2TPCGlobal(36.), kChi2ITScluster(36.), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fMultSelection(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fRunName(0), kTriggerMask(0), kSgTPC_Alone(0), kSgTPC_TOFVt(0), kSgTOF_Veto(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_Run(0), fnPhiRec(0), fEventMask(0), fIsINELgt0(0), fTrueEventMask(0), fIsTrueINELgt0(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kVertexCut(0), /* fQC Histograms*/ fQC_Event_Enum_FLL(0), fQC_Event_Enum_V0M(0), fQC_Event_Enum_TRK(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Tracks_Momentum(0), fQC_Tracks_TMomentum(0), fQC_Tracks_Eta(0), fQC_Tracks_Phi(0), fQC_Tracks_V0M(0), fQC_Tracks_TRK(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAZ_PT(0), fQC_Tracks_TOF_P(0), fQC_Tracks_TOF_PT(0), fQC_Tracks_TPC_P(0), fQC_Tracks_TPC_PT(0), fQC_Kaons_Momentum(0), fQC_Kaons_TMomentum(0), fQC_Kaons_Eta(0), fQC_Kaons_Phi(0), fQC_Kaons_V0M(0), fQC_Kaons_TRK(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAZ_PT(0), fQC_Kaons_TOF_P(0), fQC_Kaons_TOF_PT(0), fQC_Kaons_TPC_P(0), fQC_Kaons_TPC_PT(0), fQC_PID_TOF_Kaons_P(0), fQC_PID_TOF_Kaons_PT(0), fQC_PID_TPC_Kaons_P(0), fQC_PID_TPC_Kaons_PT(0), fQC_PID_TPC_TOF_Kaons_PT(0), fQC_PID_TOF_NSig_SEL_Kaons_P(0), fQC_PID_TOF_NSig_SEL_Kaons_PT(0), fQC_PID_TPC_NSig_SEL_Kaons_P(0), fQC_PID_TPC_NSig_SEL_Kaons_PT(0), fQC_PID_TOF_Sgnl_SEL_Kaons_P(0), fQC_PID_TOF_Sgnl_SEL_Kaons_PT(0), fQC_PID_TPC_Sgnl_SEL_Kaons_P(0), fQC_PID_TPC_Sgnl_SEL_Kaons_PT(0), fQC_Event_Enum_V0T(0), fQC_Phi_InvMass_Rec(0), fQC_Phi_InvMass_Gen(0), fQC_Phi_InvMass_Eff(0) {
-                
+            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount() : AliAnalysisTaskSE(), kMCbool(0), kPhibool(0), kKaonbool(0), kSpherocityPTWeight(0), kComputeRT(0), kFilterBit(5), kDCAzCut(2.), kNSigmaPtDepXYDCA(7.), kMinTPCclusters(70.), kChi2TPCcluster(4.), kChi2TPCGlobal(36.), kChi2ITScluster(36.), kTPCClsOverFndbl(0), fIs_p_p(1), fIs_p_Pb(0), fIs_Pb_Pb(0), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fMultSelection(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fCurrent_SPH(0), fCurrent_RT(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fRunName(0), kTriggerMask(0), kSgTPC_Alone(0), kSgTPC_TOFVt(0), kSgTOF_Veto(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_Run(0), fnPhiRec(0), fEventMask(0), fIsINELgt0(0), fTrueEventMask(0), fIsTrueINELgt0(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kVertexCut(0), /* fQC Histograms*/ fQC_Event_Enum_FLL(0), fQC_Event_Enum_V0M(0), fQC_Event_Enum_TRK(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Tracks_Momentum(0), fQC_Tracks_TMomentum(0), fQC_Tracks_Eta(0), fQC_Tracks_Phi(0), fQC_Tracks_V0M(0), fQC_Tracks_TRK(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAZ_PT(0), fQC_Tracks_TOF_P(0), fQC_Tracks_TOF_PT(0), fQC_Tracks_TPC_P(0), fQC_Tracks_TPC_PT(0), fQC_Tracks_TPC_CLS(0), fQC_Tracks_TPC_FRC(0), fQC_Tracks_TPC_CHI(0), fQC_Tracks_TPC_CNS(0), fQC_Tracks_ITS_CHI(0), fQC_Kaons_Momentum(0), fQC_Kaons_TMomentum(0), fQC_Kaons_Eta(0), fQC_Kaons_Phi(0), fQC_Kaons_V0M(0), fQC_Kaons_TRK(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAZ_PT(0), fQC_Kaons_TOF_P(0), fQC_Kaons_TOF_PT(0), fQC_Kaons_TPC_P(0), fQC_Kaons_TPC_PT(0), fQC_PID_TOF_Kaons_P(0), fQC_PID_TOF_Kaons_PT(0), fQC_PID_TPC_Kaons_P(0), fQC_PID_TPC_Kaons_PT(0), fQC_PID_TPC_TOF_Kaons_PT(0), fQC_PID_TOF_NSig_SEL_Kaons_P(0), fQC_PID_TOF_NSig_SEL_Kaons_PT(0), fQC_PID_TPC_NSig_SEL_Kaons_P(0), fQC_PID_TPC_NSig_SEL_Kaons_PT(0), fQC_PID_TOF_Sgnl_SEL_Kaons_P(0), fQC_PID_TOF_Sgnl_SEL_Kaons_PT(0), fQC_PID_TPC_Sgnl_SEL_Kaons_P(0), fQC_PID_TPC_Sgnl_SEL_Kaons_PT(0), fQC_Event_Enum_V0T(0), fQC_Phi_InvMass_Rec(0), fQC_Phi_InvMass_Gen(0), fQC_Phi_InvMass_Eff(0), fQC_Event_Spherocity(0), fQC_Event_FullRT(0), fQC_Event_FullRF(0), fQC_Event_FullRB(0) {
             }
 
 //_____________________________________________________________________________
 
-            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount(const char* name) : AliAnalysisTaskSE(name), kMCbool(0), kPhibool(0), kKaonbool(0), kFilterBit(5), kDCAzCut(2.), kNSigmaPtDepXYDCA(7.), kMinTPCclusters(70.), kChi2TPCcluster(4.), kChi2TPCGlobal(36.), kChi2ITScluster(36.), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fMultSelection(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fRunName(0), kTriggerMask(0), kSgTPC_Alone(0), kSgTPC_TOFVt(0), kSgTOF_Veto(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_Run(0), fnPhiRec(0), fEventMask(0), fIsINELgt0(0), fTrueEventMask(0), fIsTrueINELgt0(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kVertexCut(0), /* fQC Histograms*/ fQC_Event_Enum_FLL(0), fQC_Event_Enum_V0M(0), fQC_Event_Enum_TRK(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Tracks_Momentum(0), fQC_Tracks_TMomentum(0), fQC_Tracks_Eta(0), fQC_Tracks_Phi(0), fQC_Tracks_V0M(0), fQC_Tracks_TRK(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAZ_PT(0), fQC_Tracks_TOF_P(0), fQC_Tracks_TOF_PT(0), fQC_Tracks_TPC_P(0), fQC_Tracks_TPC_PT(0), fQC_Kaons_Momentum(0), fQC_Kaons_TMomentum(0), fQC_Kaons_Eta(0), fQC_Kaons_Phi(0), fQC_Kaons_V0M(0), fQC_Kaons_TRK(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAZ_PT(0), fQC_Kaons_TOF_P(0), fQC_Kaons_TOF_PT(0), fQC_Kaons_TPC_P(0), fQC_Kaons_TPC_PT(0), fQC_PID_TOF_Kaons_P(0), fQC_PID_TOF_Kaons_PT(0), fQC_PID_TPC_Kaons_P(0), fQC_PID_TPC_Kaons_PT(0), fQC_PID_TPC_TOF_Kaons_PT(0), fQC_PID_TOF_NSig_SEL_Kaons_P(0), fQC_PID_TOF_NSig_SEL_Kaons_PT(0), fQC_PID_TPC_NSig_SEL_Kaons_P(0), fQC_PID_TPC_NSig_SEL_Kaons_PT(0), fQC_PID_TOF_Sgnl_SEL_Kaons_P(0), fQC_PID_TOF_Sgnl_SEL_Kaons_PT(0), fQC_PID_TPC_Sgnl_SEL_Kaons_P(0), fQC_PID_TPC_Sgnl_SEL_Kaons_PT(0), fQC_Event_Enum_V0T(0), fQC_Phi_InvMass_Rec(0), fQC_Phi_InvMass_Gen(0), fQC_Phi_InvMass_Eff(0) {
+            AliAnalysisTaskPhiCount::AliAnalysisTaskPhiCount(const char* name) : AliAnalysisTaskSE(name), kMCbool(0), kPhibool(0), kKaonbool(0), kSpherocityPTWeight(0), kComputeRT(0), kFilterBit(5), kDCAzCut(2.), kNSigmaPtDepXYDCA(7.), kMinTPCclusters(70.), kChi2TPCcluster(4.), kChi2TPCGlobal(36.), kChi2ITScluster(36.), kTPCClsOverFndbl(0), fIs_p_p(1), fIs_p_Pb(0), fIs_Pb_Pb(0), fAOD(0), fESD(0), fMCD(0), AODMCTrackArray(0), fPIDResponse(0), fPrimaryVertex(0), fMultSelection(0), fCurrent_Track(0), fCurrent_Track_Charge(0), fCurrent_Track_Momentum(0),fCurrent_Track_TransMom(0), fCurrent_Track_Eta(0), fCurrent_Track_Phi(0), fCurrent_Track_DCAXY(0), fCurrent_Track_DCAZ(0), fCurrent_SPH(0), fCurrent_RT(0), fIsTPCAvailable(0), fIsTOFAvailable(0), fBetaFromTOFSignal(0), fTPCSignal(0), fQCOutputList(0), fRunName(0), kTriggerMask(0), kSgTPC_Alone(0), kSgTPC_TOFVt(0), kSgTOF_Veto(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_Run(0), fnPhiRec(0), fEventMask(0), fIsINELgt0(0), fTrueEventMask(0), fIsTrueINELgt0(0), fPhiCandidate(0), fnPhi(0), fKaonCandidate(0), fnKaon(0), fPhiEfficiency(0), fnPhiTru(0), fKaonEfficiency(0), fnKaonTru(0), fAnalysisOutputList(0), kVertexCut(0), /* fQC Histograms*/ fQC_Event_Enum_FLL(0), fQC_Event_Enum_V0M(0), fQC_Event_Enum_TRK(0), fQC_Event_Vertex_Fll(0), fQC_Event_Vertex_Cut(0), fQC_Tracks_Momentum(0), fQC_Tracks_TMomentum(0), fQC_Tracks_Eta(0), fQC_Tracks_Phi(0), fQC_Tracks_V0M(0), fQC_Tracks_TRK(0), fQC_Tracks_DCAXY_P(0), fQC_Tracks_DCAXY_PT(0), fQC_Tracks_DCAZ_P(0), fQC_Tracks_DCAZ_PT(0), fQC_Tracks_TOF_P(0), fQC_Tracks_TOF_PT(0), fQC_Tracks_TPC_P(0), fQC_Tracks_TPC_PT(0), fQC_Tracks_TPC_CLS(0), fQC_Tracks_TPC_FRC(0), fQC_Tracks_TPC_CHI(0), fQC_Tracks_TPC_CNS(0), fQC_Tracks_ITS_CHI(0), fQC_Kaons_Momentum(0), fQC_Kaons_TMomentum(0), fQC_Kaons_Eta(0), fQC_Kaons_Phi(0), fQC_Kaons_V0M(0), fQC_Kaons_TRK(0), fQC_Kaons_DCAXY_P(0), fQC_Kaons_DCAXY_PT(0), fQC_Kaons_DCAZ_P(0), fQC_Kaons_DCAZ_PT(0), fQC_Kaons_TOF_P(0), fQC_Kaons_TOF_PT(0), fQC_Kaons_TPC_P(0), fQC_Kaons_TPC_PT(0), fQC_PID_TOF_Kaons_P(0), fQC_PID_TOF_Kaons_PT(0), fQC_PID_TPC_Kaons_P(0), fQC_PID_TPC_Kaons_PT(0), fQC_PID_TPC_TOF_Kaons_PT(0), fQC_PID_TOF_NSig_SEL_Kaons_P(0), fQC_PID_TOF_NSig_SEL_Kaons_PT(0), fQC_PID_TPC_NSig_SEL_Kaons_P(0), fQC_PID_TPC_NSig_SEL_Kaons_PT(0), fQC_PID_TOF_Sgnl_SEL_Kaons_P(0), fQC_PID_TOF_Sgnl_SEL_Kaons_PT(0), fQC_PID_TPC_Sgnl_SEL_Kaons_P(0), fQC_PID_TPC_Sgnl_SEL_Kaons_PT(0), fQC_Event_Enum_V0T(0), fQC_Phi_InvMass_Rec(0), fQC_Phi_InvMass_Gen(0), fQC_Phi_InvMass_Eff(0), fQC_Event_Spherocity(0), fQC_Event_FullRT(0), fQC_Event_FullRF(0), fQC_Event_FullRB(0) {
 // Define Input
 DefineInput(0, TChain::Class());
 
@@ -213,29 +212,54 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Tracks_DCAZ_PT              ->  GetZaxis()  ->  SetTitle("Z-DCA (cm)");
     fQCOutputList->Add(fQC_Tracks_DCAZ_PT);
     
-    fQC_Tracks_TOF_P                = new TH3F("fQC_Tracks_TOF_P",           "Acc. Kaons TOF Sig.",                             2, -1., 1.,  400, 0., 10., 120, 0., 1.2);
+    fQC_Tracks_TOF_P                = new TH3F("fQC_Tracks_TOF_P",           "Acc. Tracks TOF Sig.",                            2, -1., 1.,  400, 0., 10., 120, 0., 1.2);
     fQC_Tracks_TOF_P                ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Tracks_TOF_P                ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Tracks_TOF_P                ->  GetZaxis()  ->  SetTitle("#beta");
     fQCOutputList->Add(fQC_Tracks_TOF_P);
     
-    fQC_Tracks_TOF_PT               = new TH3F("fQC_Tracks_TOF_PT",          "Acc. Kaons TOF Sig.",                             2, -1., 1.,  400, 0., 10., 120, 0., 1.2);
-    fQC_Tracks_TOF_PT               ->  GetXaxis()  ->  SetTitle("Kaon Sign");
-    fQC_Tracks_TOF_PT               ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
+    fQC_Tracks_TOF_PT               = new TH3F("fQC_Tracks_TOF_PT",          "Acc. Tracks TOF Sig.",                            2, -1., 1.,  400, 0., 10., 120, 0., 1.2);
+    fQC_Tracks_TOF_PT               ->  GetXaxis()  ->  SetTitle("Track Sign");
+    fQC_Tracks_TOF_PT               ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_TOF_PT               ->  GetZaxis()  ->  SetTitle("#beta");
     fQCOutputList->Add(fQC_Tracks_TOF_PT);
     
-    fQC_Tracks_TPC_P                = new TH3F("fQC_Tracks_TPC_P",           "Acc. Kaons TPC Sig.",                             2, -1., 1.,  400, 0., 10., 100, 0., 500.);
-    fQC_Tracks_TPC_P                ->  GetXaxis()  ->  SetTitle("Kaon Sign");
-    fQC_Tracks_TPC_P                ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
+    fQC_Tracks_TPC_P                = new TH3F("fQC_Tracks_TPC_P",           "Acc. Tracks TPC Sig.",                            2, -1., 1.,  400, 0., 10., 100, 0., 500.);
+    fQC_Tracks_TPC_P                ->  GetXaxis()  ->  SetTitle("Track Sign");
+    fQC_Tracks_TPC_P                ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_Tracks_TPC_P                ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
     fQCOutputList->Add(fQC_Tracks_TPC_P);
     
-    fQC_Tracks_TPC_PT               = new TH3F("fQC_Tracks_TPC_PT",          "Acc. Kaons TPC Sig.",                             2, -1., 1.,  400, 0., 10., 100, 0., 500.);
-    fQC_Tracks_TPC_PT               ->  GetXaxis()  ->  SetTitle("Kaon Sign");
-    fQC_Tracks_TPC_PT               ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
+    fQC_Tracks_TPC_PT               = new TH3F("fQC_Tracks_TPC_PT",          "Acc. Tracks TPC Sig.",                            2, -1., 1.,  400, 0., 10., 100, 0., 500.);
+    fQC_Tracks_TPC_PT               ->  GetXaxis()  ->  SetTitle("Track Sign");
+    fQC_Tracks_TPC_PT               ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_TPC_PT               ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
     fQCOutputList->Add(fQC_Tracks_TPC_PT);
+    
+    fQC_Tracks_TPC_CLS              = new TH1F("fQC_Tracks_TPC_CLS",        "Acc. Tracks TPC Clusters",                         300, 0., 300. );
+    fQC_Tracks_TPC_CLS              ->  GetXaxis()  ->  SetTitle("TPC Clusters");
+    fQC_Tracks_TPC_CLS              ->  GetYaxis()  ->  SetTitle("Tracks");
+    fQCOutputList->Add(fQC_Tracks_TPC_CLS);
+    
+    fQC_Tracks_TPC_FRC              = new TH1F("fQC_Tracks_TPC_FRC",        "Acc. Tracks TPC Clusters over Findable",           1000, 0., 1. );
+    fQC_Tracks_TPC_FRC              ->  GetXaxis()  ->  SetTitle("TPC Clusters over Findable");
+    fQC_Tracks_TPC_FRC              ->  GetYaxis()  ->  SetTitle("Tracks");
+    fQCOutputList->Add(fQC_Tracks_TPC_FRC);
+    
+    fQC_Tracks_TPC_CHI              = new TH1F("fQC_Tracks_TPC_CHI",        "Acc. Tracks TPC Chi^2 over Clusters",              1000, 0., 10. );
+    fQC_Tracks_TPC_CHI              ->  GetXaxis()  ->  SetTitle("TPC Chi^2 over Clusters");
+    fQC_Tracks_TPC_CHI              ->  GetYaxis()  ->  SetTitle("Tracks");
+    fQCOutputList->Add(fQC_Tracks_TPC_CHI);
+    
+    fQC_Tracks_TPC_CNS              = new TH1F("fQC_Tracks_TPC_CNS",        "Acc. Tracks TPC Chi^2 Constrained Global",         500, 0., 50. );
+    fQC_Tracks_TPC_CNS              ->  GetXaxis()  ->  SetTitle("TPC Clusters");
+    fQC_Tracks_TPC_CNS              ->  GetYaxis()  ->  SetTitle("Tracks");
+    fQCOutputList->Add(fQC_Tracks_TPC_CNS);
+    
+    fQC_Tracks_ITS_CHI              = new TH1F("fQC_Tracks_ITS_CHI",        "Acc. Tracks ITS Chi^2 over Clusters",              500, 0., 50. );
+    fQC_Tracks_ITS_CHI              ->  GetXaxis()  ->  SetTitle("ITS Chi^2 over Clusters");
+    fQC_Tracks_ITS_CHI              ->  GetYaxis()  ->  SetTitle("Tracks");
+    fQCOutputList->Add(fQC_Tracks_ITS_CHI);
     
     //_____________________________________________________________________________
     //
@@ -412,19 +436,19 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //
     //  GENERAL
     //_____________________________________________________________________________
-    fQC_Phi_InvMass_Rec             = new TH2F("fQC_Phi_InvMass_Rec",             "Invariant Mass Accepted #phi",                 200, 0.75, 1.25, 100, 0.4, 10.);
+    fQC_Phi_InvMass_Rec             = new TH2F("fQC_Phi_InvMass_Rec",             "Invariant Mass Accepted #phi",               1000, 0.99, 1.08, 100, 0.0, 10.);
     fQC_Phi_InvMass_Rec             ->  GetXaxis()  ->  SetTitle("m_{K^{+}K^{-}}");
     fQC_Phi_InvMass_Rec             ->  GetYaxis()  ->  SetTitle("#epsilon");
     fQC_Phi_InvMass_Rec             ->  GetZaxis()  ->  SetTitle("Counts");
     fQCOutputList->Add(fQC_Phi_InvMass_Rec);
     
-    fQC_Phi_InvMass_Gen             = new TH2F("fQC_Phi_InvMass_Gen",             "Invariant Mass Generated #phi",                 200, 0.75, 1.25, 100, 0.4, 10.);
+    fQC_Phi_InvMass_Gen             = new TH2F("fQC_Phi_InvMass_Gen",             "Invariant Mass Generated #phi",              1000, 0.99, 1.08, 100, 0.0, 10.);
     fQC_Phi_InvMass_Gen             ->  GetXaxis()  ->  SetTitle("m_{K^{+}K^{-}}");
     fQC_Phi_InvMass_Gen             ->  GetYaxis()  ->  SetTitle("#epsilon");
     fQC_Phi_InvMass_Gen             ->  GetZaxis()  ->  SetTitle("Counts");
     fQCOutputList->Add(fQC_Phi_InvMass_Gen);
     
-    fQC_Phi_InvMass_Eff             = new TH2F("fQC_Phi_InvMass_Eff",             "Invariant Mass Efficiency #phi",                 200, 0.75, 1.25, 100, 0.4, 10.);
+    fQC_Phi_InvMass_Eff             = new TH2F("fQC_Phi_InvMass_Eff",             "Invariant Mass Efficiency #phi",             1000, 0.99, 1.08, 100, 0.0, 10.);
     fQC_Phi_InvMass_Eff             ->  GetXaxis()  ->  SetTitle("m_{K^{+}K^{-}}");
     fQC_Phi_InvMass_Eff             ->  GetYaxis()  ->  SetTitle("#epsilon");
     fQC_Phi_InvMass_Eff             ->  GetZaxis()  ->  SetTitle("Counts");
@@ -474,7 +498,6 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiEfficiency->Branch      ("Multiplicity",    &fCurrent_V0M,      "fMultiplicity/F");
     fPhiEfficiency->Branch      ("Spherocity",      &fCurrent_SPH,      "fSpherocity/F");
     fPhiEfficiency->Branch      ("nPhi",            &fnPhiTru,          "fnPhiTru/I");
-    fPhiEfficiency->Branch      ("EventMask",       &fEventMask,        "fEventMask/b");
     fPhiEfficiency->Branch      ("Px",              &fPhiTruPx,         "fPhiTruPx[fnPhiTru]/F");
     fPhiEfficiency->Branch      ("Py",              &fPhiTruPy,         "fPhiTruPy[fnPhiTru]/F");
     fPhiEfficiency->Branch      ("Pz",              &fPhiTruPz,         "fPhiTruPz[fnPhiTru]/F");
@@ -794,7 +817,7 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
     if ( fCurrent_TRK != -1 && fCurrent_TRK != -2 ) {
         for ( Int_t iTRK = 0; iTRK < fAOD->GetMultiplicity()->GetNumberOfTracklets(); iTRK++ )  {
             if ( TMath::Abs(fAOD->GetMultiplicity()->GetEta(iTRK)) < 1.0 )  {
-                fSetEventMask(3);
+                fSetEventMask(0);
                 break;
             } else  {
                 //fCurrent_V0M = 104.;
@@ -823,12 +846,12 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
 bool        AliAnalysisTaskPhiCount::fIsEventPileUp()                           {
     bool fResult    =   false;
     if ( fAOD->IsPileupFromSPD() )  {
-        fQC_Event_Enum_FLL->Fill(9,1);
+        fQC_Event_Enum_FLL->Fill("Pile-Up",1);
         fSetEventMask(1);
         fResult     =   true;
     }
     if ( fAOD->IsPileupFromSPDInMultBins() )    {
-        fQC_Event_Enum_FLL->Fill(10,1);
+        fQC_Event_Enum_FLL->Fill("Pile-Up in Mult",1);
         fSetEventMask(2);
         fResult     =   true;
     }
@@ -986,6 +1009,11 @@ void        AliAnalysisTaskPhiCount::fQC_TRK( )                                 
     fQC_Tracks_DCAXY_PT ->Fill(fCurrent_Track_Charge*0.5,   fCurrent_Track_TransMom,    fCurrent_Track_DCAXY);
     fQC_Tracks_DCAZ_P   ->Fill(fCurrent_Track_Charge*0.5,   fCurrent_Track_Momentum,    fCurrent_Track_DCAZ);
     fQC_Tracks_DCAZ_PT  ->Fill(fCurrent_Track_Charge*0.5,   fCurrent_Track_TransMom,    fCurrent_Track_DCAZ);
+    fQC_Tracks_TPC_CLS  ->Fill(fCurrent_Track->GetTPCncls() );
+    fQC_Tracks_TPC_FRC  ->Fill(fCurrent_Track->GetTPCFoundFraction() );
+    fQC_Tracks_TPC_CHI  ->Fill( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) );
+    fQC_Tracks_TPC_CNS  ->Fill(fCurrent_Track->GetChi2TPCConstrainedVsGlobal() );
+    fQC_Tracks_ITS_CHI  ->Fill( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) );
 }
 
 //_____________________________________________________________________________
@@ -1168,27 +1196,27 @@ void        AliAnalysisTaskPhiCount::Terminate( Option_t* )                     
 //_____________________________________________________________________________
 
 void        AliAnalysisTaskPhiCount::fSetEventMask( Int_t iMaskBit )            {
-    auto    fResult =   fEventMask  |   (iMaskBit);
+    auto    fResult =   fEventMask  |   BIT( iMaskBit );
     fEventMask      =   fResult;
 }
 
 //_____________________________________________________________________________
 
 void        AliAnalysisTaskPhiCount::fSetTrueEventMask( Int_t iMaskBit )        {
-    auto    fResult     =   fTrueEventMask  |   (iMaskBit);
+    auto    fResult     =   fTrueEventMask  |   BIT( iMaskBit );
     fTrueEventMask      =   fResult;
 }
 
 //_____________________________________________________________________________
 
 bool        AliAnalysisTaskPhiCount::fCheckMask( Int_t iMaskBit )               {
-    return  ( ( (iMaskBit) & fEventMask)       ==  (iMaskBit) );
+    return  ( ( BIT(iMaskBit) & fEventMask )        ==  BIT(iMaskBit) );
 }
 
 //_____________________________________________________________________________
 
 bool        AliAnalysisTaskPhiCount::fCheckTrueMask( Int_t iMaskBit )           {
-    return  ( ( (iMaskBit) & fTrueEventMask)   ==  (iMaskBit) );
+    return  ( ( BIT(iMaskBit) & fTrueEventMask )    ==  BIT(iMaskBit) );
 }
 
 //_____________________________________________________________________________
