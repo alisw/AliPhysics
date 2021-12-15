@@ -24,6 +24,9 @@
 #include "TF1.h"
 #include "AliESDVertex.h"
 #include "TMath.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+
 class AliEffFDContainer: public TNamed {
   public:
     AliEffFDContainer();
@@ -38,12 +41,15 @@ class AliEffFDContainer: public TNamed {
     void SetEta(Double_t etaLow, Double_t etaHigh) {fEtaLow = etaLow, fEta = etaHigh; };
     void AddCut(AliESDtrackCuts *inCuts);
     void AddCut(Int_t lFilterBit);
+    void EnablePID(Bool_t newval) { fAddPID = newval; };
+    void SetPIDObjects(AliPIDResponse *lPIDResponse, AliPIDCombined *lPIDCombined) {fPIDResponse = lPIDResponse; fBayesPID = lPIDCombined; if(lPIDCombined&&lPIDResponse) fAddPID=kTRUE; };
     void Fill(AliESDEvent &inputESD, AliMCEvent &inputMC);
     void Fill(AliESDEvent &inputESD);
     TList *GetOutList() { return fOutList; };
     Bool_t AddContainer(AliEffFDContainer *target);
     TH1* fetchObj(TString inname) { return (TH1*)fOutList->FindObject(makeName(inname).Data()); };
     void SetUseGenPt(Bool_t newval) { fUseGenPt = newval; };
+    void SetBayesianProbs(std::vector<Double_t> probs) {fMinBayesProb.clear(); for(auto i: probs) fMinBayesProb.push_back(i); };
   // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
@@ -53,12 +59,20 @@ class AliEffFDContainer: public TNamed {
     Double_t GetChi2TPCConstrained(const AliESDtrack *l_Tr);
     Bool_t CheckEta(Double_t &lEta) { if(fEtaLow>-999) return ((lEta>fEtaLow) && (lEta<fEta)); else return (TMath::Abs(lEta)<fEta);  };
     void SetIdentifier(TString newname) { fIdentifier->SetTitle(newname.Data()); };
-    TString makeName(TString pf) { return pf+fIdentifier->GetTitle(); };
+    Int_t GetBayesPIDIndex(AliVTrack *l_track);
+    Int_t GetTruePIDIndex(const Int_t &pdgcode);
+    TString getSpecieName(Int_t ind) {if(ind>=(Int_t)fSpNames.size() || ind<0) return "Undefined_"; return fSpNames[ind];};
+    TString makeName(TString pf, Int_t spInd=0) { return getSpecieName(spInd)+pf+fIdentifier->GetTitle(); };
     //Members
     TList *fOutList;
     TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise
     Double_t fChi2Cut;
     TF1 *fDCAXYPtCut;
+    Bool_t fAddPID;
+    Int_t fNSpecies;
+    AliPIDResponse *fPIDResponse; //! for PID
+    AliPIDCombined *fBayesPID; //! for PID
+    std::vector<Double_t> fMinBayesProb; //Minimum Bayesian probabilities
     Bool_t fIsMC;
     Bool_t fUseGenPt;
     Bool_t fInitialized;
@@ -68,10 +82,12 @@ class AliEffFDContainer: public TNamed {
     AliMCSpectraWeightsHandler* flmcWeightsHandler;//! do not store this
     AliMCSpectraWeights *flMCSpectraWeights;//! do not store
     //Pointers to histograms -- so that we don't need to look them up in the list all the time:
-    TH2D **fEff; //! Stored by TList
-    TH3D **fDCA;//! Stored by TList
-    TH2D **fWithinDCA;//! Stored by TList
+    TH2D ***fEff; //! Stored by TList
+    TH3D ***fDCA;//! Stored by TList
+    TH2D ***fWithinDCA;//! Stored by TList
+    TH2D ***fPurity;//! Stored by TList
     TNamed *fIdentifier; //
+    std::vector<TString> fSpNames;//! No need to store, defined at initialization
     //Pointers to axes
     Double_t *fPtBins; //!
     Int_t fNPtBins; //!
@@ -85,6 +101,6 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMax;
     Double_t fEta;
     Double_t fEtaLow;
-    ClassDef(AliEffFDContainer,3);
+    ClassDef(AliEffFDContainer,4);
 };
 #endif

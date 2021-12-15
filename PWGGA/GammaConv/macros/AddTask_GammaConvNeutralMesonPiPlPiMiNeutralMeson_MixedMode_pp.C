@@ -674,6 +674,22 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00062113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","01031f3400000000","0453503000000000"); // PHI7, new Gamma Energy cut 7.5 GeV
   } else if(trainConfig == 407)  { //Standard PHOS Selection Window 3 Sigma
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 Selection Window 3 Sigma
+  } else if(trainConfig == 408)  { //PHOS INT7 Standard
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard
+  } else if(trainConfig == 409)  { //Standard PHOS Selection Window 3 Sigma
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 Selection Window 3 Sigma, use d MatBud
+  } else if(trainConfig == 410)  { //PHOS INT7 Standard
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use d MatBud
+  } else if(trainConfig == 411)  { //PHOS INT7 Standard, R Bins // weights 1
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0d200009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use 2 MatBud
+    //cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use m MatBud
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dh00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use h MatBud
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0di00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use i MatBud
+  } else if(trainConfig == 412)  { //PHOS INT7 Standard, R Bins // weights 1
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dj00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use j MatBud
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dk00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use k MatBud
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dl00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use l MatBud
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dg00009f9730000dge0404000","24466190sa01cc00000","32c51070a","0103103400000000","0453503000000000"); // INT7 Standard, use g MatBud
   //QA Plots
   } else if(trainConfig == 415)  { // Standard PHOS MB, no shared TPC clusters, Shared cluster Fraction =0
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32e51070a","0103103400000000","0453503000000000"); // INT7
@@ -1158,8 +1174,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 2305)  { //EMCal + DCal INT7, N.Pi cut var. Selection Window, Std 1 -> 2 sigma
     //                                                                                                      0103103200000000
     //                                                                                                             |
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103u00000000","0453503000000000"); // INT7, 1 sigma, NEEDS CHANGE AS THIS IS EMCEMC
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103v00000000","0453503000000000"); // INT7, 3 sigma, NEEDS CHANGE AS THIS IS EMCEMC
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103e00000000","0453503000000000"); // INT7, 1.5 sigma
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","0103103f00000000","0453503000000000"); // INT7, 2.5 sigma
   } else if(trainConfig == 2306)  { //EMCal + DCal INT7, N.Pi cut var. open. angle, Std 0 -> off
     //                                                                                                      0103103200000000
     //                                                                                                                    |
@@ -1436,8 +1452,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 3305)  { //EMCal + DCal EG2, N.Pi cut var. Selection Window, Std 1 -> 2 sigma
     //                            0008e113   0dm00009f9730000dge0404000   411790109fe30220000   32c51070a   01031v3200000000   0453503000000000
     //                                                                                                             |
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3u00000000","0453503000000000"); // EG2, 1 sigma, NEEDS CHANGE AS THIS IS EMCEMC
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3v00000000","0453503000000000"); // EG2, 3 sigma, NEEDS CHANGE AS THIS IS EMCEMC
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3e00000000","0453503000000000"); // EG2, 1.5 sigma
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3f00000000","0453503000000000"); // EG2, 2.5 sigma
   } else if(trainConfig == 3306)  { //EMCal + DCal EG2, N.Pi cut var. open. angle, Std 0 -> off
     //                            0008e113   0dm00009f9730000dge0404000   411790109fe30220000   32c51070a   01031v3200000000   0453503000000000
     //                                                                                                                    |
@@ -1717,8 +1733,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 4305)  { //EMCal + DCal EG1, N.Pi cut var. Selection Window, Std 1 -> 2 sigma
     //                            0008d113   0dm00009f9730000dge0404000   411790109fe30220000   32c51070a   01031v3200000000   0453503000000000
     //                                                                                                             |
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3u00000000","0453503000000000"); // EG1, 1 sigma, NEEDS CHANGE AS THIS IS EMCEMC
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3v00000000","0453503000000000"); // EG1, 3 sigma, NEEDS CHANGE AS THIS IS EMCEMC
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3e00000000","0453503000000000"); // EG1, 1.5 sigma
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32c51070a","01031v3f00000000","0453503000000000"); // EG1, 2.5 sigma
   } else if(trainConfig == 4306)  { //EMCal + DCal EG1, N.Pi cut var. open. angle, Std 0 -> off
     //                            0008d113   0dm00009f9730000dge0404000   411790109fe30220000   32c51070a   01031v3200000000   0453503000000000
     //                                                                                                                    |

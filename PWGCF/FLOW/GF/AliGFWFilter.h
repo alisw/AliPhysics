@@ -63,7 +63,7 @@ namespace GFWFlags {
                     kDCA4Sigma, kDCA10Sigma,
                     kChiSq2, kChiSq3,
                     kNTPC80, kNTPC90, kNTPC100,
-                    kFB768Tuned, kFB96Tuned,
+                    kFB96Tuned, kFB768Tuned,
                     kFB768DCAz,
                     kFB768DCAxyLow,
                     kFB768DCAxyHigh,

@@ -25,7 +25,12 @@ AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample():
   fIsMC(kFALSE),
   fUseGenPt(kTRUE),
   fMCEvent(0),
+  fAddPID(kFALSE),
+  fPIDResponse(0),
+  fBayesPID(0),
+  fBayesPIDProbs({0.95,0.85,0.85}),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
+  fVtxZCut(10),
   fEfFd(0),
   fEtaMin(-0.8),
   fEtaMax(0.8),
@@ -46,7 +51,12 @@ AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample(const char *name, Bool_
   fIsMC(IsMC),
   fUseGenPt(kTRUE),
   fMCEvent(0),
+  fAddPID(kFALSE),
+  fPIDResponse(0),
+  fBayesPID(0),
+  fBayesPIDProbs({0.95,0.85,0.85}),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
+  fVtxZCut(10),
   fEfFd(0),
   fEtaMin(-0.8),
   fEtaMax(0.8),
@@ -100,6 +110,18 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
   //Instead, filter bits 32, 64, 256, and 512 are implemented:
   if(fTCtoAdd) for(Int_t i=0;i<fTCtoAdd->GetEntries();i++) fEfFd->AddCut((AliESDtrackCuts*)fTCtoAdd->At(i));
   if(fFBtoAdd) fEfFd->AddCut(fFBtoAdd);
+  //Checking & setting up PID, if needed
+  if(fAddPID) {
+    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    fPIDResponse = inputHandler->GetPIDResponse();
+    fBayesPID = new AliPIDCombined();
+    fBayesPID->SetDefaultTPCPriors();
+    fBayesPID->SetSelectedSpecies(AliPID::kSPECIES);
+    fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+    fEfFd->SetPIDObjects(fPIDResponse,fBayesPID);
+    fEfFd->SetBayesianProbs(fBayesPIDProbs);
+  };
   PostData(1,fEfFd);
 };
 void AliAnalysisTaskEffFDExample::UserExec(Option_t*) {
@@ -110,6 +132,7 @@ void AliAnalysisTaskEffFDExample::UserExec(Option_t*) {
   if(!(fTriggerType&fSelMask)) return ;
   //Checking event cuts
   if(!fEventCuts.AcceptEvent(fESD)) return;
+  if(TMath::Abs(fESD->GetPrimaryVertex()->GetZ())>fVtxZCut) return;
   //Fetching MC event
   if(fIsMC) {
     fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());

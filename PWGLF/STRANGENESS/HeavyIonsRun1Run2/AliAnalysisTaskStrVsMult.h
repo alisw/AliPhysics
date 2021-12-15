@@ -44,6 +44,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetIsMC(bool IsMC){fisMC = IsMC;};
     void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
 
+    //pile-up rejection setter
+    void SetRejectPileUpEvts(bool RejectPileupEvts){fRejectPileupEvts = RejectPileupEvts;};
+
   private:
     THistManager* fHistos_eve;                                //!
     THistManager* fHistos_K0S;                                //!
@@ -60,6 +63,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
 
     //AliEventCuts object
     AliEventCuts fEventCuts;                                  //
+
+    //pile-up rejection flag
+    bool fRejectPileupEvts;                                   //
 
     //MC-realted variables
     bool fisMC;                                               //

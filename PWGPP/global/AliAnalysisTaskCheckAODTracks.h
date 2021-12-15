@@ -142,7 +142,8 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   
   TList*  fOutput;                   //!<!  list of output histos
 
-  TH1F* fHistNEvents;                  //!<!  histo with N of events  
+  TH1F* fHistNEvents;                  //!<!  histo with N of events
+  TH2F* fHistGenPilTag;                //!<!  histo of pileup tag in MC
   TH1F* fHistNTracks;                  //!<!  histo with N of tracks
   TH2F* fHistNTracksVsTPCclusters;     //!<! histos of track-cluster correlations
   TH2F* fHistNTracksVsITSclusters;     //!<! histos of track-cluster correlations
@@ -305,7 +306,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,29);
+  ClassDef(AliAnalysisTaskCheckAODTracks,30);
 };
 
 

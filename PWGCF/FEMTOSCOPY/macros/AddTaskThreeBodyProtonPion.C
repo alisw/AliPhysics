@@ -369,6 +369,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProto
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
+    taskNano->SetDoTwoPrimary(false);
     
     
     mgr->AddTask(taskNano);

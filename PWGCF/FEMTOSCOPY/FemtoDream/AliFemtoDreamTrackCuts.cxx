@@ -692,7 +692,7 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
    }
   
-  }else{ // Deuteron TOF selection
+  }else{ // Deuteron TPC selection
    if(p<1.4&&TPCd<fcutTPCkd) passTPC = true;//momentum theshold && own TPC deuteron kaon selection
   }
  }else{

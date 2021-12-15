@@ -1,5 +1,9 @@
+/* -------------------------------------------
+ * Maintainer: Mingrui Zhao
+ */
 #include "AliAnalysisTaskNonlinearFlow.h"
 #include "AliGFWCuts.h"
+#include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 
@@ -69,6 +73,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     AliAnalysisTaskSE(),
     fEventCuts(),
     fGFWSelection(NULL),
+    fGFWSelection15o(NULL),
     fAOD(0),
     fitssatrackcuts(0),
     fEtaCut(0.8),
@@ -178,6 +183,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   AliAnalysisTaskSE(name),
   fEventCuts(),
   fGFWSelection(NULL),
+  fGFWSelection15o(NULL),
   fAOD(0),
   fitssatrackcuts(0),
   fEtaCut(0.8),
@@ -306,6 +312,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   AliAnalysisTaskSE(name),
   fEventCuts(),
   fGFWSelection(NULL),
+  fGFWSelection15o(NULL),
   fAOD(0),
   fitssatrackcuts(0),
   fEtaCut(0.8),
@@ -448,6 +455,7 @@ AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
   for (int i = 0; i < 10; i++) if (QDis3subR[i]) delete QDis3subR[i];
 
   if (fGFWSelection) delete fGFWSelection;
+  if (fGFWSelection15o) delete fGFWSelection15o;
 }
 
 //______________________________________________________________________________
@@ -473,8 +481,13 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fPileUpCutMV = true;
   }
 
-  fGFWSelection = new AliGFWCuts();
-  fGFWSelection->PrintSetup();
+  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+    fGFWSelection15o = new AliGFWNFCuts();
+    fGFWSelection15o->PrintSetup();
+  } else {
+    fGFWSelection = new AliGFWCuts();
+    fGFWSelection->PrintSetup();
+  }
 
   if (fNtrksName == "Mult") {
     nn = 200 + 56;
@@ -728,19 +741,37 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   }
   hEventCount->Fill("after fEventCuts", 1.);
 
-  fGFWSelection->ResetCuts();
+  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+    fGFWSelection15o->ResetCuts();
+  } else {
+    fGFWSelection->ResetCuts();
+  }
   //..filling Vz distribution
   AliVVertex *vtx = fAOD->GetPrimaryVertex();
   float fVtxZ = vtx->GetZ();
-  if (!fGFWSelection->AcceptVertex(fAOD)) {
-    PostData(1,fListOfObjects);
-    int outputslot = 2;
-    PostData(2, fListOfProfile);
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      PostData(outputslot, fListOfProfiles[i]);
-    }
-    return;
+
+  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
+	    PostData(1,fListOfObjects);
+	    int outputslot = 2;
+	    PostData(2, fListOfProfile);
+	    for (int i = 0; i < 30; i++) {
+	      outputslot++;
+	      PostData(outputslot, fListOfProfiles[i]);
+	    }
+	    return;
+	  }
+  } else {
+	  if (!fGFWSelection->AcceptVertex(fAOD)) {
+	    PostData(1,fListOfObjects);
+	    int outputslot = 2;
+	    PostData(2, fListOfProfile);
+	    for (int i = 0; i < 30; i++) {
+	      outputslot++;
+	      PostData(outputslot, fListOfProfiles[i]);
+	    }
+	    return;
+	  }
   }
 
   // checking the run number for aplying weights & loading TList with weights
@@ -773,16 +804,30 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   NTracksCalculation(fInputEvent);
 
   // Setup AliGFWCuts for a specific systematics
-  fGFWSelection->SetupCuts(fCurrSystFlag);
-  if (!fGFWSelection->AcceptVertex(fAOD)) {
-    PostData(1,fListOfObjects);
-    int outputslot = 2;
-    PostData(2, fListOfProfile);
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      PostData(outputslot, fListOfProfiles[i]);
+  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+    fGFWSelection15o->SetupCuts(fCurrSystFlag);
+    if (!fGFWSelection15o->AcceptVertex(fAOD)) {
+      PostData(1,fListOfObjects);
+      int outputslot = 2;
+      PostData(2, fListOfProfile);
+      for (int i = 0; i < 30; i++) {
+        outputslot++;
+        PostData(outputslot, fListOfProfiles[i]);
+      }
+      return;
     }
-    return;
+  } else {
+   fGFWSelection->SetupCuts(fCurrSystFlag);
+    if (!fGFWSelection->AcceptVertex(fAOD)) {
+      PostData(1,fListOfObjects);
+      int outputslot = 2;
+      PostData(2, fListOfProfile);
+      for (int i = 0; i < 30; i++) {
+        outputslot++;
+        PostData(outputslot, fListOfProfiles[i]);
+      }
+      return;
+    }
   }
   // Check the VtxZ distribution
   fVtxAfterCuts->Fill(fVtxZ);
@@ -2395,7 +2440,12 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+
+  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+    return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  } else {
+    return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  }
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) {

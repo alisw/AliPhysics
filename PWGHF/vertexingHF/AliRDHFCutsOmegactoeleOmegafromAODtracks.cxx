@@ -715,11 +715,11 @@ Bool_t AliRDHFCutsOmegactoeleOmegafromAODtracks::SingleCascadeCuts(AliAODcascade
   Double_t massXi = casc->MassXi();
   Double_t massOmega = casc->MassOmega();
 
-  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmega)
+  if(TMath::Abs(massOmega-momegaPDG)>fProdMassTolOmegaRough)
      return kFALSE;
 
-  if(TMath::Abs(massXi-mxiPDG)<fProdMassRejXi)
-  return kFALSE;
+//  if(TMath::Abs(massXi-mxiPDG)<fProdMassRejXi)
+//  return kFALSE;
   
   Double_t lPosXi[3];
   lPosXi[0] = casc->DecayVertexXiX();

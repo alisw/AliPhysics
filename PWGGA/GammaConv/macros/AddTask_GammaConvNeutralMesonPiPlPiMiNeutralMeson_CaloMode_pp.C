@@ -1361,6 +1361,42 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","01031s3100000000","0453503000000000"); // EG1
   } else if(trainConfig == 1185)  { //EDC 13TeV EG1, min/max pt cut v (no min pt, max pt  25gev), NCell: n NCell2 + NCell effi in MC
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe3n220000","32c51070a","01031v3100000000","0453503000000000"); // EG1
+  } else if(trainConfig == 1200)  { //EMCal + DCal INT7 Ch Pi MassCut function o -> 0<Mass<470 & 510<Mass<650
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070o","0103103100000000","0453503000000000"); //INT7 MassCut o
+  } else if(trainConfig == 1201)  { //EMCal + DCal INT7 Ch Pi MassCut function p -> 0<Mass<470 & 510<Mass<700
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070p","0103103100000000","0453503000000000"); //INT7 MassCut p
+  } else if(trainConfig == 1202)  { //EMCal + DCal INT7 Ch Pi MassCut function q -> 0<Mass<470 & 510<Mass<850
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070q","0103103100000000","0453503000000000"); //INT7 MassCut q
+  } else if(trainConfig == 1203)  { //EMCal + DCal INT7 Ch Pi MassCut function o -> 0<Mass<470 & 510<Mass<650, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51073o","0103103100000000","0453503000000000"); //INT7 MassCut o, ToF 3
+  } else if(trainConfig == 1204)  { //EMCal + DCal INT7 Ch Pi MassCut function p -> 0<Mass<470 & 510<Mass<700, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51073p","0103103100000000","0453503000000000"); //INT7 MassCut p, ToF 3
+  } else if(trainConfig == 1205)  { //EMCal + DCal INT7 Ch Pi MassCut function q -> 0<Mass<470 & 510<Mass<850, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51073q","0103103100000000","0453503000000000"); //INT7 MassCut q, ToF 3
+  } else if(trainConfig == 1210)  { //EMCal + DCal EG2 Ch Pi MassCut function o -> 0<Mass<470 & 510<Mass<650
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070o","01031v3100000000","0453503000000000"); //EG2 MassCut o
+  } else if(trainConfig == 1211)  { //EMCal + DCal EG2 Ch Pi MassCut function p -> 0<Mass<470 & 510<Mass<700
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070p","01031v3100000000","0453503000000000"); //EG2 MassCut p
+  } else if(trainConfig == 1212)  { //EMCal + DCal EG2 Ch Pi MassCut function q -> 0<Mass<470 & 510<Mass<850
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51070q","01031v3100000000","0453503000000000"); //EG2 MassCut q
+  } else if(trainConfig == 1213)  { //EMCal + DCal EG2 Ch Pi MassCut function o -> 0<Mass<470 & 510<Mass<650, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51073o","01031v3100000000","0453503000000000"); //EG2 MassCut o, ToF 3
+  } else if(trainConfig == 1214)  { //EMCal + DCal EG2 Ch Pi MassCut function p -> 0<Mass<470 & 510<Mass<700, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51073p","01031v3100000000","0453503000000000"); //EG2 MassCut p, ToF 3
+  } else if(trainConfig == 1215)  { //EMCal + DCal EG2 Ch Pi MassCut function q -> 0<Mass<470 & 510<Mass<850, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32c51073q","01031v3100000000","0453503000000000"); //EG2 MassCut q, ToF 3
+  } else if(trainConfig == 1220)  { //EMCal + DCal EG1 Ch Pi MassCut function o -> 0<Mass<470 & 510<Mass<650
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070o","01031v3100000000","0453503000000000"); //EG1 MassCut o
+  } else if(trainConfig == 1221)  { //EMCal + DCal EG1 Ch Pi MassCut function p -> 0<Mass<470 & 510<Mass<700
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070p","01031v3100000000","0453503000000000"); //EG1 MassCut p
+  } else if(trainConfig == 1222)  { //EMCal + DCal EG1 Ch Pi MassCut function q -> 0<Mass<470 & 510<Mass<850
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51070q","01031v3100000000","0453503000000000"); //EG1 MassCut q
+  } else if(trainConfig == 1223)  { //EMCal + DCal EG1 Ch Pi MassCut function o -> 0<Mass<470 & 510<Mass<650, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51073o","01031v3100000000","0453503000000000"); //EG1 MassCut o, ToF 3
+  } else if(trainConfig == 1224)  { //EMCal + DCal EG1 Ch Pi MassCut function p -> 0<Mass<470 & 510<Mass<700, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51073p","01031v3100000000","0453503000000000"); //EG1 MassCut p, ToF 3
+  } else if(trainConfig == 1225)  { //EMCal + DCal EG1 Ch Pi MassCut function q -> 0<Mass<470 & 510<Mass<850, ToF 3 -> -3, 5 Sigma
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32c51073q","01031v3100000000","0453503000000000"); //EG1 MassCut q, ToF 3
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // EMC pp 13 TeV Fitting, Systematics

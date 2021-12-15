@@ -55,7 +55,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
     UInt_t evfl = calculateEventFlag();
     fRetFlags->SetEventFlags(evfl);
     Double_t pt, eta, trXYZ[3], trDCAxy;
-    Float_t nTPCCLSsh, nTPCcl;
+    UShort_t nTPCCLSsh, nTPCcl;
     for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
       fAODTrack = (AliAODTrack*)fAOD->GetTrack(i);
       if(!fAODTrack) continue;
@@ -70,9 +70,9 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(fAODTrack->TestFilterBit(256)) AddTr(klFB256);
       if(fAODTrack->TestFilterBit(512)) AddTr(klFB512);
       //Testing shared clusters
-      nTPCCLSsh = fAODTrack->GetTPCnclsS()*1.0;
-      nTPCcl    = fAODTrack->GetTPCncls()*1.0;
-      if(nTPCCLSsh/nTPCcl <= 0.4) AddTr(klSharedClusters);
+      nTPCCLSsh = fAODTrack->GetTPCnclsS();
+      nTPCcl    = fAODTrack->GetTPCncls();
+      if(nTPCCLSsh*1.0/nTPCcl <= 0.4) AddTr(klSharedClusters);
       //Testing hit on first layer SDD
       if(fAODTrack->HasPointOnITSLayer(4)) AddTr(klHitOnSDD); //2xSPD, 2xSSD, 2xSDD
       if(!fAODTrack->HasPointOnITSLayer(0) && !fAODTrack->HasPointOnITSLayer(1)) AddTr(klNoSPD); //No hits in SPD -> Necessary for FB 96<->768 overlap
@@ -100,7 +100,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(tpcChi2PerCluster<=2.5) AddTr(klTPCchi2PC25);
       if(tpcChi2PerCluster<=3.0) AddTr(klTPCchi2PC30);
       //Checking number of TPC clusters:
-      Int_t nTPCCls = fAODTrack->GetTPCNclsF();
+      UShort_t nTPCCls = fAODTrack->GetTPCNclsF();
       if(nTPCCls>70) AddTr(klNTPCcls70);
       if(nTPCCls>80) AddTr(klNTPCcls80);
       if(nTPCCls>90) AddTr(klNTPCcls90);
@@ -109,7 +109,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(TSB(klFB32)||TSB(klFB64)) AddTr(klFB96);
       if(TSB(klFB96)&&TSB(klSharedClusters)) AddTr(klFB96Tuned); //Tuned to overlap with 768 (modified)
       if(TSB(klFB256)||TSB(klFB512)) AddTr(klFB768);
-      if(TSB(klFB256)||TB(klFB512+klHitOnSDD+klNoSPD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
+      if(TSB(klFB256)||TB(klFB512+klNoSPD+klHitOnSDD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
       UInt_t flagToAdd = calculateTrackFlag();
       if(flagToAdd) fRetFlags->AddTrackFlags(i,flagToAdd); //Only count ones that pass any cuts
     };

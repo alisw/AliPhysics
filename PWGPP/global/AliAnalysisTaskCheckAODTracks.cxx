@@ -12,6 +12,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include <AliAODMCParticle.h>
+#include <AliAODMCHeader.h>
 #include "AliAnalysisUtils.h"
 #include "AliEventCuts.h"
 #include <TSystem.h>
@@ -58,6 +59,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   AliAnalysisTaskSE("QAofAODtracks"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
+  fHistGenPilTag{nullptr},
   fHistNTracks{nullptr},
   fHistNTracksVsTPCclusters{nullptr},
   fHistNTracksVsITSclusters{nullptr},
@@ -237,6 +239,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistGenPilTag;
     delete fHistNTracks;
     delete fHistNTracksVsTPCclusters;
     delete fHistNTracksVsITSclusters;
@@ -438,6 +441,10 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(8,"Reject generated pileup");
   fOutput->Add(fHistNEvents);
 
+  fHistGenPilTag = new TH2F("hGenPilTag"," ; from fMCEvent ; from AliAODMCHeader",2,-0.5,1.5,2,-0.5,1.5);
+  fOutput->Add(fHistGenPilTag);
+
+  
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
   fOutput->Add(fHistNTracks);
   fHistNTracksVsTPCclusters = new TH2F("hNTracksVsTPCclusters"," ; N_{TPCclusters} ; N_{tracks}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
@@ -747,11 +754,17 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
   
   TClonesArray *arrayMC=0;
-
+  AliAODMCHeader *aodMcHeader = 0x0;
+  
   if(fReadMC){
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
       Printf("ERROR: MC particles branch not found!\n");
+      return;
+    }
+    aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if(!aodMcHeader) {
+      Printf("ERROR: MC header branch not found!\n");
       return;
     }
   }
@@ -849,11 +862,13 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   fHistNEvents->Fill(6);
 
   // in PbPb reject events with generated pileup
-  if(fMCEvent && ((runNumb >= 244917 && runNumb <= 246994) || (runNumb >= 295369 && runNumb <= 297624))){
-    if(fRejectPbPbEventsWithGeneratedPileup && AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ijing")) return;
+  if(fMCEvent && aodMcHeader && ((runNumb >= 244917 && runNumb <= 246994) || (runNumb >= 295369 && runNumb <= 297624))){
+    Bool_t isPileupMCEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ijing");
+    Bool_t isPileupAODheader = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMcHeader,"ijing");
+    fHistGenPilTag->Fill(isPileupMCEvent,isPileupAODheader);
+    if(fRejectPbPbEventsWithGeneratedPileup && isPileupAODheader) return;
   }
   fHistNEvents->Fill(7);
-  
   
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);

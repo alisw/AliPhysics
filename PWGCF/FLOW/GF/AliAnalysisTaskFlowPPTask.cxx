@@ -296,7 +296,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	//So I annotated the code of fEventCuts Settings
     //..Settings for AliEventCuts:
 	//..This adds QA plots to the output
-	//fEventCuts.AddQAplotsToList(fListOfObjects);
+	fEventCuts.AddQAplotsToList(fListOfObjects);
 	//..kINT7 is set in the class as default, if I want to have kHigHMultV0 in pp, I have to switch to manual mode
     //fEventCuts.SetManualMode();
 	//fEventCuts.fRequireTrackVertex = false; // !!
@@ -405,6 +405,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	}
 
 	
+	
 	//fPeriod is set in AddTask
 	if (fPeriod.EqualTo("LHC15o")) {
 		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
@@ -412,26 +413,25 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 			return;
 		}
 	} else {
-		
+		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
 		//Standard AliEventCuts for events
 		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
 			PostData(1,fListOfObjects);
 			return;
 		}
 
+
 		//Additional Cuts
-
-		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
-
+		//if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
 		//Get MultSelection Object
-		AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-		if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
+		//AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+		//if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
 		//Use MultSelection cut
-		if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
-	
-		Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
-		if(nTracksPrim < 0.5) { return; }
+		//if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
+		//Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
+		//if(nTracksPrim < 0.5) { return; }
 	}
+
 	hEventCount->Fill("after fEventCuts", 1.);
 
 	//..filling Vz distribution

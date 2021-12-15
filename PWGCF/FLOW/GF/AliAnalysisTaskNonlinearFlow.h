@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
 #include "AliGFWCuts.h"
+#include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -273,6 +274,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		AliEventCuts	fEventCuts;					// Event cuts
 		AliGFWCuts*     fGFWSelection;                                  //!
+		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
@@ -285,11 +287,11 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t			fSample;				// number of sample
 		Int_t			fTrigger;				// flag for trigger
 		Int_t			fAliTrigger;				// name for trigger
-		// Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
+		// Bool_t		fLS;					// charge, 1:all, 2:pp,  3: mm
 		Bool_t			fNUE;					// flag for NUE correction
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
-		bool        fIsMC;        // The observable for MonteCarlo truth
-		TString                 fNtrksName;                                 // Cent or Mult
+		bool                    fIsMC;                                  // The observable for MonteCarlo truth
+		TString                 fNtrksName;                             // Cent or Mult
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                              // Systematics flag
 		Bool_t      fSpringMode;                                            // The mode with spring cuts.

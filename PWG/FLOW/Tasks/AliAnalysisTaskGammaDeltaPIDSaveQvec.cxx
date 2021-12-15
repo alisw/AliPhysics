@@ -178,6 +178,12 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
+  fHCorrectNUAkPIDPosPion(NULL),
+  fHCorrectNUAkPIDNegPion(NULL),
+  fHCorrectNUAkPIDPosKaon(NULL),
+  fHCorrectNUAkPIDNegKaon(NULL),
+  fHCorrectNUAkPIDPosProton(NULL),
+  fHCorrectNUAkPIDNegProton(NULL),
   
   hAvgV2TPCvsCent(NULL),
   hAvgV2TPCvsCentPion(NULL),
@@ -503,6 +509,12 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
+  fHCorrectNUAkPIDPosPion(NULL),
+  fHCorrectNUAkPIDNegPion(NULL),
+  fHCorrectNUAkPIDPosKaon(NULL),
+  fHCorrectNUAkPIDNegKaon(NULL),
+  fHCorrectNUAkPIDPosProton(NULL),
+  fHCorrectNUAkPIDNegProton(NULL),
   
   hAvgV2TPCvsCent(NULL),
   hAvgV2TPCvsCentPion(NULL),
@@ -1289,8 +1301,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	ptWgtMCPIDtrk1 = 1.0;
 
 
-	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);    
-	WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);       
+	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);          
 	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0);
 
 	wgtComb1Ch  = WgtNUAChtrk1*ptWgtMCChtrk1;    /// Charge
@@ -1308,6 +1319,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	isTrk1Pion = CheckPIDofParticle(AODtrack1,1); // 1 for pion
 	if (isTrk1Pion) {
 		ptWgtMCPiontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,1);
+		WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg,1); 
 		wgtComb1PIDPion = WgtNUAPIDtrk1*ptWgtMCPiontrk1;
 	}
 	
@@ -1316,6 +1328,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	isTrk1Kaon = CheckPIDofParticle(AODtrack1,2); // 2 for kaon
 	if (isTrk1Kaon) {
 		ptWgtMCKaontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,2);
+		WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg,2); 
 		wgtComb1PIDKaon = WgtNUAPIDtrk1*ptWgtMCKaontrk1;
 	}
 	
@@ -1324,6 +1337,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	isTrk1Proton = CheckPIDofParticle(AODtrack1,3); // 3 for proton
 	if (isTrk1Proton) {
 		ptWgtMCProtontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,3);
+		WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg,3); 
 		wgtComb1PIDProton = WgtNUAPIDtrk1*ptWgtMCProtontrk1;
 	}
 	
@@ -1501,7 +1515,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 
 
 		WgtNUAChtrk2  = GetNUAWeightForTrack(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);    
-		WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);       
 		ptWgtMCChtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,0);
 		
 		wgtComb2Ch  = WgtNUAChtrk2*ptWgtMCChtrk2;      /// Combined weight for trk2 Ch
@@ -1520,6 +1533,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		isTrk2Pion = CheckPIDofParticle(AODtrack2,1); // 1 for pion
 		if (isTrk2Pion) {
 			ptWgtMCPionTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,1);
+			WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg,1);
 			wgtComb2PIDPion = WgtNUAPIDtrk2*ptWgtMCPionTrk2;
 		}
 		
@@ -1528,6 +1542,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		isTrk2Kaon = CheckPIDofParticle(AODtrack2,2); // 2 for kaon
 		if (isTrk2Kaon) {
 			ptWgtMCKaonTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,2);
+			WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg,2);
 			wgtComb2PIDKaon = WgtNUAPIDtrk2*ptWgtMCKaonTrk2;
 		}
 		
@@ -1536,6 +1551,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		isTrk2Proton = CheckPIDofParticle(AODtrack2,3); // 2 for proton
 		if (isTrk2Proton) {
 			ptWgtMCProtonTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,3);
+			WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg,3);
 			wgtComb2PIDProton = WgtNUAPIDtrk2*ptWgtMCProtonTrk2;
 		}
 	
@@ -3648,6 +3664,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::GetNUACorrectionHist(Int_t run, Int_t
     fHCorrectNUAkPIDPos = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d",kParticleID,run)); 
     fHCorrectNUAkPIDNeg = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d",kParticleID,run)); 
     
+    fHCorrectNUAkPIDPosPion = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID10Pos_Run%d",run)); 
+    fHCorrectNUAkPIDNegPion = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID10Neg_Run%d",run));
+    fHCorrectNUAkPIDPosKaon = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID20Pos_Run%d",run)); 
+    fHCorrectNUAkPIDNegKaon = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID20Neg_Run%d",run));
+    fHCorrectNUAkPIDPosProton = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID30Pos_Run%d",run)); 
+    fHCorrectNUAkPIDNegProton = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID30Neg_Run%d",run));
+    
     if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
       cout<<" ===========> Info:: Setting up NUA corrections for Charge, run = "<<run<<endl;   
     }
@@ -4171,6 +4194,56 @@ Double_t AliAnalysisTaskGammaDeltaPIDSaveQvec::GetNUAWeightForTrackPID(Double_t 
   return WgtNUAtrk1;
 }
 
+
+Double_t AliAnalysisTaskGammaDeltaPIDSaveQvec::GetNUAWeightForTrackPID(Double_t fVtxZ,Double_t fPhi,Double_t fEta,Int_t gChrg,Int_t gPID){
+
+  Double_t WgtNUAtrk1 = 1.0;
+  Int_t    iBinforNUA = 0;
+
+  /// It is responsibility of User to Set the Correct NUA file for the PID needed. 
+  if(gChrg>0){
+	if(gPID==1) {// pion
+      if(fHCorrectNUAkPIDPosPion){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDPosPion->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDPosPion->GetBinContent(iBinforNUA);
+      }
+	} else if(gPID==2) {//kaon
+	  if(fHCorrectNUAkPIDPosKaon){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDPosKaon->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDPosKaon->GetBinContent(iBinforNUA);
+      }
+	} else if (gPID==3) {//proton
+	  if(fHCorrectNUAkPIDPosProton){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDPosProton->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDPosProton->GetBinContent(iBinforNUA);
+      }
+	} else {
+	  printf("\n\n **WARNING** ::GetNUAWeightForTrackPID() Unknown PID.\n\n");
+	}
+  }
+  else{
+    if(gPID==1) {// pion
+      if(fHCorrectNUAkPIDNegPion){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDNegPion->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDNegPion->GetBinContent(iBinforNUA);
+      }
+	} else if(gPID==2) {//kaon
+	  if(fHCorrectNUAkPIDNegKaon){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDNegKaon->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDNegKaon->GetBinContent(iBinforNUA);
+      }
+	} else if (gPID==3) {//proton
+	  if(fHCorrectNUAkPIDNegProton){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDNegProton->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDNegProton->GetBinContent(iBinforNUA);
+      }
+	} else {
+	  printf("\n\n **WARNING** ::GetNUAWeightForTrackPID() Unknown PID.\n\n");
+	}
+  }
+  
+  return WgtNUAtrk1;
+}
 
 
 void AliAnalysisTaskGammaDeltaPIDSaveQvec::ApplyTPCqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t& qxEtaNeg, Double_t& qyEtaNeg,Double_t& qxEtaPos,Double_t& qyEtaPos){

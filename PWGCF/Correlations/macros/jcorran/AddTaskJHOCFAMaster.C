@@ -122,7 +122,9 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   
     if (strcmp(configNames[i].Data(), "zvtx") == 0) {    
       fJCatalyst[i]->SetZVertexCut(10.0);
-    } // Else: do nothing, default is 8.
+    } else {  // Default value for JCorran analyses in Run 2.
+      fJCatalyst[i]->SetZVertexCut(8.0);
+    }
 
     if (strcmp(configNames[i].Data(), "nqq") == 0) {
       fJCatalyst[i]->SetParticleCharge(-1);
