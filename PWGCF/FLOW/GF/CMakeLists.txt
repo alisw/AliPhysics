@@ -74,6 +74,7 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliGFWFilter.cxx)
   list(APPEND SRCS AliGFWFilterTask.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
+  list(APPEND SRCS AliGFWNFCuts.cxx)
 endif()
 
 # Headers from sources
