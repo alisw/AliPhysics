@@ -4,6 +4,7 @@
 //
 // Author: S. Sakai
 
+#include <TGrid.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -1387,6 +1388,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             cout << "fptAssocut = " << fptAssocut << endl;
            }
 
+	if(!gGrid){
+                cout << "no Grid connection, connecting to the Grid ..." << endl; 
+		TGrid::Connect("alien//");
+	}   
+
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
   fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
@@ -1501,18 +1507,39 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	  }
   }
 
+  //cout << "fDelta_pT = " << fDelta_pT << endl;
+
   if(!ippcoll)
     {
      if(fMCarray && !fDelta_pT)
         {
+            //cout << " get delta pT " << endl;
+            //cout << " fJetEtaCut = " << fJetEtaCut << endl;
             TFile* fBGgrac = TFile::Open(fbgfracFile.Data());
-            if(fJetEtaCut==0.7)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR02");           
-            if(fJetEtaCut==0.6)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR03");           
-            if(fJetEtaCut==0.5)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR04");           
-            if(fJetEtaCut==0.3)fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR06");           
+            //cout << " fBGgrac = " << fBGgrac << endl;
+            if(fJetEtaCut>0.69 && fJetEtaCut<0.71) // R=0.2
+               {
+               fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR02");
+              }           
+            else if(fJetEtaCut>0.59 && fJetEtaCut<0.61) // R=0.3
+               {  
+                //cout << "get bgfrac for 0.3 " << endl;
+                fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR03");
+                //cout << "check fDelta_pT = " << fDelta_pT << endl;
+               }           
+            else if(fJetEtaCut>0.49 && fJetEtaCut<0.51) // R=0.4
+              {
+               fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR04");  
+              }         
+            else if(fJetEtaCut>0.29 && fJetEtaCut<0.31) // R=0.6
+              {
+               fDelta_pT = (TH1D*)fBGgrac->Get("bgfracR06");
+              } 
+            else fDelta_pT = 0x0;          
         }
     }
 
+  //cout << "fDelta_pT = " << fDelta_pT << endl;
 
   // track
   //ftrack = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));

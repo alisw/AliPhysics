@@ -907,7 +907,8 @@ void AliAnalysisTaskDeuteronsRT::ProcessSimEvent ()  {
         if (!particle) continue;
         if (!particle->IsPhysicalPrimary()) continue;
         if ( TMath::Abs(particle->PdgCode()) != 1000010020 ) continue;
-
+        if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMCEvent)) continue;
+        
         //Rapidity Cut
         Double_t m = AliPID::ParticleMass(AliPID::kDeuteron);
         Double_t E = TMath::Sqrt(m*m + particle->P()*particle->P());

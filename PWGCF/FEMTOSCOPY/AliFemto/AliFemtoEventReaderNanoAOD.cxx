@@ -563,7 +563,18 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	trackCopy->SetNSigmaTPCE(nsigmaTPCE);
 	trackCopy->SetNSigmaTPCD(nsigmaTPCD);
 
- 	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
+    // dowang 2021.8.30 for t/He3 identification
+    static const Int_t kcstNSigmaTPCT = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kTriton);
+    static const Int_t kcstNSigmaTPCHe3 = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kHe3);
+    if(kcstNSigmaTPCT!=-1){
+        const float nsigmaTPCT = aodtrack->GetVar(kcstNSigmaTPCT);
+        trackCopy->SetNSigmaTPCT(nsigmaTPCT);
+    }
+    if(kcstNSigmaTPCHe3!=-1){
+        const float nsigmaTPCHe3 = aodtrack->GetVar(kcstNSigmaTPCHe3);
+        trackCopy->SetNSigmaTPCH(nsigmaTPCHe3);
+    }
+//	trackCopy->SetTPCsignal(aodtrack->GetTPCsignal());
 //	trackCopy->SetTPCsignalS(1);
 //	trackCopy->SetTPCsignalN(aodtrack->GetTPCsignalN());
 
@@ -594,6 +605,17 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	trackCopy->SetNSigmaTOFE(nsigmaTOFE);
 	trackCopy->SetNSigmaTOFD(nsigmaTOFD);
 
+    // dowang 2021.8.30 for t/He3 identification
+    static const Int_t kcstNSigmaTOFT = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kTriton);
+    static const Int_t kcstNSigmaTOFHe3 = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kHe3);
+    if(kcstNSigmaTOFT!=-1){
+      const float nsigmaTOFT = aodtrack->GetVar(kcstNSigmaTOFT);
+      trackCopy->SetNSigmaTOFT(nsigmaTOFT);
+    }
+    if(kcstNSigmaTOFHe3!=-1){
+      const float nsigmaTOFHe3 = aodtrack->GetVar(kcstNSigmaTOFHe3);
+      trackCopy->SetNSigmaTOFH(nsigmaTOFHe3);
+    }
 //	trackCopy->SetTOFsignal(aodtrack->GetTOFsignal());
 
       }
@@ -810,7 +832,7 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNclsF());
 
-  tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+  //tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   //tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   //tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
 

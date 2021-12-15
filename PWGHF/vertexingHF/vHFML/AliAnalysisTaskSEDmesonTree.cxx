@@ -1,9 +1,9 @@
-/* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 //*************************************************************************
 // \class AliAnalysisTaskSEDmesonTree
-// \brief Analysis task to produce trees of Lc candidates for ML analyses of non-prompt Lc
+// \brief Analysis task to produce trees of D-meson candidates for ML analyses
 // \authors:
 // F. Grosa, fabrizio.grosa@cern.ch
 /////////////////////////////////////////////////////////////
@@ -150,12 +150,12 @@ void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
     fHistNEvents->SetMinimum(0);
     fOutput->Add(fHistNEvents);
 
-    fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
-    fSPDMultCand = new TH1F("hSPDMultCand", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
-    fSPDMultCandInMass = new TH1F("hSPDMultCandInMass", "Tracklets multiplicity; Tracklets ; Entries", 201, -0.5, 200.5);
-    fOutput->Add(fSPDMult);
-    fOutput->Add(fSPDMultCand);
-    fOutput->Add(fSPDMultCandInMass);
+    fSPDMultVsCent = new TH2F("hSPDMultVsCent", "Tracklets multiplicity vs. centrality; Centrality (%); Tracklets", 100, 0., 100., 201, -0.5, 200.5);
+    fSPDMultVsCentCand = new TH2F("hSPDMultVsCentCand", "Tracklets multiplicity vs. centrality; Centrality (%); Tracklets", 100, 0., 100., 201, -0.5, 200.5);
+    fSPDMultVsCentCandInMass = new TH2F("hSPDMultVsCentCandInMass", "Tracklets multiplicity vs. centrality; Centrality (%); Tracklets", 100, 0., 100., 201, -0.5, 200.5);
+    fOutput->Add(fSPDMultVsCent);
+    fOutput->Add(fSPDMultVsCentCand);
+    fOutput->Add(fSPDMultVsCentCandInMass);
 
     // Sparses for efficiencies (only gen)
     if(fReadMC)
@@ -275,6 +275,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     }
 
     TClonesArray *arrayCand = nullptr;
+    TClonesArray *arrayCandDDau = nullptr;
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
         // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -297,6 +298,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     break;
                 case kDstartoD0pi:
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
+                    arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
                     break;
             }
         }
@@ -313,11 +315,12 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                 break;
             case kDstartoD0pi:
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
+                arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
                 break;
         }
     }
 
-    if (!fAOD || !arrayCand)
+    if (!fAOD || !arrayCand || (fDecChannel == kDstartoD0pi && !arrayCandDDau))
     {
         AliError("Candidate branch not found!\n");
         PostData(1, fOutput);
@@ -355,6 +358,11 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     AliAODMCHeader *mcHeader = nullptr;
     int Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD, -1., 1.);
 
+    double centrality = -999.;
+    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+    if(multSelection)
+        centrality = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
+
     // load MC particles
     if (fReadMC)
     {
@@ -386,7 +394,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     }
 
     fHistNEvents->Fill(4); // accepted event
-    fSPDMult->Fill(Ntracklets);
+    fSPDMultVsCent->Fill(centrality, Ntracklets);
 
     // check if the train includes the common ML selector for the given charm-hadron species
     AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
@@ -419,19 +427,29 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
     for (size_t iCand = 0; iCand < chHadIdx.size(); iCand++)
     {
         AliAODRecoDecayHF *dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
+        AliAODRecoDecayHF *dMesonWithVtx;
+        if(fDecChannel == kDstartoD0pi)
+        {
+            if(dMeson->GetIsFilled()<1)
+                dMesonWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(dMeson->GetProngID(1)));
+            else
+                dMesonWithVtx = dynamic_cast<AliAODRecoCascadeHF *>(dMeson)->Get2Prong();
+        }
+        else
+            dMesonWithVtx = dMeson;
 
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
         bool isInSignalRegion = false;
-        int isSelected = IsCandidateSelected(dMeson, &vHF, unsetVtx, recVtx, origOwnVtx, isInSignalRegion);
+        int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, &vHF, unsetVtx, recVtx, origOwnVtx, isInSignalRegion);
         if (!isSelected)
         {
             if (unsetVtx)
-                dMeson->UnsetOwnPrimaryVtx();
+                dMesonWithVtx->UnsetOwnPrimaryVtx();
             if (recVtx)
-                fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
+                fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
             continue;
         }
 
@@ -566,7 +584,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                         fMLhandler->FillTree();
                 }
-                break;
+                continue;
             }
             else
             {
@@ -599,7 +617,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                 bool okSetVar = fMLhandler->SetVariables(dMeson, fAOD->GetMagneticField(), 0, pidHF);
                 if (okSetVar && !(fReadMC && !isSignal && !isBkg && !isPrompt && !isFD && !isRefl)) // add tag in tree handler for signal from pileup events?
                     fMLhandler->FillTree();
-                break;
+                continue;
             }
         }
 
@@ -609,10 +627,6 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             std::vector<double> modelPred = {};
             bool isMLsel = false;
             double ptCand = dMeson->Pt();
-            double centrality = -999.;
-            AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-            if(multSelection)
-                centrality = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
 
             if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
             {
@@ -761,16 +775,16 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         }
 
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         if (recVtx)
-            fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
     }
 
     if(nSelected > 0)
     {
-        fSPDMultCand->Fill(Ntracklets);
+        fSPDMultVsCentCand->Fill(centrality, Ntracklets);
         if(nSelectedInMass > 0)
-            fSPDMultCandInMass->Fill(Ntracklets);
+            fSPDMultVsCentCandInMass->Fill(centrality, Ntracklets);
     }
 
     PostData(1, fOutput);
@@ -780,10 +794,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, bool &isInSignalRegion)
+int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, bool &isInSignalRegion)
 {
 
-    if (!dMeson || !vHF)
+    if (!dMeson || !dMesonWithVtx || !vHF)
         return 0;
     fHistNEvents->Fill(11);
 
@@ -795,7 +809,11 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
 
     for (int iDau = 0; iDau < nDau; iDau++)
     {
-        AliAODTrack *track = vHF->GetProng(fAOD, dMeson, iDau);
+        AliAODTrack *track;
+        if ((fDecChannel != kDstartoD0pi) || (iDau == 0))
+            track = vHF->GetProng(fAOD, dMeson, iDau);
+        else
+            track = vHF->GetProng(fAOD, dMesonWithVtx, iDau-1); //D0<-D* daughters
         arrDauTracks.AddAt(track, iDau);
     }
 
@@ -836,9 +854,9 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     fHistNEvents->Fill(12);
 
     unsetVtx = false;
-    if (!dMeson->GetOwnPrimaryVtx())
+    if (!dMesonWithVtx->GetOwnPrimaryVtx())
     {
-        dMeson->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
+        dMesonWithVtx->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
         unsetVtx = true;
         // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
         // Pay attention if you use continue inside this loop!!!
@@ -853,7 +871,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
         if (pseudoRand > fFracCandToKeep && ptD < fMaxCandPtSampling)
         {
             if (unsetVtx)
-                dMeson->UnsetOwnPrimaryVtx();
+                dMesonWithVtx->UnsetOwnPrimaryVtx();
             return 0;
         }
     }
@@ -862,7 +880,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     if (ptBin < 0)
     {
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -870,7 +888,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     if (!isFidAcc)
     {
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -878,7 +896,7 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
     if (!isSelected)
     {
         if (unsetVtx)
-            dMeson->UnsetOwnPrimaryVtx();
+            dMesonWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -887,12 +905,12 @@ int AliAnalysisTaskSEDmesonTree::IsCandidateSelected(AliAODRecoDecayHF *&dMeson,
 
     if (fRDCuts->GetIsPrimaryWithoutDaughters())
     {
-        if (dMeson->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*dMeson->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(dMeson, fAOD))
+        if (dMesonWithVtx->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*dMesonWithVtx->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(dMesonWithVtx, fAOD))
             recVtx = true;
         else
-            fRDCuts->CleanOwnPrimaryVtx(dMeson, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(dMesonWithVtx, fAOD, origOwnVtx);
     }
 
     double mass = -1.;
@@ -1079,7 +1097,7 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             break;
     }
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 100, 201, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 1000, 201, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., -0.5, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 2*ptLims[nPtBinsCutObj], 100., 200.5, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
     int nVars = 6;

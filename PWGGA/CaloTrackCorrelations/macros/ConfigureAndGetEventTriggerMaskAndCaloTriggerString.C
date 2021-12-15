@@ -43,6 +43,11 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
     mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central mask %d\n",mask);
   }
+  else if( trigger.Contains("AllMB_EMDCAL_L1") )
+  {
+    mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central | EMCEGA mask %d\n",mask);
+  }
   else if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
   {
     mask = ( AliVEvent::kINT7 | AliVEvent::kMB );
@@ -135,16 +140,25 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
     mask = ( AliVEvent::kEMCEGA );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
   }
+
   if ( trigger.Contains("CaloOnly") )
   {
     mask = AliVEvent::kCaloOnly;
     printf("\t If periods without TPC, change trigger mask %d!!!!\n",mask);
-    
-    if ( trigger.Contains("L0") )
-      triggerString = "CDMC7PER";
-    
-    if ( trigger.Contains("MB") )
-      triggerString = "CINT7-B-NOPF-CALOPLUS";
+
+    if ( year == 2018 )
+    {
+      if ( trigger.Contains("L0") )
+        triggerString = "CDMC7PER";
+
+      if ( trigger.Contains("MB") )
+        triggerString = "CINT7-B-NOPF-CALOPLUS";
+    }
+    else
+    {
+      if ( trigger.Contains("L0") )
+        triggerString = "MC7-B-NOPF-CALOFAST";
+    }
   }
   
   return mask;

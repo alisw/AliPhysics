@@ -74,6 +74,9 @@
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2MC+;
 #pragma link C++ class AliAnalysisTaskV0multspec+;
+#pragma link C++ class AliAnalysisTaskXiNucleusInteraction+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

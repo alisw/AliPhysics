@@ -20,6 +20,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/FlowVectorCorrections
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -63,6 +64,7 @@ set(SRCS
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
     AliAnalysisTaskRhoTransDev.cxx
+    AliAnalysisTaskRhoPerpCone.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
     AliEmcalJetTaggerTaskFast.cxx
@@ -149,7 +151,6 @@ set(SRCS
     Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
-    Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
     Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
     Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
@@ -186,7 +187,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
-    UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
@@ -237,7 +237,6 @@ set(SRCS
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
     UserTasks/AliAnalysisTaskTrackSkim.cxx
-
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
@@ -246,7 +245,11 @@ set(SRCS
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
-    UserTasks/AliMCParticleContainerToyModel.cxx)
+    UserTasks/AliMCParticleContainerToyModel.cxx
+    UserTasks/AliAnalysisTaskRawJetWithEP.cxx
+    UserTasks/AliPieceWisePoly.cxx
+    FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
+)
 
 # Tasks that need direct access to RooUnfold
 if(RooUnfold_FOUND)
@@ -284,6 +287,7 @@ if(FASTJET_FOUND)
             UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
 	    UserTasks/AliAnalysisTaskJetPull.cxx
+	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
@@ -294,6 +298,9 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
+        UserTasks/AliHelperClassFastSimulation.cxx
+        UserTasks/AliJEQnVectorHandler.cxx
         UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
@@ -311,6 +318,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
@@ -340,7 +348,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
+  if(ROOT_VERSION_MINOR LESS_EQUAL 20)
     set(ROOT_DEPENDENCIES PyROOT)
+  else()
+    set(ROOT_DEPENDENCIES ROOTTPython)
+  endif()
 else()
     set(ROOT_DEPENDENCIES)
 endif()
@@ -423,3 +435,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWGJE/EMCALJetTasks)
+install (DIRECTORY FlowVectorCorrections/macros DESTINATION PWGJE/EMCALJetTasks/FlowVectorCorrections)

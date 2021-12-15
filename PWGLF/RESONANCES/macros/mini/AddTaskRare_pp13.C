@@ -158,8 +158,8 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
         for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-        for(j=1;j<20;j++){multbins[nmult]=0.01*j; nmult++;}
-        for(j=2;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+        for(j=1;j<30;j++){multbins[nmult]=0.01*j; nmult++;}
+        for(j=3;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
         for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
     }
     nmult--;
@@ -3905,7 +3905,10 @@ Bool_t Config_Xik0(
         multbins[nmult]=15.; nmult++;
         for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
     }else{
-        multbins[nmult]=0.; nmult++;
+        multbins[nmult]=0.01; nmult++;
+        multbins[nmult]=0.02; nmult++;
+        multbins[nmult]=0.03; nmult++;
+        multbins[nmult]=0.04; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.06; nmult++;
         multbins[nmult]=0.07; nmult++;
@@ -3922,22 +3925,40 @@ Bool_t Config_Xik0(
         multbins[nmult]=0.18; nmult++;
         multbins[nmult]=0.19; nmult++;
         multbins[nmult]=0.2; nmult++;
-        multbins[nmult]=1.; nmult++;
+        multbins[nmult]=0.21; nmult++;
+        multbins[nmult]=0.22; nmult++;
+        multbins[nmult]=0.23; nmult++;
+        multbins[nmult]=0.24; nmult++;
+        multbins[nmult]=0.25; nmult++;
+        multbins[nmult]=0.26; nmult++;
+        multbins[nmult]=0.27; nmult++;
+        multbins[nmult]=0.28; nmult++;
+        multbins[nmult]=0.29; nmult++;
+        multbins[nmult]=0.3; nmult++;
     }
     
     // pT binning
     Double_t ptbins[200];
     int npt=0;
-    ptbins[npt]=0.; npt++;
-    ptbins[npt]=1.; npt++;
-    ptbins[npt]=2.; npt++;
-    for(j=1;j<=20;j++){ptbins[npt]=2+j*0.1; npt++;}
-    for(j=1;j<=6;j++){ptbins[npt]=4+j*0.5; npt++;}
-    ptbins[npt]=8; npt++;
-    ptbins[npt]=9; npt++;
+    ptbins[npt]=2; npt++;
+    ptbins[npt]=2.2; npt++;
+    ptbins[npt]=2.4; npt++;
+    ptbins[npt]=2.5; npt++;
+    ptbins[npt]=2.6; npt++;
+    ptbins[npt]=2.8; npt++;
+    ptbins[npt]=3; npt++;
+    ptbins[npt]=3.2; npt++;
+    ptbins[npt]=3.4; npt++;
+    ptbins[npt]=3.5; npt++;
+    ptbins[npt]=3.6; npt++;
+    ptbins[npt]=3.8; npt++;
+    ptbins[npt]=4; npt++;
+    ptbins[npt]=4.5; npt++;
+    ptbins[npt]=5; npt++;
+    ptbins[npt]=5.5; npt++;
+    ptbins[npt]=6; npt++;
+    ptbins[npt]=7; npt++;
     ptbins[npt]=10; npt++;
-    ptbins[npt]=15; npt++;
-    ptbins[npt]=20; npt++;
     
     // -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,    kFALSE);
@@ -4029,7 +4050,7 @@ Bool_t Config_Xik0(
         
         if(j<=6){
             //if(xID==imID) out->AddAxis(imID,240,1.8,3);// axis X: invmass
-            if(xID==imID || xID==mmID) out->AddAxis(xID,400,1.8,2.2);// axis X: invmass
+            if(xID==imID || xID==mmID) out->AddAxis(xID,380,1.82,2.2);// axis X: invmass
             else out->AddAxis(diffID,200,-0.02,0.02);// axis X: resolution
             out->AddAxis(ptID,npt,ptbins);//200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity

@@ -39,6 +39,7 @@
 #include "TTree.h"
 
 #include "AliParticleContainer.h"
+#include "AliAODMCHeader.h"
 
 //________________________________________________________________
 //****************************************************************
@@ -55,6 +56,7 @@ class AliParticleTreeHandler : public TObject
   
     // Setters
     void SetParticleContainer(AliParticleContainer* partCont) { fParticleContainer = partCont; }
+    void SetMCHeader(AliAODMCHeader* MCHeader) { fMCHeader = MCHeader; }
 
   protected:
   
@@ -66,7 +68,8 @@ class AliParticleTreeHandler : public TObject
     // Each tree structure is completely flat -- the branches are all primitive types.
   
     TTree*                       fTreeParticle;            ///< Tree with particle variables
-  
+    bool                         fIsMCGen;                 //!<! Flag for whether tree is for MC gen particles
+    AliAODMCHeader*              fMCHeader;                //!<! MC header (only used in case is_mc_gen=true)
     AliParticleContainer*        fParticleContainer;       //!<! Particle container for this tree
   
     // Track quantities.
@@ -81,7 +84,7 @@ class AliParticleTreeHandler : public TObject
     Long64_t                     fEventIDLong;                 //!<! event ID (unique identifier when run number is fixed), full 64 bits of fEventIDLong
 
   /// \cond CLASSIMP
-  ClassDef(AliParticleTreeHandler,1); ///
+  ClassDef(AliParticleTreeHandler,2); ///
   /// \endcond
 };
 

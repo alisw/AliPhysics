@@ -53,7 +53,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     // Jet functions
     void ProcessJets();
-    Bool_t IsClusterInJet(Double_t clusEta, Double_t clusPhi, Bool_t isTrueJet, Int_t &matchedJet, Double_t &RJetPi0Cand);
 
     // for electron contamination
     void ProcessElectronCont();
@@ -412,7 +411,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 46);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 47);
 };
 
 #endif

@@ -18,10 +18,10 @@ struct MiniLambda {
   Double32_t eta;
   Double32_t mass;
   Double32_t ct;
-  Double32_t radius;      //[0,50.8,8]
+  Double32_t radius;      //[0,101.6,8]
   Double32_t dcaV0PV;     //[0,10.16,8]
-  Double32_t dcaPiPV;     //[0,10.16,8]
-  Double32_t dcaPrPV;     //[0,10.16,8]
+  Double32_t dcaPiPV;     //[0,20.32,8]
+  Double32_t dcaPrPV;     //[0,20.32,8]
   Double32_t dcaV0tracks; //[0,2.54,8]
   Double32_t cosPA;       //[0.95,1,16]
   Double32_t tpcNsigmaPi; //[-5,5,8]
@@ -42,6 +42,7 @@ struct MiniLambdaMC : public MiniLambda {
   int pdg;
   bool isPrimary;
   bool isReconstructed;
+  unsigned char flag;
 };
 
 struct MiniCascade {
@@ -82,10 +83,17 @@ struct MiniCascadeMC : public MiniCascade {
   float yMC;
   int pdg;
   bool isReconstructed;
+  unsigned char flag;
 };
 
 class AliAnalysisTaskStrangenessRatios : public AliAnalysisTaskSE {
 public:
+  enum StatusFlag {
+    kPrimary = BIT(0),
+    kSecondaryFromWD = BIT(1),
+    kSecondaryFromMaterial = BIT(2)
+  };
+
   AliAnalysisTaskStrangenessRatios(bool isMC = false, TString taskname = "StrangenessRatios");
   static AliAnalysisTaskStrangenessRatios* AddTask(bool isMC, TString tskname, TString suffix);
   virtual ~AliAnalysisTaskStrangenessRatios();

@@ -344,6 +344,8 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2017pp();
   void InitLctopKpi20161718pp13TeV();
   void InitLctopKpi20161718pp13TeVFineBins();
+  void InitLctopKpi2018PbPb010();
+  void InitLctopKpi2018PbPb3050();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
@@ -402,6 +404,7 @@ class AliHFSystErr : public TNamed
   void InitNonPromptDzerotoKpi2018PbPb5TeV010ML();
   void InitNonPromptDzerotoKpi2018PbPb5TeV3050ML();
   void InitNonPromptDplustoKpipi2017pp5TeVML();
+  void InitNonPromptLctopK0s20161718pp13TeVML();
   void InitNonPromptDstoKKpi2017pp5TeVML();
   void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
 
@@ -436,7 +439,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,15);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,16);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

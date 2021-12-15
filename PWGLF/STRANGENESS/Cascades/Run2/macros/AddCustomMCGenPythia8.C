@@ -13,7 +13,7 @@ AliGenerator* AddCustomMCGenPythia8( TString lTune          = "pp",
   gSystem->Load("liblhapdf");
   
   AliGenerator *genP  = NULL;
-  if( !lTune.Contains("pp") ){
+  if( lTune.Contains("pp") ){
     genP                = CreatePythia8GenCustom(lTune, e_cms);
   }else{
     genP                = CreatePythia8GenPbPb(lTune, e_cms);
@@ -231,11 +231,11 @@ AliGenerator* CreatePythia8GenPbPb( TString lTune,
   std::cout << " Desired PYTHIA configuration: "<< lTune.Data()<< std::endl;
   std::cout << "*****************************************************************" << std::endl;
   // set process (MB)
-  if(lTune.EqualTo("PbPb")) gener->SetProcess(kPyAngantyr);
-  if(lTune.EqualTo("XeXe")) gener->SetProcess(kPyAngantyrXeXe);
-  if(lTune.EqualTo("KrKr")) gener->SetProcess(kPyAngantyrKrKr);
-  if(lTune.EqualTo("ArAr")) gener->SetProcess(kPyAngantyrArAr);
-  if(lTune.EqualTo("OO")) gener->SetProcess(kPyAngantyrOO);
+//  if(lTune.EqualTo("PbPb")) gener->SetProcess(kPyAngantyr);
+//  if(lTune.EqualTo("XeXe")) gener->SetProcess(kPyAngantyrXeXe);
+//  if(lTune.EqualTo("KrKr")) gener->SetProcess(kPyAngantyrKrKr);
+//  if(lTune.EqualTo("ArAr")) gener->SetProcess(kPyAngantyrArAr);
+//  if(lTune.EqualTo("OO")) gener->SetProcess(kPyAngantyrOO);
   
   //Centre of mass energy
   gener->SetEnergyCMS(e_cms); // in GeV

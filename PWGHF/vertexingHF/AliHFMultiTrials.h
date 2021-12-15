@@ -93,6 +93,7 @@ class AliHFMultiTrials : public TNamed {
   TH1F* SetTemplateRefl(const TH1F *hTemplRefl);
 
   void SetFixRefoS(Float_t refloS){fFixRefloS=refloS;}
+  void SetAcceptValidFit(){fAcceptValidFit=kTRUE;}
 
   void AddInvMassFitSaveAsFormat(std::string format) { fInvMassFitSaveAsFormats.insert(format); }
   void DisableInvMassFitSaveAs() { fInvMassFitSaveAsFormats.clear(); }
@@ -179,9 +180,10 @@ class AliHFMultiTrials : public TNamed {
   Double_t fMaxYieldGlob;   /// maximum yield
 
   std::vector<AliHFMassFitterVAR*> fMassFitters; //!<! Mass fitters
+  Bool_t fAcceptValidFit; /// accept fits proviing ROOT::Fit::FitResult::IsValid() true, neverteless the status code
 
   /// \cond CLASSIMP
-  ClassDef(AliHFMultiTrials,5); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFMultiTrials,6); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 

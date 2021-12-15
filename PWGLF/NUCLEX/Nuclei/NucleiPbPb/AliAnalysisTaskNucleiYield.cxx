@@ -36,7 +36,6 @@
 #include "AliMCEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliVEventHandler.h"
-#include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 
@@ -158,6 +157,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDisableITSatHighPt{100.f}
    ,fDisableTPCpidAtHighPt{100.f}
    ,fEnablePtCorrection{false}
+   ,fRequireITSrefit{true}
+   ,fRequireTPCrefit{true}
    ,fRequireITSrecPoints{2u}
    ,fRequireTPCrecPoints{0u}
    ,fRequireITSsignal{0u}
@@ -169,6 +170,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireYmin{-0.5f}
    ,fRequireYmax{0.5f}
    ,fRequireMaxChi2{4.f}
+   ,fRequireMaxITSChi2{36.f}
    ,fRequireMaxDCAxy{0.12f}
    ,fRequireMaxDCAz{1.f}
    ,fRequireTPCpidSigmas{3.f}
@@ -190,6 +192,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fITSelectronRejectionSigma{-1.}
    ,fBeamRapidity{0.f}
    ,fEstimator{0}
+   ,fRequireLongMCTracks{false}
+   ,fRequirePrimaryFromDistance{false}
+   ,fDistCut{0.001}
    ,fEnableFlattening{false}
    ,fSaveTrees{false}
    ,fTOFminPtTrees{100}
@@ -555,6 +560,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
   TClonesArray *stack = nullptr;
   fRejectedParticles.clear();
+  std::vector<std::pair<int, SLightNucleus>> genParticles;
   if (fIsMC || fPtShape) {
     AliAODMCHeader *mcHeader = (AliAODMCHeader *)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (!mcHeader){
@@ -598,12 +604,13 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           }
         }
         SetSLightNucleus(part,fSimNucleus);
-        fSTree->Fill();
+        genParticles.emplace_back(iMC, fSimNucleus);
       }
       if (part->IsPhysicalPrimary() && fIsMC) fTotal[iC]->Fill(fCentrality,part->Pt());
     }
   }
 
+  fRecoNucleiMCindex.clear();
   /// Checking how many deuterons in acceptance are reconstructed well
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(ev->GetTrack(iT));
@@ -614,6 +621,12 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       TrackLoop(aodTrack, false);
     }
   } // End AOD track loop
+
+  for (auto& gen : genParticles) {
+    fSimNucleus = gen.second;
+    fSimNucleus.isReco = std::find(fRecoNucleiMCindex.begin(), fRecoNucleiMCindex.end(), gen.first) != fRecoNucleiMCindex.end();
+    fSTree->Fill();
+  }
 
   //  Post output data.
   PostData(1, fList);
@@ -908,6 +921,10 @@ void AliAnalysisTaskNucleiYield::SetSLightNucleus(AliAODMCParticle* part, SLight
   snucl.absCt = fAbsorptionCt;
   snucl.centrality = fCentrality;
   snucl.pdg = part->GetPdgCode();
+  snucl.xOrigin = part->Xv();
+  snucl.yOrigin = part->Yv();
+  snucl.zOrigin = part->Zv();
+
   if (part->IsPhysicalPrimary())
     snucl.flag = SLightNucleus::kPrimary;
   else if (part->IsSecondaryFromWeakDecay())
@@ -977,4 +994,22 @@ Bool_t AliAnalysisTaskNucleiYield::IsSelectedTPCGeoCut(AliNanoAODTrack *track) {
     return kTRUE;
   else
     return kFALSE;
+}
+
+bool AliAnalysisTaskNucleiYield::IsPrimaryFromDistance(const AliAODMCParticle *part) {
+  AliVEvent *evt = InputEvent();
+  AliAODMCHeader* header = (AliAODMCHeader *)evt->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  double primVert[3];
+  double partVert[3];
+  part->XvYvZv(partVert);
+  primVert[0] = header->GetVtxX(), primVert[1] = header->GetVtxY(), primVert[2] = header->GetVtxZ();
+  double distance = Dist(primVert, partVert);
+  return distance < fDistCut;
+}
+
+bool AliAnalysisTaskNucleiYield::IsLongMCTrack(AliAODTrack *track){
+  int label = std::abs(track->GetLabel());
+  int p[3]={0,0,0};
+  track->GetTOFLabel(p);
+  return (p[0]==label || p[1]==label || p[2]==label);
 }

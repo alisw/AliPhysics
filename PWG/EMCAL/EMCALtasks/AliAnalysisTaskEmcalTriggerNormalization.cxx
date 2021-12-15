@@ -86,6 +86,15 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
 
   fHistos = new THistManager("HistosTriggerNorm");
 
+  // Histograms for metadata: year and datatype
+  fHistos->CreateTH1("hYear", "Year of the data", 10, 2008.5, 2018.5);
+  std::array<std::string, 5> collisionsystems = {{"pp, 13 TeV", "pp, 5.02 TeV", "p-Pb, 5.02 TeV", "p-Pb, 8.16 TeV", "Pb-Pb, 5.02 TeV"}};
+  fHistos->CreateTH1("hCollisionSystem", "Collision system", collisionsystems.size(), -0.5, collisionsystems.size() - 0.5);
+  auto collsyshist = static_cast<TH1 *>(fHistos->FindObject("hCollisionSystem"));
+  for(decltype(collisionsystems.size()) ib = 0; ib < collisionsystems.size(); ib++) {
+    collsyshist->GetXaxis()->SetBinLabel(ib+1, collisionsystems[ib].data());
+  }
+
   fHistos->CreateTH2("hTriggerNorm", "Histogram for the trigger normalization", 16, -0.5, 15.5, 100, 0., 100.);
   fHistos->CreateTH2("hTriggerLuminosity", "Histogram for the trigger luminosity (INT7-triggered cluster)", 16, -0.5, 15.5, 100, 0., 100.);
   auto normhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject("hTriggerNorm"));
@@ -362,6 +371,22 @@ std::vector<AliAnalysisTaskEmcalTriggerNormalization::TriggerCluster_t> AliAnaly
 }
 
 void AliAnalysisTaskEmcalTriggerNormalization::RunChanged(int newrun){
+  auto year = getYear(newrun);
+  if(year > -1) fHistos->FillTH1("hYear", year);
+  int collsysbin = -1;
+  if(IsRun2pp13TeV(newrun)) {
+    collsysbin = 0;
+  } else if(IsRun2pp5TeV(newrun)) {
+    collsysbin = 1;
+  } else if(IsRun1pPb5TeV(newrun) || IsRun2pPb5TeV(newrun)) {
+    collsysbin = 2;
+  } else if(IsRun2pPb8TeV(newrun)) {
+    collsysbin = 3;
+  } else if(IsRun2PbPb5TeV2015(newrun)) {
+    collsysbin = 4;
+  }
+  if(collsysbin > -1) fHistos->FillTH1("hCollisionSystem", collsysbin);
+
   PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
 
   fCacheTriggerClasses.clear();

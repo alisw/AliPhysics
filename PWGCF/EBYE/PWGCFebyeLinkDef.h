@@ -82,6 +82,7 @@
 #pragma link C++ class AliAnalysisFBMultFluct+;
 #pragma link C++ class AliAnalysisTaskLongFluctuations+;
 #pragma link C++ class AliAnalysisTaskLegendreCoef+;
+#pragma link C++ class AliAnalysisTaskEtaDist+;
 
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
@@ -109,5 +110,8 @@
 
 #pragma link C++ class TrackInfoCorr+;
 #pragma link C++ class AliAnalysisTaskFluctMCTEPOS+;
+
+#pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency+;
+#pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelations+;
 
 #endif

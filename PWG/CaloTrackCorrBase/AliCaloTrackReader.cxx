@@ -671,7 +671,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     fhNEventsAfterCut->Fill(3.5);
   }
-  
+
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
@@ -686,7 +686,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   AliDebug(1,"Pass event bit rejection");
   
   fhNEventsAfterCut->Fill(4.5);
-  
+
   //----------------------------------------------------------------------
   // Do not count events that were likely triggered by an exotic cluster
   // or out BC cluster
@@ -718,13 +718,15 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if ( IsEventDCALL1Gamma1CaloOnly () && IsEventDCALL1Gamma2CaloOnly () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
       
       // Coincidence L0-L2
-      if ( IsEventDCALL0CaloOnly() && IsEventDCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
-      if ( IsEventDCALL0CaloOnly() && IsEventDCALL1Gamma1CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+      if ( IsEventDCALL0CaloOnly () && IsEventDCALL1Gamma2CaloOnly () && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
+      if ( IsEventDCALL0CaloOnly () && IsEventDCALL1Gamma1CaloOnly () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+      if ( IsEventEMCALL0CaloOnly() && IsEventEMCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
+      if ( IsEventEMCALL0CaloOnly() && IsEventEMCALL1Gamma1CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
     }
     
      fhNEventsAfterCut->Fill(5.5);
   }
-  
+
   // Reject events from centrality triggers with centrality out of expected range
   //
   if ( fRemoveCentralityTriggerOutliers  )
@@ -807,7 +809,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     } // EMCal triggers
     
   } //  fRemoveCentralityTriggerOutliers
-  
+
   // Match triggers
   //
   if ( fTriggerPatchClusterMatch &&
@@ -945,7 +947,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     fhNEventsAfterCut->Fill(7.5);
   }
-  
+
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
   // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
@@ -4925,14 +4927,26 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
         if ( GetFiredTriggerClasses().Contains("DJ2") ) fEventTrigDCALL1Jet2CaloOnly = kTRUE;
       }
       
-      if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
-      {
-        fEventTrigDCALL0CaloOnly = kTRUE;
-      }
+      Int_t runNumber = fInputEvent->GetRunNumber();
       
-      if ( GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CALOPLUS") )
+      if ( runNumber >= 295584 )
       {
-        fEventTrigMinBiasCaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
+        {
+          fEventTrigDCALL0CaloOnly = kTRUE;
+        }
+
+        if ( GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CALOPLUS") )
+        {
+          fEventTrigMinBiasCaloOnly = kTRUE;
+        }
+      } // LHC18qr
+      else
+      {
+        if ( GetFiredTriggerClasses().Contains("CDMC7-B-NOPF-CALOFAST") )
+          fEventTrigDCALL0CaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("CEMC7-B-NOPF-CALOFAST") )
+          fEventTrigEMCALL0CaloOnly = kTRUE;
       }
     }
     //------------
@@ -4970,8 +4984,7 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
                   fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
                   fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
                   fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  )  );
-  
-  
+
   // L1 trigger bit
   if ( fBitEGA == 0 && fBitEJE == 0 )
   {

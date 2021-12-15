@@ -38,23 +38,28 @@ AliAnalysisTaskLcToD0MC::AliAnalysisTaskLcToD0MC(const char *name)
   fHistProtonALICE(0), fHistPionALICE(0),
   fHistLambdaALICE(0), fHistK0sALICE(0),
   fHistLambdacALICE(0), fHistDZeroALICE(0),
+  fHistLambdabALICE(0),
+  fHistProtonALICE3(0), fHistPionALICE3(0),
+  fHistLambdaALICE3(0), fHistK0sALICE3(0),
+  fHistLambdacALICE3(0), fHistDZeroALICE3(0),
+  fHistLambdabALICE3(0),
   fHistProtonCMS(0), fHistPionCMS(0),
   fHistLambdaCMS(0), fHistK0sCMS(0),
   fHistLambdacCMS(0), fHistDZeroCMS(0),
+  fHistLambdabCMS(0),
   fHistProtonLHCb(0), fHistPionLHCb(0),
   fHistLambdaLHCb(0), fHistK0sLHCb(0),
   fHistLambdacLHCb(0), fHistDZeroLHCb(0),
+  fHistLambdabLHCb(0),
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
   fPtMin(0.1),
   fPtMax(10.5),
-  fEtaMin(-0.8),
-  fEtaMax(-0.8),
-  fEtaMinCMS(-2.4),
-  fEtaMaxCMS(2.4),
-  fEtaMinLHCb(2.),
-  fEtaMaxLHCb(4.5) {
+  fEtaMin(-0.8), fEtaMax(-0.8),
+  fEtaMinALICE3(-1.44), fEtaMaxALICE3(1.44),
+  fEtaMinCMS(-2.4), fEtaMaxCMS(2.4),
+  fEtaMinLHCb(2.), fEtaMaxLHCb(4.5) {
   // Constructor
 
   // Define input and output slots here
@@ -112,6 +117,15 @@ void AliAnalysisTaskLcToD0MC::UserCreateOutputObjects() {
   fHistLambdaALICE = new TH2F("fHistLambdaALICE",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistDZeroALICE = new TH2F("fHistDZeroALICE",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistLambdacALICE = new TH2F("fHistLambdacALICE",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistLambdabALICE = new TH2F("fHistLambdabALICE",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+
+  fHistProtonALICE3 = new TH2F("fHistProtonALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistPionALICE3 = new TH2F("fHistPionALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistK0sALICE3 = new TH2F("fHistK0sALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistLambdaALICE3 = new TH2F("fHistLambdaALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistDZeroALICE3 = new TH2F("fHistDZeroALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistLambdacALICE3 = new TH2F("fHistLambdacALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistLambdabALICE3 = new TH2F("fHistLambdabALICE3",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
 
   fHistProtonCMS = new TH2F("fHistProtonCMS",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistPionCMS = new TH2F("fHistPionCMS",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
@@ -119,6 +133,7 @@ void AliAnalysisTaskLcToD0MC::UserCreateOutputObjects() {
   fHistLambdaCMS = new TH2F("fHistLambdaCMS",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistDZeroCMS = new TH2F("fHistDZeroCMS",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistLambdacCMS = new TH2F("fHistLambdacCMS",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistLambdabCMS = new TH2F("fHistLambdabCMS",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
 
   fHistProtonLHCb = new TH2F("fHistProtonLHCb",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistPionLHCb = new TH2F("fHistPionLHCb",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
@@ -126,6 +141,7 @@ void AliAnalysisTaskLcToD0MC::UserCreateOutputObjects() {
   fHistLambdaLHCb = new TH2F("fHistLambdaLHCb",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistDZeroLHCb = new TH2F("fHistDZeroLHCb",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
   fHistLambdacLHCb = new TH2F("fHistLambdacLHCb",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
+  fHistLambdabLHCb = new TH2F("fHistLambdabLHCb",";p_{T};Multiplicity;Counts",100,0,50,200,-0.5,199.5);
 
   fList->Add(fHistPionALICE);
   fList->Add(fHistProtonALICE);
@@ -133,6 +149,15 @@ void AliAnalysisTaskLcToD0MC::UserCreateOutputObjects() {
   fList->Add(fHistLambdaALICE);
   fList->Add(fHistDZeroALICE);
   fList->Add(fHistLambdacALICE);
+  fList->Add(fHistLambdabALICE);
+
+  fList->Add(fHistPionALICE3);
+  fList->Add(fHistProtonALICE3);
+  fList->Add(fHistK0sALICE3);
+  fList->Add(fHistLambdaALICE3);
+  fList->Add(fHistDZeroALICE3);
+  fList->Add(fHistLambdacALICE3);
+  fList->Add(fHistLambdabALICE3);
 
   fList->Add(fHistPionCMS);
   fList->Add(fHistProtonCMS);
@@ -140,6 +165,7 @@ void AliAnalysisTaskLcToD0MC::UserCreateOutputObjects() {
   fList->Add(fHistLambdaCMS);
   fList->Add(fHistDZeroCMS);
   fList->Add(fHistLambdacCMS);
+  fList->Add(fHistLambdabCMS);
 
   fList->Add(fHistPionLHCb);
   fList->Add(fHistProtonLHCb);
@@ -147,6 +173,7 @@ void AliAnalysisTaskLcToD0MC::UserCreateOutputObjects() {
   fList->Add(fHistLambdaLHCb);
   fList->Add(fHistDZeroLHCb);
   fList->Add(fHistLambdacLHCb);
+  fList->Add(fHistLambdabLHCb);
 
   // Post output data.
   PostData(1, fList);
@@ -234,6 +261,8 @@ void AliAnalysisTaskLcToD0MC::UserExec(Option_t *) {
 	      //getting multiplicity for events with Dzero particle
 	      if(eta > fEtaMin && eta < fEtaMax){
 		fHistPionALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistPionALICE3 -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
 		fHistPionCMS -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
@@ -245,6 +274,8 @@ void AliAnalysisTaskLcToD0MC::UserExec(Option_t *) {
 	      //getting multiplicity for events with Lambdac particle      
 	      if(eta > fEtaMin && eta < fEtaMax){
 		fHistProtonALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistProtonALICE3 -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
 		fHistProtonCMS -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
@@ -257,6 +288,8 @@ void AliAnalysisTaskLcToD0MC::UserExec(Option_t *) {
 	      //getting multiplicity for events with Dzero particle
 	      if(eta > fEtaMin && eta < fEtaMax){
 		fHistK0sALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistK0sALICE3 -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
 		fHistK0sCMS -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
@@ -268,6 +301,8 @@ void AliAnalysisTaskLcToD0MC::UserExec(Option_t *) {
 	      //getting multiplicity for events with Lambdac particle      
 	      if(eta > fEtaMin && eta < fEtaMax){
 		fHistLambdaALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistLambdaALICE3 -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
 		fHistLambdaCMS -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
@@ -280,6 +315,8 @@ void AliAnalysisTaskLcToD0MC::UserExec(Option_t *) {
 	      //getting multiplicity for events with Dzero particle
 	      if(eta > fEtaMin && eta < fEtaMax){
 		fHistDZeroALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistDZeroALICE3 -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
 		fHistDZeroCMS -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
@@ -291,12 +328,27 @@ void AliAnalysisTaskLcToD0MC::UserExec(Option_t *) {
 	      //getting multiplicity for events with Lambdac particle      
 	      if(eta > fEtaMin && eta < fEtaMax){
 		fHistLambdacALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistLambdacALICE3 -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
 		fHistLambdacCMS -> Fill(pT,nAcceptedParticlesControl);}
 	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
 		fHistLambdacLHCb -> Fill(pT,nAcceptedParticlesControl);}
 	    }
-	    
+
+	    //checking for Lambdab particle
+	    else if(epg == 5122){
+	      //getting multiplicity for events with Lambdac particle      
+	      if(eta > fEtaMin && eta < fEtaMax){
+		fHistLambdabALICE -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinALICE3 && eta < fEtaMaxALICE3){
+		fHistLambdabALICE3 -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinCMS && eta < fEtaMaxCMS){
+		fHistLambdabCMS -> Fill(pT,nAcceptedParticlesControl);}
+	      if(eta > fEtaMinLHCb && eta < fEtaMaxLHCb){
+		fHistLambdabLHCb -> Fill(pT,nAcceptedParticlesControl);}
+	    }
+
 	  }//particle loop
 	}//Vz cut
       }//Vy cut

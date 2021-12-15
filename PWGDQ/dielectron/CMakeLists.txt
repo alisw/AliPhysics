@@ -108,6 +108,7 @@ set(SRCS
       LMEE/AliAnalysisTaskTGReducedTree.cxx
       LMEE/AliAnalysisTaskReducedTreeDS.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+      LMEE/AliAnalysisTaskLMeePureMC.cxx	
       LMEE/AliCocktailSmearing.cxx
       LMEE/AliAnalysisTaskCharm.cxx
       LMEE/AliAnalysisTaskBeauty.cxx

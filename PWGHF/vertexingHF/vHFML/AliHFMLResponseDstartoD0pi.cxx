@@ -106,6 +106,10 @@ void AliHFMLResponseDstartoD0pi::SetMapOfVariables(AliAODRecoDecayHF *cand, doub
         dautrack[2] = (AliAODTrack*)dzero->GetDaughter(0);
     }
 
+    double d0[2], cov[3];
+    dzero->PropagateToDCA(dzero->GetPrimaryVtx(), 0., 3., d0, cov); //propagate as a straight line
+    fVars["dca"] = TMath::Sqrt(d0[0]*d0[0]+d0[1]*d0[1]);
+
     for (int iProng = 0; iProng < 3; iProng++)
     {
         double nsigmaTPCpi = -999., nsigmaTPCK = -999., nsigmaTOFpi = -999., nsigmaTOFK = -999.;

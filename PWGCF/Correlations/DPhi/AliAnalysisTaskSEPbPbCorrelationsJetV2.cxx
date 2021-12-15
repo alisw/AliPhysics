@@ -803,7 +803,7 @@ void AliAnalysisTaskSEPbPbCorrelationsJetV2::UserExec(Option_t *) {
   }
   fHistESDvsTPC->Fill(multTpc,multEsd);
   Double_t multESDTPCDif = Double_t(multEsd) - Double_t(multTpc)*3.38;
-  if (multESDTPCDif > 1000.) return;
+  if (multESDTPCDif > 15000.) return;
   fHistEvStat->Fill(cutIndex++); // Index = 14
   
   if (!ComputeQ(fAOD,fzvtx)) return;

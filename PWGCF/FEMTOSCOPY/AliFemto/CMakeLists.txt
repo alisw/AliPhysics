@@ -126,6 +126,9 @@ set(SRCS
   AliFemtoCutMonitorParticleYPt_pion.cxx  
   AliFemtoCutMonitorParticleYPt_proton.cxx
   AliFemtoEventReaderAODKinematicsMultSelection.cxx
+  AliFemtoSimpleAnalysisOnlyMixP1.cxx
+  AliFemtoVertexMultAnalysisOnlyMixP1.cxx
+  AliFemtoPairkTPairCut.cxx
   )
 
 # Headers from sources
@@ -189,6 +192,9 @@ set(HDRS ${HDRS}
   AliFemtoTrioFctnCollection.h
   AliFemtoEventReaderNanoAOD.h
   AliFemtoEventReaderNanoAODChain.h
+  AliFemtoSimpleAnalysisOnlyMixP1.h
+  AliFemtoVertexMultAnalysisOnlyMixP1.h
+  AliFemtoPairkTPairCut.h
   )
 
 set ( FSRCS

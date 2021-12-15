@@ -104,6 +104,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kTracklets:    return "EventTracklets";
       case kPlaneAngle:   return "EventPlane";
       case kLeadingPt:    return "EventLeadingPt";
+      case kLeadingPhi:   return "EventLeadingPhi";
       case kPt:           return "Pt";
       case kPz:           return "Pz";
       case kInvMass:      return "InvMass";
@@ -111,6 +112,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kInvMassRes:   return "InvMassResolution";
       case kInvMassDiff:  return "InvMassDifference";
       case kEta:          return "Eta";
+      case kPhi:          return "Phi";
       case kMt:           return "Mt";
       case kY:            return "Y";
       case kPtRatio:      return "PtRatio";
@@ -185,6 +187,16 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
             return v.Pt();
          }
          return 0.0;
+      case kLeadingPhi:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            Double_t angle = v.Phi();
+            while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+            while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
+            return angle;
+         }
+         return 0.0;
       case kPt:
          return pair->Pt(fUseMCInfo);
       case kInvMass:
@@ -193,6 +205,13 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return pair->InvMass(kTRUE);
       case kEta:
          return pair->Eta(fUseMCInfo);
+      case kPhi:
+          { 
+            Double_t angle1 = pair->Sum(fUseMCInfo).Phi();
+            while (angle1 >= 1.5 * TMath::Pi()) angle1 -= 2 * TMath::Pi();
+            while (angle1 < -0.5 * TMath::Pi()) angle1 += 2 * TMath::Pi();
+            return angle1;
+          }
       case kInvMassRes:
          return pair->InvMassRes();
       case kInvMassDiff:
@@ -226,7 +245,9 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kAngleLeading:
          l = event->LeadingParticle(fUseMCInfo);
          if (l) {
+             if (pair->ContainsIndex(l->Index())) return 1E20;
             l->Set4Vector(v,-1.0,fUseMCInfo);
+            if (pair->Pt(fUseMCInfo) > v.Pt()) return 1E20;
             Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
 
             //return angle w.r.t. leading particle in the range -pi/2, 3/2pi

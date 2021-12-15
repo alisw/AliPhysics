@@ -18,7 +18,7 @@ AliAnalysisTask *AddTaskJFFlucMapMaster(TString taskName="JFFlucMaster", UInt_t 
     	cmaptask->EnableCentFlattening("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC18r_pass13.root");
     	cmaptask->EnableEffCorrection("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC18q-LHC18l8-0-Lists.root"); // needed but not used!
     	mgr->AddTask((AliAnalysisTask*) cmaptask);
-    } else if(period == 10h) {
+    } else if(period == lhc10h) {
     	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask"); 
     	cmaptask->EnableEffCorrection("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC10h-LHC11a10a_bis-0-Lists.root"); // needed but not used!
     	mgr->AddTask((AliAnalysisTask*) cmaptask);

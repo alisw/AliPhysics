@@ -77,6 +77,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fFillRecoilTree(kFALSE),
 	fFillResponseInclusiveTHnSparse(kFALSE),
 	fFillResponseRecoilTHnSparse(kFALSE),
+	fFillDataTree(kFALSE),
 	fMoreTreeVars(kFALSE),
 	fDoDeltaPtInclusive(kFALSE),
 	fDoDeltaPtRecoil(kFALSE),
@@ -142,7 +143,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fhFractionSharedPtInclusive(0x0),
 	fhFractionSharedPtRecoil(0x0),
 	fTreeEmbInclusive(0x0),
-	fTreeEmbRecoil(0x0)
+	fTreeEmbRecoil(0x0),
+	fTreeData(0x0)
 {
   SetMakeGeneralHistograms(kTRUE);
 
@@ -151,6 +153,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	DefineOutput(2, TTree::Class());
 //	if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart && fFillRecoilTree)
 	DefineOutput(3, TTree::Class());
+	DefineOutput(4, TTree::Class());
 }
 
 /**
@@ -183,6 +186,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fFillRecoilTree(kFALSE),
 	fFillResponseInclusiveTHnSparse(kFALSE),
 	fFillResponseRecoilTHnSparse(kFALSE),
+	fFillDataTree(kFALSE),
 	fMoreTreeVars(kFALSE),
 	fRhoShiftSignal(0.),
 	fRhoShiftReference(0.),
@@ -246,13 +250,15 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fhFractionSharedPtInclusive(0x0),
 	fhFractionSharedPtRecoil(0x0),
 	fTreeEmbInclusive(0x0),
-	fTreeEmbRecoil(0x0)
+	fTreeEmbRecoil(0x0),
+	fTreeData(0x0)
 {
   SetMakeGeneralHistograms(kTRUE);
 
 	DefineOutput(1, TList::Class());
 	DefineOutput(2, TTree::Class());
 	DefineOutput(3, TTree::Class());
+	DefineOutput(4, TTree::Class());
 }
 
 /**
@@ -285,6 +291,7 @@ void AliAnalysisTaskJetCoreEmcal::UserCreateOutputObjects()
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) PostData(2, fTreeEmbInclusive); // Post data for ALL output slots > 0 here.
   if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree)    PostData(3, fTreeEmbRecoil); // Post data for ALL output slots > 0 here.
+  PostData(4, fTreeData);
 }
 
 /*
@@ -585,13 +592,13 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 
 	// azimuthal correlation
 
-	fhDphiPtSigPi = new TH2F("hDphiPtSPi","recoil #Delta #phi vs jet pT signal",200,0,2*TMath::Pi(),25000,-50,200);  
+	fhDphiPtSigPi = new TH2F("hDphiPtSPi","recoil #Delta #phi vs jet pT signal",200,0,2*TMath::Pi(),30000,-100,200);  
 	fhDphiPtSigPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtSigPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),25000,-50,200);  
+	fhDphiPtRefPi = new TH2F("hDphiPtRPi","recoil #Delta #phi vs jet pT reference",200,0,2*TMath::Pi(),30000,-100,200);  
 	fhDphiPtRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",20,0,2*TMath::Pi(),250,-50,200,8,-0.3,0.4);
+  fhDphiPtShiftRefPi=new TH3F("hDphiPtShiftRefPi","#phi vs jet pT (shifted) vs rho shift reference",200,0,2*TMath::Pi(),300,-100,200,11,-0.5,0.6);
 	fhDphiPtShiftRefPi->GetXaxis()->SetTitle("#Delta #phi"); 
 	fhDphiPtShiftRefPi->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 	fhDphiPtShiftRefPi->GetZaxis()->SetTitle("#rho shift (GeV)"); 
@@ -808,6 +815,16 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
     }
 	}
 
+  if(fFillDataTree) {
+    TString varNamesData[6]={"centrality","ptRawRec","areaRec","ptCorrRec","phiRec","ptLeadingTrackRec"};
+    const char* nameData = GetOutputSlot(4)->GetContainer()->GetName();
+    fTreeData= new TTree(nameData, nameData);
+    for(Int_t ivar=0; ivar < 6; ivar++) {
+      fTreeData->Branch(varNamesData[ivar].Data(), &fTreeVarsData[ivar], Form("%s/F", varNamesData[ivar].Data()));
+    }
+  }
+
+
   if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) {
       // ptPart (300,0,300)
       // phiPart (10,pi/2,pi)
@@ -815,7 +832,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
       // phiRec (10,pi/2,pi)
       // matchedJetDistanceRec (15,0.1,0.4)
       const Int_t dimSpec = 5;
-      const Int_t nBinsSpec[dimSpec]     = {300, 40           , 250 , 40            , 20 };
+      const Int_t nBinsSpec[dimSpec]     = {300, 100          , 250 , 100            , 20 };
       const Double_t lowBinSpec[dimSpec] = {0.  , 0., -50., 0., 0. };
       const Double_t hiBinSpec[dimSpec]  = {300., TMath::Pi()  , 200. , TMath::Pi()   , 0.4 };
 
@@ -852,6 +869,7 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbDet) && fFillInclusiveTree) PostData(2, fTreeEmbInclusive);
 
   if((fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) && fFillRecoilTree)    PostData(3, fTreeEmbRecoil);
+  PostData(4, fTreeData);
 }
 
 /**
@@ -1065,8 +1083,8 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			else         {
         fhDphiPtRefPi->Fill(dPhiShiftPi,ptcorr);
         fhDphiPtRef->Fill(dPhiShift,ptcorr);
-        for(Int_t i=0;i<7;i++) {
-          Double_t rhoshift = -0.3 + Double_t(i)*0.1;
+        for(Int_t i=0;i<11;i++) {
+          Double_t rhoshift = -0.5 + Double_t(i)*0.1;
           Double_t ptcorrshift=ptbig-(rho+rhoshift)*areabig;
           fhDphiPtShiftRefPi->Fill(dPhiShiftPi,ptcorrshift,rhoshift+0.001);
         }
@@ -1475,6 +1493,15 @@ void AliAnalysisTaskJetCoreEmcal::DoJetLoop()
         histname = TString::Format("%s/histJetCorrPtLeadingTrackPt_%d", groupname.Data(), fCentBin);
         fHistManager.FillTH2(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area(), jet->GetLeadingTrack()->Pt());
 
+      }
+      if(fFillDataTree && jet->Pt() - jetCont->GetRhoVal() * jet->Area() > 40) {
+        fTreeVarsData[0] = fCent;
+        fTreeVarsData[1] = jet->Pt();
+        fTreeVarsData[2] = jet->Area();
+        fTreeVarsData[3] = jet->Pt() - jetCont->GetRhoVal() * jet->Area();
+        fTreeVarsData[4] = jet->Phi();
+        fTreeVarsData[5] = jet->GetLeadingTrack()->Pt();
+        fTreeData->Fill();
       }
     }
     histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);

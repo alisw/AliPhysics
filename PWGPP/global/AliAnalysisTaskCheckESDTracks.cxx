@@ -68,6 +68,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNtracksSPDanyVsV0befEvSel{nullptr},
   fHistNtracksTPCselVsV0aftEvSel{nullptr},
   fHistNtracksSPDanyVsV0aftEvSel{nullptr},
+  fHistHypoVsPTPCselNoTOFbc{nullptr},
+  fHistHypoVsPTPCselTOFbc{nullptr},
   fHistCorrelHypo0HypoTPCsel{nullptr},
   fHistCorrelHypo0HypoTPCselITSref{nullptr},
   fHistEtaPhiPtTPCsel{nullptr},
@@ -108,9 +110,11 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNtrackeltsPtTPCselITSrefTOFbc{nullptr},
   fHistNtrackeltsPtTPCselSPDanyTOFbc{nullptr},
   fHistTPCchi2PerClusPhiPtTPCsel{nullptr},
+  fHistTPCchi2PerClusPhiPtTPCselTOFbc{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselITSref{nullptr},
   fHistTPCchi2PerClusPhiPtTPCselSPDany{nullptr},
   fHistSig1ptCovMatPhiPtTPCsel{nullptr},
+  fHistSig1ptCovMatPhiPtTPCselTOFbc{nullptr},
   fHistSig1ptCovMatPhiPtTPCselITSref{nullptr},
   fHistSig1ptCovMatPhiPtTPCselSPDany{nullptr},
   fHistEtaPhiPtGoodHypTPCsel{nullptr},
@@ -178,6 +182,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
   fRejectGeneratedEventsWithPileup(kFALSE),
+  fRejectParticlesFromOutOfBunchPileup(kFALSE),
   fTriggerMask(AliVEvent::kAnyINT),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
@@ -213,7 +218,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   
   for(Int_t jsp=0; jsp<9; jsp++){
     fHistdEdxVsP[jsp]=0x0;
-    fHistdEdxVsPTPCsel[jsp]=0x0;
+    fHistdEdxVsPTPCselNoTOFbc[jsp]=0x0;
+    fHistdEdxVsPTPCselTOFbc[jsp]=0x0;
     fHistdEdxVsPTPCselITSref[jsp]=0x0;
     fHistdEdxVsP0[jsp]=0x0;
     fHistdEdxVsPTPCsel0[jsp]=0x0;
@@ -288,9 +294,11 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistNtrackeltsPtTPCselITSrefTOFbc;
     delete fHistNtrackeltsPtTPCselSPDanyTOFbc;
     delete fHistTPCchi2PerClusPhiPtTPCsel;
+    delete fHistTPCchi2PerClusPhiPtTPCselTOFbc;
     delete fHistTPCchi2PerClusPhiPtTPCselITSref;
     delete fHistTPCchi2PerClusPhiPtTPCselSPDany;
     delete fHistSig1ptCovMatPhiPtTPCsel;
+    delete fHistSig1ptCovMatPhiPtTPCselTOFbc;
     delete fHistSig1ptCovMatPhiPtTPCselITSref;
     delete fHistSig1ptCovMatPhiPtTPCselSPDany;
     for(Int_t j=0; j<3; j++){
@@ -355,13 +363,16 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
 
     for(Int_t jsp=0; jsp<9; jsp++){
       delete fHistdEdxVsP[jsp];
-      delete fHistdEdxVsPTPCsel[jsp];
+      delete fHistdEdxVsPTPCselNoTOFbc[jsp];
+      delete fHistdEdxVsPTPCselTOFbc[jsp];
       delete fHistdEdxVsPTPCselITSref[jsp];
       delete fHistdEdxVsP0[jsp];
       delete fHistdEdxVsPTPCsel0[jsp];
       delete fHistdEdxVsPTPCselITSref0[jsp];
       delete fHistnSigmaVsPdEdxTPCsel[jsp];
     }
+    delete fHistHypoVsPTPCselNoTOFbc;
+    delete fHistHypoVsPTPCselTOFbc;
     delete fHistCorrelHypo0HypoTPCsel;
     delete fHistCorrelHypo0HypoTPCselITSref;
     delete fTrackTree;
@@ -519,20 +530,24 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   
   for(Int_t jsp=0; jsp<9; jsp++){
     fHistdEdxVsP[jsp] = new TH2F(Form("hdEdxVsP%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
-    fHistdEdxVsPTPCsel[jsp] = new TH2F(Form("hdEdxVsPTPCsel%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsPTPCselNoTOFbc[jsp] = new TH2F(Form("hdEdxVsPTPCselNoTOFbc%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
+    fHistdEdxVsPTPCselTOFbc[jsp] = new TH2F(Form("hdEdxVsPTPCselTOFbc%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistdEdxVsPTPCselITSref[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistdEdxVsP0[jsp] = new TH2F(Form("hdEdxVsP0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistdEdxVsPTPCsel0[jsp] = new TH2F(Form("hdEdxVsPTPCsel0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistdEdxVsPTPCselITSref0[jsp] = new TH2F(Form("hdEdxVsPTPCselITSref0%s",pNames[jsp].Data()),"  ; p_{TPC} (GeV/c) ; dE/dx",nbinsp,pLims,300,0.,600.);
     fHistnSigmaVsPdEdxTPCsel[jsp] = new TH2F(Form("hnSigmaVsPdEdxTPCsel%s",pNames[jsp].Data()),Form("  ; p_{TPC} (GeV/c) ; n#sigma(%s)",pNames[jsp].Data()),nbinsp,pLims,200,-10.,10.);
     fOutput->Add(fHistdEdxVsP[jsp]);
-    fOutput->Add(fHistdEdxVsPTPCsel[jsp]);
+    fOutput->Add(fHistdEdxVsPTPCselNoTOFbc[jsp]);
+    fOutput->Add(fHistdEdxVsPTPCselTOFbc[jsp]);
     fOutput->Add(fHistdEdxVsPTPCselITSref[jsp]);
     fOutput->Add(fHistdEdxVsP0[jsp]);
     fOutput->Add(fHistdEdxVsPTPCsel0[jsp]);
     fOutput->Add(fHistdEdxVsPTPCselITSref0[jsp]);
     fOutput->Add(fHistnSigmaVsPdEdxTPCsel[jsp]);
   }
+  fHistHypoVsPTPCselNoTOFbc = new TH2F("hHypoVsPTPCselNoTOFbc","; p_{TPC} (GeV/c) ; PID hypo",nbinsp,pLims,9,-0.5,8.5);
+  fHistHypoVsPTPCselTOFbc = new TH2F("hHypoVsPTPCselTOFbc","; p_{TPC} (GeV/c) ; PID hypo",nbinsp,pLims,9,-0.5,8.5);
   fHistCorrelHypo0HypoTPCsel = new TH2F("hCorrelHypo0HypoTPCsel"," ; PID hypo inward ; PID hypo outward",9,-0.5,8.5,9,-0.5,8.5);
   fHistCorrelHypo0HypoTPCselITSref = new TH2F("hCorrelHypo0HypoTPCselITSref"," ; PID hypo inward ; PID hypo outward",9,-0.5,8.5,9,-0.5,8.5);
   for(Int_t jsp=0; jsp<9; jsp++){ 
@@ -541,6 +556,8 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
     fHistCorrelHypo0HypoTPCselITSref->GetXaxis()->SetBinLabel(jsp+1,AliPID::ParticleName(jsp));
     fHistCorrelHypo0HypoTPCselITSref->GetYaxis()->SetBinLabel(jsp+1,AliPID::ParticleName(jsp));
   }
+  fOutput->Add(fHistHypoVsPTPCselNoTOFbc);
+  fOutput->Add(fHistHypoVsPTPCselTOFbc);
   fOutput->Add(fHistCorrelHypo0HypoTPCsel);
   fOutput->Add(fHistCorrelHypo0HypoTPCselITSref);
 
@@ -645,16 +662,20 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
  
 
   fHistTPCchi2PerClusPhiPtTPCsel = new TH3F("hTPCchi2PerClusPhiPtTPCsel"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistTPCchi2PerClusPhiPtTPCselTOFbc = new TH3F("hTPCchi2PerClusPhiPtTPCselTOFbc"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistTPCchi2PerClusPhiPtTPCselITSref = new TH3F("hTPCchi2PerClusPhiPtTPCselITSref"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistTPCchi2PerClusPhiPtTPCselSPDany = new TH3F("hTPCchi2PerClusPhiPtTPCselSPDany"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCsel);
+  fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselTOFbc);
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselITSref);
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselSPDany);
   
   fHistSig1ptCovMatPhiPtTPCsel = new TH3F("hSig1ptCovMatPhiPtTPCsel"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
+  fHistSig1ptCovMatPhiPtTPCselTOFbc = new TH3F("hSig1ptCovMatPhiPtTPCselTOFbc"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistSig1ptCovMatPhiPtTPCselITSref = new TH3F("hSig1ptCovMatPhiPtTPCselITSref"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistSig1ptCovMatPhiPtTPCselSPDany = new TH3F("hSig1ptCovMatPhiPtTPCselSPDany"," ; p_{T}*#sigma(1/p_{T}); p_{T} (GeV/c) ; #varphi",100, 0, 0.3, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fOutput->Add(fHistSig1ptCovMatPhiPtTPCsel);
+  fOutput->Add(fHistSig1ptCovMatPhiPtTPCselTOFbc);
   fOutput->Add(fHistSig1ptCovMatPhiPtTPCselITSref);
   fOutput->Add(fHistSig1ptCovMatPhiPtTPCselSPDany);
  
@@ -1081,7 +1102,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       if(isBG) nBGtracks++;
       else nEmbeddedtracks++;
       AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(abstrlabel);
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)) nOOBPileuptracks++;
+      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(abstrlabel,mcEvent)){
+	nOOBPileuptracks++;
+	if(fRejectParticlesFromOutOfBunchPileup) continue;
+      }
       TParticle* part = mcEvent->Particle(abstrlabel);
       if (part){
         ptgen=part->Pt();
@@ -1186,21 +1210,30 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     }
 
 
-    if(fUseTOFbcSelection && !tofOK) continue;
-    fHistCorrelHypo0HypoTPCsel->Fill(pidtr0,pidtr);
-    if(itsRefit) fHistCorrelHypo0HypoTPCselITSref->Fill(pidtr0,pidtr);
-
-    if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCsel[pidtr]->Fill(ptrackTPC,dedx);
+    if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCselNoTOFbc[pidtr]->Fill(ptrackTPC,dedx);
     if(pidtr0>=0 && pidtr0<9) fHistdEdxVsPTPCsel0[pidtr0]->Fill(ptrackTPC,dedx);
     for(Int_t jsp=0; jsp<9; jsp++){
       fHistnSigmaVsPdEdxTPCsel[jsp]->Fill(ptrackTPC,nSigmaTPC[jsp]);
     }
-
-    fHistTPCchi2PerClusPhiPtTPCsel->Fill(chi2clus,pttrack,phitrack);
-    fHistSig1ptCovMatPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
+    fHistHypoVsPTPCselNoTOFbc->Fill(ptrackTPC,pidtr);
+    if(tofOK){
+      if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCselTOFbc[pidtr]->Fill(ptrackTPC,dedx);
+      fHistHypoVsPTPCselTOFbc->Fill(ptrackTPC,pidtr);
+    }
+    fHistCorrelHypo0HypoTPCsel->Fill(pidtr0,pidtr);
     if(itsRefit){
       if(pidtr>=0 && pidtr<9) fHistdEdxVsPTPCselITSref[pidtr]->Fill(ptrackTPC,dedx);
       if(pidtr0>=0 && pidtr0<9) fHistdEdxVsPTPCselITSref0[pidtr0]->Fill(ptrackTPC,dedx);
+      fHistCorrelHypo0HypoTPCselITSref->Fill(pidtr0,pidtr);
+    }
+
+    fHistTPCchi2PerClusPhiPtTPCsel->Fill(chi2clus,pttrack,phitrack);
+    fHistSig1ptCovMatPhiPtTPCsel->Fill(curvrelerr,pttrack,phitrack);
+    if(tofOK){
+      fHistTPCchi2PerClusPhiPtTPCselTOFbc->Fill(chi2clus,pttrack,phitrack);
+      fHistSig1ptCovMatPhiPtTPCselTOFbc->Fill(curvrelerr,pttrack,phitrack);
+    }
+    if(itsRefit){
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
       fHistSig1ptCovMatPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
       if(spdAny){ 
@@ -1208,6 +1241,8 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
         fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
       }
     }
+
+    if(fUseTOFbcSelection && !tofOK) continue;
 
     bool pid[AliPID::kSPECIESC] = {false};
     if (fReadMC && fUseMCId) {

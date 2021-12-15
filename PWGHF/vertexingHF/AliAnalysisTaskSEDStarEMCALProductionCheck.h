@@ -132,7 +132,7 @@ private:
   THnSparseF *fHistMassPtImpParTCDs[5];//!<! histograms for impact paramter studies
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDStarEMCALProductionCheck, 1); /// class for D* spectra
+  ClassDef(AliAnalysisTaskSEDStarEMCALProductionCheck, 2); /// class for D* spectra
   /// \endcond
 };
 

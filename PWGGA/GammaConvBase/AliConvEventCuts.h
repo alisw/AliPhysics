@@ -659,7 +659,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);
 
-      Int_t     SecondaryClassificationPhoton(  TParticle *particle,
+      Int_t     SecondaryClassificationPhoton(  AliMCParticle *particle,
                                                 AliMCEvent *mcEvent,
                                                 Bool_t isConversion );
       Int_t     SecondaryClassificationPhotonAOD( AliAODMCParticle *particle,

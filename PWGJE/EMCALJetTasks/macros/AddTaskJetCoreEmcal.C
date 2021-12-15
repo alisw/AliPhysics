@@ -183,6 +183,15 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
     mgr->ConnectOutput (task, 3, coutput3 );
   }
 
+  TString treename = "TreeData";
+	treename += Form("_%s",TString(listName).Data());
+	treename += Form("_%02d",Int_t(R*10+0.001));
+    AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(treename.Data(),
+        TTree::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput (task, 4, coutput4 );
+
+
   return task;
 
 }

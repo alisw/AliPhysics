@@ -47,12 +47,16 @@ public:
 
 private:
   TH2D *fPtPDG;    // Rapidity vs. Pt monitor
+  TH2D *fPtOrigin;    // Particle origin vs Pt
   TH2D *ftpcHist;  // TPC histogram
   TH1D *fPtGoodPi; // Good pions
+  TH1D *fPrimaryPtGoodPi; // Good primary pions
   TH1D *fPtFakePi; // Fake pions
   TH1D *fPtGoodK;  // Good kaons
+  TH1D *fPrimaryPtGoodK;  // Good primary kaons
   TH1D *fPtFakeK;  // Fake kaons
   TH1D *fPtGoodP;  // Good protons
+  TH1D *fPrimaryPtGoodP;  // Good primary protons
   TH1D *fPtFakeP;  // Fake protons
   TH1D *fPtRPi;    // Pions pt 
   TH1D *fPtRK;     // Kaons pt

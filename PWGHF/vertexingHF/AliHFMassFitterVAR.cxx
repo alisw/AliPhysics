@@ -46,6 +46,7 @@
 #include "AliHFMassFitter.h"
 #include "AliHFMassFitterVAR.h"
 #include "AliVertexingHFUtils.h"
+#include "TFitResult.h"
 
 
 using std::cout;
@@ -79,7 +80,8 @@ AliHFMassFitter(),
   fRawYieldHelp(0),
   fpolbackdegreeTay(4),
   fpolbackdegreeTayHelp(-1),
-  fMassParticle(1.864)
+  fMassParticle(1.864),
+  fAcceptValidFit(kFALSE)
 {
   // default constructor
 
@@ -112,7 +114,8 @@ AliHFMassFitterVAR::AliHFMassFitterVAR (const TH1F *histoToFit, Double_t minvalu
   fRawYieldHelp(0),
   fpolbackdegreeTay(4),
   fpolbackdegreeTayHelp(-1),
-  fMassParticle(1.864)
+  fMassParticle(1.864),
+  fAcceptValidFit(kFALSE)
 {
   // standard constructor
 
@@ -993,9 +996,12 @@ Bool_t AliHFMassFitterVAR::MassFitter(Bool_t draw){
   }
 
   Int_t status;
+  Bool_t isFitValid=kFALSE;
   Printf("Fitting");
-  status = fhistoInvMass->Fit(massname.Data(),Form("R,%s,+,0",fFitOption.Data()));
-  if (status != 0){
+  TFitResultPtr resultptr_massfitter = fhistoInvMass->Fit(massname.Data(),Form("R,S,%s,+,0",fFitOption.Data()));
+  status = (Int_t) resultptr_massfitter;
+  isFitValid=resultptr_massfitter->IsValid();
+  if ( (status!=0 && !fAcceptValidFit) || (fAcceptValidFit && !isFitValid) ){
     cout<<"Minuit returned "<<status<<endl;
     delete funcbkg;
     delete[] parBackInit;
@@ -1171,15 +1177,21 @@ Bool_t AliHFMassFitterVAR::RefitWithBkgOnly(Bool_t draw){
   }
 
   Int_t status=0;
+  Bool_t isFitValid=kFALSE;
   if(ftypeOfFit4Bkg==6){
     if(PrepareHighPolFit(funcbkg)){
 
       fhistoInvMass->GetListOfFunctions()->Add(funcbkg);
       fhistoInvMass->GetFunction(funcbkg->GetName())->SetBit(1<<9,kTRUE);
+      isFitValid=kTRUE;
     }
   }
-  else status=fhistoInvMass->Fit(bkgname.Data(),"R,E,+,0");
-  if (status != 0){
+  else{
+    TFitResultPtr resultptr_bkg=fhistoInvMass->Fit(bkgname.Data(),"R,S,E,+,0");
+    status = (Int_t) resultptr_bkg;
+    isFitValid = resultptr_bkg->IsValid();
+  }
+  if ( (status!=0 && !fAcceptValidFit) || (fAcceptValidFit && !isFitValid) ){
     ftypeOfFit4Sgn=typesSave;
     cout<<"Minuit returned "<<status<<endl;
     return kFALSE;
