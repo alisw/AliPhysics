@@ -61,6 +61,8 @@ public:
         fMLSelectorName = name;
     }
 
+    void SetCheckWithD0()                                                                         {fDecChannel = kD0toKpi;}
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -69,8 +71,8 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 6,
-        knVarForSparseReco   = 7,
+        knVarForSparseAcc    = 7,
+        knVarForSparseReco   = 8,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
