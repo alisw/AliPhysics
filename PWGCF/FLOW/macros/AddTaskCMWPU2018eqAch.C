@@ -36,6 +36,10 @@ void AddTaskCMWPU2018eqAch(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t
     task_CMW->SelectCollisionCandidates(AliVEvent::kCentral);
     printf("\n =========> AddTaskCMW::Info() Trigger = kCentral \n");
   }
+  else if(sTrigger=="kAll"){
+    task_CMW->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral );      // default is kINT7         
+    printf("\n =========> AddTaskCMW::Info() Trigger = kCentral \n");
+  }
   else{//if trigger==kINT7 or no trigger provided:
     task_CMW->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
     printf("\n =========> AddTaskCMW::Info() Trigger = kINT7 \n");
