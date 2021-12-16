@@ -155,6 +155,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTKaonTPCsigma_d[30];
   Float_t fTKaonTOFsigma_d[30];
   Float_t fTKaonDCA[30];
+  Float_t fTKaonDCAz[30];
   Int_t fTKaonNcl[30];
   Int_t fTKaonShared[30];
   Float_t fTKaonTPCchi2[30];
@@ -202,6 +203,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTDeuteronTPCsigma_d[10];
   Float_t fTDeuteronTOFsigma_d[10];
   Float_t fTDeuteronDCA[10];
+  Float_t fTDeuteronDCAz[10];
   Int_t fTDeuteronNcl[10];
   Int_t fTDeuteronShared[10];
   Float_t fTDeuteronTPCchi2[10];
