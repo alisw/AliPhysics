@@ -168,7 +168,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
-    double fptbinning[knumpart][600];                         //
+    double fptbinning[knumpart][2000];                        //
 
     //functions to allow flushing part of code out of UserExec
     bool ApplyCuts(int);
@@ -182,8 +182,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 9); 
-    //version 9: fixed AliEventCuts streamer
+    ClassDef(AliAnalysisTaskStrVsMult, 10); 
+    //version 10: enlarge max number of pT bins
 };
 
 #endif
