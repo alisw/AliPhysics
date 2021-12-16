@@ -168,7 +168,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
-    double fptbinning[knumpart][600];                         //
+    double fptbinning[knumpart][2000];                        //
 
     //functions to allow flushing part of code out of UserExec
     bool ApplyCuts(int);
