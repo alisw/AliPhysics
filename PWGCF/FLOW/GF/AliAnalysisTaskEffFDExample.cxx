@@ -71,6 +71,7 @@ AliAnalysisTaskEffFDExample::AliAnalysisTaskEffFDExample(const char *name, Bool_
   fTCtoAdd(0),
   fFBtoAdd(0)
 {
+  DefineInput(1,TH3D::Class());
   DefineOutput(1,AliEffFDContainer::Class());//AliEffFDContainer::Class());
 };
 AliAnalysisTaskEffFDExample::~AliAnalysisTaskEffFDExample() {
@@ -91,7 +92,6 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
                                               1.5, 1.75, 2.0, 2.25, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0,
                                               8.0, 10.0};
   if(!fPtAxis) SetPtBins(default_NPtBins,default_PtBins);
-
   //Creating the EffFD Object
   fEfFd = new AliEffFDContainer(Form("%s_EffAndFD%s",this->GetName(), fContPF.Data()),Form("%s_EffAndFD%s",this->GetName(), fContPF.Data()),fIsMC);
   fEfFd->SetEta(fEtaMin,fEtaMax);
@@ -104,6 +104,9 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
   fEfFd->SetCentralityBins(fMultiAxis->GetNbins(),multibins);
   //Centrality estimator, default is V0M
   fEfFd->SetCentralityEstimator(fCentEst);
+  //Setting weights in case those are specified
+  TH3D *hWeights = (TH3D*)GetInputData(1);
+  fEfFd->SetMCSWeights(hWeights);
   /* //Example how to add custom cuts:
   AliESDtrackCuts *tc = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   fEfFd->AddCut(tc); */
@@ -126,22 +129,41 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
 };
 void AliAnalysisTaskEffFDExample::UserExec(Option_t*) {
   AliESDEvent *fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if(!fESD) return;
+  AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  if(!fESD && !fAOD) return;
   //Checking trigger
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(!(fTriggerType&fSelMask)) return ;
-  //Checking event cuts
-  if(!fEventCuts.AcceptEvent(fESD)) return;
-  if(TMath::Abs(fESD->GetPrimaryVertex()->GetZ())>fVtxZCut) return;
-  //Fetching MC event
-  if(fIsMC) {
-    fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
-    if (!fMCEvent) return;
+  if(fESD) { //If working on ESDs
+    //Checking event cuts
+    if(!fEventCuts.AcceptEvent(fESD)) return;
+    if(TMath::Abs(fESD->GetPrimaryVertex()->GetZ())>fVtxZCut) return;
+    //Fetching MC event
+    if(fIsMC) {
+      fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
+      if (!fMCEvent) return;
+    }
+    //Filling: either ESD + MC (for MC), or ESD (for data)
+    if(fIsMC) fEfFd->Fill(*fESD, *fMCEvent);
+              else fEfFd->Fill(*fESD);
+    PostData(1,fEfFd);
+    return;
+  } else if(fAOD) { //else if working on AODs
+    if(!fIsMC) return; //If running on AODs, only makes sense running on MC ( = efficiencies), since we can't get the DCAxy anyways
+    //Event and vertex selection embedded in AliGFWFlags
+    // if(!fEventCuts.AcceptEvent(fAOD)) return;
+    // if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ())>fVtxZCut) return;
+    //Fetching MC event
+    if(fIsMC) {
+      fMCEvent = dynamic_cast<AliMCEvent *>(MCEvent());
+      if (!fMCEvent) return;
+    }
+    //Filling: for AODs, only makes sense to fill for MC
+    fEfFd->Fill(*fAOD, *fMCEvent);
+    PostData(1,fEfFd);
+    return;
+
   }
-  //Filling: either ESD + MC (for MC), or ESD (for data)
-  if(fIsMC) fEfFd->Fill(*fESD, *fMCEvent);
-            else fEfFd->Fill(*fESD);
-  PostData(1,fEfFd);
 };
 void AliAnalysisTaskEffFDExample::Terminate(Option_t*) {
 };
