@@ -154,6 +154,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   std::vector<SimpleSecondaryVertex> fSimpleSecVertices;  ///< Vector of secondary vertices
 
   AliAnalysisTaskJetQnVectors* fqnVectorReader;                         ///< Reader for the Qn vector
+  Double_t                     fQ2VectorValue;                          ///< Calibrated q2 value from V0
+  Double_t                     fEPangleV0;                              ///< Calibrated event-plane angle from V0
 
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
@@ -174,7 +176,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 11) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 12) // Jet extraction task
   /// \endcond
 };
 

@@ -8,16 +8,10 @@
 
 //*************************************************************************************************
 // \class AliAnalysisTaskJetQnVectors
-// \brief task used to load the Qn calibrations and get the calibrated Qn vectors for HF analyses
+// \brief task used to load the Qn calibrations and get the calibrated Qn vectors for JE analyses
 // \authors:
-// F. Grosa, fabrizio.grosa@cern.ch
-// F. Catalano, fabio.catalano@cern.ch
-// A. Dobrin, alexandru.dobrin@cern.ch
-// A. Festanti, andrea.festanti@cern.ch
-// G. Luparello, grazia.luparello@cern.ch
-// F. Prino, prino@to.infn.it
-// A. Rossi, andrea.rossi@cern.ch
-// S. Trogolo, stefano.trogolo@cern.ch
+// C. Beattie, caitlin.beattie@cern.ch
+// M. Sas,     mike.sas@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <TH1F.h>
@@ -56,6 +50,7 @@ public:
     void EnableQVecTPCVsCentrDistrHistosVsRun()                                                          {fEnableQvecTPCVsCentrDistr=true;}
 
     double Getq2V0()                                                                                     {return fq2V0;}
+    double GetEPangleCF()                                                                                {return fEPangleCF;}
 
 private:
 
@@ -93,8 +88,9 @@ private:
     unsigned long long fTriggerMask;                 /// trigger mask
 
     double fq2V0;                                    /// q2 vector from the V0     
+    double fEPangleCF;                               /// EP Angle with callibrations from V0
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 4);
+    ClassDef(AliAnalysisTaskJetQnVectors, 5);
 };
 
 #endif
