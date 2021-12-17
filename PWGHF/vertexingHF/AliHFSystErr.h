@@ -344,6 +344,7 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2017pp();
   void InitLctopKpi20161718pp13TeV();
   void InitLctopKpi20161718pp13TeVFineBins();
+  void InitLctopKpi20161718pp13TeVFineBins_woVertexing();
   void InitLctopKpi2018PbPb010();
   void InitLctopKpi2018PbPb3050();
 

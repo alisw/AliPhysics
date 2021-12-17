@@ -509,7 +509,10 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCollisionType==0) {
         if (fRunNumber==17 || fRunNumber==2017) InitLctopKpi2017pp();
         else if( fRunNumber==18 || fRunNumber==2018) InitLctopKpi20161718pp13TeV();
-        else if( fRunNumber==20161718 ) InitLctopKpi20161718pp13TeVFineBins();
+        else if( fRunNumber==20161718 ) {
+          if(fIsLowPtAnalysis)  InitLctopKpi20161718pp13TeVFineBins_woVertexing();
+          else InitLctopKpi20161718pp13TeVFineBins();
+        }
         else{
           if (fIsBDTAnalysis) InitLctopKpi2010ppBDT();
           else                InitLctopKpi2010pp();
@@ -8866,6 +8869,61 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins() {
   fMCPtShape->SetBinContent(1,0.04);
   fMCPtShape->SetBinContent(2,0.04);  // 1-2
   fMCPtShape->SetBinContent(3,0.02);  // 2-3
+  fMCPtShape->SetBinContent(4,0.01);  // 3-4
+  for(Int_t i=5;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 4-24
+
+  // BR
+  fBR= new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i,0.05);
+
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins_woVertexing() {
+  //
+  // Lc->pKpi std. cut method syst errors., fine binning, no Lc vertexing. Responsible: Mattia Faggin
+  //  2016 2017 2018  pp sample
+  //
+  //
+
+  std::cout << std::endl << "### InitLctopKpi20161718pp13TeVFineBins_woVertexing" << std::endl << std::endl;
+
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi20161718pp_wovertexing");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.016);
+
+  // Tracking efficiency (+++ From topological analysis +++)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  fTrackingEff->SetBinContent(1,0.045); // 0-1
+  for(Int_t i=2;i<=3;i++) fTrackingEff->SetBinContent(i,0.045); // 1-2
+  for(Int_t i=3;i<=5;i++) fTrackingEff->SetBinContent(i,0.055); // 2-3
+  for(Int_t i=5;i<=7;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
+  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.13);//0-1
+  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.09); // 1-2
+  for(Int_t i=3;i<=7;i++) fRawYield->SetBinContent(i,0.04); // from 2-3 to 6-7
+  for(Int_t i=8;i<=24;i++) fRawYield->SetBinContent(i,0.10); // from 7-8 to 12-24
+
+  // topological selection
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,0.10);//0-1
+  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05); // from 1-2 to 4-5
+  for(Int_t i=6;i<=24;i++) fCutsEff->SetBinContent(i,0.03); // from 4-5 to 12-24
+
+  // PID efficiency (variation of Bayes PID criterion, 5% everywhere confirmed from fine-binning analysis)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  fMCPtShape->SetBinContent(1,0.01);  // 0-1
+  fMCPtShape->SetBinContent(2,0.01);  // 1-2
+  fMCPtShape->SetBinContent(3,0.01);  // 2-3
   fMCPtShape->SetBinContent(4,0.01);  // 3-4
   for(Int_t i=5;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 4-24
 
