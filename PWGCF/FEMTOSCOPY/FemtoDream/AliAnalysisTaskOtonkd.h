@@ -118,6 +118,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
 //  TH2F  *fDeuteronRestMassNoTOF;            //!
 //  TH2F  *fAntiDeuteronRestMassNoTOF;        //!
 
+  TRandom3 r3;
 
   TTree* fTree;  //!
   Int_t fTRunNumber;
