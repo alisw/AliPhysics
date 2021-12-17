@@ -114,4 +114,6 @@
 #pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency+;
 #pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelations+;
 
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity+;
+
 #endif

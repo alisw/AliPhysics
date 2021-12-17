@@ -124,6 +124,7 @@ set(SRCS
   FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency.cxx
   ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelations.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx	
   )
 
 # Headers from sources
@@ -175,3 +176,4 @@ install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyI
 install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
 install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)
 install(DIRECTORY ParticleYieldRatioCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
+install(DIRECTORY HMPTF/macros DESTINATION PWGCF/EBYE/HMPTF)
