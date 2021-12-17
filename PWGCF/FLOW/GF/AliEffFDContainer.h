@@ -26,6 +26,9 @@
 #include "TMath.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
+#include "AliGFWFilter.h"
 
 class AliEffFDContainer: public TNamed {
   public:
@@ -45,6 +48,7 @@ class AliEffFDContainer: public TNamed {
     void SetPIDObjects(AliPIDResponse *lPIDResponse, AliPIDCombined *lPIDCombined) {fPIDResponse = lPIDResponse; fBayesPID = lPIDCombined; if(lPIDCombined&&lPIDResponse) fAddPID=kTRUE; };
     void Fill(AliESDEvent &inputESD, AliMCEvent &inputMC);
     void Fill(AliESDEvent &inputESD);
+    void Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC);
     TList *GetOutList() { return fOutList; };
     Bool_t AddContainer(AliEffFDContainer *target);
     TH1* fetchObj(TString inname) { return (TH1*)fOutList->FindObject(makeName(inname).Data()); };
@@ -54,6 +58,7 @@ class AliEffFDContainer: public TNamed {
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
     void NewEvent(AliMCEvent &inputMC);
+    void NewAODEvent(AliAODEvent &inputAOD, AliMCEvent &inputMC);
     void StoreBins(Int_t nBins, Double_t *lBins, Int_t &tNBins, Double_t *&tBins);
     void CreateHistograms(Bool_t forceRecreate=kFALSE);
     Double_t GetChi2TPCConstrained(const AliESDtrack *l_Tr);
@@ -61,6 +66,10 @@ class AliEffFDContainer: public TNamed {
     void SetIdentifier(TString newname) { fIdentifier->SetTitle(newname.Data()); };
     Int_t GetBayesPIDIndex(AliVTrack *l_track);
     Int_t GetTruePIDIndex(const Int_t &pdgcode);
+    Int_t GetMCSWPrimIndex(AliMCParticle *lPart);
+    Int_t GetMCSWMotherIndex(AliMCParticle *lPart, Double_t &lMotherPt);
+    void SetMCSWeights(TH3D *inh) {fMCSWeights=inh;};
+    Int_t CalculateMult(); //Required to pick up the correct weights
     TString getSpecieName(Int_t ind) {if(ind>=(Int_t)fSpNames.size() || ind<0) return "Undefined_"; return fSpNames[ind];};
     TString makeName(TString pf, Int_t spInd=0) { return getSpecieName(spInd)+pf+fIdentifier->GetTitle(); };
     //Members
@@ -78,9 +87,11 @@ class AliEffFDContainer: public TNamed {
     Bool_t fInitialized;
     AliMCEvent *flMCEvent; //! fetched runtime, no need to store
     AliESDEvent *flESDEvent; //! cast at NewEvent(), so that we don't need to do that multiple times
+    AliAODEvent *flAODEvent; //! cast at NewEvent(), so that we don't need to do that multiple times
     AliMultSelection *flMultSel;//! do not store
     AliMCSpectraWeightsHandler* flmcWeightsHandler;//! do not store this
     AliMCSpectraWeights *flMCSpectraWeights;//! do not store
+    TH3D *fMCSWeights; //! do not store... I think?
     //Pointers to histograms -- so that we don't need to look them up in the list all the time:
     TH2D ***fEff; //! Stored by TList
     TH3D ***fDCA;//! Stored by TList
