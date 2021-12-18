@@ -43,6 +43,8 @@ public:
   void         SetEtamin(Double_t min)            { fEtamin = min; }
   void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b; }
   void         SetApplyEventw(Bool_t b)           { fEventWeight = b;  }
+  void         Selectonebbbar(Bool_t b)           { fSelectonebbbar = b;  }
+
   
   
 private:
@@ -67,6 +69,7 @@ protected:
   Double_t                 fEtamin;
   Double_t                 fEtamax;
   Bool_t                   fScaleByRAA;
+  Bool_t                   fSelectonebbbar; // select events with only one bbbar pair in history
   // Histogram with 4 bins: for # of events 
   TH1F *hNEvents;                                      //!
   TH1F *hNEventsW;                                     //!

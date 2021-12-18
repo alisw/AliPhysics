@@ -61,6 +61,7 @@ fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
 fScaleByRAA(kFALSE),
+fSelectonebbbar(kFALSE),
 hNEvents(0),
 hNEventsW(0),
 hQuarkMethod1(0),                     
@@ -187,6 +188,7 @@ fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
 fScaleByRAA(kFALSE),
+fSelectonebbbar(kFALSE),
 hNEvents(0),
 hNEventsW(0),
 hQuarkMethod1(0),                     
@@ -325,6 +327,8 @@ void AliAnalysisTaskBeauty::UserCreateOutputObjects()
   printf("  low-eta cut:         %f\n", fEtamin);
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
+  printf("  select only event wih one bbbar pair:    %s\n", fSelectonebbbar?"YES":"NO");
+
   std::cout << std::endl;
 
   AliCocktailSmearing::Print();
@@ -424,7 +428,36 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
   if(fEventWeight) eventw = crosssection;
 
   //printf("Event number %d\n",fNbEvents);
-  
+
+  //additional loop in case only events with one bbbar should be selected 
+  if(fSelectonebbbar){
+    Int_t  nbquarkintheeventp = 0;
+    Int_t  nbquarkintheeventn = 0;
+
+    for(int iparticle=0; iparticle<nparticles;iparticle++){
+      AliVParticle * p = fMcEvent->GetTrack(iparticle);
+      if (!p) continue;
+
+      if((p->PdgCode()==5) ) {
+        nbquarkintheeventp ++;
+	if(nbquarkintheeventp > 1){
+	  PostData(1, fOutputList);
+	  return;
+	}
+      }
+      if((p->PdgCode()==-5) ) {
+        nbquarkintheeventn ++;
+	if(nbquarkintheeventn > 1){
+	  PostData(1, fOutputList);
+	  return;
+	}
+      }
+    }
+    if(!(nbquarkintheeventp == 1 && nbquarkintheeventn == 1)){
+      PostData(1, fOutputList);
+      return;
+    }
+  } 
 
   for(int iparticle=0; iparticle<nparticles;iparticle++){
     AliVParticle * p = fMcEvent->GetTrack(iparticle);
