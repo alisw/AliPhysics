@@ -85,7 +85,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian);
   void                        GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
   bool                        PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
-  void                        GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD);
+  void                        GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& partJetPhi, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD);
   void                        DoJetMatching(); 
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsTriggerTrackInEvent();
@@ -176,7 +176,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 12) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 13) // Jet extraction task
   /// \endcond
 };
 
@@ -219,8 +219,8 @@ class AliEmcalJetTree : public TNamed
     void            FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth);
     void            FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision,
                                     Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetAngularity_Det, Float_t matchedJetpTD_Det,
-                                    Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part,
-                                    Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter);
+                                    Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetPhi_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part,
+                                    Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter, Float_t evPlaneV0);
     void            FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_d0, std::vector<Float_t>& trackIP_z0, std::vector<Float_t>& trackIP_d0cov, std::vector<Float_t>& trackIP_z0cov);
     void            FillBuffer_TriggerTracks(std::vector<Float_t>& triggerTrackPt, std::vector<Float_t>& triggerTrackDeltaEta, std::vector<Float_t>& triggerTrackDeltaPhi);
     // ######################################
@@ -331,6 +331,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_Mass;       //!<! array buffer
     Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_Angularity; //!<! array buffer
     Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_pTD;        //!<! array buffer
+    Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_EPangle;    //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction;               //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction_PartLevel;     //!<! array buffer
 
