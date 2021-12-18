@@ -1823,13 +1823,13 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   double weight = 1;
   //..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
   if((eff < 0.03) || ((error/eff) > 0.1)) error = 0.00001;
-  else{
-    TRandom3 r(0);
-    double efficiency = 0;
-    efficiency = r.Gaus(eff, error);
-    weight = 1./efficiency; //..taking into account errors
-    //weight = 1./eff;
-  }
+  if((eff < 0.03)) return 1;
+
+  TRandom3 r(0);
+  double efficiency = 0;
+  efficiency = r.Gaus(eff, error);
+  weight = 1./efficiency; //..taking into account errors
+  //weight = 1./eff;
 
   return weight;
 
