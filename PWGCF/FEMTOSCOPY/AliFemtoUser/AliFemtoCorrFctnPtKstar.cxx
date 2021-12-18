@@ -142,11 +142,11 @@ void AliFemtoCorrFctnPtKstar::AddRealPair( AliFemtoPair* pair){
  
    // Calculate transverse momentum of the pair:
   double px1 = pair->Track1()->Track()->P().x();
-  double px2 = pair->Track2()->Track()->P().x();
+  double px22 = pair->Track2()->Track()->P().x();
   double py1 = pair->Track1()->Track()->P().y();
-  double py2 = pair->Track2()->Track()->P().y();
-  double pxpair = px1 + px2;
-  double pypair = py1 + py2;
+  double py22 = pair->Track2()->Track()->P().y();
+  double pxpair = px1 + px22;
+  double pypair = py1 + py22;
   double pTpair = TMath::Sqrt(pxpair*pxpair + pypair*pypair);
   // Calculate energies of particles:
   double pz1 = pair->Track1()->Track()->P().z();
@@ -154,8 +154,8 @@ void AliFemtoCorrFctnPtKstar::AddRealPair( AliFemtoPair* pair){
   double pzpair = pz1 + pz2;
   double p1 = TMath::Sqrt(px1*px1 + py1*py1 + pz1*pz1);
   double p2 = TMath::Sqrt(px2*px2 + py2*py2 + pz2*pz2);
-  double m1 = fMassPart1;
-  double m2 = fMassPart2;
+  double m1 = 0.13957;  //pion mass
+  double m2 = 0.493677; //kaon mass
   double e1 = TMath::Sqrt(p1*p1 + m1*m1);
   double e2 = TMath::Sqrt(p2*p2 + m2*m2);
   // Calculate transverse mass of the pair:
