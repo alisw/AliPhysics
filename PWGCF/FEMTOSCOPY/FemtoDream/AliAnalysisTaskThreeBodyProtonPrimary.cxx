@@ -1787,7 +1787,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistributionME(std::vector<s
       std::vector<AliFemtoDreamBasePart> iEvent2 = MixedEvent1Container->GetEvent(iDepth1); //GANESHA Here check if two species are the same
       for ( auto iPart2 = iEvent2.begin(); iPart2 != iEvent2.end(); ++iPart2) {
 
-        if(speciesSE==0 && speciesME1 ==0){
+        if((speciesSE==0 && speciesME1 ==0)||(speciesSE==1 && speciesME1 ==1)){ // CHANGED BY RAFFA
 
           bool Pair12 = true;
 
