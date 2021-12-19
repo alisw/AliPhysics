@@ -1414,6 +1414,7 @@ bool AliAnalysisTaskCMWESETrkSyst::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* f
     if (fDoNUA){
       double wAcc = GetNUACor(charge, phi, eta, vz, SystSwitch);
       if (wAcc<0) continue;
+      if (fabs(wAcc) < 1e-8) weight *=1;
       else weight *= wAcc;
     if (SystSwitch==0) hPhi[1]->Fill(phi, wAcc);
     if (SystSwitch==1) hPhiMCSyst[1]->Fill(phi, wAcc);
@@ -2141,7 +2142,9 @@ bool AliAnalysisTaskCMWESETrkSyst::AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack
     if (SystSwitch == 1 ) hNhitsMCSyst[0]->Fill(nhits);
     if (SystSwitch == 2 ) hEtaFBSyst[0]->Fill(eta);
     if (SystSwitch == 2 ) hNhitsFBSyst[0]->Fill(nhits);
-    if(pt < fPtMin || pt > fPtMax || fabs(eta)>fEtaCut || fabs(nhits)<fNclsCut || chi2<fChi2Lo || chi2>fChi2Hg || dedx<10.0) return false;
+
+    if (pt < fPtMin || pt > fPtMax || fabs(eta)>fEtaCut || fabs(nhits)<fNclsCut || chi2<fChi2Lo || chi2>fChi2Hg || dedx<10.0) return false;
+    
     if (SystSwitch == 0 ) hEta[1]->Fill(eta);
     if (SystSwitch == 0 ) hNhits[1]->Fill(nhits);
     if (SystSwitch == 1 ) hEtaMCSyst[1]->Fill(eta);

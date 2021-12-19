@@ -101,9 +101,9 @@ AliAnalysisTaskCMWESETrkSyst* AddTaskCMWESETrkSyst(
 				if (MCSyst){
 					AliAnalysisDataContainer *cin_NUESyst = mgr->CreateContainer(Form("NUESyst"), TList::Class(), AliAnalysisManager::kInputContainer);
                 				TFile *inNUESyst;
-					inNUESyst = TFile::Open("");
+					inNUESyst = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/Run1NUE_AMPT.root");
 					TList* wNUE_Systlist = NULL;
-					wNUE_Systlist = dynamic_cast<TList*>(inNUESyst->Get(""));
+					wNUE_Systlist = dynamic_cast<TList*>(inNUESyst->Get("listNUEAMPT"));
 					if (!wNUE_Systlist) printf("Read TList wrong!\n");
             		    		cin_NUESyst->SetData(wNUE_Systlist); 			
 					mgr->ConnectInput(task,inSlotCounter,cin_NUESyst);
@@ -112,9 +112,9 @@ AliAnalysisTaskCMWESETrkSyst* AddTaskCMWESETrkSyst(
 				if (FBSyst){
 					AliAnalysisDataContainer *cin_NUESystFB = mgr->CreateContainer(Form("NUESystFB"), TList::Class(), AliAnalysisManager::kInputContainer);
                 				TFile *inNUESystFB;
-					inNUESystFB = TFile::Open("");
+					inNUESystFB = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/Run1NUEFB272.root");
 					TList* wNUE_SystFBlist = NULL;
-					wNUE_SystFBlist = dynamic_cast<TList*>(inNUESystFB->Get(""));
+					wNUE_SystFBlist = dynamic_cast<TList*>(inNUESystFB->Get("listNUE"));
 					if (!wNUE_SystFBlist) printf("Read TList wrong!\n");
             		    		cin_NUESystFB->SetData(wNUE_SystFBlist); 			
 					mgr->ConnectInput(task,inSlotCounter,cin_NUESystFB);
@@ -183,9 +183,9 @@ AliAnalysisTaskCMWESETrkSyst* AddTaskCMWESETrkSyst(
 				if (FBSyst){
 					AliAnalysisDataContainer *cin_NUASystFB = mgr->CreateContainer(Form("NUASystFB"), TList::Class(), AliAnalysisManager::kInputContainer);
                 				TFile *inNUASystFB;
-					inNUASystFB = TFile::Open("");
+					inNUASystFB = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB272.root");
 					TList* wNUA_SystFBlist = NULL;
-					wNUA_SystFBlist = dynamic_cast<TList*>(inNUASystFB->Get(""));
+					wNUA_SystFBlist = dynamic_cast<TList*>(inNUASystFB->Get("10hListNUAFB272"));
 					if (!wNUA_SystFBlist) printf("Read TList wrong!\n");
             		    		cin_NUASystFB->SetData(wNUA_SystFBlist); 			
 					mgr->ConnectInput(task,inSlotCounter,cin_NUASystFB);
