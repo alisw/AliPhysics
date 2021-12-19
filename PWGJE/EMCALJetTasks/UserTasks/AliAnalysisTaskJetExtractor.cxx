@@ -239,7 +239,7 @@ void AliEmcalJetTree::FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetAngularity_Det, Float_t matchedJetpTD_Det, Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part, Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter)
+void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetAngularity_Det, Float_t matchedJetpTD_Det, Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetPhi_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part, Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter, Float_t evPlaneV0)
 {
   fBuffer_Jet_MC_MotherParton = motherParton;
   fBuffer_Jet_MC_MotherHadron = motherHadron;
@@ -255,6 +255,7 @@ void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadr
   fBuffer_Jet_MC_MatchedPartLevelJet_Mass = matchedJetMass_Part;
   fBuffer_Jet_MC_MatchedPartLevelJet_Angularity = matchedJetAngularity_Part;
   fBuffer_Jet_MC_MatchedPartLevelJet_pTD = matchedJetpTD_Part;
+  fBuffer_Jet_MC_MatchedPartLevelJet_EPangle = RelativePhi(matchedJetPhi_Part, evPlaneV0);
 
   fBuffer_Jet_MC_TruePtFraction = truePtFraction;
   fBuffer_Jet_MC_TruePtFraction_PartLevel = truePtFraction_PartLevel;
@@ -474,6 +475,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Mass",&fBuffer_Jet_MC_MatchedPartLevelJet_Mass,"Jet_MC_MatchedPartLevelJet_Mass/F");
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Angularity",&fBuffer_Jet_MC_MatchedPartLevelJet_Angularity,"Jet_MC_MatchedPartLevelJet_Angularity/F");
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_pTD",&fBuffer_Jet_MC_MatchedPartLevelJet_pTD,"Jet_MC_MatchedPartLevelJet_pTD/F");
+      fJetTree->Branch("Jet_MC_MatchedPartLevelJet_EPangle",&fBuffer_Jet_MC_MatchedPartLevelJet_EPangle,"Jet_MC_MatchedPartLevelJet_EPangle/F");
     }
 
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
@@ -829,37 +831,6 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     std::vector<Float_t> splittings_radiatorE; std::vector<Float_t> splittings_kT; std::vector<Float_t> splittings_theta; std::vector<Int_t> splittings_secVtx_rank; std::vector<Int_t> splittings_secVtx_index;
 
     FillJetControlHistograms(jet);
-    if(fSaveMCInformation)
-    {
-      Double_t matchedJetDistance_Det = 0;
-      Double_t matchedJetPt_Det = 0;
-      Double_t matchedJetMass_Det = 0;
-      Double_t matchedJetAngularity_Det = 0;
-      Double_t matchedJetpTD_Det = 0;
-      Double_t matchedJetDistance_Part = 0;
-      Double_t matchedJetPt_Part = 0;
-      Double_t matchedJetMass_Part = 0;
-      Double_t matchedJetAngularity_Part = 0;
-      Double_t matchedJetpTD_Part = 0;
-      Double_t truePtFraction = 0;
-      Double_t truePtFraction_PartLevel = 0;
-      Int_t currentJetType_HM = 0;
-      Int_t currentJetType_PM = 0;
-      Int_t currentJetType_IC = 0;
-
-      // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
-      GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
-      // Get true estimators: for pt, jet mass, ...
-      GetTrueJetPtFraction(jet, truePtFraction, truePtFraction_PartLevel);
-      
-      GetMatchedJetObservables(jet, matchedJetPt_Det, matchedJetPt_Part, matchedJetDistance_Det, matchedJetDistance_Part, matchedJetMass_Det, matchedJetMass_Part, matchedJetAngularity_Det, matchedJetAngularity_Part, matchedJetpTD_Det,matchedJetpTD_Part);
-
-      
-      fJetTree->FillBuffer_MonteCarlo(currentJetType_PM,currentJetType_HM,currentJetType_IC,
-                                      matchedJetDistance_Det,matchedJetPt_Det,matchedJetMass_Det,matchedJetAngularity_Det,matchedJetpTD_Det,
-                                      matchedJetDistance_Part,matchedJetPt_Part,matchedJetMass_Part,matchedJetAngularity_Part,matchedJetpTD_Part,
-                                      truePtFraction,truePtFraction_PartLevel,fPtHard,fEventWeight,fImpactParameter);
-    }
 
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
     if(fSaveConstituentPID || fSaveConstituentsIP)
@@ -924,11 +895,47 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       fJetTree->FillBuffer_Splittings(splittings_radiatorE, splittings_kT, splittings_theta, fSaveSecondaryVertices, splittings_secVtx_rank, splittings_secVtx_index);
     }
 
-    if (fSaveQVector) {
-       fQ2VectorValue = fqnVectorReader->Getq2V0();      
+    if (fSaveQVector) 
+    {
+       fQ2VectorValue = fqnVectorReader->Getq2V0();     //connect to JetQnVectors Task 
        fEPangleV0 = fqnVectorReader->GetEPangleCF();    //include calibrated V0 Event Plane
-       }
-    if (!fSaveQVector)   fEPangleV0 = fEPV0;           //use uncalibrated V0 Event Plane
+    }
+    if (!fSaveQVector)   fEPangleV0 = fEPV0;            //use uncalibrated V0 Event Plane
+
+    if(fSaveMCInformation)
+    {
+      Double_t matchedJetDistance_Det = 0;
+      Double_t matchedJetPt_Det = 0;
+      Double_t matchedJetMass_Det = 0;
+      Double_t matchedJetAngularity_Det = 0;
+      Double_t matchedJetpTD_Det = 0;
+      Double_t matchedJetDistance_Part = 0;
+      Double_t matchedJetPt_Part = 0;
+      Double_t matchedJetPhi_Part = 0;
+      Double_t matchedJetMass_Part = 0;
+      Double_t matchedJetAngularity_Part = 0;
+      Double_t matchedJetpTD_Part = 0;
+      Double_t matchedJetEPangle_Part = 0;
+      Double_t truePtFraction = 0;
+      Double_t truePtFraction_PartLevel = 0;
+      Int_t currentJetType_HM = 0;
+      Int_t currentJetType_PM = 0;
+      Int_t currentJetType_IC = 0;
+
+      // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
+      GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
+      // Get true estimators: for pt, jet mass, ...
+      GetTrueJetPtFraction(jet, truePtFraction, truePtFraction_PartLevel);
+      
+      GetMatchedJetObservables(jet, matchedJetPt_Det, matchedJetPt_Part, matchedJetPhi_Part, matchedJetDistance_Det, matchedJetDistance_Part, matchedJetMass_Det, matchedJetMass_Part, matchedJetAngularity_Det, matchedJetAngularity_Part, matchedJetpTD_Det, matchedJetpTD_Part);
+
+      
+      fJetTree->FillBuffer_MonteCarlo(currentJetType_PM,currentJetType_HM,currentJetType_IC,
+                                      matchedJetDistance_Det,matchedJetPt_Det,matchedJetMass_Det,matchedJetAngularity_Det,matchedJetpTD_Det,
+                                      matchedJetDistance_Part,matchedJetPt_Part, matchedJetPhi_Part, matchedJetMass_Part,matchedJetAngularity_Part,matchedJetpTD_Part, 
+                                      truePtFraction,truePtFraction_PartLevel,fPtHard,fEventWeight,fImpactParameter, fEPangleV0);
+    }
+
 
     // Fill jet to tree (here adding the minimum properties)
     Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, fQ2VectorValue, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPangleV0);
@@ -1301,7 +1308,7 @@ bool AliAnalysisTaskJetExtractor::PerformGeometricalJetMatching(AliJetContainer&
   return true;
 }
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD)
+void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& partJetPhi, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD)
 {
 
   
@@ -1347,6 +1354,7 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
   // if we are doing particle level matching, require that there is both a particle and detector level match
   detJetPt  = ptJet2;
   partJetPt = ptJet3;
+  partJetPhi = jet3->Phi();
   detJetDistance  = jet->DeltaR(jet2);
   partJetDistance = jet2->DeltaR(jet3);
   detJetMass  = jet2->M();
