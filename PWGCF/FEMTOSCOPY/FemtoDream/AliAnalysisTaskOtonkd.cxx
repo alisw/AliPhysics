@@ -311,7 +311,8 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
+  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/S");
+  fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
 
   //Deuterons:
   fTree->Branch("nDeuteron",&fTnDeuteron,"fTnDeuteron/I");
@@ -344,6 +345,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
 //  fTree->Branch("DeuteronITStime",&fTDeuteronITStime,"fTDeuteronITStime[fTnDeuteron]/O");
 //  fTree->Branch("DeuteronTOFtime",&fTDeuteronTOFtime,"fTDeuteronTOFtime[fTnDeuteron]/O");
   fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/I");
+  fTree->Branch("DeuteronOrigin",&fTDeuteronOrigin,"fTDeuteronOrigin[fTnDeuteron]/S");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -421,6 +423,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTKaonTPCsigma_d[ii]=-100000.;
    fTKaonTOFsigma_d[ii]=-100000.;
    fTKaonPDG[ii]=0.;//sure Zero?
+   fTKaonOrigin[ii]=-1;
   }
   fTnKaon=0;
 
@@ -454,6 +457,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTDeuteronTPCsigma_d[ii]=-100000.;
    fTDeuteronTOFsigma_d[ii]=-100000.;
    fTDeuteronPDG[ii]=0.;//sure Zero?
+   fTDeuteronOrigin[ii]=-1;
   }
   fTnDeuteron=0;
  
@@ -858,6 +862,25 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
   fTKaonFilterBit[fTnKaon] = TheTrack->GetFilterMap();
  fTKaonPDG[fTnKaon] = TheTrack->GetMCPDGCode();
 
+ AliFemtoDreamBasePart::PartOrigin org = TheTrack->GetParticleOrigin();
+    fTKaonOrigin[fTnKaon] = -1;
+    switch (org) {
+      case AliFemtoDreamBasePart::kPhysPrimary:
+        fTKaonOrigin[fTnKaon] = 0;
+        break;
+      case AliFemtoDreamBasePart::kWeak:
+        fTKaonOrigin[fTnKaon] = 1;
+        break;
+      case AliFemtoDreamBasePart::kMaterial:
+        fTKaonOrigin[fTnKaon] = 2;
+        break;
+      case AliFemtoDreamBasePart::kContamination:
+        fTKaonOrigin[fTnKaon] = 3;
+        break;
+     }
+
+
+
  fTnKaon++;
  Filled = kTRUE;
  return Filled;
@@ -899,6 +922,24 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack) {
  fTDeuteronITStime[fTnDeuteron] = TheTrack->GetHasITSHit();
  fTDeuteronTOFtime[fTnDeuteron] = TheTrack->GetTOFTimingReuqirement();
  fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMCPDGCode();
+
+ AliFemtoDreamBasePart::PartOrigin org = TheTrack->GetParticleOrigin();
+    fTDeuteronOrigin[fTnDeuteron] = -1;
+    switch (org) {
+      case AliFemtoDreamBasePart::kPhysPrimary:
+        fTDeuteronOrigin[fTnDeuteron] = 0;
+        break;
+      case AliFemtoDreamBasePart::kWeak:
+        fTDeuteronOrigin[fTnDeuteron] = 1;
+        break;
+      case AliFemtoDreamBasePart::kMaterial:
+        fTDeuteronOrigin[fTnDeuteron] = 2;
+        break;
+      case AliFemtoDreamBasePart::kContamination:
+        fTDeuteronOrigin[fTnDeuteron] = 3;
+        break;
+     }
+
 
  fTnDeuteron++;
  Filled = kTRUE;
