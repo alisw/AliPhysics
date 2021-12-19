@@ -172,6 +172,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Bool_t fTKaonIsFD[30];
   UInt_t fTKaonFilterBit[30];
   Int_t fTKaonPDG[30];
+  Short_t fTKaonOrigin[30];
 
 
   const Int_t MAXDeuteronS = 10;
@@ -218,6 +219,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Int_t fTDeuteronID[10];
   Float_t fTDeuteronTOFbeta[10];
   Int_t fTDeuteronPDG[10];
+  Short_t fTDeuteronOrigin[10];
 
 
   ClassDef(AliAnalysisTaskOtonkd, 6)
