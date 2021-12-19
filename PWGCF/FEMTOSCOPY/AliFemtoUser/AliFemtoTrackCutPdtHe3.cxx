@@ -21,6 +21,7 @@ AliFemtoESDTrackCut()
 
     fdEdxcut = 1;
     fOtherNsigmacut = 0;
+    
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -69,6 +70,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fdEdxcut = aCut.fdEdxcut;
     fOtherNsigmacut = aCut.fOtherNsigmacut;
+    
     return *this;
 }
 

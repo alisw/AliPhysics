@@ -2,7 +2,6 @@
 #define AliFemtoTrackCutPdtHe3_hh
 
 #include "AliFemtoESDTrackCut.h"
-
 //==============================================================\\
 // dowang track cut for p-d/t/He3 analysis                      \\
 // deuteron part refer to AliFemtoWRzTrackCut.h                 \\
@@ -36,6 +35,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetHe3Nsigma(float Nsigma);
         void SetRejectionNsigma(float Nsigma);
 	void SetOtherNsigmacutLabel(int OtherNsigmaLabel);
+
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -68,9 +68,6 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsPionNSigmaRejection(     float mom, float nsigmaTPCPi, float nsigmaTOFPi);
         bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
         bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
-        
-        
-
         
        
 
