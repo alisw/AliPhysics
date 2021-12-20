@@ -1,4 +1,4 @@
-AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0,Float_t NMee = 1200, Float_t MinMee = 0, Float_t MaxMee = 6,Float_t NPtee  = 400, Float_t MinPtee = 0, Float_t MaxPtee = 10) {
+AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Float_t MaxPt = 8.0, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Bool_t local = kFALSE, Int_t ALTweightType = 1, TString resFileName = "",TString effFileName = "", Int_t version = 0,Float_t NMee = 1200, Float_t MinMee = 0, Float_t MaxMee = 6,Float_t NPtee  = 400, Float_t MinPtee = 0, Float_t MaxPtee = 10, Float_t MinOpAng = 0.0) {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -53,6 +53,8 @@ AliAnalysisTaskLMeeCocktailMC *AddTask_LMeeCocktailMC(Int_t CollisionSystem = 20
   task->SetNBinsPtee(NPtee);
   task->SetMinPtee(MinPtee);
   task->SetMaxPtee(MaxPtee);
+
+  task->SetMinOpAng(MinOpAng);
 
   task->SetWriteTTree(WriteTTree);
   task->SetResolType(ResolType);

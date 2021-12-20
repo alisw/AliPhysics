@@ -117,12 +117,12 @@ hMeePtee_ULS_eta_pt(0),
 hMeePtee_LS_eta_pt(0),
 hMeePtee_ULS_eta08_pt400(0),
 hMeePtee_LS_eta08_pt400(0),
-hMeePtee_ULS_eta08_pt200_opAngle50(0),
-hMeePtee_LS_eta08_pt200_opAngle50(0),
-hMeePtee_ULS_eta08_pt300_opAngle50(0),
-hMeePtee_LS_eta08_pt300_opAngle50(0),
-hMeePtee_ULS_eta08_pt400_opAngle50(0),
-hMeePtee_LS_eta08_pt400_opAngle50(0),
+hMeePtee_ULS_eta08_pt200_opAngleCut(0),
+hMeePtee_LS_eta08_pt200_opAngleCut(0),
+hMeePtee_ULS_eta08_pt300_opAngleCut(0),
+hMeePtee_LS_eta08_pt300_opAngleCut(0),
+hMeePtee_ULS_eta08_pt400_opAngleCut(0),
+hMeePtee_LS_eta08_pt400_opAngleCut(0),
 hMee_ULS_simulated_be(0),
 hMee_LS_simulated_be(0),
 hMee_ULS_eta05_be(0),
@@ -244,12 +244,12 @@ hMeePtee_ULS_eta_pt(0),
 hMeePtee_LS_eta_pt(0),
 hMeePtee_ULS_eta08_pt400(0),
 hMeePtee_LS_eta08_pt400(0),
-hMeePtee_ULS_eta08_pt200_opAngle50(0),
-hMeePtee_LS_eta08_pt200_opAngle50(0),
-hMeePtee_ULS_eta08_pt300_opAngle50(0),
-hMeePtee_LS_eta08_pt300_opAngle50(0),
-hMeePtee_ULS_eta08_pt400_opAngle50(0),
-hMeePtee_LS_eta08_pt400_opAngle50(0),
+hMeePtee_ULS_eta08_pt200_opAngleCut(0),
+hMeePtee_LS_eta08_pt200_opAngleCut(0),
+hMeePtee_ULS_eta08_pt300_opAngleCut(0),
+hMeePtee_LS_eta08_pt300_opAngleCut(0),
+hMeePtee_ULS_eta08_pt400_opAngleCut(0),
+hMeePtee_LS_eta08_pt400_opAngleCut(0),
 hMee_ULS_simulated_be(0),
 hMee_LS_simulated_be(0),
 hMee_ULS_eta05_be(0),
@@ -373,7 +373,7 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
   //double EtaCutTight=0.5;
   //double EtaCutPhenix=0.35;
 
-  double opAngle50   =0.05; // 50 mrad
+  double opAngleCut   =fMinOpAng; // 50 mrad
 
   // one can intialize it out of the event loop (if one reset this in the event loop after each event) :
   bool IsBmeson      = kFALSE; //kTRUE if all Bmeson events, in |y|<1
@@ -893,10 +893,10 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMeePtee_ULS_eta08_pt200->Fill(mass,pt_pair,ptweight2);  // pt>0.2
             hMeePtee_ULS_eta08_pt400->Fill(mass,pt_pair,ptweight4); // pt>0.4
             hMeeOpAngle_ULS_eta08_pt200->Fill(mass,opAngle,ptweight2); // opening angle
-            if (opAngle > opAngle50) { // cut on smeared opening angle
-              hMeePtee_ULS_eta08_pt200_opAngle50->Fill(mass,pt_pair,ptweight2); // pt>0.2
-              hMeePtee_ULS_eta08_pt300_opAngle50->Fill(mass,pt_pair,ptweight3); // pt>0.3
-              hMeePtee_ULS_eta08_pt400_opAngle50->Fill(mass,pt_pair,ptweight4); // pt>0.4
+            if (opAngle > opAngleCut) { // cut on smeared opening angle
+              hMeePtee_ULS_eta08_pt200_opAngleCut->Fill(mass,pt_pair,ptweight2); // pt>0.2
+              hMeePtee_ULS_eta08_pt300_opAngleCut->Fill(mass,pt_pair,ptweight3); // pt>0.3
+              hMeePtee_ULS_eta08_pt400_opAngleCut->Fill(mass,pt_pair,ptweight4); // pt>0.4
             }
 
           } //  |eta|<0.8
@@ -987,10 +987,10 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
             hMeePtee_LS_eta08_pt200->Fill(mass,pt_pair,ptweight2); // pt>0.2
             hMeePtee_LS_eta08_pt400->Fill(mass,pt_pair,ptweight4); // pt>0.4
             hMeeOpAngle_LS_eta08_pt200->Fill(mass,opAngle,ptweight2); // opening angle
-            if (opAngle > opAngle50) { // cut on smeared opening angle
-              hMeePtee_LS_eta08_pt200_opAngle50->Fill(mass,pt_pair,ptweight2); // pt>0.2
-              hMeePtee_LS_eta08_pt300_opAngle50->Fill(mass,pt_pair,ptweight3); // pt>0.3
-              hMeePtee_LS_eta08_pt400_opAngle50->Fill(mass,pt_pair,ptweight4); // pt>0.4
+            if (opAngle > opAngleCut) { // cut on smeared opening angle
+              hMeePtee_LS_eta08_pt200_opAngleCut->Fill(mass,pt_pair,ptweight2); // pt>0.2
+              hMeePtee_LS_eta08_pt300_opAngleCut->Fill(mass,pt_pair,ptweight3); // pt>0.3
+              hMeePtee_LS_eta08_pt400_opAngleCut->Fill(mass,pt_pair,ptweight4); // pt>0.4
             }
           } // |eta|<0.8
         } // all combinations for b->e and b->c->e
@@ -1190,12 +1190,12 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta_pt  = new TH2F("hMeePtee_LS_eta_pt" ,"e+e+ & e-e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400 = new TH2F("hMeePtee_ULS_eta08_pt400","e+e-,       |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt400  = new TH2F("hMeePtee_LS_eta08_pt400" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt200_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt200_opAngle50","e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt200_opAngle50  = new TH2F("hMeePtee_LS_eta08_pt200_opAngle50" ,"e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt300_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt300_opAngle50","e+e-,        |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt300_opAngle50  = new TH2F("hMeePtee_LS_eta08_pt300_opAngle50" ,"e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt400_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt400_opAngle50","e+e-,        |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt400_opAngle50  = new TH2F("hMeePtee_LS_eta08_pt400_opAngle50" ,"e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt200_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt200_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt200_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt200_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt300_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt300_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt300_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt300_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt400_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt400_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt400_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt400_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
 
   // Histograms for invariant mass spectra (ULS,LS),  b-->e , bBar->e
   // titles (eta, phenix) are messed up...
@@ -1308,12 +1308,12 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta_pt->Sumw2();
   hMeePtee_ULS_eta08_pt400->Sumw2();
   hMeePtee_LS_eta08_pt400->Sumw2();
-  hMeePtee_ULS_eta08_pt200_opAngle50->Sumw2();
-  hMeePtee_LS_eta08_pt200_opAngle50->Sumw2();
-  hMeePtee_ULS_eta08_pt300_opAngle50->Sumw2();
-  hMeePtee_LS_eta08_pt300_opAngle50->Sumw2();
-  hMeePtee_ULS_eta08_pt400_opAngle50->Sumw2();
-  hMeePtee_LS_eta08_pt400_opAngle50->Sumw2();
+  hMeePtee_ULS_eta08_pt200_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt200_opAngleCut->Sumw2();
+  hMeePtee_ULS_eta08_pt300_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt300_opAngleCut->Sumw2();
+  hMeePtee_ULS_eta08_pt400_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt400_opAngleCut->Sumw2();
   hMee_ULS_simulated_be->Sumw2();
   hMee_LS_simulated_be->Sumw2();
   hMee_ULS_eta05_be->Sumw2();
@@ -1417,12 +1417,12 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   fOutputList->Add(hMeePtee_LS_eta_pt);
   fOutputList->Add(hMeePtee_ULS_eta08_pt400);
   fOutputList->Add(hMeePtee_LS_eta08_pt400);
-  fOutputList->Add(hMeePtee_ULS_eta08_pt200_opAngle50);
-  fOutputList->Add(hMeePtee_LS_eta08_pt200_opAngle50);
-  fOutputList->Add(hMeePtee_ULS_eta08_pt300_opAngle50);
-  fOutputList->Add(hMeePtee_LS_eta08_pt300_opAngle50);
-  fOutputList->Add(hMeePtee_ULS_eta08_pt400_opAngle50);
-  fOutputList->Add(hMeePtee_LS_eta08_pt400_opAngle50);
+  fOutputList->Add(hMeePtee_ULS_eta08_pt200_opAngleCut);
+  fOutputList->Add(hMeePtee_LS_eta08_pt200_opAngleCut);
+  fOutputList->Add(hMeePtee_ULS_eta08_pt300_opAngleCut);
+  fOutputList->Add(hMeePtee_LS_eta08_pt300_opAngleCut);
+  fOutputList->Add(hMeePtee_ULS_eta08_pt400_opAngleCut);
+  fOutputList->Add(hMeePtee_LS_eta08_pt400_opAngleCut);
   fOutputList->Add(hMee_ULS_simulated_be);
   fOutputList->Add(hMee_LS_simulated_be);
   fOutputList->Add(hMee_ULS_eta05_be);

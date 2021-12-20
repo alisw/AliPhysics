@@ -41,6 +41,7 @@ public:
   void         SetPtCutLow(Double_t min)          { fPtCutLow = min; }
   void         SetEtamax(Double_t max)            { fEtamax = max; }
   void         SetEtamin(Double_t min)            { fEtamin = min; }
+  void         SetMinOpang(Double_t opAng)        { fMinOpAng = opAng; }
   void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b; }
   void         SetApplyEventw(Bool_t b)           { fEventWeight = b;  }
   void         Selectonebbbar(Bool_t b)           { fSelectonebbbar = b;  }
@@ -68,6 +69,7 @@ protected:
   Double_t                 fPtCutLow;
   Double_t                 fEtamin;
   Double_t                 fEtamax;
+  Double_t                 fMinOpAng;
   Bool_t                   fScaleByRAA;
   Bool_t                   fSelectonebbbar; // select events with only one bbbar pair in history
   // Histogram with 4 bins: for # of events 
@@ -135,12 +137,12 @@ protected:
   TH2F *hMeePtee_LS_eta_pt;                            //!
   TH2F *hMeePtee_ULS_eta08_pt400;                      //!
   TH2F *hMeePtee_LS_eta08_pt400;                       //!
-  TH2F *hMeePtee_ULS_eta08_pt200_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt200_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt300_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt300_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt400_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt400_opAngle50;             //!
+  TH2F *hMeePtee_ULS_eta08_pt200_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt200_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt300_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt300_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt400_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt400_opAngleCut;             //!
   // Histograms (ULS,LS),  b-->e , bBar->e
   TH1F *hMee_ULS_simulated_be;                         //!
   TH1F *hMee_LS_simulated_be;                          //!

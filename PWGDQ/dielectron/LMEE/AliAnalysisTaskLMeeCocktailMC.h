@@ -36,6 +36,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetResFileName(TString name);
     void SetResFileLocal(Bool_t localres) {fLocalRes = localres; }
     void SetEffFileName(TString name);
+    void SetMinOpAng(Float_t MinOpAng = 0.050){fMinOpAng = MinOpAng;}
 
     TH1F *GetEffHisto() {return fhwEffpT;}
 
@@ -182,6 +183,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Float_t              fNBinsPtee;                  // number of bins in pair pt
     Float_t              fMinPtee;                    // minimum pair pt
     Float_t              fMaxPtee;                    // minimum pair pt
+    Float_t              fMinOpAng;                   // Min opening angle for pairs in mrad
     Bool_t               fWriteTTree;
     Int_t              fcollisionSystem;
     Int_t                fResolType;

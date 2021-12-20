@@ -1,9 +1,10 @@
-AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE)
+AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE, Float_t MinOpAng=0.0)
 {
   AliAnalysisTaskCharm* task = new  AliAnalysisTaskCharm("");
   task->SetProcessType(processtype);
   task->SetSeed(rndmseed);
   task->SetPtCutHigh(ptmax);
+  task->SetMinOpAng(MinOpAng);
   task->SetApplywm(applyweight);
   task->SetApplyEventw(applyeventw);
   task->Selectoneccbar(selectoneccbar);
