@@ -392,8 +392,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	if( fOption.Contains("GRID") ){
 		TGrid::Connect("alien://");
 		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
-		fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
-		if( fOption.Contains("Add3DEff") )fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
+		if( fOption.Contains("pPb") ){
+			TGrid::Connect("alien://");
+			fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
+		}
+		if( fOption.Contains("Add3DEff") ){
+			TGrid::Connect("alien://");
+			fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
+		}
 	}
 
 
