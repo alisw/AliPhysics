@@ -705,7 +705,6 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
 
   const Int_t trackMult = fEvent->GetNumberOfTracks();
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
   Double_t value3D[3] = {0,0,0};
 
   for(Int_t itrack=0;itrack<trackMult;itrack++){
@@ -752,13 +751,14 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
       if(value3D[2] < 0) value3D[2] += TMath::TwoPi();
 
       UInt_t cutmask_probe = fProbeFilter->IsSelected(particle);
-      if(cutmask_probe == selectedMask_probe) FillSparse(fOutputContainer,"hsAll_El_TAP_MC",value3D);
-
-      for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+      if(cutmask_probe == selectedMask_probe){
+        FillSparse(fOutputContainer,"hsAll_El_TAP_MC",value3D);
+        for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
           AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
           UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
           UInt_t cutmask_passingprobe = ppfilter->IsSelected(particle);
           if(cutmask_passingprobe == selectedMask_passingprobe) FillSparse(fOutputContainer,Form("hsSel_El_TAP_MC_%s",ppfilter->GetName()),value3D);
+        }
       }
     }
     else if(TMath::Abs(pdg) == 211 && fPIDCalibMode){
