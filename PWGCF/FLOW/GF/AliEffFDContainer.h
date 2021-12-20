@@ -54,6 +54,7 @@ class AliEffFDContainer: public TNamed {
     TH1* fetchObj(TString inname) { return (TH1*)fOutList->FindObject(makeName(inname).Data()); };
     void SetUseGenPt(Bool_t newval) { fUseGenPt = newval; };
     void SetBayesianProbs(std::vector<Double_t> probs) {fMinBayesProb.clear(); for(auto i: probs) fMinBayesProb.push_back(i); };
+    void SetAODSelectionFlags(UInt_t evFlag, UInt_t trFlags) { fEvNomFlag=evFlag; fTrNomFlag=trFlags; };
   // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
@@ -77,6 +78,8 @@ class AliEffFDContainer: public TNamed {
     TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise
     Double_t fChi2Cut;
     TF1 *fDCAXYPtCut;
+    UInt_t fEvNomFlag; //Flag for event selection -- relevant for AODs. The whole flag, not bit index
+    UInt_t fTrNomFlag; //Flag for track selection -- relevant for AODs. The whole flag, not bit index
     Bool_t fAddPID;
     Int_t fNSpecies;
     AliPIDResponse *fPIDResponse; //! for PID
@@ -112,6 +115,6 @@ class AliEffFDContainer: public TNamed {
     Double_t fPtMax;
     Double_t fEta;
     Double_t fEtaLow;
-    ClassDef(AliEffFDContainer,4);
+    ClassDef(AliEffFDContainer,5);
 };
 #endif

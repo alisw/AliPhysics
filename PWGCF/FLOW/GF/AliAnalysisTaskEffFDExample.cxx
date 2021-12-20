@@ -105,8 +105,10 @@ void AliAnalysisTaskEffFDExample::UserCreateOutputObjects(){
   //Centrality estimator, default is V0M
   fEfFd->SetCentralityEstimator(fCentEst);
   //Setting weights in case those are specified
+  //In principle here we don't know if we'll be working with AODs, so just setting them up and if we end up working with ESDs, they won't be used
   TH3D *hWeights = (TH3D*)GetInputData(1);
   fEfFd->SetMCSWeights(hWeights);
+  fEfFd->SetAODSelectionFlags(fEvNomFlag,fTrNomFlag);
   /* //Example how to add custom cuts:
   AliESDtrackCuts *tc = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   fEfFd->AddCut(tc); */
@@ -174,4 +176,80 @@ Double_t *AliAnalysisTaskEffFDExample::GetBinsFromAxis(TAxis *inax) {
     retBins[i] = inax->GetBinLowEdge(i+1);
   retBins[lBins] = inax->GetBinUpEdge(lBins);
   return retBins;
+}
+void AliAnalysisTaskEffFDExample::SetupFlagsByIndex(Int_t ind) {
+  fEvNomFlag=1<<kNominal;
+  fTrNomFlag=1<<kFB96;
+  switch(ind) {
+    default: // also 0
+      break;
+    //Event flags:
+    case 1:
+      fEvNomFlag = 1<<kVtx9;
+      break;
+    case 2:
+      fEvNomFlag = 1<<kVtx7;
+      break;
+    case 3:
+      fEvNomFlag = 1<<kVtx5;
+      break;
+    //Track flags:
+    case 4:
+      fTrNomFlag = 1<<kFB768;
+      break;
+    case 5:
+      fTrNomFlag = 1<<kDCAz10;
+      break;
+    case 6:
+      fTrNomFlag = 1<<kDCAz05;
+      break;
+    case 7:
+      fTrNomFlag = 1<<kDCA4Sigma;
+      break;
+    case 8:
+      fTrNomFlag = 1<<kDCA10Sigma;
+      break;
+    case 9:
+      fTrNomFlag = 1<<kChiSq2;
+      break;
+    case 10:
+      fTrNomFlag = 1<<kChiSq3;
+      break;
+    case 11:
+      fTrNomFlag = 1<<kNTPC80;
+      break;
+    case 12:
+      fTrNomFlag = 1<<kNTPC90;
+      break;
+    case 13:
+      fTrNomFlag = 1<<kNTPC100;
+      break;
+    case 14:
+      fTrNomFlag = 1<<kFB768Tuned;
+      break;
+    case 15:
+      fTrNomFlag = 1<<kFB96Tuned;
+      break;
+    case 16:
+      fTrNomFlag = 1<<kFB768DCAz;
+      break;
+    case 17:
+      fTrNomFlag = 1<<kFB768DCAxyLow;
+      break;
+    case 18:
+      fTrNomFlag = 1<<kFB768DCAxyHigh;
+      break;
+    case 19:
+      fTrNomFlag = 1<<kFB768ChiSq2;
+      break;
+    case 20:
+      fTrNomFlag = 1<<kFB768ChiSq3;
+      break;
+    case 21:
+      fTrNomFlag = 1<<kFB768nTPC;
+      break;
+    case 22:
+      fTrNomFlag = 1<<kFB96MergedDCA;
+      break;
+  }
 }
