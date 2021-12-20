@@ -20,7 +20,6 @@
 #include <vector>
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
-#include "AliAODEvent.h"
 #include "AliMultSelection.h"
 #include "AliAODInputHandler.h"
 #include "AliEventPoolManager.h"
@@ -29,6 +28,8 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "AliAODEvent.h"
+#include "AliAODv0.h"
 #include "AliAODForwardMult.h"
 #include "AliAODVZERO.h"
 #include "AliPartSimpleForCorr.h"
@@ -46,15 +47,22 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         enum                    AnaType { eTPCFMDA = 0, eTPCFMDC, eFMDAFMDC, eTPCTPC };
-        enum                    PartSpecies { eCharged = 0, ePion, eKaon, eProton };
+        enum                    PartSpecies { eCharged = 0, ePion, eKaon, eProton, eK0s, eLambda };
 
         //event and track selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
         void                    SetPtRangeTrig(Double_t min, Double_t max) {fPtMinTrig = min; fPtMaxTrig = max; }
         void                    SetPtRangeAss(Double_t min, Double_t max) {fPtMinAss = min; fPtMaxAss = max; }
-        void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
-        void                    SetPVZcut(Double_t cut) {fPVzCut = cut; }
+        void                    SetAbsEta(Double_t etaAbs) { fAbsEtaMax = etaAbs; }
+        void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
+        void                    SetTPCclMincut(Double_t cut) { fTPCclMin = cut; }
+        void                    SetTPCclV0Ratio(Double_t cut) { fV0ratioClusters = cut; }
+        void                    SetV0dcaToPVcut(Double_t cut) { fV0dcaToPV = cut; }
+        void                    SetV0dcaDaugters(Double_t cut) { fV0dcaDaugters = cut; }
+        void                    SetV0radius(Double_t min, Double_t max) { fV0radiusMin = min; fV0radiusMax = max; }
+        void                    SetV0sCPAs(Double_t k0s, Double_t lambda) { fCutCPAK0s = k0s; fCutCPALambda = lambda; }
+        void                    SetV0sTaus(Double_t k0s, Double_t lambda) { fCutTauK0s = k0s; fCutTauLambda = lambda; }
         void                    SetBayesPIDcut(Double_t pion, Double_t kaon, Double_t proton){ fPIDbayesPion = pion; fPIDbayesKaon = kaon; fPIDbayesProton = proton; }
         void                    SetPhiStarCur(Double_t phiStar) {fMergingCut = phiStar; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
@@ -63,6 +71,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
+        void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
@@ -92,6 +101,11 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  PrepareFMDTracks();
 
         Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
+        void                    PrepareV0(); // V0
+        Bool_t                  IsV0(const AliAODv0* v0) const; // V0s selection
+        Bool_t                  IsK0s(const AliAODv0* v0) const;
+        Bool_t                  IsLambda(const AliAODv0* v0) const;
+        Double_t                ProperLifetime(const AliAODv0* v0, const Double_t massPDG) const;
         Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
         Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
         Bool_t                  AreEfficienciesLoaded();
@@ -104,7 +118,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputListCharged;    //! output list
         TList*                  fInputListEfficiency;    //! input list
-        TObjArray*              fTracksTrig[4]; //!
+        TObjArray*              fTracksTrig[6]; //!
         TObjArray*              fTracksAss; //!
         AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
         AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
@@ -113,17 +127,20 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
         TH3D*                   fhTrigTracks[4]; //!
-        AliTHn*                 fhSE[4]; //!
-        AliTHn*                 fhME[4]; //!
+        AliTHn*                 fhSE[6]; //!
+        AliTHn*                 fhME[6]; //!
+        AliTHn*                 fhTrigV0[2]; //!
         TH1D*                   fhEfficiency[4]; //! not eta dependent
         TH1D*                   fhEfficiencyEta[4][4]; //! eta dependent (4 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
+        TH1D*                   fhV0Counter[2]; //!
 
         //event and track selection
         AnaType                 fAnalType;
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fIsHMpp; // [kFALSE]
         Bool_t                  fDoPID; // [kFALSE]
+        Bool_t                  fDoV0; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fEfficiencyEtaDependent; // [kFALSE]
@@ -134,8 +151,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   fNofTracks;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
-        Int_t                   fNOfSamples; //[1]
-        Int_t                   fSampleIndex; //[0]
+        Double_t                fNOfSamples; //[1]
+        Double_t                fSampleIndex; //[0]
         Double_t                fPtMinTrig;
         Double_t                fPtMaxTrig;
         Double_t                fPtMinAss;
@@ -156,9 +173,19 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fAbsEtaMax;
         Double_t                fPVz;
         Double_t                fPVzCut; // [10.]
+        Double_t                fTPCclMin; // [70.]
         Double_t                fPIDbayesPion; // [0.95]
         Double_t                fPIDbayesKaon; // [0.85]
         Double_t                fPIDbayesProton; // [0.85]
+        Double_t                fV0ratioClusters; // [0.8]
+        Double_t                fV0dcaToPV; // [0.06]
+        Double_t                fV0dcaDaugters; // [1.]
+        Double_t                fV0radiusMin; // [0.5]
+        Double_t                fV0radiusMax; // [200.]
+        Double_t                fCutCPAK0s; // [0.97]
+        Double_t                fCutCPALambda; // [0.995]
+        Double_t                fCutTauK0s; // [0.]
+        Double_t                fCutTauLambda; // [0.]
         TString                 fCentEstimator;
         AliEventCuts            fEventCuts;
 
@@ -172,7 +199,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 4);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 5);
 };
 
 #endif
