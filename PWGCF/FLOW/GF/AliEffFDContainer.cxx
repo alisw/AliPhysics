@@ -13,6 +13,8 @@ AliEffFDContainer::AliEffFDContainer():
   fCutList(0),
   fChi2Cut(1e10),
   fDCAXYPtCut(0),
+  fEvNomFlag(1),
+  fTrNomFlag(1),
   fAddPID(kFALSE),
   fNSpecies(1),
   fPIDResponse(0),
@@ -56,6 +58,8 @@ AliEffFDContainer::AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC
   fCutList(0),
   fChi2Cut(1e10),
   fDCAXYPtCut(0),
+  fEvNomFlag(1),
+  fTrNomFlag(1),
   fAddPID(kFALSE),
   fNSpecies(1),
   fPIDResponse(0),
@@ -303,8 +307,6 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
   AliGFWFlags *lFlags = (AliGFWFlags*)flAODEvent->FindListObject("GFWFlags");
   if(!lFlags) {printf("GFWFlags were not found!\n"); return; };
   UInt_t gEventFlag = lFlags->GetEventFlags();
-  UInt_t fEvNomFlag=1; //Should be a member + need a setter, but now it's fine for testing
-  UInt_t fTrNomFlag=1; //Also, need a flag for tracks
   if(!(gEventFlag&fEvNomFlag)) return; //If not the selected event flag, then move on
 
   Int_t nPrimPart = flMCEvent->GetNumberOfTracks();
