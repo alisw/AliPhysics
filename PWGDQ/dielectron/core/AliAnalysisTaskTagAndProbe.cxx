@@ -1072,10 +1072,8 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
   const Int_t Nv0 = fEvent->GetNumberOfV0s();  
   UInt_t selectedMask_tag          = (1<<fTagFilter->GetCuts()->GetEntries())-1;
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
   UInt_t cutmask_tag = -1;
   UInt_t cutmask_probe = -1;
-  UInt_t cutmask_passingprobe = -1;
 
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliESDv0 *v0 = (AliESDv0*)fESDEvent->GetV0(iv0);
@@ -1188,7 +1186,7 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
               for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
                   AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
                   UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
-                  UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
+                  UInt_t cutmask_passingprobe = ppfilter->IsSelected(legPos);
                   if(cutmask_passingprobe == selectedMask_passingprobe){
                       value3D[0] = legPos->Pt();
                       value3D[1] = legPos->Eta();
@@ -1345,10 +1343,8 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
 
   UInt_t selectedMask_tag          = (1<<fTagFilter->GetCuts()->GetEntries())-1;
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
   UInt_t cutmask_tag = -1;
   UInt_t cutmask_probe = -1;
-  //UInt_t cutmask_passingprobe = -1;
 
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliAODv0 *v0 = (AliAODv0*)fAODEvent->GetV0(iv0);
@@ -1461,7 +1457,7 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
               for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
                   AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
                   UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
-                  UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
+                  UInt_t cutmask_passingprobe = ppfilter->IsSelected(legPos);
                   if(cutmask_passingprobe == selectedMask_passingprobe){
                       value3D[0] = legPos->Pt();
                       value3D[1] = legPos->Eta();
