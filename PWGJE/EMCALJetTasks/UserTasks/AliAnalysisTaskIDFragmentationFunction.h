@@ -51,8 +51,7 @@ public:
   // Setters and Getters
   virtual void   SetNonStdFile(char* c){fNonStdFile = c;} 
   
-  virtual void   SetCentralityEstimator(TString c){fCentralityEstimator = c;}
-  const TString  GetCentralityEstimator() const { return fCentralityEstimator; }
+  const TString  GetCentralityEstimator() const { return TString(fCentEst); }
   
   virtual void   SetMinMaxMultiplicity(Int_t min, Int_t max) {fMinMultiplicity = min; fMaxMultiplicity = max;}
   virtual Int_t  GetMinMultiplicity() { return fMinMultiplicity; }
@@ -202,8 +201,7 @@ public:
   AliAODEvent* fAODJets;  //! AOD event with jet branch (case we have AOD both in input and output)
   AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
   TString       fNonStdFile; // name of delta aod file to catch the extension
- 
-  TString fCentralityEstimator;   // Estimator for the Centrality, V0M is default, set to be V0A for pPb-collisions   
+  
   Int_t fMinMultiplicity;
   Int_t fMaxMultiplicity;
   
