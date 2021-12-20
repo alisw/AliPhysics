@@ -9,3 +9,6 @@ AliPartSimpleForCorr::AliPartSimpleForCorr(Short_t charge, Float_t eta, Float_t 
 
 AliPartSimpleForCorr::AliPartSimpleForCorr(Float_t eta, Float_t phi, Double_t multiplicity)
           : fEta(eta), fPhi(phi), fMultiplicity(multiplicity) {}
+
+AliPartSimpleForCorr::AliPartSimpleForCorr(Float_t eta, Float_t phi, Float_t pt, Double_t mass)
+          : fEta(eta), fPhi(phi), fpT(pt), fMass(mass), fCharge(0) {}
