@@ -1264,10 +1264,6 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
  						values[AliDielectronVarManager::kPOut], effErr);
   }
 
-
-
-
-
   values[AliDielectronVarManager::kTPCsignal]=particle->GetTPCsignal();
   values[AliDielectronVarManager::kTPCsignalTunedOnData]=particle->GetTPCsignalTunedOnData();
 
@@ -4283,7 +4279,7 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
 
       if(track->Pt() < 0.2 || 2.0 < track->Pt()) continue; 
       if(track->Eta() < -0.8 || +0.8 < track->Eta()) continue; 
-      if(track->GetTPCNcls() < 70) continue;
+      //if(track->GetTPCNcls() < 70) continue;
       if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
       if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
@@ -4306,9 +4302,11 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
 
       if(track->Pt() < 0.2 || 2.0 < track->Pt()) continue; 
       if(track->Eta() < -0.8 || +0.8 < track->Eta()) continue; 
-      if(track->GetTPCNcls() < 70) continue;
+      //if(track->GetTPCNcls() < 70) continue;
       if(!(track->GetStatus() & AliVTrack::kITSrefit)) continue;
       if(!(track->GetStatus() & AliVTrack::kTPCrefit)) continue;
+      if(!track->TestFilterBit(AliAODTrack::kTrkTPCOnly)) continue;//TPC only track, uniform phi. bit0
+      //if(!track->TestFilterBit(AliAODTrack::kTrkTPCOnlyConstrained)) continue;//TPC only track constrained to SPD vertex, uniform phi. bit7
 
       //DCAxy = 999.; DCAz  = 999.;
       //track->GetImpactParameters(DCAxy,DCAz);
