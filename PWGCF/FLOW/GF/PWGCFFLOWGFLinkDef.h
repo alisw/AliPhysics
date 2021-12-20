@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskDeform+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
 #pragma link C++ class AliAnalysisTaskFlowExample+;
+#pragma link C++ class AliAnalysisTaskPtCorr+;
 #pragma link C++ class AliDecorrFlowCorrTask+;
 #pragma link C++ class AliGFWCuts+;
 #pragma link C++ class AliGFWCumulant+;
