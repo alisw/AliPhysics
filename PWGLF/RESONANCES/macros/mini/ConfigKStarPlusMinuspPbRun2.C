@@ -46,9 +46,9 @@ Bool_t ConfigKStarPlusMinuspPbRun2
 //kTPCpidphipp2015
 {
   if (isMC)
-    Bool_t isDATA=kFALSE;
+    Bool_t isData=kFALSE;
   else
-    Bool_t isDATA=kTRUE;
+    Bool_t isData=kTRUE;
 
   // manage suffix
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
