@@ -437,21 +437,36 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
     for(int iparticle=0; iparticle<nparticles;iparticle++){
       AliVParticle * p = fMcEvent->GetTrack(iparticle);
       if (!p) continue;
+      int pdg = fabs(p->PdgCode()); 
 
-      if((p->PdgCode()==5) ) {
-        nbquarkintheeventp ++;
-	if(nbquarkintheeventp > 1){
-	  PostData(1, fOutputList);
-	  return;
+      if(pdg ==5 ) {
+        int k1 = p->GetDaughterFirst();
+	int k2 = p->GetDaughterLast();
+	// Look for charm quarks which fragments
+	for(int d=k1; d <= k2; d++) {
+	  if(d>0){
+	    AliVParticle *decay = fMcEvent->GetTrack(d);
+	    if(!decay) continue;
+	    int pdgdecay = decay->PdgCode();
+	    if ( int(TMath::Abs(pdgdecay)/100.) == 5 || int(TMath::Abs(pdgdecay)/1000.) == 5 ) {
+              if(p->PdgCode()==5 ) {
+	        nbquarkintheeventp ++;
+	        if(nbquarkintheeventp > 1){
+	          PostData(1, fOutputList);
+	          return;
+	        }
+              }
+              if((p->PdgCode()==-5) ) {
+                nbquarkintheeventn ++;
+                if(nbquarkintheeventn > 1){
+                  PostData(1, fOutputList);
+                  return;
+                }
+              }
+	    }
+	  }
 	}
-      }
-      if((p->PdgCode()==-5) ) {
-        nbquarkintheeventn ++;
-	if(nbquarkintheeventn > 1){
-	  PostData(1, fOutputList);
-	  return;
-	}
-      }
+      }    
     }
     if(!(nbquarkintheeventp == 1 && nbquarkintheeventn == 1)){
       PostData(1, fOutputList);
