@@ -80,5 +80,7 @@
 #pragma link C++ class AliAnalysisTaskCMWESEsyst+;
 #pragma link C++ class AliAnalysisTaskGammaDeltaPIDSaveQvec+;
 #pragma link C++ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent+;
+#pragma link C++ class AliAnalysisTaskCMXQA+;
+
 #endif
 
