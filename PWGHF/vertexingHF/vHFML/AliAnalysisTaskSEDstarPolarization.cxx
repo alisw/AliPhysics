@@ -571,7 +571,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
     }
 
     // Preselection to speed up task
-    TObjArray arrDauTracks(3);
+    TObjArray arrDauTracks(nDau);
 
     for (int iDau = 0; iDau < nDau; iDau++) {
         AliAODTrack *track = nullptr;
@@ -584,7 +584,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
         else {
             track = vHF->GetProng(fAOD, d, iDau);
         }
-        arrDauTracks.Add(track);
+        arrDauTracks.AddAt(track, iDau);
     }
 
     if (!fRDCuts->PreSelect(arrDauTracks)) {
@@ -674,6 +674,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
 
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
 
+        isMLsel = 3;
         if(fDependOnMLSelector) {
             std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
             int bin = low - fPtLimsML.begin() - 1;
@@ -682,7 +683,6 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
             else if(bin > fPtLimsML.size()-2)
                 bin = fPtLimsML.size()-2;
 
-            isMLsel = 3;
             if(isSelected == 1 || isSelected == 3) {
                 for(size_t iScore = 0; iScore < scoresFromMLSelector.size(); iScore++) {
                     if((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelector[iScore] > fMLScoreCuts[bin][iScore]) ||
@@ -690,10 +690,6 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
                     {
                         isMLsel -= 1;
                         break;
-                    }
-                    else {
-                        if(!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 0))
-                            isMLsel -= 1;
                     }
                 }
             }
@@ -705,11 +701,17 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
                         isMLsel -= 2;
                         break;
                     }
-                    else {
-                        if(!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 1))
-                            isMLsel -= 2;
-                    }
                 }
+            }
+        }
+        else {
+            if(isSelected == 1 || isSelected == 3) {
+                if(!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 0))
+                    isMLsel -= 1;
+            }
+            if(isSelected >= 2) {
+                if(!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 1))
+                    isMLsel -= 2;
             }
         }
         return isMLsel;
