@@ -273,6 +273,10 @@ void AddTask_GammaConvV1_pPb(
     cuts.AddCutPCM("86010123", "00200009f9730000dge0400000", "0162103500000000"); //new default
     cuts.AddCutPCM("86010123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
 
+
+  } else if (trainConfig == 70){
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0162103500000000"); //new default
+
   //--------------------------------------------------------------------------
   // Systematics variations for standard ana w/o to close V0, wo smearing
   //--------------------------------------------------------------------------
