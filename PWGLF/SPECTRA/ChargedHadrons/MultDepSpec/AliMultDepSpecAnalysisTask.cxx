@@ -114,7 +114,7 @@ void AliMultDepSpecAnalysisTask::FillTrackQA(AliESDtrack* track)
 
   fHist_itsNCls.Fill(track->GetITSclusters(0));
   for (unsigned int i = 0; i < 6; i++) {
-    if (track->GetITSClusterMap() & (1 << i)) fHist_itsHits.Fill(i + 1);
+    if (track->GetITSClusterMap() & (1 << i)) fHist_itsHits.Fill(i);
   }
   fHist_itsChi2NCl.Fill((track->GetITSclusters(0) > 0.) ? (track->GetITSchi2() / track->GetITSclusters(0)) : -1.);
 
