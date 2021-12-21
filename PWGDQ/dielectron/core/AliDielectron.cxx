@@ -118,7 +118,8 @@ AliDielectron::AliDielectron() :
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
   fRotateTrackCorrectionMap(),
-	fPIDCalibinPU(kFALSE),
+  fPIDCalibinPU(kFALSE),
+  fUseTOFbeta(kFALSE),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
   fEventFilter("EventFilter"),
@@ -212,7 +213,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPostPIDWdthCorrITS(0x0),
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
-	fPIDCalibinPU(kFALSE),
+  fPIDCalibinPU(kFALSE),
+  fUseTOFbeta(kFALSE),
   fLegEffMap(0x0),
   fPairEffMap(0x0),
   fRotateTrackCorrectionMap(),
@@ -476,7 +478,8 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
 		}
 	}
 
-	AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
+  AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
+  AliDielectronPID::SetUseTOFbeta(fUseTOFbeta);
 
   // set event
   AliDielectronVarManager::SetFillMap(fUsedVars);
