@@ -624,8 +624,8 @@ Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut, Doubl
   //
   if(fgUseTOFbeta){
     //printf("TOFbeta = %f\n",TOFbeta);
-    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire     && TOFbeta < 0.01) return kFALSE;
-    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable && TOFbeta < 0.01) return kTRUE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire     && TOFbeta < 1e-3) return kFALSE;
+    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable && TOFbeta < 1e-3) return kTRUE;
   }
   else{
     AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,part);
