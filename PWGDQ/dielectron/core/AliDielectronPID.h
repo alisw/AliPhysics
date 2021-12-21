@@ -96,7 +96,8 @@ public:
   static void SetWidthCorrFunctionTOF(TH1 *fun) { fgFunWdthCorrTOF=fun; }
   static void SetCentroidCorrFunctionPU(Int_t id,Int_t ip,THnBase *fun) { fgFunCntrdCorrPU[id][ip]=fun; }
   static void SetWidthCorrFunctionPU(Int_t id,Int_t ip,THnBase *fun) { fgFunWdthCorrPU[id][ip]=fun; }
-	static void SetPIDCalibinPU(Bool_t flag) {fgPIDCalibinPU = flag;}
+  static void SetPIDCalibinPU(Bool_t flag) {fgPIDCalibinPU = flag;}
+  static void SetUseTOFbeta(Bool_t flag) {fgUseTOFbeta = flag;}
 
   static Double_t GetEtaCorr(const AliVTrack *track);
 
@@ -127,7 +128,7 @@ public:
 	static Double_t GetWdthCorrITS(const AliVTrack *track , UInt_t partype=AliPID::kElectron){
 		if(!fgPIDCalibinPU){
 			if(partype == AliPID::kElectron) return (fgFunWdthCorrITS  ? GetPIDCorr(track,fgFunWdthCorrITS) : 1.0); 
-			else return 1.0;	
+			else return 1.0;
 		}
 		else return (fgFunWdthCorrPU[AliDielectronPID::kITS][partype] ? GetPIDCorr(track,fgFunWdthCorrPU[AliDielectronPID::kITS][partype]) : 1.0);
 	}
@@ -186,7 +187,8 @@ private:
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
   static THnBase *fgFunCntrdCorrPU[15][15];  //function for correction of centroid //multi-dimension for pileup
   static THnBase *fgFunWdthCorrPU[15][15];   //function for correction of width    //multi-dimension for pileup
-	static Bool_t fgPIDCalibinPU;      //flag to calibrate PID spline in pileup event
+  static Bool_t fgPIDCalibinPU;      //flag to calibrate PID spline in pileup event
+  static Bool_t fgUseTOFbeta;      //flag to use TOFbeta, instead of kDefPidOk for TOF
 
   static Double_t GetPIDCorr(const AliVTrack *track, TH1 *hist);
   static Double_t GetPIDCorr(const AliVTrack *track, THnBase *hist);
@@ -194,15 +196,15 @@ private:
   THnBase* fMapElectronCutLow[kNmaxPID];  //map for the electron lower cut in units of n-sigma widths 1 centered to zero
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut, Double_t *values);
-	Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod);
+  Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod);
   Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D);
-  Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut, Double_t TOFbeta);
   Bool_t IsSelectedEMCAL(AliVTrack * const part, Int_t icut);
 
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,10)         // Dielectron PID
+  ClassDef(AliDielectronPID,11)         // Dielectron PID
 };
 
 #endif
