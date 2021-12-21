@@ -11,7 +11,8 @@
 
 //____________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronsRT *addTaskDeuteronsRT (
-                                                Bool_t    isMC = kFALSE,
+                                                Bool_t    isMC  = kFALSE,
+                                                Bool_t    ispPb = kFALSE,
                                                 Bool_t    isUEanalysis = kTRUE,
                                                 UInt_t    triggerType = (AliVEvent::kINT7),//(AliVEvent::kINT7|AliVEvent::kHighMultV0)
                                                 Double_t  multMin = 0.0,
@@ -53,9 +54,9 @@ AliAnalysisTaskDeuteronsRT *addTaskDeuteronsRT (
     task -> AliAnalysisTaskDeuteronsRT::SetMultiplicityInterval   (multMin,multMax);
     task -> AliAnalysisTaskDeuteronsRT::SetAverageTransverseMult  (average_Nch_Transv);
     task -> AliAnalysisTaskDeuteronsRT::SetAnalysisParametersSyst (hAnalysisParameters);
-    task -> AliAnalysisTaskDeuteronsRT::SetInputData (isMC);
-    task -> AliAnalysisTaskDeuteronsRT::SetMinPtLeadingTrack (pt_min_leading);
-    task -> AliAnalysisTaskDeuteronsRT::SetIsUEAnalysis      (isUEanalysis);
+    task -> AliAnalysisTaskDeuteronsRT::SetInputData              (ispPb,isMC);
+    task -> AliAnalysisTaskDeuteronsRT::SetMinPtLeadingTrack      (pt_min_leading);
+    task -> AliAnalysisTaskDeuteronsRT::SetIsUEAnalysis           (isUEanalysis);
     mgr  -> AddTask(task);
     mgr  -> ConnectInput (task,0,mgr->GetCommonInputContainer());
     mgr  -> ConnectOutput(task,1,mgr->CreateContainer(results_cont, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
