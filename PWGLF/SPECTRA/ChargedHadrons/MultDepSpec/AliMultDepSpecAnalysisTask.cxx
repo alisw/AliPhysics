@@ -922,13 +922,13 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fTrackCuts->SetMaxChi2PerClusterITS(49.);
   } else if (cutMode == 103) {
     if (fIsNewReco) {
-      fTrackCuts->SetMaxChi2PerClusterTPC(1.7);
+      fTrackCuts->SetMaxChi2PerClusterTPC(2.0);
     } else {
       fTrackCuts->SetMaxChi2PerClusterTPC(3.0);
     }
   } else if (cutMode == 104) {
     if (fIsNewReco) {
-      fTrackCuts->SetMaxChi2PerClusterTPC(3.4);
+      fTrackCuts->SetMaxChi2PerClusterTPC(3.0);
     } else {
       fTrackCuts->SetMaxChi2PerClusterTPC(5.0);
     }
