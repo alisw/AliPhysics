@@ -148,6 +148,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ITS_nSigma_Muons",       "n#sigma_{#mu}^{ITS}",                                ""},
   {"ITS_nSigma_Kaons",       "n#sigma_{K}^{ITS}",                                  ""},
   {"ITS_nSigma_Protons",     "n#sigma_{p}^{ITS}",                                  ""},
+  {"ITS_nSigma_Deuterons",   "n#sigma_{d}^{ITS}",                                  ""},
 
   {"P_InnerParam",           "#it{p}_{inner wall}^{TPC}",                          "(GeV/#it{c})"},
   {"P_OuterParam",           "#it{p}_{outer wall}^{TPC}",                          "(GeV/#it{c})"},
@@ -165,6 +166,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPC_nSigma_Muons",       "n#sigma_{#mu}^{TPC}",                                ""},
   {"TPC_nSigma_Kaons",       "n#sigma_{K}^{TPC}",                                  ""},
   {"TPC_nSigma_Protons",     "n#sigma_{p}^{TPC}",                                  ""},
+  {"TPC_nSigma_Deuterons",   "n#sigma_{d}^{TPC}",                                  ""},
 
   {"TOF_nSigma_ElectronsRaw","n#sigma_{e}^{TOF} (raw)",                            ""},
   {"TOF_nSigma_Electrons",   "n#sigma_{e}^{TOF}",                                  ""},
@@ -172,6 +174,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TOF_nSigma_Muons",       "n#sigma_{#mu}^{TOF}",                                ""},
   {"TOF_nSigma_Kaons",       "n#sigma_{K}^{TOF}",                                  ""},
   {"TOF_nSigma_Protons",     "n#sigma_{p}^{TOF}",                                  ""},
+  {"TOF_nSigma_Deuterons",   "n#sigma_{d}^{TOF}",                                  ""},
 
   {"EMCAL_nSigma_Electrons", "n#sigma_{e}^{EMCAL}",                                ""},
   {"EMCAL_EoverP",           "E^{EMCAL}/^{}#it{p}",                                "(#it{c})"},
