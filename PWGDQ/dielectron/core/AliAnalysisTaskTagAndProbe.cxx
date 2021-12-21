@@ -1084,8 +1084,16 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
     AliESDtrack* legPos = fESDEvent->GetTrack(v0->GetPindex());
     AliESDtrack* legNeg = fESDEvent->GetTrack(v0->GetNindex());
     if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
-    if(fProbeFilter->IsSelected(legNeg) != selectedMask_probe) continue;
-    if(fProbeFilter->IsSelected(legPos) != selectedMask_probe) continue;
+
+    if(legPos->Pt() < 0.15) continue;
+    if(TMath::Abs(legPos->Eta()) > 0.9) continue;
+    if(legNeg->Pt() < 0.15) continue;
+    if(TMath::Abs(legNeg->Eta()) > 0.9) continue;
+
+    if(!(legPos->GetStatus() & AliVTrack::kITSrefit)) continue;
+    if(!(legNeg->GetStatus() & AliVTrack::kITSrefit)) continue;
+    if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
+    if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
     Lxy = v0->GetRr();
     alpha = v0->AlphaV0();
@@ -1356,8 +1364,15 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
     AliAODTrack *legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
     if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
 
-    if(fProbeFilter->IsSelected(legNeg) != selectedMask_probe) continue;
-    if(fProbeFilter->IsSelected(legPos) != selectedMask_probe) continue;
+    if(legPos->Pt() < 0.15) continue;
+    if(TMath::Abs(legPos->Eta()) > 0.9) continue;
+    if(legNeg->Pt() < 0.15) continue;
+    if(TMath::Abs(legNeg->Eta()) > 0.9) continue;
+
+    if(!(legPos->GetStatus() & AliVTrack::kITSrefit)) continue;
+    if(!(legNeg->GetStatus() & AliVTrack::kITSrefit)) continue;
+    if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
+    if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
     Lxy = v0->RadiusV0();//in cm
 
