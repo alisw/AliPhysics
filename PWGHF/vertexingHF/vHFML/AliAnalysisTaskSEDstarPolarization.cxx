@@ -467,13 +467,18 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 else
                 {
                     if(labD > 0) {
-                        if(orig == 4) {
-                            fnSparseReco[1]->Fill(var4nSparse.data());
-                            fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
-                        }
-                        else if(orig == 5) {
-                            fnSparseReco[2]->Fill(var4nSparse.data());
-                            fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                        //check if reflected signal
+                        int labDauFirst = dauPi->GetLabel();
+                        AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauFirst));
+                        if(TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                            if(orig == 4) {
+                                fnSparseReco[1]->Fill(var4nSparse.data());
+                                fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                            }
+                            else if(orig == 5) {
+                                fnSparseReco[2]->Fill(var4nSparse.data());
+                                fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                            }
                         }
                     }
                     else {
@@ -517,13 +522,18 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 else
                 {
                     if(labD > 0) {
-                        if(orig == 4) {
-                            fnSparseReco[1]->Fill(var4nSparse.data());
-                            fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
-                        }
-                        else if(orig == 5) {
-                            fnSparseReco[2]->Fill(var4nSparse.data());
-                            fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                        //check if reflected signal
+                        int labDauFirst = dauPi->GetLabel();
+                        AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauFirst));
+                        if(TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                            if(orig == 4) {
+                                fnSparseReco[1]->Fill(var4nSparse.data());
+                                fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                            }
+                            else if(orig == 5) {
+                                fnSparseReco[2]->Fill(var4nSparse.data());
+                                fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                            }
                         }
                     }
                     else {
@@ -731,11 +741,14 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                 bool isFidAcc = false;
                 bool isDaugInAcc = false;
                 int nDau = 3;
-                deca = AliVertexingHFUtils::CheckDstarDecay(arrayMC, mcPart, labDau);
+                if(fDecChannel == kDstartoD0pi)
+                    deca = AliVertexingHFUtils::CheckDstarDecay(arrayMC, mcPart, labDau);
+                else
+                    deca = AliVertexingHFUtils::CheckD0Decay(arrayMC, mcPart, labDau);
 
                 if (labDau[0] == -1)
                     continue; //protection against unfilled array of labels
-                if (deca > 0)
+                if (deca == 1)
                     isGoodDecay = true;
 
                 if (isGoodDecay)
