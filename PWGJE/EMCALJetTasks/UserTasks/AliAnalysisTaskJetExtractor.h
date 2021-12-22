@@ -70,6 +70,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetRandomSeed(ULong_t val)                          { fRandomSeed  = val; }
   void                        SetRandomSeedCones(ULong_t val)                     { fRandomSeedCones  = val; }
   void                        SetNeedEmbedClusterContainer(Bool_t val)            { fNeedEmbedClusterContainer = val;}
+  void                        SetLightTreeMode(Bool_t val)                        { fLightTreeMode = val;}
   
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
@@ -124,6 +125,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   TString                     fMCParticleArrayName;                     ///< Array name of MC particles in event (mcparticles)
   Bool_t                      fNeedEmbedClusterContainer;               ///< If we need to get embedded cluster container (true for hybrid event)
+  Bool_t                      fLightTreeMode;                           ///< Save fewer branches to reduce tree/train size
 
   ULong_t                     fRandomSeed;                              ///< random seed
   ULong_t                     fRandomSeedCones;                         ///< random seed
@@ -176,7 +178,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 13) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 14) // Jet extraction task
   /// \endcond
 };
 
@@ -209,7 +211,7 @@ class AliEmcalJetTree : public TNamed
     void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
     void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
 
-    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
+    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks, Bool_t lightTreeMode);
 
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Float_t QVector, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0);
