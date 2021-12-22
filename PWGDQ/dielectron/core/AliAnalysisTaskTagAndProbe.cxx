@@ -299,7 +299,7 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH1F("hTrackNclsITS","Number of clusters ITS;N_{cls}^{ITS}"      ,7,-0.5,6.5));
   fOutputContainer->Add(new TH1F("hTrackNscITS" ,"Number of shared clusters ITS;N_{sc}^{ITS}",7,-0.5,6.5));
-  fOutputContainer->Add(new TH1F("hTrackChi2ITS","chi2 ITS;#chi^{2}/N_{cls}^{ITS}",100,0,10));
+  fOutputContainer->Add(new TH1F("hTrackChi2ITS","chi2 ITS;#chi^{2}/N_{cls}^{ITS}",360,0,36));
 
   fOutputContainer->Add(new TH2F("hTrackTPCdEdx","TPC dE/dx vs. p_{in};p_{in} (GeV/c);TPC dE/dx (a.u.)",500,0.,10,200,0,200));
   fOutputContainer->Add(new TH2F("hTrackITSdEdx","ITS dE/dx vs. p_{in};p_{in} (GeV/c);ITS dE/dx (a.u.)",500,0.,10,400,0,400));
@@ -1090,10 +1090,26 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
     if(legNeg->Pt() < 0.15) continue;
     if(TMath::Abs(legNeg->Eta()) > 0.9) continue;
 
+    if(legPos->GetKinkIndex(0) != 0) continue;
+    if(legNeg->GetKinkIndex(0) != 0) continue;
+
     if(!(legPos->GetStatus() & AliVTrack::kITSrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kITSrefit)) continue;
+    if(legPos->GetNcls(0) < 0.5) continue;//minimum number of ITS cluster 1
+    if(legNeg->GetNcls(0) < 0.5) continue;//minimum number of ITS cluster 1
+    if(legPos->GetITSchi2() / legPos->GetNcls(0) > 36.) continue;//maximum chi2 per cluster ITS
+    if(legNeg->GetITSchi2() / legNeg->GetNcls(0) > 36.) continue;//maximum chi2 per cluster ITS
+    
     if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
+    if(legPos->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
+    if(legNeg->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
+    if(legPos->GetTPCchi2() / legPos->GetNcls(1) > 4.0) continue;//maximum chi2 per cluster TPC
+    if(legNeg->GetTPCchi2() / legNeg->GetNcls(1) > 4.0) continue;//maximum chi2 per cluster TPC
+    Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : 1.0;
+    Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : 1.0;
+    if(ratio_pos < 0.8) continue;
+    if(ratio_neg < 0.8) continue;
 
     Lxy = v0->GetRr();
     alpha = v0->AlphaV0();
@@ -1369,10 +1385,28 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
     if(legNeg->Pt() < 0.15) continue;
     if(TMath::Abs(legNeg->Eta()) > 0.9) continue;
 
+    AliAODVertex *avp = (AliAODVertex*)legPos->GetProdVertex();
+    AliAODVertex *avn = (AliAODVertex*)legNeg->GetProdVertex();
+    if(avp->GetType() == AliAODVertex::kKink) continue;//reject kink
+    if(avn->GetType() == AliAODVertex::kKink) continue;//reject kink
+
     if(!(legPos->GetStatus() & AliVTrack::kITSrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kITSrefit)) continue;
+    if(legPos->GetNcls(0) < 0.5) continue;//minimum number of ITS cluster 1
+    if(legNeg->GetNcls(0) < 0.5) continue;//minimum number of ITS cluster 1
+    if(legPos->GetITSchi2() / legPos->GetNcls(0) > 36.) continue;//maximum chi2 per cluster ITS
+    if(legNeg->GetITSchi2() / legNeg->GetNcls(0) > 36.) continue;//maximum chi2 per cluster ITS
+    
     if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
+    if(legPos->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
+    if(legNeg->GetTPCCrossedRows() < 70) continue;//minimum number of TPC crossed rows 70
+    if(legPos->GetTPCchi2() / legPos->GetNcls(1) > 4.0) continue;//maximum chi2 per cluster TPC
+    if(legNeg->GetTPCchi2() / legNeg->GetNcls(1) > 4.0) continue;//maximum chi2 per cluster TPC
+    Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : 1.0;
+    Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : 1.0;
+    if(ratio_pos < 0.8) continue;
+    if(ratio_neg < 0.8) continue;
 
     Lxy = v0->RadiusV0();//in cm
 
