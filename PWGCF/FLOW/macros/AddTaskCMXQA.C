@@ -1,5 +1,5 @@
 
-void AddTaskSimple(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,  Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90., Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", const char *suffix = "")
+void AddTaskCMXQA(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,  Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90., Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", const char *suffix = "")
 {
   // standard with task
   printf("===================================================================================\n");
