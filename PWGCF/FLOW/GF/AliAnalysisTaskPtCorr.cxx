@@ -368,7 +368,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     double trackXYZ[3];
     double ptMin = fPtBins[0];
     double ptMax = fPtBins[fNPtBins];
-    if(!fOnTheFly && !LoadWeights(ev->GetRunNumber())) return;
+  
     int iCent = fV0MMulti->FindBin(l_cent);
     if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
     iCent--;
@@ -411,6 +411,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     }
     else
     {
+      if(!LoadWeights(ev->GetRunNumber())) return;
       for(int iTrack(0); iTrack<ev->GetNumberOfTracks();iTrack++)
       {
           track = (AliAODTrack*)ev->GetTrack(iTrack);
