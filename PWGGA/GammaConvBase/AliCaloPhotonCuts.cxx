@@ -1744,8 +1744,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"conv cl match R > 180cm");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"conv cl match w lead R < 180cm");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"conv cl match w lead R > 180cm");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"Ch cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"Ch cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"Ch prim. cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"Ch prim. cl match w lead");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(24,"El cl match");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(25,"El cl match w lead");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(26,"All cl w valid track");
