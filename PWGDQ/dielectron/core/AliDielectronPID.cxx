@@ -61,7 +61,6 @@ TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 THnBase *AliDielectronPID::fgFunCntrdCorrPU[15][15] = {0x0};
 THnBase *AliDielectronPID::fgFunWdthCorrPU[15][15] = {0x0};
 Bool_t  AliDielectronPID::fgPIDCalibinPU=kFALSE;
-Bool_t AliDielectronPID::fgUseTOFbeta=kFALSE;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
@@ -322,7 +321,6 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
     }
   }
 
-  fUsedVars->SetBitNumber(AliDielectronVarManager::kTOFbeta,kTRUE);
   // check for corrections and add their variables to the fill map
   if(fgFunCntrdCorr)  {
     fUsedVars->SetBitNumber(fgFunCntrdCorr->GetXaxis()->GetUniqueID(), kTRUE);
@@ -436,7 +434,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
       selected = IsSelectedTRDeleEff(part,icut,AliTRDPIDResponse::kLQ7D);
       break;
     case kTOF:
-      selected = IsSelectedTOF(part,icut,values[AliDielectronVarManager::kTOFbeta]);
+      selected = IsSelectedTOF(part,icut);
       break;
     case kEMCAL:
       selected = IsSelectedEMCAL(part,icut);
@@ -616,22 +614,16 @@ Bool_t AliDielectronPID::IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut,
 }
 
 //______________________________________________
-Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut, Double_t TOFbeta)
+Bool_t AliDielectronPID::IsSelectedTOF(AliVTrack * const part, Int_t icut)
 {
   //
   // TOF part of the PID check
   // Don't accept the track if there was no pid bit set
   //
-  if(fgUseTOFbeta){
-    //printf("TOFbeta = %f\n",TOFbeta);
-    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire     && TOFbeta < 0.01) return kFALSE;
-    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable && TOFbeta < 0.01) return kTRUE;
-  }
-  else{
-    AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,part);
-    if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
-    if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
-  }
+  AliPIDResponse::EDetPidStatus pidStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,part);
+  if (fRequirePIDbit[icut]==AliDielectronPID::kRequire&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kFALSE;
+  if (fRequirePIDbit[icut]==AliDielectronPID::kIfAvailable&&(pidStatus!=AliPIDResponse::kDetPidOk)) return kTRUE;
+
   Float_t numberOfSigmas=fPIDResponse->NumberOfSigmasTOF(part, fPartType[icut]);
 
 //	if(!fgPIDCalibinPU){
