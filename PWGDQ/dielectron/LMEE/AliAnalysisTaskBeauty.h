@@ -41,7 +41,7 @@ public:
   void         SetPtCutLow(Double_t min)          { fPtCutLow = min; }
   void         SetEtamax(Double_t max)            { fEtamax = max; }
   void         SetEtamin(Double_t min)            { fEtamin = min; }
-  void         SetMinOpang(Double_t opAng)        { fMinOpAng = opAng; }
+  void         SetMinOpAng(Double_t opAng)        { fMinOpAng = opAng; }
   void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b; }
   void         SetApplyEventw(Bool_t b)           { fEventWeight = b;  }
   void         Selectonebbbar(Bool_t b)           { fSelectonebbbar = b;  }
