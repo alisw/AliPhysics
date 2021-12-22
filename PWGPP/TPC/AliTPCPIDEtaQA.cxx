@@ -630,6 +630,8 @@ void AliTPCPIDEtaQA::SetUpHist(THnSparse* hist, Double_t* binsPt) const
 
 void AliTPCPIDEtaQA::SetUpPhiCutFunctions()
 {
+    //This functions are not used anywhere at the moment
+    
     // Question: Is this the right place to initialize these functions?
     // Will it work on proof? i.e. will they be streamed to the workers?
     // Also one should add getters and setters
