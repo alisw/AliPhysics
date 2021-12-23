@@ -99,6 +99,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(tpcChi2PerCluster<=2.) AddTr(klTPCchi2PC20);
       if(tpcChi2PerCluster<=2.5) AddTr(klTPCchi2PC25);
       if(tpcChi2PerCluster<=3.0) AddTr(klTPCchi2PC30);
+      if(tpcChi2PerCluster<=4.0) AddTr(klTPCchi2PC40);
       //Checking number of TPC clusters:
       UShort_t nTPCCls = fAODTrack->GetTPCNclsF();
       if(nTPCCls>70) AddTr(klNTPCcls70);
