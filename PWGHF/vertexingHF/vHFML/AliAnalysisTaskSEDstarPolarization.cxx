@@ -470,7 +470,6 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                     if(labD >= 0) {
                         //check if reflected signal
                         int labDauFirst = dauPi->GetLabel();
-                        std::cout << labDauFirst << std::endl;
                         AliAODMCParticle* dauFirst = nullptr;
                         if(labDauFirst >= 0)
                             dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
@@ -528,7 +527,6 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                     if(labD >= 0) {
                         //check if reflected signal
                         int labDauFirst = dauPi->GetLabel();
-                        std::cout << labDauFirst << std::endl;
                         AliAODMCParticle* dauFirst = nullptr;
                         if(labDauFirst >= 0)
                             dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
