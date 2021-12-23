@@ -24,7 +24,7 @@ AliAnalysisTaskEffFDExample* AddTaskEffFDExample(TString name, Bool_t IsMC, TStr
     if(!AllContainers->FindObject("SpectraWeightHist")) {
       // tf = TFile::Open("/Users/batman/AliceData/MCSpectraWeightsInput/Histograms.root");
       TGrid::Connect("alien:");
-      TFile *tf = TFile::Open("alien:///alice/cern.ch/user/v/vvislavi/GFWFilter_Weights/WeightsAsHistograms.root");
+      TFile *tf = TFile::Open("alien:///alice/cern.ch/user/v/vvislavi/MCSpectraWeights/WeightsAsHistograms.root");
       TH3D *hw = (TH3D*)tf->Get(weightHist.Data());
       AliAnalysisDataContainer *cInWeights = mgr->CreateContainer("SpectraWeightHist",TH3D::Class(), AliAnalysisManager::kInputContainer);
       cInWeights->SetData(hw);
