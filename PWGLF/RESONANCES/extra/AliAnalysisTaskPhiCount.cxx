@@ -521,7 +521,6 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
      //
     //  Check the Event type
     fIsEventMultiplicityAvailable();
-    fIsEventPileUp();
     uCalculateSpherocity();
     uCalculateRT();
     uGuessCollisionSystem();
@@ -820,18 +819,18 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
                 fSetEventMask(0);
                 break;
             } else  {
-                //fCurrent_V0M = 104.;
+                fCurrent_V0M = 104.;
             }
         }
     }
-    //
-    if ( fCurrent_TRK == -4 ) //fCurrent_V0M = -1;
     //
     if ( fCurrent_V0M == -200 ) fCurrent_V0M = 154;
     if ( fCurrent_V0M == -201 ) fCurrent_V0M = 156;
     if ( fCurrent_V0M == -202 ) fCurrent_V0M = 158;
     if ( fCurrent_V0M == -203 ) fCurrent_V0M = 160;
     if ( fCurrent_V0M == -204 ) fCurrent_V0M = 162;
+    if ( fAOD->IsPileupFromSPD() )              fCurrent_V0M += 300;
+    if ( fAOD->IsPileupFromSPDInMultBins() )    fCurrent_V0M += 400;
     //
     // Fill the QC on Multiplicity
     fQC_Event_Enum_V0M->Fill(fCurrent_V0M);
