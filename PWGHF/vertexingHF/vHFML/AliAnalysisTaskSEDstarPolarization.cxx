@@ -360,7 +360,8 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             else
                 labD = dMeson->MatchToMC(421, arrayMC, 2, pdgD0Dau);
 
-            partD = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labD));
+            if (labD >= 0)
+                partD = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labD));
 
             if (partD)
                 orig = AliVertexingHFUtils::CheckOrigin(arrayMC, partD, true);
@@ -466,11 +467,14 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 }
                 else
                 {
-                    if(labD > 0) {
+                    if(labD >= 0) {
                         //check if reflected signal
                         int labDauFirst = dauPi->GetLabel();
-                        AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauFirst));
-                        if(TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                        std::cout << labDauFirst << std::endl;
+                        AliAODMCParticle* dauFirst = nullptr;
+                        if(labDauFirst >= 0)
+                            dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
+                        if(dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
                             if(orig == 4) {
                                 fnSparseReco[1]->Fill(var4nSparse.data());
                                 fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
@@ -521,11 +525,14 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 }
                 else
                 {
-                    if(labD > 0) {
+                    if(labD >= 0) {
                         //check if reflected signal
                         int labDauFirst = dauPi->GetLabel();
-                        AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauFirst));
-                        if(TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                        std::cout << labDauFirst << std::endl;
+                        AliAODMCParticle* dauFirst = nullptr;
+                        if(labDauFirst >= 0)
+                            dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
+                        if(dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
                             if(orig == 4) {
                                 fnSparseReco[1]->Fill(var4nSparse.data());
                                 fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
@@ -592,7 +599,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
         return 0;
     }
 
-    if (fDecChannel == kDstartoD0pi == !vHF->FillRecoCasc(fAOD, dStar, false)) {
+    if (fDecChannel == kDstartoD0pi && !vHF->FillRecoCasc(fAOD, dStar, false)) {
         fHistNEvents->Fill(14);
         return 0;
     }
@@ -730,7 +737,7 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
     {
         for (int iPart = 0; iPart < arrayMC->GetEntriesFast(); iPart++)
         {
-            AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->At(iPart));
+            AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(iPart));
             auto pdgCode = TMath::Abs(mcPart->GetPdgCode());
             if ((fDecChannel == kDstartoD0pi && pdgCode == 413) || (fDecChannel == kD0toKpi && pdgCode == 421))
             {
@@ -742,11 +749,15 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                 int labDau[3] = {-1, -1, -1};
                 bool isFidAcc = false;
                 bool isDaugInAcc = false;
-                int nDau = 3;
-                if(fDecChannel == kDstartoD0pi)
+                int nDau = 0;
+                if(fDecChannel == kDstartoD0pi) {
+                    nDau = 3;
                     deca = AliVertexingHFUtils::CheckDstarDecay(arrayMC, mcPart, labDau);
-                else
+                }
+                else {
+                    nDau = 2;
                     deca = AliVertexingHFUtils::CheckD0Decay(arrayMC, mcPart, labDau);
+                }
 
                 if (labDau[0] == -1)
                     continue; //protection against unfilled array of labels
@@ -764,7 +775,9 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                     if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 1))
                     {
                         int labDauFirst = mcPart->GetDaughterFirst();
-                        AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDauFirst));
+                        if(labDauFirst < 0)
+                            continue;
+                        AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
                         fourVecDstar = ROOT::Math::PxPyPzMVector(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->M());
                         fourVecPi = ROOT::Math::PxPyPzMVector(dauFirst->Px(), dauFirst->Py(), dauFirst->Pz(), dauFirst->M());
 
@@ -817,12 +830,12 @@ bool AliAnalysisTaskSEDstarPolarization::CheckDaugAcc(TClonesArray *arrayMC, int
     for (int iProng = 0; iProng < nProng; iProng++)
     {
         bool isSoftPion = false;
-        AliAODMCParticle *mcPartDaughter = dynamic_cast<AliAODMCParticle *>(arrayMC->At(labDau[iProng]));
+        AliAODMCParticle *mcPartDaughter = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDau[iProng]));
         if (!mcPartDaughter)
             return false;
 
-        AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(mcPartDaughter->GetMother()));
-        if(TMath::Abs(mother->GetPdgCode()) == 413)
+        AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(mcPartDaughter->GetMother()));
+        if(mother && TMath::Abs(mother->GetPdgCode()) == 413)
             isSoftPion = true;
 
         double eta = mcPartDaughter->Eta();
