@@ -1515,7 +1515,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             Double_t emcalphimax = 3.265;
             
             Double_t dcalphimin = 4.53;
-            Double_t dcalphimax = 5.708;
+            Double_t dcalphimax = 5.58; // removed PHOS
             
             Bool_t isDCalCluster = kFALSE;
             
@@ -1534,11 +1534,12 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                     cluster->GetPosition(emcx);
                     TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
                     Double_t emcphi = clustpos.Phi();
+                    Double_t emceta = clustpos.Eta();
                     
                     if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
                     
                     if ((emcphi>emcalphimin && emcphi<emcalphimax) ||
-                        (emcphi>dcalphimin && emcphi<dcalphimax)){
+                        (emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12)){
                         clsE = cluster->GetNonLinCorrEnergy();
                         m20 = cluster->GetM20();
                         m02 = cluster->GetM02();
@@ -1546,7 +1547,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
                         
                         EovP = clsE/p;
                         
-                        if(emcphi>dcalphimin && emcphi<dcalphimax) isDCalCluster = kTRUE;
+                        if(emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12) isDCalCluster = kTRUE;
                     }
                 }
             }
@@ -1669,7 +1670,9 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             Double_t emcalphimax = 3.265;
             
             Double_t dcalphimin = 4.53;
-            Double_t dcalphimax = 5.708;
+            Double_t dcalphimax = 5.58; //removed phos
+            
+            
             
             Bool_t isDCalCluster = kFALSE;
             
@@ -1689,16 +1692,17 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                     cluster->GetPosition(emcx);
                     TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
                     Double_t emcphi = clustpos.Phi();
+                    Double_t emceta = clustpos.Eta();
                     
                     if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
                     
                     if ((emcphi>emcalphimin && emcphi<emcalphimax) ||
-                        (emcphi>dcalphimin && emcphi<dcalphimax)){
+                        (emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12)){
                     
                         clsE = cluster->GetNonLinCorrEnergy();
                         m20 = cluster->GetM20();
                         
-                      if(emcphi>dcalphimin && emcphi<dcalphimax) isDCalCluster = kTRUE;
+                      if(emcphi>dcalphimin && emcphi<dcalphimax && TMath::Abs(emceta)>0.12 && TMath::Abs(eta)>0.12) isDCalCluster = kTRUE;
                     }
                 }
             }
