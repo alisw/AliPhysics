@@ -149,10 +149,6 @@ Bool_t ConfigKStarPlusMinuspPbRun2
         else if(Sys==21){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster+0.1);}
 
     }
-
-
-
-
     //
     AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
     cutSetK0s->AddCut(cutK0s);
@@ -201,18 +197,18 @@ Bool_t ConfigKStarPlusMinuspPbRun2
     // [1] = mixing
     // [2] = like ++
     // [3] = like --
-    Bool_t  use     [6] = {isData               ,isData                ,isData                  ,isData                   ,isMC                ,isMC ,isMC ,isMC ,isMC ,isMC };
-    Bool_t  useIM   [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 ,1    ,1        ,1      ,1};
-    TString name    [6] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust",  "KStarPlusMinusMotherMC", "AKStarPlusMinusMotherMC", "KStarPlusMinusMotherMCNOPU", "AKStarPlusMinusMotherMCNOPU" };
-    TString comp    [6] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE"  , "MOTHER", "MOTHER", "MOTHER_NO_PILEUP", "MOTHER_NO_PILEUP" };
-    TString output  [6] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE"  ,"SPARSE"    ,"SPARSE"         , "SPARSE"        ,"SPARSE"   };
-    Char_t  charge1 [6] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'   ,'0'      ,'0'      ,'0'         ,'0'  };
-    Char_t  charge2 [6] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'  , '+'        ,'-'       , '+'      ,'-' };
-    Int_t   cutID1  [6] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s,  ,iCutK0s   ,iCutK0s         ,iCutK0s        ,iCutK0s };
-    Int_t   cutID2  [6] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi , iCutPi      ,iCutPi      ,iCutPi           ,iCutPi  };
-    Int_t   ipdg    [6] = {323             ,-323             ,323                ,-323                ,323              ,-323   ,323           ,-323         ,323           ,-323   };
-    Double_t mass   [6] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166    ,0.89166       ,0.89166         ,0.89166     ,0.89166          };
-    AliRsnCutSet* paircuts[6] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame   ,PairCutsSame         ,PairCutsSame           ,PairCutsSame            ,PairCutsSame };
+    Bool_t  use     [10] = {isData               ,isData                ,isData                  ,isData                   ,isMC                ,isMC ,isMC ,isMC ,isMC ,isMC };
+    Bool_t  useIM   [10] = {1               ,1                ,1                  ,1                   ,1                ,1                 ,1    ,1        ,1      ,1};
+    TString name    [10] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust",  "KStarPlusMinusMotherMC", "AKStarPlusMinusMotherMC", "KStarPlusMinusMotherMCNOPU", "AKStarPlusMinusMotherMCNOPU" };
+    TString comp    [10] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE"  , "MOTHER", "MOTHER", "MOTHER_NO_PILEUP", "MOTHER_NO_PILEUP" };
+    TString output  [10] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE"  ,"SPARSE"    ,"SPARSE"         , "SPARSE"        ,"SPARSE"   };
+    Char_t  charge1 [10] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'   ,'0'      ,'0'      ,'0'         ,'0'  };
+    Char_t  charge2 [10] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'  , '+'        ,'-'       , '+'      ,'-' };
+    Int_t   cutID1  [10] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s,  ,iCutK0s   ,iCutK0s         ,iCutK0s        ,iCutK0s };
+    Int_t   cutID2  [10] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi , iCutPi      ,iCutPi      ,iCutPi           ,iCutPi  };
+    Int_t   ipdg    [10] = {323             ,-323             ,323                ,-323                ,323              ,-323   ,323           ,-323         ,323           ,-323   };
+    Double_t mass   [10] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166    ,0.89166       ,0.89166         ,0.89166     ,0.89166          };
+    AliRsnCutSet* paircuts[10] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame   ,PairCutsSame         ,PairCutsSame           ,PairCutsSame            ,PairCutsSame };
     for (Int_t i = 0; i < 10; i++) {
         if (!use[i]) continue;
         //if (collSyst) output[i] = "SPARSE";
