@@ -115,7 +115,7 @@ class AliGFWFilter
     void SetEventCuts(AliEventCuts *fEvCuts) {fEventCuts = fEvCuts; };
     void CheckEvent(AliVEvent *inEv);
     Bool_t AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ);
-    void CreateStandardCutMasks();
+    void CreateStandardCutMasks(kLocalTrackFlags lStandardChi2Cut = klTPCchi2PC25);
     void AddCustomCuts(Bool_t cleanFirst=kTRUE, UInt_t lEv=klVtxZ10+klEventCuts, UInt_t lTr=klFB96+klDCAz20+klDCAxy2011+klTPCchi2PC25+klNTPCcls70);
     AliGFWFlags *GetFlags() { return fRetFlags; };
     void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };

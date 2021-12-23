@@ -11,6 +11,7 @@ AliGFWFilterTask::AliGFWFilterTask():
  fExtendV0MAcceptance(kFALSE),
  fCustomCuts({}),
  fDisableDefaultCuts(kFALSE),
+ fStandardChi2Cut(GFWFlags::klTPCchi2PC25),
  fPtMin(0.2),
  fPtMax(3.0),
  fEtaMin(-0.8),
@@ -28,6 +29,7 @@ AliGFWFilterTask::AliGFWFilterTask(const char* name):
  fExtendV0MAcceptance(kFALSE),
  fCustomCuts({}),
  fDisableDefaultCuts(kFALSE),
+ fStandardChi2Cut(GFWFlags::klTPCchi2PC25),
  fPtMin(0.2),
  fPtMax(3.0),
  fEtaMin(-0.8),
@@ -47,7 +49,7 @@ void AliGFWFilterTask::UserCreateOutputObjects()
     fOutList = new TList();
     fOutList->SetOwner(kTRUE);
     fFilter = new AliGFWFilter();
-    if(!fDisableDefaultCuts || !fCustomCuts.size()) fFilter->CreateStandardCutMasks(); //If no custom cuts are set, then create standard cuts nevertheless
+    if(!fDisableDefaultCuts || !fCustomCuts.size()) fFilter->CreateStandardCutMasks(fStandardChi2Cut); //If no custom cuts are set, then create standard cuts nevertheless
     for(auto lcut: fCustomCuts) fFilter->AddCustomCuts(kFALSE,lcut.first, lcut.second);
     fFilter->SetPt(fPtMin,fPtMax);
     fFilter->SetEta(fEtaMin,fEtaMax);

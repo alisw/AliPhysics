@@ -120,51 +120,51 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
 //klSharedClusters, klHitOnSDD, -- included in *Tuned fb's already
 //klDCAz20, klDCAz10, klDCAz05,
 //klDCAxy2010, klDCAxy2011, klDCAxy8Sigma, klDCAxy4Sigma, klDCAxy10Sigma,
-//klTPCchi2PC25, klTPCchi2PC20, klTPCchi2PC30,
+//klTPCchi2PC25, klTPCchi2PC20, klTPCchi2PC30, klTPCchi2PC40
 //klNTPCcls70, klNTPCcls80, klNTPCcls90, klNTPCcls100
-void AliGFWFilter::CreateStandardCutMasks() {
+void AliGFWFilter::CreateStandardCutMasks(kLocalTrackFlags lStandardChi2Cut) {
   //Standard cuts:
   //Nominal -- FB96:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768:
-  fTrackMasks.push_back(klFB768 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768 + lStandardChi2Cut + klNTPCcls70);
   //FB96, |dcaZ| < 1:
-  fTrackMasks.push_back(klFB96 + klDCAz10 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz10 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB96, |dcaZ| < 0.5:
-  fTrackMasks.push_back(klFB96 + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz05 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB96, |DCAxy| 4 sigma:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy4Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB96, |DCAxy| 10 sigma:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy10Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB96, chi2 per cluster <2:
   fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70);
   //FB96, chi2 per cluster <3:
   fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70);
   //FB96, Ntpc clusters > 80:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls80);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls80);
   //FB96, Ntpc clusters > 90:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls90);
   //FB96, Ntpc clusters > 100:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls100);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls100);
   //More reasonable ones:
   //Nominal, tuned to overlap with 768
-  fTrackMasks.push_back(klFB96Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96Tuned + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned to overlap with 96
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned, smaller DCAz cut
-  fTrackMasks.push_back(klFB768Tuned + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz05 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned, DCAxy 4 sigma
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy4Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned, DCAxy 10 sigma
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy10Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB768tunes tuned, TPC chi2 <2
   fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70);
   //FB768tunes tuned, TPC chi2 <3
   fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70);
   //FB768tunes tuned, nTPC clusters >90
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls90);
   //FB96 with 2010 AND 2011 DCAxy
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
 
   //Event cuts:
   // if(!fEventMasks) fEventMasks = new UInt_t[gNEventFlags];

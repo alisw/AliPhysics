@@ -35,6 +35,7 @@ class AliGFWFilterTask : public AliAnalysisTaskSE
         void SetExtentV0MAcceptance(Bool_t newVal) { fExtendV0MAcceptance=newVal; };
         void AddCustomCuts(UInt_t lEvCuts, UInt_t lTrCuts) {fCustomCuts.push_back(make_pair(lEvCuts,lTrCuts)); };
         void SetDisableDefaultCuts(Bool_t newval) {fDisableDefaultCuts=newval;};
+        void SetDefaultChi2Cut(GFWFlags::kLocalTrackFlags newval) { fStandardChi2Cut = newval; };
         void SetPt(Double_t lPtMin, Double_t lPtMax) {fPtMin=lPtMin; fPtMax=lPtMax; };
         void SetEta(Double_t lEtaMin, Double_t lEtaMax) {fEtaMin=lEtaMin; fEtaMax=lEtaMax; };
     private:
@@ -48,11 +49,12 @@ class AliGFWFilterTask : public AliAnalysisTaskSE
         Bool_t fExtendV0MAcceptance;
         vector< pair<UInt_t, UInt_t> > fCustomCuts;
         Bool_t fDisableDefaultCuts;
+        GFWFlags::kLocalTrackFlags fStandardChi2Cut;
         Double_t fPtMin;
         Double_t fPtMax;
         Double_t fEtaMin;
         Double_t fEtaMax;
-        ClassDef(AliGFWFilterTask, 1);
+        ClassDef(AliGFWFilterTask, 2);
 };
 
 #endif
