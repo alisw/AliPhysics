@@ -24,12 +24,10 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     //void SetEventFilter(AliAnalysisFilter *filter){fEventFilter = filter;}
     //void SetTagFilter(AliAnalysisFilter *filter)  {fTagFilter   = filter;}
     //void SetProbeFilter(AliAnalysisFilter *filter){fProbeFilter = filter;}
-    //void SetPassingProbeFilter(AliAnalysisFilter *filter){fPassingProbeFilter = filter;}
 
     AliAnalysisFilter *GetEventFilter()     {return fEventFilter;}
     AliAnalysisFilter *GetTagFilter()       {return fTagFilter  ;}
     AliAnalysisFilter *GetProbeFilter(){return fProbeFilter;}
-    AliAnalysisFilter *GetPassingProbeFilter()  {return fPassingProbeFilter;}
     void AddPassingProbeFilter(AliAnalysisFilter *filter) {fListPassingProbeFilters->Add(filter);}
 
     void SetPIDCalibMode(Bool_t flag) {fPIDCalibMode = flag;}
@@ -91,8 +89,8 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     }
 
     void SetCentroidCorrFunctionTPC(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
-      UInt_t valType[20] = {0};
-      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      //UInt_t valType[20] = {0};
+      //valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
       // clone temporare histogram, otherwise it will not be streamed to file!
       TString key = Form("cntrd%d%d%d",varx,vary,varz);
       fun->GetZaxis()->SetUniqueID(varz);
@@ -115,8 +113,8 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     } 
 
     void SetWidthCorrFunctionTPC(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
-      UInt_t valType[20] = {0};
-      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      //UInt_t valType[20] = {0};
+      //valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
       // clone temporare histogram, otherwise it will not be streamed to file!
       TString key = Form("wdth%d%d%d",varx,vary,varz);
       fun->GetZaxis()->SetUniqueID(varz);
@@ -139,8 +137,8 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     }
 
     void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
-      UInt_t valType[20] = {0};
-      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      //UInt_t valType[20] = {0};
+      //valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
       // clone temporare histogram, otherwise it will not be streamed to file!
       TString key = Form("cntrd%d%d%d",varx,vary,varz);
       fun->GetZaxis()->SetUniqueID(varz);
@@ -163,8 +161,8 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     } 
 
     void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
-      UInt_t valType[20] = {0};
-      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      //UInt_t valType[20] = {0};
+      //valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
       // clone temporare histogram, otherwise it will not be streamed to file!
       TString key = Form("wdth%d%d%d",varx,vary,varz);
       fun->GetZaxis()->SetUniqueID(varz);
@@ -187,8 +185,8 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     }
 
     void SetCentroidCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
-      UInt_t valType[20] = {0};
-      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      //UInt_t valType[20] = {0};
+      //valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
       // clone temporare histogram, otherwise it will not be streamed to file!
       TString key = Form("cntrd%d%d%d",varx,vary,varz);
       fun->GetZaxis()->SetUniqueID(varz);
@@ -211,8 +209,8 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     } 
 
     void SetWidthCorrFunctionTOF(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz) {
-      UInt_t valType[20] = {0};
-      valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+      //UInt_t valType[20] = {0};
+      //valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
       // clone temporare histogram, otherwise it will not be streamed to file!
       TString key = Form("wdth%d%d%d",varx,vary,varz);
       fun->GetZaxis()->SetUniqueID(varz);
@@ -239,7 +237,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     virtual void ProcessMC(Option_t *option);
-    void CutEfficiency();
+    void CutEfficiency(TObjArray *arr1, TObjArray *arr2, const TString str);
     void TrackQA();
     void FillV0InfoESD();
     void FillV0InfoAOD();
@@ -298,14 +296,12 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     TH1 *fPostPIDWdthCorrITS;
     TH1 *fPostPIDCntrdCorrTOF;
     TH1 *fPostPIDWdthCorrTOF;
-    TObjArray *fTagTrackArray;//ele or pos
-    TObjArray *fProbeTrackArray;//ele or pos
-    TObjArray *fPassingProbeTrackArray;//ele or pos
-    TList *fEventList[2][10];//p/pp x zvtx
+    TObjArray *fTrackArrayPos;
+    TObjArray *fTrackArrayNeg;
+    TList *fEventList[2][10];//ele/pos x zvtx
     AliAnalysisFilter *fEventFilter;
     AliAnalysisFilter *fTagFilter;
     AliAnalysisFilter *fProbeFilter;
-    AliAnalysisFilter *fPassingProbeFilter;
     TList *fListPassingProbeFilters;
     Float_t fMmax;
     Float_t fPhiVmin;
@@ -321,7 +317,7 @@ class AliAnalysisTaskTagAndProbe : public AliAnalysisTaskSE {
     AliAnalysisTaskTagAndProbe(const AliAnalysisTaskTagAndProbe&);
     AliAnalysisTaskTagAndProbe& operator=(const AliAnalysisTaskTagAndProbe&);
 
-    ClassDef(AliAnalysisTaskTagAndProbe, 10);
+    ClassDef(AliAnalysisTaskTagAndProbe, 11);
 };
 
 
