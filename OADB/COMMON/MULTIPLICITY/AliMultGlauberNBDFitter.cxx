@@ -23,12 +23,13 @@
 
 ClassImp(AliMultGlauberNBDFitter);
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter() : TNamed(), 
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(Int_t lAncestorMode) : TNamed(), 
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),
 ffChanged(kTRUE),
 fCurrentf(-1),
+fAncestorMode(lAncestorMode),
 fNpart(0x0),
 fNcoll(0x0),
 fContent(0x0),
@@ -49,7 +50,8 @@ fFitOptions("R0")
   fhNanc = new TH1D("fhNanc", "", 1000, -0.5, 999.5);
   
   //NBD
-  fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,800);
+  fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,45000);
+  fNBD->SetNpx(45000);
   
   //master function
   fGlauberNBD = new TF1("fGlauberNBD", this, &AliMultGlauberNBDFitter::ProbDistrib,
@@ -60,12 +62,13 @@ fFitOptions("R0")
   fGlauberNBD->SetParameter(3,fnorm);
 }
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(const char * name, const char * title): TNamed(name,title),
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(Int_t lAncestorMode, const char * name, const char * title): TNamed(name,title),
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),
 ffChanged(kTRUE),
 fCurrentf(-1),
+fAncestorMode(lAncestorMode),
 fNpart(0x0),
 fNcoll(0x0),
 fContent(0x0),
@@ -83,10 +86,11 @@ fFitOptions("R0")
   fContent = new Long_t[fMaxNpNcPairs];
   
   //Ancestor histo
-  fhNanc = new TH1D("fhNanc", "", 1000, -0.5, 999.5);
+  fhNanc = new TH1D("fhNanc", "", fAncestorMode==2?10000:1000, -0.5, 999.5);
   
   //NBD
-  fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,800);
+  fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,45000);
+  fNBD->SetNpx(45000);
   
   //master function
   fGlauberNBD = new TF1("fGlauberNBD", this, &AliMultGlauberNBDFitter::ProbDistrib,
@@ -134,21 +138,36 @@ Double_t AliMultGlauberNBDFitter::ProbDistrib(Double_t *x, Double_t *par)
     fhNanc->Reset();
     
     for(int ibin=0;ibin<fNNpNcPairs;ibin++){
-      //Atentar-se à normalização de Nanc
-      fhNanc->Fill(TMath::Floor(fNpart[ibin]*par[2] + fNcoll[ibin]*(1-par[2]) + 0.5),fContent[ibin]);
+      Double_t lOption0 = (Int_t)(fNpart[ibin]*par[2] + fNcoll[ibin]*(1.0-par[2]));
+      Double_t lOption1 = TMath::Floor(fNpart[ibin]*par[2] + fNcoll[ibin]*(1.0-par[2]) + 0.5);
+      Double_t lOption2 = (fNpart[ibin]*par[2] + fNcoll[ibin]*(1.0-par[2]));
+      if( fAncestorMode==0 ) fhNanc->Fill(lOption0,fContent[ibin]);
+      if( fAncestorMode==1 ) fhNanc->Fill(lOption1,fContent[ibin]);
+      if( fAncestorMode==2 ) fhNanc->Fill(lOption2,fContent[ibin]);
+    }
+    if( fhNanc->Integral() < 1 ){
+      cout<<"ERROR: ANCESTOR HISTOGRAM EMPTY"<<endl;
+      cout<<"Will not do anything. Call InitializeNpNc if you want to plot without fitting"<<endl;
+      return 0;
     }
     fhNanc->Scale(1./fhNanc->Integral());
   }
   //______________________________________________________
-  //Actually ealuate function
-  for(Long_t iNanc = 1; iNanc<900; iNanc++){
-    Double_t lThisMu = ((Double_t)iNanc)*par[0];
-    Double_t lThisk = ((Double_t)iNanc)*par[1];
+  //Actually evaluate function
+  Int_t lStartBin = fhNanc->FindBin(0.0) + 1;
+  for(Long_t iNanc = lStartBin; iNanc<fhNanc->GetNbinsX()+1; iNanc++){
+    Double_t lNancestors = fhNanc->GetBinCenter(iNanc);
+    Double_t lNancestorCount = fhNanc->GetBinContent(iNanc);
+    //if(lNancestorCount<1e-12&&lNancestors>10) break;
+    
+    Double_t lThisMu = (((Double_t)lNancestors))*par[0];
+    Double_t lThisk = (((Double_t)lNancestors))*par[1];
     Double_t lpval = TMath::Power(1+lThisMu/lThisk,-1);
     fNBD->SetParameter(1,lThisk);
     fNBD->SetParameter(0,lpval);
-    Double_t lMult = fNBD->Eval(lMultValue);
-    lProbability += fhNanc->GetBinContent(fhNanc->FindBin(iNanc))*lMult;
+    Double_t lMult = 0.0;
+    if(lMultValue>1e-6) lMult = fAncestorMode!=2?fNBD->Eval(lMultValue):ContinuousNBD(lMultValue,lThisMu,lThisk);
+    lProbability += lNancestorCount*lMult;
   }
   //______________________________________________________
   return par[3]*lProbability;
@@ -200,7 +219,10 @@ void AliMultGlauberNBDFitter::SetFitOptions(TString lOpt){
 Bool_t AliMultGlauberNBDFitter::DoFit(){
   //Try very hard, please
   TVirtualFitter::SetMaxIterations(5000000);
-  if( !InitializeNpNc() ) return kFALSE ;
+  if( !InitializeNpNc() ){
+    cout<<"---> Initialization of Npart x Ncoll correlation info failed!"<<endl;
+    return kFALSE ;
+  }
   
   TStopwatch* timer = new TStopwatch();
   timer->Start ( kTRUE );
@@ -246,4 +268,32 @@ Bool_t AliMultGlauberNBDFitter::InitializeNpNc(){
     cout<<"Please remember to call SetNpartNcollCorrelation before doing fit!"<<endl;
   }
   return lReturnValue;
+}
+
+//________________________________________________________________
+Double_t AliMultGlauberNBDFitter::ContinuousNBD(Double_t n, Double_t mu, Double_t k)
+{
+  //Adaptation of the negative binominal distribution
+  //for non-integer arguments: analytical continuation
+  //
+  //This function would actually also be fine with integers;
+  //in fact it is equivalent to that if 'n' is typecast as
+  //an integer prior to use
+  
+  Double_t F;
+  Double_t f;
+  
+  if (n+k > 100.0) {
+    // log method for handling large numbers
+    F  = TMath::LnGamma(n + k)- TMath::LnGamma(n + 1.)- TMath::LnGamma(k);
+    f  = n * TMath::Log(mu/k) - (n + k) * TMath::Log(1.0 + mu/k);
+    F = F+f;
+    F = TMath::Exp(F);
+  } else {
+    F  = TMath::Gamma(n + k) / ( TMath::Gamma(n + 1.) * TMath::Gamma(k) );
+    f  = n * TMath::Log(mu/k) - (n + k) * TMath::Log(1.0 + mu/k);
+    f  = TMath::Exp(f);
+    F *= f;
+  }
+  return F;
 }
