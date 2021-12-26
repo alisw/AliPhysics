@@ -53,9 +53,13 @@ public:
   
   void SetFitRange  (Double_t lMin, Double_t lMax);
   void SetFitOptions(TString lOpt);
+  void SetFitNpx    (Long_t lNpx);
   
   //For ancestor mode 2
   Double_t ContinuousNBD(Double_t n, Double_t mu, Double_t k);
+  
+  //For estimating Npart, Ncoll in multiplicity bins
+  void CalculateAvNpNc(TProfile *lNPartProf, TProfile *lNCollProf); 
   
   //void    Print(Option_t *option="") const;
   
@@ -91,7 +95,8 @@ private:
   Double_t ff;
   Double_t fnorm;
   
-  TString fFitOptions; 
+  TString fFitOptions;
+  Long_t fFitNpx; 
   
   ClassDef(AliMultGlauberNBDFitter, 1);
 };

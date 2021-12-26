@@ -20,6 +20,7 @@
 #include "TF1.h"
 #include "TStopwatch.h"
 #include "TVirtualFitter.h"
+#include "TProfile.h"
 
 ClassImp(AliMultGlauberNBDFitter);
 
@@ -39,7 +40,8 @@ fMu(45),
 fk(1.5),
 ff(0.8),
 fnorm(100),
-fFitOptions("R0")
+fFitOptions("R0"),
+fFitNpx(5000)
 {
   // Constructor
   fNpart = new Double_t[fMaxNpNcPairs];
@@ -78,7 +80,8 @@ fMu(45),
 fk(1.5),
 ff(0.8),
 fnorm(100),
-fFitOptions("R0")
+fFitOptions("R0"),
+fFitNpx(5000)
 {
   //Named constructor
   fNpart = new Double_t[fMaxNpNcPairs];
@@ -124,7 +127,7 @@ AliMultGlauberNBDFitter::~AliMultGlauberNBDFitter() {
 Double_t AliMultGlauberNBDFitter::ProbDistrib(Double_t *x, Double_t *par)
 //Master fitter function
 {
-  Double_t lMultValue = TMath::Floor(x[0]+0.5);
+  Double_t lMultValue = x[0];
   Double_t lProbability = 0.0;
   ffChanged = kTRUE;
 
@@ -216,6 +219,11 @@ void AliMultGlauberNBDFitter::SetFitOptions(TString lOpt){
 }
 
 //________________________________________________________________
+void AliMultGlauberNBDFitter::SetFitNpx(Long_t lNpx){
+  fFitNpx = lNpx;
+}
+
+//________________________________________________________________
 Bool_t AliMultGlauberNBDFitter::DoFit(){
   //Try very hard, please
   TVirtualFitter::SetMaxIterations(5000000);
@@ -226,9 +234,12 @@ Bool_t AliMultGlauberNBDFitter::DoFit(){
   
   TStopwatch* timer = new TStopwatch();
   timer->Start ( kTRUE );
+  if( fAncestorMode == 0 ) cout<<"---> Config: Nancestors will be truncated"<<endl;
+  if( fAncestorMode == 1 ) cout<<"---> Config: Nancestors will be rounded"<<endl;
+  if( fAncestorMode == 2 ) cout<<"---> Config: Nancestors will be taken as float"<<endl;
   cout<<"---> Now fitting, please wait..."<<endl;
-  
-  fGlauberNBD->SetNpx(100);
+   
+  fGlauberNBD->SetNpx(fFitNpx);
   fhV0M->Fit("fGlauberNBD",fFitOptions.Data());
   
   timer->Stop();
@@ -296,4 +307,39 @@ Double_t AliMultGlauberNBDFitter::ContinuousNBD(Double_t n, Double_t mu, Double_
     F *= f;
   }
   return F;
+}
+
+void AliMultGlauberNBDFitter::CalculateAvNpNc(TProfile *lNPartProf, TProfile *lNCollProf){
+  cout<<"Calculating <Npart>, <Ncoll> in centrality bins..."<<endl;
+  
+  //2-fold nested loop:
+  // + looping over all Nancestor combinations
+  // + looping over all possible final multiplicities
+  // ^---> final product already multiplicity-binned
+  
+  //______________________________________________________
+  Double_t lLoRange, lHiRange;
+  fGlauberNBD->GetRange(lLoRange,lHiRange);
+  for(int ibin=0;ibin<fNNpNcPairs;ibin++){
+    if(ibin%2000==0) cout<<"At NpNc pair #"<<ibin<<" of "<<fNNpNcPairs<<"..."<<endl;
+    Double_t lNAncestors0 = (Int_t)(fNpart[ibin]*ff + fNcoll[ibin]*(1.0-ff));
+    Double_t lNAncestors1 = TMath::Floor(fNpart[ibin]*ff + fNcoll[ibin]*(1.0-ff) + 0.5);
+    Double_t lNAncestors2 = (fNpart[ibin]*ff + fNcoll[ibin]*(1.0-ff));
+    for(Long_t lMultValue = 1; lMultValue < lHiRange; lMultValue++ ){
+      Double_t lNancestors = lNAncestors0;
+      if( fAncestorMode==1 ) lNancestors = lNAncestors1;
+      if( fAncestorMode==2 ) lNancestors = lNAncestors2;
+      Double_t lNancestorCount = fContent[ibin];
+      Double_t lThisMu = (((Double_t)lNancestors))*fMu;
+      Double_t lThisk = (((Double_t)lNancestors))*fk;
+      Double_t lpval = TMath::Power(1+lThisMu/lThisk,-1);
+      fNBD->SetParameter(1,lThisk);
+      fNBD->SetParameter(0,lpval);
+      Double_t lMult = 0.0;
+      if(lMultValue>1e-6) lMult = fAncestorMode!=2?fNBD->Eval(lMultValue):ContinuousNBD(lMultValue,lThisMu,lThisk);
+      Double_t lProbability = lNancestorCount*lMult;
+      lNPartProf->Fill(lMultValue, fNpart[ibin],lProbability);
+      lNCollProf->Fill(lMultValue, fNcoll[ibin],lProbability);
+    }
+  }
 }
