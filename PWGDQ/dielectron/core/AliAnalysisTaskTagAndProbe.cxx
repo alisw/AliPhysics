@@ -663,8 +663,6 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
    ||  fTrackArrayNeg->GetEntriesFast() > 1
    || (fTrackArrayPos->GetEntriesFast() > 0 && fTrackArrayNeg->GetEntriesFast() > 0)
    ){
-    //prevEvent_pos->AddFirst(fTrackArrayPos->Clone());
-    //prevEvent_neg->AddFirst(fTrackArrayNeg->Clone());
     prevEvent_pos->AddFirst(new TObjArray(*fTrackArrayPos));
     prevEvent_neg->AddFirst(new TObjArray(*fTrackArrayNeg));
 
@@ -919,14 +917,17 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
     ITSchi2 = NclsITS > 0 ? track->GetITSchi2() / NclsITS : 999;
     TPCchi2 = NclsTPC > 0 ? track->GetTPCchi2() / NclsTPC : 999;
 
+    DCAxy = -999, DCAz = -999;
+    track->GetImpactParameters(DCAxy,DCAz);
+
     NscITS = 0;
     for(Int_t il=0;il<6;il++){
       if(track->HasSharedPointOnITSLayer(il)) NscITS++;
     }
 
     FillHistogramTH2(fOutputContainer,"hTrackDCA"            ,DCAxy, DCAz);
-    FillHistogramTH2(fOutputContainer,"hTrackPtDCAxy"            ,pT, DCAxy);
-    FillHistogramTH2(fOutputContainer,"hTrackPtDCAz"            ,pT, DCAz);
+    FillHistogramTH2(fOutputContainer,"hTrackPtDCAxy"        ,pT, DCAxy);
+    FillHistogramTH2(fOutputContainer,"hTrackPtDCAz"         ,pT, DCAz);
     FillHistogramTH1(fOutputContainer,"hTrackNclsTPC"        ,NclsTPC);
     FillHistogramTH1(fOutputContainer,"hTrackNclsPIDTPC"     ,NclsPIDTPC);
     FillHistogramTH1(fOutputContainer,"hTrackNcrTPC"         ,NcrTPC);
@@ -1630,7 +1631,7 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
 void AliAnalysisTaskTagAndProbe::CutEfficiency(TObjArray *arr1, TObjArray *arr2, const TString str)
 {
   //tag and probe method.
-  AliInfo(Form("%s , N1 = %d , N2 = %d",str.Data(),arr1->GetEntries(),arr2->GetEntries()));
+  //AliInfo(Form("%s , N1 = %d , N2 = %d",str.Data(),arr1->GetEntries(),arr2->GetEntries()));
   Double_t value[4] = {0,0,0,0};
 
   for(Int_t i=0;i<arr1->GetEntries();i++){
