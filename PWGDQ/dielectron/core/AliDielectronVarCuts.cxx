@@ -30,6 +30,7 @@
 
 
 #include <THnBase.h>
+#include <TF1.h>
 
 #include "AliDielectronVarCuts.h"
 #include "AliDielectronMC.h"
@@ -56,6 +57,8 @@ AliDielectronVarCuts::AliDielectronVarCuts() :
     fCutExclude[i]=kFALSE;
     fBitCut[i]=kFALSE;
     fUpperCut[i]=0x0;
+    fFunUpperCut[i]=0x0;
+    fFunLowerCut[i]=0x0;
     fVarOperation[i]=AliDielectronVarCuts::kNone;
   }
 }
@@ -80,6 +83,8 @@ AliDielectronVarCuts::AliDielectronVarCuts(const char* name, const char* title) 
     fCutExclude[i]=kFALSE;
     fBitCut[i]=kFALSE;
     fUpperCut[i]=0x0;
+    fFunUpperCut[i]=0x0;
+    fFunLowerCut[i]=0x0;
     fVarOperation[i]=AliDielectronVarCuts::kNone;
   }
 }
@@ -154,7 +159,7 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
       }
       else{
         // standard var cuts
-        if ( !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) {
+        if ( !(fFunUpperCut[iCut] && fFunLowerCut[iCut]) && !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) {
           CLRBIT(fSelectedCutsMask,iCut);
         }
         else if ( fUpperCut[iCut]) {
@@ -170,6 +175,23 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
           Double_t cutMax = (bin>0 ? fUpperCut[iCut]->GetBinContent(bin) : -999. );
           if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
           delete [] vals;
+        }
+        else if ( fFunUpperCut[iCut] && fFunLowerCut[iCut] ) {
+          /// use a TF1 cut object //
+          Int_t cutB = fActiveCuts[iCut+1];
+          double min = fFunLowerCut[iCut]->Eval(values[cutB]);
+          double max = fFunUpperCut[iCut]->Eval(values[cutB]);
+          TString nameY = AliDielectronVarManager::GetValueName(fActiveCuts[iCut]);
+          TString nameB = AliDielectronVarManager::GetValueName(cutB);
+          //printf("TF1-based cut is applied , %s = %f , (should be in %f,%f) , %s = %f , min = %f , max = %f\n",nameB.Data(),values[cutB],fCutMin[iCut],fCutMax[iCut],nameY.Data(),values[cut],min,max);
+          if ( (
+               (values[cutB] < fCutMin[iCut] || values[cutB] > fCutMax[iCut]) 
+            || (values[cut]  <           min || values[cut]  >           max) 
+               )^fCutExclude[iCut] 
+             ) CLRBIT(fSelectedCutsMask,iCut);
+          iCut++;
+          SETBIT(fSelectedCutsMask,iCut); // Set bit to true for cut only containing second variable
+
         }
       }
     }
@@ -230,7 +252,7 @@ Bool_t AliDielectronVarCuts::IsSelected(Double_t* values)
       }
       else{
         // standard var cuts
-        if ( !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) {
+        if ( !(fFunUpperCut[iCut] && fFunLowerCut[iCut]) && !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) {
           CLRBIT(fSelectedCutsMask,iCut);
         }
         else if ( fUpperCut[iCut]) {
@@ -246,6 +268,19 @@ Bool_t AliDielectronVarCuts::IsSelected(Double_t* values)
           Double_t cutMax = (bin>0 ? fUpperCut[iCut]->GetBinContent(bin) : -999. );
           if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
           delete [] vals;
+        }
+        else if ( fFunUpperCut[iCut] && fFunLowerCut[iCut] ) {
+          /// use a TF1 cut object //
+          Int_t cutB = fActiveCuts[iCut+1];
+          double min = fFunLowerCut[iCut]->Eval(values[cutB]);
+          double max = fFunUpperCut[iCut]->Eval(values[cutB]);
+          if ( (
+               (values[cutB] < fCutMin[iCut] || values[cutB] > fCutMax[iCut]) 
+            || (values[cut]  <           min || values[cut]  >           max) 
+               )^fCutExclude[iCut] 
+             ) CLRBIT(fSelectedCutsMask,iCut);
+          iCut++;
+          SETBIT(fSelectedCutsMask,iCut); // Set bit to true for cut only containing second variable
         }
       }
     }
@@ -342,7 +377,31 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes typeA, Ali
   ++fNActiveCuts;
 
 }
+//________________________________________________________________________
+void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes typeY, TF1 * const funLow, TF1 * const funUp, AliDielectronVarManager::ValueTypes typeX, Double_t min, Double_t max, Bool_t excludeRange) {
+  //
+  // Set cut range and activate it, becarefull! TF1 has to be "typeY as a function of typeX", e.g. TOFbeta as a function of p.
+  //
+  if (min>max){
+    Double_t tmp=min;
+    min=max;
+    max=tmp;
+  }
+  fCutMin[fNActiveCuts]=min;
+  fCutMax[fNActiveCuts]=max;
+  fCutExclude[fNActiveCuts]=excludeRange;
+  fUsedVars->SetBitNumber(typeY,kTRUE);
+  fUsedVars->SetBitNumber(typeX,kTRUE);
+  fFunUpperCut[fNActiveCuts]=funUp;
+  fFunLowerCut[fNActiveCuts]=funLow;
+  SETBIT(fActiveCutsMask,fNActiveCuts);
+  fActiveCuts[fNActiveCuts]=(UShort_t)typeY;
+  ++fNActiveCuts;
 
+  SETBIT(fActiveCutsMask,fNActiveCuts);
+  fActiveCuts[fNActiveCuts]=(UShort_t)typeX;
+  ++fNActiveCuts;
+}
 //________________________________________________________________________
 void AliDielectronVarCuts::InvertCuts()
 {
@@ -373,8 +432,10 @@ void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
     Bool_t inverse=fCutExclude[iCut];
     Bool_t bitcut=fBitCut[iCut];
     Bool_t objcut=fUpperCut[iCut];
+    Bool_t objcutfunmin=fFunLowerCut[iCut];
+    Bool_t objcutfunmax=fFunUpperCut[iCut];
 
-    if(!bitcut && !objcut) {
+    if(!bitcut && !objcut && !(objcutfunmin && objcutfunmax)) {
       // standard cut
       if (!inverse){
         printf("Cut %02d: %f < %s < %f\n", iCut,
@@ -406,6 +467,18 @@ void AliDielectronVarCuts::Print(const Option_t* /*option*/) const
       } else {
         printf("Cut %02d: !(%f < %s < obj(%s))\n", iCut,
                fCutMin[iCut], AliDielectronVarManager::GetValueName((Int_t)cut), dep.Data());
+      }
+    }
+    else if((objcutfunmin && objcutfunmax)) {
+      // TF1-based cut
+      TString dep = AliDielectronVarManager::GetValueName((Int_t)fActiveCuts[iCut+1]);
+
+      if (!inverse){
+        printf("Cut %02d: TF1(%s) < %s < TF1(%s) in %f < %s < %f\n", iCut,
+               fFunLowerCut[iCut]->GetName(), AliDielectronVarManager::GetValueName((Int_t)cut), fFunUpperCut[iCut]->GetName(), fCutMin[iCut], dep.Data(), fCutMax[iCut]);
+      } else {
+        printf("Cut %02d: !(TF1(%s) < %s < TF1(%s) in %f < %s < %f)\n", iCut,
+               fFunLowerCut[iCut]->GetName(), AliDielectronVarManager::GetValueName((Int_t)cut), fFunUpperCut[iCut]->GetName(), fCutMin[iCut], dep.Data(), fCutMax[iCut]);
       }
     }
   } //loop over cuts
