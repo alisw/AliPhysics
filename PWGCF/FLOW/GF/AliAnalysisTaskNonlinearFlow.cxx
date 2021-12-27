@@ -2389,6 +2389,15 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
+  // LHC15i, LHC15l, LHC16, LHC17, LHC18: means: pp sample
+  if (fPeriod.EqualTo("LHC15i") ||
+      fPeriod.EqualTo("LHC15l") ||
+      fPeriod.EqualTo("LHC16") ||
+      fPeriod.EqualTo("LHC17") ||
+      fPeriod.EqualTo("LHC18")) {
+    fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+  }
+
 
   if(!fEventCuts.AcceptEvent(inEv)) return false;
 
@@ -2411,15 +2420,15 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
   } else {
-    if(fAOD->IsPileupFromSPDInMultBins() ) { return false; }
+    // if(fAOD->IsPileupFromSPDInMultBins() ) { return false; }
 
-    AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-    if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return false; }
+    // AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    // if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return false; }
 
-    if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return false; }
+    // if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return false; }
 
-    Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
-    if(nTracksPrim < 0.5) { return false; }
+    // Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
+    // if(nTracksPrim < 0.5) { return false; }
   }
 
   // Vertex Z
