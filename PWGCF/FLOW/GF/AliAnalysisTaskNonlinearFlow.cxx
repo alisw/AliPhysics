@@ -2411,15 +2411,15 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
   } else {
-    if(fAOD->IsPileupFromSPDInMultBins() ) { return false; }
+    // if(fAOD->IsPileupFromSPDInMultBins() ) { return false; }
 
-    AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-    if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return false; }
+    // AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    // if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return false; }
 
-    if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return false; }
+    // if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return false; }
 
-    Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
-    if(nTracksPrim < 0.5) { return false; }
+    // Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
+    // if(nTracksPrim < 0.5) { return false; }
   }
 
   // Vertex Z
