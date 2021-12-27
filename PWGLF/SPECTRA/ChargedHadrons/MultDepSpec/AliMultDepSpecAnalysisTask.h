@@ -135,6 +135,8 @@ protected:
   Hist::Hist<TH1D> fHist_multDist_evt_gen_trig{};      //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
   Hist::Hist<TH2D> fHist_multPtSpec_prim_gen_notrig{}; //!<! generated primary charged particles of events that did not fulfil physics selection and trigger condition as function of multiplicity and pt
 
+  Hist::Hist<TH2D> fHist_multPtSpec_trk_inter{}; //!<! reference for interim step of unfolding
+
   // QA histograms
   Hist::Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
   Hist::Log<TH1I> fHist_runStatistics{};     //!<! number of measured events per run

@@ -254,6 +254,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_meas_evtcont, "multPtSpec_trk_meas_evtcont", {mult_meas, pt_meas});
+    BookHistogram(fHist_multPtSpec_trk_inter, "multPtSpec_trk_inter", {mult_true, pt_meas});
   }
 
   // check required memory
@@ -278,6 +279,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
     fHist_multPtSpec_trk_sec_meas.GetSize() +
+    fHist_multPtSpec_trk_inter.GetSize() +
     fHist_signed1Pt.GetSize() +
     fHist_eta.GetSize() +
     fHist_phi.GetSize() +
@@ -573,22 +575,25 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
           if (!fMCAcceptEvent) {
             // contamination originating from undesired events (wrong event class or true zvtex outside fiducial region)
             fHist_multPtSpec_trk_meas_evtcont.Fill(fMultMeas, fPt);
-          } else if (isValidParticle) {
-            if (fIsNominalSetting) {
-              // true pt resolution (QA variable)
-              fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
-            }
-            if (fMCIsChargedPrimary) {
-              // part of measurement that comes from primaries (as function of measured quantities -> for contamination)
-              fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
-              // part of measurement that comes from primaries (as function of true quantities -> for efficiency)
-              fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
-              // correlation matrices used for the unfolding
-              fHist_ptCorrel_prim.Fill(fPt, fMCPt);
-              fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
-            } else {
-              // contamination from secondaries
-              fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+          } else {
+            fHist_multPtSpec_trk_inter.Fill(fMultTrue, fPt);
+            if (isValidParticle) {
+              if (fIsNominalSetting) {
+                // true pt resolution (QA variable)
+                fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
+              }
+              if (fMCIsChargedPrimary) {
+                // part of measurement that comes from primaries (as function of measured quantities -> for contamination)
+                fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
+                // part of measurement that comes from primaries (as function of true quantities -> for efficiency)
+                fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
+                // correlation matrices used for the unfolding
+                fHist_ptCorrel_prim.Fill(fPt, fMCPt);
+                fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
+              } else {
+                // contamination from secondaries
+                fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+              }
             }
           }
         }
