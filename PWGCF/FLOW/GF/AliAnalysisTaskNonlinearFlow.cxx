@@ -2389,6 +2389,15 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
+  // LHC15i, LHC15l, LHC16, LHC17, LHC18: means: pp sample
+  if (fPeriod.EqualTo("LHC15i") ||
+      fPeriod.EqualTo("LHC15l") ||
+      fPeriod.EqualTo("LHC16") ||
+      fPeriod.EqualTo("LHC17") ||
+      fPeriod.EqualTo("LHC18")) {
+    fEventCuts.OverrideAutomaticTriggerSelection(AliEvent::kHighMultV0, true);
+  }
+
 
   if(!fEventCuts.AcceptEvent(inEv)) return false;
 
