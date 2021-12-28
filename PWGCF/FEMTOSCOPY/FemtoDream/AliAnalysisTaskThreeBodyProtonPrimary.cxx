@@ -1192,10 +1192,10 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
     PostData(14, fAntiProtonMCList);
   }
   if (fPrimary->GetIsMonteCarlo()) {
-    PostData(15, fProtonMCList);
+    PostData(15, fPrimaryMCList);
   }
   if (fAntiPrimary->GetIsMonteCarlo()) {
-    PostData(16, fAntiProtonMCList);
+    PostData(16, fAntiPrimaryMCList);
   }
   if(fCleanWithLambdas){
     if (fLambda->GetIsMonteCarlo()) {
