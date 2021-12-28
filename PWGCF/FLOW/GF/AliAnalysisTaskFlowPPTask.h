@@ -6,6 +6,7 @@
 #define AliAnalysisTaskFlowPPTask_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliGFWCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -249,6 +250,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         
 
 		AliEventCuts	fEventCuts;					// Event cuts
+		AliGFWCuts*     fGFWSelection;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
@@ -405,6 +407,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int nn;                             //!
 		TH1F* MyEventNumber;					//!
         
+		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		void CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks);
 		void InitProfile(PhysicsProfilePPTask& profile, TString);
         
