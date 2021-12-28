@@ -39,8 +39,8 @@ public:
   int     GerHarmonic(){return fHarmonic;}
   void  SetHarmonic(double x)  {fHarmonic = x;}
 
-  int GetTrigger(){return fTrigger;}
-  void SetTrigger(int x){fTrigger = x;}
+  TString GetTrigger(){return fTrigger;}
+  void SetTrigger(TString x){fTrigger = x;}
 
   int    GetFilterBit(){return fFltbit;}
   void SetFilterBit(int x){fFltbit = x;}
@@ -102,7 +102,11 @@ public:
   float GetCentCut(){return fCentCut;}
   void SetCentCut(float x){fCentCut = x;}
 
+  float GetVzCut(){return fZvtxCut;}
+  void SetVzCut(float x){fZvtxCut = x;}
 
+  int    GetPUSyst(){return fPUSyst;}
+  void SetPUSyst(int x){fPUSyst = x;}
 
 private:
 
@@ -136,11 +140,11 @@ private:
   int             GetQnPercTPC(AliAODEvent* fAOD);
   double      GetEventPlane(double qx, double qy);
   int             GetPercCode(double perc);
-
+  void          OpenInfoCalbration(Int_t run);
     // Cuts and options
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
-    int                     fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+    TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
     int                     fFltbit; // AOD filter bit selection
     int                     fNclsCut; // ncls cut for all tracks 
     float                  fChi2Hg; // upper limmit for chi2
@@ -170,12 +174,11 @@ private:
     int                     fQnBin; // qn bin: 0-10
     const float        fEtaCut; // eta cut
     const float        fDedxCut; //dedx cut
-    const float        fZvtxCut; // z-vertex selection for collision  
+    float                  fZvtxCut; // z-vertex selection for collision  
+    int                     fPUSyst;                  
     // Weight List   
     TList*                fListNUE; // read list for NUE
-    TList*                fListNUA1; // read lists for NUA
-    TList*                fListNUA2; // read lists for NUA
-    TList*                fListNUA3; // read lists for NUA
+    TList*                fListNUA; // read lists for NUA
     TList*                fListVZEROCALIB; // read list fpr V0 Calib
 
     // Q QStar event-wise
@@ -231,16 +234,12 @@ private:
     TProfile3D*     pV0XMeanRead[3]; 
     TProfile3D*     pV0YMeanRead[3];
     // Run2 A.Dorbin
-    TH1D*             hMultV0[138]; //Dobrin
-    TH1D*             hQx2mV0[138][2];
-    TH1D*             hQy2mV0[138][2];
-    TH1D*             hQx2sV0[138][2];
-    TH1D*             hQy2sV0[138][2];
+    TH1D*             hMultV0; //Dobrin
+    TH1D*             hQxnmV0[2];
+    TH1D*             hQynmV0[2];
     double             fMultV0Ch[64];
     double             fV0XMean[3];
     double             fV0YMean[3];
-    double             fV0XSigma[3];
-    double             fV0YSigma[3];
     TSpline3*        splQ2c[90]; //A.Dobrin
 
     // Output QA
@@ -271,8 +270,8 @@ private:
     TProfile*         pIntd2[NCENTBINS];
     TProfile*         pIntd2Ach[NCENTBINS];
     TProfile*         pAch[NCENTBINS];
-    TH1D*            hMult[NCENTBINS+1][NQNBINS];
-    TH1D*            hAch[NCENTBINS+1][NQNBINS];
+    TH1D*            hMultMb[NQNBINS];
+    TH1D*            hAchMb[NQNBINS];
 
     AliAnalysisTaskCMWESE(const AliAnalysisTaskCMWESE&);
     AliAnalysisTaskCMWESE& operator=(const AliAnalysisTaskCMWESE&);
