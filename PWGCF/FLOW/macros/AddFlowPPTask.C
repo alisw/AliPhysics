@@ -20,6 +20,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
         TString         fNtrksName              = "Mult",
 		Bool_t		fNUE 				= true,
 		Bool_t		fNUA				= true,
+		Bool_t		UseCorrectedNTracks = true,
 		TString		uniqueID        	= "Default"
     )
 {
@@ -96,6 +97,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
     task->SetUsePeriodWeigths(false);
     task->SetUseWeights3D(false); 
 	task->SetPeriod(fPeriod);
+	task->SetOnlineTrackCorrection(UseCorrectedNTracks);
 	//task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     
     //task->SelectCollisionCandidates(AliVEvent::kINT7);
