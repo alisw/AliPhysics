@@ -1044,8 +1044,8 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
       maxMultTrue = 3200;
     }
     if (dataSet.find("XeXe") != string::npos) {
-      maxMultMeas = 1800;
-      maxMultTrue = 2800;
+      maxMultMeas = 2000;
+      maxMultTrue = 3200;
     }
   }
 
