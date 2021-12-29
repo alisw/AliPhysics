@@ -662,40 +662,43 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		aodTrk->GetXYZ(pos);
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
-		double dcaZ = 100;
-		double dcaX = 100;
-		double dcaY = 100;
-		double dcaXY = 100;
-		dcaZ = pos[2] - vz;
-		dcaX = pos[0] - vx;
-		dcaY = pos[1] - vy;
-		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-                // nClustersITS cut
-		int nClustersITS = 0;
-		nClustersITS = aodTrk->GetITSNcls();
-		float chi2PerClusterITS = -1;
-		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
+		// //manual Tracks cut
+		// double dcaZ = 100;
+		// double dcaX = 100;
+		// double dcaY = 100;
+		// double dcaXY = 100;
+		// dcaZ = pos[2] - vz;
+		// dcaX = pos[0] - vx;
+		// dcaY = pos[1] - vy;
+		// dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-                // nClustersTPC cut
-                int nClustersTPC = 0;
-		nClustersTPC = aodTrk->GetTPCNcls();
-		if (nClustersTPC < fTPCclusters) { continue; }
-		float chi2PerClusterTPC = -1;
-		if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
-		if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
+        //         // nClustersITS cut
+		// int nClustersITS = 0;
+		// nClustersITS = aodTrk->GetITSNcls();
+		// float chi2PerClusterITS = -1;
+		// if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
-		if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
-		if (fFilterbit == 96) {
-			if (TMath::Abs(dcaZ) > fDCAz) continue;
-		}
-                if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
-                if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
+        //         // nClustersTPC cut
+        //         int nClustersTPC = 0;
+		// nClustersTPC = aodTrk->GetTPCNcls();
+		// if (nClustersTPC < fTPCclusters) { continue; }
+		// float chi2PerClusterTPC = -1;
+		// if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
+		// if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
 
-		if(aodTrk->Pt() < fMinPt) continue;
-		if(aodTrk->Pt() > fMaxPt) continue;
+		// if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
+		// if (fFilterbit == 96) {
+		// 	if (TMath::Abs(dcaZ) > fDCAz) continue;
+		// }
+        //         if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
+        //         if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
 
-		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+		// if(aodTrk->Pt() < fMinPt) continue;
+		// if(aodTrk->Pt() > fMaxPt) continue;
+
+		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+
 
 		NtrksAfter += 1;
 
