@@ -2428,6 +2428,10 @@ void AliAnalysisTaskTaggedPhotons::FillHistogram(const char* key, Double_t x, Do
     ((TH2F*)tmp)->Fill(x, y);
     return;
   }
+  if (tmp->IsA() == TClass::GetClass("TH2D")) {
+    ((TH2D*)tmp)->Fill(x, y);
+    return;
+  }
   if (tmp->IsA() == TClass::GetClass("TProfile")) {
     ((TProfile*)tmp)->Fill(x, y);
     return;
@@ -2448,8 +2452,16 @@ void AliAnalysisTaskTaggedPhotons::FillHistogram(const char* key, Double_t x, Do
     ((TH2F*)tmp)->Fill(x, y, z);
     return;
   }
+  if (tmp->IsA() == TClass::GetClass("TH2D")) {
+    ((TH2D*)tmp)->Fill(x, y, z);
+    return;
+  }
   if (tmp->IsA() == TClass::GetClass("TH3F")) {
     ((TH3F*)tmp)->Fill(x, y, z);
+    return;
+  }
+  if (tmp->IsA() == TClass::GetClass("TH3D")) {
+    ((TH3D*)tmp)->Fill(x, y, z);
     return;
   }
 }
