@@ -1,5 +1,5 @@
 
-void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70)
+void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileDir = "_default"))
 {
   // standard with task
   printf("===================================================================================\n");
@@ -14,6 +14,7 @@ void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax
 
   TString list1OutName = outfileName;        // common outfile filename
   list1OutName        += ":Results";         // This directory contains result histograms
+  list1OutName        += OutFileDir;
 
   Int_t gCentMin = fCentralityMin;
   Int_t gCentMax = fCentralityMax;
