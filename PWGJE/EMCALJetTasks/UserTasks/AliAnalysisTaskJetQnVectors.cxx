@@ -5,19 +5,11 @@
 
 //*************************************************************************************************
 // \class AliAnalysisTaskJetQnVectors
-// \brief task used to load the Qn calibrations and get the calibrated Qn vectors for HF analyses
+// \brief task used to load the Qn calibrations and get the calibrated Qn vectors for JE analyses
+// \adapted from HF task
 // \authors of this task
 // C. Beattie, caitie.beattie@yale.edu
 // M. Sas, mike.sas@cern.ch
-// \authors of HF task:
-// F. Grosa, fabrizio.grosa@cern.ch
-// F. Catalano, fabio.catalano@cern.ch
-// A. Dobrin, alexandru.dobrin@cern.ch
-// A. Festanti, andrea.festanti@cern.ch
-// G. Luparello, grazia.luparello@cern.ch
-// F. Prino, prino@to.infn.it
-// A. Rossi, andrea.rossi@cern.ch
-// S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <TChain.h>
@@ -50,8 +42,12 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
-    fq2V0(0),
-    fEPangleCF(0)
+    fq2V0M(0),
+    fq2V0A(0),
+    fq2V0C(0),
+    fEPangleV0M(0),
+    fEPangleV0A(0),
+    fEPangleV0C(0)
 {
     //
     // default constructor
@@ -86,8 +82,12 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
-    fq2V0(0),
-    fEPangleCF(0)
+    fq2V0M(0),
+    fq2V0A(0),
+    fq2V0C(0),
+    fEPangleV0M(0),
+    fEPangleV0A(0),
+    fEPangleV0C(0)
 {
     //
     // standard constructor
@@ -269,7 +269,9 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double PsinFullV0 = -1., PsinV0A = -1., PsinV0C = -1.;
     fHFQnVecHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
     fHFQnVecHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
-    fEPangleCF = PsinFullV0;
+    fEPangleV0M = PsinFullV0;
+    fEPangleV0A = PsinV0A;
+    fEPangleV0C = PsinV0C;
 
     fHistEventPlaneTPC[0]->Fill(PsinFullTPC);
     fHistEventPlaneTPC[1]->Fill(PsinPosTPC);
@@ -283,7 +285,9 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double qnFullV0 = -1., qnV0A = -1., qnV0C = -1.;
     fHFQnVecHandler->GetqnTPC(qnFullTPC,qnPosTPC,qnNegTPC);
     fHFQnVecHandler->GetqnV0(qnFullV0,qnV0A,qnV0C);
-    fq2V0 = qnFullV0;
+    fq2V0M = qnFullV0;
+    fq2V0A = qnV0A;
+    fq2V0C = qnV0C;
 
 	fHistqnVsCentrTPC[0]->Fill(cent,qnFullTPC);
 	fHistqnVsCentrTPC[1]->Fill(cent,qnPosTPC);
