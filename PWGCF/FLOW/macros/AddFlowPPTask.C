@@ -18,9 +18,13 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
         Int_t           fSystFlag               = 0,
         TString         fPeriod                 = "LHC17",
         TString         fNtrksName              = "Mult",
-		TString		uniqueID        	= "Mult",
-    TString name = "MyFlowPPTask")
+		Bool_t		fNUE 				= true,
+		Bool_t		fNUA				= true,
+		Bool_t		UseCorrectedNTracks = true,
+		TString		uniqueID        	= "Default"
+    )
 {
+	TString name = "MyFlowPPTask";
      // The common parameters
 	Double_t	fEtaCut 			= 0.8;
 	Double_t	fVtxCut				= 10.0;
@@ -35,8 +39,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 	Int_t		IsSample			= 10;
 	Short_t		nCentFl				= 0;
 	Bool_t		fLS				= false;
-	Bool_t		fNUE 				= true;
-	Bool_t		fNUA				= true;
+	//Bool_t		fNUE 				= true;
+	//Bool_t		fNUA				= true;
 	
 
 
@@ -57,7 +61,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":MyResults";      // create a subfolder in the file
+    fileName += ":MyResults";      
+	//fileName += uniqueID; // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskFlowPPTask* task = new AliAnalysisTaskFlowPPTask(name.Data());   
     if(!task) return 0x0;
@@ -92,6 +97,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
     task->SetUsePeriodWeigths(false);
     task->SetUseWeights3D(false); 
 	task->SetPeriod(fPeriod);
+	task->SetOnlineTrackCorrection(UseCorrectedNTracks);
+	//task->SelectCollisionCandidates(AliVEvent::kAnyINT);
     
     //task->SelectCollisionCandidates(AliVEvent::kINT7);
     /*
@@ -135,7 +142,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
@@ -145,6 +152,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 	if(fNUA || fNUE)TGrid::Connect("alien:");
 	//NUA
 	if(fNUA) {
+		//if(AllContainers->FindObject("NUA")){}(from AddTaskNonlinearFlowC)
+
 		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
                
                 TFile *inNUA;

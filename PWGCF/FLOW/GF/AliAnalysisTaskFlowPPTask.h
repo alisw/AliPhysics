@@ -216,6 +216,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetPeriod(TString period) { fPeriod = period; }
         virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
         virtual int    GetSystFlag() { return fCurrSystFlag; }
+		virtual void	SetOnlineTrackCorrection(Bool_t UseCorrectedNTracks){fUseCorrectedNTracks = UseCorrectedNTracks;}
         
         //===================================================================================
 
@@ -283,6 +284,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TString                 fNtrksName;                             // Cent or Mult
 		TString			fPeriod;				// period
                 Int_t                   fCurrSystFlag;                          // Systematics flag
+		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -343,6 +345,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		// Event histograms
 		TH1D*			hEventCount;			//! counting events passing given event cuts
+		TH2D*			hTracksCorrection2d;	//! Correlation table for number of tracks table
+		TProfile*		hnCorrectedTracks;		//! Number of corrected tracks in a ntracks bin
 		TH1F*			hMult;				//! multiplicity distribution
 		TH1F*			hMultfBin[12]; 			//! multiplicity distribution in fBin
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
@@ -394,6 +398,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter3subL = 0;            //!
 		int NtrksAfter3subM = 0;            //!
 		int NtrksAfter3subR = 0;            //!
+		int NTracksCorrected = 0;			//!
+		int NTracksUncorrected = 0;			//!
         
 		PhysicsProfilePPTask multProfile;          //!
 		PhysicsProfilePPTask multProfile_bin[30];  //!

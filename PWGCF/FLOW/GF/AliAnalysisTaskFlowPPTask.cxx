@@ -56,7 +56,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fNtrksName("Mult"),
     //....
     fPeriod("LHC15o"),
-
+	fUseCorrectedNTracks(false),
     fListOfObjects(0),
 
     fMultTOFLowCut(0),
@@ -101,6 +101,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 
     hEventCount(0),
     hMult(0),
+	hTracksCorrection2d(0),
+    hnCorrectedTracks(0),
     fVtxAfterCuts(0),
     fCentralityDis(0),
     fV0CentralityDis(0),
@@ -170,7 +172,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
         fNtrksName("Mult"),
 	//....
 	fPeriod("LHC15o"),
-
+	fUseCorrectedNTracks(false),
 	fListOfObjects(0),
 
 	fMultTOFLowCut(0),
@@ -215,6 +217,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 
 	hEventCount(0),
 	hMult(0),
+	hTracksCorrection2d(0),
+    hnCorrectedTracks(0),
 	fVtxAfterCuts(0),
 	fCentralityDis(0),
 	fV0CentralityDis(0),
@@ -334,6 +338,12 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
 	hMult->Sumw2();
 	fListOfObjects->Add(hMult);
+
+	hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
+  	fListOfObjects->Add(hTracksCorrection2d);
+
+  	hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
+  	fListOfObjects->Add(hnCorrectedTracks);
 
 	fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
 	fVtxAfterCuts->Sumw2();
@@ -539,13 +549,16 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 	const int nAODTracks = aod->GetNumberOfTracks();
 	NtrksCounter = 0;
-
+	NTracksCorrected = 0;
+  	NTracksUncorrected = 0;
 	//..for DCA
 	double pos[3], vz, vx, vy;
 	vz = aod->GetPrimaryVertex()->GetZ();
 	vx = aod->GetPrimaryVertex()->GetX();
 	vy = aod->GetPrimaryVertex()->GetY();
 	double vtxp[3] = {vx, vy, vz};
+	float fVtxZ = vz;
+  	double runNumber = fInputEvent->GetRunNumber();
 
 	//..LOOP OVER TRACKS........
 	//........................................
@@ -562,36 +575,49 @@ void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 		aodTrk->GetXYZ(pos);
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 		
-		//(DCA)
-		double dcaZ = 100;
-		double dcaX = 100;
-		double dcaY = 100;
-		double dcaXY = 100;
-		dcaZ = pos[2] - vz;
-		dcaX = pos[0] - vx;
-		dcaY = pos[1] - vy;
-		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
+		// //(DCA)
+		// double dcaZ = 100;
+		// double dcaX = 100;
+		// double dcaY = 100;
+		// double dcaXY = 100;
+		// dcaZ = pos[2] - vz;
+		// dcaX = pos[0] - vx;
+		// dcaY = pos[1] - vy;
+		// dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-		int nClustersITS = 0;
-		nClustersITS = aodTrk->GetITSNcls();
-		float chi2PerClusterITS = -1;
-		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
+		// int nClustersITS = 0;
+		// nClustersITS = aodTrk->GetITSNcls();
+		// float chi2PerClusterITS = -1;
+		// if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
-		if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
-		//Global track Filter
-		if (fFilterbitDefault == 96) {
-			//DCAZ<2cm
-			if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
-		}
-		//pt cut  0.2<pT<3.0
-		if(aodTrk->Pt() < fMinPt) continue;
-		if(aodTrk->Pt() > fMaxPt) continue;
-		//eta cut |η|<0.8
-		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+		// if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
+		// //Global track Filter
+		// if (fFilterbitDefault == 96) {
+		// 	//DCAZ<2cm
+		// 	if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
+		// }
+		// //pt cut  0.2<pT<3.0
+		// if(aodTrk->Pt() < fMinPt) continue;
+		// if(aodTrk->Pt() > fMaxPt) continue;
+		// //eta cut |η|<0.8
+		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
+		double weightPt = 1;
+		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
+
+		NTracksUncorrected += 1;
+    	NTracksCorrected += weightPt;
 		//Count track
-		NtrksCounter += 1;
+		//NtrksCounter += 1;
 	} // end loop of all track
+
+	if (!fUseCorrectedNTracks) {
+    	NtrksCounter = NTracksUncorrected;
+  	} else {
+    	NtrksCounter = NTracksCorrected; 
+  	}
+	hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
+  	hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
 }
 
 //====================================================================================================
@@ -662,40 +688,43 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		aodTrk->GetXYZ(pos);
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
-		double dcaZ = 100;
-		double dcaX = 100;
-		double dcaY = 100;
-		double dcaXY = 100;
-		dcaZ = pos[2] - vz;
-		dcaX = pos[0] - vx;
-		dcaY = pos[1] - vy;
-		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-                // nClustersITS cut
-		int nClustersITS = 0;
-		nClustersITS = aodTrk->GetITSNcls();
-		float chi2PerClusterITS = -1;
-		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
+		// //manual Tracks cut
+		// double dcaZ = 100;
+		// double dcaX = 100;
+		// double dcaY = 100;
+		// double dcaXY = 100;
+		// dcaZ = pos[2] - vz;
+		// dcaX = pos[0] - vx;
+		// dcaY = pos[1] - vy;
+		// dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-                // nClustersTPC cut
-                int nClustersTPC = 0;
-		nClustersTPC = aodTrk->GetTPCNcls();
-		if (nClustersTPC < fTPCclusters) { continue; }
-		float chi2PerClusterTPC = -1;
-		if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
-		if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
+        //         // nClustersITS cut
+		// int nClustersITS = 0;
+		// nClustersITS = aodTrk->GetITSNcls();
+		// float chi2PerClusterITS = -1;
+		// if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
-		if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
-		if (fFilterbit == 96) {
-			if (TMath::Abs(dcaZ) > fDCAz) continue;
-		}
-                if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
-                if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
+        //         // nClustersTPC cut
+        //         int nClustersTPC = 0;
+		// nClustersTPC = aodTrk->GetTPCNcls();
+		// if (nClustersTPC < fTPCclusters) { continue; }
+		// float chi2PerClusterTPC = -1;
+		// if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
+		// if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
 
-		if(aodTrk->Pt() < fMinPt) continue;
-		if(aodTrk->Pt() > fMaxPt) continue;
+		// if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
+		// if (fFilterbit == 96) {
+		// 	if (TMath::Abs(dcaZ) > fDCAz) continue;
+		// }
+        //         if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
+        //         if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
 
-		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+		// if(aodTrk->Pt() < fMinPt) continue;
+		// if(aodTrk->Pt() > fMaxPt) continue;
+
+		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+
 
 		NtrksAfter += 1;
 
