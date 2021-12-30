@@ -1,7 +1,7 @@
 AliAnalysisTask *AddTask_jditzel_DoubleHypNucTree(UInt_t triggerMask = (AliVEvent::kAny), Bool_t pidch = kFALSE) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_jditzel_DoubleHypNucTreeAOD", "No analysis manager found.");
+    Error("AddTask_jditzel_DoubleHypNucTree", "No analysis manager found.");
     return 0;
   }
   if (!mgr->GetInputEventHandler()) {
