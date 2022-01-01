@@ -14,27 +14,22 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
       bool                  tpcqmean=false,
       bool                  tpcshift=false,
       bool                  tpccalib=false,
-      bool                  v0eston=true,
+      bool                  v0eston=false,
       bool                  v0gaineq=false,
       bool                  v0qmean=false,
-      bool                  v0calib=true,
-      bool                  v0QA=true,
+      bool                  v0calib=false,
+      bool                  v0QA=false,
+      bool                  fillwNUA=false,
       int                     debug=0, // debug level controls amount of output statements
-      double              Harmonic=3,
-      int                     trigger=0,
-      int                     filterBit=768, // AOD filter bit selection
-      int                     nclscut=70, // ncls cut for all tracks 
-      float                  chi2hg=4.0,
-      float                  chi2lo=0.1,
-      float                  dcacutz=3.2, // dcaz cut for all tracks
-      float                  dcacutxy=2.4, // dcaxy cut for all tracks
+      double              Harmonic=2,
+      TString             trigger="kMB",
       float                  ptmin=0.2, // minimum pt for Q-vector components
       float                  ptmax=2.0, // maximum pt for Q-vector components
       int                     cbinlo=0, // lower centrality bin for histogram array
       int                     cbinhg=8, // higher centrality bin for histogram array
-      TString             period="LHC15o", // period
-      TString             multComp="pileupByEDSTPC128", // multiplicity comparison
-      float                  centcut=7.5 // centrality restriction for V0M and TRK
+      TString             period="LHC10h", // period
+      float                  centcut=7.5, // centrality restriction for V0M and TRK
+      TString             uniqueID=""
       )	
 {	
 	// Creates a pid task and adds it to the analysis manager
@@ -69,21 +64,15 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
   	task->SetFillVZEROQMean(v0qmean);
   	task->SetVZEROCalib(v0calib);
   	task->SetfQAV0(v0QA);
+      task->SetfFillWNUA(fillwNUA);
 	task->SetDebug(debug);
 	task-> SetHarmonic(Harmonic);
 	task->SetTrigger(trigger);
-	task->SetFilterBit(filterBit);
-	task->SetNclsCut(nclscut);
-  	task->SetChi2High(chi2hg);
-  	task->SetChi2Low(chi2lo);
-	task->SetDCAcutZ(dcacutz);
-	task->SetDCAcutXY(dcacutxy);
 	task->SetPtMin(ptmin);
 	task->SetPtMax(ptmax);
 	task->SetCentBinLow(cbinlo);
 	task->SetCentBinHigh(cbinhg);
 	task->SetPeriod(period);
-	task->SetMultComp(multComp);
 	task->SetCentCut(centcut);
 	// task->SelectCollisionCandidates(AliVEvent::kINT7);
 	mgr->AddTask(task);
@@ -93,11 +82,13 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
 	// the manager as below
 	//======================================================================
     	AliAnalysisDataContainer* cinput  = mgr->GetCommonInputContainer();
-  	AliAnalysisDataContainer* coutput = mgr->CreateContainer("output", TList::Class(), 
-                                                           AliAnalysisManager::kOutputContainer, 
-                                                           mgr->GetCommonFileName());
+      const char* outputFileName = mgr->GetCommonFileName();
+      AliAnalysisDataContainer* coutput = mgr->CreateContainer(Form("output_%s", uniqueID.Data()), TList::Class(), 
+                                                           AliAnalysisManager::kOutputContainer,                                                          
+                                                           Form("%s:%s", outputFileName, uniqueID.Data()));
    	mgr->ConnectInput (task, 0, cinput);
   	mgr->ConnectOutput(task, 1, coutput);
+
 	return task;
 }	
 
