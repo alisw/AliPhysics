@@ -29,6 +29,7 @@
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 #include "AliAODv0.h"
 #include "AliAODForwardMult.h"
 #include "AliAODVZERO.h"
@@ -39,7 +40,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
     public:
 
                                 AliAnalysisTaskCorrForFlowFMD();
-                                AliAnalysisTaskCorrForFlowFMD(const char *name, Bool_t bUseEff);
+                                AliAnalysisTaskCorrForFlowFMD(const char *name, Bool_t bUseEff, Bool_t bUseCalib);
         virtual                 ~AliAnalysisTaskCorrForFlowFMD();
 
         virtual void            UserCreateOutputObjects();
@@ -72,6 +73,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
+        void                    SetIsMC(Bool_t mc = kTRUE) { fIsMC = mc; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
@@ -98,7 +100,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
         void                    FillCorrelations(const Int_t spec);
         void                    FillCorrelationsMixed(const Int_t spec);
+        Bool_t                  PrepareTPCTracks();
         Bool_t                  PrepareFMDTracks();
+        Bool_t                  PrepareMCTracks();
 
         Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
         void                    PrepareV0(); // V0
@@ -134,10 +138,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH1D*                   fhEfficiencyEta[4][4]; //! eta dependent (4 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
         TH1D*                   fhV0Counter[2]; //!
+        TH1D*                   fhCentCalib; //!
 
         //event and track selection
         AnaType                 fAnalType;
         AliVEvent::EOfflineTriggerTypes    fTrigger;
+        Bool_t                  fIsMC; // [kFALSE]
         Bool_t                  fIsHMpp; // [kFALSE]
         Bool_t                  fDoPID; // [kFALSE]
         Bool_t                  fDoV0; // [kFALSE]
@@ -146,6 +152,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fEfficiencyEtaDependent; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
+        Bool_t                  fUseCentralityCalibration; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fNofTracks;
@@ -199,7 +206,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 5);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 6);
 };
 
 #endif
