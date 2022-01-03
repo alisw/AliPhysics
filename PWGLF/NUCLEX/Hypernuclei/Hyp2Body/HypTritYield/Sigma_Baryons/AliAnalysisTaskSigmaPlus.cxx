@@ -66,6 +66,11 @@
 #include "AliKFParticleBase.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
+#include "AliESDv0.h"
+#include "AliESDVertex.h"
+
+#include <thread>         // std::this_thread::sleep_for()
+#include <chrono>         // std::chrono::seconds()
 
 class TTree;
 class TParticle;
@@ -82,25 +87,28 @@ ClassImp(AliAnalysisTaskSigmaPlus) // classimp: necessary for root
 AliAnalysisTaskSigmaPlus::AliAnalysisTaskSigmaPlus() : AliAnalysisTaskSE(), 
 fOutputList(0), aodEvent(0x0), mcEvent(0x0),        
 AODMCTrackArray(0x0), fPIDResponse(0), isMonteCarlo(kFALSE),
-fSigmaCandTree(0x0), f4PartSigmaCandTree(0x0), f3PartPi0CandTree(0x0), 
-fProtonArray(0x0), fAntiProtonArray(0x0), fConvPhotonArray(0x0),
-fElectronArray(0x0), fPositronArray(0x0), fElectronPairArray(0x0), fPositronPairArray(0x0),
+fSigmaCandTree(0x0), fSigmaCandTreeExtra(0x0),
 cElectronMass(0), cProtonMass(0), cPionMass(0), cPi0Mass(0), c(0), Bz(0),
 primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0), nTracks(0), Centrality(0),
+fDebug(kFALSE),
+
+fProcessProtons(kTRUE), 
+fProcessMCParticles(kTRUE), 
+fProcessV0s(kTRUE), 
+fProcessAddPhoton(kTRUE), 
+fProcessElectrons(kTRUE), 
+fProcessReco(kTRUE), 
+fProcessRecoOff(kTRUE), 
+fProcessRecoOff2(kTRUE), 
+fProcessOneGamma(kFALSE), 
 
 fMaxProtEta(0.9),    
 fMinTPCClustProt(70),
 fMaxNsigProtTPC(3),
 fMaxNsigProtTOF(3),  
 fMaxpOnlyTPCPID(0.75),
-fMinProtpt(0.5), 
-fMaxProtpt(10),   
-
-fMaxElecEta(0.9),
-fMinTPCClustElec(60),
-fMaxNsigElecTPC(3),
-fMaxNsigElecTOF(3),
-fNsigHadronreject(2),
+fMinProtpt(0), 
+fMaxProtpt(15),   
 
 fMaxMCEta(0.9),
 
@@ -111,36 +119,40 @@ fMaxalpha(0.9),
 fMaxqt(0.04),
 fMaxopenangle(0.2),
 fMaxdeltatheta(0.1),
+fMinV0CPA(0.85),
+fMinV0Radius(3), 
+fMaxV0Radius(200),
 fMaxphotonmass(0.05),
 
-fMaxPairalpha(0.9),
-fMaxPairqt(0.04),
-fMaxPairopenangle(0.2),
-fMaxPairDCA(2),
-fMaxPairphotonmass(0.06),
+fMinDCADaughtPV(0.1),
+fMaxDCADaught(5),
 
-fMinSingleElectronPt(0.25),
-fMinPi0mass3Part(0.12),
-fMaxPi0mass3Part(0.15),
-fMaxElecPt3Part(0.9),
-fMaxSigmaPA3Part(0.175),
-fMinPi0DCAtoPV3Part(1),
-fMaxProtPi0DCA3Part(2),
-fMaxPhotElecDCA(2),
+fMaxElecEta(0.9),    
+fMinTPCClustElec(40),
+fMaxNsigElecTPC(3),
+fMinNsigHadronTPC(0),
+fMaxNsigElecTOF(3),  
+fMaxElecpt(5), 
 
-fMinPi0mass(0.12),
-fMaxPi0mass(0.15),
-fMaxElecPt(0.9),
-fMaxSigmaPA(0.175),
-fMinPi0DCAtoPV(1),
-fMaxProtPi0DCA(2),
-fMaxPhotPhotDCA(2),
-fMindcazProt(0),
-fMindcaxyProt(0), 
+fRejectGammaAutoCorr(0.02),
+fMinPi0Mass(0.06), 
+fMaxPi0Mass(0.19),  
+fMaxSigmaPA(0.2),  
+fMaxSigmaMass(1.7),
+fMinProtonDCAxy(0),
+fMinProtonDCAz(0), 
+flowkstar(0.6),
+fverylowkstar(0.3),
+fveryverylowkstar(0.1),
 
 fIsMCSigma(kFALSE),
+fIsMCPrimary(kFALSE),
+fIsV01fromFinder(kFALSE),
+fIsV02fromFinder(kFALSE),
 fIsV01Onthefly(kFALSE),
 fIsV02Onthefly(kFALSE),
+fSigRunnumber(-999),
+fSigTriggerMask(999),
 fSigCentrality(-999),
 fSigBField(-999),
 fInvSigMass(-999),
@@ -155,14 +167,14 @@ fPrimVertZ(-999),
 fSigDecayVertX(-999),
 fSigDecayVertY(-999),
 fSigDecayVertZ(-999),
+fPhoton1Radius(-999),
+fPhoton2Radius(-999),
+fPhoton1DCAPV(-999),
+fPhoton2DCAPV(-999),
 fInvPi0Mass(-999),
 fPi0Px(-999),
 fPi0Py(-999),
 fPi0Pz(-999),
-fPi0DaughtPt1(-999),
-fPi0DaughtPt2(-999),
-fPi0DaughtPt3(-999),
-fPi0DaughtPt4(-999),
 fPi0DecayVertX(-999),
 fPi0DecayVertY(-999),
 fPi0DecayVertZ(-999),
@@ -173,58 +185,18 @@ fProtonPz(-999),
 fProtonDCAtoPVxy(-999),
 fProtonDCAtoPVz(-999),
 fProtonPi0DCA(-999),
+fnPair(-999),
+fnPairlowkstar(-999),
+fnPairverylowkstar(-999),
+fnPairveryverylowkstar(-999),
 
-f4PartIsMCSigma(kFALSE),
-f4PartIsV0Onthefly(kFALSE),
-f4PartInvSigMass(-999),
-f4PartSigCharge(-999),
-f4PartSigPx(-999),
-f4PartSigPy(-999),
-f4PartSigPz(-999),
-f4PartPrimVertX(-999),
-f4PartPrimVertY(-999),
-f4PartPrimVertZ(-999),
-f4PartSigDecayVertX(-999),
-f4PartSigDecayVertY(-999),
-f4PartSigDecayVertZ(-999),
-f4PartInvPi0Mass(-999),
-f4PartPi0Px(-999),
-f4PartPi0Py(-999),
-f4PartPi0Pz(-999),
-f4PartPi0DaughtPt1(-999),
-f4PartPi0DaughtPt2(-999),
-f4PartPi0DaughtPt3(-999),
-f4PartPi0DecayVertX(-999),
-f4PartPi0DecayVertY(-999),
-f4PartPi0DecayVertZ(-999),
-f4PartPi0PhotPhotDCA(-999),
-f4PartProtonPx(-999),
-f4PartProtonPy(-999),
-f4PartProtonPz(-999),
-f4PartProtonDCAtoPVxy(-999),
-f4PartProtonDCAtoPVz(-999),
-f4PartProtonPi0DCA(-999),
-
-fInv3PartPi0Mass(-999),
-f3PartPi0Px(-999),
-f3PartPi0Py(-999),
-f3PartPi0Pz(-999),
-f3PartPi0DaughtPt1(-999),
-f3PartPi0DaughtPt2(-999),
-f3PartPi0DaughtPt3(-999),
-f3PartPi0DecayVertX(-999),
-f3PartPi0DecayVertY(-999),
-f3PartPi0DecayVertZ(-999),
-f3PartPi0PhotPhotDCA(-999),
-f3PartPi0PhotConvx(-999),
-f3PartPi0PhotConvy(-999),
-f3PartPi0PhotConvz(-999),
-f3PartPrimVertX(-999),
-f3PartPrimVertY(-999),
-f3PartPrimVertZ(-999),
-f3PartPi0ElecPosx(-999),
-f3PartPi0ElecPosy(-999),
-f3PartPi0ElecPosz(-999)
+fIsV0fromFinder(kTRUE),
+fIsV0Onthefly(kTRUE),
+fPhotonPx(999),        
+fPhotonPy(999),        
+fPhotonPz(999),
+fPhotonRadius(-999),
+fExtPhotProtDCA(999)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -233,65 +205,72 @@ f3PartPi0ElecPosz(-999)
 AliAnalysisTaskSigmaPlus::AliAnalysisTaskSigmaPlus(const char* name) : AliAnalysisTaskSE(name),
 fOutputList(0), aodEvent(0x0), mcEvent(0x0),        
 AODMCTrackArray(0x0), fPIDResponse(0), isMonteCarlo(kFALSE),
-fSigmaCandTree(0x0), f4PartSigmaCandTree(0x0), f3PartPi0CandTree(0x0), 
-fProtonArray(0x0), fAntiProtonArray(0x0), fConvPhotonArray(0x0),
-fElectronArray(0x0), fPositronArray(0x0), fElectronPairArray(0x0), fPositronPairArray(0x0),
+fSigmaCandTree(0x0), fSigmaCandTreeExtra(0x0),
 cElectronMass(0), cProtonMass(0), cPionMass(0), cPi0Mass(0), c(0), Bz(0),
 primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0), nTracks(0), Centrality(0),
+fDebug(kFALSE),
+
+fProcessProtons(kTRUE), 
+fProcessMCParticles(kTRUE), 
+fProcessV0s(kTRUE), 
+fProcessAddPhoton(kTRUE), 
+fProcessElectrons(kTRUE), 
+fProcessReco(kTRUE), 
+fProcessRecoOff(kTRUE), 
+fProcessRecoOff2(kTRUE), 
+fProcessOneGamma(kFALSE), 
 
 fMaxProtEta(0.9),    
 fMinTPCClustProt(70),
 fMaxNsigProtTPC(3),
 fMaxNsigProtTOF(3),  
 fMaxpOnlyTPCPID(0.75),
-fMinProtpt(0.5), 
-fMaxProtpt(10),   
-
-fMaxElecEta(0.9),
-fMinTPCClustElec(60),
-fMaxNsigElecTPC(3),
-fMaxNsigElecTOF(3),
-fNsigHadronreject(2),
+fMinProtpt(0), 
+fMaxProtpt(15),   
 
 fMaxMCEta(0.9),
 
-fMaxDaughtEta(0.9),    
+fMaxDaughtEta(0.9),
 fMinTPCClustDaught(60),
 fMaxNsigDaughtTPC(3),
 fMaxalpha(0.9),
 fMaxqt(0.04),
 fMaxopenangle(0.2),
 fMaxdeltatheta(0.1),
+fMinV0CPA(0.85),
+fMinV0Radius(3), 
+fMaxV0Radius(200),
 fMaxphotonmass(0.05),
 
-fMaxPairalpha(0.9),
-fMaxPairqt(0.04),
-fMaxPairopenangle(0.2),
-fMaxPairDCA(2),
-fMaxPairphotonmass(0.06),
+fMinDCADaughtPV(0.1),
+fMaxDCADaught(5),
 
-fMinSingleElectronPt(0.25),
-fMinPi0mass3Part(0.12),
-fMaxPi0mass3Part(0.15),
-fMaxElecPt3Part(0.9),
-fMaxSigmaPA3Part(0.175),
-fMinPi0DCAtoPV3Part(1),
-fMaxProtPi0DCA3Part(2),
-fMaxPhotElecDCA(2),
+fMaxElecEta(0.9),    
+fMinTPCClustElec(40),
+fMaxNsigElecTPC(3),
+fMinNsigHadronTPC(0),
+fMaxNsigElecTOF(3),  
+fMaxElecpt(5), 
 
-fMinPi0mass(0.12),
-fMaxPi0mass(0.15),
-fMaxElecPt(0.9),
-fMaxSigmaPA(0.175),
-fMinPi0DCAtoPV(1),
-fMaxProtPi0DCA(2),
-fMaxPhotPhotDCA(2),
-fMindcazProt(0),
-fMindcaxyProt(0), 
+fRejectGammaAutoCorr(0.02),
+fMinPi0Mass(0.06), 
+fMaxPi0Mass(0.19),  
+fMaxSigmaPA(0.2),  
+fMaxSigmaMass(1.7),
+fMinProtonDCAxy(0),
+fMinProtonDCAz(0), 
+flowkstar(0.6),
+fverylowkstar(0.3),
+fveryverylowkstar(0.1),
 
 fIsMCSigma(kFALSE),
+fIsMCPrimary(kFALSE),
+fIsV01fromFinder(kFALSE),
+fIsV02fromFinder(kFALSE),
 fIsV01Onthefly(kFALSE),
 fIsV02Onthefly(kFALSE),
+fSigRunnumber(-999),
+fSigTriggerMask(999),
 fSigCentrality(-999),
 fSigBField(-999),
 fInvSigMass(-999),
@@ -306,14 +285,14 @@ fPrimVertZ(-999),
 fSigDecayVertX(-999),
 fSigDecayVertY(-999),
 fSigDecayVertZ(-999),
+fPhoton1Radius(-999),
+fPhoton2Radius(-999),
+fPhoton1DCAPV(-999),
+fPhoton2DCAPV(-999),
 fInvPi0Mass(-999),
 fPi0Px(-999),
 fPi0Py(-999),
 fPi0Pz(-999),
-fPi0DaughtPt1(-999),
-fPi0DaughtPt2(-999),
-fPi0DaughtPt3(-999),
-fPi0DaughtPt4(-999),
 fPi0DecayVertX(-999),
 fPi0DecayVertY(-999),
 fPi0DecayVertZ(-999),
@@ -324,58 +303,18 @@ fProtonPz(-999),
 fProtonDCAtoPVxy(-999),
 fProtonDCAtoPVz(-999),
 fProtonPi0DCA(-999),
+fnPair(-999),
+fnPairlowkstar(-999),
+fnPairverylowkstar(-999),
+fnPairveryverylowkstar(-999),
 
-f4PartIsMCSigma(kFALSE),
-f4PartIsV0Onthefly(kFALSE),
-f4PartInvSigMass(-999),
-f4PartSigCharge(-999),
-f4PartSigPx(-999),
-f4PartSigPy(-999),
-f4PartSigPz(-999),
-f4PartPrimVertX(-999),
-f4PartPrimVertY(-999),
-f4PartPrimVertZ(-999),
-f4PartSigDecayVertX(-999),
-f4PartSigDecayVertY(-999),
-f4PartSigDecayVertZ(-999),
-f4PartInvPi0Mass(-999),
-f4PartPi0Px(-999),
-f4PartPi0Py(-999),
-f4PartPi0Pz(-999),
-f4PartPi0DaughtPt1(-999),
-f4PartPi0DaughtPt2(-999),
-f4PartPi0DaughtPt3(-999),
-f4PartPi0DecayVertX(-999),
-f4PartPi0DecayVertY(-999),
-f4PartPi0DecayVertZ(-999),
-f4PartPi0PhotPhotDCA(-999),
-f4PartProtonPx(-999),
-f4PartProtonPy(-999),
-f4PartProtonPz(-999),
-f4PartProtonDCAtoPVxy(-999),
-f4PartProtonDCAtoPVz(-999),
-f4PartProtonPi0DCA(-999),
-
-fInv3PartPi0Mass(-999),
-f3PartPi0Px(-999),
-f3PartPi0Py(-999),
-f3PartPi0Pz(-999),
-f3PartPi0DaughtPt1(-999),
-f3PartPi0DaughtPt2(-999),
-f3PartPi0DaughtPt3(-999),
-f3PartPi0DecayVertX(-999),
-f3PartPi0DecayVertY(-999),
-f3PartPi0DecayVertZ(-999),
-f3PartPi0PhotPhotDCA(-999),
-f3PartPi0PhotConvx(-999),
-f3PartPi0PhotConvy(-999),
-f3PartPi0PhotConvz(-999),
-f3PartPrimVertX(-999),
-f3PartPrimVertY(-999),
-f3PartPrimVertZ(-999),
-f3PartPi0ElecPosx(-999),
-f3PartPi0ElecPosy(-999),
-f3PartPi0ElecPosz(-999)
+fIsV0fromFinder(kTRUE),
+fIsV0Onthefly(kTRUE),
+fPhotonPx(999),        
+fPhotonPy(999),        
+fPhotonPz(999),
+fPhotonRadius(-999),
+fExtPhotProtDCA(999)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -387,8 +326,7 @@ f3PartPi0ElecPosz(-999)
                                         // make changes to your AddTask macro!
 
     DefineOutput(2, TTree::Class());    //Additional Output: Sigma Candidate Tree
-    DefineOutput(3, TTree::Class());    //Additional Output: 4Part Sigma Candidate Tree
-    DefineOutput(4, TTree::Class());    //Additional Output: 3Part Pi0 Candidate Tree
+    DefineOutput(3, TTree::Class());    //Additional Output: Extra Sigma Candidate Tree
 }
 //_____________________________________________________________________________
 AliAnalysisTaskSigmaPlus::~AliAnalysisTaskSigmaPlus()
@@ -398,16 +336,8 @@ AliAnalysisTaskSigmaPlus::~AliAnalysisTaskSigmaPlus()
     if(fOutputList) delete fOutputList;     
 
     if(fSigmaCandTree) delete fSigmaCandTree;
-    if(f4PartSigmaCandTree) delete f4PartSigmaCandTree;
-    if(f3PartPi0CandTree) delete f3PartPi0CandTree;
 
-    if(fProtonArray)       delete fProtonArray;      
-    if(fAntiProtonArray)   delete fAntiProtonArray;  
-    if(fConvPhotonArray)   delete fConvPhotonArray;  
-    if(fElectronArray)     delete fElectronArray;    
-    if(fPositronArray)     delete fPositronArray;    
-    if(fElectronPairArray) delete fElectronPairArray;
-    if(fPositronPairArray) delete fPositronPairArray;
+    if(fSigmaCandTreeExtra) delete fSigmaCandTreeExtra;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
@@ -430,8 +360,13 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     // Create TTree of Sigma Candidates
     fSigmaCandTree = new TTree("fSigmaCandTree","Tree of Sigma Candidates");
     fSigmaCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+    fSigmaCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+    fSigmaCandTree->Branch("fIsV01fromFinder",&fIsV01fromFinder,"fIsV01fromFinder/O");
+    fSigmaCandTree->Branch("fIsV02fromFinder",&fIsV02fromFinder,"fIsV02fromFinder/O");
     fSigmaCandTree->Branch("fIsV01Onthefly",&fIsV01Onthefly,"fIsV01Onthefly/O");
     fSigmaCandTree->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
+    fSigmaCandTree->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
+    fSigmaCandTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/g");
     fSigmaCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaCandTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
     fSigmaCandTree->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
@@ -446,14 +381,14 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
     fSigmaCandTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
     fSigmaCandTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+    fSigmaCandTree->Branch("fPhoton1Radius",&fPhoton1Radius,"fPhoton1Radius/F");
+    fSigmaCandTree->Branch("fPhoton2Radius",&fPhoton2Radius,"fPhoton2Radius/F");
+    fSigmaCandTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
+    fSigmaCandTree->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
     fSigmaCandTree->Branch("fInvPi0Mass",&fInvPi0Mass,"fInvPi0Mass/F");
     fSigmaCandTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
     fSigmaCandTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
     fSigmaCandTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-    fSigmaCandTree->Branch("fPi0DaughtPt1",&fPi0DaughtPt1,"fPi0DaughtPt1/F");
-    fSigmaCandTree->Branch("fPi0DaughtPt2",&fPi0DaughtPt2,"fPi0DaughtPt2/F");
-    fSigmaCandTree->Branch("fPi0DaughtPt3",&fPi0DaughtPt3,"fPi0DaughtPt3/F");
-    fSigmaCandTree->Branch("fPi0DaughtPt4",&fPi0DaughtPt4,"fPi0DaughtPt4/F");
     fSigmaCandTree->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
     fSigmaCandTree->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
     fSigmaCandTree->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
@@ -464,70 +399,48 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fProtonDCAtoPVxy",&fProtonDCAtoPVxy,"fProtonDCAtoPVxy/F");
     fSigmaCandTree->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaCandTree->Branch("fProtonPi0DCA",&fProtonPi0DCA,"fProtonPi0DCA/F");
+    fSigmaCandTree->Branch("fnPair",&fnPair,"fnPair/S");
+    fSigmaCandTree->Branch("fnPairlowkstar",&fnPairlowkstar,"fnPairlowkstar/S");
+    fSigmaCandTree->Branch("fnPairverylowkstar",&fnPairverylowkstar,"fnPairverylowkstar/S");
+    fSigmaCandTree->Branch("fnPairveryverylowkstar",&fnPairveryverylowkstar,"fnPairveryverylowkstar/S");
 
-    f4PartSigmaCandTree = new TTree("f4PartSigmaCandTree","Tree of Sigma Candidates (3 Electron Method)");
-    f4PartSigmaCandTree->Branch("f4PartIsMCSigma",&f4PartIsMCSigma,"f4PartIsMCSigma/O");
-    f4PartSigmaCandTree->Branch("f4PartIsV0Onthefly",&f4PartIsV0Onthefly,"f4PartIsV0Onthefly/O");
-    f4PartSigmaCandTree->Branch("f4PartInvSigMass",&f4PartInvSigMass,"f4PartInvSigMass/F");
-    f4PartSigmaCandTree->Branch("f4PartSigCharge",&f4PartSigCharge,"f4PartSigCharge/F");
-    f4PartSigmaCandTree->Branch("f4PartSigPx",&f4PartSigPx,"f4PartSigPx/F");
-    f4PartSigmaCandTree->Branch("f4PartSigPy",&f4PartSigPy,"f4PartSigPy/F");
-    f4PartSigmaCandTree->Branch("f4PartSigPz",&f4PartSigPz,"f4PartSigPz/F");
-    f4PartSigmaCandTree->Branch("f4PartPrimVertX",&f4PartPrimVertX,"f4PartPrimVertX/F");
-    f4PartSigmaCandTree->Branch("f4PartPrimVertY",&f4PartPrimVertY,"f4PartPrimVertY/F");
-    f4PartSigmaCandTree->Branch("f4PartPrimVertZ",&f4PartPrimVertZ,"f4PartPrimVertZ/F");
-    f4PartSigmaCandTree->Branch("f4PartSigDecayVertX",&f4PartSigDecayVertX,"f4PartSigDecayVertX/F");
-    f4PartSigmaCandTree->Branch("f4PartSigDecayVertY",&f4PartSigDecayVertY,"f4PartSigDecayVertY/F");
-    f4PartSigmaCandTree->Branch("f4PartSigDecayVertZ",&f4PartSigDecayVertZ,"f4PartSigDecayVertZ/F");
-    f4PartSigmaCandTree->Branch("f4PartInvPi0Mass",&f4PartInvPi0Mass,"f4PartInvPi0Mass/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0Px",&f4PartPi0Px,"f4PartPi0Px/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0Py",&f4PartPi0Py,"f4PartPi0Py/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0Pz",&f4PartPi0Pz,"f4PartPi0Pz/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0DaughtPt1",&f4PartPi0DaughtPt1,"f4PartPi0DaughtPt1/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0DaughtPt2",&f4PartPi0DaughtPt2,"f4PartPi0DaughtPt2/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0DaughtPt3",&f4PartPi0DaughtPt3,"f4PartPi0DaughtPt3/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0DecayVertX",&f4PartPi0DecayVertX,"f4PartPi0DecayVertX/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0DecayVertY",&f4PartPi0DecayVertY,"f4PartPi0DecayVertY/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0DecayVertZ",&f4PartPi0DecayVertZ,"f4PartPi0DecayVertZ/F");
-    f4PartSigmaCandTree->Branch("f4PartPi0PhotPhotDCA",&f4PartPi0PhotPhotDCA,"f4PartPi0PhotPhotDCA/F");
-    f4PartSigmaCandTree->Branch("f4PartProtonPx",&f4PartProtonPx,"f4PartProtonPx/F");
-    f4PartSigmaCandTree->Branch("f4PartProtonPy",&f4PartProtonPy,"f4PartProtonPy/F");
-    f4PartSigmaCandTree->Branch("f4PartProtonPz",&f4PartProtonPz,"f4PartProtonPz/F");
-    f4PartSigmaCandTree->Branch("f4PartProtonDCAtoPVxy",&f4PartProtonDCAtoPVxy,"f4PartProtonDCAtoPVxy/F");
-    f4PartSigmaCandTree->Branch("f4PartProtonDCAtoPVz",&f4PartProtonDCAtoPVz,"f4PartProtonDCAtoPVz/F");
-    f4PartSigmaCandTree->Branch("f4PartProtonPi0DCA",&f4PartProtonPi0DCA,"f4PartProtonPi0DCA/F");
+    // Create TTree of Extra Sigma Candidates
+    fSigmaCandTreeExtra = new TTree("fSigmaCandTreeExtra","Tree of Extra Sigma Candidates");
+    fSigmaCandTreeExtra->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+    fSigmaCandTreeExtra->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+    fSigmaCandTreeExtra->Branch("fIsV0fromFinder",&fIsV0fromFinder,"fIsV0fromFinder/O");
+    fSigmaCandTreeExtra->Branch("fIsV0Onthefly",&fIsV0Onthefly,"fIsV0Onthefly/O");
+    fSigmaCandTreeExtra->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
+    fSigmaCandTreeExtra->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/g");
+    fSigmaCandTreeExtra->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
+    fSigmaCandTreeExtra->Branch("fSigBField",&fSigBField,"fSigBField/F");
+    fSigmaCandTreeExtra->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
+    fSigmaCandTreeExtra->Branch("fSigPA",&fSigPA,"fSigPA/F");
+    fSigmaCandTreeExtra->Branch("fSigCharge",&fSigCharge,"fSigCharge/F");
+    fSigmaCandTreeExtra->Branch("fSigPx",&fSigPx,"fSigPx/F");
+    fSigmaCandTreeExtra->Branch("fSigPy",&fSigPy,"fSigPy/F");
+    fSigmaCandTreeExtra->Branch("fSigPz",&fSigPz,"fSigPz/F");
+    fSigmaCandTreeExtra->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+    fSigmaCandTreeExtra->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
+    fSigmaCandTreeExtra->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
+    fSigmaCandTreeExtra->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
+    fSigmaCandTreeExtra->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
+    fSigmaCandTreeExtra->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+    fSigmaCandTreeExtra->Branch("fPhotonPx",&fPhotonPx,"fPhotonPx/F");
+    fSigmaCandTreeExtra->Branch("fPhotonPy",&fPhotonPy,"fPhotonPy/F");
+    fSigmaCandTreeExtra->Branch("fPhotonPz",&fPhotonPz,"fPhotonPz/F");
+    fSigmaCandTreeExtra->Branch("fPhotonRadius",&fPhotonRadius,"fPhotonRadius/F");
+    fSigmaCandTreeExtra->Branch("fExtPhotProtDCA",&fExtPhotProtDCA,"fExtPhotProtDCA/F");
+    fSigmaCandTreeExtra->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
+    fSigmaCandTreeExtra->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
+    fSigmaCandTreeExtra->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+    fSigmaCandTreeExtra->Branch("fProtonDCAtoPVxy",&fProtonDCAtoPVxy,"fProtonDCAtoPVxy/F");
+    fSigmaCandTreeExtra->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
+    fSigmaCandTreeExtra->Branch("fnPair",&fnPair,"fnPair/S");
+    fSigmaCandTreeExtra->Branch("fnPairlowkstar",&fnPairlowkstar,"fnPairlowkstar/S");
+    fSigmaCandTreeExtra->Branch("fnPairverylowkstar",&fnPairverylowkstar,"fnPairverylowkstar/S");
+    fSigmaCandTreeExtra->Branch("fnPairveryverylowkstar",&fnPairveryverylowkstar,"fnPairveryverylowkstar/S");
 
-    f3PartPi0CandTree = new TTree("f3PartPi0CandTree","Tree of Pi0 Candidates (3 Electron Method)");
-    f3PartPi0CandTree->Branch("fInv3PartPi0Mass",&fInv3PartPi0Mass,"fInv3PartPi0Mass/F");
-    f3PartPi0CandTree->Branch("f3PartPi0Px",&f3PartPi0Px,"f3PartPi0Px/F");
-    f3PartPi0CandTree->Branch("f3PartPi0Py",&f3PartPi0Py,"f3PartPi0Py/F");
-    f3PartPi0CandTree->Branch("f3PartPi0Pz",&f3PartPi0Pz,"f3PartPi0Pz/F");
-    f3PartPi0CandTree->Branch("f3PartPi0DaughtPt1",&f3PartPi0DaughtPt1,"f3PartPi0DaughtPt1/F");
-    f3PartPi0CandTree->Branch("f3PartPi0DaughtPt2",&f3PartPi0DaughtPt2,"f3PartPi0DaughtPt2/F");
-    f3PartPi0CandTree->Branch("f3PartPi0DaughtPt3",&f3PartPi0DaughtPt3,"f3PartPi0DaughtPt3/F");
-    f3PartPi0CandTree->Branch("f3PartPi0DecayVertX",&f3PartPi0DecayVertX,"f3PartPi0DecayVertX/F");
-    f3PartPi0CandTree->Branch("f3PartPi0DecayVertY",&f3PartPi0DecayVertY,"f3PartPi0DecayVertY/F");
-    f3PartPi0CandTree->Branch("f3PartPi0DecayVertZ",&f3PartPi0DecayVertZ,"f3PartPi0DecayVertZ/F");
-    f3PartPi0CandTree->Branch("f3PartPi0PhotPhotDCA",&f3PartPi0PhotPhotDCA,"f3PartPi0PhotPhotDCA/F");
-    f3PartPi0CandTree->Branch("f3PartPi0PhotConvx",&f3PartPi0PhotConvx,"f3PartPi0PhotConvx/F");
-    f3PartPi0CandTree->Branch("f3PartPi0PhotConvy",&f3PartPi0PhotConvy,"f3PartPi0PhotConvy/F");
-    f3PartPi0CandTree->Branch("f3PartPi0PhotConvz",&f3PartPi0PhotConvz,"f3PartPi0PhotConvz/F");
-    f3PartPi0CandTree->Branch("f3PartPrimVertX",&f3PartPrimVertX,"f3PartPrimVertX/F");
-    f3PartPi0CandTree->Branch("f3PartPrimVertY",&f3PartPrimVertY,"f3PartPrimVertY/F");
-    f3PartPi0CandTree->Branch("f3PartPrimVertZ",&f3PartPrimVertZ,"f3PartPrimVertZ/F");
-    f3PartPi0CandTree->Branch("f3PartPi0ElecPosx",&f3PartPi0ElecPosx,"f3PartPi0ElecPosx/F");
-    f3PartPi0CandTree->Branch("f3PartPi0ElecPosy",&f3PartPi0ElecPosy,"f3PartPi0ElecPosy/F");
-    f3PartPi0CandTree->Branch("f3PartPi0ElecPosz",&f3PartPi0ElecPosz,"f3PartPi0ElecPosz/F");
-
-    // Create Particle Arrays to store selected Protons and Photons
-    fProtonArray       = new std::vector<int>;
-    fAntiProtonArray   = new std::vector<int>;
-    fConvPhotonArray   = new std::vector<int>;
-    fElectronArray     = new std::vector<int>;
-    fPositronArray     = new std::vector<int>;
-    fElectronPairArray = new std::vector<int>;
-    fPositronPairArray = new std::vector<int>;
-    
     //Save Particle Masses and other constants for later use
     cElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();      
     cProtonMass   = TDatabasePDG::Instance()->GetParticle(2212)->Mass();    
@@ -537,271 +450,605 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 
 /**************************Histograms********************************/
 
-    //Event related    
-    TH1F* fHistVertexZ             = new TH1F("fHistVertexZ", "Z Vertex Position;z [cm];Counts/mm", 400, -20, 20);
-    TH1F* fHistCentrality          = new TH1F("fHistCentrality", "Centrality Percentile;Centrality [%];Counts/%", 100, 0, 100);
-    TH1F* fHistEventCounter        = new TH1F("fHistEventCounter", "Event Counter", 1, 0.5, 1.5);
+    //Book Keeper for used Cuts 
+    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 38, 0.5, 38.5);
 
-    //Counters
-    TH1F* fHistMCCounter           = new TH1F("fHistMCCounter", "Monte Carlo Counter", 27, 0.5, 27.5);
-    TH2F* fHistCandperEvent        = new TH2F("fHistCandperEvent", "Particle Candidates per Event;#pi^{0};p",21,-0.5,20.5,21,-0.5,20.5);
-    TH1F* fHistDiscardedOnflyV0    = new TH1F("fHistDiscardedOnflyV0", "Number of discarded Onfly Gammas", 16, -5.5, 10.5);
-    TH1F* fHistDiscardedOfflineV0  = new TH1F("fHistDiscardedOfflineV0", "Number of discarded Offline Gammas", 16, -5.5, 10.5);
+    //Event related                    
+    TH1F* fHistVertexZ                 = new TH1F("fHistVertexZ", "Z Vertex Position;z [cm];Counts/mm", 400, -20, 20);
+    TH1F* fHistCentrality              = new TH1F("fHistCentrality", "Centrality Percentile;Centrality [%];Counts/%", 100, 0, 100);
+    TH1F* fHistEventCounter            = new TH1F("fHistEventCounter", "Event Counter", 1, 0.5, 1.5);
+    TH1F* fHistTrackMultiplicity       = new TH1F("fHistTrackMultiplicity","Number of Tracks per Event",20000,0,20000);
+                                       
+    //Counters                         
+    TH1F* fHistMCCounter               = new TH1F("fHistMCCounter", "Monte Carlo Counter", 18, 0.5, 18.5);
+    TH1F* fHistV0Statistics            = new TH1F("fHistV0Statistics", "V0 Counter;Stage;Counts",14,0.5,14.5);
+    TH1F* fHistV0StatisticsMC          = new TH1F("fHistV0StatisticsMC", "V0 Counter MC;Stage;Counts",14,0.5,14.5);
+    TH1F* fHistV0StatisticsSigmaMC     = new TH1F("fHistV0StatisticsSigmaMC", "V0 Counter Sigma MC;Stage;Counts",14,0.5,14.5);
+    TH1F* fHistProtonStatistics        = new TH1F("fHistProtonStatistics", "Proton Counter;Stage;Counts",7,0.5,7.5);
+    TH1F* fHistProtonStatisticsMC      = new TH1F("fHistProtonStatisticsMC", "Proton Counter MC;Stage;Counts",7,0.5,7.5);
+    TH1F* fHistProtonStatisticsSigmaMC = new TH1F("fHistProtonStatisticsSigmaMC", "Proton Counter Sigma MC;Stage;Counts",7,0.5,7.5);
+    TH1F* fHistAddV0Statistics         = new TH1F("fHistAddV0Statistics", "Additional V0 Counter;Stage;Counts",11,0,11);
+    TH1F* fHistAddV0StatisticsMC       = new TH1F("fHistAddV0StatisticsMC", "Additional V0 Counter MC;Stage;Counts",11,0,11);
+    TH1F* fHistAddV0StatisticsSigmaMC  = new TH1F("fHistAddV0StatisticsSigmaMC", "Additional V0 Counter Sigma MC;Stage;Counts",11,0,11);
+    TH1F* fHistSigmaCounter            = new TH1F("fHistSigmaCounter", "#Sigma Counter", 6, 0.5, 6.5);
+                                       
+    //MC Information              
+    TH1F* fHistMCSigmaPt               = new TH1F("fHistMCSigmaPt","Transverse momentum of MC #Sigma^{+};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCAntiSigmaPt           = new TH1F("fHistMCAntiSigmaPt","Transverse momentum of MC #bar#Sigma^{-};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimSigmaPt           = new TH1F("fHistMCPrimSigmaPt","Transverse momentum of primary MC #Sigma^{+};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimAntiSigmaPt       = new TH1F("fHistMCPrimAntiSigmaPt","Transverse momentum of primary MC #bar#Sigma^{-};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCSigmaOrigin           = new TH1F("fHistMCSigmaOrigin","Origin of MC #Sigma^{+};r_{xy} [cm];Counts/mm",5000,0,500);   
+    TH1F* fHistMCAntiSigmaOrigin       = new TH1F("fHistMCAntiSigmaOrigin","Origin of MC #bar#Sigma^{-};r_{xy} [cm];Counts/mm",5000,0,500);   
+    TH1F* fHistMCDeltaPt               = new TH1F("fHistMCDeltaPt","Transverse momentum of MC #Delta^{+};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCAntiDeltaPt           = new TH1F("fHistMCAntiDeltaPt","Transverse momentum of MC #bar#Delta^{-};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPi0Pt                 = new TH1F("fHistMCPi0Pt","Transverse momentum of MC #pi^{0};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCProtonPt              = new TH1F("fHistMCProtonPt","Transverse momentum of MC Protons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCAntiProtonPt          = new TH1F("fHistMCAntiProtonPt","Transverse momentum of MC Anti-Protons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimProtonPt          = new TH1F("fHistMCPrimProtonPt","Transverse momentum primary of MC Protons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPrimAntiProtonPt      = new TH1F("fHistMCPrimAntiProtonPt","Transverse momentum of primary MC Anti-Protons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCPhotonPt              = new TH1F("fHistMCPhotonPt","Transverse momentum of MC Photons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCSigmaPhotonPt         = new TH1F("fHistMCSigmaPhotonPt","Transverse momentum of MC Photons from #Sigma^{+}/#bar#Sigma^{-};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCConvPhotonPt          = new TH1F("fHistMCConvPhotonPt","Transverse momentum of converted MC Photons (R<180cm);#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCSigmaConvPhotonPt     = new TH1F("fHistMCSigmaConvPhotonPt","Transverse momentum of converted MC Photons from #Sigma^{+}/#bar#Sigma^{-} (R<180cm);#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistMCConvRadius            = new TH1F("fHistMCConvRadius","Conversion radius of MC Photons;r_{xy} [cm];Counts/mm",5000,0,500);   
+    TH2F* fHistMCConvRadiusvspt        = new TH2F("fHistMCConvRadiusvspt","Conversion radius of MC Photons vs. #it{p}_{T};r_{xy} [cm];#it{p}_{T} [GeV/#it{c}]",500,0,500,500,0,5);   
+    TH1F* fHistSigmaMotherPart         = new TH1F("fHistSigmaMotherPart", "#Sigma^{+} Mother Particle", 25, 0.5, 25.5); 
+    TH1F* fHistAntiSigmaMotherPart     = new TH1F("fHistAntiSigmaMotherPart", "#bar#Sigma^{-} Mother Particle", 25, 0.5, 25.5); 
 
-    //MC Kinematics
-    TH1F* fHistMCPhotonPt          = new TH1F("fHistMCPhotonPt","Transverse momentum of MC Photons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH1F* fHistMCSigmaPt           = new TH1F("fHistMCSigmaPt","Transverse momentum of MC #Sigma^{+};p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH1F* fHistV0PhotonPt          = new TH1F("fHistV0PhotonPt","Transverse momentum of V0 Photons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH1F* fHistMCElectronPt        = new TH1F("fHistMCElectronPt","Transverse momentum of MC Electrons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH1F* fHistRecoElectronPt      = new TH1F("fHistRecoElectronPt","Transverse momentum of reconstructed Electrons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH1F* fHistMCSigmaPhotonPt     = new TH1F("fHistMCSigmaPhotonPt","Transverse momentum of MC Photons from Sigma;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH1F* fHistV0SigmaPhotonPt     = new TH1F("fHistV0SigmaPhotonPt","Transverse momentum of V0 Photons from Sigma;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
-    TH2F* fHistSigmaptvsept        = new TH2F("fHistSigmaptvsept","p_{t} of Sigma vs p_{t} of electrons;p_{T} [GeV/c];p_{T} [GeV/c]",200,0,20,200,0,20);
-    TH2F* fHistSigmaptvspi0pt      = new TH2F("fHistSigmaptvspi0pt","p_{t} of Sigma vs p_{t} of #pi^{0};#Sigma^{+} p_{T} [GeV/c];#pi^{0} p_{T} [GeV/c]",200,0,20,200,0,20);
+    //Track Quality                        
+    TH2F* fHistTrackEtaPhi             = new TH2F("fHistTrackEtaPhi","#eta vs. #phi of Tracks;#eta;#phi [rad]",300,-1.5,1.5,300,0,2*TMath::Pi());                                
+    TH1F* fHistTrackChi2               = new TH1F("fHistTrackChi2","#chi^{2}/NDF of Tracks;#chi^{2}/NDF",200,0,100);
+    TH1F* fHistTrackTPCCluster         = new TH1F("fHistTrackTPCCluster","Number of TPC Clusters of Tracks",160,0,160);
+    TH2F* fHistTrackpvsdEdx            = new TH2F("fHistTrackpvsdEdx","Momentum vs. TPC dE/dx;p [GeV/#it{c}];TPC #frac{dE}{dx} (a.u.)",500,0,10,500,0,500);
+    TH2F* fHistTrackpvsbeta            = new TH2F("fHistTrackpvsbeta","Momentum vs. #beta;p [GeV/#it{c}];#beta",500,0,10,500,0,1.2);
+    TH1F* fHistTrackpt                 = new TH1F("fHistTrackpt","Transverse momentum of Tracks;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
 
-    //Proton Track Quality
-    TH1F* fHistNClusterProt        = new TH1F("fHistNClusterProt","Number of TPC Clusters",160,0,160);
+    //Proton QA                        
+    TH2F* fHistProtonEtaPhiMC          = new TH2F("fHistProtonEtaPhiMC","#eta vs. #phi of Protons MC;#eta;#phi [rad]",300,-1.5,1.5,300,0,2*TMath::Pi());
+    TH1F* fHistProtonChi2MC            = new TH1F("fHistProtonChi2MC","#chi^{2}/NDF of Protons MC;#chi^{2}/NDF",200,0,100);
+    TH1F* fHistProtonTPCClusterMC      = new TH1F("fHistProtonTPCClusterMC","Number of TPC Clusters of Protons MC",160,0,160);
+    TH2F* fHistProtonpvsNSigmaTPC      = new TH2F("fHistProtonpvsNSigmaTPC","Momentum vs N sigma TPC Proton;p [GeV/#it{c}];n_{#sigma,TPC}",500,0,10,500,-10,10);
+    TH2F* fHistProtonpvsNSigmaTPCMC    = new TH2F("fHistProtonpvsNSigmaTPCMC","Momentum vs N sigma TPC Proton MC;p [GeV/#it{c}];n_{#sigma,TPC}",500,0,10,500,-10,10);
+    TH2F* fHistProtonpvsNSigmaTOF      = new TH2F("fHistProtonpvsNSigmaTOF","Momentum vs N sigma TOF Proton;p [GeV/#it{c}];n_{#sigma,TOF}",500,0,10,500,-10,10);
+    TH2F* fHistProtonpvsNSigmaTOFMC    = new TH2F("fHistProtonpvsNSigmaTOFMC","Momentum vs N sigma TOF Proton MC;p [GeV/#it{c}];n_{#sigma,TOF}",500,0,10,500,-10,10);
+    TH1F* fHistProtonDCAxy             = new TH1F("fHistProtonDCAxy","DCA_{xy} of Protons;DCA_{xy} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAz              = new TH1F("fHistProtonDCAz","DCA_{z} of Protons;DCA_{z} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAxyMC           = new TH1F("fHistProtonDCAxyMC","DCA_{xy} of Protons MC;DCA_{xy} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAzMC            = new TH1F("fHistProtonDCAzMC","DCA_{z} of Protons MC;DCA_{z} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAxyMCSigma      = new TH1F("fHistProtonDCAxyMCSigma","DCA_{xy} of Protons from MC #Sigma^{+}/#bar#Sigma^{-};DCA_{xy} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAzMCSigma       = new TH1F("fHistProtonDCAzMCSigma","DCA_{z} of Protons from MC #Sigma^{+}/#bar#Sigma^{-};DCA_{z} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAxyMCPrimSig    = new TH1F("fHistProtonDCAxyMCPrimSig","DCA_{xy} of Protons from primary MC #Sigma^{+}/#bar#Sigma^{-};DCA_{xy} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonDCAzMCPrimSig     = new TH1F("fHistProtonDCAzMCPrimSig","DCA_{z} of Protons from primary MC #Sigma^{+}/#bar#Sigma^{-};DCA_{z} [cm];Counts/(0.1 mm))",1000,0,10);
+    TH1F* fHistProtonptMC              = new TH1F("fHistProtonptMC","Transverse momentum of MC Protons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);          
+    TH1F* fHistProtonptwCutsMC         = new TH1F("fHistProtonptwCutsMC","Transverse momentum of MC Protons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistProtonptwCuts           = new TH1F("fHistProtonptwCuts","Transverse momentum of Protons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);   
 
-    //Proton PID
-    TH2F* fHistPvsBeta             = new TH2F("fHistPvsBeta","momentum vs TOF #beta;p [GeV/c];TOF #beta",500,0,5,500,0.1,1.1);                                
-    TH2F* fHistPvsdEdx             = new TH2F("fHistPvsdEdx","momentum vs TPC dE/dx;p [GeV/c];TPC #frac{dE}{dx} (a.u.)",500,0,10,500,0,500);
-    TH2F* fHistPvsBetaBothCuts     = new TH2F("fHistPvsBetaBothCuts","momentum vs TOF #beta with TPC and TOF Cut;p [GeV/c];TOF #beta",500,0,5,500,0.1,1.1);              
-    TH2F* fHistPvsdEdxBothCuts     = new TH2F("fHistPvsdEdxBothCuts","momentum vs TPC dE/dx with TPC and TOF Cut;p [GeV/c];TPC #frac{dE}{dx} (a.u.)",500,0,10,500,0,500);
+    //V0 QA                            
+    TH2F* fHistV0OnflyvsOffline        = new TH2F("fHistV0OnflyvsOffline", "Number of V0s found by On-the-fly Finder vs. Offline Finder", 201, -0.5, 200.5, 201, -0.5, 200.5);
+    TH2F* fHistV0DaughtEtaPhi          = new TH2F("fHistV0DaughtEtaPhi","#eta vs. #phi of V0 Daughters;#eta;#phi [rad]",300,-1.5,1.5,300,0,2*TMath::Pi());
+    TH2F* fHistV0DaughtEtaPhiMC        = new TH2F("fHistV0DaughtEtaPhiMC","#eta vs. #phi of V0 Daughters MC;#eta;#phi [rad]",300,-1.5,1.5,300,0,2*TMath::Pi());
+    TH1F* fHistV0DaughtChi2            = new TH1F("fHistV0DaughtChi2","#chi^{2}/NDF of V0 Daughters;#chi^{2}/NDF",200,0,100);
+    TH1F* fHistV0DaughtChi2MC          = new TH1F("fHistV0DaughtChi2MC","#chi^{2}/NDF of V0 Daughters MC;#chi^{2}/NDF",200,0,100);
+    TH1F* fHistV0DaughtTPCClust        = new TH1F("fHistV0DaughtTPCClust","Number of TPC Clusters of V0 Daughters",160,0,160);
+    TH1F* fHistV0DaughtTPCClustMC      = new TH1F("fHistV0DaughtTPCClustMC","Number of TPC Clusters of V0 Daughters MC",160,0,160);
+    TH2F* fHistV0DaughtpvsNSigmaTPC    = new TH2F("fHistV0DaughtpvsNSigmaTPC","Momentum vs N sigma TPC Electron;p [GeV/#it{c}];n_{#sigma,TPC}",500,0,10,500,-10,10);
+    TH1F* fHistV0DaughtDCAtoPV         = new TH1F("fHistV0DaughtDCAtoPV","DCA to PV of V0 Daughters;DCA [cm];Counts/mm",200,0,20);
+    TH1F* fHistV0DaughtDCAtoPVMC       = new TH1F("fHistV0DaughtDCAtoPVMC","DCA to PV of V0 Daughters MC;DCA [cm];Counts/mm",200,0,20);
+    TH1F* fHistV0DaughtDCA             = new TH1F("fHistV0DaughtDCA","DCA between V0 Daughters;DCA [cm];Counts/(0.5mm)",200,0,10);
+    TH1F* fHistV0DaughtDCAMC           = new TH1F("fHistV0DaughtDCAMC","DCA between V0 Daughters MC;DCA [cm];Counts/(0.5mm)",200,0,10);
+    TH1F* fHistV0CPA                   = new TH1F("fHistV0CPA","Cosine of Pointing Angle of V0s;cos(PA);Counts/0.0001",2000,0.85,1.05);
+    TH1F* fHistV0CPAMC                 = new TH1F("fHistV0CPAMC","Cosine of Pointing Angle of V0s MC;cos(PA);Counts/0.0001",2000,0.85,1.05);
+    TH1F* fHistV0CPAMCSigma            = new TH1F("fHistV0CPAMCSigma","Cosine of Pointing Angle of V0s MC (#gamma from #Sigma);cos(PA);Counts/0.0001",2000,0.85,1.05);
+    TH1F* fHistV0Radius                = new TH1F("fHistV0Radius","Radius of V0s;r_{xy} [cm];Counts/mm",3000,0,300);   
+    TH1F* fHistV0RadiusMC              = new TH1F("fHistV0RadiusMC","Radius of V0s MC;r_{xy} [cm];Counts/mm",3000,0,300);   
+    TH2F* fHistV0Position2D            = new TH2F("fHistV0Position2D","Position of V0s;x [cm];y [cm]",1000,-180,180,1000,-180,180);   
+    TH2F* fHistV0Position2DMC          = new TH2F("fHistV0Position2DMC","Position of V0s MC;x [cm];y [cm]",1000,-180,180,1000,-180,180);   
+    TH1F* fHistV0PhotonDCAPV           = new TH1F("fHistV0PhotonDCAPV","DCA to PV of Photons;DCA [cm];Counts/mm)",100,0,10);
+    TH1F* fHistV0PhotonDCAPVMC         = new TH1F("fHistV0PhotonDCAPVMC","DCA to PV of MC Photons;DCA [cm];Counts/mm)",100,0,10);
+    TH1F* fHistV0PhotonDCAPVMCSigma    = new TH1F("fHistV0PhotonDCAPVMCSigma","DCA to PV of MC Photons from #Sigma^{+}/#bar#Sigma^{-};DCA [cm];Counts/mm)",100,0,10);
+    TH2F* fHistV0ArmPod                = new TH2F("fHistV0ArmPod", "Armenteros-Podolanski Plot of V0s;#alpha;q_{t} [GeV/#it{c}]",200,-1.0,1.0,200,-0.05,0.4);       
+    TH2F* fHistV0ArmPodMC              = new TH2F("fHistV0ArmPodMC", "Armenteros-Podolanski Plot of V0s MC;#alpha;q_{t} [GeV/#it{c}]",200,-1.0,1.0,200,-0.05,0.4);
+    TH1F* fHistV0OpenAngle             = new TH1F("fHistV0OpenAngle","Total Opening Angle of V0s;#xi [rad];Counts/(0.00314)",1000,0,TMath::Pi());
+    TH1F* fHistV0OpenAngleMC           = new TH1F("fHistV0OpenAngleMC","Total Opening Angle of V0s MC;#xi [rad];Counts/(0.00314)",1000,0,TMath::Pi());
+    TH1F* fHistV0DeltaTheta            = new TH1F("fHistV0DeltaTheta","#Delta#Theta of V0 Daughters;#Delta#Theta [rad];Counts/(0.00314)",1000,-TMath::Pi()/2,TMath::Pi()/2);
+    TH1F* fHistV0DeltaThetaMC          = new TH1F("fHistV0DeltaThetaMC","#Delta#Theta of V0 Daughters MC;#Delta#Theta [rad];Counts/(0.00314)",1000,-TMath::Pi()/2,TMath::Pi()/2);
+    TH1F* fHistV0InvMass               = new TH1F("fHistV0InvMass", "Invariant mass of V0s;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 2000, 0, 2);
+    TH1F* fHistV0InvMassMC             = new TH1F("fHistV0InvMassMC", "Invariant mass of V0s MC;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 2000, 0, 2);
+    TH1F* fHistV0ptMC                  = new TH1F("fHistV0ptMC","Transverse momentum of MC V0 Photons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);          
+    TH1F* fHistV0ptwCutsMC             = new TH1F("fHistV0ptwCutsMC","Transverse momentum of MC V0 Photons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistV0SigmaptMC             = new TH1F("fHistV0SigmaptMC","Transverse momentum of MC V0 Photons from #Sigma^{+}/#bar#Sigma^{-};#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);          
+    TH1F* fHistV0SigmaptwCutsMC        = new TH1F("fHistV0SigmaptwCutsMC","Transverse momentum of MC V0 Photons from #Sigma^{+}/#bar#Sigma^{-} with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistV0ptwCuts               = new TH1F("fHistV0ptwCuts","Transverse momentum of V0 Photons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);    
 
-    //Proton Kinematics and Topology
-    TH1F* fHistRealProtonPt        = new TH1F("fHistRealProtonPt","Transverse momentum of MC Protons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistProtonfromSigmaPt   = new TH1F("fHistProtonfromSigmaPt","Transverse momentum of MC Protons from #Sigma^{+};p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistSelectProtonPt      = new TH1F("fHistSelectProtonPt","Transverse momentum of selected Protons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistRealSelectProtonPt  = new TH1F("fHistRealSelectProtonPt","Transverse momentum of selected MC Protons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistSelectProtfromSigPt = new TH1F("fHistSelectProtfromSigPt","Transverse momentum of selected MC Protons from #Sigma^{+};p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistRealProtonDCAxy     = new TH1F("fHistRealProtonDCAxy","Proton DCAxy;DCA_{xy} [cm];Counts/(25#mum)",8000,-10,10);
-    TH1F* fHistRealProtonDCAz      = new TH1F("fHistRealProtonDCAz","Proton DCAz;DCA_{z} [cm];Counts/(25#mum)",8000,-10,10);
-    TH1F* fHistProtonfromSigDCAxy  = new TH1F("fHistProtonfromSigDCAxy","Proton from #Sigma^{+} DCAxy;DCA_{xy} [cm];Counts/(25#mum)",8000,-10,10);
-    TH1F* fHistProtonfromSigDCAz   = new TH1F("fHistProtonfromSigDCAz","Proton from #Sigma^{+} DCAz;DCA_{z} [cm];Counts/(25#mum)",8000,-10,10);
+    //Additional Photon QA                    
+    TH1F* fHistPairDCAtoPV             = new TH1F("fHistPairDCAtoPV","DCA to PV of Pair Daughters;DCA [cm];Counts/mm",200,0,20); 
+    TH1F* fHistPairDCA                 = new TH1F("fHistPairDCA","DCA between Pair Daughters;DCA [cm];Counts/(0.5mm)",200,0,10); 
+    TH1F* fHistPairDCAMC               = new TH1F("fHistPairDCAMC","DCA between Pair Daughters MC;DCA [cm];Counts/(0.5mm)",200,0,10);
+    TH1F* fHistPairRadius              = new TH1F("fHistPairRadius","Radius of Pairs;r_{xy} [cm];Counts/mm",3000,0,300);      
+    TH1F* fHistPairRadiusMC            = new TH1F("fHistPairRadiusMC","Radius of Pairs MC;r_{xy} [cm];Counts/mm",3000,0,300);   
+    TH1F* fHistPairPhotonDCAPV         = new TH1F("fHistPairPhotonDCAPV","DCA to PV of Photons;DCA [cm];Counts/mm)",100,0,10);
+    TH1F* fHistPairPhotonDCAPVMC       = new TH1F("fHistPairPhotonDCAPVMC","DCA to PV of MC Photons;DCA [cm];Counts/mm)",100,0,10);
+    TH1F* fHistPairPhotonDCAPVMCSigma  = new TH1F("fHistPairPhotonDCAPVMCSigma","DCA to PV of MC Photons from #Sigma^{+}/#bar#Sigma^{-};DCA [cm];Counts/mm)",100,0,10);
+    TH1F* fHistPairCPA                 = new TH1F("fHistPairCPA","Cosine of Pointing Angle of Pairs;cos(PA);Counts/0.0001",2000,0.85,1.05);
+    TH1F* fHistPairCPAMC               = new TH1F("fHistPairCPAMC","Cosine of Pointing Angle of Pairs MC;cos(PA);Counts/0.0001",2000,0.85,1.05);
+    TH1F* fHistPairCPAMCSigma          = new TH1F("fHistPairCPAMCSigma","Cosine of Pointing Angle of Pairs MC (#gamma from #Sigma);cos(PA);Counts/0.0001",2000,0.85,1.05);
+    TH2F* fHistPairArmPod              = new TH2F("fHistPairArmPod", "Armenteros-Podolanski Plot of Pairs;#alpha;q_{t} [GeV/#it{c}]",200,-1.0,1.0,200,-0.05,0.4);       
+    TH2F* fHistPairArmPodMC            = new TH2F("fHistPairArmPodMC", "Armenteros-Podolanski Plot of Pairs MC;#alpha;q_{t} [GeV/#it{c}]",200,-1.0,1.0,200,-0.05,0.4);
+    TH1F* fHistPairOpenAngle           = new TH1F("fHistPairOpenAngle","Total Opening Angle of Pairs;#xi [rad];Counts/(0.00314)",1000,0,TMath::Pi());
+    TH1F* fHistPairOpenAngleMC         = new TH1F("fHistPairOpenAngleMC","Total Opening Angle of Pairs MC;#xi [rad];Counts/(0.00314)",1000,0,TMath::Pi());
+    TH1F* fHistPairDeltaTheta          = new TH1F("fHistPairDeltaTheta","#Delta#Theta of Pair Daughters;#Delta#Theta [rad];Counts/(0.00314)",1000,-TMath::Pi()/2,TMath::Pi()/2);
+    TH1F* fHistPairDeltaThetaMC        = new TH1F("fHistPairDeltaThetaMC","#Delta#Theta of Pair Daughters MC;#Delta#Theta [rad];Counts/(0.00314)",1000,-TMath::Pi()/2,TMath::Pi()/2);
+    TH1F* fHistPairInvMass             = new TH1F("fHistPairInvMass", "Invariant mass of Pairs;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 2000, 0, 2);
+    TH1F* fHistPairInvMassMC           = new TH1F("fHistPairInvMassMC", "Invariant mass of Pairs MC;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 2000, 0, 2);
+    TH1F* fHistPairptMC                = new TH1F("fHistPairptMC","Transverse momentum of MC Pair Photons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);          
+    TH1F* fHistPairptwCutsMC           = new TH1F("fHistPairptwCutsMC","Transverse momentum of MC Pair Photons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistPairptwCuts             = new TH1F("fHistPairptwCuts","Transverse momentum of Pair Photons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);   
 
-    //V0 kinematics
-    TH1F* fHistSelectedPhotPt      = new TH1F("fHistSelectedPhotPt","Transverse momentum of selected Photons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistRealPhotonPt        = new TH1F("fHistRealPhotonPt","Transverse momentum of real Photons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistSelectRealPhotonPt  = new TH1F("fHistSelectRealPhotonPt","Transverse momentum of real Photons with Cuts;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistV0DaughtPt          = new TH1F("fHistV0DaughtPt","Transverse momentum of V0 Daughters;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
-    TH1F* fHistSelectedV0DaughtPt  = new TH1F("fHistSelectedV0DaughtPt","Transverse momentum of V0 Photon Daughters;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,10);
+    //Electron QA                      
+    TH2F* fHistElectronEtaPhiMC        = new TH2F("fHistElectronEtaPhiMC","#eta vs. #phi of Electrons MC;#eta;#phi [rad]",300,-1.5,1.5,300,0,2*TMath::Pi());
+    TH1F* fHistElectronChi2MC          = new TH1F("fHistElectronChi2MC","#chi^{2}/NDF of Electrons MC;#chi^{2}/NDF",200,0,100);
+    TH1F* fHistElectronTPCClusterMC    = new TH1F("fHistElectronTPCClusterMC","Number of TPC Clusters of Electrons MC",160,0,160);
+    TH2F* fHistElectronpvsNSigmaTPC    = new TH2F("fHistElectronpvsNSigmaTPC","Momentum vs N sigma TPC Electrons;p [GeV/#it{c}];n_{#sigma,TPC}",500,0,10,500,-10,10);
+    TH2F* fHistElectronpvsNSigTPCwCuts = new TH2F("fHistElectronpvsNSigTPCwCuts","Momentum vs N sigma TPC Electrons with Cuts;p [GeV/#it{c}];n_{#sigma,TPC}",500,0,10,500,-10,10);
+    TH2F* fHistElectronpvsNSigmaTPCMC  = new TH2F("fHistElectronpvsNSigmaTPCMC","Momentum vs N sigma TPC Electrons MC;p [GeV/#it{c}];n_{#sigma,TPC}",500,0,10,500,-10,10);
+    TH2F* fHistElectronpvsNSigmaTOF    = new TH2F("fHistElectronpvsNSigmaTOF","Momentum vs N sigma TOF Electrons;p [GeV/#it{c}];n_{#sigma,TOF}",500,0,10,500,-10,10);
+    TH2F* fHistElectronpvsNSigmaTOFMC  = new TH2F("fHistElectronpvsNSigmaTOFMC","Momentum vs N sigma TOF Electrons MC;p [GeV/#it{c}];n_{#sigma,TOF}",500,0,10,500,-10,10);
+    TH1F* fHistElectronptMC            = new TH1F("fHistElectronptMC","Transverse momentum of MC Electrons;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);          
+    TH1F* fHistElectronptwCutsMC       = new TH1F("fHistElectronptwCutsMC","Transverse momentum of MC Electrons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);
+    TH1F* fHistElectronptwCuts         = new TH1F("fHistElectronptwCuts","Transverse momentum of Electrons with Cuts;#it{p}_{T} [GeV/#it{c}];Counts/(MeV/#it{c})",12000,0,12);   
 
-    //V0 topology
-  	TH1F* fHistCosPA               = new TH1F("fHistCosPA","Cosine of pointing angle;cos(PA);Counts/0.0005",60,0.98,1.01);
-  	TH1F* fHistDCAV0Daught         = new TH1F("fHistDCAV0Daught","DCA between photon daughters;DCA [cm];Counts/(0.5mm)",200,0,10);
-    TH1F* fHistDCADaughPV          = new TH1F("fHistDCADaughPV","DCA to PV;DCA [cm];Counts/mm",200,0,20);
-    TH1F* fHistdeltatheta          = new TH1F("fHistdeltatheta","#Delta#Theta;#Delta#Theta;Counts/(0.0157)",200,-TMath::Pi()/2,TMath::Pi()/2);
-    TH1F* fHisttotangle            = new TH1F("fHisttotangle","Total V0 Opening Angle;#xi;Counts/(0.0157)",200,0,TMath::Pi());
-    TH2F* fHistVertexPos           = new TH2F("fHistVertexPos","Position of photon conversion vertex;x [cm];y [cm];",480,-120,120,480,-120,120);    
-    TH1F* fHistTransverseRadius    = new TH1F("fHistTransverseRadius","Conversion Radius of Photon;r_{xy} [cm];Counts/(5 mm)",600,0,300);
+    //Gamma Gamma QA                      
+    TH1F* fHistGammaPairInvMass        = new TH1F("fHistGammaPairInvMass", "Invariant mass of Photon Pairs;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassMC      = new TH1F("fHistGammaPairInvMassMC", "Invariant mass of Photon Pairs MC;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassOnfly   = new TH1F("fHistGammaPairInvMassOnfly", "Invariant mass of On-the-fly Photon Pairs;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassMCOnfly = new TH1F("fHistGammaPairInvMassMCOnfly", "Invariant mass of On-the-fly Photon Pairs MC;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassOneAdd  = new TH1F("fHistGammaPairInvMassOneAdd", "Invariant mass of Photon Pairs, one additional Photon;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassOneAddMC= new TH1F("fHistGammaPairInvMassOneAddMC", "Invariant mass of On-fly Photon Pairs, one additional Photon MC;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassOnlyAdd = new TH1F("fHistGammaPairInvMassOnlyAdd", "Invariant mass of Photon Pairs, only additional Photons;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairInvMassOnlyAddMC= new TH1F("fHistGammaPairInvMassOnlyAddMC", "Invariant mass of Photon Pairs, only additional Photons MC;m_{inv} [GeV/#it{c}^{2}];Counts/(MeV/#it{c}^{2})", 1400, 0, 0.7);
+    TH1F* fHistGammaPairDCA            = new TH1F("fHistGammaPairDCA","DCA between Photon Pairs;DCA [cm];Counts/(0.5mm)",200,0,10); 
+    TH1F* fHistGammaPairDCAMC          = new TH1F("fHistGammaPairDCAMC","DCA between Photon Pairs MC;DCA [cm];Counts/(0.5mm)",200,0,10);
 
-    //MC V0 topology
-	  TH1F* fHistCosPASigma          = new TH1F("fHistCosPASigma","Cosine of pointing angle, Photons from #Sigma^{+};cos(PA);Counts/0.0005",60,0.98,1.01);
-    TH1F* fHistMCPhotondeltatheta  = new TH1F("fHistMCPhotondeltatheta","#Delta#Theta of MC Photons;#Delta#Theta;Counts/(0.0157)",200,-TMath::Pi()/2,TMath::Pi()/2);
-    TH1F* fHistMCPhotontotangle    = new TH1F("fHistMCPhotontotangle","Total V0 Opening Angle of MC Photons;#xi;Counts/(0.0157)",200,0,TMath::Pi());
-    TH1F* fHistConvRadius          = new TH1F("fHistConvRadius","Conversion Radius;r [cm];Counts/(5 mm)",1000,0,500);
-    TH2F* fHistpVsMCConvRadius     = new TH2F("fHistpVsMCConvRadius","Conversion Radius of MC Photon vs momentum;r_{xy} [cm];p [GeV/c]",1000,0,500,500,0,5);
-
-    //V0 track quality
-    TH1F* fHistNClusterV0          = new TH1F("fHistNClusterV0","Number of TPC Clusters of V0 Daughters",160,0,160);
-    
-    //TPC PID
-    TH2F* fHistPdEdxDaught         = new TH2F("fHistPdEdxDaught", "p VS. TPC dEdx Daughters;p [GeV/c];TPC #frac{dE}{dx} (a.u.)",500,0,5,500,0,200);
-    TH2F* fHistElecNsigTPC         = new TH2F("fHistElecNsigTPC","Electron momentum vs N sigma TPC;p [GeV/c];n_{#sigma,TPC}",500,0,5,500,-10,10);
-    
-    //Armenteros-Podolanski
-    TH2F* fHistArmPod              = new TH2F("fHistArmPod", "Armenteros-Podolanski Plot;#alpha;q_{t} [GeV/c]",200,-1.0,1.0,200,-0.05,0.4);
-    TH2F* fHistArmPodPhotons       = new TH2F("fHistArmPodPhotons", "Armenteros-Podolanski Plot Photons;#alpha;q_{t} [GeV/c]",200,-1.0,1.0,200,-0.01,0.3);
-
-    //Electron Track Quality
-    TH1F* fHistNClusterElec        = new TH1F("fHistNClusterElec","Number of TPC Clusters",160,0,160);
-
-    //Electron PID
-    TH2F* fHistElecNsigTPCall      = new TH2F("fHistElecNsigTPCall","e^{-} p vs n_{#sigma,TPC}, No PID;p [GeV/c];n_{#sigma,TPC}",500,0,5,500,-10,10);
-    TH2F* fHistElecNsigTPCTPCsamp  = new TH2F("fHistElecNsigTPCTPCsamp","e^{-} p vs n_{#sigma,TPC}, TPC Sample;p [GeV/c];n_{#sigma,TPC}",500,0,5,500,-10,10);
-    TH2F* fHistElecNsigTPCTOFsamp  = new TH2F("fHistElecNsigTPCTOFsamp","e^{-} p vs n_{#sigma,TPC}, TOF Sample;p [GeV/c];n_{#sigma,TPC}",500,0,5,500,-10,10);
-    TH2F* fHistElecNsigTPCcomb     = new TH2F("fHistElecNsigTPCcomb","e^{-} p vs n_{#sigma,TPC}, Combined Sample;p [GeV/c];n_{#sigma,TPC}",500,0,5,500,-10,10);
-
-    //invariant masses
-    TH1F* fHistV0photonmass        = new TH1F("fHistV0photonmass", "Photon Mass;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 1000, 0, 1);
-    TH1F* fHistpi0mass             = new TH1F("fHistpi0mass", "#pi^{0} Mass;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHistpi0massKF           = new TH1F("fHistpi0massKF", "#pi^{0} Mass with KFParticle;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHistMCpi0mass           = new TH1F("fHistMCpi0mass", "MC #pi^{0} Mass;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHistMCsigmamass         = new TH1F("fHistMCsigmamass", "MC #Sigma^{+} Mass;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 500, 1, 1.5);
-    TH1F* fHistMCdeltamass         = new TH1F("fHistMCdeltamass", "MC #Delta^{+} Mass;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 500, 1, 1.5);
-    TH1F* fHist3Partpi0mass        = new TH1F("fHist3Partpi0mass", "#pi^{0} Mass (3 electrons);m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHist3Partpi0massKF      = new TH1F("fHist3Partpi0massKF", "#pi^{0} Mass (3 electrons) with KFParticle;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHist3Partpi0massMC      = new TH1F("fHist3Partpi0massMC", "#pi^{0} Mass (3 electrons);m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHist3Partpi0massMChighpt= new TH1F("fHist3Partpi0massMChighpt", "#pi^{0} Mass (3 electrons);m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH2F* fHist3Partpi0massvspt    = new TH2F("fHist3Partpi0massvspt", "#pi^{0} Mass (3 electrons) vs. single electron pt;m_{inv} [GeV/c^{2}];p_{t} [GeV/c]", 700, 0, 0.7, 100, 0, 1);
-
-    //KFParticle
-    TH1F* fHisteephotmassTL        = new TH1F("fHisteephotmassTL", "Photon Mass with TLorentzvector;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 1000, 0, 1);
-    TH1F* fHisteephotmassKF        = new TH1F("fHisteephotmassKF", "Photon Mass with KFParticle;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 1000, 0, 1);
-    TH1F* fHisteephotmassKFMC      = new TH1F("fHisteephotmassKFMC", "MC Photon Mass with KFParticle;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 1000, 0, 1);
-    TH1F* fHisteephotmassKFNoCut   = new TH1F("fHisteephotmassKFNoCut", "Photon Mass with KFParticle without Cuts;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 1000, 0, 1);
-    TH1F* fHisteepi0massTL         = new TH1F("fHisteepi0massTL", "#pi^{0} Mass with TL from e^+-e^--pairs;m_{inv} [GeV/c^{2}];Counts/(MeV/c^{2})", 700, 0, 0.7);
-    TH1F* fHisteeopenangle         = new TH1F("fHisteeopenangle","Total Opening Angle of e^+-e^--pair;#xi;Counts/(0.0157)",200,0,TMath::Pi());
-    TH2F* fHistArmPodKF            = new TH2F("fHistArmPodKF", "Armenteros-Podolanski Plot with KFParticle;#alpha;q_{t} [GeV/c]",200,-1.0,1.0,200,-0.05,0.4);
-	  TH1F* fHistKFeeDCA             = new TH1F("fHistKFeeDCA","DCA between photon daughters with KF;DCA [cm];Counts/(0.5mm)",200,0,10);
-    TH1F* fHisteeopenangleMC       = new TH1F("fHisteeopenangleMC","Total Opening Angle of e^+-e^--pair;#xi;Counts/(0.0157)",200,0,TMath::Pi());
-    TH2F* fHistArmPodKFMC          = new TH2F("fHistArmPodKFMC", "Armenteros-Podolanski Plot with KFParticle;#alpha;q_{t} [GeV/c]",200,-1.0,1.0,200,-0.05,0.4);
-  	TH1F* fHistKFeeDCAMC           = new TH1F("fHistKFeeDCAMC","DCA between photon daughters with KF;DCA [cm];Counts/(0.5mm)",200,0,10);
-
-    //MC Sigma Topologyc
-    TH1F* fHistPi0VertexvsMC       = new TH1F("fHistPi0VertexvsMC","#pi^{0} KF Decay Radius - MC Decay Radius;#Deltar [cm];Counts/(mm)", 400, -20, 20);
-    TH1F* fHist3PartPi0VertexvsMC  = new TH1F("fHist3PartPi0VertexvsMC","#pi^{0} KF Decay Radius - MC Decay Radius;#Deltar [cm];Counts/(mm)", 400, -20, 20);
-    TH1F* fHistMCSigmaPA           = new TH1F("fHistMCSigmaPA","#Sigma^{+} PA;PA [rad];Counts/(0.0157)",200,0,TMath::Pi());
-    TH1F* fHistMC4PartSigmaPA      = new TH1F("fHistMC4PartSigmaPA","#Sigma^{+} PA;PA [rad];Counts/(0.0157)",200,0,TMath::Pi());
-    TH1F* fHistPi0VertexMC         = new TH1F("fHistPi0VertexMC","#pi^{0} MC Decay Radius;r [cm];Counts/(mm)", 200, 0, 20);
+    //MC Sigma Topology
+    TH1F* fHistPi0VertexvsMC           = new TH1F("fHistPi0VertexvsMC","#pi^{0} KF Decay Radius - MC Decay Radius;#Deltar [cm];Counts/(mm)", 400, -20, 20);
+    TH1F* fHistMCSigmaPA               = new TH1F("fHistMCSigmaPA","#Sigma^{+}/#bar#Sigma^{-} PA;PA [rad];Counts/(0.005)",200,0,1);
+    TH1F* fHistSigmaPA                 = new TH1F("fHistSigmaPA","#Sigma^{+}/#bar#Sigma^{-} PA;PA [rad];Counts/(0.005)",200,0,1);
+    TH1F* fHistInvSigmaMass            = new TH1F("fHistInvSigmaMass","Invariant mass of #Sigma^{+}/#bar#Sigma^{-} Candidates;m_{inv} [GeV/#it{c}^{2}];Counts/(10 MeV/#it{c}^{2})", 300, 0, 3);
+    TH1F* fHistMCOneGammaSigmaPA       = new TH1F("fHistMCOneGammaSigmaPA","#Sigma^{+} PA;PA [rad];Counts/(0.005)",200,0,1);
+    TH1F* fHistPi0VertexMC             = new TH1F("fHistPi0VertexMC","#pi^{0} MC Decay Radius;r [cm];Counts/(mm)", 200, 0, 20);
+    TH1F* fHistMCSigmaProtonkstar      = new TH1F("fHistMCSigmaProtonkstar","MC #Sigma^{+}/#bar#Sigma^{-}-p k*;k* [GeV/#it{c}];Counts/(5 MeV/#it{c})",1000,0,5);
 
     //Miscellaneous
     /*** EMPTY ***/
 
     //Alphanumeric Histogram Labels
-    fHistMCCounter->GetXaxis()->SetBinLabel(1,"Events");
-    fHistMCCounter->GetXaxis()->SetBinLabel(2,"p");
-    fHistMCCounter->GetXaxis()->SetBinLabel(3,"#barp");
-    fHistMCCounter->GetXaxis()->SetBinLabel(4,"#Delta^{+}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(5,"#bar#Delta^{-}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(6,"#Sigma^{+}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(7,"#bar#Sigma^{-}");    
-    fHistMCCounter->GetXaxis()->SetBinLabel(8,"pi^{0}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(9,"#gamma");
-    fHistMCCounter->GetXaxis()->SetBinLabel(10,"#gamma from pi^{0}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(11,"#gamma from #Sigma^{+}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(12,"#gamma->e^{+}e^{-}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(13,"#gamma from pi^{0}->e^{+}e^{-}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(14,"#gamma from #Sigma^{+}->e^{+}e^{-}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(15,"V0");
-    fHistMCCounter->GetXaxis()->SetBinLabel(16,"On-fly V0");
-    fHistMCCounter->GetXaxis()->SetBinLabel(17,"V0 is #gamma");
-    fHistMCCounter->GetXaxis()->SetBinLabel(18,"#gamma is from #Sigma^{+}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(19,"e+-e--pairs");
-    fHistMCCounter->GetXaxis()->SetBinLabel(20,"pair is #gamma");
-    fHistMCCounter->GetXaxis()->SetBinLabel(21,"#gamma is from #Sigma^{+}");
-    fHistMCCounter->GetXaxis()->SetBinLabel(22,"Reconstructed MC #pi^{0} V0");
-    fHistMCCounter->GetXaxis()->SetBinLabel(23,"Reconstructed MC #Sigma V0");
-    fHistMCCounter->GetXaxis()->SetBinLabel(24,"MC Electrons");
-    fHistMCCounter->GetXaxis()->SetBinLabel(25,"MC Positrons");
-    fHistMCCounter->GetXaxis()->SetBinLabel(26,"Reconstructed Electrons");
-    fHistMCCounter->GetXaxis()->SetBinLabel(27,"Reconstructed Positrons");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(1,"fMaxProtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(2,"fMinTPCClustProt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(3,"fMaxNsigProtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(4,"fMaxNsigProtTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(5,"fMaxpOnlyTPCPID");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(6,"fMinProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(7,"fMaxProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(8,"fMaxMCEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(9,"fMaxDaughtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(10,"fMinTPCClustDaught");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(11,"fMaxNsigDaughtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(12,"fMaxalpha");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(13,"fMaxqt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(14,"fMaxopenangle");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(15,"fMaxdeltatheta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(16,"fMinV0CPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(17,"fMinV0Radius");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(18,"fMaxV0Radius");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(19,"fMaxphotonmass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(20,"fMinDCADaughtPV");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(21,"fMaxDCADaught");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(22,"fMaxElecEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(23,"fMinTPCClustElec");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(24,"fMaxNsigElecTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(25,"fMinNsigHadronTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(26,"fMaxNsigElecTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(27,"fMaxElecpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(28,"fMinPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(29,"fRejectGammaAutoCorr");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(30,"fMaxPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(31,"fMaxSigmaPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(32,"fMaxSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(33,"fMinProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(34,"fMinProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(35,"low kstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(36,"very low kstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(37,"very very low kstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(38,"Number of Fills");
 
-    for(Int_t i=0; i<21; i++){
-    fHistCandperEvent->GetXaxis()->SetBinLabel(i+1,Form("%d", i));
-    fHistCandperEvent->GetYaxis()->SetBinLabel(i+1,Form("%d", i));
-    }
+    fHistCutBookKeeper->SetBinContent(1,fMaxProtEta);
+    fHistCutBookKeeper->SetBinContent(2,fMinTPCClustProt);
+    fHistCutBookKeeper->SetBinContent(3,fMaxNsigProtTPC);
+    fHistCutBookKeeper->SetBinContent(4,fMaxNsigProtTOF);
+    fHistCutBookKeeper->SetBinContent(5,fMaxpOnlyTPCPID);
+    fHistCutBookKeeper->SetBinContent(6,fMinProtpt);
+    fHistCutBookKeeper->SetBinContent(7,fMaxProtpt);
+    fHistCutBookKeeper->SetBinContent(8,fMaxMCEta);
+    fHistCutBookKeeper->SetBinContent(9,fMaxDaughtEta);
+    fHistCutBookKeeper->SetBinContent(10,fMinTPCClustDaught);
+    fHistCutBookKeeper->SetBinContent(11,fMaxNsigDaughtTPC);
+    fHistCutBookKeeper->SetBinContent(12,fMaxalpha);
+    fHistCutBookKeeper->SetBinContent(13,fMaxqt);
+    fHistCutBookKeeper->SetBinContent(14,fMaxopenangle);
+    fHistCutBookKeeper->SetBinContent(15,fMaxdeltatheta);
+    fHistCutBookKeeper->SetBinContent(16,fMinV0CPA);
+    fHistCutBookKeeper->SetBinContent(17,fMinV0Radius);
+    fHistCutBookKeeper->SetBinContent(18,fMaxV0Radius);
+    fHistCutBookKeeper->SetBinContent(19,fMaxphotonmass);
+    fHistCutBookKeeper->SetBinContent(20,fMinDCADaughtPV);
+    fHistCutBookKeeper->SetBinContent(21,fMaxDCADaught);
+    fHistCutBookKeeper->SetBinContent(22,fMaxElecEta);
+    fHistCutBookKeeper->SetBinContent(23,fMinTPCClustElec);
+    fHistCutBookKeeper->SetBinContent(24,fMaxNsigElecTPC);
+    fHistCutBookKeeper->SetBinContent(25,fMinNsigHadronTPC);
+    fHistCutBookKeeper->SetBinContent(26,fMaxNsigElecTOF);
+    fHistCutBookKeeper->SetBinContent(27,fMaxElecpt);
+    fHistCutBookKeeper->SetBinContent(28,fRejectGammaAutoCorr);
+    fHistCutBookKeeper->SetBinContent(29,fMinPi0Mass);
+    fHistCutBookKeeper->SetBinContent(30,fMaxPi0Mass);
+    fHistCutBookKeeper->SetBinContent(31,fMaxSigmaPA);
+    fHistCutBookKeeper->SetBinContent(32,fMaxSigmaMass);
+    fHistCutBookKeeper->SetBinContent(33,fMinProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(34,fMinProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(35,flowkstar);
+    fHistCutBookKeeper->SetBinContent(36,fverylowkstar);
+    fHistCutBookKeeper->SetBinContent(37,fveryverylowkstar);
+    fHistCutBookKeeper->SetBinContent(38,1);
+
+    fHistMCCounter->GetXaxis()->SetBinLabel(1,"Events");
+    fHistMCCounter->GetXaxis()->SetBinLabel(2,"MC Particles");
+    fHistMCCounter->GetXaxis()->SetBinLabel(3,"p");
+    fHistMCCounter->GetXaxis()->SetBinLabel(4,"#barp");
+    fHistMCCounter->GetXaxis()->SetBinLabel(5,"#Delta^{+}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(6,"#bar#Delta^{-}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(7,"#Sigma^{+}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(8,"#bar#Sigma^{-}");    
+    fHistMCCounter->GetXaxis()->SetBinLabel(9,"pi^{0}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(10,"pi^{0} from #Sigma^{+}/#bar#Sigma^{-}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(11,"#gamma");
+    fHistMCCounter->GetXaxis()->SetBinLabel(12,"#gamma->e^{-}+e^{+} (R_{conv}<180cm)"); 
+    fHistMCCounter->GetXaxis()->SetBinLabel(13,"#gamma from pi^{0}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(14,"#gamma from #Sigma^{+}/#bar#Sigma^{-}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(15,"#gamma from #Sigma^{+}/#bar#Sigma^{-} via pi^{0}");
+    fHistMCCounter->GetXaxis()->SetBinLabel(16,"#gamma from pi^{0} conv.");
+    fHistMCCounter->GetXaxis()->SetBinLabel(17,"#gamma from #Sigma^{+}/#bar#Sigma^{-} conv.");
+    fHistMCCounter->GetXaxis()->SetBinLabel(18,"#gamma from #Sigma^{+}/#bar#Sigma^{-} via pi^{0} conv.");
 
     fHistEventCounter->GetXaxis()->SetBinLabel(1,"Events");
 
+    fHistV0Statistics->GetXaxis()->SetBinLabel(1, "On-the-fly V0s");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(2, "Offline V0s");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(3, "Offline only V0s");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(4, "Passed eta cut");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(5, "Passed cluster cut");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(6, "Passed alpha cut");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(7, "Passed qt cut");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(8, "Passed open angle");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(9, "Passed delta theta");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(10,"Passed CosPA cut");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(11,"Passed TPC PID");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(12,"Passed min radius");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(13,"Passed max radius");
+    fHistV0Statistics->GetXaxis()->SetBinLabel(14,"Passed inv mass");
+
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(1, "On-the-fly V0s");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(2, "Offline V0s");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(3, "Offline only V0s");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(4, "Passed eta cut");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(5, "Passed cluster cut");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(6, "Passed alpha cut");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(7, "Passed qt cut");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(8, "Passed open angle");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(9, "Passed delta theta");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(10,"Passed CosPA cut");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(11,"Passed TPC PID");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(12,"Passed min radius");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(13,"Passed max radius");
+    fHistV0StatisticsMC->GetXaxis()->SetBinLabel(14,"Passed inv mass");
+
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(1, "On-the-fly V0s");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(2, "Offline V0s");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(3, "Offline only V0s");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(4, "Passed eta cut");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(5, "Passed cluster cut");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(6, "Passed alpha cut");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(7, "Passed qt cut");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(8, "Passed open angle");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(9, "Passed delta theta");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(10,"Passed CosPA cut");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(11,"Passed TPC PID");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(12,"Passed min radius");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(13,"Passed max radius");
+    fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(14,"Passed inv mass");
+
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(1, "Tracks");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(2, "No doublecount");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(3, "Passed eta cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(4, "Passed cluster cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(5, "Passed TPC cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(6, "Passed TOF cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(7, "Passed pt cut");
+
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(1, "Tracks");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(2, "No doublecount");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(3, "Passed eta cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(4, "Passed cluster cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(5, "Passed TPC cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(6, "Passed TOF cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(7, "Passed pt cut");
+
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(1, "Tracks");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(2, "No doublecount");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(3, "Passed eta cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(4, "Passed cluster cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(5, "Passed TPC cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(6, "Passed TOF cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(7, "Passed pt cut");
+
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(1, "Pairs considered");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(2, "Pairs not Onfly V0s");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(3, "Passed daughter dca");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(4, "Vertex within volume");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(5, "Passed radius cut");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(6, "Passed CosPA cut");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(7, "Passed alpha cut");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(8, "Passed qt cut");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(9, "Passed open angle");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(10,"Passed delta theta");
+    fHistAddV0Statistics->GetXaxis()->SetBinLabel(11,"Passed inv mass");
+
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(1, "Pairs considered");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(2, "Pairs not Onfly V0s");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(3, "Passed daughter dca");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(4, "Vertex within volume");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(5, "Passed radius cut");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(6, "Passed CosPA cut");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(7, "Passed alpha cut");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(8, "Passed qt cut");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(9, "Passed open angle");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(10,"Passed delta theta");
+    fHistAddV0StatisticsMC->GetXaxis()->SetBinLabel(11,"Passed inv mass");
+
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(1, "Pairs considered");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(2, "Pairs not Onfly V0s");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(3, "Passed daughter dca");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(4, "Vertex within volume");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(5, "Passed radius cut");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(6, "Passed CosPA cut");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(7, "Passed alpha cut");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(8, "Passed qt cut");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(9, "Passed open angle");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(10,"Passed delta theta");
+    fHistAddV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(11,"Passed inv mass");
+
+    fHistSigmaCounter->GetXaxis()->SetBinLabel(1, "Both from Finder");
+    fHistSigmaCounter->GetXaxis()->SetBinLabel(2, "One from Finder");
+    fHistSigmaCounter->GetXaxis()->SetBinLabel(3, "Additional #gammas");
+    fHistSigmaCounter->GetXaxis()->SetBinLabel(4, "4 Particle Reco");
+    fHistSigmaCounter->GetXaxis()->SetBinLabel(5, "#Sigma->p#gamma from Finder");
+    fHistSigmaCounter->GetXaxis()->SetBinLabel(6, "#Sigma->p#gamma additional");
+
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(1,"Total");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(2,"Primary");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(3,"K^{0}_{L}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(4,"K^{0}_{S}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(5,"K^{0}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(6,"#barK^{0}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(7,"K^{-}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(8,"K^{+}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(9,"pi^{-}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(10,"pi^{+}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(11,"n");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(12,"#barn");    
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(13,"p");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(14,"#barp");    
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(15,"#Lambda");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(16,"#bar#Lambda");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(17,"#Sigma^{+}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(18,"#Sigma^{-}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(19,"#bar#Sigma^{-}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(20,"#bar#Sigma^{+}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(21,"#Xi^{0}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(22,"#bar#Xi^{0}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(23,"#Xi^{-}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(24,"#bar#Xi^{+}");
+    fHistSigmaMotherPart->GetXaxis()->SetBinLabel(25,"Other");
+
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(1,"Total");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(2,"Primary");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(3,"K^{0}_{L}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(4,"K^{0}_{S}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(5,"K^{0}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(6,"#barK^{0}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(7,"K^{-}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(8,"K^{+}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(9,"pi^{-}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(10,"pi^{+}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(11,"n");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(12,"#barn");    
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(13,"p");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(14,"#barp");    
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(15,"#Lambda");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(16,"#bar#Lambda");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(17,"#Sigma^{+}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(18,"#Sigma^{-}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(19,"#bar#Sigma^{-}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(20,"#bar#Sigma^{+}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(21,"#Xi^{0}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(22,"#bar#Xi^{0}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(23,"#Xi^{-}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(24,"#bar#Xi^{+}");
+    fHistAntiSigmaMotherPart->GetXaxis()->SetBinLabel(25,"Other");
+
     //Add Histograms to Output List
+    
+    //Book Keeper for used Cuts
+    fOutputList->Add(fHistCutBookKeeper);
     //Event related
     fOutputList->Add(fHistVertexZ);
     fOutputList->Add(fHistCentrality);
     fOutputList->Add(fHistEventCounter);
+    fOutputList->Add(fHistTrackMultiplicity);
     //Counters
     fOutputList->Add(fHistMCCounter);
-    fOutputList->Add(fHistCandperEvent);
-    fOutputList->Add(fHistDiscardedOnflyV0);
-    fOutputList->Add(fHistDiscardedOfflineV0);
-    //MC Kinematics
-    fOutputList->Add(fHistMCPhotonPt);
+    fOutputList->Add(fHistV0Statistics);
+    fOutputList->Add(fHistV0StatisticsMC);
+    fOutputList->Add(fHistV0StatisticsSigmaMC);
+    fOutputList->Add(fHistProtonStatistics);
+    fOutputList->Add(fHistProtonStatisticsMC);
+    fOutputList->Add(fHistProtonStatisticsSigmaMC);
+    fOutputList->Add(fHistAddV0Statistics);
+    fOutputList->Add(fHistAddV0StatisticsMC);
+    fOutputList->Add(fHistAddV0StatisticsSigmaMC);
+    fOutputList->Add(fHistSigmaCounter);
+    //MC Kinematics              
     fOutputList->Add(fHistMCSigmaPt);
-    fOutputList->Add(fHistV0PhotonPt);
-    fOutputList->Add(fHistMCElectronPt);
-    fOutputList->Add(fHistRecoElectronPt);
+    fOutputList->Add(fHistMCAntiSigmaPt);
+    fOutputList->Add(fHistMCPrimSigmaPt);
+    fOutputList->Add(fHistMCPrimAntiSigmaPt);
+    fOutputList->Add(fHistMCSigmaOrigin);
+    fOutputList->Add(fHistMCAntiSigmaOrigin);
+    fOutputList->Add(fHistMCDeltaPt);    
+    fOutputList->Add(fHistMCAntiDeltaPt);
+    fOutputList->Add(fHistMCPi0Pt);      
+    fOutputList->Add(fHistMCProtonPt);         
+    fOutputList->Add(fHistMCAntiProtonPt);
+    fOutputList->Add(fHistMCPrimProtonPt);
+  	fOutputList->Add(fHistMCPrimAntiProtonPt);     
+    fOutputList->Add(fHistMCPhotonPt);         
     fOutputList->Add(fHistMCSigmaPhotonPt);
-    fOutputList->Add(fHistV0SigmaPhotonPt);
-    fOutputList->Add(fHistSigmaptvsept);
-    fOutputList->Add(fHistSigmaptvspi0pt);
-    //Proton Track Quality
-    fOutputList->Add(fHistNClusterProt);
-    //Proton PID
-    fOutputList->Add(fHistPvsBeta);
-    fOutputList->Add(fHistPvsdEdx);
-    fOutputList->Add(fHistPvsBetaBothCuts);
-    fOutputList->Add(fHistPvsdEdxBothCuts);
-    //Proton Kinematics and Topology
-    fOutputList->Add(fHistRealProtonPt);
-    fOutputList->Add(fHistProtonfromSigmaPt);
-    fOutputList->Add(fHistSelectProtonPt);
-    fOutputList->Add(fHistRealSelectProtonPt);
-    fOutputList->Add(fHistSelectProtfromSigPt);
-    fOutputList->Add(fHistRealProtonDCAxy);
-    fOutputList->Add(fHistRealProtonDCAz);
-    fOutputList->Add(fHistProtonfromSigDCAxy);           
-    fOutputList->Add(fHistProtonfromSigDCAz);       
-    //V0 kinematics
-    fOutputList->Add(fHistSelectedPhotPt);
-    fOutputList->Add(fHistRealPhotonPt);
-    fOutputList->Add(fHistSelectRealPhotonPt);
-    fOutputList->Add(fHistV0DaughtPt);
-    fOutputList->Add(fHistSelectedV0DaughtPt);
-    //V0 topology
-    fOutputList->Add(fHistCosPA);
-    fOutputList->Add(fHistDCAV0Daught);
-    fOutputList->Add(fHistDCADaughPV);
-    fOutputList->Add(fHistdeltatheta);
-    fOutputList->Add(fHisttotangle);
-    fOutputList->Add(fHistVertexPos);
-    fOutputList->Add(fHistTransverseRadius);
-    //MC V0 topology
-    fOutputList->Add(fHistCosPASigma);
-    fOutputList->Add(fHistMCPhotondeltatheta);
-    fOutputList->Add(fHistMCPhotontotangle);
-    fOutputList->Add(fHistConvRadius);
-    fOutputList->Add(fHistpVsMCConvRadius);
-    //V0 track quality
-    fOutputList->Add(fHistNClusterV0);
-    //TPC PID
-    fOutputList->Add(fHistPdEdxDaught);
-    fOutputList->Add(fHistElecNsigTPC);
-    //Armenteros-Podolanski
-    fOutputList->Add(fHistArmPod);
-    fOutputList->Add(fHistArmPodPhotons);
-    //Electron Track Quality
-    fOutputList->Add(fHistNClusterElec);
-    //Electron PID
-    fOutputList->Add(fHistElecNsigTPCall);
-    fOutputList->Add(fHistElecNsigTPCTPCsamp);
-    fOutputList->Add(fHistElecNsigTPCTOFsamp);
-    fOutputList->Add(fHistElecNsigTPCcomb);
-    //invariant masses
-    fOutputList->Add(fHistV0photonmass);
-    fOutputList->Add(fHistpi0mass);
-    fOutputList->Add(fHistpi0massKF);
-    fOutputList->Add(fHistMCpi0mass);
-    fOutputList->Add(fHistMCsigmamass);
-    fOutputList->Add(fHistMCdeltamass);
-    fOutputList->Add(fHist3Partpi0mass);
-    fOutputList->Add(fHist3Partpi0massKF);
-    fOutputList->Add(fHist3Partpi0massMC);
-    fOutputList->Add(fHist3Partpi0massMChighpt);
-    fOutputList->Add(fHist3Partpi0massvspt);
-    //KFParticle
-    fOutputList->Add(fHisteephotmassTL);
-    fOutputList->Add(fHisteephotmassKF);
-    fOutputList->Add(fHisteephotmassKFMC);
-    fOutputList->Add(fHisteephotmassKFNoCut);
-    fOutputList->Add(fHisteepi0massTL);
-    fOutputList->Add(fHisteeopenangle);
-    fOutputList->Add(fHistArmPodKF);
-    fOutputList->Add(fHistKFeeDCA);
-    fOutputList->Add(fHisteeopenangleMC);
-    fOutputList->Add(fHistArmPodKFMC);
-    fOutputList->Add(fHistKFeeDCAMC);
+    fOutputList->Add(fHistMCConvPhotonPt);     
+    fOutputList->Add(fHistMCSigmaConvPhotonPt);
+    fOutputList->Add(fHistMCConvRadius);    
+    fOutputList->Add(fHistMCConvRadiusvspt);    
+    fOutputList->Add(fHistSigmaMotherPart);    
+    fOutputList->Add(fHistAntiSigmaMotherPart);    
+    //Track Quality
+    fOutputList->Add(fHistTrackEtaPhi);
+    fOutputList->Add(fHistTrackChi2);
+    fOutputList->Add(fHistTrackTPCCluster);
+    fOutputList->Add(fHistTrackpvsdEdx);
+    fOutputList->Add(fHistTrackpvsbeta);
+    fOutputList->Add(fHistTrackpt);
+    //Proton QA
+    fOutputList->Add(fHistProtonEtaPhiMC);
+    fOutputList->Add(fHistProtonChi2MC);
+    fOutputList->Add(fHistProtonTPCClusterMC);
+    fOutputList->Add(fHistProtonpvsNSigmaTPC);
+    fOutputList->Add(fHistProtonpvsNSigmaTPCMC);
+    fOutputList->Add(fHistProtonpvsNSigmaTOF);
+    fOutputList->Add(fHistProtonpvsNSigmaTOFMC);
+    fOutputList->Add(fHistProtonDCAxy);
+    fOutputList->Add(fHistProtonDCAz);
+    fOutputList->Add(fHistProtonDCAxyMC);
+    fOutputList->Add(fHistProtonDCAzMC);
+    fOutputList->Add(fHistProtonDCAxyMCSigma);
+    fOutputList->Add(fHistProtonDCAzMCSigma);
+    fOutputList->Add(fHistProtonDCAxyMCPrimSig);
+    fOutputList->Add(fHistProtonDCAzMCPrimSig);
+    fOutputList->Add(fHistProtonptMC);
+    fOutputList->Add(fHistProtonptwCutsMC);
+    fOutputList->Add(fHistProtonptwCuts);
+    //V0 QA
+    fOutputList->Add(fHistV0OnflyvsOffline);
+    fOutputList->Add(fHistV0DaughtEtaPhi);
+    fOutputList->Add(fHistV0DaughtEtaPhiMC);
+    fOutputList->Add(fHistV0DaughtChi2);
+    fOutputList->Add(fHistV0DaughtChi2MC);
+    fOutputList->Add(fHistV0DaughtTPCClust);
+    fOutputList->Add(fHistV0DaughtTPCClustMC);
+    fOutputList->Add(fHistV0DaughtpvsNSigmaTPC);
+    fOutputList->Add(fHistV0DaughtDCAtoPV);
+    fOutputList->Add(fHistV0DaughtDCAtoPVMC);
+    fOutputList->Add(fHistV0DaughtDCA);
+    fOutputList->Add(fHistV0DaughtDCAMC);
+    fOutputList->Add(fHistV0CPA);
+    fOutputList->Add(fHistV0CPAMC);
+    fOutputList->Add(fHistV0CPAMCSigma);
+    fOutputList->Add(fHistV0Radius);
+    fOutputList->Add(fHistV0RadiusMC);
+    fOutputList->Add(fHistV0Position2D);
+    fOutputList->Add(fHistV0Position2DMC);
+    fOutputList->Add(fHistV0PhotonDCAPV);    
+    fOutputList->Add(fHistV0PhotonDCAPVMC);
+    fOutputList->Add(fHistV0PhotonDCAPVMCSigma);
+    fOutputList->Add(fHistV0ArmPod);
+    fOutputList->Add(fHistV0ArmPodMC);
+    fOutputList->Add(fHistV0OpenAngle);
+    fOutputList->Add(fHistV0OpenAngleMC);
+    fOutputList->Add(fHistV0DeltaTheta);
+    fOutputList->Add(fHistV0DeltaThetaMC);
+    fOutputList->Add(fHistV0InvMass);
+    fOutputList->Add(fHistV0InvMassMC);
+    fOutputList->Add(fHistV0ptMC);
+    fOutputList->Add(fHistV0ptwCutsMC);
+    fOutputList->Add(fHistV0SigmaptMC); 
+  	fOutputList->Add(fHistV0SigmaptwCutsMC); 
+    fOutputList->Add(fHistV0ptwCuts);
+    //Additional Photon QA
+    fOutputList->Add(fHistPairDCAtoPV);
+    fOutputList->Add(fHistPairDCA);
+    fOutputList->Add(fHistPairDCAMC);
+    fOutputList->Add(fHistPairRadius);
+    fOutputList->Add(fHistPairRadiusMC);
+    fOutputList->Add(fHistPairPhotonDCAPV);
+    fOutputList->Add(fHistPairPhotonDCAPVMC);
+    fOutputList->Add(fHistPairPhotonDCAPVMCSigma);
+    fOutputList->Add(fHistPairCPA);
+    fOutputList->Add(fHistPairCPAMC);
+    fOutputList->Add(fHistPairCPAMCSigma);
+    fOutputList->Add(fHistPairArmPod);
+    fOutputList->Add(fHistPairArmPodMC);
+    fOutputList->Add(fHistPairOpenAngle);
+    fOutputList->Add(fHistPairOpenAngleMC);
+    fOutputList->Add(fHistPairDeltaTheta);
+    fOutputList->Add(fHistPairDeltaThetaMC);
+    fOutputList->Add(fHistPairInvMass);
+    fOutputList->Add(fHistPairInvMassMC);
+    fOutputList->Add(fHistPairptMC);
+    fOutputList->Add(fHistPairptwCutsMC);
+    fOutputList->Add(fHistPairptwCuts);
+    //Electron QA
+    fOutputList->Add(fHistElectronEtaPhiMC);
+    fOutputList->Add(fHistElectronChi2MC);
+    fOutputList->Add(fHistElectronTPCClusterMC);
+    fOutputList->Add(fHistElectronpvsNSigmaTPC);
+    fOutputList->Add(fHistElectronpvsNSigTPCwCuts);
+    fOutputList->Add(fHistElectronpvsNSigmaTPCMC);
+    fOutputList->Add(fHistElectronpvsNSigmaTOF);
+    fOutputList->Add(fHistElectronpvsNSigmaTOFMC);
+    fOutputList->Add(fHistElectronptMC);
+    fOutputList->Add(fHistElectronptwCutsMC);
+    fOutputList->Add(fHistElectronptwCuts);
+    //Gamma Gamma QA
+    fOutputList->Add(fHistGammaPairInvMass);
+    fOutputList->Add(fHistGammaPairInvMassMC);
+    fOutputList->Add(fHistGammaPairInvMassOnfly);
+    fOutputList->Add(fHistGammaPairInvMassMCOnfly);
+    fOutputList->Add(fHistGammaPairInvMassOneAdd);  
+    fOutputList->Add(fHistGammaPairInvMassOneAddMC);
+    fOutputList->Add(fHistGammaPairInvMassOnlyAdd); 
+    fOutputList->Add(fHistGammaPairInvMassOnlyAddMC);
+    fOutputList->Add(fHistGammaPairDCA);
+    fOutputList->Add(fHistGammaPairDCAMC);
     //MC Sigma Topology
     fOutputList->Add(fHistPi0VertexvsMC);     
-    fOutputList->Add(fHist3PartPi0VertexvsMC);
-    fOutputList->Add(fHistMCSigmaPA);         
-    fOutputList->Add(fHistMC4PartSigmaPA);    
+    fOutputList->Add(fHistMCSigmaPA);
+    fOutputList->Add(fHistSigmaPA);
+    fOutputList->Add(fHistInvSigmaMass);         
+    fOutputList->Add(fHistMCOneGammaSigmaPA);
     fOutputList->Add(fHistPi0VertexMC);
+    fOutputList->Add(fHistMCSigmaProtonkstar);
 
 /**************************************************************************/
     PostData(1, fOutputList);         
     PostData(2, fSigmaCandTree);         
-    PostData(3, f4PartSigmaCandTree);         
-    PostData(4, f3PartPi0CandTree);         
+    PostData(3, fSigmaCandTreeExtra);         
 
 }//end of UserCreateOutputObjects()
 
@@ -839,6 +1086,7 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
 
   //Number of Tracks
   nTracks = aodEvent->GetNumberOfTracks();      
+  FillHistogram("fHistTrackMultiplicity",nTracks);  
   if(nTracks==0) return; //No point in continuing if there are no tracks
 
   // Check primary vertex position
@@ -869,70 +1117,107 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   if(multSelection) Centrality = multSelection->GetMultiplicityPercentile("V0M");                                //..and retrieve centrality
   FillHistogram("fHistCentrality",Centrality);
 
-  FillHistogram("fHistMCCounter",1);  //Event Counter 
-  FillHistogram("fHistEventCounter",1);    //Event Counter 
+  FillHistogram("fHistMCCounter",1); //Event Counter 
+  FillHistogram("fHistEventCounter",1); //Event Counter 
+
+  //Fill V0 maps
+  fONMap.clear(); //clear the maps
+  fOFFMap.clear();
+  fV0ParticleIDArray.clear();
+
+  Int_t nV0 = aodEvent->GetNumberOfV0s(); //Number of V0s in the event
+  if(nV0 == 0) return;      //Return if there is no V0 to be processed
+
+  for (Int_t iV0=0; iV0<nV0; iV0++) {    //Loop over V0s in the event
+      
+    AliAODv0* aodV0 = (AliAODv0*)aodEvent->GetV0(iV0);  //Get V0 object
+    if(!aodV0) continue;
+
+    // Check basic V0 properties: 2 Daughters, opposite charge, total charge = 0
+    if(aodV0->GetNDaughters() != 2)                    continue;
+    if(aodV0->GetNProngs() != 2)                       continue;
+    if(aodV0->GetCharge() != 0)                        continue;
+    if(aodV0->ChargeProng(0) == aodV0->ChargeProng(1)) continue;
+
+    // Get daughter tracks      
+    AliAODTrack* trackN = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(0));
+    AliAODTrack* trackP = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(1));
+    if (trackN->GetSign() == trackP->GetSign()) continue;
+    if (trackN->Charge() > 0){ //Check correct charge 
+    trackN = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(1));
+    trackP = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(0));
+    }
+
+    if(aodV0->GetOnFlyStatus()){
+      //map convention: negative track first, positive track second
+      fONMap.insert(make_pair(make_pair(trackN->GetID(), trackP->GetID()), iV0));
+    }
+    else if(!aodV0->GetOnFlyStatus()){
+      //map convention: negative track first, positive track second
+      fOFFMap.insert(make_pair(make_pair(trackN->GetID(), trackP->GetID()), iV0));
+    }
+  }//End of V0 Loop. Finished preparing the maps
 
 /************************Start Event Processing**************************************/
-
-  Bool_t fDebug = kFALSE;
 
   if(fDebug) cout << "Start of Event\n";
 
   //Process Protons
   if(fDebug) cout << "Processing Protons\n";
-  FillProtonArray();
-
-  //Process Electrons
-  if(fDebug) cout << "Processing Electrons\n";
-  //FillElectronArray();
+  if(fProcessProtons) FillProtonArray();
 
   //Process MC Particles
   if(fDebug&&isMonteCarlo) cout << "Processing MC Particles\n";
-  //if(isMonteCarlo) ProcessMCParticles();
+  if(isMonteCarlo && fProcessMCParticles) ProcessMCParticles();
 
   //Process V0s
   if(fDebug) cout << "Processing V0s\n";
-  FillV0PhotonArray();
+  if(fProcessV0s) FillV0PhotonArray();
 
-  //Pair selected Electrons
-  if(fDebug) cout << "Pairing Electrons\n";
-  //PairElectrons();
+  //Find Additional Photons
+  if(fDebug) cout << "Searching for additional Photons\n";
+  if(fProcessAddPhoton) FindAddPhotons();
 
-  //Pair Photons and Electrons
-  if(fDebug) cout << "Pairing Photons and Electrons\n";
-  //PairPhotonandElectron();
+  //Process Electrons
+  if(fDebug) cout << "Processing Electrons\n";
+  if(fProcessElectrons) FillElectronArray(); 
 
   //Reconstruct Pi0 and Sigma+
   if(fDebug) cout << "Reconstructing Pi0s and Sigmas\n";
-  ReconstructParticles();
+  if(fProcessReco) ReconstructParticles();
 
-  //Reconstruct Pi0 from ee pairs
-  if(fDebug) cout << "Reconstructing Pi0s and Sigmas from Electrons\n";
-  //ReconstructParticlesfromee();
+  //Reconstruct Pi0 and Sigma+
+  if(fDebug) cout << "Reconstructing Pi0s and Sigmas. One offline Photon\n";
+  if(fProcessRecoOff) ReconstructParticlesOff();
+
+  //Reconstruct Pi0 and Sigma+
+  if(fDebug) cout << "Reconstructing Pi0s and Sigmas. Two offline Photons\n";
+  if(fProcessRecoOff2) ReconstructParticlesOff2();
+
+  //Reconstruct Sigma+
+  if(fDebug) cout << "Reconstructing Pi0s and Sigmas. Exotic decay channel\n";
+  if(fProcessOneGamma) ReconstructParticlesOneGamma();
 
   if(fDebug) cout << "End of Event\n";
 
 /************************End of Event Processing**************************************/
 
     PostData(1, fOutputList); // stream the analysis results of the current event to output manager        
-    PostData(2, fSigmaCandTree);         
-    PostData(3, f4PartSigmaCandTree);
-    PostData(4, f3PartPi0CandTree);         
+    PostData(2, fSigmaCandTree);
+    PostData(3, fSigmaCandTreeExtra);                  
     return;
 
 }//end of UserExec()
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSigmaPlus::FillProtonArray() const{
+void AliAnalysisTaskSigmaPlus::FillProtonArray() {
 
   Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
 
   //Clear Proton and Antiproton Arrays and reset counters
-  fProtonArray->clear();
-  fAntiProtonArray->clear();
+  fProtonArray.clear();
   Int_t countProton = 0;
-  Int_t countAntiProton = 0;
   //Save IDs of Tracks to avoid double counting
   std::vector<int> IDvector;
   IDvector.clear();
@@ -943,6 +1228,7 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() const{
     //Initialisation of local variables
     Bool_t isReallyProton = kFALSE; //From MC
     Bool_t isProtonfromSigma = kFALSE; //From MC
+    Bool_t isPrimarySigma = kFALSE; //From MC
 
     Bool_t   isTPCProton = kFALSE;
     Bool_t   isTOFProton = kFALSE;
@@ -953,6 +1239,10 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() const{
       continue;
     }
 
+    FillHistogram("fHistProtonStatistics",1);
+    FillHistogram("fHistProtonStatisticsMC",1);
+    FillHistogram("fHistProtonStatisticsSigmaMC",1);
+
     //Check for double counted Tracks if no filterbit is used
     Int_t nIDs = IDvector.size();
     Bool_t isdouble = kFALSE;
@@ -962,25 +1252,32 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() const{
     if(isdouble) continue;
     else IDvector.push_back(aodTrack->GetID());
 
-    //Acceptance Cut
-    if(TMath::Abs(aodTrack->Eta()) > fMaxProtEta) continue; 
+    FillHistogram("fHistProtonStatistics",2);
+    FillHistogram("fHistProtonStatisticsMC",2);
+    FillHistogram("fHistProtonStatisticsSigmaMC",2);
 
-    Double_t charge = aodTrack->Charge();
+    Double_t eta    = aodTrack->Eta();
+    Double_t phi    = aodTrack->Phi();
     Double_t dEdx   = aodTrack->GetTPCsignal();
     Double_t p      = aodTrack->GetTPCmomentum();
     Double_t pt     = aodTrack->Pt();
     Int_t    nTPCClustProt = aodTrack->GetTPCNcls();
+    Double_t chi2   = aodTrack->GetTPCchi2();
 
     const Double_t len = aodTrack->GetIntegratedLength();
     const Double_t tim = aodTrack->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(aodTrack->GetTPCmomentum());
     Double_t beta = -1;
     if(tim != 0.) beta = len / (tim * c);
 
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton))<fMaxNsigProtTPC) isTPCProton = kTRUE;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton))<fMaxNsigProtTOF) isTOFProton = kTRUE;
+    Double_t nSigmaTPCProt = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
+    Double_t nSigmaTOFProt = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton);
+
+    if(TMath::Abs(nSigmaTPCProt)<fMaxNsigProtTPC) isTPCProton = kTRUE;
+    if(TMath::Abs(nSigmaTOFProt)<fMaxNsigProtTOF) isTOFProton = kTRUE;
 
     Float_t  DCAxy = -999., DCAz = -999.;
     aodTrack->GetImpactParameters(DCAxy,DCAz);
+    DCAxy = TMath::Abs(DCAxy); DCAz = TMath::Abs(DCAz);
 
     //Check MC Truth
     if(isMonteCarlo){
@@ -991,173 +1288,104 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() const{
           if(mcPart->GetMother()!=-1){
             AliAODMCParticle* ProtonMotherPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mcPart->GetMother()));
             if(ProtonMotherPart){
-                if(ProtonMotherPart->GetPdgCode()==3222 || ProtonMotherPart->GetPdgCode()==-3222) isProtonfromSigma = kTRUE;
+              if(ProtonMotherPart->GetPdgCode()==3222 || ProtonMotherPart->GetPdgCode()==-3222){ 
+                isProtonfromSigma = kTRUE;
+                if(ProtonMotherPart->IsPrimary()||ProtonMotherPart->IsPhysicalPrimary()) isPrimarySigma = kTRUE;
+              }//Is really Sigma
             }//MC Mother exists
           }//Proton has Mother
         }//is Proton or Anti-Proton
       }//MC Particle exists
     }//MC treatment
 
+    //QA Histograms
+    FillHistogram("fHistTrackEtaPhi",eta,phi);
+    if(isReallyProton) FillHistogram("fHistProtonEtaPhiMC",eta,phi);
+
+    //Acceptance Cut
+    if(TMath::Abs(eta) > fMaxProtEta) continue; 
+
+    FillHistogram("fHistProtonStatistics",3);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",3);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",3);
+
+    //Topology
+    FillHistogram("fHistProtonDCAxy",DCAxy);
+    FillHistogram("fHistProtonDCAz",DCAz);
+
+    //Track Quality
+    FillHistogram("fHistTrackChi2",chi2);
+    FillHistogram("fHistTrackTPCCluster",nTPCClustProt);
+    FillHistogram("fHistTrackpvsdEdx",p,dEdx);
+    FillHistogram("fHistTrackpvsbeta",p,beta);
+    FillHistogram("fHistTrackpt",pt);
+
+    //Proton PID
+    FillHistogram("fHistProtonpvsNSigmaTPC",p,nSigmaTPCProt);
+    FillHistogram("fHistProtonpvsNSigmaTOF",p,nSigmaTOFProt);
+
+    //MC Histograms
     if(isReallyProton){
-        FillHistogram("fHistRealProtonPt",pt);  
-        FillHistogram("fHistRealProtonDCAxy",DCAxy);   
-        FillHistogram("fHistRealProtonDCAz",DCAz);    
-    }
-    if(isProtonfromSigma){
-        FillHistogram("fHistProtonfromSigmaPt",pt);  
-        FillHistogram("fHistProtonfromSigDCAxy",DCAxy);   
-        FillHistogram("fHistProtonfromSigDCAz",DCAz);    
+      FillHistogram("fHistProtonChi2MC",chi2);
+      FillHistogram("fHistProtonDCAxyMC",DCAxy);
+      FillHistogram("fHistProtonDCAzMC",DCAz);
+      FillHistogram("fHistProtonTPCClusterMC",nTPCClustProt);
+      FillHistogram("fHistProtonpvsNSigmaTPCMC",p,nSigmaTPCProt);
+      FillHistogram("fHistProtonpvsNSigmaTOFMC",p,nSigmaTOFProt);
+      FillHistogram("fHistProtonptMC",pt);
     }
 
-    // Check Track Quality Histograms
-    FillHistogram("fHistNClusterProt",nTPCClustProt);
+    if(isProtonfromSigma){
+      FillHistogram("fHistProtonDCAxyMCSigma",DCAxy);
+      FillHistogram("fHistProtonDCAzMCSigma",DCAz);
+    }
+
+    if(isPrimarySigma){
+      FillHistogram("fHistProtonDCAxyMCPrimSig",DCAxy);
+      FillHistogram("fHistProtonDCAzMCPrimSig",DCAz);
+    }
+
+    // Cluster Cut
     if(nTPCClustProt<fMinTPCClustProt) continue;
 
-    // Filling PID Histograms
-    FillHistogram("fHistPvsBeta",p,beta);        
-    FillHistogram("fHistPvsdEdx",p,dEdx);        
+    FillHistogram("fHistProtonStatistics",4);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",4);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",4);
 
-    // Proton PID Cut
+    // TPC PID Cut
     if(!isTPCProton) continue;
+
+    FillHistogram("fHistProtonStatistics",5);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",5);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",5);
+
+    // TOF PID Cut
     if(p > fMaxpOnlyTPCPID && !isTOFProton) continue;
 
-    // Filling PID Histograms after PID Cut
-    FillHistogram("fHistPvsBetaBothCuts",p,beta);
-    FillHistogram("fHistPvsdEdxBothCuts",p,dEdx);
+    FillHistogram("fHistProtonStatistics",6);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",6);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",6);
 
-    FillHistogram("fHistSelectProtonPt",pt);           
-    if(isReallyProton) FillHistogram("fHistRealSelectProtonPt",pt);  
-
-    if(isProtonfromSigma) FillHistogram("fHistSelectProtfromSigPt",pt);  
-
-    // Proton Kinematic Cut
+    //Histograms for Purity and Efficiency Calcultation
+    if(isReallyProton) FillHistogram("fHistProtonptwCutsMC",pt);
+    FillHistogram("fHistProtonptwCuts",pt);
+    
+    // Kinematic Cut
     if(pt < fMinProtpt || pt > fMaxProtpt) continue;
 
+    FillHistogram("fHistProtonStatistics",7);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",7);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",7);
+
     // Store (Anti-)Proton candidates after selection
-    if(charge > 0.) { // Protons
-      fProtonArray->push_back(iTrack);
-      countProton++;
-    }// End of Charge > 0
-    else if(charge < 0.) { // Anti-Protons
-      fAntiProtonArray->push_back(iTrack);
-      countAntiProton++;
-    } // End of Charge < 0
+    fProtonArray.push_back(iTrack);
+    countProton++;
 
   } // End of proton track loop
 
 return;
 
 }//End of FillProtonArray  
-
-//_____________________________________________________________________________
-
-void AliAnalysisTaskSigmaPlus::FillElectronArray() const{
-
-  Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
-
-  //Clear Proton and Antiproton Arrays and reset counters
-  fElectronArray->clear();
-  fPositronArray->clear();
-  Int_t countElectrons = 0;
-  Int_t countPositrons = 0;
-
-  //Save IDs of Tracks to avoid double counting
-  std::vector<int> IDvector;
-  IDvector.clear();
-
-  //Loop for Proton Selection
-  for(Int_t iTrack=0; iTrack < nTracks; iTrack++) {
-  
-    //Initialisation of local Bools
-    Bool_t isTPCElectron = kFALSE;
-    Bool_t isTPCMuon     = kFALSE;
-    Bool_t isTPCPion     = kFALSE;
-    Bool_t isTPCKaon     = kFALSE;
-    Bool_t isTPCProton   = kFALSE;
-    Bool_t isTOFElectron = kFALSE;
-    Bool_t isGoodTPCElectron = kFALSE;
-    Bool_t isGoodTOFElectron = kFALSE;
-    Bool_t isReallyElectron = kFALSE;
-        
-    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
-    if(!aodTrack) {
-      AliWarning("No AOD Track!");
-      continue;
-    }
-
-    if(TMath::Abs(aodTrack->Eta()) > fMaxElecEta) continue; // Acceptance Cut
-
-    //Check MC Truth
-    if(isMonteCarlo){
-      AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
-      if(mcPart){
-        if(mcPart->GetPdgCode()==11 || mcPart->GetPdgCode()==-11){isReallyElectron = kTRUE; FillHistogram("fHistRecoElectronPt",aodTrack->Pt());}
-      }//MC Particle exists
-    }//MC treatment
-
-    // Track Quality Check
-    FillHistogram("fHistNClusterElec",TMath::Abs(aodTrack->GetTPCNcls()));
-    if(TMath::Abs(aodTrack->GetTPCNcls()) < fMinTPCClustElec) continue;
-
-    //Check for double counted Tracks if no filterbit is used
-    Int_t nIDs = IDvector.size();
-    Bool_t isdouble = kFALSE;
-    for(Int_t iID = 0; iID<nIDs; iID++){
-      if(aodTrack->GetID()==IDvector[iID]) isdouble = kTRUE; 
-    }
-    if(isdouble) continue;
-    else IDvector.push_back(aodTrack->GetID());
-
-    Double_t charge = aodTrack->Charge();
-    Double_t p      = aodTrack->GetTPCmomentum();
-    Double_t pt     = aodTrack->GetTPCmomentum();
-    
-    Double_t nSigmaTPCelectron = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kElectron);
-    Double_t nSigmaTOFelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kElectron));
-    Double_t nSigmaTPCmuon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kMuon));
-    Double_t nSigmaTPCpion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion));
-    Double_t nSigmaTPCkaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon));
-    Double_t nSigmaTPCproton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton));
-
-    //Electron PID
-    if(TMath::Abs(nSigmaTPCelectron)<fMaxNsigElecTPC) isTPCElectron = kTRUE;
-    if(TMath::Abs(nSigmaTOFelectron)<fMaxNsigElecTOF) isTOFElectron = kTRUE;
-
-    //Hadron + Muon Rejection
-    //if(nSigmaTPCmuon<fNsigHadronreject) isTPCMuon = kTRUE; //was -1.75 .. 1
-    if(nSigmaTPCpion<fNsigHadronreject) isTPCPion = kTRUE;   //was -2.5 .. 4
-    //if(nSigmaTPCkaon<fNsigHadronreject) isTPCKaon = kTRUE;   //was -2.25 .. 3
-    //if(nSigmaTPCproton<fNsigHadronreject) isTPCProton = kTRUE;   //was -2.25 .. 3.5
-
-    if(isTPCElectron&&!isTPCPion&&!isTPCKaon&&!isTPCProton) isGoodTPCElectron = kTRUE; 
-    if(isTOFElectron&&isTPCElectron&&!isTPCPion) isGoodTOFElectron = kTRUE; 
-
-    // Filling TPC N Sigma Histograms
-    FillHistogram("fHistElecNsigTPCall",p,nSigmaTPCelectron);
-    if(isGoodTPCElectron) FillHistogram("fHistElecNsigTPCTPCsamp",p,nSigmaTPCelectron);        
-    if(isGoodTOFElectron) FillHistogram("fHistElecNsigTPCTOFsamp",p,nSigmaTPCelectron);
-    if(isGoodTPCElectron||isGoodTOFElectron) FillHistogram("fHistElecNsigTPCcomb",p,nSigmaTPCelectron);
-
-    // Electron PID
-    if(!isGoodTPCElectron&&!isGoodTOFElectron) continue;
-
-    // Store Electron and Positron candidates after selection
-    if(charge < 0.) { // Electrons
-      fElectronArray->push_back(iTrack);
-      FillHistogram("fHistMCCounter",26);
-      countElectrons++;
-    }// End of Charge > 0
-    else if(charge > 0.) { // Positrons
-      fPositronArray->push_back(iTrack);
-      countPositrons++;
-      FillHistogram("fHistMCCounter",27);
-    } // End of Charge < 0
-
-  } // End of electron track loop
-
-return;
-
-}//End of FillElectronArray()
 
 //_____________________________________________________________________________
 
@@ -1183,73 +1411,159 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
     Int_t MCPartPDGCode = mcPart->PdgCode(); 
 
     //MC Particle Counter: Protons, Deltas, Sigma, Pi0, etc.
-    if(MCPartPDGCode == 2212) {FillHistogram("fHistMCCounter",2);}
-    if(MCPartPDGCode == -2212){FillHistogram("fHistMCCounter",3);}
-    if(MCPartPDGCode == 2214) {FillHistogram("fHistMCCounter",4);}
-    if(MCPartPDGCode == -2214){FillHistogram("fHistMCCounter",5);}
-    if(MCPartPDGCode == 3222) {FillHistogram("fHistMCCounter",6);
-    FillHistogram("fHistMCSigmaPt",mcPart->Pt()); 
+    FillHistogram("fHistMCCounter",2); //All Particles
+    
+    if(MCPartPDGCode == 2212)  {FillHistogram("fHistMCCounter",3); 
+      FillHistogram("fHistMCProtonPt",mcPart->Pt()); 
+      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimProtonPt",mcPart->Pt());}
     }
-    if(MCPartPDGCode == -3222){FillHistogram("fHistMCCounter",7);
-    FillHistogram("fHistMCSigmaPt",mcPart->Pt());       
-    }
-    if(MCPartPDGCode == 111)  {FillHistogram("fHistMCCounter",8);}
-    if(MCPartPDGCode == 11)  {FillHistogram("fHistMCCounter",24);
-    FillHistogram("fHistMCElectronPt",mcPart->Pt()); 
-    }
-    if(MCPartPDGCode == -11)  {FillHistogram("fHistMCCounter",25);
-    FillHistogram("fHistMCElectronPt",mcPart->Pt()); 
+    if(MCPartPDGCode == -2212) {FillHistogram("fHistMCCounter",4); 
+      FillHistogram("fHistMCAntiProtonPt",mcPart->Pt()); 
+      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimAntiProtonPt",mcPart->Pt());}
     }
 
-    if(MCPartPDGCode == 22){ //Photons
+    if(MCPartPDGCode == 2214)  {FillHistogram("fHistMCCounter",5); FillHistogram("fHistMCDeltaPt",mcPart->Pt());}
+    if(MCPartPDGCode == -2214) {FillHistogram("fHistMCCounter",6); FillHistogram("fHistMCAntiDeltaPt",mcPart->Pt());}
+    
+    if(MCPartPDGCode == 3222) {FillHistogram("fHistMCCounter",7); 
+      FillHistogram("fHistSigmaMotherPart",1);
+      FillHistogram("fHistMCSigmaPt",mcPart->Pt()); 
+      FillHistogram("fHistMCSigmaOrigin",TMath::Sqrt(mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv())); 
+      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimSigmaPt",mcPart->Pt()); FillHistogram("fHistSigmaMotherPart",2); continue;}
+    
+      AliAODMCParticle* SigmaMother = NULL;
+      Int_t SigmaMotherPdg = 0;
+      if(mcPart->GetMother()!=-1) SigmaMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
+      if(SigmaMother) SigmaMotherPdg = SigmaMother->GetPdgCode();
 
-      FillHistogram("fHistMCCounter",9);
+      if(SigmaMotherPdg==0) continue;
 
-      Bool_t isfromPi0 = kFALSE, isfromSigma = kFALSE;
-      Double_t Sigmapt = -1;
-      AliAODMCParticle* PhotonMother = NULL;
-      if(mcPart->GetMother()!=-1) PhotonMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
-      if(PhotonMother){
-        if(PhotonMother->GetPdgCode()==111){
-          FillHistogram("fHistMCCounter",10);
-          isfromPi0 = kTRUE;
-          AliAODMCParticle* Pi0Mother = NULL;
-          if(mcPart->GetMother()!=-1) Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(PhotonMother->GetMother())));
-          if(Pi0Mother){
-            if(TMath::Abs(Pi0Mother->GetPdgCode())==3222){isfromSigma = kTRUE; FillHistogram("fHistMCCounter",11); Sigmapt=Pi0Mother->Pt(); FillHistogram("fHistSigmaptvspi0pt",Sigmapt,PhotonMother->Pt());}
-          }
+      if(SigmaMotherPdg==130) FillHistogram("fHistSigmaMotherPart",3);
+      else if(SigmaMotherPdg==310) FillHistogram("fHistSigmaMotherPart",4);
+      else if(SigmaMotherPdg==311) FillHistogram("fHistSigmaMotherPart",5);
+      else if(SigmaMotherPdg==-311) FillHistogram("fHistSigmaMotherPart",6);
+      else if(SigmaMotherPdg==-321) FillHistogram("fHistSigmaMotherPart",7);
+      else if(SigmaMotherPdg==321) FillHistogram("fHistSigmaMotherPart",8);
+      else if(SigmaMotherPdg==-211) FillHistogram("fHistSigmaMotherPart",9);
+      else if(SigmaMotherPdg==211) FillHistogram("fHistSigmaMotherPart",10);
+      else if(SigmaMotherPdg==2112) FillHistogram("fHistSigmaMotherPart",11);
+      else if(SigmaMotherPdg==-2112) FillHistogram("fHistSigmaMotherPart",12);
+      else if(SigmaMotherPdg==2212) FillHistogram("fHistSigmaMotherPart",13);
+      else if(SigmaMotherPdg==-2212) FillHistogram("fHistSigmaMotherPart",14);
+      else if(SigmaMotherPdg==3122) FillHistogram("fHistSigmaMotherPart",15);
+      else if(SigmaMotherPdg==-3122) FillHistogram("fHistSigmaMotherPart",16);
+      else if(SigmaMotherPdg==3222) FillHistogram("fHistSigmaMotherPart",17);
+      else if(SigmaMotherPdg==3112) FillHistogram("fHistSigmaMotherPart",18);
+      else if(SigmaMotherPdg==-3222) FillHistogram("fHistSigmaMotherPart",19);
+      else if(SigmaMotherPdg==-3112) FillHistogram("fHistSigmaMotherPart",20);
+      else if(SigmaMotherPdg==3322) FillHistogram("fHistSigmaMotherPart",21);
+      else if(SigmaMotherPdg==-3322) FillHistogram("fHistSigmaMotherPart",22);
+      else if(SigmaMotherPdg==3312) FillHistogram("fHistSigmaMotherPart",23);
+      else if(SigmaMotherPdg==-3312) FillHistogram("fHistSigmaMotherPart",24);
+      else FillHistogram("fHistSigmaMotherPart",25);
+    
+    } //End of SigmaPlus treatment
+    
+    if(MCPartPDGCode == -3222) {FillHistogram("fHistMCCounter",8); 
+      FillHistogram("fHistAntiSigmaMotherPart",1); 
+      FillHistogram("fHistMCAntiSigmaPt",mcPart->Pt()); 
+      FillHistogram("fHistMCAntiSigmaOrigin",TMath::Sqrt(mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv()));       
+      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimAntiSigmaPt",mcPart->Pt()); FillHistogram("fHistAntiSigmaMotherPart",2); continue;}
+
+      AliAODMCParticle* SigmaMother = NULL;
+      Int_t SigmaMotherPdg = 0;
+      if(mcPart->GetMother()!=-1) SigmaMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
+      if(SigmaMother) SigmaMotherPdg = SigmaMother->GetPdgCode();
+
+      if(SigmaMotherPdg==0) continue;
+
+      if(SigmaMotherPdg==130) FillHistogram("fHistAntiSigmaMotherPart",3);
+      else if(SigmaMotherPdg==310) FillHistogram("fHistAntiSigmaMotherPart",4);
+      else if(SigmaMotherPdg==311) FillHistogram("fHistAntiSigmaMotherPart",5);
+      else if(SigmaMotherPdg==-311) FillHistogram("fHistAntiSigmaMotherPart",6);
+      else if(SigmaMotherPdg==-321) FillHistogram("fHistAntiSigmaMotherPart",7);
+      else if(SigmaMotherPdg==321) FillHistogram("fHistAntiSigmaMotherPart",8);
+      else if(SigmaMotherPdg==-211) FillHistogram("fHistAntiSigmaMotherPart",9);
+      else if(SigmaMotherPdg==211) FillHistogram("fHistAntiSigmaMotherPart",10);
+      else if(SigmaMotherPdg==2112) FillHistogram("fHistAntiSigmaMotherPart",11);
+      else if(SigmaMotherPdg==-2112) FillHistogram("fHistAntiSigmaMotherPart",12);
+      else if(SigmaMotherPdg==2212) FillHistogram("fHistAntiSigmaMotherPart",13);
+      else if(SigmaMotherPdg==-2212) FillHistogram("fHistAntiSigmaMotherPart",14);
+      else if(SigmaMotherPdg==3122) FillHistogram("fHistAntiSigmaMotherPart",15);
+      else if(SigmaMotherPdg==-3122) FillHistogram("fHistAntiSigmaMotherPart",16);
+      else if(SigmaMotherPdg==3222) FillHistogram("fHistAntiSigmaMotherPart",17);
+      else if(SigmaMotherPdg==3112) FillHistogram("fHistAntiSigmaMotherPart",18);
+      else if(SigmaMotherPdg==-3222) FillHistogram("fHistAntiSigmaMotherPart",19);
+      else if(SigmaMotherPdg==-3112) FillHistogram("fHistAntiSigmaMotherPart",20);
+      else if(SigmaMotherPdg==3322) FillHistogram("fHistAntiSigmaMotherPart",21);
+      else if(SigmaMotherPdg==-3322) FillHistogram("fHistAntiSigmaMotherPart",22);
+      else if(SigmaMotherPdg==3312) FillHistogram("fHistAntiSigmaMotherPart",23);
+      else if(SigmaMotherPdg==-3312) FillHistogram("fHistAntiSigmaMotherPart",24);
+      else FillHistogram("fHistAntiSigmaMotherPart",25);
+
+    } //End of AntiSigmaMinus treatment
+
+    if(MCPartPDGCode == 111)   {FillHistogram("fHistMCCounter",9); FillHistogram("fHistMCPi0Pt",mcPart->Pt());
+      AliAODMCParticle* Pi0Mother = NULL;
+      if(mcPart->GetMother()!=-1) Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
+      if(Pi0Mother){
+        if(TMath::Abs(Pi0Mother->GetPdgCode())==3222){FillHistogram("fHistMCCounter",10);}
+      }
+    } //End of MCPartPDGCode == 111
+    if(MCPartPDGCode == 22)    {
+      
+      FillHistogram("fHistMCCounter",11);
+      FillHistogram("fHistMCPhotonPt",mcPart->Pt());
+
+      AliAODMCParticle* Pi0Part = NULL;
+      AliAODMCParticle* SigmaPart = NULL;
+      Bool_t isgammafrompi0 = kFALSE;
+      Bool_t isgammafromSigma = kFALSE;
+      Bool_t isgammadirectlyfromSigma = kFALSE;
+
+      if(mcPart->GetMother()!=-1){
+        Pi0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
+      }
+      if(Pi0Part){
+        if(TMath::Abs(Pi0Part->GetPdgCode())==3222){isgammadirectlyfromSigma = kTRUE; FillHistogram("fHistMCCounter",14);}
+        if(Pi0Part->GetPdgCode()==111){isgammafrompi0 = kTRUE; FillHistogram("fHistMCCounter",13);}
+        if(Pi0Part->GetPdgCode()==111&&Pi0Part->GetMother()!=-1) SigmaPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
+      }
+      if(SigmaPart){
+        if(TMath::Abs(SigmaPart->GetPdgCode())==3222){
+          FillHistogram("fHistMCSigmaPhotonPt",mcPart->Pt());
+          FillHistogram("fHistMCCounter",15);
+          isgammafromSigma = kTRUE;
         }
       }
 
-      FillHistogram("fHistMCPhotonPt",mcPart->Pt()); 
-      if(isfromSigma) FillHistogram("fHistMCSigmaPhotonPt",mcPart->Pt());
-
-      if(mcPart->GetNDaughters()!=2) continue;  //Check if Photon has 2 Daughters (i.e. if it was converted to e+ e-)
-                    
+      if(mcPart->GetNDaughters()!=2) continue;  //Check if Photon has 2 Daughters (i.e. if it was converted to e+ e-)                    
       AliAODMCParticle* FirstDaughtParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetDaughterFirst())));
       AliAODMCParticle* LastDaughtParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetDaughterLast())));
       if(!FirstDaughtParticle || !LastDaughtParticle) continue;
 
       //Check if Photon Daughters are e+ and e-
-      if(FirstDaughtParticle->GetPdgCode()!=11 && FirstDaughtParticle->GetPdgCode()!=-11) continue; 
-      if(LastDaughtParticle->GetPdgCode()!=11 && LastDaughtParticle->GetPdgCode()!=-11) continue;      
+      if(TMath::Abs(FirstDaughtParticle->GetPdgCode())!=11) continue; 
+      if(TMath::Abs(LastDaughtParticle->GetPdgCode())!=11) continue; 
         
       //Check conversion vertex (aka production vertex of e+/e-)
       TVector3 prdvtx1(FirstDaughtParticle->Xv(),FirstDaughtParticle->Yv(),FirstDaughtParticle->Zv());   
       TVector3 prdvtx2(FirstDaughtParticle->Xv(),FirstDaughtParticle->Yv(),FirstDaughtParticle->Zv());   
       TVector3 prdvtx=prdvtx1+prdvtx2; prdvtx*=0.5;
-      FillHistogram("fHistConvRadius",prdvtx.Perp());
-      FillHistogram("fHistpVsMCConvRadius",prdvtx.Perp(),mcPart->P());
-      if(prdvtx.Perp()<180){
-        FillHistogram("fHistMCCounter",12);
-        if(isfromPi0) FillHistogram("fHistMCCounter",13);
-        if(isfromSigma){ FillHistogram("fHistMCCounter",14);
-        FillHistogram("fHistSigmaptvsept",Sigmapt,FirstDaughtParticle->Pt());
-        FillHistogram("fHistSigmaptvsept",Sigmapt,LastDaughtParticle->Pt());
-        }
+
+      FillHistogram("fHistMCConvRadius",prdvtx.Perp());
+      FillHistogram("fHistMCConvRadiusvspt",prdvtx.Perp(),mcPart->Pt());
+      
+      if(prdvtx.Perp()<180){ 
+        FillHistogram("fHistMCCounter",12); FillHistogram("fHistMCConvPhotonPt",mcPart->Pt());
+        if(isgammafromSigma) FillHistogram("fHistMCSigmaConvPhotonPt",mcPart->Pt());
+        if(isgammafrompi0) FillHistogram("fHistMCCounter",16);
+        if(isgammadirectlyfromSigma) FillHistogram("fHistMCCounter",17);
+        if(isgammafromSigma) FillHistogram("fHistMCCounter",18);
       }
-                
-    } // End of Photon treatment
+
+    } //End of MCPartPDGCode == 22
+
   } //End of MC Particle loop 
 
 return;
@@ -1258,20 +1572,18 @@ return;
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
+void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() {
 
   Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
 
   //Clear V0 Photon Array and reset counter
-  fConvPhotonArray->clear();
+  fConvPhotonArray.clear();
   Int_t countPhotons = 0;
-  std::vector<int> EraseArray;
-  EraseArray.clear();
-
-  Int_t OnflyGamma=0, OfflineGamma=0;
 
   Int_t nV0 = aodEvent->GetNumberOfV0s(); //Number of V0s in the event
   if(nV0 == 0) return;      //Return if there is no V0 to be processed
+
+  Int_t non = 0, noff = 0;
 
   for (Int_t iV0=0; iV0<nV0; iV0++) {    //Loop over V0s in the event
 
@@ -1304,9 +1616,6 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
     if(aodV0->GetCharge() != 0)                        continue;
     if(aodV0->ChargeProng(0) == aodV0->ChargeProng(1)) continue;
 
-    FillHistogram("fHistMCCounter",15); //V0 Counter
-    if(aodV0->GetOnFlyStatus()) FillHistogram("fHistMCCounter",16); //Count on-fly V0
-
     // Get daughter tracks      
     AliAODTrack* trackN = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(0));
     AliAODTrack* trackP = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(1));
@@ -1321,8 +1630,28 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
       continue;
     }
 
-    if(TMath::Abs(trackN->Eta()) > fMaxDaughtEta) continue; // Acceptance Cut
-    if(TMath::Abs(trackP->Eta()) > fMaxDaughtEta) continue;
+    //If V0 is not On-fly, check the map if there is an equivalent On-fly V0
+    if(!aodV0->GetOnFlyStatus()){ 
+      noff++;
+      FillHistogram("fHistV0Statistics",2);
+      FillHistogram("fHistV0StatisticsMC",2);
+      FillHistogram("fHistV0StatisticsSigmaMC",2);
+      map<pair<int,int>, int>::iterator iter = fONMap.find(make_pair(trackN->GetID(),trackP->GetID()));      
+      if(iter != fONMap.end()){
+        Int_t lEquivalentONV0 = (*iter).second; // or iter->second;
+        AliAODv0 *v0_on = aodEvent->GetV0(lEquivalentONV0);
+        if(v0_on) continue;  //No further processing if On-fly V0 exists!
+      }
+      FillHistogram("fHistV0Statistics",3);
+      FillHistogram("fHistV0StatisticsMC",3);
+      FillHistogram("fHistV0StatisticsSigmaMC",3);    
+    }
+    else{
+      non++; 
+      FillHistogram("fHistV0Statistics",1);
+      FillHistogram("fHistV0StatisticsMC",1);
+      FillHistogram("fHistV0StatisticsSigmaMC",1);
+    }
 
     // Check track quality
     Int_t nTPCClustNeg = trackN->GetTPCNcls();
@@ -1346,6 +1675,12 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
     vtxPosV0[2]=aodV0->DecayVertexV0Z();
     Double_t Vtxradius=TMath::Sqrt(vtxPosV0[0]*vtxPosV0[0]+vtxPosV0[1]*vtxPosV0[1]);
 
+    //Calculating DCA of Photon to PV 
+    TVector3 PV(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);                            //Prim. Vertex
+    TVector3 CV(aodV0->DecayVertexV0X(),aodV0->DecayVertexV0Y(),aodV0->DecayVertexV0Z()); //Conv. Vertex
+    TVector3 p(aodV0->Px(),aodV0->Py(),aodV0->Pz());                   //Momentum vectors of the photons
+    Double_t DCAPV = (p.Cross((CV-PV))).Mag()/p.Mag();                        //DCA to PV of Photons
+
     //Get reconstructed cartesian momentum
     vecN.SetXYZ(aodV0->MomNegX(),aodV0->MomNegY(),aodV0->MomNegZ()); //negative daughter
     vecP.SetXYZ(aodV0->MomPosX(),aodV0->MomPosY(),aodV0->MomPosZ()); //positive daughter 
@@ -1353,15 +1688,10 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
 
     // Get kinematic values
     Double_t ptV0   = aodV0->Pt();
-    Double_t ptPos  = trackP->Pt();
-    Double_t ptNeg  = trackN->Pt();
-    Double_t pV0    = aodV0->P();
     Double_t pPos   = trackP->P();
     Double_t pNeg   = trackN->P();
     Double_t thetaPos = trackP->Theta();
     Double_t thetaNeg = trackN->Theta();
-    Double_t dEdxP = trackP->GetTPCsignal();
-    Double_t dEdxN = trackN->GetTPCsignal();
     Double_t alpha=aodV0->AlphaV0();
     Double_t qt=aodV0->PtArmV0();
     Double_t totangle=aodV0->OpenAngleV0();
@@ -1381,7 +1711,9 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
                   
             AliAODMCParticle* V0Mother = NULL;
             if(V0Part->GetMother()!=-1) V0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
-            if(V0Mother){if(V0Mother->GetPdgCode()==111){
+            if(V0Mother){
+              if(TMath::Abs(V0Mother->GetPdgCode())==3222) FillHistogram("fHistSigmaCounter",5);
+              if(V0Mother->GetPdgCode()==111){
                       
               AliAODMCParticle* Pi0Mother = NULL;
               if(V0Mother->GetMother()!=-1) Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Mother->GetMother())));
@@ -1392,7 +1724,7 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
         }//Both Tracks have a common Mother
       }//Both Tracks have matched MC Particle
     }//End of isMonteCarlo
-  
+
     //***************End of AOD V0 MC treatment************************//
 
     // Reconstruct photon with TLorentzVector
@@ -1406,135 +1738,144 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
     // Angle calculation
     Double_t deltatheta = thetaPos - thetaNeg;
 
-    //Filling MC Counter
-    if(isReallyPhoton) FillHistogram("fHistMCCounter",17);
-    if(isPhotonfromSigma) FillHistogram("fHistMCCounter",18);
+    FillHistogram("fHistV0DaughtEtaPhi",trackN->Eta(),trackN->Phi());
+    FillHistogram("fHistV0DaughtEtaPhi",trackP->Eta(),trackP->Phi());
+    if(isReallyPhoton) FillHistogram("fHistV0DaughtEtaPhiMC",trackN->Eta(),trackN->Phi());
+    if(isReallyPhoton) FillHistogram("fHistV0DaughtEtaPhiMC",trackP->Eta(),trackP->Phi());
 
-    //Filling kinematic Histograms
-    if(isReallyPhoton) FillHistogram("fHistRealPhotonPt",ptV0);
-    FillHistogram("fHistV0DaughtPt",ptPos);
-    FillHistogram("fHistV0DaughtPt",ptNeg);
+    // Acceptance Cut
+    if(TMath::Abs(trackN->Eta()) > fMaxDaughtEta) continue; 
+    if(TMath::Abs(trackP->Eta()) > fMaxDaughtEta) continue;
 
-    //Filling topological Histograms
-    FillHistogram("fHistCosPA",cosPointAngle);              
-    FillHistogram("fHistDCAV0Daught",dcaV0Daughters);        
-    FillHistogram("fHistDCADaughPV",dcaPosToPrimVtx);     
-    FillHistogram("fHistDCADaughPV",dcaNegToPrimVtx);     
-    FillHistogram("fHistVertexPos",vtxPosV0[0],vtxPosV0[1]);
-    FillHistogram("fHistTransverseRadius",Vtxradius);
-    FillHistogram("fHistdeltatheta",deltatheta);        
-    FillHistogram("fHisttotangle",totangle);
+    FillHistogram("fHistV0Statistics",4);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",4);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",4);
 
-    if(isReallyPhoton) FillHistogram("fHistMCPhotondeltatheta",deltatheta);  
-    if(isReallyPhoton) FillHistogram("fHistMCPhotontotangle",totangle);
-    if(isPhotonfromSigma) FillHistogram("fHistCosPASigma",cosPointAngle);   
+    // Fill QA Histograms
+    FillHistogram("fHistV0DaughtChi2",trackN->GetTPCchi2());
+    FillHistogram("fHistV0DaughtChi2",trackP->GetTPCchi2());
+    FillHistogram("fHistV0DaughtTPCClust",nTPCClustPos);
+    FillHistogram("fHistV0DaughtTPCClust",nTPCClustNeg);
+    FillHistogram("fHistV0DaughtpvsNSigmaTPC",pNeg,nSigmaTPCelectron);
+    FillHistogram("fHistV0DaughtpvsNSigmaTPC",pPos,nSigmaTPCpositron);
+    FillHistogram("fHistV0DaughtDCAtoPV",dcaPosToPrimVtx);
+    FillHistogram("fHistV0DaughtDCAtoPV",dcaNegToPrimVtx);
+    FillHistogram("fHistV0DaughtDCA",dcaV0Daughters);
+    FillHistogram("fHistV0CPA",cosPointAngle);
+    FillHistogram("fHistV0Radius",Vtxradius);
+    FillHistogram("fHistV0Position2D",vtxPosV0[0],vtxPosV0[1]);
+    FillHistogram("fHistV0PhotonDCAPV",DCAPV);
+    FillHistogram("fHistV0ArmPod",alpha,qt);
+    FillHistogram("fHistV0OpenAngle",totangle);
+    FillHistogram("fHistV0DeltaTheta",deltatheta);
+    FillHistogram("fHistV0InvMass",photonmass);
+
+    if(isReallyPhoton){
+      FillHistogram("fHistV0DaughtChi2MC",trackN->GetTPCchi2());
+      FillHistogram("fHistV0DaughtChi2MC",trackP->GetTPCchi2());
+      FillHistogram("fHistV0DaughtDCAtoPVMC",dcaPosToPrimVtx);
+      FillHistogram("fHistV0DaughtDCAtoPVMC",dcaNegToPrimVtx);
+      FillHistogram("fHistV0DaughtTPCClustMC",nTPCClustPos);
+      FillHistogram("fHistV0DaughtTPCClustMC",nTPCClustNeg);
+      FillHistogram("fHistV0DaughtDCAMC",dcaV0Daughters);
+      FillHistogram("fHistV0CPAMC",cosPointAngle);
+      FillHistogram("fHistV0RadiusMC",Vtxradius);
+      FillHistogram("fHistV0Position2DMC",vtxPosV0[0],vtxPosV0[1]);
+      FillHistogram("fHistV0PhotonDCAPVMC",DCAPV);
+      FillHistogram("fHistV0ArmPodMC",alpha,qt);
+      FillHistogram("fHistV0OpenAngleMC",totangle);
+      FillHistogram("fHistV0DeltaThetaMC",deltatheta);
+      FillHistogram("fHistV0InvMassMC",photonmass);
+      FillHistogram("fHistV0ptMC",ptV0);
+    }
+
+    if(isPhotonfromSigma){
+      FillHistogram("fHistV0CPAMCSigma",cosPointAngle);
+      FillHistogram("fHistV0SigmaptMC",ptV0);
+      FillHistogram("fHistV0PhotonDCAPVMCSigma",DCAPV);
+    }
 
     // Check Track quality and reject poor qualty tracks
-    FillHistogram("fHistNClusterV0",nTPCClustNeg);          
-    FillHistogram("fHistNClusterV0",nTPCClustPos);          
     if(nTPCClustNeg < fMinTPCClustDaught) continue;
     if(nTPCClustPos < fMinTPCClustDaught) continue;
 
-    //Filling PID Histograms
-    FillHistogram("fHistPdEdxDaught",pPos,dEdxP);
-    FillHistogram("fHistPdEdxDaught",pNeg,dEdxN);       
-    FillHistogram("fHistElecNsigTPC",pNeg,nSigmaTPCelectron);
-    FillHistogram("fHistElecNsigTPC",pPos,nSigmaTPCpositron);       
-
-    //Filling Armenteros-Podolanski Histogram
-    FillHistogram("fHistArmPod",alpha,qt);            
+    FillHistogram("fHistV0Statistics",5);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",5);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",5);
 
     // Armenteros-Podolanski Cuts
     if(TMath::Abs(alpha) > fMaxalpha) continue;
+
+    FillHistogram("fHistV0Statistics",6);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",6);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",6);
+
     if(TMath::Abs(qt) > fMaxqt) continue;
+
+    FillHistogram("fHistV0Statistics",7);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",7);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",7);
 
     // Angle Cut
     if(TMath::Abs(totangle) > fMaxopenangle) continue;
+
+    FillHistogram("fHistV0Statistics",8);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",8);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",8);
+
     if(TMath::Abs(deltatheta) > fMaxdeltatheta) continue;
 
+    FillHistogram("fHistV0Statistics",9);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",9);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",9);
+
     // CPA Cut
-    //if(cosPointAngle < fMinV0CPA) continue;    //Pointing Angle Cut bad for secondary Photons!
+    if (cosPointAngle < fMinV0CPA) continue;
+
+    FillHistogram("fHistV0Statistics",10);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",10);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",10);
 
     // PID Cut
     if(!isPhotonTPC) continue;    
 
-    FillHistogram("fHistV0photonmass",photonmass);  
+    FillHistogram("fHistV0Statistics",11);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",11);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",11);
+
+    //Radius Cut
+    if(Vtxradius < fMinV0Radius) continue;
+
+    FillHistogram("fHistV0Statistics",12);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",12);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",12);
+
+    if(Vtxradius > fMaxV0Radius) continue;
+
+    FillHistogram("fHistV0Statistics",13);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",13);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",13);
 
     // Inv. Mass Cut
     if(photonmass > fMaxphotonmass) continue;
+    FillHistogram("fHistV0Statistics",14);
+    if(isReallyPhoton) FillHistogram("fHistV0StatisticsMC",14);
+    if(isPhotonfromSigma) FillHistogram("fHistV0StatisticsSigmaMC",14);
 
-    //Filling Armenteros-Podolanski Histogram after Selection
-    FillHistogram("fHistArmPodPhotons",alpha,qt);            
-
-    //Filling kinematic Histograms after Selection
-    FillHistogram("fHistSelectedPhotPt",ptV0);  
-    if(isReallyPhoton) FillHistogram("fHistSelectRealPhotonPt",ptV0);  
-
-    if(isReallyPhoton) FillHistogram("fHistV0PhotonPt",ptV0); 
-    if(isPhotonfromSigma) FillHistogram("fHistV0SigmaPhotonPt",ptV0);
-
-    FillHistogram("fHistSelectedV0DaughtPt",ptPos);
-    FillHistogram("fHistSelectedV0DaughtPt",ptNeg);
-
-    if(aodV0->GetOnFlyStatus()) OnflyGamma++;
-    else OfflineGamma++;
+    // Histograms for Efficiency and Purity calculation
+    if(isReallyPhoton) FillHistogram("fHistV0ptwCutsMC",ptV0);
+    if(isPhotonfromSigma) FillHistogram("fHistV0SigmaptwCutsMC",ptV0);      
+    FillHistogram("fHistV0ptwCuts",ptV0); 
 
     // Store Photon candidates after selection
-    fConvPhotonArray->push_back(iV0);
+    fV0ParticleIDArray.push_back(trackN->GetID());
+    fV0ParticleIDArray.push_back(trackP->GetID());
+    fConvPhotonArray.push_back(iV0);
     countPhotons++;
 
   }//End of V0 Loop
 
-  //Erase Offline V0s whose Tracks have been use by OntheFly V0s!
-  const Int_t nConvPhoton = fConvPhotonArray->size();
-  for(Int_t i=0; i<nConvPhoton; i++) {
-
-    //Loop over the found V0s, take only the offline ones and save their IDs
-    AliAODv0 *v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(i));
-    if(!v0) continue;
-    if(v0->GetOnFlyStatus()) continue;
-    AliAODTrack* track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
-    AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
-    if(!track1 || !track2) continue;
-    Int_t ID1 = track1->GetID();
-    Int_t ID2 = track2->GetID();
-
-    for(Int_t j=0; j<nConvPhoton; j++) {
-
-      //Now Loop over the V0s again for every offline V0 and take only the onthefly V0s
-      if(i==j) continue;
-      AliAODv0 *v02 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(j));
-      if(!v02) continue;
-      if(!v02->GetOnFlyStatus()) continue;
-      AliAODTrack* track3 = dynamic_cast<AliAODTrack*>(v02->GetDaughter(0));
-      AliAODTrack* track4 = dynamic_cast<AliAODTrack*>(v02->GetDaughter(1));
-      if(!track3 || !track4) continue;
-      Int_t ID3 = track3->GetID();
-      Int_t ID4 = track4->GetID();
-      //If the Tracks have been used in both V0 finders remove the offline one
-      if(ID3==ID1||ID3==ID2||ID4==ID1||ID4==ID2) EraseArray.push_back(i);
-    }
-  }
-
-  const Int_t nErase = EraseArray.size();
-  std::vector<int>::iterator it = fConvPhotonArray->begin();
-  Int_t previousindex = 99;
-  for(Int_t i=nErase-1; i>-1; i--){
-    if(previousindex == EraseArray.at(i)) continue;
-    else previousindex = EraseArray.at(i);
-    fConvPhotonArray->erase(it+EraseArray.at(i));
-  }
-
-  const Int_t nConvPhotonafterErase = fConvPhotonArray->size();
-  for(Int_t i=0; i<nConvPhotonafterErase; i++) {
-
-    AliAODv0 *v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(i));
-    if(!v0) continue;
-    if(v0->GetOnFlyStatus()) OnflyGamma--;
-    else OfflineGamma--;
-  }
-  FillHistogram("fHistDiscardedOnflyV0",OnflyGamma);
-  FillHistogram("fHistDiscardedOfflineV0",OfflineGamma);
+FillHistogram("fHistV0OnflyvsOffline",non,noff);
 
 return;
 
@@ -1542,423 +1883,462 @@ return;
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSigmaPlus::PairElectrons() const{
+void AliAnalysisTaskSigmaPlus::FindAddPhotons() {
+        
+  const AliAODVertex *vtxT3D=aodEvent->GetPrimaryVertex();  
 
-  Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
+  //Save IDs of Tracks to avoid double counting
+  std::vector<int> IDvector;
+  IDvector.clear();
 
-  // PID and MC Bools
-  Bool_t   isReallyPhoton = kFALSE;
-  Bool_t   isPhotonfromSigma = kFALSE;
-
-  TLorentzVector trackElectron, trackPositron, trackPhoton;
-  KFParticle KFElectron, KFPositron;                 //KFParticle for Photon reconstruction
-
-  const Int_t nElectrons = fElectronArray->size();
-  const Int_t nPositrons = fPositronArray->size();
-
-  //Clear selected Pair Arrays and reset counter
-  fElectronPairArray->clear();
-  fPositronPairArray->clear();
-  Int_t countGoodPairs = 0;
-
-  for(Int_t i=0; i<nElectrons; i++) {
-      
-    AliAODTrack *electrack = (AliAODTrack*)aodEvent->GetTrack(fElectronArray->at(i));
-    if(!electrack) continue;
+  TArrayI neg(nTracks);
+  TArrayI pos(nTracks);
     
-    for(Int_t j=0; j<nPositrons; j++) {
-      
-      AliAODTrack *positrack = (AliAODTrack*)aodEvent->GetTrack(fPositronArray->at(j));
-      if(!positrack) continue;
+  Long_t nneg=0, npos=0, nvtx=0;
 
-      FillHistogram("fHistMCCounter",19);
+  for(Int_t i=0; i<nTracks; i++) {
+    
+    AliAODTrack *aodTrack=dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(i));
+
+    // Acceptance Cut
+    if(TMath::Abs(aodTrack->Eta()) > fMaxDaughtEta) continue; 
+
+    //Check for double counted Tracks if no filterbit is used
+    Int_t nIDs = IDvector.size();
+    Bool_t isdouble = kFALSE;
+    for(Int_t iID = 0; iID<nIDs; iID++){
+      if(aodTrack->GetID()==IDvector[iID]) isdouble = kTRUE; 
+    }
+    if(isdouble) continue;
+    else IDvector.push_back(aodTrack->GetID());
+
+    // Cluster-based rejection
+    if(aodTrack->GetTPCNcls() < fMinTPCClustDaught) continue;
+                
+    // Daughter track PID using TPC (only for PCM!)
+    Double_t nSigmaTPCelectron = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kElectron);
+    if(TMath::Abs(nSigmaTPCelectron) > fMaxNsigDaughtTPC) continue;    
+
+    Float_t  d = -999., dz = -999.;
+    aodTrack->GetImpactParameters(d,dz);
+    Float_t  dcapv = TMath::Sqrt(d*d+dz*dz);
+
+    FillHistogram("fHistPairDCAtoPV",dcapv);
+
+    //Select on single-track to PV DCA here, do not call that O(N^2)
+    if(TMath::Abs(d)<fMinDCADaughtPV) continue;
+
+    if(aodTrack->Charge() < 0.) neg[nneg++]=i;
+    if(aodTrack->Charge() > 0.) pos[npos++]=i;
+  }    
+
+  PairIndexArray.clear();
+
+  for (Int_t i=0; i<nneg; i++) {
+    Long_t nidx=neg[i];
+    AliAODTrack *ntrk=dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(nidx));
+    if(!ntrk) continue;
+        
+    for (Int_t k=0; k<npos; k++) {
+      Int_t pidx=pos[k];
+      AliAODTrack *ptrk=dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(pidx));
+      if(!ptrk) continue;
+            
+      FillHistogram("fHistAddV0Statistics",0.5); //number of considered pairs
+      FillHistogram("fHistAddV0StatisticsMC",0.5);
+      FillHistogram("fHistAddV0StatisticsSigmaMC",0.5);
+            
+      //discard the ones obtained with on-the-fly finding
+      map<pair<int,int>, int>::iterator iteron = fONMap.find(make_pair(ntrk->GetID(),ptrk->GetID()));
+      map<pair<int,int>, int>::iterator iteroff = fOFFMap.find(make_pair(ntrk->GetID(),ptrk->GetID()));
+      
+      if(iteron != fONMap.end()){
+        Int_t lEquivalentONV0 = (*iteron).second; // or iter->second;
+        AliAODv0 *v0_on = aodEvent->GetV0(lEquivalentONV0);
+        if(v0_on) continue;  //No further processing if On-fly V0 exists!
+      }
+
+      if(iteroff != fOFFMap.end()){
+        Int_t lEquivalentOFFV0 = (*iteroff).second; // or iter->second;
+        AliAODv0 *v0_off = aodEvent->GetV0(lEquivalentOFFV0);
+        if(v0_off) continue; //No further processing if Offline V0 exists!
+      }
+
+      Bool_t   isReallyPhoton = kFALSE;
+      Bool_t   isPhotonfromSigma = kFALSE;
 
       // AOD MC treatment
-      isReallyPhoton = kFALSE; isPhotonfromSigma = kFALSE;
-      if(isMonteCarlo){    
+      if(isMonteCarlo){     
         AliAODMCParticle* V0Part = NULL;
-        AliAODMCParticle* NPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(electrack->GetLabel())));
-        AliAODMCParticle* PPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(positrack->GetLabel())));
+        AliAODMCParticle* NPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(ntrk->GetLabel())));
+        AliAODMCParticle* PPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(ptrk->GetLabel())));
         if(NPart&&PPart){
           if(NPart->GetMother()==PPart->GetMother()&&NPart->GetMother()!=-1){
-            V0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(NPart->GetMother())));    
-            if(V0Part){if(V0Part->GetPdgCode()==22&&NPart->GetPdgCode()==11&&PPart->GetPdgCode()==-11){ 
+            V0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NPart->GetMother()));    
+            if(V0Part){if(V0Part->GetPdgCode()==22){ 
               isReallyPhoton = kTRUE;
-              FillHistogram("fHistMCCounter",20);
+                    
               AliAODMCParticle* V0Mother = NULL;
               if(V0Part->GetMother()!=-1) V0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
-              if(V0Mother){if(V0Mother->GetPdgCode()==111){
-
+              if(V0Mother){
+                if(TMath::Abs(V0Mother->GetPdgCode())==3222) FillHistogram("fHistSigmaCounter",6);
+                if(V0Mother->GetPdgCode()==111){
+                        
                 AliAODMCParticle* Pi0Mother = NULL;
                 if(V0Mother->GetMother()!=-1) Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Mother->GetMother())));
-                if(Pi0Mother){if(TMath::Abs(Pi0Mother->GetPdgCode())==3222){isPhotonfromSigma = kTRUE; FillHistogram("fHistMCCounter",21);}}
-
+                if(TMath::Abs(Pi0Mother?Pi0Mother->GetPdgCode():0)==3222) isPhotonfromSigma = kTRUE;
+              
               }}//Mother of Photon exists and is a Pi0
             }}//Mother exists and is a Photon
           }//Both Tracks have a common Mother
         }//Both Tracks have matched MC Particle
       }//End of isMonteCarlo
 
-      //First method: TLorentzVector
-      trackElectron.SetXYZM(electrack->Px(),electrack->Py(),electrack->Pz(),cElectronMass);
-      trackPositron.SetXYZM(positrack->Px(),positrack->Py(),positrack->Pz(),cElectronMass);
-      trackPhoton = trackElectron + trackPositron;
+      //OTF not available for this pair
+      FillHistogram("fHistAddV0Statistics",1.5); //number of pairs not found by the Finders
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",1.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",1.5);
 
-      // Get Track parameters
-      Double_t trackxyz[3];
-      Double_t trackpxpypz[3];
-      Double_t trackparams[6];
-      Double_t covMatrix[21];
+      //Create AliExternalTrackParams 
+      AliExternalTrackParam nt, pt;
+      nt.CopyFromVTrack(ntrk); //Copy properties from tracks
+      pt.CopyFromVTrack(ptrk);
+      AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+      Double_t xn, xp, dca;
+                        
+      //Re-propagate to closest position to the primary vertex
+      Double_t dztemp[2], covartemp[3];
+      //Safety margin: 250 cm 
+      ntp->PropagateToDCA(vtxT3D,Bz,250,dztemp,covartemp);
+      ptp->PropagateToDCA(vtxT3D,Bz,250,dztemp,covartemp);
 
-      // Set up KFParticle for the Electron
-      electrack->GetXYZ(trackxyz);      
-      electrack->GetPxPyPz(trackpxpypz);
-      for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-      for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-      electrack->GetCovarianceXYZPxPyPz(covMatrix);
-      KFElectron.Create(trackparams,covMatrix,-1,cElectronMass);
+      dca=nt.GetDCA(&pt,Bz,xn,xp);
 
-      // Repeat for the Positron
-      positrack->GetXYZ(trackxyz);      
-      positrack->GetPxPyPz(trackpxpypz);
-      for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-      for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-      positrack->GetCovarianceXYZPxPyPz(covMatrix);
-      KFPositron.Create(trackparams,covMatrix,1,cElectronMass); 
+      FillHistogram("fHistPairDCA",dca);
+      if(isReallyPhoton) FillHistogram("fHistPairDCAMC",dca);
 
-      // Combine Electron and Positron to KF Photon Particle
-      KFParticle KFPhoton(KFElectron,KFPositron);
+      if (dca > fMaxDCADaught) continue;
+            
+      FillHistogram("fHistAddV0Statistics",2.5); //passed dca cut
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",2.5);      
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",2.5);      
 
-      Float_t mass,masserr;
-      KFPhoton.GetMass(mass,masserr);
+      if ((xn+xp) > 2*fMaxV0Radius) continue;
+      if ((xn+xp) < 2*fMinV0Radius) continue;
+            
+      FillHistogram("fHistAddV0Statistics",3.5); //passed X within R2D cut
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",3.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",3.5);
 
-      KFPhoton.TransportToDecayVertex(); //Move Photon to the point of Conversion 
-      Float_t VertexGamma[3] = {KFPhoton.GetX(), KFPhoton.GetY(), KFPhoton.GetZ()}; // Create Vertex and 
-      KFElectron.TransportToPoint(VertexGamma);                                      // transport electron
-      KFPositron.TransportToPoint(VertexGamma);                                      // and positron there  
-      Float_t armenterosQtAlfa[2] = {0.};                                            
-      KFParticle::GetArmenterosPodolanski(KFPositron,KFElectron,armenterosQtAlfa);
+      nt.PropagateTo(xn,Bz);
+      pt.PropagateTo(xp,Bz);
+            
+      AliESDv0 vertex(nt,nidx,pt,pidx);
+            
+      //Experimental: refit V0
+      vertex.Refit();
+                        
+      Double_t x=vertex.Xv(), y=vertex.Yv();
+      Double_t r2=x*x + y*y;
+      Double_t r=TMath::Sqrt(r2);
 
-      FillHistogram("fHistKFeeDCA",TMath::Abs(KFElectron.GetDistanceFromParticle(KFPositron)));        
-      FillHistogram("fHistArmPodKF",armenterosQtAlfa[1],armenterosQtAlfa[0]);            
-      FillHistogram("fHisteeopenangle",KFElectron.GetAngle(KFPositron));
+      FillHistogram("fHistPairRadius",r);
+      if(isReallyPhoton) FillHistogram("fHistPairRadiusMC",r);
+      
+      if (r < fMinV0Radius) continue;
+      if (r > fMaxV0Radius) continue;
+            
+      FillHistogram("fHistAddV0Statistics",4.5); //passed radius cut
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",4.5);      
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",4.5);      
 
-      if(isReallyPhoton){  
-      FillHistogram("fHistKFeeDCAMC",TMath::Abs(KFElectron.GetDistanceFromParticle(KFPositron)));        
-      FillHistogram("fHistArmPodKFMC",armenterosQtAlfa[1],armenterosQtAlfa[0]);            
-      FillHistogram("fHisteeopenangleMC",KFElectron.GetAngle(KFPositron));          
-      FillHistogram("fHisteephotmassKFMC",mass); //MC Photon Mass with KF
-      } 
-      FillHistogram("fHisteephotmassKFNoCut",mass); //Photon Mass with KF
+      Float_t cpa=vertex.GetV0CosineOfPointingAngle(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);
 
-      //Cuts
-      if(TMath::Abs(armenterosQtAlfa[0])>fMaxPairqt) continue; //qt
-      if(TMath::Abs(armenterosQtAlfa[1])>fMaxPairalpha) continue; //alpha
-      if(KFElectron.GetAngle(KFPositron)>fMaxPairopenangle) continue; //openangle
-      //if(TMath::Abs(KFElectron.GetDistanceFromParticle(KFPositron))>fMaxPairDCA) continue; //DCA
+      FillHistogram("fHistPairCPA",cpa);
+      if(isReallyPhoton) FillHistogram("fHistPairCPAMC",cpa);
+      if(isPhotonfromSigma) FillHistogram("fHistPairCPAMCSigma",cpa);  
 
-      FillHistogram("fHisteephotmassTL",trackPhoton.M()); //Photon Mass
-      FillHistogram("fHisteephotmassKF",mass); //Photon Mass with KF
+      //Simple cosine cut (no pt dependence for now)
+      if (cpa < fMinV0CPA) continue;
+            
+      FillHistogram("fHistAddV0Statistics",5.5); //passed cosPA
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",5.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",5.5);
+
+      //Now: Photon selection. Use same cuts as for V0s from Finders
+
+      //Get reconstructed cartesian momentum
+      Double_t Momvec[3];
+      TVector3 vecN, vecP;
+      vertex.GetNPxPyPz(Momvec[0],Momvec[1],Momvec[2]);
+      vecN.SetXYZ(Momvec[0],Momvec[1],Momvec[2]); //negative daughter
+      vertex.GetPPxPyPz(Momvec[0],Momvec[1],Momvec[2]);
+      vecP.SetXYZ(Momvec[0],Momvec[1],Momvec[2]); //positive daughter 
+
+      // Reconstruct photon with TLorentzVector
+      TLorentzVector electron, positron, photon;
+      electron.SetXYZM(vecN(0),vecN(1),vecN(2),cElectronMass);
+      positron.SetXYZM(vecP(0),vecP(1),vecP(2),cElectronMass);
+      photon=electron+positron;
+
+      //Calculating DCA of Photons to PV 
+      TVector3 PV(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);          //Prim. Vertex
+      TVector3 CV(vertex.Xv(),vertex.Yv(),vertex.Zv());                   //Conv. Vertex
+      TVector3 p(photon.Px(),photon.Py(),photon.Pz()); //Momentum vectors of the photons
+      Double_t DCAPV = (p.Cross((CV-PV))).Mag()/p.Mag();      //DCA to PV of Photons
+
+      // Calculate photon invariant mass with TL
+      Double_t photonmass = photon.M();
+
+      Double_t thetaPos = ptrk->Theta();
+      Double_t thetaNeg = ntrk->Theta();
+      Double_t alpha    = vertex.AlphaV0();
+      Double_t qt       = vertex.PtArmV0();
+      Double_t totangle = TMath::Abs(vecP.Angle(vecN));
+  
+      // Angle calculation
+      Double_t deltatheta = thetaPos - thetaNeg;
+
+      FillHistogram("fHistPairArmPod",alpha,qt);
+      FillHistogram("fHistPairOpenAngle",totangle);
+      FillHistogram("fHistPairDeltaTheta",deltatheta);
+      FillHistogram("fHistPairInvMass",photonmass);
+      FillHistogram("fHistPairPhotonDCAPV",DCAPV);
+
+      if(isReallyPhoton){
+        FillHistogram("fHistPairptMC",photon.Perp());
+        FillHistogram("fHistPairArmPodMC",alpha,qt);
+        FillHistogram("fHistPairOpenAngleMC",totangle);
+        FillHistogram("fHistPairDeltaThetaMC",deltatheta);
+        FillHistogram("fHistPairInvMassMC",photonmass);
+        FillHistogram("fHistPairPhotonDCAPVMC",DCAPV);
+      }
+
+      if(isPhotonfromSigma) FillHistogram("fHistPairPhotonDCAPVMCSigma",DCAPV);
+
+      // Armenteros-Podolanski Cuts
+      if(TMath::Abs(alpha) > fMaxalpha) continue;
+      FillHistogram("fHistAddV0Statistics",6.5); //passed alpha
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",6.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",6.5);
+
+      if(TMath::Abs(qt) > fMaxqt) continue;
+      FillHistogram("fHistAddV0Statistics",7.5); //passed qt
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",7.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",7.5);
+
+      // Angle Cut
+      if(TMath::Abs(totangle) > fMaxopenangle) continue;
+      FillHistogram("fHistAddV0Statistics",8.5); //passed openangle
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",8.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",8.5);
+
+      if(TMath::Abs(deltatheta) > fMaxdeltatheta) continue;
+      FillHistogram("fHistAddV0Statistics",9.5); //passed deltatheta
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",9.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",9.5);
 
       // Inv. Mass Cut
-      if(mass > fMaxphotonmass) continue;
+      if(photonmass > fMaxphotonmass) continue;
+      FillHistogram("fHistAddV0Statistics",10.5); //passed inv mass 
+      if(isReallyPhoton) FillHistogram("fHistAddV0StatisticsMC",10.5);
+      if(isPhotonfromSigma) FillHistogram("fHistAddV0StatisticsSigmaMC",10.5);
 
-      fElectronPairArray->push_back(fElectronArray->at(i));
-      fPositronPairArray->push_back(fPositronArray->at(j));
-      countGoodPairs++;
+      if(isReallyPhoton) FillHistogram("fHistPairptwCutsMC",photon.Perp());
+      FillHistogram("fHistPairptwCuts",photon.Perp());
 
-    }//End of Positron loop
-  }//End of Electron loop
+      //Store ESD IDs of used electrons
+      fV0ParticleIDArray.push_back(ntrk->GetID());
+      fV0ParticleIDArray.push_back(ptrk->GetID());
 
-return;
+      //Store the AOD! Track indices as pairs
+      PairIndexArray.push_back(make_pair(nidx,pidx));  
 
-} //End of PairElectrons()
+    }//End of Positive Particle Track Loop
+  }//End of Negative Particle Track Loop
+  
+  return;
+
+}//End of FindAddPhotons() const
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSigmaPlus::PairPhotonandElectron() {
-
+void AliAnalysisTaskSigmaPlus::FillElectronArray() {
+  
   Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
 
-  Bool_t isReallyPi0 = kFALSE; 
-  Bool_t isReallyPi0fromSigma = kFALSE;
+  //Clear Proton and Antiproton Arrays and reset counters
+  fElectronArray.clear();
+  //Save IDs of Tracks to avoid double counting
+  std::vector<int> IDvector;
+  IDvector.clear();
 
-  const Int_t nConvPhoton = fConvPhotonArray->size();
-  const Int_t nElectron   = fElectronArray->size();
-  const Int_t nPositron   = fPositronArray->size();
-  const Int_t nProton     = fProtonArray->size();
-  const Int_t nAntiProton = fAntiProtonArray->size();
+  //Loop for Proton Selection
+  for(Int_t iTrack=0; iTrack < nTracks; iTrack++) {
 
-  // Get Track parameters
-  Double_t trackxyz[3];
-  Double_t trackpxpypz[3];
-  Double_t trackparams[6];
-  Double_t covMatrix[21];
+    //Initialisation of local variables
+    Bool_t   isTPCElectron = kFALSE;
+    Bool_t   isTOFElectron = kFALSE;
+    Bool_t   isTPCHadron = kFALSE;
 
-  KFParticle KFSingleElectron, KFElectron, KFPositron, KFProton; 
-  TLorentzVector trackPhoton, trackElectron, trackPi0, trackProton, trackSigmaplus;  
+    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!aodTrack) {
+      AliWarning("No AOD Track!");
+      continue;
+    }
 
-  if(nConvPhoton==0) return;
-  if(nElectron==0&&nPositron==0) return;
-
-  for(Int_t i=0; i<nConvPhoton; i++) {
-
-    AliAODv0 *photon = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(i));
-    if(!photon) continue;
-
-    for(Int_t j=0; j<nElectron+nPositron; j++) {
-
-      //Check if electron is paired with second electron
-      Bool_t ispaired=kFALSE;
-      if(j<nElectron) for(UInt_t q=0; q<fElectronPairArray->size(); q++){if(fElectronArray->at(j)==fElectronPairArray->at(q)) ispaired=kTRUE;}
-      else for(UInt_t q=0; q<fPositronPairArray->size(); q++){if(fPositronArray->at(j-nElectron)==fPositronPairArray->at(q)) ispaired=kTRUE;}
-      if(ispaired) continue;
-
-      AliAODTrack *electron;
-      if(j<nElectron) electron = (AliAODTrack*)aodEvent->GetTrack(fElectronArray->at(j));
-      else electron = (AliAODTrack*)aodEvent->GetTrack(fPositronArray->at(j-nElectron));
-      if(!electron) continue;
-
-      AliAODTrack* track1 = dynamic_cast<AliAODTrack*>(photon->GetDaughter(0));
-      AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(photon->GetDaughter(1));
-
-      if(!track1 || !track2) {
-        AliWarning("ERROR: Could not retrieve all AOD tracks in Pi0 reconstruction!");
-        continue;
+    //Check MC Truth
+    Bool_t isReallyElectron = kFALSE;
+    Bool_t isElectronfromSigma = kFALSE;
+    if(isMonteCarlo){
+      AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
+      if(mcPart){
+        if(TMath::Abs(mcPart->GetPdgCode())==11){
+          isReallyElectron = kTRUE;
+          if(mcPart->GetMother()!=-1){
+            AliAODMCParticle* photon = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
+            if(photon){
+              if(photon->GetPdgCode()==22&&photon->GetMother()!=-1){
+                AliAODMCParticle* pion = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(photon->GetMother())));
+                if(pion){
+                  if(pion->GetPdgCode()==111&&pion->GetMother()!=-1){
+                    AliAODMCParticle* sigma = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(pion->GetMother())));
+                    if(sigma){
+                      if(TMath::Abs(sigma->GetPdgCode())==3222) isElectronfromSigma = kTRUE;
+                    }
+                  }
+                }
+              }              
+            }
+          }
+        }
       }
+    }
 
-      // AOD MC treatment
-      Double_t MCPi0DCAPV; //MC Pi0 Decay Vertex; 
-      isReallyPi0 = kFALSE; 
-      isReallyPi0fromSigma = kFALSE;
-      Int_t Pi0MotherLabel=-1;
+    ////Check if electron is used in V0
+    //Int_t nV0IDs = fV0ParticleIDArray.size();
+    //Bool_t isusedV0 = kFALSE;
+    //for(Int_t iID = 0; iID<nV0IDs; iID++){
+    //  if(aodTrack->GetID()==fV0ParticleIDArray[iID]) isusedV0 = kTRUE; 
+    //}
+    //if(isusedV0) continue;
 
-      Double_t f3PartPi0DecayVert[3];
-      Double_t f3PartPi0PhotConv[3];
-      Double_t f3PartPi0ElecPos[3];
+    //Check for double counted Tracks if no filterbit is used
+    Int_t nIDs = IDvector.size();
+    Bool_t isdouble = kFALSE;
+    for(Int_t iID = 0; iID<nIDs; iID++){
+      if(aodTrack->GetID()==IDvector[iID]) isdouble = kTRUE; 
+    }
+    if(isdouble) continue;
+    else IDvector.push_back(aodTrack->GetID());
 
-      if(isMonteCarlo){
-        AliAODMCParticle* SingleElec = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(electron->GetLabel())));
-        AliAODMCParticle* V0Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track1->GetLabel())));
-        AliAODMCParticle* V0Daught2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track2->GetLabel())));
-        if(V0Daught1 && V0Daught2 && SingleElec){
-          if(TMath::Abs(V0Daught1->GetPdgCode())==11&&TMath::Abs(V0Daught2->GetPdgCode())==11&&TMath::Abs(SingleElec->GetPdgCode())==11){
-            if(V0Daught1->GetMother()!=-1&&SingleElec->GetMother()!=-1&&V0Daught1->GetMother()==V0Daught2->GetMother()){
-              AliAODMCParticle* V0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Daught1->GetMother())));
-              AliAODMCParticle* SingleElecMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(SingleElec->GetMother())));
-              if(V0Part&&SingleElecMother){if(V0Part->GetPdgCode()==22&&SingleElecMother->GetPdgCode()==22){
-                if(V0Part->GetMother()!=-1&&V0Part->GetMother()==SingleElecMother->GetMother()){
+    Double_t eta           = aodTrack->Eta();
+    Double_t phi           = aodTrack->Phi();
+    Double_t p             = aodTrack->GetTPCmomentum();
+    Double_t pt            = aodTrack->Pt();
+    Int_t    nTPCClustElec = aodTrack->GetTPCNcls();
+    Double_t chi2          = aodTrack->GetTPCchi2();
 
-                  AliAODMCParticle* Pi0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
-                  if(Pi0Part){if(Pi0Part->GetPdgCode()==111){
-                  
-                    isReallyPi0=kTRUE; 
+    Double_t nSigmaTPCelectron = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kElectron);
+    Double_t nSigmaTOFelectron = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kElectron);
 
-                    TVector3 prdvtx1(V0Part->Xv(),V0Part->Yv(),V0Part->Zv());   
-                    TVector3 prdvtx2(SingleElecMother->Xv(),SingleElecMother->Yv(),SingleElecMother->Zv());   
-                    TVector3 prdvtx=prdvtx1+prdvtx2; prdvtx*=0.5;
-                    MCPi0DCAPV = prdvtx.Perp();
-                    f3PartPi0DecayVert[0] = prdvtx.X();
-                    f3PartPi0DecayVert[1] = prdvtx.Y();
-                    f3PartPi0DecayVert[2] = prdvtx.Z();
+    if(TMath::Abs(nSigmaTPCelectron)<fMaxNsigElecTPC) isTPCElectron = kTRUE;
+    if(TMath::Abs(nSigmaTOFelectron)<fMaxNsigElecTOF) isTOFElectron = kTRUE;
+    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kMuon))<fMinNsigHadronTPC)   isTPCHadron = kTRUE;
+    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion))<fMinNsigHadronTPC)   isTPCHadron = kTRUE;
+    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon))<fMinNsigHadronTPC)   isTPCHadron = kTRUE;
+    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton))<fMinNsigHadronTPC) isTPCHadron = kTRUE;
 
-                    TVector3 prdvtx3(V0Daught1->Xv(),V0Daught1->Yv(),V0Daught1->Zv());   
-                    TVector3 prdvtx4(V0Daught2->Xv(),V0Daught2->Yv(),V0Daught2->Zv());   
-                    TVector3 prdvtx5=prdvtx3+prdvtx4; prdvtx5*=0.5;
-                    f3PartPi0PhotConv[0] = prdvtx5.X();
-                    f3PartPi0PhotConv[1] = prdvtx5.Y();
-                    f3PartPi0PhotConv[2] = prdvtx5.Z();
+    //QA Histograms
+    if(isReallyElectron) FillHistogram("fHistElectronEtaPhiMC",eta,phi);
 
-                    f3PartPi0ElecPos[0] = SingleElec->Xv();
-                    f3PartPi0ElecPos[1] = SingleElec->Yv();
-                    f3PartPi0ElecPos[2] = SingleElec->Zv();
+    //Acceptance Cut
+    if(TMath::Abs(eta) > fMaxElecEta) continue; 
 
-                    AliAODMCParticle* Pi0Mother = NULL;
-                    if(Pi0Part->GetMother()!=-1){
-                      Pi0MotherLabel=Pi0Part->GetMother(); 
-                      Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
-                      }
-                    if(Pi0Mother){if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) isReallyPi0fromSigma = kTRUE;}
+    //MC Histograms
+    if(isReallyElectron){
+      FillHistogram("fHistElectronChi2MC",chi2);
+      FillHistogram("fHistElectronTPCClusterMC",nTPCClustElec);
+      FillHistogram("fHistElectronpvsNSigmaTPCMC",p,nSigmaTPCelectron);
+      FillHistogram("fHistElectronpvsNSigmaTOFMC",p,nSigmaTOFelectron);
+      FillHistogram("fHistElectronptMC",pt);
+    }
 
-                  }}//Photon Mother exists and is Pi0
-                }//Photon and Single electron have common mother
-              }}//MC Photon exists
-            }//Electrons have common mother
-          }//Daughters are all electrons
-        }//V0 Daughters and Single Electron exist
-      }//End of isMonteCarlo
+    // Cluster Cut
+    if(nTPCClustElec<fMinTPCClustElec) continue;
 
-      trackPhoton.SetXYZM(photon->Px(),photon->Py(),photon->Pz(),0);
-      trackElectron.SetXYZM(electron->Px(),electron->Py(),electron->Pz(),0);
-      trackPi0 = trackPhoton + trackElectron;
-      Double_t pi0mass = trackPi0.M();
-      FillHistogram("fHist3Partpi0massvspt",pi0mass,electron->Pt());    
-      if(electron->Pt()>0.25) FillHistogram("fHist3Partpi0mass",pi0mass);    
-      if(isReallyPi0){
-        FillHistogram("fHist3Partpi0massMC",pi0mass);    
-        if(electron->Pt()>0.25) FillHistogram("fHist3Partpi0massMChighpt",pi0mass);    
-      }
+    //PID Histograms
+    FillHistogram("fHistElectronpvsNSigmaTPC",p,nSigmaTPCelectron);
+    FillHistogram("fHistElectronpvsNSigmaTOF",p,nSigmaTOFelectron);
 
-      // Set up KFParticle
-      electron->GetXYZ(trackxyz);      
-      electron->GetPxPyPz(trackpxpypz);
-      for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-      for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-      electron->GetCovarianceXYZPxPyPz(covMatrix);
-      KFSingleElectron.Create(trackparams,covMatrix,0,cElectronMass);
+    // TPC PID Cut
+    if(!isTPCElectron) continue;
+    // TOF PID/Hadron rejection
+    if(!isTOFElectron&&isTPCHadron) continue;
 
-      // Repeat for all other particles
-      trackparams[0] = photon->DecayVertexV0X();
-      trackparams[1] = photon->DecayVertexV0Y();
-      trackparams[2] = photon->DecayVertexV0Z();
-      trackparams[3] = photon->MomPosX();
-      trackparams[4] = photon->MomPosY();
-      trackparams[5] = photon->MomPosZ();
-      if(track1->Charge()<0) track1->GetCovarianceXYZPxPyPz(covMatrix);
-      else track2->GetCovarianceXYZPxPyPz(covMatrix);
-      KFElectron.Create(trackparams,covMatrix,-1,cElectronMass);
+    FillHistogram("fHistElectronpvsNSigTPCwCuts",p,nSigmaTPCelectron);
 
-      trackparams[0] = photon->DecayVertexV0X();
-      trackparams[1] = photon->DecayVertexV0Y();
-      trackparams[2] = photon->DecayVertexV0Z();
-      trackparams[3] = photon->MomPosX();
-      trackparams[4] = photon->MomPosY();
-      trackparams[5] = photon->MomPosZ();
-      if(track1->Charge()>0) track1->GetCovarianceXYZPxPyPz(covMatrix);
-      else track2->GetCovarianceXYZPxPyPz(covMatrix);
-      KFPositron.Create(trackparams,covMatrix,1,cElectronMass);
+    //Histograms for Purity and Efficiency Calcultation
+    if(isReallyElectron) FillHistogram("fHistElectronptwCutsMC",pt);
+    FillHistogram("fHistElectronptwCuts",pt);
 
-      KFParticle KFPhoton(KFElectron,KFPositron);
-      KFPhoton.TransportToDecayVertex();
-      KFParticle KFPi0(KFPhoton,KFSingleElectron);
-      KFPi0.TransportToDecayVertex();
+  	if(pt>fMaxElecpt) continue;
 
-      //Get the invariant mass to compare with TLorentzvector!
-      Float_t mass,masserr;
-      KFPi0.GetMass(mass,masserr);
+    // Store (Anti-)Proton candidates after selection
+    fElectronArray.push_back(iTrack);
 
-      if(electron->Pt()>0.25) FillHistogram("fHist3Partpi0massKF",mass);
-      //End of KF Pi0 calculation
-
-      Float_t PhotElecDCA = TMath::Abs(KFPhoton.GetDistanceFromParticle(KFSingleElectron));
-
-      Float_t KFPi0DCAPV = TMath::Sqrt((KFPi0.GetX()-primaryVtxPosX)*(KFPi0.GetX()-primaryVtxPosX)+(KFPi0.GetY()-primaryVtxPosY)*(KFPi0.GetY()-primaryVtxPosY));  
-      if(isReallyPi0) FillHistogram("fHist3PartPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
-
-      if(isReallyPi0 && pi0mass>0 && pi0mass<0.3){ //Fill MC Pi0 Tree
-
-        fInv3PartPi0Mass = pi0mass;
-        f3PartPi0Px = trackPi0.Px(); 
-        f3PartPi0Py = trackPi0.Py();
-        f3PartPi0Pz = trackPi0.Pz();
-        f3PartPi0DaughtPt1 = TMath::Sqrt(photon->MomPosX()*photon->MomPosX()+photon->MomPosY()*photon->MomPosY());
-        f3PartPi0DaughtPt2 = TMath::Sqrt(photon->MomNegX()*photon->MomNegX()+photon->MomNegY()*photon->MomNegY());
-        f3PartPi0DaughtPt3 = electron->Pt();
-        f3PartPi0DecayVertX = f3PartPi0DecayVert[0];
-        f3PartPi0DecayVertY = f3PartPi0DecayVert[1];
-        f3PartPi0DecayVertZ = f3PartPi0DecayVert[2];
-        f3PartPi0PhotPhotDCA = PhotElecDCA;
-        f3PartPi0PhotConvx = f3PartPi0PhotConv[0];
-        f3PartPi0PhotConvy = f3PartPi0PhotConv[1];
-        f3PartPi0PhotConvz = f3PartPi0PhotConv[2];
-        f3PartPrimVertX = primaryVtxPosX;
-        f3PartPrimVertY = primaryVtxPosY;
-        f3PartPrimVertZ = primaryVtxPosZ;
-        f3PartPi0ElecPosx = f3PartPi0ElecPos[0];
-        f3PartPi0ElecPosy = f3PartPi0ElecPos[1];
-        f3PartPi0ElecPosz = f3PartPi0ElecPos[2];
-        f3PartPi0CandTree->Fill();
-
-      }
-
-      if(pi0mass<0.05 || pi0mass>0.25) continue;  //Coarse mass cut to reduce combinatorics!
-
-      /************************Sigma+ reconstruction************************************/
-
-      for(Int_t k=0; k<nProton+nAntiProton; k++) {
-
-        AliAODTrack *prot;
-        if(k<nProton) prot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray->at(k));
-        else prot = (AliAODTrack*)aodEvent->GetTrack(fAntiProtonArray->at(k-nProton));
-        if(!prot) continue;
-
-        trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
-        trackSigmaplus = trackPi0 + trackProton;
-        Float_t sigmaplusmass = trackSigmaplus.M();
-
-        prot->GetXYZ(trackxyz);      
-        prot->GetPxPyPz(trackpxpypz);
-        for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-        for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-        prot->GetCovarianceXYZPxPyPz(covMatrix);
-        if(k<nProton) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
-        else KFProton.Create(trackparams,covMatrix,-1,cProtonMass);
-
-        KFParticle KFSigmaPlus(KFProton,KFPi0);
-        KFSigmaPlus.TransportToDecayVertex();
-
-        Float_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
-        
-        Float_t  DCAxy = -999., DCAz = -999.;
-        prot->GetImpactParameters(DCAxy,DCAz);
-
-        TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
-        TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
-
-        Bool_t isReallySigma = kFALSE;
-        if(isMonteCarlo && isReallyPi0fromSigma){
-          AliAODMCParticle* ProtPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(prot->GetLabel())));
-          if(ProtPart){
-            if(TMath::Abs(ProtPart->GetPdgCode())==2212&&ProtPart->GetMother()!=-1){
-                if(ProtPart->GetMother()==Pi0MotherLabel) isReallySigma = kTRUE;    
-            }//Proton has Mother
-          }//Proton exists
-        }//Is MonteCarlo and Pi0 is from Sigma        
-
-        if(isReallySigma) FillHistogram("fHistMC4PartSigmaPA",TMath::Abs(sigmamomentum.Angle(sigmavertex)));
-
-        // Fill the Sigma Candidate Trees
-        f4PartIsMCSigma = kFALSE; if(isReallySigma) f4PartIsMCSigma = kTRUE;
-        f4PartIsV0Onthefly = photon->GetOnFlyStatus();
-        f4PartInvSigMass = sigmaplusmass; 
-        f4PartSigCharge = prot->Charge(); 
-        f4PartSigPx = trackSigmaplus.Px(); 
-        f4PartSigPy = trackSigmaplus.Py(); 
-        f4PartSigPz = trackSigmaplus.Pz(); 
-        f4PartPrimVertX = primaryVtxPosX; 
-        f4PartPrimVertY = primaryVtxPosY; 
-        f4PartPrimVertZ = primaryVtxPosZ; 
-        f4PartSigDecayVertX = KFSigmaPlus.GetX(); 
-        f4PartSigDecayVertY = KFSigmaPlus.GetY(); 
-        f4PartSigDecayVertZ = KFSigmaPlus.GetZ(); 
-        f4PartInvPi0Mass = pi0mass; 
-        f4PartPi0Px = trackPi0.Px(); 
-        f4PartPi0Py = trackPi0.Py(); 
-        f4PartPi0Pz = trackPi0.Pz(); 
-        f4PartPi0DaughtPt1 = TMath::Sqrt(photon->MomPosX()*photon->MomPosX()+photon->MomPosY()*photon->MomPosY());
-        f4PartPi0DaughtPt2 = TMath::Sqrt(photon->MomNegX()*photon->MomNegX()+photon->MomNegY()*photon->MomNegY());
-        f4PartPi0DaughtPt3 = electron->Pt();
-        f4PartPi0DecayVertX = KFPi0.GetX(); 
-        f4PartPi0DecayVertY = KFPi0.GetY(); 
-        f4PartPi0DecayVertZ = KFPi0.GetZ();
-        f4PartPi0PhotPhotDCA = PhotElecDCA;
-        f4PartProtonPx = prot->Px(); 
-        f4PartProtonPy = prot->Py(); 
-        f4PartProtonPz = prot->Pz(); 
-        f4PartProtonDCAtoPVxy = DCAxy; 
-        f4PartProtonDCAtoPVz = DCAz; 
-        f4PartProtonPi0DCA = ProtPi0DCA; 
-        if(f4PartInvSigMass<1.7) f4PartSigmaCandTree->Fill();
-
-      }//End of Proton loop
-    } //End of Electron Loop 
-  } //End of Photon Loop
+  } // End of electron track loop
 
 return;
 
-} //End of PairPhotonandElectron()
+}//End of FillElectronArray  
 
 //_____________________________________________________________________________
+
+AliESDv0 AliAnalysisTaskSigmaPlus::Tracks2V0vertex(Int_t v0index) const {
+
+  Int_t nidx = PairIndexArray[v0index].first;
+  Int_t pidx = PairIndexArray[v0index].second;
+  AliAODTrack *ntrk=dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(nidx));
+  AliAODTrack *ptrk=dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(pidx));
+
+  if(!ntrk||!ptrk){
+    cout << "WARNING: Tracks for ESD Vertex do not exist!\nTrack Pair Array Size is: " << PairIndexArray.size() << ", Index is: " << v0index << "\n";
+  }
+
+  //Create AliExternalTrackParams 
+  AliExternalTrackParam nt, pt;
+  nt.CopyFromVTrack(ntrk); //Copy properties from tracks
+  pt.CopyFromVTrack(ptrk);
+  AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+  Double_t xn, xp, dca;
+
+  const AliAODVertex *vtxT3D=aodEvent->GetPrimaryVertex();  
+
+  //Re-propagate to closest position to the primary vertex if asked to do so
+  Double_t dztemp[2], covartemp[3];
+  //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
+  ntp->PropagateToDCA(vtxT3D,Bz,250,dztemp,covartemp);
+  ptp->PropagateToDCA(vtxT3D,Bz,250,dztemp,covartemp);
+
+  dca=nt.GetDCA(&pt,Bz,xn,xp);
+
+  nt.PropagateTo(xn,Bz);
+  pt.PropagateTo(xp,Bz);
+
+  //Initizialize ESDv0 to use the refit function
+  AliESDv0 vertex(nt,nidx,pt,pidx);
+  vertex.Refit();
+
+  Float_t cpa=vertex.GetV0CosineOfPointingAngle(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);
+  vertex.SetDcaV0Daughters(dca);
+  vertex.SetV0CosineOfPointingAngle(cpa);
+
+  return vertex;
+
+}
+
+//________________________________________________________________________
 
 void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
@@ -1973,19 +2353,18 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
   TLorentzVector trackPhoton1, trackPhoton2, trackPi0, trackProton, trackSigmaplus;
   KFParticle KFElectron1, KFElectron2, KFPositron1, KFPositron2, KFProton; 
 
-  const Int_t nConvPhoton = fConvPhotonArray->size();
-  const Int_t nProton = fProtonArray->size();
-  const Int_t nAntiProton = fAntiProtonArray->size();
+  const Int_t nConvPhoton = fConvPhotonArray.size();
+  const Int_t nProton = fProtonArray.size();
   Int_t countPi0 = 0;
 
   for(Int_t i=0; i<nConvPhoton-1; i++) {
 
-    AliAODv0 *v0_1 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(i));
+    AliAODv0 *v0_1 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray.at(i));
     if(!v0_1) continue;
 
     for(Int_t j=i+1; j<nConvPhoton; j++) {
 
-      AliAODv0 *v0_2 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(j));
+      AliAODv0 *v0_2 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray.at(j));
       if(!v0_2) continue;
 
       // Get daughter tracks      
@@ -2004,6 +2383,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
       Bool_t isReallyPi0 = kFALSE; 
       Bool_t isReallyPi0fromSigma = kFALSE;
       Bool_t isReallyPi0fromDelta = kFALSE;
+      Bool_t isPrimary = kFALSE;
       Int_t Pi0MotherLabel=-1;
 
       if(isMonteCarlo){
@@ -2016,7 +2396,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             if(V01Daught1->GetMother()!=-1&&V02Daught1->GetMother()!=-1&&V01Daught1->GetMother()==V01Daught2->GetMother()&&V02Daught1->GetMother()==V02Daught2->GetMother()){
               AliAODMCParticle* V0Part1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V01Daught1->GetMother())));
               AliAODMCParticle* V0Part2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V02Daught1->GetMother())));
-              if(V0Part1&&V0Part2){if(V0Part1->GetPdgCode()==22&&V0Part2->GetPdgCode()==22){
+              if(V0Part1&&V0Part2){if(V0Part1->GetPdgCode()==22&&V0Part2->GetPdgCode()==22&&TMath::Abs(V0Part1->GetLabel())!=TMath::Abs(V0Part2->GetLabel())){
                 if(V0Part1->GetMother()!=-1&&V0Part1->GetMother()==V0Part2->GetMother()){
 
                   AliAODMCParticle* Pi0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part1->GetMother())));
@@ -2035,7 +2415,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
                       Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
                     }
                     if(Pi0Mother){
-                      if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) isReallyPi0fromSigma = kTRUE;
+                      if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {isReallyPi0fromSigma = kTRUE; if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE;}
                       if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
                     }
 
@@ -2051,8 +2431,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
       trackPhoton2.SetXYZM(v0_2->Px(),v0_2->Py(),v0_2->Pz(),0);
       trackPi0 = trackPhoton1 + trackPhoton2;
       Double_t pi0mass = trackPi0.M();
-      FillHistogram("fHistpi0mass",pi0mass);
-      if(isReallyPi0) FillHistogram("fHistMCpi0mass",pi0mass);
+
+      if(pi0mass<fRejectGammaAutoCorr&&(track1->GetID()==track3->GetID()||track2->GetID()==track4->GetID())) continue; //Clean up auto-correlations!
 
       //KF Pi0 calculations
       // Set up KFParticle
@@ -2107,80 +2487,432 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
       Double_t PhotPhotDCA = TMath::Abs(KFPhoton1.GetDistanceFromParticle(KFPhoton2));
 
-      if(pi0mass>fMinPi0mass && pi0mass<fMaxPi0mass) countPi0++;
+      //Calculating DCA of Photons to PV 
+      TVector3 PV(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);                            //Prim. Vertex
+      TVector3 CV1(v0_1->DecayVertexV0X(),v0_1->DecayVertexV0Y(),v0_1->DecayVertexV0Z()); //Conv. Vertices
+      TVector3 CV2(v0_2->DecayVertexV0X(),v0_2->DecayVertexV0Y(),v0_2->DecayVertexV0Z());
+      TVector3 p1(v0_1->Px(),v0_1->Py(),v0_1->Pz());                     //Momentum vectors of the photons
+      TVector3 p2(v0_2->Px(),v0_2->Py(),v0_2->Pz());   
+      Double_t DCAPV1 = (p1.Cross((CV1-PV))).Mag()/p1.Mag(); //DCA to PV of Photons
+      Double_t DCAPV2 = (p2.Cross((CV2-PV))).Mag()/p2.Mag(); //using line-point distance equation
 
-      if(pi0mass<0.05 || pi0mass>0.25) continue;  //Coarse mass cut to reduce combinatorics!
+  	  FillHistogram("fHistGammaPairInvMass",pi0mass);
+  	  FillHistogram("fHistGammaPairDCA",PhotPhotDCA);
+  	  if(v0_1->GetOnFlyStatus()&&v0_2->GetOnFlyStatus()) FillHistogram("fHistGammaPairInvMassOnfly",pi0mass);
+
+      if(isReallyPi0){
+  	    FillHistogram("fHistGammaPairInvMassMC",pi0mass);
+  	    FillHistogram("fHistGammaPairDCAMC",PhotPhotDCA);
+  	    if(v0_1->GetOnFlyStatus()&&v0_2->GetOnFlyStatus()) FillHistogram("fHistGammaPairInvMassMCOnfly",pi0mass);
+      }
+      
+      if(pi0mass>0.12 && pi0mass<0.15) countPi0++; //Just for counting purposes here
+
+      if(pi0mass<fMinPi0Mass || pi0mass>fMaxPi0Mass) continue;  //Coarse mass cut to reduce combinatorics!
 
       /************************Sigma+ reconstruction************************************/
 
-        for(Int_t k=0; k<nProton+nAntiProton; k++) {
+        for(Int_t k=0; k<nProton; k++) {
 
           AliAODTrack *prot;
-          if(k<nProton) prot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray->at(k));
-          else prot = (AliAODTrack*)aodEvent->GetTrack(fAntiProtonArray->at(k-nProton));
+          prot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(k));
           if(!prot) continue;
 
           trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
           trackSigmaplus = trackPi0 + trackProton;
           Float_t sigmaplusmass = trackSigmaplus.M();
-          if(sigmaplusmass>1.7) continue; 
+          FillHistogram("fHistInvSigmaMass",sigmaplusmass);
+          if(sigmaplusmass>fMaxSigmaMass) continue;   //Limit the mass range to reduce tree size
 
           prot->GetXYZ(trackxyz);      
           prot->GetPxPyPz(trackpxpypz);
           for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
           for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
           prot->GetCovarianceXYZPxPyPz(covMatrix);
-          if(k<nProton) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
+          if(prot->Charge()>0) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
           else KFProton.Create(trackparams,covMatrix,-1,cProtonMass);
 
           //Reconstruct the Pi0 with the gammas
-          Float_t mass,masserr;
-          KFPhoton1.GetMass(mass,masserr);
-          if(mass<0) continue;
-          KFPhoton2.GetMass(mass,masserr);
-          if(mass<0) continue;
+          KFParticleCD KFPi0CD; //Check Daughters to avoid floating point exceptions. See .h-file
+          KFPi0CD.AddDaughter(KFPhoton1);
+          if(!KFPi0CD.CheckDaughter(KFPhoton2)) continue;
+
           KFParticle KFPi0(KFPhoton1,KFPhoton2);
           KFPi0.TransportToDecayVertex();
-          KFPi0.GetMass(mass,masserr);
-          FillHistogram("fHistpi0massKF",mass);
 
-          Double_t KFPi0DCAPV = TMath::Sqrt((KFPi0.GetX()-primaryVtxPosX)*(KFPi0.GetX()-primaryVtxPosX)+(KFPi0.GetY()-primaryVtxPosY)*(KFPi0.GetY()-primaryVtxPosY));  
+          Double_t KFPi0DCAPV = TMath::Sqrt(KFPi0.GetX()*KFPi0.GetX()+KFPi0.GetY()*KFPi0.GetY());  
           if(isReallyPi0){ 
-            FillHistogram("fHistPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
             FillHistogram("fHistPi0VertexMC",MCPi0DCAPV);
+            FillHistogram("fHistPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
           }
 
+          KFParticleCD KFSigmaPlusCD; //Check Daughters to avoid floating point exceptions. See .h-file
+          KFSigmaPlusCD.AddDaughter(KFProton);
+          if(!KFSigmaPlusCD.CheckDaughter(KFPi0)) continue;
+    
           KFParticle KFSigmaPlus(KFProton,KFPi0);
           KFSigmaPlus.TransportToDecayVertex();
           Double_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
-
-          Float_t  DCAxy = -999., DCAz = -999.;
-          prot->GetImpactParameters(DCAxy,DCAz);
-
-          TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
-          TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
 
           Bool_t isReallySigma = kFALSE;
           if(isMonteCarlo){
             AliAODMCParticle* ProtonPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(prot->GetLabel())));
             if(ProtonPart){if(TMath::Abs(ProtonPart->GetPdgCode())==2212){
               if(ProtonPart->GetMother()==Pi0MotherLabel){
-                if(isReallyPi0fromSigma) {FillHistogram("fHistMCCounter",23); isReallySigma = kTRUE;}
+                if(isReallyPi0fromSigma) {isReallySigma = kTRUE; FillHistogram("fHistSigmaCounter",1);}
+              }//Proton and Pi0 have common Mother
+            }}//MC Particle exists and is a Proton 
+          }//End of isMonteCarlo
+
+          Float_t  DCAxy = -999., DCAz = -999.;
+          prot->GetImpactParameters(DCAxy,DCAz);
+
+          if(TMath::Abs(DCAxy)<fMinProtonDCAxy) continue; //Coarse cut on DCA to PV to reduce the tree size
+          if(TMath::Abs(DCAz)<fMinProtonDCAz) continue;
+
+          TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
+          TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
+          Float_t SigmaPointingAngle = sigmamomentum.Angle(sigmavertex);
+          if(isReallySigma) FillHistogram("fHistMCSigmaPA",SigmaPointingAngle);
+          FillHistogram("fHistSigmaPA",SigmaPointingAngle);
+          if(SigmaPointingAngle>fMaxSigmaPA) continue;  //Coarse cut on the Pointing Angle to reduce the tree size
+
+          Short_t pairs = 0, pairslowkstar = 0, pairsverylowkstar = 0, pairsveryverylowkstar = 0;
+          for(Int_t q=0; q<nProton; q++) {
+            if(q==k) continue;
+            AliAODTrack *pairprot;
+            pairprot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(q));
+            if(!pairprot) continue;
+            if(pairprot->Charge()!=prot->Charge()) continue;
+            pairs++;
+            TVector3 protonmomentum(pairprot->Px(),pairprot->Py(),pairprot->Pz());
+            TVector3 kstar=sigmamomentum-protonmomentum;
+            if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar.Mag());                        
+            if(kstar.Mag()<flowkstar) pairslowkstar++;
+            if(kstar.Mag()<fverylowkstar) pairsverylowkstar++;
+            if(kstar.Mag()<fveryverylowkstar) pairsveryverylowkstar++;
+          }        
+
+          // Fill the Sigma Candidate Trees
+          fIsMCSigma = kFALSE; 
+          if(isReallySigma) fIsMCSigma = kTRUE;
+          fIsMCPrimary = kFALSE;
+          if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
+          fIsV01fromFinder = kTRUE;
+          fIsV02fromFinder = kTRUE;
+          fIsV01Onthefly = v0_1->GetOnFlyStatus();
+          fIsV02Onthefly = v0_2->GetOnFlyStatus();
+          fSigRunnumber = aodEvent->GetRunNumber();
+          fSigTriggerMask = (ULong_t)aodEvent->GetTriggerMask();
+          fSigCentrality = Centrality;
+          fSigBField = Bz;
+          fInvSigMass = sigmaplusmass; 
+          fSigPA = SigmaPointingAngle; 
+          fSigCharge = prot->Charge(); 
+          fSigPx = trackSigmaplus.Px(); 
+          fSigPy = trackSigmaplus.Py(); 
+          fSigPz = trackSigmaplus.Pz(); 
+          fPrimVertX = primaryVtxPosX; 
+          fPrimVertY = primaryVtxPosY; 
+          fPrimVertZ = primaryVtxPosZ; 
+          fSigDecayVertX = KFSigmaPlus.GetX(); 
+          fSigDecayVertY = KFSigmaPlus.GetY(); 
+          fSigDecayVertZ = KFSigmaPlus.GetZ();
+          fPhoton1Radius = TMath::Sqrt(v0_1->DecayVertexV0X()*v0_1->DecayVertexV0X()+v0_1->DecayVertexV0Y()*v0_1->DecayVertexV0Y());
+          fPhoton2Radius = TMath::Sqrt(v0_2->DecayVertexV0X()*v0_2->DecayVertexV0X()+v0_2->DecayVertexV0Y()*v0_2->DecayVertexV0Y()); 
+          fPhoton1DCAPV = DCAPV1;
+          fPhoton2DCAPV = DCAPV2;
+          fInvPi0Mass = pi0mass; 
+          fPi0Px = trackPi0.Px(); 
+          fPi0Py = trackPi0.Py(); 
+          fPi0Pz = trackPi0.Pz(); 
+          fPi0DecayVertX = KFPi0.GetX(); 
+          fPi0DecayVertY = KFPi0.GetY(); 
+          fPi0DecayVertZ = KFPi0.GetZ();
+          fPi0PhotPhotDCA = PhotPhotDCA;
+          fProtonPx = prot->Px(); 
+          fProtonPy = prot->Py(); 
+          fProtonPz = prot->Pz(); 
+          fProtonDCAtoPVxy = DCAxy; 
+          fProtonDCAtoPVz = DCAz; 
+          fProtonPi0DCA = ProtPi0DCA;
+          fnPair = pairs;
+          fnPairlowkstar = pairslowkstar; 
+          fnPairverylowkstar = pairsverylowkstar; 
+          fnPairveryverylowkstar = pairsveryverylowkstar; 
+          fSigmaCandTree->Fill();
+
+        }//End of Proton loop
+
+      /************************End of Sigma+ reconstruction*****************************/        
+        
+      }//End of Photon 2 loop
+    }//End of Photon 1 loop
+
+return;
+
+} //End of ReconstructParticles()
+
+//________________________________________________________________________
+
+void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff() {
+
+  Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
+
+  // Get Track parameters
+  Double_t trackxyz[3];
+  Double_t trackpxpypz[3];
+  Double_t trackparams[6];
+  Double_t covMatrix[21];
+
+  TLorentzVector trackPhoton1, trackPhoton2, trackPi0, trackProton, trackSigmaplus;
+  KFParticle KFElectron1, KFElectron2, KFPositron1, KFPositron2, KFProton; 
+
+  const Int_t nConvPhoton = fConvPhotonArray.size();
+  const Int_t nOffPhoton = PairIndexArray.size();
+  const Int_t nProton = fProtonArray.size();
+  Int_t countPi0 = 0;
+
+  for(Int_t i=0; i<nOffPhoton; i++) {
+
+    AliESDv0 v0_1 = (AliESDv0)Tracks2V0vertex(i);
+
+    for(Int_t j=i; j<nConvPhoton; j++) {
+
+      AliAODv0 *v0_2 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray.at(j));
+      if(!v0_2) continue;
+
+      // Get daughter tracks      
+      AliAODTrack* track1 = (AliAODTrack*)aodEvent->GetTrack(v0_1.GetNindex());
+      AliAODTrack* track2 = (AliAODTrack*)aodEvent->GetTrack(v0_1.GetPindex());
+      AliAODTrack* track3 = dynamic_cast<AliAODTrack*>(v0_2->GetDaughter(0));
+      AliAODTrack* track4 = dynamic_cast<AliAODTrack*>(v0_2->GetDaughter(1));
+
+      if(!track1 || !track2 || !track3 || !track4) {
+        AliWarning("ERROR: Could not retrieve all AOD tracks in Pi0 reconstruction!");
+        continue;
+      }
+
+      // AOD MC treatment
+      Double_t MCPi0DCAPV; //MC Pi0 Decay Vertex;
+      Bool_t isReallyPi0 = kFALSE; 
+      Bool_t isReallyPi0fromSigma = kFALSE;
+      Bool_t isReallyPi0fromDelta = kFALSE;
+      Bool_t isPrimary = kFALSE;
+      Int_t Pi0MotherLabel=-1;
+
+      if(isMonteCarlo){
+        AliAODMCParticle* V01Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track1->GetLabel())));
+        AliAODMCParticle* V01Daught2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track2->GetLabel())));
+        AliAODMCParticle* V02Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track3->GetLabel())));
+        AliAODMCParticle* V02Daught2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track4->GetLabel())));
+        if(V01Daught1&&V01Daught2&&V02Daught1&&V02Daught2){
+          if(TMath::Abs(V01Daught1->GetPdgCode())==11&&TMath::Abs(V01Daught2->GetPdgCode())==11&&TMath::Abs(V02Daught1->GetPdgCode())==11&&TMath::Abs(V02Daught2->GetPdgCode())==11){
+            if(V01Daught1->GetMother()!=-1&&V02Daught1->GetMother()!=-1&&V01Daught1->GetMother()==V01Daught2->GetMother()&&V02Daught1->GetMother()==V02Daught2->GetMother()){
+              AliAODMCParticle* V0Part1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V01Daught1->GetMother())));
+              AliAODMCParticle* V0Part2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V02Daught1->GetMother())));
+              if(V0Part1&&V0Part2){if(V0Part1->GetPdgCode()==22&&V0Part2->GetPdgCode()==22&&TMath::Abs(V0Part1->GetLabel())!=TMath::Abs(V0Part2->GetLabel())){
+                if(V0Part1->GetMother()!=-1&&V0Part1->GetMother()==V0Part2->GetMother()){
+
+                  AliAODMCParticle* Pi0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part1->GetMother())));
+                  if(Pi0Part){if(Pi0Part->GetPdgCode()==111){
+                  
+                    isReallyPi0=kTRUE;
+
+                    TVector3 prdvtx1(V0Part1->Xv(),V0Part1->Yv(),V0Part1->Zv());   
+                    TVector3 prdvtx2(V0Part2->Xv(),V0Part2->Yv(),V0Part2->Zv());   
+                    TVector3 prdvtx=prdvtx1+prdvtx2; prdvtx*=0.5;
+                    MCPi0DCAPV = prdvtx.Perp();
+
+                    AliAODMCParticle* Pi0Mother = NULL;
+                    if(Pi0Part->GetMother()!=-1){
+                      Pi0MotherLabel=Pi0Part->GetMother(); 
+                      Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
+                    }
+                    if(Pi0Mother){
+                      if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {isReallyPi0fromSigma = kTRUE; if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE;}
+                      if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
+                    }
+
+                  }}//Photon Mother exists and is Pi0
+                }//Photon and Single electron have common mother
+              }}//MC Photon exists
+            }//Electrons have common mother
+          }//Daughters are all electrons
+        }//V0 Daughters exist
+      }//End of isMonteCarlo
+
+      trackPhoton1.SetXYZM(v0_1.Px(),v0_1.Py(),v0_1.Pz(),0);
+      trackPhoton2.SetXYZM(v0_2->Px(),v0_2->Py(),v0_2->Pz(),0);
+      trackPi0 = trackPhoton1 + trackPhoton2;
+      Double_t pi0mass = trackPi0.M();
+
+      if(pi0mass<fRejectGammaAutoCorr&&(track1->GetID()==track3->GetID()||track2->GetID()==track4->GetID())) continue; //Clean up auto-correlations!
+
+      //KF Pi0 calculations
+      // Set up KFParticle
+      trackparams[0] = v0_1.Xv();
+      trackparams[1] = v0_1.Yv();
+      trackparams[2] = v0_1.Zv();
+      v0_1.GetPPxPyPz(trackparams[3],trackparams[4],trackparams[5]);
+      if(track1->Charge()>0) track1->GetCovarianceXYZPxPyPz(covMatrix);
+      else track2->GetCovarianceXYZPxPyPz(covMatrix);
+      KFPositron1.Create(trackparams,covMatrix,1,cElectronMass);
+
+      // Repeat for all other particles
+      trackparams[0] = v0_1.Xv();
+      trackparams[1] = v0_1.Yv();
+      trackparams[2] = v0_1.Zv();
+      v0_1.GetNPxPyPz(trackparams[3],trackparams[4],trackparams[5]);
+      if(track1->Charge()<0) track1->GetCovarianceXYZPxPyPz(covMatrix);
+      else track2->GetCovarianceXYZPxPyPz(covMatrix);
+      KFElectron1.Create(trackparams,covMatrix,-1,cElectronMass);
+
+      trackparams[0] = v0_2->DecayVertexV0X();
+      trackparams[1] = v0_2->DecayVertexV0Y();
+      trackparams[2] = v0_2->DecayVertexV0Z();
+      trackparams[3] = v0_2->MomPosX();
+      trackparams[4] = v0_2->MomPosY();
+      trackparams[5] = v0_2->MomPosZ();
+      if(track3->Charge()>0) track3->GetCovarianceXYZPxPyPz(covMatrix);
+      else track4->GetCovarianceXYZPxPyPz(covMatrix);
+      KFPositron2.Create(trackparams,covMatrix,1,cElectronMass);
+
+      trackparams[0] = v0_2->DecayVertexV0X();
+      trackparams[1] = v0_2->DecayVertexV0Y();
+      trackparams[2] = v0_2->DecayVertexV0Z();
+      trackparams[3] = v0_2->MomNegX();
+      trackparams[4] = v0_2->MomNegY();
+      trackparams[5] = v0_2->MomNegZ();
+      if(track3->Charge()<0) track3->GetCovarianceXYZPxPyPz(covMatrix);
+      else track4->GetCovarianceXYZPxPyPz(covMatrix);
+      KFElectron2.Create(trackparams,covMatrix,-1,cElectronMass);
+
+      //Reconstruct the Photons with two Methods: Standard and special gamma reconstruction
+      KFParticle KFPhoton1(KFElectron1,KFPositron1);
+      KFParticle KFPhoton2(KFElectron2,KFPositron2);
+
+      //Transport Photons to Conversion Points
+      KFPhoton1.TransportToDecayVertex();
+      KFPhoton2.TransportToDecayVertex();
+
+      Double_t PhotPhotDCA = TMath::Abs(KFPhoton1.GetDistanceFromParticle(KFPhoton2));
+
+      //Calculating DCA of Photons to PV 
+      TVector3 PV(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);              //Prim. Vertex
+      TVector3 CV1(v0_1.Xv(),v0_1.Yv(),v0_1.Zv());                          //Conv. Vertices
+      TVector3 CV2(v0_2->DecayVertexV0X(),v0_2->DecayVertexV0Y(),v0_2->DecayVertexV0Z());
+      TVector3 p1(v0_1.Px(),v0_1.Py(),v0_1.Pz());          //Momentum vectors of the photons
+      TVector3 p2(v0_2->Px(),v0_2->Py(),v0_2->Pz());   
+      Double_t DCAPV1 = (p1.Cross((CV1-PV))).Mag()/p1.Mag(); //DCA to PV of Photons
+      Double_t DCAPV2 = (p2.Cross((CV2-PV))).Mag()/p2.Mag(); //using line-point distance equation
+
+  	  FillHistogram("fHistGammaPairInvMassOneAdd",pi0mass);
+      if(isReallyPi0){FillHistogram("fHistGammaPairInvMassOneAddMC",pi0mass);}
+
+      if(pi0mass>0.12 && pi0mass<0.15) countPi0++; //Just for counting purposes here
+
+      if(pi0mass<fMinPi0Mass || pi0mass>fMaxPi0Mass) continue;  //Coarse mass cut to reduce combinatorics!
+
+      /************************Sigma+ reconstruction************************************/
+
+        for(Int_t k=0; k<nProton; k++) {
+
+          AliAODTrack *prot;
+          prot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(k));
+          if(!prot) continue;
+
+          trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
+          trackSigmaplus = trackPi0 + trackProton;
+          Float_t sigmaplusmass = trackSigmaplus.M();
+          FillHistogram("fHistInvSigmaMass",sigmaplusmass);
+          if(sigmaplusmass>fMaxSigmaMass) continue;   //Limit the mass range to reduce tree size
+
+          prot->GetXYZ(trackxyz);      
+          prot->GetPxPyPz(trackpxpypz);
+          for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
+          for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
+          prot->GetCovarianceXYZPxPyPz(covMatrix);
+          if(prot->Charge()>0) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
+          else KFProton.Create(trackparams,covMatrix,-1,cProtonMass);
+
+          //Reconstruct the Pi0 with the gammas
+          KFParticleCD KFPi0CD; //Check Daughters to avoid floating point exceptions. See .h-file
+          KFPi0CD.AddDaughter(KFPhoton1);
+          if(!KFPi0CD.CheckDaughter(KFPhoton2)) continue;
+
+          KFParticle KFPi0(KFPhoton1,KFPhoton2);
+          KFPi0.TransportToDecayVertex();
+
+          Double_t KFPi0DCAPV = TMath::Sqrt(KFPi0.GetX()*KFPi0.GetX()+KFPi0.GetY()*KFPi0.GetY());  
+          if(isReallyPi0){ 
+            FillHistogram("fHistPi0VertexMC",MCPi0DCAPV);
+            FillHistogram("fHistPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
+          }
+
+          KFParticleCD KFSigmaPlusCD; //Check Daughters to avoid floating point exceptions. See .h-file
+          KFSigmaPlusCD.AddDaughter(KFProton);
+          if(!KFSigmaPlusCD.CheckDaughter(KFPi0)) continue;
+    
+          KFParticle KFSigmaPlus(KFProton,KFPi0);
+          KFSigmaPlus.TransportToDecayVertex();
+          Double_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
+
+          Bool_t isReallySigma = kFALSE;
+          if(isMonteCarlo){
+            AliAODMCParticle* ProtonPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(prot->GetLabel())));
+            if(ProtonPart){if(TMath::Abs(ProtonPart->GetPdgCode())==2212){
+              if(ProtonPart->GetMother()==Pi0MotherLabel){
+                if(isReallyPi0fromSigma) {isReallySigma = kTRUE; FillHistogram("fHistSigmaCounter",2);}
                 else if (isReallyPi0fromDelta) FillHistogram("fHistMCdeltamass",sigmaplusmass); 
               }//Proton and Pi0 have common Mother
             }}//MC Particle exists and is a Proton 
           }//End of isMonteCarlo
 
-          if(isReallySigma) FillHistogram("fHistMCSigmaPA",TMath::Abs(sigmamomentum.Angle(sigmavertex)));
+          Float_t  DCAxy = -999., DCAz = -999.;
+          prot->GetImpactParameters(DCAxy,DCAz);
+
+          if(TMath::Abs(DCAxy)<fMinProtonDCAxy) continue; //Coarse cut on DCA to PV to reduce the tree size
+          if(TMath::Abs(DCAz)<fMinProtonDCAz) continue;
+
+          TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
+          TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
+          Float_t SigmaPointingAngle = sigmamomentum.Angle(sigmavertex);
+          if(isReallySigma) FillHistogram("fHistMCSigmaPA",SigmaPointingAngle);
+          FillHistogram("fHistSigmaPA",SigmaPointingAngle);
+          if(SigmaPointingAngle>fMaxSigmaPA) continue;  //Coarse cut on the Pointing Angle to reduce the tree size
+
+          Short_t pairs = 0, pairslowkstar = 0, pairsverylowkstar = 0, pairsveryverylowkstar = 0;
+          for(Int_t q=0; q<nProton; q++) {
+            if(q==k) continue;
+            AliAODTrack *pairprot;
+            pairprot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(q));
+            if(!pairprot) continue;
+            if(pairprot->Charge()!=prot->Charge()) continue;
+            pairs++;
+            TVector3 protonmomentum(pairprot->Px(),pairprot->Py(),pairprot->Pz());
+            TVector3 kstar=sigmamomentum-protonmomentum;
+            if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar.Mag());
+            if(kstar.Mag()<flowkstar) pairslowkstar++;
+            if(kstar.Mag()<fverylowkstar) pairsverylowkstar++;
+            if(kstar.Mag()<fveryverylowkstar) pairsveryverylowkstar++;
+          }        
 
           // Fill the Sigma Candidate Trees
-          fIsMCSigma = kFALSE; if(isReallySigma) fIsMCSigma = kTRUE;
-          fIsV01Onthefly = v0_1->GetOnFlyStatus();
+          fIsMCSigma = kFALSE; 
+          if(isReallySigma) fIsMCSigma = kTRUE;
+          fIsMCPrimary = kFALSE;
+          if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
+          fIsV01fromFinder = kFALSE;
+          fIsV02fromFinder = kTRUE;
+          fIsV01Onthefly = kFALSE;
           fIsV02Onthefly = v0_2->GetOnFlyStatus();
+          fSigRunnumber = aodEvent->GetRunNumber();
+          fSigTriggerMask = (ULong_t)aodEvent->GetTriggerMask();
           fSigCentrality = Centrality;
           fSigBField = Bz;
           fInvSigMass = sigmaplusmass; 
-          fSigPA = TMath::Abs(sigmamomentum.Angle(sigmavertex)); 
+          fSigPA = SigmaPointingAngle; 
           fSigCharge = prot->Charge(); 
           fSigPx = trackSigmaplus.Px(); 
           fSigPy = trackSigmaplus.Py(); 
@@ -2191,14 +2923,14 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fSigDecayVertX = KFSigmaPlus.GetX(); 
           fSigDecayVertY = KFSigmaPlus.GetY(); 
           fSigDecayVertZ = KFSigmaPlus.GetZ(); 
+          fPhoton1Radius = TMath::Sqrt(v0_1.Xv()*v0_1.Xv()+v0_1.Yv()*v0_1.Yv());
+          fPhoton2Radius = TMath::Sqrt(v0_2->DecayVertexV0X()*v0_2->DecayVertexV0X()+v0_2->DecayVertexV0Y()*v0_2->DecayVertexV0Y());
+          fPhoton1DCAPV = DCAPV1;
+          fPhoton2DCAPV = DCAPV2; 
           fInvPi0Mass = pi0mass; 
           fPi0Px = trackPi0.Px(); 
           fPi0Py = trackPi0.Py(); 
-          fPi0Pz = trackPi0.Pz(); 
-          fPi0DaughtPt1 = TMath::Sqrt(v0_1->MomPosX()*v0_1->MomPosX()+v0_1->MomPosY()*v0_1->MomPosY());
-          fPi0DaughtPt2 = TMath::Sqrt(v0_1->MomNegX()*v0_1->MomNegX()+v0_1->MomNegY()*v0_1->MomNegY());
-          fPi0DaughtPt3 = TMath::Sqrt(v0_2->MomPosX()*v0_2->MomPosX()+v0_2->MomPosY()*v0_2->MomPosY());
-          fPi0DaughtPt4 = TMath::Sqrt(v0_2->MomNegX()*v0_2->MomNegX()+v0_2->MomNegY()*v0_2->MomNegY());
+          fPi0Pz = trackPi0.Pz();
           fPi0DecayVertX = KFPi0.GetX(); 
           fPi0DecayVertY = KFPi0.GetY(); 
           fPi0DecayVertZ = KFPi0.GetZ();
@@ -2208,7 +2940,11 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fProtonPz = prot->Pz(); 
           fProtonDCAtoPVxy = DCAxy; 
           fProtonDCAtoPVz = DCAz; 
-          fProtonPi0DCA = ProtPi0DCA; 
+          fProtonPi0DCA = ProtPi0DCA;
+          fnPair = pairs;
+          fnPairlowkstar = pairslowkstar; 
+          fnPairverylowkstar = pairsverylowkstar; 
+          fnPairveryverylowkstar = pairsveryverylowkstar; 
           fSigmaCandTree->Fill();
 
         }//End of Proton loop
@@ -2218,180 +2954,523 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
       }//End of Photon 2 loop
     }//End of Photon 1 loop
 
-  FillHistogram("fHistCandperEvent",countPi0,nProton); 
-
 return;
 
-} //End of ReconstructParticles()
+} //End of ReconstructParticlesOff()
 
-//_____________________________________________________________________________
+//________________________________________________________________________
 
-void AliAnalysisTaskSigmaPlus::ReconstructParticlesfromee() const{
+void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff2() {
 
   Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
 
-  Double_t pi0mass, sigmaplusmass; //invariant masses
-
-  // Track parameters
+  // Get Track parameters
   Double_t trackxyz[3];
   Double_t trackpxpypz[3];
   Double_t trackparams[6];
   Double_t covMatrix[21];
 
-  KFParticle KFElectron1, KFElectron2, KFPositron1, KFPositron2; 
-  TLorentzVector trackElectron1, trackElectron2, trackPositron1, trackPositron2, trackPhoton1, trackPhoton2, trackPi0;
+  TLorentzVector trackPhoton1, trackPhoton2, trackPi0, trackProton, trackSigmaplus;
+  KFParticle KFElectron1, KFElectron2, KFPositron1, KFPositron2, KFProton; 
 
-  const Int_t nElectrons = fElectronPairArray->size();
-  const Int_t nProtons = fProtonArray->size();
+  const Int_t nOffPhoton = PairIndexArray.size();
+  const Int_t nProton = fProtonArray.size();
+  Int_t countPi0 = 0;
 
-  for(Int_t i=0; i<nElectrons-1; i++) {
+  for(Int_t i=0; i<nOffPhoton-1; i++) {
 
-    AliAODTrack *electrack1 = (AliAODTrack*)aodEvent->GetTrack(fElectronPairArray->at(i));
-    AliAODTrack *positrack1 = (AliAODTrack*)aodEvent->GetTrack(fPositronPairArray->at(i));
-    if(!electrack1||!positrack1) continue;
+    AliESDv0 v0_1 = (AliESDv0)Tracks2V0vertex(i);
 
-    for(Int_t j=i+1; j<nElectrons; j++) {
+    for(Int_t j=i+1; j<nOffPhoton; j++) {
 
-      AliAODTrack *electrack2 = (AliAODTrack*)aodEvent->GetTrack(fElectronPairArray->at(j));
-      AliAODTrack *positrack2 = (AliAODTrack*)aodEvent->GetTrack(fPositronPairArray->at(j));
-      if(!electrack2||!positrack2) continue;
+      AliESDv0 v0_2 = (AliESDv0)Tracks2V0vertex(j);
 
-      AliAODv0 *v0;
-      Bool_t Phot1hasV0 = kFALSE; Int_t m_temp1 = 0;
-      Bool_t Phot2hasV0 = kFALSE; Int_t m_temp2 = 0;
-      Int_t mmax = fConvPhotonArray->size();
-      for(Int_t m=0; m<mmax; m++){
-        v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(m));
-        if(!v0) continue;
-        Int_t NID = v0->GetNegID();
-        Int_t PID = v0->GetPosID();
-        if(NID==electrack1->GetID()||PID==positrack1->GetID()){Phot1hasV0 = kTRUE; m_temp1 = m;}
-        if(NID==electrack2->GetID()||PID==positrack2->GetID()){Phot2hasV0 = kTRUE; m_temp2 = m;}
+      // Get daughter tracks      
+      AliAODTrack* track1 = (AliAODTrack*)aodEvent->GetTrack(v0_1.GetNindex());
+      AliAODTrack* track2 = (AliAODTrack*)aodEvent->GetTrack(v0_1.GetPindex());
+      AliAODTrack* track3 = (AliAODTrack*)aodEvent->GetTrack(v0_2.GetNindex());
+      AliAODTrack* track4 = (AliAODTrack*)aodEvent->GetTrack(v0_2.GetPindex());
+
+      if(!track1 || !track2 || !track3 || !track4) {
+        AliWarning("ERROR: Could not retrieve all AOD tracks in Pi0 reconstruction!");
+        continue;
       }
 
-      if(Phot1hasV0&&Phot2hasV0) continue;
+      // AOD MC treatment
+      Double_t MCPi0DCAPV; //MC Pi0 Decay Vertex;
+      Bool_t isReallyPi0 = kFALSE; 
+      Bool_t isReallyPi0fromSigma = kFALSE;
+      Bool_t isReallyPi0fromDelta = kFALSE;
+      Bool_t isPrimary = kFALSE;
+      Int_t Pi0MotherLabel=-1;
 
-      if(Phot1hasV0){
-        v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(m_temp1));        
-        if(!v0) continue;
-        AliAODTrack* track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
-        AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
-        if(!track1||!track2) continue;
+      if(isMonteCarlo){
+        AliAODMCParticle* V01Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track1->GetLabel())));
+        AliAODMCParticle* V01Daught2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track2->GetLabel())));
+        AliAODMCParticle* V02Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track3->GetLabel())));
+        AliAODMCParticle* V02Daught2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track4->GetLabel())));
+        if(V01Daught1&&V01Daught2&&V02Daught1&&V02Daught2){
+          if(TMath::Abs(V01Daught1->GetPdgCode())==11&&TMath::Abs(V01Daught2->GetPdgCode())==11&&TMath::Abs(V02Daught1->GetPdgCode())==11&&TMath::Abs(V02Daught2->GetPdgCode())==11){
+            if(V01Daught1->GetMother()!=-1&&V02Daught1->GetMother()!=-1&&V01Daught1->GetMother()==V01Daught2->GetMother()&&V02Daught1->GetMother()==V02Daught2->GetMother()){
+              AliAODMCParticle* V0Part1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V01Daught1->GetMother())));
+              AliAODMCParticle* V0Part2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V02Daught1->GetMother())));
+              if(V0Part1&&V0Part2){if(V0Part1->GetPdgCode()==22&&V0Part2->GetPdgCode()==22&&TMath::Abs(V0Part1->GetLabel())!=TMath::Abs(V0Part2->GetLabel())){
+                if(V0Part1->GetMother()!=-1&&V0Part1->GetMother()==V0Part2->GetMother()){
 
-        trackPhoton1.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),0);
+                  AliAODMCParticle* Pi0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part1->GetMother())));
+                  if(Pi0Part){if(Pi0Part->GetPdgCode()==111){
+                  
+                    isReallyPi0=kTRUE;
 
-        trackparams[0] = v0->DecayVertexV0X();
-        trackparams[1] = v0->DecayVertexV0Y();
-        trackparams[2] = v0->DecayVertexV0Z();
-        trackparams[3] = v0->MomPosX();
-        trackparams[4] = v0->MomPosY();
-        trackparams[5] = v0->MomPosZ();
-        if(track1->Charge()>0) track1->GetCovarianceXYZPxPyPz(covMatrix);
-        else track2->GetCovarianceXYZPxPyPz(covMatrix);
-        KFPositron1.Create(trackparams,covMatrix,1,cElectronMass);
+                    TVector3 prdvtx1(V0Part1->Xv(),V0Part1->Yv(),V0Part1->Zv());   
+                    TVector3 prdvtx2(V0Part2->Xv(),V0Part2->Yv(),V0Part2->Zv());   
+                    TVector3 prdvtx=prdvtx1+prdvtx2; prdvtx*=0.5;
+                    MCPi0DCAPV = prdvtx.Perp();
 
-        trackparams[0] = v0->DecayVertexV0X();
-        trackparams[1] = v0->DecayVertexV0Y();
-        trackparams[2] = v0->DecayVertexV0Z();
-        trackparams[3] = v0->MomNegX();
-        trackparams[4] = v0->MomNegY();
-        trackparams[5] = v0->MomNegZ();
-        if(track1->Charge()<0) track1->GetCovarianceXYZPxPyPz(covMatrix);
-        else track2->GetCovarianceXYZPxPyPz(covMatrix);
-        KFElectron1.Create(trackparams,covMatrix,-1,cElectronMass);
-      }
-      else{ //Else use KF
-        // Set up KFParticle
-        electrack1->GetXYZ(trackxyz);      
-        electrack1->GetPxPyPz(trackpxpypz);
-        for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-        for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-        electrack1->GetCovarianceXYZPxPyPz(covMatrix);
-        KFElectron1.Create(trackparams,covMatrix,-1,cElectronMass);
-        trackElectron1.SetXYZM(trackpxpypz[0],trackpxpypz[1],trackpxpypz[2],cElectronMass);
+                    AliAODMCParticle* Pi0Mother = NULL;
+                    if(Pi0Part->GetMother()!=-1){
+                      Pi0MotherLabel=Pi0Part->GetMother(); 
+                      Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
+                    }
+                    if(Pi0Mother){
+                      if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {isReallyPi0fromSigma = kTRUE; if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE;}
+                      if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
+                    }
 
-        // Repeat for all other particles
-        positrack1->GetXYZ(trackxyz);      
-        positrack1->GetPxPyPz(trackpxpypz);
-        for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-        for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-        positrack1->GetCovarianceXYZPxPyPz(covMatrix);
-        KFPositron1.Create(trackparams,covMatrix,1,cElectronMass);
-        trackPositron1.SetXYZM(trackpxpypz[0],trackpxpypz[1],trackpxpypz[2],cElectronMass);
+                  }}//Photon Mother exists and is Pi0
+                }//Photon and Single electron have common mother
+              }}//MC Photon exists
+            }//Electrons have common mother
+          }//Daughters are all electrons
+        }//V0 Daughters exist
+      }//End of isMonteCarlo
 
-        //Reconstruct the Photon with KF
-        KFParticle KFPhoton1(KFElectron1,KFPositron1);
-
-        //Save KF Photon Parameters in TLorentzvectors
-        trackPhoton1.SetXYZM(KFPhoton1.GetPx(),KFPhoton1.GetPy(),KFPhoton1.GetPz(),0);
-      }
-
-      if(Phot2hasV0){
-        v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(m_temp2));        
-        if(!v0) continue;
-        AliAODTrack* track3 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
-        AliAODTrack* track4 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
-        if(!track3||!track4) continue;
-
-        trackPhoton1.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),0);
-
-        trackparams[0] = v0->DecayVertexV0X();
-        trackparams[1] = v0->DecayVertexV0Y();
-        trackparams[2] = v0->DecayVertexV0Z();
-        trackparams[3] = v0->MomPosX();
-        trackparams[4] = v0->MomPosY();
-        trackparams[5] = v0->MomPosZ();
-        if(track3->Charge()>0) track3->GetCovarianceXYZPxPyPz(covMatrix);
-        else track4->GetCovarianceXYZPxPyPz(covMatrix);
-        KFPositron2.Create(trackparams,covMatrix,1,cElectronMass);
-
-        trackparams[0] = v0->DecayVertexV0X();
-        trackparams[1] = v0->DecayVertexV0Y();
-        trackparams[2] = v0->DecayVertexV0Z();
-        trackparams[3] = v0->MomNegX();
-        trackparams[4] = v0->MomNegY();
-        trackparams[5] = v0->MomNegZ();
-        if(track3->Charge()<0) track3->GetCovarianceXYZPxPyPz(covMatrix);
-        else track4->GetCovarianceXYZPxPyPz(covMatrix);
-        KFElectron2.Create(trackparams,covMatrix,-1,cElectronMass);
-      }
-      else{ //Else use KF
-        // Set up KFParticle
-        electrack2->GetXYZ(trackxyz);      
-        electrack2->GetPxPyPz(trackpxpypz);
-        for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-        for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-        electrack2->GetCovarianceXYZPxPyPz(covMatrix);
-        KFElectron2.Create(trackparams,covMatrix,-1,cElectronMass);
-        trackElectron2.SetXYZM(trackpxpypz[0],trackpxpypz[1],trackpxpypz[2],cElectronMass);
-
-        // Repeat for all other particles
-        positrack2->GetXYZ(trackxyz);      
-        positrack2->GetPxPyPz(trackpxpypz);
-        for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
-        for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
-        positrack2->GetCovarianceXYZPxPyPz(covMatrix);
-        KFPositron2.Create(trackparams,covMatrix,1,cElectronMass);
-        trackPositron2.SetXYZM(trackpxpypz[0],trackpxpypz[1],trackpxpypz[2],cElectronMass);
-
-        //Reconstruct the Photon with KF
-        KFParticle KFPhoton2(KFElectron2,KFPositron2);
-
-        //Save KF Photon Parameters in TLorentzvectors
-        trackPhoton2.SetXYZM(KFPhoton2.GetPx(),KFPhoton2.GetPy(),KFPhoton2.GetPz(),0);
-      }
-
-      //Get the invariant mass with TLorentzVector!
+      trackPhoton1.SetXYZM(v0_1.Px(),v0_1.Py(),v0_1.Pz(),0);
+      trackPhoton2.SetXYZM(v0_2.Px(),v0_2.Py(),v0_2.Pz(),0);
       trackPi0 = trackPhoton1 + trackPhoton2;
-      pi0mass = trackPi0.M();
-      FillHistogram("fHisteepi0massTL",pi0mass);
+      Double_t pi0mass = trackPi0.M();
+
+      if(pi0mass<fRejectGammaAutoCorr&&(track1->GetID()==track3->GetID()||track2->GetID()==track4->GetID())) continue; //Clean up auto-correlations!
+
+      //KF Pi0 calculations
+      // Set up KFParticle
+      trackparams[0] = v0_1.Xv();
+      trackparams[1] = v0_1.Yv();
+      trackparams[2] = v0_1.Zv();
+      v0_1.GetPPxPyPz(trackparams[3],trackparams[4],trackparams[5]);
+      if(track1->Charge()>0) track1->GetCovarianceXYZPxPyPz(covMatrix);
+      else track2->GetCovarianceXYZPxPyPz(covMatrix);
+      KFPositron1.Create(trackparams,covMatrix,1,cElectronMass);
+
+      // Repeat for all other particles
+      trackparams[0] = v0_1.Xv();
+      trackparams[1] = v0_1.Yv();
+      trackparams[2] = v0_1.Zv();
+      v0_1.GetNPxPyPz(trackparams[3],trackparams[4],trackparams[5]);
+      if(track1->Charge()<0) track1->GetCovarianceXYZPxPyPz(covMatrix);
+      else track2->GetCovarianceXYZPxPyPz(covMatrix);
+      KFElectron1.Create(trackparams,covMatrix,-1,cElectronMass);
+
+      trackparams[0] = v0_2.Xv();
+      trackparams[1] = v0_2.Yv();
+      trackparams[2] = v0_2.Zv();
+      v0_2.GetPPxPyPz(trackparams[3],trackparams[4],trackparams[5]);
+      if(track3->Charge()>0) track3->GetCovarianceXYZPxPyPz(covMatrix);
+      else track4->GetCovarianceXYZPxPyPz(covMatrix);
+      KFPositron2.Create(trackparams,covMatrix,1,cElectronMass);
+
+      trackparams[0] = v0_2.Xv();
+      trackparams[1] = v0_2.Yv();
+      trackparams[2] = v0_2.Zv();
+      v0_2.GetNPxPyPz(trackparams[3],trackparams[4],trackparams[5]);
+      if(track3->Charge()<0) track3->GetCovarianceXYZPxPyPz(covMatrix);
+      else track4->GetCovarianceXYZPxPyPz(covMatrix);
+      KFElectron2.Create(trackparams,covMatrix,-1,cElectronMass);
+
+      //Reconstruct the Photons with two Methods: Standard and special gamma reconstruction
+      KFParticle KFPhoton1(KFElectron1,KFPositron1);
+      KFParticle KFPhoton2(KFElectron2,KFPositron2);
+
+      //Transport Photons to Conversion Points
+      KFPhoton1.TransportToDecayVertex();
+      KFPhoton2.TransportToDecayVertex();
+
+      Double_t PhotPhotDCA = TMath::Abs(KFPhoton1.GetDistanceFromParticle(KFPhoton2));
+
+      //Calculating DCA of Photons to PV 
+      TVector3 PV(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);              //Prim. Vertex
+      TVector3 CV1(v0_1.Xv(),v0_1.Yv(),v0_1.Zv());                          //Conv. Vertices
+      TVector3 CV2(v0_2.Xv(),v0_2.Yv(),v0_2.Zv());
+      TVector3 p1(v0_1.Px(),v0_1.Py(),v0_1.Pz());          //Momentum vectors of the photons
+      TVector3 p2(v0_2.Px(),v0_2.Py(),v0_2.Pz());   
+      Double_t DCAPV1 = (p1.Cross((CV1-PV))).Mag()/p1.Mag(); //DCA to PV of Photons
+      Double_t DCAPV2 = (p2.Cross((CV2-PV))).Mag()/p2.Mag(); //using line-point distance equation
+
+  	  FillHistogram("fHistGammaPairInvMassOnlyAdd",pi0mass);
+      if(isReallyPi0){FillHistogram("fHistGammaPairInvMassOnlyAddMC",pi0mass);}
+
+      if(pi0mass>0.12 && pi0mass<0.15) countPi0++; //Just for counting purposes here
+
+      if(pi0mass<fMinPi0Mass || pi0mass>fMaxPi0Mass) continue;  //Coarse mass cut to reduce combinatorics!
+
+      /************************Sigma+ reconstruction************************************/
+
+        for(Int_t k=0; k<nProton; k++) {
+
+          AliAODTrack *prot;
+          prot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(k));
+          if(!prot) continue;
+
+          trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
+          trackSigmaplus = trackPi0 + trackProton;
+          Float_t sigmaplusmass = trackSigmaplus.M();
+          FillHistogram("fHistInvSigmaMass",sigmaplusmass);
+          if(sigmaplusmass>fMaxSigmaMass) continue;   //Limit the mass range to reduce tree size
+
+          prot->GetXYZ(trackxyz);      
+          prot->GetPxPyPz(trackpxpypz);
+          for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
+          for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
+          prot->GetCovarianceXYZPxPyPz(covMatrix);
+          if(prot->Charge()>0) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
+          else KFProton.Create(trackparams,covMatrix,-1,cProtonMass);
+
+          //Reconstruct the Pi0 with the gammas
+          KFParticleCD KFPi0CD; //Check Daughters to avoid floating point exceptions. See .h-file
+          KFPi0CD.AddDaughter(KFPhoton1);
+          if(!KFPi0CD.CheckDaughter(KFPhoton2)) continue;
+
+          KFParticle KFPi0(KFPhoton1,KFPhoton2);
+          KFPi0.TransportToDecayVertex();
+
+          Double_t KFPi0DCAPV = TMath::Sqrt(KFPi0.GetX()*KFPi0.GetX()+KFPi0.GetY()*KFPi0.GetY());  
+          if(isReallyPi0){ 
+            FillHistogram("fHistPi0VertexMC",MCPi0DCAPV);
+            FillHistogram("fHistPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
+          }
+
+          KFParticleCD KFSigmaPlusCD; //Check Daughters to avoid floating point exceptions. See .h-file
+          KFSigmaPlusCD.AddDaughter(KFProton);
+          if(!KFSigmaPlusCD.CheckDaughter(KFPi0)) continue;
+    
+          KFParticle KFSigmaPlus(KFProton,KFPi0);
+          KFSigmaPlus.TransportToDecayVertex();
+          Double_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
+
+          Bool_t isReallySigma = kFALSE;
+          if(isMonteCarlo){
+            AliAODMCParticle* ProtonPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(prot->GetLabel())));
+            if(ProtonPart){if(TMath::Abs(ProtonPart->GetPdgCode())==2212){
+              if(ProtonPart->GetMother()==Pi0MotherLabel){
+                if(isReallyPi0fromSigma) {isReallySigma = kTRUE; FillHistogram("fHistSigmaCounter",3);}
+                else if (isReallyPi0fromDelta) FillHistogram("fHistMCdeltamass",sigmaplusmass); 
+              }//Proton and Pi0 have common Mother
+            }}//MC Particle exists and is a Proton 
+          }//End of isMonteCarlo
+
+          Float_t  DCAxy = -999., DCAz = -999.;
+          prot->GetImpactParameters(DCAxy,DCAz);
+
+          if(TMath::Abs(DCAxy)<fMinProtonDCAxy) continue; //Coarse cut on DCA to PV to reduce the tree size
+          if(TMath::Abs(DCAz)<fMinProtonDCAz) continue;
+
+          TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
+          TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
+          Float_t SigmaPointingAngle = sigmamomentum.Angle(sigmavertex);
+          if(isReallySigma) FillHistogram("fHistMCSigmaPA",SigmaPointingAngle);
+          FillHistogram("fHistSigmaPA",SigmaPointingAngle);
+          if(SigmaPointingAngle>fMaxSigmaPA) continue;  //Coarse cut on the Pointing Angle to reduce the tree size
+
+          Short_t pairs = 0, pairslowkstar = 0, pairsverylowkstar = 0, pairsveryverylowkstar = 0;
+          for(Int_t q=0; q<nProton; q++) {
+            if(q==k) continue;
+            AliAODTrack *pairprot;
+            pairprot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(q));
+            if(!pairprot) continue;
+            if(pairprot->Charge()!=prot->Charge()) continue;
+            pairs++;
+            TVector3 protonmomentum(pairprot->Px(),pairprot->Py(),pairprot->Pz());
+            TVector3 kstar=sigmamomentum-protonmomentum;
+            if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar.Mag());
+            if(kstar.Mag()<flowkstar) pairslowkstar++;
+            if(kstar.Mag()<fverylowkstar) pairsverylowkstar++;
+            if(kstar.Mag()<fveryverylowkstar) pairsveryverylowkstar++;
+          }        
+
+          // Fill the Sigma Candidate Trees
+          fIsMCSigma = kFALSE; 
+          if(isReallySigma) fIsMCSigma = kTRUE;
+          fIsMCPrimary = kFALSE;
+          if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
+          fIsV01fromFinder = kFALSE;
+          fIsV02fromFinder = kFALSE;
+          fIsV01Onthefly = kFALSE;
+          fIsV02Onthefly = kFALSE;
+          fSigRunnumber = aodEvent->GetRunNumber();
+          fSigTriggerMask = (ULong_t)aodEvent->GetTriggerMask();
+          fSigCentrality = Centrality;
+          fSigBField = Bz;
+          fInvSigMass = sigmaplusmass; 
+          fSigPA = SigmaPointingAngle; 
+          fSigCharge = prot->Charge(); 
+          fSigPx = trackSigmaplus.Px(); 
+          fSigPy = trackSigmaplus.Py(); 
+          fSigPz = trackSigmaplus.Pz(); 
+          fPrimVertX = primaryVtxPosX; 
+          fPrimVertY = primaryVtxPosY; 
+          fPrimVertZ = primaryVtxPosZ; 
+          fSigDecayVertX = KFSigmaPlus.GetX(); 
+          fSigDecayVertY = KFSigmaPlus.GetY(); 
+          fSigDecayVertZ = KFSigmaPlus.GetZ();
+          fPhoton1Radius = TMath::Sqrt(v0_1.Xv()*v0_1.Xv()+v0_1.Yv()*v0_1.Yv());
+          fPhoton2Radius = TMath::Sqrt(v0_2.Xv()*v0_2.Xv()+v0_2.Yv()*v0_2.Yv());
+          fPhoton1DCAPV = DCAPV1;
+          fPhoton2DCAPV = DCAPV2; 
+          fInvPi0Mass = pi0mass; 
+          fPi0Px = trackPi0.Px(); 
+          fPi0Py = trackPi0.Py(); 
+          fPi0Pz = trackPi0.Pz();
+          fPi0DecayVertX = KFPi0.GetX(); 
+          fPi0DecayVertY = KFPi0.GetY(); 
+          fPi0DecayVertZ = KFPi0.GetZ();
+          fPi0PhotPhotDCA = PhotPhotDCA;
+          fProtonPx = prot->Px(); 
+          fProtonPy = prot->Py(); 
+          fProtonPz = prot->Pz(); 
+          fProtonDCAtoPVxy = DCAxy; 
+          fProtonDCAtoPVz = DCAz; 
+          fProtonPi0DCA = ProtPi0DCA;
+          fnPair = pairs;
+          fnPairlowkstar = pairslowkstar; 
+          fnPairverylowkstar = pairsverylowkstar; 
+          fnPairveryverylowkstar = pairsveryverylowkstar; 
+          fSigmaCandTree->Fill();
+
+        }//End of Proton loop
+
+      /************************End of Sigma+ reconstruction*****************************/        
         
-    }//End of Photon 2 loop
-  }//End of Photon 1 loop
+      }//End of Photon 2 loop
+    }//End of Photon 1 loop
 
 return;
 
-} //End of ReconstructParticlesfromee()
+} //End of ReconstructParticlesOff2()
+
+//________________________________________________________________________
+
+void AliAnalysisTaskSigmaPlus::ReconstructParticlesOneGamma() {
+
+  Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
+
+  // Get Track parameters
+  Double_t trackxyz[3];
+  Double_t trackpxpypz[3];
+  Double_t trackparams[6];
+  Double_t covMatrix[21];
+
+  TLorentzVector trackPhoton, trackProton, trackSigmaplus;
+  KFParticle KFElectron, KFPositron, KFProton; 
+
+  const Int_t nConvPhoton = fConvPhotonArray.size();
+  const Int_t nProton = fProtonArray.size();
+
+  for(Int_t i=0; i<nConvPhoton; i++) {
+
+    AliAODv0* v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray.at(i));
+    if(!v0) continue;
+
+    // Get daughter tracks      
+    AliAODTrack* track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+    AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+
+    if(!track1 || !track2) {
+    AliWarning("ERROR: Could not retrieve all AOD tracks in Pi0 reconstruction!");
+    continue;
+    }
+
+    trackPhoton.SetXYZM(v0->Px(),v0->Py(),v0->Pz(),0);
+
+    Bool_t isPhotonfromSigma = kFALSE;
+    Bool_t isPrimary = kFALSE;
+
+    AliAODMCParticle* PhotDaught1 = NULL;
+    AliAODMCParticle* PhotDaught2 = NULL;
+    AliAODMCParticle* PhotonPart = NULL;    
+    AliAODMCParticle* SigmaPart = NULL;
+    
+    if(isMonteCarlo){
+      PhotDaught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track1->GetLabel())));
+      PhotDaught2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track2->GetLabel())));
+      
+      if(PhotDaught1&&PhotDaught2){
+        if(PhotDaught1->GetMother()!=-1&&PhotDaught2->GetMother()!=-1&&PhotDaught1->GetMother()==PhotDaught2->GetMother()){
+          PhotonPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(PhotDaught1->GetMother())));        
+        }  
+      }    
+              
+      if(PhotonPart){
+        if(PhotonPart->GetMother()!=-1&&PhotonPart->GetPdgCode()==22){
+          SigmaPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(PhotonPart->GetMother())));        
+        }
+      }
+
+      if(SigmaPart){
+        if(TMath::Abs(SigmaPart->GetPdgCode())==3222){
+          isPhotonfromSigma = kTRUE;
+          if(SigmaPart->IsPrimary()||SigmaPart->IsPhysicalPrimary()) isPrimary = kTRUE;
+          FillHistogram("fHistSigmaCounter",4);
+        }
+      }
+    }//End of isMonteCarlo  
+
+    for(Int_t j=0; j<nProton; j++) {
+
+      AliAODTrack *prot;
+      prot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(j));
+      if(!prot) continue;
+
+      trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
+      trackSigmaplus = trackPhoton + trackProton; 
+      Float_t sigmaplusmass = trackSigmaplus.M();
+      if(sigmaplusmass>fMaxSigmaMass) continue;  //Coarse Mass Cut 
+
+      Bool_t isReallySigma = kFALSE;
+      if(isMonteCarlo&&isPhotonfromSigma){
+        AliAODMCParticle* ProtonPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(prot->GetLabel())));
+        if(ProtonPart){
+          if(ProtonPart->GetMother()!=-1&&TMath::Abs(ProtonPart->GetPdgCode())==2212){
+            if(TMath::Abs(ProtonPart->GetMother())==TMath::Abs(SigmaPart->GetLabel())) isReallySigma = kTRUE;
+          }
+        }
+      }//End of isMonteCarlo
+
+      //KF calculations
+      // Set up KFParticle
+      trackparams[0] = v0->DecayVertexV0X();
+      trackparams[1] = v0->DecayVertexV0Y();
+      trackparams[2] = v0->DecayVertexV0Z();
+      trackparams[3] = v0->MomPosX();
+      trackparams[4] = v0->MomPosY();
+      trackparams[5] = v0->MomPosZ();
+      if(track1->Charge()>0) track1->GetCovarianceXYZPxPyPz(covMatrix);
+      else track2->GetCovarianceXYZPxPyPz(covMatrix);
+      KFPositron.Create(trackparams,covMatrix,1,cElectronMass);
+
+      // Repeat for all other particles
+      trackparams[0] = v0->DecayVertexV0X();
+      trackparams[1] = v0->DecayVertexV0Y();
+      trackparams[2] = v0->DecayVertexV0Z();
+      trackparams[3] = v0->MomNegX();
+      trackparams[4] = v0->MomNegY();
+      trackparams[5] = v0->MomNegZ();
+      if(track1->Charge()<0) track1->GetCovarianceXYZPxPyPz(covMatrix);
+      else track2->GetCovarianceXYZPxPyPz(covMatrix);
+      KFElectron.Create(trackparams,covMatrix,-1,cElectronMass);
+
+      //Reconstruct the Photon
+      KFParticle KFPhoton(KFElectron,KFPositron); //Reconstruct with default method in KF
+
+      //Transport Photon to Conversion Point
+      KFPhoton.TransportToDecayVertex();
+
+      prot->GetXYZ(trackxyz);      
+      prot->GetPxPyPz(trackpxpypz);
+      for (Int_t q = 0; q<3;q++) {trackparams[q] = trackxyz[q];}
+      for (Int_t q = 0; q<3;q++) {trackparams[q+3] = trackpxpypz[q];}
+      prot->GetCovarianceXYZPxPyPz(covMatrix);
+      if(prot->Charge()>0) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
+      else KFProton.Create(trackparams,covMatrix,-1,cProtonMass);
+      
+      Double_t ProtPhotDCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPhoton));
+
+      //Calculating DCA of Photon to PV 
+      TVector3 PV(primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ);                   //Prim. Vertex
+      TVector3 CV(v0->DecayVertexV0X(),v0->DecayVertexV0Y(),v0->DecayVertexV0Z()); //Conv. Vertex
+      TVector3 p(v0->Px(),v0->Py(),v0->Pz());                   //Momentum vectors of the photons
+      Double_t DCAPV = (p.Cross((CV-PV))).Mag()/p.Mag();               //DCA to PV of Photons
+
+      KFParticleCD KFSigmaPlusCD; //Check Daughters to avoid floating point exceptions. See .h-file
+      KFSigmaPlusCD.AddDaughter(KFProton);
+      if(!KFSigmaPlusCD.CheckDaughter(KFPhoton)) continue;
+      KFParticle KFSigmaPlus(KFProton,KFPhoton);
+      
+      KFSigmaPlus.TransportToDecayVertex();
+
+      Float_t  DCAxy = -999., DCAz = -999.;
+      prot->GetImpactParameters(DCAxy,DCAz);
+
+      if(TMath::Abs(DCAxy)<fMinProtonDCAxy) continue; //Coarse cut on DCA to PV to reduce the tree size
+      if(TMath::Abs(DCAz)<fMinProtonDCAz) continue;
+
+      TVector3 sigmamomentum(trackSigmaplus.Px(),trackSigmaplus.Py(),trackSigmaplus.Pz());
+      TVector3 sigmavertex(KFSigmaPlus.GetX()-primaryVtxPosX,KFSigmaPlus.GetY()-primaryVtxPosY,KFSigmaPlus.GetZ()-primaryVtxPosZ);
+      Float_t SigmaPointingAngle = sigmamomentum.Angle(sigmavertex);
+      if(isReallySigma) FillHistogram("fHistMCOneGammaSigmaPA",SigmaPointingAngle);
+      if(SigmaPointingAngle>fMaxSigmaPA) continue;  //Coarse cut on the Pointing Angle to reduce the tree size
+
+      Short_t pairs = 0, pairslowkstar = 0, pairsverylowkstar = 0, pairsveryverylowkstar = 0;
+      for(Int_t q=0; q<nProton; q++) {
+        if(q==j) continue;
+        AliAODTrack *pairprot;
+        pairprot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(q));
+        if(!pairprot) continue;
+        if(pairprot->Charge()!=prot->Charge()) continue;
+        pairs++;
+        TVector3 protonmomentum(pairprot->Px(),pairprot->Py(),pairprot->Pz());
+        TVector3 kstar=sigmamomentum-protonmomentum;
+        if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar.Mag());
+        if(kstar.Mag()<flowkstar) pairslowkstar++;
+        if(kstar.Mag()<fverylowkstar) pairsverylowkstar++;
+        if(kstar.Mag()<fveryverylowkstar) pairsveryverylowkstar++;
+      }        
+
+      // Fill the Extra Sigma Candidate Trees
+      fIsMCSigma = kFALSE; 
+      if(isReallySigma) fIsMCSigma = kTRUE;
+      fIsMCPrimary = kFALSE;
+      if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
+      fIsV0fromFinder = kTRUE;
+      fIsV0Onthefly = v0->GetOnFlyStatus();
+      fSigRunnumber = aodEvent->GetRunNumber();
+      fSigTriggerMask = (ULong_t)aodEvent->GetTriggerMask();
+      fSigCentrality = Centrality;
+      fSigBField = Bz;
+      fInvSigMass = sigmaplusmass; 
+      fSigPA = SigmaPointingAngle; 
+      fSigCharge = prot->Charge(); 
+      fSigPx = trackSigmaplus.Px(); 
+      fSigPy = trackSigmaplus.Py(); 
+      fSigPz = trackSigmaplus.Pz(); 
+      fPrimVertX = primaryVtxPosX; 
+      fPrimVertY = primaryVtxPosY; 
+      fPrimVertZ = primaryVtxPosZ; 
+      fSigDecayVertX = KFSigmaPlus.GetX(); 
+      fSigDecayVertY = KFSigmaPlus.GetY(); 
+      fSigDecayVertZ = KFSigmaPlus.GetZ();
+      fPhotonRadius = TMath::Sqrt(v0->DecayVertexV0X()*v0->DecayVertexV0X()+v0->DecayVertexV0Y()*v0->DecayVertexV0Y()); 
+      fPhotonDCAPV = DCAPV;
+      fPhotonPx = trackPhoton.Px(); 
+      fPhotonPy = trackPhoton.Py(); 
+      fPhotonPz = trackPhoton.Pz(); 
+      fExtPhotProtDCA = ProtPhotDCA;
+      fProtonPx = prot->Px(); 
+      fProtonPy = prot->Py(); 
+      fProtonPz = prot->Pz(); 
+      fProtonDCAtoPVxy = DCAxy; 
+      fProtonDCAtoPVz = DCAz; 
+      fnPair = pairs;
+      fnPairlowkstar = pairslowkstar; 
+      fnPairverylowkstar = pairsverylowkstar; 
+      fnPairveryverylowkstar = pairsveryverylowkstar; 
+      fSigmaCandTreeExtra->Fill();
+
+    }//End of Proton Loop
+  }//End of Photon Loop
+  
+return;
+
+} //End of ReconstructParticles4Part()
 
 //_____________________________________________________________________________
 
