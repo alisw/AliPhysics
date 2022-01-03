@@ -10,7 +10,7 @@
 #include "AliFemtoDreamBasePart.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-//#include "AliAODInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -24,6 +24,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
     fisLightWeight(false),
     fTrackBufferSize(),
     fIsMC(false),
+    fIsMCtruth(false),
     fdoSideband(false),
     fSigmaUp(0.0),
     fSigmaLow(0.0),
@@ -69,11 +70,12 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
 }
 
 AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
-  const char *name, bool isMC)
+  const char *name, bool isMC, bool isMCtruth)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
     fIsMC(isMC),
+    fIsMCtruth(isMCtruth),
     fdoSideband(false),
     fSigmaUp(0.0),
     fSigmaLow(0.0),
@@ -282,7 +284,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   fTree->Branch("KaonPx",&fTKaonPx,"fTKaonPx[fTnKaon]/F");
   fTree->Branch("KaonPy",&fTKaonPy,"fTKaonPy[fTnKaon]/F");
   fTree->Branch("KaonPz",&fTKaonPz,"fTKaonPz[fTnKaon]/F");
-//  fTree->Branch("KaonEta",&fTKaonEta,"fTKaonEta[fTnKaon]/F");
+  fTree->Branch("KaonEta",&fTKaonEta,"fTKaonEta[fTnKaon]/F");
   fTree->Branch("KaonCharge",&fTKaonCharge,"fTKaonCharge[fTnKaon]/S");
   fTree->Branch("KaonITSsigma_e",&fTKaonITSsigma_e,"fTKaonITSsigma_e[fTnKaon]/F");
   fTree->Branch("KaonTPCsigma_e",&fTKaonTPCsigma_e,"fTKaonTPCsigma_e[fTnKaon]/F");
@@ -299,23 +301,25 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
 //  fTree->Branch("KaonITSsigma_d",&fTKaonITSsigma_d,"fTKaonITSsigma_d[fTnKaon]/F");
 //  fTree->Branch("KaonTPCsigma_d",&fTKaonTPCsigma_d,"fTKaonTPCsigma_d[fTnKaon]/F");
 //  fTree->Branch("KaonTOFsigma_d",&fTKaonTOFsigma_d,"fTKaonTOFsigma_d[fTnKaon]/F");
-//  fTree->Branch("KaonNcl",&fTKaonNcl,"fTKaonNcl[fTnKaon]/I");
-//  fTree->Branch("KaonPhi",&fTKaonPhi,"fTKaonPhi[fTnKaon]/F");
+  fTree->Branch("KaonNcl",&fTKaonNcl,"fTKaonNcl[fTnKaon]/I");
+  fTree->Branch("KaonPhi",&fTKaonPhi,"fTKaonPhi[fTnKaon]/F");
   fTree->Branch("KaonDCA",&fTKaonDCA,"fTKaonDCA[fTnKaon]/F");
+  fTree->Branch("KaonDCAz",&fTKaonDCAz,"fTKaonDCAz[fTnKaon]/F");
   fTree->Branch("KaonID",&fTKaonID,"fTKaonID[fTnKaon]/I");
-  fTree->Branch("KaonITStime",&fTKaonITStime,"fTKaonITStime[fTnKaon]/O");
-  fTree->Branch("KaonTOFtime",&fTKaonTOFtime,"fTKaonTOFtime[fTnKaon]/O");
+//  fTree->Branch("KaonITStime",&fTKaonITStime,"fTKaonITStime[fTnKaon]/O");
+//  fTree->Branch("KaonTOFtime",&fTKaonTOFtime,"fTKaonTOFtime[fTnKaon]/O");
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/F");
+  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/S");
+  fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
 
   //Deuterons:
   fTree->Branch("nDeuteron",&fTnDeuteron,"fTnDeuteron/I");
   fTree->Branch("DeuteronPx",&fTDeuteronPx,"fTDeuteronPx[fTnDeuteron]/F");
   fTree->Branch("DeuteronPy",&fTDeuteronPy,"fTDeuteronPy[fTnDeuteron]/F");
   fTree->Branch("DeuteronPz",&fTDeuteronPz,"fTDeuteronPz[fTnDeuteron]/F");
-//  fTree->Branch("DeuteronEta",&fTDeuteronEta,"fTDeuteronEta[fTnDeuteron]/F");
+  fTree->Branch("DeuteronEta",&fTDeuteronEta,"fTDeuteronEta[fTnDeuteron]/F");
   fTree->Branch("DeuteronCharge",&fTDeuteronCharge,"fTDeuteronCharge[fTnDeuteron]/S");
   fTree->Branch("DeuteronITSsigma_e",&fTDeuteronITSsigma_e,"fTDeuteronITSsigma_e[fTnDeuteron]/F");
   fTree->Branch("DeuteronTPCsigma_e",&fTDeuteronTPCsigma_e,"fTDeuteronTPCsigma_e[fTnDeuteron]/F");
@@ -332,14 +336,16 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   fTree->Branch("DeuteronITSsigma_d",&fTDeuteronITSsigma_d,"fTDeuteronITSsigma_d[fTnDeuteron]/F");
   fTree->Branch("DeuteronTPCsigma_d",&fTDeuteronTPCsigma_d,"fTDeuteronTPCsigma_d[fTnDeuteron]/F");
   fTree->Branch("DeuteronTOFsigma_d",&fTDeuteronTOFsigma_d,"fTDeuteronTOFsigma_d[fTnDeuteron]/F");
-//  fTree->Branch("DeuteronNcl",&fTDeuteronNcl,"fTDeuteronNcl[fTnDeuteron]/I");
-//  fTree->Branch("DeuteronPhi",&fTDeuteronPhi,"fTDeuteronPhi[fTnDeuteron]/F");
+  fTree->Branch("DeuteronNcl",&fTDeuteronNcl,"fTDeuteronNcl[fTnDeuteron]/I");
+  fTree->Branch("DeuteronPhi",&fTDeuteronPhi,"fTDeuteronPhi[fTnDeuteron]/F");
   fTree->Branch("DeuteronDCA",&fTDeuteronDCA,"fTDeuteronDCA[fTnDeuteron]/F");
+  fTree->Branch("DeuteronDCAz",&fTDeuteronDCAz,"fTDeuteronDCAz[fTnDeuteron]/F");
   fTree->Branch("DeuteronID",&fTDeuteronID,"fTDeuteronID[fTnDeuteron]/I");
 //  fTree->Branch("DeuteronTOFbeta",&fTDeuteronTOFbeta,"fTDeuteronTOFbeta[fTnDeuteron]/F");
 //  fTree->Branch("DeuteronITStime",&fTDeuteronITStime,"fTDeuteronITStime[fTnDeuteron]/O");
 //  fTree->Branch("DeuteronTOFtime",&fTDeuteronTOFtime,"fTDeuteronTOFtime[fTnDeuteron]/O");
-  fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/F");
+  fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/I");
+  fTree->Branch("DeuteronOrigin",&fTDeuteronOrigin,"fTDeuteronOrigin[fTnDeuteron]/S");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -392,6 +398,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTKaonPz[ii]=-100000.;
    fTKaonCharge[ii]=-10;
    fTKaonDCA[ii]=-100000.;
+   fTKaonDCAz[ii]=-100000.;
    fTKaonNcl[ii]=-100000;
    fTKaonITStime[ii]=kFALSE;
    fTKaonTOFtime[ii]=kFALSE;
@@ -416,6 +423,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTKaonTPCsigma_d[ii]=-100000.;
    fTKaonTOFsigma_d[ii]=-100000.;
    fTKaonPDG[ii]=0.;//sure Zero?
+   fTKaonOrigin[ii]=-1;
   }
   fTnKaon=0;
 
@@ -426,6 +434,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTDeuteronPz[ii]=-100000.;
    fTDeuteronCharge[ii]=-10;
    fTDeuteronDCA[ii]=-100000.;
+   fTDeuteronDCAz[ii]=-100000.;
    fTDeuteronNcl[ii]=-100000;
    fTDeuteronITStime[ii]=kFALSE;
    fTDeuteronTOFtime[ii]=kFALSE;
@@ -448,8 +457,15 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTDeuteronTPCsigma_d[ii]=-100000.;
    fTDeuteronTOFsigma_d[ii]=-100000.;
    fTDeuteronPDG[ii]=0.;//sure Zero?
+   fTDeuteronOrigin[ii]=-1;
   }
   fTnDeuteron=0;
+ 
+  //define buffers for "cheap toy coalesence model"
+  vector <AliAODMCParticle> p_Buff;
+  vector <AliAODMCParticle> n_Buff;
+
+
 
 /*
 //AOD
@@ -489,7 +505,6 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
       static std::vector<AliFemtoDreamBasePart> AntiProtons;
       AntiProtons.clear();
 
-
       //Now we loop over all the tracks in the reconstructed event.
 /*
 //AOD
@@ -518,6 +533,8 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
     Bool_t IsKaon = kFALSE;
     Bool_t IsProton = kFALSE;
     Bool_t IsDeuteron = kFALSE;
+
+
 
         if (fTrackCutsKaon->isSelected(fTrack)) {
           Kaons.push_back(*fTrack);
@@ -557,11 +574,150 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
         if(IsDeuteron) FillDeuteron(fTrack);
       }//end of track loop
 
+
+
+//---CHEAP TOY MODEL FOR DEUTERON PRODUCTION VIA COLAESENCE (IsMCtruth) --- //
+      // loop over the MC stack to get protons and neutrons for coalesence
+      if(fIsMC&&fIsMCtruth) {
+       AliAODInputHandler *eventHandler =
+           dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
+           ->GetInputEventHandler());
+       AliMCEvent* fMC = eventHandler->MCEvent();
+       //loop over mcparticles and put primary protons and neutrons with |eta|<0.9 in buffers
+       for(int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+        AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+        //cout<<iPart<<"  pdg="<<mcPart->GetPdgCode()<<" mother="<<mcPart->GetMother()<<endl;
+        if(mcPart->IsPhysicalPrimary()) {
+         if(abs(mcPart->GetPdgCode()) == 2212
+         &&iPart>1
+         &&fabs(mcPart->Eta())<.9){
+          p_Buff.push_back(*mcPart);  
+         }
+         if(abs(mcPart->GetPdgCode()) == 2112
+         &&fabs(mcPart->Eta())<.9){
+          n_Buff.push_back(*mcPart);  
+         }
+        }//primary
+       }
+
+       // INITIAL COMMIT (USED For MC NANO TRAIN 987)
+       //get the smaller momentum in the center of mass (PCM)  for p-n pairs
+       //Maximum PCM = 110 MeV. See . https://cds.cern.ch/record/2285500 and https://arxiv.org/pdf/2011.05898.pdf
+       //the proton charge is stored in DeuteronPDG
+
+       // CHANGES 14-Dic-2021 (NEVER ACTUALLY USED TO PRODUCE TRAINS)
+       //    now change and get every pair with PCM<500MeV, store the PCM in the deuteronDCA variable
+       //    also added: store the protonr charge pdg in DeuteronCharge (IMPORTANT CHANGE!!! see avobe)
+       //    also added: store the proton mother pdg in DeuteronPDG
+       //    also added: store the netron mother pdg in DeuteronID
+       //    also added: store PCM in DeuteronDCA
+       // When reading the ntuple, to selected deuterons formed by coalesence it is enough
+       // to require that (for example) DeuteronTPCsigma_d<-999. (and then select the PCM via DeuteronDCA)
+
+       // CHANGES 17-Dic-2021:
+       //   20% of true protons and neutrons with |eta| < 0.8 are added as deuterons
+       //   Info is like this:
+       //                   			True proton      True neutron      Coalesence deuteron
+       //PDG        				+-2212           +-2112            +-22122112
+       //motherpdg    				in deuteronID   in deuteronID       
+       //protonmotherpdg for coales deuteron    			          in deuteronID
+       //neutronmotherpdg for coales deuteron    			          in deuteronNcl
+       //PCM for coales deuteron    			       		   	  in deuteronDCA
+       double PCMmax = 0.5;
+       AliAODMCParticle *mcMother;
+
+       for(UInt_t ip=0;ip<p_Buff.size();ip++){ //loop over protons
+        int p_sign = (p_Buff.at(ip).GetPdgCode()>0)?1:-1;
+        Int_t protonmotherpdg = -99999;
+        //cout<<" the mother is "<<p_Buff.at(ip).GetMother()<<" the sign is "<<p_sign<<endl;
+        if(p_Buff.at(ip).GetMother()<fMC->GetNumberOfTracks()){
+         //AliAODMCParticle *mcMother = (AliAODMCParticle*) fMC->GetTrack(p_Buff.at(ip).GetMother());
+         mcMother = (AliAODMCParticle*) fMC->GetTrack(p_Buff.at(ip).GetMother());
+         protonmotherpdg = mcMother->GetPdgCode();
+        }
+        Double_t m1 = 0.938272088;//proton mass
+  
+        //for K-p, and K+p true MC, add 1% of protons to the deuteron tree
+        if(r3.Rndm()<.01){
+         fTDeuteronPx[fTnDeuteron] = p_Buff.at(ip).Px();
+         fTDeuteronPy[fTnDeuteron] = p_Buff.at(ip).Py();
+         fTDeuteronPz[fTnDeuteron] = p_Buff.at(ip).Pz();
+         fTDeuteronPDG[fTnDeuteron] = p_Buff.at(ip).GetPdgCode();
+         fTDeuteronEta[fTnDeuteron] = p_Buff.at(ip).Eta();
+         fTDeuteronID[fTnDeuteron] = protonmotherpdg;
+         fTnDeuteron++;
+        }
+
+        for(UInt_t in=0;in<n_Buff.size();in++){ //loop over neutrons
+         int n_sign = (n_Buff.at(in).GetPdgCode()>0)?1:-1;
+         Int_t neutronmotherpdg = -99999;
+         if(n_Buff.at(in).GetMother()<fMC->GetNumberOfTracks()){
+          mcMother = (AliAODMCParticle*) fMC->GetTrack(n_Buff.at(in).GetMother());
+          neutronmotherpdg = mcMother->GetPdgCode();
+         }
+         Double_t m2 = 0.939565420;//neutron mass
+ 
+         //DO THE COALESENCE:
+         if(p_sign == n_sign ){ // do not produce monster deuterons ;)
+          Double_t p1x = p_Buff.at(ip).Px();
+          Double_t p1y = p_Buff.at(ip).Py();
+          Double_t p1z = p_Buff.at(ip).Pz();
+          Double_t p2x = n_Buff.at(in).Px();
+          Double_t p2y = n_Buff.at(in).Py();
+          Double_t p2z = n_Buff.at(in).Pz();
+	  Double_t E1 = TMath::Sqrt( p1x*p1x + p1y*p1y + p1z*p1z + m1*m1);
+	  Double_t E2 = TMath::Sqrt( p2x*p2x + p2y*p2y + p2z*p2z + m2*m2);
+	  Double_t s = (E1+E2)*(E1+E2) - ((p1x+p2x)*(p1x+p2x) + (p1y+p2y)*(p1y+p2y) + (p1z+p2z)*(p1z+p2z));
+	  Double_t pcm = TMath::Sqrt( (s-(m1-m2)*(m1-m2))*(s-(m1+m2)*(m1+m2)) )/(2.*TMath::Sqrt(s));
+          if(pcm<PCMmax){ // select colaesence deuterons for a given maximum PCM
+           fTDeuteronPx[fTnDeuteron] = p1x+p2x;
+           fTDeuteronPy[fTnDeuteron] = p1y+p2y;
+           fTDeuteronPz[fTnDeuteron] = p1z+p2z;
+           fTDeuteronPDG[fTnDeuteron] = p_sign * 22122112;// ad-hoc coalesence deuteron pdg code with sign
+           fTDeuteronID[fTnDeuteron] =  protonmotherpdg;//proton pdg
+           fTDeuteronNcl[fTnDeuteron] =  neutronmotherpdg;//neutron pdg
+           fTDeuteronDCA[fTnDeuteron] = pcm;
+           fTnDeuteron++;
+          }//pcm
+         }//sign check
+        }//n loop
+       }//p loop
+ 
+       //at the end, reloop over neutrons to write 20% of them:
+       for(UInt_t in=0;in<n_Buff.size();in++){ //loop over neutrons
+        Int_t neutronmotherpdg = -99999;
+        if(n_Buff.at(in).GetMother()<fMC->GetNumberOfTracks()){
+         mcMother = (AliAODMCParticle*) fMC->GetTrack(n_Buff.at(in).GetMother());
+         neutronmotherpdg = mcMother->GetPdgCode();
+        }
+        //for K-n, and K+n true MC, add 20% of neutrons to the deuteron tree
+        if(r3.Rndm()<.2){
+         fTDeuteronPx[fTnDeuteron] = n_Buff.at(in).Px();
+         fTDeuteronPy[fTnDeuteron] = n_Buff.at(in).Py();
+         fTDeuteronPz[fTnDeuteron] = n_Buff.at(in).Pz();
+         fTDeuteronPDG[fTnDeuteron] = n_Buff.at(in).GetPdgCode();
+         fTDeuteronEta[fTnDeuteron] = n_Buff.at(in).Eta();
+         fTDeuteronID[fTnDeuteron] = neutronmotherpdg;
+         fTnDeuteron++;
+        }
+       }
+
+       //clear the buffers and we're done
+       p_Buff.clear();
+       n_Buff.clear();
+      }//IsMCtruth
+//---coalesence cheap toy model end --- //
+
+
+
       //fill tree:
+      //----------
       //if(fTnKaon>0) fTree->Fill(); //for test
       if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); //kd 
 
 
+     bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
+     if(FemtoDreamPairing){
       fPairCleaner->CleanTrackAndDecay(&Kaons, &Deuterons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
       fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiDeuterons, 1);///NOT SURE AT ALL ABOUT THIS 0 and 1
       fPairCleaner->CleanTrackAndDecay(&Kaons, &Protons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
@@ -580,10 +736,11 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
                           fEvent->GetZVertex(), fEvent->GetRefMult08(),
                           fEvent->GetV0MCentrality());
   
-//??? will this work with NANOAOD ????:
+//??? will this work with NANOAOD ????: (apparently it does)
       void SetEvent(std::vector<AliFemtoDreamBasePart> &vec1,
                     std::vector<AliFemtoDreamBasePart> &vec2,
                     AliFemtoDreamEvent * evt, const int pdg1, const int pdg2);
+     }
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -682,7 +839,8 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonCharge[fTnKaon] = TheTrack->GetCharge().at(0);
  fTKaonNcl[fTnKaon] = TheTrack->GetNClsTPC();
  fTKaonPhi[fTnKaon] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
- fTKaonDCA[fTnKaon] = TheTrack->GetDCAXYProp();
+ fTKaonDCA[fTnKaon] = TheTrack->GetDCAXYProp(); //difference between DCAXY and DCAXYprop???
+ fTKaonDCAz[fTnKaon] = TheTrack->GetDCAZProp(); //difference between DCAZ and DCAZprop???
  fTKaonID[fTnKaon] = TheTrack->GetIDTracks().at(0);
  fTKaonITSsigma_e[fTnKaon] = (TheTrack->GetnSigmaITS((int) (AliPID::kElectron)));
  fTKaonTPCsigma_e[fTnKaon] = (TheTrack->GetnSigmaTPC((int) (AliPID::kElectron)));
@@ -702,7 +860,26 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonITStime[fTnKaon] = TheTrack->GetHasITSHit();
  fTKaonTOFtime[fTnKaon] = TheTrack->GetTOFTimingReuqirement();
   fTKaonFilterBit[fTnKaon] = TheTrack->GetFilterMap();
- fTKaonPDG[fTnKaon] = TheTrack->GetMotherPDG();
+ fTKaonPDG[fTnKaon] = TheTrack->GetMCPDGCode();
+
+ AliFemtoDreamBasePart::PartOrigin org = TheTrack->GetParticleOrigin();
+    fTKaonOrigin[fTnKaon] = -1;
+    switch (org) {
+      case AliFemtoDreamBasePart::kPhysPrimary:
+        fTKaonOrigin[fTnKaon] = 0;
+        break;
+      case AliFemtoDreamBasePart::kWeak:
+        fTKaonOrigin[fTnKaon] = 1;
+        break;
+      case AliFemtoDreamBasePart::kMaterial:
+        fTKaonOrigin[fTnKaon] = 2;
+        break;
+      case AliFemtoDreamBasePart::kContamination:
+        fTKaonOrigin[fTnKaon] = 3;
+        break;
+     }
+
+
 
  fTnKaon++;
  Filled = kTRUE;
@@ -723,7 +900,8 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack) {
  fTDeuteronCharge[fTnDeuteron] = TheTrack->GetCharge().at(0);
  fTDeuteronNcl[fTnDeuteron] = TheTrack->GetNClsTPC();
  fTDeuteronPhi[fTnDeuteron] = (TheTrack->GetPhiAtRaidius().at(0)).at(0);//phi for r=85.cm ???
- fTDeuteronDCA[fTnDeuteron] = TheTrack->GetDCAXYProp();
+ fTDeuteronDCA[fTnDeuteron] = TheTrack->GetDCAXYProp(); //difference between DCAXY and DCAXYprop ???
+ fTDeuteronDCAz[fTnDeuteron] = TheTrack->GetDCAZProp(); //difference between DCAZ and DCAZprop ???
  fTDeuteronID[fTnDeuteron] = TheTrack->GetIDTracks().at(0);
  fTDeuteronTOFbeta[fTnDeuteron] = TheTrack->GetbetaTOF();
  fTDeuteronITSsigma_e[fTnDeuteron] = (TheTrack->GetnSigmaITS((int) (AliPID::kElectron)));
@@ -743,10 +921,27 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack) {
  fTDeuteronTOFsigma_d[fTnDeuteron] = (TheTrack->GetnSigmaTOF((int) (AliPID::kDeuteron)));
  fTDeuteronITStime[fTnDeuteron] = TheTrack->GetHasITSHit();
  fTDeuteronTOFtime[fTnDeuteron] = TheTrack->GetTOFTimingReuqirement();
- fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMotherPDG();
+ fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMCPDGCode();
+
+ AliFemtoDreamBasePart::PartOrigin org = TheTrack->GetParticleOrigin();
+    fTDeuteronOrigin[fTnDeuteron] = -1;
+    switch (org) {
+      case AliFemtoDreamBasePart::kPhysPrimary:
+        fTDeuteronOrigin[fTnDeuteron] = 0;
+        break;
+      case AliFemtoDreamBasePart::kWeak:
+        fTDeuteronOrigin[fTnDeuteron] = 1;
+        break;
+      case AliFemtoDreamBasePart::kMaterial:
+        fTDeuteronOrigin[fTnDeuteron] = 2;
+        break;
+      case AliFemtoDreamBasePart::kContamination:
+        fTDeuteronOrigin[fTnDeuteron] = 3;
+        break;
+     }
+
 
  fTnDeuteron++;
  Filled = kTRUE;
  return Filled;
 }
-

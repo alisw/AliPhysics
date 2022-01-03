@@ -86,7 +86,7 @@ fSigmaCandTree(0x0), f4PartSigmaCandTree(0x0), f3PartPi0CandTree(0x0),
 fProtonArray(0x0), fAntiProtonArray(0x0), fConvPhotonArray(0x0),
 fElectronArray(0x0), fPositronArray(0x0), fElectronPairArray(0x0), fPositronPairArray(0x0),
 cElectronMass(0), cProtonMass(0), cPionMass(0), cPi0Mass(0), c(0), Bz(0),
-primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0), nTracks(0),
+primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0), nTracks(0), Centrality(0),
 
 fMaxProtEta(0.9),    
 fMinTPCClustProt(70),
@@ -139,7 +139,12 @@ fMindcazProt(0),
 fMindcaxyProt(0), 
 
 fIsMCSigma(kFALSE),
+fIsV01Onthefly(kFALSE),
+fIsV02Onthefly(kFALSE),
+fSigCentrality(-999),
+fSigBField(-999),
 fInvSigMass(-999),
+fSigPA(-999),
 fSigCharge(-999),
 fSigPx(-999),
 fSigPy(-999),
@@ -170,6 +175,7 @@ fProtonDCAtoPVz(-999),
 fProtonPi0DCA(-999),
 
 f4PartIsMCSigma(kFALSE),
+f4PartIsV0Onthefly(kFALSE),
 f4PartInvSigMass(-999),
 f4PartSigCharge(-999),
 f4PartSigPx(-999),
@@ -231,7 +237,7 @@ fSigmaCandTree(0x0), f4PartSigmaCandTree(0x0), f3PartPi0CandTree(0x0),
 fProtonArray(0x0), fAntiProtonArray(0x0), fConvPhotonArray(0x0),
 fElectronArray(0x0), fPositronArray(0x0), fElectronPairArray(0x0), fPositronPairArray(0x0),
 cElectronMass(0), cProtonMass(0), cPionMass(0), cPi0Mass(0), c(0), Bz(0),
-primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0), nTracks(0),
+primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0), nTracks(0), Centrality(0),
 
 fMaxProtEta(0.9),    
 fMinTPCClustProt(70),
@@ -284,7 +290,12 @@ fMindcazProt(0),
 fMindcaxyProt(0), 
 
 fIsMCSigma(kFALSE),
+fIsV01Onthefly(kFALSE),
+fIsV02Onthefly(kFALSE),
+fSigCentrality(-999),
+fSigBField(-999),
 fInvSigMass(-999),
+fSigPA(-999),
 fSigCharge(-999),
 fSigPx(-999),
 fSigPy(-999),
@@ -315,6 +326,7 @@ fProtonDCAtoPVz(-999),
 fProtonPi0DCA(-999),
 
 f4PartIsMCSigma(kFALSE),
+f4PartIsV0Onthefly(kFALSE),
 f4PartInvSigMass(-999),
 f4PartSigCharge(-999),
 f4PartSigPx(-999),
@@ -418,7 +430,12 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     // Create TTree of Sigma Candidates
     fSigmaCandTree = new TTree("fSigmaCandTree","Tree of Sigma Candidates");
     fSigmaCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+    fSigmaCandTree->Branch("fIsV01Onthefly",&fIsV01Onthefly,"fIsV01Onthefly/O");
+    fSigmaCandTree->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
+    fSigmaCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
+    fSigmaCandTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
     fSigmaCandTree->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
+    fSigmaCandTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
     fSigmaCandTree->Branch("fSigCharge",&fSigCharge,"fSigCharge/F");
     fSigmaCandTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
     fSigmaCandTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
@@ -450,6 +467,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 
     f4PartSigmaCandTree = new TTree("f4PartSigmaCandTree","Tree of Sigma Candidates (3 Electron Method)");
     f4PartSigmaCandTree->Branch("f4PartIsMCSigma",&f4PartIsMCSigma,"f4PartIsMCSigma/O");
+    f4PartSigmaCandTree->Branch("f4PartIsV0Onthefly",&f4PartIsV0Onthefly,"f4PartIsV0Onthefly/O");
     f4PartSigmaCandTree->Branch("f4PartInvSigMass",&f4PartInvSigMass,"f4PartInvSigMass/F");
     f4PartSigmaCandTree->Branch("f4PartSigCharge",&f4PartSigCharge,"f4PartSigCharge/F");
     f4PartSigmaCandTree->Branch("f4PartSigPx",&f4PartSigPx,"f4PartSigPx/F");
@@ -527,6 +545,8 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     //Counters
     TH1F* fHistMCCounter           = new TH1F("fHistMCCounter", "Monte Carlo Counter", 27, 0.5, 27.5);
     TH2F* fHistCandperEvent        = new TH2F("fHistCandperEvent", "Particle Candidates per Event;#pi^{0};p",21,-0.5,20.5,21,-0.5,20.5);
+    TH1F* fHistDiscardedOnflyV0    = new TH1F("fHistDiscardedOnflyV0", "Number of discarded Onfly Gammas", 16, -5.5, 10.5);
+    TH1F* fHistDiscardedOfflineV0  = new TH1F("fHistDiscardedOfflineV0", "Number of discarded Offline Gammas", 16, -5.5, 10.5);
 
     //MC Kinematics
     TH1F* fHistMCPhotonPt          = new TH1F("fHistMCPhotonPt","Transverse momentum of MC Photons;p_{T} [GeV/c];Counts/(50 MeV/c)",200,0,20);
@@ -682,6 +702,8 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     //Counters
     fOutputList->Add(fHistMCCounter);
     fOutputList->Add(fHistCandperEvent);
+    fOutputList->Add(fHistDiscardedOnflyV0);
+    fOutputList->Add(fHistDiscardedOfflineV0);
     //MC Kinematics
     fOutputList->Add(fHistMCPhotonPt);
     fOutputList->Add(fHistMCSigmaPt);
@@ -843,10 +865,9 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   KFParticle::SetField(Bz);
 
   // Centrality
-  Float_t centrality = 0;
   AliMultSelection *multSelection = static_cast<AliMultSelection*>(aodEvent->FindListObject("MultSelection"));   //Get Mult Selection..
-  if(multSelection) centrality = multSelection->GetMultiplicityPercentile("V0M");                                //..and retrieve centrality
-  FillHistogram("fHistCentrality",centrality);
+  if(multSelection) Centrality = multSelection->GetMultiplicityPercentile("V0M");                                //..and retrieve centrality
+  FillHistogram("fHistCentrality",Centrality);
 
   FillHistogram("fHistMCCounter",1);  //Event Counter 
   FillHistogram("fHistEventCounter",1);    //Event Counter 
@@ -1244,6 +1265,10 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
   //Clear V0 Photon Array and reset counter
   fConvPhotonArray->clear();
   Int_t countPhotons = 0;
+  std::vector<int> EraseArray;
+  EraseArray.clear();
+
+  Int_t OnflyGamma=0, OfflineGamma=0;
 
   Int_t nV0 = aodEvent->GetNumberOfV0s(); //Number of V0s in the event
   if(nV0 == 0) return;      //Return if there is no V0 to be processed
@@ -1280,8 +1305,7 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
     if(aodV0->ChargeProng(0) == aodV0->ChargeProng(1)) continue;
 
     FillHistogram("fHistMCCounter",15); //V0 Counter
-    if(!aodV0->GetOnFlyStatus()) continue;    //Use only On-Fly V0s (better Resolution!)
-    FillHistogram("fHistMCCounter",16); //Count on-fly V0
+    if(aodV0->GetOnFlyStatus()) FillHistogram("fHistMCCounter",16); //Count on-fly V0
 
     // Get daughter tracks      
     AliAODTrack* trackN = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(0));
@@ -1452,11 +1476,65 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() const{
     FillHistogram("fHistSelectedV0DaughtPt",ptPos);
     FillHistogram("fHistSelectedV0DaughtPt",ptNeg);
 
+    if(aodV0->GetOnFlyStatus()) OnflyGamma++;
+    else OfflineGamma++;
+
     // Store Photon candidates after selection
     fConvPhotonArray->push_back(iV0);
     countPhotons++;
 
   }//End of V0 Loop
+
+  //Erase Offline V0s whose Tracks have been use by OntheFly V0s!
+  const Int_t nConvPhoton = fConvPhotonArray->size();
+  for(Int_t i=0; i<nConvPhoton; i++) {
+
+    //Loop over the found V0s, take only the offline ones and save their IDs
+    AliAODv0 *v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(i));
+    if(!v0) continue;
+    if(v0->GetOnFlyStatus()) continue;
+    AliAODTrack* track1 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
+    AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
+    if(!track1 || !track2) continue;
+    Int_t ID1 = track1->GetID();
+    Int_t ID2 = track2->GetID();
+
+    for(Int_t j=0; j<nConvPhoton; j++) {
+
+      //Now Loop over the V0s again for every offline V0 and take only the onthefly V0s
+      if(i==j) continue;
+      AliAODv0 *v02 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(j));
+      if(!v02) continue;
+      if(!v02->GetOnFlyStatus()) continue;
+      AliAODTrack* track3 = dynamic_cast<AliAODTrack*>(v02->GetDaughter(0));
+      AliAODTrack* track4 = dynamic_cast<AliAODTrack*>(v02->GetDaughter(1));
+      if(!track3 || !track4) continue;
+      Int_t ID3 = track3->GetID();
+      Int_t ID4 = track4->GetID();
+      //If the Tracks have been used in both V0 finders remove the offline one
+      if(ID3==ID1||ID3==ID2||ID4==ID1||ID4==ID2) EraseArray.push_back(i);
+    }
+  }
+
+  const Int_t nErase = EraseArray.size();
+  std::vector<int>::iterator it = fConvPhotonArray->begin();
+  Int_t previousindex = 99;
+  for(Int_t i=nErase-1; i>-1; i--){
+    if(previousindex == EraseArray.at(i)) continue;
+    else previousindex = EraseArray.at(i);
+    fConvPhotonArray->erase(it+EraseArray.at(i));
+  }
+
+  const Int_t nConvPhotonafterErase = fConvPhotonArray->size();
+  for(Int_t i=0; i<nConvPhotonafterErase; i++) {
+
+    AliAODv0 *v0 = (AliAODv0*)aodEvent->GetV0(fConvPhotonArray->at(i));
+    if(!v0) continue;
+    if(v0->GetOnFlyStatus()) OnflyGamma--;
+    else OfflineGamma--;
+  }
+  FillHistogram("fHistDiscardedOnflyV0",OnflyGamma);
+  FillHistogram("fHistDiscardedOfflineV0",OfflineGamma);
 
 return;
 
@@ -1762,9 +1840,9 @@ void AliAnalysisTaskSigmaPlus::PairPhotonandElectron() {
       if(electron->Pt()>0.25) FillHistogram("fHist3Partpi0massKF",mass);
       //End of KF Pi0 calculation
 
-      Double_t PhotElecDCA = TMath::Abs(KFPhoton.GetDistanceFromParticle(KFSingleElectron));
+      Float_t PhotElecDCA = TMath::Abs(KFPhoton.GetDistanceFromParticle(KFSingleElectron));
 
-      Double_t KFPi0DCAPV = TMath::Sqrt((KFPi0.GetX()-primaryVtxPosX)*(KFPi0.GetX()-primaryVtxPosX)+(KFPi0.GetY()-primaryVtxPosY)*(KFPi0.GetY()-primaryVtxPosY));  
+      Float_t KFPi0DCAPV = TMath::Sqrt((KFPi0.GetX()-primaryVtxPosX)*(KFPi0.GetX()-primaryVtxPosX)+(KFPi0.GetY()-primaryVtxPosY)*(KFPi0.GetY()-primaryVtxPosY));  
       if(isReallyPi0) FillHistogram("fHist3PartPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
 
       if(isReallyPi0 && pi0mass>0 && pi0mass<0.3){ //Fill MC Pi0 Tree
@@ -1806,7 +1884,7 @@ void AliAnalysisTaskSigmaPlus::PairPhotonandElectron() {
 
         trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
         trackSigmaplus = trackPi0 + trackProton;
-        Double_t sigmaplusmass = trackSigmaplus.M();
+        Float_t sigmaplusmass = trackSigmaplus.M();
 
         prot->GetXYZ(trackxyz);      
         prot->GetPxPyPz(trackpxpypz);
@@ -1819,7 +1897,8 @@ void AliAnalysisTaskSigmaPlus::PairPhotonandElectron() {
         KFParticle KFSigmaPlus(KFProton,KFPi0);
         KFSigmaPlus.TransportToDecayVertex();
 
-        Double_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
+        Float_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
+        
         Float_t  DCAxy = -999., DCAz = -999.;
         prot->GetImpactParameters(DCAxy,DCAz);
 
@@ -1840,6 +1919,7 @@ void AliAnalysisTaskSigmaPlus::PairPhotonandElectron() {
 
         // Fill the Sigma Candidate Trees
         f4PartIsMCSigma = kFALSE; if(isReallySigma) f4PartIsMCSigma = kTRUE;
+        f4PartIsV0Onthefly = photon->GetOnFlyStatus();
         f4PartInvSigMass = sigmaplusmass; 
         f4PartSigCharge = prot->Charge(); 
         f4PartSigPx = trackSigmaplus.Px(); 
@@ -2025,24 +2105,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
       KFPhoton1.TransportToDecayVertex();
       KFPhoton2.TransportToDecayVertex();
 
-      //Reconstruct the Pi0 with the gammas
-      KFParticle KFPi0(KFPhoton1,KFPhoton2);
-      KFPi0.TransportToDecayVertex();
-          
-      //Get the invariant mass to compare with TLorentzvector!
-      Float_t mass,masserr;
-      KFPi0.GetMass(mass,masserr);
-
-      FillHistogram("fHistpi0massKF",mass);
-      //End of KF Pi0 calculation
-
       Double_t PhotPhotDCA = TMath::Abs(KFPhoton1.GetDistanceFromParticle(KFPhoton2));
-
-      Double_t KFPi0DCAPV = TMath::Sqrt((KFPi0.GetX()-primaryVtxPosX)*(KFPi0.GetX()-primaryVtxPosX)+(KFPi0.GetY()-primaryVtxPosY)*(KFPi0.GetY()-primaryVtxPosY));  
-      if(isReallyPi0){ 
-        FillHistogram("fHistPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
-        FillHistogram("fHistPi0VertexMC",MCPi0DCAPV);
-      }
 
       if(pi0mass>fMinPi0mass && pi0mass<fMaxPi0mass) countPi0++;
 
@@ -2059,7 +2122,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
           trackProton.SetXYZM(prot->Px(),prot->Py(),prot->Pz(),cProtonMass);
           trackSigmaplus = trackPi0 + trackProton;
-          Double_t sigmaplusmass = trackSigmaplus.M();
+          Float_t sigmaplusmass = trackSigmaplus.M();
+          if(sigmaplusmass>1.7) continue; 
 
           prot->GetXYZ(trackxyz);      
           prot->GetPxPyPz(trackpxpypz);
@@ -2069,10 +2133,27 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           if(k<nProton) KFProton.Create(trackparams,covMatrix,1,cProtonMass);
           else KFProton.Create(trackparams,covMatrix,-1,cProtonMass);
 
+          //Reconstruct the Pi0 with the gammas
+          Float_t mass,masserr;
+          KFPhoton1.GetMass(mass,masserr);
+          if(mass<0) continue;
+          KFPhoton2.GetMass(mass,masserr);
+          if(mass<0) continue;
+          KFParticle KFPi0(KFPhoton1,KFPhoton2);
+          KFPi0.TransportToDecayVertex();
+          KFPi0.GetMass(mass,masserr);
+          FillHistogram("fHistpi0massKF",mass);
+
+          Double_t KFPi0DCAPV = TMath::Sqrt((KFPi0.GetX()-primaryVtxPosX)*(KFPi0.GetX()-primaryVtxPosX)+(KFPi0.GetY()-primaryVtxPosY)*(KFPi0.GetY()-primaryVtxPosY));  
+          if(isReallyPi0){ 
+            FillHistogram("fHistPi0VertexvsMC",KFPi0DCAPV-MCPi0DCAPV);
+            FillHistogram("fHistPi0VertexMC",MCPi0DCAPV);
+          }
+
           KFParticle KFSigmaPlus(KFProton,KFPi0);
           KFSigmaPlus.TransportToDecayVertex();
-
           Double_t ProtPi0DCA = TMath::Abs(KFProton.GetDistanceFromParticle(KFPi0));
+
           Float_t  DCAxy = -999., DCAz = -999.;
           prot->GetImpactParameters(DCAxy,DCAz);
 
@@ -2094,7 +2175,12 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
           // Fill the Sigma Candidate Trees
           fIsMCSigma = kFALSE; if(isReallySigma) fIsMCSigma = kTRUE;
+          fIsV01Onthefly = v0_1->GetOnFlyStatus();
+          fIsV02Onthefly = v0_2->GetOnFlyStatus();
+          fSigCentrality = Centrality;
+          fSigBField = Bz;
           fInvSigMass = sigmaplusmass; 
+          fSigPA = TMath::Abs(sigmamomentum.Angle(sigmavertex)); 
           fSigCharge = prot->Charge(); 
           fSigPx = trackSigmaplus.Px(); 
           fSigPy = trackSigmaplus.Py(); 
@@ -2123,7 +2209,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fProtonDCAtoPVxy = DCAxy; 
           fProtonDCAtoPVz = DCAz; 
           fProtonPi0DCA = ProtPi0DCA; 
-          if(fInvSigMass<1.7) fSigmaCandTree->Fill();
+          fSigmaCandTree->Fill();
 
         }//End of Proton loop
 

@@ -1,10 +1,19 @@
 #include "TROOT.h"
 #include "TSystem.h"
 
-AliAnalysisTaskSE* AddTaskOtonkd(bool isMC = false,
+AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
     int KaonCut = 0,
     int DeuteronCut = 0
     ) {
+
+  // isMCint = 0 => DATA: isMC=false 
+  // isMCint = 1 => MC STD: isMC=true,  isMCtruth=false;
+  // isMCint = 2 => MC TRUTH: isMC=true,  isMCtruth=true;
+
+  bool isMC = false;
+  if(isMCint>0) isMC = true;
+  bool isMCtruth=false;
+  if(isMCint==2)  isMCtruth=true;
 
   const char fullBlastQA = true; //moved from arguments
   const char *cutVariation = "0"; //moved from arguments, for the moment I don't use it
@@ -130,7 +139,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(bool isMC = false,
 
 //this shit is still all by hand and I want to die again:
 /////////////////////////////////////////////////////////
-  const int nPairs = 21;//for some shitty reason this runs to #pairs + 1. Die harder.
+  const int nPairs = 21;//
   for (int i = 0; i < nPairs; ++i) {
     closeRejection.push_back(false);
     pairQA.push_back(0);
@@ -250,7 +259,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(bool isMC = false,
 
   //Define here the analysis task
   AliAnalysisTaskOtonkd *task =
-   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC);
+   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);

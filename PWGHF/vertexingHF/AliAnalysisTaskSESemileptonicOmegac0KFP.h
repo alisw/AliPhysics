@@ -86,7 +86,7 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     
     void                    FillEventROOTObjects();
 
-    void                    FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype);
+    void                    FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst,KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype);
     
     void                    FillTreeElectron(AliAODTrack* trk, AliAODEvent *aodEvent, TClonesArray * mcArray);
     
@@ -130,13 +130,14 @@ private:
     TH1F*                   fHTrigger;            //!<! Histogram of trigger
     TH2F*                   fHistoElectronTPCPID;     //!<! TPC electron PID
     TH2F*                   fHistoElectronTOFPID;     //!<! TOF electron PID
-       
+    TH2F*                   fHistoOmegaMassvspTKFP;  //!<!  Histogram of OmegaMass vs pT from KFP
+    
     THnSparse*              fHistoElectronTPCPIDSelTOF;     //!<! TPC electron PID
     THnSparse*              fHistoMassConversions;          //!<! electron-pairs mass conversion
     THnSparse*              fHistoElectronTPCTOFSelPID;     //!<! TPC, TOF electron PID
     
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,2);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,3);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 

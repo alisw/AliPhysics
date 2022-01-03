@@ -43,8 +43,8 @@ set(SRCS
   AliAnalysisTaskCorrForFlowFMD.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
-  AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
+  AliAnalysisTaskPtCorr.cxx
   AliAnalysisTaskUniFlow.cxx
   AliAnalysisTaskUniFlowWithSphericity.cxx
   AliAnalysisTaskUniFlowMultiStrange.cxx
@@ -62,15 +62,21 @@ set(SRCS
   AliAnalysisDecorrTask.cxx
   AliAnalysisTaskESEFlow.cxx
   AliAnalysisTaskFlowSquareBracket.cxx
+  AliAnalysisTaskCMWESETrkSyst.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
-list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
+  list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
+  list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)
+  list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
   list(APPEND SRCS AliEffFDContainer.cxx)
+  list(APPEND SRCS AliGFWFilter.cxx)
+  list(APPEND SRCS AliGFWFilterTask.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
+  list(APPEND SRCS AliGFWNFCuts.cxx)
 endif()
 
 # Headers from sources
@@ -86,7 +92,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB EMCALbase)
+set(LIBDEPS ANALYSISalice OADB EMCALbase PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

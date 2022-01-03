@@ -31,6 +31,7 @@ AliJHOCFATask::AliJHOCFATask():
 	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
   fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
   fHOCFAGetSC3h(kTRUE),
+  fHOCFAGetEtaGap(kFALSE), fHOCFAEtaGap(0.),
   fHOCFANCombi(6), fHOCFAvalues(0), fHOCFAcombi(0)
 {
 // Dummy constructor of the class.
@@ -48,6 +49,7 @@ AliJHOCFATask::AliJHOCFATask(const char *name):
 	fHOCFAPtMin(0.2), fHOCFAPtMax(5.),
   fHOCFAUseWeightsNUE(kTRUE), fHOCFAUseWeightsNUA(kFALSE),
   fHOCFAGetSC3h(kTRUE),
+  fHOCFAGetEtaGap(kFALSE), fHOCFAEtaGap(0.),
   fHOCFANCombi(6), fHOCFAvalues(0), fHOCFAcombi(0)
 {
 // Constructor of the class.
@@ -70,6 +72,8 @@ AliJHOCFATask::AliJHOCFATask(const AliJHOCFATask& ap):
   fHOCFAUseWeightsNUE(ap.fHOCFAUseWeightsNUE),
   fHOCFAUseWeightsNUA(ap.fHOCFAUseWeightsNUA),
   fHOCFAGetSC3h(ap.fHOCFAGetSC3h),
+  fHOCFAGetEtaGap(ap.fHOCFAGetEtaGap),
+  fHOCFAEtaGap(ap.fHOCFAEtaGap),
   fHOCFANCombi(ap.fHOCFANCombi),
   fHOCFAvalues(ap.fHOCFAvalues),
   fHOCFAcombi(ap.fHOCFAcombi)
@@ -117,6 +121,7 @@ void AliJHOCFATask::UserCreateOutputObjects()
   fHOCFATask->SetObservable(fHOCFAGetSC3h);
   fHOCFATask->SetNumberCombi(fHOCFANCombi);
   fHOCFATask->SetHarmoArray(fHOCFAcombi);
+  fHOCFATask->SetEtaGaps(fHOCFAGetEtaGap, fHOCFAEtaGap);
 	OpenFile(1);
 
 	fHOCFATask->UserCreateOutputObjects();

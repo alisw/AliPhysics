@@ -299,7 +299,7 @@ void AliAnalysisTaskOtonkdAOD::UserCreateOutputObjects() {
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/F");
+  fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
 
   //Deuterons:
   fTree->Branch("nDeuteron",&fTnDeuteron,"fTnDeuteron/I");
@@ -332,7 +332,7 @@ void AliAnalysisTaskOtonkdAOD::UserCreateOutputObjects() {
 //  fTree->Branch("DeuteronTOFtime",&fTDeuteronTOFtime,"fTDeuteronTOFtime[fTnDeuteron]/O");
 //  fTree->Branch("DeuteronIs",&fTDeuteronIs,"fTDeuteronIs[fTnDeuteron]/O");
 // fTree->Branch("DeuteronIsFD",&fTDeuteronIsFD,"fTDeuteronIsFD[fTnDeuteron]/O");
-  fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/F");
+  fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/I");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -669,7 +669,7 @@ Bool_t AliAnalysisTaskOtonkdAOD::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonITStime[fTnKaon] = TheTrack->GetHasITSHit();
  fTKaonTOFtime[fTnKaon] = TheTrack->GetTOFTimingReuqirement();
   fTKaonFilterBit[fTnKaon] = TheTrack->GetFilterMap();
- fTKaonPDG[fTnKaon] = TheTrack->GetMotherPDG();
+ fTKaonPDG[fTnKaon] = TheTrack->GetMCPDGCode();
 
  fTnKaon++;
  Filled = kTRUE;
@@ -710,7 +710,7 @@ Bool_t AliAnalysisTaskOtonkdAOD::FillDeuteron(AliFemtoDreamTrack *TheTrack) {
  fTDeuteronTOFsigma_d[fTnDeuteron] = (TheTrack->GetnSigmaTOF((int) (AliPID::kDeuteron)));
  fTDeuteronITStime[fTnDeuteron] = TheTrack->GetHasITSHit();
  fTDeuteronTOFtime[fTnDeuteron] = TheTrack->GetTOFTimingReuqirement();
- fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMotherPDG();
+ fTDeuteronPDG[fTnDeuteron] = TheTrack->GetMCPDGCode();
  fTnDeuteron++;
  Filled = kTRUE;
  return Filled;

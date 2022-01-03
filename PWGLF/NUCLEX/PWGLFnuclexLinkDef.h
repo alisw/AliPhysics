@@ -48,6 +48,7 @@
 #pragma link C++ class AliLightNTrackMCHist+;
 #pragma link C++ class AliAnalysisTaskAntipd+;
 #pragma link C++ class AliAnalysisTaskHe3+;
+#pragma link C++ class AliAnalysisH3MC+;
 #pragma link C++ class AliAnalysisHe3MC+;
 #pragma link C++ class AliAnalysisTaskHe3_ESD+;
 #pragma link C++ class AliAnalysisTaskNuclei+;
@@ -100,6 +101,7 @@
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskS3ParticleYields+;
 #pragma link C++ class AliAnalysisTaskHe3EffTree+;
+#pragma link C++ class AliAnalysisTaskHypTritKf+;
 #pragma link C++ class AliAnalysisCODEXS3task+;
 #pragma link C++ class AliAnalysisTaskTRDtriggerTracks+;
 #pragma link C++ class AliAnalysisTaskSigmaPlus+;

@@ -1612,7 +1612,20 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
     
     //printf("ConfigureHadronCorrelationAnalysis() *** SET M02 limits in correlation task *** \n");
     ana->SetM02Cut(shshMin,shshMax);
-  }
+    if ( kAnaCutsString.Contains("M02PtDepCut")  )
+    {
+      if ( shshMax > 0.5 ||  shshMin > 0.39 ) // for eg. M02 = 0.4 to 2
+      {
+        ana->SwitchOnM02MinPtDependentCut();
+        ana->SetM02PtDependentCutParam(0.7, -0.016) ;
+      }
+      else // for eg. M02 = 0.1 to 0.3
+      {
+        ana->SwitchOnM02MaxPtDependentCut();
+        ana->SetM02PtDependentCutParam(0.6, -0.016) ;
+      }
+    }
+  } // pT M02 depedent cut setting
   
   if ( kAnaCutsString.Contains("PerSM") ) 
     ana->SwitchOnFillHistogramsPerSM(); 
@@ -1677,9 +1690,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   }
   else
     ana->SwitchOffOwnMix();
-  
-  ana->SetNZvertBin(20);
-  
+
   // Acceptance cut on trigger particle
   // Avoid borders of calorimeter, same as for isolation
   //
@@ -2143,6 +2154,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
 ///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc","OpenAcc","FixIsoConeExcess","IsoBandUEGap","IsoBandUEGapFix05"
+///    * Correlation analysis: "M02PtDepCut"
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
 ///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly

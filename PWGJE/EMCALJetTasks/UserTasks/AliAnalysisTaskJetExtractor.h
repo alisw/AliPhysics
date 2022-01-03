@@ -70,6 +70,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetRandomSeed(ULong_t val)                          { fRandomSeed  = val; }
   void                        SetRandomSeedCones(ULong_t val)                     { fRandomSeedCones  = val; }
   void                        SetNeedEmbedClusterContainer(Bool_t val)            { fNeedEmbedClusterContainer = val;}
+  void                        SetLightTreeMode(Bool_t val)                        { fLightTreeMode = val;}
   
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
@@ -85,7 +86,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        CalculateJetShapes(AliEmcalJet* jet, Double_t& leSub_noCorr, Double_t& angularity, Double_t& momentumDispersion, Double_t& trackPtMean, Double_t& trackPtMedian);
   void                        GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
   bool                        PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
-  void                        GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD);
+  void                        GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& partJetPhi, Double_t& detJetDistance, Double_t& partJetDistance, Double_t& detJetMass, Double_t& partJetMass, Double_t& detJetAngularity, Double_t& partJetAngularity, Double_t& detJetpTD, Double_t& partJetpTD);
   void                        DoJetMatching(); 
   void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM, Int_t& typeIC);
   Bool_t                      IsTriggerTrackInEvent();
@@ -124,6 +125,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   TString                     fMCParticleArrayName;                     ///< Array name of MC particles in event (mcparticles)
   Bool_t                      fNeedEmbedClusterContainer;               ///< If we need to get embedded cluster container (true for hybrid event)
+  Bool_t                      fLightTreeMode;                           ///< Save fewer branches to reduce tree/train size
 
   ULong_t                     fRandomSeed;                              ///< random seed
   ULong_t                     fRandomSeedCones;                         ///< random seed
@@ -154,6 +156,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   std::vector<SimpleSecondaryVertex> fSimpleSecVertices;  ///< Vector of secondary vertices
 
   AliAnalysisTaskJetQnVectors* fqnVectorReader;                         ///< Reader for the Qn vector
+  Double_t                     fQ2VectorValue;                          ///< Calibrated q2 value from V0
+  Double_t                     fEPangleV0;                              ///< Calibrated event-plane angle from V0
 
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
@@ -174,7 +178,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 11) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 14) // Jet extraction task
   /// \endcond
 };
 
@@ -207,7 +211,7 @@ class AliEmcalJetTree : public TNamed
     void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
     void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
 
-    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks);
+    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks, Bool_t lightTreeMode);
 
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Float_t QVector, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0);
@@ -217,8 +221,8 @@ class AliEmcalJetTree : public TNamed
     void            FillBuffer_PID(std::vector<Float_t>& trackPID_ITS, std::vector<Float_t>& trackPID_TPC, std::vector<Float_t>& trackPID_TOF, std::vector<Float_t>& trackPID_TRD, std::vector<Short_t>& trackPID_Reco, std::vector<Int_t>& trackPID_Truth);
     void            FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision,
                                     Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetAngularity_Det, Float_t matchedJetpTD_Det,
-                                    Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part,
-                                    Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter);
+                                    Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetPhi_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part,
+                                    Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter, Float_t evPlaneV0);
     void            FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_d0, std::vector<Float_t>& trackIP_z0, std::vector<Float_t>& trackIP_d0cov, std::vector<Float_t>& trackIP_z0cov);
     void            FillBuffer_TriggerTracks(std::vector<Float_t>& triggerTrackPt, std::vector<Float_t>& triggerTrackDeltaEta, std::vector<Float_t>& triggerTrackDeltaPhi);
     // ######################################
@@ -329,6 +333,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_Mass;       //!<! array buffer
     Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_Angularity; //!<! array buffer
     Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_pTD;        //!<! array buffer
+    Float_t         fBuffer_Jet_MC_MatchedPartLevelJet_EPangle;    //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction;               //!<! array buffer
     Float_t         fBuffer_Jet_MC_TruePtFraction_PartLevel;     //!<! array buffer
 

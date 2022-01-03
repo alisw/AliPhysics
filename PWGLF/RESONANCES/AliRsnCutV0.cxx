@@ -33,6 +33,9 @@ Lifetime cut should be quite intuitive. Set the value to a high value if not nee
 
 */
 
+//modified: Prottay Das (prottay.das@cern.ch)
+//Modification (14/12/2021): Added armentous cut for misidentification of lambda as K0s in Pb-Pb collisions
+
 #include <Riostream.h>
 #include <TFormula.h>
 #include <TBits.h>
@@ -62,7 +65,7 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDCAVertex(0.3),
    fMinCosPointAngle(0.95),
    fMaxDaughtersDCA(0.5),
-   //fMaxArm(0.2),
+   fMinArm(0.2),
    fMinTPCcluster(70),
    fMaxRapidity(0.8),
    fMaxPseudorapidity(1e20),
@@ -102,7 +105,7 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDCAVertex(copy.fMaxDCAVertex),
    fMinCosPointAngle(copy.fMinCosPointAngle),
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
-   //fMaxArm(copy.fMaxArm),
+   fMinArm(copy.fMinArm),
    fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
    fMaxPseudorapidity(copy.fMaxPseudorapidity),
@@ -156,7 +159,7 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDCAVertex = copy.fMaxDCAVertex;
    fMinCosPointAngle = copy.fMinCosPointAngle;
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
-   //fMaxArm=copy.fMaxArm;
+   fMinArm=copy.fMinArm;
    fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
    fMaxPseudorapidity = copy.fMaxPseudorapidity;
@@ -296,13 +299,13 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
      AliDebugClass(2, "Failed check on DCA to primary vertes");
      return kFALSE;
    }
-   /*
-   if ((v0->PtArmV0()/TMath::Abs(v0->AlphaV0())) > fMaxArm) {
-   //if ((v0->GetArmCut() > fMaxArm) {
+   
+   if ((v0->PtArmV0()/TMath::Abs(v0->AlphaV0())) < fMinArm) {
+   //if ((v0->GetArmCut() > fMinArm) {
     AliDebugClass(2, "Failed check on Armentous Cut");
      return kFALSE;
    }
-   */
+   
    //if (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
    if ( (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) || (TMath::Abs(v0->GetV0CosineOfPointingAngle()) >= 1 ) ) {
      AliDebugClass(2, "Failed check on cosine of pointing angle");

@@ -57,6 +57,7 @@ fMultMin(0),
 fMultMax(100),
 fAverage_Nch_Transv(6.81),
 hAnalysisParameters(nullptr),
+fIspPb(kFALSE),
 fIsMC(kFALSE),
 fPt_min_leading(3),
 fIsUEanalysis(kTRUE),
@@ -131,6 +132,7 @@ fMultMin(0),
 fMultMax(100),
 fAverage_Nch_Transv(6.81),
 hAnalysisParameters(nullptr),
+fIspPb(kFALSE),
 fIsMC(kFALSE),
 fPt_min_leading(3),
 fIsUEanalysis(kTRUE),
@@ -660,23 +662,19 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronsRT::UserExec(Option_t *)  {
     
-    
     //Get Input Event
     if ( !GetESDEvent ()) return;
     if (fIsMC && (!GetMCEvent ())) return;
-       
     
     //Load PID Response
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = (AliInputEventHandler*) (mgr->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
     
-    
     //Process Real or Simulated Event
     if ((!fIsMC) && fIsUEanalysis)    ProcessRealEvent ();
     if ((!fIsMC) && (!fIsUEanalysis)) ProcessRealEventRapidityDependence();
     if ( fIsMC) ProcessSimEvent ();
-
     
     //Post Output Data
     PostData(1, fOutputList);
@@ -907,13 +905,28 @@ void AliAnalysisTaskDeuteronsRT::ProcessSimEvent ()  {
         if (!particle) continue;
         if (!particle->IsPhysicalPrimary()) continue;
         if ( TMath::Abs(particle->PdgCode()) != 1000010020 ) continue;
-
-        //Rapidity Cut
+        if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMCEvent)) continue;
+        
+        //Rapidity Selection
         Double_t m = AliPID::ParticleMass(AliPID::kDeuteron);
         Double_t E = TMath::Sqrt(m*m + particle->P()*particle->P());
         TLorentzVector P (particle->Px(),particle->Py(),particle->Pz(),E);
-        if (TMath::Abs(P.Rapidity())>0.5) continue;
-           
+        Double_t y_lab = P.Rapidity();
+        Double_t y_cms(0);
+        
+        //Rapidity Selection in p-Pb Collisions
+        if (fIspPb)  {
+            y_cms = y_lab-0.465;
+            if (y_cms<-1.0) continue;
+            if (y_cms> 0.0) continue;
+        }
+        
+        //Rapidity Selection in pp Collisions
+        if (!fIspPb) {
+            y_cms = y_lab;
+            if (TMath::Abs(y_cms)>0.5) continue;
+        }
+
         //Fill Generated p_{T} Spectra
         if ( particle->PdgCode() == +1000010020 ) h_deuterons_Gen     -> Fill(particle->Pt());
         if ( particle->PdgCode() == -1000010020 ) h_antideuterons_Gen -> Fill(particle->Pt());
@@ -1106,9 +1119,21 @@ Bool_t AliAnalysisTaskDeuteronsRT::PassedBasicTrackQualityCuts (AliESDtrack *tra
     Double_t pz = track->Pz();
     Double_t E = TMath::Sqrt(mass*mass + p*p);
     if (E == TMath::Abs(pz)) return passedTrkSelection;
-    Double_t y = 0.5*TMath::Log((E+pz)/(E-pz));
-    if ( TMath::Abs(y) > 0.5 ) return passedTrkSelection;
+    Double_t y_lab = 0.5*TMath::Log((E+pz)/(E-pz));
+    Double_t y_cms(0);
 
+    //Rapidity Selection in p-Pb Collisions
+    if (fIspPb)  {
+        y_cms = y_lab-0.465;
+        if (y_cms<-1.0) return passedTrkSelection;
+        if (y_cms> 0.0) return passedTrkSelection;
+    }
+    
+    //Rapidity Selection in pp Collisions
+    if (!fIspPb) {
+        y_cms = y_lab;
+        if (TMath::Abs(y_cms)>0.5) return passedTrkSelection;
+    }
     
     passedTrkSelection = kTRUE;
     return passedTrkSelection;

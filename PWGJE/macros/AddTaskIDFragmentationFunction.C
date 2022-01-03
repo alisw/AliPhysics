@@ -456,7 +456,10 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
                      strDir);   
    
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-   //mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());// Comment to run locally
+  if (mgr->GetCommonOutputContainer()) {
+    //Not present for local runs
+    mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer());
+  }
    mgr->ConnectOutput (task, 1, coutput_FragFunc);   
    
    postConfig(task, namesOfInclusivePIDtasks, namesOfJetPIDtasks, namesOfJetUEPIDtasks, namesOfJetUEMethods);

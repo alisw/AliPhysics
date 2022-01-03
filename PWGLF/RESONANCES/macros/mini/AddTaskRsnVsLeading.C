@@ -50,6 +50,11 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi",
     cutsPair->AddCut(cutY);
     cutsPair->SetCutScheme(cutY->GetName());
 
+   //EVENT-ONLY COMPUTATIONS
+    Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
+   AliRsnMiniOutput *outPtl = task->CreateOutput("eventPtl", "HIST", "EVENT");
+   outPtl->AddAxis(ptlID, 60, 0.0, 30.0);
+
     // We will add RSN config file
     TString macroArgs = TString::Format("(AliRsnMiniAnalysisTask *)%p,%d,%d,%f,%f,%f,%f", task, isMC, isPP, nSigmaPart1TPC, nSigmaPart2TPC, nSigmaPart1TOF, nSigmaPart2TOF);
     TMacro cfg(gSystem->ExpandPathName(TString::Format("%s%s", path.Data(), configName.Data()).Data()));

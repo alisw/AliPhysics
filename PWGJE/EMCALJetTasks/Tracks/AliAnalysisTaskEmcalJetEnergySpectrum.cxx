@@ -85,7 +85,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fMinTimeClusterBias(-20e-9),
   fMaxTimeClusterBias(15e-9),
   fCentralityEstimator("V0M"),
-  fUserPtBinning()
+  fUserPtBinning(),
+  fMakeClusterHistos1D(false),
+  fEnergyDefinition(kDefaultEnergy)
 {
 }
 
@@ -119,7 +121,9 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fMinTimeClusterBias(-20e-9),
   fMaxTimeClusterBias(15e-9),
   fCentralityEstimator("V0M"),
-  fUserPtBinning()
+  fUserPtBinning(),
+  fMakeClusterHistos1D(false),
+  fEnergyDefinition(kDefaultEnergy)
 {
   SetMakeGeneralHistograms(true);
 }
@@ -181,6 +185,10 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
     const TBinning *binnings[6] = {&centralitybinning, &jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
     fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
     fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 6, binnings, fUseSumw2 ? "s" : "");
+  }
+
+  if(fMakeClusterHistos1D){
+    fHistos->CreateTH1("hClusterEnergy1D", "Cluster Energy Spectrum", 200., 0., 200.);
   }
 
   // A bit of QA stuff
@@ -389,6 +397,45 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTH2("hQAClusterFracLeadingVsE", ptvec.E(), maxamplitude/cluster->E());
         fHistos->FillTH2("hQAClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
       }
+
+      // 1D Cluster Histogram
+      Double_t energy(-1);
+      if(fMakeClusterHistos1D){
+        for(auto clust : clusters->all()) {
+          if(!clust->IsEMCAL()) continue;
+          if(clust->GetIsExotic()) continue;
+          if(!fIsMC) {
+            if(clust->GetTOF() < fMinTimeClusterBias || clust->GetTOF() > fMaxTimeClusterBias) continue;
+          }
+
+          // Distinguish energy definition
+          switch(fEnergyDefinition){
+          case kDefaultEnergy:
+    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: default" << std::endl;
+    	      energy = clust->E();
+    	      break;
+          case kNonLinCorrEnergy:
+    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for non-linearity" << std::endl;
+    	      energy = clust->GetNonLinCorrEnergy();
+    	      break;
+          case kHadCorrEnergy:
+    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
+    	      energy = clust->GetHadCorrEnergy();
+    	      break;
+          default:
+            energy = -1;
+            break;
+          };
+
+          AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
+    		    << " | NL: " << clust->GetNonLinCorrEnergy()
+			      << " | HD: " << clust->GetHadCorrEnergy()
+			      << ")" << std::endl;
+
+          fHistos->FillTH1("hClusterEnergy1D", energy);
+        }
+      }
+
     }
     if(tracks){
       auto leadingtrack = j->GetLeadingTrack(tracks->GetArray());
@@ -548,7 +595,7 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
     Double_t maxEta = 0.5;
     Double_t tmpRandConeEta = -999;
     Double_t tmpRandConePhi = -999;
-    Double_t tmpConePt = -1.;
+    Double_t tmpConePt = -0.;
 
     AliEmcalJet *LeadingJet = NULL;
     AliEmcalJet *SubLeadingJet = NULL;
@@ -613,21 +660,13 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
 
     } while (dLJ < 0.45 || dSLJ < 0.45);
 
-    AliVTrack *tmpTrack = 0x0;
+    AliAODTrack *tmpTrack = 0x0;
 
-    for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
+    partcont->ResetCurrentID();
+    while (AliAODTrack *tmpTrack = (AliAODTrack *)partcont->GetNextAcceptParticle())
     {
-
-        if (!partcont->GetParticle(i))
-            continue;
-        
-        tmpTrack = static_cast<AliVTrack *>(partcont->GetParticle(i));
-
-        if (fabs(tmpTrack->Eta()) > 0.9)
-            continue;
-
-        if (tmpTrack->Pt() < 0.15)
-            continue;
+        if (!tmpTrack)
+          continue;
 
         if (sqrt((tmpTrack->Eta() - tmpRandConeEta) * (tmpTrack->Eta() - tmpRandConeEta) +
                  TVector2::Phi_mpi_pi((tmpTrack->Phi() - tmpRandConePhi)) *
@@ -668,19 +707,11 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E(), -99999); //fill embedded track to the array of proto-jets
 
     //-----Filling   fFastJetWrapper with tracks from track container
-    for (Int_t i = 0; i < partcont->GetNAcceptedParticles(); i++)
+    partcont->ResetCurrentID();
+    while (AliAODTrack *trk = (AliAODTrack *)partcont->GetNextAcceptParticle())
     {
-
-        if (!partcont->GetParticle(i))
-            continue;
-
-        AliVTrack *trk = static_cast<AliVTrack *>(partcont->GetParticle(i));
-
-        if (fabs(trk->Eta()) > 0.9)
-            continue;
-
-        if (trk->Pt() < 0.15)
-            continue;
+      if (!trk)
+        continue;
 
         fFastJetWrapper->AddInputVector(trk->Px(), trk->Py(), trk->Pz(), trk->P(), 1); //fill reconstructed tracks to the array of proto-jets
     }

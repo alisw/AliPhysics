@@ -64,6 +64,7 @@ set(SRCS
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
     AliAnalysisTaskRhoTransDev.cxx
+    AliAnalysisTaskRhoPerpCone.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
     AliEmcalJetTaggerTaskFast.cxx
@@ -434,3 +435,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWGJE/EMCALJetTasks)
+install (DIRECTORY FlowVectorCorrections/macros DESTINATION PWGJE/EMCALJetTasks/FlowVectorCorrections)

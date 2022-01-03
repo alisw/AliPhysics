@@ -14,9 +14,8 @@
 AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = true,
                                      bool isMC = false, bool isNano = true, bool triggerOn = false,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
-                                     const char *cutVariation = "0", bool ClosePairRejectionForAll = "false",
-                                     const char *triggerVariation = "0", bool DoOnlyThreeBody = true) {
-
+                                     const char *cutVariation = "0", bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = "false",
+                                     const char *triggerVariation = "0", bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false) {
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -37,6 +36,10 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
+  if (UseSphericityCut){
+    float SpherDown = 0.7;
+    evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); // THINK IF NEEDED FOR THREE BODY
+  }
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, false, false);
@@ -56,14 +59,26 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   //Kaon Cuts
   AliFemtoDreamTrackCuts *KaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
+  KaonCuts->SetPtRange(0.15, 100);
   KaonCuts->SetFilterBit(128);
   KaonCuts->SetCutCharge(1);
+  if(KaonCut==0){ // cuts by Oton
+   KaonCuts->SetPIDkd();
+  }else if(KaonCut==1){ // cuts by Ramona
+   KaonCuts->SetPIDkd(true,true);
+  }
 
   //AntiKaon Cuts
   AliFemtoDreamTrackCuts *AntiKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
+  AntiKaonCuts->SetPtRange(0.15, 100);
   AntiKaonCuts->SetFilterBit(128);
   AntiKaonCuts->SetCutCharge(-1);
+  if(KaonCut==0){ // cuts by Oton
+   AntiKaonCuts->SetPIDkd();
+  }else if(KaonCut==1){ // cuts by Ramona
+   AntiKaonCuts->SetPIDkd(true,true);
+  }
 
 
   if (!fullBlastQA) {
@@ -190,13 +205,13 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
       EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), EvtCutsName.Data()));
 
-  TString TrackCutsName = Form("%sTrackCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  TString TrackCutsName = Form("%sProtonCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
       TrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), TrackCutsName.Data()));
 
-  TString AntiTrackCutsName = Form("%sAntiTrackCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  TString AntiTrackCutsName = Form("%sAntiProtonCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
@@ -259,7 +274,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   AliAnalysisDataContainer *coutputKaonCutsMC;
   AliAnalysisDataContainer *coutputAntiKaonCutsMC;
   if (isMC) {
-    TString TrkCutsMCName = Form("%sTrkCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+    TString TrkCutsMCName = Form("%sProtonCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         TrkCutsMCName.Data(),
@@ -267,7 +282,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
 
-    TString AntiTrkCutsMCName = Form("%sAntiTrkCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+    TString AntiTrkCutsMCName = Form("%sAntiProtonCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
         //@suppress("Invalid arguments") it works ffs
         AntiTrkCutsMCName.Data(),
@@ -322,8 +337,11 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetCorrelationConfig(config);
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
+    taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
+    taskNano->SetDoTwoPrimary(DoTwoPrimary);
 
     mgr->AddTask(taskNano);
 

@@ -64,6 +64,7 @@ public:
   
   void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
   void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
+  void SetEtaTrigger( Float_t lEta1, Float_t lEta2 ) { fMinEtaTrigger = lEta1; fMaxEtaTrigger = lEta2; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetALICE3Mode ( Bool_t lOpt = kTRUE) { fkALICE3SiliconMode = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
@@ -117,23 +118,27 @@ private:
   TH1D *fHistNMPI; //!
   TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[72];              //! for keeping track of base spectra
-  TH1D *fHistEta[72];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredMeson[72];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredCharm[72];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredBeauty[72];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[72];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[72];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[72];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[72];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[72];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[72];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[72];       //! for keeping track of base spectra
+  TH1D *fHistPt[76];              //! for keeping track of base spectra
+  TH1D *fHistEta[76];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredMeson[76];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredCharm[76];              //! for keeping track of base spectra
+  TH2D *fHistEtaTriggeredBeauty[76];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[76];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[76];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[76];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[76];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[76];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[76];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[76];       //! for keeping track of base spectra
   
   Bool_t fkDo2pc;
   Float_t fMinPtTrigger; //for xi trigger
   Float_t fMaxPtTrigger; //for xi trigger
-  TH1D *fHistPtTrigger;
+  Float_t fMinEtaTrigger;
+  Float_t fMaxEtaTrigger;
+  TH1D *fHistPtTriggerD0;
+  TH1D *fHistPtTriggerXiC;
+  TH1D *fHistPtTriggerXiB;
   
   TH3D *fHist3d2pcD0Proton;
   TH3D *fHist3d2pcD0AntiProton;

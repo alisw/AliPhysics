@@ -872,6 +872,7 @@ void AliJCatalystTask::InitializeArrays() {
 		  fTPCClustersHistogram[icent][i] = NULL;
 		  fITSClustersHistogram[icent][i] = NULL;
 		  fChiSquareTPCHistogram[icent][i] = NULL;
+		  fChiSquareITSHistogram[icent][i] = NULL;		  
 		  fDCAzHistogram[icent][i] = NULL;
 		  fDCAxyHistogram[icent][i] = NULL;
 	    fChargeHistogram[icent][i] = NULL;
@@ -986,12 +987,18 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fITSClustersHistogram[icent][1] = new TH1F("fITSClusters_AfterCut","ITSClustersAfterCut",10,0.,10.); 
 	 fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][1]);
 
-	 // k) Book histogram for chi square TPC 
+	 // k) Book histogram for chi square TPC and ITS
 	 fChiSquareTPCHistogram[icent][0] = new TH1F("fChiSquareTPC_BeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
 	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][0]);
 
 	 fChiSquareTPCHistogram[icent][1] = new TH1F("fChiSquareTPC_AfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
 	 fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][1]);
+
+	 fChiSquareITSHistogram[icent][0] = new TH1F("fChiSquareITS_BeforeCut","ChiSquareITSBeforeCut",1000,0.,50.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareITSHistogram[icent][0]);
+
+	 fChiSquareITSHistogram[icent][1] = new TH1F("fChiSquareITS_AfterCut","ChiSquareITSAfterCut",1000,0.,50.); 
+	 fControlHistogramsList[icent]->Add(fChiSquareITSHistogram[icent][1]);
 
 	  // l) Book histogram for DCAz
 	 fDCAzHistogram[icent][0] = new TH1F("fDCAz_BeforeCut","DCAzBeforeCut",1000,-10.,10.);  
@@ -1063,6 +1070,7 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
   fTPCClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetTPCNcls());
   fITSClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSNcls());
   fChiSquareTPCHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Chi2perNDF());
+  fChiSquareITSHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSchi2()/(float)thisTrack->GetITSNcls());
   fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
   fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
   fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());

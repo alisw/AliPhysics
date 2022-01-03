@@ -1,44 +1,92 @@
 //--- Task for investigation of the DoubleHyperHydrogen4 ---
 //---     Author: Janik Ditzel; janik.ditzel@cern.ch     ---
+//https://github.com/alisw/AliRoot/blob/master/ITS/ITSbase/AliITSV0Finder.h
+//https://github.com/alisw/AliRoot/blob/master/ITS/ITSbase/AliITStrackerMI.h
+//https://github.com/alisw/AliRoot/blob/master/ITS/ITSbase/AliITStrackMI.h
 
 #ifndef ALIANALYSISTASKDOUBLEHYPNUCTREE_H
 #define ALIANALYSISTASKDOUBLEHYPNUCTREE_H
+
+
+#define HomogeneousField ///homogenous field in z direction
+#include <algorithm>
+#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliMultSelection.h"
+#include "AliCentrality.h"
+#include "AliESDInputHandler.h"
+#include "AliESDtrack.h"
+#include "AliESDpid.h"
+#include "AliESDVertex.h"
+#include "AliESDEvent.h"
+#include "AliEventCuts.h"
+#include "AliKalmanTrack.h"
+#include "AliMCEventHandler.h"
+#include "AliMCParticle.h"
+#include "AliMCEvent.h"
+#include "AliMCVertex.h"
+#include "AliPID.h"
+#include "AliStack.h"
+#include "AliVertexerTracks.h"
+#include "AliVVertex.h"
+#include <fstream>
+#include "KFParticle.h"
+#include "KFVertex.h"
+#include "KFPVertex.h"
+#include "KFPTrack.h"
+#include <vector>
+#include "TCanvas.h"
+#include "TChain.h"
+#include <TClonesArray.h>
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "THnSparse.h"
+#include "TObject.h"
+#include "TPDGCode.h"
+#include "TLorentzVector.h"
+#include "TRandom2.h"
+#include "TTree.h"
+#include "TVector3.h"
 
 class TH1F;
 class TH2F;
 class AliESDEvent;
 class AliESDpid;
-class AliESDtrackCuts;
-class AliESDv0;
 class AliESDVertex;
-class AliESDInputHandler;
-class AliESDtrack;
+class AliESDTrack;
+//class AliKFParticle;
+class KFParticle;
+class KFVertex;
+class AliKalmanTrack;
+class AliITStrackerMI;
 
-#include "AliAnalysisTaskSE.h"
-#include "AliStack.h"
-#include "AliEventCuts.h"
-#include "TObject.h"
-#include "TLorentzVector.h"
-#include "TVector3.h"
-#include <TClonesArray.h>
-#include "AliPID.h"
-#include "AliVertexerTracks.h"
-#include "AliMCParticle.h"
-#include "AliESDEvent.h"
-
-
+using namespace std;
+// _________________________________________________ //
+class KFParticleHypNuc : public KFParticle {
+public:
+  Bool_t CheckDaughter(KFParticle daughter) {
+    Float_t m[8], mV[36], D[3][3];
+    if (KFParticleBase::GetMeasurement(daughter, m, mV, D)) return kTRUE;
+    return kFALSE;
+  }
+};
+// _________________________________________________ //
 class AliAnalysisTaskDoubleHypNucTree : public AliAnalysisTaskSE {
- public:
+public:
   AliAnalysisTaskDoubleHypNucTree();
   AliAnalysisTaskDoubleHypNucTree(const char *name);
   virtual ~AliAnalysisTaskDoubleHypNucTree();
+
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
+
   void SelectPIDcheckOnly(Bool_t pidch = kFALSE) {fPIDCheckOnly = pidch;};
   void SetTriggerMask(UInt_t triggerMask = AliVEvent::kAny) {fTriggerMask = triggerMask;};
 
-enum PdgCodeType_t {
+  enum PdgCodeType_t {
     kPDGPionPlus,
     kPDGPionMinus,
     kPDGProton,
@@ -66,7 +114,7 @@ enum PdgCodeType_t {
 
   static const Int_t fgkPdgCode[];
 
- private:
+private:
   //-- General variables --
   AliESDInputHandler    *fInputHandler;        
   AliESDpid             *fPID;                 
@@ -74,34 +122,33 @@ enum PdgCodeType_t {
   AliMCEvent            *mcEvent;
   AliStack              *fStack;     
   AliEventCuts          fEventCuts; 
-  AliESDtrackCuts       *trackCutsNuclei;
-  AliESDtrackCuts       *trackCutsStrong;
-  AliESDtrackCuts       *trackCutsSoft;
   TTree                 *fTree;
+  TTree                 *fTreeD;
+  TTree                 *fTreeKF;
   TTree                 *gTree;
+  TTree                 *gTreeD;
+  TTree                 *gTreeKF;
   TTree                 *fTreeGen;
   TTree                 *gTreeGen;
   TList                 *fHistogramList; 
   TH2F                  *fHistdEdx;            
   TH1F                  *fHistNumEvents;       
   TH1F			*fHistTrigger;	
-  TH1F 	                *hInvMass4LHe;
-  TH1F 	                *hInvMass4LLH;
   Double_t              fBetheParamsHe[6];  
   Double_t              fBetheParamsT[6];
-  Bool_t                fPIDCheckOnly;  
+  Bool_t                fPIDCheckOnly;
   Int_t                 fMCtrue; 
   UInt_t		fTriggerMask; 
-  Int_t                 fvariante; 
+  Int_t                 kVariante; 
+  Int_t                 kStandardReco;
+  Int_t                 kKFReco;
   //-- Trigger --
-  Int_t                 MB, HMV0, HMSPD, HNU, HQU;
+  Int_t                 MB, HMV0, HMSPD, HNU, HQU, Central, SemiCentral;
   //-- Tracks -- 
   AliESDtrack           *track1;
   AliESDtrack           *track2;
   AliESDtrack           *track3;
   AliESDtrack           *track4;
-  Double_t              ptot1, sign1, ptot2, sign2, ptot3, sign3, ptot4, sign4;
-  Bool_t                He3Pos1, He3Neg1, pPos2, pNeg2, piPos3, piNeg3, piPos4, piNeg4;
   //-- Full track arrays --
   std::vector < int >   He3PosArray;
   std::vector < int >   PPosArray;
@@ -111,13 +158,6 @@ enum PdgCodeType_t {
   std::vector < int >   PNegArray;
   std::vector < int >   PiNegArray;
   std::vector < int >   PiNegSecArray;
-  //-- Reduced track arrays --
-  std::vector < int >   He3PosArrayAcc;
-  std::vector < int >   PPosArrayAcc;
-  std::vector < int >   PiPosArrayAcc;
-  std::vector < int >   He3NegArrayAcc;
-  std::vector < int >   PNegArrayAcc;
-  std::vector < int >   PiNegArrayAcc;
   //-- Array index counter --
   Int_t                 He3PosCounter;
   Int_t                 He3NegCounter;
@@ -127,38 +167,59 @@ enum PdgCodeType_t {
   Int_t                 PiNegCounter;
   Int_t                 PiPosSecCounter;
   Int_t                 PiNegSecCounter;
-  Int_t                 He3PosCounterAcc;
-  Int_t                 He3NegCounterAcc;
-  Int_t                 PPosCounterAcc;
-  Int_t                 PNegCounterAcc;
-  Int_t                 PiPosCounterAcc;
-  Int_t                 PiNegCounterAcc;
   //-- Vertex Reco --
   AliESDVertex          *primVertex;
+  KFVertex              primKFVertex;
   const AliESDVertex    *vertex;
   AliESDVertex          *secVertex;
   AliESDVertex          *tertVertex;
+  AliESDVertex          *KFtertVertex;
+  AliESDVertex          *KFsecVertex;
   AliVertexerTracks     *secvertexer;
   AliVertexerTracks     *tertvertexer;   
   AliExternalTrackParam *exTrack;
+  AliExternalTrackParam *exTrack1;
+  AliExternalTrackParam *exTrack2;
+  AliExternalTrackParam *exTrack3;
+  AliExternalTrackParam *exTrack4;
   TObjArray             *trkArray;
   TObjArray             *trkArray1;
   Double_t              PrimVertex[3];
   Double_t              SecVertex[3];
   Double_t              TertVertex[3];
-  Double_t              TertVertex2[3];
+  Double_t              PrimVertexKF[3];
+  Double_t              SecVertexKF[3];
+  Double_t              SecVertexErrKF[3];
+  Double_t              TertVertexKF[3];
+  Double_t              TertVertexErrKF[3];
   Double_t              cov[21];
   Double_t              cov0[21];
   Double_t              cov1[21];
   Double_t              cov2[21];
-  UShort_t              id[2];
   Double_t              pxpypz[3];
   Double_t              xyz[3];
-  Double_t              dd[3];  
-  Short_t               sign; 
+  Double_t              dd[3];
+  Double_t              kMagF;
+  Short_t               sign;
+  KFParticle            KFtrack1;
+  KFParticle            KFtrack2;
+  KFParticle            KFtrack3;
+  KFParticle            KFtrack4;
+  //-- Cuts --
+  Double_t              kDCATracksCut;
+  Double_t              kTrackPtUncertCut;
+  Double_t              kPointingAngleCut;
+  Double_t              kPIDSelecCut;
+  Double_t              kMin4LLHMass;
+  Double_t              kMax4LLHMass;
+  Double_t              kMin4LHeMass;
+  Double_t              kMax4LHeMass;
+  Double_t              kMin3LHMass;
+  Double_t              kMax3LHMass;
   //-- MC --
-  Int_t                 noCombinatoricsMC;
-  Int_t                 lessCombinatoricsMC;
+  Bool_t                konlyBG;  
+  Bool_t                konlySig;
+  Bool_t                kMCPIDCheck;
   Int_t                 stackN;
   Int_t                 label1;
   Int_t                 label2;
@@ -173,6 +234,7 @@ enum PdgCodeType_t {
   Int_t                 labelGrandMother3;
   Int_t                 labelGrandMother4;
   Long_t                PDGCodeMother;
+  AliMCParticle         *CheckParticle;
   AliMCParticle         *FirstDaughter;
   AliMCParticle         *SecondDaughter;
   AliMCParticle         *ThirdDaughter;
@@ -196,33 +258,62 @@ enum PdgCodeType_t {
   TLorentzVector        *lorentzsum;
   TLorentzVector        *lorentzsum2;
   TVector3              *h;
-  Double_t              xthiss; 
-  Double_t              xpp; 
+  Double_t               xthiss; 
+  Double_t               xpp; 
   //-- saved in Tree --
-  Int_t		        fPeriod; 
-  Int_t                 fMagneticField;
-  Int_t                 fCentrality;
-  Int_t                 frunnumber;
-  Int_t                 mctruth;
-  Int_t                 feventclass;
-  Int_t                 fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU;
-  Int_t                 fPDGMother, fChargeMother;
-  Int_t                 fNclsDaughter, fNclsITSDaughter, fNclsDaughter1, fNclsITSDaughter1, fNclsDaughter2, fNclsITSDaughter2, fNclsDaughter3, fNclsITSDaughter3;
-  Int_t                 fPropDCADaughter, fPropDCADaughter1, fPropDCADaughter2, fPropDCADaughter3, fPropDCADaughter4;
-  Float_t               fEDaughter, fpDaughter, fptDaughter,  fpxDaughter,  fpyDaughter,  fpzDaughter, fyDaughter, fdEdxDaughter, fdEdxSigmaDaughter, fDcaDaughter, fDcaDaughtero, fDcazDaughter, fDcaSecDaughter,  fChi2Daughter,  fEtaDaughter, fPhiDaughter, fGeoLengthDaughter, fTOFSignalDaughter;
-  Float_t               fEDaughter1, fpDaughter1, fptDaughter1, fpxDaughter1, fpyDaughter1, fpzDaughter1, fyDaughter1, fdEdxDaughter1, fdEdxSigmaDaughter1, fDcaDaughter1, fDcaDaughter1o, fDcaSecDaughter1, fDcazDaughter1, fChi2Daughter1, fEtaDaughter1, fPhiDaughter1, fGeoLengthDaughter1, fTOFSignalDaughter1;
-  Float_t               fEDaughter2, fpDaughter2, fptDaughter2, fpxDaughter2, fpyDaughter2, fpzDaughter2, fyDaughter2, fdEdxDaughter2, fdEdxSigmaDaughter2, fDcaDaughter2, fDcaDaughter2o, fDcaSecDaughter2, fDcazDaughter2, fChi2Daughter2, fEtaDaughter2, fPhiDaughter2, fGeoLengthDaughter2, fTOFSignalDaughter2;
-  Float_t               fEDaughter3, fpDaughter3, fptDaughter3, fpxDaughter3, fpyDaughter3, fpzDaughter3, fyDaughter3, fdEdxDaughter3, fdEdxSigmaDaughter3, fDcaDaughter3, fDcaDaughter3o, fDcaSecDaughter3, fDcazDaughter3, fChi2Daughter3, fEtaDaughter3, fPhiDaughter3, fGeoLengthDaughter3, fTOFSignalDaughter3;
-  Float_t               fEDaughter4, fpDaughter4, fptDaughter4, fpxDaughter4, fpyDaughter4, fpzDaughter4, fyDaughter4, fDcaDaughter4, fDcazDaughter4, fDcaSecDaughter4;
-  Float_t               fSigmaYXDaughter, fSigmaXYZDaughter, fSigmaZDaughter, fSigmaYXDaughter1, fSigmaXYZDaughter1, fSigmaZDaughter1, fSigmaYXDaughter2, fSigmaXYZDaughter2, fSigmaZDaughter2, fSigmaYXDaughter3, fSigmaXYZDaughter3, fSigmaZDaughter3, fSigmaYXDaughter4, fSigmaXYZDaughter4, fSigmaZDaughter4, fPtUncertDaughter, fPtUncertDaughter1, fPtUncertDaughter2, fPtUncertDaughter3, fPtUncertDaughter4;
-  Int_t                 fTPCRefitDaughter, fITSRefitDaughter, fTPCRefitDaughter1, fITSRefitDaughter1, fTPCRefitDaughter2, fITSRefitDaughter2, fTPCRefitDaughter3, fITSRefitDaughter3;
-  Float_t               fImParDaughter, fImPar2Daughter, fImParDaughter1, fImPar2Daughter1, fImParDaughter2, fImPar2Daughter2, fImParDaughter3, fImPar2Daughter3, fImParDaughter4, fImPar2Daughter4, fImParzDaughter, fImParz2Daughter, fImParzDaughter1, fImParz2Daughter1, fImParzDaughter2, fImParz2Daughter2, fImParzDaughter3, fImParz2Daughter3, fImParzDaughter4, fImParz2Daughter4;
-  Float_t               fdEdxSigmaPion, fdEdxSigmaDeuteron, fdEdxSigmaTriton, fdEdxSigmaAlpha;
-  Float_t               fDCA2B, fDCA2Bo, fDCA3B1, fDCA3B2, fDCA3B3, fPA, fSubPA, fSubPA2, fSubPA3, fSubPA4, fDecAngle, farmalpha, farmpt;
-  Float_t               fPrimVertexX, fPrimVertexY, fPrimVertexZ,fSecVertexX, fSecVertexY, fSecVertexZ, fTertVertexX, fTertVertexY, fTertVertexZ, fTertVertex2X, fTertVertex2Y, fTertVertex2Z;
-  Float_t               fmMother, fmMother2, fEMother, fpxMother, fpyMother, fpzMother, fptMother, fpMother, fyMother, fctMother;
-  Float_t               fmSubMother, fESubMother, fpxSubMother, fpySubMother, fpzSubMother, fptSubMother, fpSubMother, fySubMother, fctSubMother;
-  Float_t               fthetaP, fthetaN;
+  Int_t		         fPeriod; 
+  Int_t                  fMagneticField;
+  Int_t                  fCentrality;
+  Int_t                  frunnumber;
+  Int_t                  fmctruth;
+  Int_t                  feventclass;
+  Int_t                  fPrimary4LHe;
+  Int_t                  fDecayChannel;
+  Int_t                  fRecoMethod;
+  Int_t                  fisOnlineV0_13;
+  Int_t                  fisOnlineV0_14;
+  Int_t                  fisOnlineV0_23;
+  Int_t                  fisOnlineV0_24;
+  Int_t                  fTrigMB, fTrigHMV0, fTrigHMSPD, fTrigHNU, fTrigHQU, fTrigkCentral, fTrigkSemiCentral;
+  Int_t                  fPDGMother, fChargeMother;
+  Int_t                  fPrimVertNDF, fSecVertNDF, fTertVertNDF;
+  Int_t                  fNclsDaughter, fNclsITSDaughter, fNclsDaughter1, fNclsITSDaughter1, fNclsDaughter2, fNclsITSDaughter2, fNclsDaughter3, fNclsITSDaughter3;
+  Int_t                  fPropDCADaughter, fPropDCADaughter1, fPropDCADaughter2, fPropDCADaughter3, fPropDCADaughter4;
+  Int_t                  fTPCRefitDaughter, fITSRefitDaughter, fTPCRefitDaughter1, fITSRefitDaughter1, fTPCRefitDaughter2, fITSRefitDaughter2, fTPCRefitDaughter3, fITSRefitDaughter3;
+  Int_t                  fITSLayer1Daughter, fITSLayer2Daughter, fITSLayer3Daughter, fITSLayer4Daughter, fITSLayer5Daughter, fITSLayer6Daughter, fITSLayer1Daughter1, fITSLayer2Daughter1, fITSLayer3Daughter1, fITSLayer4Daughter1, fITSLayer5Daughter1, fITSLayer6Daughter1, fITSLayer1Daughter2, fITSLayer2Daughter2, fITSLayer3Daughter2, fITSLayer4Daughter2, fITSLayer5Daughter2, fITSLayer6Daughter2, fITSLayer1Daughter3, fITSLayer2Daughter3, fITSLayer3Daughter3, fITSLayer4Daughter3, fITSLayer5Daughter3, fITSLayer6Daughter3;
+  Double_t               fEDaughter, fpDaughter, fptDaughter,  fpxDaughter,  fpyDaughter,  fpzDaughter, fyDaughter, fdEdxDaughter, fdEdxSigmaDaughter, fDcaDaughter, fDcaDaughtero, fDcazDaughter, fDcaSecDaughter,  fChi2Daughter,  fEtaDaughter, fPhiDaughter, fGeoLengthDaughter, fTOFSignalDaughter;
+  Double_t               fEDaughter1, fpDaughter1, fptDaughter1, fpxDaughter1, fpyDaughter1, fpzDaughter1, fyDaughter1, fdEdxDaughter1, fdEdxSigmaDaughter1, fDcaDaughter1, fDcaDaughter1o, fDcaSecDaughter1, fDcazDaughter1, fChi2Daughter1, fEtaDaughter1, fPhiDaughter1, fGeoLengthDaughter1, fTOFSignalDaughter1;
+  Double_t               fEDaughter2, fpDaughter2, fptDaughter2, fpxDaughter2, fpyDaughter2, fpzDaughter2, fyDaughter2, fdEdxDaughter2, fdEdxSigmaDaughter2, fDcaDaughter2, fDcaDaughter2o, fDcaSecDaughter2, fDcazDaughter2, fChi2Daughter2, fEtaDaughter2, fPhiDaughter2, fGeoLengthDaughter2, fTOFSignalDaughter2;
+  Double_t               fEDaughter3, fpDaughter3, fptDaughter3, fpxDaughter3, fpyDaughter3, fpzDaughter3, fyDaughter3, fdEdxDaughter3, fdEdxSigmaDaughter3, fDcaDaughter3, fDcaDaughter3o, fDcaSecDaughter3, fDcazDaughter3, fChi2Daughter3, fEtaDaughter3, fPhiDaughter3, fGeoLengthDaughter3, fTOFSignalDaughter3;
+  Double_t               fEDaughter4, fpDaughter4, fptDaughter4, fpxDaughter4, fpyDaughter4, fpzDaughter4, fyDaughter4, fDcaDaughter4, fDcazDaughter4, fDcaSecDaughter4;
+  Double_t               fSigmaYXDaughter, fSigmaXYZDaughter, fSigmaZDaughter, fSigmaYXDaughter1, fSigmaXYZDaughter1, fSigmaZDaughter1, fSigmaYXDaughter2, fSigmaXYZDaughter2, fSigmaZDaughter2, fSigmaYXDaughter3, fSigmaXYZDaughter3, fSigmaZDaughter3, fSigmaYXDaughter4, fSigmaXYZDaughter4, fSigmaZDaughter4, fPtUncertDaughter, fPtUncertDaughter1, fPtUncertDaughter2, fPtUncertDaughter3, fPtUncertDaughter4;  
+  Double_t               fImParDaughter,  fImParDaughter1,  fImParDaughter2,  fImParDaughter3,  fImParDaughter4,  fImParzDaughter,  fImParzDaughter1,  fImParzDaughter2,  fImParzDaughter3,  fImParzDaughter4;
+  Double_t               fdEdxSigmaPion, fdEdxSigmaDeuteron, fdEdxSigmaTriton, fdEdxSigmaAlpha;
+  //
+  Double_t               fDCA2B, fDCA2Bo, fDCA3B1, fDCA3B2, fDCA3B3, fPA, fSubPA, fSubPA2, fDecAngle, farmalpha, farmpt;
+  Double_t               fPrimVertexX, fPrimVertexY, fPrimVertexZ,fSecVertexX, fSecVertexY, fSecVertexZ, fTertVertexX, fTertVertexY, fTertVertexZ, fV0VertexX_13, fV0VertexY_13, fV0VertexZ_13, fV0VertexX_14, fV0VertexY_14, fV0VertexZ_14, fV0VertexX_23, fV0VertexY_23, fV0VertexZ_23, fV0VertexX_24, fV0VertexY_24, fV0VertexZ_24;
+  Double_t               fPrimVertChi2, fSecVertChi2, fTertVertChi2;  
+  Double_t               fmMother, fmMother2, fEMother, fpxMother, fpyMother, fpzMother, fptMother, fpMother, fyMother, fctMother;
+  Double_t               fmSubMother, fESubMother, fpxSubMother, fpySubMother, fpzSubMother, fptSubMother, fpSubMother, fySubMother, fctSubMother;
+  //-- KF --
+  Int_t                  fPrimVertNDFKF, fSecVertNDFKF, fTertVertNDFKF;
+  Double_t               fEDaughter1KF, fLabelDaughter1KF, fptDaughter1KF,  fpxDaughter1KF,  fpyDaughter1KF,  fpzDaughter1KF, fyDaughter1KF;
+  Double_t               fEDaughter2KF, fLabelDaughter2KF, fptDaughter2KF,  fpxDaughter2KF,  fpyDaughter2KF,  fpzDaughter2KF, fyDaughter2KF;
+  Double_t               fEDaughter3KF, fLabelDaughter3KF, fptDaughter3KF,  fpxDaughter3KF,  fpyDaughter3KF,  fpzDaughter3KF, fyDaughter3KF;
+  Double_t               fEDaughterKF, fLabelDaughterKF, fptDaughterKF,  fpxDaughterKF,  fpyDaughterKF,  fpzDaughterKF, fyDaughterKF;
+  Double_t               fDCA2BXYKF, fDCA3B1XYKF, fDCA3B2XYKF, fDCA3B3XYKF, fPAKF, fSubPAKF, fSubPA2KF;
+  Double_t               fDCA2BZKF, fDCA3B1ZKF, fDCA3B2ZKF, fDCA3B3ZKF;
+  Double_t               fPrimVertexXKF, fPrimVertexYKF, fPrimVertexZKF, fSecVertexXKF, fSecVertexYKF, fSecVertexZKF, fTertVertexXKF, fTertVertexYKF, fTertVertexZKF;
+  Double_t               fPrimVertChi2KF, fSecVertChi2KF, fTertVertChi2KF;  
+  Double_t               fmMotherKF, fEMotherKF, fpxMotherKF, fpyMotherKF, fpzMotherKF, fptMotherKF, fpMotherKF, fyMotherKF, fctMotherKF;
+  Double_t               fmSubMotherKF, fESubMotherKF, fpxSubMotherKF, fpySubMotherKF, fpzSubMotherKF, fptSubMotherKF, fpSubMotherKF, fySubMotherKF, fctSubMotherKF;
+  Double_t               fDcaDaughterXYKF, fDcaDaughter1XYKF, fDcaDaughter2XYKF, fDcaDaughter3XYKF, fDcaDaughter4XYKF, fDcaSecDaughterXYKF, fDcaSecDaughter1XYKF, fDcaSecDaughter2XYKF, fDcaSecDaughter3XYKF, fDcaSecDaughter4XYKF;
+  Double_t               fDcaDaughterZKF, fDcaDaughter1ZKF, fDcaDaughter2ZKF, fDcaDaughter3ZKF, fDcaDaughter4ZKF, fDcaSecDaughterZKF, fDcaSecDaughter1ZKF, fDcaSecDaughter2ZKF, fDcaSecDaughter3ZKF, fDcaSecDaughter4ZKF;
+  Double_t               fPrimVertexXErrKF, fPrimVertexYErrKF, fPrimVertexZErrKF, fSecVertexXErrKF, fSecVertexYErrKF, fSecVertexZErrKF, fTertVertexXErrKF, fTertVertexYErrKF, fTertVertexZErrKF;
+  Double_t               fmMotherErrKF, fEMotherErrKF, fpxMotherErrKF, fpyMotherErrKF, fpzMotherErrKF, fptMotherErrKF, fpMotherErrKF, fctMotherErrKF;
+  Double_t               fmSubMotherErrKF, fESubMotherErrKF, fpxSubMotherErrKF, fpySubMotherErrKF, fpzSubMotherErrKF, fptSubMotherErrKF, fpSubMotherErrKF, fctSubMotherErrKF;  
+  //
+  Double_t               fthetaP, fthetaN;
   //-- Functions --
   //-- only PID check --
   void dEdxCheck();
@@ -235,21 +326,33 @@ enum PdgCodeType_t {
   //-- neg 4LHe reco --
   void CalcNegDaughterHypNuc();
   //-- pos 4LLH reco --
-  void CalcPosMotherHypNuc();
+  void CalcPosMotherHypNuc(Int_t Track1Entry, Int_t Track2Entry, Int_t Track3Entry, Int_t kDecayChannel);
   //-- neg 4LLH reco
-  void CalcNegMotherHypNuc();
-  //-- function for the cascade vertex reco --
-  void CreateSecVertex();
+  void CalcNegMotherHypNuc(Int_t Track1Entry, Int_t Track2Entry, Int_t Track3Entry, Int_t kDecayChannel);
+  //-- function for the vertex reco --
+  Int_t StandardReconstruction(TString Mother, Int_t kDecayChannel, Int_t ksign);
+  //-- function for the  vertex reco with KFParticle--
+  Int_t KFReconstruction(TString Mother, Int_t kDecayChannel, Int_t ksign);
+  //-- function for the CORRECT initialization of a KFParticle--
+  KFParticle CreateKFParticle(AliExternalTrackParam& track, Double_t Mass, Int_t Charge); 
+  //-- function for the CORRECT initialization of a KFVertex--
+  KFVertex CreateKFVertex(const AliVVertex& vertex);
+  //-- check whether two used tracks are from a V0 --
+  void GetV0Status();
   //-- filling track information into tree --
-  void SetDaughterInformation(TString Mother);
+  void SetDaughterInformation(TString Mother, Int_t kDecayChannel);
+  void SetDaughterInformationKF(KFParticle daughter1, KFParticle daughter2, KFParticle daughter3, Int_t kDecayChannel);
+  void SetDaughterInformationKF(KFParticle daughter1, KFParticle daughter2, KFParticle daughter3, KFParticle daughter4, Int_t kDecayChannel);
   //-- set Bethe_Bloch Params by runnumber --
   void SetBetheBlochParams(Int_t runNumber);
   //-- Main MC function --
   void MCGenerated();                                      
   //-- gen 4LLH --
-  void MCFourBodyDecay (Int_t stackN, AliMCParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Long_t PDGThirdDaughter, Long_t PDGFourthDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter, Double_t massThirdDaughter, Double_t massFourthDaughter);
+  void MCFourBodyDecay (Int_t stackN, AliMCParticle *tparticleMother, Long_t PDGMother, Int_t kDecayChannel, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Long_t PDGThirdDaughter, Long_t PDGFourthDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter, Double_t massThirdDaughter, Double_t massFourthDaughter);
   //-- gen 4LHe --
-  void MCThreeBodyDecay (Int_t stackN, AliMCParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Long_t PDGThirdDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter, Double_t massThirdDaughter); 
+  void MCThreeBodyDecay (Int_t stackN, AliMCParticle *tparticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Long_t PDGThirdDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter, Double_t massThirdDaughter);
+  //--gen 3LH
+  void MCTwoBodyDecay(Int_t stackN, AliMCParticle* ParticleMother, Long_t PDGMother, Long_t PDGFirstDaughter, Long_t PDGSecondDaughter, Double_t massFirstDaughter, Double_t massSecondDaughter);
   //-- stack label calculation --
   Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode, Int_t motherparticlePdgCode);
   Int_t GetLabel(Int_t labelFirstMother, Int_t particlePdgCode);
@@ -260,9 +363,13 @@ enum PdgCodeType_t {
   //-- clac of dEdx --
   Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
   //
+  Int_t CustomTrackCut(const AliESDtrack& track, Int_t particle);  
+  //
   Double_t GeoLength(const AliESDtrack& track);
   //
-  Double_t GetTOFSignal(const AliESDtrack& track);
+  Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi);
+  //
+  Double_t GetTOFSignal(const AliESDtrack& track);  
   //
   void ResetVals(TString mode);
   //
@@ -270,7 +377,7 @@ enum PdgCodeType_t {
   AliAnalysisTaskDoubleHypNucTree &operator=(const AliAnalysisTaskDoubleHypNucTree&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDoubleHypNucTree, 3);
+  ClassDef(AliAnalysisTaskDoubleHypNucTree, 1);
   /// \endcond
 };
 #endif

@@ -122,6 +122,9 @@ set(SRCS
   LongAsymmetry/AliAnalysisTaskEtaDist.cxx
   StronglyIntensiveCorrelations/AliAnalysisTaskStronglyIntensiveCorrTree.cxx
   FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
+  ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency.cxx
+  ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelations.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx	
   )
 
 # Headers from sources
@@ -172,3 +175,5 @@ install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeF
 install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyIntensiveCorrelations)
 install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
 install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)
+install(DIRECTORY ParticleYieldRatioCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
+install(DIRECTORY HMPTF/macros DESTINATION PWGCF/EBYE/HMPTF)

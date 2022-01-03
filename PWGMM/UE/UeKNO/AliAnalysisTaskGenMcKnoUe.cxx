@@ -14,7 +14,7 @@
  * Author: Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
  *         Feng Fan (Feng.Fan@cern.ch)	                                  *
  *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
- *         Last modification: 10/11/2021                                  * 
+ *         Last modification: 25/11/2021                                  * 
  **************************************************************************/
 //_____ ROOT headers
 #include <TList.h>
@@ -73,9 +73,6 @@ const Int_t NchNBinsRho = 600;
 const Double_t pi = 3.1415926535897932384626433832795028841971693993751058209749445;
 const Double_t  ptamin = 0.15;
 const Double_t  ptamax = 20.0;
-const Double_t  etamax = 4.0;
-const Int_t nEtaBins = 10;
-const Int_t nPhiBins = 10;
 Int_t Nmpi = -1;
 
 ClassImp(AliAnalysisTaskGenMcKnoUe)
@@ -88,6 +85,9 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		fFirstPart(kTRUE),
 		fGenerator(0),
 		fEtaCut(0.8),
+		fEtaCutRho(4.0),
+		fnEtaBinsRho(1),
+		fnPhiBinsRho(1),
 		fIsPP(kTRUE),
 		fPtMin(0.15),
 		fGenLeadPhi(0x0),
@@ -100,6 +100,12 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		hnchmpirho(0x0),
 		hnchrho(0x0),
 		hmpirho(0x0),
+		hphiKNO(0x0),
+		hphiKNO1(0x0),
+		hphiKNO2(0x0),
+		hNchTforKNOana(0x0),
+		hNchTforKNOanaMin(0x0),
+		hNchTforKNOanaMax(0x0),
 		fOutputList(0)
 {
 	for(Int_t i=0;i<3;++i) 
@@ -109,6 +115,7 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		hNchRho[i_rho]=0;
 		hEtaLeadingRho[i_rho]=0;
 		hDetaDphiRho[i_rho]=0;
+		hDetaDphiRhoWideEta[i_rho]=0;
 		for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi)
 			hNchPtPidRho[i_dphi][i_rho]=0; // region, rho 
 	}
@@ -123,6 +130,9 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 	fFirstPart(kTRUE),
 	fGenerator(0),
 	fEtaCut(0.8),
+	fEtaCutRho(4.0),
+	fnEtaBinsRho(1),
+	fnPhiBinsRho(1),
 	fIsPP(kTRUE),
 	fPtMin(0.15),
 	fGenLeadPhi(0x0),
@@ -135,6 +145,12 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 	hnchmpirho(0x0),
 	hnchrho(0x0),
 	hmpirho(0x0),
+	hphiKNO(0x0),
+	hphiKNO1(0x0),
+	hphiKNO2(0x0),
+	hNchTforKNOana(0x0),
+	hNchTforKNOanaMin(0x0),
+	hNchTforKNOanaMax(0x0),
 	fOutputList(0)
 {
 	for(Int_t i=0;i<3;++i)
@@ -144,6 +160,7 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 		hNchRho[i_rho]=0;
 		hEtaLeadingRho[i_rho]=0;
 		hDetaDphiRho[i_rho]=0;
+		hDetaDphiRhoWideEta[i_rho]=0;
 		for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi)
 			hNchPtPidRho[i_dphi][i_rho]=0; // region, rho 
 	}
@@ -193,20 +210,20 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 	};
 
 	// Define array nch
-	Double_t EtaBins[nEtaBins+1];
-	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
-	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+	Double_t EtaBins[fnEtaBinsRho+1];
+	Double_t deltaEta = (2.0*fEtaCutRho)/(1.0*fnEtaBinsRho);
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho+1;++i_eta){
 		EtaBins[i_eta]=0;
-		if(i_eta<nEtaBins)
-			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		if(i_eta<fnEtaBinsRho)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*fEtaCutRho;
 		else
-			EtaBins[i_eta]= 1.0*etamax;
+			EtaBins[i_eta]= 1.0*fEtaCutRho;
 	}
-	Double_t PhiBins[nPhiBins+1];
-	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
-	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+	Double_t PhiBins[fnPhiBinsRho+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*fnPhiBinsRho);
+	for(Int_t i_phi=0;i_phi<fnPhiBinsRho+1;++i_phi){
 		PhiBins[i_phi]=0;
-		if(i_phi<nPhiBins)
+		if(i_phi<fnPhiBinsRho)
 			PhiBins[i_phi]=i_phi*deltaPhi;
 		else
 			PhiBins[i_phi]= 2.0*pi;
@@ -239,6 +256,29 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 			fOutputList->Add(hmpirho);
 
 		}
+
+		hphiKNO = 0;
+		hphiKNO = new TH1D("hphiKNO","",64,-pi/2.0,3*pi/2.0);
+		fOutputList->Add(hphiKNO);
+		hphiKNO1 = 0;
+		hphiKNO1 = new TH1D("hphiKNO1","",64,-pi/2.0,3*pi/2.0);
+		fOutputList->Add(hphiKNO1);
+		hphiKNO2 = 0;
+		hphiKNO2 = new TH1D("hphiKNO2","",64,-pi/2.0,3*pi/2.0);
+		fOutputList->Add(hphiKNO2);
+		hNchTforKNOana = 0;
+		hNchTforKNOana = new TH1D("hNchTforKNOana","",100,-0.5,99.5);
+		fOutputList->Add(hNchTforKNOana);
+		hNchTforKNOanaMin = 0;
+		hNchTforKNOanaMin = new TH1D("hNchTforKNOanaMin","",100,-0.5,99.5);
+		fOutputList->Add(hNchTforKNOanaMin);
+		hNchTforKNOanaMax = 0;
+		hNchTforKNOanaMax = new TH1D("hNchTforKNOanaMax","",100,-0.5,99.5);
+		fOutputList->Add(hNchTforKNOanaMax);
+
+
+
+
 		// UE analysis
 		for(Int_t i=0;i<3;++i){
 
@@ -278,6 +318,11 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 			hDetaDphiRho[i_rho]=new TH2D(Form("hDetaDphi_%s",NameOfRegionRho[i_rho]),"",100,-5,5,64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 			fOutputList->Add(hDetaDphiRho[i_rho]);
 
+			hDetaDphiRhoWideEta[i_rho]=0;
+			hDetaDphiRhoWideEta[i_rho]=new TH2D(Form("hDetaDphiWideEta_%s",NameOfRegionRho[i_rho]),"",100,-5,5,64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+			fOutputList->Add(hDetaDphiRhoWideEta[i_rho]);
+
+
 			for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi){
 				hNchPtPidRho[i_dphi][i_rho]=0; // region, rho
 				hNchPtPidRho[i_dphi][i_rho]=new TH3D(Form("hNchPtPid_%s_%s",NameOfRegionRho[i_rho],NameOfRegionDPhi[i_dphi]),"",NchNBinsRho,NchBinsRho,pTNBins,pTNBins1,NPid,Pid);
@@ -294,7 +339,7 @@ void AliAnalysisTaskGenMcKnoUe::UserExec(Option_t *)
 	// ### Initialize
 	if(!fFirstPart){
 		frho = new TF1("frho","[0]*exp([1]*x)+[2]*x^[3]",100.0,2000.0);
-		SetParametersRho();
+		SetParametersRho(fEtaCutRho);
 	}
 
 	fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -390,7 +435,7 @@ void AliAnalysisTaskGenMcKnoUe::GetGenLeadingObject() {
 		if(fFirstPart){
 			if ( TMath::Abs(particle->Eta()) > fEtaCut )continue;}
 		else{
-			if ( TMath::Abs(particle->Eta()) > etamax )continue;}
+			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;}
 		if( particle->Pt() < fPtMin)continue;
 
 		if (flPt<particle->Pt()){
@@ -423,7 +468,9 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 			continue;
 	}
 	hPtLVsV0A->Fill(fGenLeadPt,multV0Aeta*1.0);
-
+	Int_t multForKNOana = 0;
+	Int_t multForKNOana1 = 0;
+	Int_t multForKNOana2 = 0;
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); i++) {
 
 		if(i==fGenLeadIn)
@@ -448,40 +495,66 @@ void AliAnalysisTaskGenMcKnoUe::GetGenUEObservables(){
 		}
 		else{// transverse side
 			hPtVsPtLeadingTrue[2]->Fill(fGenLeadPt,particle->Pt(),multV0Aeta*1.0);
+			if( particle->Pt() >= 0.5 ){
+				multForKNOana++;
+				hphiKNO->Fill(DPhi);
+				if(DPhi-pi>=pi/3.0 || DPhi<-pi/3.0){
+					multForKNOana2++;
+					hphiKNO2->Fill(DPhi);
+				}
+				else{
+					multForKNOana1++;
+					hphiKNO1->Fill(DPhi);
+				}
+			}
+
+
 		}
 
 	}
 	hPtLeadingTrue->Fill(fGenLeadPt);
+	if(fGenLeadPt>=5.0 && fGenLeadPt<40.0){
+		hNchTforKNOana->Fill(multForKNOana);
+		if(multForKNOana2>multForKNOana1){// multForKNOana1: max, multForKNOana1: min
+			hNchTforKNOanaMin->Fill(multForKNOana1);// hist min
+			hNchTforKNOanaMax->Fill(multForKNOana2);//hist max
+		}
+		else{
+			hNchTforKNOanaMin->Fill(multForKNOana2);// hist min
+			hNchTforKNOanaMax->Fill(multForKNOana1);//hist max
+		}
+	}
+
 }
 //_______________________________________________________
 void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
-	Double_t EtaBins[nEtaBins+1];
-	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
-	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+	Double_t EtaBins[fnEtaBinsRho+1];
+	Double_t deltaEta = (2.0*fEtaCutRho)/(1.0*fnEtaBinsRho);
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho+1;++i_eta){
 		EtaBins[i_eta]=0;
-		if(i_eta<nEtaBins)
-			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		if(i_eta<fnEtaBinsRho)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*fEtaCutRho;
 		else
-			EtaBins[i_eta]= 1.0*etamax;
+			EtaBins[i_eta]= 1.0*fEtaCutRho;
 	}
-	Double_t PhiBins[nPhiBins+1];
-	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
-	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+	Double_t PhiBins[fnPhiBinsRho+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*fnPhiBinsRho);
+	for(Int_t i_phi=0;i_phi<fnPhiBinsRho+1;++i_phi){
 		PhiBins[i_phi]=0;
-		if(i_phi<nPhiBins)
+		if(i_phi<fnPhiBinsRho)
 			PhiBins[i_phi]=i_phi*deltaPhi;
 		else
 			PhiBins[i_phi]= 2.0*pi;
 	}
 
-	Int_t NchLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Int_t NchLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			NchLattice[i_eta][i_phi]=0;
-	Double_t MpTLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Double_t MpTLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			MpTLattice[i_eta][i_phi]=0;
 
 	Double_t totalpt=0;
@@ -498,15 +571,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
 		if (!fMC->IsPhysicalPrimary(i)) continue;
 		if (particle->Charge() == 0) continue;
-		if ( TMath::Abs(eta_a) > etamax )continue;
+		if ( TMath::Abs(eta_a) > fEtaCutRho )continue;
 		if ( pt_a <= 0 )continue;
 		nchtotal++;
 		if(pt_a<ptamin||pt_a>ptamax)continue;
 		totalpt+=pt_a;
 		totalnch_forpt++;
 		// loop over all eta and phi intervals
-		for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-			for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+		for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+			for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 				if(eta_a>=EtaBins[i_eta]&&eta_a<EtaBins[i_eta+1]&&phi_a>=PhiBins[i_phi]&&phi_a<PhiBins[i_phi+1]){
 					NchLattice[i_eta][i_phi]++;
 					MpTLattice[i_eta][i_phi]+=pt_a;
@@ -515,8 +588,8 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 		}
 	}
 	// analyzing array
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			if(NchLattice[i_eta][i_phi]>0)
 				MpTLattice[i_eta][i_phi]/=(1.0*NchLattice[i_eta][i_phi]);
 			else
@@ -525,29 +598,32 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 	}
 	Double_t mNch=0;
 	Double_t mMpT=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			mMpT+=MpTLattice[i_eta][i_phi];
 			mNch+=1.0*NchLattice[i_eta][i_phi];
 		}
 	}
 	// average activity per cell
-	mMpT/=(1.0*nEtaBins*nPhiBins);
-	mNch/=(1.0*nEtaBins*nPhiBins);
+	mMpT/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	mNch/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	// get sigma
 	Double_t sNch_tmp=0;
 	Double_t sMpT_tmp=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			sMpT_tmp+=TMath::Power(MpTLattice[i_eta][i_phi]-mMpT,2);
 			sNch_tmp+=TMath::Power(1.0*NchLattice[i_eta][i_phi]-mNch,2);
 		}
 	}
-	sMpT_tmp/=(1.0*nEtaBins*nPhiBins);
-	sNch_tmp/=(1.0*nEtaBins*nPhiBins);
+	sMpT_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	sNch_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
-
-	if( nchtotal > 100 && TMath::Abs(fGenLeadEta) < fEtaCut ){
+	Int_t minmult = 21;// twice the average Nch (|eta|<0.8) in MB
+	if(fEtaCutRho>3.0)
+		minmult = 100;// twice the average Nch (|eta|<4) in MB
+	//cout<<"minmult="<<minmult<<endl;
+	if( nchtotal > minmult && TMath::Abs(fGenLeadEta) < fEtaCut ){
 		Double_t rho = sMpT/mMpT;
 		Double_t meanrho = frho->Eval(1.0*nchtotal);
 		Int_t indexrho = -1;
@@ -573,11 +649,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
 			if (!fMC->IsPhysicalPrimary(i)) continue;
 			if (particle->Charge() == 0) continue;
-			if ( TMath::Abs(particle->Eta()) > etamax )continue;
 			if( particle->Pt() < ptamin)continue;
-			Int_t pid = GetPidCode(particle->PdgCode());
 			Double_t Deta = fGenLeadEta-particle->Eta();
 			Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
+			hDetaDphiRhoWideEta[0]->Fill(Deta,DPhi);
+			if(indexrho>0){
+				hDetaDphiRhoWideEta[indexrho]->Fill(Deta,DPhi);
+			}
+			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;
+			Int_t pid = GetPidCode(particle->PdgCode());
 			hDetaDphiRho[0]->Fill(Deta,DPhi);
 			if(indexrho>0){
 				hDetaDphiRho[indexrho]->Fill(Deta,DPhi);
@@ -613,32 +693,31 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 //_______________________________________________________
 void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 
-	Double_t EtaBins[nEtaBins+1];
-	Double_t deltaEta = (2.0*etamax)/(1.0*nEtaBins);
-	for(Int_t i_eta=0;i_eta<nEtaBins+1;++i_eta){
+	Double_t EtaBins[fnEtaBinsRho+1];
+	Double_t deltaEta = (2.0*fEtaCutRho)/(1.0*fnEtaBinsRho);
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho+1;++i_eta){
 		EtaBins[i_eta]=0;
-		if(i_eta<nEtaBins)
-			EtaBins[i_eta]=i_eta*deltaEta - 1.0*etamax;
+		if(i_eta<fnEtaBinsRho)
+			EtaBins[i_eta]=i_eta*deltaEta - 1.0*fEtaCutRho;
 		else
-			EtaBins[i_eta]= 1.0*etamax;
+			EtaBins[i_eta]= 1.0*fEtaCutRho;
 	}
-	Double_t PhiBins[nPhiBins+1];
-	Double_t deltaPhi = (2.0*pi)/(1.0*nPhiBins);
-	for(Int_t i_phi=0;i_phi<nPhiBins+1;++i_phi){
+	Double_t PhiBins[fnPhiBinsRho+1];
+	Double_t deltaPhi = (2.0*pi)/(1.0*fnPhiBinsRho);
+	for(Int_t i_phi=0;i_phi<fnPhiBinsRho+1;++i_phi){
 		PhiBins[i_phi]=0;
-		if(i_phi<nPhiBins)
+		if(i_phi<fnPhiBinsRho)
 			PhiBins[i_phi]=i_phi*deltaPhi;
 		else
 			PhiBins[i_phi]= 2.0*pi;
 	}
-
-	Int_t NchLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Int_t NchLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			NchLattice[i_eta][i_phi]=0;
-	Double_t MpTLattice[nEtaBins][nPhiBins];
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta)
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi)
+	Double_t MpTLattice[fnEtaBinsRho][fnPhiBinsRho];
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta)
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi)
 			MpTLattice[i_eta][i_phi]=0;
 
 	Double_t totalpt=0;
@@ -655,15 +734,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 
 		if (!fMC->IsPhysicalPrimary(i)) continue;
 		if (particle->Charge() == 0) continue;
-		if ( TMath::Abs(eta_a) > etamax )continue;
+		if ( TMath::Abs(eta_a) > fEtaCutRho )continue;
 		if ( pt_a <= 0 )continue;
 		nchtotal++;
 		if(pt_a<ptamin||pt_a>ptamax)continue;
 		totalpt+=pt_a;
 		totalnch_forpt++;
 		// loop over all eta and phi intervals
-		for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-			for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+		for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+			for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 				if(eta_a>=EtaBins[i_eta]&&eta_a<EtaBins[i_eta+1]&&phi_a>=PhiBins[i_phi]&&phi_a<PhiBins[i_phi+1]){
 					NchLattice[i_eta][i_phi]++;
 					MpTLattice[i_eta][i_phi]+=pt_a;
@@ -672,8 +751,8 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 		}
 	}
 	// analyzing array
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			if(NchLattice[i_eta][i_phi]>0)
 				MpTLattice[i_eta][i_phi]/=(1.0*NchLattice[i_eta][i_phi]);
 			else
@@ -682,26 +761,26 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3Analysis(){
 	}
 	Double_t mNch=0;
 	Double_t mMpT=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			mMpT+=MpTLattice[i_eta][i_phi];
 			mNch+=1.0*NchLattice[i_eta][i_phi];
 		}
 	}
 	// average activity per cell
-	mMpT/=(1.0*nEtaBins*nPhiBins);
-	mNch/=(1.0*nEtaBins*nPhiBins);
+	mMpT/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	mNch/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	// get sigma
 	Double_t sNch_tmp=0;
 	Double_t sMpT_tmp=0;
-	for(Int_t i_eta=0;i_eta<nEtaBins;++i_eta){
-		for(Int_t i_phi=0;i_phi<nPhiBins;++i_phi){
+	for(Int_t i_eta=0;i_eta<fnEtaBinsRho;++i_eta){
+		for(Int_t i_phi=0;i_phi<fnPhiBinsRho;++i_phi){
 			sMpT_tmp+=TMath::Power(MpTLattice[i_eta][i_phi]-mMpT,2);
 			sNch_tmp+=TMath::Power(1.0*NchLattice[i_eta][i_phi]-mNch,2);
 		}
 	}
-	sMpT_tmp/=(1.0*nEtaBins*nPhiBins);
-	sNch_tmp/=(1.0*nEtaBins*nPhiBins);
+	sMpT_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
+	sNch_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
 	hnchmpi->Fill(nchtotal,Nmpi);
 	if(mMpT>0){
@@ -729,52 +808,111 @@ Double_t AliAnalysisTaskGenMcKnoUe::DeltaPhi(Double_t phia, Double_t phib,
 
 	return dphi;
 }
-void AliAnalysisTaskGenMcKnoUe::SetParametersRho(){
+void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 
-	switch(fGenerator){
-		case 0:
-			frho->SetParameter(0,-2034448.6);
-			frho->SetParameter(1,-0.99051656);
-			frho->SetParameter(2,14.116976);
-			frho->SetParameter(3,-0.52448073);
-			break;
-		case 1:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-1.9595275);
-			frho->SetParameter(2,18.226513);
-			frho->SetParameter(3,-0.58994765);
-			break;
-		case 2:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-1.1168320);
-			frho->SetParameter(2,14.480357);
-			frho->SetParameter(3,-0.52709865);
-			break;
-		case 3:
-			frho->SetParameter(0,-1891978.1);
-			frho->SetParameter(1,-1.8212843);
-			frho->SetParameter(2,13.573444);
-			frho->SetParameter(3,-0.51139756);
-			break;
-		case 4:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-2.0788016);
-			frho->SetParameter(2,28.243893);
-			frho->SetParameter(3,-0.70047215);
-			break;
-		case 5:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-1.0183988);
-			frho->SetParameter(2,21.348248);
-			frho->SetParameter(3,-0.61011648);
-			break;
-		default:
-			frho->SetParameter(0,-2034448.6);
-			frho->SetParameter(1,-0.99051656);
-			frho->SetParameter(2,14.116976);
-			frho->SetParameter(3,-0.52448073);
+	if(etarange==0.8){
+		//cout<<"seting the case eta 0.8"<<endl;
+		switch(fGenerator){
+			case 0: // Monash
+				frho->SetParameter(0,-1.2796503);
+				frho->SetParameter(1,-0.21406574);
+				frho->SetParameter(2,7.9576486);
+				frho->SetParameter(3,-0.50547998);
+				break;
+			case 1: // Monash NoCR
+				frho->SetParameter(0,-0.62615697);
+				frho->SetParameter(1,-0.12906934);
+				frho->SetParameter(2,9.4532345);
+				frho->SetParameter(3,-0.57046898);
+				break;
+			case 2: // Monash Ropes
+				frho->SetParameter(0,-1.3036594);
+				frho->SetParameter(1,-0.18819465);
+				frho->SetParameter(2,8.2080068);
+				frho->SetParameter(3,-0.51231662);
+				break;
+			case 3: // Epos LHC
+				frho->SetParameter(0,-0.89774856);
+				frho->SetParameter(1,-0.15704294);
+				frho->SetParameter(2,8.7380225);
+				frho->SetParameter(3,-0.52647214);
+				break;
+			case 4: // Herwig
+				frho->SetParameter(0,-1.5178880);
+				frho->SetParameter(1,-0.094629819);
+				frho->SetParameter(2,17.327223);
+				frho->SetParameter(3,-0.75409746);
+				break;
+			case 5: // AMPT (to be checked)
+				frho->SetParameter(0,-1.8832819);
+				frho->SetParameter(1,-0.18063863);
+				frho->SetParameter(2,10.062015);
+				frho->SetParameter(3,-0.57335253);
+				break;
+			case 6: // AMPT no string melting
+				frho->SetParameter(0,-1.8299821);
+				frho->SetParameter(1,-0.17885455);
+				frho->SetParameter(2,10.072160);
+				frho->SetParameter(3,-0.57360867);
+				break;
+			default:
+				frho->SetParameter(0,-2034448.6);
+				frho->SetParameter(1,-0.99051656);
+				frho->SetParameter(2,14.116976);
+				frho->SetParameter(3,-0.52448073);
+		}
 	}
-
+	else{ // default eta < 4
+		switch(fGenerator){
+			case 0:
+				frho->SetParameter(0,-2034448.6);
+				frho->SetParameter(1,-0.99051656);
+				frho->SetParameter(2,14.116976);
+				frho->SetParameter(3,-0.52448073);
+				break;
+			case 1:
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.9595275);
+				frho->SetParameter(2,18.226513);
+				frho->SetParameter(3,-0.58994765);
+				break;
+			case 2:
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.1168320);
+				frho->SetParameter(2,14.480357);
+				frho->SetParameter(3,-0.52709865);
+				break;
+			case 3:
+				frho->SetParameter(0,-1891978.1);
+				frho->SetParameter(1,-1.8212843);
+				frho->SetParameter(2,13.573444);
+				frho->SetParameter(3,-0.51139756);
+				break;
+			case 4:
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-2.0788016);
+				frho->SetParameter(2,28.243893);
+				frho->SetParameter(3,-0.70047215);
+				break;
+			case 5: // AMPT string melting (to be checked)
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.0183988);
+				frho->SetParameter(2,21.348248);
+				frho->SetParameter(3,-0.61011648);
+				break;
+			case 6: // AMPT no string melting (to be checked)
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.0183988);
+				frho->SetParameter(2,21.348248);
+				frho->SetParameter(3,-0.61011648);
+				break;
+			default:
+				frho->SetParameter(0,-2034448.6);
+				frho->SetParameter(1,-0.99051656);
+				frho->SetParameter(2,14.116976);
+				frho->SetParameter(3,-0.52448073);
+		}
+	}
 }
 //_______________________________________________________
 Int_t AliAnalysisTaskGenMcKnoUe::GetPidCode(Int_t pdgCode)  {

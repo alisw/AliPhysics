@@ -22,6 +22,7 @@
 #include "AliHFMLResponseDplustoKpipi.h"
 #include "AliHFMLResponseDstoKKpi.h"
 #include "AliHFMLResponseD0toKpi.h"
+#include "AliHFMLResponseDstartoD0pi.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
@@ -134,7 +135,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserCreateOutputObjects()
             massD = TDatabasePDG::Instance()->GetParticle(431)->Mass();
             break;
         case kDstartoD0pi:
-            fMLResponse = new AliHFMLResponseD0toKpi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
+            fMLResponse = new AliHFMLResponseDstartoD0pi("DstartoD0piMLResponse", "DstartoD0piMLResponse", fConfigPath.Data());
             fMLResponse->MLResponseInit();
             massD = TDatabasePDG::Instance()->GetParticle(413)->Mass() - TDatabasePDG::Instance()->GetParticle(421)->Mass();
             break; 
@@ -203,6 +204,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         return;
     }
     TClonesArray *arrayCand = nullptr;
+    TClonesArray *arrayCandDDau = nullptr;
     int absPdgMom = 0;
     if (!fAOD && AODEvent() && IsStandardAOD())
     {
@@ -226,6 +228,7 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
                     break;
                 case kDstartoD0pi:
                     arrayCand = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("Dstar"));
+                    arrayCandDDau = dynamic_cast<TClonesArray *>(aodFromExt->GetList()->FindObject("D0toKpi"));
                     break;
             }
         }
@@ -242,11 +245,12 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
                 break;
             case kDstartoD0pi:
                 arrayCand = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("Dstar"));
+                arrayCandDDau = dynamic_cast<TClonesArray *>(fAOD->GetList()->FindObject("D0toKpi"));
                 break;
         }
     }
 
-    if (!fAOD || !arrayCand)
+    if (!fAOD || !arrayCand || (fDecChannel == kDstartoD0pi && !arrayCandDDau))
     {
         AliWarning("Candidate branch not found!\n");
         PostData(1, fOutput);
@@ -317,20 +321,32 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
     for(int iCand = 0; iCand < arrayCand->GetEntriesFast(); iCand++)
     {
         AliAODRecoDecayHF *chHad = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(iCand));
+        AliAODRecoDecayHF *chHadWithVtx;
+        if(fDecChannel == kDstartoD0pi)
+        {
+            if(chHad->GetIsFilled()<1)
+                chHadWithVtx = dynamic_cast<AliAODRecoDecayHF *>(arrayCandDDau->UncheckedAt(chHad->GetProngID(1)));
+            else
+                chHadWithVtx = dynamic_cast<AliAODRecoDecayHF *>(((AliAODRecoCascadeHF *)chHad)->Get2Prong());
+        }
+        else
+        {
+            chHadWithVtx = chHad;
+        }
 
         bool unsetVtx = false;
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
         std::vector<double> scores{}, scoresSecond{};
-        int isSelected = IsCandidateSelected(chHad, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores, scoresSecond);
+        int isSelected = IsCandidateSelected(chHad, chHadWithVtx, &vHF, absPdgMom, unsetVtx, recVtx, origOwnVtx, scores, scoresSecond);
 
         if (!isSelected || (fDecChannel == kDstoKKpi && !((isSelected & 4) || (isSelected & 8))))
         {
             if (unsetVtx)
-                chHad->UnsetOwnPrimaryVtx();
+                chHadWithVtx->UnsetOwnPrimaryVtx();
             if (recVtx)
-                fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+                fRDCuts->CleanOwnPrimaryVtx(chHadWithVtx, fAOD, origOwnVtx);
             continue;
         }
 
@@ -370,9 +386,9 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
         }        
 
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         if (recVtx)
-            fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(chHadWithVtx, fAOD, origOwnVtx);
     }
 
     fHistNselCand->Fill(fChHadIdx.size());
@@ -382,11 +398,11 @@ void AliAnalysisTaskSECharmHadronMLSelector::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAnalysisVertexingHF *vHF,
+int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayHF *&chHad, AliAODRecoDecayHF *&chHadWithVtx, AliAnalysisVertexingHF *vHF,
                                                                 int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx,
                                                                 std::vector<double> &modelPred, std::vector<double> &modelPredSecond)
 {
-    if(!chHad || !vHF )
+    if(!chHad || !chHadWithVtx || !vHF )
         return 0;
 
     //Preselection to speed up task
@@ -397,7 +413,11 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
 
     for (int iDau = 0; iDau < nDau; iDau++)
     {
-        AliAODTrack *track = vHF->GetProng(fAOD, chHad, iDau);
+        AliAODTrack *track;
+        if (fDecChannel != kDstartoD0pi || iDau == 0)
+            track = vHF->GetProng(fAOD, chHad, iDau);
+        else
+            track = vHF->GetProng(fAOD, chHadWithVtx, iDau-1); //D0<-D* daughters
         arrDauTracks.AddAt(track, iDau);
     }
 
@@ -430,9 +450,9 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     }
 
     unsetVtx = false;
-    if (!chHad->GetOwnPrimaryVtx())
+    if (!chHadWithVtx->GetOwnPrimaryVtx())
     {
-        chHad->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
+        chHadWithVtx->SetOwnPrimaryVtx(dynamic_cast<AliAODVertex *>(fAOD->GetPrimaryVertex()));
         unsetVtx = true;
         // NOTE: the own primary vertex should be unset, otherwise there is a memory leak
         // Pay attention if you use continue inside this loop!!!
@@ -444,7 +464,7 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     if (ptbin < 0)
     {
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -452,7 +472,7 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     if (!isFidAcc)
     {
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -460,7 +480,7 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     if (!isSelected)
     {
         if (unsetVtx)
-            chHad->UnsetOwnPrimaryVtx();
+            chHadWithVtx->UnsetOwnPrimaryVtx();
         return 0;
     }
 
@@ -469,12 +489,12 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
 
     if (fRDCuts->GetIsPrimaryWithoutDaughters())
     {
-        if (chHad->GetOwnPrimaryVtx())
-            origOwnVtx = new AliAODVertex(*chHad->GetOwnPrimaryVtx());
-        if (fRDCuts->RecalcOwnPrimaryVtx(chHad, fAOD))
+        if (chHadWithVtx->GetOwnPrimaryVtx())
+            origOwnVtx = new AliAODVertex(*chHadWithVtx->GetOwnPrimaryVtx());
+        if (fRDCuts->RecalcOwnPrimaryVtx(chHadWithVtx, fAOD))
             recVtx = true;
         else
-            fRDCuts->CleanOwnPrimaryVtx(chHad, fAOD, origOwnVtx);
+            fRDCuts->CleanOwnPrimaryVtx(chHadWithVtx, fAOD, origOwnVtx);
     }
     
     // ML application

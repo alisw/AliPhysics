@@ -357,7 +357,42 @@ fD0ElecDCA(0),
 fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
 fSprsTemplatesWeightVar1(0),
-fSprsTemplatesWeightVar2(0)
+fSprsTemplatesWeightVar2(0),
+
+fCalculateElecRecoEffi(kFALSE),
+
+fInclElePhysPriAll(0),
+fHFEPhysPriAll(0),
+fBEPhysPriAll(0),
+fDEPhysPriAll(0),
+fInclElePhysPriTrkCuts(0),
+fHFEPhysPriTrkCuts(0),
+fBEPhysPriTrkCuts(0),
+fDEPhysPriTrkCuts(0),
+fInclElePhysPriOnlyTPCnsig(0),
+fHFEPhysPriOnlyTPCnsig(0),
+fBEPhysPriOnlyTPCnsig(0),
+fDEPhysPriOnlyTPCnsig(0),
+fInclElePhysPriEMCMatch(0),
+fHFEPhysPriEMCMatch(0),
+fBEPhysPriEMCMatch(0),
+fDEPhysPriEMCMatch(0),
+fInclElePhysPriTPCnsig(0),
+fHFEPhysPriTPCnsig(0),
+fBEPhysPriTPCnsig(0),
+fDEPhysPriTPCnsig(0),
+fInclElePhysPriEovPBfrSS(0),
+fHFEPhysPriEovPBfrSS(0),
+fBEPhysPriEovPBfrSS(0),
+fDEPhysPriEovPBfrSS(0),
+fInclElePhysPriSS(0),
+fHFEPhysPriSS(0),
+fBEPhysPriSS(0),
+fDEPhysPriSS(0),
+fInclElePhysPriEovP(0),
+fHFEPhysPriEovP(0),
+fBEPhysPriEovP(0),
+fDEPhysPriEovP(0)
 
 
 {
@@ -460,12 +495,15 @@ fvalueElectron = new Double_t[6];
   void    SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3);
   void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
   void    GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight);
-
   void    SetDmesonWeightHistPbPb(TH1 *D0, TH1 *DPlus, TH1 *Ds, TH1 *Lc);
   void    GetDWeightPbPb(AliAODMCParticle *Part, Int_t PDG, Double_t &DCentWeight);
 
 //______________________________________________________________________
-    
+  void    SetElecRecoEffi(Bool_t fSwitch) {fCalculateElecRecoEffi = fSwitch;};
+  void    GetElectronFromStack();    
+  void    GetTrackHFStatus(AliAODTrack *track, Bool_t &IsMCEle, Bool_t &IsMCPPEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
+  void    GetEIDRecoEffi(AliAODTrack *track, AliAODCaloCluster *clust, Bool_t IsMCPPEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
+
  private:
   
   Bool_t        fIsMC;//
@@ -773,6 +811,40 @@ fvalueElectron = new Double_t[6];
  THnSparse  *fSprsTemplatesWeightVar1;//!
  THnSparse  *fSprsTemplatesWeightVar2;//!
 
+ Bool_t      fCalculateElecRecoEffi;//
+
+    TH1F                *fInclElePhysPriAll;//!
+    TH1F                *fHFEPhysPriAll;//!
+    TH1F                *fBEPhysPriAll;//!
+    TH1F                *fDEPhysPriAll;//!
+    TH1F                *fInclElePhysPriTrkCuts;//!
+    TH1F                *fHFEPhysPriTrkCuts;//!
+    TH1F                *fBEPhysPriTrkCuts;//!
+    TH1F                *fDEPhysPriTrkCuts;//!
+    TH1F                *fInclElePhysPriOnlyTPCnsig;//!
+    TH1F                *fHFEPhysPriOnlyTPCnsig;//!
+    TH1F                *fBEPhysPriOnlyTPCnsig;//!
+    TH1F                *fDEPhysPriOnlyTPCnsig;//!
+    TH1F                *fInclElePhysPriEMCMatch;//!
+    TH1F                *fHFEPhysPriEMCMatch;//!
+    TH1F                *fBEPhysPriEMCMatch;//!
+    TH1F                *fDEPhysPriEMCMatch;//!
+    TH1F                *fInclElePhysPriTPCnsig;//!
+    TH1F                *fHFEPhysPriTPCnsig;//!
+    TH1F                *fBEPhysPriTPCnsig;//!
+    TH1F                *fDEPhysPriTPCnsig;//!
+    TH1F                *fInclElePhysPriEovPBfrSS;//!
+    TH1F                *fHFEPhysPriEovPBfrSS;//!
+    TH1F                *fBEPhysPriEovPBfrSS;//!
+    TH1F                *fDEPhysPriEovPBfrSS;//!
+    TH1F                *fInclElePhysPriSS;//!
+    TH1F                *fHFEPhysPriSS;//!
+    TH1F                *fBEPhysPriSS;//!
+    TH1F                *fDEPhysPriSS;//!
+    TH1F                *fInclElePhysPriEovP;//!
+    TH1F                *fHFEPhysPriEovP;//!
+    TH1F                *fBEPhysPriEovP;//!
+    TH1F                *fDEPhysPriEovP;//!
 
 
   AliAnalysisHFEppEMCalBeauty(const AliAnalysisHFEppEMCalBeauty&); // not implemented

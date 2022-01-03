@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  * Author: Ahsan Mehmood Khan(ahsan.mehmood.khan@cern.ch)                 * 
- *         Feng Fan (Feng.Fan@cern.ch)				                                  *
+ *         Feng Fan (feng.fan@cern.ch)				                                  *
  *         Antonio Ortiz (antonio.ortiz@nucleares.unam.mx)                *
  **************************************************************************/
 
@@ -132,13 +132,22 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskMcKnoUeSystem) // classimp: necessary for root
 
 AliAnalysisTaskMcKnoUeSystem::AliAnalysisTaskMcKnoUeSystem() : AliAnalysisTaskSE(),
-    fCutMaxFractionSharedTPCClusters(0), fCutMinRatioCrossedRowsOverFindableClustersTPC(0), fCutGeoNcrNclZone(0), fCutGeoNcrNclLength(0), 
-    fIsRequirementSPD(kFALSE), fCutMaxChi2PerClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2TPCConstrainedVsGlobal(0), fCutMaxDCAToVertexZ(0),
-    fCutMinNClusterTPC(0), fNchCutMaxChi2PerClusterTPC(0), fNchCutMaxDCAToVertexZ(0), fCutMaxDCAToVertexXY(0), fIsITSRefit(kFALSE), fIsTPCRefit(kFALSE), 
-    hZvtxAllMeasured(0), hZvtxGoodVtxMeasured(0), hZvtxCutAccMeasured(0), hZvtxAllGen(0), hZvtxCutGen(0), hZvtxTrigGen(0), hZvtxGoodVtxGen(0), 
-    hZvtxCutAccGen(0), hZvtxCutKnoGen(0), fCutVertexZposition(0),
-	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),fRefmult08std(0),fpercentileV0M(0),fMultSelection(0x0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSRec(0), hNchResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hNchTSData(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0), hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0), hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSminData(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0), hNchTSmaxData(0), hPhiData_TS1(0), hPhiData_TS2(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0),hRefMult08std(0),hMultV0M(0),hRefMultvsMultV0M(0)
-
+    fESD(0), fMC(0), fMCStack(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIsPythia(kTRUE), fIsppData(kFALSE), fIspPbData(kFALSE), fEventCuts(0x0),
+    fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), 
+    fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),
+    fMultSelection(0x0), fRefmult08std(0), fpercentileV0M(0),
+    fCutVertexZposition(0), fCutMaxFractionSharedTPCClusters(0), fCutMinRatioCrossedRowsOverFindableClustersTPC(0), fCutGeoNcrNclZone(0),
+    fCutGeoNcrNclLength(0), fIsRequirementSPD(kFALSE), fCutMaxChi2PerClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2TPCConstrainedVsGlobal(0),
+    fCutMaxDCAToVertexZ(0), fCutMinNClusterTPC(0), fCutMaxChi2PerClusterTPC_nch(0), fCutMaxDCAToVertexZ_nch(0), fCutMaxDCAToVertexXY(0), 
+    fIsITSRefit(kFALSE), fIsTPCRefit(kFALSE),
+    hCounter(0), hZvtxAllMeasured(0), hZvtxGoodVtxMeasured(0), hZvtxCutAccMeasured(0), hZvtxAllGen(0), hZvtxCutGen(0), hZvtxTrigGen(0),
+    hZvtxGoodVtxGen(0), hZvtxCutAccGen(0), hZvtxCutKnoGen(0), hNchTSData(0), hNchTSminData(0), hNchTSmaxData(0), hPhiData_TS1(0), hPhiData_TS2(0),
+    hNchTSGen(0), hNchTSRec(0), hNchTSResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0),
+    hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0),
+    hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0),
+    hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0),
+    hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0),
+    hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0), hRefMult08std(0), hMultV0M(0), hRefMultvsMultV0M(0)
 {
 	for(Int_t i=0;i<3;++i){ 
 		hPhiGen[i]= 0;
@@ -201,15 +210,24 @@ AliAnalysisTaskMcKnoUeSystem::AliAnalysisTaskMcKnoUeSystem() : AliAnalysisTaskSE
 }
 //_____________________________________________________________________________
 AliAnalysisTaskMcKnoUeSystem::AliAnalysisTaskMcKnoUeSystem(const char* name) : AliAnalysisTaskSE(name),
-    fCutMaxFractionSharedTPCClusters(0), fCutMinRatioCrossedRowsOverFindableClustersTPC(0), fCutGeoNcrNclZone(0), fCutGeoNcrNclLength(0), 
-    fIsRequirementSPD(kFALSE), fCutMaxChi2PerClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2TPCConstrainedVsGlobal(0), fCutMaxDCAToVertexZ(0),
-    fCutMinNClusterTPC(0), fNchCutMaxChi2PerClusterTPC(0), fNchCutMaxDCAToVertexZ(0), fCutMaxDCAToVertexXY(0), fIsITSRefit(kFALSE), fIsTPCRefit(kFALSE),
-    hZvtxAllMeasured(0), hZvtxGoodVtxMeasured(0), hZvtxCutAccMeasured(0), hZvtxAllGen(0), hZvtxCutGen(0), hZvtxTrigGen(0), hZvtxGoodVtxGen(0), 
-    hZvtxCutAccGen(0), hZvtxCutKnoGen(0), fCutVertexZposition(0),
-	fESD(0), fIsPythia(kTRUE),fIsppData(kFALSE),fIspPbData(kFALSE), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),fRefmult08std(0),fpercentileV0M(0),fMultSelection(0x0), hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hNchTSGen(0), hNchTSRec(0), hNchResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hNchTSData(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0), hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0), hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSminData(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0), hNchTSmaxData(0), hPhiData_TS1(0), hPhiData_TS2(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0), hCounter(0), hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0), hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0),hRefMult08std(0),hMultV0M(0),hRefMultvsMultV0M(0)
+    fESD(0), fMC(0), fMCStack(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIsPythia(kTRUE), fIsppData(kFALSE), fIspPbData(kFALSE), fEventCuts(0x0),
+    fLeadingTrackFilter(0x0), fTrackFilterForDCA(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fLeadPtCutMin(5.0),
+    fLeadPtCutMax(40.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0), fDCAxy(0), fDCAz(0),
+    fMultSelection(0x0), fRefmult08std(0), fpercentileV0M(0),
+    fCutVertexZposition(0), fCutMaxFractionSharedTPCClusters(0), fCutMinRatioCrossedRowsOverFindableClustersTPC(0), fCutGeoNcrNclZone(0),
+    fCutGeoNcrNclLength(0), fIsRequirementSPD(kFALSE), fCutMaxChi2PerClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2TPCConstrainedVsGlobal(0),
+    fCutMaxDCAToVertexZ(0), fCutMinNClusterTPC(0), fCutMaxChi2PerClusterTPC_nch(0), fCutMaxDCAToVertexZ_nch(0), fCutMaxDCAToVertexXY(0),
+    fIsITSRefit(kFALSE), fIsTPCRefit(kFALSE),
+    hCounter(0), hZvtxAllMeasured(0), hZvtxGoodVtxMeasured(0), hZvtxCutAccMeasured(0), hZvtxAllGen(0), hZvtxCutGen(0), hZvtxTrigGen(0),
+    hZvtxGoodVtxGen(0), hZvtxCutAccGen(0), hZvtxCutKnoGen(0), hNchTSData(0), hNchTSminData(0), hNchTSmaxData(0), hPhiData_TS1(0), hPhiData_TS2(0),
+    hNchTSGen(0), hNchTSRec(0), hNchTSResponse(0), hNchTSGenTest(0), hNchTSRecTest(0), hPhiGen_TS1(0), hPhiGen_TS2(0), hPhiRec_TS1(0), hPhiRec_TS2(0),
+    hPhiGenTest_TS1(0), hPhiGenTest_TS2(0), hPhiRecTest_TS1(0), hPhiRecTest_TS2(0), hNchTSminGen(0), hNchTSminRec(0), hNchTSminResponse(0),
+    hNchTSminGenTest(0), hNchTSminRecTest(0), hNchTSmaxGen(0), hNchTSmaxRec(0), hNchTSmaxResponse(0), hNchTSmaxGenTest(0), hNchTSmaxRecTest(0),
+    hPTVsDCAData(0), hPtDCAPrimary(0), hPtDCAWeak(0), hPtDCAMat(0), hPtDCAall(0), hPtInPrim(0), hPtOut(0), hPtOutPrim(0), hPtOutSec(0),
+    hPtLeadingTrue(0), hPtLeadingMeasured(0), hPtLeadingData(0), hPtLeadingRecPS(0), hPtLeadingRecPSV(0), hPtLeadingRecGood(0), hPtLeadingGenPS(0),
+    hPtLeadingGenPSV(0), hPtLeadingGenGood(0), hPtLeadingRecAll(0), hPtLeadingGenAll(0), hRefMult08std(0), hMultV0M(0), hRefMultvsMultV0M(0)
 {
 	for(Int_t i=0;i<3;++i){
-
 		hPhiGen[i] = 0;
 		hPhiRec[i] = 0;
 		hNumDenMC[i]=0;
@@ -258,7 +276,6 @@ AliAnalysisTaskMcKnoUeSystem::AliAnalysisTaskMcKnoUeSystem(const char* name) : A
 		hPtVsUERecTest[i]=0;
 		hPtVsUEData[i]=0;
 	}
-
     for(Int_t i=0;i<6;++i){
         hPtInPrimPart[i]=0;
         hPtOutPrimPart[i]=0;
@@ -318,17 +335,17 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
 		fLeadingTrackFilter = new AliAnalysisFilter("trackFilter2015");
 		AliESDtrackCuts * fCuts1 = new AliESDtrackCuts();
 		//1 additional cut
-		fCuts1->SetMaxFractionSharedTPCClusters(fCutMaxFractionSharedTPCClusters);       //0.4(default), 0.2, 1.0
+		fCuts1->SetMaxFractionSharedTPCClusters(fCutMaxFractionSharedTPCClusters); //0.4(default), 0.2, 1.0
 		//13 cuts from StadardITSTPCTrackCuts2015PbPb
 		//fCuts1->SetMinNCrossedRowsTPC(70);
-		fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(fCutMinRatioCrossedRowsOverFindableClustersTPC);   //0.8(default), 0.7, 0.9
-		fCuts1->SetCutGeoNcrNcl(fCutGeoNcrNclZone, fCutGeoNcrNclLength, 1.5, 0.85, 0.7); //3.0cm(default), 2.0cm, 4.0cm;   130.0(default), 120.0, 140.0
+		fCuts1->SetMinRatioCrossedRowsOverFindableClustersTPC(fCutMinRatioCrossedRowsOverFindableClustersTPC); //0.8(default), 0.7, 0.9
+		fCuts1->SetCutGeoNcrNcl(fCutGeoNcrNclZone, fCutGeoNcrNclLength, 1.5, 0.85, 0.7); //3cm(default), 2cm, 4cm;   130(default), 120, 140
 	     
 		if (fIsRequirementSPD) {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);} //kTRUE---kAny(default)
                 else {fCuts1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);} //kFALSE---kNone
-                fCuts1->SetMaxChi2PerClusterITS(fCutMaxChi2PerClusterITS);  //36(default), 25, 49
-		fCuts1->SetMaxChi2PerClusterTPC(fCutMaxChi2PerClusterTPC);  //4(default), 3, 5
-                fCuts1->SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal);  //36(default), 25, 49
+                fCuts1->SetMaxChi2PerClusterITS(fCutMaxChi2PerClusterITS); //36(default), 25, 49
+		fCuts1->SetMaxChi2PerClusterTPC(fCutMaxChi2PerClusterTPC); //4(default), 3, 5
+                fCuts1->SetMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal); //36(default), 25, 49
                 fCuts1->SetRequireITSRefit(kTRUE);
 		fCuts1->SetRequireTPCRefit(kTRUE);
                 fCuts1->SetAcceptKinkDaughters(kFALSE);
@@ -346,10 +363,10 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
 		fTrackFilter = new AliAnalysisFilter("trackFilterTPConly");
 		AliESDtrackCuts * fCuts2 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
                 //6 cuts from StandardTPConlyTrackCuts
-                fCuts2->SetMinNClustersTPC(fCutMinNClusterTPC);               //50(default), 40, 60
-                fCuts2->SetMaxChi2PerClusterTPC(fNchCutMaxChi2PerClusterTPC); //4(default),  3, 5
-                fCuts2->SetMaxDCAToVertexZ(fNchCutMaxDCAToVertexZ);        //3.2(default), 2.2, 4.2
-                fCuts2->SetMaxDCAToVertexXY(fCutMaxDCAToVertexXY);         //2.4(default), 1.4, 3.4
+                fCuts2->SetMinNClustersTPC(fCutMinNClusterTPC);                //50(default), 30, 70
+                fCuts2->SetMaxChi2PerClusterTPC(fCutMaxChi2PerClusterTPC_nch); //4(default), 3, 5
+                fCuts2->SetMaxDCAToVertexZ(fCutMaxDCAToVertexZ_nch);           //3.2(default), 2.0, 4.0
+                fCuts2->SetMaxDCAToVertexXY(fCutMaxDCAToVertexXY);             //2.4(default), 1.0, 4.0
                 fCuts2->SetDCAToVertex2D(kTRUE);
                 fCuts2->SetAcceptKinkDaughters(kFALSE);
 		//2 additional cuts
@@ -457,8 +474,8 @@ void AliAnalysisTaskMcKnoUeSystem::UserCreateOutputObjects()
                 hNchTSRec = new TH1D("hNchTSRec","",100,-0.5,99.5);
                 fOutputList->Add(hNchTSRec);
                 
-                hNchResponse = new TH2D("hNchResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
-                fOutputList->Add(hNchResponse);
+                hNchTSResponse = new TH2D("hNchTSResponse","Detector response; rec mult; gen mult",100,-0.5,99.5,100,-0.5,99.5);
+                fOutputList->Add(hNchTSResponse);
 
 		hNchTSGenTest = new TH1D("hNchTSGenTest","",100,-0.5,99.5); 
 		fOutputList->Add(hNchTSGenTest);
@@ -774,16 +791,15 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
 		fMCStack = fMC->Stack();
 	}
 
-
 	hCounter->Fill(0);
 
 
-	AliHeader* headerMC = fMC->Header();
 	Bool_t isGoodVtxPosMC = kFALSE;
-
 	TArrayF vtxMC(3); // primary vertex  MC
         vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
+	
 	if (fUseMC){
+	        AliHeader* headerMC = fMC->Header();
 		AliGenEventHeader* genHeader = headerMC->GenEventHeader();
 		//TArrayF vtxMC(3); // primary vertex  MC 
 		//vtxMC[0]=9999; vtxMC[1]=9999;  vtxMC[2]=9999; //initialize with dummy
@@ -808,8 +824,7 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
     Double_t Zvertex = fPrimaryVtx->GetZ();
     hZvtxAllMeasured->Fill(Zvertex);
     
-    if(isGoodVtxPosMC)
-        hPtLeadingGenAll->Fill(fGenLeadPt);
+    if(isGoodVtxPosMC) hPtLeadingGenAll->Fill(fGenLeadPt);
 
 	vector<Double_t> ue_gen;// 0: nch_near, 1: nch_away, 2: nch_trans, 3: sumpt_near, ... 
 	vector<Double_t> ue_rec;
@@ -829,11 +844,11 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
 	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7||fSelectMask&AliVEvent::kMB;
 	if(!isINT7selected)  return;
 	hCounter->Fill(1);
-	hZvtxTrigGen->Fill(vtxMC[2]);
+	
+	if(fUseMC) hZvtxTrigGen->Fill(vtxMC[2]);
 
 	hPtLeadingRecPS->Fill(fRecLeadPt);
-	if(isGoodVtxPosMC)
-		hPtLeadingGenPS->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC) hPtLeadingGenPS->Fill(fGenLeadPt);
 
 	for(Int_t i=0;i<3;++i){
 		pNumDenMeasuredPS[i]->Fill(fRecLeadPt,ue_rec[i]);
@@ -849,7 +864,7 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
 	hasRecVertex=HasRecVertex();
 	if(!hasRecVertex)return;
         hCounter->Fill(2);
-	hZvtxGoodVtxGen->Fill(vtxMC[2]);
+	if(fUseMC) hZvtxGoodVtxGen->Fill(vtxMC[2]);
     
     fRefmult08std = -999;
     fpercentileV0M = -999;
@@ -871,8 +886,7 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
     hRefMultvsMultV0M->Fill(fRefmult08std,fpercentileV0M);
     
 	hPtLeadingRecPSV->Fill(fRecLeadPt);
-	if(isGoodVtxPosMC)
-		hPtLeadingGenPSV->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC) hPtLeadingGenPSV->Fill(fGenLeadPt);
 
 	for(Int_t i=0;i<3;++i){
 		pNumDenMeasuredPSV[i]->Fill(fRecLeadPt,ue_rec[i]);
@@ -895,11 +909,10 @@ void AliAnalysisTaskMcKnoUeSystem::UserExec(Option_t *)
 	hCounter->Fill(3);
 
         hZvtxCutAccMeasured->Fill(Zvertex);
-        if(isGoodVtxPosMC)    hZvtxCutAccGen->Fill(vtxMC[2]);
+        if(isGoodVtxPosMC) hZvtxCutAccGen->Fill(vtxMC[2]);
 
 	hPtLeadingRecGood->Fill(fRecLeadPt);
-	if(isGoodVtxPosMC)
-		hPtLeadingGenGood->Fill(fGenLeadPt);
+	if(isGoodVtxPosMC) hPtLeadingGenGood->Fill(fGenLeadPt);
 
 	for(Int_t i=0;i<3;++i){
 		pNumDenMeasuredGood[i]->Fill(fRecLeadPt,ue_rec[i]);
@@ -1387,7 +1400,7 @@ void AliAnalysisTaskMcKnoUeSystem::GetDetectorResponse() {
         hNchTSminRec->Fill(multTSmin_rec);
         hNchTSmaxRec->Fill(multTSmax_rec);
         
-	hNchResponse->Fill(multTSrec,multTSgen);
+	hNchTSResponse->Fill(multTSrec,multTSgen);
         hNchTSminResponse->Fill(multTSmin_rec,multTSmin_gen);
         hNchTSmaxResponse->Fill(multTSmax_rec,multTSmax_gen);
 }

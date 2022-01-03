@@ -164,9 +164,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
 		TH1D * hPtOutPrim_rest;
 		TH1D * hPtOutSec; 
 		TH1D * hCounter;
-		TH2D * hPtVsUEGenTest[3];//UE->NchTS
-		TH2D * hPtVsUERecTest[3];//UE->NchTS
-		TH2D * hPtVsUEData[3];//UE->NchTS
+		TH2D * hPtVsUEGenTest[3];
+		TH2D * hPtVsUERecTest[3];
+		TH2D * hPtVsUEData[3];
 		TH2D * hPtVsNchGenTest[3];
 		TH2D * hPtVsNchRecTest[3];
 		TH2D * hPtVsNchData[3];

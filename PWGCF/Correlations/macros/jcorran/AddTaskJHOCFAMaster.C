@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool getSC3h = kTRUE, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -122,7 +122,9 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   
     if (strcmp(configNames[i].Data(), "zvtx") == 0) {    
       fJCatalyst[i]->SetZVertexCut(10.0);
-    } // Else: do nothing, default is 8.
+    } else {  // Default value for JCorran analyses in Run 2.
+      fJCatalyst[i]->SetZVertexCut(8.0);
+    }
 
     if (strcmp(configNames[i].Data(), "nqq") == 0) {
       fJCatalyst[i]->SetParticleCharge(-1);
@@ -150,6 +152,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     myTask[i]->HOCFASetPtRange(ptMin, ptMax);
     myTask[i]->HOCFASetParticleWeights(useWeightsNUE, useWeightsNUA);
     myTask[i]->HOCFASetObservable(getSC3h);
+    myTask[i]->HOCFASetEtaGaps(getEtaGap, etaGap);
     myTask[i]->HOCFASetNumberCombi(Ncombi);
     myTask[i]->HOCFASetHarmoArray(Form("%s", combiArray.Data()));
     mgr->AddTask((AliAnalysisTask *)myTask[i]);

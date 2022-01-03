@@ -6,6 +6,7 @@
 #define AliAnalysisTaskFlowPPTask_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliGFWCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -160,6 +161,7 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
 		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
 		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
+		TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
 
 		// 8 particle correlation
 		TProfile*	fChcn8[6];  			//! <<8>> in unit bins of Ntrks
@@ -214,6 +216,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetPeriod(TString period) { fPeriod = period; }
         virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
         virtual int    GetSystFlag() { return fCurrSystFlag; }
+		virtual void	SetOnlineTrackCorrection(Bool_t UseCorrectedNTracks){fUseCorrectedNTracks = UseCorrectedNTracks;}
         
         //===================================================================================
 
@@ -248,6 +251,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         
 
 		AliEventCuts	fEventCuts;					// Event cuts
+		AliGFWCuts*     fGFWSelection;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
@@ -280,6 +284,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TString                 fNtrksName;                             // Cent or Mult
 		TString			fPeriod;				// period
                 Int_t                   fCurrSystFlag;                          // Systematics flag
+		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -290,9 +295,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TF1*			fMultCentLowCut;		// cut low for multiplicity centrality outliers
 
 		// NUE
-		TFile*			fTrackEfficiency;		//! file with tracking efficiency
-		TH3F*			hTrackEfficiency;		//! histogram with tracking efficiency
-		TH3F*			hTrackEfficiencyRun;            //! histogram with tracking efficiency
+		TList*			fTrackEfficiency;		//! file with tracking efficiency
+		TH1D*			hTrackEfficiency;		//! histogram with tracking efficiency
+		TH1D*			hTrackEfficiencyRun;            //! histogram with tracking efficiency
 
 		// NUA
 		bool fFlowRunByRunWeights;                              // flag of whether get the Run by run weight 
@@ -340,6 +345,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		// Event histograms
 		TH1D*			hEventCount;			//! counting events passing given event cuts
+		TH2D*			hTracksCorrection2d;	//! Correlation table for number of tracks table
+		TProfile*		hnCorrectedTracks;		//! Number of corrected tracks in a ntracks bin
 		TH1F*			hMult;				//! multiplicity distribution
 		TH1F*			hMultfBin[12]; 			//! multiplicity distribution in fBin
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
@@ -382,6 +389,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		// Global variables
 		int NtrksCounter = 0;               //!
 		int NtrksAfter = 0;                 //!
+		int NtrksAfterGap0M = 0;           //!
+		int NtrksAfterGap0P = 0;           //!
 		int NtrksAfterGap10M = 0;           //!
 		int NtrksAfterGap10P = 0;           //!
 		int NtrksAfterGap14M = 0;           //!
@@ -389,6 +398,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter3subL = 0;            //!
 		int NtrksAfter3subM = 0;            //!
 		int NtrksAfter3subR = 0;            //!
+		int NTracksCorrected = 0;			//!
+		int NTracksUncorrected = 0;			//!
         
 		PhysicsProfilePPTask multProfile;          //!
 		PhysicsProfilePPTask multProfile_bin[30];  //!
@@ -402,6 +413,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int nn;                             //!
 		TH1F* MyEventNumber;					//!
         
+		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		void CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks);
 		void InitProfile(PhysicsProfilePPTask& profile, TString);
         

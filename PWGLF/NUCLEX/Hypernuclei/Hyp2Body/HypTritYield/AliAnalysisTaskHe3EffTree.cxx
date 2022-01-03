@@ -49,6 +49,7 @@ fTree(0),
 fTreeGen(0),
 fBetheParamsHe(),
 fBetheParamsT(),
+fUseExternalSplines(kFALSE),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
@@ -138,6 +139,7 @@ fTree(0),
 fTreeGen(0),
 fBetheParamsHe(),
 fBetheParamsT(),
+fUseExternalSplines(kFALSE),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
@@ -354,7 +356,8 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
   if(!fEventCuts.AcceptEvent(fESDevent)) return;
 
   Int_t runNumber = fESDevent->GetRunNumber();
-	SetBetheBlochParams(runNumber);
+  if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
+
 
 	AliCDBManager *cdbMgr = AliCDBManager::Instance();
 	if (fMCtrue) {

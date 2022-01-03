@@ -108,12 +108,15 @@ Double_t nchbins_3_data[nchNbins_data_3+1]={0,10,20,30,40,50,60,70,80,90,100};
 
 
 const Int_t nDeltabins_data = 64;
-Double_t Deltabins_data[nDeltabins_data+1]={-1.0472, -0.957204, -0.867211, -0.777217, -0.687223, -0.59723, -0.507236, -0.417243, -0.327249, -0.237256, -0.147262, -0.0572686, 0.0327249, 0.122718, 0.212712, 0.302706, 0.392699, 0.482693, 0.572686, 0.66268, 0.752673, 0.842667, 0.93266, 1.02265, 1.11265, 1.20264, 1.29263, 1.38263, 1.47262, 1.56262, 1.65261, 1.7426, 1.8326, 1.92259, 2.01258, 2.10258, 2.19257, 2.28256, 2.37256, 2.46255, 2.55254, 2.64254, 2.73253, 2.82252, 2.91252, 3.00251, 3.09251, 3.1825, 3.27249, 3.36249, 3.45248, 3.54247, 3.63247, 3.72246, 3.81245, 3.90245, 3.99244, 4.08243, 4.17243, 4.26242, 4.35241, 4.44241, 4.5324, 4.6224, 4.71239};
+Double_t Deltabins_data[nDeltabins_data+1]={-1.5708,-1.47262,-1.37445,-1.27627,-1.1781,-1.07992,-0.981748,-0.883573,-0.785398,-0.687223,-0.589049,-0.490874,-0.392699,-0.294524,-0.19635,-0.0981748,0,0.0981748,0.19635,0.294524,0.392699,0.490874,0.589049,0.687223,0.785398,0.883573,0.981748,1.07992,1.1781,1.27627,1.37445,1.47262,1.5708,1.66897,1.76715,1.86532,1.9635,2.06167,2.15984,2.25802,2.35619,2.45437,2.55254,2.65072,2.74889,2.84707,2.94524,3.04342,3.14159,3.23977,3.33794,3.43612,3.53429,3.63247,3.73064,3.82882,3.92699,4.02517,4.12334,4.22152,4.31969,4.41786,4.51604,4.61421,4.7123890};
 
 const Int_t ptNbins_data = 36;
 Double_t ptbins1_1_data[ptNbins_data+1] = {
   0.0,  0.1,  0.15,  0.2,  0.25,  0.3,  0.35,  0.4,  0.45,  0.5,  0.6,  0.7,  0.8,  0.9,  1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5, 5.0, 6.0, 7.0,  8.0,  9.0,  10.0,  12.0,  14.0,  16.0,  18.0,  20.0,  30.0,  40.0,  50.0
 };
+
+const Int_t ptNbins_dphi = 5;
+Double_t ptbins1_dphi[ptNbins_dphi+1] = {0.5, 1.0, 2.0, 3.0, 4.0, 6.0};
 
 const int nBinsDCAxy_data = 121;
   double binsDCAxy_data[nBinsDCAxy_data+1] = {-3.025,-2.975,-2.925,-2.875,-2.825,-2.775,-2.725,-2.675,-2.625,-2.575,-2.525,-2.475,-2.425,-2.375,-2.325,-2.275,-2.225, -2.175,-2.125,-2.075,-2.025,-1.975,-1.925,-1.875,-1.825,-1.775,-1.725,-1.675,-1.625,-1.575,-1.525,-1.475,-1.425,-1.375,-1.325,-1.275,-1.225,-1.175,-1.125,-1.075,-1.025,-0.975,-0.925,-0.875,-0.825,-0.775,-0.725,-0.675,-0.625,-0.575,-0.525,-0.475,-0.425,-0.375,-0.325,-0.275,-0.225,-0.175,-0.125,-0.075,-0.025,0.025,0.075,0.125,0.175,0.225,0.275,0.325,0.375,0.425,0.475,0.525,0.575,0.625,0.675,0.725,0.775,0.825,0.875,0.925,0.975,1.025,1.075,1.125,1.175,1.225,1.275,1.325,1.375,1.425,1.475,1.525,1.575,1.625,1.675,1.725,1.775,1.825,1.875,1.925,1.975,2.025,2.075,2.125,2.175,2.225,2.275,2.325,2.375,2.425,2.475,2.525,2.575,2.625,2.675,2.725,2.775,2.825,2.875,2.925,2.975,3.025};
@@ -132,7 +135,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskDataKno) // classimp: necessary for root
 
 AliAnalysisTaskDataKno::AliAnalysisTaskDataKno() : AliAnalysisTaskSE(),
-  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fIsTPConly(kTRUE), fTPCclustersVar1(kFALSE), fTPCclustersVar2(kFALSE), fNcrVar1(kFALSE), fNcrVar2(kFALSE), fGeoTPCVar1(kFALSE), fGeoTPCVar2(kFALSE), fGeoTPCVar3(kFALSE), fGeoTPCVar4(kFALSE), fChisqTPCVar1(kFALSE), fChisqTPCVar2(kFALSE), fChisqITSVar1(kFALSE), fChisqITSVar2(kFALSE), fChisqITSmTPCVar1(kFALSE), fChisqITSmTPCVar2(kFALSE), fDcazVar1(kFALSE), fDcazVar2(kFALSE), fSPDreqVar1(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999), fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchGen(0), hNchTSRec(0), hNchData(0), hNchTSData(0),hNchRec(0), hCounter(0),hRefMult08(0), hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0), hITSclustersvsUE(0),hITSclustersvsNch(0), hPtVsV0MData(0), hDphiVsUEData(0), hDphiVsNchData(0), hPTVsDCAData(0), hPTVsDCAcentData(0)
+  fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE), fIsTPConly(kTRUE), fTPCclustersVar1(kFALSE), fTPCclustersVar2(kFALSE), fNcrVar1(kFALSE), fNcrVar2(kFALSE), fGeoTPCVar1(kFALSE), fGeoTPCVar2(kFALSE), fGeoTPCVar3(kFALSE), fGeoTPCVar4(kFALSE), fChisqTPCVar1(kFALSE), fChisqTPCVar2(kFALSE), fChisqITSVar1(kFALSE), fChisqITSVar2(kFALSE), fChisqITSmTPCVar1(kFALSE), fChisqITSmTPCVar2(kFALSE), fDcazVar1(kFALSE), fDcazVar2(kFALSE), fSPDreqVar1(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0), fV0Mmin(0.0),fV0Mmax(100.0), fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999), fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchGen(0), hNchTSRec(0), hNchData(0), hNchTSData(0),hNchRec(0), hCounter(0),hRefMult08(0), hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0),hV0MmultvsUE(0),hRefmultvsUE(0), hITSclustersvsUE(0),hITSclustersvsNch(0), hPtVsV0MData(0), hDphiVsUEData(0), hDphiVsNchData(0),hpTaVsDphi(0), hPTVsDCAData(0), hPTVsDCAcentData(0)
 {
   for(Int_t i=0;i<3;++i){
     hPtVsUEData[i]=0;
@@ -146,7 +149,7 @@ AliAnalysisTaskDataKno::AliAnalysisTaskDataKno() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskDataKno::AliAnalysisTaskDataKno(const char* name) : AliAnalysisTaskSE(name),
-								   fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE),fIsTPConly(kTRUE), fTPCclustersVar1(kFALSE), fTPCclustersVar2(kFALSE), fNcrVar1(kFALSE), fNcrVar2(kFALSE), fGeoTPCVar1(kFALSE), fGeoTPCVar2(kFALSE), fGeoTPCVar3(kFALSE), fGeoTPCVar4(kFALSE), fChisqTPCVar1(kFALSE), fChisqTPCVar2(kFALSE), fChisqITSVar1(kFALSE), fChisqITSVar2(kFALSE), fChisqITSmTPCVar1(kFALSE), fChisqITSmTPCVar2(kFALSE), fDcazVar1(kFALSE), fDcazVar2(kFALSE),fSPDreqVar1(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999),fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchGen(0), hNchTSRec(0), hNchData(0), hNchTSData(0), hNchRec(0), hCounter(0),hRefMult08(0),hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0),  hITSclustersvsUE(0), hITSclustersvsNch(0), hPtVsV0MData(0), hDphiVsUEData(0), hDphiVsNchData(0), hPTVsDCAData(0), hPTVsDCAcentData(0)
+								   fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0), fUseMC(kFALSE), fIsMCclosure(kFALSE), fIspPb(kFALSE),fIsTPConly(kTRUE), fTPCclustersVar1(kFALSE), fTPCclustersVar2(kFALSE), fNcrVar1(kFALSE), fNcrVar2(kFALSE), fGeoTPCVar1(kFALSE), fGeoTPCVar2(kFALSE), fGeoTPCVar3(kFALSE), fGeoTPCVar4(kFALSE), fChisqTPCVar1(kFALSE), fChisqTPCVar2(kFALSE), fChisqITSVar1(kFALSE), fChisqITSVar2(kFALSE), fChisqITSmTPCVar1(kFALSE), fChisqITSmTPCVar2(kFALSE), fDcazVar1(kFALSE), fDcazVar2(kFALSE),fSPDreqVar1(kFALSE), fLeadingTrackFilter(0x0), fTrackFilter(0x0),fTrackFilterwoDCA(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),fLeadPtCutMin(5.0), fLeadPtCutMax(40.0),fV0Mmin(0.0),fV0Mmax(100.0),  fGenLeadPhi(0), fGenLeadPt(0), fGenLeadIn(0), fRecLeadPhi(0), fRecLeadPt(0), fRecLeadIn(0),ftrackmult08(0), fv0mpercentile(0), fv0mpercentilebefvtx(0), fdcaxy(-999), fdcaz(-999),fMultSelection(0x0), fMultSelectionbefvtx(0x0), hNchTSGen(0), hNchGen(0), hNchTSRec(0), hNchData(0), hNchTSData(0), hNchRec(0), hCounter(0),hRefMult08(0),hV0Mmult(0), hV0Mmultbefvtx(0), hRefMultvsV0Mmult(0), hV0MmultvsUE(0),hRefmultvsUE(0),  hITSclustersvsUE(0), hITSclustersvsNch(0), hPtVsV0MData(0), hDphiVsUEData(0), hDphiVsNchData(0),hpTaVsDphi(0), hPTVsDCAData(0), hPTVsDCAcentData(0)
 {
   for(Int_t i=0;i<3;++i){
     hPtVsUEData[i]=0;
@@ -355,6 +358,9 @@ void AliAnalysisTaskDataKno::UserCreateOutputObjects()
 
   hDphiVsNchData = new TH2D("hDphiVsNchData","Delta phi vs nch_transverse",3000,-0.5,2999.5,nDeltabins_data,Deltabins_data);
   fOutputList->Add(hDphiVsNchData);
+
+  hpTaVsDphi = new TH2D("hpTaVsDphi","pT vs Delta phi",nDeltabins_data,Deltabins_data,ptNbins_dphi,ptbins1_dphi);
+  fOutputList->Add(hpTaVsDphi);
 
 
   //hV0MVsUEvsRef = 0;
@@ -691,6 +697,7 @@ void AliAnalysisTaskDataKno::GetMultiplicityDistributionsData(){
 
     hDphiVsUEData->Fill(multTSrec,DPhi);
     hDphiVsNchData->Fill(multrec,DPhi);
+    hpTaVsDphi->Fill(DPhi,track->Pt());
       
   }
   //}

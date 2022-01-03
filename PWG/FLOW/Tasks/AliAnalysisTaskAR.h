@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 04.11.2021
+ * Last Modified Date: 25.11.2021
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -21,7 +21,6 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
 #include "AliVParticle.h"
-#include <Riostream.h>
 #include <TComplex.h>
 #include <TDataType.h>
 #include <TF1.h>
@@ -35,17 +34,12 @@
 
 // global constants for qvectors
 const Int_t kMaxHarmonic = 20;
-const Int_t kMaxCorrelator = 20;
 const Int_t kMaxPower = 20;
 // global constants for QA filterbit scan
 const Int_t kMaxFilterbit = 15; // 2^(15-1)=16384
 const Int_t kNumberofTestFilterBit = 6;
 const Int_t kTestFilterbit[kNumberofTestFilterBit] = {1,   92,  128,
                                                       256, 512, 768};
-// centrality estimators
-enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
-const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
-                                                         "SPDTracklets"};
 // event variables
 enum kEvent {
   kMUL,
@@ -60,6 +54,10 @@ enum kEvent {
   kVPOS,
   LAST_EEVENT
 };
+// centrality estimators
+enum kCenEstimators { kV0M, kCL0, kCL1, kSPDTRACKLETS, LAST_ECENESTIMATORS };
+const TString kCenEstimatorNames[LAST_ECENESTIMATORS] = {"V0M", "CL0", "CL1",
+                                                         "SPDTracklets"};
 // multiplicity estimators
 const Int_t kMulEstimators = kNCONTRIB + 1;
 const TString kMulEstimatorNames[kMulEstimators] = {"kMUL", "kMULQ", "kMULW",
@@ -67,8 +65,8 @@ const TString kMulEstimatorNames[kMulEstimators] = {"kMUL", "kMULQ", "kMULW",
 // track variables
 enum kTrack {
   kPT,
-  kPHI,
   kETA,
+  kPHI,
   kCHARGE,
   kTPCNCLS,
   kTPCCROSSEDROWS,
@@ -80,8 +78,8 @@ enum kTrack {
   kDCAXY,
   LAST_ETRACK
 };
-// kinematic variables
-const Int_t kKinematic = kETA + 1;
+// kinematic variables -> (p_t,eta,phi)
+const Int_t kKinematic = kPHI + 1;
 // final result histograms
 enum kFinalResultHist {
   kAVGPHI,
@@ -91,10 +89,13 @@ enum kFinalResultHist {
   kNUMBEROFTRACKS,
   LAST_EFINALHIST
 };
+// final result profiles
 enum kFinalResultProfile {
   kINTEGRATED,
   kCENDEP,
   kMULDEP,
+  kPTDEP,
+  kETADEP,
   LAST_EFINALRESULTPROFILE
 };
 // various gloabl objects
@@ -135,6 +136,7 @@ public:
   virtual void BookQAHistograms();
   virtual void BookControlHistograms();
   virtual void BookFinalResultHistograms();
+  virtual void BookTrackBinHistograms();
   virtual void BookFinalResultCorrelators();
   virtual void BookFinalResultSymmetricCumulants();
 
@@ -157,11 +159,11 @@ public:
   virtual void FillEventObjects(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void ClearVectors();
   virtual void FillTrackObjects(AliVParticle *avp);
-  virtual void AggregateWeights();
   virtual Int_t IndexCorHistograms(Int_t i, Int_t j, Int_t N);
 
   // methods for computing qvectors
-  void CalculateQvectors();
+  void CalculateQvectors(std::vector<Double_t> angles,
+                         std::vector<Double_t> weights);
   TComplex Q(Int_t n, Int_t p);
   TComplex Two(Int_t n1, Int_t n2);
   TComplex Three(Int_t n1, Int_t n2, Int_t n3);
@@ -169,25 +171,35 @@ public:
   TComplex Five(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
   TComplex Six(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5, Int_t n6);
   TComplex Recursion(Int_t n, Int_t *harmonic, Int_t mult = 1, Int_t skip = 0);
-  TComplex TwoNestedLoops(Int_t n1, Int_t n2);
-  TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3);
-  TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4);
-  TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5);
+  TComplex TwoNestedLoops(Int_t n1, Int_t n2, std::vector<Double_t> angles,
+                          std::vector<Double_t> weights);
+  TComplex ThreeNestedLoops(Int_t n1, Int_t n2, Int_t n3,
+                            std::vector<Double_t> angles,
+                            std::vector<Double_t> weights);
+  TComplex FourNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4,
+                           std::vector<Double_t> angles,
+                           std::vector<Double_t> weights);
+  TComplex FiveNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
+                           std::vector<Double_t> angles,
+                           std::vector<Double_t> weights);
   TComplex SixNestedLoops(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t n5,
-                          Int_t n6);
+                          Int_t n6, std::vector<Double_t> angles,
+                          std::vector<Double_t> weights);
 
   // methods for calculating symmetric cumulants
   void SC2(std::vector<Int_t> sc, Int_t index);
   void SC3(std::vector<Int_t> sc, Int_t index);
   std::vector<std::vector<Int_t>> MapSCToCor(std::vector<Int_t> sc);
 
-  // GetPointers Methods in case we need to manually trigger Terminate()
+  // GetPointers Methods for initalizing a task from an output file in case we
+  // need to manually trigger Terminate()
   virtual void GetPointers(TList *list);
   virtual void GetPointersForQAHistograms();
   virtual void GetPointersForControlHistograms();
   virtual void GetPointersForFinalResults();
 
   // setters and getters for list objects
+  TList *GetHistList() const { return fHistList; };
   TList *GetCenCorQAHistogramList() const { return fCenCorQAHistogramsList; }
   TObject *GetCenCorQAHistogram(kBeforeAfter ba, kCenEstimators cen1,
                                 kCenEstimators cen2) {
@@ -401,6 +413,7 @@ public:
   void SetEventCuts(kEvent Event, Bool_t option) {
     this->fUseEventCuts[Event] = option;
   }
+  // setter for centrality correlation cut
   void SetCenCorCut(Double_t m, Double_t t) {
     this->fCenCorCut[0] = m;
     this->fCenCorCut[1] = t;
@@ -414,9 +427,7 @@ public:
     this->fUseMulCorCuts = kTRUE;
   }
   void SetMulCorCut(Bool_t option) { this->fUseMulCorCuts = option; }
-  // filterbit
-  // depends strongly on the data set
-  // typical choices are 1,128,256,768
+  // filterbit (e.g. 1,92,,128,256,768)
   void SetFilterbit(Int_t Filterbit) {
     this->fFilterbit = Filterbit;
     this->fUseFilterbit = kTRUE;
@@ -428,11 +439,13 @@ public:
   void SetPrimaryDefinitionInMC(kMCPrimaryDef def) {
     this->fMCPrimaryDef = def;
   }
+  // use fake tracks for weight computation
+  void SetUseFakeTracks(Bool_t option) { this->fUseFakeTracks = option; }
   // cut all non-global track away
   void SetGlobalTracksOnlyCut(Bool_t option) {
     this->fGlobalTracksOnly = option;
   }
-  // flatten centrality if necessary
+  // centrality flattening
   void SetCenFlattenHist(TH1D *hist) {
     if (!hist) {
       std::cout << __LINE__ << ": Did not get centrality flattening histogram"
@@ -444,7 +457,7 @@ public:
   };
   void SetCenFlattenHist(const char *Filename, const char *Histname);
 
-  // setters for MC on the fly/closure analysis
+  // setters for MC on the fly/closure
   void SetMCClosure(Bool_t option) { this->fMCClosure = option; }
   void SetMCOnTheFly(Bool_t option) { this->fMCOnTheFly = option; }
   void SetCustomSeed(const UInt_t seed) {
@@ -475,13 +488,7 @@ public:
                               const char *Histname);
 
   // setters for weight histograms
-  void SetUseWeights(kTrack kinematic, Bool_t option) {
-    if (kinematic >= kKinematic) {
-      std::cout << __LINE__ << ": Out of range" << std::endl;
-      Fatal("SetUseWeights", "Out of range");
-    }
-    this->fUseWeights[kinematic] = option;
-  }
+  void SetUseWeights(Bool_t option) { this->fUseWeights = option; }
   void SetWeightHistogram(kTrack kinematic, TH1D *WeightHistogram) {
     if (!WeightHistogram) {
       std::cout << __LINE__ << ": Did not get weight histogram" << std::endl;
@@ -491,7 +498,7 @@ public:
       std::cout << __LINE__ << ": Out of range" << std::endl;
       Fatal("SetWeightHistogram", "Out of range");
     }
-    this->fUseWeights[kinematic] = kTRUE;
+    this->fUseWeights = kTRUE;
     this->fWeightHistogram[kinematic] = WeightHistogram;
   }
   void SetWeightHistogram(kTrack kinematic, const char *Filename,
@@ -502,15 +509,26 @@ public:
     this->fCorrelators = correlators;
   }
 
-  // set symmetric cumulant to be computed
+  // set symmetric cumulant to be computed (will figure out the minimal required
+  // set of correlators)
   void SetSymmetricCumulants(std::vector<std::vector<Int_t>> SC) {
     this->fSymmetricCumulants = SC;
   }
 
-  // use nested loops for computation of correlators
+  // for differential analysis (p_t,eta) of symmetric cumulants
+  void SetTrackBinning(kTrack track, std::vector<Double_t> TrackBins) {
+    if (track > kETA) {
+      std::cout << __LINE__ << ": Out of range" << std::endl;
+      Fatal("SetTrackBinning", "Out of range");
+    }
+    this->fTrackBins[track] = TrackBins;
+  }
+
+  // use nested loops for computation of correlators (only used for validation)
   void SetUseNestedLoops(Bool_t option) { this->fUseNestedLoops = option; }
 
-  // use fischer-yates for indices randomization
+  // use fischer-yates for indices randomization (only used when fixing the
+  // multiplicity)
   void SetFisherYates(Bool_t option) { this->fUseFisherYates = option; }
   // use a fixed multiplicity
   void SetFixedMultiplicity(Int_t FixedMultiplicity) {
@@ -525,20 +543,16 @@ private:
   AliAnalysisTaskAR(const AliAnalysisTaskAR &aatmpf);
   AliAnalysisTaskAR &operator=(const AliAnalysisTaskAR &aatmpf);
 
-  // base list
-  TList *fHistList;
+  TList *fHistList; // base list
   TString fHistListName;
 
-  // QA histograms
-  TList *fQAHistogramsList;
+  TList *fQAHistogramsList; // QA histograms
   TString fQAHistogramsListName;
   Bool_t fFillQAHistograms;
-  // only fill correlation histograms
-  Bool_t fFillQACorHistogramsOnly;
-  // array holding all centrality estimates
-  Double_t fCentrality[LAST_ECENESTIMATORS];
-  // centrality correlation histograms
-  TList *fCenCorQAHistogramsList;
+  Bool_t fFillQACorHistogramsOnly;           // only fill correlation histograms
+  Double_t fCentrality[LAST_ECENESTIMATORS]; // array holding all centrality
+                                             // estimates
+  TList *fCenCorQAHistogramsList; // centrality correlation histograms
   TString fCenCorQAHistogramsListName;
   TH2D *fCenCorQAHistograms[LAST_ECENESTIMATORS * (LAST_ECENESTIMATORS - 1) / 2]
                            [LAST_EBEFOREAFTER];
@@ -548,10 +562,9 @@ private:
   Double_t fCenCorQAHistogramBins[LAST_ECENESTIMATORS *
                                   (LAST_ECENESTIMATORS - 1) /
                                   2][2 * LAST_EBINS];
-  // array holding all multiplicity estimates
-  Double_t fMultiplicity[kMulEstimators];
-  // multiplicity correlation histograms
-  TList *fMulCorQAHistogramsList;
+  Double_t
+      fMultiplicity[kMulEstimators]; // array holding all multiplicity estimates
+  TList *fMulCorQAHistogramsList;    // multiplicity correlation histograms
   TString fMulCorQAHistogramsListName;
   TH2D *fMulCorQAHistograms[kMulEstimators * (kMulEstimators - 1) / 2]
                            [LAST_EBEFOREAFTER];
@@ -559,15 +572,14 @@ private:
                                  [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fMulCorQAHistogramBins[kMulEstimators * (kMulEstimators - 1) / 2]
                                  [2 * LAST_EBINS];
-  // multiplicity-centrality correlation histograms
-  TList *fCenMulCorQAHistogramsList;
+  TList *fCenMulCorQAHistogramsList; // multiplicity-centrality correlation
+                                     // histograms
   TString fCenMulCorQAHistogramsListName;
   TH2D *fCenMulCorQAHistograms[kMulEstimators][LAST_EBEFOREAFTER];
   TString fCenMulCorQAHistogramNames[kMulEstimators][LAST_EBEFOREAFTER]
                                     [LAST_ENAME];
   Double_t fCenMulCorQAHistogramBins[kMulEstimators][2 * LAST_EBINS];
-  // filterbit scans histograms
-  TList *fFBScanQAHistogramsList;
+  TList *fFBScanQAHistogramsList; // filterbit scans histograms
   TString fFBScanQAHistogramsListName;
   TH1D *fFBScanQAHistogram;
   TString fFBScanQAHistogramName[LAST_ENAME];
@@ -576,25 +588,21 @@ private:
   TString fFBTrackScanQAHistogramNames[LAST_ETRACK][kNumberofTestFilterBit]
                                       [LAST_ENAME];
   Double_t fFBTrackScanQAHistogramBins[LAST_ETRACK][LAST_EBINS];
-  // self correlation histograms
-  TList *fSelfCorQAHistogramsList;
+  TList *fSelfCorQAHistogramsList; // self correlation histograms
   TString fSelfCorQAHistogramsListName;
   TH1D *fSelfCorQAHistograms[kKinematic][LAST_EBEFOREAFTER];
   TString fSelfCorQAHistogramNames[kKinematic][LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fSelfCorQAHistogramBins[kKinematic][LAST_EBINS];
 
-  // control histograms
-  TList *fControlHistogramsList;
+  TList *fControlHistogramsList; // control histograms
   TString fControlHistogramsListName;
-  // track control histograms
-  TList *fTrackControlHistogramsList;
+  TList *fTrackControlHistogramsList; // track control histograms
   TString fTrackControlHistogramsListName;
   TH1D *fTrackControlHistograms[LAST_EMODE][LAST_ETRACK][LAST_EBEFOREAFTER];
   TString fTrackControlHistogramNames[LAST_EMODE][LAST_ETRACK]
                                      [LAST_EBEFOREAFTER][LAST_ENAME];
   Double_t fTrackControlHistogramBins[LAST_ETRACK][LAST_EBINS];
-  // event control historams
-  TList *fEventControlHistogramsList;
+  TList *fEventControlHistogramsList; // event control historams
   TString fEventControlHistogramsListName;
   TH1D *fEventControlHistograms[LAST_EMODE][LAST_EEVENT][LAST_EBEFOREAFTER];
   TString fEventControlHistogramNames[LAST_EMODE][LAST_EEVENT]
@@ -602,20 +610,18 @@ private:
   Double_t fEventControlHistogramBins[LAST_EEVENT][LAST_EBINS];
 
   // cuts
-  Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX];
+  Double_t fTrackCuts[LAST_ETRACK][LAST_EMINMAX]; // track cuts
   Bool_t fUseTrackCuts[LAST_ETRACK];
   TH1D *fTrackCutsCounter[LAST_EMODE];
   TString fTrackCutsCounterCumulativeName;
-  // THnSparseD *fTrackCutsCounterCumulative;
   TString fTrackCutsValuesName;
   TProfile *fTrackCutsValues;
   TString fTrackCutsCounterNames[LAST_EMODE];
   TString fTrackCutsCounterBinNames[LAST_ETRACK][LAST_EMINMAX];
-  Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX];
+  Double_t fEventCuts[LAST_EEVENT][LAST_EMINMAX]; // event cuts
   Bool_t fUseEventCuts[LAST_EEVENT];
   TH1D *fEventCutsCounter[LAST_EMODE];
   TString fEventCutsCounterCumulativeName;
-  // THnSparseD *fEventCutsCounterCumulative;
   TString fEventCutsValuesName;
   TProfile *fEventCutsValues;
   TString fEventCutsCounterNames[LAST_EMODE];
@@ -625,6 +631,7 @@ private:
   Bool_t fChargedOnly;
   Bool_t fPrimaryOnly;
   kMCPrimaryDef fMCPrimaryDef;
+  Bool_t fUseFakeTracks;
   Bool_t fGlobalTracksOnly;
   kCenEstimators fCentralityEstimator;
   Double_t fCenCorCut[2];
@@ -634,62 +641,55 @@ private:
   Bool_t fUseCenFlatten;
   TH1D *fCenFlattenHist;
 
-  // Final results
-  TList *fFinalResultsList;
+  TList *fFinalResultsList; // Final results (histograms and profiles)
   TString fFinalResultsListName;
-  // array holding final result histograms
   TList *fFinalResultHistogramsList;
   TString fFinalResultHistogramsListName;
   TH1D *fFinalResultHistograms[LAST_EFINALHIST];
   TString fFinalResultHistogramNames[LAST_EFINALHIST][LAST_ENAME];
   Double_t fFinalResultHistogramBins[LAST_EFINALHIST][LAST_EBINS];
-  // final result correlators
-  // will be generated by CreateUserObjects depending on the correlators we have
-  TList *fFinalResultCorrelatorsList;
+  TList *
+      fFinalResultCorrelatorsList; // final result correlators will be generated
+                                   // by CreateUserObjects depending on the
+                                   // correlators/symmetric cumulants we have
   TString fFinalResultCorrelatorsListName;
   TList *fFinalResultSymmetricCumulantsList;
   TString fFinalResultSymmetricCumulantsListName;
-  // only fill control histograms
-  Bool_t fFillControlHistogramsOnly;
+  Bool_t fFillControlHistogramsOnly; // only fill control histograms
   Bool_t fUseNestedLoops;
 
-  // Seed for RNG
-  Bool_t fUseCustomSeed;
+  Bool_t fUseCustomSeed; // Seed for RNG
   UInt_t fSeed;
 
-  // Monte Carlo on the fly/Closure
-  Bool_t fMCOnTheFly;
-  Bool_t fMCClosure;
+  Bool_t fMCOnTheFly; // MC on the fly
+  Bool_t fMCClosure;  // MC closure
   TF1 *fMCKinematicPDFs[kKinematic];
   Double_t fMCKinematicVariables[kKinematic];
   TH1D *fAcceptanceHistogram[kKinematic];
   TF1 *fMCMultiplicity;
 
-  // Look up tabel between MC and data particles
-  std::map<Int_t, Int_t> fLookUpTable;
+  std::map<Int_t, Int_t>
+      fLookUpTable; // Look up tabel between MC and data particles
 
-  // use Fisher-Yates algorithm to randomize tracks
-  Bool_t fUseFisherYates;
+  Bool_t fUseFisherYates; // use Fisher-Yates algorithm to randomize tracks
   std::vector<Int_t> fRandomizedTrackIndices;
-  // needed when sampling a fixed number of tracks per event
-  Bool_t fUseFixedMultplicity;
+  Bool_t fUseFixedMultplicity; // needed when sampling a fixed number of tracks
+                               // per event
   Int_t fFixedMultiplicy;
 
-  // qvectors
-  TComplex fQvector[kMaxHarmonic][kMaxPower];
-  std::vector<Double_t> fKinematics[kKinematic];
-  std::vector<Double_t> fKinematicWeights[kKinematic];
-  std::vector<Double_t> fWeightsAggregated;
+  TComplex fQvector[kMaxHarmonic][kMaxPower]; // qvectors
+  std::vector<std::vector<Double_t>> fKinematics[kKinematic];
+  std::vector<std::vector<Double_t>> fKinematicWeights[kKinematic];
   TH1D *fWeightHistogram[kKinematic];
-  Bool_t fUseWeights[kKinematic];
-  Bool_t fUseWeightsAggregated;
+  Bool_t fUseWeights;
   std::vector<std::vector<Int_t>> fCorrelators;
   std::vector<std::vector<Int_t>> fSymmetricCumulants;
   std::map<std::vector<Int_t>, std::vector<std::vector<Int_t>>> fMapSCtoCor;
   std::map<std::vector<Int_t>, Int_t> fMapCorToIndex;
+  TH1D *fTrackBinsHistogram[kKinematic - 1];
+  std::vector<Double_t> fTrackBins[kKinematic];
 
-  // increase this counter in each new version
-  ClassDef(AliAnalysisTaskAR, 19);
+  ClassDef(AliAnalysisTaskAR, 21); // increase this counter in each new version
 };
 
 #endif

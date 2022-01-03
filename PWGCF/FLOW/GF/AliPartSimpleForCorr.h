@@ -14,6 +14,8 @@ class AliPartSimpleForCorr : public AliVParticle
 
         AliPartSimpleForCorr(Float_t eta, Float_t phi, Double_t multiplicity);
 
+        AliPartSimpleForCorr(Float_t eta, Float_t phi, Float_t pt, Double_t mass);
+
         virtual ~AliPartSimpleForCorr() {}
 
         virtual Double_t Px() const {
@@ -66,10 +68,7 @@ class AliPartSimpleForCorr : public AliVParticle
           AliFatal("Not implemented");
           return 0;
         }
-        virtual Double_t M() const {
-          AliFatal("Not implemented");
-          return 0;
-        }
+        virtual Double_t M() const { return fMass; }
         virtual Double_t Eta() const { return fEta; }
         virtual Double_t Y() const {
           AliFatal("Not implemented");
@@ -105,8 +104,9 @@ class AliPartSimpleForCorr : public AliVParticle
         Double_t    fMultiplicity;
         Int_t       fID1;
         Int_t       fID2;
+        Double_t    fMass;
 
-        ClassDef(AliPartSimpleForCorr, 1);
+        ClassDef(AliPartSimpleForCorr, 2);
 };
 
 #endif

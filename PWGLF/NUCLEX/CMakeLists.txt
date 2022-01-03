@@ -69,6 +69,7 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliAnalysisTaskReducedTreeHypertritonBindingEnergy.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskS3ParticleYields.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3EffTree.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHypTritKf.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisCODEXS3task.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskTRDtriggerTracks.cxx
   Hypernuclei/Hyp2Body/HypTritYield/Sigma_Baryons/AliAnalysisTaskSigmaPlus.cxx
@@ -91,7 +92,9 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNEventCuts.cxx
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisH3MC.cxx
   Nuclei/AbsorptionRatios/AliAnalysisHe3MC.cxx
+  Nuclei/AbsorptionRatios/AliAnalysisH3MC.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskHe3_ESD.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskNuclei.cxx
   Nuclei/AbsorptionRatios/HMAnalysis/AliAnalysisTaskAntipd.cxx

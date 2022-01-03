@@ -24,9 +24,9 @@ AliAnalysisTaskSVtaskMCFilter* AddTaskSVtaskMCFilter(const char* trkcontname   =
    TString taskFiltername = Form("SVFilterTask_%s_to_%s", trkcontname, outtrk); 
 	
 	
-   AliAnalysisTaskSVtaskMCFilter* task = mgr->GetTask(taskFiltername.Data());
+   AliAnalysisTaskSVtaskMCFilter* task = (AliAnalysisTaskSVtaskMCFilter*)mgr->GetTask(taskFiltername.Data());
    if(task){
-      ::Info("AddTaskSVtaskMCFilter", Form("Task %s already exist, continue",taskFiltername.Data()));
+      ::Info("AddTaskSVtaskMCFilter", "Task %s already exist, continue", taskFiltername.Data());
       return task;
    }else{
       ::Info("AddTaskSVtaskMCFilter", "Creating the task");

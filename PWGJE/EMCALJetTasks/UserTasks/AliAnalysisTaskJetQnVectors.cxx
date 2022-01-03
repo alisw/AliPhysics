@@ -50,7 +50,8 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
-    fq2V0(0)
+    fq2V0(0),
+    fEPangleCF(0)
 {
     //
     // default constructor
@@ -85,7 +86,8 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
-    fq2V0(0)
+    fq2V0(0),
+    fEPangleCF(0)
 {
     //
     // standard constructor
@@ -267,6 +269,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double PsinFullV0 = -1., PsinV0A = -1., PsinV0C = -1.;
     fHFQnVecHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
     fHFQnVecHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
+    fEPangleCF = PsinFullV0;
 
     fHistEventPlaneTPC[0]->Fill(PsinFullTPC);
     fHistEventPlaneTPC[1]->Fill(PsinPosTPC);

@@ -247,16 +247,23 @@ protected:
     TH1F                                *fLSptAng[5][5];
     TH1F                                *fULSptDisp[5][6];
     TH1F                                *fLSptDisp[5][6];
+    TH1F                                *fRecPEAngDcal[5][5];
+    TH1F                                *fTotPEAngDcal[5][5];
+    TH1F                                *fRecPEDispDcal[5][6];
+    TH1F                                *fTotPEDispDcal[5][6];
     TH2F                                *fPtP;
     TH1F                                *fptJetIE;               // pT of jets containing IE
     TH1F                                *fptJetPE;               // pT of jets containing PE
     TH1F                                *fptJetHFE;              // pT of jets containing HFE
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
+    TH1F                                *fptTruePEdcal;
+    TH1F                                *fptRecPEdcal;
     TH1F                                *fptTrueHFEeffTPCTOF[5];
     TH3F                                *fptTrueHFEeffTPCTOFang[2];
     TH3F                                *fptTrueHFEeffTPCTOFdisp[2];
-    TH1F                                *fptTrueHFEeffEMCal[5];
+    TH1F                                *fptTrueHFEeffEMCal[5];         //EMCal + DCal
+    TH1F                                *fptTrueHFEeffDCal[5];
     TH3F                                *fptTrueHFEeffEMCalang[2];
     TH3F                                *fptTrueHFEeffEMCaldisp[2];
     TH1F                                *fPtTrack;
@@ -274,7 +281,8 @@ protected:
     TH2F                                *fEtaPhiTrueElec;
     TH2F                                *fnEovPelecNoTPCcut;
     TH2F                                *fnEovPelecTPCcut;
-    TH2F                                *fnEovPelecTPCEMCalcut;
+    TH2F                                *fnEovPelecTPCEMCalcut;     //EMCal + Dcal
+    TH2F                                *fnEovPelecTPCDCalcut;
     TH2F                                *fnEovPelecTPCsscut[5];
     TH2F                                *fnEovPbackg;
     TH2F                                *fnClsE;

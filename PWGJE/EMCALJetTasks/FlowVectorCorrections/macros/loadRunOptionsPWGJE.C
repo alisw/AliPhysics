@@ -176,7 +176,7 @@ Bool_t loadRunOptionsPWGJE(Bool_t verb,const char *path) {
   currline.ReadLine(optionsfile);
   while (currline.BeginsWith("#") || currline.IsWhitespace()) currline.ReadLine(optionsfile);
   // if (currline.BeginsWith("Is 2015 dataset")) {
-  //   currline.Remove(0,strlen("Is 2015 dataset"));
+    // currline.Remove(0,strlen("Is 2015 dataset"));
   if (currline.BeginsWith("Is Run2 dataset")) {
     currline.Remove(0,strlen("Is Run2 dataset"));
     if (currline.Contains("yes"))
@@ -262,7 +262,7 @@ Bool_t loadRunOptionsPWGJE(Bool_t verb,const char *path) {
         currline.ReadLine(optionsfile);
         while (currline.BeginsWith("#") || currline.IsWhitespace()) currline.ReadLine(optionsfile);
       } /* end use only events validated for centrality calibration */
-    }
+//     }
 
       /* use only events validated for centrality calibration */
       if (currline.BeginsWith("Use AliEventCuts: ")) {

@@ -74,8 +74,8 @@ public:
     void    SetUpMaxDCAToVertexZ(Float_t dist = 1e10)            {fCutMaxDCAToVertexZ = dist;}
     //track selection for Nch
     void    SetUpMinNClustersTPC(Int_t min = -1)          {fCutMinNClusterTPC = min;}
-    void    SetUpMaxChi2PerClusterTPC_nch(Float_t max = 1e10) {fNchCutMaxChi2PerClusterTPC = max;}
-    void    SetUpMaxDCAToVertexZ_nch(Float_t dist = 1e10)  {fNchCutMaxDCAToVertexZ = dist;}
+    void    SetUpMaxChi2PerClusterTPC_nch(Float_t max = 1e10) {fCutMaxChi2PerClusterTPC_nch = max;}
+    void    SetUpMaxDCAToVertexZ_nch(Float_t dist = 1e10)  {fCutMaxDCAToVertexZ_nch = dist;}
     void    SetUpMaxDCAToVertexXY(Float_t dist = 1e10)    {fCutMaxDCAToVertexXY = dist;}
     void    SetUpRequireITSRefit(Bool_t req = kFALSE)   {fIsITSRefit = req;}
     void    SetUpRequireTPCRefit(Bool_t req = kFALSE)   {fIsTPCRefit = req;}
@@ -91,18 +91,18 @@ protected:
 
 private:
 	AliESDEvent* fESD;                                        //! input ESD event
-	Bool_t       fIsPythia;
-    Bool_t       fIsppData;
-    Bool_t       fIspPbData;
-	AliEventCuts fEventCuts;
-	AliStack*    fMCStack;                                                 //! MC stack
 	AliMCEvent*  fMC;                                               //! MC Event
+	AliStack*    fMCStack;                                                 //! MC stack
 	Bool_t       fUseMC;                // analyze MC events
 	Bool_t       fIsMCclosure;         
+	Bool_t       fIsPythia;
+        Bool_t       fIsppData;
+        Bool_t       fIspPbData;
+	AliEventCuts fEventCuts;
 	AliAnalysisFilter*  fLeadingTrackFilter;
 	AliAnalysisFilter*  fTrackFilterForDCA;
 	AliAnalysisFilter*  fTrackFilter;
-	TList*                  fOutputList;                                      //! output list in the root file
+	TList*              fOutputList;                                      //! output list in the root file
 
 	Double_t fEtaCut;
 	Double_t fPtMin;
@@ -117,9 +117,10 @@ private:
 
 	Float_t fDCAxy;
 	Float_t fDCAz;
-    Double_t fRefmult08std;
-    Double_t fpercentileV0M;
-    AliMultSelection *fMultSelection;
+        
+	AliMultSelection *fMultSelection;
+	Double_t fRefmult08std;
+        Double_t fpercentileV0M;
     
     
     //systematic uncertainties --- variation
@@ -128,83 +129,82 @@ private:
     //track selection for leading particle
     Float_t  fCutMaxFractionSharedTPCClusters;                //0.4(default), 0.2, 1.0
     Float_t  fCutMinRatioCrossedRowsOverFindableClustersTPC;  //0.8(default), 0.7, 0.9
-    Float_t  fCutGeoNcrNclZone, fCutGeoNcrNclLength;          //3.0cm(default), 2.0cm, 4.0cm;     130.0(default), 120.0, 140.0
+    Float_t  fCutGeoNcrNclZone, fCutGeoNcrNclLength;          //3cm(default), 2cm, 4cm;     130(default), 120, 140
     Bool_t   fIsRequirementSPD;         //kTRUE--kAny(default), kFALSE--kNone
     Float_t  fCutMaxChi2PerClusterITS;  //36(default), 25, 49
     Float_t  fCutMaxChi2PerClusterTPC;  //4(default), 3, 5
     Float_t  fCutMaxChi2TPCConstrainedVsGlobal;  //36(default), 25, 49
-    Float_t  fCutMaxDCAToVertexZ;                //2(default) 1cm, 5cm
+    Float_t  fCutMaxDCAToVertexZ;                //2(default), 1, 5
     //track selection for Nch
-    Int_t    fCutMinNClusterTPC;          //50(default), 40, 60
-    Float_t  fNchCutMaxChi2PerClusterTPC; //4(default),  3, 5
-    Float_t  fNchCutMaxDCAToVertexZ;      //3.2(default), 2.2, 4.2
-    Float_t  fCutMaxDCAToVertexXY;        //2.4(default), 1.4, 3.4
+    Int_t    fCutMinNClusterTPC;          //50(default), 30, 70
+    Float_t  fCutMaxChi2PerClusterTPC_nch; //4(default),  3, 5
+    Float_t  fCutMaxDCAToVertexZ_nch;      //3.2(default), 2.0, 4.0
+    Float_t  fCutMaxDCAToVertexXY;        //2.4(default), 1.0, 4.0
     Bool_t   fIsITSRefit; //kTRUE(default), kFALSE    
     Bool_t   fIsTPCRefit; //kTRUE(default), kFALSE
-    //histograms
-    // DCA 
-    TH2D * hPTVsDCAData;
-    TH2D * hPtDCAPrimary;
-    TH2D * hPtDCAWeak;
-    TH2D * hPtDCAMat;
-    TH2D * hPtDCAall;
     
-        //systematic uncertainties --- variation
-        //event selection
-        TH1D * hZvtxAllMeasured;
-        TH1D * hZvtxGoodVtxMeasured;
-	TH1D * hZvtxCutAccMeasured;
-    	TH1D * hZvtxAllGen;
-    	TH1D * hZvtxCutGen;
-    	TH1D * hZvtxTrigGen;
-    	TH1D * hZvtxGoodVtxGen;
-    	TH1D * hZvtxCutAccGen;
-    	TH1D * hZvtxCutKnoGen;
+
+    
+    //histograms
+    TH1I * hCounter;
+    //vertex Z position
+    TH1D * hZvtxAllMeasured;
+    TH1D * hZvtxGoodVtxMeasured;
+    TH1D * hZvtxCutAccMeasured;
+    TH1D * hZvtxAllGen;
+    TH1D * hZvtxCutGen;
+    TH1D * hZvtxTrigGen;
+    TH1D * hZvtxGoodVtxGen;
+    TH1D * hZvtxCutAccGen;
+    TH1D * hZvtxCutKnoGen;
+    // KNO
+    TH1D * hNchTSData;
+    TH1D * hNchTSminData;
+    TH1D * hNchTSmaxData;
+    TH1D * hPhiData_TS1;
+    TH1D * hPhiData_TS2;
+
+    TH1D * hPhiGen[3];
+    TH1D * hPhiRec[3];
+    TH1D * hNchTSGen;
+    TH1D * hNchTSRec;
+    TH2D * hNchTSResponse;
+    TH1D * hNchTSGenTest;
+    TH1D * hNchTSRecTest;
+         
+    TH1D * hPhiGen_TS1;
+    TH1D * hPhiGen_TS2;
+    TH1D * hPhiRec_TS1;
+    TH1D * hPhiRec_TS2;
+    TH1D * hPhiGenTest_TS1;
+    TH1D * hPhiGenTest_TS2;
+    TH1D * hPhiRecTest_TS1;
+    TH1D * hPhiRecTest_TS2;
+        
+    TH1D * hNchTSminGen;
+    TH1D * hNchTSminRec;
+    TH2D * hNchTSminResponse;
+    TH1D * hNchTSminGenTest;
+    TH1D * hNchTSminRecTest;
+        
+    TH1D * hNchTSmaxGen;
+    TH1D * hNchTSmaxRec;
+    TH2D * hNchTSmaxResponse;
+    TH1D * hNchTSmaxGenTest;
+    TH1D * hNchTSmaxRecTest;
 
 
-
-	// KNO
-	TH1D * hPhiGen[3];
-	TH1D * hNchTSGen;
-	TH1D * hNchTSGenTest;
-	TH1D * hPhiRec[3];
-	TH1D * hNchTSRec;
-	TH1D * hNchTSRecTest;
-	TH2D * hNchResponse;
-        
-        TH1D * hNchTSData;
-        TH1D * hPhiData_TS1;
-        TH1D * hPhiData_TS2;
-        TH1D * hNchTSminData;
-        TH1D * hNchTSmaxData;
-        
-        TH1D * hPhiGen_TS1;
-        TH1D * hPhiGen_TS2;
-        TH1D * hPhiGenTest_TS1;
-        TH1D * hPhiGenTest_TS2;
-        TH1D * hPhiRec_TS1;
-        TH1D * hPhiRec_TS2;
-        TH1D * hPhiRecTest_TS1;
-        TH1D * hPhiRecTest_TS2;
-        
-        TH1D * hNchTSminGen;
-        TH1D * hNchTSminRec;
-        TH2D * hNchTSminResponse;
-        TH1D * hNchTSminGenTest;
-        TH1D * hNchTSminRecTest;
-        
-        TH1D * hNchTSmaxGen;
-        TH1D * hNchTSmaxRec;
-        TH2D * hNchTSmaxResponse;
-        TH1D * hNchTSmaxGenTest;
-        TH1D * hNchTSmaxRecTest;
-
+        // DCA
+        TH2D * hPTVsDCAData;
+        TH2D * hPtDCAPrimary;
+    	TH2D * hPtDCAWeak;
+    	TH2D * hPtDCAMat;
+    	TH2D * hPtDCAall;
 	// UE 
 	TH1D * hPtInPrim;
 	TH1D * hPtOut;
 	TH1D * hPtOutPrim; 
-	TH1D * hPtOutSec; 
-	TH1I * hCounter;
+	TH1D * hPtOutSec;
 	TH2D * hNumDenMC[3];
 	TH2D * hSumPtMC[3];
 	TH2D * hNumDenMCMatch[3];
@@ -262,9 +262,9 @@ private:
 	TH1D * hPtLeadingGenGood;
 	TH1D * hPtLeadingRecAll;
 	TH1D * hPtLeadingGenAll;
-    TH1D * hRefMult08std;
-    TH1D * hMultV0M;
-    TH2D * hRefMultvsMultV0M;
+        TH1D * hRefMult08std;
+        TH1D * hMultV0M;
+        TH2D * hRefMultvsMultV0M;
 
 	AliAnalysisTaskMcKnoUeSystem(const AliAnalysisTaskMcKnoUeSystem&);                  // not implemented
 	AliAnalysisTaskMcKnoUeSystem& operator=(const AliAnalysisTaskMcKnoUeSystem&);       // not implemented

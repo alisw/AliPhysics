@@ -41,6 +41,7 @@ public:
   void         SetPtCutHigh(Double_t max)                   { fPtCutHigh = max; }
   void         SetPtCutLow(Double_t min)                    { fPtCutLow = min; }
   void         SetEtaCutMinMax(Double_t min, Double_t max)  { fEtamin = min; fEtamax = max;}
+  void         SetMinOpAng(Double_t opAng)                  { fMinOpAng = opAng;}
   void         ScaleByRAA(Bool_t b)                         { fScaleByRAA = b; }
   void         ScaleByCNM(Bool_t b,TGraph *cnmgraph)        { fScaleByCNM = b; fgraphCNM = cnmgraph;}
   void         TakeptOfDCNM(Bool_t b)                       { fTakeptOfDCNM = b; }
@@ -73,6 +74,7 @@ protected:
   Double_t                 fPtCutLow;
   Double_t                 fEtamin;
   Double_t                 fEtamax;
+  Double_t                 fMinOpAng;
   Bool_t                   fScaleByRAA;
   Bool_t                   fScaleByCNM;
   TGraph                  *fgraphCNM;
@@ -183,12 +185,12 @@ protected:
   TH2F *hMeePtee_LS_eta08_pt300;                       //!
   TH2F *hMeePtee_ULS_eta08_pt400;                      //!
   TH2F *hMeePtee_LS_eta08_pt400;                       //!
-  TH2F *hMeePtee_ULS_eta08_pt200_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt200_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt300_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt300_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt400_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt400_opAngle50;             //!
+  TH2F *hMeePtee_ULS_eta08_pt200_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt200_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt300_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt300_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt400_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt400_opAngleCut;             //!
   // opening angle
   TH2F *hMeeOpAngle_ULS_eta08_pt200;                   //!
   TH2F *hMeeOpAngle_LS_eta08_pt200;                    //!

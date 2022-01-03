@@ -139,6 +139,10 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   fLambdaMassCut(0.005),
   vecPosEPTrkID(0),
   vecNegEPTrkID(0),
+  vecPosEPTrkPhi(0),
+  vecNegEPTrkPhi(0),
+  vecPosEPTrkNUAWgt(0),
+  vecNegEPTrkNUAWgt(0),
   
   fHistVertexZcm(NULL),
   fHistAnalysisInfo(NULL),
@@ -288,7 +292,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   fProfileGammaV0A_AntiLambda_hNeg(NULL),
   fProfileGammaV0A_AntiLambda_Proton(NULL),
   fProfileGammaV0A_AntiLambda_AntiProton(NULL),
-  hEmptyPointerFortheList(NULL)  
+  hEmptyPointerFortheList(NULL),
+  bCheckPIDFlow(kFALSE)  
 {
   
   //std::vector<Int_t> vecPosEPTrkID = {0};
@@ -316,7 +321,17 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
     fProfileLambdaMassVsPt[i]     = NULL;
     fProfileAntiLambdaMassVsPt[i] = NULL;
   }  
-  
+
+  for (int i = 0; i < 3; i++) {
+    fHist3DdNdPhiCentPthPos[i] = NULL;
+    fHist3DdNdPhiCentPthNeg[i] = NULL;  
+    fHist3DdNdPhiCentPtProton[i] = NULL;
+    fHist3DdNdPhiCentPtAntiProton[i] = NULL;
+  }
+  for (int i = 0; i < 4; i++) {
+    fHist3DdNdPhiCentPtLambda[i] = NULL;
+    fHist3DdNdPhiCentPtAntiLambda[i] = NULL;
+  }  
   //Must be here:
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
@@ -334,13 +349,13 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fListHist(NULL),
   fListTRKCorr(NULL),
   fListNUACorr(NULL),
-  fListV0MCorr(NULL),   
+  fListV0MCorr(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
   fCenCutLowPU(NULL),
   fCenCutHighPU(NULL),
-						  
+
   gHarmonic(0),
   gParticleID(0),
   fFilterBit(1),
@@ -394,6 +409,10 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fLambdaMassCut(0.005),
   vecPosEPTrkID(0),
   vecNegEPTrkID(0),
+  vecPosEPTrkPhi(0),
+  vecNegEPTrkPhi(0),
+  vecPosEPTrkNUAWgt(0),
+  vecNegEPTrkNUAWgt(0),
   
   fHistVertexZcm(NULL),
   fHistAnalysisInfo(NULL),
@@ -544,7 +563,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fProfileGammaV0A_AntiLambda_hNeg(NULL),
   fProfileGammaV0A_AntiLambda_Proton(NULL),
   fProfileGammaV0A_AntiLambda_AntiProton(NULL),  
-  hEmptyPointerFortheList(NULL)
+  hEmptyPointerFortheList(NULL),
+  bCheckPIDFlow(kFALSE)
 {
   //std::vector<Int_t> vecPosEPTrkID = {0};
   //std::vector<Int_t> vecNegEPTrkID = {0};
@@ -571,7 +591,17 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
     fProfileLambdaMassVsPt[i]     = NULL;
     fProfileAntiLambdaMassVsPt[i] = NULL;
   }  
-    
+  for (int i = 0; i < 3; i++) {
+    fHist3DdNdPhiCentPthPos[i] = NULL;
+    fHist3DdNdPhiCentPthNeg[i] = NULL;  
+    fHist3DdNdPhiCentPtProton[i] = NULL;
+    fHist3DdNdPhiCentPtAntiProton[i] = NULL;
+
+  }
+  for (int i = 0; i < 4; i++) {
+    fHist3DdNdPhiCentPtLambda[i] = NULL;
+    fHist3DdNdPhiCentPtAntiLambda[i] = NULL;
+  }
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
@@ -634,6 +664,7 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   SetupAnalysisHistograms();
   SetupPileUpRemovalFunctions();
   SetupEventAndTaskConfigInfo();
+  if (bCheckPIDFlow) SetupLambdaPIDFlowHistograms();
 
 
 
@@ -797,6 +828,17 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   vecPosEPTrkID.clear();
   vecNegEPTrkID.clear();
+  vecPosEPTrkPhi.clear();
+  vecNegEPTrkPhi.clear();
+  vecPosEPTrkNUAWgt.clear();
+  vecNegEPTrkNUAWgt.clear();
+
+  vector<Int_t>().swap(vecPosEPTrkID);
+  vector<Int_t>().swap(vecNegEPTrkID);   
+  vector<Double_t>().swap(vecPosEPTrkPhi);
+  vector<Double_t>().swap(vecNegEPTrkPhi);
+  vector<Double_t>().swap(vecPosEPTrkNUAWgt);
+  vector<Double_t>().swap(vecNegEPTrkNUAWgt);
   
   kPileupEvent = GetTPCQvectAndRemovePileUp2018(fAOD, fSumQnxNeg, fSumQnyNeg, fSumQnxPos, fSumQnyPos, fMultNeg, fMultPos);
   
@@ -1151,12 +1193,12 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	  isItProttrk1 = CheckPIDofParticle(AODtrack1,3); // 3=proton
 	
 	  if(trk1Chrg > 0) {
-      code = 999999;
+      code = 999;
 	    if(isItPiontrk1)      code = 211;
 	    else if(isItKaontrk1) code = 321;
 	    else if(isItProttrk1) code = 2212;
 	  } else{  /// 
-      code = -999999;
+      code = -999;
 	    if(isItPiontrk1)      code = -211;
 	    else if(isItKaontrk1) code = -321;
 	    else if(isItProttrk1) code = -2212;
@@ -1396,6 +1438,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     ////////-----> Starting V0 Loop -----------
     vector<Int_t>    vecLambdaCode;
     vector<Double_t> vecLambdaPhi;
+    vector<Double_t> vecLambdaPt;
     vector<Int_t>    vecDaughterPosID; // Pos Daughter ID
     vector<Int_t>    vecDaughterNegID; // Neg Daughter ID
 
@@ -1454,6 +1497,9 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
         fProfileLambdaMassVsPt[0]     -> Fill(pt, massLambda);
 
         if (TMath::Abs(massLambda - fMassMean) < fLambdaMassCut) {
+          //if a particle has been used as daughter particle before(It happends), we have to refuse a new one.
+          if (find(vecDaughterPosID.begin(), vecDaughterPosID.end(), id_posDaughter) != vecDaughterPosID.end()) continue;
+          if (find(vecDaughterNegID.begin(), vecDaughterNegID.end(), id_negDaughter) != vecDaughterNegID.end()) continue;
           fHistLambdaPt[1]              -> Fill(pt);
           fHistLambdaEta[1]             -> Fill(eta);
           fHistLambdaPhi[1]             -> Fill(phi);
@@ -1465,6 +1511,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
           vecLambdaCode.push_back(code);
           vecLambdaPhi.push_back(phi);
+          vecLambdaPt.push_back(pt);
           vecDaughterPosID.push_back(id_posDaughter);
           vecDaughterNegID.push_back(id_negDaughter);
         }
@@ -1482,6 +1529,8 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
         fProfileAntiLambdaMassVsPt[0]     -> Fill(pt, massAntiLambda);
 
         if (TMath::Abs(massAntiLambda - fMassMean) < fLambdaMassCut) {
+          if (find(vecDaughterPosID.begin(), vecDaughterPosID.end(), id_posDaughter) != vecDaughterPosID.end()) continue;
+          if (find(vecDaughterNegID.begin(), vecDaughterNegID.end(), id_negDaughter) != vecDaughterNegID.end()) continue;
           fHistAntiLambdaPt[1]              -> Fill(pt);
           fHistAntiLambdaEta[1]             -> Fill(eta);
           fHistAntiLambdaPhi[1]             -> Fill(eta);
@@ -1493,6 +1542,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
           
           vecLambdaCode.push_back(code);
           vecLambdaPhi.push_back(phi);
+          vecLambdaPt.push_back(pt);
           vecDaughterPosID.push_back(id_posDaughter);
           vecDaughterNegID.push_back(id_negDaughter);
         }
@@ -1500,84 +1550,132 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     }
 
     //// Now fill Lambda-X correlations:
-    for (vector<Double_t>::size_type iTrk = 0; iTrk < vecPhi.size(); iTrk++) {
-      Int_t    id   = vecID[iTrk];
-      Int_t    code = vecPDGCode[iTrk];
-      Double_t pt   = vecPt[iTrk];
-      Double_t eta  = vecEta[iTrk];
-      Double_t phi  = vecPhi[iTrk];
+    //Lambda - X
+    for (vector<Double_t>::size_type jLambda = 0; jLambda < vecLambdaPhi.size(); jLambda++) {
+      Int_t    code_lambda    = vecLambdaCode[jLambda];
+      Double_t phi_lambda     = vecLambdaPhi[jLambda];
+      Double_t pt_lambda      = vecLambdaPt[jLambda];
+      Int_t    id_posDaughter = vecDaughterPosID[jLambda];
+      Int_t    id_negDaughter = vecDaughterNegID[jLambda];
 
-      //Lambda - X
-      for (vector<Double_t>::size_type jLambda = 0; jLambda < vecLambdaPhi.size(); jLambda++) {
+      //Remove AutoCorrelation:
+      Double_t fPosTPCQxTemp = 0., fPosTPCQyTemp = 0.; ///Get the Total sum of Pos TPC Qx,Qy  locally, then Remove AutoCorr if needed.
+      Double_t fNegTPCQxTemp = 0., fNegTPCQyTemp = 0.; ///Get the Total sum of Neg TPC Qx,Qy  locally, then Remove AutoCorr if needed.
+      Double_t fPosTPCMult = 0.,   fNegTPCMult = 0.;
+      Double_t qxPosTPC = 0., qyPosTPC = 0.;
+      Double_t qxNegTPC = 0., qyNegTPC = 0.;
 
-        Int_t code_lambda = vecLambdaCode[jLambda];
-	      Double_t phi_lambda = vecLambdaPhi[jLambda];
-	      Int_t id_posDaughter = vecDaughterPosID[jLambda];
-	      Int_t id_negDaughter = vecDaughterNegID[jLambda];
-	      if(id == id_posDaughter || id == id_negDaughter) continue;  // checking if charged particle is daughter itself.
+      // use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
+      fNegTPCQxTemp = fSumQnxNeg[0];
+      fNegTPCQyTemp = fSumQnyNeg[0];
+      fNegTPCMult   = fMultNeg;
+
+      fPosTPCQxTemp = fSumQnxPos[0];
+      fPosTPCQyTemp = fSumQnyPos[0];
+      fPosTPCMult   = fMultPos;
+      
+      //for NegEP
+      vector<Int_t>::iterator iterPosDaughterNegTPC = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_posDaughter);
+      vector<Int_t>::iterator iterNegDaughterNegTPC = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_negDaughter);
+      
+      //for PosEP
+      vector<Int_t>::iterator iterPosDaughterPosTPC = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_posDaughter);
+      vector<Int_t>::iterator iterNegDaughterPosTPC = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_negDaughter);
+	
+      if (iterPosDaughterNegTPC != vecNegEPTrkID.end()) {
+        Int_t iDaughter = distance(vecNegEPTrkID.begin(), iterPosDaughterNegTPC);
+        qxNegTPC +=  vecNegEPTrkNUAWgt[iDaughter] * TMath::Cos(2 * vecNegEPTrkPhi[iDaughter]);
+        qyNegTPC +=  vecNegEPTrkNUAWgt[iDaughter] * TMath::Sin(2 * vecNegEPTrkPhi[iDaughter]);
+        fNegTPCMult -= vecNegEPTrkNUAWgt[iDaughter];
+      }
+
+      if (iterNegDaughterNegTPC != vecNegEPTrkID.end()) {
+        Int_t iDaughter = distance(vecNegEPTrkID.begin(), iterNegDaughterNegTPC);
+        qxNegTPC += vecNegEPTrkNUAWgt[iDaughter] * TMath::Cos(2 * vecNegEPTrkPhi[iDaughter]);
+        qyNegTPC += vecNegEPTrkNUAWgt[iDaughter] * TMath::Sin(2 * vecNegEPTrkPhi[iDaughter]);
+        fNegTPCMult -= vecNegEPTrkNUAWgt[iDaughter];
+      }
+
+      if (iterPosDaughterPosTPC != vecPosEPTrkID.end()) {
+        Int_t iDaughter = distance(vecPosEPTrkID.begin(), iterPosDaughterPosTPC);
+        qxPosTPC += vecPosEPTrkNUAWgt[iDaughter] * TMath::Cos(2 * vecPosEPTrkPhi[iDaughter]);
+        qyPosTPC += vecPosEPTrkNUAWgt[iDaughter] * TMath::Sin(2 * vecPosEPTrkPhi[iDaughter]);
+        fPosTPCMult -= vecPosEPTrkNUAWgt[iDaughter];
+      }
     
-	      //Remove AutoCorrelation:
-	      Double_t fTPCQxTemp = 0., fTPCQyTemp = 0.; ///Get the Total sum of Qx,Qy  locally, then Remove AutoCorr if needed.
-	      Double_t qx = 0., qy = 0.;
-	      Double_t fTPCMult = 0.;
-	    
-	      if(eta > 0) {// use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
-	        fTPCQxTemp = fSumQnxNeg[0];
-	        fTPCQyTemp = fSumQnyNeg[0];
-	        fTPCMult   = fMultNeg;
-	        
-          vector<Int_t>::iterator iterPosDaughter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_posDaughter);
-          vector<Int_t>::iterator iterNegDaughter = find(vecNegEPTrkID.begin(), vecNegEPTrkID.end(), id_negDaughter);
-	    
-          if (iterPosDaughter != vecNegEPTrkID.end()) {
-            Int_t iPosDaughter = distance(vecNegEPTrkID.begin(), iterPosDaughter);
-            qx +=  vecNUAWeight[iPosDaughter] * TMath::Cos(2 * vecPhi[iPosDaughter]);
-            qy +=  vecNUAWeight[iPosDaughter] * TMath::Sin(2 * vecPhi[iPosDaughter]);
-            fTPCMult -= 1;
-          }
+      if (iterNegDaughterPosTPC != vecPosEPTrkID.end()) {
+        Int_t iDaughter = distance(vecPosEPTrkID.begin(), iterNegDaughterPosTPC);
+        qxPosTPC +=  vecPosEPTrkNUAWgt[iDaughter] * TMath::Cos(2 * vecPosEPTrkPhi[iDaughter]);
+        qyPosTPC +=  vecPosEPTrkNUAWgt[iDaughter] * TMath::Sin(2 * vecPosEPTrkPhi[iDaughter]);
+        fPosTPCMult -= vecPosEPTrkNUAWgt[iDaughter];
+      }
 
-          if (iterNegDaughter != vecNegEPTrkID.end()) {
-            Int_t iNegDaughter = distance(vecNegEPTrkID.begin(), iterNegDaughter);
-            qx += vecNUAWeight[iNegDaughter] * TMath::Cos(2 * vecPhi[iNegDaughter]);
-            qy += vecNUAWeight[iNegDaughter] * TMath::Sin(2 * vecPhi[iNegDaughter]);
-            fTPCMult -= 1;
-          }
-	      } else { ///for -ve EP
-	        fTPCQxTemp = fSumQnxPos[0];
-	        fTPCQyTemp = fSumQnyPos[0];
-	        fTPCMult   = fMultPos;
+      fPosTPCQxTemp -= qxPosTPC;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
+      fPosTPCQyTemp -= qyPosTPC;
 
-          vector<Int_t>::iterator iterPosDaughter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_posDaughter);
-          vector<Int_t>::iterator iterNegDaughter = find(vecPosEPTrkID.begin(), vecPosEPTrkID.end(), id_negDaughter);
-
-	        if (iterPosDaughter != vecPosEPTrkID.end()) {
-            Int_t iPosDaughter = distance(vecPosEPTrkID.begin(), iterPosDaughter);
-            qx += vecNUAWeight[iPosDaughter] * TMath::Cos(2 * vecPhi[iPosDaughter]);
-            qy += vecNUAWeight[iPosDaughter] * TMath::Sin(2 * vecPhi[iPosDaughter]);
-            fTPCMult -= 1;
-          }
+      fNegTPCQxTemp -= qxNegTPC;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
+      fNegTPCQyTemp -= qyNegTPC;
     
-          if (iterNegDaughter != vecPosEPTrkID.end()) {
-            Int_t iNegDaughter = distance(vecPosEPTrkID.begin(), iterNegDaughter);
-            qx +=  vecNUAWeight[iNegDaughter] * TMath::Cos(2 * vecPhi[iNegDaughter]);
-            qy +=  vecNUAWeight[iNegDaughter] * TMath::Sin(2 * vecPhi[iNegDaughter]);
-            fTPCMult -= 1;
-          }
-	      }/// for PosEP 
+      if(fPosTPCMult > 0. && fNegTPCMult > 0.) {
+        fPosTPCQxTemp = fPosTPCQxTemp/fPosTPCMult;
+        fPosTPCQyTemp = fPosTPCQyTemp/fPosTPCMult;
+        fNegTPCQxTemp = fNegTPCQxTemp/fNegTPCMult;
+        fNegTPCQyTemp = fNegTPCQyTemp/fNegTPCMult;
+      } else continue;
 
-	      fTPCQxTemp -= qx;   /// qx=0,qy=0 if Lambda daughters are on the opposite eta of the EP used.. 
-	      fTPCQyTemp -= qy;   	      
-    
-	      if(fTPCMult>0) {
-	        fTPCQxTemp = fTPCQxTemp/fTPCMult;
-	        fTPCQyTemp = fTPCQyTemp/fTPCMult;
-	      }
-	      
-	      Double_t fPsiNTPCNoAuto = (1./2)*TMath::ATan2(fTPCQyTemp,fTPCQxTemp);   //AutoCorrelation Removed EP.
-	      if(fPsiNTPCNoAuto < 0) fPsiNTPCNoAuto += TMath::TwoPi()/2.0;  	  
-    
-	      Double_t delta = TMath::Cos(phi_lambda - phi);
-	      Double_t gammaTPC  = TMath::Cos(phi_lambda + phi - 2 *fPsiNTPCNoAuto);
+      Double_t fPsiNPosTPCNoAuto = (1./2)*TMath::ATan2(fPosTPCQyTemp,fPosTPCQxTemp);   //AutoCorrelation Removed Pos EP.
+      if(fPsiNPosTPCNoAuto < 0) fPsiNPosTPCNoAuto += TMath::TwoPi()/2.0;
+      Double_t fPsiNNegTPCNoAuto = (1./2)*TMath::ATan2(fNegTPCQyTemp,fNegTPCQxTemp);   //AutoCorrelation Removed Neg EP.
+      if(fPsiNNegTPCNoAuto < 0) fPsiNNegTPCNoAuto += TMath::TwoPi()/2.0;
+
+
+      //Check the PID Flow
+      if(bCheckPIDFlow) {
+        if(phi_lambda < TMath::Pi()) phi_lambda += TMath::Pi();
+        Double_t dPhiTPCPos = phi_lambda - fPsiNPosTPCNoAuto;
+        Double_t dPhiTPCNeg = phi_lambda - fPsiNNegTPCNoAuto;
+        Double_t dPhiV0C = phi_lambda - fPsiNV0C;
+        Double_t dPhiV0A = phi_lambda - fPsiNV0A; 
+
+        if(dPhiTPCPos < 0) dPhiTPCPos += TMath::Pi();
+        if(dPhiTPCNeg < 0) dPhiTPCNeg += TMath::Pi();
+        if(dPhiV0C    < 0) dPhiV0C    += TMath::Pi();
+        if(dPhiV0A    < 0) dPhiV0A    += TMath::Pi();
+
+        if(dPhiTPCPos > TMath::Pi()) dPhiTPCPos -= TMath::Pi();
+        if(dPhiTPCNeg > TMath::Pi()) dPhiTPCNeg -= TMath::Pi();
+        if(dPhiV0C    > TMath::Pi()) dPhiV0C    -= TMath::Pi();
+        if(dPhiV0A    > TMath::Pi()) dPhiV0A    -= TMath::Pi();
+        
+        if(code_lambda == 3122) {
+          fHist3DdNdPhiCentPtLambda[0]->Fill(centrality, pt_lambda, dPhiTPCPos);
+          fHist3DdNdPhiCentPtLambda[1]->Fill(centrality, pt_lambda, dPhiTPCNeg);
+          fHist3DdNdPhiCentPtLambda[2]->Fill(centrality, pt_lambda, dPhiV0C);
+          fHist3DdNdPhiCentPtLambda[3]->Fill(centrality, pt_lambda, dPhiV0A);
+        }
+
+        if(code_lambda == -3122) {
+          fHist3DdNdPhiCentPtAntiLambda[0]->Fill(centrality, pt_lambda, dPhiTPCPos);
+          fHist3DdNdPhiCentPtAntiLambda[1]->Fill(centrality, pt_lambda, dPhiTPCNeg);
+          fHist3DdNdPhiCentPtAntiLambda[2]->Fill(centrality, pt_lambda, dPhiV0C);
+          fHist3DdNdPhiCentPtAntiLambda[3]->Fill(centrality, pt_lambda, dPhiV0A);
+        }
+      }
+
+      for (vector<Double_t>::size_type iTrk = 0; iTrk < vecPhi.size(); iTrk++) {
+        Int_t    id   = vecID[iTrk];
+        Int_t    code = vecPDGCode[iTrk];
+        Double_t pt   = vecPt[iTrk];
+        Double_t eta  = vecEta[iTrk];
+        Double_t phi  = vecPhi[iTrk];
+        if(id == id_posDaughter || id == id_negDaughter) continue;
+
+        Double_t fPsiNTPCNoAuto = -999;
+        if (eta > 0.) fPsiNTPCNoAuto = fPsiNNegTPCNoAuto;
+        else fPsiNTPCNoAuto = fPsiNPosTPCNoAuto;
+  
+        Double_t delta     = TMath::Cos(phi_lambda - phi);
+        Double_t gammaTPC  = TMath::Cos(phi_lambda + phi - 2 *fPsiNTPCNoAuto);
         Double_t gammaV0C  = TMath::Cos(phi_lambda + phi - 2 *fPsiNV0C);
         Double_t gammaV0A  = TMath::Cos(phi_lambda + phi - 2 *fPsiNV0A);
 
@@ -1605,7 +1703,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
           fProfileGammaV0C_AntiLambda_hNeg -> Fill(centrality, gammaV0C);
           fProfileGammaV0A_AntiLambda_hNeg -> Fill(centrality, gammaV0A);
         }
-    
         if (code ==  2212 && code_lambda ==  3122) {
           fProfileDelta_Lambda_Proton      -> Fill(centrality, delta);
           fProfileGammaTPC_Lambda_Proton   -> Fill(centrality, gammaTPC);
@@ -1630,10 +1727,57 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
           fProfileGammaV0C_AntiLambda_AntiProton -> Fill(centrality, gammaV0C);
           fProfileGammaV0A_AntiLambda_AntiProton -> Fill(centrality, gammaV0A);
         }
-	    }// (Anti)Lambda-X pair done 
-
+      }// (Anti)Lambda-X pair done 
     }/// loop over charge particle array
 
+    if(bCheckPIDFlow) {
+      for (vector<Double_t>::size_type iTrk = 0; iTrk < vecPhi.size(); iTrk++) {
+        Int_t    code = vecPDGCode[iTrk];
+        Double_t pt   = vecPt[iTrk];
+        Double_t eta  = vecEta[iTrk];
+        Double_t phi  = vecPhi[iTrk];
+
+        Double_t dPhiTPCPos = phi - fPsiNTPCPos;
+        Double_t dPhiTPCNeg = phi - fPsiNTPCNeg;
+        Double_t dPhiV0C    = phi - fPsiNV0C;
+        Double_t dPhiV0A    = phi - fPsiNV0A;
+
+        if(dPhiTPCPos < 0) dPhiTPCPos += TMath::Pi();
+        if(dPhiTPCNeg < 0) dPhiTPCNeg += TMath::Pi();
+        if(dPhiV0C    < 0) dPhiV0C    += TMath::Pi();
+        if(dPhiV0A    < 0) dPhiV0A    += TMath::Pi();
+
+        if(dPhiTPCPos > TMath::Pi()) dPhiTPCPos -= TMath::Pi();
+        if(dPhiTPCNeg > TMath::Pi()) dPhiTPCNeg -= TMath::Pi();
+        if(dPhiV0C    > TMath::Pi()) dPhiV0C    -= TMath::Pi();
+        if(dPhiV0A    > TMath::Pi()) dPhiV0A    -= TMath::Pi();
+        
+        if (code > 0) {
+          if (eta > 0) fHist3DdNdPhiCentPthPos[0]->Fill(centrality, pt, dPhiTPCNeg);
+          else         fHist3DdNdPhiCentPthPos[0]->Fill(centrality, pt, dPhiTPCPos);
+          fHist3DdNdPhiCentPthPos[1]->Fill(centrality, pt, dPhiV0C);
+          fHist3DdNdPhiCentPthPos[2]->Fill(centrality, pt, dPhiV0A);
+        }
+        if (code < 0) {
+          if (eta > 0) fHist3DdNdPhiCentPthNeg[0]->Fill(centrality, pt, dPhiTPCNeg);
+          else         fHist3DdNdPhiCentPthNeg[0]->Fill(centrality, pt, dPhiTPCPos);
+          fHist3DdNdPhiCentPthNeg[1]->Fill(centrality, pt, dPhiV0C);
+          fHist3DdNdPhiCentPthNeg[2]->Fill(centrality, pt, dPhiV0A);
+        }
+        if (code == 2212) {
+          if (eta > 0) fHist3DdNdPhiCentPtProton[0]->Fill(centrality, pt, dPhiTPCNeg);
+          else         fHist3DdNdPhiCentPtProton[0]->Fill(centrality, pt, dPhiTPCPos);
+          fHist3DdNdPhiCentPtProton[1]->Fill(centrality, pt, dPhiV0C);
+          fHist3DdNdPhiCentPtProton[2]->Fill(centrality, pt, dPhiV0A);
+        }
+        if (code == -2212) {
+          if (eta > 0) fHist3DdNdPhiCentPtAntiProton[0]->Fill(centrality, pt, dPhiTPCNeg);
+          else         fHist3DdNdPhiCentPtAntiProton[0]->Fill(centrality, pt, dPhiTPCPos);
+          fHist3DdNdPhiCentPtAntiProton[1]->Fill(centrality, pt, dPhiV0C);
+          fHist3DdNdPhiCentPtAntiProton[2]->Fill(centrality, pt, dPhiV0A);
+        }
+      }////--------- PID Flow hist are Filled ----------
+    }
   }////--------- Lambda Histograms are Filled ----------
  
 
@@ -1943,7 +2087,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
     fListHist->Add(fHistLambdaCPA[i]);
     fHistLambdaDecayLength[i] = new TH1D(Form("hLambdaDecayLength_%sMassCut",name),"", 250, 0., 500.);
     fListHist->Add(fHistLambdaDecayLength[i]);
-    fHistLambdaMass[i] = new TH1D(Form("hLambdaMass_%sMassCut",name),"",250,1.,1.25); //  Current bin size = 0.001
+    fHistLambdaMass[i] = new TH1D(Form("hLambdaMass_%sMassCut",name),"",1000,1.,1.25); //  Current bin size = 0.00025
     fListHist->Add(fHistLambdaMass[i]);
     fProfileLambdaMassVsPt[i] = new TProfile(Form("pLambdaMassVsPt_%sMassCut",name),"",200,0,20);
     fListHist->Add(fProfileLambdaMassVsPt[i]);
@@ -1953,7 +2097,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
     fListHist->Add(fHistAntiLambdaPt[i]);
     fHistAntiLambdaEta[i] = new TH1D(Form("hAntiLambdaEta_%sMassCut",name),"",200, -10., 10.);
     fListHist->Add(fHistAntiLambdaEta[i]);
-    fHistAntiLambdaPhi[i] = new TH1D(Form("hLambdaPhi_%sMassCut",name),"", 360, 0, TMath::TwoPi());
+    fHistAntiLambdaPhi[i] = new TH1D(Form("hAntiLambdaPhi_%sMassCut",name),"", 360, 0, TMath::TwoPi());
     fListHist->Add(fHistAntiLambdaPhi[i]);
     fHistAntiLambdaDcaToPrimVertex[i] = new TH1D(Form("hAntiLambdaDcaToPrimVertex_%sMassCut",name),"",200, 0., 20.);
     fListHist->Add(fHistAntiLambdaDcaToPrimVertex[i]);
@@ -1961,7 +2105,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
     fListHist->Add(fHistAntiLambdaCPA[i]);
     fHistAntiLambdaDecayLength[i] = new TH1D(Form("hAntiLambdaDecayLength_%sMassCut",name),"", 250, 0., 500.);
     fListHist->Add(fHistAntiLambdaDecayLength[i]);
-    fHistAntiLambdaMass[i] = new TH1D(Form("hAntiLambdaMass_%sMassCut",name),"",250,1.,1.25); // Current bin size = 0.001
+    fHistAntiLambdaMass[i] = new TH1D(Form("hAntiLambdaMass_%sMassCut",name),"",1000,1.,1.25); // Current bin size = 0.00025
     fListHist->Add(fHistAntiLambdaMass[i]);
     fProfileAntiLambdaMassVsPt[i] = new TProfile(Form("pAntiLambdaMassVsPt_%sMassCut",name),"",200,0,20);
     fListHist->Add(fProfileAntiLambdaMassVsPt[i]);    
@@ -1971,86 +2115,86 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
   ///Gamma Correlators:
   //TPC Plane
   ///Lambda - X
-  fProfileGammaTPC_Lambda_hPos = new TProfile("fProfileGammaTPC_Lambda_hPos","",20,0,100);
+  fProfileGammaTPC_Lambda_hPos = new TProfile("fProfileGammaTPC_Lambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaTPC_Lambda_hPos);
-  fProfileGammaTPC_Lambda_hNeg = new TProfile("fProfileGammaTPC_Lambda_hNeg","",20,0,100);
+  fProfileGammaTPC_Lambda_hNeg = new TProfile("fProfileGammaTPC_Lambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaTPC_Lambda_hNeg);
-  fProfileGammaTPC_Lambda_Proton = new TProfile("fProfileGammaTPC_Lambda_Proton","",20,0,100);
+  fProfileGammaTPC_Lambda_Proton = new TProfile("fProfileGammaTPC_Lambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaTPC_Lambda_Proton);
-  fProfileGammaTPC_Lambda_AntiProton = new TProfile("fProfileGammaTPC_Lambda_AntiProton","",20,0,100);  
+  fProfileGammaTPC_Lambda_AntiProton = new TProfile("fProfileGammaTPC_Lambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileGammaTPC_Lambda_AntiProton);
 
   ///AntiLambda - X
-  fProfileGammaTPC_AntiLambda_hPos = new TProfile("fProfileGammaTPC_AntiLambda_hPos","",20,0,100);
+  fProfileGammaTPC_AntiLambda_hPos = new TProfile("fProfileGammaTPC_AntiLambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaTPC_AntiLambda_hPos);
-  fProfileGammaTPC_AntiLambda_hNeg = new TProfile("fProfileGammaTPC_AntiLambda_hNeg","",20,0,100);
+  fProfileGammaTPC_AntiLambda_hNeg = new TProfile("fProfileGammaTPC_AntiLambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaTPC_AntiLambda_hNeg);
-  fProfileGammaTPC_AntiLambda_Proton = new TProfile("fProfileGammaTPC_AntiLambda_Proton","",20,0,100);
+  fProfileGammaTPC_AntiLambda_Proton = new TProfile("fProfileGammaTPC_AntiLambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaTPC_AntiLambda_Proton);
-  fProfileGammaTPC_AntiLambda_AntiProton = new TProfile("fProfileGammaTPC_AntiLambda_AntiProton","",20,0,100);  
+  fProfileGammaTPC_AntiLambda_AntiProton = new TProfile("fProfileGammaTPC_AntiLambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileGammaTPC_AntiLambda_AntiProton);
 
   //V0C Plane
   ///Lambda - X
-  fProfileGammaV0C_Lambda_hPos = new TProfile("fProfileGammaV0C_Lambda_hPos","",20,0,100);
+  fProfileGammaV0C_Lambda_hPos = new TProfile("fProfileGammaV0C_Lambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0C_Lambda_hPos);
-  fProfileGammaV0C_Lambda_hNeg = new TProfile("fProfileGammaV0C_Lambda_hNeg","",20,0,100);
+  fProfileGammaV0C_Lambda_hNeg = new TProfile("fProfileGammaV0C_Lambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0C_Lambda_hNeg);
-  fProfileGammaV0C_Lambda_Proton = new TProfile("fProfileGammaV0C_Lambda_Proton","",20,0,100);
+  fProfileGammaV0C_Lambda_Proton = new TProfile("fProfileGammaV0C_Lambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0C_Lambda_Proton);
-  fProfileGammaV0C_Lambda_AntiProton = new TProfile("fProfileGammaV0C_Lambda_AntiProton","",20,0,100);  
+  fProfileGammaV0C_Lambda_AntiProton = new TProfile("fProfileGammaV0C_Lambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileGammaV0C_Lambda_AntiProton);
 
   ///AntiLambda - X
-  fProfileGammaV0C_AntiLambda_hPos = new TProfile("fProfileGammaV0C_AntiLambda_hPos","",20,0,100);
+  fProfileGammaV0C_AntiLambda_hPos = new TProfile("fProfileGammaV0C_AntiLambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0C_AntiLambda_hPos);
-  fProfileGammaV0C_AntiLambda_hNeg = new TProfile("fProfileGammaV0C_AntiLambda_hNeg","",20,0,100);
+  fProfileGammaV0C_AntiLambda_hNeg = new TProfile("fProfileGammaV0C_AntiLambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0C_AntiLambda_hNeg);
-  fProfileGammaV0C_AntiLambda_Proton = new TProfile("fProfileGammaV0C_AntiLambda_Proton","",20,0,100);
+  fProfileGammaV0C_AntiLambda_Proton = new TProfile("fProfileGammaV0C_AntiLambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0C_AntiLambda_Proton);
-  fProfileGammaV0C_AntiLambda_AntiProton = new TProfile("fProfileGammaV0C_AntiLambda_AntiProton","",20,0,100);  
+  fProfileGammaV0C_AntiLambda_AntiProton = new TProfile("fProfileGammaV0C_AntiLambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileGammaV0C_AntiLambda_AntiProton);
 
-  //V0APlane
+  //V0A Plane
   ///Lambda - X
-  fProfileGammaV0A_Lambda_hPos = new TProfile("fProfileGammaV0A_Lambda_hPos","",20,0,100);
+  fProfileGammaV0A_Lambda_hPos = new TProfile("fProfileGammaV0A_Lambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0A_Lambda_hPos);
-  fProfileGammaV0A_Lambda_hNeg = new TProfile("fProfileGammaV0A_Lambda_hNeg","",20,0,100);
+  fProfileGammaV0A_Lambda_hNeg = new TProfile("fProfileGammaV0A_Lambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0A_Lambda_hNeg);
-  fProfileGammaV0A_Lambda_Proton = new TProfile("fProfileGammaV0A_Lambda_Proton","",20,0,100);
+  fProfileGammaV0A_Lambda_Proton = new TProfile("fProfileGammaV0A_Lambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0A_Lambda_Proton);
-  fProfileGammaV0A_Lambda_AntiProton = new TProfile("fProfileGammaV0A_Lambda_AntiProton","",20,0,100);  
+  fProfileGammaV0A_Lambda_AntiProton = new TProfile("fProfileGammaV0A_Lambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileGammaV0A_Lambda_AntiProton);
 
   ///AntiLambda - X
-  fProfileGammaV0A_AntiLambda_hPos = new TProfile("fProfileGammaV0A_AntiLambda_hPos","",20,0,100);
+  fProfileGammaV0A_AntiLambda_hPos = new TProfile("fProfileGammaV0A_AntiLambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0A_AntiLambda_hPos);
-  fProfileGammaV0A_AntiLambda_hNeg = new TProfile("fProfileGammaV0A_AntiLambda_hNeg","",20,0,100);
+  fProfileGammaV0A_AntiLambda_hNeg = new TProfile("fProfileGammaV0A_AntiLambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0A_AntiLambda_hNeg);
-  fProfileGammaV0A_AntiLambda_Proton = new TProfile("fProfileGammaV0A_AntiLambda_Proton","",20,0,100);
+  fProfileGammaV0A_AntiLambda_Proton = new TProfile("fProfileGammaV0A_AntiLambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileGammaV0A_AntiLambda_Proton);
-  fProfileGammaV0A_AntiLambda_AntiProton = new TProfile("fProfileGammaV0A_AntiLambda_AntiProton","",20,0,100);  
+  fProfileGammaV0A_AntiLambda_AntiProton = new TProfile("fProfileGammaV0A_AntiLambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileGammaV0A_AntiLambda_AntiProton);
   
   ///Delta Correlators:
    ///Lambda - X
-  fProfileDelta_Lambda_hPos = new TProfile("fProfileDelta_Lambda_hPos","",20,0,100);
+  fProfileDelta_Lambda_hPos = new TProfile("fProfileDelta_Lambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileDelta_Lambda_hPos);
-  fProfileDelta_Lambda_hNeg = new TProfile("fProfileDelta_Lambda_hNeg","",20,0,100);
+  fProfileDelta_Lambda_hNeg = new TProfile("fProfileDelta_Lambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileDelta_Lambda_hNeg);
-  fProfileDelta_Lambda_Proton = new TProfile("fProfileDelta_Lambda_Proton","",20,0,100);
+  fProfileDelta_Lambda_Proton = new TProfile("fProfileDelta_Lambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileDelta_Lambda_Proton);
-  fProfileDelta_Lambda_AntiProton = new TProfile("fProfileDelta_Lambda_AntiProton","",20,0,100);  
+  fProfileDelta_Lambda_AntiProton = new TProfile("fProfileDelta_Lambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileDelta_Lambda_AntiProton);
 
   ///AntiLambda - X
-  fProfileDelta_AntiLambda_hPos = new TProfile("fProfileDelta_AntiLambda_hPos","",20,0,100);
+  fProfileDelta_AntiLambda_hPos = new TProfile("fProfileDelta_AntiLambda_hPos", "", 18, 0., 90.);
   fListHist->Add(fProfileDelta_AntiLambda_hPos);
-  fProfileDelta_AntiLambda_hNeg = new TProfile("fProfileDelta_AntiLambda_hNeg","",20,0,100);
+  fProfileDelta_AntiLambda_hNeg = new TProfile("fProfileDelta_AntiLambda_hNeg", "", 18, 0., 90.);
   fListHist->Add(fProfileDelta_AntiLambda_hNeg);
-  fProfileDelta_AntiLambda_Proton = new TProfile("fProfileDelta_AntiLambda_Proton","",20,0,100);
+  fProfileDelta_AntiLambda_Proton = new TProfile("fProfileDelta_AntiLambda_Proton", "", 18, 0., 90.);
   fListHist->Add(fProfileDelta_AntiLambda_Proton);
-  fProfileDelta_AntiLambda_AntiProton = new TProfile("fProfileDelta_AntiLambda_AntiProton","",20,0,100);  
+  fProfileDelta_AntiLambda_AntiProton = new TProfile("fProfileDelta_AntiLambda_AntiProton", "", 18, 0., 90.);  
   fListHist->Add(fProfileDelta_AntiLambda_AntiProton);
 
   ///// <-------- chunzheng's Histograms....
@@ -2279,6 +2423,37 @@ void AliAnalysisTaskGammaDeltaPID::SetupEventAndTaskConfigInfo(){
   fListHist->Add(fHistAnalysisInfo);
 }
 
+void AliAnalysisTaskGammaDeltaPID::SetupLambdaPIDFlowHistograms() {
+  Double_t centbins[10] = {0., 10., 20., 30., 40., 50., 60., 70, 80, 90};
+  Double_t pTbins[13]   = {0.0, 0.2, 0.6, 1.0, 1.4, 1.8, 2.2, 2.6, 3.0, 3.4, 3.8, 4.2, 5.0};
+  Double_t phibins[361] = {0.};
+  for (Int_t i = 0; i <= 360; i++) phibins[i] = -TMath::TwoPi() + i * 4.*TMath::Pi()/360.;
+  Char_t name1[20];
+  for (Int_t i = 0; i < 3; i++) {
+    if(i==0) sprintf(name1,"TPC");
+    if(i==1) sprintf(name1,"V0C");
+    if(i==2) sprintf(name1,"V0A");
+    fHist3DdNdPhiCentPthPos[i] = new TH3D(Form("fHist3DdNdPhiCentPthPos_%s",name1),Form("fHist3DdNdPhiCentPthPos_%s",name1), 9, centbins, 12, pTbins, 360, phibins);
+    fHist3DdNdPhiCentPthNeg[i] = new TH3D(Form("fHist3DdNdPhiCentPthNeg_%s",name1),Form("fHist3DdNdPhiCentPthNeg_%s",name1), 9, centbins, 12, pTbins, 360, phibins);
+    fHist3DdNdPhiCentPtProton[i] = new TH3D(Form("fHist3DdNdPhiCentPtProton_%s",name1),Form("fHist3DdNdPhiCentPtProton_%s",name1), 9, centbins, 12, pTbins, 360, phibins);
+    fHist3DdNdPhiCentPtAntiProton[i] = new TH3D(Form("fHist3DdNdPhiCentPtAntiProton_%s",name1),Form("fHist3DdNdPhiCentPtAntiProtong_%s",name1), 9, centbins, 12, pTbins, 360, phibins);
+    fListHist->Add(fHist3DdNdPhiCentPthPos[i]);
+    fListHist->Add(fHist3DdNdPhiCentPthNeg[i]);
+    fListHist->Add(fHist3DdNdPhiCentPtProton[i]);
+    fListHist->Add(fHist3DdNdPhiCentPtAntiProton[i]);
+  }
+  Char_t name2[20];
+  for (Int_t i = 0; i < 4; i++) {
+    if(i==0) sprintf(name2,"TPCPos");
+    if(i==1) sprintf(name2,"TPCNeg");
+    if(i==2) sprintf(name2,"V0C");
+    if(i==3) sprintf(name2,"V0A");
+    fHist3DdNdPhiCentPtLambda[i] = new TH3D(Form("fHist3DdNdPhiCentPtLambda_%s",name2),Form("fHist3DdNdPhiCentPtLambda_%s",name2), 9, centbins, 12, pTbins, 360, phibins);
+    fHist3DdNdPhiCentPtAntiLambda[i] = new TH3D(Form("fHist3DdNdPhiCentPtAntiLambda_%s",name2),Form("fHist3DdNdPhiCentPtAntiLambda_%s",name2), 9, centbins, 12, pTbins, 360, phibins);
+    fListHist->Add(fHist3DdNdPhiCentPtLambda[i]);
+    fListHist->Add(fHist3DdNdPhiCentPtAntiLambda[i]);
+  }
+}
 
 
 
@@ -2411,7 +2586,7 @@ Bool_t AliAnalysisTaskGammaDeltaPID::CheckPIDofParticle(AliAODTrack* ftrack,Int_
 
   ///Pion => 
   if(pidToCheck==1){ 
-    nSigTPC = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
+    nSigTPC = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);//Some warning show here (***TDatabasePDG::AddParicle: particle with PDGcode = 3124 already defind),I don't understand what happended. --chunzheng
     nSigTOF = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
@@ -2669,6 +2844,8 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetTPCQvectAndRemovePileUp2018(AliAODEvent 
       
       fWgtMultTPCPos += trk1Wgt; 
       vecPosEPTrkID.push_back(trk1ID);
+      vecPosEPTrkPhi.push_back(trk1Phi);
+      vecPosEPTrkNUAWgt.push_back(trk1Wgt);
     }
     else if(trk1Eta <= fEtaGapNegforEP){
       SumQ2xTPCNeg   += trk1Wgt*TMath::Cos(2*trk1Phi);
@@ -2680,6 +2857,8 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetTPCQvectAndRemovePileUp2018(AliAODEvent 
       
       fWgtMultTPCNeg += trk1Wgt;
       vecNegEPTrkID.push_back(trk1ID);
+      vecNegEPTrkPhi.push_back(trk1Phi);
+      vecNegEPTrkNUAWgt.push_back(trk1Wgt);
     }
         
   }//AOD track loop

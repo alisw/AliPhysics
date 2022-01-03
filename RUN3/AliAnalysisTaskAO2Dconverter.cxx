@@ -680,7 +680,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   // Create the output directory for the current time frame
   fOutputDir = fOutputFile->mkdir(Form("DF_%llu", tfId));
 
-  // Associate branches for Run 2 BC info
+  // Associate branches for origin table
   TTree* tOrigin = CreateTree(kOrigin);
   if (fTreeStatus[kOrigin]) {
     tOrigin->Branch("fDataframeID", &origin.fDataframeID, "fDataframeID/l");
@@ -916,7 +916,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFV0A])
   {
     tFV0A->Branch("fIndexBCs", &fv0a.fIndexBCs, "fIndexBCs/I");
-    tFV0A->Branch("fAmplitude", fv0a.fAmplitude, "fAmplitude[48]/F");
+    tFV0A->Branch("fChannel_size", &fv0a.fChannel_size, "fChannel_size/I");
+    tFV0A->Branch("fChannel", fv0a.fChannel, "fChannel[fChannel_size]/b");
+    tFV0A->Branch("fAmplitude_size", &fv0a.fAmplitude_size, "fAmplitude_size/I");
+    tFV0A->Branch("fAmplitude", fv0a.fAmplitude, "fAmplitude[fAmplitude_size]/F");
     tFV0A->Branch("fTime", &fv0a.fTime, "fTime/F");
     tFV0A->Branch("fTriggerMask", &fv0a.fTriggerMask, "fTriggerMask/b");
     tFV0A->SetBasketSize("*", fBasketSizeEvents);
@@ -927,7 +930,10 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFV0C])
   {
     tFV0C->Branch("fIndexBCs", &fv0c.fIndexBCs, "fIndexBCs/I");
-    tFV0C->Branch("fAmplitude", fv0c.fAmplitude, "fAmplitude[32]/F");
+    tFV0C->Branch("fChannel_size", &fv0c.fChannel_size, "fChannel_size/I");
+    tFV0C->Branch("fChannel", fv0c.fChannel, "fChannel[fChannel_size]/b");
+    tFV0C->Branch("fAmplitude_size", &fv0c.fAmplitude_size, "fAmplitude_size/I");
+    tFV0C->Branch("fAmplitude", fv0c.fAmplitude, "fAmplitude[fAmplitude_size]/F");
     tFV0C->Branch("fTime", &fv0c.fTime, "fTime/F");
     tFV0C->SetBasketSize("*", fBasketSizeEvents);
   }
@@ -937,8 +943,14 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kFT0])
   {
     tFT0->Branch("fIndexBCs", &ft0.fIndexBCs, "fIndexBCs/I");
-    tFT0->Branch("fAmplitudeA", ft0.fAmplitudeA, "fAmplitudeA[96]/F");
-    tFT0->Branch("fAmplitudeC", ft0.fAmplitudeC, "fAmplitudeC[112]/F");
+    tFT0->Branch("fChannelA_size", &ft0.fChannelA_size, "fChannelA_size/I");
+    tFT0->Branch("fChannelA", ft0.fChannelA, "fChannelA[fChannelA_size]/b");
+    tFT0->Branch("fAmplitudeA_size", &ft0.fAmplitudeA_size, "fAmplitudeA_size/I"); // will be removed with O2 improvement (one size field used for two VLAs)
+    tFT0->Branch("fAmplitudeA", ft0.fAmplitudeA, "fAmplitudeA[fChannelA_size]/F");
+    tFT0->Branch("fChannelC_size", &ft0.fChannelC_size, "fChannelC_size/I");
+    tFT0->Branch("fChannelC", ft0.fChannelC, "fChannelC[fChannelC_size]/b");
+    tFT0->Branch("fAmplitudeC_size", &ft0.fAmplitudeC_size, "fAmplitudeC_size/I"); // will be removed with O2 improvement (one size field used for two VLAs)
+    tFT0->Branch("fAmplitudeC", ft0.fAmplitudeC, "fAmplitudeC[fChannelC_size]/F");
     tFT0->Branch("fTimeA", &ft0.fTimeA, "fTimeA/F");
     tFT0->Branch("fTimeC", &ft0.fTimeC, "fTimeC/F");
     tFT0->Branch("fTriggerMask", &ft0.fTriggerMask, "fTriggerMask/b");
@@ -2156,7 +2168,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       fwdtracks.fIndexCollisions = fCollisionCount;
 
       // Now MUON clusters for the current track
-      Int_t muTrackID = fOffsetMuTrackID + imu;
+      // Int_t muTrackID = fOffsetMuTrackID + imu;
       Int_t nmucl = mutrk->GetNClusters();
 
       fwdtracks.fNClusters = nmucl;
@@ -2283,10 +2295,22 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   AliVVZERO *vz = fVEvent->GetVZEROData();
   fv0a.fIndexBCs = fBCCount;
   fv0c.fIndexBCs = fBCCount;
-  for (Int_t ich = 0; ich < 32; ++ich)
-    fv0a.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0A(ich), mV0Amplitude);
-  for (Int_t ich = 0; ich < 32; ++ich)
-    fv0c.fAmplitude[ich] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0C(ich), mV0Amplitude);
+  fv0a.fAmplitude_size = 0;
+  fv0c.fAmplitude_size = 0;
+  fv0a.fChannel_size = 0;
+  fv0c.fChannel_size = 0;
+  for (Int_t ich = 0; ich < 32; ++ich) {
+    if (vz->GetMultiplicityV0A(ich) > 0) {
+      fv0a.fAmplitude[fv0a.fAmplitude_size++] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0A(ich), mV0Amplitude);
+      fv0a.fChannel[fv0a.fChannel_size++] = ich;
+    }
+  }
+  for (Int_t ich = 0; ich < 32; ++ich) {
+    if (vz->GetMultiplicityV0C(ich) > 0) {
+      fv0c.fAmplitude[fv0c.fAmplitude_size++] = AliMathBase::TruncateFloatFraction(vz->GetMultiplicityV0C(ich), mV0Amplitude);
+      fv0c.fChannel[fv0c.fChannel_size++] = ich;
+    }
+  }
   fv0a.fTime = AliMathBase::TruncateFloatFraction(vz->GetV0ATime(), mV0Time);
   fv0c.fTime = AliMathBase::TruncateFloatFraction(vz->GetV0CTime(), mV0Time);
   fv0a.fTriggerMask = 0; // not filled for the moment
@@ -2300,25 +2324,46 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // FT0
   ft0.fIndexBCs = fBCCount;
+  ft0.fChannelA_size = 0;
+  ft0.fChannelC_size = 0;
   if (fESD) {
-    for (Int_t ich = 0; ich < 12; ++ich)
-      ft0.fAmplitudeA[ich] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich + 12], mT0Amplitude);
-    for (Int_t ich = 0; ich < 12; ++ich)
-      ft0.fAmplitudeC[ich] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich], mT0Amplitude);
+    for (Int_t ich = 0; ich < 12; ++ich) {
+      if (fESD->GetT0amplitude()[ich + 12] > 0) {
+        ft0.fAmplitudeA[ft0.fChannelA_size] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich + 12], mT0Amplitude);
+        ft0.fChannelA[ft0.fChannelA_size++] = ich;
+      }
+    }
+    for (Int_t ich = 0; ich < 12; ++ich) {
+      if (fESD->GetT0amplitude()[ich] > 0) {
+        ft0.fAmplitudeC[ft0.fChannelC_size] = AliMathBase::TruncateFloatFraction(fESD->GetT0amplitude()[ich], mT0Amplitude);
+        ft0.fChannelC[ft0.fChannelC_size++] = ich;
+      }
+    }
     ft0.fTimeA = AliMathBase::TruncateFloatFraction(fESD->GetT0TOF(1) * 1e-3, mT0Time); // ps to ns
     ft0.fTimeC = AliMathBase::TruncateFloatFraction(fESD->GetT0TOF(2) * 1e-3, mT0Time); // ps to ns
     ft0.fTriggerMask = fESD->GetT0Trig();
   }
   else {
     AliAODTZERO * aodtzero = fAOD->GetTZEROData();
-    for (Int_t ich = 0; ich < 12; ++ich)
-      ft0.fAmplitudeA[ich] = AliMathBase::TruncateFloatFraction(aodtzero->GetAmp(ich + 12), mT0Amplitude);
-    for (Int_t ich = 0; ich < 12; ++ich)
-      ft0.fAmplitudeC[ich] = AliMathBase::TruncateFloatFraction(aodtzero->GetAmp(ich), mT0Amplitude);
+    for (Int_t ich = 0; ich < 12; ++ich) {
+      if (aodtzero->GetAmp(ich + 12) > 0) {
+        ft0.fAmplitudeA[ft0.fChannelA_size] = AliMathBase::TruncateFloatFraction(aodtzero->GetAmp(ich + 12), mT0Amplitude);
+        ft0.fChannelA[ft0.fChannelA_size++] = ich;
+      }
+    }
+    for (Int_t ich = 0; ich < 12; ++ich) {
+      if (aodtzero->GetAmp(ich) > 0) {
+        ft0.fAmplitudeC[ft0.fChannelC_size] = AliMathBase::TruncateFloatFraction(aodtzero->GetAmp(ich), mT0Amplitude);
+        ft0.fChannelC[ft0.fChannelC_size++] = ich;
+      }
+    }
     ft0.fTimeA = AliMathBase::TruncateFloatFraction(aodtzero->GetT0TOF(1) * 1e-3, mT0Time); // ps to ns
     ft0.fTimeC = AliMathBase::TruncateFloatFraction(aodtzero->GetT0TOF(2) * 1e-3, mT0Time); // ps to ns
     ft0.fTriggerMask = 0; // Not available in AOD
   }
+  // will be removed with O2 improvement (one size field used for two VLAs)
+  ft0.fAmplitudeA_size = ft0.fChannelA_size; 
+  ft0.fAmplitudeC_size = ft0.fChannelC_size;
   
   FillTree(kFT0);
   if (fTreeStatus[kFT0])

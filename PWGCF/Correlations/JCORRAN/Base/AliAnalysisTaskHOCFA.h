@@ -18,7 +18,6 @@
 #include "TH1D.h"
 #include "TProfile.h"
 #include "AliJEfficiency.h"
-
 #include <sstream>
 
 class TClonesArray;
@@ -55,13 +54,16 @@ class AliAnalysisTaskHOCFA {
   void SetObservable(bool observ) {fGetSC3h = observ;}
   void SetNumberCombi(int combi) {fNCombi = combi;}
   virtual void SetHarmoArray(TString combiString);
+  void SetEtaGaps(bool etaGap, float myGap) {
+    fGetEtaGap = etaGap; fEtaGap = myGap;
+  }
 
   virtual void CalculateQvectors(Long64_t multiplicity, double angles[], double pWeights[]);
   TComplex Q(int n, int p);
   TComplex CalculateRecursion(int n, int *harmonic, int mult=1, int skip=0);
   virtual void ComputeAllTerms();
   virtual void CalculateCorrelator(int combi, int bin, int nParticles, int harmonics[], double *errorTerms);
-
+  virtual void ComputeEtaGaps(Long64_t multiplicity, double angles[], double pWeights[], double pseudorapidity[]);
 
 private:
   AliAnalysisTaskHOCFA(const AliAnalysisTaskHOCFA& aat);
@@ -84,6 +86,8 @@ private:
   bool fUseWeightsNUE;          // kTRUE: Enable the non-unit NUE corrections.
   bool fUseWeightsNUA;          // kTRUE: Enable the non-unit NUA corrections.
   bool fGetSC3h;                // kTRUE: Calculate SC(k,l,m), else AC(m,n).
+  bool fGetEtaGap;              // kTRUE: Get the 2p correlators with an eta gap.
+  float fEtaGap;                // Value of the gap (default: 0.).
   int fNCombi;                  // Number of combinations of harmonics (max 6).
   int fHarmoArray[6][3];        // Combinations of harmonics for the CFA.
     // 6: max number of possible observables, 3: number of harmonics.
@@ -101,10 +105,11 @@ private:
   TH1I *fHistoCharge[16];       //! Charge distribution of the trimmed tracks.
   TProfile *fCorrelTerms[6][16];      //! Combinations of correlators for CFA.
     // 6: Max number of SCs/ACs, 16: Max number of centrality bins.
+  TProfile *fCorrelEtaGap[16];        //! 2-particle correlators for v_1-v_8 with eta gap.
   TProfile *fErrorTermsSC3h[6][16];   //! Error propagation (SC(k,l,m).
   TProfile *fErrorTermsAC41[6][16];   //! Error propagation (AC_41(m,n)).
 
-  ClassDef(AliAnalysisTaskHOCFA, 4);
+  ClassDef(AliAnalysisTaskHOCFA, 5);
 };
 
 #endif

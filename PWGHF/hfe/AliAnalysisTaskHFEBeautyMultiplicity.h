@@ -31,7 +31,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
         virtual void            GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
         //virtual void            FindPatches(Bool_t &hasfiredEG1, Bool_t &hasfiredEG2, Double_t emceta, Double_t emcphi);
         virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt, Double_t DCAxy, Int_t Bsign);
-    
+	virtual void		SelectTrack_DCA(Int_t itrack, AliAODTrack *track, Double_t TPC_CrossedRows, Double_t ITS_chi2, Double_t TPC_chi2NDF, Double_t dca_xy, Double_t dca_z, Double_t track_Eta, Bool_t &fFlagTrkSelect_forDCA);
         //---- called for end of analysis ----//
         virtual void            Terminate(Option_t* option);
 
@@ -229,6 +229,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 
 	TH1F *fHistPt_BeforePID;
     	TH2F *fdEdx_BeforePID;
+    	TH2F *fTPCnsig_BeforePID;
     
     
         //---- MC output ----//
@@ -282,6 +283,18 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH2F*	fDCAxy_MC_Ds_weight;
 	TH2F*	fDCAxy_MC_Lc;
 	TH2F*	fDCAxy_MC_Lc_weight;
+
+	TH2F*	fDCA_B_total;
+	TH2F*	fDCA_B_total_weight;
+	TH2F*	fDCA_D_total;
+	TH2F*	fDCA_Dpm_total;
+	TH2F*	fDCA_Dpm_total_weight;
+	TH2F*	fDCA_D0_total;
+	TH2F*	fDCA_D0_total_weight;
+	TH2F*	fDCA_Ds_total;
+	TH2F*	fDCA_Ds_total_weight;
+	TH2F*	fDCA_Lc_total;
+	TH2F*	fDCA_Lc_total_weight;
 
 	TH2F*	fDCAxy_MC_ele;
 	TH2F*	fDCAxy_MC_Phot;
