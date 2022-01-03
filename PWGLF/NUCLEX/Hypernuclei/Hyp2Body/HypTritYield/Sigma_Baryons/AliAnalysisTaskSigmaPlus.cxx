@@ -81,6 +81,9 @@ class AliAODv0;
 class AliAnalysisTaskSigmaPlus;    // analysis class
 
 using std::cout;            
+using std::map;            
+using std::make_pair;            
+using std::pair;            
 
 ClassImp(AliAnalysisTaskSigmaPlus) // classimp: necessary for root
 
