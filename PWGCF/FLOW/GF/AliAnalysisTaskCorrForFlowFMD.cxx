@@ -795,7 +795,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
           for(Int_t iAss(0); iAss < mixEvents->GetEntriesFast(); iAss++){
-            AliAODTrack* trackAss = (AliAODTrack*)mixEvents->At(iAss);
+            AliVParticle* trackAss = dynamic_cast<AliVParticle*>(mixEvents->At(iTrig));
             if(!trackAss) continue;
 
             Double_t assPt = trackAss->Pt();
