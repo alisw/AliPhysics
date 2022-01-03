@@ -4227,11 +4227,19 @@ inline void AliDielectronVarManager::GetVzeroRP(const AliVEvent* event, Double_t
   }
 
   const AliVVertex *primVtx = event->GetPrimaryVertex();
-  if(!primVtx) return;
+  if(!primVtx){
+    qvec[0] = -999; qvec[1] = -999; qvec[2] = -999;
+    return;
+  }
   vtxZ = primVtx->GetZ();
-  if(TMath::Abs(vtxZ)>10.) return;
-  if(centralitySPD < 0. || centralitySPD > 90.) return;
-
+  if(TMath::Abs(vtxZ)>10.){
+    qvec[0] = -999; qvec[1] = -999; qvec[2] = -999;
+    return;
+  }
+  if(centralitySPD < 0. || centralitySPD > 90.){
+    qvec[0] = -999; qvec[1] = -999; qvec[2] = -999;
+    return;
+  }
   Int_t binCent = -1; Int_t binVtx = -1;
   if(fgVZEROCalib[0]) {
     binVtx = fgVZEROCalib[0]->GetXaxis()->FindBin(vtxZ);
@@ -4336,6 +4344,31 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   const AliESDEvent *esd = dynamic_cast<const AliESDEvent*>(event);
   const AliAODEvent *aod = dynamic_cast<const AliAODEvent*>(event);
 
+  // get centrality and vertex for this event
+  Double_t centralityV0M = -1; Double_t vtxZ = -999.;
+  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+    centralityV0M = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+  }
+  else{
+    centralityV0M = -1;
+    //printf("GetTPCRP: No centrality estimation avaible!\n");
+  }
+
+  const AliVVertex *primVtx = event->GetPrimaryVertex();
+  if(!primVtx){
+    qvec[0] = -999; qvec[1] = -999; qvec[2] = -999;
+    return;
+  }
+  vtxZ = primVtx->GetZ();
+  if(TMath::Abs(vtxZ)>10.){
+    qvec[0] = -999; qvec[1] = -999; qvec[2] = -999;
+    return;
+  }
+  if(centralityV0M < 0. || centralityV0M > 90.){
+    qvec[0] = -999; qvec[1] = -999; qvec[2] = -999;
+    return;
+  }
+
   const Int_t Ntrack = event->GetNumberOfTracks();
 
   if(esd){
@@ -4397,22 +4430,6 @@ inline void AliDielectronVarManager::GetTPCRP(const AliVEvent* event, Double_t* 
   }//end of AOD event
 
   //printf("TPC: Qx = %f , Qy = %f\n",qvec[0],qvec[1]);
-
-  // get centrality and vertex for this event
-  Double_t centralityV0M = -1; Double_t vtxZ = -999.;
-  if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
-    centralityV0M = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  }
-  else{
-    centralityV0M = -1;
-    //printf("GetTPCRP: No centrality estimation avaible!\n");
-  }
-
-  const AliVVertex *primVtx = event->GetPrimaryVertex();
-  if(!primVtx) return;
-  vtxZ = primVtx->GetZ();
-  if(TMath::Abs(vtxZ)>10.) return;
-  if(centralityV0M < 0. || centralityV0M > 90.) return;
 
   if(fgTPCRecentering[0]) {
     //     printf("TPC: %p\n",fgTPCRecentering[0]);
