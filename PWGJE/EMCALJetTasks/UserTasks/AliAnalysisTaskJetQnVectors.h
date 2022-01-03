@@ -49,8 +49,12 @@ public:
     void EnableTPCPhiVsCentrDistrHistosVsRun()                                                           {fEnableTPCPhiVsCentrDistr=true;}
     void EnableQVecTPCVsCentrDistrHistosVsRun()                                                          {fEnableQvecTPCVsCentrDistr=true;}
 
-    double Getq2V0()                                                                                     {return fq2V0;}
-    double GetEPangleCF()                                                                                {return fEPangleCF;}
+    double Getq2V0M()                                                                                    {return fq2V0M;}
+    double Getq2V0A()                                                                                    {return fq2V0A;}
+    double Getq2V0C()                                                                                    {return fq2V0C;}
+    double GetEPangleV0M()                                                                               {return fEPangleV0M;}
+    double GetEPangleV0A()                                                                               {return fEPangleV0A;}
+    double GetEPangleV0C()                                                                               {return fEPangleV0C;}
 
 private:
 
@@ -87,10 +91,14 @@ private:
     TString fTriggerClass;                           /// trigger class
     unsigned long long fTriggerMask;                 /// trigger mask
 
-    double fq2V0;                                    /// q2 vector from the V0     
-    double fEPangleCF;                               /// EP Angle with callibrations from V0
+    double fq2V0M;                                   /// q2 vector from the V0M   
+    double fq2V0A;                                   /// q2 vector from the V0A    
+    double fq2V0C;                                   /// q2 vector from the V0C     
+    double fEPangleV0M;                              /// EP Angle with calibrations from V0M
+    double fEPangleV0C;                              /// EP Angle with calibrations from V0A
+    double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 5);
+    ClassDef(AliAnalysisTaskJetQnVectors, 6);
 };
 
 #endif
