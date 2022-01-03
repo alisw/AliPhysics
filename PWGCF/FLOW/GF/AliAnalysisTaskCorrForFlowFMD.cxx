@@ -317,7 +317,6 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     } // end MC
 
-
     if(!fTracksAss->IsEmpty()){
       for(Int_t i(0); i < 6; i++){
         if(!fDoPID && i > 0 && i < 4) continue;
@@ -648,7 +647,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksTrig[spec]->At(iTrig));
       if(!track) continue;
       AliAODTrack* trackAOD = nullptr;
-      if(spec < 4) trackAOD = (AliAODTrack*)fTracksTrig[spec]->At(iTrig);
+      if(!fIsMC && spec < 4) trackAOD = (AliAODTrack*)fTracksTrig[spec]->At(iTrig);
 
       Double_t trigPt = track->Pt();
       Double_t trigEta = track->Eta();
@@ -660,8 +659,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       if(spec > 3) binscont[4] = track->M();
 
       for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
-        AliAODTrack* trackAss = (AliAODTrack*)fTracksAss->At(iAss);
+        AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iAss));
         if(!trackAss) continue;
+        AliAODTrack* trackAODAss = nullptr;
+        if(!fIsMC && spec < 4) trackAODAss = (AliAODTrack*)fTracksAss->At(iAss);
 
         Double_t assPt = trackAss->Pt();
         Double_t assEta = trackAss->Eta();
@@ -670,7 +671,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assEff = 1.0;
         if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
 
-        if(spec < 4 && trackAOD->GetID() == trackAss->GetID()) continue;
+        if(!fIsMC && spec < 4 && trackAOD->GetID() == trackAODAss->GetID()) continue;
 
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
@@ -794,7 +795,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
           for(Int_t iAss(0); iAss < mixEvents->GetEntriesFast(); iAss++){
-            AliAODTrack* trackAss = (AliAODTrack*)mixEvents->At(iAss);
+            AliVParticle* trackAss = dynamic_cast<AliVParticle*>(mixEvents->At(iAss));
             if(!trackAss) continue;
 
             Double_t assPt = trackAss->Pt();
@@ -1239,7 +1240,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
           fhTrigTracks[0]->Fill(partPt, fPVz, fSampleIndex);
-          if(partIdx > 0){
+          if(fDoPID && partIdx > 0){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(partPt, fPVz, fSampleIndex);
           }
@@ -1250,7 +1251,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
           fhTrigTracks[0]->Fill(partPt, fPVz, fSampleIndex);
-          if(partIdx > 0){
+          if(fDoPID && partIdx > 0){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(partPt, fPVz, fSampleIndex);
           }
@@ -1269,13 +1270,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       }
     } // end eta within FMDA range
     else if(partEta < -fFMDCacceptanceCutLower && partEta > -fFMDCacceptanceCutUpper){
-      if(fAnalType == eTPCFMDA) {
+      if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
-        fHistFMDeta->Fill(partEta,fPVz,1.);
-      }
-      if(fAnalType == eFMDAFMDC) {
-        fTracksTrig[0]->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
-        fhTrigTracks[0]->Fill(partEta,fPVz,fSampleIndex,1.);
         fHistFMDeta->Fill(partEta,fPVz,1.);
       }
     } // end eta within FMDC range
