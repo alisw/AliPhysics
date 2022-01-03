@@ -1229,7 +1229,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
     Double_t partPhi = part->Phi();
 
     // TPC region
-    if(TMath::Abs(partEta) > 0.8){
+    if(TMath::Abs(partEta) < 0.8){
       Int_t partPDG = TMath::Abs(part->PdgCode());
       Int_t partIdx = -1;
       if(partPDG == 211) partIdx = 1;
