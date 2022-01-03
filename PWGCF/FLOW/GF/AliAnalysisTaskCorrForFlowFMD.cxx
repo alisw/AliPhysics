@@ -659,7 +659,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       if(spec > 3) binscont[4] = track->M();
 
       for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
-        AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iTrig));
+        AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iAss));
         if(!trackAss) continue;
         AliAODTrack* trackAODAss = nullptr;
         if(!fIsMC && spec < 4) trackAODAss = (AliAODTrack*)fTracksAss->At(iAss);
@@ -795,7 +795,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
           for(Int_t iAss(0); iAss < mixEvents->GetEntriesFast(); iAss++){
-            AliVParticle* trackAss = dynamic_cast<AliVParticle*>(mixEvents->At(iTrig));
+            AliVParticle* trackAss = dynamic_cast<AliVParticle*>(mixEvents->At(iAss));
             if(!trackAss) continue;
 
             Double_t assPt = trackAss->Pt();
