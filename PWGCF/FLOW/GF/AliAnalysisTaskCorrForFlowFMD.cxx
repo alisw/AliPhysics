@@ -1269,13 +1269,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       }
     } // end eta within FMDA range
     else if(partEta < -fFMDCacceptanceCutLower && partEta > -fFMDCacceptanceCutUpper){
-      if(fAnalType == eTPCFMDA) {
+      if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
-        fHistFMDeta->Fill(partEta,fPVz,1.);
-      }
-      if(fAnalType == eFMDAFMDC) {
-        fTracksTrig[0]->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
-        fhTrigTracks[0]->Fill(partEta,fPVz,fSampleIndex,1.);
         fHistFMDeta->Fill(partEta,fPVz,1.);
       }
     } // end eta within FMDC range
