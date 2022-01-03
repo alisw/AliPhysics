@@ -1239,7 +1239,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
           fhTrigTracks[0]->Fill(partPt, fPVz, fSampleIndex);
-          if(partIdx > 0){
+          if(fDoPID && partIdx > 0){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(partPt, fPVz, fSampleIndex);
           }
@@ -1250,7 +1250,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
           fhTrigTracks[0]->Fill(partPt, fPVz, fSampleIndex);
-          if(partIdx > 0){
+          if(fDoPID && partIdx > 0){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
             fhTrigTracks[partIdx]->Fill(partPt, fPVz, fSampleIndex);
           }
