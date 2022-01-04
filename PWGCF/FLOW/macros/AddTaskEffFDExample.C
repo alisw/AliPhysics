@@ -33,7 +33,7 @@ AliAnalysisTaskEffFDExample* AddTaskEffFDExample(TString name, Bool_t IsMC, TStr
       mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("SpectraWeightHist"));
     }
   };
-  AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("ExampleEffAndFD%s",pf.Data()),AliEffFDContainer::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+  AliAnalysisDataContainer *effCont = mgr->CreateContainer(Form("%s%s",name.Data(),pf.Data()),AliEffFDContainer::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
   mgr->ConnectOutput(task,1,effCont);
   return task;
 }
