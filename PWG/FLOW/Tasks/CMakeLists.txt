@@ -99,6 +99,7 @@ set(SRCS
   AliAnalysisTaskCMWPUeqAch.cxx
   AliAnalysisTaskCMWPUuncAch.cxx
   AliAnalysisTaskv2pt.cxx
+  AliAnalysisTaskv2vscent.cxx
   AliAnalysisTaskMuPa.cxx
   AliAnalysisTaskAR.cxx
   AliAnalysisTaskEbECumulants.cxx
