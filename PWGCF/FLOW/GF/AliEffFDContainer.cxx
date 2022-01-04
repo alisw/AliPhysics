@@ -539,10 +539,10 @@ void AliEffFDContainer::CreateHistograms(Bool_t forceRecreate) {
     if(fAddPID) {
       if(!iSpecie) continue; //Not adding it for charged. Then we have to be carefull when filling
       fPurity[iSpecie-1] = new TH2D*[4];
-      fPurity[iSpecie-1][0] = new TH2D(makeName("all_weighted_IdentifiedAs",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-      fPurity[iSpecie-1][1] = new TH2D(makeName("all_uneighted_IdentifiedAs",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-      fPurity[iSpecie-1][2] = new TH2D(makeName("primary_weighted_IdentifiedAs",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
-      fPurity[iSpecie-1][3] = new TH2D(makeName("primary_uneighted_IdentifiedAs",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+      fPurity[iSpecie-1][0] = new TH2D(makeName("PurityAll_Weighted",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+      fPurity[iSpecie-1][1] = new TH2D(makeName("PurityAll_Uneighted",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+      fPurity[iSpecie-1][2] = new TH2D(makeName("PurityPrimary_Weighted",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
+      fPurity[iSpecie-1][3] = new TH2D(makeName("PurityPrimary_Uneighted",iSpecie),"SelectedByBayes; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
       for(Int_t i=0;i<4;i++) { fPurity[iSpecie-1][i]->SetDirectory(0); fOutList->Add(fPurity[iSpecie-1][i]); };
     };
   };
@@ -692,3 +692,37 @@ Int_t AliEffFDContainer::CalculateMult() {
   };
   return retCount;
 };
+TH2 *AliEffFDContainer::get2DRatio(TString numID, TString denID, Int_t iSpecie) {
+  TH2 *hNum = (TH2*)fetchObj(numID,iSpecie);
+  if(!hNum) {printf("Could not find %s in %s!\n",makeName(numID,iSpecie).Data(), this->GetName()); return 0; };
+  TH2 *hDen = (TH2*)fetchObj(denID,iSpecie);
+  if(!hDen) {printf("Could not find %s in %s!\n",makeName(denID,iSpecie).Data(), this->GetName()); return 0; };
+  hNum = (TH2*)hNum->Clone(denID.Data());
+  hNum->SetDirectory(0);
+  hNum->Divide(hDen);
+  return hNum;
+};
+TH1 *AliEffFDContainer::get1DRatio(TString numID, TString denID, Int_t iSpecie, Int_t yb1, Int_t yb2) {
+  TH2 *hNum = (TH2*)fetchObj(numID,iSpecie);
+  if(!hNum) {printf("Could not find %s in %s!\n",makeName(numID,iSpecie).Data(), this->GetName()); return 0; };
+  TH2 *hDen = (TH2*)fetchObj(denID,iSpecie);
+  if(!hDen) {printf("Could not find %s in %s!\n",makeName(denID,iSpecie).Data(), this->GetName()); return 0; };
+  if(yb1<1) yb1=1;
+  if(yb2<yb1 || yb2>hNum->GetNbinsY()) yb2 = hNum->GetNbinsY();
+  TH1 *h1Num = hNum->ProjectionX(numID.Data(),yb1,yb2);
+  TH1 *h1Den = hDen->ProjectionX(denID.Data(),yb1,yb2);
+  h1Num->SetDirectory(0);
+  h1Num->Divide(h1Den);
+  delete h1Den;
+  return h1Num;
+};
+TH1 *AliEffFDContainer::getPureFeeddown(Int_t iSpecie) {
+  TH2 *l_h2 = (TH2*)fetchObj("WithinDCA_withChi2",iSpecie);
+  if(!l_h2) {printf("Could not find %s in %s!\n",makeName("WithinDCA_withChi2",iSpecie).Data(), this->GetName()); return 0; };
+  TH1 *hPrim = (TH1*)l_h2->ProjectionX(makeName("PrimOverAll",iSpecie),1,1);
+  hPrim->SetDirectory(0);
+  TH1 *hAll  = (TH1*)l_h2->ProjectionX("All",1,l_h2->GetNbinsX());
+  hPrim->Divide(hAll);
+  delete hAll;
+  return hPrim;
+}
