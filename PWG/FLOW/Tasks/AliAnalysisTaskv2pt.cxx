@@ -1043,10 +1043,10 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	  nSigRMSTPCTOFpion = TMath::Sqrt(nSigTPCpion*nSigTPCpion + nSigTOFpion*nSigTOFpion);
 
 
-	  if(trkPt<=0.6 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
+	  if(trkPt<=0.5 && TMath::Abs(nSigTPCpion)<=fNSigmaTPCCut){
 	    isItPion = kTRUE;
 	  }
-	  else if(trkPt>0.6 && trkPt<=10.0 && TMath::Abs(nSigRMSTPCTOFpion)<=fNSigmaTOFCut){
+	  else if(trkPt>0.5 && trkPt<=10.0 && TMath::Abs(nSigRMSTPCTOFpion)<=fNSigmaTOFCut){
 	    isItPion = kTRUE;
 	  }
 	}
@@ -1193,8 +1193,8 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	/// infinity Weight protection:
 	if(WgtNUA>1e3)     WgtNUA = 1.0;
 	if(WgtNUAPion>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAKaon>1e3) WgtNUAPion = 1.0;
-	if(WgtNUAProt>1e3) WgtNUAPion = 1.0;
+	if(WgtNUAKaon>1e3) WgtNUAKaon = 1.0;
+	if(WgtNUAProt>1e3) WgtNUAProt = 1.0;
 
 	
 	
