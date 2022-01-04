@@ -2080,6 +2080,7 @@ void AddTask_GammaCaloMerged_pp(
   // systematics pp 5 TeV no TM
   // MB configs
   } else if (trainConfig == 4100){ // M02 var 1
+    cuts.AddCutMergedCalo("00010113","4117901060g32200000","4117901060g22700001","0163300000000000"); // std for normalization
     cuts.AddCutMergedCalo("000a0113","4117901060g32200000","4117901060g22700001","0163300000000000"); // std
   } else if (trainConfig == 4101){ // M02 var 1
     cuts.AddCutMergedCalo("000a0113","4117901060g32200000","4117901060g22600001","0163300000000000"); // min 0.3
