@@ -51,11 +51,16 @@ class AliEffFDContainer: public TNamed {
     void Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC);
     TList *GetOutList() { return fOutList; };
     Bool_t AddContainer(AliEffFDContainer *target);
-    TH1* fetchObj(TString inname) { return (TH1*)fOutList->FindObject(makeName(inname).Data()); };
+    TH1* fetchObj(TString inname, Int_t iSpecie=0) { return (TH1*)fOutList->FindObject(makeName(inname,iSpecie).Data()); };
     void SetUseGenPt(Bool_t newval) { fUseGenPt = newval; };
     void SetBayesianProbs(std::vector<Double_t> probs) {fMinBayesProb.clear(); for(auto i: probs) fMinBayesProb.push_back(i); };
     void SetAODSelectionFlags(UInt_t evFlag, UInt_t trFlags) { fEvNomFlag=evFlag; fTrNomFlag=trFlags; };
-  // private:
+    TH2 *getPureEfficiency2D(Int_t iSpecie, Bool_t weighted=kTRUE) {if(weighted) return get2DRatio("nChRec_Weighted","nChGen_Weighted",iSpecie); return get2DRatio("nChRec_Uneighted","nChGen_Uneighted",iSpecie); };
+    TH1 *getPureEfficiency1D(Int_t iSpecie, Bool_t weighted=kTRUE, Int_t yb1=-1, Int_t yb2=-1) {if(weighted) return get1DRatio("nChRec_Weighted","nChGen_Weighted",iSpecie,yb1,yb2); return get1DRatio("nChRec_Uneighted","nChGen_Uneighted",iSpecie,yb1,yb2); };
+    TH2 *getPurity2D(Int_t iSpecie, Bool_t weighted=kTRUE) {if(weighted) return get2DRatio("nChRec_Weighted","primary_weighted_IdentifiedAs",iSpecie); return get2DRatio("nChRec_Uneighted","primary_uneighted_IdentifiedAs",iSpecie); };
+    TH1 *getPurity1D(Int_t iSpecie, Bool_t weighted=kTRUE, Int_t yb1=-1, Int_t yb2=-1) {if(weighted) return get1DRatio("nChRec_Weighted","primary_weighted_IdentifiedAs",iSpecie,yb1,yb2); return get1DRatio("nChRec_Uneighted","primary_uneighted_IdentifiedAs",iSpecie,yb1,yb2); };
+    TH1 *getPureFeeddown(Int_t iSpecie);
+      // private:
     //Helper functions
     void NewEvent(AliESDEvent &inputESD);
     void NewEvent(AliMCEvent &inputMC);
@@ -73,6 +78,9 @@ class AliEffFDContainer: public TNamed {
     Int_t CalculateMult(); //Required to pick up the correct weights
     TString getSpecieName(Int_t ind) {if(ind>=(Int_t)fSpNames.size() || ind<0) return "Undefined_"; return fSpNames[ind];};
     TString makeName(TString pf, Int_t spInd=0) { return getSpecieName(spInd)+pf+fIdentifier->GetTitle(); };
+    //Getters for "pure" observables:
+    TH2 *get2DRatio(TString numID, TString denID, Int_t iSpecie);
+    TH1 *get1DRatio(TString numID, TString denID, Int_t iSpecie, Int_t yb1=-1, Int_t yb2=-1);
     //Members
     TList *fOutList;
     TList *fCutList; //! might be interesting to store for reference, but irrelevant otherwise

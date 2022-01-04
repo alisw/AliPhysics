@@ -57,7 +57,7 @@ void AliGFWFilterTask::UserCreateOutputObjects()
       fEventCuts = new AliEventCuts();
       fEventCuts->AddQAplotsToList(fOutList,kTRUE);
       fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-      if(fTrigger) fEventCuts->OverrideCentralityFramework(fTrigger);
+      if(fTrigger) fEventCuts->OverrideAutomaticTriggerSelection(fTrigger,kTRUE);
       if(fExtendV0MAcceptance) {
         fEventCuts->OverrideCentralityFramework(1);
         fEventCuts->SetCentralityEstimators("V0M","CL0");
@@ -73,9 +73,12 @@ void AliGFWFilterTask::NotifyRun() {
     AliAODEvent *lEv = dynamic_cast<AliAODEvent*>(InputEvent());
     fEventCuts->AcceptEvent(lEv);
     fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-    if(fTrigger) {
-        fEventCuts->OverrideCentralityFramework(fTrigger);
-    };
+    if(fTrigger) fEventCuts->OverrideAutomaticTriggerSelection(fTrigger,kTRUE);
+    if(fExtendV0MAcceptance) {
+      fEventCuts->OverrideCentralityFramework(1);
+      fEventCuts->SetCentralityEstimators("V0M","CL0");
+      fEventCuts->SetCentralityRange(0.f,101.f);
+    }
   }
 }
 //_____________________________________________________________________________
