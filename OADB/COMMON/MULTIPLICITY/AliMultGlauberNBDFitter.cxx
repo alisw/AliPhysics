@@ -24,13 +24,13 @@
 
 ClassImp(AliMultGlauberNBDFitter);
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(Int_t lAncestorMode) : TNamed(), 
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter() : TNamed(),
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),
 ffChanged(kTRUE),
 fCurrentf(-1),
-fAncestorMode(lAncestorMode),
+fAncestorMode(2),
 fNpart(0x0),
 fNcoll(0x0),
 fContent(0x0),

@@ -12,7 +12,7 @@ class AliMultGlauberNBDFitter : public TNamed {
   
 public:
   //basic functionality
-  AliMultGlauberNBDFitter(Int_t lAncestorMode = 2);
+  AliMultGlauberNBDFitter();
   AliMultGlauberNBDFitter(Int_t lAncestorMode = 2, const char *name = "fitter" , const char * title = "Glauber+NBD fitter");
   ~AliMultGlauberNBDFitter();
   
