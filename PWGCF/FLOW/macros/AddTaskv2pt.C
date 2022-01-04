@@ -26,7 +26,7 @@ void AddTaskv2pt(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10
   ///-------> Analysis Object Created, now pass the arguments
   
   task_CVE->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral );      // default is kINT7
-  if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger
+  if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger for LHC10h
     task_CVE->SelectCollisionCandidates(AliVEvent::kMB);
   }
   ///Event cuts:
