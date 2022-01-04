@@ -130,10 +130,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
-        TH3D*                   fhTrigTracks[4]; //!
+        AliTHn*                 fhTrigTracks[6]; //!
         AliTHn*                 fhSE[6]; //!
         AliTHn*                 fhME[6]; //!
-        AliTHn*                 fhTrigV0[2]; //!
         TH1D*                   fhEfficiency[4]; //! not eta dependent
         TH1D*                   fhEfficiencyEta[4][4]; //! eta dependent (4 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
