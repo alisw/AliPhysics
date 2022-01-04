@@ -132,6 +132,8 @@ ClassImp(AliV0XiParticleall)
 		fMinCtau(0),
 		fMaxCtau(0),
 		fEtaCut(0),
+		fV0Eta(0),
+		fRapidity(0),
 		fV0DaughterEtaCut(0),
 		fV0DaughterPtMinCut(0),
 		fPtAssoMin(0), 
@@ -249,6 +251,8 @@ AliAnalysisTaskLambdaK0s::AliAnalysisTaskLambdaK0s(const char *name,Double_t cen
 	fMinCtau(0),
 	fMaxCtau(0),
 	fEtaCut(0),
+	fV0Eta(0),
+	fRapidity(0),
 	fV0DaughterEtaCut(0),
 	fV0DaughterPtMinCut(0),
 	fPtAssoMin(0), 
@@ -369,7 +373,7 @@ void AliAnalysisTaskLambdaK0s::UserCreateOutputObjects()
 
 	// defining bins for centrality
 	const Int_t nCentralityBins  = 1;
-	Double_t centBins[] = {0., 10.};
+	Double_t centBins[] = {fMinCent , fMaxCent};//centMin,centMax
 
 	//-----Vtx bins 
 	const Int_t nZvtxBins  = 6;
@@ -849,7 +853,7 @@ void AliAnalysisTaskLambdaK0s::AddAnalysisLambda()
 
 	// defining bins for centrality
 	const Int_t nCentralityBins  = 1;//11
-	Double_t centBins[] = {0., 10.};
+	Double_t centBins[] = {fMinCent , fMaxCent};
 
 	const Int_t nZvtxBins  = 6;
 	Double_t vertexBins[] = {-8., -4., -2., 0., 2., 4.,  8.};
@@ -1019,7 +1023,7 @@ void AliAnalysisTaskLambdaK0s::AddAnalysisAntiLambda()
 
 	// defining bins for centrality
 	const Int_t nCentralityBins  = 1;//11
-	Double_t centBins[] = {0., 10.};
+	Double_t centBins[] = {fMinCent , fMaxCent};
 
 
 	const Int_t nZvtxBins  = 6;
@@ -1155,7 +1159,7 @@ void AliAnalysisTaskLambdaK0s::AddAnalysisXiMinus()
 
 	// defining bins for centrality
 	const Int_t nCentralityBins  = 1;
-	Double_t centBins[] = {0., 10.};
+	Double_t centBins[] = {fMinCent , fMaxCent};
 	const Double_t* centralityBins = centBins;
 
 	// defining bins for Z vertex
@@ -1460,32 +1464,43 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 				fHistMCtruthTrk[binVertex]->Fill(mcTrackPt,mcTrackEta, mcTrackPhi);
 			}
 			//V0 and cascade processing
-			if( -0.5 >= mcTrackY || mcTrackY >= 0.5 || mcTrackPt < 1) continue;
-			if(TMath::Abs(mcTrack->GetPdgCode()) == 310){
-				//K0S
-				fHistMCtruthK0sPt->Fill(mcTrackPt, mcTrackEta);
-				fHistMCtruthK0s[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
+              
+			
+			if(fRapidity){
+			    if(TMath::Abs( mcTrackY )>= 0.5 &&  mcTrackPt <1) continue;
+            }else {
+				 if(TMath::Abs(mcTrackEta) >= fV0Eta && mcTrackPt < 1) continue;
 			}
-			else if(mcTrack->GetPdgCode() == 3122){
-				//Lambda
-				fHistMCtruthLambdaPt->Fill(mcTrackPt, mcTrackEta);// mcTrackY
-				fHistMCtruthLambda[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
-			}
-			else if(mcTrack->GetPdgCode() == -3122){
-				//Anti-Lambda
-				fHistMCtruthAntiLambdaPt->Fill(mcTrackPt, mcTrackEta);
-				fHistMCtruthAntiLambda[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
-			}
-			//------------------------------------------------------------------------------------------------------------
-			else if (mcTrack->GetPdgCode() == 3312 || mcTrack->GetPdgCode() == -3312){
-				//Xi-
-				fHistMCtruthXiMinusPt->Fill(mcTrackPt, mcTrackEta);
-				//add hist
-				fHistMCtruthXiMinus[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
-				fHistMCXiMinusPt->Fill(mcTrackPt);
-			}  
 
+                     if(TMath::Abs(mcTrack->GetPdgCode()) == 310){
+				     //K0S
+				     fHistMCtruthK0sPt->Fill(mcTrackPt, mcTrackEta);
+				      fHistMCtruthK0s[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
+		         	}
+			
+			    	else if(mcTrack->GetPdgCode() == 3122){
+				    	 //Lambda
+				   		 fHistMCtruthLambdaPt->Fill(mcTrackPt, mcTrackEta);// mcTrackY
+				   		 fHistMCtruthLambda[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
+					}
+					else if(mcTrack->GetPdgCode() == -3122){
+						//Anti-Lambda
+						fHistMCtruthAntiLambdaPt->Fill(mcTrackPt, mcTrackEta);
+						fHistMCtruthAntiLambda[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
+					}
+						//------------------------------------------------------------------------------------------------------------
+					else if (mcTrack->GetPdgCode() == 3312 || mcTrack->GetPdgCode() == -3312){
+						//Xi-
+						fHistMCtruthXiMinusPt->Fill(mcTrackPt, mcTrackEta);
+						//add hist
+						fHistMCtruthXiMinus[binVertex]->Fill(mcTrackPt, mcTrackEta, mcTrackPhi);
+						fHistMCXiMinusPt->Fill(mcTrackPt);
+					}  
+				
 
+			
+
+			
 		}//end MC truth-------------------------------------------------------------------------------------------
 
 
@@ -1579,8 +1594,14 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 		Double_t lEta  = v0->PseudoRapV0();
 		Double_t lRapLabK0Short = v0->RapK0Short();
 		Double_t lRapLabLambda = v0->RapLambda();                                                                                                     
+        if(fRapidity){
+			if ( -0.5 >= lRapLabK0Short || lRapLabK0Short >= 0.5 || -0.5>= lRapLabLambda || lRapLabLambda >= 0.5  )  continue; 
+		}else{
+            if (  TMath::Abs(lEta) >= fV0Eta ) continue;
+			 
+		}
 
-		if ( -0.5 >= lRapLabK0Short || lRapLabK0Short >= 0.5 || -0.5>= lRapLabLambda || lRapLabLambda >= 0.5  )  continue; 
+
 
 		const AliAODTrack *ntrack=(AliAODTrack *)v0->GetDaughter(1);
 		const AliAODTrack *ptrack=(AliAODTrack *)v0->GetDaughter(0);
