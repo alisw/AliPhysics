@@ -36,8 +36,6 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fPtMaxPosDaughter(99.0),
   fPtMinNegDaughter(0.0),
   fPtMaxNegDaughter(99.0),
-
-
   fMinAvgSepDaughters(0),
 
 
@@ -86,7 +84,11 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fInvMassRange2AntiLambdaMin(0),
   fInvMassRange2AntiLambdaMax(1000)
 {
+
   // Default constructor
+  fRapidity[0] = -999;
+  fRapidity[1] = 999;
+
 }
 
 //------------------------------
@@ -173,6 +175,9 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fInvMassRange2AntiLambdaMax(aCut.fInvMassRange2AntiLambdaMax)
 {
   //copy constructor
+  fRapidity[0] = aCut.fRapidity[0];
+  fRapidity[1] = aCut.fRapidity[1];
+  
   if(aCut.fMinvPurityAidHistoV0) fMinvPurityAidHistoV0 = new TH1D(*aCut.fMinvPurityAidHistoV0);
     else fMinvPurityAidHistoV0 = 0;
   if(aCut.fK0sMassOfMisIDV0) fK0sMassOfMisIDV0 = new TH1D(*aCut.fK0sMassOfMisIDV0);
@@ -277,6 +282,8 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fInvMassRange2AntiLambdaMin = aCut.fInvMassRange2AntiLambdaMin;
   fInvMassRange2AntiLambdaMax = aCut.fInvMassRange2AntiLambdaMax;
 
+ fRapidity[0] = aCut.fRapidity[0];
+ fRapidity[1] = aCut.fRapidity[1];
   return *this;
 }
 
@@ -296,8 +303,15 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   // false if it doesn't meet at least one of the criteria
   Float_t pt = aV0->PtV0();
   Float_t eta = aV0->EtaV0();
-
+  
+	float tEnergy = ::sqrt(aV0->MomV0().Mag2()+fMass*fMass);
+ 	float tRapidity = 0;
+ 	if(tEnergy-aV0->MomV0().z()!=0 && (tEnergy+aV0->MomV0().z())/(tEnergy-aV0->MomV0().z())>0)
+   	tRapidity = 0.5*::log((tEnergy+aV0->MomV0().z())/(tEnergy-aV0->MomV0().z()));
   //kinematic cuts
+  
+  if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1])) return false;
+      
   if (TMath::Abs(eta) > fEta) return false;  //put in kinematic cuts by hand
   if (pt < fPtMin || fPtMax < pt) return false;
   if (TMath::Abs(aV0->EtaPos()) > fMaxEtaDaughters) return false;
@@ -514,7 +528,7 @@ AliFemtoString AliFemtoV0TrackCut::Report()
   report += Form("Minimum DCA of positive daughter to primary vertex:\t%lf\n", fMinDcaDaughterPosToVert);
   report += Form("Minimum DCA of negative daughter to primary vertex:\t%lf\n", fMinDcaDaughterNegToVert);
   report += Form("Max DCA of daughters:\t%lf\n", fMaxDcaV0Daughters);
-
+  
   return report;
 }
 
@@ -523,7 +537,15 @@ TList *AliFemtoV0TrackCut::ListSettings()
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
   char *buf = Form("AliFemtoV0TrackCut.InvMassLambdaMin=%lf", fInvMassLambdaMin);
+    tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoMJTrackCut.rapidity.minimum=%f", fRapidity[0]);
   tListSetttings->AddLast(new TObjString(buf));
+  snprintf(buf, 200, "AliFemtoMJTrackCut.rapidity.maximum=%f", fRapidity[1]);
+  tListSetttings->AddLast(new TObjString(buf));
+ // tListSetttings->AddLast(new TObjString(buf));
+  
+  
+
   return tListSetttings;
 }
 
@@ -1032,3 +1054,4 @@ void AliFemtoV0TrackCut::SetInvariantMassAntiLambdaSideband(double min1, double 
   fInvMassRange2AntiLambdaMin = min2;
   fInvMassRange2AntiLambdaMax = max2;
 }
+
