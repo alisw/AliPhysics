@@ -1237,6 +1237,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
     Double_t partEta = part->Eta();
     Double_t partPt = part->Pt();
     Double_t partPhi = part->Phi();
+    binscont[2] = partPt;
 
     // TPC region
     if(TMath::Abs(partEta) < 0.8){
@@ -1249,7 +1250,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(fAnalType == eTPCTPC){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
           fTracksTrig[0]->Add((AliMCParticle*)part);
-          binscont[2] = partPt;
           fhTrigTracks[0]->Fill(binscont,0,1.);
           if(fDoPID && partIdx > 0){
             fTracksTrig[partIdx]->Add((AliMCParticle*)part);
