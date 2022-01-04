@@ -871,10 +871,7 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
 	}
 
 	
-	//if(iTrack%10==0){
-	//std::cout<<" pT = "<<trkPt<<"\t MCWgt = "<<ptWgtMC<<"\t Eta = "<<trkEta<<"\t NUAwgt = "<<WgtNUA<<"\t TotalWgt = "<<trkWgt<<endl;
-	//}
-       
+	
 	
 	if (trkPt<fMaxevpt)
 	  {
@@ -1021,9 +1018,7 @@ void AliAnalysisTaskv2pt::UserExec(Option_t*) {
       //Apply track cuts here:
       if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {
 
-	//dcaXY  = track->DCA();
-	//dcaZ   = track->ZAtDCA();
-        
+	
 	//---------->  Here I do All my track level analysis:
 
 	
