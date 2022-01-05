@@ -432,7 +432,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
 
-    fHistWeightsAfterSel = new TProfile("fHistWeightsAfterSel", "fHistWeightsAfterSel", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeightsAfterSel = new TH1F("fHistWeightsAfterSel", "fHistWeightsAfterSel", fNPtHardBins, 0, fNPtHardBins);
     fHistWeightsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
     fOutput->Add(fHistWeightsAfterSel);
