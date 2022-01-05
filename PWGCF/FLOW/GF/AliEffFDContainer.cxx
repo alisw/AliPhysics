@@ -361,6 +361,7 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
     if(!lPart) continue;
     if(lPart->Charge()==0.) continue;
     eta = lPart->Eta();
+    if(!CheckEta(eta)) continue;
     //Weights -- should be fetched from histograms
     Int_t primIndex = GetMCSWPrimIndex(lPart)+1;
     Int_t ptBin = fMCSWeights->GetYaxis()->FindBin(pt);
