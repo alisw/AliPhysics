@@ -51,7 +51,6 @@ public:
     void SetDCAPostoPrimVertexMinAntiLambda(Double_t value){fDCAPostoPrimVertexMinAntiLambda = value; }
     void SetPLtimeK0s( Double_t value){fPLtimeK0s=value;   }
     void SetPLtimeLambda( Double_t value){fPLtimeLambda=value;   }
-
    
   void SetCPA(Double_t value){fCPA = value;}
   void SetLambdaCPA(Double_t value){fLambdaCPA = value;}
@@ -62,6 +61,7 @@ public:
   void SetMinCtau(Double_t value){fMinCtau = value;}
   void SetMaxCtau(Double_t value){fMaxCtau = value;}
   void SetMaxEta(Double_t value){fEtaCut = value;}
+  void SetV0Eta(Double_t value){fV0Eta = value;}
   void SetV0DaughterEtaCut(Double_t value){fV0DaughterEtaCut = value;}
   void SetV0DaughterPtCut(Double_t value){fV0DaughterPtMinCut = value;}
   void SetAssoPtMin(Double_t value){fPtAssoMin = value;}
@@ -69,8 +69,8 @@ public:
   void SetPtTrigMin(Double_t value){fPtTrigMin = value;}
   void SetPtTrigMax(Double_t value){fPtTrigMax = value;}
 
-  void SetMixingTracks(Int_t value){fMixingTracks = value;}
-  void SetMixingPoolSize(Int_t value){fPoolSize =value ;}
+void SetMixingTracks(Int_t value){fMixingTracks = value;}
+void SetMixingPoolSize(Int_t value){fPoolSize =value ;}
 void SetMCpileupgenandrc(Bool_t  gen=kFALSE ,Bool_t rc=kFALSE ){fIsPileUpCuts=gen; fRejectTrackPileUp=rc;}
 void SetVtxXMin(Double_t value){fVtxXMin = value;}
 void SetVtxYMin(Double_t value){fVtxYMin = value;}
@@ -82,6 +82,10 @@ void SetPrimVertexCut(Double_t value){fPrimVertexCut = value;}
   void SetAnalysisMC(Bool_t AnalysisMC = kFALSE) {fAnalysisMC = AnalysisMC;}
   void SetEventMixing(Bool_t eventMixing = kFALSE){fEventMixing = eventMixing;}
   void SetUseHybridGlobalTrack(){fUseHybridGlobalTrack = kFALSE;}
+
+  void SetRapidity(Bool_t Rapidity = kFALSE){fRapidity = Rapidity;}
+
+
   
  private:
   AliAnalysisTaskLambdaK0s(const AliAnalysisTaskLambdaK0s&);            //not implemented
@@ -204,6 +208,9 @@ TH1F * fHistRCXiPt; //!
   Bool_t fAnalysisMC; // enable MC study 
   Bool_t fEventMixing; // enable event mixing
   Bool_t fUseHybridGlobalTrack;
+  Bool_t fRapidity;
+  Double_t fV0Eta;
+
 
 
   AliAnalysisUtils * fUtils;

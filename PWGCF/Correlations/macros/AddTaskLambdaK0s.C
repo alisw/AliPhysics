@@ -19,7 +19,7 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
 
  AliAnalysisTaskLambdaK0s* task = new AliAnalysisTaskLambdaK0s(taskName.Data(),  cenMin,cenMax,effCorr); 
 
-  task->SelectCollisionCandidates(trigger);
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetPrimVertexCut(8.);  
   task->SetDCAToPrimVtxCut(0.1);
   task->SetDcaV0DaughtersCut(0.8);
@@ -54,8 +54,11 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   task->SetMixingTracks(200);
   task->SetMixingPoolSize(200);
 
+  task->SetV0Eta(0.7);
+	task->SetRapidity(kFALSE);
+
     
-    mgr->AddTask(task);
+   mgr->AddTask(task);
    AliAnalysisDataContainer *cinput1 = 0x0;
 
   TList *effList = 0x0;
