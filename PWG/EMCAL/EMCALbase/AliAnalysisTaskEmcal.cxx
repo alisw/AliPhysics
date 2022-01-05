@@ -179,6 +179,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
@@ -304,6 +305,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
@@ -429,6 +431,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsectionAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
+
+    fHistWeightsAfterSel = new TProfile("fHistWeightsAfterSel", "fHistWeightsAfterSel", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeightsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeightsAfterSel);
 
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", fNPtHardBins, 0, fNPtHardBins);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
@@ -585,6 +592,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     // and after selection
     fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, 1);
     fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fNTrials);
+    fHistWeightsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
     fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard, weight);
     if(fPtHardInitialized){

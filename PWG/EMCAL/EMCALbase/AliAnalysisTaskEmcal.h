@@ -1446,6 +1446,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistTrialsAfterSel;         //!<!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!<!total number of events per pt hard bin after selection
   TProfile                   *fHistXsectionAfterSel;       //!<!x section from pythia header
+  TH1                        *fHistWeightsAfterSel;        //!<!  integrated weights per pt hard bin after selection
   TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
   TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
   TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
