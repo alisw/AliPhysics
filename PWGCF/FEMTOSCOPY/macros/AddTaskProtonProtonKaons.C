@@ -59,7 +59,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   //Kaon Cuts
   AliFemtoDreamTrackCuts *KaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
-  KaonCuts->SetPtRange(0.15, 100);
+  KaonCuts->SetPtRange(0.15, 10);
   KaonCuts->SetFilterBit(128);
   KaonCuts->SetCutCharge(1);
   if(KaonCut==0){ // cuts by Oton
@@ -71,7 +71,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   //AntiKaon Cuts
   AliFemtoDreamTrackCuts *AntiKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
-  AntiKaonCuts->SetPtRange(0.15, 100);
+  AntiKaonCuts->SetPtRange(0.15, 10);
   AntiKaonCuts->SetFilterBit(128);
   AntiKaonCuts->SetCutCharge(-1);
   if(KaonCut==0){ // cuts by Oton
