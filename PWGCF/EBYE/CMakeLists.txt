@@ -124,7 +124,8 @@ set(SRCS
   FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency.cxx
   ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelations.cxx
-  HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx	
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx
+  HMPTF/AliAnalysisTaskMeanptFluctuationPP.cxx	
   )
 
 # Headers from sources
