@@ -1976,7 +1976,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t m20 =clustMatch->GetM20();
             if(iSSlong)m20 =clustMatch->GetM02();
 
-						fM20->Fill(pt,m20);
+						fM20->Fill(trackp,m20);
          
             //if(m20<0.01 || m20>0.35)continue;  // shower shape cut (not need for MB since vAN20180710)
             if(m20<fmimM20 || m20>fmaxM20)continue;  // shower shape cut (not need for MB since vAN20180710)
@@ -2005,7 +2005,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             //if(eop>0.2  && eop<0.7 && m20>0.01 && m20<0.35)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
             if(eop>0.8  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
             if(eop>0.8  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_pele->Fill(trackp,fTPCnSigma);
-            if(eop>0.8  && eop<1.3 && fTPCnSigma>-1 && fTPCnSigma<3)fM20_2->Fill(pt,m20);
+            if(eop>0.8  && eop<1.3 && fTPCnSigma>-1 && fTPCnSigma<3)fM20_2->Fill(trackp,m20);
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_phad->Fill(trackp,fTPCnSigma);
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_phad->Fill(trackp,fTPCnSigma);
