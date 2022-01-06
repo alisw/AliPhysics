@@ -205,6 +205,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoMCSecEtaSource(NULL),
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
+  fHistoMCPi0PtNotTriggered(NULL),
   fHistoMCPi0PtGammaLeg(NULL),
   fHistoMCPi0WOWeightPtGammaLeg(NULL),
   fHistoMCPi0InAccPtGammaLeg(NULL),
@@ -472,7 +473,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fFileNameBroken(NULL),
   fAllowOverlapHeaders(kTRUE),
   fTrackMatcherRunningMode(0),
-  fDoHBTHistoOutput(kFALSE)
+  fDoHBTHistoOutput(kFALSE),
+  fCurrentEventIsTriggered(kTRUE)  
 {
 
 }
@@ -620,6 +622,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoMCSecEtaSource(NULL),
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
+  fHistoMCPi0PtNotTriggered(NULL),
   fHistoMCPi0PtGammaLeg(NULL),
   fHistoMCPi0WOWeightPtGammaLeg(NULL),
   fHistoMCPi0InAccPtGammaLeg(NULL),
@@ -887,7 +890,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fFileNameBroken(NULL),
   fAllowOverlapHeaders(kTRUE),
   fTrackMatcherRunningMode(0),
-  fDoHBTHistoOutput(kFALSE)
+  fDoHBTHistoOutput(kFALSE),
+  fCurrentEventIsTriggered(kTRUE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2061,6 +2065,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
 
     if(fDoMesonAnalysis){
       fHistoMCPi0Pt                                 = new TH1F*[fnCuts];
+      fHistoMCPi0PtNotTriggered                     = new TH1F*[fnCuts];
       fHistoMCPi0WOWeightPt                         = new TH1F*[fnCuts];
       fHistoMCEtaPt                                 = new TH1F*[fnCuts];
       fHistoMCEtaWOWeightPt                         = new TH1F*[fnCuts];
@@ -2313,6 +2318,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoMCPi0Pt[iCut]               = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCPi0Pt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0Pt[iCut]);
+        fHistoMCPi0PtNotTriggered[iCut]               = new TH1F("MC_Pi0_Pt_NotTriggered", "MC_Pi0_Pt_NotTriggered", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+        fHistoMCPi0PtNotTriggered[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0PtNotTriggered[iCut]);
         fHistoMCPi0WOWeightPt[iCut]       = new TH1F("MC_Pi0_WOWeights_Pt", "MC_Pi0_WOWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fMCList[iCut]->Add(fHistoMCPi0WOWeightPt[iCut]);
 
@@ -3426,27 +3434,27 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
       }
     }
 
-    Bool_t triggered = kTRUE;
+    fCurrentEventIsTriggered = kTRUE;
 
     if(eventNotAccepted!= 0){
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       if (eventNotAccepted==3 && fIsMC > 0){
-        triggered = kFALSE;
+        fCurrentEventIsTriggered = kFALSE;
       }else {
         continue;
       }
     }
 
-    if(eventQuality != 0 && triggered== kTRUE){// Event Not Accepted
+    if(eventQuality != 0 && fCurrentEventIsTriggered == kTRUE){// Event Not Accepted
       //cout << "event rejected due to: " <<eventQuality << endl;
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
       continue;
     }
 
-    if (triggered==kTRUE){
+    if (fCurrentEventIsTriggered==kTRUE){
       if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
         if(fV0Reader->GetSphericity() != -1 && fV0Reader->GetSphericity() != 0){
           fHistoEventSphericity[iCut]->Fill(fV0Reader->GetSphericity(), fWeightJetJetMC);
@@ -3511,7 +3519,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
         ProcessAODMCParticles();
     }
 
-    if (triggered==kFALSE) continue;
+    if (fCurrentEventIsTriggered==kFALSE) continue;
 
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
     ProcessClusters();// process calo clusters
@@ -4750,6 +4758,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles()
 
           if(particle->GetPdgCode() == 111){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+            if((!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) && !fCurrentEventIsTriggered ) fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
                 if(!fDoLightOutput) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
@@ -5134,6 +5143,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
 
           if(particle->PdgCode() == 111){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
+            if((!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) && !fCurrentEventIsTriggered ) fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
                 if(!fDoLightOutput) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
