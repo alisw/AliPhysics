@@ -140,6 +140,14 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistTPCnSigma_ele;
   TH2F                        *fHistTPCnSigma_had;
   TH2F                        *fHistTPCnSigma_eMC;
+	TH2F                        *fHistdEdx;
+	TH2F                        *fHistTPCnSigma_p;
+	TH2F                        *fHistTPCnSigma_pele;
+	TH2F                        *fHistTPCnSigma_phad;
+	TH2F                        *fM20;
+	TH2F                        *fM20_ele;
+	TH2F                        *fM20_had;
+	TH2F                        *fM20_2;
   TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
   TH2F                        *fHistEopHFE;
