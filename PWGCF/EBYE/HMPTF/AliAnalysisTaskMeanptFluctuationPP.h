@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskResonanceVsMultiplicity_H
-#define AliAnalysisTaskResonanceVsMultiplicity_H
+#ifndef AliAnalysisTaskMeanptFluctuationPP_H
+#define AliAnalysisTaskMeanptFluctuationPP_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -35,11 +35,11 @@ class AliPIDResponse;
 class AliMultSelection;
 
 
-class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
+class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskResonanceVsMultiplicity();
-  AliAnalysisTaskResonanceVsMultiplicity(const char *name);
-  virtual ~AliAnalysisTaskResonanceVsMultiplicity();
+  AliAnalysisTaskMeanptFluctuationPP();
+  AliAnalysisTaskMeanptFluctuationPP(const char *name);
+  virtual ~AliAnalysisTaskMeanptFluctuationPP();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -51,13 +51,17 @@ class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
   Bool_t        MatchTOF(AliVTrack *vtrack);
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  void SetTreeName(TString TreeName)
+  {
+    fTreeName = TreeName;
+  }
   void SetVzRangeMax(Double_t VzMax)
   {
     fVertexZMax = VzMax;
   }
-  void SetDCAXYRangeMax(Double_t dcaxy)          
+  void SetDCAXYPtDep_choice(Int_t dcaxy_choice)          
   {
-    fDCAxyMax = dcaxy;
+    fDCAxy_ptdep = dcaxy_choice;
   }
   void SetDCAZRangeMax(Double_t dcaz)
   {
@@ -75,10 +79,6 @@ class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
   {
     fNCrossedRowsTPC = nCrossedRow;
   }
- void SetTreeName(TString TreeName)
- {
-    fTreeName = TreeName;
- }
  
  private:
   enum
@@ -106,13 +106,14 @@ class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
   Float_t fNch_ptmax3;
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  TString fTreeName;
   Double_t fVertexZMax;
+  Int_t fDCAxy_ptdep;
   Double_t fDCAxyMax;
   Double_t fDCAzMax;
   Double_t fChi2TPC;
   Double_t fChi2ITS;
   Double_t fNCrossedRowsTPC;
-  TString fTreeName;
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Int_t fTreeEventNTrack;
@@ -185,9 +186,9 @@ class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
   //Custom Functions:
   Bool_t AcceptEventAfterPileUpCut(AliESDEvent* fESD);
   
-  AliAnalysisTaskResonanceVsMultiplicity(const AliAnalysisTaskResonanceVsMultiplicity&);
-  AliAnalysisTaskResonanceVsMultiplicity& operator=(const AliAnalysisTaskResonanceVsMultiplicity&);  
-  ClassDef(AliAnalysisTaskResonanceVsMultiplicity, 1);
+  AliAnalysisTaskMeanptFluctuationPP(const AliAnalysisTaskMeanptFluctuationPP&);
+  AliAnalysisTaskMeanptFluctuationPP& operator=(const AliAnalysisTaskMeanptFluctuationPP&);  
+  ClassDef(AliAnalysisTaskMeanptFluctuationPP, 1);
 };
 
 #endif

@@ -29,7 +29,7 @@
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
 
-#include "AliAnalysisTaskResonanceVsMultiplicity.h"
+#include "AliAnalysisTaskMeanptFluctuationPP.h"
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
@@ -40,9 +40,9 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskResonanceVsMultiplicity)
+ClassImp(AliAnalysisTaskMeanptFluctuationPP)
 
-AliAnalysisTaskResonanceVsMultiplicity::AliAnalysisTaskResonanceVsMultiplicity(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fQAList(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), fNch_ptmax2(0),fQ1_ptmax2(0),fQ2_ptmax2(0),fQ3_ptmax2(0),fQ4_ptmax2(0),fNch_ptmax3(0),fQ1_ptmax3(0),fQ2_ptmax3(0),fQ3_ptmax3(0),fQ4_ptmax3(0),Profile_mean_term1_ptmax2(0),Profile_var_term1_ptmax2(0),Profile_var_term2_ptmax2(0),Profile_skewness_term1_ptmax2(0),Profile_skewness_term2_ptmax2(0),Profile_skewness_term3_ptmax2(0),Profile_kurtosis_term1_ptmax2(0),Profile_kurtosis_term2_ptmax2(0),Profile_kurtosis_term3_ptmax2(0),Profile_kurtosis_term4_ptmax2(0),Profile_mean_term1_ptmax3(0),Profile_var_term1_ptmax3(0),Profile_var_term2_ptmax3(0),Profile_skewness_term1_ptmax3(0),Profile_skewness_term2_ptmax3(0),Profile_skewness_term3_ptmax3(0),Profile_kurtosis_term1_ptmax3(0),Profile_kurtosis_term2_ptmax3(0),Profile_kurtosis_term3_ptmax3(0),Profile_kurtosis_term4_ptmax3(0),fHistTPConlyVsV0MBeforeAliEventCut(0),fHistCL0VsV0MBeforeAliEventCut(0),fHistTPConlyVsV0MAfterAliEventCut(0),fHistCL0VsV0MAfterAliEventCut(0),fHistTPCtracksVsITStrkltsBeforeAliEventCut(0),fHistTPCtracksVsITStrkltsAfterAliEventCut(0),fHistTPConlyVsV0MBefore(0),fHistCL0VsV0MBefore(0),fHistTPConlyVsV0MAfter(0),fHistCL0VsV0MAfter(0),fHistTPCtracksVsITStrkltsBefore(0),fHistTPCtracksVsITStrkltsAfter(0),fHistTPConlyVsV0MAfterITSTPCcorelationCut(0),fHistCL0VsV0MAfterITSTPCcorelationCut(0),fHistTPCtracksVsITStrkltsAfterITSTPCcorelationCut(0),fHistTPCrefitVsITSrefitBeforeAliEventCut(0),fHistTPCrefitVsITSrefitAfterAliEventCut(0),fHistTPCrefitVsITSrefitBefore(0),fHistTPCrefitVsITSrefitAfter(0),fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut(0),fCenCutLowPU(0),fCenCutHighPU(0),fSPDCutPU(0),fV0CutPU(0),fMultCutPU(0),fTreeEventNTrack(0),Hist_fTreeTrackVariableDcaXY(0),Hist_fTreeTrackVariableDcaZ(0),Hist_fTreeTrackVariableTpcNCls(0), Hist_fTreeTrackVariableTpcNCrossedRows(0), Hist_fTreeTrackVariableLeastRatioCrossedRowsOverFindable(0),Hist_fTreeTrackVariableChiSqrPerTpcCls(0),Hist_fTreeTrackVariableChiSqrPerItsCls(0), Hist_Eta(0), Hist_Pt(0), fVertexZMax(0), fDCAxyMax(0), fDCAzMax(0), fChi2TPC(0), fChi2ITS(0), fNCrossedRowsTPC(0), fTreeName(0)
+AliAnalysisTaskMeanptFluctuationPP::AliAnalysisTaskMeanptFluctuationPP(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fQAList(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), fNch_ptmax2(0),fQ1_ptmax2(0),fQ2_ptmax2(0),fQ3_ptmax2(0),fQ4_ptmax2(0),fNch_ptmax3(0),fQ1_ptmax3(0),fQ2_ptmax3(0),fQ3_ptmax3(0),fQ4_ptmax3(0),Profile_mean_term1_ptmax2(0),Profile_var_term1_ptmax2(0),Profile_var_term2_ptmax2(0),Profile_skewness_term1_ptmax2(0),Profile_skewness_term2_ptmax2(0),Profile_skewness_term3_ptmax2(0),Profile_kurtosis_term1_ptmax2(0),Profile_kurtosis_term2_ptmax2(0),Profile_kurtosis_term3_ptmax2(0),Profile_kurtosis_term4_ptmax2(0),Profile_mean_term1_ptmax3(0),Profile_var_term1_ptmax3(0),Profile_var_term2_ptmax3(0),Profile_skewness_term1_ptmax3(0),Profile_skewness_term2_ptmax3(0),Profile_skewness_term3_ptmax3(0),Profile_kurtosis_term1_ptmax3(0),Profile_kurtosis_term2_ptmax3(0),Profile_kurtosis_term3_ptmax3(0),Profile_kurtosis_term4_ptmax3(0),fHistTPConlyVsV0MBeforeAliEventCut(0),fHistCL0VsV0MBeforeAliEventCut(0),fHistTPConlyVsV0MAfterAliEventCut(0),fHistCL0VsV0MAfterAliEventCut(0),fHistTPCtracksVsITStrkltsBeforeAliEventCut(0),fHistTPCtracksVsITStrkltsAfterAliEventCut(0),fHistTPConlyVsV0MBefore(0),fHistCL0VsV0MBefore(0),fHistTPConlyVsV0MAfter(0),fHistCL0VsV0MAfter(0),fHistTPCtracksVsITStrkltsBefore(0),fHistTPCtracksVsITStrkltsAfter(0),fHistTPConlyVsV0MAfterITSTPCcorelationCut(0),fHistCL0VsV0MAfterITSTPCcorelationCut(0),fHistTPCtracksVsITStrkltsAfterITSTPCcorelationCut(0),fHistTPCrefitVsITSrefitBeforeAliEventCut(0),fHistTPCrefitVsITSrefitAfterAliEventCut(0),fHistTPCrefitVsITSrefitBefore(0),fHistTPCrefitVsITSrefitAfter(0),fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut(0),fCenCutLowPU(0),fCenCutHighPU(0),fSPDCutPU(0),fV0CutPU(0),fMultCutPU(0),fTreeEventNTrack(0),Hist_fTreeTrackVariableDcaXY(0),Hist_fTreeTrackVariableDcaZ(0),Hist_fTreeTrackVariableTpcNCls(0), Hist_fTreeTrackVariableTpcNCrossedRows(0), Hist_fTreeTrackVariableLeastRatioCrossedRowsOverFindable(0),Hist_fTreeTrackVariableChiSqrPerTpcCls(0),Hist_fTreeTrackVariableChiSqrPerItsCls(0), Hist_Eta(0), Hist_Pt(0), fTreeName(0), fVertexZMax(0), fDCAxyMax(0),fDCAxy_ptdep(0), fDCAzMax(0), fChi2TPC(0), fChi2ITS(0), fNCrossedRowsTPC(0)
 {
   for(int str=0; str<kMaxTrack; str++)
     {
@@ -57,7 +57,7 @@ AliAnalysisTaskResonanceVsMultiplicity::AliAnalysisTaskResonanceVsMultiplicity()
   
 }
 
-AliAnalysisTaskResonanceVsMultiplicity::AliAnalysisTaskResonanceVsMultiplicity(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fQAList(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), fNch_ptmax2(0),fQ1_ptmax2(0),fQ2_ptmax2(0),fQ3_ptmax2(0),fQ4_ptmax2(0),fNch_ptmax3(0),fQ1_ptmax3(0),fQ2_ptmax3(0),fQ3_ptmax3(0),fQ4_ptmax3(0),Profile_mean_term1_ptmax2(0),Profile_var_term1_ptmax2(0),Profile_var_term2_ptmax2(0),Profile_skewness_term1_ptmax2(0),Profile_skewness_term2_ptmax2(0),Profile_skewness_term3_ptmax2(0),Profile_kurtosis_term1_ptmax2(0),Profile_kurtosis_term2_ptmax2(0),Profile_kurtosis_term3_ptmax2(0),Profile_kurtosis_term4_ptmax2(0),Profile_mean_term1_ptmax3(0),Profile_var_term1_ptmax3(0),Profile_var_term2_ptmax3(0),Profile_skewness_term1_ptmax3(0),Profile_skewness_term2_ptmax3(0),Profile_skewness_term3_ptmax3(0),Profile_kurtosis_term1_ptmax3(0),Profile_kurtosis_term2_ptmax3(0),Profile_kurtosis_term3_ptmax3(0),Profile_kurtosis_term4_ptmax3(0),fHistTPConlyVsV0MBeforeAliEventCut(0),fHistCL0VsV0MBeforeAliEventCut(0),fHistTPConlyVsV0MAfterAliEventCut(0),fHistCL0VsV0MAfterAliEventCut(0),fHistTPCtracksVsITStrkltsBeforeAliEventCut(0),fHistTPCtracksVsITStrkltsAfterAliEventCut(0),fHistTPConlyVsV0MBefore(0),fHistCL0VsV0MBefore(0),fHistTPConlyVsV0MAfter(0),fHistCL0VsV0MAfter(0),fHistTPCtracksVsITStrkltsBefore(0),fHistTPCtracksVsITStrkltsAfter(0),fHistTPConlyVsV0MAfterITSTPCcorelationCut(0),fHistCL0VsV0MAfterITSTPCcorelationCut(0),fHistTPCtracksVsITStrkltsAfterITSTPCcorelationCut(0),fHistTPCrefitVsITSrefitBeforeAliEventCut(0),fHistTPCrefitVsITSrefitAfterAliEventCut(0),fHistTPCrefitVsITSrefitBefore(0),fHistTPCrefitVsITSrefitAfter(0),fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut(0),fCenCutLowPU(0),fCenCutHighPU(0),fSPDCutPU(0),fV0CutPU(0),fMultCutPU(0),fTreeEventNTrack(0),Hist_fTreeTrackVariableDcaXY(0),Hist_fTreeTrackVariableDcaZ(0),Hist_fTreeTrackVariableTpcNCls(0), Hist_fTreeTrackVariableTpcNCrossedRows(0), Hist_fTreeTrackVariableLeastRatioCrossedRowsOverFindable(0),Hist_fTreeTrackVariableChiSqrPerTpcCls(0),Hist_fTreeTrackVariableChiSqrPerItsCls(0), Hist_Eta(0), Hist_Pt(0), fVertexZMax(0), fDCAxyMax(0), fDCAzMax(0), fChi2TPC(0), fChi2ITS(0), fNCrossedRowsTPC(0), fTreeName(0)
+AliAnalysisTaskMeanptFluctuationPP::AliAnalysisTaskMeanptFluctuationPP(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fQAList(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), fNch_ptmax2(0),fQ1_ptmax2(0),fQ2_ptmax2(0),fQ3_ptmax2(0),fQ4_ptmax2(0),fNch_ptmax3(0),fQ1_ptmax3(0),fQ2_ptmax3(0),fQ3_ptmax3(0),fQ4_ptmax3(0),Profile_mean_term1_ptmax2(0),Profile_var_term1_ptmax2(0),Profile_var_term2_ptmax2(0),Profile_skewness_term1_ptmax2(0),Profile_skewness_term2_ptmax2(0),Profile_skewness_term3_ptmax2(0),Profile_kurtosis_term1_ptmax2(0),Profile_kurtosis_term2_ptmax2(0),Profile_kurtosis_term3_ptmax2(0),Profile_kurtosis_term4_ptmax2(0),Profile_mean_term1_ptmax3(0),Profile_var_term1_ptmax3(0),Profile_var_term2_ptmax3(0),Profile_skewness_term1_ptmax3(0),Profile_skewness_term2_ptmax3(0),Profile_skewness_term3_ptmax3(0),Profile_kurtosis_term1_ptmax3(0),Profile_kurtosis_term2_ptmax3(0),Profile_kurtosis_term3_ptmax3(0),Profile_kurtosis_term4_ptmax3(0),fHistTPConlyVsV0MBeforeAliEventCut(0),fHistCL0VsV0MBeforeAliEventCut(0),fHistTPConlyVsV0MAfterAliEventCut(0),fHistCL0VsV0MAfterAliEventCut(0),fHistTPCtracksVsITStrkltsBeforeAliEventCut(0),fHistTPCtracksVsITStrkltsAfterAliEventCut(0),fHistTPConlyVsV0MBefore(0),fHistCL0VsV0MBefore(0),fHistTPConlyVsV0MAfter(0),fHistCL0VsV0MAfter(0),fHistTPCtracksVsITStrkltsBefore(0),fHistTPCtracksVsITStrkltsAfter(0),fHistTPConlyVsV0MAfterITSTPCcorelationCut(0),fHistCL0VsV0MAfterITSTPCcorelationCut(0),fHistTPCtracksVsITStrkltsAfterITSTPCcorelationCut(0),fHistTPCrefitVsITSrefitBeforeAliEventCut(0),fHistTPCrefitVsITSrefitAfterAliEventCut(0),fHistTPCrefitVsITSrefitBefore(0),fHistTPCrefitVsITSrefitAfter(0),fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut(0),fCenCutLowPU(0),fCenCutHighPU(0),fSPDCutPU(0),fV0CutPU(0),fMultCutPU(0),fTreeEventNTrack(0),Hist_fTreeTrackVariableDcaXY(0),Hist_fTreeTrackVariableDcaZ(0),Hist_fTreeTrackVariableTpcNCls(0), Hist_fTreeTrackVariableTpcNCrossedRows(0), Hist_fTreeTrackVariableLeastRatioCrossedRowsOverFindable(0),Hist_fTreeTrackVariableChiSqrPerTpcCls(0),Hist_fTreeTrackVariableChiSqrPerItsCls(0), Hist_Eta(0), Hist_Pt(0), fTreeName(0), fVertexZMax(0), fDCAxyMax(0), fDCAxy_ptdep(0), fDCAzMax(0), fChi2TPC(0), fChi2ITS(0), fNCrossedRowsTPC(0)
 {
 
    for(int str=0; str<kMaxTrack; str++)
@@ -77,7 +77,7 @@ AliAnalysisTaskResonanceVsMultiplicity::AliAnalysisTaskResonanceVsMultiplicity(c
     
 }
 
-AliAnalysisTaskResonanceVsMultiplicity::~AliAnalysisTaskResonanceVsMultiplicity()
+AliAnalysisTaskMeanptFluctuationPP::~AliAnalysisTaskMeanptFluctuationPP()
 {
     //------------------------------------------------
     // DESTRUCTOR
@@ -98,7 +98,7 @@ AliAnalysisTaskResonanceVsMultiplicity::~AliAnalysisTaskResonanceVsMultiplicity(
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
+void AliAnalysisTaskMeanptFluctuationPP::UserCreateOutputObjects()
 {
 
   //------------------------------------------------
@@ -115,17 +115,35 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
     {
       fESDtrackCuts = new AliESDtrackCuts();
       fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+      //fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
       fESDtrackCuts->SetPtRange(0.15,5.0);
       fESDtrackCuts->SetEtaRange(-0.8,0.8);
+      
+      fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
       //++++++++++++++Track parameters to be varied for systematics++++++++++++++
-      fESDtrackCuts->SetMaxDCAToVertexXY(fDCAxyMax);
+      if(fDCAxy_ptdep == 0)//default
+	{
+	  // 7*(0.0015+0.0050/pt^1.1)
+	  fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+	}
+      if(fDCAxy_ptdep == 1)//systematic 1
+	{
+	  // 4*(0.0015+0.0050/pt^1.1)
+	  fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0060+0.0200/pt^1.1");
+	}
+      if(fDCAxy_ptdep == 2)//systematic 2
+	{
+	  // 5*(0.0015+0.0050/pt^1.1)
+	  fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0075+0.0250/pt^1.1");
+	}
       fESDtrackCuts->SetMaxDCAToVertexZ(fDCAzMax);
       fESDtrackCuts->SetMaxChi2PerClusterTPC(fChi2TPC);
       fESDtrackCuts->SetMaxChi2PerClusterITS(fChi2ITS);
       fESDtrackCuts->SetMinNCrossedRowsTPC(fNCrossedRowsTPC);
       //fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      
     }
 
   
@@ -173,7 +191,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
   Hist_Eta = new TH1D("Hist_Eta","Hist_Eta", 40, -1, +1);
   Hist_Pt = new TH1D("Hist_Pt","Hist_Pt", 500, 0, 5);
   
-
+  /*
   //histograms for ptcut 0.2 < pT < 2.0 GeV/c
   Profile_mean_term1_ptmax2=new TProfile("Profile_mean_term1_ptmax2","Profile_mean_term1_ptmax2",3001,-0.5,3000.5);
   Profile_var_term1_ptmax2=new TProfile("Profile_var_term1_ptmax2","Profile_var_term1_ptmax2",3001,-0.5,3000.5);
@@ -220,7 +238,8 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
   fHistTPCrefitVsITSrefitBefore=new TH2D("fHistTPCrefitVsITSrefitBefore","fHistTPCrefitVsITSrefitBefore",250,0,5000,250,0,5000);
   fHistTPCrefitVsITSrefitAfter=new TH2D("fHistTPCrefitVsITSrefitAfter","fHistTPCrefitVsITSrefitAfter",250,0,5000,250,0,5000);
   fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut=new TH2D("fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut","fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut",250,0,5000,250,0,5000);
-
+  */
+  
 
   fListHist->Add(Hist_fTreeTrackVariableDcaXY);
   fListHist->Add(Hist_fTreeTrackVariableDcaZ);
@@ -231,7 +250,8 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
   fListHist->Add(Hist_fTreeTrackVariableChiSqrPerItsCls);
   fListHist->Add(Hist_Eta);
   fListHist->Add(Hist_Pt);
-  
+
+  /*
   fListHist->Add(Profile_mean_term1_ptmax2);
   fListHist->Add(Profile_var_term1_ptmax2);
   fListHist->Add(Profile_var_term2_ptmax2);
@@ -274,20 +294,21 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
   fListHist->Add(fHistCL0VsV0MAfterITSTPCcorelationCut);
   fListHist->Add(fHistTPCtracksVsITStrkltsAfterITSTPCcorelationCut);
   fListHist->Add(fHistTPCrefitVsITSrefitAfterITSTPCcorelationCut);
+  */
   PostData(2, fListHist);
 
 
   OpenFile(3);
   fQAList = new TList();
   fEventCuts.AddQAplotsToList(fQAList,kTRUE);
-  PostData(3, fQAList); 
   fQAList->SetOwner(kTRUE);
+  PostData(3, fQAList); 
   
 
 
 
 
-
+  
   //// PileUp Removal Functions:
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
@@ -304,7 +325,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
   fCenCutLowPU->SetParameters(parV0CL0);
   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
- 
+  
    
   
   
@@ -312,7 +333,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
+void AliAnalysisTaskMeanptFluctuationPP::UserExec(Option_t *)
 {
   AliESDEvent *lESDevent = 0x0;
    
@@ -392,6 +413,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
       return; //This would have to be adjusted for vs. V0M
     }
 
+  /*
   AliESDtrackCuts *fESDTPConlyTracks= new AliESDtrackCuts();
   fESDTPConlyTracks = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   Int_t nTPCtracks = lESDevent->GetNumberOfTPCTracks();
@@ -425,11 +447,12 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
   fHistCL0VsV0MBeforeAliEventCut->Fill(v0Centr,cl0Centr);
   fHistTPCtracksVsITStrkltsBeforeAliEventCut->Fill(nITSTrkls,multTPConlyTrk);
   fHistTPCrefitVsITSrefitBeforeAliEventCut->Fill(nTracksTPC,nTracksITS);
+  */
  
   //***************************************************************************************************************************************************************
   //Pileup
   Bool_t EventAccepted;
-  fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  //fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
   EventAccepted = fEventCuts.AcceptEvent(lESDevent);
   if (!EventAccepted)
     {
@@ -439,8 +462,8 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
       return;
     }
 
-  
-   //Histograms after AliEventCut imposed
+  /*
+  //Histograms after AliEventCut imposed
   fHistTPConlyVsV0MAfterAliEventCut->Fill(v0Centr,multTrk);
   fHistCL0VsV0MAfterAliEventCut->Fill(v0Centr,cl0Centr);
   fHistTPCtracksVsITStrkltsAfterAliEventCut->Fill(nITSTrkls,multTPConlyTrk);
@@ -460,7 +483,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
       return;
     }
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+  */
 
   /*
   //ITS TPC correlation cut for pileup
@@ -600,7 +623,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
 	Hist_Pt->Fill(Track_pt);
 
 	//************************************************************************
-
+    
 
 
       if(TMath::Abs(Track_eta)>0.8)continue;
@@ -637,7 +660,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
   fQ4_ptmax3=Q4[1];
   fNch_ptmax3=Nch[1];
   
-
+  /*
   if(Nch[0] > 0.0)
     {
       mean_term1[0]=Q1[0]/Nch[0];
@@ -704,6 +727,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
       Profile_kurtosis_term3_ptmax3->Fill(Nch[1],kurtosis_term3[1]);
       Profile_kurtosis_term4_ptmax3->Fill(Nch[1],kurtosis_term4[1]);
     }
+  */
   
   fTreeEvent->Fill();
   PostData(1, fTreeEvent);
@@ -714,7 +738,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
 //____________________________________________________________________________________________________________________________________
 //PILEUP selection
 
-Bool_t  AliAnalysisTaskResonanceVsMultiplicity::AcceptEventAfterPileUpCut(AliESDEvent* fESD) { //From Alex
+Bool_t  AliAnalysisTaskMeanptFluctuationPP::AcceptEventAfterPileUpCut(AliESDEvent* fESD) { //From Alex
 
   Bool_t BisPileUp=kTRUE;
 
@@ -812,12 +836,12 @@ Bool_t  AliAnalysisTaskResonanceVsMultiplicity::AcceptEventAfterPileUpCut(AliESD
 
 
 //________________________________________________________________________
-void AliAnalysisTaskResonanceVsMultiplicity::Terminate(Option_t *)
+void AliAnalysisTaskMeanptFluctuationPP::Terminate(Option_t *)
 {
   
 }
 //----------------------------------------------------------------------------
-Double_t AliAnalysisTaskResonanceVsMultiplicity::MyRapidity(Double_t rE, Double_t rPz) const
+Double_t AliAnalysisTaskMeanptFluctuationPP::MyRapidity(Double_t rE, Double_t rPz) const
 {
     // Local calculation for rapidity
   Double_t ReturnValue = -100;
@@ -827,7 +851,7 @@ Double_t AliAnalysisTaskResonanceVsMultiplicity::MyRapidity(Double_t rE, Double_
   return ReturnValue;
 } 
 //----------------------------------------------------------------------------
-void AliAnalysisTaskResonanceVsMultiplicity::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
+void AliAnalysisTaskMeanptFluctuationPP::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
   if(fESDtrackCuts){ 
     delete fESDtrackCuts;
     fESDtrackCuts = 0x0;
@@ -835,7 +859,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::SetPersonalESDtrackCuts(AliESDtrack
   fESDtrackCuts = trackcuts;
 }
 //----------------------------------------------------------------------------
-Double_t AliAnalysisTaskResonanceVsMultiplicity::GetTOFBeta(AliVTrack *vtrack)
+Double_t AliAnalysisTaskMeanptFluctuationPP::GetTOFBeta(AliVTrack *vtrack)
 {
   AliESDtrack *esdtrack  = dynamic_cast<AliESDtrack*>(vtrack);
   if(!esdtrack) return -1;
@@ -848,7 +872,7 @@ Double_t AliAnalysisTaskResonanceVsMultiplicity::GetTOFBeta(AliVTrack *vtrack)
   return mass_square;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskResonanceVsMultiplicity::MatchTOF(AliVTrack *vtrack)
+Bool_t AliAnalysisTaskMeanptFluctuationPP::MatchTOF(AliVTrack *vtrack)
 {
   if (!vtrack) {
     AliWarning("NULL argument: impossible to check status");
