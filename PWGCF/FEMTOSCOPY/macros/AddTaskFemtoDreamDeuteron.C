@@ -2,8 +2,9 @@
 #include "TSystem.h"
 
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
-    bool fullBlastQA = true,//2
-    bool SystematicLowpT = false,//3
+   TString trigger = "kINT7", //2
+    bool fullBlastQA = true,//3
+    bool SystematicLowpT = false,//4
     const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -53,10 +54,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
 
 
   std::vector<bool> closeRejection;
-  // std::vector<float> mTBins;
-  //  mTBins.push_back(1.14);
-  //  mTBins.push_back(1.26);
-  //  mTBins.push_back(999.);
+  std::vector<float> mTBins;
+  mTBins.push_back(1.14);
+  mTBins.push_back(1.26);
+  mTBins.push_back(999.);
   std::vector<int> pairQA;
   //pairs:
   // pp             0
@@ -172,9 +173,9 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
   config->SetDeltaEtaMax(0.017); // and here you set the actual values
   config->SetDeltaPhiMax(0.017); // and here you set the actual values
   config->SetMixingDepth(10);
-  //config->SetmTBins(mTBins);
-  //config->SetDomTMultBinning(true);
-  //config->SetmTBinning(true);
+  config->SetmTBins(mTBins);
+  config->SetDomTMultBinning(true);
+  config->SetmTBinning(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   if (isMC) {
@@ -732,8 +733,30 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
  }
 
   AliAnalysisTaskFemtoDreamDeuteron *task =
-    new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault", isMC);
-  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+  new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault", isMC);
+  if (trigger == "kINT7") {
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    std::cout << "Added kINT7 Trigger \n";
+  } else if (trigger == "kHM") {
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    std::cout << "Added kHighMult Trigger \n";
+  } else {
+    std::cout
+        << "====================================================================="
+        << std::endl;
+    std::cout
+        << "====================================================================="
+        << std::endl;
+    std::cout
+        << "Centrality Estimator not set, fix it else your Results will be empty!"
+        << std::endl;
+    std::cout
+        << "====================================================================="
+        << std::endl;
+    std::cout
+        << "====================================================================="
+        << std::endl;
+  }
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
   }
@@ -748,7 +771,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(bool isMC = false,//1
 
   mgr->AddTask(task);
 
-  TString addon = "HM";
+  TString addon = "";
+
+  if (trigger == "kINT7") {
+    addon += "MB";
+  } else if (trigger == "kHM") {
+    addon += "HM";
+  }
 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
