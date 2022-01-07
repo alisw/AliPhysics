@@ -3096,7 +3096,7 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",16,0,16);
-  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.08); // PDG 2021: BR = 1.10 +/- 0.09
+  for(Int_t i=1;i<=16;i++) fBR->SetBinContent(i,0.05); // PDG 2021: BR = (1.100 +/- 0.055)%
 
   // Tracking efficiency (from prompt analysis)
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
@@ -3114,15 +3114,8 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
-  fCutsEff->SetBinContent(1,1.00);
-  fCutsEff->SetBinContent(2,1.00);
-  fCutsEff->SetBinContent(3,0.07);
-  fCutsEff->SetBinContent(4,0.07);
-  fCutsEff->SetBinContent(5,0.10);
-  fCutsEff->SetBinContent(6,0.10);
-  fCutsEff->SetBinContent(7,0.08);
-  fCutsEff->SetBinContent(8,0.08);
-  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.10);
+  for(Int_t i=1;i<=2;i++) fCutsEff->SetBinContent(i,1.00);
+  for(Int_t i=3;i<=12;i++) fCutsEff->SetBinContent(i,0.09);
   for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,1.00);
   
   // PID efficiency (from prompt analysis)
@@ -3132,9 +3125,8 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
   for(Int_t i=1;i<=2;i++) fMCPtShape->SetBinContent(i,1.00);
-  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,0.04);
-  for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.02);
-  for(Int_t i=7;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,0.03);
+  for(Int_t i=5;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
   for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,1.00);
 
   // FD
