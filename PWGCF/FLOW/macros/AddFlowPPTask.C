@@ -157,7 +157,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 	if(fNUA) {
 		//if(AllContainers->FindObject("NUA")){}(from AddTaskNonlinearFlowC)
 		if(!AllContainers->FindObject("NUA")){
-			AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+			AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TFile::Class(), AliAnalysisManager::kInputContainer);
                
             TFile *inNUA=nullptr;
 
@@ -243,7 +243,7 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 
 		if(!AllContainers->FindObject("NUE")){
 
-			AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE%s", uniqueID.Data()), TFile::Class(), AliAnalysisManager::kInputContainer);
+			AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TFile::Class(), AliAnalysisManager::kInputContainer);
 			TFile *inNUE =TFile::Open("alien:///alice/cern.ch/user/v/vvislavi/Aux/LHC17d20a1_WithModEff_Syst.root");
 			TList* weight_listEff = NULL;
 			weight_listEff = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
