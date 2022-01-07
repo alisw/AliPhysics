@@ -1130,6 +1130,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","24466530ha01cc00000","0163103100000010"); // 0-100% non-lin 1
     cuts.AddCutCalo("80010123","24466540ha01cc00000","0163103100000010"); // 0-100% non-lin 2
 
+  } else if (trainConfig == 528){ // PHOS INT7, 300MeV
+    cuts.AddCutCalo("80010123","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 529){ // PHOS PHI7, 300MeV
+    cuts.AddCutCalo("80062123","24466190sa01cc00000","0163103100000010"); //PHI7
+
   // Variations for systematics
   } else if ( trainConfig == 530) { // NL variations (standard: 42 PHOS ML)
     cuts.AddCutCalo("80010113","24466530ha01cc00000","0163103100000010");
