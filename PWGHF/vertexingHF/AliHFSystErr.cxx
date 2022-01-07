@@ -8912,7 +8912,8 @@ void AliHFSystErr::InitLctopKpi20161718pp13TeVFineBins_woVertexing() {
   // topological selection
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
   fCutsEff->SetBinContent(1,0.10);//0-1
-  for(Int_t i=2;i<=5;i++) fCutsEff->SetBinContent(i,0.05); // from 1-2 to 4-5
+  for(Int_t i=2;i<=3;i++) fCutsEff->SetBinContent(i,0.10); // 1-2, 2-3
+  for(Int_t i=4;i<=5;i++) fCutsEff->SetBinContent(i,0.05); // 3-4, 4-5
   for(Int_t i=6;i<=24;i++) fCutsEff->SetBinContent(i,0.03); // from 4-5 to 12-24
 
   // PID efficiency (variation of Bayes PID criterion, 5% everywhere confirmed from fine-binning analysis)
