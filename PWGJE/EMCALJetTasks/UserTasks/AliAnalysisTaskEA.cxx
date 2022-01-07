@@ -164,13 +164,14 @@ fhPtTrkSecOrFakeRec(0x0),
 fhJetPtPartLevelCorr(0x0),
 fhJetPtPartLevelZero(0x0),
 fhJetPtPartLevelVsJetPtDetLevelCorr(0x0),                         //1D unfolding
-fhJetPtPartLevelVsJetPtDetLevelZero(0x0),                         //1D unfolding
-fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
+fhJetPtZeroPartLevelVsJetPtZeroDetLevel(0x0),                         //1D unfolding
+fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
 fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                          //Impurity distribution (added by KA)
 fhPhi_JetPtPartLevel_InclusiveJets(0x0),                          //2D unfolding
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0),     //2D unfolding
 fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                      //2D unfolding (added by KA)
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets(0x0), //2D unfolding (added by KA)
+fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets(0x0), //2D unfolding (added by KA)
 fhJetPtResolutionVsPtPartLevel(0x0),
 fhOneOverPtVsPhiNeg(0x0),
 fhOneOverPtVsPhiPos(0x0),
@@ -220,19 +221,33 @@ fMaxFacPtHard(0)
    //1D respnse matrix from recoil jets  //FF
    for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
       fhRecoilJetPtPartLevelCorr[itt] = NULL;
-      fhRecoilJetPtPartLevelCorr_CorrespTT[itt] = NULL; // Modified by KA
-      fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt] = NULL;
-      fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_CorrespTT[itt] = NULL; // Modified by KA
+      fhRecoilJetPtZeroPartLevel[itt] = NULL;
+
+      fhRecoilJetPtPartLevel_CorrespTT[itt] = NULL;                        // Modified by KA
+      fhRecoilJetPtZeroPartLevel_CorrespTT[itt] = NULL;                        // Modified by KA
+
+      fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt] = NULL;                   // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtDetLevelCorr[itt] = NULL;               // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevelCorr[itt] = NULL;           // Modified by KA
+
+      fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[itt] = NULL;         // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[itt] = NULL;     // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[itt] = NULL; // Modified by KA
+
       fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = NULL;
    }
    //2D unfolding
    for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
-      fhDeltaPhi_JetPtPartLevel[itt] = NULL;                                    //2D unfolding
-      fhDeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;                          //2D unfolding
-      fhDeltaPhi_JetPtZero_PartLevel[itt] = NULL;                               //2D unfolding (added by KA)
-      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt] = NULL;          //2D unfolding
-      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;//2D unfolding
-      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = NULL;      //2D unfolding (added by KA)
+      fhDeltaPhi_JetPtPartLevel[itt] = NULL;                                             //2D unfolding
+      fhDeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;                                   //2D unfolding
+      fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = NULL;                               //2D unfolding
+      fhDeltaPhi_JetPtZero_PartLevel[itt] = NULL;                                        //2D unfolding (added by KA)
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt] = NULL;                   //2D unfolding
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;         //2D unfolding
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = NULL;     //2D unfolding
+      fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = NULL; //2D unfolding
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = NULL;               //2D unfolding (added by KA)
+      fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = NULL;           //2D unfolding (added by KA)
       // fhNumberOf_ChosenTT_PartLevel[itt] = NULL;
    }
 
@@ -565,13 +580,14 @@ fhPtTrkSecOrFakeRec(0x0),
 fhJetPtPartLevelCorr(0x0),
 fhJetPtPartLevelZero(0x0),
 fhJetPtPartLevelVsJetPtDetLevelCorr(0x0),
-fhJetPtPartLevelVsJetPtDetLevelZero(0x0),
-fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
+fhJetPtZeroPartLevelVsJetPtZeroDetLevel(0x0),
+fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
 fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                          //Impurity distribution (added by KA)
 fhPhi_JetPtPartLevel_InclusiveJets(0x0),                          //2D unfolding
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0),     //2D unfolding
 fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                      //2D unfolding (added by KA)
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets(0x0), //2D unfolding (added by KA)
+fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets(0x0), //2D unfolding (added by KA)
 fhJetPtResolutionVsPtPartLevel(0x0),
 fhOneOverPtVsPhiNeg(0x0),
 fhOneOverPtVsPhiPos(0x0),
@@ -622,20 +638,34 @@ fMaxFacPtHard(0)
    //1D respnse matrix from recoil jets  //FF
    for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
       fhRecoilJetPtPartLevelCorr[itt] = NULL;
-      fhRecoilJetPtPartLevelCorr_CorrespTT[itt] = NULL; // Modified by KA
+      fhRecoilJetPtZeroPartLevel[itt] = NULL;
+
+      fhRecoilJetPtPartLevel_CorrespTT[itt] = NULL; // Modified by KA
+      fhRecoilJetPtZeroPartLevel_CorrespTT[itt] = NULL; // Modified by KA
+
       fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt] = NULL;
-      fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_CorrespTT[itt] = NULL; // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtDetLevelCorr[itt] = NULL;
+      fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevelCorr[itt] = NULL;
+
+      fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[itt] = NULL; // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[itt] = NULL; // Modified by KA
+      fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[itt] = NULL; // Modified by KA
+
       fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = NULL;
    }
 
    //2D unfolding
    for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
-      fhDeltaPhi_JetPtPartLevel[itt] = NULL;                                    //2D unfolding
-      fhDeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;                          //2D unfolding
-      fhDeltaPhi_JetPtZero_PartLevel[itt] = NULL;                               //2D unfolding (added by KA)
-      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt] = NULL;          //2D unfolding
-      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;//2D unfolding
-      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = NULL;      //2D unfolding (added by KA)
+      fhDeltaPhi_JetPtPartLevel[itt] = NULL;                                             //2D unfolding
+      fhDeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;                                   //2D unfolding
+      fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = NULL;                               //2D unfolding
+      fhDeltaPhi_JetPtZero_PartLevel[itt] = NULL;                                        //2D unfolding (added by KA)
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt] = NULL;                   //2D unfolding
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt] = NULL;         //2D unfolding
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = NULL;     //2D unfolding
+      fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = NULL; //2D unfolding
+      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = NULL;               //2D unfolding (added by KA)
+      fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = NULL;           //2D unfolding (added by KA)
       // fhNumberOf_ChosenTT_PartLevel[itt] = NULL;
    }
 
@@ -2903,14 +2933,14 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 
       //pT spectrum of detector level physical primary tracks and secondary tracks
       if(fTrkContainerDetLevel && fParticleContainerPartLevel){
-         for(auto trkIterator : fTrkContainerDetLevel->accepted_momentum() ){
+         for(auto trkIterator : fTrkContainerDetLevel->accepted_momentum()){
             track = trkIterator.second;  // Get the pointer to mc particle object
             if(!track)  continue;
 
             if(!IsTrackInAcceptance(track, kDetLevel)) continue; //reconstructed level tracks
             bRecPrim = kFALSE; //not yet matched to generator level physical primary
 
-            for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum() ){
+            for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum()){
                mcParticle = mcPartIterator.second;  // Get the pointer to mc particle object
                if(!mcParticle)  continue;
 
@@ -2988,8 +3018,8 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
             jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
 
             fhJetPtPartLevelVsJetPtDetLevelCorr->Fill(jetPtCorrDet,jetPtCorrPart); //response matrix
-            fhJetPtPartLevelVsJetPtDetLevelZero->Fill(jet->Pt(),jetPartMC->Pt()); //response matrix
-            fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr->Fill(jetPtCorrDet, jetPartMC->Pt()); //response matrix (added by KA)
+            fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr->Fill(jetPtCorrDet, jetPartMC->Pt()); //response matrix (added by KA)
+            fhJetPtZeroPartLevelVsJetPtZeroDetLevel->Fill(jet->Pt(),jetPartMC->Pt()); //response matrix
 
             if(TMath::Abs(jetPartMC->Eta()) > 0.5) fhImpurityInclusive_DetJetPtVsPartJetPtCorr->Fill(jetPtCorrDet, jetPtCorrPart); // added by KA
 
@@ -3022,6 +3052,7 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
                if(TMath::Abs(TVector2::Phi_mpi_pi(xphi - fTTH[itt][idx].Phi())) > fPhiCut){  //fk
                   jetPtCorrPart = jet->Pt() - fRhoMC*jet->Area();
                   fhRecoilJetPtPartLevelCorr[itt]->Fill(jetPtCorrPart);
+                  fhRecoilJetPtZeroPartLevel[itt]->Fill(jet->Pt());
                }
             }
 
@@ -3048,6 +3079,8 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 
                if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi())) > fPhiCut){   //fk
                   fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt]->Fill(jetPtCorrDet,jetPtCorrPart);
+                  fhRecoilJetPtZeroPartLevelVsJetPtDetLevelCorr[itt]->Fill(jetPtCorrDet,jetPartMC->Pt());
+                  fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevelCorr[itt]->Fill(jet->Pt(),jetPartMC->Pt());
                   if(TMath::Abs(jetPartMC->Eta()) > 0.5) fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt]->Fill(jetPtCorrDet,jetPtCorrPart); // added by KA
                }
             }
@@ -3088,7 +3121,8 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 
                if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi() - fTTH_PartLevel[iTT][idx_PartLevel].Phi())) > fPhiCut){  // KA
                   jetPtCorrPart = jet->Pt() - fRhoMC*jet->Area();
-                  fhRecoilJetPtPartLevelCorr_CorrespTT[iTT]->Fill(jetPtCorrPart); // Modified by KA
+                  fhRecoilJetPtPartLevel_CorrespTT[iTT]->Fill(jetPtCorrPart); // Modified by KA
+                  fhRecoilJetPtZeroPartLevel_CorrespTT[iTT]->Fill(jet->Pt()); // Modified by KA
                }
             }
 
@@ -3104,7 +3138,9 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
                jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
 
                if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTH[iTT][idx].Phi())) > fPhiCut && TMath::Abs(TVector2::Phi_mpi_pi(jetPartMC->Phi()-fTTH_PartLevel[iTT][idx_PartLevel].Phi())) > fPhiCut){   // KA: look for events when both matched jets are in the recoil
-                  fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_CorrespTT[iTT]->Fill(jetPtCorrDet,jetPtCorrPart); // Modified by KA
+                  fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[iTT]->Fill(jetPtCorrDet, jetPtCorrPart); // Modified by KA
+                  fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[iTT]->Fill(jetPtCorrDet, jetPartMC->Pt()); // Modified by KA
+                  fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[iTT]->Fill(jet->Pt(), jetPartMC->Pt()); // Modified by KA
                }
             }
          }
@@ -3147,7 +3183,7 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
             jetDetMC =  jet->ClosestJet();
 
             //Averaging over phi angle by random generation of phi angle PartLvl. Phi angle DetLvl is obtained by adding smearing to PartLvl phi angle
-            random_PhiAnglePartLevel = TMath::Pi()*fRandom->Uniform(0,2);  //(0,2pi)
+            random_PhiAnglePartLevel = TMath::Pi()*fRandom->Uniform(0,1);  //(0,pi)
             jetPtCorrPart = jet->Pt() - jet->Area()*fRhoMC;
 
 	         if(jet->Pt() > 5e-4){
@@ -3155,18 +3191,16 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                if(!jetDetMC){ //No associated MC detector level jet ->  Fill input for the miss function
 
                   fhPhi_JetPtPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jetPtCorrPart);
-
                   fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jet->Pt()); // (added by KA)
 
                } else if(jetDetMC->Pt() < 1e-10){ //associated MC detector level jet is a ghost jet ->  Fill input for the miss function
 
                   fhPhi_JetPtPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jetPtCorrPart);
-
                   fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jet->Pt()); // (added by KA)
 
                } else { //Associated Detector level jet is a physical jet -> fill response matrix
                   smearing_Of_PhiAngle = jetDetMC->Phi() - jet->Phi(); //Smearing of phi angle
-                  random_PhiAngleDetLevel = TVector2::Phi_0_2pi(random_PhiAnglePartLevel + smearing_Of_PhiAngle);
+                  random_PhiAngleDetLevel = random_PhiAnglePartLevel + smearing_Of_PhiAngle; //TVector2::Phi_0_2pi
                   jetPtCorrDet = jetDetMC->Pt() - jetDetMC->Area()*fRho;
 
                   fArray_for_filling[0] = random_PhiAngleDetLevel;
@@ -3179,6 +3213,10 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                   //Particle level jet pT is not corrected by RhokT
                   fArray_for_filling[3] = jet->Pt();
                   fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->Fill(fArray_for_filling); // added by KA
+
+                  //Jet pT is not corrected by RhokT
+                  fArray_for_filling[1] = jetDetMC->Pt();
+                  fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->Fill(fArray_for_filling); // added by KA
                }
             }
          }//end inclusive jets
@@ -3228,6 +3266,10 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                      //Particle level jet pT is NOT corrected for RhokT
 		               fArray_for_filling[3] = jet->Pt();
                      fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[iTT]->Fill(fArray_for_filling); // added by KA
+
+                     //Particle level jet pT is NOT corrected for RhokT
+		               fArray_for_filling[1] = jetDetMC->Pt();
+                     fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[iTT]->Fill(fArray_for_filling); // added by KA
                   }
                }
             }//end recoil jets
@@ -3273,10 +3315,12 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                      if(!jetDetMC){  //no matched detector level jet
 
                         fhDeltaPhi_JetPtPartLevel_CorrespTT[iTT]->Fill(deltaPhi_angle_ParticleLevel, jetPtCorrPart); // Modified by KA
+                        fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[iTT]->Fill(deltaPhi_angle_ParticleLevel, jet->Pt()); // Modified by KA
 
                      }else if(jetDetMC->Pt() < 1e-10) {  //matched to a ghost
 
                         fhDeltaPhi_JetPtPartLevel_CorrespTT[iTT]->Fill(deltaPhi_angle_ParticleLevel, jetPtCorrPart); // Modified by KA
+                        fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[iTT]->Fill(deltaPhi_angle_ParticleLevel, jet->Pt()); // Modified by KA
 
                      }else{
 
@@ -3288,6 +3332,14 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
 		                  fArray_for_filling[2] = deltaPhi_angle_ParticleLevel;
 		                  fArray_for_filling[3] = jetPtCorrPart;
                         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[iTT]->Fill(fArray_for_filling); // Modified by KA
+
+                        //Particle level jet pT is NOT corrected for RhokT
+                        fArray_for_filling[3] = jet->Pt();
+                        fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[iTT]->Fill(fArray_for_filling); // added by KA
+
+                        //Particle level jet pT is NOT corrected for RhokT
+                        fArray_for_filling[1] = jetDetMC->Pt();
+                        fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[iTT]->Fill(fArray_for_filling); // added by KA
                      }
                   }
                }//end recoil jets
@@ -4735,23 +4787,34 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhPtTrkSecOrFakeRec = new TH3D("fhPtTrkSecOrFakeRec","fhPtTrkSecOrFakeRec",100,0,100,20,-1,1, 10,0,10);
       fOutput->Add((TH3D*) fhPtTrkSecOrFakeRec);
 
-      name = Form("fhJetPtPartLevelCorr_Rho%s", rhotype.Data());
+      name = Form("JetPtPartLevel_Rho%s", rhotype.Data());
       fhJetPtPartLevelCorr = new TH1D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270. -20, 250) added by KA
       fOutput->Add((TH1D*) fhJetPtPartLevelCorr);
 
-      fhJetPtPartLevelZero = new TH1D("fhJetPtPartLevelZero","fhJetPtPartLevelZero", numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0, 250) added by KA
+      fhJetPtPartLevelZero = new TH1D("JetPtZeroPartLevel","JetPtZeroPartLevel", numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0, 250) added by KA
       fOutput->Add((TH1D*) fhJetPtPartLevelZero);
 
       for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
          //FF Normalization of response matrix filled from recoil jets
-         name = Form("fhRecoilJetPtPartLevelCorr_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         name = Form("RecoilJetPtPartLevel_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
          fhRecoilJetPtPartLevelCorr[itt] = new TH1D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins);
          fOutput->Add((TH1D*) fhRecoilJetPtPartLevelCorr[itt]);
 
+         //Jet pT not corrected on RhokT
+         name = Form("RecoilJetPtZeroPartLevel_TTH%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhRecoilJetPtZeroPartLevel[itt] = new TH1D(name.Data(), name.Data(), numberBins_jetpT_Zero, jetPtZero_Bins);
+         fOutput->Add((TH1D*) fhRecoilJetPtZeroPartLevel[itt]);
+
+         //______________________________________________________
          //KA Normalization of response matrix filled from recoil jets on PARTICLE level
-         name = Form("RecoilJetPtPartLevelCorr_Rho%s_Corresp_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
-         fhRecoilJetPtPartLevelCorr_CorrespTT[itt] = new TH1D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins);
-         fOutput->Add((TH1D*) fhRecoilJetPtPartLevelCorr_CorrespTT[itt]);
+         name = Form("RecoilJetPt_Rho%s_PartLevel_Corresp_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtPartLevel_CorrespTT[itt] = new TH1D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins);
+         fOutput->Add((TH1D*) fhRecoilJetPtPartLevel_CorrespTT[itt]);
+
+         //Jet pT not corrected on RhokT
+         name = Form("RecoilJetPtZeroPartLevel_Corresp_TTH%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtZeroPartLevel_CorrespTT[itt] = new TH1D(name.Data(), name.Data(), numberBins_jetpT_Zero, jetPtZero_Bins);
+         fOutput->Add((TH1D*) fhRecoilJetPtZeroPartLevel_CorrespTT[itt]);
       }
 
       name = Form("fhFractionOfSecInJet_Rho%s", rhotype.Data());
@@ -4759,15 +4822,16 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fOutput->Add((TH2D*) fhFractionOfSecInJet);
 
       //1D unfolding
-      name = Form("JetPtPartLevelVsJetPtDetLevelCorr_Rho%s", rhotype.Data());
+      name = Form("JetPtPartLevelVsJetPtDetLevel_Rho%s", rhotype.Data());
       fhJetPtPartLevelVsJetPtDetLevelCorr = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); // (270, -20.0, 250, 270, -20.0, 270) added by KA
       fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorr);
 
-      fhJetPtPartLevelVsJetPtDetLevelZero = new TH2D("JetPtPartLevel_Vs_JetPtDetLevelZero","Jet pT zero response matrix ", numberBins_jetpT_Zero, jetPtZero_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0, 250, 250, 0, 250) added by KA
-      fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelZero);
+      fhJetPtZeroPartLevelVsJetPtZeroDetLevel = new TH2D("JetPtZeroPartLevel_Vs_JetPtZeroDetLevel","JetPtZeroPartLevel_Vs_JetPtZeroDetLevel", numberBins_jetpT_Zero, jetPtZero_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0, 250, 250, 0, 250) added by KA
+      fOutput->Add((TH2D*) fhJetPtZeroPartLevelVsJetPtZeroDetLevel);
 
-      fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr = new TH2D("JetPtPartLevelZero_Vs_JetPtDetLevelCorr","JetPtPartLevelZero_Vs_JetPtDetLevelCorr", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); // (270. -20, 250, 250, 0, 250) added by KA
-      fOutput->Add((TH2D*) fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr);
+      name = Form("JetPtZeroPartLevel_Vs_JetPtDetLevel_Rho%s", rhotype.Data());
+      fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); // (270. -20, 250, 250, 0, 250) added by KA
+      fOutput->Add((TH2D*) fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr);
 
       name = Form("ImpurityInclusive_DetJetPtVsPartJetPt_Rho%s", rhotype.Data());
       fhImpurityInclusive_DetJetPtVsPartJetPtCorr = new TH2D(name.Data(), "Matched inclusive jets where part. level one outside TPC fid. cut", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); // (270, -20.0, 250, 270, -20.0, 270) added by KA
@@ -4775,17 +4839,39 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
       for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
          //FF Response matrix filled from recoil jets
-	      name = Form("fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+	      name = Form("RecoilJetPtPartLevelVsJetPtDetLevel_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
          fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by FF
          fOutput->Add((TH2D*) fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[itt]);
 
-         //KA Reponse matrix filled from recoil jets wrt corresponding TT
-	      name = Form("RecoilJetPtPartLevelVsJetPtDetLevelCorr_Rho%s_Corresp_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
-         fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_CorrespTT[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by KA
-         fOutput->Add((TH2D*) fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_CorrespTT[itt]);
+         // Part level jet pT not corrected on RhokT
+         name = Form("RecoilJetPtZeroPartLevelVsJetPtDetLevel_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtZeroPartLevelVsJetPtDetLevelCorr[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); //(270, - 20.0, 250, 250, 0.0, 250) added by FF
+         fOutput->Add((TH2D*) fhRecoilJetPtZeroPartLevelVsJetPtDetLevelCorr[itt]);
 
+         //  Jet pT not corrected on RhokT
+         name = Form("RecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_TTH%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevelCorr[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_Zero, jetPtZero_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0.0, 250, 250, 0.0, 250) added by FF
+         fOutput->Add((TH2D*) fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevelCorr[itt]);
+
+         //____________________________________________________________
+         //KA Reponse matrix filled from recoil jets wrt corresponding TT
+	      name = Form("RecoilJetPtPartLevelVsJetPtDetLevel_Rho%s_Corresp_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by KA
+         fOutput->Add((TH2D*) fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[itt]);
+
+         // Part level jet pT not corrected on RhokT
+         name = Form("RecoilJetPtZeroPartLevelVsJetPtDetLevel_Rho%s_Corresp_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); //(270, - 20.0, 250, 250, 0.0, 250) added by KA
+         fOutput->Add((TH2D*) fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[itt]);
+
+         //  Jet pT not corrected on RhokT
+         name = Form("RecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_Corresp_TTH%d_%d", fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
+         fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[itt] = new TH2D(name.Data(), name.Data(), numberBins_jetpT_Zero, jetPtZero_Bins, numberBins_jetpT_Zero, jetPtZero_Bins); //(250, 0.0, 250, 250, 0.0, 250) added by KA
+         fOutput->Add((TH2D*) fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[itt]);
+
+         //____________________________________________________________
          name = Form("ImpurityRecoil_DetJetPtVsPartJetPt_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
-         fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = new TH2D(name.Data(), "Matched recoil jets where part. level one outside TPC fid. cut", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by KA
+         fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt] = new TH2D(name.Data(), "Matched recoil jets where part. level ones outside TPC fid. cut", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); //(270, - 20.0, 250, 270, -20.0, 270) added by KA
          fOutput->Add((TH2D*) fhImpurityRecoil_DetJetPtVsPartJetPtCorr[itt]);
       }
 
@@ -4818,51 +4904,50 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       // Particle Level jet pT is CORRECTED on Rhokt
       const Int_t fNumberOfDimensions = 4;
       const Int_t fSparseBinsNumber_JetPtRhokT[fNumberOfDimensions] = {ndeltaPhiBins, numberBins_jetpT_RhokT, ndeltaPhiBins, numberBins_jetpT_RhokT};
-      const Int_t fSparseBinsNumber_JetPtRhokT_InclusiveJets[fNumberOfDimensions] = {2*ndeltaPhiBins, numberBins_jetpT_RhokT, 2*ndeltaPhiBins, numberBins_jetpT_RhokT};
 
       //Inclusive jets
       // Missed events
-      name = Form("MissedEvents_Phi_JetPtRhokT_PartLevel_InclusiveJets_%s", trig[kMB].Data());
-      fhPhi_JetPtPartLevel_InclusiveJets = new TH2D (name.Data(), "Missed events phi vs inclusive jet pT RhokT part level",  2*ndeltaPhiBins, deltaPhiBins_InclusiveJets, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
+      name = Form("MissedEvents_Phi_JetPt_Rho%s_PartLevel_InclusiveJets_%s", rhotype.Data(), trig[kMB].Data());
+      fhPhi_JetPtPartLevel_InclusiveJets = new TH2D (name.Data(), "Missed events phi vs inclusive jet pT RhokT part level",  ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
       fOutput->Add((TH2D*) fhPhi_JetPtPartLevel_InclusiveJets);
 
       //Sparse object as basis for RooUnfoldResponse object
-      name = Form("Phi_JetPtRhokT_DetLevel_Vs_Phi_JetPtRhokT_PartLevel_InclusiveJets_%s", trig[kMB].Data());
-      fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets = new THnSparseD (name.Data(), "Phi vs Jet pT RhokT for filling response matrix with inclusive jets", fNumberOfDimensions, fSparseBinsNumber_JetPtRhokT_InclusiveJets, NULL, NULL);
-      fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->SetBinEdges(0, deltaPhiBins_InclusiveJets);    //Delta phi detector level
+      name = Form("Phi_JetPtRhokT_DetLevel_Vs_Phi_JetPt_Rho%s_PartLevel_InclusiveJets_%s", rhotype.Data(), trig[kMB].Data());
+      fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets = new THnSparseD (name.Data(), "Phi vs Jet pT RhokT for filling response matrix with inclusive jets", fNumberOfDimensions, fSparseBinsNumber_JetPtRhokT, NULL, NULL);
+      fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->SetBinEdges(0, deltaPhiBins);    //Delta phi detector level
       fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->SetBinEdges(1, jetPtRhokT_Bins); //Jet pT detector level
-      fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->SetBinEdges(2, deltaPhiBins_InclusiveJets);    //Delta phi particle level
+      fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->SetBinEdges(2, deltaPhiBins);    //Delta phi particle level
       fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->SetBinEdges(3, jetPtRhokT_Bins); //Jet pT particle level
       fOutput->Add((THnSparse*) fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets);
 
       //Jets from events with TT
       for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
          //Missed events for RM initialization, K.A.
-         name = Form("MissedEvents_DeltaPhi_JetPtRhokT_%s_TTH%d_%d_PartLevel", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); // first-> event trigger; second-> TT bin
+         name = Form("MissedEvents_DeltaPhi_JetPt_Rho%s_PartLevel_TTH%d_%d_%s", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data()); // first-> event trigger; second-> TT bin
          fhDeltaPhi_JetPtPartLevel[itt] = new TH2D (name.Data(), "Missed events delta phi vs jet pT RhokT part level", ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
          fOutput->Add((TH2D*) fhDeltaPhi_JetPtPartLevel[itt]);
 
          // Modified by KA
-         name = Form("MissedEvents_DeltaPhi_JetPtRhokT_%s_Corresp_TTH%d_%d_PartLevel", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); // first-> event trigger; second-> TT bin
+         name = Form("MissedEvents_DeltaPhi_JetPt_Rho%s_PartLevel_Corresp_TTH%d_%d_%s", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data()); // first-> event trigger; second-> TT bin
          fhDeltaPhi_JetPtPartLevel_CorrespTT[itt] = new TH2D (name.Data(), "Missed events delta phi vs jet pT RhokT part level", ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
          fOutput->Add((TH2D*) fhDeltaPhi_JetPtPartLevel_CorrespTT[itt]);
 
          //Sparse object as basis for RooUnfoldResponse object
-         name = Form("DeltaPhi_JetPtRhokT_DetLevel_Vs_DeltaPhi_JetPtRhokT_PartLevel_%s_TTH%d_%d", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         name = Form("DeltaPhi_JetPt_Rho%s_DetLevel_Vs_DeltaPhi_JetPt_Rho%s_PartLevel_TTH%d_%d_%s", rhotype.Data(), rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data());
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt] = new THnSparseD (name.Data(), "Delta phi vs jet pT RhokT for filling response matrix", fNumberOfDimensions, fSparseBinsNumber_JetPtRhokT, NULL, NULL);
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]->SetBinEdges(0, deltaPhiBins);    //Delta phi detector level
-         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]->SetBinEdges(1, jetPtRhokT_Bins);       //Jet pT detector level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]->SetBinEdges(1, jetPtRhokT_Bins); //Jet pT detector level
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]->SetBinEdges(2, deltaPhiBins);    //Delta phi particle level
-         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]->SetBinEdges(3, jetPtRhokT_Bins);       //Jet pT particle level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]->SetBinEdges(3, jetPtRhokT_Bins); //Jet pT particle level
          fOutput->Add((THnSparse*) fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[itt]);
 
          // Modified by KA
-         name = Form("DeltaPhi_JetPtRhokT_DetLevel_Vs_DeltaPhi_JetPtRhokT_PartLevel_%s_Corresp_TTH%d_%d", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         name = Form("DeltaPhi_JetPt_Rho%s_DetLevel_Vs_DeltaPhi_JetPt_Rho%s_PartLevel_Corresp_TTH%d_%d_%s", rhotype.Data(), rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data());
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt] = new THnSparseD (name.Data(), "Delta phi vs jet pT RhokT for filling response matrix", fNumberOfDimensions, fSparseBinsNumber_JetPtRhokT, NULL, NULL);
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]->SetBinEdges(0, deltaPhiBins);    //Delta phi detector level
-         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]->SetBinEdges(1, jetPtRhokT_Bins);       //Jet pT detector level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]->SetBinEdges(1, jetPtRhokT_Bins); //Jet pT detector level
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]->SetBinEdges(2, deltaPhiBins);    //Delta phi particle level
-         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]->SetBinEdges(3, jetPtRhokT_Bins);       //Jet pT particle level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]->SetBinEdges(3, jetPtRhokT_Bins); //Jet pT particle level
          fOutput->Add((THnSparse*) fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[itt]);
 
          //Count TT on Particle level
@@ -4876,37 +4961,81 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
       // Particle Level jet pT is NOT CORRECTED on Rhokt (added by KA)
       const Int_t fSparseBinsNumber_PartLevel_JetPtZero[fNumberOfDimensions] = {ndeltaPhiBins, numberBins_jetpT_RhokT, ndeltaPhiBins, numberBins_jetpT_Zero};
-      const Int_t fSparseBinsNumber_PartLevel_JetPtZero_InclusiveJets[fNumberOfDimensions] = {2*ndeltaPhiBins, numberBins_jetpT_RhokT, 2*ndeltaPhiBins, numberBins_jetpT_Zero};
+      const Int_t fSparseBinsNumber_JetPtZero[fNumberOfDimensions]           = {ndeltaPhiBins, numberBins_jetpT_Zero, ndeltaPhiBins, numberBins_jetpT_Zero};
 
       //Inclusive jets
       //Missed events
-      name = Form("MissedEvents_Phi_JetPtZero_PartLevel_InclusiveJets_%s", trig[kMB].Data());
-      fhPhi_JetPtZeroPartLevel_InclusiveJets = new TH2D (name.Data(), "Missed events phi vs inclusive jet pT zero part level",  2*ndeltaPhiBins, deltaPhiBins_InclusiveJets, numberBins_jetpT_Zero, jetPtZero_Bins); // added by KA
+      name = Form("MissedEvents_Phi_JetPtZeroPartLevel_InclusiveJets_%s", trig[kMB].Data());
+      fhPhi_JetPtZeroPartLevel_InclusiveJets = new TH2D (name.Data(), "Missed events phi vs inclusive jet pT zero part level",  ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_Zero, jetPtZero_Bins); // added by KA
       fOutput->Add((TH2D*) fhPhi_JetPtZeroPartLevel_InclusiveJets);
 
       // Sparse object as basis for RooUnfoldResponse object. Part level jet pT is not corrected on Rhokt
-      name = Form("Phi_JetPtDetLevel_Vs_Phi_JetPtZero_PartLevel_InclusiveJets_%s", trig[kMB].Data());
-      fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets = new THnSparseD (name.Data(), "Phi vs Jet pT zero for filling response matrix with inclusive jets", fNumberOfDimensions, fSparseBinsNumber_PartLevel_JetPtZero_InclusiveJets, NULL, NULL); // added by KA
-      fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(0, deltaPhiBins_InclusiveJets);    //Delta phi detector level
+      name = Form("Phi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets_%s", trig[kMB].Data());
+      fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets = new THnSparseD (name.Data(), "Phi vs Jet pT zero for filling response matrix with inclusive jets", fNumberOfDimensions, fSparseBinsNumber_PartLevel_JetPtZero, NULL, NULL); // added by KA
+      fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(0, deltaPhiBins);    //Delta phi detector level
       fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(1, jetPtRhokT_Bins); //Jet pT detector level
-      fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(2, deltaPhiBins_InclusiveJets);    //Delta phi particle level
+      fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(2, deltaPhiBins);    //Delta phi particle level
       fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(3, jetPtZero_Bins);  //Jet pT particle level
       fOutput->Add((THnSparse*) fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets);
 
+      // Sparse object as basis for RooUnfoldResponse object. Jet pT is not corrected on Rhokt
+      name = Form("Phi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets_%s", trig[kMB].Data());
+      fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets = new THnSparseD (name.Data(), "Phi vs Jet pT zero for filling response matrix with inclusive jets", fNumberOfDimensions, fSparseBinsNumber_JetPtZero, NULL, NULL); // added by KA
+      fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(0, deltaPhiBins);   //Delta phi detector level
+      fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(1, jetPtZero_Bins); //Jet pT detector level
+      fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(2, deltaPhiBins);   //Delta phi particle level
+      fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->SetBinEdges(3, jetPtZero_Bins); //Jet pT particle level
+      fOutput->Add((THnSparse*) fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets);
+
       for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
          //Missed events for RM initialization, K.A. Part level jet pT is not corrected on RhokT
-         name = Form("MissedEvents_DeltaPhi_JetPtZero_%s_TTH%d_%d_PartLevel", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); // first-> event trigger; second-> TT bin
+         name = Form("MissedEvents_DeltaPhi_JetPtZero_PartLevel_TTH%d_%d_%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data()); // first-> event trigger; second-> TT bin
          fhDeltaPhi_JetPtZero_PartLevel[itt] = new TH2D (name.Data(), "Missed events delta phi vs jet pT zero part level", ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_Zero, jetPtZero_Bins); // added by KA
          fOutput->Add((TH2D*) fhDeltaPhi_JetPtZero_PartLevel[itt]);
 
          //Sparse object as basis for RooUnfoldResponse object. Part level jet pT is NOT corrected on RhokT
-         name = Form("DeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZero_PartLevel_%s_TTH%d_%d", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         name = Form("DeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_TTH%d_%d_%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data());
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = new THnSparseD (name.Data(), "Delta phi vs jet pT zero for filling response matrix", fNumberOfDimensions, fSparseBinsNumber_PartLevel_JetPtZero, NULL, NULL); // added by KA
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(0, deltaPhiBins);    //Delta phi detector level
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(1, jetPtRhokT_Bins); //Jet pT detector level
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(2, deltaPhiBins);    //Delta phi particle level
          fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(3, jetPtZero_Bins);  //Jet pT particle level
          fOutput->Add((THnSparse*) fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]);
+
+         //Sparse object as basis for RooUnfoldResponse object. Jet pT is NOT corrected on RhokT
+         name = Form("DeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_TTH%d_%d_%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data());
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt] = new THnSparseD (name.Data(), "Delta phi vs jet pT zero for filling response matrix", fNumberOfDimensions, fSparseBinsNumber_JetPtZero, NULL, NULL); // added by KA
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(0, deltaPhiBins);   //Delta phi detector level
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(1, jetPtZero_Bins); //Jet pT detector level
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(2, deltaPhiBins);   //Delta phi particle level
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]->SetBinEdges(3, jetPtZero_Bins); //Jet pT particle level
+         fOutput->Add((THnSparse*) fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[itt]);
+
+         //_________________________________________________________
+         // Response matrix constructed w.r.t. corresponding TT
+
+         //Missed events for RM initialization, K.A. Part level jet pT is not corrected on RhokT
+         name = Form("MissedEvents_DeltaPhi_JetPtZero_PartLevel_Corresp_TTH%d_%d_%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data()); // first-> event trigger; second-> TT bin
+         fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = new TH2D (name.Data(), "Missed events delta phi vs jet pT zero part level", ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_Zero, jetPtZero_Bins); // added by KA
+         fOutput->Add((TH2D*) fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]);
+
+         //Sparse object as basis for RooUnfoldResponse object. Part level jet pT is NOT corrected on RhokT
+         name = Form("DeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_Corresp_TTH%d_%d_%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data());
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = new THnSparseD (name.Data(), "Delta phi vs jet pT zero for filling response matrix", fNumberOfDimensions, fSparseBinsNumber_PartLevel_JetPtZero, NULL, NULL); // added by KA
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(0, deltaPhiBins);    //Delta phi detector level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(1, jetPtRhokT_Bins); //Jet pT detector level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(2, deltaPhiBins);    //Delta phi particle level
+         fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(3, jetPtZero_Bins);  //Jet pT particle level
+         fOutput->Add((THnSparse*) fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]);
+
+         //Sparse object as basis for RooUnfoldResponse object. Jet pT is NOT corrected on RhokT
+         name = Form("DeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_Corresp_TTH%d_%d_%s", fHadronTTLowPt[itt], fHadronTTHighPt[itt], trig[kMB].Data());
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt] = new THnSparseD (name.Data(), "Delta phi vs jet pT zero for filling response matrix", fNumberOfDimensions, fSparseBinsNumber_JetPtZero, NULL, NULL); // added by KA
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(0, deltaPhiBins);   //Delta phi detector level
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(1, jetPtZero_Bins); //Jet pT detector level
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(2, deltaPhiBins);   //Delta phi particle level
+         fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(3, jetPtZero_Bins); //Jet pT particle level
+         fOutput->Add((THnSparse*) fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]);
       }
    }
    //2D unfolding -------------------------------

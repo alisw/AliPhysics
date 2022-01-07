@@ -391,42 +391,61 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliFJWrapper*               fFastJetWrapper;          ///< EMB_clus wrapper for fast jet finding
 
 
-   TH3D* fhPtTrkTruePrimGen;                                  //! physical primary mc particle eta vs pT  vs V0Mnorm
-   TH3D* fhPtTrkTruePrimRec;                                  //! physical primary detector level track eta vs pT vs V0Mnorm
-   TH3D* fhPtTrkSecOrFakeRec;                                 //! secondary tracks eta vs pT vs V0Mnorm
+   TH3D* fhPtTrkTruePrimGen;  //! physical primary mc particle eta vs pT  vs V0Mnorm
+   TH3D* fhPtTrkTruePrimRec;  //! physical primary detector level track eta vs pT vs V0Mnorm
+   TH3D* fhPtTrkSecOrFakeRec; //! secondary tracks eta vs pT vs V0Mnorm
 
+   //_________________________________________________________________________________________________________________________________________________________________________________________
    // 1D Unfolding
-   TH1D* fhJetPtPartLevelCorr;                                //! response matrix normalization spectrum, jet pT corrected on rho
-   TH1D* fhJetPtPartLevelZero;                                //! response matrix normalization spectrum, jet pT is not corrected on rho
-   TH1D* fhRecoilJetPtPartLevelCorr[fkTTbins];                //! response matrix normalization spectrum, jet pT corrected on rho,  built from recoil jets //FF
-   TH1D* fhRecoilJetPtPartLevelCorr_CorrespTT[fkTTbins];      //! response matrix normalization spectrum, jet pT corrected on rho,  built from recoil jets on particle level //KA
 
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;                             //! response matrix jet pT corrected on rho
-   TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;                             //! response matrix jet pT not corrected on rho
-   TH2D* fhJetPtPartLevelZero_Vs_JetPtDetLevelCorr;                       //! response matrix part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
-   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[fkTTbins];             //! response matrix jet pT corrected on rho built from recoil jets //FF
-   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr_CorrespTT[fkTTbins]; //! response matrix jet pT corrected on rho built from jets recoil from corresponding TT // KA
+   // Inclusive jets
+   TH1D* fhJetPtPartLevelCorr;                      //! response matrix normalization spectrum, jet pT corrected on rho
+   TH1D* fhJetPtPartLevelZero;                      //! response matrix normalization spectrum, jet pT is not corrected on rho
+   TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr;       //! response matrix, jet pT corrected on rho
+   TH2D* fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr; //! response matrix, part level jet pT is not corrected on rho, detectot level jet pT is corrected on rho (added by KA)
+   TH2D* fhJetPtZeroPartLevelVsJetPtZeroDetLevel;   //! response matrix, jet pT not corrected on rho
 
-   TH2D* fhImpurityInclusive_DetJetPtVsPartJetPtCorr;         //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for inclusive jets //KA
-   TH2D* fhImpurityRecoil_DetJetPtVsPartJetPtCorr[fkTTbins];  //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for recoil jets    //KA
+   // Recoil jets with TT on detector level
+   TH1D* fhRecoilJetPtPartLevelCorr[fkTTbins];                        //! response matrix normalization spectrum, jet pT corrected on rho, built from recoil jets //FF
+   TH1D* fhRecoilJetPtZeroPartLevel[fkTTbins];                        //! response matrix normalization spectrum, jet pT not corrected on rho, built from recoil jets
+   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevelCorr[fkTTbins];         //! response matrix, jet pT corrected on rho, built from recoil jets //FF
+   TH2D* fhRecoilJetPtZeroPartLevelVsJetPtDetLevelCorr[fkTTbins];     //! response matrix, part level jet pT not corrected on rho, built from recoil jets //FF
+   TH2D* fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevelCorr[fkTTbins]; //! response matrix, jet pT not corrected on rho, built from recoil jets //FF
 
+   // Recoil jets with corresponding TT
+   TH1D* fhRecoilJetPtPartLevel_CorrespTT[fkTTbins];                        //! response matrix normalization spectrum, jet pT corrected on rho, built from recoil jets on particle level //KA
+   TH1D* fhRecoilJetPtZeroPartLevel_CorrespTT[fkTTbins];                    //! response matrix normalization spectrum, jet pT not corrected on rho, built from recoil jets on particle level
+   TH2D* fhRecoilJetPtPartLevelVsJetPtDetLevel_CorrespTT[fkTTbins];         //! response matrix jet pT corrected on rho built from jets recoil from corresponding TT // KA
+   TH2D* fhRecoilJetPtZeroPartLevelVsJetPtDetLevel_CorrespTT[fkTTbins];     //! response matrix jet pT corrected on rho built from jets recoil from corresponding TT // KA
+   TH2D* fhRecoilJetPtZeroPartLevelVsJetPtZeroDetLevel_CorrespTT[fkTTbins]; //! response matrix jet pT corrected on rho built from jets recoil from corresponding TT // KA
+
+   // Impurity
+   TH2D* fhImpurityInclusive_DetJetPtVsPartJetPtCorr;        //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for inclusive jets //KA
+   TH2D* fhImpurityRecoil_DetJetPtVsPartJetPtCorr[fkTTbins]; //! Impurity distribution: matched jets where det. level jet is within |0.5| and part. one is out for recoil jets    //KA
+
+   //_________________________________________________________________________________________________________________________________________________________________________________________
    //2D unfolding
-   // Jet pT is CORRECTED on Rhokt (particle and detector levels)
-   TH2D *fhPhi_JetPtPartLevel_InclusiveJets;                                           //! histogram with missed events -> no matching with DetLevel jets. Inclusive Jets
-   THnSparse *fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets;                 //! 4D-response matrix delta phi vs jet pT.  Inclusive Jets
 
-   TH2D *fhDeltaPhi_JetPtPartLevel[fkTTbins];                                          //! histogram with missed events -> no matching with DetLevel jets. TT events
-   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[fkTTbins];           //! 4D-response matrix delta phi vs jet pT. TT events
+   // Inclusive jets
+   TH2D *fhPhi_JetPtPartLevel_InclusiveJets;                                   //! histogram with missed events -> no matching with DetLevel jets. Inclusive Jets
+   TH2D *fhPhi_JetPtZeroPartLevel_InclusiveJets;                               //! histogram with missed events -> no matching with DetLevel jets. Inclusive Jets
+   THnSparse *fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets;         //! 4D-response matrix delta phi vs jet pT.  Inclusive Jets
+   THnSparse *fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets;     //! 4D-response matrix delta phi vs jet pT.  Inclusive Jets, part level jet pT not corrected on rho
+   THnSparse *fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets; //! 4D-response matrix delta phi vs jet pT.  Inclusive Jets, jet pT not corrected on rho
 
-   TH2D *fhDeltaPhi_JetPtPartLevel_CorrespTT[fkTTbins];                                //! histogram with missed events -> no matching with DetLevel jets. TT events
-   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[fkTTbins]; //! 4D-response matrix delta phi vs jet pT. TT events
+   // Recoil jets with TT on detector level
+   TH2D *fhDeltaPhi_JetPtPartLevel[fkTTbins];                                        //! histogram with missed events -> no matching with DetLevel jets. TT events
+   TH2D *fhDeltaPhi_JetPtZero_PartLevel[fkTTbins];                                   //! histogram with missed events -> no matching with DetLevel jets. TT events
+   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel[fkTTbins];         //! 4D-response matrix delta phi vs jet pT. TT events
+   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[fkTTbins];     //! 4D-response matrix delta phi vs jet pT. TT events, part level jet pT not corrected on rho
+   THnSparse *fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[fkTTbins]; //! 4D-response matrix delta phi vs jet pT. TT events, jet pT not corrected on rho
 
-   //Particle level Jet pT is NOT CORRECTED on Rhokt
-   TH2D *fhPhi_JetPtZeroPartLevel_InclusiveJets;                                 //! histogram with missed events -> no matching with DetLevel jets. Inclusive Jets (added by KA)
-   THnSparse *fhPhi_JetPtDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets;       //! 4D-response matrix delta phi vs jet pT.  Inclusive Jets (added by KA)
-
-   TH2D *fhDeltaPhi_JetPtZero_PartLevel[fkTTbins];                               //! histogram with missed events -> no matching with DetLevel jets. TT events (added by KA)
-   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel[fkTTbins]; //! 4D-response matrix delta phi vs jet pT. TT events (added by KA)
+   // Recoil jets with corresponding TT
+   TH2D *fhDeltaPhi_JetPtPartLevel_CorrespTT[fkTTbins];                                        //! histogram with missed events -> no matching with DetLevel jets. TT events
+   TH2D *fhDeltaPhi_JetPtZeroPartLevel_CorrespTT[fkTTbins];                                    //! histogram with missed events -> no matching with DetLevel jets. TT events
+   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtPartLevel_CorrespTT[fkTTbins];         //! 4D-response matrix delta phi vs jet pT. TT events
+   THnSparse *fhDeltaPhi_JetPtDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[fkTTbins];     //! 4D-response matrix delta phi vs jet pT. TT events, part level jet pT not corrected on rho
+   THnSparse *fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[fkTTbins]; //! 4D-response matrix delta phi vs jet pT. TT events, jet pT not corrected on rho
 
    // TH1D *fhNumberOf_ChosenTT_PartLevel[fkTTbins];                             //! number of particle level TT (I suggest to delete it, since it is not needed) added by KA
 
@@ -470,8 +489,6 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhRecoilJetPtEvtByEventPartLevel[fkTTbins];         //! event by event pt spectrum of jets with physical TT
    TH1D* fhRecoilJetPtEvtByEventRandomTTPartLevel;           //! event by event pt spectrum of jets with radom TT
 
-
-
    //EMBEDDING
    TH2D* fhTrackEtaInclEMB;                              //!  Eta dist inclusive embedded tracks vs pT
    TH3D* fhRecoilJetPhiTTH_EMB_V0Mnorm1[kTG][fkTTbins];  //!  filled with any detector level pythia recoil jet
@@ -483,8 +500,6 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    TH2D* fhJetPtPartLevelVsJetPtDetLevelCorr_EMB[kTG];           //! response matrix jet pT corrected on rho    embedded to minimum bias events
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero_EMB[kTG];           //! response matrix jet pT not corrected on rho
-
-
 
    Double_t fMinFractionShared;     // cut on shared fraction
 
@@ -572,7 +587,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 36); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 37); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }
