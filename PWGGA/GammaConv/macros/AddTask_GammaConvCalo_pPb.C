@@ -1030,9 +1030,9 @@ void AddTask_GammaConvCalo_pPb(
 
 
   } else if ( trainConfig == 1050){ // INT7, 
-    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7 no Trigger
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0h63103100000010"); // INT7 no Trigger
   } else if ( trainConfig == 1051){ // PHI7, 
-    cuts.AddCutPCMCalo("80062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //PHI7
+    cuts.AddCutPCMCalo("80062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0h63103100000010"); //PHI7
 
   //************************************************ PCM- PHOS analysis 5 TeV pPb cent dep ************************************
   } else if (trainConfig == 1100){ // centrality dependent and with latest TM run 1
