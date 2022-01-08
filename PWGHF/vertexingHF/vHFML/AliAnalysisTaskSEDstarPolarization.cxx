@@ -674,12 +674,11 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
     else {
         //variables for ML application
         std::vector<double> modelPred = {};
-        int isMLsel = 0;
+        int isMLsel = isSelected;
         double ptCand = d->Pt();
 
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
 
-        isMLsel = 3;
         if(fDependOnMLSelector) {
             std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
             int bin = low - fPtLimsML.begin() - 1;
