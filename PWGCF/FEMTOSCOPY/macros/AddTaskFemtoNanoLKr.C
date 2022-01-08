@@ -9,7 +9,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = false,		//2
+AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2
 									 int fFilterBit = 128,  //3 type of tracks we select from raw data. TPC only track with 128. With 96 (for sanity check)
 									 TString triggerData = "kINT7",	//4 minimum bias  (for default is this) or sample with high multiplicity KHM
                    int CutKaon = 0, ///7 decide which cut use (Ramona s or Oton s)
@@ -82,9 +82,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = false,		//2
   TrackNegKaonCuts->SetFilterBit(fFilterBit);
   TrackNegKaonCuts->SetCutCharge(-1); ///negative particle
 	if(CutKaon==0){
-    TrackPosKaonCuts->SetPIDkd();// Oton
+    TrackNegKaonCuts->SetPIDkd();// Oton
   } else if (CutKaon==1){
-    TrackPosKaonCuts->SetPIDkd(true,true); //Ramona
+    TrackNegKaonCuts->SetPIDkd(true,true); //Ramona
   }
 	if (suffix != "0" && suffix != "999")
 	{
@@ -229,7 +229,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = false,		//2
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
-	config->SetMixingDepth(30); ///how many events i want to mix. 10 is usually okay
+	//config->SetMixingDepth(30); ///how many events i want to mix. 10 is usually okay
+  config->SetMixingDepth(100); ///how many events I want to mix. 10 is usually okay
 
 
   if (suffix == "0") {
