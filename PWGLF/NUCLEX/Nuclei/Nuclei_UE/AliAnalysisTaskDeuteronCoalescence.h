@@ -9,11 +9,10 @@
 #include "TLorentzVector.h"
 #include "AliMCParticle.h"
 #include "AliEventCuts.h"
-#include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "TVector2.h"
 #include "TVector3.h"
-#include "AliStack.h"
 #include "TList.h"
 #include "TTree.h"
 #include "TH1D.h"
@@ -64,12 +63,9 @@ public:
     Bool_t    DoCoalescence                (Double_t deltaX, Double_t deltaP, Double_t sigma_p, const char *func);
     TLorentzVector LorentzTransform        (TLorentzVector R, TVector3 beta_vect);
 
-    AliEventCuts  fESDeventCuts;//
-
 private:
-    AliESDEvent       *fESDevent;//!
+    AliAODEvent       *fAODevent;//!
     AliMCEvent        *fMCEvent;//!
-    AliStack          *fMCstack;//!
     AliMCEventHandler *fMCEventHandler;//!
     TList             *fOutputList;//!
     TList             *fQAList;//!
@@ -77,7 +73,7 @@ private:
     //Average Multiplicity
     Double_t fAverage_Nch_Transv;//
     
-    //Re-shaping Protons
+    //Re-shaping Protons 
     TH1D *hProtonWeights;//
     TF1  *fProtonWeights;//
     TH1D *hWeightToward;//

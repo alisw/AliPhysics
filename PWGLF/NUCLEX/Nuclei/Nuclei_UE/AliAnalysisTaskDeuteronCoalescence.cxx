@@ -9,8 +9,6 @@
 #include "AliAnalysisTask.h"
 #include "TLorentzVector.h"
 #include "AliMCParticle.h"
-#include "AliCentrality.h"
-#include "AliEventCuts.h"
 #include "TDatabasePDG.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -38,10 +36,8 @@ ClassImp(AliAnalysisTaskDeuteronCoalescence)
 //____________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronCoalescence::AliAnalysisTaskDeuteronCoalescence():
 AliAnalysisTaskSE(),
-fESDeventCuts(),
-fESDevent(nullptr),
+fAODevent(nullptr),
 fMCEvent(nullptr),
-fMCstack(nullptr),
 fMCEventHandler(nullptr),
 fOutputList(nullptr),
 fQAList(nullptr),
@@ -90,10 +86,8 @@ hDeltaPhi_INELgtZERO(nullptr)
 //____________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronCoalescence::AliAnalysisTaskDeuteronCoalescence(const char *name):
 AliAnalysisTaskSE(name),
-fESDeventCuts(),
-fESDevent(nullptr),
+fAODevent(nullptr),
 fMCEvent(nullptr),
-fMCstack(nullptr),
 fMCEventHandler(nullptr),
 fOutputList(nullptr),
 fQAList(nullptr),
@@ -147,9 +141,8 @@ hDeltaPhi_INELgtZERO(nullptr)
 AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     
     fOutputList->Clear();
-    delete fESDevent;
+    delete fAODevent;
     delete fMCEvent;
-    delete fMCstack;
     delete fMCEventHandler;
     delete fOutputList;
     delete fQAList;
@@ -203,23 +196,6 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
     fQAList     = new TList();
     fOutputList -> SetOwner();
     fQAList     -> SetOwner();
-    
-    //Event Selection
-    fESDeventCuts.AddQAplotsToList(fQAList);
-    fESDeventCuts.SetManualMode();
-    fESDeventCuts.fRequireTrackVertex = kTRUE;
-    fESDeventCuts.fMinVtz = -10.f;
-    fESDeventCuts.fMaxVtz = +10.f;
-    fESDeventCuts.fMaxDeltaSpdTrackAbsolute = 0.5f;
-    fESDeventCuts.fMaxResolutionSPDvertex = 0.25f;
-    fESDeventCuts.fTriggerMask = (AliVEvent::kINT7);
-    fESDeventCuts.fRejectDAQincomplete = kTRUE;
-    fESDeventCuts.fSPDpileupMinContributors = 3;
-    fESDeventCuts.fSPDpileupMinZdist = 0.8;
-    fESDeventCuts.fSPDpileupNsigmaZdist = 3.0;
-    fESDeventCuts.fSPDpileupNsigmaDiamXY = 2.0;
-    fESDeventCuts.fSPDpileupNsigmaDiamZ = 5.0;
-    fESDeventCuts.fTrackletBGcut = kTRUE;
     
     //Event Counter
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
@@ -877,9 +853,9 @@ void AliAnalysisTaskDeuteronCoalescence::UserExec(Option_t *)  {
 //____________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDeuteronCoalescence::GetEvent ()  {
     
-    //Get ESD Event
-    fESDevent = dynamic_cast <AliESDEvent*>(InputEvent());
-    if (!fESDevent) return kFALSE;
+    //Get AOD Event
+    fAODevent = dynamic_cast <AliAODEvent*>(InputEvent());
+    if (!fAODevent) return kFALSE;
     hNumberOfEvents -> Fill(0.5);
 
     //Get MC Event
@@ -891,76 +867,26 @@ Bool_t AliAnalysisTaskDeuteronCoalescence::GetEvent ()  {
     fMCEventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
     if(!fMCEventHandler) return kFALSE;
     hNumberOfEvents -> Fill(2.5);
-
-    //Standard Event Cuts
-    if (!fESDeventCuts.AcceptEvent(fESDevent)) {
-        PostData(2, fQAList);
-        return kFALSE;
-    }
-    hNumberOfEvents -> Fill(3.5);
-       
-    //Reject Events with Incomplete DAQ
-    if (fESDevent->IsIncompleteDAQ()) return kFALSE;
-    hNumberOfEvents -> Fill(4.5);
-       
-    //V0 Timing Decision
-    AliVVZERO *vzeroData = fESDevent->GetVZEROData();
-    if (!(vzeroData->GetV0ADecision()) || !(vzeroData->GetV0CDecision())) return kFALSE;
-    hNumberOfEvents -> Fill(5.5);
-       
-    //Pileup Rejection
-    Int_t nClustersLayer0 = fESDevent->GetNumberOfITSClusters(0);
-    Int_t nClustersLayer1 = fESDevent->GetNumberOfITSClusters(1);
-    Int_t nTracklets      = fESDevent->GetMultiplicity()->GetNumberOfTracklets();
-    if ((nClustersLayer0 + nClustersLayer1) > 65.0 + (Double_t)nTracklets*4.0) return kFALSE;
-    hNumberOfEvents -> Fill(6.5);
-
-    //Primary Vertex Tracks
-    AliESDVertex *vertex_tracks = (AliESDVertex*) fESDevent->GetPrimaryVertexTracks();
-    if (!vertex_tracks) return kFALSE;
-    hNumberOfEvents -> Fill(7.5);
-       
-    //Vertex Contributors Tracks
-    if ( vertex_tracks->GetNContributors() < 1 ) return kFALSE;
-    hNumberOfEvents -> Fill(8.5);
-       
-    //Primary Vertex SPD
-    AliESDVertex *vertex_SPD = (AliESDVertex*) fESDevent->GetPrimaryVertexSPD();
-    if (!vertex_SPD) return kFALSE;
-    hNumberOfEvents -> Fill(9.5);
-       
-    //Vertex Contributors SPD
-    if (vertex_SPD->GetNContributors() < 1 ) return kFALSE;
-    hNumberOfEvents -> Fill(10.5);
-       
-    //SPD Pile-up in Mult Bins
-    if (fESDevent->IsPileupFromSPDInMultBins()) return kFALSE;
-    hNumberOfEvents -> Fill(11.5);
-       
-    //Cut on Z-Vertex Resolution
-    if (TMath::Abs(vertex_SPD->GetZ() - vertex_tracks->GetZ()) > 0.3) return kFALSE;
-    hNumberOfEvents -> Fill(12.5);
-
-    //Primary Vertex Selection
-    if (vertex_tracks->GetZ() < -10.0) return kFALSE;
-    if (vertex_tracks->GetZ() > +10.0) return kFALSE;
-    hNumberOfEvents -> Fill(13.5);
-              
-    //Multiplicity
-    AliMultSelection *multiplicitySelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
-    if(!multiplicitySelection) return kFALSE;
-    hNumberOfEvents -> Fill(14.5);
-       
-    //Selection of Multiplicity Range
-    Double_t mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
-    if (mult_percentile <  0.0)   return kFALSE;
-    if (mult_percentile >  100.0) return kFALSE;
-    hNumberOfEvents -> Fill(15.5);
     
     //Selection of INEL>0 Events
     if (!IsINELgtZERO ()) return kFALSE;
+    hNumberOfEvents -> Fill(3.5);
+    
+    //No Vertex & Multiplicity Selection
+    hNumberOfEvents -> Fill(4.5);
+    hNumberOfEvents -> Fill(5.5);
+    hNumberOfEvents -> Fill(6.5);
+    hNumberOfEvents -> Fill(7.5);
+    hNumberOfEvents -> Fill(8.5);
+    hNumberOfEvents -> Fill(9.5);
+    hNumberOfEvents -> Fill(10.5);
+    hNumberOfEvents -> Fill(11.5);
+    hNumberOfEvents -> Fill(12.5);
+    hNumberOfEvents -> Fill(13.5);
+    hNumberOfEvents -> Fill(14.5);
+    hNumberOfEvents -> Fill(15.5);
     hNumberOfEvents -> Fill(16.5);
-         
+
     return kTRUE;
 }
 //____________________________________________________________________________________________________________________________________________________
