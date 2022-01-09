@@ -75,7 +75,8 @@ void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1.Form("SimpleTask_%s",OutFileName);
+  sMyOutName1 += "SimpleTaskTree";
+  sMyOutName1 += OutFileName;
   sMyOutName2 += "Histogram_TrackVariables";
   sMyOutName2 += OutFileName;
   sMyOutName3 += "QAPileupPlots";

@@ -75,7 +75,8 @@ void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1.Form("SimpleTask_%s"," ");
+  sMyOutName1 += "SimpleTaskTree";
+  sMyOutName1 += OutFileDir;
   sMyOutName2 += "HistogramTrackVariables";
   sMyOutName2 += OutFileDir;
   sMyOutName3 += "QAPileupPlots";

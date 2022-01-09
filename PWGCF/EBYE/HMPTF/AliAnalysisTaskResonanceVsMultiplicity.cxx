@@ -395,12 +395,12 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
   AliESDtrackCuts *fESDTPConlyTracks= new AliESDtrackCuts();
   fESDTPConlyTracks = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   Int_t nTPCtracks = lESDevent->GetNumberOfTPCTracks();
-  cout<<"TPC tracks:"<<nTPCtracks<<endl;
+  //cout<<"TPC tracks:"<<nTPCtracks<<endl;
   Int_t nITSClsLy0 = lESDevent->GetNumberOfITSClusters(0);
   Int_t nITSClsLy1 = lESDevent->GetNumberOfITSClusters(1);
   Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
   Int_t nITSTrkls = lESDevent->GetMultiplicity()->GetNumberOfTracklets();
-  cout<<"No. of ITS tracklets:"<<nITSTrkls<<endl;
+  //cout<<"No. of ITS tracklets:"<<nITSTrkls<<endl;
   const Int_t nTracks = lESDevent->GetNumberOfTracks();
   Int_t multTrk = 0;
   Int_t multTPConlyTrk = 0;
@@ -418,7 +418,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
     if(esdTrack->IsOn(AliESDtrack::kTPCrefit)) nTracksTPC++;
     if(esdTrack->IsOn(AliESDtrack::kITSrefit)) nTracksITS++;
   }
-  cout<<"TPC tracks using cut: "<<multTPConlyTrk<<endl;
+  //cout<<"TPC tracks using cut: "<<multTPConlyTrk<<endl;
 
   //Histograms before AliEventCut imposed
   fHistTPConlyVsV0MBeforeAliEventCut->Fill(v0Centr,multTrk);
@@ -739,12 +739,12 @@ Bool_t  AliAnalysisTaskResonanceVsMultiplicity::AcceptEventAfterPileUpCut(AliESD
   AliESDtrackCuts *fESDTPConlyTracks= new AliESDtrackCuts();
   fESDTPConlyTracks = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   Int_t nTPCtracks = fESD->GetNumberOfTPCTracks();
-  cout<<"TPC tracks:"<<nTPCtracks<<endl;
+  //cout<<"TPC tracks:"<<nTPCtracks<<endl;
   Int_t nITSClsLy0 = fESD->GetNumberOfITSClusters(0);
   Int_t nITSClsLy1 = fESD->GetNumberOfITSClusters(1);
   Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
   Int_t nITSTrkls = fESD->GetMultiplicity()->GetNumberOfTracklets();
-  cout<<"No. of ITS tracklets:"<<nITSTrkls<<endl;
+  //cout<<"No. of ITS tracklets:"<<nITSTrkls<<endl;
   const Int_t nTracks = fESD->GetNumberOfTracks();
   Int_t multTrk = 0;
   Int_t multTPConlyTrk = 0;
@@ -762,7 +762,7 @@ Bool_t  AliAnalysisTaskResonanceVsMultiplicity::AcceptEventAfterPileUpCut(AliESD
     if(esdTrack->IsOn(AliESDtrack::kTPCrefit)) nTracksTPC++;
     if(esdTrack->IsOn(AliESDtrack::kITSrefit)) nTracksITS++;
   }
-  cout<<"TPC tracks using cut: "<<multTPConlyTrk<<endl;
+  //cout<<"TPC tracks using cut: "<<multTPConlyTrk<<endl;
   AliESDVZERO* esdV0 = fESD->GetVZEROData();
   Float_t multV0a = esdV0->GetMTotV0A();
   Float_t multV0c = esdV0->GetMTotV0C();
