@@ -53,7 +53,7 @@ public:
     void SetFillNSparseAcceptanceLevel(bool fill = true)                                          {fFillAcceptanceLevel = fill;}
 
     /// methods for ML application
-    void SetDoMLApplication(bool flag = true, bool isMultiClass = false)                          {fApplyML = flag; fMultiClass = isMultiClass;}
+    void SetDoMLApplication(bool flag = true)                                                     {fApplyML = flag;}
     void SetMLConfigFile(std::string path = "")                                                   {fConfigPath = path;}
 
     void SetIsDependentOnMLSelector(bool flag=true, std::string name="MLSelector") {
@@ -109,7 +109,6 @@ private:
     THnSparseF* fnSparseRecoThetaPhiStar[4] = {nullptr, nullptr, nullptr, nullptr}; //!<! THnSparse for reco candidates
 
     bool fApplyML = false;                                                          /// flag to enable ML application
-    bool fMultiClass = false;                                                       /// flag to enable multi-class models (Bkg, Prompt, FD)
     std::string fConfigPath = "";                                                   /// path to ML config file
     AliHFMLResponse* fMLResponse = nullptr;                                         //!<! object to handle ML response
 
@@ -125,7 +124,7 @@ private:
     ROOT::Math::PxPyPzMVector fourVecPiCM{};                                        /// four vector for reconstructed pion in the D* RF
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 4); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 5); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 
