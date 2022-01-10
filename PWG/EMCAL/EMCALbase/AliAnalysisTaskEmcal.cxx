@@ -452,6 +452,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
 
+    fHistWeights = new TH1F("fHistWeights", "fHistWeights", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeights->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeights);
+
     // Set the bin labels
     Bool_t binningAvailable = false;
     if(fPtHardBinning.GetSize() > 0) {
@@ -476,10 +481,12 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
         fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEventsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsectionAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeightsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
 
         fHistTrials->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsection->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEvents->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeights->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
       }
     } else {
       AliErrorStream() << "No suitable binning available - skipping bin labels" << std::endl;
@@ -668,6 +675,10 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   // as event counting for the cross section normalization
   // depends on it.
   if(fPtHard < fMinPtHard || fPtHard > fMaxPtHard) return;
+
+  // Fill weights before event selection
+  auto weight = GetEventWeightFromHeader();
+  fHistWeights->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
 
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
