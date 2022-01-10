@@ -367,6 +367,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fTrackMatcherRunningMode(0),
   fEnableSortForClusMC(0),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoProfileMaterialBudgetWeights(kFALSE),
+  fProfileMaterialBudgetWeights(nullptr),
+  fNumberOfMaterialBudgetBins(12),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
@@ -688,6 +691,9 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fTrackMatcherRunningMode(0),
   fEnableSortForClusMC(0),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
+  fDoProfileMaterialBudgetWeights(kFALSE),
+  fProfileMaterialBudgetWeights(nullptr),
+  fNumberOfMaterialBudgetBins(12),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
@@ -877,6 +883,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   }
   if(fDoLightOutput<=1){
     fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground = kTRUE;
+  }
+  if (fDoMaterialBudgetWeightingOfGammasForTrueMesons){
+      if (fIsMC>=1){
+        fDoProfileMaterialBudgetWeights = kTRUE;
+      }
   }
   if( fDoMesonQA>0 ) {
     //fNDMRecoMode: 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
@@ -1123,7 +1134,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoAnglePiPlNDM       = new TH2F*[fnCuts];
     fHistoAngleSum              = new TH2F*[fnCuts];
   }
-
+  if (fDoProfileMaterialBudgetWeights){
+      fProfileMaterialBudgetWeights       = new TProfile*[fnCuts];
+  }
   fHistoGammaGammaInvMassPt               = new TH2F*[fnCuts];
   fHistoGammaGammaInvMassPtBeforeCuts     = new TH2F*[fnCuts];
   if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetBackgroundMode() == 7){
@@ -1534,6 +1547,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
+    }
+    if (fDoProfileMaterialBudgetWeights){
+        fProfileMaterialBudgetWeights[iCut]  = new TProfile("fProfileMaterialBudgetWeights", "fProfileMaterialBudgetWeights", fNumberOfMaterialBudgetBins, 0., 180.);
+        fProfileMaterialBudgetWeights[iCut]->GetXaxis()->SetTitle("Conversion Radius");
+        fProfileMaterialBudgetWeights[iCut]->GetYaxis()->SetTitle("Material Budget Weight");
+        fESDList[iCut]->Add(fProfileMaterialBudgetWeights[iCut]);
     }
     fHistoMotherInvMassPt[iCut]                   = new TH2F("ESD_Mother_InvMass_Pt","ESD_Mother_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1], HistoNPtBins, arrPtBinning);
     fHistoMotherInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
@@ -3306,6 +3325,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessConversionPhotonC
     Double_t weightMatBudget = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
       weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+      if (fDoProfileMaterialBudgetWeights){
+          fProfileMaterialBudgetWeights[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightMatBudget);
+      }
     }
 
     if( fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0 ){
@@ -3354,7 +3376,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessConversionPhotonC
 
       Double_t weightMatBudget = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-    weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+        weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+        if (fDoProfileMaterialBudgetWeights){
+            fProfileMaterialBudgetWeights[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightMatBudget);
+        }
       }
       fIsFromMBHeader = kTRUE;
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -3388,7 +3413,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessConversionPhotonC
 
       Double_t weightMatBudget = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
-    weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+        weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate, magField);
+        if (fDoProfileMaterialBudgetWeights){
+            fProfileMaterialBudgetWeights[fiCut]->Fill(PhotonCandidate->GetConversionRadius(), weightMatBudget);
+        }
       }
 
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -3565,6 +3593,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralDecayMeson
         Float_t weightMatBudget = 1.;
         if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
           weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(gamma0, magField) * ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(gamma1,magField);
+          if (fDoProfileMaterialBudgetWeights){
+              fProfileMaterialBudgetWeights[fiCut]->Fill(gamma0->GetConversionRadius(), weightMatBudget);
+              fProfileMaterialBudgetWeights[fiCut]->Fill(gamma1->GetConversionRadius(), weightMatBudget);
+          }
         }
 
         if(!fDoLightOutput){
@@ -4311,6 +4343,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
         Float_t weightMatBudget = 1.;
         if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
           weightMatBudget = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(gamma0, magField);
+          if (fDoProfileMaterialBudgetWeights){
+              fProfileMaterialBudgetWeights[fiCut]->Fill(gamma0->GetConversionRadius(), weightMatBudget);
+          }
         }
 
         if(!fDoLightOutput){
