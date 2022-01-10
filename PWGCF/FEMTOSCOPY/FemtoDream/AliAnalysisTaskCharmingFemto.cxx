@@ -77,6 +77,11 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fDoDorigPlots(false),
+      fHistDplusMCtruthmotherPDG(nullptr),
+      fHistDplusMCtruthQuarkOrigin(nullptr),
+      fHistDminusMCtruthmotherPDG(nullptr),
+      fHistDminusMCtruthQuarkOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -163,6 +168,11 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fDoDorigPlots(false),
+      fHistDplusMCtruthmotherPDG(nullptr),
+      fHistDplusMCtruthQuarkOrigin(nullptr),
+      fHistDminusMCtruthmotherPDG(nullptr),
+      fHistDminusMCtruthQuarkOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -510,6 +520,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dplus.push_back(part);
+                  if(fDoDorigPlots){
+                    FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+                    FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+                  }
                 }
                 
               }
@@ -520,6 +534,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dminus.push_back(part);
+                  if(fDoDorigPlots){
+                    FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+                    FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+                  }
                 }
               }            
             }
@@ -934,6 +952,41 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDplusMCThetaRes);
       fDChargedHistList->Add(fHistDplusMCOrigin);
     }
+  }
+
+  //MCTruth Histos
+
+  if (fIsMC && fIsMCtruth) {
+      
+      fHistDplusMCtruthmotherPDG = new TH2F(
+          TString::Format("fHist%sMCPDGPt_MCtruth", nameD.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+
+      fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 3, 0.5, 3.5);
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+
+      fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
+      fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
+
+      fHistDminusMCtruthmotherPDG = new TH2F(
+          TString::Format("fHist%sMCPDGPt_MCtruth", nameDminus.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+      
+      fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 3, 0.5, 3.5);
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+
+      fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
+      fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
   }
 
   fHistDminusInvMassPt = new TH2F(
