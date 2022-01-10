@@ -71,7 +71,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliPhysicsSelection.h"
 #include "AliFlowEventSimple.h"
-//#include "AliTimeRangeCut.h"
+#include "AliTimeRangeCut.h"
 
 using std::cout;
 using std::endl;
@@ -124,7 +124,7 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA() // All data members should be initi
   fHistEventCount(0),
   fHistCentDist(0),
   fHistPionVsKaonMult(0),  
-  fHistTPCClusterRP(0),
+/*fHistTPCClusterRP(0),
   fHistITSClusterRP(0),
   fHistChiSqrPerNdfTPCRP(0),
   fHistChiSqrPerNdfITSRP(0),
@@ -140,6 +140,7 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA() // All data members should be initi
   fHistratioCrossedRowsOverFindableClustersTPC(0),
   fHistDCAxyPOI(0),
   fHistDCAzPOI(0),
+*/  
   fProCosResThreeSubEventPsiAB(0),
   fProCosResThreeSubEventPsiAC(0),
   fProCosResThreeSubEventPsiBC(0),
@@ -150,7 +151,16 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA() // All data members should be initi
   fFullCosTerm_V0A(0),  
   fFullSinTerm_V0A(0),
   fFullCosTerm_V0C(0),  
-  fFullSinTerm_V0C(0)
+  fFullSinTerm_V0C(0),
+
+  fhInvMassSAEPvzeroA(0),
+  fhInvMassLikePPSAEPvzeroA(0),
+  fhInvMassLikeMMSAEPvzeroA(0),
+  fhInvMassMixSAEPvzeroA(0),
+  fhInvMassSAEPvzeroC(0),
+  fhInvMassLikePPSAEPvzeroC(0),
+  fhInvMassLikeMMSAEPvzeroC(0),
+  fhInvMassMixSAEPvzeroC(0)
 {
   // Dummy constructor ALWAYS needed for I/O.
   kaonMass = 0.49368;
@@ -160,15 +170,6 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA() // All data members should be initi
   for(Int_t i = 0; i < kDimBuf; i++){
     if(i < kCenBin)
       {
-	fhInvMassSAEPvzeroA[i] = 0;
-	fhInvMassLikePPSAEPvzeroA[i] = 0;
-	fhInvMassLikeMMSAEPvzeroA[i] = 0;
-	fhInvMassMixSAEPvzeroA[i] = 0;
-	fhInvMassSAEPvzeroC[i] = 0;
-	fhInvMassLikePPSAEPvzeroC[i] = 0;
-	fhInvMassLikeMMSAEPvzeroC[i] = 0;
-	fhInvMassMixSAEPvzeroC[i] = 0;
-
 	fHistEPTPC[i] = 0;
 	fHistEPV0A[i] = 0;
 	fHistEPV0C[i] = 0;
@@ -292,6 +293,7 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA(const char *name, const Bool_t useshi
    fHistEventCount(0),
    fHistCentDist(0),   
    fHistPionVsKaonMult(0),
+   /*
    fHistTPCClusterRP(0),
    fHistITSClusterRP(0),
    fHistChiSqrPerNdfTPCRP(0),
@@ -308,6 +310,7 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA(const char *name, const Bool_t useshi
    fHistratioCrossedRowsOverFindableClustersTPC(0),
    fHistDCAxyPOI(0),
    fHistDCAzPOI(0),
+   */   
    fProCosResThreeSubEventPsiAB(0),
    fProCosResThreeSubEventPsiAC(0),
    fProCosResThreeSubEventPsiBC(0),
@@ -318,7 +321,17 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA(const char *name, const Bool_t useshi
    fFullCosTerm_V0A(0),  
    fFullSinTerm_V0A(0),
    fFullCosTerm_V0C(0),  
-   fFullSinTerm_V0C(0)
+   fFullSinTerm_V0C(0),
+
+   fhInvMassSAEPvzeroA(0),
+   fhInvMassLikePPSAEPvzeroA(0),
+   fhInvMassLikeMMSAEPvzeroA(0),
+   fhInvMassMixSAEPvzeroA(0),
+   fhInvMassSAEPvzeroC(0),
+   fhInvMassLikePPSAEPvzeroC(0),
+   fhInvMassLikeMMSAEPvzeroC(0),
+   fhInvMassMixSAEPvzeroC(0)
+
 {
   // Constructor
   // Define input and output slots here (never in the dummy constructor)
@@ -340,15 +353,7 @@ AliAnalysisTaskPhiSA::AliAnalysisTaskPhiSA(const char *name, const Bool_t useshi
 
     if(i < kCenBin)
       {
-	fhInvMassSAEPvzeroA[i] = 0;
-	fhInvMassLikePPSAEPvzeroA[i] = 0;
-	fhInvMassLikeMMSAEPvzeroA[i] = 0;
-	fhInvMassMixSAEPvzeroA[i] = 0;
-	fhInvMassSAEPvzeroC[i] = 0;
-	fhInvMassLikePPSAEPvzeroC[i] = 0;
-	fhInvMassLikeMMSAEPvzeroC[i] = 0;
-	fhInvMassMixSAEPvzeroC[i] = 0;
-	
+		
 	fHistEPTPC[i] = 0;
 	fHistEPV0A[i] = 0;
 	fHistEPV0C[i] = 0;
@@ -563,7 +568,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
   fHistZVertex            = new TH1F("fHistZVertex", "Z vertex distribution", 200,-20,20);       
   fHistCentralityEvtCount = new TH1F("fHistCentralityEvtCount", "Centrality Event Count", 11,-1,10);
   fHistEventCount         = new TH1F("fHistEventCount","fHistEventCount",10,0,10);
-  fHistCentDist           = new TH1F("fHistCentDist","fHistCentDist",111,-1,110);
+  fHistCentDist           = new TH1F("fHistCentDist","fHistCentDist",100,0,100);
   //Q Vector
   //Eta Sub-Event Mult QA RP
   //POI Kaon Correlation
@@ -573,13 +578,13 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
    *                    Track related Plots              *
    *******************************************************/
   //Track QA Plot for RP
-  fHistTPCClusterRP       = new TH1F("fHistTPCClusterRP","fHistTPCClusterRP",160,0,160);
+  /*fHistTPCClusterRP       = new TH1F("fHistTPCClusterRP","fHistTPCClusterRP",160,0,160);
   fHistITSClusterRP       = new TH1F("fHistITSClusterRP","fHistITSClusterRP",10,0,10);
   fHistChiSqrPerNdfTPCRP  = new TH1F("fHistChiSqrPerNdfTPCRP","fHistChiSqrPerNdfTPCRP",120,-1,5);
   fHistChiSqrPerNdfITSRP  = new TH1F("fHistChiSqrPerNdfITSRP","fHistChiSqrPerNdfITSRP",120,-1,5);
-  
+  */
   //PID Selection for POI
-  fHistdEdxKaonTpc        = new TH2F("fHistdEdxKaonTpc","Tpc  dEdx vs Mom kaon",1000,-10.,10.,500,0.,500);
+  /*fHistdEdxKaonTpc        = new TH2F("fHistdEdxKaonTpc","Tpc  dEdx vs Mom kaon",1000,-10.,10.,500,0.,500);
   fHistdEdxKaonTof        = new TH2F("fHistdEdxKaonTof","Tof #beta vs Mom kaon",1000,-10.,10.,150,0.,1.5);
   fHistdEdxPionTpc        = new TH2F("fHistdEdxPionTpc","Tpc  dEdx vs Mom pion",1000,-10.,10.,500,0.,500);
   fHistdEdxPionTof        = new TH2F("fHistdEdxPionTof","Tof #beta vs Mom pion",1000,-10.,10.,150,0.,1.5);
@@ -591,7 +596,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
   fHistratioCrossedRowsOverFindableClustersTPC      = new TH1F("fHistratioCrossedRowsOverFindableClustersTPC","fHistratioCrossedRowsOverFindableClustersTPC",100,0,2);
   fHistDCAxyPOI      = new TH1F("fHistDCAxyPOI","fHistDCAxyPOI",200,-5,5);
   fHistDCAzPOI      = new TH1F("fHistDCAzPOI","fHistDCAzPOI",200,-5,5);
-  
+  */
   //Event Plane Resolution Calculation (RP)
 
   fProCosResThreeSubEventPsiAB = new TProfile("fProCosResThreeSubEventPsiAB","fProCosResThreeSubEventPsiAB",11,-1,10,-1.,1.);
@@ -612,6 +617,30 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
    *      Phi-Distribution of RP for Phi-weight calculation     *
    **************************************************************/
 
+  Int_t bins[5] =    {300,  20,   80,  90,  18 };
+  Double_t xmin[5] = {0.0, -1.0, -4.0, 0.6, 0.0};
+  Double_t xmax[5] = {30.0, 1.0,  4.0, 1.5, 90.0};
+
+
+      fhInvMassSAEPvzeroA = new THnSparseD(Form("fhInvMassSAEPvzeroA_Cen_%d",0),Form("fhInvMassSAEPvzeroA_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+      fhInvMassLikePPSAEPvzeroA = new THnSparseD(Form("fhInvMassLikePPSAEPvzeroA_Cen_%d",0),Form("fhInvMassLikePPSAEPvzeroA_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+      fhInvMassLikeMMSAEPvzeroA = new THnSparseD(Form("fhInvMassLikeMMSAEPvzeroA_Cen_%d",0),Form("fhInvMassLikeMMSAEPvzeroA_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+      fhInvMassMixSAEPvzeroA = new THnSparseD(Form("fhInvMassMixSAEPvzeroA_Cen_%d",0),Form("fhInvMassMixSAEPvzeroA_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+     
+      fhInvMassSAEPvzeroC = new THnSparseD(Form("fhInvMassSAEPvzeroC_Cen_%d",0),Form("fhInvMassSAEPvzeroC_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+      fhInvMassLikePPSAEPvzeroC = new THnSparseD(Form("fhInvMassLikePPSAEPvzeroC_Cen_%d",0),Form("fhInvMassLikePPSAEPvzeroC_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+      fhInvMassLikeMMSAEPvzeroC = new THnSparseD(Form("fhInvMassLikeMMSAEPvzeroC_Cen_%d",0),Form("fhInvMassLikeMMSAEPvzeroC_SA_pt_Cen_%d",0),5,bins,xmin,xmax);
+      fhInvMassMixSAEPvzeroC = new THnSparseD(Form("fhInvMassMixSAEPvzeroC_Cen_%d",0),Form("fhInvMassMixSAEPvzeroC_SA_pt_Cen_%d",0),5,bins,xmin,xmax);      
+
+      fOutput->Add(fhInvMassSAEPvzeroA);
+      fOutput->Add(fhInvMassLikePPSAEPvzeroA);
+      fOutput->Add(fhInvMassLikeMMSAEPvzeroA);
+      fOutput->Add(fhInvMassMixSAEPvzeroA);
+      fOutput->Add(fhInvMassSAEPvzeroC);
+      fOutput->Add(fhInvMassLikePPSAEPvzeroC);
+      fOutput->Add(fhInvMassLikeMMSAEPvzeroC);
+      fOutput->Add(fhInvMassMixSAEPvzeroC);
+      
   for(Int_t i=0;i<kCenBin;i++)
     {
       /*
@@ -636,23 +665,8 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
 
       */
 
-  //This 3D is only for inveriant mass method
-
-      Int_t bins[4] = {100, 10, 80, 90};
-      Double_t xmin[4] = {0.0, 0.0, -4.0, 0.6};
-      Double_t xmax[4] = {10.0, 1.0, 4.0, 1.5};
-
-
-      fhInvMassSAEPvzeroA[i] = new THnSparseD(Form("fhInvMassSAEPvzeroA_Cen_%d",i),Form("fhInvMassSAEPvzeroA_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-      fhInvMassLikePPSAEPvzeroA[i] = new THnSparseD(Form("fhInvMassLikePPSAEPvzeroA_Cen_%d",i),Form("fhInvMassLikePPSAEPvzeroA_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-      fhInvMassLikeMMSAEPvzeroA[i] = new THnSparseD(Form("fhInvMassLikeMMSAEPvzeroA_Cen_%d",i),Form("fhInvMassLikeMMSAEPvzeroA_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-      fhInvMassMixSAEPvzeroA[i] = new THnSparseD(Form("fhInvMassMixSAEPvzeroA_Cen_%d",i),Form("fhInvMassMixSAEPvzeroA_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-     
-      fhInvMassSAEPvzeroC[i] = new THnSparseD(Form("fhInvMassSAEPvzeroC_Cen_%d",i),Form("fhInvMassSAEPvzeroC_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-      fhInvMassLikePPSAEPvzeroC[i] = new THnSparseD(Form("fhInvMassLikePPSAEPvzeroC_Cen_%d",i),Form("fhInvMassLikePPSAEPvzeroC_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-      fhInvMassLikeMMSAEPvzeroC[i] = new THnSparseD(Form("fhInvMassLikeMMSAEPvzeroC_Cen_%d",i),Form("fhInvMassLikeMMSAEPvzeroC_SA_pt_Cen_%d",i),4,bins,xmin,xmax);
-      fhInvMassMixSAEPvzeroC[i] = new THnSparseD(Form("fhInvMassMixSAEPvzeroC_Cen_%d",i),Form("fhInvMassMixSAEPvzeroC_SA_pt_Cen_%d",i),4,bins,xmin,xmax);      
-
+    
+    
       //Phi-distribution for RP
 
       //Multiplicity Distribution POI
@@ -683,14 +697,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
       fHistEPV0C_sc[i] = new TH1F(Form("fHistEPV0C_sc%d",i),Form("fHistEPV0C_sc%d",i),180,0.,pi);
 
 
-      fOutput->Add(fhInvMassSAEPvzeroA[i]);
-      fOutput->Add(fhInvMassLikePPSAEPvzeroA[i]);
-      fOutput->Add(fhInvMassLikeMMSAEPvzeroA[i]);
-      fOutput->Add(fhInvMassMixSAEPvzeroA[i]);
-      fOutput->Add(fhInvMassSAEPvzeroC[i]);
-      fOutput->Add(fhInvMassLikePPSAEPvzeroC[i]);
-      fOutput->Add(fhInvMassLikeMMSAEPvzeroC[i]);
-      fOutput->Add(fhInvMassMixSAEPvzeroC[i]);
+
 
       fOutput->Add(fHistEPTPC[i]);
       fOutput->Add(fHistEPV0A[i]);
@@ -724,7 +731,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
  
   fOutput->Add(fHistPionVsKaonMult);
   
-  fOutput->Add(fHistTPCClusterRP);
+  /*  fOutput->Add(fHistTPCClusterRP);
   fOutput->Add(fHistITSClusterRP);
   fOutput->Add(fHistChiSqrPerNdfTPCRP);
   fOutput->Add(fHistChiSqrPerNdfITSRP);
@@ -741,7 +748,7 @@ void AliAnalysisTaskPhiSA::UserCreateOutputObjects()
   fOutput->Add(fHistratioCrossedRowsOverFindableClustersTPC);
   fOutput->Add(fHistDCAxyPOI);
   fOutput->Add(fHistDCAzPOI);
-  
+  */
   fOutput->Add(fProCosResThreeSubEventPsiAB);
   fOutput->Add(fProCosResThreeSubEventPsiAC);
   fOutput->Add(fProCosResThreeSubEventPsiBC);
@@ -848,17 +855,21 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
     if (!fPIDResponse){Printf("ERROR: Could not retrieve PID Reasponse\n"); PostData(1, fOutput);return; }
     ReSet();
     
-    /*
+    
     AliTimeRangeCut  *fTimeRangeCut;
     fTimeRangeCut = new AliTimeRangeCut;
     fTimeRangeCut->InitFromEvent(event);
     if (fTimeRangeCut->CutEvent(event))
       return;
-    */
+    
 
     if(PassEvent(event)){
       
       Int_t centBin = GetCentrality(event);  
+      Float_t centralitydet = GetCentralityValue(event);
+      fHistCentDist->Fill(centralitydet);
+      
+      
       
       Int_t nRP = 0, passtrack = 0;
       TObjArray* tracklist = new TObjArray;
@@ -1129,7 +1140,7 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
 	      if(isTOF){
 		tofbeta = GetTOFBeta(track);
 	      }
-	      fHistTPCClusterPOI->Fill(nClustersTPC);
+	      /*fHistTPCClusterPOI->Fill(nClustersTPC);
 	      fHistITSClusterPOI->Fill(nClustersITS);
 	      fHistChiSqrPerNdfTPCPOI->Fill(chi2PerClusterTPC);
 	      fHistChiSqrPerNdfITSPOI->Fill(chi2PerClusterITS);
@@ -1137,7 +1148,7 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
 	      fHistratioCrossedRowsOverFindableClustersTPC->Fill(ratioCrossedRowsOverFindableClustersTPC);
 	      fHistDCAxyPOI->Fill(dcaxy);
 	      fHistDCAzPOI->Fill(dcaz);
-	      
+	      */
 	      //select Pions POI
 	      if( IsSelectedPION(track))// for pi-/pi+
 		{
@@ -1153,8 +1164,8 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
 		    fCurrentEventDoughterTwoIn[fCurrentEventDoughterTwo] = 1;//dummy
 		  else fCurrentEventDoughterTwoIn[fCurrentEventDoughterTwo] = 0;//dummy
 		  fCurrentEventDoughterTwo++;
-		  fHistdEdxPionTpc->Fill(pTrackTpc*charge, TpcSignal);
-		  if(isTOF)fHistdEdxPionTof->Fill(pTrack*charge, tofbeta);
+		  //fHistdEdxPionTpc->Fill(pTrackTpc*charge, TpcSignal);
+		  //if(isTOF)fHistdEdxPionTof->Fill(pTrack*charge, tofbeta);
 		}
 	      //select Kaons POI
 	      //if(!IsSelectedPION(track) && IsSelectedKAON(track))//K+/K-
@@ -1172,8 +1183,8 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
 		    fCurrentEventDoughterOneIn[fCurrentEventDoughterOne] = 1;//dummy
 		  else fCurrentEventDoughterOneIn[fCurrentEventDoughterOne] = 0;//dummy
 		  fCurrentEventDoughterOne++;
-		  fHistdEdxKaonTpc->Fill(pTrackTpc*charge, TpcSignal);
-		  if(isTOF)fHistdEdxKaonTof->Fill(pTrack*charge, tofbeta);
+		  //fHistdEdxKaonTpc->Fill(pTrackTpc*charge, TpcSignal);
+		  //if(isTOF)fHistdEdxKaonTof->Fill(pTrack*charge, tofbeta);
 		}
 	      //}//IsPIDold
 	    }//pass track
@@ -1183,7 +1194,7 @@ void AliAnalysisTaskPhiSA::UserExec(Option_t *)
       }//isESD
       
       //std::cout<<" Total particle after track cuts   "<<tracklist->GetEntries()<<"  "<<passtrack<<"  "<<nRP<<std::endl;
-      
+    
       fHistPionVsKaonMult->Fill(fCurrentEventDoughterTwo,fCurrentEventDoughterOne);
       //fBufferPointer = (Int_t)(fCurrentEventCentralityBin)*10 + (Int_t)((fCurrentEventVz+10.0)/2.0);
       fBufferPointer = (Int_t)(centBin)*10 + (Int_t)((fCurrentEventVz+10.0)/2.0);
@@ -1309,33 +1320,9 @@ Bool_t AliAnalysisTaskPhiSA::PassEvent(AliVEvent *evt){
 //-------------------------------------------------------------------------------------
 Int_t AliAnalysisTaskPhiSA::GetCentrality(AliVEvent *evt )
 {
-  //AliVEvent *event = InputEvent();
   
   evt = InputEvent();
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(evt);
-
-  /*
-  AliCentrality *centrality = esd->GetCentrality();
-  if (!centrality) {
-    AliError("Cannot compute centrality!");
-    return -1.0;
-  }
-  //if(centrality->IsEventInCentralityClass(post(80.,90.,"V0M"))       fCurrentEventCentralityBin = 0;
-  if(centrality->IsEventInCentralityClass(70.,80.,"V0M"))       fCurrentEventCentralityBin = 8;
-  else if(centrality->IsEventInCentralityClass(60.,70.,"V0M"))  fCurrentEventCentralityBin = 7;
-  else if(centrality->IsEventInCentralityClass(50.,60.,"V0M"))  fCurrentEventCentralityBin = 6;
-  else if(centrality->IsEventInCentralityClass(40.,50.,"V0M"))  fCurrentEventCentralityBin = 5;
-  else if(centrality->IsEventInCentralityClass(30.,40.,"V0M"))  fCurrentEventCentralityBin = 4;
-  else if(centrality->IsEventInCentralityClass(20.,30.,"V0M"))  fCurrentEventCentralityBin = 3;
-  else if(centrality->IsEventInCentralityClass(10.,20.,"V0M"))  fCurrentEventCentralityBin = 2;
-  else if(centrality->IsEventInCentralityClass( 5.,10.,"V0M"))  fCurrentEventCentralityBin = 1;
-  else if(centrality->IsEventInCentralityClass( 0., 5.,"V0M"))  fCurrentEventCentralityBin = 0;
-  else fCurrentEventCentralityBin = -1;
-  */
-
-
-
-
 
 
   
@@ -1378,6 +1365,40 @@ Int_t AliAnalysisTaskPhiSA::GetCentrality(AliVEvent *evt )
   
 }
 //-------------------------------------------------------------------------------------
+
+
+Float_t AliAnalysisTaskPhiSA::GetCentralityValue(AliVEvent *evt )
+{
+  
+  evt = InputEvent();
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(evt);
+
+
+  
+  Float_t centralitydet = -99.0;
+  Float_t centrV0M   = -99.0;
+
+  
+  fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");  // Must never comment this
+  if(!fMultSelection) {
+    printf("\n...**ERROR**...\n UserExec() AliMultSelection object not found\n Status:Quit!! \n");
+    return -1;
+  }
+  else
+    {
+  centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+    }
+ 
+  centralitydet = centrV0M;  // This Is Always Default, changes below for other options:
+  
+  return centralitydet;
+
+  
+}
+
+//-------------------------------------------------------------------------------------
+
+
 
 Bool_t AliAnalysisTaskPhiSA::PassTrack(AliVTrack *trackv)
 {
@@ -1435,6 +1456,8 @@ Int_t AliAnalysisTaskPhiSA::MakeRealPair(TVector2 * QvA, TVector2 * QvC)
   Double_t QvC_X = QvC->X();
   Double_t QvC_Y = QvC->Y();
   TVector2 QvA_new, QvC_new;
+  AliVEvent *event = InputEvent();
+  Float_t centralitydet = GetCentralityValue(event);
   Double_t DgtOneCos2phi, DgtOneSin2phi, DgtTwoCos2phi,DgtTwoSin2phi;
   for(Int_t i = 0; i < fCurrentEventDoughterTwo; i++)
     {
@@ -1473,15 +1496,19 @@ Int_t AliAnalysisTaskPhiSA::MakeRealPair(TVector2 * QvA, TVector2 * QvC)
 	      Double_t cosphipsiA = CosPhiPsi(Mother,DgtOne,QvA_new);
 	      Double_t cosphipsiC = CosPhiPsi(Mother,DgtOne,QvC_new);
 	      
-	      Double_t arrA[4]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M()};
-	      Double_t arrC[4]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M()};
+	      //Double_t arrA[4]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M()};
+	      //Double_t arrC[4]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M()};
+	      Double_t arrA[5]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M(),centralitydet};
+	      Double_t arrC[5]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M(),centralitydet};
 	      if(fCurrentEventCentralityBin >=0 && fCurrentEventCentralityBin < kCenBin) 
 		{
 		  //if(Mother.Pt()< 0.1 || Mother.Pt()>= 10) continue;
 		  //fhInvMassSAEPvzeroA[fCurrentEventCentralityBin]->Fill(Mother.Pt(),costhetastarA,cosphipsiA,Mother.M(),weight);
 		  //fhInvMassSAEPvzeroC[fCurrentEventCentralityBin]->Fill(Mother.Pt(),costhetastarC,cosphipsiC,Mother.M(),weight);
-		  fhInvMassSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
-		  fhInvMassSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+		  //fhInvMassSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
+		  //fhInvMassSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+		  fhInvMassSAEPvzeroA->Fill(arrA,weight);
+		  fhInvMassSAEPvzeroC->Fill(arrC,weight);
 
 		}
 	    }//charge conservation loop	  
@@ -1510,6 +1537,8 @@ Int_t AliAnalysisTaskPhiSA::MakeLikePair(TVector2 * QvA, TVector2 * QvC)
   Double_t QvC_X = QvC->X();
   Double_t QvC_Y = QvC->Y();
   TVector2 QvA_new, QvC_new;
+  AliVEvent *event = InputEvent();
+  Float_t centralitydet = GetCentralityValue(event);
   Double_t DgtOneCos2phi, DgtOneSin2phi, DgtTwoCos2phi,DgtTwoSin2phi;
   for(Int_t i = 0; i < fCurrentEventDoughterTwo; i++)
     {
@@ -1551,16 +1580,20 @@ Int_t AliAnalysisTaskPhiSA::MakeLikePair(TVector2 * QvA, TVector2 * QvC)
 	      Double_t cosphipsiA = CosPhiPsi(Mother,DgtOne,QvA_new);
 	      Double_t cosphipsiC = CosPhiPsi(Mother,DgtOne,QvC_new);
 	      
-	      Double_t arrA[4]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M()};
-              Double_t arrC[4]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M()};
+	      //Double_t arrA[4]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M()};
+              //Double_t arrC[4]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M()};
+	      Double_t arrA[5]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M(),centralitydet};
+              Double_t arrC[5]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M(),centralitydet};
 
 	      if(fCurrentEventCentralityBin >=0 && fCurrentEventCentralityBin < kCenBin && (fCurrentEventDoughterOneCharge[i] + fCurrentEventDoughterTwoCharge[j] ==2)) 
 		{
 		  //if(Mother.Pt()< 0.1 || Mother.Pt()>= 10) continue;
 		  //fhInvMassLikePPSAEPvzeroA[fCurrentEventCentralityBin]->Fill(Mother.Pt(),costhetastarA,cosphipsiA,Mother.M(),weight);
 		  //fhInvMassLikePPSAEPvzeroC[fCurrentEventCentralityBin]->Fill(Mother.Pt(),costhetastarC,cosphipsiC,Mother.M(),weight);
-		  fhInvMassLikePPSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
-		  fhInvMassLikePPSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+		  //fhInvMassLikePPSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
+		  //fhInvMassLikePPSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+		  fhInvMassLikePPSAEPvzeroA->Fill(arrA,weight);
+		  fhInvMassLikePPSAEPvzeroC->Fill(arrC,weight);
 		  
 		}
 	      if(fCurrentEventCentralityBin >=0 && fCurrentEventCentralityBin < kCenBin && (fCurrentEventDoughterOneCharge[i] + fCurrentEventDoughterTwoCharge[j] ==-2)) 
@@ -1568,8 +1601,10 @@ Int_t AliAnalysisTaskPhiSA::MakeLikePair(TVector2 * QvA, TVector2 * QvC)
 		  //if(Mother.Pt()< 0.1 || Mother.Pt()>= 10) continue;
 		  //fhInvMassLikeMMSAEPvzeroA[fCurrentEventCentralityBin]->Fill(Mother.Pt(),costhetastarA,cosphipsiA,Mother.M(),weight);
 		  //fhInvMassLikeMMSAEPvzeroC[fCurrentEventCentralityBin]->Fill(Mother.Pt(),costhetastarC,cosphipsiC,Mother.M(),weight);
-		  fhInvMassLikeMMSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
-		  fhInvMassLikeMMSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+		  //fhInvMassLikeMMSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
+		  //fhInvMassLikeMMSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+		  fhInvMassLikeMMSAEPvzeroA->Fill(arrA,weight);
+		  fhInvMassLikeMMSAEPvzeroC->Fill(arrC,weight);
 		  
 		}
 	    }//charge conservation loop	  
@@ -1598,6 +1633,8 @@ Int_t AliAnalysisTaskPhiSA::MakeMixedPair(Int_t bufferPointer, TVector2 * QvA, T
   Double_t QvC_Xm = QvC->X();
   Double_t QvC_Ym = QvC->Y();
   TVector2 QvA_newm, QvC_newm;
+  AliVEvent *event = InputEvent();
+  Float_t centralitydet = GetCentralityValue(event);
   Double_t DgtOneCos2phi, DgtOneSin2phi, DgtTwoCos2phi,DgtTwoSin2phi;
   Int_t MaxBufferPointer = 100;
   for(Int_t k = 0; k < fBufferEventNEvents[bufferPointer]; k++)
@@ -1637,8 +1674,10 @@ Int_t AliAnalysisTaskPhiSA::MakeMixedPair(Int_t bufferPointer, TVector2 * QvA, T
 	  Double_t cosphipsiA = CosPhiPsi(Mother,DgtTwo,QvA_newm);
 	  Double_t cosphipsiC = CosPhiPsi(Mother,DgtTwo,QvC_newm);
 
-	  Double_t arrA[4]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M()};
-	  Double_t arrC[4]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M()};
+	  //Double_t arrA[4]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M()};
+	  //Double_t arrC[4]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M()};
+	  Double_t arrA[5]={Mother.Pt(),costhetastarA,cosphipsiA,Mother.M(),centralitydet};
+	  Double_t arrC[5]={Mother.Pt(),costhetastarC,cosphipsiC,Mother.M(),centralitydet};
 	  
 
 	  if(fCurrentEventCentralityBin >=0 && fCurrentEventCentralityBin < kCenBin) 
@@ -1646,8 +1685,10 @@ Int_t AliAnalysisTaskPhiSA::MakeMixedPair(Int_t bufferPointer, TVector2 * QvA, T
 	      //if(Mother.Pt() < 0.1 || Mother.Pt() >= 10.) continue;
 	      //fhInvMassMixSAEPvzeroA[fCurrentEventCentralityBin]->Fill(Mother.Pt(), costhetastarA, cosphipsiA, Mother.M(),weight);
 	      //fhInvMassMixSAEPvzeroC[fCurrentEventCentralityBin]->Fill(Mother.Pt(), costhetastarC, cosphipsiC, Mother.M(),weight);
-	      fhInvMassMixSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
-	      fhInvMassMixSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+	      //fhInvMassMixSAEPvzeroA[fCurrentEventCentralityBin]->Fill(arrA,weight);
+	      //fhInvMassMixSAEPvzeroC[fCurrentEventCentralityBin]->Fill(arrC,weight);
+	      fhInvMassMixSAEPvzeroA->Fill(arrA,weight);
+	      fhInvMassMixSAEPvzeroC->Fill(arrC,weight);
 	    }
 	  
 	}  //buffer event DgtOne loop
@@ -1714,6 +1755,7 @@ void AliAnalysisTaskPhiSA::CopyCurrentToBuffer(Int_t bufferPointer,TVector2 *Qv)
   Int_t MaxBufferPointer = 100;
   Int_t iran = 0;
   if(fBufferEventNEvents[bufferPointer] >= Nmix) fBufferEventFull[bufferPointer] = 1;
+ 
   TRandom3 *Rand = new TRandom3(iran++);
   Int_t eventPointer = -1;
   if(fBufferEventFull[bufferPointer]) 
@@ -1729,6 +1771,8 @@ void AliAnalysisTaskPhiSA::CopyCurrentToBuffer(Int_t bufferPointer,TVector2 *Qv)
     { // not full
       eventPointer = fBufferEventNEvents[bufferPointer];
     }
+  
+ 
   delete gRandom;
   fBufferEventPsi[bufferPointer+MaxBufferPointer*eventPointer] = EPAngle;
   fBufferEventDoughterTwo[bufferPointer+MaxBufferPointer*eventPointer]= fCurrentEventDoughterTwo;
