@@ -30,19 +30,22 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fhEventCounter(0),
     fhEventMultiplicity(0),
     fAnalType(eFMDAFMDC),
+    fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
     fIsMC(kFALSE),
+    fIsTPCgen(kFALSE),
+    fIsFMDgen(kFALSE),
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
     fDoV0(kFALSE),
     fUseNch(kFALSE),
     fUseEfficiency(kFALSE),
-    fEfficiencyEtaDependent(kFALSE),
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(kFALSE),
     fFilterBit(96),
     fbSign(0),
+    fRunNumber(-1),
     fNofTracks(0),
     fNchMin(0),
     fNchMax(100000),
@@ -67,6 +70,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPVz(100.0),
     fPVzCut(10.0),
     fTPCclMin(70.),
+    fCutDCAz(0.),
+    fCutDCAxySigma(0.),
+    fCutTPCchi2pCl(0.),
     fPIDbayesPion(0.95),
     fPIDbayesKaon(0.85),
     fPIDbayesProton(0.85),
@@ -80,6 +86,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fCentEstimator("V0M"),
+    fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
     fPoolMinNTracks(50000),
     fMinEventsToMix(5),
@@ -99,19 +106,22 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fhEventCounter(0),
     fhEventMultiplicity(0),
     fAnalType(eFMDAFMDC),
+    fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
     fIsMC(kFALSE),
+    fIsTPCgen(kFALSE),
+    fIsFMDgen(kFALSE),
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
     fDoV0(kFALSE),
     fUseNch(kFALSE),
     fUseEfficiency(bUseEff),
-    fEfficiencyEtaDependent(kFALSE),
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
     fUseCentralityCalibration(bUseCalib),
     fFilterBit(96),
     fbSign(0),
+    fRunNumber(-1),
     fNofTracks(0),
     fNchMin(0),
     fNchMax(100000),
@@ -136,6 +146,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPVz(100.0),
     fPVzCut(10.0),
     fTPCclMin(70.),
+    fCutDCAz(0.),
+    fCutDCAxySigma(0.),
+    fCutTPCchi2pCl(0.),
     fPIDbayesPion(0.95),
     fPIDbayesKaon(0.85),
     fPIDbayesProton(0.85),
@@ -149,6 +162,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fCentEstimator("V0M"),
+    fSystematicsFlag(""),
     fPoolMaxNEvents(2000),
     fPoolMinNTracks(50000),
     fMinEventsToMix(5),
@@ -251,7 +265,9 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 
     if(fUseEfficiency) {
       fInputListEfficiency = (TList*) GetInputData(1);
-      if(fEfficiencyEtaDependent && fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
+      if(fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
+      if(fSystematicsFlag.IsNull()) fSystematicsFlag = "Ev0_Tr0";
+      if(fColSystem == sPPb && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
     }
 
     if(fUseCentralityCalibration){
@@ -259,7 +275,6 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       else fhCentCalib = (TH1D*) GetInputData(1);
       if(!fhCentCalib) { AliError("Centrality calibration histogram not loaded!"); return; }
     }
-
 
     PostData(1, fOutputListCharged);
 }
@@ -282,7 +297,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     fTracksAss = new TObjArray;
     fTracksTrig[0] = new TObjArray;
 
-    if(fUseEfficiency && !AreEfficienciesLoaded()) { return; }
+    if(fUseEfficiency && fColSystem == sPP && (fRunNumber != fAOD->GetRunNumber()) && !AreEfficienciesLoaded()) { return; }
 
     // FMD - V0 correlation event cut
     if(fAnalType != eTPCTPC) {
@@ -294,20 +309,19 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
-    if(!fIsMC){
-      if(fAnalType != eFMDAFMDC) {
-        if(!PrepareTPCTracks()){
-          for(Int_t i(0); i < 6; i++){
-            if(!fDoPID && i > 0 && i < 4) continue;
-            if(!fDoV0 && i > 3) continue;
-            if(fTracksTrig[i]) delete fTracksTrig[i];
-          }
-          PostData(1, fOutputListCharged);
-          return;
+    if(fAnalType != eFMDAFMDC && !fIsTPCgen) {
+      if(!PrepareTPCTracks()){
+        for(Int_t i(0); i < 6; i++){
+          if(!fDoPID && i > 0 && i < 4) continue;
+          if(!fDoV0 && i > 3) continue;
+          if(fTracksTrig[i]) delete fTracksTrig[i];
         }
+        PostData(1, fOutputListCharged);
+        return;
       }
-    } // end data
-    else{
+    }
+
+    if(fIsMC){
       if(!PrepareMCTracks()){
         for(Int_t i(0); i < 6; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
@@ -331,6 +345,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
         delete fTracksTrig[i];
       }
     }
+
+    if(fUseEfficiency) fRunNumber = fAOD->GetRunNumber();
 
     fTracksAss->Clear();
 	  delete fTracksAss;
@@ -403,6 +419,20 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   if(track->GetTPCNcls() < fTPCclMin && fFilterBit != 2) { return kFALSE; }
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
+
+  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[2] -= vtxXYZ[2];
+    if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+
+    Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
+    Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
+    if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }
+  }
+
+  if(fCutTPCchi2pCl > 0. && track->GetTPCchi2perCluster() > fCutTPCchi2pCl)  { return kFALSE; }
 
   return kTRUE;
 }
@@ -914,41 +944,108 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
 {
   if(!fInputListEfficiency) {AliError("Efficiency input list not loaded"); return kFALSE; }
   TString part[4] = {"ch", "pi", "ka", "pr"};
-  for(Int_t p(0); p < 4; p++){
-    if(!fEfficiencyEtaDependent){
-      fhEfficiency[p] = (TH1D*)fInputListEfficiency->FindObject(Form("EffRescaled_%s_eta0",part[p].Data()));
-      if(!fhEfficiency[p]) {AliError(Form("Efficiency (%s, not eta dependent) not loaded",part[p].Data())); return kFALSE; }
-    }
-    else{
-      Int_t etaReg[4] = {100, 101, 102, 103};
-      for(Int_t eta(0); eta < 4; eta++){
-        fhEfficiencyEta[p][eta] = (TH1D*)fInputListEfficiency->FindObject(Form("EffRescaled_%s_eta%d",part[p].Data(), etaReg[eta]));
-        if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %d) not loaded",part[p].Data(),etaReg[eta])); return kFALSE; }
+  if(fColSystem == sPPb){
+    TString etaReg[8] = {"0020", "0200", "0204", "0402", "0406", "0604", "0608", "0806"};
+    for(Int_t p(0); p < 4; p++){
+      for(Int_t eta(0); eta < 8; eta++){
+        fhEfficiencyEta[p][eta] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC17f2b_%s_Eta_%s_%s_wFD",part[p].Data(), etaReg[eta].Data(),fSystematicsFlag.Data()));
+        if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %s, flag %s) not loaded",part[p].Data(),etaReg[eta].Data(),fSystematicsFlag.Data())); return kFALSE; }
       }
+      if(!fDoPID) break;
     }
-    if(!fDoPID) break;
+    fhEventCounter->Fill("Efficiencies loaded",1);
+    return kTRUE;
   }
-  fhEventCounter->Fill("Efficiencies loaded",1);
-  return kTRUE;
+  else if(fColSystem == sPP){
+    for(Int_t p(0); p < 4; p++){
+      fhEfficiency[p] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC%s_%s_%s_wFD",ReturnPPperiod(fAOD->GetRunNumber()).Data(),part[p].Data(),fSystematicsFlag.Data()));
+      if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[p].Data(),fSystematicsFlag.Data())); return kFALSE; }
+      if(!fDoPID) break;
+    }
+  }
+
+  return kFALSE;
+}
+//_____________________________________________________________________________
+TString AliAnalysisTaskCorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) const
+{
+  if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
+    if(runNumber >= 252235 && runNumber <= 252375) return "17f6";
+    if(runNumber >= 253437 && runNumber <= 253591) return "17f9";
+    if(runNumber >= 254128 && runNumber <= 254332) return "17d17";
+    if(runNumber >= 254604 && runNumber <= 255467) return "17f5";
+    if(runNumber >= 255539 && runNumber <= 255618) return "17d3";
+    if(runNumber >= 256219 && runNumber <= 256418) return "17e5";
+    if(runNumber >= 256941 && runNumber <= 258537) return "18f1";
+    if(runNumber >= 258962 && runNumber <= 259888) return "18d8";
+    if(runNumber >= 262424 && runNumber <= 264035) return "17d16";
+    if(runNumber >= 264076 && runNumber <= 264347) return "17d18";
+  }
+
+  if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
+    if(runNumber >= 270581 && runNumber <= 270667) return "18d3";
+    if(runNumber >= 270822 && runNumber <= 270830) return "17h1";
+    if(runNumber >= 270854 && runNumber <= 270865) return "18d3";
+    if(runNumber >= 271870 && runNumber <= 273103) return "18c12";
+    if(runNumber >= 273591 && runNumber <= 274442) return "17k4";
+    if(runNumber >= 274593 && runNumber <= 274671) return "17h11";
+    if(runNumber >= 274690 && runNumber <= 276508) return "18c13";
+    if(runNumber >= 276551 && runNumber <= 278216) return "18a8";
+    if(runNumber >= 278914 && runNumber <= 280140) return "17l5";
+    if(runNumber >= 280282 && runNumber <= 281961) return "18a9";
+    if(runNumber >= 282528 && runNumber <= 282704) return "18a1";
+  }
+
+  if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
+    if(runNumber >= 285009 && runNumber <= 285396) return "18g4";
+    if(runNumber >= 285978 && runNumber <= 286350) return "18g5";
+    if(runNumber >= 286380 && runNumber <= 286937) return "18g6";
+    if(runNumber >= 287000 && runNumber <= 287658) return "18h2";
+    if(runNumber >= 288619 && runNumber <= 289201) return "18h4"; //g,h,i,j,k
+    if(runNumber >= 289240 && runNumber <= 289971) return "18j1";
+    if(runNumber >= 290323 && runNumber <= 292839) return "18j4";
+    if(runNumber >= 293357 && runNumber <= 293359) return "18k1";
+    if(runNumber >= 293475 && runNumber <= 293898) return "18k2";
+    if(runNumber >= 294009 && runNumber <= 294925) return "18k3";
+  }
+
+  AliWarning("PP period identifier was called and based on the run number did not pick up the correct efficiency. Setting up efficiencies from LHC18j4.");
+  return "18j4";
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskCorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
 {
   if(!fUseEfficiency) return 1.0;
   if(spec < 0 || spec > 3) { AliError("Efficiency loading -- species out of range! ");}
-  if(!fEfficiencyEtaDependent && !fhEfficiency[spec]) { AliFatal("Efficiency not loaded"); return 0.0; }
-  if(!fEfficiencyEtaDependent) return fhEfficiency[spec]->GetBinContent(fhEfficiency[spec]->FindFixBin(dPt));
-  else{
-    Int_t etaReg = -1;
-    if(dEta < -0.8) AliError("Efficiency loading -- eta out of range! ");
-    else if(dEta < -0.465) etaReg = 0;
-    else if(dEta < 0.0) etaReg = 1;
-    else if(dEta < 0.465) etaReg = 2;
-    else if(dEta < 0.8) etaReg = 3;
-    else AliError("Efficiency loading -- eta out of range! ");
-    if(!fhEfficiencyEta[spec][etaReg] || etaReg < 0) { AliFatal("Efficiency not loaded"); return 0.0; }
-    return fhEfficiencyEta[spec][etaReg]->GetBinContent(fhEfficiencyEta[spec][etaReg]->FindFixBin(dPt));
+  if(fColSystem == sPPb){
+    Int_t region = GetEtaRegion(dEta);
+    if(region < 0) { AliWarning("Invalid region, returning efficiency 1.0."); return 1.0; }
+    if(!fhEfficiencyEta[spec][region]) { AliError("Efficiency histogram not found, returning efficiency 1.0."); return 1.0; }
+    return fhEfficiencyEta[spec][region]->GetBinContent(fhEfficiencyEta[spec][region]->FindFixBin(dPt, fCentrality));
+  }else{
+    if(!fhEfficiency[spec]) { AliError("Efficiency histogram not found, returning efficiency 1.0."); return 1.0; }
+    return fhEfficiency[spec]->GetBinContent(fhEfficiency[spec]->FindFixBin(dPt, fCentrality));
   }
+
+  return 1.0;
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskCorrForFlowFMD::GetEtaRegion(const Double_t dEta){
+  if(TMath::Abs(dEta) > 0.8) { AliWarning("Eta out of range!"); return -1; }
+  if(dEta > 0.0){
+    if(dEta > 0.6) return 6;
+    if(dEta > 0.4) return 4;
+    if(dEta > 0.2) return 2;
+    return 0;
+  }
+  else{
+    if(dEta < -0.6) return 7;
+    if(dEta < -0.4) return 5;
+    if(dEta < -0.2) return 3;
+    return 1;
+  }
+
+  return -1;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
@@ -1164,7 +1261,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
       if(mostProbableN > 0) {
     	   if(eta > 0){
     	     nFMD_fwd_hits+=mostProbableN;
-           if(fIsMC) continue;
+           if(fIsFMDgen) continue;
            if(eta > fFMDAacceptanceCutLower && eta < fFMDAacceptanceCutUpper){
              if(fAnalType == eTPCFMDA) {
                fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
@@ -1180,7 +1277,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
          else
          {
     	     nFMD_bwd_hits+=mostProbableN;
-           if(fIsMC) continue;
+           if(fIsFMDgen) continue;
            if(eta < -fFMDCacceptanceCutLower && eta > -fFMDCacceptanceCutUpper){
              if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
                fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
@@ -1241,6 +1338,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
     // TPC region
     if(TMath::Abs(partEta) < 0.8){
+      if(!fIsTPCgen) continue;
       Int_t partPDG = TMath::Abs(part->PdgCode());
       Int_t partIdx = -1;
       if(partPDG == 211) partIdx = 1;
@@ -1270,6 +1368,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       }
     } // end eta within 0.8
     else if(partEta > fFMDAacceptanceCutLower && partEta < fFMDAacceptanceCutUpper){
+      if(!fIsFMDgen) continue;
       if(fAnalType == eTPCFMDA) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fHistFMDeta->Fill(partEta,fPVz,1.);
@@ -1281,6 +1380,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       }
     } // end eta within FMDA range
     else if(partEta < -fFMDCacceptanceCutLower && partEta > -fFMDCacceptanceCutUpper){
+      if(!fIsFMDgen) continue;
       if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fHistFMDeta->Fill(partEta,fPVz,1.);
@@ -1296,16 +1396,19 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\n\n\n ************** Parameters ************** \n");
   printf("\t fAnalType: (Int_t) %d\n", fAnalType);
+  printf("\t fColSystem: (Int_t) %d\n", fColSystem);
   printf("\t fIsMC: (Bool_t) %s\n", fIsMC ? "kTRUE" : "kFALSE");
+  printf("\t fIsTPCgen: (Bool_t) %s\n", fIsTPCgen ? "kTRUE" : "kFALSE");
+  printf("\t fIsFMDgen: (Bool_t) %s\n", fIsFMDgen ? "kTRUE" : "kFALSE");
   printf("\t fDoPID: (Bool_t) %s\n", fDoPID ? "kTRUE" : "kFALSE");
   printf("\t fDoV0: (Bool_t) %s\n", fDoV0 ? "kTRUE" : "kFALSE");
   printf("\t fUseNch: (Bool_t) %s\n", fUseNch ? "kTRUE" : "kFALSE");
   printf("\t fIsHMpp: (Bool_t) %s\n", fIsHMpp ? "kTRUE" : "kFALSE");
   printf("\t fUseEfficiency: (Bool_t) %s\n",  fUseEfficiency ? "kTRUE" : "kFALSE");
-  printf("\t fEfficiencyEtaDependent: (Bool_t) %s\n", fEfficiencyEtaDependent ? "kTRUE" : "kFALSE");
   printf("\t fUseOppositeSidesOnly: (Bool_t) %s\n", fUseOppositeSidesOnly ? "kTRUE" : "kFALSE");
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
   printf(" **************************** \n");
+  printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());
   printf("\t fAbsEtaMax: (Double_t) %f\n", fAbsEtaMax);
   printf("\t fPtMinTrig -- fPtMaxTrig: (Double_t) %f -- %f\n", fPtMinTrig, fPtMaxTrig);
   printf("\t fPtMinAss -- fPtMaxAss: (Double_t) %f -- %f\n", fPtMinAss, fPtMaxAss);
