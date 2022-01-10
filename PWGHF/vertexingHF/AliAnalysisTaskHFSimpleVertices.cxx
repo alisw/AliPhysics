@@ -1466,16 +1466,16 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t *)
         twoTrackArrayCasc->AddAt(track_p0,0);
         twoTrackArrayCasc->AddAt(trackV0,1);
         AliESDVertex* vertexCasc = 0x0;
-	if(fFindVertexForCascades){
-	  vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
-	}else{
-	  // assume Cascade decays at the primary vertex
+        if(fFindVertexForCascades){
+          vertexCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, primVtxTrk);
+        }else{
+          // assume Cascade decays at the primary vertex
           Double_t pos[3],cov[6],chi2perNDF;
           primVtxTrk->GetXYZ(pos);
           primVtxTrk->GetCovMatrix(cov);
           chi2perNDF = primVtxTrk->GetChi2toNDF();
           vertexCasc = new AliESDVertex(pos,cov,chi2perNDF,2);
-	}
+        }
         if (vertexCasc == 0x0) {
           delete trackV0;
           twoTrackArrayCasc->Clear();
