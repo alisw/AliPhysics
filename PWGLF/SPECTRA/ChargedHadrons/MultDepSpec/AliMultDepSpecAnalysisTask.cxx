@@ -295,7 +295,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_tpcGeomLength.GetSize();
 
   // max allowed memory per train job: 8 GiB
-  AliError(Form("\n\nEstimated memory usage of histograms: %.2f MiB. For all 23 systematic variations: %.2f MiB\n", requiredMemory / 1048576, 23 * requiredMemory / 1048576));
+  AliError(Form("\n\nEstimated memory usage of histograms: %.2f MiB. For all 21 systematic variations: %.2f MiB\n", requiredMemory / 1048576, 21 * requiredMemory / 1048576));
 }
 
 //**************************************************************************************************
@@ -424,21 +424,22 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
         if (!recoPass.empty()) trainInfo += period + "_" + recoPass;
       }
       trainInfo += ", " + fTrainMetadata;
-      if (fMCEventClass == EventClass::triggered) {
-        trainInfo += ", triggered";
-      } else if (fMCEventClass == EventClass::fiducial) {
-        trainInfo += ", fiducial";
-      } else if (fMCEventClass == EventClass::inelgt0) {
-        trainInfo += ", INEL>0";
-      } else {
-        trainInfo += ", all";
-      }
-      trainInfo += " events";
+      if (fIsMC) {
+        if (fMCEventClass == EventClass::triggered) {
+          trainInfo += ", triggered";
+        } else if (fMCEventClass == EventClass::fiducial) {
+          trainInfo += ", fiducial";
+        } else if (fMCEventClass == EventClass::inelgt0) {
+          trainInfo += ", INEL>0";
+        } else {
+          trainInfo += ", all";
+        }
+        trainInfo += " events";
 
-      if (!fMCEnableDDC || !fMCSpectraWeights) {
-        trainInfo += ", no DDCs";
+        if (!fMCEnableDDC || !fMCSpectraWeights) {
+          trainInfo += ", no DDCs";
+        }
       }
-
       fHist_trainInfo.Fill(trainInfo.data());
       fIsFirstEventInJob = false;
     }
