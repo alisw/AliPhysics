@@ -32,6 +32,7 @@
 #pragma link C++ class AliAnalysisTaskCompareAODTrackCuts+;
 #pragma link C++ class AliAnalysisTaskDiJetCorrelationsAllb2b+;
 #pragma link C++ class AliDPhiBasicParticleDiJet+;
+#pragma link C++ class AliEPDependentDiHadronOnTheFlyMCTask+;
 #pragma link C++ class AliEvtPoolManager+;
 #pragma link C++ class AliEvtPool+;
 #pragma link C++ class AliMiniTrack+;
