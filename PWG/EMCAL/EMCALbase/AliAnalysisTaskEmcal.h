@@ -1450,6 +1450,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
   TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
   TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
+  TH1                        *fHistWeights;                //!<! integrated weights per pt hard bin before selection
   TH1                        *fHistPtHard;                 //!<!\f$ p_{t}\f$-hard distribution
   TH2                        *fHistPtHardCorr;             //!<!Correlation between \f$ p_{t}\f$-hard value and bin
   TH2                        *fHistPtHardCorrGlobal;       //!<!Correlation between \f$ p_{t}\f$-hard value and global bin
