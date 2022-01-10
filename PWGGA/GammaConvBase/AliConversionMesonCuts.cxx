@@ -2655,6 +2655,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaLow  = 3.;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 0;
+      break;
     case 34: // y PCM-EMC 4 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
@@ -2668,6 +2669,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaLow  = 3.;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 4;
+      break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
       return kFALSE;
