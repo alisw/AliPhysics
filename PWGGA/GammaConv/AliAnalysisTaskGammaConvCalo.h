@@ -288,7 +288,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCConvGammaPt;                //! array of histos with converted gamma, pT
     TH2F**                  fHistoMCSecondaryConvGammaPt;       //! array of histos wiht secondary converted gamma, pt
 
-    //histograms for pure MC quantities for mesaon analysis
+    //histograms for pure MC quantities for meson analysis
     TH1F**                  fHistoMCPi0Pt;                      //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;           //! array of histos without event weights pi0, pT
@@ -313,6 +313,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCSecEtaSource;               //! array of histos with secondary eta, source
     TH2F**                  fHistoMCPi0PtJetPt;                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                 //! array of histos with weighted eta, pT, hardest jet pt
+    TH1F**                  fHistoMCPi0PtNotTriggered;          //! array of histos with weighted pi0, pT
 
     // histograms for pure MC quantites for dir gamma analysis part
     TH2F**                  fHistoMCPi0PtGammaLeg;              //! array of histos with weighted pi0, pT gamma, different legs
@@ -600,12 +601,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
     Bool_t                  fDoHBTHistoOutput;                                  // switch for additional HBT output
+    Bool_t                  fCurrentEventIsTriggered;                        //! global variable storing if currently processed event is triggered or not for signal loss analysis
 
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 68);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 69);
 };
 
 #endif
