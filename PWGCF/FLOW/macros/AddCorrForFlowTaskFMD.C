@@ -36,7 +36,7 @@ AliAnalysisTaskCorrForFlowFMD* AddCorrForFlowTaskFMD(TString name = "name", TStr
         TFile* efficiency_file = TFile::Open(efficiencyFile.Data(),"READ");
         if(!efficiency_file) { printf("Input file with efficiency not found!\n"); return NULL; }
 
-        TList* efficiency_list = (TList*) efficiency_file->Get("EffAndFD");
+        TList* efficiency_list = (TList*) efficiency_file->Get("Efficiency2D_wFD");
         if(!efficiency_list) { printf("E-AddTask: Input list with efficiency not found!\n"); efficiency_file->ls(); return NULL; }
 
         AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEfficiency",TList::Class(), AliAnalysisManager::kInputContainer);
