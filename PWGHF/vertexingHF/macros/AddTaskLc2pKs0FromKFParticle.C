@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname="", Bool_t IsMC=kTRUE, TString cuttype="", Bool_t writeQATree=kTRUE, Bool_t IsAnaLc2Lpi=kFALSE, Bool_t useWeights = kFALSE, Bool_t keepOnlyMCSignal = kTRUE, Bool_t useMultiplicity = kFALSE, TString multProfiles = "", Int_t analysisType = AliAnalysisTaskSELc2pKs0fromKFP::kpPb2016, Double_t refMult = 29.2, Bool_t keepAllVariables = kFALSE)
+AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname="", Bool_t IsMC=kTRUE, TString cuttype="", Bool_t writeQATree=kTRUE, Bool_t IsAnaLc2Lpi=kFALSE, Bool_t useWeights = kFALSE, Bool_t keepOnlyMCSignal = kTRUE, Bool_t useMultiplicity = kFALSE, TString multProfiles = "", Int_t analysisType = AliAnalysisTaskSELc2pKs0fromKFP::kpPb2016, Double_t refMult = 29.2, Bool_t keepAllVariables = kFALSE, Bool_t useOnFlyV0 = kFALSE)
 {
     Bool_t writeLcRecTree = kTRUE;
     Bool_t writeLcMCGenTree = kFALSE;
@@ -75,6 +75,7 @@ AliAnalysisTaskSELc2pKs0fromKFP* AddTaskLc2pKs0FromKFParticle(TString finname=""
     task->SetWriteLcTree(writeLcRecTree);
     task->SetWriteLcQATree(writeQATree);
     task->SetKeepAllVariables(keepAllVariables);
+    task->SetUseOnTheFlyV0(useOnFlyV0);
     // weight
     TF1 *weight = new TF1("weight", "expo", 0., 50.);
     weight->SetParameter(0, 0.853544);
