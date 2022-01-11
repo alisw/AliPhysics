@@ -38,8 +38,8 @@ public:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
 
-    AliJEQnVectorHandler* GetQnVectorHandler() const                                                     {return fHFQnVecHandler;}
-    TList* GetSplineForqnPercentileList(int det=kFullTPC) const;
+    AliJEQnVectorHandler* GetQnVectorHandler() const                                                     {return fJEQnVecHandler;}
+    TDirectoryFile*  GetSplineForqnPercentileList(int det=kFullTPC) const;
     void SetUseAODBCalibrations(TString oadbFileName)                                                    {fOADBFileName = oadbFileName; fCalibType = AliJEQnVectorHandler::kQnCalib;}
     void SetUseQnFrameworkCalibrations()                                                                 {fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
     void SetNormalisationMethod(int normmethod)                                                          {fNormMethod = normmethod;}
@@ -75,15 +75,15 @@ private:
     bool fEnableTPCPhiVsCentrDistr;                  /// flag to enable histos of phi vs. centr
     bool fEnableQvecTPCVsCentrDistr;                 /// flag to enable histos of TPC Q-vector vs. centr
 
-    AliJEQnVectorHandler* fHFQnVecHandler;           /// Qn-vector handler
+    AliJEQnVectorHandler* fJEQnVecHandler;           /// Qn-vector handler
     int fHarmonic;                                   /// Qn-vector harmonic
     int fCalibType;                                  /// type of calibrations used by handler
     int fNormMethod;                                 /// normalisation of Q vector
 
     TString fOADBFileName;                           /// OADB input file name
 
-    TList* fSplineListqnPercTPC[3];                  /// Splines for qn percentile calibration for TPC
-    TList* fSplineListqnPercV0[3];                   /// Splines for qn percentile calibration for V0
+    TDirectoryFile* fSplineListqnPercTPC[3];         /// Splines for qn percentile calibration for TPC
+    TDirectoryFile* fSplineListqnPercV0[3];          /// Splines for qn percentile calibration for V0
 
     AliAODEvent* fAOD;                               /// AOD event
     int fPrevEventRun;                               /// run number of event previously analysed
