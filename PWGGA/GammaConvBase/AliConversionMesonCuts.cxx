@@ -4737,12 +4737,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
               pt=(meson->Pt());
           }
           //[0]+[1]*exp(-[2]*(x-[3]))
-          //Parameter 0: 6855.12 +- 1.41421
-          //Parameter 1: 0.980296 +- 1.41421
-          //Parameter 2: -51.0261 +- 0
-          //Parameter 3: -0.906353 +- 198.955
+          //Parameter 0: 0.00526618 +- 2.85152e-05
+          //Parameter 1: 0.164035 +- 0.18279
+          //Parameter 2: 0.967652 +- 0.0461525
+          //Parameter 3: -3.44249 +- 1.15896
 
-          sigma = (6855.12)+(0.980296)*exp(-(-51.0261)*(pt-(-0.906353)));
+          sigma = (0.00526618)+(0.164035)*exp(-(0.967652)*(pt-(-3.44249)));
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
