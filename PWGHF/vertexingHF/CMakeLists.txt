@@ -81,6 +81,7 @@ set(SRCS
   AliAnalysisTaskSEB0toDStarPi.cxx
   AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
+  AliAnalysisTaskSEVertexingHFRun3Conversion.cxx
   AliAnalysisTaskMEVertexingHF.cxx
   AliAnalysisTaskSESelectHF.cxx
   AliAnalysisTaskSECleanupVertexingHF.cxx
