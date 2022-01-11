@@ -95,6 +95,10 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //_____________________________________________________________________________
     //
     //  EVENT
+    auto    kV0M_bin    =   100000;
+    auto    kV0M_min    =   -100.;
+    auto    kV0M_max    =   +900.;
+    //
     //_____________________________________________________________________________
     fQC_Event_Enum_FLL              = new TH1D("fQC_Event_Enum_FLL",       "Event Selection",                                  29, -0.5, 28.5);
     fQC_Event_Enum_FLL              ->  GetXaxis()  ->  SetTitle("");
@@ -102,7 +106,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fSetEventCountLabels(fQC_Event_Enum_FLL);
     fQCOutputList->Add(fQC_Event_Enum_FLL);
     
-    fQC_Event_Enum_V0M              = new TH1D("fQC_Event_Enum_V0M",        "Acc. Events in Mult.",                             202, -1., 201.);
+    fQC_Event_Enum_V0M              = new TH1D("fQC_Event_Enum_V0M",        "Acc. Events in Mult.",                             kV0M_bin, kV0M_min, kV0M_max);
     fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Event_Enum_V0M              ->  GetYaxis()  ->  SetTitle("Accepted Event");
     fQCOutputList->Add(fQC_Event_Enum_V0M);
@@ -176,9 +180,9 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Tracks_Phi                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_Phi);
     
-    fQC_Tracks_V0M                  = new TH2F("fQC_Tracks_V0M",            "Acc. Tracks in Mult.",                             2, -1., 1., 202, -1., 201.);
+    fQC_Tracks_V0M                  = new TH2F("fQC_Tracks_V0M",            "Acc. Tracks in Mult.",                             2, -1., 1., kV0M_bin, kV0M_min, kV0M_max);
     fQC_Tracks_V0M                  ->  GetXaxis()  ->  SetTitle("Track Sign");
-    fQC_Tracks_V0M              ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
+    fQC_Tracks_V0M                  ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Tracks_V0M                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_V0M);
     
@@ -289,7 +293,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Kaons_Phi                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_Phi);
     
-    fQC_Kaons_V0M                   = new TH2F("fQC_Kaons_V0M",            "Acc. Kaons in Mult.",                               2, -1., 1., 202, -1., 201.);
+    fQC_Kaons_V0M                   = new TH2F("fQC_Kaons_V0M",            "Acc. Kaons in Mult.",                               2, -1., 1., kV0M_bin, kV0M_min, kV0M_max);
     fQC_Kaons_V0M                   ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_V0M                   ->  GetYaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Kaons_V0M                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
@@ -521,6 +525,7 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
      //
     //  Check the Event type
     fIsEventMultiplicityAvailable();
+    fIsEventPileUp();
     uCalculateSpherocity();
     uCalculateRT();
     uGuessCollisionSystem();
@@ -688,7 +693,7 @@ bool        AliAnalysisTaskPhiCount::fIsEventCandidate ()                       
         return false;
     }
     //
-    if ( ( ( kTriggerMask & ( fAOD->GetTriggerMask() ) ) == 0 ) )  {
+    if ( ( ( kTriggerMask & ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()) == 0 ) )  {
         fFillEventEnumerate("NoTrigger");
         fStoreTruePhi(kTRU_NOTRG);
         fPostData();
@@ -806,10 +811,8 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
     AliMultSelection   *fMultSelectio2  = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     if ( !fMultSelection )  fCurrent_V0M    =   102.;
     // if pPb should be V0A
-    else {
-        if ( fIs_p_p )                  fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M",true);
-        if ( fIs_p_Pb || fIs_Pb_Pb )    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0A",true);
-    }
+    if ( fIs_p_p  || fIs_Pb_Pb )    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M");
+    if ( fIs_p_Pb )                 fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0A");
     fCurrent_TRK    =   (dynamic_cast<AliAODHeader*>(fAOD->GetHeader()))->GetRefMultiplicityComb08();
     //
     //  INELGT0 Check
@@ -818,19 +821,21 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
             if ( TMath::Abs(fAOD->GetMultiplicity()->GetEta(iTRK)) < 1.0 )  {
                 fSetEventMask(0);
                 break;
-            } else  {
-                fCurrent_V0M = 104.;
             }
         }
     }
+    //
+    if ( !fCheckMask(0) )       fCurrent_V0M = 104;
     //
     if ( fCurrent_V0M == -200 ) fCurrent_V0M = 154;
     if ( fCurrent_V0M == -201 ) fCurrent_V0M = 156;
     if ( fCurrent_V0M == -202 ) fCurrent_V0M = 158;
     if ( fCurrent_V0M == -203 ) fCurrent_V0M = 160;
     if ( fCurrent_V0M == -204 ) fCurrent_V0M = 162;
-    if ( fAOD->IsPileupFromSPD() )              fCurrent_V0M += 300;
-    if ( fAOD->IsPileupFromSPDInMultBins() )    fCurrent_V0M += 400;
+    if ( ( fCurrent_V0M >= 0 ) && ( fCurrent_V0M <= 100 ) )   {
+        if ( fAOD->IsPileupFromSPD() )              fCurrent_V0M += 300;
+        else if ( fAOD->IsPileupFromSPDInMultBins() )    fCurrent_V0M += 400;
+    }
     //
     // Fill the QC on Multiplicity
     fQC_Event_Enum_V0M->Fill(fCurrent_V0M);
