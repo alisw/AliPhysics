@@ -7,7 +7,7 @@
 /* $Id$ */ 
 
 ///*************************************************************************
-/// \class Class AliAnalysisTaskSEXicTopKpi
+/// \class Class AliAnalysisTaskSEXicTopKpiAR
 /// \brief AliAnalysisTaskSE for Xic->pKpi candidates invariant mass histogram
 /// and comparison to MC truth (kinematics stored in the AOD) and cut variables
 /// distributions
@@ -172,6 +172,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   // reject events without a recognised p, K, pi
   void SetRejEvWoutpKpi(){fRejEvWoutpKpi=kTRUE;}
 
+  void SetRandomRejFactorDebug(Double_t value){fRejFactorFastAnalysis=value;}
   // apply different pt cuts on candidate daughters
   void SetMinPtSingleDaughter(Double_t minPtProton, Double_t minPtKaon, Double_t minPtPion){
     fUseMinPtSingleDaughter = kTRUE;
@@ -179,10 +180,35 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     fMinPtKaon = minPtKaon;
     fMinPtPion = minPtPion;
   }
+  void SwitchToFastLoops(){fFastLoopPbPb=kTRUE;}
+  void SwitchOnFastSelections(Bool_t fastsel=kTRUE){fFastLoopPbPbFastSelections=fastsel;}
 
   // avoid SigmaC analysis
   void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
+  void SetFillNtupleFastVar(Bool_t fillNt=kTRUE){fFillFastVarForDebug=fillNt;}
+  void SetMinFastLxyCuts(Double_t minLxyFast,Double_t minLxyFast12,Double_t minLxyFast13,Double_t minLxyFast23){
+    if(minLxyFast12>0.)fMinFastLxy12Sq=minLxyFast12*minLxyFast12;
+    else fMinFastLxy12Sq=-1;
+    if(fMinFastLxy13Sq>0.)fMinFastLxy13Sq=minLxyFast13*minLxyFast13;
+    else fMinFastLxy13Sq=-1;
+    if(fMinFastLxy23Sq>0.)fMinFastLxy23Sq=minLxyFast23*minLxyFast23;
+    else fMinFastLxy23Sq=-1;
+    if(fMinFastLxySq>0.) fMinFastLxySq=minLxyFast*minLxyFast;
+    else fMinFastLxySq=-1;
+  }
+  
+  void SetMaxDistVtxFast(Double_t maxDist12_13,Double_t maxDist12_23){
+    fMaxFastDist12_13Sq=maxDist12_13*maxDist12_13;
+    fMaxFastDist12_23Sq=maxDist12_23*maxDist12_23;
+  }
+  void SetMinFastPtCand(Double_t minpt){fMinFastPtCand=minpt;}
+  void SetMinCosPointAngleXYFast(Double_t cosPxyFast){
+    if(cosPxyFast<0)fMinFastCosPointXYSq=-1;
+    else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
+  }
 
+ 
+  
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
 /*   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;} */
@@ -240,7 +266,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   AliAODMCParticle* MatchRecoCandtoMC(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
   AliAODMCParticle* MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
   void LoopOverGenParticles();
-  void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);  
+  void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);
+  Int_t DefinePbPbfilteringLoop(const AliAODTrack *track,Bool_t isPreselSoftPionOnly);
+  void PrepareArrayFastLoops();
   AliAnalysisVertexingHF *fvHF;   //!<! temporary object for filling reco cands
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
   //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
@@ -467,9 +495,31 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   // avoid SigmaC analysis
   Bool_t fDisableSigmaCLoop; //
-
+  TH2F *fHistoPtd0plane;//!<!
+  TH2F *fHistoPtd0planeAfterFastLoopSel;//!<!
+  Bool_t fFastLoopPbPb;// option for fast loops in Pb-Pb
+  Bool_t fFastLoopPbPbFastSelections;// option for fast selections before computing vertex, can be used also for pp though not needed
+  TArrayI *ftrackArraySelFast;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop1;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop2;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop3;  //!<! array of selected tracks for internal use
+  Int_t floop1;  //!<! internal number of selected tracks for loop1
+  Int_t floop2;  //!<! internal number of selected tracks for loop2
+  Int_t floop3;  //!<! internal number of selected tracks for loop3
+  TNtuple *tnFastVariables; //!<!  ntuple with fast variable and correlation with full calculation
+  Bool_t fFillFastVarForDebug; // flag to fill ntuple with fast variables
+  Double_t fMinFastLxy12Sq; // variable used in fast selection
+  Double_t fMinFastLxy13Sq; // variable used in fast selection
+  Double_t fMinFastLxy23Sq; // variable used in fast selection
+  Double_t fMinFastLxySq; // variable used in fast selection
+  Double_t fMaxFastDist12_13Sq; // variable used in fast selection
+  Double_t fMaxFastDist12_23Sq; // variable used in fast selection
+  Double_t fMinFastPtCand; // variable used in fast selection
+  Double_t fMinFastCosPointXYSq; // variable used in fast selection
+  TH2D *fHistFastInvMass;//!<! fast inv mass plot
+  Double_t fRejFactorFastAnalysis; // random rejection factor for debugging, makes sense if between 0 (reject all, also if <0) and 1 (keep all, also if>1)
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,23); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,24); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 
