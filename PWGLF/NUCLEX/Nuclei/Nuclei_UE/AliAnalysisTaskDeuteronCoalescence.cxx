@@ -1,25 +1,16 @@
 #include "AliAnalysisTaskDeuteronCoalescence.h"
-#include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliMCEventHandler.h"
-#include "AliAnalysisUtils.h"
-#include "AliMultSelection.h"
-#include "AliMultEstimator.h"
 #include "AliAnalysisTask.h"
 #include "TLorentzVector.h"
 #include "AliMCParticle.h"
-#include "TDatabasePDG.h"
-#include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliMCEvent.h"
-#include "TObjArray.h"
 #include "TVector2.h"
 #include "TVector3.h"
-#include "TVectorD.h"
 #include "TRandom.h"
 #include "TChain.h"
 #include "TMath.h"
-#include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH1F.h"
@@ -38,7 +29,6 @@ AliAnalysisTaskDeuteronCoalescence::AliAnalysisTaskDeuteronCoalescence():
 AliAnalysisTaskSE(),
 fAODevent(nullptr),
 fMCEvent(nullptr),
-fMCEventHandler(nullptr),
 fOutputList(nullptr),
 fQAList(nullptr),
 fAverage_Nch_Transv(7.2),
@@ -68,7 +58,6 @@ hNeutrons_Away(nullptr),
 hNeutrons_Toward_reshaped(nullptr),
 hNeutrons_Transv_reshaped(nullptr),
 hNeutrons_Away_reshaped(nullptr),
-hRparticles(nullptr),
 hRapidityProtons(nullptr),
 hRapidityNeutrons(nullptr),
 hDeltaP(nullptr),
@@ -88,7 +77,6 @@ AliAnalysisTaskDeuteronCoalescence::AliAnalysisTaskDeuteronCoalescence(const cha
 AliAnalysisTaskSE(name),
 fAODevent(nullptr),
 fMCEvent(nullptr),
-fMCEventHandler(nullptr),
 fOutputList(nullptr),
 fQAList(nullptr),
 fAverage_Nch_Transv(7.2),
@@ -118,7 +106,6 @@ hNeutrons_Away(nullptr),
 hNeutrons_Toward_reshaped(nullptr),
 hNeutrons_Transv_reshaped(nullptr),
 hNeutrons_Away_reshaped(nullptr),
-hRparticles(nullptr),
 hRapidityProtons(nullptr),
 hRapidityNeutrons(nullptr),
 hDeltaP(nullptr),
@@ -143,7 +130,6 @@ AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     fOutputList->Clear();
     delete fAODevent;
     delete fMCEvent;
-    delete fMCEventHandler;
     delete fOutputList;
     delete fQAList;
     delete hProtonWeights;
@@ -172,7 +158,6 @@ AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     delete hNeutrons_Toward_reshaped;
     delete hNeutrons_Transv_reshaped;
     delete hNeutrons_Away_reshaped;
-    delete hRparticles;
     delete hRapidityProtons;
     delete hRapidityNeutrons;
     delete hDeltaP;
@@ -186,7 +171,6 @@ AliAnalysisTaskDeuteronCoalescence::~AliAnalysisTaskDeuteronCoalescence()  {
     delete hDeltaPhi_Transv;
     delete hDeltaPhi_Away;
     delete hDeltaPhi_INELgtZERO;
-
 }
 //____________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
@@ -317,12 +301,6 @@ void AliAnalysisTaskDeuteronCoalescence::UserCreateOutputObjects()  {
     fOutputList -> Add(hNeutrons_Transv_reshaped);
     fOutputList -> Add(hNeutrons_Away_reshaped);
 
-    
-    //QA Histograms & Debug
-    hRparticles = new TH1D ("hRparticles","",1000,0,1);
-    hRparticles -> Sumw2();
-    fOutputList -> Add(hRparticles);
-    
     //Rapidity Distributions of Protons & Neutrons that form Deuteron in |y|<0.5
     hRapidityProtons  = new TH1D ("hRapidityProtons","",200,-2,2);
     hRapidityNeutrons = new TH1D ("hRapidityNeutrons","",200,-2,2);
@@ -862,12 +840,8 @@ Bool_t AliAnalysisTaskDeuteronCoalescence::GetEvent ()  {
     fMCEvent = MCEvent();
     if (!fMCEvent) return kFALSE;
     hNumberOfEvents -> Fill(1.5);
-       
-    //Get MC Event Handler
-    fMCEventHandler = dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if(!fMCEventHandler) return kFALSE;
     hNumberOfEvents -> Fill(2.5);
-    
+
     //Selection of INEL>0 Events
     if (!IsINELgtZERO ()) return kFALSE;
     hNumberOfEvents -> Fill(3.5);
@@ -1081,8 +1055,6 @@ Int_t AliAnalysisTaskDeuteronCoalescence::GetLeadingParticle ()  {
         Double_t y = particle->Yv();
         Double_t z = particle->Zv();
         Double_t r = TMath::Sqrt(x*x+y*y+z*z);
-        if (particle->IsPhysicalPrimary()) hRparticles -> Fill(r);
-        //if (r>1e-10) continue;
         
         Bool_t isFSParticle = (kFALSE);
         if (TMath::Abs(particle->PdgCode())==211)  isFSParticle=kTRUE;
