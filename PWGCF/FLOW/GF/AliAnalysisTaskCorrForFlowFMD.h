@@ -88,10 +88,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetPtRangeTrig(Double_t min, Double_t max) {fPtMinTrig = min; fPtMaxTrig = max; }
         void                    SetPtRangeAss(Double_t min, Double_t max) {fPtMinAss = min; fPtMaxAss = max; }
         void                    SetPtBins(std::vector<Double_t> bins) { fPtBinsTrigCharged = bins; }
-        void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
         void                    SetPhiStarCur(Double_t phiStar) {fMergingCut = phiStar; }
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
+        void                    SetNofMbins(Int_t n) { fNbinsMinv = n; }
 
         // FMD related
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
@@ -175,6 +175,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   fNofTracks;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
+        Int_t                   fNbinsMinv; // [60]
         Double_t                fNOfSamples; //[1]
         Double_t                fSampleIndex; //[0]
         Double_t                fPtMinTrig;
@@ -190,7 +191,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fFMDCacceptanceCutLower; // [1.8]
         Double_t                fFMDCacceptanceCutUpper; // [3.2]
         std::vector<Double_t>   fPtBinsTrigCharged;
-        std::vector<Double_t>   fPtBinsAss;
         Double_t                fCentMin;
         Double_t                fCentMax;
         Double_t                fCentrality;
@@ -227,7 +227,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 8);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 9);
 };
 
 #endif
