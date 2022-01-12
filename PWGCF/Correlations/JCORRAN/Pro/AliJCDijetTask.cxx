@@ -423,9 +423,9 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtr,AliJCDijetAna::iBGSubtr);
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCutsRaw,AliJCDijetAna::iBGSubtrCutsRaw);
         //we can run custom configuration with an argument
-        if((iUnfJetClassTrue!=AliJCDijetAna::iAcc            && iUnfJetClassDet!=AliJCDijetAna::iAcc)
-        || (iUnfJetClassTrue!=AliJCDijetAna::iBGSubtr        && iUnfJetClassDet!=AliJCDijetAna::iBGSubtr)
-        || (iUnfJetClassTrue!=AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet!=AliJCDijetAna::iBGSubtrCutsRaw)) {
+        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc            && iUnfJetClassDet==AliJCDijetAna::iAcc)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr        && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw))) {
             fana->CalculateResponse(fanaMC,fhistosDetMC,iUnfJetClassTrue,iUnfJetClassDet);
         }
 #endif
