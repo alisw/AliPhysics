@@ -765,7 +765,8 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD){
-    if(fDebug>3) Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
+    if(fDebug>3) 
+      Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
   }
   
   // get AOD event from input/ouput
@@ -806,12 +807,12 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   }
   
   if(!fAOD){
-    Printf("%s:%d AODEvent not found", (char*)__FILE__,__LINE__);
-//     return kFALSE;
+    if(fDebug>3) 
+      Printf("%s:%d AODEvent not found", (char*)__FILE__,__LINE__);
   }
   if(!fAODJets){
-    Printf("%s:%d AODEvent with jet branch not found", (char*)__FILE__,__LINE__);
-//     return kFALSE;
+    if(fDebug>3) 
+      Printf("%s:%d AODEvent with jet branch not found", (char*)__FILE__,__LINE__);
   }
 
   
