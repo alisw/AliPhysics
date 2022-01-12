@@ -539,7 +539,7 @@ int AliAnalysisTaskSENonPromptLc::IsCandidateSelected(AliAODRecoDecayHF *&lc, Al
 
         AliAODv0 *v0part = dynamic_cast<AliAODv0*>(dynamic_cast<AliAODRecoCascadeHF *>(lc)->Getv0());
         if (v0part->GetOnFlyStatus()) {
-            fHistNEvents->Fill(17);
+            fHistNEvents->Fill(16);
             return 0;
         }
     }
