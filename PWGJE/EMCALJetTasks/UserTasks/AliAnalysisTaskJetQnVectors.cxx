@@ -20,6 +20,7 @@
 #include "AliMultSelection.h"
 #include "AliAODVertex.h"
 #include "AliDataFile.h"
+#include "TGrid.h"
 
 using namespace std;
 
@@ -362,13 +363,19 @@ void AliAnalysisTaskJetQnVectors::LoadSplinesForqnPercentile(TString splinesFile
     TString listnameV0[3] = {"SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
 
     TString pathToFileCMVFNS = AliDataFile::GetFileName(splinesFilePath.Data());
-    // Check access to CVMFS (will only be displayed locally)
-    if (pathToFileCMVFNS.IsNull())
-        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+    TString pathToFileLocal = splinesFilePath;
 
-    TFile* splinesfile = TFile::Open(pathToFileCMVFNS.Data());
-    if(!splinesfile)
-        AliFatal("File with splines for qn percentiles not found!");
+      TFile* splinesfile;
+      if (splinesFilePath.BeginsWith("alien://") && !gGrid)
+        {
+          AliInfo("Trying to connect to AliEn ...");
+          TGrid::Connect("alien://");
+        }
+      // Check access to CVMFS (will only be displayed locally)
+      if (!pathToFileCMVFNS.IsNull())   splinesfile = TFile::Open(pathToFileCMVFNS.Data());
+      if (pathToFileCMVFNS.IsNull())    splinesfile = TFile::Open(splinesFilePath.Data());
+   
+      if(!splinesfile)    AliFatal("File with splines for qn percentiles not found!");
 
     for(int iDet=0; iDet<3; iDet++) {
         fSplineListqnPercTPC[iDet] = (TDirectoryFile*)splinesfile->Get(listnameTPC[iDet].Data());
