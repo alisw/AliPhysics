@@ -114,7 +114,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   fEtaCut(0.8),
   fDedxCut(10.0),
   fZvtxCut(10.0),
-  fPUSyst(-1),
+  fPUSyst(0),
   fListNUE(NULL),
   fListNUA(NULL), 
   fListVZEROCALIB(NULL),
@@ -245,7 +245,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   fEtaCut(0.8),
   fDedxCut(10.0),
   fZvtxCut(10.0),
-  fPUSyst(-1),
+  fPUSyst(0),
   fListNUE(NULL),
   fListNUA(NULL), 
   fListVZEROCALIB(NULL),
@@ -409,7 +409,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   fEtaCut(0.8),
   fDedxCut(10.0),
   fZvtxCut(10.0),
-  fPUSyst(-1),
+  fPUSyst(0),
   fListNUE(NULL),
   fListNUA(NULL), 
   fListVZEROCALIB(NULL),
@@ -1337,13 +1337,13 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
     } 
   } else if (fPeriod.EqualTo("LHC15o")){ // Rihan and Protty 's NUA Results
     if (charge>0){ 
-      hCorrectNUAPos = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%d",fRunNum));
+      hCorrectNUAPos = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%i",fRunNum));
       if (!hCorrectNUAPos) return -1;
       int iBinNUA = hCorrectNUAPos->FindBin(vz,phi,eta); 
       if (hCorrectNUAPos->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUAPos->GetBinContent(iBinNUA);
       return  weightNUA;
     } else if (charge<0){
-      hCorrectNUANeg = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%d",fRunNum));
+      hCorrectNUANeg = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%i",fRunNum));
       if (!hCorrectNUANeg) return -1;
       int iBinNUA = hCorrectNUANeg->FindBin(vz,phi,eta); 
       if (hCorrectNUANeg->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUANeg->GetBinContent(iBinNUA);
