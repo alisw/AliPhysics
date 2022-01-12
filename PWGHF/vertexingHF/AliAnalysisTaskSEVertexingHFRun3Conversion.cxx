@@ -55,6 +55,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::AliAnalysisTaskSEVertexingHFRun3Conv
 AliAnalysisTaskSE(),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
+fResetTreeAtEachEv(kTRUE),
 fOutput(0x0),
 fD0CandidateTree(0x0),
 f3ProngCandidateTree(0x0),
@@ -92,6 +93,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::AliAnalysisTaskSEVertexingHFRun3Conv
 AliAnalysisTaskSE(name),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
+fResetTreeAtEachEv(kTRUE),
 fOutput(0x0),
 fD0CandidateTree(0x0),
 f3ProngCandidateTree(0x0),
@@ -182,27 +184,27 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserCreateOutputObjects()
   fOutput->SetName("OutputArrays");
 
   fD0CandidateTree = new TTree("candD0Tree", "Tree of D0->Kpi candidates");
-  fD0CandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
+  if(!fResetTreeAtEachEv) fD0CandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
   fD0CandidateTree->Branch("trackId0",&fD0track0,"trackId0/I");
   fD0CandidateTree->Branch("trackId1",&fD0track1,"trackId1/I");
   fOutput->Add(fD0CandidateTree);
 
   f3ProngCandidateTree = new TTree("cand3ProngTree", "Tree of c->3prong candidates");
-  f3ProngCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
+  if(!fResetTreeAtEachEv) f3ProngCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
   f3ProngCandidateTree->Branch("trackId0",&f3ptrack0,"trackId0/I");
   f3ProngCandidateTree->Branch("trackId1",&f3ptrack1,"trackId1/I");
   f3ProngCandidateTree->Branch("trackId2",&f3ptrack2,"trackId2/I");
   fOutput->Add(f3ProngCandidateTree);
   
   fDstarCandidateTree = new TTree("candDstarTree", "Tree of D*->D0pi candidates");
-  fDstarCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
+  if(!fResetTreeAtEachEv) fDstarCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
   fDstarCandidateTree->Branch("trackD0Dau0",&fDstD0tr0,"trackD0Dau0/I");
   fDstarCandidateTree->Branch("trackD0Dau1",&fDstD0tr1,"trackD0Dau1/I");
   fDstarCandidateTree->Branch("trackSoftPi",&fDstSofPi,"trackSoftPi/I");
   fOutput->Add(fDstarCandidateTree);
 
   fCascadeCandidateTree = new TTree("candCascade", "Tree of Lc->V0+bach candidates");
-  fCascadeCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
+  if(!fResetTreeAtEachEv) fCascadeCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
   fCascadeCandidateTree->Branch("v0index",&fCasV0ind,"v0index/I");
   fCascadeCandidateTree->Branch("trackV0Dau0",&fCasV0tr0,"trackV0Dau0/I");
   fCascadeCandidateTree->Branch("trackV0Dau1",&fCasV0tr1,"trackV0Dau1/I");
@@ -289,8 +291,13 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
                        fLikeSign2ProngTClArr,
                        fLikeSign3ProngTClArr);
   
-
-
+  if(fResetTreeAtEachEv){
+    fD0CandidateTree->Reset();
+    f3ProngCandidateTree->Reset();
+    fDstarCandidateTree->Reset();
+    fCascadeCandidateTree->Reset();
+  }
+  
   fEventIndex=event->GetEventNumberInFile();
   Int_t nD0=fD0toKpiTClArr->GetEntriesFast();
   for(Int_t iD0=0; iD0<nD0; iD0++){
@@ -339,6 +346,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     fCascadeCandidateTree->Fill();
   }
   
+
   PostData(2,fOutput);
   return;
 }

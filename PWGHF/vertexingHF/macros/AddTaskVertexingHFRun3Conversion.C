@@ -1,4 +1,4 @@
-AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename=""){
+AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename="", Bool_t resetAtEachEv=kTRUE){
   //
   // Creates a task for heavy flavour vertexing for conversion to AO2D
   // Extract parameters from environment variables
@@ -46,6 +46,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
   // Create the task, add it to the manager and configure it.
   //===========================================================================
   AliAnalysisTaskSEVertexingHFRun3Conversion *hfTask = new AliAnalysisTaskSEVertexingHFRun3Conversion("vertexing HF");
+  hfTask->ResetTreeAtEachEvent(resetAtEachEv);
   mgr->AddTask(hfTask);
 
   //
