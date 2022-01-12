@@ -1943,9 +1943,12 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       // otherwise, do not touch it
       if(!fSwitchOffPIDafterFilt) massHypothesis=resp_onlyPID&massHypothesis;
     }
-    else {  // this is the default
-      if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
-	    else                      massHypothesis=isSeleCuts&massHypothesis;
+    else {  // topological analysis
+      if(fSwitchOffPIDafterFilt)  massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+      else { // this is the default
+        if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+	      else                      massHypothesis=isSeleCuts&massHypothesis;
+      }
     }
 
 	  //
