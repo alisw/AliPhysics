@@ -28,7 +28,7 @@ AliAnalysisTaskPhiCount* AddAnalysisTaskPhiCount( Bool_t MCFlag, Bool_t PhiFlag,
     
     //  -   //  Event Selection
     fAliAnlTask ->  SelectCollisionCandidates(AliVEvent::kAny);
-    fAliAnlTask ->  SetkTriggerMask(AliVEvent::kAnyINT);
+    fAliAnlTask ->  SetkTriggerMask(AliVEvent::kAnyINT); // | AliVEvent::kHighMultV0
     fAliAnlTask ->  SetVertexCut(kVertexCut);
     fAliAnlTask ->  SetSPCompute(kFALSE);
     fAliAnlTask ->  SetRTCompute(kFALSE);
