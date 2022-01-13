@@ -481,7 +481,7 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2Kine::UserExec(Option_t *)
   if (!TrCharge)        continue;
   if (!TrIsPrim)           continue;
   if (mcTrack->Pt() < 0.001 || mcTrack->Pt() > 50.) continue;
-  if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
+//  if (pdgabs!=211 && pdgabs!=321 && pdgabs!=2212) continue; //only charged pi+K+p
   if (pdgabs==9902210) return; //no diffractive protons 
 
   const auto dEtapp(mcTrack->Eta());
