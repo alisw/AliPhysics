@@ -33,6 +33,7 @@
 
 #ifdef __CLING__
 
+#pragma link C++ class AliAnalysisTaskCreateNUA+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
