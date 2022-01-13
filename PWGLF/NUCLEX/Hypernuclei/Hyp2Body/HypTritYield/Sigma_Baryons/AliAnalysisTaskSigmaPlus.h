@@ -90,16 +90,16 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         TTree*                fSigmaCandTree;             //! Tree with Sigma candidates
         TTree*                fSigmaCandTreeExtra;        //! Tree with Extra Sigma candidates
 
-        //V0 Maps
-        std::map<std::pair<int, int>, int> fONMap;        //!<! Map the track pairs found by the V0
-        std::map<std::pair<int, int>, int> fOFFMap;       //!<! Finders to avoid double counting. Uses ESD IDs!
+        //V0 Arrays
+        std::vector<int>      fOnFlyVector;               //!<! Save the track IDs used by the V0 Finders 
+        std::vector<int>      fFinderVector;              //!<! to avoid double counting. Uses ESD IDs!
+        std::vector<int>      fV0ParticleIDArray;         //!<! Save IDs of Particles found by any of the V0 Finders
 
         //Particle Arrays
         std::vector<int>      fProtonArray;               //!<! Proton candidates
         std::vector<int>      fElectronArray;             //!<! Electron candidates
         std::vector<int>      fConvPhotonArray;           //!<! V0 Photon candidates
         std::vector<std::pair<int,int>>  PairIndexArray;  //!<! V0 Photon candidates
-        std::vector<int>      fV0ParticleIDArray;         //!<! Save IDs of Particles found by any of the V0 Finders
 
         Bool_t                isMonteCarlo;               //True if MC information is available  
 
@@ -115,6 +115,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              primaryVtxPosZ;             //Position of the primary Vertex of the Event
         Int_t                 nTracks;                    //Number of Tracks in the Event
         Int_t                 Centrality;                 //Centrality of the Event
+        ULong64_t             fGlobalEventID;             //Global ID of the Collision  
 
         //Activate some extra output. Caution: Very anoying!
         Bool_t                fDebug = kFALSE;
@@ -142,10 +143,10 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //FillProtonArray Cuts
         Double_t              fMaxProtEta = 0.9;    
-        Double_t              fMinTPCClustProt = 70;
-        Double_t              fMaxNsigProtTPC = 3;
-        Double_t              fMaxNsigProtTOF = 3;  
-        Double_t              fMaxpOnlyTPCPID = 0.75;
+        Double_t              fMinTPCClustProt = 60;
+        Double_t              fMaxNsigProtTPC = 5;
+        Double_t              fMaxNsigProtTOF = 5;  
+        Double_t              fMaxpOnlyTPCPID = 0.8;
         Double_t              fMinProtpt = 0; 
         Double_t              fMaxProtpt = 15;  
         void SetProtonMaxEta(Double_t maxeta) {fMaxProtEta = maxeta;}
@@ -162,16 +163,16 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //FillV0PhotonArray Cuts
         Double_t              fMaxDaughtEta = 0.9;    
-        Double_t              fMinTPCClustDaught = 40;
-        Double_t              fMaxNsigDaughtTPC = 3;
-        Double_t              fMaxalpha = 0.9;
-        Double_t              fMaxqt = 0.04;
-        Double_t              fMaxopenangle = 0.2;
+        Double_t              fMinTPCClustDaught = 30;
+        Double_t              fMaxNsigDaughtTPC = 5;
+        Double_t              fMaxalpha = 1.2;
+        Double_t              fMaxqt = 0.06;
+        Double_t              fMaxopenangle = 0.3;
         Double_t              fMaxdeltatheta = 0.1;
-        Double_t              fMinV0CPA = 0.85;
+        Double_t              fMinV0CPA = 0.8;
         Double_t              fMinV0Radius = 3; 
-        Double_t              fMaxV0Radius = 200;
-        Double_t              fMaxphotonmass = 0.05;
+        Double_t              fMaxV0Radius = 220;
+        Double_t              fMaxphotonmass = 0.15;
         void SetV0DaughtMaxEta(Double_t maxeta) {fMaxDaughtEta = maxeta;}
         void SetV0DaughtMinTPCCluster(Double_t minclst) {fMinTPCClustDaught = minclst;}
         void SetV0DaughtMaxNSigmaTPC(Double_t nsigtpc) {fMaxNsigDaughtTPC = nsigtpc;}
@@ -186,8 +187,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //FindAddPhotons Cuts. CAUTION: Uses same Cuts for Daughters as used for V0s 
         Double_t              fMinDCADaughtPV = 0.1;
-        Double_t              fMaxDCADaught = 5;
-        void SetAddPhotonMinDCAPV(Double_t mindca) {fMinDCADaughtPV = mindca;}
+        Double_t              fMaxDCADaught   = 100; //Cut not very good
+        void SetAddPhotonMinDCAPV(Double_t mindcapv) {fMinDCADaughtPV = mindcapv;}
         void SetAddPhotonMaxDaughtDCA(Double_t maxdca) {fMaxDCADaught = maxdca;}
 
         //FillElectronArray Cuts
@@ -205,17 +206,17 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetElectronMaxpt(Double_t maxpt) {fMaxElecpt = maxpt;}
 
         //Fill Sigma Tree Cuts     (Coarse Cuts to reduce Tree Size)
-        Double_t              fRejectGammaAutoCorr = 0.02;
+        Bool_t                fCleanAutoCorr = kTRUE;
         Double_t              fMinPi0Mass = 0.06;    
         Double_t              fMaxPi0Mass = 0.19;    
         Double_t              fMaxSigmaPA = 0.2;     
         Double_t              fMaxSigmaMass = 1.7;    
         Double_t              fMinProtonDCAxy = 0;    
-        Double_t              fMinProtonDCAz = 0;    
+        Double_t              fMinProtonDCAz = 0;
         Double_t              flowkstar = 0.6;    
         Double_t              fverylowkstar = 0.3;    
-        Double_t              fveryverylowkstar = 0.1;    
-        void SetRejectGammaAutoCorr(Double_t minrejectmass) {fRejectGammaAutoCorr = minrejectmass;}
+        Double_t              fveryverylowkstar = 0.1;        
+        void SetCleanAutoCorrelations(Bool_t cleanpairs) {fCleanAutoCorr = cleanpairs;}        
         void SetPi0MinMass(Double_t minpi0mass) {fMinPi0Mass = minpi0mass;}
         void SetPi0MaxMass(Double_t maxpi0mass) {fMaxPi0Mass = maxpi0mass;}
         void SetSigmaMaxPA(Double_t maxpa) {fMaxSigmaPA = maxpa;}
@@ -233,8 +234,11 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fIsV02fromFinder;
         Bool_t                fIsV01Onthefly;
         Bool_t                fIsV02Onthefly;
-        Int_t                 fSigRunnumber;               
-        ULong_t               fSigTriggerMask;               
+        Bool_t                fHas4DiffIDs;
+        Int_t                 fSigRunnumber;
+        Int_t                 fSigTriggerMask;               
+        Int_t                 fSigMCLabel;
+        ULong64_t             fSigEventID;
         Float_t               fSigCentrality;               
         Float_t               fSigBField;               
         Float_t               fInvSigMass;               
@@ -252,7 +256,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fPhoton1Radius;        
         Float_t               fPhoton2Radius;        
         Float_t               fPhoton1DCAPV;        
-        Float_t               fPhoton2DCAPV;        
+        Float_t               fPhoton2DCAPV;
+        Float_t               fPhotonsMinCluster;
+        Float_t               fPhotonsMaxalpha;
+        Float_t               fPhotonsMaxqt;
+        Float_t               fPhotonsMaxOpenAngle;
+        Float_t               fPhotonsMaxinvmass;        
+        Float_t               fPhotonsMaxNSigTPC;        
         Float_t               fInvPi0Mass;        
         Float_t               fPi0Px;        
         Float_t               fPi0Py;        
@@ -264,9 +274,19 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fProtonPx;        
         Float_t               fProtonPy;        
         Float_t               fProtonPz;        
+        Float_t               fProtonpropPx;        
+        Float_t               fProtonpropPy;        
+        Float_t               fProtonpropPz;        
         Float_t               fProtonDCAtoPVxy;        
         Float_t               fProtonDCAtoPVz;        
-        Float_t               fProtonPi0DCA;        
+        Float_t               fProtonPi0DCA;
+        Float_t               fProtonNSigTPC;
+        Float_t               fProtonNSigTOF;
+        Float_t               fProtonNCluster;  
+        Float_t               fProtonNSigTPCPion;
+        Float_t               fProtonNSigTPCKaon;
+        Float_t               fProtonNSigTOFPion;
+        Float_t               fProtonNSigTOFKaon;
         Short_t               fnPair;        
         Short_t               fnPairlowkstar;        
         Short_t               fnPairverylowkstar;        
