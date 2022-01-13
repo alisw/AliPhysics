@@ -212,6 +212,7 @@ void AliAnalysisTaskCreateNUA::UserExec(Option_t *)
   AliMultSelection *lMultSel = (AliMultSelection *)fInputEvent->FindListObject("MultSelection");
   Double_t cent = lMultSel->GetMultiplicityPercentile("V0M");
 
+
   fAOD = dynamic_cast<AliAODEvent *>(InputEvent()); // get an event (called fAOD) from the input file
                                                     // there's another event format (ESD) which works in a similar wya
                                                     // but is more cpu/memory unfriendly. for now, we'll stick with aod's
