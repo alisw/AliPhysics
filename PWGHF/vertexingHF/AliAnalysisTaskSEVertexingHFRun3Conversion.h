@@ -47,7 +47,6 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   AliAnalysisVertexingHF *fVHF;        /// Vertexer heavy flavour
   Bool_t       fMakeReducedCandidates; /// flag to use reduced size candidates
   Bool_t       fResetTreeAtEachEv;     /// flag to reset trees at each event
-  TList        *fOutput;               //!<! list with output onjects
   TTree        *fD0CandidateTree;      //!<! output tree
   TTree        *f3ProngCandidateTree;  //!<! output tree
   TTree        *fDstarCandidateTree;   //!<! output tree
@@ -77,7 +76,7 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   TClonesArray *fLikeSign3ProngTClArr; /// Array of LikeSign3Prong
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,2); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,3); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
   /// \endcond
 };
 
