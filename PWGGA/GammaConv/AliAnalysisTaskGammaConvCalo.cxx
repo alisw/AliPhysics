@@ -206,8 +206,11 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
   fHistoMCPi0PtNotTriggered(NULL),
+  fHistoMCPi0PtNoVertex(NULL),
   fHistoMCEtaPtNotTriggered(NULL),
+  fHistoMCEtaPtNoVertex(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
+  fHistoMCGammaPtNoVertex(NULL),
   fHistoMCPi0PtGammaLeg(NULL),
   fHistoMCPi0WOWeightPtGammaLeg(NULL),
   fHistoMCPi0InAccPtGammaLeg(NULL),
@@ -624,8 +627,11 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoMCPi0PtJetPt(NULL),
   fHistoMCEtaPtJetPt(NULL),
   fHistoMCPi0PtNotTriggered(NULL),
+  fHistoMCPi0PtNoVertex(NULL),
   fHistoMCEtaPtNotTriggered(NULL),
+  fHistoMCEtaPtNoVertex(NULL),
   fHistoMCGammaPtNotTriggered(NULL),
+  fHistoMCGammaPtNoVertex(NULL),
   fHistoMCPi0PtGammaLeg(NULL),
   fHistoMCPi0WOWeightPtGammaLeg(NULL),
   fHistoMCPi0InAccPtGammaLeg(NULL),
@@ -1999,6 +2005,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoMCAllGammaPt                              = new TH1F*[fnCuts];
     fHistoMCAllGammaEMCALAccPt                      = new TH1F*[fnCuts];
     fHistoMCGammaPtNotTriggered                     = new TH1F*[fnCuts];
+    fHistoMCPi0PtNoVertex                           = new TH1F*[fnCuts];
 
     if(!fDoLightOutput){
       fHistoMCHeaders                                 = new TH1I*[fnCuts];
@@ -2070,9 +2077,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if(fDoMesonAnalysis){
       fHistoMCPi0Pt                                 = new TH1F*[fnCuts];
       fHistoMCPi0PtNotTriggered                     = new TH1F*[fnCuts];
+      fHistoMCEtaPtNoVertex                         = new TH1F*[fnCuts];
       fHistoMCPi0WOWeightPt                         = new TH1F*[fnCuts];
       fHistoMCEtaPt                                 = new TH1F*[fnCuts];
       fHistoMCEtaPtNotTriggered                     = new TH1F*[fnCuts];
+      fHistoMCGammaPtNoVertex                       = new TH1F*[fnCuts];
       fHistoMCEtaWOWeightPt                         = new TH1F*[fnCuts];
       fHistoMCPi0InAccPt                            = new TH1F*[fnCuts];
       fHistoMCPi0WOWeightInAccPt                    = new TH1F*[fnCuts];
@@ -2272,10 +2281,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fMCList[iCut]->Add(fHistoMCAllGammaEMCALAccPt[iCut]);
       fHistoMCGammaPtNotTriggered[iCut]  = new TH1F("MC_AllGammaNotTriggered_Pt", "MC_AllGammaNotTriggered_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
       fMCList[iCut]->Add(fHistoMCGammaPtNotTriggered[iCut]);
+      fHistoMCGammaPtNoVertex[iCut]  = new TH1F("MC_AllGammaNoVertex_Pt", "MC_AllGammaNoVertex_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+      fMCList[iCut]->Add(fHistoMCGammaPtNoVertex[iCut]);
       if (fIsMC > 1){
         fHistoMCAllGammaPt[iCut]->Sumw2();
         fHistoMCAllGammaEMCALAccPt[iCut]->Sumw2();
         fHistoMCGammaPtNotTriggered[iCut]->Sumw2();
+        fHistoMCGammaPtNoVertex[iCut]->Sumw2();
       }
       if(!fDoLightOutput){
         fHistoMCHeaders[iCut]             = new TH1I("MC_Headers", "MC_Headers", 20, 0, 20);
@@ -2331,6 +2343,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoMCPi0PtNotTriggered[iCut]               = new TH1F("MC_Pi0_Pt_NotTriggered", "MC_Pi0_Pt_NotTriggered", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCPi0PtNotTriggered[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPi0PtNotTriggered[iCut]);
+        fHistoMCPi0PtNoVertex[iCut]               = new TH1F("MC_Pi0_Pt_NoVertex", "MC_Pi0_Pt_NoVertex", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+        fHistoMCPi0PtNoVertex[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCPi0PtNoVertex[iCut]);
         fHistoMCPi0WOWeightPt[iCut]       = new TH1F("MC_Pi0_WOWeights_Pt", "MC_Pi0_WOWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fMCList[iCut]->Add(fHistoMCPi0WOWeightPt[iCut]);
 
@@ -2340,6 +2355,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoMCEtaPtNotTriggered[iCut]               = new TH1F("MC_Eta_Pt_NotTriggered", "MC_Eta_Pt_NotTriggered", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fHistoMCEtaPtNotTriggered[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCEtaPtNotTriggered[iCut]);
+        fHistoMCEtaPtNoVertex[iCut]               = new TH1F("MC_Eta_Pt_NoVertex", "MC_Eta_Pt_NoVertex", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+        fHistoMCEtaPtNoVertex[iCut]->Sumw2();
+        fMCList[iCut]->Add(fHistoMCEtaPtNoVertex[iCut]);
         fHistoMCEtaWOWeightPt[iCut]       = new TH1F("MC_Eta_WOWeights_Pt", "MC_Eta_WOWeights_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fMCList[iCut]->Add(fHistoMCEtaWOWeightPt[iCut]);
 
@@ -3455,15 +3473,19 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       if (eventNotAccepted==3 && fIsMC > 0){
         if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(kFALSE);
+          ProcessMCParticles(1);
         if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(kFALSE);
+          ProcessAODMCParticles(1);
+      } else if (eventNotAccepted==5 && fIsMC > 0){
+        if(fInputEvent->IsA()==AliESDEvent::Class())
+          ProcessMCParticles(2);
+        if(fInputEvent->IsA()==AliAODEvent::Class())
+          ProcessAODMCParticles(2);
       }
       continue;
     }
     
-    // ??????????????? is this correct?
-    if(eventQuality != 0 && eventNotAccepted==3){// Event Not Accepted
+    if(eventQuality != 0){// Event Not Accepted
       //cout << "event rejected due to: " <<eventQuality << endl;
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
@@ -3528,9 +3550,9 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
     }
     if(fIsMC>0){
       if(fInputEvent->IsA()==AliESDEvent::Class())
-        ProcessMCParticles();
+        ProcessMCParticles(0);
       if(fInputEvent->IsA()==AliAODEvent::Class())
-        ProcessAODMCParticles();
+        ProcessAODMCParticles(0);
     }
 
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
@@ -4643,7 +4665,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
   return;
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTriggered)
+void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Int_t isCurrentEventSelected)
 {
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
@@ -4671,8 +4693,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
       
       if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,fAODMCTrackArray,kFALSE)){
-        if (!isCurrentEventTriggered) {
+        if (isCurrentEventSelected==1) {
           fHistoMCGammaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
+        } else if (isCurrentEventSelected==2) {
+          fHistoMCGammaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
         } else {
           fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
           if (TMath::Abs(particle->Eta()) < 0.66 ){
@@ -4712,7 +4736,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
           AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(daughterIndex));
           if(!tmpDaughter) continue;
         }
-        if(!fDoLightOutput && isCurrentEventTriggered) fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+        if(!fDoLightOutput && isCurrentEventSelected == 0) fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
       }
       // Converted MC Gamma
       if(fDoMesonAnalysis){
@@ -4726,7 +4750,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
           mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
-        if(fDoLightOutput!=2 && isCurrentEventTriggered){
+        if(fDoLightOutput!=2 && isCurrentEventSelected == 0){
           if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
             if ( particle->GetPdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., fWeightJetJetMC);
@@ -4775,12 +4799,13 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
 
           if(particle->GetPdgCode() == 111){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
-              if (isCurrentEventTriggered)   fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
-              else fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+              if (isCurrentEventSelected == 1) fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+              else if (isCurrentEventSelected == 2) fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+              else fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
             }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
-                if(!fDoLightOutput && isCurrentEventTriggered) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
+                if(!fDoLightOutput && isCurrentEventSelected == 0) fHistoMCPi0JetEventGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in jet event
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
@@ -4793,10 +4818,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
                   RJetPi0Cand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
                   if(fConvJetReader->Get_Jet_Radius() > 0 ){
                     if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
-                      if(!fDoLightOutput && isCurrentEventTriggered) fHistoMCPi0inJetGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
+                      if(!fDoLightOutput && isCurrentEventSelected == 0) fHistoMCPi0inJetGenerated[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
                       else {
-                        if (isCurrentEventTriggered) fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC);
-                        else fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC);
+                        if (isCurrentEventSelected == 1) fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC);
+                        else if (isCurrentEventSelected == 2) fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC);
+                        else fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted* fWeightJetJetMC);
                       }
                     }
                   }
@@ -4805,7 +4831,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
                 fTrueVectorJetPhi.clear();
               }
             }
-            if (!isCurrentEventTriggered) continue; 
+            if (isCurrentEventSelected > 0) continue; 
             fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (!fDoLightOutput){
               // fill pi0 hists against gamma pt of first leg
@@ -4829,8 +4855,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
             }
           }else if(particle->GetPdgCode() == 221){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)){
-              if (isCurrentEventTriggered) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
-              else fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered events
+              if (isCurrentEventSelected == 1) fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered events
+              else if (isCurrentEventSelected == 2) fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered events
+              else fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
             } 
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
@@ -4849,8 +4876,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
                     if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
                       if(!fDoLightOutput) fHistoMCEtainJetGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
                       else { 
-                        if (isCurrentEventTriggered) fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
-                        else fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered events
+                        if (isCurrentEventSelected == 1) fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered events
+                        else if (isCurrentEventSelected == 2) fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered events
+                        else fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
                       }
                     }
                   }
@@ -4859,7 +4887,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
                 fTrueVectorJetPhi.clear();
               }
             }
-            if (!isCurrentEventTriggered) continue; 
+            if (isCurrentEventSelected > 0) continue; 
             fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (fIsMC > 1) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0){
@@ -4868,7 +4896,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
               if (fIsMC == 2) fHistoMCEtaPtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
             }
           }
-          if (!isCurrentEventTriggered) continue; 
+          if (isCurrentEventSelected > 0) continue; 
 
           // Check the acceptance for both gammas
           if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedAODMC(daughter0,fAODMCTrackArray,kFALSE) &&
@@ -4953,7 +4981,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
         }
       }
     } else {
-      if (!isCurrentEventTriggered) continue;
+      if (isCurrentEventSelected > 0) continue;
       // fill secondary histograms
       Int_t isMCFromMBHeader = -1;
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -5053,7 +5081,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticles(Bool_t isCurrentEventTr
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTriggered)
+void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Int_t isCurrentEventSelected)
 {
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxX   = primVtxMC->GetX();
@@ -5078,8 +5106,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
       
       if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
-        if (!isCurrentEventTriggered) {
+        if (isCurrentEventSelected == 1) {
           fHistoMCGammaPtNotTriggered[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
+        } else if (isCurrentEventSelected == 2) {
+          fHistoMCGammaPtNoVertex[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
         } else {
           fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC); // All MC Gamma
           if (TMath::Abs(particle->Eta()) < 0.66 ){
@@ -5117,7 +5147,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
       }
       // Converted MC Gamma
       if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
-        if(!fDoLightOutput && isCurrentEventTriggered) fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
+        if(!fDoLightOutput && isCurrentEventSelected == 0) fHistoMCConvGammaPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
       }
 
 
@@ -5133,7 +5163,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
           mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
         }
 
-        if(fHistoMCPrimaryPtvsSource[fiCut] && isCurrentEventTriggered){
+        if(fHistoMCPrimaryPtvsSource[fiCut] && isCurrentEventSelected == 0){
           if ((mesonY > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMin()) && (mesonY < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetRapidityCutValueMax())){
             if ( particle->PdgCode() == 211 ){  // positve pions
               fHistoMCPrimaryPtvsSource[fiCut]->Fill(particle->Pt(), 0., fWeightJetJetMC);
@@ -5180,8 +5210,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
 
           if(particle->PdgCode() == 111){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
-              if (isCurrentEventTriggered)   fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
-              else fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+              if (isCurrentEventSelected == 1) fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+              else if (isCurrentEventSelected == 2) fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions  
+              else fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
             }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
@@ -5200,8 +5231,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
                     if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
                       if(!fDoLightOutput) fHistoMCPi0inJetGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
                       else {
-                        if (isCurrentEventTriggered)   fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
-                        else fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+                        if (isCurrentEventSelected == 1) fHistoMCPi0PtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+                        else if (isCurrentEventSelected == 2) fHistoMCPi0PtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0 in not triggered collisions
+                        else fHistoMCPi0Pt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Pi0
                       }
                     }
                   }
@@ -5210,7 +5242,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
                 fTrueVectorJetPhi.clear();
               }
             }
-            if (!isCurrentEventTriggered) continue; 
+            if (isCurrentEventSelected > 0) continue; 
             fHistoMCPi0WOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (!fDoLightOutput){
               // fill pi0 hists against gamma pt of first leg
@@ -5234,8 +5266,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
             }
           }else if(particle->PdgCode() == 221){
             if(!fDoJetAnalysis || (fDoJetAnalysis && !fDoLightOutput)) {
-              if (isCurrentEventTriggered)   fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
-              else fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered collisions
+              if (isCurrentEventSelected == 1) fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered collisions
+              else if (isCurrentEventSelected == 2) fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered collisions
+              else fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
             }
             if(fDoJetAnalysis){
               if(fConvJetReader->GetTrueNJets()>0){
@@ -5254,8 +5287,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
                     if(RJetPi0Cand < fConvJetReader->Get_Jet_Radius()){
                       if(!fDoLightOutput) fHistoMCEtainJetGenerated[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // MC Pi0 with gamma in acc in a jet
                       else {
-                        if (isCurrentEventTriggered)   fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
-                        else fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered collisions
+                        if (isCurrentEventSelected == 1) fHistoMCEtaPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered collisions
+                        else if (isCurrentEventSelected == 2) fHistoMCEtaPtNoVertex[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta in not triggered collisions
+                        else fHistoMCEtaPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Eta
                       }
                     }
                   }
@@ -5264,7 +5298,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
                 fTrueVectorJetPhi.clear();
               }
             }
-            if (!isCurrentEventTriggered) continue; 
+            if (isCurrentEventSelected > 0) continue; 
             fHistoMCEtaWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
             if (fIsMC > 1) fHistoMCEtaWOEvtWeightPt[fiCut]->Fill(particle->Pt());
             if (fDoMesonQA > 0){
@@ -5273,7 +5307,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
               if (fIsMC == 2) fHistoMCEtaPtJetPt[fiCut]->Fill(particle->Pt(),((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetMaxPtJet(),fWeightJetJetMC);
             }
           }
-          if (!isCurrentEventTriggered) continue; 
+          if (isCurrentEventSelected > 0) continue; 
 
           // Check the acceptance for both gammas & whether they are counted as primaries as well
           Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetDaughterFirst(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
@@ -5363,7 +5397,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Bool_t isCurrentEventTrigg
       }
     } else {
     // fill secondary histograms
-      if (!isCurrentEventTriggered) continue;
+      if (isCurrentEventSelected > 0) continue;
       AliMCParticle* particle = (AliMCParticle *)fMCEvent->GetTrack(i);
       if (!particle) continue;
       Int_t isMCFromMBHeader = -1;
