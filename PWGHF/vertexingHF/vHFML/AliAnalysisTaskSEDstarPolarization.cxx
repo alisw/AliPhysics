@@ -807,7 +807,7 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, centrality};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality};
                             double var4nSparseAccThetaPhiStar[3] = {pt, thetaStarBeam, phiStarBeam};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                             fnSparseMCThetaPhiStar[1]->Fill(var4nSparseAccThetaPhiStar);
