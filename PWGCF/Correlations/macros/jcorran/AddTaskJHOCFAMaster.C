@@ -62,7 +62,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   TString MAPfilenames[Nsets];  // Azimuthal corrections.
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
-  TString sCorrection[3] = { "17i2a", "18q", "18r" }; // 17i2a for 15o.
+  TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
 
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root", speriod[period].Data()));
