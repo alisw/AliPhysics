@@ -634,6 +634,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );
+      Bool_t    IsEventINELgtZERO(AliVEvent *event);
       Bool_t    IsTriggerSelected(  AliVEvent *event,
                                     Bool_t isMC);
       Bool_t    HasV0AND()                                                          { return fHasV0AND                                          ; }
@@ -793,6 +794,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t                     fMaxFacPtHard;                          ///< maximum factor between maximum jet pt and pt hard generated
       Float_t                     fMaxFacPtHardSingleParticle;            ///< maximum factor between maximum single particle pt (pi0/eta) and pt hard generated
       Int_t                       fMimicTrigger;                          ///< enable trigger mimiking
+      Bool_t                      fINELgtZEROTrigger;                     // enable INEL > 0 selection
       TString                     fPathTriggerMimicSpecialInput;          ///< set special trigger mimiking OADB file
       Bool_t                      fRejectTriggerOverlap;                  ///< enable trigger overlap rejections
       //
@@ -807,7 +809,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,87)
+      ClassDef(AliConvEventCuts,88)
       /// \endcond
 };
 

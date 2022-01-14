@@ -3626,6 +3626,22 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n2310113","411790109fe30230000","0s631031000000d0"); // INT7, 20-30%
     cuts.AddCutCalo("n7a10113","411790109fe30230000","0s631031000000d0"); // INT7, 50-70%
 
+  // with INEL>0 selection
+  // selected mult intervals for efficiency studies
+  } else if (trainConfig == 2470){ // min bias
+      cuts.AddCutCalo("00015113","411790109fe30230000","0s631031000000d0"); // INT7, INEL>0
+  } else if (trainConfig == 2471){ // EG1 + EG2
+    cuts.AddCutCalo("0008h113","411790109fe30230000","0s631031000000d0"); // EG1, INEL>0
+    cuts.AddCutCalo("0008i113","411790109fe30230000","0s631031000000d0"); // EG2, INEL>0
+  } else if (trainConfig == 2472){ // MB in mult slices with INEL condition
+    cuts.AddCutCalo("r0a15113","411790109fe30230000","0s631031000000d0"); // INT7, INEL>0, 0-0.1%
+    cuts.AddCutCalo("m0115113","411790109fe30230000","0s631031000000d0"); // INT7, 0-1%
+    cuts.AddCutCalo("m5a15113","411790109fe30230000","0s631031000000d0"); // INT7, 5-10%
+    cuts.AddCutCalo("n2315113","411790109fe30230000","0s631031000000d0"); // INT7, 20-30%
+    cuts.AddCutCalo("n7a15113","411790109fe30230000","0s631031000000d0"); // INT7, 50-70%
+
+
+
   //*************************************************************************************************
   // 13 TeV EMCal Sphericity differential cuts
   //*************************************************************************************************
