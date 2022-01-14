@@ -1941,7 +1941,9 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       //
       // if wee keep the selection on PID, modify the massHypothesis
       // otherwise, do not touch it
-      if(!fSwitchOffPIDafterFilt) massHypothesis=resp_onlyPID&massHypothesis;
+      if(!fSwitchOffPIDafterFilt) {
+        if(!fExplore_PIDstdCuts)  massHypothesis=resp_onlyPID&massHypothesis;
+      }
     }
     else {  // topological analysis
       if(fSwitchOffPIDafterFilt)  massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
