@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool setNUAmap = kFALSE, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -72,8 +72,13 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   }
 
   for (int i = 0; i < Nsets; i++) {
-    MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
-      MAPdirname.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
+    if (setNUAmap) {  // Use the same minPt = 0.2 map for all config of minPt.
+      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
+        MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+    } else {  // Use minPt dependent map.
+      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
+        MAPdirname.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
+    }
     cmaptask->EnablePhiCorrection(i, MAPfilenames[i]);  // i: index for 'SetPhiCorrectionIndex(i)'.
   }
   mgr->AddTask((AliAnalysisTask *) cmaptask);
