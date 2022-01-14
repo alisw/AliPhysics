@@ -317,7 +317,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::Notify()
   if(tree){
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
-      Error("Notify","No current file");
+      AliError("No current file");
       return kFALSE;
     }
     
@@ -338,8 +338,8 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::Notify()
         fJetUEPIDtask[i]->FillXsec(xsection);
     }    
   
-    if(!fh1Xsec||!fh1Trials){
-      Printf("%s:%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+    if(!fh1Xsec || !fh1Trials) {
+      AliError("No Histogram fh1Xsec");
       return kFALSE;
     }
     
@@ -365,8 +365,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
 {
   // create output objects
 
-  if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()");
-
+  AliDebug(1, "Start creating user outputs");
+  
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
   
   //
@@ -470,12 +470,12 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   fAnaUtils->SetMaxVtxZ(fMaxVertexZ);
 
   // Load PID framework if desired
-  if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Loading PID framework");
+  AliDebug(1, "Loading PID framework");
   
   if (fUseJetPIDtask || fUseInclusivePIDtask || fUseJetUEPIDtask) {
     TObjArray* tasks = AliAnalysisManager::GetAnalysisManager()->GetTasks();
     if (!tasks) {
-      Printf("ERROR loading PID tasks: Failed to retrieve tasks from analysis manager!\n");
+      AliError("ERROR loading PID tasks: Failed to retrieve tasks from analysis manager!");
       
       fUseInclusivePIDtask = kFALSE;
       fUseJetPIDtask = kFALSE;
@@ -493,13 +493,13 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
           fInclusivePIDtask[i] = (AliAnalysisTaskPID*)tasks->FindObject(fNameInclusivePIDtask[i].Data());
           
           if (!fInclusivePIDtask[i]) {
-            Printf("ERROR: Failed to load inclusive pid task!\n");
+            AliErrorStream() << "ERROR Failed to load inclusive pid task" << std::endl;
             fUseInclusivePIDtask = kFALSE;
           }
         }
       }
       else {
-        Printf("WARNING: zero inclusive pid tasks!\n");
+        AliWarningStream() << "zero inclusive pid tasks!" << std::endl;
         fUseInclusivePIDtask = kFALSE;
       }
     }    
@@ -515,13 +515,13 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
           fJetPIDtask[i] = (AliAnalysisTaskPID*)tasks->FindObject(fNameJetPIDtask[i].Data());
           
           if (!fJetPIDtask[i]) {
-            Printf("ERROR: Failed to load jet pid task!\n");
+            AliErrorStream() << "ERROR Failed to load jet pid task" << std::endl;
             fUseJetPIDtask = kFALSE;
           }
         }
       }
       else {
-        Printf("WARNING: zero jet pid tasks!\n");
+        AliWarningStream() << "zero jet pid tasks!" << std::endl;
         fUseJetPIDtask = kFALSE;
       }
     }
@@ -537,13 +537,13 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
           fJetUEPIDtask[i] = (AliAnalysisTaskPID*)tasks->FindObject(fNameJetUEPIDtask[i].Data());
           
           if (!fJetUEPIDtask[i]) {
-            Printf("ERROR: Failed to load jet underlying event pid task!\n");
+            AliErrorStream() << "ERROR Failed to load jet underlying event pid task" << std::endl;
             fUseJetUEPIDtask = kFALSE;
           }
         }
       }
       else {
-        Printf("WARNING: zero jet underlying event pid tasks!\n");
+        AliWarningStream() << "zero jet underlying event pid tasks!" << std::endl;
         fUseJetUEPIDtask = kFALSE;
       }
     }    
@@ -627,18 +627,18 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   
   TH1::AddDirectory(oldStatus);
 
-  if(fDebug > 2) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Posting Output");
+  AliDebugStream(1) << "Posting Output" << std::endl;
   
   PostData(1, fCommonHistList);
   
-  if(fDebug > 2) Printf("AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects() -> Done");
+  AliDebugStream(1) << "Done" << std::endl;
 }
 
 //_______________________________________________
 void AliAnalysisTaskIDFragmentationFunction::Init()
 {
   // Initialization
-  if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::Init()");
+  AliDebugStream(1) << "Start Init" << std::endl;
   
   if (fUseFastSimulations && !fEffFunctions) {
     fEffFunctions = new TF1*[2*AliPID::kSPECIES];
@@ -688,13 +688,14 @@ void AliAnalysisTaskIDFragmentationFunction::Init()
 //_____________________________________________________________
 Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms() 
 {	
-  if(fDebug > 1) Printf("AliAnalysisTaskIDFragmentationFunction::FillHistograms()");
+  AliDebugStream(1) << "Start FillHistograms" << std::endl;
   
-  if(fDebug > 1) Printf("Analysis event #%5d", (Int_t) fEntry);
+  AliDebugStream(1) << "Analyse Event #" << fEntry << std::endl;
   
   fMCEvent = MCEvent();
+  
   if(!fMCEvent){
-    if(fDebug>3) Printf("%s:%d MCEvent not found in the input", (char*)__FILE__,__LINE__);
+    AliDebugStream(3) << "MCEvent not found in the input" << std::endl;
   }
   
   // Extract pThard and nTrials in case of MC. 
@@ -710,25 +711,20 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
       AliGenHijingEventHeader*  hijingGenHeader = 0x0;
       
       if(pythiaGenHeader){
-        if(fDebug>3) 
-            Printf("%s:%d pythiaGenHeader found", (char*)__FILE__,__LINE__);
+        AliDebugStream(3) << "pythiaGenHeader found" << std::endl;
         nTrials = pythiaGenHeader->Trials();
         ptHard  = pythiaGenHeader->GetPtHard();
       } else { // no pythia, hijing?
-        
-        if(fDebug>3) 
-            Printf("%s:%d no pythiaGenHeader found", (char*)__FILE__,__LINE__);
+        AliDebugStream(3) << "no pythiaGenHeader found" << std::endl;
         
         hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+        
         if(!hijingGenHeader){
-          Printf("%s:%d no pythiaGenHeader or hjingGenHeader found", (char*)__FILE__,__LINE__);
+          AliWarningStream() << "no pythiaGenHeader or hjingGenHeader found" << std::endl;
         } else {
-          if(fDebug>3) 
-              Printf("%s:%d hijingGenHeader found", (char*)__FILE__,__LINE__);
+            AliDebugStream(3) << "hijingGenHeader found" << std::endl;
         }
       }
-      
-      //fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
     }
   }
   
@@ -741,7 +737,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     
     // Cut
     if (fMCPtHardCut >= 0. && ptHard >= fMCPtHardCut) {
-      if (fDebug>3) Printf("%s:%d skipping event with pThard %f (>= %f)", (char*)__FILE__,__LINE__, ptHard, fMCPtHardCut);
+      AliDebugStream(3) << "skipping event with pThard " << ptHard << " (>= " << fMCPtHardCut << ")" << std::endl;
       PostData(1, fCommonHistList);
       return kFALSE;
     }
@@ -758,15 +754,14 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   
   if(!(inputHandler->IsEventSelected() & fEvtSelectionMask)){
     fh1EvtSelection->Fill(1.);
-    if (fDebug > 1 ) Printf(" Trigger Selection: event REJECTED ... ");
+    AliDebugStream(1) << "Trigger Selection: event REJECTED .." << std::endl;
     PostData(1, fCommonHistList);
     return kFALSE;
   }
   
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD){
-    if(fDebug>3) 
-      Printf("%s:%d ESDEvent not found in the input", (char*)__FILE__,__LINE__);
+    AliDebugStream(3) << "ESDEvent not found in the input" << std::endl;
   }
   
   // get AOD event from input/ouput
@@ -774,14 +769,14 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   if( handler && handler->InheritsFrom("AliAODInputHandler") ) {
     fAOD  =  ((AliAODInputHandler*)handler)->GetEvent();
     if(fUseAODInputJets) fAODJets = fAOD;
-    if (fDebug > 1)  Printf("%s:%d AOD event from input", (char*)__FILE__,__LINE__);
+    AliDebugStream(1) << "AOD event from input" << std::endl;
   }
   else {
     handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
     if( handler && handler->InheritsFrom("AliAODHandler") ) {
       fAOD = ((AliAODHandler*)handler)->GetAOD();
       fAODJets = fAOD;
-      if (fDebug > 1)  Printf("%s:%d AOD event from output", (char*)__FILE__,__LINE__);
+      AliDebugStream(1) << "AOD event from output" << std::endl;
     }
   }
   
@@ -792,7 +787,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     TObject* outHandler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
     if( outHandler && outHandler->InheritsFrom("AliAODHandler") ) {
       fAODJets = ((AliAODHandler*)outHandler)->GetAOD();
-      if (fDebug > 1)  Printf("%s:%d jets from output AOD", (char*)__FILE__,__LINE__);
+      AliDebugStream(1) << "jets from output AOD" << std::endl;
     }
   }
   
@@ -802,17 +797,15 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
     fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);    
     if(!fAODExtension){
-      if(fDebug>1)Printf("AODExtension not found for %s",fNonStdFile.Data());
+      AliDebugStream(1) << "AODExtension not found for " << fNonStdFile << std::endl;
     }
   }
   
   if(!fAOD){
-    if(fDebug>3) 
-      Printf("%s:%d AODEvent not found", (char*)__FILE__,__LINE__);
+    AliDebugStream(3) << "AODEvent not found" << std::endl;
   }
   if(!fAODJets){
-    if(fDebug>3) 
-      Printf("%s:%d AODEvent with jet branch not found", (char*)__FILE__,__LINE__);
+    AliDebugStream(3) << "AODEvent with jet branch not found" << std::endl;
   }
 
   
@@ -831,14 +824,13 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
       return kFALSE;
   }
   
-  //TODO: Simplify getting centrality. Also should not depend on fIsPP, centrality can be always estiamted
+  //TODO: Simplify getting centrality. Also should not depend on fIsPP, centrality can be always estimated
   
   Double_t centPercent = fCent;
   if (fEventClass > -1) {
     if (fCentBin != fEventClass) {
       // event not in selected event class, reject event
-      if (fDebug > 1) 
-        Printf("%s:%d event not in selected event class: event REJECTED ...",(char*)__FILE__,__LINE__);
+      AliDebugStream(1) << "event not in selected event class: event REJECTED ..." << std::endl;
       
       fh1EvtSelection->Fill(2.);
       PostData(1, fCommonHistList);
@@ -851,12 +843,12 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     centPercent = -1;
   }
   
-  AliPIDResponse *fPIDResponse = inputHandler->GetPIDResponse();
-  if (!fPIDResponse) {
-    AliError("PIDResponse object was not created");
+  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
+  if (!pidResponse) {
+    AliFatal("PIDResponse object was not created");
   }
   
-  fPIDResponse->SetCurrentCentrality(centPercent);
+  pidResponse->SetCurrentCentrality(centPercent);
 
   // Retrieve reference multiplicities in |eta|<0.8 and <0.5
   const Int_t refMult5 = 0; //((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb05();
@@ -869,17 +861,16 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   // *** vertex cut ***
   const AliVVertex* primVtx = InputEvent()->GetPrimaryVertex();
 	if (!primVtx) {
-		Printf("%s:%d Primary vertex not found", (char*)__FILE__,__LINE__);
+    AliErrorStream() << "Primary vertex not found " << std::endl;
 		return kFALSE;
   }
 	
   Int_t nTracksPrim = primVtx->GetNContributors();
   fh1VertexNContributors->Fill(nTracksPrim);
   
-  
-  if (fDebug > 1) Printf("%s:%d primary vertex selection: %d", (char*)__FILE__,__LINE__,nTracksPrim);
+  AliDebugStream(1) << "primary vertex selection: " << nTracksPrim << std::endl;
   if(nTracksPrim <= 0) {
-    if (fDebug > 1) Printf("%s:%d primary vertex selection: event REJECTED...",(char*)__FILE__,__LINE__); 
+    AliDebugStream(1) << "primary vertex selection: event REJECTED..." << std::endl;
     fh1EvtSelection->Fill(3.);
     PostData(1, fCommonHistList);
     return kFALSE;
@@ -887,10 +878,10 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   
   TString primVtxName(primVtx->GetName());
   if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
-      if (fDebug > 1) Printf("%s:%d primary vertex selection: TPC vertex, event REJECTED...",(char*)__FILE__,__LINE__);
-      fh1EvtSelection->Fill(5.);
-      PostData(1, fCommonHistList);
-      return kFALSE;
+    AliDebugStream(1) << "primary vertex selection: TPC vertex, event REJECTED..." << std::endl;
+    fh1EvtSelection->Fill(5.);
+    PostData(1, fCommonHistList);
+    return kFALSE;
   }
   
   // Count events with trigger selection and vtx cut, note: Set centrality percentile fix to -1 for pp for PID framework
@@ -899,7 +890,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   fh1VertexZ->Fill(primVtx->GetZ());
   
   if(TMath::Abs(primVtx->GetZ())>fMaxVertexZ) {
-    if (fDebug > 1) Printf("%s:%d primary vertex z = %f: event REJECTED...",(char*)__FILE__,__LINE__,primVtx->GetZ()); 
+    AliDebugStream(1) << "primary vertex z = " << primVtx->GetZ() << ": event REJECTED..." << std::endl;
     fh1EvtSelection->Fill(4.);
     PostData(1, fCommonHistList);
     return kFALSE; 
@@ -954,9 +945,8 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   // Count events with trigger selection, vtx cut, z vtx cut and after pile-up rejection (if enabled in that task)
   IncrementPIDTasksEventCounts(centPercent, AliAnalysisTaskPID::kTriggerSelAndVtxCutAndZvtxCut, isPileUpInclusivePIDtask, isPileUpJetPIDtask, isPileUpJetUEPIDtask);
   
-  if (fDebug > 1)
-      Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
-  
+  AliDebugStream(1) << "event ACCEPTED ..." << std::endl;
+
   fh1EvtSelection->Fill(0.);
   
   const AliAODVertex* aodVertex = dynamic_cast<const AliAODVertex*>(primVtx);
@@ -1021,28 +1011,10 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     fh1PtHardTrials->Fill(ptHard,nTrials);
   }
   
-  AliPIDResponse* pidResponse = 0x0;
-  Bool_t tuneOnDataTPC = kFALSE;
-  if (fUseJetPIDtask || fUseInclusivePIDtask || fUseJetUEPIDtask) {
-    if (!inputHandler) {
-      AliFatal("Input handler needed");
-      return kFALSE;
-    }
-    else {
-      // PID response object
-      pidResponse = inputHandler->GetPIDResponse();
-      if (!pidResponse) {
-        AliFatal("PIDResponse object was not created");
-        return kFALSE;
-      }
-      else {
-        tuneOnDataTPC = pidResponse->IsTunedOnData() &&
+  Bool_t tuneOnDataTPC = pidResponse->IsTunedOnData() &&
                         ((pidResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
-      }
-    }
-  }
   
-  if(fDebug>2)Printf("%s:%d Starting processing...",(char*)__FILE__,__LINE__);
+  AliDebugStream(1) << "Starting processing..." << std::endl;
   
   //____ analysis, fill histos ___________________________________________________
   
@@ -1076,7 +1048,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
       
   // Fill efficiency for generated primaries and also fill histos for generated yields (primaries + all)
   // Efficiency, inclusive - particle level
-  if(fDebug>2)Printf("%s:%d Starting Inclusive Efficiency...",(char*)__FILE__,__LINE__);
+  AliDebugStream(2) << "Starting Inclusive Efficiency..." << std::endl;
   
   if (fUseInclusivePIDtask && mcParticleContainer && !isPileUpForAllInclusivePIDTasks) {
     for (auto part : mcParticleContainer->accepted()) {
@@ -1254,7 +1226,8 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     }
   }
   
-  if(fDebug>2)Printf("%s:%d Process inclusive tracks...",(char*)__FILE__,__LINE__);
+  AliDebugStream(2) << "Process inclusive tracks..." << std::endl;
+  
   if (fUseInclusivePIDtask && trackContainer && !isPileUpForAllInclusivePIDTasks) {
     for(auto part : trackContainer->accepted()) {
       if (!part) 
@@ -1350,9 +1323,9 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     }    
   }
   
-  if(fDebug>2)Printf("%s:%d Process jets...",(char*)__FILE__,__LINE__);  
+  AliDebugStream(2) << "Process jets..." << std::endl;
   
-  if(fDebug>2)Printf("%s:%d Process Jets - efficiency, particle level..",(char*)__FILE__,__LINE__);
+  AliDebugStream(2) << "Process Jets - efficiency, particle level.." << std::endl;
   
   AliJetContainer* mcJetContainer = GetJetContainer(GetNameMCParticleJetContainer()); 
   
@@ -1535,7 +1508,6 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
 
   AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
   
-  // printf("Own Jet finder:\n");
   if (GetDoGroomedJets() && trackContainer) {
     AliFJWrapper* wrapper = new AliFJWrapper("wrapper","wrapper");
     SetUpFastJetWrapperWithOriginalValues(wrapper);    
@@ -1636,7 +1608,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     }
   }
   
-  if(fDebug>2)Printf("%s:%d Process Underlying event...",(char*)__FILE__,__LINE__);
+  AliDebugStream(2) << "Process Underlying event..." << std::endl;
   if (fUseJetUEPIDtask && jetContainer && !isPileUpForAllJetUEPIDTasks && !fUseFastSimulations) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
       if (!isPileUpJetUEPIDtask[i]) {
@@ -1740,7 +1712,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   
   //___________________
   
-  if(fDebug > 2) Printf("%s:%d Processing done, posting output data now...",(char*)__FILE__,__LINE__);
+  AliDebugStream(2) << "Processing done, posting output data now..." << std::endl;
   
   //Post output data.
   PostData(1, fCommonHistList);
@@ -1763,7 +1735,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
     }
   }
   
-  if(fDebug > 2) Printf("%s:%d Done",(char*)__FILE__,__LINE__);
+  AliDebugStream(1) << "Event done!" << std::endl;
   
   return kTRUE;
 }
@@ -1771,14 +1743,13 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
 //______________________________________________________________
 void AliAnalysisTaskIDFragmentationFunction::Terminate(Option_t *) 
 {
+  AliDebugStream(1) << "Terminate!" << std::endl;
   // terminated
   if (fUseJetUEPIDtask) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
       fJetUEPIDtask[i]->NormalizeJetArea(TMath::Abs(GetFFRadius()));
     }
   }
-
-  if(fDebug > 1) printf("AliAnalysisTaskIDFragmentationFunction::Terminate() \n");
 }  
 
 // _________________________________________________________________________________________________________
@@ -2056,7 +2027,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet(const AliVP
   
   for(auto jet : jetContainer->accepted()){   //loop over all reconstructed jets in events      
     if(!jet){
-      if (fDebug>2) std::cout << "AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet jet pointer invalid!" << std::endl; 
+      AliWarningStream() << "AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet jet pointer invalid!" << std::endl;
       continue;
     }
     if(IsParticleInCone(jet, part, dDistance) == kTRUE) return kTRUE;//RC and JC are overlapping
@@ -2111,7 +2082,7 @@ void AliAnalysisTaskIDFragmentationFunction::PerformJetMonteCarloAnalysisGenerat
     mcJetContainer = GetJetContainer(GetNameMCParticleJetContainer());
   
   if (!mcJetContainer) {
-    std::cout << "Monte-Carlo Jet Container not found." << std::endl;
+    AliWarningStream() << "Monte-Carlo Jet Container not found." << std::endl;
   }
   
   Float_t jetPt   = jet->Pt();
@@ -2122,7 +2093,7 @@ void AliAnalysisTaskIDFragmentationFunction::PerformJetMonteCarloAnalysisGenerat
   // Efficiency, jets - particle level
   AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(trackVP);
   if (!part) {
-    AliError("expected ref track not found ");
+    AliErrorStream() << "expected ref track not found!" << std::endl;
     return;
   }
   
@@ -2182,10 +2153,7 @@ void AliAnalysisTaskIDFragmentationFunction::PerformJetMonteCarloAnalysisGenerat
 void AliAnalysisTaskIDFragmentationFunction::AnalyseJetTrack(AliVTrack* track, AliEmcalJet* jet, AliAnalysisTaskPID* task, const Bool_t* trackRejectedByTask, Double_t centPercent, AliMCParticleContainer* mcParticleContainer) {
   
   if (!track || (!task && !trackRejectedByTask)) {
-    std::cout << "Cannot analyse track" << std::endl;
-    std::cout << "Track: " << track << std::endl;
-    std::cout << "Task: " << task << std::endl;
-    std::cout << "Rejection Array: " << trackRejectedByTask << std::endl;
+    AliErrorStream() << "Cannot analyse track! Track: " << track << "; Task: " << task << "; RejectionArray: " << trackRejectedByTask << std::endl;
     return;
   }
     
@@ -2364,7 +2332,7 @@ void AliAnalysisTaskIDFragmentationFunction::FillDCA(AliVTrack* track, AliMCPart
   Double_t pos[3] = {0, };
   const AliVVertex* primVtx = InputEvent()->GetPrimaryVertex();
   if (!primVtx) {
-    std::cout << "Primary Vertex not found, do not fill DCA" << std::endl;
+    AliWarningStream() << "Primary Vertex not found, do not fill DCA" << std::endl;
     return;
   }
   primVtx->GetXYZ(v);
