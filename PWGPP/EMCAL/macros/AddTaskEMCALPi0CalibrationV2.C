@@ -33,6 +33,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param simu      : Int, 0: data, 1: MC, 2: JJ MC
 /// \param fSaveCells: Bool, save the tree output for cells
 /// \param fSaveClusters : Bool, save the tree output for clusters
+/// \param fSaveFullTree: Bool, save the cell and cluster energy as float instead of short
 /// \param minClusterEnergy : Double, minimum cluster energy used for pairing (GeV)
 /// \param maxClusterEnergy : Double, maximum cluster energy used for pairing (GeV)
 /// \param minNCells : Int, minimum number of cells for clusters
@@ -51,6 +52,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   Bool_t  fSaveHistos            = kTRUE,
   Bool_t  fSaveCells             = kFALSE,
   Bool_t  fSaveClusters          = kFALSE,
+  Bool_t  fSaveFullTree          = kFALSE,
   Bool_t  isHeavyIon             = kFALSE,
   Bool_t  fNContCut              = kFALSE,
   Float_t minCellEnergy          = 0.05,
@@ -114,7 +116,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
-  // pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
+  pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
   pi0calib->SetCorrectionTaskSetting(corrTaskSetting);
 
   if( simu == 1 ) {
@@ -137,6 +139,10 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
 
   if( fSaveClusters ){
     pi0calib->SetSaveClusters();
+  }
+
+  if( fSaveFullTree ){
+    pi0calib->SetSaveFullTree();
   }
 
   if( fNContCut ){
