@@ -121,7 +121,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 
    if( fEvInfo->IsPileUp() ) return;
 
-   if (TMath::Abs(fEvInfo->GetVertexZ()) > 10.) return;
+// // //    if (TMath::Abs(fEvInfo->GetVertexZ()) > 10.) return;
 
    // !!!!!!!!!!
 	
@@ -565,8 +565,8 @@ Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
   Int_t NzVtxBins1 = 5;
   Double_t ZvtxBins1[] = {-10., -5., -2.5, 2.5, 5., 10.}; 
   
-  Int_t NzVtxBins2 = 4;
-  Double_t ZvtxBins2[] = {-5., -2.5, 0., 2.5, 5.}; 
+  Int_t NzVtxBins2 = 3;
+  Double_t ZvtxBins2[] = {-5., -2.5, 2.5, 5.}; 
   
   Int_t NzVtxBins3 = 7;
   Double_t ZvtxBins3[] = {-15., -10., -5., -2.5, 2.5, 5., 10., 15.}; 
