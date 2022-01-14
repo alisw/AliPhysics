@@ -43,13 +43,15 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fSystFlag(0),
     fContSubfix(0),
     fIsMC(kFALSE),
-    fOutput(0),
     fCorrList(0),
+    fDynList(0),
     fWeightList(0),
     fEfficiencyList(0),
+    fmptList(0),
     fEfficiency(0),
     fEfficiencies(0),
     fWeights(0),
+    fmpt(0),
     fWeightSubfix(""),
     fGFWSelection(0),
     fV0MAxis(0),
@@ -66,28 +68,37 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fRndm(0),
     fNbootstrap(10),
     fUseWeightsOne(false),
+    fdoDynamicCorr(false),
     mpar(6),
     fV0MMulti(0),
+    //fdyncorrnompt(0),
     fptcorr(0),
+    fdyncorr(0),
+    pfmpt(0),
+    corr(7, 0.0),
+    dyncorr(7, 0.0),
+    sumw(7, 0.0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
 {};
 //_____________________________________________________________________________
-AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString analysisStage, TString ContSubfix) : AliAnalysisTaskSE(name),
+AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool dodynamics, TString analysisStage, TString ContSubfix) : AliAnalysisTaskSE(name),
     fEventCuts(),
     fCentEst(0),
     fRunNo(0),
     fSystFlag(0),
     fContSubfix(0),
     fIsMC(IsMC),
-    fOutput(0),
     fCorrList(0),
+    fDynList(0),
     fWeightList(0),
     fEfficiencyList(0),
+    fmptList(0),
     fEfficiency(0),
     fEfficiencies(0),
     fWeights(0),
+    fmpt(0),
     fWeightSubfix(""),
     fGFWSelection(0),
     fV0MAxis(0),
@@ -104,9 +115,16 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fRndm(0),
     fNbootstrap(10),
     fUseWeightsOne(false),
+    fdoDynamicCorr(dodynamics),
     mpar(6),
     fV0MMulti(0),
+    //fdyncorrnompt(0),
     fptcorr(0),
+    fdyncorr(0),
+    pfmpt(0),
+    corr(7, 0.0),
+    dyncorr(7, 0.0),
+    sumw(7, 0.0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -130,14 +148,25 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
           vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
           for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
         }
+        if(fdoDynamicCorr) (fIsMC)?DefineInput(1,TList::Class()):DefineInput(3,TList::Class());
         DefineOutput(1, TList::Class());
         DefineOutput(2, TList::Class());
+    }
+    if(fAnalysisStage==3)
+    {
+        if(!fIsMC)
+        {
+            DefineInput(1, TList::Class());
+        }
+        DefineOutput(1,TList::Class());
     }
 };
 //_____________________________________________________________________________
 AliAnalysisTaskPtCorr::~AliAnalysisTaskPtCorr()
 {
-    if(fOutput) delete fOutput;
+    if(fCorrList) delete fCorrList;
+    if(fDynList) delete fDynList;
+    if(fmptList) delete fmptList;
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
@@ -150,6 +179,8 @@ void AliAnalysisTaskPtCorr::NotifyRun() {
 void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
 {
     printf("Analysis stage is %i\n\n\n",fAnalysisStage);
+    TString dodyn = (fdoDynamicCorr)?" ":" not ";
+    printf("Dynamic correlations will%sbe done!\n",dodyn.Data());
     if(!fGFWSelection) SetSystFlag(0);
     fGFWSelection->PrintSetup();
     fSystFlag = fGFWSelection->GetSystFlagIndex();
@@ -169,6 +200,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
     fPtBins = GetBinsFromAxis(fPtAxis);
     fNPtBins = fPtAxis->GetNbins();
+    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
+    fRndm = new TRandom(0);
     if(fAnalysisStage==1) 
     {
         fWeightList = new TList();
@@ -201,21 +234,60 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
             fWeightList = (TList*)GetInputData(2);
             fWeights = new AliGFWWeights*[1];
         };
-        fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",l_NV0MBinsDefault,l_V0MBinsDefault);
-        fOutput = new TList(); fOutput->SetOwner(1);
+        if(fdoDynamicCorr)
+        {
+          fmptList = (fIsMC)?(TList*)GetInputData(1):(TList*)GetInputData(3);
+          fmpt = (TH1D*)fmptList->FindObject("MeanPt_ch");
+        }
         fCorrList = new TList(); fCorrList->SetOwner(1);
+        fDynList = new TList(); fDynList->SetOwner(1);
+        //fdyncorrnompt = new AliPtContainer*[9];
         fptcorr = new AliProfileBS*[9];
+        fdyncorr = new AliProfileBS*[9];
         for(int i(0);i<mpar;++i) 
         {
+          //fDynList->Add(new AliPtContainer(Form("dyncorrnompt_%ipar",i+1),Form("cdyncorrnompt_%ipar",i+1),fNMultiBins,fMultiBins,i+1));
+          //fdyncorrnompt[i] = (AliPtContainer*)fDynList->At(2*i);
           fCorrList->Add(new AliProfileBS(Form("corr_%ipar",i+1),Form("corr_%ipar",i+1),fNMultiBins,fMultiBins));
           fptcorr[i] = (AliProfileBS*)fCorrList->At(i);
+          fDynList->Add(new AliProfileBS(Form("dyncorr_%ipar",i+1),Form("dyncorr_%ipar",i+1),fNMultiBins,fMultiBins));
+          fdyncorr[i] = (AliProfileBS*)fDynList->At(i);
         }
-        if(fNbootstrap) for(int i(0);i<mpar;++i) fptcorr[i]->InitializeSubsamples(fNbootstrap);
-        fRndm = new TRandom(0);
-        fOutput->Add(fV0MMulti);
-        PostData(1,fOutput);
-        PostData(2,fCorrList);
+        pfmpt = new AliProfileBS("meanpt","meanpt",fNMultiBins,fMultiBins);
+        fCorrList->Add(pfmpt);
+        if(fNbootstrap) {
+          for(int i(0);i<mpar;++i) { 
+              fptcorr[i]->InitializeSubsamples(fNbootstrap); 
+              fdyncorr[i]->InitializeSubsamples(fNbootstrap); 
+              //fdyncorrnompt[i]->InitializeSubsamples(fNbootstrap); 
+            }
+          pfmpt->InitializeSubsamples(fNbootstrap);
+        }
+        fCorrList->Add(fV0MMulti);
+        PostData(1,fCorrList);
+        PostData(2,fDynList);
         printf("User output objects created!\n");
+    }
+    if(fAnalysisStage==3)
+    {
+      fmptList = new TList(); fmptList->SetOwner(1);
+      if(!fIsMC)
+      { 
+          fEfficiencyList = (TList*)GetInputData(1);
+          fEfficiencies = new TH1D*[l_NV0MBinsDefault];
+          for(int i=0;i<l_NV0MBinsDefault;i++) {
+              fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
+              if(!fEfficiencies[i]) {
+              if(!i) AliFatal("Could not fetch efficiency!\n");
+              printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
+              fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
+              };
+          }
+      }
+      pfmpt = new AliProfileBS("MeanPt_ch","MeanPt_ch",fNMultiBins,fMultiBins);
+      fmptList->Add(pfmpt);
+      pfmpt->InitializeSubsamples(fNbootstrap);
+      PostData(1,fmptList);
     }
 }
 void AliAnalysisTaskPtCorr::UserExec(Option_t *)
@@ -246,6 +318,8 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t *)
         FillWeights(fAOD, vtxZ, l_cent, vtxXYZ);
     if(fAnalysisStage==2)
         (fOnTheFly)?FillPtCorr(fEvent,vtxZ,l_cent,vtxXYZ):FillPtCorr(fAOD,vtxZ,l_cent,vtxXYZ);
+    if(fAnalysisStage==3)
+        (fOnTheFly)?FillMPT(fEvent,vtxZ,l_cent,vtxXYZ):FillMPT(fAOD,vtxZ,l_cent,vtxXYZ);
 }
 bool AliAnalysisTaskPtCorr::CheckTrigger(Double_t lCent) {
   unsigned int fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -337,38 +411,30 @@ bool AliAnalysisTaskPtCorr::AcceptAODEvent(AliAODEvent *ev, Double_t *inVtxXYZ)
     vtx->GetXYZ(inVtxXYZ);
     return kTRUE;
 };
-void AliAnalysisTaskPtCorr::FillWPCounter(double* inarr, double w, double p)
+template<typename T> void AliAnalysisTaskPtCorr::FillWPCounter(T& inarr, double w, double pt)
 {
-  inarr[0] += w;
-  inarr[1] += w*p;
-  inarr[2] += w*w*p*p;
-  inarr[3] += w*w*w*p*p*p;
-  inarr[4] += w*w*w*w*p*p*p*p;
-  inarr[5] += w*w*w*w*w*p*p*p*p*p;
-  inarr[6] += w*w*w*w*w*w*p*p*p*p*p*p;
+  for(int i = 0; i <= 6; ++i)
+    for(int j = 0; j <= 6; ++j)
+    {
+      if(!fdoDynamicCorr && i!=j && i!=0) continue;
+      inarr[j][i] += pow(w,j)*pow(pt,i);
+    }
+
   return;
 }
-void AliAnalysisTaskPtCorr::FillWCounter(double* inarr, double w)
+void AliAnalysisTaskPtCorr::MptCounter(double* inarr, int icent)
 {
-    inarr[1] += w*w;
-    inarr[2] += w*w*w;
-    inarr[3] += w*w*w*w;
-    inarr[4] += w*w*w*w*w;
-    inarr[5] += w*w*w*w*w*w;
-    inarr[6] += w*w*w*w*w*w*w;
-    return;
+  for(int i=0;i<=6;++i) inarr[i] = pow(fmpt->GetBinContent(icent),i);
+  return;
 }
-void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ)
+void AliAnalysisTaskPtCorr::FillMPT(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ)
 {
-    double wp[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-    double w[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-    double ptcorr[] = {0.0,0.0,0.0,0.0,0.0,0.0};
-    double sumw[] = {1.0,0.0,0.0,0.0,0.0,0.0,0.0};
+    double wp = 0.0;
+    double w = 0.0;
     AliAODTrack *track;
     double trackXYZ[3];
     double ptMin = fPtBins[0];
     double ptMax = fPtBins[fNPtBins];
-  
     int iCent = fV0MMulti->FindBin(l_cent);
     if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
     iCent--;
@@ -388,25 +454,96 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           if (TMath::Abs(l_eta) > fEta) continue;
           double l_pt = track->Pt();
           if (l_pt<0.2 || l_pt>3.) continue;
-          FillWPCounter(wp,1,l_pt);
-          FillWCounter(w,1);
+          wp += l_pt;
+          w++;
       }    
     }
     else if(fIsMC)
     {
-    TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
-    Int_t nPrim = tca->GetEntries();
-    AliAODMCParticle *part;
-    for(Int_t ipart = 0; ipart < nPrim; ipart++) {
-      part = (AliAODMCParticle*)tca->At(ipart);
-      if (!part->IsPhysicalPrimary()) continue;
-      if (part->Charge()==0.) continue;
-      double l_eta = part->Eta();
-      if (TMath::Abs(l_eta) > fEta) continue;
-      double l_pt = part->Pt();
-      if (l_pt<0.2 || l_pt>3.) continue;
-      FillWPCounter(wp,1,l_pt);
-      FillWCounter(w,1);
+      TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+      Int_t nPrim = tca->GetEntries();
+      AliAODMCParticle *part;
+      for(Int_t ipart = 0; ipart < nPrim; ipart++) {
+        part = (AliAODMCParticle*)tca->At(ipart);
+        if (!part->IsPhysicalPrimary()) continue;
+        if (part->Charge()==0.) continue;
+        double l_eta = part->Eta();
+        if (TMath::Abs(l_eta) > fEta) continue;
+        double l_pt = part->Pt();
+        if (l_pt<0.2 || l_pt>3.) continue;
+        w+=l_pt;
+        w++;
+      }
+    }
+    else
+    {
+      for(int iTrack(0); iTrack<ev->GetNumberOfTracks();iTrack++)
+      {
+          track = (AliAODTrack*)ev->GetTrack(iTrack);
+          if(!track) continue;
+          double l_eta = track->Eta();
+          if(l_eta>0.8) continue;
+          double trackXYZ[] = {0.,0.,0.};
+          if(!AcceptAODTrack(track,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
+          double l_pt = track->Pt();
+          double wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
+          if(wNUE==0.0) continue;
+          double l_phi = track->Phi();
+          wNUE = 1.0/wNUE;
+          wp+=l_pt*wNUE;
+          w+=wNUE;
+      }
+    }
+    if(w==0.0) return;
+    double l_rnd = fRndm->Rndm();
+    pfmpt->FillProfile(l_cent,wp/w,w,l_rnd);
+    PostData(1,fmptList);
+}
+void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ)
+{
+    double wp[7][7];
+    double mpt[7];
+    AliAODTrack *track;
+    double trackXYZ[3];
+    double ptMin = fPtBins[0];
+    double ptMax = fPtBins[fNPtBins];
+    int iCent = fV0MMulti->FindBin(l_cent);
+    if(fdoDynamicCorr) MptCounter(mpt,iCent);
+    if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
+    iCent--;
+    if(fOnTheFly)
+    {
+      AliMCEvent* mcev = dynamic_cast<AliMCEvent*>(ev);
+      int NTracks = mcev->GetNumberOfPrimaries();
+      if(NTracks < 1) { return; }
+      for(Int_t iTrack(0); iTrack < NTracks; iTrack++) 
+      {
+          AliMCParticle* track = dynamic_cast<AliMCParticle*>(mcev->GetTrack(iTrack));
+          if(!track) { continue; }
+
+          if(!(mcev->IsPhysicalPrimary(iTrack))) continue;
+          if(track->Charge() == 0) continue;
+          double l_eta = track->Eta();          
+          if (TMath::Abs(l_eta) > fEta) continue;
+          double l_pt = track->Pt();
+          if (l_pt<0.2 || l_pt>3.) continue;
+          FillWPCounter(wp,1,l_pt);
+      }    
+    }
+    else if(fIsMC)
+    {
+      TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
+      Int_t nPrim = tca->GetEntries();
+      AliAODMCParticle *part;
+      for(Int_t ipart = 0; ipart < nPrim; ipart++) {
+        part = (AliAODMCParticle*)tca->At(ipart);
+        if (!part->IsPhysicalPrimary()) continue;
+        if (part->Charge()==0.) continue;
+        double l_eta = part->Eta();
+        if (TMath::Abs(l_eta) > fEta) continue;
+        double l_pt = part->Pt();
+        if (l_pt<0.2 || l_pt>3.) continue;
+        FillWPCounter(wp,1,l_pt);
       }
     }
     else
@@ -427,31 +564,70 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           double wNUA = fWeights[0]->GetNUA(l_phi,l_eta,VtxZ);
           wNUE = 1.0/wNUE;
           FillWPCounter(wp,wNUE,l_pt);
-          FillWCounter(w,wNUE);
       }
     }
-
-    if(wp[0]==0) return;
-    w[0] = wp[0];
+    if(wp[0][0]==0) return;
     double l_rnd = fRndm->Rndm();
-    MomentumCorrelation(wp,w,ptcorr,sumw);
-    FillCorrelationProfiles(l_cent,ptcorr,w,l_rnd);
-    PostData(1,fOutput);
-    PostData(2,fCorrList);
+    pfmpt->FillProfile(l_cent,wp[1][1]/wp[1][0],wp[1][0],l_rnd);
+    getMomentumCorrelation(wp);
+    FillCorrelationProfiles(l_cent,l_rnd);
+    //getDynCorrSkipMpt(wp,l_cent,l_rnd);
+    if(fdoDynamicCorr) 
+    {
+      getDynamicMomentumCorrelation(wp,mpt);
+      FillDynamicProfiles(l_cent,l_rnd);
+    }
+    PostData(1,fCorrList);
+    PostData(2,fDynList);
 }
-void AliAnalysisTaskPtCorr::MomentumCorrelation(double* wp, double* w, double* ptcorr, double* sumw)
+template<typename T> double AliAnalysisTaskPtCorr::DynamicP(int k, T& wp, double* mpt)
+{
+  double val = 0.0;
+  for(int i=0;i<=k;++i)
+  {
+    val += fSign[i]*binomial(k,i)*wp[k][k-i]*mpt[i];
+  }
+  return val;
+}
+void AliAnalysisTaskPtCorr::FillCorrelationProfiles(const double &l_cent, double &rn)
+{
+  for(int m=1;m<=mpar;++m)
+  { 
+    if(sumw[m]==0.0) continue;
+    fptcorr[m-1]->FillProfile(l_cent,corr[m]/sumw[m],sumw[m],rn);
+  }
+  return;
+}
+void AliAnalysisTaskPtCorr::FillDynamicProfiles(const double &l_cent, double &rn)
+{
+  for(int m=1;m<=mpar;++m)
+  { 
+    if(sumw[m]==0.0) continue;
+    fdyncorr[m-1]->FillProfile(l_cent,dyncorr[m]/sumw[m],sumw[m],rn);
+  }
+  return;
+}
+int AliAnalysisTaskPtCorr::binomial(const int n, const int m)
+{
+  int formula = fFactorial[n]/(fFactorial[m]*fFactorial[n-m]);
+  return formula;
+}
+template<typename T> void AliAnalysisTaskPtCorr::getMomentumCorrelation(T& wp)
 {
   double sumNum = 0;
   double sumDenum = 0;
   std::vector<double> valNum;
   std::vector<double> valDenum;
-  double corr[] = {1.0,0.0,0.0,0.0,0.0,0.0,0.0};
+  corr.clear();
+  sumw.clear();
+  corr[0] = 1;
+  sumw[0] = 1;
   for(int m(1); m<=mpar; ++m)
   {
     for(int k(1);k<=m;++k)
     {
-      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wp[k]);
-      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*w[k]);
+      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wp[k][k]);
+      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wp[k][0]);
     }
     sumNum = OrderedAddition(valNum, m);
     sumDenum = OrderedAddition(valDenum, m);
@@ -461,19 +637,55 @@ void AliAnalysisTaskPtCorr::MomentumCorrelation(double* wp, double* w, double* p
     
     corr[m] = sumNum;
     sumw[m] = sumDenum;
-    
-    ptcorr[m-1] = sumNum/sumDenum;
-    }
-  return;
-}
-void AliAnalysisTaskPtCorr::FillCorrelationProfiles(double l_cent, double* ptcorr, double* w, double &rn)
-{
-  for(int i(0);i<mpar;++i)
-  {
-    fptcorr[i]->FillProfile(l_cent,ptcorr[i],fUseWeightsOne?1:w[i],rn);
   }
   return;
 }
+template<typename T> void AliAnalysisTaskPtCorr::getDynamicMomentumCorrelation(T& wp, double* mpt)
+{
+  double sumNum = 0;
+  std::vector<double> valNum;
+  dyncorr.clear();
+  dyncorr[0] = 1;
+  for(int m(1); m<=mpar; ++m)
+  {
+    for(int k(1);k<=m;++k)
+    {
+      valNum.push_back(fSign[k-1]*dyncorr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*DynamicP(k,wp,mpt));
+    }
+    sumNum = OrderedAddition(valNum, m);
+
+    valNum.clear();
+    
+    dyncorr[m] = sumNum;
+  }
+
+  return;
+}
+/*
+template<typename T> void AliAnalysisTaskPtCorr::getDynCorrSkipMpt(T& wp, const double &l_cent, double &rn)
+{
+  double term[7][7];
+  term[0][0] = 1;
+  for(int m=1;m<=mpar;++m)
+  {
+    for(int k=0;k<=m;++k)
+    {
+      getTermsOfMpt(k,m,term,wp);
+      if(sumw[m]==0.0) continue;
+      fdyncorrnompt[m-1]->FillTerm(l_cent,term[k][m]/sumw[m],sumw[m],k,rn);
+    }
+  }
+  return;
+}
+template<typename T> void AliAnalysisTaskPtCorr::getTermsOfMpt(int k, int m, T& term, T& wp)
+{
+  for(int i=1;i<=m;++i)
+  {
+    term[k][m] += fSign[k]*binomial(m,k)*fSign[i-1]*term[min(k,m-i)][m-i]*(fFactorial[m-1]/fFactorial[m-i])*wp[i][i-k+min(k,m-i)];
+  }
+  return;
+}
+*/
 double AliAnalysisTaskPtCorr::OrderedAddition(std::vector<double> vec, int size)
 {
   double sum = 0;
@@ -533,6 +745,7 @@ int AliAnalysisTaskPtCorr::GetAnalysisStage(TString instr)
 {
   if(instr.Contains("weights")) return 1;
   if(instr.Contains("ptcorr")) return 2;
+  if(instr.Contains("meanpt")) return 3;
   return 0;
 }
 double *AliAnalysisTaskPtCorr::GetBinsFromAxis(TAxis *inax) {
@@ -555,106 +768,3 @@ void AliAnalysisTaskPtCorr::SetV0MBins(int nMultiBins, double *multibins) {
   if(fV0MAxis) delete fV0MAxis;
   fV0MAxis = new TAxis(nMultiBins, multibins);
 }
-/*
-BootstrapProfile::BootstrapProfile():
-  TProfile(),
-  fListOfSamples(0),
-  fProfInitialized(kFALSE),
-  fNSamples(0),
-  fMultiRebin(0),
-  fMultiRebinEdges(0),
-  fPresetWeights(0)
-{};
-BootstrapProfile::~BootstrapProfile()
-{
-  delete fListOfSamples;
-};
-BootstrapProfile::BootstrapProfile(const char* name, const char* title, int nbinsx, double x_low, double x_up):
-  TProfile(name,title,nbinsx,x_low,x_up),
-  fListOfSamples(0),
-  fProfInitialized(kTRUE),
-  fNSamples(0),
-  fMultiRebin(0),
-  fMultiRebinEdges(0),
-  fPresetWeights(0)
-{};
-BootstrapProfile::BootstrapProfile(const char* name, const char* title, int nbinsx, const double* xbins):
-  TProfile(name,title,nbinsx,xbins),
-  fListOfSamples(0),
-  fProfInitialized(kFALSE),
-  fNSamples(0),
-  fMultiRebin(0),
-  fMultiRebinEdges(0),
-  fPresetWeights(0)
-{};
-void BootstrapProfile::InitializeSubsamples(int nSub)
-{
-  if(nSub<1) {printf("Number of subprofiles has to be > 0!\n"); return; };
-  if(fListOfSamples) delete fListOfSamples;
-  fListOfSamples = new TList();
-  fListOfSamples->SetOwner(kTRUE);
-  TProfile *dummyPF = (TProfile*)this;
-  for(Int_t i=0;i<nSub;i++) {
-    fListOfSamples->Add((TProfile*)dummyPF->Clone(Form("%s_Subpf%i",dummyPF->GetName(),i)));
-    ((TProfile*)fListOfSamples->At(i))->Reset();
-  }
-  fNSamples = nSub;
-}
-void BootstrapProfile::FillProfile(const double &xv, const double &yv, const double &w, const Double_t &rn)
-{
-  TProfile::Fill(xv,yv,w);
-  if(!fNSamples) return;
-  Int_t targetInd = rn*fNSamples;
-  if(targetInd>=fNSamples) targetInd = 0;
-  ((TProfile*)fListOfSamples->At(targetInd))->Fill(xv,yv,w);
-}
-void BootstrapProfile::FillProfile(const double &xv, const double &yv, const double &w)
-{
-  TProfile::Fill(xv,yv,w);
-}
-void BootstrapProfile::RebinMulti(Int_t nbins) {
-  this->RebinX(nbins);
-  if(!fListOfSamples) return;
-  for(Int_t i=0;i<fListOfSamples->GetEntries();i++)
-    ((TProfile*)fListOfSamples->At(i))->RebinX(nbins);
-}
-void BootstrapProfile::RebinMulti(Int_t nbins, Double_t *binedges) {
-  if(fMultiRebinEdges) {delete [] fMultiRebinEdges; fMultiRebinEdges=0;};
-  if(nbins<=0) { fMultiRebin=0; return; };
-  fMultiRebin = nbins;
-  fMultiRebinEdges = new Double_t[nbins+1];
-  for(Int_t i=0;i<=fMultiRebin;i++) fMultiRebinEdges[i] = binedges[i];
-}
-TH1 *BootstrapProfile::getHist(Int_t ind) 
-{
-  //if(fPresetWeights && fMultiRebin>0) return getWeightBasedRebin(ind);
-  if(ind<0) {
-    if((TProfile*)this) return getHistRebinned((TProfile*)this);
-    else { printf("Empty BootstrapProfile addressed, cannot get a histogram\n"); return 0; };
-  } else {
-    if(!fListOfSamples) { printf("No subprofiles exist!\n"); return 0; };
-    if(ind<fNSamples) return getHistRebinned((TProfile*)fListOfSamples->At(ind));
-    else { printf("Trying to fetch subprofile no %i out of %i, not possible\n",ind,fNSamples); return 0;};
-  }
-  return 0;
-}
-TProfile *BootstrapProfile::getProfile(Int_t ind) 
-{
-  if(ind<0) {
-    if((TProfile*)this) return (TProfile*)this;
-    else { printf("Empty BootstrapProfile addressed, cannot get a histogram\n"); return 0; };
-  } else {
-    if(!fListOfSamples) { printf("No subprofiles exist!\n"); return 0; };
-    if(ind<fNSamples) return (TProfile*)fListOfSamples->At(ind);
-    else { printf("Trying to fetch subprofile no %i out of %i, not possible\n",ind,fNSamples); return 0;};
-  }
-}
-TH1 *BootstrapProfile::getHistRebinned(TProfile *inpf) {
-  if(!inpf) return 0;
-  if(fMultiRebin<=0) return ((TProfile*)inpf)->ProjectionX(Form("%s_hist",inpf->GetName()));
-  TProfile *temppf = (TProfile*)inpf->Rebin(fMultiRebin,"tempProfile",fMultiRebinEdges);
-  TH1 *reth = (TH1*)temppf->ProjectionX(Form("%s_hist",inpf->GetName()));
-  delete temppf;
-  return reth;
-}
-*/

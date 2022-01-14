@@ -12,6 +12,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliGFWWeights.h"
 #include "AliProfileBS.h"
+//#include "AliPtContainer.h"
 
 class TList;
 class TH1;
@@ -25,7 +26,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
 {
   public:
     AliAnalysisTaskPtCorr();
-    AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString analysisStage, TString ContSubfix);
+    AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool dodynamics, TString analysisStage, TString ContSubfix);
     virtual ~AliAnalysisTaskPtCorr();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -42,6 +43,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
+    void DoDynamicCorrelations(bool dodyn) { fdoDynamicCorr = dodyn; }
     AliEventCuts            fEventCuts;
     
   private:
@@ -52,13 +54,15 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     int                     fSystFlag;
     TString*                fContSubfix;
     bool                    fIsMC; 
-    TList*                  fOutput; //! output list
     TList*                  fCorrList; //!
+    TList*                  fDynList; //!
     TList*                  fWeightList; //!
-    TList*                  fEfficiencyList;
+    TList*                  fEfficiencyList; //!
+    TList*                  fmptList; //!
     TH2D**                  fEfficiency;     
     TH1D**                  fEfficiencies;     
     AliGFWWeights**         fWeights; //!
+    TH1D*                   fmpt;
     TString                 fWeightSubfix;
     AliGFWCuts*             fGFWSelection; 
     TAxis*                  fV0MAxis; //!
@@ -75,9 +79,17 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     TRandom*                fRndm;
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
+    bool                    fdoDynamicCorr;
     int                     mpar;
     TH1D*                   fV0MMulti;    //!
-    AliProfileBS          **fptcorr;     //!
+    //AliPtContainer**        fdyncorrnompt;     //!
+    AliProfileBS**          fptcorr;     //!
+    AliProfileBS**          fdyncorr;     //!
+    AliProfileBS*           pfmpt;      //!
+
+    vector<double>          corr;
+    vector<double>          dyncorr;
+    vector<double>          sumw;
 
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
@@ -92,11 +104,18 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double getCentrality();
     void FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    void FillCorrelationProfiles(double l_cent, double* ptcorr, double* w, double &rn);
-    void FillWPCounter(double* inarr, double w, double p);
-    void FillWCounter(double* inarr, double w);
-    void MomentumCorrelation(double* wp, double* w, double* ptcorr, double* sumw);
+    void FillMPT(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ);
+    void FillCorrelationProfiles(const double &l_cent, double &rn);
+    void FillDynamicProfiles(const double &l_cent, double &rn);
+    template <typename T> void FillWPCounter(T& inarr, double w, double p);
+    void MptCounter(double* inarr, int icent);
+    template<typename T> void getMomentumCorrelation(T& wp);
+    template<typename T> void getDynamicMomentumCorrelation(T& wp, double* mpt);
+    //template<typename T> void getDynCorrSkipMpt(T& wp, const double &l_cent, double &rn);
+    //template<typename T> void getTermsOfMpt(int k, int m, T& term, T& wp);
     double OrderedAddition(std::vector<double> vec, int size);
+    int binomial(const int n, const int m);
+    template<typename T> double DynamicP(int k, T& wp, double* mpt);
     bool LoadWeights(const int &lRunNo);
     int GetAnalysisStage(TString instr);
     double *GetBinsFromAxis(TAxis *inax);
