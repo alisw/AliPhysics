@@ -27,6 +27,8 @@
 #ifndef ALIANALYSISTASKEMCALJETENERGYSCALE_H
 #define ALIANALYSISTASKEMCALJETENERGYSCALE_H
 
+#include <exception>
+#include <string>
 #include <TString.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliJetContainer.h"
@@ -41,6 +43,74 @@ namespace EMCALJetTasks{
 
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
+  class AngularityException : public std::exception{
+    public:
+      AngularityException() {}
+      virtual ~AngularityException() throw() {}
+
+      virtual const char *what() const throw() {
+        return "Angularity cannot be detrmined";
+      }
+  };
+
+  class AngularityHandler : public TObject{
+    public:
+      class AngularityBin : public TObject {
+        public:
+          AngularityBin(): TObject(), fMin(-1.), fMax(-1.), fValue(-1.) {}
+          AngularityBin(double min, double max, double value) : TObject(), fMin(min), fMax(max), fValue(value) {}
+          virtual ~AngularityBin() {}
+          
+          double Min() const { return fMin; }
+          double Max() const { return fMax; }
+          double Value() const { return fValue; }
+
+          void SetMin(double min) { fMin = min; }
+          void SetMax(double max) { fMax = max; }
+          void SetValue(double value) { fValue = value; }
+
+          bool IsInRange(double entry) const { return entry >= fMin && entry < fMax; }
+          bool IsOK() const { return fMin > -1. && fMax > -1.; }
+
+        private:
+          double fMin;          ///< Bin min
+          double fMax;          ///< Bin max
+          double fValue;        ///< Bin value
+      };
+      class BinNotFoundException : public std::exception {
+        public:
+          BinNotFoundException(double pt) : fMessage(), fPt(pt) {
+            fMessage = Form("No bin found for pt %f", pt);
+          }
+          virtual ~BinNotFoundException() throw() {}
+
+          const char *what() const throw() {
+            return fMessage.c_str();
+          }
+
+          double getPt() const {return fPt; }
+        private:
+          std::string fMessage;   ///< Message
+          double      fPt;        ///< Pt
+      };
+
+      AngularityHandler() : TObject(), fRadius(-1), fBins() { fBins.SetOwner(true); }
+      AngularityHandler(double radius) : TObject(), fRadius(radius), fBins() { fBins.SetOwner(true); }
+      virtual ~AngularityHandler() {}
+
+      void InitFromFile(const char *filename);
+      void SetBin(double min, double max, double value);
+      void SetRadius(double radius) { fRadius = radius; }
+
+      double GetValue(double pt) const;
+      bool IsHigherAngularity(double pt, double angularity) const;
+
+    private:
+      AngularityBin FindBin(double pt) const; 
+      double fRadius;       ///< Jet raduius
+      TList fBins;          ///< Pt bins
+  };
+
   enum EJetTypeOutliers_t {
     kOutlierPartJet,
     kOutlierDetJet
@@ -54,6 +124,8 @@ public:
   AliJetContainer *GetDetLevelJetContainer() const { return GetJetContainer(fNameDetectorJets); }
   const TString &GetNamePartLevelLets() const { return fNameParticleJets; }
   const TString &GetNameDetLevelJets() const { return fNameDetectorJets; }
+  AngularityHandler *GetAngularityHandler() const {return fAngularityHandler; }
+  bool HasAngularitySplitting() const { return fAngularityHandler != NULL; }
 
   void SetNameDetJetContainer(const char *name)  { fNameDetectorJets = name; }
   void SetNamePartJetContainer(const char *name) { fNameParticleJets = name; }
@@ -66,6 +138,7 @@ public:
   void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
   void SetRequireSameAcceptance(Bool_t doRequire) { fRequireSameAcceptance = doRequire; }
   void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
+  void SetAngularitySpitting(bool doSplit = true);
 
   void ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
   void ConfigureMinBias(MCProductionType_t mcprodtype);
@@ -100,9 +173,11 @@ protected:
   virtual Bool_t Run(); 
   virtual Bool_t CheckMCOutliers();
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
+  Double_t MakeAngularity(const AliEmcalJet &jet, AliVCluster::VCluUserDefEnergy_t energydef) const;
 
 private:
   THistManager                *fHistos;                       //!<! Histogram collection
+  AngularityHandler           *fAngularityHandler;            ///< Handler for angularity splitting
   TString                     fNameDetectorJets;              ///< Name of the data jet container
   TString                     fNameParticleJets;              ///< Name of the MC jet container
   TString                     fTriggerSelectionString;        ///< Trigger selection string
