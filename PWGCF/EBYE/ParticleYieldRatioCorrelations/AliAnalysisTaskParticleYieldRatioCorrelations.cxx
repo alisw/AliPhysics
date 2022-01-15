@@ -409,6 +409,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
         Float_t nOfSigmasTPC_pi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         Float_t nOfSigmasTPC_K = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
         Float_t nOfSigmasTPC_p = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        Float_t nOfSigmasTPC_d = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
 
         Float_t nOfSigmasTOF_pi = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion, fPIDResponse->GetTOFResponse().GetTimeZero());
         Float_t nOfSigmasTOF_K = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon, fPIDResponse->GetTOFResponse().GetTimeZero());
@@ -523,7 +524,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
             }
 
             bool selected_p = false;
-            if (Pt < nSigmaBoundary[2] && fabs(nOfSigmasTPC_p) < nSigma && fabs(nOfSigmasTPC_pi) > 3 && fabs(nOfSigmasTPC_K) > 3 && fabs(nOfSigmasTPC_el) > 1)
+            if (Pt < nSigmaBoundary[2] && fabs(nOfSigmasTPC_p) < nSigma && fabs(nOfSigmasTPC_pi) > 3 && fabs(nOfSigmasTPC_K) > 3 && fabs(nOfSigmasTPC_el) > 1 && fabs(nOfSigmasTPC_d) > 3)
                 selected_p = true;
             if (Pt > nSigmaBoundary[2] && nSigma_comb_p < nSigma && nSigma_comb_pi > 3 && nSigma_comb_K > 3)
                 selected_p = true;
@@ -566,6 +567,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
         for (Int_t i(0); i < nMCTracks; i++)
         {
             AliAODMCParticle *trackMC = (AliAODMCParticle *)fMC->GetTrack(i);
+            if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC)) continue;
             if (trackMC && trackMC->IsPhysicalPrimary() && fabs(trackMC->Eta()) < 0.8 && trackMC->Pt() >= minP && trackMC->Pt() <= maxP)
             {
                 Float_t GenPt = trackMC->Pt();
