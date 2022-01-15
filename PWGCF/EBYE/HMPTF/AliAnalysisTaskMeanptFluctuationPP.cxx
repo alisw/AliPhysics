@@ -405,7 +405,7 @@ void AliAnalysisTaskMeanptFluctuationPP::UserExec(Option_t *)
       cl1Centr = multSelection->GetMultiplicityPercentile("CL1");
       cl0Centr = multSelection->GetMultiplicityPercentile("CL0");
     }
-  if(v0Centr>=90.||v0Centr<0) 
+  if(v0Centr>=100.||v0Centr<0) 
     {
       PostData(1, fTreeEvent);
       PostData(2, fListHist);
