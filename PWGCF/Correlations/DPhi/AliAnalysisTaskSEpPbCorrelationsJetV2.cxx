@@ -1049,9 +1049,10 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
    }
   //===================== For Rcp
+
+  Int_t nTracks = fEvent->GetNumberOfTracks();
   if(!fprimTPC && !fprimFMD)
   {
-   Int_t nTracks = fEvent->GetNumberOfTracks();
    for(Int_t i = 0; i < nTracks; i++)
    {
     AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
