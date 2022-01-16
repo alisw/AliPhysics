@@ -16,7 +16,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoBenchmark(bool fullBlastQA = false, //1
                                              bool isPileUpRej = false,
                                              bool isCleanUpSPD = false,
                                              bool isCleanUpv0A = false,
-                                             bool isCleanUpv0c = false,
+                                             bool isCleanUpv0C = false,
+                                             bool isCleanUpRefMult08 = false,
                                              bool Systematic = false,      //6
                                              const char *cutVariation = "0")
 { //11
@@ -50,7 +51,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoBenchmark(bool fullBlastQA = false, //1
   evtCuts->SetCutMinContrib(0);
   evtCuts->SetZVtxPosition(-10., 10.);
   evtCuts->PileUpRejection(isPileUpRej);
-  evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->CleanUpMult(isCleanUpSPD, isCleanUpv0A, isCleanUpv0C, isCleanUpRefMult08);
   evtCuts->UseDontWorryEvtCuts(isAliEvt);
 
   if (DoSpherocity == true)

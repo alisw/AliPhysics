@@ -698,7 +698,14 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
         if ( esdV0 && ((esdV0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
                        ( esdV0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
 
-	if(v0->Pt()<minPtV0) continue;
+
+	Double_t ptV0=0.;
+	if(fInputAOD){
+	  if(v0) ptV0=v0->Pt();
+	}else{
+	  if(esdV0) ptV0=esdV0->Pt();
+	}
+	if(ptV0<minPtV0) continue;
         // Get the tracks that form the V0
         //  ( parameters at primary vertex )
         //   and define an AliExternalTrackParam out of them

@@ -20,6 +20,7 @@
 #include "AliMultSelection.h"
 #include "AliAODVertex.h"
 #include "AliDataFile.h"
+#include "TGrid.h"
 
 using namespace std;
 
@@ -27,13 +28,13 @@ ClassImp(AliAnalysisTaskJetQnVectors)
 
 //________________________________________________________________________
 AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
-    AliAnalysisTaskSE("HFTenderQnVectors"),
+    AliAnalysisTaskSE("JEQnVectors"),
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
-    fHFQnVecHandler(nullptr),
+    fJEQnVecHandler(nullptr),
     fHarmonic(2),
     fCalibType(AliJEQnVectorHandler::kQnCalib),
     fNormMethod(AliJEQnVectorHandler::kQoverM),
@@ -73,7 +74,7 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fHistCentrality(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
-    fHFQnVecHandler(nullptr),
+    fJEQnVecHandler(nullptr),
     fHarmonic(harmonic),
     fCalibType(calibType),
     fNormMethod(AliJEQnVectorHandler::kQoverSqrtM),
@@ -131,7 +132,7 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 		}
 		delete fOutputList;
     }
-    if(fHFQnVecHandler) delete fHFQnVecHandler;
+    if(fJEQnVecHandler) delete fJEQnVecHandler;
     for(int iDet=0; iDet<3; iDet++) {
         if(fQvecTPCVsCentrDistr[iDet]) delete fQvecTPCVsCentrDistr[iDet];
         if(iDet<2) {
@@ -143,8 +144,8 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 //________________________________________________________________________
 void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
 {
-    fHFQnVecHandler = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName);
-    fHFQnVecHandler->EnablePhiDistrHistos();
+    fJEQnVecHandler = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName);
+    fJEQnVecHandler->EnablePhiDistrHistos();
 
     fOutputList = new TList();
     fOutputList->SetOwner(true);
@@ -177,9 +178,9 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     if(fCalibType==AliJEQnVectorHandler::kQnCalib) {
         if(fEnableTPCPhiVsCentrDistr) {
             OpenFile(2);
-            fTPCPhiVsCentrDistr[0] = dynamic_cast<TH2F*>(fHFQnVecHandler->GetPhiDistrHistosTPCPosEta()->Clone());
+            fTPCPhiVsCentrDistr[0] = dynamic_cast<TH2F*>(fJEQnVecHandler->GetPhiDistrHistosTPCPosEta()->Clone());
             OpenFile(3);
-            fTPCPhiVsCentrDistr[1] = dynamic_cast<TH2F*>(fHFQnVecHandler->GetPhiDistrHistosTPCNegEta()->Clone());
+            fTPCPhiVsCentrDistr[1] = dynamic_cast<TH2F*>(fJEQnVecHandler->GetPhiDistrHistosTPCNegEta()->Clone());
         }
         if(fEnableQvecTPCVsCentrDistr) {
             OpenFile(4);
@@ -259,16 +260,16 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         return;
     }
 
-    fHFQnVecHandler->ResetAODEvent();
-    fHFQnVecHandler->SetAODEvent(fAOD);
-    fHFQnVecHandler->ComputeCalibratedQnVectorTPC();
-    fHFQnVecHandler->ComputeCalibratedQnVectorV0();
+    fJEQnVecHandler->ResetAODEvent();
+    fJEQnVecHandler->SetAODEvent(fAOD);
+    fJEQnVecHandler->ComputeCalibratedQnVectorTPC();
+    fJEQnVecHandler->ComputeCalibratedQnVectorV0();
 
-	//fill histos with EP angle
+    //fill histos with EP angle
     double PsinFullTPC = -1., PsinPosTPC = -1., PsinNegTPC = -1.;
     double PsinFullV0 = -1., PsinV0A = -1., PsinV0C = -1.;
-    fHFQnVecHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
-    fHFQnVecHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
+    fJEQnVecHandler->GetEventPlaneAngleTPC(PsinFullTPC,PsinPosTPC,PsinNegTPC);
+    fJEQnVecHandler->GetEventPlaneAngleV0(PsinFullV0,PsinV0A,PsinV0C);
     fEPangleV0M = PsinFullV0;
     fEPangleV0A = PsinV0A;
     fEPangleV0C = PsinV0C;
@@ -280,11 +281,11 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     fHistEventPlaneV0[1]->Fill(PsinV0A);
     fHistEventPlaneV0[2]->Fill(PsinV0C);
 
-	//fill histos for q2 spline calibration
+    //fill histos for q2 spline calibration
     double qnFullTPC = -1., qnPosTPC = -1., qnNegTPC = -1.;
     double qnFullV0 = -1., qnV0A = -1., qnV0C = -1.;
-    fHFQnVecHandler->GetqnTPC(qnFullTPC,qnPosTPC,qnNegTPC);
-    fHFQnVecHandler->GetqnV0(qnFullV0,qnV0A,qnV0C);
+    fJEQnVecHandler->GetqnTPC(qnFullTPC,qnPosTPC,qnNegTPC);
+    fJEQnVecHandler->GetqnV0(qnFullV0,qnV0A,qnV0C);
     fq2V0M = qnFullV0;
     fq2V0A = qnV0A;
     fq2V0C = qnV0C;
@@ -300,8 +301,8 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 
     if(fCalibType==AliJEQnVectorHandler::kQnCalib) {
         if(fEnableTPCPhiVsCentrDistr) {
-            TH2F* hPhiPosEta = fHFQnVecHandler->GetPhiDistrHistosTPCPosEta();
-            TH2F* hPhiNegEta = fHFQnVecHandler->GetPhiDistrHistosTPCNegEta();
+            TH2F* hPhiPosEta = fJEQnVecHandler->GetPhiDistrHistosTPCPosEta();
+            TH2F* hPhiNegEta = fJEQnVecHandler->GetPhiDistrHistosTPCNegEta();
             if(runnumber!=fPrevEventRun) {
                 fTPCPhiVsCentrDistr[0]->SetName(Form("%s_%d",hPhiPosEta->GetName(),runnumber));
                 fTPCPhiVsCentrDistr[1]->SetName(Form("%s_%d",hPhiNegEta->GetName(),runnumber));
@@ -322,7 +323,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
             }
 
             double QnVecFullTPC[2], QnVecPosTPC[2], QnVecNegTPC[2];
-            fHFQnVecHandler->GetUnNormQnVecTPC(QnVecFullTPC, QnVecPosTPC, QnVecNegTPC);
+            fJEQnVecHandler->GetUnNormQnVecTPC(QnVecFullTPC, QnVecPosTPC, QnVecNegTPC);
             fQvecTPCVsCentrDistr[0]->Fill(cent, TMath::Sqrt(QnVecFullTPC[0]*QnVecFullTPC[0]+QnVecFullTPC[1]*QnVecFullTPC[1]));
             fQvecTPCVsCentrDistr[1]->Fill(cent, TMath::Sqrt(QnVecPosTPC[0]*QnVecPosTPC[0]+QnVecPosTPC[1]*QnVecPosTPC[1]));
             fQvecTPCVsCentrDistr[2]->Fill(cent, TMath::Sqrt(QnVecNegTPC[0]*QnVecNegTPC[0]+QnVecNegTPC[1]*QnVecNegTPC[1]));
@@ -339,7 +340,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 }
 
 //________________________________________________________________________
-TList* AliAnalysisTaskJetQnVectors::GetSplineForqnPercentileList(int det) const
+TDirectoryFile* AliAnalysisTaskJetQnVectors::GetSplineForqnPercentileList(int det) const
 {
     if(det<=kNegTPC) {
         return fSplineListqnPercTPC[det];
@@ -362,24 +363,33 @@ void AliAnalysisTaskJetQnVectors::LoadSplinesForqnPercentile(TString splinesFile
     TString listnameV0[3] = {"SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
 
     TString pathToFileCMVFNS = AliDataFile::GetFileName(splinesFilePath.Data());
-    // Check access to CVMFS (will only be displayed locally)
-    if (pathToFileCMVFNS.IsNull())
-        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+    TString pathToFileLocal = splinesFilePath;
 
-    TFile* splinesfile = TFile::Open(pathToFileCMVFNS.Data());
-    if(!splinesfile)
-        AliFatal("File with splines for qn percentiles not found!");
+      TFile* splinesfile;
+      if (splinesFilePath.BeginsWith("alien://") && !gGrid)
+        {
+          AliInfo("Trying to connect to AliEn ...");
+          TGrid::Connect("alien://");
+        }
+      // Check access to CVMFS (will only be displayed locally)
+      if (!pathToFileCMVFNS.IsNull())   splinesfile = TFile::Open(pathToFileCMVFNS.Data());
+      if (pathToFileCMVFNS.IsNull())    splinesfile = TFile::Open(splinesFilePath.Data());
+   
+      if(!splinesfile)    AliFatal("File with splines for qn percentiles not found!");
 
     for(int iDet=0; iDet<3; iDet++) {
-        fSplineListqnPercTPC[iDet] = (TList*)splinesfile->Get(listnameTPC[iDet].Data());
-        if(!fSplineListqnPercTPC[iDet])
-            AliFatal("TList with splines for qnTPC percentiles not found in the spline file!");
-        fSplineListqnPercV0[iDet] = (TList*)splinesfile->Get(listnameV0[iDet].Data());
-        if(!fSplineListqnPercV0[iDet])
-            AliFatal("TList with splines for qnV0 percentiles not found in the spline file!");
+        fSplineListqnPercTPC[iDet] = (TDirectoryFile*)splinesfile->Get(listnameTPC[iDet].Data());
+        if(!fSplineListqnPercTPC[iDet]) {
+           std::cout << "Warning: TDirectoryFile with splines for qnTPC percentiles not found in the spline file!\n";
+           continue;}
+        fSplineListqnPercV0[iDet] = (TDirectoryFile*)splinesfile->Get(listnameV0[iDet].Data());
+        if(!fSplineListqnPercV0[iDet])  { 
+           std::cout << "Warning: TDirectoryFile with splines for qnV0 percentiles not found in the spline file!\n";
+           continue;}
 
-        fSplineListqnPercTPC[iDet]->SetOwner();
-        fSplineListqnPercV0[iDet]->SetOwner();
+        //uncoment if using TLists
+        /*fSplineListqnPercTPC[iDet]->SetOwner();
+        fSplineListqnPercV0[iDet]->SetOwner();*/
     }
     splinesfile->Close();
 }

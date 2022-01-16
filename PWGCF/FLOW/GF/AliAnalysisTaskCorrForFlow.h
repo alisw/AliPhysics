@@ -9,8 +9,10 @@
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "TObjArray.h"
 #include "TObject.h"
+#include "TRandom.h"
 #include "TList.h"
 #include "TMath.h"
 #include "THnSparse.h"
@@ -24,9 +26,6 @@
 #include "AliEventPoolManager.h"
 #include "AliVEvent.h"
 #include "AliTHn.h"
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
 
 class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
 {
@@ -51,7 +50,9 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         void                    SetPtBins(std::vector<Double_t> bins) { fPtBinsTrigCharged = bins; }
         void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
-        void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
+        void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
+
+
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
 
@@ -67,14 +68,9 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         Double_t                GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
         void                    FillCorrelations();
         void                    FillCorrelationsMixed();
-        void                    FillCorrelationsPID(const Int_t pid);
-        void                    FillCorrelationsMixedPID(const Int_t pid);
-
-        Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
-        Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
-        Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
         Bool_t                  AreEfficienciesLoaded();
-        Double_t                GetEff(const Double_t dPt, const Int_t spec = 0, const Double_t dEta = 0.0);
+        Double_t                GetEff(const Double_t dPt, const Double_t dEta = 0.0);
+        Int_t                   GetEtaRegion(const Double_t dEta);
 
 
         AliAnalysisTaskCorrForFlow(const AliAnalysisTaskCorrForFlow&); // not implemented
@@ -84,28 +80,20 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         TList*                  fOutputListCharged;    //! output list
         TList*                  fInputListEfficiency;    //! input list
         TObjArray*              fTracksTrigCharged; //!
-        TObjArray*              fTracksTrigPID[3]; //!
         TObjArray*              fTracksAss; //!
-        AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
-        AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
         AliEventPoolManager*    fPoolMgr;  //!  event pool manager for Event Mixing
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
         TH2D*                   fHistPhiEta; //!
-        TH2D*                   fhTrigTracks; //!
-        TH2D*                   fhTrigTracksPID[3]; //!
+        TH3D*                   fhTrigTracks; //!
         AliTHn*                 fhChargedSE; //!
         AliTHn*                 fhChargedME; //!
-        AliTHn*                 fhPidSE[3]; //!
-        AliTHn*                 fhPidME[3]; //!
-        TH1D*                   fhEfficiency[4]; //! not eta dependent
-        TH1D*                   fhEfficiencyEta[4][4]; //! eta dependent (4 sectors)
+        TH2D*                   fhEfficiencyEta[8]; //! eta dependent (4 sectors)
 
         //event and track selection
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fIsHMpp; // [kFALSE]
-        Bool_t                  fDoPID; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fEfficiencyEtaDependent; // [kFALSE]
@@ -137,8 +125,12 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         std::vector<Double_t>   fzVtxBins;
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
+        Int_t                   fNOfSamples;
+        Int_t                   fSampleIndex;
+        std::vector<Double_t>   fsampleBins; //sampling
+        TString                 fSystematicsFlag; // ""
 
-        ClassDef(AliAnalysisTaskCorrForFlow, 5);
+        ClassDef(AliAnalysisTaskCorrForFlow, 6);
 };
 
 #endif

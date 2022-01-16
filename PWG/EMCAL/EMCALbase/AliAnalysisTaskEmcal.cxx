@@ -183,6 +183,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -309,6 +310,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -454,7 +456,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
     fHistWeights = new TH1F("fHistWeights", "fHistWeights", fNPtHardBins, 0, fNPtHardBins);
     fHistWeights->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
+    fHistWeights->GetYaxis()->SetTitle("integrated weights");
     fOutput->Add(fHistWeights);
 
     // Set the bin labels
@@ -677,8 +679,10 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if(fPtHard < fMinPtHard || fPtHard > fMaxPtHard) return;
 
   // Fill weights before event selection
-  auto weight = GetEventWeightFromHeader();
-  fHistWeights->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
+  if(fIsPythia || fIsHerwig || fIsHepMC) {
+    auto weight = GetEventWeightFromHeader();
+    fHistWeights->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
+  }
 
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){

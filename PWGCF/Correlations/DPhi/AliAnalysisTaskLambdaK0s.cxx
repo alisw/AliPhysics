@@ -1358,8 +1358,8 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 	UInt_t fSelectMask= inputHandler->IsEventSelected();
 	if (!fSelectMask) return;
 
-	Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
-	if (!isINT7selected) return;
+	//Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
+	//if (!isINT7selected) return;
 
 	AliAODEvent* aod = dynamic_cast<AliAODEvent*>(inputHandler->GetEvent());
 	if(!aod) return;
@@ -1671,7 +1671,7 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 			{
 				((TH2F*)((TList*)fOutput->FindObject("AnalysisK0s"))->FindObject("fHistMassK0s"))->Fill(massK0s,lPt);//do the eff at the outside
 			}    
-			if(TMath::Abs(massK0s - fMassMean[0]) < 5.*fMassRes[0]){
+			if(TMath::Abs(massK0s - fMassMean[0]) < 8.*fMassRes[0]){
 
 				((TH3F*)((TList*)fOutput->FindObject("AnalysisK0s"))->FindObject("fHistK0s"))->Fill(lPt, lEta, lPhi);
 				((TH1F*)((TList*)fOutput->FindObject("AnalysisK0s"))->FindObject("fHistK0sEta"))->Fill(lEta);	
@@ -1696,7 +1696,7 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 				((TH2F*)((TList*)fOutput->FindObject("AnalysisLambda"))->FindObject("fHistMassLambda"))->Fill(massLambda,lPt);  
 				((TH3F*)((TList*)fOutput->FindObject("AnalysisLambda"))->FindObject("fHistMassDCALambda"))->Fill(massLambda,lPt,lDCA2PV);
 			}  
-			if(TMath::Abs(massLambda - fMassMean[1]) < 5.*fMassRes[1]){
+			if(TMath::Abs(massLambda - fMassMean[1]) < 8.*fMassRes[1]){
 				((TH2F*)((TList*)fOutput->FindObject("AnalysisLambda"))->FindObject("fHistDCALambda"))->Fill(lPt,lDCA2PV);	  
 
 				((TH3F*)((TList*)fOutput->FindObject("AnalysisLambda"))->FindObject("fHistLambda"))->Fill(lPt, lEta, lPhi);
@@ -1785,7 +1785,7 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 				&& nsigPosPion < fNsigma && nsigNegProton < fNsigma && xyn>fDCANegtoPrimVertexMinAntiLambda &&xyp>fDCAPostoPrimVertexMinAntiLambda){
 			selectedAntiLambda->Add(v0);
 
-			if(TMath::Abs(massAntiLambda - fMassMean[1]) < 5.*fMassRes[1]){
+			if(TMath::Abs(massAntiLambda - fMassMean[1]) < 8.*fMassRes[1]){
 				((TH3F*)((TList*)fOutput->FindObject("AnalysisAntiLambda"))->FindObject("fHistAntiLambda"))->Fill(lPt, lEta, lPhi);
 				((TH1F*)((TList*)fOutput->FindObject("AnalysisAntiLambda"))->FindObject("fHistAntiLambdaEta"))->Fill(lEta);
 				((TH1F*)((TList*)fOutput->FindObject("AnalysisAntiLambda"))->FindObject("fHistAntiLambdaPhi"))->Fill(lPhi);
@@ -2003,7 +2003,7 @@ void AliAnalysisTaskLambdaK0s::UserExec(Option_t *)
 		if(lPt < 1 || lPt > 10.0) continue;
 
 
-		if ((TMath::Abs(rapXi) < 0.5 && isBachelorPionForTPC) && ((xi->ChargeXi() < 0 && isPosProtonForTPC && isNegPionForTPC)|| (xi->ChargeXi() > 0 && isNegProtonForTPC && isPosPionForTPC) ) ){
+		if ((TMath::Abs(etaXi) < 0.7 && isBachelorPionForTPC) && ((xi->ChargeXi() < 0 && isPosProtonForTPC && isNegPionForTPC)|| (xi->ChargeXi() > 0 && isNegProtonForTPC && isPosPionForTPC) ) ){
 
 			if( TMath::Abs(invMassOmega-1.67245) > 0.008 ){
 

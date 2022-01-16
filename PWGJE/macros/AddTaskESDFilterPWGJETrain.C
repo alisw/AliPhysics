@@ -1,4 +1,8 @@
-
+#ifdef __CLING__
+// ROOT6, bindet andere macros wie Header files ein, include Pfad kann mit R__ADD_INCLUDE_PATH hinzugefügt werden
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGJE/macros/CreateTrackCutsPWGJE.C>
+#endif
 
 Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdFilter);
 Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdFilter);
@@ -8,8 +12,8 @@ Bool_t enableTPCOnlyAODTracks = kTRUE;
 AliAnalysisTaskESDfilter *AddTaskESDFilterPWGJETrain(Bool_t useKineFilter=kTRUE, 
 						     Bool_t writeMuonAOD=kFALSE,
 						     Bool_t writeDimuonAOD=kFALSE,
-						     Bool_t usePhysicsSelection=kFALSE,
-						     Bool_t useCentralityTask=kFALSE)
+						     Bool_t usePhysicsSelection=kFALSE/*,
+						      Bool_t useCentralityTask=kFALSE*/ )
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -125,10 +129,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWGJETrain(Bool_t useKineFilter=kTRUE,
 								   AliAnalysisManager::kOutputContainer,"pyxsec_hists.root");
       mgr->ConnectOutput (kinefilter,  1,coutputEx);
    }   
-  if (useCentralityTask) {
-       mgr->ConnectInput (ctask, 0, mgr->GetCommonInputContainer());
-       mgr->ConnectOutput(ctask, 0, mgr->GetCommonOutputContainer());
-   }
+//   if (useCentralityTask) {
+//        mgr->ConnectInput (ctask, 0, mgr->GetCommonInputContainer());
+//        mgr->ConnectOutput(ctask, 0, mgr->GetCommonOutputContainer());
+//    }
 
    return esdfilter;
  }
@@ -159,7 +163,11 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   // ITSrefit and use only primaries...
   
   // ITS cuts for new jet analysis 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
+
+  #ifndef __CLING__
+  // ROOT5, interpretiert anderes macro on-the-fly
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C”);
+  #endif
   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWGJE(10001006);
   
   // throw out tracks with too low number of clusters in

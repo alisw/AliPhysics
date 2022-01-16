@@ -1,4 +1,4 @@
-AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFRun3Conversion(TString configfilename=""){
+AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename="", Bool_t resetAtEachEv=kTRUE){
   //
   // Creates a task for heavy flavour vertexing for conversion to AO2D
   // Extract parameters from environment variables
@@ -12,20 +12,11 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFRun3Conversion(TString configfil
     return NULL;
   }   
    
-  // This task requires an ESD or AOD input handler and an AOD output handler.
-  // Check this using the analysis manager.
-  //===============================================================================
   TString type = mgr->GetInputEventHandler()->GetDataType();
   if (!type.Contains("ESD") && !type.Contains("AOD")) {
     ::Error("AddTaskVertexingHF", "HF vertexing task needs the manager to have an ESD or AOD input handler.");
     return NULL;
   }   
-  // Check if AOD output handler exist.
-  AliAODHandler *aodh = (AliAODHandler*)mgr->GetOutputEventHandler();
-  if (!aodh) {
-    ::Error("AddTaskVertexingHF", "HF vertexing task needs the manager to have an AOD output handler.");
-    return NULL;
-  }
 
   TString localdir=".";
   Int_t runnumber=-1;
@@ -54,18 +45,48 @@ AliAnalysisTaskSEVertexingHF *AddTaskVertexingHFRun3Conversion(TString configfil
 
   // Create the task, add it to the manager and configure it.
   //===========================================================================
-  AliAnalysisTaskSEVertexingHF *hfTask = new AliAnalysisTaskSEVertexingHF("vertexing HF");
-  hfTask->SetDeltaAODFileName("AliAOD.VertexingHF.root");
-  mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
+  AliAnalysisTaskSEVertexingHFRun3Conversion *hfTask = new AliAnalysisTaskSEVertexingHFRun3Conversion("vertexing HF");
+  hfTask->ResetTreeAtEachEvent(resetAtEachEv);
   mgr->AddTask(hfTask);
 
   //
   // Create containers for input/output
-  AliAnalysisDataContainer *coutputListOfCuts = mgr->CreateContainer("ListOfCuts",TList::Class(),AliAnalysisManager::kOutputContainer,hfTask->GetDeltaAODFileName()); //cuts
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  
+  AliAnalysisDataContainer *coutputListOfCuts = mgr->CreateContainer("ListOfCuts",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); //cuts
+  
+  AliAnalysisDataContainer *coutputD0 = mgr->CreateContainer("D0CandidateTree",
+							     TTree::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputfile.Data());
+  coutputD0->SetSpecialOutput();
+  
+  AliAnalysisDataContainer *coutput3p = mgr->CreateContainer("Charm3pCandidateTree",
+							     TTree::Class(),
+							     AliAnalysisManager::kOutputContainer,
+							     outputfile.Data());
+  
+  coutput3p->SetSpecialOutput();
+  
+  AliAnalysisDataContainer *coutputDst = mgr->CreateContainer("DstarCandidateTree",
+							      TTree::Class(),
+							      AliAnalysisManager::kOutputContainer,
+							      outputfile.Data());
+  coutputDst->SetSpecialOutput();
+
+  AliAnalysisDataContainer *coutputCasc = mgr->CreateContainer("LcV0bachCandidateTree",
+							       TTree::Class(),
+							       AliAnalysisManager::kOutputContainer,
+							       outputfile.Data());
+  coutputCasc->SetSpecialOutput();
+
 
   mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(hfTask,0,mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(hfTask,1,coutputListOfCuts);
+  mgr->ConnectOutput(hfTask,2,coutputD0);
+  mgr->ConnectOutput(hfTask,3,coutput3p);
+  mgr->ConnectOutput(hfTask,4,coutputDst);
+  mgr->ConnectOutput(hfTask,5,coutputCasc);
 
   return hfTask;
 }

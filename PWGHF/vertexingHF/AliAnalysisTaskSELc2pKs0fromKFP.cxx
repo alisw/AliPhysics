@@ -98,7 +98,8 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP() :
   fFuncWeightFONLL5overLHC13d3Lc(0),
   fUseMult(kFALSE),
   fRefMult(0),
-  fAnalysisType(kpPb2016)
+  fAnalysisType(kpPb2016),
+  fUseOnTheFlyV0(kFALSE)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -147,7 +148,8 @@ AliAnalysisTaskSELc2pKs0fromKFP::AliAnalysisTaskSELc2pKs0fromKFP(const char* nam
   fFuncWeightFONLL5overLHC13d3Lc(0),
   fUseMult(kFALSE),
   fRefMult(0),
-  fAnalysisType(kpPb2016)
+  fAnalysisType(kpPb2016),
+  fUseOnTheFlyV0(kFALSE)
 {
     // constructor
     for (Int_t i=0; i<4; i++) fMultEstimatorAvg[i] = 0;
@@ -822,6 +824,13 @@ void AliAnalysisTaskSELc2pKs0fromKFP::MakeAnaLcFromCascadeHF(TClonesArray *array
       AliDebug(2,Form("current V0 does not have 2 daughters (onTheFly=%d, nDaughters=%d)",v0part->GetOnFlyStatus(),v0part->GetNDaughters()));
       continue;
     }
+
+    if (v0part->GetOnFlyStatus() && !fUseOnTheFlyV0) {
+      AliDebug(2,Form("V0 for cascade %d is on-the-fly but only offline requested",iCasc));
+      continue;
+    }
+
+
 
     AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(Lc2pKs0orLpi->Getv0PositiveTrack());
     AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(Lc2pKs0orLpi->Getv0NegativeTrack());

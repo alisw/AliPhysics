@@ -164,7 +164,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     fBuddyeta = eta;
   }
   void SetBuddyOriginMCTRUTH(int origin) {
-    //0:no selection, 1:Physical Primary, 2:Secondary From Weak Decay, 3:Secondary From Material
+    //0:no selection, 1:Physical Primary, 2:Secondary From Weak Decay, 3:Secondary From Material, 4: Primary part
     fBuddyOrigin = origin;
   }
   bool SelectBuddyOrigin(AliAODMCParticle *mcPart) {
@@ -189,14 +189,21 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       else 
         return false;
     }
+    else if(fBuddyOrigin==4){
+      if(mcPart->IsPrimary())
+        return true;
+      else 
+        return false;
+    }
     return false;
   }
   void SetDmesonOriginMCTRUTH(int origin) {
-    //0:no selection, 1:charm, 2:beauty
+    //0:no selection, 1:charm, 2:beauty, 3: D*, 4:B
     fDmesonOrigin = origin;
   }
   bool SelectDmesonOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
     if(fDmesonOrigin==0) {
+      fDoDorigPlots=true;
       return true;
     }
     else if(fDmesonOrigin==1){
@@ -208,10 +215,67 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     else if(fDmesonOrigin==2){
       if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==5)
         return true;
-      else 
+      else
         return false;
     }
+    else {
+      int motherID = mcPart->GetMother();
+      AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherID);
+      int PDGCodeMoth= mcMother->GetPdgCode();
+      if(fDmesonOrigin==3){
+        if(TMath::Abs(PDGCodeMoth) == 413)
+          return true;
+        else 
+          return false;
+      }
+      if(fDmesonOrigin==4){
+        if(TMath::Abs(PDGCodeMoth) == 521)
+          return true;
+        else 
+          return false;
+      }
+    }
     return false;
+  }
+  void FillMCtruthPDGDmeson(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    int motherID = mcPart->GetMother();
+    AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherID);
+    int PDGCodeMoth= mcMother->GetPdgCode();
+    int PDGCodePart= mcPart->GetPdgCode();
+    float pt = mcPart->Pt();
+    if(PDGCodePart==411){
+      fHistDplusMCtruthmotherPDG->Fill(pt,TMath::Abs(PDGCodeMoth));
+    } else if (PDGCodePart==-411){
+      fHistDminusMCtruthmotherPDG->Fill(pt,TMath::Abs(PDGCodeMoth));
+    }
+    return;
+  }
+  
+  void FillMCtruthQuarkOriginDmeson(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    int PDGCodePart= mcPart->GetPdgCode();
+    float pt = mcPart->Pt();
+    if (AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==4) { //charm
+      if(PDGCodePart==411){
+        fHistDplusMCtruthQuarkOrigin->Fill(pt,1);
+      } else if (PDGCodePart==-411){
+        fHistDminusMCtruthQuarkOrigin->Fill(pt,1);
+      }
+    }
+    else if (AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==5) { //beauty
+      if(PDGCodePart==411){
+        fHistDplusMCtruthQuarkOrigin->Fill(pt,2);
+      } else if (PDGCodePart==-411){
+        fHistDminusMCtruthQuarkOrigin->Fill(pt,2);
+      }
+    }
+    else {
+      if(PDGCodePart==411){
+        fHistDplusMCtruthQuarkOrigin->Fill(pt,3);
+      } else if (PDGCodePart==-411){
+        fHistDminusMCtruthQuarkOrigin->Fill(pt,3);
+      }
+    }
+    return;
   }
 
  private:
@@ -284,7 +348,13 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDminusMCPhiRes;    //!
   TH2F *fHistDminusMCThetaRes;  //!
   TH2F *fHistDminusMCOrigin;    //!
-  
+
+  bool fDoDorigPlots;            //!
+  TH2F *fHistDplusMCtruthmotherPDG;  //!
+  TH2F *fHistDplusMCtruthQuarkOrigin;     //!
+  TH2F *fHistDminusMCtruthmotherPDG;  //!
+  TH2F *fHistDminusMCtruthQuarkOrigin;     //!
+
   // HF data members
   int fDecChannel;                                         // HF decay channel
   AliRDHFCuts* fRDHFCuts;                                  // HF cut object
@@ -322,7 +392,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 12)
+ClassDef(AliAnalysisTaskCharmingFemto, 13)
 };
 
 #endif

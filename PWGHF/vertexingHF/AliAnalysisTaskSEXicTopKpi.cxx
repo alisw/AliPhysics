@@ -223,6 +223,29 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fHistoPtSelKaon(0x0)
   ,fHistoPtSelPion(0x0)
   ,fDisableSigmaCLoop(kFALSE)
+  ,fHistoPtd0plane(0x0)
+  ,fHistoPtd0planeAfterFastLoopSel(0x0)
+  ,fFastLoopPbPb(kFALSE)
+  ,fFastLoopPbPbFastSelections(kFALSE)
+  ,ftrackArraySelFast(0x0)
+  ,ftrackArraySelLoop1(0x0)
+  ,ftrackArraySelLoop2(0x0)
+  ,ftrackArraySelLoop3(0x0)
+  ,floop1()
+  ,floop2()
+  ,floop3()
+  ,tnFastVariables()
+  ,fFillFastVarForDebug(kFALSE)
+  ,fMinFastLxy12Sq(-1.)
+  ,fMinFastLxy13Sq(-1.)
+  ,fMinFastLxy23Sq(-1.)
+  ,fMinFastLxySq(-1.)
+  ,fMaxFastDist12_13Sq(99.)
+  ,fMaxFastDist12_23Sq(99.)
+  ,fMinFastPtCand(0.)
+  ,fMinFastCosPointXYSq(-1)
+  ,fHistFastInvMass(0x0)
+  ,fRejFactorFastAnalysis(1.1)
 {
   /// Default constructor
 
@@ -364,6 +387,29 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fHistoPtSelKaon(0x0)
   ,fHistoPtSelPion(0x0)
   ,fDisableSigmaCLoop(kFALSE)
+  ,fHistoPtd0plane(0x0)
+  ,fHistoPtd0planeAfterFastLoopSel(0x0)
+  ,fFastLoopPbPb(kFALSE)
+  ,fFastLoopPbPbFastSelections(kFALSE)
+  ,ftrackArraySelFast(0x0)
+  ,ftrackArraySelLoop1(0x0)
+  ,ftrackArraySelLoop2(0x0)
+  ,ftrackArraySelLoop3(0x0)
+  ,floop1()
+  ,floop2()
+  ,floop3()
+  ,tnFastVariables()
+  ,fFillFastVarForDebug(kFALSE)
+   ,fMinFastLxy12Sq(-1.)
+  ,fMinFastLxy13Sq(-1.)
+  ,fMinFastLxy23Sq(-1.)
+  ,fMinFastLxySq(-1.)
+  ,fMaxFastDist12_13Sq(99.)
+  ,fMaxFastDist12_23Sq(99.)
+  ,fMinFastPtCand(0.)
+  ,fMinFastCosPointXYSq(-1)
+  ,fHistFastInvMass(0x0)
+  ,fRejFactorFastAnalysis(1.1)
 {
   /// Default constructor
 
@@ -462,7 +508,19 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
   if(fPionID)delete fPionID;
   if(fTreeVar)delete fTreeVar;
   if(fhsparseMC_ScPeak)delete fhsparseMC_ScPeak;
-}  
+  if(fHistoPtd0plane)delete fHistoPtd0plane;
+  if(fHistoPtd0planeAfterFastLoopSel)delete fHistoPtd0planeAfterFastLoopSel;
+  if(ftrackArraySelFast)delete ftrackArraySelFast;
+  if(ftrackArraySelLoop1)delete ftrackArraySelLoop1;
+  if(ftrackArraySelLoop2)delete ftrackArraySelLoop2;
+  if(ftrackArraySelLoop3)delete ftrackArraySelLoop3;
+  if(tnFastVariables){
+    delete tnFastVariables;
+  }
+  if(fHistFastInvMass)delete fHistFastInvMass;
+
+       
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSEXicTopKpi::Init()
@@ -684,7 +742,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtxS");
   fNentries->GetXaxis()->SetBinLabel(5,"ptbin = -1");
   fNentries->GetXaxis()->SetBinLabel(6,"no daughter");
-  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(Tr)");
+  fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(Tr)");
   //  if(fFillVarHists || fPIDCheck){
   fNentries->GetXaxis()->SetBinLabel(8,"PID=0");
   fNentries->GetXaxis()->SetBinLabel(9,"PID=1");
@@ -712,12 +770,17 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fCounter->Init();
 
 
-  ftrackArraySel=new TArrayI(10000);
-  ftrackArraySelSoftPi=new TArrayI(10000);
-  ftrackSelStatusProton=new TArrayI(10000);
-  ftrackSelStatusKaon=new TArrayI(10000);
-  ftrackSelStatusPion=new TArrayI(10000);
+  ftrackArraySel=new TArrayI(15000);
+  ftrackArraySelSoftPi=new TArrayI(15000);
+  ftrackSelStatusProton=new TArrayI(15000);
+  ftrackSelStatusKaon=new TArrayI(15000);
+  ftrackSelStatusPion=new TArrayI(15000);
 
+  ftrackArraySelFast=new TArrayI(10000);
+  ftrackArraySelLoop1=new TArrayI(10000);
+  ftrackArraySelLoop2=new TArrayI(10000);
+  ftrackArraySelLoop3=new TArrayI(10000);
+    
   
   //fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,1.600,2.800,5,-0.5,4.5);
   if(fIsCdeuteronAnalysis) fhistInvMassCheck=new TH2F("fhistInvMassCheck","InvDistrCheck",1000,2.600,3.800,1010,-0.5,1010);
@@ -938,6 +1001,13 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fHistoPtSelKaon = new TH1D("fHistoPtSelKaon","flagged kaons (track cuts + n#sigma PID),#it{p}_{T} (GeV/#it{c})",200,0,10);
   fHistoPtSelPion = new TH1D("fHistoPtSelPion","flagged pions (track cuts + n#sigma PID);#it{p}_{T} (GeV/#it{c})",200,0,10);
 
+  fHistoPtd0plane=new TH2F("fHistoPtd0plane","2D histo of d0,pt distribution",60,0,3.,480,0.,0.6);
+  fHistoPtd0planeAfterFastLoopSel=new TH2F("fHistoPtd0planeAfterFastLoopSel","2D histo of d0,pt distribution after loop assignment",60,0,3.,480,0.,0.6);
+
+
+  tnFastVariables=new TNtuple("tnFastVariables","tnFastVariables","ptFast:cosPointXYsqFast:LxyFast:xvtxFast:yvtxFast:pt:cosPointXYsq:Lxy:xvtx:yvtx");
+
+  fHistFastInvMass=new TH2D("fHistFastInvMass","Inv Mass Fast;M(p,K,pi);pt",400,2.18,2.58,48,0,24);
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
   fOutput->Add(fDist12All);
@@ -987,7 +1057,10 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   fOutput->Add(fHistoPtSelProton);
   fOutput->Add(fHistoPtSelKaon);
   fOutput->Add(fHistoPtSelPion);
-
+  fOutput->Add(fHistoPtd0plane);
+  fOutput->Add(fHistoPtd0planeAfterFastLoopSel);
+  fOutput->Add(tnFastVariables);
+  fOutput->Add(fHistFastInvMass);
 
   // Post the data
   PostData(1,fNentries);
@@ -1188,6 +1261,8 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   Bool_t isGoodVtx=kFALSE;
   fZvtx_reco_noSel10_MC->Fill(fprimVtx->GetZ());                // counter
   if(fReadMC) fZvtx_gen_noSel10_MC->Fill(mcHeader->GetVtxZ());  // counter
+  Double_t posPrimVtx[3];
+  fprimVtx->GetXYZ(posPrimVtx);
   
   TString primTitle =fprimVtx->GetTitle();
   if(primTitle.Contains("VertexerTracks") && fprimVtx->GetNContributors()>0) {
@@ -1197,7 +1272,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   fhistMonitoring->Fill(2);
 
   fvHF=new AliAnalysisVertexingHF();
- 
   PrepareTracks(aod,fmcArray,mcHeader); // done always, also if only pre-filtered candidates are used: needed for SigmaC loop... or should work for a different solution
   if(fCheckOnlyTrackEfficiency){
     delete fvHF;
@@ -1239,7 +1313,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     }
   }
   
-  
+  Double_t mK=TDatabasePDG::Instance()->GetParticle(321)->Mass(),mpi=TDatabasePDG::Instance()->GetParticle(211)->Mass(),mProt=TDatabasePDG::Instance()->GetParticle(2212)->Mass();  
   /*
   // Initialize vars for TTree and set addresses if needed
   Float_t var[20];
@@ -1279,14 +1353,30 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   
   // NOW LOOP OVER SELECTED TRACKS
   fCandCounter_onTheFly->Fill(1); // evs. entering the triple nested track loop
-  for(Int_t itrack1=0;itrack1<fnSel;itrack1++){// First loop
+  for(Int_t itrackfast1=0;itrackfast1<floop1;itrackfast1++){// First loop
+
+    // get proper index
+    Int_t itrack1=ftrackArraySelFast->At(itrackfast1);
+    
     if(ftrackSelStatusProton->At(itrack1)<=0 && ftrackSelStatusKaon->At(itrack1)<=0 && ftrackSelStatusPion->At(itrack1)<=0)continue;//reject tracks selected only as soft-pions
     AliAODTrack *track1=(AliAODTrack*)aod->GetTrack(ftrackArraySel->At(itrack1));    
     if(!track1)continue;
     //     if(track1->Charge()<0 && !fLikeSign) continue;
+
     
     // HERE MAY CHECK DISPLACEMENT FOR MAKING FILTERING FASTER IN Pb-Pb
-    for(Int_t itrack2=itrack1+1;itrack2<fnSel;itrack2++){// Second loop
+    Double_t x1[3],p1[3];
+    track1->GetXYZ(x1);
+    track1->GetPxPyPz(p1);
+    if(TMath::Abs(p1[0])<1.e-8)p1[0]=1.e-8;// this is just to facilitate treatment of tracks // y axis
+    Double_t mStraightLine1=p1[1]/p1[0];
+    Double_t y1AtXeq0=x1[1]-mStraightLine1*x1[0];
+
+    
+    for(Int_t itrackfast2=itrackfast1+1;itrackfast2<floop1+floop2;itrackfast2++){// Second loop
+      // get proper index
+      Int_t itrack2=ftrackArraySelFast->At(itrackfast2);
+    
       if(ftrackSelStatusProton->At(itrack2)<=0 && ftrackSelStatusKaon->At(itrack2)<=0 && ftrackSelStatusPion->At(itrack2)<=0)continue;//reject tracks selected only as soft-pions
       AliAODTrack *track2=(AliAODTrack*)aod->GetTrack(ftrackArraySel->At(itrack2));    
       if(!track2)continue;
@@ -1303,15 +1393,47 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	if(ftrackSelStatusPion->At(itrack1)<=0 && ftrackSelStatusPion->At(itrack2)<=0)continue;// equal-sign pair -> there must be at least one pion
       }
       else continue;// should never met this else condition since charge is checked in SelectTrack and pretended to be |charge|=1
+      // now check "fast lxy"
+      Double_t x2[3],p2[3];
+      track2->GetXYZ(x2);
+      track2->GetPxPyPz(p2);
 
-      // THIRD LOOP
-      for(Int_t itrackThird=itrack2+1;itrackThird<fnSel;itrackThird++){// Third loop
+      if(TMath::Abs(p2[0])<1.e-8)p2[0]=1.e-8;// this is just to facilitate treatment of tracks // y axis
+      Double_t mStraightLine2=p2[1]/p2[0];
+      Double_t y2AtXeq0=x2[1]-mStraightLine2*x2[0];
+
+      // get intersection point
+      Double_t ip12x=(y1AtXeq0-y2AtXeq0)/(mStraightLine2-mStraightLine1);
+      Double_t ip12y=mStraightLine2*ip12x+y2AtXeq0;
+      // the following lines for comparison/debugging, DO NOT CANCEL THEM
+      // Float_t dxy[2],cdxy[3];
+      // track1->GetImpactParameters(dxy,cdxy);
+      // Float_t ip1=dxy[0];
+      // track2->GetImpactParameters(dxy,cdxy);
+      // Float_t ip2=dxy[0];
+      // Printf("IP radius: %f, %f, radius %f",ip1,ip2,TMath::Sqrt((ip12x-posPrimVtx[0])*(ip12x-posPrimVtx[0])+(ip12y-posPrimVtx[1])*(ip12y-posPrimVtx[1])));
+
+      // Cut on Fast Lxy12
+      if(fFastLoopPbPbFastSelections){
+	if((ip12x-posPrimVtx[0])*(ip12x-posPrimVtx[0])+(ip12y-posPrimVtx[1])*(ip12y-posPrimVtx[1])<fMinFastLxy12Sq)continue;
+      }
+      
+      // THIRD LOOP 
+      for(Int_t itrackfastThird=itrackfast2+1;itrackfastThird<floop1+floop2+floop3;itrackfastThird++){// Third loop
+	// get proper index
+	Int_t itrackThird=ftrackArraySelFast->At(itrackfastThird);
+      
 	if(itrackThird==itrack1 || itrackThird==itrack2)continue;// should never happen, line can be removed
 	if(ftrackSelStatusProton->At(itrackThird)<=0 && ftrackSelStatusKaon->At(itrackThird)<=0 && ftrackSelStatusPion->At(itrackThird)<=0)continue;//needed to reject tracks selected only as soft-pions
 	AliAODTrack *track3=(AliAODTrack*)aod->GetTrack(ftrackArraySel->At(itrackThird));    
 	if(!track3)continue;       
 	UShort_t trid[3];
 	TObjArray trackArray(3);
+	// Get p for FastLxy13,23
+	Double_t x3[3],p3[3];
+	track3->GetXYZ(x3);
+	track3->GetPxPyPz(p3);
+	Double_t *w1,*wK,*w3;// this is for fast selections
 	Int_t massHypothesis=0;// 0 = none, 1= p K pi only, 2 = pi, K, p only, 3=both
 	if(charge!=0){// ++- or --+ : fill candidate anyway in the same way (opposite charge in the middle)
 	  if(charge<0 && track3->Charge()<0)continue;
@@ -1322,6 +1444,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  trid[0]=(UShort_t)track1->GetID();
 	  trid[1]=(UShort_t)track3->GetID();
 	  trid[2]=(UShort_t)track2->GetID();
+	  w1=p1; wK=p3; w3=p2;
 	  // PID BASIC SELECTION HERE
 	  if(ftrackSelStatusKaon->At(itrackThird)<=0)continue;// the opposite-charge particle must be compatible with the K hypo
 	  if(ftrackSelStatusProton->At(itrack1)>0 && ftrackSelStatusPion->At(itrack2)>0){
@@ -1339,6 +1462,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    trid[0]=(UShort_t)track1->GetID();
 	    trid[1]=(UShort_t)track2->GetID();
 	    trid[2]=(UShort_t)track3->GetID();
+	    w1=p1; wK=p2; w3=p3;
 	    // PID BASIC SELECTION HERE
 	    if(ftrackSelStatusKaon->At(itrack2)<=0)continue;// the opposite-charge particle must be compatible with the K hypo
 	    if(ftrackSelStatusProton->At(itrack1)>0 && ftrackSelStatusPion->At(itrackThird)>0){
@@ -1355,6 +1479,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	    trid[0]=(UShort_t)track2->GetID();
 	    trid[1]=(UShort_t)track1->GetID();
 	    trid[2]=(UShort_t)track3->GetID();
+	    w1=p2; wK=p1; w3=p3;
 	    // PID BASIC SELECTION HERE
 	    if(ftrackSelStatusKaon->At(itrack1)<=0)continue;// the opposite-charge particle must be compatible with the K hypo
 	    if(ftrackSelStatusProton->At(itrack2)>0 && ftrackSelStatusPion->At(itrackThird)>0){
@@ -1369,12 +1494,93 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	//      if(track3->Charge()<0 && !fLikeSign) continue;
 	if(massHypothesis==0)continue; 
 	fhistMonitoring->Fill(8);
+	  
+	if(!fIsCdeuteronAnalysis && fFastLoopPbPbFastSelections ){
+	  // check inv. mass of pKpi state are reject in case no hypothesis provide a mass^2 larger than (Mlc-0.25)^2 and smaller than (MXic+0.4)^2
+	  Int_t keepMass=massHypothesis;
+	  Double_t fastmassSq=0;
+	  Double_t sum4dvect[4]={0.,w1[0]+wK[0]+w3[0],w1[1]+wK[1]+w3[1],w1[2]+wK[2]+w3[2]};
+	  Double_t sumPsq=sum4dvect[1]*sum4dvect[1]+sum4dvect[2]*sum4dvect[2]+sum4dvect[3]*sum4dvect[3];
+	  Double_t e1sq,e2sq,e3sq;
+	  
+	  e2sq=TMath::Sqrt(mK*mK+wK[0]*wK[0]+wK[1]*wK[1]+wK[2]*wK[2]);
+	  if(massHypothesis==1 || massHypothesis==3){
+	    e1sq=TMath::Sqrt(mProt*mProt+w1[0]*w1[0]+w1[1]*w1[1]+w1[2]*w1[2]);
+	    e3sq=TMath::Sqrt(mpi*mpi+w3[0]*w3[0]+w3[1]*w3[1]+w3[2]*w3[2]);
+	    fastmassSq=(e1sq+e2sq+e3sq)*(e1sq+e2sq+e3sq)-sumPsq;
+	    if(fastmassSq<4.145)keepMass-=1;// ~(Mlc-0.25)^2
+	    if(fastmassSq>8.225)keepMass-=1;//~(MXic+0.4)^2
+	    fHistFastInvMass->Fill(TMath::Sqrt(fastmassSq),TMath::Sqrt(sumPsq-(w1[2]+wK[2]+w3[2])*(w1[2]+wK[2]+w3[2])));
+	  }
+	  if(massHypothesis==2 || massHypothesis==3){
+	    e1sq=TMath::Sqrt(mpi*mpi+w1[0]*w1[0]+w1[1]*w1[1]+w1[2]*w1[2]);
+	    e3sq=TMath::Sqrt(mProt*mProt+w3[0]*w3[0]+w3[1]*w3[1]+w3[2]*w3[2]);
+	    fastmassSq=(e1sq+e2sq+e3sq)*(e1sq+e2sq+e3sq)-sumPsq;
+	    if(fastmassSq<4.145)keepMass-=2;// ~(Mlc-0.25)^2
+	    if(fastmassSq>8.225)keepMass-=2;//~(MXic+0.4)^2
+	    fHistFastInvMass->Fill(TMath::Sqrt(fastmassSq),TMath::Sqrt(sumPsq-(w1[2]+wK[2]+w3[2])*(w1[2]+wK[2]+w3[2])));
+	  }
+	  if(!keepMass)continue;
+	}
+
+	
+	if(TMath::Abs(p3[0])<1.e-8)p3[0]=1.e-8;// this is just to facilitate treatment of tracks // y axis
+	Double_t mStraightLine3=p3[1]/p3[0];
+	Double_t y3AtXeq0=x3[1]-mStraightLine3*x3[0];
+	Float_t arrayTupleFast[10];
+	if(fFastLoopPbPbFastSelections){
+	  // get intersection point 1-3
+	  Double_t ip13x=(y1AtXeq0-y3AtXeq0)/(mStraightLine3-mStraightLine1);
+	  Double_t ip13y=mStraightLine3*ip13x+y3AtXeq0;
+	  //  Cut on Fast Lxy13
+	  if((ip13x-posPrimVtx[0])*(ip13x-posPrimVtx[0])+(ip13y-posPrimVtx[1])*(ip13y-posPrimVtx[1])<fMinFastLxy13Sq)continue;
+	  // require vtxXy12 and 13 are close
+	  if((ip13x-ip12x)*(ip13x-ip12x)+(ip13y-ip12y)*(ip13y-ip12y)<fMaxFastDist12_13Sq)continue;
+	  // get intersection point 2-3
+	  Double_t ip23x=(y2AtXeq0-y3AtXeq0)/(mStraightLine3-mStraightLine2);
+	  Double_t ip23y=mStraightLine3*ip23x+y3AtXeq0;
+	  // NOW Cut on Fast Lxy23
+	  if((ip23x-posPrimVtx[0])*(ip23x-posPrimVtx[0])+(ip23y-posPrimVtx[1])*(ip23y-posPrimVtx[1])<fMinFastLxy23Sq)continue;
+	  // require vtxXy12 and 23 are close
+	  if((ip23x-ip12x)*(ip23x-ip12x)+(ip23y-ip12y)*(ip23y-ip12y)<fMaxFastDist12_23Sq)continue;
+	  // fast pointing angle xy (cosine squared)
+	  Double_t lxy[2]={(ip12x+ip13x+ip23x)/3.-posPrimVtx[0],(ip12y+ip13y+ip23y)/3.-posPrimVtx[1]}; // not in use anymore, superseded by next definition
+	  Double_t xySecVtx[2]={ip12x,ip12y};
+	  // check prongs with higher pt
+	  if(p3[0]*p3[0]+p3[1]*p3[1]>p2[0]*p2[0]+p2[1]*p2[1]){
+	    xySecVtx[0]=ip13x;
+	    xySecVtx[1]=ip13y;
+	    if(p2[0]*p2[0]+p2[1]*p2[1]>p1[0]*p1[0]+p1[1]*p1[1]){
+	      xySecVtx[0]=ip23x;
+	      xySecVtx[1]=ip23y;
+	    }
+	  }
+	  lxy[0]=xySecVtx[0]-posPrimVtx[0];
+	  lxy[1]=xySecVtx[1]-posPrimVtx[1];
+	  if(lxy[0]*lxy[0]+lxy[1]*lxy[1]<fMinFastLxySq)continue;
+	  
+	  Double_t pxycand[2]={p1[0]+p2[0]+p3[0],p1[1]+p2[1]+p3[1]};
+	  Double_t ptSqfastcand=pxycand[0]*pxycand[0]+pxycand[1]*pxycand[1];
+	  Double_t cosnum=lxy[0]*pxycand[0]+lxy[1]*pxycand[1];
+	  Double_t cospSqfast=(cosnum*cosnum)/((lxy[0]*lxy[0]+lxy[1]*lxy[1])*ptSqfastcand);
+	  if(fMinFastCosPointXYSq>0.&&(cospSqfast<fMinFastCosPointXYSq||cosnum<0))continue; 
+	  if(fFillFastVarForDebug){
+	    arrayTupleFast[0]=TMath::Sqrt(ptSqfastcand);
+	    arrayTupleFast[1]=TMath::Sqrt(cospSqfast);
+	    arrayTupleFast[2]=TMath::Sqrt(lxy[0]*lxy[0]+lxy[1]*lxy[1]);
+	    arrayTupleFast[3]=(ip12x+ip13x+ip23x)/3.-posPrimVtx[0];
+	    arrayTupleFast[4]=(ip12y+ip13y+ip23y)/3.-posPrimVtx[1];
+	  }
+	  // cut on cand pt>2
+	  if(ptSqfastcand<fMinFastPtCand)continue;
+	}
+	
 	AliAODRecoDecayHF3Prong *io3Prong= new AliAODRecoDecayHF3Prong();		  
 	io3Prong->SetNProngsHF(3);
 	io3Prong->SetNProngs();
 	io3Prong->SetProngIDs(3,trid);	
 	io3Prong->SetIsFilled(0);
-  fCandCounter_onTheFly->Fill(2); // on-the-fly candidate built
+	fCandCounter_onTheFly->Fill(2); // on-the-fly candidate built
 
 	if(!fvHF->FillRecoCand(aod,io3Prong)){
 	  AliAODVertex *vtx3 = (AliAODVertex*)io3Prong->GetSecondaryVtx();
@@ -1382,8 +1588,20 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  delete io3Prong;
 	  continue;
 	}
-  fCandCounter_onTheFly->Fill(3); // after FillRecoCand
+	fCandCounter_onTheFly->Fill(3); // after FillRecoCand
 
+
+	
+	if(fFillFastVarForDebug){
+	  arrayTupleFast[5]=io3Prong->Pt();
+	  arrayTupleFast[6]=TMath::Abs(io3Prong->CosPointingAngleXY());
+	  arrayTupleFast[7]=io3Prong->DecayLengthXY();
+	  AliAODVertex *vtxRD = (AliAODVertex*)io3Prong->GetSecondaryVtx();
+	  arrayTupleFast[8]=vtxRD->GetX()-posPrimVtx[0];
+	  arrayTupleFast[9]=vtxRD->GetY()-posPrimVtx[1];
+	  tnFastVariables->Fill(arrayTupleFast);
+	}
+	
 	Bool_t unsetvtx=kFALSE;
 	if(!io3Prong->GetOwnPrimaryVtx()){
 	  io3Prong->SetOwnPrimaryVtx(fprimVtx);
@@ -1419,7 +1637,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   fCandCounter_onTheFly->Fill(5); // after reducedChi2 cut
 
 	Int_t isTrueLambdaCorXic=0,checkOrigin=-1, decay_channel=0;   // decay channel info is 0 in data
-  Int_t arrayDauLabReco[3];
+	Int_t arrayDauLabReco[3];
 	AliAODMCParticle *part=0x0;
 	//Double_t pointlcsc[6];
 	Double_t pointlcsc[7];  // adding axis for Lc decay channel (MC)
@@ -1725,9 +1943,12 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       // otherwise, do not touch it
       if(!fSwitchOffPIDafterFilt) massHypothesis=resp_onlyPID&massHypothesis;
     }
-    else {  // this is the default
-      if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
-	    else                      massHypothesis=isSeleCuts&massHypothesis;
+    else {  // topological analysis
+      if(fSwitchOffPIDafterFilt)  massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+      else { // this is the default
+        if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+	      else                      massHypothesis=isSeleCuts&massHypothesis;
+      }
     }
 
 	  //
@@ -2789,6 +3010,10 @@ void AliAnalysisTaskSEXicTopKpi::FillDist12and23(AliAODRecoDecayHF3Prong *pr,Dou
     esdTrack[j]=new AliESDtrack(tr);
     // needed to calculate the impact parameters
     esdTrack[j]->PropagateToDCA(fprimVtx,magfield,kVeryBig,d0z0,covd0z0);
+    // following lines used for debugging only: the AODtrack::GetImpactParameters method works fine, but only for datasets reconstructed with AliRoot versions later than 1st March 2018 
+    // Float_t dxy[2],cdxy[3];
+    //    tr->GetImpactParameters(dxy,cdxy);
+    //if(TMath::Abs(d0z0[0]-dxy[0])>1.e-4)Printf("DCA esd: %f vs. aod %f",d0z0[0],dxy[0]);
   }
   TObjArray *twoTrackArray=new TObjArray(2);
   twoTrackArray->AddAt(esdTrack[0],0);
@@ -3204,6 +3429,16 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
   ftrackSelStatusKaon->Reset();
   ftrackSelStatusPion->Reset();
 
+  // ftrackArraySelFast resetted later when arrays are combined
+  if(fFastLoopPbPb){
+    ftrackArraySelLoop1->Reset();
+    ftrackArraySelLoop2->Reset();
+    ftrackArraySelLoop3->Reset();
+    floop1=0;
+    floop2=0;
+    floop3=0;
+
+  }
 
   if(fRejEvWoutpKpi) {
     fnProt = 0; // number of PID selected protons
@@ -3253,7 +3488,9 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
       Double_t pt_track = track->Pt()*1000.;  // rejection from the 4th decimal digit
       if( TMath::Abs(pt_track-floor(pt_track))>fRejFactorBkgUpgrade ) continue; // if looking at bkg, keep only a small percentage of available tracks (5%)
     }
-
+    Double_t pt_track = track->Pt()*1000.;
+    if( TMath::Abs(pt_track-floor(pt_track))>fRejFactorFastAnalysis) continue;
+    
     //    Printf("selecting track");
     AliESDtrack *trackESD=SelectTrack(track,iSelProtonCuts,iSelKaonCuts,iSelPionCuts,iSelSoftPionCuts,fESDtrackCutsProton,fESDtrackCutsKaon,fESDtrackCutsPion,fESDtrackCutsSoftPion);
     
@@ -3270,10 +3507,43 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     if(iSelProtonCuts < 0 && iSelKaonCuts < 0 && iSelPionCuts < 0 && iSelSoftPionCuts<0){
       delete trackESD;
       continue;
-    } 
+    }
+
+    Bool_t isSelOnlySoftPion=kTRUE;
+    if(iSelProtonCuts >= 0 || iSelKaonCuts >=0 || iSelPionCuts >= 0){
+      isSelOnlySoftPion=kFALSE;
+      Float_t dxy[2],cdxy[3];
+      track->GetImpactParameters(dxy,cdxy);
+      //Double_t dprod[3]; // this and next two lines just for debugging
+      // track->GetXYZ(dprod);
+      //  Printf("DCA: %f, coord dca: %f",dxy[0],TMath::Sqrt((dprod[0]-fprimVtx->GetX())*(dprod[0]-fprimVtx->GetX())+((dprod[1]-fprimVtx->GetY())*(dprod[1]-fprimVtx->GetY()))));
+      fHistoPtd0plane->Fill(track->Pt(),TMath::Abs(dxy[0]));
+     }
+     
+    if(fFastLoopPbPb){
+      // NEW SCHEME FOR Pb-Pb    
+      // Check d0 and pt and sets
+      Int_t loop=DefinePbPbfilteringLoop(track,isSelOnlySoftPion);
+      if(loop==0){
+	 delete trackESD;
+	 continue;
+      }
+      else if(loop==3){
+	ftrackArraySelLoop3->AddAt(fnSel,floop3);
+	floop3++;
+      }
+      else if(loop==2){
+	ftrackArraySelLoop2->AddAt(fnSel,floop2);
+	floop2++;    
+      }
+      else if(loop==1){
+	ftrackArraySelLoop1->AddAt(fnSel,floop1);
+	floop1++;    
+      }
+    }
     
     ftrackArraySel->AddAt(itrack,fnSel);
-  
+      
     // PID SELECTION
     IsSelectedPID(track,iSelPion,iSelKaon,iSelProton,iSelPionCuts,iSelKaonCuts,iSelProtonCuts,kTRUE);
     //    if(itrack%50==0)Printf("Track %d, pt: %f",itrack,track->Pt());
@@ -3339,7 +3609,42 @@ void AliAnalysisTaskSEXicTopKpi::PrepareTracks(AliAODEvent *aod,TClonesArray *mc
     
     delete trackESD;
   }
+  PrepareArrayFastLoops(); // THIS MUST BE DONE W/O checking the fFastLoopPbPb flag. The ftrackArraySelFast, which is filled in the PrepareArrayFastLoops method, will coincide with ftrackArraySel if the fFastLoopPbPb=kFALSE. In the loops ftrackArraySelFast is used even if fFastLoopPbPb=kFALSE, so that the ftrackArraySel is basically just a temporary array. It's a bit odd but this allowed the modification to the code to be minimal. 
 }
+//______________________________________
+void AliAnalysisTaskSEXicTopKpi::PrepareArrayFastLoops(){
+  ftrackArraySelFast->Reset();
+  if(fFastLoopPbPb){
+    if(floop1+floop2+floop3!=fnSel)AliFatal("FastLoop, mismatch in array ordering");
+    Printf("Array sizes: %d , %d , %d",floop1,floop2,floop3);
+    Int_t globcounter=0;
+    for(Int_t j=0;j<floop1;j++){
+      ftrackArraySelFast->AddAt(ftrackArraySelLoop1->At(j),j);
+      globcounter++;
+    }
+    for(Int_t j=0;j<floop2;j++){
+      ftrackArraySelFast->AddAt(ftrackArraySelLoop2->At(j),j+floop1);
+      globcounter++;
+    }
+    for(Int_t j=0;j<floop3;j++){
+      ftrackArraySelFast->AddAt(ftrackArraySelLoop3->At(j),j+floop1+floop2);
+      globcounter++;
+    }
+    if(globcounter!=fnSel)AliFatal("FastLoop, mismatch in array ordering");
+  }
+  else {
+    for(Int_t j=0;j<fnSel;j++){
+      ftrackArraySelFast->AddAt(j,j);
+      //      ftrackArraySelFast->AddAt(ftrackArraySel->At(j),j);
+
+    }
+    floop1=fnSel;
+    floop2=0;
+    floop3=0;
+  }
+  
+}
+
 
 //______________________________________
 void AliAnalysisTaskSEXicTopKpi::PrintCandidateVariables(AliAODRecoDecayHF3Prong *d,AliAODEvent *aod){
@@ -4043,3 +4348,47 @@ void AliAnalysisTaskSEXicTopKpi::LoopOverFilteredCandidates(TClonesArray *lcArra
        if(unsetvtx)d->UnsetOwnPrimaryVtx();
   }
 }// END OF LOOP OVER FILTERED CANDIDARES
+
+Int_t AliAnalysisTaskSEXicTopKpi::DefinePbPbfilteringLoop(const AliAODTrack *track,Bool_t isPreselSoftPionOnly){
+  Int_t loop=0;
+  Double_t ptaodtrk=track->Pt();
+  Float_t dxy[2],cdxy[3];
+  track->GetImpactParameters(dxy,cdxy);
+  Double_t ptLoop1=2.;
+  Double_t ptLoop2=1.;
+  Double_t ptLoop3=0.7;
+  
+  //Double_t dprod[3]; // this and next two lines just for debugging
+  // track->GetXYZ(dprod);
+  //  Printf("DCA: %f, coord dca: %f",dxy[0],TMath::Sqrt((dprod[0]-fprimVtx->GetX())*(dprod[0]-fprimVtx->GetX())+((dprod[1]-fprimVtx->GetY())*(dprod[1]-fprimVtx->GetY()))));
+
+  // lower pt cut and upper d0 cut at 5 mm
+  if(ptaodtrk<0.3)return loop;
+  if(TMath::Abs(dxy[0])>0.5)return loop; 
+  
+  if(TMath::Abs(dxy[0])>0.0110*(1./ptaodtrk-1.))loop=3;
+
+  if(ptaodtrk>ptLoop1){// always in first loop
+    loop=1;
+    if(!isPreselSoftPionOnly)fHistoPtd0planeAfterFastLoopSel->Fill(ptaodtrk,TMath::Abs(dxy[0])); // the filling of this histo was anticipated temporarily 
+    return loop;
+  }
+  if(ptaodtrk>ptLoop2){
+    if(TMath::Abs(dxy[0])>0.01-(ptaodtrk-ptLoop2)*0.01/(ptLoop1-ptLoop2)){// 0.02-0.01pt
+      loop=1;
+    }
+    else if(TMath::Abs(dxy[0])>0.005-(ptaodtrk-ptLoop2)*0.005/(ptLoop1-ptLoop2)){// 0.005-0.005pt
+      loop=2;
+    }
+    if(!isPreselSoftPionOnly)fHistoPtd0planeAfterFastLoopSel->Fill(ptaodtrk,TMath::Abs(dxy[0])); // the filling of this histo was anticipated temporarily 
+    return loop; // loop =3 case already assigned
+  }
+  if(ptaodtrk>ptLoop3){
+    if(TMath::Abs(dxy[0])>0.1-(ptaodtrk-ptLoop3)/(ptLoop2-ptLoop3)*(0.1-0.005)){// converges to previous limit at ptLoop2
+      loop=2;
+    }
+  }
+  if(loop>0&& !isPreselSoftPionOnly)fHistoPtd0planeAfterFastLoopSel->Fill(ptaodtrk,TMath::Abs(dxy[0])); // the filling of this histo was anticipated temporarily 
+  return loop;
+  
+}

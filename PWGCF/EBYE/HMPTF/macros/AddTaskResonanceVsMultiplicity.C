@@ -1,5 +1,5 @@
 
-void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default")
+void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -59,6 +59,7 @@ void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
   task_Mpt->SetMinNCrossedRowsTPCRange(fnCrossedRows);
+  task_Mpt->SetEtaCut(fEta);
 
   TString OutTreeName;
   OutTreeName += "fTreeEvent";
@@ -75,7 +76,7 @@ void AddTaskResonanceVsMultiplicity(Int_t fCentralityMin=0, Int_t fCentralityMax
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1 += "SimpleTaskTree";
+  sMyOutName1 += "SimpleTask_tree";
   sMyOutName1 += OutFileName;
   sMyOutName2 += "Histogram_TrackVariables";
   sMyOutName2 += OutFileName;

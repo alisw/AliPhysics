@@ -49,6 +49,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fNofTracks(0),
     fNchMin(0),
     fNchMax(100000),
+    fNbinsMinv(60),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -125,6 +126,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fNofTracks(0),
     fNchMin(0),
     fNchMax(100000),
+    fNbinsMinv(60),
     fNOfSamples(1.0),
     fSampleIndex(0.0),
     fPtMinTrig(0.5),
@@ -189,6 +191,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 
     if(fAnalType == eFMDAFMDC && fDoPID) { AliWarning("PID on when running FMDA-FMDC. Turning off."); fDoPID = kFALSE; }
     if(fAnalType == eFMDAFMDC && fDoV0) { AliWarning("V0 on when running FMDA-FMDC. Turning off."); fDoV0 = kFALSE; }
+    if(!fDoV0) { fNbinsMinv = 1; }
 
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
 
@@ -207,9 +210,10 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     TString pidName[6] = {"", "_Pion", "_Kaon", "_Proton", "_K0s", "_Lambda"};
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t sizeOfSamples = (Int_t) fNOfSamples;
+    const Int_t sizeMbins = fNbinsMinv;
     Int_t binsFMD[] = {10, 10};
     Int_t binsPID[] = {10, 10, sizePtTrig};
-    Int_t binsV0[] = {10, 10, sizePtTrig, 60};
+    Int_t binsV0[] = {10, 10, sizePtTrig, sizeMbins};
     Double_t min[2] = {0.44, 1.08};
     Double_t max[2] = {0.56, 1.15};
 
@@ -670,7 +674,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
   if(!fhSE[spec]) { AliError(Form("Output AliTHn missing for %d , terminating!", spec)); return; }
 
   if(fAnalType == eTPCTPC){
-    Double_t binscont[7];
+    Double_t binscont[6];
     binscont[2] = fPVz;
     binscont[3] = fSampleIndex;
     binscont[4] = 1.0;
@@ -707,7 +711,6 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
-        binscont[6] = assPt;
 
         if(TMath::Abs(binscont[0]) < fMergingCut){
           Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
@@ -808,7 +811,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
     Int_t nMix = pool->GetCurrentNEvents();
 
     if(fAnalType == eTPCTPC){
-      Double_t binscont[7];
+      Double_t binscont[6];
       binscont[2] = fPVz;
       binscont[3] = fSampleIndex;
       binscont[4] = 1.0;
@@ -837,7 +840,6 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
-            binscont[6] = assPt;
 
             if(TMath::Abs(binscont[0]) < fMergingCut){
               Double_t dPhiStarLow = GetDPhiStar(trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge, 0.8);
@@ -1052,8 +1054,8 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   Int_t nSteps = 1;
   Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
   const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
-  const Int_t sizePtAss = fPtBinsAss.size() - 1;
   const Int_t sizeOfSamples = (Int_t) fNOfSamples;
+  const Int_t sizeMbins = fNbinsMinv;
 
   Double_t min[6] = {0.0, 0.0, 0.0, 0.0, 0.44, 1.08};
   Double_t max[6] = {2.0, 2.0, 2.0, 2.0, 0.56, 1.15};
@@ -1065,8 +1067,8 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8};
     Double_t binning_detaFMDCTPC[]={ 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
 
-    Int_t iTrackBin_tpcfmdA[] = {26, 72, 10, sizeOfSamples, 60, sizePtTrig};
-    Int_t iTrackBin_tpcfmdC[] = {15, 72, 10, sizeOfSamples, 60, sizePtTrig};
+    Int_t iTrackBin_tpcfmdA[] = {26, 72, 10, sizeOfSamples, sizeMbins, sizePtTrig};
+    Int_t iTrackBin_tpcfmdC[] = {15, 72, 10, sizeOfSamples, sizeMbins, sizePtTrig};
     Int_t nTrackBin_tpcfmd = sizeof(iTrackBin_tpcfmdA) / sizeof(Int_t);
 
     for(Int_t i(0); i < 6; i++){
@@ -1109,7 +1111,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end FMD - FMD
   else {
     Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
-    Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,60,sizePtTrig,sizePtAss};
+    Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizeMbins,sizePtTrig};
     Int_t nTrackBin_tpctpc = sizeof(iBinningTPCTPC) / sizeof(Int_t);
 
     for(Int_t i(0); i < 6; i++){
@@ -1119,14 +1121,10 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
       fhSE[i]->SetBinLimits(0, binning_deta_tpctpc);
       fhSE[i]->SetBinLimits(1, binning_dphi);
-      fhSE[i]->SetBinLimits(6, fPtBinsAss.data());
-      fhSE[i]->SetVarTitle(6, "p_{T} [GeV/c] (ass)");
 
       fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
       fhME[i]->SetBinLimits(0, binning_deta_tpctpc);
       fhME[i]->SetBinLimits(1, binning_dphi);
-      fhME[i]->SetBinLimits(6, fPtBinsAss.data());
-      fhME[i]->SetVarTitle(6, "p_{T} [GeV/c] (ass)");
     }
 
   } // end TPC - TPC

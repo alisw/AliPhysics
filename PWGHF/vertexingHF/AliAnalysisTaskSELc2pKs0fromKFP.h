@@ -116,6 +116,8 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
           if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
           fMultEstimatorAvg[2]=new TProfile(*hprof);
         }
+        void SetUseOnTheFlyV0(Bool_t opt) {fUseOnTheFlyV0 = opt;}
+        Bool_t GetUseOnTheFlyV0() {return fUseOnTheFlyV0;}
 
         TProfile* GetEstimatorHistogram(const AliVEvent* event);
 
@@ -171,11 +173,12 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
         Double_t                fRefMult;      ///reference multiplicity for ntrk correction
         Int_t                   fAnalysisType; ///< switch for analysis period (for multiplicity corrections)
+        Bool_t                  fUseOnTheFlyV0; ///< switch for use of on-the-fly V0s
 
         AliAnalysisTaskSELc2pKs0fromKFP(const AliAnalysisTaskSELc2pKs0fromKFP &source); // not implemented
         AliAnalysisTaskSELc2pKs0fromKFP& operator=(const AliAnalysisTaskSELc2pKs0fromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 8);
+        ClassDef(AliAnalysisTaskSELc2pKs0fromKFP, 9);
 };
 
 #endif

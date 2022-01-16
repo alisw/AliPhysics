@@ -12,9 +12,6 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
       int                     debug=0, // debug level controls amount of output statements
       double              Harmonic=2,
       TString             trigger="kINT7",
-      int                     filterBit=768, // AOD filter bit selection
-      int                     nclscut=70, // ncls cut for all tracks 
-      float                  chi2hg=4.0,
       float                  chi2lo=0.1,
       float                  dcacutz=3.2, // dcaz cut for all tracks
       float                  dcacutxy=2.4, // dcaxy cut for all tracks
@@ -56,9 +53,6 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 	task->SetDebug(debug);
 	task-> SetHarmonic(Harmonic);
 	task->SetTrigger(trigger);
-	task->SetFilterBit(filterBit);
-	task->SetNclsCut(nclscut);
-  	task->SetChi2High(chi2hg);
   	task->SetChi2Low(chi2lo);
 	task->SetDCAcutZ(dcacutz);
 	task->SetDCAcutXY(dcacutxy);
@@ -132,15 +126,30 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 
 
 
+	TString filenameNUA = "";
+	if (uniqueID.EqualTo("10h_Default") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1.root";
+	if (uniqueID.EqualTo("10h_ChiHg3") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1ChiHg3.root";
+	if (uniqueID.EqualTo("10h_Nhits60") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1Nhits60.root";
+	if (uniqueID.EqualTo("10h_Nhits80") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1Nhits80.root";
+	if (uniqueID.EqualTo("10h_FB768")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB768.root";
+	if (uniqueID.EqualTo("10h_FB272")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB272.root";
+
+	if (uniqueID.EqualTo("15o_Default")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root";
+	if (uniqueID.EqualTo("15o_ChiHg3")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_ChiHg3.root";
+	if (uniqueID.EqualTo("15o_Nhits60")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_Nhits60.root";
+	if (uniqueID.EqualTo("15o_Nhits80")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_Nhits80.root";
+	if (uniqueID.EqualTo("15o_FB96")      && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_FB96.root";	
+	if (uniqueID.EqualTo("15o_NUA_fromEmil")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_wSyst.root";
 
 	if(task->GetNUAOn() ||doNUA) {
 		if (period.EqualTo("LHC10h") ) { // NUA for 10h is too large to read, we separate them into 3 TList*s.
 			TFile *inNUA;
 			if(!AllContainers->FindObject("NUA")) {
-				inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1.root");
+				inNUA = TFile::Open(filenameNUA);
+				if (!inNUA) return task;
 				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
 	                		TList* wNUA_list = NULL;
-				wNUA_list = dynamic_cast<TList*>(inNUA->Get("10hListNUAFB1"));
+				wNUA_list = dynamic_cast<TList*>(inNUA->Get("10hListNUA"));
 		                	cin_NUA->SetData(wNUA_list); 
 				mgr->ConnectInput(task,inSlotCounter,cin_NUA);
 				inSlotCounter++;
@@ -156,13 +165,11 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 		else if (period.EqualTo("LHC15o")) {
 			TFile *inNUA;
 			if(!AllContainers->FindObject("NUA")) {
-				if (task->GetFilterBit() ==768) inNUA = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root");
-				// Ref NUA data from alien:///alice/cern.ch/user/p/prottay/nuarootfiles_p5_one_two_two_FB768_15op2_withpileup
-				// /wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root  (15o_pass2)
-				TDirectoryFile* wNUA_directoryfile = (TDirectoryFile*)inNUA->Get("ZDCgains");
+				inNUA = TFile::Open(filenameNUA);
+				if (!inNUA) return task;
 				AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);				
 				TList* wNUA_list = NULL;
-				wNUA_list = dynamic_cast<TList*>(wNUA_directoryfile->Get("fNUA_ChPosChNeg"));
+				wNUA_list = dynamic_cast<TList*>(inNUA->Get("15oListNUA"));
 		                	cin_NUA->SetData(wNUA_list); 
 				mgr->ConnectInput(task,inSlotCounter,cin_NUA);
 				inSlotCounter++;			
