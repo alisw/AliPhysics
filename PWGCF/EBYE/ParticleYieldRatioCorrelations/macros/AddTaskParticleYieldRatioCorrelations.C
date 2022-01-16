@@ -14,7 +14,7 @@ AliAnalysisTaskParticleYieldRatioCorrelations *AddTaskParticleYieldRatioCorrelat
     fileName += ":output_";
     fileName += name;
     TString SuffixAdd;
-    SuffixAdd.Form("MyTask%s", suffix);
+    SuffixAdd.Form("%s", suffix);
     fileName += "_";
     fileName += SuffixAdd;
     AliAnalysisTaskParticleYieldRatioCorrelations *task = new AliAnalysisTaskParticleYieldRatioCorrelations(name.Data());
@@ -34,7 +34,7 @@ AliAnalysisTaskParticleYieldRatioCorrelations *AddTaskParticleYieldRatioCorrelat
     TFile *InputFile = TFile::Open(InputFileName.Data());
     if (!InputFile)
         printf("Could not open input file\n");
-    TList *fList = (TList *)InputFile->Get(Form("List%d", iTask));
+    TList *fList = (TList *)InputFile->Get(SuffixAdd);
     AliAnalysisDataContainer *cinput_list = mgr->CreateContainer("Efficiency", TList::Class(), AliAnalysisManager::kInputContainer);
     cinput_list->SetData(fList);
     mgr->ConnectInput(task, 1, cinput_list);
