@@ -1049,15 +1049,18 @@ void AliAnalysisTaskSEpPbCorrelationsJetV2::UserCreateOutputObjects() {
     }
    }
   //===================== For Rcp
-  Int_t nTracks = fEvent->GetNumberOfTracks();
-  for(Int_t i = 0; i < nTracks; i++)
+  if(!fprimTPC && !fprimFMD)
   {
-   AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
-   if (!aodTrack)      continue;
-   if (!IsAcceptedTrack(aodTrack))      continue;
-   if (aodTrack->Charge() == 0)      continue; 
-   Double_t aodTrack_pt = aodTrack->Pt();
-   (static_cast<TH2D*>(fOutputList2 ->FindObject("hPt_Cen_mid")))->Fill(aodTrack_pt,lCentrality);
+   Int_t nTracks = fEvent->GetNumberOfTracks();
+   for(Int_t i = 0; i < nTracks; i++)
+   {
+    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack *>(fEvent->GetTrack(i));
+    if (!aodTrack)      continue;
+    if (!IsAcceptedTrack(aodTrack))      continue;
+    if (aodTrack->Charge() == 0)      continue; 
+    Double_t aodTrack_pt = aodTrack->Pt();
+    (static_cast<TH2D*>(fOutputList2 ->FindObject("hPt_Cen_mid")))->Fill(aodTrack_pt,lCentrality);
+   }
   }
   if(fAnaMode=="Rcp")
   {
