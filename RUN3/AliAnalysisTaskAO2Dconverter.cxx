@@ -2408,22 +2408,22 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (fESD) {
 	AliESDv0 *v0 = fESD->GetV0(iv0);
 	// select only "offline" V0s, skip the "on-the-fly" ones
-	if (v0 && !v0->GetOnFlyStatus()) {
-	  Int_t pidx = v0->GetPindex();
-	  Int_t nidx = v0->GetNindex();
-	  v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-	  v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
-	}
+	if (!v0 || v0->GetOnFlyStatus())
+          continue;
+        Int_t pidx = v0->GetPindex();
+        Int_t nidx = v0->GetNindex();
+        v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
       }
       else {
 	AliAODv0 *v0 = fAOD->GetV0(iv0);
 	// select only "offline" V0s, skip the "on-the-fly" ones
-	if (v0 && !v0->GetOnFlyStatus()) {
-	  Int_t pidx = v0->GetPosID();
-	  Int_t nidx = v0->GetNegID();
-	  v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-	  v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
-	}
+	if (!v0 || v0->GetOnFlyStatus())
+          continue;
+        Int_t pidx = v0->GetPosID();
+        Int_t nidx = v0->GetNegID();
+        v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
       }
       
       FillTree(kV0s);
