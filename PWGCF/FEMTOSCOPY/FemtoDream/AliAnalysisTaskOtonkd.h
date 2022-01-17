@@ -172,6 +172,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Bool_t fTKaonIsFD[30];
   UInt_t fTKaonFilterBit[30];
   Int_t fTKaonPDG[30];
+  Int_t fTKaonMotherWeak[30];
   Short_t fTKaonOrigin[30];
 
 
