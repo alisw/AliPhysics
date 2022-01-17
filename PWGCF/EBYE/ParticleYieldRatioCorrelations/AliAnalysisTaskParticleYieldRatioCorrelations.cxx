@@ -430,7 +430,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
             Float_t Phi = track->Phi();
             Float_t Eta = track->Eta();
             Float_t DeDx = track->GetTPCsignal();
-            Float_t Charge = track->Charge();
+            int Charge = track->Charge();
             fDeDx->Fill(Moment, DeDx);
             fTOF->Fill(Moment, track->GetTOFsignal());
             NAcceptedtracksinEta[EtaBin]++;
@@ -573,7 +573,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
                 Float_t GenPt = trackMC->Pt();
                 Float_t GenPhi = trackMC->Phi();
                 Float_t GenEta = trackMC->Eta();
-                Float_t GenCharge = trackMC->Charge();
+                int GenCharge = trackMC->Charge();
 
                 EtaBin = (0.8 + GenEta) / (1.6 / nEtaClasses);
                 //phiBin = GenPhi / (TMath::TwoPi() / nPhiWindows);
@@ -582,6 +582,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
                     phiBin = 0;
                 NAcceptedGenTracksinEta[EtaBin]++;
 
+                sort = 20;
                 if (fabs(trackMC->GetPdgCode()) == 211)
                     sort = 0;
                 if (fabs(trackMC->GetPdgCode()) == 321)
