@@ -2412,8 +2412,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
           continue;
         Int_t pidx = v0->GetPindex();
         Int_t nidx = v0->GetNindex();
-        v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-        v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
+        v0s.fIndexTracksPos = TMath::Abs(pidx) + fOffsetTrack; // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Abs(nidx) + fOffsetTrack; // Negative track ID
       }
       else {
 	AliAODv0 *v0 = fAOD->GetV0(iv0);
@@ -2422,8 +2422,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
           continue;
         Int_t pidx = v0->GetPosID();
         Int_t nidx = v0->GetNegID();
-        v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-        v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
+        v0s.fIndexTracksPos = TMath::Abs(pidx) + fOffsetTrack; // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Abs(nidx) + fOffsetTrack; // Negative track ID
       }
       
       FillTree(kV0s);
