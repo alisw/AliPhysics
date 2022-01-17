@@ -1407,6 +1407,8 @@ void AddTask_GammaCalo_pp(
 
   } else if (trainConfig == 490){ // INT7 EMCAL standard cut with triggers - NO TM - default
     cuts.AddCutCalo("00010113","4117901090e30220000","01631031000000d0"); // std INT7
+    cuts.AddCutCalo("00010113","4117901090e30220000","0r631031000000d0"); // std INT7
+    cuts.AddCutCalo("00010113","4117901090e30220000","0s631031000000d0"); // std INT7
   } else if (trainConfig == 491){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
     cuts.AddCutCalo("000a0113","4117901090e30220000","01631031000000d0"); // std INT7
     cuts.AddCutCalo("000aq113","4117901090e30220000","01631031000000d0"); // std EMC7
@@ -1733,10 +1735,10 @@ void AddTask_GammaCalo_pp(
   } else if( trainConfig == 705){ // Timing cut efficiency studies
     cuts.AddCutCalo("00010113","244665100a01cc00000","0163103100000010"); //
     cuts.AddCutCalo("000ap113","244665100001cc00000","0163103100000010"); // PHI7
-  } else if( trainConfig == 706){ // DEFAULT 2019 july 18
-    cuts.AddCutCalo("00010113","24466000ga09cc00000","0163103100000010"); //
-    cuts.AddCutCalo("00010113","24466000g009cc00000","0163103100000010"); //
-    cuts.AddCutCalo("000ap113","24466000g009cc00000","0163103100000010"); // PHI7
+  } else if( trainConfig == 706){ // DEFAULT
+    cuts.AddCutCalo("00010113","24466520sa01cc00000","0163103100000010"); //
+    cuts.AddCutCalo("00010113","24466520s001cc00000","0163103100000010"); //
+    cuts.AddCutCalo("000ap113","24466520s001cc00000","0163103100000010"); // PHI7
   } else if( trainConfig == 707){ // rerun August 2021
     cuts.AddCutCalo("00010113","24466520ga01ee00000","0163103100000010"); //
     cuts.AddCutCalo("00010113","24466520g001ee00000","0163103100000010"); //
