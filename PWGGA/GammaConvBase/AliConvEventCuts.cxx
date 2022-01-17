@@ -41,6 +41,7 @@
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionTask.h"
 #include "AliOADBContainer.h"
 #include "TList.h"
 #include "TFile.h"
@@ -204,6 +205,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
+  fINELgtZEROTrigger(kFALSE),
   fPathTriggerMimicSpecialInput(""),
   fRejectTriggerOverlap(kFALSE),
   fDoMultiplicityWeighting(kFALSE),
@@ -347,7 +349,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMinFacPtHard(ref.fMinFacPtHard),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
-  fMimicTrigger(ref.fMimicTrigger),
+  fINELgtZEROTrigger(ref.fINELgtZEROTrigger),
   fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
   fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
@@ -551,7 +553,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoEventCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoEventCuts);
 
-    hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",37,-0.5,36.5);
+    hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",38,-0.5,37.5);
     hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
     hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
     hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
@@ -589,10 +591,11 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClass->GetXaxis()->SetBinLabel(35,"kCaloOnly");
     hTriggerClass->GetXaxis()->SetBinLabel(36,"failed Physics Selection");
     hTriggerClass->GetXaxis()->SetBinLabel(37,"mimickedTrigger");
+    hTriggerClass->GetXaxis()->SetBinLabel(38,"INEL>0");
     fHistograms->Add(hTriggerClass);
   }
   if(!preCut){
-    hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",35,-0.5,34.5);
+    hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",36,-0.5,35.5);
     hTriggerClassSelected->GetXaxis()->SetBinLabel( 1,"kMB");
     hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
     hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
@@ -628,6 +631,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
     hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
     hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
+    hTriggerClassSelected->GetXaxis()->SetBinLabel(36,"INEL>0");
     fHistograms->Add(hTriggerClassSelected);
 
     if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
@@ -1636,6 +1640,14 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialTrigger=1;
       fSpecialSubTrigger=1;
       break;
+    case 5: //with VZERO general implementation of V0AND (like case 0) but with additional INEL>0 requirement
+      fSpecialTrigger=0;
+      fSpecialSubTrigger=0;
+      fOfflineTriggerMask=AliVEvent::kINT7;
+      fTriggerSelectedManually = kTRUE;
+      fSpecialTriggerName="AliVEvent::kINT7";
+      fINELgtZEROTrigger=kTRUE;
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -1955,6 +1967,22 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHMV0M-B-SPD2";
       break;
+    case 7: // SPD high mult trigger and event has to be INEL>0
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="SPMult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMSH2-B-";
+      fINELgtZEROTrigger=kTRUE;
+      break;
+    case 8: // V0 high mult trigger with pileup condition on and event has to be INEL>0
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="V0Mult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMV0M-B-SPD2";
+      fINELgtZEROTrigger=kTRUE;
+      break;
 
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -2082,6 +2110,24 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerNameAdditional="8DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 17: //h) Gamma Low EMC and DMC (like case 13) + INEL>0 condition
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG1";
+      fSpecialSubTriggerNameAdditional="7DG1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      fINELgtZEROTrigger = kTRUE;
+      break;
+    case 18: //i) Gamma Low EMC and DMC (like case 14) + INEL>0 condition
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG2";
+      fSpecialSubTriggerNameAdditional="7DG2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      fINELgtZEROTrigger = kTRUE;
       break;
 
     default:
@@ -5691,6 +5737,20 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 }
 
 //________________________________________________________________________
+Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
+  AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
+  if(aodEvent){
+    AliMultSelection* MultSelectionTask = (AliMultSelection*)event->FindListObject("MultSelection");
+    if(!MultSelectionTask){
+      AliWarning ("MultSelectionTask object not found !");
+      return kFALSE;
+    }
+    return MultSelectionTask->GetThisEventINELgtZERO();
+    // return MultSelectionTask->IsINELgtZERO(event);
+  }
+}
+
+//________________________________________________________________________
 Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 {
 
@@ -6240,10 +6300,14 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   Bool_t mimickedTrigger = kTRUE;
   if (fMimicTrigger) mimickedTrigger = MimicTrigger(event, isMC);
   // cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
+
+  Bool_t isINELgtZERO = kFALSE;
+  if(fINELgtZEROTrigger) isINELgtZERO = IsEventINELgtZERO(event);
+
   // Fill Histogram
   if(hTriggerClass){
     if (fIsSDDFired) hTriggerClass->Fill(34);
-    if (mimickedTrigger){
+    if (mimickedTrigger && (!fINELgtZEROTrigger || (fINELgtZEROTrigger && isINELgtZERO))){
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(0);
       if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClass->Fill(1);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClass->Fill(2);
@@ -6288,11 +6352,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(35);
     }
     if (mimickedTrigger && fMimicTrigger) hTriggerClass->Fill(36);
+    if (fINELgtZEROTrigger && isINELgtZERO) hTriggerClass->Fill(37);
   }
 
   if(hTriggerClassSelected && isSelected){
 
-    if (mimickedTrigger){
+    if (mimickedTrigger && (!fINELgtZEROTrigger || (fINELgtZEROTrigger && isINELgtZERO))){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
       if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassSelected->Fill(1);
@@ -6336,11 +6401,17 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClassSelected->Fill(31);
     }
     if (mimickedTrigger && fMimicTrigger) hTriggerClassSelected->Fill(34);
+    if (fINELgtZEROTrigger && isINELgtZERO) hTriggerClassSelected->Fill(35);
   }
 
   if(!isSelected)return kFALSE;
+
   if (fMimicTrigger)
     if (!mimickedTrigger ) return kFALSE;
+
+  if(fINELgtZEROTrigger)
+    if(!isINELgtZERO)         return kFALSE;
+
   return kTRUE;
 
 }

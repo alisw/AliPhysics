@@ -79,7 +79,10 @@ class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
  {
     fTreeName = TreeName;
  }
- 
+ void SetEtaCut(Double_t EtaMax)
+{
+    fEtaMax=EtaMax;
+}
  private:
   enum
   {
@@ -113,6 +116,7 @@ class AliAnalysisTaskResonanceVsMultiplicity : public AliAnalysisTaskSE {
   Double_t fChi2ITS;
   Double_t fNCrossedRowsTPC;
   TString fTreeName;
+  Double_t fEtaMax;
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Int_t fTreeEventNTrack;
