@@ -40,11 +40,16 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   TrackCutsKaon->SetCutCharge(1);
   TrackCutsKaon->SetFilterBit(128);
   if(KaonCut==0){// cuts by Oton
-   TrackCutsKaon->SetPIDkd();
+   //TrackCutsKaon->SetPIDkd();
+   //open cuts for syst:
+   TrackCutsKaon->SetPIDkd(true,false,4.5,3.5);
+   TrackCutsKaon->SetEtaRange(-0.84, 0.84);
+   TrackCutsKaon->SetNClsTPC(70);
+   TrackCutsKaon->SetDCAVtxZ(0.25);
+   TrackCutsKaon->SetDCAVtxXY(2.5);
+
   }else if(KaonCut==1){ // cuts by Ramona
    TrackCutsKaon->SetPIDkd(true,true);
-   //TrackCutsKaon->SetNClsTPC(70);
-   //TrackCutsKaon->SetDCAVtxZ(0.1);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
@@ -52,7 +57,14 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   TrackCutsAntiKaon->SetCutCharge(-1);
   TrackCutsAntiKaon->SetFilterBit(128);
   if(KaonCut==0){ // cuts by Oton
-   TrackCutsAntiKaon->SetPIDkd();
+   //TrackCutsAntiKaon->SetPIDkd();
+   //open cuts for syst:
+   TrackCutsAntiKaon->SetPIDkd(true,false,4.5,3.5);
+   TrackCutsAntiKaon->SetEtaRange(-0.84, 0.84);
+   TrackCutsAntiKaon->SetNClsTPC(70);
+   TrackCutsAntiKaon->SetDCAVtxZ(0.25);
+   TrackCutsAntiKaon->SetDCAVtxXY(2.5);
+
   }else if(KaonCut==1){ // cuts by Ramona
    TrackCutsAntiKaon->SetPIDkd(true,true);
    //TrackCutsAntiKaon->SetNClsTPC(70);
@@ -66,7 +78,12 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   if(DeuteronCut==0){ // cuts by Oton
    TrackCutsDeuteron->SetPIDkd(false);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
-   TrackCutsDeuteron->SetPtRange(0.5,1.4);
+   //TrackCutsDeuteron->SetPtRange(0.5,1.4);
+   //open cuts for syst:
+   TrackCutsDeuteron->SetPtRange(0.5,1.5);
+   TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
+   TrackCutsDeuteron->SetNClsTPC(70);
+   TrackCutsDeuteron->SetDCAVtxZ(0.25);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
@@ -75,7 +92,11 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   if(DeuteronCut==0){ // cuts by Oton
    TrackCutsAntiDeuteron->SetPIDkd(false);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
-   TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
+   //TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
+   TrackCutsAntiDeuteron->SetPtRange(0.5,1.5);
+   TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
+   TrackCutsAntiDeuteron->SetNClsTPC(70);
+   TrackCutsAntiDeuteron->SetDCAVtxZ(0.25);
   }
 
   //protons
