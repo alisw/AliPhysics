@@ -1376,9 +1376,28 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() {
       continue;
     }
 
+    //Check MC Truth
+    if(isMonteCarlo){
+      AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
+      if(mcPart){
+        if(mcPart->GetPdgCode()==2212 || mcPart->GetPdgCode()==-2212){
+          isReallyProton = kTRUE;
+          if(mcPart->GetMother()!=-1){
+            AliAODMCParticle* ProtonMotherPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mcPart->GetMother()));
+            if(ProtonMotherPart){
+              if(ProtonMotherPart->GetPdgCode()==3222 || ProtonMotherPart->GetPdgCode()==-3222){ 
+                isProtonfromSigma = kTRUE;
+                if(ProtonMotherPart->IsPrimary()||ProtonMotherPart->IsPhysicalPrimary()) isPrimarySigma = kTRUE;
+              }//Is really Sigma
+            }//MC Mother exists
+          }//Proton has Mother
+        }//is Proton or Anti-Proton
+      }//MC Particle exists
+    }//MC treatment
+
     FillHistogram("fHistProtonStatistics",1);
-    FillHistogram("fHistProtonStatisticsMC",1);
-    FillHistogram("fHistProtonStatisticsSigmaMC",1);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",1);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",1);
 
     //Check for double counted Tracks if no filterbit is used
     Int_t nIDs = IDvector.size();
@@ -1390,8 +1409,8 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() {
     else IDvector.push_back(aodTrack->GetID());
 
     FillHistogram("fHistProtonStatistics",2);
-    FillHistogram("fHistProtonStatisticsMC",2);
-    FillHistogram("fHistProtonStatisticsSigmaMC",2);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",2);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",2);
 
     Double_t eta    = aodTrack->Eta();
     Double_t phi    = aodTrack->Phi();
@@ -1415,25 +1434,6 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() {
     Float_t  DCAxy = -999., DCAz = -999.;
     aodTrack->GetImpactParameters(DCAxy,DCAz);
     DCAxy = TMath::Abs(DCAxy); DCAz = TMath::Abs(DCAz);
-
-    //Check MC Truth
-    if(isMonteCarlo){
-      AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
-      if(mcPart){
-        if(mcPart->GetPdgCode()==2212 || mcPart->GetPdgCode()==-2212){
-          isReallyProton = kTRUE;
-          if(mcPart->GetMother()!=-1){
-            AliAODMCParticle* ProtonMotherPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(mcPart->GetMother()));
-            if(ProtonMotherPart){
-              if(ProtonMotherPart->GetPdgCode()==3222 || ProtonMotherPart->GetPdgCode()==-3222){ 
-                isProtonfromSigma = kTRUE;
-                if(ProtonMotherPart->IsPrimary()||ProtonMotherPart->IsPhysicalPrimary()) isPrimarySigma = kTRUE;
-              }//Is really Sigma
-            }//MC Mother exists
-          }//Proton has Mother
-        }//is Proton or Anti-Proton
-      }//MC Particle exists
-    }//MC treatment
 
     //QA Histograms
     FillHistogram("fHistTrackEtaPhi",eta,phi);
