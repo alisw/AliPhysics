@@ -365,13 +365,12 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
     eta = aTrack->Eta();
     charge = aTrack->GetCharge(); // charge
 
+    Double_t iEffCorr = 1.;//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
+    Double_t iEffInverse = 1.;
+    Double_t phi_module_corr = 1.;// doing it in AliJCatalyst while filling track information.
+
     if (bUseWeightsNUE || bUseWeightsNUA)
     {
-      Double_t iEffCorr = 1.;//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
-      Double_t iEffInverse = 1.;
-      Double_t phi_module_corr = 1.;// doing it in AliJCatalyst while filling track information.
-
-
       if(bUseWeightsNUE)
       {
   	iEffCorr = aTrack->GetTrackEff();//fEfficiency->GetCorrection( pt, fEffFilterBit, fCent);
@@ -381,6 +380,8 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
       {
   	phi_module_corr = aTrack->GetWeight();// doing it in AliJCatalyst while filling track information.
       }
+
+      //printf("iEffCorr: %.6f iPhiModuleCorr: %.6f \n", iEffCorr, phi_module_corr);
       
       weight = iEffInverse/phi_module_corr;
 
@@ -439,9 +440,9 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
      {
      	if(!bDoMixed)
 	{
-		fPhiHistogram[CentralityBin][0]->Fill(phi); 
+		fPhiHistogram[CentralityBin][0]->Fill(phi, (1./phi_module_corr)); 
 		fEtaHistogram[CentralityBin][0]->Fill(eta);
-		fPTHistogram[CentralityBin][0]->Fill(pt);
+		fPTHistogram[CentralityBin][0]->Fill(pt, (1./iEffCorr));
     fChargeHistogram[CentralityBin]->Fill(charge); 
 	}//if(!bDoMixed)
 
