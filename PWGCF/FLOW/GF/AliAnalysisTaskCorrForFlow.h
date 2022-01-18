@@ -1,3 +1,4 @@
+
 #ifndef ALIANALYSISTASKCORRFORFLOW_H
 #define ALIANALYSISTASKCORRFORFLOW_H
 
@@ -51,7 +52,13 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         void                    SetPtBinsAss(std::vector<Double_t> bins) { fPtBinsAss = bins; }
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
+        void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
 
+        void                    SetPVZcut(Double_t cut) { fPVzCut = cut; } //systematics setters
+        void                    SetutDCAz(Double_t cut) { fCutDCAz = cut; }
+        void                    SetutDCAxy(Double_t cut) { fCutDCAxySigma = cut; }
+        void                    SetCutTPCchi2pCl(Double_t cut) { fCutTPCchi2pCl = cut; }
+        void                    SetTPCclMincut(Double_t cut) { fTPCclMin = cut; }
 
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseEtaDependentEfficiencies(Bool_t ef = kTRUE) { fEfficiencyEtaDependent = ef; }
@@ -59,7 +66,6 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
     private:
 
         void                    PrintSetup();
-
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
@@ -130,7 +136,14 @@ class AliAnalysisTaskCorrForFlow : public AliAnalysisTaskSE
         std::vector<Double_t>   fsampleBins; //sampling
         TString                 fSystematicsFlag; // ""
 
-        ClassDef(AliAnalysisTaskCorrForFlow, 6);
+        Double_t                fPVzCut;
+        Double_t                fCutDCAz;
+        Double_t                fCutDCAxySigma;
+        Double_t                fCutTPCchi2pCl;
+        Double_t                fTPCclMin;
+
+
+        ClassDef(AliAnalysisTaskCorrForFlow, 7);
 };
 
 #endif
