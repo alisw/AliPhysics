@@ -1872,6 +1872,10 @@ const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies speci
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
+
+  // If the period is not pPb LHC16qt
+  if (!fPeriod.EqualTo("LHC16qt")) {
+
   if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
   else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
   if(!fWeightsSystematics)
@@ -1880,16 +1884,39 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     return kFALSE;
   }
   fWeightsSystematics->CreateNUA();
+  } 
+  // If it is the pPb LHC16qt
+  else {
+  fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev0_Tr0",fAOD->GetRunNumber()));
+  if(!fWeightsSystematics)
+  {
+    printf("Weights could not be found in list!\n");
+    return kFALSE;
+  }
+  fWeightsSystematics->CreateNUA();
+  }
   return kTRUE;
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
-  if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
-  else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
-  if(!fPtWeightsSystematics)
-  {
-    printf("PtWeights could not be found in list!\n");
-    return kFALSE;
+  // If the period is not pPb LHC16qt
+  if (!fPeriod.EqualTo("LHC16qt")) {
+    if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
+    else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
+    if(!fPtWeightsSystematics)
+    {
+      printf("PtWeights could not be found in list!\n");
+      return kFALSE;
+    }
+  } 
+  // If it is the pPb LHC16qt 
+  else {
+    fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev0_Tr0"));
+    if(!fPtWeightsSystematics)
+    {
+      printf("pPb: PtWeights could not be found in list!\n");
+      return kFALSE;
+    }
   }
   return kTRUE;
 
