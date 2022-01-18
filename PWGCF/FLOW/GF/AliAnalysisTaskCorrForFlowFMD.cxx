@@ -964,6 +964,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
       if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[p].Data(),fSystematicsFlag.Data())); return kFALSE; }
       if(!fDoPID) break;
     }
+    fhEventCounter->Fill("Efficiencies loaded",1);
+    return kTRUE;
   }
 
   return kFALSE;
