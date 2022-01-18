@@ -947,29 +947,29 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]);
 
 	 // e) Book histogam for Vertex X 
-	 fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",1000,-20.,20.); 
+	 fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",2000,-10.,10.); 
 	 fVertexXHistogram[icent][0]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][0]);
 
-	 fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",1000,-20.,20.); 
+	 fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",2000,-10.,10.); 
 	 fVertexXHistogram[icent][1]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][1]);
 
 	 // f) Book histogam for Vertex Y 
-	 fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",1000,-20.,20.); 
+	 fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",2000,-10.,10.); 
 	 fVertexYHistogram[icent][0]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][0]);
 
-	 fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",1000,-20.,20.); 
+	 fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",2000,-10.,10.); 
 	 fVertexYHistogram[icent][1]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][1]);
 
 	 // g) Book histogam for Vertex Z 
-	 fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",1000,-20.,20.); 
+	 fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",4000,-20.,20.); 
 	 fVertexZHistogram[icent][0]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][0]);
 
-	 fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",1000,-20.,20.); 
+	 fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",4000,-20.,20.); 
 	 fVertexZHistogram[icent][1]->GetXaxis()->SetTitle("");
 	 fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][1]);
 
