@@ -155,6 +155,7 @@ fHas4DiffIDs(kFALSE),
 fSigRunnumber(-999),
 fSigTriggerMask(-999),
 fSigMCLabel(0),
+fSigProtonID(0),
 fSigEventID(0),
 fSigCentrality(-999),
 fSigBField(-999),
@@ -293,6 +294,7 @@ fHas4DiffIDs(kFALSE),
 fSigRunnumber(-999),
 fSigTriggerMask(-999),
 fSigMCLabel(0),
+fSigProtonID(0),
 fSigEventID(0),
 fSigCentrality(-999),
 fSigBField(-999),
@@ -409,6 +411,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
     fSigmaCandTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/I");
     fSigmaCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
+    fSigmaCandTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaCandTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaCandTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
@@ -472,6 +475,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTreeExtra->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
     fSigmaCandTreeExtra->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/I");
     fSigmaCandTreeExtra->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
+    fSigmaCandTreeExtra->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaCandTreeExtra->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaCandTreeExtra->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaCandTreeExtra->Branch("fSigBField",&fSigBField,"fSigBField/F");
@@ -1267,7 +1271,6 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   fV0ParticleIDArray.clear();
 
   Int_t nV0 = aodEvent->GetNumberOfV0s(); //Number of V0s in the event
-  if(nV0 == 0) return;      //Return if there is no V0 to be processed
 
   for (Int_t iV0=0; iV0<nV0; iV0++) {    //Loop over V0s in the event
       
@@ -2783,6 +2786,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fSigRunnumber = aodEvent->GetRunNumber();
           fSigTriggerMask = (Int_t)aodEvent->GetTriggerMask();
           fSigMCLabel = Pi0MotherLabel;
+          fSigProtonID = prot->GetID();
           fSigEventID = fGlobalEventID;
           fSigCentrality = Centrality;
           fSigBField = Bz;
@@ -3166,6 +3170,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff() {
           fSigRunnumber = aodEvent->GetRunNumber();
           fSigTriggerMask = (Int_t)aodEvent->GetTriggerMask();
           fSigMCLabel = Pi0MotherLabel;
+          fSigProtonID = prot->GetID();
           fSigEventID = fGlobalEventID;
           fSigCentrality = Centrality;
           fSigBField = Bz;
@@ -3547,6 +3552,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff2() {
           fSigRunnumber = aodEvent->GetRunNumber();
           fSigTriggerMask = (Int_t)aodEvent->GetTriggerMask();
           fSigMCLabel = Pi0MotherLabel;
+          fSigProtonID = prot->GetID();
           fSigEventID = fGlobalEventID;
           fSigCentrality = Centrality;
           fSigBField = Bz;
@@ -3815,6 +3821,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOneGamma() {
       fSigRunnumber = aodEvent->GetRunNumber();
       fSigTriggerMask = (Int_t)aodEvent->GetTriggerMask();
       fSigMCLabel = SigmaLabel;
+      fSigProtonID = prot->GetID();
       fSigEventID = fGlobalEventID;
       fSigCentrality = Centrality;
       fSigBField = Bz;

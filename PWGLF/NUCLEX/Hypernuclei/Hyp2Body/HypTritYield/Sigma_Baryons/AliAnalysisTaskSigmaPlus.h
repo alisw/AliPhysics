@@ -238,6 +238,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fSigRunnumber;
         Int_t                 fSigTriggerMask;               
         Int_t                 fSigMCLabel;
+        Int_t                 fSigProtonID;
         ULong64_t             fSigEventID;
         Float_t               fSigCentrality;               
         Float_t               fSigBField;               
