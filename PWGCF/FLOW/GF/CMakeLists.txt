@@ -66,6 +66,7 @@ set(SRCS
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskCreateNUA.cxx)
   list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
   list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)
