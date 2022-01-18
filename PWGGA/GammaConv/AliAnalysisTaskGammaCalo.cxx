@@ -2240,11 +2240,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoUnfoldingRejectInvMassZ                  = new TH2F*[fnCuts];
       }
 
+    fHistoMCAllGammaPt              = new TH1F*[fnCuts];
+    fHistoMCGammaPtNotTriggered     = new TH1F*[fnCuts];
+    fHistoMCGammaPtNoVertex         = new TH1F*[fnCuts];
+
     if(!fDoLightOutput){
       fHistoMCHeaders                 = new TH1I*[fnCuts];
-      fHistoMCAllGammaPt              = new TH1F*[fnCuts];
-      fHistoMCGammaPtNotTriggered     = new TH1F*[fnCuts];
-      fHistoMCGammaPtNoVertex         = new TH1F*[fnCuts];
       fHistoMCAllSecondaryGammaPt     = new TH2F*[fnCuts];
       fHistoMCDecayGammaPi0Pt         = new TH1F*[fnCuts];
       fHistoMCDecayGammaRhoPt         = new TH1F*[fnCuts];
@@ -2454,19 +2455,20 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fMCList[iCut]->SetOwner(kTRUE);
       fCutFolder[iCut]->Add(fMCList[iCut]);
 
+      fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt", "MC_AllGamma_Pt", nBinsClusterPt, arrClusPtBinning);
+      fHistoMCAllGammaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
+      fHistoMCGammaPtNotTriggered[iCut]          = new TH1F("MC_AllGammaNotTriggered_Pt", "MC_AllGammaNotTriggered_Pt", nBinsClusterPt, arrClusPtBinning);
+      fHistoMCGammaPtNotTriggered[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fMCList[iCut]->Add(fHistoMCGammaPtNotTriggered[iCut]);
+      fHistoMCGammaPtNoVertex[iCut]          = new TH1F("MC_AllGammaNoVertex_Pt", "MC_AllGammaNoVertex_Pt", nBinsClusterPt, arrClusPtBinning);
+      fHistoMCGammaPtNoVertex[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fMCList[iCut]->Add(fHistoMCGammaPtNoVertex[iCut]);
+      
       if(!fDoLightOutput){
         fHistoMCHeaders[iCut]             = new TH1I("MC_Headers", "MC_Headers", 20, 0, 20);
         fHistoMCHeaders[iCut]->SetXTitle("accepted headers");
         fMCList[iCut]->Add(fHistoMCHeaders[iCut]);
-        fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt", "MC_AllGamma_Pt", nBinsClusterPt, arrClusPtBinning);
-        fHistoMCAllGammaPt[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
-        fHistoMCGammaPtNotTriggered[iCut]          = new TH1F("MC_AllGammaNotTriggered_Pt", "MC_AllGammaNotTriggered_Pt", nBinsClusterPt, arrClusPtBinning);
-        fHistoMCGammaPtNotTriggered[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fMCList[iCut]->Add(fHistoMCGammaPtNotTriggered[iCut]);
-        fHistoMCGammaPtNoVertex[iCut]          = new TH1F("MC_AllGammaNoVertex_Pt", "MC_AllGammaNoVertex_Pt", nBinsClusterPt, arrClusPtBinning);
-        fHistoMCGammaPtNoVertex[iCut]->SetXTitle("p_{T} (GeV/c)");
-        fMCList[iCut]->Add(fHistoMCGammaPtNoVertex[iCut]);
         fHistoMCAllSecondaryGammaPt[iCut] = new TH2F("MC_AllSecondaryGamma_Pt", "MC_AllSecondaryGamma_Pt", nBinsClusterPt, arrClusPtBinning, 5, -0.5, 4.5);
         fHistoMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(1,"K0s");
         fHistoMCAllSecondaryGammaPt[iCut]->GetYaxis()->SetBinLabel(2,"K0l");
@@ -2531,9 +2533,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         }
 
         if (fIsMC > 1){
-          fHistoMCAllGammaPt[iCut]->Sumw2();
-          fHistoMCGammaPtNotTriggered[iCut]->Sumw2();
-          fHistoMCGammaPtNoVertex[iCut]->Sumw2();
           fHistoMCAllSecondaryGammaPt[iCut]->Sumw2();
           fHistoMCDecayGammaPi0Pt[iCut]->Sumw2();
           fHistoMCDecayGammaRhoPt[iCut]->Sumw2();
@@ -2543,6 +2542,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoMCDecayGammaPhiPt[iCut]->Sumw2();
           fHistoMCDecayGammaSigmaPt[iCut]->Sumw2();
         }
+      }
+      if (fIsMC > 1){
+        fHistoMCAllGammaPt[iCut]->Sumw2();
+        fHistoMCGammaPtNotTriggered[iCut]->Sumw2();
+        fHistoMCGammaPtNoVertex[iCut]->Sumw2();
       }
       if(fDoMesonAnalysis){
         fHistoMCPi0Pt[iCut]           = new TH1F("MC_Pi0_Pt", "MC_Pi0_Pt", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
