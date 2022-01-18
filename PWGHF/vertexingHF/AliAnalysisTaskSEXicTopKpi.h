@@ -312,6 +312,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
+  THnSparseF* fhSparseAnalysisReflections;//! sparse for analysis - reflections
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
   THnSparseF* fhSparsePartReco;//! sparse for single track efficiency (reco spectra)
   THnSparseF* fhSparsePartGen;//! sparse for single track efficiency (gen spectra)
