@@ -507,6 +507,9 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
       static std::vector<AliFemtoDreamBasePart> AntiProtons;
       AntiProtons.clear();
 
+      //boolean for MC for Kaon DCA templates
+      Bool_t IsKaonWeak = kFALSE;
+
       //Now we loop over all the tracks in the reconstructed event.
 /*
 //AOD
@@ -537,16 +540,17 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
     Bool_t IsDeuteron = kFALSE;
 
 
-
         if (fTrackCutsKaon->isSelected(fTrack)) {
           Kaons.push_back(*fTrack);
           IsKaon= kTRUE;
           //fTKaonIs[fTnKaon] = kTRUE;
+          if(fTrack->GetMotherWeak()!=0) IsKaonWeak = kTRUE;
         }
         if (fTrackCutsAntiKaon->isSelected(fTrack)) {
           AntiKaons.push_back(*fTrack);
           IsKaon= kTRUE;
           //fTKaonIs[fTnKaon] = kTRUE;
+          if(fTrack->GetMotherWeak()!=0) IsKaonWeak = kTRUE;
         }
 
         if (fTrackCutsDeuteron->isSelected(fTrack)){
@@ -715,7 +719,11 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
       //fill tree:
       //----------
       //if(fTnKaon>0) fTree->Fill(); //for test
-      if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); //kd 
+      if(!fIsMC&&!fIsMCtruth) {
+       if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); //kd 
+      }else{
+       if( (fTnKaon>0&&fTnDeuteron>0)||IsKaonWeak ) fTree->Fill(); //kd 
+      }
 
 
       bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
