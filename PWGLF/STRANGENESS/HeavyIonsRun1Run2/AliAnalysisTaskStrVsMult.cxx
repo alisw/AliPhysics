@@ -476,8 +476,8 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
       return;
     }
     if (fisMC) {
-      if ((isESD && AliAnalysisUtils::IsPileupInGeneratedEvent(lMCev, "")) ||
-          (!isESD && AliAnalysisUtils::IsPileupInGeneratedEvent(header, ""))) {
+      if ((isESD && AliAnalysisUtils::IsPileupInGeneratedEvent(lMCev, "ijing")) ||
+          (!isESD && AliAnalysisUtils::IsPileupInGeneratedEvent(header, "ijing"))) {
         DataPosting(); 
         return;
       }
