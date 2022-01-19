@@ -7,7 +7,7 @@
 /* $Id$ */ 
 
 ///*************************************************************************
-/// \class Class AliAnalysisTaskSEXicTopKpiAR
+/// \class Class AliAnalysisTaskSEXicTopKpi
 /// \brief AliAnalysisTaskSE for Xic->pKpi candidates invariant mass histogram
 /// and comparison to MC truth (kinematics stored in the AOD) and cut variables
 /// distributions
@@ -108,6 +108,21 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
      fminpT_treeFill = min;
      fmaxpT_treeFill = max;
    }
+
+  void SetFastLoopParamsSingleTrack(Double_t ptLoop1,Double_t ptLoop2,Double_t ptLoop3,Double_t minptTracksFastLoop,Double_t maxDCATracksFastLoop,Double_t DCApar1,Double_t DCApar2,Double_t DCApar3,Double_t DCApar4){
+    fptLoop1=ptLoop1;
+  fptLoop2=ptLoop2;
+  fptLoop3=ptLoop3;
+  fminptTracksFastLoop=minptTracksFastLoop;
+  fmaxDCATracksFastLoop=maxDCATracksFastLoop;
+  fFastLoopDCApar1=DCApar1;
+  fFastLoopDCApar2=DCApar2;
+  fFastLoopDCApar3=DCApar3;
+  fFastLoopDCApar4=DCApar4;
+  }
+
+
+  
   // require the calculation of dist12 and dist23
   void SetCalculate_dist12_dist23(Bool_t flag){ fCompute_dist12_dist23 = flag; }
   Short_t SetMapCutsResponse(Int_t massHypo_filtering, Int_t response_onlyCuts, Int_t response_onlyPID);
@@ -131,6 +146,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     }
   }
 
+  void SetUseOnlySignalInLoop(Bool_t useOnlySignal=kTRUE){
+    fLoopOverSignalOnly=useOnlySignal;
+  }
   // integer to keep only SigmaC candidate with 0 or ++ charge
   void SetAbsValueScCharge(Int_t value){
     fAbsValueScCharge = value;
@@ -206,9 +224,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     if(cosPxyFast<0)fMinFastCosPointXYSq=-1;
     else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
   }
-
-  void EnableSparseReflections(){fFillSparseReflections=kTRUE;}
- 
+void EnableSparseReflections(){fFillSparseReflections=kTRUE;} 
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -270,6 +286,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);
   Int_t DefinePbPbfilteringLoop(const AliAODTrack *track,Bool_t isPreselSoftPionOnly);
   void PrepareArrayFastLoops();
+  void InitStandardValuesForFastLoops();
   AliAnalysisVertexingHF *fvHF;   //!<! temporary object for filling reco cands
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
   //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
@@ -508,7 +525,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Int_t floop1;  //!<! internal number of selected tracks for loop1
   Int_t floop2;  //!<! internal number of selected tracks for loop2
   Int_t floop3;  //!<! internal number of selected tracks for loop3
-  TNtuple *tnFastVariables; //!<!  ntuple with fast variable and correlation with full calculation
+  TNtuple *ftnFastVariables; //!<!  ntuple with fast variable and correlation with full calculation
   Bool_t fFillFastVarForDebug; // flag to fill ntuple with fast variables
   Double_t fMinFastLxy12Sq; // variable used in fast selection
   Double_t fMinFastLxy13Sq; // variable used in fast selection
@@ -520,9 +537,21 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fMinFastCosPointXYSq; // variable used in fast selection
   TH2D *fHistFastInvMass;//!<! fast inv mass plot
   Double_t fRejFactorFastAnalysis; // random rejection factor for debugging, makes sense if between 0 (reject all, also if <0) and 1 (keep all, also if>1)
-  Bool_t fFillSparseReflections;  // flag to enable the reflection sparse
+  Bool_t fFillSparseReflections; 
+  Bool_t  fLoopOverSignalOnly; // flag to select only tracks from signals (Lc,Xic,Sc,c-deut) for the loops (to be used in MC only!)
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,25); /// AliAnalysisTaskSE for Xic->pKpi
+  Double_t fptLoop1;// internal parameter for fast loops
+  Double_t fptLoop2;// internal parameter for fast loops
+  Double_t fptLoop3;// internal parameter for fast loops
+  Double_t fminptTracksFastLoop; // internal parameter for fast loops
+  Double_t fmaxDCATracksFastLoop; // internal parameter for fast loops
+  Double_t fFastLoopDCApar1; // internal parameter for fast loops
+  Double_t fFastLoopDCApar2;// internal parameter for fast loops
+  Double_t fFastLoopDCApar3;// internal parameter for fast loops
+  Double_t fFastLoopDCApar4;// internal parameter for fast loops
+  
+  ClassDef(AliAnalysisTaskSEXicTopKpi,26); /// AliAnalysisTaskSE for Xic->pKpi
+
   /// \endcond
 };
 
