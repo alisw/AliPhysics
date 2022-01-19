@@ -29,6 +29,8 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <TFile.h>
+#include <TH1.h>
 #include <THistManager.h>
 #include <TCustomBinning.h>
 #include <TLinearBinning.h>
@@ -52,6 +54,7 @@ using namespace PWGJE::EMCALJetTasks;
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
+  fAngularityHandler(nullptr),
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
@@ -70,6 +73,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
+  fAngularityHandler(nullptr),
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
@@ -122,13 +126,45 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH1("hAllQuarks", "Pt of the hardest parton in case it is a quark", 1000, 0., 1000.);
   fHistos->CreateTH1("hAllGluons", "Pt of the hardest parton in case it is a gluon", 1000, 0., 1000.);
   fHistos->CreateTH2("hJetEnergyScale", "Jet Energy scale; p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleCharged", "Jet Energy scale (charged part); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleNeutral", "Jet Energy scale (neutral part); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleChargedVsFull", "Jet Energy scale (charged part, vs. full jet pt); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleNeutralVsFull", "Jet Energy scale (neutral part, vs. full jet pt); p_{t,part} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetEnergyScaleDet", "Jet Energy scale (det); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetCharged", "Jet Energy scale (det, charged part); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetNeutral", "Jet Energy scale (det, neutral part); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetChargedVsFull", "Jet Energy scale (det, charged part, vs. full jet pt); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
+  fHistos->CreateTH2("hJetEnergyScaleDetNeutralVsFull", "Jet Energy scale (det, neutral part, vs. full jet pt); p_{t,det} (GeV/c); (p_{t,det} - p_{t,part})/p_{t,part}" , 400, 0., 400., 200, -1., 1.);
   fHistos->CreateTH2("hJetResponseFine", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineCharged", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH2("hJetResponseFineNeutral", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  if(fAngularityHandler) {
+    fHistos->CreateTH2("hJetResponseFineAngularityLow", "Response matrix, fine binning (low angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityHigh", "Response matrix, fine binning (high angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityLowClosure", "Response matrix, fine binning for closure test(low angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityLowNoClosure", "Response matrix, fine binning for closure test(low angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityHighClosure", "Response matrix, fine binning for closure test(high angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityHighNoClosure", "Response matrix, fine binning for closure test(high angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  }
   fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAllClosure", "Part level jet pt spectrum for closure test", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hJetSpectrumPartAllNoClosure", "Part level jet pt spectrum (no-closure sample)", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hPurityDet", "Det. level purity", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
-  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Det. level purity", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hPurityDetClosure", "Det. level purity for closure test", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hPurityDetNoClosure", "Det. level purity (no-closure sample)", kNPtBinsDet, 0., kPtDetMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCore", "Part. level efficiency", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCoreClosure", "Part. level efficiency for closure test", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hJetfindingEfficiencyCoreNoClosure", "Part. level efficiency (no-closure sample)", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hAngularityPart", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+  fHistos->CreateTH2("hAngularityDet", "Angularity at detector level", kNPtBinsDet, 0., kPtDetMax, 100, 0., 1.);
+  fHistos->CreateTH1("hAngularityErrorsPart", "Number of errors calculating the angularity (part level)", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hAngularityErrorsDet", "Number of errors calculating the angularity (det level)", kNPtBinsDet, 0., kPtDetMax);
+  if(fAngularityHandler) {
+    fHistos->CreateTH2("hAngularityPartLow", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+    fHistos->CreateTH2("hAngularityPartHigh", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+  }
   if(fFillHSparse){
     TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
@@ -224,7 +260,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   }
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
-  fSampleSplitter = new TRandom;
+  fSampleSplitter = new TRandom(0);
 
   PostData(1, fOutput);
 }
@@ -299,6 +335,9 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
   }
 
+  // SampleSplitting for closure test on event level
+  bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
+
   auto detjets = GetDetLevelJetContainer(),
        partjets = GetPartLevelJetContainer();
   if(!detjets || !partjets) {
@@ -318,55 +357,128 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     if(!partjet) {
       AliDebugStream(2) << "No tagged jet" << std::endl;
       fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
+      if(isClosure) {
+        fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 0);
+      } else {
+        fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 0);
+      }
       continue;
     } else {
       if(!(partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType())){
         // Acceptance not matching
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 1);
+        if(isClosure){
+          fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 1);
+        } else {
+          fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 1);
+        }
         if(fRequireSameAcceptance) continue;
       } else {
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
+        if(isClosure) {
+          fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 2);
+        } else {
+          fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 2);
+        }
       }
     }
-    acceptedjets.push_back(detjet);
-    bool isClosure = fSampleSplitter->Uniform() < fFractionResponseClosure;
-    Double_t detpt = detjet->Pt();
-    if(TMath::Abs(fScaleShift) > DBL_EPSILON){
-      detpt += fScaleShift * detpt;
+    double angularityPart = -1., angularityDet = -1.;
+    try {
+      angularityPart = MakeAngularity(*partjet, AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy1),
+      fHistos->FillTH2("hAngularityPart", partjet->Pt(), angularityPart);
+    } catch(AngularityException &e) {
+      fHistos->FillTH1("hAngularityErrorsPart", partjet->Pt());
     }
+    try {
+      AliVCluster::VCluUserDefEnergy_t energydef = AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy1;
+      auto detjetscusters = detjets->GetClusterContainer();
+      if(detjetscusters){
+       energydef = (AliVCluster::VCluUserDefEnergy_t)detjetscusters->GetDefaultClusterEnergy();
+      }
+      angularityDet = MakeAngularity(*detjet, energydef);
+      fHistos->FillTH2("hAngularityDet", detjet->Pt(), angularityDet); 
+    } catch(AngularityException &e) {
+      fHistos->FillTH1("hAngularityErrorsDet", partjet->Pt());
+    }
+    acceptedjets.push_back(detjet);
+    Double_t detjetpt = detjet->Pt();
+    Double_t partjetpt = partjet->Pt();
+    if(TMath::Abs(fScaleShift) > DBL_EPSILON){
+      detjetpt += fScaleShift * detjetpt;
+    }
+
+    if (fDoBkgSub && detjets->GetRhoParameter()){
+      detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
+      partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
+    }
+
     if(fFillHSparse) {
       Bool_t acceptancematch = false;
       if (partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType()) acceptancematch = true;
       TVector3 basevec, tagvec;
-      basevec.SetPtEtaPhi(detjet->Pt(), detjet->Eta(), detjet->Phi());
-      tagvec.SetPtEtaPhi(partjet->Pt(), partjet->Eta(), partjet->Phi());
-      double pointCorr[6] = {partjet->Pt(), detpt, detjet->NEF(), basevec.DeltaR(tagvec), acceptancematch ? 1. : 0.,  isClosure ? 0. : 1.},
-             pointDiff[3] = {partjet->Pt(), detjet->NEF(), (detpt-partjet->Pt())/partjet->Pt()};
+      basevec.SetPtEtaPhi(detjetpt, detjet->Eta(), detjet->Phi());
+      tagvec.SetPtEtaPhi(partjetpt, partjet->Eta(), partjet->Phi());
+      double pointCorr[6] = {partjetpt, detjetpt, detjet->NEF(), basevec.DeltaR(tagvec), acceptancematch ? 1. : 0.,  isClosure ? 0. : 1.},
+             pointDiff[3] = {partjetpt, detjet->NEF(), (detjetpt-partjetpt)/partjetpt};
       fHistos->FillTHnSparse("hPtDiff", pointDiff);
       fHistos->FillTHnSparse("hPtCorr", pointCorr);
     }
-    fHistos->FillTH2("hJetResponseFine", detpt, partjet->Pt());
-    fHistos->FillTH1("hJetEnergyScale", partjet->Pt(), (detpt - partjet->Pt())/partjet->Pt());
-    fHistos->FillTH1("hJetEnergyScaleDet", detpt, (detpt - partjet->Pt())/partjet->Pt());
+
+    double detptcharged = detjetpt * (1 - detjet->NEF()), detptneutral = detjetpt * detjet->NEF(),
+           partptcharged = partjetpt * (1 - partjet->NEF()),  partptneutral = partjetpt * partjet->NEF();
+    fHistos->FillTH2("hJetResponseFine", detjetpt, partjetpt);
+    fHistos->FillTH1("hJetResponseFineCharged", detptcharged, partptcharged);
+    fHistos->FillTH1("hJetResponseFineNeutral", detptneutral, partptneutral);
+    fHistos->FillTH1("hJetEnergyScale", partjetpt, (detjetpt - partjetpt)/partjetpt);
+    fHistos->FillTH1("hJetEnergyScaleCharged", partptcharged, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleNeutral", partptneutral, (detptneutral - partptneutral)/partptneutral);
+    fHistos->FillTH1("hJetEnergyScaleChargedVsFull", partjetpt, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleNeutralVsFull", partjetpt, (detptneutral - partptneutral)/partptneutral);
+    fHistos->FillTH1("hJetEnergyScaleDet", detjetpt, (detjetpt - partjetpt)/partjetpt);
+    fHistos->FillTH1("hJetEnergyScaleDetCharged", detptcharged, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleDetNeutral", detptneutral, (detptneutral - partptneutral)/partptneutral);
+    fHistos->FillTH1("hJetEnergyScaleDetChargedVsFull", detjetpt, (detptcharged - partptcharged)/partptcharged);
+    fHistos->FillTH1("hJetEnergyScaleDetNeutralVsFull", detjetpt, (detptneutral - partptneutral)/partptneutral);
     // splitting for closure test
     if(isClosure) {
-      fHistos->FillTH2("hJetResponseFineClosure", detpt, partjet->Pt());
+      fHistos->FillTH2("hJetResponseFineClosure", detjetpt, partjetpt);
     } else {
-      fHistos->FillTH2("hJetResponseFineNoClosure", detpt, partjet->Pt());
+      fHistos->FillTH2("hJetResponseFineNoClosure", detjetpt, partjetpt);
     }
+    // splitting response in low / high angularity
+    if(fAngularityHandler && angularityPart > -1.) {
+      bool isAngularityHigh = fAngularityHandler->IsHigherAngularity(partjetpt, angularityPart);
+      if(isAngularityHigh) {
+        fHistos->FillTH2("hAngularityPartHigh", partjetpt, angularityPart);
+        fHistos->FillTH2("hJetResponseFineAngularityHigh", detjetpt, partjetpt);
+        if(isClosure) {
+          fHistos->FillTH2("hJetResponseFineAngularityHighClosure", detjetpt, partjetpt);
+        } else {
+          fHistos->FillTH2("hJetResponseFineAngularityHighNoClosure", detjetpt, partjetpt);
+        }
+      } else {
+        fHistos->FillTH2("hAngularityPartLow", partjetpt, angularityPart);
+        fHistos->FillTH2("hJetResponseFineAngularityLow", detjetpt, partjetpt);
+        if(isClosure) {
+          fHistos->FillTH2("hJetResponseFineAngularityLowClosure", detjetpt, partjetpt);
+        } else {
+          fHistos->FillTH2("hJetResponseFineAngularityLowNoClosure", detjetpt, partjetpt);
+        }
+      }
+    } 
 
     // Fill histograms for JES debugging
     int ptbminI = -1,
         ptbmaxI = -1;
     for(std::size_t iptbin = 0; iptbin < ptbinsDebug.size() - 1; iptbin++){
-      if(partjet->Pt() >= ptbinsDebug[iptbin] && partjet->Pt() < ptbinsDebug[iptbin+1]) {
+      if(partjetpt >= ptbinsDebug[iptbin] && partjetpt < ptbinsDebug[iptbin+1]) {
         ptbminI = ptbinsDebug[iptbin];
         ptbmaxI = ptbinsDebug[iptbin+1];
         break;
       }
     }
     if(ptbminI > -1 && ptbmaxI > -1){
-      double jes = (detpt - partjet->Pt())/partjet->Pt();
+      double jes = (detjetpt - partjetpt)/partjetpt;
       fHistos->FillTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), detjet->NEF(), jes);
       fHistos->FillTH2(Form("hJESVsNEFpart_%d_%d", ptbminI, ptbmaxI), partjet->NEF(), jes);
       fHistos->FillTH2(Form("hJESVsNConstDet_%d_%d", ptbminI, ptbmaxI), detjet->N(), jes);
@@ -383,8 +495,8 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
 
     // Fill QA histograms
-    fHistos->FillTH2("hQANEFPtPart", partjet->Pt(), partjet->NEF());
-    fHistos->FillTH2("hQANEFPtDet", detjet->Pt(), detjet->NEF());
+    fHistos->FillTH2("hQANEFPtPart", partjetpt, partjet->NEF());
+    fHistos->FillTH2("hQANEFPtDet", detjetpt, detjet->NEF());
     fHistos->FillTH2("hQAEtaPhiPart", partjet->Eta(), TVector2::Phi_0_2pi(partjet->Phi()));
     fHistos->FillTH2("hQAEtaPhiDet", detjet->Eta(), TVector2::Phi_0_2pi(detjet->Phi()));
     auto deltaR = TMath::Abs(partjet->DeltaR(detjet));
@@ -393,15 +505,15 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     TVector3 jetvecDet(detjet->Px(), detjet->Py(), detjet->Px());
     if(clusters){
       auto leadcluster = detjet->GetLeadingCluster(clusters->GetArray());
-      fHistos->FillTH2("hQANnePtDet", detjet->Pt(), detjet->GetNumberOfClusters());
+      fHistos->FillTH2("hQANnePtDet", detjetpt, detjet->GetNumberOfClusters());
 
       for(auto iclust = 0; iclust < detjet->GetNumberOfClusters(); iclust++) {
         auto cluster = detjet->Cluster(iclust);
         TLorentzVector clustervec;
         cluster->GetMomentum(clustervec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-        fHistos->FillTH2("hQAConstPtNeDet", detjet->Pt(), clustervec.Pt());
+        fHistos->FillTH2("hQAConstPtNeDet", detjetpt, clustervec.Pt());
         fHistos->FillTH2("hQAEtaPhiConstNeDet", clustervec.Eta(), TVector2::Phi_0_2pi(clustervec.Phi()));
-        fHistos->FillTH2("hQADeltaRNeutralDet", detjet->Pt(), jetvecDet.DeltaR(clustervec.Vect()));
+        fHistos->FillTH2("hQADeltaRNeutralDet", detjetpt, jetvecDet.DeltaR(clustervec.Vect()));
         fHistos->FillTH2("hQAClusterTimeVsE", cluster->GetTOF() * 1e9 - 600, clustervec.E());         // time in ns., apply 600 ns time shift
         fHistos->FillTH2("hQAClusterTimeVsEFine", cluster->GetTOF() * 1e9 - 600, clustervec.E());     // time in ns., apply 600 ns time shift
         fHistos->FillTH2("hQAClusterNCellVsE", cluster->GetNCells(), clustervec.E());
@@ -418,28 +530,28 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       if(leadcluster){
         TLorentzVector ptvec;
         leadcluster->GetMomentum(ptvec, fVertex, (AliVCluster::VCluUserDefEnergy_t)clusters->GetDefaultClusterEnergy());
-        fHistos->FillTH2("hQAZnePtDet", detjet->Pt(), detjet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()));
-        fHistos->FillTH2("hQAConstPtNeMaxDet", detjet->Pt(), ptvec.Pt());
+        fHistos->FillTH2("hQAZnePtDet", detjetpt, detjet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz()));
+        fHistos->FillTH2("hQAConstPtNeMaxDet", detjetpt, ptvec.Pt());
         fHistos->FillTH2("hQAEtaPhiConstMaxNeDet", ptvec.Eta(), TVector2::Phi_0_2pi(ptvec.Phi()));
-        fHistos->FillTH2("hQADeltaRMaxNeutralDet", detjet->Pt(), jetvecDet.DeltaR(ptvec.Vect()));
+        fHistos->FillTH2("hQADeltaRMaxNeutralDet", detjetpt, jetvecDet.DeltaR(ptvec.Vect()));
       }
     }
     if(tracks){
-      fHistos->FillTH2("hQANChPtDet", detjet->Pt(),  detjet->GetNumberOfTracks());
+      fHistos->FillTH2("hQANChPtDet", detjetpt,  detjet->GetNumberOfTracks());
       auto leadingtrack = detjet->GetLeadingTrack(tracks->GetArray());
 
       for(int itrk = 0; itrk < detjet->GetNumberOfTracks(); itrk++) {
         auto trk = detjet->Track(itrk);
-        fHistos->FillTH2("hQAConstPtChDet", detjet->Pt(), trk->Pt());
+        fHistos->FillTH2("hQAConstPtChDet", detjetpt, trk->Pt());
         fHistos->FillTH2("hQAEtaPhiConstChDet", trk->Eta(), TVector2::Phi_0_2pi(trk->Phi()));
-        fHistos->FillTH2("hQADeltaRChargedDet", detjet->Pt(), detjet->DeltaR(trk));
+        fHistos->FillTH2("hQADeltaRChargedDet", detjetpt, detjet->DeltaR(trk));
       }
 
       if(leadingtrack){
-        fHistos->FillTH2("hQAZchPtDet", detjet->Pt(), detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()));
-        fHistos->FillTH2("hQAConstPtChMaxDet", detjet->Pt(), leadingtrack->Pt());
+        fHistos->FillTH2("hQAZchPtDet", detjetpt, detjet->GetZ(leadingtrack->Px(), leadingtrack->Py(), leadingtrack->Pz()));
+        fHistos->FillTH2("hQAConstPtChMaxDet", detjetpt, leadingtrack->Pt());
         fHistos->FillTH2("hQAEtaPhiConstMaxChDet", leadingtrack->Eta(), leadingtrack->Phi());
-        fHistos->FillTH2("hQADeltaRMaxChargedDet", detjet->Pt(), detjet->DeltaR(leadingtrack));
+        fHistos->FillTH2("hQADeltaRMaxChargedDet", detjetpt, detjet->DeltaR(leadingtrack));
       }
     }
     if(particles){
@@ -449,18 +561,18 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
         auto particle = partjet->Track(ipart);
         if(particle->Charge()) {
           ncharged++;
-          fHistos->FillTH2("hQAConstPtChPart", partjet->Pt(), particle->Pt());
+          fHistos->FillTH2("hQAConstPtChPart", partjetpt, particle->Pt());
           fHistos->FillTH2("hQAEtaPhiConstChPart", particle->Eta(), TVector2::Phi_0_2pi(particle->Phi()));
-          fHistos->FillTH2("hQADeltaRChargedPart", partjet->Pt(), partjet->DeltaR(particle));
+          fHistos->FillTH2("hQADeltaRChargedPart", partjetpt, partjet->DeltaR(particle));
           if(!leadingcharged) leadingcharged = particle;
           else {
             if(particle->E() > leadingcharged->E()) leadingcharged = particle;
           }
         } else {
           nneutral++;
-          fHistos->FillTH2("hQAConstPtNePart", partjet->Pt(), particle->Pt());
+          fHistos->FillTH2("hQAConstPtNePart", partjetpt, particle->Pt());
           fHistos->FillTH2("hQAEtaPhiConstNePart", particle->Eta(), TVector2::Phi_0_2pi(particle->Phi()));
-          fHistos->FillTH2("hQADeltaRNeutralPart", partjet->Pt(), partjet->DeltaR(particle));
+          fHistos->FillTH2("hQADeltaRNeutralPart", partjetpt, partjet->DeltaR(particle));
           if(!leadingneutral) leadingneutral = particle;
           else {
             if(particle->E() > leadingneutral->E()) leadingneutral = particle;
@@ -468,33 +580,43 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
         }
       }
       if(leadingcharged) {
-        fHistos->FillTH2("hQAConstPtChMaxPart", partjet->Pt(), leadingcharged->Pt());
+        fHistos->FillTH2("hQAConstPtChMaxPart", partjetpt, leadingcharged->Pt());
         fHistos->FillTH2("hQAEtaPhiConstMaxChPart", leadingcharged->Eta(), TVector2::Phi_0_2pi(leadingcharged->Phi()));
-        fHistos->FillTH2("hQAZchPtPart", partjet->Pt(), partjet->GetZ(leadingcharged));
-        fHistos->FillTH2("hQADeltaRMaxChargedPart", partjet->Pt(), partjet->DeltaR(leadingcharged));
+        fHistos->FillTH2("hQAZchPtPart", partjetpt, partjet->GetZ(leadingcharged));
+        fHistos->FillTH2("hQADeltaRMaxChargedPart", partjetpt, partjet->DeltaR(leadingcharged));
       }
       if(leadingneutral) {
-        fHistos->FillTH2("hQAConstPtNeMaxPart", partjet->Pt(), leadingneutral->Pt());
+        fHistos->FillTH2("hQAConstPtNeMaxPart", partjetpt, leadingneutral->Pt());
         fHistos->FillTH2("hQAEtaPhiConstMaxNePart", leadingneutral->Eta(), TVector2::Phi_0_2pi(leadingneutral->Phi()));
-        fHistos->FillTH2("hQAZnePtPart", partjet->Pt(), partjet->GetZ(leadingneutral));
-        fHistos->FillTH2("hQADeltaRMaxNeutralPart", partjet->Pt(), partjet->DeltaR(leadingneutral));
+        fHistos->FillTH2("hQAZnePtPart", partjetpt, partjet->GetZ(leadingneutral));
+        fHistos->FillTH2("hQADeltaRMaxNeutralPart", partjetpt, partjet->DeltaR(leadingneutral));
       }
-      fHistos->FillTH2("hQANChPtPart", partjet->Pt(), ncharged);
-      fHistos->FillTH2("hQANnePtPart", partjet->Pt(), nneutral);
+      fHistos->FillTH2("hQANChPtPart", partjetpt, ncharged);
+      fHistos->FillTH2("hQANnePtPart", partjetpt, nneutral);
     }
-    fHistos->FillTH2("hQAJetAreaVsJetPtPart", partjet->Pt(), partjet->Area());
-    fHistos->FillTH2("hQAJetAreaVsJetPtDet", detjet->Pt(), detjet->Area());
+    fHistos->FillTH2("hQAJetAreaVsJetPtPart", partjetpt, partjet->Area());
+    fHistos->FillTH2("hQAJetAreaVsJetPtDet", detjetpt, detjet->Area());
     fHistos->FillTH2("hQAJetAreaVsNEFPart", partjet->NEF(), partjet->Area());
     fHistos->FillTH2("hQAJetAreaVsNEFDet", detjet->NEF(), detjet->Area());
     fHistos->FillTH2("hQAJetAreaVsNConstPart", partjet->GetNumberOfTracks(), partjet->Area());
     fHistos->FillTH2("hQAJetAreaVsNConstDet", detjet->GetNumberOfClusters() + detjet->GetNumberOfTracks(), detjet->Area());
-    fHistos->FillTH1("hFracPtHardPart", partjet->Pt()/fPtHard);
-    fHistos->FillTH1("hFracPtHardDet", detjet->Pt()/fPtHard);
+    fHistos->FillTH1("hFracPtHardPart", partjetpt/fPtHard);
+    fHistos->FillTH1("hFracPtHardDet", detjetpt/fPtHard);
   }
 
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
   for(auto partjet : partjets->accepted()){
-    fHistos->FillTH1("hJetSpectrumPartAll", partjet->Pt());
+    Double_t partjetpt = partjet->Pt();
+    if (fDoBkgSub && partjets->GetRhoParameter()){
+      partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
+    }
+
+    fHistos->FillTH1("hJetSpectrumPartAll", partjetpt);
+    if(isClosure) {
+      fHistos->FillTH1("hJetSpectrumPartAllClosure", partjetpt);
+    } else {
+      fHistos->FillTH1("hJetSpectrumPartAllNoClosure", partjetpt);
+    }
     for(auto itrk = 0; itrk < partjet->GetNumberOfTracks(); itrk++) {
       auto constituent = partjet->Track(itrk);
       switch(TMath::Abs(constituent->PdgCode())) {
@@ -511,12 +633,22 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       if(detjet->GetJetAcceptanceType() & partjets->GetAcceptanceType()) tagstatus = 2;
       else tagstatus = 1;
     }
-    fHistos->FillTH2("hJetfindingEfficiencyCore", partjet->Pt(), tagstatus);
+    fHistos->FillTH2("hJetfindingEfficiencyCore", partjetpt, tagstatus);
+    if(isClosure) {
+      fHistos->FillTH2("hJetfindingEfficiencyCoreClosure", partjetpt, tagstatus);
+    } else {
+      fHistos->FillTH2("hJetfindingEfficiencyCoreNoClosure", partjetpt, tagstatus);
+    }
     if(fFillHSparse){
-      double effvec[3] = {partjet->Pt(), 0.,static_cast<double>(tagstatus)};
+      double effvec[3] = {partjetpt, 0.,static_cast<double>(tagstatus)};
       if(detjet) {
         // Found a match
-        effvec[1] = detjet->Pt();
+        Double_t detjetpt = detjet->Pt();
+        if (fDoBkgSub && detjets->GetRhoParameter()){
+          detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
+        }
+
+        effvec[1] = detjetpt;
         if(TMath::Abs(fScaleShift) > DBL_EPSILON){
           effvec[1] += fScaleShift * effvec[1];
         }
@@ -525,6 +657,37 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
   }
   return true;
+}
+
+Double_t AliAnalysisTaskEmcalJetEnergyScale::MakeAngularity(const AliEmcalJet &jet, AliVCluster::VCluUserDefEnergy_t energydef) const {
+  if(!(jet.GetNumberOfTracks() || jet.GetNumberOfClusters()))
+    throw AngularityException();
+  TVector3 jetvec(jet.Px(), jet.Py(), jet.Pz());
+  Double_t den(0.), num(0.);
+  for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
+    auto track = jet.Track(itrk);
+    if(!track){
+      AliErrorStream() << "Associated constituent particle / track not found\n";
+      continue;
+    }
+    TVector3 trackvec(track->Px(), track->Py(), track->Pz());
+
+    num +=  track->Pt() * trackvec.DrEtaPhi(jetvec);
+    den += +track->Pt();
+  }
+  for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
+    auto clust = jet.Cluster(icl);
+    if(!clust) {
+      AliErrorStream() << "Associated constituent cluster not found\n";
+      continue;
+    }
+    TLorentzVector clusterp;
+    clust->GetMomentum(clusterp, fVertex, energydef);
+
+    num += clusterp.Pt() * clusterp.Vect().DrEtaPhi(jetvec);
+    den += clusterp.Pt();
+  }
+  return num/den;
 }
 
 bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &triggerstring) const {
@@ -539,6 +702,26 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
     }
   }
   return isEMCAL;
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::SetAngularitySpitting(bool doSplit) { 
+  if(doSplit) {
+    auto partcont = GetPartLevelJetContainer();
+    double radius = -1;
+    if(partcont) radius = partcont->GetJetRadius();
+    if(!fAngularityHandler) {
+      if(radius > -1.) {
+        AliInfoStream() << "Initializing angularity handler with R=" << radius << std::endl;
+        fAngularityHandler = new AngularityHandler(radius);
+      } else {
+        AliInfoStream() << "Default initialization of angularity without radius" << std::endl;
+        fAngularityHandler = new AngularityHandler();
+      }
+    }
+  } else {
+    if(fAngularityHandler) delete fAngularityHandler;
+    fAngularityHandler = nullptr;
+  }
 }
 
 void AliAnalysisTaskEmcalJetEnergyScale::ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
@@ -657,4 +840,147 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   mgr->ConnectInput(energyscaletask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(energyscaletask, 1, mgr->CreateContainer(listnamebuilder.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, outnamebuilder.str().data()));
   return energyscaletask;
+}
+
+AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScaleBkgSub(AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, Double_t jetradius, Bool_t useDCAL, const char *namepartcont, const char *nRho, const char *nRhoMC, const char *trigger, const char *suffix) {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if(!mgr){
+    ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
+    return nullptr;
+  }
+
+  auto inputhandler = mgr->GetInputEventHandler();
+  auto isAOD = inputhandler->IsA() == AliAODInputHandler::Class();
+
+  std::string jettypename;
+  AliJetContainer::JetAcceptanceType acceptance(AliJetContainer::kTPCfid);
+  AliJetContainer::EJetType_t mcjettype(jettype);
+  bool addClusterContainer(false), addTrackContainer(false);
+  switch(jettype){
+    case AliJetContainer::kFullJet:
+        jettypename = "FullJet";
+        acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
+        addClusterContainer = addTrackContainer = true;
+        break;
+    case AliJetContainer::kChargedJet:
+        jettypename = "ChargedJet";
+        acceptance = AliJetContainer::kTPCfid;
+        addTrackContainer = true;
+        mcjettype = AliJetContainer::kChargedJet;
+        break;
+    case AliJetContainer::kNeutralJet:
+        jettypename = "NeutralJet";
+        acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
+        addClusterContainer = true;
+        break;
+    case AliJetContainer::kUndefinedJetType:
+        break;
+  };
+
+  std::stringstream taskname, tag;
+  tag << jettypename << "_R" << std::setw(2) << std::setfill('0') << int(jetradius * 10.) << "_" << trigger;
+  if(strlen(suffix)) tag << "_" << suffix;
+  taskname << "EnergyScaleTask_" << tag.str();
+  AliAnalysisTaskEmcalJetEnergyScale *energyscaletask = new AliAnalysisTaskEmcalJetEnergyScale(taskname.str().data());
+  mgr->AddTask(energyscaletask);
+  energyscaletask->SetTriggerName(trigger);
+
+  TString partcontname(namepartcont);
+  if(partcontname == "usedefault") partcontname = "mcparticles";
+  auto partcont = energyscaletask->AddMCParticleContainer(partcontname.Data());
+  partcont->SetMinPt(0.);
+
+  AliClusterContainer *clusters(nullptr);
+  if(addClusterContainer) {
+    clusters = energyscaletask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    clusters->SetDefaultClusterEnergy(energydef);
+    clusters->SetClusUserDefEnergyCut(energydef, 0.3);
+  }
+  AliTrackContainer *tracks(nullptr);
+  if(addTrackContainer) {
+    tracks = energyscaletask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+  }
+
+  const std::string kNameJetsPart = "particleLevelJets",
+                    kNameJetsDet = "detectorLevelJets";
+
+  auto contpartjet = energyscaletask->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
+                                                      acceptance, partcont, nullptr);
+  contpartjet->SetName(kNameJetsPart.data());
+  contpartjet->SetRhoName(nRhoMC);
+  energyscaletask->SetNamePartJetContainer(kNameJetsPart.data());
+  std::cout << "Adding particle-level jet container with underling array: " << contpartjet->GetArrayName() << std::endl;
+
+  auto contdetjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
+                                                     acceptance, tracks, clusters);
+  contdetjet->SetName(kNameJetsDet.data());
+  contdetjet->SetRhoName(nRho);
+  energyscaletask->SetNameDetJetContainer(kNameJetsDet.data());
+  std::cout << "Adding detector-level jet container with underling array: " << contdetjet->GetArrayName() << std::endl;
+
+  std::stringstream outnamebuilder, listnamebuilder;
+  listnamebuilder << "EnergyScaleHists_" << tag.str();
+  outnamebuilder << mgr->GetCommonFileName() << ":EnergyScaleResults_" << tag.str();
+
+  mgr->ConnectInput(energyscaletask, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(energyscaletask, 1, mgr->CreateContainer(listnamebuilder.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, outnamebuilder.str().data()));
+  return energyscaletask;
+}
+
+
+void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::InitFromFile(const char *filename) {
+  fBins.Clear();
+  std::unique_ptr<TFile> reader(TFile::Open(filename, "READ"));
+  std::string rstring=Form("R%02d", int(fRadius*10.));
+  auto hist = dynamic_cast<TH1 *>(reader->Get(Form("meanAngularity%s", rstring.data())));
+  if(!hist) {
+    AliErrorStream() << "Mean angularity dist not found for R = " << fRadius << std::endl;
+    return;
+  }
+  for(int ib = 0; ib < hist->GetXaxis()->GetNbins(); ib++){
+    auto min = hist->GetXaxis()->GetBinLowEdge(ib+1),
+         max = hist->GetXaxis()->GetBinUpEdge(ib+1),
+         value = hist->GetBinContent(ib+1);
+    SetBin(min, max, value);
+  }
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::SetBin(double min, double max, double value) {
+  bool hasOverlap = false;
+  for(auto b : fBins) {
+    AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
+    if(!nextbin) continue;
+    if(min >= nextbin->Min() && min < nextbin->Max()) hasOverlap = true;
+    if(max >= nextbin->Min() && max < nextbin->Max()) hasOverlap = true;
+    if(hasOverlap) break;
+  }
+  if(hasOverlap) {
+    AliErrorStream() << "Cannot add bin with min " << min << " and max " << max << " due to overlap";
+    return;
+  }
+  fBins.Add(new AngularityBin(min, max, value));
+}
+
+double AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::GetValue(double pt) const {
+  auto result = FindBin(pt);
+  return result.Value();
+}
+
+bool AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::IsHigherAngularity(double pt, double angularity) const {
+  auto result = FindBin(pt);
+  if(!result.IsOK()) throw BinNotFoundException(pt);
+  return angularity > result.Value();
+}
+
+AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::AngularityBin AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::FindBin(double pt) const {
+  AngularityBin result;
+  for(auto b : fBins) {
+    AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
+    if(!nextbin) continue;  
+    if(nextbin->IsInRange(pt)) {
+      result = *nextbin;
+      break;
+    }
+  }
+  return result;
 }

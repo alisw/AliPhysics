@@ -25,6 +25,7 @@ class AliAnalysisUtils;
 class AliCalorimeterUtils;
 class AliMultSelection;
 class TLorentzVector;
+class TRandom3;
 
 #include "TFile.h"
 #include <TSystem.h>
@@ -178,6 +179,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
 	TFile*                          fefficiencyFilepPb= TFile::Open("EffOutpPb.root","read"); //
 	TFile*				fefficiency3DFile=nullptr; //
+	TRandom3*                       random_subsample; //
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
@@ -197,6 +199,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	std::vector < UInt_t >          goodtrackindicesMCCMS; //!
 
 	std::vector < Double_t > 	NTracksPerPtBin;
+	std::vector < Double_t >        NTracksPerPtBinLP;
 	std::vector < Double_t >        NTracksPerPtBinMCALICE;
 	std::vector < Double_t >        NTracksPerPtBinMCCMS;
 
@@ -209,6 +212,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         TAxis                           binZ; //!
 	TAxis				binTPt; //!
 	TAxis				binAPt; //!
+	TAxis				binTPt_forLP; //!
+	TAxis				binAPt_forLP; //!
 	TAxis				binPhi; //!
 	TAxis				binEta; //!
 	TAxis				binMCEta; //!
@@ -227,6 +232,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 
 	TAxis				binPhiTrack; //!
 	TAxis				binEtaTrack; //!
+
+	TAxis				binSubsample; //!
 
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
@@ -251,6 +258,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         Int_t                           bookingsize = 7;
         AliVMultiplicity*               fMultiplicity=nullptr;//!
 	Int_t				bookingsizeMC = 7;
+	Double_t			SubSampling;
 	std::vector< std::vector< double > > Eff;
 	std::vector< std::vector< std::vector< double > > > Eff3D;
 

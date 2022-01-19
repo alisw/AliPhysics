@@ -35,6 +35,8 @@
 
 class THistManager;
 class AliEventCuts;
+class AliFJWrapper; 
+class TRandom3;
 
 namespace PWGJE {
 
@@ -51,6 +53,12 @@ public:
     kEventWeightType,
     kNoWeightType 
   };
+  enum EnergyDefinition_t {
+    kDefaultEnergy,       ///< Uncorrected energy measurement
+    kNonLinCorrEnergy,    ///< Energy corrected for non-linearity
+    kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
+  };
+
   AliAnalysisTaskEmcalJetEnergySpectrum();
   AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
@@ -83,6 +91,13 @@ public:
   void SetEMCALClusterBias(double minE)            { fEMCALClusterBias = minE; }
   void SetTimeRangeEMCALCusterBias(Double_t mintime, Double_t maxtime) { fMinTimeClusterBias = mintime; fMaxTimeClusterBias = maxtime; }
   void SetMimicEJData(bool doMimic)                { fMimicEJData = doMimic; if(fMimicEJData) fUseTriggerSelectionForData = true; }
+  void SetMakeClusterHistos1D(bool doMake)         { fMakeClusterHistos1D = doMake; }
+  void SetEnergyDefinition(EnergyDefinition_t edef){ fEnergyDefinition = edef; }
+
+
+  void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
+  double GetDeltaPtRandomCone();
+  double GetDeltaPtEmbedding();
 
   void ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
   void ConfigureMCMinBias(MCProductionType_t mcprodtype);
@@ -98,6 +113,19 @@ public:
     EMCAL_STRINGVIEW trigger, 
     EMCAL_STRINGVIEW suffix = ""
   );
+
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSub(
+    Bool_t isMC, 
+    AliJetContainer::EJetType_t jettype, 
+    AliJetContainer::ERecoScheme_t recoscheme, 
+    AliVCluster::VCluUserDefEnergy_t energydef, 
+    double radius,
+    EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW nRho, 
+    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -129,6 +157,9 @@ private:
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
   Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
+  Bool_t                        fDoBkgSub;                      ///< Do background subtraction
+  AliFJWrapper                  *fFastJetWrapper;               ///< EMB_clus wrapper for fast jet finding
+  TRandom                       *fTrackGenerator;               ///< EMB_clus generator for track perpendicular to signal jet
   EJetTypeOutliers_t            fJetTypeOutliers;               ///< Jet type used for outlier detection
   Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
   Double_t                      fEMCALClusterBias;              ///< Requirement of a min. cluster energy in EMCAL
@@ -136,6 +167,9 @@ private:
   Double_t                      fMaxTimeClusterBias;            ///< Max. time cut for cluster bias
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
+  Bool_t                        fMakeClusterHistos1D;           ///< Make 1D emcal cluster energy histogram
+  EnergyDefinition_t            fEnergyDefinition;              ///< Energy definition used for a given cluster
+
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };

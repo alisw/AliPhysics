@@ -173,7 +173,7 @@ public TObject
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDCascadeTrack, 3);
+  ClassDef(AliAnalysisPIDCascadeTrack, 4);
  
 };
 

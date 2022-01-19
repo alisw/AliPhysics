@@ -1784,13 +1784,11 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
     fOutputRT = new TList();
     fOutputRT->SetOwner();
     fOutputRT->SetName("OutputHistos");
-
     fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
     fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
     fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
     fStepRecoPIDRT = new TH1F("fStepRecoPIDRT","RT for events with selected D;R_{T};Entries",100,0,10);
     fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
-
     fOutputRT->Add(fNChargedInTrans);
     fOutputRT->Add(fPTDistributionInTransverse);
     fOutputRT->Add(fGlobalRT);
@@ -2893,6 +2891,7 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
  	esdTrackCutsComplementary[0]->SetEtaRange(-0.8,0.8);
  	fTrackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
    }
+   
 
 
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
@@ -3084,8 +3083,6 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
       if(region == -2) away->Add(part);
 
       if(region == 1 || region == -1) fPTDistributionInTransverse->Fill(part->Pt());
-
-
 
    }//end loop on tracks
 

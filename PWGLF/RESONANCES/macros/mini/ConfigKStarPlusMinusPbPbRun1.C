@@ -241,6 +241,8 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
       out->SetCharge(0, charge1[i]);
       out->SetCharge(1, charge2[i]);
       out->SetMotherPDG(ipdg[i]);
+      
+      
       out->SetMotherMass(mass[i]);
      	
       // pair cuts
@@ -342,7 +344,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
     } 
       
     
-  
+  /*
     if (isMC) {
       
       TString mode = "SPARSE";
@@ -426,6 +428,7 @@ Bool_t ConfigKStarPlusMinusPbPbRun1
     outpsf->AddAxis(ptID,300,0.,3.);
 	
     }
+    */
     return kTRUE;
 }
 

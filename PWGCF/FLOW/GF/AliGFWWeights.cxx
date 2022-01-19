@@ -1,6 +1,8 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Contains the non-uniform acceptance correction.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
 */
 #include "AliGFWWeights.h"
 #include "TMath.h"
@@ -273,7 +275,7 @@ void AliGFWWeights::ReadAndMerge(TString filelinks, TString listName, Bool_t add
 };
 void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
   if(!sour) {
-    printf("Source array does not exist!\n");
+    // printf("Source array does not exist!\n");
     return;
   };
   for(Int_t i=0;i<sour->GetEntries();i++) {

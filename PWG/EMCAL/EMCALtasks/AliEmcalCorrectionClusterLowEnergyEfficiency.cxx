@@ -21,7 +21,10 @@ const std::map <std::string, AliEMCALRecoUtils::NCellEfficiencyFunctions> AliEmc
     { "kAllClusters", AliEMCALRecoUtils::kNCeAllClusters },
     { "kTestBeam", AliEMCALRecoUtils::kNCeTestBeam },
     { "kGammaAndElec", AliEMCALRecoUtils::kNCeGammaAndElec },
-    { "kPi0TaggedPCMEMC", AliEMCALRecoUtils::kNCePi0TaggedPCMEMC }
+    { "kPCMEMCGaussian", AliEMCALRecoUtils::kNCePCMEMCGaussian },
+    { "kPCMEMCPol2", AliEMCALRecoUtils::kNCePCMEMCPol2 },
+    { "kEMCGaussian", AliEMCALRecoUtils::kNCeEMCGaussian },
+    { "kEMCPol2", AliEMCALRecoUtils::kNCeEMCPol2 }
 };
 
 /**

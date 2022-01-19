@@ -161,6 +161,7 @@ private:
 	TH2D * hDphiVsUEData;//UE->NchTS
 
 	TH2D * hDphiVsNchData;
+	TH2D * hpTaVsDphi;
 
 	TH2D * hPTVsDCAData;
 	TH2D * hPTVsDCAcentData;

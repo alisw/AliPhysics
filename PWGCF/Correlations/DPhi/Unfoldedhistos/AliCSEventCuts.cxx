@@ -97,6 +97,7 @@ AliCSEventCuts::AliCSEventCuts() :
     fReferenceMultiplicity(0),
     fV0Multiplicity(0),
     fCL1Multiplicity(0),
+    fCL1EtaGapMultiplicity(0),
     fNoOfAODTracks(0),
     fNoOfESDTracks(0),
     fNoOfFB32Tracks(0),
@@ -114,8 +115,10 @@ AliCSEventCuts::AliCSEventCuts() :
     fhCutsCorrelation(NULL),
     fhV0Multiplicity(nullptr),
     fhCL1Multiplicity(nullptr),
+    fhCL1EtaGapMultiplicity(nullptr),
     fhV0MCentMult(nullptr),
     fhCL1CentMult(nullptr),
+    fhCL1EtaGapCentMult(nullptr),
     fhCentrality{NULL},
     fhVertexZ{NULL},
     fhSPDClustersVsTracklets{NULL},
@@ -167,6 +170,7 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fReferenceMultiplicity(0),
     fV0Multiplicity(0),
     fCL1Multiplicity(0),
+    fCL1EtaGapMultiplicity(0),
     fNoOfAODTracks(0),
     fNoOfESDTracks(0),
     fNoOfFB32Tracks(0),
@@ -184,8 +188,10 @@ AliCSEventCuts::AliCSEventCuts(const char *name, const char *title) :
     fhCutsCorrelation(NULL),
     fhV0Multiplicity(nullptr),
     fhCL1Multiplicity(nullptr),
+    fhCL1EtaGapMultiplicity(nullptr),
     fhV0MCentMult(nullptr),
     fhCL1CentMult(nullptr),
+    fhCL1EtaGapCentMult(nullptr),
     fhCentrality{NULL},
     fhVertexZ{NULL},
     fhSPDClustersVsTracklets{NULL},
@@ -1043,8 +1049,19 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
 
   if (fgIsOnTheFlyMC) {
     /* on the fly MC production */
-    /* multiplicity / centrality percentile already stored */
-    return fV0MCentrality;
+    switch(fCentralityDetector) {
+    case 0:
+      /* default centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fV0MCentrality;
+    case 1:
+      /* alternative centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fCL1Centrality;
+    default:
+      AliError("Wrong stored centrality detector");
+      return -1.0;
+    }
   }
 
   if (esdEvent != NULL) {
@@ -1235,8 +1252,19 @@ Float_t AliCSEventCuts::GetEventAltCentrality(AliVEvent *event) const
 
   if (fgIsOnTheFlyMC) {
     /* on the fly MC production */
-    /* multiplicity / centrality percentile already stored */
-    return fCL1Centrality;
+    switch(fCentralityDetector) {
+    case 0:
+      /* default centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fCL1Centrality;
+    case 1:
+      /* alternative centrality detector */
+      /* multiplicity / centrality percentile already stored */
+      return fV0MCentrality;
+    default:
+      AliError("Wrong stored centrality detector");
+      return -1.0;
+    }
   }
 
   if (esdEvent != NULL) {
@@ -2029,16 +2057,21 @@ Bool_t AliCSEventCuts::StoreEventCentralities(AliVEvent *event) {
       float V0CM = GetOnTheFlyMultiplicity(event, -3.7, -1.7);
       float V0M = V0AM+V0CM;
       float CL1M = GetOnTheFlyMultiplicity(event, -1.4, 1.4);
+      float CL1EtaGapM = GetOnTheFlyMultiplicity(event, -1.4, -0.8) + GetOnTheFlyMultiplicity(event, 0.8, 1.4);
       float dNchdeta = GetOnTheFlyMultiplicity(event, -0.5, 0.5);
       if (fhV0Multiplicity != nullptr) 
         fhV0Multiplicity->Fill(V0M,dNchdeta);
       if (fhCL1Multiplicity != nullptr) 
         fhCL1Multiplicity->Fill(CL1M,dNchdeta);
+      if (fhCL1EtaGapMultiplicity != nullptr) 
+        fhCL1EtaGapMultiplicity->Fill(CL1EtaGapM,dNchdeta);
       /* extract the centrality / mutiliplicity percentile */
-      if (fhV0MCentMult) 
+      if (fhV0MCentMult != nullptr) 
         fV0MCentrality = fhV0MCentMult->GetBinContent(V0M);
-      if (fhCL1CentMult) 
+      if (fhCL1CentMult != nullptr) 
         fCL1Centrality = fhCL1CentMult->GetBinContent(CL1M);
+      if (fhCL1EtaGapCentMult != nullptr) /* eta gap has priority on CL1 centrality / multiplicity */
+        fCL1Centrality = fhCL1EtaGapCentMult->GetBinContent(CL1EtaGapM);
     }
   }
   else {
@@ -2274,11 +2307,15 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
     }
     /* secure INEL > 0 */
     fV0Multiplicity = 0;
+    fCL1Multiplicity = 0;
+    fCL1EtaGapMultiplicity = 0;
     if (GetOnTheFlyMultiplicity(event, -1.0, 1.0) > 0) {
       float V0AM = GetOnTheFlyMultiplicity(event, 2.8, 5.1);
       float V0CM = GetOnTheFlyMultiplicity(event, -3.7, -1.7);
       fV0Multiplicity = V0AM+V0CM;
       fCL1Multiplicity = GetOnTheFlyMultiplicity(event, -1.4, 1.4);
+      fCL1EtaGapMultiplicity = GetOnTheFlyMultiplicity(event, -1.4, -0.8) + GetOnTheFlyMultiplicity(event, 0.8, 1.4);
+
     }
   }
   else {
@@ -2419,9 +2456,10 @@ void AliCSEventCuts::InitCuts(const char *name){
 /// Stores the centrality / multiplicity estimation histograms
 /// \param v0mh V0M centrality / multiplicity estimation histogram
 /// \param cl1mh CL1M centrality / multiplicity estimation histogram
-void AliCSEventCuts::StoreCentMultEstimationHistos(const TH1 *v0mh, const TH1 *cl1mh) { 
+void AliCSEventCuts::StoreCentMultEstimationHistos(const TH1 *v0mh, const TH1 *cl1mh, const TH1 *cl1egmh) { 
   fhV0MCentMult = (v0mh != nullptr) ? v0mh : nullptr; 
   fhCL1CentMult = (cl1mh != nullptr) ? cl1mh : nullptr; 
+  fhCL1EtaGapCentMult = (cl1egmh != nullptr) ? cl1egmh : nullptr;
 }
 
 
@@ -2479,8 +2517,11 @@ void AliCSEventCuts::DefineHistograms(){
                                     nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
         fhCL1Multiplicity = new TH2F(TString::Format("CL1Multiplicity_%s",GetCutsString()),"CL1M;CL1M;dN/d#eta;counts",
                                      nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
+        fhCL1EtaGapMultiplicity = new TH2F(TString::Format("CL1EtaGapMultiplicity_%s",GetCutsString()),"CL1M (excl |#eta|<0.8);CL1M;dN/d#eta;counts",
+                                           nBinsMult[fSystem],-9.5, -9.5+nBinsMult[fSystem], nBinsDNdeta[fSystem],-9.5,-9.5+nBinsDNdeta[fSystem]);
         fHistogramsList->Add(fhV0Multiplicity);
         fHistogramsList->Add(fhCL1Multiplicity);
+        fHistogramsList->Add(fhCL1EtaGapMultiplicity);
       }
     }
 
@@ -2676,12 +2717,11 @@ float AliCSEventCuts::GetOnTheFlyMultiplicity(AliVEvent *event, float etamin, fl
       case 211:   /* pions */
       case 321:   /* kaons */
       case 2212:  /* protons */
-        if (AliCSTrackCuts::IsPhysicalPrimary(itrk)) {
-          if (0.001 < particle->Pt() && particle->Pt() < 50.0) {
-            float eta = particle->Eta();
-            if (etamin < eta and eta < etamax) {
-              multiplicity += 1;
-            }
+        /* not clear if we should use IsPhysicalPrimary here */
+        if (0.001 < particle->Pt() && particle->Pt() < 50.0) {
+          float eta = particle->Eta();
+          if (etamin < eta and eta < etamax) {
+            multiplicity += 1;
           }
         }
         break;

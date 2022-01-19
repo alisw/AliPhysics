@@ -470,7 +470,8 @@ public:
   Bool_t           IsEventMinimumBias()              const { return fEventTrigMinBias        ; }
   Bool_t           IsEventCentral()                  const { return fEventTrigCentral        ; }
   Bool_t           IsEventSemiCentral()              const { return fEventTrigSemiCentral    ; }
-	
+  Bool_t           IsEventMinimumBiasAll()           const { return ( IsEventMinimumBias() || IsEventCentral() || IsEventSemiCentral() ) ; }
+
   Bool_t           IsEventEMCALL0()                  const { return fEventTrigEMCALL0        ; }
   Bool_t           IsEventEMCALL1Gamma1()            const { return fEventTrigEMCALL1Gamma1  ; }
   Bool_t           IsEventEMCALL1Gamma2()            const { return fEventTrigEMCALL1Gamma2  ; }
@@ -489,6 +490,9 @@ public:
   Bool_t           IsEventDCALL1Jet()                const { return (fEventTrigDCALL1Jet1   || fEventTrigDCALL1Jet2  ) ; }
   Bool_t           IsEventDCALL1()                   const { return (IsEventDCALL1Gamma()   || IsEventDCALL1Jet()    ) ; }
   
+  Bool_t           IsEventEMDCALAll()            const     { return ( IsEventDCALL1() || IsEventEMCALL1() ||
+                                                                      IsEventDCALL0() || IsEventEMCALL0()     ) ; }
+
   Bool_t           IsEventMinimumBiasCaloOnly()      const { return fEventTrigMinBiasCaloOnly        ; }
   Bool_t           IsEventEMCALL0CaloOnly()          const { return fEventTrigEMCALL0CaloOnly        ; }
   Bool_t           IsEventEMCALL1Gamma1CaloOnly()    const { return fEventTrigEMCALL1Gamma1CaloOnly  ; }

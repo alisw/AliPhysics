@@ -19,6 +19,7 @@
 #include "AliPID.h"
 #include "AliESDtrack.h"
 #include "AliVertexingHFUtils.h"
+#include "AliMultSelection.h"
 
 /// \cond CLASSIMP
 ClassImp(AliHFMLVarHandler);
@@ -107,7 +108,14 @@ void AliHFMLVarHandler::SetIsSignalWoQuark(bool isSignalWoQuark) {
 
 void AliHFMLVarHandler::SetGlobalEventVariables(AliAODEvent* event) {
     if(fEnableNtracklets)
-        fNtracklets = static_cast<int>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(event,-1.,1.));
+        fNtracklets = static_cast<int>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(event, -1., 1.));
+    if(fEnableCentPercentile) {
+        AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+        if(!multSelection)
+            fCentPercentile = -999.;
+        else
+            fCentPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator.data());
+    }
 }
 
 //________________________________________________________________
@@ -147,7 +155,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
     TString detName[knMaxDet4Pid] = {"TPC", "TOF"};
     TString rawPidName[knMaxDet4Pid] = {"dEdxTPC", "ToF"};
 
-    if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) {
+    if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || fPidOpt == kBayesAndNsigmaDetAndNsigmaCombPID) {
         //initialise AliPIDCombined object for Bayesian PID
         if(!fPIDCombined)
             fPIDCombined = new AliPIDCombined();
@@ -192,7 +200,7 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
                 fTreeVar->Branch(Form("start_time_res_prong%d", iProng), &fStartTimeResProng[iProng]);
             }
         }
-        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) {
+        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || fPidOpt == kBayesAndNsigmaDetAndNsigmaCombPID) {
             for(unsigned int iPartHypo = 0; iPartHypo < knMaxHypo4Pid; iPartHypo++) {
                 if(!useHypo[iPartHypo]) 
                     continue;
@@ -208,6 +216,8 @@ void AliHFMLVarHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool 
 void AliHFMLVarHandler::AddGlobalEventVarBranches() {
     if(fEnableNtracklets)
         fTreeVar->Branch("n_trkl", &fNtracklets);
+    if(fEnableCentPercentile)
+        fTreeVar->Branch("cent_perc", &fCentPercentile);
 }
 
 //________________________________________________________________
@@ -263,7 +273,7 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidh
                         pidhf->GetnSigmaTOF(prongtracks[iProng], parthypo[iPartHypo], nSigmaTOF);
                         sig[iProng][kTOF][iPartHypo] = nSigmaTOF;
                     }
-                    if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) && useTPC && useTOF) {
+                    if((fPidOpt == kNsigmaCombPID || fPidOpt == kNsigmaDetAndCombPID || fPidOpt == kBayesAndNsigmaCombPID || fPidOpt == kBayesAndNsigmaDetAndNsigmaCombPID) && useTPC && useTOF) {
                         sigComb[iProng][iPartHypo] = AliVertexingHFUtils::CombineNsigmaTPCTOF(sig[iProng][kTPC][iPartHypo], 
                                                                                               sig[iProng][kTOF][iPartHypo]);
                     }
@@ -290,7 +300,7 @@ bool AliHFMLVarHandler::SetPidVars(AliAODTrack* prongtracks[], AliAODPidHF* pidh
                 }
             }
         }
-        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || kBayesAndNsigmaDetAndNsigmaCombPID) {
+        if(fPidOpt == kBayesPID || fPidOpt == kBayesAndNsigmaCombPID || fPidOpt == kBayesAndNsigmaDetAndNsigmaCombPID) {
             double probTPCTOF[AliPID::kSPECIES] = {-1.};
             AliPIDResponse* pidrespo = pidhf->GetPidResponse(); //FIXME: TPC postcalibrations for Pb-Pb not implemented in AliPIDResponse
             unsigned int detUsed = fPIDCombined->ComputeProbabilities(prongtracks[iProng], pidrespo, probTPCTOF);

@@ -6,7 +6,6 @@
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
 #pragma link C++ class AliAnalysisTaskTPCMatchEff+;
-#pragma link C++ class AliAnalysisTaskDCArStudy+;
 #pragma link C++ class AliAnalysisTaskPtResStudy+;
 #pragma link C++ class AliAnalysisTaskEffContStudy+;
 #pragma link C++ class AliAnalysisTaskUEStudy+;
@@ -21,6 +20,7 @@
 #pragma link C++ class AliMultDepSpecAnalysisTask+;
 #pragma link C++ class AliMultDepSpecAnalysisTaskOLD+;
 #pragma link C++ class AliMultDepSpecAnalysisTaskUE+;
+#pragma link C++ class AliAnalysisTaskDCArStudy+;
 #pragma link C++ class AliAnalysisTaskCutStudies+;
 #pragma link C++ class AliAnalysisTaskSpectraEtaPhi+;
 #pragma link C++ class AliAnalysisTaskSpectraINEL0+;
@@ -37,6 +37,7 @@
 #pragma link C++ class AliAnalysisTaskPPvsRT_TPCTOF+;
 #pragma link C++ class AliAnalysisTaskSpectraRT+;
 #pragma link C++ class AliAnalysisTaskSpectraMC+;
+#pragma link C++ class AliAnalysisTaskGenRT+;
 #pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
@@ -113,6 +114,8 @@
 #pragma link C++ class AliMESbaseTask+;
 #pragma link C++ class AliMEStender+;
 #pragma link C++ class AliMEStender::AliMESconfigTender+;
+#pragma link C++ class AliMEStenderV2+;
+#pragma link C++ class AliMEStenderV2::AliMESconfigTender+;
 #pragma link C++ class AliMESpidTask+;
 #pragma link C++ class AliMESchgTask+;
 #pragma link C++ class AliMESppColTask+;
@@ -125,6 +128,7 @@
 #pragma link C++ class AliAnalysisTaskProtonQA+;
 #pragma link C++ class AliAnalysisTaskProtonAbsorbtion+;
 // spherocity analysis
+#pragma link C++ class AliAnalysisTaskS0+;
 #pragma link C++ class AliTransverseEventShape+;
 #pragma link C++ class AliSpherocityUtils+;
 #pragma link C++ class AliAnalysisSphericityTask+;

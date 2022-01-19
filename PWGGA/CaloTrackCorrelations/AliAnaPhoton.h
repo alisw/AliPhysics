@@ -61,7 +61,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm,
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Int_t absIdMax,
                                Bool_t matched, Bool_t bEoP, Bool_t bRes,
                                Int_t mctag, Float_t mcbin,
                                Float_t egen, Float_t ptgen,
@@ -169,8 +169,11 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Double_t     GetTimeCutMax()                  const { return fTimeCutMax         ; }	
 	
   void         SetNCellCut(Int_t n)                   { fNCellsCut = n             ; }
-  Double_t     GetNCellCut()                    const { return fNCellsCut          ; }
-  
+  Int_t        GetNCellCut()                    const { return fNCellsCut          ; }
+
+  void         SetExoCut(Float_t exo)                 { fExoCut = exo              ; }
+  Float_t      GetExoCut()                      const { return fExoCut             ; }
+
   void         SetNLMCut(Int_t min, Int_t max)        { fNLMCutMin = min; 
     fNLMCutMax = max                ; }
   Int_t        GetNLMCutMin()                   const { return fNLMCutMin          ; }
@@ -245,6 +248,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Double_t fTimeCutMax  ;                           ///<  Remove clusters/cells with time larger than this value, in ns
     
   Int_t    fNCellsCut ;                             ///<  Accept for the analysis clusters with more than fNCellsCut cells
+  Float_t  fExoCut    ;                             ///<  Accept for the analysis clusters with exoticty smaller
     
   Int_t    fNLMCutMin  ;                            ///<  Remove clusters/cells with number of local maxima smaller than this value
   Int_t    fNLMCutMax  ;                            ///<  Remove clusters/cells with number of local maxima larger than this value
@@ -304,7 +308,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNSectors = 10;     
 
   /// Total number basic cluster cuts
-  static const Int_t fgkNClusterCuts = 11 ;
+  static const Int_t fgkNClusterCuts = 12 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   TH2F * fhClusterCutsECen [fgkNClusterCuts];       //!<! control histogram on the different photon selection cuts, E vs centrality
@@ -810,7 +814,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,59) ;
+  ClassDef(AliAnaPhoton,60) ;
   /// \endcond
 
 } ;

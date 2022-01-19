@@ -1,13 +1,13 @@
 /***************************************************************************
- //            Modified by Kishora Nayak - 14/06/2016
  //            Modified by Enrico Fragiacomo - 15/01/2014
+ //            Modified by Kishora Nayak - 14/06/2016
  //            Modified by Kunal Garg - 13/05/2018 (kgarg@cern.ch)
                Modified by Sudipan De - 01/04/2019 (sde@cern.ch)
                Modified by Dukhishyam Mallick- 01/04/2019 (dmallick@cern.ch)
 	       Modified by Prottay           -31/08/2020
+               Modified by Dukhishyam Mallick  -25/10/2021
 	       //Based on AddAnalysisTaskRsnMini
-	       //pPb specific settings from AddTaskKStarPPB.C
-	       //
+
 	       // Macro to configure the KStarPlusMinus analysis task
 	       // It calls all configs desired by the user, by means
 	       // of the boolean switches defined in the first lines.
@@ -23,6 +23,10 @@
 	       ****************************************************************************/
 
 //enum ERsnCollType_t { kPP=0,      kPPb,      kPbPb};
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun2.C>
+#endif
 
 enum pairYCutSet { kPairDefault,    // USED ONLY FOR pA
     kNegative,       // USED ONLY FOR pA
@@ -52,18 +56,20 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
 (
- Bool_t      isMC,
+ Bool_t      isMC=0,
+ Bool_t      isAOD=0,
+ Int_t       aodFilterBit=0,
  Bool_t      enableMonitor=kTRUE,
  TString     monitorOpt="PbPb",
  Float_t     piPIDCut = 2.0,
  Float_t     nsigmaTOF = 3.0,
- Float_t     cutV = 10.0,
  Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
+ Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
  Float_t     pi_k0s_PIDCut = 3.0,
  Bool_t      rejectPileUp=kTRUE,
  Bool_t      UseArmentousCut = kFALSE,
- Float_t     ArmentousParameter = 0.2,
+ Float_t     ArmentousParameter=0.2,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.0043,
  Int_t       tol_switch = 1,
@@ -74,11 +80,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.99,
  Float_t     k0sDaughDCA = 0.3,
- Int_t       NTPCcluster = 70,
  TString     outNameSuffix = "KStarPlusMinus_V0Mass_Pt",
  Float_t     DCAxy = 0.1,
  Bool_t      enableSys = kFALSE,
- Float_t     crossedRows = 70,
  Int_t       Sys= 0,
  UInt_t      triggerMask=AliVEvent::kINT7,
  Int_t       nmix=10,
@@ -93,7 +97,6 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
  Float_t                  hmultbin,
  Bool_t    timeRangeCut      = kTRUE
 
-
  )
 {
     //-------------------------------------------
@@ -103,32 +106,24 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
   Float_t     maxDiffAngleMixDeg = 20.0;
   Float_t     maxDiffVzMix = 1.0;
   Float_t     maxDiffMultMix = 5.0; 
-  Bool_t      isPP=0;
-  Float_t     v0rapidity= 0.5;
-  Float_t     rowsbycluster = 0.8;
-  Int_t aodFilterBit=0;
- 
- 
- 
   Int_t       MultBins=aodFilterBit/100;
     //   cout<<"EVENTCUTID is    "<<evtCutSetID<<endl;
-    
-    /*if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm
+  /*if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm
     if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
     if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
     if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
-    */
-    
-    //if(isMC) rejectPileUp=kFALSE;
-    
-    //-------------------------------------------
+  */
+  
+  //if(isMC) rejectPileUp=kFALSE;
+  
+  //-------------------------------------------
     //mixing settings
     //-------------------------------------------
     
     //Int_t       nmix = 10;
     /*if (mixingConfigID == eventMixConfig::kMixDefault) nmix = 10;
-    if (mixingConfigID == eventMixConfig::k5Evts)      nmix = 5;
-    if (mixingConfigID == eventMixConfig::k5Cent)      maxDiffMultMix = 5;
+      if (mixingConfigID == eventMixConfig::k5Evts)      nmix = 5;
+      if (mixingConfigID == eventMixConfig::k5Cent)      maxDiffMultMix = 5;
     */
     //
     // -- INITIALIZATION ----------------------------------------------------------------------------
@@ -140,34 +135,28 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
         ::Error("AddTaskKStarPlusMinus", "No analysis manager to connect to.");
         return NULL;
     }
-    
     // create the task and configure
-    TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
-        AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-    //    task->SelectCollisionCandidates(AliVEvent::kMB);
-	task->UseESDTriggerMask(triggerMask);
-       if (isPP)
-	 task->UseMultiplicity("QUALITY");
-       else
-	 task->UseMultiplicity("AliMultSelection_V0M");//Only for RunII        
-       
-
-    //  task->UseMultiplicity("AliMultSelection_V0A");
-       
-    // task->UseCentrality("V0M");
-    // task->UseMultiplicity("");
-     
-     // set event mixing options
+    TString taskName = Form("KStarPlusMinus%s%s", (isAOD? "AOD" : "PbPb"), (isMC ? "MC" : "Data"));
+    AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
+   
+    //trigger 
+    if (!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
+    else task->SelectCollisionCandidates(triggerMask); //AOD
+    //    if (isPP)
+    // task->UseMultiplicity("QUALITY");
+    // else
+      task->UseMultiplicity("AliMultSelection_V0M");//Only for RunII        
+    // set event mixing options
      task->UseContinuousMix();
     //task->UseBinnedMix();
      task->SetNMix(nmix);
      task->SetMaxDiffVz(maxDiffVzMix);
-    task->SetMaxDiffMult(maxDiffMultMix);
-    if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
+     task->SetMaxDiffMult(maxDiffMultMix);
+     task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
     //task->SetUseTimeRangeCut(timeRangeCut);
-    task->UseMC(isMC);    
-
-    ::Info("AddAnalysisTaskTOFKStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %\5.3f",  nmix, maxDiffVzMix, maxDiffMultMix));
+     task->UseMC(isMC);    
+     
+     ::Info("AddAnalysisTaskTOFKStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %\5.3f",  nmix, maxDiffVzMix, maxDiffMultMix));
     
     mgr->AddTask(task);
     
@@ -197,9 +186,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
     //multiplicity
     Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
-    if(isPP)
-    outMult->AddAxis(multID,400,0.5,400.5);
-    else outMult->AddAxis(multID,100,0.,100.);
+     outMult->AddAxis(multID,100,0.,100.);
     
     TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 240,-12.0,12.0);
     task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
@@ -232,26 +219,22 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusPbPbRun2
     PairCutsMix->SetCutScheme(cutY->GetName());
     //
     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-    // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinuspPbRun2.C");
-    // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
-    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPb2018.C");
-
-    //    gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
-   
-      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun2.C");
-  
-  
-      
-  //    gROOT->LoadMacro("ConfigKStarPlusMinusPbPb2018.C");
 
 
+ 
      if (isMC) {
        Printf("========================== MC analysis - PID cuts not used");
     } else
        Printf("========================== DATA analysis - PID cuts used");
-    
- 
-     if(!ConfigKStarPlusMinusPbPbRun2(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseArmentousCut, ArmentousParameter, massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame,PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, Sys, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin)) return 0x0;
+
+
+ #ifdef __CINT__
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusPbPbRun2.C");
+  #endif 
+
+  if(!ConfigKStarPlusMinusPbPbRun2(task, isMC, aodFilterBit,piPIDCut,ThetaStar,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, 
+  monitorOpt.Data(), UseArmentousCut,ArmentousParameter,massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn,
+  k0sDaughDCA,"", PairCutsSame,PairCutsMix, DCAxy, enableSys, Sys, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin)) return 0x0;
     
      //
      // -- CONTAINERS --------------------------------------------------------------------------------

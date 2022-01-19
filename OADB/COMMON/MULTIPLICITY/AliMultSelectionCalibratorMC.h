@@ -81,6 +81,7 @@ private:
 
     AliMultInput     *fInput;     //Object for all input
     AliMultSelection *fSelection; //Object for all estimators
+    AliMultSelection *fSelectionMC; //Object for all estimators
 
     // Object for storing event selection configuration
     AliMultSelectionCuts *fMultSelectionCuts;

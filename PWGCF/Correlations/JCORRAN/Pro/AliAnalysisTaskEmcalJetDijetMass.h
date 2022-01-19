@@ -26,7 +26,8 @@
 #include "THistManager.h"
 //#include "AliAnalysisTaskEmcalJetDijetMassHisto.h"
 #include "AliJCDijetHistos.h"
-#include "AliJCDijetAna.h"
+#include "AliJEmcalDijetAna.h"
+//#include "AliAnalysisTaskEmcalJetDijetMassHistos.h"
 
 /**
  * \class AliAnalysisTaskEmcalJetDijetMass
@@ -105,11 +106,13 @@ static AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
 //void                        DoClusterLoop()                                   ;
 //void                        DoCellLoop()                                      ;
 
-//THistManager                fHistManager                                      ;///< Histogram manager
+  THistManager                fHistManager                                      ;///< Histogram manager
 //AliAnalysisTaskEmcalJetDijetMassHisto *fhistos;
-  AliJCDijetAna *fana;
+  AliJEmcalDijetAna *fana;
   //AliJCDijetAna *fanaMC;
-  AliJCDijetHistos *fhistos;
+  //AliJCDijetHistos *fhistos;  ///<
+  //AliAnalysisTaskEmcalJetDijetMassHistos *fEmcalHistos; ///<
+  TH1D* hTest; ///<
   //AliJCDijetHistos *fhistosDetMC;
 
  private:
@@ -132,6 +135,8 @@ static AliAnalysisTaskEmcalJetDijetMass *AddTaskEmcalJetDijetMass(
   double fdeltaPhiCut;
   double fmatchingR;
   double ftrackingIneff;
+  //TH1F *hBinning;
+  //TH1F *hBinningALICE;
 
 
   /// \cond CLASSIMP

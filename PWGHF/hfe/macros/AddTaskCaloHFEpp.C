@@ -34,9 +34,11 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		TString  pte = "pte",
 		Double_t MassMin,
 		Double_t nref,
+		Double_t nrefV0,
 		TString estimatorFilename,
 		Int_t minNtr,
-		Int_t maxNtr)
+		Int_t maxNtr,
+                Int_t mtype)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -77,9 +79,11 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     task -> SetptCut(pte);
     task -> SetMassMin(MassMin);
     task -> SetNref(nref);
+    task -> SetNrefV0(nrefV0);
     task -> SetMinNtr(minNtr);
     task -> SetMaxNtr(maxNtr);
     task -> SetEstimatorFile(estimatorFilename);
+    task -> SetMultType(mtype);
 
     /*
     TFile* fEstimator=TFile::Open(estimatorFilename.Data());

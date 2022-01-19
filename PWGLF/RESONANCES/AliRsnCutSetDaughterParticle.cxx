@@ -542,6 +542,20 @@ void AliRsnCutSetDaughterParticle::Init()
       SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
        break;     
 
+    case AliRsnCutSetDaughterParticle::kTPCpidTOFveto:
+      iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+      AddCut(fCutQuality);
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+       break;     
+
     case AliRsnCutSetDaughterParticle::kCombinedPidBestPtDep:
       /* Set TPC  PID (if no TOF)*/
       // all   below  500 MeV: 3sigma

@@ -175,13 +175,15 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys()
      fHistMCtruthK0sPt(0),
      fHistMCtruthLambdaPt(0),
      fHistMCtruthAntiLambdaPt(0),
-
+     fData2018(kFALSE),
      fAnalysisMC(kFALSE),
      fRejectTrackPileUp(kTRUE),
      fRejectV0PileUp(kTRUE),
      fV0h(kTRUE),
      fhh(kTRUE),
      fMCArray(NULL),
+     fIsPileUpCuts(kFALSE),
+
      //--------------------------Correction---------------------------------
      fEffCorr(kFALSE),
      fEffList(0),
@@ -317,13 +319,15 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys(const char 
      fHistMCtruthK0sPt(0),
      fHistMCtruthLambdaPt(0),
      fHistMCtruthAntiLambdaPt(0),
-    
+     fData2018(kFALSE),
      fAnalysisMC(kFALSE),
      fRejectTrackPileUp(kTRUE),
      fRejectV0PileUp(kTRUE),
      fV0h(kTRUE),
      fhh(kTRUE),
      fMCArray(NULL),
+     fIsPileUpCuts(kFALSE),
+
      //------------------------------Correction----------------------------------
      fEffCorr(effCorr),
      fEffList(0),
@@ -738,7 +742,7 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
   tQAEvent->Add(fHistCentVtx);
 
  // TH1F *fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 2000, 0, 2000);
-  TH1F *fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 4, 0, 4);
+  TH1F *fHistMultiMain = new TH1F("fHistMultiMain", "Multiplicity of main events", 5, 0, 5);
   tQAEvent->Add(fHistMultiMain);
 
   TH1F *fhEventCentAfterPilp = new TH1F( "fhEventCentAfterPilp","Event distribution to centrality after pile up remove ; Centrality ; Number of Events",90, 0., 90); 
@@ -1756,8 +1760,23 @@ void AliAnalysisTaskV0ChCorrelationsys::UserExec(Option_t *)
 
     // physics selection
     UInt_t maskIsSelected= inEvMain->IsEventSelected();
-    Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
-    if (!isINT7selected) return;
+   // Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
+   // if (!isINT7selected) return;
+
+
+ if(!fData2018){if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
+
+ if(fData2018){
+ if(!(maskIsSelected & (AliVEvent::kCentral |AliVEvent::kINT7))) {
+  return; }
+
+else{
+    {if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
+   }
+  }
+
+
+
 
     AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());
   
@@ -1813,6 +1832,7 @@ if( !MultSelection) {
     ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fhEventAf"))->Fill(lCent);
     ((TH2F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistCentVtx"))->Fill(lCent,lPVz);
     ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fhEventCentAfterPilp"))->Fill(lCent);
+    ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(4.5);;
    
 
 //here is the =TObjArray for Mc Closure test  
@@ -1838,23 +1858,54 @@ if( !MultSelection) {
 
     Int_t iMC = 0;
     if(fAnalysisMC){
-    AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAOD->FindListObject(AliAODMCHeader::StdBranchName());
-    Float_t vzMC = aodMCheader->GetVtxZ();
-    if (TMath::Abs(vzMC) >= fPrimaryVertexCut) return;
 
-    //retreive MC particles from event
+
+//retreive MC particles from event
    fMCArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
-//    fMCArray = (TClonesArray*)fAOD->GeTList()->FindObject(AliAODMCParticle::StdBranchName());
+
     if(!fMCArray){
       Printf("No MC particle branch found");
       return;
     }
-    //--------------------------------------------------------------------------------
 
     Int_t nMCAllTracks =fMCArray->GetEntriesFast();
-    // new tracks array - without injected signal
-    TObjArray * mcTracks = new TObjArray;
-    //selectedMCTracks->SetOwner(kTRUE);
+
+
+        if(fIsPileUpCuts){
+
+////pile up
+    AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAOD->FindListObject(AliAODMCHeader::StdBranchName());
+      if(!aodMCheader) {
+                printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+                return;
+            }
+
+
+ Bool_t isPileupInGeneratedEvent = kFALSE;
+            isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMCheader,"Hijing");
+            if(isPileupInGeneratedEvent) return;
+
+    //--------------------------------------------------------------------------------
+   }
+
+
+
+  //  AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAOD->FindListObject(AliAODMCHeader::StdBranchName());
+   // Float_t vzMC = aodMCheader->GetVtxZ();
+   // if (TMath::Abs(vzMC) >= fPrimaryVertexCut) return;
+
+    //retreive MC particles from event
+  // fMCArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
+   // if(!fMCArray){
+     // Printf("No MC particle branch found");
+     // return;
+   // }
+    //--------------------------------------------------------------------------------
+
+  //  Int_t nMCAllTracks =fMCArray->GetEntriesFast();
+
+   // TObjArray * mcTracks = new TObjArray;
+
  
     for (Int_t i = 0; i < nMCAllTracks; i++){
         AliAODMCParticle *mcTrack = (AliAODMCParticle*)fMCArray->At(i);
@@ -1863,16 +1914,16 @@ if( !MultSelection) {
             continue;
         }
 
-       mcTracks->Add(mcTrack);
-    }
+     //  mcTracks->Add(mcTrack);
+  //  }
 
-    Int_t nMCTracks = mcTracks->GetEntriesFast();
-    for (iMC = 0; iMC < nMCTracks; iMC++){
-      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcTracks->At(iMC);
-      if (!mcTrack) {
-        Error("ReadEventAODMC", "Could not receive particle %d", iMC);
-        continue;
-      }
+  //  Int_t nMCTracks = mcTracks->GetEntriesFast();
+  //  for (iMC = 0; iMC < nMCTracks; iMC++){
+   //   AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcTracks->At(iMC);
+    //  if (!mcTrack) {
+     //   Error("ReadEventAODMC", "Could not receive particle %d", iMC);
+     //   continue;
+    //  }
          
       //track processing
       Double_t mcTrackEta = mcTrack->Eta();
@@ -1882,7 +1933,12 @@ if( !MultSelection) {
       Bool_t TrEtaMax = TMath::Abs(mcTrackEta)<0.8;
       Bool_t TrPtMin = mcTrackPt>fTrackPtMin;
       Bool_t TrCharge = (mcTrack->Charge())!=0;
-      if (TrIsPrim && TrEtaMax && TrPtMin && TrCharge){
+      Bool_t TrPtMax = mcTrackPt<fTrackPtMax;
+      if(!mcTrack->IsPhysicalPrimary()) continue ;
+      if(!mcTrack->IsPrimary()) continue;
+
+     // if (TrIsPrim && TrEtaMax && TrPtMin && TrCharge){
+      if (TrEtaMax && TrPtMax && TrPtMin && TrCharge){
 
 
          fHistMCtruthTrkPtEta->Fill(mcTrackPt,mcTrackEta);
@@ -1891,35 +1947,35 @@ if( !MultSelection) {
 
               } 
 
+
+
 if (TrIsPrim && TrEtaMax && TrCharge && mcTrackPt>fV0PtMin){
    mcTriggerTracks->Add(new AliV0XiParticles(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),mcTrack->GetLabel()));
 
-//cout<<mcTrackPt<<endl;
+
                                                        
     }
  
 
-      }
+     // }
   
 
 
 //loop for V0 
- for (Int_t i = 0; i < nMCAllTracks; i++){
-        AliAODMCParticle *mcTrack = (AliAODMCParticle*)fMCArray->At(i);
-        if (!mcTrack) {
-            Error("ReadEventAODMC", "Could not receive particle %d", i);
-            continue;
-        }
+ //for (Int_t i = 0; i < nMCAllTracks; i++){
+     //   AliAODMCParticle *mcTrack = (AliAODMCParticle*)fMCArray->At(i);
+       // if (!mcTrack) {
+         //   Error("ReadEventAODMC", "Could not receive particle %d", i);
+         //   continue;
+      //  }
 
 
-if ((mcTrack->GetStatus() == 21)
-          ||(mcTrack->GetPdgCode() == 443 && mcTrack->GetMother() == -1))
-     break;
+if ((mcTrack->GetStatus() == 21)||(mcTrack->GetPdgCode() == 443 && mcTrack->GetMother() == -1))break;
 
-      Double_t mcTrackEta = mcTrack->Eta();
-      Double_t mcTrackPt = mcTrack->Pt();
-      Double_t mcTrackPhi = mcTrack->Phi();
-      if(!mcTrack->IsPhysicalPrimary()) continue ;
+   //   Double_t mcTrackEta = mcTrack->Eta();
+   //   Double_t mcTrackPt = mcTrack->Pt();
+     // Double_t mcTrackPhi = mcTrack->Phi();
+     // if(!mcTrack->IsPhysicalPrimary()) continue ;
 
   //V0 processing
     if(TMath::Abs(mcTrackEta) < fV0Eta && mcTrackPt > fV0PtMin && mcTrackPt < fV0PtMax){    
@@ -3080,6 +3136,14 @@ if(fEffCorr){
                   Double_t spSigMixTrk[7] = {dPhiMix, dEtaMix, atrTrig->Pt(), atr->Pt(),lCent, lPVz, 1.};
                   ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk, 1/weight);
                 }
+
+else{
+
+ Double_t spSigMixTrk[7] = {dPhiMix, dEtaMix, atrTrig->Pt(), atr->Pt(),lCent, lPVz, 1.};
+                  ((THnSparseF*)((TList*)fOutput3->FindObject("Track"))->FindObject("fHistdPhidEtaMixTrk"))->Fill(spSigMixTrk);
+
+}
+
 
 
 }}

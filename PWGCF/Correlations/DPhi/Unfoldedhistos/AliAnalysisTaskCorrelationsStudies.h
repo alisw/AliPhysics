@@ -130,6 +130,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     TRandom3                   *fRandomGenerator;             ///< the random generator object instance for enforcing the efficiency profile
     const TH1                  *fhV0MCentMult;                ///< the V0M centrality / multiplicity estimation histogram
     const TH1                  *fhCL1MCentMult;               ///< the CL1M centrality / multiplicity estimation histogram
+    const TH1                  *fhCL1EtaGapMCentMult;         ///< the CL1M with an eta gap centrality / multiplicity estimation histogram
     TH3F                       *fhWeightsTrack_1;             ///< the weights histogram for track one
     TH3F                       *fhWeightsTrack_2;             ///< the weights histogram for track two
     const TH2                  *fhPtAverageTrack_1;           ///< the track one \f$ \langle p_{T>} \rangle \f$

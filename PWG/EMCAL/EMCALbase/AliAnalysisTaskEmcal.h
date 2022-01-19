@@ -304,6 +304,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
     kMCHerwig6,
     kMCHepMCPtHard,
     kMCHepMCMB,
+    kMCPythiaWeighted,
     kNoMC
   };
 
@@ -482,6 +483,18 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @param i If true the production is handled as a pt-hard production
    */
   void                        SetIsHepMC(Bool_t i)                                 { fIsHepMC          = i                              ; }
+
+  /**
+   * @brief Define production as event-weighted production
+   * 
+   * Production is event weighted. In this case the pt-hard spectrum is biased
+   * as events with a high-pt hard are simulated with a higher probability than
+   * expected. In order to get the physical spectrum shape the histograms have
+   * to be filled with the event weight from the event header as weight.
+   * 
+   * @param isWeighted If true the production is an event-weighed production
+   */
+  void                        SetIsWeighted(Bool_t isWeighted)                     { fIsWeighted       = isWeighted                     ; }             
 
   /**
    * @brief Set type of the MC production
@@ -677,6 +690,12 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return Event weight (-1 if not a PPYTHIA- or HepMC-based production) 
    */
   double                      GetEventWeightFromHeader()                      const;
+
+  /**
+   * @brief Check whether the task was configured for running on an event-weighed sample
+   * @return true if the sample is event weighted, false otherwise 
+   */
+  bool                        IsWeighted()                                    const { return fIsWeighted; }
 
   /**
    * @brief Switch on pt-hard bin scaling
@@ -1362,6 +1381,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
   Bool_t                      fIsHepMC;                    ///< trigger, if it is a HepMC-based production
+  Bool_t                      fIsWeighted;                 ///< Weighted production, event weight in histograms
   Bool_t                      fGetPtHardBinFromName;       ///< Obtain pt-hard bin from file path
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
@@ -1385,60 +1405,62 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
 
   // Service fields
-  Int_t                       fRunNumber;                  //!<!run number (triggering RunChanged())
-  AliEventCuts                fAliEventCuts;               ///< Event cuts (run2 defaults)
-  AliAnalysisUtils           *fAliAnalysisUtils;           //!<!vertex selection (optional)
-  Bool_t                      fIsEsd;                      //!<!whether it's an ESD analysis
-  AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
-  TClonesArray               *fTracks;                     //!<!tracks
-  TClonesArray               *fCaloClusters;               //!<!clusters
-  AliVCaloCells              *fCaloCells;                  //!<!cells
-  AliVCaloTrigger            *fCaloTriggers;               //!<!calo triggers
-  TClonesArray               *fTriggerPatchInfo;           //!<!trigger patch info array
-  Double_t                    fCent;                       //!<!event centrality
-  Int_t                       fCentBin;                    //!<!event centrality bin
-  Double_t                    fEPV0;                       //!<!event plane V0
-  Double_t                    fEPV0A;                      //!<!event plane V0A
-  Double_t                    fEPV0C;                      //!<!event plane V0C
-  Double_t                    fVertex[3];                  //!<!event vertex
-  Double_t                    fVertexSPD[3];               //!<!event Svertex
-  Int_t                       fNVertCont;                  //!<!event vertex number of contributors
-  Int_t                       fNVertSPDCont;               //!<!event SPD vertex number of contributors
-  BeamType                    fBeamType;                   //!<!event beam type
-  AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
-  AliGenHerwigEventHeader    *fHerwigHeader;               //!<!event Herwig header
-  AliGenHepMCEventHeader     *fHepMCHeader;                //!<!event HepMC header
-  Float_t                     fPtHard;                     //!<!event \f$ p_{t}\f$-hard
-  Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
-  Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
-  Bool_t                      fPtHardInitialized;          //!<!flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
-  Bool_t                      fDoCheckPtHardBin;           ///< Flag whether the pt-hard bin between path and pt-hard value should be checked
-  Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
+  Int_t                       fRunNumber;                  //!<! run number (triggering RunChanged())
+  AliEventCuts                fAliEventCuts;               ///<  Event cuts (run2 defaults)
+  AliAnalysisUtils           *fAliAnalysisUtils;           //!<! vertex selection (optional)
+  Bool_t                      fIsEsd;                      //!<! whether it's an ESD analysis
+  AliEMCALGeometry           *fGeom;                       //!<! emcal geometry
+  TClonesArray               *fTracks;                     //!<! tracks
+  TClonesArray               *fCaloClusters;               //!<! clusters
+  AliVCaloCells              *fCaloCells;                  //!<! cells
+  AliVCaloTrigger            *fCaloTriggers;               //!<! calo triggers
+  TClonesArray               *fTriggerPatchInfo;           //!<! trigger patch info array
+  Double_t                    fCent;                       //!<! event centrality
+  Int_t                       fCentBin;                    //!<! event centrality bin
+  Double_t                    fEPV0;                       //!<! event plane V0
+  Double_t                    fEPV0A;                      //!<! event plane V0A
+  Double_t                    fEPV0C;                      //!<! event plane V0C
+  Double_t                    fVertex[3];                  //!<! event vertex
+  Double_t                    fVertexSPD[3];               //!<! event Svertex
+  Int_t                       fNVertCont;                  //!<! event vertex number of contributors
+  Int_t                       fNVertSPDCont;               //!<! event SPD vertex number of contributors
+  BeamType                    fBeamType;                   //!<! event beam type
+  AliGenPythiaEventHeader    *fPythiaHeader;               //!<! event Pythia header
+  AliGenHerwigEventHeader    *fHerwigHeader;               //!<! event Herwig header
+  AliGenHepMCEventHeader     *fHepMCHeader;                //!<! event HepMC header
+  Float_t                     fPtHard;                     //!<! event \f$ p_{t}\f$-hard
+  Int_t                       fPtHardBin;                  //!<! event \f$ p_{t}\f$-hard bin
+  Int_t                       fPtHardBinGlobal;            //!<! event \f$ p_{t}\f$-hard bin, detected from filename
+  Bool_t                      fPtHardInitialized;          //!<! flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
+  Bool_t                      fDoCheckPtHardBin;           ///<  Flag whether the pt-hard bin between path and pt-hard value should be checked
+  Int_t                       fNPtHardBins;                ///<  Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
-  Int_t                       fNTrials;                    //!<!event trials
-  Float_t                     fXsection;                   //!<!x-section from pythia header
-  AliEmcalPythiaInfo         *fPythiaInfo;                 //!<!event parton info
+  Int_t                       fNTrials;                    //!<! event trials
+  Float_t                     fXsection;                   //!<! x-section from pythia header
+  AliEmcalPythiaInfo         *fPythiaInfo;                 //!<! event parton info
   PWG::EMCAL::AliEmcalMCPartonInfo *fMCPartonInfo;         //!<! (HepMC) event parton info
 
   // Output
-  AliEmcalList               *fOutput;                     //!<!output list
-  TH1                        *fHistEventCount;             //!<!incoming and selected events
-  TH1                        *fHistTrialsAfterSel;         //!<!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsAfterSel;         //!<!total number of events per pt hard bin after selection
-  TProfile                   *fHistXsectionAfterSel;       //!<!x section from pythia header
-  TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
-  TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
-  TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
-  TH1                        *fHistPtHard;                 //!<!\f$ p_{t}\f$-hard distribution
-  TH2                        *fHistPtHardCorr;             //!<!Correlation between \f$ p_{t}\f$-hard value and bin
-  TH2                        *fHistPtHardCorrGlobal;       //!<!Correlation between \f$ p_{t}\f$-hard value and global bin
-  TH2                        *fHistPtHardBinCorr;          //!<!Correlation between global and local (per-event) \f$ p_{t}\f$-hard bin
-  TH1                        *fHistCentrality;             //!<!event centrality distribution
-  TH1                        *fHistZVertex;                //!<!z vertex position
-  TH1                        *fHistEventPlane;             //!<!event plane distribution
-  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
-  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
-  TH1                        *fHistTriggerClassesCorr;     //!<!corrected number of events in each trigger class
+  AliEmcalList               *fOutput;                     //!<! output list
+  TH1                        *fHistEventCount;             //!<! incoming and selected events
+  TH1                        *fHistTrialsAfterSel;         //!<! total number of trials per pt hard bin after selection
+  TH1                        *fHistEventsAfterSel;         //!<! total number of events per pt hard bin after selection
+  TProfile                   *fHistXsectionAfterSel;       //!<! section from pythia header
+  TH1                        *fHistWeightsAfterSel;        //!<! integrated weights per pt hard bin after selection
+  TH1                        *fHistTrials;                 //!<! trials from pyxsec.root
+  TH1                        *fHistEvents;                 //!<! total number of events per pt hard bin
+  TProfile                   *fHistXsection;               //!<! section from pyxsec.root
+  TH1                        *fHistWeights;                //!<! integrated weights per pt hard bin before selection
+  TH1                        *fHistPtHard;                 //!<! \f$ p_{t}\f$-hard distribution
+  TH2                        *fHistPtHardCorr;             //!<! Correlation between \f$ p_{t}\f$-hard value and bin
+  TH2                        *fHistPtHardCorrGlobal;       //!<! Correlation between \f$ p_{t}\f$-hard value and global bin
+  TH2                        *fHistPtHardBinCorr;          //!<! Correlation between global and local (per-event) \f$ p_{t}\f$-hard bin
+  TH1                        *fHistCentrality;             //!<! event centrality distribution
+  TH1                        *fHistZVertex;                //!<! z vertex position
+  TH1                        *fHistEventPlane;             //!<! event plane distribution
+  TH1                        *fHistEventRejection;         //!<! book keep reasons for rejecting event
+  TH1                        *fHistTriggerClasses;         //!<! number of events in each trigger class
+  TH1                        *fHistTriggerClassesCorr;     //!<! corrected number of events in each trigger class
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented

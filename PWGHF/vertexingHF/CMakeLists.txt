@@ -81,6 +81,7 @@ set(SRCS
   AliAnalysisTaskSEB0toDStarPi.cxx
   AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
+  AliAnalysisTaskSEVertexingHFRun3Conversion.cxx
   AliAnalysisTaskMEVertexingHF.cxx
   AliAnalysisTaskSESelectHF.cxx
   AliAnalysisTaskSECleanupVertexingHF.cxx
@@ -111,6 +112,7 @@ set(SRCS
   AliCFVertexingHFLctoV0bachelor.cxx
   AliCFTaskVertexingHF.cxx
   AliCFTaskVertexingHFCutVarFDSub.cxx
+  AliCFTaskVertexingHFEMCal.cxx
   AliCFTaskForDStarAnalysis.cxx
   AliAnalysisTaskSEDStarJets.cxx
   AliAnalysisTaskSEDStarSpectra.cxx
@@ -177,6 +179,8 @@ set(SRCS
   AliAnalysisTaskCheckAODdAODMatching.cxx
   AliAnalysisTaskSEXicPlusToXi2PifromKFP.cxx
   AliAnalysisTaskSEXiccPPToXicPlusPiPlusfromKFP.cxx
+  AliAnalysisTaskSESemileptonicOmegac0KFP.cxx
+  AliRDHFCutsOmegactoeleOmegafromKFP.cxx
 )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

@@ -9,9 +9,11 @@ void AddTaskCMWPU(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=1
 {
   // standard with task
   printf("===================================================================================\n");
-  printf("\n                PID: Initialising AliAnalysisTaskCMWPU                             \n");
+  printf("\n                PID: Initialising AliAnalysisTaskCMWPU                           \n");
   printf("===================================================================================\n");
-
+  printf("************************************************************************************\n");
+  printf("############checks##############################");
+  
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   TString     outfileName = AliAnalysisManager::GetCommonFileName();

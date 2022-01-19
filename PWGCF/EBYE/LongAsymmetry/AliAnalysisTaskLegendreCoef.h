@@ -30,6 +30,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetNclTPC(Int_t ncl) { fTPCNcls = ncl; }
     void            SetPtLimits(Double_t ptmin, Double_t ptmax) { fPtmin = ptmin; fPtmax=ptmax; }
     void            SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+    void            SetFilterBit(Int_t filterbit) { fBit = filterbit; }
     void            SetPileUpRead(Bool_t flag) {fIsPileUpCuts = flag;}
     void            SetBuildBackground(Bool_t flag) {fIsBuildBG = flag; }
     void            SetBuildLegendre(Bool_t flag) {fIsBuildLG = flag; }
@@ -40,13 +41,16 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            GetMCNegBackground(TH2D* hist) { fMCNegBackgroundHist = hist; }
     void            GetMCChargedBackground(TH2D* hist) { fMCChargedBackgroundHist = hist; }
     void            GetNeventsCentHist(TH1D* hist) { fNeventCentHist = hist; }
+    void            SetGeneratorName(TString generator) {fGenName = generator; }
+    void            SetPileUpLevel(Int_t level) {fPileUpLevel = level; }
+    void            SetTPCNCrossedRows(UShort_t crossedrows) { fTPCNCrossedRows = crossedrows; }
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
     Double_t LegPol(int order, Double_t x);
     void    BuildBackground();
     void    BuildSignal();
-    void    BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, char *type);
+    void    BuildCoefficients(TH1D *signal, TH1D *background, Float_t centrality, TString type);
     AliAODEvent*    fAOD;                 //! input event
     TList*          fOutputList;          //! output list
 
@@ -57,6 +61,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Double_t fPtmin; //min PT
     Double_t fPtmax; //max PT
     Double_t fEta; //max eta
+    Int_t fBit; //filter bit - 96 default
     Bool_t fIsPileUpCuts; //pile up cuts flag
     Bool_t fIsBuildBG; //build background flag
     Bool_t fIsBuildLG; //calculates the legendre coefficients
@@ -67,6 +72,9 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     TH2D* fMCNegBackgroundHist; //input MC background histogram for negative tracks (eta,cent)
     TH2D* fMCChargedBackgroundHist; //input MC background histogram for positive and negative tracks (eta,cent)
     TH1D* fNeventCentHist; //input Nevents vs centrality histogram 
+    TString fGenName; //MC generator name
+    Int_t fPileUpLevel;
+    UShort_t  fTPCNCrossedRows;  
     AliEventCuts fEventCuts;
 
     AliAnalysisTaskLegendreCoef(const AliAnalysisTaskLegendreCoef&); // not implemented

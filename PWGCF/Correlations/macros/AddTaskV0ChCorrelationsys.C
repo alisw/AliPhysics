@@ -29,10 +29,12 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   // create task
 
   AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName.Data(),  cenMin,cenMax,effCorr);  
-
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetAnalysisMC(isMC);
   task->SetV0h(kTRUE);
   task->Sethh(kTRUE);
+  task->SetPileUpRead(kTRUE);
+
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(50000);
    task->SetPoolSize(200); 

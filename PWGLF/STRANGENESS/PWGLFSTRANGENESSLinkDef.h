@@ -25,7 +25,6 @@
 #pragma link C++ class AliAnalysisTaskExtractCascade+;
 #pragma link C++ class AliAnalysisTaskExtractCascadePbPbRun2+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceCascade+;
-#pragma link C++ class AliAnalysisTaskStrangenessLifetimes+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2+;
@@ -60,13 +59,6 @@
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
 #pragma link C++ class AliAnalysisTaskStrEffStudy+;
 #pragma link C++ class AliAnalysisTaskMCPredictions+;
-#pragma link C++ class Lifetimes::MiniV0+;
-#pragma link C++ class std::vector<Lifetimes::MiniV0>+;
-#pragma link C++ class Lifetimes::MCparticle+;
-#pragma link C++ class std::vector<Lifetimes::MCparticle>+;
-#pragma link C++ class Lifetimes::HyperTriton2Body+;
-#pragma link C++ class std::vector<Lifetimes::HyperTriton2Body>+;
-#pragma link C++ class Lifetimes::MiniEvent+;
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
 #pragma link C++ class AliReconstructedFirstC+;
 #pragma link C++ class AliReconstructedSecondC+;
@@ -78,9 +70,22 @@
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
+#pragma link C++ class AliAnalysisTaskStrVsMult_SelectionStudies+;
+#pragma link C++ class AliEventContainer+;
+#pragma link C++ class AliCascadeContainer+;
+#pragma link C++ class AliV0Container+;
+#pragma link C++ class AliTrackInfoContainer+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2+;
+#pragma link C++ class AliMCEventContainer+;
+#pragma link C++ class AliMCCascadeContainer+;
+#pragma link C++ class AliMCV0Container+;
+#pragma link C++ class AliMCTrackInfoContainer+;
+#pragma link C++ class AliMCGenParticleContainer+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2MC+;
 #pragma link C++ class AliAnalysisTaskV0multspec+;
+#pragma link C++ class AliAnalysisTaskXiNucleusInteraction+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

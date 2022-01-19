@@ -21,6 +21,9 @@ void AliRsnMiniPair::Fill
    
    fDCA1 = p1->DCA();
    fDCA2 = p2->DCA();
+	
+   fIndex1 = p1->Index();
+   fIndex2 = p2->Index();
 
    fMother = -1;
    fIsFromB = kFALSE;
@@ -550,5 +553,17 @@ Double_t AliRsnMiniPair::PairAsymmetry(Bool_t mc)
   Double_t asym=TMath::Abs(P1.Mag()-P2.Mag())/(P1.Mag()+P2.Mag());
 
   return asym;
+  
+}
+//__________________________________________________________________________________________________
+Bool_t AliRsnMiniPair::ContainsIndex(Int_t index)
+{
+
+//
+
+  if (fIndex1 == index) return kTRUE;
+  if (fIndex2 == index) return kTRUE;
+
+  return kFALSE;
   
 }

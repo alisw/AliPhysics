@@ -954,11 +954,16 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80083103","0dm00009f9730000dge0404000","111110205fg32230000","0h63103100b00010");
 
   } else if (trainConfig == 310) { // NL 01
-    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105fg32230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105fg32230000","0h63103100000010");
-  } else if (trainConfig == 311) { // NL 02
-    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790205fg32230000","0h63103100b00010");
-    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790205fg32230000","0h63103100000010");
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105fe30230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790105fe3n230000","0h63103100000010");
+  } else if (trainConfig == 311) { // open NCell
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","111110105fe30230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("80085103","0dm00009f9730000dge0404000","111110105fe30230000","0h63103100b00010");
+    cuts.AddCutPCMCalo("80083103","0dm00009f9730000dge0404000","111110105fe30230000","0h63103100b00010");
+  } else if (trainConfig == 312) { // NCell>=2
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","111110105fe3n230000","0h63103100000010");
+    cuts.AddCutPCMCalo("80085103","0dm00009f9730000dge0404000","111110105fe3n230000","0h63103100000010");
+    cuts.AddCutPCMCalo("80083103","0dm00009f9730000dge0404000","111110105fe3n230000","0h63103100000010");
 
   } else if (trainConfig == 320) { // smear EMC MB cent
     cuts.AddCutPCMCalo("a0110103","0dm00009f9730000dge0404000","111110105fg32230000","0h63103100b00010");
@@ -1022,6 +1027,12 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466000ha01cc00000","0h63103100000010"); // 0-100% without NL
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466530ha01cc00000","0h63103100000010"); // 0-100% with NL 1
     cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","24466540ha01cc00000","0h63103100000010"); // 0-100% with NL 2
+
+
+  } else if ( trainConfig == 1050){ // INT7, 
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466190sa01cc00000","0h63103100000010"); // INT7 no Trigger
+  } else if ( trainConfig == 1051){ // PHI7, 
+    cuts.AddCutPCMCalo("80062113","0dm00009f9730000dge0404000","24466190sa01cc00000","0h63103100000010"); //PHI7
 
   //************************************************ PCM- PHOS analysis 5 TeV pPb cent dep ************************************
   } else if (trainConfig == 1100){ // centrality dependent and with latest TM run 1

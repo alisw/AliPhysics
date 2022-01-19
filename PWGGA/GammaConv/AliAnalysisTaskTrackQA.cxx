@@ -23,7 +23,6 @@
 #include "AliAnalysisTaskTrackQA.h"
 #include "TChain.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrackCuts.h"

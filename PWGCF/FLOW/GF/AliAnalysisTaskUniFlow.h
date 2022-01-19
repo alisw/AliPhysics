@@ -170,19 +170,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void					  SetPhiInvMassMin(Double_t mass) { fCutPhiInvMassMin = mass; }
       void					  SetPhiInvMassMax(Double_t mass) { fCutPhiInvMassMax = mass; }
 
-      //correlations related setters
-      void            SetDoCorrelationsUsingGF(Bool_t use = kTRUE) { fCorrUsingGF = use;}
-      void            SetDoCorrelations(Bool_t use = kTRUE) { fCorrFill = use;}
-      void            SetDoMixedJustForGF(Bool_t use = kTRUE) { fMixedOnlyForGF = use; fCorrFill = use; fFillMixed = use; }
-      void            SetDEta(Int_t nBins, Double_t min, Double_t max) { fCorrDEtaBinNum = nBins; fCorrdEtaMin = min; fCorrdEtaMax = max; }
-      void            SetDPhi(Int_t nBins, Double_t min, Double_t max) { fCorrDPhiBinNum = nBins; fCorrdPhiMin = min; fCorrdPhiMax = max; }
-      void            SetDisablePtBinnedPool(Bool_t dis = kFALSE) {fUsePtBinnedEventPool = dis; }
-      void            SetDisableFillMixedCorrelations(Bool_t fill = kFALSE) { fFillMixed = fill;}
-      void            SetMaxPoolSize(Int_t size){fPoolSize = size; }
-      void            SetMergingCut(Double_t cut){ fMergingCut = cut; }
-      Bool_t          FillCorrelations();
-      Double_t        RangePhi(Double_t dPhi);
-      Double_t        GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
 
       AliEventCuts            fEventCuts; //
 
@@ -260,13 +247,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   FillPOIsVectorsCharged(const AliUniFlowCorrTask* task, Double_t dEtaGap, Double_t dPtLow, Double_t dPtHigh, std::array<Int_t, 4> &indexStart); // fill flow vectors p,q and s with POIs (for given species) for differential flow calculations for charged species with GF weights fix
       void                    ResetFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax], Int_t maxHarm = 8, Int_t maxWeightPower = 4, Bool_t usePow = kFALSE, std::vector<Int_t> maxPowVec = {}); // set values to TComplex(0,0,0) for given array
       void                    ListFlowVector(TComplex (&array)[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]) const; // printf all values of given Flow vector array
-
-      //dihadron corr related method
-      void                    ResetFlowVectorQdih(TComplex (&array)[fFlowBinNumberEtaSlices][6][3], Int_t harm); // set values to TComplex(0,0,0) for given array
-      void                    FillFlowQVectorsForDih(Double_t dWeight, Double_t dPhi, Double_t dEta, Int_t harm); // fill flow vector Q with RFPs for dihadron correlation study
-      void                    FillFlowQVectorsMEForDih(Double_t dWeight, Double_t dPhi, Double_t dEta, Int_t harm); // fill flow vector Q with RFPs for dihadron correlation study (mixed events)
-      void                    CalculateDihCorr(const AliUniFlowCorrTask* task) const;
-      void                    CalculateDihCorrMixed(const AliUniFlowCorrTask* task);
 
       TComplex                Q(Int_t n, Int_t p) const;
       TComplex                QGapPos(Int_t n, Int_t p) const;
@@ -404,27 +384,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  fFlowPeriodWeights; // [kFALSE] flag for using period-averaged weigths from weigths file; if false, only one set of histrograms is provided (average); for pp only
       Bool_t                  fFlowWeightsApplyForReco; //[kFALSE] flag for applying weights for Reco particles
       TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
-      // cuts & selection: correlations related
-      AliEventPoolManager*    fEventPoolMgr; // event pool manager
-      AliEventPool*           fPool; //
-      TObjArray*              fSelectedTracks; //! tracks for mixing
-      Bool_t                  fCorrUsingGF; // [kFALSE] fill correlations flag (but using GF and Q-cumulants)
-      Bool_t                  fCorrFill; // [kFALSE] fill correlations flag
-      Bool_t		              fFillMixed;		// [kTRUE] enable event mixing
-      Bool_t		              fMixedOnlyForGF;		// [kFALSE] mixing of events only with GF
-      Bool_t		              fUsePtBinnedEventPool;		// [kTRUE] enable filling mixed events based on pT dependence
-      Int_t                   fPoolSize; // [-1] maximum number of events, -1 means no limit
-      Int_t  		              fMixingTracks;	// [5000] size of track buffer for event mixing
-      Int_t  		              fMinEventsToMix;	// [5] min number of events for event mixing
-      Int_t                   fCorrDEtaBinNum; // [32] number of dEta bins for correlations
-      Int_t                   fCorrDPhiBinNum; // [72] number of dPhi bins for correlations
-      Double_t                fCorrdEtaMin; // [-1.6] min of dEta bins for correlations
-      Double_t                fCorrdEtaMax; // [1.6] max of dEta bins for correlations
-      Double_t                fCorrdPhiMin; // [-pi/2] min of dEta bins for correlations
-      Double_t                fCorrdPhiMax ; // [3/2 pi] max of dEta bins for correlations
-      Double_t                fEtaSlicesArr[fFlowBinNumberEtaSlices+1]; // array with lower
-      Int_t                   fMagFieldSign; // [0] mag field sign
-      Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system
@@ -539,8 +498,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhRefsPhi; //! pt distribution of selected RFPs
       TProfile*               fpRefsMult; //! <multiplicity>
       TH1D*                   fhChargedCounter; //! counter following charged track selection
-      THnSparseD*             fh4CorrelationsSE[kUnknown]; //! eta phi distributin of the same event
-      THnSparseD*             fh4CorrelationsME[kUnknown]; //! eta phi distributin for mixed events
       // PID
       TH1D*                   fhPIDCounter; //! counter for PID
       TH1D*                   fhPIDMult[3]; //! multiplicity distribution of selected pions
@@ -667,7 +624,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 28);
+      ClassDef(AliAnalysisTaskUniFlow, 29);
 };
 
 #endif
