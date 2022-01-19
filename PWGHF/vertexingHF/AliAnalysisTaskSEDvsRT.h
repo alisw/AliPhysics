@@ -138,7 +138,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT1,5); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,5); /// charmed hadrons vs. RT task
    /// \endcond
 };
 
