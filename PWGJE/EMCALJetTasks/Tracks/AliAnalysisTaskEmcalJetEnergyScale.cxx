@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -48,6 +49,8 @@
 #include "AliVEventHandler.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale)
+ClassImp(PWGJE::EMCALJetTasks::AngularityHandler)
+ClassImp(PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin)
 
 using namespace PWGJE::EMCALJetTasks;
 
@@ -262,6 +265,10 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
   fSampleSplitter = new TRandom(0);
 
+  if(fAngularityHandler) {
+    AliDebugStream(1) << *fAngularityHandler << std::endl;
+  }
+
   PostData(1, fOutput);
 }
 
@@ -269,7 +276,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
   if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
-  AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+  AliDebugStream(2) << "Using custom MC outlier rejection" << std::endl;
   AliJetContainer *outlierjets(nullptr);
   switch(fJetTypeOutliers) {
     case kOutlierPartJet: outlierjets = GetJetContainer(fNameParticleJets); break;
@@ -282,7 +289,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
   if(max != jetiter.end())  {
     // At least one jet found with pt > n * pt-hard
-    AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    AliDebugStream(2) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
     if(fDebugMaxJetOutliers) {
       // cross check whether implemenation using stl gives the same result as a trivial manual iteration
       // over all jets
@@ -304,18 +311,18 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
 }
 
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
-  AliDebugStream(1) << "Next event" << std::endl;
+  AliDebugStream(2) << "Next event" << std::endl;
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
     auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
-    AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
+    AliDebugStream(3) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
     if(!mctrigger){
       AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
       return false;
     }
     if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
   }
-  AliDebugStream(1) << "event selected" << std::endl;
+  AliDebugStream(3) << "event selected" << std::endl;
   fHistos->FillTH1("hEventCounter", 1);
 
   if(fMCPartonInfo) {
@@ -347,15 +354,15 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   AliClusterContainer *clusters(detjets->GetClusterContainer());
   AliTrackContainer *tracks(static_cast<AliTrackContainer *>(detjets->GetParticleContainer()));
   AliParticleContainer *particles(partjets->GetParticleContainer());
-  AliDebugStream(1) << "Have both jet containers: part(" << partjets->GetNAcceptedJets() << "|" << partjets->GetNJets() << "), det(" << detjets->GetNAcceptedJets() << "|" << detjets->GetNJets() << ")" << std::endl;
+  AliDebugStream(3) << "Have both jet containers: part(" << partjets->GetNAcceptedJets() << "|" << partjets->GetNJets() << "), det(" << detjets->GetNAcceptedJets() << "|" << detjets->GetNJets() << ")" << std::endl;
 
   std::array<double, 17> ptbinsDebug = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
   std::vector<AliEmcalJet *> acceptedjets;
   for(auto detjet : detjets->accepted()){
-    AliDebugStream(2) << "Next jet" << std::endl;
+    AliDebugStream(4) << "Next jet" << std::endl;
     auto partjet = detjet->ClosestJet();
     if(!partjet) {
-      AliDebugStream(2) << "No tagged jet" << std::endl;
+      AliDebugStream(4) << "No tagged jet" << std::endl;
       fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
       if(isClosure) {
         fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 0);
@@ -928,7 +935,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
 }
 
 
-void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::InitFromFile(const char *filename) {
+void AngularityHandler::InitFromFile(const char *filename) {
   fBins.Clear();
   std::unique_ptr<TFile> reader(TFile::Open(filename, "READ"));
   std::string rstring=Form("R%02d", int(fRadius*10.));
@@ -936,6 +943,8 @@ void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::InitFromFile(const c
   if(!hist) {
     AliErrorStream() << "Mean angularity dist not found for R = " << fRadius << std::endl;
     return;
+  } else {
+    AliDebugStream(1) << "Using histogram " << hist->GetName() << " for R=" << fRadius << std::endl;
   }
   for(int ib = 0; ib < hist->GetXaxis()->GetNbins(); ib++){
     auto min = hist->GetXaxis()->GetBinLowEdge(ib+1),
@@ -945,7 +954,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::InitFromFile(const c
   }
 }
 
-void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::SetBin(double min, double max, double value) {
+void AngularityHandler::SetBin(double min, double max, double value) {
   bool hasOverlap = false;
   for(auto b : fBins) {
     AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
@@ -961,26 +970,56 @@ void AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::SetBin(double min, d
   fBins.Add(new AngularityBin(min, max, value));
 }
 
-double AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::GetValue(double pt) const {
+double AngularityHandler::GetValue(double pt) const {
   auto result = FindBin(pt);
   return result.Value();
 }
 
-bool AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::IsHigherAngularity(double pt, double angularity) const {
+bool AngularityHandler::IsHigherAngularity(double pt, double angularity) const {
   auto result = FindBin(pt);
   if(!result.IsOK()) throw BinNotFoundException(pt);
   return angularity > result.Value();
 }
 
-AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::AngularityBin AliAnalysisTaskEmcalJetEnergyScale::AngularityHandler::FindBin(double pt) const {
+AngularityHandler::AngularityBin AngularityHandler::FindBin(double pt) const {
   AngularityBin result;
   for(auto b : fBins) {
     AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
     if(!nextbin) continue;  
     if(nextbin->IsInRange(pt)) {
       result = *nextbin;
+      AliDebugStream(3) << "Found bin with minb " << result.Min() << " and maxb " << result.Max() << " for pt = " << pt << std::endl;
       break;
     }
   }
   return result;
+}
+
+void AngularityHandler::PrintStream(std::ostream &stream) const {
+  stream << "Angularity Handler for R = " << fRadius << std::endl;
+  stream << "===========================================" << std::endl;
+  for(const auto binObject : fBins) {
+    auto bin = static_cast<AngularityBin *>(binObject);
+    if(bin) {
+      stream << *bin << std::endl;
+    }
+  }
+}
+
+void AngularityHandler::AngularityBin::PrintStream(std::ostream &stream) const {
+  stream << "min " << fMin << ", max " << fMax << ", value " << fValue;
+}
+
+void AngularityHandler::Print(Option_t *) const {
+  std::cout << *this << std::endl;
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler &handler) {
+  handler.PrintStream(stream);
+  return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin &bin) {
+  bin.PrintStream(stream);
+  return stream;
 }
