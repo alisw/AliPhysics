@@ -1587,34 +1587,36 @@ void AliHFSystErr::InitD0toKpi20161718pp13TeVmb(){
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2016pp13TeV");
 
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm",24,1,24);
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); //
 
   // Branching ratio
-  fBR = new TH1F("fBR","fBR",24,1,24);
+  fBR = new TH1F("fBR","fBR",24,0,24);
   for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.89)
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,1,24);
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   fTrackingEff->SetBinContent(1,0.035);
-  fTrackingEff->SetBinContent(2,0.04);
-  for(Int_t i=3;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
+  fTrackingEff->SetBinContent(2,0.035);
+  fTrackingEff->SetBinContent(3,0.04);
+  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
 
   // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",24,1,24);
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
   fRawYield->SetBinContent(1,0.04);
-  for(Int_t i=2;i<=24;i++)fRawYield->SetBinContent(i,0.02);
+  fRawYield->SetBinContent(2,0.04);
+  for(Int_t i=3;i<=24;i++)fRawYield->SetBinContent(i,0.02);
 
   // Cuts efficiency (from cuts variation)
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,1,24);
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.03);
 
   // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,1,24);
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.00); // 0%
 
   // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,1,24);
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
   for(Int_t i=2;i<=24;i++) fMCPtShape->SetBinContent(i,0);
   fMCPtShape->SetBinContent(1,0.05);
 
@@ -1631,24 +1633,25 @@ void AliHFSystErr::InitD0toKpi20161718pp13TeVlm(){
   SetNameTitle("AliHFSystErr","SystErrD0toKpi2016pp13TeV");
 
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm",24,1,24);
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
   for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); //
 
   // Branching ratio
-  fBR = new TH1F("fBR","fBR",24,1,24);
+  fBR = new TH1F("fBR","fBR",24,0,24);
   for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.89)
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,1,24);
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   fTrackingEff->SetBinContent(1,0.035);
-  fTrackingEff->SetBinContent(2,0.04);
+  fTrackingEff->SetBinContent(2,0.035);
+  fTrackingEff->SetBinContent(3,0.04);
   for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,1,24);
   fRawYield->SetBinContent(1,0.04);
-  for(Int_t i=2;i<12;i++)fRawYield->SetBinContent(1,0.02);
-  fRawYield->SetBinContent(1,0.04);
+  fRawYield->SetBinContent(2,0.04);
+  for(Int_t i=3;i<12;i++)fRawYield->SetBinContent(1,0.02);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,1,24);
@@ -1660,8 +1663,9 @@ void AliHFSystErr::InitD0toKpi20161718pp13TeVlm(){
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,1,24);
-  for(Int_t i=2;i<=24;i++) fMCPtShape->SetBinContent(i,0);
+  for(Int_t i=3;i<=24;i++) fMCPtShape->SetBinContent(i,0);
   fMCPtShape->SetBinContent(1,0.05);
+  fMCPtShape->SetBinContent(2,0.05);
 
   return;
 }
