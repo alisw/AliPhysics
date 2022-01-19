@@ -207,6 +207,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
   }
 
+  void EnableSparseReflections(){fFillSparseReflections=kTRUE;}
  
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
@@ -519,8 +520,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   Double_t fMinFastCosPointXYSq; // variable used in fast selection
   TH2D *fHistFastInvMass;//!<! fast inv mass plot
   Double_t fRejFactorFastAnalysis; // random rejection factor for debugging, makes sense if between 0 (reject all, also if <0) and 1 (keep all, also if>1)
+  Bool_t fFillSparseReflections;  // flag to enable the reflection sparse
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXicTopKpi,24); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,25); /// AliAnalysisTaskSE for Xic->pKpi
   /// \endcond
 };
 

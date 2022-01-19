@@ -247,6 +247,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fMinFastCosPointXYSq(-1)
   ,fHistFastInvMass(0x0)
   ,fRejFactorFastAnalysis(1.1)
+  ,fFillSparseReflections(kFALSE)
 {
   /// Default constructor
 
@@ -412,6 +413,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fMinFastCosPointXYSq(-1)
   ,fHistFastInvMass(0x0)
   ,fRejFactorFastAnalysis(1.1)
+  ,fFillSparseReflections(kFALSE)
 {
   /// Default constructor
 
@@ -870,7 +872,7 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   }
   if(!fFillTree){
     fhSparseAnalysis=new THnSparseF("fhSparseAnalysis","fhSparseAnalysis;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
-    fhSparseAnalysisReflections=new THnSparseF("fhSparseAnalysisReflections","fhSparseAnalysisReflections;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
+    if(fFillSparseReflections)  fhSparseAnalysisReflections=new THnSparseF("fhSparseAnalysisReflections","fhSparseAnalysisReflections;pt;mass;Lxy;nLxy;cosThatPoint;normImpParXY;infoMC;PIDcase;channel",9,nbinsSparse,lowEdges,upEdges);
   }
   
   // add also here the axis for Lc decay channel (MC)
@@ -2056,7 +2058,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
           if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 	        fhSparseAnalysis->Fill(point);
         }
-        else if(converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22){
+        else if((converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22) && fFillSparseReflections){
           /// these are real Lc,Xic->piKp reconstructed as Lc,Xic->pKpi - reflections!
           if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
           fhSparseAnalysisReflections->Fill(point);
@@ -2078,7 +2080,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
           }
           else  fhSparseAnalysis->Fill(point);
         }
-        else if(converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22){
+        else if((converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22) && fFillSparseReflections){
           /// these are real Lc,Xic->piKp reconstructed as Lc,Xic->pKpi - reflections!
           if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
           if(fNoStdPIDcases){
@@ -2112,7 +2114,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
           if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 	        fhSparseAnalysis->Fill(point);
         }
-        else if(converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21){
+        else if((converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) && fFillSparseReflections){
           /// these are real Lc,Xic->pKpi reconstructed as Lc,Xic->piKp - reflections!
           if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
           fhSparseAnalysisReflections->Fill(point);
@@ -2134,7 +2136,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
           }
           else  fhSparseAnalysis->Fill(point);
         }
-        else if(converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21){
+        else if((converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) && fFillSparseReflections){
           /// these are real Lc,Xic->pKpi reconstructed as Lc,Xic->piKp - reflections!
           if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
           if(fNoStdPIDcases){
