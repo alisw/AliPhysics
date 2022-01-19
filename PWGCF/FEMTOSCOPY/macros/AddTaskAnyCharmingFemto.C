@@ -166,6 +166,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
+  config->SetPhiEtaBinnign(isMC);
 
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
