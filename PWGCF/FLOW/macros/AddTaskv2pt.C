@@ -24,9 +24,14 @@ void AddTaskv2pt(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10
   AliAnalysisTaskv2pt *task_CVE = new AliAnalysisTaskv2pt(TaskCVEPID);
 
   ///-------> Analysis Object Created, now pass the arguments
-  
-  task_CVE->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
-  if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger
+
+  if(sTrigger=="kAll")   // if We want MB Trigger for LHC10h
+    task_CVE->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral );      // default is kINT7
+  else if(sTrigger=="kINT7" || sTrigger=="kint7" || sTrigger=="KINT7")   // if We want MB Trigger for LHC10h
+    task_CVE->SelectCollisionCandidates(AliVEvent::kINT7);
+  else if(sTrigger=="kCentral")   // if We want MB Trigger for LHC10h
+    task_CVE->SelectCollisionCandidates(AliVEvent::kCentral);
+  else if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger for LHC10h
     task_CVE->SelectCollisionCandidates(AliVEvent::kMB);
   }
   ///Event cuts:

@@ -104,6 +104,7 @@ fHistoElectronTPCPID(0),
 fHistoElectronTOFPID(0),
 fHistoElectronTPCPIDSelTOF(0),
 fHistoMassConversions(0),
+fHistoOmegaMassvspTKFP(0),
 fWriteOmegac0Tree(kFALSE),
 fWriteOmegac0QATree(kFALSE),
 fWriteOmegac0MCGenTree(kFALSE),
@@ -143,6 +144,7 @@ fHistoElectronTPCPID(0),
 fHistoElectronTOFPID(0),
 fHistoElectronTPCPIDSelTOF(0),
 fHistoMassConversions(0),
+fHistoOmegaMassvspTKFP(0),
 fWriteOmegac0Tree(kFALSE),
 fWriteOmegac0QATree(kFALSE),
 fWriteOmegac0MCGenTree(kFALSE),
@@ -894,7 +896,12 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
             Float_t massOmegaMinus_Rec, err_massOmegaMinus;
             kfpOmegaMinus.GetMass(massOmegaMinus_Rec,err_massOmegaMinus);
             if(err_massOmegaMinus <= 0 ) continue;
-               
+            
+             //------- store the TH2F OmegaMassvspT ------
+             if(TMath::Abs(massOmegaMinus_Rec - massOmega) < fAnalCuts->GetProdMassTolOmegaRough()) {
+                 fHistoOmegaMassvspTKFP -> Fill( kfpOmegaMinus.GetMass(),kfpOmegaMinus.GetPt() ); // OmegaMinus
+             }
+            
             //chi2 >0 && NDF>0
             if(kfpOmegaMinus.GetNDF() <=0 || kfpOmegaMinus.GetChi2() <=0) continue;
                
@@ -1130,6 +1137,10 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         Float_t massOmegaPlus_Rec, err_massOmegaPlus;
         kfpOmegaPlus.GetMass(massOmegaPlus_Rec, err_massOmegaPlus);
         if ( err_massOmegaPlus<=0 ) continue;
+        //------ store the TH2F OmegaMassvspT ----
+        if (TMath::Abs(massOmegaPlus_Rec-massOmega) < fAnalCuts->GetProdMassTolOmegaRough()){
+            fHistoOmegaMassvspTKFP -> Fill( kfpOmegaPlus.GetMass(),kfpOmegaPlus.GetPt()); // OmegaPlus
+            }
 
         // chi2>0 && NDF>0
         if ( kfpOmegaPlus.GetNDF()<=0 || kfpOmegaPlus.GetChi2()<=0 ) continue;
@@ -1503,6 +1514,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineAnaHist()
     Double_t xmax[3] = {10.,0.5,0.5};
     fHistoMassConversions = new THnSparseF("fHistoMassConversions","",3,bins,xmin,xmax);
     fOutputList->Add(fHistoMassConversions);
+    
+    fHistoOmegaMassvspTKFP = new TH2F("fHistoOmegaMassvsPtKFP","Omega mass",100,1.67-0.05,1.67+0.05,20,0.,10.);
+    fOutputList->Add(fHistoOmegaMassvspTKFP);
     
     
     return;

@@ -115,6 +115,14 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistTPCnSigma_ele(0),
   fHistTPCnSigma_had(0),
   fHistTPCnSigma_eMC(0),
+	fHistdEdx(0),
+	fHistTPCnSigma_p(0),
+	fHistTPCnSigma_pele(0),
+	fHistTPCnSigma_phad(0),
+	fM20(0),
+	fM20_ele(0),
+	fM20_had(0),
+	fM20_2(0),
   fHistEopNsig(0),
   fHistEop(0),
   fHistEopHFE(0),
@@ -358,6 +366,14 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistTPCnSigma_ele(0),
 	fHistTPCnSigma_had(0),
 	fHistTPCnSigma_eMC(0),
+	fHistdEdx(0),
+	fHistTPCnSigma_p(0),
+	fHistTPCnSigma_pele(0),
+	fHistTPCnSigma_phad(0),
+	fM20(0),
+	fM20_ele(0),
+	fM20_had(0),
+	fM20_2(0),
 	fHistEopNsig(0),
 	fHistEop(0),
 	fHistEopHFE(0),
@@ -681,19 +697,43 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistCent = new TH1F("fHistCent","centrality distribution",100,0,100);
   fOutput->Add(fHistCent);
 
-  fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigms",100,0.,20.,250,-5.,5.);
+  fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigma",100,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma);
 
-  fHistTPCnSigma_ele = new TH2F("fHistTPCnSigma_ele","TPC nSigma electron;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fHistTPCnSigma_ele = new TH2F("fHistTPCnSigma_ele","TPC nSigma electron;p_{T}(GeV/c);n#sigma",20,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma_ele);
 
-  fHistTPCnSigma_had = new TH2F("fHistTPCnSigma_had","TPC nSigma hadron;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fHistTPCnSigma_had = new TH2F("fHistTPCnSigma_had","TPC nSigma hadron;p_{T}(GeV/c);n#sigma",20,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma_had);
 
-  fHistTPCnSigma_eMC = new TH2F("fHistTPCnSigma_eMC","TPC nSigma electron in MC;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fHistTPCnSigma_eMC = new TH2F("fHistTPCnSigma_eMC","TPC nSigma electron in MC;p_{T}(GeV/c);n#sigma",20,0.,20.,200,-10.,10.);
   fOutput->Add(fHistTPCnSigma_eMC);
 
-  fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-5,5,200,0.,4.);
+  fHistdEdx = new TH2F("fHistdEdx","All Track dEdx;p (GeV/c);dEdx",500,0,50,500,0,160);
+	fOutput->Add(fHistdEdx);
+
+  fHistTPCnSigma_p = new TH2F("fHistTPCnSigma_p","TPC nSigma;p (GeV/c);n#sigma",1000,0.,50.,200,-10.,10.);
+  fOutput->Add(fHistTPCnSigma_p);
+
+  fHistTPCnSigma_pele = new TH2F("fHistTPCnSigma_pele","TPC nSigma;p (GeV/c);n#sigma",1000,0.,50.,200,-10.,10.);
+  fOutput->Add(fHistTPCnSigma_pele);
+
+  fHistTPCnSigma_phad = new TH2F("fHistTPCnSigma_phad","TPC nSigma;p (GeV/c);n#sigma",1000,0.,50.,200,-10.,10.);
+  fOutput->Add(fHistTPCnSigma_phad);
+
+	 fM20 = new TH2F ("fM20","M20 vs pt distribution; pt(GeV/c); M20",500,0,50,400,0,2);
+   fOutput->Add(fM20);
+
+	 fM20_ele = new TH2F ("fM20_ele","M20 distribution ele; pt(GeV/c); M20",500,0,50,400,0,2);
+   fOutput->Add(fM20_ele);
+
+	 fM20_had = new TH2F ("fM20_had","M20 distribution had; pt(GeV/c); M20",500,0,50,400,0,2);
+	 fOutput->Add(fM20_had);
+
+	 fM20_2 = new TH2F ("fM20_2","M20 vs pt distribution (-1<nSigma<3 & 0.9<E/p<1.3); pt(GeV/c); M20",500,0,50,400,0,2);
+	 fOutput->Add(fM20_2);
+
+  fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-10,10,200,0.,4.);
   fOutput->Add(fHistEopNsig);
 
   //fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
@@ -1826,6 +1866,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
         // get track information
         Double_t pt = track->Pt(); 
+        Double_t trackp = track->P(); 
         Double_t px = track->Px(); 
         Double_t py = track->Py(); 
         Double_t pz = track->Pz(); 
@@ -1885,6 +1926,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
         //if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
+				fHistTPCnSigma_p->Fill(trackp,fTPCnSigma);
+				fHistdEdx->Fill(trackp,dEdx);
 
                epTarray[0] = pt;
                epTarray[1] = pz;
@@ -1932,6 +1975,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
             if(iSSlong)m20 =clustMatch->GetM02();
+
+						fM20->Fill(trackp,m20);
          
             //if(m20<0.01 || m20>0.35)continue;  // shower shape cut (not need for MB since vAN20180710)
             if(m20<fmimM20 || m20>fmaxM20)continue;  // shower shape cut (not need for MB since vAN20180710)
@@ -1958,8 +2003,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             // check nSigma Data and MC
             //if(eop>0.85 && eop<1.3 && m20>0.01 && m20<0.35)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
             //if(eop>0.2  && eop<0.7 && m20>0.01 && m20<0.35)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
-            if(eop>0.9  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(eop>0.8  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(eop>0.8  && eop<1.3 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_pele->Fill(trackp,fTPCnSigma);
+            if(eop>0.8  && eop<1.3 && fTPCnSigma>-1 && fTPCnSigma<3)fM20_2->Fill(trackp,m20);
             if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
+            if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_phad->Fill(trackp,fTPCnSigma);
+            if(eop>0.2  && eop<0.7 && m20>fmimM20 && m20<fmaxM20)fHistTPCnSigma_phad->Fill(trackp,fTPCnSigma);
             if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
  
             //if(fTPCnSigma<-2.5 && eop>fmimEop && eop<1.3)GetFakeHadronJet(pt,epTarray,rho);

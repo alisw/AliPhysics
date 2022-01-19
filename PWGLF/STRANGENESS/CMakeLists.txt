@@ -98,9 +98,20 @@ set(SRCS
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_BumpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_PileUpStudies.cxx
   HeavyIonsRun1Run2/AliAnalysisTaskStrVsMult_SelectionStudies.cxx
+  Cascades/Run2/AliEventContainer.cxx
+  Cascades/Run2/AliCascadeContainer.cxx
+  Cascades/Run2/AliV0Container.cxx
+  Cascades/Run2/AliTrackInfoContainer.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2.cxx
+  Cascades/Run2/AliMCEventContainer.cxx
+  Cascades/Run2/AliMCCascadeContainer.cxx
+  Cascades/Run2/AliMCV0Container.cxx
+  Cascades/Run2/AliMCTrackInfoContainer.cxx
+  Cascades/Run2/AliMCGenParticleContainer.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesTriggerAODRun2MC.cxx
   StrPDF/AliAnalysisTaskV0multspec.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

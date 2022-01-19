@@ -199,6 +199,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	std::vector < UInt_t >          goodtrackindicesMCCMS; //!
 
 	std::vector < Double_t > 	NTracksPerPtBin;
+	std::vector < Double_t >        NTracksPerPtBinLP;
 	std::vector < Double_t >        NTracksPerPtBinMCALICE;
 	std::vector < Double_t >        NTracksPerPtBinMCCMS;
 

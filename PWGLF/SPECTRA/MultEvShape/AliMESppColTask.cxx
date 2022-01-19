@@ -1,4 +1,5 @@
-//taskul ruleaza analiza de multiplicitate pentru care am modificat intervalul de pseudorapiditate la +/- 0.6 ca sa facem o comparatie cu rezultatele din teza 
+//taskul ruleaza analiza de multiplicitate 
+// vertexZ < 5cm 
 
 #include "AliLog.h"
 
@@ -110,16 +111,30 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
     if ( !fEvInfo->HasTriggerMB() ) return;
 }
 
+
+
+ // !!!!!!!!!!
+ // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
+ // !!!!!!!!!!
+
+   if( !fEvInfo->HasVertex() ) return;
+
+   if( fEvInfo->IsPileUp() ) return;
+
+// // //    if (TMath::Abs(fEvInfo->GetVertexZ()) > 10.) return;
+
+   // !!!!!!!!!!
 	
 	Double_t vec_hNoEvts[5]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
     
 	Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
+    if(mult_comb08 < 0.) return;
 	// event shape for data (from ESD)
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
 	
 	vec_hNoEvts[0] = 0.;
-	hNoEvts->Fill(vec_hNoEvts);
+// 	hNoEvts->Fill(vec_hNoEvts);
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	if(sfer > 0.0 ) vec_hNoEvts[2] = sfer;
@@ -136,7 +151,6 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 		if (MC_sfer > 0.0) vec_hNoEvts[4] = MC_sfer;
         else vec_hNoEvts[4] = -99.;
 	}
-	
 	vec_hNoEvts[0] = 4.;
 	hNoEvts->Fill(vec_hNoEvts);
 	
@@ -154,7 +168,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
   for(Int_t it(0); it<fTracks->GetEntries(); it++){
     if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
 	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-	 if( TMath::Abs(t->Eta())> 0.6 ) continue;
+	 if( TMath::Abs(t->Eta())> 0.8 ) continue;
 	 if( t->Pt()< 0.2 ) continue;
 	 if( HasMCdata() ){
 		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
@@ -171,7 +185,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
 		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-		if( TMath::Abs(tMC->Eta())> 0.6 ) continue;
+		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
 		if( tMC->Pt()< 0.2 ) continue;
 		if((tMC->Pt())>pTMClead){
 			pTMClead = tMC->Pt();
@@ -181,13 +195,13 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 		}
 	  }
 	}
-// 		  //---------------end of ESD loop for leading determination--------------------
-// //basic track info sparse  
+		  //---------------end of ESD loop for leading determination--------------------
+
+		  // //basic track info sparse  
 //     Double_t vec_hbTrk[6];
 // 	THnSparseD *hbTrk = (THnSparseD*)fHistosQA->At(147);
 //     Double_t vec_hbMCTrk[6];
 //     THnSparseD *hbMCTrk = (THnSparseD*)fHistosQA->At(148);
-// 
 // 
 //     for(Int_t it(0); it<fTracks->GetEntries(); it++){
 //     if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
@@ -211,7 +225,6 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 //                   vec_hbTrk[4] = -999.;
 //                   vec_hbTrk[5] = -999.;
 //                 }
-// 		hbTrk->Fill(vec_hbTrk);
 //   }
 // 
 // 		if( HasMCdata() ){
@@ -237,11 +250,35 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 //             hbMCTrk->Fill(vec_hbMCTrk);
 // 	  }
 // 	}
-// 	//	  ---------------end of ESD loop for basic info trk sparse --------------------
+	//	  ---------------end of ESD loop for basic info trk sparse --------------------
+
+	//Debuging
+//     if(DebugLevel()>0){
+//       (*AliMESbaseTask::DebugStream()) << "EvShape"
+// 
+//         <<"sfer="<< sfer
+//         <<"mult="<< mult_comb08
+//         <<"sferMC="<< MC_sfer
+//         <<"multMC="<< MC_mult_glob08
+//         <<"pTlead="<< pTlead
+//         <<"idL="<< idLead
+//         <<"phiL="<< phiL
+//         <<"etaL="<< etaL
+//         <<"pTleadMC="<< pTMClead
+//         <<"idLMC="<< idMCLead
+//         <<"phiLMC="<< phiMCL
+//         <<"etaLMC="<< etaMCL
+//         <<"ev.=" << fEvInfo
+//         <<"trks.="<< fTracks
+//         <<"evMC.=" << fMCevInfo
+//         <<"trksMC.="<< fMCtracks
+//         << "\n";
+//      }
+
+
 
 	
-	
-	// ESD tracks
+//	ESD tracks
 	Int_t ESD=1;
   
     do{
@@ -254,29 +291,29 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.3 && sfer<=0.6*/){
-// //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks2) break;
-//         selectedTracks2->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
-//       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.6 && sfer<=1.0*/){
-// //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks3) break;
-//         selectedTracks3->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
-//       }
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<5.0 /*&& sfer>0.3 && sfer<=0.6*/){
+//         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
+			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks2) break;
+        selectedTracks2->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
+      }
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<15.0 /*&& sfer>0.6 && sfer<=1.0*/){
+//         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
+			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks3) break;
+        selectedTracks3->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
+      }
         ESD=0;
     }while(ESD==1);
 
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<5.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
 // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
 			TObjArray *selectedTracksMC1=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
 		if(!selectedTracksMC1) return;
@@ -373,7 +410,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
           }
           if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
       // Accept tracks in a limited pT & rapidity range
-			 if( TMath::Abs(part->Eta())> 0.6 ) continue;
+			 if( TMath::Abs(part->Eta())> 0.8 ) continue;
 			 if(ipart != idL && part->Pt()>=1.0 && part->Pt()<=2.0) tracks->AddLast(part);
 			 if(ipart == idL) tracks->AddLast(part);
     }
@@ -393,7 +430,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
           if(!(partMC = (AliMEStrackInfo*)obj ->At(ipart))) continue;
           if(!(partMC->HasOrigin(AliMEStrackInfo::kPrimary))) continue;
         // Accept tracks in a limited pT & rapidity range
-          if( TMath::Abs(partMC->Eta())> 0.6 ) continue;
+          if( TMath::Abs(partMC->Eta())> 0.8 ) continue;
 			 if(ipart != idLMC && partMC->Pt()>=1.0 && partMC->Pt()<=2.0) tracksMC->AddLast(partMC);
 			 if(ipart == idLMC) tracksMC->AddLast(partMC);
         }
@@ -432,7 +469,7 @@ TObjArray*  AliMESppColTask::FindLeadingObjects(TObjArray *obj, Int_t MC)
           if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
       // Accept tracks in a limited pT & rapidity range
 //           if(part->Pt()<0.2 || part->Pt()>3.3) continue;
-          if( TMath::Abs(part->Eta())> 0.6 ) continue;
+          if( TMath::Abs(part->Eta())> 0.8 ) continue;
           tracks->AddLast(part);
     }
     // Order tracks by pT, first track is LeadingParticle
@@ -451,7 +488,7 @@ TObjArray*  AliMESppColTask::FindLeadingObjects(TObjArray *obj, Int_t MC)
           if(!(partMC->HasOrigin(AliMEStrackInfo::kPrimary))) continue;
         // Accept tracks in a limited pT & rapidity range
 //           if(partMC->Pt()<0.2 || partMC->Pt()>3.3) continue;
-          if( TMath::Abs(partMC->Eta())> 0.6 ) continue;
+          if( TMath::Abs(partMC->Eta())> 0.8 ) continue;
           tracksMC->AddLast(partMC);
         }
       QSortTracks( *tracksMC, 0, tracksMC->GetEntriesFast() );
@@ -524,31 +561,38 @@ Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
   Double_t MultBins1[] = { 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80. };
   Double_t MultBins2[] = { 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80. };
   Double_t MultBins3[] = { 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 80. };
-  Int_t NzVtxBins = 5;
-  Double_t ZvtxBins[] = {  -10., -5., -2.5, 2.5, 5.,  10. }; 
+  
+  Int_t NzVtxBins1 = 5;
+  Double_t ZvtxBins1[] = {-10., -5., -2.5, 2.5, 5., 10.}; 
+  
+  Int_t NzVtxBins2 = 3;
+  Double_t ZvtxBins2[] = {-5., -2.5, 2.5, 5.}; 
+  
+  Int_t NzVtxBins3 = 7;
+  Double_t ZvtxBins3[] = {-15., -10., -5., -2.5, 2.5, 5., 10., 15.}; 
   
     if(HasMCdata() && MC==1){
-    fPoolMgrMC1 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins1, NzVtxBins, ZvtxBins);
+    fPoolMgrMC1 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins1, NzVtxBins1, ZvtxBins1);
     fPoolMgrMC1 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
     fPoolMgrMC1->SetDebug(0);
-    fPoolMgrMC2 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins2, NzVtxBins, ZvtxBins);
+    fPoolMgrMC2 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins2, NzVtxBins2, ZvtxBins2);
     fPoolMgrMC2 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
     fPoolMgrMC2->SetDebug(0);
-    fPoolMgrMC3 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins3, NzVtxBins, ZvtxBins);
+    fPoolMgrMC3 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins3, NzVtxBins3, ZvtxBins3);
     fPoolMgrMC3 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
     fPoolMgrMC3->SetDebug(0);
 //     if(!fPoolMgrMC) return kFALSE;
   }
   
   if(MC==0){
-  fPoolMgr1 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins1, NzVtxBins, ZvtxBins);
+  fPoolMgr1 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins1, NzVtxBins1, ZvtxBins1);
   fPoolMgr1 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
   //fPoolMgr1 -> SetMaxNbMixEvents(10);
   fPoolMgr1->SetDebug(0);
-  fPoolMgr2 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins2, NzVtxBins, ZvtxBins);
+  fPoolMgr2 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins2, NzVtxBins2, ZvtxBins2);
   fPoolMgr2 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
   fPoolMgr2->SetDebug(0);
-  fPoolMgr3 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins3, NzVtxBins, ZvtxBins);
+  fPoolMgr3 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins3, NzVtxBins3, ZvtxBins3);
   fPoolMgr3 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
   fPoolMgr3->SetDebug(0);
 //   if(!fPoolMgr) return kFALSE;
@@ -584,7 +628,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 	AliMEStrackInfo* trigger = (AliMEStrackInfo*)selectedArray->At(0);
 	if(!trigger) return;
 	if(jm<0 || trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) return;
-	if( TMath::Abs(trigger->Eta())> 0.6 ) return;
+	if( TMath::Abs(trigger->Eta())> 0.8 ) return;
                       
 	Double_t ptL  = trigger->Pt();
 	Double_t phiL = trigger->Phi();
@@ -595,7 +639,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 		AliMEStrackInfo* associate = (AliMEStrackInfo*)selectedArray->At(j);
 		if(!associate) continue;
 		if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-		if( TMath::Abs(associate->Eta())> 0.6 ) continue;
+		if( TMath::Abs(associate->Eta())> 0.8 ) continue;
 
 		Double_t ptAs = associate->Pt();
 		Double_t phiAs = associate->Phi();
@@ -670,7 +714,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 		}
 	}
 
-	if(TMath::Abs(Zvtx)>=10. || MultipOrCentMix>poolmax || MultipOrCentMix < poolmin){
+	if(/*TMath::Abs(Zvtx)>=10.0 || */MultipOrCentMix>poolmax || MultipOrCentMix < poolmin){
       AliInfo(Form("pp Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",Zvtx,MultipOrCentMix));
       return;
 	}
@@ -698,14 +742,14 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
             if(trigger->Pt() < pTtrigMin[jm] || trigger->Pt() > pTtrigMax[jm]) continue;
-            if( TMath::Abs(trigger->Eta())> 0.6 ) continue;
+            if( TMath::Abs(trigger->Eta())> 0.8 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
           //		 AliInfo("In a doua bucla!!!!!!");
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
               if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-              if( TMath::Abs(associate->Eta())> 0.6 ) continue;
+              if( TMath::Abs(associate->Eta())> 0.8 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
@@ -738,7 +782,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool2->PrintInfo();
   // 		pool2->SetTargetEvents(5);
 
-        if (pool2->GetCurrentNEvents() >= 5  && pool2->GetCurrentNEvents() <= 15){
+        if (pool2->IsReady() || pool2->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -790,7 +834,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool3->PrintInfo();
   // 		pool3->SetTargetEvents(5);
 
-        if (pool3->GetCurrentNEvents() >= 5  && pool3->GetCurrentNEvents() <= 180){
+        if (pool3->IsReady() || pool3->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -853,13 +897,13 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
             if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
-            if( TMath::Abs(trigger->Eta())> 0.6 ) continue;
+            if( TMath::Abs(trigger->Eta())> 0.8 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
               if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
-              if( TMath::Abs(associate->Eta())> 0.6 ) continue;
+              if( TMath::Abs(associate->Eta())> 0.8 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
@@ -1048,5 +1092,7 @@ const Int_t ndimbTrk(7);
 
   THnSparseD *hbMCTrk = new THnSparseD("basicInfoMCTrk","basicInfoMCTrk;multComb08MC;sferMC;p_{T}^{L};p_{T}^{As};dEtaMC;dPhiMC;asMC;",ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
   fHistosQA->AddAt(hbMCTrk, 148);
+  
+  
   return kTRUE;
 }

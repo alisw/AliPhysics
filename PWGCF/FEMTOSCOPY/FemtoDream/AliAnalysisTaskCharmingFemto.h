@@ -15,6 +15,7 @@
 #include "AliAODVertex.h"
 #include "AliHFMLResponse.h"
 #include "TChain.h"
+#include "AliVertexingHFUtils.h"
 
 class AliVParticle;
 class AliVTrack;
@@ -43,7 +44,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   };
 
   AliAnalysisTaskCharmingFemto();
-  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC);
+  AliAnalysisTaskCharmingFemto(const char *name, const bool isMC, const bool isMCtruth);
   virtual ~AliAnalysisTaskCharmingFemto();
 
   virtual void LocalInit();
@@ -52,6 +53,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   void SetIsMC(bool isMC) {
     fIsMC = isMC;
+  }
+  void SetUseMCTruthReco(bool useMCTruthReco) {
+    fUseMCTruthReco = useMCTruthReco;
   }
   void SetLightweight(bool isLightweight) {
     fIsLightweight = isLightweight;
@@ -146,6 +150,133 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void UseTrueDOnly() {
     fUseTrueDOnly = true;
   }
+  void SetCutWindowMCTRUTH(float low, float high) {
+    fInvMassCutLow = low;
+    fInvMassCutHigh = high;
+  }
+  void SetBuddypTLowMCTRUTH(float pT) {
+    fBuddypTlow = pT;
+  }
+  void SetBuddypTHighMCTRUTH(float pT) {
+    fBuddypThigh = pT;
+  }
+  void SetBuddyEtaMCTRUTH(float eta) {
+    fBuddyeta = eta;
+  }
+  void SetBuddyOriginMCTRUTH(int origin) {
+    //0:no selection, 1:Physical Primary, 2:Secondary From Weak Decay, 3:Secondary From Material, 4: Primary part
+    fBuddyOrigin = origin;
+  }
+  bool SelectBuddyOrigin(AliAODMCParticle *mcPart) {
+    if(fBuddyOrigin==0) {
+      return true;
+    }
+    else if(fBuddyOrigin==1){
+      if(mcPart->IsPhysicalPrimary())
+        return true;
+      else
+        return false;
+    }
+    else if(fBuddyOrigin==2){
+      if(mcPart->IsSecondaryFromWeakDecay())
+        return true;
+      else 
+        return false;
+    }
+    else if(fBuddyOrigin==3){
+      if(mcPart->IsSecondaryFromMaterial())
+        return true;
+      else 
+        return false;
+    }
+    else if(fBuddyOrigin==4){
+      if(mcPart->IsPrimary())
+        return true;
+      else 
+        return false;
+    }
+    return false;
+  }
+  void SetDmesonOriginMCTRUTH(int origin) {
+    //0:no selection, 1:charm, 2:beauty, 3: D*, 4:B
+    fDmesonOrigin = origin;
+  }
+  bool SelectDmesonOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if(fDmesonOrigin==0) {
+      fDoDorigPlots=true;
+      return true;
+    }
+    else if(fDmesonOrigin==1){
+      if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==4)
+        return true;
+      else
+        return false;
+    }
+    else if(fDmesonOrigin==2){
+      if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==5)
+        return true;
+      else
+        return false;
+    }
+    else {
+      int motherID = mcPart->GetMother();
+      AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherID);
+      int PDGCodeMoth= mcMother->GetPdgCode();
+      if(fDmesonOrigin==3){
+        if(TMath::Abs(PDGCodeMoth) == 413)
+          return true;
+        else 
+          return false;
+      }
+      if(fDmesonOrigin==4){
+        if(TMath::Abs(PDGCodeMoth) == 521)
+          return true;
+        else 
+          return false;
+      }
+    }
+    return false;
+  }
+  void FillMCtruthPDGDmeson(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    int motherID = mcPart->GetMother();
+    AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherID);
+    int PDGCodeMoth= mcMother->GetPdgCode();
+    int PDGCodePart= mcPart->GetPdgCode();
+    float pt = mcPart->Pt();
+    if(PDGCodePart==411){
+      fHistDplusMCtruthmotherPDG->Fill(pt,TMath::Abs(PDGCodeMoth));
+    } else if (PDGCodePart==-411){
+      fHistDminusMCtruthmotherPDG->Fill(pt,TMath::Abs(PDGCodeMoth));
+    }
+    return;
+  }
+  
+  void FillMCtruthQuarkOriginDmeson(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    int PDGCodePart= mcPart->GetPdgCode();
+    float pt = mcPart->Pt();
+    if (AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==4) { //charm
+      if(PDGCodePart==411){
+        fHistDplusMCtruthQuarkOrigin->Fill(pt,1);
+      } else if (PDGCodePart==-411){
+        fHistDminusMCtruthQuarkOrigin->Fill(pt,1);
+      }
+    }
+    else if (AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==5) { //beauty
+      if(PDGCodePart==411){
+        fHistDplusMCtruthQuarkOrigin->Fill(pt,2);
+      } else if (PDGCodePart==-411){
+        fHistDminusMCtruthQuarkOrigin->Fill(pt,2);
+      }
+    }
+    else {
+      if(PDGCodePart==411){
+        fHistDplusMCtruthQuarkOrigin->Fill(pt,3);
+      } else if (PDGCodePart==-411){
+        fHistDminusMCtruthQuarkOrigin->Fill(pt,3);
+      }
+    }
+    return;
+  }
 
  private:
   AliAnalysisTaskCharmingFemto(const AliAnalysisTaskCharmingFemto &task);
@@ -157,7 +288,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool MassSelection(const double mass, const double pt, const int pdg);
 
   // Track / event selection objects
-  AliAODEvent* fInputEvent;                          //
+  AliAODEvent *fInputEvent;                          //
   AliFemtoDreamEvent *fEvent;                        //!
   AliFemtoDreamEventCuts *fEvtCuts;                  //
   AliFemtoDreamTrack *fProtonTrack;                  //!
@@ -170,6 +301,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;            //!
 
   bool fIsMC;              //
+  bool fUseMCTruthReco;    //
+  bool fIsMCtruth;         //
   bool fIsLightweight;     //
   UInt_t fTrigger;         //
   int fSystem;             //
@@ -215,7 +348,13 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDminusMCPhiRes;    //!
   TH2F *fHistDminusMCThetaRes;  //!
   TH2F *fHistDminusMCOrigin;    //!
-  
+
+  bool fDoDorigPlots;            //!
+  TH2F *fHistDplusMCtruthmotherPDG;  //!
+  TH2F *fHistDplusMCtruthQuarkOrigin;     //!
+  TH2F *fHistDminusMCtruthmotherPDG;  //!
+  TH2F *fHistDminusMCtruthQuarkOrigin;     //!
+
   // HF data members
   int fDecChannel;                                         // HF decay channel
   AliRDHFCuts* fRDHFCuts;                                  // HF cut object
@@ -234,6 +373,15 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
   bool fUseTrueDOnly;
 
+  //MC Truth Stuff
+  float fInvMassCutLow;    //
+  float fInvMassCutHigh;   //
+  float fBuddypTlow;       //
+  float fBuddypThigh;      //
+  float fBuddyeta;         //
+  int fBuddyOrigin;        //
+  int fDmesonOrigin;       //
+
   // variables for ML application
   bool fApplyML;                                           // flag to enable ML application
   TString fConfigPath;                                     // path to ML config file
@@ -244,7 +392,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 11)
+ClassDef(AliAnalysisTaskCharmingFemto, 13)
 };
 
 #endif

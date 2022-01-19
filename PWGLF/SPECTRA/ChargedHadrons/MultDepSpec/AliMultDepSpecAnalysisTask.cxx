@@ -112,17 +112,17 @@ void AliMultDepSpecAnalysisTask::FillTrackQA(AliESDtrack* track)
   fHist_eta.Fill(track->Eta());
   fHist_phi.Fill(track->Phi());
 
-  fHist_itsFoundClusters.Fill(track->GetITSclusters(0));
+  fHist_itsNCls.Fill(track->GetITSclusters(0));
   for (unsigned int i = 0; i < 6; i++) {
-    if (track->GetITSClusterMap() & (1 << i)) fHist_itsHits.Fill(i + 1);
+    if (track->GetITSClusterMap() & (1 << i)) fHist_itsHits.Fill(i);
   }
-  fHist_itsChi2PerCluster.Fill((track->GetITSclusters(0) > 0.) ? (track->GetITSchi2() / track->GetITSclusters(0)) : -1.);
+  fHist_itsChi2NCl.Fill((track->GetITSclusters(0) > 0.) ? (track->GetITSchi2() / track->GetITSclusters(0)) : -1.);
 
-  fHist_tpcFindableClusters.Fill(track->GetTPCNclsF());
-  fHist_tpcFoundClusters.Fill(track->GetTPCclusters(0));
+  fHist_tpcNClsFindable.Fill(track->GetTPCNclsF());
+  fHist_tpcNClsFound.Fill(track->GetTPCclusters(0));
   fHist_tpcCrossedRows.Fill(track->GetTPCCrossedRows());
-  fHist_tpcCrossedRowsOverFindableClusters.Fill((track->GetTPCNclsF() > 0) ? track->GetTPCCrossedRows() / track->GetTPCNclsF() : -1.);
-  fHist_tpcChi2PerCluster.Fill((track->GetTPCclusters(0) > 0.) ? track->GetTPCchi2() / track->GetTPCclusters(0) : -1.);
+  fHist_tpcCrossedRowsOverFindableCls.Fill((track->GetTPCNclsF() > 0) ? track->GetTPCCrossedRows() / track->GetTPCNclsF() : -1.);
+  fHist_tpcChi2NCl.Fill((track->GetTPCclusters(0) > 0.) ? track->GetTPCchi2() / track->GetTPCclusters(0) : -1.);
   fHist_tpcGoldenChi2.Fill(track->GetChi2TPCConstrainedVsGlobal(static_cast<AliESDVertex*>(const_cast<AliVVertex*>(fEvent->GetPrimaryVertex()))));
   if (track->GetInnerParam()) fHist_tpcGeomLength.Fill(track->GetLengthInActiveZone(1, 3., 220, fEvent->GetMagneticField()));
 
@@ -194,35 +194,35 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_signed1Pt.AddAxis("signed1Pt", "q/p_{T}", 200, -8, 8);
     fQAList->Add(fHist_signed1Pt.GenerateHist("signed1Pt"));
 
-    fHist_eta.AddAxis("eta", "#eta", 101, -1.0, 1.0);
+    fHist_eta.AddAxis("eta", "#eta", 180, -0.9, 0.9);
     fQAList->Add(fHist_eta.GenerateHist("eta"));
 
-    fHist_phi.AddAxis("phi", "#phi [rad]", 90, 0., 2 * M_PI); // 5 bins for each of the 18 sectors
+    fHist_phi.AddAxis("phi", "#phi [rad]", 180, 0., 2 * M_PI); // 18 tpc sectors
     fQAList->Add(fHist_phi.GenerateHist("phi"));
 
-    fHist_itsFoundClusters.AddAxis("itsFoundClusters", "# clusters ITS", 7, -0.5, 6.5);
-    fQAList->Add(fHist_itsFoundClusters.GenerateHist("itsFoundClusters"));
+    fHist_itsNCls.AddAxis("itsNCls", "# clusters ITS", 8, -0.5, 7.5);
+    fQAList->Add(fHist_itsNCls.GenerateHist("itsNCls"));
 
-    fHist_itsHits.AddAxis("itsHits", "layer ITS", 6, 0.5, 6.5);
+    fHist_itsHits.AddAxis("itsHits", "layer ITS", 7, -0.5, 6.5);
     fQAList->Add(fHist_itsHits.GenerateHist("itsHits"));
 
-    fHist_itsChi2PerCluster.AddAxis("itsChi2PerCluster", "chi2 per cluster ITS", 100, 0, 50);
-    fQAList->Add(fHist_itsChi2PerCluster.GenerateHist("itsChi2PerCluster"));
+    fHist_itsChi2NCl.AddAxis("itsChi2NCl", "chi2 per cluster ITS", 100, 0, 40);
+    fQAList->Add(fHist_itsChi2NCl.GenerateHist("itsChi2NCl"));
 
-    fHist_tpcFindableClusters.AddAxis("tpcFindableClusters", "# findable clusters TPC", 81, 79.5, 160.5);
-    fQAList->Add(fHist_tpcFindableClusters.GenerateHist("tpcFindableClusters"));
+    fHist_tpcNClsFindable.AddAxis("tpcNClsFindable", "# findable clusters TPC", 165, -0.5, 164.5);
+    fQAList->Add(fHist_tpcNClsFindable.GenerateHist("tpcNClsFindable"));
 
-    fHist_tpcFoundClusters.AddAxis("foundClustersTPC", "# found clusters TPC", 81, 79.5, 160.5);
-    fQAList->Add(fHist_tpcFoundClusters.GenerateHist("tpcFoundClusters"));
+    fHist_tpcNClsFound.AddAxis("tpcNClsFound", "# clusters TPC", 165, -0.5, 164.5);
+    fQAList->Add(fHist_tpcNClsFound.GenerateHist("tpcNClsFound"));
 
-    fHist_tpcCrossedRows.AddAxis("tpcCrossedRows", "# crossed rows TPC", 81, 79.5, 160.5);
+    fHist_tpcCrossedRows.AddAxis("tpcCrossedRows", "# crossed rows TPC", 165, -0.5, 164.5);
     fQAList->Add(fHist_tpcCrossedRows.GenerateHist("tpcCrossedRows"));
 
-    fHist_tpcCrossedRowsOverFindableClusters.AddAxis("tpcCrossedRowsOverFindableClusters", "crossed rows / findable clusters TPC", 60, 0.7, 1.3);
-    fQAList->Add(fHist_tpcCrossedRowsOverFindableClusters.GenerateHist("tpcCrossedRowsOverFindableClusters"));
+    fHist_tpcCrossedRowsOverFindableCls.AddAxis("tpcCrossedRowsOverFindableCls", "crossed rows / findable clusters TPC", 60, 0.7, 1.3);
+    fQAList->Add(fHist_tpcCrossedRowsOverFindableCls.GenerateHist("tpcCrossedRowsOverFindableCls"));
 
-    fHist_tpcChi2PerCluster.AddAxis("chi2PerClusterTPC", "chi2 / cluster TPC", 140, 0., 7.);
-    fQAList->Add(fHist_tpcChi2PerCluster.GenerateHist("tpcChi2PerCluster"));
+    fHist_tpcChi2NCl.AddAxis("tpcChi2NCl", "chi2 / cluster TPC", 100, 0, 10);
+    fQAList->Add(fHist_tpcChi2NCl.GenerateHist("tpcChi2NCl"));
 
     fHist_tpcGoldenChi2.AddAxis("goldenChi2TPC", "chi2 global vs. TPC constrained", 41, -0.5, 40.5);
     fQAList->Add(fHist_tpcGoldenChi2.GenerateHist("tpcGoldenChi2"));
@@ -231,10 +231,10 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fQAList->Add(fHist_tpcGeomLength.GenerateHist("tpcGeomLength"));
 
     fHist_dcaXY.AddAxis(fAxes[pt_meas]);
-    fHist_dcaXY.AddAxis("dcaXY", "dca XY (cm)", 100, -0.5, 0.5);
+    fHist_dcaXY.AddAxis("dcaXY", "dca XY (cm)", 200, -0.15, 0.15);
     fQAList->Add(fHist_dcaXY.GenerateHist("dcaXY"));
 
-    fHist_dcaZ.AddAxis("dcaZ", "dca Z (cm)", 100, -0.5, 0.5);
+    fHist_dcaZ.AddAxis("dcaZ", "dca Z (cm)", 200, -0.15, 0.15);
     fQAList->Add(fHist_dcaZ.GenerateHist("dcaZ"));
   }
 
@@ -248,11 +248,13 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multCorrel_prim, "multCorrel_prim", {mult_meas, mult_true});
     BookHistogram(fHist_ptCorrel_prim, "ptCorrel_prim", {pt_meas, pt_true});
     BookHistogram(fHist_multPtSpec_prim_gen, "multPtSpec_prim_gen", {mult_true, pt_true});
-    BookHistogram(fHist_multPtSpec_prim_gen_sigloss, "multPtSpec_prim_gen_sigloss", {mult_true, pt_true});
+    BookHistogram(fHist_multPtSpec_prim_gen_evtloss, "multPtSpec_prim_gen_evtloss", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_prim_gen_notrig, "multPtSpec_prim_gen_notrig", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_prim_meas, "multPtSpec_prim_meas", {mult_true, pt_true});
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
+    BookHistogram(fHist_multPtSpec_trk_meas_evtcont, "multPtSpec_trk_meas_evtcont", {mult_meas, pt_meas});
+    BookHistogram(fHist_multPtSpec_trk_inter, "multPtSpec_trk_inter", {mult_true, pt_meas});
   }
 
   // check required memory
@@ -262,6 +264,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_zVtxMeas.GetSize() +
     fHist_multDist_evt_meas.GetSize() +
     fHist_multPtSpec_trk_meas.GetSize() +
+    fHist_multPtSpec_trk_meas_evtcont.GetSize() +
     fHist_sigmaPt.GetSize() +
     fHist_zVtxGen.GetSize() +
     fHist_multDist_evt_gen.GetSize() +
@@ -271,27 +274,28 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multCorrel_prim.GetSize(0.045) +
     fHist_ptCorrel_prim.GetSize() +
     fHist_multPtSpec_prim_gen.GetSize() +
-    fHist_multPtSpec_prim_gen_sigloss.GetSize() +
+    fHist_multPtSpec_prim_gen_evtloss.GetSize() +
     fHist_multPtSpec_prim_gen_notrig.GetSize() +
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
     fHist_multPtSpec_trk_sec_meas.GetSize() +
+    fHist_multPtSpec_trk_inter.GetSize() +
     fHist_signed1Pt.GetSize() +
     fHist_eta.GetSize() +
     fHist_phi.GetSize() +
-    fHist_itsFoundClusters.GetSize() +
+    fHist_itsNCls.GetSize() +
     fHist_itsHits.GetSize() +
-    fHist_itsChi2PerCluster.GetSize() +
-    fHist_tpcFindableClusters.GetSize() +
-    fHist_tpcFoundClusters.GetSize() +
+    fHist_itsChi2NCl.GetSize() +
+    fHist_tpcNClsFindable.GetSize() +
+    fHist_tpcNClsFound.GetSize() +
     fHist_tpcCrossedRows.GetSize() +
-    fHist_tpcCrossedRowsOverFindableClusters.GetSize() +
-    fHist_tpcChi2PerCluster.GetSize() +
+    fHist_tpcCrossedRowsOverFindableCls.GetSize() +
+    fHist_tpcChi2NCl.GetSize() +
     fHist_tpcGoldenChi2.GetSize() +
     fHist_tpcGeomLength.GetSize();
 
   // max allowed memory per train job: 8 GiB
-  AliError(Form("\n\nEstimated memory usage of histograms: %.2f MiB. For all 23 systematic variations: %.2f MiB\n", requiredMemory / 1048576, 23 * requiredMemory / 1048576));
+  AliError(Form("\n\nEstimated memory usage of histograms: %.2f MiB. For all 21 systematic variations: %.2f MiB\n", requiredMemory / 1048576, 21 * requiredMemory / 1048576));
 }
 
 //**************************************************************************************************
@@ -420,21 +424,22 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
         if (!recoPass.empty()) trainInfo += period + "_" + recoPass;
       }
       trainInfo += ", " + fTrainMetadata;
-      if (fMCEventClass == EventClass::triggered) {
-        trainInfo += ", triggered";
-      } else if (fMCEventClass == EventClass::fiducial) {
-        trainInfo += ", fiducial";
-      } else if (fMCEventClass == EventClass::inelgt0) {
-        trainInfo += ", INEL>0";
-      } else {
-        trainInfo += ", all";
-      }
-      trainInfo += " events";
+      if (fIsMC) {
+        if (fMCEventClass == EventClass::triggered) {
+          trainInfo += ", triggered";
+        } else if (fMCEventClass == EventClass::fiducial) {
+          trainInfo += ", fiducial";
+        } else if (fMCEventClass == EventClass::inelgt0) {
+          trainInfo += ", INEL>0";
+        } else {
+          trainInfo += ", all";
+        }
+        trainInfo += " events";
 
-      if (!fMCEnableDDC || !fMCSpectraWeights) {
-        trainInfo += ", no DDCs";
+        if (!fMCEnableDDC || !fMCSpectraWeights) {
+          trainInfo += ", no DDCs";
+        }
       }
-
       fHist_trainInfo.Fill(trainInfo.data());
       fIsFirstEventInJob = false;
     }
@@ -448,32 +453,6 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
   LoopMeas();
 
   PostData(1, fOutputList.get());
-}
-
-//**************************************************************************************************
-/**
- * Function to get data-driven secondary scaling weights.
- */
-//**************************************************************************************************
-double AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliVParticle* particle)
-{
-  if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
-  }
-  return 1.0;
-}
-
-//**************************************************************************************************
-/**
- * Function to get data-driven particle composition weights.
- */
-//**************************************************************************************************
-double AliMultDepSpecAnalysisTask::GetParticleWeight(AliVParticle* particle)
-{
-  if (fMCSpectraWeights) {
-    return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
-  }
-  return 1.0;
 }
 
 //**************************************************************************************************
@@ -500,8 +479,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       return false;
     }
     if (fIsNewReco && AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fMCEvent)) {
-      // reject all the rare events with simulated in-bunch pileup
-      // those events would have a biased true multiplicity as we cannot identify the particles actually coming from the trigger event
+      // reject the rare events with simulated in-bunch pileup as those would have a biased true multiplicity (we cannot identify the particles coming from the trigger event)
       return false;
     }
 
@@ -577,7 +555,6 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       } else {
         isValidParticle = InitParticle<AliAODMCParticle>(mcLabel);
       }
-      if (fMCIsPileupParticle) continue; // skip tracks from pileup in mc
     }
 
     if (count) {
@@ -587,24 +564,38 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       if (fIsESD && fIsNominalSetting) FillTrackQA(dynamic_cast<AliESDtrack*>(track));
 
       for (int i = 0; i < fNRepetitions; ++i) {
+        if (fIsNominalSetting) {
+          // pt resolution (QA variable)
+          fHist_sigmaPt.Fill(fPt, fSigmaPt);
+        }
 
+        // fill all measured tracks (data and MC)
         fHist_multPtSpec_trk_meas.Fill(fMultMeas, fPt);
-        if (fIsNominalSetting) fHist_sigmaPt.Fill(fPt, fSigmaPt);
 
-        if (fIsMC && fMCAcceptEvent && isValidParticle) {
-
-          if (fIsNominalSetting) fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
-
-          if (fMCIsChargedPrimary) {
-            fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
-
-            fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
-
-            fHist_ptCorrel_prim.Fill(fPt, fMCPt);
-            fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
-
+        if (fIsMC) {
+          if (!fMCAcceptEvent) {
+            // contamination originating from undesired events (wrong event class or true zvtex outside fiducial region)
+            fHist_multPtSpec_trk_meas_evtcont.Fill(fMultMeas, fPt);
           } else {
-            fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+            fHist_multPtSpec_trk_inter.Fill(fMultTrue, fPt);
+            if (isValidParticle) {
+              if (fIsNominalSetting) {
+                // true pt resolution (QA variable)
+                fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
+              }
+              if (fMCIsChargedPrimary) {
+                // part of measurement that comes from primaries (as function of measured quantities -> for contamination)
+                fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
+                // part of measurement that comes from primaries (as function of true quantities -> for efficiency)
+                fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
+                // correlation matrices used for the unfolding
+                fHist_ptCorrel_prim.Fill(fPt, fMCPt);
+                fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
+              } else {
+                // contamination from secondaries
+                fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+              }
+            }
           }
         }
       }
@@ -638,12 +629,15 @@ void AliMultDepSpecAnalysisTask::LoopTrue(bool count)
     } else {
       for (int i = 0; i < fNRepetitions; ++i) {
         if (fMCAcceptEvent) {
+          // all generated primaries that we want to measure
           fHist_multPtSpec_prim_gen.Fill(fMultTrue, fMCPt);
           if (!fAcceptEvent) {
-            fHist_multPtSpec_prim_gen_sigloss.Fill(fMultTrue, fMCPt);
+            // part of the generated primaries (signal) coming from events that are rejected by the event selection
+            fHist_multPtSpec_prim_gen_evtloss.Fill(fMultTrue, fMCPt);
           }
         }
         if (fMCIsGoodZPos && !fIsTriggered) {
+          // additional info needed only for 'triggered' event class to correct for signal loss
           fHist_multPtSpec_prim_gen_notrig.Fill(fMultTrue, fMCPt);
         }
       }
@@ -662,15 +656,8 @@ bool AliMultDepSpecAnalysisTask::InitTrack(AliVTrack* track)
     AliFatal("Track not found\n");
     return false;
   }
-  // reset the two mc variables that have side effects on measured loop in mc
+  // reset the mc variable that has side effect on measured loop in mc
   fNRepetitions = 1;
-  fMCIsPileupParticle = false;
-
-  // temporary solution to remove tracks from background events (corresponds to fMCIsPileupParticle = true)
-  // FIXME: we may actually not want to reject those tracks but count them as contamination instead
-  if (fIsMC && fIsNewReco && std::abs(track->GetLabel()) >= AliMCEvent::BgLabelOffset()) {
-    return false;
-  }
 
   fPt = track->Pt();
   fEta = track->Eta();
@@ -713,12 +700,9 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
     AliFatal("Particle not found\n");
     return false;
   }
-  // in case of enbedded pileup particleID will be different from the mc label stored in the particle
-  fMCLabel = particle->GetLabel();
-  fMCIsPileupParticle = false;
-  // reject all particles and tracks that come from simulated out-of-bunch pileup
+
+  // reject all particles that come from simulated out-of-bunch pileup
   if (fIsNewReco && (fMCEvent->IsFromSubsidiaryEvent(particleID) || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(particleID, fMCEvent))) {
-    fMCIsPileupParticle = true; // store this info as it is relevant for track loop as well
     return false;
   }
 
@@ -737,18 +721,18 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   // event class is INEL>0 in case it has a charged particle in abs(eta) < 1
   fMCIsINELGT0 = fMCIsINELGT0 || (fMCIsChargedPrimary && (std::abs(fMCEta) < 1.));
 
-  fMCParticleWeight = 1.0;
-  fMCSecScaleWeight = 1.0;
+  fMCLabel = particleID;
+  fMCParticleWeight = 1.;
   fNRepetitions = 1;
 
-  if (fMCEnableDDC) {
+  if (fMCEnableDDC && fMCSpectraWeights) {
+    // memo: be sure never to call these functions with particles form pileup events
     if (fMCIsChargedPrimary) {
-      fMCParticleWeight = GetParticleWeight(static_cast<AliVParticle*>(particle));
-      fNRepetitions = GetNRepetitons(fMCParticleWeight);
+      fMCParticleWeight = fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCDDCMode);
     } else if (isChargedSecondaryFromWeakDecay) {
-      fMCSecScaleWeight = GetSecScalingFactor(static_cast<AliVParticle*>(particle));
-      fNRepetitions = GetNRepetitons(fMCSecScaleWeight);
-    }
+      fMCParticleWeight = fMCSpectraWeights->GetWeightForSecondaryParticle(particle->Particle(), fMCDDCMode);
+    } // dont touch secondaries from material
+    fNRepetitions = GetNRepetitons(fMCParticleWeight);
   }
 
   if ((fMCPt <= fMinPt + PRECISION) || (fMCPt >= fMaxPt - PRECISION) || (fMCEta <= fMinEta + PRECISION) || (fMCEta >= fMaxEta - PRECISION)) {
@@ -779,10 +763,6 @@ int AliMultDepSpecAnalysisTask::GetNRepetitons(double scalingFactor)
 //**************************************************************************************************
 unsigned long AliMultDepSpecAnalysisTask::GetSeed()
 {
-  if (fUseRandomSeed) {
-    return 0;
-  }
-
   unsigned long seed = fEventNumber;
   seed <<= 5;
   seed += fRunNumber;
@@ -822,7 +802,7 @@ bool AliMultDepSpecAnalysisTask::InitCentrality()
  * Function to add this task to a train.
  */
 //**************************************************************************************************
-AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(const string& dataSet, int cutModeLow, int cutModeHigh, TString options, bool isMC)
+AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(const string& dataSet, TString options, int cutModeLow, int cutModeHigh, bool isMC)
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -907,7 +887,11 @@ void AliMultDepSpecAnalysisTask::SaveTrainMetadata()
 //**************************************************************************************************
 bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet, TString options, int cutMode)
 {
-  if ((!isMC && cutMode > 119) || cutMode < 100 || cutMode > 121) return false;
+  fMCEnableDDC = true;
+  if (options.Contains("noDDC")) {
+    fMCEnableDDC = false;
+  }
+  if (cutMode < 100 || cutMode > 121 || ((!isMC || !fMCEnableDDC) && cutMode > 119)) return false;
   if (cutMode == 100) fIsNominalSetting = true;
   fIsMC = isMC;
   fIsESD = !isAOD;
@@ -944,13 +928,13 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fTrackCuts->SetMaxChi2PerClusterITS(49.);
   } else if (cutMode == 103) {
     if (fIsNewReco) {
-      fTrackCuts->SetMaxChi2PerClusterTPC(1.7);
+      fTrackCuts->SetMaxChi2PerClusterTPC(2.0);
     } else {
       fTrackCuts->SetMaxChi2PerClusterTPC(3.0);
     }
   } else if (cutMode == 104) {
     if (fIsNewReco) {
-      fTrackCuts->SetMaxChi2PerClusterTPC(3.4);
+      fTrackCuts->SetMaxChi2PerClusterTPC(3.0);
     } else {
       fTrackCuts->SetMaxChi2PerClusterTPC(5.0);
     }
@@ -986,18 +970,13 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fTrackCuts->SetCutGeoNcrNcl(2, 130, 1.5, 0.85, 0.7);
   }
 
-  fMCEnableDDC = true;
-  if (options.Contains("noDDC")) {
-    fMCEnableDDC = false;
-  }
-
   // in MC we always apply data driven corrections to account for wrong particle composition in the generator
   if (isMC && fMCEnableDDC) {
     fMCDDCMode = 0;
     if (cutMode == 120) {
-      fMCDDCMode = 1;             // shift correction factors up within their systematics
+      fMCDDCMode = -1; // shift correction factors down within their systematics
     } else if (cutMode == 121) {
-      fMCDDCMode = -1;            // shift correction factors down within their systematics
+      fMCDDCMode = 1; // shift correction factors up within their systematics
     }
   }
   return true;
@@ -1045,7 +1024,7 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
 
   // for reconstructions after mid 2020 chi2/clusterTPC cut moves from 4 -> 2.5 and MCs contain out-of-bunch pileup
   if (!options.Contains("oldReco") &&
-      (dataSet.find("pp_13TeV") != string::npos || dataSet.find("pPb") != string::npos || dataSet.find("PbPb_5TeV") != string::npos)) {
+      (dataSet.find("pp_5TeV") != string::npos || dataSet.find("pp_13TeV") != string::npos || dataSet.find("pPb") != string::npos || dataSet.find("PbPb_5TeV") != string::npos)) {
     SetIsNewReco();
   }
 
@@ -1066,8 +1045,8 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
       maxMultTrue = 3200;
     }
     if (dataSet.find("XeXe") != string::npos) {
-      maxMultMeas = 1800;
-      maxMultTrue = 2800;
+      maxMultMeas = 2000;
+      maxMultTrue = 3200;
     }
   }
 

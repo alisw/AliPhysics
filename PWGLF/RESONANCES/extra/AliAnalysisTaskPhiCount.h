@@ -199,6 +199,11 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH3F                       *fQC_Tracks_TOF_PT;          //! Acc. tracks TOF Signal in Transverse Momentum
     TH3F                       *fQC_Tracks_TPC_P;           //! Acc. tracks TPC Signal in Momentum
     TH3F                       *fQC_Tracks_TPC_PT;          //! Acc. tracks TPC Signal in Transverse Momentum
+    TH1F                       *fQC_Tracks_TPC_CLS;         //! Acc. tracks TPC Clusters
+    TH1F                       *fQC_Tracks_TPC_FRC;         //! Acc. tracks TPC Clusters over findable
+    TH1F                       *fQC_Tracks_TPC_CHI;         //! Acc. tracks TPC Chi^2 over Clusters
+    TH1F                       *fQC_Tracks_TPC_CNS;         //! Acc. tracks TPC Global Constrained
+    TH1F                       *fQC_Tracks_ITS_CHI;         //! Acc. tracks ITS Chi^2 over Clusters
     //
     //>->->->       Tracks: Kaons
     //
@@ -254,9 +259,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     fCurrent_TRK;               //! Event Multiplicity
     Float_t                     fCurrent_RT;                //! Event RTransverse
     Int_t                       fCurrent_Run;               //! Current Run Number
-    Int_t                       fKaonLabels     [1024];     //! Kaon Labels
+    Int_t                       fKaonLabels     [2048];     //! Kaon Labels
     Int_t                       fnPhiRec;                   //! Recordable Phi Number
-    AliAODMCParticle*           fPhiRecParticles[1024];     //! Recordable Phi Labels
+    AliAODMCParticle*           fPhiRecParticles[2048];     //! Recordable Phi Labels
     //
     //>->->->   Data Event Mask
     UChar_t                     fEventMask;                 //! Event Mask
@@ -273,29 +278,29 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Bool_t                      fIsPhiCandidate             ( TLorentzVector fPhi );
     //
     Int_t                       fnPhi;                      //! Number of Phis produced found
-    Float_t                     fInvMass        [1024];     //! Invariant Mass
-    Float_t                     fPhiPx          [1024];     //! Phi Px
-    Float_t                     fPhiPy          [1024];     //! Phi Py
-    Float_t                     fPhiPz          [1024];     //! Phi Pz
-    Int_t                       fiKaon          [1024];     //! iKaon
-    Int_t                       fjKaon          [1024];     //! jKaon
-    Float_t                     fTrueInvMass    [1024];     //! True Invariant Mass
+    Float_t                     fInvMass        [2048];     //! Invariant Mass
+    Float_t                     fPhiPx          [2048];     //! Phi Px
+    Float_t                     fPhiPy          [2048];     //! Phi Py
+    Float_t                     fPhiPz          [2048];     //! Phi Pz
+    Int_t                       fiKaon          [2048];     //! iKaon
+    Int_t                       fjKaon          [2048];     //! jKaon
+    Float_t                     fTrueInvMass    [2048];     //! True Invariant Mass
     //
     TTree                      *fKaonCandidate;             //! output tree for Signal
     Int_t                       fnKaon;                     //! Number of Phis produced found
-    Float_t                     fKaonPx         [1024];     //! Kaon Px
-    Float_t                     fKaonPy         [1024];     //! Kaon Py
-    Float_t                     fKaonPz         [1024];     //! Kaon Pz
-    Char_t                      fCharge         [1024];     //! Kaon Charge
-    Char_t                      fTOFSigma       [1024];     //! PID TOF
-    Char_t                      fTPCSigma       [1024];     //! PID TPC
+    Float_t                     fKaonPx         [2048];     //! Kaon Px
+    Float_t                     fKaonPy         [2048];     //! Kaon Py
+    Float_t                     fKaonPz         [2048];     //! Kaon Pz
+    Char_t                      fCharge         [2048];     //! Kaon Charge
+    Char_t                      fTOFSigma       [2048];     //! PID TOF
+    Char_t                      fTPCSigma       [2048];     //! PID TPC
     //
     TTree                      *fPhiEfficiency;             //! output tree for MC Truth
     Int_t                       fnPhiTru;                   //! Number of Phis produced found
-    Float_t                     fPhiTruPx       [1024];     //! Phi Px
-    Float_t                     fPhiTruPy       [1024];     //! Phi Py
-    Float_t                     fPhiTruPz       [1024];     //! Phi Pz
-    UChar_t                     fSelection      [1024];     //! Selection integer
+    Float_t                     fPhiTruPx       [2048];     //! Phi Px
+    Float_t                     fPhiTruPy       [2048];     //! Phi Py
+    Float_t                     fPhiTruPz       [2048];     //! Phi Pz
+    UChar_t                     fSelection      [2048];     //! Selection integer
     //
     TTree                      *fKaonEfficiency;            //! output tree for MC Truth
     Int_t                     fnKaonTru;                  //! Number of Kaons produced found

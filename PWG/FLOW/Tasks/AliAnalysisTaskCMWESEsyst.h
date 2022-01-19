@@ -98,7 +98,7 @@ private:
   static const int NCENTBINS = 10;
   static const int NPOIBINS  = 2;
   static const int NQNBINS  = 10;
-  static const int NRUNNUM = 68;
+  static const int NRUNNUM = 138;
   void          ResetHists();
   bool          DoCumulants();
   void          CalcRefFlow();
@@ -253,8 +253,8 @@ private:
     TProfile*         pIntd2AchCentdefQ2a[NCENTBINS];
     TProfile*         pAchCentdefQ2a[NCENTBINS];
 
-    TH1D*            hMultCentdefQ2a[NQNBINS];
-    TH1D*            hAchCentdefQ2a[NQNBINS];
+    TH1D*            hMultCentdefQ2c[NQNBINS];
+    TH1D*            hAchCentdefQ2c[NQNBINS];
 
     // physics 
     TProfile*         pRefFlowCentspd[NCENTBINS];     

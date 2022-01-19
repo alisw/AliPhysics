@@ -74,7 +74,9 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fPeriod(0),
   fTriggerMask(0),
   fBetheSplines(kFALSE),
+  fUseExternalSplines(kFALSE),
   fBetheParamsHe(),
+  fRefitOnFlyV0(kFALSE),
   fBetheParamsT() {
 
   }
@@ -117,7 +119,9 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fPeriod(00),
   fTriggerMask(),
   fBetheSplines(kFALSE),
+  fUseExternalSplines(kFALSE),
   fBetheParamsHe(),
+  fRefitOnFlyV0(kFALSE),
   fBetheParamsT()
   {
     DefineInput(0, TChain::Class());
@@ -270,7 +274,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   }
 
   Int_t runNumber = fESDevent->GetRunNumber();
-  SetBetheBlochParams(runNumber);
+  
+  if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
 
 	AliCDBManager *cdbMgr = AliCDBManager::Instance();
 	if (fMCtrue) {
@@ -388,6 +393,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 //        tritonNegative = kTRUE;
 //      }
     }
+    
+       	       	
     if (helium3Positive && pionNegative) {
       SetMomentum( 2, v0ChargeCorrect);
       CalculateV0(*trackN, *trackP,  AliPID::kPion, AliPID::kHe3, mcEvent);
@@ -418,6 +425,30 @@ void AliAnalysisTaskHypTritEventTree::Terminate(const Option_t*) {
 /// \param charge charge of nuclei
 /// \param v0Charge corrects for mistake in AliESDv0. It is true when the charge was correctly set
 void AliAnalysisTaskHypTritEventTree::SetMomentum(Int_t charge, Bool_t v0ChargeCorrect) {
+		
+	if (fV0->GetOnFlyStatus() && fRefitOnFlyV0) {
+		AliESDVertex vtx = fV0->GetVertex();
+		Double_t mvec[3];
+		AliExternalTrackParam extParamsP(*(fV0->GetParamP()));
+		AliExternalTrackParam extParamsN(*(fV0->GetParamN()));
+		extParamsP.PropagateToDCA(&vtx, fESDevent->GetMagneticField(), 25);
+		extParamsN.PropagateToDCA(&vtx, fESDevent->GetMagneticField(), 25);
+		extParamsP.GetPxPyPz(mvec);
+		TVector3 momentumVectorP(mvec[0],mvec[1],mvec[2]); 	
+		extParamsN.GetPxPyPz(mvec);
+		TVector3 momentumVectorN(mvec[0],mvec[1],mvec[2]); 	
+
+		if (charge > 0) {
+			fMomPos.SetVect(charge * momentumVectorP);
+			fMomNeg.SetVect(momentumVectorN); 
+		}
+		else {
+			fMomPos.SetVect(momentumVectorP);
+			fMomNeg.SetVect(-charge * momentumVectorN);
+		}
+		return;
+  }
+  
   TVector3 momentumVector(0,0,0);
   if (charge > 0) {
     fV0->GetPPxPyPz(momentumVector(0), momentumVector(1), momentumVector(2));
@@ -676,7 +707,7 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 
 	} else {
 		// MC: simulate TRD trigger
-		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE;
+		Bool_t secHeHNU = kFALSE, secHeHQU = kFALSE, secHeHSE = kFALSE;
 
 		if (nTrdTracks > 0) {
 			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
@@ -697,7 +728,7 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 				}
 				// simulate HQU
 				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
-					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					trdTrack->GetPID() >= 135 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
 					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
 					if (sag < 0.2 && sag > -0.2) {
 						fReducedEvent->fTrigHQU = 1;
@@ -707,9 +738,22 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection(AliMCEvent* mcEvent) {
 						}
 					}
 				}
+				// simulate HSE
+				if (TMath::Abs(trdTrack->GetPt()) >= 384 &&
+					trdTrack->GetPID() >= 120 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){
+					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						fReducedEvent->fTrigHSE = 1;
+						fReducedEvent->fTrigger = 7;
+						if (TMath::Abs(particle->PdgCode()) == 1000020030) {
+							if (mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(label))) secHeHSE = kTRUE;
+						}
+					}
+				}
 			}
-		if (secHeHNU) fReducedEvent->fTrigHNU = 2;
-		if (secHeHQU) fReducedEvent->fTrigHQU = 2;
+			if (secHeHNU) fReducedEvent->fTrigHNU = 2;
+			if (secHeHQU) fReducedEvent->fTrigHQU = 2;
+			if (secHeHSE) fReducedEvent->fTrigHSE = 2;
 		}
 	}
 	fHistTrigger->Fill(fReducedEvent->fTrigger);
@@ -785,149 +829,73 @@ Double_t AliAnalysisTaskHypTritEventTree::GeoLength(const AliESDtrack& track) {
 //_____________________________________________________________________________
 void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
+	if (runNumber >= 252235 && runNumber <= 265589) { // 2016 pp data
 		fYear = 2016;
-		if(!fMCtrue) { // Data
-			// LHC16 + LHC18
-			// Triton
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// He3
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else { // MC
-			if (runNumber >= 262424 || runNumber <= 256418 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 256941 && runNumber <= 258537 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 258962 && runNumber <= 259888 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-		}
+		// He3
+		fBetheParamsHe[0] = 1.81085;
+		fBetheParamsHe[1] = 29.4656;
+		fBetheParamsHe[2] = 0.0458225;
+		fBetheParamsHe[3] = 2.08689;
+		fBetheParamsHe[4] = 2.28772;
+		fBetheParamsHe[5] = 0.06;
+		// Triton
+		fBetheParamsT[0] = 0.427978;
+		fBetheParamsT[1] = 105.46;
+		fBetheParamsT[2] = -7.08642e-07;
+		fBetheParamsT[3] = 2.23332;
+		fBetheParamsT[4] = 18.8231;
+		fBetheParamsT[5] = 0.06;
 	}
-	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
+	if (runNumber > 265589 && runNumber <= 267166) { // 2016 p-Pb data
+		fYear = 2016;
+		// He3
+		fBetheParamsHe[0] = 0.715489;
+		fBetheParamsHe[1] = 59.5463;
+		fBetheParamsHe[2] = 4.44487e-12;
+		fBetheParamsHe[3] = 2.69874;
+		fBetheParamsHe[4] = 24.063;
+		fBetheParamsHe[5] = 0.04725;
+		// Triton
+		fBetheParamsT[0] = 0.223948;
+		fBetheParamsT[1] = 180.564;
+		fBetheParamsT[2] = -3.03884e-10;
+		fBetheParamsT[3] = 2.30095;
+		fBetheParamsT[4] = 34.2269;
+		fBetheParamsT[5] = 0.06517;	
+	} 	
+	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp data
 		fYear = 2017;
-		if(!fMCtrue) {
-			//LHC17 Data
-			// He3
-			fBetheParamsHe[0] = 3.20025;
-			fBetheParamsHe[1] = 16.4971;
-			fBetheParamsHe[2] = -0.0116571;
-			fBetheParamsHe[3] = 2.3152;
-			fBetheParamsHe[4] = 3.11135;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 0.420434;
-			fBetheParamsT[1] = 106.102;
-			fBetheParamsT[2] = -3.15587e-07;
-			fBetheParamsT[3] = 2.32499;
-			fBetheParamsT[4] = 21.3439;
-			fBetheParamsT[5] = 0.06;
-		} else {
-			//LHC20l7b (-> LHC17)
-			// He3
-			fBetheParamsHe[0] = 3.14546;
-			fBetheParamsHe[1] = 16.2277;
-			fBetheParamsHe[2] = -0.000523081;
-			fBetheParamsHe[3] = 2.28248;
-			fBetheParamsHe[4] = 2.60465;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.88676;
-			fBetheParamsT[1] = 15.3823;
-			fBetheParamsT[2] = 0.580675;
-			fBetheParamsT[3] = 2.28551;
-			fBetheParamsT[4] = 2.47351;
-			fBetheParamsT[5] = 0.06;
-		}
+		// He3
+		fBetheParamsHe[0] = 3.20025;
+		fBetheParamsHe[1] = 16.4971;
+		fBetheParamsHe[2] = -0.0116571;
+		fBetheParamsHe[3] = 2.3152;
+		fBetheParamsHe[4] = 3.11135;
+		fBetheParamsHe[5] = 0.06;
+		// Triton
+		fBetheParamsT[0] = 0.420434;
+		fBetheParamsT[1] = 106.102;
+		fBetheParamsT[2] = -3.15587e-07;
+		fBetheParamsT[3] = 2.32499;
+		fBetheParamsT[4] = 21.3439;
+		fBetheParamsT[5] = 0.06;
 	}
-	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
+	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp data
 		fYear = 2018;
-		if(!fMCtrue) {
-			// LHC16 + LHC18
-			// He3
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// Triton
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else {
-			//LHC20l7a (-> LHC18)
-			// He3
-			fBetheParamsHe[0] = 3.07067;
-			fBetheParamsHe[1] = 15.8069;
-			fBetheParamsHe[2] = -0.0142383;
-			fBetheParamsHe[3] = 2.15513;
-			fBetheParamsHe[4] = 2.5192;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.95171;
-			fBetheParamsT[1] = 17.7223;
-			fBetheParamsT[2] = 37.7979;
-			fBetheParamsT[3] = 2.03313;
-			fBetheParamsT[4] = 0.730268;
-			fBetheParamsT[5] = 0.06;
-		}
+		// He3
+		fBetheParamsHe[0] = 1.81085;
+		fBetheParamsHe[1] = 29.4656;
+		fBetheParamsHe[2] = 0.0458225;
+		fBetheParamsHe[3] = 2.08689;
+		fBetheParamsHe[4] = 2.28772;
+		fBetheParamsHe[5] = 0.06;
+		// Triton
+		fBetheParamsT[0] = 0.427978;
+		fBetheParamsT[1] = 105.46;
+		fBetheParamsT[2] = -7.08642e-07;
+		fBetheParamsT[3] = 2.23332;
+		fBetheParamsT[4] = 18.8231;
+		fBetheParamsT[5] = 0.06;
 	}
 }
 //_____________________________________________________________________________

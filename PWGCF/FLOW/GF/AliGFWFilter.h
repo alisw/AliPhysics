@@ -40,21 +40,23 @@ namespace GFWFlags {
     klFB768Tuned =     BIT(7), //FB768 where 512 FB requires a hit on first SDD (for compatibility with FB96Tuned)
     klSharedClusters = BIT(8), //fraction of shared TPC clusters < 0.4
     klHitOnSDD =       BIT(9), //hit on first layer of SDD
-    klDCAz20 =         BIT(10),//DCA z < 2 cm
-    klDCAz10 =         BIT(11),//DCA z < 1 cm
-    klDCAz05 =         BIT(12),//DCA z < 0.5 cm
-    klDCAxy2010 =      BIT(13),//DCAxy cut tuned to 2010
-    klDCAxy2011 =      BIT(14),//DCAxy cut tuned to 2011
-    klDCAxy8Sigma =    BIT(15),//DCAxy cut on 8 sigma, 2011
-    klDCAxy4Sigma =    BIT(16),//DCAxy cut on 4 sigma, 2011
-    klDCAxy10Sigma =   BIT(17),//DCAxy cut on 10 sigma, 2011
-    klTPCchi2PC25 =    BIT(18),//TPC chi2/cluster < 2.5
-    klTPCchi2PC20 =    BIT(19),//TPC chi2/cluster < 2.0
-    klTPCchi2PC30 =    BIT(20),//TPC chi2/cluster < 3.0
-    klNTPCcls70 =      BIT(21),//Number of TPC clusters 70
-    klNTPCcls80 =      BIT(22),//Number of TPC clusters 80
-    klNTPCcls90 =      BIT(23),//Number of TPC clusters 90
-    klNTPCcls100 =     BIT(24)//Number of TPC clusters 100
+    klNoSPD =          BIT(10), //hit on first layer of SDD
+    klDCAz20 =         BIT(11),//DCA z < 2 cm
+    klDCAz10 =         BIT(12),//DCA z < 1 cm
+    klDCAz05 =         BIT(13),//DCA z < 0.5 cm
+    klDCAxy2010 =      BIT(14),//DCAxy cut tuned to 2010
+    klDCAxy2011 =      BIT(15),//DCAxy cut tuned to 2011
+    klDCAxy8Sigma =    BIT(16),//DCAxy cut on 8 sigma, 2011
+    klDCAxy4Sigma =    BIT(17),//DCAxy cut on 4 sigma, 2011
+    klDCAxy10Sigma =   BIT(18),//DCAxy cut on 10 sigma, 2011
+    klTPCchi2PC25 =    BIT(19),//TPC chi2/cluster < 2.5
+    klTPCchi2PC20 =    BIT(20),//TPC chi2/cluster < 2.0
+    klTPCchi2PC30 =    BIT(21),//TPC chi2/cluster < 3.0
+    klTPCchi2PC40 =    BIT(22),//TPC chi2/cluster < 3.0
+    klNTPCcls70 =      BIT(23),//Number of TPC clusters 70
+    klNTPCcls80 =      BIT(24),//Number of TPC clusters 80
+    klNTPCcls90 =      BIT(25),//Number of TPC clusters 90
+    klNTPCcls100 =     BIT(26)//Number of TPC clusters 100
   };
   enum EventFlags { kNominal=0, kVtx9, kVtx7, kVtx5, kAllEvFlags}; //Better keep these as uint_t so that we reuse them as array indeces
   enum TrackFlags { kFB96=0, kFB768,
@@ -62,7 +64,7 @@ namespace GFWFlags {
                     kDCA4Sigma, kDCA10Sigma,
                     kChiSq2, kChiSq3,
                     kNTPC80, kNTPC90, kNTPC100,
-                    kFB768Tuned, kFB96Tuned,
+                    kFB96Tuned, kFB768Tuned,
                     kFB768DCAz,
                     kFB768DCAxyLow,
                     kFB768DCAxyHigh,
@@ -70,6 +72,12 @@ namespace GFWFlags {
                     kFB768nTPC, kFB96MergedDCA,
                     kAllTrFlags
                   };
+  static const Int_t BitIndex(const UInt_t &lFlag) {
+    if(lFlag==0) return -1;
+    for(Int_t i=0;i<sizeof(lFlag)*8;i++) if(lFlag&(1<<i)) return i;
+    return -1;
+  };
+  static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
   const Int_t gNTrackFlags=20;
   const Int_t gNEventFlags=4;
 };
@@ -107,14 +115,13 @@ class AliGFWFilter
     void SetEventCuts(AliEventCuts *fEvCuts) {fEventCuts = fEvCuts; };
     void CheckEvent(AliVEvent *inEv);
     Bool_t AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ);
-    void CreateStandardCutMasks();
+    void CreateStandardCutMasks(kLocalTrackFlags lStandardChi2Cut = klTPCchi2PC25);
     void AddCustomCuts(Bool_t cleanFirst=kTRUE, UInt_t lEv=klVtxZ10+klEventCuts, UInt_t lTr=klFB96+klDCAz20+klDCAxy2011+klTPCchi2PC25+klNTPCcls70);
     AliGFWFlags *GetFlags() { return fRetFlags; };
     void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };
-    void SetEtaMin(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
-    static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
-    static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:(ind-gNEventFlags); return GetSystPF(lev,ltr); };
-  // private:
+    void SetEta(Double_t etaMin, Double_t etaMax) { fEtaMin = etaMin; fEtaMax = etaMax; };
+    // static const TString GetSystPF(UInt_t ind) { Int_t lev=ind<gNEventFlags?ind:0; Int_t ltr=ind<gNEventFlags?0:(ind-gNEventFlags); return GetSystPF(lev,ltr); };
+  private:
     inline Double_t f_DCAxy2010(Double_t &pt) { return (0.0026+0.0050/TMath::Power(pt,1.01)); };
     inline Double_t f_DCAxy2011(Double_t &pt) { return (0.0015+0.0050/TMath::Power(pt,1.1)); };
     void AddEv(const UInt_t &lFlag) {fEventFlag|=lFlag;};

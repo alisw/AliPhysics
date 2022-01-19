@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_jditzel_DoubleHypNucTree(UInt_t triggerMask = AliVEvent::kAny, Bool_t pidch = kFALSE) {
+AliAnalysisTask *AddTask_jditzel_DoubleHypNucTree(UInt_t triggerMask = (AliVEvent::kAny), Bool_t pidch = kFALSE) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_jditzel_DoubleHypNucTree", "No analysis manager found.");
@@ -18,14 +18,22 @@ AliAnalysisTask *AddTask_jditzel_DoubleHypNucTree(UInt_t triggerMask = AliVEvent
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("histograms", TList::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("fTree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("fTreeGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("gTree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("gTreeGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName()); 
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("fTreeD", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("fTreeKF", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer("fTreeGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("gTree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("gTreeD", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("gTreeKF", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("gTreeGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName()); 
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
   mgr->ConnectOutput(task, 3, coutput3);
   mgr->ConnectOutput(task, 4, coutput4);
   mgr->ConnectOutput(task, 5, coutput5);
+  mgr->ConnectOutput(task, 6, coutput6);
+  mgr->ConnectOutput(task, 7, coutput7);
+  mgr->ConnectOutput(task, 8, coutput8);
+  mgr->ConnectOutput(task, 9, coutput9);
   return task;
 }

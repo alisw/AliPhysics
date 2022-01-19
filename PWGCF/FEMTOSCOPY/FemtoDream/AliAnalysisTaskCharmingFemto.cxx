@@ -35,6 +35,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(false),
+      fUseMCTruthReco(false),
+      fIsMCtruth(false),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -75,6 +77,11 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fDoDorigPlots(false),
+      fHistDplusMCtruthmotherPDG(nullptr),
+      fHistDplusMCtruthQuarkOrigin(nullptr),
+      fHistDminusMCtruthmotherPDG(nullptr),
+      fHistDminusMCtruthQuarkOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -89,6 +96,13 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fInvMassCutLow(0.),
+      fInvMassCutHigh(0.),
+      fBuddypTlow(0.),
+      fBuddypThigh(0.),
+      fBuddyeta(0.),
+      fBuddyOrigin(0),
+      fDmesonOrigin(0),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -99,7 +113,8 @@ ClassImp(AliAnalysisTaskCharmingFemto)
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
-                                                           const bool isMC)
+                                                           const bool isMC,
+                                                           const bool isMCtruth)
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fEvent(nullptr),
@@ -111,6 +126,8 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(isMC),
+      fUseMCTruthReco(false),
+      fIsMCtruth(isMCtruth),
       fIsLightweight(false),
       fTrigger(AliVEvent::kINT7),
       fSystem(kpp13TeV),
@@ -151,6 +168,11 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fDoDorigPlots(false),
+      fHistDplusMCtruthmotherPDG(nullptr),
+      fHistDplusMCtruthQuarkOrigin(nullptr),
+      fHistDminusMCtruthmotherPDG(nullptr),
+      fHistDminusMCtruthQuarkOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -165,6 +187,13 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fInvMassCutLow(0.),
+      fInvMassCutHigh(0.),
+      fBuddypTlow(0.),
+      fBuddypThigh(0.),
+      fBuddyeta(0.),
+      fBuddyOrigin(0),
+      fDmesonOrigin(0),
       fApplyML(false),
       fConfigPath(""),
       fMLResponse(nullptr),
@@ -346,10 +375,19 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   }
   static std::vector<AliFemtoDreamBasePart> protons;
   static std::vector<AliFemtoDreamBasePart> antiprotons;
+  static std::vector<AliFemtoDreamBasePart> dplus;
+  static std::vector<AliFemtoDreamBasePart> dminus;
   protons.clear();
   antiprotons.clear();
+  dplus.clear();
+  dminus.clear();
+
   const int multiplicity = fEvent->GetMultiplicity();
   fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  
+  if ((fIsMCtruth || fUseMCTruthReco) && fDecChannel != kDplustoKpipi)
+    AliFatal("MC truth only implemented for kDplustoKpipi decay channel.");
+    
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(
         iTrack));
@@ -359,18 +397,158 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         continue;
       }
     }
-
-  float DmesonBuddyMass =
-    TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
+    float DmesonBuddyMass =
+      TDatabasePDG::Instance()->GetParticle(fTrackCutsPartProton->GetPDGCode())->Mass();
 
     fProtonTrack->SetTrack(track);
     fProtonTrack->SetInvMass(DmesonBuddyMass);
+
+    int mcpdg = 0;
+    if (fUseMCTruthReco && track->GetLabel() >= 0){ // Fake tracks have label < 0. Reject them.
+      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
+      if(mcPart){
+        mcpdg = mcPart->GetPdgCode();
+      }
+    }
+
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      protons.push_back(*fProtonTrack);
+      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode()){
+        protons.push_back(*fProtonTrack);
+      }
+      else if (!fIsMCtruth) {
+        protons.push_back(*fProtonTrack);
+      }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiprotons.push_back(*fProtonTrack);
+      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
+        antiprotons.push_back(*fProtonTrack);
+      }
+      else if (!fIsMCtruth) {
+        antiprotons.push_back(*fProtonTrack);
+      }      
     }
+  }
+
+  auto trackCutsDdau = fRDHFCuts->GetTrackCuts();
+  float ptMin, ptMax, etaMin, etaMax;
+  trackCutsDdau->GetPtRange(ptMin, ptMax);
+  trackCutsDdau->GetEtaRange(etaMin, etaMax);
+  float* DmesonPtBins = fRDHFCuts->GetPtBinLimits();
+  float DmesonPtMin=DmesonPtBins[0];
+  float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
+
+  if (fIsMCtruth) {
+    TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    int noPart = fArrayMCAOD->GetEntriesFast();
+  
+    for (int iPart = 1; iPart < noPart; iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(iPart);
+      if (!(mcPart)) {
+        std::cout << "NO MC particle" << std::endl;
+        continue;
+      }
+
+      if (mcPart->GetLabel() < 0) {
+        continue;
+      }
+
+      AliFemtoDreamBasePart part;
+
+      int mcpdg = mcPart->GetPdgCode();
+      double pt = mcPart->Pt();
+      double eta = mcPart->Eta();
+      if (mcpdg == fTrackCutsPartProton->GetPDGCode()) {        
+        if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
+          if(SelectBuddyOrigin(mcPart)){
+            part.SetMCParticleRePart(mcPart);
+            part.SetID(mcPart->GetLabel());
+            part.SetIDTracks(mcPart->GetLabel());
+            protons.push_back(part);
+          }
+        }
+      }
+
+      if (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
+        if ((pt < fBuddypThigh && pt > fBuddypTlow) && (eta > -fBuddyeta && eta < fBuddyeta)) {
+          if(SelectBuddyOrigin(mcPart)){
+            part.SetMCParticleRePart(mcPart);
+            part.SetID(mcPart->GetLabel());
+            part.SetIDTracks(mcPart->GetLabel());
+            antiprotons.push_back(part);
+          }
+        }
+      }
+
+      if ((std::abs(mcpdg)) == absPdgMom && (fDecChannel == kDplustoKpipi)) {
+        if((pt>DmesonPtMin) && (pt<DmesonPtMax)) {
+          int NDDaughters=(const int)mcPart->GetNDaughters();
+          if (NDDaughters == 3) {
+            int labelFirstDau = mcPart->GetDaughterLabel(0);
+            int labelThirdDau = mcPart->GetDaughterLabel(1);
+            int labelSecondDau = labelThirdDau-1;
+
+            AliAODMCParticle *D1 = (AliAODMCParticle *)fArrayMCAOD->At(labelFirstDau);
+            AliAODMCParticle *D2 = (AliAODMCParticle *)fArrayMCAOD->At(labelSecondDau);
+            AliAODMCParticle *D3 = (AliAODMCParticle *)fArrayMCAOD->At(labelThirdDau);
+
+            std::vector<int> pdgvec = {D1->GetPdgCode(), D2->GetPdgCode(), D3->GetPdgCode()};
+            std::vector<double> pTvec = {D1->Pt(), D2->Pt(), D3->Pt()};
+            std::vector<double> etavec = {D1->Eta(), D2->Eta(), D3->Eta()};
+            int counter = 0;
+
+            for (int i = 0; i<NDDaughters; i++) {
+              if ((pTvec.at(i) < ptMax && pTvec.at(i) > ptMin) && (etavec.at(i) > etaMin && etavec.at(i) < etaMax)) {
+                counter++;
+              }
+            }
+
+            if(counter==3){
+              std::sort(pdgvec.begin(), pdgvec.end());
+              // cout<<"*** ";
+              // for (int i = 0; i<NDDaughters; i++) {
+              //   cout<<" "<<pdgvec[i];
+              // }
+              // cout<<" ***"<< endl;
+              if ((pdgvec.at(0)==-321) && (pdgvec.at(1)==211) && (pdgvec.at(2)==211) && (mcpdg == 411)) {
+                if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
+                  part.SetMCParticleRePart(mcPart);
+                  part.SetIDTracks(labelFirstDau);
+                  part.SetIDTracks(labelSecondDau);
+                  part.SetIDTracks(labelThirdDau);
+                  dplus.push_back(part);
+                  if(fDoDorigPlots){
+                    FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+                    FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+                  }
+                }
+                
+              }
+              if ((pdgvec.at(0)==-211) && (pdgvec.at(1)==-211) && (pdgvec.at(2)==321) && (mcpdg == -411) ) {
+                if (SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
+                  part.SetMCParticleRePart(mcPart);
+                  part.SetIDTracks(labelFirstDau);
+                  part.SetIDTracks(labelSecondDau);
+                  part.SetIDTracks(labelThirdDau);
+                  dminus.push_back(part);
+                  if(fDoDorigPlots){
+                    FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+                    FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+                  }
+                }
+              }            
+            }
+          }
+        }
+      }
+
+
+    }
+
+ 
   }
 
   // D MESON SELECTION
@@ -397,11 +575,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
   }
 
-  static std::vector<AliFemtoDreamBasePart> dplus;
-  static std::vector<AliFemtoDreamBasePart> dminus;
-  dplus.clear();
-  dminus.clear();
-
   // needed to initialise PID response
   fRDHFCuts->IsEventSelected(fInputEvent);
 
@@ -419,8 +592,25 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     bool unsetVtx = false;
     bool recVtx = false;
     AliAODVertex *origOwnVtx = nullptr;
-
-    int isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    
+    int pdgDplusDau[3] = {321, 211, 211};
+    int isSelected = 1;
+    if(fUseMCTruthReco){
+      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
+      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      
+      int dMesonLabel = dMeson->MatchToMC(411, fArrayMCAOD, 3, pdgDplusDau);
+      if(dMesonLabel < 0){
+        continue;
+      }
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(dMesonLabel);
+      if(mcPart->Pt() < DmesonPtMin || mcPart->Pt() > DmesonPtMax) {
+        continue;
+      }
+    } else {
+      isSelected = IsCandidateSelected(dMeson, dMesonWithVtx, absPdgMom, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand]);
+    }
+    
     if(!isSelected) {
       if (unsetVtx) {
         dMesonWithVtx->UnsetOwnPrimaryVtx();
@@ -458,7 +648,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             && std::abs(dplusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
-        dplus.push_back(dplusCand);
+        if (!fIsMCtruth) {
+          dplus.push_back(dplusCand);
+        }
         if (!fIsLightweight) {
           fHistDplusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDplusEta->Fill(dMeson->Eta());
@@ -504,7 +696,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
             && std::abs(dminusCand.GetMCPDGCode()) != absPdgMom) {
           continue;
         }
-        dminus.push_back(dminusCand);
+        if (!fIsMCtruth){
+          dminus.push_back(dminusCand);
+        }
         if (!fIsLightweight) {
           fHistDminusInvMassPtSel->Fill(dMeson->Pt(), mass);
           fHistDminusEta->Fill(dMeson->Eta());
@@ -557,6 +751,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
+
   fPairCleaner->StoreParticle(dplus);
   fPairCleaner->StoreParticle(dminus);
 
@@ -757,6 +952,41 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDplusMCThetaRes);
       fDChargedHistList->Add(fHistDplusMCOrigin);
     }
+  }
+
+  //MCTruth Histos
+
+  if (fIsMC && fIsMCtruth) {
+      
+      fHistDplusMCtruthmotherPDG = new TH2F(
+          TString::Format("fHist%sMCPDGPt_MCtruth", nameD.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+
+      fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 3, 0.5, 3.5);
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+
+      fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
+      fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
+
+      fHistDminusMCtruthmotherPDG = new TH2F(
+          TString::Format("fHist%sMCPDGPt_MCtruth", nameDminus.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+      
+      fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 3, 0.5, 3.5);
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+
+      fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
+      fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
   }
 
   fHistDminusInvMassPt = new TH2F(

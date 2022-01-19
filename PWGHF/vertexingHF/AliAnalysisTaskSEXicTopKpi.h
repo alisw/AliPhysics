@@ -224,8 +224,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     if(cosPxyFast<0)fMinFastCosPointXYSq=-1;
     else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
   }
-void EnableSparseReflections(){fFillSparseReflections=kTRUE;}
- 
+void EnableSparseReflections(){fFillSparseReflections=kTRUE;} 
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -552,6 +551,7 @@ void EnableSparseReflections(){fFillSparseReflections=kTRUE;}
   Double_t fFastLoopDCApar4;// internal parameter for fast loops
   
   ClassDef(AliAnalysisTaskSEXicTopKpi,26); /// AliAnalysisTaskSE for Xic->pKpi
+
   /// \endcond
 };
 

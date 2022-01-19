@@ -12,6 +12,7 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include <AliAODMCParticle.h>
+#include <AliAODMCHeader.h>
 #include "AliAnalysisUtils.h"
 #include "AliEventCuts.h"
 #include <TSystem.h>
@@ -58,6 +59,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   AliAnalysisTaskSE("QAofAODtracks"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
+  fHistGenPilTag{nullptr},
   fHistNTracks{nullptr},
   fHistNTracksVsTPCclusters{nullptr},
   fHistNTracksVsITSclusters{nullptr},
@@ -133,6 +135,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulTPCselSPDanyPrim{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecDec{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecMat{nullptr},
+  fHistGenK0s{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
   fHistInvMassAntiLambda{nullptr},
@@ -236,6 +239,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistGenPilTag;
     delete fHistNTracks;
     delete fHistNTracksVsTPCclusters;
     delete fHistNTracksVsITSclusters;
@@ -311,6 +315,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
     delete fHistImpParXYPtMulTPCselSPDanySecDec;
     delete fHistImpParXYPtMulTPCselSPDanySecMat;
+    delete fHistGenK0s;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
@@ -436,6 +441,10 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(8,"Reject generated pileup");
   fOutput->Add(fHistNEvents);
 
+  fHistGenPilTag = new TH2F("hGenPilTag"," ; from fMCEvent ; from AliAODMCHeader",2,-0.5,1.5,2,-0.5,1.5);
+  fOutput->Add(fHistGenPilTag);
+
+  
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
   fOutput->Add(fHistNTracks);
   fHistNTracksVsTPCclusters = new TH2F("hNTracksVsTPCclusters"," ; N_{TPCclusters} ; N_{tracks}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
@@ -654,10 +663,11 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
 
-
+  fHistGenK0s = new TH2F("hGenK0s"," ; p_{T} ; y",200,0.,10.,20,-1.,1.);
   fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,50,0.,10.,50,0.,50.);
   fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
   fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
+  fOutput->Add(fHistGenK0s);
   fOutput->Add(fHistInvMassK0s);
   fOutput->Add(fHistInvMassLambda);
   fOutput->Add(fHistInvMassAntiLambda);
@@ -744,11 +754,17 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
   
   TClonesArray *arrayMC=0;
-
+  AliAODMCHeader *aodMcHeader = 0x0;
+  
   if(fReadMC){
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
       Printf("ERROR: MC particles branch not found!\n");
+      return;
+    }
+    aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if(!aodMcHeader) {
+      Printf("ERROR: MC header branch not found!\n");
       return;
     }
   }
@@ -846,11 +862,13 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   fHistNEvents->Fill(6);
 
   // in PbPb reject events with generated pileup
-  if(fMCEvent && ((runNumb >= 244917 && runNumb <= 246994) || (runNumb >= 295369 && runNumb <= 297624))){
-    if(fRejectPbPbEventsWithGeneratedPileup && AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ijing")) return;
+  if(fMCEvent && aodMcHeader && ((runNumb >= 244917 && runNumb <= 246994) || (runNumb >= 295369 && runNumb <= 297624))){
+    Bool_t isPileupMCEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ijing");
+    Bool_t isPileupAODheader = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMcHeader,"ijing");
+    fHistGenPilTag->Fill(isPileupMCEvent,isPileupAODheader);
+    if(fRejectPbPbEventsWithGeneratedPileup && isPileupAODheader) return;
   }
   fHistNEvents->Fill(7);
-  
   
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
@@ -1175,7 +1193,18 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       }
     }
   }
-
+  // build generated spectrum of K0s in case of MC
+  if(fMCEvent){
+    for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
+      AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
+      if(part){
+	if(!part->IsPhysicalPrimary()) continue;
+	const int pdg = std::abs(part->PdgCode());
+	if(pdg==310) fHistGenK0s->Fill(part->Pt(),part->Y());
+      }
+    }
+  }
+  
   Int_t nv0s = aod->GetNumberOfV0s();
   for (Int_t iV0 = 0; iV0 < nv0s; iV0++){
     AliAODv0 *v0 = aod->GetV0(iV0);

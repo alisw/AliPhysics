@@ -71,10 +71,21 @@
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_SelectionStudies+;
+#pragma link C++ class AliEventContainer+;
+#pragma link C++ class AliCascadeContainer+;
+#pragma link C++ class AliV0Container+;
+#pragma link C++ class AliTrackInfoContainer+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2+;
+#pragma link C++ class AliMCEventContainer+;
+#pragma link C++ class AliMCCascadeContainer+;
+#pragma link C++ class AliMCV0Container+;
+#pragma link C++ class AliMCTrackInfoContainer+;
+#pragma link C++ class AliMCGenParticleContainer+;
 #pragma link C++ class AliAnalysisTaskStrangeCascadesTriggerAODRun2MC+;
 #pragma link C++ class AliAnalysisTaskV0multspec+;
 #pragma link C++ class AliAnalysisTaskXiNucleusInteraction+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2+;
+#pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

@@ -14,6 +14,7 @@
 #include "THnSparse.h"
 #include "TString.h"
 #include "AliEventCuts.h"
+//#include "AliMCSpectraWeights.h"
 
 class TList;
 class AliCFContainer;
@@ -91,6 +92,11 @@ public:
   }
   void DumpTObjTable(const char* note);
 
+
+  //  void SetMCSpectraweightObject(AliMCSpectraWeights*obj){
+  //	fMCSpectraWeights=obj;
+  //  }
+
   
 private:
   AliAnalysisTaskSEpPbCorrelationsMCYS(
@@ -145,6 +151,8 @@ private:
                              Float_t phi2, Float_t pt2, Float_t charge2,
                              Float_t radius, Float_t bSign);
 
+  //  AliMCSpectraWeights* fMCSpectraWeights;
+  
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t fcentcalib;

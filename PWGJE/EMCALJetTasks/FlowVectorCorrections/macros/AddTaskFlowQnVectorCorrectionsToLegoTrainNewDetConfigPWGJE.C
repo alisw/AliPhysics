@@ -21,7 +21,7 @@
 #include "AliAnalysisManager.h"
 AliAnalysisDataContainer* AddTaskFlowQnVectorCorrectionsNewDetConfigPWGJE();
 
-#include "runAnalysis.H"
+#include "runAnalysisPWG.H"
 
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
@@ -79,7 +79,7 @@ void AddTaskFlowQnVectorCorrectionsToLegoTrainNewDetConfigPWGJE(const char *conf
     #ifndef __CLING__
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskQnVectorAnalysis.C");
     #endif
-    AliAnalysisTaskQnVectorAnalysis* taskQn = AddTaskQnVectorAnalysis(bUseMultiplicity, b2015DataSet);
+    AliAnalysisTaskQnVectorAnalysis* taskQn = AddTaskQnVectorAnalysis(bUseMultiplicity, bRun2DataSet);
     taskQn->SetExpectedCorrectionPass(szCorrectionPass.Data());
     taskQn->SetAlternativeCorrectionPass(szAltCorrectionPass.Data());
 

@@ -57,7 +57,7 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		virtual void SetIsPP(Bool_t val){fIsPP = val;}
 		virtual void SetGenerator(Int_t val){fGenerator = val;}
 		virtual void SetIsFirstPart(Bool_t val){fFirstPart = val;}
-		virtual void SetParametersRho(); 
+		virtual void SetParametersRho(Double_t etarange); 
 
 	private:
 
@@ -107,6 +107,7 @@ class AliAnalysisTaskGenMcKnoUe : public AliAnalysisTaskSE
 		TH2D * hNchRho[3];
 		TH1D * hEtaLeadingRho[3];
 		TH2D * hDetaDphiRho[3];
+		TH2D * hDetaDphiRhoWideEta[3];
 		TH3D * hNchPtPidRho[4][3]; // region, rho 
 
 		TList*  fOutputList;    //!<! Output list of objects

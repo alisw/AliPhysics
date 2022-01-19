@@ -44,6 +44,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetIsMC(bool IsMC){fisMC = IsMC;};
     void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
 
+    //pile-up rejection setter
+    void SetRejectPileUpEvts(bool RejectPileupEvts){fRejectPileupEvts = RejectPileupEvts;};
+
   private:
     THistManager* fHistos_eve;                                //!
     THistManager* fHistos_K0S;                                //!
@@ -59,7 +62,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     UInt_t fTriggerMask;                                      //!
 
     //AliEventCuts object
-    AliEventCuts fEventCuts;                                  //!
+    AliEventCuts fEventCuts;                                  //
+
+    //pile-up rejection flag
+    bool fRejectPileupEvts;                                   //
 
     //MC-realted variables
     bool fisMC;                                               //
@@ -162,7 +168,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     int fnmassbins[knumpart];                                 //
     double fmassbinning[knumpart][1000];                      //
     int fnptbins[knumpart];                                   //
-    double fptbinning[knumpart][600];                         //
+    double fptbinning[knumpart][2000];                        //
 
     //functions to allow flushing part of code out of UserExec
     bool ApplyCuts(int);
@@ -176,8 +182,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 8); 
-    //version 8: introduced AliEventCuts
+    ClassDef(AliAnalysisTaskStrVsMult, 10); 
+    //version 10: enlarge max number of pT bins
 };
 
 #endif

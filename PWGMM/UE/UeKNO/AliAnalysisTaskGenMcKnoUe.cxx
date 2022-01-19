@@ -115,6 +115,7 @@ ClassImp(AliAnalysisTaskGenMcKnoUe)
 		hNchRho[i_rho]=0;
 		hEtaLeadingRho[i_rho]=0;
 		hDetaDphiRho[i_rho]=0;
+		hDetaDphiRhoWideEta[i_rho]=0;
 		for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi)
 			hNchPtPidRho[i_dphi][i_rho]=0; // region, rho 
 	}
@@ -159,6 +160,7 @@ AliAnalysisTaskGenMcKnoUe::AliAnalysisTaskGenMcKnoUe(const char* name):
 		hNchRho[i_rho]=0;
 		hEtaLeadingRho[i_rho]=0;
 		hDetaDphiRho[i_rho]=0;
+		hDetaDphiRhoWideEta[i_rho]=0;
 		for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi)
 			hNchPtPidRho[i_dphi][i_rho]=0; // region, rho 
 	}
@@ -316,6 +318,11 @@ void AliAnalysisTaskGenMcKnoUe::UserCreateOutputObjects()
 			hDetaDphiRho[i_rho]=new TH2D(Form("hDetaDphi_%s",NameOfRegionRho[i_rho]),"",100,-5,5,64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
 			fOutputList->Add(hDetaDphiRho[i_rho]);
 
+			hDetaDphiRhoWideEta[i_rho]=0;
+			hDetaDphiRhoWideEta[i_rho]=new TH2D(Form("hDetaDphiWideEta_%s",NameOfRegionRho[i_rho]),"",100,-5,5,64,-TMath::Pi()/2.0,3.0*TMath::Pi()/2.0);
+			fOutputList->Add(hDetaDphiRhoWideEta[i_rho]);
+
+
 			for(Int_t i_dphi=0;i_dphi<nRegDphi;++i_dphi){
 				hNchPtPidRho[i_dphi][i_rho]=0; // region, rho
 				hNchPtPidRho[i_dphi][i_rho]=new TH3D(Form("hNchPtPid_%s_%s",NameOfRegionRho[i_rho],NameOfRegionDPhi[i_dphi]),"",NchNBinsRho,NchBinsRho,pTNBins,pTNBins1,NPid,Pid);
@@ -332,7 +339,7 @@ void AliAnalysisTaskGenMcKnoUe::UserExec(Option_t *)
 	// ### Initialize
 	if(!fFirstPart){
 		frho = new TF1("frho","[0]*exp([1]*x)+[2]*x^[3]",100.0,2000.0);
-		SetParametersRho();
+		SetParametersRho(fEtaCutRho);
 	}
 
 	fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -612,8 +619,11 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 	sMpT_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	sNch_tmp/=(1.0*fnEtaBinsRho*fnPhiBinsRho);
 	Double_t sMpT=TMath::Sqrt(sMpT_tmp);
-
-	if( nchtotal > 100 && TMath::Abs(fGenLeadEta) < fEtaCut ){
+	Int_t minmult = 21;// twice the average Nch (|eta|<0.8) in MB
+	if(fEtaCutRho>3.0)
+		minmult = 100;// twice the average Nch (|eta|<4) in MB
+	//cout<<"minmult="<<minmult<<endl;
+	if( nchtotal > minmult && TMath::Abs(fGenLeadEta) < fEtaCut ){
 		Double_t rho = sMpT/mMpT;
 		Double_t meanrho = frho->Eval(1.0*nchtotal);
 		Int_t indexrho = -1;
@@ -639,11 +649,15 @@ void AliAnalysisTaskGenMcKnoUe::MakeALICE3AnalysisP2(){
 
 			if (!fMC->IsPhysicalPrimary(i)) continue;
 			if (particle->Charge() == 0) continue;
-			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;
 			if( particle->Pt() < ptamin)continue;
-			Int_t pid = GetPidCode(particle->PdgCode());
 			Double_t Deta = fGenLeadEta-particle->Eta();
 			Double_t DPhi = DeltaPhi(particle->Phi(), fGenLeadPhi);
+			hDetaDphiRhoWideEta[0]->Fill(Deta,DPhi);
+			if(indexrho>0){
+				hDetaDphiRhoWideEta[indexrho]->Fill(Deta,DPhi);
+			}
+			if ( TMath::Abs(particle->Eta()) > fEtaCutRho )continue;
+			Int_t pid = GetPidCode(particle->PdgCode());
 			hDetaDphiRho[0]->Fill(Deta,DPhi);
 			if(indexrho>0){
 				hDetaDphiRho[indexrho]->Fill(Deta,DPhi);
@@ -794,52 +808,111 @@ Double_t AliAnalysisTaskGenMcKnoUe::DeltaPhi(Double_t phia, Double_t phib,
 
 	return dphi;
 }
-void AliAnalysisTaskGenMcKnoUe::SetParametersRho(){
+void AliAnalysisTaskGenMcKnoUe::SetParametersRho(Double_t etarange){
 
-	switch(fGenerator){
-		case 0:
-			frho->SetParameter(0,-2034448.6);
-			frho->SetParameter(1,-0.99051656);
-			frho->SetParameter(2,14.116976);
-			frho->SetParameter(3,-0.52448073);
-			break;
-		case 1:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-1.9595275);
-			frho->SetParameter(2,18.226513);
-			frho->SetParameter(3,-0.58994765);
-			break;
-		case 2:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-1.1168320);
-			frho->SetParameter(2,14.480357);
-			frho->SetParameter(3,-0.52709865);
-			break;
-		case 3:
-			frho->SetParameter(0,-1891978.1);
-			frho->SetParameter(1,-1.8212843);
-			frho->SetParameter(2,13.573444);
-			frho->SetParameter(3,-0.51139756);
-			break;
-		case 4:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-2.0788016);
-			frho->SetParameter(2,28.243893);
-			frho->SetParameter(3,-0.70047215);
-			break;
-		case 5:
-			frho->SetParameter(0,-7.8071100);
-			frho->SetParameter(1,-1.0183988);
-			frho->SetParameter(2,21.348248);
-			frho->SetParameter(3,-0.61011648);
-			break;
-		default:
-			frho->SetParameter(0,-2034448.6);
-			frho->SetParameter(1,-0.99051656);
-			frho->SetParameter(2,14.116976);
-			frho->SetParameter(3,-0.52448073);
+	if(etarange==0.8){
+		//cout<<"seting the case eta 0.8"<<endl;
+		switch(fGenerator){
+			case 0: // Monash
+				frho->SetParameter(0,-1.2796503);
+				frho->SetParameter(1,-0.21406574);
+				frho->SetParameter(2,7.9576486);
+				frho->SetParameter(3,-0.50547998);
+				break;
+			case 1: // Monash NoCR
+				frho->SetParameter(0,-0.62615697);
+				frho->SetParameter(1,-0.12906934);
+				frho->SetParameter(2,9.4532345);
+				frho->SetParameter(3,-0.57046898);
+				break;
+			case 2: // Monash Ropes
+				frho->SetParameter(0,-1.3036594);
+				frho->SetParameter(1,-0.18819465);
+				frho->SetParameter(2,8.2080068);
+				frho->SetParameter(3,-0.51231662);
+				break;
+			case 3: // Epos LHC
+				frho->SetParameter(0,-0.89774856);
+				frho->SetParameter(1,-0.15704294);
+				frho->SetParameter(2,8.7380225);
+				frho->SetParameter(3,-0.52647214);
+				break;
+			case 4: // Herwig
+				frho->SetParameter(0,-1.5178880);
+				frho->SetParameter(1,-0.094629819);
+				frho->SetParameter(2,17.327223);
+				frho->SetParameter(3,-0.75409746);
+				break;
+			case 5: // AMPT (to be checked)
+				frho->SetParameter(0,-1.8832819);
+				frho->SetParameter(1,-0.18063863);
+				frho->SetParameter(2,10.062015);
+				frho->SetParameter(3,-0.57335253);
+				break;
+			case 6: // AMPT no string melting
+				frho->SetParameter(0,-1.8299821);
+				frho->SetParameter(1,-0.17885455);
+				frho->SetParameter(2,10.072160);
+				frho->SetParameter(3,-0.57360867);
+				break;
+			default:
+				frho->SetParameter(0,-2034448.6);
+				frho->SetParameter(1,-0.99051656);
+				frho->SetParameter(2,14.116976);
+				frho->SetParameter(3,-0.52448073);
+		}
 	}
-
+	else{ // default eta < 4
+		switch(fGenerator){
+			case 0:
+				frho->SetParameter(0,-2034448.6);
+				frho->SetParameter(1,-0.99051656);
+				frho->SetParameter(2,14.116976);
+				frho->SetParameter(3,-0.52448073);
+				break;
+			case 1:
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.9595275);
+				frho->SetParameter(2,18.226513);
+				frho->SetParameter(3,-0.58994765);
+				break;
+			case 2:
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.1168320);
+				frho->SetParameter(2,14.480357);
+				frho->SetParameter(3,-0.52709865);
+				break;
+			case 3:
+				frho->SetParameter(0,-1891978.1);
+				frho->SetParameter(1,-1.8212843);
+				frho->SetParameter(2,13.573444);
+				frho->SetParameter(3,-0.51139756);
+				break;
+			case 4:
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-2.0788016);
+				frho->SetParameter(2,28.243893);
+				frho->SetParameter(3,-0.70047215);
+				break;
+			case 5: // AMPT string melting (to be checked)
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.0183988);
+				frho->SetParameter(2,21.348248);
+				frho->SetParameter(3,-0.61011648);
+				break;
+			case 6: // AMPT no string melting (to be checked)
+				frho->SetParameter(0,-7.8071100);
+				frho->SetParameter(1,-1.0183988);
+				frho->SetParameter(2,21.348248);
+				frho->SetParameter(3,-0.61011648);
+				break;
+			default:
+				frho->SetParameter(0,-2034448.6);
+				frho->SetParameter(1,-0.99051656);
+				frho->SetParameter(2,14.116976);
+				frho->SetParameter(3,-0.52448073);
+		}
+	}
 }
 //_______________________________________________________
 Int_t AliAnalysisTaskGenMcKnoUe::GetPidCode(Int_t pdgCode)  {

@@ -265,9 +265,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   if( AliPPVsMultUtils::IsMinimumBias(fESD) ) {
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection (for MB normalisation to INEL)
   }
-  if( (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)) ) {
-	  return;
-  }
+//   if( (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)) ) {
+// 	  return;
+//   }
   ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // analyzed events
 
 
@@ -307,18 +307,17 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 //       return;
     }
   }
-/*
+
   if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
+	  return;
   }
   if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
+	  return;
   }
-
 // 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
-*/
+
 
   fEvInfo->SetVertexZ(vertex->GetZ());
 

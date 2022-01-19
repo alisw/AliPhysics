@@ -5,6 +5,7 @@
  *      Authors: Raffaele Del Grande, Marcel Lesch
  *      Based on AliAnalysisTaskThreeBodyFemtoAOD.cxx from Laura Serksnyte
  */
+
 #include "AliAnalysisTaskThreeBodyProtonPrimary.h"
 #include "AliFemtoDreamHigherPairMath.h"
 #include "AliNanoAODTrack.h"
@@ -46,7 +47,15 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fSameEvent(nullptr),
       fMixedEvent(nullptr),
       fSameEventMult(nullptr),
+      fSameEventPtPrimaries(nullptr),
+      fSameEventPtProtons(nullptr),
+      fSameEventPtPrimaries2(nullptr),
+      fSameEventPtProtons2(nullptr),
       fMixedEventMult(nullptr),
+      fMixedEventPtPrimaries(nullptr),
+      fMixedEventPtProtons(nullptr),
+      fMixedEventPtPrimaries2(nullptr),
+      fMixedEventPtProtons2(nullptr),
       fSameEventPhiTheta(nullptr),
       fMixedEventPhiTheta(nullptr),
       fQ3Vskq12(nullptr),
@@ -62,6 +71,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fRunPlotPhiTheta(true),
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
+      fRunPlotPt(true),
       fRunOfficialTwoBody(false), // ADDED BY RAFFA
       fClosePairRejectionForAll(false),
       fturnoffClosePairRejectionCompletely(false),
@@ -69,8 +79,13 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fQ3LimitForDeltaPhiDeltaEta(0.4),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
+      fDoTwoPrimary(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
+      fSameEventTripletPtPrimaries(nullptr),
+      fSameEventTripletPtProtons2(nullptr),
+      fSameEventTripletPtPrimaries2(nullptr),
+      fSameEventTripletPtProtons(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
       fSameEventTripletArray_TwoBody(nullptr),
       fSameEventTripletMultArray_TwoBody(nullptr),
@@ -78,11 +93,19 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fPairTranverseMass_TwoBody(nullptr), // ADDED BY RAFFA
       fPairTranverseMassVSkstar_TwoBody(nullptr), // ADDED BY RAFFA
       fPartContainer(0),
-      fPartContainerTEST(0),
-      fPartContainerTESTppL(0),
-      fPartContainerTESTppp(0),
+      fPartContainerPPP(0),
+      fPartContainerPPPrim(0),
+      fPartContainerPPAPrim(0),
+      fPartContainerPP(0),
+      fPartContainerPPrim(0),
+      fPartContainerPAPrim(0),
+      fVectPartContainers(0),
       fMixedEventTripletArray(nullptr),
       fMixedEventTripletMultArray(nullptr),
+      fMixedEventTripletPtPrimaries(nullptr),
+      fMixedEventTripletPtProtons(nullptr),
+      fMixedEventTripletPtPrimaries2(nullptr),
+      fMixedEventTripletPtProtons2(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
       fMixedEventTripletArray_TwoBody(nullptr),
       fMixedEventTripletMultArray_TwoBody(nullptr),
@@ -107,6 +130,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fResultsSample(nullptr),
       fResultsSampleQA(nullptr),
       fTrackBufferSize(2000),
+      fStandardMixing(true),
       fGTI(nullptr) {
 }
 
@@ -144,8 +168,15 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fResultsThreeBody(nullptr),
       fSameEvent(nullptr),
       fMixedEvent(nullptr),
-      fSameEventMult(nullptr),
+      fSameEventPtPrimaries(nullptr),
+      fSameEventPtProtons(nullptr),
+      fSameEventPtPrimaries2(nullptr),
+      fSameEventPtProtons2(nullptr),
       fMixedEventMult(nullptr),
+      fMixedEventPtPrimaries(nullptr),
+      fMixedEventPtProtons(nullptr),
+      fMixedEventPtPrimaries2(nullptr),
+      fMixedEventPtProtons2(nullptr),
       fSameEventPhiTheta(nullptr),
       fMixedEventPhiTheta(nullptr),
       fQ3Vskq12(nullptr),
@@ -157,10 +188,11 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fInvMassTripletMixed(nullptr),
       fRunThreeBody(true),
       fRunPlotInvMassTriplet(true),
-      fRunPlotQ3Vsq(true),
+      fRunPlotQ3Vsq(false),
       fRunPlotPhiTheta(true),
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
+      fRunPlotPt(true),
       fRunOfficialTwoBody(false), // ADDED BY RAFFA
       fClosePairRejectionForAll(false),
       fturnoffClosePairRejectionCompletely(false),
@@ -168,8 +200,13 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fQ3LimitForDeltaPhiDeltaEta(0.4),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
+      fDoTwoPrimary(true),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
+      fSameEventTripletPtPrimaries(nullptr),
+      fSameEventTripletPtProtons(nullptr),
+      fSameEventTripletPtPrimaries2(nullptr),
+      fSameEventTripletPtProtons2(nullptr),
       fSameEventTripletPhiThetaArray(nullptr),
       fSameEventTripletArray_TwoBody(nullptr),
       fSameEventTripletMultArray_TwoBody(nullptr),
@@ -177,11 +214,19 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fPairTranverseMass_TwoBody(nullptr), // ADDED BY RAFFA
       fPairTranverseMassVSkstar_TwoBody(nullptr), // ADDED BY RAFFA
       fPartContainer(0),
-      fPartContainerTEST(0),
-      fPartContainerTESTppL(0),
-      fPartContainerTESTppp(0),
+      fPartContainerPPP(0),
+      fPartContainerPPPrim(0),
+      fPartContainerPPAPrim(0),
+      fPartContainerPP(0),
+      fPartContainerPPrim(0),
+      fPartContainerPAPrim(0),
+      fVectPartContainers(0),
       fMixedEventTripletArray(nullptr),
       fMixedEventTripletMultArray(nullptr),
+      fMixedEventTripletPtPrimaries(nullptr),
+      fMixedEventTripletPtProtons(nullptr),
+      fMixedEventTripletPtPrimaries2(nullptr),
+      fMixedEventTripletPtProtons2(nullptr),
       fMixedEventTripletPhiThetaArray(nullptr),
       fMixedEventTripletArray_TwoBody(nullptr),
       fMixedEventTripletMultArray_TwoBody(nullptr),
@@ -206,6 +251,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fResultsSample(nullptr),
       fResultsSampleQA(nullptr),
       fTrackBufferSize(2000),
+      fStandardMixing(true),
       fGTI(nullptr) {
         DefineOutput(1, TList::Class());  //Output for the Event Cuts
         DefineOutput(2, TList::Class());  //Output for the Proton Cuts
@@ -433,7 +479,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fSameEvent->SetName("SameEvent");
 
     fSameEventTripletArray = new TH1F*[28];
-    TString histTitlesSame[28] = {"sameEventDistributionPPPrim","sameEventDistributionAPAPAPrim", "sameEventDistributionPPP", "sameEventDistributionAPAPAP", "sameEventDistributionPPAPrim","sameEventDistributionAPAPPrim", "sameEventDistributionPPrimPrim", "sameEventDistributionAPAPrimAPrim", "sameEventDistributionPAPrimAPrim", "sameEventDistributionAPPrimPrim","sameEventDistributionPPSamePrimMixed", "sameEventDistributionPPrimSamePMixed", "sameEventDistributionAPAPSameAPrimMixed", "sameEventDistributionAPAPrimSameAPMixed", "sameEventDistributionPPSamePMixed", "sameEventDistributionAPAPSameAPMixed", "sameEventDistributionPPSameAPrimMixed", "sameEventDistributionPAPrimSamePMixed", "sameEventDistributionAPAPSamePrimMixed", "sameEventDistributionAPPrimSameAPMixed", "sameEventDistributionPPrimSamePimMixed", "sameEventDistributionPrimPrimSamePMixed", "sameEventDistributionAPAPrimSameAPMixed", "sameEventDistributionAPrimAPrimSameAPMixed", "sameEventDistributionPAPrimSameAPrimMixed", "sameEventDistributionAPrimAPrimSamePMixed", "sameEventDistributionAPPrimSamePrimMixed", "sameEventDistributionPrimPrimSameAPMixed"};
+    TString histTitlesSame[28] = {"sameEventDistributionPPPrim","sameEventDistributionAPAPAPrim", "sameEventDistributionPPP", "sameEventDistributionAPAPAP", "sameEventDistributionPPAPrim","sameEventDistributionAPAPPrim", "sameEventDistributionPPrimPrim", "sameEventDistributionAPAPrimAPrim", "sameEventDistributionPAPrimAPrim", "sameEventDistributionAPPrimPrim","sameEventDistributionPPSamePrimMixed", "sameEventDistributionPPrimSamePMixed", "sameEventDistributionAPAPSameAPrimMixed", "sameEventDistributionAPAPrimSameAPMixed", "sameEventDistributionPPSamePMixed", "sameEventDistributionAPAPSameAPMixed", "sameEventDistributionPPSameAPrimMixed", "sameEventDistributionPAPrimSamePMixed", "sameEventDistributionAPAPSamePrimMixed", "sameEventDistributionAPPrimSameAPMixed", "sameEventDistributionPPrimSamePrimMixed", "sameEventDistributionPrimPrimSamePMixed", "sameEventDistributionAPAPrimSameAPrimMixed", "sameEventDistributionAPrimAPrimSameAPMixed", "sameEventDistributionPAPrimSameAPrimMixed", "sameEventDistributionAPrimAPrimSamePMixed", "sameEventDistributionAPPrimSamePrimMixed", "sameEventDistributionPrimPrimSameAPMixed"};
 
     if(fDoOnlyThreeBody){
 	    for (int i = 0; i < 10; ++i) {
@@ -470,7 +516,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 
 
     fSameEventTripletMultArray = new TH2F*[28];
-    TString histTitlesSameMult[28] = {"sameEventDistributionMultPPPrim","sameEventDistributionMultAPAPAPrim","sameEventDistributionMultPPP", "sameEventDistributionMultAPAPAP", "sameEventDistributionMultPPAPrim","sameEventDistributionMultAPAPPrim", "sameEventDistributionMultPPrimPrim", "sameEventDistributionMultAPAPrimAPrim", "sameEventDistributionMultPAPrimAPrim", "sameEventDistributionMultAPPrimPrim", "sameEventDistributionMultPPSamePrimMixed", "sameEventDistributionMultPPrimSamePMixed", "sameEventDistributionMultAPAPSameAPrimMixed", "sameEventDistributionMultAPAPrimSameAPMixed", "sameEventDistributionMultPPSamePMixed", "sameEventDistributionMultAPAPSameAPMixed", "sameEventDistributionMultPPSameAPrimMixed", "sameEventDistributionMultPAPrimSamePMixed", "sameEventDistributionMultAPAPSamePrimMixed", "sameEventDistributionMultAPPrimSameAPMixed", "sameEventDistributionMultPPrimSamePimMixed", "sameEventDistributionMultPrimPrimSamePMixed", "sameEventDistributionMultAPAPrimSameAPMixed", "sameEventDistributionMultAPrimAPrimSameAPMixed", "sameEventDistributionMultPAPrimSameAPrimMixed", "sameEventDistributionMultAPrimAPrimSamePMixed", "sameEventDistributionMultAPPrimSamePrimMixed", "sameEventDistributionMultPrimPrimSameAPMixed"};
+    TString histTitlesSameMult[28] = {"sameEventDistributionMultPPPrim","sameEventDistributionMultAPAPAPrim", "sameEventDistributionMultPPP", "sameEventDistributionMultAPAPAP", "sameEventDistributionMultPPAPrim","sameEventDistributionMultAPAPPrim", "sameEventDistributionMultPPrimPrim", "sameEventDistributionMultAPAPrimAPrim", "sameEventDistributionMultPAPrimAPrim", "sameEventDistributionMultAPPrimPrim","sameEventDistributionMultPPSamePrimMixed", "sameEventDistributionMultPPrimSamePMixed", "sameEventDistributionMultAPAPSameAPrimMixed", "sameEventDistributionMultAPAPrimSameAPMixed", "sameEventDistributionMultPPSamePMixed", "sameEventDistributionMultAPAPSameAPMixed", "sameEventDistributionMultPPSameAPrimMixed", "sameEventDistributionMultPAPrimSamePMixed", "sameEventDistributionMultAPAPSamePrimMixed", "sameEventDistributionMultAPPrimSameAPMixed", "sameEventDistributionMultPPrimSamePrimMixed", "sameEventDistributionMultPrimPrimSamePMixed", "sameEventDistributionMultAPAPrimSameAPrimMixed", "sameEventDistributionMultAPrimAPrimSameAPMixed", "sameEventDistributionMultPAPrimSameAPrimMixed", "sameEventDistributionMultAPrimAPrimSamePMixed", "sameEventDistributionMultAPPrimSamePrimMixed", "sameEventDistributionMultPrimPrimSameAPMixed"};
 
     if(fDoOnlyThreeBody){
 	    for (int i = 0; i < 28; ++i) {
@@ -478,6 +524,77 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
               if(fRunPlotMult){fSameEventMult->Add(fSameEventTripletMultArray[i]);}
 	     }
     }
+
+
+    // Same event Pt Primaries
+    fSameEventPtPrimaries = new TList();
+    fSameEventPtPrimaries->SetOwner();
+    fSameEventPtPrimaries->SetName("SameEventPtPrimaries");
+
+
+    fSameEventTripletPtPrimaries = new TH1F*[28];
+    TString histTitlesSamePtPrimaries[28] = {"sameEventDistributionPtPrimariesPPPrim","sameEventDistributionPtPrimariesAPAPAPrim", "sameEventDistributionPtPrimariesPPP", "sameEventDistributionPtPrimariesAPAPAP", "sameEventDistributionPtPrimariesPPAPrim","sameEventDistributionPtPrimariesAPAPPrim", "sameEventDistributionPtPrimariesPPrimPrim", "sameEventDistributionPtPrimariesAPAPrimAPrim", "sameEventDistributionPtPrimariesPAPrimAPrim", "sameEventDistributionPtPrimariesAPPrimPrim","sameEventDistributionPtPrimariesPPSamePrimMixed", "sameEventDistributionPtPrimariesPPrimSamePMixed", "sameEventDistributionPtPrimariesAPAPSameAPrimMixed", "sameEventDistributionPtPrimariesAPAPrimSameAPMixed", "sameEventDistributionPtPrimariesPPSamePMixed", "sameEventDistributionPtPrimariesAPAPSameAPMixed", "sameEventDistributionPtPrimariesPPSameAPrimMixed", "sameEventDistributionPtPrimariesPAPrimSamePMixed", "sameEventDistributionPtPrimariesAPAPSamePrimMixed", "sameEventDistributionPtPrimariesAPPrimSameAPMixed", "sameEventDistributionPtPrimariesPPrimSamePrimMixed", "sameEventDistributionPtPrimariesPrimPrimSamePMixed", "sameEventDistributionPtPrimariesAPAPrimSameAPrimMixed", "sameEventDistributionPtPrimariesAPrimAPrimSameAPMixed", "sameEventDistributionPtPrimariesPAPrimSameAPrimMixed", "sameEventDistributionPtPrimariesAPrimAPrimSamePMixed", "sameEventDistributionPtPrimariesAPPrimSamePrimMixed", "sameEventDistributionPtPrimariesPrimPrimSameAPMixed"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 28; ++i) {
+        fSameEventTripletPtPrimaries[i] =  new TH1F(histTitlesSamePtPrimaries[i],histTitlesSamePtPrimaries[i], 4000, 0, 4);
+              if(fRunPlotPt){fSameEventPtPrimaries->Add(fSameEventTripletPtPrimaries[i]);}
+       }
+    }
+
+
+ // Same event Pt Protons
+    fSameEventPtProtons = new TList();
+    fSameEventPtProtons->SetOwner();
+    fSameEventPtProtons->SetName("SameEventPtProtons");
+
+
+    fSameEventTripletPtProtons = new TH1F*[28];
+    TString histTitlesSamePtProtons[28] = {"sameEventDistributionPtProtonsPPPrim","sameEventDistributionPtProtonsAPAPAPrim", "sameEventDistributionPtProtonsPPP", "sameEventDistributionPtProtonsAPAPAP", "sameEventDistributionPtProtonsPPAPrim","sameEventDistributionPtProtonsAPAPPrim", "sameEventDistributionPtProtonsPPrimPrim", "sameEventDistributionPtProtonsAPAPrimAPrim", "sameEventDistributionPtProtonsPAPrimAPrim", "sameEventDistributionPtProtonsAPPrimPrim","sameEventDistributionPtProtonsPPSamePrimMixed", "sameEventDistributionPtProtonsPPrimSamePMixed", "sameEventDistributionPtProtonsAPAPSameAPrimMixed", "sameEventDistributionPtProtonsAPAPrimSameAPMixed", "sameEventDistributionPtProtonsPPSamePMixed", "sameEventDistributionPtProtonsAPAPSameAPMixed", "sameEventDistributionPtProtonsPPSameAPrimMixed", "sameEventDistributionPtProtonsPAPrimSamePMixed", "sameEventDistributionPtProtonsAPAPSamePrimMixed", "sameEventDistributionPtProtonsAPPrimSameAPMixed", "sameEventDistributionPtProtonsPPrimSamePrimMixed", "sameEventDistributionPtProtonsPrimPrimSamePMixed", "sameEventDistributionPtProtonsAPAPrimSameAPrimMixed", "sameEventDistributionPtProtonsAPrimAPrimSameAPMixed", "sameEventDistributionPtProtonsPAPrimSameAPrimMixed", "sameEventDistributionPtProtonsAPrimAPrimSamePMixed", "sameEventDistributionPtProtonsAPPrimSamePrimMixed", "sameEventDistributionPtProtonsPrimPrimSameAPMixed"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 28; ++i) {
+        fSameEventTripletPtProtons[i] =  new TH1F(histTitlesSamePtProtons[i],histTitlesSamePtProtons[i], 4000, 0, 4);
+              if(fRunPlotPt){fSameEventPtProtons->Add(fSameEventTripletPtProtons[i]);}
+       }
+    }
+
+
+    // Same event Pt Primaries L1520
+    fSameEventPtPrimaries2 = new TList();
+    fSameEventPtPrimaries2->SetOwner();
+    fSameEventPtPrimaries2->SetName("SameEventPtPrimariesL1520");
+
+
+    fSameEventTripletPtPrimaries2 = new TH1F*[28];
+    TString histTitlesSamePtPrimaries2[28] = {"sameEventDistributionPtPrimariesPPPrim","sameEventDistributionPtPrimariesAPAPAPrim", "sameEventDistributionPtPrimariesPPP", "sameEventDistributionPtPrimariesAPAPAP", "sameEventDistributionPtPrimariesPPAPrim","sameEventDistributionPtPrimariesAPAPPrim", "sameEventDistributionPtPrimariesPPrimPrim", "sameEventDistributionPtPrimariesAPAPrimAPrim", "sameEventDistributionPtPrimariesPAPrimAPrim", "sameEventDistributionPtPrimariesAPPrimPrim","sameEventDistributionPtPrimariesPPSamePrimMixed", "sameEventDistributionPtPrimariesPPrimSamePMixed", "sameEventDistributionPtPrimariesAPAPSameAPrimMixed", "sameEventDistributionPtPrimariesAPAPrimSameAPMixed", "sameEventDistributionPtPrimariesPPSamePMixed", "sameEventDistributionPtPrimariesAPAPSameAPMixed", "sameEventDistributionPtPrimariesPPSameAPrimMixed", "sameEventDistributionPtPrimariesPAPrimSamePMixed", "sameEventDistributionPtPrimariesAPAPSamePrimMixed", "sameEventDistributionPtPrimariesAPPrimSameAPMixed", "sameEventDistributionPtPrimariesPPrimSamePrimMixed", "sameEventDistributionPtPrimariesPrimPrimSamePMixed", "sameEventDistributionPtPrimariesAPAPrimSameAPrimMixed", "sameEventDistributionPtPrimariesAPrimAPrimSameAPMixed", "sameEventDistributionPtPrimariesPAPrimSameAPrimMixed", "sameEventDistributionPtPrimariesAPrimAPrimSamePMixed", "sameEventDistributionPtPrimariesAPPrimSamePrimMixed", "sameEventDistributionPtPrimariesPrimPrimSameAPMixed"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 28; ++i) {
+        fSameEventTripletPtPrimaries2[i] =  new TH1F(histTitlesSamePtPrimaries2[i],histTitlesSamePtPrimaries2[i], 4000, 0, 4);
+              if(fRunPlotPt){fSameEventPtPrimaries2->Add(fSameEventTripletPtPrimaries2[i]);}
+       }
+    }
+
+
+ // Same event Pt Protons L1520
+    fSameEventPtProtons2 = new TList();
+    fSameEventPtProtons2->SetOwner();
+    fSameEventPtProtons2->SetName("SameEventPtProtonsL1520");
+
+
+    fSameEventTripletPtProtons2 = new TH1F*[28];
+    TString histTitlesSamePtProtons2[28] = {"sameEventDistributionPtProtonsPPPrim","sameEventDistributionPtProtonsAPAPAPrim", "sameEventDistributionPtProtonsPPP", "sameEventDistributionPtProtonsAPAPAP", "sameEventDistributionPtProtonsPPAPrim","sameEventDistributionPtProtonsAPAPPrim", "sameEventDistributionPtProtonsPPrimPrim", "sameEventDistributionPtProtonsAPAPrimAPrim", "sameEventDistributionPtProtonsPAPrimAPrim", "sameEventDistributionPtProtonsAPPrimPrim","sameEventDistributionPtProtonsPPSamePrimMixed", "sameEventDistributionPtProtonsPPrimSamePMixed", "sameEventDistributionPtProtonsAPAPSameAPrimMixed", "sameEventDistributionPtProtonsAPAPrimSameAPMixed", "sameEventDistributionPtProtonsPPSamePMixed", "sameEventDistributionPtProtonsAPAPSameAPMixed", "sameEventDistributionPtProtonsPPSameAPrimMixed", "sameEventDistributionPtProtonsPAPrimSamePMixed", "sameEventDistributionPtProtonsAPAPSamePrimMixed", "sameEventDistributionPtProtonsAPPrimSameAPMixed", "sameEventDistributionPtProtonsPPrimSamePrimMixed", "sameEventDistributionPtProtonsPrimPrimSamePMixed", "sameEventDistributionPtProtonsAPAPrimSameAPrimMixed", "sameEventDistributionPtProtonsAPrimAPrimSameAPMixed", "sameEventDistributionPtProtonsPAPrimSameAPrimMixed", "sameEventDistributionPtProtonsAPrimAPrimSamePMixed", "sameEventDistributionPtProtonsAPPrimSamePrimMixed", "sameEventDistributionPtProtonsPrimPrimSameAPMixed"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 28; ++i) {
+        fSameEventTripletPtProtons2[i] =  new TH1F(histTitlesSamePtProtons2[i],histTitlesSamePtProtons2[i], 4000, 0, 4);
+              if(fRunPlotPt){fSameEventPtProtons2->Add(fSameEventTripletPtProtons2[i]);}
+       }
+    }
+
+
+
 
     fSameEventTripletMultArray_TwoBody = new TH2F*[7];
     TString histTitlesSameMult_TwoBody[7] = {"sameEventDistributionMultPP","sameEventDistributionMultAPAP", "sameEventDistributionMultPPrim", "sameEventDistributionMultAPAPrim", "sameEventDistributionMultPAPrim", "sameEventDistributionMultAPPrim", "sameEventDistributionMultPrimAPrim"};
@@ -534,6 +651,69 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	     }
     }
 
+
+    fMixedEventPtPrimaries = new TList();
+    fMixedEventPtPrimaries->SetOwner();
+    fMixedEventPtPrimaries->SetName("MixedEventPtPrimaries");
+
+    fMixedEventTripletPtPrimaries = new TH1F*[10];
+    TString histTitlesMixedPtPrimaries[10] = {"mixedEventDistributionPtPrimariesPPPrim","mixedEventDistributionPtPrimariesAPAPAPrim","mixedEventDistributionPtPrimariesPPP", "mixedEventDistributionPtPrimariesAPAPAP", "mixedEventDistributionPtPrimariesPPAPrim","mixedEventDistributionPtPrimariesAPAPPrim", "mixedEventDistributionPtPrimariesPPrimPrim", "mixedEventDistributionPtPrimariesAPAPrimAPrim", "mixedEventDistributionPtPrimariesPAPrimAPrim", "mixedEventDistributionPtPrimariesAPPrimPrim"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 10; ++i) {
+        fMixedEventTripletPtPrimaries[i] = new TH1F(histTitlesMixedPtPrimaries[i],histTitlesMixedPtPrimaries[i], 4000, 0, 4);
+          if(fRunPlotPt){fMixedEventPtPrimaries->Add(fMixedEventTripletPtPrimaries[i]);}
+       }
+    }
+
+    fMixedEventPtProtons = new TList();
+    fMixedEventPtProtons->SetOwner();
+    fMixedEventPtProtons->SetName("MixedEventPtProtons");
+
+
+    fMixedEventTripletPtProtons = new TH1F*[10];
+    TString histTitlesMixedPtProtons[10] = {"mixedEventDistributionPtProtonsPPPrim","mixedEventDistributionPtProtonsAPAPAPrim","mixedEventDistributionPtProtonsPPP", "mixedEventDistributionPtProtonsAPAPAP", "mixedEventDistributionPtProtonsPPAPrim","mixedEventDistributionPtProtonsAPAPPrim", "mixedEventDistributionPtProtonsPPrimPrim", "mixedEventDistributionPtProtonsAPAPrimAPrim", "mixedEventDistributionPtProtonsPAPrimAPrim", "mixedEventDistributionPtProtonsAPPrimPrim"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 10; ++i) {
+        fMixedEventTripletPtProtons[i] = new TH1F(histTitlesMixedPtProtons[i],histTitlesMixedPtProtons[i], 4000, 0, 4);
+          if(fRunPlotPt){fMixedEventPtProtons->Add(fMixedEventTripletPtProtons[i]);}
+       }
+    }
+
+
+
+    fMixedEventPtPrimaries2 = new TList();
+    fMixedEventPtPrimaries2->SetOwner();
+    fMixedEventPtPrimaries2->SetName("MixedEventPtPrimariesL1520");
+
+    fMixedEventTripletPtPrimaries2 = new TH1F*[10];
+    TString histTitlesMixedPtPrimaries2[10] = {"mixedEventDistributionPtPrimariesPPPrim","mixedEventDistributionPtPrimariesAPAPAPrim","mixedEventDistributionPtPrimariesPPP", "mixedEventDistributionPtPrimariesAPAPAP", "mixedEventDistributionPtPrimariesPPAPrim","mixedEventDistributionPtPrimariesAPAPPrim", "mixedEventDistributionPtPrimariesPPrimPrim", "mixedEventDistributionPtPrimariesAPAPrimAPrim", "mixedEventDistributionPtPrimariesPAPrimAPrim", "mixedEventDistributionPtPrimariesAPPrimPrim"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 10; ++i) {
+        fMixedEventTripletPtPrimaries2[i] = new TH1F(histTitlesMixedPtPrimaries2[i],histTitlesMixedPtPrimaries2[i], 4000, 0, 4);
+          if(fRunPlotPt){fMixedEventPtPrimaries2->Add(fMixedEventTripletPtPrimaries2[i]);}
+       }
+    }
+
+    fMixedEventPtProtons2 = new TList();
+    fMixedEventPtProtons2->SetOwner();
+    fMixedEventPtProtons2->SetName("MixedEventPtProtonsL1520");
+
+
+    fMixedEventTripletPtProtons2 = new TH1F*[10];
+    TString histTitlesMixedPtProtons2[10] = {"mixedEventDistributionPtProtonsPPPrim","mixedEventDistributionPtProtonsAPAPAPrim","mixedEventDistributionPtProtonsPPP", "mixedEventDistributionPtProtonsAPAPAP", "mixedEventDistributionPtProtonsPPAPrim","mixedEventDistributionPtProtonsAPAPPrim", "mixedEventDistributionPtProtonsPPrimPrim", "mixedEventDistributionPtProtonsAPAPrimAPrim", "mixedEventDistributionPtProtonsPAPrimAPrim", "mixedEventDistributionPtProtonsAPPrimPrim"};
+
+    if(fDoOnlyThreeBody){
+      for (int i = 0; i < 10; ++i) {
+        fMixedEventTripletPtProtons2[i] = new TH1F(histTitlesMixedPtProtons2[i],histTitlesMixedPtProtons2[i], 4000, 0, 4);
+          if(fRunPlotPt){fMixedEventPtProtons2->Add(fMixedEventTripletPtProtons2[i]);}
+       }
+    }
+
+
+
      fMixedEventTripletMultArray_TwoBody = new TH2F*[7];
     TString histTitlesMixedMult_TwoBody[7] = {"MixedEventDistributionMultPP","MixedEventDistributionMultAPAP", "MixedEventDistributionMultPPrim", "MixedEventDistributionMultAPAPrim", "MixedEventDistributionMultPAPrim", "MixedEventDistributionMultAPPrim", "MixedEventDistributionMultPrimAPrim"};
 
@@ -549,6 +729,17 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fResultsThreeBody->Add(fSameEventMult);
     fResultsThreeBody->Add(fMixedEventMult);
     }
+    if(fRunPlotPt){
+    fResultsThreeBody->Add(fSameEventPtPrimaries);
+    fResultsThreeBody->Add(fMixedEventPtPrimaries);
+    fResultsThreeBody->Add(fSameEventPtProtons);
+    fResultsThreeBody->Add(fMixedEventPtProtons);
+    fResultsThreeBody->Add(fSameEventPtPrimaries2);
+    fResultsThreeBody->Add(fMixedEventPtPrimaries2);
+    fResultsThreeBody->Add(fSameEventPtProtons2);
+    fResultsThreeBody->Add(fMixedEventPtProtons2);
+    }
+
     // Same event phi theta distribution ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     fSameEventPhiTheta = new TList();
     fSameEventPhiTheta->SetOwner();
@@ -626,8 +817,10 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fResultsThreeBody->Add(fMixedEventPhiTheta);
     }
 
+
+
+
     // Q3 vs q12 plot for theory
-    if(fRunPlotQ3Vsq){
       fQ3Vskq12 = new TList();
       fQ3Vskq12->SetOwner();
       fQ3Vskq12->SetName("Q3Vskq12");
@@ -637,6 +830,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
         "Q3vskDistributionppSamepMixed","Q3vskDistributionapapSameaLMixed", "Q3vskDistributionapaLSameapMixed",
         "Q3vskDistributionapapSameapMixed", "Q3vskDistributionpLSameLMixed", "Q3vskDistributionLLSamepMixed",
         "Q3vskDistributionapaLSameaLMixed", "Q3vskDistributionaLaLSameapMixed","Q3vskDistributionLLSameLMixed", "Q3vskDistributionaLaLSameaLMixed", "TRASH"};
+    
       for(int i=0;i<13;i++){
         fQ3VskDistributionsArrayq12[i] = new TH2F(histTitlesfQ3VskDistributions[i],histTitlesfQ3VskDistributions[i], 1000, 0., 1.,1000,0.,1.);
         fQ3Vskq12->Add(fQ3VskDistributionsArrayq12[i]);
@@ -679,6 +873,8 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
         fQ3VskDistributionsArrayq23Mixed[i] = new TH2F(histTitlesfQ3VskDistributionsMixed2[i],histTitlesfQ3VskDistributionsMixed2[i], 1000, 0., 1.,1000,0.,1.);
         fQ3Vskq23Mixed->Add(fQ3VskDistributionsArrayq23Mixed[i]);
       }
+
+    if(fRunPlotQ3Vsq){
 
       fResultsThreeBody->Add(fQ3Vskq12);
       fResultsThreeBody->Add(fQ3Vskq12Mixed);
@@ -830,47 +1026,45 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
         }
         MultContainer.push_back(AllUsedParticles);
       }
-      fPartContainer.push_back(MultContainer);
+
+      if(fStandardMixing){
+         fPartContainer.push_back(MultContainer);
+      } else {
+        if(fDoOnlyThreeBody){
+          fPartContainerPPP.push_back(MultContainer);
+          fPartContainerPPPrim.push_back(MultContainer);
+          fPartContainerPPAPrim.push_back(MultContainer);
+        } else {
+          fPartContainerPP.push_back(MultContainer);
+          fPartContainerPPrim.push_back(MultContainer);
+          fPartContainerPAPrim.push_back(MultContainer);
+        }
+      }
     }
 
-    for(int iZVtx = 0; iZVtx<ZVtxBinsSize; iZVtx++){
-      std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainer;
-      for(int iMult = 0; iMult<MultBinsSize; iMult++){
-        std::vector<AliFemtoDreamPartContainer> AllUsedParticles;
-        for(unsigned int iSpecies = 0; iSpecies<PDGCodes.size(); iSpecies++){
-          auto tempPartContainer = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
-          AllUsedParticles.push_back(*tempPartContainer);
-        }
-        MultContainer.push_back(AllUsedParticles);
+
+
+    if(fStandardMixing){
+
+        fVectPartContainers.push_back(fPartContainer);
+
+    }else{
+
+      if(fDoOnlyThreeBody){
+
+        fVectPartContainers.push_back(fPartContainerPPP);
+        fVectPartContainers.push_back(fPartContainerPPPrim);
+        fVectPartContainers.push_back(fPartContainerPPAPrim);
+
+      } else {
+      
+        fVectPartContainers.push_back(fPartContainerPP);
+        fVectPartContainers.push_back(fPartContainerPPrim);
+        fVectPartContainers.push_back(fPartContainerPAPrim);
+
       }
-      fPartContainerTEST.push_back(MultContainer);
     }
 
-    for(int iZVtx = 0; iZVtx<ZVtxBinsSize; iZVtx++){
-      std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainer;
-      for(int iMult = 0; iMult<MultBinsSize; iMult++){
-        std::vector<AliFemtoDreamPartContainer> AllUsedParticles;
-        for(unsigned int iSpecies = 0; iSpecies<PDGCodes.size(); iSpecies++){
-          auto tempPartContainer = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
-          AllUsedParticles.push_back(*tempPartContainer);
-        }
-        MultContainer.push_back(AllUsedParticles);
-      }
-      fPartContainerTESTppL.push_back(MultContainer);
-    }
-
-    for(int iZVtx = 0; iZVtx<ZVtxBinsSize; iZVtx++){
-      std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainer;
-      for(int iMult = 0; iMult<MultBinsSize; iMult++){
-        std::vector<AliFemtoDreamPartContainer> AllUsedParticles;
-        for(unsigned int iSpecies = 0; iSpecies<PDGCodes.size(); iSpecies++){
-          auto tempPartContainer = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
-          AllUsedParticles.push_back(*tempPartContainer);
-        }
-        MultContainer.push_back(AllUsedParticles);
-      }
-      fPartContainerTESTppp.push_back(MultContainer);
-    }
 
 
 } //void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects()
@@ -980,6 +1174,39 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(Primaries);
   fPairCleaner->StoreParticle(AntiPrimaries);
 
+
+
+
+
+  int ContainerIdPPP;
+  int ContainerIdPPPrim;
+  int ContainerIdPPAPrim;
+  int ContainerIdPP;
+  int ContainerIdPPrim;
+  int ContainerIdPAPrim;
+
+
+  if(fStandardMixing){
+
+    ContainerIdPPP = 0;
+    ContainerIdPPPrim = 0;
+    ContainerIdPPAPrim = 0;
+    ContainerIdPP = 0;
+    ContainerIdPPrim = 0;
+    ContainerIdPAPrim = 0;
+
+  }else{
+
+    ContainerIdPPP = 0;
+    ContainerIdPPPrim = 1;
+    ContainerIdPPAPrim = 2;
+    ContainerIdPP = 0;
+    ContainerIdPPrim = 1;
+    ContainerIdPAPrim = 2;
+
+  }
+
+
   //c) Start Three Body Calculus +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if(fRunThreeBody){
     static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
@@ -992,55 +1219,60 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector = fPairCleaner->GetCleanParticles();
 
     if(fDoOnlyThreeBody){
-    // Proton Proton Primary
-    FillTripletDistribution( ParticleVector, 2, 0, 0, fSameEventTripletArray[0],PDGCodes, bins[1],fSameEventTripletMultArray[0], fSameEventTripletPhiThetaArray,0, *fConfig);//, fInvMassSame[0]);
-    // Antiproton Antiproton Antiprimary
-    FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,1, *fConfig);//, fInvMassSame[1]);
-    // Proton Proton Proton
-    FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,2, *fConfig);//, fInvMassSame[2]);
-    // Antiproton Antiproton Antiproton
-    FillTripletDistribution( ParticleVector, 1, 1, 1, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,3, *fConfig);//, fInvMassSame[3]);
-    // Proton Proton AntiPrimary
-    FillTripletDistribution( ParticleVector, 3, 0, 0, fSameEventTripletArray[4],PDGCodes, bins[1],fSameEventTripletMultArray[4], fSameEventTripletPhiThetaArray,4, *fConfig);//, fInvMassSame[4]);
-    // Antiproton Antiproton Primary
-    FillTripletDistribution( ParticleVector, 2, 1, 1, fSameEventTripletArray[5],PDGCodes, bins[1],fSameEventTripletMultArray[5], fSameEventTripletPhiThetaArray,5, *fConfig);//, fInvMassSame[5]);
-    // Proton Primary Primary
-    FillTripletDistribution( ParticleVector, 0, 2, 2, fSameEventTripletArray[6],PDGCodes, bins[1],fSameEventTripletMultArray[6], fSameEventTripletPhiThetaArray,6, *fConfig);//, fInvMassSame[5]);
-    // Antiproton Antiprimary Antiprimary
-    FillTripletDistribution( ParticleVector, 1, 3, 3, fSameEventTripletArray[7],PDGCodes, bins[1],fSameEventTripletMultArray[7], fSameEventTripletPhiThetaArray,7, *fConfig);//, fInvMassSame[5]);
-    // Proton Antiprimary Antiprimary
-    FillTripletDistribution( ParticleVector, 0, 3, 3, fSameEventTripletArray[8],PDGCodes, bins[1],fSameEventTripletMultArray[8], fSameEventTripletPhiThetaArray,8, *fConfig);//, fInvMassSame[5]);
-    // Antiproton Primary Primary
-    FillTripletDistribution( ParticleVector, 1, 2, 2, fSameEventTripletArray[9],PDGCodes, bins[1],fSameEventTripletMultArray[9], fSameEventTripletPhiThetaArray,9, *fConfig);//, fInvMassSame[5]);
+   
+    if(!fDoTwoPrimary){
+       // Proton Proton Primary
+       FillTripletDistribution( ParticleVector, 2, 0, 0, fSameEventTripletArray[0],PDGCodes, bins[1],fSameEventTripletMultArray[0], fSameEventTripletPtPrimaries[0], fSameEventTripletPtProtons[0], fSameEventTripletPtPrimaries2[0], fSameEventTripletPtProtons2[0], fSameEventTripletPhiThetaArray,0, *fConfig);//, fInvMassSame[0]);
+       // Antiproton Antiproton Antiprimary
+       FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPtPrimaries[1], fSameEventTripletPtProtons[1], fSameEventTripletPtPrimaries2[1], fSameEventTripletPtProtons2[1], fSameEventTripletPhiThetaArray,1, *fConfig);//, fInvMassSame[1]);
+       // Proton Proton Proton
+       FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPtPrimaries[2], fSameEventTripletPtProtons[2], fSameEventTripletPtPrimaries2[2], fSameEventTripletPtProtons2[2], fSameEventTripletPhiThetaArray,2, *fConfig);//, fInvMassSame[2]);
+       // Antiproton Antiproton Antiproton
+       FillTripletDistribution( ParticleVector, 1, 1, 1, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPtPrimaries[3], fSameEventTripletPtProtons[3], fSameEventTripletPtPrimaries2[3], fSameEventTripletPtProtons2[3], fSameEventTripletPhiThetaArray,3, *fConfig);//, fInvMassSame[3]);
+       // Proton Proton AntiPrimary
+       FillTripletDistribution( ParticleVector, 3, 0, 0, fSameEventTripletArray[4],PDGCodes, bins[1],fSameEventTripletMultArray[4], fSameEventTripletPtPrimaries[4], fSameEventTripletPtProtons[4], fSameEventTripletPtPrimaries2[4], fSameEventTripletPtProtons2[4], fSameEventTripletPhiThetaArray,4, *fConfig);//, fInvMassSame[4]);
+       // Antiproton Antiproton Primary
+       FillTripletDistribution( ParticleVector, 2, 1, 1, fSameEventTripletArray[5],PDGCodes, bins[1],fSameEventTripletMultArray[5], fSameEventTripletPtPrimaries[5], fSameEventTripletPtProtons[5], fSameEventTripletPtPrimaries2[5], fSameEventTripletPtProtons2[5], fSameEventTripletPhiThetaArray,5, *fConfig);//, fInvMassSame[5]);
     }
+    else{
+       // Proton Primary Primary
+       FillTripletDistribution( ParticleVector, 0, 2, 2, fSameEventTripletArray[6],PDGCodes, bins[1],fSameEventTripletMultArray[6], fSameEventTripletPtPrimaries[6], fSameEventTripletPtProtons[6], fSameEventTripletPtPrimaries2[6], fSameEventTripletPtProtons2[6], fSameEventTripletPhiThetaArray,6, *fConfig);//, fInvMassSame[5]);
+       // Antiproton Antiprimary Antiprimary
+       FillTripletDistribution( ParticleVector, 1, 3, 3, fSameEventTripletArray[7],PDGCodes, bins[1],fSameEventTripletMultArray[7], fSameEventTripletPtPrimaries[7], fSameEventTripletPtProtons[7], fSameEventTripletPtPrimaries2[7], fSameEventTripletPtProtons2[7], fSameEventTripletPhiThetaArray,7, *fConfig);//, fInvMassSame[5]);
+       // Proton Antiprimary Antiprimary
+       FillTripletDistribution( ParticleVector, 0, 3, 3, fSameEventTripletArray[8],PDGCodes, bins[1],fSameEventTripletMultArray[8], fSameEventTripletPtPrimaries[8], fSameEventTripletPtProtons[8], fSameEventTripletPtPrimaries2[8], fSameEventTripletPtProtons2[8], fSameEventTripletPhiThetaArray,8, *fConfig);//, fInvMassSame[5]);
+       // Antiproton Primary Primary
+       FillTripletDistribution( ParticleVector, 1, 2, 2, fSameEventTripletArray[9],PDGCodes, bins[1],fSameEventTripletMultArray[9], fSameEventTripletPtPrimaries[9], fSameEventTripletPtProtons[9], fSameEventTripletPtPrimaries2[9], fSameEventTripletPtProtons2[9], fSameEventTripletPhiThetaArray,9, *fConfig);//, fInvMassSame[5]);
+      }//if(fDoTwoPrimary)
+    }//if(fDoOnlyThreeBody)
     else {
-    //Two Body Analyses...........
-    //Proton Proton
-    FillPairDistribution( ParticleVector, 0, 0, fSameEventTripletArray_TwoBody[0],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[0], fSameEventTripletPhiThetaArray_TwoBody,0, *fConfig);
-    //AntiProton AntiProton
-    FillPairDistribution( ParticleVector, 1, 1, fSameEventTripletArray_TwoBody[1],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[1], fSameEventTripletPhiThetaArray_TwoBody,1, *fConfig);
-    //Proton Primary
-    FillPairDistribution( ParticleVector, 0, 2, fSameEventTripletArray_TwoBody[2],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[2], fSameEventTripletPhiThetaArray_TwoBody,2, *fConfig);
-    //Antiproton Antiprimary
-    FillPairDistribution( ParticleVector, 1, 3, fSameEventTripletArray_TwoBody[3],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[3], fSameEventTripletPhiThetaArray_TwoBody,3, *fConfig);
-    //Proton Antiprimary
-    FillPairDistribution( ParticleVector, 0, 3, fSameEventTripletArray_TwoBody[4],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[4], fSameEventTripletPhiThetaArray_TwoBody,4, *fConfig);
-    //Antiproton Primary
-    FillPairDistribution( ParticleVector, 1, 2, fSameEventTripletArray_TwoBody[5],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[5], fSameEventTripletPhiThetaArray_TwoBody,5, *fConfig);
-   //Primary Antiprimary
-    FillPairDistribution( ParticleVector, 2, 3, fSameEventTripletArray_TwoBody[6],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[6], fSameEventTripletPhiThetaArray_TwoBody,6, *fConfig);
+      //Two Body Analyses...........
+      //Proton Proton
+      FillPairDistribution( ParticleVector, 0, 0, fSameEventTripletArray_TwoBody[0],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[0], fSameEventTripletPhiThetaArray_TwoBody,0, *fConfig);
+      //AntiProton AntiProton
+      FillPairDistribution( ParticleVector, 1, 1, fSameEventTripletArray_TwoBody[1],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[1], fSameEventTripletPhiThetaArray_TwoBody,1, *fConfig);
+      //Proton Primary
+      FillPairDistribution( ParticleVector, 0, 2, fSameEventTripletArray_TwoBody[2],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[2], fSameEventTripletPhiThetaArray_TwoBody,2, *fConfig);
+      //Antiproton Antiprimary
+      FillPairDistribution( ParticleVector, 1, 3, fSameEventTripletArray_TwoBody[3],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[3], fSameEventTripletPhiThetaArray_TwoBody,3, *fConfig);
+      //Proton Antiprimary
+      FillPairDistribution( ParticleVector, 0, 3, fSameEventTripletArray_TwoBody[4],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[4], fSameEventTripletPhiThetaArray_TwoBody,4, *fConfig);
+      //Antiproton Primary
+      FillPairDistribution( ParticleVector, 1, 2, fSameEventTripletArray_TwoBody[5],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[5], fSameEventTripletPhiThetaArray_TwoBody,5, *fConfig);
+     //Primary Antiprimary
+      FillPairDistribution( ParticleVector, 2, 3, fSameEventTripletArray_TwoBody[6],PDGCodes, bins[1],fSameEventTripletMultArray_TwoBody[6], fSameEventTripletPhiThetaArray_TwoBody,6, *fConfig);
 
-    if(fRunOfficialTwoBody){
+      if(fRunOfficialTwoBody){
 
-      FillPairTransverseMass(ParticleVector, 0, 0, fPairTranverseMass_TwoBody[0], PDGCodes, fPairTranverseMassVSkstar_TwoBody[0]);
-      FillPairTransverseMass(ParticleVector, 1, 1, fPairTranverseMass_TwoBody[1], PDGCodes, fPairTranverseMassVSkstar_TwoBody[1]);
-      FillPairTransverseMass(ParticleVector, 0, 2, fPairTranverseMass_TwoBody[2], PDGCodes, fPairTranverseMassVSkstar_TwoBody[2]);
-      FillPairTransverseMass(ParticleVector, 1, 3, fPairTranverseMass_TwoBody[3], PDGCodes, fPairTranverseMassVSkstar_TwoBody[3]);
-      FillPairTransverseMass(ParticleVector, 0, 3, fPairTranverseMass_TwoBody[4], PDGCodes, fPairTranverseMassVSkstar_TwoBody[4]);
-      FillPairTransverseMass(ParticleVector, 1, 2, fPairTranverseMass_TwoBody[5], PDGCodes, fPairTranverseMassVSkstar_TwoBody[5]);
-      FillPairTransverseMass(ParticleVector, 2, 3, fPairTranverseMass_TwoBody[6], PDGCodes, fPairTranverseMassVSkstar_TwoBody[6]);
+        FillPairTransverseMass(ParticleVector, 0, 0, fPairTranverseMass_TwoBody[0], PDGCodes, fPairTranverseMassVSkstar_TwoBody[0]);
+        FillPairTransverseMass(ParticleVector, 1, 1, fPairTranverseMass_TwoBody[1], PDGCodes, fPairTranverseMassVSkstar_TwoBody[1]);
+        FillPairTransverseMass(ParticleVector, 0, 2, fPairTranverseMass_TwoBody[2], PDGCodes, fPairTranverseMassVSkstar_TwoBody[2]);
+        FillPairTransverseMass(ParticleVector, 1, 3, fPairTranverseMass_TwoBody[3], PDGCodes, fPairTranverseMassVSkstar_TwoBody[3]);
+        FillPairTransverseMass(ParticleVector, 0, 3, fPairTranverseMass_TwoBody[4], PDGCodes, fPairTranverseMassVSkstar_TwoBody[4]);
+        FillPairTransverseMass(ParticleVector, 1, 2, fPairTranverseMass_TwoBody[5], PDGCodes, fPairTranverseMassVSkstar_TwoBody[5]);
+        FillPairTransverseMass(ParticleVector, 2, 3, fPairTranverseMass_TwoBody[6], PDGCodes, fPairTranverseMassVSkstar_TwoBody[6]);
 
-    }
+      }
   // Two Body Same Event
     }//else
 
@@ -1049,92 +1281,136 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
     // TAKE CARE OF MULT AND ZVtx!
     if (!(bins[0] == -99 || bins[1] == -99)) {
 
-      auto itZVtx = fPartContainer.begin()+ bins[0];
-      auto itMult = itZVtx->begin() + bins[1];
+      std::vector<std::vector<AliFemtoDreamPartContainer>*> VectItMult;
+
+
+      if(fStandardMixing){
+        auto itZVtx = fVectPartContainers[0].begin()+ bins[0];
+        auto itMult = itZVtx->begin() + bins[1];
+        VectItMult.push_back(&(*itMult));
+      
+      } else {
+      
+        for(int i=0; i<3; i++){
+          auto itZVtx = fVectPartContainers[i].begin()+ bins[0];
+          auto itMult = itZVtx->begin() + bins[1];
+          VectItMult.push_back(&(*itMult));
+        }
+
+      }
+
+
 
       //c.1.0) Same 2, Mixed 1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       if(fDoOnlyThreeBody){
-      // Proton Proton Primary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 0, 2, fSameEventTripletArray[10], PDGCodes, bins[1],fSameEventTripletMultArray[10], fSameEventTripletPhiThetaArray, 10, *fConfig);//, fQ3VskDistributionsArrayq12[0],fQ3VskDistributionsArrayq23[0]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 2, 0, fSameEventTripletArray[11], PDGCodes, bins[1],fSameEventTripletMultArray[11], fSameEventTripletPhiThetaArray, 11, *fConfig);//, fQ3VskDistributionsArrayq12[1],fQ3VskDistributionsArrayq23[1]);
 
-      // Antiproton Antiproton Antiprimary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 1, 3, fSameEventTripletArray[12], PDGCodes, bins[1],fSameEventTripletMultArray[12], fSameEventTripletPhiThetaArray, 12, *fConfig);//, fQ3VskDistributionsArrayq12[3],fQ3VskDistributionsArrayq23[3]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 3, 1, fSameEventTripletArray[13], PDGCodes, bins[1],fSameEventTripletMultArray[13], fSameEventTripletPhiThetaArray, 13, *fConfig);//, fQ3VskDistributionsArrayq12[4],fQ3VskDistributionsArrayq23[4]);
+      if(!fDoTwoPrimary){
+         // Proton Proton Primary
+        FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPPrim], 0, 0, 2, fSameEventTripletArray[10], PDGCodes, bins[1],fSameEventTripletMultArray[10], fSameEventTripletPtPrimaries[10], fSameEventTripletPtProtons[10], fSameEventTripletPtPrimaries2[10], fSameEventTripletPtProtons2[10], fSameEventTripletPhiThetaArray, 10, *fConfig);//, fQ3VskDistributionsArrayq12[0],fQ3VskDistributionsArrayq23[0]);
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPPrim], 0, 2, 0, fSameEventTripletArray[11], PDGCodes, bins[1],fSameEventTripletMultArray[11], fSameEventTripletPtPrimaries[11], fSameEventTripletPtProtons[11], fSameEventTripletPtPrimaries2[11], fSameEventTripletPtProtons2[11], fSameEventTripletPhiThetaArray, 11, *fConfig);//, fQ3VskDistributionsArrayq12[1],fQ3VskDistributionsArrayq23[1]);
 
-       // Proton Proton Proton
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 0, 0, fSameEventTripletArray[14], PDGCodes, bins[1],fSameEventTripletMultArray[14], fSameEventTripletPhiThetaArray, 14, *fConfig);//, fQ3VskDistributionsArrayq12[2],fQ3VskDistributionsArrayq23[2]);
+         // Antiproton Antiproton Antiprimary
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPPrim], 1, 1, 3, fSameEventTripletArray[12], PDGCodes, bins[1],fSameEventTripletMultArray[12], fSameEventTripletPtPrimaries[12], fSameEventTripletPtProtons[12], fSameEventTripletPtPrimaries2[12], fSameEventTripletPtProtons2[12], fSameEventTripletPhiThetaArray, 12, *fConfig);//, fQ3VskDistributionsArrayq12[3],fQ3VskDistributionsArrayq23[3]);
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPPrim], 1, 3, 1, fSameEventTripletArray[13], PDGCodes, bins[1],fSameEventTripletMultArray[13], fSameEventTripletPtPrimaries[13], fSameEventTripletPtProtons[13], fSameEventTripletPtPrimaries2[13], fSameEventTripletPtProtons2[13], fSameEventTripletPhiThetaArray, 13, *fConfig);//, fQ3VskDistributionsArrayq12[4],fQ3VskDistributionsArrayq23[4]);
 
-      // Antiproton Antiproton Antiproton
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 1, 1, fSameEventTripletArray[15], PDGCodes, bins[1],fSameEventTripletMultArray[15], fSameEventTripletPhiThetaArray, 15, *fConfig);//, fQ3VskDistributionsArrayq12[5],fQ3VskDistributionsArrayq23[5]);
+         // Proton Proton Proton
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPP], 0, 0, 0, fSameEventTripletArray[14], PDGCodes, bins[1],fSameEventTripletMultArray[14], fSameEventTripletPtPrimaries[14], fSameEventTripletPtProtons[14], fSameEventTripletPtPrimaries2[14], fSameEventTripletPtProtons2[14], fSameEventTripletPhiThetaArray, 14, *fConfig);//, fQ3VskDistributionsArrayq12[2],fQ3VskDistributionsArrayq23[2]);
 
-      // Proton Proton AntiPrimary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 0, 3, fSameEventTripletArray[16], PDGCodes, bins[1],fSameEventTripletMultArray[16], fSameEventTripletPhiThetaArray, 16, *fConfig);//, fQ3VskDistributionsArrayq12[6],fQ3VskDistributionsArrayq23[6]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 3, 0, fSameEventTripletArray[17], PDGCodes, bins[1],fSameEventTripletMultArray[17], fSameEventTripletPhiThetaArray, 17, *fConfig);//, fQ3VskDistributionsArrayq12[7],fQ3VskDistributionsArrayq23[7]);
+         // Antiproton Antiproton Antiproton
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPP], 1, 1, 1, fSameEventTripletArray[15], PDGCodes, bins[1],fSameEventTripletMultArray[15], fSameEventTripletPtPrimaries[15], fSameEventTripletPtProtons[15], fSameEventTripletPtPrimaries2[15], fSameEventTripletPtProtons2[15], fSameEventTripletPhiThetaArray, 15, *fConfig);//, fQ3VskDistributionsArrayq12[5],fQ3VskDistributionsArrayq23[5]);
 
-      // Antiproton Antiproton Primary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 1, 2, fSameEventTripletArray[18], PDGCodes, bins[1],fSameEventTripletMultArray[18], fSameEventTripletPhiThetaArray, 18, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 2, 1, fSameEventTripletArray[19], PDGCodes, bins[1],fSameEventTripletMultArray[19], fSameEventTripletPhiThetaArray, 19, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+         // Proton Proton AntiPrimary
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPAPrim], 0, 0, 3, fSameEventTripletArray[16], PDGCodes, bins[1],fSameEventTripletMultArray[16], fSameEventTripletPtPrimaries[16], fSameEventTripletPtProtons[16], fSameEventTripletPtPrimaries2[16], fSameEventTripletPtProtons2[16], fSameEventTripletPhiThetaArray, 16, *fConfig);//, fQ3VskDistributionsArrayq12[6],fQ3VskDistributionsArrayq23[6]);
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPAPrim], 0, 3, 0, fSameEventTripletArray[17], PDGCodes, bins[1],fSameEventTripletMultArray[17], fSameEventTripletPtPrimaries[17], fSameEventTripletPtProtons[17], fSameEventTripletPtPrimaries2[17], fSameEventTripletPtProtons2[17], fSameEventTripletPhiThetaArray, 17, *fConfig);//, fQ3VskDistributionsArrayq12[7],fQ3VskDistributionsArrayq23[7]);
 
-      // Proton Primary Primary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 2, 2, fSameEventTripletArray[20], PDGCodes, bins[1],fSameEventTripletMultArray[20], fSameEventTripletPhiThetaArray, 20, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 2, 2, 0, fSameEventTripletArray[21], PDGCodes, bins[1],fSameEventTripletMultArray[21], fSameEventTripletPhiThetaArray, 21, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+         // Antiproton Antiproton Primary
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPAPrim], 1, 1, 2, fSameEventTripletArray[18], PDGCodes, bins[1],fSameEventTripletMultArray[18], fSameEventTripletPtPrimaries[18], fSameEventTripletPtProtons[18], fSameEventTripletPtPrimaries2[18], fSameEventTripletPtProtons2[18], fSameEventTripletPhiThetaArray, 18, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
+         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPAPrim], 1, 2, 1, fSameEventTripletArray[19], PDGCodes, bins[1],fSameEventTripletMultArray[19], fSameEventTripletPtPrimaries[19], fSameEventTripletPtProtons[19], fSameEventTripletPtPrimaries2[19], fSameEventTripletPtProtons2[19], fSameEventTripletPhiThetaArray, 19, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
 
-      // Antiproton Antiprimary Antiprimary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 3, 3, fSameEventTripletArray[22], PDGCodes, bins[1],fSameEventTripletMultArray[22], fSameEventTripletPhiThetaArray, 22, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 3, 3, 1, fSameEventTripletArray[23], PDGCodes, bins[1],fSameEventTripletMultArray[23], fSameEventTripletPhiThetaArray, 23, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+      }else{
 
-      // Proton Antiprimary Antiprimary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 3, 3, fSameEventTripletArray[24], PDGCodes, bins[1],fSameEventTripletMultArray[24], fSameEventTripletPhiThetaArray, 24, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 3, 3, 0, fSameEventTripletArray[25], PDGCodes, bins[1],fSameEventTripletMultArray[25], fSameEventTripletPhiThetaArray, 25, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+/*         // Proton Primary Primary
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 2, 2, fSameEventTripletArray[20], PDGCodes, bins[1],fSameEventTripletMultArray[20], fSameEventTripletPtPrimaries[20], fSameEventTripletPtProtons[20], fSameEventTripletPtPrimaries2[20], fSameEventTripletPtProtons2[20], fSameEventTripletPhiThetaArray, 20, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 2, 2, 0, fSameEventTripletArray[21], PDGCodes, bins[1],fSameEventTripletMultArray[21], fSameEventTripletPtPrimaries[21], fSameEventTripletPtProtons[21], fSameEventTripletPtPrimaries2[21], fSameEventTripletPtProtons2[21], fSameEventTripletPhiThetaArray, 21, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
 
-      // Antiproton Primary Primary
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 2, 2, fSameEventTripletArray[26], PDGCodes, bins[1],fSameEventTripletMultArray[26], fSameEventTripletPhiThetaArray, 26, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
-      FillTripletDistributionSE2ME1(ParticleVector, *itMult, 2, 2, 1, fSameEventTripletArray[27], PDGCodes, bins[1],fSameEventTripletMultArray[27], fSameEventTripletPhiThetaArray, 27, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+         // Antiproton Antiprimary Antiprimary
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 3, 3, fSameEventTripletArray[22], PDGCodes, bins[1],fSameEventTripletMultArray[22], fSameEventTripletPtPrimaries[22], fSameEventTripletPtProtons[22], fSameEventTripletPtPrimaries2[22], fSameEventTripletPtProtons2[22], fSameEventTripletPhiThetaArray, 22, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 3, 3, 1, fSameEventTripletArray[23], PDGCodes, bins[1],fSameEventTripletMultArray[23], fSameEventTripletPtPrimaries[23], fSameEventTripletPtProtons[23], fSameEventTripletPtPrimaries2[23], fSameEventTripletPtProtons2[23], fSameEventTripletPhiThetaArray, 23, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
 
+         // Proton Antiprimary Antiprimary
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 0, 3, 3, fSameEventTripletArray[24], PDGCodes, bins[1],fSameEventTripletMultArray[24], fSameEventTripletPtPrimaries[24], fSameEventTripletPtProtons[24], fSameEventTripletPtPrimaries2[24], fSameEventTripletPtProtons2[24], fSameEventTripletPhiThetaArray, 24, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 3, 3, 0, fSameEventTripletArray[25], PDGCodes, bins[1],fSameEventTripletMultArray[25], fSameEventTripletPtPrimaries[25], fSameEventTripletPtProtons[25], fSameEventTripletPtPrimaries2[25], fSameEventTripletPtProtons2[25], fSameEventTripletPhiThetaArray, 25, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+
+         // Antiproton Primary Primary
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 1, 2, 2, fSameEventTripletArray[26], PDGCodes, bins[1],fSameEventTripletMultArray[26], fSameEventTripletPtPrimaries[26], fSameEventTripletPtProtons[26], fSameEventTripletPtPrimaries2[26], fSameEventTripletPtProtons2[26], fSameEventTripletPhiThetaArray, 26, *fConfig);//, fQ3VskDistributionsArrayq12[8],fQ3VskDistributionsArrayq23[8]);
+         FillTripletDistributionSE2ME1(ParticleVector, *itMult, 2, 2, 1, fSameEventTripletArray[27], PDGCodes, bins[1],fSameEventTripletMultArray[27], fSameEventTripletPtPrimaries[27], fSameEventTripletPtProtons[27], fSameEventTripletPtPrimaries2[27], fSameEventTripletPtProtons2[27], fSameEventTripletPhiThetaArray, 27, *fConfig);//, fQ3VskDistributionsArrayq12[9],fQ3VskDistributionsArrayq23[9]);
+*/
+        }//if(fDoTwoPrimary)
       }//if(fDoOnlyThreeBody)
 
       //c.1.1) Normal mixing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       if(fDoOnlyThreeBody){
-      // 2 (Anti-)Protons, 1 (Anti-)Primary
-      FillTripletDistributionME(ParticleVector, *itMult, 2, 0, 0, fMixedEventTripletArray[0], PDGCodes, bins[1],fMixedEventTripletMultArray[0], fMixedEventTripletPhiThetaArray,0, *fConfig);//, fInvMassMixed[0], fQ3VskDistributionsArrayq12Mixed[0], fQ3VskDistributionsArrayq23Mixed[0]);
-      FillTripletDistributionME(ParticleVector, *itMult, 3, 1, 1, fMixedEventTripletArray[1], PDGCodes, bins[1],fMixedEventTripletMultArray[1], fMixedEventTripletPhiThetaArray,1, *fConfig);//, fInvMassMixed[1], fQ3VskDistributionsArrayq12Mixed[1], fQ3VskDistributionsArrayq23Mixed[1]);
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 0, 0, fMixedEventTripletArray[2], PDGCodes, bins[1],fMixedEventTripletMultArray[2], fMixedEventTripletPhiThetaArray,2, *fConfig);//, fInvMassMixed[2], fQ3VskDistributionsArrayq12Mixed[2], fQ3VskDistributionsArrayq23Mixed[2]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 1, 1, fMixedEventTripletArray[3], PDGCodes, bins[1],fMixedEventTripletMultArray[3], fMixedEventTripletPhiThetaArray,3, *fConfig);//, fInvMassMixed[3], fQ3VskDistributionsArrayq12Mixed[3], fQ3VskDistributionsArrayq23Mixed[3]);
-      FillTripletDistributionME(ParticleVector, *itMult, 3, 0, 0, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPhiThetaArray,4, *fConfig);//, fInvMassMixed[4], fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4]);
-      FillTripletDistributionME(ParticleVector, *itMult, 2, 1, 1, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPhiThetaArray,5, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
 
-      // 1 (Anti-)Proton, 2 (Anti-)Primary
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 2, 2, fMixedEventTripletArray[6], PDGCodes, bins[1],fMixedEventTripletMultArray[6], fMixedEventTripletPhiThetaArray,6, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 3, 3, fMixedEventTripletArray[7], PDGCodes, bins[1],fMixedEventTripletMultArray[7], fMixedEventTripletPhiThetaArray,7, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
-      FillTripletDistributionME(ParticleVector, *itMult, 0, 3, 3, fMixedEventTripletArray[8], PDGCodes, bins[1],fMixedEventTripletMultArray[8], fMixedEventTripletPhiThetaArray,8, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
-      FillTripletDistributionME(ParticleVector, *itMult, 1, 2, 2, fMixedEventTripletArray[9], PDGCodes, bins[1],fMixedEventTripletMultArray[9], fMixedEventTripletPhiThetaArray,9, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+        if(!fDoTwoPrimary){
+           // 2 (Anti-)Protons, 1 (Anti-)Primary
+           FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPPrim], 2, 0, 0, fMixedEventTripletArray[0], PDGCodes, bins[1],fMixedEventTripletMultArray[0], fMixedEventTripletPtPrimaries[0], fMixedEventTripletPtProtons[0], fMixedEventTripletPtPrimaries2[0], fMixedEventTripletPtProtons2[0], fMixedEventTripletPhiThetaArray,0, *fConfig, fQ3VskDistributionsArrayq12Mixed[0], fQ3VskDistributionsArrayq23Mixed[0]);//, fInvMassMixed[0], fQ3VskDistributionsArrayq12Mixed[0], fQ3VskDistributionsArrayq23Mixed[0]);
+           FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPPrim], 3, 1, 1, fMixedEventTripletArray[1], PDGCodes, bins[1],fMixedEventTripletMultArray[1], fMixedEventTripletPtPrimaries[1], fMixedEventTripletPtProtons[1], fMixedEventTripletPtPrimaries2[1], fMixedEventTripletPtProtons2[1], fMixedEventTripletPhiThetaArray,1, *fConfig, fQ3VskDistributionsArrayq12Mixed[1], fQ3VskDistributionsArrayq23Mixed[1]);//, fInvMassMixed[1], fQ3VskDistributionsArrayq12Mixed[1], fQ3VskDistributionsArrayq23Mixed[1]);
+           FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPP], 0, 0, 0, fMixedEventTripletArray[2], PDGCodes, bins[1],fMixedEventTripletMultArray[2], fMixedEventTripletPtPrimaries[2], fMixedEventTripletPtProtons[2], fMixedEventTripletPtPrimaries2[2], fMixedEventTripletPtProtons2[2], fMixedEventTripletPhiThetaArray,2, *fConfig, fQ3VskDistributionsArrayq12Mixed[2], fQ3VskDistributionsArrayq23Mixed[2]);//, fInvMassMixed[2], fQ3VskDistributionsArrayq12Mixed[2], fQ3VskDistributionsArrayq23Mixed[2]);
+           FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPP], 1, 1, 1, fMixedEventTripletArray[3], PDGCodes, bins[1],fMixedEventTripletMultArray[3], fMixedEventTripletPtPrimaries[3], fMixedEventTripletPtProtons[3], fMixedEventTripletPtPrimaries2[3], fMixedEventTripletPtProtons2[3], fMixedEventTripletPhiThetaArray,3, *fConfig, fQ3VskDistributionsArrayq12Mixed[3], fQ3VskDistributionsArrayq23Mixed[3]);//, fInvMassMixed[3], fQ3VskDistributionsArrayq12Mixed[3], fQ3VskDistributionsArrayq23Mixed[3]);
+           FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPAPrim], 3, 0, 0, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPtPrimaries[4], fMixedEventTripletPtProtons[4], fMixedEventTripletPtPrimaries2[4], fMixedEventTripletPtProtons2[4], fMixedEventTripletPhiThetaArray,4, *fConfig, fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4]);//, fInvMassMixed[4], fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4]);
+           FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPAPrim], 2, 1, 1, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPtPrimaries[5], fMixedEventTripletPtProtons[5], fMixedEventTripletPtPrimaries2[5], fMixedEventTripletPtProtons2[5], fMixedEventTripletPhiThetaArray,5, *fConfig, fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+        }
+        else{
+  /*         // 1 (Anti-)Proton, 2 (Anti-)Primary
+           FillTripletDistributionME(ParticleVector, *itMult, 0, 2, 2, fMixedEventTripletArray[6], PDGCodes, bins[1],fMixedEventTripletMultArray[6], fMixedEventTripletPtPrimaries[6], fMixedEventTripletPtProtons[6], fMixedEventTripletPtPrimaries2[6], fMixedEventTripletPtProtons2[6], fMixedEventTripletPhiThetaArray,6, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+           FillTripletDistributionME(ParticleVector, *itMult, 1, 3, 3, fMixedEventTripletArray[7], PDGCodes, bins[1],fMixedEventTripletMultArray[7], fMixedEventTripletPtPrimaries[7], fMixedEventTripletPtProtons[7], fMixedEventTripletPtPrimaries2[7], fMixedEventTripletPtProtons2[7], fMixedEventTripletPhiThetaArray,7, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+           FillTripletDistributionME(ParticleVector, *itMult, 0, 3, 3, fMixedEventTripletArray[8], PDGCodes, bins[1],fMixedEventTripletMultArray[8], fMixedEventTripletPtPrimaries[8], fMixedEventTripletPtProtons[8], fMixedEventTripletPtPrimaries2[8], fMixedEventTripletPtProtons2[8], fMixedEventTripletPhiThetaArray,8, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+           FillTripletDistributionME(ParticleVector, *itMult, 1, 2, 2, fMixedEventTripletArray[9], PDGCodes, bins[1],fMixedEventTripletMultArray[9], fMixedEventTripletPtPrimaries[9], fMixedEventTripletPtProtons[9], fMixedEventTripletPtPrimaries2[9], fMixedEventTripletPtProtons2[9], fMixedEventTripletPhiThetaArray,9, *fConfig);//, fInvMassMixed[5], fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5]);
+  */
+        }//if(fDoTwoPrimary)
 
       } else {
-      //Two Body Analyses...........
+        //Two Body Analyses...........
 
-      //Proton Proton
-      FillPairDistributionME( ParticleVector, *itMult, 0, 0, fMixedEventTripletArray_TwoBody[0],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[0], fMixedEventTripletPhiThetaArray_TwoBody,0, *fConfig);
-      //AntiProton AntiProton
-      FillPairDistributionME( ParticleVector, *itMult, 1, 1, fMixedEventTripletArray_TwoBody[1],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[1], fMixedEventTripletPhiThetaArray_TwoBody,1, *fConfig);
-      //Proton Primary
-      FillPairDistributionME( ParticleVector, *itMult, 0, 2, fMixedEventTripletArray_TwoBody[2],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[2], fMixedEventTripletPhiThetaArray_TwoBody,2, *fConfig);
-      //Antiproton Antiprimary
-      FillPairDistributionME( ParticleVector, *itMult, 1, 3, fMixedEventTripletArray_TwoBody[3],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[3], fMixedEventTripletPhiThetaArray_TwoBody,3, *fConfig);
-      //Proton Antiprimary
-      FillPairDistributionME( ParticleVector, *itMult, 0, 3, fMixedEventTripletArray_TwoBody[4],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[4], fMixedEventTripletPhiThetaArray_TwoBody,4, *fConfig);
-      //Antiproton Primary
-      FillPairDistributionME( ParticleVector, *itMult, 1, 2, fMixedEventTripletArray_TwoBody[5],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[5], fMixedEventTripletPhiThetaArray_TwoBody,5, *fConfig);
-      //Primary Antiprimary
-      FillPairDistributionME( ParticleVector, *itMult, 2, 3, fMixedEventTripletArray_TwoBody[6],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[6], fMixedEventTripletPhiThetaArray_TwoBody,6, *fConfig);
+        //Proton Proton
+        FillPairDistributionME( ParticleVector, *VectItMult[ContainerIdPP], 0, 0, fMixedEventTripletArray_TwoBody[0],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[0], fMixedEventTripletPhiThetaArray_TwoBody,0, *fConfig);
+        //AntiProton AntiProton
+        FillPairDistributionME( ParticleVector, *VectItMult[ContainerIdPP], 1, 1, fMixedEventTripletArray_TwoBody[1],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[1], fMixedEventTripletPhiThetaArray_TwoBody,1, *fConfig);
+        //Proton Primary
+        FillPairDistributionME( ParticleVector, *VectItMult[ContainerIdPPrim], 0, 2, fMixedEventTripletArray_TwoBody[2],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[2], fMixedEventTripletPhiThetaArray_TwoBody,2, *fConfig);
+        //Antiproton Antiprimary
+        FillPairDistributionME( ParticleVector, *VectItMult[ContainerIdPPrim], 1, 3, fMixedEventTripletArray_TwoBody[3],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[3], fMixedEventTripletPhiThetaArray_TwoBody,3, *fConfig);
+        //Proton Antiprimary
+        FillPairDistributionME( ParticleVector, *VectItMult[ContainerIdPAPrim], 0, 3, fMixedEventTripletArray_TwoBody[4],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[4], fMixedEventTripletPhiThetaArray_TwoBody,4, *fConfig);
+        //Antiproton Primary
+        FillPairDistributionME( ParticleVector, *VectItMult[ContainerIdPAPrim], 1, 2, fMixedEventTripletArray_TwoBody[5],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[5], fMixedEventTripletPhiThetaArray_TwoBody,5, *fConfig);
+        //Primary Antiprimary
+        //FillPairDistributionME( ParticleVector, *itMult, 2, 3, fMixedEventTripletArray_TwoBody[6],PDGCodes, bins[1],fMixedEventTripletMultArray_TwoBody[6], fMixedEventTripletPhiThetaArray_TwoBody,6, *fConfig);
 
       }
 
+
       // Update the particle container with current event
-      SetMixedEvent(ParticleVector, &(*itMult));
-      //SetMixedEventOnlyPLambdaTEST(ParticleVector, &(*itMultTEST));
-      //SetMixedEventOnlyPPLambdaTEST( ParticleVector, &(*itMultTESTppL));
-      //SetMixedEventOnlyPPPTEST( ParticleVector, &(*itMultTESTppp));
+      if(fStandardMixing) {
+
+        SetMixedEvent(ParticleVector, VectItMult[0]);
+
+      }else{
+
+        if(fDoOnlyThreeBody){
+
+          SetMixedEventPPP(ParticleVector, VectItMult[0]);
+          SetMixedEventPPPrim(ParticleVector, VectItMult[1]);
+          SetMixedEventPPAPrim(ParticleVector, VectItMult[2]);
+
+        } else {
+        
+          SetMixedEventPP(ParticleVector, VectItMult[0]);
+          SetMixedEventPPrim(ParticleVector, VectItMult[1]);
+          SetMixedEventPAPrim(ParticleVector, VectItMult[2]);
+
+        }
+      }
 
     }//if (!(bins[0] == -99 || bins[1] == -99))
 
@@ -1178,10 +1454,10 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
     PostData(14, fAntiProtonMCList);
   }
   if (fPrimary->GetIsMonteCarlo()) {
-    PostData(15, fProtonMCList);
+    PostData(15, fPrimaryMCList);
   }
   if (fAntiPrimary->GetIsMonteCarlo()) {
-    PostData(16, fAntiProtonMCList);
+    PostData(16, fAntiPrimaryMCList);
   }
   if(fCleanWithLambdas){
     if (fLambda->GetIsMonteCarlo()) {
@@ -1256,7 +1532,7 @@ TLorentzVector AliAnalysisTaskThreeBodyProtonPrimary::RelativePairMomentum(
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* InvMassSame){
+void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* InvMassSame){
   // This function creates a triplet distribution in Q3 bins (defined lower).
   // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
   // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just
@@ -1279,10 +1555,13 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
   unsigned int DaughterPart3 = 0;
   if(abs(*itPDGPar1)==3122) DaughterPart1 = 2;
   if(abs(*itPDGPar1)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGPar1)==321) DaughterPart1 = 1;
   if(abs(*itPDGPar2)==3122) DaughterPart2 = 2;
   if(abs(*itPDGPar2)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGPar2)==321) DaughterPart2 = 1;
   if(abs(*itPDGPar3)==3122) DaughterPart3 = 2;
   if(abs(*itPDGPar3)==2212) DaughterPart3 = 1;
+  if(abs(*itPDGPar3)==321) DaughterPart3 = 1;
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
   unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
   unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
@@ -1335,7 +1614,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
             Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
           }
           if(!fClosePairRejectionForAll){
-            if(fClosePairRejectionPPPorPPL){
+           
               if(DoThisPair12==11){
                 Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
               }
@@ -1345,19 +1624,6 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
               if(DoThisPair31==11){
                 Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
               }
-            }
-
-            if(!fClosePairRejectionPPPorPPL){
-              if(DoThisPair12==21||DoThisPair12==12){
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
-              }
-              if(DoThisPair23==21||DoThisPair23==12){
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
-              }
-              if(DoThisPair31==21||DoThisPair31==12){
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
-              }
-            }
 
           }
 
@@ -1369,6 +1635,28 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
         hist->Fill(Q3);
         hist2d->Fill(Q3,mult+1);
 
+        if(fRunPlotPt){
+
+          if (Q3<1.) // MODIFIED BY ME
+          {
+            if(abs(*itPDGPar1)==321) hPtPrimaries -> Fill(part1_LorVec.Pt());
+            if(abs(*itPDGPar1)==2212) hPtProtons -> Fill(part1_LorVec.Pt());
+            if(abs(*itPDGPar2)==321) hPtPrimaries -> Fill(part2_LorVec.Pt());
+            if(abs(*itPDGPar2)==2212) hPtProtons -> Fill(part2_LorVec.Pt());
+            if(abs(*itPDGPar3)==321) hPtPrimaries -> Fill(part3_LorVec.Pt());
+            if(abs(*itPDGPar3)==2212) hPtProtons -> Fill(part3_LorVec.Pt());
+          }
+          if (Q3>0.4&&Q3<1.) // REGION OF THE LAMBDA (1520)
+          {
+            if(abs(*itPDGPar1)==321) hPtPrimaries2 -> Fill(part1_LorVec.Pt());
+            if(abs(*itPDGPar1)==2212) hPtProtons2 -> Fill(part1_LorVec.Pt());
+            if(abs(*itPDGPar2)==321) hPtPrimaries2 -> Fill(part2_LorVec.Pt());
+            if(abs(*itPDGPar2)==2212) hPtProtons2 -> Fill(part2_LorVec.Pt());
+            if(abs(*itPDGPar3)==321) hPtPrimaries2 -> Fill(part3_LorVec.Pt());
+            if(abs(*itPDGPar3)==2212) hPtProtons2 -> Fill(part3_LorVec.Pt());
+          }
+
+        }
         /*if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
         if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
         if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());*/
@@ -1398,8 +1686,11 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistribution(std::vector<std
 
   if(abs(*itPDGPar1)==3122) DaughterPart1 = 2;
   if(abs(*itPDGPar1)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGPar1)==321) DaughterPart1 = 1;
   if(abs(*itPDGPar2)==3122) DaughterPart2 = 2;
   if(abs(*itPDGPar2)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGPar2)==321) DaughterPart2 = 1;
+
 
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
 
@@ -1423,7 +1714,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistribution(std::vector<std
 
         if(!fturnoffClosePairRejectionCompletely){
 
-            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+          if(fClosePairRejectionForAll){
+             Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+          }
+          else{
+
+             if(DoThisPair12==11){
+               Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+             }
+          } 
         }
 
         if(!Pair12) {continue;}
@@ -1452,7 +1751,23 @@ void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEvent(
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventOnlyPLambdaTEST(
+void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventPP(
+    std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
+  // Feed this function with GetCleanParticles output and fill the mixed events for different particles
+  // THIS WORKS ONLY IF 0 and 2 is proton and lambda, 1 and 3 is antiproton antilambda.
+  // Fill the particles only if both lambda and proton are present in the event, so later on for mixing
+  // one would be able to know what the lambda and proton are not from the same event
+  if ((ParticleVector.begin())->size() > 1) {
+    (fPartContainer->begin())->SetEvent(*(ParticleVector.begin()));
+  }
+  if ((ParticleVector.begin()+1)->size() > 1) {
+    (fPartContainer->begin()+1)->SetEvent(*(ParticleVector.begin()+1));
+  }
+}
+
+//==================================================================================================================================================
+
+void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventPPrim(
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
   // Feed this function with GetCleanParticles output and fill the mixed events for different particles
   // THIS WORKS ONLY IF 0 and 2 is proton and lambda, 1 and 3 is antiproton antilambda.
@@ -1470,25 +1785,25 @@ void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventOnlyPLambdaTEST(
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventOnlyPPLambdaTEST(
+void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventPAPrim(  
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
   // Feed this function with GetCleanParticles output and fill the mixed events for different particles
   // THIS WORKS ONLY IF 0 and 2 is proton and lambda, 1 and 3 is antiproton antilambda.
   // Fill the particles only if both lambda and proton are present in the event, so later on for mixing
   // one would be able to know what the lambda and proton are not from the same event
-  if ((ParticleVector.begin())->size() > 1 && (ParticleVector.begin()+2)->size() > 0) {
+  if ((ParticleVector.begin())->size() > 0 && (ParticleVector.begin()+3)->size() > 0) {
     (fPartContainer->begin())->SetEvent(*(ParticleVector.begin()));
-    (fPartContainer->begin()+2)->SetEvent(*(ParticleVector.begin()+2));
-  }
-  if ((ParticleVector.begin()+1)->size() > 1 && (ParticleVector.begin()+3)->size() > 0) {
-    (fPartContainer->begin()+1)->SetEvent(*(ParticleVector.begin()+1));
     (fPartContainer->begin()+3)->SetEvent(*(ParticleVector.begin()+3));
+  }
+  if ((ParticleVector.begin()+1)->size() > 0 && (ParticleVector.begin()+2)->size() > 0) {
+    (fPartContainer->begin()+1)->SetEvent(*(ParticleVector.begin()+1));
+    (fPartContainer->begin()+2)->SetEvent(*(ParticleVector.begin()+2));
   }
 }
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventOnlyPPPTEST(
+void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventPPP(
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
   // Feed this function with GetCleanParticles output and fill the mixed events for different particles
   // THIS WORKS ONLY IF 0 and 2 is proton and lambda, 1 and 3 is antiproton antilambda.
@@ -1501,10 +1816,43 @@ void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventOnlyPPPTEST(
     (fPartContainer->begin()+1)->SetEvent(*(ParticleVector.begin()+1));
   }
 }
+//==================================================================================================================================================
+
+void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventPPPrim(
+    std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
+  // Feed this function with GetCleanParticles output and fill the mixed events for different particles
+  // THIS WORKS ONLY IF 0 and 2 is proton and primary, 1 and 3 is antiproton antiprimary.
+  // Fill the particles only if at least 2 prontons and a primary particle are present in the event
+  if ((ParticleVector.begin())->size() > 1 && (ParticleVector.begin()+2)->size() > 0) {
+    (fPartContainer->begin())->SetEvent(*(ParticleVector.begin()));
+    (fPartContainer->begin()+2)->SetEvent(*(ParticleVector.begin()+2));
+  }
+  if ((ParticleVector.begin()+1)->size() > 1 && (ParticleVector.begin()+3)->size() > 0) {
+    (fPartContainer->begin()+1)->SetEvent(*(ParticleVector.begin()+1));
+    (fPartContainer->begin()+3)->SetEvent(*(ParticleVector.begin()+3));
+  }
+}
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
+void AliAnalysisTaskThreeBodyProtonPrimary::SetMixedEventPPAPrim(
+    std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
+  // Feed this function with GetCleanParticles output and fill the mixed events for different particles
+  // THIS WORKS ONLY IF 0 and 2 is proton and primary, 1 and 3 is antiproton antiprimary.
+  // Fill the particles only if at least 2 prontons and a primary particle are present in the event
+  if ((ParticleVector.begin())->size() > 1 && (ParticleVector.begin()+3)->size() > 0) {
+    (fPartContainer->begin())->SetEvent(*(ParticleVector.begin()));
+    (fPartContainer->begin()+3)->SetEvent(*(ParticleVector.begin()+3));
+  }
+  if ((ParticleVector.begin()+1)->size() > 1 && (ParticleVector.begin()+2)->size() > 0) {
+    (fPartContainer->begin()+1)->SetEvent(*(ParticleVector.begin()+1));
+    (fPartContainer->begin()+2)->SetEvent(*(ParticleVector.begin()+2));
+  }
+}
+
+//==================================================================================================================================================
+
+void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
   // Description of function given in AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution
   // In this function, only one particle is used from current event, and the other two - from other two events
 
@@ -1536,10 +1884,13 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
   unsigned int DaughterPart3 = 0;
   if(abs(*itPDGParSE)==3122) DaughterPart1 = 2;
   if(abs(*itPDGParSE)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGParSE)==321) DaughterPart1 = 1;
   if(abs(*itPDGParME1)==3122) DaughterPart2 = 2;
   if(abs(*itPDGParME1)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGParME1)==321) DaughterPart2 = 1;
   if(abs(*itPDGParME2)==3122) DaughterPart3 = 2;
   if(abs(*itPDGParME2)==2212) DaughterPart3 = 1;
+  if(abs(*itPDGParME2)==321) DaughterPart3 = 1;
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
   unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
   unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
@@ -1588,7 +1939,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
                 Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[10+phiEtaHistNo],Config, Q3);
               }
               if(!fClosePairRejectionForAll){
-                if(fClosePairRejectionPPPorPPL){
+               
                   if(DoThisPair12==11){
                     Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[10+phiEtaHistNo],Config, Q3);
                   }
@@ -1597,19 +1948,8 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
                   }
                   if(DoThisPair31==11){
                     Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[10+phiEtaHistNo],Config, Q3);
-                  }
-                }
-                if(!fClosePairRejectionPPPorPPL){
-                  if(DoThisPair12==21||DoThisPair12==12){
-                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[10+phiEtaHistNo],Config, Q3);
-                  }
-                  if(DoThisPair23==21||DoThisPair23==12){
-                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[10+phiEtaHistNo],Config, Q3);
-                  }
-                  if(DoThisPair31==21||DoThisPair31==12){
-                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[10+phiEtaHistNo],Config, Q3);
-                  }
-                }
+                  }  
+
               }
 
             }
@@ -1621,13 +1961,39 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
 
             hist->Fill(Q3);
             hist2d->Fill(Q3,mult+1);
-            /*
+
+
+            if(fRunPlotPt){
+
+              if (Q3<1.) // MODIFIED BY ME
+              {
+                if(abs(*itPDGParSE)==321) hPtPrimaries -> Fill(part1_LorVec.Pt());
+                if(abs(*itPDGParSE)==2212) hPtProtons -> Fill(part1_LorVec.Pt());
+                if(abs(*itPDGParME1)==321) hPtPrimaries -> Fill(part2_LorVec.Pt());
+                if(abs(*itPDGParME1)==2212) hPtProtons -> Fill(part2_LorVec.Pt());
+                if(abs(*itPDGParME2)==321) hPtPrimaries -> Fill(part3_LorVec.Pt());
+                if(abs(*itPDGParME2)==2212) hPtProtons -> Fill(part3_LorVec.Pt());
+              }
+              if (Q3>0.4&&Q3<1.) // REGION OF THE LAMBDA (1520)
+              {
+                if(abs(*itPDGParSE)==321) hPtPrimaries2 -> Fill(part1_LorVec.Pt());
+                if(abs(*itPDGParSE)==2212) hPtProtons2 -> Fill(part1_LorVec.Pt());
+                if(abs(*itPDGParME1)==321) hPtPrimaries2 -> Fill(part2_LorVec.Pt());
+                if(abs(*itPDGParME1)==2212) hPtProtons2 -> Fill(part2_LorVec.Pt());
+                if(abs(*itPDGParME2)==321) hPtPrimaries2 -> Fill(part3_LorVec.Pt());
+                if(abs(*itPDGParME2)==2212) hPtProtons2 -> Fill(part3_LorVec.Pt());
+              }
+
+            }
+            
             if(fRunPlotQ3Vsq){
               float qSame12= sqrt(-q12*q12);
               float qSame23= sqrt(-q23*q23);
               Q3VskDistribution12Mixed->Fill(Q3, qSame12);
               Q3VskDistribution23Mixed->Fill(Q3, qSame23);
             }
+
+            /*
             if (fRunPlotInvMassTriplet){
               if(speciesSE == 2 || speciesSE == 3) InvMassMixed->Fill(Q3, iPart1->GetInvMass());
               if(speciesME1 == 2 || speciesME1 == 3) InvMassMixed->Fill(Q3, iPart2->GetInvMass());
@@ -1757,8 +2123,10 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistributionME(std::vector<s
 
   if(abs(*itPDGParSE)==3122) DaughterPart1 = 2;
   if(abs(*itPDGParSE)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGParSE)==321) DaughterPart1 = 1;
   if(abs(*itPDGParME1)==3122) DaughterPart2 = 2;
   if(abs(*itPDGParME1)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGParME1)==321) DaughterPart2 = 1;
 
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
 
@@ -1773,19 +2141,23 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistributionME(std::vector<s
       std::vector<AliFemtoDreamBasePart> iEvent2 = MixedEvent1Container->GetEvent(iDepth1); //GANESHA Here check if two species are the same
       for ( auto iPart2 = iEvent2.begin(); iPart2 != iEvent2.end(); ++iPart2) {
 
-        if(speciesSE==0 && speciesME1 ==0){
-
-          bool Pair12 = true;
+        
+        bool Pair12 = true;
 
          if(!fturnoffClosePairRejectionCompletely){
 
-            Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
-            }
+          if(fClosePairRejectionForAll){
+             Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+          }
+          else{
 
-            if(!Pair12) {continue;}
+             if(DoThisPair12==11){
+               Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+             }
+          } 
+        }
 
-        }//if(speciesSE==0 && speciesME1 ==0)
-
+        if(!Pair12) {continue;}
 
         // Now we have the three particles, lets create their Lorentz vectors
         TLorentzVector part1_LorVec, part2_LorVec;
@@ -1803,12 +2175,31 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistributionME(std::vector<s
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23){
+void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH1F* hPtPrimaries, TH1F* hPtProtons, TH1F* hPtPrimaries2, TH1F* hPtProtons2, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config){//, TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23){
   // Description of function given in AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution
   // In this function, two particles are used from current event, and one - from other event
   auto ParticleSE1 = ParticleVector.begin()+speciesSE1;
   auto ParticleSE2 = ParticleVector.begin()+speciesSE2;
   auto MixedEventContainer = fPartContainer.begin()+speciesME;
+
+
+  if(!fStandardMixing){
+    if((speciesSE1==0&&speciesSE2==0&&speciesME==0)||(speciesSE1==1&&speciesSE2==1&&speciesME==1)){ // (p-p)-p
+      if(ParticleVector[speciesSE1].size()<3) return;
+    }
+    if((speciesSE1==0&&speciesSE2==0&&speciesME==2)||(speciesSE1==1&&speciesSE2==1&&speciesME==3)){ // (p-p)-Prim
+      if(ParticleVector[speciesSE1].size()<2||ParticleVector[speciesME].size()<1) return;
+    }
+    if((speciesSE1==0&&speciesSE2==2&&speciesME==0)||(speciesSE1==1&&speciesSE2==3&&speciesME==1)){ // (p-Prim)-p
+      if(ParticleVector[speciesSE1].size()<2||ParticleVector[speciesSE2].size()<1) return;
+    }
+    if((speciesSE1==0&&speciesSE2==0&&speciesME==3)||(speciesSE1==1&&speciesSE2==1&&speciesME==2)){ // (p-p)-APrim
+      if(ParticleVector[speciesSE1].size()<2||ParticleVector[speciesME].size()<1) return;
+    }
+    if((speciesSE1==0&&speciesSE2==3&&speciesME==0)||(speciesSE1==1&&speciesSE2==2&&speciesME==1)){ // (p-APrim)-p
+      if(ParticleVector[speciesSE1].size()<2||ParticleVector[speciesSE2].size()<1) return;
+    }
+  }
 
   // Get the PID codes std::vector<int>
   auto itPDGParSE1 = PDGCodes.begin()+speciesSE1;
@@ -1825,10 +2216,13 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
   unsigned int DaughterPart3 = 0;
   if(abs(*itPDGParSE1)==3122) DaughterPart1 = 2;
   if(abs(*itPDGParSE1)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGParSE1)==321) DaughterPart1 = 1;
   if(abs(*itPDGParSE2)==3122) DaughterPart2 = 2;
   if(abs(*itPDGParSE2)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGParSE2)==321) DaughterPart2 = 1;
   if(abs(*itPDGParME)==3122) DaughterPart3 = 2;
   if(abs(*itPDGParME)==2212) DaughterPart3 = 1;
+  if(abs(*itPDGParME)==321) DaughterPart3 = 1;
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
   unsigned int DoThisPair23 = DaughterPart2*10+DaughterPart3;
   unsigned int DoThisPair31 = DaughterPart3*10+DaughterPart1;
@@ -1873,7 +2267,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
               Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
             }
             if(!fClosePairRejectionForAll){
-              if(fClosePairRejectionPPPorPPL){
+          
                 if(DoThisPair12==11){
                   Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
                 }
@@ -1883,18 +2277,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
                 if(DoThisPair31==11){
                   Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
                 }
-              }
-              if(!fClosePairRejectionPPPorPPL){
-                if(DoThisPair12==21||DoThisPair12==12){
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2,true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
-                }
-                if(DoThisPair23==21||DoThisPair23==12){
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3,true,  DoThisPair23, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
-                }
-                if(DoThisPair31==21||DoThisPair31==12){
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1,true,  DoThisPair31, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[28+phiEtaHistNo],Config, Q3);
-                }
-              }
+              
             }
 
           }
@@ -1905,6 +2288,28 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
           hist->Fill(Q3);
           hist2d->Fill(Q3,mult+1);
 
+          if(fRunPlotPt){
+
+            if (Q3<1.) // MODIFIED BY ME
+            {
+              if(abs(*itPDGParSE1)==321) hPtPrimaries -> Fill(part1_LorVec.Pt());
+              if(abs(*itPDGParSE1)==2212) hPtProtons -> Fill(part1_LorVec.Pt());
+              if(abs(*itPDGParSE2)==321) hPtPrimaries -> Fill(part2_LorVec.Pt());
+              if(abs(*itPDGParSE2)==2212) hPtProtons -> Fill(part2_LorVec.Pt());
+              if(abs(*itPDGParME)==321) hPtPrimaries -> Fill(part3_LorVec.Pt());
+              if(abs(*itPDGParME)==2212) hPtProtons -> Fill(part3_LorVec.Pt());
+            }
+            if (Q3>0.4&&Q3<1.) // REGION OF THE LAMBDA (1520)
+            {
+              if(abs(*itPDGParSE1)==321) hPtPrimaries2 -> Fill(part1_LorVec.Pt());
+              if(abs(*itPDGParSE1)==2212) hPtProtons2 -> Fill(part1_LorVec.Pt());
+              if(abs(*itPDGParSE2)==321) hPtPrimaries2 -> Fill(part2_LorVec.Pt());
+              if(abs(*itPDGParSE2)==2212) hPtProtons2 -> Fill(part2_LorVec.Pt());
+              if(abs(*itPDGParME)==321) hPtPrimaries2 -> Fill(part3_LorVec.Pt());
+              if(abs(*itPDGParME)==2212) hPtProtons2 -> Fill(part3_LorVec.Pt());
+            }
+
+          }
           /*if(fRunPlotQ3Vsq){
             float qSame12= sqrt(-q12*q12);
             float qSame23= sqrt(-q23*q23);
@@ -2171,8 +2576,10 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairTransverseMass(std::vector<s
 
   if(abs(*itPDGPar1)==3122) DaughterPart1 = 2;
   if(abs(*itPDGPar1)==2212) DaughterPart1 = 1;
+  if(abs(*itPDGPar1)==321) DaughterPart1 = 1;
   if(abs(*itPDGPar2)==3122) DaughterPart2 = 2;
   if(abs(*itPDGPar2)==2212) DaughterPart2 = 1;
+  if(abs(*itPDGPar2)==321) DaughterPart2 = 1;
 
   unsigned int DoThisPair12 = DaughterPart1*10+DaughterPart2;
 

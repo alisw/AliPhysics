@@ -123,12 +123,15 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_doubleConeM;              //! // Double cone invariant mass
         AliJTH1D fh_jet2Cone1Dist;            //! // Distance between jet 2 and cone 1
         AliJTH1D fh_jet1Cone2Dist;            //! // Distance between jet 1 and cone 2
+        AliJTH1D fh_jet1Cone2AltDist;            //! // Distance between jet 1 and cone 2
         AliJTH1D fh_localRho1;                //! // Localrho1
         AliJTH1D fh_localRho2;                //! // Localrho2
         AliJTH1D fh_deltaRho1;                //! // Difference of rho and localrho1
         AliJTH1D fh_deltaRho2;                //! // Difference of rho and localrho2
         AliJTH1D fh_deltaLocalRho;            //! // Difference of localrho1 and localrho2
         AliJTH1D fh_dijetdeltaM5;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM5NearCone;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM5NearConeAlt;             //! // Dijet deltaM
         AliJTH1D fh_dijetMLocalRho;            //! // Dijet deltaM with localrho
         AliJTH2D fh_deltaMResponse;           //! // deltaM response matrix 
         AliJTH2D fh_dijetResponseTrunc;            //! // Dijet response matrix truncated from above and below

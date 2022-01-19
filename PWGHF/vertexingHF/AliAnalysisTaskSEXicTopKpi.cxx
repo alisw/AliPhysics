@@ -258,7 +258,6 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fFastLoopDCApar2(0.01)
   ,fFastLoopDCApar3(0.005)
   ,fFastLoopDCApar4(0.1)
-
 {
   /// Default constructor
 
@@ -2014,14 +2013,16 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       //
       // if wee keep the selection on PID, modify the massHypothesis
       // otherwise, do not touch it
-      if(!fSwitchOffPIDafterFilt) massHypothesis=resp_onlyPID&massHypothesis;
+      if(!fSwitchOffPIDafterFilt) {
+        if(!fExplore_PIDstdCuts)  massHypothesis=resp_onlyPID&massHypothesis;
+      }
     }
-    else {  // topological analysis
-       if(fSwitchOffPIDafterFilt)  massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
-       else { // this is the default
-         if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
- 	      else                      massHypothesis=isSeleCuts&massHypothesis;
-       }
+    else {  // topological analysis 
+      if(fSwitchOffPIDafterFilt)  massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+      else { // this is the default
+        if(fExplore_PIDstdCuts)   massHypothesis=resp_onlyCuts&massHypothesis;  // we do not want the candidates to be filtered by Bayes PID
+	      else                      massHypothesis=isSeleCuts&massHypothesis;
+      }
     }
 
 	  //
@@ -2126,6 +2127,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 		fhSparseAnalysisReflections->Fill(point);
 	      }
+
 	    }
 	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 	  }
@@ -2135,23 +2137,23 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		      point[7] = i;
 		      if(arrayPIDpkpi[i]){
 			if(fReadMC) {
- 			  if(converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) {
-			    /// These are real Lc,Xic->pKpi that are correctly reconstructed
-			    if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
-			    if(fNoStdPIDcases){
-			      if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
-			    }
-			    else  fhSparseAnalysis->Fill(point);
-			  }
-			  else if((converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22) && fFillSparseReflections){
-			    /// these are real Lc,Xic->piKp reconstructed as Lc,Xic->pKpi - reflections!
-			    if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
-			    if(fNoStdPIDcases){
-			      if(i==0 || i==11) fhSparseAnalysisReflections->Fill(point);  // avoid to fill the cases with STD PID
-			    }
-			    else  fhSparseAnalysisReflections->Fill(point);
-			  }
-       			}
+			  if(converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) {
+          /// These are real Lc,Xic->pKpi that are correctly reconstructed
+          if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
+          if(fNoStdPIDcases){
+            if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+          }
+          else  fhSparseAnalysis->Fill(point);
+        }
+        else if((converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22) && fFillSparseReflections){
+          /// these are real Lc,Xic->piKp reconstructed as Lc,Xic->pKpi - reflections!
+          if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
+          if(fNoStdPIDcases){
+            if(i==0 || i==11) fhSparseAnalysisReflections->Fill(point);  // avoid to fill the cases with STD PID
+          }
+          else  fhSparseAnalysisReflections->Fill(point);
+        }
+			}
 			if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
 			  if(fNoStdPIDcases){
 			    if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
@@ -2172,16 +2174,16 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  // this two filling fill the sparse with PID in cut object always
 	  if(fhSparseAnalysis && !fExplore_PIDstdCuts){
 	    if(fReadMC) {
- 	      if(converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22){
-		/// these are real Lc,Xic->piKp that are correctly reconstructed
-		if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
-		fhSparseAnalysis->Fill(point);
-	      }
-	      else if((converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) && fFillSparseReflections){
-		/// these are real Lc,Xic->pKpi reconstructed as Lc,Xic->piKp - reflections!
-		if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
-		fhSparseAnalysisReflections->Fill(point);
-	      }
+	      if(converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22){
+          /// these are real Lc,Xic->piKp that are correctly reconstructed
+          if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
+	        fhSparseAnalysis->Fill(point);
+        }
+        else if((converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) && fFillSparseReflections){
+          /// these are real Lc,Xic->pKpi reconstructed as Lc,Xic->piKp - reflections!
+          if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
+          fhSparseAnalysisReflections->Fill(point);
+        }
 	    }
 	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
 	  }
@@ -2191,22 +2193,22 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	        point[7] = i;
 		if(arrayPIDpikp[i]){
 		  if(fReadMC)  {
- 		    if(converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22){
-		      /// these are real Lc,Xic->piKp that are correctly reconstructed
-		      if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
- 		      if(fNoStdPIDcases){
-			if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
-		      }
-		      else  fhSparseAnalysis->Fill(point);
-		    }
-		    else if((converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) && fFillSparseReflections){
-		      /// these are real Lc,Xic->pKpi reconstructed as Lc,Xic->piKp - reflections!
-		      if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
+		    if(converted_isTrueLcXic==3 || converted_isTrueLcXic==7 || converted_isTrueLcXic==9 || converted_isTrueLcXic==12 || converted_isTrueLcXic==16 || converted_isTrueLcXic==18 || converted_isTrueLcXic==22){
+          /// these are real Lc,Xic->piKp that are correctly reconstructed
+          if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 		      if(fNoStdPIDcases){
-			if(i==0 || i==11) fhSparseAnalysisReflections->Fill(point);  // avoid to fill the cases with STD PID
-		      }
-		      else  fhSparseAnalysisReflections->Fill(point);
-		    }
+            if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+          }
+          else  fhSparseAnalysis->Fill(point);
+        }
+        else if((converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21) && fFillSparseReflections){
+          /// these are real Lc,Xic->pKpi reconstructed as Lc,Xic->piKp - reflections!
+          if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
+          if(fNoStdPIDcases){
+            if(i==0 || i==11) fhSparseAnalysisReflections->Fill(point);  // avoid to fill the cases with STD PID
+          }
+          else  fhSparseAnalysisReflections->Fill(point);
+        }
 		  }
 		  if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
 		    if(fNoStdPIDcases){

@@ -114,6 +114,8 @@
 #pragma link C++ class AliMESbaseTask+;
 #pragma link C++ class AliMEStender+;
 #pragma link C++ class AliMEStender::AliMESconfigTender+;
+#pragma link C++ class AliMEStenderV2+;
+#pragma link C++ class AliMEStenderV2::AliMESconfigTender+;
 #pragma link C++ class AliMESpidTask+;
 #pragma link C++ class AliMESchgTask+;
 #pragma link C++ class AliMESppColTask+;

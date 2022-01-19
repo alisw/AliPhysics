@@ -182,7 +182,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 
 	binCent = AxisVar("Cent",varcentbinHigh);
-	binSubsample = AxisFix("Subsamples",10,-0.5,9.5);
+	binSubsample = AxisFix("Subsamples",10,0.0,10.0);
 
 	if( IsAA ) binCent = AxisVar("Cent",varcentbinHeavy);
 	if( fOption.Contains("HighMult") ){ binCent = AxisVar("Cent",varcentbinHigh); }
@@ -392,8 +392,14 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	if( fOption.Contains("GRID") ){
 		TGrid::Connect("alien://");
 		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
-		fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
-		if( fOption.Contains("Add3DEff") )fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
+		if( fOption.Contains("pPb") ){
+			TGrid::Connect("alien://");
+			fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
+		}
+		if( fOption.Contains("Add3DEff") ){
+			TGrid::Connect("alien://");
+			fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
+		}
 	}
 
 
@@ -1237,10 +1243,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 
 	NTracksPerPtBin.clear();
 	NTracksPerPtBin.resize( binTPt.GetNbins() );
-
         for(int i=0;i<binTPt.GetNbins();i++){
                 NTracksPerPtBin[i] =0 ;
         }
+
+	NTracksPerPtBinLP.clear();
+	NTracksPerPtBinLP.resize( binTPt_forLP.GetNbins() );
+	for(int i=0;i<binTPt_forLP.GetNbins();i++){
+		NTracksPerPtBinLP[i] = 0;
+	}
+
 
 	AliVTrack *track1, *track2;
 	TLorentzVector temp1,temp2;
@@ -1315,6 +1327,10 @@ void AliAnalysisTaskRidge::FillTracks(){
 		if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){
 			NTracksPerPtBin[ binTPt.FindBin( track1->Pt() )-1 ] += effi;
 		}
+
+		if( binTPt_forLP.FindBin( track1->Pt() )-1 >= 0 ){
+			NTracksPerPtBinLP[ binTPt_forLP.FindBin( track1->Pt() )-1 ] += effi;
+		}
 //		if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){ NTracksPerPtBin[ binTPt.FindBin( track1->Pt() )-1 ]++; }
 		if( MaxPt < track1->Pt() ){
 			if(!fOption.Contains("SmallEtaLP") ){
@@ -1337,9 +1353,13 @@ void AliAnalysisTaskRidge::FillTracks(){
         for(int i=0;i<binTPt.GetNbins();i++){
 		if( NTracksPerPtBin[i] > 0.5 ){
 			FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0,SubSampling},NTracksPerPtBin[i]);
+		}
+	}
+	for(int i=0;i<binTPt_forLP.GetNbins();i++){
+		if( NTracksPerPtBinLP[i] > 0.5 ){
 			if( fOption.Contains("HighMult") ){
-				FillTHnSparse("hNtrigLT",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPt,SubSampling},NTracksPerPtBin[i] );
-				FillTHnSparse("hNtrigJet",{fCent,binTPt.GetBinCenter(i+1),1.0,fJetPt,SubSampling},NTracksPerPtBin[i] );
+				FillTHnSparse("hNtrigLT",{fCent,binTPt_forLP.GetBinCenter(i+1),1.0,MaxPt,SubSampling},NTracksPerPtBinLP[i] );
+				FillTHnSparse("hNtrigJet",{fCent,binTPt_forLP.GetBinCenter(i+1),1.0,fJetPt,SubSampling},NTracksPerPtBinLP[i] );
 			}
 		}
         }
@@ -1485,6 +1505,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 				FillTHnSparse("hRidge",{fCent, deltaphi, deltaeta,
 					track1-> Pt(),track2-> Pt(),SubSampling},
 					1.0/ ( eff1*eff2 ) );
+			}
+			if( NTracksPerPtBinLP[binTPt_forLP.FindBin( max(track1->Pt(),track2-> Pt()) )-1] > 0 ){
 				if( fOption.Contains("HighMult") ){
                                 	FillTHnSparse("hRidgeLT",{fCent, deltaphi, deltaeta,
 						track1-> Pt(),track2-> Pt(),MaxPt,SubSampling},

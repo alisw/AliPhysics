@@ -51,14 +51,17 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   bool    GetfQAV0(){return fQAV0;}
   void    SetfQAV0(bool x){fQAV0 = x;}
 
+  bool    GetfFillWNUA(){return fFillWeightNUA;}
+  void    SetfFillWNUA(bool x){fFillWeightNUA = x;}
+
   int       GetDebug(){return fDebug;}
   void     SetDebug(int x){fDebug = x;}
   
   double  GerHarmonic(){return fHarmonic;}
   void      SetHarmonic(double x)  {fHarmonic = x;}
 
-  int       GetTrigger(){return fTrigger;}
-  void    SetTrigger(int x){fTrigger = x;}
+  TString GetTrigger(){return fTrigger;}
+  void      SetTrigger(TString x){fTrigger = x;}
 
   int       GetFilterBit(){return fFltbit;}
   void    SetFilterBit(int x){fFltbit = x;}
@@ -102,14 +105,14 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
  private:
 
   static const int NCENTBINS = 10;
-  static const int NRUNNUM=68;
+  static const int NRUNNUM=150;
 
   int                     GetRunNumBin(int runNum);
   // pile-up        
   bool                  RejectEvtTFFit(AliAODEvent* fAOD);
   bool                  RemovalForRun1 (AliAODEvent* fAOD, AliAnalysisUtils* fUtils);
   bool                  AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack *track, AliAODVertex* fVtx);
-  void                  TPCPlane(AliAODEvent* fAOD);
+  void                  TPCPlane(AliAODEvent* fAOD, AliAODVertex* fVtx);
   void                  V0Plane(AliAODEvent* fAOD);
   double              GetEventPlane(double qx, double qy);
   double              GetNUACor(int charge, double phi, double eta, double vz);
@@ -124,11 +127,12 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   bool                  fFillVZEROQMean;
   bool                  fVZEROCalib;
   bool                  fQAV0;
+  bool                  fFillWeightNUA;
 
   // Cuts and options
   int                     fDebug; // debug level controls amount of output statements
   double              fHarmonic;
-  int                     fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+  TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
   int                     fFltbit; // AOD filter bit selection
   int                     fNclsCut; // ncls cut for all tracks 
   float                  fChi2Hg; // upper limmit for chi2
@@ -218,6 +222,7 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   TProfile2D*     pTPCShiftFillCoeffSin[3];
   TH2D*             hTPCShiftReadCoeffCos[3];
   TH2D*             hTPCShiftReadCoeffSin[3];
+  TH3F*             hFillNUA[NRUNNUM][2];
   AliAnalysisTaskEPCalib(const AliAnalysisTaskEPCalib&);
   AliAnalysisTaskEPCalib& operator=(const AliAnalysisTaskEPCalib&);
 

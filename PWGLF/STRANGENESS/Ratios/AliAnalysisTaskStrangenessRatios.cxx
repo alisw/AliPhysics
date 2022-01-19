@@ -388,7 +388,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
       fRecLambda->pt = v0->Pt();
       fRecLambda->eta = v0->Eta();
-      fRecLambda->mass = v0->MassLambda();
+      fRecLambda->mass = fRecLambda->matter ? v0->MassLambda() : v0->MassAntiLambda();
       fRecLambda->ct = v0->Ct(kLambdaPdg, pv);
       fRecLambda->radius = v0->RadiusV0();
       fRecLambda->dcaV0PV = v0->DcaV0ToPrimVertex();

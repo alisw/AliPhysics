@@ -29,7 +29,8 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliAnalysisTaskFlowPPTask) // classimp: necessary for root
 
 AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(), 
-    fAOD(0),
+    fGFWSelection(NULL),
+	fAOD(0),
     fitssatrackcuts(0),
     fFilterbit(96),
     fFilterbitDefault(96),
@@ -55,7 +56,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fNtrksName("Mult"),
     //....
     fPeriod("LHC15o"),
-
+	fUseCorrectedNTracks(false),
     fListOfObjects(0),
 
     fMultTOFLowCut(0),
@@ -100,6 +101,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 
     hEventCount(0),
     hMult(0),
+	hTracksCorrection2d(0),
+    hnCorrectedTracks(0),
     fVtxAfterCuts(0),
     fCentralityDis(0),
     fV0CentralityDis(0),
@@ -142,7 +145,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0),
+    fGFWSelection(NULL),
+	fAOD(0),
     fitssatrackcuts(0),
 	fFilterbit(96),
 	fEtaCut(0.8),
@@ -168,7 +172,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
         fNtrksName("Mult"),
 	//....
 	fPeriod("LHC15o"),
-
+	fUseCorrectedNTracks(false),
 	fListOfObjects(0),
 
 	fMultTOFLowCut(0),
@@ -213,6 +217,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 
 	hEventCount(0),
 	hMult(0),
+	hTracksCorrection2d(0),
+    hnCorrectedTracks(0),
 	fVtxAfterCuts(0),
 	fCentralityDis(0),
 	fV0CentralityDis(0),
@@ -273,6 +279,7 @@ AliAnalysisTaskFlowPPTask::~AliAnalysisTaskFlowPPTask()
     // destructor
     if (fListOfObjects)
 		delete fListOfObjects;
+	if (fGFWSelection) delete fGFWSelection;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
@@ -292,18 +299,25 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
                                         // if requested (dont worry about this now)
     
 	
-    
+    //use the standard AliEventCuts,
+	//So I annotated the code of fEventCuts Settings
     //..Settings for AliEventCuts:
 	//..This adds QA plots to the output
 	fEventCuts.AddQAplotsToList(fListOfObjects);
 	//..kINT7 is set in the class as default, if I want to have kHigHMultV0 in pp, I have to switch to manual mode
-    fEventCuts.SetManualMode();
-	fEventCuts.fRequireTrackVertex = false; // !!
-	fEventCuts.fMinVtz = -10.f;
-	fEventCuts.fMaxVtz = 10.f;
-	fEventCuts.fMaxResolutionSPDvertex = 0.25f;
+    //fEventCuts.SetManualMode();
+	//fEventCuts.fRequireTrackVertex = false; // !!
+	//fEventCuts.fMinVtz = -10.f;
+	//fEventCuts.fMaxVtz = 10.f;
+	//fEventCuts.fMaxResolutionSPDvertex = 0.25f;
 	// Distance between track and SPD vertex < 0.2 cm
-	fEventCuts.fPileUpCutMV = true;
+	//fEventCuts.fPileUpCutMV = true;
+
+
+	//Create an AliGFWCuts Selection
+	fGFWSelection = new AliGFWCuts();
+    fGFWSelection->PrintSetup();
+
 
     if (fNtrksName == "Mult") {//Bin Numbers are different between multiplicity and centrality 
 	    nn = 3000;
@@ -318,12 +332,18 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
             }
     }
 
-    hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
+    hEventCount = new TH1D("hEventCount", "; centrality;;", 6, 0, 6);
 	fListOfObjects->Add(hEventCount);
 
 	hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
 	hMult->Sumw2();
 	fListOfObjects->Add(hMult);
+
+	hTracksCorrection2d = new TH2D("hTracksCorrection2d", "Correlation table for number of tracks table", nn, xbins, nn, xbins);
+  	fListOfObjects->Add(hTracksCorrection2d);
+
+  	hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
+  	fListOfObjects->Add(hnCorrectedTracks);
 
 	fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
 	fVtxAfterCuts->Sumw2();
@@ -373,7 +393,12 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 {
-    // user exec
+	
+	//hEventCount->Fill("after fEventCuts", 1.);
+	hEventCount->GetXaxis()->SetBinLabel(1,"Loop Number");
+    hEventCount->Fill(0.5);
+
+	// user exec
     // this function is called once for each event
     // the manager will take care of reading the events from file, and with the static function InputEvent() you 
     // have access to the current event. 
@@ -392,6 +417,8 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	    fAliTrigger = AliVEvent::kHighMultV0;
         }
 	if(isTrigselected == false) return;
+	hEventCount->GetXaxis()->SetBinLabel(2,"After Trigger");
+	hEventCount->Fill(1.5);
 
 	//..check if I have AOD
 	fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    // get an event (called fAOD) from the input file
@@ -402,27 +429,54 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 		Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
 		return;
 	}
-
+	hEventCount->GetXaxis()->SetBinLabel(3,"AOD OK");
+	hEventCount->Fill(2.5);
 	
-	//fPeriod is set in AddTask
-	if (fPeriod.EqualTo("LHC15o")) {
-		if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
-			PostData(1,fListOfObjects);
-			return;
-		}
-	} else {
-		if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
-
-		//Get MultSelection Object
-		AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-		if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
-		//Use MultSelection cut
-		if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
 	
-		Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
-		if(nTracksPrim < 0.5) { return; }
+	
+	fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+	//Standard AliEventCuts for events
+	if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
+		PostData(1,fListOfObjects);
+		return;
 	}
-	hEventCount->Fill("after fEventCuts", 1.);
+
+	//fPeriod is set in AddTask
+	//if (fPeriod.EqualTo("LHC15o")) {
+	//	if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
+	//		PostData(1,fListOfObjects);
+	//		return;
+	//	}
+	//} else {
+	//	fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+		//Standard AliEventCuts for events
+	//	if(!fEventCuts.AcceptEvent(fAOD)) { // automatic event selection for Run2
+	//		PostData(1,fListOfObjects);
+	//		return;
+	//	}
+		//Additional Cuts
+		//if(fAOD->IsPileupFromSPDInMultBins() ) { return; }
+		//Get MultSelection Object
+		//AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+		//if (!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return; }
+		//Use MultSelection cut
+		//if(!multSelection->GetThisEventIsNotPileup() || !multSelection->GetThisEventIsNotPileupInMultBins() || !multSelection->GetThisEventHasNoInconsistentVertices() || !multSelection->GetThisEventPassesTrackletVsCluster()) { return; }
+		//Int_t nTracksPrim = fAOD->GetPrimaryVertex()->GetNContributors();
+		//if(nTracksPrim < 0.5) { return; }
+	//}
+	hEventCount->GetXaxis()->SetBinLabel(4,"after fEventCuts");
+	hEventCount->Fill(3.5);
+
+	fGFWSelection->ResetCuts();
+	fGFWSelection->SetupCuts(fCurrSystFlag);
+	if (!fGFWSelection->AcceptVertex(fAOD)){
+		PostData(1,fListOfObjects);
+		return;
+	}
+
+
+	hEventCount->GetXaxis()->SetBinLabel(5,"after fGFWSelection");
+	hEventCount->Fill(4.5);
 
 	//..filling Vz distribution
 	AliVVertex *vtx = fAOD->GetPrimaryVertex();
@@ -432,8 +486,11 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	//calculate Ntraks for every event
 	//When(Mult)fNtrksName is multiplicity, in opposite is centrality
 	NTracksCalculation(fInputEvent);
+	//in this case, fVtxCut = fVtxCutDefault = 10.0
 	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
 	fVtxAfterCuts->Fill(fVtxZ);
+
+	
 
 	//Record Run Number
 	MyEventNumber->Fill(fCurrentRunNumber);
@@ -468,7 +525,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 		//if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
         //}
 
-
+	
 
 	//..all charged particles
 	//AnalyzeAOD calculate Q vector and Profile。
@@ -478,6 +535,9 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
 		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, true);
 	} else AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+
+	hEventCount->GetXaxis()->SetBinLabel(6,"after AnalyzeAOD");
+	hEventCount->Fill(5.5);
 
     PostData(1, fListOfObjects);                          // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
@@ -489,12 +549,16 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 	const int nAODTracks = aod->GetNumberOfTracks();
 	NtrksCounter = 0;
-
+	NTracksCorrected = 0;
+  	NTracksUncorrected = 0;
 	//..for DCA
 	double pos[3], vz, vx, vy;
 	vz = aod->GetPrimaryVertex()->GetZ();
 	vx = aod->GetPrimaryVertex()->GetX();
 	vy = aod->GetPrimaryVertex()->GetY();
+	double vtxp[3] = {vx, vy, vz};
+	float fVtxZ = vz;
+  	double runNumber = fInputEvent->GetRunNumber();
 
 	//..LOOP OVER TRACKS........
 	//........................................
@@ -509,36 +573,51 @@ void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 
 		double pos[3];
 		aodTrk->GetXYZ(pos);
-		//(DCA)
-		double dcaZ = 100;
-		double dcaX = 100;
-		double dcaY = 100;
-		double dcaXY = 100;
-		dcaZ = pos[2] - vz;
-		dcaX = pos[0] - vx;
-		dcaY = pos[1] - vy;
-		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
+		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
+		
+		// //(DCA)
+		// double dcaZ = 100;
+		// double dcaX = 100;
+		// double dcaY = 100;
+		// double dcaXY = 100;
+		// dcaZ = pos[2] - vz;
+		// dcaX = pos[0] - vx;
+		// dcaY = pos[1] - vy;
+		// dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-		int nClustersITS = 0;
-		nClustersITS = aodTrk->GetITSNcls();
-		float chi2PerClusterITS = -1;
-		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
+		// int nClustersITS = 0;
+		// nClustersITS = aodTrk->GetITSNcls();
+		// float chi2PerClusterITS = -1;
+		// if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
-		if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
-		//Global track Filter
-		if (fFilterbitDefault == 96) {
-			//DCAZ<2cm
-			if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
-		}
-		//pt cut  0.2<pT<3.0
-		if(aodTrk->Pt() < fMinPt) continue;
-		if(aodTrk->Pt() > fMaxPt) continue;
-		//eta cut |η|<0.8
-		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+		// if (!(aodTrk->TestFilterBit(fFilterbitDefault))) { continue; }
+		// //Global track Filter
+		// if (fFilterbitDefault == 96) {
+		// 	//DCAZ<2cm
+		// 	if (TMath::Abs(dcaZ) > fDCAzDefault) continue;
+		// }
+		// //pt cut  0.2<pT<3.0
+		// if(aodTrk->Pt() < fMinPt) continue;
+		// if(aodTrk->Pt() > fMaxPt) continue;
+		// //eta cut |η|<0.8
+		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
+		double weightPt = 1;
+		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
+
+		NTracksUncorrected += 1;
+    	NTracksCorrected += weightPt;
 		//Count track
-		NtrksCounter += 1;
+		//NtrksCounter += 1;
 	} // end loop of all track
+
+	if (!fUseCorrectedNTracks) {
+    	NtrksCounter = NTracksUncorrected;
+  	} else {
+    	NtrksCounter = NTracksCorrected; 
+  	}
+	hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
+  	hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
 }
 
 //====================================================================================================
@@ -566,6 +645,7 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 	vz = aod->GetPrimaryVertex()->GetZ();
 	vx = aod->GetPrimaryVertex()->GetX();
 	vy = aod->GetPrimaryVertex()->GetY();
+	double vtxp[3] = {vx, vy, vz};
 
 	double Qcos[20][20] = {0};
 	double Qsin[20][20] = {0};
@@ -606,40 +686,45 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		}
 
 		aodTrk->GetXYZ(pos);
-		double dcaZ = 100;
-		double dcaX = 100;
-		double dcaY = 100;
-		double dcaXY = 100;
-		dcaZ = pos[2] - vz;
-		dcaX = pos[0] - vx;
-		dcaY = pos[1] - vy;
-		dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
+		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
-                // nClustersITS cut
-		int nClustersITS = 0;
-		nClustersITS = aodTrk->GetITSNcls();
-		float chi2PerClusterITS = -1;
-		if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
-                // nClustersTPC cut
-                int nClustersTPC = 0;
-		nClustersTPC = aodTrk->GetTPCNcls();
-		if (nClustersTPC < fTPCclusters) { continue; }
-		float chi2PerClusterTPC = -1;
-		if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
-		if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
+		// //manual Tracks cut
+		// double dcaZ = 100;
+		// double dcaX = 100;
+		// double dcaY = 100;
+		// double dcaXY = 100;
+		// dcaZ = pos[2] - vz;
+		// dcaX = pos[0] - vx;
+		// dcaY = pos[1] - vy;
+		// dcaXY = TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
 
-		if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
-		if (fFilterbit == 96) {
-			if (TMath::Abs(dcaZ) > fDCAz) continue;
-		}
-                if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
-                if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
+        //         // nClustersITS cut
+		// int nClustersITS = 0;
+		// nClustersITS = aodTrk->GetITSNcls();
+		// float chi2PerClusterITS = -1;
+		// if(nClustersITS != 0) chi2PerClusterITS = aodTrk->GetITSchi2()/float(nClustersITS);
 
-		if(aodTrk->Pt() < fMinPt) continue;
-		if(aodTrk->Pt() > fMaxPt) continue;
+        //         // nClustersTPC cut
+        //         int nClustersTPC = 0;
+		// nClustersTPC = aodTrk->GetTPCNcls();
+		// if (nClustersTPC < fTPCclusters) { continue; }
+		// float chi2PerClusterTPC = -1;
+		// if (nClustersTPC != 0) chi2PerClusterTPC = aodTrk->GetTPCchi2()/float(nClustersTPC);
+		// if (chi2PerClusterTPC > fChi2PerTPCcluster) { continue; }
 
-		if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+		// if (!(aodTrk->TestFilterBit(fFilterbit))) { continue; }
+		// if (fFilterbit == 96) {
+		// 	if (TMath::Abs(dcaZ) > fDCAz) continue;
+		// }
+        //         if(fUseDCAzCut && dcaZ > fDCAz) { continue; }
+        //         if(fUseDCAxyCut && dcaXY > (0.0105+0.0350/pow(aodTrk->Pt(),1.1))*fDCAxy) { continue; }
+
+		// if(aodTrk->Pt() < fMinPt) continue;
+		// if(aodTrk->Pt() > fMaxPt) continue;
+
+		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
+
 
 		NtrksAfter += 1;
 
@@ -1468,6 +1553,22 @@ void AliAnalysisTaskFlowPPTask::InitProfile(PhysicsProfilePPTask& multProfile, T
 	multProfile.fChsc633_Gap10A->Sumw2();
 	fListOfObjects->Add(multProfile.fChsc633_Gap10A);
 
+}
+
+Bool_t AliAnalysisTaskFlowPPTask::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {
+  // Pt cut
+  if(mtr->Pt() < fMinPt) return kFALSE;
+  if(mtr->Pt() > fMaxPt) return kFALSE;
+
+  // DCA cut
+  if(ltrackXYZ && vtxp) {
+    mtr->GetXYZ(ltrackXYZ);
+    ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
+    ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
+    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+  } else return kFALSE; //DCA cut is a must for now
+
+  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
 }
 
 void AliAnalysisTaskFlowPPTask::CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks) {

@@ -669,11 +669,8 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     }
 
    }else{ //Deuteron TOF selection
-    if(
-     COMBd<fcutCOMBkd 
-//     && COMBd<COMBp && COMBd<COMBpi && COMBd<COMBe && COMBd<COMBk
-//     && TOFd<TOFp && TOFd<TOFpi && TOFd<TOFe && TOFd<TOFk
-    ) passTOF=true;
+    //if( COMBd < fcutCOMBkd ) passTOF=true;//COMBd<fcutCOMBkd //comb cut is not what we want to do for deuterons! 
+    if( TOFd < 4 && TPCd < 4 ) passTOF=true; 
    }
 
   }//TOFyes
@@ -692,7 +689,7 @@ bool AliFemtoDreamTrackCuts::PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool 
     if(p>0.15&&p<0.3&&TPCk<3) passTPC=true;
    }
   
-  }else{ // Deuteron TOF selection
+  }else{ // Deuteron TPC selection
    if(p<1.4&&TPCd<fcutTPCkd) passTPC = true;//momentum theshold && own TPC deuteron kaon selection
   }
  }else{

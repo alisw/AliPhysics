@@ -2,6 +2,7 @@
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
 #include "AliGFWCuts.h"
+#include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -219,6 +220,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual int    GetSystFlag() { return fCurrSystFlag; }
 		virtual void   SetSpringMode(bool flag = true) { fSpringMode = flag; }
 		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
+		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
@@ -272,6 +274,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		AliEventCuts	fEventCuts;					// Event cuts
 		AliGFWCuts*     fGFWSelection;                                  //!
+		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
@@ -284,15 +287,16 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t			fSample;				// number of sample
 		Int_t			fTrigger;				// flag for trigger
 		Int_t			fAliTrigger;				// name for trigger
-		// Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
+		// Bool_t		fLS;					// charge, 1:all, 2:pp,  3: mm
 		Bool_t			fNUE;					// flag for NUE correction
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
-		bool        fIsMC;        // The observable for MonteCarlo truth
-		TString                 fNtrksName;                                 // Cent or Mult
+		bool                    fIsMC;                                  // The observable for MonteCarlo truth
+		TString                 fNtrksName;                             // Cent or Mult
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                              // Systematics flag
 		Bool_t      fSpringMode;                                            // The mode with spring cuts.
 		Bool_t      fLowMultiplicityMode;                                   // The mode to consider low-multiplicity region 
+		Bool_t      fAddTPCPileupCuts;                                      // Additional TPC pileup cuts
 		Bool_t      fUseCorrectedNTracks;                                   // Use corrected Ntracks in the filling of xbins;
 
 		// Output objects
@@ -467,7 +471,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 8);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 9);    //Analysis task
 };
 
 #endif
