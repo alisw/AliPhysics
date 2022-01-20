@@ -268,6 +268,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    if (debug>=0) 
 		 task->SetDebugLevel(debug);
 
+   task->SetUseNewCentralityEstimation(kTRUE);
    task->SetEventSelectionMask(kPhysSel);
    task->SetEventClass(eventClass);
 	 
