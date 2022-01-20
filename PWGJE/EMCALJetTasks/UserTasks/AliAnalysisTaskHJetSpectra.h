@@ -27,6 +27,9 @@ class AliParticleContainer;
 class AliClusterContainer;
 class AliMultSelection;
 
+#include <vector>
+using std::vector;
+
 #include "AliAnalysisTaskEmcalJet.h"
 
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
@@ -240,7 +243,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 27); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 28); // Charged jet analysis for pA
 
 };
 #endif
