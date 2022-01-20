@@ -127,8 +127,10 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(0.017);
-  config->SetDeltaPhiMax(0.017);
+  config->SetDeltaEtaMax(0.);
+  config->SetDeltaPhiMax(0.);
+//  config->SetDeltaEtaMax(0.017);
+//  config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
   config->SetMixingDepth(MixingDepth);
   config->SetUseEventMixing(true);
