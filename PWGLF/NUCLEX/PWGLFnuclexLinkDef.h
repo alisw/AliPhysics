@@ -85,6 +85,7 @@
 #pragma link C++ class AliAnalysisTaskNucleiv2PbPb18+;
 #pragma link C++ class AliAnalysisTaskDeuteronsRT+;
 #pragma link C++ class AliAnalysisTaskDeuteronCoalescence+;
+#pragma link C++ class AliAnalysisTaskPythiaCoalescence+;
 
 
 /// * NucleiKine
