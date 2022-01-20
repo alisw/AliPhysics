@@ -196,10 +196,13 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
-  task->CheckProtonSPDHit();
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
+  }
+  
+  if (suffix == "1") {
+    task->CheckProtonSPDHit();
   }
 
   if (trigger == "kINT7") {
@@ -227,63 +230,6 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetBuddyEtaMCTRUTH(0.8);
     task->SetBuddyOriginMCTRUTH(0);
     task->SetDmesonOriginMCTRUTH(0);
-
-    if (suffix == "1") {
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(1);
-    }
-    if (suffix == "2") {
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(2);
-    }
-    if (suffix == "3") {
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(3);
-    }
-    if (suffix == "4") {
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(4);
-    }
-    if (suffix == "5") {
-      task->SetBuddyOriginMCTRUTH(4);
-      task->SetDmesonOriginMCTRUTH(0);
-    }
-    if (suffix == "6") {
-      task->SetBuddyOriginMCTRUTH(4);
-      task->SetDmesonOriginMCTRUTH(1);
-    }
-    if (suffix == "7") {
-      task->SetBuddyOriginMCTRUTH(4);
-      task->SetDmesonOriginMCTRUTH(2);
-    }
-    if (suffix == "8") {
-      task->SetBuddyOriginMCTRUTH(4);
-      task->SetDmesonOriginMCTRUTH(3);
-    }
-    if (suffix == "9") {
-      task->SetBuddyOriginMCTRUTH(1);
-      task->SetDmesonOriginMCTRUTH(3);
-    }
-    if (suffix == "10") {
-      task->SetBuddyOriginMCTRUTH(1);
-      task->SetDmesonOriginMCTRUTH(4);
-    }
-    if (suffix == "11") {
-      task->SetBuddyOriginMCTRUTH(2);
-      task->SetDmesonOriginMCTRUTH(3);
-    }
-    if (suffix == "12") {
-      task->SetBuddyOriginMCTRUTH(2);
-      task->SetDmesonOriginMCTRUTH(4);
-    }
-    if (suffix == "13") {
-      task->SetBuddyOriginMCTRUTH(3);
-      task->SetDmesonOriginMCTRUTH(3);
-    }
-    if (suffix == "14") {
-      task->SetBuddyOriginMCTRUTH(3);
-      task->SetDmesonOriginMCTRUTH(4);
-    }
   }
 
   mgr->AddTask(task);
