@@ -2270,6 +2270,8 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 1919){  // pp 13 TeV variations: min energy
     cuts.AddCutCalo("00010113","411790109fe20230000","0s631031000000d0"); // INT7 energy 0.6 GeV
     cuts.AddCutCalo("00010113","411790109fe40230000","0s631031000000d0"); // INT7 energy 0.8 GeV
+    cuts.AddCutCalo("00010113","411790109fe50230000","0s631031000000d0"); // INT7 energy 0.9 GeV
+    cuts.AddCutCalo("00010113","411790109feb0230000","0s631031000000d0"); // INT7 energy 1.0 GeV
   } else if (trainConfig == 1920){  // pp 13 TeV variations: M02
     cuts.AddCutCalo("00010113","411790109fe30030000","0s631031000000d0"); // INT7 no lower M02 cut
     cuts.AddCutCalo("00010113","411790109fe30240000","0s631031000000d0"); // INT7 M02 0.4
@@ -3894,6 +3896,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411792109fe30230000","0s631031000000d0"); // INT7 NL 21 (old FT)
     cuts.AddCutCalo("00010113","411792109fe3n230000","0s631031000000d0"); // INT7 NL 21 (old FT)
 
+  } else if (trainConfig == 2594){  // Standard cut, No NCell cut, with non-Lin for nomB which can also be applied to low-B
+    cuts.AddCutCalo("00010113","411799309fe30230000","0s631031000000d0"); // INT7 NL 01, (new FT)
 
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
