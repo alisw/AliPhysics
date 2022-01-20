@@ -698,13 +698,12 @@ if(fjets>0){
     if (aodtrack->IsPrimaryCandidate()) {
       tracksPrim++;
     }
-/*
+
     if ((fFilterBit && !aodtrack->TestFilterBit(fFilterBit)) ||
         (fFilterMask && !aodtrack->TestFilterBit(fFilterMask))) {
       continue;
     }
-*/
-if(!aodtrack->TestFilterBit(fFilterMask)) continue;  
+
   // Check the sanity of the tracks - reject zero momentum tracks
     if (aodtrack->P() == 0.0) {
       continue;
