@@ -1354,6 +1354,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 		if( NTracksPerPtBin[i] > 0.5 ){
 			FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0,SubSampling},NTracksPerPtBin[i]);
 		}
+	}
+	for(int i=0;i<binTPt_forLP.GetNbins();i++){
 		if( NTracksPerPtBinLP[i] > 0.5 ){
 			if( fOption.Contains("HighMult") ){
 				FillTHnSparse("hNtrigLT",{fCent,binTPt_forLP.GetBinCenter(i+1),1.0,MaxPt,SubSampling},NTracksPerPtBinLP[i] );

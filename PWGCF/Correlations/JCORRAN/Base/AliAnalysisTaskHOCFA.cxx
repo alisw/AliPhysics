@@ -137,9 +137,9 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     if (fDebugLevel > 10) printf("iEffCorr: %.6f iPhiModuleCorr: %.6f \n", iEffCorr, iPhiModuleCorr);
     iWeights[iTrack] = (1.0/iEffCorr)/iPhiModuleCorr;
 
-    fHistoPt[fCentralityBin]->Fill((1./iEffCorr)*aTrack->Pt());
+    fHistoPt[fCentralityBin]->Fill(aTrack->Pt(), (1./iEffCorr));
     fHistoEta[fCentralityBin]->Fill(iEta[iTrack]);
-    fHistoPhi[fCentralityBin]->Fill((1./iPhiModuleCorr)*iPhi[iTrack]);
+    fHistoPhi[fCentralityBin]->Fill(iPhi[iTrack], (1./iPhiModuleCorr));
     fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
   }
 
