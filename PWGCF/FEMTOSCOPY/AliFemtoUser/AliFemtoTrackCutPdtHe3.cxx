@@ -21,6 +21,7 @@ AliFemtoESDTrackCut()
 
     fdEdxcut = 1;
     fOtherNsigmacut = 0;
+    fMinTPCFoundFraction = 0;
     
 }
 
@@ -41,6 +42,7 @@ AliFemtoESDTrackCut(aCut)
 
     fdEdxcut = aCut.fdEdxcut;
     fOtherNsigmacut = aCut.fOtherNsigmacut;
+    fMinTPCFoundFraction = aCut.fMinTPCFoundFraction;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -70,7 +72,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fdEdxcut = aCut.fdEdxcut;
     fOtherNsigmacut = aCut.fOtherNsigmacut;
-    
+    fMinTPCFoundFraction = aCut.fMinTPCFoundFraction;
     return *this;
 }
 
@@ -114,6 +116,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     if (track->TPCchi2perNDF() > fMaxTPCchiNdof) {
         return false;
     }
+
 
     // ITS cluster requirenments
     for (Int_t i = 0; i < 3; i++) {
@@ -518,3 +521,7 @@ void AliFemtoTrackCutPdtHe3::SetRejectionNsigma(float Nsigma){
 void AliFemtoTrackCutPdtHe3::SetOtherNsigmacutLabel(int OtherNsigmaLabel){
     fOtherNsigmacut = OtherNsigmaLabel;
 }
+void AliFemtoTrackCutPdtHe3::SetMinTPCFoundFraction(float MinTPCFoundFraction){
+    fMinTPCFoundFraction = MinTPCFoundFraction;
+}
+
