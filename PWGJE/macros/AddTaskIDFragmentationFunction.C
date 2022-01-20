@@ -113,7 +113,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   const char* trackType = "AODMC2b",
   Float_t radius = -0.4,
   Int_t PtTrackMin = 150.0,
-  Int_t eventClass=0,
+  Int_t eventClass=-1,
   Int_t FFMaxTrackPt = -1,
   Int_t FFMinNTracks = 0,
   UInt_t filterMaskTracks = 0,
@@ -268,6 +268,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    if (debug>=0) 
 		 task->SetDebugLevel(debug);
 
+   task->SetUseNewCentralityEstimation(kTRUE);
    task->SetEventSelectionMask(kPhysSel);
    task->SetEventClass(eventClass);
 	 
