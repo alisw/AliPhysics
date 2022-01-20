@@ -166,7 +166,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
-  config->SetPhiEtaBinnign(isMC);
+  config->SetPhiEtaBinnign(true);
 
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
@@ -196,6 +196,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
+  task->CheckProtonSPDHit();
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
