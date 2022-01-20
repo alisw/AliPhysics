@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.11.2021
+ * Last Modified Date: 20.01.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -2965,20 +2965,20 @@ void AliAnalysisTaskAR::FillFinalResultCorrelators() {
   // fill final result profiles
 
   Double_t corr = 0.0;
-  Double_t weight = 0.0;
+  Double_t weight = 1.0;
 
   for (Int_t kin = 0; kin < kKinematic; kin++) {
     for (std::size_t Bin = 0; Bin < fTrackBins[kin].size() - 1; Bin++) {
       CalculateQvectors(fKinematics[kin].at(Bin),
                         fKinematicWeights[kin].at(Bin));
       corr = 0.;
-      weight = 0.;
+      weight = 1.;
 
       // loop over all correlators
       for (std::size_t i = 0; i < fCorrelators.size(); i++) {
         // protect against insufficient amount of statistics i.e. number of
         // particles is lower then the order of correlator due to track cuts
-        if (fKinematics[kin].at(Bin).size() < fCorrelators.at(i).size()) {
+        if (fKinematics[kin].at(Bin).size() <= fCorrelators.at(i).size()) {
           std::cout
               << "Not enough tracks in this event to compute the correlator"
               << std::endl
