@@ -2,7 +2,6 @@
 // Utilities class for Jet-Hadron correlation analysis
 //
 
-//#include "AliAnalysisTaskEmcalJetHUtils.h"
 #include "AliAnalysisTaskEmcalJetHUtils.h"
 
 // Require to use AliLog streams with some types
@@ -285,7 +284,8 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     std::map<std::string, MFP> eventCutsPeriods = { std::make_pair("LHC11h", &AliEventCuts::SetupRun1PbPb),
                             std::make_pair("LHC15o", &AliEventCuts::SetupLHC15o),
                             std::make_pair("LHC18qr", &AliEventCuts::SetupPbPb2018),
-                            std::make_pair("LHC18q", &AliEventCuts::SetupPbPb2018) };
+                            std::make_pair("LHC18q", &AliEventCuts::SetupPbPb2018),
+                            std::make_pair("LHC18r", &AliEventCuts::SetupPbPb2018) };
     std::string manualCutsPeriod = "";
     yamlConfig.GetProperty({ baseName, "cutsPeriod" }, manualCutsPeriod, true);
     auto eventCutsPeriod = eventCutsPeriods.find(manualCutsPeriod);
