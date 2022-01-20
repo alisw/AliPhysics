@@ -104,6 +104,7 @@ set(SRCS
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronCoalescence.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskPythiaCoalescence.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
