@@ -1969,7 +1969,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190s101cc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 TM var 1
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190s401cc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 TM var 4
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190s501cc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 TM var 5
-  } else if(trainConfig == 6000)  { //PHOS INT7 Calo cut var. reconstructed conversion
+  } else if(trainConfig == 6108)  { //PHOS INT7 Calo cut var. reconstructed conversion
     //                            00010113   0dm00009f9730000dge0404000   24466190sa01cc00000   32c51070a   0103103m00000000   0453503000000000
     //                                                                                    |
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00100","32c51070a","0103103m00000000","0453503000000000"); // INT7 0: 0.02
