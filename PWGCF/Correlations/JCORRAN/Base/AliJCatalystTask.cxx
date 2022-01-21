@@ -679,6 +679,12 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 			if(!((double)MTPC > (-65.0 + 1.54*Mglobal) && (double)MTPC < (90.0 + 2.30*Mglobal))) {
 				return kFALSE;
 			}
+			if (fCentDetName == "V0M") {
+				float cent_V0M = ReadCentrality(event,"V0M");
+				if ((cent_V0M > 20.) && (cent_V0M < 30.) && (MTPC > 1500)) {return kFALSE;}
+				if ((cent_V0M > 30.) && (cent_V0M < 40.) && (MTPC > 1050)) {return kFALSE;}
+				if ((cent_V0M > 40.) && (cent_V0M < 50.) && (MTPC > 700)) {return kFALSE;}
+			}
 			if (bSaveAllQA && bSaveHMOhist) {fHMOsHistogram[thisCent][1]->Fill(Mglobal, MTPC);}
 		}
 		else {	// TBA: QA histo if chosen, possibility to choose between the two versions for LHC10h
