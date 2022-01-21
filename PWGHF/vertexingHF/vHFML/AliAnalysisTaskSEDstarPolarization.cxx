@@ -57,7 +57,7 @@ AliAnalysisTaskSEDstarPolarization::~AliAnalysisTaskSEDstarPolarization()
     delete fOutput;
     delete fListCuts;
     delete fRDCuts;
-    if(fApplyML && fMLResponse)
+    if (fApplyML && fMLResponse)
         delete fMLResponse;
 }
 
@@ -66,7 +66,7 @@ void AliAnalysisTaskSEDstarPolarization::LocalInit()
 {
     // Initialization
 
-    if(fDecChannel == kDstartoD0pi) {
+    if (fDecChannel == kDstartoD0pi) {
         AliRDHFCutsDStartoKpipi *copycut = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi *>(fRDCuts)));
         PostData(2, copycut);
     }
@@ -111,12 +111,12 @@ void AliAnalysisTaskSEDstarPolarization::UserCreateOutputObjects()
     fOutput->Add(fHistNEvents);
 
     // Sparses for efficiencies (only gen)
-    if(fReadMC)
+    if (fReadMC)
         CreateEffSparses();
 
     //Loading of ML models
-    if(fApplyML) {
-        if(!fDependOnMLSelector)
+    if (fApplyML) {
+        if (!fDependOnMLSelector)
         {
             switch (fDecChannel)
             {
@@ -240,7 +240,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
     double centrality = -999.;
     AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-    if(multSelection)
+    if (multSelection)
         centrality = multSelection->GetMultiplicityPercentile("V0M");
 
     // load MC particles
@@ -279,10 +279,10 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     AliAnalysisTaskSECharmHadronMLSelector *taskMLSelect = nullptr;
     std::vector<int> chHadIdx{};
     std::vector<std::vector<double> > scoresFromMLSelector{}, scoresFromMLSelectorSecond{};
-    if(fDependOnMLSelector) 
+    if (fDependOnMLSelector) 
     {
         taskMLSelect = dynamic_cast<AliAnalysisTaskSECharmHadronMLSelector*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fMLSelectorName.data()));
-        if(!taskMLSelect)
+        if (!taskMLSelect)
         {
             AliFatal("ML Selector not present in train and ML models not compiled!");
             return;
@@ -311,10 +311,10 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         AliAODRecoDecayHF *dMeson = nullptr;
         AliAODRecoCascadeHF *dStar = nullptr;
         AliAODRecoDecayHF2Prong *dZeroDau = nullptr;
-        if(fDecChannel == kDstartoD0pi) {
+        if (fDecChannel == kDstartoD0pi) {
             dMeson = dynamic_cast<AliAODRecoDecayHF *>(arrayCand->UncheckedAt(chHadIdx[iCand]));
             dStar = dynamic_cast<AliAODRecoCascadeHF *>(dMeson);
-            if(dMeson->GetIsFilled()<1)
+            if (dMeson->GetIsFilled()<1)
                 dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(arrayCandDDau->UncheckedAt(dStar->GetProngID(1)));
             else
                 dZeroDau = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
@@ -326,10 +326,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
-        int isSelected = IsCandidateSelected(dMeson, dZeroDau, &vHF, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand], scoresFromMLSelectorSecond[iCand]);
+        std::vector<double> scores{}, scoresSecond{};
+        int isSelected = IsCandidateSelected(dMeson, dZeroDau, &vHF, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand], scoresFromMLSelectorSecond[iCand], scores, scoresSecond);
         if (!isSelected)
         {
-            if(fDecChannel == kDstartoD0pi) {
+            if (fDecChannel == kDstartoD0pi) {
                 if (unsetVtx)
                     dZeroDau->UnsetOwnPrimaryVtx();
                 if (recVtx)
@@ -355,7 +356,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
         if (fReadMC)
         {
-            if(fDecChannel == kDstartoD0pi)
+            if (fDecChannel == kDstartoD0pi)
                 labD = dStar->MatchToMC(413, 421, pdgDstarDau, pdgD0Dau, arrayMC, false);
             else
                 labD = dMeson->MatchToMC(421, arrayMC, 2, pdgD0Dau);
@@ -377,7 +378,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         double thetaRandom = gRandom->Uniform(0., TMath::Pi());
         ROOT::Math::XYZVector randomVec = ROOT::Math::XYZVector(TMath::Sin(thetaRandom) * TMath::Cos(phiRandom), TMath::Sin(thetaRandom) * TMath::Sin(phiRandom), TMath::Cos(thetaRandom));
 
-        if(fDecChannel == kDstartoD0pi) {
+        if (fDecChannel == kDstartoD0pi) {
             AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dStar->GetBachelor());
             AliAODRecoDecayHF2Prong* dauD0 = dynamic_cast<AliAODRecoDecayHF2Prong *>(dStar->Get2Prong());
             fourVecPi = ROOT::Math::PxPyPzMVector(dauPi->Px(), dauPi->Py(), dauPi->Pz(), TDatabasePDG::Instance()->GetParticle(211)->Mass());
@@ -402,21 +403,21 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
             double mass = dStar->DeltaInvMass();
 
-            std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality};
+            std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality, scores[0], scores[1], scores[2]};
             std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
-            if(!fReadMC) {
+            if (!fReadMC) {
                 fnSparseReco[0]->Fill(var4nSparse.data());
                 fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
             }
             else
             {
-                if(labD > 0) {
-                    if(orig == 4) {
+                if (labD > 0) {
+                    if (orig == 4) {
                         fnSparseReco[1]->Fill(var4nSparse.data());
                         fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
                     }
-                    else if(orig == 5) {
+                    else if (orig == 5) {
                         fnSparseReco[2]->Fill(var4nSparse.data());
                         fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
                     }
@@ -433,7 +434,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 fRDCuts->CleanOwnPrimaryVtx(dZeroDau, fAOD, origOwnVtx);
         }
         else {
-            if(isSelected == 1 || isSelected == 3) {
+            if (isSelected == 1 || isSelected == 3) {
                 AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(0));
                 AliAODTrack* dauK = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(1));
                 fourVecPi = ROOT::Math::PxPyPzMVector(dauPi->Px(), dauPi->Py(), dauPi->Pz(), TDatabasePDG::Instance()->GetParticle(211)->Mass());
@@ -458,27 +459,27 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
                 double mass = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0();
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality};
+                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality, scores[0], scores[1], scores[2]};
                 std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
-                if(!fReadMC) {
+                if (!fReadMC) {
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
                 }
                 else
                 {
-                    if(labD >= 0) {
+                    if (labD >= 0) {
                         //check if reflected signal
                         int labDauFirst = dauPi->GetLabel();
                         AliAODMCParticle* dauFirst = nullptr;
-                        if(labDauFirst >= 0)
+                        if (labDauFirst >= 0)
                             dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
-                        if(dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
-                            if(orig == 4) {
+                        if (dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                            if (orig == 4) {
                                 fnSparseReco[1]->Fill(var4nSparse.data());
                                 fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
                             }
-                            else if(orig == 5) {
+                            else if (orig == 5) {
                                 fnSparseReco[2]->Fill(var4nSparse.data());
                                 fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
                             }
@@ -490,7 +491,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                     }
                 }
             }
-            if(isSelected >= 2) {
+            if (isSelected >= 2) {
                 AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(1));
                 AliAODTrack* dauK = dynamic_cast<AliAODTrack *>(dMeson->GetDaughter(0));
                 fourVecPi = ROOT::Math::PxPyPzMVector(dauPi->Px(), dauPi->Py(), dauPi->Pz(), TDatabasePDG::Instance()->GetParticle(211)->Mass());
@@ -515,27 +516,27 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
                 double mass = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0bar();
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality};
+                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandom, centrality, scoresSecond[0], scoresSecond[1], scoresSecond[2]};
                 std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
-                if(!fReadMC) {
+                if (!fReadMC) {
                     fnSparseReco[0]->Fill(var4nSparse.data());
                     fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
                 }
                 else
                 {
-                    if(labD >= 0) {
+                    if (labD >= 0) {
                         //check if reflected signal
                         int labDauFirst = dauPi->GetLabel();
                         AliAODMCParticle* dauFirst = nullptr;
-                        if(labDauFirst >= 0)
+                        if (labDauFirst >= 0)
                             dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
-                        if(dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
-                            if(orig == 4) {
+                        if (dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                            if (orig == 4) {
                                 fnSparseReco[1]->Fill(var4nSparse.data());
                                 fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
                             }
-                            else if(orig == 5) {
+                            else if (orig == 5) {
                                 fnSparseReco[2]->Fill(var4nSparse.data());
                                 fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
                             }
@@ -558,7 +559,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond)
+int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond)
 {
 
     if (!d || (!dZeroDau && fDecChannel == kDstartoD0pi) || !vHF)
@@ -567,7 +568,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
 
     AliAODRecoCascadeHF* dStar = nullptr;
     int nDau = 0;
-    if(fDecChannel == kDstartoD0pi) {
+    if (fDecChannel == kDstartoD0pi) {
         dStar = dynamic_cast<AliAODRecoCascadeHF*>(d);
         nDau = 3;
     }
@@ -580,7 +581,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
 
     for (int iDau = 0; iDau < nDau; iDau++) {
         AliAODTrack *track = nullptr;
-        if(fDecChannel == kDstartoD0pi) {
+        if (fDecChannel == kDstartoD0pi) {
             if (iDau == 0)
                 track = vHF->GetProng(fAOD, dStar, iDau);
             else
@@ -668,7 +669,7 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
         }
     }
 
-    if(!fApplyML) {
+    if (!fApplyML) {
         return isSelected;
     }
     else {
@@ -679,17 +680,20 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
 
         AliAODPidHF *pidHF = fRDCuts->GetPidHF();
 
-        if(fDependOnMLSelector) {
+        if (fDependOnMLSelector) {
             std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
             int bin = low - fPtLimsML.begin() - 1;
-            if(bin < 0)
+            if (bin < 0)
                 bin = 0;
-            else if(bin > fPtLimsML.size()-2)
+            else if (bin > fPtLimsML.size()-2)
                 bin = fPtLimsML.size()-2;
 
-            if(isSelected == 1 || isSelected == 3) {
+            scores = scoresFromMLSelector;
+            scoresSecond = scoresFromMLSelectorSecond;
+
+            if ((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || isSelected) {
                 for(size_t iScore = 0; iScore < scoresFromMLSelector.size(); iScore++) {
-                    if((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelector[iScore] > fMLScoreCuts[bin][iScore]) ||
+                    if ((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelector[iScore] > fMLScoreCuts[bin][iScore]) ||
                        (fMLOptScoreCuts[bin][iScore] == "lower" && scoresFromMLSelector[iScore] < fMLScoreCuts[bin][iScore]))
                     {
                         isMLsel -= 1;
@@ -697,9 +701,9 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
                     }
                 }
             }
-            if(isSelected >= 2) {
+            if (fDecChannel == kD0toKpi && isSelected >= 2) {
                 for(size_t iScore = 0; iScore < scoresFromMLSelectorSecond.size(); iScore++) {
-                    if((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelectorSecond[iScore] > fMLScoreCuts[bin][iScore]) ||
+                    if ((fMLOptScoreCuts[bin][iScore] == "upper" && scoresFromMLSelectorSecond[iScore] > fMLScoreCuts[bin][iScore]) ||
                     (fMLOptScoreCuts[bin][iScore] == "lower" && scoresFromMLSelectorSecond[iScore] < fMLScoreCuts[bin][iScore]))
                     {
                         isMLsel -= 2;
@@ -709,13 +713,15 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
             }
         }
         else {
-            if(isSelected == 1 || isSelected == 3) {
-                if(!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 0))
+            if (isSelected == 1 || isSelected == 3) {
+                if (!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 0))
                     isMLsel -= 1;
+                scores = modelPred;
             }
-            if(isSelected >= 2) {
-                if(!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 1))
+            if (isSelected >= 2) {
+                if (!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 1))
                     isMLsel -= 2;
+                scoresSecond = modelPred;
             }
         }
         return isMLsel;
@@ -747,7 +753,7 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                 bool isFidAcc = false;
                 bool isDaugInAcc = false;
                 int nDau = 0;
-                if(fDecChannel == kDstartoD0pi) {
+                if (fDecChannel == kDstartoD0pi) {
                     nDau = 3;
                     deca = AliVertexingHFUtils::CheckDstarDecay(arrayMC, mcPart, labDau);
                 }
@@ -772,7 +778,7 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                     if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 1))
                     {
                         int labDauFirst = mcPart->GetDaughterFirst();
-                        if(labDauFirst < 0)
+                        if (labDauFirst < 0)
                             continue;
                         AliAODMCParticle* dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
                         fourVecDstar = ROOT::Math::PxPyPzMVector(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->M());
@@ -832,7 +838,7 @@ bool AliAnalysisTaskSEDstarPolarization::CheckDaugAcc(TClonesArray *arrayMC, int
             return false;
 
         AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(mcPartDaughter->GetMother()));
-        if(mother && TMath::Abs(mother->GetPdgCode()) == 413)
+        if (mother && TMath::Abs(mother->GetPdgCode()) == 413)
             isSoftPion = true;
 
         double eta = mcPartDaughter->Eta();
@@ -898,7 +904,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
     int nMassBins = 500;
     double massMin = 0.138, massMax = 0.160;
     TString massTitle = "#it{M}(K#pi#pi) #minus #it{M}(K#pi)";
-    if(fDecChannel == kD0toKpi) {
+    if (fDecChannel == kD0toKpi) {
         massMin = 1.65;
         massMax = 2.15;
         massTitle = "#it{M}(K#pi)";
@@ -906,9 +912,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 
     int nCosThetaBins = 5;
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 100};
-    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0., 0.};
-    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 100.};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2]};
+    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 100., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
     int nBinsThetaPhiReco[4] = {nMassBins, nPtBins, 100, 100};
     double xminThetaPhiReco[4] = {massMin, 0., 0., 0.};
@@ -927,6 +933,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fnSparseReco[iHist]->GetAxis(5)->SetTitle("|cos(#theta*)| (helicity)");
         fnSparseReco[iHist]->GetAxis(6)->SetTitle("|cos(#theta*)| (random)");
         fnSparseReco[iHist]->GetAxis(7)->SetTitle("centrality %");
+        fnSparseReco[iHist]->GetAxis(8)->SetTitle("ML bkg output score");
+        fnSparseReco[iHist]->GetAxis(9)->SetTitle("ML prompt output score");
+        fnSparseReco[iHist]->GetAxis(10)->SetTitle("ML non-prompt output score");
         fOutput->Add(fnSparseReco[iHist]);
 
         fnSparseRecoThetaPhiStar[iHist] = new THnSparseF(Form("fnSparseRecoThetaPhiStar_%s", label[iHist].Data()), titleSparse.Data(), 4, nBinsThetaPhiReco, xminThetaPhiReco, xmaxThetaPhiReco);
