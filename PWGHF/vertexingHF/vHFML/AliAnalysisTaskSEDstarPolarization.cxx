@@ -423,8 +423,10 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                     }
                 }
                 else {
-                    fnSparseReco[3]->Fill(var4nSparse.data());
-                    fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                    if(fFillBkgSparse) {
+                        fnSparseReco[3]->Fill(var4nSparse.data());
+                        fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                    }
                 }
             }
 
@@ -486,8 +488,10 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                         }
                     }
                     else {
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                        if(fFillBkgSparse) {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                            fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                        }
                     }
                 }
             }
@@ -543,8 +547,10 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                         }
                     }
                     else {
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                        if(fFillBkgSparse) {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                            fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                        }
                     }
                 }
             }

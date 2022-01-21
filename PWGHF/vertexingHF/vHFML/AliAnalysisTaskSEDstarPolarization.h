@@ -62,6 +62,7 @@ public:
     }
 
     void SetCheckWithD0()                                                                                       {fDecChannel = kD0toKpi;}
+    void SetFillBkgSparse()                                                                                     {fFillBkgSparse = true;}
 
     void SetBinsForMLAxes(std::array<int, 3> nBins, std::array<double, 3> mins, std::array<double, 3> maxs) {
         fNBinsML = nBins;
@@ -132,6 +133,8 @@ private:
     ROOT::Math::PxPyPzMVector fourVecD0{};                                          /// four vector for reconstructed D0 in the lab
     ROOT::Math::PxPyPzMVector fourVecPi{};                                          /// four vector for reconstructed pion in the lab
     ROOT::Math::PxPyPzMVector fourVecPiCM{};                                        /// four vector for reconstructed pion in the D* RF
+
+    bool fFillBkgSparse = false;                                                    /// flag to fill or not fill bkg sparses
 
     /// \cond CLASSIMP
     ClassDef(AliAnalysisTaskSEDstarPolarization, 6); /// AliAnalysisTaskSE for production of D-meson trees
