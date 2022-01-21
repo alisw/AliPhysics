@@ -1438,7 +1438,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c510d0a","0103103g00000000","0453503000000000"); // INT7, Ch.Pi -3.25,3.0
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c510e0a","0103103g00000000","0453503000000000"); // INT7, Ch.Pi -2.75,3.0
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c510f0a","0103103g00000000","0453503000000000"); // INT7, Ch.Pi -2.5,3.0
-  } else if(trainConfig == 2205)  { //EMCal + DCal INT7, Ch.Pi cut var. Ch.Pi TPC dEdx, Std 7 -> -3,3
+  } else if(trainConfig == 3205)  { //EMCal + DCal INT7, Ch.Pi cut var. Ch.Pi TPC dEdx, Std 7 -> -3,3
     //                            0008e113   0dm00009f9730000dge0404000   411790109fe30220000   32c51070a   0103103g00000000   0453503000000000
     //                                                                                                |
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32c510g0a","0103103g00000000","0453503000000000"); // INT7, Ch.Pi -3.0,2.5
