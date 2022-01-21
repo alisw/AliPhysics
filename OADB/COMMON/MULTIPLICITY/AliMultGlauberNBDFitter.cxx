@@ -65,13 +65,13 @@ fFitNpx(5000)
   fGlauberNBD->SetParameter(3,fnorm);
 }
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(const char * name, const char * title, Int_t lAncestorMode): TNamed(name,title),
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(const char * name, const char * title): TNamed(name,title),
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),
 ffChanged(kTRUE),
 fCurrentf(-1),
-fAncestorMode(lAncestorMode),
+fAncestorMode(2),
 fNpart(0x0),
 fNcoll(0x0),
 fContent(0x0),
@@ -90,7 +90,7 @@ fFitNpx(5000)
   fContent = new Long_t[fMaxNpNcPairs];
   
   //Ancestor histo
-  fhNanc = new TH1D("fhNanc", "", fAncestorMode==2?10000:1000, -0.5, 999.5);
+  //fhNanc = new TH1D("fhNanc", "", fAncestorMode==2?10000:1000, -0.5, 999.5);
   
   //NBD
   fNBD = new TF1("fNBD","ROOT::Math::negative_binomial_pdf(x,[0],[1])",0,45000);
@@ -127,7 +127,7 @@ AliMultGlauberNBDFitter::~AliMultGlauberNBDFitter() {
 //______________________________________________________
 Double_t AliMultGlauberNBDFitter::ProbDistrib(Double_t *x, Double_t *par)
 //Master fitter function
-{
+{ 
   Double_t lMultValue = x[0];
   Double_t lProbability = 0.0;
   ffChanged = kTRUE;
@@ -225,7 +225,13 @@ void AliMultGlauberNBDFitter::SetFitNpx(Long_t lNpx){
 }
 
 //________________________________________________________________
+void AliMultGlauberNBDFitter::InitAncestor(){
+  if(!fhNanc) fhNanc = new TH1D("fhNanc", "", fAncestorMode==2?10000:1000, -0.5, 999.5);
+}
+
+//________________________________________________________________
 Bool_t AliMultGlauberNBDFitter::DoFit(){
+  InitAncestor();
   //Try very hard, please
   TVirtualFitter::SetMaxIterations(5000000);
   if( !InitializeNpNc() ){

@@ -13,12 +13,14 @@ class AliMultGlauberNBDFitter : public TNamed {
 public:
   //basic functionality
   AliMultGlauberNBDFitter();
-  AliMultGlauberNBDFitter(const char *name = "fitter" , const char * title = "Glauber+NBD fitter", Int_t lAncestorMode = 2);
+  AliMultGlauberNBDFitter(const char *name = "fitter" , const char * title = "Glauber+NBD fitter");
   ~AliMultGlauberNBDFitter();
   
   //Master fitter function
   Double_t ProbDistrib(Double_t *x, Double_t *par);
-
+  
+  void InitAncestor(); 
+  
   //Do Fit: where everything happens 
   Bool_t DoFit();
   
@@ -36,6 +38,7 @@ public:
   Bool_t InitializeNpNc();
   
   //Interface for debug
+  void  SetAncestorMode(Int_t lAncMode = 0){ fAncestorMode = lAncMode; } 
   Int_t GetAncestorMode() { return fAncestorMode; } 
   TH1D *GetAncestorHistogram() { return fhNanc; } 
   
