@@ -1982,6 +1982,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( iEst < fNDebug ) {
           fQuantiles[iEst] = lThisQuantile; //Debug, please
         }
+        if(lThisQuantile<1e-6) lThisQuantile = 99.5; //protection for zdc firing
         lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
       }
     }
