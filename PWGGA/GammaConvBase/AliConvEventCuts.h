@@ -332,6 +332,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17j5a,            //!LHC17k Strangeness enhanced
         kLHC17j5b,            //!LHC17l Strangeness enhanced
         kLHC17j5c,            //!LHC17o Strangeness enhanced
+        kLHC21j8a,            //!LHC17d no B-field MC
+
         //13 TeV LHC2017 JJ
         kLHC17P1JJ,           //!LHC17k JJ
         kLHC17P1JJLowB,       //!LHC17k JJ
@@ -511,7 +513,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       // Geters
       AliV0ReaderV1* GetV0Reader();
       TString   GetCutNumber();
-      TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
+      TString*  GetFoundHeader()                                                    { return fGeneratorNames.data()                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetUseSphericity()                                                  { return fUseSphericity                                     ; }
@@ -525,9 +527,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t     GetMultiplicityMethod()                                             { return fMultiplicityMethod                                ; }
       Int_t     GetSignalRejection()                                                { return fRejectExtraSignals                                ; }
       Int_t     GetNAcceptedHeaders()                                               { return fnHeaders                                          ; }
-      TString * GetAcceptedHeaderNames()                                            { return fGeneratorNames                                    ; }
-      Int_t *   GetAcceptedHeaderStart()                                            { return fNotRejectedStart                                  ; }
-      Int_t *   GetAcceptedHeaderEnd()                                              { return fNotRejectedEnd                                    ; }
+      TString * GetAcceptedHeaderNames()                                            { return fGeneratorNames.data()                                    ; }
+      Int_t *   GetAcceptedHeaderStart()                                            { return fNotRejectedStart.data()                                  ; }
+      Int_t *   GetAcceptedHeaderEnd()                                              { return fNotRejectedEnd.data()                                    ; }
       Int_t     GetAcceptedHeaderStart(Int_t headernumber)                          { if (headernumber < fnHeaders)
                                                                                         return fNotRejectedStart[headernumber]                  ;
                                                                                       else
@@ -704,9 +706,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t                      fIsSDDFired;                            ///< SDD FIRED to select with SDD events
       TRandom3                    fRandom;                                ///<
       Int_t                       fnHeaders;                              ///< Number of Headers
-      Int_t*                      fNotRejectedStart;                      //[fnHeaders]
-      Int_t*                      fNotRejectedEnd;                        //[fnHeaders]
-      TString*                    fGeneratorNames;                        //[fnHeaders]
+      std::vector<int>            fNotRejectedStart;                      //[fnHeaders]
+      std::vector<int>            fNotRejectedEnd;                        //[fnHeaders]
+      std::vector<TString>        fGeneratorNames;                        //[fnHeaders]
       PeriodVar                   fPeriodEnum;                            ///< period selector
       EnergyVar                   fEnergyEnum;                            ///< energy selector
       AliTimeRangeCut             fTimeRangeCut;                          //!
@@ -809,7 +811,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,88)
+      ClassDef(AliConvEventCuts,89)
       /// \endcond
 };
 

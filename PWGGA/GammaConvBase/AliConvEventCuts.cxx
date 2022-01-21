@@ -382,18 +382,18 @@ AliConvEventCuts::~AliConvEventCuts() {
       delete fCutString;
       fCutString = NULL;
   }
-  if(fNotRejectedStart){
-      delete[] fNotRejectedStart;
-      fNotRejectedStart = NULL;
-  }
-  if(fNotRejectedEnd){
-      delete[] fNotRejectedEnd;
-      fNotRejectedEnd = NULL;
-  }
-  if(fGeneratorNames){
-      delete[] fGeneratorNames;
-      fGeneratorNames = NULL;
-  }
+  // if(fNotRejectedStart){
+  //     delete[] fNotRejectedStart;
+  //     fNotRejectedStart = NULL;
+  // }
+  // if(fNotRejectedEnd){
+  //     delete[] fNotRejectedEnd;
+  //     fNotRejectedEnd = NULL;
+  // }
+  // if(fGeneratorNames){
+  //     delete[] fGeneratorNames;
+  //     fGeneratorNames = NULL;
+  // }
   if(fUtils){
     delete fUtils;
     fUtils = NULL;
@@ -2863,6 +2863,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC17j5a :
     case kLHC17j5b :
     case kLHC17j5c :
+    case kLHC21j8a :
     case kLHC17P1JJ :
     case kLHC17P1JJLowB :
     case kLHC18l6b1 :
@@ -6432,18 +6433,18 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     return;
   }
 
-  if(fNotRejectedStart){
-    delete[] fNotRejectedStart;
-    fNotRejectedStart         = NULL;
-  }
-  if(fNotRejectedEnd){
-    delete[] fNotRejectedEnd;
-    fNotRejectedEnd         = NULL;
-  }
-  if(fGeneratorNames){
-    delete[] fGeneratorNames;
-    fGeneratorNames         = NULL;
-  }
+  // if(fNotRejectedStart){
+  //   delete[] fNotRejectedStart;
+  //   fNotRejectedStart         = NULL;
+  // }
+  // if(fNotRejectedEnd){
+  //   delete[] fNotRejectedEnd;
+  //   fNotRejectedEnd         = NULL;
+  // }
+  // if(fGeneratorNames){
+  //   delete[] fGeneratorNames;
+  //   fGeneratorNames         = NULL;
+  // }
 
   AliGenCocktailEventHeader *cHeader   = 0x0;
   AliAODMCHeader *cHeaderAOD       = 0x0;
@@ -6573,9 +6574,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     }
     if (fDebugLevel > 0 ) cout << "number of headers: " <<fnHeaders << endl;
 
-    fNotRejectedStart       = new Int_t[fnHeaders];
-    fNotRejectedEnd         = new Int_t[fnHeaders];
-    fGeneratorNames         = new TString[fnHeaders];
+    fNotRejectedStart.resize(fnHeaders);
+    fNotRejectedEnd.resize(fnHeaders);
+    fGeneratorNames.resize(fnHeaders);
 
     if(rejection == 1 || rejection == 3){
       // note: if we're here, we know we have fPeriodEnum!=kLHC20g10
@@ -6708,8 +6709,8 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       }
     }
   } else { // No Cocktail Header Found
-    fNotRejectedStart         = new Int_t[1];
-    fNotRejectedEnd         = new Int_t[1];
+    fNotRejectedStart.resize(1);
+    fNotRejectedEnd.resize(1);
 
     fnHeaders             = 1;
     fNotRejectedStart[0]       = 0;
@@ -6719,7 +6720,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       fNotRejectedEnd[0]       = -1;
     }
 
-    fGeneratorNames         = new TString[1];
+    fGeneratorNames.resize(1);
     fGeneratorNames[0]         = "NoCocktailGeneratorFound";
 //     SetRejectExtraSignalsCut(0);
   }
@@ -8637,6 +8638,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17P1Pyt8LowB") == 0 ||
               periodName.CompareTo("LHC17h3") ==0 ){
     fPeriodEnum = kLHC17P1Pyt8LowB;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17P1Pyt8NoB") == 0 ||
+              periodName.CompareTo("LHC21j8a") ==0 ){
+    fPeriodEnum = kLHC21j8a;
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC17P1JJ") == 0 ||
               periodName.CompareTo("LHC18f5") == 0 ){
