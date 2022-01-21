@@ -25,7 +25,7 @@
 
 ClassImp(AliMultGlauberNBDFitter);
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter() : TNamed(),
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter() : TNamed(), 
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),

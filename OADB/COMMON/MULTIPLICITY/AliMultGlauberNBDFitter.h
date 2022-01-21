@@ -101,6 +101,6 @@ private:
   TString fFitOptions;
   Long_t fFitNpx; 
   
-  ClassDef(AliMultGlauberNBDFitter, 1);
+  ClassDef(AliMultGlauberNBDFitter, 2);
 };
 #endif
