@@ -164,6 +164,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hAngularityDet", "Angularity at detector level", kNPtBinsDet, 0., kPtDetMax, 100, 0., 1.);
   fHistos->CreateTH1("hAngularityErrorsPart", "Number of errors calculating the angularity (part level)", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hAngularityErrorsDet", "Number of errors calculating the angularity (det level)", kNPtBinsDet, 0., kPtDetMax);
+  fHistos->CreateTH1("hAngularityErrorsMatrix", "Number of errors filling the response according to the angularity", kNPtBinsPart, 0., kPtPartMax);
   if(fAngularityHandler) {
     fHistos->CreateTH2("hAngularityPartLow", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
     fHistos->CreateTH2("hAngularityPartHigh", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
@@ -454,23 +455,27 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
     // splitting response in low / high angularity
     if(fAngularityHandler && angularityPart > -1.) {
-      bool isAngularityHigh = fAngularityHandler->IsHigherAngularity(partjetpt, angularityPart);
-      if(isAngularityHigh) {
-        fHistos->FillTH2("hAngularityPartHigh", partjetpt, angularityPart);
-        fHistos->FillTH2("hJetResponseFineAngularityHigh", detjetpt, partjetpt);
-        if(isClosure) {
-          fHistos->FillTH2("hJetResponseFineAngularityHighClosure", detjetpt, partjetpt);
+      try{
+        bool isAngularityHigh = fAngularityHandler->IsHigherAngularity(partjetpt, angularityPart);
+        if(isAngularityHigh) {
+          fHistos->FillTH2("hAngularityPartHigh", partjetpt, angularityPart);
+          fHistos->FillTH2("hJetResponseFineAngularityHigh", detjetpt, partjetpt);
+          if(isClosure) {
+            fHistos->FillTH2("hJetResponseFineAngularityHighClosure", detjetpt, partjetpt);
+          } else {
+            fHistos->FillTH2("hJetResponseFineAngularityHighNoClosure", detjetpt, partjetpt);
+          }
         } else {
-          fHistos->FillTH2("hJetResponseFineAngularityHighNoClosure", detjetpt, partjetpt);
+          fHistos->FillTH2("hAngularityPartLow", partjetpt, angularityPart);
+          fHistos->FillTH2("hJetResponseFineAngularityLow", detjetpt, partjetpt);
+          if(isClosure) {
+            fHistos->FillTH2("hJetResponseFineAngularityLowClosure", detjetpt, partjetpt);
+          } else {
+            fHistos->FillTH2("hJetResponseFineAngularityLowNoClosure", detjetpt, partjetpt);
+          }
         }
-      } else {
-        fHistos->FillTH2("hAngularityPartLow", partjetpt, angularityPart);
-        fHistos->FillTH2("hJetResponseFineAngularityLow", detjetpt, partjetpt);
-        if(isClosure) {
-          fHistos->FillTH2("hJetResponseFineAngularityLowClosure", detjetpt, partjetpt);
-        } else {
-          fHistos->FillTH2("hJetResponseFineAngularityLowNoClosure", detjetpt, partjetpt);
-        }
+      } catch(AngularityHandler::BinNotFoundException &e) {
+         fHistos->FillTH1("hAngularityErrorsMatrix", partjetpt);
       }
     } 
 
@@ -946,12 +951,19 @@ void AngularityHandler::InitFromFile(const char *filename) {
   } else {
     AliDebugStream(1) << "Using histogram " << hist->GetName() << " for R=" << fRadius << std::endl;
   }
+  double currentptmax = DBL_MIN, currentval = DBL_MIN; // For overflow bin (using same value as of the highest bin)
   for(int ib = 0; ib < hist->GetXaxis()->GetNbins(); ib++){
     auto min = hist->GetXaxis()->GetBinLowEdge(ib+1),
          max = hist->GetXaxis()->GetBinUpEdge(ib+1),
          value = hist->GetBinContent(ib+1);
     SetBin(min, max, value);
+    if(max > currentptmax) {
+      currentval = value;
+      currentptmax = max;
+    }
   }
+  // Set overflow bin
+  SetBin(currentptmax, DBL_MAX, currentval);
 }
 
 void AngularityHandler::SetBin(double min, double max, double value) {
