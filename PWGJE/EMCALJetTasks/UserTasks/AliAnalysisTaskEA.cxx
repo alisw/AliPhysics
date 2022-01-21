@@ -3183,29 +3183,29 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
             jetDetMC =  jet->ClosestJet();
 
             //Averaging over phi angle by random generation of phi angle PartLvl. Phi angle DetLvl is obtained by adding smearing to PartLvl phi angle
-            random_PhiAnglePartLevel = TMath::Pi()*fRandom->Uniform(0,1);  //(0,pi)
+            random_PhiAnglePartLevel = TMath::Pi()*fRandom->Uniform(-1,1);  //(-pi,pi)
             jetPtCorrPart = jet->Pt() - jet->Area()*fRhoMC;
 
 	         if(jet->Pt() > 5e-4){
 
                if(!jetDetMC){ //No associated MC detector level jet ->  Fill input for the miss function
 
-                  fhPhi_JetPtPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jetPtCorrPart);
-                  fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jet->Pt()); // (added by KA)
+                  fhPhi_JetPtPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jetPtCorrPart);
+                  fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jet->Pt()); // (added by KA)
 
                } else if(jetDetMC->Pt() < 1e-10){ //associated MC detector level jet is a ghost jet ->  Fill input for the miss function
 
-                  fhPhi_JetPtPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jetPtCorrPart);
-                  fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(random_PhiAnglePartLevel, jet->Pt()); // (added by KA)
+                  fhPhi_JetPtPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jetPtCorrPart);
+                  fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jet->Pt()); // (added by KA)
 
                } else { //Associated Detector level jet is a physical jet -> fill response matrix
                   smearing_Of_PhiAngle = jetDetMC->Phi() - jet->Phi(); //Smearing of phi angle
-                  random_PhiAngleDetLevel = random_PhiAnglePartLevel + smearing_Of_PhiAngle; //TVector2::Phi_0_2pi
+                  random_PhiAngleDetLevel = TMath::Abs(TVector2::Phi_mpi_pi(random_PhiAnglePartLevel + smearing_Of_PhiAngle)); //TVector2::Phi_mpi_pi
                   jetPtCorrDet = jetDetMC->Pt() - jetDetMC->Area()*fRho;
 
                   fArray_for_filling[0] = random_PhiAngleDetLevel;
 		            fArray_for_filling[1] = jetPtCorrDet;
-		            fArray_for_filling[2] = random_PhiAnglePartLevel;
+		            fArray_for_filling[2] = TMath::Abs(random_PhiAnglePartLevel);
 		            fArray_for_filling[3] = jetPtCorrPart;
 
 	               fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets->Fill(fArray_for_filling);
