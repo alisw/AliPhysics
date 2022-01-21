@@ -21,6 +21,7 @@
 #include "TStopwatch.h"
 #include "TVirtualFitter.h"
 #include "TProfile.h"
+#include "TFitResult.h"
 
 ClassImp(AliMultGlauberNBDFitter);
 
@@ -64,7 +65,7 @@ fFitNpx(5000)
   fGlauberNBD->SetParameter(3,fnorm);
 }
 
-AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(Int_t lAncestorMode, const char * name, const char * title): TNamed(name,title),
+AliMultGlauberNBDFitter::AliMultGlauberNBDFitter(const char * name, const char * title, Int_t lAncestorMode): TNamed(name,title),
 fNBD(0x0),
 fhNanc(0x0),
 fhNpNc(0x0),
@@ -240,7 +241,9 @@ Bool_t AliMultGlauberNBDFitter::DoFit(){
   cout<<"---> Now fitting, please wait..."<<endl;
    
   fGlauberNBD->SetNpx(fFitNpx);
-  fhV0M->Fit("fGlauberNBD",fFitOptions.Data());
+  TFitResultPtr fitptr;
+  fFitOptions.Append("S");
+  fitptr = fhV0M->Fit("fGlauberNBD",fFitOptions.Data());
   
   timer->Stop();
   Double_t lTotalTime = timer->RealTime();
@@ -251,7 +254,7 @@ Bool_t AliMultGlauberNBDFitter::DoFit(){
   ff    = fGlauberNBD -> GetParameter(2);
   fnorm = fGlauberNBD -> GetParameter(3);
   
-  return kTRUE;
+  return fitptr.Get()->IsValid();
 }
 
 //________________________________________________________________

@@ -13,7 +13,7 @@ class AliMultGlauberNBDFitter : public TNamed {
 public:
   //basic functionality
   AliMultGlauberNBDFitter();
-  AliMultGlauberNBDFitter(Int_t lAncestorMode = 2, const char *name = "fitter" , const char * title = "Glauber+NBD fitter");
+  AliMultGlauberNBDFitter(const char *name = "fitter" , const char * title = "Glauber+NBD fitter", Int_t lAncestorMode = 2);
   ~AliMultGlauberNBDFitter();
   
   //Master fitter function
