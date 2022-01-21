@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskV0ChCorrelationsys task
 
-AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(TString taskName = "",float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(TString taskName = "",int trigger,float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
   
  
 
