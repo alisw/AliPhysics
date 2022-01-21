@@ -51,7 +51,8 @@ void AddTaskResonanceVsMultiplicityMC(Int_t fCentralityMin=0, Int_t fCentralityM
   task_Mpt->SetVzRangeMin(fVzMin);
   */
 
-  
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   task_Mpt->SetVzRangeMax(fVzMax);
        
 
@@ -71,7 +72,8 @@ void AddTaskResonanceVsMultiplicityMC(Int_t fCentralityMin=0, Int_t fCentralityM
   
   
   mgr->AddTask(task_Mpt);                        // connect the task to the analysis manager
-  mgr->ConnectInput(task_Mpt, 0, cinput);        
+  mgr->ConnectInput(task_Mpt, 0, cinput);
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
   AliAnalysisDataContainer  *cOutPut1;
@@ -97,7 +99,7 @@ void AddTaskResonanceVsMultiplicityMC(Int_t fCentralityMin=0, Int_t fCentralityM
   //mgr->ConnectOutput(task_Mpt, 3, cOutPut3);
   
  
-  printf("\n\n ================> AddTaskRESONANCEVSMULTIPLICTY() Configured properly <==================\n\n",);
+  printf("\n\n ================> AddTaskRESONANCEVSMULTIPLICTYMC() Configured properly <==================\n\n",);
 
   //return task_Mpt;
 

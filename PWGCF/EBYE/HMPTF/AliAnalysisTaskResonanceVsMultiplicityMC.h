@@ -50,7 +50,8 @@ class AliAnalysisTaskResonanceVsMultiplicityMC : public AliAnalysisTaskSE {
   Double_t      GetTOFBeta(AliVTrack *esdtrack);
   Bool_t        MatchTOF(AliVTrack *vtrack);
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//Functions required for AddTask
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   void SetVzRangeMax(Double_t VzMax)
   {
     fVertexZ_max = VzMax;
@@ -83,7 +84,7 @@ class AliAnalysisTaskResonanceVsMultiplicityMC : public AliAnalysisTaskSE {
 {
     fEta_max=EtaMax;
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
  private:
   
@@ -94,7 +95,9 @@ class AliAnalysisTaskResonanceVsMultiplicityMC : public AliAnalysisTaskSE {
   AliEventCuts fEventCuts;
   //Float_t fTreeVariableCentrality;
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Variables used for this code ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+//Variables used for this code 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   Float_t fTreeVariableCentrality; 
   Float_t fvertex;
   Float_t fQ1_gen[4];

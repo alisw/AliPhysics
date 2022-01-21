@@ -151,31 +151,13 @@ void AliAnalysisTaskResonanceVsMultiplicityMC::UserCreateOutputObjects()
   OpenFile(2);
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
-  // Profile_mean_term1=new TProfile("Profile_mean_term1","Profile_mean_term1",3001,-0.5,3000.5);
-  // Profile_var_term1=new TProfile("Profile_var_term1","Profile_var_term1",3001,-0.5,3000.5);
-  // Profile_var_term2=new TProfile("Profile_var_term2","Profile_var_term2",3001,-0.5,3000.5);
-  // Profile_skewness_term1=new TProfile("Profile_skewness_term1","Profile_skewness_term1",3001,-0.5,3000.5);
-  // Profile_skewness_term2=new TProfile("Profile_skewness_term2","Profile_skewness_term2",3001,-0.5,3000.5);
-  // Profile_skewness_term3=new TProfile("Profile_skewness_term3","Profile_skewness_term3",3001,-0.5,3000.5);
-  // Profile_kurtosis_term1=new TProfile("Profile_kurtosis_term1","Profile_kurtosis_term1",3001,-0.5,3000.5);
-  // Profile_kurtosis_term2=new TProfile("Profile_kurtosis_term2","Profile_kurtosis_term2",3001,-0.5,3000.5);
-  // Profile_kurtosis_term3=new TProfile("Profile_kurtosis_term3","Profile_kurtosis_term3",3001,-0.5,3000.5);
-  // Profile_kurtosis_term4=new TProfile("Profile_kurtosis_term4","Profile_kurtosis_term4",3001,-0.5,3000.5);
+  
 
   hist2D_pt_gen_centrality=new TH2F("hist2D_pt_gen_centrality","hist2D_pt_gen_centrality",800,0,8,100,0,100);
   hist2D_pt_rec_centrality=new TH2F("hist2D_pt_rec_centrality","hist2D_pt_rec_centrality",800,0,8,100,0,100);
   hist_centrality_beforecut=new TH1D("hist_centrality_beforecut","hist_centrality_beforecut",100,0,100);
 
-  // fListHist->Add(Profile_mean_term1);
-  // fListHist->Add(Profile_var_term1);
-  // fListHist->Add(Profile_var_term2);
-  // fListHist->Add(Profile_skewness_term1);
-  // fListHist->Add(Profile_skewness_term2);
-  // fListHist->Add(Profile_skewness_term3);
-  // fListHist->Add(Profile_kurtosis_term1);
-  // fListHist->Add(Profile_kurtosis_term2);
-  // fListHist->Add(Profile_kurtosis_term3);
-  // fListHist->Add(Profile_kurtosis_term4);
+ 
   fListHist->Add(hist2D_pt_gen_centrality);
   fListHist->Add(hist2D_pt_rec_centrality);
   fListHist->Add(hist_centrality_beforecut);
