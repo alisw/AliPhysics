@@ -259,6 +259,8 @@ Bool_t ConfigKStarPlusMinusPbPb2018arm
       
       // axis W: Centrality                                                                                                                         
       out->AddAxis(centID, multbin, lmultbin, hmultbin);
+      out->AddAxis(fdpt, 200, 0.0, 20.0);
+      out->AddAxis(sdpt, 200, 0.0, 20.0);
         
     }
 
