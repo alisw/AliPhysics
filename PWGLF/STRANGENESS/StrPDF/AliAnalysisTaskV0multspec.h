@@ -11,7 +11,7 @@
 #include "AliMCEvent.h"
 
 enum PartType {kk0s, klam, kalam, kxi, kom, kallparts};
-int PDGcodes[5] = {310, 3122, -3122, 3312, 3334};
+const int PDGcodes[5] = {310, 3122, -3122, 3312, 3334};
 
 struct V0filler{
 
