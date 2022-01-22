@@ -108,17 +108,17 @@ void AliAnalysisTaskV0multspec::UserCreateOutputObjects()
   fHistos_misc->CreateTH1("hPlusAndMinFilled", "", 100, 0, 100, "s");  //histo for debug
   
   //Events passing different cuts
-  TString labtext[5] = {"PassEvSelCode",">0Cand","FillTree","FillTreeP","FillTreeM"};
+  //TString labtext[5] = {"PassEvSelCode",">0Cand","FillTree","FillTreeP","FillTreeM"};
   fHistos_misc->CreateTH1("TH1EventMonitor", "", 5, 0, 5);
-  ((TH1D*)fHistos_misc->FindObject("TH1EventMonitor"))->GetXaxis()->SetLabelOffset(0.05);
-  ((TH1D*)fHistos_misc->FindObject("TH1EventMonitor"))->GetXaxis()->SetNdivisions(5);
+  //((TH1D*)fHistos_misc->FindObject("TH1EventMonitor"))->GetXaxis()->SetLabelOffset(0.05);
+  //((TH1D*)fHistos_misc->FindObject("TH1EventMonitor"))->GetXaxis()->SetNdivisions(5);
   fHistos_misc->CreateTH2("EventMonitor", "", 5, 0, 5, 101, 0, 101);
-  ((TH2D*)fHistos_misc->FindObject("EventMonitor"))->GetXaxis()->SetLabelOffset(0.05);
-  ((TH2D*)fHistos_misc->FindObject("EventMonitor"))->GetXaxis()->SetNdivisions(5);
-  for (int i=0; i<5; i++) {
-      ((TH1D*)fHistos_misc->FindObject("TH1EventMonitor"))->GetXaxis()->ChangeLabel(i+1,30,-1,13,-1,-1,labtext[i].Data());
-      ((TH2D*)fHistos_misc->FindObject("EventMonitor"))->GetXaxis()->ChangeLabel(i+1,30,-1,13,-1,-1,labtext[i].Data());
-  }
+  //((TH2D*)fHistos_misc->FindObject("EventMonitor"))->GetXaxis()->SetLabelOffset(0.05);
+  //((TH2D*)fHistos_misc->FindObject("EventMonitor"))->GetXaxis()->SetNdivisions(5);
+  //for (int i=0; i<5; i++) {
+  //    ((TH1D*)fHistos_misc->FindObject("TH1EventMonitor"))->GetXaxis()->ChangeLabel(i+1,30,-1,13,-1,-1,labtext[i].Data());
+  //    ((TH2D*)fHistos_misc->FindObject("EventMonitor"))->GetXaxis()->ChangeLabel(i+1,30,-1,13,-1,-1,labtext[i].Data());
+  //}
   
   //tree
   if(fpart<kxi){
