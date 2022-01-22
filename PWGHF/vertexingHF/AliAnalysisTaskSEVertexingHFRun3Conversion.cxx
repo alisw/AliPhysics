@@ -56,16 +56,18 @@ AliAnalysisTaskSE(),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
 fResetTreeAtEachEv(kTRUE),
-fD0CandidateTree(0x0),
+f2ProngCandidateTree(0x0),
 f3ProngCandidateTree(0x0),
 fDstarCandidateTree(0x0),
 fCascadeCandidateTree(0x0),
 fEventIndex(-1),
 fD0track0(-1),
 fD0track1(-1),
+fHF2pflag(0),
 f3ptrack0(-1),
 f3ptrack1(-1),
 f3ptrack2(-1),
+fHF3pflag(0),
 fDstD0tr0(-1),
 fDstD0tr1(-1),
 fDstSofPi(-1),
@@ -93,16 +95,18 @@ AliAnalysisTaskSE(name),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
 fResetTreeAtEachEv(kTRUE),
-fD0CandidateTree(0x0),
+f2ProngCandidateTree(0x0),
 f3ProngCandidateTree(0x0),
 fDstarCandidateTree(0x0),
 fCascadeCandidateTree(0x0),
 fEventIndex(-1),
 fD0track0(-1),
 fD0track1(-1),
+fHF2pflag(0),
 f3ptrack0(-1),
 f3ptrack1(-1),
 f3ptrack2(-1),
+fHF3pflag(0),
 fDstD0tr0(-1),
 fDstD0tr1(-1),
 fDstSofPi(-1),
@@ -139,7 +143,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::~AliAnalysisTaskSEVertexingHFRun3Con
     delete fListOfCuts;
     fListOfCuts=NULL;
   }
-  delete fD0CandidateTree;
+  delete f2ProngCandidateTree;
   delete f3ProngCandidateTree;
   delete fDstarCandidateTree;
   delete fCascadeCandidateTree;
@@ -183,16 +187,18 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserCreateOutputObjects()
     return;
   }
   
-  fD0CandidateTree = new TTree("candD0Tree", "Tree of D0->Kpi candidates");
-  if(!fResetTreeAtEachEv) fD0CandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
-  fD0CandidateTree->Branch("trackId0",&fD0track0,"trackId0/I");
-  fD0CandidateTree->Branch("trackId1",&fD0track1,"trackId1/I");
+  f2ProngCandidateTree = new TTree("cand2ProngTree", "Tree of 2prong candidates");
+  if(!fResetTreeAtEachEv) f2ProngCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
+  f2ProngCandidateTree->Branch("trackId0",&fD0track0,"trackId0/I");
+  f2ProngCandidateTree->Branch("trackId1",&fD0track1,"trackId1/I");
+  f2ProngCandidateTree->Branch("hfflag",&fHF2pflag,"hfflag/I");
 
   f3ProngCandidateTree = new TTree("cand3ProngTree", "Tree of c->3prong candidates");
   if(!fResetTreeAtEachEv) f3ProngCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
   f3ProngCandidateTree->Branch("trackId0",&f3ptrack0,"trackId0/I");
   f3ProngCandidateTree->Branch("trackId1",&f3ptrack1,"trackId1/I");
   f3ProngCandidateTree->Branch("trackId2",&f3ptrack2,"trackId2/I");
+  f3ProngCandidateTree->Branch("hfflag",&fHF3pflag,"hfflag/I");
   
   fDstarCandidateTree = new TTree("candDstarTree", "Tree of D*->D0pi candidates");
   if(!fResetTreeAtEachEv) fDstarCandidateTree->Branch("eventId",&fEventIndex,"eventId/I");
@@ -254,7 +260,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserCreateOutputObjects()
   
   //--------------------------------------------------------------  
 
-  PostData(2,fD0CandidateTree);
+  PostData(2,f2ProngCandidateTree);
   PostData(3,f3ProngCandidateTree);
   PostData(4,fDstarCandidateTree);
   PostData(5,fCascadeCandidateTree);
@@ -292,7 +298,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
                        fLikeSign3ProngTClArr);
   
   if(fResetTreeAtEachEv){
-    fD0CandidateTree->Reset();
+    f2ProngCandidateTree->Reset();
     f3ProngCandidateTree->Reset();
     fDstarCandidateTree->Reset();
     fCascadeCandidateTree->Reset();
@@ -304,7 +310,8 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     AliAODRecoDecayHF2Prong* dcand=(AliAODRecoDecayHF2Prong*)fD0toKpiTClArr->At(iD0);
     fD0track0=dcand->GetProngID(0);
     fD0track1=dcand->GetProngID(1);
-    fD0CandidateTree->Fill();
+    fHF2pflag=1*dcand->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+    f2ProngCandidateTree->Fill();
     //    printf("Event %d cand %d  tracks %d %d\n",fEventIndex,iD0,fD0track0,fD0track1);
   }
   
@@ -314,6 +321,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     f3ptrack0=dcand->GetProngID(0);
     f3ptrack1=dcand->GetProngID(1);
     f3ptrack2=dcand->GetProngID(2);
+    fHF3pflag=1*dcand->HasSelectionBit(AliRDHFCuts::kDplusCuts)+2*dcand->HasSelectionBit(AliRDHFCuts::kLcCuts)+4*dcand->HasSelectionBit(AliRDHFCuts::kDsCuts);
     f3ProngCandidateTree->Fill();
   }
 
@@ -347,7 +355,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
   }
   
 
-  PostData(2,fD0CandidateTree);
+  PostData(2,f2ProngCandidateTree);
   PostData(3,f3ProngCandidateTree);
   PostData(4,fDstarCandidateTree);
   PostData(5,fCascadeCandidateTree);
