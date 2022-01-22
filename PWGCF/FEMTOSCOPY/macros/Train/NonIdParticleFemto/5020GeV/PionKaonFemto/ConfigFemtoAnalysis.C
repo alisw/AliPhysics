@@ -343,7 +343,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
           //sqpcetaphitpcRD[aniter] = new AliFemtoPairCutRadialDistanceLM();
 
 	  if (paircutmergedfractionon == 1) 
-	    sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction(distance, fraction1, 0.09, 0.8, 2.5);
+	    sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction(distance, fraction1, 0.009, 0.8, 2.5);
 	  else
 	    sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	  
