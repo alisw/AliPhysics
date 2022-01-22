@@ -83,7 +83,7 @@ private:
     Bool_t SPDvsV0MCut, LargeTPCCut;
     AliEventCuts *fAliEventCuts;  //!
     int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
-    static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
+    static const int nCentrClasses = 100, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
     Float_t minP, maxP, Vertexmin, Vertexmax;
     Float_t CentrPercentiles[100];
     int nCentrClassesUsed;
