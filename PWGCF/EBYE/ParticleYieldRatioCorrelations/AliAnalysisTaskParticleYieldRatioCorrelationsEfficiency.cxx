@@ -117,8 +117,6 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
             fOutputList->Add(purity[iSort][jSort]);
         }
     }
-    fHistQASPDTrackletsvsV0MCent = new TH2D("fHistQASPDTrackletsvsV0MCent", ";V0M Percentile;N Tracklets in SPD", 100, 0, 100, 400, 0, 1e4);
-    fOutputList->Add(fHistQASPDTrackletsvsV0MCent);
   for (Int_t i(0); i < 3; i++)
   {
     fHistQASPDTrackletsvsV0MCent[i] = new TH2D(Form("fHistQASPDTrackletsvsV0MCent%d", i), ";V0M Percentile;N Tracklets in SPD", 100, 0, 100, 400, 0, 1e4);
