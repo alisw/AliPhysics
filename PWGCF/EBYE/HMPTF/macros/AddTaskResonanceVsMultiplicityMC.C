@@ -1,5 +1,5 @@
 
-void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Int_t fdcaxy_ptdep=0, Double_t fdcaz=2, Double_t fchi2tpc=4.0, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileDir = "_default")
+void AddTaskResonanceVsMultiplicityMC(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -13,34 +13,33 @@ void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100
 
 
   TString list1OutName = outfileName;        // common outfile filename
-  list1OutName        += ":Results";         // This directory contains result histograms
-  //list1OutName        += OutFileDir;
+  list1OutName        += ":Results_MC";         // This directory contains result histograms
 
   Int_t gCentMin = fCentralityMin;
   Int_t gCentMax = fCentralityMax;
 
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
-  gROOT->LoadMacro("AliAnalysisTaskMeanptFluctuationPP.cxx++g");                                                           
-  AliAnalysisTaskMeanptFluctuationPP *task_Mpt = new AliAnalysisTaskMeanptFluctuationPP(TaskMeanpt);
+  gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicityMC.cxx++g");                                                           
+  AliAnalysisTaskResonanceVsMultiplicityMC *task_Mpt = new AliAnalysisTaskResonanceVsMultiplicityMC(TaskMeanpt);
 
   /*
   ///-------> Analysis Object Created, now pass the arguments
   if(sTrigger=="kMB" || sTrigger=="kmb" || sTrigger=="MB"){   // if We want MB Trigger
     task_Mpt->SelectCollisionCandidates(AliVEvent::kMB);
-    printf("\n =========> AddTaskMeanptFluctuationPP::Info() Trigger = kMB  \n");
+    printf("\n =========> AddTaskResonancevsMultiplicity::Info() Trigger = kMB  \n");
   }
   else if(sTrigger=="kSemiCentral" || sTrigger=="SemiCentral" || sTrigger=="semicentral"){
     task_Mpt->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-    printf("\n =========> AddTaskMeanptFluctuationPP::Info() Trigger = kSemiCentral \n");
+    printf("\n =========> AddTaskRESONANCEVSMULTIPLICTY::Info() Trigger = kSemiCentral \n");
   }
   else if(sTrigger=="kCentral" || sTrigger=="Central" || sTrigger=="central"){
     task_Mpt->SelectCollisionCandidates(AliVEvent::kCentral);
-    printf("\n =========> AddTaskMeanptFluctuationPP::Info() Trigger = kCentral \n");
+    printf("\n =========> AddTaskRESONANCEVSMULTIPLICTY::Info() Trigger = kCentral \n");
   }
   else{//if trigger==kINT7 or no trigger provided:
     task_Mpt->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
-    printf("\n =========> AddTaskMeanptFluctuationPP::Info() Trigger = kINT7 \n");
+    printf("\n =========> AddTaskRESONANCEVSMULTIPLICTY::Info() Trigger = kINT7 \n");
   }
   */
   ///swati: add event and track cuts
@@ -52,48 +51,55 @@ void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100
   task_Mpt->SetVzRangeMin(fVzMin);
   */
 
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   task_Mpt->SetVzRangeMax(fVzMax);
+       
+
   //Track cuts:
-  task_Mpt->SetDCAXYPtDep_choice(fdcaxy_ptdep);
+  task_Mpt->SetDCAXYRangeMax(fdcaxy);
   task_Mpt->SetDCAZRangeMax(fdcaz);
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
   task_Mpt->SetMinNCrossedRowsTPCRange(fnCrossedRows);
+  task_Mpt->SetEtaCut(fEta);
+  
 
-  TString EventTreeName;
-  EventTreeName += "fTreeEvent";
-  EventTreeName += OutFileDir;
-  task_Mpt->SetTreeName(EventTreeName);
+  TString OutTreeName;
+  OutTreeName += "fTreeEvent";
+  OutTreeName += OutFileName;
+  task_Mpt->SetTreeName(OutTreeName);
+  
   
   mgr->AddTask(task_Mpt);                        // connect the task to the analysis manager
-  mgr->ConnectInput(task_Mpt, 0, cinput);        
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  mgr->ConnectInput(task_Mpt, 0, cinput);
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
   AliAnalysisDataContainer  *cOutPut1;
   AliAnalysisDataContainer  *cOutPut2;
-  AliAnalysisDataContainer  *cOutPut3;
+  //AliAnalysisDataContainer  *cOutPut3;
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1 += "SimpleTaskTree";
-  sMyOutName1 += OutFileDir;
-  sMyOutName2 += "HistogramTrackVariables";
-  sMyOutName2 += OutFileDir;
+  sMyOutName1 += "SimpleTask_tree";
+  sMyOutName1 += OutFileName;
+  sMyOutName2 += "Histogram_TrackVariables";
+  sMyOutName2 += OutFileName;
   sMyOutName3 += "QAPileupPlots";
-  sMyOutName3 += OutFileDir;
+  sMyOutName3 += OutFileName;
+  
   
   cOutPut1 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName1,TTree::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
   cOutPut2 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName2,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
-  cOutPut3 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName3,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
+  //cOutPut3 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName3,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
   
   mgr->ConnectOutput(task_Mpt, 1, cOutPut1);
   mgr->ConnectOutput(task_Mpt, 2, cOutPut2);
-  mgr->ConnectOutput(task_Mpt, 3, cOutPut3);
+  //mgr->ConnectOutput(task_Mpt, 3, cOutPut3);
+  
  
- 
-  printf("\n\n ================> AddTaskMeanptFluctuationPP() Configured properly <==================\n\n",);
+  printf("\n\n ================> AddTaskRESONANCEVSMULTIPLICTYMC() Configured properly <==================\n\n",);
 
   //return task_Mpt;
 
