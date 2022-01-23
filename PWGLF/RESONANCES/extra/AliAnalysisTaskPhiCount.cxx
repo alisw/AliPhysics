@@ -811,8 +811,8 @@ bool        AliAnalysisTaskPhiCount::fIsEventMultiplicityAvailable ()           
     AliMultSelection   *fMultSelectio2  = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     if ( !fMultSelection )  fCurrent_V0M    =   102.;
     // if pPb should be V0A
-    if ( fIs_p_p  || fIs_Pb_Pb )    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M");
-    if ( fIs_p_Pb )                 fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0A");
+                    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M");
+    if ( fIs_p_Pb ) fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0A");
     fCurrent_TRK    =   (dynamic_cast<AliAODHeader*>(fAOD->GetHeader()))->GetRefMultiplicityComb08();
     //
     //  INELGT0 Check
@@ -1207,7 +1207,7 @@ void        AliAnalysisTaskPhiCount::fSetEventMask( Int_t iMaskBit )            
 //_____________________________________________________________________________
 
 void        AliAnalysisTaskPhiCount::fSetTrueEventMask( Int_t iMaskBit )        {
-    auto    fResult     =   fTrueEventMask  |   BIT( iMaskBit );
+    auto    fResult     =   fTrueEventMask  |   ( iMaskBit );
     fTrueEventMask      =   fResult;
 }
 
