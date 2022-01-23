@@ -154,12 +154,13 @@ void FillHbtParticleCollectionOnlyMixP1(AliFemtoParticleCut *partCut,
 AliFemtoSimpleAnalysisOnlyMixP1::AliFemtoSimpleAnalysisOnlyMixP1():
     AliFemtoSimpleAnalysis()
 {
-
+	MakeCForNot = 1;	
 }
 AliFemtoSimpleAnalysisOnlyMixP1::AliFemtoSimpleAnalysisOnlyMixP1(const AliFemtoSimpleAnalysisOnlyMixP1 &OriAnalysis):
     AliFemtoSimpleAnalysis(OriAnalysis)
 {
     //copy constructor 
+    MakeCForNot = OriAnalysis.MakeCForNot;
 }
 AliFemtoSimpleAnalysisOnlyMixP1::~AliFemtoSimpleAnalysisOnlyMixP1()
 {
@@ -173,7 +174,7 @@ AliFemtoSimpleAnalysisOnlyMixP1& AliFemtoSimpleAnalysisOnlyMixP1::operator=(cons
         return *this;
 
     AliFemtoSimpleAnalysisOnlyMixP1::operator=(OriAnalysis);
-
+    MakeCForNot = OriAnalysis.MakeCForNot;
     return *this;
 }
 
@@ -224,6 +225,13 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
     tmpPassEvent = tmpPassEvent && coll_1_size_passes && coll_2_size_passes;
     // fill the event cut monitor
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
+   
+    //\ dowang 1.23
+    if(MakeCForNot!=1){
+    	EventEnd(hbtEvent);
+    	fPicoEvent = nullptr;
+	return;
+    }
     if (!tmpPassEvent) {
 	// if collection2 == nullptr, we also update this event, but not do make pair!	
 	if(coll_1_size!=0 && coll_2_size==0){
@@ -261,5 +269,8 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
  EventEnd(hbtEvent);
 	return;
 
+}
+void AliFemtoSimpleAnalysisOnlyMixP1::SetMakeCForNot(int fMake){
+     MakeCForNot = fMake;
 }
 
