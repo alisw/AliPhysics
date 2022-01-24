@@ -1,97 +1,303 @@
-#ifndef ALIRSNMINIPARTICLE_H
-#define ALIRSNMINIPARTICLE_H
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
+////////////////////////////////////////////////////////////////////////////////
 //
-// This object is used as lightweight temporary container
-// of all information needed from any input object and
-// useful for resonance analysis.
+//  This class contains all code which is used to compute any of the values
+//  which can be of interest within a resonance analysis. Besides the obvious
+//  invariant mass, it allows to compute other utility values on all possible
+//  targets, in order to allow a wide spectrum of binning and checks.
+//  When needed, this object can also define a binning in the variable which
+//  it is required to compute, which is used for initializing axes of output
+//  histograms (see AliRsnFunction).
+//  The value computation requires this object to be passed the object whose
+//  informations will be used. This object can be of any allowed input type
+//  (track, pair, event), then this class must inherit from AliRsnTarget.
+//  Then, when value computation is attempted, a check on target type is done
+//  and computation is successful only if expected target matches that of the
+//  passed object.
+//  In some cases, the value computation can require a support external object,
+//  which must then be passed to this class. It can be of any type inheriting
+//  from TObject.
+//
+//  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//           M. Vala (martin.vala@cern.ch)
+//  developers: F. Bellini (fbellini@cern.ch)
+//
+//Modified by Prottay 23/01/2022(prottay.das@cern.ch) to fill K0s inv mass for a given bin of K*+/-
+
+////////////////////////////////////////////////////////////////////////////////
+
+#include "Riostream.h"
+
+#include "AliLog.h"
+
+#include "AliRsnMiniPair.h"
+#include "AliRsnMiniEvent.h"
+#include "AliRsnMiniParticle.h"
+
+#include "AliRsnMiniValue.h"
+
+ClassImp(AliRsnMiniValue)
+
+//_____________________________________________________________________________
+AliRsnMiniValue::AliRsnMiniValue(EType type, Bool_t useMC) :
+   TNamed(ValueName(type, useMC), ""),
+   fType(type),
+   fUseMCInfo(useMC)
+{
+//
+// Constructor
+//
+}
+
+//_____________________________________________________________________________
+AliRsnMiniValue::AliRsnMiniValue(const AliRsnMiniValue &copy) :
+   TNamed(copy),
+   fType(copy.fType),
+   fUseMCInfo(copy.fUseMCInfo)
+{
+//
+// Copy constructor
+//
+}
+
+//_____________________________________________________________________________
+AliRsnMiniValue &AliRsnMiniValue::operator=(const AliRsnMiniValue &copy)
+{
+//
+// Assignment operator.
+// Works like copy constructor.
+//
+   TNamed::operator=(copy);
+   if (this == &copy)
+      return *this;
+   fType = copy.fType;
+   fUseMCInfo = copy.fUseMCInfo;
+
+   return (*this);
+}
+
+//_____________________________________________________________________________
+const char *AliRsnMiniValue::TypeName(EType type)
+{
+//
+// This method returns a string to give a name to each possible
+// computation value.
 //
 
-#include <TMath.h>
-#include <TObject.h>
-#include <TLorentzVector.h>
+   switch (type) {
+      case kVz:           return "EventVz";
+      case kSpherocity:   return "EventSpherocity";
+      case kMult:         return "EventMult";
+      case kRefMult:      return "EventReferenceMult";
+      case kTracklets:    return "EventTracklets";
+      case kPlaneAngle:   return "EventPlane";
+      case kLeadingPt:    return "EventLeadingPt";
+      case kLeadingPhi:   return "EventLeadingPhi";
+      case kPt:           return "Pt";
+      case kPz:           return "Pz";
+      case kInvMass:      return "InvMass";
+      case kInvMassMother: return "InvMassMother";
+      case kInvMassRes:   return "InvMassResolution";
+      case kInvMassDiff:  return "InvMassDifference";
+      case kEta:          return "Eta";
+      case kPhi:          return "Phi";
+      case kMt:           return "Mt";
+      case kY:            return "Y";
+      case kPtRatio:      return "PtRatio";
+      case kDipAngle:     return "DipAngle";
+      case kCosThetaStar: return "CosThetaStar";
+      case kCosThetaStarAbs:    return "CosThetaStarAbs";
+      case kCosThetaJackson:    return "CosThetaJackson";
+      case kCosThetaTransversity:    return "CosThetaTransversity";
+      case kCosThetaHe:   return "CosThetaHe";
+      case kCosThetaHeAbs:   return "CosThetaHeAbs";
+      case kPhiHePbPb5:   return "PhiHePbPb5";
+      case kPhiHePP5:   return "PhiHePP5";
+      case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
+      case kAngleLeading: return "AngleToLeading";
+      case kDeltaEta: return "DeltaEta";
+      case kFirstDaughterPt: return "FirstDaughterPt";
+      case kSecondDaughterPt: return "SecondDaughterPt";
+      case kFirstDaughterP: return "FirstDaughterP";
+      case kSecondDaughterP: return "SecondDaughterP";
+   case kFirstDaughterIM: return "FirstDaughterIM"; //K0s IM (prottay) 
+      case kDCAproduct:   return "DaughterDCAproduct";
+      case kFirstDaughterDCA: return "FirstDaughterDCA";
+      case kSecondDaughterDCA: return "SecondDaughterDCA";
+      case kNSisters:     return "NumberOfSisters";
+      case kPairPtRes:        return "PairPtResolution";
+      case kPairYRes:         return "PairYResolution";
+      case kPhiV:         return "PhiV";
+      case kAsym:         return "PairAsymmetry";
+      default:            return "Undefined";
+   }
+}
 
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
-#include "AliESDv0.h"
+//_____________________________________________________________________________
+Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
+{
+//
+// Evaluation of the required value.
+// In this implementation, fills the member 4-vectors with data
+// coming from the object passed as argument, and then returns the value
+//
 
-class AliRsnDaughter;
-
-class AliRsnMiniParticle : public TObject {
-public:
-
-  AliRsnMiniParticle() : fIndex(-0x80000000), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0), fPassesOOBPileupCut(kTRUE), K0smass(0) {
-       Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;
-       fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -0x80000000;
-       fMass[0] = fMass[1] = -1.0;
+   if (!pair && fType > kEventCuts) {
+      AliError("Null pair passed!");
+      return 1E20;
    }
 
-   Int_t         &Index()                    {return fIndex;}
-   void          SetResonance()              {fIndex=-0x7fffffff;}
-   Bool_t        IsResonance()               {return (fIndex==-0x7fffffff);}
-   Int_t         &IndexV0Pos()               {return fIndexDaughters[0];}
-   Int_t         &IndexV0Neg()               {return fIndexDaughters[1];}
-   Int_t         &IndexBachelor()            {return fIndexDaughters[2];}
-   Double_t      &K0M()                      {return K0smass;} //added by prottay
-   Char_t        &Charge()                   {return fCharge;}
-   Float_t       &PsimX()                    {return fPsim[0];}
-   Float_t       &PsimY()                    {return fPsim[1];}
-   Float_t       &PsimZ()                    {return fPsim[2];}
-   Float_t       &PrecX()                    {return fPrec[0];}
-   Float_t       &PrecY()                    {return fPrec[1];}
-   Float_t       &PrecZ()                    {return fPrec[2];}
-   Float_t       &PmotherX()                 {return fPmother[0];}
-   Float_t       &PmotherY()                 {return fPmother[1];}
-   Float_t       &PmotherZ()                 {return fPmother[2];}
-   Float_t       &Px(Bool_t mc)              {return (mc ? fPsim[0] : fPrec[0]);}
-   Float_t       &Py(Bool_t mc)              {return (mc ? fPsim[1] : fPrec[1]);}
-   Float_t       &Pz(Bool_t mc)              {return (mc ? fPsim[2] : fPrec[2]);}
-   Long_t        &PDG()                      {return fPDG;}
-   Long_t        PDGAbs()                    {return TMath::Abs(fPDG);}
-   Double_t      Mass();                     // returns PDG mass
-   Double_t      K0Mass();                   // returns eff mass (by prottay)
-   Double_t      &StoredMass(Bool_t mc)      {return (mc ? fMass[0] : fMass[1]);} // store mass for resonances
-   Int_t         &Mother()                   {return fMother;}
-   Long_t        &MotherPDG()                {return fMotherPDG;}
-   Bool_t        &IsFromB()                  {return fIsFromB;}
-   Bool_t        &IsQuarkFound()             {return fIsQuarkFound;}
-   UShort_t      &CutBits()                  {return fCutBits;}
-   Double_t      DCA()                      {return fDCA;}
-   Short_t       NTotSisters()              {return fNTotSisters;}
-   Bool_t        HasCutBit(Int_t i)         {UShort_t bit = 1 << i; return ((fCutBits & bit) != 0);}
-   void          SetCutBit(Int_t i)         {UShort_t bit = 1 << i; fCutBits |=   bit;}
-   void          ClearCutBit(Int_t i)       {UShort_t bit = 1 << i; fCutBits &= (~bit);}
-   Bool_t        &PassesOOBPileupCut()      {return fPassesOOBPileupCut;}
+   // compute value depending on types in the enumeration
+   // if the type does not match any available choice, or if
+   // the computation is not doable due to any problem
+   // (not initialized support object, wrong values, risk of floating point errors)
+   // the method returng kFALSE and sets the computed value to a meaningless number
+   Double_t p3[3]= {0.,0.,0.};
+   AliRsnMiniParticle *l;
+   TLorentzVector v;
+   switch (fType) {
+         // ---- event values -------------------------------------------------------------------------
+      case kVz:
+         return event->Vz();
+      case kSpherocity:
+         return event->Spherocity();
+      case kMult:
+         return event->Mult();
+      case kRefMult:
+         return event->RefMult();
+      case kTracklets:
+         return event->Tracklets();	 
+      case kPlaneAngle:
+         return event->Angle();
+      case kLeadingPt:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            return v.Pt();
+         }
+         return 0.0;
+      case kLeadingPhi:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            Double_t angle = v.Phi();
+            while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+            while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
+            return angle;
+         }
+         return 0.0;
+      case kPt:
+         return pair->Pt(fUseMCInfo);
+      case kInvMass:
+         return pair->InvMass(fUseMCInfo);
+      case kInvMassMother:
+         return pair->InvMass(kTRUE);
+      case kEta:
+         return pair->Eta(fUseMCInfo);
+      case kPhi:
+          { 
+            Double_t angle1 = pair->Sum(fUseMCInfo).Phi();
+            while (angle1 >= 1.5 * TMath::Pi()) angle1 -= 2 * TMath::Pi();
+            while (angle1 < -0.5 * TMath::Pi()) angle1 += 2 * TMath::Pi();
+            return angle1;
+          }
+      case kInvMassRes:
+         return pair->InvMassRes();
+      case kInvMassDiff:
+         return pair->InvMassDiff();
+      case kMt:
+         return pair->Mt(fUseMCInfo);
+      case kY:
+         return pair->Y(fUseMCInfo);
+      case kPtRatio:
+         return pair->PtRatio(fUseMCInfo);
+      case kDipAngle:
+         return pair->DipAngle(fUseMCInfo);
+      case kCosThetaStar:
+         return pair->CosThetaStar(fUseMCInfo);
+      case kCosThetaStarAbs:
+          return pair->CosThetaStarAbs(fUseMCInfo);           
+      case kCosThetaJackson:
+         return pair->CosThetaJackson(fUseMCInfo);
+      case kCosThetaTransversity:
+         return pair->CosThetaTransversity(fUseMCInfo);
+      case kCosThetaHe:
+           return pair->CosThetaHe(fUseMCInfo);
+      case kCosThetaHeAbs:
+           return pair->CosThetaHeAbs(fUseMCInfo);
+      case kPhiHePbPb5:
+           return pair->PhiHePbPb5(fUseMCInfo);
+      case kPhiHePP5:
+           return pair->PhiHePP5(fUseMCInfo);	   
+      case kCosThetaToEventPlane:
+         return pair->CosThetaToEventPlane(event, fUseMCInfo);
+      case kAngleLeading:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+             if (pair->ContainsIndex(l->Index())) return 1E20;
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            if (pair->Pt(fUseMCInfo) > v.Pt()) return 1E20;
+            Double_t angle = v.Phi() - pair->Sum(fUseMCInfo).Phi();
 
-   void          Clear(Option_t *opt="");
-
-   void          Set4Vector(TLorentzVector &v, Float_t mass=-1.0, Bool_t mc=kFALSE);
-   void          CopyDaughter(AliRsnDaughter *daughter);
-
-private:
-    
-   Bool_t    TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
-   Bool_t    TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b);
-
-   Int_t     fIndex;        // ID of track in its event
-   Int_t     fIndexDaughters[3]; // daugher indices (0:pos, 1:neg, 2: bachelor) (if not V0/resonance then 0:ESD/AOD label, 1:(-1))
-   Char_t    fCharge;       // track charge *character*: '+', '-', '0' (whatever else = undefined)
-   Float_t   fPsim[3];      // MC momentum of the track
-   Float_t   fPrec[3];      // reconstructed momentum of the track
-   Double_t  fMass[2];      // reconstructed [0] and simulated [1] mass, only used for resonances
-   Float_t   fPmother[3];   // MC momentum of the track's mother
-   Long_t    fPDG;          // particle PDG code
-   Int_t     fMother;       // index of mother in its container
-   Long_t    fMotherPDG;    // PDG code of mother
-   Double_t  fDCA;          // DCA of the particle
-   Short_t   fNTotSisters;  // number of  daughters of the particle
-   Bool_t    fIsFromB;	    // is the particle from B meson flag
-   Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
-   UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
-   Bool_t    fPassesOOBPileupCut; // passes out-of-bunch pileup cut
-   Double_t   K0smass;      //K0s mass (by prottay)
-  
-   ClassDef(AliRsnMiniParticle, 9)
-};
-
-#endif
+            //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
+            while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+            while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
+            return angle;
+         }
+//         AliWarning("This method is not yet implemented");
+         return 1E20;
+      case kDeltaEta:
+         l = event->LeadingParticle(fUseMCInfo);
+         if (l) {
+            l->Set4Vector(v,-1.0,fUseMCInfo);
+            Double_t deta = v.Eta() - pair->Sum(fUseMCInfo).Eta();
+            return deta;
+         }
+         return 1E20;
+      case kFirstDaughterPt:
+         return pair->DaughterPt(0,fUseMCInfo);
+      case kSecondDaughterPt:
+         return pair->DaughterPt(1,fUseMCInfo);
+      case kFirstDaughterP:
+         pair->DaughterPxPyPz(0,fUseMCInfo, p3);
+         return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
+      case kSecondDaughterP:
+         pair->DaughterPxPyPz(1,fUseMCInfo, p3);
+         return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
+      case kFirstDaughterIM:
+         return pair->DaughterIM();
+      case kDCAproduct:
+         return pair->DCAProduct();
+      case kFirstDaughterDCA:
+         return pair->DaughterDCA(0);
+      case kSecondDaughterDCA:
+         return pair->DaughterDCA(1);
+      case kNSisters:
+         return pair->NSisters();
+      case kPairPtRes:
+         return pair->PairPtRes();
+      case kPairYRes:
+         return pair->PairYRes();     
+      case kPhiV:
+         return pair->PhiV(fUseMCInfo);
+      case kAsym:
+         return pair->PairAsymmetry(fUseMCInfo);
+      default:
+         AliError("Invalid value type");
+         return 1E20;
+   }
+}
