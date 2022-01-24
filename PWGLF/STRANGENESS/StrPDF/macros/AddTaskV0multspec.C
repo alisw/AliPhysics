@@ -12,7 +12,7 @@ AliAnalysisTaskV0multspec *AddTaskV0multspec(int part = 0, bool ismc = kFALSE, T
   }
 
   // Create the task and add it to the manager
-  TString tskname = Form("V0multspec_Task_%s", suffix.Data());
+  TString tskname = Form("StrMultSpec_%s", suffix.Data());
   AliAnalysisTaskV0multspec *mytask = new AliAnalysisTaskV0multspec(tskname, part, "", ismc);
   mytask->SetIsMC(ismc);
   mgr->AddTask(mytask);
@@ -24,8 +24,8 @@ AliAnalysisTaskV0multspec *AddTaskV0multspec(int part = 0, bool ismc = kFALSE, T
   AliAnalysisDataContainer *coutput[2];
 
   mgr->ConnectInput(mytask, 0, mgr->GetCommonInputContainer());
-  coutput[0] = mgr->CreateContainer("fHistos_misc", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-  coutput[1] = mgr->CreateContainer("fTree",      TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  coutput[0] = mgr->CreateContainer(Form("fHistos_misc_%s",suffix.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  coutput[1] = mgr->CreateContainer(Form("fTree_%s",suffix.Data()),      TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
   mgr->ConnectOutput(mytask, 1, coutput[0]);
   mgr->ConnectOutput(mytask, 2, coutput[1]);
   
