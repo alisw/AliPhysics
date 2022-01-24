@@ -110,6 +110,7 @@ set(SRCS
   AliAnalysisTaskGammaDeltaPIDSaveQvec.cxx
   AliAnalysisTaskGammaDeltaPIDSaveQvecEvent.cxx
   AliAnalysisTaskCMXQA.cxx
+  AliAnalysisTaskCMWPU2018eqAchCL.cxx
 )
 
 # Headers from sources
