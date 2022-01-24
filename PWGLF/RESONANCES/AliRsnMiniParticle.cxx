@@ -1,3 +1,4 @@
+
 //
 // This object is used as lightweight temporary container
 // of all information needed from any input object and
@@ -5,6 +6,9 @@
 // Lists of such objects are stored in a buffer, in order
 // to allow an event mixing.
 //
+
+//Modified by Prottay 23/01/2022(prottay.das@cern.ch) to fill K0s inv mass for a given bin of K*+/-
+
 
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
@@ -14,6 +18,13 @@
 #include "AliRsnEvent.h"
 #include "AliRsnMiniEvent.h"
 #include "AliRsnMiniParticle.h"
+#include "AliRsnEvent.h"
+#include "AliRsnDaughter.h"
+#include "AliRsnMother.h"
+#include "AliRsnDaughterDef.h"
+#include "AliRsnDaughterDef.h"
+
+
 
 ClassImp(AliRsnMiniParticle)
 
@@ -35,6 +46,7 @@ void AliRsnMiniParticle::Clear(Option_t *)
    fIsQuarkFound = kFALSE;
    fCutBits = 0;
    fPassesOOBPileupCut = kTRUE;
+   K0smass=0.0;   
 }
 
 //__________________________________________________________________________________________________
@@ -57,12 +69,14 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
    fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -0x80000000;
    fMass[0] = fMass[1] = -1.0;
-
-   // charge
+   
+   
+   //charge
    if (daughter->IsPos())
       fCharge = '+';
    else if (daughter->IsNeg())
       fCharge = '-';
+   
    else{
       AliAODcascade *Xiaod = (AliAODcascade *)daughter->Ref2AODcascade();
       if(Xiaod){  // For ESD Cascade
@@ -77,6 +91,8 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
       else fCharge = '0';
    }
 
+   
+   
    // rec info
    if (daughter->GetRef()) {
       fPrec[0] = daughter->GetRef()->Px();
@@ -122,6 +138,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
             }
          }
       }
+
       if (v0 && aodEvent) {
          fIndexDaughters[0] = v0->GetPosID();
          fIndexDaughters[1] = v0->GetNegID();
@@ -188,7 +205,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
          //DCA to Primary Vertex for ESD
          AliESDtrack *track = daughter->Ref2ESDtrack();
          AliESDv0 *v0 = daughter->Ref2ESDv0();
-         AliESDcascade *xi = daughter->Ref2ESDcascade();
+	 AliESDcascade *xi = daughter->Ref2ESDcascade();
          AliESDEvent *esdEvent = (AliESDEvent*) event->GetRefESD();
          if (track && esdEvent) {
             AliVVertex *vertex = (AliVVertex*) esdEvent->GetPrimaryVertex();
@@ -200,9 +217,17 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
                }
             }
          }
+
+	 
          if (v0 && esdEvent) {
             fIndexDaughters[0] = v0->GetPindex();
             fIndexDaughters[1] = v0->GetNindex();
+	    
+	    double ma=v0->GetEffMass();	    
+	    K0smass=ma;
+	    	 
+	 
+	    
          }
          if (xi && esdEvent) {
             fIndexDaughters[0] = xi->GetPindex();
@@ -273,6 +298,12 @@ Double_t AliRsnMiniParticle::Mass()
    TDatabasePDG *db   = TDatabasePDG::Instance();
    TParticlePDG *part = db->GetParticle(PDG());
    return part->Mass();
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniParticle::K0Mass()
+{
+  return K0smass;
 }
 
 //__________________________________________________________________________________________________

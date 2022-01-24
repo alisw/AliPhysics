@@ -57,7 +57,21 @@ public:
     nCrossedRows = f_nCrossedRows;
     movePhi = f_movePhi;
   }
-
+  virtual void SetCentralities(int f_nCentrClassesUsed, Float_t cent0, Float_t cent1, Float_t cent2, Float_t cent3, Float_t cent4, Float_t cent5)
+    {
+        nCentrClassesUsed = f_nCentrClassesUsed;
+        Float_t f_CentrPercentiles[] = {cent0, cent1, cent2, cent3, cent4, cent5};
+        for (int i = 0; i < nCentrClasses+1; i++)
+        {
+        CentrPercentiles[i] = f_CentrPercentiles[i];
+        }
+    }
+    virtual void SetCuts(Bool_t f_SPDvsV0MCut, Bool_t f_LargeTPCCut)
+    {
+        SPDvsV0MCut = f_SPDvsV0MCut;
+        LargeTPCCut = f_LargeTPCCut;
+    }
+    
 private:
   AliAODEvent *fAOD;            //! input event
   AliPIDResponse *fPIDResponse; //! pid response object
@@ -66,10 +80,13 @@ private:
   TH1F *fHistTracksCut;         //!
   UInt_t filterBit;             //
   Bool_t pbpb, IsMC;
+  Bool_t SPDvsV0MCut, LargeTPCCut;
   AliEventCuts *fAliEventCuts; //!
   int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
   Float_t minP, maxP, Vertexmin, Vertexmax;
-  static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8;
+  Float_t CentrPercentiles[100];
+  int nCentrClassesUsed;
+  static const int nCentrClasses = 100, nEtaClasses = 16, nSorts = 8;
   //Efficiency Maps
   //Tracking:
   TH3D *NGenTracks[nCentrClasses][nEtaClasses][nSorts];            //!
@@ -90,7 +107,10 @@ private:
   TH1D *purityAll[8]; //!
   TH1D *purity[8][8]; //!
 
-  TH2D *fHistQASPDTrackletsvsV0MCent; //!
+  TH2D *fHistQASPDTrackletsvsV0MCent[3]; //!
+  TH2D *fHistQAMultTPCvsESD[2]; //!
+  TH2D *fHistQAMultTPCvsV0[2]; //!
+  TH2D *fHistQAMultTrkvsMultTrkTOF[2]; //!
 
   AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency(const AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency &);            // not implemented
   AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency &operator=(const AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency &); // not implemented

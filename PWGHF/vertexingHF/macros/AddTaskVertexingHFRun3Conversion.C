@@ -20,9 +20,9 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
 
   TString localdir=".";
   Int_t runnumber=-1;
-  if(gSystem->Getenv("ALIEN_JDL_LPMRUNNUMBER")) runnumber = atoi(gSystem->Getenv("ALIEN_JDL_LPMRUNNUMBER"));
-  TString collSyst=gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
-  TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+  if(gSystem->Getenv("LPMRunNumber")) runnumber = atoi(gSystem->Getenv("LPMRunNumber"));
+  TString collSyst=gSystem->Getenv("LPMInteractionType");
+  TString prodType = gSystem->Getenv("LPMProductionType");
   
   // Copy the needed Config file in the current directory 
   if(configfilename.IsNull()){
@@ -31,7 +31,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
       configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C";
       if(runnumber>=295424)configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt.C";
       if (prodType=="MC"){
-	TString prodtag=gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
+	TString prodtag=gSystem->Getenv("LPMProductionTag");
 	if(prodtag=="LHC20g2a_2" || prodtag=="LHC20g11a2" || prodtag=="LHC20j5a1" || prodtag=="LHC20j5a2" || prodtag=="LHC20k3a" || prodtag=="LHC20l5a") configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt_Central.C";
 	else if(prodtag=="LHC20g2b_2" || prodtag=="LHC20g11b2" || prodtag=="LHC20j5b1" || prodtag=="LHC20j5b2" || prodtag=="LHC20k3b" || prodtag=="LHC20l5b") configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt_SemiCentral.C";
       }

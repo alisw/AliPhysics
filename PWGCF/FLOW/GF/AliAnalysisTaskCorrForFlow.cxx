@@ -470,11 +470,11 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixed()
           }
         }
       }
-
+    }
       TObjArray* cloneArray = (TObjArray *)fTracksAss->Clone();
      cloneArray->SetOwner(kTRUE);
      pool->UpdatePool(cloneArray);
-}
+
  return;
 }
 //_____________________________________________________________________________

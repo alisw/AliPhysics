@@ -50,6 +50,7 @@ class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
   Double_t      GetTOFBeta(AliVTrack *esdtrack);
   Bool_t        MatchTOF(AliVTrack *vtrack);
 
+  //Functions for AddTask
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   void SetTreeName(TString TreeName)
   {
@@ -79,6 +80,9 @@ class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
   {
     fNCrossedRowsTPC = nCrossedRow;
   }
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
  
  private:
   enum

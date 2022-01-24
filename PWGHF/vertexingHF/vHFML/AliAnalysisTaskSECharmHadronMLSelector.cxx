@@ -438,7 +438,7 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
                 return 0;
             break;
         case kDstartoD0pi:
-            if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(chHad), true))
+            if (!vHF->FillRecoCasc(fAOD, dynamic_cast<AliAODRecoCascadeHF *>(chHad), false))
                 return 0;
             break;
         case kDstoKKpi:
@@ -459,17 +459,8 @@ int AliAnalysisTaskSECharmHadronMLSelector::IsCandidateSelected(AliAODRecoDecayH
     }
 
     double ptD = chHad->Pt();
-    double yD = chHad->Y(absPdgMom);
     int ptbin = fRDCuts->PtBin(ptD);
     if (ptbin < 0)
-    {
-        if (unsetVtx)
-            chHadWithVtx->UnsetOwnPrimaryVtx();
-        return 0;
-    }
-
-    bool isFidAcc = fRDCuts->IsInFiducialAcceptance(ptD, yD);
-    if (!isFidAcc)
     {
         if (unsetVtx)
             chHadWithVtx->UnsetOwnPrimaryVtx();

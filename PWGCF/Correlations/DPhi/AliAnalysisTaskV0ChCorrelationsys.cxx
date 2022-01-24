@@ -1763,7 +1763,7 @@ void AliAnalysisTaskV0ChCorrelationsys::UserExec(Option_t *)
    // Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
    // if (!isINT7selected) return;
 
-
+/*
  if(!fData2018){if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
 
  if(fData2018){
@@ -1775,7 +1775,7 @@ else{
    }
   }
 
-
+*/
 
 
     AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());

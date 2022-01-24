@@ -70,7 +70,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
     fOutputList->Add(fHistEventsCut);
     fOutputList->Add(fHistTracksCut);
 
-    for (int iCent = 0; iCent < nCentrClasses; iCent++)
+    for (int iCent = 0; iCent < nCentrClassesUsed; iCent++)
     {
         for (int iEta = 0; iEta < nEtaClasses; iEta++)
         {
@@ -117,8 +117,20 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
             fOutputList->Add(purity[iSort][jSort]);
         }
     }
-    fHistQASPDTrackletsvsV0MCent = new TH2D("fHistQASPDTrackletsvsV0MCent", ";V0M Percentile;N Tracklets in SPD", 100, 0, 100, 400, 0, 1e4);
-    fOutputList->Add(fHistQASPDTrackletsvsV0MCent);
+  for (Int_t i(0); i < 3; i++)
+  {
+    fHistQASPDTrackletsvsV0MCent[i] = new TH2D(Form("fHistQASPDTrackletsvsV0MCent%d", i), ";V0M Percentile;N Tracklets in SPD", 100, 0, 100, 400, 0, 1e4);
+    fOutputList->Add(fHistQASPDTrackletsvsV0MCent[i]);
+  }
+  for (Int_t i(0); i < 2; i++)
+  {
+    fHistQAMultTPCvsESD[i] = new TH2D(Form("fHistQAMultTPCvsESD%d", i), ";MultTPC;MultESD", 400, 0, 1e4, 400, 0, 5e4);
+    fOutputList->Add(fHistQAMultTPCvsESD[i]);
+    fHistQAMultTPCvsV0[i] = new TH2D(Form("fHistQAMultTPCvsV0%d", i), ";MultTPC;V0", 400, 0, 1e4, 400, 0, 5e4);
+    fOutputList->Add(fHistQAMultTPCvsV0[i]);
+    fHistQAMultTrkvsMultTrkTOF[i] = new TH2D(Form("fHistQAMultTrkvsMultTrkTOF%d", i), ";MultTrk;MultTrkTOF", 400, 0, 5e4, 400, 0, 5e4);
+    fOutputList->Add(fHistQAMultTrkvsMultTrkTOF[i]);
+  }
     if (!pbpb)
     {
         fAliEventCuts = new AliEventCuts();
@@ -182,8 +194,8 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
         return;
     }
     fHistEventsCut->Fill("centrality", 1);
-    fHistQASPDTrackletsvsV0MCent->Fill(centr, NTrackletsSPD);
-    if (1)
+    fHistQASPDTrackletsvsV0MCent[0]->Fill(centr, NTrackletsSPD);
+    if (SPDvsV0MCut)
     {
         TF1 *fSPDvsV0M_DownLimit = new TF1("fSPDvsV0M_DownLimit", "exp(8.1456-0.0354*x-3.8e-04*x*x)", 0, 80);
         TF1 *fSPDvsV0M_UperLimit = new TF1("fSPDvsV0M_UperLimit", "exp(8.58-0.036*x-4.4e-05*x*x)", 0, 80);
@@ -194,6 +206,10 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
         }
         fHistEventsCut->Fill("SPDvsV0M", 1);
     }
+    fHistQASPDTrackletsvsV0MCent[1]->Fill(centr, NTrackletsSPD);
+    //Events with large number of TPC clusters
+    Int_t multEsd = ((AliAODHeader *)fAOD->GetHeader())->GetNumberOfESDTracks();
+    Int_t multTPC = 0;
     const AliAODVertex *vtx = fAOD->GetPrimaryVertex();
     if (vtx->GetNContributors() < 1)
     {
@@ -211,8 +227,20 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
     Int_t nTracks(fAOD->GetNumberOfTracks());
     Int_t EtaBin, CentrBin;
     int sort = 20;
-    CentrBin = (centr - minCent) / ((maxCent - minCent) / nCentrClasses);
+    //CentrBin = (centr - minCent) / ((maxCent - minCent) / nCentrClasses);
     //CentrBin = centr<=5?0:(centr<=10?1: 2+(centr-10)/((maxCent-10)/(nCentrClasses-2)) ); //if first bins are 0-5 & 5-10
+    for (Int_t i(0); i < nCentrClassesUsed; i++)
+    {
+     if (centr >= CentrPercentiles[i] && centr <= CentrPercentiles[i + 1])
+      {
+       CentrBin = i;
+      }
+    }
+    if(!(CentrBin+1)||CentrBin>=nCentrClassesUsed)
+    {
+    PostData(1, fOutputList);
+    return;
+    }
     int NAcceptedtracks = 0;
     fHistTracksCut->Fill("minBias", nTracks);
 
@@ -221,11 +249,19 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
     Int_t nMCTracks(fMC->GetNumberOfTracks());
     Float_t PtCut[3] = {0.2, 0.5, 0.5};
     Float_t nSigmaBoundary[3] = {0.5, 0.32, 0.7};
-
+    Int_t multTrk=0;
+    Int_t multTrkTOF=0;
     //Track loop:
     for (Int_t i(0); i < nTracks; i++)
     {
         AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
+        if (track->TestFilterBit(32))
+         {
+         multTrk++;
+         if ( TMath::Abs(track->GetTOFsignalDz()) <= 10 && track->GetTOFsignal() >= 12000 && track->GetTOFsignal() <= 25000) multTrkTOF++;
+         }
+        if (track->TestFilterBit(128))
+        multTPC++;
         if (!track || !track->TestFilterBit(filterBit))
             continue;
         fHistTracksCut->Fill("FilterBit", 1);
@@ -439,9 +475,22 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
         NAcceptedtracks++;
     }
     // end of track loop
-
+  const AliAODVZERO *vzrData = fAOD->GetVZEROData();
+  float sumV0ampl = vzrData->GetMTotV0A() + vzrData->GetMTotV0C();
+  fHistQAMultTPCvsV0[0]->Fill(multTPC, sumV0ampl);
+  fHistQAMultTPCvsESD[0]->Fill(multTPC, multEsd);
+  fHistQAMultTrkvsMultTrkTOF[0]->Fill(multTrk, multTrkTOF);
+  if (multEsd - 3.38 * multTPC >= 15000 && LargeTPCCut)
+  {
+    PostData(1, fOutputList);
+    return;
+  }
+  fHistQASPDTrackletsvsV0MCent[2]->Fill(centr, NTrackletsSPD);
+  fHistQAMultTPCvsESD[1]->Fill(multTPC, multEsd);
+  fHistQAMultTPCvsV0[1]->Fill(multTPC, multEsd);
+  fHistQAMultTrkvsMultTrkTOF[1]->Fill(multTrk, multTrkTOF);
+    
     int nAcceptedGenTracks = 0;
-
     if (IsMC && fMC)
     {
         //Generated particles track loop

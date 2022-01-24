@@ -61,7 +61,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event, int ispileup, int trackpileup, double pTmin, double pTmax, int kt1, int kt2, int iskt, int isbeta, double dEtamax) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, double Vz, int Vz_bin, double eta, double dcaxy, double dcaz, int ncls, int pid_default, int pid_loose, int pid_strict,  int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid, int lmax, int no_mix_event, int ispileup, int trackpileup, double pTmin, double pTmax, int kt1, int kt2, int iskt, int isbeta) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -343,7 +343,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
           //sqpcetaphitpcRD[aniter] = new AliFemtoPairCutRadialDistanceLM();
 
 	  if (paircutmergedfractionon == 1) 
-	    sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction(distance, fraction1, dEtamax, 0.8, 2.5);
+	    sqpcetaphitpc[aniter] = new AliFemtoPairCutMergedFraction(distance, fraction1, 0.011, 0.8, 2.5);
 	  else
 	    sqpcetaphitpc[aniter] = new AliFemtoPairCutAntiGamma();
 	  

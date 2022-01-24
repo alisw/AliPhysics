@@ -13,13 +13,14 @@
 
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
+#include "AliESDv0.h"
 
 class AliRsnDaughter;
 
 class AliRsnMiniParticle : public TObject {
 public:
 
-   AliRsnMiniParticle() : fIndex(-0x80000000), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0), fPassesOOBPileupCut(kTRUE) {
+  AliRsnMiniParticle() : fIndex(-0x80000000), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0), fPassesOOBPileupCut(kTRUE), K0smass(0) {
        Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;
        fIndexDaughters[0] = fIndexDaughters[1] = fIndexDaughters[2] = -0x80000000;
        fMass[0] = fMass[1] = -1.0;
@@ -31,6 +32,7 @@ public:
    Int_t         &IndexV0Pos()               {return fIndexDaughters[0];}
    Int_t         &IndexV0Neg()               {return fIndexDaughters[1];}
    Int_t         &IndexBachelor()            {return fIndexDaughters[2];}
+   Double_t      &K0M()                      {return K0smass;} //added by prottay
    Char_t        &Charge()                   {return fCharge;}
    Float_t       &PsimX()                    {return fPsim[0];}
    Float_t       &PsimY()                    {return fPsim[1];}
@@ -47,6 +49,7 @@ public:
    Long_t        &PDG()                      {return fPDG;}
    Long_t        PDGAbs()                    {return TMath::Abs(fPDG);}
    Double_t      Mass();                     // returns PDG mass
+   Double_t      K0Mass();                   // returns eff mass (by prottay)
    Double_t      &StoredMass(Bool_t mc)      {return (mc ? fMass[0] : fMass[1]);} // store mass for resonances
    Int_t         &Mother()                   {return fMother;}
    Long_t        &MotherPDG()                {return fMotherPDG;}
@@ -86,7 +89,8 @@ private:
    Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
    Bool_t    fPassesOOBPileupCut; // passes out-of-bunch pileup cut
-
+   Double_t   K0smass;      //K0s mass (by prottay)
+  
    ClassDef(AliRsnMiniParticle, 9)
 };
 
