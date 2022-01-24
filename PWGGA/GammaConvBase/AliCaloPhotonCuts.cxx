@@ -7177,6 +7177,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         // TB parametrization for 100MeV points for data an MC
         // MC fine tuning for lowB (0.2T) and nomB (0.5T) obtained with PCM-EMCal
         // incl. interpolation between PCM-EMC and EMC-EMC fine tuning of 0.25%!
+        // MC fine tuning for noB (0T) obtained with EMC-EMC
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           // fine tuning for pp 13 TeV lowB
@@ -7186,7 +7187,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
             }
-            // fine tuning for pp 13 TeV nominal B (default for all B=0.5T periods)
+          // fine tuning for pp 13 TeV no B (only for LHC17d)
+          } else if (fCurrentMC==kLHC21j8a){
+            energy /= 1.0378;
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+          // fine tuning for pp 13 TeV nominal B (default for all B=0.5T periods)
           } else {
             energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
             energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
