@@ -3429,7 +3429,7 @@ Bool_t Config_k0Sigmastar(
     Double_t mass;
     Double_t massAll[4]={1.8826, 2.0650, 2.2550, 2.4550}; //masses phi+p and 3 Ps states
     Int_t ipdgNum[4]={9322132,9322312,9323212,9332212};  //pdgs Ps states
-    Int_t Ps = ; //TrackCutsP = 10000 to turn on Ps MC
+    Int_t Ps = (TrackCutsK/10)%10; //TrackCutsK = 10 to turn on Ps MC
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
