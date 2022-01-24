@@ -113,6 +113,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
 
 	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
+	void SetEfficiencyFilepPb(char* fname) { TGrid::Connect("alien://"); fefficiencyFilepPb = TFile::Open(fname,"READ"); }
 	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }
 
         Bool_t  GoodTracksSelection(int trk);
@@ -176,8 +177,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         TString                         fOption;
 	AliDirList*				fOutput=nullptr; //!
 
-	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
-	TFile*                          fefficiencyFilepPb= TFile::Open("EffOutpPb.root","read"); //
+	TFile*				fefficiencyFile=nullptr; //
+	TFile*                          fefficiencyFilepPb=nullptr; //
 	TFile*				fefficiency3DFile=nullptr; //
 	TRandom3*                       random_subsample; //
 
