@@ -79,6 +79,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
+#include "AliAnalysisFilter.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
@@ -156,12 +157,13 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE)
-{
-  //
-  //Default ctor
-  //
-  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
-}
+  {
+    //
+    //Default ctor
+    //
+    for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
+
+  for(Int_t i = 0; i < 18; i++) fTrackFilter[i] = 0;}
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
   AliAnalysisTaskSE(name),
@@ -251,6 +253,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
   for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
+  for (Int_t i = 0; i < 18; i++) {fTrackFilter[i] = 0;}
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
   DefineOutput(6,TList::Class());
   fCuts->PrintAll();
@@ -1784,11 +1787,13 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
     fOutputRT = new TList();
     fOutputRT->SetOwner();
     fOutputRT->SetName("OutputHistos");
+
     fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
     fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
     fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
     fStepRecoPIDRT = new TH1F("fStepRecoPIDRT","RT for events with selected D;R_{T};Entries",100,0,10);
     fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
+
     fOutputRT->Add(fNChargedInTrans);
     fOutputRT->Add(fPTDistributionInTransverse);
     fOutputRT->Add(fGlobalRT);
@@ -2790,6 +2795,12 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    Int_t eventId = 0;
    Double_t trackRTval = -1;
    if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
+
+   ///settings for track filter used in RT determination
+  AliESDtrackCuts* esdTrackCutsRun2[18] = {0};
+  AliESDtrackCuts* esdTrackCutsGlobal[18] = {0};
+  AliESDtrackCuts* esdTrackCutsComplementary[18] = {0};
+
    if (!fUseHybridTracks){
      for ( int iTc = 0 ; iTc < 18 ; iTc++ )
        {
@@ -2891,7 +2902,6 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
  	esdTrackCutsComplementary[0]->SetEtaRange(-0.8,0.8);
  	fTrackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
    }
-   
 
 
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
@@ -2911,17 +2921,16 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       for ( Int_t i = 0; i < 1; i++)
       {
          UInt_t selectDebug = 0;
-         if (trackFilter)
+         if (!fUseHybridTracks && fTrackFilter[i])
          {
-            selectDebug = trackFilter->IsSelected(part);
+            selectDebug = fTrackFilter[i]->IsSelected(part);
             if (!selectDebug)
             {
                continue;
             }
-            /// fill tracks array
-            fCTSTracks->Add(part);
             if (!part) continue;
-         }
+         } else if (fUseHybridTracks && fTrackFilterGlobal && fTrackFilterComplementary ){
+	   	 }
       }
    }
 
@@ -2954,7 +2963,6 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
   if (regionSortedParticlesReco) delete regionSortedParticlesReco;
   if (regionsMinMaxReco) delete regionsMinMaxReco;
   if (LeadingTrackReco) delete LeadingTrackReco;
-  if(trackFilter) delete trackFilter;
   return trackRTval;
 }
 
@@ -3083,6 +3091,8 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
       if(region == -2) away->Add(part);
 
       if(region == 1 || region == -1) fPTDistributionInTransverse->Fill(part->Pt());
+
+
 
    }//end loop on tracks
 
