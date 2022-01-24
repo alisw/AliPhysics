@@ -719,12 +719,12 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
             }
         }
         else {
-            if (isSelected == 1 || isSelected == 3) {
+            if ((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || isSelected) {
                 if (!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 0))
                     isMLsel -= 1;
                 scores = modelPred;
             }
-            if (isSelected >= 2) {
+            if (fDecChannel == kD0toKpi && isSelected >= 2) {
                 if (!fMLResponse->IsSelectedMultiClass(modelPred, d, fAOD->GetMagneticField(), pidHF, 1))
                     isMLsel -= 2;
                 scoresSecond = modelPred;
