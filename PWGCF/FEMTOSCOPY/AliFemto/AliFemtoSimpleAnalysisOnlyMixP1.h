@@ -22,7 +22,9 @@ class AliFemtoSimpleAnalysisOnlyMixP1 : public AliFemtoSimpleAnalysis{
 
         
         virtual void ProcessEvent(const AliFemtoEvent* hbtEvent);
-
+	//\ dowang 1.23
+	void SetMakeCForNot(int fMake);
+        int MakeCForNot;
 
 };
 
