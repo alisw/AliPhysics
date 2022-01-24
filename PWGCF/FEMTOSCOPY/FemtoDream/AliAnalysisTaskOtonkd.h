@@ -133,6 +133,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTKaonPx[30];
   Float_t fTKaonPy[30];
   Float_t fTKaonPz[30];
+  Float_t fTKaonPTPC[30];
   Float_t fTKaonVPx[30];
   Float_t fTKaonVPy[30];
   Float_t fTKaonVPz[30];
