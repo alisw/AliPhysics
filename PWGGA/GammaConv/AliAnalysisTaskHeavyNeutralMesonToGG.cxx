@@ -1784,7 +1784,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k<(Int_t)clus->GetNLabels(); k++){
           PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-          //           Int_t pdgCode = fMCEvent->Particle(mclabelsCluster[k])->GetPdgCode();
+          //           Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
           //           cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
         }
       }
@@ -1855,12 +1855,12 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
 //________________________________________________________________________
 void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueClusterCandidates(AliAODConversionPhoton *TruePhotonCandidate, Float_t clusM02){
 
-  TParticle *Photon = NULL;
+  AliMCParticle *Photon = NULL;
   if (TruePhotonCandidate->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set task will abort");
   if (TruePhotonCandidate->GetCaloPhotonMCLabel(0) < 0) return;
   if(!fDoLightOutput) fHistoTrueNLabelsInClusPt[fiCut]->Fill(TruePhotonCandidate->GetNCaloPhotonMCLabels(),TruePhotonCandidate->Pt(),fWeightJetJetMC);
 
-  if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0)Photon = fMCEvent->Particle(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
+  if (TruePhotonCandidate->GetNCaloPhotonMCLabels()>0) Photon = (AliMCParticle*) fMCEvent->GetTrack(TruePhotonCandidate->GetCaloPhotonMCLabel(0));
   else return;
 
   if(Photon == NULL){
@@ -1878,7 +1878,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueClusterCandidates(AliAODCo
 
   // to get primary distrinction right put mother of conversion electron as particle to check
   if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion())
-    isPrimary              = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, Photon->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    isPrimary              = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, Photon->GetMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
 
   // Fill histograms for inclusive gamma corrections
@@ -1894,7 +1894,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueClusterCandidates(AliAODCo
       if(isPrimary){
         fHistoTruePrimaryClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
         // --> c) which are from conversions? Just additonal information
-        if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && (Photon->GetMother(0)>-1)){
+        if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && (Photon->GetMother()>-1)){
           fHistoTruePrimaryClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
         }
         // --> d) how do the secondaries look like
@@ -1910,7 +1910,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueClusterCandidates(AliAODCo
   }
 
   // Check if we are double counting photons
-  Int_t motherLab = Photon->GetMother(0);
+  Int_t motherLab = Photon->GetMother();
   if (motherLab > -1){
     if (TruePhotonCandidate->IsLargestComponentPhoton()){
       if (CheckVectorForDoubleCount(fVectorDoubleCountTrueClusterGammas,motherLab)){
@@ -1918,7 +1918,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueClusterCandidates(AliAODCo
         FillMultipleCountMap(fMapMultipleCountTrueClusterGammas,motherLab);
       }
     }
-    Int_t grandMotherLab = fMCEvent->Particle(motherLab)->GetMother(0);
+    Int_t grandMotherLab = fMCEvent->GetTrack(motherLab)->GetMother();
     if (grandMotherLab > -1){
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
         if (CheckVectorForDoubleCount(fVectorDoubleCountTrueClusterGammas,grandMotherLab)){
@@ -2182,25 +2182,25 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTruePhotonCandidates(AliAODCon
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
   // Process True Photons
-  TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
-  TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
+  AliMCParticle *posDaughter = (AliMCParticle*) TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
+  AliMCParticle *negDaughter = (AliMCParticle*) TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
 
   if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
-  Int_t pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()),TMath::Abs(negDaughter->GetPdgCode())};
-  if(posDaughter->GetMother(0) != negDaughter->GetMother(0)){
+  Int_t pdgCode[2] = {TMath::Abs(posDaughter->PdgCode()),TMath::Abs(negDaughter->PdgCode())};
+  if(posDaughter->GetMother() != negDaughter->GetMother()){
     return;
   }
-  else if(posDaughter->GetMother(0) == -1){
+  else if(posDaughter->GetMother() == -1){
     return;
   }
 
   if(pdgCode[0]!=11 || pdgCode[1]!=11) return; //One Particle is not a electron
 
-  if(posDaughter->GetPdgCode()==negDaughter->GetPdgCode()) return; // Same Charge
+  if(posDaughter->PdgCode()==negDaughter->PdgCode()) return; // Same Charge
 
-  TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCEvent);
+  AliMCParticle *Photon = (AliMCParticle*) TruePhotonCandidate->GetMCParticle(fMCEvent);
 
-  if(Photon->GetPdgCode() != 22){
+  if(Photon->PdgCode() != 22){
     return; // Mother is no Photon
   }
 
@@ -2209,12 +2209,12 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTruePhotonCandidates(AliAODCon
   // True Photon
   if(fIsFromDesiredHeader){
     if(!fDoLightOutput) fHistoTrueConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
-    if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother(0))){
+    if (CheckVectorForDoubleCount(fVectorDoubleCountTrueConvGammas,posDaughter->GetMother())){
       if(!fDoLightOutput) fHistoDoubleCountTrueConvGammaRPt[fiCut]->Fill(TruePhotonCandidate->GetConversionRadius(),TruePhotonCandidate->Pt(),fWeightJetJetMC);
-      FillMultipleCountMap(fMapMultipleCountTrueConvGammas,posDaughter->GetMother(0));
+      FillMultipleCountMap(fMapMultipleCountTrueConvGammas,posDaughter->GetMother());
     }
   }
-  Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+  Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
   if(isPrimary){
     // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
     if(fIsFromDesiredHeader){
@@ -2340,7 +2340,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessMCParticles(){
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
     if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
       // fill primary histograms
-      TParticle* particle = (TParticle *)fMCEvent->Particle(i);
+      AliMCParticle* particle = (AliMCParticle *)fMCEvent->GetTrack(i);
       if (!particle) continue;
 
       Int_t isMCFromMBHeader = -1;
@@ -2356,8 +2356,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessMCParticles(){
       // Fill histograms for other particles
       Double_t mesonY = 1.e30;
       Double_t ratio  = 0;
-      if (particle->Energy() != TMath::Abs(particle->Pz())){
-        ratio         = (particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz());
+      if (particle->E() != TMath::Abs(particle->Pz())){
+        ratio         = (particle->E()+particle->Pz()) / (particle->E()-particle->Pz());
       }
       if( !(ratio <= 0) ){
         mesonY = particle->Y()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift();
@@ -2365,8 +2365,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessMCParticles(){
 
       // check neutral mesons
       if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedMC(particle,fMCEvent,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-        TParticle* daughter0 = (TParticle*)fMCEvent->Particle(particle->GetFirstDaughter());
-        TParticle* daughter1 = (TParticle*)fMCEvent->Particle(particle->GetLastDaughter());
+        AliMCParticle* daughter0 = (AliMCParticle*)fMCEvent->GetTrack(particle->GetDaughterFirst());
+        AliMCParticle* daughter1 = (AliMCParticle*)fMCEvent->GetTrack(particle->GetDaughterLast());
 
         Float_t weighted= 1;
         if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent)){
@@ -2376,8 +2376,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessMCParticles(){
         }
 
         Double_t alpha = -10;
-        if(particle->GetPdgCode() == fMesonPDG){
-          alpha = (daughter0->Energy() - daughter1->Energy())/(daughter0->Energy() + daughter1->Energy());
+        if(particle->PdgCode() == fMesonPDG){
+          alpha = (daughter0->E() - daughter1->E())/(daughter0->E() + daughter1->E());
           if (fHistoMCMesonPt[fiCut])fHistoMCMesonPt[fiCut]->Fill(particle->Pt(),weighted*fWeightJetJetMC); // All MC Meson
           if (fHistoMCMesonWOWeightPt[fiCut]) fHistoMCMesonWOWeightPt[fiCut]->Fill(particle->Pt(),fWeightJetJetMC);
           if (fIsMC > 1 && fHistoMCMesonWOEvtWeightPt[fiCut])fHistoMCMesonWOEvtWeightPt[fiCut]->Fill(particle->Pt());
@@ -2388,8 +2388,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessMCParticles(){
           }
 
           // Check the acceptance for both gammas & whether they are counted as primaries as well
-          Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetFirstDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-          Bool_t kDaughter1IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetLastDaughter(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+          Bool_t kDaughter0IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetDaughterFirst(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+          Bool_t kDaughter1IsPrim = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryESD( fMCEvent, particle->GetDaughterLast(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
           if( kDaughter0IsPrim && kDaughter1IsPrim ){
             if (fMesonRecoMode == 0){
               if( ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(daughter0,fMCEvent,kFALSE) &&
@@ -2791,8 +2791,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConvCalo(  
     if (TrueGammaCandidate0->IsTrueConvertedPhoton()){
       gamma0MCLabel = TrueGammaCandidate0->GetMCParticleLabel(fMCEvent);
       if(gamma0MCLabel>-1){
-        TParticle * gammaMC0 = (TParticle*)fMCEvent->Particle(gamma0MCLabel);
-        gamma0MotherLabel=gammaMC0->GetFirstMother();
+        AliMCParticle * gammaMC0 = (AliMCParticle*)fMCEvent->GetTrack(gamma0MCLabel);
+        gamma0MotherLabel=gammaMC0->GetMother();
       }
     }
     if (TrueGammaCandidate1->GetIsCaloPhoton() == 0) AliFatal("CaloPhotonFlag has not been set. Aborting");
@@ -2801,23 +2801,23 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConvCalo(  
     Int_t gamma1MotherLabel = -1;
     // check if
 
-    TParticle * gammaMC1 = 0x0;
+    AliMCParticle * gammaMC1 = 0x0;
     if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
       // Daughters Gamma 1
-      gammaMC1 = (TParticle*)fMCEvent->Particle(gamma1MCLabel);
+      gammaMC1 = (AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel);
       if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){    // largest component is electro magnetic
         // get mother of interest (pi0 or eta)
         if (TrueGammaCandidate1->IsLargestComponentPhoton()){                            // for photons its the direct mother
-          gamma1MotherLabel=gammaMC1->GetMother(0);
+          gamma1MotherLabel=gammaMC1->GetMother();
         }else if (TrueGammaCandidate1->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
-          if (TrueGammaCandidate1->IsConversion() && gammaMC1->GetMother(0)>-1) gamma1MotherLabel=fMCEvent->Particle(gammaMC1->GetMother(0))->GetMother(0);
-          else gamma1MotherLabel=gammaMC1->GetMother(0);
+          if (TrueGammaCandidate1->IsConversion() && gammaMC1->GetMother()>-1) gamma1MotherLabel=fMCEvent->GetTrack(gammaMC1->GetMother())->GetMother();
+          else gamma1MotherLabel=gammaMC1->GetMother();
         }
       }
     }
 
     if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
-      if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fMesonPDG){
+      if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == fMesonPDG){
         isTrueMeson=kTRUE;
       }
     }
@@ -2866,7 +2866,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConvCalo(  
         if (isPrimary) {
           Float_t weighted= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1MotherLabel, fMCEvent, fInputEvent)){
-              if (((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt()>0.005){
+              if (((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt()>0.005){
                 weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
                   //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
               }
@@ -2883,7 +2883,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConvCalo(  
 
           if (fDoMesonQA > 0 && fIsMC < 2){
             if(isTrueMeson){ // Only primary pi0 for resolution
-              if (fHistoTruePrimaryMesonMCPtResolPt[fiCut]) fHistoTruePrimaryMesonMCPtResolPt[fiCut]->Fill(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt(),(mesonCand->Pt()-((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt())/((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt(),weighted*fWeightJetJetMC);
+              if (fHistoTruePrimaryMesonMCPtResolPt[fiCut]) fHistoTruePrimaryMesonMCPtResolPt[fiCut]->Fill(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),(mesonCand->Pt()-((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt())/((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),weighted*fWeightJetJetMC);
             }
           }
         }
@@ -2893,7 +2893,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConvCalo(  
         if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Meson or Eta
           if (fHistoTrueBckGGInvMassPt[fiCut])fHistoTrueBckGGInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(), fWeightJetJetMC);
           if(
-            ( ((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fMesonPDG
+            ( ((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == fMesonPDG
               && (TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv()))
           ){
             if (fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]) fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(), fWeightJetJetMC);
@@ -3072,18 +3072,18 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCalo(  AliA
   Int_t gamma0MCLabel = TrueGammaCandidate0->GetCaloPhotonMCLabel(0);   // get most probable MC label
   Int_t gamma0MotherLabel = -1;
 
-  TParticle * gammaMC0 = 0x0;
+  AliMCParticle * gammaMC0 = 0x0;
   if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
-    gammaMC0 = (TParticle*)fMCEvent->Particle(gamma0MCLabel);
+    gammaMC0 = (AliMCParticle*)fMCEvent->GetTrack(gamma0MCLabel);
     if (TrueGammaCandidate0->IsLargestComponentPhoton() || TrueGammaCandidate0->IsLargestComponentElectron()){    // largest component is electro magnetic
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate0->IsLargestComponentPhoton()){                            // for photons its the direct mother
-        gamma0MotherLabel=gammaMC0->GetMother(0);
+        gamma0MotherLabel=gammaMC0->GetMother();
       } else if (TrueGammaCandidate0->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
-        if (TrueGammaCandidate0->IsConversion() && (gammaMC0->GetMother(0) > -1)){
-          gamma0MotherLabel=fMCEvent->Particle(gammaMC0->GetMother(0))->GetMother(0);
+        if (TrueGammaCandidate0->IsConversion() && (gammaMC0->GetMother() > -1)){
+          gamma0MotherLabel=fMCEvent->GetTrack(gammaMC0->GetMother())->GetMother();
         } else {
-          gamma0MotherLabel=gammaMC0->GetMother(0);
+          gamma0MotherLabel=gammaMC0->GetMother();
         }
       }
     }
@@ -3094,26 +3094,26 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCalo(  AliA
   Int_t gamma1MotherLabel = -1;
   // check if
 
-  TParticle * gammaMC1 = 0x0;
+  AliMCParticle * gammaMC1 = 0x0;
   if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
     // Daughters Gamma 1
-    gammaMC1 = (TParticle*)fMCEvent->Particle(gamma1MCLabel);
+    gammaMC1 = (AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel);
     if (TrueGammaCandidate1->IsLargestComponentPhoton() || TrueGammaCandidate1->IsLargestComponentElectron()){    // largest component is electro magnetic
       // get mother of interest (pi0 or eta)
       if (TrueGammaCandidate1->IsLargestComponentPhoton()){                            // for photons its the direct mother
-        gamma1MotherLabel      = gammaMC1->GetMother(0);
+        gamma1MotherLabel      = gammaMC1->GetMother();
       } else if (TrueGammaCandidate1->IsLargestComponentElectron()){                         // for electrons its either the direct mother or for conversions the grandmother
         if (TrueGammaCandidate1->IsConversion()){
-          if(gammaMC1->GetMother(0) > -1) gamma1MotherLabel    = fMCEvent->Particle(gammaMC1->GetMother(0))->GetMother(0);
+          if(gammaMC1->GetMother() > -1) gamma1MotherLabel    = fMCEvent->GetTrack(gammaMC1->GetMother())->GetMother();
         } else {
-          gamma1MotherLabel=gammaMC1->GetMother(0);
+          gamma1MotherLabel=gammaMC1->GetMother();
         }
       }
     }
   }
 
   if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
-    if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fMesonPDG){
+    if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == fMesonPDG){
       isTrueMeson=kTRUE;
     }
   }
@@ -3163,8 +3163,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCalo(  AliA
       // filling primary histograms
       Float_t weighted= 1;
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1MotherLabel, fMCEvent, fInputEvent)){
-        if (((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt()>0.005){
-          weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
+        if (((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt()>0.005){
+          weighted = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
           //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
         }
       }
@@ -3176,7 +3176,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCalo(  AliA
       }
       if (fDoMesonQA > 0 && fDoMesonQA < 3 && fIsMC<2){
         if(isTrueMeson){ // Only primary pi0 for resolution
-          if (fHistoTruePrimaryMesonMCPtResolPt[fiCut]) fHistoTruePrimaryMesonMCPtResolPt[fiCut]->Fill(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt(),(mesonCand->Pt()-((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt())/((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt(),weighted* fWeightJetJetMC);
+          if (fHistoTruePrimaryMesonMCPtResolPt[fiCut]) fHistoTruePrimaryMesonMCPtResolPt[fiCut]->Fill(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),(mesonCand->Pt()-((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt())/((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),weighted* fWeightJetJetMC);
         }
       }
     }
@@ -3185,10 +3185,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesCalo(  AliA
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
         if (fHistoTrueBckGGInvMassPt[fiCut]) fHistoTrueBckGGInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(), fWeightJetJetMC);
 
-        if( (((TParticle*)fMCEvent->Particle(gamma0MotherLabel))->GetPdgCode() == fMesonPDG
+        if( (((AliMCParticle*)fMCEvent->GetTrack(gamma0MotherLabel))->PdgCode() == fMesonPDG
           && (TrueGammaCandidate0->IsMerged() || TrueGammaCandidate0->IsMergedPartConv()))
           ||
-          (((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fMesonPDG
+          (((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == fMesonPDG
           && (TrueGammaCandidate1->IsMerged() || TrueGammaCandidate1->IsMergedPartConv()))
         ){
           if (fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]) fHistoTrueBckFullMesonContainedInOneClusterInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(), fWeightJetJetMC);
@@ -3366,16 +3366,16 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConv(  AliA
     Int_t gamma0MotherLabel = -1;
     if(gamma0MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
       // Daughters Gamma 0
-      TParticle * negativeMC = (TParticle*)TrueGammaCandidate0->GetNegativeMCDaughter(fMCEvent);
-      TParticle * positiveMC = (TParticle*)TrueGammaCandidate0->GetPositiveMCDaughter(fMCEvent);
-      TParticle * gammaMC0 = (TParticle*)fMCEvent->Particle(gamma0MCLabel);
-      if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
+      AliMCParticle * negativeMC = (AliMCParticle*)TrueGammaCandidate0->GetNegativeMCDaughter(fMCEvent);
+      AliMCParticle * positiveMC = (AliMCParticle*)TrueGammaCandidate0->GetPositiveMCDaughter(fMCEvent);
+      AliMCParticle * gammaMC0 = (AliMCParticle*)fMCEvent->GetTrack(gamma0MCLabel);
+      if(TMath::Abs(negativeMC->PdgCode())==11 && TMath::Abs(positiveMC->PdgCode())==11){  // Electrons ...
         if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
-          if(gammaMC0->GetPdgCode() == 22){ // ... with Gamma Mother
-            gamma0MotherLabel=gammaMC0->GetFirstMother();
+          if(gammaMC0->PdgCode() == 22){ // ... with Gamma Mother
+            gamma0MotherLabel=gammaMC0->GetMother();
           }
         }
-        if(gammaMC0->GetPdgCode() ==fMesonPDG){ // Dalitz candidate
+        if(gammaMC0->PdgCode() ==fMesonPDG){ // Dalitz candidate
           gamma0DalitzCand = kTRUE;
           gamma0MotherLabel=-fMesonPDG;
         }
@@ -3386,23 +3386,23 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConv(  AliA
       Int_t gamma1MotherLabel = -1;
       if(gamma1MCLabel != -1){ // Gamma is Combinatorial; MC Particles don't belong to the same Mother
         // Daughters Gamma 1
-        TParticle * negativeMC = (TParticle*)TrueGammaCandidate1->GetNegativeMCDaughter(fMCEvent);
-        TParticle * positiveMC = (TParticle*)TrueGammaCandidate1->GetPositiveMCDaughter(fMCEvent);
-        TParticle * gammaMC1 = (TParticle*)fMCEvent->Particle(gamma1MCLabel);
-        if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){  // Electrons ...
+        AliMCParticle * negativeMC = (AliMCParticle*)TrueGammaCandidate1->GetNegativeMCDaughter(fMCEvent);
+        AliMCParticle * positiveMC = (AliMCParticle*)TrueGammaCandidate1->GetPositiveMCDaughter(fMCEvent);
+        AliMCParticle * gammaMC1 = (AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel);
+        if(TMath::Abs(negativeMC->PdgCode())==11 && TMath::Abs(positiveMC->PdgCode())==11){  // Electrons ...
           if(negativeMC->GetUniqueID() == 5 && positiveMC->GetUniqueID() ==5){ // ... From Conversion ...
-            if(gammaMC1->GetPdgCode() == 22){ // ... with Gamma Mother
-              gamma1MotherLabel=gammaMC1->GetFirstMother();
+            if(gammaMC1->PdgCode() == 22){ // ... with Gamma Mother
+              gamma1MotherLabel=gammaMC1->GetMother();
             }
           }
-          if(gammaMC1->GetPdgCode() ==fMesonPDG ){ // Dalitz candidate
+          if(gammaMC1->PdgCode() ==fMesonPDG ){ // Dalitz candidate
             gamma1DalitzCand = kTRUE;
             gamma1MotherLabel=-fMesonPDG;
           }
         }
       }
       if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
-        if(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->GetPdgCode() == fMesonPDG){
+        if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->PdgCode() == fMesonPDG){
           isTrueMeson=kTRUE;
           if (CheckVectorForDoubleCount(fVectorDoubleCountTrueMesons,gamma0MotherLabel)){
             if (fHistoDoubleCountTrueMesonInvMassPt[fiCut]) fHistoDoubleCountTrueMesonInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(),fWeightJetJetMC);
@@ -3437,8 +3437,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConv(  AliA
         if(isPrimary){ // Only primary pi0 for efficiency calculation
           Float_t weighted= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1MotherLabel, fMCEvent, fInputEvent)){
-            if (((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt()>0.005){
-              weighted= ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
+            if (((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt()>0.005){
+              weighted = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetWeightForMeson(gamma1MotherLabel, fMCEvent, fInputEvent);
               //                      cout << "rec \t " <<gamma1MotherLabel << "\t" <<  weighted << endl;
             }
           }
@@ -3447,7 +3447,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessTrueMesonCandidatesConv(  AliA
           if (fProfileTruePrimaryMesonWeightsInvMassPt[fiCut]) fProfileTruePrimaryMesonWeightsInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(),weighted*fWeightJetJetMC);
 
           if (fDoMesonQA > 0 && fIsMC < 2){
-            if (fHistoTruePrimaryMesonMCPtResolPt[fiCut]) fHistoTruePrimaryMesonMCPtResolPt[fiCut]->Fill(((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt(),(mesonCand->Pt()-((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt())/((TParticle*)fMCEvent->Particle(gamma1MotherLabel))->Pt(),weighted);
+            if (fHistoTruePrimaryMesonMCPtResolPt[fiCut]) fHistoTruePrimaryMesonMCPtResolPt[fiCut]->Fill(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),(mesonCand->Pt()-((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt())/((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),weighted);
           }
         }
       } else if(!isTrueMeson ){ // Background
@@ -3844,7 +3844,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
             // Fill Eta Phi Map for Calo Photon
             cellIDRotatedPhoton1 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton1.Eta(), lvRotationPhoton1.Phi());
             if(!fDoLightOutput){
-              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent))){
+              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))){
                 ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()), 1);
               }
             }
@@ -3871,7 +3871,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
               std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
               // std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
 
-              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)))
+              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())))
               {
                 if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
                 {
@@ -3950,10 +3950,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
               cellIDRotatedPhoton2 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()));
 
               if(!fDoLightOutput){
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent))){
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))){
                   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()), 1);
                 }
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent))){
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))){
                   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()), 1);
                 }
               }
@@ -3967,7 +3967,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
 
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)) && lvRotationPhoton1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && lvRotationPhoton1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
                 {
                   if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton1, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
                   {
@@ -3977,7 +3977,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundSwapp(){
                     // }
                   }
                 }
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent)) && lvRotationPhoton2.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && lvRotationPhoton2.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
                 {
                   if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton2, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
                   {

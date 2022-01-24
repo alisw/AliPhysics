@@ -1,0 +1,111 @@
+AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename="", Bool_t resetAtEachEv=kTRUE){
+  //
+  // Creates a task for heavy flavour vertexing for conversion to AO2D
+  // Extract parameters from environment variables
+  //
+
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskVertexingHF", "No analysis manager to connect to.");
+    return NULL;
+  }   
+   
+  TString type = mgr->GetInputEventHandler()->GetDataType();
+  if (!type.Contains("ESD") && !type.Contains("AOD")) {
+    ::Error("AddTaskVertexingHF", "HF vertexing task needs the manager to have an ESD or AOD input handler.");
+    return NULL;
+  }   
+
+  TString localdir=".";
+  Int_t runnumber=-1;
+  if(gSystem->Getenv("LPMRunNumber")) runnumber = atoi(gSystem->Getenv("LPMRunNumber"));
+  TString collSyst="";
+  if(gSystem->Getenv("LPMInteractionType")) collSyst=gSystem->Getenv("LPMInteractionType");
+  TString prodType="";
+  if(gSystem->Getenv("LPMProductionType")) prodType=gSystem->Getenv("LPMProductionType");
+
+  // Copy the needed Config file in the current directory 
+  if(configfilename.IsNull()){
+    if(collSyst.IsNull()){
+      ::Error("AddTaskVertexingHF","LPMInteractionType not available and custom config not passed in the arguments");
+      return NULL;
+    }
+    TString     configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C";
+    if(collSyst=="PbPb" || collSyst=="XeXe"){
+      configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C";
+      if(runnumber<0){
+        ::Error("AddTaskVertexingHF","LPMRunNumber (needed for Pb-Pb or Xe-Xe) not available and custom config not passed in the arguments");
+        return NULL;
+      }
+      if(prodType.IsNull()){
+        ::Error("AddTaskVertexingHF","LPMProductionType (needed for Pb-Pb or Xe-Xe) not available and custom config not passed in the arguments");
+        return NULL;
+      }
+      if(runnumber>=295424)configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt.C";
+      if (prodType=="MC"){
+        TString prodTag="";
+        if(gSystem->Getenv("LPMProductionTag")) prodTag=gSystem->Getenv("LPMProductionTag");
+        if(prodTag.IsNull()){
+          ::Error("AddTaskVertexingHF","LPMProductionTag (needed for MCs of Pb-Pb or Xe-Xe) not available and custom config not passed in the arguments");
+          return NULL;
+        }
+        if(prodTag=="LHC20g2a_2" || prodTag=="LHC20g11a2" || prodTag=="LHC20j5a1" || prodTag=="LHC20j5a2" || prodTag=="LHC20k3a" || prodTag=="LHC20l5a") configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt_Central.C";
+        else if(prodTag=="LHC20g2b_2" || prodTag=="LHC20g11b2" || prodTag=="LHC20j5b1" || prodTag=="LHC20j5b2" || prodTag=="LHC20k3b" || prodTag=="LHC20l5b") configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt_SemiCentral.C";
+      }
+    }
+    Printf("HF config file that will be used (and copied to ConfigVertexingHF.C in the local directory) is: %s", configPWG3d2h.Data());
+    TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), Form("%s/ConfigVertexingHF.C", localdir.Data()));
+  }else{
+    Printf("HF config file passed as argument that will be used (and copied to ConfigVertexingHF.C in the local directory) is: %s", configfilename.Data());
+    TFile::Cp(gSystem->ExpandPathName(configfilename.Data()), Form("%s/ConfigVertexingHF.C", localdir.Data()));
+  }
+
+  // Create the task, add it to the manager and configure it.
+  //===========================================================================
+  AliAnalysisTaskSEVertexingHFRun3Conversion *hfTask = new AliAnalysisTaskSEVertexingHFRun3Conversion("vertexing HF");
+  hfTask->ResetTreeAtEachEvent(resetAtEachEv);
+  mgr->AddTask(hfTask);
+
+  //
+  // Create containers for input/output
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
+  
+  AliAnalysisDataContainer *coutputListOfCuts = mgr->CreateContainer("ListOfCuts",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); //cuts
+  
+  AliAnalysisDataContainer *coutputD0 = mgr->CreateContainer("D0CandidateTree",
+                                                             TTree::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputfile.Data());
+  coutputD0->SetSpecialOutput();
+  
+  AliAnalysisDataContainer *coutput3p = mgr->CreateContainer("Charm3pCandidateTree",
+                                                             TTree::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             outputfile.Data());
+  
+  coutput3p->SetSpecialOutput();
+  
+  AliAnalysisDataContainer *coutputDst = mgr->CreateContainer("DstarCandidateTree",
+                                                              TTree::Class(),
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              outputfile.Data());
+  coutputDst->SetSpecialOutput();
+
+  AliAnalysisDataContainer *coutputCasc = mgr->CreateContainer("LcV0bachCandidateTree",
+                                                               TTree::Class(),
+                                                               AliAnalysisManager::kOutputContainer,
+                                                               outputfile.Data());
+  coutputCasc->SetSpecialOutput();
+
+
+  mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(hfTask,1,coutputListOfCuts);
+  mgr->ConnectOutput(hfTask,2,coutputD0);
+  mgr->ConnectOutput(hfTask,3,coutput3p);
+  mgr->ConnectOutput(hfTask,4,coutputDst);
+  mgr->ConnectOutput(hfTask,5,coutputCasc);
+
+  return hfTask;
+}

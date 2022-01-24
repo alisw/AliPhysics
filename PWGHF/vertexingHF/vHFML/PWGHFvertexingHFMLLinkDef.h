@@ -7,6 +7,7 @@
 
 #pragma link C++ class AliAnalysisTaskSEDplus+;
 #pragma link C++ class AliAnalysisTaskSEDs+;
+#pragma link C++ class AliAnalysisTaskSEDstarPolarization+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronMLSelector+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
 #pragma link C++ class AliAnalysisTaskSECheckCharmHadronBkg+;

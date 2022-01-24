@@ -83,7 +83,7 @@ private:
     AliESDEvent* fESDEvent;
     AliAODEvent* fAODEvent;
     Bool_t fIsESD;
-ClassDef( AliDalitzData, 1 );
+ClassDef( AliDalitzData, 1 )
 };
 
 #endif // ALIDALITZDATA_H

@@ -599,7 +599,11 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    if(parentListDE[0]) {
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    } else{
+      AliWarning("Could not get deposited energy of parents. Particle might not have parents?");
+    }
     
     //
     // Set the cell energy deposition fraction map:

@@ -91,11 +91,26 @@ set(SRCS
   AliAnalysisTaskCMWPU.cxx
   AliAnalysisTaskCMWPU2018.cxx
   AliAnalysisTaskCMWPU2018eqAch.cxx
+  AliAnalysisTaskCMWPU2018dca.cxx
+  AliAnalysisTaskCMWPU2018eqAchdca.cxx
+  AliAnalysisTaskCMWPU2018eqAchmerge.cxx
+  AliAnalysisTaskCMWPU2018eqAchmergedca.cxx	
   AliAnalysisTaskCVEUNIpt.cxx
   AliAnalysisTaskCMWPUeqAch.cxx
   AliAnalysisTaskCMWPUuncAch.cxx
+  AliAnalysisTaskv2pt.cxx
+  AliAnalysisTaskv2vscent.cxx
   AliAnalysisTaskMuPa.cxx
   AliAnalysisTaskAR.cxx
+  AliAnalysisTaskEbECumulants.cxx
+  AliAnalysisTaskGammaDeltaPID.cxx
+  AliAnalysisTaskCMWESE.cxx
+  AliAnalysisTaskEPCalib.cxx
+  AliAnalysisTaskCMWESEsyst.cxx
+  AliAnalysisTaskGammaDeltaPIDSaveQvec.cxx
+  AliAnalysisTaskGammaDeltaPIDSaveQvecEvent.cxx
+  AliAnalysisTaskCMXQA.cxx
+  AliAnalysisTaskCMWPU2018eqAchCL.cxx
 )
 
 # Headers from sources

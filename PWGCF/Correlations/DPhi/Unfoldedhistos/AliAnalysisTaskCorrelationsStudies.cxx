@@ -98,6 +98,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fRandomGenerator(NULL),
     fhV0MCentMult(nullptr),
     fhCL1MCentMult(nullptr),
+    fhCL1EtaGapMCentMult(nullptr),
     fhWeightsTrack_1(NULL),
     fhWeightsTrack_2(NULL),
     fhPtAverageTrack_1(nullptr),
@@ -199,6 +200,7 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fRandomGenerator(NULL),
     fhV0MCentMult(nullptr),
     fhCL1MCentMult(nullptr),
+    fhCL1EtaGapMCentMult(nullptr),
     fhWeightsTrack_1(NULL),
     fhWeightsTrack_2(NULL),
     fhPtAverageTrack_1(nullptr),
@@ -1085,8 +1087,9 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
           if (fOnTheFlyProduction.Length() != 0) {
             fhV0MCentMult = (TH1*) inputandweights->Get("V0MCentMult");
             fhCL1MCentMult = (TH1*) inputandweights->Get("CL1MCentMult");
+            fhCL1EtaGapMCentMult = (TH1*) inputandweights->Get("CL1EtaGapMCentMult");
 
-            if ((fhV0MCentMult == nullptr) and (fhCL1MCentMult == nullptr)) {
+            if ((fhV0MCentMult == nullptr) and (fhCL1MCentMult == nullptr) and (fhCL1EtaGapMCentMult == nullptr)) {
               AliError("On the fly MC production but centraliy / multiplicity estimation histograms not present");
             }
           }
@@ -1314,7 +1317,7 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 
   fEventCuts->SetQALevelOutput(AliCSAnalysisCutsBase::kQALevelHeavy);
   fEventCuts->InitCuts();
-  fEventCuts->StoreCentMultEstimationHistos(fhV0MCentMult,fhCL1MCentMult);
+  fEventCuts->StoreCentMultEstimationHistos(fhV0MCentMult,fhCL1MCentMult,fhCL1EtaGapMCentMult);
   fOutput->Add(fEventCuts->GetHistogramsList());
 
   fTrackSelectionCuts = new AliCSTrackSelection("CS_Track_Selection", "CS Track Selection");

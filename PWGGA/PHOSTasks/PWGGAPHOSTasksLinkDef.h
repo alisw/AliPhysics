@@ -52,6 +52,9 @@
 //PHOS_EpRatio
 #pragma link C++ class AliAnalysisTaskEpRatio+;
 
+//PHOS_Fluctuations
+#pragma link C++ class AliAnalysisPHOSFluctuations+;
+
 //PHOS_PbPb_MC
 #pragma link C++ class AliPHOSHijingEfficiency+;
 

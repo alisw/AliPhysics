@@ -158,8 +158,8 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
     }else{
         for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
         for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-        for(j=1;j<20;j++){multbins[nmult]=0.01*j; nmult++;}
-        for(j=2;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+        for(j=1;j<30;j++){multbins[nmult]=0.01*j; nmult++;}
+        for(j=3;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
         for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
     }
     nmult--;
@@ -1895,26 +1895,31 @@ Bool_t Config_Lambdakx(
     
     // -- Create all needed outputs -----------------------------------------------------------------
     
-    Int_t i,k,xID,cut1,pairID,ipdg;
+    Int_t i,k,p,xID,cut1,pairID,ipdg;
     TString name,comp;
     Char_t charge2;
-    Double_t mass=1.8234;
+    Double_t mass;
+    Double_t massAll[5]={1.8234, 1.8700, 2.0650, 2.2550, 2.4550}; //masses for Xi(1820) and 4 Ps states
+    Int_t ipdgNum[5]={123314,9322132,9322312,9323212,9332212};  //pdgs for Xi(1820) and 4 Ps states
+    Int_t Ps = (TrackCutsLambda/100)%10; //TrackCutsLambda = 100 turns on strange pentaquark MC
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<2;i++) for(j=0;j<2;j++) for(k=0;k<9;k++){
+    for(i=0;i<2;i++) for(j=0;j<2;j++) for(k=0;k<9;k++) for(p=0;p<5;p++) {
         ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("Lambdap");
             cut1=iCutLambda;
-            ipdg=123314;
+            ipdg=ipdgNum[p];
         }else{
             name.Form("Lambdaa");
             cut1=iCutAntiLambda;
-            ipdg=-123314;
+            ipdg=-ipdgNum[p];
         }
         
         if(!j){
@@ -1926,6 +1931,8 @@ Bool_t Config_Lambdakx(
         }
         
         if(!isMC && k>=3) continue;
+        if(isMC && Ps && k>=3){
+            name.Append(Form("_PsMass_%.3f", mass));}
         xID=imID;
         pairID=1;
         if(!k){
@@ -2281,27 +2288,35 @@ Bool_t Config_Lambdak0(
     
     // -- Create all needed outputs -----------------------------------------------------------------
     
-    Int_t i,xID,cut1,pairID,ipdg;
+    Int_t i,p,xID,cut1,pairID,ipdg;
     TString name,comp;
-    Double_t mass=1.8234;
+    Double_t mass;
+    Double_t massAll[5]={1.8234, 1.8700, 2.0650, 2.2550, 2.4550}; //masses for Xi(1820)0 and 4 Ps states
+    Int_t ipdgNum[5]={123324,9322131,9322311,9323211,9332211};  //pdgs for Xi(1820)0 and 4 Ps states
+    Int_t Ps = (TrackCutsLambda/100)%10; //100 turns on Ps MC
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
     task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
-    for(i=0;i<2;i++) for(j=0;j<9;j++){
+    for(i=0;i<2;i++) for(j=0;j<9;j++) for(p=0;p<5;p++){
+        ipdg=0;
+        if(!isMC && p>=1) continue;
+        mass=massAll[p];
         if(!i){
             name.Form("LambdapK0");
             cut1=iCutLambda;
-            ipdg=123324;
+            ipdg=ipdgNum[p];
         }else{
             name.Form("LambdaaK0");
             cut1=iCutAntiLambda;
-            ipdg=-123324;
+            ipdg=-ipdgNum[p];
         }
         
         if(!isMC && j>=3) continue;
+        if(isMC && Ps && j>=3){
+            name.Append(Form("_PsMass_%.3f", mass));}
         xID=imID;
         pairID=1;
         if(!j){
@@ -3905,7 +3920,10 @@ Bool_t Config_Xik0(
         multbins[nmult]=15.; nmult++;
         for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
     }else{
-        multbins[nmult]=0.; nmult++;
+        multbins[nmult]=0.01; nmult++;
+        multbins[nmult]=0.02; nmult++;
+        multbins[nmult]=0.03; nmult++;
+        multbins[nmult]=0.04; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.06; nmult++;
         multbins[nmult]=0.07; nmult++;
@@ -3922,22 +3940,40 @@ Bool_t Config_Xik0(
         multbins[nmult]=0.18; nmult++;
         multbins[nmult]=0.19; nmult++;
         multbins[nmult]=0.2; nmult++;
-        multbins[nmult]=1.; nmult++;
+        multbins[nmult]=0.21; nmult++;
+        multbins[nmult]=0.22; nmult++;
+        multbins[nmult]=0.23; nmult++;
+        multbins[nmult]=0.24; nmult++;
+        multbins[nmult]=0.25; nmult++;
+        multbins[nmult]=0.26; nmult++;
+        multbins[nmult]=0.27; nmult++;
+        multbins[nmult]=0.28; nmult++;
+        multbins[nmult]=0.29; nmult++;
+        multbins[nmult]=0.3; nmult++;
     }
     
     // pT binning
     Double_t ptbins[200];
     int npt=0;
-    ptbins[npt]=0.; npt++;
-    ptbins[npt]=1.; npt++;
-    ptbins[npt]=2.; npt++;
-    for(j=1;j<=20;j++){ptbins[npt]=2+j*0.1; npt++;}
-    for(j=1;j<=6;j++){ptbins[npt]=4+j*0.5; npt++;}
-    ptbins[npt]=8; npt++;
-    ptbins[npt]=9; npt++;
+    ptbins[npt]=2; npt++;
+    ptbins[npt]=2.2; npt++;
+    ptbins[npt]=2.4; npt++;
+    ptbins[npt]=2.5; npt++;
+    ptbins[npt]=2.6; npt++;
+    ptbins[npt]=2.8; npt++;
+    ptbins[npt]=3; npt++;
+    ptbins[npt]=3.2; npt++;
+    ptbins[npt]=3.4; npt++;
+    ptbins[npt]=3.5; npt++;
+    ptbins[npt]=3.6; npt++;
+    ptbins[npt]=3.8; npt++;
+    ptbins[npt]=4; npt++;
+    ptbins[npt]=4.5; npt++;
+    ptbins[npt]=5; npt++;
+    ptbins[npt]=5.5; npt++;
+    ptbins[npt]=6; npt++;
+    ptbins[npt]=7; npt++;
     ptbins[npt]=10; npt++;
-    ptbins[npt]=15; npt++;
-    ptbins[npt]=20; npt++;
     
     // -- Values ------------------------------------------------------------------------------------
     /* invariant mass   */ Int_t imID   = task->CreateValue(AliRsnMiniValue::kInvMass,    kFALSE);
@@ -4029,7 +4065,7 @@ Bool_t Config_Xik0(
         
         if(j<=6){
             //if(xID==imID) out->AddAxis(imID,240,1.8,3);// axis X: invmass
-            if(xID==imID || xID==mmID) out->AddAxis(xID,400,1.8,2.2);// axis X: invmass
+            if(xID==imID || xID==mmID) out->AddAxis(xID,380,1.82,2.2);// axis X: invmass
             else out->AddAxis(diffID,200,-0.02,0.02);// axis X: resolution
             out->AddAxis(ptID,npt,ptbins);//200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity

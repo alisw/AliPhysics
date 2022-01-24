@@ -73,6 +73,9 @@ AliAnalysisTaskCorrelationhCascDATA::AliAnalysisTaskCorrelationhCascDATA() :AliA
   fEtaV0Assoc(0.8),
   fFilterBitValue(128),
   fYear(2016),
+  fisInclusiveINELgt0(0),
+  lPercentilesMin(0),
+  lPercentilesMax(0),
   fisHM(0),
   fHistPt(0), 
   fHistDCAxym1(0),
@@ -231,6 +234,9 @@ AliAnalysisTaskCorrelationhCascDATA::AliAnalysisTaskCorrelationhCascDATA(const c
   fEtaV0Assoc(0.8),
   fFilterBitValue(128),
   fYear(2016),
+  fisInclusiveINELgt0(0),
+  lPercentilesMin(0),
+  lPercentilesMax(0),
   fisHM(0),
   fHistPt(0), 
   fHistDCAxym1(0),
@@ -679,8 +685,8 @@ void AliAnalysisTaskCorrelationhCascDATA::UserCreateOutputObjects()
   fHistEventMult->GetXaxis()->SetBinLabel(4,"Events w/ PID"); 
   fHistEventMult->GetXaxis()->SetBinLabel(5,"centrality <= 199"); 
   fHistEventMult->GetXaxis()->SetBinLabel(6,"NO PILE UP"); 
-  fHistEventMult->GetXaxis()->SetBinLabel(7,"INT7"); 
-  fHistEventMult->GetXaxis()->SetBinLabel(8,"ANY"); 
+  fHistEventMult->GetXaxis()->SetBinLabel(7,"INT7 or HM"); 
+  fHistEventMult->GetXaxis()->SetBinLabel(8,"INEL>0");
   fHistEventMult->GetXaxis()->SetBinLabel(9,"isSelected"); 
   fHistEventMult->GetXaxis()->SetBinLabel(10,"Ntrigger>0"); 
   fHistEventMult->GetXaxis()->SetBinLabel(11,"Ntrigger>0 (MC)"); 
@@ -1202,14 +1208,36 @@ void AliAnalysisTaskCorrelationhCascDATA::UserExec(Option_t *)
       isSelected = kTRUE;
   }
   
-  if(isSelectedInt7)
+  if(isSelectedInt7 && !fisHM)
     fHistEventMult->Fill(7);
-  else if(isSelectedAny)
-    fHistEventMult->Fill(8);
-  
+  if(isSelectedHM && fisHM)
+    fHistEventMult->Fill(7);
+
+ //to select INEL>0 events for inclusive analysis
+  const AliMultiplicity* mult = (AliMultiplicity*)fAOD->GetMultiplicity();
+  Bool_t inelgt0 = kFALSE;
+  Int_t       counterTracklets =0;
+  for (Int_t i = 0; i < mult->GetNumberOfTracklets(); ++i) {
+    if (TMath::Abs(mult->GetEta(i)) < 1.) {
+      inelgt0 = kTRUE;
+      counterTracklets++;
+    }
+  }
+   
+  if (inelgt0)  fHistEventMult->Fill(8) ;
+  if (fisInclusiveINELgt0 && !inelgt0){
+    PostData(1, fOutputList);
+    PostData(2, fSignalTree );
+    PostData(3,fBkgTree);
+    PostData(4, fOutputList2);
+    PostData(5, fOutputList3);
+    PostData(6, fOutputList4);
+    return;
+  }
+
   if (isSelected)
     fHistEventMult->Fill(9) ; 
-      
+   
   if(!isSelected){   
     PostData(1, fOutputList);
     PostData(2, fSignalTree );
@@ -1217,10 +1245,20 @@ void AliAnalysisTaskCorrelationhCascDATA::UserExec(Option_t *)
     PostData(4, fOutputList2);  
     PostData(5, fOutputList3);     
     PostData(6, fOutputList4);
-    // cout << "event does not fulfil centrality selection criteria " << endl;          
+    // cout << "event does not fulfil centrality selection criteria " << endl;      
     return;
   }
   
+  if (lPercentiles < lPercentilesMin || lPercentiles > lPercentilesMax){
+    PostData(1, fOutputList );
+    PostData(2, fSignalTree );
+    PostData(3, fBkgTree);
+    PostData(4, fOutputList2);
+    PostData(5, fOutputList3);
+    PostData(6, fOutputList4);
+    return;
+  }
+
   fHist_multiplicityAllSelEvents->Fill(lPercentiles);
   //  cout << "event has passed selection criteria.... first and second particles to be analyzed ...."<< endl;
 
@@ -1388,207 +1426,216 @@ void AliAnalysisTaskCorrelationhCascDATA::UserExec(Option_t *)
   //begin loop for trigger particles   
   if (!(fReadMCTruth && !isEfficiency && !isHybridMCTruth)){
     for(Int_t i=0; i < iTracks; i++) {
+      if (fisInclusiveINELgt0){
+        track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+        trackPtTMax = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+        NumberFirstParticleAllPt++;
+        NumberFirstParticle++;
+        if (track && trackPtTMax) break;
+        if (!track) continue;
+        if (!trackPtTMax) continue;
+      }
+      else {
+	track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));        
+	fHistTrack->Fill(1);
+	if(!track) continue;
 
-      track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));        
-      fHistTrack->Fill(1);
-      if(!track) continue;
-
-      //to know if trigger particle is primary, secondary,...
-      if(fReadMCTruth){
-	if (fMCEvent){
-	  TClonesArray* AODMCTrackArrayTrigg =0x0;  
-	  AODMCTrackArrayTrigg = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
-	  if (AODMCTrackArrayTrigg == NULL){
-	    return;
-	    Printf("ERROR: stack not available");
-	  }
+	//to know if trigger particle is primary, secondary,...
+	if(fReadMCTruth){
+	  if (fMCEvent){
+	    TClonesArray* AODMCTrackArrayTrigg =0x0;  
+	    AODMCTrackArrayTrigg = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+	    if (AODMCTrackArrayTrigg == NULL){
+	      return;
+	      Printf("ERROR: stack not available");
+	    }
       
-	  AliAODMCParticle* particleTrig = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigg->At(TMath::Abs(track->GetLabel())));
-	  if (!particleTrig) continue;
-	  if(particleTrig->IsPhysicalPrimary())     labelPrimOrSec=1;
-	  else if(particleTrig->IsSecondaryFromWeakDecay())      labelPrimOrSec=2;
-	  else if(particleTrig->IsSecondaryFromMaterial())      labelPrimOrSec=3;
-	  else labelPrimOrSec=4;
-	  TriggerPdgCode = particleTrig->GetPdgCode();
+	    AliAODMCParticle* particleTrig = static_cast<AliAODMCParticle*>(AODMCTrackArrayTrigg->At(TMath::Abs(track->GetLabel())));
+	    if (!particleTrig) continue;
+	    if(particleTrig->IsPhysicalPrimary())     labelPrimOrSec=1;
+	    else if(particleTrig->IsSecondaryFromWeakDecay())      labelPrimOrSec=2;
+	    else if(particleTrig->IsSecondaryFromMaterial())      labelPrimOrSec=3;
+	    else labelPrimOrSec=4;
+	    TriggerPdgCode = particleTrig->GetPdgCode();
 
+	  }
 	}
-      }
   
-      if(!track->TestFilterBit(fFilterBitValue)) continue; 
-      fHistTrack->Fill(2);
+	if(!track->TestFilterBit(fFilterBitValue)) continue; 
+	fHistTrack->Fill(2);
     
-      if(TMath::Abs(track->Eta())>fEtaTrigger)  continue;
-      fHistTrack->Fill(3);
+	if(TMath::Abs(track->Eta())>fEtaTrigger)  continue;
+	fHistTrack->Fill(3);
 
-      NumberCharged++; //all charged particles
+	NumberCharged++; //all charged particles
     
-      if(track->Chi2perNDF()>4.)continue;
-      fHistTrack->Fill(4);
+	if(track->Chi2perNDF()>4.)continue;
+	fHistTrack->Fill(4);
     
-      nTPCCrossedRows=track->GetTPCNCrossedRows();
-      if(nTPCCrossedRows<80) continue;
-      fHistTrack->Fill(5); 
+	nTPCCrossedRows=track->GetTPCNCrossedRows();
+	if(nTPCCrossedRows<80) continue;
+	fHistTrack->Fill(5); 
         
-      rationCrnFind=nTPCCrossedRows/track->GetTPCNclsF();
-      if(rationCrnFind<0.8)  continue;
-      fHistTrack->Fill(6); 
+	rationCrnFind=nTPCCrossedRows/track->GetTPCNclsF();
+	if(rationCrnFind<0.8)  continue;
+	fHistTrack->Fill(6); 
 
-      Float_t lTrackLength = -1;
-      Float_t lTrackLengthBis = -1;
-      lTrackLength = GetLengthInActiveZone( track, /*1,*/ 2.0, 220.0, fAOD->GetMagneticField());
-      lTrackLengthBis = GetLengthInActiveZone( track, /*1,*/ 0., 250.0, fAOD->GetMagneticField()); //test value
+	Float_t lTrackLength = -1;
+	Float_t lTrackLengthBis = -1;
+	lTrackLength = GetLengthInActiveZone( track, /*1,*/ 2.0, 220.0, fAOD->GetMagneticField());
+	lTrackLengthBis = GetLengthInActiveZone( track, /*1,*/ 0., 250.0, fAOD->GetMagneticField()); //test value
 
-      Float_t     CrossedRowsOverLengthBis=    track->GetTPCClusterInfo(2,1)/lTrackLength;
-      Float_t     CrossedRowsOverLength=(Float_t)nTPCCrossedRows/lTrackLength; //->both work in the same way
+	Float_t     CrossedRowsOverLengthBis=    track->GetTPCClusterInfo(2,1)/lTrackLength;
+	Float_t     CrossedRowsOverLength=(Float_t)nTPCCrossedRows/lTrackLength; //->both work in the same way
 
-      fHistLengthvsCrossedRows ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength );
+	fHistLengthvsCrossedRows ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength );
 
-      if (lTrackLength<90) continue;
-      fHistTrack->Fill(7);  
+	if (lTrackLength<90) continue;
+	fHistTrack->Fill(7);  
 
-      if (CrossedRowsOverLength< 0.8) continue;
-      fHistTrack->Fill(8); 
-      fHistLengthvsCrossedRowsAfterSel ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength);
+	if (CrossedRowsOverLength< 0.8) continue;
+	fHistTrack->Fill(8); 
+	fHistLengthvsCrossedRowsAfterSel ->Fill(  (Float_t)nTPCCrossedRows, lTrackLength);
 
-      //cluster selection (not applied)
-      Int_t nClustersTPC = -1;
-      //if(fCutRequireTPCStandAlone) {
-      // nClustersTPC = track->GetTPCNclsIter1();
-      //  }
-      //  else {
-      nClustersTPC = track->GetTPCncls(0);
-      //}
-      Int_t nClustersTPCShared = track->GetTPCnclsS();
-      Float_t fracClustersTPCShared = -1.;
-      if (nClustersTPC!=0) {
-	fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
-      }
-      //    fHistFractionSharedTPCClusters->Fill(fracClustersTPCShared);
-      //  if (fracClustersTPCShared > 0.2) continue;
-      //    fHistTrack->Fill(9);
+	//cluster selection (not applied)
+	Int_t nClustersTPC = -1;
+	//if(fCutRequireTPCStandAlone) {
+	// nClustersTPC = track->GetTPCNclsIter1();
+	//  }
+	//  else {
+	nClustersTPC = track->GetTPCncls(0);
+	//}
+	Int_t nClustersTPCShared = track->GetTPCnclsS();
+	Float_t fracClustersTPCShared = -1.;
+	if (nClustersTPC!=0) {
+	  fracClustersTPCShared = Float_t(nClustersTPCShared)/Float_t(nClustersTPC);
+	}
+	//    fHistFractionSharedTPCClusters->Fill(fracClustersTPCShared);
+	//  if (fracClustersTPCShared > 0.2) continue;
+	//    fHistTrack->Fill(9);
 
 
-      //Golden cut (not applied)
-      //    fHistGoldenCut->Fill(track->GetChi2TPCConstrainedVsGlobal());
-      //  if ((track->GetChi2TPCConstrainedVsGlobal())>36) continue;
-      //    fHistTrack->Fill(7);
+	//Golden cut (not applied)
+	//    fHistGoldenCut->Fill(track->GetChi2TPCConstrainedVsGlobal());
+	//  if ((track->GetChi2TPCConstrainedVsGlobal())>36) continue;
+	//    fHistTrack->Fill(7);
 
-      if((track->Charge())==0) continue;
-      fHistTrack->Fill(9);
+	if((track->Charge())==0) continue;
+	fHistTrack->Fill(9);
 	  
-      if (fFilterBitValue==128 || fFilterBitValue==512){ 
-	//!!!!!!!!!information on DCA is correct only if taken in this way for tracks with FB128!!!!!!!!
-	if (-track->GetID()-1 >= fTrackBufferSize) {
-	  printf ("Exceeding buffer size!!");
-	  continue;
-	}
+	if (fFilterBitValue==128 || fFilterBitValue==512){ 
+	  //!!!!!!!!!information on DCA is correct only if taken in this way for tracks with FB128!!!!!!!!
+	  if (-track->GetID()-1 >= fTrackBufferSize) {
+	    printf ("Exceeding buffer size!!");
+	    continue;
+	  }
 
-	vtrackg = fAOD->GetTrack(farrGT[-track->GetID()-1]);
-	if (!vtrackg) {
-	  printf ("No global info! iTrack %d, ID %d\n",i,track->GetID());
-	  continue;
-	}
-	if (farrGT[-track->GetID()-1]>=iTracks || farrGT[-track->GetID()-1]<0) { /*cout<<"This index is out of range!!"<<farrGT[-track->GetID()-1]<<endl;*/ continue;}
-	globaltrack = dynamic_cast<AliAODTrack*>(vtrackg); 
-	if(!globaltrack) AliFatal("Not a standard AOD");
+	  vtrackg = fAOD->GetTrack(farrGT[-track->GetID()-1]);
+	  if (!vtrackg) {
+	    printf ("No global info! iTrack %d, ID %d\n",i,track->GetID());
+	    continue;
+	  }
+	  if (farrGT[-track->GetID()-1]>=iTracks || farrGT[-track->GetID()-1]<0) { /*cout<<"This index is out of range!!"<<farrGT[-track->GetID()-1]<<endl;*/ continue;}
+	  globaltrack = dynamic_cast<AliAODTrack*>(vtrackg); 
+	  if(!globaltrack) AliFatal("Not a standard AOD");
 
-	dzg[0]= -999.; dzg[1] = -999.;
-	etp1.CopyFromVTrack(vtrackg); 
-	etp1.PropagateToDCA(vertexmain,(InputEvent())->GetMagneticField(),100.,dzg,covarg);    
-	//      cout << "Propagate to DCA method : DCAxy " << dzg[0] << " DCAz " << dzg[1] << endl;
+	  dzg[0]= -999.; dzg[1] = -999.;
+	  etp1.CopyFromVTrack(vtrackg); 
+	  etp1.PropagateToDCA(vertexmain,(InputEvent())->GetMagneticField(),100.,dzg,covarg);    
+	  //      cout << "Propagate to DCA method : DCAxy " << dzg[0] << " DCAz " << dzg[1] << endl;
 
-	/* does not seem to work properly 
-	   vtrackg->GetImpactParameters(&DCAxy, &DCAz);
-	   dz[0] = DCAxy;   
-	   dz[1] = DCAz; 
-	   cout << "GetImpactParamter method : DCAxy " << dz[0] << " DCAz " << dz[1] << endl;
-	*/
+	  /* does not seem to work properly 
+	     vtrackg->GetImpactParameters(&DCAxy, &DCAz);
+	     dz[0] = DCAxy;   
+	     dz[1] = DCAz; 
+	     cout << "GetImpactParamter method : DCAxy " << dz[0] << " DCAz " << dz[1] << endl;
+	  */
 	
-	/* The following method gives equal results to propagate to DCA     
-	   Float_t fPosition[2]={-999.};
-	   static_cast<AliAODTrack*>(fAOD->GetTrack(farrGT[-track->GetID()-1]))->GetPosition(fPosition);
-	   cout << "z position pos " << fPosition[2] << " z position primary vertex " << lBestPrimaryVtxPos[2] << endl;
-	   cout << "y position pos " << fPosition[1] << " y position primary vertex " << lBestPrimaryVtxPos[1] << endl;
-	   cout << "x position pos " << fPosition[0] << " x position primary vertex " << lBestPrimaryVtxPos[0] << endl;
-	   cout << fPosition[2]- lBestPrimaryVtxPos[2] << endl; //this value is = to dzg[1]
-	   cout << sqrt(pow (fPosition[0]- lBestPrimaryVtxPos[0],2) + pow(fPosition[1]- lBestPrimaryVtxPos[1],2)) << endl; //this value is = to dzg[0]
-	*/
-      } //end if on filterbit value
+	  /* The following method gives equal results to propagate to DCA     
+	     Float_t fPosition[2]={-999.};
+	     static_cast<AliAODTrack*>(fAOD->GetTrack(farrGT[-track->GetID()-1]))->GetPosition(fPosition);
+	     cout << "z position pos " << fPosition[2] << " z position primary vertex " << lBestPrimaryVtxPos[2] << endl;
+	     cout << "y position pos " << fPosition[1] << " y position primary vertex " << lBestPrimaryVtxPos[1] << endl;
+	     cout << "x position pos " << fPosition[0] << " x position primary vertex " << lBestPrimaryVtxPos[0] << endl;
+	     cout << fPosition[2]- lBestPrimaryVtxPos[2] << endl; //this value is = to dzg[1]
+	     cout << sqrt(pow (fPosition[0]- lBestPrimaryVtxPos[0],2) + pow(fPosition[1]- lBestPrimaryVtxPos[1],2)) << endl; //this value is = to dzg[0]
+	  */
+	} //end if on filterbit value
 
-      //    cout << "DCAxy trigger particle " << dzg[0] << " DCAz trigger particle " << dzg[1] << endl;	  
+	//    cout << "DCAxy trigger particle " << dzg[0] << " DCAz trigger particle " << dzg[1] << endl;	  
 
-      if (fFilterBitValue!=128 && fFilterBitValue!=512){
+	if (fFilterBitValue!=128 && fFilterBitValue!=512){
 
-	/* does not seem to work properly
-	   DCAxy=-999.;      DCAz =-999.;
-	   track->GetImpactParameters(&DCAxy, &DCAz);
-	   dz[0] = DCAxy;   
-	   dz[1] = DCAz; 
-	   cout << "GetImpactParamter method : DCAxy " << dz[0] << " DCAz " << dz[1] << endl;
-	*/
+	  /* does not seem to work properly
+	     DCAxy=-999.;      DCAz =-999.;
+	     track->GetImpactParameters(&DCAxy, &DCAz);
+	     dz[0] = DCAxy;   
+	     dz[1] = DCAz; 
+	     cout << "GetImpactParamter method : DCAxy " << dz[0] << " DCAz " << dz[1] << endl;
+	  */
 
-	//It seems that for FB 256 the two following methods (my method and propagate t DCA) give the same results (which seem reasonable: both DCAz and DCA yx are < 0.2 and have the correct shape), while the previous method (GetImpactParameter) give smaller results. 
-	dzg[0]= -999.; dzg[1] = -999.;
-	etp1.CopyFromVTrack(track); 
-	etp1.PropagateToDCA(vertexmain,(InputEvent())->GetMagneticField(),100.,dzg,covarg);    
-	//      cout << "Propagate to DCA method : DCAxy " << dzg[0] << " DCAz " << dzg[1] << endl;
+	  //It seems that for FB 256 the two following methods (my method and propagate t DCA) give the same results (which seem reasonable: both DCAz and DCA yx are < 0.2 and have the correct shape), while the previous method (GetImpactParameter) give smaller results. 
+	  dzg[0]= -999.; dzg[1] = -999.;
+	  etp1.CopyFromVTrack(track); 
+	  etp1.PropagateToDCA(vertexmain,(InputEvent())->GetMagneticField(),100.,dzg,covarg);    
+	  //      cout << "Propagate to DCA method : DCAxy " << dzg[0] << " DCAz " << dzg[1] << endl;
 
-	/*      Float_t fPosition[2]={-999.};
-		track->GetPosition(fPosition);
-		cout << "z position pos " << fPosition[2] << " z position primary vertex " << lBestPrimaryVtxPos[2] << endl;
-		cout << "y position pos " << fPosition[1] << " y position primary vertex " << lBestPrimaryVtxPos[1] << endl;
-		cout << "x position pos " << fPosition[0] << " x position primary vertex " << lBestPrimaryVtxPos[0] << endl;
-		cout << "DCAz my method " << fPosition[2]- lBestPrimaryVtxPos[2] << endl; //this value is = to dzg[1]
-		cout << "|DCAxy| my method " << sqrt(pow (fPosition[0]- lBestPrimaryVtxPos[0],2) + pow(fPosition[1]- lBestPrimaryVtxPos[1],2)) << endl; //this value is = to dzg[0]
-	*/
-      }
-
-      //    fHistDCAxym1->Fill(dz[0]);
-      //    fHistDCAzm1->Fill(dz[1]);
-
-      fHistDCAxym2->Fill(dzg[0]);
-      fHistDCAzm2 ->Fill(dzg[1]);
-
-      //it seems that Propagate to DCA give the best results for all FB:
-      //    if (fFilterBitValue==128){
-      dzglobal[0]=dzg[0];
-      dzglobal[1]=dzg[1];
-      /*
+	  /*      Float_t fPosition[2]={-999.};
+		  track->GetPosition(fPosition);
+		  cout << "z position pos " << fPosition[2] << " z position primary vertex " << lBestPrimaryVtxPos[2] << endl;
+		  cout << "y position pos " << fPosition[1] << " y position primary vertex " << lBestPrimaryVtxPos[1] << endl;
+		  cout << "x position pos " << fPosition[0] << " x position primary vertex " << lBestPrimaryVtxPos[0] << endl;
+		  cout << "DCAz my method " << fPosition[2]- lBestPrimaryVtxPos[2] << endl; //this value is = to dzg[1]
+		  cout << "|DCAxy| my method " << sqrt(pow (fPosition[0]- lBestPrimaryVtxPos[0],2) + pow(fPosition[1]- lBestPrimaryVtxPos[1],2)) << endl; //this value is = to dzg[0]
+	  */
 	}
-	else{
-	dzglobal[0]=dz[0];
-	dzglobal[1]=dz[1];
+
+	//    fHistDCAxym1->Fill(dz[0]);
+	//    fHistDCAzm1->Fill(dz[1]);
+
+	fHistDCAxym2->Fill(dzg[0]);
+	fHistDCAzm2 ->Fill(dzg[1]);
+
+	//it seems that Propagate to DCA give the best results for all FB:
+	//    if (fFilterBitValue==128){
+	dzglobal[0]=dzg[0];
+	dzglobal[1]=dzg[1];
+	/*
+	  }
+	  else{
+	  dzglobal[0]=dz[0];
+	  dzglobal[1]=dz[1];
+	  }
+	*/
+
+	if(TMath::Abs(dzglobal[0])> (0.0105 + 0.0350/pow(track->Pt(),1.1))) continue;
+	fHistTrack->Fill(10);
+	if(TMath::Abs(dzglobal[1])> 0.04) continue;
+	fHistTrack->Fill(11);
+
+	NumberFirstParticleAllPt++; 
+
+	if(track->Pt()< ptTriggerMinimoDati) ptTriggerMinimoDati=track->Pt(); 
+	if(track->Pt()> ptTriggerMassimoDati){
+	  ptTriggerMassimoDati =track->Pt(); 
+	  etaTriggerMassimoDati=track->Eta(); 
+	  phiTriggerMassimoDati=track->Phi(); 
+	  labelPtTMax=track->GetLabel();
+	  dzgPtTMax = dzglobal[1];
+	  trackPtTMax = static_cast<AliAODTrack*>(fAOD->GetTrack(i));        
+	  globaltrackPtTMax = dynamic_cast<AliAODTrack*>(vtrackg); 
+	  ptTriggerMassimoDatiBis=	trackPtTMax->Pt();
+	  PdgCodeTrackPtMax = labelPrimOrSec; 
 	}
-      */
 
-      if(TMath::Abs(dzglobal[0])> (0.0105 + 0.0350/pow(track->Pt(),1.1))) continue;
-      fHistTrack->Fill(10);
-      if(TMath::Abs(dzglobal[1])> 0.04) continue;
-      fHistTrack->Fill(11);
-
-      NumberFirstParticleAllPt++; 
-
-      if(track->Pt()< ptTriggerMinimoDati) ptTriggerMinimoDati=track->Pt(); 
-      if(track->Pt()> ptTriggerMassimoDati){
-	ptTriggerMassimoDati =track->Pt(); 
-	etaTriggerMassimoDati=track->Eta(); 
-	phiTriggerMassimoDati=track->Phi(); 
-	labelPtTMax=track->GetLabel();
-	dzgPtTMax = dzglobal[1];
-	trackPtTMax = static_cast<AliAODTrack*>(fAOD->GetTrack(i));        
-	globaltrackPtTMax = dynamic_cast<AliAODTrack*>(vtrackg); 
-	ptTriggerMassimoDatiBis=	trackPtTMax->Pt();
-	PdgCodeTrackPtMax = labelPrimOrSec; 
+	if (track->Pt()>Ptintermediate){
+	  Ptintermediate=track->Pt();
+	  selectedtrackID= track->GetID();
+	  NumberFirstParticle_finale= NumberFirstParticle;     
+	}
       }
-
-      if (track->Pt()>Ptintermediate){
-	Ptintermediate=track->Pt();
-	selectedtrackID= track->GetID();
-	NumberFirstParticle_finale= NumberFirstParticle;     
-      }
-
       if(track->Pt()> fminPtj && track->Pt()<fmaxPtj){ //Here I select trigger particle with pT>fminPtj and save their characteristics
-	NumberFirstParticle++;   
+	if (!fisInclusiveINELgt0) 	NumberFirstParticle++;   
 	if((!fReadMCTruth)|| (fReadMCTruth && isEfficiency) || (fReadMCTruth && isHybridMCTruth) ){
 	  //save first particle information (leading particle)
 	  fEvt->fReconstructedFirst[NumberFirstParticle-1].fCharge       = track->Charge();
@@ -1694,6 +1741,7 @@ void AliAnalysisTaskCorrelationhCascDATA::UserExec(Option_t *)
 
   if ((!fReadMCTruth || (fReadMCTruth &&isEfficiency) || (fReadMCTruth && isHybridMCTruth))&&  ptTriggerMassimoDati!=0 )  fHistPtMaxvsMultBefAll->Fill(ptTriggerMassimoDati, lPercentiles);
   if (fReadMCTruth && !isEfficiency &&  !isHybridMCTruth && ptTriggerMassimoMC!=0)  fHistPtMaxvsMultBefAll->Fill(ptTriggerMassimoMC, lPercentiles);  
+  if (fisInclusiveINELgt0) fHistPtMaxvsMultBefAll->Fill(0.0001, lPercentiles); //fake pt
 
   fHistPtTMinBefAll->Fill(ptTriggerMinimoDati);
   fHistPtTMinBefAllMC->Fill(ptTriggerMinimoMC);

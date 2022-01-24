@@ -79,12 +79,19 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
 #include "AliGenEventHeader.h"
+#include "AliAnalysisFilter.h"
 
 //__________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   AliAnalysisTaskSE(),
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
+  fNChargedInTrans(0x0),
+  fPTDistributionInTransverse(0x0),
+  fGlobalRT(0x0),
+  fStepRecoPIDRT(0x0),
+  fHistPtLead(0x0),
+  fOutputRT(0x0),
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
@@ -144,20 +151,30 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(6.0),
   fAveMultInTransForRT(4.965),
+  fTrackFilterGlobal(0),
+  fTrackFilterComplementary(0),
+  fUseHybridTracks(kTRUE),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE)
-{
-  //
-  //Default ctor
-  //
-  for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
-}
+  {
+    //
+    //Default ctor
+    //
+    for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
+
+  for(Int_t i = 0; i < 18; i++) fTrackFilter[i] = 0;}
 //___________________________________________________________________________
 AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
   AliAnalysisTaskSE(name),
   fCFManager(0x0),
   fHistEventsProcessed(0x0),
+  fNChargedInTrans(0x0),
+  fPTDistributionInTransverse(0x0),
+  fGlobalRT(0x0),
+  fStepRecoPIDRT(0x0),
+  fHistPtLead(0x0),
+  fOutputRT(0x0),
   fCorrelation(0x0),
   fListProfiles(0),
   fCountMC(0),
@@ -217,6 +234,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fCutOnMomConservation(0.00001),
   fMinLeadPtRT(6.0),
   fAveMultInTransForRT(4.965),
+  fTrackFilterGlobal(0),
+  fTrackFilterComplementary(0),
+  fUseHybridTracks(kTRUE),
   fAODProtection(0),
   fRejectOOBPileUpEvents(kFALSE),
   fKeepOnlyOOBPileupEvents(kFALSE)
@@ -233,8 +253,9 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   DefineOutput(3,THnSparseD::Class());
   DefineOutput(4,AliRDHFCuts::Class());
   for(Int_t i=0; i<33; i++) fMultEstimatorAvg[i]=0;
+  for (Int_t i = 0; i < 18; i++) {fTrackFilter[i] = 0;}
   DefineOutput(5,TList::Class()); // slot #5 keeps the zvtx Ntrakclets correction profiles
-
+  DefineOutput(6,TList::Class());
   fCuts->PrintAll();
 }
 
@@ -263,6 +284,12 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   AliAnalysisTaskSE(c),
   fCFManager(c.fCFManager),
   fHistEventsProcessed(c.fHistEventsProcessed),
+  fNChargedInTrans(c.fNChargedInTrans),
+  fPTDistributionInTransverse(c.fPTDistributionInTransverse),
+  fGlobalRT(c.fGlobalRT),
+  fStepRecoPIDRT(c.fStepRecoPIDRT),
+  fHistPtLead(c.fHistPtLead),
+  fOutputRT(c.fOutputRT),
   fCorrelation(c.fCorrelation),
   fListProfiles(c.fListProfiles),
   fCountMC(c.fCountMC),
@@ -577,6 +604,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   PostData(1,fHistEventsProcessed) ;
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
+    // TList for output
+  if (fConfiguration==kRT) PostData(6,fOutputRT) ;
 
   AliDebug(3,Form("*** Processing event %d\n", fEvents));
 
@@ -943,7 +972,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
      //do RT determination if RT analysis
     cfVtxHF->SetAveMultiInTrans(fAveMultInTransForRT);
      rtval = CalculateRTValue(aodEvent,mcHeader,cfVtxHF);
+     if (rtval<0.) {
+       delete cfVtxHF;
+       return;
+     }
      cfVtxHF->SetRTValue(rtval);
+     fGlobalRT->Fill(rtval);
   }
 
   //  printf("Multiplicity estimator %d, value %2.2f\n",fMultiplicityEstimator,multiplicity);
@@ -1332,6 +1366,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
                 }
                 fCFManager->GetParticleContainer()->Fill(containerInput, kStepRecoPID, fWeight*weigPID);
                 icountRecoPID++;
+		if(fConfiguration==kRT) fStepRecoPIDRT->Fill(rtval);
                 AliDebug(3,"Reco PID cuts passed and container filled \n");
                 if(!fAcceptanceUnf){
                   Double_t fill[4]; //fill response matrix
@@ -1747,10 +1782,31 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   fHistEventsProcessed->GetXaxis()->SetBinLabel(8,"AOD/dAOD #events ok");
   fHistEventsProcessed->GetXaxis()->SetBinLabel(9,"Candidates from OOB pile-up");
 
-  PostData(1,fHistEventsProcessed) ;
+    // TList for output
+  if (fConfiguration==kRT) {
+    fOutputRT = new TList();
+    fOutputRT->SetOwner();
+    fOutputRT->SetName("OutputHistos");
+
+    fNChargedInTrans = new TH1F("fNChargedInTrans","Charged Tracks in Transvers region;N_{ch};Entries",200,0,200);
+    fPTDistributionInTransverse = new TH1F("fPTDistributionInTransverse","pT distribution of all charged particles in Transverse region",250,0,50);
+    fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
+    fStepRecoPIDRT = new TH1F("fStepRecoPIDRT","RT for events with selected D;R_{T};Entries",100,0,10);
+    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
+
+    fOutputRT->Add(fNChargedInTrans);
+    fOutputRT->Add(fPTDistributionInTransverse);
+    fOutputRT->Add(fGlobalRT);
+    fOutputRT->Add(fStepRecoPIDRT);
+    fOutputRT->Add(fHistPtLead);
+  }
+
+  PostData(1,fHistEventsProcessed);
   PostData(2,fCFManager->GetParticleContainer()) ;
   PostData(3,fCorrelation) ;
 
+    // TList for output
+  if (fConfiguration==kRT) PostData(6,fOutputRT);
 }
 
 
@@ -2155,56 +2211,56 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5anddataoverLHC20g2a(){
 
     if(fHistoPtWeight) delete fHistoPtWeight;
     fHistoPtWeight = new TH1F("histoWeight","histoWeight",500,0.,50.);
-    Float_t binc[500]={ 
-      1.275279, 1.178278, 1.097561, 1.037290, 0.995188, 0.969488, 0.958207, 0.958101, 0.967583, 0.989210, 
-      1.026397, 1.073075, 1.117044, 1.154229, 1.185649, 1.211302, 1.231190, 1.245313, 1.253670, 1.256261, 
-      1.253087, 1.244147, 1.229442, 1.208970, 1.182734, 1.150731, 1.112963, 1.069430, 1.032005, 1.003455, 
-      0.973970, 0.942495, 0.899813, 0.848803, 0.801111, 0.756539, 0.714863, 0.675874, 0.639391, 0.605245, 
-      0.573278, 0.543344, 0.515306, 0.489036, 0.464417, 0.441337, 0.419694, 0.399391, 0.380339, 0.362455, 
-      0.345661, 0.329884, 0.315057, 0.301118, 0.288007, 0.275670, 0.264056, 0.253117, 0.242810, 0.233092, 
-      0.223926, 0.215276, 0.207108, 0.199391, 0.192096, 0.185196, 0.178666, 0.172482, 0.166621, 0.161064, 
-      0.155792, 0.150786, 0.146030, 0.141509, 0.137207, 0.133112, 0.129210, 0.125490, 0.121941, 0.118553, 
-      0.115316, 0.112220, 0.109259, 0.106423, 0.103706, 0.101100, 0.098600, 0.096199, 0.093892, 0.091674, 
-      0.089539, 0.087483, 0.085502, 0.083592, 0.081749, 0.079969, 0.078250, 0.076588, 0.074981, 0.073424, 
-      0.071917, 0.070457, 0.069041, 0.067668, 0.066335, 0.065040, 0.063782, 0.062560, 0.061371, 0.060214, 
-      0.059088, 0.057992, 0.056923, 0.055882, 0.054868, 0.053878, 0.052912, 0.051969, 0.051049, 0.050151, 
-      0.049273, 0.048415, 0.047577, 0.046757, 0.045955, 0.045171, 0.044404, 0.043653, 0.042918, 0.042198, 
-      0.041494, 0.040804, 0.040128, 0.039465, 0.038816, 0.038180, 0.037556, 0.036945, 0.036346, 0.035758, 
-      0.035182, 0.034616, 0.034062, 0.033518, 0.032984, 0.032460, 0.031946, 0.031442, 0.030947, 0.030461, 
-      0.029983, 0.029515, 0.029055, 0.028604, 0.028160, 0.027725, 0.027298, 0.026878, 0.026465, 0.026060, 
-      0.025663, 0.025272, 0.024888, 0.024511, 0.024141, 0.023777, 0.023419, 0.023068, 0.022723, 0.022384, 
-      0.022051, 0.021724, 0.021402, 0.021086, 0.020775, 0.020470, 0.020170, 0.019876, 0.019586, 0.019301, 
-      0.019022, 0.018747, 0.018476, 0.018211, 0.017950, 0.017693, 0.017441, 0.017193, 0.016950, 0.016710, 
-      0.016475, 0.016244, 0.016016, 0.015793, 0.015573, 0.015357, 0.015145, 0.014936, 0.014731, 0.014529, 
-      0.014331, 0.014136, 0.013945, 0.013757, 0.013571, 0.013389, 0.013210, 0.013035, 0.012862, 0.012692, 
-      0.012525, 0.012360, 0.012199, 0.012040, 0.011884, 0.011730, 0.011579, 0.011431, 0.011285, 0.011142, 
-      0.011001, 0.010862, 0.010726, 0.010592, 0.010460, 0.010330, 0.010203, 0.010078, 0.009955, 0.009834, 
-      0.009715, 0.009597, 0.009482, 0.009369, 0.009258, 0.009148, 0.009041, 0.008935, 0.008831, 0.008729, 
-      0.008628, 0.008529, 0.008432, 0.008336, 0.008242, 0.008149, 0.008058, 0.007969, 0.007881, 0.007794, 
-      0.007709, 0.007626, 0.007543, 0.007462, 0.007383, 0.007305, 0.007228, 0.007152, 0.007077, 0.007004, 
-      0.006932, 0.006861, 0.006792, 0.006723, 0.006656, 0.006589, 0.006524, 0.006460, 0.006397, 0.006335, 
-      0.006274, 0.006214, 0.006154, 0.006096, 0.006039, 0.005983, 0.005928, 0.005873, 0.005820, 0.005767, 
-      0.005715, 0.005664, 0.005614, 0.005565, 0.005516, 0.005468, 0.005421, 0.005375, 0.005330, 0.005285, 
-      0.005241, 0.005198, 0.005155, 0.005113, 0.005072, 0.005031, 0.004991, 0.004952, 0.004913, 0.004875, 
-      0.004838, 0.004801, 0.004764, 0.004729, 0.004693, 0.004659, 0.004625, 0.004591, 0.004558, 0.004526, 
-      0.004494, 0.004462, 0.004431, 0.004401, 0.004371, 0.004341, 0.004312, 0.004284, 0.004255, 0.004228, 
-      0.004200, 0.004173, 0.004147, 0.004121, 0.004095, 0.004070, 0.004045, 0.004020, 0.003996, 0.003972, 
-      0.003949, 0.003926, 0.003903, 0.003881, 0.003859, 0.003837, 0.003816, 0.003795, 0.003774, 0.003754, 
-      0.003733, 0.003714, 0.003694, 0.003675, 0.003656, 0.003637, 0.003619, 0.003601, 0.003583, 0.003565, 
-      0.003548, 0.003531, 0.003514, 0.003497, 0.003481, 0.003465, 0.003449, 0.003433, 0.003418, 0.003403, 
-      0.003388, 0.003373, 0.003358, 0.003344, 0.003330, 0.003316, 0.003302, 0.003288, 0.003275, 0.003262, 
-      0.003249, 0.003236, 0.003223, 0.003211, 0.003198, 0.003186, 0.003174, 0.003162, 0.003151, 0.003139, 
-      0.003128, 0.003116, 0.003105, 0.003094, 0.003084, 0.003073, 0.003063, 0.003052, 0.003042, 0.003032, 
-      0.003022, 0.003012, 0.003002, 0.002993, 0.002983, 0.002974, 0.002965, 0.002955, 0.002946, 0.002938, 
-      0.002929, 0.002920, 0.002912, 0.002903, 0.002895, 0.002886, 0.002878, 0.002870, 0.002862, 0.002854, 
-      0.002847, 0.002839, 0.002831, 0.002824, 0.002816, 0.002809, 0.002802, 0.002795, 0.002787, 0.002780, 
-      0.002773, 0.002767, 0.002760, 0.002753, 0.002746, 0.002740, 0.002733, 0.002727, 0.002721, 0.002714, 
-      0.002708, 0.002702, 0.002696, 0.002690, 0.002684, 0.002678, 0.002672, 0.002666, 0.002661, 0.002655, 
-      0.002649, 0.002644, 0.002638, 0.002633, 0.002627, 0.002622, 0.002617, 0.002611, 0.002606, 0.002601, 
-      0.002596, 0.002591, 0.002586, 0.002581, 0.002576, 0.002571, 0.002566, 0.002562, 0.002557, 0.002552, 
-      0.002547, 0.002543, 0.002538, 0.002534, 0.002529, 0.002525, 0.002520, 0.002516, 0.002511, 0.002507, 
-      0.002503, 0.002499, 0.002494, 0.002490, 0.002486, 0.002482, 0.002478, 0.002474, 0.002470, 0.002466, 
-      0.002462, 0.002458, 0.002454, 0.002450, 0.002446, 0.002442, 0.002438, 0.002434, 0.002431, 0.002427, 
+    Float_t binc[500]={
+      1.275279, 1.178278, 1.097561, 1.037290, 0.995188, 0.969488, 0.958207, 0.958101, 0.967583, 0.989210,
+      1.026397, 1.073075, 1.117044, 1.154229, 1.185649, 1.211302, 1.231190, 1.245313, 1.253670, 1.256261,
+      1.253087, 1.244147, 1.229442, 1.208970, 1.182734, 1.150731, 1.112963, 1.069430, 1.032005, 1.003455,
+      0.973970, 0.942495, 0.899813, 0.848803, 0.801111, 0.756539, 0.714863, 0.675874, 0.639391, 0.605245,
+      0.573278, 0.543344, 0.515306, 0.489036, 0.464417, 0.441337, 0.419694, 0.399391, 0.380339, 0.362455,
+      0.345661, 0.329884, 0.315057, 0.301118, 0.288007, 0.275670, 0.264056, 0.253117, 0.242810, 0.233092,
+      0.223926, 0.215276, 0.207108, 0.199391, 0.192096, 0.185196, 0.178666, 0.172482, 0.166621, 0.161064,
+      0.155792, 0.150786, 0.146030, 0.141509, 0.137207, 0.133112, 0.129210, 0.125490, 0.121941, 0.118553,
+      0.115316, 0.112220, 0.109259, 0.106423, 0.103706, 0.101100, 0.098600, 0.096199, 0.093892, 0.091674,
+      0.089539, 0.087483, 0.085502, 0.083592, 0.081749, 0.079969, 0.078250, 0.076588, 0.074981, 0.073424,
+      0.071917, 0.070457, 0.069041, 0.067668, 0.066335, 0.065040, 0.063782, 0.062560, 0.061371, 0.060214,
+      0.059088, 0.057992, 0.056923, 0.055882, 0.054868, 0.053878, 0.052912, 0.051969, 0.051049, 0.050151,
+      0.049273, 0.048415, 0.047577, 0.046757, 0.045955, 0.045171, 0.044404, 0.043653, 0.042918, 0.042198,
+      0.041494, 0.040804, 0.040128, 0.039465, 0.038816, 0.038180, 0.037556, 0.036945, 0.036346, 0.035758,
+      0.035182, 0.034616, 0.034062, 0.033518, 0.032984, 0.032460, 0.031946, 0.031442, 0.030947, 0.030461,
+      0.029983, 0.029515, 0.029055, 0.028604, 0.028160, 0.027725, 0.027298, 0.026878, 0.026465, 0.026060,
+      0.025663, 0.025272, 0.024888, 0.024511, 0.024141, 0.023777, 0.023419, 0.023068, 0.022723, 0.022384,
+      0.022051, 0.021724, 0.021402, 0.021086, 0.020775, 0.020470, 0.020170, 0.019876, 0.019586, 0.019301,
+      0.019022, 0.018747, 0.018476, 0.018211, 0.017950, 0.017693, 0.017441, 0.017193, 0.016950, 0.016710,
+      0.016475, 0.016244, 0.016016, 0.015793, 0.015573, 0.015357, 0.015145, 0.014936, 0.014731, 0.014529,
+      0.014331, 0.014136, 0.013945, 0.013757, 0.013571, 0.013389, 0.013210, 0.013035, 0.012862, 0.012692,
+      0.012525, 0.012360, 0.012199, 0.012040, 0.011884, 0.011730, 0.011579, 0.011431, 0.011285, 0.011142,
+      0.011001, 0.010862, 0.010726, 0.010592, 0.010460, 0.010330, 0.010203, 0.010078, 0.009955, 0.009834,
+      0.009715, 0.009597, 0.009482, 0.009369, 0.009258, 0.009148, 0.009041, 0.008935, 0.008831, 0.008729,
+      0.008628, 0.008529, 0.008432, 0.008336, 0.008242, 0.008149, 0.008058, 0.007969, 0.007881, 0.007794,
+      0.007709, 0.007626, 0.007543, 0.007462, 0.007383, 0.007305, 0.007228, 0.007152, 0.007077, 0.007004,
+      0.006932, 0.006861, 0.006792, 0.006723, 0.006656, 0.006589, 0.006524, 0.006460, 0.006397, 0.006335,
+      0.006274, 0.006214, 0.006154, 0.006096, 0.006039, 0.005983, 0.005928, 0.005873, 0.005820, 0.005767,
+      0.005715, 0.005664, 0.005614, 0.005565, 0.005516, 0.005468, 0.005421, 0.005375, 0.005330, 0.005285,
+      0.005241, 0.005198, 0.005155, 0.005113, 0.005072, 0.005031, 0.004991, 0.004952, 0.004913, 0.004875,
+      0.004838, 0.004801, 0.004764, 0.004729, 0.004693, 0.004659, 0.004625, 0.004591, 0.004558, 0.004526,
+      0.004494, 0.004462, 0.004431, 0.004401, 0.004371, 0.004341, 0.004312, 0.004284, 0.004255, 0.004228,
+      0.004200, 0.004173, 0.004147, 0.004121, 0.004095, 0.004070, 0.004045, 0.004020, 0.003996, 0.003972,
+      0.003949, 0.003926, 0.003903, 0.003881, 0.003859, 0.003837, 0.003816, 0.003795, 0.003774, 0.003754,
+      0.003733, 0.003714, 0.003694, 0.003675, 0.003656, 0.003637, 0.003619, 0.003601, 0.003583, 0.003565,
+      0.003548, 0.003531, 0.003514, 0.003497, 0.003481, 0.003465, 0.003449, 0.003433, 0.003418, 0.003403,
+      0.003388, 0.003373, 0.003358, 0.003344, 0.003330, 0.003316, 0.003302, 0.003288, 0.003275, 0.003262,
+      0.003249, 0.003236, 0.003223, 0.003211, 0.003198, 0.003186, 0.003174, 0.003162, 0.003151, 0.003139,
+      0.003128, 0.003116, 0.003105, 0.003094, 0.003084, 0.003073, 0.003063, 0.003052, 0.003042, 0.003032,
+      0.003022, 0.003012, 0.003002, 0.002993, 0.002983, 0.002974, 0.002965, 0.002955, 0.002946, 0.002938,
+      0.002929, 0.002920, 0.002912, 0.002903, 0.002895, 0.002886, 0.002878, 0.002870, 0.002862, 0.002854,
+      0.002847, 0.002839, 0.002831, 0.002824, 0.002816, 0.002809, 0.002802, 0.002795, 0.002787, 0.002780,
+      0.002773, 0.002767, 0.002760, 0.002753, 0.002746, 0.002740, 0.002733, 0.002727, 0.002721, 0.002714,
+      0.002708, 0.002702, 0.002696, 0.002690, 0.002684, 0.002678, 0.002672, 0.002666, 0.002661, 0.002655,
+      0.002649, 0.002644, 0.002638, 0.002633, 0.002627, 0.002622, 0.002617, 0.002611, 0.002606, 0.002601,
+      0.002596, 0.002591, 0.002586, 0.002581, 0.002576, 0.002571, 0.002566, 0.002562, 0.002557, 0.002552,
+      0.002547, 0.002543, 0.002538, 0.002534, 0.002529, 0.002525, 0.002520, 0.002516, 0.002511, 0.002507,
+      0.002503, 0.002499, 0.002494, 0.002490, 0.002486, 0.002482, 0.002478, 0.002474, 0.002470, 0.002466,
+      0.002462, 0.002458, 0.002454, 0.002450, 0.002446, 0.002442, 0.002438, 0.002434, 0.002431, 0.002427,
       0.002423, 0.002420, 0.002416, 0.002412, 0.002409, 0.002405, 0.002401, 0.002398, 0.002394, 0.002391
       };
     for(Int_t i=0; i<500; i++){
@@ -2221,56 +2277,56 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5anddataoverLHC20g2b(){
 
     if(fHistoPtWeight) delete fHistoPtWeight;
     fHistoPtWeight = new TH1F("histoWeight","histoWeight",500,0.,50.);
-    Float_t binc[500]={ 
-      1.244760, 1.150068, 1.071265, 1.012415, 0.971299, 0.946193, 0.935163, 0.935049, 0.944369, 0.964778, 
-      0.997505, 1.036911, 1.073968, 1.105850, 1.133293, 1.156296, 1.174859, 1.188983, 1.198668, 1.203912, 
-      1.204718, 1.201084, 1.193010, 1.180497, 1.163544, 1.142152, 1.116320, 1.086049, 1.051338, 1.017632, 
-      0.990162, 0.964726, 0.938994, 0.914297, 0.890133, 0.866480, 0.843481, 0.821118, 0.799372, 0.778227, 
-      0.757666, 0.737672, 0.718229, 0.699323, 0.680939, 0.663061, 0.645675, 0.628769, 0.612328, 0.596340, 
-      0.580792, 0.565672, 0.550967, 0.536667, 0.522759, 0.509234, 0.496080, 0.483287, 0.470845, 0.458744, 
-      0.446975, 0.435528, 0.424395, 0.413567, 0.403035, 0.392791, 0.382827, 0.373135, 0.363708, 0.354539, 
-      0.345619, 0.336943, 0.328503, 0.320293, 0.312306, 0.304537, 0.296978, 0.289626, 0.282473, 0.275513, 
-      0.268743, 0.262156, 0.255748, 0.249513, 0.243446, 0.237544, 0.231801, 0.226213, 0.220775, 0.215484, 
-      0.210335, 0.205325, 0.200450, 0.195705, 0.191088, 0.186594, 0.182221, 0.177965, 0.173823, 0.169791, 
-      0.165866, 0.162047, 0.158329, 0.154709, 0.151186, 0.147757, 0.144418, 0.141168, 0.138003, 0.134923, 
-      0.131923, 0.129003, 0.126159, 0.123390, 0.120694, 0.118068, 0.115512, 0.113022, 0.110597, 0.108235, 
-      0.105934, 0.103694, 0.101511, 0.099385, 0.097314, 0.095297, 0.093331, 0.091416, 0.089551, 0.087733, 
-      0.085961, 0.084235, 0.082553, 0.080914, 0.079316, 0.077759, 0.076241, 0.074762, 0.073320, 0.071914, 
-      0.070543, 0.069207, 0.067904, 0.066634, 0.065395, 0.064187, 0.063008, 0.061859, 0.060738, 0.059645, 
-      0.058578, 0.057538, 0.056523, 0.055532, 0.054565, 0.053622, 0.052702, 0.051803, 0.050927, 0.050071, 
-      0.049235, 0.048419, 0.047623, 0.046845, 0.046086, 0.045344, 0.044620, 0.043912, 0.043221, 0.042546, 
-      0.041887, 0.041242, 0.040612, 0.039997, 0.039395, 0.038807, 0.038233, 0.037671, 0.037122, 0.036584, 
-      0.036059, 0.035545, 0.035043, 0.034552, 0.034071, 0.033600, 0.033140, 0.032690, 0.032249, 0.031818, 
-      0.031395, 0.030982, 0.030577, 0.030181, 0.029792, 0.029412, 0.029040, 0.028675, 0.028318, 0.027967, 
-      0.027624, 0.027288, 0.026958, 0.026635, 0.026318, 0.026007, 0.025703, 0.025404, 0.025111, 0.024823, 
-      0.024541, 0.024265, 0.023993, 0.023726, 0.023465, 0.023208, 0.022956, 0.022708, 0.022465, 0.022226, 
-      0.021992, 0.021761, 0.021535, 0.021312, 0.021094, 0.020879, 0.020667, 0.020460, 0.020255, 0.020055, 
-      0.019857, 0.019663, 0.019472, 0.019284, 0.019099, 0.018917, 0.018738, 0.018561, 0.018388, 0.018217, 
-      0.018049, 0.017883, 0.017720, 0.017559, 0.017401, 0.017245, 0.017091, 0.016939, 0.016790, 0.016643, 
-      0.016498, 0.016355, 0.016214, 0.016075, 0.015937, 0.015802, 0.015669, 0.015537, 0.015407, 0.015279, 
-      0.015153, 0.015028, 0.014904, 0.014783, 0.014663, 0.014544, 0.014427, 0.014311, 0.014197, 0.014084, 
-      0.013973, 0.013863, 0.013754, 0.013647, 0.013540, 0.013435, 0.013332, 0.013229, 0.013128, 0.013027, 
-      0.012928, 0.012830, 0.012733, 0.012637, 0.012543, 0.012449, 0.012356, 0.012264, 0.012173, 0.012083, 
-      0.011995, 0.011907, 0.011819, 0.011733, 0.011648, 0.011563, 0.011480, 0.011397, 0.011315, 0.011234, 
-      0.011154, 0.011074, 0.010995, 0.010917, 0.010840, 0.010763, 0.010687, 0.010612, 0.010538, 0.010464, 
-      0.010391, 0.010318, 0.010247, 0.010175, 0.010105, 0.010035, 0.009966, 0.009897, 0.009829, 0.009762, 
-      0.009695, 0.009629, 0.009563, 0.009498, 0.009433, 0.009369, 0.009305, 0.009242, 0.009180, 0.009118, 
-      0.009057, 0.008996, 0.008935, 0.008875, 0.008816, 0.008757, 0.008698, 0.008640, 0.008583, 0.008525, 
-      0.008469, 0.008413, 0.008357, 0.008301, 0.008246, 0.008192, 0.008138, 0.008084, 0.008031, 0.007978, 
-      0.007925, 0.007873, 0.007822, 0.007770, 0.007719, 0.007669, 0.007619, 0.007569, 0.007520, 0.007471, 
-      0.007422, 0.007373, 0.007325, 0.007278, 0.007231, 0.007184, 0.007137, 0.007091, 0.007045, 0.006999, 
-      0.006954, 0.006909, 0.006864, 0.006820, 0.006776, 0.006732, 0.006689, 0.006646, 0.006603, 0.006560, 
-      0.006518, 0.006476, 0.006435, 0.006393, 0.006352, 0.006311, 0.006271, 0.006231, 0.006191, 0.006151, 
-      0.006112, 0.006073, 0.006034, 0.005995, 0.005957, 0.005919, 0.005881, 0.005843, 0.005806, 0.005769, 
-      0.005732, 0.005696, 0.005659, 0.005623, 0.005587, 0.005552, 0.005517, 0.005481, 0.005447, 0.005412, 
-      0.005378, 0.005343, 0.005309, 0.005276, 0.005242, 0.005209, 0.005176, 0.005143, 0.005110, 0.005078, 
-      0.005046, 0.005014, 0.004982, 0.004950, 0.004919, 0.004888, 0.004857, 0.004826, 0.004795, 0.004765, 
-      0.004735, 0.004705, 0.004675, 0.004646, 0.004616, 0.004587, 0.004558, 0.004529, 0.004501, 0.004472, 
-      0.004444, 0.004416, 0.004388, 0.004360, 0.004333, 0.004305, 0.004278, 0.004251, 0.004224, 0.004197, 
-      0.004171, 0.004145, 0.004118, 0.004093, 0.004067, 0.004041, 0.004016, 0.003990, 0.003965, 0.003940, 
-      0.003915, 0.003891, 0.003866, 0.003842, 0.003817, 0.003793, 0.003769, 0.003746, 0.003722, 0.003699, 
-      0.003675, 0.003652, 0.003629, 0.003606, 0.003584, 0.003561, 0.003539, 0.003516, 0.003494, 0.003472, 
-      0.003450, 0.003429, 0.003407, 0.003386, 0.003364, 0.003343, 0.003322, 0.003301, 0.003280, 0.003260, 
+    Float_t binc[500]={
+      1.244760, 1.150068, 1.071265, 1.012415, 0.971299, 0.946193, 0.935163, 0.935049, 0.944369, 0.964778,
+      0.997505, 1.036911, 1.073968, 1.105850, 1.133293, 1.156296, 1.174859, 1.188983, 1.198668, 1.203912,
+      1.204718, 1.201084, 1.193010, 1.180497, 1.163544, 1.142152, 1.116320, 1.086049, 1.051338, 1.017632,
+      0.990162, 0.964726, 0.938994, 0.914297, 0.890133, 0.866480, 0.843481, 0.821118, 0.799372, 0.778227,
+      0.757666, 0.737672, 0.718229, 0.699323, 0.680939, 0.663061, 0.645675, 0.628769, 0.612328, 0.596340,
+      0.580792, 0.565672, 0.550967, 0.536667, 0.522759, 0.509234, 0.496080, 0.483287, 0.470845, 0.458744,
+      0.446975, 0.435528, 0.424395, 0.413567, 0.403035, 0.392791, 0.382827, 0.373135, 0.363708, 0.354539,
+      0.345619, 0.336943, 0.328503, 0.320293, 0.312306, 0.304537, 0.296978, 0.289626, 0.282473, 0.275513,
+      0.268743, 0.262156, 0.255748, 0.249513, 0.243446, 0.237544, 0.231801, 0.226213, 0.220775, 0.215484,
+      0.210335, 0.205325, 0.200450, 0.195705, 0.191088, 0.186594, 0.182221, 0.177965, 0.173823, 0.169791,
+      0.165866, 0.162047, 0.158329, 0.154709, 0.151186, 0.147757, 0.144418, 0.141168, 0.138003, 0.134923,
+      0.131923, 0.129003, 0.126159, 0.123390, 0.120694, 0.118068, 0.115512, 0.113022, 0.110597, 0.108235,
+      0.105934, 0.103694, 0.101511, 0.099385, 0.097314, 0.095297, 0.093331, 0.091416, 0.089551, 0.087733,
+      0.085961, 0.084235, 0.082553, 0.080914, 0.079316, 0.077759, 0.076241, 0.074762, 0.073320, 0.071914,
+      0.070543, 0.069207, 0.067904, 0.066634, 0.065395, 0.064187, 0.063008, 0.061859, 0.060738, 0.059645,
+      0.058578, 0.057538, 0.056523, 0.055532, 0.054565, 0.053622, 0.052702, 0.051803, 0.050927, 0.050071,
+      0.049235, 0.048419, 0.047623, 0.046845, 0.046086, 0.045344, 0.044620, 0.043912, 0.043221, 0.042546,
+      0.041887, 0.041242, 0.040612, 0.039997, 0.039395, 0.038807, 0.038233, 0.037671, 0.037122, 0.036584,
+      0.036059, 0.035545, 0.035043, 0.034552, 0.034071, 0.033600, 0.033140, 0.032690, 0.032249, 0.031818,
+      0.031395, 0.030982, 0.030577, 0.030181, 0.029792, 0.029412, 0.029040, 0.028675, 0.028318, 0.027967,
+      0.027624, 0.027288, 0.026958, 0.026635, 0.026318, 0.026007, 0.025703, 0.025404, 0.025111, 0.024823,
+      0.024541, 0.024265, 0.023993, 0.023726, 0.023465, 0.023208, 0.022956, 0.022708, 0.022465, 0.022226,
+      0.021992, 0.021761, 0.021535, 0.021312, 0.021094, 0.020879, 0.020667, 0.020460, 0.020255, 0.020055,
+      0.019857, 0.019663, 0.019472, 0.019284, 0.019099, 0.018917, 0.018738, 0.018561, 0.018388, 0.018217,
+      0.018049, 0.017883, 0.017720, 0.017559, 0.017401, 0.017245, 0.017091, 0.016939, 0.016790, 0.016643,
+      0.016498, 0.016355, 0.016214, 0.016075, 0.015937, 0.015802, 0.015669, 0.015537, 0.015407, 0.015279,
+      0.015153, 0.015028, 0.014904, 0.014783, 0.014663, 0.014544, 0.014427, 0.014311, 0.014197, 0.014084,
+      0.013973, 0.013863, 0.013754, 0.013647, 0.013540, 0.013435, 0.013332, 0.013229, 0.013128, 0.013027,
+      0.012928, 0.012830, 0.012733, 0.012637, 0.012543, 0.012449, 0.012356, 0.012264, 0.012173, 0.012083,
+      0.011995, 0.011907, 0.011819, 0.011733, 0.011648, 0.011563, 0.011480, 0.011397, 0.011315, 0.011234,
+      0.011154, 0.011074, 0.010995, 0.010917, 0.010840, 0.010763, 0.010687, 0.010612, 0.010538, 0.010464,
+      0.010391, 0.010318, 0.010247, 0.010175, 0.010105, 0.010035, 0.009966, 0.009897, 0.009829, 0.009762,
+      0.009695, 0.009629, 0.009563, 0.009498, 0.009433, 0.009369, 0.009305, 0.009242, 0.009180, 0.009118,
+      0.009057, 0.008996, 0.008935, 0.008875, 0.008816, 0.008757, 0.008698, 0.008640, 0.008583, 0.008525,
+      0.008469, 0.008413, 0.008357, 0.008301, 0.008246, 0.008192, 0.008138, 0.008084, 0.008031, 0.007978,
+      0.007925, 0.007873, 0.007822, 0.007770, 0.007719, 0.007669, 0.007619, 0.007569, 0.007520, 0.007471,
+      0.007422, 0.007373, 0.007325, 0.007278, 0.007231, 0.007184, 0.007137, 0.007091, 0.007045, 0.006999,
+      0.006954, 0.006909, 0.006864, 0.006820, 0.006776, 0.006732, 0.006689, 0.006646, 0.006603, 0.006560,
+      0.006518, 0.006476, 0.006435, 0.006393, 0.006352, 0.006311, 0.006271, 0.006231, 0.006191, 0.006151,
+      0.006112, 0.006073, 0.006034, 0.005995, 0.005957, 0.005919, 0.005881, 0.005843, 0.005806, 0.005769,
+      0.005732, 0.005696, 0.005659, 0.005623, 0.005587, 0.005552, 0.005517, 0.005481, 0.005447, 0.005412,
+      0.005378, 0.005343, 0.005309, 0.005276, 0.005242, 0.005209, 0.005176, 0.005143, 0.005110, 0.005078,
+      0.005046, 0.005014, 0.004982, 0.004950, 0.004919, 0.004888, 0.004857, 0.004826, 0.004795, 0.004765,
+      0.004735, 0.004705, 0.004675, 0.004646, 0.004616, 0.004587, 0.004558, 0.004529, 0.004501, 0.004472,
+      0.004444, 0.004416, 0.004388, 0.004360, 0.004333, 0.004305, 0.004278, 0.004251, 0.004224, 0.004197,
+      0.004171, 0.004145, 0.004118, 0.004093, 0.004067, 0.004041, 0.004016, 0.003990, 0.003965, 0.003940,
+      0.003915, 0.003891, 0.003866, 0.003842, 0.003817, 0.003793, 0.003769, 0.003746, 0.003722, 0.003699,
+      0.003675, 0.003652, 0.003629, 0.003606, 0.003584, 0.003561, 0.003539, 0.003516, 0.003494, 0.003472,
+      0.003450, 0.003429, 0.003407, 0.003386, 0.003364, 0.003343, 0.003322, 0.003301, 0.003280, 0.003260,
       0.003239, 0.003219, 0.003199, 0.003178, 0.003158, 0.003139, 0.003119, 0.003099, 0.003080, 0.003060
       };
     for(Int_t i=0; i<500; i++){
@@ -2418,7 +2474,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2b(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsLcFromPythiaMode2overLHC20f4abc(){
-  // weight function from the ratio of the LHC20f4abc MC 
+  // weight function from the ratio of the LHC20f4abc MC
   // and Pythia Mode2 calculations for pp data at 13TeV
 
   if(fFuncWeight) delete fFuncWeight;
@@ -2739,9 +2795,113 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
    Int_t eventId = 0;
    Double_t trackRTval = -1;
    if (esdEvent->GetHeader()) eventId = GetEventIdAsLong(esdEvent->GetHeader());
-   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-   AliESDtrackCuts* esdCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-   trackFilter->AddCuts(esdCutsTPC);
+
+   ///settings for track filter used in RT determination
+  AliESDtrackCuts* esdTrackCutsRun2[18] = {0};
+  AliESDtrackCuts* esdTrackCutsGlobal[18] = {0};
+  AliESDtrackCuts* esdTrackCutsComplementary[18] = {0};
+
+   if (!fUseHybridTracks){
+     for ( int iTc = 0 ; iTc < 18 ; iTc++ )
+       {
+ 	// standar parameters ------------------- //
+ 	double maxdcaz = 2.;
+ 	double minratiocrossrowstpcover = 0.8;
+ 	double maxfraclusterstpcshared = 0.4;
+ 	double maxchi2perclustertpc = 4.0;
+ 	double maxchi2perclusterits = 36.;
+ 	double geowidth = 3.;
+ 	double geolenght = 130.;
+ 	double maxchi2tpcglobal = 36.;
+ 	// ------------------------------------- //
+
+ 	// variations of the track cuts -------- //
+ 	if ( iTc == 1) maxdcaz = 1.0;
+ 	if ( iTc == 2) maxdcaz = 5.0;
+ 	if ( iTc == 5) minratiocrossrowstpcover = 0.7;
+ 	if ( iTc == 6) minratiocrossrowstpcover = 0.9;
+ 	if ( iTc == 7) maxfraclusterstpcshared = 0.2;
+ 	if ( iTc == 8) maxfraclusterstpcshared = 1.0;
+ 	if ( iTc == 9) maxchi2perclustertpc = 3.0;
+ 	if ( iTc == 10) maxchi2perclustertpc = 5.0;
+ 	if ( iTc == 11) maxchi2perclusterits = 25.0;
+ 	if ( iTc == 12) maxchi2perclusterits = 49.0;
+ 	if ( iTc == 14) geowidth = 2.0;
+ 	if ( iTc == 15) geowidth = 4.0;
+ 	if ( iTc == 16) geolenght = 120.0;
+ 	if ( iTc == 17) geolenght = 140.0;
+ 	// variations of the track cuts -------- //
+ 	fTrackFilter[iTc] = new AliAnalysisFilter(Form("fTrackFilter%d",iTc));
+ 	esdTrackCutsRun2[iTc] = new AliESDtrackCuts(Form("esdTrackCutsRun2%d",iTc));
+
+ 	// TPC
+ 	esdTrackCutsRun2[iTc]->SetCutGeoNcrNcl(geowidth,geolenght,1.5,0.85,0.7);
+ 	esdTrackCutsRun2[iTc]->SetRequireTPCRefit(kTRUE);
+ 	esdTrackCutsRun2[iTc]->SetMinRatioCrossedRowsOverFindableClustersTPC(minratiocrossrowstpcover);
+ 	esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterTPC(maxchi2perclustertpc);
+ 	esdTrackCutsRun2[iTc]->SetMaxFractionSharedTPCClusters(maxfraclusterstpcshared);
+ 	//esdTrackCutsRun2[iTc]->SetMaxChi2TPCConstrainedGlobal(maxchi2tpcglobal); TODO VZ: check this cut
+ 	// ITS
+ 	esdTrackCutsRun2[iTc]->SetRequireITSRefit(kTRUE);
+ 	if ( iTc != 13 )
+ 	  esdTrackCutsRun2[iTc]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+
+ 	esdTrackCutsRun2[iTc]->SetMaxChi2PerClusterITS(maxchi2perclusterits);
+
+ 	// primary selection
+ 	esdTrackCutsRun2[iTc]->SetDCAToVertex2D(kFALSE);
+ 	esdTrackCutsRun2[iTc]->SetRequireSigmaToVertex(kFALSE);
+ 	esdTrackCutsRun2[iTc]->SetMaxDCAToVertexZ(maxdcaz);
+ 	esdTrackCutsRun2[iTc]->SetAcceptKinkDaughters(kFALSE);
+
+ 	if ( iTc == 3 )
+ 	  // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("4*(0.0026+0.0050/pt^1.01)");
+ 	  esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("6.5*(0.0026+0.0050/pt^1.01)");
+ 	else if ( iTc == 4 )
+ 	  // esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("10*(0.0026+0.0050/pt^1.01)");
+ 	  esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("7.5*(0.0026+0.0050/pt^1.01)");
+ 	else
+ 	  esdTrackCutsRun2[iTc]->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); // (7*(------))
+
+ 	fTrackFilter[iTc]->AddCuts(esdTrackCutsRun2[iTc]);
+       }
+   } else {//end if on usage of hybrid tracks
+ 	fTrackFilterGlobal = new AliAnalysisFilter("fTrackFilterGlobal0");
+ 	esdTrackCutsGlobal[0] = new AliESDtrackCuts("esdTrackCutsRunGlobal0"); //use other slots for systematic if needed;
+
+ 	esdTrackCutsGlobal[0]->SetMinNCrossedRowsTPC(70);
+ 	esdTrackCutsGlobal[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+ 	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterTPC(4);
+ 	esdTrackCutsGlobal[0]->SetAcceptKinkDaughters(kFALSE);
+ 	esdTrackCutsGlobal[0]->SetRequireTPCRefit(kTRUE);
+ 	esdTrackCutsGlobal[0]->SetRequireITSRefit(kTRUE);
+ 	esdTrackCutsGlobal[0]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+ 	esdTrackCutsGlobal[0]->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+ 	esdTrackCutsGlobal[0]->SetMaxDCAToVertexZ(2);
+ 	esdTrackCutsGlobal[0]->SetDCAToVertex2D(kFALSE);
+ 	esdTrackCutsGlobal[0]->SetRequireSigmaToVertex(kFALSE);
+ 	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterITS(36);
+ 	esdTrackCutsGlobal[0]->SetEtaRange(-0.8,0.8);
+ 	fTrackFilterGlobal->AddCuts(esdTrackCutsGlobal[0]);
+
+ 	fTrackFilterComplementary = new AliAnalysisFilter("fTrackFilterComplementary0");
+ 	esdTrackCutsComplementary[0] = new AliESDtrackCuts("esdTrackCutsRunComplementary0"); //use other slots for systematic if needed;
+
+ 	esdTrackCutsComplementary[0]->SetMinNCrossedRowsTPC(70);
+ 	esdTrackCutsComplementary[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+ 	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterTPC(4);
+ 	esdTrackCutsComplementary[0]->SetAcceptKinkDaughters(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetRequireTPCRefit(kTRUE);
+ 	esdTrackCutsComplementary[0]->SetRequireITSRefit(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+ 	esdTrackCutsComplementary[0]->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+ 	esdTrackCutsComplementary[0]->SetMaxDCAToVertexZ(2);
+ 	esdTrackCutsComplementary[0]->SetDCAToVertex2D(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetRequireSigmaToVertex(kFALSE);
+ 	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterITS(36);
+ 	esdTrackCutsComplementary[0]->SetEtaRange(-0.8,0.8);
+ 	fTrackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
+   }
 
 
    const Int_t nESDTracks = esdEvent->GetNumberOfTracks();
@@ -2754,24 +2914,23 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       part = esdEvent->GetTrack(iT);
       eta = part->Eta();
       pt  = part->Pt();
-      if (TMath::Abs(eta) > 1.5) continue; //temporary, hardcoded eta cut to default value
+      if (TMath::Abs(eta) > 0.8) continue; //temporary, hardcoded eta cut to default value
       if (!(TMath::Abs(pt) > 0.15)) continue;
 
       // Default track filter (to be checked)
       for ( Int_t i = 0; i < 1; i++)
       {
          UInt_t selectDebug = 0;
-         if (trackFilter)
+         if (!fUseHybridTracks && fTrackFilter[i])
          {
-            selectDebug = trackFilter->IsSelected(part);
+            selectDebug = fTrackFilter[i]->IsSelected(part);
             if (!selectDebug)
             {
                continue;
             }
-            /// fill tracks array
-            fCTSTracks->Add(part);
             if (!part) continue;
-         }
+         } else if (fUseHybridTracks && fTrackFilterGlobal && fTrackFilterComplementary ){
+	   	 }
       }
    }
 
@@ -2795,6 +2954,8 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
          listMin = (TList*)regionsMinMaxReco->At(1);
 
          trackRTval = (listMax->GetEntries() + listMin->GetEntries()) / cf->GetAveMultiInTrans(); //sum of transverse regions / average
+	 fNChargedInTrans->Fill(listMax->GetEntries() + listMin->GetEntries());
+         fHistPtLead->Fill(LeadingPt);
       }
 
    }
@@ -2802,7 +2963,6 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
   if (regionSortedParticlesReco) delete regionSortedParticlesReco;
   if (regionsMinMaxReco) delete regionsMinMaxReco;
   if (LeadingTrackReco) delete LeadingTrackReco;
-  if(trackFilter) delete trackFilter;
   return trackRTval;
 }
 
@@ -2929,6 +3089,11 @@ TObjArray *AliCFTaskVertexingHF::SortRegionsRT(const AliVParticle* leading, TObj
       if(region == -1) transverse2->Add(part);
       if(region == 2) toward->Add(part);
       if(region == -2) away->Add(part);
+
+      if(region == 1 || region == -1) fPTDistributionInTransverse->Fill(part->Pt());
+
+
+
    }//end loop on tracks
 
    return regionParticles;

@@ -13,19 +13,23 @@ void runLocal() {
 
   // load the addtask macro and create the task
   AliAnalysisTaskLegendreCoef *task = reinterpret_cast<AliAnalysisTaskLegendreCoef*>(gInterpreter->ExecuteMacro("macros/AddTaskLegendreCoef.C"));
-  task->SetPileUpRead(kTRUE);
-  // task->SetBuildBackground(kTRUE);
-  TFile *f1 = new TFile("/home/alidock/localtest/AnalysisResults9775.root");
-  TList* histlist = (TList*)f1->Get("LongFluctuations/EtaBG");
-  if(!histlist) printf("error!!!!!!!! no list\n");
-  if(!(TH2D*)histlist->FindObject("PosBGHistOut")) printf("error!!!!!!!! no hist\n");
+  if(!task) return 0x0;
 
-  task->GetPosBackground((TH2D*)histlist->FindObject("PosBGHistOut"));
-  task->GetNegBackground((TH2D*)histlist->FindObject("NegBGHistOut"));
-  task->GetChargedBackground((TH2D*)histlist->FindObject("ChargedBGHistOut"));
-  task->GetNeventsCentHist((TH1D*)histlist->FindObject("NeventsCentHist"));
+  //task->SetPileUpRead(kTRUE);
+  task->SetBuildBackground(kTRUE);
 
-  task->SetBuildLegendre(kTRUE);
+  // TFile *f1 = new TFile("/Users/raquelquishpe/analysis/localtest/AnalysisResults9773.root");
+  // TList* histlist = (TList*)f1->Get("LongFluctuations/EtaBG");
+  // if(!histlist) printf("error!!!!!!!! no list\n");
+  // if(!(TH2D*)histlist->FindObject("PosBGHistOut")) printf("error!!!!!!!! no hist\n");
+
+  // task->GetPosBackground((TH2D*)histlist->FindObject("PosBGHistOut"));
+  // task->GetNegBackground((TH2D*)histlist->FindObject("NegBGHistOut"));
+  // task->GetChargedBackground((TH2D*)histlist->FindObject("ChargedBGHistOut"));
+  // task->GetNeventsCentHist((TH1D*)histlist->FindObject("NeventsCentHist"));
+  //task->SetFilterBit(768);
+
+  //task->SetBuildLegendre(kTRUE);
 
 
   if(!mgr->InitAnalysis()) return;
@@ -35,6 +39,6 @@ void runLocal() {
   
   // if you want to run locally, we need to define some input
   TChain* chain = new TChain("aodTree");
-  chain->Add("/home/alidock/longfluc/AliAOD.root");
+  chain->Add("/Users/raquelquishpe/analysis/localtest/XeAliAOD.root");
   mgr->StartAnalysis("local", chain);
 }

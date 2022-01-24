@@ -54,23 +54,18 @@ AliAnalysisTaskChargedVsRT* AddTaskChargedVsRT(const Char_t* taskname="ChargedVs
     taskKno->SetLeadingPtMin(PtLmin);
     taskKno->SetLeadingPtMax(PtLmax);
     // Systematic -------------------------------
-    taskKno->SetTPCclustersVar1(TPCclustersVar1);
-    taskKno->SetTPCclustersVar2(TPCclustersVar2);
     taskKno->SetNcrVar1(NcrVar1);
     taskKno->SetNcrVar2(NcrVar2);
     taskKno->SetChisqTPCVar1(ChisqTPCVar1);
     taskKno->SetChisqTPCVar2(ChisqTPCVar2);
     taskKno->SetChisqITSVar1(ChisqITSVar1);
     taskKno->SetChisqITSVar2(ChisqITSVar2);
-    taskKno->SetChisqITSmTPCVar1(ChisqITSmTPCVar1);
-    taskKno->SetChisqITSmTPCVar2(ChisqITSmTPCVar2);
     taskKno->SetDcazVar1(DcazVar1);
     taskKno->SetDcazVar2(DcazVar2);
     taskKno->SetGeoTPCVar1(GeoTPCVar1);
     taskKno->SetGeoTPCVar2(GeoTPCVar2);
     taskKno->SetGeoTPCVar3(GeoTPCVar3);
     taskKno->SetGeoTPCVar4(GeoTPCVar4);
-    taskKno->SetSPDreqVar1(SPDreqVar1);
     // Systematic -------------------------------
     mgr->AddTask(taskKno);
 

@@ -69,6 +69,7 @@ CellEnergy:                                         # Cell Energy correction com
     enableNewTempCalib: false                       # Whether the new temperature calibration parmeters should be used (available for Run1 and Run2)
     disableTempCalib: false                         # Switch off temperature calib completely (this should only be done by experts)
     enableShaperCorrection: false                   # Correct all cells >50 GeV for the shaper detector effect (to be used with special testbeam nonlinearity)
+    enableLGDetermination: false                    # Use own determination if a cell is HG or LG and not info stored in cell by using ADC values
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     enableAdditionalScale: false                    # Set an additional energy scale shift on cell level. HIGHLY EXPERIMENTAL and should not be used for standard analyses!
@@ -252,6 +253,16 @@ ClusterLowEnergyEfficiency:                         # Cluster number of cell eff
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
         - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterPositionCorrection:                          # Cluster position correction
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    setSMEtaValues: [0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.]      # eta position shifts per SM
+    setSMPhiValues: [0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.,   0., 0., 0., 0., 0.]      # phi position shifts per SM
+    applyToMC: true                                 # if set to true, data-MC position correction is used; if set to false MC-data position correction is used
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
 ClusterTrackMatcher:                                # Cluster-track matcher component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -349,6 +360,7 @@ executionOrder:
     - ClusterNonLinearity
     - ClusterNonLinearityMCAfterburner
     - ClusterLowEnergyEfficiency
+    - ClusterPositionCorrection
     - ClusterTrackMatcher
     - ClusterHadronicCorrection
     - ClusterEnergyVariation

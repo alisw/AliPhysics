@@ -5,6 +5,8 @@
 
 #include "runCorrelationsStudiesConfigMacro.H"
 
+void load2010c900RunNumbers();
+void load2010cMC900RunNumbers();
 void load2010bTestRunNumber();
 void load2010cTestRunNumber();
 void load2010bRunNumbers();
@@ -65,13 +67,15 @@ void runCorrelationsStudiesConfigMacro() {
   szpass = "2";
 
   /* Running conditions */
-  szAliPhysicsVersion = "vAN-20210519-1";
+  szAliPhysicsVersion = "vAN-20220119_ROOT6-1";
 
   /* the number of files we want to test */
   nNoOfInputFiles = 30;
   nNoOfTestFiles = 4;
 
   /* load the run numbers */
+  // load2010c900RunNumbers();
+  load2010cMC900RunNumbers();
   // load2010bTestRunNumber();
   // loadLocal2010hMCTestRunNumber();
   // load2010hTestRunNumber();
@@ -93,7 +97,7 @@ void runCorrelationsStudiesConfigMacro() {
   // loadAMPT2760RunNumbers();
   // load2018qRunNumbers();
   // load2018rESDRunNumbers();
-  load2015pPbHIJINGTestRunNumber();
+  // load2015pPbHIJINGTestRunNumber();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -110,7 +114,75 @@ void loadLocal2010hMCTestRunNumber() {
   bMC                        = kTRUE;
 }
 
+/* 2010c period, pp 900 GeV */
+void load2010c900RunNumbers()
+{
+    const int nRuns = 10;
+    const char *runnumber[nRuns] = {"118506",
+                                    "118507",
+                                    "118512",
+                                    "118518",
+                                    "118556",
+                                    "118558",
+                                    "118560",
+                                    "118561",
+                                    "121039",
+                                    "121040"};
 
+    bUseESD = kFALSE;
+    bUseAOD = !bUseESD;
+
+    /* the GRID working directory */
+    szGridWorkingDir = "CorrelationStudies_2010c";
+
+    /* 2010c */
+    szDataDir = "/alice/data/2010/LHC10c";
+
+    /* pass 4 */
+    szDataPattern = "AOD221/*/AliAOD.root";
+
+    /* the list of runs to analyze */
+    for (Int_t run = 0; run < nRuns; run++)
+        listOfActiveRuns.Add(new TObjString(runnumber[run]));
+
+    isHeavyIon = kFALSE;
+    szpass = "4";
+}
+
+/* 2013d4 MC anchored to 2010c period, pp 900 GeV */
+void load2010cMC900RunNumbers()
+{
+    const int nRuns = 9;
+    const char *runnumber[nRuns] = {"118507",
+                                    "118512",
+                                    "118518",
+                                    "118556",
+                                    "118558",
+                                    "118560",
+                                    "118561",
+                                    "121039",
+                                    "121040"};
+
+    bUseESD = kFALSE;
+    bUseAOD = !bUseESD;
+
+    /* the GRID working directory */
+    szGridWorkingDir = "CorrelationStudies_2010cMC";
+
+    /* 2013d4 */
+    szDataDir = "/alice/sim/2013/LHC13d4";
+
+    /* pass 3? */
+    szDataPattern = "AOD/*/AliAOD.root";
+
+    /* the list of runs to analyze */
+    for (Int_t run = 0; run < nRuns; run++)
+        listOfActiveRuns.Add(new TObjString(runnumber[run]));
+
+    isHeavyIon = kFALSE;
+    szpass = "3";
+    bMC = kTRUE;
+}
 
 /* 2010h period */
 static const int nNoOf2010hBmmRuns = 45;

@@ -123,12 +123,14 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Double_t GetMassCut(){return fMassCut;}
     Double_t GetMassCut_WithNDM(){return fMassCut_WithNDM;}
 	void SetPrefilterRunFlag(Int_t runflag){fRunFlag = runflag;}
+    Bool_t MassCutFunction(Double_t MesonMass);
 	
 	// Request Flags
 	Double_t GetEtaCut(){ return  fEtaCut;}
     Double_t GetNFindableClustersTPC(AliVTrack* lTrack);
 	Bool_t   DoWeights(){return fDoWeights;}
 	Bool_t 	 DoMassCut(){return fDoMassCut;}
+    Bool_t 	 DoMassCut_byFunction(){return fDoMassCut_byFunction;}
     Bool_t 	 DoMassCut_WithNDM(){return fDoMassCut_WithNDM;}
 	Bool_t 	 RequireVertexConstrain(){return fRequireVertexConstrain;}
 	Bool_t 	 Use4VecForMass(){return fUse4VecForMass;}
@@ -163,10 +165,12 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
 	Bool_t   fUseTOFpid; // flag to use tof pid
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
-	Bool_t   fDoMassCut;
+    Bool_t   fDoMassCut;
     Bool_t   fDoMassCut_WithNDM;
+    Bool_t   fDoMassCut_byFunction;
 	Double_t fMassCut;	
     Double_t fMassCut_WithNDM;
+    Int_t fMassCut_FunctionNumber;
 	Bool_t fUse4VecForMass; // use only momentum 4vector to calculate inv mass
 	Bool_t fRequireVertexConstrain; // require contrain to primary vertex (only for AOD)
 	Bool_t   fDoWeights;
@@ -212,7 +216,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,13)
+    ClassDef(AliPrimaryPionCuts,14)
 };
 
 #endif

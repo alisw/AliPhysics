@@ -378,6 +378,14 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609fe30220000","0r63103100000010"); // INT7 with M02/exotic cut, no FT
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609f030000000","0r63103100000010"); // INT7 without M02/exotic cut, no FT
 
+    // lowB settings
+  } else if (trainConfig == 110){ // lowB
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // INT7 with M02/exotic cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f030000000","0r63103100000010"); // INT7 without M02/exotic cut
+  } else if (trainConfig == 111){ // lowB
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe30220000","0r63103100000010"); // INT7 with M02/exotic cut, no FT
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609f030000000","0r63103100000010"); // INT7 without M02/exotic cut, no FT
+
 
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

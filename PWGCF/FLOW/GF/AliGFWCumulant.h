@@ -1,6 +1,9 @@
 /*
 Author: Vytautas Vislavicius
-Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+A part of <AliGFW.cxx/h>
+A container to store Q vectors for one subevent with an extra layer to recursively calculate particle correlations.
+If used, modified, or distributed, please aknowledge the author of this code.
 */
 #ifndef ALIGFWCUMULANT__H
 #define ALIGFWCUMULANT__H
@@ -35,7 +38,7 @@ class AliGFWCumulant {
   void CreateComplexVectorArrayVarPower(Int_t N=1, vector<Int_t> Pvec={1}, Int_t Pt=1);
   Int_t PW(Int_t ind) { return fPowVec.at(ind); }; //No checks to speed up, be carefull!!!
   void DestroyComplexVectorArray();
-  Bool_t IsPtBinFilled(Int_t ptb) { if(!fFilledPts) return kFALSE; return fFilledPts[ptb]; };
+  Bool_t IsPtBinFilled(Int_t ptb);
 };
 
 #endif

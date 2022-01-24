@@ -90,8 +90,10 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fRequireTOF(kFALSE),
 	fDoMassCut(kFALSE),
     fDoMassCut_WithNDM(kFALSE),
+    fDoMassCut_byFunction(kFALSE),
 	fMassCut(10),
     fMassCut_WithNDM(10),
+    fMassCut_FunctionNumber(0),
 	fUse4VecForMass(kFALSE),
 	fRequireVertexConstrain(kFALSE),
 	fDoWeights(kFALSE),
@@ -165,8 +167,10 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fRequireTOF(ref.fRequireTOF),
 	fDoMassCut(ref.fDoMassCut),
     fDoMassCut_WithNDM(ref.fDoMassCut_WithNDM),
+    fDoMassCut_byFunction(ref.fDoMassCut_byFunction),
 	fMassCut(ref.fMassCut),
     fMassCut_WithNDM(ref.fMassCut_WithNDM),
+    fMassCut_FunctionNumber(ref.fMassCut_FunctionNumber),
 	fUse4VecForMass(ref.fUse4VecForMass),
 	fRequireVertexConstrain(ref.fRequireVertexConstrain),
 	fDoWeights(ref.fDoWeights),
@@ -383,9 +387,9 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEv
     if( labelParticle < 0 || labelParticle >= mcEvent->GetNumberOfTracks() ) return kFALSE;
 // 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
 
-    TParticle* particle = mcEvent->Particle(labelParticle);
+    AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(labelParticle);
 
-	if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
+    if( TMath::Abs( particle->PdgCode() ) != 211 )  return kFALSE;
 	
 	if( fDoEtaCut ){
 	if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
@@ -1003,18 +1007,58 @@ Bool_t AliPrimaryPionCuts::SetTPCdEdxCutPionLine(Int_t ededxSigmaCut){
 			break;
         case 9: // -2.5, 2.5
             fDodEdxSigmaTPCCut = kTRUE;
-            fPIDnSigmaBelowPionLineTPC=-2;
-            fPIDnSigmaAbovePionLineTPC=3.;
+            fPIDnSigmaBelowPionLineTPC=-2.5;
+            fPIDnSigmaAbovePionLineTPC=2.5;
             break;
         case 10: //a -3.5, 3.5
             fDodEdxSigmaTPCCut = kTRUE;
-            fPIDnSigmaBelowPionLineTPC=-2;
-            fPIDnSigmaAbovePionLineTPC=3.;
+            fPIDnSigmaBelowPionLineTPC=-3.5;
+            fPIDnSigmaAbovePionLineTPC=3.5;
             break;
-        case 11: //b -2., 2.
+        case 11: //b -2., 2.0
             fDodEdxSigmaTPCCut = kTRUE;
             fPIDnSigmaBelowPionLineTPC=-2;
-            fPIDnSigmaAbovePionLineTPC=3.;
+            fPIDnSigmaAbovePionLineTPC=2.;
+            break;
+        case 12: //c -3.5,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.5;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 13: //d -3.25,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.25;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 14: //e -2.75,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2.75;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 15: //f -2.5,3.0
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-2.5;
+            fPIDnSigmaAbovePionLineTPC=3.0;
+            break;
+        case 16: //g -3.0,2.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=2.5;
+            break;
+        case 17: //h -3.0,2.75
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=2.75;
+            break;
+        case 18: //i -3.0,3.25
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=3.25;
+            break;
+        case 19: //j -3.0,3.5
+            fDodEdxSigmaTPCCut = kTRUE;
+            fPIDnSigmaBelowPionLineTPC=-3.0;
+            fPIDnSigmaAbovePionLineTPC=3.5;
             break;
 		default:
 			cout<<"Warning: TPCdEdxCutPionLine not defined"<<ededxSigmaCut<<endl;
@@ -1177,6 +1221,28 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fMaxSharedClsTPCFrac=0.4;
+            break;
+        case 16:  //g 70 + refit
+            fMinClsTPC= 70.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+        case 17:  //h 100 + refit
+            fMinClsTPC= 100.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+        case 18:  //i 80 + refit, 35% of findable clusters
+            fMinClsTPC = 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMinClsTPCToF= 0.35;
+            fUseCorrectedTPCClsInfo=0;
+            break;
+        case 19:  //j 80 + refit, 60% of findable clusters
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fMinClsTPCToF= 0.6;
+            fUseCorrectedTPCClsInfo=0;
             break;
 				default:
 						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
@@ -1489,8 +1555,38 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 0.520;
             break;
-		default:
-			cout<<"Warning: MassCut not defined "<<massCut<<endl;
+        case 22: //m cut at eta prime mass
+            fDoMassCut = kTRUE;
+            fMassCut = 0.95778;
+            break;
+        case 23: //n overload mass cut for chi2 of vParticle
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fMassCut = 1.000;
+            break;
+        case 24: //o use fMassCut function, 0<Mass<470 & 510<Mass<650
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_byFunction = kTRUE;
+            fMassCut = 0.85;
+            fMassCut_FunctionNumber = 1;
+            break;
+        case 25: //p use fMassCut function, 0<Mass<470 & 510<Mass<700
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_byFunction = kTRUE;
+            fMassCut = 0.85;
+            fMassCut_FunctionNumber = 2;
+            break;
+        case 26: //q use fMassCut function, 0<Mass<470 & 510<Mass<850
+            fUse4VecForMass = kTRUE;
+            fDoMassCut = kTRUE;
+            fDoMassCut_byFunction = kTRUE;
+            fMassCut = 0.85;
+            fMassCut_FunctionNumber = 3;
+            break;
+	default:
+		cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
     } 
     return kTRUE;
@@ -1616,5 +1712,59 @@ if(fUsePtDepXYDCA) SetPtDepDCACuts(lTrack->Pt());
     return kFALSE;
 
 	return kTRUE;
+}
+//--------------------------------------------------------------------------
+Bool_t  AliPrimaryPionCuts::MassCutFunction(Double_t MesonMass){
+  Double_t LowerLimit=0;
+  Double_t UpperLimit=470;
+  switch (fMassCut_FunctionNumber){
+    case 1:
+      LowerLimit=0;
+      UpperLimit=470;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+          return kTRUE;
+      }
+      LowerLimit=510;
+      UpperLimit=650;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+          return kTRUE;
+      }
+      return kFALSE;
+      break;
+    case 2:
+      LowerLimit=0;
+      UpperLimit=470;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+      }
+      LowerLimit=510;
+      UpperLimit=700;
+      if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+      }
+      return kFALSE;
+      break;
+    case 3:
+        LowerLimit=0;
+        UpperLimit=470;
+        if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+        }
+        LowerLimit=510;
+        UpperLimit=850;
+        if ((MesonMass>LowerLimit)&&(MesonMass<UpperLimit)){
+        return kTRUE;
+        }
+        return kFALSE;
+        break;
+    case 0:
+    default:
+      if (MesonMass>fMassCut){
+          return kFALSE;
+      } else {
+          return kTRUE;
+      }
+      break;
+  }
 }
 

@@ -1,62 +1,56 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-//            AddTaskMcKnoUe Macro to run on grids               //
-//                                                               //
+//            AddTaskGenMcKnoUe                                  //
+//            Last update: 25/11/2021                            //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-//AliAnalysisTaskGenMcKnoUe* AddTaskGenMcKnoUe(const Char_t* taskname="McKnoUe",Bool_t isPythia=kFALSE,Bool_t isEPOS=kFALSE,Bool_t isAnyGen=kFALSE, Double_t minpT=0.5)
-
-AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5,TString suffixName ="")
+AliAnalysisTask *AddTaskGenMcKnoUe(Double_t minpT=0.5, Double_t maxEta = 0.8, Double_t maxEtaRho = 0.8, Int_t fnEtaBinsRho = 1, Int_t fnPhiBinsRho = 1, Bool_t isPP=kTRUE, Bool_t isFirstPart=kTRUE, Int_t inGenerator=0, TString suffixName ="")
 {
-    // get the manager via the static access member. since it's static, you don't need
-    // an instance of the class to call the function
+	// inGenerator: 0 (Monash), 1 (Monash NoCR), 2 (Monash Ropes), 3 (Epos LHC), 4 (Herwig), 5 (AMPT), 6 (AMPT no string melting)
+	AliAnalysisTaskGenMcKnoUe* taskUE = new AliAnalysisTaskGenMcKnoUe("taskKno");
+	taskUE->SetPtMin(minpT);
+	taskUE->SetEtaMax(maxEta);
+	taskUE->SetEtaRhoMax(maxEtaRho);
+	taskUE->SetnEtaBinsRho(fnEtaBinsRho);
+	taskUE->SetnPhiBinsRho(fnPhiBinsRho);
+	taskUE->SetIsPP(isPP); 
+	taskUE->SetGenerator(inGenerator);
+	taskUE->SetIsFirstPart(isFirstPart);
 
-    AliAnalysisTaskGenMcKnoUe* taskUE = new AliAnalysisTaskGenMcKnoUe("taskKno");
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr) {
+		Printf("AliAnalysisTaskSimSpectraLF: No analysis manager to connect to.");
+		return 0x0;
+	}
+	// get the input event handler this handler is part of the managing system and feeds events to your task
+	if (!mgr->GetMCtruthEventHandler()) {
+		Printf("AliAnalysisTaskSimSpectraLF: This task requires an input MC event handler.");
+		return 0x0;
+	}
 
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        Printf("AliAnalysisTaskSimSpectraLF: No analysis manager to connect to.");
-        return 0x0;
-    }
-    // get the input event handler this handler is part of the managing system and feeds events to your task
-    if (!mgr->GetMCtruthEventHandler()) {
-        Printf("AliAnalysisTaskSimSpectraLF: This task requires an input MC event handler.");
-        return 0x0;
-    }
+	mgr->AddTask(taskUE);
 
-    // now you create an instance of your task
-    
-    if(!taskUE) return 0x0;
-   
-    // add your task to the manager
-    //taskUE -> SetGenerator("Pythia8");
-    taskUE->SetPtMin(minpT);
-    
-    mgr->AddTask(taskUE);
+	// Create containers for input/output
 
-    
-    // Create containers for input/output
+	TString finDirname    = "";
+	TString inname    = "cinput";
+	TString outBasic    = "cList";
 
-    TString finDirname    = "";
-    TString inname    = "cinput";
-    TString outBasic    = "cList";
+	finDirname    += suffixName.Data();
+	inname    += finDirname.Data();
+	outBasic    += finDirname.Data();
 
-    finDirname    += suffixName.Data();
-    inname    += finDirname.Data();
-    outBasic    += finDirname.Data();
+	// Input and Output Slots
+	//===========================================================================
 
+	TString outputfile = AliAnalysisManager::GetCommonFileName();
+	outputfile += Form(":PWGMM_GenKnoUe_%1.2f",minpT);
 
-    // Input and Output Slots
-    //===========================================================================
+	AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
-    TString outputfile = AliAnalysisManager::GetCommonFileName();
-    outputfile += Form(":PWGMM_GenKnoUe_%1.2f",minpT);
+	mgr->ConnectInput (taskUE, 0, mgr->GetCommonInputContainer());
+	mgr->ConnectOutput(taskUE, 1, coutSim);
 
-    AliAnalysisDataContainer *coutSim = mgr->CreateContainer(outBasic,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-
-    mgr->ConnectInput (taskUE, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskUE, 1, coutSim);
-
-    return taskUE;
+	return taskUE;
 }

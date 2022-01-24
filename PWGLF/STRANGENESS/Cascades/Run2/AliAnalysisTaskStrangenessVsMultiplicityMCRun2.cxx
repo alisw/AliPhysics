@@ -145,6 +145,7 @@ fDownScaleFactorEvent      ( 0.0  ),
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
+fkSaveEverything(kFALSE),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkAlwaysKeepTrue( kFALSE ),
@@ -328,6 +329,12 @@ fTreeVariablePosCreationX(0),
 fTreeVariablePosCreationY(0),
 fTreeVariablePosCreationZ(0),
 
+fTreeVariableNegPx(0),
+fTreeVariableNegPy(0),
+fTreeVariableNegPz(0),
+fTreeVariablePosPx(0),
+fTreeVariablePosPy(0),
+fTreeVariablePosPz(0),
 fTreeVariableNegPxMC(0),
 fTreeVariableNegPyMC(0),
 fTreeVariableNegPzMC(0),
@@ -691,6 +698,7 @@ fDownScaleFactorEvent      ( 0.0  ),
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
+fkSaveEverything(kFALSE),
 fkPreselectDedx ( kFALSE ),
 fkPreselectPID  ( kTRUE  ),
 fkAlwaysKeepTrue( kFALSE ),
@@ -874,6 +882,12 @@ fTreeVariablePosCreationX(0),
 fTreeVariablePosCreationY(0),
 fTreeVariablePosCreationZ(0),
 
+fTreeVariableNegPx(0),
+fTreeVariableNegPy(0),
+fTreeVariableNegPz(0),
+fTreeVariablePosPx(0),
+fTreeVariablePosPy(0),
+fTreeVariablePosPz(0),
 fTreeVariableNegPxMC(0),
 fTreeVariableNegPyMC(0),
 fTreeVariableNegPzMC(0),
@@ -1497,6 +1511,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
       fTreeV0->Branch("fTreeVariablePosCreationX",&fTreeVariablePosCreationX,"fTreeVariablePosCreationX/F");
       fTreeV0->Branch("fTreeVariablePosCreationY",&fTreeVariablePosCreationY,"fTreeVariablePosCreationY/F");
       fTreeV0->Branch("fTreeVariablePosCreationZ",&fTreeVariablePosCreationZ,"fTreeVariablePosCreationZ/F");
+      
+      fTreeV0->Branch("fTreeVariableNegPx",&fTreeVariableNegPx,"fTreeVariableNegPx/F");
+      fTreeV0->Branch("fTreeVariableNegPy",&fTreeVariableNegPy,"fTreeVariableNegPy/F");
+      fTreeV0->Branch("fTreeVariableNegPz",&fTreeVariableNegPz,"fTreeVariableNegPz/F");
+      fTreeV0->Branch("fTreeVariablePosPx",&fTreeVariablePosPx,"fTreeVariablePosPx/F");
+      fTreeV0->Branch("fTreeVariablePosPy",&fTreeVariablePosPy,"fTreeVariablePosPy/F");
+      fTreeV0->Branch("fTreeVariablePosPz",&fTreeVariablePosPz,"fTreeVariablePosPz/F");
       
       fTreeV0->Branch("fTreeVariableNegPxMC",&fTreeVariableNegPxMC,"fTreeVariableNegPxMC/F");
       fTreeV0->Branch("fTreeVariableNegPyMC",&fTreeVariableNegPyMC,"fTreeVariableNegPyMC/F");
@@ -2419,10 +2440,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     CheckChargeV0( v0 );
     //Remove like-sign (will not affect offline V0 candidates!)
     if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0 ){
-      continue;
+      if( !fkSaveEverything ) continue;
     }
     if( v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0 ){
-      continue;
+      if( !fkSaveEverything ) continue;
     }
     
     Double_t tDecayVertexV0[3];
@@ -2438,7 +2459,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     lPt = v0->Pt();
     lRapK0Short = v0->RapK0Short();
     lRapLambda  = v0->RapLambda();
-    if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
+    if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt))
+      if( !fkSaveEverything ) continue;
     
     UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
     UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
@@ -2447,6 +2469,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
     Double_t lMomNeg[3];
     v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+    
+    fTreeVariableNegPx = lMomNeg[0];
+    fTreeVariableNegPy = lMomNeg[1];
+    fTreeVariableNegPz = lMomNeg[2];
+    fTreeVariablePosPx = lMomPos[0];
+    fTreeVariablePosPy = lMomPos[1];
+    fTreeVariablePosPz = lMomPos[2];
     
     //Provisions for cowboy/sailor check
     Double_t lModp1 = TMath::Sqrt( lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] );
@@ -2533,13 +2562,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeVariablePosEta = pTrack->Eta();
     
     if ( fkExtraCleanup ){
-      if( TMath::Abs(fTreeVariableNegEta)>0.8 || TMath::Abs(fTreeVariableNegEta)>0.8 ) continue;
-      if( TMath::Abs(lRapK0Short        )>0.5 && TMath::Abs(lRapLambda         )>0.5 ) continue;
+      if( TMath::Abs(fTreeVariableNegEta)>0.8 || TMath::Abs(fTreeVariableNegEta)>0.8 )
+        if( !fkSaveEverything ) continue;
+      if( TMath::Abs(lRapK0Short        )>0.5 && TMath::Abs(lRapLambda         )>0.5 )
+        if( !fkSaveEverything ) continue;
     }
     
     // Filter like-sign V0 (next: add counter and distribution)
     if ( pTrack->GetSign() == nTrack->GetSign()) {
-      continue;
+      if( !fkSaveEverything ) continue;
     }
     
     //________________________________________________________________________
@@ -2551,8 +2582,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
       fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
     
     // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
-    if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-    if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+    if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit))
+      if( !fkSaveEverything ) continue;
+    if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit))
+      if( !fkSaveEverything ) continue;
     
     //Get status flags
     fTreeVariablePosTrackStatus = pTrack->GetStatus();
@@ -2562,10 +2595,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeVariableNegDCAz = GetDCAz(nTrack);
     
     //GetKinkIndex condition
-    if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
+    if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 )
+      if( !fkSaveEverything ) continue;
     
     //Findable clusters > 0 condition
-    if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
+    if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 )
+      if( !fkSaveEverything ) continue;
     
     //Compute ratio Crossed Rows / Findable clusters
     //Note: above test avoids division by zero!
@@ -2616,7 +2651,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     fTreeVariableMinTrackLength = lSmallestTrackLength;
     
-    if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ) continue;
+    if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 )
+      if( !fkSaveEverything ) continue;
     
     //End track Quality Cuts
     //________________________________________________________________________
@@ -2875,7 +2911,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     // memory usage!
     
     //First Selection: Reject OnFly
-    if( lOnFlyStatus == 0 ) {
+    if( lOnFlyStatus == 0 && ( !fkSaveEverything ) ) {
       //Second Selection: rough 20-sigma band, parametric.
       //K0Short: Enough to parametrize peak broadening with linear function.
       Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt;
@@ -2935,6 +2971,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree && lKeepV0 ) fTreeV0->Fill();
       }
     }
+    
+    if(fkSaveEverything) fTreeV0->Fill();
     
     //------------------------------------------------
     // Fill V0 tree over.

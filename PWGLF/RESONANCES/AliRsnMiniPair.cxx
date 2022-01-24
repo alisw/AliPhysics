@@ -4,7 +4,28 @@
 
 #include <AliQnCorrectionsQnVector.h>
 
+
+#include "AliESDpid.h"
+#include "AliAODPid.h"
+#include "AliCentrality.h"
+#include "AliESDUtils.h"
+#include "AliPIDResponse.h"
+#include "AliESDv0.h"
+
+#include "AliRsnEvent.h"
+#include "AliRsnDaughter.h"
+#include "AliRsnMother.h"
+#include "AliRsnDaughterDef.h"
+#include "AliRsnDaughterDef.h"
+#include "AliESDv0.h"
+
+#include "AliRsnValueDaughter.h"
+
+//Modified by Prottay 23/01/2022(prottay.das@cern.ch) to fill K0s inv mass for a given bin of K*+/-
+
 ClassImp(AliRsnMiniPair)
+
+
 
 //__________________________________________________________________________________________________
 void AliRsnMiniPair::Fill
@@ -18,9 +39,14 @@ void AliRsnMiniPair::Fill
    p2->Set4Vector(fP2[0], m2, kFALSE);
    p1->Set4Vector(fP1[1], m1, kTRUE );
    p2->Set4Vector(fP2[1], m2, kTRUE );
+
+
    
    fDCA1 = p1->DCA();
    fDCA2 = p2->DCA();
+	
+   fIndex1 = p1->Index();
+   fIndex2 = p2->Index();
 
    fMother = -1;
    fIsFromB = kFALSE;
@@ -43,6 +69,15 @@ void AliRsnMiniPair::Fill
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), refMass);
    }
+
+    
+   //added by prottay   
+   Double_t K0smass=p1->K0M();
+   K0sIM = K0smass;
+   ////////////////////////////
+
+
+
 
    fNSisters=-1;
    if (p1->NTotSisters()==p2->NTotSisters()) fNSisters = p1->NTotSisters();
@@ -74,6 +109,8 @@ void AliRsnMiniPair::Fill
    fPassesOOBPileupCut = kFALSE;
    if (p1->PassesOOBPileupCut() || p2->PassesOOBPileupCut()) fPassesOOBPileupCut = kTRUE;
 }
+
+
 
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
@@ -474,6 +511,28 @@ Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
     return fP2[ID(mc)].Pt();
 }
 
+
+//invariant mass of daughters
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DaughterIM()
+{
+  //returns pt of the <id> daughter
+  // if MC returns generated momenta
+
+
+
+  return K0sIM;
+  
+  
+  /* 
+  if (daughterId==0)
+    return fP1[ID(mc)].M();
+  else
+    return fP2[ID(mc)].M();
+  */
+}
+
+
 //__________________________________________________________________________________________________
 Double_t AliRsnMiniPair::DaughterDCA(Int_t daughterId)
 {
@@ -550,5 +609,17 @@ Double_t AliRsnMiniPair::PairAsymmetry(Bool_t mc)
   Double_t asym=TMath::Abs(P1.Mag()-P2.Mag())/(P1.Mag()+P2.Mag());
 
   return asym;
+  
+}
+//__________________________________________________________________________________________________
+Bool_t AliRsnMiniPair::ContainsIndex(Int_t index)
+{
+
+//
+
+  if (fIndex1 == index) return kTRUE;
+  if (fIndex2 == index) return kTRUE;
+
+  return kFALSE;
   
 }

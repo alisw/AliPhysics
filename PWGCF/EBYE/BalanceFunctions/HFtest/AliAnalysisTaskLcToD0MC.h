@@ -56,6 +56,15 @@ class AliAnalysisTaskLcToD0MC : public AliAnalysisTaskSE {
   TH2F *fHistK0sALICE;
   TH2F *fHistLambdacALICE;
   TH2F *fHistDZeroALICE;
+  TH2F *fHistLambdabALICE;
+
+  TH2F *fHistProtonALICE3;
+  TH2F *fHistPionALICE3;
+  TH2F *fHistLambdaALICE3;
+  TH2F *fHistK0sALICE3;
+  TH2F *fHistLambdacALICE3;
+  TH2F *fHistDZeroALICE3;
+  TH2F *fHistLambdabALICE3;
 
   TH2F *fHistProtonCMS;
   TH2F *fHistPionCMS;
@@ -63,6 +72,7 @@ class AliAnalysisTaskLcToD0MC : public AliAnalysisTaskSE {
   TH2F *fHistK0sCMS;
   TH2F *fHistLambdacCMS;
   TH2F *fHistDZeroCMS;
+  TH2F *fHistLambdabCMS;
 
   TH2F *fHistProtonLHCb;
   TH2F *fHistPionLHCb;
@@ -70,6 +80,7 @@ class AliAnalysisTaskLcToD0MC : public AliAnalysisTaskSE {
   TH2F *fHistK0sLHCb;
   TH2F *fHistLambdacLHCb;
   TH2F *fHistDZeroLHCb;
+  TH2F *fHistLambdabLHCb;
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
@@ -80,6 +91,8 @@ class AliAnalysisTaskLcToD0MC : public AliAnalysisTaskSE {
   Double_t fEtaMin;//only used for AODs
   Double_t fEtaMax;//only used for AODs
 
+  Double_t fEtaMinALICE3;
+  Double_t fEtaMaxALICE3;
   Double_t fEtaMinCMS;
   Double_t fEtaMaxCMS;
   Double_t fEtaMinLHCb;

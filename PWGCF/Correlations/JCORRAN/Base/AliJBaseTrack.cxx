@@ -136,6 +136,7 @@ void AliJBaseTrack::Print(Option_t *option) const{
   cout<<"fTriggID="<<fTriggID <<endl; 
   cout<<"fAssocID="<<fAssocID <<endl; 
   cout<<"fTracEff="<<fTracEff <<endl; 
+  cout<<"fWeight="<<fWeight <<endl;
 }
 
 ClassImp(AliJBaseTrack)

@@ -5,7 +5,9 @@
 #pragma link off all functions;
 
 //Neutral Gamma Ntuples task
+#ifdef HAVE_FASTJET
 #pragma link C++ class AliAnalysisTaskNTGJ+;
+#endif
 
 
 #endif

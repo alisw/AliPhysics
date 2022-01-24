@@ -143,6 +143,18 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistEtaAntiHelium3RecPairPtCut(0),
   fHistPtAntiParticlesRec(0),
   fHistSEDAntiPairRec(0),
+  fHistdEdx_LHC18a2a(0),
+  fHistdEdx_LHC18a2b(0),
+  fHistdEdx_LHC18a2b4(0),
+  fHistdEdx_LHC20l7a(0),
+  GeneratedProtonArray(0),
+  GeneratedDeuteronArray(0),
+  GeneratedAntiProtonArray(0),
+  GeneratedAntiDeuteronArray(0),
+  ReconstructedProtonArray(0),
+  ReconstructedDeuteronArray(0),
+  ReconstructedAntiProtonArray(0),
+  ReconstructedAntiDeuteronArray(0),
   fHistEventCounter(0),
   fPIDResponse(0)
 {
@@ -241,6 +253,18 @@ AliAnalysisTaskDeuteronProtonEfficiency::AliAnalysisTaskDeuteronProtonEfficiency
   fHistEtaAntiHelium3RecPairPtCut(0),
   fHistPtAntiParticlesRec(0),
   fHistSEDAntiPairRec(0),
+  fHistdEdx_LHC18a2a(0),
+  fHistdEdx_LHC18a2b(0),
+  fHistdEdx_LHC18a2b4(0),
+  fHistdEdx_LHC20l7a(0),
+  GeneratedProtonArray(0),
+  GeneratedDeuteronArray(0),
+  GeneratedAntiProtonArray(0),
+  GeneratedAntiDeuteronArray(0),
+  ReconstructedProtonArray(0),
+  ReconstructedDeuteronArray(0),
+  ReconstructedAntiProtonArray(0),
+  ReconstructedAntiDeuteronArray(0),
   fHistEventCounter(0),
   fPIDResponse(0)
 {
@@ -642,6 +666,23 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserCreateOutputObjects()
   fHistEventCounter->GetXaxis()->SetBinLabel(1,"number of events");
   fHistEventCounter->GetYaxis()->SetTitle("entries");
 
+  // dE/dx for reconstructed particles and antiparticles
+  fHistdEdx_LHC18a2a = new TH2F("fHistdEdx_LHC18a2a","reconstructed particles and antiparticles in LHC18a2a",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC18a2a->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC18a2a->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
+  fHistdEdx_LHC18a2b = new TH2F("fHistdEdx_LHC18a2b","reconstructed particles and antiparticles in LHC18a2b",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC18a2b->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC18a2b->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
+  fHistdEdx_LHC18a2b4 = new TH2F("fHistdEdx_LHC18a2b4","reconstructed particles and antiparticles in LHC18a2b4",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC18a2b4->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC18a2b4->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
+  fHistdEdx_LHC20l7a = new TH2F("fHistdEdx_LHC20l7a","reconstructed particles and antiparticles in LHC20l7a",1000,-5.0,5.0,1000,0.0,1500.0);
+  fHistdEdx_LHC20l7a->GetXaxis()->SetTitle("#frac{#it{p}}{#it{z}} (GeV/#it{c})");
+  fHistdEdx_LHC20l7a->GetYaxis()->SetTitle("TPC signal (a.u.)");
+
   // generated protons
   fHistList->Add(fHistPtProtonGenPDG);
   fHistList->Add(fHistPtProtonGenPrimary);
@@ -746,9 +787,24 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserCreateOutputObjects()
   fHistList->Add(fHistPtAntiParticlesRec);
   fHistList->Add(fHistSEDAntiPairRec);
 
+  // dE/dx for particles and antiparticles
+  fHistList->Add(fHistdEdx_LHC18a2a);
+  fHistList->Add(fHistdEdx_LHC18a2b);
+  fHistList->Add(fHistdEdx_LHC18a2b4);
+  fHistList->Add(fHistdEdx_LHC20l7a);
+
   // event counter
   fHistList->Add(fHistEventCounter);
 
+  GeneratedProtonArray = new std::vector<int>;
+  GeneratedDeuteronArray = new std::vector<int>;
+  GeneratedAntiProtonArray = new std::vector<int>;
+  GeneratedAntiDeuteronArray = new std::vector<int>;
+
+  ReconstructedProtonArray = new std::vector<int>;
+  ReconstructedDeuteronArray = new std::vector<int>;
+  ReconstructedAntiProtonArray = new std::vector<int>;
+  ReconstructedAntiDeuteronArray = new std::vector<int>;
 
   PostData(1,fHistList);
 
@@ -803,8 +859,8 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
 
   // Masses (GeV/c2)
-  double ProtonMass   = 0.93827;
-  double DeuteronMass = 1.87561;
+  double MassProton   = 0.93827;
+  double MassDeuteron = 1.87561;
 
   // PDG codes
   int ProtonPDG	      =	       2212;
@@ -818,13 +874,44 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   int MyonPDG	      =		 13;
 */
 
+
+  // Particle labels
+  int LabelProton	= 0;
+  int LabelDeuteron	= 0;
+  int LabelAntiProton	= 0;
+  int LabelAntiDeuteron	= 0;
+
+
   // Single-particle and pair cuts
   double EtaLimit1 = -0.8;
   double EtaLimit2 = +0.8;
-  double PairPtLimit1 = 1.0;
-  double PairPtLimit2 = 2.0;
+  double PairPtLimit1 = 0.0;
+  double PairPtLimit2 = 999.0;
   double ProtonpTPCThreshold = 0.7;
   double DeuteronpTPCThreshold = 1.4;
+
+  // Variables for particles
+  double MomentumProton[3]  = {0,0,0};
+  double EtaProton	    = 0.0;
+  double PtProton	    = 0.0;
+
+  double MomentumDeuteron[3]  = {0,0,0};
+  double EtaDeuteron	      = 0.0;
+  double PtDeuteron	      = 0.0;
+
+  double MomentumAntiProton[3]  = {0,0,0};
+  double EtaAntiProton		= 0.0;
+  double PtAntiProton		= 0.0;
+
+  double MomentumAntiDeuteron[3]  = {0,0,0};
+  double EtaAntiDeuteron	  = 0.0;
+  double PtAntiDeuteron		  = 0.0;
+
+  double PtPair		  = 0.0;
+  double EtaPair	  = 0.0;
+  
+
+
 
   // Variables for generated particles
   double MomentumProtonGen[3]    = {0,0,0};
@@ -846,6 +933,7 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double PtDeuteronRec	 = 0.0;
   double PtHelium3Rec	 = 0.0;
 
+  double fBetheParametersDeuteron[6];
 
   // DCA calculation
   Float_t xv_Proton[2];
@@ -865,8 +953,11 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 
   double RelativeMomentum = 0.0;
 
+  int nStackLoop = 0;
   int nStackLoop1 = 0;
   int nStackLoop2 = 0;
+
+
 
   // Variables for PID
   double nSigmaTPCTOFproton = 0.0;
@@ -876,249 +967,434 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
   double nSigmaTOFproton = 0.0;
   double nSigmaTOFdeuteron = 0.0;
 
-  bool TPC1_OK = false;
-  bool TPC2_OK = false;
-  bool TOF1_OK = false;
-  bool TOF2_OK = false;
+  bool TPC_OK = false;
+  bool TOF_OK = false;
+
+
+  int RunNumber = fESD->GetRunNumber();
+  int ParticleLabel = 0;
+
+  bool LHC18a2a = false;
+  bool LHC18a2b = false;
+  bool LHC18a2b4 = false;
+  bool LHC20l7a = false;
 
 
   if(fMCtrue){
 
-    // loop for the generated particles
-    for(nStackLoop1 = 0; nStackLoop1 < stack->GetNtrack(); nStackLoop1++) // proton loop
+
+    // set the appropriate Bethe-Bloch parameters for deuterons for the individual productions
+
+    if(RunNumber >= 270581 && RunNumber <= 282704){
+    // LHC18a2a (anchored to 2017 data)
+
+	LHC18a2a = true;
+	fBetheParametersDeuteron[0] = 2.63655; 
+	fBetheParametersDeuteron[1] = 16.8483;
+	fBetheParametersDeuteron[2] = 0.0854068; 
+	fBetheParametersDeuteron[3] = 2.03083;
+	fBetheParametersDeuteron[4] = -1.90682;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }else if(RunNumber >= 256504 && RunNumber <= 259888){
+    // LHC18a2b4 (anchored to 2016 k/l pass2)
+
+	LHC18a2b4 = true;
+	fBetheParametersDeuteron[0] = 1.64162; 
+	fBetheParametersDeuteron[1] = 24.2932;
+	fBetheParametersDeuteron[2] = 0.464873; 
+	fBetheParametersDeuteron[3] = 2.0147;
+	fBetheParametersDeuteron[4] = -0.773004;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }else if(RunNumber >= 252235 && RunNumber <= 264347){
+    // LHC18a2b (anchored to 2016 data)
+
+	LHC18a2b = true;
+	fBetheParametersDeuteron[0] = 3.74652; 
+	fBetheParametersDeuteron[1] = 12.159;
+	fBetheParametersDeuteron[2] = 0.0332405; 
+	fBetheParametersDeuteron[3] = 1.77673;
+	fBetheParametersDeuteron[4] = -2.31179;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }else if(RunNumber >= 285009 && RunNumber <= 294925){
+    // LHC20l7a (anchored to 2018 data)
+
+	LHC20l7a = true;
+	// parameters taken from LHC18a2a
+	fBetheParametersDeuteron[0] = 2.63655; 
+	fBetheParametersDeuteron[1] = 16.8483;
+	fBetheParametersDeuteron[2] = 0.0854068; 
+	fBetheParametersDeuteron[3] = 2.03083;
+	fBetheParametersDeuteron[4] = -1.90682;
+	fBetheParametersDeuteron[5] = 0.06;
+
+    }
+
+    GeneratedProtonArray->clear();
+    GeneratedDeuteronArray->clear();
+    GeneratedAntiProtonArray->clear();
+    GeneratedAntiDeuteronArray->clear();
+
+    ReconstructedProtonArray->clear();
+    ReconstructedDeuteronArray->clear();
+    ReconstructedAntiProtonArray->clear();
+    ReconstructedAntiDeuteronArray->clear();
+
+
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++ Loops for generated particles +++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // loop for generated protons
+    for(int track = 0; track < stack->GetNtrack(); track++)
       {
 
-	AliMCParticle *Particle1 = (AliMCParticle*)(mcEvent->GetTrack(nStackLoop1));
-	// check if particle is a proton
-	if(!(Particle1->PdgCode() == ProtonPDG)) continue;
+	AliMCParticle *Proton = (AliMCParticle*)(mcEvent->GetTrack(track));
+	LabelProton = TMath::Abs(Proton->GetLabel());
 
-	MomentumProtonGen[0] = Particle1->Px();
-	MomentumProtonGen[1] = Particle1->Py();
-	MomentumProtonGen[2] = Particle1->Pz();
+	MomentumProton[0] = Proton->Px();
+	MomentumProton[1] = Proton->Py();
+	MomentumProton[2] = Proton->Pz();
 	  
-	TLorentzVector LorentzVectorProtonGen;
-	LorentzVectorProtonGen.SetXYZM(MomentumProtonGen[0],MomentumProtonGen[1],MomentumProtonGen[2],ProtonMass);
-	PtProtonGen = LorentzVectorProtonGen.Pt();
-	EtaProtonGen = LorentzVectorProtonGen.Eta();
+	TLorentzVector LorentzVectorProton;
+	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],MassProton);
+	PtProton = LorentzVectorProton.Pt();
+	EtaProton = LorentzVectorProton.Eta();
 
-	fHistPtProtonGenPDG->Fill(PtProtonGen);
-	fHistEtaProtonGenPDG->Fill(EtaProtonGen);
+
+	// check if particle is a proton
+	if(!(Proton->PdgCode() == ProtonPDG)) continue;
+
+	    fHistPtProtonGenPDG->Fill(PtProton);
+	    fHistEtaProtonGenPDG->Fill(EtaProton);
+
 
 	// check if proton is a primary particle
-	if(!Particle1->IsPhysicalPrimary()) continue;
+	if(!Proton->IsPhysicalPrimary()) continue;
 
-	fHistPtProtonGenPrimary->Fill(PtProtonGen);
-	fHistEtaProtonGenPrimary->Fill(EtaProtonGen);
+	    fHistPtProtonGenPrimary->Fill(PtProton);
+	    fHistEtaProtonGenPrimary->Fill(EtaProton);
+
 
 	// apply a cut in pseudo-rapidity
-	if((EtaProtonGen < EtaLimit1) || (EtaProtonGen > EtaLimit2)) continue;
+	if((EtaProton < EtaLimit1) || (EtaProton > EtaLimit2)) continue;
 
-	fHistPtProtonGenEtaCut->Fill(PtProtonGen);
-	fHistEtaProtonGenEtaCut->Fill(EtaProtonGen);
+	  fHistPtProtonGenEtaCut->Fill(PtProton);
+	  fHistEtaProtonGenEtaCut->Fill(EtaProton);
 
+	GeneratedProtonArray->push_back(LabelProton);
 
-	    for(nStackLoop2 = 0; nStackLoop2 < stack->GetNtrack(); nStackLoop2++) // deuteron loop
-	      {
-
-		AliMCParticle *Particle2 = (AliMCParticle*)(mcEvent->GetTrack(nStackLoop2));
-		// check if particle is a deuteron
-		if(!(Particle2->PdgCode() == DeuteronPDG)) continue;
-
-		MomentumDeuteronGen[0] = Particle2->Px();
-		MomentumDeuteronGen[1] = Particle2->Py();
-		MomentumDeuteronGen[2] = Particle2->Pz();
-
-		TLorentzVector LorentzVectorDeuteronGen;
-		LorentzVectorDeuteronGen.SetXYZM(MomentumDeuteronGen[0],MomentumDeuteronGen[1],MomentumDeuteronGen[2],DeuteronMass);
-		PtDeuteronGen = LorentzVectorDeuteronGen.Pt();
-		EtaDeuteronGen = LorentzVectorDeuteronGen.Eta();
-
-		fHistPtDeuteronGenPDG->Fill(PtDeuteronGen);
-		fHistEtaDeuteronGenPDG->Fill(EtaDeuteronGen);
-
-		// check if deuteron is a primary particle
-		if(!Particle2->IsPhysicalPrimary()) continue;
-
-		fHistPtDeuteronGenPrimary->Fill(PtDeuteronGen);
-		fHistEtaDeuteronGenPrimary->Fill(EtaDeuteronGen);
-
-		// apply a cut in pseudo-rapidity
-		if((EtaDeuteronGen < EtaLimit1)	|| (EtaDeuteronGen > EtaLimit2))  continue;
-
-		fHistPtDeuteronGenEtaCut->Fill(PtDeuteronGen);
-		fHistEtaDeuteronGenEtaCut->Fill(EtaDeuteronGen);
-
-      
-		TLorentzVector LorentzVectorHelium3Gen;
-		LorentzVectorHelium3Gen = LorentzVectorProtonGen + LorentzVectorDeuteronGen;
-
-		PtHelium3Gen = LorentzVectorHelium3Gen.Pt();
-		EtaHelium3Gen = LorentzVectorHelium3Gen.Eta();
-
-		// pair cut
-		if((PtHelium3Gen < PairPtLimit1)  || (PtHelium3Gen > PairPtLimit2)) continue;
-
-		RelativeMomentum = CalculateRelativeMomentum(LorentzVectorHelium3Gen,LorentzVectorProtonGen,LorentzVectorDeuteronGen);
-
-		fHistPtProtonGenPairPtCut->Fill(PtProtonGen);
-		fHistEtaProtonGenPairPtCut->Fill(EtaProtonGen);
-		fHistPtDeuteronGenPairPtCut->Fill(PtDeuteronGen);
-		fHistEtaDeuteronGenPairPtCut->Fill(EtaDeuteronGen);
-		fHistPtHelium3GenPairPtCut->Fill(PtHelium3Gen);
-		fHistEtaHelium3GenPairPtCut->Fill(EtaHelium3Gen);
-		fHistSEDPairGen->Fill(RelativeMomentum);
-		fHistPtParticlesGen->Fill(PtDeuteronGen,PtProtonGen);
-
-	      } // end of stack loop 2 (deuteron loop)
-
-      } // end of stack loop 1 (proton loop)
+      } // end of loop for generated protons
 
 
-    // loop for the generated antiparticles
-    for(nStackLoop1 = 0; nStackLoop1 < stack->GetNtrack(); nStackLoop1++) // antiproton loop
+
+    // loop for generated deuterons
+    for(int track = 0; track < stack->GetNtrack(); track++)
       {
 
-	AliMCParticle *Particle1 = (AliMCParticle*)(mcEvent->GetTrack(nStackLoop1));
-	// check if particle is an antiproton
-	if(!(Particle1->PdgCode() == -ProtonPDG)) continue;
+	AliMCParticle *Deuteron = (AliMCParticle*)(mcEvent->GetTrack(track));
+	LabelDeuteron = TMath::Abs(Deuteron->GetLabel());
 
-	MomentumProtonGen[0] = Particle1->Px();
-	MomentumProtonGen[1] = Particle1->Py();
-	MomentumProtonGen[2] = Particle1->Pz();
+	MomentumDeuteron[0] = Deuteron->Px();
+	MomentumDeuteron[1] = Deuteron->Py();
+	MomentumDeuteron[2] = Deuteron->Pz();
+
+	TLorentzVector LorentzVectorDeuteron;
+	LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],MassDeuteron);
+	PtDeuteron = LorentzVectorDeuteron.Pt();
+	EtaDeuteron = LorentzVectorDeuteron.Eta();
+
+
+	// check if particle is a deuteron
+	if(!(Deuteron->PdgCode() == DeuteronPDG)) continue;
+
+	    fHistPtDeuteronGenPDG->Fill(PtDeuteron);
+	    fHistEtaDeuteronGenPDG->Fill(EtaDeuteron);
+
+
+	// check if deuteron is a primary particle
+	if(!Deuteron->IsPhysicalPrimary()) continue;
+
+	    fHistPtDeuteronGenPrimary->Fill(PtDeuteron);
+	    fHistEtaDeuteronGenPrimary->Fill(EtaDeuteron);
+
+
+	// apply a cut in pseudo-rapidity
+	if((EtaDeuteron < EtaLimit1)	|| (EtaDeuteron > EtaLimit2))  continue;
+
+	    fHistPtDeuteronGenEtaCut->Fill(PtDeuteron);
+	    fHistEtaDeuteronGenEtaCut->Fill(EtaDeuteron);
+
+	GeneratedDeuteronArray->push_back(LabelDeuteron);
+
+      }	// end of loop for generated deuterons
+
+
+    // loop for generated particle pairs
+    for(int track1 = 0; track1 < GeneratedProtonArray->size(); track1++) // proton loop
+      {
+
+	AliMCParticle *Proton = (AliMCParticle*)(mcEvent->GetTrack(GeneratedProtonArray->at(track1)));
+
+	MomentumProton[0] = Proton->Px();
+	MomentumProton[1] = Proton->Py();
+	MomentumProton[2] = Proton->Pz();
+
+	TLorentzVector LorentzVectorProton;
+	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],MassProton);
+	PtProton = LorentzVectorProton.Pt();
+	EtaProton = LorentzVectorProton.Eta();
+
+	for(int track2 = 0; track2 < GeneratedDeuteronArray->size(); track2++) // deuteron loop
+	  {
+
+	    AliMCParticle *Deuteron = (AliMCParticle*)(mcEvent->GetTrack(GeneratedDeuteronArray->at(track2)));
+
+	    MomentumDeuteron[0] = Deuteron->Px();
+	    MomentumDeuteron[1] = Deuteron->Py();
+	    MomentumDeuteron[2] = Deuteron->Pz();
+
+	    TLorentzVector LorentzVectorDeuteron;
+	    LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],MassDeuteron);
+	    PtDeuteron = LorentzVectorDeuteron.Pt();
+	    EtaDeuteron = LorentzVectorDeuteron.Eta();
+      
+	    TLorentzVector LorentzVectorPair;
+	    LorentzVectorPair = LorentzVectorProton + LorentzVectorDeuteron;
+
+	    PtPair = LorentzVectorPair.Pt();
+	    EtaPair = LorentzVectorPair.Eta();
+
+	    // pair cut
+	    if((PtPair < PairPtLimit1)  || (PtPair > PairPtLimit2)) continue;
+
+	    RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorProton,LorentzVectorDeuteron);
+
+		fHistPtProtonGenPairPtCut->Fill(PtProton);
+		fHistEtaProtonGenPairPtCut->Fill(EtaProton);
+		fHistPtDeuteronGenPairPtCut->Fill(PtDeuteron);
+		fHistEtaDeuteronGenPairPtCut->Fill(EtaDeuteron);
+		fHistPtHelium3GenPairPtCut->Fill(PtPair);
+		fHistEtaHelium3GenPairPtCut->Fill(EtaPair);
+		fHistSEDPairGen->Fill(RelativeMomentum);
+		fHistPtParticlesGen->Fill(PtDeuteron,PtProton);
+
+
+	  } // end of loop for generated particle pairs (deuteron loop)
+
+      } // end of loop for generated particle pairs (proton loop)
+
+
+
+
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++ Loops for generated antiparticles +++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // loop for generated antiprotons
+    for(int track = 0; track < stack->GetNtrack(); track++)
+      {
+
+	AliMCParticle *AntiProton = (AliMCParticle*)(mcEvent->GetTrack(track));
+	LabelAntiProton = TMath::Abs(AntiProton->GetLabel());
+
+	MomentumAntiProton[0] = AntiProton->Px();
+	MomentumAntiProton[1] = AntiProton->Py();
+	MomentumAntiProton[2] = AntiProton->Pz();
 	  
-	TLorentzVector LorentzVectorProtonGen;
-	LorentzVectorProtonGen.SetXYZM(MomentumProtonGen[0],MomentumProtonGen[1],MomentumProtonGen[2],ProtonMass);
-	PtProtonGen = LorentzVectorProtonGen.Pt();
-	EtaProtonGen = LorentzVectorProtonGen.Eta();
+	TLorentzVector LorentzVectorAntiProton;
+	LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],MassProton);
+	PtAntiProton = LorentzVectorAntiProton.Pt();
+	EtaAntiProton = LorentzVectorAntiProton.Eta();
 
-	fHistPtAntiProtonGenPDG->Fill(PtProtonGen);
-	fHistEtaAntiProtonGenPDG->Fill(EtaProtonGen);
+
+	// check if particle is an antiproton
+	if(!(AntiProton->PdgCode() == -ProtonPDG)) continue;
+
+	    fHistPtAntiProtonGenPDG->Fill(PtAntiProton);
+	    fHistEtaAntiProtonGenPDG->Fill(EtaAntiProton);
+
 
 	// check if antiproton is a primary particle
-	if(!Particle1->IsPhysicalPrimary()) continue;
+	if(!AntiProton->IsPhysicalPrimary()) continue;
 
-	fHistPtAntiProtonGenPrimary->Fill(PtProtonGen);
-	fHistEtaAntiProtonGenPrimary->Fill(EtaProtonGen);
+	    fHistPtAntiProtonGenPrimary->Fill(PtAntiProton);
+	    fHistEtaAntiProtonGenPrimary->Fill(EtaAntiProton);
+
 
 	// apply a cut in pseudo-rapidity
-	if((EtaProtonGen < EtaLimit1) || (EtaProtonGen > EtaLimit2)) continue;
+	if((EtaAntiProton < EtaLimit1) || (EtaAntiProton > EtaLimit2)) continue;
 
-	fHistPtAntiProtonGenEtaCut->Fill(PtProtonGen);
-	fHistEtaAntiProtonGenEtaCut->Fill(EtaProtonGen);
+	  fHistPtAntiProtonGenEtaCut->Fill(PtAntiProton);
+	  fHistEtaAntiProtonGenEtaCut->Fill(EtaAntiProton);
 
+	GeneratedAntiProtonArray->push_back(LabelAntiProton);
 
-	    for(nStackLoop2 = 0; nStackLoop2 < stack->GetNtrack(); nStackLoop2++) // antideuteron loop
-	      {
-
-		AliMCParticle *Particle2 = (AliMCParticle*)(mcEvent->GetTrack(nStackLoop2));
-		// check if particle is an anitdeuteron
-		if(!(Particle2->PdgCode() == -DeuteronPDG)) continue;
-
-		MomentumDeuteronGen[0] = Particle2->Px();
-		MomentumDeuteronGen[1] = Particle2->Py();
-		MomentumDeuteronGen[2] = Particle2->Pz();
-
-		TLorentzVector LorentzVectorDeuteronGen;
-		LorentzVectorDeuteronGen.SetXYZM(MomentumDeuteronGen[0],MomentumDeuteronGen[1],MomentumDeuteronGen[2],DeuteronMass);
-		PtDeuteronGen = LorentzVectorDeuteronGen.Pt();
-		EtaDeuteronGen = LorentzVectorDeuteronGen.Eta();
-
-		fHistPtAntiDeuteronGenPDG->Fill(PtDeuteronGen);
-		fHistEtaAntiDeuteronGenPDG->Fill(EtaDeuteronGen);
-
-		// check if antideuteron is a primary particle
-		if(!Particle2->IsPhysicalPrimary()) continue;
-
-		fHistPtAntiDeuteronGenPrimary->Fill(PtDeuteronGen);
-		fHistEtaAntiDeuteronGenPrimary->Fill(EtaDeuteronGen);
-
-		// apply a cut in pseudo-rapidity
-		if((EtaDeuteronGen < EtaLimit1)	|| (EtaDeuteronGen > EtaLimit2))  continue;
-
-		fHistPtAntiDeuteronGenEtaCut->Fill(PtDeuteronGen);
-		fHistEtaAntiDeuteronGenEtaCut->Fill(EtaDeuteronGen);
-
-      
-		TLorentzVector LorentzVectorHelium3Gen;
-		LorentzVectorHelium3Gen = LorentzVectorProtonGen + LorentzVectorDeuteronGen;
-
-		PtHelium3Gen = LorentzVectorHelium3Gen.Pt();
-		EtaHelium3Gen = LorentzVectorHelium3Gen.Eta();
-
-		// antipair cut
-		if((PtHelium3Gen < PairPtLimit1)  || (PtHelium3Gen > PairPtLimit2)) continue;
-
-		RelativeMomentum = CalculateRelativeMomentum(LorentzVectorHelium3Gen,LorentzVectorProtonGen,LorentzVectorDeuteronGen);
-
-		fHistPtAntiProtonGenPairPtCut->Fill(PtProtonGen);
-		fHistEtaAntiProtonGenPairPtCut->Fill(EtaProtonGen);
-		fHistPtAntiDeuteronGenPairPtCut->Fill(PtDeuteronGen);
-		fHistEtaAntiDeuteronGenPairPtCut->Fill(EtaDeuteronGen);
-		fHistPtAntiHelium3GenPairPtCut->Fill(PtHelium3Gen);
-	  	fHistEtaAntiHelium3GenPairPtCut->Fill(EtaHelium3Gen);
-		fHistSEDAntiPairGen->Fill(RelativeMomentum);
-		fHistPtAntiParticlesGen->Fill(PtDeuteronGen,PtProtonGen);
-
-	      } // end of stack loop 2 (antideuteron loop)
-
-      } // end of stack loop 1 (antiproton loop)
+      } // end of loop for generated antiprotons
 
 
 
-    // loop for reconstructed particles
-    for(int nTrack1 = 0; nTrack1 < fESD->GetNumberOfTracks(); nTrack1++) // proton loop
+    // loop for generated antideuterons
+    for(int track = 0; track < stack->GetNtrack(); track++)
       {
 
-	TPC1_OK = false;
-	TOF1_OK = false;
-	TPC2_OK = false;
-	TOF2_OK = false;
+	AliMCParticle *AntiDeuteron = (AliMCParticle*)(mcEvent->GetTrack(track));
+	LabelAntiDeuteron = TMath::Abs(AntiDeuteron->GetLabel());
 
-	AliESDtrack *Track1 = dynamic_cast<AliESDtrack*>(fESD->GetTrack(nTrack1));
+	MomentumAntiDeuteron[0] = AntiDeuteron->Px();
+	MomentumAntiDeuteron[1] = AntiDeuteron->Py();
+	MomentumAntiDeuteron[2] = AntiDeuteron->Pz();
 
-	AliMCParticle *Particle1 = (AliMCParticle*)(mcEvent->GetTrack(TMath::Abs(Track1->GetLabel())));
-	int Particle1PDG = Particle1->PdgCode();
+	TLorentzVector LorentzVectorAntiDeuteron;
+	LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],MassDeuteron);
+	PtAntiDeuteron = LorentzVectorAntiDeuteron.Pt();
+	EtaAntiDeuteron = LorentzVectorAntiDeuteron.Eta();
 
-	MomentumProtonRec[0] = Track1->Px();
-	MomentumProtonRec[1] = Track1->Py();
-	MomentumProtonRec[2] = Track1->Pz();
 
-	TLorentzVector LorentzVectorProtonRec;
-	LorentzVectorProtonRec.SetXYZM(MomentumProtonRec[0],MomentumProtonRec[1],MomentumProtonRec[2],ProtonMass);
+	// check if particle is an antideuteron
+	if(!(AntiDeuteron->PdgCode() == -DeuteronPDG)) continue;
 
-	PtProtonRec = LorentzVectorProtonRec.Pt();
-	EtaProtonRec = LorentzVectorProtonRec.Eta();
+	    fHistPtAntiDeuteronGenPDG->Fill(PtAntiDeuteron);
+	    fHistEtaAntiDeuteronGenPDG->Fill(EtaAntiDeuteron);
+
+
+	// check if antideuteron is a primary particle
+	if(!AntiDeuteron->IsPhysicalPrimary()) continue;
+
+	    fHistPtAntiDeuteronGenPrimary->Fill(PtAntiDeuteron);
+	    fHistEtaAntiDeuteronGenPrimary->Fill(EtaAntiDeuteron);
+
+
+	// apply a cut in pseudo-rapidity
+	if((EtaAntiDeuteron < EtaLimit1)	|| (EtaAntiDeuteron > EtaLimit2))  continue;
+
+	    fHistPtAntiDeuteronGenEtaCut->Fill(PtAntiDeuteron);
+	    fHistEtaAntiDeuteronGenEtaCut->Fill(EtaAntiDeuteron);
+
+	GeneratedAntiDeuteronArray->push_back(LabelAntiDeuteron);
+
+      }	// end of loop for generated antideuterons
+
+
+    // loop for generated antiparticle pairs
+    for(int track1 = 0; track1 < GeneratedAntiProtonArray->size(); track1++)
+      {
+
+	AliMCParticle *AntiProton = (AliMCParticle*)(mcEvent->GetTrack(GeneratedAntiProtonArray->at(track1)));
+
+	MomentumAntiProton[0] = AntiProton->Px();
+	MomentumAntiProton[1] = AntiProton->Py();
+	MomentumAntiProton[2] = AntiProton->Pz();
+
+	TLorentzVector LorentzVectorAntiProton;
+	LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],MassProton);
+	PtAntiProton = LorentzVectorAntiProton.Pt();
+	EtaAntiProton = LorentzVectorAntiProton.Eta();
+
+	for(int track2 = 0; track2 < GeneratedAntiDeuteronArray->size(); track2++)
+	  {
+
+	    AliMCParticle *AntiDeuteron = (AliMCParticle*)(mcEvent->GetTrack(GeneratedAntiDeuteronArray->at(track2)));
+
+	    MomentumAntiDeuteron[0] = AntiDeuteron->Px();
+	    MomentumAntiDeuteron[1] = AntiDeuteron->Py();
+	    MomentumAntiDeuteron[2] = AntiDeuteron->Pz();
+
+	    TLorentzVector LorentzVectorAntiDeuteron;
+	    LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],MassDeuteron);
+	    PtAntiDeuteron = LorentzVectorAntiDeuteron.Pt();
+	    EtaAntiDeuteron = LorentzVectorAntiDeuteron.Eta();
+      
+	    TLorentzVector LorentzVectorPair;
+	    LorentzVectorPair = LorentzVectorAntiProton + LorentzVectorAntiDeuteron;
+
+	    PtPair = LorentzVectorPair.Pt();
+	    EtaPair = LorentzVectorPair.Eta();
+
+	    // pair cut
+	    if((PtPair < PairPtLimit1)  || (PtPair > PairPtLimit2)) continue;
+
+	    RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorAntiProton,LorentzVectorAntiDeuteron);
+
+		fHistPtAntiProtonGenPairPtCut->Fill(PtAntiProton);
+		fHistEtaAntiProtonGenPairPtCut->Fill(EtaAntiProton);
+		fHistPtAntiDeuteronGenPairPtCut->Fill(PtAntiDeuteron);
+		fHistEtaAntiDeuteronGenPairPtCut->Fill(EtaAntiDeuteron);
+		fHistPtAntiHelium3GenPairPtCut->Fill(PtPair);
+		fHistEtaAntiHelium3GenPairPtCut->Fill(EtaPair);
+		fHistSEDAntiPairGen->Fill(RelativeMomentum);
+		fHistPtAntiParticlesGen->Fill(PtAntiDeuteron,PtAntiProton);
+
+
+	  } // end of loop for generated antiparticle pairs (antideuteron loop)
+
+      } // end of loop for generated antiparticle pairs (antiproton loop)
+
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++ Loops for reconstructed particles +++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+    // loop for reconstructed protons
+    for(int track = 0; track < fESD->GetNumberOfTracks(); track++)
+      {
+
+	TPC_OK = false;
+	TOF_OK = false;
+
+	AliESDtrack *ProtonTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(track));
+	LabelProton = TMath::Abs(ProtonTrack->GetLabel());
+	AliMCParticle *Proton = (AliMCParticle*)(mcEvent->GetTrack(LabelProton));
+
+	MomentumProton[0] = ProtonTrack->Px();
+	MomentumProton[1] = ProtonTrack->Py();
+	MomentumProton[2] = ProtonTrack->Pz();
+
+	TLorentzVector LorentzVectorProton;
+	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],MassProton);
+
+	PtProton = LorentzVectorProton.Pt();
+	EtaProton = LorentzVectorProton.Eta();
 
 	// check if particle is a proton
-	if(!(Particle1PDG == ProtonPDG))	continue;
+	if(!(Proton->PdgCode() == ProtonPDG))	continue;
 
-	fHistPtProtonRecPDG->Fill(PtProtonRec);
-	fHistEtaProtonRecPDG->Fill(EtaProtonRec);
+	fHistPtProtonRecPDG->Fill(PtProton);
+	fHistEtaProtonRecPDG->Fill(EtaProton);
 
 	// check if proton is a primary particle
-	if(!Particle1->IsPhysicalPrimary()) continue;
+	if(!Proton->IsPhysicalPrimary()) continue;
 
-	fHistPtProtonRecPrimary->Fill(PtProtonRec);
-	fHistEtaProtonRecPrimary->Fill(EtaProtonRec);
+	fHistPtProtonRecPrimary->Fill(PtProton);
+	fHistEtaProtonRecPrimary->Fill(EtaProton);
 
 	// apply track cuts
-	if(!fESDtrackCutsProton->AcceptTrack(Track1)) continue;
-	if(Track1->GetSign() < 1) continue;
+	if(!fESDtrackCutsProton->AcceptTrack(ProtonTrack)) continue;
+	if(ProtonTrack->GetSign() < 1) continue;
 
 	// nsigma cuts
-	AliPIDResponse::EDetPidStatus status1TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track1);
-	AliPIDResponse::EDetPidStatus status1TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track1);
+	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,ProtonTrack);
+	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,ProtonTrack);
 
-	if(status1TPC == AliPIDResponse::kDetPidOk) TPC1_OK = true;
-	if(status1TOF == AliPIDResponse::kDetPidOk) TOF1_OK = true;
-	if(!(TPC1_OK)) continue;
-	if(!(TOF1_OK)) continue;
+	if(statusTPC == AliPIDResponse::kDetPidOk) TPC_OK = true;
+	if(statusTOF == AliPIDResponse::kDetPidOk) TOF_OK = true;
+	if(!(TPC_OK)) continue;
+	if(!(TOF_OK)) continue;
 
-	nSigmaTPCproton = fPIDResponse->NumberOfSigmasTPC(Track1,AliPID::kProton);
-	nSigmaTOFproton = fPIDResponse->NumberOfSigmasTOF(Track1,AliPID::kProton);
+	nSigmaTPCproton = fPIDResponse->NumberOfSigmasTPC(ProtonTrack,AliPID::kProton);
+	nSigmaTOFproton = fPIDResponse->NumberOfSigmasTOF(ProtonTrack,AliPID::kProton);
 	nSigmaTPCTOFproton = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
 
-	Double_t ProtonpTPC = Track1->GetInnerParam()->GetP();
+	Double_t ProtonpTPC = ProtonTrack->GetInnerParam()->GetP();
 
 	if(ProtonpTPC <= ProtonpTPCThreshold){
 
@@ -1131,185 +1407,235 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
         }
 
 	// DCA cuts
-	Track1->GetImpactParameters(xv_Proton,yv_Proton);
+	ProtonTrack->GetImpactParameters(xv_Proton,yv_Proton);
 	ProtonDCAxy = xv_Proton[0];
 	ProtonDCAz  = xv_Proton[1];
 	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
 
 
-	fHistPtProtonRecTrackCuts->Fill(PtProtonRec);
-	fHistEtaProtonRecTrackCuts->Fill(EtaProtonRec);
+	fHistPtProtonRecTrackCuts->Fill(PtProton);
+	fHistEtaProtonRecTrackCuts->Fill(EtaProton);
+
+	ReconstructedProtonArray->push_back(LabelProton);
 
 
-
-	for(int nTrack2 = nTrack1 + 1; nTrack2 < fESD->GetNumberOfTracks(); nTrack2++)	// deuteron loop
-	  {
-
-	    AliESDtrack *Track2 = dynamic_cast<AliESDtrack*>(fESD->GetTrack(nTrack2));
-
-	    AliMCParticle *Particle2 = (AliMCParticle*)(mcEvent->GetTrack(TMath::Abs(Track2->GetLabel())));
-	    int Particle2PDG = Particle2->PdgCode();
-
-	    MomentumDeuteronRec[0] = Track2->Px();
-	    MomentumDeuteronRec[1] = Track2->Py();
-	    MomentumDeuteronRec[2] = Track2->Pz();
-
-	    TLorentzVector LorentzVectorDeuteronRec;
-	    LorentzVectorDeuteronRec.SetXYZM(MomentumDeuteronRec[0],MomentumDeuteronRec[1],MomentumDeuteronRec[2],DeuteronMass);
-
-	    PtDeuteronRec = LorentzVectorDeuteronRec.Pt();
-	    EtaDeuteronRec = LorentzVectorDeuteronRec.Eta();
-
-	    // check if particle is a deuteron
-	    if(!(Particle2PDG == DeuteronPDG))	continue;
-
-	    fHistPtDeuteronRecPDG->Fill(PtDeuteronRec);
-	    fHistEtaDeuteronRecPDG->Fill(EtaDeuteronRec);
-
-	    // check if deuteron is a primary particle
-	    if((!Particle2->IsPhysicalPrimary())) continue;
-
-	    fHistPtDeuteronRecPrimary->Fill(PtDeuteronRec);
-	    fHistEtaDeuteronRecPrimary->Fill(EtaDeuteronRec);
-
-	    // apply track cuts
-	    if(!fESDtrackCutsDeuteron->AcceptTrack(Track2)) continue;
-	    if(Track2->GetSign() < 1) continue;
-
-	    AliPIDResponse::EDetPidStatus status2TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track2);
-	    AliPIDResponse::EDetPidStatus status2TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track2);
-
-	    if(status2TPC == AliPIDResponse::kDetPidOk) TPC2_OK = true;
-	    if(status2TOF == AliPIDResponse::kDetPidOk) TOF2_OK = true;
-
-	    if(!(TPC2_OK)) continue;
-	    if(!(TOF2_OK)) continue;
-
-	    nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
-	    nSigmaTOFdeuteron = fPIDResponse->NumberOfSigmasTOF(Track2,AliPID::kDeuteron);
-	    nSigmaTPCTOFdeuteron = TMath::Sqrt(pow(nSigmaTPCdeuteron,2.) + pow(nSigmaTOFdeuteron,2.));
-
-	    Double_t DeuteronpTPC = Track2->GetInnerParam()->GetP();
-
-	    if(DeuteronpTPC <= DeuteronpTPCThreshold){
-
-	      if(!(nSigmaTPCdeuteron < 3.0)) continue;
-
-	    }else{
-	    
-	      if(!(nSigmaTPCTOFdeuteron < 3.0)) continue;
-
-	    }
-
-	    // DCA cuts
-	    Track2->GetImpactParameters(xv_Deuteron,yv_Deuteron);
-	    DeuteronDCAxy = xv_Deuteron[0];
-	    DeuteronDCAz  = xv_Deuteron[1];
-	    if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
-
-	    fHistPtDeuteronRecTrackCuts->Fill(PtDeuteronRec);
-	    fHistEtaDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
-
-/*
-	    if((Particle1PDG == TritonPDG)	|| (Particle1PDG == -TritonPDG))      continue;
-	    if((Particle1PDG == Helium3PDG)	|| (Particle1PDG == -Helium3PDG))     continue;
-	    if((Particle1PDG == HypertritonPDG) || (Particle1PDG == -HypertritonPDG)) continue;
-	    if((Particle1PDG == PionPDG)	|| (Particle1PDG == -PionPDG))	      continue;
-	    if((Particle1PDG == KaonPDG)	|| (Particle1PDG == -KaonPDG))	      continue;
-	    if((Particle1PDG == ElectronPDG)	|| (Particle1PDG == -ElectronPDG))    continue;
-	    if((Particle1PDG == MyonPDG)	|| (Particle1PDG == -MyonPDG))	      continue;
-
-	    if((Particle2PDG == TritonPDG)	|| (Particle2PDG == -TritonPDG))      continue;
-	    if((Particle2PDG == Helium3PDG)	|| (Particle2PDG == -Helium3PDG))     continue;
-	    if((Particle2PDG == HypertritonPDG) || (Particle2PDG == -HypertritonPDG)) continue;
-	    if((Particle2PDG == PionPDG)	|| (Particle2PDG == -PionPDG))	      continue;
-	    if((Particle2PDG == KaonPDG)	|| (Particle2PDG == -KaonPDG))	      continue;
-	    if((Particle2PDG == ElectronPDG)	|| (Particle2PDG == -ElectronPDG))    continue;
-	    if((Particle2PDG == MyonPDG)	|| (Particle2PDG == -MyonPDG))	      continue;
-*/
-
-
-
-	    TLorentzVector LorentzVectorHelium3Rec;
-	    LorentzVectorHelium3Rec = LorentzVectorProtonRec + LorentzVectorDeuteronRec;
-
-	    EtaHelium3Rec = LorentzVectorHelium3Rec.Eta();
-	    PtHelium3Rec = LorentzVectorHelium3Rec.Pt();
-
-	    // apply pair cut
-	    if((PtHelium3Rec < PairPtLimit1)	  || (PtHelium3Rec > PairPtLimit2)) continue;
-
-	    RelativeMomentum = CalculateRelativeMomentum(LorentzVectorHelium3Rec,LorentzVectorProtonRec,LorentzVectorDeuteronRec);
-
-	    fHistPtProtonRecPairPtCut->Fill(PtProtonRec);
-	    fHistEtaProtonRecPairPtCut->Fill(EtaProtonRec);
-	    fHistPtDeuteronRecPairPtCut->Fill(PtDeuteronRec);
-	    fHistEtaDeuteronRecPairPtCut->Fill(EtaDeuteronRec);
-	    fHistPtHelium3RecPairPtCut->Fill(PtHelium3Rec);
-	    fHistEtaHelium3RecPairPtCut->Fill(EtaHelium3Rec);
-	    fHistSEDPairRec->Fill(RelativeMomentum);
-	    fHistPtParticlesRec->Fill(PtDeuteronRec,PtProtonRec);
-
-	  } // end of track2 loop (deuteron loop)
-
-      } // end of track1 loop (proton loop)
+      }	// end of loop for reconstructed protons
 
 
 
 
-    // loop for reconstructed antiparticles
-    for(int nTrack1 = 0; nTrack1 < fESD->GetNumberOfTracks(); nTrack1++) // antiproton loop
+    // loop for reconstructed deuterons
+    for(int track = 0; track < fESD->GetNumberOfTracks(); track++)
       {
 
-	TPC1_OK = false;
-	TOF1_OK = false;
-	TPC2_OK = false;
-	TOF2_OK = false;
+	TPC_OK = false;
+	TOF_OK = false;
 
-	AliESDtrack *Track1 = dynamic_cast<AliESDtrack*>(fESD->GetTrack(nTrack1));
+	AliESDtrack *DeuteronTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(track));
+	LabelDeuteron = TMath::Abs(DeuteronTrack->GetLabel());
+	AliMCParticle *Deuteron = (AliMCParticle*)(mcEvent->GetTrack(LabelDeuteron));
 
-	AliMCParticle *Particle1 = (AliMCParticle*)(mcEvent->GetTrack(TMath::Abs(Track1->GetLabel())));
-	int Particle1PDG = Particle1->PdgCode();
+	MomentumDeuteron[0] = DeuteronTrack->Px();
+	MomentumDeuteron[1] = DeuteronTrack->Py();
+	MomentumDeuteron[2] = DeuteronTrack->Pz();
 
-	MomentumProtonRec[0] = Track1->Px();
-	MomentumProtonRec[1] = Track1->Py();
-	MomentumProtonRec[2] = Track1->Pz();
+	TLorentzVector LorentzVectorDeuteron;
+	LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],MassDeuteron);
 
-	TLorentzVector LorentzVectorProtonRec;
-	LorentzVectorProtonRec.SetXYZM(MomentumProtonRec[0],MomentumProtonRec[1],MomentumProtonRec[2],ProtonMass);
+	PtDeuteron = LorentzVectorDeuteron.Pt();
+	EtaDeuteron = LorentzVectorDeuteron.Eta();
 
-	PtProtonRec = LorentzVectorProtonRec.Pt();
-	EtaProtonRec = LorentzVectorProtonRec.Eta();
 
-	// check if particle is an antiproton
-	if(!(Particle1PDG == -ProtonPDG))	continue;
+	// check if particle is a deuteron
+	if(!(Deuteron->PdgCode() == DeuteronPDG)) continue;
 
-	fHistPtAntiProtonRecPDG->Fill(PtProtonRec);
-	fHistEtaAntiProtonRecPDG->Fill(EtaProtonRec);
+	    fHistPtDeuteronRecPDG->Fill(PtDeuteron);
+	    fHistEtaDeuteronRecPDG->Fill(EtaDeuteron);
 
-	// check if antiproton is a primary particle
-	if(!Particle1->IsPhysicalPrimary()) continue;
 
-	fHistPtAntiProtonRecPrimary->Fill(PtProtonRec);
-	fHistEtaAntiProtonRecPrimary->Fill(EtaProtonRec);
+	// check if deuteron is a primary particle
+	if((!Deuteron->IsPhysicalPrimary())) continue;
+
+	    fHistPtDeuteronRecPrimary->Fill(PtDeuteron);
+	    fHistEtaDeuteronRecPrimary->Fill(EtaDeuteron);
+
 
 	// apply track cuts
-	if(!fESDtrackCutsProton->AcceptTrack(Track1)) continue;
-	if(Track1->GetSign() > -1) continue;
+	if(!fESDtrackCutsDeuteron->AcceptTrack(DeuteronTrack)) continue;
+	if(DeuteronTrack->GetSign() < 1) continue;
 
-	AliPIDResponse::EDetPidStatus status1TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track1);
-	AliPIDResponse::EDetPidStatus status1TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track1);
+	// fill dE/dx with particles and antiparticles according to the production period
+	if(LHC18a2a == true){
 
-	if(status1TPC == AliPIDResponse::kDetPidOk) TPC1_OK = true;
-	if(status1TOF == AliPIDResponse::kDetPidOk) TOF1_OK = true;
-	if(!(TPC1_OK)) continue;
-	if(!(TOF1_OK)) continue;
+	  fHistdEdx_LHC18a2a->Fill(DeuteronTrack->GetInnerParam()->GetP() * DeuteronTrack->GetSign(),DeuteronTrack->GetTPCsignal());
 
-	nSigmaTPCproton = fPIDResponse->NumberOfSigmasTPC(Track1,AliPID::kProton);
-	nSigmaTOFproton = fPIDResponse->NumberOfSigmasTOF(Track1,AliPID::kProton);
+	  }else if(LHC18a2b == true){
+
+	    fHistdEdx_LHC18a2b->Fill(DeuteronTrack->GetInnerParam()->GetP() * DeuteronTrack->GetSign(),DeuteronTrack->GetTPCsignal());
+
+	    }else if(LHC18a2b4 == true){
+
+	      fHistdEdx_LHC18a2b4->Fill(DeuteronTrack->GetInnerParam()->GetP() * DeuteronTrack->GetSign(),DeuteronTrack->GetTPCsignal());
+
+	      }else if(LHC20l7a == true){
+
+		fHistdEdx_LHC20l7a->Fill(DeuteronTrack->GetInnerParam()->GetP() * DeuteronTrack->GetSign(),DeuteronTrack->GetTPCsignal());
+
+		}
+
+	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,DeuteronTrack);
+	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,DeuteronTrack);
+
+	if(statusTPC == AliPIDResponse::kDetPidOk) TPC_OK = true;
+	if(statusTOF == AliPIDResponse::kDetPidOk) TOF_OK = true;
+
+	if(!(TPC_OK)) continue;
+	if(!(TOF_OK)) continue;
+
+	nSigmaTPCdeuteron = Bethe(*DeuteronTrack,AliPID::ParticleMass(AliPID::kDeuteron),1,fBetheParametersDeuteron);
+	nSigmaTOFdeuteron = fPIDResponse->NumberOfSigmasTOF(DeuteronTrack,AliPID::kDeuteron);
+	nSigmaTPCTOFdeuteron = TMath::Sqrt(pow(nSigmaTPCdeuteron,2.) + pow(nSigmaTOFdeuteron,2.));
+
+	Double_t DeuteronpTPC = DeuteronTrack->GetInnerParam()->GetP();
+
+	if(DeuteronpTPC <= DeuteronpTPCThreshold){
+
+	  if(!(nSigmaTPCdeuteron < 3.0)) continue;
+
+	}else{
+	    
+	  if(!(nSigmaTPCTOFdeuteron < 3.0)) continue;
+
+	}
+
+	// DCA cuts
+	DeuteronTrack->GetImpactParameters(xv_Deuteron,yv_Deuteron);
+	DeuteronDCAxy = xv_Deuteron[0];
+	DeuteronDCAz  = xv_Deuteron[1];
+	if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
+
+	fHistPtDeuteronRecTrackCuts->Fill(PtDeuteron);
+	fHistEtaDeuteronRecTrackCuts->Fill(EtaDeuteron);
+
+	ReconstructedDeuteronArray->push_back(LabelDeuteron);
+
+      }	// end of loop for reconstructed deuterons
+
+
+
+
+    // loop for reconstructed particle pairs
+    for(int track1 = 0; track1 < ReconstructedProtonArray->size(); track1++)
+      {
+
+	AliESDtrack *ProtonTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedProtonArray->at(track1)));
+
+	MomentumProton[0] = ProtonTrack->Px();
+	MomentumProton[1] = ProtonTrack->Py();
+	MomentumProton[2] = ProtonTrack->Pz();
+
+	TLorentzVector LorentzVectorProton;
+	LorentzVectorProton.SetXYZM(MomentumProton[0],MomentumProton[1],MomentumProton[2],MassProton);
+	PtProton = LorentzVectorProton.Pt();
+	EtaProton = LorentzVectorProton.Eta();
+
+	for(int track2 = 0; track2 < ReconstructedDeuteronArray->size(); track2++)
+	  {
+
+	    AliESDtrack *DeuteronTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedDeuteronArray->at(track2)));
+
+	    MomentumDeuteron[0] = DeuteronTrack->Px();
+	    MomentumDeuteron[1] = DeuteronTrack->Py();
+	    MomentumDeuteron[2] = DeuteronTrack->Pz();
+
+	    TLorentzVector LorentzVectorDeuteron;
+	    LorentzVectorDeuteron.SetXYZM(MomentumDeuteron[0],MomentumDeuteron[1],MomentumDeuteron[2],MassDeuteron);
+	    PtDeuteron = LorentzVectorDeuteron.Pt();
+	    EtaDeuteron = LorentzVectorDeuteron.Eta();
+
+
+	    TLorentzVector LorentzVectorPair;
+	    LorentzVectorPair = LorentzVectorProton + LorentzVectorDeuteron;
+
+	    EtaPair = LorentzVectorPair.Eta();
+	    PtPair = LorentzVectorPair.Pt();
+
+	    // apply pair cut
+	    if((PtPair < PairPtLimit1)	  || (PtPair > PairPtLimit2)) continue;
+
+	    RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorProton,LorentzVectorDeuteron);
+
+	    fHistPtProtonRecPairPtCut->Fill(PtProton);
+	    fHistEtaProtonRecPairPtCut->Fill(EtaProton);
+	    fHistPtDeuteronRecPairPtCut->Fill(PtDeuteron);
+	    fHistEtaDeuteronRecPairPtCut->Fill(EtaDeuteron);
+	    fHistPtHelium3RecPairPtCut->Fill(PtPair);
+	    fHistEtaHelium3RecPairPtCut->Fill(EtaPair);
+	    fHistSEDPairRec->Fill(RelativeMomentum);
+	    fHistPtParticlesRec->Fill(PtDeuteron,PtProton);
+
+	  } // end of loop for reconstructed particle pairs (deuteron loop)
+
+      } // end of loop for reconstructed particle pairs (proton loop)
+
+
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++ Loops for reconstructed antiparticles +++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+    // loop for reconstructed antiprotons
+    for(int track = 0; track < fESD->GetNumberOfTracks(); track++)
+      {
+
+	TPC_OK = false;
+	TOF_OK = false;
+
+	AliESDtrack *AntiProtonTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(track));
+
+	LabelAntiProton = TMath::Abs(AntiProtonTrack->GetLabel());
+	AliMCParticle *AntiProton = (AliMCParticle*)(mcEvent->GetTrack(LabelAntiProton));
+
+	MomentumAntiProton[0] = AntiProtonTrack->Px();
+	MomentumAntiProton[1] = AntiProtonTrack->Py();
+	MomentumAntiProton[2] = AntiProtonTrack->Pz();
+
+	TLorentzVector LorentzVectorAntiProton;
+	LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],MassProton);
+
+	PtAntiProton = LorentzVectorAntiProton.Pt();
+	EtaAntiProton = LorentzVectorAntiProton.Eta();
+
+	// check if particle is an antiproton
+	if(!(AntiProton->PdgCode() == -ProtonPDG))  continue;
+
+	fHistPtAntiProtonRecPDG->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecPDG->Fill(EtaAntiProton);
+
+	// check if antiproton is a primary particle
+	if(!AntiProton->IsPhysicalPrimary()) continue;
+
+	fHistPtAntiProtonRecPrimary->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecPrimary->Fill(EtaAntiProton);
+
+	// apply track cuts
+	if(!fESDtrackCutsProton->AcceptTrack(AntiProtonTrack)) continue;
+	if(AntiProtonTrack->GetSign() > -1) continue;
+
+	AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,AntiProtonTrack);
+	AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,AntiProtonTrack);
+
+	if(statusTPC == AliPIDResponse::kDetPidOk) TPC_OK = true;
+	if(statusTOF == AliPIDResponse::kDetPidOk) TOF_OK = true;
+	if(!(TPC_OK)) continue;
+	if(!(TOF_OK)) continue;
+
+	nSigmaTPCproton = fPIDResponse->NumberOfSigmasTPC(AntiProtonTrack,AliPID::kProton);
+	nSigmaTOFproton = fPIDResponse->NumberOfSigmasTOF(AntiProtonTrack,AliPID::kProton);
 	nSigmaTPCTOFproton = TMath::Sqrt(pow(nSigmaTPCproton,2.) + pow(nSigmaTOFproton,2.));
 
-	Double_t ProtonpTPC = Track1->GetInnerParam()->GetP();
+	Double_t ProtonpTPC = AntiProtonTrack->GetInnerParam()->GetP();
 
 	if(ProtonpTPC <= ProtonpTPCThreshold){
 
@@ -1322,65 +1648,73 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
         }
 
 	// DCA cuts
-	Track1->GetImpactParameters(xv_Proton,yv_Proton);
+	AntiProtonTrack->GetImpactParameters(xv_Proton,yv_Proton);
 	ProtonDCAxy = xv_Proton[0];
 	ProtonDCAz  = xv_Proton[1];
 	if((ProtonDCAxy > ProtonDCAxyMax) || (ProtonDCAz > ProtonDCAzMax)) continue;
 
 
-	fHistPtAntiProtonRecTrackCuts->Fill(PtProtonRec);
-	fHistEtaAntiProtonRecTrackCuts->Fill(EtaProtonRec);
+	fHistPtAntiProtonRecTrackCuts->Fill(PtAntiProton);
+	fHistEtaAntiProtonRecTrackCuts->Fill(EtaAntiProton);
+
+	ReconstructedAntiProtonArray->push_back(LabelAntiProton);
+
+      } // end of loop for reconstructed antiprotons
 
 
+      // loop for reconstructed antideuterons
+      for(int track = 0; track < fESD->GetNumberOfTracks(); track++)
+	{
 
-	for(int nTrack2 = nTrack1 + 1; nTrack2 < fESD->GetNumberOfTracks(); nTrack2++)	// antideuteron loop
-	  {
+	  TPC_OK = false;
+	  TOF_OK = false;
 
-	    AliESDtrack *Track2 = dynamic_cast<AliESDtrack*>(fESD->GetTrack(nTrack2));
+	  AliESDtrack *AntiDeuteronTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(track));
+	  LabelAntiDeuteron = TMath::Abs(AntiDeuteronTrack->GetLabel());
 
-	    AliMCParticle *Particle2 = (AliMCParticle*)(mcEvent->GetTrack(TMath::Abs(Track2->GetLabel())));
-	    int Particle2PDG = Particle2->PdgCode();
+	  AliMCParticle *AntiDeuteron = (AliMCParticle*)(mcEvent->GetTrack(LabelAntiDeuteron));
 
-	    MomentumDeuteronRec[0] = Track2->Px();
-	    MomentumDeuteronRec[1] = Track2->Py();
-	    MomentumDeuteronRec[2] = Track2->Pz();
+	  MomentumAntiDeuteron[0] = AntiDeuteronTrack->Px();
+	  MomentumAntiDeuteron[1] = AntiDeuteronTrack->Py();
+	  MomentumAntiDeuteron[2] = AntiDeuteronTrack->Pz();
 
-	    TLorentzVector LorentzVectorDeuteronRec;
-	    LorentzVectorDeuteronRec.SetXYZM(MomentumDeuteronRec[0],MomentumDeuteronRec[1],MomentumDeuteronRec[2],DeuteronMass);
+	  TLorentzVector LorentzVectorAntiDeuteron;
+	  LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],MassDeuteron);
 
-	    PtDeuteronRec = LorentzVectorDeuteronRec.Pt();
-	    EtaDeuteronRec = LorentzVectorDeuteronRec.Eta();
+	  PtAntiDeuteron = LorentzVectorAntiDeuteron.Pt();
+	  EtaAntiDeuteron = LorentzVectorAntiDeuteron.Eta();
 
-	    // check if particle is an antideuteron
-	    if(!(Particle2PDG == -DeuteronPDG))	continue;
+	  // check if particle is an antideuteron
+	  if(!(AntiDeuteron->PdgCode() == -DeuteronPDG)) continue;
 
-	    fHistPtAntiDeuteronRecPDG->Fill(PtDeuteronRec);
-	    fHistEtaAntiDeuteronRecPDG->Fill(EtaDeuteronRec);
+	  fHistPtAntiDeuteronRecPDG->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecPDG->Fill(EtaAntiDeuteron);
 
-	    // check if antideuteron is a primary particle
-	    if((!Particle2->IsPhysicalPrimary())) continue;
+	  // check if antideuteron is a primary particle
+	  if((!AntiDeuteron->IsPhysicalPrimary())) continue;
 
-	    fHistPtAntiDeuteronRecPrimary->Fill(PtDeuteronRec);
-	    fHistEtaAntiDeuteronRecPrimary->Fill(EtaDeuteronRec);
+	  fHistPtAntiDeuteronRecPrimary->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecPrimary->Fill(EtaAntiDeuteron);
 
-	    // apply track cuts
-	    if(!fESDtrackCutsDeuteron->AcceptTrack(Track2)) continue;
-	    if(Track2->GetSign() > -1) continue;
+	  // apply track cuts
+	  if(!fESDtrackCutsDeuteron->AcceptTrack(AntiDeuteronTrack)) continue;
+	  if(AntiDeuteronTrack->GetSign() > -1) continue;
 
-	    AliPIDResponse::EDetPidStatus status2TPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,Track2);
-	    AliPIDResponse::EDetPidStatus status2TOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,Track2);
+	  AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,AntiDeuteronTrack);
+	  AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,AntiDeuteronTrack);
 
-	    if(status2TPC == AliPIDResponse::kDetPidOk) TPC2_OK = true;
-	    if(status2TOF == AliPIDResponse::kDetPidOk) TOF2_OK = true;
+	  if(statusTPC == AliPIDResponse::kDetPidOk) TPC_OK = true;
+	  if(statusTOF == AliPIDResponse::kDetPidOk) TOF_OK = true;
 
-	    if(!(TPC2_OK)) continue;
-	    if(!(TOF2_OK)) continue;
+	  if(!(TPC_OK)) continue;
+	  if(!(TOF_OK)) continue;
 
-	    nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
-	    nSigmaTOFdeuteron = fPIDResponse->NumberOfSigmasTOF(Track2,AliPID::kDeuteron);
-	    nSigmaTPCTOFdeuteron = TMath::Sqrt(pow(nSigmaTPCdeuteron,2.) + pow(nSigmaTOFdeuteron,2.));
+	  //nSigmaTPCdeuteron = fPIDResponse->NumberOfSigmasTPC(Track2,AliPID::kDeuteron);
+	  nSigmaTPCdeuteron = Bethe(*AntiDeuteronTrack,AliPID::ParticleMass(AliPID::kDeuteron),1,fBetheParametersDeuteron);
+	  nSigmaTOFdeuteron = fPIDResponse->NumberOfSigmasTOF(AntiDeuteronTrack,AliPID::kDeuteron);
+	  nSigmaTPCTOFdeuteron = TMath::Sqrt(pow(nSigmaTPCdeuteron,2.) + pow(nSigmaTOFdeuteron,2.));
 
-	    Double_t DeuteronpTPC = Track2->GetInnerParam()->GetP();
+	  Double_t DeuteronpTPC = AntiDeuteronTrack->GetInnerParam()->GetP();
 
 	    if(DeuteronpTPC <= DeuteronpTPCThreshold){
 
@@ -1393,58 +1727,73 @@ void AliAnalysisTaskDeuteronProtonEfficiency::UserExec(Option_t *)
 	    }
 
 	    // DCA cuts
-	    Track2->GetImpactParameters(xv_Deuteron,yv_Deuteron);
-	    DeuteronDCAxy = xv_Deuteron[0];
-	    DeuteronDCAz  = xv_Deuteron[1];
-	    if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
+	  AntiDeuteronTrack->GetImpactParameters(xv_Deuteron,yv_Deuteron);
+	  DeuteronDCAxy = xv_Deuteron[0];
+	  DeuteronDCAz  = xv_Deuteron[1];
+	  if((DeuteronDCAxy > DeuteronDCAxyMax) || (DeuteronDCAz > DeuteronDCAzMax)) continue;
 
-	    fHistPtAntiDeuteronRecTrackCuts->Fill(PtDeuteronRec);
-	    fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaDeuteronRec);
+	  fHistPtAntiDeuteronRecTrackCuts->Fill(PtAntiDeuteron);
+	  fHistEtaAntiDeuteronRecTrackCuts->Fill(EtaAntiDeuteron);
 
-/*
-	    if((Particle1PDG == TritonPDG)	|| (Particle1PDG == -TritonPDG))      continue;
-	    if((Particle1PDG == Helium3PDG)	|| (Particle1PDG == -Helium3PDG))     continue;
-	    if((Particle1PDG == HypertritonPDG) || (Particle1PDG == -HypertritonPDG)) continue;
-	    if((Particle1PDG == PionPDG)	|| (Particle1PDG == -PionPDG))	      continue;
-	    if((Particle1PDG == KaonPDG)	|| (Particle1PDG == -KaonPDG))	      continue;
-	    if((Particle1PDG == ElectronPDG)	|| (Particle1PDG == -ElectronPDG))    continue;
-	    if((Particle1PDG == MyonPDG)	|| (Particle1PDG == -MyonPDG))	      continue;
+	  ReconstructedAntiDeuteronArray->push_back(LabelAntiDeuteron);
 
-	    if((Particle2PDG == TritonPDG)	|| (Particle2PDG == -TritonPDG))      continue;
-	    if((Particle2PDG == Helium3PDG)	|| (Particle2PDG == -Helium3PDG))     continue;
-	    if((Particle2PDG == HypertritonPDG) || (Particle2PDG == -HypertritonPDG)) continue;
-	    if((Particle2PDG == PionPDG)	|| (Particle2PDG == -PionPDG))	      continue;
-	    if((Particle2PDG == KaonPDG)	|| (Particle2PDG == -KaonPDG))	      continue;
-	    if((Particle2PDG == ElectronPDG)	|| (Particle2PDG == -ElectronPDG))    continue;
-	    if((Particle2PDG == MyonPDG)	|| (Particle2PDG == -MyonPDG))	      continue;
-*/
+	} // end of loop for reconstructed antideuterons
 
 
 
-	    TLorentzVector LorentzVectorHelium3Rec;
-	    LorentzVectorHelium3Rec = LorentzVectorProtonRec + LorentzVectorDeuteronRec;
+    // loop for reconstructed antiparticle pairs
+    for(int track1 = 0; track1 < ReconstructedAntiProtonArray->size(); track1++)
+      {
 
-	    EtaHelium3Rec = LorentzVectorHelium3Rec.Eta();
-	    PtHelium3Rec = LorentzVectorHelium3Rec.Pt();
+	AliESDtrack *AntiProtonTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedAntiProtonArray->at(track1)));
 
-	    // apply antipair cut
-	    if((PtHelium3Rec < PairPtLimit1)	  || (PtHelium3Rec > PairPtLimit2)) continue;
+	MomentumAntiProton[0] = AntiProtonTrack->Px();
+	MomentumAntiProton[1] = AntiProtonTrack->Py();
+	MomentumAntiProton[2] = AntiProtonTrack->Pz();
 
-	    RelativeMomentum = CalculateRelativeMomentum(LorentzVectorHelium3Rec,LorentzVectorProtonRec,LorentzVectorDeuteronRec);
+	TLorentzVector LorentzVectorAntiProton;
+	LorentzVectorAntiProton.SetXYZM(MomentumAntiProton[0],MomentumAntiProton[1],MomentumAntiProton[2],MassProton);
+	PtAntiProton = LorentzVectorAntiProton.Pt();
+	EtaAntiProton = LorentzVectorAntiProton.Eta();
 
-	    fHistPtAntiProtonRecPairPtCut->Fill(PtProtonRec);
-	    fHistEtaAntiProtonRecPairPtCut->Fill(EtaProtonRec);
-	    fHistPtAntiDeuteronRecPairPtCut->Fill(PtDeuteronRec);
-	    fHistEtaAntiDeuteronRecPairPtCut->Fill(EtaDeuteronRec);
-	    fHistPtAntiHelium3RecPairPtCut->Fill(PtHelium3Rec);
-	    fHistEtaAntiHelium3RecPairPtCut->Fill(EtaHelium3Rec);
+	for(int track2 = 0; track2 < ReconstructedAntiDeuteronArray->size(); track2++)
+	  {
+
+	    AliESDtrack *AntiDeuteronTrack = (AliESDtrack*)(mcEvent->GetTrack(ReconstructedAntiDeuteronArray->at(track2)));
+
+	    MomentumAntiDeuteron[0] = AntiDeuteronTrack->Px();
+	    MomentumAntiDeuteron[1] = AntiDeuteronTrack->Py();
+	    MomentumAntiDeuteron[2] = AntiDeuteronTrack->Pz();
+
+	    TLorentzVector LorentzVectorAntiDeuteron;
+	    LorentzVectorAntiDeuteron.SetXYZM(MomentumAntiDeuteron[0],MomentumAntiDeuteron[1],MomentumAntiDeuteron[2],MassDeuteron);
+	    PtAntiDeuteron = LorentzVectorAntiDeuteron.Pt();
+	    EtaAntiDeuteron = LorentzVectorAntiDeuteron.Eta();
+
+
+	    TLorentzVector LorentzVectorPair;
+	    LorentzVectorPair = LorentzVectorAntiProton + LorentzVectorAntiDeuteron;
+
+	    EtaPair = LorentzVectorPair.Eta();
+	    PtPair = LorentzVectorPair.Pt();
+
+	    // apply pair cut
+	    if((PtPair < PairPtLimit1)	  || (PtPair > PairPtLimit2)) continue;
+
+	    RelativeMomentum = CalculateRelativeMomentum(LorentzVectorPair,LorentzVectorAntiProton,LorentzVectorAntiDeuteron);
+
+	    fHistPtAntiProtonRecPairPtCut->Fill(PtAntiProton);
+	    fHistEtaAntiProtonRecPairPtCut->Fill(EtaAntiProton);
+	    fHistPtAntiDeuteronRecPairPtCut->Fill(PtAntiDeuteron);
+	    fHistEtaAntiDeuteronRecPairPtCut->Fill(EtaAntiDeuteron);
+	    fHistPtAntiHelium3RecPairPtCut->Fill(PtPair);
+	    fHistEtaAntiHelium3RecPairPtCut->Fill(EtaPair);
 	    fHistSEDAntiPairRec->Fill(RelativeMomentum);
-	    fHistPtAntiParticlesRec->Fill(PtDeuteronRec,PtProtonRec);
+	    fHistPtAntiParticlesRec->Fill(PtAntiDeuteron,PtAntiProton);
 
-	  } // end of track2 loop (antideuteron loop)
+	  } // end of loop for reconstructed antiparticle pairs (antideuteron loop)
 
-      } // end of track1 loop (antiproton loop)
-
+      } // end of loop for reconstructed antiparticle pairs (antiproton loop)
 
 
 
@@ -1468,6 +1817,20 @@ void AliAnalysisTaskDeuteronProtonEfficiency::Terminate(Option_t *)
 
 
 } // end of Terminate
+
+
+
+// Calculates number of sigma deviation from expected dE/dx in TPC
+double AliAnalysisTaskDeuteronProtonEfficiency::Bethe(const AliESDtrack &track, double mass, int charge, double *params){
+
+  double expected = charge*charge*AliExternalTrackParam::BetheBlochAleph(charge*track.GetInnerParam()->GetP()/mass,params[0],params[1],params[2],params[3],params[4]);
+  double sigma = expected * params[5];
+
+  if(TMath::IsNaN(expected)) return -999;
+  return (track.GetTPCsignal() - expected) / sigma;
+
+
+} // end of Bethe
 
 
 

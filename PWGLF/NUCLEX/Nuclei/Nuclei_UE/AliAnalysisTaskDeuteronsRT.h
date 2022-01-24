@@ -41,7 +41,7 @@ public:
     void SetMultiplicityInterval   (Double_t multMin, Double_t multMax) { fMultMin = multMin; fMultMax = multMax; }
     void SetAverageTransverseMult  (Double_t average_Nch_Transv)        { fAverage_Nch_Transv = average_Nch_Transv; }
     void SetAnalysisParametersSyst (TH2F *h2Dmatrix)                    { hAnalysisParameters = h2Dmatrix; }
-    void SetInputData              (Bool_t isMC)                        { fIsMC = isMC; }
+    void SetInputData              (Bool_t ispPb, Bool_t isMC)          { fIspPb = ispPb; fIsMC = isMC; }
     void SetMinPtLeadingTrack      (Double_t pt)                        { fPt_min_leading = pt; }
     void SetIsUEAnalysis           (Bool_t isUEanalysis)                { fIsUEanalysis = isUEanalysis; }
 
@@ -95,6 +95,7 @@ private:
     Double_t  fMultMax;//
     Double_t  fAverage_Nch_Transv;//
     TH2F     *hAnalysisParameters;//
+    Bool_t    fIspPb;//
     Bool_t    fIsMC;//
     Double_t  fPt_min_leading;//
     Bool_t    fIsUEanalysis;//

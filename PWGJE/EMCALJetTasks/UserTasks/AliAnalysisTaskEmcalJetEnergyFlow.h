@@ -5,11 +5,11 @@
  * \brief Declaration of class AliAnalysisTaskEmcalJetEnergyFlow
  *
  * In this header file the class AliAnalysisTaskEmcalJetEnergyFlow is declared
- * This is an analysis task which calculates the energy flow between jets of increasing jet radii, defined as the difference of pt in matched jets.
+ * This is an analysis task which calculates the energy flow between jets of increasing jet radii, defined as the difference of pt in spatially matched jets.
  * The goal of this task is to define an observable for the effect of the recoil of medium particles from the jet equivalent to the feature modeled to Jewel generator.
  *
  * \author Christos Pliatskas <c.pliatskas.stylianidis@nikhef.nl>, Nikhef
- * \date Jan 04, 2021
+ * \date Oct 26, 2021
  */
 
 /* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved.*
@@ -27,9 +27,9 @@
 class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	public:
 	
-	AliAnalysisTaskEmcalJetEnergyFlow()				;
-	AliAnalysisTaskEmcalJetEnergyFlow(const char* name)		;
-	virtual ~AliAnalysisTaskEmcalJetEnergyFlow()			;
+	AliAnalysisTaskEmcalJetEnergyFlow()			;
+	AliAnalysisTaskEmcalJetEnergyFlow(const char* name)	;
+	virtual ~AliAnalysisTaskEmcalJetEnergyFlow()		;
 	
 	void 	UserCreateOutputObjects()				;
 	void	Terminate(Option_t* option)				;
@@ -72,7 +72,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
   	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,12);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,13);
 	/// \endcond
 };
 #endif

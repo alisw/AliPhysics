@@ -124,7 +124,7 @@ void AliAnalysisTaskBaseWeights::AddOutput() {
                                         // 7=sigmaM, 8=xi, 9=omega, 5=other
     Axis mcInfoAxis{"mcInfo",
         "mcInfo",
-        {-0.3, 3.5},
+        {-0.5, 3.5},
         4}; // 0=prim, 1=decay 2=material, 3=genprim
     Axis mcWeightAxis{"weight",
         "weight",

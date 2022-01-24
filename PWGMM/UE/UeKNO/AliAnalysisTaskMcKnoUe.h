@@ -117,8 +117,34 @@ private:
 	TH1D * hPhiRec[3];
 	TH1D * hNchTSRec;
 	TH1D * hNchTSRecTest;
-	TH1D * hNchTSData;
 	TH2D * hNchResponse;
+        
+        TH1D * hNchTSData;
+        TH1D * hPhiData_TS1;
+        TH1D * hPhiData_TS2;
+        TH1D * hNchTSminData;
+        TH1D * hNchTSmaxData;
+        
+        TH1D * hPhiGen_TS1;
+        TH1D * hPhiGen_TS2;
+        TH1D * hPhiGenTest_TS1;
+        TH1D * hPhiGenTest_TS2;
+        TH1D * hPhiRec_TS1;
+        TH1D * hPhiRec_TS2;
+        TH1D * hPhiRecTest_TS1;
+        TH1D * hPhiRecTest_TS2;
+        
+        TH1D * hNchTSminGen;
+        TH1D * hNchTSminRec;
+        TH2D * hNchTSminResponse;
+        TH1D * hNchTSminGenTest;
+        TH1D * hNchTSminRecTest;
+        
+        TH1D * hNchTSmaxGen;
+        TH1D * hNchTSmaxRec;
+        TH2D * hNchTSmaxResponse;
+        TH1D * hNchTSmaxGenTest;
+        TH1D * hNchTSmaxRecTest;
 
 	// UE 
 	TH1D * hPtInPrim;

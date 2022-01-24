@@ -49,8 +49,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
 
     // MC functions
     void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
-    void ProcessMCParticles             ();
-    void ProcessAODMCParticles          ();
+    void ProcessMCParticles             ( Int_t isCurrentEventSelected = 0);
+    void ProcessAODMCParticles          ( Int_t isCurrentEventSelected = 0);
     void RelabelAODPhotonCandidates     ( Bool_t mode);
     void ProcessTruePhotonCandidates    ( AliAODConversionPhoton* TruePhotonCandidate);
     void ProcessTrueClusterCandidates   ( AliAODConversionPhoton* TruePhotonCandidate,
@@ -288,7 +288,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCConvGammaPt;                //! array of histos with converted gamma, pT
     TH2F**                  fHistoMCSecondaryConvGammaPt;       //! array of histos wiht secondary converted gamma, pt
 
-    //histograms for pure MC quantities for mesaon analysis
+    //histograms for pure MC quantities for meson analysis
     TH1F**                  fHistoMCPi0Pt;                      //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;           //! array of histos without event weights pi0, pT
@@ -313,6 +313,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCSecEtaSource;               //! array of histos with secondary eta, source
     TH2F**                  fHistoMCPi0PtJetPt;                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                 //! array of histos with weighted eta, pT, hardest jet pt
+    TH1F**                  fHistoMCPi0PtNotTriggered;          //! array of histos with weighted pi0 in not triggered events, pT
+    TH1F**                  fHistoMCPi0PtNoVertex;              //! array of histos with weighted pi0 without a vertex, pT
+    TH1F**                  fHistoMCEtaPtNotTriggered;          //! array of histos with weighted eta in not triggered events, pT
+    TH1F**                  fHistoMCEtaPtNoVertex;              //! array of histos with weighted eta without a vertex, pT
+    TH1F**                  fHistoMCGammaPtNotTriggered;        //! array of histos with weighted gamm in not triggered events, pT
+    TH1F**                  fHistoMCGammaPtNoVertex;            //! array of histos with weighted gamm without a vertex, pT
 
     // histograms for pure MC quantites for dir gamma analysis part
     TH2F**                  fHistoMCPi0PtGammaLeg;              //! array of histos with weighted pi0, pT gamma, different legs
@@ -605,7 +611,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 68);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 70);
 };
 
 #endif

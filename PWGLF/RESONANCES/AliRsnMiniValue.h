@@ -24,6 +24,7 @@ public:
       kTracklets,     // event tracklets
       kPlaneAngle,    // event reaction plane angle
       kLeadingPt,     // event leading particle momentum
+      kLeadingPhi,     // event leading particle phi angle
       kEventCuts,     // -- limit of event cuts ----------------------------------------------------
       kPt,            // pair transverse momentum
       kPz,            // pair longitudinal momentum
@@ -31,6 +32,7 @@ public:
       kInvMassMother, // pair invariant mass, always returns mass of mother
       kInvMassRes,    // pair invariant mass resolution
       kInvMassDiff,   // pair invariant mass difference (MC - reconstructed)
+      kPhi,           // pair angle phi
       kEta,           // pair pseudo-rapidity
       kMt,            // pair transverse mass (need a reference mass)
       kY,             // pair rapidity (need a reference mass)
@@ -51,6 +53,7 @@ public:
       kSecondDaughterPt, //pt of the second daughter of the pair
       kFirstDaughterP,   //p of the first daughter of the pair
       kSecondDaughterP,  //p of the second daughter of the pair
+      kFirstDaughterIM,  //IM of the first daughter of the pair
       kDCAproduct,    // product of the daughter's dca to PV (same in AliRsnValuePair)
       kFirstDaughterDCA,  //DCA to PV of the first daughter of the pair
       kSecondDaughterDCA, //DCA to PV of the second daughter of the pair

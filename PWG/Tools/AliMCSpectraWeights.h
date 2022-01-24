@@ -136,10 +136,11 @@ class AliMCSpectraWeights : public TNamed {
     bool CalcMCFractions();                                    //!
     bool CorrectFractionsforRest();                            //!
     bool CalculateSystematicUncertainties(); //!
+    
 
     int const CheckAndIdentifyParticle(TParticle* part);
     int const FindBinEntry(float pt, int const part);
-
+    
     // private = to be deleted
     AliMCSpectraWeights(const AliMCSpectraWeights&);//copy
     AliMCSpectraWeights& operator=(const AliMCSpectraWeights&);//copy assign
@@ -169,6 +170,9 @@ class AliMCSpectraWeights : public TNamed {
                                                          different particle species */
     float const
     GetMCSpectraWeightSystematics(TParticle* mcGenParticle, Int_t SysCase = 1);
+
+    int const IdentifySecondaryType(TParticle* part);
+    float const GetWeightForSecondaryParticle(TParticle* mcGenParticle, Int_t SysCase=0);
 
     void FillMCSpectra(
         AliMCEvent* mcEvent); /*!< function to fill internal mc spectra for

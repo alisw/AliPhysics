@@ -218,6 +218,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   }
   return RelativeK;
   }
+  else {
+    return -1;
+  }
 }
 
 void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK,

@@ -123,6 +123,10 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusGammaERxSM(NULL),
   fHistoClusGammaERxNCellCrit(NULL),
   fHistoClusGammaERxNCellCritSM(NULL),
+  fHistoClusTrackdEtaSM(NULL),
+  fHistoClusTrackdPhiSM(NULL),
+  fHistoClusHighPtTrackdEtaSM(NULL),
+  fHistoClusHighPtTrackdPhiSM(NULL),
   fHistoEVsM02(NULL),
   fHistoEVsM02NCell4(NULL),
   fHistoMotherInvMassRejected(NULL),
@@ -244,6 +248,10 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusGammaERxSM(NULL),
   fHistoClusGammaERxNCellCrit(NULL),
   fHistoClusGammaERxNCellCritSM(NULL),
+  fHistoClusTrackdEtaSM(NULL),
+  fHistoClusTrackdPhiSM(NULL),
+  fHistoClusHighPtTrackdEtaSM(NULL),
+  fHistoClusHighPtTrackdPhiSM(NULL),
   fHistoEVsM02(NULL),
   fHistoEVsM02NCell4(NULL),
   fHistoMotherInvMassRejected(NULL),
@@ -500,11 +508,19 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fHistoClusGammaERxSM           = new TH1F**[fnCuts];
         fHistoClusGammaERxNCellCritSM  = new TH1F**[fnCuts];
         fHistoClusGammaERxNCellCritSM  = new TH1F**[fnCuts];
+        fHistoClusHighPtTrackdEtaSM    = new TH1F**[fnCuts];
+        fHistoClusHighPtTrackdPhiSM    = new TH1F**[fnCuts];
+        fHistoClusTrackdEtaSM          = new TH1F**[fnCuts];
+        fHistoClusTrackdPhiSM          = new TH1F**[fnCuts];
         fHistoEVsM02                   = new TH2F*[fnCuts];
         fHistoEVsM02NCell4             = new TH2F*[fnCuts];
         for(Int_t icuts = 0; icuts < fnCuts; icuts++){
           fHistoClusGammaERxSM[icuts]           = new TH1F*[fnModules];
           fHistoClusGammaERxNCellCritSM[icuts]  = new TH1F*[fnModules];
+          fHistoClusHighPtTrackdEtaSM[icuts]    = new TH1F*[fnModules];
+          fHistoClusHighPtTrackdPhiSM[icuts]    = new TH1F*[fnModules];
+          fHistoClusTrackdEtaSM[icuts]          = new TH1F*[fnModules];
+          fHistoClusTrackdPhiSM[icuts]          = new TH1F*[fnModules];
         }
       }
     }
@@ -864,6 +880,16 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoClusGammaERxSM[iCut][iModules]);
         fHistoClusGammaERxNCellCritSM[iCut][iModules] = new TH1F(Form("ClusGamma_E_Rx_NCellCrit_SM%i", iModules), Form("ClusGamma_E_Rx_NCellCrit_SM%i; E_{clus} (GeV/c)", iModules), nBinsClusterPt, arrClusPtBinning);
         fESDList[iCut]->Add(fHistoClusGammaERxNCellCritSM[iCut][iModules]);
+
+
+        fHistoClusTrackdEtaSM[iCut][iModules] = new TH1F(Form("Clus_Track_dEta_SM%i", iModules), Form("Clus_Track_dEta_SM%i; d#eta", iModules), 200, -0.01, 0.01);
+        fESDList[iCut]->Add(fHistoClusTrackdEtaSM[iCut][iModules]);
+        fHistoClusTrackdPhiSM[iCut][iModules] = new TH1F(Form("Clus_Track_dPhi_SM%i", iModules), Form("Clus_Track_dPhi_SM%i; d#eta", iModules), 200, -0.01, 0.01);
+        fESDList[iCut]->Add(fHistoClusTrackdPhiSM[iCut][iModules]);
+        fHistoClusHighPtTrackdEtaSM[iCut][iModules] = new TH1F(Form("Clus_HighPtTrack_dEta_SM%i", iModules), Form("Clus_HighPtTrack_dEta_SM%i; d#eta", iModules), 200, -0.01, 0.01);
+        fESDList[iCut]->Add(fHistoClusHighPtTrackdEtaSM[iCut][iModules]);
+        fHistoClusHighPtTrackdPhiSM[iCut][iModules] = new TH1F(Form("Clus_HighPtTrack_dPhi_SM%i", iModules), Form("Clus_HighPtTrack_dPhi_SM%i; d#eta", iModules), 200, -0.01, 0.01);
+        fESDList[iCut]->Add(fHistoClusHighPtTrackdPhiSM[iCut][iModules]);
       }
       fHistoEVsM02[iCut]                       = new TH2F("ESD_ClusterE_M02", "ESD_ClusterE_M02", nBinsClusterPt, arrClusPtBinning, 200, 0, 2);
       fHistoEVsM02[iCut]->SetXTitle("E_{cluster}(GeV)");
@@ -931,6 +957,10 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
           if(fHistoClusGammaERxNCellCritSM[iCut][iModules])fHistoClusGammaERxNCellCritSM[iCut][iModules]->Sumw2();
           if (fHistoMotherInvMassECalibSM[iCut][iModules]) fHistoMotherInvMassECalibSM[iCut][iModules]->Sumw2();
           if (fHistoMotherBackInvMassECalibSM[iCut][iModules]) fHistoMotherBackInvMassECalibSM[iCut][iModules]->Sumw2();
+          if(fHistoClusTrackdEtaSM[iCut][iModules]) fHistoClusTrackdEtaSM[iCut][iModules]->Sumw2();
+          if(fHistoClusTrackdPhiSM[iCut][iModules]) fHistoClusTrackdPhiSM[iCut][iModules]->Sumw2();
+          if(fHistoClusHighPtTrackdEtaSM[iCut][iModules]) fHistoClusHighPtTrackdEtaSM[iCut][iModules]->Sumw2();
+          if(fHistoClusHighPtTrackdPhiSM[iCut][iModules]) fHistoClusHighPtTrackdPhiSM[iCut][iModules]->Sumw2();
         }
       }
     }
@@ -1213,6 +1243,17 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     nclus = arrClustersProcess->GetEntries();
   }
 
+  // check if esd or aod
+  AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(fInputEvent);
+  AliAODEvent *aodev = 0;
+  if (!esdev) {
+    aodev = dynamic_cast<AliAODEvent*>(fInputEvent);
+    if (!aodev) {
+      AliError("Task needs AOD or ESD event, returning");
+      return;
+    }
+  }
+
     // cout << nclus << endl;
   vector<AliAODConversionPhoton*>         vectorCurrentClusters;
   vector<Int_t>                           vectorRejectCluster;
@@ -1246,10 +1287,63 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     }
 
     if (!clus) continue;
-    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
+    Bool_t IsClusSelected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i);
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch()){
+      // get track matching histos for eta and phi for every SM
+      AliCaloTrackMatcher* trackMatcher = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance();
+      if(!trackMatcher) AliFatal("AliAnalysisTaskConvCaloCalibration::ProcessClusters()  Track matcher instance could not be retrieved...\n");
+      // loop over all tracks
+      for (Int_t itr=0;itr<fInputEvent->GetNumberOfTracks();itr++){
+        AliVTrack *inTrack = 0x0;
+        if(esdev){
+          inTrack = esdev->GetTrack(itr);
+          if(!inTrack) continue;
+          AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+          // if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+          //    if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+          // }
+          const AliExternalTrackParam *in = esdt->GetInnerParam();
+          if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
+        } else if(aodev) {
+          inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
+          if(!inTrack) continue;
+          AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+          // if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+          if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+          if(TMath::Abs(aodt->Eta())>0.8) continue;
+          if(aodt->Pt()<0.15) continue;
+          // }
+          if(trackMatcher->GetRunningMode()==7){
+            // if you considered negative ID hybrid tracks, one needs to make sure
+            // that one only asks fCaloTrackMatcher->GetTrackClusterMatchingResidual()
+            // for hybrid tracks as well. Otherwise you will find multiple matches
+            // since this loop contains dublicates when not requiring Is
+            if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+            if(TMath::Abs(aodt->Eta())>0.8) continue;
+            if(aodt->Pt()<0.15) continue;
+          }
+        } // end condition AOD/ESD
+
+        Float_t dEta, dPhi;
+        if(!trackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),clus->GetID(),dEta,dPhi)){
+          continue;
+        }
+        if(!fGeomEMCAL)fGeomEMCAL = AliEMCALGeometry::GetInstance();
+        Int_t SupMod = fGeomEMCAL->GetSuperModuleNumber(clus->GetCellAbsId(0));
+        fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+        fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+        if(inTrack->Pt()>5){
+          fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+          fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+        }
+      } // end loop over tracks
+    }
+
+    if(!IsClusSelected){
       delete clus;
       continue;
     }
+
     if(fUseEletronMatchingCalibration == 1){
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorElectronIndex, fWeightJetJetMC);
       ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorPositronIndex, fWeightJetJetMC);
@@ -1997,10 +2091,10 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundSwapp(){
               cellIDRotatedPhoton2 = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()));
 
               if(!fDoLightOutput){
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent))){
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))){
                   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()), 1);
                 }
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent))){
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))){
                   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton2.Eta(), static_cast<double>((lvRotationPhoton2.Phi()<0) ? lvRotationPhoton2.Phi() + TMath::Pi()*2. : lvRotationPhoton2.Phi()), 1);
                 }
               }
@@ -2014,7 +2108,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundSwapp(){
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
                 std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentClusterCandidates)));
 
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, lvRotationPhoton1.Phi(), fInputEvent)) && lvRotationPhoton1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton1, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && lvRotationPhoton1.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
                 {
                   if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton1, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
                   {
@@ -2022,7 +2116,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundSwapp(){
                     vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate1->M(),backgroundCandidate1->Pt()});
                   }
                 }
-                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, lvRotationPhoton2.Phi(), fInputEvent)) && lvRotationPhoton2.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
+                if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton2, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())) && lvRotationPhoton2.E() > ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetMinClusterEnergy())
                 {
                   if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton2, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()))
                   {
@@ -2106,7 +2200,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundSwapp(){
             // Fill Eta Phi Map for Calo Photon
             cellIDRotatedPhoton = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloCellIdFromEtaPhi(lvRotationPhoton1.Eta(), lvRotationPhoton1.Phi());
             if(!fDoLightOutput){
-              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, lvRotationPhoton1.Phi(), fInputEvent))){
+              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg()))){
                 ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillEtaPhiMapForClusterInBg(lvRotationPhoton1.Eta(), static_cast<double>((lvRotationPhoton1.Phi()<0) ? lvRotationPhoton1.Phi() + TMath::Pi()*2. : lvRotationPhoton1.Phi()), 1);
               }
             }
@@ -2134,7 +2228,7 @@ void AliAnalysisTaskConvCaloCalibration::CalculateBackgroundSwapp(){
               std::unique_ptr<AliAODConversionMother> backgroundCandidate1(new AliAODConversionMother(currentEventGoodV0Rotation1.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
               // std::unique_ptr<AliAODConversionMother> backgroundCandidate2(new AliAODConversionMother(currentEventGoodV0Rotation2.get(), ((AliAODConversionPhoton*) kCurrentGammaCandidates)));
 
-              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, lvRotationPhoton1.Phi(), fInputEvent)))
+              if(!(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CheckDistanceToBadChannelSwapping(cellIDRotatedPhoton, fInputEvent, ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDistanceToBorderForBg())))
               {
                 if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))
                 {
