@@ -3,7 +3,7 @@
 Modified on: 04/08/2019
 By: Pragati Sahoo
 
-Modified on: 
+Modified on: 25/01/2022
 By: Nasir Mehdi Malik
 
 Modified by himani.bhatt@cern.ch  - last modified on 30/04/2018 
@@ -87,7 +87,7 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10;//cm, default cut on vtx z
   Int_t       MultBins= aodFilterBit/100;
-  cout<<"mult bin =="<< MultBins<<endl;
+  
 
   if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
@@ -234,14 +234,25 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
   //multiplicity or centrality
   Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
   AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
-  if(isPP && !MultBins) outMult->AddAxis(multID,110,0.,110.);
-  else outMult->AddAxis(multID,110,0.,110.);
 
-  TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 240,-12.0,12.0);
+  Int_t multb;
+  Double_t multlow,multhigh;
+    if(isPP && !MultBins){
+      multb =400;
+      multlow=0.;
+      multhigh=400.;}
+    else{multb =110;
+      multlow=0.;
+      multhigh=110.;}
+      
+    outMult->AddAxis(multID,multb,multlow,multhigh);
+
+  
+  TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
  
-  TH2F* hmc=new TH2F("MultiVsCent","", 100,0.,100., 100,0.5,100.5);
+  TH2F* hmc=new TH2F("MultiVsCent","", 110,0.,110., multb,multlow,multhigh);
     hmc->GetYaxis()->SetTitle("QUALITY");
     task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
