@@ -236,7 +236,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
        CentrBin = i;
       }
     }
-    if(!(CentrBin+1)||CentrBin>=nCentrClassesUsed)
+    if(CentrBin<0||CentrBin>=nCentrClassesUsed)
     {
     PostData(1, fOutputList);
     return;
