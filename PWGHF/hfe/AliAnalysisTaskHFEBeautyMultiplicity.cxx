@@ -284,6 +284,9 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_B_TrkCut11(0),
     fHistPt_B_TrkCut12(0),
 
+    fHistPt_Tracking_B(0),
+    fHistPt_EMCmatch_B(0),
+
     fHistPt_D_TrkCut(0),
     fHistPt_D_TrkCut0(0),
     fHistPt_D_TrkCut1(0),
@@ -298,6 +301,9 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_D_TrkCut10(0),
     fHistPt_D_TrkCut11(0),
     fHistPt_D_TrkCut12(0),
+
+    fHistPt_Tracking_D(0),
+    fHistPt_EMCmatch_D(0),
 
     fNtrkletNch(0),
     fweightNtrkl(0),
@@ -566,6 +572,9 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_B_TrkCut11(0),
     fHistPt_B_TrkCut12(0),
 
+    fHistPt_Tracking_B(0),
+    fHistPt_EMCmatch_B(0),
+
     fHistPt_D_TrkCut(0),
     fHistPt_D_TrkCut0(0),
     fHistPt_D_TrkCut1(0),
@@ -580,6 +589,9 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_D_TrkCut10(0),
     fHistPt_D_TrkCut11(0),
     fHistPt_D_TrkCut12(0),
+
+    fHistPt_Tracking_D(0),
+    fHistPt_EMCmatch_D(0),
 
     fNtrkletNch(0),
     fweightNtrkl(0),
@@ -685,7 +697,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNevents->GetXaxis()->SetBinLabel(2,"pile-up cut");
     fNevents->GetXaxis()->SetBinLabel(3,"Global track cont cut");
     fNevents->GetXaxis()->SetBinLabel(4,"SPD track cont cut");
-    fNevents->GetXaxis()->SetBinLabel(5,"SPD&Global mutch");
+    fNevents->GetXaxis()->SetBinLabel(5,"SPD&Global match");
     fNevents->GetXaxis()->SetBinLabel(6,"SPD resolusion cut");
     fNevents->GetXaxis()->SetBinLabel(7,"|Zvertex| < 10cm");
     fNevents->GetXaxis()->SetBinLabel(8,"tracklet class");
@@ -1057,7 +1069,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoB->GetXaxis()->SetBinLabel(1,"B->e");
     fNoB->GetXaxis()->SetBinLabel(2,"correct");
     fNoB->GetXaxis()->SetBinLabel(3,"phi cut (EMCal)");
-    fNoB->GetXaxis()->SetBinLabel(4,"Track mutch");
+    fNoB->GetXaxis()->SetBinLabel(4,"Track match");
     fNoB->GetXaxis()->SetBinLabel(5,"AOD standard");
     fNoB->GetXaxis()->SetBinLabel(6,"TPC & ITS refit");
     fNoB->GetXaxis()->SetBinLabel(7,"TPC CrossedRow");
@@ -1079,7 +1091,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fNoD->GetXaxis()->SetBinLabel(1,"D->e & B->D->e");
     fNoD->GetXaxis()->SetBinLabel(2,"correct");
     fNoD->GetXaxis()->SetBinLabel(3,"phi cut (EMCal)");
-    fNoD->GetXaxis()->SetBinLabel(4,"Track mutch");
+    fNoD->GetXaxis()->SetBinLabel(4,"Track match");
     fNoD->GetXaxis()->SetBinLabel(5,"AOD standard");
     fNoD->GetXaxis()->SetBinLabel(6,"TPC & ITS refit");
     fNoD->GetXaxis()->SetBinLabel(7,"TPC CrossedRow");
@@ -1254,6 +1266,10 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_B_TrkCut10 = new TH1F("fHistPt_B_TrkCut10","B (TPC Nsigma cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_B_TrkCut10);
     fHistPt_B_TrkCut11 = new TH1F("fHistPt_B_TrkCut11","B (shower shape cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_B_TrkCut11);
     fHistPt_B_TrkCut12 = new TH1F("fHistPt_B_TrkCut12","B (E/p cut);p_{T} [GeV/c];",1200,0,60);			fOutputList->Add(fHistPt_B_TrkCut12);
+
+    fHistPt_Tracking_B = new TH1F("fHistPt_Tracking_B","fHistPt_Tracking_B;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_Tracking_B);
+    fHistPt_EMCmatch_B = new TH1F("fHistPt_EMCmatch_B","fHistPt_EMCmatch_B;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_EMCmatch_B);
+
     
   //D Hist
     fHistPt_D_TrkCut   = new TH1F("fHistPt_D_TrkCut",  "D (phi cut, EMCal);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut);
@@ -1270,6 +1286,9 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_D_TrkCut10 = new TH1F("fHistPt_D_TrkCut10","D (TPC Nsigma cut);p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_D_TrkCut10);
     fHistPt_D_TrkCut11 = new TH1F("fHistPt_D_TrkCut11","D (shower shape cut);p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_D_TrkCut11);
     fHistPt_D_TrkCut12 = new TH1F("fHistPt_D_TrkCut12","D (E/p cut);p_{T} [GeV/c];",1200,0,60);			fOutputList->Add(fHistPt_D_TrkCut12);
+
+    fHistPt_Tracking_D = new TH1F("fHistPt_Tracking_D","fHistPt_Tracking_D;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_Tracking_D);
+    fHistPt_EMCmatch_D = new TH1F("fHistPt_EMCmatch_D","fHistPt_EMCmatch_D;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_EMCmatch_D);
 
 
   //Tracklet vs. N charged
@@ -1394,9 +1413,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fDCA_Lc_total_weight = new TH2F("fDCA_Lc_total_weight","Total DCA (MC : #Lambda_{c} with weight);p_{T} [GeV/c];DCA_{xy} #times charge #times Bsign[cm]",600,0,30,800,-0.2,0.2);
     fDCA_Lc_total_weight->Sumw2();
     fOutputList->Add(fDCA_Lc_total_weight);
-
-
-
 
 
 
@@ -1873,11 +1889,18 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
         if(TrkPt>2.0)fTPCnsigEta0 -> Fill(TrkEta,TPCnSigma);    //track pT > 2 GeV/c
         if(TrkPt>3.0)fTPCnsigEta1 -> Fill(TrkEta,TPCnSigma);    //track pT > 3 GeV/c
         if(TrkPt>5.0)fTPCnsigEta2 -> Fill(TrkEta,TPCnSigma);    //track pT > 5 GeV/c
-        
+ 
+
+	
+      //---- for tracking efficiency ----
+	if((pid_eleB) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_Tracking_B->Fill(TrkPt);
+	if((pid_eleD) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_Tracking_D->Fill(TrkPt);
+      //---------------------------------
+	
         
 
             
-//---- for DCA Template ----
+//---- for DCA Template (no EMCAL) ----
     Bool_t fFlagTrkSelect_forDCA = kFALSE;
     Double_t dca[2], CovaMatrix[3];
     	track->PropagateToDCA(pVtx, fVevent->GetMagneticField(),20., dca, CovaMatrix);
@@ -1886,8 +1909,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
     if(fFlagTrkSelect_forDCA)
     {
-      //if((TPCnSigma >= CutTPCNsigma[0] && TPCnSigma <= CutTPCNsigma[1]) && (m20 >= CutM20[0] && m20 <= CutM20[1]) && (eop >= CutEop[0] && eop <= CutEop[1])) // PID
-      //{
         if(pid_ele == 1.0)
         {
             if(pid_eleB)
@@ -1932,7 +1953,6 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
             }
 
         }
-      //}
 
     }
 
@@ -2037,6 +2057,11 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
 
             fEMCTrkMatch_EtaPhi_AfterCut -> Fill(fEtaDiff,fPhiDiff);
 
+	
+      //---- for matching efficiency ----
+	if((pid_eleB) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_EMCmatch_B->Fill(TrkPt);
+	if((pid_eleD) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_EMCmatch_D->Fill(TrkPt);
+      //---------------------------------
 
 
 
