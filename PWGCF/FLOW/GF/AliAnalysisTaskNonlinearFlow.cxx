@@ -2496,6 +2496,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   if (fPeriod.EqualTo("LHC15o") ||
       fPeriod.EqualTo("LHC15o_pass2") ||
       fPeriod.EqualTo("LHC18qr_pass3") ||
+      fPeriod.EqualTo("LHC16qt") ||
+      fPeriod.EqualTo("LHC17n") ||
       fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
   } else {

@@ -113,6 +113,11 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PhiWeight_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                 } 
+		// XeXe Periods
+		else if (fPeriod.EqualTo("LHC17n")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsXeXeLHC17n_wCLX.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
 		// pPb Periods
 		else if (fPeriod.EqualTo("LHC16qt")) {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pPb16qt_pass1.root");
@@ -200,7 +205,14 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/TrackingEfficiency_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
-                } else if (fPeriod.EqualTo("LHC16qt")) {
+                } 
+		// XeXe Periods
+		else if (fPeriod.EqualTo("LHC17n")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17nEfficiency.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
+		// pPb Periods
+		else if (fPeriod.EqualTo("LHC16qt")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/pPb_DPMJet.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
 		}
