@@ -192,7 +192,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		AliAnalysisTaskNonlinearFlow();
 		AliAnalysisTaskNonlinearFlow(const char *name);
-		AliAnalysisTaskNonlinearFlow(const char *name, int NUA, int NUE);
+		AliAnalysisTaskNonlinearFlow(const char *name, int NUA, int NUE, TString fPeriod);
 
 		virtual ~AliAnalysisTaskNonlinearFlow();
 
@@ -322,6 +322,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		//
 		TList*                  fFlowWeightsList;               //! flowWightsList
 		TList*                  fFlowPtWeightsList;             //! PtflowWightsList
+		TList*                  fFlowFeeddownList;              //! FeeddownList
 		TFile*                  fFlowPtWeightsFile;             //! PtflowWightsList
 		TList*			fPhiWeight;	                //! file with phi weights
 		TFile*			fPhiWeightFile;	                //! file with phi weights
@@ -333,6 +334,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH3D*                   fh3AfterWeights[kUnknown];      //! distribution after applying GF weights - full QA (phi,eta,pt)
 		AliGFWWeights*          fWeightsSystematics;            //! Weights for systematics
 		TH1D*                   fPtWeightsSystematics;          //! PtWeights for systematics
+		TH1D*                   fPtWeightsFeeddown;             //! Feeddown for systematics
 
 
 		TH3F*			hPhiWeight;			//! 3D weight for all periods except LHC15ijl
@@ -471,7 +473,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 9);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 10);    //Analysis task
 };
 
 #endif
