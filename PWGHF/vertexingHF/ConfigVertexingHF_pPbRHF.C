@@ -1,6 +1,6 @@
 AliAnalysisVertexingHF* ConfigVertexingHF() {
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
-  vHF = new AliAnalysisVertexingHF();
+  AliAnalysisVertexingHF* vHF = new AliAnalysisVertexingHF();
   vHF->SetMakeReducedRHF(kTRUE);
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
