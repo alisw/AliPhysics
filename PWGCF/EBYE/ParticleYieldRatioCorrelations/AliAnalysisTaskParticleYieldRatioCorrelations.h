@@ -60,7 +60,7 @@ public:
     {
         nCentrClassesUsed = f_nCentrClassesUsed;
         Float_t f_CentrPercentiles[] = {cent0, cent1, cent2, cent3, cent4, cent5};
-        for (int i = 0; i < nCentrClasses+1; i++)
+        for (int i = 0; i < 5; i++)
         {
         CentrPercentiles[i] = f_CentrPercentiles[i];
         }
@@ -83,9 +83,9 @@ private:
     Bool_t SPDvsV0MCut, LargeTPCCut;
     AliEventCuts *fAliEventCuts;  //!
     int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
-    static const int nCentrClasses = 100, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
+    static const int nCentrClasses = 10, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
     Float_t minP, maxP, Vertexmin, Vertexmax;
-    Float_t CentrPercentiles[100];
+    Float_t CentrPercentiles[10];
     int nCentrClassesUsed;
     static const int SortPairs = 6 * (6 + 1) / 2;
 
