@@ -2276,7 +2276,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
         passedTrueJetCriterium = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet( fConvJetReader->GetTrueVectorJetEta(), fConvJetReader->GetTrueVectorJetPhi(), fConvJetReader->Get_Jet_Radius(),
                                                                                                         etaCluster, phiCluster, matchedTrueJet, RTrueJetPi0Cand);
       }
-      
+
         // return for
         // - MC if particle is not in rec or true jet (to be able to fill histos if pi0 is just in true jet)
         // - data if particle is not in rec Jet (as there are no true jets)
@@ -3575,6 +3575,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 
+  // Check if MC generated particles should be filled for this event using the selected trigger
+  if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    return;
+  }
+
   Bool_t passedJetCriterium = kFALSE;
   Int_t matchedJet = 0;
   Double_t RJetPi0Cand = 0;
@@ -3871,6 +3876,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
 
   if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (fAODMCTrackArray == NULL) return;
+
+  // Check if MC generated particles should be filled for this event using the selected trigger
+  if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    return;
+  }
 
   // Load Jet eta phi vectors
   Bool_t passedJetCriterium = kFALSE;

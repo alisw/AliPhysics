@@ -5738,7 +5738,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 }
 
 //________________________________________________________________________
-Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
+Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event)
+{
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
     AliMultSelection* MultSelectionTask = (AliMultSelection*)event->FindListObject("MultSelection");
@@ -5747,8 +5748,62 @@ Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
       return kFALSE;
     }
     return MultSelectionTask->GetThisEventINELgtZERO();
-    // return MultSelectionTask->IsINELgtZERO(event);
   }
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsEventTrueINELgtZERO(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+
+  const AliVVertex* primVtxMC   = lMCevent->GetPrimaryVertex();
+  Double_t mcProdVtxX   = primVtxMC->GetX();
+  Double_t mcProdVtxY   = primVtxMC->GetY();
+  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
+  Bool_t isTrueINELgtZERO = kFALSE;
+  if(!event || event->IsA()==AliESDEvent::Class()){
+    for(Long_t i = 0; i < lMCevent->GetNumberOfTracks(); i++) {
+      if (IsConversionPrimaryESD( lMCevent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+
+        AliMCParticle* particle = (AliMCParticle *)lMCevent->GetTrack(i);
+        if (!particle) continue;
+        if(TMath::Abs(particle->Charge())<0.001) continue;
+        if(fabs(particle -> Eta()) < 1){
+          isTrueINELgtZERO = kTRUE;
+          break;
+        }
+      }
+    }
+  } else if(event->IsA()==AliAODEvent::Class()){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      // Loop over all primary MC particle
+      for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+        if (!particle) continue;
+
+        Bool_t isPrimary = IsConversionPrimaryAOD(event, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+        if (isPrimary){
+          if(fabs(particle -> Eta()) < 1){
+            isTrueINELgtZERO = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return isTrueINELgtZERO;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsMCTriggerSelected(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+  // if requested event class is INEL>0, check if it is INEL>0 on MC gen. level
+  if( GetUseINELgtZERO() && !IsEventTrueINELgtZERO(event, lMCevent)){
+    return kFALSE;
+  }
+  // standard, all events should be accepted (all inelastic collisions)
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -6411,7 +6466,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     if (!mimickedTrigger ) return kFALSE;
 
   if(fINELgtZEROTrigger)
-    if(!isINELgtZERO)         return kFALSE;
+    if(!isINELgtZERO)      return kFALSE;
 
   return kTRUE;
 
