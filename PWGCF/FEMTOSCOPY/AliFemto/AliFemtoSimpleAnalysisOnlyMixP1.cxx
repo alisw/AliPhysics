@@ -154,13 +154,15 @@ void FillHbtParticleCollectionOnlyMixP1(AliFemtoParticleCut *partCut,
 AliFemtoSimpleAnalysisOnlyMixP1::AliFemtoSimpleAnalysisOnlyMixP1():
     AliFemtoSimpleAnalysis()
 {
-	MakeCForNot = 1;	
+	MakeCForNot = 1;
+	OnlyP1Exist = 1;	
 }
 AliFemtoSimpleAnalysisOnlyMixP1::AliFemtoSimpleAnalysisOnlyMixP1(const AliFemtoSimpleAnalysisOnlyMixP1 &OriAnalysis):
     AliFemtoSimpleAnalysis(OriAnalysis)
 {
     //copy constructor 
     MakeCForNot = OriAnalysis.MakeCForNot;
+    OnlyP1Exist = OriAnalysis.OnlyP1Exist;
 }
 AliFemtoSimpleAnalysisOnlyMixP1::~AliFemtoSimpleAnalysisOnlyMixP1()
 {
@@ -175,6 +177,7 @@ AliFemtoSimpleAnalysisOnlyMixP1& AliFemtoSimpleAnalysisOnlyMixP1::operator=(cons
 
     AliFemtoSimpleAnalysisOnlyMixP1::operator=(OriAnalysis);
     MakeCForNot = OriAnalysis.MakeCForNot;
+    OnlyP1Exist = OriAnalysis.OnlyP1Exist;
     return *this;
 }
 
@@ -196,11 +199,20 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
     AliFemtoParticleCollection *collection1 = fPicoEvent->FirstParticleCollection(),
                                *collection2 = fPicoEvent->SecondParticleCollection();
     // only collection1 == nullptr, we delete this event!
-    if (collection1 == nullptr){
+    if ((collection1 == nullptr) && (OnlyP1Exist == 1)){
         cout << "E-AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent: new PicoEvent is missing particle collections!\n";
         EventEnd(hbtEvent);  // cleanup for EbyE
         delete fPicoEvent;
         return;
+    }
+    // dowang 2022.1.26
+    // only for side band cut!
+    if (OnlyP1Exist == 0){
+    	if((collection1 == nullptr) && (collection2 == nullptr)){
+		EventEnd(hbtEvent);  // cleanup for EbyE
+	        delete fPicoEvent;
+        	return;
+	}
     }
     FillHbtParticleCollectionOnlyMixP1(fFirstParticleCut,
                             hbtEvent,
@@ -273,4 +285,6 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
 void AliFemtoSimpleAnalysisOnlyMixP1::SetMakeCForNot(int fMake){
      MakeCForNot = fMake;
 }
-
+void AliFemtoSimpleAnalysisOnlyMixP1::SetOnlyP1Exist(int fOnlyP1Exist){
+     OnlyP1Exist = fOnlyP1Exist;
+}

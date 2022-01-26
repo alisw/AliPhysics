@@ -25,7 +25,9 @@ class AliFemtoSimpleAnalysisOnlyMixP1 : public AliFemtoSimpleAnalysis{
 	//\ dowang 1.23
 	void SetMakeCForNot(int fMake);
         int MakeCForNot;
-
+	//\ dowang 1.26
+	void SetOnlyP1Exist(int fOnlyP1Exist);
+	int OnlyP1Exist;
 };
 
 

@@ -36,6 +36,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetRejectionNsigma(float Nsigma);
 	void SetOtherNsigmacutLabel(int OtherNsigmaLabel);
 	void SetMinTPCFoundFraction(float MinTPCFoundFraction);
+	// set TOF Mass cut for side band
+	void SetUseTOFMassCut(int UseTOFMassCut);
+        void SetTOFMassLimit(float LowMass,float UpMass);
+	float ReturnTOFMass(const AliFemtoTrack* track);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -71,7 +75,11 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
         bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
         
-       
+	//\ 2022.1.26
+	int fUseTOFMassCut;
+	float TOFMassLowLimit;
+	float TOFMassUpLimit;
+     
 
 };
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
