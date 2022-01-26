@@ -707,7 +707,7 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (!fMCSelectedGenerator.empty()) {
     TString generator = "";
     fMCEvent->GetCocktailGenerator(particleID, generator);
-    if (!generator.EqualTo(fMCSelectedGenerator.data())) {
+    if (!generator.BeginsWith(fMCSelectedGenerator.data())) {
       fMCIsInjectedSignal = true;
       return false;
     }
