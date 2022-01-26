@@ -38,7 +38,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
     for (int i = 1; i <= num_children; ++i) {
       // Check if child is active
       sprintf(varname, "RUNNO_child_%d", i);
-      if (!gSystem->Getenv(varname)) continue;
+      if (!gSystem->Getenv(varname) || atoi(gSystem->Getenv(varname)) < 0) continue;
       sprintf(varname, "ALIEN_JDL_child_%d_LPMRUNNUMBER", i);
       runnumber = atoi(gSystem->Getenv(varname));
       sprintf(varname, "ALIEN_JDL_child_%d_LPMINTERACTIONTYPE", i);
