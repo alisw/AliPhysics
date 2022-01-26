@@ -541,7 +541,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
   }else{
       lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   }*/
-  cout<<"\n\n#####\n"<<fEstimator<<endl<<"\n\n#####\n";
+  //cout<<"\n\n#####\n"<<fEstimator<<endl<<"\n\n#####\n";
   float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
   bool isMultSelected = kFALSE;//(Multiplicity_percentile>99.9);// The multiplicity selection will always pass. The variable is passed to track cuts to make the cut there. This allows to test with the dataset we need to use, and only the number of events are left in the end.
   if (isMultSelected) {
@@ -566,14 +566,14 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     // ===================== track cuts =====================
     // filter bit, pt and eta
 		// todo: implement method so that if event doesnt have anything that passes track cuts, it doesnt fill Nch. This should solve the Nch 0 issue. Or increment Nch before track cuts
-    if (!(track->TestFilterBit(fFilterBit)))          {cout<<"failed filterbit"<<endl; continue;}
-    if (trackP < fLowPCut || trackP > fHighPCut)      {cout<<"failed pt cuts"<<endl; continue;}
-    if (TMath::Abs(trackEta) > fEtaCut)               {cout<<"failed eta cut"<<endl; continue;}
-    if (track->GetITSNcls() < fMinClIts)              {cout<<"failed ITSNClst cut"<<endl; continue;}
-    if (TMath::Abs(track->Y())>fYlimit)		  					{cout<<"failed Y cut"<<"Y cut: "<<fYlimit<<endl; continue;}//If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.8
+    if (!(track->TestFilterBit(fFilterBit)))          {/*cout<<"failed filterbit"<<endl;*/ continue;}
+    if (trackP < fLowPCut || trackP > fHighPCut)      {/*cout<<"failed pt cuts"<<endl;*/ continue;}
+    if (TMath::Abs(trackEta) > fEtaCut)               {/*cout<<"failed eta cut"<<endl;*/ continue;}
+    if (track->GetITSNcls() < fMinClIts)              {/*cout<<"failed ITSNClst cut"<<endl;*/ continue;}
+    if (TMath::Abs(track->Y())>fYlimit)		  					{/*cout<<"failed Y cut"<<"Y cut: "<<fYlimit<<endl;*/ continue;}//If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.8
     //The fYlimit flag setting is currently not working in the AddTask. The variable is passed ot the Ntuple and the cut can be performed there.
-    cout<<"Track passed cuts. Moving to PID"<<endl;
-    cout<<"Y cut: "<<fYlimit<<endl;
+    //cout<<"Track passed cuts. Moving to PID"<<endl;
+    //cout<<"Y cut: "<<fYlimit<<endl;
 
     
     // DCA information
