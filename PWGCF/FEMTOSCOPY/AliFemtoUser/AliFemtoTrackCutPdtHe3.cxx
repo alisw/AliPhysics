@@ -22,7 +22,10 @@ AliFemtoESDTrackCut()
     fdEdxcut = 1;
     fOtherNsigmacut = 0;
     fMinTPCFoundFraction = 0;
-    
+   
+    fUseTOFMassCut = 0; 
+    TOFMassLowLimit = 0.;
+    TOFMassUpLimit = 10.;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -43,6 +46,11 @@ AliFemtoESDTrackCut(aCut)
     fdEdxcut = aCut.fdEdxcut;
     fOtherNsigmacut = aCut.fOtherNsigmacut;
     fMinTPCFoundFraction = aCut.fMinTPCFoundFraction;
+
+    fUseTOFMassCut = aCut.fUseTOFMassCut;
+    TOFMassLowLimit = aCut.TOFMassLowLimit;
+    TOFMassUpLimit = aCut.TOFMassUpLimit;
+
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -73,6 +81,11 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fdEdxcut = aCut.fdEdxcut;
     fOtherNsigmacut = aCut.fOtherNsigmacut;
     fMinTPCFoundFraction = aCut.fMinTPCFoundFraction;
+
+    fUseTOFMassCut = aCut.fUseTOFMassCut;
+    TOFMassLowLimit = aCut.TOFMassLowLimit;
+    TOFMassUpLimit = aCut.TOFMassUpLimit;
+
     return *this;
 }
 
@@ -297,6 +310,12 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                     imost = 16;
                 }
             }
+	    if(fUseTOFMassCut){
+		float TmpTOFMass = ReturnTOFMass(track);
+	    	if(TmpTOFMass < TOFMassLowLimit || TmpTOFMass > TOFMassUpLimit){
+			return false;
+		}
+	    }
             if (imost != fMostProbable) return false;
             
         }
@@ -524,4 +543,23 @@ void AliFemtoTrackCutPdtHe3::SetOtherNsigmacutLabel(int OtherNsigmaLabel){
 void AliFemtoTrackCutPdtHe3::SetMinTPCFoundFraction(float MinTPCFoundFraction){
     fMinTPCFoundFraction = MinTPCFoundFraction;
 }
+void AliFemtoTrackCutPdtHe3::SetUseTOFMassCut(int UseTOFMassCut){
+    fUseTOFMassCut = UseTOFMassCut;
+}
+void AliFemtoTrackCutPdtHe3::SetTOFMassLimit(float LowMass,float UpMass){
+    TOFMassLowLimit = LowMass;
+    TOFMassUpLimit  = UpMass;  
+}
+float AliFemtoTrackCutPdtHe3::ReturnTOFMass(const AliFemtoTrack* track){
+	float tMom = track->P().Mag();
+	float c=1.;
+	float beta = track->VTOF();
+	float massTOF = -1.;//Mass square
 
+	if(beta!=0){
+		massTOF= tMom*tMom/c/c*(1/(beta*beta)-1);   
+	}
+	
+	return massTOF;
+
+}
