@@ -229,7 +229,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
-	fHistNtrBGfrac(0),
+  fHistNtrBGfrac(0),
   fHistUE_org(0),
   fHistUE_true(0),
   fHistUE_reco(0),
@@ -288,6 +288,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistphoEtaMC(0),//pho from eta without emb
   fNtrklRhoarea(0),
   fHistPtfracB(0),
+  fHistPtfracD(0),
   fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
   fDelta_pT(0),	
   //======parameter============
@@ -540,6 +541,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistphoEtaMC(0),//photonic e from eta without emb
 	fNtrklRhoarea(0),
 	fHistPtfracB(0),
+        fHistPtfracD(0),
         fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
         fDelta_pT(0),	
 
@@ -1220,6 +1222,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   Double_t maxfrac[3]={50.0,30.0,2};
   fHistPtfracB = new THnSparseD("fHistPtfracB","pT distribution;p_{T}^{B};p_{T}^{HFE};p_{T} fraction",3, nBinfrac, minfrac,maxfrac);
   fOutput->Add(fHistPtfracB);
+	
+  fHistPtfracD = new THnSparseD("fHistPtfracD","pT distribution;p_{T}^{D};p_{T}^{HFE};p_{T} fraction",3, nBinfrac, minfrac,maxfrac);
+  fOutput->Add(fHistPtfracD);
+
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
@@ -2105,7 +2111,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         fHistHfEleMCreco->Fill(pt);  // 
         fHistHfEleMCiso->Fill(pt,iso);  // 
 
-				//HFE from B
+     //HFE from B
       if(TMath::Abs(pidM)==511 || TMath::Abs(pidM)==513 || TMath::Abs(pidM)==521 || TMath::Abs(pidM)==523 || TMath::Abs(pidM)==531)
         {
 						Double_t ptfrac = pt/pTmom; 
@@ -2116,6 +2122,21 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	          fHistPtfracB->Fill(ptfracvals);
 
 				}
+	    
+	    
+    //HFE from D
+      if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413 || TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423 || TMath::Abs(pidM)==431)
+        {
+						Double_t ptfracD = pt/pTmom; 
+						Double_t ptfracDvals[3];
+						ptfracDvals[0]=pTmom;
+						ptfracDvals[1]=pt;
+						ptfracDvals[2]=ptfracD;
+	          fHistPtfracD->Fill(ptfracDvals);
+
+				}
+
+
 
 			 }
 
