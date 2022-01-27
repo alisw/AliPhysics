@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 20.01.2022
+ * Last Modified Date: 27.01.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -3150,7 +3150,9 @@ void AliAnalysisTaskAR::FillSymmetricCumulant() {
       SC3(fSymmetricCumulants.at(i), i);
       break;
     default:
-      std::cout << "Not implemented" << std::endl;
+      std::cout
+          << "Symmetric cumulants of order 4 and higher are not implemented yet"
+          << std::endl;
       break;
     }
   }
@@ -3192,7 +3194,6 @@ void AliAnalysisTaskAR::SC3(std::vector<Int_t> sc, Int_t index) {
 
   TList *listSC_kln =
       dynamic_cast<TList *>(fFinalResultSymmetricCumulantsList->At(index));
-
   std::vector<std::vector<Int_t>> correlators = fMapSCtoCor.at(sc);
 
   TList *listC_kln = dynamic_cast<TList *>(
@@ -4248,6 +4249,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   fSymmetricCumulants.clear();
   fCorrelators.clear();
   fMapSCtoCor.clear();
+
   // initalize vectors for computation of symmetric cumulants
   for (auto list : *fFinalResultSymmetricCumulantsList) {
     sc.clear();
@@ -4255,8 +4257,8 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
     name.ReplaceAll("SC(", "");
     name.ReplaceAll(")", "");
     name.ReplaceAll(",", "");
-    for (int i = 0; i < name.Length(); i++) {
-      sc.push_back(std::atoi(&name[i]));
+    for (Int_t i = 0; i < name.Length(); i++) {
+      sc.push_back(TString(name[i]).Atoi());
     }
     fSymmetricCumulants.push_back(sc);
   }
