@@ -300,7 +300,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1D                        *fHistphoPi0MC;
   TH1D                        *fHistphoEtaMC;
   TH2D                        *fNtrklRhoarea;
-	THnSparse                   *fHistPtfracB;
+  THnSparse                   *fHistPtfracB;
+  THnSparse                   *fHistPtfracD;
   TString fbgfracFile;
   TH1D                        *fDelta_pT;
 
