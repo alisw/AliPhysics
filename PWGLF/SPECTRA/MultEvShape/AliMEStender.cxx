@@ -308,14 +308,14 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     }
   }
 
-  if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-	  return;
-  }
-  if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-	  return;
-  }
+//   if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
+// 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+//   }
+//   if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
+// 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+//   }
 // 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
 
 
