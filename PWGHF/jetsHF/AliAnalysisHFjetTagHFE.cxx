@@ -287,7 +287,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
   fNtrklRhoarea(0),
-	fHistPtfracB(0),
+  fHistPtfracB(0),
   fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
   fDelta_pT(0),	
   //======parameter============
