@@ -70,6 +70,7 @@ public:
   void SetTrackSelection(trackSelections s=kCENTwSSD){fTrackSelection=s;}
   void SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   void SetJetPthardRatio(Double_t  ratio=2.5){fJetPtHardFactor=ratio;}
+  void SetStrictPastFuture(){ fStrictPastFutureCut = true ;}
 protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
@@ -110,6 +111,9 @@ protected:
 
 private:
 
+    // Default isolation cut
+  const Int_t kDefISolation = 2;
+    
   AliPHOSGeometry  *fPHOSgeom;      //!PHOS geometry
   THashList *   fOutputContainer ;  //!List of output histograms
   TClonesArray *fStack ;            //!Pointer to MC stack (AOD)
@@ -139,6 +143,7 @@ private:
   Bool_t fIsMCWithPileup; //Special MC production with pileup
   Bool_t fDefTof;         // default tof cut eff param or alternative to sys error estimate
   Bool_t fDoUnsmear;      // do unsmearing
+  Bool_t fStrictPastFutureCut; //Apply strict past-future protection
   Double_t fRP;           //! Reaction plane orientation
   Double_t fJetPtHardFactor ; //Maximal Jetpt to pthard bins ratio
   

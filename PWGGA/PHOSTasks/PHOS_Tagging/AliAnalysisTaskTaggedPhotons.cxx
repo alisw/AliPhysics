@@ -90,6 +90,7 @@ ClassImp(AliAnalysisTaskTaggedPhotons)
     fIsMCWithPileup(0),
     fDefTof(true),
     fDoUnsmear(false),
+    fStrictPastFutureCut(false),
     fRP(0.),
     fJetPtHardFactor(2.5),
     fZmax(0.),
@@ -160,6 +161,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char* name)
     fIsMCWithPileup(0),
     fDefTof(true),
     fDoUnsmear(false),
+    fStrictPastFutureCut(false),
     fRP(0.),
     fJetPtHardFactor(2.5),
     fZmax(-60.),
@@ -225,6 +227,7 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
     fIsMCWithPileup(0),
     fDefTof(true),
     fDoUnsmear(false),
+    fStrictPastFutureCut(false),
     fRP(0.),
     fJetPtHardFactor(2.5),
     fZmax(-60.),
@@ -297,8 +300,10 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->SetName(GetName());
 
   // QA histograms
-  fOutputContainer->Add(new TH1F("hSelEvents", "Event selection", 15, 0., 15.));
-
+  fOutputContainer->Add(new TH1F("hSelEvents", "Event selection", 17, 0., 17.));
+  fOutputContainer->Add(new TH2F("SPDtrackletsBefore","SPD tracklets vs SPD clusters",100,0,200,250,0,1000));
+  fOutputContainer->Add(new TH2F("SPDtrackletsAfter","SPD tracklets vs SPD clusters",100,0,200,250,0,1000));
+ 
   // vertex distribution
   fOutputContainer->Add(new TH1F("hNvertexTracks", "N of primary tracks from the primary vertex", 150, 0., 150.));
   fOutputContainer->Add(new TH1F("hZvertex", "Z vertex", 200, -50., +50.));
@@ -663,6 +668,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       for (Int_t iPID = 0; iPID < fNPID; iPID++) {
         fOutputContainer->Add(
           new TH1D(Form("hMCRecPhoton_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
+        fOutputContainer->Add(
+          new TH1D(Form("hMCRecPhotonIso_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
         fOutputContainer->Add(new TH2D(Form("hMCRecPhotonE_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons",
                                        nPt, ptBins, 200, 0., 2.));
         fOutputContainer->Add(
@@ -703,6 +710,14 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
           new TH1D(Form("hMCRecPhotOther_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
         fOutputContainer->Add(
           new TH1D(Form("hMCRecPhotNoPrim_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
+        fOutputContainer->Add(
+          new TH1D(Form("hMCRecPhotPi0Iso_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
+        fOutputContainer->Add(
+          new TH1D(Form("hMCRecPhotEtaIso_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
+        fOutputContainer->Add(
+          new TH1D(Form("hMCRecPhotOmegaIso_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
+        fOutputContainer->Add(
+          new TH1D(Form("hMCRecPhotOtherIso_%s_cent%d", cPID[iPID], cen), "Spectrum of rec. photons", nPt, ptBins));
 
         // MC tagging: reasons of partner loss etc.
         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnStack_%s_cent%d", cPID[iPID], cen),
@@ -804,6 +819,13 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t*)
   if (!fForseRun)
     fRunNumber = event->GetRunNumber();
 
+  if(event->IsIncompleteDAQ()==kTRUE){
+    FillHistogram("hSelEvents", 14);
+    PostData(1, fOutputContainer);
+    return;      
+  }
+  
+  
   // MC stack init
   fStack = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
 
@@ -904,6 +926,45 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t*)
     return;
   }
   FillHistogram("hSelEvents", 3);
+  
+  
+  // SPD clusters vs tracklets to check for pileup/background
+  Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
+  Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
+  Int_t nTracklets      = event->GetMultiplicity()->GetNumberOfTracklets();
+  FillHistogram("SPDtrackletsBefore",nTracklets, (nClustersLayer0 + nClustersLayer1));
+  // Pile Up Rejection
+  if(fUtils->IsPileUpMV(event)){
+    PostData(1, fOutputContainer);
+    return;
+  }  
+  FillHistogram("SPDtrackletsAfter",nTracklets, (nClustersLayer0 + nClustersLayer1));
+  FillHistogram("hSelEvents", 15);
+  //stricter out of bunch pileup
+  // see GammaConvBase/AliConvEventCuts.cxx
+  if(fStrictPastFutureCut){
+    TBits fIR1 =  event->GetHeader()->GetIRInt1InteractionMap();         // IR1 contains V0 information (VIR)
+    TBits fIR2 =  event->GetHeader()->GetIRInt2InteractionMap();         // IR2 contains T0 information
+    UShort_t bunchCrossings = event->GetBunchCrossNumber();
+    Bool_t isOutOfBunchPileup = 0;
+    const int fPastFutureRejectionLow= -4;
+    const int fPastFutureRejectionHigh= 7;
+    Int_t pf1 = fPastFutureRejectionLow +bunchCrossings%4;
+    Int_t pf2 = fPastFutureRejectionHigh+bunchCrossings%4;
+    if(pf1 < -89) pf1 = -89;
+    if(pf2 > 89)  pf2 =  89;
+    Int_t pf2maxForT0 = pf2;
+    for (Int_t i=pf1;i<=pf2;i++) {
+      if (i==0) continue;
+      if (i<=pf2maxForT0) isOutOfBunchPileup|=fIR2.TestBitNumber(90+i); // T0-based clean-up
+      isOutOfBunchPileup|=fIR1.TestBitNumber(90+i); // V0-based clean-up
+    }
+    if(isOutOfBunchPileup){
+      PostData(1, fOutputContainer);
+      return;
+    }
+  }
+  FillHistogram("hSelEvents", 16);
 
   if (fMCType == kJetJet) {
     // reject events with too hard jets compared to ptHardBin
@@ -1314,6 +1375,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos()
         // case 111: //Bug in assigning label to cluster
         // case 221:
         FillPIDHistogramsW("hMCRecPhoton", p, w1TOF); // Reconstructed with photon from conversion primary
+        if(p->GetIsolationTag() & kDefISolation){
+          FillPIDHistogramsW("hMCRecPhotonIso", p, w1TOF);          
+        }
         FillHistogram(Form("hMCRecPhotonE_All_cent%d", fCentBin), p->Pt(), parent->E() / p->E(), w1TOF * fCentWeight * p->GetWeight());
         if (p->IsDispOK()){
           FillHistogram(Form("hMCRecPhotonE_Disp_cent%d", fCentBin), p->Pt(), parent->E() / p->E(), w1TOF * fCentWeight * p->GetWeight());
@@ -1427,15 +1491,28 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos()
       switch (grandParentPDG) {
         case 111: // pi0
           FillPIDHistogramsW("hMCRecPhotPi0", p, w1TOF);
+          //Isolation
+          if(p->GetIsolationTag() & kDefISolation){
+            FillPIDHistogramsW("hMCRecPhotPi0Iso", p, w1TOF);          
+          }
           break;
         case 221: // eta decay
           FillPIDHistogramsW("hMCRecPhotEta", p, w1TOF);
+          if(p->GetIsolationTag() & kDefISolation){
+            FillPIDHistogramsW("hMCRecPhotEtaIso", p, w1TOF);          
+          }
           break;
         case 223: // omega meson decay
           FillPIDHistogramsW("hMCRecPhotOmega", p, w1TOF);
+          if(p->GetIsolationTag() & kDefISolation){
+            FillPIDHistogramsW("hMCRecPhotOmegaIso", p, w1TOF);          
+          }
           break;
         default:
           FillPIDHistogramsW("hMCRecPhotOther", p, w1TOF);
+          if(p->GetIsolationTag() & kDefISolation){
+            FillPIDHistogramsW("hMCRecPhotOtherIso", p, w1TOF);          
+          }
       }
       //--------consider pi0 decays--------------------
       if (grandParentPDG == 111) {
@@ -1633,8 +1710,6 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos()
 {
   // Fill all necessary histograms
 
-  // Default isolation cut
-  const Int_t kDefISolation = 2;
   // Minimal opening angle cut
   const Double_t minAngle = TMath::ATan(2.2 * sqrt(2.) / 460.);
 
