@@ -48,8 +48,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetIsMC(Int_t isMC)                              { fIsMC                       = isMC                                                            ; }
     void SetSelectedMesonID(Int_t anaMeson)               { fSelectedMesonID            = anaMeson                                                        ; }
 
-    void ProcessMCParticles();
-    void ProcessAODMCParticles();
+    void ProcessMCParticles(Int_t isCurrentEventSelected);
+    void ProcessAODMCParticles(Int_t isCurrentEventSelected);
 
     // Jet functions
     void ProcessJets();
@@ -209,16 +209,24 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     //histograms for pure MC quantities
     TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
     TH1F**                  fHistoMCPi0Pt;                                      //! array of histos with weighted pi0, pT
+    TH1F**                  fHistoMCPi0PtNotTriggered;                          //! array of histos with weighted pi0 from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCPi0PtNoVertex;                              //! array of histos with weighted pi0 from events with no Vertex, pT
     TH1F**                  fHistoMCPi0ReducedPt;                               //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;                              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;                           //! array of histos without event weights pi0, pT
     TH1F**                  fHistoMCEtaPt;                                      //! array of histos with weighted eta, pT
+    TH1F**                  fHistoMCEtaPtNotTriggered;                          //! array of histos with weighted eta from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCEtaPtNoVertex;                              //! array of histos with weighted eta from events with no Vertex, pT
     TH1F**                  fHistoMCEtaWOWeightPt;                              //! array of histos with unweighted eta, pT
     TH1F**                  fHistoMCEtaWOEvtWeightPt;                           //! array of histos without event weights eta, pT
     TH1F**                  fHistoMCPi0DalitzPt;                                //! array of histos with weighted pi0 Dalitz, pT
+    TH1F**                  fHistoMCPi0DalitzPtNotTriggered;                    //! array of histos with weighted pi0 Dalitz from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCPi0DalitzPtNoVertex;                        //! array of histos with weighted pi0 Dalitz from events with no Vertex, pT
     TH1F**                  fHistoMCPi0DalitzWOWeightPt;                        //! array of histos with unweighted pi0 Dalitz, pT
     TH1F**                  fHistoMCPi0DalitzWOEvtWeightPt;                     //! array of histos without event weights pi0 Dalitz, pT
     TH1F**                  fHistoMCEtaDalitzPt;                                //! array of histos with weighted eta Dalitz, pT
+    TH1F**                  fHistoMCEtaDalitzPtNotTriggered;                    //! array of histos with weighted eta Dalitz from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCEtaDalitzPtNoVertex;                        //! array of histos with weighted eta Dalitz from events with no Vertex, pT
     TH1F**                  fHistoMCEtaDalitzWOWeightPt;                        //! array of histos with unweighted eta Dalitz, pT
     TH1F**                  fHistoMCEtaDalitzWOEvtWeightPt;                     //! array of histos without event weights eta Dalitz, pT
     TH1F**                  fHistoMCPi0InAccPt;                                 //! array of histos with weighted pi0 in acceptance, pT
@@ -239,6 +247,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCPrimaryYvsSource;                           //! array of histos with weighted primary particles, Y vs source
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
+    TH1F**                  fHistoMCAllGammaPtNotTriggered;                     //! array of histos with weighted all gamma from events which didnt fire the trigger
+    TH1F**                  fHistoMCAllGammaPtNoVertex;                         //! array of histos with weighted all gamma from events with no rec. vertex
     TH2F**                  fHistoMCElectronsPt;                                //! array of histos with weighted electrons from different sources
 
     // MC validated cluster histos
@@ -411,7 +421,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 47);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 48);
 };
 
 #endif
