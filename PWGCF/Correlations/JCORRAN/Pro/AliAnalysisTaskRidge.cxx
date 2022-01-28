@@ -263,7 +263,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 
         	CreateTHnSparse("hRidgeJet","RidgeJet",6,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binJetpT},"s");
         	CreateTHnSparse("hRidgeMixingSJet","RidgeMixingSJet",6,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binJetpT},"s");
-		CreateTHnSparse("hNtrigJet","hNtrigJet",4,{binCent,binTPt_forLP,binJetpT},"s");
+		CreateTHnSparse("hNtrigJet","hNtrigJet",4,{binCent,binTPt_forLP,binNtrig,binJetpT},"s");
 	}
 
 	CreateTHnSparse("hTrackData","hTrackData",6,{binPt,binPhiTrack,binEtaTrack,binZ,binTrkEff,binCent},"s");
