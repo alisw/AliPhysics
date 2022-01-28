@@ -1899,26 +1899,34 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="";
       // AliInfo("Info: Nothing to be done");
       break;
-    case 1: // CEMC1 - V0OR and PHOS fired
+    case 1: // CPHI1 - V0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
       fSpecialTriggerName="AliVEvent::kPHI1";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI1";
       break;
-    case 2: // CEMC7 - V0AND and PHOS fired
+    case 2: // CPHI7 - V0AND and PHOS fired
       fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kPHI7;
       fSpecialTriggerName="AliVEvent::kPHI7";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI7";
       break;
-    case 3: // CEMC8  - T0OR and PHOS fired
+    case 3: // CPHI8  - T0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI8;
       fSpecialTriggerName="AliVEvent::kPHI8";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI8";
+      break;
+    case 4: // CPHI7 - V0AND and PHOS fired but with additional INEL>0 requirement
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fOfflineTriggerMask=AliVEvent::kPHI7;
+      fSpecialTriggerName="AliVEvent::kPHI7";
+      fSpecialSubTriggerName="CPHI7";
+      fINELgtZEROTrigger=kTRUE;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
