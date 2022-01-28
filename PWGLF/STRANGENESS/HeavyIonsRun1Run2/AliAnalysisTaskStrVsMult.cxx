@@ -31,6 +31,7 @@ class AliAODcascade;
 #include "AliAnalysisUtils.h"
 #include "AliAODMCHeader.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliAnalysisTaskStrVsMult.h"
 
@@ -64,6 +65,8 @@ fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
+//usage of geometrical cut
+fUseGeometricalCut(0),
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -80,6 +83,7 @@ fV0_InvMassLam(0),
 fV0_InvMassALam(0),
 fV0_LeastCRaws(0),
 fV0_LeastCRawsOvF(0),
+fV0_PassedGeoCut(0),
 fV0_LeastTPCcls(0),
 fV0_MaxChi2perCls(0),
 fV0_NSigPosProton(0),
@@ -107,6 +111,7 @@ fCasc_NSigBacPion(0),
 fCasc_NSigBacKaon(0),
 fCasc_LeastCRaws(0),
 fCasc_LeastCRawsOvF(0),
+fCasc_PassedGeoCut(0),
 fCasc_LeastTPCcls(0),
 fCasc_MaxChi2perCls(0),
 fCasc_InvMassLam(0),
@@ -164,6 +169,8 @@ fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0.5, 0.8, 70., 0.8, 50., 2.5, 5., 20., 
 fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 50., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 3., 85., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
+//usage of geometrical cut
+fUseGeometricalCut(kFALSE),
 //variables for V0 cuts
 fV0_DcaV0Daught(0),
 fV0_DcaPosToPV(0),
@@ -180,6 +187,7 @@ fV0_InvMassLam(0),
 fV0_InvMassALam(0),
 fV0_LeastCRaws(0),
 fV0_LeastCRawsOvF(0),
+fV0_PassedGeoCut(kTRUE),
 fV0_LeastTPCcls(0),
 fV0_MaxChi2perCls(0),
 fV0_NSigPosProton(0),
@@ -207,6 +215,7 @@ fCasc_NSigBacPion(0),
 fCasc_NSigBacKaon(0),
 fCasc_LeastCRaws(0),
 fCasc_LeastCRawsOvF(0),
+fCasc_PassedGeoCut(kTRUE),
 fCasc_LeastTPCcls(0),
 fCasc_MaxChi2perCls(0),
 fCasc_InvMassLam(0),
@@ -378,6 +387,8 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   //fEventCuts Setup
   if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 
+  //geometrical cut Setup
+  if (fUseGeometricalCut) fESDTrackCuts.SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
   //Output posting
   DataPosting();
 
@@ -618,10 +629,15 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double_t lCrosRawsOvFNeg = lCrosRawsNeg / ((double) (nTrack->GetTPCNclsF()));
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrack->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrack->GetTPCsignalN();
-        fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+        if (fUseGeometricalCut) {
+          //geometrical cut
+          fV0_PassedGeoCut = (fESDTrackCuts.AcceptTrack(pTrack) && fESDTrackCuts.AcceptTrack(nTrack)) ? kTRUE : kFALSE;
+        } else {
+          //clusters for TPC PID
+          double_t lTPCclsPos = pTrack->GetTPCsignalN();
+          double_t lTPCclsNeg = nTrack->GetTPCsignalN();
+          fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+        }
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrack->GetTPCchi2()/pTrack->GetNcls(1);
@@ -729,10 +745,15 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double_t lCrosRawsOvFNeg = lCrosRawsNeg/((double) (nTrack->GetTPCNclsF()));
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrack->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrack->GetTPCsignalN();
-        fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+        if (fUseGeometricalCut) {
+          //geometrical cut
+          fV0_PassedGeoCut = (fESDTrackCuts.AcceptVTrack(pTrack) && fESDTrackCuts.AcceptVTrack(nTrack)) ? kTRUE : kFALSE;
+        } else {
+          //clusters for TPC PID
+          double_t lTPCclsPos = pTrack->GetTPCsignalN();
+          double_t lTPCclsNeg = nTrack->GetTPCsignalN();
+          fV0_LeastTPCcls = (int) TMath::Min(lTPCclsPos, lTPCclsNeg);
+        }
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrack->GetTPCchi2perCluster();
@@ -877,11 +898,16 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFBac = lCrosRawsBac/((double) (bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
-        double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
-        fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+        if (fUseGeometricalCut) {
+          //geometrical cut
+          fCasc_PassedGeoCut = (fESDTrackCuts.AcceptTrack(pTrackCasc) && fESDTrackCuts.AcceptTrack(nTrackCasc) && fESDTrackCuts.AcceptTrack(bTrackCasc)) ? kTRUE : kFALSE;
+        } else {
+          //clusters for TPC PID
+          double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
+          double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
+          double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
+          fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+        }
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrackCasc->GetTPCchi2()/pTrackCasc->GetNcls(1);
@@ -1016,11 +1042,16 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         double lCrosRawsOvFBac = lCrosRawsBac / ((double)(bTrackCasc->GetTPCNclsF()));
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
-        //clusters for TPC PID
-        double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
-        double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
-        double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
-        fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+        if (fUseGeometricalCut) {
+          //geometrical cut
+          fCasc_PassedGeoCut = (fESDTrackCuts.AcceptVTrack(pTrackCasc) && fESDTrackCuts.AcceptVTrack(nTrackCasc) && fESDTrackCuts.AcceptVTrack(bTrackCasc)) ? kTRUE : kFALSE;
+        } else {
+          //clusters for TPC PID
+          double_t lTPCclsPos = pTrackCasc->GetTPCsignalN();
+          double_t lTPCclsNeg = nTrackCasc->GetTPCsignalN();
+          double_t lTPCclsBac = bTrackCasc->GetTPCsignalN();
+          fCasc_LeastTPCcls = (int) (lTPCclsPos<lTPCclsNeg ? std::min(lTPCclsPos, lTPCclsBac) : std::min(lTPCclsNeg, lTPCclsBac));
+        }
 
         //chi^2 per TPC cluster
         double_t lChi2perTPCclsPos = pTrackCasc->GetTPCchi2perCluster();
@@ -1238,8 +1269,12 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if (fV0_LeastCRaws<cutval_V0[kV0_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
     if (fV0_LeastCRawsOvF<cutval_V0[kV0_LeastCRawsOvF]) return kFALSE;
-    // check candidate daughters' TPC clusters (note that the checked value is the lowest between the two daughters)
-    if (fV0_LeastTPCcls<cutval_V0[kV0_LeastTPCcls]) return kFALSE;
+    // check candidate daughters' TPC clusters or apply geometrical cut
+    if (fUseGeometricalCut) {
+      if(!fV0_PassedGeoCut) return kFALSE;
+    } else {
+      if(fV0_LeastTPCcls<cutval_Casc[kCasc_LeastTPCcls]) return kFALSE;
+    }
     // check candidate daughters' Chi^2 per TPC cluster
     if (fV0_MaxChi2perCls>cutval_V0[kV0_MaxChi2perCls]) return kFALSE;
     // check candidate daughters' DCA to Primary Vertex (needs to be large because V0 decay is far from the Primary Vertex)
@@ -1278,8 +1313,12 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if(fCasc_LeastCRaws<cutval_Casc[kCasc_LeastCRaws]) return kFALSE;
     // check candidate daughters' crossed TPC raws over findable
     if(fCasc_LeastCRawsOvF<cutval_Casc[kCasc_LeastCRawsOvF]) return kFALSE;
-    // check candidate daughters' TPC clusters
-    if(fCasc_LeastTPCcls<cutval_Casc[kCasc_LeastTPCcls]) return kFALSE;
+    // check candidate daughters' TPC clusters or apply geometrical cut
+    if (fUseGeometricalCut) {
+      if(!fCasc_PassedGeoCut) return kFALSE;
+    } else {
+      if(fCasc_LeastTPCcls<cutval_Casc[kCasc_LeastTPCcls]) return kFALSE;
+    }
     // check candidate daughters' Chi^2 per TPC cluster
     if(fCasc_MaxChi2perCls>cutval_Casc[kCasc_MaxChi2perCls]) return kFALSE;
     // check candidate's 2D decay distance from PV (if it is too small, then it's not a weak decay)

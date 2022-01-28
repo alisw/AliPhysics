@@ -9,6 +9,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "THistManager.h"
 #include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
   public:
@@ -47,6 +48,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //pile-up rejection setter
     void SetRejectPileUpEvts(bool RejectPileupEvts){fRejectPileupEvts = RejectPileupEvts;};
 
+    //geometrical cut setter
+    void SetUseGeometricalCut(bool UseGeometricalCut){fUseGeometricalCut = UseGeometricalCut;};
+
   private:
     THistManager* fHistos_eve;                                //!
     THistManager* fHistos_K0S;                                //!
@@ -79,6 +83,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //particles to be analysed
     bool fParticleAnalysisStatus[ksignednumpart];             //
 
+    //geometrical cut usage
+    bool fUseGeometricalCut;                                  //
+    AliESDtrackCuts fESDTrackCuts;                            //
+
     //variables for V0 analysis
     double fV0_DcaV0Daught;                                   //!
     double fV0_DcaPosToPV;                                    //!
@@ -95,6 +103,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fV0_InvMassALam;                                   //!
     double fV0_LeastCRaws;                                    //!
     double fV0_LeastCRawsOvF;                                 //!
+    bool fV0_PassedGeoCut;                                    //!
     double fV0_LeastTPCcls;                                   //!
     double fV0_MaxChi2perCls;                                 //!
     double fV0_NSigPosProton;                                 //!
@@ -123,6 +132,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fCasc_NSigBacKaon;                                 //!
     double fCasc_LeastCRaws;                                  //!
     double fCasc_LeastCRawsOvF;                               //!
+    bool fCasc_PassedGeoCut;                                  //!
     double fCasc_LeastTPCcls;                                 //!
     double fCasc_MaxChi2perCls;                               //!
     double fCasc_InvMassLam;                                  //!
@@ -182,8 +192,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 10); 
-    //version 10: enlarge max number of pT bins
+    ClassDef(AliAnalysisTaskStrVsMult, 11); 
+    //version 11: add geometrical cut
 };
 
 #endif
