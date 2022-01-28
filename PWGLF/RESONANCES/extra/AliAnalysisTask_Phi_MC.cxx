@@ -10,6 +10,8 @@
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliMCVertex.h"
 #include "AliAODMCParticle.h"
@@ -19,6 +21,24 @@
 #include "AliPPVsMultUtils.h"
 #include "AliAnalysisTask_Phi_MC.h"
 #include "AliESDtrackCuts.h"
+#include "AliAnalysisTask.h"
+#include "AliAnalysisFilter.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliESDInputHandler.h"
+#include "AliESDEvent.h"
+#include "AliLog.h"
+#include "AliVParticle.h"
+#include "AliStack.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliAODInputHandler.h"
+#include "AliAODHandler.h"
+#include "AliAODMCHeader.h"
+#include "AliAODEvent.h"
+#include "AliAODMCParticle.h"
 
 class AliAnalysisTask_Phi_MC;
 
@@ -70,6 +90,26 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
     uSetEventCountLabels(fQC_Event_Enum_FLL);
     lQCParticle_0333    ->  Add(fQC_Event_Enum_FLL);
     //
+    fQC_Event_Enum_E08              = new TH1D("fQC_Event_Enum_E08",       "Events with tracks in #eta < 0.8",                  5000,   0., 5000.);
+    fQC_Event_Enum_E08              ->  GetXaxis()  ->  SetTitle("N Tracks");
+    fQC_Event_Enum_E08              ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    lQCParticle_0333    ->  Add(fQC_Event_Enum_E08);
+    //
+    fQC_Event_Enum_E10              = new TH1D("fQC_Event_Enum_E10",       "Events with tracks in #eta < 1.0",                  5000,   0., 5000.);
+    fQC_Event_Enum_E10              ->  GetXaxis()  ->  SetTitle("N Tracks");
+    fQC_Event_Enum_E10              ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    lQCParticle_0333    ->  Add(fQC_Event_Enum_E10);
+    //
+    fQC_Event_Enum_V0A              = new TH1D("fQC_Event_Enum_V0A",       "Events with tracks in V0A acceptance",              5000,   0., 5000.);
+    fQC_Event_Enum_V0A              ->  GetXaxis()  ->  SetTitle("N Tracks");
+    fQC_Event_Enum_V0A              ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    lQCParticle_0333    ->  Add(fQC_Event_Enum_V0A);
+    //
+    fQC_Event_Enum_V0M              = new TH1D("fQC_Event_Enum_V0M",       "Events with tracks in V0M acceptance",              5000,   0., 5000.);
+    fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("N Tracks");
+    fQC_Event_Enum_V0M              ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    lQCParticle_0333    ->  Add(fQC_Event_Enum_V0M);
+    //
     PostData ( 2, lQCParticle_0333 );
     //
     //  --- Particle Tree
@@ -87,13 +127,13 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
 
 void        AliAnalysisTask_Phi_MC::UserExec( Option_t* )                      {
     //  --- Check the Event is available and within requirements
-    if ( !fIsEventCandidate() )    return;
+    if ( !fIsEventCandidate() )             return;
+    uIsEventMultiplicityAvailable();
     //
-    Int_t   fNTracks    =   AODMCTrackArray->GetEntriesFast();
-    for ( Int_t iTrack = 0; iTrack < fNTracks; iTrack++ )    {
+    for ( Int_t iTrack = 0; iTrack < fMCD->GetNumberOfTracks(); iTrack++ )    {
         //
         //  --- Recover current particle
-        AliAODMCParticle* fCurrent_Particle = static_cast<AliAODMCParticle*>( AODMCTrackArray->At(iTrack) );
+        TParticle* fCurrent_Particle = static_cast<TParticle*>( fMCD->Particle(iTrack) );
         //
         //  Check it is a requested particle
         if ( !fCurrent_Particle )                       continue;
@@ -132,8 +172,7 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
     }
     //
     // Recover and Check the MC tracks
-    AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if ( !AODMCTrackArray )  {
+    if ( !((AliMCEvent*)fMCD)->Stack() )  {
         uFillEventEnumerate("TrackArray");
         fPostData();
         return false;
@@ -149,46 +188,43 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
 
 //_____________________________________________________________________________
 
-bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ()           {
-    return true;
-    /*
-    // Recovering Multiplicity information
-    AliMultSelection   *fMultSelectio2  = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-    if ( !fMultSelection )  fCurrent_V0M    =   102.;
-    // if pPb should be V0A
-                    fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0M");
-    if ( fIs_p_Pb ) fCurrent_V0M    =   fMultSelectio2->GetMultiplicityPercentile("V0A");
-    fCurrent_TRK    =   (dynamic_cast<AliAODHeader*>(fAOD->GetHeader()))->GetRefMultiplicityComb08();
+bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           {
     //
-    //  INELGT0 Check
-    if ( fCurrent_TRK != -1 && fCurrent_TRK != -2 ) {
-        for ( Int_t iTRK = 0; iTRK < fAOD->GetMultiplicity()->GetNumberOfTracklets(); iTRK++ )  {
-            if ( TMath::Abs(fAOD->GetMultiplicity()->GetEta(iTRK)) < 1.0 )  {
-                fSetEventMask(0);
-                break;
-            }
-        }
+    fCurrent_E08 = 0;
+    fCurrent_E10 = 0;
+    fCurrent_V0A = 0;
+    fCurrent_V0M = 0;
+    //
+    //  --- Loop on MC particles
+    for ( Int_t iTrack = 0; iTrack < fMCD->GetNumberOfTracks(); iTrack++ )    {
+        //
+        //  --- Recover current particle
+        TParticle* fCurrent_Particle = static_cast<TParticle*>( fMCD->Particle(iTrack) );
+        //
+        //  Check it is a requested particle
+        if ( !fCurrent_Particle )                           continue;
+        if (  fCurrent_Particle->GetPDG()->Charge() == 0 )  continue;
+        if ( !fMCD->IsPhysicalPrimary( iTrack ) )           continue;
+        //
+        //  --- #eta 0.8
+        if (  fabs( fCurrent_Particle->Eta() ) < 0.8 )  fCurrent_E08++;
+        //
+        //  --- #eta 1.0
+        if (  fabs( fCurrent_Particle->Eta() ) < 1.0 )  fCurrent_E10++;
+        //
+        //  --- V0 Estimators
+        //  --- --- V0A & M
+        if ( (fCurrent_Particle->Eta() < 5.1) && (fCurrent_Particle->Eta() > 2.8) )   { fCurrent_V0A++; fCurrent_V0M++; }
+        //  --- --- V0M
+        if ( (fCurrent_Particle->Eta() < -1.7) && (fCurrent_Particle->Eta() > -3.7) )   fCurrent_V0M++;
     }
     //
-    if ( !fCheckMask(0) )       fCurrent_V0M = 104;
-    //
-    if ( fCurrent_V0M == -200 ) fCurrent_V0M = 154;
-    if ( fCurrent_V0M == -201 ) fCurrent_V0M = 156;
-    if ( fCurrent_V0M == -202 ) fCurrent_V0M = 158;
-    if ( fCurrent_V0M == -203 ) fCurrent_V0M = 160;
-    if ( fCurrent_V0M == -204 ) fCurrent_V0M = 162;
-    if ( ( fCurrent_V0M >= 0 ) && ( fCurrent_V0M <= 100 ) )   {
-        if ( fAOD->IsPileupFromSPD() )              fCurrent_V0M += 300;
-        else if ( fAOD->IsPileupFromSPDInMultBins() )    fCurrent_V0M += 400;
-    }
-    //
-    // Fill the QC on Multiplicity
-    fQC_Event_Enum_V0M->Fill(fCurrent_V0M);
-    fQC_Event_Enum_TRK->Fill(fCurrent_TRK);
-    fQC_Event_Enum_V0T->Fill(fCurrent_V0M,fCurrent_TRK);
+    fQC_Event_Enum_E08  ->  Fill( fCurrent_E08 );
+    fQC_Event_Enum_E10  ->  Fill( fCurrent_E10 );
+    fQC_Event_Enum_V0A  ->  Fill( fCurrent_V0A );
+    fQC_Event_Enum_V0M  ->  Fill( fCurrent_V0M );
     //
     return true;
-     */
 }
 
 //_____________________________________________________________________________

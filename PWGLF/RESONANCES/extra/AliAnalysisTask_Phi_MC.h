@@ -54,6 +54,10 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     Bool_t                      fIs_Pb_Pb;                  //! Collision system flag for PbPb
     TString                     fRunName;                   //  MultiRun name
     TH1D*                       fQC_Event_Enum_FLL;         //! Event count utility histogram
+    TH1D*                       fQC_Event_Enum_E08;         //! Event Multiplicity utility histogram
+    TH1D*                       fQC_Event_Enum_E10;         //! Event Multiplicity utility histogram
+    TH1D*                       fQC_Event_Enum_V0A;         //! Event Multiplicity utility histogram
+    TH1D*                       fQC_Event_Enum_V0M;         //! Event Multiplicity utility histogram
     //
     //  --- EVENT --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     //
@@ -62,6 +66,9 @@ AliAnalysisTask_Phi_MC : public AliAnalysisTaskSE    {
     TClonesArray*               AODMCTrackArray;            //! MC Tracks Array
     AliPPVsMultUtils*           fMultSelection;             //! Multiplicity Utility
     Float_t                     fCurrent_SPH;               //! Event Spherocity
+    Float_t                     fCurrent_E08;               //! Event E08 Multiplicity
+    Float_t                     fCurrent_E10;               //! Event E10 Multiplicity
+    Float_t                     fCurrent_V0A;               //! Event V0A Multiplicity
     Float_t                     fCurrent_V0M;               //! Event V0M Multiplicity
     Float_t                     fCurrent_TRK;               //! Event Tracklets Multiplicity
     Float_t                     fCurrent_RT;                //! Event RTransverse
