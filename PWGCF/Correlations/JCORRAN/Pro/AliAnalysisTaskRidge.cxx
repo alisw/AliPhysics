@@ -389,19 +389,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 		}
 	}
 
-	if( fOption.Contains("GRID") ){
-		TGrid::Connect("alien://");
-		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
-		if( fOption.Contains("pPb") ){
-			TGrid::Connect("alien://");
-			fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
-		}
-		if( fOption.Contains("Add3DEff") ){
-			TGrid::Connect("alien://");
-			fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
-		}
-	}
-
+        SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+        SetEfficiencyFilepPb("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root");
 
 	V0M_mean = 120;
 

@@ -204,6 +204,7 @@ Bool_t ConfigKStarPlusMinusPbPb2018arm
     /* 2nd daughter pt  */ Int_t sdpt   = task->CreateValue(AliRsnMiniValue::kSecondDaughterPt,kFALSE);
     /* 1st daughter p   */ Int_t fdp    = task->CreateValue(AliRsnMiniValue::kFirstDaughterP,kFALSE);
     /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP,kFALSE);
+    /* 1st daughter p   */ Int_t fim    = task->CreateValue(AliRsnMiniValue::kFirstDaughterIM,kFALSE);
     /* cos(theta) J     */ Int_t ctjID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kFALSE);
     /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
     /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
@@ -259,8 +260,10 @@ Bool_t ConfigKStarPlusMinusPbPb2018arm
       
       // axis W: Centrality                                                                                                                         
       out->AddAxis(centID, multbin, lmultbin, hmultbin);
-      out->AddAxis(fdpt, 200, 0.0, 20.0);
-      out->AddAxis(sdpt, 200, 0.0, 20.0);
+      out->AddAxis(fdpt, 200, 0, 20);
+      out->AddAxis(fdp, 200, 0, 20);
+      out->AddAxis(fim, 200, 0.4, 0.6);
+     
         
     }
 

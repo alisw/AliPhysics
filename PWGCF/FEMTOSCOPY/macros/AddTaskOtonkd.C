@@ -47,7 +47,8 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    //TrackCutsKaon->SetDCAVtxZ(0.1);
   }else if(KaonCut==2){ // Open cuts for syst by Oton
    //open cuts for syst:
-   TrackCutsKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   //TrackCutsKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   TrackCutsKaon->SetPIDkd(); // no PID variations now
    TrackCutsKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsKaon->SetNClsTPC(70);
    TrackCutsKaon->SetDCAVtxZ(0.25);
@@ -66,7 +67,8 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    //TrackCutsAntiKaon->SetDCAVtxZ(0.1);
   }else if(KaonCut==2){ // Open cuts for syst by Oton
    // Oton open cuts for syst:
-   TrackCutsAntiKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   //TrackCutsAntiKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   TrackCutsAntiKaon->SetPIDkd(); // no PID variations now
    TrackCutsAntiKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiKaon->SetNClsTPC(70);
    TrackCutsAntiKaon->SetDCAVtxZ(0.25);

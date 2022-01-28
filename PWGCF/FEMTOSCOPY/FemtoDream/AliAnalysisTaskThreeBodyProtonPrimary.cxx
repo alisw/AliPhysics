@@ -1715,47 +1715,46 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
         bool Pair23 = true;
         bool Pair31 = true;
 
-
         if(!fturnoffClosePairRejectionCompletely){
 
           if(fClosePairRejectionForAll){
             if(abs(*itPDGPar1)==abs(*itPDGPar2)){
-              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+              Pair12 = DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
             }else{
-              Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+              Pair12 = DeltaEtaDeltaPhi(firstSpecies, secondSpecies,*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
             }
             if(abs(*itPDGPar2)==abs(*itPDGPar3)){
-              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+              Pair23 = DeltaEtaDeltaPhi(secondSpecies, thirdSpecies, *iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
             }else{
-              Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+              Pair23 = DeltaEtaDeltaPhi(secondSpecies, thirdSpecies, *iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
             }
             if(abs(*itPDGPar3)==abs(*itPDGPar1)){
-              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+              Pair31 = DeltaEtaDeltaPhi(thirdSpecies, firstSpecies, *iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
             }else{
-              Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+              Pair31 = DeltaEtaDeltaPhi(thirdSpecies, firstSpecies, *iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
             }
           }
           if(!fClosePairRejectionForAll){
            
               if(DoThisPair12==11){
                 if(abs(*itPDGPar1)==abs(*itPDGPar2)){
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                  Pair12 = DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
                 }else{
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                  Pair12 = DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
                 }
               }
               if(DoThisPair23==11){
                 if(abs(*itPDGPar2)==abs(*itPDGPar3)){
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                  Pair23 = DeltaEtaDeltaPhi(secondSpecies, thirdSpecies, *iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
                 }else{
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                  Pair23 = DeltaEtaDeltaPhi(secondSpecies, thirdSpecies, *iPart2,*iPart3, *itPDGPar2, *itPDGPar3, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
                 }
               }
               if(DoThisPair31==11){
                 if(abs(*itPDGPar3)==abs(*itPDGPar1)){
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                  Pair31 = DeltaEtaDeltaPhi(thirdSpecies, firstSpecies, *iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
                 }else{
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                  Pair31 = DeltaEtaDeltaPhi(thirdSpecies, firstSpecies, *iPart3,*iPart1, *itPDGPar3, *itPDGPar1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
                 }
               }
 
@@ -1862,12 +1861,12 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistribution(std::vector<std
         if(!fturnoffClosePairRejectionCompletely){
 
           if(fClosePairRejectionForAll){
-             Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+             Pair12 = DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
           }
           else{
 
              if(DoThisPair12==11){
-               Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+               Pair12 = DeltaEtaDeltaPhi(firstSpecies, secondSpecies, *iPart1,*iPart2, *itPDGPar1, *itPDGPar2, true,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA  Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
              }
           } 
         }
@@ -2082,42 +2081,42 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
 
               if(fClosePairRejectionForAll){
                 if(abs(*itPDGParSE)==abs(*itPDGParME1)){
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
+                  Pair12 = DeltaEtaDeltaPhi(speciesSE, speciesME1, *iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
                 }else{
-                  Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
+                  Pair12 = DeltaEtaDeltaPhi(speciesSE, speciesME1, *iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
                 }
                 if(abs(*itPDGParME1)==abs(*itPDGParME2)){
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
+                  Pair23 = DeltaEtaDeltaPhi(speciesME1, speciesME2, *iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
                 }else{
-                  Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
+                  Pair23 = DeltaEtaDeltaPhi(speciesME1, speciesME2, *iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
                 }
                 if(abs(*itPDGParME2)==abs(*itPDGParSE)){
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
+                  Pair31 = DeltaEtaDeltaPhi(speciesME2, speciesSE, *iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
                 }else{
-                  Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
+                  Pair31 = DeltaEtaDeltaPhi(speciesME2, speciesSE, *iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
                 }
               }
               if(!fClosePairRejectionForAll){
                
                   if(DoThisPair12==11){
                     if(abs(*itPDGParSE)==abs(*itPDGParME1)){
-                      Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
+                      Pair12 = DeltaEtaDeltaPhi(speciesSE, speciesME1, *iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
                     }else{
-                      Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
+                      Pair12 = DeltaEtaDeltaPhi(speciesSE, speciesME1, *iPart1,*iPart2, *itPDGParSE, *itPDGParME1, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
                     }
                   }
                   if(DoThisPair23==11){
                     if(abs(*itPDGParME1)==abs(*itPDGParME2)){
-                      Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
+                      Pair23 = DeltaEtaDeltaPhi(speciesME1, speciesME2, *iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
                     }else{
-                      Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
+                      Pair23 = DeltaEtaDeltaPhi(speciesME1, speciesME2, *iPart2,*iPart3, *itPDGParME1, *itPDGParME2, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
                     }
                   }
                   if(DoThisPair31==11){
                     if(abs(*itPDGParME2)==abs(*itPDGParSE)){
-                      Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
+                      Pair31 = DeltaEtaDeltaPhi(speciesME2, speciesSE, *iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[10+phiEtaHistNo],Config, Q3);
                     }else{
-                      Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
+                      Pair31 = DeltaEtaDeltaPhi(speciesME2, speciesSE, *iPart3,*iPart1, *itPDGParME2, *itPDGParSE, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[10+phiEtaHistNo],Config, Q3);
                     }
                   }  
 
@@ -2234,12 +2233,12 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillPairDistributionME(std::vector<s
          if(!fturnoffClosePairRejectionCompletely){
 
           if(fClosePairRejectionForAll){
-             Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+             Pair12 = DeltaEtaDeltaPhi(speciesSE, speciesME1, *iPart1,*iPart2, *itPDGParSE, *itPDGParME1, false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
           }
           else{
 
              if(DoThisPair12==11){
-               Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
+               Pair12 = DeltaEtaDeltaPhi(speciesSE, speciesME1,*iPart1,*iPart2, *itPDGParSE, *itPDGParME1, false,  DoThisPair12, fEventTripletPhiThetaArray[phiEtaHistNo],fEventTripletPhiThetaArray[7+phiEtaHistNo],Config); //GANESHA Change number + Check about DeltaEtaDeltaPhi Function. Might need to change for 2 Body
              }
           } 
         }
@@ -2350,42 +2349,42 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
 
             if(fClosePairRejectionForAll){
               if(abs(*itPDGParSE1)==abs(*itPDGParSE2)){
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                Pair12 = DeltaEtaDeltaPhi(speciesSE1, speciesSE2, *iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
               }else{
-                Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                Pair12 = DeltaEtaDeltaPhi(speciesSE1, speciesSE2, *iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
               }
               if(abs(*itPDGParSE2)==abs(*itPDGParME)){
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                Pair23 = DeltaEtaDeltaPhi(speciesSE2, speciesME, *iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
               }else{
-                Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                Pair23 = DeltaEtaDeltaPhi(speciesSE2, speciesME, *iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
               }
               if(abs(*itPDGParSE1)==abs(*itPDGParME)){
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                Pair31 = DeltaEtaDeltaPhi(speciesME, speciesSE1, *iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
               }else{
-                Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                Pair31 = DeltaEtaDeltaPhi(speciesME, speciesSE1, *iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
               }
             }
             if(!fClosePairRejectionForAll){
           
                 if(DoThisPair12==11){
                   if(abs(*itPDGParSE1)==abs(*itPDGParSE2)){
-                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                    Pair12 = DeltaEtaDeltaPhi(speciesSE1, speciesSE2, *iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
                   }else{
-                    Pair12 = DeltaEtaDeltaPhi(*iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                    Pair12 = DeltaEtaDeltaPhi(speciesSE1, speciesSE2, *iPart1,*iPart2, *itPDGParSE1, *itPDGParSE2, true,  DoThisPair12, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
                   }
                 }
                 if(DoThisPair23==11){
                   if(abs(*itPDGParSE2)==abs(*itPDGParME)){
-                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                    Pair23 = DeltaEtaDeltaPhi(speciesSE2, speciesME, *iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
                   }else{
-                    Pair23 = DeltaEtaDeltaPhi(*iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                    Pair23 = DeltaEtaDeltaPhi(speciesSE2, speciesME, *iPart2,*iPart3, *itPDGParSE2, *itPDGParME, true,  DoThisPair23, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
                   }
                 }
                 if(DoThisPair31==11){
                   if(abs(*itPDGParSE1)==abs(*itPDGParME)){
-                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
+                    Pair31 = DeltaEtaDeltaPhi(speciesME, speciesSE1, *iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_SamePair[phiEtaHistNo],fEventTripletPhiThetaArray_SamePair[28+phiEtaHistNo],Config, Q3);
                   }else{
-                    Pair31 = DeltaEtaDeltaPhi(*iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
+                    Pair31 = DeltaEtaDeltaPhi(speciesME, speciesSE1, *iPart3,*iPart1, *itPDGParME, *itPDGParSE1, true,  DoThisPair31, fEventTripletPhiThetaArray_DifferentPair[phiEtaHistNo],fEventTripletPhiThetaArray_DifferentPair[28+phiEtaHistNo],Config, Q3);
                   }
                 }
               
@@ -2435,7 +2434,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
 
 //==================================================================================================================================================
 
-bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(
+bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int species2,
                                                    AliFemtoDreamBasePart &part1,
                                                    AliFemtoDreamBasePart &part2,
                                                    int part1PDGcode,
@@ -2451,13 +2450,13 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(
   //cout<<part1.GetPDGCode()<<endl;
 
   
-  if ((part1PDGcode==321&&part2PDGcode==2212)||(part1PDGcode==2212&&part2PDGcode==321)||
-      (part1PDGcode==-321&&part2PDGcode==-2212)||(part1PDGcode==-2212&&part2PDGcode==-321))
+  if ((species1==2&&species2==0)||(species1==0&&species2==2)||
+      (species1==3&&species2==1)||(species1==1&&species2==3))
   {
     fDeltaPhiSqMax = 0.04*0.04;
     fDeltaEtaSqMax = 0.012*0.012;
   }
-  if ((part1PDGcode==2212&&part2PDGcode==2212)||(part1PDGcode==-2212&&part2PDGcode==-2212))
+  if ((species1==0&&species2==0)||(species1==1&&species2==1))
   {
     fDeltaPhiSqMax = 0.017*0.017;
     fDeltaEtaSqMax = 0.017*0.017;
@@ -2541,7 +2540,7 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(
 
 //==================================================================================================================================================
 
-bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(
+bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int species2,
                                                    AliFemtoDreamBasePart &part1,
                                                    AliFemtoDreamBasePart &part2,
                                                    int part1PDGcode,
@@ -2556,20 +2555,23 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(
 
   //cout<<part1PDGcode<<endl;
 
- 
+ //bool test = false;
 
-  if ((part1PDGcode==321&&part2PDGcode==2212)||(part1PDGcode==2212&&part2PDGcode==321)||
-      (part1PDGcode==-321&&part2PDGcode==-2212)||(part1PDGcode==-2212&&part2PDGcode==-321))
+ if ((species1==2&&species2==0)||(species1==0&&species2==2)||
+      (species1==3&&species2==1)||(species1==1&&species2==3))
   {
     fDeltaPhiSqMax = 0.04*0.04;
     fDeltaEtaSqMax = 0.012*0.012;
+  //  test = true;
   }
-  if ((part1PDGcode==2212&&part2PDGcode==2212)||(part1PDGcode==-2212&&part2PDGcode==-2212))
+  if ((species1==0&&species2==0)||(species1==1&&species2==1))
   {
     fDeltaPhiSqMax = 0.017*0.017;
     fDeltaEtaSqMax = 0.017*0.017;
+  //  test = true;
   }
 
+  //cout<<species1<<"   "<<species2<<"  "<<test<<endl;
 
   bool pass = true;
   // if nDaug == 1 => Single Track, else decay

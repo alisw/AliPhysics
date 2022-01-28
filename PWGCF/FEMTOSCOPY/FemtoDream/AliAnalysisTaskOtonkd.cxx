@@ -284,6 +284,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   fTree->Branch("KaonPx",&fTKaonPx,"fTKaonPx[fTnKaon]/F");
   fTree->Branch("KaonPy",&fTKaonPy,"fTKaonPy[fTnKaon]/F");
   fTree->Branch("KaonPz",&fTKaonPz,"fTKaonPz[fTnKaon]/F");
+  fTree->Branch("KaonPTPC",&fTKaonPTPC,"fTKaonPTPC[fTnKaon]/F");
   fTree->Branch("KaonEta",&fTKaonEta,"fTKaonEta[fTnKaon]/F");
   fTree->Branch("KaonCharge",&fTKaonCharge,"fTKaonCharge[fTnKaon]/S");
 //  fTree->Branch("KaonITSsigma_e",&fTKaonITSsigma_e,"fTKaonITSsigma_e[fTnKaon]/F");
@@ -397,6 +398,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTKaonPx[ii]=-100000.;
    fTKaonPy[ii]=-100000.;
    fTKaonPz[ii]=-100000.;
+   fTKaonPTPC[ii]=-100000.;
    fTKaonCharge[ii]=-10;
    fTKaonDCA[ii]=-100000.;
    fTKaonDCAz[ii]=-100000.;
@@ -845,6 +847,7 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonPx[fTnKaon] = mom.X();
  fTKaonPy[fTnKaon] = mom.Y();
  fTKaonPz[fTnKaon] = mom.Z();
+ fTKaonPTPC[fTnKaon] = TheTrack->GetMomTPC();
  fTKaonEta[fTnKaon] = TheTrack->GetEta().at(0);
  fTKaonCharge[fTnKaon] = TheTrack->GetCharge().at(0);
  fTKaonNcl[fTnKaon] = TheTrack->GetNClsTPC();

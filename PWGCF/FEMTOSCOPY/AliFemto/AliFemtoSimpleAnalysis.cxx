@@ -183,7 +183,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fMinSizePartCollection(0),
   fVerbose(kTRUE),
   fPerformSharedDaughterCut(kFALSE),
-  fEnablePairMonitors(kFALSE)
+  fEnablePairMonitors(kFALSE),
+  freverseParticleVariables(kFALSE)
 {
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
@@ -205,7 +206,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   fMinSizePartCollection(a.fMinSizePartCollection),
   fVerbose(a.fVerbose),
   fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
-  fEnablePairMonitors(a.fEnablePairMonitors)
+  fEnablePairMonitors(a.fEnablePairMonitors),
+  freverseParticleVariables(a.freverseParticleVariables)
 {
   /// Copy constructor
 
@@ -402,7 +404,7 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
   fVerbose = aAna.fVerbose;
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
   fEnablePairMonitors = aAna.fEnablePairMonitors;
-
+  freverseParticleVariables = aAna.freverseParticleVariables;
   return *this;
 }
 //______________________
@@ -648,6 +650,19 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
       if (partCollection2 != nullptr) {
         tPair->SetTrack2(*tPartIter2);
 
+	if(freverseParticleVariables){
+	    //This works only if you set the variable on true (default=false). Temporary function. see the comment in .h file
+            AliFemtoParticle *fTrack2=(AliFemtoParticle*)*tPartIter2;
+	    AliFemtoLorentzVector p2 = (AliFemtoLorentzVector) fTrack2->FourMomentum();
+            p2.SetX(-1.0*p2.x());
+            p2.SetY(-1.0*p2.y());
+            p2.SetZ(-1.0*p2.z());
+            fTrack2->ResetFourMomentum(p2);
+            tPair->SetTrack2(fTrack2);
+	}
+
+
+
       // Swap between first and second particles to avoid biased ordering
       } else {
         tPair->SetTrack1(swpart ? *tPartIter2 : *tPartIter1);
@@ -846,3 +861,4 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
 
   return tOutputList;
 }
+

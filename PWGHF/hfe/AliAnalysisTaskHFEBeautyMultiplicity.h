@@ -1,7 +1,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 /* See cxx source for full Copyright notice                               */
 /* $Id$                                                                   */
-
 #ifndef AliAnalysisTaskHFEBeautyMultiplicity_H
 #define AliAnalysisTaskHFEBeautyMultiplicity_H
 
@@ -313,6 +312,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_B_TrkCut10;
 	TH1F*	fHistPt_B_TrkCut11;
 	TH1F*	fHistPt_B_TrkCut12;
+	
+	TH1F*	fHistPt_Tracking_B;
+	TH1F*	fHistPt_EMCmatch_B;
 
 	TH1F*	fHistPt_D_TrkCut;
 	TH1F*	fHistPt_D_TrkCut0;
@@ -328,6 +330,9 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_D_TrkCut10;
 	TH1F*	fHistPt_D_TrkCut11;
 	TH1F*	fHistPt_D_TrkCut12;
+
+	TH1F*	fHistPt_Tracking_D;
+	TH1F*	fHistPt_EMCmatch_D;
 
 	TH2F*	fNtrkletNch;
 	TH2F*	fNtrkletNch_Corr;

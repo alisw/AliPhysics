@@ -10,7 +10,6 @@
 #include "TString.h"
 #include "TRandom.h"
 #include "AliESDtrackCuts.h"
-#include "AliGFWWeights.h"
 #include "AliProfileBS.h"
 //#include "AliPtContainer.h"
 
@@ -26,7 +25,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
 {
   public:
     AliAnalysisTaskPtCorr();
-    AliAnalysisTaskPtCorr(const char *name, bool IsMC, bool dodynamics, TString analysisStage, TString ContSubfix);
+    AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString ContSubfix);
     virtual ~AliAnalysisTaskPtCorr();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -43,7 +42,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
-    void DoDynamicCorrelations(bool dodyn) { fdoDynamicCorr = dodyn; }
     AliEventCuts            fEventCuts;
     
   private:
@@ -54,41 +52,31 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     int                     fSystFlag;
     TString*                fContSubfix;
     bool                    fIsMC; 
+    AliMCEvent*             fMCEvent; //!
     TList*                  fCorrList; //!
-    TList*                  fDynList; //!
-    TList*                  fWeightList; //!
-    TList*                  fEfficiencyList; //!
-    TList*                  fmptList; //!
-    TH2D**                  fEfficiency;     
+    TList*                  fEfficiencyList;
     TH1D**                  fEfficiencies;     
-    AliGFWWeights**         fWeights; //!
-    TH1D*                   fmpt;
     TString                 fWeightSubfix;
     AliGFWCuts*             fGFWSelection; 
-    TAxis*                  fV0MAxis; //!
-    TAxis*                  fMultiAxis; //!
+    TAxis*                  fV0MAxis; 
+    TAxis*                  fMultiAxis; 
     double*                 fMultiBins; //!
-    double                  fNMultiBins; //!
-    TAxis*                  fPtAxis;  //!
+    int                     fNMultiBins; //!
+    TAxis*                  fPtAxis;  
     double*                 fPtBins; //!
     int                     fNPtBins; //!
     double                  fEta;
     double                  fPtMin;
     double                  fPtMax;
-    int                     fAnalysisStage;
     TRandom*                fRndm;
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
-    bool                    fdoDynamicCorr;
     int                     mpar;
     TH1D*                   fV0MMulti;    //!
-    //AliPtContainer**        fdyncorrnompt;     //!
     AliProfileBS**          fptcorr;     //!
-    AliProfileBS**          fdyncorr;     //!
     AliProfileBS*           pfmpt;      //!
 
     vector<double>          corr;
-    vector<double>          dyncorr;
     vector<double>          sumw;
 
     unsigned int            fTriggerType;
@@ -102,21 +90,11 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool AcceptMCEvent(AliVEvent* inev);
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
-    void FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    void FillMPT(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ);
     void FillCorrelationProfiles(const double &l_cent, double &rn);
-    void FillDynamicProfiles(const double &l_cent, double &rn);
-    template <typename T> void FillWPCounter(T& inarr, double w, double p);
-    void MptCounter(double* inarr, int icent);
+    template<typename T> void FillWPCounter(T& inarr, double w, double p);
     template<typename T> void getMomentumCorrelation(T& wp);
-    template<typename T> void getDynamicMomentumCorrelation(T& wp, double* mpt);
-    //template<typename T> void getDynCorrSkipMpt(T& wp, const double &l_cent, double &rn);
-    //template<typename T> void getTermsOfMpt(int k, int m, T& term, T& wp);
     double OrderedAddition(std::vector<double> vec, int size);
-    int binomial(const int n, const int m);
-    template<typename T> double DynamicP(int k, T& wp, double* mpt);
-    bool LoadWeights(const int &lRunNo);
     int GetAnalysisStage(TString instr);
     double *GetBinsFromAxis(TAxis *inax);
     

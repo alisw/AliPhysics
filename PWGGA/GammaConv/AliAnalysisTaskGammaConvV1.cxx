@@ -3228,6 +3228,12 @@ void AliAnalysisTaskGammaConvV1::ProcessAODMCParticles()
     AliInfo("AODMCTrackArray could not be loaded");
     return;
   }
+
+  // Check if MC generated particles should be filled for this event using the selected trigger
+  if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    return;
+  }
+
   if (fAODMCTrackArray){
     // Loop over all primary MC particle
     for(Int_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
@@ -3579,6 +3585,11 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
 //   cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
+
+  // Check if MC generated particles should be filled for this event using the selected trigger
+  if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    return;
+  }
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {

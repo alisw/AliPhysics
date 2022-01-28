@@ -8,10 +8,6 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	if (!mgr) return 0x0;
 	if (!mgr->GetInputEventHandler())  return 0x0;
 
-	TGrid::Connect("alien://");
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root ."));
-	TGrid::Connect("alien://");
-	gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root ."));
 
 	AliAnalysisTaskRidge* taskRidge =
 		new AliAnalysisTaskRidge(taskname, Form("%s_%s",taskname,option) );

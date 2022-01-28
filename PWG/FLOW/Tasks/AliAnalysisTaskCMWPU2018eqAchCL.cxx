@@ -72,16 +72,16 @@
 #include "AliPhysicsSelection.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskCMWPU2018eqAch.h"
+#include "AliAnalysisTaskCMWPU2018eqAchCL.h"
 
 using std::cout;
 using std::endl;
 using std::vector;
 
 
-ClassImp(AliAnalysisTaskCMWPU2018eqAch)
+ClassImp(AliAnalysisTaskCMWPU2018eqAchCL)
 
-AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): AliAnalysisTaskSE(name),
+AliAnalysisTaskCMWPU2018eqAchCL::AliAnalysisTaskCMWPU2018eqAchCL(const char *name): AliAnalysisTaskSE(name),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -152,7 +152,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
 {
 
   for(int i=0;i<1;i++){
-    for(int j=0;j<9;j++){
+    for(int j=0;j<4;j++){
       fHistv2AchChrgPos[i][j] = NULL;
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
@@ -199,7 +199,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
   
 
   
-  for(int i=0; i<9; i++){
+  for(int i=0; i<4; i++){
     fHistv2cumAchChrgAll[i] = NULL;
   }
   
@@ -209,7 +209,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
 }
 
 //_______________________empty constructor_______________________
-AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
+AliAnalysisTaskCMWPU2018eqAchCL::AliAnalysisTaskCMWPU2018eqAchCL():
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -280,7 +280,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
 
 
   for(int i=0;i<1;i++){
-    for(int j=0;j<9;j++){
+    for(int j=0;j<4;j++){
       fHistv2AchChrgPos[i][j] = NULL;
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
@@ -326,7 +326,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
   //}
 
     
-  for(int i=0; i<9; i++){
+  for(int i=0; i<4; i++){
     fHistv2cumAchChrgAll[i] = NULL;
   }
 
@@ -337,7 +337,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
 }
   
 //__________________ destructor ___________________
-AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
+AliAnalysisTaskCMWPU2018eqAchCL::~AliAnalysisTaskCMWPU2018eqAchCL()
 {
   if(fListHist)      delete fListHist;  
   if(fAnalysisUtil)  delete fAnalysisUtil;   // because its 'new' !!
@@ -369,7 +369,7 @@ AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
 
 
 //________________ Define Histograms _______________
-void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
+void AliAnalysisTaskCMWPU2018eqAchCL::UserCreateOutputObjects()
 {
   //std::cout<<"\n UserCreateOutputObject: function begins...\n"<<endl; 
   //Get The Input Hander:
@@ -414,101 +414,66 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   Char_t title[1000];
  
 
-  Double_t centRange[10] = {0,5,10,20,30,40,50,60,80,90};
+  //Double_t centRange[10] = {0,5,10,20,30,40,50,60,80,90};
+  Double_t centRange[5] = {0,10,50,80,90};
 
 
   //18q
   // Acharge Binning with Equal Event per bin:
-  //Cent 0-5
-  Double_t fAchBinCent0[11] = {-0.074, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
-  //Cent 5-10
-  Double_t fAchBinCent1[11] = {-0.09, -0.02, -0.012, -0.006, 0, 0.004, 0.008, 0.014, 0.018, 0.026, 1};
-  //Cent 10-20 
-  Double_t fAchBinCent2[11] = {-0.108, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.022, 0.03, 1};
-  //Cent 20-30 
-  Double_t fAchBinCent3[11] = {-0.134, -0.03, -0.018, -0.01, -0.002, 0.004, 0.01, 0.018, 0.026, 0.036, 1};
-  //Cent 30-40 
-  Double_t fAchBinCent4[11] = {-0.174, -0.038, -0.024, -0.014, -0.004, 0.004, 0.012, 0.02, 0.03, 0.046, 1};
-  //Cent 40-50 
-  Double_t fAchBinCent5[11] = {-0.242, -0.05, -0.032, -0.018, -0.008, 0.004, 0.014, 0.026, 0.038, 0.058, 1};
-  //Cent 50-60 
-  Double_t fAchBinCent6[11] = {-0.41, -0.07, -0.044, -0.026, -0.01, 0.002, 0.018, 0.034, 0.052, 0.076, 1};
-  //Cent 60-80 
-  Double_t fAchBinCent7[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+  //Cent 0-10
+  Double_t fAchBinCent0[6] = {-0.09, -0.01, 0, 0.008, 0.018, 1};
+  //Cent 10-50
+  Double_t fAchBinCent1[6] = {-0.242, -0.02, -0.004, 0.01, 0.028, 1};
+  //Cent 50-80 
+  Double_t fAchBinCent2[6] = {-0.996, -0.066, -0.016, 0.024, 0.072, 1};
   //Cent 80-90 
-  Double_t fAchBinCent8[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+  Double_t fAchBinCent3[6] = {-0.996, -0.066, -0.016, 0.024, 0.072, 1};
     
 
   //18r
   // Acharge Binning with Equal Event per bin:
-  //Cent 0-5
-  Double_t fAchBinCent00[11] = {-0.078, -0.022, -0.014, -0.01, -0.004, 0, 0.004, 0.008, 0.014, 0.02, 1};
-  //Cent 5-10
-  Double_t fAchBinCent11[11] = {-0.088, -0.024, -0.016, -0.01, -0.004, 0, 0.004, 0.01, 0.016, 0.024, 1 };
-  //Cent 10-20 
-  Double_t fAchBinCent22[11] = {-0.11, -0.026, -0.018, -0.01, -0.006, 0, 0.006, 0.012, 0.018, 0.028, 1 };
-  //Cent 20-30 
-  Double_t fAchBinCent33[11] = {-0.13, -0.032, -0.022, -0.012, -0.006, 0.002, 0.008, 0.014, 0.022, 0.034, 1};
-  //Cent 30-40 
-  Double_t fAchBinCent44[11] = {-0.182, -0.04, -0.026, -0.016, -0.008, 0.002, 0.01, 0.018, 0.028, 0.042, 1 };
-  //Cent 40-50 
-  Double_t fAchBinCent55[11] = {-0.24, -0.054, -0.034, -0.022, -0.01, 0.002, 0.012, 0.022, 0.036, 0.054, 1 };
-  //Cent 50-60 
-  Double_t fAchBinCent66[11] = {-0.338, -0.072, -0.046, -0.028, -0.014, 0.002, 0.016, 0.03, 0.048, 0.074, 1};  
-  //Cent 60-80 
-  Double_t fAchBinCent77[11] = {-0.996, -0.13, -0.082, -0.05, -0.024, 0.002, 0.026, 0.052, 0.084, 0.132, 1};
+  //Cent 0-10
+  Double_t fAchBinCent00[6] = {-0.088, -0.014, -0.004, 0.004, 0.014, 1};
+  //Cent 10-50
+  Double_t fAchBinCent11[6] = {-0.24, -0.024, -0.006, 0.008, 0.026, 1};
+  //Cent 50-80 
+  Double_t fAchBinCent22[6] = {-0.996, -0.066, -0.018, 0.02, 0.068, 1};
   //Cent 80-90 
-  Double_t fAchBinCent88[11] = {-0.996, -0.13, -0.082, -0.05, -0.024, 0.002, 0.026, 0.052, 0.084, 0.132, 1};
+  Double_t fAchBinCent33[6] = {-0.996, -0.066, -0.018, 0.02, 0.068, 1};
   
 
 
   //15op2 pospol                                                                                                                             
   // Acharge Binning with Equal Event per bin:                                                                                               
-  //Cent 0-5                                                                                                                                 
-  Double_t fAchBinCent000[11] = {-0.09, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
-  //Cent 5-10                                                                                                                                
-  Double_t fAchBinCent111[11] = {-0.1, -0.02, -0.012, -0.006, -0.002, 0.004, 0.008, 0.012, 0.018, 0.026, 1};
-  //Cent 10-20                                                                                                                               
-  Double_t fAchBinCent222[11] = {-0.146, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.02, 0.03, 1};
-  //Cent 20-30                                                                                                                               
-  Double_t fAchBinCent333[11] = {-0.144, -0.03, -0.018, -0.01, -0.004,  0.004, 0.01, 0.016, 0.024, 0.036, 1};
-  //Cent 30-40                                                                                                                               
-  Double_t fAchBinCent444[11] = {-0.186, -0.038, -0.024, -0.014, -0.006, 0.002, 0.012, 0.02, 0.03, 0.044, 1};
-  //Cent 40-50                                                                                                                               
-  Double_t fAchBinCent555[11] = {-0.23, -0.052, -0.032, -0.018, -0.008, 0.004, 0.014, 0.024, 0.038, 0.058, 1};
-  //Cent 50-60                                                                                                                               
-  Double_t fAchBinCent666[11] = {-0.332, -0.07, -0.044, -0.026, -0.012, 0.002, 0.018, 0.032, 0.05, 0.076, 1};
-  //Cent 60-80                                                                                                                               
-  Double_t fAchBinCent777[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
+  //Cent 0-10                                                                                                                                
+  Double_t fAchBinCent000[6] = {-0.09, -0.018, -0.01, -0.004, 0, 0.004};
+  //Cent 10-30                                                                                                                               
+  Double_t fAchBinCent111[6] = {-0.1, -0.02, -0.012, -0.006, -0.002, 0.004};
+  //Cent 30-50                                                                                                                               
+  Double_t fAchBinCent222[6] = {-0.146, -0.024, -0.014, -0.008, -0.002, 0.004};
+  //Cent 50-80                                                                                                                               
+  Double_t fAchBinCent333[6] = {-0.144, -0.03, -0.018, -0.01, -0.004,  0.004};
   //Cent 80-90                                                                                                                               
-  Double_t fAchBinCent888[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
-
+  Double_t fAchBinCent444[6] = {-0.186, -0.038, -0.024, -0.014, -0.006, 0.002};
+  
 
   //15op2 negpol                                                                                                                             
   // Acharge Binning with Equal Event per bin:                                                                                               
-  //Cent 0-5                                                                                                                                 
-  Double_t fAchBinCent0000[11] = {-0.148, -0.022, -0.014, -0.01, -0.006, -0.002, 0.002, 0.008, 0.012, 0.02, 1};
-  //Cent 5-10                                                                                                                                
-  Double_t fAchBinCent1111[11] = {-0.132, -0.024, -0.016, -0.01, -0.006, 0, 0.004, 0.008, 0.014, 0.022, 1};
-  //Cent 10-20                                                                                                                               
-  Double_t fAchBinCent2222[11] = {-0.166, -0.028, -0.018, -0.012, -0.006, 0, 0.004, 0.01, 0.016, 0.026, 1};
-  //Cent 20-30                                                                                                                               
-  Double_t fAchBinCent3333[11] = {-0.182, -0.034, -0.022, -0.014, -0.008, 0, 0.006, 0.012, 0.022, 0.032, 1};
-  //Cent 30-40                                                                                                                               
-  Double_t fAchBinCent4444[11] = {-0.216, -0.042, -0.028, -0.018, -0.008, 0, 0.008, 0.016, 0.026, 0.042, 1};
-  //Cent 40-50                                                                                                                              
-  Double_t fAchBinCent5555[11] = {-0.246, -0.054, -0.036, -0.022, -0.012, -0.002, 0.01, 0.022, 0.034, 0.054, 1};
-  //Cent 50-60                                                                                                                               
-  Double_t fAchBinCent6666[11] = {-0.372, -0.074, -0.048, -0.03, -0.014, 0.002, 0.014, 0.03, 0.048, 0.072, 1};
-  //Cent 60-80                                                                                                                               
-  Double_t fAchBinCent7777[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
+  //Cent 0-10                                                                                                                                
+  Double_t fAchBinCent0000[6] = {-0.148, -0.022, -0.014, -0.01, -0.006, -0.002};
+  //Cent 10-30                                                                                                                               
+  Double_t fAchBinCent1111[6] = {-0.132, -0.024, -0.016, -0.01, -0.006, 0};
+  //Cent 30-50                                                                                                                               
+  Double_t fAchBinCent2222[6] = {-0.166, -0.028, -0.018, -0.012, -0.006, 0};
+  //Cent 50-80                                                                                                                               
+  Double_t fAchBinCent3333[6] = {-0.182, -0.034, -0.022, -0.014, -0.008, 0};
   //Cent 80-90                                                                                                                               
-  Double_t fAchBinCent8888[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
+  Double_t fAchBinCent4444[6] = {-0.216, -0.042, -0.028, -0.018, -0.008, 0};
 
 
 
 
-  Double_t fAchBinSelect[11] = {0.0};
+  Double_t fAchBinSelect[6] = {0.0};
  
 
 
@@ -524,63 +489,47 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 		 
   // v2 vs Ach
   for(int i=0;i<1;i++){
-    for(int j=0;j<9;j++){
+    for(int j=0;j<4;j++){
  
 
       if (bdataset==0)
       {
 
-      if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
-      if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
-      if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
-      if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
-      if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4[k]; } }
-      if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5[k]; } }
-      if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
-      if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
-      if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
+      if(j==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
+      if(j==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
+      if(j==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
+      if(j==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
+      
       
       }
 
       else if (bdataset==1)
       {
-	  if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent00[k]; } }
-	  if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent11[k]; } }
-	  if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent22[k]; } }
-	  if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent33[k]; } }
-	  if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent44[k]; } }
-	  if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent55[k]; } }
-	  if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent66[k]; } }
-	  if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent77[k]; } }
-	  if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
+	  if(j==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent00[k]; } }
+	  if(j==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent11[k]; } }
+	  if(j==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent22[k]; } }
+	  if(j==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent33[k]; } }
+	  
 	  
 	}   
 
       else if (bdataset==2)
 	{
-          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
-          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
-          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
-          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
-          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
-          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555[k]; } }
-          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666[k]; } }
-          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777[k]; } }
-          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888[k]; } }
+          if(j==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
+          if(j==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
+          if(j==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
+          if(j==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
+          if(j==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
 
         }
 
       else if (bdataset==3)
 	{
-          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
-          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
-          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
-          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
-          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
-          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5555[k]; } }
-          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6666[k]; } }
-          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7777[k]; } }
-          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8888[k]; } }
+          if(j==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
+          if(j==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
+          if(j==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
+          if(j==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
+          if(j==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
 
         }
 
@@ -589,12 +538,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       ////Charge:
       sprintf(name,"fHistv2AchChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPos[i][j]);
       sprintf(name,"fHistv2AchChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNeg[i][j]);
 
@@ -602,12 +551,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
       sprintf(name,"fHistv2AchChrgPosChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchChrgPosChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPosChrgNeg[i][j]);
       sprintf(name,"fHistv2AchChrgNegChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchChrgNegChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNegChrgPos[i][j]);
 
@@ -617,12 +566,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Pion:
       sprintf(name,"fHistv2AchPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPos[i][j]);
       sprintf(name,"fHistv2AchPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNeg[i][j]);
 
@@ -630,12 +579,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       
       sprintf(name,"fHistv2AchPionPosPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchPionPosPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPosPionNeg[i][j]);
       sprintf(name,"fHistv2AchPionNegPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchPionNegPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNegPionPos[i][j]);  
       
@@ -643,24 +592,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Kaon:
       sprintf(name,"fHistv2AchKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPos[i][j]);
       sprintf(name,"fHistv2AchKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchKaonPosKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchKaonPosKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPosKaonNeg[i][j]);
       sprintf(name,"fHistv2AchKaonNegKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchKaonNegKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNegKaonPos[i][j]);      
             
@@ -668,24 +617,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Proton:
       sprintf(name,"fHistv2AchProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPos[i][j]);
       sprintf(name,"fHistv2AchProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchProtPosProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchProtPosProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPosProtNeg[i][j]);
       sprintf(name,"fHistv2AchProtNegProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,5,fAchBinSelect,"");
       fHistv2AchProtNegProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNegProtPos[i][j]);    
     }
@@ -707,65 +656,49 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   
 
   
-  for(int i=0; i<9; i++){
+  for(int i=0; i<4; i++){
 
     if (bdataset==0)
     {
-    if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
-    if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
-    if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
-    if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
-    if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4[k]; } }
-    if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5[k]; } }
-    if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6[k]; } }
-    if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7[k]; } }
-    if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8[k]; } }
+    if(i==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0[k]; } }
+    if(i==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1[k]; } }
+    if(i==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2[k]; } }
+    if(i==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3[k]; } }
+    
     }
 
     else if (bdataset==1)
     {
-    if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent00[k]; } }
-    if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent11[k]; } }
-    if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent22[k]; } }
-    if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent33[k]; } }
-    if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent44[k]; } }
-    if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent55[k]; } }
-    if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent66[k]; } }
-    if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent77[k]; } }
-    if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88[k]; } }
+    if(i==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent00[k]; } }
+    if(i==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent11[k]; } }
+    if(i==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent22[k]; } }
+    if(i==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent33[k]; } }
+    
     }
     
     else if (bdataset==2)
       {
-	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
-	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
-	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
-	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
-	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
-	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555[k]; } }
-	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666[k]; } }
-	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777[k]; } }
-	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888[k]; } }
+	if(i==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent000[k]; } }
+	if(i==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent111[k]; } }
+	if(i==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent222[k]; } }
+	if(i==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent333[k]; } }
+	if(i==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent444[k]; } }
       }
 
     else if (bdataset==3)
       {
-	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
-	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
-	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
-	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
-	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
-	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent5555[k]; } }
-	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent6666[k]; } }
-	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent7777[k]; } }
-	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent8888[k]; } }
+	if(i==0){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent0000[k]; } }
+	if(i==1){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent1111[k]; } }
+	if(i==2){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent2222[k]; } }
+	if(i==3){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent3333[k]; } }
+	if(i==4){ for(int k=0; k<6; k++){ fAchBinSelect[k] = fAchBinCent4444[k]; } }
       }
 
 
     ////Charge:
     sprintf(name,"fHistv2cumAchChrgAllQcumCent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[i],centRange[i+1]);
-    fHistv2cumAchChrgAll[i] = new TProfile(name,title,10,fAchBinSelect,"");
+    fHistv2cumAchChrgAll[i] = new TProfile(name,title,5,fAchBinSelect,"");
     fHistv2cumAchChrgAll[i]->Sumw2();
     fListHist->Add(fHistv2cumAchChrgAll[i]);    
 
@@ -838,7 +771,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
 
 //____________________________ Call Event by Event ___________________________________
-void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
+void AliAnalysisTaskCMWPU2018eqAchCL::UserExec(Option_t*) {
  
   //std::cout<<" Info:UserExec() called ..!!!\n";
 
@@ -966,22 +899,18 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   ///----> Get 0-10 index of centrality:
   Int_t cent10bin = -99, iCent = -99;
 
-  if(centrality<5.0) {
+  if(centrality<10.0) {
     cent10bin  = 0; 
-  }
-  else if(centrality>=5.0 && centrality<10){
-    cent10bin  = 1;
-  }
-  else if(centrality>=10.0) {
-    cent10bin = abs(centrality/10.0)+1;
-  }
+  }  
+  else if(centrality>=10.0 && centrality<50) 
+    cent10bin  = 1; 
+  else if(centrality>=50.0 && centrality<80) 
+    cent10bin  = 2; 
+  else if(centrality>=80.0) 
+    cent10bin  = 3; 
 
   iCent = cent10bin;
 
-  if (iCent==8)
-    iCent=7;
-  if (iCent==9)
-    iCent=8;
 
   //Centrality array index for NUA correcion
   Int_t cForNUA = 0;  
@@ -1089,8 +1018,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
     AliAODTrack* AODtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
     if(!AODtrack) continue;
     
-    if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
-    //if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
+    // if(AODtrack->TestFilterBit(fFilterBit)) {  //// Only use FB tracks.
+    if(AODtrack->TestFilterBit(768)) {  //// Only use FB tracks. hard coded 
 
       trkPt    = AODtrack->Pt();
       trkPhi   = AODtrack->Phi();
@@ -1108,9 +1037,9 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       
 
 
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
-      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
 
 	  
@@ -1132,7 +1061,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  
 	  //if(fHCorrectNUAposChrg[cForNUA]){
 	  if(fHCorrectNUAposChrg){
-	    //iBinNUA = fHCorrectNUAposChrg[cForNUA->FindBin(pVtxZ,trkPhi,trkEta);
+	    //iBinNUA = fHCorrectNUAposChrg[cForNUA]->FindBin(pVtxZ,trkPhi,trkEta);
 	    //WgtNUA  = fHCorrectNUAposChrg[cForNUA]->GetBinContent(iBinNUA);	    
 	    iBinNUA = fHCorrectNUAposChrg->FindBin(pVtxZ,trkPhi,trkEta);
 	    WgtNUA  = fHCorrectNUAposChrg->GetBinContent(iBinNUA);	    
@@ -1994,7 +1923,7 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskCMWPU2018eqAchCL::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
 
   /*
@@ -2174,7 +2103,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) 
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskCMWPU2018eqAchCL::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
@@ -2365,7 +2294,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::PileUpMultiVertex(const AliAODEvent* faod)
+Bool_t AliAnalysisTaskCMWPU2018eqAchCL::PileUpMultiVertex(const AliAODEvent* faod)
 {  // check for multi-vertexer pile-up
   const int    kMinPlpContrib = 5;
   const double kMaxPlpChi2    = 5.0;
@@ -2404,7 +2333,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::PileUpMultiVertex(const AliAODEvent* faod)
 
 
 
-double AliAnalysisTaskCMWPU2018eqAch::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+double AliAnalysisTaskCMWPU2018eqAchCL::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 {
   // calculate sqrt of weighted distance to other vertex
   if (!v0 || !v1) {
@@ -2445,7 +2374,7 @@ double AliAnalysisTaskCMWPU2018eqAch::GetWDist(const AliVVertex* v0, const AliVV
 
 
 
-void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
+void AliAnalysisTaskCMWPU2018eqAchCL::SetupEventAndTaskConfigInfo(){
 
 
 
@@ -2472,7 +2401,7 @@ void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
 
 
 
-Int_t AliAnalysisTaskCMWPU2018eqAch::GetCentralityScaled0to10(Double_t fCent){
+Int_t AliAnalysisTaskCMWPU2018eqAchCL::GetCentralityScaled0to10(Double_t fCent){
 
  Int_t cIndex = 0;
 
@@ -2489,7 +2418,7 @@ Int_t AliAnalysisTaskCMWPU2018eqAch::GetCentralityScaled0to10(Double_t fCent){
  
 }//------------GetCentralityScaled0to10------------
 
-void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
+void AliAnalysisTaskCMWPU2018eqAchCL::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
 {
 
   if(fListNUACorr){
@@ -2564,7 +2493,7 @@ void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParti
 
 
 
-void AliAnalysisTaskCMWPU2018eqAch::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
+void AliAnalysisTaskCMWPU2018eqAchCL::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
 {
 
   if(fListV0MCorr){
@@ -2589,7 +2518,7 @@ void AliAnalysisTaskCMWPU2018eqAch::GetV0MCorrectionHist(Int_t run, Int_t kParti
 
 ////---------- SetUp Tracking Efficiency Correction Map ---------------
 
-void AliAnalysisTaskCMWPU2018eqAch::GetMCCorrectionHist(Int_t run,Float_t centr){
+void AliAnalysisTaskCMWPU2018eqAchCL::GetMCCorrectionHist(Int_t run,Float_t centr){
 
   if(fListTRKCorr) {
     //cout<<"\n =========> Info: Found TList with MC Tracking Corr Histograms <=========== "<<endl;

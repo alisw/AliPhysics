@@ -558,6 +558,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Bool_t    GetUseNewMultiplicityFramework();
+      Bool_t    GetUseINELgtZERO()                                                  { return fINELgtZEROTrigger                                 ; }
       void      GetCorrectEtaShiftFromPeriod();
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
       Double_t  GetV0Multiplicity(AliVEvent *event) const;
@@ -636,7 +637,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );
-      Bool_t    IsEventINELgtZERO(AliVEvent *event);
+      Bool_t    IsEventINELgtZERO(AliVEvent *event);                                // checks if at least one SPD tracklet is found
+      Bool_t    IsEventTrueINELgtZERO(AliVEvent *event, AliMCEvent  *lMCevent);     // checks if a true particle (MC stack) is found in eta < 1
+      Bool_t    IsMCTriggerSelected(  AliVEvent *event, AliMCEvent  *lMCevent);     // check if trigger on MC generated has to be applied (for example INEL>0)
       Bool_t    IsTriggerSelected(  AliVEvent *event,
                                     Bool_t isMC);
       Bool_t    HasV0AND()                                                          { return fHasV0AND                                          ; }
@@ -811,7 +814,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,89)
+      ClassDef(AliConvEventCuts,90)
       /// \endcond
 };
 

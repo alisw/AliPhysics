@@ -105,8 +105,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2fv0c",
   "O2ft0",
   "O2fdd",
-  "O2v0",
-  "O2cascade",
+  "O2v0_001",
+  "O2cascade_001",
   "O2tof",
   "O2mcparticle",
   "O2mccollision",
@@ -974,6 +974,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tV0s = CreateTree(kV0s);
   if (fTreeStatus[kV0s])
   {
+    tV0s->Branch("fIndexCollisions", &v0s.fIndexCollisions, "fIndexCollisions/I");
     tV0s->Branch("fIndexTracks_Pos", &v0s.fIndexTracksPos, "fIndexTracks_Pos/I");
     tV0s->Branch("fIndexTracks_Neg", &v0s.fIndexTracksNeg, "fIndexTracks_Neg/I");
     tV0s->SetBasketSize("*", fBasketSizeTracks);
@@ -983,6 +984,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tCascades = CreateTree(kCascades);
   if (fTreeStatus[kCascades])
   {
+    tCascades->Branch("fIndexCollisions", &cascs.fIndexCollisions, "fIndexCollisions/I");
     tCascades->Branch("fIndexV0s", &cascs.fIndexV0s, "fIndexV0s/I");
     tCascades->Branch("fIndexTracks", &cascs.fIndexTracks, "fIndexTracks/I");
     tCascades->SetBasketSize("*", fBasketSizeTracks);
@@ -2404,6 +2406,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     //---------------------------------------------------------------------------
     // V0s (Lambda and KS)
     Int_t nv0 = fVEvent->GetNumberOfV0s();
+    v0s.fIndexCollisions = fCollisionCount;
     for (Int_t iv0 = 0; iv0 < nv0; ++iv0) {
       if (fESD) {
 	AliESDv0 *v0 = fESD->GetV0(iv0);
@@ -2512,6 +2515,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       //Sort cascades
       TMath::Sort(ncastosort, packedV0indices, sortV0Idx, kFALSE);
       //Fill cascades only after V0 sorting
+      cascs.fIndexCollisions = fCollisionCount;
       for (Int_t icas = 0; icas < ncastosort; ++icas){
         //Fill tree only with ordered information
         cascs.fIndexV0s    = packedV0indices[sortV0Idx[icas]];

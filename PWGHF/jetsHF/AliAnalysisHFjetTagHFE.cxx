@@ -229,7 +229,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistBGfrac(0),
   fHistBGfracHFEev(0),
   fHistBGrandHFEev(0),
-	fHistNtrBGfrac(0),
+  fHistNtrBGfrac(0),
   fHistUE_org(0),
   fHistUE_true(0),
   fHistUE_reco(0),
@@ -287,6 +287,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistphoPi0MC(0),//pho from pi0 without emb
   fHistphoEtaMC(0),//pho from eta without emb
   fNtrklRhoarea(0),
+  fHistPtfracB(0),
+  fHistPtfracD(0),
   fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
   fDelta_pT(0),	
   //======parameter============
@@ -538,6 +540,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistphoPi0MC(0),//photonic e from pi0 without emb
 	fHistphoEtaMC(0),//photonic e from eta without emb
 	fNtrklRhoarea(0),
+	fHistPtfracB(0),
+        fHistPtfracD(0),
         fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
         fDelta_pT(0),	
 
@@ -1209,8 +1213,20 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fNtrklEopHad->Sumw2();
   fOutput->Add(fNtrklEopHad);
 
-	fNtrklRhoarea = new TH2D("fNtrklRhoarea", "Ntrackelet vs Rho_area; N^{corr}_{trkl};#it{p}_{T}",301,-0.5,300.5,600,-100,500);
-	fOutput->Add(fNtrklRhoarea);
+  fNtrklRhoarea = new TH2D("fNtrklRhoarea", "Ntrackelet vs Rho_area; N^{corr}_{trkl};#it{p}_{T}",301,-0.5,300.5,600,-100,500);
+  fOutput->Add(fNtrklRhoarea);
+
+  //pT fraction of HFE from B
+  Int_t nBinfrac[3] = {100,60,200};
+  Double_t minfrac[3]={0.0,0.0,0.0};
+  Double_t maxfrac[3]={50.0,30.0,2};
+  fHistPtfracB = new THnSparseD("fHistPtfracB","pT distribution;p_{T}^{B};p_{T}^{HFE};p_{T} fraction",3, nBinfrac, minfrac,maxfrac);
+  fOutput->Add(fHistPtfracB);
+	
+  fHistPtfracD = new THnSparseD("fHistPtfracD","pT distribution;p_{T}^{D};p_{T}^{HFE};p_{T} fraction",3, nBinfrac, minfrac,maxfrac);
+  fOutput->Add(fHistPtfracD);
+
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
   // pi0 & eta weight
@@ -2094,7 +2110,35 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
        {
         fHistHfEleMCreco->Fill(pt);  // 
         fHistHfEleMCiso->Fill(pt,iso);  // 
-       }
+
+     //HFE from B
+      if(TMath::Abs(pidM)==511 || TMath::Abs(pidM)==513 || TMath::Abs(pidM)==521 || TMath::Abs(pidM)==523 || TMath::Abs(pidM)==531)
+        {
+						Double_t ptfrac = pt/pTmom; 
+						Double_t ptfracvals[3];
+						ptfracvals[0]=pTmom;
+						ptfracvals[1]=pt;
+						ptfracvals[2]=ptfrac;
+	          fHistPtfracB->Fill(ptfracvals);
+
+				}
+	    
+	    
+    //HFE from D
+      if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413 || TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423 || TMath::Abs(pidM)==431)
+        {
+						Double_t ptfracD = pt/pTmom; 
+						Double_t ptfracDvals[3];
+						ptfracDvals[0]=pTmom;
+						ptfracDvals[1]=pt;
+						ptfracDvals[2]=ptfracD;
+	          fHistPtfracD->Fill(ptfracDvals);
+
+				}
+
+
+
+			 }
 
     if(iMCPHO)
       {

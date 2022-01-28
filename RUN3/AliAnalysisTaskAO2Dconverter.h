@@ -570,6 +570,7 @@ private:
   struct {
     /// V0s (Ks, Lambda)
 
+    Int_t fIndexCollisions = -1; /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexTracksPos = -1; // Positive track ID
     Int_t fIndexTracksNeg = -1; // Negative track ID
   } v0s;               //! structure to keep v0sinformation
@@ -577,6 +578,7 @@ private:
   struct {
     /// Cascades
 
+    Int_t fIndexCollisions = -1; /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexV0s = -1; // V0 ID
     Int_t fIndexTracks = -1; // Bachelor track ID
   } cascs;             //! structure to keep cascades information
@@ -615,7 +617,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 24);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 25);
 };
 
 #endif

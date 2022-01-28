@@ -26,98 +26,110 @@ ClassImp(AliAnalysisTaskPythiaCoalescence)
 
     //____________________________________________________________________________________________________________________________________________________
     AliAnalysisTaskPythiaCoalescence::AliAnalysisTaskPythiaCoalescence() : AliAnalysisTaskSE(),
-                                                                               fAODevent(nullptr),
-                                                                               fMCEvent(nullptr),
-                                                                               fOutputList(nullptr),
-                                                                               fQAList(nullptr),
-                                                                               fAverage_Nch_Transv(7.2),
-                                                                               hProtonWeights(nullptr),
-                                                                               fProtonWeights(nullptr),
-                                                                               hWeightToward(nullptr),
-                                                                               hWeightTransv(nullptr),
-                                                                               hWeightAway(nullptr),
-                                                                               fDeuteronWF(nullptr),
-                                                                               hSourceSize(nullptr),
-                                                                               hNumberOfEvents(nullptr),
-                                                                               hTransverseMult(nullptr),
-                                                                               hRtDistribution(nullptr),
-                                                                               hProtonsINELgtZERO(nullptr),
-                                                                               hProtonsINELgtZERO_reshaped(nullptr),
-                                                                               hProtons_Toward(nullptr),
-                                                                               hProtons_Transv(nullptr),
-                                                                               hProtons_Away(nullptr),
-                                                                               hProtons_Toward_reshaped(nullptr),
-                                                                               hProtons_Transv_reshaped(nullptr),
-                                                                               hProtons_Away_reshaped(nullptr),
-                                                                               hNeutronsINELgtZERO(nullptr),
-                                                                               hNeutronsINELgtZERO_reshaped(nullptr),
-                                                                               hNeutrons_Toward(nullptr),
-                                                                               hNeutrons_Transv(nullptr),
-                                                                               hNeutrons_Away(nullptr),
-                                                                               hNeutrons_Toward_reshaped(nullptr),
-                                                                               hNeutrons_Transv_reshaped(nullptr),
-                                                                               hNeutrons_Away_reshaped(nullptr),
-                                                                               hRapidityProtons(nullptr),
-                                                                               hRapidityNeutrons(nullptr),
-                                                                               hDeltaP(nullptr),
-                                                                               hSourceRadius_Prot(nullptr),
-                                                                               hSourceRadius_Neut(nullptr),
-                                                                               hDistanceLab(nullptr),
-                                                                               hDistanceDeut(nullptr),
-                                                                               hDistanceDiff(nullptr),
-                                                                               hPtProtonsFirstBinDeut(nullptr),
-                                                                               hDeltaPhi_Toward(nullptr),
-                                                                               hDeltaPhi_Transv(nullptr),
-                                                                               hDeltaPhi_Away(nullptr),
-                                                                               hDeltaPhi_INELgtZERO(nullptr)
+fAODevent(nullptr),
+fMCEvent(nullptr),
+fOutputList(nullptr),
+fQAList(nullptr),
+fAverage_Nch_Transv(7.2),
+hProtonWeights(nullptr),
+fProtonWeights(nullptr),
+hWeightToward(nullptr),
+hWeightTransv(nullptr),
+hWeightAway(nullptr),
+fDeuteronWF(nullptr),
+hSourceSize(nullptr),
+hNumberOfEvents(nullptr),
+hTransverseMult(nullptr),
+hRtDistribution(nullptr),
+hProtonsINELgtZERO(nullptr),
+hProtonsINELgtZERO_reshaped(nullptr),
+hDeuteronsINELgtZERO_TruewignerGaus(nullptr),
+hDeuterons_Toward_TruewignerGaus(nullptr),
+hDeuterons_Transv_TruewignerGaus(nullptr),
+hDeuteronsINELgtZERO_TruewignerDoubleGaus(nullptr),
+hDeuterons_Toward_TruewignerDoubleGaus(nullptr),
+hDeuterons_Transv_TruewignerDoubleGaus(nullptr),
+hProtons_Toward(nullptr),
+hProtons_Transv(nullptr),
+hProtons_Away(nullptr),
+hProtons_Toward_reshaped(nullptr),
+hProtons_Transv_reshaped(nullptr),
+hProtons_Away_reshaped(nullptr),
+hNeutronsINELgtZERO(nullptr),
+hNeutronsINELgtZERO_reshaped(nullptr),
+hNeutrons_Toward(nullptr),
+hNeutrons_Transv(nullptr),
+hNeutrons_Away(nullptr),
+hNeutrons_Toward_reshaped(nullptr),
+hNeutrons_Transv_reshaped(nullptr),
+hNeutrons_Away_reshaped(nullptr),
+hRapidityProtons(nullptr),
+hRapidityNeutrons(nullptr),
+hDeltaP(nullptr),
+hSourceRadius_Prot(nullptr),
+hSourceRadius_Neut(nullptr),
+hDistanceLab(nullptr),
+hDistanceDeut(nullptr),
+hDistanceDiff(nullptr),
+hPtProtonsFirstBinDeut(nullptr),
+hDeltaPhi_Toward(nullptr),
+hDeltaPhi_Transv(nullptr),
+hDeltaPhi_Away(nullptr),
+hDeltaPhi_INELgtZERO(nullptr)
 {
 }
 //____________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskPythiaCoalescence::AliAnalysisTaskPythiaCoalescence(const char *name) : AliAnalysisTaskSE(name),
-                                                                                           fAODevent(nullptr),
-                                                                                           fMCEvent(nullptr),
-                                                                                           fOutputList(nullptr),
-                                                                                           fQAList(nullptr),
-                                                                                           fAverage_Nch_Transv(7.2),
-                                                                                           hProtonWeights(nullptr),
-                                                                                           fProtonWeights(nullptr),
-                                                                                           hWeightToward(nullptr),
-                                                                                           hWeightTransv(nullptr),
-                                                                                           hWeightAway(nullptr),
-                                                                                           fDeuteronWF(nullptr),
-                                                                                           hSourceSize(nullptr),
-                                                                                           hNumberOfEvents(nullptr),
-                                                                                           hTransverseMult(nullptr),
-                                                                                           hRtDistribution(nullptr),
-                                                                                           hProtonsINELgtZERO(nullptr),
-                                                                                           hProtonsINELgtZERO_reshaped(nullptr),
-                                                                                           hProtons_Toward(nullptr),
-                                                                                           hProtons_Transv(nullptr),
-                                                                                           hProtons_Away(nullptr),
-                                                                                           hProtons_Toward_reshaped(nullptr),
-                                                                                           hProtons_Transv_reshaped(nullptr),
-                                                                                           hProtons_Away_reshaped(nullptr),
-                                                                                           hNeutronsINELgtZERO(nullptr),
-                                                                                           hNeutronsINELgtZERO_reshaped(nullptr),
-                                                                                           hNeutrons_Toward(nullptr),
-                                                                                           hNeutrons_Transv(nullptr),
-                                                                                           hNeutrons_Away(nullptr),
-                                                                                           hNeutrons_Toward_reshaped(nullptr),
-                                                                                           hNeutrons_Transv_reshaped(nullptr),
-                                                                                           hNeutrons_Away_reshaped(nullptr),
-                                                                                           hRapidityProtons(nullptr),
-                                                                                           hRapidityNeutrons(nullptr),
-                                                                                           hDeltaP(nullptr),
-                                                                                           hSourceRadius_Prot(nullptr),
-                                                                                           hSourceRadius_Neut(nullptr),
-                                                                                           hDistanceLab(nullptr),
-                                                                                           hDistanceDeut(nullptr),
-                                                                                           hDistanceDiff(nullptr),
-                                                                                           hPtProtonsFirstBinDeut(nullptr),
-                                                                                           hDeltaPhi_Toward(nullptr),
-                                                                                           hDeltaPhi_Transv(nullptr),
-                                                                                           hDeltaPhi_Away(nullptr),
-                                                                                           hDeltaPhi_INELgtZERO(nullptr)
+fAODevent(nullptr),
+fMCEvent(nullptr),
+fOutputList(nullptr),
+fQAList(nullptr),
+fAverage_Nch_Transv(7.2),
+hProtonWeights(nullptr),
+fProtonWeights(nullptr),
+hWeightToward(nullptr),
+hWeightTransv(nullptr),
+hWeightAway(nullptr),
+fDeuteronWF(nullptr),
+hSourceSize(nullptr),
+hNumberOfEvents(nullptr),
+hTransverseMult(nullptr),
+hRtDistribution(nullptr),
+hProtonsINELgtZERO(nullptr),
+hProtonsINELgtZERO_reshaped(nullptr),
+hDeuteronsINELgtZERO_TruewignerGaus(nullptr),
+hDeuterons_Toward_TruewignerGaus(nullptr),
+hDeuterons_Transv_TruewignerGaus(nullptr),
+hDeuteronsINELgtZERO_TruewignerDoubleGaus(nullptr),
+hDeuterons_Toward_TruewignerDoubleGaus(nullptr),
+hDeuterons_Transv_TruewignerDoubleGaus(nullptr),
+hProtons_Toward(nullptr),
+hProtons_Transv(nullptr),
+hProtons_Away(nullptr),
+hProtons_Toward_reshaped(nullptr),
+hProtons_Transv_reshaped(nullptr),
+hProtons_Away_reshaped(nullptr),
+hNeutronsINELgtZERO(nullptr),
+hNeutronsINELgtZERO_reshaped(nullptr),
+hNeutrons_Toward(nullptr),
+hNeutrons_Transv(nullptr),
+hNeutrons_Away(nullptr),
+hNeutrons_Toward_reshaped(nullptr),
+hNeutrons_Transv_reshaped(nullptr),
+hNeutrons_Away_reshaped(nullptr),
+hRapidityProtons(nullptr),
+hRapidityNeutrons(nullptr),
+hDeltaP(nullptr),
+hSourceRadius_Prot(nullptr),
+hSourceRadius_Neut(nullptr),
+hDistanceLab(nullptr),
+hDistanceDeut(nullptr),
+hDistanceDiff(nullptr),
+hPtProtonsFirstBinDeut(nullptr),
+hDeltaPhi_Toward(nullptr),
+hDeltaPhi_Transv(nullptr),
+hDeltaPhi_Away(nullptr),
+hDeltaPhi_INELgtZERO(nullptr)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -144,6 +156,13 @@ AliAnalysisTaskPythiaCoalescence::~AliAnalysisTaskPythiaCoalescence()
     delete hRtDistribution;
     delete hProtonsINELgtZERO;
     delete hProtonsINELgtZERO_reshaped;
+    delete hDeuteronsINELgtZERO_TruewignerGaus;
+    delete hDeuterons_Toward_TruewignerGaus;
+    delete hDeuterons_Transv_TruewignerGaus;
+    delete hDeuteronsINELgtZERO_TruewignerDoubleGaus;
+    delete hDeuterons_Toward_TruewignerDoubleGaus;
+    delete hDeuterons_Transv_TruewignerDoubleGaus;
+
     delete hProtons_Toward;
     delete hProtons_Transv;
     delete hProtons_Away;
@@ -633,7 +652,7 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
                     break;
                 }
                 // Coalescence Condition True Wigner Gaus
-                if(iTrial == 0)
+                if (iTrial == 0)
                 {
                     //  True Wigner function Coalescence
                     Double_t rndmG = gRandom->Uniform(0.0, 1.0); // random number for Gaus Wavefunction
@@ -663,7 +682,7 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
                     Double_t zeta1 = pow((pow(3.979, 2)) / (pow(3.979, 2) + 4 * SourceSize), 3 / 2);
                     Double_t zeta2 = pow((pow(0.89, 2)) / (pow(0.89, 2) + 4 * SourceSize), 3 / 2);
                     Double_t Delta = 0.581;
-                    if (rndmG < 3 *(Delta* zeta1 * exp(-deltaP * deltaP * 3.979 * 3.979)+(1-Delta)*zeta2*exp(-deltaP * deltaP * 0.89 * 0.89)))
+                    if (rndmG < 3 * (Delta * zeta1 * exp(-deltaP * deltaP * 3.979 * 3.979) + (1 - Delta) * zeta2 * exp(-deltaP * deltaP * 0.89 * 0.89)))
                     {
                         neutron_status[in] = 1;
                         Double_t y = p_deuteron.Rapidity();
@@ -971,7 +990,7 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
                     Double_t zeta1 = pow((pow(3.979, 2)) / (pow(3.979, 2) + 4 * SourceSize), 3 / 2);
                     Double_t zeta2 = pow((pow(0.89, 2)) / (pow(0.89, 2) + 4 * SourceSize), 3 / 2);
                     Double_t Delta = 0.581;
-                    if (rndmG < 3 *(Delta* zeta1 * exp(-deltaP * deltaP * 3.979 * 3.979)+(1-Delta)*zeta2*exp(-deltaP * deltaP * 0.89 * 0.89)))
+                    if (rndmG < 3 * (Delta * zeta1 * exp(-deltaP * deltaP * 3.979 * 3.979) + (1 - Delta) * zeta2 * exp(-deltaP * deltaP * 0.89 * 0.89)))
                     {
                         Double_t pt = p_deuteron.Pt();
                         Double_t phi_particle = TVector2::Phi_0_2pi(p_deuteron.Phi());

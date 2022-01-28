@@ -96,7 +96,8 @@ protected:
   AliESDtrackCuts* fTrackCuts{nullptr};       //-> track cuts
   std::unique_ptr<TRandom3> fRand{};          //!<! random generator
 
-  std::string fTrainMetadata{}; ///<  metadata of the train run used to generate the output
+  std::string fTrainMetadata{};       ///<  metadata of the train run used to generate the output
+  std::string fMCSelectedGenerator{}; ///<  selected generator (used in case of MCs with embedded signal to select the MB event)
 
   unsigned int fMCEventClass{EventClass::fiducial}; ///< baseline event class that this measurement should be corrected to
   bool fIsNominalSetting{};                         ///< flag to  propagate if this is the nominal cut setting
@@ -201,6 +202,7 @@ protected:
 
   int fMCLabel{}; //!<! mc label
 
+  bool fMCIsInjectedSignal{};   //!<! is injected signal?
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
   bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 
