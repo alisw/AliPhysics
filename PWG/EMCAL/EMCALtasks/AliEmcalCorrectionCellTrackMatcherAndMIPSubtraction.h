@@ -43,6 +43,8 @@ protected:
   Double_t               fEmipMC;              ///< Energy of MIP used to subtract from cell, in case of MC
 
   Bool_t                 fDoPropagation;      ///< Bool to switch propagation on/off
+  Bool_t                 fDoMatchPrimaryOnly; ///< Bool to switch if secndaries/conversions (r>fMaxDistToVtxPrim cm) will be matched
+  Double_t               fMaxDistToVtxPrim;   ///< Maximum DCA in XY direction for a track to be counted as primary
 
   //#if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -55,6 +57,7 @@ protected:
   TH2          *fCellNTrackMatch;              //!<!NTrackMatch distribution
   TH1          *fCellTrackMatchEbefore;        //!<!Ebefore distribution
   TH1          *fCellTrackMatchEafter;         //!<!Eafter distribution
+  TH2F         *fHistoMatchingEfficiency;      //!<! histo keeping track if cell was matched correctly or not as function of track momentum
 
  private:
   AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction(const AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction &);               // Not implemented
@@ -64,7 +67,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 3); // EMCal cell track matcher
+  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 4); // EMCal cell track matcher
   /// \endcond
 };
 
