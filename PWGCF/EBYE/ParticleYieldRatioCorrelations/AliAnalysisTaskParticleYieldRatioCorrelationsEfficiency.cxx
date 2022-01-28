@@ -133,7 +133,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
     }
     fAliEventCuts = new AliEventCuts();
     if (pbpb)
-        fAliEventCuts->SetupRun2PbPb();
+        fAliEventCuts->SetupPbPb2018();
     else
         fAliEventCuts->SetupRun2pp();
     fAliEventCuts->AddQAplotsToList(fOutputList);
