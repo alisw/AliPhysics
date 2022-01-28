@@ -26,12 +26,12 @@ using namespace std;
 
 ClassImp(AliAnalysisTask_Phi_MC)
 
-            AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC() : AliAnalysisTaskSE(), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0)  {
+AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC() : AliAnalysisTaskSE(), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0), fMCD(0), AODMCTrackArray(0), fMultSelection(0), fCurrent_SPH(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_RT(0), fCurrent_Run(0), fTrueEventMask(0), tParticle_0333(0), fTNParticle_0333(0), lQCParticle_0333(0), lAnalysisOutputList(0)  {
             }
 
 //_____________________________________________________________________________
 
-            AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC(const char* name) : AliAnalysisTaskSE(name), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0)  {
+            AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC(const char* name) : AliAnalysisTaskSE(name), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0), fMCD(0), AODMCTrackArray(0), fMultSelection(0), fCurrent_SPH(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_RT(0), fCurrent_Run(0), fTrueEventMask(0), tParticle_0333(0), fTNParticle_0333(0), lQCParticle_0333(0), lAnalysisOutputList(0) {
                 // Define Input
                 DefineInput(0, TChain::Class());
 
@@ -77,9 +77,9 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
     //  --- --- Allocating tree and setting branches
     tParticle_0333      =   new TTree   ( Form( "PhiCandidate_%s", fRunName.Data() ), "Data Tree for Phi Candidates" );
     tParticle_0333      ->  Branch      ( "n0333",      &fTNParticle_0333,      "fTNParticle_0333/I");
-    tParticle_0333      ->  Branch      ( "Px",         &fTPx,                  "fTPx[n0333]/F" );
-    tParticle_0333      ->  Branch      ( "Py",         &fTPy,                  "fTPy[n0333]/F" );
-    tParticle_0333      ->  Branch      ( "Pz",         &fTPz,                  "fTPz[n0333]/F" );
+    tParticle_0333      ->  Branch      ( "Px",         &fTPx,                  "fTPx[fTNParticle_0333]/F" );
+    tParticle_0333      ->  Branch      ( "Py",         &fTPy,                  "fTPy[fTNParticle_0333]/F" );
+    tParticle_0333      ->  Branch      ( "Pz",         &fTPz,                  "fTPz[fTNParticle_0333]/F" );
     PostData(3, tParticle_0333);
 }
 
@@ -141,6 +141,9 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
     //  Event Counting
     uFillEventEnumerate("Accepted");
     //
+    //  --- Zero all counters
+    fTNParticle_0333    = 0;
+    //
     return true;
 }
 
@@ -201,7 +204,7 @@ void        AliAnalysisTask_Phi_MC::fPostData( )                               {
     // Post-data for TLists
     PostData(1, lAnalysisOutputList );
     PostData(2, lQCParticle_0333 );
-    PostData(3, tParticle_0333 );
+    if ( fTNParticle_0333 > 0 ) PostData(3, tParticle_0333 );
 }
 
 //_____________________________________________________________________________
