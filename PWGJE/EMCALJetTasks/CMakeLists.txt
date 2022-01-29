@@ -230,7 +230,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskJetV3.cxx
     UserTasks/AliAnalysisTaskJetVn.cxx
-    UserTasks/AliAnalysisTaskPID.cxx
+    UserTasks/AliAnalysisTaskMTFPID.cxx
     UserTasks/AliAnalysisTaskPIDV0base.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx

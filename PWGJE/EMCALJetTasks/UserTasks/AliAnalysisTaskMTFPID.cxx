@@ -31,7 +31,7 @@
 
 #include "AliPPVsMultUtils.h"
 
-#include "AliAnalysisTaskPID.h"
+#include "AliAnalysisTaskMTFPID.h"
 
 #include "AliEMCALTrack.h"
 
@@ -46,20 +46,20 @@ data from e.g. HMPID is also foreseen.
 Contact: bhess@cern.ch
 */
 
-ClassImp(AliAnalysisTaskPID)
+ClassImp(AliAnalysisTaskMTFPID)
 
-const Int_t AliAnalysisTaskPID::fgkNumJetAxes = 5; // Number of additional axes for jets
-const Double_t AliAnalysisTaskPID::fgkEpsilon = 1e-8; // Double_t threshold above zero
-const Int_t AliAnalysisTaskPID::fgkMaxNumGenEntries = 500; // Maximum number of generated detector responses per track and delta(Prime) and associated species
+const Int_t AliAnalysisTaskMTFPID::fgkNumJetAxes = 5; // Number of additional axes for jets
+const Double_t AliAnalysisTaskMTFPID::fgkEpsilon = 1e-8; // Double_t threshold above zero
+const Int_t AliAnalysisTaskMTFPID::fgkMaxNumGenEntries = 500; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
-const Double_t AliAnalysisTaskPID::fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
+const Double_t AliAnalysisTaskMTFPID::fgkOneOverSqrt2 = 0.707106781186547462; // = 1. / TMath::Sqrt2();
 
-const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition
+const Double_t AliAnalysisTaskMTFPID::fgkSigmaReferenceForTransitionPars = 0.05; // Reference sigma chosen to calculate transition
 
-AliAnalysisTaskPID::EventGenerator AliAnalysisTaskPID::fgEventGenerator = AliAnalysisTaskPID::kPythia6Perugia0;
+AliAnalysisTaskMTFPID::EventGenerator AliAnalysisTaskMTFPID::fgEventGenerator = AliAnalysisTaskMTFPID::kPythia6Perugia0;
 
 //________________________________________________________________________
-AliAnalysisTaskPID::AliAnalysisTaskPID()
+AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   : AliAnalysisTaskPIDV0base()
   , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
@@ -205,11 +205,11 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
 {
   // default Constructor
   
-  AliLog::SetClassDebugLevel("AliAnalysisTaskPID", AliLog::kInfo); 
+  AliLog::SetClassDebugLevel("AliAnalysisTaskMTFPID", AliLog::kInfo); 
   
-  fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskPID::ConvolutedGaus,
+  fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskMTFPID::ConvolutedGaus,
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
-                                      fkConvolutedGausNPar, "AliAnalysisTaskPID", "ConvolutedGaus");
+                                      fkConvolutedGausNPar, "AliAnalysisTaskMTFPID", "ConvolutedGaus");
   
   // Set some arbitrary parameteres, such that the function call will not crash
   // (although it should not be called with these parameters...)
@@ -235,7 +235,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
+AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   : AliAnalysisTaskPIDV0base(name)
   , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
@@ -381,11 +381,11 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
 {
   // Constructor
   
-  AliLog::SetClassDebugLevel("AliAnalysisTaskPID", AliLog::kInfo);
+  AliLog::SetClassDebugLevel("AliAnalysisTaskMTFPID", AliLog::kInfo);
   
-  fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskPID::ConvolutedGaus,
+  fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskMTFPID::ConvolutedGaus,
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
-                                      fkConvolutedGausNPar, "AliAnalysisTaskPID", "ConvolutedGaus");
+                                      fkConvolutedGausNPar, "AliAnalysisTaskMTFPID", "ConvolutedGaus");
   
   // Set some arbitrary parameteres, such that the function call will not crash
   // (although it should not be called with these parameters...)
@@ -422,7 +422,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
 
 
 //________________________________________________________________________
-AliAnalysisTaskPID::~AliAnalysisTaskPID()
+AliAnalysisTaskMTFPID::~AliAnalysisTaskMTFPID()
 {
   // dtor
   
@@ -568,7 +568,7 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpPIDcombined()
+void AliAnalysisTaskMTFPID::SetUpPIDcombined()
 {
   // Initialise the PIDcombined object
   
@@ -616,7 +616,7 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
 
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskPID::CalculateMaxEtaVariationMapFromPIDResponse()
+Bool_t AliAnalysisTaskMTFPID::CalculateMaxEtaVariationMapFromPIDResponse()
 {
   // Calculate the maximum deviation from unity of the eta correction factors for each row in 1/dEdx(splines)
   // from the eta correction map of the TPCPIDResponse. The result is stored in fhMaxEtaVariation.
@@ -659,14 +659,14 @@ Bool_t AliAnalysisTaskPID::CalculateMaxEtaVariationMapFromPIDResponse()
     fhMaxEtaVariation->SetBinContent(binY, maxAbs);
   }
   
-  printf("AliAnalysisTaskPID: Calculated max eta variation from map \"%s\".\n", hEta->GetTitle());
+  printf("AliAnalysisTaskMTFPID: Calculated max eta variation from map \"%s\".\n", hEta->GetTitle());
   
   return kTRUE;
 }
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::UserCreateOutputObjects()
+void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -1332,7 +1332,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::UserExec(Option_t *)
+void AliAnalysisTaskMTFPID::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
@@ -1476,7 +1476,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   Bool_t isMultSelected = kFALSE;
   
   
-  if(GetRunMode() == AliAnalysisTaskPID::kJetPIDMode) {
+  if(GetRunMode() == AliAnalysisTaskMTFPID::kJetPIDMode) {
     IncrementEventCounter(centralityPercentile, kTriggerSel);
     if (passedVertexSelectionMB) {
       IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut); 
@@ -1516,7 +1516,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
   }
   
-  if (GetRunMode() == AliAnalysisTaskPID::kLightFlavorMode) {
+  if (GetRunMode() == AliAnalysisTaskMTFPID::kLightFlavorMode) {
     if (passedDAQCheck && passedTrackClustCut && !isPileUpMB) {
       IncrementEventCounter(centralityPercentile, kTriggerSel);
       if (passedVertexSelectionMB) {
@@ -1753,7 +1753,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
 }      
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::Terminate(const Option_t *)
+void AliAnalysisTaskMTFPID::Terminate(const Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
@@ -1761,7 +1761,7 @@ void AliAnalysisTaskPID::Terminate(const Option_t *)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
+void AliAnalysisTaskMTFPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
 {
   // Check whether at least one scale factor indicates the ussage of systematic studies
   // and set internal flag accordingly.
@@ -1795,7 +1795,7 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
+void AliAnalysisTaskMTFPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
 {
   // Configure the task for the current event. In particular, this is needed if the run number changes
   
@@ -1820,7 +1820,7 @@ void AliAnalysisTaskPID::ConfigureTaskForCurrentEvent(AliVEvent* event)
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::PDGtoMCID(Int_t pdg)
+Int_t AliAnalysisTaskMTFPID::PDGtoMCID(Int_t pdg)
 {
   // Returns the corresponding AliPID index to the given pdg code.
   // Returns AliPID::kUnkown if pdg belongs to a not considered species.
@@ -1847,7 +1847,7 @@ Int_t AliAnalysisTaskPID::PDGtoMCID(Int_t pdg)
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi)
+void AliAnalysisTaskMTFPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt, Double_t& z, Double_t& xi)
 {
   // Uses trackPt and jetPt to obtain z and xi.
   z = (jetPt > 0 && trackPt >= 0) ? (trackPt / jetPt) : -1;
@@ -1861,7 +1861,7 @@ void AliAnalysisTaskPID::GetJetTrackObservables(Double_t trackPt, Double_t jetPt
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::CleanupParticleFractionHistos()
+void AliAnalysisTaskMTFPID::CleanupParticleFractionHistos()
 {
   // Delete histos with particle fractions
   
@@ -1876,7 +1876,7 @@ void AliAnalysisTaskPID::CleanupParticleFractionHistos()
 
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPID::ConvolutedGaus(const Double_t* xx, const Double_t* par) const
+Double_t AliAnalysisTaskMTFPID::ConvolutedGaus(const Double_t* xx, const Double_t* par) const
 {
   // Convolutes gauss with an exponential tail which describes dEdx-response better than pure gaussian
 
@@ -1892,7 +1892,7 @@ Double_t AliAnalysisTaskPID::ConvolutedGaus(const Double_t* xx, const Double_t* 
 
 
 //_____________________________________________________________________________
-inline Double_t AliAnalysisTaskPID::FastGaus(Double_t x, Double_t mean, Double_t sigma) const
+inline Double_t AliAnalysisTaskMTFPID::FastGaus(Double_t x, Double_t mean, Double_t sigma) const
 {
   // Calculate an unnormalised gaussian function with mean and sigma.
 
@@ -1905,7 +1905,7 @@ inline Double_t AliAnalysisTaskPID::FastGaus(Double_t x, Double_t mean, Double_t
 
 
 //_____________________________________________________________________________
-inline Double_t AliAnalysisTaskPID::FastNormalisedGaus(Double_t x, Double_t mean, Double_t sigma) const
+inline Double_t AliAnalysisTaskMTFPID::FastNormalisedGaus(Double_t x, Double_t mean, Double_t sigma) const
 {
   // Calculate a normalised (divided by sqrt(2*Pi)*sigma) gaussian function with mean and sigma.
 
@@ -1919,7 +1919,7 @@ inline Double_t AliAnalysisTaskPID::FastNormalisedGaus(Double_t x, Double_t mean
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindBinWithinRange(TAxis* axis, Double_t value) const
+Int_t AliAnalysisTaskMTFPID::FindBinWithinRange(TAxis* axis, Double_t value) const
 {
   // Find the corresponding bin of the axis. Values outside the range (also under and overflow) will be set to the first/last
   // available bin
@@ -1936,7 +1936,7 @@ Int_t AliAnalysisTaskPID::FindBinWithinRange(TAxis* axis, Double_t value) const
 
   
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
+Int_t AliAnalysisTaskMTFPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
                                                       Int_t zBin) const
 {
   // Kind of projects a TH3 to 1 bin combination in y and z
@@ -1957,7 +1957,7 @@ Int_t AliAnalysisTaskPID::FindFirstBinAboveIn3dSubset(const TH3* hist, Double_t 
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
+Int_t AliAnalysisTaskMTFPID::FindLastBinAboveIn3dSubset(const TH3* hist, Double_t threshold, Int_t yBin,
                                                      Int_t zBin) const
 {
   // Kind of projects a TH3 to 1 bin combination in y and z 
@@ -1978,7 +1978,7 @@ Int_t AliAnalysisTaskPID::FindLastBinAboveIn3dSubset(const TH3* hist, Double_t t
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::GetParticleFraction(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
+Bool_t AliAnalysisTaskMTFPID::GetParticleFraction(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
                                                AliPID::EParticleType species,
                                                Double_t& fraction, Double_t& fractionErrorStat, Double_t& fractionErrorSys) const
 {
@@ -2072,7 +2072,7 @@ Bool_t AliAnalysisTaskPID::GetParticleFraction(Double_t trackPt, Double_t jetPt,
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::GetParticleFractions(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
+Bool_t AliAnalysisTaskMTFPID::GetParticleFractions(Double_t trackPt, Double_t jetPt, Double_t centralityPercentile,
                                                 Double_t* prob, Int_t smearSpeciesByError,
                                                 Int_t takeIntoAccountSpeciesSysError, Bool_t uniformSystematicError) const
 {
@@ -2278,7 +2278,7 @@ Bool_t AliAnalysisTaskPID::GetParticleFractions(Double_t trackPt, Double_t jetPt
 
 
 //_____________________________________________________________________________
-const TH3D* AliAnalysisTaskPID::GetParticleFractionHisto(Int_t species, Bool_t sysError) const
+const TH3D* AliAnalysisTaskMTFPID::GetParticleFractionHisto(Int_t species, Bool_t sysError) const
 {
   if (species < AliPID::kElectron || species > AliPID::kProton)
     return 0x0;
@@ -2288,7 +2288,7 @@ const TH3D* AliAnalysisTaskPID::GetParticleFractionHisto(Int_t species, Bool_t s
 
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t motherGenPt)
+Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t motherGenPt)
 {
   // Strangeness ratio MC/data as function of mother pt from CMS data in |eta|<2.0
   // -> Based on function in PWGJE/AliAnalysisTaskFragmentationFunction, which uses
@@ -2471,7 +2471,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(Int_t motherPDG, Double_t
 
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter)
+Double_t AliAnalysisTaskMTFPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliMCParticle* daughter)
 {
   // Strangeness ratio MC/data as function of mother pt from CMS data in |eta|<2.0
   // -> Based on function in PWGJE/AliAnalysisTaskFragmentationFunction
@@ -2533,7 +2533,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliM
 
 
 // _________________________________________________________________________________
-AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
+AliAnalysisTaskMTFPID::TOFpidInfo AliAnalysisTaskMTFPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
 {
   // Get the (locally defined) particle type judged by TOF
   if (!fStoreTOFInfo) {
@@ -2641,7 +2641,7 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
 
 
 // _________________________________________________________________________________
-Bool_t AliAnalysisTaskPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel)
+Bool_t AliAnalysisTaskMTFPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel)
 {
   // Check whether particle is a secondary with strange mother, i.e. returns kTRUE if a strange mother is found
   // and the particle is NOT a physical primary. In all other cases kFALSE is returned
@@ -2676,7 +2676,7 @@ Bool_t AliAnalysisTaskPID::IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, I
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::SetParticleFractionHisto(const TH3D* hist, Int_t species, Bool_t sysError)
+Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHisto(const TH3D* hist, Int_t species, Bool_t sysError)
 {
   // Store a clone of hist (containing the particle fractions of the corresponding species with statistical error (sysError = kFALSE)
   // or systematic error (sysError = kTRUE), respectively), internally 
@@ -2703,7 +2703,7 @@ Bool_t AliAnalysisTaskPID::SetParticleFractionHisto(const TH3D* hist, Int_t spec
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString filePathName, Bool_t sysError)
+Bool_t AliAnalysisTaskMTFPID::SetParticleFractionHistosFromFile(const TString filePathName, Bool_t sysError)
 {
   // Loads particle fractions for all species from the desired file and returns kTRUE on success.
   // The maps are assumed to be of Type TH3D, to sit in the main directory and to have names 
@@ -2743,7 +2743,7 @@ Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString fileP
 
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskPID::GetMaxEtaVariation(Double_t dEdxSplines)
+Double_t AliAnalysisTaskMTFPID::GetMaxEtaVariation(Double_t dEdxSplines)
 {
   // Returns the maximum eta variation (i.e. deviation of eta correction factor from unity) for the
   // given (spline) dEdx
@@ -2765,7 +2765,7 @@ Double_t AliAnalysisTaskPID::GetMaxEtaVariation(Double_t dEdxSplines)
 
 
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskPID::GetRandomParticleTypeAccordingToParticleFractions(Double_t trackPt, Double_t jetPt,
+Int_t AliAnalysisTaskMTFPID::GetRandomParticleTypeAccordingToParticleFractions(Double_t trackPt, Double_t jetPt,
                                                                             Double_t centralityPercentile, 
                                                                             Bool_t smearByError,
                                                                             Bool_t takeIntoAccountSysError) const
@@ -2805,7 +2805,7 @@ Int_t AliAnalysisTaskPID::GetRandomParticleTypeAccordingToParticleFractions(Doub
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::GenerateDetectorResponse(AliAnalysisTaskPID::ErrorCode errCode, 
+AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::GenerateDetectorResponse(AliAnalysisTaskMTFPID::ErrorCode errCode, 
                                                                            Double_t mean, Double_t sigma,
                                                                            Double_t* responses, Int_t nResponses, 
                                                                            Bool_t usePureGaus)
@@ -2854,7 +2854,7 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::GenerateDetectorResponse(AliAn
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
+void AliAnalysisTaskMTFPID::PrintSettings(Bool_t printSystematicsSettings) const
 {
   // Print current settings.
   
@@ -2903,10 +2903,10 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("\n");
   
   std::cout << "Run Mode: ";
-  if (GetRunMode() == AliAnalysisTaskPID::kJetPIDMode) {
+  if (GetRunMode() == AliAnalysisTaskMTFPID::kJetPIDMode) {
     std::cout << "Jet PID Mode";
   } 
-  else if (GetRunMode() == AliAnalysisTaskPID::kLightFlavorMode) {
+  else if (GetRunMode() == AliAnalysisTaskMTFPID::kLightFlavorMode) {
     std::cout << "Light Flavor Mode";
   }
   else {
@@ -2953,7 +2953,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
 
 
 //_____________________________________________________________________________
-void AliAnalysisTaskPID::PrintSystematicsSettings() const
+void AliAnalysisTaskMTFPID::PrintSystematicsSettings() const
 {
   // Print current settings for systematic studies.
   
@@ -2974,7 +2974,7 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile,
+Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particlePDGcode, Double_t centralityPercentile,
                                         Double_t jetPt, Bool_t isMBSelected, Bool_t isMultSelected, 
                                         Double_t radialDistanceToJet, Double_t jT) 
 {
@@ -3903,7 +3903,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
 
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
+Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
 {
   // Set the lambda parameter of the convolution to the desired value. Automatically
   // calculates the parameters for the transition (restricted) gauss -> convoluted gauss.
@@ -4100,7 +4100,7 @@ Bool_t AliAnalysisTaskPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma) 
+AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGaus(Double_t gausMean, Double_t gausSigma) 
 {
   // Set parameters for convoluted gauss using parameters for a pure gaussian.
   // If SetConvolutedGaussLambdaParameter has not been called before to initialise the translation parameters,
@@ -4227,7 +4227,7 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(Dou
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt,
+void AliAnalysisTaskMTFPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt,
                                       Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
@@ -4286,7 +4286,7 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt, Double_t* binsJt) const
+void AliAnalysisTaskMTFPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt, Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
@@ -4323,7 +4323,7 @@ void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Do
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt,
+void AliAnalysisTaskMTFPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt,
                                    Double_t* binsJt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
@@ -4382,7 +4382,7 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const
+void AliAnalysisTaskMTFPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
@@ -4402,7 +4402,7 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
+void AliAnalysisTaskMTFPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
@@ -4419,7 +4419,7 @@ void AliAnalysisTaskPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, D
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const
+void AliAnalysisTaskMTFPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   hist->SetBinEdges(kDeDxCheckP, binsPt);
@@ -4442,7 +4442,7 @@ void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* bin
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* binsCent, const Double_t* binsPt) const
+void AliAnalysisTaskMTFPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* binsCent, const Double_t* binsPt) const
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   hist->SetBinEdges(kBinZeroStudyCentrality, binsCent);
@@ -4456,19 +4456,19 @@ void AliAnalysisTaskPID::SetUpBinZeroStudyHist(THnSparse* hist, const Double_t* 
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPID::FillUEDensity(Double_t cent, Double_t UEpt) {
+void AliAnalysisTaskMTFPID::FillUEDensity(Double_t cent, Double_t UEpt) {
   if (fIsUEPID) {
     fh2UEDensity->Fill(cent, UEpt);
   }
 }
 
-void AliAnalysisTaskPID::FillJetArea(Double_t cent, Double_t area) {
+void AliAnalysisTaskMTFPID::FillJetArea(Double_t cent, Double_t area) {
   if (fIsUEPID) {
     fh1JetArea->Fill(cent,area);
   }
 }
 
-void AliAnalysisTaskPID::NormalizeJetArea(Double_t jetParameter) {
+void AliAnalysisTaskMTFPID::NormalizeJetArea(Double_t jetParameter) {
   if (!fIsUEPID)
     return;
   
@@ -4486,7 +4486,7 @@ void AliAnalysisTaskPID::NormalizeJetArea(Double_t jetParameter) {
   }
 }
 
-void AliAnalysisTaskPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const AliVVertex* primvtx, AliMCEvent* mcEvent, Double_t jetPt) {
+void AliAnalysisTaskMTFPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const AliVVertex* primvtx, AliMCEvent* mcEvent, Double_t jetPt) {
   
   if (!GetDoDCATemplateGeneration())
     return;
@@ -4584,7 +4584,7 @@ void AliAnalysisTaskPID::FillDCA(AliVTrack* track, Double_t dEdxTPC, const AliVV
   }
 }
 
-void AliAnalysisTaskPID::DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, Int_t multiplicity, Double_t dEdx, Int_t PiTracksEnabled, AliTrackContainer* trackContainer) {
+void AliAnalysisTaskMTFPID::DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, Int_t multiplicity, Double_t dEdx, Int_t PiTracksEnabled, AliTrackContainer* trackContainer) {
   if (!GetDoTPCclusterStudies())
     return;
   
@@ -4645,7 +4645,7 @@ void AliAnalysisTaskPID::DoTPCclusterStudies(AliVTrack* track, Int_t v0tag, Int_
   return;
 }
 
-void AliAnalysisTaskPID::FillTPCclusterStudiesHistograms(TObjArray* histarray, Double_t deltaPrime, Int_t nparam, Double_t param[]) {
+void AliAnalysisTaskMTFPID::FillTPCclusterStudiesHistograms(TObjArray* histarray, Double_t deltaPrime, Int_t nparam, Double_t param[]) {
   for (Int_t i=0;i<histarray->GetEntriesFast();++i) {
     if (i != 2) {
       TH2* hist = dynamic_cast<TH2*>(histarray->At(i));
@@ -4661,7 +4661,7 @@ void AliAnalysisTaskPID::FillTPCclusterStudiesHistograms(TObjArray* histarray, D
   return;
 }
 
-Int_t AliAnalysisTaskPID::GetNumberOfNearTracks(AliVTrack* track, AliTrackContainer* trackContainer) {
+Int_t AliAnalysisTaskMTFPID::GetNumberOfNearTracks(AliVTrack* track, AliTrackContainer* trackContainer) {
   Int_t nOfNearTracks = 0;
   Double_t phi = track->Phi();
   Double_t theta = track->Theta();

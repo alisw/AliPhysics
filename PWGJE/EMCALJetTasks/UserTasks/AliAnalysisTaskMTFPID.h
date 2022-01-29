@@ -1,5 +1,5 @@
-#ifndef ALI_ANALYSIS_TASK_PID_H
-#define ALI_ANALYSIS_TASK_PID_H
+#ifndef ALI_ANALYSIS_TASK_MTF_PID_H
+#define ALI_ANALYSIS_TASK_MTF_PID_H
 
 /*
 This task collects PID output from different detectors.
@@ -41,11 +41,11 @@ class AliTrackContainer;
 #include "AliPID.h"
 #include "AliAnalysisTaskPIDV0base.h"
 
-class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
+class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
  public:
-  AliAnalysisTaskPID();
-  AliAnalysisTaskPID(const char *name);
-  virtual ~AliAnalysisTaskPID();
+  AliAnalysisTaskMTFPID();
+  AliAnalysisTaskMTFPID(const char *name);
+  virtual ~AliAnalysisTaskMTFPID();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -109,8 +109,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   static Bool_t IsSecondaryWithStrangeMotherMC(AliMCEvent* mcEvent, Int_t partLabel);
   
-  static AliAnalysisTaskPID::EventGenerator GetEventGenerator() { return fgEventGenerator; };
-  static void SetEventGenerator(AliAnalysisTaskPID::EventGenerator value) { fgEventGenerator = value; };
+  static AliAnalysisTaskMTFPID::EventGenerator GetEventGenerator() { return fgEventGenerator; };
+  static void SetEventGenerator(AliAnalysisTaskMTFPID::EventGenerator value) { fgEventGenerator = value; };
   
   virtual void ConfigureTaskForCurrentEvent(AliVEvent* event);
   
@@ -402,7 +402,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t fDCAUpperpTLimit;
   Bool_t fSigmaFactorCutForDCATemplateGeneration;
   
-  static AliAnalysisTaskPID::EventGenerator fgEventGenerator;
+  static AliAnalysisTaskMTFPID::EventGenerator fgEventGenerator;
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
@@ -558,8 +558,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t fClusterStudiesPrMomentumHigh;
   Double_t fVicinityCut;
   
-  AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
-  AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
+  AliAnalysisTaskMTFPID(const AliAnalysisTaskMTFPID&); // not implemented
+  AliAnalysisTaskMTFPID& operator=(const AliAnalysisTaskMTFPID&); // not implemented
   
   //For Underlying Event
   Bool_t fIsUEPID;
@@ -576,12 +576,12 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   TH3D* fh3DCA_XY_WeakDecays_Negative;
   TH3D* fh3DCA_XY_Material_Negative;  
   
-  ClassDef(AliAnalysisTaskPID, 23);
+  ClassDef(AliAnalysisTaskMTFPID, 1);
 };
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values, AliAnalysisTaskPID::EffSteps step,
+inline Bool_t AliAnalysisTaskMTFPID::FillEfficiencyContainer(const Double_t* values, AliAnalysisTaskMTFPID::EffSteps step,
                                                           Double_t weight) 
 {
   // Fill efficiency container at step "step" with the values
@@ -601,7 +601,7 @@ inline Bool_t AliAnalysisTaskPID::FillEfficiencyContainer(const Double_t* values
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, Double_t weight)
+inline Bool_t AliAnalysisTaskMTFPID::FillGeneratedYield(const Double_t* values, Double_t weight)
 {
   // Fill histos with generated primary yields with provided values
   
@@ -620,7 +620,7 @@ inline Bool_t AliAnalysisTaskPID::FillGeneratedYield(const Double_t* values, Dou
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillGenJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm)
+inline Bool_t AliAnalysisTaskMTFPID::FillGenJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm)
 {
   if (!fDoPID && !fDoEfficiency)
     return kFALSE;
@@ -638,7 +638,7 @@ inline Bool_t AliAnalysisTaskPID::FillGenJets(Double_t centralityPercentile, Dou
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm)
+inline Bool_t AliAnalysisTaskMTFPID::FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm)
 {
   if (!fDoPID && !fDoEfficiency)
     return kFALSE;
@@ -656,7 +656,7 @@ inline Bool_t AliAnalysisTaskPID::FillRecJets(Double_t centralityPercentile, Dou
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillPtResolution(Int_t mcID, const Double_t* values)
+inline Bool_t AliAnalysisTaskMTFPID::FillPtResolution(Int_t mcID, const Double_t* values)
 {
   // Fill histos with pT resolution with provided values
   
@@ -675,7 +675,7 @@ inline Bool_t AliAnalysisTaskPID::FillPtResolution(Int_t mcID, const Double_t* v
  
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPercentile, AliAnalysisTaskPID::EventCounterType type)
+inline Bool_t AliAnalysisTaskMTFPID::IncrementEventCounter(Double_t centralityPercentile, AliAnalysisTaskMTFPID::EventCounterType type)
 {
   // Increment the number of events for the given centrality percentile and the corresponding counter type
   
@@ -718,7 +718,7 @@ inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPerce
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::FillCutHisto(Double_t value, AliAnalysisTaskPID::CutHistoType type)
+inline Bool_t AliAnalysisTaskMTFPID::FillCutHisto(Double_t value, AliAnalysisTaskMTFPID::CutHistoType type)
 {
   // Fill cut histo of corresponding type at given value.
   if (type == kMCPtHardCut) {
@@ -735,7 +735,7 @@ inline Bool_t AliAnalysisTaskPID::FillCutHisto(Double_t value, AliAnalysisTaskPI
 
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::SetEtaAbsCutRange(Double_t lowerLimit, Double_t upperLimit)
+inline Bool_t AliAnalysisTaskMTFPID::SetEtaAbsCutRange(Double_t lowerLimit, Double_t upperLimit)
 {
   if (lowerLimit >= upperLimit) {
     AliError(Form("Requested lower |eta| cut limit >= upper |eta| cut limit. Old eta cut range will be used (low %f, high %f).",
@@ -749,7 +749,7 @@ inline Bool_t AliAnalysisTaskPID::SetEtaAbsCutRange(Double_t lowerLimit, Double_
   return kTRUE;
 };
 
-inline void AliAnalysisTaskPID::SetMultBinSystematics(Int_t nMultBins, Double_t* multBins, Double_t* uncertainties) {
+inline void AliAnalysisTaskMTFPID::SetMultBinSystematics(Int_t nMultBins, Double_t* multBins, Double_t* uncertainties) {
   if (fMultBinSystematics) {
     delete fMultBinSystematics;
   }
@@ -761,7 +761,7 @@ inline void AliAnalysisTaskPID::SetMultBinSystematics(Int_t nMultBins, Double_t*
 }
 
 //_____________________________________________________________________________
-inline Double_t AliAnalysisTaskPID::GetConvolutedGaussTransitionPar(Int_t index) const
+inline Double_t AliAnalysisTaskMTFPID::GetConvolutedGaussTransitionPar(Int_t index) const
 {
   if (index < 0 || index >= 3) {
     printf("Invalid index %d!\n", index);
@@ -772,7 +772,7 @@ inline Double_t AliAnalysisTaskPID::GetConvolutedGaussTransitionPar(Int_t index)
 
 
 //_____________________________________________________________________________
-inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsTrackPt() const
+inline Int_t AliAnalysisTaskMTFPID::GetParticleFractionHistoNbinsTrackPt() const
 {
   if (!fFractionHists[AliPID::kPion])
     return -1;
@@ -782,7 +782,7 @@ inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsTrackPt() const
 
 
 //_____________________________________________________________________________
-inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsJetPt() const
+inline Int_t AliAnalysisTaskMTFPID::GetParticleFractionHistoNbinsJetPt() const
 {
   if (!fFractionHists[AliPID::kPion])
     return -1;
@@ -792,7 +792,7 @@ inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsJetPt() const
 
 
 //_____________________________________________________________________________
-inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsCentrality() const
+inline Int_t AliAnalysisTaskMTFPID::GetParticleFractionHistoNbinsCentrality() const
 {
   if (!fFractionHists[AliPID::kPion])
     return -1;
@@ -802,7 +802,7 @@ inline Int_t AliAnalysisTaskPID::GetParticleFractionHistoNbinsCentrality() const
 
 
 //_____________________________________________________________________________
-inline Double_t AliAnalysisTaskPID::GetCentralityPercentile(AliVEvent* evt) const
+inline Double_t AliAnalysisTaskMTFPID::GetCentralityPercentile(AliVEvent* evt) const
 {
   // WARNING: This function may not be used in case of special pp centrality estimators which require different handling
   // (and sometimes ESD events)
@@ -818,7 +818,7 @@ inline Double_t AliAnalysisTaskPID::GetCentralityPercentile(AliVEvent* evt) cons
 
 
 //_____________________________________________________________________________
-inline void AliAnalysisTaskPID::PostOutputData()
+inline void AliAnalysisTaskMTFPID::PostOutputData()
 {
   PostData(1, fOutputContainer);
   

@@ -122,7 +122,7 @@
 #pragma link C++ class AliAnalysisTaskJetV3+;
 #pragma link C++ class AliAnalysisTaskJetVn+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
-#pragma link C++ class AliAnalysisTaskPID+;
+#pragma link C++ class AliAnalysisTaskMTFPID+;
 #pragma link C++ class AliAnalysisTaskPIDV0base+;
 #pragma link C++ class AliPieceWisePoly+;
 #pragma link C++ class AliAnalysisTaskPSHFE+;

@@ -49,7 +49,7 @@ public:
     Vertexmin = f_Vertexmin;
     Vertexmax = f_Vertexmax;
   }
-  virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows, int f_movePhi)
+  virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, Float_t f_nSigma, int f_nCrossedRows, int f_movePhi)
   {
     IsMC = f_IsMC;
     pbpb = f_pbpb; // pp if false
@@ -82,8 +82,8 @@ private:
   Bool_t pbpb, IsMC;
   Bool_t SPDvsV0MCut, LargeTPCCut;
   AliEventCuts *fAliEventCuts; //!
-  int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
-  Float_t minP, maxP, Vertexmin, Vertexmax;
+  int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nCrossedRows, movePhi;
+  Float_t minP, maxP, Vertexmin, Vertexmax, nSigma;
   Float_t CentrPercentiles[10];
   int nCentrClassesUsed;
   static const int nCentrClasses = 10, nEtaClasses = 16, nSorts = 8;
