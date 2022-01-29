@@ -640,6 +640,17 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
     // If we have two collections - set the first track
     if (partCollection2 != nullptr) {
       tPair->SetTrack1(*tPartIter1);
+      
+        if(freverseParticleVariables){
+	    //This works only if you set the variable on true (default=false). Temporary function. see the comment in .h file
+            AliFemtoParticle *fTrack1=(AliFemtoParticle*)*tPartIter1;
+	    AliFemtoLorentzVector p1 = (AliFemtoLorentzVector) fTrack1->FourMomentum();
+            p1.SetX(-1.0*p1.x());
+            p1.SetY(-1.0*p1.y());
+            p1.SetZ(-1.0*p1.z());
+            fTrack1->ResetFourMomentum(p1);
+            tPair->SetTrack1(fTrack1);
+	}
     }
 
     // Begin the inner loop
@@ -649,19 +660,6 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
       // If we have two collections - only set the second track
       if (partCollection2 != nullptr) {
         tPair->SetTrack2(*tPartIter2);
-
-	if(freverseParticleVariables){
-	    //This works only if you set the variable on true (default=false). Temporary function. see the comment in .h file
-            AliFemtoParticle *fTrack2=(AliFemtoParticle*)*tPartIter2;
-	    AliFemtoLorentzVector p2 = (AliFemtoLorentzVector) fTrack2->FourMomentum();
-            p2.SetX(-1.0*p2.x());
-            p2.SetY(-1.0*p2.y());
-            p2.SetZ(-1.0*p2.z());
-            fTrack2->ResetFourMomentum(p2);
-            tPair->SetTrack2(fTrack2);
-	}
-
-
 
       // Swap between first and second particles to avoid biased ordering
       } else {
