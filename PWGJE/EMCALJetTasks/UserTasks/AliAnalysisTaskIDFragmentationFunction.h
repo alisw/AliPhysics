@@ -32,7 +32,7 @@ class AliFJWrapper;
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliPID.h"
-#include "AliAnalysisTaskPID.h"
+#include "AliAnalysisTaskMTFPID.h"
   
 class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskEmcalJet {
 public:
@@ -124,8 +124,8 @@ public:
   virtual void SetUseJetUEPIDtask(Bool_t flag) {fUseJetUEPIDtask = flag; }
   
   // Helper functions
-  virtual void FillPIDTasksCutHisto(Double_t value, AliAnalysisTaskPID::CutHistoType histoType);
-  virtual void IncrementPIDTasksEventCounts(Double_t centPercent, AliAnalysisTaskPID::EventCounterType eventCounterType, Bool_t* isPileUpInclusivePIDtask = 0x0, Bool_t* isPileUpJetPIDtask = 0x0, Bool_t* isPileUpJetUEPIDtask = 0x0);
+  virtual void FillPIDTasksCutHisto(Double_t value, AliAnalysisTaskMTFPID::CutHistoType histoType);
+  virtual void IncrementPIDTasksEventCounts(Double_t centPercent, AliAnalysisTaskMTFPID::EventCounterType eventCounterType, Bool_t* isPileUpInclusivePIDtask = 0x0, Bool_t* isPileUpJetPIDtask = 0x0, Bool_t* isPileUpJetUEPIDtask = 0x0);
   
   // Begin of underlying event calculations
   virtual TList* GetUEJetsWithRandomConeMethod(AliJetContainer* jetContainer, Double_t coneRadius, Double_t maxEtaTrack);
@@ -137,10 +137,10 @@ public:
   virtual Bool_t OverlapsWithAnyRecJet(const AliVParticle* part, Double_t dDistance = -1.0) const; 
   
   //Filling the efficiency containers of the specified task with the generated jet yield
-  virtual void PerformJetMonteCarloAnalysisGeneratedYield(AliEmcalJet* jet, AliVParticle* trackVP, AliAnalysisTaskPID* task, Double_t centPercent, AliJetContainer* mcJetContainer = 0x0);
+  virtual void PerformJetMonteCarloAnalysisGeneratedYield(AliEmcalJet* jet, AliVParticle* trackVP, AliAnalysisTaskMTFPID* task, Double_t centPercent, AliJetContainer* mcJetContainer = 0x0);
   
   //Jet Track Calculations, including filling of the efficiency containers. If no task is specified, the function loops over all Jet tasks in fJetPIDtask, using trackRejectedByTask[] to decide if the track is accepted. If a task is specified, everything is done (without checking further) for the specified task. 
-  virtual void AnalyseJetTrack(AliVTrack* track, AliEmcalJet* jet, AliAnalysisTaskPID* task, const Bool_t* trackRejectedByTask, Double_t centPercent, AliMCParticleContainer* mcParticleContainer = 0x0);
+  virtual void AnalyseJetTrack(AliVTrack* track, AliEmcalJet* jet, AliAnalysisTaskMTFPID* task, const Bool_t* trackRejectedByTask, Double_t centPercent, AliMCParticleContainer* mcParticleContainer = 0x0);
   
   //Fill DCA
   virtual void FillDCA(AliVTrack* track, AliMCParticleContainer* mcParticleContainer); 
@@ -192,7 +192,7 @@ public:
   void RemoveJetContainer(const char* n) {fJetCollArray.Remove(GetJetContainer(n));}
   
   void SetUpFastJetWrapperWithOriginalValues(AliFJWrapper* wrapper);
-  void FillEfficiencyContainerFromTrack(AliAODMCParticle* part, AliEmcalJet* jet, Double_t centPercent, AliAnalysisTaskPID::EffSteps step);
+  void FillEfficiencyContainerFromTrack(AliAODMCParticle* part, AliEmcalJet* jet, Double_t centPercent, AliAnalysisTaskMTFPID::EffSteps step);
 	
  protected:
 
@@ -286,9 +286,9 @@ public:
   TString* fNameJetPIDtask;                 //[fNumJetPIDtasks] Names of the tasks for jet PID spectra
   TString* fNameJetUEPIDtask;               //[fNumJetUEPIDtasks] Names of the tasks for jet UE PID spectra
   
-  AliAnalysisTaskPID** fInclusivePIDtask;   //! Pointer to tasks for inclusive PID spectra
-  AliAnalysisTaskPID** fJetPIDtask;         //! Pointer to tasks for jet PID spectra
-  AliAnalysisTaskPID** fJetUEPIDtask;       //! Pointer to tasks for jet UE PID spectra
+  AliAnalysisTaskMTFPID** fInclusivePIDtask;   //! Pointer to tasks for inclusive PID spectra
+  AliAnalysisTaskMTFPID** fJetPIDtask;         //! Pointer to tasks for jet PID spectra
+  AliAnalysisTaskMTFPID** fJetUEPIDtask;       //! Pointer to tasks for jet UE PID spectra
   
   Bool_t fUseInclusivePIDtask;              // Process inclusive PID spectra?
   Bool_t fUseJetPIDtask;                    // Process jet PID spectra?

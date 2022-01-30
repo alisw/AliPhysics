@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskPID(TString nameSuffix = "", Bool_t inputFromOtherTask = kFALSE, Bool_t writeOutputToSeparateFiles = kTRUE, Bool_t useConvolutedGauss = kTRUE, Bool_t storeJetInformation = kFALSE, TString listOfFiles = "", Bool_t doEfficiency = kFALSE)
+AliAnalysisTaskMTFPID *AddTaskMTFPID(Bool_t inputFromOtherTask = kFALSE, Bool_t writeOutputToSeparateFiles = kTRUE, Bool_t useConvolutedGauss = kTRUE, Bool_t storeJetInformation = kFALSE, TString listOfFiles = "", Bool_t doEfficiency = kFALSE, TString nameSuffix = "")
 {
   // Macro to set up and add PID task with default settings.
   //
@@ -7,8 +7,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix = "", Bool_t inputFromOtherTask =
   // and as a second task
   // "PWGJE_taskPID_Jets_Inclusive", kTRUE, kTRUE, "V0A", kTRUE
   
-  TString taskName = Form("PWGJE_taskPID%s", nameSuffix.Data());
-  
+  TString taskName = Form("PWGJE_taskMTFPID%s", nameSuffix.Data());
   
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,7 +17,7 @@ AliAnalysisTask *AddTaskPID(TString nameSuffix = "", Bool_t inputFromOtherTask =
   }
   
   //========= Add task to the ANALYSIS manager =====
-  AliAnalysisTaskPID *task = new AliAnalysisTaskPID(taskName.Data());
+  AliAnalysisTaskMTFPID *task = new AliAnalysisTaskMTFPID(taskName.Data());
   
   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kINT7 | AliVEvent::kINT8);
   

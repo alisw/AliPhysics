@@ -25,6 +25,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
     fTrackBufferSize(),
     fIsMC(false),
     fIsMCtruth(false),
+    fdoFDpairing(false),
     fdoSideband(false),
     fSigmaUp(0.0),
     fSigmaLow(0.0),
@@ -70,12 +71,13 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
 }
 
 AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
-  const char *name, bool isMC, bool isMCtruth)
+  const char *name, bool isMC, bool isMCtruth, bool doFDpairing)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
     fIsMC(isMC),
     fIsMCtruth(isMCtruth),
+    fdoFDpairing(doFDpairing),
     fdoSideband(false),
     fSigmaUp(0.0),
     fSigmaLow(0.0),
@@ -728,7 +730,8 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
       //}
 
 
-      bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
+     bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
+     if(fdoFDpairing) FemtoDreamPairing = true;
      if(FemtoDreamPairing){
       fPairCleaner->CleanTrackAndDecay(&Kaons, &Deuterons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
       fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiDeuterons, 1);///NOT SURE AT ALL ABOUT THIS 0 and 1

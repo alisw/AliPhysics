@@ -144,6 +144,7 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         TH1D * hNchRec;
         TH1D * hNchRecTest;
         TH1D * hPtInPrim;
+        TH1D * hPtInPrim_lambda;
         TH1D * hPtInPrim_pion;
         TH1D * hPtInPrim_kaon;
         TH1D * hPtInPrim_proton;
@@ -151,10 +152,10 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         TH1D * hPtInPrim_sigmam;
         TH1D * hPtInPrim_omega;
         TH1D * hPtInPrim_xi;
-        TH1D * hPtInPrim_lambda;
         TH1D * hPtInPrim_rest;
         TH1D * hPtOut;
         TH1D * hPtOutPrim;
+        TH1D * hPtOutPrim_lambda;
         TH1D * hPtOutPrim_pion;
         TH1D * hPtOutPrim_kaon;
         TH1D * hPtOutPrim_proton;
@@ -162,7 +163,6 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         TH1D * hPtOutPrim_sigmam;
         TH1D * hPtOutPrim_omega;
         TH1D * hPtOutPrim_xi;
-        TH1D * hPtOutPrim_lambda;
         TH1D * hPtOutPrim_rest;
         TH1D * hPtOutSec;
         TH1D * hCounter;
