@@ -706,7 +706,7 @@ Bool_t AliAnalysisTaskSELc2pKs0fromKFP::MakeMCAnalysis(TClonesArray *mcArray, Al
           if ( (TMath::Abs(pdgLamDaugh0)==2212 && TMath::Abs(pdgLamDaugh1)==211) || (TMath::Abs(pdgLamDaugh0)==211 && TMath::Abs(pdgLamDaugh1)==2212) ) {
             if ( TMath::Abs(mcPart->Y()) < 0.8 ) {
               Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-              FillTreeGenLc(mcPart, CheckOrigin, mcHeader, aodEvent);
+              FillTreeGenLc(mcArray, mcPart, CheckOrigin, mcHeader, aodEvent);
             }
           }
         }
