@@ -2429,7 +2429,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                        HFjetCorrUE->Fill(HFjetVals4); 
  
                        double HFjetVals5[7]; // sub UE in reco jet
-                       double bgfrac = fDelta_pT->GetRandom();
+                       //double bgfrac = fDelta_pT->GetRandom();
+                       double bgfrac = 0.0;
+                       if(fDelta_pT)bgfrac = fDelta_pT->GetRandom();
                        if(bgfrac>=0 && bgfrac<1.0)bgfrac=0.0;
                        double corrPt_UE_fbg = pTeJet - pTeJet_UE - bgfrac;
                        HFjetVals4[0]=track->Pt(); HFjetVals4[1]=0.0; HFjetVals4[2] = corrPt_UE_fbg; HFjetVals4[3] = pTeJet; HFjetVals4[4] = pTeJetTrue; HFjetVals4[5] = 0.0; HFjetVals4[6] = 0.0;
