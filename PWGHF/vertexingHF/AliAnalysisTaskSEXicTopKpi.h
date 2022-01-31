@@ -225,6 +225,10 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
   }
 void EnableSparseReflections(){fFillSparseReflections=kTRUE;} 
+
+// build background of Lc candidates with rotated pion
+void SetBuildRotBkgLc(){fLcRotationBkg=kTRUE;};
+void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse, Int_t massHypo);
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -549,8 +553,10 @@ void EnableSparseReflections(){fFillSparseReflections=kTRUE;}
   Double_t fFastLoopDCApar2;// internal parameter for fast loops
   Double_t fFastLoopDCApar3;// internal parameter for fast loops
   Double_t fFastLoopDCApar4;// internal parameter for fast loops
+
+  Bool_t fLcRotationBkg;  // build background of Lc candidates with rotated pion
   
-  ClassDef(AliAnalysisTaskSEXicTopKpi,26); /// AliAnalysisTaskSE for Xic->pKpi
+  ClassDef(AliAnalysisTaskSEXicTopKpi,27); /// AliAnalysisTaskSE for Xic->pKpi
 
   /// \endcond
 };
