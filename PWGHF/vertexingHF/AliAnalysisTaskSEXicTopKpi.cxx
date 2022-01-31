@@ -258,6 +258,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fFastLoopDCApar2(0.01)
   ,fFastLoopDCApar3(0.005)
   ,fFastLoopDCApar4(0.1)
+  ,fLcRotationBkg(kFALSE)
 {
   /// Default constructor
 
@@ -434,6 +435,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fFastLoopDCApar2(0.01)
   ,fFastLoopDCApar3(0.005)
   ,fFastLoopDCApar4(0.1)
+  ,fLcRotationBkg(kFALSE)
 {
   /// Default constructor
   
@@ -2129,7 +2131,12 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	      }
 
 	    }
-	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
+	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
+        fhSparseAnalysis->Fill(point);
+        
+        /// background of rotated Lc candidates
+        if(fSwitchOffTopCuts && fLcRotationBkg) BuildRotLcBkg(io3Prong, point, massHypothesis);
+      }
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
@@ -2156,9 +2163,19 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 			}
 			if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
 			  if(fNoStdPIDcases){
-			    if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+			    if(i==0 || i==11){
+            fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+
+            /// background of rotated Lc candidates
+            if(fSwitchOffTopCuts && fLcRotationBkg) BuildRotLcBkg(io3Prong, point, massHypothesis);
+          }
 			  }
-			  else  fhSparseAnalysis->Fill(point);
+			  else  {
+          fhSparseAnalysis->Fill(point);
+
+          /// background of rotated Lc candidates
+          if(fSwitchOffTopCuts && fLcRotationBkg) BuildRotLcBkg(io3Prong, point, massHypothesis);
+        }
 			}
 		      }
 	      }
@@ -2185,7 +2202,12 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
           fhSparseAnalysisReflections->Fill(point);
         }
 	    }
-	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) )  fhSparseAnalysis->Fill(point);
+	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
+        fhSparseAnalysis->Fill(point);
+      
+        /// background of rotated Lc candidates
+        if(fSwitchOffTopCuts && fLcRotationBkg) BuildRotLcBkg(io3Prong, point, massHypothesis);
+      }
 	  }
 	  if(fExplore_PIDstdCuts){
 	    if(fhSparseAnalysis){
@@ -2212,9 +2234,19 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		  }
 		  if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
 		    if(fNoStdPIDcases){
-		      if(i==0 || i==11) fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+		      if(i==0 || i==11) {
+            fhSparseAnalysis->Fill(point);  // avoid to fill the cases with STD PID
+
+            /// background of rotated Lc candidates
+            if(fSwitchOffTopCuts && fLcRotationBkg) BuildRotLcBkg(io3Prong, point, massHypothesis);
+          }
 		    }
-		    else  fhSparseAnalysis->Fill(point);
+		    else{
+          fhSparseAnalysis->Fill(point);
+
+          /// background of rotated Lc candidates
+          if(fSwitchOffTopCuts && fLcRotationBkg) BuildRotLcBkg(io3Prong, point, massHypothesis);
+        }
 		  }
 		}
 	      }
@@ -4529,4 +4561,90 @@ Int_t AliAnalysisTaskSEXicTopKpi::DefinePbPbfilteringLoop(const AliAODTrack *tra
   if(loop>0&& !isPreselSoftPionOnly)fHistoPtd0planeAfterFastLoopSel->Fill(ptaodtrk,TMath::Abs(dxy[0])); // the filling of this histo was anticipated temporarily 
   return loop;
   
+}
+
+//____________________________________________________________________
+//____________________________________________________________________
+/// Build rotated Lc candidates and fill the analysis sparse with them
+/// NB: this method only works by creating 19 bkg candidates for each selected true candidate (phi step width: pi/10.)
+///     Here the selections are only those of filtering + candidate PID (no topology!)
+///     This does not work with topological analysis
+///     (or better: it may work but there is not a real selection on rotated candidates, since the topological variables are different for rotated candidates
+///      and FillRecoCandidate is not called due to technical difficulties)
+void AliAnalysisTaskSEXicTopKpi::BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse, Int_t massHypo){
+
+  /// original 1st track momentum
+  Double_t pTrack0_orig[3];
+  ((AliAODTrack*) candidate->GetDaughter(0))->GetPxPyPz(pTrack0_orig);
+
+  /// original K track momentum
+  Double_t pKaon_orig[3];
+  ((AliAODTrack*) candidate->GetDaughter(1))->GetPxPyPz(pKaon_orig);
+
+  /// original 3rd track momentum
+  Double_t pTrack2_orig[3];
+  ((AliAODTrack*) candidate->GetDaughter(2))->GetPxPyPz(pTrack2_orig);
+
+  /// masses
+  const Double_t massProton = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
+  const Double_t massKaon = TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  const Double_t massPion = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+
+  /// apply the rotation on K track
+  const Double_t rotStep_rotLcBkg = TMath::Pi()/10.;
+  for(int iRot_LcBkg=1; iRot_LcBkg<=19; iRot_LcBkg++){
+
+    Double_t rotPhi_rotLcBkg = iRot_LcBkg*rotStep_rotLcBkg; // rotation angle in azimuth
+    Double_t pKaon_rotated[3];
+
+    // rotation
+    pKaon_rotated[0] = pKaon_orig[0]*TMath::Cos(rotPhi_rotLcBkg) - pKaon_orig[1]*TMath::Sin(rotPhi_rotLcBkg);
+    pKaon_rotated[1] = pKaon_orig[0]*TMath::Sin(rotPhi_rotLcBkg) + pKaon_orig[1]*TMath::Sin(rotPhi_rotLcBkg);
+    pKaon_rotated[2] = pKaon_orig[2];
+
+    const Double_t energyKaon = TMath::Sqrt( massKaon*massKaon + pKaon_rotated[0]*pKaon_rotated[0] + pKaon_rotated[1]*pKaon_rotated[1] + pKaon_rotated[2]*pKaon_rotated[2] );
+    
+    if(massHypo==1 || massHypo==3){ // pKpi hypothesis possible
+    
+      /// recalculate the invariant mass and fill
+      const Double_t energyProt = TMath::Sqrt( massProton*massProton + pTrack0_orig[0]*pTrack0_orig[0] + pTrack0_orig[1]*pTrack0_orig[1] + pTrack0_orig[2]*pTrack0_orig[2] );
+      const Double_t energyPion = TMath::Sqrt( massPion*massPion + pTrack2_orig[0]*pTrack2_orig[0] + pTrack2_orig[1]*pTrack2_orig[1] + pTrack2_orig[2]*pTrack2_orig[2] );
+      TLorentzVector tlv_rotatedLc( pTrack0_orig[0]+pKaon_rotated[0]+pTrack2_orig[0]
+                                  , pTrack0_orig[1]+pKaon_rotated[1]+pTrack2_orig[1]
+                                  , pTrack0_orig[2]+pKaon_rotated[2]+pTrack2_orig[2]
+                                  , energyProt+energyKaon+energyPion
+                                  );
+      
+      /// update the values for the rotated candidate
+      pointFillSparse[0] = tlv_rotatedLc.Pt();  // transverse momentum
+      pointFillSparse[1] = tlv_rotatedLc.M();   // invariant mass
+      pointFillSparse[6] = -1.; // infoMC==-1. means "rotated candidate"
+
+      /// fill the analysis sparse
+      fhSparseAnalysis->Fill(pointFillSparse);
+
+    } // end of pKpi hypothesis possible
+    if(massHypo==2 || massHypo==3){ // piKp hypothesis possible
+
+      /// recalculate the invariant mass and fill
+      const Double_t energyProt = TMath::Sqrt( massProton*massProton + pTrack2_orig[0]*pTrack2_orig[0] + pTrack2_orig[1]*pTrack2_orig[1] + pTrack2_orig[2]*pTrack2_orig[2] );
+      const Double_t energyPion = TMath::Sqrt( massPion*massPion + pTrack0_orig[0]*pTrack0_orig[0] + pTrack0_orig[1]*pTrack0_orig[1] + pTrack0_orig[2]*pTrack0_orig[2] );
+      TLorentzVector tlv_rotatedLc( pTrack0_orig[0]+pKaon_rotated[0]+pTrack2_orig[0]
+                                  , pTrack0_orig[1]+pKaon_rotated[1]+pTrack2_orig[1]
+                                  , pTrack0_orig[2]+pKaon_rotated[2]+pTrack2_orig[2] 
+                                  , energyProt+energyKaon+energyPion
+                                  );
+      
+      /// update the values for the rotated candidate
+      pointFillSparse[0] = tlv_rotatedLc.Pt();  // transverse momentum
+      pointFillSparse[1] = tlv_rotatedLc.M();   // invariant mass
+      pointFillSparse[6] = -1.; // infoMC==-1. means "rotated candidate"
+
+      /// fill the analysis sparse
+      fhSparseAnalysis->Fill(pointFillSparse);
+
+    } // end of piKp hypothesis possible
+  } // end of loop
+
+  return;
 }
