@@ -11,7 +11,8 @@
 #include "TRandom.h"
 #include "AliESDtrackCuts.h"
 #include "AliProfileBS.h"
-//#include "AliPtContainer.h"
+#include "AliCkContainer.h"
+#include "AliPtContainer.h"
 
 class TList;
 class TH1;
@@ -41,11 +42,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void OverrideMC(bool ismc) { fIsMC = ismc; }
     void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
+    void SetEta(int eta) { fEta = eta; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
     AliEventCuts            fEventCuts;
     
   private:
-    static int              fFactorial[9];
+    static double           fFactorial[9];
     static int              fSign[9];
     TString*                fCentEst;
     int                     fRunNo; //!
@@ -75,9 +77,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     TH1D*                   fV0MMulti;    //!
     AliProfileBS**          fptcorr;     //!
     AliProfileBS*           pfmpt;      //!
-
-    vector<double>          corr;
-    vector<double>          sumw;
+    AliCkContainer*         fck;      //!
+    AliPtContainer*         fskew;      //!
 
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
@@ -91,9 +92,10 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    void FillCorrelationProfiles(const double &l_cent, double &rn);
+    //void FillCorrelationProfiles(const double &l_cent, double &rn);
     template<typename T> void FillWPCounter(T& inarr, double w, double p);
-    template<typename T> void getMomentumCorrelation(T& wp);
+    void FillAltWPCounter(double inArr[5], double w, double p);
+    template<typename T> void getMomentumCorrelation(T& wp, const double &l_cent, double &rn);
     double OrderedAddition(std::vector<double> vec, int size);
     int GetAnalysisStage(TString instr);
     double *GetBinsFromAxis(TAxis *inax);
