@@ -54,7 +54,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   //create task and add it to the manager (MB)
   TString appendix;
   appendix += TString::Format("Cen%d_%d_%s_rejpileup%d_%d",CenMin,CenMax,triggername.Data(),rejpileup,version);
-  if(CentralityEstimator.Contains("V0")) appendix += TString::Format("_CenEs",CentralityEstimator.Data());
+  if(CentralityEstimator.Contains("V0")) appendix += TString::Format("_Cen%s",CentralityEstimator.Data());
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   task->UsePhysicsSelection();
