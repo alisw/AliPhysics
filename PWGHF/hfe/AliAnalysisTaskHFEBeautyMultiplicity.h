@@ -314,6 +314,7 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_B_TrkCut12;
 	
 	TH1F*	fHistPt_Tracking_B;
+	TH1F*	fHistPt_Tracking_B_2;
 	TH1F*	fHistPt_EMCmatch_B;
 
 	TH1F*	fHistPt_D_TrkCut;
@@ -332,7 +333,10 @@ class AliAnalysisTaskHFEBeautyMultiplicity : public AliAnalysisTaskSE
 	TH1F*	fHistPt_D_TrkCut12;
 
 	TH1F*	fHistPt_Tracking_D;
+	TH1F*	fHistPt_Tracking_D_2;
 	TH1F*	fHistPt_EMCmatch_D;
+
+	TH1F*	fHistEta_forTrackingEff;
 
 	TH2F*	fNtrkletNch;
 	TH2F*	fNtrkletNch_Corr;

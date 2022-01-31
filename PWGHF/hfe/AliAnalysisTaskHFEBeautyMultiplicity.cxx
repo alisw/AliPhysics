@@ -285,6 +285,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_B_TrkCut12(0),
 
     fHistPt_Tracking_B(0),
+    fHistPt_Tracking_B_2(0),
     fHistPt_EMCmatch_B(0),
 
     fHistPt_D_TrkCut(0),
@@ -303,7 +304,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity() : A
     fHistPt_D_TrkCut12(0),
 
     fHistPt_Tracking_D(0),
+    fHistPt_Tracking_D_2(0),
     fHistPt_EMCmatch_D(0),
+
+    fHistEta_forTrackingEff(0),
 
     fNtrkletNch(0),
     fweightNtrkl(0),
@@ -573,6 +577,7 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_B_TrkCut12(0),
 
     fHistPt_Tracking_B(0),
+    fHistPt_Tracking_B_2(0),
     fHistPt_EMCmatch_B(0),
 
     fHistPt_D_TrkCut(0),
@@ -591,7 +596,10 @@ AliAnalysisTaskHFEBeautyMultiplicity::AliAnalysisTaskHFEBeautyMultiplicity(const
     fHistPt_D_TrkCut12(0),
 
     fHistPt_Tracking_D(0),
+    fHistPt_Tracking_D_2(0),
     fHistPt_EMCmatch_D(0),
+
+    fHistEta_forTrackingEff(0),
 
     fNtrkletNch(0),
     fweightNtrkl(0),
@@ -799,7 +807,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fEMCTrkPhi);
 
   //TPC CrossedRows
-    fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{ITS}_{CrossedRow}; counts",200,0.,200.); 
+    fTPCCrossedRow = new TH1F("fTPCCrossedRow","No of TPC CrossedRow; N^{TPC}_{CrossedRow}; counts",200,0.,200.); 
     fOutputList->Add(fTPCCrossedRow);
 
   //Phi vs. Eta
@@ -1268,6 +1276,7 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_B_TrkCut12 = new TH1F("fHistPt_B_TrkCut12","B (E/p cut);p_{T} [GeV/c];",1200,0,60);			fOutputList->Add(fHistPt_B_TrkCut12);
 
     fHistPt_Tracking_B = new TH1F("fHistPt_Tracking_B","fHistPt_Tracking_B;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_Tracking_B);
+    fHistPt_Tracking_B_2 = new TH1F("fHistPt_Tracking_B_2","fHistPt_Tracking_B 2;p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_Tracking_B_2);
     fHistPt_EMCmatch_B = new TH1F("fHistPt_EMCmatch_B","fHistPt_EMCmatch_B;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_EMCmatch_B);
 
     
@@ -1288,7 +1297,12 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserCreateOutputObjects()
     fHistPt_D_TrkCut12 = new TH1F("fHistPt_D_TrkCut12","D (E/p cut);p_{T} [GeV/c];",1200,0,60);			fOutputList->Add(fHistPt_D_TrkCut12);
 
     fHistPt_Tracking_D = new TH1F("fHistPt_Tracking_D","fHistPt_Tracking_D;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_Tracking_D);
+    fHistPt_Tracking_D_2 = new TH1F("fHistPt_Tracking_D_2","fHistPt_Tracking_D 2;p_{T} [GeV/c];",1200,0,60);	fOutputList->Add(fHistPt_Tracking_D_2);
     fHistPt_EMCmatch_D = new TH1F("fHistPt_EMCmatch_D","fHistPt_EMCmatch_D;p_{T} [GeV/c];",1200,0,60);		fOutputList->Add(fHistPt_EMCmatch_D);
+
+
+    fHistEta_forTrackingEff = new TH1F("fHistEta_fortrackingEff","Eta for tracking efficiency;#Eta;counts",400,-2.0,2.0);
+    fOutputList->Add(fHistEta_forTrackingEff);
 
 
   //Tracklet vs. N charged
@@ -1895,6 +1909,16 @@ void AliAnalysisTaskHFEBeautyMultiplicity::UserExec(Option_t *)
       //---- for tracking efficiency ----
 	if((pid_eleB) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_Tracking_B->Fill(TrkPt);
 	if((pid_eleD) && (TMath::Abs(TrkEta)<CutTrackEta[1])) fHistPt_Tracking_D->Fill(TrkPt);
+
+	if( TMath::Abs(TrkEta)<CutTrackEta[1] ){
+		fHistEta_forTrackingEff->Fill(TrkEta);
+
+            	if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA))
+		{
+			if(pid_eleB) fHistPt_Tracking_B_2->Fill(TrkPt);	
+			if(pid_eleD) fHistPt_Tracking_D_2->Fill(TrkPt);	
+		}
+	}
       //---------------------------------
 	
         
