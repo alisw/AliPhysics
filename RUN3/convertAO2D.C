@@ -34,24 +34,19 @@ void convertAO2D(Bool_t mc = kFALSE, Bool_t hf = kFALSE)
    AddTaskPhysicsSelection();
    AddTaskPIDResponse();
 
+   if (hf) {
+      auto hfTask = AddTaskVertexingHFRun3Conversion("");
+      if (hfTask == nullptr)
+         return;
+   }
+
    AliAnalysisTaskAO2Dconverter* converter = AddTaskAO2Dconverter("");
    if (mc)
      converter->SetMCMode();
+   if (hf)
+      converter->SetStoreHF();
    //converter->SelectCollisionCandidates(AliVEvent::kAny);
 
-   if (hf) {
-      auto hfTask = AddTaskVertexingHFRun3Conversion("");
-      if (hfTask == nullptr) {
-         return;
-      }
-
-      mgr->ConnectInput(converter,1,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("D0CandidateTree"));
-      mgr->ConnectInput(converter,2,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("Charm3pCandidateTree"));
-      mgr->ConnectInput(converter,3,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("DstarCandidateTree"));
-      mgr->ConnectInput(converter,4,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("LcV0bachCandidateTree"));
-      converter->SetStoreHF();
-   }
-   
    if (!mgr->InitAnalysis()) return;
    //PH   mgr->SetBit(AliAnalysisManager::kTrueNotify);
    mgr->SetRunFromPath(244918);

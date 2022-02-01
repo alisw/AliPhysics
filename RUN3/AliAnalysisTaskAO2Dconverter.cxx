@@ -616,6 +616,15 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   //   mgr->ConnectOutput(task, 2 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
+
+  // Connect HF task
+  if (mgr->GetContainers()->FindObject("D0CandidateTree")) {
+    mgr->ConnectInput(task,1,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("D0CandidateTree"));
+    mgr->ConnectInput(task,2,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("Charm3pCandidateTree"));
+    mgr->ConnectInput(task,3,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("DstarCandidateTree"));
+    mgr->ConnectInput(task,4,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("LcV0bachCandidateTree"));
+  }
+
   return task;
 } // AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suffix)
 
