@@ -106,7 +106,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fV0_NSigNegProton;                                 //!
     double fV0_NSigNegPion;                                   //!
     double fV0_DistOverTotP;                                  //!
-    double fV0_ITSTOFtracks;                                  //!
+    int fV0_ITSTOFtracks;                                     //!
     ULong64_t fV0_NegTrackStatus;                             //!
     ULong64_t fV0_PosTrackStatus;                             //!
     double fV0_kinkidx;                                       //!
@@ -134,7 +134,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     double fCasc_V0CosPA;                                     //!
     double fCasc_DcaV0ToPV;                                   //!
     double fCasc_DcaBachToPV;                                 //!
-    double fCasc_ITSTOFtracks;                                //!
+    int fCasc_ITSTOFtracks;                                   //!
     double fCasc_yXi;                                         //!
     double fCasc_yOm;                                         //!
     int fCasc_charge;                                         //!
@@ -186,8 +186,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 12); 
-    //version 12: modify geometrical cut for systematic uncertainty evaluation
+    ClassDef(AliAnalysisTaskStrVsMult, 13); 
+    //version 13: change ITSTOFtracks to int
 };
 
 #endif

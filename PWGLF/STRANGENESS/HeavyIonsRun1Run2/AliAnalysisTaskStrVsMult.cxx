@@ -661,8 +661,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_PosTrackStatus = pTrack->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fV0_ITSTOFtracks = 0;
-        if((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
+        fV0_ITSTOFtracks = ((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fV0_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
 
         //MC association
@@ -767,8 +766,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_PosTrackStatus = pTrack->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fV0_ITSTOFtracks = 0;
-        if((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
+        fV0_ITSTOFtracks = ((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fV0_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
         
         if(fisMC){
@@ -909,8 +907,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_BacTrackStatus = bTrackCasc->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fCasc_ITSTOFtracks = 0;
-        if((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
+        fCasc_ITSTOFtracks = ((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fCasc_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
         if((fCasc_BacTrackStatus & AliESDtrack::kITSrefit) || (bTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
 
@@ -1043,8 +1040,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_BacTrackStatus = bTrackCasc->GetStatus();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-        fCasc_ITSTOFtracks = 0;
-        if((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
+        fCasc_ITSTOFtracks = ((fCasc_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fCasc_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
         if((fCasc_BacTrackStatus & AliESDtrack::kITSrefit) || (bTrackCasc->GetTOFBunchCrossing(lMagField) > -95.)) fCasc_ITSTOFtracks++;
 
@@ -1257,7 +1253,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if ((part==kk0s) && (0.497*fV0_DistOverTotP>cutval_V0[kV0_PropLifetK0s])) return kFALSE;
     if ((part>kk0s) && (1.115683*fV0_DistOverTotP>cutval_V0[kV0_PropLifetLam])) return kFALSE;
     // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-    if (fV0_ITSTOFtracks<cutval_V0[kV0_ITSTOFtracks]) return kFALSE;
+    if (fV0_ITSTOFtracks<cutval_V0[kV0_ITSTOFtracks]-0.1) return kFALSE;
     // TPC refit, should be already verified for Offline V0s
     if (!(fV0_PosTrackStatus & AliESDtrack::kTPCrefit) || !(fV0_NegTrackStatus & AliESDtrack::kTPCrefit)) return kFALSE;
     // check that none of daughters is a kink
@@ -1304,7 +1300,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     // check that none of daughters is a kink
     if(fCasc_kinkidx>0) return kFALSE;
     // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
-    if (fCasc_ITSTOFtracks<cutval_Casc[kCasc_ITSTOFtracks]) return kFALSE;
+    if (fCasc_ITSTOFtracks<cutval_Casc[kCasc_ITSTOFtracks]-0.1) return kFALSE;
     // TPC refit, should be already verified for Offline V0s
     if(!(fCasc_PosTrackStatus & AliESDtrack::kTPCrefit) ||
        !(fCasc_NegTrackStatus & AliESDtrack::kTPCrefit) ||
