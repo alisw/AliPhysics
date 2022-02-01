@@ -245,6 +245,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoMCEtaWOEvtWeightPt;                             //! array of histos without event weights eta, pT
     TH1F**                fHistoMCPi0InAccPt;                                   //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                fHistoMCEtaInAccPt;                                   //! array of histos with weighted eta in acceptance, pT
+    TH1F**                fHistoMCPi0InAccPtNotTriggered;                       //! array of histos with weighted pi0 in acceptance, pT
+    TH1F**                fHistoMCEtaInAccPtNotTriggered;                       //! array of histos with weighted eta in acceptance, pT
     TH1F**                fHistoMCPi0WOEvtWeightInAccPt;                        //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                fHistoMCEtaWOEvtWeightInAccPt;                        //! array of histos without evt weight eta in acceptance, pT
     TH2F**                fHistoMCPi0PtY;                                       //! array of histos with weighted pi0, pT, Y
@@ -611,7 +613,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 88);
+    ClassDef(AliAnalysisTaskGammaCalo, 89);
 };
 
 #endif
