@@ -20,22 +20,23 @@
 #include <string.h>
 
 // Root headers
+#include "TROOT.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TList.h"
 #include "TChain.h"
+#include "TString.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TDatabasePDG.h"
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TClonesArray.h"
+#include "TColor.h"
 #include "TRandom.h"
-#include "TRandom3.h"
 
 // AliRoot headers:
-#include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEventHandler.h"
@@ -58,14 +59,14 @@
 // My headers:
 #include "AliAnalysisTaskCentralJpsi_DG.h"
 
-class AliAnalysisTaskCentralJpsi_DG; // analysis class
-
 ClassImp(AliAnalysisTaskCentralJpsi_DG) // classimp: necessary for root
+
+using std::cout;
+using std::endl;
 
 AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG() : // initializer list
     AliAnalysisTaskSE(),
     fPIDResponse(0),
-    fTimeRangeCut(),
     fTrackCutsBit4(0),
     isMC(kFALSE),
     fEvent(0),
@@ -107,7 +108,6 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG() : // initializer 
     fADA_dec(0), fADC_dec(0),
     // Matching SPD clusters with FOhits
     fMatchingSPD(0),
-    fFOCrossFiredChips(),
     // Trigger inputs for MC data
     fSPDfile(0), fTOFfile(0), fLoadedRun(-1), hTOFeff(0), hSPDeff(0), fTOFmask(0),
     // MC kinematics on generator level
@@ -119,7 +119,6 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG() : // initializer 
 AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG(const char* name) : // initializer list
     AliAnalysisTaskSE(name),
     fPIDResponse(0),
-    fTimeRangeCut(),
     fTrackCutsBit4(0),
     isMC(kFALSE),
     fEvent(0),
@@ -161,7 +160,6 @@ AliAnalysisTaskCentralJpsi_DG::AliAnalysisTaskCentralJpsi_DG(const char* name) :
     fADA_dec(0), fADC_dec(0),
     // Matching SPD clusters with FOhits
     fMatchingSPD(0),
-    fFOCrossFiredChips(),
     // Trigger inputs for MC data
     fSPDfile(0), fTOFfile(0), fLoadedRun(-1), hTOFeff(0), hSPDeff(0), fTOFmask(0),
     // MC kinematics on generator level
@@ -187,11 +185,11 @@ AliAnalysisTaskCentralJpsi_DG::~AliAnalysisTaskCentralJpsi_DG()
 
     if (AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis){
         delete fOutputList;
-        fOutputList = 0;
+        fOutputList = 0x0;
         delete fTreeJpsi;
-        fTreeJpsi = 0;
+        fTreeJpsi = 0x0;
         delete fTreeJpsiMCGen;
-        fTreeJpsiMCGen = 0;
+        fTreeJpsiMCGen = 0x0;
     }
 }
 //_____________________________________________________________________________
@@ -285,8 +283,6 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
     // Counter for events passing each cut
     hCounterCuts = new TH1D("hCounterCuts", "# of events passing each cut", 5, -0.5, 4.5);
     hCounterCuts->GetXaxis()->SetBinLabel(1,"0: non-empty ev");
-    //hCounterCuts->GetXaxis()->SetBinLabel(2,"1: vrtx contrib");
-    //hCounterCuts->GetXaxis()->SetBinLabel(3,"2: vrtx Z dist");
     hCounterCuts->GetXaxis()->SetBinLabel(2,"1: two good trks");
     if(!isMC) hCounterCuts->GetXaxis()->SetBinLabel(3,"2: CCUP31 trigg");
 
@@ -334,9 +330,8 @@ void AliAnalysisTaskCentralJpsi_DG::UserCreateOutputObjects()
     fOutputList->Add(hTPCdEdxElectron);
 
     if(isMC){
-        Int_t n_bins = 2000;
         // x axis = pT from the generator, y axis = pT reconstructed
-        hPtRecGen = new TH2D("hPtRecGen", "pT rec vs pT gen", n_bins, 0., 2., n_bins, 0., 2.);
+        hPtRecGen = new TH2D("hPtRecGen", "pT rec vs pT gen", 2000, 0., 2., 2000, 0., 2.);
         fOutputList->Add(hPtRecGen);
     }
 
@@ -860,7 +855,6 @@ void AliAnalysisTaskCentralJpsi_DG::Terminate(Option_t *)
 
     TFile* file = TFile::Open("track_cuts.root", "RECREATE");
     fTrackCutsBit4->SaveHistograms();
-    file->Write();
     file->Close();
 }
 //_____________________________________________________________________________

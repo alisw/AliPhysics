@@ -6,6 +6,7 @@
 #define AliAnalysisTaskCentralJpsi_DG_H
 
 class TH1;
+class TH2;
 class TTree;
 class TList;
 class TFile;
@@ -17,16 +18,16 @@ class AliTOFTriggerMask;
 #include "AliTimeRangeCut.h"
 #include "AliAnalysisTaskSE.h"
 
-class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE
+class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE 
 {
     public:
-                AliAnalysisTaskCentralJpsi_DG(); // a constructor
+                AliAnalysisTaskCentralJpsi_DG(); 
                 AliAnalysisTaskCentralJpsi_DG(const char *name);
-        virtual ~AliAnalysisTaskCentralJpsi_DG(); // a destructor
+        virtual ~AliAnalysisTaskCentralJpsi_DG(); 
 
-        virtual void    UserCreateOutputObjects(); // here one can define output objects
-        virtual void    UserExec(Option_t* option);	// called for each single event
-        virtual void    Terminate(Option_t* option); // usually empty, called at the end
+        virtual void    UserCreateOutputObjects();
+        virtual void    UserExec(Option_t* option);
+        virtual void    Terminate(Option_t* option); 
 
         void    SetIsMC(Bool_t MC){isMC = MC;}
         void    ReplayTriggersMC(AliVEvent *fEvent);
@@ -116,7 +117,7 @@ class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE
         AliAnalysisTaskCentralJpsi_DG(const AliAnalysisTaskCentralJpsi_DG&); // not implemented
         AliAnalysisTaskCentralJpsi_DG& operator=(const AliAnalysisTaskCentralJpsi_DG&); // not implemented
 
-        ClassDef(AliAnalysisTaskCentralJpsi_DG, 1);
+        ClassDef(AliAnalysisTaskCentralJpsi_DG, 2);
 };
 
 #endif
