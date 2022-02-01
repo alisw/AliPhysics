@@ -22,12 +22,14 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/correlationHF)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML
   )
 if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
@@ -69,6 +71,8 @@ set(SRCS
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
     AliAnalysisHFEHCorrOnFlySim.cxx
+    AliHFMLResponseLambdactopKpi.cxx
+    AliAnalysisTaskSELambdacCorrelations.cxx
   )
 
 # Tasks that should only be compiled in ROOT 6

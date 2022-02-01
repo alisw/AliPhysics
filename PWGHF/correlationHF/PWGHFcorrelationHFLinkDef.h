@@ -38,6 +38,8 @@
 #pragma link C++ class AliHFCorrFitSystematics+;
 #pragma link C++ class AliDhCorrelationExtraction+;
 #pragma link C++ class AliAnalysisHFEHCorrOnFlySim+;
+#pragma link C++ class AliHFMLResponseLambdactopKpi+;
+#pragma link C++ class AliAnalysisTaskSELambdacCorrelations+;
 
 #if ROOT_VERSION_CODE > ROOT_VERSION(6,4,0)
 #pragma link C++ namespace AliDHFeCorr+;
