@@ -77,9 +77,9 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     TH1D*                   fV0MMulti;    //!
     AliProfileBS**          fptcorr;     //!
     AliProfileBS*           pfmpt;      //!
-    AliCkContainer*         fck;      //!
+    AliPtContainer*         fck;      //!
     AliPtContainer*         fskew;      //!
-
+    AliPtContainer*         fkur;      //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
@@ -94,10 +94,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
     //void FillCorrelationProfiles(const double &l_cent, double &rn);
     template<typename T> void FillWPCounter(T& inarr, double w, double p);
-    void FillAltWPCounter(double inArr[5], double w, double p);
     template<typename T> void getMomentumCorrelation(T& wp, const double &l_cent, double &rn);
     double OrderedAddition(std::vector<double> vec, int size);
-    int GetAnalysisStage(TString instr);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);
