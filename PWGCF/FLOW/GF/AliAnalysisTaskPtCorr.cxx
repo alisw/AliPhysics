@@ -68,6 +68,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     pfmpt(0),
     fck(0),
     fskew(0),
+    fkur(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -105,6 +106,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     pfmpt(0),
     fck(0),
     fskew(0),
+    fkur(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -185,15 +187,18 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     }
     pfmpt = new AliProfileBS("meanpt","meanpt",fNMultiBins,fMultiBins);
     fCorrList->Add(pfmpt);
-    fck = new AliCkContainer("ckcont","ckcont",fNMultiBins,fMultiBins);
+    fck = new AliPtContainer("ckcont","ckcont",fNMultiBins,fMultiBins,2);
     fskew = new AliPtContainer("skewcont","skewcont",fNMultiBins,fMultiBins,3);
+    fkur = new AliPtContainer("kurcont","kurcont",fNMultiBins,fMultiBins,4);
     fCorrList->Add(fck);
     fCorrList->Add(fskew);
+    fCorrList->Add(fkur);
     if(fNbootstrap) {
       for(int i(0);i<mpar;++i) fptcorr[i]->InitializeSubsamples(fNbootstrap);             
       pfmpt->InitializeSubsamples(fNbootstrap);
       fck->InitializeSubsamples(fNbootstrap);
       fskew->InitializeSubsamples(fNbootstrap);
+      fkur->InitializeSubsamples(fNbootstrap);
     }
     fCorrList->Add(fV0MMulti);
     PostData(1,fCorrList);
@@ -326,28 +331,7 @@ template<typename T> void AliAnalysisTaskPtCorr::FillWPCounter(T& inarr, double 
       inarr[i][j] += pow(w,i)*pow(p,j);
     }
   }
-  /*
-  inarr[0][0] += w;
-  inarr[0][1] += w*w;
-  inarr[0][2] += w*w*w;
-  inarr[0][3] += w*w*w*w;
-  inarr[0][4] += w*w*w*w*w;
-  inarr[0][5] += w*w*w*w*w*w;
-  inarr[1][0] += w*p;
-  inarr[1][1] += w*w*p*p;
-  inarr[1][2] += w*w*w*p*p*p;
-  inarr[1][3] += w*w*w*w*p*p*p*p;
-  inarr[1][4] += w*w*w*w*w*p*p*p*p*p;
-  inarr[1][5] += w*w*w*w*w*w*p*p*p*p*p*p;
-  */
   return;
-}
-void AliAnalysisTaskPtCorr::FillAltWPCounter(double inArr[5], double w, double p) {
-  inArr[0] += w;       // = w1p0
-  inArr[1] += w*p;     // = w1p1
-  inArr[2] += w*w*p*p; // = w2p2
-  inArr[3] += w*w*p;   // = w2p1
-  inArr[4] += w*w;     // = w2p0
 }
 void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ)
 {
@@ -359,7 +343,6 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
                        {0,0,0,0,0,0,0},
                        {0,0,0,0,0,0,0},
                        };
-    double altwp[5] = {0,0,0,0,0};
     AliAODTrack *track;
     double trackXYZ[3];
     double ptMin = fPtBins[0];
@@ -384,7 +367,6 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           double l_pt = track->Pt();
           if (l_pt<0.2 || l_pt>3.) continue;
           FillWPCounter(wp,1,l_pt);
-          FillAltWPCounter(altwp,1,l_pt);
       }    
     }
     else if(fIsMC)
@@ -402,7 +384,6 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
         double l_pt = part->Pt();
         if (l_pt<0.2 || l_pt>3.) continue;
         FillWPCounter(wp,1,l_pt);
-        FillAltWPCounter(altwp,1,l_pt);
       }
     }
     else
@@ -421,7 +402,6 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           if(wNUE==0.0) continue;
           wNUE = 1.0/wNUE;
           FillWPCounter(wp,wNUE,l_pt);
-          FillAltWPCounter(altwp,wNUE,l_pt);
       }
     }
     if(wp[1][0]==0) return;
@@ -431,28 +411,11 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     getMomentumCorrelation(wp,l_cent,l_rnd);
     //FillCorrelationProfiles(l_cent,l_rnd);
     //Test with explicit ck calculation
-    fck->FillObs(altwp,l_cent,l_rnd);
+    fck->FillObs(wp,l_cent,l_rnd);
     fskew->FillObs(wp,l_cent,l_rnd);
+    fkur->FillObs(wp,l_cent,l_rnd);
     PostData(1,fCorrList);
 }
-/*
-void AliAnalysisTaskPtCorr::FillCorrelationProfiles(const double &l_cent, double &rn)
-{
-  for(int m=1;m<=mpar;++m)
-  { 
-    if(sumw[m]==0.0) continue;
-    if(isnan(corr[m]/sumw[m]) || isinf(corr[m]/sumw[m])) continue;
-    if(m==6) 
-    {
-      printf("num = %.4f\n",corr[m]);
-      printf("den = %.4f\n",sumw[m]);
-      printf("val = %.4f\n",corr[m]/sumw[m]);
-    }
-    fptcorr[m-1]->FillProfile(l_cent,corr[m]/sumw[m],sumw[m],rn);
-  }
-  return;
-}
-*/
 template<typename T> void AliAnalysisTaskPtCorr::getMomentumCorrelation(T& wp, const double &l_cent, double &rn)
 {
   std::vector<double> corr;
@@ -494,12 +457,6 @@ double AliAnalysisTaskPtCorr::OrderedAddition(std::vector<double> vec, int size)
     sum += vec[i];
   }
   return sum;
-}
-int AliAnalysisTaskPtCorr::GetAnalysisStage(TString instr) 
-{
-  if(instr.Contains("ptcorr")) return 1;
-  if(instr.Contains("meanpt")) return 2;
-  return 0;
 }
 double *AliAnalysisTaskPtCorr::GetBinsFromAxis(TAxis *inax) {
   Int_t lBins = inax->GetNbins();

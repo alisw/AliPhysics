@@ -57,6 +57,7 @@ set(SRCS
   AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
   AliProfileBS.cxx
+  AliPtContainer.cxx
   AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
