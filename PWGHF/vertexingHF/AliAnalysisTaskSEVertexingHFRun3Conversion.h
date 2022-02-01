@@ -36,7 +36,6 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   void SetMakeReducedCandidates(Bool_t opt){fMakeReducedCandidates=opt;}
-  void ResetTreeAtEachEvent(Bool_t opt){fResetTreeAtEachEv=opt;}
   AliAnalysisVertexingHF *GetVertexingHF() const {return fVHF;}
   
  private:
@@ -46,7 +45,6 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
 
   AliAnalysisVertexingHF *fVHF;        /// Vertexer heavy flavour
   Bool_t       fMakeReducedCandidates; /// flag to use reduced size candidates
-  Bool_t       fResetTreeAtEachEv;     /// flag to reset trees at each event
   TTree        *f2ProngCandidateTree;  //!<! output tree
   TTree        *f3ProngCandidateTree;  //!<! output tree
   TTree        *fDstarCandidateTree;   //!<! output tree
@@ -54,13 +52,12 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   Int_t        fEventIndex;            //!<! tree variable
   Int_t        fD0track0;              //!<! tree variable
   Int_t        fD0track1;              //!<! tree variable
-  Int_t        fHF2pflag;              //!<! tree variable
+  uint8_t      fHF2pflag;              //!<! tree variable
   Int_t        f3ptrack0;              //!<! tree variable
   Int_t        f3ptrack1;              //!<! tree variable
   Int_t        f3ptrack2;              //!<! tree variable
-  Int_t        fHF3pflag;              //!<! tree variable
-  Int_t        fDstD0tr0;              //!<! tree variable
-  Int_t        fDstD0tr1;              //!<! tree variable
+  uint8_t      fHF3pflag;              //!<! tree variable
+  Int_t        fDstD0;                 //!<! tree variable
   Int_t        fDstSofPi;              //!<! tree variable
   Int_t        fCasV0ind;              //!<! tree variable
   Int_t        fCasV0tr0;              //!<! tree variable
@@ -78,7 +75,7 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   TClonesArray *fLikeSign3ProngTClArr; /// Array of LikeSign3Prong
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,4); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,5); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
   /// \endcond
 };
 
