@@ -85,15 +85,45 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
   } 
 
   // Track Cuts
-  AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
-      isMC, true, false, false);
-  TrackCuts->SetFilterBit(128);
-  TrackCuts->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *TrackCuts = nullptr;
+  AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
 
-  AliFemtoDreamTrackCuts *AntiTrackCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  AntiTrackCuts->SetFilterBit(128);
-  AntiTrackCuts->SetCutCharge(-1);
+  if(std::abs(pdgDmesonBuddy) == 2212) {
+    TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+    TrackCuts->SetFilterBit(128);
+    TrackCuts->SetCutCharge(1);
+    AntiTrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+    AntiTrackCuts->SetFilterBit(128);
+    AntiTrackCuts->SetCutCharge(-1);
+  }
+  else if(std::abs(pdgDmesonBuddy) == 211) {
+    TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+    TrackCuts->SetFilterBit(96);
+    TrackCuts->SetCutCharge(1);
+    AntiTrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+    AntiTrackCuts->SetFilterBit(96);
+    AntiTrackCuts->SetCutCharge(-1);
+  }
+  else if(std::abs(pdgDmesonBuddy) == 321) {
+    TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
+    TrackCuts->SetFilterBit(128);
+    TrackCuts->SetPtRange(0.15, 4.0);
+    TrackCuts->SetCutCharge(1);
+    if(!useMCTruthReco) {
+      TrackCuts->SetPIDkd();
+    }
+    AntiTrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
+    AntiTrackCuts->SetFilterBit(128);
+    AntiTrackCuts->SetPtRange(0.15, 4.0);
+    AntiTrackCuts->SetCutCharge(-1);
+    if(!useMCTruthReco) {
+      AntiTrackCuts->SetPIDkd();
+    }
+  }
+  else {
+    Error("AddTaskAnyCharmingFemto()", "Particle not implemented.");
+    return nullptr;
+  }
 
   TrackCuts->SetMinimalBooking(suffix != "0");
   AntiTrackCuts->SetMinimalBooking(suffix != "0");

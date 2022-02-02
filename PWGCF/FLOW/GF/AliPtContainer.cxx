@@ -63,7 +63,7 @@ void AliPtContainer::InitializeSubsamples(const int &nsub)
         ((AliProfileBS*)fTermList->At(i))->InitializeSubsamples(nsub);
     return;
 };
-template<typename T> void AliPtContainer::FillObs(T& inarr, const double &lMult, const double &rn) 
+void AliPtContainer::FillObs(double inarr[15][15], const double &lMult, const double &rn) 
 {
     switch(mpar)
     {
@@ -84,14 +84,14 @@ template<typename T> void AliPtContainer::FillObs(T& inarr, const double &lMult,
     }
     return;
 }
-template<typename T> void AliPtContainer::FillMpt(T& inarr, const double &lMult, const double &rn)
+void AliPtContainer::FillMpt(double inarr[15][15], const double &lMult, const double &rn)
 {
     Double_t lwpt = inarr[1][0];
     if(lwpt==0) return;
     ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1])/lwpt,lwpt,rn);
     return;
 }
-template<typename T> void AliPtContainer::FillCk(T& inarr, const double &lMult, const double &rn)
+void AliPtContainer::FillCk(double inarr[15][15], const double &lMult, const double &rn)
 {
     Double_t lwck = inarr[1][0]*inarr[1][0] - inarr[2][0];
     Double_t lwpt = inarr[1][0];
@@ -101,7 +101,7 @@ template<typename T> void AliPtContainer::FillCk(T& inarr, const double &lMult, 
     ((AliProfileBS*)fTermList->At(2))->FillProfile(lMult,inarr[1][1]/lwpt,lwpt,rn);
     return;
 }
-template<typename T> void AliPtContainer::FillSkew(T& inarr, const double &lMult, const double &rn)
+void AliPtContainer::FillSkew(double inarr[15][15], const double &lMult, const double &rn)
 {
     double lwpt = inarr[1][0];
     double lwskew = lwpt*lwpt*lwpt - 3*inarr[2][0]*inarr[1][0]+2*inarr[3][0];
@@ -112,7 +112,7 @@ template<typename T> void AliPtContainer::FillSkew(T& inarr, const double &lMult
     ((AliProfileBS*)fTermList->At(3))->FillProfile(lMult,inarr[1][1]/lwpt,lwpt,rn);
     return;
 }
-template<typename T> void AliPtContainer::FillKurtosis(T& inarr, const double &lMult, const double &rn)
+void AliPtContainer::FillKurtosis(double inarr[15][15], const double &lMult, const double &rn)
 {
     double lwpt = inarr[1][0];
     double lwkur = lwpt*lwpt*lwpt*lwpt-6*inarr[2][0]*lwpt*lwpt+8*lwpt*inarr[3][0]+3*inarr[2][0]*inarr[2][0]-6*inarr[4][0];

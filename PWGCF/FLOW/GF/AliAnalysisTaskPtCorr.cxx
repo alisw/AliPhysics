@@ -320,7 +320,7 @@ bool AliAnalysisTaskPtCorr::AcceptAODEvent(AliAODEvent *ev, Double_t *inVtxXYZ)
     vtx->GetXYZ(inVtxXYZ);
     return kTRUE;
 };
-template<typename T> void AliAnalysisTaskPtCorr::FillWPCounter(T& inarr, double w, double p)
+void AliAnalysisTaskPtCorr::FillWPCounter(double inarr[15][15], double w, double p)
 {
   for(int i=1;i<=mpar;++i)
   {
@@ -335,14 +335,13 @@ template<typename T> void AliAnalysisTaskPtCorr::FillWPCounter(T& inarr, double 
 }
 void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ)
 {
-    double wp[7][7] = {{0,0,0,0,0,0,0},
-                       {0,0,0,0,0,0,0},
-                       {0,0,0,0,0,0,0},
-                       {0,0,0,0,0,0,0},
-                       {0,0,0,0,0,0,0},
-                       {0,0,0,0,0,0,0},
-                       {0,0,0,0,0,0,0},
-                       };
+    double wp[15][15] = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
     AliAODTrack *track;
     double trackXYZ[3];
     double ptMin = fPtBins[0];
@@ -416,7 +415,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     fkur->FillObs(wp,l_cent,l_rnd);
     PostData(1,fCorrList);
 }
-template<typename T> void AliAnalysisTaskPtCorr::getMomentumCorrelation(T& wp, const double &l_cent, double &rn)
+void AliAnalysisTaskPtCorr::getMomentumCorrelation(double wp[15][15], const double &l_cent, double &rn)
 {
   std::vector<double> corr;
   std::vector<double> sumw;
@@ -447,7 +446,7 @@ template<typename T> void AliAnalysisTaskPtCorr::getMomentumCorrelation(T& wp, c
   }
   return;
 }
-double AliAnalysisTaskPtCorr::OrderedAddition(std::vector<double> vec, int size)
+double AliAnalysisTaskPtCorr::OrderedAddition(vector<double> vec, int size)
 {
   double sum = 0;
   std::sort(vec.begin(), vec.end());

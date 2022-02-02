@@ -143,8 +143,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   }
 
   if (!isMCtruth) {
-    closeRejection[0] = true;  // pp
-    closeRejection[4] = true;  // barp barp
+    closeRejection[0] = true;   // light-light
+    closeRejection[4] = true;   // antilight-antilight
+    closeRejection[2] = true;   // light-charm
+    closeRejection[3] = true;   // light-anticharm
+    closeRejection[5] = true;   // antilight charm
+    closeRejection[6] = true;   // antilight anticharm
   }
   else {
     closeRejection[0] = false;  // pp
@@ -174,7 +178,10 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
-  config->SetPhiEtaBinnign(true);
+
+  if (!isMCtruth){
+    config->SetPhiEtaBinnign(true);
+  }
 
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
@@ -234,6 +241,35 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetBuddyEtaMCTRUTH(0.8);
     task->SetBuddyOriginMCTRUTH(0);
     task->SetDmesonOriginMCTRUTH(0);
+  }
+
+  if(useMCTruthReco){
+    task->SetBuddyOriginMCTRUTH(0);
+    task->SetDmesonOriginMCTRUTH(0);
+    if (suffix == "1") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(1);
+    } 
+    if (suffix == "2") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "3") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(1);
+    }  
+    if (suffix == "4") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "5") {
+      task->SetBuddyOriginMCTRUTH(4);
+      task->SetDmesonOriginMCTRUTH(1);
+    }  
+    if (suffix == "6") {
+      task->SetBuddyOriginMCTRUTH(4);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
   }
 
   mgr->AddTask(task);
