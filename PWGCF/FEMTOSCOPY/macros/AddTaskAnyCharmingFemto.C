@@ -143,8 +143,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   }
 
   if (!isMCtruth) {
-    closeRejection[0] = true;  // pp
-    closeRejection[4] = true;  // barp barp
+    closeRejection[0] = true;   // light-light
+    closeRejection[4] = true;   // antilight-antilight
+    closeRejection[2] = true;   // light-charm
+    closeRejection[3] = true;   // light-anticharm
+    closeRejection[5] = true;   // antilight charm
+    closeRejection[6] = true;   // antilight anticharm
   }
   else {
     closeRejection[0] = false;  // pp
@@ -174,7 +178,10 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetExtendedQAPairs(pairQA);
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
-  config->SetPhiEtaBinnign(true);
+
+  if (!isMCtruth){
+    config->SetPhiEtaBinnign(true);
+  }
 
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
