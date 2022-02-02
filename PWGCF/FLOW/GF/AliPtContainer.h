@@ -1,5 +1,5 @@
-#ifndef ALIPTCONTAINER
-#define ALIPTCONTAINER
+#ifndef ALIPTCONTAINER__H
+#define ALIPTCONTAINER__H
 
 #include "AliProfileBS.h"
 #include "TNamed.h"
@@ -15,7 +15,7 @@ class AliPtContainer: public TNamed {
         void Initialize(int nbinsx, double* xbins);
         void Initialize(int nbinsx, double xlow, double xhigh);
         void InitializeSubsamples(const int &nsub);
-        template<typename T> void FillObs(T& inarr, const double &lMult, const double &rn);
+        void FillObs(double inarr[15][15], const double &lMult, const double &rn);
         TList* GetTermList() { return fTermList; }
         void CalculateCorrelation();
         TH1* getHist(int ind);
@@ -23,10 +23,10 @@ class AliPtContainer: public TNamed {
         TList* fTermList;
         TList* fObsList;
         int mpar;
-        template<typename T> void FillMpt(T& inarr, const double &lMult, const double &rn);
-        template<typename T> void FillCk(T& inarr, const double &lMult, const double &rn);
-        template<typename T> void FillSkew(T& inarr, const double &lMult, const double &rn);
-        template<typename T> void FillKurtosis(T& inarr, const double &lMult, const double &rn);
+        void FillMpt(double inarr[15][15], const double &lMult, const double &rn);
+        void FillCk(double inarr[15][15], const double &lMult, const double &rn);
+        void FillSkew(double inarr[15][15], const double &lMult, const double &rn);
+        void FillKurtosis(double inarr[15][15], const double &lMult, const double &rn);
         void CalculateObs();
         TH1* RecalculateObsHists(vector<TH1*> inh); 
         TH1* RecalculateCkHists(vector<TH1*> inh);
