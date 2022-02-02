@@ -95,6 +95,7 @@ ClassImp(AliAnalysisTaskNonlinearFlow)
     fLowMultiplicityMode(false),
     fAddTPCPileupCuts(false),
     fUseCorrectedNTracks(false),
+    fUseFlippedEta(false),
 
     fListOfObjects(0),
     fListOfProfile(0),
@@ -206,6 +207,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
   fUseCorrectedNTracks(false),
+  fUseFlippedEta(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -339,6 +341,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
   fUseCorrectedNTracks(false),
+  fUseFlippedEta(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -1200,7 +1203,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
     if (fuQThreeSub) {
       //..3-subevent method
-      if(aodTrk->Eta() < -0.4) {//..left part
+      if((aodTrk->Eta() < -0.4 && !UseFlippedEta) 
+		      || (aodTrk->Eta() > 0.4 && UseFlippedEta)
+		      ) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1218,7 +1223,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
           }
         }
       }
-      if(aodTrk->Eta() > 0.4) {//..right part
+      if((aodTrk->Eta() > 0.4 && !UseFlippedEta)
+		     || (aodTrk->Eta() < -0.4 && UseFlippedEta) 
+		      ) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
