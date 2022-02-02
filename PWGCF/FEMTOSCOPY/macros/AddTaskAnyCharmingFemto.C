@@ -247,7 +247,6 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetBuddyOriginMCTRUTH(0);
     task->SetDmesonOriginMCTRUTH(0);
     if (suffix == "1") {
-      std::cout<<"lalalalDmeson"<<std::endl;
       task->SetBuddyOriginMCTRUTH(0);
       task->SetDmesonOriginMCTRUTH(1);
     } 
