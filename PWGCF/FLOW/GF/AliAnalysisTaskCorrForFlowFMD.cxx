@@ -1189,8 +1189,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   fNofTracks = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
-  printf("Cuts: \n DCAz: \t %f \t\t\t DCAxy \t %f\n", fCutDCAz, fCutDCAxySigma);
-
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
       if(!track || !IsTrackSelected(track)) { continue; }
