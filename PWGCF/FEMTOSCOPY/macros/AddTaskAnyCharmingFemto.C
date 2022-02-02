@@ -12,13 +12,21 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
-    bool isMC = false, bool useMCTruthReco = false, bool isMCtruth = false, bool fullBlastQA = true, TString trigger = "kINT7",
+    bool isMC = false,
+    bool useMCTruthReco = false,
+    bool isMCtruth = false,
+    bool fullBlastQA = true,
+    TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
-    TString fileCutObjHF = "HFCuts.root", TString cutObjHFName = "AnalysisCuts",
-    TString cutHFsuffix = "", bool applyML = false, TString configML =
-        "config_ML.yml",
-    int useAODProtection = 0, int massSelection =
-        AliAnalysisTaskCharmingFemto::kSignal, int pdgDmesonBuddy = 2212, const char *cutVariation = "0") {
+    TString fileCutObjHF = "HFCuts.root",
+    TString cutObjHFName = "AnalysisCuts",
+    TString cutHFsuffix = "",
+    bool applyML = false, TString configML = "config_ML.yml",
+    int useAODProtection = 0,
+    int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
+    int pdgDmesonBuddy = 2212,
+    const char *cutVariation = "0"
+  ) {
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -201,7 +209,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetMLConfigFile(configML);
   }
   
-  if (suffix == "1") {
+  if (suffix == "1000") {
     task->CheckProtonSPDHit();
   }
 
