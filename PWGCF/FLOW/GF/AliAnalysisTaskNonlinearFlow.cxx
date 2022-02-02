@@ -1203,8 +1203,8 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
     if (fuQThreeSub) {
       //..3-subevent method
-      if((aodTrk->Eta() < -0.4 && !UseFlippedEta) 
-		      || (aodTrk->Eta() > 0.4 && UseFlippedEta)
+      if((aodTrk->Eta() < -0.4 && !fUseFlippedEta) 
+		      || (aodTrk->Eta() > 0.4 && fUseFlippedEta)
 		      ) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
@@ -1223,8 +1223,8 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
           }
         }
       }
-      if((aodTrk->Eta() > 0.4 && !UseFlippedEta)
-		     || (aodTrk->Eta() < -0.4 && UseFlippedEta) 
+      if((aodTrk->Eta() > 0.4 && !fUseFlippedEta)
+		     || (aodTrk->Eta() < -0.4 && fUseFlippedEta) 
 		      ) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
