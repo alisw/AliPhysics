@@ -424,13 +424,20 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
 
-  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+  if(fCutDCAz > 0.){
     Double_t vtxXYZ[3], trXYZ[3];
     track->GetXYZ(trXYZ);
     fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
     trXYZ[2] -= vtxXYZ[2];
     if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+  }
 
+  if(fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[0] -= vtxXYZ[0];
+    trXYZ[1] -= vtxXYZ[1];
     Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
     Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
     if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }
@@ -1181,6 +1188,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 
   fNofTracks = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
+
+  printf("Cuts: \n DCAz: \t %f \t\t\t DCAxy \t %f\n", fCutDCAz, fCutDCAxySigma);
 
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
