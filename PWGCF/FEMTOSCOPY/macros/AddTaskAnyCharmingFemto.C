@@ -213,10 +213,6 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetTrigger(AliVEvent::kHighMultV0);
   }
 
-  if (isMC) {
-    task->ScaleMCBeautyFraction(0.5, 0.05);
-  }
-
   if (isMCtruth){
     if (std::abs(pdgDmesonBuddy) == 321) {
       task->SetBuddypTLowMCTRUTH(0.15);
