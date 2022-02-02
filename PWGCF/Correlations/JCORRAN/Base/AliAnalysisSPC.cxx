@@ -441,9 +441,11 @@ fCentralityHistogram[CentralityBin]->Fill(fCentrality);
      	if(!bDoMixed)
 	{
 		fPhiHistogram[CentralityBin][0]->Fill(phi, (1./phi_module_corr)); 
+ 		fPhiWeightProfile[CentralityBin]->Fill(phi,(1./phi_module_corr));
 		fEtaHistogram[CentralityBin][0]->Fill(eta);
 		fPTHistogram[CentralityBin][0]->Fill(pt, (1./iEffCorr));
-    fChargeHistogram[CentralityBin]->Fill(charge); 
+    		fChargeHistogram[CentralityBin]->Fill(charge); 
+		
 	}//if(!bDoMixed)
 
 	else
@@ -545,6 +547,8 @@ void AliAnalysisSPC::InitializeArrays()
   	  fEtaHistogram[icent][i] = NULL;
   	  fMultHistogram[icent][i] = NULL;
   	}   
+
+        fPhiWeightProfile[icent] = NULL;
 
   	//Output Histograms
   	fResults[icent] = NULL;
@@ -670,6 +674,11 @@ void AliAnalysisSPC::BookControlHistograms()
 	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 if(bDoMixed) { fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]); } 
+
+         fPhiWeightProfile[icent] = new TProfile("fPhiWeightProfile","Phi Weights",100,-TMath::Pi(),TMath::Pi()); //centrality dependent output
+	 fPhiWeightProfile[icent]->GetXaxis()->SetTitle("#varphi");
+	 fPhiWeightProfile[icent]->GetYaxis()->SetTitle("weight");
+	 fControlHistogramsList[icent]->Add(fPhiWeightProfile[icent]);
 
 	 // c) Book histogram to hold eta distribution before track selection:
 	 fEtaHistogram[icent][0] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution",1000,-1.,1.);
