@@ -206,36 +206,39 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
       fDoDorigPlots=true;
       return true;
     }
-    else if(fDmesonOrigin==1){
-      if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==4)
-        return true;
-      else
-        return false;
-    }
-    else if(fDmesonOrigin==2){
-      if(AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true)==5)
-        return true;
-      else
-        return false;
-    }
     else {
-      int motherID = mcPart->GetMother();
-      AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherID);
-      int PDGCodeMoth= mcMother->GetPdgCode();
-      if(fDmesonOrigin==3){
-        if(TMath::Abs(PDGCodeMoth) == 413)
+      int origin = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
+      if(fDmesonOrigin==1){
+        if(origin==4)
           return true;
-        else 
+        else
           return false;
       }
-      if(fDmesonOrigin==4){
-        if(TMath::Abs(PDGCodeMoth) == 521)
+      else if(fDmesonOrigin==2){
+        if(origin==5)
           return true;
-        else 
+        else
           return false;
       }
+      else {
+        int motherID = mcPart->GetMother();
+        AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherID);
+        int PDGCodeMoth= mcMother->GetPdgCode();
+        if(origin==4 && fDmesonOrigin==3){
+          if(TMath::Abs(PDGCodeMoth) == 413)
+            return true;
+          else 
+            return false;
+        }
+        if(fDmesonOrigin==4){
+          if(TMath::Abs(PDGCodeMoth) == 521)
+            return true;
+          else 
+            return false;
+        }
+      }
+      return false;
     }
-    return false;
   }
   void FillMCtruthPDGDmeson(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
     int motherID = mcPart->GetMother();
