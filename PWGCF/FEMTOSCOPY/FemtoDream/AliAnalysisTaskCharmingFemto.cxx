@@ -362,6 +362,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   if (!fEvtCuts->isSelected(fEvent))
     return;
 
+  if(fCheckProtonSPDHit) { // force usage of global tracks since TPC only tracks have no ITS hits
+    fTrackCutsPartProton->SetFilterBit(96);
+    fTrackCutsPartAntiProton->SetFilterBit(96);
+  }
+
   // PROTON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
