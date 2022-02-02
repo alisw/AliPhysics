@@ -93,8 +93,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double getCentrality();
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
     //void FillCorrelationProfiles(const double &l_cent, double &rn);
-    template<typename T> void FillWPCounter(T& inarr, double w, double p);
-    template<typename T> void getMomentumCorrelation(T& wp, const double &l_cent, double &rn);
+    void FillWPCounter(double inarr[15][15], double w, double p);
+    void getMomentumCorrelation(double wp[15][15], const double &l_cent, double &rn);
     double OrderedAddition(std::vector<double> vec, int size);
     double *GetBinsFromAxis(TAxis *inax);
     
