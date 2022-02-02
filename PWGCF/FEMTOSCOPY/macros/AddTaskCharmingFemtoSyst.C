@@ -22,7 +22,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
     TString configML = "config_ML.yml",
     int useAODProtection = 0,
     int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
-    unsigned int pdgCodeBuddy = 0,
+    unsigned int pdgCodeBuddy = 211,
     const char *cutVariation = "0"
   ) {
   TString suffix = TString::Format("%s", cutVariation);
@@ -112,8 +112,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -132,8 +132,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -152,8 +152,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -172,8 +172,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -190,8 +190,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -207,8 +207,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -230,8 +230,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -252,8 +252,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -272,8 +272,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -292,8 +292,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
       TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kPion){
-      TrackCuts->SetPID(aliPIDParticle, 0.5);
-      AntiTrackCuts->SetPID(aliPIDParticle, 0.5);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
     } else if (aliPIDparticle == AliPID::kKaon){
       TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
       AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
@@ -310,11 +310,18 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
 
   AliRDHFCuts *analysisCutsHF = nullptr;
   TString HFPartName = "";
+  Int_t pdgDmeson;
   switch(channelHF) {
     case AliAnalysisTaskCharmingFemto::kDplustoKpipi:
       HFPartName = "Dplus";
       analysisCutsHF = (AliRDHFCutsDplustoKpipi*)fileCuts->Get(cutObjHFName);
-    break;
+      pdgDmeson = 411;
+      break;
+    case AliAnalysisTaskCharmingFemto::kDstartoKpipi:
+      HFPartName = "Dstar";
+      analysisCutsHF = (AliRDHFCutsDStartoKpipi*)fileCuts->Get(cutObjHFName);
+      pdgDmeson = 413;
+      break;
     default:
       Error("AddTaskCharmingFemto()", "Wrong HF hadron setting, particle not implemented.");
       return nullptr;
@@ -324,10 +331,10 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
   // =====================================================================
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212);  // 0 - proton
-  PDGParticles.push_back(2212);  // 1 - antiproton
-  PDGParticles.push_back(411);   // 2 - dplus
-  PDGParticles.push_back(411);   // 3 - dminus
+  PDGParticles.push_back(pdgDmesonBuddy);  //
+  PDGParticles.push_back(pdgDmesonBuddy);  //
+  PDGParticles.push_back(pdgDmeson);   // 2 - dplus or dstar+
+  PDGParticles.push_back(pdgDmeson);   // 3 - dminus or dstar-
 
   std::vector<float> ZVtxBins = AliFemtoDreamCollConfig::GetDefaultZbins();
 
