@@ -2128,8 +2128,8 @@ if(suffixTrigger=="5"){
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(0.017);
-  config->SetDeltaPhiMax(0.017);
+  config->SetDeltaEtaMax(0.012);
+  config->SetDeltaPhiMax(0.012);
 
   if(suffixTrigger=="699"){
     config->SetDeltaEtaMax(0.02);
