@@ -52,12 +52,12 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
   float buddyNsigmaUp = 3.3;
   float buddyNClsLow = 70;
   float buddyNClsUp = 90;
-  float buddyMaxPt
+  float buddyMaxPt;
 
-  std::map kaonPIDTight<std::string, float>;
-  std::map kaonPIDLoose<std::string, float>;
+  std::map<std::string, float> kaonPIDTight;
+  std::map<std::string, float> kaonPIDLoose;
   
-  AliPID aliPIDParticle;
+  AliPID::EParticleType aliPIDParticle;
   
   if (pdgCodeBuddy == 2212){ // proton
     buddyPtlow = 0.45;
@@ -65,21 +65,21 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
     buddyNsigmaLow = 2.7;
     buddyNsigmaUp = 3.3;
     buddyMaxPt = 4.05
-    aliPIDParticle = AliAOD::kProton;
+    aliPIDParticle = AliPID::kProton;
   } else if (pdgCodeBuddy == 211){ // pion+
     buddyPtlow = 0.1;
     buddyPtup = 0.2;
     buddyNsigmaLow = 2.7;
     buddyNsigmaUp = 3.3;
-    buddyMaxPt = 4.0
-    aliPIDParticle = AliAOD::kPion;
+    buddyMaxPt = 4.0;
+    aliPIDParticle = AliPID::kPion;
   } else if (pdgCodeBuddy == 321){ // kaon+
     buddyPtlow = 0.09;
     buddyPtup = 0.19;
     buddyNsigmaLow = 3;
     buddyNsigmaUp = 3;
-    buddyMaxPt = 4.0
-    aliPIDParticle = AliAOD::kKaon;
+    buddyMaxPt = 4.0;
+    aliPIDParticle = AliPID::kKaon;
     kaonPIDTight = { {"COMB", 3.7}, {"TPC", 2.7}, {"EXCLUSION", 3.3}, }; // for SetPIDkd() when using oton's K selection
     kaonPIDLoose = { {"COMB", 4.3}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
   } 
@@ -88,7 +88,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
   AliFemtoDreamTrackCuts *TrackCuts = nullptr;
   AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
 
-  if(std::abs(pdgDmesonBuddy) == 2212) {
+  if(std::abs(pdgCodeBuddy) == 2212) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetCutCharge(1);
@@ -96,7 +96,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
     AntiTrackCuts->SetFilterBit(128);
     AntiTrackCuts->SetCutCharge(-1);
   }
-  else if(std::abs(pdgDmesonBuddy) == 211) {
+  else if(std::abs(pdgCodeBuddy) == 211) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(96);
     TrackCuts->SetCutCharge(1);
@@ -104,7 +104,7 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
     AntiTrackCuts->SetFilterBit(96);
     AntiTrackCuts->SetCutCharge(-1);
   }
-  else if(std::abs(pdgDmesonBuddy) == 321) {
+  else if(std::abs(pdgCodeBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetPtRange(0.15, 4.0);
@@ -361,8 +361,8 @@ AliAnalysisTaskSE *AddTaskCharmingFemtoSyst(
   // =====================================================================
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(pdgDmesonBuddy);  //
-  PDGParticles.push_back(pdgDmesonBuddy);  //
+  PDGParticles.push_back(pdgCodeBuddy);  //
+  PDGParticles.push_back(pdgCodeBuddy);  //
   PDGParticles.push_back(pdgDmeson);   // 2 - dplus or dstar+
   PDGParticles.push_back(pdgDmeson);   // 3 - dminus or dstar-
 
