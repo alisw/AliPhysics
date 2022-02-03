@@ -71,15 +71,15 @@ set(SRCS
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
     AliAnalysisHFEHCorrOnFlySim.cxx
-    AliHFMLResponseLambdactopKpi.cxx
-    AliAnalysisTaskSELambdacCorrelations.cxx
   )
 
 # Tasks that should only be compiled in ROOT 6
 if(ROOT_VERSION_MAJOR EQUAL 6)
     set(SRCS ${SRCS}
 	AliAnalysisTaskDHFeCorr.cxx
-	)						
+        AliHFMLResponseLambdactopKpi.cxx
+        AliAnalysisTaskSELambdacCorrelations.cxx
+	)
 endif(ROOT_VERSION_MAJOR EQUAL 6)
 
 # Headers from sources
