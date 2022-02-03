@@ -251,10 +251,6 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     fMetaData()
 {
   DefineInput(0, TChain::Class());
-  DefineInput(1, TTree::Class());
-  DefineInput(2, TTree::Class());
-  DefineInput(3, TTree::Class());
-  DefineInput(4, TTree::Class());
   DefineOutput(1, TList::Class());
   for (Int_t i = 0; i < kTrees; i++)
   {
@@ -404,7 +400,6 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 
   PostData(1, fOutputList);
 
-  // Auto-detect HF input
   if (!fStoreHF) {
     DisableTree(kHF2Prong);
     DisableTree(kHF3Prong);
@@ -616,14 +611,6 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   //   mgr->ConnectOutput(task, 2 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
-
-  // Connect HF task
-  if (mgr->GetContainers()->FindObject("D0CandidateTree")) {
-    mgr->ConnectInput(task,1,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("D0CandidateTree"));
-    mgr->ConnectInput(task,2,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("Charm3pCandidateTree"));
-    mgr->ConnectInput(task,3,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("DstarCandidateTree"));
-    mgr->ConnectInput(task,4,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("LcV0bachCandidateTree"));
-  }
 
   return task;
 } // AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suffix)
@@ -2617,8 +2604,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       // Store HF here when we have the V0 infos in place
       if (fStoreHF) {
         // Read input from HF task
-        TTree *hf2ProngCandidateTree = (TTree*) GetInputData(1);
-        Printf("HF hf2ProngCandidateTree (slot 1) has %lld entries", hf2ProngCandidateTree->GetEntries());
+        TTree *hf2ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf2ProngCandidateTree");
+        Printf("HF hf2ProngCandidateTree has %lld entries", hf2ProngCandidateTree->GetEntries());
         hf2ProngCandidateTree->SetBranchAddress("trackId0", &hf2Prong.fIndexTracks_0);
         hf2ProngCandidateTree->SetBranchAddress("trackId1", &hf2Prong.fIndexTracks_1);
         hf2ProngCandidateTree->SetBranchAddress("hfflag", &hf2Prong.fHFflag);
@@ -2632,8 +2619,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         }
         eventextra.fNentries[kHF2Prong] = n2prong_filled;
 
-        TTree *hf3ProngCandidateTree = (TTree*) GetInputData(2);
-        Printf("HF hf3ProngCandidateTree (slot 2) has %lld entries", hf3ProngCandidateTree->GetEntries());
+        TTree *hf3ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf3ProngCandidateTree");
+        Printf("HF hf3ProngCandidateTree has %lld entries", hf3ProngCandidateTree->GetEntries());
         hf3ProngCandidateTree->SetBranchAddress("trackId0", &hf3Prong.fIndexTracks_0);
         hf3ProngCandidateTree->SetBranchAddress("trackId1", &hf3Prong.fIndexTracks_1);
         hf3ProngCandidateTree->SetBranchAddress("trackId2", &hf3Prong.fIndexTracks_2);
@@ -2648,8 +2635,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         }
         eventextra.fNentries[kHF3Prong] = hf3ProngCandidateTree->GetEntries();
 
-        TTree *hfDstarCandidateTree = (TTree*) GetInputData(3);
-        Printf("HF hfDstarCandidateTree (slot 3) has %lld entries", hfDstarCandidateTree->GetEntries());
+        TTree *hfDstarCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfDstarCandidateTree");
+        Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
         hfDstarCandidateTree->SetBranchAddress("trackSoftPi", &hfDStar.fIndexTracks_0);
         hfDstarCandidateTree->SetBranchAddress("trackD0", &hfDStar.fIndexHf2Prong);
 
@@ -2661,8 +2648,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         }
         eventextra.fNentries[kHFDStar] = hfDstarCandidateTree->GetEntries();
 
-        TTree *hfCascadeCandidateTree = (TTree*) GetInputData(4);
-        Printf("HF hfCascadeCandidateTree (slot 4) has %lld entries", hfCascadeCandidateTree->GetEntries());
+        TTree *hfCascadeCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfCascadeCandidateTree");
+        Printf("HF hfCascadeCandidateTree has %lld entries", hfCascadeCandidateTree->GetEntries());
         Int_t v0Index = -1;
         hfCascadeCandidateTree->SetBranchAddress("v0index", &v0Index);
         hfCascadeCandidateTree->SetBranchAddress("trackBachel", &hfCascades.fIndexTracks_0);

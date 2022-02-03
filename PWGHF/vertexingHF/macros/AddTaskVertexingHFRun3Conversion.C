@@ -108,34 +108,8 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
   
   AliAnalysisDataContainer *coutputListOfCuts = mgr->CreateContainer("ListOfCuts",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); //cuts
   
-  AliAnalysisDataContainer *coutputD0 = mgr->CreateContainer("D0CandidateTree",
-                                                             TTree::Class(),
-                                                             AliAnalysisManager::kExchangeContainer,
-                                                             outputfile.Data());
-  
-  AliAnalysisDataContainer *coutput3p = mgr->CreateContainer("Charm3pCandidateTree",
-                                                             TTree::Class(),
-                                                             AliAnalysisManager::kExchangeContainer,
-                                                             outputfile.Data());
-  
-  
-  AliAnalysisDataContainer *coutputDst = mgr->CreateContainer("DstarCandidateTree",
-                                                              TTree::Class(),
-                                                              AliAnalysisManager::kExchangeContainer,
-                                                              outputfile.Data());
-
-  AliAnalysisDataContainer *coutputCasc = mgr->CreateContainer("LcV0bachCandidateTree",
-                                                               TTree::Class(),
-                                                               AliAnalysisManager::kExchangeContainer,
-                                                               outputfile.Data());
-
-
   mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(hfTask,1,coutputListOfCuts);
-  mgr->ConnectOutput(hfTask,2,coutputD0);
-  mgr->ConnectOutput(hfTask,3,coutput3p);
-  mgr->ConnectOutput(hfTask,4,coutputDst);
-  mgr->ConnectOutput(hfTask,5,coutputCasc);
 
   return hfTask;
 }

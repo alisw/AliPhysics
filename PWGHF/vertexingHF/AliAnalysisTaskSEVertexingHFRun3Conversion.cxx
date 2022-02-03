@@ -124,10 +124,6 @@ fLikeSign3ProngTClArr(0)
   // Standard constructor
 
   DefineOutput(1,TList::Class()); // analysis cuts
-  DefineOutput(2,TTree::Class());  // TTree D0
-  DefineOutput(3,TTree::Class());  // TTree 3prong
-  DefineOutput(4,TTree::Class());  // TTree D*
-  DefineOutput(5,TTree::Class());  // TTree Cascade
 }
 
 //________________________________________________________________________
@@ -257,30 +253,46 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
                        fLikeSign3ProngTClArr);
   
   // Trees need to be created each time
-  delete f2ProngCandidateTree;
-  f2ProngCandidateTree = new TTree("cand2ProngTree", "Tree of 2prong candidates");
+  if (f2ProngCandidateTree != nullptr) {
+    inputHandler->GetUserInfo()->Remove(f2ProngCandidateTree);
+    delete f2ProngCandidateTree;
+  }
+  f2ProngCandidateTree = new TTree("hf2ProngCandidateTree", "Tree of 2prong candidates");
   f2ProngCandidateTree->Branch("trackId0",&fD0track0,"trackId0/I");
   f2ProngCandidateTree->Branch("trackId1",&fD0track1,"trackId1/I");
   f2ProngCandidateTree->Branch("hfflag",&fHF2pflag,"hfflag/b");
+  inputHandler->GetUserInfo()->Add(f2ProngCandidateTree);
 
-  delete f3ProngCandidateTree;
-  f3ProngCandidateTree = new TTree("cand3ProngTree", "Tree of c->3prong candidates");
+  if (f3ProngCandidateTree != nullptr) {
+    inputHandler->GetUserInfo()->Remove(f3ProngCandidateTree);
+    delete f3ProngCandidateTree;
+  }
+  f3ProngCandidateTree = new TTree("hf3ProngCandidateTree", "Tree of c->3prong candidates");
   f3ProngCandidateTree->Branch("trackId0",&f3ptrack0,"trackId0/I");
   f3ProngCandidateTree->Branch("trackId1",&f3ptrack1,"trackId1/I");
   f3ProngCandidateTree->Branch("trackId2",&f3ptrack2,"trackId2/I");
   f3ProngCandidateTree->Branch("hfflag",&fHF3pflag,"hfflag/b");
+  inputHandler->GetUserInfo()->Add(f3ProngCandidateTree);
   
-  delete fDstarCandidateTree;
-  fDstarCandidateTree = new TTree("candDstarTree", "Tree of D*->D0pi candidates");
+  if (fDstarCandidateTree != nullptr) {
+    inputHandler->GetUserInfo()->Remove(fDstarCandidateTree);
+    delete fDstarCandidateTree;
+  }
+  fDstarCandidateTree = new TTree("hfDstarCandidateTree", "Tree of D*->D0pi candidates");
   fDstarCandidateTree->Branch("trackD0",&fDstD0,"trackD0/I");
   fDstarCandidateTree->Branch("trackSoftPi",&fDstSofPi,"trackSoftPi/I");
+  inputHandler->GetUserInfo()->Add(fDstarCandidateTree);
 
-  delete fCascadeCandidateTree;
-  fCascadeCandidateTree = new TTree("candCascade", "Tree of Lc->V0+bach candidates");
+  if (fCascadeCandidateTree != nullptr) {
+    inputHandler->GetUserInfo()->Remove(fCascadeCandidateTree);
+    delete fCascadeCandidateTree;
+  }
+  fCascadeCandidateTree = new TTree("hfCascadeCandidateTree", "Tree of Lc->V0+bach candidates");
   fCascadeCandidateTree->Branch("v0index",&fCasV0ind,"v0index/I");
   fCascadeCandidateTree->Branch("trackV0Dau0",&fCasV0tr0,"trackV0Dau0/I");
   fCascadeCandidateTree->Branch("trackV0Dau1",&fCasV0tr1,"trackV0Dau1/I");
   fCascadeCandidateTree->Branch("trackBachel",&fCasBachl,"trackBachel/I");
+  inputHandler->GetUserInfo()->Add(fCascadeCandidateTree);
 
   fEventIndex=event->GetEventNumberInFile();
   Int_t nD0=fD0toKpiTClArr->GetEntriesFast();
@@ -328,13 +340,6 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     }
     fCascadeCandidateTree->Fill();
   }
-  
-
-  PostData(2,f2ProngCandidateTree);
-  PostData(3,f3ProngCandidateTree);
-  PostData(4,fDstarCandidateTree);
-  PostData(5,fCascadeCandidateTree);
-  return;
 }
 
 //________________________________________________________________________
