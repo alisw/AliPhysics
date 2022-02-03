@@ -1640,6 +1640,7 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCXicPlus(AliAODTrack *trac
       AliAODMCParticle *mcMother_Pi1 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[2]));
       if ( mcMother_Xi->GetPdgCode() == 3324 && ( (mcMother_Pi0->GetPdgCode()==4232) || (mcMother_Pi1->GetPdgCode()==4232) ) ) {
         Int_t Index_XiStar0_Mother = mcMother_Xi->GetMother();
+        if (Index_XiStar0_Mother<0) return -15;
         AliAODMCParticle *mcMother_XiStar0 = static_cast<AliAODMCParticle*>(mcArray->At(Index_XiStar0_Mother));
         if ( mcMother_XiStar0->GetPdgCode()==4232 && mcMother_XiStar0->GetNDaughters()==2 && (Index_XiStar0_Mother==IndexMother_XicPlusDau[0] || Index_XiStar0_Mother==IndexMother_XicPlusDau[1]) ) {
           if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_XiStar0,kTRUE)==4) return -4;
@@ -1726,6 +1727,7 @@ Int_t AliAnalysisTaskSEXicPlusToXi2PifromKFP::MatchToMCAntiXicPlus(AliAODTrack *
       AliAODMCParticle *mcMother_Pi1 = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother_XicPlusDau[2]));
       if ( mcMother_Xi->GetPdgCode() == -3324 && ( (mcMother_Pi0->GetPdgCode()==-4232) || (mcMother_Pi1->GetPdgCode()==-4232) ) ) {
         Int_t Index_XiStar0_Mother = mcMother_Xi->GetMother();
+        if (Index_XiStar0_Mother<0) return -15;
         AliAODMCParticle *mcMother_XiStar0 = static_cast<AliAODMCParticle*>(mcArray->At(Index_XiStar0_Mother));
         if ( mcMother_XiStar0->GetPdgCode()==-4232 && mcMother_XiStar0->GetNDaughters()==2 && (Index_XiStar0_Mother==IndexMother_XicPlusDau[0] || Index_XiStar0_Mother==IndexMother_XicPlusDau[1]) ) {
           if (AliVertexingHFUtils::CheckOrigin(mcArray,mcMother_Xi,kTRUE)==4) return -4;
