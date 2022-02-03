@@ -100,6 +100,10 @@ if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
   set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
 endif(KFParticle_FOUND)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
+endif(ROOT_VERSION_MAJOR EQUAL 6)
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
