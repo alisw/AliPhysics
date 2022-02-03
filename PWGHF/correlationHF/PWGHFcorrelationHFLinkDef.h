@@ -42,6 +42,7 @@
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
 #pragma link C++ class AliHFMLResponseLambdactopKpi+;
 #pragma link C++ class AliAnalysisTaskSELambdacCorrelations+;
+#endif
 
 #if ROOT_VERSION_CODE > ROOT_VERSION(6,4,0)
 #pragma link C++ namespace AliDHFeCorr+;
