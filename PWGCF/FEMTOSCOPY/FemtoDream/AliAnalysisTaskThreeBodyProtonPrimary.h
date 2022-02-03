@@ -154,6 +154,18 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void SetStandardMixing(bool StandardMixing){
     fStandardMixing = StandardMixing;
   }
+  void SetDeltaPhiMaxpp(double DeltaPhiMaxpp){
+    fDeltaPhiMaxpp = DeltaPhiMaxpp;
+  }      
+  void SetDeltaEtaMaxpp(double DeltaEtaMaxpp){
+    fDeltaEtaMaxpp = DeltaEtaMaxpp;
+  }      
+  void SetDeltaPhiMaxpKplus(double DeltaPhiMaxpKplus){
+    fDeltaPhiMaxpKplus = DeltaPhiMaxpKplus;
+  }      
+  void SetDeltaEtaMaxpKplus(double DeltaEtaMaxpKplus){
+    fDeltaEtaMaxpKplus = DeltaEtaMaxpKplus;
+  }      
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -228,6 +240,11 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fClosePairRejectionPPPorPPL; 
 
   double fQ3LimitForDeltaPhiDeltaEta;
+  double fDeltaPhiMaxpp;
+  double fDeltaEtaMaxpp;
+  double fDeltaPhiMaxpKplus;
+  double fDeltaEtaMaxpKplus;
+
 
   bool fCleanWithLambdas; //if kTRUE: reject Proton + Pi- / Antiproton + Pi+ from Lambda/AntiLambda
   bool fDoOnlyThreeBody; //if kTRUE: 3 Body analysis, else 2 Body
