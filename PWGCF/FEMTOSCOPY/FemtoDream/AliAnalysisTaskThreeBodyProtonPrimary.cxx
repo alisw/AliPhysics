@@ -79,6 +79,10 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fturnoffClosePairRejectionCompletely(false),
       fClosePairRejectionPPPorPPL(false),
       fQ3LimitForDeltaPhiDeltaEta(1.),
+      fDeltaPhiMaxpp(0.017),
+      fDeltaEtaMaxpp(0.017),
+      fDeltaPhiMaxpKplus(0.04),
+      fDeltaEtaMaxpKplus(0.012),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
       fDoTwoPrimary(true),
@@ -208,6 +212,10 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fturnoffClosePairRejectionCompletely(false),
       fClosePairRejectionPPPorPPL(false),
       fQ3LimitForDeltaPhiDeltaEta(1.),
+      fDeltaPhiMaxpp(0.017),
+      fDeltaEtaMaxpp(0.017),
+      fDeltaPhiMaxpKplus(0.04),
+      fDeltaEtaMaxpKplus(0.012),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
       fDoTwoPrimary(true),
@@ -2443,8 +2451,12 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int s
   // DoThisPair = ij where i is the number of daughters for first particle, j for the second
 
   static const float piHi = TMath::Pi();
-  auto fDeltaPhiSqMax = Config.GetDeltaPhiMax() * Config.GetDeltaPhiMax();
-  auto fDeltaEtaSqMax = Config.GetDeltaEtaMax() * Config.GetDeltaEtaMax() ;
+  //auto fDeltaPhiSqMax = Config.GetDeltaPhiMax() * Config.GetDeltaPhiMax();
+  //auto fDeltaEtaSqMax = Config.GetDeltaEtaMax() * Config.GetDeltaEtaMax() ;
+
+  double DeltaPhiSqMaxValue = 0;
+  double DeltaEtaSqMaxValue = 0;
+
 
   //cout<<part1.GetPDGCode()<<endl;
 
@@ -2452,13 +2464,19 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int s
   if ((species1==2&&species2==0)||(species1==0&&species2==2)||
       (species1==3&&species2==1)||(species1==1&&species2==3))
   {
-    fDeltaPhiSqMax = 0.04*0.04;
-    fDeltaEtaSqMax = 0.012*0.012;
+    //fDeltaPhiSqMax = 0.04*0.04;
+    //fDeltaEtaSqMax = 0.012*0.012;
+    DeltaPhiSqMaxValue = fDeltaPhiMaxpKplus*fDeltaPhiMaxpKplus;
+    DeltaEtaSqMaxValue = fDeltaEtaMaxpKplus*fDeltaEtaMaxpKplus;
+
   }
   if ((species1==0&&species2==0)||(species1==1&&species2==1))
   {
-    fDeltaPhiSqMax = 0.017*0.017;
-    fDeltaEtaSqMax = 0.017*0.017;
+    //fDeltaPhiSqMax = 0.017*0.017;
+    //fDeltaEtaSqMax = 0.017*0.017;
+    DeltaPhiSqMaxValue = fDeltaPhiMaxpp*fDeltaPhiMaxpp;
+    DeltaEtaSqMaxValue = fDeltaEtaMaxpp*fDeltaEtaMaxpp;
+
   }
 
   bool pass = true;
@@ -2522,8 +2540,8 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int s
         beforeHist->Fill(dphiAvg/ (float) size, deta);
       }
       if (pass) {
-        if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
-            + deta * deta / fDeltaEtaSqMax < 1.) {
+        if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / DeltaPhiSqMaxValue
+            + deta * deta / DeltaEtaSqMaxValue < 1.) {
           pass = false;
         }
         else{
@@ -2549,8 +2567,11 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int s
   // DoThisPair = ij where i is the number of daughters for first particle, j for the second
 
   static const float piHi = TMath::Pi();
-  auto fDeltaPhiSqMax = Config.GetDeltaPhiMax() * Config.GetDeltaPhiMax();
-  auto fDeltaEtaSqMax = Config.GetDeltaEtaMax() * Config.GetDeltaEtaMax() ;
+  //auto fDeltaPhiSqMax = Config.GetDeltaPhiMax() * Config.GetDeltaPhiMax();
+  //auto fDeltaEtaSqMax = Config.GetDeltaEtaMax() * Config.GetDeltaEtaMax() ;
+
+  double DeltaPhiSqMaxValue = 0;
+  double DeltaEtaSqMaxValue = 0;
 
   //cout<<part1PDGcode<<endl;
 
@@ -2559,14 +2580,21 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int s
  if ((species1==2&&species2==0)||(species1==0&&species2==2)||
       (species1==3&&species2==1)||(species1==1&&species2==3))
   {
-    fDeltaPhiSqMax = 0.04*0.04;
-    fDeltaEtaSqMax = 0.012*0.012;
+    //fDeltaPhiSqMax = 0.04*0.04;
+    //fDeltaEtaSqMax = 0.012*0.012;
+
+    DeltaPhiSqMaxValue = fDeltaPhiMaxpKplus*fDeltaPhiMaxpKplus;
+    DeltaEtaSqMaxValue = fDeltaEtaMaxpKplus*fDeltaEtaMaxpKplus;
   //  test = true;
   }
   if ((species1==0&&species2==0)||(species1==1&&species2==1))
   {
-    fDeltaPhiSqMax = 0.017*0.017;
-    fDeltaEtaSqMax = 0.017*0.017;
+    //fDeltaPhiSqMax = 0.017*0.017;
+    //fDeltaEtaSqMax = 0.017*0.017;
+
+    DeltaPhiSqMaxValue = fDeltaPhiMaxpp*fDeltaPhiMaxpp;
+    DeltaEtaSqMaxValue = fDeltaEtaMaxpp*fDeltaEtaMaxpp;
+
   //  test = true;
   }
 
@@ -2635,8 +2663,8 @@ bool AliAnalysisTaskThreeBodyProtonPrimary::DeltaEtaDeltaPhi(int species1, int s
         }
       }
       if (pass) {
-        if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
-            + deta * deta / fDeltaEtaSqMax < 1.) {
+        if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / DeltaPhiSqMaxValue
+            + deta * deta / DeltaEtaSqMaxValue < 1.) {
           pass = false;
         }
         else{
