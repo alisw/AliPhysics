@@ -24,7 +24,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     bool applyML = false, TString configML = "config_ML.yml",
     int useAODProtection = 0,
     int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
-    int pdgDmesonBuddy = 2212,
+    int pdgBuddy = 2212,
     const char *cutVariation = "0"
   ) {
   TString suffix = TString::Format("%s", cutVariation);
@@ -44,13 +44,11 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
-  // =====================================================================
-  // Proton cut variations
-
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts = nullptr;
   AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
-  if(std::abs(pdgDmesonBuddy) == 2212) {
+
+  if(std::abs(pdgBuddy) == 2212) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetCutCharge(1);
@@ -58,7 +56,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     AntiTrackCuts->SetFilterBit(128);
     AntiTrackCuts->SetCutCharge(-1);
   }
-  else if(std::abs(pdgDmesonBuddy) == 211) {
+  else if(std::abs(pdgBuddy) == 211) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(96);
     TrackCuts->SetCutCharge(1);
@@ -66,7 +64,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     AntiTrackCuts->SetFilterBit(96);
     AntiTrackCuts->SetCutCharge(-1);
   }
-  else if(std::abs(pdgDmesonBuddy) == 321) {
+  else if(std::abs(pdgBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
     TrackCuts->SetPtRange(0.15, 4.0);
@@ -87,8 +85,252 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     return nullptr;
   }
 
+  // =====================================================================
+  // Cut variations
+  float buddyPtlow;
+  float buddyPtup;
+  float buddyEtaLow = 0.75;
+  float buddyEtaUp = 0.85;
+  float buddyNsigmaLow = 2.7;
+  float buddyNsigmaUp = 3.3;
+  float buddyNClsLow = 70;
+  float buddyNClsUp = 90;
+  float buddyMaxPt;
+
+  std::map<std::string, float> kaonPIDTight;
+  std::map<std::string, float> kaonPIDLoose;
+  
+  AliPID::EParticleType aliPIDParticle;
+  
+  if (pdgBuddy == 2212){ // proton
+    buddyPtlow = 0.45;
+    buddyPtup = 0.55;
+    buddyNsigmaLow = 2.7;
+    buddyNsigmaUp = 3.3;
+    buddyMaxPt = 4.05;
+    aliPIDParticle = AliPID::kProton;
+  } else if (pdgBuddy == 211){ // pion+
+    buddyPtlow = 0.1;
+    buddyPtup = 0.2;
+    buddyNsigmaLow = 2.7;
+    buddyNsigmaUp = 3.3;
+    buddyMaxPt = 4.0;
+    aliPIDParticle = AliPID::kPion;
+  } else if (pdgBuddy == 321){ // kaon+
+    buddyPtlow = 0.09;
+    buddyPtup = 0.19;
+    buddyNsigmaLow = 3;
+    buddyNsigmaUp = 3;
+    buddyMaxPt = 4.0;
+    aliPIDParticle = AliPID::kKaon;
+    kaonPIDTight = { {"COMB", 3.7}, {"TPC", 2.7}, {"EXCLUSION", 3.3}, }; // for SetPIDkd() when using oton's K selection
+    kaonPIDLoose = { {"COMB", 4.3}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
+  } 
+
   TrackCuts->SetMinimalBooking(suffix != "0");
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
+
+  if (suffix == "1") {
+    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  } else if (suffix == "2") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "3") {
+    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    TrackCuts->SetNClsTPC(buddyNClsUp);
+    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  } else if (suffix == "4") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "5") {
+    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+    TrackCuts->SetNClsTPC(buddyNClsLow);
+    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  } else if (suffix == "6") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "7") {
+    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+    TrackCuts->SetNClsTPC(buddyNClsUp);
+    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  } else if (suffix == "8") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "9") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    TrackCuts->SetNClsTPC(buddyNClsUp);
+    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  } else if (suffix == "10") {
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+    TrackCuts->SetNClsTPC(buddyNClsLow);
+    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  } else if (suffix == "11") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "12") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    TrackCuts->SetNClsTPC(buddyNClsUp);
+    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+  } else if (suffix == "13") {
+    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+  } else if (suffix == "14") {
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+    TrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+    AntiTrackCuts->SetEtaRange(-buddyEtaLow, buddyEtaLow);
+  } else if (suffix == "15") {
+    TrackCuts->SetNClsTPC(buddyNClsUp);
+    AntiTrackCuts->SetNClsTPC(buddyNClsUp);
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+  } else if (suffix == "16") {
+    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaLow);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDLoose["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "17") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    TrackCuts->SetNClsTPC(buddyNClsLow);
+    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+  } else if (suffix == "18") {
+    TrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtup, buddyMaxPt);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  } else if (suffix == "19") {
+    TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    AntiTrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
+    TrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+    AntiTrackCuts->SetEtaRange(-buddyEtaUp, buddyEtaUp);
+  } else if (suffix == "20") {
+    TrackCuts->SetNClsTPC(buddyNClsLow);
+    AntiTrackCuts->SetNClsTPC(buddyNClsLow);
+    
+    // Set PID variations
+    if (aliPIDParticle == AliPID::kProton){
+      TrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.75, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, buddyNsigmaUp);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+      AntiTrackCuts->SetPIDkd(true, false, kaonPIDTight["COMB"], kaonPIDTight["TPC"], kaonPIDTight["EXCLUSION"]);
+    }
+  }
 
   // =====================================================================
   // D mesons
@@ -121,8 +363,8 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   // =====================================================================
   // Femto Collection
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(pdgDmesonBuddy);  //
-  PDGParticles.push_back(pdgDmesonBuddy);  //
+  PDGParticles.push_back(pdgBuddy);  //
+  PDGParticles.push_back(pdgBuddy);  //
   PDGParticles.push_back(pdgDmeson);   // 2 - dplus or dstar+
   PDGParticles.push_back(pdgDmeson);   // 3 - dminus or dstar-
 
@@ -215,10 +457,6 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
   }
-  
-  if (suffix == "1000") {
-    task->CheckProtonSPDHit();
-  }
 
   if (trigger == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -229,11 +467,11 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   }
 
   if (isMCtruth){
-    if (std::abs(pdgDmesonBuddy) == 321) {
+    if (std::abs(pdgBuddy) == 321) {
       task->SetBuddypTLowMCTRUTH(0.15);
       task->SetBuddypTHighMCTRUTH(4.0);
     }
-    if (std::abs(pdgDmesonBuddy) == 211) {
+    if (std::abs(pdgBuddy) == 211) {
       task->SetBuddypTLowMCTRUTH(0.14);
       task->SetBuddypTHighMCTRUTH(4.0);
     }
@@ -242,35 +480,35 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     task->SetBuddyOriginMCTRUTH(0);
     task->SetDmesonOriginMCTRUTH(0);
   }
-
-  if(useMCTruthReco){
-    task->SetBuddyOriginMCTRUTH(0);
-    task->SetDmesonOriginMCTRUTH(0);
-    if (suffix == "1") {
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(1);
-    } 
-    if (suffix == "2") {
-      task->SetBuddyOriginMCTRUTH(0);
-      task->SetDmesonOriginMCTRUTH(2);
-    }
-    if (suffix == "3") {
-      task->SetBuddyOriginMCTRUTH(1);
-      task->SetDmesonOriginMCTRUTH(1);
-    }  
-    if (suffix == "4") {
-      task->SetBuddyOriginMCTRUTH(1);
-      task->SetDmesonOriginMCTRUTH(2);
-    }
-    if (suffix == "5") {
-      task->SetBuddyOriginMCTRUTH(4);
-      task->SetDmesonOriginMCTRUTH(1);
-    }  
-    if (suffix == "6") {
-      task->SetBuddyOriginMCTRUTH(4);
-      task->SetDmesonOriginMCTRUTH(2);
-    }
-  }
+  // Cutvariation currently not implemented for mctruth gen/reco
+  // if(useMCTruthReco){
+  //   task->SetBuddyOriginMCTRUTH(0);
+  //   task->SetDmesonOriginMCTRUTH(0);
+  //   if (suffix == "1") {
+  //     task->SetBuddyOriginMCTRUTH(0);
+  //     task->SetDmesonOriginMCTRUTH(1);
+  //   } 
+  //   if (suffix == "2") {
+  //     task->SetBuddyOriginMCTRUTH(0);
+  //     task->SetDmesonOriginMCTRUTH(2);
+  //   }
+  //   if (suffix == "3") {
+  //     task->SetBuddyOriginMCTRUTH(1);
+  //     task->SetDmesonOriginMCTRUTH(1);
+  //   }  
+  //   if (suffix == "4") {
+  //     task->SetBuddyOriginMCTRUTH(1);
+  //     task->SetDmesonOriginMCTRUTH(2);
+  //   }
+  //   if (suffix == "5") {
+  //     task->SetBuddyOriginMCTRUTH(4);
+  //     task->SetDmesonOriginMCTRUTH(1);
+  //   }  
+  //   if (suffix == "6") {
+  //     task->SetBuddyOriginMCTRUTH(4);
+  //     task->SetDmesonOriginMCTRUTH(2);
+  //   }
+  // }
 
   mgr->AddTask(task);
 
