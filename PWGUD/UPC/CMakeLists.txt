@@ -47,6 +47,7 @@ set(SRCS
     AliAnalysisTaskUpcRho0.cxx
     AliAnalysisTaskUpc4Prongs.cxx
     AliAnalysisTaskUpc4Pi.cxx
+    AliAnalysisTaskUpc2Pi2E.cxx
 		AliAnalysisTaskUpcTree.cxx
 		AliAnalysisTaskADin2018.cxx
 		AliAnalysisTaskForMCpPb.cxx
