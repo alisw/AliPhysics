@@ -1,4 +1,4 @@
-AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename="", Bool_t resetAtEachEv=kTRUE){
+AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename=""){
   //
   // Creates a task for heavy flavour vertexing for conversion to AO2D
   // Extract parameters from environment variables
@@ -100,7 +100,6 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
   // Create the task, add it to the manager and configure it.
   //===========================================================================
   AliAnalysisTaskSEVertexingHFRun3Conversion *hfTask = new AliAnalysisTaskSEVertexingHFRun3Conversion("vertexing HF");
-  hfTask->ResetTreeAtEachEvent(resetAtEachEv);
   mgr->AddTask(hfTask);
 
   //
@@ -109,38 +108,8 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
   
   AliAnalysisDataContainer *coutputListOfCuts = mgr->CreateContainer("ListOfCuts",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); //cuts
   
-  AliAnalysisDataContainer *coutputD0 = mgr->CreateContainer("D0CandidateTree",
-                                                             TTree::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputfile.Data());
-  coutputD0->SetSpecialOutput();
-  
-  AliAnalysisDataContainer *coutput3p = mgr->CreateContainer("Charm3pCandidateTree",
-                                                             TTree::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             outputfile.Data());
-  
-  coutput3p->SetSpecialOutput();
-  
-  AliAnalysisDataContainer *coutputDst = mgr->CreateContainer("DstarCandidateTree",
-                                                              TTree::Class(),
-                                                              AliAnalysisManager::kOutputContainer,
-                                                              outputfile.Data());
-  coutputDst->SetSpecialOutput();
-
-  AliAnalysisDataContainer *coutputCasc = mgr->CreateContainer("LcV0bachCandidateTree",
-                                                               TTree::Class(),
-                                                               AliAnalysisManager::kOutputContainer,
-                                                               outputfile.Data());
-  coutputCasc->SetSpecialOutput();
-
-
   mgr->ConnectInput(hfTask,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(hfTask,1,coutputListOfCuts);
-  mgr->ConnectOutput(hfTask,2,coutputD0);
-  mgr->ConnectOutput(hfTask,3,coutput3p);
-  mgr->ConnectOutput(hfTask,4,coutputDst);
-  mgr->ConnectOutput(hfTask,5,coutputCasc);
 
   return hfTask;
 }
