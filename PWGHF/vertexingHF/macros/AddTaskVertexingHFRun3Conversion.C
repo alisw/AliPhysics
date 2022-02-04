@@ -69,7 +69,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
       ::Error("AddTaskVertexingHF","LPMInteractionType not available and custom config not passed in the arguments");
       return NULL;
     }
-    TString     configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF.C";
+    TString configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_pp_OfflineV0.C";
     if(collSyst=="PbPb" || collSyst=="XeXe"){
       configPWG3d2h="$ALICE_PHYSICS/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C";
       if(runnumber<0){

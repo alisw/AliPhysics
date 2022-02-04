@@ -238,6 +238,7 @@ install(FILES
             AddD2HTrain.C
 	    AddGoodRuns.C
             ConfigVertexingHF.C
+	    ConfigVertexingHF_pp_OfflineV0.C
             ConfigVertexingHF_pPbRHF.C
             ConfigVertexingHF_highmult.C
             ConfigVertexingHF_pp_LambdaC.C
