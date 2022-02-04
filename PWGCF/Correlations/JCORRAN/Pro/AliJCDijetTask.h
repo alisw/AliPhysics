@@ -53,6 +53,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         virtual void Terminate(Option_t* );
         AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
         void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
+        void    SetDijetMBins( TString dijetMBins ) {fsDijetMBins=dijetMBins; }
         void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
         void    SetBGSubtrSettings(int ktScheme, int antiktScheme, Bool_t usePionMass, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fantiktScheme=antiktScheme; fusePionMass=usePionMass; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
         void    SetUnfoldingJetSets(AliJCDijetAna::jetClasses lJetClassTrue, AliJCDijetAna::jetClasses lJetClassDet) { iUnfJetClassTrue = lJetClassTrue; iUnfJetClassDet = lJetClassDet;}
@@ -95,6 +96,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         TString           fJCatalystTaskName; // Name for JCatalyst task
         TString           fJCatalystDetMCTaskName; // Name for JCatalyst task
         vector<double> fcentralityBins;
+        TString fsDijetMBins;
         double fjetCone;
         double fktJetCone;
         int  fktScheme;
