@@ -157,12 +157,16 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fHistoMCEtaDalitzWOWeightPt(NULL),
   fHistoMCEtaDalitzWOEvtWeightPt(NULL),
   fHistoMCPi0InAccPt(NULL),
+  fHistoMCPi0InAccPtNotTriggerd(NULL),
   fHistoMCPi0ReducedInAccPt(NULL),
   fHistoMCEtaInAccPt(NULL),
+  fHistoMCEtaInAccPtNotTriggered(NULL),
   fHistoMCPi0WOEvtWeightInAccPt(NULL),
   fHistoMCEtaWOEvtWeightInAccPt(NULL),
   fHistoMCPi0DalitzInAccPt(NULL),
+  fHistoMCPi0DalitzInAccPtNotTriggered(NULL),
   fHistoMCEtaDalitzInAccPt(NULL),
+  fHistoMCEtaDalitzInAccPNotTriggered(NULL),
   fHistoMCPi0DalitzWOEvtWeightInAccPt(NULL),
   fHistoMCEtaDalitzWOEvtWeightInAccPt(NULL),
   fHistoMCSecPi0PtvsSource(NULL),
@@ -421,12 +425,16 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fHistoMCEtaDalitzWOWeightPt(NULL),
   fHistoMCEtaDalitzWOEvtWeightPt(NULL),
   fHistoMCPi0InAccPt(NULL),
+  fHistoMCPi0InAccPtNotTriggerd(NULL),
   fHistoMCPi0ReducedInAccPt(NULL),
   fHistoMCEtaInAccPt(NULL),
+  fHistoMCEtaInAccPtNotTriggered(NULL),
   fHistoMCPi0WOEvtWeightInAccPt(NULL),
   fHistoMCEtaWOEvtWeightInAccPt(NULL),
   fHistoMCPi0DalitzInAccPt(NULL),
+  fHistoMCPi0DalitzInAccPtNotTriggered(NULL),
   fHistoMCEtaDalitzInAccPt(NULL),
+  fHistoMCEtaDalitzInAccPNotTriggered(NULL),
   fHistoMCPi0DalitzWOEvtWeightInAccPt(NULL),
   fHistoMCEtaDalitzWOEvtWeightInAccPt(NULL),
   fHistoMCSecPi0PtvsSource(NULL),
@@ -1162,6 +1170,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     if (GetSelectedMesonID() != 2){
       fHistoMCPi0WOWeightPt                       = new TH1F*[fnCuts];
       fHistoMCPi0InAccPt                          = new TH1F*[fnCuts];
+      fHistoMCPi0InAccPtNotTriggerd               = new TH1F*[fnCuts];
       fHistoMCPi0ReducedInAccPt                   = new TH1F*[fnCuts];
       fHistoMCPi0WOEvtWeightInAccPt               = new TH1F*[fnCuts];
       fHistoMCSecPi0PtvsSource                    = new TH2F*[fnCuts];
@@ -1171,6 +1180,7 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fHistoMCPi0DalitzPtNoVertex                 = new TH1F*[fnCuts];
       fHistoMCPi0DalitzWOWeightPt                 = new TH1F*[fnCuts];
       fHistoMCPi0DalitzInAccPt                    = new TH1F*[fnCuts];
+      fHistoMCPi0DalitzInAccPtNotTriggered        = new TH1F*[fnCuts];
       fHistoMCPi0DalitzWOEvtWeightInAccPt         = new TH1F*[fnCuts];
       fHistoPi0EvsGammaOverlapE                   = new TH2F*[fnCuts];
 
@@ -1178,10 +1188,13 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     if (GetSelectedMesonID() != 1){
       fHistoMCEtaWOWeightPt                       = new TH1F*[fnCuts];
       fHistoMCEtaInAccPt                          = new TH1F*[fnCuts];
+      fHistoMCEtaInAccPtNotTriggered              = new TH1F*[fnCuts];
       fHistoMCEtaWOEvtWeightInAccPt               = new TH1F*[fnCuts];
       fHistoMCEtaDalitzPt                         = new TH1F*[fnCuts];
+      fHistoMCEtaDalitzPtNotTriggered             = new TH1F*[fnCuts];
       fHistoMCEtaDalitzWOWeightPt                 = new TH1F*[fnCuts];
       fHistoMCEtaDalitzInAccPt                    = new TH1F*[fnCuts];
+      fHistoMCEtaDalitzInAccPNotTriggered         = new TH1F*[fnCuts];
       fHistoMCEtaDalitzWOEvtWeightInAccPt         = new TH1F*[fnCuts];
     }
     if (fIsMC == 2){
@@ -1386,6 +1399,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCPi0WOWeightPt[iCut]);
         fHistoMCPi0InAccPt[iCut]                    = new TH1F("MC_Pi0InAcc_Pt","MC_Pi0InAcc_Pt",ptBins, arrPtBinning);
         fMCList[iCut]->Add(fHistoMCPi0InAccPt[iCut]);
+        fHistoMCPi0InAccPtNotTriggerd[iCut]         = new TH1F("MC_Pi0InAcc_Pt_NotTriggered","MC_Pi0InAcc_Pt_NotTriggered",ptBins, arrPtBinning);
+        fMCList[iCut]->Add(fHistoMCPi0InAccPtNotTriggerd[iCut]);
         fHistoMCPi0ReducedInAccPt[iCut]             = new TH1F("MC_Pi0InAccMulipleSubtraction_Pt","MC_Pi0InAccMulipleSubtraction_Pt",ptBins, arrPtBinning);
         fMCList[iCut]->Add(fHistoMCPi0ReducedInAccPt[iCut]);
         fHistoMCPi0DalitzPt[iCut]                   = new TH1F("MC_Pi0Dalitz_Pt","MC_Pi0Dalitz_Pt",ptBins, arrPtBinning);
@@ -1398,6 +1413,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCPi0DalitzWOWeightPt[iCut]);
         fHistoMCPi0DalitzInAccPt[iCut]              = new TH1F("MC_Pi0DalitzInAcc_Pt","MC_Pi0DalitzInAcc_Pt",ptBins, arrPtBinning);
         fMCList[iCut]->Add(fHistoMCPi0DalitzInAccPt[iCut]);
+        fHistoMCPi0DalitzInAccPtNotTriggered[iCut]  = new TH1F("MC_Pi0DalitzInAcc_Pt_NotTriggered","MC_Pi0DalitzInAcc_Pt_NotTriggered",ptBins, arrPtBinning);
+        fMCList[iCut]->Add(fHistoMCPi0DalitzInAccPtNotTriggered[iCut]);
 
         // initialization for secondary histograms
         fHistoMCSecPi0PtvsSource[iCut]              = new TH2F("MC_SecPi0_Pt_Source","MC_SecPi0_Pt_Source", ptBins, arrPtBinning, 16, -0.5, 15.5);
@@ -1410,8 +1427,10 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
 
         if(fIsMC >= 2){
           fHistoMCPi0InAccPt[iCut]->Sumw2();
+          fHistoMCPi0InAccPtNotTriggerd[iCut]->Sumw2();
           fHistoMCPi0ReducedInAccPt[iCut]->Sumw2();
           fHistoMCPi0DalitzInAccPt[iCut]->Sumw2();
+          fHistoMCPi0DalitzInAccPtNotTriggered[iCut]->Sumw2();
           fHistoMCPi0DalitzPt[iCut]->Sumw2();
           fHistoMCPi0DalitzPtNotTriggered[iCut]->Sumw2();
           fHistoMCPi0DalitzPtNoVertex[iCut]->Sumw2();
@@ -1425,6 +1444,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCEtaWOWeightPt[iCut]);
         fHistoMCEtaInAccPt[iCut]                    = new TH1F("MC_EtaInAcc_Pt","MC_EtaInAcc_Pt",ptBins, arrPtBinning);
         fMCList[iCut]->Add(fHistoMCEtaInAccPt[iCut]);
+        fHistoMCEtaInAccPtNotTriggered[iCut]        = new TH1F("MC_EtaInAcc_Pt_NotTriggered","MC_EtaInAcc_Pt_NotTriggered",ptBins, arrPtBinning);
+        fMCList[iCut]->Add(fHistoMCEtaInAccPtNotTriggered[iCut]);
         fHistoMCEtaDalitzPt[iCut]                   = new TH1F("MC_EtaDalitz_Pt","MC_EtaDalitz_Pt",ptBins, arrPtBinning);
         fMCList[iCut]->Add(fHistoMCEtaDalitzPt[iCut]);
         fHistoMCEtaDalitzPtNotTriggered[iCut]       = new TH1F("MC_EtaDalitz_Pt_NotTriggered","MC_EtaDalitz_Pt_NotTriggered",ptBins, arrPtBinning);
@@ -1435,13 +1456,17 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
         fMCList[iCut]->Add(fHistoMCEtaDalitzWOWeightPt[iCut]);
         fHistoMCEtaDalitzInAccPt[iCut]              = new TH1F("MC_EtaDalitzInAcc_Pt","MC_EtaDalitzInAcc_Pt",ptBins, arrPtBinning);
         fMCList[iCut]->Add(fHistoMCEtaDalitzInAccPt[iCut]);
+        fHistoMCEtaDalitzInAccPNotTriggered[iCut]   = new TH1F("MC_EtaDalitzInAcc_Pt_NotTriggered","MC_EtaDalitzInAcc_Pt_NotTriggered",ptBins, arrPtBinning);
+        fMCList[iCut]->Add(fHistoMCEtaDalitzInAccPNotTriggered[iCut]);
 
         if(fIsMC >= 2){
           fHistoMCEtaInAccPt[iCut]->Sumw2();
+          fHistoMCEtaInAccPtNotTriggered[iCut]->Sumw2();
           fHistoMCEtaDalitzPt[iCut]->Sumw2();
           fHistoMCEtaDalitzPtNotTriggered[iCut]->Sumw2();
           fHistoMCEtaDalitzPtNoVertex[iCut]->Sumw2();
           fHistoMCEtaDalitzInAccPt[iCut]->Sumw2();
+          fHistoMCEtaDalitzInAccPNotTriggered[iCut]->Sumw2();
         }
       }
 
@@ -3812,12 +3837,14 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles(Int_t isCurrentEventSele
             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(daughter1,fMCEvent) ) ){
           if(particle->PdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
+            if(isCurrentEventSelected == 1) fHistoMCPi0InAccPtNotTriggerd[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc for not triggered events
             if(std::find(fVectorLabelsMultiplePi0Reduced.begin(), fVectorLabelsMultiplePi0Reduced.end(), i) != fVectorLabelsMultiplePi0Reduced.end()) {
               fHistoMCPi0ReducedInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc, ONLY overlapping pi0 in cluster
             }
             if (fIsMC == 2)fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 w/o event weights with gamma in acc
           } else if(particle->PdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
+            if(isCurrentEventSelected==1)fHistoMCEtaInAccPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc for not triggered events
             if (fIsMC == 2)fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta w/o event weights with gamma in acc
           }
         }
@@ -3876,9 +3903,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles(Int_t isCurrentEventSele
           ){
           if(particle->PdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0DalitzInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
+            if(isCurrentEventSelected==1)fHistoMCPi0DalitzInAccPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc for not triggered events
             if (fIsMC == 2) fHistoMCPi0DalitzWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
           } else if(particle->PdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaDalitzInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
+            if(isCurrentEventSelected==1)fHistoMCEtaDalitzInAccPNotTriggered[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc for not triggered events
             if (fIsMC == 2) fHistoMCEtaDalitzWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
           }
         }
@@ -4145,12 +4174,14 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles(Int_t isCurrentEventS
             ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(daughter1,fAODMCTrackArray) ) ){
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0InAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
+            if(isCurrentEventSelected == 1)fHistoMCPi0InAccPtNotTriggerd[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc for not triggered events
             if(std::find(fVectorLabelsMultiplePi0Reduced.begin(), fVectorLabelsMultiplePi0Reduced.end(), i) != fVectorLabelsMultiplePi0Reduced.end()) {
               fHistoMCPi0ReducedInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc, ONLY overlapping pi0 in cluster
             }
             if (fIsMC == 2)fHistoMCPi0WOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Pi0 w/o event weights with gamma in acc
           } else if(particle->GetPdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
+            if(isCurrentEventSelected==1)fHistoMCEtaInAccPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc for not triggered events
             if (fIsMC == 2)fHistoMCEtaWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt()); // MC Eta w/o event weights with gamma in acc
           }
         }
@@ -4209,9 +4240,11 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles(Int_t isCurrentEventS
           ){
           if(particle->GetPdgCode() == 111 && GetSelectedMesonID() != 2){
             fHistoMCPi0DalitzInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
+            if(isCurrentEventSelected==1)fHistoMCPi0DalitzInAccPtNotTriggered[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc for not triggered events
             if (fIsMC == 2) fHistoMCPi0DalitzWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
           } else if(particle->GetPdgCode() == 221 && GetSelectedMesonID() != 1){
             fHistoMCEtaDalitzInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc
+            if(isCurrentEventSelected==1)fHistoMCEtaDalitzInAccPNotTriggered[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Eta with gamma in acc for not triggered events
             if (fIsMC == 2) fHistoMCEtaDalitzWOEvtWeightInAccPt[fiCut]->Fill(particle->Pt(),weighted* tempParticleWeight); // MC Pi0 with gamma in acc
           }
         }
