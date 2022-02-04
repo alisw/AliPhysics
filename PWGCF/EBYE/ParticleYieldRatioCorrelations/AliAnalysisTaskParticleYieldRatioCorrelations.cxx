@@ -38,7 +38,7 @@ ClassImp(AliAnalysisTaskParticleYieldRatioCorrelations)
       fHistQACrossedRowsTPC(0),
       fHistQAChi2perNDF(0),
       fHistQAClustersITS(0),
-      fHistQAEtaPhi(0)
+      fHistQAEtaPhi(0),
           fHistQAMomPt(0)
 
 {
@@ -65,7 +65,7 @@ AliAnalysisTaskParticleYieldRatioCorrelations::AliAnalysisTaskParticleYieldRatio
       fHistQACrossedRowsTPC(0),
       fHistQAChi2perNDF(0),
       fHistQAClustersITS(0),
-      fHistQAEtaPhi(0)
+      fHistQAEtaPhi(0),
           fHistQAMomPt(0)
 {
   // constructor
