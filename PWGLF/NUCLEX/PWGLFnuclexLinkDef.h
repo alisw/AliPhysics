@@ -134,6 +134,9 @@
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
 #pragma link C++ class AliAnalysisTaskHe3piAOD+;
+#pragma link C++ class AliAnalysisTaskAlphaPiAOD+;
+#pragma link C++ class StructHyper+;
+#pragma link C++ class StructHyperMC+;
 #pragma link C++ class MiniHyper+;
 #pragma link C++ class MiniHyperMC+;
 #pragma link C++ class RHyperTriton+;
