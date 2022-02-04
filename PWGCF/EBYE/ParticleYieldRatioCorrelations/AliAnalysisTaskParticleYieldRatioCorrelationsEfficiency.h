@@ -61,7 +61,7 @@ public:
     {
         nCentrClassesUsed = f_nCentrClassesUsed;
         Float_t f_CentrPercentiles[] = {cent0, cent1, cent2, cent3, cent4, cent5};
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < nCentrClassesUsed+1; i++)
         {
         CentrPercentiles[i] = f_CentrPercentiles[i];
         }
