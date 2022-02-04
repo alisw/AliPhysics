@@ -17,7 +17,9 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 
-#include <cstdint>
+#include "TClass.h"
+
+#include <Rtypes.h>
 
 class TList;
 class TString;
