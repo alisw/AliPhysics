@@ -69,6 +69,8 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
     }
     fOutputList->Add(fHistEventsCut);
     fOutputList->Add(fHistTracksCut);
+nPBins = 5;
+Double_t PBins[6] = {0.2, 0.3, 0.4, 0.6, 0.8, 2.0};
     Double_t PhiBins[nPhiBins + 1], VertexBins[nVertexBins + 1];
     for (int i = 0; i < nPhiBins + 1; i++)
         PhiBins[i] = i * TMath::TwoPi() / nPhiBins;
