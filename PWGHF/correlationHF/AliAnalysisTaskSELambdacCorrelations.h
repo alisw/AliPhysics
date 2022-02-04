@@ -25,7 +25,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliHFMLResponseLambdactopKpi.h"
-#include "AliHFMLVarHandlerDplustoKpipi.h"
+#include "AliHFMLVarHandlerLctopKpi.h"
 #include "AliHFAssociatedTrackCuts.h"
 #include "AliHFCorrelator.h"
 #include "AliNormalizationCounter.h"
@@ -151,7 +151,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void SetMinimalVarForMLSparse(Bool_t flag = kTRUE) {fUseMinimalVarForSparse = flag;}
   /// methods for ML tree creation
   void SetCreateMLTree(Bool_t flag = kTRUE) {fCreateMLtree = flag;}
-  void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID
+  void SetMLTreePIDopt(int opt) {fPIDopt = opt;} // default AliHFMLVarHandlerLctopKpi::kNsigmaDetAndCombPID
   void SetMLTreeAddTrackVar(Bool_t flag = kTRUE) {fAddSingleTrackVar = flag;}
   void SetMLTreeAddImpParProd(Bool_t flag = kTRUE) {fAddImpParProdProngs = flag;}
   void SetFillOnlySignalInMLtree(Bool_t opt = kTRUE) {
@@ -300,9 +300,9 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
 
   /// variables for tree creation
   Bool_t fCreateMLtree = kFALSE;
-  AliHFMLVarHandlerDplustoKpipi* fMLhandler = nullptr;                //!<! object to handle ML tree creation and filling
+  AliHFMLVarHandlerLctopKpi* fMLhandler = nullptr;                //!<! object to handle ML tree creation and filling
   TTree* fMLtree = nullptr;                                           //!<! tree with candidates for ML
-  int fPIDopt = AliHFMLVarHandlerDplustoKpipi::kNsigmaDetAndCombPID;  /// option for PID variables
+  int fPIDopt = AliHFMLVarHandlerLctopKpi::kNsigmaDetAndCombPID;  /// option for PID variables
   Bool_t fAddSingleTrackVar = kFALSE;                                 /// option to store single track variables
   Bool_t fAddImpParProdProngs = kFALSE;                               /// option to store LambdacK*Lambdacpi1 and LambdacK*Lambdacpi2 variables
   Bool_t fAddNtracklets = kFALSE;                                     /// option to add Ntracklets 
