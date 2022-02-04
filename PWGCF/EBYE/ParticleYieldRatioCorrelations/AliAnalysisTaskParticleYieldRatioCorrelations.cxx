@@ -39,6 +39,7 @@ ClassImp(AliAnalysisTaskParticleYieldRatioCorrelations)
       fHistQAChi2perNDF(0),
       fHistQAClustersITS(0),
       fHistQAEtaPhi(0)
+          fHistQAMomPt(0)
 
 {
   // default constructor, don't allocate memory here!
@@ -65,6 +66,7 @@ AliAnalysisTaskParticleYieldRatioCorrelations::AliAnalysisTaskParticleYieldRatio
       fHistQAChi2perNDF(0),
       fHistQAClustersITS(0),
       fHistQAEtaPhi(0)
+          fHistQAMomPt(0)
 {
   // constructor
   DefineInput(0, TChain::Class());
@@ -89,7 +91,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserCreateOutputObjects()
   {
     for (int iEta = 0; iEta < nEtaClasses; iEta++)
     {
-      for (int iSort = 0; iSort < nSorts; ++iSort)
+      for (int iSort = 0; iSort < 6; ++iSort)
       {
         EfficiencyTracking[iCent][iEta][iSort] = (TH3D *)fInputList->FindObject(Form("EfficiencyTrackingC%dEta%dSort%d", iCent, iEta, iSort));
         ContaminationTracking[iCent][iEta][iSort] = (TH3D *)fInputList->FindObject(Form("ContaminationTrackingC%dEta%dSort%d", iCent, iEta, iSort));
@@ -158,7 +160,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserCreateOutputObjects()
       fOutputList->Add(fHistMomentsInAllAccRegSub[iSub][iCent]);
     }
 
-    for (int iSort = 0; iSort < nSorts; iSort++)
+    for (int iSort = 0; iSort < 6; iSort++)
     {
       fHistMomentsInEtaRec[iCent][iSort] = new TH1D(Form("fHistMomentsInEtaRec_C%d_S%d", iCent, iSort), ";;Number Of Tracks", nEtaClasses, -0.8, 0.8);
       fHistMomentsInEtaGen[iCent][iSort] = new TH1D(Form("fHistMomentsInEtaGen_C%d_S%d", iCent, iSort), ";;Number Of Tracks", nEtaClasses, -0.8, 0.8);
@@ -242,6 +244,9 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserCreateOutputObjects()
 
   fHistQAEtaPhi = new TH2D("fHistQAEtaPhi", "N tracks in (#eta, #varphi);#eta;#varphi", 25, -0.8, 0.8, 25, 0, 2 * TMath::Pi());
   fOutputList->Add(fHistQAEtaPhi);
+
+  fHistQAMomPt = new TH2D("fHistQAMomPt", "N tracks;Momentum TPC;Pt", 100, 0, 3, 100, 0, 3);
+  fOutputList->Add(fHistQAMomPt);
 
   for (Int_t i(0); i < 3; i++)
   {
@@ -456,136 +461,141 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
     if (fabs(nOfSigmasTOF_pi) > 900 || fabs(nOfSigmasTOF_K) > 900 || fabs(nOfSigmasTOF_p) > 900)
       fHistTracksCut->Fill("TOF", 1);
 
-      Float_t Pt = track->Pt();
-      Float_t Px = track->Px();
-      Float_t Py = track->Py();
-      Float_t Pz = track->Pz();
-      Float_t Moment = track->GetTPCmomentum();
-      Float_t Phi = track->Phi();
-      Float_t Eta = track->Eta();
-      Float_t DeDx = track->GetTPCsignal();
-      int Charge = track->Charge();
-      fDeDx->Fill(Moment, DeDx);
-      fTOF->Fill(Moment, track->GetTOFsignal());
-      NAcceptedtracksinEta[EtaBin]++;
+    Float_t Pt = track->Pt();
+    Float_t Px = track->Px();
+    Float_t Py = track->Py();
+    Float_t Pz = track->Pz();
+    Float_t Moment = track->GetTPCmomentum();
+    Float_t Phi = track->Phi();
+    Float_t Eta = track->Eta();
+    Float_t DeDx = track->GetTPCsignal();
+    int Charge = track->Charge();
+    fDeDx->Fill(Moment, DeDx);
+    fTOF->Fill(Moment, track->GetTOFsignal());
+    NAcceptedtracksinEta[EtaBin]++;
 
-      fHistQAPt->Fill(Pt);
-      fHistQAEta->Fill(Eta);
-      fHistQAPhi->Fill(Phi);
-      fHistQAEtaPhi->Fill(Eta, Phi);
+    fHistQAPt->Fill(Pt);
+    fHistQAEta->Fill(Eta);
+    fHistQAPhi->Fill(Phi);
+    fHistQAEtaPhi->Fill(Eta, Phi);
+    fHistQAMomPt->Fill(Moment, Pt);
 
-      fHistQAClustersTPC->Fill(track->GetTPCNcls());
-      fHistQACrossedRowsTPC->Fill(track->GetTPCCrossedRows());
-      fHistQAClustersITS->Fill(track->GetITSclusters(0));
-      fHistQAChi2perNDF->Fill(track->Chi2perNDF());
+    fHistQAClustersTPC->Fill(track->GetTPCNcls());
+    fHistQACrossedRowsTPC->Fill(track->GetTPCCrossedRows());
+    fHistQAClustersITS->Fill(track->GetITSclusters(0));
+    fHistQAChi2perNDF->Fill(track->Chi2perNDF());
 
-      // Get correction coefficients from efficiency maps
-      Double_t coeff[nSorts] = {0};
-      for (int iSort = 0; iSort < nSorts; iSort++)
+    // Get correction coefficients from efficiency maps
+    Double_t coeff[nSorts] = {0};
+    for (int iSort = 0; iSort < 6; iSort++)
+    {
+      if (!EfficiencyPID[CentrBin][EtaBin][iSort] || !EfficiencyTracking[CentrBin][EtaBin][iSort] || !ContaminationPID[CentrBin][EtaBin][iSort] || !ContaminationTracking[CentrBin][EtaBin][iSort])
+        continue;
+      if (
+          EfficiencyPID[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyPID[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex)) > 1e-10 &&
+          EfficiencyTracking[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyTracking[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex)) > 1e-10)
+        coeff[iSort] = 1;
+      if (PIDCorr)
+        coeff[iSort] *= (1 - ContaminationPID[CentrBin][EtaBin][iSort]->GetBinContent(ContaminationPID[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex))) /
+                        EfficiencyPID[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyPID[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex));
+      if (TrackingCorr)
+        coeff[iSort] *= (1 - ContaminationTracking[CentrBin][EtaBin][iSort]->GetBinContent(ContaminationTracking[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex))) /
+                        EfficiencyTracking[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyTracking[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex));
+    }
+
+    Float_t nSigma_comb_pi = sqrt(nOfSigmasTPC_pi * nOfSigmasTPC_pi + nOfSigmasTOF_pi * nOfSigmasTOF_pi);
+    Float_t nSigma_comb_K = sqrt(nOfSigmasTPC_K * nOfSigmasTPC_K + nOfSigmasTOF_K * nOfSigmasTOF_K);
+    Float_t nSigma_comb_p = sqrt(nOfSigmasTPC_p * nOfSigmasTPC_p + nOfSigmasTOF_p * nOfSigmasTOF_p);
+
+    // test if particle fits identification criterias
+    // if true, add to collector with correction coefficients as weight factor
+    bool selected_pi = false;
+    if (Pt < nSigmaBoundary[0] && fabs(nOfSigmasTPC_pi) < nSigma && fabs(nOfSigmasTPC_K) > 3 && fabs(nOfSigmasTPC_p) > 3 && fabs(nOfSigmasTPC_el) > 1)
+      selected_pi = true;
+    if (Pt > nSigmaBoundary[0] && nSigma_comb_pi < nSigma && nSigma_comb_K > 3 && nSigma_comb_p > 3)
+      selected_pi = true;
+    if (selected_pi)
+    {
+      if (Charge < 0)
       {
-        if (
-            EfficiencyPID[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyPID[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex)) > 1e-10 &&
-            EfficiencyTracking[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyTracking[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex)) > 1e-10)
-          coeff[iSort] =
-              (1 - ContaminationPID[CentrBin][EtaBin][iSort]->GetBinContent(ContaminationPID[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex))) /
-              EfficiencyPID[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyPID[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex)) *
-              (1 - ContaminationTracking[CentrBin][EtaBin][iSort]->GetBinContent(ContaminationTracking[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex))) /
-              EfficiencyTracking[CentrBin][EtaBin][iSort]->GetBinContent(EfficiencyTracking[CentrBin][EtaBin][iSort]->FindBin(Pt, Phi, vertex));
+        NTracksInCutEta[EtaBin][0] += coeff[0];
+        NTracksInCut2Eta[EtaBin][0] += coeff[0] * coeff[0];
+        NTracksRegEta[EtaBin][0] += 1;
+        NTracksInCutPhi[phiBin][0] += coeff[0];
+        NTracksInCut2Phi[phiBin][0] += coeff[0] * coeff[0];
+        NTracksRegPhi[phiBin][0] += 1;
       }
-
-      Float_t nSigma_comb_pi = sqrt(nOfSigmasTPC_pi * nOfSigmasTPC_pi + nOfSigmasTOF_pi * nOfSigmasTOF_pi);
-      Float_t nSigma_comb_K = sqrt(nOfSigmasTPC_K * nOfSigmasTPC_K + nOfSigmasTOF_K * nOfSigmasTOF_K);
-      Float_t nSigma_comb_p = sqrt(nOfSigmasTPC_p * nOfSigmasTPC_p + nOfSigmasTOF_p * nOfSigmasTOF_p);
-
-      // test if particle fits identification criterias
-      // if true, add to collector with correction coefficients as weight factor
-      bool selected_pi = false;
-      if (Pt < nSigmaBoundary[0] && fabs(nOfSigmasTPC_pi) < nSigma && fabs(nOfSigmasTPC_K) > 3 && fabs(nOfSigmasTPC_p) > 3 && fabs(nOfSigmasTPC_el) > 1)
-        selected_pi = true;
-      if (Pt > nSigmaBoundary[0] && nSigma_comb_pi < nSigma && nSigma_comb_K > 3 && nSigma_comb_p > 3)
-        selected_pi = true;
-      if (selected_pi)
+      if (Charge > 0)
       {
-        if (Charge < 0)
-        {
-          NTracksInCutEta[EtaBin][0] += coeff[0];
-          NTracksInCut2Eta[EtaBin][0] += coeff[0] * coeff[0];
-          NTracksRegEta[EtaBin][0] += 1;
-          NTracksInCutPhi[phiBin][0] += coeff[0];
-          NTracksInCut2Phi[phiBin][0] += coeff[0] * coeff[0];
-          NTracksRegPhi[phiBin][0] += 1;
-        }
-        if (Charge > 0)
-        {
-          NTracksInCutEta[EtaBin][1] += coeff[1];
-          NTracksInCut2Eta[EtaBin][1] += coeff[1] * coeff[1];
-          NTracksRegEta[EtaBin][1] += 1;
-          NTracksInCutPhi[phiBin][1] += coeff[1];
-          NTracksInCut2Phi[phiBin][1] += coeff[1] * coeff[1];
-          NTracksRegPhi[phiBin][1] += 1;
-        }
-        fDeDxSorts[0]->Fill(Moment, DeDx);
-        fTOFSorts[0]->Fill(Moment, track->GetTOFsignal());
+        NTracksInCutEta[EtaBin][1] += coeff[1];
+        NTracksInCut2Eta[EtaBin][1] += coeff[1] * coeff[1];
+        NTracksRegEta[EtaBin][1] += 1;
+        NTracksInCutPhi[phiBin][1] += coeff[1];
+        NTracksInCut2Phi[phiBin][1] += coeff[1] * coeff[1];
+        NTracksRegPhi[phiBin][1] += 1;
       }
+      fDeDxSorts[0]->Fill(Moment, DeDx);
+      fTOFSorts[0]->Fill(Moment, track->GetTOFsignal());
+    }
 
-      bool selected_K = false;
-      if (Pt < nSigmaBoundary[1] && fabs(nOfSigmasTPC_K) < nSigma && fabs(nOfSigmasTPC_pi) > 3 && fabs(nOfSigmasTPC_p) > 3) // && fabs( nOfSigmasTPC_el)>1 )
-        selected_K = true;
-      if (Pt > nSigmaBoundary[1] && nSigma_comb_K < nSigma && nSigma_comb_pi > 3 && nSigma_comb_p > 3)
-        selected_K = true;
-      if (selected_K && Pt > PtCut[1])
+    bool selected_K = false;
+    if (Pt < nSigmaBoundary[1] && fabs(nOfSigmasTPC_K) < nSigma && fabs(nOfSigmasTPC_pi) > 3 && fabs(nOfSigmasTPC_p) > 3) // && fabs( nOfSigmasTPC_el)>1 )
+      selected_K = true;
+    if (Pt > nSigmaBoundary[1] && nSigma_comb_K < nSigma && nSigma_comb_pi > 3 && nSigma_comb_p > 3)
+      selected_K = true;
+    if (selected_K && Pt > PtCut[1])
+    {
+      if (Charge < 0)
       {
-        if (Charge < 0)
-        {
-          NTracksInCutEta[EtaBin][2] += coeff[2];
-          NTracksInCut2Eta[EtaBin][2] += coeff[2] * coeff[2];
-          NTracksRegEta[EtaBin][2] += 1;
-          NTracksInCutPhi[phiBin][2] += coeff[2];
-          NTracksInCut2Phi[phiBin][2] += coeff[2] * coeff[2];
-          NTracksRegPhi[phiBin][2] += 1;
-        }
-        if (Charge > 0)
-        {
-          NTracksInCutEta[EtaBin][3] += coeff[3];
-          NTracksInCut2Eta[EtaBin][3] += coeff[3] * coeff[3];
-          NTracksRegEta[EtaBin][3] += 1;
-          NTracksInCutPhi[phiBin][3] += coeff[3];
-          NTracksInCut2Phi[phiBin][3] += coeff[3] * coeff[3];
-          NTracksRegPhi[phiBin][3] += 1;
-        }
-        fDeDxSorts[1]->Fill(Moment, DeDx);
-        fTOFSorts[1]->Fill(Moment, track->GetTOFsignal());
+        NTracksInCutEta[EtaBin][2] += coeff[2];
+        NTracksInCut2Eta[EtaBin][2] += coeff[2] * coeff[2];
+        NTracksRegEta[EtaBin][2] += 1;
+        NTracksInCutPhi[phiBin][2] += coeff[2];
+        NTracksInCut2Phi[phiBin][2] += coeff[2] * coeff[2];
+        NTracksRegPhi[phiBin][2] += 1;
       }
+      if (Charge > 0)
+      {
+        NTracksInCutEta[EtaBin][3] += coeff[3];
+        NTracksInCut2Eta[EtaBin][3] += coeff[3] * coeff[3];
+        NTracksRegEta[EtaBin][3] += 1;
+        NTracksInCutPhi[phiBin][3] += coeff[3];
+        NTracksInCut2Phi[phiBin][3] += coeff[3] * coeff[3];
+        NTracksRegPhi[phiBin][3] += 1;
+      }
+      fDeDxSorts[1]->Fill(Moment, DeDx);
+      fTOFSorts[1]->Fill(Moment, track->GetTOFsignal());
+    }
 
-      bool selected_p = false;
-      if (Pt < nSigmaBoundary[2] && fabs(nOfSigmasTPC_p) < nSigma && fabs(nOfSigmasTPC_pi) > 3 && fabs(nOfSigmasTPC_K) > 3 && fabs(nOfSigmasTPC_el) > 1 && fabs(nOfSigmasTPC_d) > 3)
-        selected_p = true;
-      if (Pt > nSigmaBoundary[2] && nSigma_comb_p < nSigma && nSigma_comb_pi > 3 && nSigma_comb_K > 3)
-        selected_p = true;
-      if (selected_p && Pt > PtCut[2])
+    bool selected_p = false;
+    if (Pt < nSigmaBoundary[2] && fabs(nOfSigmasTPC_p) < nSigma && fabs(nOfSigmasTPC_pi) > 3 && fabs(nOfSigmasTPC_K) > 3 && fabs(nOfSigmasTPC_el) > 1 && fabs(nOfSigmasTPC_d) > 3)
+      selected_p = true;
+    if (Pt > nSigmaBoundary[2] && nSigma_comb_p < nSigma && nSigma_comb_pi > 3 && nSigma_comb_K > 3)
+      selected_p = true;
+    if (selected_p && Pt > PtCut[2])
+    {
+      if (Charge < 0)
       {
-        if (Charge < 0)
-        {
-          NTracksInCutEta[EtaBin][4] += coeff[4];
-          NTracksInCut2Eta[EtaBin][4] += coeff[4] * coeff[4];
-          NTracksRegEta[EtaBin][4] += 1;
-          NTracksInCutPhi[phiBin][4] += coeff[4];
-          NTracksInCut2Phi[phiBin][4] += coeff[4] * coeff[4];
-          NTracksRegPhi[phiBin][4] += 1;
-        }
-        if (Charge > 0)
-        {
-          NTracksInCutEta[EtaBin][5] += coeff[5];
-          NTracksInCut2Eta[EtaBin][5] += coeff[5] * coeff[5];
-          NTracksRegEta[EtaBin][5] += 1;
-          NTracksInCutPhi[phiBin][5] += coeff[5];
-          NTracksInCut2Phi[phiBin][5] += coeff[5] * coeff[5];
-          NTracksRegPhi[phiBin][5] += 1;
-        }
-        fDeDxSorts[2]->Fill(Moment, DeDx);
-        fTOFSorts[2]->Fill(Moment, track->GetTOFsignal());
+        NTracksInCutEta[EtaBin][4] += coeff[4];
+        NTracksInCut2Eta[EtaBin][4] += coeff[4] * coeff[4];
+        NTracksRegEta[EtaBin][4] += 1;
+        NTracksInCutPhi[phiBin][4] += coeff[4];
+        NTracksInCut2Phi[phiBin][4] += coeff[4] * coeff[4];
+        NTracksRegPhi[phiBin][4] += 1;
       }
-      NAcceptedtracks++;
+      if (Charge > 0)
+      {
+        NTracksInCutEta[EtaBin][5] += coeff[5];
+        NTracksInCut2Eta[EtaBin][5] += coeff[5] * coeff[5];
+        NTracksRegEta[EtaBin][5] += 1;
+        NTracksInCutPhi[phiBin][5] += coeff[5];
+        NTracksInCut2Phi[phiBin][5] += coeff[5] * coeff[5];
+        NTracksRegPhi[phiBin][5] += 1;
+      }
+      fDeDxSorts[2]->Fill(Moment, DeDx);
+      fTOFSorts[2]->Fill(Moment, track->GetTOFsignal());
+    }
+    NAcceptedtracks++;
   }
   // end of track loop
 
@@ -609,12 +619,6 @@ void AliAnalysisTaskParticleYieldRatioCorrelations::UserExec(Option_t *)
   {
     // MC track loop
     AliMCEvent *fMC = eventHandler->MCEvent();
-    if (!fAliEventCuts->AcceptEvent(fMC))
-    {
-      PostData(1, fOutputList);
-      return;
-    }
-
     Int_t nMCTracks(fMC->GetNumberOfTracks());
 
     for (Int_t i(0); i < nMCTracks; i++)
