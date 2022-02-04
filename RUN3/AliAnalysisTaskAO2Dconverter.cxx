@@ -2196,6 +2196,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
     calo.fTime = AliMathBase::TruncateFloatFraction(time, 0x1FFF);  //13 bit
     calo.fCellType = phoscells->GetHighGain(icp) ? 0. : 1.; 
+    calo.fCaloType = phoscells->GetType();
 
     FillTree(kCalo);
     if (fTreeStatus[kCalo])
