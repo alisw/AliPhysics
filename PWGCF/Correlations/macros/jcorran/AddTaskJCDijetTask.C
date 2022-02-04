@@ -5,6 +5,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     TString sJCatalystDetMC   = "JCatalystDetMCTask",
                                     UInt_t flags              = 0,
                                     TString centBins          = "0.0 5.0 10.0 20.0 30.0 40.0 50.0 60.0 70.0",
+                                    TString sDijetMBins       = "0, 20, 40, 45, 55, 65, 75, 85, 100, 120, 150, 250, 400, 500, 100000",
                                     double jetCone            = 0.4,
                                     double ktjetCone          = 0.4,
                                     int ktScheme              = 1,
@@ -89,6 +90,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     dijetTask->SetJCatalystTaskName(sJCatalyst.Data());
     dijetTask->SetJCatalystTaskNameDetMC(sJCatalystDetMC.Data());
     dijetTask->SetCentralityBins(vecCentBins);
+    dijetTask->SetDijetMBins(sDijetMBins);
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
     dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr);
     dijetTask->SetUnfoldingJetSets(lUnfJetClassTrue, lUnfJetClassDet);
