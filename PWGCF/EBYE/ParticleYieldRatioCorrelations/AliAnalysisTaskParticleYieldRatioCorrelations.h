@@ -60,7 +60,7 @@ public:
     {
         nCentrClassesUsed = f_nCentrClassesUsed;
         Float_t f_CentrPercentiles[] = {cent0, cent1, cent2, cent3, cent4, cent5};
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < nCentrClassesUsed+1; i++)
         {
         CentrPercentiles[i] = f_CentrPercentiles[i];
         }
@@ -69,6 +69,11 @@ public:
     {
         SPDvsV0MCut = f_SPDvsV0MCut;
         LargeTPCCut = f_LargeTPCCut;
+    }
+    virtual void SetCorrections(Bool_t f_PIDCorr, Bool_t f_TrackingCorr)
+    {
+        f_PIDCorr = PIDCorr;
+        f_TrackingCorr = TrackingCorr;
     }
 
 private:
@@ -80,7 +85,7 @@ private:
     TH1F *fHistTracksCut;         //! QA tracks
     UInt_t filterBit;             //
     Bool_t IsMC, pbpb;           // is MC or not; is Pb-Pb or pp
-    Bool_t SPDvsV0MCut, LargeTPCCut;
+    Bool_t SPDvsV0MCut, LargeTPCCut,  PIDCorr, TrackingCorr;
     AliEventCuts *fAliEventCuts;  //!
     int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nCrossedRows, movePhi;
     static const int nCentrClasses = 10, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
@@ -155,6 +160,7 @@ private:
     TH1D *fHistQAClustersITS;           //! Number of ITS clusters distribution
                                         //
     TH2D *fHistQAEtaPhi;                //!
+    TH2D *fHistQAMomPt;                //!
     TH2D *fHistQASPDTrackletsvsV0MCent[3]; //!
     TH2D *fHistQAMultTPCvsESD[2]; //!
     TH2D *fHistQAMultTPCvsV0[2]; //!

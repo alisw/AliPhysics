@@ -69,6 +69,13 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
     }
     fOutputList->Add(fHistEventsCut);
     fOutputList->Add(fHistTracksCut);
+nPBins = 5;
+Double_t PBins[6] = {0.2, 0.3, 0.4, 0.6, 0.8, 2.0};
+    Double_t PhiBins[nPhiBins + 1], VertexBins[nVertexBins + 1];
+    for (int i = 0; i < nPhiBins + 1; i++)
+        PhiBins[i] = i * TMath::TwoPi() / nPhiBins;
+    for (int i = 0; i < nVertexBins + 1; i++)
+        VertexBins[i] = Vertexmin + i * (Vertexmax - Vertexmin) / nVertexBins;
 
     for (int iCent = 0; iCent < nCentrClassesUsed; iCent++)
     {
@@ -77,22 +84,22 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
             for (int iSort = 0; iSort < nSorts; iSort++)
             {
                 NGenTracks[iCent][iEta][iSort] = new TH3D(Form("NGenTracksC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};Ntracks",
-                                                          nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                          nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
                 EfficiencyTracking[iCent][iEta][iSort] = new TH3D(Form("EfficiencyTrackingC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};EfficiencyTracking",
-                                                                  nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                                  nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
                 ContaminationTracking[iCent][iEta][iSort] = new TH3D(Form("ContaminationTrackingC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};ContaminationTracking",
-                                                                     nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                                     nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
                 NReconstTracks[iCent][iEta][iSort] = new TH3D(Form("NReconstTracksC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};Ntracks",
-                                                              nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                              nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
 
                 NTrueTracks[iCent][iEta][iSort] = new TH3D(Form("NTrueTracksC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};Ntracks",
-                                                           nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                           nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
                 EfficiencyPID[iCent][iEta][iSort] = new TH3D(Form("EfficiencyPIDC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};EfficiencyPID",
-                                                             nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                             nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
                 ContaminationPID[iCent][iEta][iSort] = new TH3D(Form("ContaminationPIDC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};ContaminationPID",
-                                                                nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                                nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
                 NTracksInCut[iCent][iEta][iSort] = new TH3D(Form("NTracksInCutC%dEta%dSort%d", iCent, iEta, iSort), ";P_{T};Ntracks",
-                                                            nPBins, minP, maxP, nPhiBins, 0, TMath::TwoPi(), nVertexBins, Vertexmin, Vertexmax);
+                                                            nPBins, PBins, nPhiBins, PhiBins, nVertexBins, VertexBins);
 
                 fOutputList->Add(NGenTracks[iCent][iEta][iSort]);
                 fOutputList->Add(EfficiencyTracking[iCent][iEta][iSort]);
@@ -109,11 +116,11 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserCreateOutputOb
 
     for (int iSort = 0; iSort < nSorts; iSort++)
     {
-        purityAll[iSort] = new TH1D(Form("pur%d", iSort), "", nPBins, minP, maxP);
+        purityAll[iSort] = new TH1D(Form("pur%d", iSort), "", nPBins, PBins);
         fOutputList->Add(purityAll[iSort]);
         for (int jSort = 0; jSort < nSorts; jSort++)
         {
-            purity[iSort][jSort] = new TH1D(Form("pur%din%d", jSort, iSort), "", nPBins, minP, maxP);
+            purity[iSort][jSort] = new TH1D(Form("pur%din%d", jSort, iSort), "", nPBins, PBins);
             fOutputList->Add(purity[iSort][jSort]);
         }
     }
@@ -288,7 +295,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
         if (fabs(nOfSigmasTOF_pi) > 900)
         {
             fHistTracksCut->Fill("TOF", 1);
-            //continue;
+            // continue;
         }
         /*if (fabs(nOfSigmasTOF_K) > 900)
         {
@@ -440,7 +447,7 @@ void AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency::UserExec(Option_t 
                 purityAll[5]->Fill(Pt);
             }
             fDeDxSorts[2]->Fill(Moment, DeDx);
-            
+
             fTOFSorts[2]->Fill(Moment, track->GetTOFsignal());
         }
 
