@@ -56,11 +56,11 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   Int_t        fEventIndex;            //!<! tree variable
   Int_t        fD0track0;              //!<! tree variable
   Int_t        fD0track1;              //!<! tree variable
-  uint8_t      fHF2pflag;              //!<! tree variable
+  UChar_t      fHF2pflag;              //!<! tree variable
   Int_t        f3ptrack0;              //!<! tree variable
   Int_t        f3ptrack1;              //!<! tree variable
   Int_t        f3ptrack2;              //!<! tree variable
-  uint8_t      fHF3pflag;              //!<! tree variable
+  UChar_t      fHF3pflag;              //!<! tree variable
   Int_t        fDstD0;                 //!<! tree variable
   Int_t        fDstSofPi;              //!<! tree variable
   Int_t        fCasV0ind;              //!<! tree variable
