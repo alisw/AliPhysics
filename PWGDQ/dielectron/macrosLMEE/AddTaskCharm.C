@@ -1,4 +1,4 @@
-AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE, Float_t MinOpAng=0.0)
+AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweight=kFALSE,Bool_t selectoneccbar=kFALSE,Bool_t selectcleanhistory=kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=8.0,TString file_cnm="",TString cnm="",Bool_t takeptofDCNM=kFALSE, Float_t MinOpAng=0.0, TString file_raa="", TString hname_raa="")
 {
   AliAnalysisTaskCharm* task = new  AliAnalysisTaskCharm("");
   task->SetProcessType(processtype);
@@ -50,6 +50,24 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
       task->ReadEffFile(&fefficiency);
     }
   }
+
+  Bool_t applyRAA = kFALSE;
+  //RAA
+  if(file_raa.Contains("alien")) {
+    gSystem->Exec(Form("alien_cp %s .",file_raa.Data()));
+    TObjArray* Strings = file_raa.Tokenize("/");
+    TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+    printf("RAA file is %s copied from %s\n",namefile.Data(),file_raa.Data());
+    TFile fraa(namefile.Data());
+    if (fraa.IsOpen()){
+      if((TH1F*)fraa.Get(hname_raa.Data()) != 0x0) { // apply RAA weighting.
+        TH1F *h1RAA = (TH1F*)fraa.Get(hname_raa.Data());
+        h1RAA->SetDirectory(0);
+        task->ScaleByRAA(kTRUE,h1RAA);
+        applyRAA = kTRUE;
+      }
+    }
+  }
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -77,6 +95,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   if(takeptofDCNM) listname += "takeptDCNM";
   listname += versionsmearing;
   listname += cnm;
+  if(applyRAA) listname += "RAAhfe";
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   

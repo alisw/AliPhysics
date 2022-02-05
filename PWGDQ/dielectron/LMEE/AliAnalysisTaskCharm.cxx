@@ -62,6 +62,7 @@ fEtamin(-0.8),
 fEtamax(0.8),
 fMinOpAng(0.0),
 fScaleByRAA(kFALSE),
+fHistoRAA(0x0),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
 fTakeptOfDCNM(kFALSE),
@@ -185,6 +186,7 @@ fEtamin(-0.8),
 fEtamax(0.8),
 fMinOpAng(0.0),
 fScaleByRAA(kFALSE),
+fHistoRAA(0x0),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
 fTakeptOfDCNM(kFALSE),
@@ -1311,7 +1313,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
-	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
+        ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
 
       
@@ -1890,9 +1892,12 @@ Double_t AliAnalysisTaskCharm::pt_cutLow(Double_t pT) {
 }
 
 Double_t AliAnalysisTaskCharm::scale_RAA(Double_t pT) {
-  //return 8.46749e-01 + (-1.30301e-01) * pT; // fit 0-10%
-  //return 9.03546e-01 + (-1.09215e-01) * pT; // fit 20-40%
-  return 0.885416 + (-0.114357) * pT; // fits for 10-20% + 20-40% combined
+  if(!fHistoRAA) return 1.0;
+  Int_t index = fHistoRAA->FindBin(pT);
+  Int_t n = fHistoRAA->GetNbinsX();
+  if(pT < fHistoRAA->GetBinLowEdge(1))        return fHistoRAA->GetBinContent(1);
+  else if(pT > fHistoRAA->GetBinLowEdge(n+1)) return fHistoRAA->GetBinContent(n);
+  return fHistoRAA->GetBinContent(index);
 }
 
 Double_t AliAnalysisTaskCharm::scale_CNM(Double_t pT) {

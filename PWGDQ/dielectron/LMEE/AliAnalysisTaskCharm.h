@@ -42,7 +42,7 @@ public:
   void         SetPtCutLow(Double_t min)                    { fPtCutLow = min; }
   void         SetEtaCutMinMax(Double_t min, Double_t max)  { fEtamin = min; fEtamax = max;}
   void         SetMinOpAng(Double_t opAng)                  { fMinOpAng = opAng;}
-  void         ScaleByRAA(Bool_t b)                         { fScaleByRAA = b; }
+  void         ScaleByRAA(Bool_t b, TH1F *h1RAA)            { fScaleByRAA = b; fHistoRAA = h1RAA;}
   void         ScaleByCNM(Bool_t b,TGraph *cnmgraph)        { fScaleByCNM = b; fgraphCNM = cnmgraph;}
   void         TakeptOfDCNM(Bool_t b)                       { fTakeptOfDCNM = b; }
   void         SetNbEvent(Int_t b)                          { fNbEvent = b;  }
@@ -76,6 +76,7 @@ protected:
   Double_t                 fEtamax;
   Double_t                 fMinOpAng;
   Bool_t                   fScaleByRAA;
+  TH1F                    *fHistoRAA;
   Bool_t                   fScaleByCNM;
   TGraph                  *fgraphCNM;
   Bool_t                   fTakeptOfDCNM;
@@ -209,7 +210,7 @@ protected:
   AliAnalysisTaskCharm(const AliAnalysisTaskCharm &c); // not implemented
   AliAnalysisTaskCharm& operator= (const AliAnalysisTaskCharm &c); // not implemented
   
-  ClassDef(AliAnalysisTaskCharm,3)
+  ClassDef(AliAnalysisTaskCharm,4)
 };
 
 #endif

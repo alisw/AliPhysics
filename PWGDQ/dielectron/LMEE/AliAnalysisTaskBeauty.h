@@ -42,7 +42,7 @@ public:
   void         SetEtamax(Double_t max)            { fEtamax = max; }
   void         SetEtamin(Double_t min)            { fEtamin = min; }
   void         SetMinOpAng(Double_t opAng)        { fMinOpAng = opAng; }
-  void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b; }
+  void         ScaleByRAA(Bool_t b, TH1F *h1RAA)  { fScaleByRAA = b; fHistoRAA = h1RAA;}
   void         SetApplyEventw(Bool_t b)           { fEventWeight = b;  }
   void         Selectonebbbar(Bool_t b)           { fSelectonebbbar = b;  }
 
@@ -71,6 +71,7 @@ protected:
   Double_t                 fEtamax;
   Double_t                 fMinOpAng;
   Bool_t                   fScaleByRAA;
+  TH1F                    *fHistoRAA;
   Bool_t                   fSelectonebbbar; // select events with only one bbbar pair in history
   // Histogram with 4 bins: for # of events 
   TH1F *hNEvents;                                      //!
@@ -199,7 +200,7 @@ protected:
   AliAnalysisTaskBeauty& operator= (const AliAnalysisTaskBeauty &c); // not implemented
 
   
-  ClassDef(AliAnalysisTaskBeauty,2)
+  ClassDef(AliAnalysisTaskBeauty,3)
 };
 
 #endif
