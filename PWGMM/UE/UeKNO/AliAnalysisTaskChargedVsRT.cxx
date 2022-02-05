@@ -819,15 +819,17 @@ void AliAnalysisTaskChargedVsRT::GetBinByBinCorrections( Int_t multGen, Int_t mu
     for (Int_t i = 0; i < multGen; ++i) {
         hPtInPrim->Fill(ptGen[i]);// inital pT distribution (MC gen)
         if(!fIsMCclosure){
-            if (idGen[i]==0) hPtInPrim_lambda->Fill(ptGen[i]); //lambdas
-            else if (idGen[i]==1) hPtInPrim_pion->Fill(ptGen[i]); //pions
-            else if (idGen[i]==2) hPtInPrim_kaon->Fill(ptGen[i]); //kaons
-            else if (idGen[i]==3) hPtInPrim_proton->Fill(ptGen[i]); //protons
-            else if (idGen[i]==4) hPtInPrim_sigmap->Fill(ptGen[i]); //sigma plus
-            else if (idGen[i]==5) hPtInPrim_sigmam->Fill(ptGen[i]); //sigma minus
-            else if (idGen[i]==6) hPtInPrim_omega->Fill(ptGen[i]); //Omega
-            else if (idGen[i]==7) hPtInPrim_xi->Fill(ptGen[i]); //Xi
-            else hPtInPrim_rest->Fill(ptGen[i]); //rest of the charged particles
+            if(idGen[i]>=0&&idGen[i]<=8){
+                if (idGen[i]==0) hPtInPrim_lambda->Fill(ptGen[i]); //lambdas
+                else if (idGen[i]==1) hPtInPrim_pion->Fill(ptGen[i]); //pions
+                else if (idGen[i]==2) hPtInPrim_kaon->Fill(ptGen[i]); //kaons
+                else if (idGen[i]==3) hPtInPrim_proton->Fill(ptGen[i]); //protons
+                else if (idGen[i]==4) hPtInPrim_sigmap->Fill(ptGen[i]); //sigma plus
+                else if (idGen[i]==5) hPtInPrim_sigmam->Fill(ptGen[i]); //sigma minus
+                else hPtInPrim_rest->Fill(ptGen[i]); //rest of the charged particles
+                if (idGen[i]==6) hPtInPrim_omega->Fill(ptGen[i]); //Omega
+                if (idGen[i]==7) hPtInPrim_xi->Fill(ptGen[i]); //Xi
+            }
         }
     }
 
@@ -837,15 +839,17 @@ void AliAnalysisTaskChargedVsRT::GetBinByBinCorrections( Int_t multGen, Int_t mu
             if( isprimRec[i] == 0 ){
                 hPtOutPrim->Fill(ptRec[i]);
                 if(!fIsMCclosure){
-                    if (idRec[i]==0) hPtOutPrim_lambda->Fill(ptRec[i]); //lambdas
-                    else if (idRec[i]==1) hPtOutPrim_pion->Fill(ptRec[i]); //pions
-                    else if (idRec[i]==2) hPtOutPrim_kaon->Fill(ptRec[i]); //kaons
-                    else if (idRec[i]==3) hPtOutPrim_proton->Fill(ptRec[i]); //protons
-                    else if (idRec[i]==4) hPtOutPrim_sigmap->Fill(ptRec[i]); //sigma plus
-                    else if (idRec[i]==5) hPtOutPrim_sigmam->Fill(ptRec[i]); //sigma minus
-                    else if (idRec[i]==6) hPtOutPrim_omega->Fill(ptRec[i]); //Omega
-                    else if (idRec[i]==7) hPtOutPrim_xi->Fill(ptRec[i]); //Xi
-                    else hPtOutPrim_rest->Fill(ptRec[i]); //rest of the charged particles
+                    if(idRec[i]>=0&&idRec[i]<=8){
+                        if (idRec[i]==0) hPtOutPrim_lambda->Fill(ptRec[i]); //lambdas
+                        else if (idRec[i]==1) hPtOutPrim_pion->Fill(ptRec[i]); //pions
+                        else if (idRec[i]==2) hPtOutPrim_kaon->Fill(ptRec[i]); //kaons
+                        else if (idRec[i]==3) hPtOutPrim_proton->Fill(ptRec[i]); //protons
+                        else if (idRec[i]==4) hPtOutPrim_sigmap->Fill(ptRec[i]); //sigma plus
+                        else if (idRec[i]==5) hPtOutPrim_sigmam->Fill(ptRec[i]); //sigma minus
+                        else hPtOutPrim_rest->Fill(ptRec[i]); //rest of the charged particles
+                        if (idRec[i]==6) hPtOutPrim_omega->Fill(ptRec[i]); //Omega
+                        if (idRec[i]==7) hPtOutPrim_xi->Fill(ptRec[i]); //Xi
+                    }
                 }
             }
         if( isprimRec[i] == 1 || isprimRec[i] == 2 ){
@@ -1173,16 +1177,16 @@ Int_t AliAnalysisTaskChargedVsRT::FillArrayMC( vector<Float_t> &ptArray, vector<
         Int_t idPart = -1;
         Int_t partPDG = TMath::Abs(particle->PdgCode());
         if (partPDG==3122) idPart = 0; //lambda
-        if (particle->Charge() == 0) continue;
-        if (partPDG==211) idPart = 1; //pions
-        else if (partPDG==321) idPart = 2; //kaons
-        else if (partPDG==2212) idPart = 3; //protons
-        else if (partPDG==3222) idPart = 4; //sigma plus
-        else if (partPDG==3112) idPart = 5; //sigma minus
-        else if (partPDG==3334) idPart = 6; //Omega
-        else if (partPDG==3312) idPart = 7; //Xi
-        else idPart = 8; //rest of the charged particles
-
+        if (particle->Charge() != 0){
+            if (partPDG==211) idPart = 1; //pions
+            else if (partPDG==321) idPart = 2; //kaons
+            else if (partPDG==2212) idPart = 3; //protons
+            else if (partPDG==3222) idPart = 4; //sigma plus
+            else if (partPDG==3112) idPart = 5; //sigma minus
+            else if (partPDG==3334) idPart = 6; //Omega
+            else if (partPDG==3312) idPart = 7; //Xi
+            else idPart = 8; //rest of the charged particles
+        }
         ptArray.push_back(particle->Pt());
         phiArray.push_back(particle->Phi());
         idArray.push_back(idPart);
