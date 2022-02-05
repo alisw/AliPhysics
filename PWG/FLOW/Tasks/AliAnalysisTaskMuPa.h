@@ -117,6 +117,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void BookInternalValidationHistograms();
   virtual void BookTest0Histograms();
   virtual void BookFinalResultsHistograms();
+  virtual void StoreLabelsInPlaceholder(const char *source); 
+  virtual Bool_t RetrieveCorrelationsLabels();
 
   // 2) Methods called in UserExec(Option_t *):
   virtual void InternalValidation();
@@ -144,8 +146,6 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void MakeLookUpTable(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void RandomIndices(AliVEvent *ave);
   virtual void CalculateTest0();
-  virtual void StoreLabelsInPlaceholder(const char *source); 
-  virtual Bool_t RetrieveCorrelationsLabels();
   virtual void CalculateKineCorrelations(const char* kc); 
   virtual void CalculateKineTest0(const char* kc);
   virtual Double_t CalculateKineCustomNestedLoop(TArrayI *harmonics, const char* kc, Int_t bin); // calculate custom nested loop for the specified harmonics, kine. variable, and bin
