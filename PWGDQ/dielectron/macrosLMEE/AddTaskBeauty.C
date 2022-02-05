@@ -1,4 +1,4 @@
-AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=1e20, Bool_t selectonebbbar=kFALSE, Float_t MinOpAng=0.0)
+AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_momentum_smear="", TString versionsmearing="", TString file_efficiency="", Int_t fTypeEff=0, Int_t processtype=0, UInt_t rndmseed=0, Double_t ptmax=1e20, Bool_t selectonebbbar=kFALSE, Float_t MinOpAng=0.0, TString file_raa="", TString hname_raa="")
 {
   AliAnalysisTaskBeauty* task = new  AliAnalysisTaskBeauty("");
   task->SetProcessType(processtype);
@@ -36,6 +36,24 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
     }
   }
 
+  Bool_t applyRAA = kFALSE;
+  //RAA
+  if(file_raa.Contains("alien")) {
+    gSystem->Exec(Form("alien_cp %s .",file_raa.Data()));
+    TObjArray* Strings = file_raa.Tokenize("/");
+    TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+    printf("RAA file is %s copied from %s\n",namefile.Data(),file_raa.Data());
+    TFile fraa(namefile.Data());
+    if (fraa.IsOpen()){
+      if((TH1F*)fraa.Get(hname_raa.Data()) != 0x0) { // apply RAA weighting.
+        TH1F *h1RAA = (TH1F*)fraa.Get(hname_raa.Data());
+        h1RAA->SetDirectory(0);
+        task->ScaleByRAA(kTRUE,h1RAA);
+        applyRAA = kTRUE;
+      }
+    }
+  }
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Printf("AliAnalysisTaskBeauty: No analysis manager to connect to.");
@@ -57,6 +75,7 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
   if(processtype>0) listname += processtype;
   if(applyeventw) listname += "eventweight";
   listname += versionsmearing;
+  if(applyRAA) listname += "RAAhfe";
   
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   
