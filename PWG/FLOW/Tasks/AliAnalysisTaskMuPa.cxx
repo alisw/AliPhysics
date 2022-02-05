@@ -569,7 +569,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    if(!(wPhi > 0.))
    {
     cout<<"wPhi is not positive, skipping this particle for the time being..."<<endl;
-    cout<<Form("iTrack= %d\ndPhi = %f\nwPhi = %f",iTrack,dPhi,wPhi)<<endl;
+    cout<<Form("iTrack = %d\ndPhi = %f\nwPhi = %f",iTrack,dPhi,wPhi)<<endl;
     sleep(2);
     continue;
    } 
@@ -580,7 +580,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    if(!(wPt > 0.))
    {
     cout<<"wPt is not positive, skipping this particle for the time being..."<<endl;
-    cout<<Form("iTrack= %d\ndPt = %f\nwPt = %f",iTrack,dPt,wPt)<<endl;
+    cout<<Form("iTrack = %d\ndPt = %f\nwPt = %f",iTrack,dPt,wPt)<<endl;
     sleep(2);
     continue;
    } 
@@ -591,7 +591,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    if(!(wEta > 0.))
    {
     cout<<"wEta is not positive, skipping this particle for the time being..."<<endl;
-    cout<<Form("iTrack= %d\ndEta = %f\nwEta = %f",iTrack,dEta,wEta)<<endl;
+    cout<<Form("iTrack = %d\ndEta = %f\nwEta = %f",iTrack,dEta,wEta)<<endl;
     sleep(2);
     continue;
    } 
@@ -661,8 +661,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   // Nested loops containers:
   if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
   {
-   if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,nSelectedTracksCounter);} 
-   if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,nSelectedTracksCounter);} 
+   if(ftaNestedLoops[0]){ftaNestedLoops[0]->AddAt(dPhi,nSelectedTracksCounter);} // remember that the 2nd argument here must start from 0
+   if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(wPhi*wPt*wEta,nSelectedTracksCounter);} // remember that the 2nd argument here must start from 0
   } // if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
 
   // Sum of particle weights:
@@ -5835,6 +5835,7 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
 
   // Book the placeholder for all labels (temporary workaround): 
   fTest0LabelsPlaceholder = new TH1I("fTest0LabelsPlaceholder",Form("placeholder for all labels, %d in total",nLabels),nLabels,0,nLabels);  
+  fTest0LabelsPlaceholder->SetStats(kFALSE);
 
   Int_t bin = 1; // used only for fTest0LabelsPlaceholder
   // external file exist locally, get all labels of interest from there:
@@ -5870,6 +5871,7 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
 
   // Book the placeholder for all labels (temporary workaround): 
   fTest0LabelsPlaceholder = new TH1I("fTest0LabelsPlaceholder","placeholder for all labels (temporary workaround)",gMaxCorrelator*gMaxIndex,0,gMaxCorrelator*gMaxIndex);  
+  fTest0LabelsPlaceholder->SetStats(kFALSE);
   // TBI 20210914 instead of upper limit gMaxCorrelator*gMaxIndex, use in the previous line the exact number of bins
 
   Int_t bin = 1; // used only for fTest0LabelsPlaceholder
@@ -6052,7 +6054,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
  } 
 
  // b) Calculate correlations:
- Double_t correlation = 0.;
+ Double_t correlation = 0.; // still has to be divided with 'weight' later, to get average correlation
  Double_t weight = 0.;
  Int_t n[gMaxCorrelator] = {0}; // array holding harmonics
 
@@ -6090,61 +6092,73 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     switch(mo+1) // which order? yes, mo+1
     {
      case 1:
+      if(fSelectedTracks<1){return;}
       correlation = One(n[0]).Re();
       weight = One(0).Re();
      break;
 
      case 2:  
+      if(fSelectedTracks<2){return;}
       correlation = Two(n[0],n[1]).Re();
       weight = Two(0,0).Re();
      break;
 
      case 3: 
+      if(fSelectedTracks<3){return;}
       correlation = Three(n[0],n[1],n[2]).Re();
       weight = Three(0,0,0).Re();
      break;
  
      case 4: 
+      if(fSelectedTracks<4){return;}
       correlation = Four(n[0],n[1],n[2],n[3]).Re();
       weight = Four(0,0,0,0).Re();
      break;
 
      case 5: 
+      if(fSelectedTracks<5){return;}
       correlation = Five(n[0],n[1],n[2],n[3],n[4]).Re();
       weight = Five(0,0,0,0,0).Re();
      break;
 
      case 6: 
+      if(fSelectedTracks<6){return;}
       correlation = Six(n[0],n[1],n[2],n[3],n[4],n[5]).Re();
       weight = Six(0,0,0,0,0,0).Re();
      break;
 
      case 7: 
+      if(fSelectedTracks<7){return;}
       correlation = Seven(n[0],n[1],n[2],n[3],n[4],n[5],n[6]).Re();
       weight = Seven(0,0,0,0,0,0,0).Re();
      break;
 
      case 8: 
+      if(fSelectedTracks<8){return;}
       correlation = Eight(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]).Re();
       weight = Eight(0,0,0,0,0,0,0,0).Re();
      break;
 
      case 9: 
+      if(fSelectedTracks<9){return;}
       correlation = Nine(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8]).Re();
       weight = Nine(0,0,0,0,0,0,0,0,0).Re();
      break;
 
      case 10: 
+      if(fSelectedTracks<10){return;}
       correlation = Ten(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],n[9]).Re();
       weight = Ten(0,0,0,0,0,0,0,0,0,0).Re();
      break;
 
      case 11: 
+      if(fSelectedTracks<11){return;}
       correlation = Eleven(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],n[9],n[10]).Re();
       weight = Eleven(0,0,0,0,0,0,0,0,0,0,0).Re();
      break;
 
      case 12: 
+      if(fSelectedTracks<12){return;}
       correlation = Twelve(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],n[9],n[10],n[11]).Re();
       weight = Twelve(0,0,0,0,0,0,0,0,0,0,0,0).Re();
      break;
@@ -6200,10 +6214,18 @@ void AliAnalysisTaskMuPa::CalculateTest0()
      delete harmonics; harmonics = NULL;
     } // if(fUseInternalValidation && fRescaleWithTheoreticalInput)
 
+    // Insanity check on weight:
+    if(!(weight > 0.))
+    {
+     Red(Form("weight = %f is not positive for %s. Skipping it, but investigate further why this happens.",weight,fTest0Pro[mo][mi][0]->GetTitle()));
+     Red(Form("Perhaps number of selected particles in this event is too low for this correlator? fSelectedTracks = %d",fSelectedTracks));
+     //sleep(1);
+     return;
+    }
+
     // Finally, fill:
     for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
     { 
-     if(!(weight > 0.)){cout<<__LINE__<<endl;exit(1);}
      // integrated:
      if(fTest0Pro[mo][mi][0]){fTest0Pro[mo][mi][0]->Fill(0.5,correlation/weight,weight);}
      // vs. multiplicity:
@@ -7163,8 +7185,8 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
       delete oa; // yes, otherwise it's a memory leak
      }
 
-     if(fqVectorEntries[qv][b]<mo+1){continue;} // TBI 20211026 is this really safe
-
+     if(fqVectorEntries[qv][b]<mo+1){continue;}
+ 
      switch(mo+1) // which order? yes, mo+1
      {
       case 1:
@@ -7278,9 +7300,24 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
       delete harmonics; harmonics = NULL;
      } // if(fUseInternalValidation && fRescaleWithTheoreticalInput)
 
-     // Finally, fill:
-     if(!(weight > 0.)){cout<<__LINE__<<endl;exit(1);}
+     // Insanity check for the event weight:
+     if(!(weight > 0.))
+     {
+      // If it's negative, that means that sum of particle weights is smaller than "number of particles - 1"
+      // In that case, you can simpy rescale all particle weights, so that each of them is > 1, basically recalcute weights.root files with such a rescaling. 
+      cout<<Form("b = %d",b)<<endl;
+      cout<<Form("qv = %d",qv)<<endl;
+      cout<<Form("event weight = %e",weight)<<endl;
+      cout<<Form("sum of particle weights = %e",One(0).Re())<<endl;
+      cout<<Form("correlation = %f",correlation)<<endl;
+      cout<<Form("fTest0Pro[mo][mi][kb]->GetTitle() = %s",fTest0Pro[mo][mi][kb]->GetTitle())<<endl;      
+      cout<<Form("[mo][mi][kb] = [%d][%d][%d]",mo,mi,kb)<<endl;      
+      cout<<Form("fSelectedTracks = %d",fSelectedTracks)<<endl;
+      cout<<Form("fqVectorEntries[qv][b] = %d",fqVectorEntries[qv][b])<<endl;
+      cout<<__LINE__<<endl;exit(1);
+     }
 
+     // Finally, fill:
      if(fTest0Pro[mo][mi][kb]){fTest0Pro[mo][mi][kb]->Fill(fTest0Pro[mo][mi][kb]->GetXaxis()->GetBinCenter(b+1),correlation/weight,weight);} // fill in the bin center
 
     } // if(fTest0Labels[mo][mi])

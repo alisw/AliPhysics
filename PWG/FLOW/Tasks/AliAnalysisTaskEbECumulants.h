@@ -18,6 +18,16 @@
 #include <TSystem.h>
 #include <TH1F.h>
 
+// Global variables:
+const Int_t gEventHistogramsEbE = 7; // total number of event histograms
+
+// Enums:
+enum eEventHistogramsEbE { eNumberOfEvents, eTotalMultiplicity, eSelectedParticles, eCentrality, eVertex_x, eVertex_y, eVertex_z };
+enum eBeforeAfterEbE { eBefore = 0, eAfter = 1 };
+enum eRecSimEbE { eRec = 0, eSim = 1 };
+enum eMinMaxEbE { eMin = 0, eMax = 1 };
+enum eDefaultColorsEbE { COLOREbE = kBlack, FILLCOLOREbE = kGray };
+
 //================================================================================================================
 
 class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
@@ -35,25 +45,12 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
  
   // 1.) Methods called in UserCreateOutputObjects():
   virtual void BookAndNestAllLists();
-  virtual void BookControlHistograms();
+  virtual void BookEventHistograms();
   virtual void BookFinalResultsHistograms();
 
   // 2.) Methods called in UserExec(Option_t *):
   virtual void RandomIndices(AliVEvent *ave);
   virtual void ResetEventByEventQuantities();
-
-  // 3.) Setters and getters:
-  void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
-  TList* GetControlHistogramsList() const {return this->fControlHistogramsList;} 
-  void SetFinalResultsList(TList* const frl) {this->fFinalResultsList = frl;};
-  TList* GetFinalResultsList() const {return this->fFinalResultsList;}
-
-  void SetPtBinning(Int_t const nbins, Float_t min, Float_t max)
-  {
-   this->fNbinsPt = nbins;
-   this->fMinBinPt = min;
-   this->fMaxBinPt = max;
-  };
 
   // Utility:
   void Red(const char* text);
@@ -63,27 +60,72 @@ class AliAnalysisTaskEbECumulants : public AliAnalysisTaskSE{
   TObject* GetObjectFromList(TList *list, Char_t *objectName); // see .cxx
   Int_t NumberOfNonEmptyLines(const char *externalFile);  
 
+  // *) Setters for event histograms:
+  void SetBookEventHistograms(const char* type, Bool_t bookOrNot)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("NumberOfEvents")){var = eNumberOfEvents;} 
+   else if (TString(type).EqualTo("TotalMultiplicity")){var = eTotalMultiplicity;}
+   else if (TString(type).EqualTo("SelectedParticles")){var = eSelectedParticles;}
+   else if (TString(type).EqualTo("Centrality")){var = eCentrality;}
+   else if (TString(type).EqualTo("Vertex_x")){var = eVertex_x;}
+   else if (TString(type).EqualTo("Vertex_y")){var = eVertex_y;}
+   else if (TString(type).EqualTo("Vertex_z")){var = eVertex_z;}
+   else{exit(1);}
+   this->fBookEventHistograms[var] = bookOrNot;
+  }
+  void SetEventHistogramsBins(const char* type, const Double_t nbins, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("NumberOfEvents")){var = eNumberOfEvents;} 
+   else if (TString(type).EqualTo("TotalMultiplicity")){var = eTotalMultiplicity;}
+   else if (TString(type).EqualTo("SelectedParticles")){var = eSelectedParticles;}
+   else if (TString(type).EqualTo("Centrality")){var = eCentrality;}
+   else if (TString(type).EqualTo("Vertex_x")){var = eVertex_x;}
+   else if (TString(type).EqualTo("Vertex_y")){var = eVertex_y;}
+   else if (TString(type).EqualTo("Vertex_z")){var = eVertex_z;}
+   else{exit(1);}
+   this->fEventHistogramsBins[var][0] = nbins;
+   this->fEventHistogramsBins[var][1] = min;
+   this->fEventHistogramsBins[var][2] = max;
+  }
+  void SetEventCuts(const char* type, const Double_t min, const Double_t max)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("NumberOfEvents")){var = eNumberOfEvents;} 
+   else if (TString(type).EqualTo("TotalMultiplicity")){var = eTotalMultiplicity;}
+   else if (TString(type).EqualTo("SelectedParticles")){var = eSelectedParticles;}
+   else if (TString(type).EqualTo("Centrality")){var = eCentrality;}
+   else if (TString(type).EqualTo("Vertex_x")){var = eVertex_x;}
+   else if (TString(type).EqualTo("Vertex_y")){var = eVertex_y;}
+   else if (TString(type).EqualTo("Vertex_z")){var = eVertex_z;}
+   else{exit(1);}
+   this->fEventCuts[var][0] = min;
+   this->fEventCuts[var][1] = max;
+  }
+
  private:
   AliAnalysisTaskEbECumulants(const AliAnalysisTaskEbECumulants& aatmpf);
   AliAnalysisTaskEbECumulants& operator=(const AliAnalysisTaskEbECumulants& aatmpf);
   
-  // 0.) Base lists:
+  // *) Base lists:
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
   Bool_t fUseFisherYates; // use SetUseFisherYates(kTRUE); in the steering macro to randomize particle indices
   TArrayI *fRandomIndices; // array to store random indices obtained from Fisher-Yates algorithm 
   
-  // 1.) Control histograms:  
-  TList *fControlHistogramsList; // list to hold all control histograms
-  TH1F *fPtHist;                 // atrack->Pt()
-  Int_t fNbinsPt;                // number of bins
-  Float_t fMinBinPt;             // min bin
-  Float_t fMaxBinPt;             // min bin
+  // *) Event histograms and cuts: 
+  TList *fEventHistogramsList; // base list to hold all event histograms
+  TProfile *fEventHistogramsPro; // keeps all flags for event histograms
+  TH1D *fEventHistograms[gEventHistogramsEbE][2][2]; //! [ type - see enum eEventHistograms ][reco,sim][before,after event cuts]
+  Bool_t fBookEventHistograms[gEventHistogramsEbE]; // book or not this histogram, see SetBookEventHistograms
+  Double_t fEventHistogramsBins[gEventHistogramsEbE][3]; // [nBins,min,max]
+  Double_t fEventCuts[gEventHistogramsEbE][2]; // [min,max]
   
   // 2.) Final results:
   TList *fFinalResultsList; // list to hold all histograms with final results
 
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskEbECumulants,2);
+  ClassDef(AliAnalysisTaskEbECumulants,3);
 
 };
 
