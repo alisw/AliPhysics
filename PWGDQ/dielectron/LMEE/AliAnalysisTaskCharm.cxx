@@ -26,6 +26,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TF1.h"
 #include "TList.h"
 #include "TChain.h"
 #include "TVector2.h"
@@ -63,6 +64,7 @@ fEtamax(0.8),
 fMinOpAng(0.0),
 fScaleByRAA(kFALSE),
 fHistoRAA(0x0),
+fTF1RAA(0x0),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
 fTakeptOfDCNM(kFALSE),
@@ -187,6 +189,7 @@ fEtamax(0.8),
 fMinOpAng(0.0),
 fScaleByRAA(kFALSE),
 fHistoRAA(0x0),
+fTF1RAA(0x0),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
 fTakeptOfDCNM(kFALSE),
@@ -325,6 +328,8 @@ void AliAnalysisTaskCharm::UserCreateOutputObjects()
   printf("  use CNM scaling:    %s\n", fScaleByCNM?"YES":"NO");
   printf("  Take pt of D meson:    %s\n", fTakeptOfDCNM?"YES":"NO");
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
+  if(fTF1RAA && fScaleByRAA) printf("  Scale HFE RAA with function\n");
+  if(fHistoRAA && fScaleByRAA) printf("  Scale HFE RAA with histo\n");
   printf("  use Decay weight:    %s\n", fApplywm?"YES":"NO");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
  
@@ -1310,6 +1315,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       
       // HFE R_AA scaling
       if (fScaleByRAA) {
+	//printf("Check: scale Raa %f for pt %f\n",scale_RAA(pt_i),pt_i);
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
@@ -1892,12 +1898,21 @@ Double_t AliAnalysisTaskCharm::pt_cutLow(Double_t pT) {
 }
 
 Double_t AliAnalysisTaskCharm::scale_RAA(Double_t pT) {
-  if(!fHistoRAA) return 1.0;
-  Int_t index = fHistoRAA->FindBin(pT);
-  Int_t n = fHistoRAA->GetNbinsX();
-  if(pT < fHistoRAA->GetBinLowEdge(1))        return fHistoRAA->GetBinContent(1);
-  else if(pT > fHistoRAA->GetBinLowEdge(n+1)) return fHistoRAA->GetBinContent(n);
-  return fHistoRAA->GetBinContent(index);
+  if(fHistoRAA) {
+    Int_t index = fHistoRAA->FindBin(pT);
+    Int_t n = fHistoRAA->GetNbinsX();
+    if(pT < fHistoRAA->GetBinLowEdge(1))        return fHistoRAA->GetBinContent(1);
+    else if(pT > fHistoRAA->GetBinLowEdge(n+1)) return fHistoRAA->GetBinContent(n);
+    return fHistoRAA->GetBinContent(index);
+  }
+  else if(fTF1RAA) {
+    return fTF1RAA->Eval(pT);
+  }
+  else {
+    return 8.46749e-01 + (-1.30301e-01) * pT; // fit 0-10%
+    //return 9.03546e-01 + (-1.09215e-01) * pT; // fit 20-40%
+    //return 0.885416 + (-0.114357) * pT; // fits for 10-20% + 20-40% combined
+  }
 }
 
 Double_t AliAnalysisTaskCharm::scale_CNM(Double_t pT) {
