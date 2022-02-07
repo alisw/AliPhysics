@@ -2215,6 +2215,10 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("ExoCut") )
     kAnaCaloTrackCorr+= "_ExoCut";
 
+  if ( analysisString.Contains("NLMCut3" ) ) kAnaCaloTrackCorr+= "_NLMCut3";
+  if ( analysisString.Contains("NLMCut4" ) ) kAnaCaloTrackCorr+= "_NLMCut4";
+  if ( analysisString.Contains("NLMCut10") ) kAnaCaloTrackCorr+= "_NLMCut10";
+
   if ( analysisString.Contains("Isolation") )
   {
     if ( !analysisString.Contains("MultiIsoR")  )
