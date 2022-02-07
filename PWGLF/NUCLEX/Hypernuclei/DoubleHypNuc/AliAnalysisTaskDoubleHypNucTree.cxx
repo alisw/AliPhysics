@@ -777,7 +777,6 @@ void AliAnalysisTaskDoubleHypNucTree::UserCreateOutputObjects() {
   gTreeD->Branch("fDcaDaughter", &fDcaDaughter, "fDcaDaughter/D");
   gTreeD->Branch("fDcaDaughtero", &fDcaDaughtero, "fDcaDaughtero/D");
   gTreeD->Branch("fDcazDaughter", &fDcazDaughter, "fDcazDaughter/D");
-  gTreeD->Branch("fImParDaughter", &fImParDaughter, "fImParDaughter/D");
   gTreeD->Branch("fNclsDaughter", &fNclsDaughter, "fNclsDaughter/I");
   gTreeD->Branch("fChi2Daughter", &fChi2Daughter, "fChi2Daughter/D");
   gTreeD->Branch("fNclsITSDaughter", &fNclsITSDaughter, "fNclsITSDaughter/I");
