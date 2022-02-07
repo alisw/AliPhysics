@@ -42,6 +42,9 @@
 #include "AliJHistManager.h"
 #include "AliJRunTable.h"
 #include "AliJFFlucAnalysis.h" // TEMP for getting bins
+#include "TDirectoryFile.h"
+#include "TList.h"
+#include "TSystem.h"
 
 //#pragma GCC diagnostic warning "-Wall"
 //______________________________________________________________________________
@@ -78,6 +81,7 @@ AliJCatalystTask::AliJCatalystTask():
 	grEffCor(0),
 	fCentBinEff(0),
 	phiMapIndex(0),
+	bUseAlternativeWeights(kFALSE),
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
@@ -90,7 +94,7 @@ AliJCatalystTask::AliJCatalystTask():
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
 	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
 {
-	//
+	InitializeArrays(); //
 }
 
 //______________________________________________________________________________
@@ -128,6 +132,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	grEffCor(0),
 	fCentBinEff(0),
 	phiMapIndex(0),
+	bUseAlternativeWeights(kFALSE),
 // QA part.
 	fMainList(NULL),
 	bSaveAllQA(kFALSE),
@@ -167,6 +172,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	grEffCor(ap.grEffCor),
 	fCentBinEff(ap.fCentBinEff),
 	phiMapIndex(ap.phiMapIndex),
+	bUseAlternativeWeights(ap.bUseAlternativeWeights),
 // QA part.
 	fMainList(ap.fMainList),
 	bSaveAllQA(ap.bSaveAllQA),
@@ -526,17 +532,24 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				
 				// Adding phi weight for a track
 				Double_t phi_module_corr = 1.0;
-				if(fJCorMapTask){
-					Double_t w;
-					if(pPhiWeights) {
-						Double_t phi = itrack->Phi();
-						Double_t eta = itrack->Eta();
-						w = pPhiWeights->GetBinContent(pPhiWeights->FindBin(phi,eta,fZvert));
+				if(bUseAlternativeWeights){
+				   Int_t RunBin = GetRunIndex10h((Int_t)aod->GetRunNumber());
+				   Int_t CentralityBin = GetCentralityBin(fcent);
+				   Int_t phiBin = fHistoPhiWeight[CentralityBin][RunBin]->FindBin(track->Phi());
+				   phi_module_corr = 1./((double)(fHistoPhiWeight[CentralityBin][RunBin])->GetBinContent(phiBin));
+				} else {
+					if(fJCorMapTask){
+						Double_t w;
+						if(pPhiWeights) {
+							Double_t phi = itrack->Phi();
+							Double_t eta = itrack->Eta();
+							w = pPhiWeights->GetBinContent(pPhiWeights->FindBin(phi,eta,fZvert));
+						}
+						else {
+							w = 1.0;
+						}
+						if(w > 1e-6) phi_module_corr = w;
 					}
-					else {
-						w = 1.0;
-					}
-					if(w > 1e-6) phi_module_corr = w;
 				}
 				itrack->SetWeight(phi_module_corr);
 			}	// End: if(track->TestFilterBit( fFilterBit ))
@@ -890,6 +903,7 @@ void AliJCatalystTask::InitializeArrays() {
 		}
 
 		fCentralityHistogram[icent] = NULL;
+		for(int iRun = 0; iRun < 90; iRun++) {fHistoPhiWeight[icent][iRun] = NULL;}
 	}
 }
 
@@ -1120,3 +1134,87 @@ void AliJCatalystTask::SetInitializeCentralityArray()
   }
 }
 
+//______________________________________________________________________________
+//______________________________________________________________________________
+//______________________________________________________________________________
+
+Int_t AliJCatalystTask::GetRunIndex10h(Int_t runNumber)
+{
+// Return for the given run the index in the run-by-run arrays.
+  TString sMethod = "Int_t AliJCatalystTask::GetRunIndex10h()";
+  Int_t cRun = -1; // Current index in the loop.
+
+  const int NumberRuns = 90;
+  Int_t listRuns[90] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+
+// Find the position of the given run into the list of runs.
+  for (Int_t iRun = 0; iRun < NumberRuns; iRun++)
+  {
+    if (listRuns[iRun] == runNumber)
+    {
+      cRun = iRun;
+      break;
+    } // End: for (Int_t iRun = 0; iRun < fNumberRuns; iRun++).
+  } // End: iRun.
+
+ if(cRun == -1){Fatal(sMethod.Data(), "FATAL: Run Number not in List of Runs!");}  
+
+  return cRun;
+} // End: Int_t GetRunIndex(Int_t).
+
+//==========================================================================================================================================================================
+
+void AliJCatalystTask::SetInputAlternativeNUAWeights10h(bool UseAltWeight, TString fileWeight)
+{
+// Setter to open the external file with the particle weights and import them in the task....
+// a.)  Open the external file.                                                                  
+// b.)  Parse the runs.                                                                          
+// b.1) Open the TDirectoryFile for the current run.                                            
+// b.2) Open the list for the current centrality range.                                                                                         
+// c.)  Close the external file.                                                               
+
+  TString sMethod = "void AliJCatalystTask::SetInputAlternativeNUAWeights10h()"; 
+
+  bUseAlternativeWeights = UseAltWeight;
+
+  const int NumberRuns = 90;
+  Int_t listRuns[90] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161};
+
+  // a.) Open the external file.
+  TFile *weightsFile = TFile::Open(Form("%s", fileWeight.Data()), "READ");
+  if (!weightsFile) {Fatal(sMethod.Data(), "ERROR 404: File not found");}
+
+	for (Int_t iRun = 0; iRun < NumberRuns; iRun++)
+	{
+	  // b.1) Open the TDirectoryFile for the current run.
+	  Int_t runNumber = listRuns[iRun];
+
+	  TDirectoryFile *runTDF = dynamic_cast<TDirectoryFile*>(weightsFile->Get(Form("%d", runNumber)));
+	  if (!runTDF) {Fatal(sMethod.Data(), "ERROR: Directory not found");}
+
+	  for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins //GANESHA: Check about fCentralityBins. Hardcode???
+ 	  {
+	      //Check if value of this centrality bin is negativ -> if yes: break. We do not need anymore
+	      //The next edge is a breaking point -> this bin does not exist anymore
+	      if(fcentralityArray[icent+1] < 0) {break;}
+
+	      // b.2) Open the list for the current centrality range.
+	      TList *centralityList = dynamic_cast<TList*>(runTDF->Get(Form("Centrality-%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1])));
+	      if (!centralityList) {Fatal(sMethod.Data(), "ERROR: List not found");}
+
+	      fHistoPhiWeight[icent][iRun] = dynamic_cast<TH1F*>(centralityList->FindObject("phi-weight"));
+	      if (!fHistoPhiWeight[icent][iRun]) {Fatal(sMethod.Data(), "ERROR: phi-weight histogram not found");}
+	      else {fHistoPhiWeight[icent][iRun]->SetDirectory(0);}  // Kill the default ownership
+
+	      delete centralityList;
+	   } // End: icent
+	   delete runTDF;
+ 	}//for irun
+
+  // c.) Close the external file.
+  weightsFile->Close();
+  delete weightsFile;
+
+} // void AliAnalysisTaskStudentsML::SetInputParticleWeights(TString fileWeight)
+
+//==========================================================================================================================================================================

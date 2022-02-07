@@ -27,6 +27,8 @@
 #include "AliVVertex.h"
 #include "AliStack.h"
 #include "AliJCorrectionMapTask.h"
+#include "TH1F.h"
+#include "TFile.h"
 
 //==============================================================
 
@@ -142,6 +144,9 @@ public:
 		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
 
+// Methods to use alternative correction weights.
+	Int_t GetRunIndex10h(Int_t runNumber);
+	void SetInputAlternativeNUAWeights10h(bool UseAltWeight, TString fileWeight);
 
 private:
 	TClonesArray * fInputList;  // tracklist
@@ -181,6 +186,7 @@ private:
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
 	UInt_t phiMapIndex; //
+	Bool_t bUseAlternativeWeights; //
 
 // Data members for the QA of the catalyst.
 	TList *fMainList;		// Mother list containing all possible output of the catalyst task.
@@ -195,7 +201,8 @@ private:
 	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
 	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
 
-	TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
+
+  TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
   TH1F *fPTHistogram[16][2];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection.
   TH1F *fPhiHistogram[16][2];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection.
   TH1F *fEtaHistogram[16][2];		//! 0: Eta Before Track Selection, 1: Eta After Track Selection.
@@ -212,7 +219,8 @@ private:
   TH1F *fVertexYHistogram[16][2];		//! 0: Vertex Y Before Corresponding, 1: Vertex Y After Corresponding Cut.
   TH1F *fVertexZHistogram[16][2];		//! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut.
   TH2D *fHMOsHistogram[16][2];		//! 0: Correlations between global and TPC tracks before, 1: after HMO cut.
+  TH1F *fHistoPhiWeight[16][90];	// Histograms to save the NUA correction weights per centrality and runs.
 
-	ClassDef(AliJCatalystTask, 4);
+  ClassDef(AliJCatalystTask, 5);
 };
 #endif // AliJCatalystTask_H
