@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8)
+AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8, Bool_t UseAlternativeWeights = kFALSE, TString AlternativeWeightFile = "alien:///alice/cern.ch/user/m/mlesch/Weights/WeightsLHC10h_Filter768_OnlyPrimaries_vAN-20201209.root")
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -89,6 +89,9 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
     }
     if (strcmp(configNames[i].Data(), "hybrid") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
+      if(UseAlternativeWeights){
+      	fJCatalyst[i]->SetInputAlternativeNUAWeights10h(kTRUE, AlternativeWeightFile);
+      }
     } else {
       fJCatalyst[i]->SetTestFilterBit(tpconlyCut); // default
     }
@@ -130,6 +133,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
     fJCatalyst[i]->SetPtRange(ptMin, 5.0);
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
+   
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
 
