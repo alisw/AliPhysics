@@ -5,6 +5,9 @@
  *	Author:	Michael Jung
  */
 
+#include "AliAnalysisTaskLeuteronAOD.h"
+#include "AliAnalysisTaskLeuteronAOD.cxx"
+
 
 AliAnalysisTaskSE *AddTaskLeuteron(
   bool isFullBlastQA = false,
@@ -15,6 +18,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isSidebandSignal = false,
   bool isUpperSideband = false,
   bool isLowerSideband = false,
+  bool isPbPb = false,
   bool isSystematics = false,
   bool DoITSPID = false,
   const char *CutVariation = "0"){
@@ -840,18 +844,34 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isFullBlastQA,isFullBlastQA);
+    std::cout << "before taskAOD = new..." << std::endl;
 
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isPbPb,isFullBlastQA,isFullBlastQA);
+
+    std::cout << "after taskAOD = new..." << std::endl;
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
       return nullptr;
     }
 
+    std::cout << "before trigger settings..." << std::endl;
+
     if(isHighMultV0){
 
-      taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-      std::cout << "Added kHighMultV0 Trigger" << std::endl;
+	taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+	std::cout << "Added kHighMultV0 Trigger" << std::endl;
 
+    } 
+
+    if(isPbPb){
+
+	std::cout << "Adding PbPb Trigger" << std::endl;
+	taskAOD->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+//	taskAOD->SelectCollisionCandidates(AliVEvent::kCentral);
+//	taskAOD->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+	std::cout << "Added PbPb Trigger" << std::endl;
+
+      
     } else{
 
       taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);
