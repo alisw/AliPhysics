@@ -442,7 +442,7 @@ if((suffix == "0" && fullBlastQA)){
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
-  config->SetMinimalBookingME(suffix == "0");
+  config->SetMinimalBookingME(suffix != "0");
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC, isMCtruth);
