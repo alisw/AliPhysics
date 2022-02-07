@@ -39,6 +39,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskBF.cxx
   BalanceFunctions/AliAnalysisTaskBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskSignedBF.cxx
+  BalanceFunctions/AliAnalysisTaskSignedBFMC.cxx	
   BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx
   BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx
@@ -124,6 +125,10 @@ set(SRCS
   FBCorrelationsWithPID/AliAnalysisFBCorrelationsWithPID.cxx
   ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency.cxx
   ParticleYieldRatioCorrelations/AliAnalysisTaskParticleYieldRatioCorrelations.cxx
+  ################################
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx
+  HMPTF/AliAnalysisTaskMeanptFluctuationPP.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicityMC.cxx
   )
 
 # Headers from sources
@@ -175,3 +180,4 @@ install(DIRECTORY StronglyIntensiveCorrelations DESTINATION PWGCF/EBYE/StronglyI
 install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelationsWithPID)
 install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)
 install(DIRECTORY ParticleYieldRatioCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
+install(DIRECTORY HMPTF/macros DESTINATION PWGCF/EBYE/HMPTF)

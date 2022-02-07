@@ -320,6 +320,10 @@ private:
     Float_t fCentrality_RefMult08; //!
     Float_t fCentrality_SPDClusters; //!
     Float_t fCentrality_SPDTracklets; //!
+    Float_t fZNApp; //!
+    Float_t fZNCpp; //!
+    Float_t fZPApp; //!
+    Float_t fZPCpp; //!
     Bool_t fMVPileupFlag; //!
     Int_t fRun;//!
     Int_t  fSPDtracklets; //!

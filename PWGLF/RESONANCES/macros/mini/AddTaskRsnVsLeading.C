@@ -6,6 +6,8 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi",
  Double_t nSigmaPart2TPC = -1,
  Double_t nSigmaPart1TOF = -1, 
  Double_t nSigmaPart2TOF = -1,
+ Int_t    customQualityCutsID = 1,
+ Int_t    aodFilterBit = 0,
  TString configName = "ConfigPhiLeading.C", 
  TString path = "")
 {
@@ -50,8 +52,13 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi",
     cutsPair->AddCut(cutY);
     cutsPair->SetCutScheme(cutY->GetName());
 
+   //EVENT-ONLY COMPUTATIONS
+    Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
+   AliRsnMiniOutput *outPtl = task->CreateOutput("eventPtl", "HIST", "EVENT");
+   outPtl->AddAxis(ptlID, 60, 0.0, 30.0);
+
     // We will add RSN config file
-    TString macroArgs = TString::Format("(AliRsnMiniAnalysisTask *)%p,%d,%d,%f,%f,%f,%f", task, isMC, isPP, nSigmaPart1TPC, nSigmaPart2TPC, nSigmaPart1TOF, nSigmaPart2TOF);
+    TString macroArgs = TString::Format("(AliRsnMiniAnalysisTask *)%p,%d,%d,%f,%f,%f,%f,%d,%d", task, isMC, isPP, nSigmaPart1TPC, nSigmaPart2TPC, nSigmaPart1TOF, nSigmaPart2TOF, customQualityCutsID, aodFilterBit);
     TMacro cfg(gSystem->ExpandPathName(TString::Format("%s%s", path.Data(), configName.Data()).Data()));
     Long_t rc = reinterpret_cast<Long_t>(cfg.Exec(macroArgs.Data()));
     if (!rc)

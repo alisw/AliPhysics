@@ -77,6 +77,11 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fDoDorigPlots(false),
+      fHistDplusMCtruthmotherPDG(nullptr),
+      fHistDplusMCtruthQuarkOrigin(nullptr),
+      fHistDminusMCtruthmotherPDG(nullptr),
+      fHistDminusMCtruthQuarkOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -163,6 +168,11 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fHistDminusMCPhiRes(nullptr),
       fHistDminusMCThetaRes(nullptr),
       fHistDminusMCOrigin(nullptr),
+      fDoDorigPlots(false),
+      fHistDplusMCtruthmotherPDG(nullptr),
+      fHistDplusMCtruthQuarkOrigin(nullptr),
+      fHistDminusMCtruthmotherPDG(nullptr),
+      fHistDminusMCtruthQuarkOrigin(nullptr),
       fDecChannel(kDplustoKpipi),
       fRDHFCuts(nullptr),
       fAODProtection(0),
@@ -259,8 +269,11 @@ void AliAnalysisTaskCharmingFemto::LocalInit()
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fInputEvent = static_cast<AliAODEvent*>(InputEvent());
-  if (fIsMC)
+  TClonesArray *fArrayMCAOD = nullptr;
+  if (fIsMC) {
     fMCEvent = MCEvent();
+    fArrayMCAOD = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  }
 
   // PREAMBLE - CHECK EVERYTHING IS THERE
   if (!fInputEvent) {
@@ -334,6 +347,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     return;
   }
 
+  if (fIsMC && !fArrayMCAOD) {
+    AliError("No MC AOD array");
+    return;
+  }
+
   if (!fEvtCuts) {
     AliError("Event Cuts missing");
     return;
@@ -351,6 +369,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fEvent->SetEvent(fInputEvent);
   if (!fEvtCuts->isSelected(fEvent))
     return;
+
+  if(fCheckProtonSPDHit) { // force usage of global tracks since TPC only tracks have no ITS hits
+    fTrackCutsPartProton->SetFilterBit(96);
+    fTrackCutsPartAntiProton->SetFilterBit(96);
+  }
 
   // PROTON SELECTION
   ResetGlobalTrackReference();
@@ -394,18 +417,17 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fProtonTrack->SetInvMass(DmesonBuddyMass);
 
     int mcpdg = 0;
+    AliAODMCParticle *mcPart = nullptr;
     if (fUseMCTruthReco && track->GetLabel() >= 0){ // Fake tracks have label < 0. Reject them.
-      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
-      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
-      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
+      mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
       }
     }
 
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode()){
+      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode() && mcPart && SelectBuddyOrigin(mcPart)){
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth) {
@@ -413,7 +435,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
+      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode() && mcPart && SelectBuddyOrigin(mcPart)) {
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth) {
@@ -431,8 +453,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
 
   if (fIsMCtruth) {
-    TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
-        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
   
     for (int iPart = 1; iPart < noPart; iPart++) {
@@ -510,6 +530,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dplus.push_back(part);
+                  if(fDoDorigPlots){
+                    FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+                    FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+                  }
                 }
                 
               }
@@ -520,17 +544,17 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
                   part.SetIDTracks(labelSecondDau);
                   part.SetIDTracks(labelThirdDau);
                   dminus.push_back(part);
+                  if(fDoDorigPlots){
+                    FillMCtruthPDGDmeson(fArrayMCAOD, mcPart);
+                    FillMCtruthQuarkOriginDmeson(fArrayMCAOD, mcPart);
+                  }
                 }
               }            
             }
           }
         }
       }
-
-
     }
-
- 
   }
 
   // D MESON SELECTION
@@ -587,6 +611,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(dMesonLabel);
       if(mcPart->Pt() < DmesonPtMin || mcPart->Pt() > DmesonPtMax) {
+        continue;
+      }
+      if(!SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
         continue;
       }
     } else {
@@ -934,6 +961,41 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       fDChargedHistList->Add(fHistDplusMCThetaRes);
       fDChargedHistList->Add(fHistDplusMCOrigin);
     }
+  }
+
+  //MCTruth Histos
+
+  if (fIsMC && fIsMCtruth) {
+      
+      fHistDplusMCtruthmotherPDG = new TH2F(
+          TString::Format("fHist%sMCPDGPt_MCtruth", nameD.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+
+      fHistDplusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameD.Data()),
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 3, 0.5, 3.5);
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+      fHistDplusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+
+      fDChargedHistList->Add(fHistDplusMCtruthmotherPDG);
+      fDChargedHistList->Add(fHistDplusMCtruthQuarkOrigin);
+
+      fHistDminusMCtruthmotherPDG = new TH2F(
+          TString::Format("fHist%sMCPDGPt_MCtruth", nameDminus.Data()),
+          "; #it{p}_{T} (GeV/#it{c}); PDG Code mother",
+          250, 0, 25, 5000, 0, 5000);
+      
+      fHistDminusMCtruthQuarkOrigin = new TH2F(TString::Format("fHist%sMCQuarkOrigin_MCtruth", nameDminus.Data()),
+                                    "; #it{p}_{T} (GeV/#it{c}); Origin", 100, 0,
+                                    10, 3, 0.5, 3.5);
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(1, "Charm");
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(2, "Beauty");
+      fHistDminusMCtruthQuarkOrigin->GetYaxis()->SetBinLabel(3, "else");
+
+      fDChargedHistList->Add(fHistDminusMCtruthmotherPDG);
+      fDChargedHistList->Add(fHistDminusMCtruthQuarkOrigin);
   }
 
   fHistDminusInvMassPt = new TH2F(

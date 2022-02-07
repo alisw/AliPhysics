@@ -86,9 +86,10 @@ CellEmulateCrosstalk:                               # Component to emulate cross
         values: {"all" : [5.0e-03,5.0e-03,5.0e-03, 0]}        # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, ??]
     inducedEnergyLossMinimumFraction:               # Minimum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values
-        values: {0 : [4.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [4.5e-3], 5 : [4.5e-3], 6 : [4.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 
-                 10: [5.0e-3], 11: [4.5e-3], 12: [4.5e-3], 13: [4.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [4.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
-                 20: [3.5e-3], 21: [3.5e-3]} 
+        values: {0 : [4.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [4.5e-3], 5 : [4.5e-3], 
+                 6 : [4.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 10: [5.0e-3], 11: [4.5e-3], 
+                 12: [4.5e-3], 13: [4.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [4.5e-3], 17: [3.5e-3], 
+                 18: [3.5e-3], 19: [3.5e-3], 20: [3.5e-3], 21: [3.5e-3]} 
        #values: {"all" : [0.008]}                   # Values are [minimum fraction]
     inducedEnergyLossMaximumFraction:               # Maximum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values

@@ -167,6 +167,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fNBinsPtee(400),
   fMinPtee(0.0),
   fMaxPtee(10.0),
+  fMinOpAng(0.0),
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
@@ -291,6 +292,7 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fNBinsPtee(400),
   fMinPtee(0.0),
   fMaxPtee(10.0),
+  fMinOpAng(0.0),
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
@@ -704,7 +706,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
      if(dielectron_ch==0) fULS_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
      if(dielectron_ch>0) fLSpp_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
      if(dielectron_ch<0) fLSmm_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
-     if(e.Pt()>fMinPt&&eBuff.at(jj).Pt()>fMinPt&&e.Pt()<fMaxPt&&eBuff.at(jj).Pt()<fMaxPt&&TMath::Abs(e.Eta())<fMaxEta&&TMath::Abs(eBuff.at(jj).Eta())<fMaxEta){
+     if(e.Pt()>fMinPt&&eBuff.at(jj).Pt()>fMinPt&&e.Pt()<fMaxPt&&eBuff.at(jj).Pt()<fMaxPt&&TMath::Abs(e.Eta())<fMaxEta&&TMath::Abs(eBuff.at(jj).Eta())<fMaxEta&&e.Angle(eBuff.at(jj).Vect())>fMinOpAng){
       if(dielectron_ch==0) fULS->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
       if(dielectron_ch>0) fLSpp->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
       if(dielectron_ch<0) fLSmm->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
@@ -880,6 +882,8 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         fpass=kTRUE;
         if(dau1.Pt()<fMinPt||dau2.Pt()<fMinPt) fpass=kFALSE; //leg pT cut
         if(dau1.Pt()>fMaxPt||dau2.Pt()>fMaxPt) fpass=kFALSE; //leg pT cut
+        if(dau1.Angle(dau2.Vect())<fMinOpAng) fpass=kFALSE; //opening angle cut
+
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT)
@@ -1035,6 +1039,8 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         fpass=kTRUE;
         if(dau1.Pt()<fMinPt||dau2.Pt()<fMinPt) fpass=kFALSE; //leg pT cut
         if(dau1.Pt()>fMaxPt||dau2.Pt()>fMaxPt) fpass=kFALSE; //leg pT cut
+        if(dau1.Angle(dau2.Vect())<fMinOpAng) fpass=kFALSE; //opening angle cut
+
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT) -> no DCA for virtual photon for the moment

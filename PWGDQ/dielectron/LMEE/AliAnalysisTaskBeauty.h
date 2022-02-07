@@ -19,6 +19,7 @@
 #include "AliCocktailSmearing.h"
 class TH1F;
 class TH2F;
+class TF1;
 class TList;
 class AliMCEvent;
 class AliInputEventHandler;
@@ -41,8 +42,13 @@ public:
   void         SetPtCutLow(Double_t min)          { fPtCutLow = min; }
   void         SetEtamax(Double_t max)            { fEtamax = max; }
   void         SetEtamin(Double_t min)            { fEtamin = min; }
-  void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b; }
+  void         SetMinOpAng(Double_t opAng)        { fMinOpAng = opAng; }
+  void         ScaleByRAA(Bool_t b)               { fScaleByRAA = b;}
+  void         SetTH1FRAA(TH1F *h1RAA)            { fHistoRAA = h1RAA;}
+  void         SetTF1RAA(TF1 *f1RAA)              { fTF1RAA = f1RAA;}
   void         SetApplyEventw(Bool_t b)           { fEventWeight = b;  }
+  void         Selectonebbbar(Bool_t b)           { fSelectonebbbar = b;  }
+
   
   
 private:
@@ -66,7 +72,11 @@ protected:
   Double_t                 fPtCutLow;
   Double_t                 fEtamin;
   Double_t                 fEtamax;
+  Double_t                 fMinOpAng;
   Bool_t                   fScaleByRAA;
+  TH1F                    *fHistoRAA;
+  TF1                     *fTF1RAA;
+  Bool_t                   fSelectonebbbar; // select events with only one bbbar pair in history
   // Histogram with 4 bins: for # of events 
   TH1F *hNEvents;                                      //!
   TH1F *hNEventsW;                                     //!
@@ -132,12 +142,12 @@ protected:
   TH2F *hMeePtee_LS_eta_pt;                            //!
   TH2F *hMeePtee_ULS_eta08_pt400;                      //!
   TH2F *hMeePtee_LS_eta08_pt400;                       //!
-  TH2F *hMeePtee_ULS_eta08_pt200_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt200_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt300_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt300_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt400_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt400_opAngle50;             //!
+  TH2F *hMeePtee_ULS_eta08_pt200_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt200_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt300_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt300_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt400_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt400_opAngleCut;             //!
   // Histograms (ULS,LS),  b-->e , bBar->e
   TH1F *hMee_ULS_simulated_be;                         //!
   TH1F *hMee_LS_simulated_be;                          //!
@@ -194,7 +204,7 @@ protected:
   AliAnalysisTaskBeauty& operator= (const AliAnalysisTaskBeauty &c); // not implemented
 
   
-  ClassDef(AliAnalysisTaskBeauty,2)
+  ClassDef(AliAnalysisTaskBeauty,4)
 };
 
 #endif

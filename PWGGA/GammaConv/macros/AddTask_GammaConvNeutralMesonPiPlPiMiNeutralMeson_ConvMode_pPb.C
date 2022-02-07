@@ -32,7 +32,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
-    Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
+    Int_t     doWeightingPart             = kFALSE,                   //enable Weighting
     TString   generatorName               = "HIJING",
     Double_t  tolerance                   = -1,
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
@@ -185,6 +185,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     cuts.AddCutHeavyMesonPCM("8008d113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG1
   } else if (trainConfig == 1006){ // EMC EMC triggers
     cuts.AddCutHeavyMesonPCM("8008e113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000"); // 0-100%, EG2
+
+  }else if (trainConfig == 1007){ // PCM  INT7 standard cut study guesstimate
+    cuts.AddCutHeavyMesonPCM("80010113","00200009227000008250400000","32c51070a","0103603o00000000","0453503000000000"); //  First converstion cut guesstimate
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  PHI7 run1
     cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100%
@@ -255,7 +258,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
       HeaderList->Add(HeaderP8J);
     }
   }
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);

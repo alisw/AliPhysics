@@ -71,6 +71,7 @@
 //They are considered as electrons from the primary vertex which have the similar PID/tracking efficiency.
 
 using namespace std;
+using namespace ROOT::Math;
 
 ClassImp(AliAnalysisTaskTagAndProbe)
 
@@ -99,13 +100,12 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe():
   fPostPIDWdthCorrITS(0x0),
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
-  fTagTrackArray(0x0),
-  fProbeTrackArray(0x0),
-  fPassingProbeTrackArray(0x0),
+  fTrackArrayPos(0x0),
+  fTrackArrayNeg(0x0),
+  fEventList(),
   fEventFilter(0x0),
   fTagFilter(0x0),
   fProbeFilter(0x0),
-  fPassingProbeFilter(0x0),
   fListPassingProbeFilters(0x0),
   fMmax(-1),
   fPhiVmin(3.2),
@@ -159,13 +159,12 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fPostPIDWdthCorrITS(0x0),
   fPostPIDCntrdCorrTOF(0x0),
   fPostPIDWdthCorrTOF(0x0),
-  fTagTrackArray(0x0),
-  fProbeTrackArray(0x0),
-  fPassingProbeTrackArray(0x0),
+  fTrackArrayPos(0x0),
+  fTrackArrayNeg(0x0),
+  fEventList(),
   fEventFilter(0x0),
   fTagFilter(0x0),
   fProbeFilter(0x0),
-  fPassingProbeFilter(0x0),
   fListPassingProbeFilters(0x0),
   fMmax(-1),
   fPhiVmin(3.2),
@@ -193,19 +192,14 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
     }
   }
 
-  fTagTrackArray = new TObjArray(1000);
-  fTagTrackArray->SetOwner(kFALSE);
-
-  fProbeTrackArray = new TObjArray(1000);
-  fProbeTrackArray->SetOwner(kFALSE);
-
-  fPassingProbeTrackArray = new TObjArray(1000);
-  fPassingProbeTrackArray->SetOwner(kFALSE);
+  fTrackArrayPos = new TObjArray(1000);
+  fTrackArrayPos->SetOwner(kFALSE);
+  fTrackArrayNeg = new TObjArray(1000);
+  fTrackArrayNeg->SetOwner(kFALSE);
 
   fEventFilter = new AliAnalysisFilter("fEventFilter","fEventFilter");
   fTagFilter   = new AliAnalysisFilter("fTagFilter"  ,"fTagFilter");
   fProbeFilter = new AliAnalysisFilter("fProbeFilter","fProbeFilter");
-  fPassingProbeFilter = new AliAnalysisFilter("fPassingProbeFilter"  ,"fPassingProbeFilter");
 
   fListPassingProbeFilters = new TList();
   fListPassingProbeFilters->SetName("fListPassingProbeFilters");
@@ -220,10 +214,6 @@ AliAnalysisTaskTagAndProbe::AliAnalysisTaskTagAndProbe(const char *name):
   fAODv0KineCuts = new AliAODv0KineCuts();
   fESDv0KineCuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPbPb);
   fAODv0KineCuts->SetMode(AliAODv0KineCuts::kPurity,AliAODv0KineCuts::kPbPb);
-  //Float_t Rcut[2] = {0,90};
-  //fESDv0KineCuts->SetGammaCutVertexR(Rcut);
-  //fAODv0KineCuts->SetGammaCutVertexR(Rcut);
-  //fAODv0KineCuts->SetGammaCutInvMass(0.1);//upper limit for mee
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -238,15 +228,20 @@ AliAnalysisTaskTagAndProbe::~AliAnalysisTaskTagAndProbe()
   delete fEventFilter;
   delete fTagFilter;
   delete fProbeFilter;
-  delete fPassingProbeFilter;
   delete fListPassingProbeFilters;
-  delete fTagTrackArray;
-  delete fProbeTrackArray;
-  delete fPassingProbeTrackArray;
+  delete fTrackArrayPos;
+  delete fTrackArrayNeg;
   delete fESDtrackCutsGlobalNoDCA;
   delete fESDv0KineCuts;
   delete fAODv0KineCuts;
   delete fUsedVars;
+
+  for(Int_t i=0;i<2;i++){
+    for(Int_t j=0;j<10;j++){
+      delete fEventList[i][j];
+    }
+  }
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
@@ -285,11 +280,13 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   Double_t xmin[Ndim] = {  0, -1,              0};
   Double_t xmax[Ndim] = { 10, +1, TMath::TwoPi()};
 
-  THnSparseF *hs_PtEtaPhi = new THnSparseF("hs_PtEtaPhi","hs_PtEtaPhi;p_{T} (GeV/c);#eta;#varphi (rad.);",Ndim,Nbin,xmin,xmax);
-  hs_PtEtaPhi->Sumw2();
-  fOutputContainer->Add(hs_PtEtaPhi);
+  THnSparseF *hsPtEtaPhi = new THnSparseF("hsPtEtaPhi","hsPtEtaPhi;p_{T} (GeV/c);#eta;#varphi (rad.);",Ndim,Nbin,xmin,xmax);
+  hsPtEtaPhi->Sumw2();
+  fOutputContainer->Add(hsPtEtaPhi);
 
   fOutputContainer->Add(new TH2F("hTrackDCA","DCA xy vs. z;DCA_{xy} (cm);DCA_{z} (cm)",100,-5,+5,100,-5,+5));
+  fOutputContainer->Add(new TH2F("hTrackPtDCAxy","DCA xy vs. p_{T};p_{T} (GeV/c);DCA_{xy} (cm)",100,0,10,800,-4,+4));
+  fOutputContainer->Add(new TH2F("hTrackPtDCAz" ,"DCA z vs. p_{T};p_{T} (GeV/c);DCA_{z} (cm)"  ,100,0,10,800,-4,+4));
   fOutputContainer->Add(new TH1F("hTrackNclsTPC"   ,"Number of clusters TPC;N_{cls}^{TPC}"                ,161,-0.5,160.5));
   fOutputContainer->Add(new TH1F("hTrackNclsPIDTPC","Number of clusters for PID TPC;N_{cls}^{TPC} for PID",161,-0.5,160.5));
   fOutputContainer->Add(new TH1F("hTrackNcrTPC"    ,"Number of crossed rows TPC;N_{cr}^{TPC}"            ,161,-0.5,160.5));
@@ -299,7 +296,7 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH1F("hTrackNclsITS","Number of clusters ITS;N_{cls}^{ITS}"      ,7,-0.5,6.5));
   fOutputContainer->Add(new TH1F("hTrackNscITS" ,"Number of shared clusters ITS;N_{sc}^{ITS}",7,-0.5,6.5));
-  fOutputContainer->Add(new TH1F("hTrackChi2ITS","chi2 ITS;#chi^{2}/N_{cls}^{ITS}",100,0,10));
+  fOutputContainer->Add(new TH1F("hTrackChi2ITS","chi2 ITS;#chi^{2}/N_{cls}^{ITS}",360,0,36));
 
   fOutputContainer->Add(new TH2F("hTrackTPCdEdx","TPC dE/dx vs. p_{in};p_{in} (GeV/c);TPC dE/dx (a.u.)",500,0.,10,200,0,200));
   fOutputContainer->Add(new TH2F("hTrackITSdEdx","ITS dE/dx vs. p_{in};p_{in} (GeV/c);ITS dE/dx (a.u.)",500,0.,10,400,0,400));
@@ -320,18 +317,42 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   //pair histograms
   fOutputContainer->Add(new TH2F("hPairMvsPhiV","m_{ee} vs.#varphi_{V};#varphi_{V} (rad.);m_{ee} (GeV/c^{2})",100,0,TMath::Pi(),100,0,0.1));
 
+  const Int_t Ndim_TAP = 4;//mee, pT, eta, phi
+  Int_t Nbin_TAP[Ndim_TAP]    = {400, 100, 20,             36};
+  Double_t xmin_TAP[Ndim_TAP] = {  0,   0, -1,              0};
+  Double_t xmax_TAP[Ndim_TAP] = {  4,  10, +1, TMath::TwoPi()};
   const TString probetype[2]  = {"Probe","PassingProbe"};
   const TString chargetype[3]  = {"ULS","LSpp","LSnn"};
   const TString eventtype[2] = {"same","mix"};
 
-  for(Int_t ip=0;ip<2;ip++){
+  for(Int_t ip=0;ip<1;ip++){
     for(Int_t ic=0;ic<3;ic++){
-      for(Int_t ie=0;ie<2;ie++){
-        TH2F *h2TAP = new TH2F(Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Form("h%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),500,0,5,100,0,10);
-        h2TAP->SetXTitle("m_{ee} (GeV/c^{2})");
-        h2TAP->SetYTitle("p_{T,e} (GeV/c)");
-        h2TAP->Sumw2();
-        fOutputContainer->Add(h2TAP);
+      for(Int_t ie=0;ie<2;ie++){ 
+          THnSparseF *hsTAP_p = new THnSparseF(Form("hs%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),
+                                               Form("hs%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Ndim_TAP,Nbin_TAP,xmin_TAP,xmax_TAP);
+          hsTAP_p->GetAxis(0)->SetTitle("m_{ee} (GeV/c^{2})");
+          hsTAP_p->GetAxis(1)->SetTitle("p_{T,e} (GeV/c)");
+          hsTAP_p->GetAxis(2)->SetTitle("#eta_{e}");
+          hsTAP_p->GetAxis(3)->SetTitle("#varphi_{e} (rad.)");
+          hsTAP_p->Sumw2();
+          fOutputContainer->Add(hsTAP_p);
+      }
+    }
+  }
+
+  for(Int_t ip=1;ip<2;ip++){
+    for(Int_t ic=0;ic<3;ic++){
+      for(Int_t ie=0;ie<2;ie++){ 
+        for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+          THnSparseF *hsTAP_pp = new THnSparseF(Form("hs%s_%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data(),fListPassingProbeFilters->At(i)->GetName()),
+                                                Form("hs%s_%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data(),fListPassingProbeFilters->At(i)->GetName()),Ndim_TAP,Nbin_TAP,xmin_TAP,xmax_TAP);
+          hsTAP_pp->GetAxis(0)->SetTitle("m_{ee} (GeV/c^{2})");
+          hsTAP_pp->GetAxis(1)->SetTitle("p_{T,e} (GeV/c)");
+          hsTAP_pp->GetAxis(2)->SetTitle("#eta_{e}");
+          hsTAP_pp->GetAxis(3)->SetTitle("#varphi_{e} (rad.)");
+          hsTAP_pp->Sumw2();
+          fOutputContainer->Add(hsTAP_pp);
+        }
       }
     }
   }
@@ -421,17 +442,17 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
     hsAll_El_TAP_MC->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
     fOutputContainer->Add(hsAll_El_TAP_MC);
 
-  for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
-    THnSparseF *hsSel_El_TAP_MC = new THnSparseF(Form("hsSel_El_TAP_MC_%s",fListPassingProbeFilters->At(i)->GetName()),Form("hs all e^{#pm} for PID eff. MC %s",fListPassingProbeFilters->At(i)->GetName()),Ndim,Nbin,xmin,xmax);
-    hsSel_El_TAP_MC->Sumw2();
-    hsSel_El_TAP_MC->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
-    hsSel_El_TAP_MC->GetAxis(1)->SetTitle("#eta_{e}");
-    hsSel_El_TAP_MC->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
-    fOutputContainer->Add(hsSel_El_TAP_MC);
-    //TH2F *hMCElselected = new TH2F("hMCElselected","selected electron in M.C.;p_{T,e} (GeV/c);#eta_{e}",100,0,10,20,-1,+1);
-    //hMCElselected->Sumw2();
-    //fOutputContainer->Add(hMCElselected);
-  }
+    for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+      THnSparseF *hsSel_El_TAP_MC = new THnSparseF(Form("hsSel_El_TAP_MC_%s",fListPassingProbeFilters->At(i)->GetName()),Form("hs all e^{#pm} for PID eff. MC %s",fListPassingProbeFilters->At(i)->GetName()),Ndim,Nbin,xmin,xmax);
+      hsSel_El_TAP_MC->Sumw2();
+      hsSel_El_TAP_MC->GetAxis(0)->SetTitle("p_{T,e} (GeV/c)");
+      hsSel_El_TAP_MC->GetAxis(1)->SetTitle("#eta_{e}");
+      hsSel_El_TAP_MC->GetAxis(2)->SetTitle("#varphi_{e} (rad.)");
+      fOutputContainer->Add(hsSel_El_TAP_MC);
+      //TH2F *hMCElselected = new TH2F("hMCElselected","selected electron in M.C.;p_{T,e} (GeV/c);#eta_{e}",100,0,10,20,-1,+1);
+      //hMCElselected->Sumw2();
+      //fOutputContainer->Add(hMCElselected);
+    }
   }
 
   AliDielectronPID::SetPIDCalibinPU(fPIDCalibinPU);
@@ -521,15 +542,8 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
   AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::SetEvent( InputEvent() );
 
-//  if(!fEventFilter->IsSelected(InputEvent())){
-//    AliInfo("event is rejected by event filter. return.");
-//    return;
-//  }
-
-
-  fTagTrackArray->Clear();
-  fProbeTrackArray->Clear();
-  fPassingProbeTrackArray->Clear();
+  fTrackArrayPos->Clear();
+  fTrackArrayNeg->Clear();
 
   fZvtxBin = (Int_t)((fVertex[2]+10.)/2.);//it should be 0-9.
   if(fZvtxBin < 0) fZvtxBin = 0;//protection to avoid fZvtxBin = -1.
@@ -608,41 +622,71 @@ void AliAnalysisTaskTagAndProbe::UserExec(Option_t *option)
   valuePU[1] = TPCpileupZ; valuePU[2] = TPCpileupM;
   FillSparse(fOutputContainer,"hsTPCpileup",valuePU);
 
-  if(!fEventList[0][fZvtxBin]) fEventList[0][fZvtxBin] = new TList();//0 -> probe
-  if(!fEventList[1][fZvtxBin]) fEventList[1][fZvtxBin] = new TList();//1 -> passing probe
-  TList *prevEvent_p  = fEventList[0][fZvtxBin];
-  TList *prevEvent_pp = fEventList[1][fZvtxBin];
+  if(!fEventList[0][fZvtxBin]) fEventList[0][fZvtxBin] = new TList();//0 -> pos
+  if(!fEventList[1][fZvtxBin]) fEventList[1][fZvtxBin] = new TList();//1 -> neg
+  TList *prevEvent_pos = fEventList[0][fZvtxBin];
+  TList *prevEvent_neg = fEventList[1][fZvtxBin];
 
   TrackQA();
   if(fESDEvent)      FillV0InfoESD();
   else if(fAODEvent) FillV0InfoAOD();
-
-//  CutEfficiency();
-//
-//  //Now we either add current events to stack or remove
-//  //If no electron in current event - no need to add it to mixed
-//  if(fProbeTrackArray->GetEntriesFast() > 0){
-//    prevEvent_p ->AddFirst(fProbeTrackArray->Clone());
-//    prevEvent_pp->AddFirst(fPassingProbeTrackArray->Clone());
-//
-//    if(prevEvent_p->GetSize() > fNMixed){//Remove redundant events
-//      TObjArray * tmp_p = static_cast<TObjArray*>(prevEvent_p->Last());
-//      prevEvent_p->RemoveLast();
-//      delete tmp_p;
-//      tmp_p = NULL;
-//
-//      TObjArray * tmp_pp = static_cast<TObjArray*>(prevEvent_pp->Last());
-//      prevEvent_pp->RemoveLast();
-//      delete tmp_pp;
-//      tmp_pp = NULL;
-//    }
-//  }
 
   if(fIsMC){
     if(fESDEvent) GetMCInfoESD();
     else if(fAODEvent) GetMCInfoAOD();
     ProcessMC(option);
   }
+
+  if(fPIDCalibMode) return;//no need to process cut efficiency, if PID is not calibrated
+
+  CutEfficiency(fTrackArrayPos, fTrackArrayNeg, "ULS_same" );//+-
+  CutEfficiency(fTrackArrayNeg, fTrackArrayPos, "ULS_same" );//-+
+  CutEfficiency(fTrackArrayNeg, fTrackArrayNeg, "LSnn_same");//--
+  CutEfficiency(fTrackArrayPos, fTrackArrayPos, "LSpp_same");//++
+
+  for(Int_t iev=0;iev<prevEvent_neg->GetSize();iev++){
+    TObjArray *arr2 = (TObjArray*)prevEvent_neg->At(iev);
+    CutEfficiency(fTrackArrayPos, arr2, "ULS_mix");//+-
+  }
+
+  for(Int_t iev=0;iev<prevEvent_pos->GetSize();iev++){
+    TObjArray *arr2 = (TObjArray*)prevEvent_pos->At(iev);
+    CutEfficiency(fTrackArrayNeg, arr2, "ULS_mix");//-+
+  }
+
+  for(Int_t iev=0;iev<prevEvent_neg->GetSize();iev++){
+    TObjArray *arr2 = (TObjArray*)prevEvent_neg->At(iev);
+    CutEfficiency(fTrackArrayNeg, arr2, "LSnn_mix");//--
+  }
+
+  for(Int_t iev=0;iev<prevEvent_pos->GetSize();iev++){
+    TObjArray *arr2 = (TObjArray*)prevEvent_pos->At(iev);
+    CutEfficiency(fTrackArrayPos, arr2, "LSpp_mix");//++
+  }
+
+  //Now we either add current events to stack or remove
+  //If no electron in current event - no need to add it to mixed
+  if(
+       fTrackArrayPos->GetEntriesFast() > 1
+   ||  fTrackArrayNeg->GetEntriesFast() > 1
+   || (fTrackArrayPos->GetEntriesFast() > 0 && fTrackArrayNeg->GetEntriesFast() > 0)
+   ){
+    prevEvent_pos->AddFirst(new TObjArray(*fTrackArrayPos));
+    prevEvent_neg->AddFirst(new TObjArray(*fTrackArrayNeg));
+
+    if(prevEvent_pos->GetSize() > fNMixed){//Remove redundant events
+      TObjArray * tmp_pos = static_cast<TObjArray*>(prevEvent_pos->Last());
+      prevEvent_pos->RemoveLast();
+      delete tmp_pos;
+      tmp_pos = NULL;
+
+      TObjArray * tmp_neg = static_cast<TObjArray*>(prevEvent_neg->Last());
+      prevEvent_neg->RemoveLast();
+      delete tmp_neg;
+      tmp_neg = NULL;
+    }
+  }
+
 
   PostData(1, fOutputContainer);
 }
@@ -664,36 +708,24 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
   Int_t NclsSSD1 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(5);
   Int_t NSDDSSD = NclsSDD0 + NclsSDD1 + NclsSSD0 + NclsSSD1;
 
-  Int_t NclsTPC  = 0;
-  if(fESDEvent) NclsTPC = fESDEvent->GetNumberOfTPCClusters();
-  else if(fAODEvent) NclsTPC = fAODEvent->GetNumberOfTPCClusters();
+  //Int_t NclsTPC  = 0;
+  //if(fESDEvent) NclsTPC = fESDEvent->GetNumberOfTPCClusters();
+  //else if(fAODEvent) NclsTPC = fAODEvent->GetNumberOfTPCClusters();
 
-  Float_t TPCpileupZA = 0;
-  Float_t TPCpileupZC = 0;
   Float_t TPCpileupZ  = 0;
-  Float_t TPCpileupMA = 0;
-  Float_t TPCpileupMC = 0;
   Float_t TPCpileupM  = 0;
 
   if(fESDEvent){
     TVectorF tpcVertexInfo(10);
     AliESDUtils::GetTPCPileupVertexInfo(fESDEvent, tpcVertexInfo);
-    TPCpileupZA = tpcVertexInfo[0];
-    TPCpileupZC = tpcVertexInfo[1];
     TPCpileupZ  = tpcVertexInfo[2];
-    TPCpileupMA = tpcVertexInfo[3];
-    TPCpileupMC = tpcVertexInfo[4];
     TPCpileupM  = tpcVertexInfo[5];
   }
   else if (fAODEvent){
     AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
     static TVectorF dummyVertexInfo(10); // to be used with old AODs w/o vertex info
     const TVectorF &tpcVertexInfo = header->GetTPCPileUpInfo() ? *header->GetTPCPileUpInfo() : dummyVertexInfo;
-    TPCpileupZA = tpcVertexInfo[0];
-    TPCpileupZC = tpcVertexInfo[1];
     TPCpileupZ  = tpcVertexInfo[2];
-    TPCpileupMA = tpcVertexInfo[3];
-    TPCpileupMC = tpcVertexInfo[4];
     TPCpileupM  = tpcVertexInfo[5];
   }
 
@@ -705,7 +737,6 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
 
   const Int_t trackMult = fEvent->GetNumberOfTracks();
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
   Double_t value3D[3] = {0,0,0};
 
   for(Int_t itrack=0;itrack<trackMult;itrack++){
@@ -752,28 +783,29 @@ void AliAnalysisTaskTagAndProbe::ProcessMC(Option_t *option)
       if(value3D[2] < 0) value3D[2] += TMath::TwoPi();
 
       UInt_t cutmask_probe = fProbeFilter->IsSelected(particle);
-      if(cutmask_probe == selectedMask_probe) FillSparse(fOutputContainer,"hsAll_El_TAP_MC",value3D);
-
-      for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+      if(cutmask_probe == selectedMask_probe){
+        FillSparse(fOutputContainer,"hsAll_El_TAP_MC",value3D);
+        for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
           AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
           UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
           UInt_t cutmask_passingprobe = ppfilter->IsSelected(particle);
           if(cutmask_passingprobe == selectedMask_passingprobe) FillSparse(fOutputContainer,Form("hsSel_El_TAP_MC_%s",ppfilter->GetName()),value3D);
+        }
       }
     }
-    else if(TMath::Abs(pdg) == 211){
+    else if(TMath::Abs(pdg) == 211 && fPIDCalibMode){
       value[5] = nsigma_Pi_TPC;
       value[6] = nsigma_Pi_ITS;
       value[7] = nsigma_Pi_TOF;
       FillSparse(fOutputContainer,"hsPID_MCPi",value);
     }
-    else if(TMath::Abs(pdg) == 321){
+    else if(TMath::Abs(pdg) == 321 && fPIDCalibMode){
       value[5] = nsigma_Ka_TPC;
       value[6] = nsigma_Ka_ITS;
       value[7] = nsigma_Ka_TOF;
       FillSparse(fOutputContainer,"hsPID_MCKa",value);
     }
-    else if(TMath::Abs(pdg) == 2212){
+    else if(TMath::Abs(pdg) == 2212 && fPIDCalibMode){
       value[5] = nsigma_Pr_TPC;
       value[6] = nsigma_Pr_ITS;
       value[7] = nsigma_Pr_TOF;
@@ -790,8 +822,9 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
   if(fEvent) tofH = (AliTOFHeader*)fEvent->GetTOFHeader();
 
   Double_t vec_3D[3] = {0,0,0};
-  UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
+  UInt_t selectedMask_tag   = (1<<fTagFilter  ->GetCuts()->GetEntries())-1;
+  UInt_t selectedMask_probe = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
+  const Double_t Me  = TDatabasePDG::Instance()->GetParticle(11)->Mass();
 
   Double_t pT=0, eta=0, phi=0, pin=0;
   Double_t TPCsignal=0, ITSsignal = 0, TOFbeta = -1;
@@ -806,22 +839,39 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
   Float_t nsigma_El_ITS = -999;
   Float_t nsigma_El_TOF = -999;
 
+
   for(Int_t itrack=0;itrack<trackMult;itrack++){
     AliVParticle *particle = (AliVParticle*)fEvent->GetTrack(itrack);
+    AliVTrack *track = dynamic_cast<AliVTrack*>(particle);
 
-    if(fIsMC){
-      Int_t label = TMath::Abs(particle->GetLabel());
-      if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label, fMCEvent)) continue;//particles from pileup collision should NOT be used.
-    }
+    //if(fIsMC){
+    //  Int_t label = TMath::Abs(particle->GetLabel());
+    //  if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label, fMCEvent)) continue;//particles from pileup collision should NOT be used.
+    //}
 
-    //reduce unnecessary IsSelected()
-    if(particle->Pt() < 0.15) continue;
-    if(TMath::Abs(particle->Eta()) > 0.9) continue;
-
+    if(track->Pt() < 0.15) continue;
+    if(TMath::Abs(track->Eta()) > 0.9) continue;
     UInt_t cutmask_probe = fProbeFilter->IsSelected(particle);
     if(cutmask_probe != selectedMask_probe) continue;
 
-    AliVTrack *track = dynamic_cast<AliVTrack*>(particle);
+    TLorentzVector *lv = new TLorentzVector();
+    lv->SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), Me);
+    UInt_t cutmask_tag = fTagFilter->IsSelected(track);
+    if(cutmask_tag == selectedMask_tag) lv->SetBit(1 << 0 , true);//0th bit for tag
+   
+    cutmask_probe = fProbeFilter->IsSelected(track);
+    if(cutmask_probe == selectedMask_probe) lv->SetBit(1 << 1 , true);//1st bit for probe
+
+    for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
+      AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
+      UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
+      UInt_t cutmask_passingprobe = ppfilter->IsSelected(track);
+      if(cutmask_passingprobe == selectedMask_passingprobe) lv->SetBit(1 << (i+2) , true);//i-th bit above 2nd bit for passing probe
+    }
+
+    if(track->Charge() < 0) fTrackArrayNeg->Add(lv);
+    else                    fTrackArrayPos->Add(lv);
+
     pT  = track->Pt();
     eta = track->Eta();
     phi = track->Phi();
@@ -830,7 +880,7 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
     vec_3D[0] = pT;
     vec_3D[1] = eta;
     vec_3D[2] = phi;
-    FillSparse(fOutputContainer,"hs_PtEtaPhi",vec_3D);
+    FillSparse(fOutputContainer,"hsPtEtaPhi",vec_3D);
   
     pin = track->GetTPCmomentum();
     TPCsignal = track->GetTPCsignal();
@@ -879,6 +929,8 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
     }
 
     FillHistogramTH2(fOutputContainer,"hTrackDCA"            ,DCAxy, DCAz);
+    FillHistogramTH2(fOutputContainer,"hTrackPtDCAxy"        ,pT, DCAxy);
+    FillHistogramTH2(fOutputContainer,"hTrackPtDCAz"         ,pT, DCAz);
     FillHistogramTH1(fOutputContainer,"hTrackNclsTPC"        ,NclsTPC);
     FillHistogramTH1(fOutputContainer,"hTrackNclsPIDTPC"     ,NclsPIDTPC);
     FillHistogramTH1(fOutputContainer,"hTrackNcrTPC"         ,NcrTPC);
@@ -920,25 +972,6 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
     FillHistogramTH2(fOutputContainer,"hTrackNsigmaElITSvsEta",eta,nsigma_El_ITS);
     FillHistogramTH2(fOutputContainer,"hTrackNsigmaElTOFvsEta",eta,nsigma_El_TOF);
 
-    fProbeTrackArray->Add(particle);//array of probe electrons for mixed event, // copy constructor?
-
-    UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(particle);
-    if(cutmask_passingprobe == selectedMask_passingprobe){
-      fPassingProbeTrackArray->Add(particle);//array of passing probe electrons for mixed event
-    }
-  }//end of track loop
-
-  //create tag track array
-  UInt_t selectedMask_tag = (1<<fTagFilter->GetCuts()->GetEntries())-1;
-  for(Int_t itrack=0;itrack<trackMult;itrack++){
-    AliVParticle *particle = (AliVParticle*)fEvent->GetTrack(itrack);
-
-    //reduce unnecessary IsSelected()
-    if(particle->Pt() < 0.15) continue;
-    if(TMath::Abs(particle->Eta()) > 0.9) continue;
-
-    UInt_t cutmask_tag= fTagFilter->IsSelected(particle);
-    if(cutmask_tag == selectedMask_tag) fTagTrackArray->Add(particle);
   }//end of track loop
 
   if(!fPIDCalibMode) return;
@@ -956,32 +989,20 @@ void AliAnalysisTaskTagAndProbe::TrackQA()
   Int_t NclsSSD1 = fEvent->GetMultiplicity()->GetNumberOfITSClusters(5);
   Int_t NSDDSSD = NclsSDD0 + NclsSDD1 + NclsSSD0 + NclsSSD1;
 
-  Float_t TPCpileupZA = 0;
-  Float_t TPCpileupZC = 0;
   Float_t TPCpileupZ  = 0;
-  Float_t TPCpileupMA = 0;
-  Float_t TPCpileupMC = 0;
   Float_t TPCpileupM  = 0;
 
   if(fESDEvent){
     TVectorF tpcVertexInfo(10);
     AliESDUtils::GetTPCPileupVertexInfo(fESDEvent, tpcVertexInfo);
-    TPCpileupZA = tpcVertexInfo[0];
-    TPCpileupZC = tpcVertexInfo[1];
     TPCpileupZ  = tpcVertexInfo[2];
-    TPCpileupMA = tpcVertexInfo[3];
-    TPCpileupMC = tpcVertexInfo[4];
     TPCpileupM  = tpcVertexInfo[5];
   }
   else if (fAODEvent){
     AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
     static TVectorF dummyVertexInfo(10); // to be used with old AODs w/o vertex info
     const TVectorF &tpcVertexInfo = header->GetTPCPileUpInfo() ? *header->GetTPCPileUpInfo() : dummyVertexInfo;
-    TPCpileupZA = tpcVertexInfo[0];
-    TPCpileupZC = tpcVertexInfo[1];
     TPCpileupZ  = tpcVertexInfo[2];
-    TPCpileupMA = tpcVertexInfo[3];
-    TPCpileupMC = tpcVertexInfo[4];
     TPCpileupM  = tpcVertexInfo[5];
   }
 
@@ -1070,12 +1091,10 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
   value[1] = TPCpileupZ;
   value[2] = TPCpileupM;
   const Int_t Nv0 = fEvent->GetNumberOfV0s();  
-  UInt_t selectedMask_tag          = (1<<fTagFilter->GetCuts()->GetEntries())-1;
-  UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
+  UInt_t selectedMask_tag   = (1<<fTagFilter->GetCuts()->GetEntries())-1;
+  UInt_t selectedMask_probe = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
   UInt_t cutmask_tag = -1;
   UInt_t cutmask_probe = -1;
-  UInt_t cutmask_passingprobe = -1;
 
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliESDv0 *v0 = (AliESDv0*)fESDEvent->GetV0(iv0);
@@ -1086,8 +1105,14 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
     AliESDtrack* legPos = fESDEvent->GetTrack(v0->GetPindex());
     AliESDtrack* legNeg = fESDEvent->GetTrack(v0->GetNindex());
     if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
-    if(fProbeFilter->IsSelected(legNeg) != selectedMask_probe) continue;
+
+    if(legPos->Pt() < 0.15) continue;
+    if(TMath::Abs(legPos->Eta()) > 0.9) continue;
+    if(legNeg->Pt() < 0.15) continue;
+    if(TMath::Abs(legNeg->Eta()) > 0.9) continue;
+
     if(fProbeFilter->IsSelected(legPos) != selectedMask_probe) continue;
+    if(fProbeFilter->IsSelected(legNeg) != selectedMask_probe) continue;
 
     Lxy = v0->GetRr();
     alpha = v0->AlphaV0();
@@ -1188,7 +1213,7 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoESD()
               for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
                   AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
                   UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
-                  UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
+                  UInt_t cutmask_passingprobe = ppfilter->IsSelected(legPos);
                   if(cutmask_passingprobe == selectedMask_passingprobe){
                       value3D[0] = legPos->Pt();
                       value3D[1] = legPos->Eta();
@@ -1345,10 +1370,8 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
 
   UInt_t selectedMask_tag          = (1<<fTagFilter->GetCuts()->GetEntries())-1;
   UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
   UInt_t cutmask_tag = -1;
   UInt_t cutmask_probe = -1;
-  //UInt_t cutmask_passingprobe = -1;
 
   for(Int_t iv0=0;iv0<Nv0;iv0++){
     AliAODv0 *v0 = (AliAODv0*)fAODEvent->GetV0(iv0);
@@ -1360,8 +1383,13 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
     AliAODTrack *legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
     if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
 
-    if(fProbeFilter->IsSelected(legNeg) != selectedMask_probe) continue;
+    if(legPos->Pt() < 0.15) continue;
+    if(TMath::Abs(legPos->Eta()) > 0.9) continue;
+    if(legNeg->Pt() < 0.15) continue;
+    if(TMath::Abs(legNeg->Eta()) > 0.9) continue;
+
     if(fProbeFilter->IsSelected(legPos) != selectedMask_probe) continue;
+    if(fProbeFilter->IsSelected(legNeg) != selectedMask_probe) continue;
 
     Lxy = v0->RadiusV0();//in cm
 
@@ -1461,7 +1489,7 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
               for(Int_t i=0;i<fListPassingProbeFilters->GetEntries();i++){//loop over passing probe filters
                   AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(i);
                   UInt_t selectedMask_passingprobe = (1<< ppfilter ->GetCuts() ->GetEntries())-1;
-                  UInt_t cutmask_passingprobe = fPassingProbeFilter->IsSelected(legPos);
+                  UInt_t cutmask_passingprobe = ppfilter->IsSelected(legPos);
                   if(cutmask_passingprobe == selectedMask_passingprobe){
                       value3D[0] = legPos->Pt();
                       value3D[1] = legPos->Eta();
@@ -1565,555 +1593,38 @@ void AliAnalysisTaskTagAndProbe::FillV0InfoAOD()
 
 }
 //________________________________________________________________________
-void AliAnalysisTaskTagAndProbe::CutEfficiency()
+void AliAnalysisTaskTagAndProbe::CutEfficiency(TObjArray *arr1, TObjArray *arr2, const TString str)
 {
   //tag and probe method.
-
-  const Double_t Me = TDatabasePDG::Instance()->GetParticle(11)->Mass();
-
-  //const Int_t trackMult = fEvent->GetNumberOfTracks();
-  //UInt_t selectedMask_tag          = (1<<fTagFilter->GetCuts()->GetEntries())-1;
-  //UInt_t selectedMask_probe        = (1<<fProbeFilter->GetCuts()->GetEntries())-1;
-  //UInt_t selectedMask_passingprobe = (1<<fPassingProbeFilter->GetCuts()->GetEntries())-1;
-
+  //AliInfo(Form("%s , N1 = %d , N2 = %d",str.Data(),arr1->GetEntries(),arr2->GetEntries()));
   Double_t value[4] = {0,0,0,0};
-  const Int_t trackMult_tag = fTagTrackArray->GetEntries();
-  const Int_t trackMult_p   = fProbeTrackArray->GetEntries();
-  const Int_t trackMult_pp  = fPassingProbeTrackArray->GetEntries();
 
-  //same particle combination is rejected by pointer.
-
-  //fill ULS -+ same
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-
-    if(par1->Charge() > 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t i2=0;i2<trackMult_p;i2++){
-      AliVParticle *par2 = (AliVParticle*)fProbeTrackArray->At(i2);
-
-      if(par2 == par1) continue;
-      if(par2->Charge() < 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-      FillHistogramTH2(fOutputContainer,"hPairMvsPhiV",phiv,p12.M());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hProbe_ULS_same",p12.M(),pv2.Pt());
-
-    }//end of par2
-
-    for(Int_t i2=0;i2<trackMult_pp;i2++){
-      AliVParticle *par2 = (AliVParticle*)fPassingProbeTrackArray->At(i2);
-
-      if(par2 == par1) continue;
-      if(par2->Charge() < 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hPassingProbe_ULS_same",p12.M(),pv2.Pt());
-    }//end of par2
-
-  }//end of par1
-
-  //fill ULS +- same
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    //AliVParticle *par1 = (AliVParticle*)fEvent->GetTrack(i1);
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-
-    if(par1->Charge() < 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t i2=0;i2<trackMult_p;i2++){
-      //if(i2==i1) continue;//reject same track combination
-      //AliVParticle *par2 = (AliVParticle*)fEvent->GetTrack(i2);
-      AliVParticle *par2 = (AliVParticle*)fProbeTrackArray->At(i2);
-      if(par2 == par1) continue;
-      if(par2->Charge() > 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-      FillHistogramTH2(fOutputContainer,"hPairMvsPhiV",phiv,p12.M());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hProbe_ULS_same",p12.M(),pv2.Pt());
-
-    }//end of par2
-
-
-    for(Int_t i2=0;i2<trackMult_pp;i2++){
-      //if(i2==i1) continue;//reject same track combination
-      //AliVParticle *par2 = (AliVParticle*)fEvent->GetTrack(i2);
-      AliVParticle *par2 = (AliVParticle*)fPassingProbeTrackArray->At(i2);
-      if(par2 == par1) continue;
-      if(par2->Charge() > 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hPassingProbe_ULS_same",p12.M(),pv2.Pt());
-    }//end of par2
-
-  }//end of par1
-
-  //fill LS ++ same
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    //AliVParticle *par1 = (AliVParticle*)fEvent->GetTrack(i1);
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-
-    if(par1->Charge() < 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t i2=0;i2<trackMult_p;i2++){
-      //if(i2==i1) continue;//reject same track combination
-      //AliVParticle *par2 = (AliVParticle*)fEvent->GetTrack(i2);
-      AliVParticle *par2 = (AliVParticle*)fProbeTrackArray->At(i2);
-
-      if(par2 == par1) continue;
-      if(par2->Charge() < 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hProbe_LSpp_same",p12.M(),pv2.Pt());
-
-    }//end of par2
-
-    for(Int_t i2=0;i2<trackMult_pp;i2++){
-      //if(i2==i1) continue;//reject same track combination
-      //AliVParticle *par2 = (AliVParticle*)fEvent->GetTrack(i2);
-      AliVParticle *par2 = (AliVParticle*)fPassingProbeTrackArray->At(i2);
-
-      if(par2 == par1) continue;
-      if(par2->Charge() < 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hPassingProbe_LSpp_same",p12.M(),pv2.Pt());
-    }//end of par2
-
-  }//end of par1
-
-
-  //fill LS -- same
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-
-    if(par1->Charge() > 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t i2=0;i2<trackMult_p;i2++){
-      AliVParticle *par2 = (AliVParticle*)fProbeTrackArray->At(i2);
-
-      if(par2 == par1) continue;
-      if(par2->Charge() > 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hProbe_LSnn_same",p12.M(),pv2.Pt());
-
-    }//end of par2
-
-    for(Int_t i2=0;i2<trackMult_pp;i2++){
-      AliVParticle *par2 = (AliVParticle*)fPassingProbeTrackArray->At(i2);
-      if(par2 == par1) continue;
-      if(par2->Charge() > 0) continue;
-
-      TLorentzVector pv2 = TLorentzVector();
-      pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-      TLorentzVector p12 = pv1 + pv2;
-      value[0] = p12.M();
-      value[1] = pv2.Pt();
-      value[2] = pv2.Eta();
-      value[3] = pv2.Phi();
-      if(value[3] < 0) value[3] += TMath::TwoPi();
-
-      Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-
-      if(
-          (0 < p12.M() && p12.M() < fMmax)
-          && (fPhiVmin < phiv && phiv < TMath::Pi())
-        ) continue;
-
-      FillHistogramTH2(fOutputContainer,"hPassingProbe_LSnn_same",p12.M(),pv2.Pt());
-    }//end of par2
-
-  }//end of par1
-
-  //next mixed event
-  TList *prevEvent_p  = fEventList[0][fZvtxBin];
-  TList *prevEvent_pp = fEventList[1][fZvtxBin];
-
-  //fill ULS -+ mix
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-    if(par1->Charge() > 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t iev=0;iev<prevEvent_p->GetEntries();iev++){
-      TObjArray *arrmix = static_cast<TObjArray*>(prevEvent_p->At(iev));
-
-      for(Int_t i2=0;i2<arrmix->GetEntriesFast();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() < 0) continue;
-
-        //UInt_t cutmask_probe = fProbeFilter->IsSelected(par2);
-        //if(cutmask_probe != selectedMask_probe) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
+  for(Int_t i=0;i<arr1->GetEntries();i++){
+    TLorentzVector *v1 = (TLorentzVector*)arr1->At(i);
+    if(!( v1->TestBit(1 << 0) )) continue;//0th bit for tag
+
+    for(Int_t j=0;j<arr2->GetEntries();j++){
+      TLorentzVector *v2 = (TLorentzVector*)arr2->At(j);
+
+      if(!str.Contains("ULS") && str.Contains("LS") && str.Contains("same") && i==j) continue;
+      //printf("%s , i = %d , j = %d\n",str.Data(),i,j);
+
+      if( v2->TestBit(1 << 1) ){//1st bit for tag
+        TLorentzVector v12 = *v1 + *v2;
+        value[0] = v12.M();
+        value[1] = v2->Pt();
+        value[2] = v2->Eta();
+        value[3] = v2->Phi();
         if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-        FillHistogramTH2(fOutputContainer,"hProbe_ULS_mix",p12.M(),pv2.Pt());
+        FillSparse(fOutputContainer,Form("hsProbe_%s",str.Data()),value);
+        for(Int_t icut=0;icut<fListPassingProbeFilters->GetEntries();icut++){//loop over passing probe filters
+          AliAnalysisFilter *ppfilter = (AliAnalysisFilter*)fListPassingProbeFilters->At(icut);
+          if( v2->TestBit(1 << (icut+2) )) FillSparse(fOutputContainer,Form("hsPassingProbe_%s_%s",str.Data(),ppfilter->GetName()),value);//above 2nd bit, for passing probe
+        }
 
-      }//end of par2
-    }//end of mix event loop
-
-    for(Int_t iev=0;iev<prevEvent_pp->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_pp->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() < 0) continue;
-
-        //UInt_t cutmask_probe = fProbeFilter->IsSelected(par2);
-        //if(cutmask_probe != selectedMask_probe) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-
-        FillHistogramTH2(fOutputContainer,"hPassingProbe_ULS_mix",p12.M(),pv2.Pt());
-      }//end of par2
-    }//end of mix event loop
-
-  }//end of par1
-
-  //fill ULS +- mix
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-
-    if(par1->Charge() < 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t iev=0;iev<prevEvent_p->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_p->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() > 0) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-        FillHistogramTH2(fOutputContainer,"hProbe_ULS_mix",p12.M(),pv2.Pt());
-      }//end of par2
-    }//end of mix event loop
-
-    for(Int_t iev=0;iev<prevEvent_pp->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_pp->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() > 0) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-
-        FillHistogramTH2(fOutputContainer,"hPassingProbe_ULS_mix",p12.M(),pv2.Pt());
-      }//end of par2
-    }//end of mix event loop
-  }//end of par1
-
-  //fill ULS ++ mix
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-
-    if(par1->Charge() < 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t iev=0;iev<prevEvent_p->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_p->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() < 0) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-        FillHistogramTH2(fOutputContainer,"hProbe_LSpp_mix",p12.M(),pv2.Pt());
-
-      }//end of par2
-    }//end of mix event loop
-
-    for(Int_t iev=0;iev<prevEvent_pp->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_pp->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() < 0) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-
-        FillHistogramTH2(fOutputContainer,"hPassingProbe_LSpp_mix",p12.M(),pv2.Pt());
-      }//end of par2
-    }//end of mix event loop
-  }//end of par1
-
-  //fill ULS -- mix
-  for(Int_t i1=0;i1<trackMult_tag;i1++){
-    AliVParticle *par1 = (AliVParticle*)fTagTrackArray->At(i1);
-    if(par1->Charge() > 0) continue;
-
-    //apply tight cut to particle1
-    TLorentzVector pv1 = TLorentzVector();
-    pv1.SetPtEtaPhiM(par1->Pt(),par1->Eta(),par1->Phi(),Me);
-
-    for(Int_t iev=0;iev<prevEvent_p->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_p->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() > 0) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-        FillHistogramTH2(fOutputContainer,"hProbe_LSnn_mix",p12.M(),pv2.Pt());
-
-      }//end of par2
-    }//end of mix event loop
-
-    for(Int_t iev=0;iev<prevEvent_pp->GetEntries();iev++){
-      TObjArray *arrmix = (TObjArray*)prevEvent_pp->At(iev);
-
-      for(Int_t i2=0;i2<arrmix->GetEntries();i2++){
-        AliVParticle *par2 = (AliVParticle*)arrmix->At(i2);
-        if(par2->Charge() > 0) continue;
-
-        TLorentzVector pv2 = TLorentzVector();
-        pv2.SetPtEtaPhiM(par2->Pt(),par2->Eta(),par2->Phi(),Me);
-
-        TLorentzVector p12 = pv1 + pv2;
-        value[0] = p12.M();
-        value[1] = pv2.Pt();
-        value[2] = pv2.Eta();
-        value[3] = pv2.Phi();
-        if(value[3] < 0) value[3] += TMath::TwoPi();
-        Float_t phiv = PhivPair(fEvent->GetMagneticField(),par1->Charge(),par2->Charge(),pv1.Vect(),pv2.Vect());
-        if(
-            (0 < p12.M() && p12.M() < fMmax)
-            && (fPhiVmin < phiv && phiv < TMath::Pi())
-          ) continue;
-
-        FillHistogramTH2(fOutputContainer,"hPassingProbe_LSnn_mix",p12.M(),pv2.Pt());
-      }//end of par2
-    }//end of mix event loop
-  }//end of par1
-
+      }
+    }
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskTagAndProbe::FillHistogramTH1(TList *list, const Char_t *hname, Double_t x, Double_t w, Option_t *opt) const

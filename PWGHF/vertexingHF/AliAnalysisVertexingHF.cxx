@@ -698,7 +698,14 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
         if ( esdV0 && ((esdV0->GetOnFlyStatus() == kTRUE  && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOfflineV0s) ||
                        ( esdV0->GetOnFlyStatus() == kFALSE && fV0TypeForCascadeVertex == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) continue;
 
-	if(v0->Pt()<minPtV0) continue;
+
+	Double_t ptV0=0.;
+	if(fInputAOD){
+	  if(v0) ptV0=v0->Pt();
+	}else{
+	  if(esdV0) ptV0=esdV0->Pt();
+	}
+	if(ptV0<minPtV0) continue;
         // Get the tracks that form the V0
         //  ( parameters at primary vertex )
         //   and define an AliExternalTrackParam out of them
@@ -739,7 +746,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           // Define the AODv0 from ESDv0 if reading ESDs
 	  twoTrackArrayV0->AddAt(posVV0track,0);
 	  twoTrackArrayV0->AddAt(negVV0track,1);
-          v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
+	  v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
 	  twoTrackArrayV0->Clear();
         }
 
@@ -811,7 +818,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
             vCasc->AddDaughter(v0); // fill the 2prong V0
           }
           rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
-        }
+	}
 
 
         // Clean up
@@ -3755,7 +3762,7 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
 
   AliAODv0 *aodV0 = new AliAODv0(vertexV0,dcaV0Daughters,dcaV0ToPrimVertex,pmom,nmom,dcaV0DaughterToPrimVertex);
   aodV0->SetOnFlyStatus(esdV0->GetOnFlyStatus());
-
+  aodV0->SetOwnSecondaryVtx(vertexV0);
   delete trackesdV0;
   delete primVertexAOD;
 

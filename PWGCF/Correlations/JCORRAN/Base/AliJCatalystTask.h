@@ -203,6 +203,7 @@ private:
   TH1F *fTPCClustersHistogram[16][2];		//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection.
   TH1F *fITSClustersHistogram[16][2];		//! 0: ITS Clusters Before Track Selection, 1: ITS Clusters After Track Selection.
   TH1F *fChiSquareTPCHistogram[16][2];		//! 0: ChiSquare TPC Before Track Selection, 1: ChiSquare TPC After Track Selection.
+  TH1F *fChiSquareITSHistogram[16][2];		//! 0: ChiSquare ITS Before Track Selection, 1: ChiSquare ITS After Track Selection.  
   TH1F *fDCAzHistogram[16][2];		//! 0: DCAz Before Track Selection, 1: DCAz After Track Selection.
   TH1F *fDCAxyHistogram[16][2];		//! 0: DCAxy Before Track Selection, 1: DCAxy After Track Selection.
   TH1I *fChargeHistogram[16][2];		//! 0: Charge Before Track Selection, 1: Charge After Track Selection.
@@ -212,6 +213,6 @@ private:
   TH1F *fVertexZHistogram[16][2];		//! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut.
   TH2D *fHMOsHistogram[16][2];		//! 0: Correlations between global and TPC tracks before, 1: after HMO cut.
 
-	ClassDef(AliJCatalystTask, 3);
+	ClassDef(AliJCatalystTask, 4);
 };
 #endif // AliJCatalystTask_H

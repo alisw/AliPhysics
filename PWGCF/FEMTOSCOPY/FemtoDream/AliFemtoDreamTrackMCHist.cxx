@@ -67,7 +67,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
                                                    bool DCADist,
                                                    bool checkMother,
                                                    float pTmin, float pTmax)
-    : fpTbins(20),
+    : fpTbins(200),
       fDoSplitting(contribSplitting),
       fDoDCAPlots(DCADist),
       fpTmin(pTmin),
@@ -283,84 +283,84 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
 
     fMCPrimDCAXYPtBins = new TH2F(MCPridcaPtBinName.Data(),
                                   MCPridcaPtBinName.Data(), fpTbins, fpTmin,
-                                  fpTmax, 500, -5, 5);
+                                  fpTmax, 5000, -5, 5);
     fMCPrimDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCPrimDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCPrimDCAXYPtBins);
 
     fMCMaterialDCAXYPtBins = new TH2F(MCMatdcaPtBinName.Data(),
                                       MCMatdcaPtBinName.Data(), fpTbins, fpTmin,
-                                      fpTmax, 500, -5, 5);
+                                      fpTmax, 5000, -5, 5);
     fMCMaterialDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCMaterialDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCMaterialDCAXYPtBins);
 
     fMCSecondaryDCAXYPtBins = new TH2F(MCSecdcaPtBinName.Data(),
                                        MCSecdcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecondaryDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecondaryDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecondaryDCAXYPtBins);
 
     fMCSecLambdaDCAXYPtBins = new TH2F(MCSecLamdcaPtBinName.Data(),
                                        MCSecLamdcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecLambdaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecLambdaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecLambdaDCAXYPtBins);
 
     fMCSecSigmaDCAXYPtBins = new TH2F(MCSecSigdcaPtBinName.Data(),
                                       MCSecSigdcaPtBinName.Data(), fpTbins,
-                                      fpTmin, fpTmax, 500, -5, 5);
+                                      fpTmin, fpTmax, 5000, -5, 5);
     fMCSecSigmaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecSigmaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecSigmaDCAXYPtBins);
 
     fMCSecSigmaPlusDCAXYPtBins = new TH2F(MCSecSigPldcaPtBinName.Data(),
                                       MCSecSigPldcaPtBinName.Data(), fpTbins,
-                                      fpTmin, fpTmax, 500, -5, 5);
+                                      fpTmin, fpTmax, 5000, -5, 5);
     fMCSecSigmaPlusDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecSigmaPlusDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecSigmaPlusDCAXYPtBins);
 
     fMCSecSigmaMinusDCAXYPtBins = new TH2F(MCSecSigMindcaPtBinName.Data(),
                                       MCSecSigMindcaPtBinName.Data(), fpTbins,
-                                      fpTmin, fpTmax, 500, -5, 5);
+                                      fpTmin, fpTmax, 5000, -5, 5);
     fMCSecSigmaMinusDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecSigmaMinusDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecSigmaMinusDCAXYPtBins);
 
     fMCSecXiDCAXYPtBins = new TH2F(MCSecXidcaPtBinName.Data(),
                                    MCSecXidcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecXiDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecXiDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecXiDCAXYPtBins);
 
     fMCSecOmegaDCAXYPtBins = new TH2F(MCSecOmegadcaPtBinName.Data(),
                                       MCSecOmegadcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecOmegaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecOmegaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecOmegaDCAXYPtBins);
 
     fMCSecKlongDCAXYPtBins = new TH2F(MCSecKlcaPtBinName.Data(),
                                       MCSecKlcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecKlongDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecKlongDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecKlongDCAXYPtBins);
 
     fMCSecKshortDCAXYPtBins = new TH2F(MCSecKsdcaPtBinName.Data(),
                                        MCSecKsdcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecKshortDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecKshortDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecKshortDCAXYPtBins);
 
     fMCSecKchDCAXYPtBins = new TH2F(MCSecKchdcaPtBinName.Data(),
                                     MCSecKchdcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
+                                       fpTmin, fpTmax, 5000, -5, 5);
     fMCSecKchDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecKchDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecKchDCAXYPtBins);

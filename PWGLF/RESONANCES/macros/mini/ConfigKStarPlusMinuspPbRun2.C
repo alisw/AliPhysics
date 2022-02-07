@@ -1,10 +1,8 @@
 /*=================================================================================
  Dukhishyam Mallick - last modified 01 April 2019 (mallick.dukhishyam@cern.ch)
-
  *** Configuration script for K*+-->K0Short-Pi analysis ***
  =======================================================================================*/
 // A configuration script for RSN package needs to define the followings:
-//
 // (1) decay tree of each resonance to be studied, which is needed to select
 //     true pairs and to assign the right mass to all candidate daughters
 // (2) cuts at all levels: single daughters, tracks, events
@@ -26,7 +24,7 @@ Bool_t ConfigKStarPlusMinuspPbRun2
  TString                 monitorOpt="",
  Float_t                 massTol,
  Float_t                 massTolVeto,
- Int_t 				 	    tol_switch,
+ Int_t 			 tol_switch,
  Double_t                tol_sigma,
  Float_t                 pLife,
  Float_t                 radiuslow,
@@ -42,21 +40,23 @@ Bool_t ConfigKStarPlusMinuspPbRun2
  Bool_t                  enableSys,
  Float_t                 crossedRows,
  Float_t                 rowsbycluster,
- Float_t						 v0rapidity,
+ Float_t		 v0rapidity,
  Int_t                   Sys
  )
 //kTPCpidphipp2015
 {
+  if (isMC)
+    Bool_t isData=kFALSE;
+  else
+    Bool_t isData=kTRUE;
+
   // manage suffix
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
-  
+
   /////////////////////////////////////////////////////
   // selections for the pion from the decay of KStarPlusMinus*
   /////////////////////////////////////////////////////
-  //
-
-  
-  
+ 
   AliRsnCutSetDaughterParticle* cutSetQ;
   AliRsnCutSetDaughterParticle* cutSetPi;
   
@@ -71,14 +71,11 @@ Bool_t ConfigKStarPlusMinuspPbRun2
     cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),AliRsnCutSetDaughterParticle::kQualityStd2011,AliPID::kPion,-1.,aodFilterBit,kTRUE);
     cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutPiCandidate,piPIDCut,nsigmaTOF),cutPiCandidate,AliPID::kPion,piPIDCut,nsigmaTOF,aodFilterBit, kTRUE);
   }
-  
-  
+   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);
   
-  
-  
-  
+
   // AliRsnCutSetDaughterParticle * cutQ = new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit), AliRsnCutSetDaughterParticle::kQualityStd2011, AliPID::kPion, -1.0, aodFilterBit, kTRUE);
   //cutQ->SetUse2011StdQualityCuts(kTRUE);
 
@@ -104,7 +101,7 @@ Bool_t ConfigKStarPlusMinuspPbRun2
     esdTrackCuts->SetAcceptKinkDaughters(0); //
     esdTrackCuts->SetMinNCrossedRowsTPC(crossedRows);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster);
-    esdTrackCuts->SetMaxChi2PerClusterTPC(100);
+    // esdTrackCuts->SetMaxChi2PerClusterTPC(100);
     esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
 
     //
@@ -152,10 +149,6 @@ Bool_t ConfigKStarPlusMinuspPbRun2
         else if(Sys==21){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster+0.1);}
 
     }
-
-
-
-
     //
     AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
     cutSetK0s->AddCut(cutK0s);
@@ -204,22 +197,19 @@ Bool_t ConfigKStarPlusMinuspPbRun2
     // [1] = mixing
     // [2] = like ++
     // [3] = like --
-    Bool_t  use     [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 };
-    Bool_t  useIM   [6] = {1               ,1                ,1                  ,1                   ,1                ,1                 };
-    TString name    [6] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust"};
-    TString comp    [6] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE"            };
-    TString output  [6] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE"            };
-    Char_t  charge1 [6] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'               };
-    Char_t  charge2 [6] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'               };
-    Int_t   cutID1  [6] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s             };
-    Int_t   cutID2  [6] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi            };
-    Int_t   ipdg    [6] = {323             ,-323             ,323                ,-323                ,323              ,-323              };
-    Double_t mass   [6] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166           };
-    AliRsnCutSet* paircuts[6] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame              };
-
-
-
-    for (Int_t i = 0; i < 6; i++) {
+    Bool_t  use     [10] = {isData               ,isData                ,isData                  ,isData                   ,isMC                ,isMC ,isMC ,isMC ,isMC ,isMC };
+    Bool_t  useIM   [10] = {1               ,1                ,1                  ,1                   ,1                ,1                 ,1    ,1        ,1      ,1};
+    TString name    [10] = {"KStarPlusMinus","AKStarPlusMinus","KStarPlusMinusmix","AKStarPlusMinusmix","KStarPlusMinust","AKStarPlusMinust",  "KStarPlusMinusMotherMC", "AKStarPlusMinusMotherMC", "KStarPlusMinusMotherMCNOPU", "AKStarPlusMinusMotherMCNOPU" };
+    TString comp    [10] = {"PAIR"          ,"PAIR"           ,"MIX"              ,"MIX"               ,"TRUE"           ,"TRUE"  , "MOTHER", "MOTHER", "MOTHER_NO_PILEUP", "MOTHER_NO_PILEUP" };
+    TString output  [10] = {"SPARSE"    ,"SPARSE"         ,"SPARSE"             ,"SPARSE"            ,"SPARSE"         ,"SPARSE"  ,"SPARSE"    ,"SPARSE"         , "SPARSE"        ,"SPARSE"   };
+    Char_t  charge1 [10] = {'0'             ,'0'              ,'0'                ,'0'                 ,'0'              ,'0'   ,'0'      ,'0'      ,'0'         ,'0'  };
+    Char_t  charge2 [10] = {'+'             ,'-'              ,'+'                ,'-'                 ,'+'              ,'-'  , '+'        ,'-'       , '+'      ,'-' };
+    Int_t   cutID1  [10] = { iCutK0s      ,iCutK0s           ,iCutK0s            ,iCutK0s            ,iCutK0s          ,iCutK0s,  ,iCutK0s   ,iCutK0s         ,iCutK0s        ,iCutK0s };
+    Int_t   cutID2  [10] = { iCutPi         ,iCutPi           ,iCutPi             ,iCutPi              ,iCutPi           ,iCutPi , iCutPi      ,iCutPi      ,iCutPi           ,iCutPi  };
+    Int_t   ipdg    [10] = {323             ,-323             ,323                ,-323                ,323              ,-323   ,323           ,-323         ,323           ,-323   };
+    Double_t mass   [10] = { 0.89166        ,0.89166          ,0.89166            ,0.89166             ,0.89166          ,0.89166    ,0.89166       ,0.89166         ,0.89166     ,0.89166          };
+    AliRsnCutSet* paircuts[10] = {PairCutsSame,  PairCutsSame,   PairCutsMix,    PairCutsMix,    PairCutsSame,   PairCutsSame   ,PairCutsSame         ,PairCutsSame           ,PairCutsSame            ,PairCutsSame };
+    for (Int_t i = 0; i < 10; i++) {
         if (!use[i]) continue;
         //if (collSyst) output[i] = "SPARSE";
         // create output
@@ -249,7 +239,8 @@ Bool_t ConfigKStarPlusMinuspPbRun2
         if(isGT) out->AddAxis(sdpt,100,0.,10.);
     }
 
-
+    if (!isMC)
+      {
     // AddMonitorOutput_K0sP(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sNegDaughPt(cutSetK0s->GetMonitorOutput());
@@ -263,14 +254,14 @@ Bool_t ConfigKStarPlusMinuspPbRun2
     AddMonitorOutput_K0sPionPID(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sfpLife(cutSetK0s->GetMonitorOutput());
     AddMonitorOutput_K0sMass_Pt(cutSetK0s->GetMonitorOutput());
-
-    //Monitor Output for Tracks
+   //Monitor Output for Tracks
     AddMonitorOutput_MinDCAToVertexXYPtDep(cutSetK0s->GetMonitorOutput());
     //AddMonitorOutput_MinDCAToVertexXY(cutSetK0s->GetMonitorOutput());     //Uncomment if fixed value Cut used
-
+      }
+    
     if (isMC) {
 
-        TString mode = "SPARSE";
+      /*    TString mode = "SPARSE";
         //TString mode = "HIST";
         //if (collSyst) mode = "SPARSE";
 
@@ -312,11 +303,7 @@ Bool_t ConfigKStarPlusMinuspPbRun2
         else out->AddAxis(centID, 100, 0.0, 100.);
         if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 
-
-
-
-
-
+ */
         AliRsnMiniOutput* outps=task->CreateOutput(Form("K*_phaseSpace%s", suffix),"HIST","TRUE");
         outps->SetDaughter(0,AliRsnDaughter::kKaon0);
         outps->SetDaughter(1,AliRsnDaughter::kPion);
@@ -328,7 +315,7 @@ Bool_t ConfigKStarPlusMinuspPbRun2
         outps->AddAxis(fdpt,100,0.,10.);
         outps->AddAxis(sdpt,100,0.,10.);
         outps->AddAxis(ptID,200,0.,20.);
-
+	/*
         AliRsnMiniOutput* outpsf=task->CreateOutput(Form("K*_phaseSpaceFine%s", suffix),"HIST","TRUE");
         outpsf->SetDaughter(0,AliRsnDaughter::kKaon0);
         outpsf->SetDaughter(1,AliRsnDaughter::kPion);
@@ -340,10 +327,11 @@ Bool_t ConfigKStarPlusMinuspPbRun2
         outpsf->AddAxis(fdpt,30,0.,3.);
         outpsf->AddAxis(sdpt,30,0.,3.);
         outpsf->AddAxis(ptID,300,0.,3.);
-
+	*/
 
     }
-
+    
+    
     return kTRUE;
 }
 

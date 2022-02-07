@@ -52,10 +52,11 @@ namespace GFWFlags {
     klTPCchi2PC25 =    BIT(19),//TPC chi2/cluster < 2.5
     klTPCchi2PC20 =    BIT(20),//TPC chi2/cluster < 2.0
     klTPCchi2PC30 =    BIT(21),//TPC chi2/cluster < 3.0
-    klNTPCcls70 =      BIT(22),//Number of TPC clusters 70
-    klNTPCcls80 =      BIT(23),//Number of TPC clusters 80
-    klNTPCcls90 =      BIT(24),//Number of TPC clusters 90
-    klNTPCcls100 =     BIT(25)//Number of TPC clusters 100
+    klTPCchi2PC40 =    BIT(22),//TPC chi2/cluster < 3.0
+    klNTPCcls70 =      BIT(23),//Number of TPC clusters 70
+    klNTPCcls80 =      BIT(24),//Number of TPC clusters 80
+    klNTPCcls90 =      BIT(25),//Number of TPC clusters 90
+    klNTPCcls100 =     BIT(26)//Number of TPC clusters 100
   };
   enum EventFlags { kNominal=0, kVtx9, kVtx7, kVtx5, kAllEvFlags}; //Better keep these as uint_t so that we reuse them as array indeces
   enum TrackFlags { kFB96=0, kFB768,
@@ -63,7 +64,7 @@ namespace GFWFlags {
                     kDCA4Sigma, kDCA10Sigma,
                     kChiSq2, kChiSq3,
                     kNTPC80, kNTPC90, kNTPC100,
-                    kFB768Tuned, kFB96Tuned,
+                    kFB96Tuned, kFB768Tuned,
                     kFB768DCAz,
                     kFB768DCAxyLow,
                     kFB768DCAxyHigh,
@@ -114,7 +115,7 @@ class AliGFWFilter
     void SetEventCuts(AliEventCuts *fEvCuts) {fEventCuts = fEvCuts; };
     void CheckEvent(AliVEvent *inEv);
     Bool_t AcceptVertex(AliAODEvent *inEv, Double_t *lvtxXYZ);
-    void CreateStandardCutMasks();
+    void CreateStandardCutMasks(kLocalTrackFlags lStandardChi2Cut = klTPCchi2PC25);
     void AddCustomCuts(Bool_t cleanFirst=kTRUE, UInt_t lEv=klVtxZ10+klEventCuts, UInt_t lTr=klFB96+klDCAz20+klDCAxy2011+klTPCchi2PC25+klNTPCcls70);
     AliGFWFlags *GetFlags() { return fRetFlags; };
     void SetPt(Double_t ptMin, Double_t ptMax) {fPtMin = ptMin; fPtMax = ptMax; };

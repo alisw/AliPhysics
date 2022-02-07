@@ -140,6 +140,14 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistTPCnSigma_ele;
   TH2F                        *fHistTPCnSigma_had;
   TH2F                        *fHistTPCnSigma_eMC;
+	TH2F                        *fHistdEdx;
+	TH2F                        *fHistTPCnSigma_p;
+	TH2F                        *fHistTPCnSigma_pele;
+	TH2F                        *fHistTPCnSigma_phad;
+	TH2F                        *fM20;
+	TH2F                        *fM20_ele;
+	TH2F                        *fM20_had;
+	TH2F                        *fM20_2;
   TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
   TH2F                        *fHistEopHFE;
@@ -292,6 +300,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1D                        *fHistphoPi0MC;
   TH1D                        *fHistphoEtaMC;
   TH2D                        *fNtrklRhoarea;
+  THnSparse                   *fHistPtfracB;
+  THnSparse                   *fHistPtfracD;
   TString fbgfracFile;
   TH1D                        *fDelta_pT;
 

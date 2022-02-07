@@ -182,6 +182,8 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys()
      fV0h(kTRUE),
      fhh(kTRUE),
      fMCArray(NULL),
+     fIsPileUpCuts(kFALSE),
+
      //--------------------------Correction---------------------------------
      fEffCorr(kFALSE),
      fEffList(0),
@@ -324,6 +326,8 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys(const char 
      fV0h(kTRUE),
      fhh(kTRUE),
      fMCArray(NULL),
+     fIsPileUpCuts(kFALSE),
+
      //------------------------------Correction----------------------------------
      fEffCorr(effCorr),
      fEffList(0),
@@ -499,18 +503,18 @@ void AliAnalysisTaskV0ChCorrelationsys::UserCreateOutputObjects()
    AddQAAnalysisAntiLambda();
 
 
-  const Int_t nPtBinsV0Xi = 47;
-  const Double_t PtBinsV0Xi[48] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
+  const Int_t nPtBinsV0Xi = 49;
+  const Double_t PtBinsV0Xi[50] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
                                    1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
                                    2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 
                                    3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9,
-                                   4.0, 4.5, 5.0, 5.5, 6.0, 8.0, 10.0, 15.0};
-  const Int_t nPtBins = 48;
-  const Double_t PtBins[49] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
+                                   4.0, 4.5, 5.0, 5.5, 6.0, 8.0, 10.0,16.0,20.0,25.0};
+  const Int_t nPtBins = 51;
+  const Double_t PtBins[52] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
                                1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
                                2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 
                                3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9,
-                               4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0};  
+                               4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 10.0,16.0,20.0,25.0};  
   //defining bins of Eta distribution
   const Int_t nEtaBins=16; 
   Double_t EtaBins[nEtaBins+1] = {0.};
@@ -791,12 +795,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQATrackCandidates()
         }
     }
 
-const Int_t nPtBinsV0Xi = 1;
-const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+const Int_t nPtBinsV0Xi = 7;
+const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
    
 
-const Int_t nPtBins = 6;
-const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+const Int_t nPtBins = 8;
+const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
 
 
 
@@ -1133,13 +1137,15 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisK0s()
     }
 
  
-    const Int_t nPtBinsV0Xi = 1;
-    const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+  const Int_t nPtBinsV0Xi = 7;
+const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
    
-      
-   // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 6;
-   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+
+const Int_t nPtBins = 8;
+const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+
+
+
 
   
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1335,14 +1341,15 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisLambda()
         }
     }
 
-   
-    const Int_t nPtBinsV0Xi = 1;
-    const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+ const Int_t nPtBinsV0Xi = 7;
+const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
    
 
-   // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 6;
-   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+const Int_t nPtBins = 8;
+const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+
+
+
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
@@ -1545,13 +1552,14 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisAntiLambda()
         }
     }
 
-    const Int_t nPtBinsV0Xi = 1;
-    const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+ const Int_t nPtBinsV0Xi = 7;
+const Double_t PtBinsV0Xi[8] = {1.0,2.0,3.0,4.0,6.0,10.0,16.0,25}; 
    
 
-   // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 6;
-   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+const Int_t nPtBins = 8;
+const Double_t PtBins[9] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0,16.0,25.0}; 
+
+
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1759,6 +1767,7 @@ void AliAnalysisTaskV0ChCorrelationsys::UserExec(Option_t *)
    // Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
    // if (!isINT7selected) return;
 
+/*
  if(!fData2018){if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
 
  if(fData2018){
@@ -1769,6 +1778,9 @@ else{
     {if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
    }
   }
+
+*/
+
 
     AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());
   
@@ -1850,23 +1862,54 @@ if( !MultSelection) {
 
     Int_t iMC = 0;
     if(fAnalysisMC){
-    AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAOD->FindListObject(AliAODMCHeader::StdBranchName());
-    Float_t vzMC = aodMCheader->GetVtxZ();
-    if (TMath::Abs(vzMC) >= fPrimaryVertexCut) return;
 
-    //retreive MC particles from event
+
+//retreive MC particles from event
    fMCArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
-//    fMCArray = (TClonesArray*)fAOD->GeTList()->FindObject(AliAODMCParticle::StdBranchName());
+
     if(!fMCArray){
       Printf("No MC particle branch found");
       return;
     }
-    //--------------------------------------------------------------------------------
 
     Int_t nMCAllTracks =fMCArray->GetEntriesFast();
-    // new tracks array - without injected signal
-    TObjArray * mcTracks = new TObjArray;
-    //selectedMCTracks->SetOwner(kTRUE);
+
+
+        if(fIsPileUpCuts){
+
+////pile up
+    AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAOD->FindListObject(AliAODMCHeader::StdBranchName());
+      if(!aodMCheader) {
+                printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+                return;
+            }
+
+
+ Bool_t isPileupInGeneratedEvent = kFALSE;
+            isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMCheader,"Hijing");
+            if(isPileupInGeneratedEvent) return;
+
+    //--------------------------------------------------------------------------------
+   }
+
+
+
+  //  AliAODMCHeader *aodMCheader = (AliAODMCHeader*)fAOD->FindListObject(AliAODMCHeader::StdBranchName());
+   // Float_t vzMC = aodMCheader->GetVtxZ();
+   // if (TMath::Abs(vzMC) >= fPrimaryVertexCut) return;
+
+    //retreive MC particles from event
+  // fMCArray = (TClonesArray*)fAOD->FindListObject(AliAODMCParticle::StdBranchName());
+   // if(!fMCArray){
+     // Printf("No MC particle branch found");
+     // return;
+   // }
+    //--------------------------------------------------------------------------------
+
+  //  Int_t nMCAllTracks =fMCArray->GetEntriesFast();
+
+   // TObjArray * mcTracks = new TObjArray;
+
  
     for (Int_t i = 0; i < nMCAllTracks; i++){
         AliAODMCParticle *mcTrack = (AliAODMCParticle*)fMCArray->At(i);
@@ -1875,16 +1918,16 @@ if( !MultSelection) {
             continue;
         }
 
-       mcTracks->Add(mcTrack);
-    }
+     //  mcTracks->Add(mcTrack);
+  //  }
 
-    Int_t nMCTracks = mcTracks->GetEntriesFast();
-    for (iMC = 0; iMC < nMCTracks; iMC++){
-      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcTracks->At(iMC);
-      if (!mcTrack) {
-        Error("ReadEventAODMC", "Could not receive particle %d", iMC);
-        continue;
-      }
+  //  Int_t nMCTracks = mcTracks->GetEntriesFast();
+  //  for (iMC = 0; iMC < nMCTracks; iMC++){
+   //   AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcTracks->At(iMC);
+    //  if (!mcTrack) {
+     //   Error("ReadEventAODMC", "Could not receive particle %d", iMC);
+     //   continue;
+    //  }
          
       //track processing
       Double_t mcTrackEta = mcTrack->Eta();
@@ -1894,7 +1937,12 @@ if( !MultSelection) {
       Bool_t TrEtaMax = TMath::Abs(mcTrackEta)<0.8;
       Bool_t TrPtMin = mcTrackPt>fTrackPtMin;
       Bool_t TrCharge = (mcTrack->Charge())!=0;
-      if (TrIsPrim && TrEtaMax && TrPtMin && TrCharge){
+      Bool_t TrPtMax = mcTrackPt<fTrackPtMax;
+      if(!mcTrack->IsPhysicalPrimary()) continue ;
+      if(!mcTrack->IsPrimary()) continue;
+
+     // if (TrIsPrim && TrEtaMax && TrPtMin && TrCharge){
+      if (TrEtaMax && TrPtMax && TrPtMin && TrCharge){
 
 
          fHistMCtruthTrkPtEta->Fill(mcTrackPt,mcTrackEta);
@@ -1903,35 +1951,35 @@ if( !MultSelection) {
 
               } 
 
+
+
 if (TrIsPrim && TrEtaMax && TrCharge && mcTrackPt>fV0PtMin){
    mcTriggerTracks->Add(new AliV0XiParticles(mcTrack->Eta(),mcTrack->Phi(),mcTrack->Pt(),3,mcTrack->GetLabel(),mcTrack->GetLabel()));
 
-//cout<<mcTrackPt<<endl;
+
                                                        
     }
  
 
-      }
+     // }
   
 
 
 //loop for V0 
- for (Int_t i = 0; i < nMCAllTracks; i++){
-        AliAODMCParticle *mcTrack = (AliAODMCParticle*)fMCArray->At(i);
-        if (!mcTrack) {
-            Error("ReadEventAODMC", "Could not receive particle %d", i);
-            continue;
-        }
+ //for (Int_t i = 0; i < nMCAllTracks; i++){
+     //   AliAODMCParticle *mcTrack = (AliAODMCParticle*)fMCArray->At(i);
+       // if (!mcTrack) {
+         //   Error("ReadEventAODMC", "Could not receive particle %d", i);
+         //   continue;
+      //  }
 
 
-if ((mcTrack->GetStatus() == 21)
-          ||(mcTrack->GetPdgCode() == 443 && mcTrack->GetMother() == -1))
-     break;
+if ((mcTrack->GetStatus() == 21)||(mcTrack->GetPdgCode() == 443 && mcTrack->GetMother() == -1))break;
 
-      Double_t mcTrackEta = mcTrack->Eta();
-      Double_t mcTrackPt = mcTrack->Pt();
-      Double_t mcTrackPhi = mcTrack->Phi();
-      if(!mcTrack->IsPhysicalPrimary()) continue ;
+   //   Double_t mcTrackEta = mcTrack->Eta();
+   //   Double_t mcTrackPt = mcTrack->Pt();
+     // Double_t mcTrackPhi = mcTrack->Phi();
+     // if(!mcTrack->IsPhysicalPrimary()) continue ;
 
   //V0 processing
     if(TMath::Abs(mcTrackEta) < fV0Eta && mcTrackPt > fV0PtMin && mcTrackPt < fV0PtMax){    

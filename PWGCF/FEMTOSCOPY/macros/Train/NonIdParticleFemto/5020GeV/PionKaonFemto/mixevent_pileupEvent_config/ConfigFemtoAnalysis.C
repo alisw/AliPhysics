@@ -82,7 +82,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   if(kt1==1){
   double ktrng[numOfkTbins + 1] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 1.5};}		
   if(kt2==1){
-  double ktrng[numOfkTbins + 1] = {0.5, 0.8, 1.1, 1.4, 1.7, 2.0, 2.5, 3.0};}
+  double ktrng[numOfkTbins + 1] = {0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0};}
   
   int runshlcms = 0;// 0:PRF(PAP), 1:LCMS(PP,APAP)
 

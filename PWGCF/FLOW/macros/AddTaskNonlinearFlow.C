@@ -49,7 +49,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 	//========================================================================
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp", fNUA, fNUE);
+	AliAnalysisTaskNonlinearFlow* taskFlowEp = new AliAnalysisTaskNonlinearFlow("taskFlowEp", fNUA, fNUE, fPeriod);
 	taskFlowEp->SetDebugLevel(3);
 	taskFlowEp->SetEtaCut(fEtaCut);
 	taskFlowEp->SetMinPt(fMinPt);
@@ -99,6 +99,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
                 TFile *inNUA;
 
+		// PbPb periods
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
@@ -111,15 +112,19 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PhiWeight_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
-                } else if (fPeriod.EqualTo("LHC17")) {
-	            taskFlowEp->SetUsePeriodWeigths(true);
-                    if (trigger == 0) {
-                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_MB_periods.root");
-                    } else {
-			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp17.root");
+                } 
+		// XeXe Periods
+		else if (fPeriod.EqualTo("LHC17n")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsXeXeLHC17n_wCLX.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
-                    }
-                } else if (fPeriod.EqualTo("LHC15i")) {
+		}
+		// pPb Periods
+		else if (fPeriod.EqualTo("LHC16qt")) {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pPb16qt_pass1.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
+	        // pp Periods
+		else if (fPeriod.EqualTo("LHC15i")) { 
 	            taskFlowEp->SetUsePeriodWeigths(true);
 		    if (trigger == 0) {
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC15/weights_LHC15i_MB.root");
@@ -139,6 +144,14 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                         inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_MB_periods.root");
                     } else {
 			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp16.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+                    }
+                } else if (fPeriod.EqualTo("LHC17")) {
+	            taskFlowEp->SetUsePeriodWeigths(true);
+                    if (trigger == 0) {
+                        inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC17/weights_LHC17_MB_periods.root");
+                    } else {
+			inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/Weights_pp17.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
                     }
                 } else if (fPeriod.EqualTo("LHC18")) {
@@ -172,8 +185,14 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 
                 if(!AllContainers->FindObject("NUE")) {
                 TFile *inNUE = NULL;
+		AliAnalysisDataContainer *cin_NUE_feeddown = NULL;
 
 		AliAnalysisDataContainer *cin_NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
+		if (fPeriod.EqualTo("LHC16qt")) {
+		 cin_NUE_feeddown = mgr->CreateContainer(Form("NUE_feeddown"), TList::Class(), AliAnalysisManager::kInputContainer);
+		}
+
+		// PbPb Periods
                 if (fPeriod.EqualTo("LHC15o")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC18e1_MBEff_FD_wSyst_v2.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
@@ -186,7 +205,19 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                 } else if (fPeriod.EqualTo("LHC15oKatarina")) {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/TrackingEfficiency_Katarina.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
-                } else {
+                } 
+		// XeXe Periods
+		else if (fPeriod.EqualTo("LHC17n")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17nEfficiency.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
+		// pPb Periods
+		else if (fPeriod.EqualTo("LHC16qt")) {
+			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/pPb_DPMJet.root");
+			taskFlowEp->SetUseWeigthsRunByRun(true);
+		}
+		// pp Periods
+		else {
 			inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
 			taskFlowEp->SetUseWeigthsRunByRun(true);
 		}
@@ -195,21 +226,37 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 			printf("Could not open efficiency file!\n");
 			return 0;
 		}
+
+		// Connect the weight
                 TList* weight_list = NULL;
                 if (fPeriod.EqualTo("LHC15oKatarina")) {
 		    weight_list = dynamic_cast<TList*>(inNUE->Get("weightList"));
 		    cin_NUE->SetData(weight_list);
-                } else {
+                } else if (fPeriod.EqualTo("LHC16qt")) {
+		    weight_list = dynamic_cast<TList*>(inNUE->Get("EfficiencyMB"));
+		    cin_NUE->SetData(weight_list);
+		    TList* feeddown_list = dynamic_cast<TList*>(inNUE->Get("FeeddownMB"));
+		    cin_NUE_feeddown->SetData(feeddown_list);
+		} else {
 		    weight_list = dynamic_cast<TList*>(inNUE->Get("EffAndFD"));
 		    cin_NUE->SetData(weight_list);
                 }
 		mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE);
 		inSlotCounter++;
-           	} else {
+		if (fPeriod.EqualTo("LHC16qt")) {
+		  mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE_feeddown);
+		  inSlotCounter++;
+		}
+		  
+            } else {
 		    mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"));
 		    inSlotCounter++;
+		    if (fPeriod.EqualTo("LHC16qt")) {
+		      mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE_feeddown"));
+		      inSlotCounter++;
+		   }
 		    printf("NUE already loaded\n");
-		}
+	    }
 
 	} 
 

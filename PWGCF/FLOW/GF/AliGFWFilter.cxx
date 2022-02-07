@@ -55,7 +55,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
     UInt_t evfl = calculateEventFlag();
     fRetFlags->SetEventFlags(evfl);
     Double_t pt, eta, trXYZ[3], trDCAxy;
-    Float_t nTPCCLSsh, nTPCcl;
+    UShort_t nTPCCLSsh, nTPCcl;
     for(Int_t i=0;i<fAOD->GetNumberOfTracks();i++) {
       fAODTrack = (AliAODTrack*)fAOD->GetTrack(i);
       if(!fAODTrack) continue;
@@ -70,9 +70,9 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(fAODTrack->TestFilterBit(256)) AddTr(klFB256);
       if(fAODTrack->TestFilterBit(512)) AddTr(klFB512);
       //Testing shared clusters
-      nTPCCLSsh = fAODTrack->GetTPCnclsS()*1.0;
-      nTPCcl    = fAODTrack->GetTPCncls()*1.0;
-      if(nTPCCLSsh/nTPCcl <= 0.4) AddTr(klSharedClusters);
+      nTPCCLSsh = fAODTrack->GetTPCnclsS();
+      nTPCcl    = fAODTrack->GetTPCncls();
+      if(nTPCCLSsh*1.0/nTPCcl <= 0.4) AddTr(klSharedClusters);
       //Testing hit on first layer SDD
       if(fAODTrack->HasPointOnITSLayer(4)) AddTr(klHitOnSDD); //2xSPD, 2xSSD, 2xSDD
       if(!fAODTrack->HasPointOnITSLayer(0) && !fAODTrack->HasPointOnITSLayer(1)) AddTr(klNoSPD); //No hits in SPD -> Necessary for FB 96<->768 overlap
@@ -99,8 +99,9 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(tpcChi2PerCluster<=2.) AddTr(klTPCchi2PC20);
       if(tpcChi2PerCluster<=2.5) AddTr(klTPCchi2PC25);
       if(tpcChi2PerCluster<=3.0) AddTr(klTPCchi2PC30);
+      if(tpcChi2PerCluster<=4.0) AddTr(klTPCchi2PC40);
       //Checking number of TPC clusters:
-      Int_t nTPCCls = fAODTrack->GetTPCNclsF();
+      UShort_t nTPCCls = fAODTrack->GetTPCNclsF();
       if(nTPCCls>70) AddTr(klNTPCcls70);
       if(nTPCCls>80) AddTr(klNTPCcls80);
       if(nTPCCls>90) AddTr(klNTPCcls90);
@@ -109,7 +110,7 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
       if(TSB(klFB32)||TSB(klFB64)) AddTr(klFB96);
       if(TSB(klFB96)&&TSB(klSharedClusters)) AddTr(klFB96Tuned); //Tuned to overlap with 768 (modified)
       if(TSB(klFB256)||TSB(klFB512)) AddTr(klFB768);
-      if(TSB(klFB256)||TB(klFB512+klHitOnSDD+klNoSPD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
+      if(TSB(klFB256)||TB(klFB512+klNoSPD+klHitOnSDD)) AddTr(klFB768Tuned); //Tuned to overlap with 96 (modified). Second part is that only second part requires hit in SDD
       UInt_t flagToAdd = calculateTrackFlag();
       if(flagToAdd) fRetFlags->AddTrackFlags(i,flagToAdd); //Only count ones that pass any cuts
     };
@@ -119,51 +120,51 @@ void AliGFWFilter::CheckEvent(AliVEvent* inEv) {
 //klSharedClusters, klHitOnSDD, -- included in *Tuned fb's already
 //klDCAz20, klDCAz10, klDCAz05,
 //klDCAxy2010, klDCAxy2011, klDCAxy8Sigma, klDCAxy4Sigma, klDCAxy10Sigma,
-//klTPCchi2PC25, klTPCchi2PC20, klTPCchi2PC30,
+//klTPCchi2PC25, klTPCchi2PC20, klTPCchi2PC30, klTPCchi2PC40
 //klNTPCcls70, klNTPCcls80, klNTPCcls90, klNTPCcls100
-void AliGFWFilter::CreateStandardCutMasks() {
+void AliGFWFilter::CreateStandardCutMasks(kLocalTrackFlags lStandardChi2Cut) {
   //Standard cuts:
   //Nominal -- FB96:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768:
-  fTrackMasks.push_back(klFB768 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768 + lStandardChi2Cut + klNTPCcls70);
   //FB96, |dcaZ| < 1:
-  fTrackMasks.push_back(klFB96 + klDCAz10 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz10 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB96, |dcaZ| < 0.5:
-  fTrackMasks.push_back(klFB96 + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz05 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB96, |DCAxy| 4 sigma:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy4Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB96, |DCAxy| 10 sigma:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy10Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB96, chi2 per cluster <2:
   fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70);
   //FB96, chi2 per cluster <3:
   fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70);
   //FB96, Ntpc clusters > 80:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls80);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls80);
   //FB96, Ntpc clusters > 90:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls90);
   //FB96, Ntpc clusters > 100:
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls100);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls100);
   //More reasonable ones:
   //Nominal, tuned to overlap with 768
-  fTrackMasks.push_back(klFB96Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96Tuned + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned to overlap with 96
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned, smaller DCAz cut
-  fTrackMasks.push_back(klFB768Tuned + klDCAz05 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz05 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned, DCAxy 4 sigma
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy4Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy4Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB768 tuned, DCAxy 10 sigma
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy10Sigma + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy10Sigma + lStandardChi2Cut + klNTPCcls70);
   //FB768tunes tuned, TPC chi2 <2
   fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC20 + klNTPCcls70);
   //FB768tunes tuned, TPC chi2 <3
   fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC30 + klNTPCcls70);
   //FB768tunes tuned, nTPC clusters >90
-  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls90);
+  fTrackMasks.push_back(klFB768Tuned + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls90);
   //FB96 with 2010 AND 2011 DCAxy
-  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
 
   //Event cuts:
   // if(!fEventMasks) fEventMasks = new UInt_t[gNEventFlags];

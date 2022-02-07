@@ -81,6 +81,7 @@ set(SRCS
     AliAnalysisTaskV0ChCorrelationpp.cxx
     AliAnalysisTaskV0ChCorrelationppsys.cxx
     AliAnalysisTaskV0ChCorrelationsys.cxx
+    AliAnalysisTaskLambdaK0s.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx
     AliAnalysisTaskEPCorrPP.cxx
@@ -89,6 +90,7 @@ set(SRCS
     AliAnalysisTaskPIDBFDptDpt.cxx
     AliAnalysisTaskGeneralBF.cxx
     AliCorrelationAnalysis.cxx
+    AliEPDependentDiHadronOnTheFlyMCTask.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
     DiHadronPID/AliAODEventCutsDiHadronPID.cxx

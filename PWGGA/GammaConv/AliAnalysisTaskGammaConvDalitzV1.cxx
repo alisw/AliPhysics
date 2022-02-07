@@ -3327,6 +3327,11 @@ void AliAnalysisTaskGammaConvDalitzV1::CountESDTracks(){
 
 void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles(){
 
+  // Check if MC generated particles should be filled for this event using the selected trigger
+  if( !((AliConvEventCuts*)fCutEventArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
+    return;
+  }
+
   // Loop over all primary MC particle
   for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++) {
      std::unique_ptr <AliDalitzAODESDMC> particle = std::unique_ptr<AliDalitzAODESDMC>(fAODESDEventMC->Particle(i));

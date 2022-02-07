@@ -36,8 +36,8 @@ public:
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
-   //void           SetMaxArmentousCut(Double_t value)       {fMaxArm          = value;}
-   //Double_t       GetMaxArmentousCut()                     {return fMaxArm;}
+   void           SetMinArmentousCut(Double_t value)       {fMinArm          = value;}
+   Double_t       GetMinArmentousCut()                     {return fMinArm;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
    void           SetMaxPseudorapidity(Double_t value)           {fMaxPseudorapidity = value;}
@@ -78,7 +78,7 @@ protected:
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
-   //Double_t         fMaxArm;           // max armentous cut value
+   Double_t         fMinArm;           // min armentous cut value
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
    Double_t         fMaxPseudorapidity; // max allowed V0 pseudorapidity

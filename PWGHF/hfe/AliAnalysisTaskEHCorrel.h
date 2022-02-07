@@ -116,6 +116,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    IsPbPb(Bool_t isPbPb) {fIsPbPb = isPbPb;};
     void    Ispp(Bool_t ispp) {fIspp = ispp;};
     void    IspPb(Bool_t ispPb) {fIspPb = ispPb;};
+    void    IsPASS2weight(Bool_t pPbpass2weight) {fpPbPASS2weight = pPbpass2weight;};
     void    IsMC(Bool_t isMC) {fIsMC = isMC;};
 
     void    SwitchFillEHCorrel(Bool_t fSwitch){fFillEHCorrel = fSwitch;};
@@ -197,6 +198,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fIsPbPb;//
     Bool_t              fIspp;//
     Bool_t              fIspPb;//
+    Bool_t              fpPbPASS2weight;//
     Bool_t              fEMCClsTimeCut;//
     TClonesArray        *fMCarray;//!
     AliAODMCHeader      *fMCHeader;//!

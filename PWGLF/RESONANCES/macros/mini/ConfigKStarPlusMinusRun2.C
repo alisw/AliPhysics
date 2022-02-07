@@ -194,6 +194,8 @@ Bool_t ConfigKStarPlusMinusRun2
     /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
     /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
 
+    /* pair pt resolution (MC) */   Int_t resPt  = task->CreateValue(AliRsnMiniValue::kPairPtRes, kTRUE);
+
 
     //
     // -- Create all needed outputs -----------------------------------------------------------------
@@ -341,6 +343,14 @@ Bool_t ConfigKStarPlusMinusRun2
         outpsf->AddAxis(sdpt,30,0.,3.);
         outpsf->AddAxis(ptID,300,0.,3.);
 
+        AliRsnMiniOutput *outres = task->CreateOutput(Form("KStarPlusMinus_PairPtResol%s", suffix), mode.Data(), "MOTHER");
+        outres->SetDaughter(0, AliRsnDaughter::kKaon0);
+        outres->SetDaughter(1, AliRsnDaughter::kPion);
+        outres->SetMotherPDG(323);
+        outres->SetMotherMass(0.89166);
+        outres->SetPairCuts(PairCutsSame);
+        outres->AddAxis(resPt, 200, -0.1, 0.1);
+        outres->AddAxis(ptID, 300, 0.0, 30.0);
 
     }
 

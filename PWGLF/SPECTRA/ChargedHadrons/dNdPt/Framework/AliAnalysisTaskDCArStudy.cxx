@@ -155,6 +155,10 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     fOutputList->Add(fHistSecWeights.GenerateHist("fHistSecWeights"));
     requiredMemory += fHistSecWeights.GetSize();
 
+    fEventHist.AddAxis(multAxisNch);
+    fOutputList->Add(fEventHist.GenerateHist("fEventHist"));
+    requiredMemory += fEventHist.GetSize();
+
     AliError(Form("Estimated memory usage of histograms: %.0f Bytes (%f MiB)",
                   requiredMemory, requiredMemory / 1048576));
 
@@ -170,9 +174,10 @@ Bool_t AliAnalysisTaskDCArStudy::IsEventSelected()
 //_____________________________________________________________________________
 
 
-void AliAnalysisTaskDCArStudy::AnaEvent()
+void AliAnalysisTaskDCArStudy::AnaEventDATA()
 {
     LoopOverAllTracks();
+    fEventHist.Fill(fNTracksAcc);
 }
 
 void AliAnalysisTaskDCArStudy::AnaEventMC() {
@@ -182,6 +187,7 @@ void AliAnalysisTaskDCArStudy::AnaEventMC() {
     
 //    LoopOverAllParticles();
     LoopOverAllTracks();
+    fEventHist.Fill(fNTracksAcc);
 }
 
 //_____________________________________________________________________________
@@ -205,10 +211,10 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
             fHistSecWeights.Fill(fPt, fMCweight, fMCSpectraWeights->IdentifySecondaryType(fMCParticle->Particle()));
 
         }
-        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
-        fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
-        fHistDCAPCCSysUp.FillWeight(fMCweightSysUp, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
-        fHistDCAPCCSysDown.FillWeight(fMCweightSysDown, fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, fMCPrimSec);
+        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMCPrimSec);
+        fHistDCAPCC.FillWeight(fMCweight, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
+        fHistDCAPCCSysUp.FillWeight(fMCweightSysUp, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
+        fHistDCAPCCSysDown.FillWeight(fMCweightSysDown, fDCAr, fPt, fNTracksAcc, fMCPrimSec);
     }
 }
 
@@ -217,8 +223,8 @@ void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
 void AliAnalysisTaskDCArStudy::AnaTrackDATA(Int_t flag)
 {
     if (fAcceptTrack[0]) {
-        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, -1);
-        fHistDCAPCC.Fill(fDCAr, fPt, fNTracksAcc, fMultPercentileV0M, -1);
+        fHistDCA.Fill(fDCAr, fPt, fNTracksAcc, -1);
+        fHistDCAPCC.Fill(fDCAr, fPt, fNTracksAcc, -1);
     }
 }
 

@@ -308,8 +308,8 @@ int AliJCDijetAna::CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos
         eta = chparticles.at(utrack).eta();
         phi = chparticles.at(utrack).phi();
         fhistos->fh_eta[lCBin]->Fill(eta);
-        fhistos->fh_phi[lCBin]->Fill(phi);
-        fhistos->fh_etaPhi[lCBin]->Fill(eta,phi);
+        fhistos->fh_phi[lCBin]->Fill(phi-TMath::Pi());
+        fhistos->fh_etaPhi[lCBin]->Fill(eta,phi-TMath::Pi());
         fhistos->fh_pt[lCBin]->Fill(pt);
         if(eta>0.0) fhistos->fh_ptPosEta[lCBin]->Fill(pt);
         else        fhistos->fh_ptNegEta[lCBin]->Fill(pt);
@@ -374,7 +374,6 @@ void AliJCDijetAna::SetJets(vector<fastjet::PseudoJet> jetsOutside) {
 //       in the previous functions.
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
-    TString sDijetTypes[jetClassesSize] = {"raw", "bg. subtr.", "bg. subtr. const. cut", "const. cut", "kt"};
     int iAccJetCounter = 0;
     bool bHasHighPtJet = false;
 
@@ -531,6 +530,7 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
     double jetCutCompare;
     double maxPt;
     double secondMaxPt;
+    int iDijetBin;
     std::vector<unsigned> uLeading(jetClassesSize,10000);
     std::vector<unsigned> uSubleading(jetClassesSize,10000);
     std::vector<unsigned> uSubleadingDeltaPhi(jetClassesSize,10000);
@@ -605,8 +605,13 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                 fhistos->fh_events[lCBin]->Fill(Form("%s acc. dijets",sDijetTypes[udijet].Data()),1.0);
                 bHasDijet.at(udijet) = true;
                 dijet = dijets.at(udijet).at(0).at(0) + dijets.at(udijet).at(0).at(1);
+                fhistos->fh_jetPtLeadSublead_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(0).pt());
+                fhistos->fh_jetPtLeadSublead_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(0).at(1).pt());
                 mjj = dijet.m();
                 ptpair = dijet.pt();
+                iDijetBin = fhistos->GetDijetMClass(mjj);
+                fhistos->fh_jetPtLeadSubleadMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(0).pt());
+                fhistos->fh_jetPtLeadSubleadMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(1).pt());
                 fhistos->fh_dijetInvM[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMLin[lCBin][udijet]->Fill(mjj);
                 fhistos->fh_dijetInvMTrunc[lCBin][udijet]->Fill(mjj);
@@ -630,8 +635,13 @@ void AliJCDijetAna::FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin) {
                     fhistos->fh_events[lCBin]->Fill(Form("%s deltaphi cut dijets",sDijetTypes[udijet].Data()),1.0);
                     bHasDeltaPhiDijet.at(udijet) = true;
                     dijet = dijets.at(udijet).at(1).at(0) + dijets.at(udijet).at(1).at(1);
+                    fhistos->fh_jetPtLeadSubleadDeltaPhi_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(0).pt());
+                    fhistos->fh_jetPtLeadSubleadDeltaPhi_ALICE[lCBin][udijet]->Fill(dijets.at(udijet).at(1).at(1).pt());
                     mjj = dijet.m();
                     ptpair = dijet.pt();
+                    iDijetBin = fhistos->GetDijetMClass(mjj);
+                    fhistos->fh_jetPtLeadSubleadDeltaPhiMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(0).pt());
+                    fhistos->fh_jetPtLeadSubleadDeltaPhiMBin_ALICE[lCBin][udijet][iDijetBin]->Fill(dijets.at(udijet).at(0).at(1).pt());
                     fhistos->fh_dijetInvMDeltaPhiCut[lCBin][udijet]->Fill(mjj);
                     fhistos->fh_dijetInvMDeltaPhiCutLin[lCBin][udijet]->Fill(mjj);
                     fhistos->fh_dijetInvMDeltaPhiCutTrunc[lCBin][udijet]->Fill(mjj);
@@ -668,22 +678,31 @@ void AliJCDijetAna::CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSuble
     double secndJetPhi = tempSubLead.phi() - TMath::Pi(); //-pi to pi
     double firstJetEta = tempLeading.eta();
     double secndJetEta = tempSubLead.eta();
-    double firstConePhi = firstJetPhi-TMath::Pi()/2.0 < -TMath::Pi() ? firstJetPhi+3.0*TMath::Pi()/2.0 : firstJetPhi-TMath::Pi()/2.0;
+    double firstConePhi = firstJetPhi-(TMath::Pi()/2.0) < -TMath::Pi() ? firstJetPhi+(3.0*TMath::Pi()/2.0) : firstJetPhi-(TMath::Pi()/2.0);
     double coneDeltaPhi = GetDeltaPhi(tempLeading, tempSubLead); // 0-2pi
-    double secondConePhi = firstConePhi+coneDeltaPhi > TMath::Pi() ? firstConePhi+coneDeltaPhi-2*TMath::Pi() : firstConePhi+coneDeltaPhi;
+    double secondConePhi = firstConePhi+coneDeltaPhi > TMath::Pi() ? firstConePhi+coneDeltaPhi-(2*TMath::Pi()) : firstConePhi+coneDeltaPhi;
+    double secondConePhiAlt = secndJetPhi-(TMath::Pi()/2.0) < -TMath::Pi() ? secndJetPhi+(3.0*TMath::Pi()/2.0) : secndJetPhi-(TMath::Pi()/2.0);
     double firstConeEta = firstJetEta;
     double secondConeEta = secndJetEta;
     double distanceBtwJet2Cone1 = DeltaR(firstConeEta, secndJetEta, firstConePhi, secndJetPhi);
     double distanceBtwJet1Cone2 = DeltaR(secondConeEta, firstJetEta, secondConePhi, firstJetPhi);
+    double distanceBtwJet1Cone2Alt = DeltaR(secondConeEta, firstJetEta, secondConePhiAlt, firstJetPhi);
+    bool bConeNearJet = distanceBtwJet2Cone1 < 2*fJetCone;
+    bool bConeNearJetAlt = (distanceBtwJet2Cone1 < 2*fJetCone) || (distanceBtwJet1Cone2Alt < 2*fJetCone);
+    bool bConesOverlap = DeltaR(firstConeEta, secondConeEta, firstConePhi, secondConePhi) < 0.8;
+    bool bConesOverlapAlt = DeltaR(firstConeEta, secondConeEta, firstConePhi, secondConePhiAlt) < 0.8;
     fhistos->fh_jet2Cone1Dist->Fill(distanceBtwJet2Cone1);
     fhistos->fh_jet1Cone2Dist->Fill(distanceBtwJet1Cone2);
+    fhistos->fh_jet1Cone2AltDist->Fill(distanceBtwJet1Cone2Alt);
     fastjet::PseudoJet holderJet;
     fastjet::PseudoJet firstConeP;
     fastjet::PseudoJet secondConeP;
+    fastjet::PseudoJet secondConePAlt;
     pt = 0;
     pt2 = 0;
+    double pt2Alt = 0;
     for (utrack = 0; utrack < chparticles.size(); utrack++) {
-        phi = chparticles.at(utrack).phi();
+        phi = chparticles.at(utrack).phi() - TMath::Pi();
         eta = chparticles.at(utrack).eta();
         if(DeltaR(firstConeEta, eta, firstConePhi, phi) < fJetCone) {
             holderJet = fastjet::PseudoJet(chparticles.at(utrack).px(), chparticles.at(utrack).py(), chparticles.at(utrack).pz(), chparticles.at(utrack).E());
@@ -696,18 +715,29 @@ void AliJCDijetAna::CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSuble
             secondConeP += holderJet;
             pt2 += holderJet.pt();
         }
+        if(DeltaR(secondConeEta, eta, secondConePhiAlt, phi) < fJetCone) {
+            holderJet = fastjet::PseudoJet(chparticles.at(utrack).px(), chparticles.at(utrack).py(), chparticles.at(utrack).pz(), chparticles.at(utrack).E());
+            secondConePAlt += holderJet;
+            pt2Alt += holderJet.pt();
+        }
     }
 
     fastjet::PseudoJet doubleCone = firstConeP + secondConeP;
+    fastjet::PseudoJet doubleConeAlt = firstConeP + secondConePAlt;
     fhistos->fh_doubleConeM->Fill(doubleCone.m());
+    fhistos->fh_doubleConeMAlt->Fill(doubleConeAlt.m());
 
     double localRho1 = pt/(TMath::Pi()*0.4*0.4);
     double localRho2 = pt2/(TMath::Pi()*0.4*0.4);
+    double localRho2Alt = pt2Alt/(TMath::Pi()*0.4*0.4);
     fhistos->fh_localRho1->Fill(localRho1);
     fhistos->fh_localRho2->Fill(localRho2);
+    fhistos->fh_localRho2Alt->Fill(localRho2Alt);
     fhistos->fh_deltaRho1->Fill(localRho1-rho); //localrho is usually bigger
     fhistos->fh_deltaRho2->Fill(localRho2-rho);
+    fhistos->fh_deltaRho2Alt->Fill(localRho2Alt-rho);
     fhistos->fh_deltaLocalRho->Fill(localRho1-localRho2);
+    fhistos->fh_deltaLocalRhoAlt->Fill(localRho1-localRho2Alt);
 
     fastjet::PseudoJet bgsubtrJeFifth1 = fastjet::PseudoJet(tempLeading.px() - localRho1 * tempLeading.area_4vector().px(),
             tempLeading.py() - localRho1 * tempLeading.area_4vector().py(),
@@ -717,15 +747,28 @@ void AliJCDijetAna::CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSuble
             tempSubLead.py() - localRho2 * tempSubLead.area_4vector().py(),
             tempSubLead.pz() - localRho2 * tempSubLead.area_4vector().pz(),
             tempSubLead.E()  - localRho2 * tempSubLead.area_4vector().E());
+    fastjet::PseudoJet bgsubtrJeFifth2Alt = fastjet::PseudoJet(tempSubLead.px() - localRho2Alt * tempSubLead.area_4vector().px(),
+            tempSubLead.py() - localRho2Alt * tempSubLead.area_4vector().py(),
+            tempSubLead.pz() - localRho2Alt * tempSubLead.area_4vector().pz(),
+            tempSubLead.E()  - localRho2Alt * tempSubLead.area_4vector().E());
     if(bgsubtrJeFifth1.pt()<fLeadingJetCut)    fhistos->fh_events[lcentBin]->Fill("localRho dropped leading jet",1.0);
     if(bgsubtrJeFifth2.pt()<fSubleadingJetCut) fhistos->fh_events[lcentBin]->Fill("localRho dropped subleading jet",1.0);
+    if(bgsubtrJeFifth2Alt.pt()<fSubleadingJetCut) fhistos->fh_events[lcentBin]->Fill("localRho dropped subleading jet (Alt)",1.0);
     fastjet::PseudoJet doubleDeltaCone_fifth = bgsubtrJeFifth1 + bgsubtrJeFifth2;
+    fastjet::PseudoJet doubleDeltaCone_fifthAlt = bgsubtrJeFifth1 + bgsubtrJeFifth2Alt;
 
     dijet = dijets.at(iJetSet).at(1).at(0) + dijets.at(iJetSet).at(1).at(1);
 
     fDeltaM=dijet.m()-doubleDeltaCone_fifth.m();
+    double fDeltaMAlt=dijet.m()-doubleDeltaCone_fifthAlt.m();
     fhistos->fh_dijetdeltaM5[iJetSet]->Fill(fDeltaM);
+    fhistos->fh_dijetdeltaM5Alt[iJetSet]->Fill(fDeltaMAlt);
+    if(bConeNearJet)    fhistos->fh_dijetdeltaM5NearCone[iJetSet]->Fill(fDeltaM);
+    if(bConeNearJetAlt) fhistos->fh_dijetdeltaM5NearConeAlt[iJetSet]->Fill(fDeltaM);
+    if(bConesOverlap) fhistos->fh_events[lcentBin]->Fill("cones overlap", 1.0);
+    if(bConesOverlapAlt) fhistos->fh_events[lcentBin]->Fill("cones overlap alt", 1.0);
     fhistos->fh_dijetMLocalRho[iJetSet]->Fill(doubleDeltaCone_fifth.m());
+    fhistos->fh_dijetMLocalRhoAlt[iJetSet]->Fill(doubleDeltaCone_fifthAlt.m());
     fhistos->fh_deltaMResponse[iJetSet]->Fill(dijet.m()+fDeltaM, dijet.m());
 
     return;
@@ -1055,6 +1098,14 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
         histos->fh_events[iBin]->Fill("const. cut dijets leading cut",0.0);
         histos->fh_events[iBin]->Fill("const. cut acc. dijets",0.0);
         histos->fh_events[iBin]->Fill("const. cut deltaphi cut dijets",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. cuts raw dijets",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. cuts raw dijets leading cut",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. cuts raw acc. dijets",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. cuts raw deltaphi cut dijets",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. const. cut cuts raw dijets",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. const. cut cuts raw dijets leading cut",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. const. cut cuts raw acc. dijets",0.0);
+        histos->fh_events[iBin]->Fill("bg. subtr. const. cut cuts raw deltaphi cut dijets",0.0);
         histos->fh_events[iBin]->Fill("kt dijets",0.0);
         histos->fh_events[iBin]->Fill("kt dijets leading cut",0.0);
         histos->fh_events[iBin]->Fill("kt acc. dijets",0.0);
@@ -1062,8 +1113,11 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
         histos->fh_events[iBin]->Fill("pt_hard bin cuts",0.0);
         histos->fh_events[iBin]->Fill("localRho dropped leading jet",0.0);
         histos->fh_events[iBin]->Fill("localRho dropped subleading jet",0.0);
+        histos->fh_events[iBin]->Fill("localRho dropped subleading jet (Alt)",0.0);
         histos->fh_events[iBin]->Fill("localRho increased leading jet",0.0);
         histos->fh_events[iBin]->Fill("localRho increased subleading jet",0.0);
+        histos->fh_events[iBin]->Fill("cones overlap",0.0);
+        histos->fh_events[iBin]->Fill("cones overlap alt",0.0);
         if(bIsMC) {
             histos->fh_responseInfo->Fill("True jet has pair",0.0);
             histos->fh_responseInfo->Fill("True jet has no pair",0.0);

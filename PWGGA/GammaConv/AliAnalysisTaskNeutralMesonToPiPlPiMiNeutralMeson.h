@@ -499,9 +499,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Int_t                           fNDMRecoMode;                                         ///< Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           ///< tolerance in rad for angle cuts
     Double_t                        fWeightJetJetMC;                                      //!<! Weight for hte jet-jet Monte-Carlo
-    Int_t                           fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
-    Bool_t                          fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
-    Bool_t                          fDoMaterialBudgetWeightingOfGammasForTrueMesons;    // flag to set the usage of material budget weights
+    Int_t                           fTrackMatcherRunningMode;                             /// CaloTrackMatcher running mode
+    Bool_t                          fEnableSortForClusMC;                                 /// switch on sorting for MC labels in cluster
+    Bool_t                          fDoMaterialBudgetWeightingOfGammasForTrueMesons;      /// flag to set the usage of material budget weights
+    Bool_t                          fDoProfileMaterialBudgetWeights;                      /// Number of MaterialBudgetWeight Bins
+    TProfile**                      fProfileMaterialBudgetWeights;                        //!<! histo to track MaterialBudgetWeights
+    Int_t                           fNumberOfMaterialBudgetBins;                          /// Number of MaterialBudgetWeight Bins
+
 
     TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling)
     TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
@@ -512,7 +516,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 27);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 28);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

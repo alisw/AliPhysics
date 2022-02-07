@@ -12,11 +12,10 @@
 #endif
 
 AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = true,
-                                     bool isMC = false, bool isNano = true, bool triggerOn = false,
+                                     bool isMC = false, bool isNano = true, bool triggerOn = false, int MixingDepth = 30,
                                      float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
-                                     const char *cutVariation = "0", bool ClosePairRejectionForAll = "false",
-                                     const char *triggerVariation = "0", bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1) {
-
+                                     const char *cutVariation = "0", bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = "false",
+                                     const char *triggerVariation = "0", bool RunPlotPt = true, bool RunPlotQ3Vsq = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false, bool StandardMixing = false) {
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -60,6 +59,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   //Kaon Cuts
   AliFemtoDreamTrackCuts *KaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
+  KaonCuts->SetPtRange(0.15, 10);
   KaonCuts->SetFilterBit(128);
   KaonCuts->SetCutCharge(1);
   if(KaonCut==0){ // cuts by Oton
@@ -71,6 +71,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   //AntiKaon Cuts
   AliFemtoDreamTrackCuts *AntiKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
+  AntiKaonCuts->SetPtRange(0.15, 10);
   AntiKaonCuts->SetFilterBit(128);
   AntiKaonCuts->SetCutCharge(-1);
   if(KaonCut==0){ // cuts by Oton
@@ -126,10 +127,12 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(0.017);
-  config->SetDeltaPhiMax(0.017);
+  config->SetDeltaEtaMax(0.);
+  config->SetDeltaPhiMax(0.);
+//  config->SetDeltaEtaMax(0.017);
+//  config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(MixingDepth);
   config->SetUseEventMixing(true);
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
@@ -336,9 +339,14 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetCorrelationConfig(config);
     taskNano->SetRunThreeBodyHistograms(true);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
     taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
+    taskNano->SetDoTwoPrimary(DoTwoPrimary);
+    taskNano->SetStandardMixing(StandardMixing);
+    taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
+    taskNano->SetRunPlotPt(RunPlotPt);
 
     mgr->AddTask(taskNano);
 

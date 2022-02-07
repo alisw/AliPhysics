@@ -154,6 +154,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fIsPbPb(kFALSE),
   fIspp(kTRUE),
   fIspPb(kFALSE),
+  fpPbPASS2weight(kTRUE),
   fEMCClsTimeCut(kFALSE),
   fMCarray(0),
   fMCHeader(0),
@@ -349,6 +350,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fIsPbPb(kFALSE),
   fIspp(kTRUE),
   fIspPb(kFALSE),
+  fpPbPASS2weight(kTRUE),
   fEMCClsTimeCut(kFALSE),
   fMCarray(0),
   fMCHeader(0),
@@ -544,9 +546,19 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
     
   if(fIspPb){
+  
+   if(fpPbPASS2weight){
+   
+           fPi0Weight->SetParameters(1.53790e+02,9.59471e-02,-2.43197e-03,1.31348e+00,5.31726e+00);
+           fEtaWeight->SetParameters(6.81328e+00,1.06621e+00,-2.47101e-02,1.13821e+00,4.20900e+00);
+  
+  }
+   if(!fpPbPASS2weight){
+  
+  
         fPi0Weight->SetParameters(5.04011e+02,-3.62390e-02,-9.98778e-04,1.58097e+00,5.34769e+00);
         fEtaWeight->SetParameters(3.65122e+02,3.78278e-02,8.73001e-03,1.52167e+00,5.65169e+00);
-  }
+  }}
 
   ////////////////////////
   //Initiale mixed event//

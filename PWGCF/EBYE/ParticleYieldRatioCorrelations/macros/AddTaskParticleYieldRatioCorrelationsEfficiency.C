@@ -1,5 +1,5 @@
 AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency *AddTaskParticleYieldRatioCorrelationsEfficiency(
-    TString name = "name", int iTask = 0)
+    TString name = "name", int iTask = 0, const char* suffix = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr)
@@ -12,6 +12,10 @@ AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency *AddTaskParticleYieldRat
     }
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":output_";
+    TString SuffixAdd;
+    SuffixAdd.Form("%s", suffix);
+    name += "_";
+    name += SuffixAdd;
     fileName += name;
     AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency *task = new AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency(name.Data());
     if (!task)

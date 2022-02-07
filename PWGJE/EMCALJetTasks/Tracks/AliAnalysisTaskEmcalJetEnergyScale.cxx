@@ -26,9 +26,12 @@
  ************************************************************************************/
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
+#include <TFile.h>
+#include <TH1.h>
 #include <THistManager.h>
 #include <TCustomBinning.h>
 #include <TLinearBinning.h>
@@ -46,12 +49,15 @@
 #include "AliVEventHandler.h"
 
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale)
+ClassImp(PWGJE::EMCALJetTasks::AngularityHandler)
+ClassImp(PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin)
 
 using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
+  fAngularityHandler(nullptr),
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
@@ -70,6 +76,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
+  fAngularityHandler(nullptr),
   fNameDetectorJets(),
   fNameParticleJets(),
   fTriggerSelectionString(),
@@ -136,6 +143,14 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetResponseFineNeutral", "Response matrix, fine binning", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH2("hJetResponseFineNoClosure", "Response matrix, fine binning, for closure test", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  if(fAngularityHandler) {
+    fHistos->CreateTH2("hJetResponseFineAngularityLow", "Response matrix, fine binning (low angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityHigh", "Response matrix, fine binning (high angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityLowClosure", "Response matrix, fine binning for closure test(low angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityLowNoClosure", "Response matrix, fine binning for closure test(low angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityHighClosure", "Response matrix, fine binning for closure test(high angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+    fHistos->CreateTH2("hJetResponseFineAngularityHighNoClosure", "Response matrix, fine binning for closure test(high angularity)", kNPtBinsDet, 0., kPtDetMax, kNPtBinsPart, 0., kPtPartMax);
+  }
   fHistos->CreateTH1("hJetSpectrumPartAll", "Part level jet pt spectrum ", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hJetSpectrumPartAllClosure", "Part level jet pt spectrum for closure test", kNPtBinsPart, 0., kPtPartMax);
   fHistos->CreateTH1("hJetSpectrumPartAllNoClosure", "Part level jet pt spectrum (no-closure sample)", kNPtBinsPart, 0., kPtPartMax);
@@ -145,6 +160,15 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetfindingEfficiencyCore", "Part. level efficiency", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
   fHistos->CreateTH2("hJetfindingEfficiencyCoreClosure", "Part. level efficiency for closure test", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
   fHistos->CreateTH2("hJetfindingEfficiencyCoreNoClosure", "Part. level efficiency (no-closure sample)", kNPtBinsPart, 0., kPtPartMax, 3, -0.5, 2.5);
+  fHistos->CreateTH2("hAngularityPart", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+  fHistos->CreateTH2("hAngularityDet", "Angularity at detector level", kNPtBinsDet, 0., kPtDetMax, 100, 0., 1.);
+  fHistos->CreateTH1("hAngularityErrorsPart", "Number of errors calculating the angularity (part level)", kNPtBinsPart, 0., kPtPartMax);
+  fHistos->CreateTH1("hAngularityErrorsDet", "Number of errors calculating the angularity (det level)", kNPtBinsDet, 0., kPtDetMax);
+  fHistos->CreateTH1("hAngularityErrorsMatrix", "Number of errors filling the response according to the angularity", kNPtBinsPart, 0., kPtPartMax);
+  if(fAngularityHandler) {
+    fHistos->CreateTH2("hAngularityPartLow", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+    fHistos->CreateTH2("hAngularityPartHigh", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+  }
   if(fFillHSparse){
     TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
@@ -242,6 +266,10 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
 
   fSampleSplitter = new TRandom(0);
 
+  if(fAngularityHandler) {
+    AliDebugStream(1) << *fAngularityHandler << std::endl;
+  }
+
   PostData(1, fOutput);
 }
 
@@ -249,7 +277,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   if(!fMCRejectFilter) return true;
   if(!(fIsPythia || fIsHerwig || fIsHepMC)) return true;    // Only relevant for pt-hard production
   if(fUseStandardOutlierRejection) return AliAnalysisTaskEmcal::CheckMCOutliers();
-  AliDebugStream(1) << "Using custom MC outlier rejection" << std::endl;
+  AliDebugStream(2) << "Using custom MC outlier rejection" << std::endl;
   AliJetContainer *outlierjets(nullptr);
   switch(fJetTypeOutliers) {
     case kOutlierPartJet: outlierjets = GetJetContainer(fNameParticleJets); break;
@@ -262,7 +290,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
   auto max = std::max_element(jetiter.begin(), jetiter.end(), [](const AliEmcalJet *lhs, const AliEmcalJet *rhs ) { return lhs->Pt() < rhs->Pt(); });
   if(max != jetiter.end())  {
     // At least one jet found with pt > n * pt-hard
-    AliDebugStream(1) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
+    AliDebugStream(2) << "Found max jet with pt " << (*max)->Pt() << " GeV/c" << std::endl;
     if(fDebugMaxJetOutliers) {
       // cross check whether implemenation using stl gives the same result as a trivial manual iteration
       // over all jets
@@ -284,18 +312,18 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::CheckMCOutliers() {
 }
 
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
-  AliDebugStream(1) << "Next event" << std::endl;
+  AliDebugStream(2) << "Next event" << std::endl;
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
     auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
-    AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
+    AliDebugStream(3) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
     if(!mctrigger){
       AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
       return false;
     }
     if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
   }
-  AliDebugStream(1) << "event selected" << std::endl;
+  AliDebugStream(3) << "event selected" << std::endl;
   fHistos->FillTH1("hEventCounter", 1);
 
   if(fMCPartonInfo) {
@@ -327,15 +355,15 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   AliClusterContainer *clusters(detjets->GetClusterContainer());
   AliTrackContainer *tracks(static_cast<AliTrackContainer *>(detjets->GetParticleContainer()));
   AliParticleContainer *particles(partjets->GetParticleContainer());
-  AliDebugStream(1) << "Have both jet containers: part(" << partjets->GetNAcceptedJets() << "|" << partjets->GetNJets() << "), det(" << detjets->GetNAcceptedJets() << "|" << detjets->GetNJets() << ")" << std::endl;
+  AliDebugStream(3) << "Have both jet containers: part(" << partjets->GetNAcceptedJets() << "|" << partjets->GetNJets() << "), det(" << detjets->GetNAcceptedJets() << "|" << detjets->GetNJets() << ")" << std::endl;
 
   std::array<double, 17> ptbinsDebug = {0., 10., 20., 30., 40., 50., 60., 80., 100., 120., 140., 160., 180., 200., 240., 280., 320.};
   std::vector<AliEmcalJet *> acceptedjets;
   for(auto detjet : detjets->accepted()){
-    AliDebugStream(2) << "Next jet" << std::endl;
+    AliDebugStream(4) << "Next jet" << std::endl;
     auto partjet = detjet->ClosestJet();
     if(!partjet) {
-      AliDebugStream(2) << "No tagged jet" << std::endl;
+      AliDebugStream(4) << "No tagged jet" << std::endl;
       fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
       if(isClosure) {
         fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 0);
@@ -361,6 +389,24 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
           fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 2);
         }
       }
+    }
+    double angularityPart = -1., angularityDet = -1.;
+    try {
+      angularityPart = MakeAngularity(*partjet, AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy1),
+      fHistos->FillTH2("hAngularityPart", partjet->Pt(), angularityPart);
+    } catch(AngularityException &e) {
+      fHistos->FillTH1("hAngularityErrorsPart", partjet->Pt());
+    }
+    try {
+      AliVCluster::VCluUserDefEnergy_t energydef = AliVCluster::VCluUserDefEnergy_t::kUserDefEnergy1;
+      auto detjetscusters = detjets->GetClusterContainer();
+      if(detjetscusters){
+       energydef = (AliVCluster::VCluUserDefEnergy_t)detjetscusters->GetDefaultClusterEnergy();
+      }
+      angularityDet = MakeAngularity(*detjet, energydef);
+      fHistos->FillTH2("hAngularityDet", detjet->Pt(), angularityDet); 
+    } catch(AngularityException &e) {
+      fHistos->FillTH1("hAngularityErrorsDet", partjet->Pt());
     }
     acceptedjets.push_back(detjet);
     Double_t detjetpt = detjet->Pt();
@@ -407,6 +453,31 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     } else {
       fHistos->FillTH2("hJetResponseFineNoClosure", detjetpt, partjetpt);
     }
+    // splitting response in low / high angularity
+    if(fAngularityHandler && angularityPart > -1.) {
+      try{
+        bool isAngularityHigh = fAngularityHandler->IsHigherAngularity(partjetpt, angularityPart);
+        if(isAngularityHigh) {
+          fHistos->FillTH2("hAngularityPartHigh", partjetpt, angularityPart);
+          fHistos->FillTH2("hJetResponseFineAngularityHigh", detjetpt, partjetpt);
+          if(isClosure) {
+            fHistos->FillTH2("hJetResponseFineAngularityHighClosure", detjetpt, partjetpt);
+          } else {
+            fHistos->FillTH2("hJetResponseFineAngularityHighNoClosure", detjetpt, partjetpt);
+          }
+        } else {
+          fHistos->FillTH2("hAngularityPartLow", partjetpt, angularityPart);
+          fHistos->FillTH2("hJetResponseFineAngularityLow", detjetpt, partjetpt);
+          if(isClosure) {
+            fHistos->FillTH2("hJetResponseFineAngularityLowClosure", detjetpt, partjetpt);
+          } else {
+            fHistos->FillTH2("hJetResponseFineAngularityLowNoClosure", detjetpt, partjetpt);
+          }
+        }
+      } catch(AngularityHandler::BinNotFoundException &e) {
+         fHistos->FillTH1("hAngularityErrorsMatrix", partjetpt);
+      }
+    } 
 
     // Fill histograms for JES debugging
     int ptbminI = -1,
@@ -600,6 +671,37 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   return true;
 }
 
+Double_t AliAnalysisTaskEmcalJetEnergyScale::MakeAngularity(const AliEmcalJet &jet, AliVCluster::VCluUserDefEnergy_t energydef) const {
+  if(!(jet.GetNumberOfTracks() || jet.GetNumberOfClusters()))
+    throw AngularityException();
+  TVector3 jetvec(jet.Px(), jet.Py(), jet.Pz());
+  Double_t den(0.), num(0.);
+  for(UInt_t itrk = 0; itrk < jet.GetNumberOfTracks(); itrk++) {
+    auto track = jet.Track(itrk);
+    if(!track){
+      AliErrorStream() << "Associated constituent particle / track not found\n";
+      continue;
+    }
+    TVector3 trackvec(track->Px(), track->Py(), track->Pz());
+
+    num +=  track->Pt() * trackvec.DrEtaPhi(jetvec);
+    den += +track->Pt();
+  }
+  for(UInt_t icl = 0; icl < jet.GetNumberOfClusters(); icl++){
+    auto clust = jet.Cluster(icl);
+    if(!clust) {
+      AliErrorStream() << "Associated constituent cluster not found\n";
+      continue;
+    }
+    TLorentzVector clusterp;
+    clust->GetMomentum(clusterp, fVertex, energydef);
+
+    num += clusterp.Pt() * clusterp.Vect().DrEtaPhi(jetvec);
+    den += clusterp.Pt();
+  }
+  return num/den;
+}
+
 bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &triggerstring) const {
   const std::array<TString, 10> kEMCALTriggers = {
     "EMC7","EJE", "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
@@ -612,6 +714,26 @@ bool AliAnalysisTaskEmcalJetEnergyScale::IsSelectEmcalTriggers(const TString &tr
     }
   }
   return isEMCAL;
+}
+
+void AliAnalysisTaskEmcalJetEnergyScale::SetAngularitySpitting(bool doSplit) { 
+  if(doSplit) {
+    auto partcont = GetPartLevelJetContainer();
+    double radius = -1;
+    if(partcont) radius = partcont->GetJetRadius();
+    if(!fAngularityHandler) {
+      if(radius > -1.) {
+        AliInfoStream() << "Initializing angularity handler with R=" << radius << std::endl;
+        fAngularityHandler = new AngularityHandler(radius);
+      } else {
+        AliInfoStream() << "Default initialization of angularity without radius" << std::endl;
+        fAngularityHandler = new AngularityHandler();
+      }
+    }
+  } else {
+    if(fAngularityHandler) delete fAngularityHandler;
+    fAngularityHandler = nullptr;
+  }
 }
 
 void AliAnalysisTaskEmcalJetEnergyScale::ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut) {
@@ -815,4 +937,101 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   mgr->ConnectInput(energyscaletask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(energyscaletask, 1, mgr->CreateContainer(listnamebuilder.str().data(), TList::Class(), AliAnalysisManager::kOutputContainer, outnamebuilder.str().data()));
   return energyscaletask;
+}
+
+
+void AngularityHandler::InitFromFile(const char *filename) {
+  fBins.Clear();
+  std::unique_ptr<TFile> reader(TFile::Open(filename, "READ"));
+  std::string rstring=Form("R%02d", int(fRadius*10.));
+  auto hist = dynamic_cast<TH1 *>(reader->Get(Form("meanAngularity%s", rstring.data())));
+  if(!hist) {
+    AliErrorStream() << "Mean angularity dist not found for R = " << fRadius << std::endl;
+    return;
+  } else {
+    AliDebugStream(1) << "Using histogram " << hist->GetName() << " for R=" << fRadius << std::endl;
+  }
+  double currentptmax = DBL_MIN, currentval = DBL_MIN; // For overflow bin (using same value as of the highest bin)
+  for(int ib = 0; ib < hist->GetXaxis()->GetNbins(); ib++){
+    auto min = hist->GetXaxis()->GetBinLowEdge(ib+1),
+         max = hist->GetXaxis()->GetBinUpEdge(ib+1),
+         value = hist->GetBinContent(ib+1);
+    SetBin(min, max, value);
+    if(max > currentptmax) {
+      currentval = value;
+      currentptmax = max;
+    }
+  }
+  // Set overflow bin
+  SetBin(currentptmax, DBL_MAX, currentval);
+}
+
+void AngularityHandler::SetBin(double min, double max, double value) {
+  bool hasOverlap = false;
+  for(auto b : fBins) {
+    AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
+    if(!nextbin) continue;
+    if(min >= nextbin->Min() && min < nextbin->Max()) hasOverlap = true;
+    if(max >= nextbin->Min() && max < nextbin->Max()) hasOverlap = true;
+    if(hasOverlap) break;
+  }
+  if(hasOverlap) {
+    AliErrorStream() << "Cannot add bin with min " << min << " and max " << max << " due to overlap";
+    return;
+  }
+  fBins.Add(new AngularityBin(min, max, value));
+}
+
+double AngularityHandler::GetValue(double pt) const {
+  auto result = FindBin(pt);
+  return result.Value();
+}
+
+bool AngularityHandler::IsHigherAngularity(double pt, double angularity) const {
+  auto result = FindBin(pt);
+  if(!result.IsOK()) throw BinNotFoundException(pt);
+  return angularity > result.Value();
+}
+
+AngularityHandler::AngularityBin AngularityHandler::FindBin(double pt) const {
+  AngularityBin result;
+  for(auto b : fBins) {
+    AngularityBin *nextbin = dynamic_cast<AngularityBin *>(b);
+    if(!nextbin) continue;  
+    if(nextbin->IsInRange(pt)) {
+      result = *nextbin;
+      AliDebugStream(3) << "Found bin with minb " << result.Min() << " and maxb " << result.Max() << " for pt = " << pt << std::endl;
+      break;
+    }
+  }
+  return result;
+}
+
+void AngularityHandler::PrintStream(std::ostream &stream) const {
+  stream << "Angularity Handler for R = " << fRadius << std::endl;
+  stream << "===========================================" << std::endl;
+  for(const auto binObject : fBins) {
+    auto bin = static_cast<AngularityBin *>(binObject);
+    if(bin) {
+      stream << *bin << std::endl;
+    }
+  }
+}
+
+void AngularityHandler::AngularityBin::PrintStream(std::ostream &stream) const {
+  stream << "min " << fMin << ", max " << fMax << ", value " << fValue;
+}
+
+void AngularityHandler::Print(Option_t *) const {
+  std::cout << *this << std::endl;
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler &handler) {
+  handler.PrintStream(stream);
+  return stream;
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin &bin) {
+  bin.PrintStream(stream);
+  return stream;
 }

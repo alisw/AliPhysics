@@ -38,6 +38,7 @@
 #pragma link C++ class AliRDHFCutsXictoeleXifromAODtracks+;
 #pragma link C++ class AliAnalysisVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEVertexingHF+;
+#pragma link C++ class AliAnalysisTaskSEVertexingHFRun3Conversion+;
 #pragma link C++ class AliAnalysisTaskMEVertexingHF+;
 #pragma link C++ class AliAnalysisTaskSEB0toDPi+;
 #pragma link C++ class AliAnalysisTaskSEB0toDStarPi+;

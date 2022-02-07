@@ -1744,8 +1744,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"conv cl match R > 180cm");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"conv cl match w lead R < 180cm");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"conv cl match w lead R > 180cm");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"Ch cl match");
-    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"Ch cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"Ch prim. cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(23,"Ch prim. cl match w lead");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(24,"El cl match");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(25,"El cl match w lead");
     fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(26,"All cl w valid track");
@@ -7177,6 +7177,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         // TB parametrization for 100MeV points for data an MC
         // MC fine tuning for lowB (0.2T) and nomB (0.5T) obtained with PCM-EMCal
         // incl. interpolation between PCM-EMC and EMC-EMC fine tuning of 0.25%!
+        // MC fine tuning for noB (0T) obtained with EMC-EMC
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           // fine tuning for pp 13 TeV lowB
@@ -7186,7 +7187,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
             }
-            // fine tuning for pp 13 TeV nominal B (default for all B=0.5T periods)
+          // fine tuning for pp 13 TeV no B (only for LHC17d)
+          } else if (fCurrentMC==kLHC21j8a){
+            energy /= 1.0378;
+            if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+              energy /= 0.99;
+            }
+          // fine tuning for pp 13 TeV nominal B (default for all B=0.5T periods)
           } else {
             energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
             energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
@@ -7198,6 +7205,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
           if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
+          else if (fCurrentMC == k16pPb5023GeV) energy *= 0.994;
         }
 
       } else if ( fClusterType == 2 ){
@@ -7641,19 +7649,19 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 19:
       if(isMC>0){
          // pp 13 TeV PCM-PHOS NL with PHOS finetuning
-         if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger  || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger || fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB || fCurrentMC==kPP13T16P1JJLowB){
+        //  if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger  || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger || fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB || fCurrentMC==kPP13T16P1JJLowB){
            if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted, corrected by PHOS
                energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
                energy /= 1.022224;
                energy /= FunctionNL_LinLogConst(energy,  0.374346, 2.08291, 1.12166, -0.33141, 0.00247156, -0.124062, -0.119848);
-           }
+          //  }
         } else fPeriodNameAvailable = kFALSE;
       } else if (isMC==0){
-          if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
+          // if( fCurrentMC == k16pp13TeV || fCurrentMC == k17pp13TeV || fCurrentMC == k18pp13TeV || fCurrentMC == k16pp13TeVLow || fCurrentMC == k17pp13TeVLow || fCurrentMC == k18pp13TeVLow ){
               if(fClusterType==2) {
                 energy /= 1.022224;
               }
-          }
+          // }
       }
       break;
 
@@ -8700,14 +8708,18 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
 
 
   // *************** experimental settings for EMCal studies
-    // with new cell scale, PCM-EMC fine tuning for low B field
+    // with new cell scale, standard fine tuning for nominal B-field
+    // in this case no selection of the specifi MC production is done so this can also be used for low-B field (experimental)
     case 93:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // TB parametrization from Nico on Martin 100MeV points (final version incl. fine tuning) FOR RUN 2!
-        // This was determined with the S300A100 clusterizer setting and with PCM-EMC! Should be very similar to case 97
         if(isMC){
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
-          energy /= FunctionNL_kSDM(energy, 0.982087, -3.1388, -0.545095);
+          energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+          energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
+          energy /= 1.0025;
+          if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+            energy /= 0.99;
+          }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
         }
@@ -9480,6 +9492,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC19g7c")==0 )      return kPP13T18P1Pyt8;
   else if ( namePeriod.CompareTo("LHC18P1Pyt8LowB") ==0 ||
             namePeriod.CompareTo("LHC18h1") ==0  )      return kPP13T18P1Pyt8LowB;
+  else if ( namePeriod.CompareTo("LHC17P1Pyt8NoB") ==0 ||
+            namePeriod.CompareTo("LHC21j8a") == 0 )      return kLHC21j8a;
   //pp 13 TeV LHC18 JJ MCs
   else if ( namePeriod.CompareTo("LHC18P1JJ") == 0 ||
             namePeriod.Contains("LHC19d3") )            return kPP13T18P1JJ;

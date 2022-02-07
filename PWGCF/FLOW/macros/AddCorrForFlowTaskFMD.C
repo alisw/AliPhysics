@@ -1,4 +1,4 @@
-AliAnalysisTaskCorrForFlowFMD* AddCorrForFlowTaskFMD(TString name = "name", TString efficiencyFile = "",const char* suffix = "")
+AliAnalysisTaskCorrForFlowFMD* AddCorrForFlowTaskFMD(TString name = "name", TString efficiencyFile = "",TString calibrationFile = "",const char* suffix = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -14,7 +14,10 @@ AliAnalysisTaskCorrForFlowFMD* AddCorrForFlowTaskFMD(TString name = "name", TStr
     Bool_t useEfficiency = kFALSE;
     if(!efficiencyFile.IsNull()) useEfficiency = kTRUE;
 
-    AliAnalysisTaskCorrForFlowFMD* task = new AliAnalysisTaskCorrForFlowFMD(taskName.Data(), useEfficiency);
+    Bool_t useCalibration = kFALSE;
+    if(!calibrationFile.IsNull()) useCalibration = kTRUE;
+
+    AliAnalysisTaskCorrForFlowFMD* task = new AliAnalysisTaskCorrForFlowFMD(taskName.Data(), useEfficiency, useCalibration);
     if(!task) return 0x0;
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -33,8 +36,8 @@ AliAnalysisTaskCorrForFlowFMD* AddCorrForFlowTaskFMD(TString name = "name", TStr
         TFile* efficiency_file = TFile::Open(efficiencyFile.Data(),"READ");
         if(!efficiency_file) { printf("Input file with efficiency not found!\n"); return NULL; }
 
-        TList* efficiency_list = (TList*) efficiency_file->Get("EffAndFD");
-        if(!efficiency_list) { printf("E-AddTaskUniFlow: Input list with efficiency not found!\n"); efficiency_file->ls(); return NULL; }
+        TList* efficiency_list = (TList*) efficiency_file->Get("Efficiency2D_wFD");
+        if(!efficiency_list) { printf("E-AddTask: Input list with efficiency not found!\n"); efficiency_file->ls(); return NULL; }
 
         AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEfficiency",TList::Class(), AliAnalysisManager::kInputContainer);
         cInputEfficiency->SetData(efficiency_list);
@@ -42,6 +45,33 @@ AliAnalysisTaskCorrForFlowFMD* AddCorrForFlowTaskFMD(TString name = "name", TStr
       }
       else {
         mgr->ConnectInput(task,1,efficiency);
+      }
+    }
+
+    if(useCalibration) {
+      TObjArray* taskContainers = mgr->GetContainers();
+      if(!taskContainers) { printf("Task containers does not exists!\n"); return NULL; }
+
+      AliAnalysisDataContainer* calib = (AliAnalysisDataContainer*) taskContainers->FindObject("calib");
+      if(!calib) {
+        if(calibrationFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+        printf("input file name: %s \n", calibrationFile.Data());
+
+        TFile* calib_file = TFile::Open(calibrationFile.Data(),"READ");
+        if(!calib_file) { printf("Input file with AMPT centrality calibration not found!\n"); return NULL; }
+
+        TH1D* calib_histo = (TH1D*)calib_file->Get("hcent");
+        if(!calib_histo) { printf("E-AddTask: Input list with AMPT centrality calibration not found!\n"); calib_file->ls(); return NULL; }
+
+        AliAnalysisDataContainer* cInputCalib = mgr->CreateContainer("calib",TH1D::Class(), AliAnalysisManager::kInputContainer);
+        cInputCalib->SetData(calib_histo);
+        if(useEfficiency) mgr->ConnectInput(task,2,cInputCalib);
+        else mgr->ConnectInput(task,1,cInputCalib);
+      }
+      else {
+        if(useEfficiency) mgr->ConnectInput(task,2,calib);
+        else mgr->ConnectInput(task,1,calib);
       }
     }
 

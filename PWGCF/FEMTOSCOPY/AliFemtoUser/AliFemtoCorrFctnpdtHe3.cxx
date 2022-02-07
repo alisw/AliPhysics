@@ -28,12 +28,12 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fP2Mass(0.1),
     fNumerator(nullptr),
     fDenominator(nullptr),
-    fQANumerator(3, nullptr),
-    fQADenominator(3, nullptr),
     fP1EarlierP2Num(nullptr),
     fP1EarlierP2Dum(nullptr),
     fP2EarlierP1Num(nullptr),
-    fP2EarlierP1Dum(nullptr)
+    fP2EarlierP1Dum(nullptr),
+    fNumHigh3F(nullptr),
+    fDenHigh3F(nullptr)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -41,19 +41,6 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     
     fNumerator->Sumw2();
     fDenominator->Sumw2();
-
-    for (int ihist = 0; ihist < 3; ihist++) {
-
-        TString suffix = TString::Format("fQANumerator_%d_%s",ihist, fTitle.Data());
-        fQANumerator[ihist] = new TH1D(suffix, "fQANumerator", nbins, KStarLo, KStarHi);
-        suffix = TString::Format("fQADenominator_%d_%s",ihist, fTitle.Data());
-        fQADenominator[ihist] = new TH1D(suffix, "fQADenominator", nbins, KStarLo, KStarHi);
-        
-
-        fQANumerator[ihist]->Sumw2();
-        fQADenominator[ihist]->Sumw2();
-
-    }
 
     fP1EarlierP2Num = new TH1D(TString::Format("p1Ep2Num_%s", fTitle.Data()), " ", nbins, KStarLo, KStarHi);
     fP1EarlierP2Dum = new TH1D(TString::Format("p1Ep2Dum_%s", fTitle.Data()), " ", nbins, KStarLo, KStarHi);;
@@ -65,7 +52,19 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fP2EarlierP1Num->Sumw2();
     fP2EarlierP1Dum->Sumw2();
 
-
+    int xybin = 19;
+    float testxy[20];
+    for(int i=0;i<20;i++){
+        testxy[i] = 0.2*float(i+1);
+    }
+    float testz[101];
+    for(int i=0;i<101;i++){
+        testz[i] = 0.01*float(i);
+    }
+    fNumHigh3F = new TH3F(TString::Format("fNumHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,100,testz);
+    fDenHigh3F = new TH3F(TString::Format("fDenHigh3F_%s", fTitle.Data())," ",xybin,testxy,xybin,testxy,100,testz);
+    fNumHigh3F->Sumw2();
+    fDenHigh3F->Sumw2();
 }
 AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCorrFctn):
     AliFemtoCorrFctn(aCorrFctn),
@@ -78,19 +77,14 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fP2Mass(aCorrFctn.fP2Mass),
     fNumerator(aCorrFctn.fNumerator ? new TH1D(*aCorrFctn.fNumerator) : nullptr),
     fDenominator(aCorrFctn.fDenominator ? new TH1D(*aCorrFctn.fDenominator) : nullptr),
-    fQANumerator(3, nullptr),
-    fQADenominator(3, nullptr),
     fP1EarlierP2Num(aCorrFctn.fP1EarlierP2Num),
     fP1EarlierP2Dum(aCorrFctn.fP1EarlierP2Dum),
     fP2EarlierP1Num(aCorrFctn.fP2EarlierP1Num),
-    fP2EarlierP1Dum(aCorrFctn.fP2EarlierP1Dum)
+    fP2EarlierP1Dum(aCorrFctn.fP2EarlierP1Dum),
+    fNumHigh3F(aCorrFctn.fNumHigh3F),
+    fDenHigh3F(aCorrFctn.fDenHigh3F)
 {
     
-    // copy constructor
-    for (int ihist = 0; ihist < 3; ihist++) {
-        fQANumerator[ihist]     = new TH1D(*aCorrFctn.fQANumerator[ihist]);
-        fQADenominator[ihist]   = new TH1D(*aCorrFctn.fQADenominator[ihist]);
-    }
 
 
 }
@@ -99,17 +93,15 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     // destructor
     delete fNumerator;
     delete fDenominator;
-    for (int ihist = 0; ihist < 3; ihist++) {
-        delete fQANumerator[ihist];
-        delete fQADenominator[ihist];
-       
-    }
+    
     delete fP1EarlierP2Num;
     delete fP1EarlierP2Dum;
     delete fP2EarlierP1Num;
     delete fP2EarlierP1Dum;
-
     
+    delete fNumHigh3F;
+    delete fDenHigh3F;
+
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
 {
@@ -132,31 +124,6 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
     if(fDenominator) delete fDenominator;
         fDenominator = new TH1D(*aCorrFctn.fDenominator);
 
-    if (fQANumerator.size() == aCorrFctn.fQANumerator.size()) {
-        // simple assignments if same number of histograms
-
-        for (int ihist = 0; ihist < 3; ihist++) {
-            *fQANumerator[ihist] = *aCorrFctn.fQANumerator[ihist];
-            *fQADenominator[ihist] = *aCorrFctn.fQADenominator[ihist];
-        }
-
-    } 
-    else {
-        // delete and resize to match
-        for (size_t i = 0; i < 3; ++i) {
-            delete fQANumerator[i];
-            delete fQADenominator[i];
-        }
-
-        fQANumerator.resize(3, nullptr);
-        fQADenominator.resize(3, nullptr);
-
-        for (int ihist = 0; ihist < 3; ihist++) {
-            fQANumerator[ihist]     = new TH1D(*aCorrFctn.fQANumerator[ihist]);
-            fQADenominator[ihist]   = new TH1D(*aCorrFctn.fQADenominator[ihist]);
-        }
-    }
-
 
     if(fP1EarlierP2Num) delete fP1EarlierP2Num;
         fP1EarlierP2Num = new TH1D(*aCorrFctn.fP1EarlierP2Num);
@@ -167,6 +134,8 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
     if(fP2EarlierP1Dum) delete fP2EarlierP1Dum;
         fP2EarlierP1Dum = new TH1D(*aCorrFctn.fP2EarlierP1Dum);
 
+    fNumHigh3F = new TH3F(*aCorrFctn.fNumHigh3F);
+    fDenHigh3F = new TH3F(*aCorrFctn.fDenHigh3F);
     return *this;
 
 }
@@ -187,19 +156,13 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
     tOutputList->Add(fNumerator);
     tOutputList->Add(fDenominator);
 
-    for (int ihist = 0; ihist < 3; ihist++) {
-
-        tOutputList->Add(fQANumerator[ihist]);
-        tOutputList->Add(fQADenominator[ihist]);
-
-    }
-
     tOutputList->Add(fP1EarlierP2Num);
     tOutputList->Add(fP1EarlierP2Dum);
     tOutputList->Add(fP2EarlierP1Num);
     tOutputList->Add(fP2EarlierP1Dum);
     
-
+    tOutputList->Add(fNumHigh3F);
+    tOutputList->Add(fDenHigh3F);
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -211,15 +174,14 @@ void AliFemtoCorrFctnpdtHe3::Write()
     // Write out neccessary objects
     fNumerator->Write();
     fDenominator->Write();
-    for (int ihist = 0; ihist < 3; ihist++) {
-        fQANumerator[ihist]->Write();
-        fQADenominator[ihist]->Write();
-    }
 
     fP1EarlierP2Num->Write();
     fP1EarlierP2Dum->Write();
     fP2EarlierP1Num->Write();
     fP2EarlierP1Dum->Write();
+
+    fNumHigh3F->Write();
+    fDenHigh3F->Write();
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -242,14 +204,9 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 
     double tKStar = fabs(fPair->KStar());
     fNumerator->Fill(tKStar);
+    fNumHigh3F->Fill(fPair->Track1()->Track()->Pt(),fPair->Track2()->Track()->Pt(),tKStar); 
 
-    float p1pT = fPair->Track1()->Track()->Pt();
-    if(p1pT > 0.2) fQANumerator[0]->Fill(tKStar);
-    if(p1pT > 0.3) fQANumerator[1]->Fill(tKStar);
-    if(p1pT > 0.4) fQANumerator[2]->Fill(tKStar);
-  
-
-    int VelLabel = ReVelocityGate(aPair);
+    int VelLabel = ReVelocityGate(fPair);
     if(VelLabel == 1){
         fP1EarlierP2Num->Fill(tKStar);
     }
@@ -259,6 +216,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
     else if(VelLabel == 3){
         return;
     }
+    
  
 }
 
@@ -281,14 +239,9 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 
     double tKStar = fabs(fPair->KStar());
     fDenominator->Fill(tKStar);
+    fDenHigh3F->Fill(fPair->Track1()->Track()->Pt(),fPair->Track2()->Track()->Pt(),tKStar);
 
-    float p1pT = fPair->Track1()->Track()->Pt();
-    if(p1pT > 0.2) fQADenominator[0]->Fill(tKStar);
-    if(p1pT > 0.3) fQADenominator[1]->Fill(tKStar);
-    if(p1pT > 0.4) fQADenominator[2]->Fill(tKStar);
-
-
-    int VelLabel = ReVelocityGate(aPair);
+    int VelLabel = ReVelocityGate(fPair);
     if(VelLabel == 1){
         fP1EarlierP2Dum->Fill(tKStar);
     }

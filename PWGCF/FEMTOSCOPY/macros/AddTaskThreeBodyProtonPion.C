@@ -11,7 +11,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProtonPion", int trigger = 0, bool RunPlotInvMassTriplet = false, bool RunPlotQ3Vsq = false, bool RunPlotPhiTheta = false, bool RunPlotOtherHistos = false, bool RunPlotMult = false, bool fullBlastQA = true, bool isMC = false, bool isNano = true, float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01, const char *cutVariation = "0", bool ClosePairRejectionForAll = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = true){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProtonPion", int trigger = 0, bool RunPlotInvMassTriplet = false, bool RunPlotQ3Vsq = false, bool RunPlotPhiTheta = false, bool RunPlotOtherHistos = false, bool RunPlotMult = false, int MixingDepth = 10, bool fullBlastQA = true, bool isMC = false, bool isNano = true, float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01, const char *cutVariation = "0", bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = true, bool DoTwoPrimary = false){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -157,7 +157,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProto
   config->SetDeltaEtaMax(0.017);
   config->SetDeltaPhiMax(0.017);
   config->SetExtendedQAPairs(pairQA);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(MixingDepth);
   config->SetUseEventMixing(true);
 
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
@@ -366,9 +366,11 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProto
     taskNano->SetRunPlotPhiTheta(RunPlotPhiTheta);
     taskNano->SetRunPlotOtherHistos(RunPlotOtherHistos);
     taskNano->SetRunPlotMult(RunPlotMult);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
+    taskNano->SetDoTwoPrimary(DoTwoPrimary);
     
     
     mgr->AddTask(taskNano);

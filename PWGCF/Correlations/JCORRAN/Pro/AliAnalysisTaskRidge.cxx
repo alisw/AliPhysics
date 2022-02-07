@@ -25,7 +25,6 @@
 #include "TGrid.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "TRandom3.h"
 
 #include "TString.h"
 #include "AliStack.h"
@@ -104,7 +103,6 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge()
 	, fEMpooltracklet() 
 	, fEMpoolMCALICE ()
 	, fEMpoolMCCMS ()
-	, random_subsample ()
 {
 }
 //___________________________________________________________________
@@ -120,7 +118,6 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
 	, fEMpooltracklet() 
 	, fEMpoolMCALICE ()
 	, fEMpoolMCCMS ()
-	, random_subsample ()
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -135,7 +132,6 @@ AliAnalysisTaskRidge::AliAnalysisTaskRidge
 	, fEMpooltracklet(ap.fEMpooltracklet) 
 	, fEMpoolMCALICE(ap.fEMpoolMCALICE)
 	, fEMpoolMCCMS(ap.fEMpoolMCCMS)
-	, random_subsample(ap.random_subsample)
 {
     DefineOutput (1, AliDirList::Class());
 }
@@ -182,7 +178,6 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	Double1D varcentbinHeavy = {0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
 
 	binCent = AxisVar("Cent",varcentbinHigh);
-	binSubsample = AxisFix("Subsamples",10,0.0,10.0);
 
 	if( IsAA ) binCent = AxisVar("Cent",varcentbinHeavy);
 	if( fOption.Contains("HighMult") ){ binCent = AxisVar("Cent",varcentbinHigh); }
@@ -257,18 +252,18 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
         binPhiTrack = AxisFix("PHI",180,0,2*pi);
         binEtaTrack = AxisFix("ETA",80,-4,4);
 
-        CreateTHnSparse("hRidge","Ridge",6,{binCent,binPhi,binEta,binTPt,binAPt,binSubsample},"s");
-        CreateTHnSparse("hRidgeMixingS","RidgeMixingS",6,{binCent,binPhi,binEta,binTPt,binAPt,binSubsample},"s");
-        CreateTHnSparse("hNtrig","hNtrig",4,{binCent,binTPt,binNtrig,binSubsample},"s");
+        CreateTHnSparse("hRidge","Ridge",5,{binCent,binPhi,binEta,binTPt,binAPt},"s");
+        CreateTHnSparse("hRidgeMixingS","RidgeMixingS",5,{binCent,binPhi,binEta,binTPt,binAPt},"s");
+        CreateTHnSparse("hNtrig","hNtrig",3,{binCent,binTPt,binNtrig},"s");
 
 	if( fOption.Contains("HighMult") ){
-		CreateTHnSparse("hRidgeLT","RdgeLT",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt,binSubsample},"s");
-		CreateTHnSparse("hRidgeMixingSLT","RidgeMixingSLT",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt,binSubsample},"s");
-		CreateTHnSparse("hNtrigLT","hNtrigLT",5,{binCent,binTPt_forLP,binNtrig,binLtpt,binSubsample},"s");
+		CreateTHnSparse("hRidgeLT","RdgeLT",6,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt},"s");
+		CreateTHnSparse("hRidgeMixingSLT","RidgeMixingSLT",6,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binLtpt},"s");
+		CreateTHnSparse("hNtrigLT","hNtrigLT",4,{binCent,binTPt_forLP,binNtrig,binLtpt},"s");
 
-        	CreateTHnSparse("hRidgeJet","RidgeJet",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binJetpT,binSubsample},"s");
-        	CreateTHnSparse("hRidgeMixingSJet","RidgeMixingSJet",7,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binJetpT,binSubsample},"s");
-		CreateTHnSparse("hNtrigJet","hNtrigJet",5,{binCent,binTPt_forLP,binNtrig,binJetpT,binSubsample},"s");
+        	CreateTHnSparse("hRidgeJet","RidgeJet",6,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binJetpT},"s");
+        	CreateTHnSparse("hRidgeMixingSJet","RidgeMixingSJet",6,{binCent,binPhi,binEta,binTPt_forLP,binAPt_forLP,binJetpT},"s");
+		CreateTHnSparse("hNtrigJet","hNtrigJet",4,{binCent,binTPt_forLP,binNtrig,binJetpT},"s");
 	}
 
 	CreateTHnSparse("hTrackData","hTrackData",6,{binPt,binPhiTrack,binEtaTrack,binZ,binTrkEff,binCent},"s");
@@ -389,13 +384,8 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 		}
 	}
 
-	if( fOption.Contains("GRID") ){
-		TGrid::Connect("alien://");
-		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
-		fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
-		if( fOption.Contains("Add3DEff") )fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
-	}
-
+        SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+        SetEfficiencyFilepPb("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root");
 
 	V0M_mean = 120;
 
@@ -430,7 +420,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsFirstEvent ){
 		runnumber = fEvt->GetRunNumber();
         	fRunTable = new AliAnalysisTaskRidgeRunTable(runnumber);
-		random_subsample = new TRandom3();
 //		if( !fefficiencyFile ) return;
 
 		     if( runnumber >= 252235 && runnumber <= 252330 ) Period = "LHC16d";
@@ -567,9 +556,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}
 		IsFirstEvent = kFALSE;
         }
-
-	SubSampling = (int)random_subsample->Uniform(10);
-        if( SubSampling == 10 ) SubSampling = (int)random_subsample->Uniform(10);
 
 	fCent = 200.0;
 	fZ = 0.0;
@@ -1237,10 +1223,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 
 	NTracksPerPtBin.clear();
 	NTracksPerPtBin.resize( binTPt.GetNbins() );
-
         for(int i=0;i<binTPt.GetNbins();i++){
                 NTracksPerPtBin[i] =0 ;
         }
+
+	NTracksPerPtBinLP.clear();
+	NTracksPerPtBinLP.resize( binTPt_forLP.GetNbins() );
+	for(int i=0;i<binTPt_forLP.GetNbins();i++){
+		NTracksPerPtBinLP[i] = 0;
+	}
+
 
 	AliVTrack *track1, *track2;
 	TLorentzVector temp1,temp2;
@@ -1315,6 +1307,10 @@ void AliAnalysisTaskRidge::FillTracks(){
 		if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){
 			NTracksPerPtBin[ binTPt.FindBin( track1->Pt() )-1 ] += effi;
 		}
+
+		if( binTPt_forLP.FindBin( track1->Pt() )-1 >= 0 ){
+			NTracksPerPtBinLP[ binTPt_forLP.FindBin( track1->Pt() )-1 ] += effi;
+		}
 //		if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){ NTracksPerPtBin[ binTPt.FindBin( track1->Pt() )-1 ]++; }
 		if( MaxPt < track1->Pt() ){
 			if(!fOption.Contains("SmallEtaLP") ){
@@ -1336,10 +1332,14 @@ void AliAnalysisTaskRidge::FillTracks(){
 	}
         for(int i=0;i<binTPt.GetNbins();i++){
 		if( NTracksPerPtBin[i] > 0.5 ){
-			FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0,SubSampling},NTracksPerPtBin[i]);
+			FillTHnSparse("hNtrig",{fCent,binTPt.GetBinCenter(i+1),1.0},NTracksPerPtBin[i]);
+		}
+	}
+	for(int i=0;i<binTPt_forLP.GetNbins();i++){
+		if( NTracksPerPtBinLP[i] > 0.5 ){
 			if( fOption.Contains("HighMult") ){
-				FillTHnSparse("hNtrigLT",{fCent,binTPt.GetBinCenter(i+1),1.0,MaxPt,SubSampling},NTracksPerPtBin[i] );
-				FillTHnSparse("hNtrigJet",{fCent,binTPt.GetBinCenter(i+1),1.0,fJetPt,SubSampling},NTracksPerPtBin[i] );
+				FillTHnSparse("hNtrigLT",{fCent,binTPt_forLP.GetBinCenter(i+1),1.0,MaxPt},NTracksPerPtBinLP[i] );
+				FillTHnSparse("hNtrigJet",{fCent,binTPt_forLP.GetBinCenter(i+1),1.0,fJetPt},NTracksPerPtBinLP[i] );
 			}
 		}
         }
@@ -1483,14 +1483,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 
 			if( NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1] > 0 ){
 				FillTHnSparse("hRidge",{fCent, deltaphi, deltaeta,
-					track1-> Pt(),track2-> Pt(),SubSampling},
+					track1-> Pt(),track2-> Pt()},
 					1.0/ ( eff1*eff2 ) );
+			}
+			if( NTracksPerPtBinLP[binTPt_forLP.FindBin( max(track1->Pt(),track2-> Pt()) )-1] > 0 ){
 				if( fOption.Contains("HighMult") ){
                                 	FillTHnSparse("hRidgeLT",{fCent, deltaphi, deltaeta,
-						track1-> Pt(),track2-> Pt(),MaxPt,SubSampling},
+						track1-> Pt(),track2-> Pt(),MaxPt},
 						1.0/ ( eff1*eff2 ) );
 					FillTHnSparse("hRidgeJet",{fCent, deltaphi, deltaeta,
-						track1-> Pt(),track2-> Pt(),fJetPt,SubSampling},
+						track1-> Pt(),track2-> Pt(),fJetPt},
                                         	1.0/ ( eff1*eff2 ) );
 				}
 			}
@@ -1627,16 +1629,16 @@ void AliAnalysisTaskRidge::FillTracks(){
                                         else{ eff1 = 1.0; eff2 = 1.0; }
                                 }
 				FillTHnSparse("hRidgeMixingS",{fCent, deltaphi, deltaeta,
-					track1-> Pt(),track2-> Pt(),SubSampling},
+					track1-> Pt(),track2-> Pt()},
 					1.0/(eff1*eff2) );
 
 				if( fOption.Contains("HighMult") ){
 					FillTHnSparse("hRidgeMixingSLT",{fCent, deltaphi, deltaeta,
-						track1-> Pt(),track2-> Pt(),MaxPt,SubSampling},
+						track1-> Pt(),track2-> Pt(),MaxPt},
 						1.0/(eff1*eff2) );
 
                                        	FillTHnSparse("hRidgeMixingSJet",{fCent, deltaphi, deltaeta,
-						track1-> Pt(),track2-> Pt(),fJetPt,SubSampling},
+						track1-> Pt(),track2-> Pt(),fJetPt},
                                                 1.0/(eff1*eff2) );
 				}
 			}
