@@ -397,12 +397,14 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     closeRejection[4] = false;  // barp barp
   }
 
+if((suffix == "0" && fullBlastQA)){
   pairQA[0] = 11;   // light-light
   pairQA[4] = 11;   // antilight-antilight
   pairQA[2] = 13;   // light-charm
   pairQA[3] = 13;   // light-anticharm
   pairQA[5] = 13;   // antilight charm
   pairQA[6] = 13;   // antilight anticharm
+}
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   if (trigger == "kHighMultV0") {
@@ -418,6 +420,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetMultBinning(true);
 
   config->SetExtendedQAPairs(pairQA);
+
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
 
@@ -430,7 +433,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetClosePairRejection(closeRejection);
 
   config->SetmTBinning((suffix == "0" && fullBlastQA));
-  config->SetPtQA(true);
+  config->SetPtQA((suffix == "0" && fullBlastQA));
   config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -439,7 +442,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
-  config->SetMinimalBookingME(false);
+  config->SetMinimalBookingME(suffix == "0");
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
       "AliAnalysisTaskCharmingFemto", isMC, isMCtruth);
