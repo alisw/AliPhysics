@@ -2798,7 +2798,7 @@ Double_t AliCFTaskVertexingHF::CalculateRTValue(AliAODEvent* esdEvent, AliAODMCH
       part = esdEvent->GetTrack(iT);
       eta = part->Eta();
       pt  = part->Pt();
-      if (TMath::Abs(eta) > 1.5) continue; //temporary, hardcoded eta cut to default value
+      if (TMath::Abs(eta) > 0.8) continue; //temporary, hardcoded eta cut to default value
       if (!(TMath::Abs(pt) > 0.15)) continue;
 
       // Default track filter (to be checked)
