@@ -604,7 +604,6 @@ private:
     // HF Lc->V0+bach / cascades
     Int_t fIndexV0s = -1;      /// V0 index
     Int_t fIndexTracks_0 = -1; /// Bachelor track index
-    uint8_t fHFflag = 0;       /// Selection flag
   } hfCascades;                //! structure for HF Lc->V0+bach / cascades
 
   struct {
