@@ -38,6 +38,7 @@ AliAnalysisTaskSigmaPlus* AddTaskSigmaPlus(TString name = "SigmaPlus")
     mgr->ConnectOutput(task,1,mgr->CreateContainer("Histogram_List", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer("Sigma_Candidate_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3,mgr->CreateContainer("Sigma_Candidate_Extra_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer("Sigma_Pair_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // Finally, a pointer to the created task is returned
     return task;
 }
