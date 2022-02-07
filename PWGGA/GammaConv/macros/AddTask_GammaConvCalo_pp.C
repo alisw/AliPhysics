@@ -2218,6 +2218,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("n2410113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 20-40%
     cuts.AddCutPCMCalo("n4710113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 40-70%
     cuts.AddCutPCMCalo("n7a10113","0dm00009f9730000dge0404000","24466520ga01ee00000","0h63103100000010"); // 70-100%
+  } else if ( trainConfig == 852){ // checks with "7" cut for TRD
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520sa01cc00000","0h63103100000010"); // INT7 std cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0474000","24466520ga01ee00000","0h63103100000010"); // INT7 std cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0474000","24466520sa01cc00000","0h63103100000010"); // INT7 std cut
   //PCM-PHOS pp HBT systematics studies <- without enabling extra HBT plots
   } else if ( trainConfig == 860){ // Systematics (1/4) TM variations & opening angle
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","24466520g101ee00000","0h63103100000010"); // TM stricter eta and phi
