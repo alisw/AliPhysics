@@ -1148,7 +1148,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     {
       tHFCascade->Branch("fIndexV0s", &hfCascades.fIndexV0s, "fIndexV0s/I");
       tHFCascade->Branch("fIndexTracks_0", &hfCascades.fIndexTracks_0, "fIndexTracks_0/I");
-      tHFCascade->Branch("fHFflag", &hfCascades.fHFflag, "fHFflag/b");
       tHFCascade->SetBasketSize("*", fBasketSizeEvents);
     }
   }
@@ -2656,7 +2655,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         Int_t v0Index = -1;
         hfCascadeCandidateTree->SetBranchAddress("v0index", &v0Index);
         hfCascadeCandidateTree->SetBranchAddress("trackBachel", &hfCascades.fIndexTracks_0);
-        hfCascadeCandidateTree->SetBranchAddress("hfflag", &hfCascades.fHFflag);
 
         Int_t nhfcascades_filled = 0;
         for (int i=0; i<hfCascadeCandidateTree->GetEntries(); i++) {

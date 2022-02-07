@@ -24,7 +24,9 @@ AliAnalysisTask *AddTask_jditzel_DoubleHypNucTree(UInt_t triggerMask = (AliVEven
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer("gTree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer("gTreeD", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   AliAnalysisDataContainer *coutput8 = mgr->CreateContainer("gTreeKF", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
-  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("gTreeGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName()); 
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer("gTreeGen", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput10 = mgr->CreateContainer("hTree", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
+  AliAnalysisDataContainer *coutput11 = mgr->CreateContainer("hTreeKF", TTree::Class(),AliAnalysisManager::kOutputContainer,mgr->GetCommonFileName());
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
@@ -35,5 +37,7 @@ AliAnalysisTask *AddTask_jditzel_DoubleHypNucTree(UInt_t triggerMask = (AliVEven
   mgr->ConnectOutput(task, 7, coutput7);
   mgr->ConnectOutput(task, 8, coutput8);
   mgr->ConnectOutput(task, 9, coutput9);
+  mgr->ConnectOutput(task, 10, coutput10);
+  mgr->ConnectOutput(task, 11, coutput11);
   return task;
 }
