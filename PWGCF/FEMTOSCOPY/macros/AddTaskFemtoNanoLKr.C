@@ -7,6 +7,7 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamv0Cuts.h"
 #include "AliFemtoDreamCollConfig.h"
+#include "AliFemtoDreamCascadeCuts.h"
 #endif
 
 AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
@@ -14,7 +15,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
 									 TString triggerData = "kINT7",	//4 minimum bias  (for default is this) or sample with high multiplicity KHM
                    int CutKaon = 0, ///7 decide which cut use (Ramona s or Oton s)
 									 const char *sTcut = "0", ///6 for the sphericity cuts. If it s 1, it does the sphericity cuts
-									 const char *cutVariation = "0") {  ///8 to set subwagon, and vary random combination of different cuts (systematic variation)
+									 const char *cutVariation = "0", ///8 to set subwagon, and vary random combination of different cuts (systematic variation)
+                   bool DoAncestors = true) {  //for common or uncommon ancestors
 
   TString suffix = TString::Format("%s", cutVariation); //convert into a string the information about the systematics
 	TString sTsuffix = TString::Format("%s", sTcut); ///convert into a string the information about the sphericity cuts
@@ -46,7 +48,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
   AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);//PileUpRej, false
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
-  v0Cuts->SetCutInvMass(3);
+  //by default in AliFemtoDreamv0Cuts, the parameter SetCutInvMass is 0.004. It should stay as it is, but we want to do an analysis with
+  //all the mass spectrum, so just for this analysis, we ll change this parameter. Afterwards we will put again as it is
+  v0Cuts->SetCutInvMass(3);  
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  //Proton
@@ -249,6 +253,12 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(bool isMC = true,		//2 MC
   } else {
     std::cout
         << "You are trying to request the Momentum Resolution without MC Info; fix it wont work! \n";
+  }
+
+//for common ancestors. It is tue only when we run MC 
+if (isMC && DoAncestors){
+  config->SetAncestors(true);
+  config->GetDoAncestorsPlots();
   }
 
 ///Setting all cuts for systematics
