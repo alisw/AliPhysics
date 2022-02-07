@@ -939,13 +939,13 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     if ( fCurrent_Track->GetTPCCrossedRows() < kMinTPCclusters )                                                return false;
     
     //  -   //  TPC CROSSED OVER FINDABLE
-    if ( ( ( fCurrent_Track->GetTPCCrossedRows() / fCurrent_Track->GetTPCNclsF() ) < kTPCClsOverFndbl ) ) && ( fCurrent_Track->GetTPCNclsF() <= 0 ) )                                           return false;
+    if ( ( ( fCurrent_Track->GetTPCCrossedRows() / fCurrent_Track->GetTPCNclsF() ) < kTPCClsOverFndbl ) && ( fCurrent_Track->GetTPCNclsF() != 0 ) ) return false;
     
     //  -   //  CHI2 PER CLUSTER
-    if ( ( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) > kChi2TPCcluster ) && ( fCurrent_Track->GetTPCNcls() <= 0 ) && ( fCurrent_Track->GetTPCchi2() <= 0  ) )   return false;
+    if ( ( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) > kChi2TPCcluster ) && ( fCurrent_Track->GetTPCNcls() != 0 ) ) return false;
     
     //  -   //  CHI2 GLOBAL
-    if ( ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() > kChi2TPCGlobal ) || ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() <= 0 ) )                                                     return false;
+    if ( ( fCurrent_Track->GetChi2TPCConstrainedVsGlobal() > kChi2TPCGlobal ) )                                 return false;
 
     //  -   //  REFIT
     if ( fCurrent_Track->IsOn(0x4) == false )                                                                   return false;
@@ -959,7 +959,7 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     if ( !fCurrent_Track->HasPointOnITSLayer(0) && !fCurrent_Track->HasPointOnITSLayer(1) )                     return false;
         
     //  -   //  CHI2 PER CLUSTER
-    if ( ( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) > kChi2ITScluster ) && ( fCurrent_Track->GetITSNcls() <= 0 ) && ( fCurrent_Track->GetITSchi2() <= 0 ) ) return false;
+    if ( ( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) > kChi2ITScluster ) && ( fCurrent_Track->GetITSNcls() != 0 ) ) return false;
     
     if ( fIs_p_p )  {
         //  ------------------------ CUSTOM IMPLEMENTATION FOR pp
@@ -1013,10 +1013,10 @@ void        AliAnalysisTaskPhiCount::fQC_TRK( )                                 
     fQC_Tracks_DCAZ_P   ->Fill(fCurrent_Track_Charge*0.5,   fCurrent_Track_Momentum,    fCurrent_Track_DCAZ);
     fQC_Tracks_DCAZ_PT  ->Fill(fCurrent_Track_Charge*0.5,   fCurrent_Track_TransMom,    fCurrent_Track_DCAZ);
     fQC_Tracks_TPC_CLS  ->Fill(fCurrent_Track->GetTPCCrossedRows() );
-    if ( fCurrent_Track->GetTPCNclsF()  <= 0 )  fQC_Tracks_TPC_FRC  ->Fill( ( fCurrent_Track->GetTPCCrossedRows() / fCurrent_Track->GetTPCNclsF() ) );
-    if ( fCurrent_Track->GetTPCNcls()   <= 0 )  fQC_Tracks_TPC_CHI  ->Fill( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) );
+    if ( fCurrent_Track->GetTPCNclsF()  != 0 )  fQC_Tracks_TPC_FRC  ->Fill( ( fCurrent_Track->GetTPCCrossedRows() / fCurrent_Track->GetTPCNclsF() ) );
+    if ( fCurrent_Track->GetTPCNcls()   != 0 )  fQC_Tracks_TPC_CHI  ->Fill( ( 1.*fCurrent_Track->GetTPCchi2() ) / ( 1.*fCurrent_Track->GetTPCNcls() ) );
     fQC_Tracks_TPC_CNS  ->Fill(fCurrent_Track->GetChi2TPCConstrainedVsGlobal() );
-    if ( fCurrent_Track->GetITSNcls() ) <= 0 )  fQC_Tracks_ITS_CHI  ->Fill( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) );
+    if ( fCurrent_Track->GetITSNcls()   != 0 )  fQC_Tracks_ITS_CHI  ->Fill( ( 1.*fCurrent_Track->GetITSchi2() ) / ( 1.*fCurrent_Track->GetITSNcls() ) );
 }
 
 //_____________________________________________________________________________
