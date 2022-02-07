@@ -396,14 +396,13 @@ private:
 
     Int_t   fIndexMcCollisions = -1;    /// The index of the MC collision vertex
 
-    // MC information (modified version of TParticle
+    // MC information (modified version of TParticle)
     Int_t fPdgCode    = -99999; /// PDG code of the particle
     Int_t fStatusCode = -99999; /// generation status code
     uint8_t fFlags    = 0;     /// See enum MCParticleFlags
-    Int_t fIndexMcParticles_Mother0    = 0; /// Indices of the mother particles
-    Int_t fIndexMcParticles_Mother1    = 0;
-    Int_t fIndexMcParticles_Daughter0  = 0; /// Indices of the daughter particles
-    Int_t fIndexMcParticles_Daughter1  = 0;
+    Int_t fIndexArray_Mothers_size     = 0;   /// Length of fIndexArray_Mothers
+    Int_t fIndexArray_Mothers[1]       = {0}; /// VLA of mothers (always length 1 for Run 2)
+    Int_t fIndexSlice_Daughters[2]     = {0}; /// Slice of daughter particles
     Float_t fWeight   = 1;     /// particle weight from the generator or ML
 
     Float_t fPx = -999.f; /// x component of momentum
@@ -650,7 +649,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 26);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 27);
 };
 
 #endif
