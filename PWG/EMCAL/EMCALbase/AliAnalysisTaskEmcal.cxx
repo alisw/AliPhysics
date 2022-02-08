@@ -701,8 +701,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     }
     */
     fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
-    fHistTrials->Fill(fPtHardBin);
-    fHistEvents->Fill(fPtHardBin);
+    fHistTrials->Fill(fPtHardBinGlobal);
+    fHistEvents->Fill(fPtHardBinGlobal);
   }
 
   if(fIsHepMC && fHepMCHeader) {
