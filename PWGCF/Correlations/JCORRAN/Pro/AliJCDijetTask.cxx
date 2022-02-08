@@ -93,7 +93,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fUtils(nullptr)
 {
     // Constructor
-    AliInfo("---- AliJCDijetTask Constructor ----");
+    AliInfo(Form("---- AliJCDijetTask Constructor: %s ----",name));
     DefineOutput (1, TDirectory::Class());
 }
 
