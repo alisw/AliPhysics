@@ -144,6 +144,9 @@ public:
 		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
 
+// Methods to apply tighter cuts on Run2.
+	void SetTightCuts(bool usePrimary) {fUseTightCuts = usePrimary;}
+
 // Methods to use alternative correction weights.
 	Int_t GetRunIndex10h(Int_t runNumber);
 	void SetInputAlternativeNUAWeights10h(bool UseAltWeight, TString fileWeight);
@@ -201,10 +204,12 @@ private:
 	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
 	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
 
+// Data members for the use of tighter cuts in Run2.
+	bool fUseTightCuts;		// if kTRUE: apply tighter cuts on DCAxy and goldenChi2
 
   TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
-  TH1F *fPTHistogram[16][2];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection.
-  TH1F *fPhiHistogram[16][2];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection.
+  TH1F *fPTHistogram[16][3];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: After correction.
+  TH1F *fPhiHistogram[16][3];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: after correction.
   TH1F *fEtaHistogram[16][2];		//! 0: Eta Before Track Selection, 1: Eta After Track Selection.
   TH1F *fMultHistogram[16][2];		//! 0: Multiplicity Before Track Selection, 1: Mult. After Track Selection.
   TH1F *fTPCClustersHistogram[16][2];		//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection.
@@ -220,7 +225,8 @@ private:
   TH1F *fVertexZHistogram[16][2];		//! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut.
   TH2D *fHMOsHistogram[16][2];		//! 0: Correlations between global and TPC tracks before, 1: after HMO cut.
   TH1F *fHistoPhiWeight[16][90];	// Histograms to save the NUA correction weights per centrality and runs.
+  TProfile *fProfileWeights[16];	//! Profiles for the weights to apply per phi bins.
 
-  ClassDef(AliJCatalystTask, 5);
+  ClassDef(AliJCatalystTask, 6);
 };
 #endif // AliJCatalystTask_H
