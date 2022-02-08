@@ -720,6 +720,8 @@ int AliJCDijetHistos::GetDijetMClass(Double_t fMClass){
     }
     if(fMClass > dijetMBin.at(fnNewBinsDijet1))
         return fnNewBinsDijet1;
-    return -1;
+    if(fMClass <= 0.0)
+        return 0;
+    return 0;
 }
 
