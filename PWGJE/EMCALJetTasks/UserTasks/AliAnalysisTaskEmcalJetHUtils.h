@@ -159,7 +159,7 @@ class AliAnalysisTaskEmcalJetHUtils {
  * All functions in the FlowVectorCorrections static class are copied diretly from the AddTask. I wish I didn't have
  * to do this, but I need it in compiled code, so I have no choice.
  */
-/*
+
 class FlowVectorCorrections {
  public:
   static void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
@@ -171,7 +171,7 @@ class FlowVectorCorrections {
   static void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);
   static void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos* histos, TString histClass);
 };
-*/
+
 
 } /* namespace EMCALJetTasks */
 } /* namespace PWGJE */

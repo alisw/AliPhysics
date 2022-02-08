@@ -1136,7 +1136,7 @@ double AliAnalysisTaskEmcalJetHUtils::LHC18qrTrackingEfficiency(const double tra
 double AliAnalysisTaskEmcalJetHUtils::LHC18qrPtEfficiency(const double trackPt, const double params[11])
 {
   return ((trackPt <= 2.7) * LHC18qrLowPtEfficiencyImpl(trackPt, params, 0) +
-      (trackPt > 2.7 && trackPt <= 10) * LHC18qrLowPtEfficiencyImpl(trackPt, params, 5) +
+      (trackPt > 2.7 && trackPt <= 10) * LHC18qrMidPtEfficiencyImpl(trackPt, params, 5) +
       (trackPt > 10) * LHC18qrHighPtEfficiencyImpl(params, 5));
 }
 
