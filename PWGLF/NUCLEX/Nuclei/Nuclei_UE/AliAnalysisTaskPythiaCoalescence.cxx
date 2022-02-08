@@ -225,6 +225,14 @@ void AliAnalysisTaskPythiaCoalescence::UserCreateOutputObjects()
     fOutputList->Add(hNeutronsINELgtZERO_reshaped);
 
     // p_{T} Spectra Deuterons
+    hDeuteronsINELgtZERO_TruewignerGaus = new TH1D("hDeuteronsINELgtZERO_TruewignerGaus", "Distance: 1.2 fm", nPtDeuteron, pt_deuteron);
+    hDeuteronsINELgtZERO_TruewignerGaus->Sumw2();
+    fOutputList->Add(hDeuteronsINELgtZERO_TruewignerGaus);
+
+    hDeuteronsINELgtZERO_TruewignerDoubleGaus = new TH1D("hDeuteronsINELgtZERO_TruewignerDoubleGaus", "Distance: 1.2 fm", nPtDeuteron, pt_deuteron); // min bias
+    hDeuteronsINELgtZERO_TruewignerDoubleGaus->Sumw2();
+    fOutputList->Add(hDeuteronsINELgtZERO_TruewignerDoubleGaus);
+
     for (Int_t i = 0; i < 50; i++)
     {
 
@@ -263,24 +271,18 @@ void AliAnalysisTaskPythiaCoalescence::UserCreateOutputObjects()
 
 
         // p_{T} Spectra: Deuterons (True Wigner Gaus)
-        hDeuteronsINELgtZERO_TruewignerGaus = new TH1D("hDeuteronsINELgtZERO_TruewignerGaus", "Distance: 1.2 fm", nPtDeuteron, pt_deuteron);
         hDeuterons_Toward_TruewignerGaus[i] = new TH1D(Form("hDeuterons_Toward_TruewignerGaus[%d]", i), Form("Distance: %d*0.05 fm", i ), 500, 0, 5);
         hDeuterons_Transv_TruewignerGaus[i] = new TH1D(Form("hDeuterons_Transv_TruewignerGaus[%d]", i), Form("Distance: %d*0.05 fm", i ), 500, 0, 5);
-        hDeuteronsINELgtZERO_TruewignerGaus->Sumw2();
         hDeuterons_Toward_TruewignerGaus[i]->Sumw2();
         hDeuterons_Transv_TruewignerGaus[i]->Sumw2();
-        fOutputList->Add(hDeuteronsINELgtZERO_TruewignerGaus);
         fOutputList->Add(hDeuterons_Toward_TruewignerGaus[i]);
         fOutputList->Add(hDeuterons_Transv_TruewignerGaus[i]);
 
         // p_{T} Spectra: Deuterons (True Wigner DoubleGaus)
-        hDeuteronsINELgtZERO_TruewignerDoubleGaus = new TH1D("hDeuteronsINELgtZERO_TruewignerDoubleGaus", "Distance: 1.2 fm", nPtDeuteron, pt_deuteron); // min bias
         hDeuterons_Toward_TruewignerDoubleGaus[i] = new TH1D(Form("hDeuterons_Toward_TruewignerDoubleGaus[%d]", i), Form("Distance: %d*0.05 fm", i ), 500, 0, 5);                      // Toward region
         hDeuterons_Transv_TruewignerDoubleGaus[i] = new TH1D(Form("hDeuterons_Transv_TruewignerDoubleGaus[%d]", i), Form("Distance: %d*0.05 fm", i ), 500, 0, 5);                      // away region
-        hDeuteronsINELgtZERO_TruewignerDoubleGaus->Sumw2();
         hDeuterons_Toward_TruewignerDoubleGaus[i]->Sumw2();
         hDeuterons_Transv_TruewignerDoubleGaus[i]->Sumw2();
-        fOutputList->Add(hDeuteronsINELgtZERO_TruewignerDoubleGaus);
         fOutputList->Add(hDeuterons_Toward_TruewignerDoubleGaus[i]);
         fOutputList->Add(hDeuterons_Transv_TruewignerDoubleGaus[i]);
 
@@ -580,10 +582,10 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
             }
         }
     }
-
     //************************************************** COALESCENCE: WIGNER GAUS **************************************************//
     for (Int_t iTrial = 0; iTrial < nTrials; iTrial++)
     {
+                //std::cout << "Trial " << iTrial << std::endl;
 
         // Reset Neutron Status
         for (Int_t in = 0; in < (Int_t)neutron_ID.size(); in++)
@@ -593,7 +595,7 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
 
         for (Int_t ip = 0; ip < (Int_t)proton_ID.size(); ip++)
         {
-
+             //std::cout << "Proton " << ip  << std::endl;
             // Proton 4-Momentum
             AliMCParticle *proton = (AliMCParticle *)fMCEvent->GetTrack(proton_ID[ip]);
             TLorentzVector p_proton;
@@ -601,7 +603,7 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
 
             for (Int_t in = 0; in < (Int_t)neutron_ID.size(); in++)
             {
-
+                //std::cout << "HOLY CANOLY" << std::endl;
                 // Neutron 4-Momentum
                 AliMCParticle *neutron = (AliMCParticle *)fMCEvent->GetTrack(neutron_ID[in]);
                 TLorentzVector p_neutron;
@@ -651,8 +653,8 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
                 Double_t rndmG = gRandom->Uniform(0.0, 1.0); // random number for Gaus Wavefunction
                 // Gaussian Wigner function Coalescence Condition
                 Double_t SourceSize = 1.2; // fm. Bambi This should be done as a function of mT
-                Double_t zeta = pow((pow(3.2, 2)) / (pow(3.2, 2) + 4 * SourceSize), 3 / 2);
-                if (rndmG < 3 * zeta * exp(-deltaP * deltaP * 3.2 * 3.2 * 5.08 * 5.08))
+                Double_t zeta = pow(pow(3.2, 2) / (pow(3.2, 2) + 4 * SourceSize), 3 / 2);
+                if (rndmG < 3 * zeta * exp(-deltaP/2 * deltaP/2 * 3.2 * 3.2 * 5.08 * 5.08))
                 {
 
                     neutron_status[in] = 1;
