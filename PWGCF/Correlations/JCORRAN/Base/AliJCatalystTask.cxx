@@ -92,7 +92,8 @@ AliJCatalystTask::AliJCatalystTask():
  	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
-	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
+	fUseTightCuts(false)
 {
 	InitializeArrays(); //
 }
@@ -143,7 +144,8 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
  	fChi2perNDF_min(0.1),	// TBC: Which default value do we choose?
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
-	fDCAz_max(3.2)	// TBC: Shall we keep 2010 default?
+	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
+	fUseTightCuts(false)
 {
 // Main list to save the output of the QA.
   fMainList = new TList();
@@ -482,6 +484,14 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 		    DCAz = pos[2] - v[2];
 		  }
 
+		  // Newer: Set the tighter cuts for PbPb Run2: primary cuts along with hybrids.
+		  if (fUseTightCuts){
+		  	// Set the golden cut on chi2: < 36
+		  	if ((track->GetChi2TPCConstrainedVsGlobal()) > 36) {continue;}
+		  	// Redefine the max for DCAxy as a function of pT.
+		  	fDCAxy_max = 0.0105 + 0.0350/(TMath::Power(track->Pt(), 1.1));
+		  }
+
 		  // New: Apply the cuts on the DCA values of the track.
 			if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
 			if(TMath::Abs(DCAz) > fDCAz_max) {continue;}
@@ -552,6 +562,12 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 					}
 				}
 				itrack->SetWeight(phi_module_corr);
+
+				if (bSaveAllQA){
+					fProfileWeights[GetCentralityBin(fcent)]->Fill(itrack->Phi(), phi_module_corr);
+					fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(track->Phi(), 1./phi_module_corr);
+					fPTHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Pt(), 1./effCorr);
+				}
 			}	// End: if(track->TestFilterBit( fFilterBit ))
 		}
 
@@ -901,8 +917,11 @@ void AliJCatalystTask::InitializeArrays() {
 		  fMultHistogram[icent][i] = NULL;
 		  fHMOsHistogram[icent][i] = NULL;
 		}
+	    fPTHistogram[icent][2] = NULL;
+		  fPhiHistogram[icent][2] = NULL;
 
 		fCentralityHistogram[icent] = NULL;
+		fProfileWeights[icent] = NULL;
 		for(int iRun = 0; iRun < 90; iRun++) {fHistoPhiWeight[icent][iRun] = NULL;}
 	}
 }
@@ -934,6 +953,11 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fPTHistogram[icent][1]->GetXaxis()->SetTitle("P_t");
 	 fPTHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][1]);
+
+	 fPTHistogram[icent][2] = new TH1F("fPTHist_AfterTrackSelection_Weighted","Pt Distribution",1000,0.,10.);
+	 fPTHistogram[icent][2]->GetXaxis()->SetTitle("P_t");
+	 fPTHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
 	 
 	 // b) Book histogram to hold phi spectra
 	 fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
@@ -945,6 +969,11 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
+
+	 fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
+	 fPhiHistogram[icent][2]->SetLineColor(4);
+	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
 
 	 // c) Book histogram to hold eta distribution before track selection:
 	 fEtaHistogram[icent][0] = new TH1F("fEtaHist_BeforeTrackSelection","Eta Distribution",1000,-1.,1.); 
@@ -1057,6 +1086,12 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{global}");
 	 fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
 	 if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
+
+	 // TProfile for the weights to apply.
+   fProfileWeights[icent] = new TProfile("fProfileWeights","Phi Weights",1000,-TMath::Pi(),TMath::Pi()); //centrality dependent output
+	 fProfileWeights[icent]->GetXaxis()->SetTitle("#varphi");
+	 fProfileWeights[icent]->GetYaxis()->SetTitle("weight");
+	 fControlHistogramsList[icent]->Add(fProfileWeights[icent]);
 
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 }
