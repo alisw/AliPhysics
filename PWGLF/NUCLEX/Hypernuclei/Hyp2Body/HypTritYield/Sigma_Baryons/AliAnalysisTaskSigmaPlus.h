@@ -89,6 +89,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         TTree*                fSigmaCandTree;             //! Tree with Sigma candidates
         TTree*                fSigmaCandTreeExtra;        //! Tree with Extra Sigma candidates
+        TTree*                fSigmaPairTree;             //! Tree with Sigma Proton Pairs
 
         //V0 Arrays
         std::vector<int>      fOnFlyVector;               //!<! Save the track IDs used by the V0 Finders 
@@ -125,12 +126,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fProcessProtons = kTRUE; 
         Bool_t                fProcessMCParticles = kTRUE; 
         Bool_t                fProcessV0s = kTRUE; 
-        Bool_t                fProcessAddPhoton = kTRUE; 
-        Bool_t                fProcessElectrons = kTRUE; 
+        Bool_t                fProcessAddPhoton = kFALSE; 
+        Bool_t                fProcessElectrons = kFALSE; 
         Bool_t                fProcessReco = kTRUE; 
-        Bool_t                fProcessRecoOff = kTRUE; 
-        Bool_t                fProcessRecoOff2 = kTRUE; 
+        Bool_t                fProcessRecoOff = kFALSE; 
+        Bool_t                fProcessRecoOff2 = kFALSE; 
         Bool_t                fProcessOneGamma = kFALSE; 
+        Bool_t                fSavePairs = kTRUE; 
         void SetActivateProton(Bool_t processprotons) {fProcessProtons = processprotons;}
         void SetActivateMCParticles(Bool_t processmcpart) {fProcessMCParticles = processmcpart;}
         void SetActivateV0s(Bool_t processv0s) {fProcessV0s = processv0s;}
@@ -140,11 +142,12 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetActivateRecoOff(Bool_t processrecooff) {fProcessRecoOff = processrecooff;}
         void SetActivateRecoOff2(Bool_t processrecooff2) {fProcessRecoOff2 = processrecooff2;}
         void SetActivateOneGamma(Bool_t processonegamma) {fProcessOneGamma = processonegamma;}
+        void SetActivatePairs(Bool_t savepairs) {fSavePairs = savepairs;}
 
         //FillProtonArray Cuts
         Double_t              fMaxProtEta = 0.9;    
         Double_t              fMinTPCClustProt = 60;
-        Double_t              fMaxNsigProtTPC = 5;
+        Double_t              fMaxNsigProtTPC = 3.5;
         Double_t              fMaxNsigProtTOF = 5;  
         Double_t              fMaxpOnlyTPCPID = 0.8;
         Double_t              fMinProtpt = 0; 
@@ -165,14 +168,14 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxDaughtEta = 0.9;    
         Double_t              fMinTPCClustDaught = 30;
         Double_t              fMaxNsigDaughtTPC = 5;
-        Double_t              fMaxalpha = 1.2;
-        Double_t              fMaxqt = 0.06;
+        Double_t              fMaxalpha = 1;
+        Double_t              fMaxqt = 0.05;
         Double_t              fMaxopenangle = 0.3;
         Double_t              fMaxdeltatheta = 0.1;
         Double_t              fMinV0CPA = 0.8;
         Double_t              fMinV0Radius = 3; 
         Double_t              fMaxV0Radius = 220;
-        Double_t              fMaxphotonmass = 0.15;
+        Double_t              fMaxphotonmass = 0.1;
         void SetV0DaughtMaxEta(Double_t maxeta) {fMaxDaughtEta = maxeta;}
         void SetV0DaughtMinTPCCluster(Double_t minclst) {fMinTPCClustDaught = minclst;}
         void SetV0DaughtMaxNSigmaTPC(Double_t nsigtpc) {fMaxNsigDaughtTPC = nsigtpc;}
@@ -213,9 +216,9 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxSigmaMass = 1.7;    
         Double_t              fMinProtonDCAxy = 0;    
         Double_t              fMinProtonDCAz = 0;
-        Double_t              flowkstar = 0.6;    
-        Double_t              fverylowkstar = 0.3;    
-        Double_t              fveryverylowkstar = 0.1;        
+        Double_t              flowkstar = 0.3;    
+        Double_t              fverylowkstar = 0.15;    
+        Double_t              fveryverylowkstar = 0.05;        
         void SetCleanAutoCorrelations(Bool_t cleanpairs) {fCleanAutoCorr = cleanpairs;}        
         void SetPi0MinMass(Double_t minpi0mass) {fMinPi0Mass = minpi0mass;}
         void SetPi0MaxMass(Double_t maxpi0mass) {fMaxPi0Mass = maxpi0mass;}
@@ -226,6 +229,22 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetLowkstar(Double_t lowkstar) {flowkstar = lowkstar;}
         void SetVeryLowkstar(Double_t verylowkstar) {fverylowkstar = verylowkstar;}
         void SetVeryVeryLowkstar(Double_t veryverylowkstar) {fveryverylowkstar = veryverylowkstar;}
+
+        //Fill Pair Tree Cuts     (Coarse Cuts to reduce Tree Size)
+        Double_t              fMinPairPi0Mass = 0.1;    
+        Double_t              fMaxPairPi0Mass = 0.16;    
+        Double_t              fMaxPairSigmaPA = 0.06;     
+        Double_t              fMinPairSigmaMass = 1.16;    
+        Double_t              fMaxPairSigmaMass = 1.22;    
+        Double_t              fMinPairProtonDCAxy = 0.005;    
+        Double_t              fMaxPairkstar = 0.5;    
+        void SetPairPi0MinMass(Double_t minpi0mass) {fMinPairPi0Mass = minpi0mass;}
+        void SetPairPi0MaxMass(Double_t maxpi0mass) {fMaxPairPi0Mass = maxpi0mass;}
+        void SetPairSigmaMaxPA(Double_t maxpa) {fMaxPairSigmaPA = maxpa;}
+        void SetPairSigmaMinMass(Double_t minsigmass) {fMinPairSigmaMass = minsigmass;}
+        void SetPairSigmaMaxMass(Double_t maxsigmass) {fMaxPairSigmaMass = maxsigmass;}
+        void SetPairProtonMinDCAxy(Double_t minprotondcaxy) {fMinPairProtonDCAxy = minprotondcaxy;}
+        void SetPairMaxkstar(Double_t maxkstar) {fMaxPairkstar = maxkstar;}
 
         //Branches of TTree "fSigmaCandTree"
         Bool_t                fIsMCSigma;
@@ -304,6 +323,19 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fPhotonDCAPV;        
         Float_t               fExtPhotProtDCA;
         //End of Extra Branches of "fSigmaCandTreeExtra"
+
+        //Extra Branches of TTree "fSigmaPairTree"
+        Float_t               fPairProtonIsMC;        
+        Float_t               fPairProtonPx;        
+        Float_t               fPairProtonPy;        
+        Float_t               fPairProtonPz;        
+        Float_t               fPairProtonDCAtoPVxy;
+        Float_t               fPairProtonDCAtoPVz;        
+        Float_t               fPairProtonNSigTPC;        
+        Float_t               fPairProtonNSigTOF;
+        Int_t                 fPairProtonCluster;
+        Int_t                 fPairProtonID;
+        //End of Extra Branches of "fSigmaPairTree"
 
         AliAnalysisTaskSigmaPlus(const AliAnalysisTaskSigmaPlus&); // not implemented
         AliAnalysisTaskSigmaPlus& operator=(const AliAnalysisTaskSigmaPlus&); // not implemented
