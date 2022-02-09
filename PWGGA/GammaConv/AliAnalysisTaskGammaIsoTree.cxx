@@ -416,6 +416,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_EventNtrials(0),
   fBuffer_EventNPrimaryTracks(0),
   fBuffer_EventIsTriggered(0),
+  fBuffer_EventZVertex(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
@@ -859,6 +860,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_EventNtrials(0),
   fBuffer_EventNPrimaryTracks(0),
   fBuffer_EventIsTriggered(0),
+  fBuffer_EventZVertex(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
@@ -2494,6 +2496,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     if(fIsMC>0) fAnalysisTree->Branch("Event_Ntrials", &fBuffer_EventNtrials,"Event_Ntrials/s");
     fAnalysisTree->Branch("Event_NPrimaryTracks", &fBuffer_EventNPrimaryTracks,"Event_NPrimaryTracks/s");
     fAnalysisTree->Branch("Event_IsTriggered", &fBuffer_EventIsTriggered,"Event_IsTriggered/O");
+    fAnalysisTree->Branch("Event_ZVertex", &fBuffer_EventZVertex,"Event_ZVertex/D");
     fAnalysisTree->Branch("Cluster_E","std::vector<Float_t>",&fBuffer_ClusterE);
     fAnalysisTree->Branch("Cluster_Px","std::vector<Float_t>",&fBuffer_ClusterPx);
     fAnalysisTree->Branch("Cluster_Py","std::vector<Float_t>",&fBuffer_ClusterPy);
@@ -2715,6 +2718,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+  fBuffer_EventZVertex = vertex[2]; // store Z coordinate in tree
 
   if(fSaveConversions) ProcessConversionPhotons();
   // auto startCalo = std::chrono::high_resolution_clock::now();
