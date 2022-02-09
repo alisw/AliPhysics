@@ -1,6 +1,6 @@
 /*
 Author: Emil Gorm Nielsen
-Modified from AliCkContainer by Vytautas 
+Modified from AliCkContainer by Vytautas
 Container to store the terms required to calculate higher order moments of the pT spectrum.
 If used, modified, or distributed, please aknowledge the original author of this code.
 */
@@ -63,7 +63,7 @@ void AliPtContainer::InitializeSubsamples(const int &nsub)
         ((AliProfileBS*)fTermList->At(i))->InitializeSubsamples(nsub);
     return;
 };
-void AliPtContainer::FillObs(double inarr[15][15], const double &lMult, const double &rn) 
+void AliPtContainer::FillObs(double inarr[15][15], const double &lMult, const double &rn)
 {
     switch(mpar)
     {
@@ -158,7 +158,7 @@ void AliPtContainer::CalculateObs()
   //reset mpt weights
   ((AliProfileBS*)fObsList->At(mpar))->PresetWeights(0);
 }
-TH1 *AliPtContainer::RecalculateObsHists(vector<TH1*> inh) 
+TH1 *AliPtContainer::RecalculateObsHists(vector<TH1*> inh)
 {
     TH1* reth = (TH1*)inh[mpar]->Clone("reth");
     switch(mpar)
@@ -180,7 +180,7 @@ TH1 *AliPtContainer::RecalculateObsHists(vector<TH1*> inh)
     }
     return reth;
 }
-TH1 *AliPtContainer::RecalculateCkHists(vector<TH1*> inh) 
+TH1 *AliPtContainer::RecalculateCkHists(vector<TH1*> inh)
 {
   inh[1]->Multiply(inh[2]);
   inh[1]->Scale(2);
@@ -194,7 +194,7 @@ TH1 *AliPtContainer::RecalculateCkHists(vector<TH1*> inh)
   delete hWeights;
   return (TH1*)inh[0]->Clone("hRec");
 }
-TH1 *AliPtContainer::RecalculateSkewHists(vector<TH1*> inh) 
+TH1 *AliPtContainer::RecalculateSkewHists(vector<TH1*> inh)
 {
   inh[1]->Multiply(inh[3]);
   inh[1]->Scale(3);
@@ -214,7 +214,7 @@ TH1 *AliPtContainer::RecalculateSkewHists(vector<TH1*> inh)
   delete hWeights;
   return (TH1*)inh[0]->Clone("hRec");
 }
-TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh) 
+TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh)
 {
   inh[1]->Multiply(inh[4]);
   inh[1]->Scale(4);
@@ -239,4 +239,31 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh)
   for(Int_t i=1;i<=hWeights->GetNbinsX();i++) inh[0]->SetBinError(i,hWeights->GetBinError(i));
   delete hWeights;
   return (TH1*)inh[0]->Clone("hRec");
+}
+Long64_t AliPtContainer::Merge(TCollection *collist) {
+  Long64_t nmerged=0;
+  TIter all_PTC(collist);
+  AliPtContainer *l_PTC = 0;
+  while ((l_PTC = ((AliPtContainer*) all_PTC()))) {
+      TList *t_Term = l_PTC->fTermList;
+      TList *t_Obs  = l_PTC->fObsList;
+      if(t_Term) {
+        if(!fTermList) fTermList = (TList*)t_Term->Clone();
+        else MergeBSLists(fTermList,t_Term);
+        nmerged++;
+      };
+      if(t_Obs) {
+        if(!fObsList) fObsList = (TList*)t_Obs->Clone();
+        else MergeBSLists(fObsList,t_Obs);
+      };
+  }
+  return nmerged;
+}
+void AliPtContainer::MergeBSLists(TList *source, TList *target) {
+  if(source->GetEntries()!=target->GetEntries()) { printf("Number in lists to be merged are not the same, skipping...\n"); return; };
+  for(Int_t i=0;i<source->GetEntries();i++) {
+    AliProfileBS *l_obj = (AliProfileBS*)source->At(i);
+    AliProfileBS *t_obj = (AliProfileBS*)target->At(i);
+    l_obj->MergeBS(t_obj);
+  };
 }
