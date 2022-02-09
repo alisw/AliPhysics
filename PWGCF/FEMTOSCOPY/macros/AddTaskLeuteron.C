@@ -6,7 +6,7 @@
  */
 
 #include "AliAnalysisTaskLeuteronAOD.h"
-#include "AliAnalysisTaskLeuteronAOD.cxx"
+
 
 
 AliAnalysisTaskSE *AddTaskLeuteron(
