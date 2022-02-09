@@ -235,7 +235,8 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
 
   // Histograms
   THistManager           fHistManager;             ///<  Histogram manager
-  TH1                   *fHistJetHTrackPt;         //!<! Track pt spectrum
+  TH1                   *fHistJetHTrackPtraw;      //!<! Track pt spectrum (for all tracks !)
+  TH1                   *fHistJetHTrackPt;         //!<! Track pt spectrum  (for jet pT > 15 GeV)
   TH2                   *fHistJetEtaPhi;           //!<! Jet eta-phi distribution
   TH2                   *fHistTrackEtaPhi[7];      //!<! Track eta-phi distribution (the array corresponds to track pt)
   TH2                   *fHistJetHEtaPhi;          //!<! Eta-phi distribution of jets which are in jet-hadron correlations
