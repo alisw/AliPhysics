@@ -956,8 +956,8 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
                     }
                     break;
                 }
-                if (iTrial == 0)
-                {
+                //if (iTrial == 0)
+                //{
                     // Bambi: add here the Coalescence in the Regions with Wigner probability
                     //  True Wigner function Coalescence
                 Double_t rndmG = gRandom->Uniform(0.0, 1.0); // random number for Gaus Wavefunction
@@ -1001,7 +1001,7 @@ void AliAnalysisTaskPythiaCoalescence::UserExec(Option_t *)
                         hDeuterons_Transv_TruewignerDoubleGaus[iTrial]->Fill(pt, deutWeight);
                     break;
                     }
-                }    
+                //}    
             }
         }
     }
