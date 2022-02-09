@@ -3403,10 +3403,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // STD
   } else if (trainConfig == 3101){ //  NL , STD without smearing
   //                                                                 //
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411791109fe30230000","0r63103100000010"); // EG2  NL11
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411791209fe30230000","0r63103100000010"); // EG2  NL12
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411792109fe30230000","0r63103100000010"); // EG2  NL21
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411792209fe30230000","0r63103100000010"); // EG2  NL22
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe30230000","0r63103100000010"); // EG2  NL97
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799809fe30230000","0r63103100000010"); // EG2  NL98
   } else if (trainConfig == 3102) {  //   (fPSigSmearing, fPSigSmearingCte)
   //                                                                                            /
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100b00010"); // no smearing
@@ -3536,10 +3534,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // STD
   } else if (trainConfig == 3201){ //  NL , STD without smearing
   //                                                                 //
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411791109fe30230000","0r63103100000010"); // EG1  NL11
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411791209fe30230000","0r63103100000010"); // EG1  NL12
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411792109fe30230000","0r63103100000010"); // EG1  NL21
-    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411792209fe30230000","0r63103100000010"); // EG1  NL22
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe30230000","0r63103100000010"); // EG1  NL97
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799809fe30230000","0r63103100000010"); // EG1  NL98
   } else if (trainConfig == 3202) {  //   (fPSigSmearing, fPSigSmearingCte)
   //                                                                                            /
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100b00010"); // no smearing
@@ -3753,7 +3749,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109f830230000","0r63103100000010"); // ExC 95
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109fb30230000","0r63103100000010"); // ExC 95 + TCard > 50
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411790109f030230000","0r63103100000010"); // Off
-
+  } else if (trainConfig == 3316){ //  NL , STD without smearing
+  //                                                                 //
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799709fe30230000","0r63103100000010"); // INT7B  NL97
+    cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799809fe30230000","0r63103100000010"); // INT7B  NL98
 
 
     // systematics for PCM-PHOS  13 TeV- LowB
@@ -3877,10 +3876,8 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // STD
   } else if (trainConfig == 3501){ //  NL , STD without smearing
   //                                                                 //
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109fe30230000","0r63103100000010"); // INT7  NL11
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791209fe30230000","0r63103100000010"); // INT7  NL12
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792109fe30230000","0r63103100000010"); // INT7  NL21
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411792209fe30230000","0r63103100000010"); // INT7  NL22
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe30230000","0r63103100000010"); // INT7  NL97
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe30230000","0r63103100000010"); // INT7  NL98
   } else if (trainConfig == 3502) {  //   (fPSigSmearing, fPSigSmearingCte)  //                                                                                            /
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100b00010"); // smearing
     // Variations of EDC Part
