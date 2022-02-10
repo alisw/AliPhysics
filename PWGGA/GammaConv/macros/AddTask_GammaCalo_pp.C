@@ -2815,21 +2815,21 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2040){ // no TM
     cuts.AddCutCalo("00010113","4117901090e3n230000","0s631031000000d0"); // INT7 NL 21 + TB
     cuts.AddCutCalo("00010113","4117901090e30230000","0s631031000000d0"); // INT7 NL 21 + TB no NCell cut
-  } else if (trainConfig == 2041){ // no TM (cell TM in correction framework)
-    cuts.AddCutCalo("00010113","4117901090e3n230000","0s631031000000d0"); // INT7 NL 21 + TB
-    cuts.AddCutCalo("00010113","4117901090e30230000","0s631031000000d0"); // INT7 NL 21 + TB no NCell cut
+  } else if (trainConfig == 2041){ // E<p < 1.1 TM
+    cuts.AddCutCalo("00010113","411790109pe3n230000","0s631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("00010113","411790109pe30230000","0s631031000000d0"); // INT7 NL 21 + TB no NCell cut
   } else if (trainConfig == 2042){ // no TM EG2
     cuts.AddCutCalo("0008e113","4117901090e3n230000","0s631031000000d0"); // INT7 NL 21 + TB
     cuts.AddCutCalo("0008e113","4117901090e30230000","0s631031000000d0"); // INT7 NL 21 + TB
   } else if (trainConfig == 2043){ // no TM EG1
     cuts.AddCutCalo("0008d113","4117901090e3n230000","0s631031000000d0"); // INT7 NL 21 + TB
     cuts.AddCutCalo("0008d113","4117901090e30230000","0s631031000000d0"); // INT7 NL 21 + TB
-  } else if (trainConfig == 2044){ // no TM (cell TM in correction framework)
-    cuts.AddCutCalo("0008e113","4117901090e3n230000","0s631031000000d0"); // INT7 NL 21 + TB
-    cuts.AddCutCalo("0008e113","4117901090e30230000","0s631031000000d0"); // INT7 NL 21 + TB
-  } else if (trainConfig == 2045){ // no TM (cell TM in correction framework)
-    cuts.AddCutCalo("0008d113","4117901090e3n230000","0s631031000000d0"); // INT7 NL 21 + TB
-    cuts.AddCutCalo("0008d113","4117901090e30230000","0s631031000000d0"); // INT7 NL 21 + TB
+  } else if (trainConfig == 2044){ // // E<p < 1.1 TM
+    cuts.AddCutCalo("0008e113","411790109pe3n230000","0s631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008e113","411790109pe30230000","0s631031000000d0"); // INT7 NL 21 + TB
+  } else if (trainConfig == 2045){ // // E<p < 1.1 TM
+    cuts.AddCutCalo("0008d113","411790109pe3n230000","0s631031000000d0"); // INT7 NL 21 + TB
+    cuts.AddCutCalo("0008d113","411790109pe30230000","0s631031000000d0"); // INT7 NL 21 + TB
 
     // configs for different triggers with NCell efficiency
   } else if (trainConfig == 2046){
@@ -4290,6 +4290,20 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790109fe30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
   } else if (trainConfig == 3108){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
     cuts.AddCutCalo("0008d113","411790109fe30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  // no track matching
+  } else if (trainConfig == 3109){  // EMCAL+DCAL clusters No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","4117901090e30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3110){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008e113","4117901090e30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3111){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008d113","4117901090e30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  // E/p < 1.1 track matching
+  } else if (trainConfig == 3112){  // EMCAL+DCAL clusters No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("00010113","411790109pe30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3113){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008e113","411790109pe30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
+  } else if (trainConfig == 3114){  // EMCAL+DCAL clusters  No NCell cut, INT7, NL , std TM, swapping back.
+    cuts.AddCutCalo("0008d113","411790109pe30220000","2l631031000000d0"); // INT7 NL 12 + TB dir. gamma
 
 
 
