@@ -1238,10 +1238,12 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fMinClsTPC= 70.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+			break;
         case 17:  //h 100 + refit
             fMinClsTPC= 100.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+			break;
         case 18:  //i 80 + refit, 35% of findable clusters
             fMinClsTPC = 80.;
             fRequireTPCRefit    = kTRUE;
@@ -1261,12 +1263,14 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 			fMaxSharedClsTPCAbsolute = 10;
+			break;
 		case 21: // l cut on absolute number of max shared TPC cluster and min TPC PID clusters
 			fMinClsTPC= 80.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
 			fMaxSharedClsTPCAbsolute = 10;
 			fMinTPCPIDClusters       = 50;
+			break;
 		default:
 				cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
 				return kFALSE;
