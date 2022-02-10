@@ -46,6 +46,8 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetTPCNCrossedRows(UShort_t crossedrows) { fTPCNCrossedRows = crossedrows; }
     void            SetPVzMinLimit(Float_t pvzmin) {fPVzMin=pvzmin;}
     void            SetPVzMaxLimit(Float_t pvzmax) {fPVzMax=pvzmax;}
+    void            SetPVzSign(Int_t sign) {fPVzSign=sign;}//-1 then negative pvz, +1 then positive pvz, 0 then absolute value (to test effect from the TPC membrane)
+
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -79,7 +81,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     UShort_t  fTPCNCrossedRows;  
     Float_t fPVzMax; //max PVz
     Float_t fPVzMin; //min PVz
-   
+    Int_t fPVzSign; //sign of PVz
 
     AliEventCuts fEventCuts;
 
