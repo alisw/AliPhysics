@@ -42,6 +42,7 @@ public:
     //Getter
 	void       GetLeadingObject(Bool_t isMC);
 	void       GetDetectorResponse();
+    void       GetTrackingEfficiencyTPConly();
 	void       GetBinByBinCorrections();
 	void       GetUEObservables();
     void       GetUEObservablesData();
@@ -192,6 +193,10 @@ private:
     TH2D * hNchTSmaxResponse;
     TH1D * hNchTSmaxGenTest;
     TH1D * hNchTSmaxRecTest;
+    
+    TH1D * hPtPrimGen;
+    TH1D * hPtPrimRec;
+    
 
 
         // DCA
