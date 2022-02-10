@@ -1542,6 +1542,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070f","0103103x00000000","0453503000000000"); // INT7, Ch.Pi<650MeV
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070k","0103103x00000000","0453503000000000"); // INT7, Ch.Pi<480MeV
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070n","0103103x00000000","0453503000000000"); // INT7, Ch.Pi<1000MeV
+  } else if(trainConfig == 2207)  { //EMCal + DCal INT7 shared cluster + TPC pid clusters
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070a","0103103x00000000","0453503000000000"); // INT7 default cut  
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32k51070a","0103103x00000000","0453503000000000"); // INT7 max shared clusters 10
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l51070a","0103103x00000000","0453503000000000"); // INT7 max shared clusters 10 + min TPC PID clusters 50
+    
     //-----
     //INT7: Neutral Meson (Pi0) Cut Variations
     //-----
