@@ -1276,6 +1276,16 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310e03","41179010a0e30220000","01331061000000d0"); //
     cuts.AddCutCalo("13530e03","41179010a0e30220000","01331031000000d0"); //
     cuts.AddCutCalo("15910e03","41179010a0e30220000","01331031000000d0"); //
+  } else if (trainConfig == 783){ // EMCAL+DCal clusters - no TM - no Ncell - no raised thresholds
+    cuts.AddCutCalo("1018da13","4117901050e30220000","01331061000000d0"); //
+    cuts.AddCutCalo("1138da13","4117901050e30220000","01331061000000d0"); //
+    cuts.AddCutCalo("1358da13","4117901050e30220000","01331031000000d0"); //
+    cuts.AddCutCalo("1598da13","4117901050e30220000","01331031000000d0"); //
+  } else if (trainConfig == 784){ // EMCAL+DCal clusters - no TM - no Ncell - no raised thresholds
+    cuts.AddCutCalo("1018ea13","4117901050e30220000","01331061000000d0"); //
+    cuts.AddCutCalo("1138ea13","4117901050e30220000","01331061000000d0"); //
+    cuts.AddCutCalo("1358ea13","4117901050e30220000","01331031000000d0"); //
+    cuts.AddCutCalo("1598ea13","4117901050e30220000","01331031000000d0"); //
 
   // **********************************************************************************************************
   // ***************************** PHOS       QA configurations PbPb run 2 2018 *******************************
