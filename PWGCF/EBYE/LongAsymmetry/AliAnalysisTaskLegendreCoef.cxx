@@ -30,7 +30,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0),  fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0),  fEventCuts(0)
 {
 
 }
@@ -41,7 +41,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -79,14 +79,14 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
     fOutputList->Add(new TH2D("PosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  positive tracks
     fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  negative tracks
     fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  charged tracks
-    fOutputList->Add(new TH3D("PhiEtaCentHist", "track;phi;eta;centrality", 24, -3.0*TMath::Pi()/2.0 ,TMath::Pi()/2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+    fOutputList->Add(new TH3D("PhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
     fOutputList->Add(new TH2D("PtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
     if(fIsMC) {
       fOutputList->Add(new TH2D("MCPosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  positive tracks
       fOutputList->Add(new TH2D("MCNegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  negative tracks
       fOutputList->Add(new TH2D("MCChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  charged tracks  
-      fOutputList->Add(new TH3D("GenPhiEtaCentHist", "track;phi;eta;centrality", 24, -3.0*TMath::Pi()/2.0 ,TMath::Pi()/2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
-      fOutputList->Add(new TH3D("RecPhiEtaCentHist", "track;phi;eta;centrality", 24, -3.0*TMath::Pi()/2.0 ,TMath::Pi()/2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+      fOutputList->Add(new TH3D("GenPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+      fOutputList->Add(new TH3D("RecPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
       fOutputList->Add(new TH2D("GenPtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
       fOutputList->Add(new TH2D("RecPtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
     }
@@ -155,6 +155,12 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   Float_t PVz = PrimaryVertex->GetZ();
   if(fabs(PVz)>fPVzMax) return;
   if(fabs(PVz)<fPVzMin) return;
+  if(fPVzSign==1){//take only positive pvz
+    if(PVz<0) return;
+  }
+  if(fPVzSign==-1){//take only negative pvz
+    if(PVz>0) return;
+  }
 
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
   if(!MultSelection) return;
@@ -260,7 +266,14 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   const AliAODVertex *PrimaryVertex = fAOD->GetVertex(0);
   if(!PrimaryVertex) return;
   Float_t PVz = PrimaryVertex->GetZ();
-  if(fabs(PVz)>8.0) return;
+  if(fabs(PVz)>fPtmin) return;
+  if(fabs(PVz)<fPVzMin) return;
+  if(fPVzSign==1){//take only positive pvz
+    if(PVz<0) return;
+  }
+  if(fPVzSign==-1){//take only negative pvz
+    if(PVz>0) return;
+  }
   
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
   if(!MultSelection) return;
