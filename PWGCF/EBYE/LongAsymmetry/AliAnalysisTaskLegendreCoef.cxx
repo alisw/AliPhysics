@@ -266,7 +266,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   const AliAODVertex *PrimaryVertex = fAOD->GetVertex(0);
   if(!PrimaryVertex) return;
   Float_t PVz = PrimaryVertex->GetZ();
-  if(fabs(PVz)>fPtmin) return;
+  if(fabs(PVz)>fPVzMax) return;
   if(fabs(PVz)<fPVzMin) return;
   if(fPVzSign==1){//take only positive pvz
     if(PVz<0) return;
