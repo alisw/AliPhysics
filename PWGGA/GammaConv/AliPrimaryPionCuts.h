@@ -152,6 +152,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t   fRequireTPCRefit; // require a refit in the TPC
 	Double_t fMinClsTPCToF; // minimum clusters to findable clusters
     Double_t fMaxSharedClsTPCFrac; // maximum fraction of shared clusters to TPCnClus
+	Double_t fMaxSharedClsTPCAbsolute; // absolute max number of shared TPC clusters
+	Double_t fMinTPCPIDClusters; // minimum number of PID clusters in TPC
 	Double_t fMinClsITS; // minimum clustersin the ITS
 	Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
 	Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas
@@ -216,7 +218,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,14)
+    ClassDef(AliPrimaryPionCuts,15)
 };
 
 #endif
