@@ -369,6 +369,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
 
   if (!acceptedTrack) return;
+  bool rejectTrack = false;
 
   if (fSaveTrees && track->Pt() < 10.) {
     //double mcPt = 0;
@@ -382,8 +383,13 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecoNucleiMCindex.emplace_back(mcId);
       } else
         good2save = false;
+
+      if (fPtShape) {
+        if (std::find(fRejectedParticles.begin(), fRejectedParticles.end(), mcId) != fRejectedParticles.end())
+          rejectTrack = true;
+      }
     }
-    if (good2save) {
+    if (good2save && !rejectTrack) {
       AliTOFPIDResponse& tofPID = fPID->GetTOFResponse();
 
       fRecNucleus.pt = track->Pt() * track->Charge();
@@ -421,13 +427,8 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
+  if(rejectTrack) return;
 
-  int mcId = TMath::Abs(track->GetLabel());
-  if (fPtShape) {
-    if (std::find(fRejectedParticles.begin(), fRejectedParticles.end(), mcId) != fRejectedParticles.end()) {
-      return;
-    }
-  }
   if (fIsMC) {
     AliAODMCParticle *part = (AliAODMCParticle*)MCEvent()->GetTrack(mcId);
     /// Workaround: if the AOD are filtered with an AliRoot tag before v5-08-18, hyper-nuclei prongs
