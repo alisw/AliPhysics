@@ -30,7 +30,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE()
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0),  fEventCuts(0)
 {
 
 }
@@ -41,7 +41,7 @@ AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : Ali
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -73,15 +73,22 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
   }
   double centbins[9] = {0.01,5,10,20,30,40,50,60,70};
 
+
   if(fIsBuildBG){
     fOutputList->Add(new TH1D("NeventsCentHist", "nevents;centrality", 8,centbins));//output histogram when building background -  all tracks
     fOutputList->Add(new TH2D("PosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  positive tracks
     fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  negative tracks
     fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  charged tracks
+    fOutputList->Add(new TH3D("PhiEtaCentHist", "track;phi;eta;centrality", 24, -3.0*TMath::Pi()/2.0 ,TMath::Pi()/2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+    fOutputList->Add(new TH2D("PtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
     if(fIsMC) {
       fOutputList->Add(new TH2D("MCPosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  positive tracks
       fOutputList->Add(new TH2D("MCNegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  negative tracks
       fOutputList->Add(new TH2D("MCChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  charged tracks  
+      fOutputList->Add(new TH3D("GenPhiEtaCentHist", "track;phi;eta;centrality", 24, -3.0*TMath::Pi()/2.0 ,TMath::Pi()/2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+      fOutputList->Add(new TH3D("RecPhiEtaCentHist", "track;phi;eta;centrality", 24, -3.0*TMath::Pi()/2.0 ,TMath::Pi()/2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+      fOutputList->Add(new TH2D("GenPtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
+      fOutputList->Add(new TH2D("RecPtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
     }
   }
     
@@ -146,8 +153,9 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   const AliAODVertex *PrimaryVertex = fAOD->GetVertex(0);
   if(!PrimaryVertex) return;
   Float_t PVz = PrimaryVertex->GetZ();
-  if(fabs(PVz)>8.0) return;
-  
+  if(fabs(PVz)>fPVzMax) return;
+  if(fabs(PVz)<fPVzMin) return;
+
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
   if(!MultSelection) return;
   
@@ -172,6 +180,8 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
         if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
         if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
+        ((TH3D*) fOutputList->FindObject("PhiEtaCentHist"))->Fill(track->Phi(),track->Eta(), Cent);
+        ((TH2D*) fOutputList->FindObject("PtCentHist"))->Fill(track->Pt(), Cent);
       }else{
         //build background for MC reconstructed
         int label = TMath::Abs(track->GetLabel());
@@ -183,6 +193,8 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
           ((TH2D*) fOutputList->FindObject("ChargedBGHistOut"))->Fill(track->Eta(), Cent);
           if(track->Charge() > 0) ((TH2D*) fOutputList->FindObject("PosBGHistOut"))->Fill(track->Eta(), Cent);
           if(track->Charge() < 0) ((TH2D*) fOutputList->FindObject("NegBGHistOut"))->Fill(track->Eta(), Cent);
+          ((TH3D*) fOutputList->FindObject("RecPhiEtaCentHist"))->Fill(track->Phi(),track->Eta(), Cent);
+          ((TH2D*) fOutputList->FindObject("RecPtCentHist"))->Fill(track->Pt(), Cent);
         }
       }
     }
@@ -218,6 +230,8 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         ((TH2D*) fOutputList->FindObject("MCChargedBGHistOut"))->Fill(p1->Eta(), Cent);
         if(p1->Charge() > 0) ((TH2D*) fOutputList->FindObject("MCPosBGHistOut"))->Fill(p1->Eta(), Cent);
         if(p1->Charge() < 0) ((TH2D*) fOutputList->FindObject("MCNegBGHistOut"))->Fill(p1->Eta(), Cent);
+        ((TH3D*) fOutputList->FindObject("GenPhiEtaCentHist"))->Fill(p1->Phi(),p1->Eta(), Cent);
+        ((TH2D*) fOutputList->FindObject("GenPtCentHist"))->Fill(p1->Pt(), Cent);
       }
     }
   }
