@@ -430,6 +430,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   if(rejectTrack) return;
 
   if (fIsMC) {
+    int mcId = std::abs(track->GetLabel());
     AliAODMCParticle *part = (AliAODMCParticle*)MCEvent()->GetTrack(mcId);
     /// Workaround: if the AOD are filtered with an AliRoot tag before v5-08-18, hyper-nuclei prongs
     /// are marked as SecondaryFromMaterial.
