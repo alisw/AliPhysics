@@ -3925,11 +3925,13 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
-  if (fIsMC>0){
-    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (fAODMCTrackArray == NULL){
-      AliInfo("AODMCTrackArray could not be loaded");
-      return;
+  if(fDoIsolatedAnalysis){
+    if (fIsMC>0){
+      if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (fAODMCTrackArray == NULL){
+	AliInfo("AODMCTrackArray could not be loaded");
+	return;
+      }
     }
   }
   // Conversion Gammas
