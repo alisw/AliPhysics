@@ -44,6 +44,8 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetGeneratorName(TString generator) {fGenName = generator; }
     void            SetPileUpLevel(Int_t level) {fPileUpLevel = level; }
     void            SetTPCNCrossedRows(UShort_t crossedrows) { fTPCNCrossedRows = crossedrows; }
+    void            SetPVzMinLimit(Float_t pvzmin) {fPVzMin=pvzmin;}
+    void            SetPVzMaxLimit(Float_t pvzmax) {fPVzMax=pvzmax;}
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -75,6 +77,10 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     TString fGenName; //MC generator name
     Int_t fPileUpLevel;
     UShort_t  fTPCNCrossedRows;  
+    Float_t fPVzMax; //max PVz
+    Float_t fPVzMin; //min PVz
+   
+
     AliEventCuts fEventCuts;
 
     AliAnalysisTaskLegendreCoef(const AliAnalysisTaskLegendreCoef&); // not implemented
