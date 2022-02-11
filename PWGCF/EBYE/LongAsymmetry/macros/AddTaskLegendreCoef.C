@@ -26,7 +26,8 @@ AliAnalysisTaskLegendreCoef* AddTaskLegendreCoef(const char *suffix = "")
     task->SetPileUpRead(kFALSE);
     task->SetChi2DoF(4);
     task->SetPtLimits(0.2, 2.0);
-    task->SetEtaLimit(0.8);
+    task->SetEtaMinLimit(-0.8);
+    task->SetEtaMaxLimit(0.8);
     task->SetBuildBackground(kFALSE);
     task->SetBuildLegendre(kFALSE);
     printf("Container name is %s\n",name.Data());
