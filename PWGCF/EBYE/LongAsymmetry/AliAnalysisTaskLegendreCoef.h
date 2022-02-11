@@ -29,7 +29,8 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetChi2DoF(Double_t Chi2DoF) { fChi2DoF = Chi2DoF; }
     void            SetNclTPC(Int_t ncl) { fTPCNcls = ncl; }
     void            SetPtLimits(Double_t ptmin, Double_t ptmax) { fPtmin = ptmin; fPtmax=ptmax; }
-    void            SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+    void            SetEtaMinLimit(Double_t etalowlimit) { fEtaMin = etalowlimit; }
+    void            SetEtaMaxLimit(Double_t etauplimit) { fEtaMax = etauplimit; }
     void            SetFilterBit(Int_t filterbit) { fBit = filterbit; }
     void            SetPileUpRead(Bool_t flag) {fIsPileUpCuts = flag;}
     void            SetBuildBackground(Bool_t flag) {fIsBuildBG = flag; }
@@ -47,6 +48,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetPVzMinLimit(Float_t pvzmin) {fPVzMin=pvzmin;}
     void            SetPVzMaxLimit(Float_t pvzmax) {fPVzMax=pvzmax;}
     void            SetPVzSign(Int_t sign) {fPVzSign=sign;}//-1 then negative pvz, +1 then positive pvz, 0 then absolute value (to test effect from the TPC membrane)
+    void            SetNEtaBins(Int_t Netabins) {fNetabins=Netabins;}//default 16
 
 
   private:
@@ -64,7 +66,8 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Int_t fTPCNcls; //limit for TPC Ncls
     Double_t fPtmin; //min PT
     Double_t fPtmax; //max PT
-    Double_t fEta; //max eta
+    Double_t fEtaMin; //min eta
+    Double_t fEtaMax; //max eta
     Int_t fBit; //filter bit - 96 default
     Bool_t fIsPileUpCuts; //pile up cuts flag
     Bool_t fIsBuildBG; //build background flag
@@ -82,6 +85,7 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Float_t fPVzMax; //max PVz
     Float_t fPVzMin; //min PVz
     Int_t fPVzSign; //sign of PVz
+    Int_t fNetabins; //number of bins in eta
 
     AliEventCuts fEventCuts;
 
