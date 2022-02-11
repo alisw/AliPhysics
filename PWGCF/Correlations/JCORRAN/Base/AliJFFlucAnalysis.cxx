@@ -219,16 +219,16 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< fHistCentBin
 		<< "END" ;
 	fh_phi
-		<< TH1D("h_phi", "h_phi", 50,-TMath::Pi(),TMath::Pi())
+		<< TH1D("h_phi", "h_phi", 200,-TMath::Pi(),TMath::Pi())
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
 	if(!(flags & FLUC_PHI_CORRECTION)) {
 		fh_phieta
-			<< TH2D("h_phieta","h_phieta",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
+			<< TH2D("h_phieta","h_phieta",200,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0)
 			<< fHistCentBin
 			<< "END";
 		fh_phietaz
-			<< TH3D("h_phietaz","h_phietaz",50,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
+			<< TH3D("h_phietaz","h_phietaz",200,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
 			<< fHistCentBin
 			<< "END";
 	}
