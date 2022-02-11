@@ -3925,6 +3925,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
 
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
+  // fAODMCTrackArray is used when the flag DoIsolatedAnalysis is True. And can only work on AODs. This "if" is necessary for any  task running in ESDs, otherwise one skips the calculation
   if(fDoIsolatedAnalysis){
     if (fIsMC>0){
       if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
