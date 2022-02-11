@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_Run2_pass2", UInt_t period = 0, std::string ptMinArray = "0.2 0.3 0.4 0.5", double ptMax = 5.0, int cutConfig = 0, bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool useTightCuts = kFALSE, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_Run2_pass2", UInt_t period = 0, std::string ptMinArray = "0.2 0.3 0.4 0.5", double ptMax = 5.0, int cutConfig = 0, bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool useTightCuts = kFALSE, bool ESDpileup = false, double slope = 3.38, double intercept = 15000, bool saveQApileup = false, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -103,6 +103,7 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
   // Set the correct flags to use.
     if (strcmp(configName.Data(), "pileup") != 0) {
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
+      fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);
     }
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}
 
