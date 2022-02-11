@@ -357,7 +357,7 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 	fOutput -> Add( fHistos->GetListOfHistograms() );
 	PostData(1, fOutput);
 
-	if( !fOption.Contains("ITS") ){
+	/*if( !fOption.Contains("ITS") ){
 		for(int i=0;i<fEff_npT_step;i++){
 			std::vector<double> elem;
 			elem.resize(fEff_neta_step);
@@ -384,8 +384,26 @@ void AliAnalysisTaskRidge::UserCreateOutputObjects()
 		}
 	}
 
-        SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
-        SetEfficiencyFilepPb("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root");
+	SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
+	SetEfficiencyFilepPb("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root");
+
+	if( fOption.Contains("GRID") ){
+		TGrid::Connect("alien://");
+		fefficiencyFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root","read");
+		if( fOption.Contains("pPb") ){
+			TGrid::Connect("alien://");
+			fefficiencyFilepPb = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOutpPb.root","read");
+		}
+		if( fOption.Contains("Add3DEff") ){
+			TGrid::Connect("alien://");
+			fefficiency3DFile = TFile::Open("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/Eff3DOut.root","read");
+		}
+	}*/
+
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	fJCorMapTask = (AliJCorrectionMapTask*)man->GetTask("JCorrectionMapTask");
+	if(!fJCorMapTask)
+		AliInfo("----CHECK if AliJCorrectionMapTask Missing ----");
 
 	V0M_mean = 120;
 
@@ -402,7 +420,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	// connect to ESD tree --------------------------------------------------
 	Int_t runnumber;
 //	TString foption = option;
-	TString Period;
+	//TString Period;
 
 	event->IsA()==AliESDEvent::Class() 
 		? fEvt = dynamic_cast<AliESDEvent*>(event)
@@ -422,7 +440,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         	fRunTable = new AliAnalysisTaskRidgeRunTable(runnumber);
 //		if( !fefficiencyFile ) return;
 
-		     if( runnumber >= 252235 && runnumber <= 252330 ) Period = "LHC16d";
+		/*     if( runnumber >= 252235 && runnumber <= 252330 ) Period = "LHC16d";
 		else if( runnumber >= 253437 && runnumber <= 253591 ) Period = "LHC16e";
 		else if( runnumber >= 253659 && runnumber <= 253978 ) Period = "LHC16f";
 		else if( runnumber >= 254128 && runnumber <= 254332 ) Period = "LHC16g";
@@ -462,21 +480,21 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		else if( runnumber >= 293475 && runnumber <= 293898 ) { Period = "LHC18o"; V0M_mean=124.973; }
 		else if( runnumber >= 294009 && runnumber <= 294925 ) Period = "LHC18p";
 
-		if( fOption.Contains("pPb") ) Period = "LHC16q";
+		if( fOption.Contains("pPb") ) Period = "LHC16q";*/
 
 
-		TH2D* hEfficiencyHist;
-		TH3D* hEfficiency3DHist;
+		//TH2D* hEfficiencyHist;
+		//TH3D* hEfficiency3DHist;
 
-		if( !fefficiencyFile ){
+		/*if( !fefficiencyFile ){
                 	for(int i=0;i<fEff_npT_step;i++){
                 	        for(int j=0;j<fEff_neta_step;j++){
                 	                Eff[i][j] = 1.0;
                 	        }
                 	}
-		}
+		}*/
 
-		if( fOption.Contains("Add3DEff") && !fefficiency3DFile ){
+		/*if( fOption.Contains("Add3DEff") && !fefficiency3DFile ){
 			for(int i=0;i<fEff_npT_step;i++){
 				for(int j=0;j<fEff_neta_step;j++){
 					for(int k=0;k<fEff_nphi_step;k++){
@@ -484,10 +502,19 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 					}
 				}
 			}
-		}
+		}*/
 
-        	if( fefficiencyFile ){
-//			cout << (bool)fefficiencyFile->FindObject(Form("%s_Hyb8cm",Period.Data())) << endl;
+		if(fOption.Contains("Glb"))
+			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,EFF2_LABEL_GLOBAL8);
+		else
+		if(fOption.Contains("SDD"))
+			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,EFF2_LABEL_GLOBALSDD8);
+		else
+		if(fOption.Contains("TightVtx"))
+			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,EFF2_LABEL_HYBRID6);
+		else std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(fOption.Contains("pPb")?"LHC16q":"LHC16l",EFF2_LABEL_HYBRID8); //MC and others
+
+		/*if( fefficiencyFile ){
 			hEfficiencyHist = (TH2D*)fefficiencyFile->Get(Form("%s_Hyb8cm",Period.Data()));
         	        if( fOption.Contains("Glb") ){ hEfficiencyHist = (TH2D*)fefficiencyFile->Get(Form("%s_Glb8cm",Period.Data())); }
         	        if( fOption.Contains("SDD") ){ hEfficiencyHist = (TH2D*)fefficiencyFile->Get(Form("%s_GlbSDD8cm",Period.Data())); }
@@ -496,9 +523,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	                if( !hEfficiencyHist ){ hEfficiencyHist = (TH2D*)fefficiencyFile->Get("LHC16l_Hyb8cm"); }
 
 			if( fOption.Contains("MC") ){ hEfficiencyHist = (TH2D*)fefficiencyFile->Get("LHC16l_Hyb8cm"); }
-		}
+		}*/
 
-		if( fefficiencyFilepPb && fOption.Contains("pPb") ){
+		/*if( fefficiencyFilepPb && fOption.Contains("pPb") ){
 			hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_Hyb8cm",Period.Data()));
 			if( fOption.Contains("Glb") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_Glb8cm",Period.Data())); }
                         if( fOption.Contains("SDD") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get(Form("%s_GlbSDD8cm",Period.Data())); }
@@ -506,9 +533,10 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
                         if( !hEfficiencyHist ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get("LHC16q_Hyb8cm"); }
                         if( fOption.Contains("MC") ){ hEfficiencyHist = (TH2D*)fefficiencyFilepPb->Get("LHC16q_Hyb8cm"); }
-		}
+		}*/
 
-		if( hEfficiencyHist ){
+		//XXX ------------
+		/*if( hEfficiencyHist ){
 	               	for(int i=0;i<fEff_npT_step;i++){
 	               	        for(int j=0;j<fEff_neta_step;j++){
 	               	                if( i<hEfficiencyHist->GetNbinsY() ) Eff[i][j] = hEfficiencyHist->GetBinContent(j+1,i+1);
@@ -522,8 +550,9 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 					Eff[i][j] = 0.25;
 				}
 			}
-	        }
-		if( fOption.Contains("Add3DEff") && fefficiency3DFile ){
+		}*/
+		//XXX ------------
+		/*if( fOption.Contains("Add3DEff") && fefficiency3DFile ){
 			hEfficiency3DHist = (TH3D*)fefficiency3DFile->Get(Form("%s_Hyb8cm",Period.Data()));
 			if( fOption.Contains("Glb") ) hEfficiency3DHist = (TH3D*)fefficiency3DFile->Get(Form("%s_Glb8cm",Period.Data()));
                         if( fOption.Contains("SDD") ) hEfficiency3DHist = (TH3D*)fefficiency3DFile->Get(Form("%s_GlbSDD8cm",Period.Data()));
@@ -553,7 +582,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
                                         }
                                 }
                         }	
-		}
+		}*/
 		IsFirstEvent = kFALSE;
         }
 
@@ -958,6 +987,17 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	PostData(1, fOutput);
 }
 
+double AliAnalysisTaskRidge::GetEfficiency(double pt, double eta, bool bITS) const{
+	//
+	//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
+	//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-ITS_fEff_eta_min)/ITS_fEff_eta_l) ] );
+	if(!peffHist)
+		return 0.25;
+	int ptbin = std::min(binPt.FindBin(track->Pt()),peffHist->GetNbinsY());
+	int etabin = (int)(!bITS?(eta-fEff_eta_min)/fEff_eta_l:(eta-ITS_fEff_eta_min)/ITS_fEff_eta_l);
+	return peffHist->GetBinContent(etabin+1,ptbin);
+}
+
 Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 
 	fFilterBit = 0x300;
@@ -971,6 +1011,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 
 	tracklist *etl;
 	eventpool *ep;
+
+	bool bITS = fOutput.Contains("ITS");
 
 	//Event mixing pool
 	if (fsetmixing && centbin>=0 && zbin>=0 &&
@@ -1012,7 +1054,7 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 			if( LHPt < track->Pt() ){ LHPt = track->Pt(); }
 
 			fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta(),1.0);
-			if( !fOption.Contains("ITS") ){
+			//if( !fOption.Contains("ITS") ){
 				if( fOption.Contains("AddEff") ){
 					if( track->Pt() > fEff_pT_max ){
 						fHistos->FillTH2("hPhiEtaCor",track->Phi(),track->Eta(),1.0);
@@ -1020,12 +1062,14 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 					}
 					else{
 						fHistos->FillTH2("hPhiEtaCor",track->Phi(),track->Eta(),1.0/
-						Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
+						//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
+						GetEfficiency(track->Pt(),track->Eta(),bITS);
 						FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0/
-						Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
+						//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
+						GetEfficiency(track->Pt(),track->Eta(),bITS);
 					}
 				}
-				else if( fOption.Contains("Add3DEff") ){
+				/*else if( fOption.Contains("Add3DEff") ){
 					if( track->Pt() > fEff_pT_max ){
 						fHistos->FillTH2("hPhiEtaCor",track->Phi(),track->Eta(),1.0);
 						FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0);
@@ -1036,21 +1080,21 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 						FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0/
 						Eff3D[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ][ (int)(track->Phi()/(2.0*pi/fEff_nphi_step)) ] );
 					}
-				}
+				}*/
 				else if( fOption.Contains("AddpTEff") ){
 					if( track->Pt() > fEff_pT_max ){
 						fHistos->FillTH2("hPhiEtaCor",track->Phi(),track->Eta(),1.0);
 	                                        FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0);
 					}
-					else{
+					/*else{
 						fHistos->FillTH2("hPhiEtaCor",track->Phi(),track->Eta(),1.0/
 	                                        EffpT[ binPt.FindBin(track->Pt())-2 ] );
 	                                        FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0/
 	                                        EffpT[ binPt.FindBin(track->Pt())-2 ] );
-					}
+					}*/
 				}
-			}
-			else if( fOption.Contains("ITS") ){
+			/*}else{
+			//else if( fOption.Contains("ITS") ){
 				if( fOption.Contains("AddEff") ){
 					if( track->Pt() > fEff_pT_max ){
 						FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0);
@@ -1059,8 +1103,8 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 						FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0/
 						Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-ITS_fEff_eta_min)/ITS_fEff_eta_l) ] );
 					}
-				}				
-			}
+				}
+			}*/
 
 		}
 		fNTracks++;
@@ -1198,7 +1242,9 @@ Bool_t AliAnalysisTaskRidge::GoodTrackletSelection(){
 		fHistos->FillTH2("hPhiEta",phi,eta);
 		if( fOption.Contains("SPDEff") )
                 fHistos->FillTH2("hPhiEtaCor",phi,eta,
-		1.0/Eff[ (int)( TVector2::Phi_0_2pi(phi)*180.0/(2*pi) ) ][ (int)( ( eta+2.0 )*40.0/4.0 ) ]
+		//1.0/Eff[ (int)( TVector2::Phi_0_2pi(phi)*180.0/(2*pi) ) ][ (int)( ( eta+2.0 )*40.0/4.0 ) ]
+		1.0/peffHist?peffHist->GetBinContent(
+			(int)(( eta+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi)*180.0/(2*pi))+1)
                 );
 		if (fsetmixing) {
 			Tracklet tracklet;
@@ -1260,6 +1306,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
 */
 
+	bool bITS = fOutput.Contains("ITS");
+
 	double MaxPhi=0;
 	double MaxPt=0;
 	double MaxEta=0;
@@ -1272,16 +1320,17 @@ void AliAnalysisTaskRidge::FillTracks(){
 		if( !track1 ) continue;
 
 		effi = 1.0;
-		if( !fOption.Contains("ITS") ){
+		//if( !fOption.Contains("ITS") ){
 			if( fOption.Contains("AddEff") ){
 				if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){
 					if( track1->Pt() < fEff_pT_max ){
-						effi = 1.0/Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
+						//effi = 1.0/Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
+						effi = 1.0/GetEfficiency(track1->Pt(),track1->Eta(),bITS);
 					}
 					else{ effi = 1.0; }
 				}
 			}
-			else if( fOption.Contains("Add3DEff") ){
+			/*else if( fOption.Contains("Add3DEff") ){
 				if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){
 					if( track1->Pt() < fEff_pT_max ){
 						effi = 1.0/Eff3D[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ][ (int)(track1->Phi()/(2.0*pi/fEff_nphi_step)) ];
@@ -1289,9 +1338,9 @@ void AliAnalysisTaskRidge::FillTracks(){
 					else{ effi = 1.0; }
 				}
 			}
-			else{ effi = 1.0; }
-		}
-		else if( fOption.Contains("ITS") ){
+			else{ effi = 1.0; }*/
+		//}
+		/*else{// if( fOption.Contains("ITS") ){
 			if( fOption.Contains("AddEff") ){
 				if( binTPt.FindBin( track1->Pt() )-1 >= 0 ){
 					if( track1->Pt() < fEff_pT_max ){
@@ -1300,7 +1349,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 					else{ effi = 1.0; }
 				}
 			}
-		}
+		}*/
 
 		if( fOption.Contains("Asso") ){ effi = 1.0; }
 //			effi = 1.0;
@@ -1419,14 +1468,16 @@ void AliAnalysisTaskRidge::FillTracks(){
 
 			if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi; 
 
-			if( !fOption.Contains("ITS") ){
+			//if( !fOption.Contains("ITS") ){
                         	if( fOption.Contains("AddEff") ){
                         	        if( track1->Pt() < fEff_pT_max ){
-                        	                eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
+                        	                //eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
+											eff1 = GetEfficiency(track1->Pt(),track1->Eta(),bITS);
                         	        }
                         	        else{ eff1 = 1.0; }
                         	        if( track2->Pt() < fEff_pT_max ){
-						eff2 = Eff[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ];
+						//eff2 = Eff[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ];
+											eff2 = GetEfficiency(track2->Pt(),track2->Eta(),bITS);
                         	        }
                         	        else{ eff2 = 1.0; }
 					if( fOption.Contains("Asso") ){
@@ -1438,7 +1489,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 						}
 					}
 				}
-				else if( fOption.Contains("Add3DEff") ){
+				/*else if( fOption.Contains("Add3DEff") ){
 					if( track1->Pt() < fEff_pT_max ){
 						eff1 = Eff3D[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ][ (int)(track1->Phi()/(2.0*pi/fEff_nphi_step)) ];
 					}
@@ -1446,8 +1497,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 					if( track2->Pt() < fEff_pT_max ){
 						eff2 = Eff3D[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ][ (int)(track2->Phi()/(2.0*pi/fEff_nphi_step)) ];
 					}
-				}
-				else if( fOption.Contains("AddpTEff") ){
+				}*/
+				/*else if( fOption.Contains("AddpTEff") ){
 					if( track1->Pt() < fEff_pT_max ){
 						eff1 = EffpT[ binPt.FindBin(track1->Pt())-2 ];
         	                        }
@@ -1456,10 +1507,10 @@ void AliAnalysisTaskRidge::FillTracks(){
 						eff2 = EffpT[ binPt.FindBin(track2->Pt())-2 ];
         	                        }
         	                        else{ eff2 = 1.0; }
-				}
+				}*/
 				else{ eff1 = 1.0; eff2 = 1.0; }
-			}
-                        else if( fOption.Contains("ITS") ){
+			//}
+                        /*else if( fOption.Contains("ITS") ){
                                 if( fOption.Contains("AddEff") ){
                                         if( track1->Pt() < fEff_pT_max ){
                                                 eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-ITS_fEff_eta_min)/ITS_fEff_eta_l) ];
@@ -1478,7 +1529,7 @@ void AliAnalysisTaskRidge::FillTracks(){
                                                 }
                                         }
                                 }
-                        }
+                        }*/
 
 
 			if( NTracksPerPtBin[binTPt.FindBin( max(track1->Pt(),track2-> Pt()) )-1] > 0 ){
@@ -1561,29 +1612,33 @@ void AliAnalysisTaskRidge::FillTracks(){
 				double deltaphi = TVector2::Phi_0_2pi(track1->Phi() - track2->Phi());
 				if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi; 
 
-				if( !fOption.Contains("ITS") ){
-                                	if( fOption.Contains("AddEff") ){
-                                	        if( track1->Pt() < fEff_pT_max ){
-							eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
-                                	        }
-                                	        else{ eff1 = 1.0; }
-	
-	                                        if( track2->Pt() < fEff_pT_max ){
-							eff2 = Eff[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ];
-	                                        }
-	                                        else{ eff2 = 1.0; }
-	                                	if( fOption.Contains("Asso") ){
-	                                	        if( track1-> Pt() > track2-> Pt() ){
-	                                	                eff1 = 1.0;
-	                                	                eff2 = Eff[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ];
-	                                	        }
-	                                	        else if( track1-> Pt() < track2-> Pt() ){
-	                                	                eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
-	                                	                eff2 = 1.0;
-	                                	        }
-	                                	}
-	                                }
-					else if( fOption.Contains("Add3DEff") ){
+				//if( !fOption.Contains("ITS") ){
+					if( fOption.Contains("AddEff") ){
+							if( track1->Pt() < fEff_pT_max ){
+			//eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
+								eff1 = GetEfficiency(track1->Pt(),track1->Eta(),bITS);
+							}
+							else{ eff1 = 1.0; }
+
+							if( track2->Pt() < fEff_pT_max ){
+			//eff2 = Eff[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ];
+								eff2 = GetEfficiency(track2->Pt(),track2->Eta(),bITS);
+							}
+							else{ eff2 = 1.0; }
+						if( fOption.Contains("Asso") ){
+								if( track1-> Pt() > track2-> Pt() ){
+										eff1 = 1.0;
+										//eff2 = Eff[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ];
+										//eff2 = GetEfficiency(track2->Pt(),track2->Eta());
+								}
+								else if( track1-> Pt() < track2-> Pt() ){
+										//eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ];
+										//eff1 = GetEfficiency(track1->Pt(),track1->Eta());
+										eff2 = 1.0;
+								}
+						}
+					}
+					/*else if( fOption.Contains("Add3DEff") ){
 						if( track1->Pt() < fEff_pT_max ){
 							eff1 = Eff3D[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-fEff_eta_min)/fEff_eta_l) ][ (int)(track1->Phi()/(2.0*pi/fEff_nphi_step)) ];
 						}
@@ -1591,8 +1646,8 @@ void AliAnalysisTaskRidge::FillTracks(){
 						if( track2->Pt() < fEff_pT_max ){
 							eff2 = Eff3D[ binPt.FindBin(track2->Pt())-1 ][ (int)((track2->Eta()-fEff_eta_min)/fEff_eta_l) ][ (int)(track2->Phi()/(2.0*pi/fEff_nphi_step)) ];
 						}
-					}
-					else if( fOption.Contains("AddpTEff") ){
+					}*/
+					/*else if( fOption.Contains("AddpTEff") ){
 	                                        if( track1->Pt() < fEff_pT_max ){
 							eff1 = EffpT[ binPt.FindBin(track1->Pt())-2 ];
 	                                        }
@@ -1602,12 +1657,12 @@ void AliAnalysisTaskRidge::FillTracks(){
 	   						eff2 = EffpT[ binPt.FindBin(track2->Pt())-2 ];
 	                                        }
 	                                        else{ eff2 = 1.0; }
-					}
+					}*/
 					else{ eff1 = 1.0; eff2 = 1.0; }
-				}
+				//}
 
 
-                                else if( fOption.Contains("ITS") ){
+                                /*else{// if( fOption.Contains("ITS") ){
 	                                if( fOption.Contains("AddEff") ){
 	                                        if( track1->Pt() < fEff_pT_max ){
 	                                                eff1 = Eff[ binPt.FindBin(track1->Pt())-1 ][ (int)((track1->Eta()-ITS_fEff_eta_min)/ITS_fEff_eta_l) ];
@@ -1627,7 +1682,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 	                                        }
 	                                }
                                         else{ eff1 = 1.0; eff2 = 1.0; }
-                                }
+                                }*/
 				FillTHnSparse("hRidgeMixingS",{fCent, deltaphi, deltaeta,
 					track1-> Pt(),track2-> Pt()},
 					1.0/(eff1*eff2) );
@@ -1685,11 +1740,17 @@ void AliAnalysisTaskRidge::FillTracklets(){
 			if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi; 
 			if( !fOption.Contains("SPDEff") )
 			FillTHnSparse("hRidge",{fCent, deltaphi, deltaeta,2,2 },1.0/ntracks );
-			else if( fOption.Contains("SPDEff") )
+			else if( fOption.Contains("SPDEff") ){
+			double w = 
+				(peffHist?peffHist->GetBinContent(
+					(int)(( eta1+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi1)*180.0/(2*pi))+1):0.25)*
+				(peffHist?peffHist->GetBinContent(
+					(int)(( eta2+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi2)*180.0/(2*pi))+1):0.25);
 			FillTHnSparse("hRidge",{fCent, deltaphi, deltaeta,2,2 },
-			1.0/( ntracks* 
-			Eff[ (int)( TVector2::Phi_0_2pi(phi1)*180.0/(2*pi) ) ][ (int)( ( eta1+2.0 )*40.0/4.0 ) ]*
-			Eff[ (int)( TVector2::Phi_0_2pi(phi2)*180.0/(2*pi) ) ][ (int)( ( eta2+2.0 )*40.0/4.0 ) ] ) );
+			1.0/( ntracks*w));
+			//Eff[ (int)( TVector2::Phi_0_2pi(phi1)*180.0/(2*pi) ) ][ (int)( ( eta1+2.0 )*40.0/4.0 ) ]*
+			//Eff[ (int)( TVector2::Phi_0_2pi(phi2)*180.0/(2*pi) ) ][ (int)( ( eta2+2.0 )*40.0/4.0 ) ] ) );
+			}
 		}
 	}
 
@@ -1706,11 +1767,17 @@ void AliAnalysisTaskRidge::FillTracklets(){
 				if( deltaphi > 1.5*pi ) deltaphi -= 2.0*pi; 
 				if( !fOption.Contains("SPDEff") )
 				FillTHnSparse("hRidgeMixing",{fCent, deltaphi, deltaeta,1,1 },1.0/(ntracks*(epsize-1)) );
-				else if( fOption.Contains("SPDEff") )
+				else if( fOption.Contains("SPDEff") ){
+				double w = 
+					(peffHist?peffHist->GetBinContent(
+						(int)(( eta1+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi1)*180.0/(2*pi))+1):0.25)*
+					(peffHist?peffHist->GetBinContent(
+						(int)(( eta2+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi2)*180.0/(2*pi))+1):0.25);
 				FillTHnSparse("hRidgeMixing",{fCent, deltaphi, deltaeta,1,1 },
-                        	1.0/( ntracks*(epsize-1)*
-                        	Eff[ (int)( TVector2::Phi_0_2pi(phi1)*180.0/(2*pi) ) ][ (int)( ( eta1+2.0 )*40.0/4.0 ) ]*
-                        	Eff[ (int)( TVector2::Phi_0_2pi(phi2)*180.0/(2*pi) ) ][ (int)( ( eta2+2.0 )*40.0/4.0 ) ] ) );
+                        	1.0/( ntracks*(epsize-1)*w));
+                        	//Eff[ (int)( TVector2::Phi_0_2pi(phi1)*180.0/(2*pi) ) ][ (int)( ( eta1+2.0 )*40.0/4.0 ) ]*
+                        	//Eff[ (int)( TVector2::Phi_0_2pi(phi2)*180.0/(2*pi) ) ][ (int)( ( eta2+2.0 )*40.0/4.0 ) ] ) );
+				}
 
 			}
 

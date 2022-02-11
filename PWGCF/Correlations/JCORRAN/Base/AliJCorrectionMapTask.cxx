@@ -112,7 +112,7 @@ void AliJCorrectionMapTask::Terminate(Option_t *)
 	if(!GetOutputData(1)) return;
 }
 
-UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname, const TString listName){
+UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname &, const TString listName &){
 	DefineInput(inputIndex,TList::Class());
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -138,19 +138,65 @@ UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname, const T
 	return inputIndex++; // need this!!!
 }
 
-void AliJCorrectionMapTask::EnablePhiCorrection(UInt_t id, const TString fname){
+void AliJCorrectionMapTask::EnablePhiCorrection(UInt_t id, const TString &fname){
 	phiInputIndex[id] = ConnectInputContainer(fname,"PhiWeights");
 	cout<<"Phi correction enabled: "<<fname.Data()<<" (id "<<id<<", index "<<phiInputIndex[id]<<")"<<endl;
 }
 
-void AliJCorrectionMapTask::EnableCentFlattening(const TString fname){
+void AliJCorrectionMapTask::EnableCentFlattening(const TString &fname){
 	centInputIndex = ConnectInputContainer(fname,"CentralityWeights");//inputIndex++;
 	cout<<"Centrality flattening enabled: "<<fname.Data()<<" (index "<<centInputIndex<<")"<<endl;
 }
 
-void AliJCorrectionMapTask::EnableEffCorrection(const TString fname){
+void AliJCorrectionMapTask::EnableEffCorrection(const TString &fname){
 	effInputIndex = ConnectInputContainer(fname,"EffCorrections");//inputIndex++;
 	cout<<"Efficiency correction enabled: "<<fname.Data()<<" (index "<<effInputIndex<<")"<<endl;
+}
+
+void AliJCorrectionMapTask::EnableEffCorrection2(const TString &fname){
+	effInputIndex2 = ConnectInputContainer(fname,"EffCorrections");//inputIndex++;
+	cout<<"Efficiency correction2 enabled: "<<fname.Data()<<" (index "<<effInputIndex2<<")"<<endl;
+	runPeriods = {
+		{252235,252330,"LHC16d",120.0},
+		{253437,253591,"LHC16e",120.0},
+		{253659,253978,"LHC16f",120.0},
+		{254128,254332,"LHC16g",120.0},
+		{254604,255467,"LHC16h",120.0},
+		{255539,255618,"LHC16i",120.0},
+		{256219,256418,"LHC16j",120.0},
+		{256941,256219,"LHC16k",120.0},
+		{258962,259888,"LHC16l",89.9003},// V0M_mean=89.9003; }
+		{262424,264035,"LHC16o",86.3912},// V0M_mean=86.3912; }
+		{264076,264347,"LHC16p",138.814},// V0M_mean=138.814; }
+
+		{270581,270667,"LHC17c",120.0},
+		{270822,270830,"LHC17e",120.0},
+		{270854,270865,"LHC17f",120.0},
+		{270882,271777,"LHC17g",120.0},
+		{271870,273103,"LHC17h",127.895},// V0M_mean=127.895; }
+		{273591,274442,"LHC17i",124.276},// V0M_mean=124.276; }
+		{274593,274671,"LHC17j",120.0},
+		{274690,276508,"LHC17k",121.31},// V0M_mean=121.31; }
+		{276551,278216,"LHC17l",119.144},// V0M_mean=119.144; }
+		{278914,280140,"LHC17m",117.165},// V0M_mean=117.165; }
+		{280282,281961,"LHC17o",113.45},// V0M_mean=113.45; }
+		{282528,282704,"LHC17r",111.462},// V0M_mean=111.462; }
+
+		{285009,285396,"LHC18b",120.0},
+		{285978,286350,"LHC18d",131.868},// V0M_mean=131.868; }
+		{286380,286937,"LHC18e",131.397},// V0M_mean=131.397; }
+		{287000,287658,"LHC18f",130.591},// V0M_mean=130.591; }
+		{288750,288619,"LHC18g",120.0},
+		{288806,288804,"LHC18h",130.86},//V0M_mean=130.86; }
+		{288909,288861,"LHC18i",120.0},
+		{288943,288943,"LHC18j",131.17},//V0M_mean=131.17; }
+		{289240,289971,"LHC18l",131.59},//V0M_mean=131.59; }
+		{290323,292839,"LHC18m",130.467},//V0M_mean=130.467; }
+		{293359,293357,"LHC18n",120.0},
+		{289201,289165,"LHC18k",127.642},//V0M_mean=127.642; }
+		{293475,293898,"LHC18o",124.973},//V0M_mean=124.973; }
+		{294009,294925,"LHC18p",120.0}
+	};
 }
 
 TH1 * AliJCorrectionMapTask::GetCorrectionMap(UInt_t it, UInt_t run, UInt_t cbin){ // mapID, run#, cent
@@ -201,7 +247,7 @@ TGraphErrors * AliJCorrectionMapTask::GetEffCorrectionMap(UInt_t run, Double_t c
 			return 0;
 		}
 		
-		TGraphErrors *grmap = (TGraphErrors*)plist->FindObject(Form("gCor%02d%02d%02d", 0,centBin,fEffFilterBit));
+		TGraphErrors *grmap = (TGraphErrors*)plist->FindObject(Form("gCor%02d%02d%02d",0,centBin,fEffFilterBit));
 		
 		EffWeightMap[centBin][run] = grmap;
 		return grmap;
@@ -210,7 +256,7 @@ TGraphErrors * AliJCorrectionMapTask::GetEffCorrectionMap(UInt_t run, Double_t c
 }
 
 // Pt dependent efficiency loaded here to improve the CPU time.
-double AliJCorrectionMapTask::GetEffCorrection( TGraphErrors * gr, double pt ) const {
+double AliJCorrectionMapTask::GetEffCorrection(TGraphErrors *gr, double pt) const{
 	// TODO : Function mode
 	//=== TEMPERORY SETTING. IT will be removed soon.
 	if( pt > 30 ) pt = 30; // Getting eff of 30GeV for lager pt
@@ -218,3 +264,47 @@ double AliJCorrectionMapTask::GetEffCorrection( TGraphErrors * gr, double pt ) c
 	if ( cor < 0.2 ) cor = 0.2;
 	return cor;
 }
+
+std::tuple<TH1 *, double> AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run, EFF2_LABEL effLabel){
+	auto m = std::find_if(runPeriods.begin(),runPeriods.end(),[&](auto &t)->bool{
+		return std::get<0>(t) <= run && run <= std::get<1>(t);
+	});
+	const char *pPeriod;
+	double V0mean;
+	if(m != runPeriods.end()){
+		pPeriod = std::get<2>(*m);
+		V0mean = std::get<3>(*m);
+	}else{
+		pPeriod = "LHC16q";
+		V0mean = 120.0;
+	}
+	//const char *pPeriod = m != runPeriods.end()?
+	//	std::get<2>(*m):"LHC16q"; //assume pPb if not on the pp list
+	
+	TList *plist = (TList*)GetInputData(effInputIndex2);
+	if(!plist)
+		return 0;
+	
+	TH1 *pmap = (TH1*)plist->FindObject(Form("%s_%s",pPeriod,peff2Labels[effLabel]));
+	return std::make_tuple(pmap,V0mean);
+}
+
+TH1 * AliJCorrectionMapTask::GetEffCorrectionMap2(const TString &tag, EFF2_LABEL effLabel){
+	TList *plist = (TList*)GetInputData(effInputIndex2);
+	if(!plist)
+		return 0;
+	
+	TH1 *pmap = (TH1*)plist->FindObject(Form("%s_%s",ptag.Data(),peff2Labels[effLabel]));
+	return pmap;
+}
+
+//double AliJCorrectionMapTask::GetEffCorrection2(TH1 *ph, double pt, 
+
+const char * AliJCorrectionMapTask::peff2Labels[AliJCorrectionMapTask::EFF2_LABEL_COUNT] = {
+	"Glb8cm",
+	"GlbSDD8cm",
+	"Hyb6cm",
+	"Hyb8cm",
+	"Hyb10cm"
+};
+

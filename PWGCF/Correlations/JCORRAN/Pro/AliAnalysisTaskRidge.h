@@ -111,10 +111,11 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
 
-	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
+	/*void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
 	void SetEfficiencyFilepPb(char* fname) { TGrid::Connect("alien://"); fefficiencyFilepPb = TFile::Open(fname,"READ"); }
-	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }
+	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }*/
 
+		double GetEfficiency(double pt, double eta, bool bITS = false) const;
         Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
 	Bool_t  GoodTracksSelectionMC();
@@ -176,13 +177,14 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         TString                         fOption;
 	AliDirList*				fOutput=nullptr; //!
 
-	TFile*				fefficiencyFile=nullptr; //
-	TFile*                          fefficiencyFilepPb=nullptr; //
-	TFile*				fefficiency3DFile=nullptr; //
+	//TFile*				fefficiencyFile=nullptr; //
+	//TFile*                          fefficiencyFilepPb=nullptr; //
+	//TFile*				fefficiency3DFile=nullptr; //
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
+	AliJCorrectionMapTask *fJCorMapTask=nullptr; //!
 	AliJJetTask*			fJetTask=nullptr; //!
 
         UInt_t                          fFilterBit=0x300;
@@ -256,10 +258,17 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         Int_t                           bookingsize = 7;
         AliVMultiplicity*               fMultiplicity=nullptr;//!
 	Int_t				bookingsizeMC = 7;
+<<<<<<< Updated upstream
 	std::vector< std::vector< double > > Eff;
 	std::vector< std::vector< std::vector< double > > > Eff3D;
+=======
+	Double_t			SubSampling;
+	//std::vector< std::vector< double > > Eff;
+	//std::vector< std::vector< std::vector< double > > > Eff3D;
+>>>>>>> Stashed changes
 
-	Double1D EffpT;
+	TH1 *peffHist;
+	//Double1D EffpT;
 
 	Int_t fEff_npT_step = 40;
 	Double_t fEff_pT_min = 0.2;
