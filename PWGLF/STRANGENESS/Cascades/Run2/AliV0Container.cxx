@@ -502,8 +502,8 @@ void AliV0Container::Fill(AliAODv0* v0, AliPIDResponse* fPIDResponse, Double_t l
     //GetKinkIndex condition
     fTreeV0VarPosIsKink   = kFALSE;
     fTreeV0VarNegIsKink   = kFALSE;
-    if( pTrack->GetKinkIndex(0)>0 ) fTreeV0VarPosIsKink   = kTRUE;
-    if( nTrack->GetKinkIndex(0)>0 ) fTreeV0VarNegIsKink   = kTRUE;
+    if( pTrack->GetProdVertex()->GetType() == AliAODVertex::kKink ) fTreeV0VarPosIsKink   = kTRUE;
+    if( nTrack->GetProdVertex()->GetType() == AliAODVertex::kKink ) fTreeV0VarNegIsKink   = kTRUE;
     
     //________________________________________________________________________
     //TOF info

@@ -26,11 +26,7 @@ fV0CSignal                  (0.),
 fMCMultiplicity             (0),
 
 fIsCollisionCandidate       (kFALSE),
-fIsEventSelected            (0),
-
 fTriggerMask                (0), 
-
-fVertexStatus               (kFALSE),
 
 //Event info
 fMagField                   (0.),
@@ -48,6 +44,7 @@ fIsIncompleteDAQ            (kFALSE),
 fIsINELgtZERO               (kFALSE),
 fHasNoInconsistentVertices  (kFALSE),
 fIsNotAsymmetricInVZERO     (kFALSE),
+fHasGoodVertex2016			(kFALSE),
 //---------------PILE-UP-INFO---------------------
 fIsPileupMV                 (kFALSE),
 fIsPileupOOB                (kFALSE),
@@ -98,7 +95,6 @@ TObject(source)
     fMCMultiplicity             = source.fMCMultiplicity;
 
     fIsCollisionCandidate       = source.fIsCollisionCandidate;
-    fIsEventSelected            = source.fIsEventSelected;
     fTriggerMask                = source.fTriggerMask;             
 
     //Event info
@@ -126,14 +122,14 @@ TObject(source)
     fPrimVertexMC   [0]         = source.fPrimVertexMC  [0];
     fPrimVertexMC   [1]         = source.fPrimVertexMC  [1];
     fPrimVertexMC   [2]         = source.fPrimVertexMC  [2];
-    
-    fVertexStatus               = source.fVertexStatus;
+	
     //---------------PILE-UP-INFO---------------------
     fIsSPDClusterVsTrackletBG   = source.fIsSPDClusterVsTrackletBG;
     fIsIncompleteDAQ            = source.fIsIncompleteDAQ;         
     fIsINELgtZERO               = source.fIsINELgtZERO;            
     fHasNoInconsistentVertices  = source.fHasNoInconsistentVertices;
-    fIsNotAsymmetricInVZERO     = source.fIsNotAsymmetricInVZERO;   
+    fIsNotAsymmetricInVZERO     = source.fIsNotAsymmetricInVZERO;  
+    fHasGoodVertex2016			= source.fHasGoodVertex2016;
     //---------------PILE-UP-INFO---------------------
     fIsPileupMV                 = source.fIsPileupMV;               
     fIsPileupOOB                = source.fIsPileupOOB;              
@@ -168,7 +164,6 @@ void AliMCEventContainer::Reset()
     fMCMultiplicity             = 0;
 
     fIsCollisionCandidate       = kFALSE;
-    fIsEventSelected            = 0;
     fTriggerMask                = 0; 
 
     //Event info
@@ -197,13 +192,13 @@ void AliMCEventContainer::Reset()
     fPrimVertexMC   [1]         = -999;
     fPrimVertexMC   [2]         = -999; 
     
-    fVertexStatus               = kFALSE;
     //---------------PILE-UP-INFO---------------------
     fIsSPDClusterVsTrackletBG   = kFALSE;
     fIsIncompleteDAQ            = kFALSE;
     fIsINELgtZERO               = kFALSE;
     fHasNoInconsistentVertices  = kFALSE;
     fIsNotAsymmetricInVZERO     = kFALSE;
+	fHasGoodVertex2016			= kFALSE;
     //---------------PILE-UP-INFO---------------------
     fIsPileupMV                 = kFALSE;
     fIsPileupOOB                = kFALSE; 
@@ -254,18 +249,22 @@ void AliMCEventContainer::Fill(AliMultSelection* MultSelection, AliAnalysisUtils
     fProximityCut    = kTRUE;
     fVertexSelected2015pp = SelectVertex2015pp(AODEvent,kTRUE,&fHasSPDANDTrkVtx,&fProximityCut);
     
-    fIsSPDClusterVsTrackletBG   = Utils->IsSPDClusterVsTrackletBG(AODEvent);          
-    fIsIncompleteDAQ            = AODEvent->IsIncompleteDAQ();         
+    //fIsSPDClusterVsTrackletBG   = Utils->IsSPDClusterVsTrackletBG(AODEvent);
+	//fIsIncompleteDAQ            = AODEvent->IsIncompleteDAQ();         
+	fIsSPDClusterVsTrackletBG   = !MultSelection->GetThisEventPassesTrackletVsCluster();          
+    fIsIncompleteDAQ            = !MultSelection->GetThisEventIsNotIncompleteDAQ();  
     
     fIsINELgtZERO               = MultSelection->GetThisEventINELgtZERO();   
     fHasNoInconsistentVertices  = MultSelection->GetThisEventHasNoInconsistentVertices();
     fIsNotAsymmetricInVZERO     = MultSelection->GetThisEventIsNotAsymmetricInVZERO();   
+	fHasGoodVertex2016			= MultSelection->GetThisEventHasGoodVertex2016();
     
     fIsPileupMV                 = !MultSelection->GetThisEventIsNotPileupMV();      
-    fIsPileupOOB                = Utils->IsOutOfBunchPileUp(AODEvent);             
-    fIsPileupFromSPD            = AODEvent->IsPileupFromSPD();       
+    fIsPileupOOB                = Utils->IsOutOfBunchPileUp(AODEvent);     
+	//fIsPileupFromSPD			= AODevent->IsPileupFromSPD();       
+    fIsPileupFromSPD            = !MultSelection->GetThisEventIsNotPileup(); 
     fIsPileupFromSPDInMultBins  = AODEvent->IsPileupFromSPDInMultBins(); 
-    fIsPileupInMultBins         = !MultSelection->GetThisEventIsNotPileupInMultBins();    
+    fIsPileupInMultBins         = !MultSelection->GetThisEventIsNotPileupInMultBins();      
 }
 //_____________________________________________________________________________
 Bool_t AliMCEventContainer::SelectVertex2015pp(AliAODEvent *aod,  Bool_t checkSPDres, Bool_t *SPDandTrkExists, Bool_t *PassProximityCut) 
@@ -273,8 +272,10 @@ Bool_t AliMCEventContainer::SelectVertex2015pp(AliAODEvent *aod,  Bool_t checkSP
   if (!aod) return kFALSE;
   const AliAODVertex * trkVertex = aod->GetPrimaryVertexTracks();
   const AliAODVertex * spdVertex = aod->GetPrimaryVertexSPD();
-  Bool_t hasSPD = spdVertex->GetStatus();
-  Bool_t hasTrk = trkVertex->GetStatus();
+//   Bool_t hasSPD = spdVertex->GetStatus();
+//   Bool_t hasTrk = trkVertex->GetStatus();
+  Bool_t hasSPD = GetVertexStatus(spdVertex);
+  Bool_t hasTrk = GetVertexStatus(trkVertex);
   //Note that AliVertex::GetStatus checks that N_contributors is > 0
   //reject events if both are explicitly requested and none is available
   //MOD: do not reject if SPD&Trk vtx. not there, but store it to the variable, if requested:
@@ -316,4 +317,12 @@ Bool_t AliMCEventContainer::IsGoodSPDvertexRes(const AliAODVertex * spdVertex)
   spdVertex->GetCovarianceMatrix(covmatrix);
   if (spdVertex->IsFromVertexerZ() && !(/*spdVertex->GetDispersion()<0.04 &&*/ TMath::Sqrt(covmatrix[5]) <0.25)) return kFALSE;
   return kTRUE;
+};
+//_____________________________________________________________________________
+Bool_t AliMCEventContainer::GetVertexStatus(const AliAODVertex *vertex)
+{
+    TString title = vertex->GetTitle();
+    if(vertex->GetNContributors()>0 || (title.Contains("cosmics") && !title.Contains("failed"))) return 1;
+    if(title.Contains("smearMC")) return 1;
+    return 0;
 };

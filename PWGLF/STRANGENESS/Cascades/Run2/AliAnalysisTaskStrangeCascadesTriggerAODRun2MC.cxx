@@ -329,12 +329,19 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserCreateOutputObjects()
     
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
-        fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",5,0,5);
-        fHistEventCounter->GetXaxis()->SetBinLabel(1, "Selected");
-        fHistEventCounter->GetXaxis()->SetBinLabel(2, "Evt");
-        fHistEventCounter->GetXaxis()->SetBinLabel(3, "EvtMC");
-		fHistEventCounter->GetXaxis()->SetBinLabel(4, "PrimVtxCuts");
-		//fHistEventCounter->GetXaxis()->SetBinLabel(5, "Tracks");
+        //Histogram Output: Event-by-Event
+        fHistEventCounter = new TH2D( "fHistEventCounter", ";Evt. Sel. Step; Trigger ; Count", 6, 0, 6, 4, 0, 4);
+        fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
+		fHistEventCounter->GetXaxis()->SetBinLabel(2, "No pileup SPD");
+		fHistEventCounter->GetXaxis()->SetBinLabel(3, "Has Vtx");
+		fHistEventCounter->GetXaxis()->SetBinLabel(4, "Vertex selected 2015");
+		fHistEventCounter->GetXaxis()->SetBinLabel(5, "Z Vtx cut");
+		fHistEventCounter->GetXaxis()->SetBinLabel(6, "INEL>0");
+		fHistEventCounter->GetYaxis()->SetBinLabel(1, "Triggered"); // = Trigger of the user (from SelectCollisionCandidates)
+		fHistEventCounter->GetYaxis()->SetBinLabel(2, "kINT7");	
+		fHistEventCounter->GetYaxis()->SetBinLabel(3, "HM"); 	// = High multiplicity : 0-10% V0M 
+		fHistEventCounter->GetYaxis()->SetBinLabel(4, "VHM");	// = Very high multiplicity : 0-1% V0M
+		
         fOutputList->Add(fHistEventCounter);
     }
     
@@ -345,7 +352,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserCreateOutputObjects()
 void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
 {
 	// Is selected
-    fHistEventCounter->Fill(0.5);
+    fHistEventCounter->Fill(0.5, 0.5);
 	
     // Main loop
     // Called for each event
@@ -360,18 +367,12 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
         return;
     }
     
-    // Get event
-    fHistEventCounter->Fill(1.5);
-    
     lMCevent = dynamic_cast<AliMCEvent*>( MCEvent() );
     if( !lMCevent ) 
     {
         Printf("ERROR: Could not retrieve MC event \n");
         return;
     }
-    
-    // Get MC event
-    fHistEventCounter->Fill(2.5);
     
     
     //------------------------------------------------
@@ -389,13 +390,6 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
     Double_t lMCVtxPos[3]          = {-100.0, -100.0, -100.0};
     lMCevent->GetPrimaryVertex()->GetXYZ(lMCVtxPos);
     
-    //Optional cut on the primary vertex
-    if ( TMath::Sqrt( TMath::Power(lBestPrimaryVtxPos[0],2)+TMath::Power(lBestPrimaryVtxPos[1],2)) > fkMaxPVR2D ) return;
-    if ( TMath::Abs( lBestPrimaryVtxPos[2] ) > fkMaxPVZ ) return;
-	
-	// Pass Primary vertex cuts
-    fHistEventCounter->Fill(3.5);
-    
     // multiplicity percentiles
     AliMultSelection *MultSelection = (AliMultSelection*) lAODevent -> FindListObject("MultSelection");
     //------------------------------------------------
@@ -406,7 +400,6 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
     fAnalysisEvent->Fill(MultSelection, fUtils, lAODevent);
     
     fAnalysisEvent->SetIsCollisionCandidate( fInputHandler->IsEventSelected() & AliVEvent::kAny );
-    fAnalysisEvent->SetIsEventSelected     ( fInputHandler->IsEventSelected() ) ;
     fAnalysisEvent->SetTriggerMask         ( fInputHandler->IsEventSelected() ) ;
     
     
@@ -432,7 +425,76 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
     fAnalysisEvent->SetPrimaryVertexPos     ( lBestPrimaryVtxPos              );
     fAnalysisEvent->SetPrimaryVertexCov     ( Cov                             );
     fAnalysisEvent->SetPrimaryVertexMCPos   ( lMCVtxPos                       );
-    fAnalysisEvent->SetVertexStatus         ( lPrimaryBestAODVtx->GetStatus() );
+	
+	// Count events
+	Bool_t lEvt_IsNotPileupFromSPD 		= !fAnalysisEvent->IsPileupFromSPD();
+	Bool_t lEvt_HasVertex 				= fAnalysisEvent->HasVertex();
+	Bool_t lEvt_IsVertexSelected2015 	= fAnalysisEvent->IsVertexSelected2015pp()	 && 
+										  fAnalysisEvent->HasSPDANDTrkVtx() 		 && 
+										  fAnalysisEvent->GetProximityCut();
+	Bool_t lEvt_ZVtxCut 				= TMath::Abs(fAnalysisEvent->GetPrimVertex(2)) < 10;
+	Bool_t lEvt_IsINELgtZERO 			= fAnalysisEvent->IsINELgtZERO();
+	
+	if( lEvt_IsNotPileupFromSPD ) 
+		fHistEventCounter->Fill(1.5, 0.5);
+	if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex ) 
+		fHistEventCounter->Fill(2.5, 0.5);
+	if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 ) 
+		fHistEventCounter->Fill(3.5, 0.5);
+	if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut ) 
+		fHistEventCounter->Fill(4.5, 0.5);
+	if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut && lEvt_IsINELgtZERO ) 
+		fHistEventCounter->Fill(5.5, 0.5);
+	
+	if( fAnalysisEvent->GetTriggerMask() & AliVEvent::kINT7 )
+	{
+		fHistEventCounter->Fill(0.5, 1.5);
+		
+		if( lEvt_IsNotPileupFromSPD ) 
+			fHistEventCounter->Fill(1.5, 1.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex ) 
+			fHistEventCounter->Fill(2.5, 1.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 ) 
+			fHistEventCounter->Fill(3.5, 1.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut ) 
+			fHistEventCounter->Fill(4.5, 1.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut && lEvt_IsINELgtZERO ) 
+			fHistEventCounter->Fill(5.5, 1.5);
+	}
+	if( fAnalysisEvent->GetV0MPercentile() < 10 )
+	{
+		fHistEventCounter->Fill(0.5, 2.5);
+		
+		if( lEvt_IsNotPileupFromSPD ) 
+			fHistEventCounter->Fill(1.5, 2.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex ) 
+			fHistEventCounter->Fill(2.5, 2.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 ) 
+			fHistEventCounter->Fill(3.5, 2.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut ) 
+			fHistEventCounter->Fill(4.5, 2.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut && lEvt_IsINELgtZERO ) 
+			fHistEventCounter->Fill(5.5, 2.5);
+	}
+	if( fAnalysisEvent->GetV0MPercentile() < 1 )
+	{
+		fHistEventCounter->Fill(0.5, 3.5);
+		
+		if( lEvt_IsNotPileupFromSPD ) 
+			fHistEventCounter->Fill(1.5, 3.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex ) 
+			fHistEventCounter->Fill(2.5, 3.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 ) 
+			fHistEventCounter->Fill(3.5, 3.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut ) 
+			fHistEventCounter->Fill(4.5, 3.5);
+		if( lEvt_IsNotPileupFromSPD && lEvt_HasVertex && lEvt_IsVertexSelected2015 && lEvt_ZVtxCut && lEvt_IsINELgtZERO ) 
+			fHistEventCounter->Fill(5.5, 3.5);
+	}
+	
+	//Optional cut on the primary vertex
+	if ( TMath::Sqrt( TMath::Power(lBestPrimaryVtxPos[0],2)+TMath::Power(lBestPrimaryVtxPos[1],2)) > fkMaxPVR2D ) return;
+    if ( TMath::Abs( lBestPrimaryVtxPos[2] ) > fkMaxPVZ ) return;
     
     //------------------------------------------------
     // MAIN CASCADE LOOP STARTS HERE
@@ -449,7 +511,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
 	{
 		for (Int_t iCasc = 0; iCasc < ncascades; iCasc++)
 		{
-			if( !lPrimaryBestAODVtx             ) continue;
+			//if( !lPrimaryBestAODVtx             ) continue;
 			//if( !lPrimaryBestAODVtx->GetStatus()) continue;
 			
 			AliAODcascade *cascade = lAODevent->GetCascade(iCasc);
@@ -522,8 +584,8 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::UserExec(Option_t *)
 			if( !fCascSaveAddConfig  )
 			{
 				if(
-					TMath::Abs( CascEta      )                      < fMaxAbsEta                          &&
-					TMath::Abs( V0Eta        )                      < fMaxAbsEta                          &&
+					//TMath::Abs( CascEta      )                      < fMaxAbsEta                          &&
+					//TMath::Abs( V0Eta        )                      < fMaxAbsEta                          &&
 					
 					TMath::Abs( fAnalysisCascade->GetBachEta() )    < fMaxAbsEta                          && 
 					TMath::Abs( fAnalysisCascade->GetPosEta() )     < fMaxAbsEta                          && 
@@ -920,7 +982,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::Terminate(Option_t *)
         return;
     }
     
-    fHistEventCounter = dynamic_cast<TH1D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
+    fHistEventCounter = dynamic_cast<TH2D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
     if (!fHistEventCounter) {
         AliError("ERROR - AliAnalysisTaskStrangeCascadesTriggerAODRun2MC : fHistEventCounter not available");
         return;
@@ -929,7 +991,7 @@ void AliAnalysisTaskStrangeCascadesTriggerAODRun2MC::Terminate(Option_t *)
     TCanvas *canCheck = new TCanvas("AliAnalysisTaskStrangeCascadesTriggerAODRun2MC","V0 Multiplicity",10,10,510,510);
     canCheck->cd(1)->SetLogy();
     
-    fHistEventCounter->SetMarkerStyle(22);
-    fHistEventCounter->DrawCopy("E");
+    //fHistEventCounter->SetMarkerStyle(22);
+    fHistEventCounter->DrawCopy("");
 }
 //_____________________________________________________________________________

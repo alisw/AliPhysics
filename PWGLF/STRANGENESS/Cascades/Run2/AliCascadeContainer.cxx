@@ -761,9 +761,9 @@ void AliCascadeContainer::Fill(AliAODcascade* cascade, AliPIDResponse* fPIDRespo
     fTreeCascVarBachIsKink  = kFALSE;
     fTreeCascVarPosIsKink   = kFALSE;
     fTreeCascVarNegIsKink   = kFALSE;
-    if( bTrack->GetKinkIndex(0)>0 ) fTreeCascVarBachIsKink  = kTRUE;
-    if( pTrack->GetKinkIndex(0)>0 ) fTreeCascVarPosIsKink   = kTRUE;
-    if( nTrack->GetKinkIndex(0)>0 ) fTreeCascVarNegIsKink   = kTRUE;
+	if( bTrack->GetProdVertex()->GetType() == AliAODVertex::kKink ) fTreeCascVarBachIsKink  = kTRUE;
+    if( pTrack->GetProdVertex()->GetType() == AliAODVertex::kKink ) fTreeCascVarPosIsKink   = kTRUE;
+    if( nTrack->GetProdVertex()->GetType() == AliAODVertex::kKink ) fTreeCascVarNegIsKink   = kTRUE;
     
     //________________________________________________________________________
     //TOF info
