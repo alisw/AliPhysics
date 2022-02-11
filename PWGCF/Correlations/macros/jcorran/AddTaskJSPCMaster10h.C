@@ -21,8 +21,8 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
   //-------- Read in passed Variations -------- 
   std::istringstream iss(Variations);
 
-  const int NPossibleVariations = 13;
-  std::string PossibleVariations[NPossibleVariations] = { "tpconly","hybrid", "V0M","zvtx6","zvtx12","zvtx", "chi03", "chi35", "dcaxy1", "dcaz2", "ntpc80", "ntpc90", "ntpc100" }; //for reference, these variations are allowed
+  const int NPossibleVariations = 14;
+  std::string PossibleVariations[NPossibleVariations] = { "tpconly","hybrid", "V0M","zvtx6","zvtx12","zvtx", "chi03", "chi35", "dcaxy1", "dcaz2", "ntpc80", "ntpc90", "ntpc100", "global" }; //for reference, these variations are allowed
     
   int PassedVariations = 0;
   std::vector<TString> configNames;
@@ -53,6 +53,9 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
 
   cMapTask->EnableEffCorrection ("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC10h-LHC11a10a_bis-0-Lists.root"); // Efficiency correction.
   for (Int_t i = 0; i < PassedVariations; i++) {
+
+    if (strcmp(configNames[i].Data(), "global") == 0) { continue; } //no map for global
+
     if (newWeightNaming) {
       MAPfilenames[i] = Form("%sPhiWeights_LHC10h_%s_pt%02d_9904.root", MAPdirname.Data(), configNames[i].Data(), Int_t (ptMin * 10));  // Azimuthal correction.
     }
@@ -66,6 +69,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
 // Setting of the general parameters.
   Int_t tpconlyCut = 128;
   Int_t hybridCut = 768;
+  Int_t globalCut = 96;
 
   UInt_t selEvt;
   selEvt = AliVEvent::kMB;// Minimum bias trigger for LHC10h.
@@ -89,6 +93,11 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
     }
     if (strcmp(configNames[i].Data(), "hybrid") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
+      if(UseAlternativeWeights){
+      	fJCatalyst[i]->SetInputAlternativeNUAWeights10h(kTRUE, AlternativeWeightFile);
+      }
+    } else if (strcmp(configNames[i].Data(), "global") == 0) {
+      fJCatalyst[i]->SetTestFilterBit(globalCut);
       if(UseAlternativeWeights){
       	fJCatalyst[i]->SetInputAlternativeNUAWeights10h(kTRUE, AlternativeWeightFile);
       }
@@ -132,7 +141,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
 
     fJCatalyst[i]->SetPtRange(ptMin, 5.0);
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
-    fJCatalyst[i]->SetPhiCorrectionIndex(i);
+    if (strcmp(configNames[i].Data(), "global") != 0) { fJCatalyst[i]->SetPhiCorrectionIndex(i); } //enable map only if we don't have global
    
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
