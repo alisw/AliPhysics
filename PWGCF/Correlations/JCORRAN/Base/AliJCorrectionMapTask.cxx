@@ -112,7 +112,7 @@ void AliJCorrectionMapTask::Terminate(Option_t *)
 	if(!GetOutputData(1)) return;
 }
 
-UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString fname &, const TString listName &){
+UInt_t AliJCorrectionMapTask::ConnectInputContainer(const TString &fname, const TString &listName){
 	DefineInput(inputIndex,TList::Class());
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -266,7 +266,7 @@ double AliJCorrectionMapTask::GetEffCorrection(TGraphErrors *gr, double pt) cons
 }
 
 std::tuple<TH1 *, double> AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run, EFF2_LABEL effLabel){
-	auto m = std::find_if(runPeriods.begin(),runPeriods.end(),[&](auto &t)->bool{
+	auto m = std::find_if(runPeriods.begin(),runPeriods.end(),[&](/*auto &t*/RunPeriod &t)->bool{
 		return std::get<0>(t) <= run && run <= std::get<1>(t);
 	});
 	const char *pPeriod;
@@ -283,7 +283,7 @@ std::tuple<TH1 *, double> AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run
 	
 	TList *plist = (TList*)GetInputData(effInputIndex2);
 	if(!plist)
-		return 0;
+		return std::make_tuple((TH1*)0,V0mean);
 	
 	TH1 *pmap = (TH1*)plist->FindObject(Form("%s_%s",pPeriod,peff2Labels[effLabel]));
 	return std::make_tuple(pmap,V0mean);
@@ -294,7 +294,7 @@ TH1 * AliJCorrectionMapTask::GetEffCorrectionMap2(const TString &tag, EFF2_LABEL
 	if(!plist)
 		return 0;
 	
-	TH1 *pmap = (TH1*)plist->FindObject(Form("%s_%s",ptag.Data(),peff2Labels[effLabel]));
+	TH1 *pmap = (TH1*)plist->FindObject(Form("%s_%s",tag.Data(),peff2Labels[effLabel]));
 	return pmap;
 }
 

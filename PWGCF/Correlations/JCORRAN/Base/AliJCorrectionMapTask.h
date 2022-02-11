@@ -63,8 +63,8 @@ public:
 		EFF2_LABEL_COUNT,
 	};
 	TH1 * GetCorrectionMap(UInt_t, UInt_t, UInt_t);
-	std::tuple<TH1 *, double> GetCorrectionMap2(UInt_t, EFF2_LABEL);
-	TH1 * GetCorrectionMap2(const TString &, EFF2_LABEL);
+	std::tuple<TH1 *, double> GetEffCorrectionMap2(UInt_t, EFF2_LABEL);
+	TH1 * GetEffCorrectionMap2(const TString &, EFF2_LABEL);
 	TH1 * GetCentCorrection();
 	TGraphErrors * GetEffCorrectionMap(UInt_t run, Double_t cent, UInt_t fEffFilterBit);
 	double GetEffCorrection(TGraphErrors *gCor, double pt ) const ;

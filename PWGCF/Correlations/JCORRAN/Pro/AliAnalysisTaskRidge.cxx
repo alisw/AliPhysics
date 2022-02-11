@@ -505,14 +505,14 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}*/
 
 		if(fOption.Contains("Glb"))
-			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,EFF2_LABEL_GLOBAL8);
+			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBAL8);
 		else
 		if(fOption.Contains("SDD"))
-			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,EFF2_LABEL_GLOBALSDD8);
+			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBALSDD8);
 		else
 		if(fOption.Contains("TightVtx"))
-			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,EFF2_LABEL_HYBRID6);
-		else std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(fOption.Contains("pPb")?"LHC16q":"LHC16l",EFF2_LABEL_HYBRID8); //MC and others
+			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_HYBRID6);
+		else peffHist = fJCorMapTask->GetEffCorrectionMap2(fOption.Contains("pPb")?"LHC16q":"LHC16l",AliJCorrectionMapTask::EFF2_LABEL_HYBRID8); //MC and others
 
 		/*if( fefficiencyFile ){
 			hEfficiencyHist = (TH2D*)fefficiencyFile->Get(Form("%s_Hyb8cm",Period.Data()));
@@ -993,7 +993,7 @@ double AliAnalysisTaskRidge::GetEfficiency(double pt, double eta, bool bITS) con
 	//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-ITS_fEff_eta_min)/ITS_fEff_eta_l) ] );
 	if(!peffHist)
 		return 0.25;
-	int ptbin = std::min(binPt.FindBin(track->Pt()),peffHist->GetNbinsY());
+	int ptbin = std::min(binPt.FindBin(pt),peffHist->GetNbinsY());
 	int etabin = (int)(!bITS?(eta-fEff_eta_min)/fEff_eta_l:(eta-ITS_fEff_eta_min)/ITS_fEff_eta_l);
 	return peffHist->GetBinContent(etabin+1,ptbin);
 }
@@ -1012,7 +1012,7 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 	tracklist *etl;
 	eventpool *ep;
 
-	bool bITS = fOutput.Contains("ITS");
+	bool bITS = fOption.Contains("ITS");
 
 	//Event mixing pool
 	if (fsetmixing && centbin>=0 && zbin>=0 &&
@@ -1063,10 +1063,10 @@ Bool_t AliAnalysisTaskRidge::GoodTracksSelection(int trk){
 					else{
 						fHistos->FillTH2("hPhiEtaCor",track->Phi(),track->Eta(),1.0/
 						//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
-						GetEfficiency(track->Pt(),track->Eta(),bITS);
+						GetEfficiency(track->Pt(),track->Eta(),bITS));
 						FillTHnSparse("hTrackDataCor",{track->Pt(),track->Phi(),track->Eta(),fCent,fZ},1.0/
 						//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
-						GetEfficiency(track->Pt(),track->Eta(),bITS);
+						GetEfficiency(track->Pt(),track->Eta(),bITS));
 					}
 				}
 				/*else if( fOption.Contains("Add3DEff") ){
@@ -1243,8 +1243,8 @@ Bool_t AliAnalysisTaskRidge::GoodTrackletSelection(){
 		if( fOption.Contains("SPDEff") )
                 fHistos->FillTH2("hPhiEtaCor",phi,eta,
 		//1.0/Eff[ (int)( TVector2::Phi_0_2pi(phi)*180.0/(2*pi) ) ][ (int)( ( eta+2.0 )*40.0/4.0 ) ]
-		1.0/peffHist?peffHist->GetBinContent(
-			(int)(( eta+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi)*180.0/(2*pi))+1)
+		1.0/(peffHist?peffHist->GetBinContent(
+			(int)(( eta+2.0 )*40.0/4.0)+1,(int)(TVector2::Phi_0_2pi(phi)*180.0/(2*pi))+1):0.25)
                 );
 		if (fsetmixing) {
 			Tracklet tracklet;
@@ -1306,7 +1306,7 @@ void AliAnalysisTaskRidge::FillTracks(){
 	std::shuffle ( goodtrackindices.begin(), goodtrackindices.end(), engine );
 */
 
-	bool bITS = fOutput.Contains("ITS");
+	bool bITS = fOption.Contains("ITS");
 
 	double MaxPhi=0;
 	double MaxPt=0;

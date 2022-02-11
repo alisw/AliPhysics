@@ -49,6 +49,7 @@ class TLorentzVector;
 #include <TLorentzVector.h>
 #include "AliJJetTask.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliJCorrectionMapTask.h"
 #include "AliJetContainer.h"
 
 class AliAnalysisTaskRidgeRunTable {
@@ -258,14 +259,8 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         Int_t                           bookingsize = 7;
         AliVMultiplicity*               fMultiplicity=nullptr;//!
 	Int_t				bookingsizeMC = 7;
-<<<<<<< Updated upstream
-	std::vector< std::vector< double > > Eff;
-	std::vector< std::vector< std::vector< double > > > Eff3D;
-=======
-	Double_t			SubSampling;
 	//std::vector< std::vector< double > > Eff;
 	//std::vector< std::vector< std::vector< double > > > Eff3D;
->>>>>>> Stashed changes
 
 	TH1 *peffHist;
 	//Double1D EffpT;

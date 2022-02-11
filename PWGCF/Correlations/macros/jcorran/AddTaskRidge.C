@@ -8,6 +8,11 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	if (!mgr) return 0x0;
 	if (!mgr->GetInputEventHandler())  return 0x0;
 
+	if(!ismc){
+		AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
+		cmaptask->EnableEffCorrection2("alien:///alice/cern.ch/user/j/jparkkil/RidgeEff/EffOutConv.root");
+		mgr->AddTask((AliAnalysisTask*) cmaptask);
+	}
 
 	AliAnalysisTaskRidge* taskRidge =
 		new AliAnalysisTaskRidge(taskname, Form("%s_%s",taskname,option) );
