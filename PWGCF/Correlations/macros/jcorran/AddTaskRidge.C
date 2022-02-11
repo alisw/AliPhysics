@@ -10,7 +10,7 @@ AliAnalysisTaskRidge* AddTaskRidge(
 
 	if(!ismc){
 		AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
-		cmaptask->EnableEffCorrection2("alien:///alice/cern.ch/user/j/jparkkil/RidgeEff/EffOutConv.root");
+		cmaptask->EnableEffCorrection2("alien:///alice/cern.ch/user/j/jparkkil/legotrain/RidgeEff/EffOutConv.root");
 		mgr->AddTask((AliAnalysisTask*) cmaptask);
 	}
 
@@ -23,8 +23,6 @@ AliAnalysisTaskRidge* AddTaskRidge(
 	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	AliAnalysisDataContainer *coutputRidge = mgr->CreateContainer(Form("%s_%s",taskname,option),
 		AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-
-//	taskRidge->SetEfficiencyFile("alien:///alice/cern.ch/user/j/junlee/Efficiency_RIDGE/EffOut.root");
 
 	mgr->ConnectInput(taskRidge, 0, cinput);
 	mgr->ConnectOutput(taskRidge,1,mgr->CreateContainer(Form("output%s%s",suffix,option), AliDirList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root"));
