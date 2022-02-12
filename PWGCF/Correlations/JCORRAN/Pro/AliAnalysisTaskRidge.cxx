@@ -810,7 +810,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	PostData(1, fOutput);
 }
 
-double AliAnalysisTaskRidge::GetEfficiency(double pt, double eta, bool bITS) const{
+double AliAnalysisTaskRidge::GetEfficiency(double pt, double eta, bool bITS){
 	//
 	//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-fEff_eta_min)/fEff_eta_l) ] );
 	//Eff[ binPt.FindBin(track->Pt())-1 ][ (int)((track->Eta()-ITS_fEff_eta_min)/ITS_fEff_eta_l) ] );

@@ -117,7 +117,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	void SetEfficiencyFilepPb(char* fname) { TGrid::Connect("alien://"); fefficiencyFilepPb = TFile::Open(fname,"READ"); }
 	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }*/
 
-		double GetEfficiency(double pt, double eta, bool bITS = false) const;
+		double GetEfficiency(double pt, double eta, bool bITS = false);
         Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
 	Bool_t  GoodTracksSelectionMC();
