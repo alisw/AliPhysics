@@ -70,8 +70,8 @@ public:
 	TAxis * GetCentBinEff();
 
 	struct RunPeriod{
-		uint runStart;
-		uint runEnd;
+		UInt_t runStart;
+		UInt_t runEnd;
 		const char *pPeriod;
 		double V0mean;
 	};
