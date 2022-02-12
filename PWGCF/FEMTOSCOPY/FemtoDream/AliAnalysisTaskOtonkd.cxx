@@ -240,7 +240,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
         fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 0,
+    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
         fConfig->GetMinimalBookingME());
   }
 
@@ -755,13 +755,11 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
      bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
      if(fdoFDpairing) FemtoDreamPairing = true;
      if(FemtoDreamPairing){
-      fPairCleaner->CleanTrackAndDecay(&Kaons, &Deuterons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
-      fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiDeuterons, 1);///NOT SURE AT ALL ABOUT THIS 0 and 1
-      fPairCleaner->CleanTrackAndDecay(&Kaons, &Protons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
-      fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiProtons, 1);///NOT SURE AT ALL ABOUT THIS 0 and 1
-      fPairCleaner->CleanTrackAndDecay(&Protons, &Deuterons, 0);
-      fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiDeuterons, 1);
       fPairCleaner->ResetArray();
+      //fPairCleaner->CleanTrackAndDecay(&Kaons, &Protons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
+      //fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiProtons, 1);///NOT SURE AT ALL ABOUT THIS 0 and 1
+      //fPairCleaner->CleanTrackAndDecay(&Kaons, &Deuterons, 0);///NOT SURE AT ALL ABOUT THIS 0 and 1
+      //fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiDeuterons, 1);///NOT SURE AT ALL ABOUT THIS 0 and 1
       fPairCleaner->StoreParticle(Kaons);
       fPairCleaner->StoreParticle(AntiKaons);
       fPairCleaner->StoreParticle(Protons);
