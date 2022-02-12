@@ -265,15 +265,16 @@ double AliJCorrectionMapTask::GetEffCorrection(TGraphErrors *gr, double pt) cons
 	return cor;
 }
 
-std::tuple<TH1 *, double> AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run, EFF2_LABEL effLabel){
-	auto m = std::find_if(runPeriods.begin(),runPeriods.end(),[&](/*auto &t*/RunPeriod &t)->bool{
-		return std::get<0>(t) <= run && run <= std::get<1>(t);
+//std::tuple<TH1 *, double> AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run, EFF2_LABEL effLabel){
+TH1 * AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run, EFF2_LABEL effLabel, double &V0mean){
+	auto m = std::find_if(runPeriods.begin(),runPeriods.end(),[&](/*auto &t*/const RunPeriod &t)->bool{
+		//return std::get<0>(t) <= run && run <= std::get<1>(t);
+		return t.runStart <= run && run <= t.runEnd;
 	});
 	const char *pPeriod;
-	double V0mean;
 	if(m != runPeriods.end()){
-		pPeriod = std::get<2>(*m);
-		V0mean = std::get<3>(*m);
+		pPeriod = (*m).pPeriod;
+		V0mean = (*m).V0mean;
 	}else{
 		pPeriod = "LHC16q";
 		V0mean = 120.0;
@@ -283,10 +284,11 @@ std::tuple<TH1 *, double> AliJCorrectionMapTask::GetEffCorrectionMap2(UInt_t run
 	
 	TList *plist = (TList*)GetInputData(effInputIndex2);
 	if(!plist)
-		return std::make_tuple((TH1*)0,V0mean);
+		return 0;//std::make_tuple((TH1*)0,V0mean);
 	
 	TH1 *pmap = (TH1*)plist->FindObject(Form("%s_%s",pPeriod,peff2Labels[effLabel]));
-	return std::make_tuple(pmap,V0mean);
+	//return std::make_tuple(pmap,V0mean);
+	return pmap;
 }
 
 TH1 * AliJCorrectionMapTask::GetEffCorrectionMap2(const TString &tag, EFF2_LABEL effLabel){

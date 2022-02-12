@@ -397,13 +397,14 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
         	fRunTable = new AliAnalysisTaskRidgeRunTable(runnumber);
 
 		if(fOption.Contains("Glb"))
-			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBAL8);
+			//std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBAL8);
+			peffHist = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBAL8,V0M_mean);
 		else
 		if(fOption.Contains("SDD"))
-			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBALSDD8);
+			peffHist = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_GLOBALSDD8,V0M_mean);
 		else
 		if(fOption.Contains("TightVtx"))
-			std::tie(peffHist,V0M_mean) = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_HYBRID6);
+			peffHist = fJCorMapTask->GetEffCorrectionMap2(runnumber,AliJCorrectionMapTask::EFF2_LABEL_HYBRID6,V0M_mean);
 		else peffHist = fJCorMapTask->GetEffCorrectionMap2(fOption.Contains("pPb")?"LHC16q":"LHC16l",AliJCorrectionMapTask::EFF2_LABEL_HYBRID8); //MC and others
 
 		IsFirstEvent = kFALSE;

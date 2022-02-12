@@ -13,7 +13,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <tuple>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iomanip>
@@ -63,20 +62,26 @@ public:
 		EFF2_LABEL_COUNT,
 	};
 	TH1 * GetCorrectionMap(UInt_t, UInt_t, UInt_t);
-	std::tuple<TH1 *, double> GetEffCorrectionMap2(UInt_t, EFF2_LABEL);
+	TH1* GetEffCorrectionMap2(UInt_t, EFF2_LABEL, double &V0mean);
 	TH1 * GetEffCorrectionMap2(const TString &, EFF2_LABEL);
 	TH1 * GetCentCorrection();
 	TGraphErrors * GetEffCorrectionMap(UInt_t run, Double_t cent, UInt_t fEffFilterBit);
 	double GetEffCorrection(TGraphErrors *gCor, double pt ) const ;
 	TAxis * GetCentBinEff();
 
+	struct RunPeriod{
+		uint runStart;
+		uint runEnd;
+		const char *pPeriod;
+		double V0mean;
+	};
 private:
 	//TList *fOutputList;          //! output data container 
 	std::map<UInt_t, TH1 *> PhiWeightMap[8][20]; //! map for each run, index1: map id, index2: cent
 	std::map<UInt_t, TGraphErrors *> EffWeightMap[20]; //!  cent
 
 	//std::map<UInt_t, TH1 *> //pp?
-	typedef std::tuple<uint, uint, const char *, double> RunPeriod;
+	//typedef std::tuple<uint, uint, const char *, double> RunPeriod;
 	std::vector<RunPeriod> runPeriods;
 	TH1 *pPhiWeights; //!
 	TGraphErrors *grEffCor; //! for one cent
