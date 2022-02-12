@@ -2610,6 +2610,13 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 1984){  // pp 13 TeV variations: cell track matching
     cuts.AddCutCalo("0008d113","4117901090e30230000","0s631031000000d0"); // EG1 no TM
 
+  } else if (trainConfig == 1990){ // only track matched clusters
+    cuts.AddCutCalo("00010113","411790109qe3n230000","0s631031000000d0"); // with NCell effi
+    cuts.AddCutCalo("00010113","411790109qe30230000","0s631031000000d0"); // no NCell cut
+  } else if (trainConfig == 1991){ // only track matched clusters
+    cuts.AddCutCalo("00010113","411790109re3n230000","0s631031000000d0"); // with NCell effi
+    cuts.AddCutCalo("00010113","411790109re30230000","0s631031000000d0"); // no NCell cut
+
 
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
     cuts.AddCutCalo("00010113","4117900077032230000","01631031000000d0"); // INT7 - NO NL
