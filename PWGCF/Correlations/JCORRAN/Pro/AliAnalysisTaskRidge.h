@@ -16,6 +16,7 @@ class AliMultSelection;
 class AliVMultiplicity;
 class TClonesArray;
 class AliJJetTask;
+class AliJCorrectionMapTask;
 class AliDirList;
 class AliJetContainer;
 class AliParticleContainer;
@@ -262,7 +263,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
 	//std::vector< std::vector< double > > Eff;
 	//std::vector< std::vector< std::vector< double > > > Eff3D;
 
-	TH1 *peffHist;
+	TH1 *peffHist; //!
 	//Double1D EffpT;
 
 	Int_t fEff_npT_step = 40;

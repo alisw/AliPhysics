@@ -431,7 +431,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( fOption.Contains("SmallCone") ) JetConeSize = 0.2;
 	double JetEtaAccpetance = 0.8 - JetConeSize;
 
-
 	if( !fOption.Contains("HighMult") && !fOption.Contains("SmallCone") )		fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
 	else if( fOption.Contains("HighMult") && !fOption.Contains("SmallCone") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
 	else if( !fOption.Contains("HighMult") && fOption.Contains("SmallCone") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskSmallCone" ));
