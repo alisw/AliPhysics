@@ -445,6 +445,8 @@ fOADB(nullptr)
 {
   
   for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackDCAz[iq] = 1e+6 ;
+  for( Int_t iq=0; iq<kTrack; iq++ ) fTrackIsPileup[iq] = kFALSE ;
   
   DefineOutput(1, TList::Class()); // Event Counter Histo
   if (fkCalibration) DefineOutput(2, TTree::Class()); // Event Tree
@@ -1257,14 +1259,6 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // N. of tracks counter
         Int_t Ntracks0 = 0;
         
-        //Check pileup per track:
-        
-        for (int iMC = 0; iMC < mcEvent->GetNumberOfTracks(); ++iMC) {
-          
-          fTrackIsPileup[Ntracks0] = fUtils->IsParticleFromOutOfBunchPileupCollision(iMC,mcEvent);
-          Ntracks0++;
-        }
-        
         //DPMJet/HIJING info if available
         if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
           hHijing = (AliGenHijingEventHeader*)mcGenH;
@@ -1694,6 +1688,21 @@ void AliMultSelectionTask::UserExec(Option_t *)
         // DCAz information:
         
         fTrackDCAz[Ntracks] = dzz[1];
+        
+        //Find out if this track is pileup
+        if ( fkDebugIsMC ) {
+          AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+          AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+          AliStack*    stack=0;
+          AliMCEvent*  mcEvent=0;
+          
+          if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+            //Step 1: access track label
+            Int_t lblTrack = (Int_t) TMath::Abs( ctrack.GetLabel() );
+            //Step 2: check if track
+            fTrackIsPileup[Ntracks] = fUtils->IsParticleFromOutOfBunchPileupCollision(lblTrack,mcEvent);
+          }
+        }
         
         if (TMath::Abs(dzz[0])<(0.0182 + 0.0350/(track->Pt()))){ //"strict" DCAxy Cut
           
