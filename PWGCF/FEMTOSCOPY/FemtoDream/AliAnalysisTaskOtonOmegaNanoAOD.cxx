@@ -163,7 +163,7 @@ void AliAnalysisTaskOtonOmegaNanoAOD::UserCreateOutputObjects() {
   }
   if (!fConfig) {
     AliError("No Correlation Config \n");
-  } else {
+  } else  {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
     fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
