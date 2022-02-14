@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <TH2.h>
+#include <TF1.h>
 #include <TList.h>
 
 #include "AliClusterContainer.h"
@@ -28,6 +29,7 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fPhiMatch(0.05),
   fEtaMatch(0.025),
   fDoTrackClus(kTRUE),
+  fDoMomDepMatching(kFALSE),
   fHadCorr(0),
   fEexclCell(0),
   fPlotOversubtractionHistograms(kFALSE),
@@ -48,6 +50,12 @@ AliEmcalCorrectionClusterHadronicCorrection::AliEmcalCorrectionClusterHadronicCo
   fHistNMatchCent(0),
   fHistNClusMatchCent(0)
 {
+  fMomDepMatchingParamEta[0] = 0.04;
+  fMomDepMatchingParamEta[1] = 0.010;
+  fMomDepMatchingParamEta[2] = 2.5;
+  fMomDepMatchingParamPhi[0] = 0.09; 
+  fMomDepMatchingParamPhi[1] = 0.015;
+  fMomDepMatchingParamPhi[2] = 2.;
   for(Int_t i=0; i<10; i++) {
     fHistEsubPch[i]    = 0;
     fHistEsubPchRat[i] = 0;
@@ -96,11 +104,18 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("hadCorr", fHadCorr);
   GetProperty("Eexcl", fEexclCell);
   GetProperty("doTrackClus", fDoTrackClus);
+  GetProperty("doMomDepMatching", fDoMomDepMatching);
   GetProperty("plotOversubtractionHistograms", fPlotOversubtractionHistograms);
   GetProperty("doNotOversubtract", fDoNotOversubtract);
   GetProperty("useM02SubtractionScheme", fUseM02SubtractionScheme);
   GetProperty("useConstantSubtraction", fUseConstantSubtraction);
   GetProperty("constantSubtractionValue", fConstantSubtractionValue);
+  GetProperty("momDepMatchingParamEta0", fMomDepMatchingParamEta[0]);
+  GetProperty("momDepMatchingParamEta1", fMomDepMatchingParamEta[1]);
+  GetProperty("momDepMatchingParamEta2", fMomDepMatchingParamEta[2]);
+  GetProperty("momDepMatchingParamPhi0", fMomDepMatchingParamPhi[0]);
+  GetProperty("momDepMatchingParamPhi1", fMomDepMatchingParamPhi[1]);
+  GetProperty("momDepMatchingParamPhi2", fMomDepMatchingParamPhi[2]);
 
   return kTRUE;
 }
@@ -571,6 +586,14 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
   AliVCluster* cluster = fClusterContainerIndexMap.GetObjectFromGlobalIndex(icluster);
 
   if (!cluster) return;
+  //These are the functional forms for the momentum dependent eta-phi track matching cut
+  //Values taken from the PCM analyses see:
+  //https://alice-notes.web.cern.ch/node/411  Fig. 46   for mom<3GeV these cuts are wider than the standard cuts
+  //these values were extracted in the 2012 pp8 TeV MonteCarlo and apparently showed robustness throughout different periods
+  TF1 funcPtDepEta("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  funcPtDepEta.SetParameters(fMomDepMatchingParamEta[0], fMomDepMatchingParamEta[1], fMomDepMatchingParamEta[2]);
+  TF1 funcPtDepPhi("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  funcPtDepPhi.SetParameters(fMomDepMatchingParamPhi[0], fMomDepMatchingParamPhi[1], fMomDepMatchingParamPhi[2]);
   
   // loop over matched tracks
   Int_t Ntrks = cluster->GetNTracksMatched();
@@ -633,6 +656,12 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
     }
     else {
       etaCut = GetEtaSigma(mombin);
+    }
+    //Do momentum dependent track matching
+    if (fDoMomDepMatching) {
+      phiCutlo = -funcPtDepPhi.Eval(mom);
+      phiCuthi = +funcPtDepPhi.Eval(mom);
+      etaCut   = funcPtDepEta.Eval(mom);
     }
     
     if ((phidiff < phiCuthi && phidiff > phiCutlo) && TMath::Abs(etadiff) < etaCut) {

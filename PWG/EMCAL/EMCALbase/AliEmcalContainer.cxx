@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2016, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <TClonesArray.h>
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -23,15 +35,8 @@
 
 #include "AliEmcalContainer.h"
 
-/// \cond CLASSIMP
 ClassImp(AliEmcalContainer);
-/// \endcond
 
-/**
- * Default constructor. This constructor is only for ROOT I/O and
- * not to be used by users. The container will not connect to an
- * array in the input event.
- */
 AliEmcalContainer::AliEmcalContainer():
   TObject(),
   fName(),
@@ -62,13 +67,6 @@ AliEmcalContainer::AliEmcalContainer():
   fVertex[2] = 0;
 }
 
-/**
- * Standard (named) constructor. The name provided must match the name of the
- * array inside the list objects in the input event the EMCAL container connects
- * to. The EMCAL container can get a different name, to be specified in the function
- * SetEvent.
- * @param name Name of the container in the input event.
- */
 AliEmcalContainer::AliEmcalContainer(const char *name):
   TObject(),
   fName(name),
@@ -99,21 +97,11 @@ AliEmcalContainer::AliEmcalContainer(const char *name):
   fVertex[2] = 0;
 }
 
-/**
- * Index operator, accessing object in the container at a given index.
- * Operates on all objects inside the container.
- * @param index Index of the object to access
- * @return Object at the given index (NULL if out of range)
- */
 TObject *AliEmcalContainer::operator[](int index) const {
   if(index >= 0 && index < GetNEntries()) return fClArray->At(index);
   return NULL;
 }
 
-/**
- * Set the name of the class of the objets inside the underlying array.
- * @param[in] clname Name of the class of the object inside the underlying array.
- */
 void AliEmcalContainer::SetClassName(const char *clname)
 {
   TClass cls(clname);
@@ -125,21 +113,12 @@ void AliEmcalContainer::SetClassName(const char *clname)
   }
 }
 
-/**
- * Retrieve the vertex from the given event. It sets fVertex to the vertex of the current event.
- * @param[in] event Input event containing the vertex.
- */
 void AliEmcalContainer::GetVertexFromEvent(const AliVEvent * event)
 {
   const AliVVertex *vertex = event->GetPrimaryVertex();
   if (vertex) vertex->GetXYZ(fVertex);
 }
 
-/**
- * Connect the container to the array with content stored inside the virtual event.
- * The object name in the event must match the name given in the constructor
- * @param event Input event containing the array with content.
- */
 void AliEmcalContainer::SetArray(const AliVEvent *event)
 {
   // Handling of default containers
@@ -178,10 +157,6 @@ void AliEmcalContainer::SetArray(const AliVEvent *event)
   fLabelMap = dynamic_cast<AliNamedArrayI*>(event->FindListObject(fClArrayName + "_Map"));
 }
 
-/**
- * Preparation for the next event.
- * @param[in] event The event to be processed.
- */
 void AliEmcalContainer::NextEvent(const AliVEvent * event)
 {
   // Get the right event (either the current event of the embedded event)
@@ -192,10 +167,6 @@ void AliEmcalContainer::NextEvent(const AliVEvent * event)
   GetVertexFromEvent(event);
 }
 
-/**
- * Count accepted entries in the container
- * @return Number of accepted events in the container
- */
 Int_t AliEmcalContainer::GetNAcceptEntries() const{
   Int_t result = 0;
   for(int index = 0; index < GetNEntries(); index++){
@@ -205,11 +176,6 @@ Int_t AliEmcalContainer::GetNAcceptEntries() const{
   return result;
 }
 
-/**
- * Get the index in the container from a given label
- * @param lab Label to check
- * @return Index (-1 if not found)
- */
 Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
 { 
   if (fLabelMap) {
@@ -227,11 +193,6 @@ Int_t AliEmcalContainer::GetIndexFromLabel(Int_t lab) const
   }
 }
 
-/**
- * Returns the highest bit in the rejection map as reason why the object
- * was rejected.
- * @return
- */
 UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason)
 { 
   UInt_t rs = rejectionReason;
@@ -240,13 +201,6 @@ UShort_t AliEmcalContainer::GetRejectionReasonBitPosition(UInt_t rejectionReason
   return p;
 }
 
-/**
- * Helper function to calculate the distance between two jets or a jet and a particle
- * @param part1 First particle in the check
- * @param part2 Second particle to compare to
- * @param dist Maximum distance under which partices are considered as "same" in \f$ p_{t} \f$, \f$ \eta \f$ and \f$ \phi \f$
- * @return True if the particles are considered as the same, false otherwise
- */
 Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle* part2, Double_t dist)
 {
   if(!part1) return kFALSE;
@@ -261,15 +215,6 @@ Bool_t AliEmcalContainer::SamePart(const AliVParticle* part1, const AliVParticle
   return kTRUE;
 }
 
-/**
- * Apply kinematical selection to the momentum vector provided. Selection is done in
- * - \f$ p_{t} \f$ (E)
- * - \f$ \eta \f$
- * - \f$ \phi \f$
- * @param[in] mom Momentum vector to select
- * @param[out] rejectionReason Bitmap for reason why object is rejected
- * @return True if the momentum vector is selected, false otherwise
- */
 Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const
 {
   if (mom.Pt() < fMinPt || mom.Pt() > fMaxPt) {
@@ -298,48 +243,22 @@ Bool_t AliEmcalContainer::ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_
   return kTRUE;
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliEmcalIterableContainer AliEmcalContainer::all() const {
   return AliEmcalIterableContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliEmcalIterableContainer AliEmcalContainer::accepted() const {
   return AliEmcalIterableContainer(this, true);
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliEmcalIterableMomentumContainer AliEmcalContainer::all_momentum() const {
   return AliEmcalIterableMomentumContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliEmcalIterableMomentumContainer AliEmcalContainer::accepted_momentum() const {
   return AliEmcalIterableMomentumContainer(this, true);
 }
 
-/**
- * Calculates the relative phi between two angle values and returns it in [-Pi, +Pi] range.
- * @param mphi First angle value
- * @param vphi Second angle value
- * @return Difference between mphi and vphi
- */
 Double_t AliEmcalContainer::RelativePhi(Double_t mphi, Double_t vphi)
 {
   vphi = TVector2::Phi_0_2pi(vphi);

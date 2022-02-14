@@ -39,7 +39,6 @@ AliFemtoModelGausLCMSFreezeOutGenerator::AliFemtoModelGausLCMSFreezeOutGenerator
 //_______________________
 AliFemtoModelGausLCMSFreezeOutGenerator::~AliFemtoModelGausLCMSFreezeOutGenerator()
 {
-  if (fRandom) delete fRandom;
 }
 //_______________________
 AliFemtoModelGausLCMSFreezeOutGenerator& AliFemtoModelGausLCMSFreezeOutGenerator::operator=(const AliFemtoModelGausLCMSFreezeOutGenerator &aModel)
@@ -62,14 +61,12 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   //AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   //AliFemtoModelHiddenInfo *inf2 = (AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
  // AliFemtoModelGlobalHiddenInfo
-  
+
   //ml
   AliFemtoTrack *inf1 = (AliFemtoTrack *) aPair->Track1()->Track();
   AliFemtoTrack *inf2 = (AliFemtoTrack *) aPair->Track2()->Track();
 
   if ((!inf1) || (!inf2)) { cout << "Hidden info not created! "  << endl; exit(kFALSE); }
-  
-  
 
   //std::cout<<" we are in Freeze-out Generator inf1 inf2  "<<inf1<<"  "<<inf2<<std::endl;
  //std::cout<<" inf1 GetMass "<<((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetPDGPid()<<std::endl;
@@ -85,7 +82,6 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
 
  //std::cout<<" tPx tPy tPz"<<tPx<<" "<<tPy<<" "<<tPz<<std::endl;
  if (!(tPx==0 && tPy==0 && tPz==0 )) {
-  
 
   Double_t tM1 = ((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetMass();
   Double_t tM2 = ((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetMass();
@@ -113,21 +109,8 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
 
 //std::cout<<" tXout tXside before hidden infor "<<tXout<<" "<<tXside<<std::endl;
 
-
-  if (!(((AliFemtoModelHiddenInfo*)inf1->GetHiddenInfo())->GetEmissionPoint())) {
-    AliFemtoLorentzVector *tPos = new AliFemtoLorentzVector(0,0,0,0);
-    inf1->SetEmissionPoint(tPos);
-    delete tPos;
-  }
-  else
-    inf1->SetEmissionPoint(0,0,0,0);
-  if (!(((AliFemtoModelHiddenInfo*)inf2->GetHiddenInfo())->GetEmissionPoint())) {
-    AliFemtoLorentzVector *tPos = new AliFemtoLorentzVector(tXout,tXside,tXlong,tXtime);
-    inf2->SetEmissionPoint(tPos);
-    delete tPos;
-  }
-  else
-    inf2->SetEmissionPoint(tXout, tXside, tXlong, tXtime);
+  inf1->SetEmissionPoint(0,0,0,0);
+  inf2->SetEmissionPoint(tXout, tXside, tXlong, tXtime);
 
 //std::cout<<" after all tXout tXside "<<tXout<<" "<<tXside<<std::endl;
 

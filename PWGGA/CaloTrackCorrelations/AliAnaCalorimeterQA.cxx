@@ -57,7 +57,9 @@ fFillAllPi0Histo(kTRUE),               fFillInvMassOpenAngle(kFALSE),
 fFillPi0PairDiffTime(kFALSE),          fFillInvMassInEMCALWithPHOSDCalAcc(kFALSE), 
 fFillEBinAcceptanceHisto(kFALSE),      fFillAllClusterHistograms(kTRUE),
 fFillAllCellHistograms(kTRUE),         fFillAllCellAbsIdHistograms(kTRUE),
-fCorrelate(kTRUE),                     fStudyBadClusters(kFALSE),               
+fFillAllLowGainHistograms(kTRUE),
+fCorrelate(kTRUE),                     fCorrelatePerSM(1),
+fStudyBadClusters(kFALSE),               
 
 // Parameters and cuts
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
@@ -150,7 +152,7 @@ fhCaloV0MCorrNCells(0),                fhCaloV0MCorrECells(0),
 fhCaloTrackMCorrNClusters(0),          fhCaloTrackMCorrEClusters(0), 
 fhCaloTrackMCorrNCells(0),             fhCaloTrackMCorrECells(0),
 fhCaloCenNClusters(0),                 fhCaloCenEClusters(0),
-fhCaloCenNCells(0),                    fhCaloCenECells(0),
+fhCaloCenNCells(0),                    fhCaloCenECells(0),                    fhCaloCenECellsMod(0),
 fhCaloEvPNClusters(0),                 fhCaloEvPEClusters(0),
 fhCaloEvPNCells(0),                    fhCaloEvPECells(0),
 
@@ -405,10 +407,10 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   if(!fFillAllCellHistograms) return;
   
   Int_t ncells = cells->GetNumberOfCells();
-  if( ncells > 0 ) fhNCells->Fill(ncells, GetEventWeight()) ; // Not ok for PHOS with CPV
 
   Int_t   ncellsCut = 0;
   Float_t ecellsCut = 0;
+  Int_t   ncellsSel = 0;
   
   AliDebug(1,Form("%s cell entries %d", GetCalorimeterString().Data(), ncells));
   
@@ -427,17 +429,49 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Int_t    iRCU   = -1;
   Float_t  amp    = 0.;
   Double_t time   = 0.;
+  Int_t    mcLabel= -1;
   Double_t timeL1UnCorr= 0.;
   Int_t    id     = -1;
   Bool_t   highG  = kFALSE;
-  Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
   Int_t    status = 0;
-  for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
+  for (Int_t iCell = 0; iCell < ncells ; iCell++)
   {
     if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
     
-    AliDebug(2,Form("Cell : amp %f, absId %d", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell)));
+    time    = cells->GetTime(iCell);
+    mcLabel = cells->GetMCLabel(iCell);
+    amp     = cells->GetAmplitude(iCell);
+    id      = cells->GetCellNumber(iCell);
+    highG   = cells->GetCellHighGain(id);
+    if ( IsDataMC() ) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
+
+    if ( IsDataMC() && GetReader()->IsMCParticlePileUpRejected() )
+    {
+      // This condition should not be necessary, next condition should have taken care but didn't, why?
+      if  ( mcLabel <= 0 )
+      {
+        //printf("Rejected: Cell neg-0 label : amp %f, time %f, mc %d, absId %d\n", amp, time*1e9, mcLabel, id);
+        continue;
+      }
+
+      if ( !GetReader()->AcceptParticleMCLabel( mcLabel ) )
+      {
+        //printf("Rejected: Cell label pile-up : amp %f, time %f, mc %d, absId %d\n", amp, time*1e9, mcLabel, id);
+        continue ;
+      }
+
+      // This condition should not be necessary, previous condition should have taken care but didn't, why?
+      if ( time*1e9 < -100 )
+      {
+        //printf("Rejected: Cell time : amp %f, time %f, mc %d, absId %d\n", amp, time*1e9, mcLabel, id);
+        continue;
+      }
+    }
+
+    ncellsSel++;
+
+    AliDebug(2,Form("Cell : amp %f, time %f, mc label %d, absId %d", amp, time*1e9, mcLabel, id));
     
     Int_t nModule = GetModuleNumberCellIndexesAbsCaloMap(cells->GetCellNumber(iCell),GetCalorimeter(), 
                                                          icol   , irow, iRCU,
@@ -463,12 +497,6 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow) ) continue;
       }
     } // use bad channel map
-    
-    amp     = cells->GetAmplitude(iCell)*recalF;
-    time    = cells->GetTime(iCell);
-    id      = cells->GetCellNumber(iCell);
-    highG   = cells->GetCellHighGain(id);
-    if(IsDataMC()) highG = kTRUE; // MC does not distinguish High and Low, put them all in high
     
     // Amplitude recalibration if set
     GetCaloUtils()->RecalibrateCellAmplitude(amp,  GetCalorimeter(), id);
@@ -505,7 +533,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     {
       fhAmpId->Fill(amp, id     , GetEventWeight()*binWidthCorrection);
       
-      if(!highG) fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
+      if ( !highG && fFillAllLowGainHistograms ) 
+        fhAmpIdLowGain->Fill(amp, id, GetEventWeight());
     }
     
     if(fFillEBinAcceptanceHisto)
@@ -535,7 +564,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       fhGridCells ->Fill(icolAbs, irowAbs, GetEventWeight());
       fhGridCellsE->Fill(icolAbs, irowAbs, amp             );
       
-      if(!highG)
+      if ( !highG && fFillAllLowGainHistograms )
       {
         fhGridCellsLowGain ->Fill(icolAbs, irowAbs, GetEventWeight());
         fhGridCellsELowGain->Fill(icolAbs, irowAbs, amp             );
@@ -564,16 +593,17 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
         
         fhGridCellsTime->Fill(icolAbs, irowAbs, time);
-        if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
+        if ( !highG && fFillAllLowGainHistograms ) 
+          fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
         
         fhTimeMod->Fill(time, nModule, GetEventWeight());
         
         if(fFillAllCellAbsIdHistograms)
           fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time, GetEventWeight());
         
-        if(!highG)
+        if ( !highG && fFillAllLowGainHistograms )
         {
-          if(fFillAllCellAbsIdHistograms) 
+          if ( fFillAllCellAbsIdHistograms ) 
             fhTimeIdLowGain ->Fill(time, id  , GetEventWeight());
           fhTimeAmpLowGain->Fill(amp , time, GetEventWeight());
         }
@@ -633,10 +663,24 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
   } // Cell loop
   
+  if ( ncellsSel > 0 ) fhNCells->Fill(ncellsSel, GetEventWeight()) ; // Not ok for PHOS with CPV
+
   // Fill the cells after the cut on min amplitude and bad/exotic channels
-  if( ncellsCut > 0 ) fhNCellsCutAmpMin->Fill(ncellsCut, GetEventWeight()) ;
-  
+  if ( ncellsCut > 0 ) fhNCellsCutAmpMin->Fill(ncellsCut, GetEventWeight()) ;
+
+  // In case of correlation per SM with tracks, centrality or V0
+  Float_t cen = -1;
+  Int_t   v0S = -1;
+  Int_t   trM = -1;
+  if ( fCorrelate ) 
+  {
+    cen = GetEventCentrality();
+    v0S = GetV0Signal(0) + GetV0Signal(1);
+    trM = GetTrackMultiplicity();
+  }
+
   // Number of cells per module
+
   for(Int_t imod = 0; imod < fNModules; imod++ )
   {
     if ( imod < fFirstModule || imod > fLastModule ) continue ;
@@ -648,6 +692,18 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     
     if(fFillAllCellAbsIdHistograms)
       fhNCellsSumAmpPerMod[imod]->Fill(eCellsInModule[imod], nCellsInModule[imod], GetEventWeight());
+    
+    if ( fCorrelate )
+    {
+      if ( fCorrelatePerSM > 0 ) 
+        fhCaloCenECellsMod[imod]->Fill(cen, eCellsInModule[imod], GetEventWeight());
+      
+      if ( fCorrelatePerSM > 1 ) 
+      {
+        fhCaloTrackMCorrECellsMod[imod]->Fill(trM, eCellsInModule[imod], GetEventWeight());
+        fhCaloV0SCorrECellsMod   [imod]->Fill(v0S, eCellsInModule[imod], GetEventWeight());
+      }
+    }
   }
     
   delete [] nCellsInModule;
@@ -986,7 +1042,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     nCaloCellsPerCluster = clus->GetNCells();
     
     // Cluster mathed with track?
-    matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
+    matched = IsTrackMatched(clus, GetReader()->GetInputEvent());
     
     // Get time of max cell
     Double_t tmax  = cells->GetCellTime(absIdMax);
@@ -1052,8 +1108,10 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // Fill histograms related to single cluster, mc vs data
     Int_t  mcOK = kFALSE;
     Int_t  pdg  = -1;
-    if(IsDataMC() && nLabel > 0 && labels) 
-      mcOK = ClusterMCHistograms(matched, labels, nLabel, pdg);
+    if ( IsDataMC() && nLabel > 0 && labels && GetMC() ) 
+      mcOK = ClusterMCHistograms(matched, labels, 
+                                 clus->GetClusterMCEdepFraction(),
+                                 nLabel, pdg);
 
     // Matched clusters with tracks, also do some MC comparison, needs input from ClusterMCHistograms
     if( matched &&  fFillAllTMHisto)
@@ -1106,7 +1164,9 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
 /// \param nLabels: number of mc labels 
 /// \param pdg: id of primary particle originating the cluster
 //__________________________________________________________________________________
-Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * labels,
+Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,
+                                                const Int_t * labels,
+                                                const UShort_t * edepFrac,
                                                 Int_t nLabels, Int_t & pdg )
 {
   if(!labels || nLabels<=0)
@@ -1146,8 +1206,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Int_t charge  = 0;
   
   // Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC(),
-                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, edepFrac,nLabels, GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept(),e);
   
   if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 
@@ -1583,7 +1643,7 @@ void AliAnaCalorimeterQA::Correlate()
   Int_t   v0S = GetV0Signal(0)       + GetV0Signal(1);
   Int_t   v0M = GetV0Multiplicity(0) + GetV0Multiplicity(1);
   Int_t   trM = GetTrackMultiplicity();
-  Float_t cen = GetEventCentrality();
+  Int_t   cen = GetEventCentrality();
   Float_t ep  = GetEventPlaneAngle();
   
   Int_t   ncl              = nclPHOS;
@@ -1591,6 +1651,8 @@ void AliAnaCalorimeterQA::Correlate()
   Int_t   ncells           = ncellsPHOS;
   Float_t sumCellEnergy    = sumCellEnergyPHOS;
   
+  //printf("cen %d, V0s %d, trackM %d, sum e cell %2.2f\n",cen, v0S,trM,sumCellEnergy);
+
   if ( GetCalorimeter() == kEMCAL )
   {
     ncl              = nclEMCAL              + nclDCAL;
@@ -1632,7 +1694,7 @@ void AliAnaCalorimeterQA::Correlate()
   AliDebug(1,Form("\t PHOS : N cells %d, N clusters  %d, summed E cells %f, summed E clusters %f",
                   ncellsPHOS,nclPHOS,sumCellEnergyPHOS,sumClusterEnergyPHOS));
   AliDebug(1,Form("\t V0 : Signal %d, Multiplicity  %d, Track Multiplicity %d", v0S,v0M,trM));
-  AliDebug(1,Form("\t centrality : %f, Event plane angle %f", cen,ep));
+  AliDebug(1,Form("\t centrality : %d, Event plane angle %f", cen,ep));
 }
 
 //_________________________________________________
@@ -1699,7 +1761,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
   Int_t nmassbins   = GetHistogramRanges()->GetHistoMassBins();         Float_t massmax   = GetHistogramRanges()->GetHistoMassMax(); 	       Float_t massmin   = GetHistogramRanges()->GetHistoMassMin();
   Int_t nasymbins   = GetHistogramRanges()->GetHistoAsymmetryBins();    Float_t asymmax   = GetHistogramRanges()->GetHistoAsymmetryMax();    Float_t asymmin   = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t nPoverEbins = GetHistogramRanges()->GetHistoEOverPBins();       Float_t eOverPmax = GetHistogramRanges()->GetHistoEOverPMax();       Float_t eOverPmin = GetHistogramRanges()->GetHistoEOverPMin();
   Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
   Int_t ndRbins     = GetHistogramRanges()->GetHistodRBins();           Float_t dRmax     = GetHistogramRanges()->GetHistodRMax();           Float_t dRmin     = GetHistogramRanges()->GetHistodRMin();
   Int_t ntimebins   = GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin   = GetHistogramRanges()->GetHistoTimeMin();       
@@ -2603,9 +2665,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhAmpId->SetXTitle("#it{E}_{cell} (GeV)");
       outputContainer->Add(fhAmpId);
       
-      fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,15,ptfinemax+15,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
-      fhAmpIdLowGain->SetXTitle("#it{E}_{cell} (GeV)");
-      outputContainer->Add(fhAmpIdLowGain);
+      if ( fFillAllLowGainHistograms )
+      {
+        fhAmpIdLowGain  = new TH2F ("hAmpIdLG","Low gain: #it{E}_{cell}", nfineptbins,15,ptfinemax+15,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+        fhAmpIdLowGain->SetXTitle("#it{E}_{cell} (GeV)");
+        outputContainer->Add(fhAmpIdLowGain);
+      }
     }
     
     if(fFillAllCellTimeHisto)
@@ -2624,10 +2689,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
       outputContainer->Add(fhTimeAmp);
       
-      fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins,ptmin,ptmax/2,ntimebins,timemin,timemax);
-      fhTimeAmpLowGain->SetYTitle("#it{t}_{cell} (ns)");
-      fhTimeAmpLowGain->SetXTitle("#it{E}_{cell} (GeV)");
-      outputContainer->Add(fhTimeAmpLowGain);
+      if ( fFillAllLowGainHistograms )
+      {
+        fhTimeAmpLowGain  = new TH2F ("hTimeAmpLG","Low gain: #it{t}_{cell} vs #it{E}_{cell}",nptbins,ptmin,ptmax/2,ntimebins,timemin,timemax);
+        fhTimeAmpLowGain->SetYTitle("#it{t}_{cell} (ns)");
+        fhTimeAmpLowGain->SetXTitle("#it{E}_{cell} (GeV)");
+        outputContainer->Add(fhTimeAmpLowGain);
+      }
       
       if(fFillAllCellAbsIdHistograms)
       {
@@ -2642,11 +2710,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         fhTimeId->SetYTitle("Cell Absolute Id");
         outputContainer->Add(fhTimeId);
         
-        fhTimeIdLowGain  = new TH2F ("hTimeIdLG","Low gain: #it{t}_{cell} vs Absolute Id",
-                                     ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
-        fhTimeIdLowGain->SetXTitle("#it{t}_{cell} (ns)");
-        fhTimeIdLowGain->SetYTitle("Cell Absolute Id");
-        outputContainer->Add(fhTimeIdLowGain);
+        if ( fFillAllLowGainHistograms )
+        {
+          fhTimeIdLowGain  = new TH2F ("hTimeIdLG","Low gain: #it{t}_{cell} vs Absolute Id",
+                                       ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
+          fhTimeIdLowGain->SetXTitle("#it{t}_{cell} (ns)");
+          fhTimeIdLowGain->SetYTitle("Cell Absolute Id");
+          outputContainer->Add(fhTimeIdLowGain);
+        }
         
         if(GetCaloUtils()->IsL1PhaseInTimeRecalibrationOn()==1)
         {
@@ -2697,17 +2768,20 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhGridCellsE->SetXTitle("column (eta direction)");
     outputContainer->Add(fhGridCellsE);
     
-    fhGridCellsLowGain  = new TH2F ("hGridCellsLG",Form("Low gain: Entries in grid of cells"),
-                                    ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
-    fhGridCellsLowGain->SetYTitle("row (phi direction)");
-    fhGridCellsLowGain->SetXTitle("column (eta direction)");
-    outputContainer->Add(fhGridCellsLowGain);
-    
-    fhGridCellsELowGain  = new TH2F ("hGridCellsELG","Low gain: Accumulated energy in grid of cells",
-                                     ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
-    fhGridCellsELowGain->SetYTitle("row (phi direction)");
-    fhGridCellsELowGain->SetXTitle("column (eta direction)");
-    outputContainer->Add(fhGridCellsELowGain);
+    if ( fFillAllLowGainHistograms )
+    {
+      fhGridCellsLowGain  = new TH2F ("hGridCellsLG",Form("Low gain: Entries in grid of cells"),
+                                      ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+      fhGridCellsLowGain->SetYTitle("row (phi direction)");
+      fhGridCellsLowGain->SetXTitle("column (eta direction)");
+      outputContainer->Add(fhGridCellsLowGain);
+      
+      fhGridCellsELowGain  = new TH2F ("hGridCellsELG","Low gain: Accumulated energy in grid of cells",
+                                       ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+      fhGridCellsELowGain->SetYTitle("row (phi direction)");
+      fhGridCellsELowGain->SetXTitle("column (eta direction)");
+      outputContainer->Add(fhGridCellsELowGain);
+    }
     
     if(fFillAllCellTimeHisto)
     { 
@@ -2717,11 +2791,15 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhGridCellsTime->SetXTitle("column (eta direction)");
       outputContainer->Add(fhGridCellsTime);
       
-      fhGridCellsTimeLowGain  = new TH2F ("hGridCellsTimeLG","Low gain: Accumulated time in grid of cells",
-                                          ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
-      fhGridCellsTimeLowGain->SetYTitle("row (phi direction)");
-      fhGridCellsTimeLowGain->SetXTitle("column (eta direction)");
-      outputContainer->Add(fhGridCellsTimeLowGain);
+      if ( fFillAllLowGainHistograms )
+      {
+        fhGridCellsTimeLowGain  = new TH2F 
+        ("hGridCellsTimeLG","Low gain: Accumulated time in grid of cells",
+         ncolcell,colcellmin,colcellmax,nrowcell,rowcellmin,rowcellmax);
+        fhGridCellsTimeLowGain->SetYTitle("row (phi direction)");
+        fhGridCellsTimeLowGain->SetXTitle("column (eta direction)");
+        outputContainer->Add(fhGridCellsTimeLowGain);
+      }
     }
     
     if(fFillAllCellAbsIdHistograms)
@@ -2834,60 +2912,82 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     // Calorimeter vs. V0 signal
     
-    fhCaloV0SCorrNClusters  = new TH2F ("hCaloV0SNClusters",Form("# clusters in %s vs V0 signal",GetCalorimeterString().Data()), nv0sbins,nv0smin,nv0smax,nclbins,nclmin,nclmax); 
+    fhCaloV0SCorrNClusters  = new TH2F ("hCaloV0SNClusters",
+                                        Form("# clusters in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                        nv0sbins,nv0smin,nv0smax,nclbins,nclmin,nclmax); 
     fhCaloV0SCorrNClusters->SetXTitle("V0 signal");
     fhCaloV0SCorrNClusters->SetYTitle(Form("number of clusters in %s",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0SCorrNClusters);
     
-    fhCaloV0SCorrEClusters  = new TH2F ("hCaloV0SEClusters",Form("summed energy of clusters in %s vs V0 signal",GetCalorimeterString().Data()), nv0sbins,nv0smin,nv0smax,nptbins,ptmin,ptmax*2);
+    fhCaloV0SCorrEClusters  = new TH2F ("hCaloV0SEClusters",
+                                        Form("summed energy of clusters in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                        nv0sbins,nv0smin,nv0smax,nptbins,ptmin,ptmax*2);
     fhCaloV0SCorrEClusters->SetXTitle("V0 signal");
     fhCaloV0SCorrEClusters->SetYTitle(Form("#Sigma #it{E} of clusters in %s (GeV)",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0SCorrEClusters);
     
-    fhCaloV0SCorrNCells  = new TH2F ("hCaloV0SNCells",Form("# Cells in %s vs V0 signal",GetCalorimeterString().Data()), nv0sbins,nv0smin,nv0smax, ncebins,ncemin,ncemax); 
+    fhCaloV0SCorrNCells  = new TH2F ("hCaloV0SNCells",
+                                     Form("# Cells in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                     nv0sbins,nv0smin,nv0smax, ncebins,ncemin,ncemax); 
     fhCaloV0SCorrNCells->SetXTitle("V0 signal");
     fhCaloV0SCorrNCells->SetYTitle(Form("number of Cells in %s",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0SCorrNCells);
     
-    fhCaloV0SCorrECells  = new TH2F ("hCaloV0SECells",Form("summed energy of Cells in %s vs V0 signal",GetCalorimeterString().Data()), nv0sbins,nv0smin,nv0smax,nptbins,ptmin,ptmax*2);
+    fhCaloV0SCorrECells  = new TH2F ("hCaloV0SECells",
+                                     Form("summed energy of Cells in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                     nv0sbins,nv0smin,nv0smax,nptbins,ptmin,ptmax*2);
     fhCaloV0SCorrECells->SetXTitle("V0 signal");
     fhCaloV0SCorrECells->SetYTitle(Form("#Sigma #it{E} of Cells in %s (GeV)",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0SCorrECells);    
     
     // Calorimeter vs V0 multiplicity
     
-    fhCaloV0MCorrNClusters  = new TH2F ("hCaloV0MNClusters",Form("# clusters in %s vs V0 signal",GetCalorimeterString().Data()), nv0mbins,nv0mmin,nv0mmax,nclbins,nclmin,nclmax); 
+    fhCaloV0MCorrNClusters  = new TH2F ("hCaloV0MNClusters",
+                                        Form("# clusters in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                        nv0mbins,nv0mmin,nv0mmax,nclbins,nclmin,nclmax); 
     fhCaloV0MCorrNClusters->SetXTitle("V0 signal");
     fhCaloV0MCorrNClusters->SetYTitle(Form("number of clusters in %s",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0MCorrNClusters);
     
-    fhCaloV0MCorrEClusters  = new TH2F ("hCaloV0MEClusters",Form("summed energy of clusters in %s vs V0 signal",GetCalorimeterString().Data()), nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax*2);
+    fhCaloV0MCorrEClusters  = new TH2F ("hCaloV0MEClusters",
+                                        Form("summed energy of clusters in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                        nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax*2);
     fhCaloV0MCorrEClusters->SetXTitle("V0 signal");
     fhCaloV0MCorrEClusters->SetYTitle(Form("#Sigma #it{E} of clusters in %s (GeV)",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0MCorrEClusters);
     
-    fhCaloV0MCorrNCells  = new TH2F ("hCaloV0MNCells",Form("# Cells in %s vs V0 signal",GetCalorimeterString().Data()), nv0mbins,nv0mmin,nv0mmax, ncebins,ncemin,ncemax); 
+    fhCaloV0MCorrNCells  = new TH2F ("hCaloV0MNCells",
+                                     Form("# Cells in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                     nv0mbins,nv0mmin,nv0mmax, ncebins,ncemin,ncemax); 
     fhCaloV0MCorrNCells->SetXTitle("V0 signal");
     fhCaloV0MCorrNCells->SetYTitle(Form("number of Cells in %s",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0MCorrNCells);
     
-    fhCaloV0MCorrECells  = new TH2F ("hCaloV0MECells",Form("summed energy of Cells in %s vs V0 signal",GetCalorimeterString().Data()), nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax*2);
+    fhCaloV0MCorrECells  = new TH2F ("hCaloV0MECells",
+                                     Form("summed energy of Cells in %s vs V0 signal",GetCalorimeterString().Data()), 
+                                     nv0mbins,nv0mmin,nv0mmax,nptbins,ptmin,ptmax*2);
     fhCaloV0MCorrECells->SetXTitle("V0 signal");
     fhCaloV0MCorrECells->SetYTitle(Form("#Sigma #it{E} of Cells in %s (GeV)",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloV0MCorrECells);    
     
     //Calorimeter VS Track multiplicity
-    fhCaloTrackMCorrNClusters  = new TH2F ("hCaloTrackMNClusters",Form("# clusters in %s vs # tracks",GetCalorimeterString().Data()), ntrmbins,ntrmmin,ntrmmax,nclbins,nclmin,nclmax); 
+    fhCaloTrackMCorrNClusters  = new TH2F ("hCaloTrackMNClusters",
+                                           Form("# clusters in %s vs # tracks",GetCalorimeterString().Data()), 
+                                           ntrmbins,ntrmmin,ntrmmax,nclbins,nclmin,nclmax); 
     fhCaloTrackMCorrNClusters->SetXTitle("# tracks");
     fhCaloTrackMCorrNClusters->SetYTitle(Form("number of clusters in %s",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloTrackMCorrNClusters);
     
-    fhCaloTrackMCorrEClusters  = new TH2F ("hCaloTrackMEClusters",Form("summed energy of clusters in %s vs # tracks",GetCalorimeterString().Data()), ntrmbins,ntrmmin,ntrmmax,nptbins,ptmin,ptmax*2);
+    fhCaloTrackMCorrEClusters  = new TH2F ("hCaloTrackMEClusters",
+                                           Form("summed energy of clusters in %s vs # tracks",GetCalorimeterString().Data()), 
+                                           ntrmbins,ntrmmin,ntrmmax,nptbins,ptmin,ptmax*2);
     fhCaloTrackMCorrEClusters->SetXTitle("# tracks");
     fhCaloTrackMCorrEClusters->SetYTitle(Form("#Sigma #it{E} of clusters in %s (GeV)",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloTrackMCorrEClusters);
     
-    fhCaloTrackMCorrNCells  = new TH2F ("hCaloTrackMNCells",Form("# Cells in %s vs # tracks",GetCalorimeterString().Data()), ntrmbins,ntrmmin,ntrmmax, ncebins,ncemin,ncemax); 
+    fhCaloTrackMCorrNCells  = new TH2F ("hCaloTrackMNCells",
+                                        Form("# Cells in %s vs # tracks",GetCalorimeterString().Data()), 
+                                        ntrmbins,ntrmmin,ntrmmax, ncebins,ncemin,ncemax); 
     fhCaloTrackMCorrNCells->SetXTitle("# tracks");
     fhCaloTrackMCorrNCells->SetYTitle(Form("number of Cells in %s",GetCalorimeterString().Data()));
     outputContainer->Add(fhCaloTrackMCorrNCells);
@@ -2916,6 +3016,42 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCaloCenECells->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
     fhCaloCenECells->SetXTitle("Centrality");
     outputContainer->Add(fhCaloCenECells);
+  
+    fhCaloCenECellsMod        = new TH2F*[fNModules];
+    fhCaloTrackMCorrECellsMod = new TH2F*[fNModules];
+    fhCaloV0SCorrECellsMod    = new TH2F*[fNModules];
+
+    if ( fCorrelatePerSM > 0 )
+    for(Int_t imod = 0; imod < fNModules; imod++)
+    {
+      if ( imod < fFirstModule || imod > fLastModule ) continue;
+      
+      fhCaloCenECellsMod[imod]  = new TH2F 
+      (Form("hCaloCenECells_Mod%d",imod),
+       Form("summed energy of Cells in calorimeter vs centrality in SM %d",imod),
+       50,0,100,nptbins/2,ptmin,ptmax);
+      fhCaloCenECellsMod[imod]->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
+      fhCaloCenECellsMod[imod]->SetXTitle("Centrality");
+      outputContainer->Add(fhCaloCenECellsMod[imod]);
+      
+      if ( fCorrelatePerSM < 2 ) continue;
+      
+      fhCaloTrackMCorrECellsMod[imod]  = new TH2F 
+      (Form("hCaloTrackMECells_Mod%d",imod),
+       Form("summed energy of Cells in calorimeter vs # tracks in SM %d",imod),
+       ntrmbins,ntrmmin,ntrmmax,nptbins/2,ptmin,ptmax);
+      fhCaloTrackMCorrECellsMod[imod]->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
+      fhCaloTrackMCorrECellsMod[imod]->SetXTitle("# tracks");
+      outputContainer->Add(fhCaloTrackMCorrECellsMod[imod]);
+      
+      fhCaloV0SCorrECellsMod[imod]  = new TH2F 
+      (Form("hCaloV0SECells_Mod%d",imod),
+       Form("summed energy of Cells in calorimeter vs V0 signal in SM %d",imod),
+       nv0sbins,nv0smin,nv0smax,nptbins/2,ptmin,ptmax);
+      fhCaloV0SCorrECellsMod[imod]->SetYTitle("#Sigma #it{E} of Cells in calorimeter (GeV)");
+      fhCaloV0SCorrECellsMod[imod]->SetXTitle("V0 signal");
+      outputContainer->Add(fhCaloV0SCorrECellsMod[imod]);
+    }
     
     fhCaloEvPNClusters  = new TH2F ("hCaloEvPNClusters","# clusters in calorimeter vs event plane angle",100,0,TMath::Pi(),nclbins,nclmin,nclmax);
     fhCaloEvPNClusters->SetYTitle("number of clusters in calorimeter");
@@ -2940,7 +3076,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   
   // Monte Carlo Histograms
   //
-  if(IsDataMC())
+  if ( IsDataMC() )
   {    
     TString particleName[] = {
       "Photon",        "Pi0",         "Eta",
@@ -2951,6 +3087,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     for(Int_t iPart = 0; iPart < 4; iPart++)
     {
+      if ( !IsGeneratedParticlesAnalysisOn() ) continue;
+      
       fhGenMCE [iPart]     = new TH1F(Form("hGenMCE_%s",particleName[iPart].Data()) ,
                                       Form("#it{E} of generated %s",particleName[iPart].Data()),
                                       nptbins,ptmin,ptmax);
@@ -2991,10 +3129,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       outputContainer->Add(fhGenMCAccE     [iPart]);
       outputContainer->Add(fhGenMCAccPt    [iPart]);
       outputContainer->Add(fhGenMCAccEtaPhi[iPart]);
-      
     }    
     
-    if(fFillAllClusterHistograms)
+    if ( fFillAllClusterHistograms )
     {
       for(Int_t iPart = 0; iPart < 7; iPart++)
       {
@@ -3558,7 +3695,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   //Print("");
   
   // Play with the MC stack if available
-  if(IsDataMC()) MCHistograms();
+  if ( IsDataMC() && IsGeneratedParticlesAnalysisOn() ) 
+    MCHistograms();
   
   // Correlate Calorimeters and V0 and track Multiplicity
   if(fCorrelate)	Correlate();
@@ -3583,8 +3721,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   if( !caloClusters || !cells )
   {
-    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
-    return; // trick coverity
+    AliWarning(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available"));
+    return; 
   }
   
   if(caloClusters->GetEntriesFast() == 0) return ;

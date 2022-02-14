@@ -23,9 +23,9 @@
 
 #include "AliAnalysisTaskEventFilter.h"
 
-using namespace EMCalTriggerPtAnalysis;
+using namespace PWGJE::EMCALJetTasks;
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEventFilter)
 
 AliAnalysisTaskEventFilter::AliAnalysisTaskEventFilter() :
 AliAnalysisTaskSE(),
@@ -111,7 +111,7 @@ void AliAnalysisTaskEventFilter::UserExec(Option_t *){
 
 UChar_t AliAnalysisTaskEventFilter::FilterEvent() const {
   UChar_t filterbits = 0;
-  if(!(fInputHandler->IsEventSelected() && AliVEvent::kINT7)) return filterbits;
+  if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return filterbits;
   filterbits |= 1 << 0;
   if(fAnalysisUtils->IsFirstEventInChunk(InputEvent())) return filterbits;
   filterbits |= 1 << 1;

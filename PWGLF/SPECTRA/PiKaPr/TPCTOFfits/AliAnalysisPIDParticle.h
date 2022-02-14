@@ -24,13 +24,13 @@ public TObject
   Int_t GetPdgCode() const {return fPdgCode;}; // get PDG code
   Int_t GetMotherPdgCode() const {return fMotherPdgCode; }; //get mother PDG code
   Double_t GetY() const; // get Y
-  Float_t GetSign() const; // get sign
+  Int_t GetSign() const; // get sign
   Int_t GetPID() const; // get MC PID
   Double_t GetMass() const; // get mass
 
   void Reset(); // reset
   void Update(TParticle *particle, Int_t label, Int_t MotherPDG); // update
-  
+
  private:
 
   Int_t fLabel; // label

@@ -1,3 +1,3 @@
-EmcalTriggerJets::AliAnalysisTaskEmcalPatchMultCorr *AddTaskEmcalPatchMultCorr(const char *name){
-  return EmcalTriggerJets::AliAnalysisTaskEmcalPatchMultCorr::AddTaskEmcalPatchMultCorr(name);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMultCorr *AddTaskEmcalPatchMultCorr(const char *name){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMultCorr::AddTaskEmcalPatchMultCorr(name);
 }

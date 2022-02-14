@@ -1,5 +1,3 @@
-// #include "iterator"
-
 // --- Custom header files ---
 #include "AliPP13EfficiencySelectionMC.h"
 
@@ -46,12 +44,12 @@ void AliPP13EfficiencySelectionMC::ConsiderPair(const AliVCluster * c1, const Al
 //________________________________________________________________
 void AliPP13EfficiencySelectionMC::InitSelectionHistograms()
 {
-	Int_t nM       = 750;
-	Double_t mMin  = 0.0;
-	Double_t mMax  = 1.5;
-	Int_t nPt      = 400;
-	Double_t ptMin = 0;
-	Double_t ptMax = 20;
+	Int_t nM       = fLimits.nM;
+	Double_t mMin  = fLimits.mMin;
+	Double_t mMax  = fLimits.mMax;
+	Int_t nPt      = fLimits.nPt;
+	Double_t ptMin = fLimits.ptMin;
+	Double_t ptMax = fLimits.ptMax;
 
 	const char * rtitle = "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma}";
 	for (Int_t i = 0; i < 2; ++i)
@@ -78,7 +76,7 @@ void AliPP13EfficiencySelectionMC::InitSelectionHistograms()
 	}
 }
 
-
+//________________________________________________________________
 void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags & eflags)
 {
 	if (!eflags.fMcParticles)
@@ -120,15 +118,5 @@ void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags &
 
 		fSpectrums[code]->fPtPrimaries[Int_t(primary)]->Fill(pt, w);
 		fSpectrums[code]->fPtPrimariesStandard[Int_t(primary)]->Fill(pt, w);
-		ConsiderGeneratedParticle(i, pt, primary, eflags);
 	}
-}
-
-//________________________________________________________________
-Bool_t AliPP13EfficiencySelectionMC::IsPrimary(const AliAODMCParticle * particle) const
-{
-	// Look what particle left vertex (e.g. with vertex with radius <1 cm)
-	Double_t rcut = 1.;
-	Double_t r2 = particle->Xv() * particle->Xv() + particle->Yv() * particle->Yv()	;
-	return r2 < rcut * rcut;
 }

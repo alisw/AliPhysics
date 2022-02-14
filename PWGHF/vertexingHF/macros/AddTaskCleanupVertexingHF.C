@@ -20,7 +20,7 @@ AliAnalysisTaskSECleanupVertexingHF *AddTaskCleanupVertexingHF()
 
 
 //Create containers for input/output
- TString name = "cinputDeleteMY";
+ name = "cinputDeleteMY";
  AliAnalysisDataContainer *cinputDelete = mgr->CreateContainer(name,TChain::Class(),
                                                             AliAnalysisManager::kInputContainer);
 

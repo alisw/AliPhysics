@@ -133,7 +133,7 @@ public:
 
 protected:
   Bool_t 			fIsFromEmbeddedEvent;	///< Flag whether constituent is from embedded event
-  ULong_t		    fGlobalIndex;			///< Index of the constituent in the global index map
+  ULong_t		  fGlobalIndex;			    ///< Index of the constituent in the global index map
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalJetConstituent, 0);

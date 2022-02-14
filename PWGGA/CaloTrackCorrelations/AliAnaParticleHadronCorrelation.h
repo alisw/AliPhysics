@@ -64,7 +64,7 @@ public:
   
   // Filling histogram methods
   
-  void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin,
+  void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin, Int_t ztBin,
                                                          Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
                                                          Float_t etaAssoc, Float_t etaTrig,     Int_t   sm,
                                                          Int_t   decayTag, Float_t hmpidSignal, Int_t   outTOF,
@@ -107,6 +107,8 @@ public:
   
   static const Int_t fgkNmcTypes = 10;    ///< Number of MC trigger particles checked when filling MC histograms
   
+  void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
+    if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
   
   Bool_t       IsTriggerTheEventLeadingParticle();
   
@@ -207,6 +209,9 @@ public:
  
   void         SwitchOnFillDeltaEtaPhiPtTrigHistograms()  { fFillDeltaPhiDeltaEtaAssocPt = kTRUE  ; }
   void         SwitchOffFillDeltaEtaPhiPtTrigHistograms() { fFillDeltaPhiDeltaEtaAssocPt = kFALSE ; }
+
+  void         SwitchOnFillDeltaEtaPhiPtTrigZTHistograms()  { fFillDeltaPhiDeltaEtaZT = kTRUE  ; }
+  void         SwitchOffFillDeltaEtaPhiPtTrigZTHistograms() { fFillDeltaPhiDeltaEtaZT = kFALSE ; }
   
   Bool_t       OnlyIsolated()              const { return fSelectIsolated        ; }
   void         SelectIsolated(Bool_t s)          { fSelectIsolated   = s         ; }
@@ -218,9 +223,6 @@ public:
   void         SetNAssocPtBins(Int_t n) ;
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
   
-  void         SetNTriggerPtBins(Int_t n) ;
-  void         SetTriggerPtBinLimit(Int_t ibin, Float_t pt) ;
-  
   Bool_t       IsMixStoredInReaderOn()     const { return fUseMixStoredInReader  ; }
   void         SwitchOnUseMixStoredInReader()    { fUseMixStoredInReader = kTRUE ; }
   void         SwitchOffUseMixStoredInReader()   { fUseMixStoredInReader = kFALSE; }
@@ -229,7 +231,16 @@ public:
   void         SwitchOffFillNeutralInMixedEvent(){ fFillNeutralEventMixPool = kFALSE ; }
   
   void         SetM02Cut(Float_t min=0, Float_t max=10)  { fM02MinCut   = min ; fM02MaxCut  = max ; }
+
+  void         SwitchOnM02MaxPtDependentCut ()      { fUsePtDepM02MaxCut = kTRUE  ; }
+  void         SwitchOffM02MaxPtDependentCut()      { fUsePtDepM02MaxCut = kFALSE ; }
+
+  void         SwitchOnM02MinPtDependentCut ()      { fUsePtDepM02MinCut = kTRUE  ; }
+  void         SwitchOffM02MinPtDependentCut()      { fUsePtDepM02MinCut = kFALSE ; }
   
+  void         SetM02PtDependentCutParam(Float_t p0=0, Float_t p1=0)
+               { fM02CutPtDep[0]= p0 ; fM02CutPtDep[1]  = p1 ; }
+
   void         SwitchOnCorrelationVzBin()        { fCorrelVzBin          = kTRUE  ; }
   void         SwitchOffCorrelationVzBin()       { fCorrelVzBin          = kFALSE ; }
   
@@ -251,9 +262,24 @@ public:
   void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
   
-  void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
-    if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
+  void         SwitchOnFillHistogramsUePart()    { fFillUePartHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsUePart()   { fFillUePartHistograms = kFALSE ; }  
   
+  void         SwitchOnFillXEHistograms()        { fFillXEHistograms = kTRUE  ; }
+  void         SwitchOffFillXEHistograms()       { fFillXEHistograms = kFALSE ; }  
+  
+  void         SwitchOnFillZTHistograms()        { fFillZTHistograms = kTRUE  ; }
+  void         SwitchOffFillZTHistograms()       { fFillZTHistograms = kFALSE ; }  
+  
+  void         SwitchOnFillHBPHistograms()       { fFillHBPHistograms = kTRUE  ; }
+  void         SwitchOffFillHBPHistograms()      { fFillHBPHistograms = kFALSE ; }  
+  
+  void         SwitchOnClusterRejectionBelowCaloTriggerThreshold () { fRejectClustersBelowTriggerThreshold = kTRUE ; }
+  void         SwitchOffClusterRejectionBelowCaloTriggerThreshold() { fRejectClustersBelowTriggerThreshold = kFALSE; }
+
+  void         SetMinimumCaloTriggerPt(Float_t th) { fMinCaloTriggerPt = th   ; }
+  Float_t      GetMinimumCaloTriggerPt()           { return fMinCaloTriggerPt ; }
+
 private:
   
   Bool_t       fFillAODWithReferences;                   ///<  Add to the trigger particle AOD the reference to the tracks or neutrals in correlation.
@@ -302,11 +328,9 @@ private:
   
   Bool_t       fFillBradHisto ;                          ///<  DPhi histograms calculated differently.
   Bool_t       fFillDeltaPhiDeltaEtaAssocPt;             ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different associated pT bins, and do not fill other histograms to reduce output size.
+  Bool_t       fFillDeltaPhiDeltaEtaZT;                   ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different zT bins, and do not fill other histograms to reduce output size.
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
-  
-  Int_t        fNTrigPtBins ;                            ///<  Number of bins for deltaEta-deltaPhi histogram.
-  Float_t      fTrigPtBinLimit[20] ;                     ///<  Trigger pT bins for deltaEta-deltaPhi histogram.
   
   Bool_t       fCorrelVzBin ;                            ///<  Fill one histogram per vz bin.
   
@@ -320,9 +344,15 @@ private:
   
   Bool_t       fFillNeutralEventMixPool;                 ///<  Add clusters to pool if requested.
   
-  Float_t      fM02MaxCut   ;                            ///<  Study photon clusters with l0 smaller than cut.
-  Float_t      fM02MinCut   ;                            ///<  Study photon clusters with l0 larger than cut.
+  Float_t      fM02MaxCut   ;                            ///<  Study photon clusters with M02 smaller than cut.
+  Float_t      fM02MinCut   ;                            ///<  Study photon clusters with M02 larger than cut.
+  Bool_t       fUsePtDepM02MaxCut ;                      ///< Use M02 maximum cut dependent on cluster pt  with param fM02CutPtDep[2]
+  Bool_t       fUsePtDepM02MinCut ;                      ///< Use M02 minimum cut dependent on cluster pt  with param fM02CutPtDep[2]
+  Float_t      fM02CutPtDep[2] ;                         ///< Cluster M02 pT dependent parameters (linear function)
   
+  Bool_t       fRejectClustersBelowTriggerThreshold;     ///< Reject clusters below hardware calorimeter trigger threshold
+  Float_t      fMinCaloTriggerPt;                        ///< Hardware calorimeter trigger threshold
+
   Bool_t       fSelectLeadingHadronAngle;                ///<  Select events with leading particle within a range.
   
   Bool_t       fFillLeadHadOppositeHisto;                ///<  Fill histograms for leading hadrons in opposite side of trigger.
@@ -347,8 +377,13 @@ private:
   Int_t        fTCardIndex;                              ///<  Store here the T-Card index per trigger cluster.
   
   Bool_t       fFillTaggedDecayHistograms;               ///<  Fill pT in cone distributions in background bins for decay particles.
-    
+     
   Float_t      fDecayTagsM02Cut;                         ///<  Lambda0 cut for decay particles.
+  
+  Bool_t       fFillUePartHistograms;                    ///< Fill UePart histograms
+  Bool_t       fFillXEHistograms;                        ///< Fill xE histograms
+  Bool_t       fFillZTHistograms;                        ///< Fill zT histograms
+  Bool_t       fFillHBPHistograms;                       ///< Fill hump back plateau histograms
   
   Int_t        fMCGenTypeMin;                            ///<  Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax.
   Int_t        fMCGenTypeMax;                            ///<  Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax.
@@ -363,6 +398,7 @@ private:
   
   // Trigger particles
   TH1F *       fhPtTriggerInput;                         //!<! pT distribution of trigger particles before selection.
+  TH1F *       fhPtTriggerCaloTriggerCut;                //!<! pT distribution of trigger particles before Calorimeter trigger selection.
   TH1F *       fhPtTriggerSSCut;                         //!<! pT distribution of trigger particles after shower shape selection.
   TH1F *       fhPtTriggerIsoCut;                        //!<! pT distribution of trigger particles after isolation cut selection.
   TH1F *       fhPtTriggerFidCut;                        //!<! pT distribution of trigger particles after fiducial selection.
@@ -509,6 +545,9 @@ private:
   
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins.
   TH3F **      fhDeltaPhiDeltaEtaAssocPtBin;             //![fNAssocPtBins*GetNZvertBin()]
+
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins.
+  TH3F **      fhDeltaPhiDeltaEtaZTBin;                  //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()]
   
   /// Trigger pT vs dPhi for different associated pt and vz bins.
   TH2F **      fhDeltaPhiAssocPtBin;                     //![fNAssocPtBins*GetNZvertBin()]
@@ -624,7 +663,11 @@ private:
   TH2F *       fhMixXECharged;                           //!<! xE for mixed event.
   TH2F *       fhMixXEUeCharged;                         //!<! xE for mixed event in Ue region.
   TH2F *       fhMixHbpXECharged;                        //!<! ln(1/xE) for mixed event.
-  
+  TH2F *       fhMixZTCharged;                           //!<! zT for mixed event.
+  TH2F *       fhMixZTUeCharged;                         //!<! zT for mixed event in Ue region.
+  TH2F *       fhMixHbpZTCharged;                        //!<! ln(1/zT) for mixed event.
+  TH2F *       fhMixPtTrigPout  ;                        //!<! Pout =associated pt*sin(delta phi) distribution vs trigger pt
+  TH2F *       fhMixPtTrigCharged ;                      //!<! trigger and correlated particl pt, to be used for mean value for kt
   /// Difference of charged particle phi and trigger particle  phi as function of  trigger particle pT, for different associated bins.
   TH2F **      fhMixDeltaPhiChargedAssocPtBin;           //![fNAssocPtBins*GetNZvertBin()]
   
@@ -636,6 +679,9 @@ private:
   
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins.
   TH3F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()]
+
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins.
+  TH3F **      fhMixDeltaPhiDeltaEtaChargedZTBin;        //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()]
   
   TH1I *       fhEventBin;                               //!<! Number of triggers in a particular event bin (cen,vz,rp).
   TH1I *       fhEventMixBin;                            //!<! Number of triggers mixed in a particular bin (cen,vz,rp).
@@ -689,7 +735,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,37) ;
+  ClassDef(AliAnaParticleHadronCorrelation,41) ;
   /// \endcond
   
 } ;

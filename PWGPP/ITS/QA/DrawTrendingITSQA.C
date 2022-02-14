@@ -2118,7 +2118,8 @@ if(hMeanVx->GetEntries()>0){
     //
     ymin = hMeanVx->GetMinimum();
     ymax = hMeanVx->GetMaximum();
-    hMeanVx->SetMinimum(0.9*ymin);
+    if(ymin>-10.)hMeanVx->SetMinimum(0.9*ymin);
+    else hMeanVx->SetMinimum(0.)
     hMeanVx->SetMaximum(1.1*ymax);
     //
 //    hMeanVx->SetMinimum(0.065);
@@ -2143,7 +2144,8 @@ if(hMeanVx->GetEntries()>0){
     cVertexDisto->cd(2);
     ymin = hMeanVy->GetMinimum();
     ymax = hMeanVy->GetMaximum();
-    hMeanVy->SetMinimum(0.9*ymin);
+    if(ymin>-10.)hMeanVy->SetMinimum(0.9*ymin);
+    else hMeanVy->SetMinimum(0.)
     hMeanVy->SetMaximum(1.1*ymax);
 
 //        if(hMeanVySPD->GetEntries()>0){  // pp runs
@@ -2165,7 +2167,8 @@ if(hMeanVx->GetEntries()>0){
     cVertexDisto->cd(3);
     ymin = hMeanVz->GetMinimum();
     ymax = hMeanVz->GetMaximum();
-    hMeanVz->SetMinimum(0.9*ymin);
+    if(ymin>-10.)hMeanVz->SetMinimum(0.9*ymin);
+    else hMeanVz->SetMinimum(0.)
     hMeanVz->SetMaximum(1.1*ymax);
 //        hMeanVz->SetMinimum(-8.);
 //        hMeanVz->SetMaximum(8.);
@@ -2201,6 +2204,11 @@ if(hMeanVx->GetEntries()>0){
         //   hSigmaVz->SetMaximum(10.);
         hSigmaVz->GetYaxis()->SetTitle("sigma on z coordinate");
         hSigmaVz->GetXaxis()->SetTitle("run number");
+        ymin = hSigmaVz->GetMinimum();
+        ymax = hSigmaVz->GetMaximum();
+        if(ymin>0.)hSigmaVz->SetMinimum(0.9*ymin);
+        else hSigmaVz->SetMinimum(0.)
+        hMeanVz->SetMaximum(1.1*ymax);
         hSigmaVz->Draw();
         if(hSigmaVzSPD->GetBinContent(1)>0)hSigmaVzSPD->Draw("same");
 	if(hSigmaVzOCDB->GetBinContent(1)>-500.)hSigmaVzOCDB->Draw("same");

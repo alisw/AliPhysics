@@ -974,13 +974,13 @@ static Bool_t AcceptV0_general(const AliAODv0 *v1, const AliAODEvent *aod, doubl
 	if (v1->GetOnFlyStatus()) return kFALSE;
 	
 	int nnum = 1, pnum = 0;	
-	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughter(nnum);
+	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughterLabel(nnum);
 	if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
 	
-	const AliAODTrack *ntrack1=(AliAODTrack *)v1->GetDaughter(nnum);
+	const AliAODTrack *ntrack1=(AliAODTrack *)v1->GetDaughterLabel(nnum);
 	if (!AcceptTrack(ntrack1, fcutMinNClustersTPC, fcutRatio)) return kFALSE;
 	
-	const AliAODTrack *ptrack1=(AliAODTrack *)v1->GetDaughter(pnum);
+	const AliAODTrack *ptrack1=(AliAODTrack *)v1->GetDaughterLabel(pnum);
 	if (!AcceptTrack(ptrack1, fcutMinNClustersTPC, fcutRatio)) return kFALSE;
 	
 	Float_t impact=v1->DcaNegToPrimVertex();
@@ -1036,11 +1036,11 @@ static Bool_t AcceptV0_lowpt(const AliAODv0 *v1, AliPIDResponse *PIDResponse,int
 {
 	
 	int nnum = 1, pnum = 0;
-	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughter(nnum);
+	const AliAODTrack *ntracktest=(AliAODTrack *)v1->GetDaughterLabel(nnum);
 	if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
 	
-	const AliAODTrack *ntrack1=(AliAODTrack *)v1->GetDaughter(nnum);
-	const AliAODTrack *ptrack1=(AliAODTrack *)v1->GetDaughter(pnum);
+	const AliAODTrack *ntrack1=(AliAODTrack *)v1->GetDaughterLabel(nnum);
+	const AliAODTrack *ptrack1=(AliAODTrack *)v1->GetDaughterLabel(pnum);
 	
 	Double_t nsig_p = 0;
 	Double_t nsig_n = 0;
@@ -1303,13 +1303,13 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 					}
 					
 					
-					Int_t daughter0Label = mcPart->GetDaughter(0);
+					Int_t daughter0Label = mcPart->GetDaughterLabel(0);
 					AliAODMCParticle *mcDaughter0 = (AliAODMCParticle *)stack->UncheckedAt(daughter0Label);
 					Int_t daughter0Type = -1;
 					if(daughter0Label >= 0)
 					{daughter0Type = mcDaughter0->GetPdgCode();}
 					
-					Int_t daughter1Label = mcPart->GetDaughter(1);
+					Int_t daughter1Label = mcPart->GetDaughterLabel(1);
 					AliAODMCParticle *mcDaughter1 = (AliAODMCParticle *)stack->UncheckedAt(daughter1Label);
 					Int_t daughter1Type = -1;
 					if(daughter1Label >= 1)
@@ -1469,11 +1469,11 @@ void AliAnalysisTaskLukeAOD::UserExec(Option_t *)
 		}
 		
 		int nnum = 1, pnum = 0;
-		const AliAODTrack *ntracktest=(AliAODTrack *)v0->GetDaughter(nnum);
+		const AliAODTrack *ntracktest=(AliAODTrack *)v0->GetDaughterLabel(nnum);
 		if(ntracktest->Charge() > 0){nnum = 0; pnum = 1;}	
 		
-		const AliAODTrack *ntrack1=(AliAODTrack *)v0->GetDaughter(nnum);
-		const AliAODTrack *ptrack1=(AliAODTrack *)v0->GetDaughter(pnum);
+		const AliAODTrack *ntrack1=(AliAODTrack *)v0->GetDaughterLabel(nnum);
+		const AliAODTrack *ptrack1=(AliAODTrack *)v0->GetDaughterLabel(pnum);
 		
 		if(ntrack1->Charge()>0)
 		{fHistLog->Fill(55);}

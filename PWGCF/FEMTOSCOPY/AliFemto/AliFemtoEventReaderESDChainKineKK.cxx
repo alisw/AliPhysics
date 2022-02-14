@@ -36,6 +36,8 @@
 
 #include "AliPID.h"
 
+#include <vector>
+
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassImp(AliFemtoEventReaderESDChainKineKK);
@@ -317,19 +319,22 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKineKK::ReturnHbtEvent()
   //  hbtEvent->SetMultiplicityEstimateITSPure(tITSPure);
   hbtEvent->SetMultiplicityEstimateITSPure(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
 
-  Int_t *motherids;
-  if (fStack) {
-    motherids = new Int_t[fStack->GetNtrack()];
-    for (int ip=0; ip<fStack->GetNtrack(); ip++) motherids[ip] = 0;
+  if (!fStack) {
+    printf("No Stack ???\n");
+    delete hbtEvent;
+    return nullptr;
+  }
 
-    // Read in mother ids
-    TParticle *motherpart;
-    for (int ip=0; ip<fStack->GetNtrack(); ip++) {
-      motherpart = fStack->Particle(ip);
-      if (motherpart->GetDaughter(0) > 0)
-        motherids[motherpart->GetDaughter(0)] = ip;
-      if (motherpart->GetDaughter(1) > 0)
-        motherids[motherpart->GetDaughter(1)] = ip;
+  std::vector<Int_t> motherids(fStack->GetNtrack(), 0);
+
+  // Read in mother ids
+  TParticle *motherpart;
+  for (int ip=0; ip<fStack->GetNtrack(); ip++) {
+    motherpart = fStack->Particle(ip);
+    if (motherpart->GetDaughter(0) > 0)
+      motherids[motherpart->GetDaughter(0)] = ip;
+    if (motherpart->GetDaughter(1) > 0)
+      motherids[motherpart->GetDaughter(1)] = ip;
 
 //     if (motherpart->GetPdgCode() == 211) {
 //       cout << "Mother " << ip << " has daughters "
@@ -341,12 +346,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKineKK::ReturnHbtEvent()
 // 	   << endl;
 
 //     }
-    }
-  }
-  else {
-    printf ("No Stack ???\n");
-    delete hbtEvent;
-    return 0;
   }
 
   for (int i=0;i<nofTracks;i++)
@@ -354,10 +353,8 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKineKK::ReturnHbtEvent()
     //      cout << "Reading track " << i << endl;
     bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
 
-
     const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
     //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
-
 
     if ((esdtrack->GetStatus() & AliESDtrack::kTPCrefit) &&
         (esdtrack->GetStatus() & AliESDtrack::kITSrefit)) {
@@ -852,8 +849,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKineKK::ReturnHbtEvent()
     }
 
   }
-
-  delete [] motherids;
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event
 

@@ -42,11 +42,9 @@
 #include "AliEMCalTriggerRecTrackAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerRecTrackAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * \brief Dummy constructor
@@ -359,5 +357,3 @@ Bool_t AliEMCalTriggerRecTrackAnalysisComponent::HasMatchedPatchOfType(
   if(triggertype.Contains("EMCLowBoth") && (hasJetLow || hasGammaLow)) return kTRUE;
   return kFALSE;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

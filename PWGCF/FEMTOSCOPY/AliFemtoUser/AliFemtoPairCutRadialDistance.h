@@ -47,6 +47,7 @@ public:
   void SetMinimumRadius(double minrad);
   void SetMaximumRadius(double maxrad);
   void SetMagneticFieldSign(int magsign);
+  void SetMagneticFieldValue(double magval);
   void SetPhiStarMin(Bool_t);
 
 
@@ -57,6 +58,7 @@ public:
   Double_t fMinRad;
   Double_t fMaxRad;
   Int_t fMagSign;
+  Double_t fMagFieldVal; 			// Magnetic field value (default 0.5)
   Bool_t fPhistarmin;
 
 #ifdef __ROOT__

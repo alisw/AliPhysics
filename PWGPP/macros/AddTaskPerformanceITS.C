@@ -3,7 +3,8 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
 						       Bool_t fillNtuples=kFALSE,
 						       Int_t minmult=0,
 						       Int_t maxmult=1000000,
-						       Int_t checkSDDIsIn=1) 
+						       Int_t checkSDDIsIn=1,
+						       TString suffix="") 
 {
   //
   // Task for check of ITS tracking
@@ -36,6 +37,7 @@ AliAnalysisTaskITSTrackingCheck *AddTaskPerformanceITS(Bool_t readMC=kFALSE,
   //
   // Create containers for input/output
   TString cname="cOutputITS";
+  cname+=suffix.Data();
   if(maxmult<1000000) {
     cname.Append("_"); cname+=minmult; 
     cname.Append("_"); cname+=maxmult;

@@ -152,7 +152,7 @@ Bool_t AliFiducialCut::CheckFiducialRegion(Float_t eta, Float_t phiOrg,
       //      printf("region %d, min %2.2f < eta %2.2f < max %2.2f;min %2.2f < phi %2.2f < max %2.2f\n",
       //             iRegion,
       //             etamin->GetAt(iRegion),eta,etamax->GetAt(iRegion),
-      //             phimax->GetAt(iRegion),phi,phimax->GetAt(iRegion));
+      //             phimin->GetAt(iRegion),phi,phimax->GetAt(iRegion));
       
       if ( eta > etamin->GetAt(iRegion) && eta < etamax->GetAt(iRegion) && 
           phi > phimin->GetAt(iRegion) && phi < phimax->GetAt(iRegion)    )

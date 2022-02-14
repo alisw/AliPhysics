@@ -92,7 +92,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   int nbinssh = 200;
 
   //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection(); 
+   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterMask(96);
   //Reader->SetCentralityPreSelection(0.001, 950);
 

@@ -18,14 +18,12 @@
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerEventData.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerClass)
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaPatternObject)
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaPatternContainer)
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerPatchTypeObject)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaTriggerClass)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaPatternObject)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaPatternContainer)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaTriggerPatchTypeObject)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) constructor - not to be used
@@ -35,8 +33,8 @@ AliEMCalTriggerAnaTriggerClass::AliEMCalTriggerAnaTriggerClass() :
     fDecisionFromTriggerBits(kFALSE),
     fDecisionFromTriggerString(kFALSE),
     fDecisionFromTriggerPatches(kFALSE),
-    fTriggerBits(0),
     fIsMinBiasTrigger(kFALSE),
+    fTriggerBits(0),
     fTriggerStringPattern(),
     fEmcalTriggerHandler(NULL)
 {
@@ -52,8 +50,8 @@ AliEMCalTriggerAnaTriggerClass::AliEMCalTriggerAnaTriggerClass(const char *name,
     fDecisionFromTriggerBits(kFALSE),
     fDecisionFromTriggerString(kFALSE),
     fDecisionFromTriggerPatches(kFALSE),
-    fTriggerBits(0),
     fIsMinBiasTrigger(kFALSE),
+    fTriggerBits(0),
     fTriggerStringPattern(),
     fTriggerPatchTypes(),
     fEmcalTriggerHandler(NULL)
@@ -130,5 +128,3 @@ Bool_t AliEMCalTriggerAnaPatternContainer::CheckTriggerString(const char *trigge
   }
   return result;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

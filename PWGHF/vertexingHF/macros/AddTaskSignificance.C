@@ -1,4 +1,9 @@
-AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8,AliAnalysisTaskSESignificance::FeedDownEnum fromcb=AliAnalysisTaskSESignificance::kBoth, TString usercomment = "username", TString cutsobjname="loosecuts")
+AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",
+                                                   Int_t decCh=0,Bool_t readMC=kFALSE,
+                                                   Int_t flagOPartAntiPart=0,
+                                                   Int_t nofsteps=8,
+                                                   AliAnalysisTaskSESignificance::FeedDownEnum fromcb=AliAnalysisTaskSESignificance::kBoth, TString usercomment = "username", 
+                                                   TString cutsobjname="loosecuts")
 {
   //
   // Test macro for the AliAnalysisTaskSE for D meson candidates
@@ -7,18 +12,30 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   //  R. Bala, bala@to.infn.it
   // C. Bianchin, cbianchi@pd.infn.it
   // Get the pointer to the existing analysis manager via the static access method.
-  //============================================================================
+  //============================================================================    
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
   if (!mgr) {
+
     ::Error("AddTaskSignificance", "No analysis manager to connect to.");
+
     return NULL;
+
+  }  
+    
+
+  Bool_t stdcuts=kFALSE;
+  TFile* filecuts;
+  if( filename.EqualTo("") ) {
+    stdcuts=kTRUE; 
+  } else {
+      filecuts=TFile::Open(filename.Data());
+      if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
+	::Fatal("AddTaskDStarSpectrajay", "Input file not found : check your cut object");
+      }
   }
 
-  TFile* filecuts=TFile::Open(filename.Data());
-  if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-    cout<<"Input file not found: exit"<<endl;
-    return;
-  }
+ 
   
   AliRDHFCuts *analysiscuts=0x0;
   TString suffix="";
@@ -60,8 +77,10 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
 
   if(!analysiscuts){
     cout<<"Specific AliRDHFCuts not found"<<endl;
-    return;
+    return NULL;
   }
+    
+ 
 
   TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
   suffix+=centr;

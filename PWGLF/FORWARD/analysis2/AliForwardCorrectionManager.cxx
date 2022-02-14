@@ -18,6 +18,7 @@
 #include <TBrowser.h>
 #include <TROOT.h>
 #include <TClass.h>
+#include <TObjString.h>
 #include <iostream>
 #include <iomanip>
     

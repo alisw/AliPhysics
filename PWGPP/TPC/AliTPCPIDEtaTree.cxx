@@ -83,6 +83,7 @@ AliTPCPIDEtaTree::AliTPCPIDEtaTree(const char *name)
   , fStoreNumClustersInActiveVolume(kFALSE)
   , fDoAdditionalQA(kFALSE)
   , fPtpcPionCut(1.0)
+  , fUseFilteredTreeCuts(kFALSE)
   , fPtpc(0)
   , fPt(0)
   , fDeDx(0)
@@ -230,8 +231,9 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
     Printf("ERROR: fESD not available");
     return;
   }
-  
-  fMC = dynamic_cast<AliMCEvent*>(MCEvent());
+
+  if (GetIsPileUp(fESD, kPileUpRejectionSPD))
+  return;
   
   if (!fPIDResponse || !fV0KineCuts)
     return;
@@ -247,8 +249,14 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
   
   if(primaryVertex->GetNContributors() <= 0) 
     return;
+    
+  fMC = dynamic_cast<AliMCEvent*>(MCEvent());
   
-  fMultiplicity = fESD->GetNumberOfESDTracks(); 
+  if (fUseFilteredTreeCuts==kFALSE){
+  fMultiplicity = fESD->GetNumberOfESDTracks();
+  } else {
+  fMultiplicity = fESD->GetNTPCTrackBeforeClean();
+  }
     
   if (fDoAdditionalQA) {
     Int_t nTotTracks = fESD->GetNumberOfESDTracks();
@@ -267,6 +275,14 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
   Bool_t etaCorrAvail = fPIDResponse->UseTPCEtaCorrection();
   Bool_t multCorrAvail = fPIDResponse->UseTPCMultiplicityCorrection();
   
+  static Bool_t pileupReported = kFALSE;
+  if (!pileupReported) {
+    if (fPIDResponse->GetTPCResponse().GetPileupCorrectionObject()) {
+      Printf("INFO: Pileup correction found! The track dEdx signal will be corrected");
+    }
+    pileupReported = kTRUE;
+  }
+
   // Track loop to fill a Train spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
     Bool_t isPr = kFALSE;
@@ -362,7 +378,8 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
       }*/
     }
     
-    fDeDx = track->GetTPCsignal();
+    const Double_t pileupCorrection = fPIDResponse->GetTPCResponse().GetPileupCorrectionValue(track);
+    fDeDx = track->GetTPCsignal() - pileupCorrection;
     
     UInt_t status = track->GetStatus();
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
@@ -467,11 +484,15 @@ void AliTPCPIDEtaTree::UserExec(Option_t *)
     if (isPr)
       fDeDxExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, 
                                                                        fCorrectdEdxEtaDependence && etaCorrAvail,
-                                                                       fCorrectdEdxMultiplicityDependence && multCorrAvail);
+                                                                       fCorrectdEdxMultiplicityDependence && multCorrAvail,
+                                                                       kFALSE // don't do pileup correction for the expected signal, since above we correct the track dEdx
+                                                                      );
     else if (isPi)
       fDeDxExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, 
                                                                        fCorrectdEdxEtaDependence && etaCorrAvail,
-                                                                       fCorrectdEdxMultiplicityDependence && multCorrAvail);
+                                                                       fCorrectdEdxMultiplicityDependence && multCorrAvail,
+                                                                       kFALSE // don't do pileup correction for the expected signal, since above we correct the track dEdx
+                                                                      );
     else
       fDeDxExpected = -1.;
     fTanTheta = track->GetInnerParam()->GetTgl();

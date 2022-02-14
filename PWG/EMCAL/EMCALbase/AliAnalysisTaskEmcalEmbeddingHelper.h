@@ -20,6 +20,7 @@ class TString;
 class TChain;
 class TFile;
 class AliVEvent;
+class AliMCEvent;
 class AliVHeader;
 class AliGenPythiaEventHeader;
 class AliEmcalList;
@@ -29,6 +30,7 @@ class AliEmcalList;
 #include <string>
 
 #include <TStopwatch.h>
+#include <TRandom3.h>
 #include <AliAnalysisTaskSE.h>
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
@@ -90,6 +92,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
    * @return The embedded event
    */
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
+  
+  /**
+    * @brief Retrieve the embedded MC event from the embedding helper
+    * @return The embedded MC event
+    */
+  AliMCEvent* GetExternalMCEvent()                          const { return fExternalMCEvent ; }
 
   /**
    * @{
@@ -115,7 +123,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
   TString GetFileListFilename()                             const { return fFileListFilename; }
   bool GetCreateHistos()                                    const { return fCreateHisto; }
-
+  TString GetExternalFilePath()                             const ;
+  
   // Set
   /// Set the pt hard bin which will be added into the file pattern. Can also be omitted and set directly in the pattern.
   void SetPtHardBin(Int_t n)                                      { fPtHardBin           = n; }
@@ -182,6 +191,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliEventCuts * GetInternalEventCuts();
   /// Set internal event centrality selection
   void SetCentralityRange(double min, double max)                 { fCentMin = min; fCentMax = max; }
+  void SetRandomRejectionFactor(Double_t configure = 1.)          { fRandomRejectionFactor = configure; }
   /* @} */
 
   /**
@@ -278,10 +288,11 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   /* @} */
 
  protected:
-  void            RetrieveTaskPropertiesFromYAMLConfig();
+  virtual void    RetrieveTaskPropertiesFromYAMLConfig();
   bool            GetFilenames()        ;
   void            DeterminePythiaXSecFilename();
   bool            IsRunInRunlist(const std::string & path) const;
+  void            FilterRunblockFilenames();
   bool            InitializeYamlConfig();
   bool            AutoConfigurePtHardBins();
   std::string     GenerateUniqueFileListFilename() const;
@@ -294,10 +305,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void            SetEmbeddedEventProperties();
   void            RecordEmbeddedEventProperties();
   Bool_t          IsEventSelected()     ;
-  Bool_t          CheckIsEmbeddedEventSelected();
+  virtual Bool_t  CheckIsEmbeddedEventSelected();
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
   bool            PythiaInfoFromCrossSectionFile(std::string filename);
+  // Validation helper
+  void            ValidatePhysicsSelectionForInternalEventSelection();
   // Helper functions
   bool            IsFileAccessible() const;
   void            ConnectToAliEn() const;
@@ -327,8 +340,12 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   bool                                 fUseManualInternalEventCuts; ///<  If true, manual event cuts mode will be used for AliEventCuts
   AliEventCuts                                  fInternalEventCuts; ///<  If enabled, Handles internal event selection
   bool                                          fEmbeddedEventUsed; //!<! If true, the internal event was selected, so the embedded event is used. Defaults to true so other tasks are not disrupted if internal event selection is disabled.
+  bool                                  fValidatedPhysicsSelection; ///<  Validate that the physics selection is set appropriately.
+  UInt_t                                 fInternalEventTriggerMask; ///<  Internal event physics selection (trigger mask) to be used with AliEventCuts.
   double                                        fCentMin          ; ///<  Minimum centrality for internal event selection
   double                                        fCentMax          ; ///<  Maximum centrality for internal event selection
+  Double_t                                      fRandomRejectionFactor; ///< factor by which to reject events
+  TRandom3                                      fRandom           ; ///< for random rejection of events
 
   bool                                    fAutoConfigurePtHardBins; ///<  If true, attempt to auto configure pt hard bins. Only works on the LEGO train.
   std::string                               fAutoConfigureBasePath; ///<  The base path to the auto configuration (for example, "/alice/cern.ch/user/a/alitrain/")
@@ -342,6 +359,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::vector <std::string>                     fFilenames        ; ///<  Paths to the files to embed
   std::string                                   fConfigurationPath; ///<  Path to %YAML configuration
   std::vector <std::string>                     fEmbeddedRunlist  ; ///<  Good runlist for files to embed
+  std::vector <int>                             fEmbeddedRunblock ; ///<  Good runblock for files to embed, each run corresponds to the first run of a block
+  Int_t                                         fDataRunNumber    ; ///< Current run number in data file  
   std::string                                  fPythiaXSecFilename; ///<  Name of the pythia x sec filename (either "pyxsec.root" or "pyxsec_hists.root")
   std::vector <std::string>                     fPythiaCrossSectionFilenames; ///< Paths to the pythia xsection files
   TFile                                        *fExternalFile     ; //!<! External file used for embedding
@@ -355,6 +374,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   THistManager                                  fHistManager      ; ///< Manages access to all histograms
   AliEmcalList                                 *fOutput           ; //!<! List which owns the output histograms to be saved
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
+  AliMCEvent                                   *fExternalMCEvent  ; //!<! Current external MC event available for embedding
   AliVHeader                                   *fExternalHeader   ; //!<! Header of the current external event
   AliGenPythiaEventHeader                      *fPythiaHeader     ; //!<! Pythia header of the current external event
 
@@ -374,7 +394,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 11);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 14);
   /// \endcond
 };
 #endif

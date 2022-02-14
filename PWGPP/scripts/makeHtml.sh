@@ -56,8 +56,8 @@ done;
 echo "</div>" >> $outputHtml
 
 if [ $heightDraw -gt 0 ] ; then
-## echo "<div class=\"rightDiv\">"  >> $outputHtml
-    echo "  <canvas width=\"800\" height=\"$heightDraw\"  id=\"canvasDraw\"/>"  >> $outputHtml
+## echo "<div class=\"rightDiv\" id=\"canvasDiv\">"  >> $outputHtml
+    echo "  <canvas width=\"800\" height=\"$heightDraw\"  id=\"canvasDraw\"></canvas>"  >> $outputHtml
     echo "</div>"  >> $outputHtml
     echo ""  >> $outputHtml
 fi;
@@ -70,11 +70,11 @@ echo "<table border=\"0\" cellpadding=\"1\" cellspacing=\"2\">"  >> $outputHtml
 echo "    <tbody>" >> $outputHtml
 echo "        <tr>"  >> $outputHtml
 echo "            <td>Custom query:</td>"  >> $outputHtml
-echo "            <td><input id=\"globalSelectionMI\" class=\"globalSelectionMI\" name=\"globalSelectionMI\" type=\"text\", size=\"50\"></td>"  >> $outputHtml
+echo "            <td><input id=\"globalSelectionMI\" class=\"globalSelectionMI\" name=\"globalSelectionMI\" type=\"text\" size=\"50\"></td>"  >> $outputHtml
 echo "        </tr>"  >> $outputHtml
 echo "    </tbody>"  >> $outputHtml
 echo "</table>"  >> $outputHtml
 echo '<table id="runTable" class="display" cellspacing="0" width="100%">' >>$outputHtml
 cat $inputTable | grep -v "<table"   >> $outputHtml  ##### Run Table for the lower corner
 echo "</div>" >> $outputHtml
-echo "</document>"       >> $outputHtml
+#echo "</document>"       >> $outputHtml

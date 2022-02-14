@@ -1,8 +1,30 @@
-//
-// Container with name, TClonesArray and cuts for particles
-//
-// Author: M. Verweij, S. Aiola
 
+/************************************************************************************
+ * Copyright (C) 2013, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <iostream>
 
 #include <TClonesArray.h>
@@ -13,13 +35,8 @@
 #include "AliTLorentzVector.h"
 #include "AliMCParticleContainer.h"
 
-/// \cond CLASSIMP
 ClassImp(AliMCParticleContainer);
-/// \endcond
 
-/**
- * Default constructor.
- */
 AliMCParticleContainer::AliMCParticleContainer():
   AliParticleContainer(),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
@@ -28,10 +45,6 @@ AliMCParticleContainer::AliMCParticleContainer():
   SetClassName("AliAODMCParticle");
 }
 
-/**
- * Standard constructor.
- * @param[in] name Name of the container (= name of the array operated on)
- */
 AliMCParticleContainer::AliMCParticleContainer(const char *name):
   AliParticleContainer(name),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
@@ -40,11 +53,6 @@ AliMCParticleContainer::AliMCParticleContainer(const char *name):
   SetClassName("AliAODMCParticle");
 }
 
-/**
- * Get MC particle using the MC label
- * @param[in] lab Label of the particle
- * @return pointer to particle if particle is found, NULL otherwise
- */
 AliAODMCParticle* AliMCParticleContainer::GetMCParticleWithLabel(Int_t lab) const
 {
   Int_t i = GetIndexFromLabel(lab);
@@ -56,11 +64,6 @@ AliAODMCParticle* AliMCParticleContainer::GetMCParticleWithLabel(Int_t lab) cons
   }
 }
 
-/**
- * Get MC particle using the MC label
- * @param[in] lab Label of the particle
- * @return pointer to particle if particle is found and accepted, NULL otherwise
- */
 AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticleWithLabel(Int_t lab)
 {
   Int_t i = GetIndexFromLabel(lab);
@@ -72,11 +75,6 @@ AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticleWithLabel(Int_t lab
   }
 }
 
-/**
- * Get track at index in the container
- * @param[in] i Index of the particle in the container
- * @return pointer to particle if particle is found, NULL otherwise
- */
 AliAODMCParticle* AliMCParticleContainer::GetMCParticle(Int_t i) const
 {
   if (i == -1) i = fCurrentID;
@@ -85,11 +83,6 @@ AliAODMCParticle* AliMCParticleContainer::GetMCParticle(Int_t i) const
   return vp;
 }
 
-/**
- * Get track at index in the container
- * @param[in] i Index of the particle in the container
- * @return pointer to particle if particle is accepted, NULL otherwise
- */
 AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i) const
 {
   //return pointer to particle if particle is accepted
@@ -105,11 +98,6 @@ AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i) const
   }
 }
 
-/**
- * Get next accepted particle in the container selected using the track cuts provided.
- * @deprecated Old style iterator - for compatibility reasons, use AliParticleContainer::accept_iterator instead
- * @return Next accepted particle (NULL if the end of the array is reached)
- */
 AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle()
 {
   const Int_t n = GetNEntries();
@@ -123,11 +111,6 @@ AliAODMCParticle* AliMCParticleContainer::GetNextAcceptMCParticle()
   return p;
 }
 
-/**
- * Get next particle in the container
- * @deprecated Old style iterator - for compatibility reasons, use AliParticleContainer::all_iterator instead
- * @return Next track in the container (NULL if end of the container is reached)
- */
 AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
 {
   //Get next particle
@@ -143,15 +126,6 @@ AliAODMCParticle* AliMCParticleContainer::GetNextMCParticle()
   return p;
 }
 
-/**
- * Perform full MC particle selection for the particle vp, consisting
- * of kinematical particle selection and MC-specific cuts
- * @param[in] vp Particle to be checked
- * @param[in] rejectionReason Bitmap encoding the reason why the
- * particle was rejected. Note: The variable is not set to NULL
- * inside this function before changing its value.
- * @return True if the particle is accepted, false otherwise
- */
 Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
@@ -164,15 +138,6 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-/**
- * Perform full MC particle selection for the particle vp, consisting
- * of kinematical particle selection and MC-specific cuts
- * @param[in] i Index of the particle to check
- * @param[in] rejectionReason Bitmap encoding the reason why the
- * particle was rejected. Note: The variable is not set to NULL
- * inside this function before changing its value.
- * @return True if the particle is accepted, false otherwise
- */
 Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
@@ -186,14 +151,6 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-/**
- * Apply MC particle cuts, e.g. primary particle selection.
- * @param[in] vp Particle to be checked
- * @param[in] rejectionReason Bitmap encoding the reason why the
- * particle was rejected. Note: The variable is not set to NULL
- * inside this function before changing its value.
- * @return True if the particle is accepted, false otherwise
- */
 Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, UInt_t &rejectionReason) const
 {
   // Return true if i^th particle is accepted.
@@ -207,48 +164,22 @@ Bool_t AliMCParticleContainer::ApplyMCParticleCuts(const AliAODMCParticle* vp, U
   return ApplyParticleCuts(vp, rejectionReason);
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliMCParticleIterableContainer AliMCParticleContainer::all() const {
   return AliMCParticleIterableContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliMCParticleIterableContainer AliMCParticleContainer::accepted() const {
   return AliMCParticleIterableContainer(this, true);
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliMCParticleIterableMomentumContainer AliMCParticleContainer::all_momentum() const {
   return AliMCParticleIterableMomentumContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliMCParticleIterableMomentumContainer AliMCParticleContainer::accepted_momentum() const {
   return AliMCParticleIterableMomentumContainer(this, true);
 }
 
-/**
- * Build title of the container consisting of the container name
- * and a string encoding the minimum \f$ p_{t} \f$ cut applied
- * in the kinematic particle selection.
- * @return Title of the container
- */
 const char* AliMCParticleContainer::GetTitle() const
 {
   static TString trackString;

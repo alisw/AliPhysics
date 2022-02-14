@@ -1,59 +1,46 @@
-AliAnalysisTaskMLTreeMakerEff *AddTaskMLTreeMakerEff(TString taskname = "ESDEffExample", 
-                                             Double_t etaMin = -0.8,
-                                             Double_t etaMax = 0.8,
-                                             Double_t ptMin = 0.2,
-                                             Double_t ptMax = 10.0
-					     ) {				
+AliAnalysisTask *AddTaskMLTreeMakerEff( )
+{
 
+//get the current analysis manager
+AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+if(!mgr){
 
-AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-if (!mgr) {
-  ::Error("AddTaskBalancePsiCentralityTrain",  "No analysis manager to connect to.");
-  return NULL;
+    Error("AddTask_slehner_TreeMakerWCutLib", "No analysis manager found.");
+    return 0;
 }
 
-// Check the analysis type using the event handlers connected to the analysis manager.
-//===========================================================================
-if (!mgr->GetInputEventHandler()) {
-  ::Error("AddTaskMLTreeMakerEff",  "This task requires an input event handler");
-  return NULL;
+//Base Directory for GRID / LEGO Train  
+TString configBasePath= "./";
+
+TString configLMEECutLib("LMEECutLib_slehner.C");
+TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+  gSystem->Exec(TString("alien_cp alien:///alice/cern.ch/user/s/selehner/cutlibs/LMEECutLib_slehner.C ."));
+//LOAD CUTLIB
+if(gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0){
+
+    ::Info("AddTask_slehner_TreeMakerWCutLib","loading LMEECutLib: %s",configLMEECutLibPath.Data());
+    gROOT->LoadMacro(configLMEECutLibPath.Data());
+} 
+else{
+    ::Info("AddTask_slehner_TreeMakerWCutLib","LMEECutLib not found: %s", configLMEECutLibPath.Data());
+    return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
 }
-TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
-if (analysisType!="ESD"){
-  ::Error("AddTaskMLTreeMakerEff",  "analysis type NOT AOD --> makes no sense!");
-  return NULL;
+//Do we have an MC handler?
+Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
+::Info("AddTask_slehner_TreeMakerWCutLib","hasMC = %d",hasMC);
+
+LMEECutLib* cutlib = new LMEECutLib();      
+AliAnalysisTaskMLTreeMakerEff *task = new AliAnalysisTaskMLTreeMakerEff("treemaker");   
+
+mgr->AddTask(task);
+
+TString outputFN = AliAnalysisManager::GetCommonFileName();
+
+AliAnalysisDataContainer *coutESD = mgr->CreateContainer(Form("output%d",1), TList::Class(),AliAnalysisManager::kOutputContainer,outputFN.Data());
+mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+mgr->ConnectOutput(task, 1, coutESD);
+
+return task;
+
 }
-      
-
-AliAnalysisTaskMLTreeMakerEff *taskESD = new AliAnalysisTaskMLTreeMakerEff(taskname);
-
-   // ==========================================================================
-  // user customization part
-
-  taskESD->SetEtaRange(etaMin, etaMax);
-  taskESD->SetPtRange(ptMin, ptMax);
-//  taskESD->SelectCollisionCandidates(AliVEvent::kMB);
-
-  // ==========================================================================
-
-  mgr->AddTask(taskESD);
-
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  //==============================================================================
-  TString outputFileName = AliAnalysisManager::GetCommonFileName();
-
-  
-// AliAnalysisDataContainer *coutESD = mgr->CreateContainer("",  TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
-// AliAnalysisDataContainer *coutESD1 = mgr->CreateContainer("QAHist",  TH1::Class(), AliAnalysisManager::kOutputContainer, outputFileName.Data());
-// mgr->ConnectInput(taskESD,  0,  mgr->GetCommonInputContainer());
-// mgr->ConnectOutput(taskESD,  1,  coutESD);
-// mgr->ConnectOutput(taskESD,  2,  coutESD1);
- 
-  AliAnalysisDataContainer *coutESD = mgr->CreateContainer("Eff_output", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  mgr->ConnectInput(taskESD, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskESD, 1, coutESD);
- 
- return taskESD;
- }

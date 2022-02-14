@@ -1098,7 +1098,9 @@ def plotChargedJetQA(ispp, isPtHard, chargedJetList, outputDir, chargedJetListRe
   outputFilename = os.path.join(outputDirJets, "hChargedJetPtLeadjetPt" + fileFormat)
   if isPtHard:
     yMin= hChargedJetPt.GetBinContent(hChargedJetPt.FindBin(200)) #find entry in bin at 200 GeV to get the right y-Axis scale
-    plotHist(hChargedJetPtLeadjetPt, outputFilename, "colz", "", True, yMin)
+    yMax= hChargedJetPt.GetBinContent(hChargedJetPt.GetMaximumBin()) #find entry in bin at 200 GeV to get the right y-Axis scale
+    hChargedJetPt.GetYaxis().SetRangeUser(yMin,yMax*1.1)
+    plotHist(hChargedJetPtLeadjetPt, outputFilename, "colz", "", True)
   else:
     plotHist(hChargedJetPtLeadjetPt, outputFilename, "colz", "", True)
   ROOT.gStyle.SetOptTitle(0)

@@ -49,8 +49,8 @@
 #include "THistManager.h"
 #include <string>
 #include <vector>
-#include "Tracks/AliAnalysisTaskEmcalTriggerBase.h"
-#include "Tracks/AliCutValueRange.h"
+#include "AliAnalysisTaskEmcalTriggerBase.h"
+#include "AliCutValueRange.h"
 #include "AliEventCuts.h"
 #include <TCustomBinning.h>
 #include <TString.h>

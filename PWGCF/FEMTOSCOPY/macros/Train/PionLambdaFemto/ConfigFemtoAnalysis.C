@@ -20,7 +20,9 @@
 #include "AliFemtoCutMonitorParticleYPt.h"
 #include "AliFemtoCutMonitorV0.h"
 
+#include "AliFemtoAvgSepCorrFctn.h"
 #include "AliFemtoCorrFctnKStar.h"
+#include "AliFemtoModelCorrFctnKStar.h"
 
 #include <TROOT.h>
 
@@ -109,17 +111,17 @@ ConfigFemtoAnalysis(const TString& param_str = "")
     // advantage of this because ROOT doesn't like enums in macros. If this becomes compiled
     // it should be re-written to set to real enum values.
     // If first bit is set, use antilambda (1) else lambda (0)
-    analysis_config.lambda_type = (bit & 1) == 1; // kAntiLambda: kLambda;
+    analysis_config.lambda_type = (bit & 1) == 1 ? AFAPL::kAntiLambda : AFAPL::kLambda;
 
     // If second bit is set, use pi- (1) else pi+ (0)
-    analysis_config.pion_type = (bit & 2) == 2; // kPiMinus : kPiPlus;
+    analysis_config.pion_type = (bit & 2) == 2 ? AFAPL::kPiMinus : AFAPL::kPiPlus;
 
 //     analysis_config.pion_type = (*config & 2) == 2 ? AFAPL::kPiPlus : AFAPL::kPiMinus;
 //     analysis_config.lambda_type = (*config & 1) == 1 ? AFAPL::kLambda : AliFemtoAnalysisPionLambda::kAntiLambda;
 
     TString analysis_name;
-    analysis_name += (analysis_config.pion_type == 0) ? "PiPlus" : "PiMinus";
-    analysis_name += (analysis_config.lambda_type == 0) ? "Lam" : "ALam";
+    analysis_name += (analysis_config.pion_type == AFAPL::kPiPlus) ? "PiPlus" : "PiMinus";
+    analysis_name += (analysis_config.lambda_type == AFAPL::kLambda) ? "Lam" : "ALam";
 
     AliFemtoAnalysisPionLambda *analysis = new AliFemtoAnalysisPionLambda(analysis_name,
                                                                           analysis_config,
@@ -168,9 +170,6 @@ void BuildConfiguration(const TString &text,
                         MacroParams &mac
                         )
 {
-
-
-
   std::cout << "I-BuildConfiguration:" << TBase64::Encode(text) << " \n";
   //   std::cout << "   '" << text << "'\n";
 
@@ -184,7 +183,7 @@ void BuildConfiguration(const TString &text,
   TIter next_line(lines);
   TObject *line_obj = NULL;
 
-  while (line_obj = next_line()) {
+  while ((line_obj = next_line())) {
 
     const TString line = ((TObjString*)line_obj)->String().ReplaceAll(".", "_")
                                                           .Strip(TString::kBoth, ' ');

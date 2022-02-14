@@ -13,39 +13,28 @@ void SetInputDirectory(TString strdir){
   inputdirectory=strdir;
 }
 
-void SetpPbyear(Int_t syst){
-  if(syst==1) pPbyear=2013;
-  if(syst==2) pPbyear=2016;
-}
-
-
 void DoNiceFitPlots() {
-  TFile fInPP(Form("%s/FitOutputs_pp/FitSystematics_pp_WeightedAverage_1.0_99.0.root",inputdirectory.Data()));
-  TFile fInPPb(Form("%s/FitOutputs_pPb/FitSystematics_pPb_WeightedAverage_1.0_99.0.root",inputdirectory.Data()));
+  TFile fInPP(Form("%s/FitOutputs_pp/FitSystematics_pp_WeightedAverage_0.3_99.0.root",inputdirectory.Data()));
+  TFile fInpp2(Form("%s/FitOutputs_pp/FitSystematics_pp_WeightedAverage_1.0_2.0.root",inputdirectory.Data()));
 
   TCanvas *cInPP = (TCanvas*)fInPP.Get("cFitting_0");
-  TCanvas *cInPPb = (TCanvas*)fInPPb.Get("cFitting_1");
+  TCanvas *cInpp2 = (TCanvas*)fInpp2.Get("cFitting_0");
    gStyle->SetOptStat(0000);
   gStyle->SetOptFit(000);
 
-  Int_t indexpp = 2;
-  Int_t indexpPb;
-  if(pPbyear==2013) indexpPb = 2;
-  if(pPbyear==2016) indexpPb = 2;
+  Int_t indexpp = 3;
+  Int_t indexpp2 = 4;
 
-  TCanvas *cOut1 = ExtractPad(cInPP,2);
+  TCanvas *cOut1 = ExtractPad(cInPP,3);
   cOut1->SetName("cNew_pp");
-  TCanvas *cOut2;
-  if(pPbyear==2013) cOut2 = ExtractPad(cInPPb,2);
-  if(pPbyear==2016) cOut2 = ExtractPad(cInPPb,2);
-
-  cOut2->SetName("cNew_pPb");
+  TCanvas *cOut2 = ExtractPad(cInpp2,4);
+  cOut2->SetName("cNew_pp2");
 
   TCanvas *cUnc_pp = (TCanvas*)fInPP.Get(Form("cFinalCorrelation%d",indexpp-1));
-  TCanvas *cUnc_pPb = (TCanvas*)fInPPb.Get(Form("cFinalCorrelation%d",indexpPb-1));
+  TCanvas *cUnc_pp2 = (TCanvas*)fInpp2.Get(Form("cFinalCorrelation%d",indexpp2-1));
 
   TGraphAsymmErrors *graph_pp = (TGraphAsymmErrors*)cUnc_pp->FindObject(Form("grapherror%d",indexpp-1));
-  TGraphAsymmErrors *graph_pPb = (TGraphAsymmErrors*)cUnc_pPb->FindObject(Form("grapherror%d",indexpPb-1));
+  TGraphAsymmErrors *graph_pp2 = (TGraphAsymmErrors*)cUnc_pp2->FindObject(Form("grapherror%d",indexpp2-1));
 
   TPad* pad1 = (TPad*)cOut1->FindObject("pad");
   pad1->cd();
@@ -56,18 +45,22 @@ void DoNiceFitPlots() {
 
   TPad* pad2 = (TPad*)cOut2->FindObject("pad");
   pad2->cd();
-  graph_pPb->SetLineColor(kRed);
-  graph_pPb->SetMarkerColor(kRed);
-  graph_pPb->SetFillStyle(0);
-  graph_pPb->Draw("E2");
+  graph_pp2->SetLineColor(kBlack);
+  graph_pp2->SetMarkerColor(kBlack);
+  graph_pp2->SetFillStyle(0);
+  graph_pp2->Draw("E2");
 
-  ModStyle(cOut1,0);
+  ModStyle(cOut1,0,0);
+     TLatex *chi = new TLatex(0.18,4.3,"#chi^{2}/ndf = 1.38");
+     chi->SetTextFont(43);
+     chi->SetTextSize(32);
+     chi->Draw();
   cOut1->Draw();
-  ModStyle(cOut2,1);
+  ModStyle(cOut2,0,1);
   cOut2->Draw();
 
-  SaveCanvas(cOut1,Form("%s/NiceStylePlots",inputdirectory.Data()),"cFitOutput_NiceStyle_pp_WeightedAverage_1.0_99.0");
-  SaveCanvas(cOut2,Form("%s/NiceStylePlots",inputdirectory.Data()),"cFitOutput_NiceStyle_pPb_WeightedAverage_1.0_99.0");
+  SaveCanvas(cOut1,Form("%s/NiceStylePlots",inputdirectory.Data()),"cFitOutput_NiceStyle_pp_WeightedAverage_0.3_99.0");
+  SaveCanvas(cOut2,Form("%s/NiceStylePlots",inputdirectory.Data()),"cFitOutput_NiceStyle_pp_WeightedAverage_1.0_2.0");
 
 }
 
@@ -82,14 +75,15 @@ TCanvas* ExtractPad(TCanvas *c, Int_t padnum) {
   return cNew;
 }
 
-void ModStyle(TCanvas *c, Int_t system) {
+void ModStyle(TCanvas *c, Int_t system, Int_t opt) {
+printf("***c list***\n");
 c->ls();
   TF1 *fun = (TF1*)c->FindObject("fGausASper");
   fun->SetLineWidth(4);
   fun->SetLineColor(kGreen+3);
   fun->SetLineStyle(5);
 
-  TF1 *fun2 = (TF1*)c->FindObject("fGausNSper");
+  TF1 *fun2 = (TF1*)c->FindObject("fModGausNSperFixBeta");
   fun2->SetLineWidth(4);
   fun2->SetLineStyle(9);
 
@@ -104,7 +98,7 @@ c->ls();
   h->GetYaxis()->CenterTitle(kTRUE);
   h->GetYaxis()->SetTitleSize(0.046);
   h->GetYaxis()->SetLabelSize(0.04);
-  h->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{-1})");
+  h->GetYaxis()->SetTitle("#frac{1}{#it{N}_{D}} #frac{d#it{N}^{assoc}}{d#Delta#varphi} (rad^{#scale[1.25]{-1}})");
   h->GetYaxis()->SetTitleOffset(1.5);
   h->GetXaxis()->SetTitle("#Delta#varphi (rad)");
   h->GetXaxis()->CenterTitle(kTRUE);
@@ -119,8 +113,9 @@ c->ls();
     hSuperimp->SetMarkerStyle(25);
     hSuperimp->SetMarkerColor(kRed+1);
   }
-
-  TF1 *funfit = (TF1*)(h->GetListOfFunctions()->FindObject("TwoGausPeriodicity"));
+printf("***h list***\n");
+h->GetListOfFunctions()->ls();
+  TF1 *funfit = (TF1*)(h->GetListOfFunctions()->FindObject("kModifNSGausPeriodicityFixBeta"));
   funfit->SetLineWidth(4); 
   funfit->SetLineColor(kRed+1); 
 
@@ -137,7 +132,7 @@ c->ls();
   Int_t syst=1;
   Int_t nextMeson=0;
 
-  TLegend * legend = new TLegend(0.42,0.43,0.85,0.65);
+  TLegend * legend = new TLegend(0.47,0.46,0.73,0.65);
   legend->SetFillColor(0);
   legend->SetMargin(0.33);
   legend->SetTextSize(0.04);
@@ -202,8 +197,8 @@ c->ls();
   legend2->SetMargin(0.3);
   legend2->SetTextSize(0.042);
   legend2->SetBorderSize(0);
-  if(system==0) legend2->AddEntry(h,"pp, #sqrt{#it{s}} = 7 TeV","lep");
-  else legend2->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lep");
+  if(system==0) legend2->AddEntry(h,"pp, #sqrt{#it{s}} = 5.02 TeV","lp");
+  else legend2->AddEntry(h,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","lp");
   legend2->Draw("same");
  
   if(system==1) {
@@ -212,7 +207,7 @@ c->ls();
     legendSuperimp->SetMargin(0.3);
     legendSuperimp->SetTextSize(0.042);
     legendSuperimp->SetBorderSize(0);
-    legendSuperimp->AddEntry(hSuperimp,"","lep");
+    legendSuperimp->AddEntry(hSuperimp,"","lp");
     legendSuperimp->Draw("same");
   }
 
@@ -224,30 +219,28 @@ c->ls();
   tl2b->Draw("same");
 
   if(system==0) {
-    TLatex *tl3=new TLatex(0.215,0.75,Form("|#it{y}^{D}_{cms}| < 0.5, |#Delta#eta| < 1"));
+    TLatex *tl3=new TLatex(0.215,0.75,Form("|#it{y}^{D}_{cms}| < 0.5, |#Delta#it{#eta}| < 1"));
     tl3->SetNDC();
     tl3->SetTextSize(0.042);
         tl3->SetTextFont(42);
     tl3->Draw("same");
   } else {
-    TLatex *tl3=new TLatex(0.215,0.75,Form("-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#eta| < 1"));
+    TLatex *tl3=new TLatex(0.215,0.75,Form("-0.96 < #it{y}^{D}_{cms} < 0.04, |#Delta#it{#eta}| < 1"));
     tl3->SetNDC();
     tl3->SetTextSize(0.042);
         tl3->SetTextFont(42);
     tl3->Draw("same");
   }
 
-  if(system==0) {
-    TLatex *tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
+  if(opt==0) {
+    TLatex *tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
         tl4->SetTextFont(42);
     tl4->Draw("same");
   } else {
     TLatex *tl4;
-    if(pPbyear==2013)tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
-    if(pPbyear==2016)tl4=new TLatex(0.215,0.69,Form("5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"));
-    else tl4=new TLatex();
+    tl4=new TLatex(0.215,0.69,Form("8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 1 < #it{p}_{T}^{assoc} < 2 GeV/#it{c}"));
     tl4->SetNDC();
     tl4->SetTextSize(0.042);
         tl4->SetTextFont(42);
@@ -259,16 +252,15 @@ c->ls();
   tlAlice->Draw();
   tlAlice->SetTextSize(0.038);
 */
-  if(system==0) {
-    TLatex *tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus13%s}_{#minus10%s} scale uncertainty","%","%"));
+  if(opt==0) {
+    TLatex *tlUnc=new TLatex(0.35,0.18,Form("#pm4%s scale uncertainty","%"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.042);
         tlUnc->SetTextFont(42);
     tlUnc->Draw("same");
   } else {
     TLatex *tlUnc;
-    if(pPbyear==2013) tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus10%s}_{#minus10%s} scale uncertainty","%","%"));
-    if(pPbyear==2016) tlUnc=new TLatex(0.35,0.21,Form("{}^{#plus4%s}_{#minus4%s} scale uncertainty","%","%"));
+    tlUnc=new TLatex(0.35,0.18,Form("#pm4%s scale uncertainty","%"));
     tlUnc->SetNDC();
     tlUnc->SetTextSize(0.042);
        tlUnc->SetTextFont(42);
@@ -288,13 +280,16 @@ c->ls();
   tl6->Draw("same");*/
   if(system==1) {
     hSuperimp->Draw("same");
-    hSuperimp->GetFunction("TwoGausPeriodicity")->SetBit(TF1::kNotDraw);
+    hSuperimp->GetFunction("kModifNSGausPeriodicityFixBeta")->SetBit(TF1::kNotDraw);
   }
 
   fun->Draw("same");
   fun2->Draw("same");
   fun3->Draw("same");
   funfit->Draw("same");
+
+    h->Draw("same");
+    h->GetFunction("kModifNSGausPeriodicityFixBeta")->SetBit(TF1::kNotDraw);
 
   return;
 }

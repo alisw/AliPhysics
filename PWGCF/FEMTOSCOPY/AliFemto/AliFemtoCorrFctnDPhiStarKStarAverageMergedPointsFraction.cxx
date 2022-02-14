@@ -134,25 +134,22 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::Report(){
+AliFemtoString AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::Report()
+{
   // Create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in merged numerator:\t%E\n",fDPhiStarKStarMergedNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in total numerator:\t%E\n",fDPhiStarKStarTotalNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in merged denominator:\t%E\n",fDPhiStarKStarMergedDenominator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in total denominator:\t%E\n",fDPhiStarKStarTotalDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "DPhiStarKStarAverageMergedPointsFraction Correlation Function Report:\n";
+  report += Form("Number of entries in merged numerator:\t%E\n",fDPhiStarKStarMergedNumerator->GetEntries());
+  report += Form("Number of entries in total numerator:\t%E\n",fDPhiStarKStarTotalNumerator->GetEntries());
+  report += Form("Number of entries in merged denominator:\t%E\n",fDPhiStarKStarMergedDenominator->GetEntries());
+  report += Form("Number of entries in total denominator:\t%E\n",fDPhiStarKStarTotalDenominator->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 
 //____________________________
-void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair(AliFemtoPair* pair)
+{
   // Add real (effect) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
@@ -220,8 +217,9 @@ void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddRealPair( AliF
 }
 
 //____________________________
-void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair( AliFemtoPair* pair){
-  // Add real (effect) pair
+void AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction::AddMixedPair(AliFemtoPair* pair)
+{
+  // Add mixed (background) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }

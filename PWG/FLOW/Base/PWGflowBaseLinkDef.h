@@ -32,6 +32,8 @@
 
 #pragma link C++ class AliFlowAnalysis+;
 #pragma link C++ class AliFlowAnalysisCRC+;
+#pragma link C++ class AliFlowAnalysisQvec+;
+#pragma link C++ class AliFlowAnalysisQvecEvent+;
 #pragma link C++ class AliFlowAnalysisWithMCEventPlane+;
 #pragma link C++ class AliFlowAnalysisWithScalarProduct+;
 #pragma link C++ class AliFlowAnalysisWithSimpleSP+;
@@ -44,5 +46,7 @@
 #pragma link C++ class AliFlowAnalysisWithNestedLoops+;
 #pragma link C++ class AliFlowOnTheFlyEventGenerator+;
 #pragma link C++ class AliFlowAnalysisWithMultiparticleCorrelations+;
+
+#pragma link C++ class AliAnalysisTaskZDCEP+;
 
 #endif

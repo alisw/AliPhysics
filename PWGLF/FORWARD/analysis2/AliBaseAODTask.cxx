@@ -13,6 +13,7 @@
 #include <TInterpreter.h>
 #include <TFile.h>
 #include <TH2.h>
+#include <TObjString.h>
 #include <iostream>
 
 //____________________________________________________________________

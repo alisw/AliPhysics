@@ -18,7 +18,9 @@
 
 class AliVTrack;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * \class AliEMCalTriggerExtraCuts
@@ -69,11 +71,11 @@ protected:
   Int_t                 fMinCrossedRowsTPC;             ///< Min. number of crossed rows in the TPC
   TBits                 fRequestBitmap;                 ///< Bitmap for cuts enabled
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerExtraCuts, 1);
-  /// \endcond CLASSIMP
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* PWGJE_EMCALJETTASKS_TRACKS_ALIEMCALTRIGGEREXTRACUTS_H_ */

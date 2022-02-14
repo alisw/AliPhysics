@@ -54,9 +54,11 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   void SetMinImpactXY(const float& minimpxy);
   void SetMaxImpactZ(const float& maximpz);
   void SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow);
+  void SetMaxImpactZPtDep(const float& maxoff, const float& maxnrm, const float& maxpow);
   void SetMostProbablePion();
   void SetMostProbableKaon();
   void SetMostProbableProton();
+  void SetMostProbableDeuteron();
   void SetLeastProbableProton();
   void SetNoMostProbable();
   void SetMostProbable(const int& num);
@@ -117,6 +119,10 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   float             fMaxImpactXYPtNrm;   // Max XY DCA Pt dependent normalization
   float             fMaxImpactXYPtPow;   // Max XY DCA Pt dependent power
 
+  float             fMaxImpactZPtOff;   // Max Z DCA Pt dependent offset
+  float             fMaxImpactZPtNrm;   // Max Z DCA Pt dependent normalization
+  float             fMaxImpactZPtPow;   // Max Z DCA Pt dependent power
+  
   float             fMinPforTOFpid;  // momentum from which TOF PID is requested
   float             fMaxPforTOFpid;  // momentum till which TOF PID is requested
   float             fMinPforTPCpid;  // momentum from which TPC PID is requested
@@ -153,6 +159,8 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   bool IsPionNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
   bool IsProtonNSigmaAccept(float mom, float nsigmaTPC, float nsigmaTOF, float TOFtime);
 
+  bool IsDeuteronTPCNSigma(float mom, float nsigmaTPC);
+
 
 
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
@@ -182,6 +190,7 @@ inline void AliFemtoMJTrackCut::SetminITScls(const int& minITScls){fminITScls=mi
 inline void AliFemtoMJTrackCut::SetMostProbablePion() { fMostProbable = 2; }
 inline void AliFemtoMJTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
 inline void AliFemtoMJTrackCut::SetMostProbableProton() { fMostProbable = 4; }
+inline void AliFemtoMJTrackCut::SetMostProbableDeuteron() { fMostProbable = 30; }
 inline void AliFemtoMJTrackCut::SetLeastProbableProton() { fMostProbable = 5; }
 inline void AliFemtoMJTrackCut::SetNoMostProbable() { fMostProbable = 0; }
 inline void AliFemtoMJTrackCut::SetMostProbable(const int& num) {  fMostProbable =  num; }
@@ -192,6 +201,7 @@ inline void AliFemtoMJTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImpa
 inline void AliFemtoMJTrackCut::SetMinImpactXY(const float& minimpxy) { fMinImpactXY = minimpxy; }
 inline void AliFemtoMJTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
 inline void AliFemtoMJTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
+inline void AliFemtoMJTrackCut::SetMaxImpactZPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactZPtOff = maxoff; fMaxImpactZPtNrm = maxnrm; fMaxImpactZPtPow = maxpow; }
 inline void AliFemtoMJTrackCut::SetElectronRejection(Bool_t setE) { fElectronRejection = setE; }
 
 #endif

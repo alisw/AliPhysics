@@ -11,11 +11,11 @@
 
 #include "AliRsnMiniEvent.h"
 #include "AliRsnCutSet.h"
-#include "AliRsnMiniAnalysisTask.h"
+#include "AliRsnMiniOutput.h"
 
 //class TList;
 class AliRsnMiniEvent;
-class AliRsnMiniAnalysisTask;
+//class AliRsnMiniAnalysisTask;
 //class AliRsnListOutput;
 //class AliRsnDaughterSelector;
 

@@ -26,11 +26,12 @@ public:
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),
+		fClusterTimeWide(0),
 		fClusterEvsT(0),
+		fClusterEvsTWide(0),
 		fClusterTimeMap(0),
 		fClusterIdN(),
 		fClusterIdE(),
-		fMassPtA(),
 		fAsymmetry(0),
 		fZvertex(0),
 		fNcellsE(0),
@@ -43,11 +44,12 @@ public:
 		fClusterNXZ(),
 		fClusterEXZ(),
 		fClusterTime(0),
+		fClusterTimeWide(0),
 		fClusterEvsT(0),
+		fClusterEvsTWide(0),
 		fClusterTimeMap(0),
 		fClusterIdN(),
 		fClusterIdE(),
-		fMassPtA(),
 		fAsymmetry(0),
 		fZvertex(0),
 		fNcellsE(0),
@@ -67,7 +69,9 @@ public:
 		}
 
 		if (fClusterTime)    delete fClusterTime;
+		if (fClusterTimeWide)    delete fClusterTime;
 		if (fClusterEvsT)    delete fClusterEvsT;
+		if (fClusterEvsT)    delete fClusterEvsTWide;
 		if (fClusterTimeMap) delete fClusterTimeMap;
 	}
 
@@ -87,12 +91,13 @@ private:
 	AliPP13DetectorHistogram * fClusterNXZ[2]; //!
 	AliPP13DetectorHistogram * fClusterEXZ[2]; //!
 	AliPP13DetectorHistogram * fClusterTime; //!
+	AliPP13DetectorHistogram * fClusterTimeWide; //!
 	AliPP13DetectorHistogram * fClusterEvsT; //!
+	AliPP13DetectorHistogram * fClusterEvsTWide; //!
 	AliPP13DetectorHistogram * fClusterTimeMap; //!
 	TH1F * fClusterIdN[2]; //!
 	TH1F * fClusterIdE[2]; //!
 
-	TH3F * fMassPtA[2]; //!
 	TH1F * fAsymmetry; //!
 	TH1F * fZvertex; //!
 	TH2F * fNcellsE; //!

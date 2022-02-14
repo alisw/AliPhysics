@@ -22,8 +22,8 @@
 //   Frederick Kramer <Frederick.Kramer@cern.ch>
 //   Julian Book <Julian.Book@cern.ch>
 
-
-
+#include <iostream>
+#include <vector>
 
 #include <TError.h>
 #include <TMath.h>
@@ -38,6 +38,7 @@
 #include <AliVParticle.h>
 #include <AliKFParticle.h>
 #include <AliESDtrackCuts.h>
+#include <AliESDtrack.h>
 #include <AliESDEvent.h>
 #include <AliMCEvent.h>
 #include <AliAODEvent.h>
@@ -195,6 +196,350 @@ Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange, Bool_
     }
   }
   return nCh;
+}
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocity(const AliVEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  //fPx fPy
+  AliVParticle *part=0x0;
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+  if(Ntracks < 10)
+    return -1;
+  Double_t stepSize=0.1;
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  Int_t steplimit = 360/stepSize;
+  for(Int_t i = 0; i < steplimit; ++i) {
+    //Divide the whole azimuth into segments and do the projection on these segments (below)
+    Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+    Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+    Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      part= ev->GetTrack(j);
+      Px = part->Px(); 
+      Py = part->Py();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityTracks(const AliVEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  //fPx fPy
+  AliVParticle *part=0x0;
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+
+  if(Ntracks < 10)
+    return -1;
+
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  //const Double_t pt = 1;
+  for(Int_t i = 0; i < Ntracks; i++) {
+
+    part = ev->GetTrack(i);
+    Px = part->Px(); 
+    Py = part->Py();
+    Double_t pt = part->Pt();
+    Double_t nx = Px / pt; // x component of a unitary vector n
+    Double_t ny = Py / pt; // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      part = ev->GetTrack(j);
+      Px = part->Px(); 
+      Py = part->Py();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += part->Pt();
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+    };
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+ 
+}
+
+//_____________________________________________________________________________
+Bool_t AliDielectronHelper::CheckESDtrack(AliESDtrack *track){
+
+  AliESDtrackCuts* TrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
+  TrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
+  TrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
+  TrackCutsTPCRefit->SetRequireITSRefit(kTRUE);
+  TrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
+
+  if(TrackCutsTPCRefit->AcceptTrack(track)) return kTRUE;
+  else return kFALSE;
+
+}
+
+
+//_____________________________________________________________________________
+std::vector<AliESDtrack*> AliDielectronHelper::GetESDtracks(const AliESDEvent *ev){
+
+  //GetNtracks
+  const Int_t Ntracks = ev->GetNumberOfTracks();
+
+  AliESDtrackCuts* TrackCutsTPCRefit = new AliESDtrackCuts("AliESDtrackCutsTPCRefit","AliESDtrackCutsTPCRefit");
+  TrackCutsTPCRefit = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //If not running, set to kFALSE;
+  TrackCutsTPCRefit->SetRequireTPCRefit(kTRUE);
+  TrackCutsTPCRefit->SetRequireITSRefit(kTRUE);
+  TrackCutsTPCRefit->SetEtaRange(-0.8,0.8);
+
+  AliESDtrack *track = 0x0;
+  std::vector<AliESDtrack *> tracks;
+  for(Int_t i=0; i<Ntracks; i++){
+
+    track = ev->GetTrack(i); 
+    if(TrackCutsTPCRefit->AcceptTrack(track)) tracks.push_back(track);
+  }
+
+  delete TrackCutsTPCRefit;
+  TrackCutsTPCRefit=0x0;
+  return tracks;
+
+}
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESD(const AliESDEvent *ev){ 
+
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<4)
+    return -1.;
+
+  //fPx fPy
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+  Double_t stepSize=0.1;
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  Int_t steplimit = 360/stepSize;
+  for(Int_t i = 0; i < steplimit; ++i) {
+    //Divide the whole azimuth into segments and do the projection on these segments (below)
+    Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+    Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+    Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      
+      track = tracks.at(j);
+      Px = track->Px(); 
+      Py = track->Py();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESDtracks(const AliESDEvent *ev){
+
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<10)
+    return -1.;
+
+  //fPx fPy
+  Double_t Px=-99.;
+  Double_t Py=-99.;
+
+  Double_t RetTransverseSpherocity = 1000.;
+  Double_t sumpt = 0;
+  Int_t firstTrack = 0;
+  //const Double_t pt = 1;
+  for(Int_t i = 0; i < Ntracks; i++) {
+
+    track = tracks.at(i);
+    Px = track->Px();
+    Py = track->Py();
+    Double_t pt = track->Pt();
+    Double_t nx = Px / pt; // x component of a unitary vector n
+    Double_t ny = Py / pt; // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      track = tracks.at(j);
+      Px = track->Px();
+      Py = track->Py();
+      //Px = TMath::Cos(part->Phi());
+      //Py = TMath::Sin(part->Phi());
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+    };
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+  if(RetTransverseSpherocity < 0.) return -1.1;
+  if(RetTransverseSpherocity > 1.) return -0.9;
+  return RetTransverseSpherocity;
+
+}
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESDwoPtWeight(const AliESDEvent *ev){
+
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<4)
+    return -1.;
+
+  //fPx fPy
+  Double_t Px=-99;
+  Double_t Py=-99;
+
+  Double_t stepSize=0.1;
+  Double_t RetTransverseSpherocity = 1000;
+  Double_t sumpt = 0;
+  Int_t steplimit = 360/stepSize;
+  for(Int_t i = 0; i < steplimit; ++i) {
+    //Divide the whole azimuth into segments and do the projection on these segments (below)
+    Double_t phiparam = ((TMath::Pi()) * i * stepSize) / 180;
+    Double_t nx = TMath::Cos(phiparam); // x component of a unitary vector n
+    Double_t ny = TMath::Sin(phiparam); // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      
+      track = tracks.at(j);
+      Px = track->Px() / track->Pt(); 
+      Py = track->Py() / track->Pt();
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt(Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+  };
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+
+  return RetTransverseSpherocity;
+}
+
+
+
+//_____________________________________________________________________________
+Double_t AliDielectronHelper::GetTransverseSpherocityESDtracksWoPtWeight(const AliESDEvent *ev){
+
+  std::vector<AliESDtrack *> tracks;
+  AliESDtrack *track = 0x0;
+  tracks = GetESDtracks(ev);
+
+  const int Ntracks = tracks.size();
+  if(Ntracks<10)
+    return -1.;
+
+  //fPx fPy
+  Double_t Px=-99.;
+  Double_t Py=-99.;
+
+  Double_t RetTransverseSpherocity = 1000.;
+  Double_t sumpt = 0;
+  Int_t firstTrack = 0;
+  //const Double_t pt = 1;
+  for(Int_t i = 0; i < Ntracks; i++) {
+
+    track = tracks.at(i);
+    Px = track->Px();
+    Py = track->Py();
+    Double_t pt = track->Pt();
+    Double_t nx = Px / pt; // x component of a unitary vector n
+    Double_t ny = Py / pt; // y component of a unitary vector n
+
+    Double_t num = 0;
+    for(Int_t j = 0; j < Ntracks; j++) {
+      track = tracks.at(j);
+      Px = track->Px() / track->Pt();
+      Py = track->Py() / track->Pt();
+      //Px = TMath::Cos(part->Phi());
+      //Py = TMath::Sin(part->Phi());
+      num += TMath::Abs(ny*Px - nx*Py);
+
+      if(i==0)
+        sumpt += TMath::Sqrt( Px*Px + Py*Py);
+    }
+
+    Double_t pFull = TMath::Power((num/sumpt), 2); //Projection of sp. on the segment
+    if(pFull < RetTransverseSpherocity)  { //Select the lowest projection
+      RetTransverseSpherocity = pFull;
+    };
+  };
+
+
+  RetTransverseSpherocity *= TMath::Pi()*TMath::Pi()/4.0;
+  if(RetTransverseSpherocity < 0.) return -1.1;
+  if(RetTransverseSpherocity > 1.) return -0.9;
+
+  return RetTransverseSpherocity;
+
 }
 
 
@@ -556,14 +901,14 @@ Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, 
 
       // Daughters
       if(mcPar->GetNDaughters() != 2) continue;
-      if(mcPar->GetFirstDaughter() >= nParticles || mcPar->GetFirstDaughter() < 0) continue;
-      AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+      if(mcPar->GetDaughterFirst() >= nParticles || mcPar->GetDaughterFirst() < 0) continue;
+      AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterFirst());
       if(!mcParDau1) continue;
       if(TMath::Abs(mcParDau1->GetPdgCode()) != pdgDaughter) continue;
       if(TMath::Abs(mcParDau1->Eta()) > TMath::Abs(etaRange)) continue;
 
-      if(mcPar->GetLastDaughter() >= nParticles || mcPar->GetLastDaughter() < 0) continue;
-      AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+      if(mcPar->GetDaughterLast() >= nParticles || mcPar->GetDaughterLast() < 0) continue;
+      AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterLast());
       if(!mcParDau2) continue;
       if(TMath::Abs(mcParDau2->GetPdgCode()) != pdgDaughter) continue;
       if(TMath::Abs(mcParDau2->Eta()) > TMath::Abs(etaRange)) continue;
@@ -677,17 +1022,17 @@ void AliDielectronHelper::CountMCtracks(const AliMCEvent *ev, Double_t numbers[1
 
     // Daughters
     if(mcPar->GetNDaughters() != 2) continue;
-    if(mcPar->GetFirstDaughter() >= nParticles || mcPar->GetFirstDaughter() < 0) continue;
+    if(mcPar->GetDaughterFirst() >= nParticles || mcPar->GetDaughterFirst() < 0) continue;
 
-    AliVParticle *mcParDau1 = (AliVParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
-    // AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+    AliVParticle *mcParDau1 = (AliVParticle*) ev->GetTrack(mcPar->GetDaughterFirst());
+    // AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterFirst());
     if(!mcParDau1) continue;
     if(TMath::Abs(mcParDau1->PdgCode()) != pdgDaughter) continue;
     // if(TMath::Abs(mcParDau1->GetPdgCode()) != pdgDaughter) continue;
 
-    if(mcPar->GetLastDaughter() >= nParticles || mcPar->GetLastDaughter() < 0) continue;
-    AliVParticle *mcParDau2 = (AliVParticle*) ev->GetTrack(mcPar->GetLastDaughter());
-    // AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+    if(mcPar->GetDaughterLast() >= nParticles || mcPar->GetDaughterLast() < 0) continue;
+    AliVParticle *mcParDau2 = (AliVParticle*) ev->GetTrack(mcPar->GetDaughterLast());
+    // AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetDaughterLast());
     if(!mcParDau2) continue;
     if(TMath::Abs(mcParDau2->PdgCode()) != pdgDaughter) continue;
     // if(TMath::Abs(mcParDau2->GetPdgCode()) != pdgDaughter) continue;

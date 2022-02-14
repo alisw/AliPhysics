@@ -167,7 +167,7 @@ private:
     Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
     Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
     
-    ClassDef(AliXiStarpp13TeV, 1); 
+    ClassDef(AliXiStarpp13TeV, 2); 
 };
 
 #endif

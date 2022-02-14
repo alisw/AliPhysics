@@ -9,6 +9,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalLight+;
 #pragma link C++ class AliAnalysisTaskEmcal+;
 #pragma link C++ class AliAnalysisTaskEmcalEmbeddingHelper+;
+#pragma link C++ class AliAnalysisTaskEmcalEmbeddingHelperData+;
 #pragma link C++ class AliEmcalEmbeddingQA+;
 #pragma link C++ class AliClusterContainer+;
 #pragma link C++ class AliEmcalContainer+;
@@ -47,8 +48,9 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;
+#pragma link C++ class PWG::EMCAL::AliEmcalMCPartonInfo+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelResultPtr+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelectionAOD+;
-
+#pragma link C++ class std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr>+;
 #endif

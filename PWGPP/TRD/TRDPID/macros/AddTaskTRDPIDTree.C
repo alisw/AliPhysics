@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0, Bool_t UseExtraPileupCut=kFALSE){
+AliAnalysisTask *AddTaskTRDPIDTree(Int_t trigger=0, Int_t system=0, Int_t UseExtraPileupCut=0){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

@@ -77,8 +77,15 @@ const std::map <std::string, AliVEvent::EOfflineTriggerTypes> AliEmcalContainerU
 UInt_t AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(const std::vector<std::string> & selections)
 {
   UInt_t physicsSelection = 0;
-  for (auto sel : selections) {
-    physicsSelection |= fgkPhysicsSelectionMap.at(sel);
+  for (auto selection : selections) {
+    auto sel = fgkPhysicsSelectionMap.find(selection);
+    AliDebugGeneralStream("AliEmcalContainerUtils", 3) << "Adding physics selection: " << selection << "\n";
+    if (sel != fgkPhysicsSelectionMap.end()) {
+      physicsSelection |= sel->second;
+    }
+    else {
+      AliFatalGeneralF("AliEmcalContainerUtils", "Could not find physics selection with key \"%s\"", selection.c_str());
+    }
   }
   return physicsSelection;
 }

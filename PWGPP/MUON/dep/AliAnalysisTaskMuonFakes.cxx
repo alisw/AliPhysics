@@ -16,6 +16,7 @@
 /* $Id$ */
 
 // ROOT includes
+#include <TObjString.h>
 #include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TH1F.h>

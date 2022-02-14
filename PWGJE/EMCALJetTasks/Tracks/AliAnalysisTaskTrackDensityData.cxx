@@ -15,7 +15,9 @@
 
 #include "AliAnalysisTaskTrackDensityData.h"
 
-namespace EMCalTriggerPtAnalysis {
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensityData)
+
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskTrackDensityData::AliAnalysisTaskTrackDensityData() :
     AliAnalysisTaskEmcalJet(),
@@ -204,6 +206,3 @@ void AliAnalysisTaskTrackDensityData::FindJetPtBin(const AliEmcalJet *const jet,
     }
   }
 }
-
-
-} /* namespace EMCalTriggerPtAnalysis */

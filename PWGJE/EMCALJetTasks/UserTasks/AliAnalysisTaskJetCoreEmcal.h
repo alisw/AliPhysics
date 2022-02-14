@@ -38,8 +38,6 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void     SetTTUpSig(Float_t ttups){fTTUpSig=ttups;}
 	virtual void		 SetNRPBins(Float_t nrpb){fNRPBins=nrpb;}
 	virtual void		 SetSignalFraction(Float_t sfrac){fFrac=sfrac;}
-	virtual void     SetJetEtaMin(Float_t eta){fJetEtaMin=eta;}
-	virtual void     SetJetEtaMax(Float_t eta){fJetEtaMax=eta;}
 	virtual void     SetJetHadronDeltaPhi(Float_t delta){fJetHadronDeltaPhi=delta;}
 	virtual void     SetMinFractionSharedPt(Float_t min){fMinFractionSharedPt=min;}
 	virtual void     SetMinEmbJetPt(Float_t min){fMinEmbJetPt=min;}
@@ -51,20 +49,32 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetFillRecoilTHnSparse(Bool_t b){fFillRecoilTHnSparse=b;}
 	virtual void		 SetFillInclusiveTree(Bool_t b){fFillInclusiveTree=b;}
 	virtual void		 SetFillRecoilTree(Bool_t b){fFillRecoilTree=b;}
+	virtual void		 SetFillResponseInclusiveTHnSparse(Bool_t b){fFillResponseInclusiveTHnSparse=b;}
+	virtual void		 SetFillResponseRecoilTHnSparse(Bool_t b){fFillResponseRecoilTHnSparse=b;}
+	virtual void		 SetFillDataTree(Bool_t b){fFillDataTree=b;}
 	virtual void		 SetPtHardBin(Int_t bin){fPtHardBin=bin;}
 	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
+	virtual void		 SetRejectionFactorRecoilJets(Int_t f){fRejectionFactorRecoilJets=f;}
+	virtual void     SetMoreTreeVars(Bool_t more){fMoreTreeVars=more;} 
+	virtual void     SetDoDeltaPtInclusive(Bool_t b){fDoDeltaPtInclusive=b;} 
+	virtual void     SetDoDeltaPtRecoil(Bool_t b){fDoDeltaPtRecoil=b;} 
 
-//  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
-//      const char *ntracks            = "usedefault",
-//      const char *nclusters          = "usedefault",
-//      const char* ncells             = "usedefault",
+	virtual void     SetRhoShiftSignal(Double_t shift){fRhoShiftSignal=shift;} 
+	virtual void     SetRhoShiftReference(Double_t shift){fRhoShiftReference=shift;} 
+
+
+//  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal( //      const char *ntracks            = "usedefault", //      const char *nclusters          = "usedefault", //      const char* ncells             = "usedefault",
 //      const char *suffix             = "");
 
   enum JetShapeType {
     kMCTrue = 0,   // generated jets only
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
-    kDetEmbPart = 3,
+    kDetEmbPart = 3, // embedding
+    kDetEmbPartCorr = 4, // embedding, do embedded h+jet correlation
+    kDetPart = 5, // pp response
+    kDetEmbDet = 6, // pp data embedding
+    kMCKine = 7 // generator level for kine trains
 //    kDetEmb = 3,  //detector embedded jets
 //    kPythiaDef = 5,
 //    kDetEmbPartPythia=6,
@@ -93,6 +103,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Int_t												SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
 	Double_t										RelativePhi(Double_t mphi,Double_t vphi);
 	Int_t												GetPhiBin(Double_t phi);
+  void                        GetRandomCone(Int_t &nconst, Float_t &pt, Float_t &eta, Float_t &phi, Float_t R, AliEmcalJet *jet, AliVParticle *tt);
 
   THistManager                fHistManager;///< Histogram manager
 
@@ -107,8 +118,6 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fTTUpSig; ///< maximum signal trigger track pt
 	Int_t fNRPBins;	 ///< 
 	Float_t fFrac; ///< fraction of events that are used to fill signal recoil jet population
-	Float_t fJetEtaMin; ///<  minimum jet eta
-	Float_t fJetEtaMax; ///< maximum jet eta
 	Float_t fJetHadronDeltaPhi; ///< max angle from pi (set <0 for no selection)
 	Float_t fMinFractionSharedPt; ///< min fraction of pt between hybrid / detector jets
 	Float_t fMinEmbJetPt; ///< min corrected jet pt to use in embedding
@@ -120,26 +129,52 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Bool_t fFillRecoilTHnSparse; ///< switch to fill recoil THnSparse for main analysis
 	Bool_t fFillInclusiveTree; ///< switch to fill embedding tree with inclusive jet info
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
+	Bool_t fFillResponseInclusiveTHnSparse; ///< switch to fill embedding THnSparse with inclusive jet info
+	Bool_t fFillResponseRecoilTHnSparse; ///< switch to fill embedding THnSparse with recoil jet info
+	Bool_t fFillDataTree; ///< switch to fill data tree
+	Bool_t fMoreTreeVars; ///< add more variables to the output tree
+	Bool_t fDoDeltaPtInclusive; ///< calculate delta pT for inclusive jets
+	Bool_t fDoDeltaPtRecoil; ///< calculate delta pT for recoil jets 
+  Double_t fRhoShiftSignal; ///< shift rho in signal events by this much
+  Double_t fRhoShiftReference; ///< shift rho in reference events by this much
 	Int_t fPtHardBin; ///< pt hard bin if running embedding
 	Int_t fRejectionFactorInclusiveJets; ///< factor to reject inclusive jets, to reduce size of ttree
+	Int_t fRejectionFactorRecoilJets; ///< factor to reject inclusive jets, to reduce size of ttree
 	//
 	TRandom3 *fRandom; ///<
-	Float_t fTreeVarsInclusive[8]; ///<
-	Float_t fTreeVarsRecoil[11]; ///<
+	Float_t fTreeVarsInclusive[9]; ///<
+	Float_t fTreeVarsInclusiveMoreVars[13]; ///<
+	Float_t fTreeVarsRecoil[8]; ///<
+	Float_t fTreeVarsRecoilMoreVars[14]; ///<
+	Float_t fTreeVarsData[6]; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	// recoil jet info contained in THnSparse
 	THnSparse *fHJetSpec;  //!<!
+	THnSparse *fHJetResponseInclusive;  //!<!
+	THnSparse *fHJetResponseRecoil;  //!<!
 	// recoil histograms
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
 	TH2F *fh2Ntriggers; //!<!
-	TH2F *fh2RPJetsC10; //!<!
-	TH2F *fh2RPJetsC20; //!<!
-	TH2F *fh2RPTC10; //!<!
-	TH2F *fh2RPTC20; //!<!
+	TH2F *fhRhoCentSig; //!<!
+	TH2F *fhRhoCentRef; //!<!
+	TH3F *fhRhoCentPtTTSig; //!<!
+	TH3F *fhRhoCentPtTTRef; //!<!
+	TH2F *fhDphiPtSigPi; //!<!
 	TH2F *fhDphiPtSig; //!<!
+	TH2F *fhDphiPtRefPi; //!<!
+	TH3F *fhDphiPtShiftRefPi; //!<!
 	TH2F *fhDphiPtRef; //!<!
+  TH1F *fhDeltaPtRCinclusive; //!<!
+  TH2F *fhDeltaPtJetPtRCinclusive; //!<!
+  TH2F *fhDeltaPtaRhoRCinclusive; //!<!
+  TH2F *fhDeltaPtCentralityRCinclusive; //!<!
+  TH2F *fhRCPtCentralityinclusive; //!<!
+  TH1F *fhDeltaPtRCrecoil; //!<!
+  TH2F *fhDeltaPtJetPtRCrecoil; //!<!
+  TH2F *fhDeltaPtaRhoRCrecoil; //!<!
+  TH2F *fhDeltaPtCentralityRCrecoil; //!<!
 	// embedding histograms
 	// inclusive jets
 	TH2F *fhPtDetPart; //!<!
@@ -149,6 +184,9 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fhPhiHybrPartCor; //!<!
 	TH1F *fhPtDet; //!<!
 	TH1F *fhPtDetMatchedToPart; //!<!
+	TH1F *fhPtPartMatched; //!<!
+	TH2F *fhPtPartMatchedCent; //!<!
+	TH2F *fhPtPartMatchedWrongCent; //!<!
 	TH1F *fhResidual; //!<!
 	TH2F *fhPtResidual; //!<!
 	TH1F *fhPhiResidual; //!<!
@@ -168,16 +206,20 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fhTTPtDetMatchedToPart; //!<!
 	TH2F *fhTTPhiDetMatchedToPart; //!<!
 	TH2F *fhDPhiHybrPartCorRecoil; //!<!
+	TH2F *fhSelectedTrigger; //!<!
+	TH2F *fhFractionSharedPtInclusive; //!<!
+	TH2F *fhFractionSharedPtRecoil; //!<!
 	// embedding trees
 	TTree *fTreeEmbInclusive; //!<!
 	TTree *fTreeEmbRecoil; //!<!
+	TTree *fTreeData; //!<!
 
  private:
   AliAnalysisTaskJetCoreEmcal(const AliAnalysisTaskJetCoreEmcal&)           ; // not implemented
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 7);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 17);
   /// \endcond
 };
 #endif

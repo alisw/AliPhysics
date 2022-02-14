@@ -1,0 +1,88 @@
+pass: pass4
+inputObjects:
+    cells:
+        cells:
+            branchName: "usedefault"
+        cells_embed:
+            branchName: "usedefault"
+            embedding: true
+        cells_combined:
+            branchName: "emcalCellsCombined"
+    clusterContainers:
+        # Used for the clusterizer
+        baseClusterContainer:
+            branchName: "caloClustersCombined"
+        # Used after clusterizer
+        baseClusterContainer_1:
+            minE: 0.0
+            minPt: 0.0
+        # Used for cluster-track matcher and after
+        baseClusterContainer_2:
+            branchName: "caloClustersCombined"
+            minE: 0.0
+            minPt: 0.0
+            clusNonLinCorrEnergyCut: 0.15
+    trackContainers:
+        trackContainerName:
+            # Sets the branch name
+            branchName: "usedefault"
+            minPt: 0.15
+        trackContainerName_embed:
+            embedding: true
+CellEnergy_data:
+    enabled: true
+    cellsNames:
+        - cells
+CellBadChannel_data:
+    enabled: true
+    cellsNames:
+        - cells
+CellBadChannel_embed:
+    enabled: true
+    cellsNames:
+        - cells_embed
+CellTimeCalib_data:
+    enabled: true
+    cellsNames:
+        - cells
+CellCombineCollections_combined:
+    enabled: true
+    # Name of the cells branch in the embedded (external) event.
+    externalCellsBranchName: "usedefault"
+    # Name of the cells branch to be created for the combined cells in the input event.
+    combinedCellsBranchName: "emcalCellsCombined"
+    # Name of the cells to connect from the input event
+    cellsNames:
+        - cells
+Clusterizer_combined:
+    enabled: true
+    cellsNames:
+        - cells_combined
+    # By selecting the cluster container here, we set where it will be output
+    clusterContainersNames:
+        - baseClusterContainer
+    createHistos: true
+    clusterizer: kClusterizerv2
+    recalDistToBadChannels: true
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -1
+    cellTimeMax: +1
+    clusterTimeLength: 1
+    w0: 4.5
+ClusterExotics_combined:
+    enabled: true
+    cellsNames:
+        - cells_combined
+    clusterContainersNames:
+        - baseClusterContainer_1
+ClusterTrackMatcher_combined:
+    enabled: true
+    cellsNames:
+        - cells_combined
+    clusterContainersNames:
+        - baseClusterContainer_2
+    trackContainersNames:
+        - trackContainerName
+        - trackContainerName_embed
+    createHistos: true

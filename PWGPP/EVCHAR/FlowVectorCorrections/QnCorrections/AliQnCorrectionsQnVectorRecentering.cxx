@@ -31,6 +31,7 @@
 
 /// \file AliQnCorrectionsQnVectorRecentering.cxx
 /// \brief Implementation of procedures for Qn vector recentering.
+#include <TObjString.h>
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileComponents.h"
 #include "AliQnCorrectionsHistogramSparse.h"

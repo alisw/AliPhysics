@@ -11,7 +11,7 @@
 #include "Riostream.h"
 #include "TObjArray.h"
 #include "TSystem.h"
-
+#include <TObjString.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMuonOCDBSnapshotGenerator)

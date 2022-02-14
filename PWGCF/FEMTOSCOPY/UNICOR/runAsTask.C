@@ -44,7 +44,7 @@ void runAsTask(int grid=0) {
 TChain* CreateChainFromTags(const char *xmlfile, const char *type="ESD")
 {
   // Create a chain using tags from the xml file.
-  TAlienCollection* coll = TAlienCollection::Open(xmlfile);
+  TGridCollection* coll = gGrid->OpenCollection(xmlfile);
   if (!coll) {
     ::Error("CreateChainFromTags", "Cannot create an AliEn collection from %s", xmlfile);
     return NULL;

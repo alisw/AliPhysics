@@ -45,6 +45,7 @@
 #include "AliMCParticle.h"
 #include "TCanvas.h"
 #include <TRandom3.h>
+#include <TObjString.h>
 #include <sstream>
 #include <memory>
 #include<iostream>

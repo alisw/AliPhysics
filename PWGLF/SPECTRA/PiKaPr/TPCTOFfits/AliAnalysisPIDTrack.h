@@ -64,6 +64,8 @@ public TObject
   Int_t GetMCMotherPdgCode() const {return fMCMotherPdgCode;}; // get MC mother PDG code
   Int_t GetMCMotherPrimary() const {return fMCMotherPrimary;}; // get MC mother primary
   Int_t GetMCMotherLabel() const {return fMCMotherLabel; }; //get MC mother label
+  Int_t GetMCPrimaryPdgCode() const {return fMCPrimaryPdgCode;}; // get MC PDG code of primary (grand)mother
+  Int_t GetMCPrimaryLabel() const {return fMCPrimaryLabel; }; //get MC label of primary (grand)mother
   Bool_t IsMCTOFMatchPrimary() const {return fMCTOFMatchPrimary;};
   Int_t GetMCTOFMatchPdgCode() const {return fMCTOFMatchPdgCode;};
   Int_t GetMCTOFMatchLevel() const {return fMCTOFMatchLevel;};
@@ -117,9 +119,13 @@ public TObject
   Float_t GetNSigmaPionTPC() {return nSigmaPionTPC;};
   Float_t GetNSigmaKaonTPC() {return nSigmaKaonTPC;};
   Float_t GetNSigmaProtonTPC() {return nSigmaProtonTPC;};
+  Float_t GetNSigmaElectronTPC() {return nSigmaElectronTPC;};
+  Float_t GetNSigmaMuonTPC() {return nSigmaMuonTPC;};
   Float_t GetNSigmaPionTOF() {return nSigmaPionTOF;};
   Float_t GetNSigmaKaonTOF() {return nSigmaKaonTOF;};
   Float_t GetNSigmaProtonTOF() {return nSigmaProtonTOF;};
+  Float_t GetNSigmaElectronTOF() {return nSigmaElectronTOF;};
+  Float_t GetNSigmaMuonTOF() {return nSigmaMuonTOF;};
   Int_t GetTrackCutFlag() {return fTrackCutFlag; };
   Bool_t HasEMCal() { return fHasEMCal; };
   Float_t GetEMCalE() { return fEMCalE; };
@@ -155,6 +161,9 @@ public TObject
   static void SetRejectITSFakes(Bool_t value) {fgRejectITSFakes = value;}; // setter
   static void SetMatchTrackDeltaX(Float_t value) {fgMatchTrackDeltaX = value;}; // setter
   static void SetMatchTrackDeltaZ(Float_t value) {fgMatchTrackDeltaZ = value;}; // setter
+  static AliTPCPIDResponse *fgTPCResponse;
+  static AliTOFPIDResponse *fgTOFResponse;
+
 
  private:
 
@@ -166,7 +175,7 @@ public TObject
   Double_t fSign; // sign
   ULong64_t fStatus; // status
   Int_t fLabel; // label
-  Float_t fImpactParameter[2]; // impact parameters 
+  Float_t fImpactParameter[2]; // impact parameters
   //Float_t fImpactParameterCov[3]; // impact parameters covariance
   /*** TPC PID info ***/
   Float_t fTPCmomentum; // TPC inner wall momentum
@@ -189,23 +198,29 @@ public TObject
   Int_t fMCPdgCode; // MC PDG code
   Bool_t fMCMotherPrimary; // MC mother primary flag
   Int_t fMCMotherPdgCode; // MC mother PDG code
-  Int_t fMCMotherLabel; //MC mother label
+  Int_t fMCMotherLabel; // MC mother label
+  Int_t fMCPrimaryPdgCode; // MC PDG code of primary (grand)mother
+  Int_t fMCPrimaryLabel; // MC label of primary (grand)mother
   Bool_t fMCTOFMatchPrimary; // MC TOF match primary flag
   Int_t fMCTOFMatchPdgCode; // MC TOF match PDG code
   Short_t fMCTOFMatchLevel; // MC TOF match level
   Float_t fMCTOFTime; // MC TOF time
   Float_t fMCTOFLength; // MC TOF length
-  Bool_t fMCSecondaryWeak; 
-  Bool_t fMCSecondaryMaterial; 
+  Bool_t fMCSecondaryWeak;
+  Bool_t fMCSecondaryMaterial;
   /*** HMPID PID info ***/
   //Float_t fHMPIDmomentum;
   //Float_t fHMPIDsignal;
   Float_t nSigmaPionTPC;
   Float_t nSigmaKaonTPC;
   Float_t nSigmaProtonTPC;
+  Float_t nSigmaElectronTPC;
+  Float_t nSigmaMuonTPC;
   Float_t nSigmaPionTOF;
   Float_t nSigmaKaonTOF;
   Float_t nSigmaProtonTOF;
+  Float_t nSigmaElectronTOF;
+  Float_t nSigmaMuonTOF;
   /*** extras ***/
   Float_t fTPCchi2; // TPC chi2
   Bool_t fITSFakeFlag; // ITS fake flag
@@ -234,13 +249,11 @@ public TObject
   //static AliTOFGeometry fgTOFGeometry;
   //  static AliTOFcalibHisto fgTOFcalibHisto;
   //  static Bool_t fgTOFcalibHistoFlag;
-  static AliTPCPIDResponse *fgTPCResponse;
-  static AliTOFPIDResponse *fgTOFResponse;
   static TH2F *hTOFtuned_th[AliPID::kSPECIES];
 
   Float_t fTimeZeroSigma; //!
 
-  ClassDef(AliAnalysisPIDTrack, 5);
+  ClassDef(AliAnalysisPIDTrack, 6);
 };
 
 #endif /* ALIANALYSISPIDTRACK_H */

@@ -21,6 +21,7 @@ class AliFemtoDreamCascadeCuts {
   AliFemtoDreamCascadeCuts &operator=(const AliFemtoDreamCascadeCuts& cuts);
   virtual ~AliFemtoDreamCascadeCuts();
   static AliFemtoDreamCascadeCuts *XiCuts(bool isMC, bool contribSplitting);
+  static AliFemtoDreamCascadeCuts *OmegaCuts(bool isMC, bool contribSplitting);
   void SetMinimalBooking(bool doIt) {
     fMinimalBooking = doIt;
   }
@@ -58,10 +59,11 @@ class AliFemtoDreamCascadeCuts {
     fMinRunNumber = iMinRun;
     fMaxRunNumber = iMaxRun;
   }
-  void SetXiMassRange(float mass, float width) {
+  void SetXiMassRange(float mass, float width, float widthExcl = -1.) {
     fcutXiMass = true;
     fXiMass = mass;
     fXiMassWidth = width;
+    fXiMassWidthExcl = widthExcl;
   }
   ;
   void SetXiCharge(int charge) {
@@ -119,6 +121,11 @@ class AliFemtoDreamCascadeCuts {
     fRejOmega = true;
     fRejOmegaMass = mass;
     fRejOmegaWidth = width;
+  }
+  void SetRejectXis(float mass, float width) {
+    fRejXi = true;
+    fRejXiMass = mass;
+    fRejXiWidth = width;
   }
   void SetPtRangeXi(float PtMin, float PtMax) {
     fPtMin = PtMin;
@@ -226,6 +233,7 @@ class AliFemtoDreamCascadeCuts {
   bool fcutXiMass;    //
   float fXiMass;    //
   float fXiMassWidth;  //
+  float fXiMassWidthExcl;  //
   bool fcutXiCharge;  //
   int fXiCharge;  //
   bool fcutDCAXiDaug;  //
@@ -254,6 +262,9 @@ class AliFemtoDreamCascadeCuts {
   bool fRejOmega;               //
   float fRejOmegaMass;          //
   float fRejOmegaWidth;         //
+  bool fRejXi;               //
+  float fRejXiMass;          //
+  float fRejXiWidth;         //
   int fPDGCasc;                 //
   int fPDGv0;                   //
   int fPDGPosDaug;              //

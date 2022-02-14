@@ -28,51 +28,111 @@
 #define __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
+#include "AliVCluster.h"
 #include <vector>
+#include <TArrayD.h>
 
 class THistManager;
+class AliEventCuts;
+class AliFJWrapper; 
+class TRandom3;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
 
-class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
+namespace EMCALJetTasks {
+
+class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
-  enum TriggerCluster_t {
-    kTrgClusterANY,
-    kTrgClusterCENT,
-    kTrgClusterCENTNOTRD,
-    kTrgClusterCALO,
-    kTrgClusterCALOFAST,
-    kTrgClusterCENTBOTH,
-    kTrgClusterOnlyCENT,
-    kTrgClusterOnlyCENTNOTRD,
-    kTrgClusterCALOBOTH,
-    kTrgClusterOnlyCALO,
-    kTrgClusterOnlyCALOFAST,
-    kTrgClusterN
+  enum EJetTypeOutliers_t {
+    kOutlierPartJet,
+    kOutlierDetJet
   };
+  enum EWeightType_t {
+    kCrossSectionWeightType,
+    kEventWeightType,
+    kNoWeightType 
+  };
+  enum EnergyDefinition_t {
+    kDefaultEnergy,       ///< Uncorrected energy measurement
+    kNonLinCorrEnergy,    ///< Energy corrected for non-linearity
+    kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
+  };
+
   AliAnalysisTaskEmcalJetEnergySpectrum();
-  AliAnalysisTaskEmcalJetEnergySpectrum(const char *name);
+  AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
 
+  AliJetContainer *GetDetJetContainer() const { return GetJetContainer(fNameJetContainer); }
+  const TString &GetNameDetJetContainer() const { return fNameJetContainer; }
+
   void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetNameJetContainer(const char *name) { fNameJetContainer = name; }
-  void SetNameTriggerDecisionContainer(const char *name) { fNameTriggerDecisionContainer = name; }
-  void SetTriggerSelection(UInt_t triggerbits, const char *triggerstring) { 
+  void SetNameJetContainer(EMCAL_STRINGVIEW name) { fNameJetContainer = name; }
+  void SetNameTriggerDecisionContainer(EMCAL_STRINGVIEW name) { fNameTriggerDecisionContainer = name; }
+  void SetTriggerSelection(UInt_t triggerbits, EMCAL_STRINGVIEW triggerstring) { 
     fTriggerSelectionBits = triggerbits;
     fTriggerSelectionString = triggerstring;
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
+  void SetUseSumw2(Bool_t doUse) { fUseSumw2 = doUse; }
+  void SetRangeRun1(Bool_t doUse) { fUseRun1Range = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
+  void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
+  void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
+  void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
+  void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
+  void SetFillHistosWeighted(EWeightType_t weighttype) { fFillHistosWeighted = weighttype; }
+  void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
+  void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
+  void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; } 
+  void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
+  void SetJetTypeOutlierCut(EJetTypeOutliers_t jtype) { fJetTypeOutliers = jtype; }
+  void SetEMCALClusterBias(double minE)            { fEMCALClusterBias = minE; }
+  void SetTimeRangeEMCALCusterBias(Double_t mintime, Double_t maxtime) { fMinTimeClusterBias = mintime; fMaxTimeClusterBias = maxtime; }
+  void SetMimicEJData(bool doMimic)                { fMimicEJData = doMimic; if(fMimicEJData) fUseTriggerSelectionForData = true; }
+  void SetMakeClusterHistos1D(bool doMake)         { fMakeClusterHistos1D = doMake; }
+  void SetEnergyDefinition(EnergyDefinition_t edef){ fEnergyDefinition = edef; }
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
+
+  void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
+  double GetDeltaPtRandomCone();
+  double GetDeltaPtEmbedding();
+
+  void ConfigureMCPtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
+  void ConfigureMCMinBias(MCProductionType_t mcprodtype);
+  void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
+
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(
+    Bool_t isMC, 
+    AliJetContainer::EJetType_t jettype, 
+    AliJetContainer::ERecoScheme_t recoscheme, 
+    AliVCluster::VCluUserDefEnergy_t energydef, 
+    double radius,
+    EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrumBkgSub(
+    Bool_t isMC, 
+    AliJetContainer::EJetType_t jettype, 
+    AliJetContainer::ERecoScheme_t recoscheme, 
+    AliVCluster::VCluUserDefEnergy_t energydef, 
+    double radius,
+    EMCAL_STRINGVIEW namepartcont, 
+    EMCAL_STRINGVIEW nRho, 
+    EMCAL_STRINGVIEW trigger, 
+    EMCAL_STRINGVIEW suffix = ""
+  );
+
 
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
   virtual bool IsTriggerSelected();
-  std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
-  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
+  virtual Bool_t CheckMCOutliers();
+  virtual void RunChanged(Int_t newrun);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
@@ -80,17 +140,41 @@ private:
 
   THistManager                  *fHistos;                       ///< Histogram manager
   Bool_t                        fIsMC;                          ///< Running on simulated events
+  Bool_t                        fFillHSparse;                   ///< Fill THnSparses with more information
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
   Bool_t                        fRequireSubsetMB;               ///< Require for triggers to be a subset of Min. Bias (for efficiency studies)
+  Bool_t                        fMimicEJData;                   ///< Mimic EJ trigger in data based on Min. bias data
   ULong_t                       fMinBiasTrigger;                ///< Min bias trigger for trigger subset (for efficiency studies)
   TString                       fNameTriggerDecisionContainer;  ///< Global trigger decision container
   Bool_t                        fUseTriggerSelectionForData;    ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
   Bool_t                        fUseDownscaleWeight;            ///< Use 1/downscale as weight
   TString                       fNameJetContainer;              ///< Name of the jet container 
+  Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
+  Bool_t                        fRequestCentrality;             ///< Request centrality
+  EWeightType_t                 fFillHistosWeighted;            ///< Fill histograms with cross section or event weight
+  Bool_t                        fUseRun1Range;                  ///< Use run1 run range for trending plots     
+  Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
+  Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
+  Bool_t                        fUseStandardOutlierRejection;   ///< Use standard outlier rejection
+  Bool_t                        fDoBkgSub;                      ///< Do background subtraction
+  AliFJWrapper                  *fFastJetWrapper;               ///< EMB_clus wrapper for fast jet finding
+  TRandom                       *fTrackGenerator;               ///< EMB_clus generator for track perpendicular to signal jet
+  EJetTypeOutliers_t            fJetTypeOutliers;               ///< Jet type used for outlier detection
+  Double_t                      fScaleShift;                    ///< Artificial jet energy scale shift
+  Double_t                      fEMCALClusterBias;              ///< Requirement of a min. cluster energy in EMCAL
+  Double_t                      fMinTimeClusterBias;            ///< Min. time cut for cluster bias
+  Double_t                      fMaxTimeClusterBias;            ///< Max. time cut for cluster bias
+  TString                       fCentralityEstimator;           ///< Centrality estimator
+  TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
+  Bool_t                        fMakeClusterHistos1D;           ///< Make 1D emcal cluster energy histogram
+  EnergyDefinition_t            fEnergyDefinition;              ///< Energy definition used for a given cluster
+
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };
+
+}
 
 }
 #endif

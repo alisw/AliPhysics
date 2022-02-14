@@ -93,6 +93,7 @@ public:
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
   void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
   void                        SetIsPtHard(Bool_t b)            {fIsPtHard = b; }
+  void                        SetMaxPtBin(Bool_t b)  { fMaxPt = b; }
   
 protected:
   

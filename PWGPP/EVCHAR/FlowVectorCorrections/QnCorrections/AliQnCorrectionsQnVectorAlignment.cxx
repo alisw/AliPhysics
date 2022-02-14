@@ -31,6 +31,7 @@
 
 /// \file AliQnCorrectionsQnVectorAlignment.cxx
 /// \brief Implementation of procedures for Qn vector alignment correction.
+#include <TObjString.h>
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileCorrelationComponents.h"
 #include "AliQnCorrectionsProfileComponents.h"

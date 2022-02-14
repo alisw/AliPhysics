@@ -20,17 +20,17 @@ class FitModule {
 public:
   FitModule(RooRealVar *xm, bool extended_likelihood=true)
   : mX(xm)
-  , mBkgCounts(new RooRealVar("N_{bkg}","Bkg counts",1000.,0.,1.e8))
-  , mSigCounts(new RooRealVar("N_{sig}","Sig counts",1000.,0.,1.e8))
+  , mBkgCounts(new RooRealVar("N_{bkg}","Bkg counts",1000.,0.,1.e10))
+  , mSigCounts(new RooRealVar("N_{sig}","Sig counts",1000.,0.,1.e10))
   , mFraction(new RooRealVar("f_{sig}","Signal fraction",0.5,0.,1.))
-  , mMu(new RooRealVar("#mu","Mu",-0.15,0.15))
-  , mSigma(new RooRealVar("#sigma","Sigma",0.02,.61))
+  , mMu(new RooRealVar("#mu","Mu",0.,-0.15,0.15))
+  , mSigma(new RooRealVar("#sigma","Sigma",0.2,0.02,.61))
     {
       mExtended = extended_likelihood;
       mNentries = 0.;
     }
 
-  virtual RooPlot* FitData(TH1* h, TString name, TString title, TString range = "", TString plotrange="", bool change_range = false, float low_x = -2., float high_x = 2.);
+  virtual RooPlot* FitData(TH1* h, TString name, TString title, TString range = "", TString plotrange="",bool isColored = false);
 
   static RooPlot* FitAndPlot(RooRealVar &x, RooAbsData &data, RooAbsPdf &model, RooAbsPdf &sig,
                              RooAbsPdf &bkg,TString range,TString plotrange) {
@@ -76,6 +76,15 @@ public:
 
   unique_ptr<RooRealVar> mTau0;
   unique_ptr<RooRealVar> mAlpha0;
+};
+
+class FitExpTailTailGaus : public FitModule {
+public:
+  FitExpTailTailGaus(RooRealVar *xm, bool extended_likelihood=true);
+
+  unique_ptr<RooRealVar> mTau0;
+  unique_ptr<RooRealVar> mAlpha0;
+  unique_ptr<RooRealVar> mAlpha1;
 };
 
 class FitExpGaus : public FitModule {
@@ -166,11 +175,21 @@ public:
   FitGausExpTailGaus(RooRealVar *xm, bool extended_likelihood=true);
 
   unique_ptr<RooGaussian> mBkg0;
+  unique_ptr<RooExponential> mBkg1;
   unique_ptr<RooRealVar> mMuBkg;
   unique_ptr<RooRealVar> mSigmaBkg;
-  unique_ptr<RooExponential> mBkg1;
-  unique_ptr<RooRealVar> mTau1;
+  unique_ptr<RooRealVar> mTau0;
   unique_ptr<RooRealVar> mKbkg;
+  unique_ptr<RooRealVar> mAlpha0;
+};
+
+class FitTailGausTailGaus : public FitModule {
+public:
+  FitTailGausTailGaus(RooRealVar *xm, bool extended_likelihood=true);
+
+  unique_ptr<RooRealVar> mMuBkg;
+  unique_ptr<RooRealVar> mSigmaBkg;
+  unique_ptr<RooRealVar> mAlpha0Bkg;
   unique_ptr<RooRealVar> mAlpha0;
 };
 

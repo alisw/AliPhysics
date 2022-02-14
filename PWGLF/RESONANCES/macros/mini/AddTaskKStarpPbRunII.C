@@ -29,6 +29,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarpPbRunII(
 						Int_t       nmix                = 5,
 						Float_t     maxDiffVzMix        = 1.0,
 						Float_t     maxDiffMultMix      = 5.0,
+                        Float_t     lrap                = -0.465,
+                        Float_t     hrap                = 0.035,
 						TString     outNameSuffix       = "pPb"
 						)
 {  
@@ -94,7 +96,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarpPbRunII(
    //
    AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
    //cutY->SetRangeD(-0.5, 0.5);
-   cutY->SetRangeD(-0.465, 0.035);// 0 < y_cm < 0.5; y_cm = y_lab + 0.465
+   cutY->SetRangeD(lrap, hrap);// 0 < y_cm < 0.5; y_cm = y_lab + 0.465
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
    cutsPair->SetCutScheme(cutY->GetName());

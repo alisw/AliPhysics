@@ -19,7 +19,7 @@ class AliOADBFillingScheme : public TNamed {
 
  public :
   AliOADBFillingScheme();
-  AliOADBFillingScheme(char* name);
+  AliOADBFillingScheme(const char* name);
   virtual ~AliOADBFillingScheme();
   void Init();
   

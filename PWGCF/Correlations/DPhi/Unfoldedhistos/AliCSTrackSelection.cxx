@@ -10,6 +10,7 @@
 * provided "as is" without express or implied warranty.                   *
 **************************************************************************/
 
+#include <TObjString.h>
 #include <TBits.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -21,11 +22,9 @@
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODMCHeader.h"
-#include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenCocktailEventHeader.h"
-#include "TParticle.h"
-#include "AliAODMCParticle.h"
+#include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliCSTrackMaps.h"
@@ -217,11 +216,13 @@ Bool_t AliCSTrackSelection::InitializeFromString(const char *confstring)
   if (fInclusivePidCutsStrings.GetEntries() != 0 || fExclusivePidCutsStrings.GetEntries() != 0) {
     AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
     if(manager != NULL) {
-      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (manager->GetInputEventHandler());
-      fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
-      /* if we need PID response instance and it is not there we cannot continue */
-      if (fPIDResponse == NULL)
-        AliFatal("No PID response instance. ABORTING!!!");
+      if (!AliCSAnalysisCutsBase::IsOnTheFlyMC()) {
+        AliInputEventHandler* inputHandler = (AliInputEventHandler*) (manager->GetInputEventHandler());
+        fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
+        /* if we need PID response instance and it is not there we cannot continue */
+        if (fPIDResponse == NULL)
+          AliFatal("No PID response instance. ABORTING!!!");
+      }
     }
     else {
       AliFatal("No analysis manager instance. ABORTING!!!");
@@ -635,13 +636,13 @@ Bool_t AliCSTrackSelection::IsFromMCInjectedSignal(Int_t itrk) {
       /* MC ESD data */
       Int_t label = itrk;
       AliMCEvent* mcevent = eventHandler->MCEvent();
-      TParticle *mother = mcevent->Particle(label);
+      AliVParticle *mother = mcevent->GetTrack(label);
 
       /* we have to find the primary one */
       while (!mcevent->IsPhysicalPrimary(label)) {
-        label = mother->GetFirstMother();
+        label = mother->GetMother();
         if (label < 0) break;
-        mother = mcevent->Particle(label);
+        mother = mcevent->GetTrack(label);
         if (mother == NULL) break;
       }
 
@@ -655,13 +656,13 @@ Bool_t AliCSTrackSelection::IsFromMCInjectedSignal(Int_t itrk) {
       /* MC ESD data */
       Int_t label = itrk;
       TClonesArray *arrayMC = AliCSAnalysisCutsBase::GetMCTrueArray();
-      AliAODMCParticle *mother = (AliAODMCParticle *) arrayMC->At(label);
+      AliVParticle *mother = (AliVParticle *) arrayMC->At(label);
 
       /* we have to find the primary one */
       while ((mother != NULL) && !(mother->IsPhysicalPrimary())) {
         label = mother->GetMother();
         if (label < 0) break;
-        mother = (AliAODMCParticle *) arrayMC->At(label);
+        mother = (AliVParticle *) arrayMC->At(label);
       }
 
       if (!(label < 0) && (mother != NULL)) {

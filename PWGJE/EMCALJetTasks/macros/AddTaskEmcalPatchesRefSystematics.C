@@ -1,10 +1,10 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRefSystematics(const char *dummy, const char *suffix){
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef *AddTaskEmcalPatchesRefSystematics(const char *dummy, const char *suffix){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   TString taskname = "emcalPatchQA_" + TString(suffix);
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef(taskname.Data());
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef *task = new PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchesRef(taskname.Data());
 
   mgr->AddTask(task);
 

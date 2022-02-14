@@ -150,6 +150,12 @@ class AliFlowEventSimple: public TObject {
   Double_t GetZPCEnergy() const {return fZPCM;};
   void SetZPAEnergy(Double_t const en) {fZPAM = en;};
   Double_t GetZPAEnergy() const {return fZPAM;};
+  
+  void SetTowZNCraw(Double_t* pos);
+  void GetTowZNCraw(Double_t* pos);
+  void SetTowZNAraw(Double_t* pos);
+  void GetTowZNAraw(Double_t* pos);
+  
   void SetAbsOrbit(UInt_t const en) {fAbsOrbit = en;};
   UInt_t GetAbsOrbit() const {return fAbsOrbit;};
 
@@ -202,6 +208,8 @@ class AliFlowEventSimple: public TObject {
   Double_t                fZNAM;                      // total energy from ZNC-A
   Double_t                fZPCM;                      // total energy from ZPC-C
   Double_t                fZPAM;                      // total energy from ZPC-A
+  Double_t                fTowZNCraw[5];              // energy of each ZNC-C tower
+  Double_t                fTowZNAraw[5];              // energy of each ZNC-A tower
   Double_t                fVtxPos[3];                 // Primary vertex position (x,y,z)
   UInt_t                  fAbsOrbit;                  // Absolute orbit number
 

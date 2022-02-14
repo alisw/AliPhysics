@@ -28,10 +28,10 @@
 #define ALIEMCALTRACKSELRESULTCOMBINED_H
 
 #include <TObject.h>
-#include <TClonesArray.h>
 #include <exception>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "AliEmcalTrackSelResultPtr.h"
 
 class TObjArray;
@@ -61,13 +61,15 @@ public:
   
   AliEmcalTrackSelResultCombined();
   AliEmcalTrackSelResultCombined(const TObjArray *singleSelPointers);
+  AliEmcalTrackSelResultCombined(const std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr>& singleSelPointers);
   virtual ~AliEmcalTrackSelResultCombined() {}
 
-  AliEmcalTrackSelResultPtr &operator[](int index) const;
+  const AliEmcalTrackSelResultPtr &operator[](int index) const;
+  AliEmcalTrackSelResultPtr &operator[](int index);
   Int_t GetNumberOfSelectionResults() const;
 
 private:
-  TClonesArray                   fData;    ///< Single 
+  std::vector<AliEmcalTrackSelResultPtr>        fData;    ///< Single 
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTrackSelResultCombined, 1);

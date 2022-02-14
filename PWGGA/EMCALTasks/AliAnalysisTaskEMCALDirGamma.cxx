@@ -3392,8 +3392,8 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
 //            AliMCParticle *tmppart2 = static_cast<AliMCParticle*>(mcEvent->GetTrack(imother));
 //            // check if mother is a photon
 //            if(tmppart2->PdgCode() == 22){
-//              Int_t d1 = tmppart2->GetFirstDaughter();
-//              Int_t d2 = tmppart2->GetLastDaughter();
+//              Int_t d1 = tmppart2->GetDaughterFirst();
+//              Int_t d2 = tmppart2->GetDaughterLast();
 //              if (d1>0){
 //                if (d2<0){
 //                  d2=d1;
@@ -3412,8 +3412,8 @@ Double_t AliAnalysisTaskEMCALDirGamma::FillClusHists(Float_t& max_phi, Float_t& 
         
         // keep only eta -> gammagamma
         if(bAddEta){
-          Int_t d1 = McMo->GetFirstDaughter();
-          Int_t d2 = McMo->GetLastDaughter();
+          Int_t d1 = McMo->GetDaughterFirst();
+          Int_t d2 = McMo->GetDaughterLast();
           if (d1>0){
             if (d2<0){
               d2=d1;
@@ -3619,7 +3619,7 @@ void AliAnalysisTaskEMCALDirGamma::CalcMcInfo()
 	
 		//Conversions
 		//count photons, that fly to the EMCAl but convert before the detector
-		Int_t jdaughter = mcPa->GetFirstDaughter();
+		Int_t jdaughter = mcPa->GetDaughterFirst();
 		AliMCParticle* mcDa = static_cast<AliMCParticle*>(mcEvent->GetTrack(jdaughter));
 		if(!mcDa){continue;}
 	
@@ -4385,7 +4385,7 @@ void AliAnalysisTaskEMCALDirGamma::PrintDaughters(const AliVParticle *p, const T
   
   Int_t n = amc->GetNDaughters();
   for (Int_t i=0; i<n; ++i) {
-    Int_t d = amc->GetDaughter(i);
+    Int_t d = amc->GetDaughterLabel(i);
     const AliVParticle *dmc = static_cast<const AliVParticle*>(arr->At(d));
     PrintDaughters(dmc,arr,level+1);
   }
@@ -4400,8 +4400,8 @@ void AliAnalysisTaskEMCALDirGamma::PrintDaughters(const AliMCParticle *p, const 
     return;
   
   for (Int_t i=0; i<level; ++i) printf(" ");
-  Int_t d1 = p->GetFirstDaughter();
-  Int_t d2 = p->GetLastDaughter();
+  Int_t d1 = p->GetDaughterFirst();
+  Int_t d2 = p->GetDaughterLast();
   printf("pid=%d: %.2f %.2f %.2f (%.2f %.2f %.2f); nd=%d,%d\n",
          p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2);
   if (d1<0)
@@ -4456,7 +4456,7 @@ void AliAnalysisTaskEMCALDirGamma::ProcessDaughters(AliVParticle *p, Int_t index
   
   Int_t n = amc->GetNDaughters();
   for (Int_t i=0; i<n; ++i) {
-    Int_t d = amc->GetDaughter(i);
+    Int_t d = amc->GetDaughterLabel(i);
     if (d<=index || d>=nparts)
       continue;
     AliVParticle *dmc = static_cast<AliVParticle*>(arr->At(d));
@@ -4472,8 +4472,8 @@ void AliAnalysisTaskEMCALDirGamma::ProcessDaughters(AliMCParticle *p, Int_t inde
   if (!p || !arr)
     return;
   
-  Int_t d1 = p->GetFirstDaughter();
-  Int_t d2 = p->GetLastDaughter();
+  Int_t d1 = p->GetDaughterFirst();
+  Int_t d2 = p->GetDaughterLast();
   if (0) {
     printf("%d pid=%d: %.3f %.3f %.3f (%.2f %.2f %.2f); nd=%d,%d, mo=%d\n",
            index,p->PdgCode(),p->Px(),p->Py(),p->Pz(),p->Xv(),p->Yv(),p->Zv(),d1,d2, p->GetMother());

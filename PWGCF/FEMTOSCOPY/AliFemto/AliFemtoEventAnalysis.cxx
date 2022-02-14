@@ -94,8 +94,8 @@ fIdenticalParticles(a.fIdenticalParticles)
   
   
   fSecondParticleCut = (a.fFirstParticleCut == a.fSecondParticleCut)
-  ? fFirstParticleCut
-  : a.fSecondParticleCut->Clone();
+                     ? fFirstParticleCut
+                     : a.fSecondParticleCut->Clone();
   if (fSecondParticleCut) {
     SetSecondParticleCut(fSecondParticleCut);
     cout << TString::Format(msg_template, "second particle cut set") << endl;
@@ -229,25 +229,26 @@ AliFemtoString AliFemtoEventAnalysis::Report()
   /// Create a simple report from the analysis execution
   
   cout << "AliFemtoEventAnalysis - constructing Report..."<<endl;
-  string temp = "-----------\nHbt Analysis Report:\n";
-  temp += "\nEvent Cuts:\n";
-  temp += fEventCut->Report();
-  temp += "\nParticle Cuts - First Particle:\n";
-  temp += fFirstParticleCut->Report();
-  temp += "\nParticle Cuts - Second Particle:\n";
-  temp += fSecondParticleCut->Report();
-  temp += "\nCorrelation Functions:\n";
+  AliFemtoString report = "-----------\nHbt Analysis Report:\n";
+  report += "\nEvent Cuts:\n";
+  report += fEventCut->Report();
+  report += "\nParticle Cuts - First Particle:\n";
+  report += fFirstParticleCut->Report();
+  report += "\nParticle Cuts - Second Particle:\n";
+  report += fSecondParticleCut->Report();
+  report += "\nCorrelation Functions:\n";
   
   if (fCorrFctnCollection->empty()) {
     cout << "AliFemtoEventAnalysis-Warning : no correlations functions in this analysis " << endl;
   }
-  for (AliFemtoCorrFctnIterator iter = fCorrFctnCollection->begin(); iter != fCorrFctnCollection->end(); ++iter) {
-    temp += (*iter)->Report();
-    temp += "\n";
+
+  for (auto *cf : *fCorrFctnCollection) {
+    report += cf->Report();
+    report += "\n";
   }
-  temp += "-------------\n";
-  AliFemtoString returnThis=temp;
-  return returnThis;
+  report += "-------------\n";
+
+  return report;
 }
 
 void AliFemtoEventAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)

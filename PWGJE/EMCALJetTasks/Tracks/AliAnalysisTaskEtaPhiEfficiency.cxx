@@ -28,7 +28,7 @@
 
 #include "AliAnalysisTaskEtaPhiEfficiency.h"
 
-using namespace EMCalTriggerPtAnalysis;
+using namespace PWGJE::EMCALJetTasks;
 
 ClassImp(AliAnalysisTaskEtaPhiEfficiency)
 
@@ -77,7 +77,7 @@ void AliAnalysisTaskEtaPhiEfficiency::UserCreateOutputObjects(){
 }
 
 void AliAnalysisTaskEtaPhiEfficiency::UserExec(Option_t *){
-  if(!fInputHandler->IsEventSelected() & AliVEvent::kINT7) return;
+  if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return;
   if(fAnalysisUtil->IsFirstEventInChunk(InputEvent())) return;
   if(fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
   if(!fAnalysisUtil->IsVertexSelected2013pA(InputEvent())) return;
@@ -126,8 +126,6 @@ Bool_t AliAnalysisTaskEtaPhiEfficiency::UserNotify(){
 
   TChain *chain = dynamic_cast<TChain*>(tree);
   if (chain) tree = chain->GetTree();
-
-  Int_t nevents = tree->GetEntriesFast();
 
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
 

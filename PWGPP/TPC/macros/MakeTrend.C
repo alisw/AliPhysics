@@ -6,7 +6,7 @@ int MakeTrend(char *infile,int run) {
   TStopwatch timer;
   timer.Start();
   gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/ITS -I$ALICE_PHYSICS -I$ALICE_PHYSICS/TRD");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ConfigOCDB.C");
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/ConfigOCDB.C");
   
   gSystem->Load("libSTAT");
   gSystem->Load("libANALYSIS");

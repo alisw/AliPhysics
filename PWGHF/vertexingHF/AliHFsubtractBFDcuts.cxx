@@ -238,9 +238,9 @@ void AliHFsubtractBFDcuts::FillGenStep(AliAODMCParticle* dzeropart,Double_t pt/*
     fMotherPt=pt;
     fLabCand=dzeropart->GetLabel();
     fPtCand=dzeropart->Pt();
-    Double_t vtxDist[]   = { mcHeader->GetVtxX()-((AliAODMCParticle*)mcArray->At(dzeropart->GetFirstDaughter()))->Xv(),
-                             mcHeader->GetVtxY()-((AliAODMCParticle*)mcArray->At(dzeropart->GetFirstDaughter()))->Yv(),
-                             mcHeader->GetVtxZ()-((AliAODMCParticle*)mcArray->At(dzeropart->GetFirstDaughter()))->Zv() };
+    Double_t vtxDist[]   = { mcHeader->GetVtxX()-((AliAODMCParticle*)mcArray->At(dzeropart->GetDaughterFirst()))->Xv(),
+                             mcHeader->GetVtxY()-((AliAODMCParticle*)mcArray->At(dzeropart->GetDaughterFirst()))->Yv(),
+                             mcHeader->GetVtxZ()-((AliAODMCParticle*)mcArray->At(dzeropart->GetDaughterFirst()))->Zv() };
     Double_t decayLength   = TMath::Sqrt(vtxDist[0]*vtxDist[0]+vtxDist[1]*vtxDist[1]+vtxDist[2]*vtxDist[2]);
     Double_t decayLengthXY = TMath::Sqrt(vtxDist[0]*vtxDist[0]+vtxDist[1]*vtxDist[1]);
     if (!AnalyseDecay(fGenerateDecayList, kTRUE)) {

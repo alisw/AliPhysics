@@ -2,7 +2,7 @@
 
 // this macro creates the track and event cuts used in this analysis
 
-// last modified: 2011-03-28 
+// last modified: 2011-03-28
 // m.l.knichel@gsi.de
 // E.PerezLezama@gsi.de
 // j.gronefeld@gsi.de
@@ -11,8 +11,9 @@
 
 AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",  Bool_t fieldOn = kTRUE, Bool_t hists = kTRUE)
 {
+  cout << "===> USED CUT MODE: " << cutMode << endl;
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
-  
+
   TString stControlString(control);
 
   if (hists)
@@ -24,6 +25,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
   Double_t minNClustersTPC;
   Double_t maxChi2PerClusterTPC;
   Double_t minPt, maxPt;
+
+  TString tag = "";
 
   // default cuts for ITS+TPC
   if (cutMode == 0)
@@ -38,14 +41,15 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     maxChi2PerClusterTPC = 3.5;
 
     esdTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
-    esdTrackCuts->SetMinNsigmaToVertex(nSigma);
+//    esdTrackCuts->SetMinNsigmaToVertex(nSigma);
+    esdTrackCuts->SetMaxNsigmaToVertex(nSigma);
     esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag("Global tracking");
+    tag = "Global tracking";
   }
 
   // TPC-only cuts (vertex n sigma cut)
@@ -64,14 +68,15 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     maxChi2PerClusterTPC = 3.5;
 
     esdTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
-    esdTrackCuts->SetMinNsigmaToVertex(nSigma);
+//    esdTrackCuts->SetMinNsigmaToVertex(nSigma);
+    esdTrackCuts->SetMaxNsigmaToVertex(nSigma);
     esdTrackCuts->SetRequireSigmaToVertex(kTRUE);
     esdTrackCuts->SetRequireTPCRefit(kFALSE);
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only cuts (vertex maxDCAtoVertex cut)
@@ -90,7 +95,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only no vertex cuts
@@ -106,7 +111,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only no cuts at all
@@ -118,7 +123,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetRequireTPCRefit(kFALSE);
     esdTrackCuts->SetAcceptKinkDaughters(kTRUE);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only no kink removal no chi2
@@ -134,7 +139,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     //esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only no kink removal
@@ -150,7 +155,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only no kink removal no minNClustersTPC
@@ -166,7 +171,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
   // TPC-only no kink removal no minNClustersTPC
   if (cutMode == 8)
@@ -184,7 +189,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only no kink removal no minNClustersTPC no maxChi2PerClusterTPC
@@ -203,7 +208,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetMinNClustersTPC(minNClustersTPC);
     //esdTrackCuts->SetMaxChi2PerClusterTPC(maxChi2PerClusterTPC);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (loose cuts, absolute DCA cut)
@@ -225,7 +230,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertex);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
 
@@ -250,7 +255,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (standard cuts, no DCA cut)
@@ -274,7 +279,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (tight cuts, no DCA cut)
@@ -298,7 +303,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (loose cuts, no pt cut)
@@ -322,7 +327,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (standard cuts, no pt cut)
@@ -346,7 +351,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (tight cuts, no pt cuts)
@@ -370,7 +375,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
   // TPC-only (loose cuts)
   if (cutMode == 17)
@@ -395,7 +400,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (standard cuts)
@@ -421,7 +426,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
  // TPC-only (tight cuts)
@@ -447,7 +452,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (arb. cuts, kink cuts included)
@@ -471,7 +476,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (arb. cuts, kink cuts excluded)
@@ -495,7 +500,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only (arb. cuts, kink cuts excluded, no chi2, no DCA)
@@ -519,7 +524,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only
@@ -544,7 +549,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetPtRange(minPt,maxPt);
     //esdTrackCuts->SetEtaRange(minEta,maxEta);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only tight cuts
@@ -569,7 +574,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetPtRange(minPt,maxPt);
     //esdTrackCuts->SetEtaRange(minEta,maxEta);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
 
@@ -593,7 +598,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
 
-    TString tag = "TPC tracking";
+    tag = "TPC tracking";
   }
 
   // TPC-only (no pt cut, no eta cut) updated 2011
@@ -625,7 +630,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking (2011)";
+    tag = "TPC-only tracking (2011)";
   }
 
   // TPC multiplicity cuts (test 2013)
@@ -657,7 +662,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC Multiplicity Cuts (2013)";
+    tag = "TPC Multiplicity Cuts (2013)";
   }
 
 
@@ -685,7 +690,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 26)
@@ -708,7 +713,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   //
@@ -735,7 +740,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 28)
@@ -758,7 +763,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 29)
@@ -781,7 +786,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 30)
@@ -804,7 +809,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 31)
@@ -827,7 +832,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
 
@@ -851,7 +856,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 33)
@@ -874,7 +879,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 34)
@@ -897,7 +902,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 35)
@@ -920,7 +925,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
 //
@@ -947,7 +952,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
  if (cutMode == 37)
@@ -970,7 +975,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 38)
@@ -993,7 +998,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 39)
@@ -1016,7 +1021,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 40)
@@ -1039,7 +1044,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 41)
@@ -1062,7 +1067,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   if (cutMode == 42)
@@ -1086,7 +1091,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
     esdTrackCuts->SetPtRange(minPt,maxPt);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
   // test
   if (cutMode == 43)
@@ -1110,7 +1115,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetPtRange(minPt,maxPt);
     //esdTrackCuts->SetEtaRange(minEta,maxEta);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-only + pt cut + eta cut
@@ -1135,7 +1140,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetPtRange(minPt,maxPt);
     //esdTrackCuts->SetEtaRange(minEta,maxEta);
 
-    TString tag = "TPC-only tracking";
+    tag = "TPC-only tracking";
   }
 
   // TPC-tracks + SPD point + ITS refit
@@ -1159,7 +1164,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
     //esdTrackCuts->SetEtaRange(-maxEtaInAcc,maxEtaInAcc);
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster";
   }
 
   // TPC-tracks + SPD point + ITS refit
@@ -1184,7 +1189,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMinNClustersTPC(minclsTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
 
-    TString tag = "Global tracking: TPC refit + ITS refit + >3 ITS clusters + >=1 SPD cluster";
+    tag = "Global tracking: TPC refit + ITS refit + >3 ITS clusters + >=1 SPD cluster";
   }
 
   /*
@@ -1207,7 +1212,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMinNClustersTPC(minclsTPC);
     esdTrackCuts->SetMaxChi2PerClusterTPC(maxchi2perTPCcl);
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt)";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt)";
   }
   */
 
@@ -1240,7 +1245,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt)";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt)";
   }
 
   // TPC+ITS combine tracking + DCAr(pt) + DCAz(pt)
@@ -1277,7 +1282,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.01+0.011/pt^0.72)
     esdTrackCuts->SetMaxDCAToVertexZPtDep("0.07+0.077/pt^0.72");
 
-    TString tag = "TPC+ITS combine tracking + DCAr(pt) + DCAz(pt)";
+    tag = "TPC+ITS combine tracking + DCAr(pt) + DCAz(pt)";
   }
 
   // TPC+ITS combine tracking + DCAr(pt) (2010)
@@ -1310,7 +1315,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0026+0.0050/pt^1.01)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
-    TString tag = "TPC+ITS combine tracking + DCAr(pt) (2010)";
+    tag = "TPC+ITS combine tracking + DCAr(pt) (2010)";
   }
 
   // TPC+ITS combine tracking + DCAr(pt) (2011)
@@ -1350,7 +1355,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0026+0.0050/pt^1.01)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
 
-    TString tag = "TPC+ITS combine tracking + DCAr(pt) (2011)";
+    tag = "TPC+ITS combine tracking + DCAr(pt) (2011)";
   }
 
 // TPC+ITS combine tracking + DCAr(pt) (2011)
@@ -1394,7 +1399,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // tpcc cut
     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
 
-    TString tag = "TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS";
+    tag = "TPC+ITS combine tracking + DCAr(pt) + Chi2TPCcc + Chi2ITS";
   }
 
 // Default track cuts (2015) for 5TeV data
@@ -1430,7 +1435,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
 
     // DCArphi parametrization
-    if (stControlString.Contains("XeXe")){ 
+    if (stControlString.Contains("XeXe")){
       // 7*(0.0017 + 0.007/pt^1.01)
       esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0119 + 0.049/pt^1.01");
     }else{
@@ -1444,8 +1449,8 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // Geometrical-Length Cut
     if (stControlString.Contains("XeXe")){esdTrackCuts->SetCutGeoNcrNcl(3,130,0.7,0.85,0.7);}
     else {esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); }
-    
-    TString tag = "Default track cuts (2015) for 5TeV data";
+
+    tag = "Default track cuts (2015) for 5TeV data";
   }
 
 
@@ -1479,7 +1484,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 4*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.02+0.024/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) 4-sigma";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) 4-sigma";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) 10-sigma
@@ -1511,7 +1516,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 10*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.05+0.06/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) 10 sigma";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) 10 sigma";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) + 60 TPCclust
@@ -1543,7 +1548,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) + 80 clusters
@@ -1575,7 +1580,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 80 TPCclust";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 80 TPCclust";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) + TPCchi2=3.5
@@ -1607,7 +1612,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + TPCchi2 3.5";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + TPCchi2 3.5";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) + TPCchi2=4.5
@@ -1639,7 +1644,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + TPCchi2 4.5";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + TPCchi2 4.5";
   }
 
   // TPC-tracks
@@ -1661,7 +1666,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
     esdTrackCuts->SetDCAToVertex2D(kTRUE);
 
-    TString tag = "TPC-tracks loose criteria";
+    tag = "TPC-tracks loose criteria";
   }
 
 
@@ -1694,7 +1699,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) + 70 TPCclust + accept kink daughters
@@ -1726,7 +1731,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
   }
 
   // TPC-tracks + SPD point + ITS refit + DCAr(pt) + 30 TPCclust + accept kink daughters
@@ -1758,7 +1763,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
+    tag = "TPC-tracks + ITS refit + >1 SPD cluster + DCAr(Pt) + 60 TPCclust";
   }
 
   // Adam Kisiel track selectiion
@@ -1792,7 +1797,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     // 7*(0.0050+0.0060/pt^0.9)
     //esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
 
-    TString tag = "Adam Kisiel track selection";
+    tag = "Adam Kisiel track selection";
   }
 
   // TPC+ITS refit + SPD any
@@ -1811,7 +1816,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     //
 
-    TString tag = "TPC+ITS refit required - for cut studies";
+    tag = "TPC+ITS refit required - for cut studies";
   }
 
   // TPC refit
@@ -1830,7 +1835,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     //
 
-    TString tag = "TPC refit required - for cut studies";
+    tag = "TPC refit required - for cut studies";
   }
 
   // TPC
@@ -1851,7 +1856,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     //
 
-    TString tag = "TPC stand alone - for cut studies";
+    tag = "TPC stand alone - for cut studies";
   }
 
   // TPC+ITS refit
@@ -1870,7 +1875,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     //
 
-    TString tag = "TPC+ITS refit and KinkRejection required - for cut studies";
+    tag = "TPC+ITS refit and KinkRejection required - for cut studies";
   }
 
   // TPC+ITS refit  + TPC DCA rough cuts
@@ -1908,7 +1913,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     //
 
-    TString tag = "TPC refit + Kink rejection required - for cut studies";
+    tag = "TPC refit + Kink rejection required - for cut studies";
   }
 
 
@@ -1956,7 +1961,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
 
     if (cutMode >= 2014) { esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); }
 
-    TString tag = "for cut/efficiency studies)";
+    tag = "for cut/efficiency studies)";
   }
 
   if ((cutMode >= 3000) && (cutMode <= 3100))
@@ -2001,31 +2006,31 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
 
     if (cutMode >= 3014) { esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); }
 
-    TString tag = "for cut/efficiency studies (version 3)";
+    tag = "for cut/efficiency studies (version 3)";
   }
-  
+
 
 
   if ((cutMode >= 5000) && (cutMode <= 5400)){
-    //According to 223 for study of systematic uncertanties. Change to fit the default cuts for 5TeV analysis 
-    //Just like the 4000 but now with intiger increasing numbers. 
-    //Easier to use. 
+    //According to 223 for study of systematic uncertanties. Change to fit the default cuts for 5TeV analysis
+    //Just like the 4000 but now with intiger increasing numbers.
+    //Easier to use.
     //
     // TPC
     //
-    TString tag = "Study of systematic uncertanties + Geomtrical cut";
-    
-    esdTrackCuts->SetRequireTPCRefit(kTRUE); 
-    //esdTrackCuts->SetMinNCrossedRowsTPC(120); 
-    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
+    tag = "Study of systematic uncertanties + Geomtrical cut";
+
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    //esdTrackCuts->SetMinNCrossedRowsTPC(120);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4); 
-    esdTrackCuts->SetMaxDCAToVertexXY(3.0); 
+    esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    esdTrackCuts->SetMaxDCAToVertexXY(3.0);
     //
     // ITS
     //
-    esdTrackCuts->SetRequireITSRefit(kTRUE); 
-    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     esdTrackCuts->SetMaxChi2PerClusterITS(36.);
     //
     // primary selection
@@ -2033,22 +2038,22 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
     esdTrackCuts->SetMaxDCAToVertexZ(2.0);
-    if (stControlString.Contains("XeXe")){ 
+    if (stControlString.Contains("XeXe")){
       // 7*(0.0017 + 0.007/pt^1.01)
       esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0119 + 0.049/pt^1.01");
     }else{
       // 7*(0.0026+0.005/pt^1.01)
       esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.035/pt^1.01");
     }
-    esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     // tpcc cut
     esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
-    
+
     // Geometrical-Length Cut
     Double_t dLenghtSlopeDependence = 1.5;
     if (stControlString.Contains("XeXe")){ dLenghtSlopeDependence = 0.7;}
     esdTrackCuts->SetCutGeoNcrNcl(3,130,dLenghtSlopeDependence,0.85,0.7);
-    
+
     //
     // Swich Low/High for study of systematics
     //
@@ -2060,7 +2065,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     if(cutMode==5006){esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
     if(cutMode==5007){esdTrackCuts->SetMaxFractionSharedTPCClusters(0.2);}
     if(cutMode==5008){esdTrackCuts->SetMaxFractionSharedTPCClusters(1.0);}
-    if(cutMode==5009){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);} 
+    if(cutMode==5009){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(25.);}
     if(cutMode==5010){esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(49.);}
     if (stControlString.Contains("XeXe")){
       if(cutMode==5011){esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0068+0.028/pt^1.01");}
@@ -2079,7 +2084,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
     if(cutMode==5020){esdTrackCuts->SetCutGeoNcrNcl(3,130,dLenghtSlopeDependence,0.80,0.65);}  //Make a variation of cut Nc,Ncl  THE EFFECT IS NEGLIGIBLE
   }
 
- 
+
 
 
 
@@ -2095,10 +2100,10 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
 //Matching Systematic Uncertainty
   if ((cutMode >= 2100) && (cutMode <= 2199))
   {
-    
-    //Float_t minNCrossedRowsTPC = 120; 
-    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8; 
-    Float_t maxFractionSharedTPCCluster = 0.4;    
+
+    //Float_t minNCrossedRowsTPC = 120;
+    Float_t minRatioCrossedRowsOverFindableClustersTPC = 0.8;
+    Float_t maxFractionSharedTPCCluster = 0.4;
     maxChi2PerClusterTPC = 4.0;
     maxDCAtoVertexXY = 2.4; // cm
     maxDCAtoVertexZ  = 3.2; // cm
@@ -2112,94 +2117,94 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, const char *control = "",
 
     esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
     esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
-    
-    if (cutMode==2100){      
+
+    if (cutMode==2100){
       esdTrackCuts->SetMinNCrossedRowsTPC(120);
-      TString tag = "Calculate matching efficiency: TPC only with Crossed Rows";
+      tag = "Calculate matching efficiency: TPC only with Crossed Rows";
     }
-    
+
     if (cutMode==2101){
       esdTrackCuts->SetMinNCrossedRowsTPC(120);
-      esdTrackCuts->SetRequireITSRefit(kTRUE); 
-      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny); 
-      TString tag = "Calculate matching efficiency: TPC + ITS with Crossed Rows";
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+      tag = "Calculate matching efficiency: TPC + ITS with Crossed Rows";
     }
-    
+
     if (cutMode==2102){
       esdTrackCuts->SetMinNCrossedRowsTPC(120);
-      esdTrackCuts->SetRequireITSRefit(kTRUE); 
-      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff); 
-      TString tag = "Calculate matching efficiency: TPC + ITS without SPC hit with Crossed Rows";
+      esdTrackCuts->SetRequireITSRefit(kTRUE);
+      esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+      tag = "Calculate matching efficiency: TPC + ITS without SPC hit with Crossed Rows";
     }
-    
+
     if (cutMode==2103){
       esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
-      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC only";
+      tag = "Calculate matching efficiency: Include geometric length cut. TPC only";
     }
-    
+
     if (cutMode==2104){
       esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS";
+      tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS";
     }
 
     if (cutMode==2105){
       esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
-      TString tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS without SPD hit";
+      tag = "Calculate matching efficiency: Include geometric length cut. TPC + ITS without SPD hit";
     }
 
     if (cutMode==2106){
       esdTrackCuts->SetCutGeoNcrNcl(0,130,1.5,0.85,0.7);
-      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC only";
+      tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC only";
     }
-    
+
     if (cutMode==2107){
       esdTrackCuts->SetCutGeoNcrNcl(0,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC + ITS";
+      tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =0). TPC + ITS";
     }
 
     if (cutMode==2108){
       esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
-      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC only";
+      tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC only";
     }
-    
+
     if (cutMode==2109){
       esdTrackCuts->SetCutGeoNcrNcl(2,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC + ITS";
+      tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =2). TPC + ITS";
     }
-   
+
     if (cutMode==2110){
       esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);
-      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC only";
+      tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC only";
     }
-    
+
     if (cutMode==2111){
       esdTrackCuts->SetCutGeoNcrNcl(4,130,1.5,0.85,0.7);
       esdTrackCuts->SetRequireITSRefit(kTRUE);
       esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-      TString tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC + ITS";
+      tag = "Calculate matching efficiency: Include geometric length cut(DeadZone =4). TPC + ITS";
     }
-  
-  
+
+
   }
 
 if (cutMode == 7000) // TPC cuts, secondaries studies with DCA fits,
 {
     //
-    // TPC 
+    // TPC
     //
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
     esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-	esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.70); // default 
+	esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.70); // default
     //
     // primary selection
     //
@@ -2208,7 +2213,7 @@ if (cutMode == 7000) // TPC cuts, secondaries studies with DCA fits,
     esdTrackCuts->SetMaxDCAToVertexZ(2.0);
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
 
-    TString tag = "TPC RAA cuts without DCArphi, global chi2 and ITS requirement";
+    tag = "TPC RAA cuts without DCArphi, global chi2 and ITS requirement";
 }
 
 if (cutMode == 8000)// TPC+ITS, secondaries studies with DCA fits
@@ -2220,8 +2225,8 @@ if (cutMode == 8000)// TPC+ITS, secondaries studies with DCA fits
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
     esdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-	esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.70); // default 
-	
+	esdTrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.70); // default
+
     //
     // ITS
     //
@@ -2238,13 +2243,13 @@ if (cutMode == 8000)// TPC+ITS, secondaries studies with DCA fits
     //esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
     //esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36.);
-	
-    TString tag = "TPC RAA cuts without DCArphi, global chi2";
-	
+
+    tag = "TPC RAA cuts without DCArphi, global chi2";
+
 }
 
 
-  
+
 
   Printf("Created track cuts for: %s", tag.Data());
 

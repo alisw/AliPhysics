@@ -18,9 +18,9 @@
 #include <stdio.h>
 #include <TRandom3.h>
 
-#include "AliJJtHistograms.h"
-#include "../AliJAcceptanceCorrection.h"
-#include "../AliJCorrelationInterface.h"
+#include <AliJJtHistograms.h>
+#include <AliJAcceptanceCorrection.h>
+#include <AliJCorrelationInterface.h>
 
 using namespace std;
 

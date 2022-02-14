@@ -47,29 +47,29 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     if(dataset == 1){
       analysiscutEvent = "10000003";
       if(lowBfield){
-          analysiscut  = "06000088400000001000000000";
-          analysiscutB = "16000088400000001000000000";
+          analysiscut  = "06000088d00000001100000000";
+          analysiscutB = "16000088d00000001100000000";
       }else{
-          analysiscut  = "06000008400000001000000000";
-          analysiscutB = "16000008400000001000000000";
+          analysiscut  = "06000008d00000001100000000";
+          analysiscutB = "16000008d00000001100000000";
       }
     } else if (dataset == 2){
       analysiscutEvent = "80000003";
       if(lowBfield){
-          analysiscut  = "06000088400000001000000000";
-          analysiscutB = "16000088400000001000000000";
+          analysiscut  = "06000088d00000001100000000";
+          analysiscutB = "16000088d00000001100000000";
       }else{
-          analysiscut  = "06000008400000001000000000";
-          analysiscutB = "16000008400000001000000000";
+          analysiscut  = "06000008d00000001100000000";
+          analysiscutB = "16000008d00000001100000000";
       }
     } else{
       analysiscutEvent = "00000003";
       if(lowBfield){
-          analysiscut  = "06000088400100001000000000";
-          analysiscutB = "16000088400100001000000000";
+          analysiscut  = "06000088d00100001100000000";
+          analysiscutB = "16000088d00100001100000000";
       }else{
-          analysiscut  = "06000008400100001000000000";
-          analysiscutB = "16000008400100001000000000";
+          analysiscut  = "06000008d00100001100000000";
+          analysiscutB = "16000008d00100001100000000";
       }
     }
 

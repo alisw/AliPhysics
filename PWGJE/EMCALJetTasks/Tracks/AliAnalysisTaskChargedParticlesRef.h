@@ -12,7 +12,9 @@
 class THistManager;
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskChargedParticlesRef
@@ -287,11 +289,11 @@ private:
   AliAnalysisTaskChargedParticlesRef(const AliAnalysisTaskChargedParticlesRef &);
   AliAnalysisTaskChargedParticlesRef &operator=(const AliAnalysisTaskChargedParticlesRef &);
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedParticlesRef, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */ 
 
 #endif /* ALIANALYSISTASKCHARGEDPARTICLESREF_H */

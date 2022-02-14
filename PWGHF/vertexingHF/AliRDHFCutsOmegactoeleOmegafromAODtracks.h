@@ -19,6 +19,7 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   enum EPIDStrategy{
     kNSigmaCuts,
     kNSigmaCustomizedCuts,
+    kNSigmaCustomizedPtDepCuts,
     kCombinedCuts
   };
 
@@ -37,6 +38,7 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Bool_t IsSelectedeID(AliAODTrack* trk);
   Bool_t IsSelectedCustomizedeID(AliAODTrack* trk);
+  Bool_t IsSelectedCustomizedPtDepeID(AliAODTrack* trk, AliAODTrack *trkpid);
   Bool_t IsSelectedCombinedeID(AliAODTrack* trk);
 
   void SetPIDStrategy(EPIDStrategy pidStrategy){fPIDStrategy=pidStrategy;}
@@ -44,16 +46,22 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   void SetCombinedPIDThreshold(Double_t a){fCombinedPIDThreshold=a;}
   Double_t GetCombinedPIDThreshold(){return fCombinedPIDThreshold;}
 
-
-  Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODVertex *primvert);
+  Bool_t SingleTrkCuts(AliAODTrack *trk, AliAODTrack *trkpid,AliAODVertex *primvert);
+  Bool_t SingleTrkCutsNoPID(AliAODTrack *trk,AliAODTrack *trkpid, AliAODVertex *primvert);
   Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
+  Bool_t TagConversions(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
+  Bool_t TagConversionsSameSign(AliAODTrack *etrk, Int_t *id2index, AliAODEvent *evt, Int_t ntrk, Double_t &minmass);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1);
 
+  void SetMagneticField(Double_t a){fBzkG = a;}
+  void SetPrimaryVertex(Double_t *a){fPrimVert[0] = a[0];fPrimVert[1] = a[1];fPrimVert[2] = a[2];}
   void SetProdTrackTPCNclsPIDMin(Int_t a){fProdTrackTPCNclsPIDMin=a;}
   void SetProdTrackTPCNclsRatioMin(Double_t a){fProdTrackTPCNclsRatioMin=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
+  void SetProdAODFilterBit(Int_t a){fProdAODFilterBit=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
   void SetProdMassTolOmega(Double_t a){fProdMassTolOmega=a;}
+  void SetProdMassTolOmegaRough(Double_t a){fProdMassTolOmegaRough=a;}
   void SetProdMassRejXi(Double_t a){fProdMassRejXi=a;}
   void SetProdRfidMinV0(Double_t a){fProdRfidMinV0=a;}
   void SetProdRfidMaxV0(Double_t a){fProdRfidMaxV0=a;}
@@ -69,6 +77,8 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   void SetProdXiCosineOfPoiningAngleMin(Double_t a){fProdXiCosineOfPoiningAngleMin=a;}
   void SetProdV0CosineOfPoiningAngleXiMin(Double_t a){fProdV0CosineOfPoiningAngleXiMin=a;}
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
+  void SetProdCascCutMinNCrossedRowsTPC(Double_t a){fProdCascCutMinNCrossedRowsTPC=a;}
+  void SetProdCascratioCrossedRowsOverFindableClusterTPC(Double_t a){fProdCascratioCrossedRowsOverFindableClusterTPC=a;}
   void SetProdCascEtaRange(Double_t a, Double_t b){fProdCascEtaMin=a;fProdCascEtaMax=b;}
   void SetProdCascRapRange(Double_t a, Double_t b){fProdCascRapMin=a;fProdCascRapMax=b;}
   void SetProdRoughMassTol(Double_t a){fProdRoughMassTol=a;}
@@ -77,8 +87,10 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   Int_t GetProdTrackTPCNclsPIDMin(){return fProdTrackTPCNclsPIDMin;}
   Double_t GetProdTrackTPCNclsRatioMin(){return fProdTrackTPCNclsRatioMin;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
+  Int_t    GetProdAODFilterBit(){return fProdAODFilterBit;}
   Double_t GetProdMassTolLambda(){return fProdMassTolLambda;}
   Double_t GetProdMassTolOmega(){return fProdMassTolOmega;}
+  Double_t GetProdMassTolOmegaRough(){return fProdMassTolOmegaRough;}
   Double_t GetProdMassRejXi(){return fProdMassRejXi;}
   Double_t GetProdRfidMinV0(){return fProdRfidMinV0;}
   Double_t GetProdRfidMaxV0(){return fProdRfidMaxV0;}
@@ -95,6 +107,8 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
   Double_t GetProdV0CosineOfPoiningAngleXiMin(){return fProdV0CosineOfPoiningAngleXiMin;}
   Double_t GetProdRoughMassTol(){return fProdRoughMassTol;}
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
+  Double_t GetProdCascCutMinNCrossedRowsTPC(){return fProdCascCutMinNCrossedRowsTPC;}
+  Double_t GetProdCascratioCrossedRowsOverFindableClusterTPC(){return fProdCascratioCrossedRowsOverFindableClusterTPC;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
   void GetProdCascEtaRange(Double_t &a, Double_t &b){a=fProdCascEtaMin;b=fProdCascEtaMax;}
   void GetProdCascRapRange(Double_t &a, Double_t &b){a=fProdCascRapMin;b=fProdCascRapMax;}
@@ -117,68 +131,92 @@ class AliRDHFCutsOmegactoeleOmegafromAODtracks : public AliRDHFCuts
       }
   AliAODPidHF* GetPidCascKa() const {return fPidObjCascKa;}
 
-	void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
-	void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
-	void SetExcludeKaonTPC(Bool_t a){fExcludeKaonTPC=a;}
-	void SetExcludenSigmaPionTPC(Double_t a){fExcludenSigmaPionTPC=a;}
-	void SetExcludenSigmaProtonTPC(Double_t a){fExcludenSigmaProtonTPC=a;}
-	void SetExcludenSigmaKaonTPC(Double_t a){fExcludenSigmaKaonTPC=a;}
-	void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
-	void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
-  
-
- protected:
+  void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
+  void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
+  void SetExcludeKaonTPC(Bool_t a){fExcludeKaonTPC=a;}
+  void SetExcludenSigmaPionTPC(Double_t a){fExcludenSigmaPionTPC=a;}
+  void SetExcludenSigmaProtonTPC(Double_t a){fExcludenSigmaProtonTPC=a;}
+  void SetExcludenSigmaKaonTPC(Double_t a){fExcludenSigmaKaonTPC=a;}
+  void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
+  void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
+  void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
+  void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
+  void SetConversionMassMax(Double_t a){fConversionMassMax=a;}
+  void SetEleOmegaMassMax(Double_t a){fEleOmegaMassMax=a;}
+    
+  Double_t GetConversionMassMax(){return fConversionMassMax;}
+  Double_t GetEleOmegaMassMax(){return fEleOmegaMassMax;}
+  Double_t DeltaPhi(AliAODcascade *casc, AliAODTrack *trk);
+  Double_t CosOpeningAngle(AliAODcascade *casc, AliAODTrack *trk);
+  Double_t DeltaEta(AliAODcascade *casc, AliAODTrack *trk);
+  Bool_t IsPeakRegion(AliAODcascade *c);
+  Bool_t IsSideBand(AliAODcascade *c);
+    
+  protected:
 	
- private:
+  private:
 
-  EPIDStrategy fPIDStrategy;        /// PID strategy
-  Double_t fCombinedPIDThreshold;   /// Threshold used in  IsSelectedCombinedPID
-  Bool_t fUseCascadePID;            /// Use PID for cascade or not
-  AliAODPidHF *fPidObjCascPi;         /// PID object for cascade-pion
-  AliAODPidHF *fPidObjCascPr;         /// PID object for cascade-proton
-  AliAODPidHF *fPidObjCascKa;         /// PID object for cascade-proton
-//  Bool_t   fUseOnTheFlyV0;          /// Flag to check if we use on-the-fly v0
-  
-  Int_t fProdTrackTPCNclsPIDMin;      /// Min. Number of TPC PID cluster
+  EPIDStrategy fPIDStrategy;         /// PID strategy
+  Double_t fCombinedPIDThreshold;    /// Threshold used in  IsSelectedCombinedPID
+  Bool_t fUseCascadePID;             /// Use PID for cascade or not
+  AliAODPidHF *fPidObjCascPi;        /// PID object for cascade-pion
+  AliAODPidHF *fPidObjCascPr;        /// PID object for cascade-proton
+  AliAODPidHF *fPidObjCascKa;        /// PID object for cascade-proton
+//  Bool_t   fUseOnTheFlyV0;         /// Flag to check if we use on-the-fly v0
+  Int_t   fUseV0Topology;            /// 0: Cowboy+Sailor 1: Cowboy 2:Sailor
+  Double_t fBzkG;                    ///B field
+  Double_t fPrimVert[3];             ///Primary vertex
+    
+  Int_t fProdTrackTPCNclsPIDMin;     /// Min. Number of TPC PID cluster
   Double_t fProdTrackTPCNclsRatioMin;      /// Min. Number of TPC PID cluster
-  Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
-  Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
-  Double_t fProdMassTolOmega;          /// Tolerance of Xi mass from PDG value
-  Double_t fProdMassRejXi;          /// Rejection range of Omega mass from PDG value
-  Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
-  Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
-  Double_t fProdRfidMinOmega;          /// Minimum Decay vertex of Xi
-  Double_t fProdRfidMaxOmega;          /// Max Decay vertex of Xi
+  Bool_t   fProdUseAODFilterBit;     /// Flag for AOD filter Bit used before object creation
+  Int_t    fProdAODFilterBit;        /// AOD filter Bit used before object creation
+  Double_t fProdMassTolLambda;       /// Tolerance of Lambda mass from PDG value
+  Double_t fProdMassTolOmega;        /// Tolerance of Omega mass from PDG value
+  Double_t fProdMassTolOmegaRough;   /// Tolerance of Omega mass from PDG value (including sideband)
+  Double_t fProdMassRejXi;           /// Rejection range of Omega mass from PDG value
+  Double_t fProdRfidMinV0;           /// Minimum Decay vertex of V0
+  Double_t fProdRfidMaxV0;           /// Max Decay vertex of V0
+  Double_t fProdRfidMinOmega;        /// Minimum Decay vertex of Xi
+  Double_t fProdRfidMaxOmega;        /// Max Decay vertex of Xi
   Double_t fProdCascProperDecayLengthMax;        /// mL/p of cascade
-  Double_t fProdDcaOmegaDaughtersMax;  /// Max Dca between Xi daughters
-  Double_t fProdDcaV0DaughtersMax;  /// Max Dca between V0 daughters
-  Double_t fProdDcaBachToPrimVertexMin;  /// Min Dca between Bachelor and PV
-  Double_t fProdDcaV0ToPrimVertexMin;  /// Min Dca between v0 and PV
+  Double_t fProdDcaOmegaDaughtersMax;   /// Max Dca between Xi daughters
+  Double_t fProdDcaV0DaughtersMax;      /// Max Dca between V0 daughters
+  Double_t fProdDcaBachToPrimVertexMin; /// Min Dca between Bachelor and PV
+  Double_t fProdDcaV0ToPrimVertexMin;   /// Min Dca between v0 and PV
   Double_t fProdDcaV0PrToPrimVertexMin;  /// Min Dca between v0-proton and PV
   Double_t fProdDcaV0PiToPrimVertexMin;  /// Min Dca between v0-pion and PV
-  Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
+  Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV  // previous
   Double_t fProdV0CosineOfPoiningAngleXiMin;  /// Min V0 cos pointing angle  to Xi vertex
   Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
-	Double_t fProdCascEtaMin; /// Minimum eta of cascade
-	Double_t fProdCascEtaMax; /// Maximum eta of cascade
-	Double_t fProdCascRapMin; /// Minimum rapidity of cascade
-	Double_t fProdCascRapMax; /// Maximum rapidity of cascade
+  Double_t fProdCascCutMinNCrossedRowsTPC;  // Minimum number of Crossed Rows TPC
+  Double_t fProdCascratioCrossedRowsOverFindableClusterTPC; // Minmum ratio of CrossedRows Over Findable Cluster
+  Double_t fProdCascEtaMin; /// Minimum eta of cascade
+  Double_t fProdCascEtaMax; /// Maximum eta of cascade
+  Double_t fProdCascRapMin; /// Minimum rapidity of cascade
+  Double_t fProdCascRapMax; /// Maximum rapidity of cascade
   Double_t fProdRoughMassTol;       /// Mass cut for Lc used before object creation
   Double_t fProdRoughPtMin;         /// pT cut for Lc used before object creation
-
-	Bool_t fExcludePionTPC; /// Flag wheter to exlude pion band
-	Bool_t fExcludeProtonTPC; /// Flag wheter to exlude proton band
-	Bool_t fExcludeKaonTPC; /// Flag wheter to exlude proton band
-	Double_t fExcludenSigmaPionTPC; /// nSigma to exclude for pion band
-	Double_t fExcludenSigmaProtonTPC; /// nSigma to exclude for proton band
-	Double_t fExcludenSigmaKaonTPC; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTPCMin; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTPCMax; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
-  
+    
+  Bool_t fExcludePionTPC; /// Flag wheter to exlude pion band
+  Bool_t fExcludeProtonTPC; /// Flag wheter to exlude proton band
+  Bool_t fExcludeKaonTPC; /// Flag wheter to exlude kaon band
+  Double_t fExcludenSigmaPionTPC; /// nSigma to exclude for pion band
+  Double_t fExcludenSigmaProtonTPC; /// nSigma to exclude for proton band
+  Double_t fExcludenSigmaKaonTPC; /// nSigma to exclude for Kaon band
+  Double_t fSigmaElectronTPCMin; /// nSigma to exclude for Kaon band
+  Double_t fSigmaElectronTPCMax; /// nSigma to exclude for Kaon band
+  Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
+  Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
+    
+  Double_t fSigmaElectronTPCPtDepPar0; /// nSigma electron lower limit (par0)
+  Double_t fSigmaElectronTPCPtDepPar1; /// nSigma electron lower limit (par1)
+  Double_t fSigmaElectronTPCPtDepPar2; /// nSigma electron lower limit (par2)
+  Double_t fConversionMassMax; /// Conversion mass
+  Double_t fEleOmegaMassMax; /// e-Omega mass max
+    
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsOmegactoeleOmegafromAODtracks,2);
+  ClassDef(AliRDHFCutsOmegactoeleOmegafromAODtracks,4);
   /// \endcond
 };
 

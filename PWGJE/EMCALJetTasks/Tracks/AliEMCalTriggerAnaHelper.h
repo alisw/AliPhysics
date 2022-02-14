@@ -3,7 +3,9 @@
 /* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE{ 
+
+namespace EMCALJetTasks {
 
 /**
  * \enum ETATriggerType
@@ -45,6 +47,8 @@ enum ETriggerMethod_t{
   kTriggerPatches,                  ///< kPatches
   kTriggerMixed                     ///< kMixed
 };
+
+}
 
 }
 

@@ -1,13 +1,9 @@
-/**
- * @file   AliAODTracklet.C
- * @author Christian Holm Christensen <cholm@nbi.dk>
- * @date   Wed Apr 27 16:49:06 2016
- * 
- * @brief  Tracklet AOD object
- * 
- * 
- * @ingroup pwglf_forward_tracklets
- */
+/// \class AliAODTracklet
+/// \brief Tracklet AOD object
+///
+/// Single tracklet information
+///
+/// \author Christian Holm Christensen <cholm@nbi.dk>
 #ifndef ALIAODTRACKLET_C
 #define ALIAODTRACKLET_C
 #include <TObject.h>
@@ -16,16 +12,12 @@
 # include <TString.h>
 #endif
 
-//====================================================================
-/**
- * Single tracklet information 
- * 
- * @ingroup pwglf_forward_tracklets
- */
+/// Single tracklet information
+/// \ingroup pwglf_forward_tracklets
 class AliAODTracklet : public TObject
 {
 public:
-  /** Flags of tracklets */
+  /// Flags of tracklets
   enum {
     kInjection      = 0x01,
     kCombinatorics  = 0x02,
@@ -37,249 +29,236 @@ public:
     kSuppressed     = 0x80
   };
     
-  /** Type of real values */
+  /// Type of real values
   typedef Float_t Real_t;
-  /** 
-   * Default constructor 
-   */
+  /// Default constructor
   AliAODTracklet();
-  /** 
-   * Copy constructor 
-   *
-   * @param other Object to copy from 
-   */
+  ///
+  /// Copy constructor
+  /// \param other Object to copy from
+  ///
   AliAODTracklet(const AliAODTracklet& other);
-  /** 
-   * Destrcutor 
-   */
+  ///
+  /// Destrcutor
+  ///
   virtual ~AliAODTracklet() {}
-  /** 
-   * Assignment operator 
-   *
-   * @param other Object to assign from 
-   *
-   * @return Reference to this object 
-   */
+   /// Assignment operator
+   ///
+   /// \param other Object to assign from
+   ///
+   /// \return Reference to this object
+   ///
   AliAODTracklet& operator=(const AliAODTracklet& other);
 
-  /** 
-   * @{
-   * @name Setters 
-   */
-  /**
-   * Set Tracklet polar angle 
-   * 
-   * @param x Tracklet polar angle
-   */
+
+   /// \name Setters
+
+   /// Set Tracklet polar angle
+   ///
+   /// \param x Tracklet polar angle
   void SetTheta(Real_t x) { fTheta = x; }
-  /**
-   * Set Tracklet azimuthal angle 
-   * 
-   * @param x Tracklet azimuthal angle
-   */
+   ///
+   /// Set Tracklet azimuthal angle
+   ///
+   /// \param x Tracklet azimuthal angle
+   ///
   void SetPhi(Real_t x) { fPhi = x; }
-  /**
-   * Set Tracklet polar opening angle 
-   * 
-   * @param x Tracklet polar opening angle
-   */
+   ///
+   /// Set Tracklet polar opening angle
+   ///
+   /// \param x Tracklet polar opening angle
+   ///
   void SetDTheta(Real_t x) { fDTheta = x; }
-  /**
-   * Set Tracklet azimuthal opening angle 
-   * 
-   * @param x Tracklet azimuthal opening angle
-   */
+   ///
+   /// Set Tracklet azimuthal opening angle
+   ///
+   /// \param x Tracklet azimuthal opening angle
+   ///
   void SetDPhi(Real_t x) { fDPhi = x; }
-  /**
-   * Set Tracklet quality 
-   * 
-   * @param x Tracklet quality
-   */
+   ///
+   /// Set Tracklet quality
+   ///
+   /// \param x Tracklet quality
+   ///
   void SetDelta(Real_t x) { fDelta = x; }
-  /**
-   * Set Tracklet flags 
-   * 
-   * @param x Tracklet flags
-   */
+   ///
+   /// Set Tracklet flags
+   ///
+   /// \param x Tracklet flags
+   ///
   void SetFlags(UChar_t x) { fFlags = x; }
-  /** 
-   * Set Injection flag 
-   */
+   ///
+   /// Set Injection flag
+   ///
   void SetInjection() { fFlags |= kInjection; }
-  /** 
-   * Flag tracklet as a combinatorial background 
-   */
+   ///
+   /// Flag tracklet as a combinatorial background
+   ///
   void SetCombinatorics() { fFlags |= kCombinatorics; }
-  /** 
-   * Flag tracklet as secondary 
-   */
+   ///
+   /// Flag tracklet as secondary
+   ///
   void SetSecondary() { fFlags |= kSecondary; }
-  /** 
-   * Flag tracklet as combinatorial background from distinct mothers 
-   */
+   ///
+   /// Flag tracklet as combinatorial background from distinct mothers
+   ///
   void SetDistinct() { fFlags |= kDistinct; }
-  /** 
-   * Flag tracklet as from simulated data 
-   */
+   ///
+   /// Flag tracklet as from simulated data
+   ///
   void SetSimulated() { fFlags |= kSimulated; }
-  /** 
-   * Flag "tracklet" as from a generated primary, particle in simulated data 
-   */
+   ///
+   /// Flag "tracklet" as from a generated primary, particle in simulated data
+   ///
   void SetGenerated() { fFlags |= kGenerated; }
-  /** 
-   * Flag "tracklet" as from a neutral primary, particle in simulated data 
-   */
+   ///
+   /// Flag "tracklet" as from a neutral primary, particle in simulated data
+   ///
   void SetNeutral() { fFlags |= kNeutral; }
-  /** 
-   * A primary charged particle can be suppressed 
-   */
+   ///
+   /// A primary charged particle can be suppressed
+   ///
   void SetSuppressed() { fFlags |= kSuppressed; }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Getters 
-   */
-  /**
-   * Get Tracklet polar angle 
-   * 
-   * @return Tracklet polar angle
-   */
+
+
+   /// \name Getters
+
+   ///
+   /// Get Tracklet polar angle
+   ///
+   /// \return Tracklet polar angle
+   ///
   Real_t GetTheta() const { return fTheta; }
-  /**
-   * Get Tracklet azimuthal angle 
-   * 
-   * @return Tracklet azimuthal angle
-   */
+   ///
+   /// Get Tracklet azimuthal angle
+   ///
+   /// \return Tracklet azimuthal angle
+   ///
   Real_t GetPhi() const { return fPhi; }
-  /**
-   * Get Tracklet polar opening angle 
-   * 
-   * @return Tracklet polar opening angle
-   */
+   ///
+   /// Get Tracklet polar opening angle
+   ///
+   /// \return Tracklet polar opening angle
+   ///
   Real_t GetDTheta() const { return fDTheta; }
-  /**
-   * Get Tracklet azimuthal opening angle 
-   * 
-   * @return Tracklet azimuthal opening angle
-   */
+   ///
+   /// Get Tracklet azimuthal opening angle
+   ///
+   /// \return Tracklet azimuthal opening angle
+   ///
   Real_t GetDPhi() const { return fDPhi; }
-  /**
-   * Get Tracklet quality 
-   * 
-   * @return Tracklet quality
-   */
+   ///
+   /// Get Tracklet quality
+   ///
+   /// \return Tracklet quality
+   ///
   Real_t GetDelta() const { return fDelta; }
-  /**
-   * Get Tracklet flags 
-   * 
-   * @return Tracklet flags
-   */
+   ///
+   /// Get Tracklet flags
+   ///
+   /// \return Tracklet flags
+   ///
   UChar_t GetFlags() const { return fFlags; }
-  /* @} */
-  /**
-   * @{ 
-   * @name Queries 
-   */
-  /** 
-   * Get the pseudorapidity of a tracklet 
-   * 
-   * @return Pseudorapidity 
-   */
+
+   /// \name Queries
+
+   ///
+   /// Get the pseudorapidity of a tracklet
+   ///
+   /// \return Pseudorapidity
+   ///
   Real_t GetEta() const { return -TMath::Log(TMath::Tan(fTheta/2)); }
-  /** 
-   * Check if this tracklet is a measured tracklet - in the sense that
-   * it is neither part of an injection sub-sample, nor generated by
-   * the model (in case of simulations)"
-   * 
-   * @return 
-   */
+   ///
+   /// Check if this tracklet is a measured tracklet - in the sense that
+   /// it is neither part of an injection sub-sample, nor generated by
+   /// the model (in case of simulations)"
+   ///
+   /// \return
+   ///
   Bool_t IsMeasured() const { return !IsInjection() && !IsGenerated(); }
-  /** 
-   * @return true if tracklet was created in an event with injection
-   * background
-   */
+   ///
+   /// \return true if tracklet was created in an event with injection
+   /// background
+   ///
   Bool_t IsInjection() const { return fFlags & kInjection; }
-  /** 
-   * @return true if tracklet is from combinatorics
-   */
+   ///
+   /// \return true if tracklet is from combinatorics
+   ///
   Bool_t IsCombinatorics() const { return fFlags & kCombinatorics; }
-  /** 
-   * @return true if two mothers a distinct (do not have same ultimate
-   * mother).
-   */
+   ///
+   /// \return true if two mothers a distinct (do not have same ultimate
+   /// mother).
+   ///
   Bool_t IsDistinct() const { return fFlags & kDistinct; }
-  /** 
-   * @return true if tracklet is from simulated data
-   */
+   ///
+   /// \return true if tracklet is from simulated data
+   ///
   Bool_t IsSimulated() const { return fFlags & kSimulated; }
-  /** 
-   * @return true if tracklet is from a secondary particle 
-   */
+   ///
+   /// \return true if tracklet is from a secondary particle
+   ///
   Bool_t IsSecondary() const { return fFlags & kSecondary; }
-  /** 
-   * @return true if tracklet is from a primary particle 
-   */
+   ///
+   /// \return true if tracklet is from a primary particle
+   ///
   Bool_t IsPrimary() const { return (IsSimulated() &&
-				     !IsSecondary() &&
-				     !IsCombinatorics() &&
-				     !IsGenerated()); }
-  /** 
-   * @return true if tracklet is a generated, primary, charged particle
-   */
+                                     !IsSecondary() &&
+                                     !IsCombinatorics() &&
+                                     !IsGenerated()); }
+   ///
+   /// \return true if tracklet is a generated, primary, charged particle
+   ///
   Bool_t IsGenerated() const { return fFlags & kGenerated; }
-  /** 
-   * @return true if tracklet is a generated, primary, neutral particle
-   */
+   ///
+   /// \return true if tracklet is a generated, primary, neutral particle
+   ///
   Bool_t IsNeutral() const { return fFlags & kNeutral; }
-  /** 
-   * Check if this primary is suppressed 
-   * 
-   * @return true of suppressed 
-   */
+   ///
+   /// Check if this primary is suppressed
+   ///
+   /// \return true of suppressed
+   ///
   Bool_t IsSuppressed() const { return fFlags & kSuppressed; }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Extra information in case of simulated data 
-   */
-  /** 
-   * Get parent transverse momentum 
-   * 
-   * @param second If true, second parent, otherwise first 
-   * 
-   * @return Here, we always return 0 
-   */
+   ///
+   /// \name Extra information in case of simulated data
+   ///
+   ///
+   /// Get parent transverse momentum
+   ///
+   /// \param second If true, second parent, otherwise first
+   ///
+   /// \return Here, we always return 0
+   ///
   virtual Real_t GetParentPt(Bool_t second=false) const { return 0; }
-  /** 
-   * Get parent particle type 
-   * 
-   * @param second If true, second parent, otherwise first 
-   * 
-   * @return Here, we always return 0 
-   */
+   ///
+   /// Get parent particle type
+   ///
+   /// \param second If true, second parent, otherwise first
+   ///
+   /// \return Here, we always return 0
+   ///
   virtual Short_t GetParentPdg(Bool_t second=false) const { return 0; }
-  /* @} */
-  /** 
-   * Print information on the tracklet 
-   * 
-   * @param option Options 
-   */
+   ///
+   /// Print information on the tracklet
+   ///
+   /// \param option Options
+   ///
   void Print(Option_t* option="") const;
 protected:
-  /** Tracklet polar angle */
+  /// Tracklet polar angle
   Real_t fTheta;
-  /** Tracklet azimuthal angle */
+  /// Tracklet azimuthal angle
   Real_t fPhi;
-  /** Tracklet polar opening angle */
+  /// Tracklet polar opening angle
   Real_t fDTheta;
-  /** Tracklet azimuthal opening angle */
+  /// Tracklet azimuthal opening angle
   Real_t fDPhi;
-  /** Tracklet quality */
+  /// Tracklet quality
   Real_t fDelta;
-  /** Tracklet flags */
+  /// Tracklet flags
   UChar_t fFlags;
 
-  ClassDef(AliAODTracklet,2); // Single tracklet
+  ClassDef(AliAODTracklet,2); /// Single tracklet
 };
 //____________________________________________________________________
 AliAODTracklet::AliAODTracklet()
@@ -340,100 +319,98 @@ void AliAODTracklet::Print(Option_t* option) const
 
   
 //====================================================================
-/**
- * Single tracklet information 
- * 
- * @ingroup pwglf_forward_tracklets
- */
+///
+///Single tracklet information
+///
+/// \ingroup pwglf_forward_tracklets
+///
 class AliAODMCTracklet : public AliAODTracklet
 {
 public:
-  /** 
-   * Default constructor 
-   */
+  ///
+  /// Default constructor
+  ///
   AliAODMCTracklet();
-  /** 
-   * Copy constructor 
-   *
-   * @param other Object to copy from 
-   */
+   ///
+   /// Copy constructor
+   ///
+   /// \param other Object to copy from
+   ///
   AliAODMCTracklet(const AliAODMCTracklet& other);
-  /** 
-   * Destrcutor 
-   */
+   ///
+   /// Destrcutor
+   ///
   virtual ~AliAODMCTracklet() {}
-  /** 
-   * Assignment operator 
-   *
-   * @param other Object to assign from 
-   *
-   * @return Reference to this object 
-   */
+   ///
+   /// Assignment operator
+   ///
+   /// \param other Object to assign from
+   ///
+   /// \return Reference to this object
+   ///
   AliAODMCTracklet& operator=(const AliAODMCTracklet& other);
-  /** 
-   * @{ 
-   * @name Extra information in case of simulated data 
-   */
-  /** 
-   * Get parent transverse momentum 
-   * 
-   * @param second if true, second parent, otherwise first
-   * 
-   * @return First or second parent transverse momentum
-   */
+   ///
+   /// \name Extra information in case of simulated data
+   ///
+   ///
+   /// Get parent transverse momentum
+   ///
+   /// \param second if true, second parent, otherwise first
+   ///
+   /// \return First or second parent transverse momentum
+   ///
   virtual Real_t GetParentPt(Bool_t second=false) const
   {
     return !second ? fPar1Pt : fPar2Pt;
   }
-  /** 
-   * Get parent particle type 
-   * 
-   * @param second if true, second parent, otherwise first
-   * 
-   * @return First or second parent particle type 
-   */
+   ///
+   /// Get parent particle type
+   ///
+   /// \param second if true, second parent, otherwise first
+   ///
+   /// \return First or second parent particle type
+   ///
   virtual Short_t GetParentPdg(Bool_t second=false) const
   {
     return !second ? fPar1Pdg : fPar2Pdg;
   }
-  /** 
-   * Set parent transverse momentum 
-   * 
-   * @param pt     Transverse momentum 
-   * @param second if true, second parent, otherwise first
-   */
+   ///
+   /// Set parent transverse momentum
+   ///
+   /// \param pt     Transverse momentum
+   /// \param second if true, second parent, otherwise first
+   ///
   void SetParentPt(Real_t pt, Bool_t second=false)
   {
     if (!second) fPar1Pt = pt; else fPar2Pt = pt;
   }
-  /** 
-   * Set parent particle type  
-   * 
-   * @param pdg    particle type 
-   * @param second if true, second parent, otherwise first
-   */
+   ///
+   /// Set parent particle type
+   ///
+   /// \param pdg    particle type
+   /// \param second if true, second parent, otherwise first
+   ///
   void SetParentPdg(Short_t pdg, Bool_t second=false)
   {
     if (!second) fPar1Pdg = pdg; else fPar2Pdg = pdg;
   }
-  /* @} */
-  /** 
-   * Print information on the tracklet 
-   * 
-   * @param option Options 
-   */
+   ///
+   /// Print information on the tracklet
+   ///
+   /// \param option Options
+   ///
   void Print(Option_t* option="") const;
 protected:
-  /** First parent pt */
+  /// First parent pt
   Real_t fPar1Pt; 
-  /** Second parent pt */
+  /// Second parent pt
   Real_t fPar2Pt; 
-  /** First parent pt */
+  /// First parent pt
   Short_t fPar1Pdg; 
-  /** Second parent pt */
+  /// Second parent pt
   Short_t fPar2Pdg; 
   
-  ClassDef(AliAODMCTracklet,2); // Single tracklet information (sim)
+  ClassDef(AliAODMCTracklet,2); /// Single tracklet information (sim)
 };
   
 //____________________________________________________________________
@@ -475,7 +452,3 @@ void AliAODMCTracklet::Print(Option_t* option) const
 }
 
 #endif
-//____________________________________________________________________
-//
-// EOF
-// 

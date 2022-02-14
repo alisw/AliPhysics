@@ -28,9 +28,9 @@ struct SelectionLimits
 		nM = 750;
 		mMin = 0.0;
 		mMax = 1.5;
-		nPt = 400;
+		nPt = 800;
 		ptMin = 0;
-		ptMax = 20;
+		ptMax = 40;
 
 	}
 
@@ -84,6 +84,7 @@ public:
 	virtual TList * GetListOfHistos() { return fListOfHistos; }
 
 protected:
+	virtual Bool_t AcceptPhotonCandidate(AliVCluster * clus, const EventFlags & eflags);
 	virtual void SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags);
 	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags);
 	virtual void FillClusterHistograms(const AliVCluster * c, const EventFlags & eflags)

@@ -36,6 +36,12 @@
 #include <fastjet/ClusterSequence.hh>
 #include <fastjet/contrib/Nsubjettiness.hh>
 #include <fastjet/contrib/SoftDrop.hh>
+#include <fastjet/config.h>
+#if FASJET_VERSION_NUMBER >= 30302
+#include <fastjet/tools/Recluster.hh>
+#else 
+#include <fastjet/contrib/Recluster.hh>
+#endif
 
 #include <THistManager.h>
 #include <TLinearBinning.h>
@@ -75,12 +81,9 @@
 #include "AliEmcalParticleJetConstituent.h"
 #endif
 
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSubstructureTree);
 
-/// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
-/// \endcond
-
-namespace EmcalTriggerJets {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree() :
     AliAnalysisTaskEmcalJet(),
@@ -250,8 +253,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
-  AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
-  AliTrackContainer *tracks = GetTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliClusterContainer *clusters = GetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliTrackContainer *tracks = GetTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliParticleContainer *particles = GetParticleContainer("mcparticles");
 
   AliJetContainer *mcjets = GetJetContainer("mcjets");
@@ -318,7 +321,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   if(fUseDownscaleWeight){
     AliDebugStream(2) << "Trigger selection string: " << fTriggerSelectionString << std::endl;
     TString selectionString = (fTriggerSelectionBits & AliVEvent::kINT7) ? "INT7" : fTriggerSelectionString;
-    auto triggerstring = MatchTrigger(selectionString.Data());
+    auto triggerstring = MatchTrigger(selectionString.Data(), fTriggerSelectionString.Data());
     AliDebugStream(2) << "Getting downscale correction factor for trigger string " << triggerstring << std::endl;
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerstring);
   }
@@ -333,6 +336,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliSoftdropDefinition softdropSettings;
   softdropSettings.fBeta = fSDBetaCut;
   softdropSettings.fZ = fSDZCut;
+  softdropSettings.fR0 = datajets->GetJetRadius();
   switch(fReclusterizer) {
   case kCAAlgo: softdropSettings.fRecluserAlgo = fastjet::cambridge_aachen_algorithm; break;
   case kKTAlgo: softdropSettings.fRecluserAlgo = fastjet::kt_algorithm; break;
@@ -476,6 +480,7 @@ void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
       std::string clustname = clust->GetName();
       auto iscent = clustname.find("CENT") != std::string::npos, iscalo = clustname.find("CALO") != std::string::npos; 
       if(!(iscalo || iscent)) continue;
+      AliInfoStream() << "Adding trigger cluster " << clustname << " to cluster lumi monitor" << std::endl;
       clusternames.emplace_back(clustname);
    }
 
@@ -497,8 +502,9 @@ void AliAnalysisTaskEmcalJetSubstructureTree::FillLuminosity() {
         auto int7trigger = trigger.IsTriggerClass("INT7");
         auto bunchcrossing = trigger.BunchCrossing() == "B";
         auto nopf = trigger.PastFutureProtection() == "NOPF";
+        bool centcalo = (trigger.Triggercluster().find("CENT") != std::string::npos) || (trigger.Triggercluster().find("CALO") != std::string::npos);
         AliDebugStream(4) << "Full name: " << trigger.ExpandClassName() << ", INT7 trigger:  " << (int7trigger ? "Yes" : "No") << ", bunch crossing: " << (bunchcrossing ? "Yes" : "No") << ", no past-future protection: " << (nopf ? "Yes" : "No")  << ", Cluster: " << trigger.Triggercluster() << std::endl;
-        if(int7trigger && bunchcrossing && nopf) {
+        if(int7trigger && bunchcrossing && nopf && centcalo) {
           double downscale = downscalefactors->GetDownscaleFactorForTriggerClass(trigger.ExpandClassName());
           AliDebugStream(5) << "Using downscale " << downscale << std::endl;
           fLumiMonitor->Fill(trigger.Triggercluster().data(), 1./downscale);
@@ -610,10 +616,14 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
 }
 
 AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cutparameters) const {
-  fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ);
+  fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ, cutparameters.fR0);
   softdropAlgorithm.set_verbose_structure(kTRUE);
-  std::unique_ptr<fastjet::contrib::Recluster> reclusterizer(new fastjet::contrib::Recluster(cutparameters.fRecluserAlgo, 1, true));
-  softdropAlgorithm.set_reclustering(kTRUE, reclusterizer.get());
+#if FASTJET_VERSION_NUMBER >= 30302
+  fastjet::Recluster reclusterizer(cutparameters.fRecluserAlgo, 1, fastjet::Recluster::keep_only_hardest);
+#else
+  fastjet::contrib::Recluster reclusterizer(cutparameters.fRecluserAlgo, 1, true);
+#endif
+  softdropAlgorithm.set_reclustering(kTRUE, &reclusterizer);
   AliDebugStream(4) << "Jet has " << jet.constituents().size() << " constituents" << std::endl;
   auto groomed = softdropAlgorithm(jet);
   try {
@@ -795,36 +805,6 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::SelectJet(const AliEmcalJet &jet, 
   return nallowed > 0;
 }
 
-std::string AliAnalysisTaskEmcalJetSubstructureTree::MatchTrigger(const std::string &triggertoken) const {
-  std::vector<std::string> tokens;
-  std::string result;
-  std::stringstream decoder(fInputEvent->GetFiredTriggerClasses().Data());
-  while(std::getline(decoder, result, ' '))  tokens.emplace_back(result); 
-  result.clear();
-  for(auto t : tokens) {
-    if(t.find(triggertoken) != std::string::npos) {
-      // take first occurrence - downscale factor should normally be the same
-      result = t;
-      break;
-    }
-  }
-  return result;
-}
-
-bool AliAnalysisTaskEmcalJetSubstructureTree::IsSelectEmcalTriggers(const std::string &triggerstring) const {
-  const std::array<std::string, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
-  };
-  bool isEMCAL = false;
-  for(auto emcaltrg : kEMCALTriggers) {
-    if(triggerstring.find(emcaltrg) != std::string::npos) {
-      isEMCAL = true;
-      break;
-    }
-  }
-  return isEMCAL;
-}
-
 AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -866,14 +846,14 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   if(isData) {
     AliTrackContainer *tracks(nullptr);
     if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
-      tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+      tracks = treemaker->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
       std::cout << "Track container name: " << tracks->GetName() << std::endl;
       tracks->SetMinPt(0.15);
     }
     AliClusterContainer *clusters(nullptr);
     if((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)){
       std::cout << "Using full or neutral jets ..." << std::endl;
-      clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+      clusters = treemaker->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
       std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
       clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
       clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
@@ -980,7 +960,6 @@ void AliJetTreeGlobalParameters::LinkJetTreeBranches(TTree *jettree, bool fillRh
   }
 }
 
-void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type) {
+void PWGJE::EMCALJetTasks::LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type) {
   jettree->Branch(branchname, data, Form("%s/%s", branchname, type));
 }
-} /* namespace EmcalTriggerJets */

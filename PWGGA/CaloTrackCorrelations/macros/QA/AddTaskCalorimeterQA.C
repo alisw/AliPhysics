@@ -48,7 +48,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
                                                           TString outputFile = "",
                                                           Int_t   year = 2015, 
                                                           Bool_t  printSettings = kFALSE,
-                                                          Bool_t  calibrate = kTRUE)
+                                                          Bool_t  calibrate = kTRUE,
+                                                          Bool_t  rejectMCPileUpParticles = kTRUE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -98,6 +99,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
+  reader->SetMultiplicityWithPhysSel(kFALSE); // Do not rely on Physics selection in case calibration not done yet.
+  
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
   
@@ -114,6 +117,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   if(calibrate && !simulation) reader->SwitchOnClusterRecalculation();
   else                         reader->SwitchOffClusterRecalculation();
   
+  if ( simulation && rejectMCPileUpParticles )
+    reader->SwitchOnMCParticlePileUpRejection();
+  else
+    reader->SwitchOffMCParticlePileUpRejection();
+
   if(printSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -132,7 +140,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   cu->SwitchOnCorrectClusterLinearity();
   
   Bool_t bExotic  = kTRUE;
-  Bool_t bNonLin  = kTRUE;
+  Int_t  bNonLin  = 2;
   Bool_t bBadMap  = kTRUE;
   
   Bool_t bEnCalib = kFALSE;
@@ -224,7 +232,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   emcalQA->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 0.65, 325) ;
   emcalQA->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
-  emcalQA->GetHistogramRanges()->SetHistoPOverERangeAndNBins(0,2.,50);
+  emcalQA->GetHistogramRanges()->SetHistoEOverPRangeAndNBins(0,2.,50);
   emcalQA->GetHistogramRanges()->SetHistodEdxRangeAndNBins(0.,200.,100);
   emcalQA->GetHistogramRanges()->SetHistodRRangeAndNBins(0.,0.10,50);
   //emcalQA->GetHistogramRanges()->SetHistoTimeRangeAndNBins( 400,900,250);

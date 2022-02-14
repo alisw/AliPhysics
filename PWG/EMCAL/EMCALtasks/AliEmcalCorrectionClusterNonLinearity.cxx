@@ -28,7 +28,16 @@ const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalC
     { "kPi0MCv5", AliEMCALRecoUtils::kPi0MCv5 },
     { "kSDMv6", AliEMCALRecoUtils::kSDMv6 },
     { "kPi0MCv6", AliEMCALRecoUtils::kPi0MCv6 },
-    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 }
+    { "kBeamTestCorrectedv3", AliEMCALRecoUtils::kBeamTestCorrectedv3 },
+    { "kPCMv1", AliEMCALRecoUtils::kPCMv1 },
+    { "kPCMplusBTCv1", AliEMCALRecoUtils::kPCMplusBTCv1 },
+    { "kPCMsysv1", AliEMCALRecoUtils::kPCMsysv1 },
+    { "kBeamTestCorrectedv4", AliEMCALRecoUtils::kBeamTestCorrectedv4 },
+    { "kBeamTestNS", AliEMCALRecoUtils::kBeamTestNS },
+    { "kPi0MCNS", AliEMCALRecoUtils::kPi0MCNS },
+    { "kTestBeamShaper", AliEMCALRecoUtils::kTestBeamShaper },
+    { "kTestBeamFinalMC", AliEMCALRecoUtils::kTestBeamFinalMC },
+    { "kTestBeamShaperWoScale", AliEMCALRecoUtils::kTestBeamShaperWoScale }
 };
 
 /**
@@ -107,7 +116,7 @@ void AliEmcalCorrectionClusterNonLinearity::UserCreateOutputObjects()
 Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
 {
   AliEmcalCorrectionComponent::Run();
-  
+
   // loop over clusters
   AliVCluster *clus = 0;
   AliClusterContainer * clusCont = 0;
@@ -130,8 +139,8 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
       if (fRecoUtils) {
         if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
-          clus->SetNonLinCorrEnergy(energy);
           if ( fSetForceClusterE ) clus->SetE(energy);
+          clus->SetNonLinCorrEnergy(energy);
         }
       }
 

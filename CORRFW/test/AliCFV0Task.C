@@ -41,7 +41,7 @@ Bool_t AliCFV0Task(
     //  Create an AliTagAnalysis Object and chain the tags
     AliTagAnalysis   *tagAna = new AliTagAnalysis(); 
     tagAna->SetType("ESD");  //for aliroot > v4-05
-    TAlienCollection *coll   = TAlienCollection::Open(kTagXMLFile); 
+    TGridCollection *coll   = gGrid->OpenCollection(kTagXMLFile);
     TGridResult      *tagResult = coll->GetGridResult("",0,0);
     tagResult->Print();
     tagAna->ChainGridTags(tagResult);

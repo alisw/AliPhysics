@@ -26,10 +26,15 @@ public:
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  AliFemtoPairCut* Clone();
+  AliFemtoPairCut* Clone() const;
 
   void SetMinSumPt(Double_t sumptmin);
   void SetMaxSumPt(Double_t sumptmax);
+
+  double GetMinSumPt() const
+    { return fSumPtMin; }
+  double GetMaxSumPt() const
+    { return fSumPtMax; }
 
 protected:
   Double_t fSumPtMin;
@@ -44,7 +49,7 @@ protected:
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutPt::Clone()
+inline AliFemtoPairCut* AliFemtoPairCutPt::Clone() const
 {
   AliFemtoPairCutPt* c = new AliFemtoPairCutPt(*this);
   return c;

@@ -1,0 +1,40 @@
+BINS: [2, 3, 4, 6, 8, 12, 999]
+N_MODELS: 6
+MODELS:
+  - path: 'alien:///alice/cern.ch/user/f/fcatalan/MLDs_071019_old/xgboost_PbPb010_pt2_3_071019_tightPre.model'
+    library: kXGBoost
+    cut: 0.95
+  - path: 'alien:///alice/cern.ch/user/f/fcatalan/MLDs_071019_old/xgboost_PbPb010_pt3_4_071019_tightPre.model'
+    library: kXGBoost
+    cut: 0.95
+  - path: 'alien:///alice/cern.ch/user/f/fcatalan/MLDs_071019_old/xgboost_PbPb010_pt4_6_071019_tightPre.model'
+    library: kXGBoost
+    cut: 0.96
+  - path: 'alien:///alice/cern.ch/user/f/fcatalan/MLDs_071019_old/xgboost_PbPb010_pt6_12_041019_MCptFix.model'
+    library: kXGBoost
+    cut: 0.98
+  - path: 'alien:///alice/cern.ch/user/f/fcatalan/MLDs_071019_old/xgboost_PbPb010_pt6_12_041019_MCptFix.model'
+    library: kXGBoost
+    cut: 0.95
+  - path: 'alien:///alice/cern.ch/user/f/fcatalan/MLDs_071019_old/xgboost_PbPb010_pt12_50_041019_MCptFix.model'
+    library: kXGBoost
+    cut: 0.85
+RAW_SCORE: False
+NUM_VAR: 13
+#list of variables: order used to train the model must be respected
+VAR_NAMES: [cos_p_xy, 
+            d_len, 
+            norm_dl_xy, 
+            sig_vert, 
+            delta_mass_KK, 
+            cos_PiKPhi_3, 
+            max_norm_d0d0exp,
+            nsigComb_Pi_0, 
+            nsigComb_Pi_1, 
+            nsigComb_Pi_2, 
+            nsigComb_K_0, 
+            nsigComb_K_1, 
+            nsigComb_K_2
+            ]
+
+

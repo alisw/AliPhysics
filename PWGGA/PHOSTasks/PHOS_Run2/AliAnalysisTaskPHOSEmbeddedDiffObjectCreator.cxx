@@ -69,8 +69,8 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserCreateOutputObjects()
 
   Init();//initialize PHOS object array
 
-  fOutputContainer = new THashList();
-  fOutputContainer->SetOwner(kTRUE);
+  //fOutputContainer = new THashList();
+  //fOutputContainer->SetOwner(kTRUE);
   AliAnalysisTaskPHOSObjectCreator::UserCreateOutputObjects();
   PostData(1,fOutputContainer);
 }
@@ -143,7 +143,6 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
         || cluster->E() < 0.1 // Emin cut
       ) continue;
 
-    if(cluster->GetM20() > 2.0) continue;
     if(cluster->GetLabel() < 0) continue;
 
     Bool_t IsSameFound = kFALSE;
@@ -257,6 +256,21 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
 
     inPHOS++;
   }//end of cluster loop
+
+
+  EstimateSTDCutEfficiency(fPHOSObjectArray);
+
+  const Int_t Nph = fPHOSObjectArray->GetEntries();
+
+  for(Int_t iph=0;iph<Nph;iph++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSObjectArray->At(iph);
+    AliVCluster *cluster = (AliVCluster*)ph->GetCluster();
+    if(!PassSTDCut(cluster)){
+      //AliInfo("cluster is rejected by the standard cluster cut.");
+      fPHOSObjectArray->Remove(ph);
+    }
+  }
+  fPHOSObjectArray->Compress();
 
   AliVEvent* input = InputEvent();
   TObject* outO = input->FindListObject(Form("PHOSEmbeddedDiffClusterArray_%s",fParticleName.Data()));
@@ -414,7 +428,3 @@ Bool_t AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::IsSameCluster(AliVCluster *
 
 }
 //________________________________________________________________________
-//________________________________________________________________________
-//________________________________________________________________________
-//________________________________________________________________________
-

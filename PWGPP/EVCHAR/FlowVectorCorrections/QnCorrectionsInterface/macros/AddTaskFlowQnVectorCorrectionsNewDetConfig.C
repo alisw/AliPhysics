@@ -65,12 +65,17 @@
 
 #endif // ifdef __ECLIPSE_IDE declaration and includes for the ECLIPSE IDE
 
+#ifdef __CLING__
+// to load external macro under ROOT6
+  #include <PWGLF/FORWARD/analysis2/AddTaskForwardMult.C>
+#endif
+
+
 #include "runAnalysis.H"
 
 using std::cout;
 using std::endl;
 
-#define VAR AliQnCorrectionsVarManagerTask
 
 void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos* histos, TString histClass);
 
@@ -99,12 +104,12 @@ AliAnalysisDataContainer* AddTaskFlowQnVectorCorrectionsNewDetConfig() {
 
   /* let's establish the event cuts for event selection */
   AliQnCorrectionsCutsSet *eventCuts = new AliQnCorrectionsCutsSet();
-  eventCuts->Add(new AliQnCorrectionsCutWithin(VAR::kVtxZ,zvertexMin,zvertexMax));
+  eventCuts->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kVtxZ,zvertexMin,zvertexMax));
   if (bUseMultiplicity) {
-    varForEventMultiplicity = VAR::kVZEROMultPercentile;
+    varForEventMultiplicity = AliQnCorrectionsVarManagerTask::kVZEROMultPercentile;
   }
   else {
-    varForEventMultiplicity = VAR::kCentVZERO;
+    varForEventMultiplicity = AliQnCorrectionsVarManagerTask::kCentVZERO;
   }
   eventCuts->Add(new AliQnCorrectionsCutWithin(varForEventMultiplicity,centralityMin,centralityMax));
   taskQnCorrections->SetEventCuts(eventCuts);
@@ -275,14 +280,14 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   AliQnCorrectionsEventClassVariablesSet *CorrEventClasses = new AliQnCorrectionsEventClassVariablesSet(nVZEROdim);
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-							       task->VarName(VAR::kVtxZ), VtxZbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxZ,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the VZERO detector */
-  AliQnCorrectionsDetector *VZERO = new AliQnCorrectionsDetector("VZERO", VAR::kVZERO);
+  AliQnCorrectionsDetector *VZERO = new AliQnCorrectionsDetector("VZERO", AliQnCorrectionsVarManagerTask::kVZERO);
 
   /* the VZEROA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *VZEROAconf =
@@ -455,7 +460,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   /* let's configure the Q vector calibration */
   VZEROCconfQoverQlength->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverQlength);
   /* lets configure the equalization of input data */
-  AliQnCorrectionsInputGainEqualization *eqAQoverQlength = new AliQnCorrectionsInputGainEqualization();
+  eqAQoverQlength = new AliQnCorrectionsInputGainEqualization();
   eqAQoverQlength->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
   eqAQoverQlength->SetShift(1.0);
   eqAQoverQlength->SetScale(0.1);
@@ -465,7 +470,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   /* we don't configure it, so we create it anonymous */
   VZEROCconfQoverQlength->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
   /* let's add the Q vector alignment correction step */
-  AliQnCorrectionsQnVectorAlignment *alignAQoverQlength = new AliQnCorrectionsQnVectorAlignment();
+  alignAQoverQlength = new AliQnCorrectionsQnVectorAlignment();
   alignAQoverQlength->SetHarmonicNumberForAlignment(2);
   alignAQoverQlength->SetReferenceConfigurationForAlignment("TPCQoverQlength");
   VZEROCconfQoverQlength->AddCorrectionOnQnVector(alignAQoverQlength);
@@ -473,7 +478,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   VZEROCconfQoverQlength->SetQACentralityVar(varForEventMultiplicity);
   VZEROCconfQoverQlength->SetQAMultiplicityAxis(100, 0.0, 500.0);
   /* let's configure the twist and rescale correction step */
-  AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
+  twScaleAQoverQlength = new AliQnCorrectionsQnVectorTwistAndRescale();
   twScaleAQoverQlength->SetApplyTwist(kTRUE);
   twScaleAQoverQlength->SetApplyRescale(kTRUE);
   twScaleAQoverQlength->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
@@ -577,7 +582,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
     /* let's configure the Q vector calibration */
     VZEROCconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
     /* lets configure the equalization of input data */
-    AliQnCorrectionsInputGainEqualization *eqAQoverSqrtM = new AliQnCorrectionsInputGainEqualization();
+    eqAQoverSqrtM = new AliQnCorrectionsInputGainEqualization();
     eqAQoverSqrtM->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
     eqAQoverSqrtM->SetShift(1.0);
     eqAQoverSqrtM->SetScale(0.1);
@@ -587,7 +592,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
     /* we don't configure it, so we create it anonymous */
     VZEROCconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
     /* let's add the Q vector alignment correction step */
-    AliQnCorrectionsQnVectorAlignment *alignAQoverSqrtM = new AliQnCorrectionsQnVectorAlignment();
+    alignAQoverSqrtM = new AliQnCorrectionsQnVectorAlignment();
     alignAQoverSqrtM->SetHarmonicNumberForAlignment(2);
     alignAQoverSqrtM->SetReferenceConfigurationForAlignment("TPCQoverSqrtM");
     VZEROCconfQoverSqrtM->AddCorrectionOnQnVector(alignAQoverSqrtM);
@@ -595,7 +600,7 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
     VZEROCconfQoverSqrtM->SetQACentralityVar(varForEventMultiplicity);
     VZEROCconfQoverSqrtM->SetQAMultiplicityAxis(100, 0.0, 500.0);
     /* let's configure the twist and rescale correction step */
-    AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+    twScaleAQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
     twScaleAQoverSqrtM->SetApplyTwist(kTRUE);
     twScaleAQoverSqrtM->SetApplyRescale(kTRUE);
     twScaleAQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
@@ -665,14 +670,14 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   AliQnCorrectionsEventClassVariablesSet *CorrEventClasses = new AliQnCorrectionsEventClassVariablesSet(nTPCdim);
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-							       task->VarName(VAR::kVtxZ), VtxZbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxZ,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the TPC  detector */
-  AliQnCorrectionsDetector *TPC = new AliQnCorrectionsDetector("TPC", VAR::kTPC);
+  AliQnCorrectionsDetector *TPC = new AliQnCorrectionsDetector("TPC", AliQnCorrectionsVarManagerTask::kTPC);
 
   /* the TPC detector configuration */
   AliQnCorrectionsDetectorConfigurationTracks *TPCconf =
@@ -697,28 +702,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   Bool_t isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPC = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-    cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+    cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPC->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCconf->SetCuts(cutsTPC);
@@ -748,28 +753,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPCNegEta = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-    cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+    cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPCNegEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCNegEtaconf->SetCuts(cutsTPCNegEta);
@@ -799,28 +804,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPCPosEta = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-    cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+    cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPCPosEta->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCPosEtaconf->SetCuts(cutsTPCPosEta);
@@ -850,28 +855,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPCQoverQlength = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+    cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCconfQoverQlength->SetCuts(cutsTPCQoverQlength);
@@ -901,28 +906,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPCNegEtaQoverQlength = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+    cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCNegEtaconfQoverQlength->SetCuts(cutsTPCNegEtaQoverQlength);
@@ -950,28 +955,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPCPosEtaQoverQlength = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+    cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCPosEtaconfQoverQlength->SetCuts(cutsTPCPosEtaQoverQlength);
@@ -1001,28 +1006,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   AliQnCorrectionsCutsSet *cutsTPCQoverSqrtM = new AliQnCorrectionsCutsSet();
   if(!isESD){
-    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+    cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
   }
   else {
     Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
     task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
     if(UseTPConlyTracks){
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
     }
     else{
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.8));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.8));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+      cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
     }
   }
   TPCconfQoverSqrtM->SetCuts(cutsTPCQoverSqrtM);
@@ -1052,28 +1057,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
     isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
     AliQnCorrectionsCutsSet *cutsTPCNegEtaQoverSqrtM = new AliQnCorrectionsCutsSet();
     if(!isESD){
-        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
     }
     else {
         Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
         task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
         if(UseTPConlyTracks){
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
         }
         else{
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,-0.8,0.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
         }
     }
     TPCNegEtaconfQoverSqrtM->SetCuts(cutsTPCNegEtaQoverSqrtM);
@@ -1103,28 +1108,28 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
     isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
     AliQnCorrectionsCutsSet *cutsTPCPosEtaQoverSqrtM = new AliQnCorrectionsCutsSet();
     if(!isESD){
-        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
-        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFilterBitMask768,0.5,1.5));
+        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
     }
     else {
         Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
         task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
         if(UseTPConlyTracks){
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-3.0,3.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-3.0,3.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCnclsIter1,70.0,161.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2Iter1,0.2,4.0));
         }
         else{
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
-            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaXY,-0.3,0.3));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kDcaZ,-0.3,0.3));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kEta,0.,0.8));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kPt,0.2,5.));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCncls,70.0,161.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kTPCchi2,0.2,4.0));
         }
     }
     TPCPosEtaconfQoverSqrtM->SetCuts(cutsTPCPosEtaQoverSqrtM);
@@ -1150,14 +1155,14 @@ void AddSPD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   AliQnCorrectionsEventClassVariablesSet *CorrEventClasses = new AliQnCorrectionsEventClassVariablesSet(nSPDdim);
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-							       task->VarName(VAR::kVtxZ), VtxZbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxZ,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the SPD detector */
-  AliQnCorrectionsDetector *SPD = new AliQnCorrectionsDetector("SPD", VAR::kSPD);
+  AliQnCorrectionsDetector *SPD = new AliQnCorrectionsDetector("SPD", AliQnCorrectionsVarManagerTask::kSPD);
 
   /* the SPD detector configuration */
   AliQnCorrectionsDetectorConfigurationTracks *SPDconf =
@@ -1204,14 +1209,14 @@ void AddTZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   AliQnCorrectionsEventClassVariablesSet *CorrEventClasses = new AliQnCorrectionsEventClassVariablesSet(nTZEROdim);
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-							       task->VarName(VAR::kVtxZ), VtxZbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxZ,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the TZERO detector */
-  AliQnCorrectionsDetector *TZERO = new AliQnCorrectionsDetector("TZERO", VAR::kTZERO);
+  AliQnCorrectionsDetector *TZERO = new AliQnCorrectionsDetector("TZERO", AliQnCorrectionsVarManagerTask::kTZERO);
 
   /* the TZEROA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *TZEROAconf =
@@ -1315,16 +1320,16 @@ void AddZDC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   Double_t VtxXbinning[][2] = {{ -0.3, 2}, {0.3, 10 }};
   Double_t VtxYbinning[][2] = {{ -0.3, 2}, {0.3, 10 }};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxX,
-							       task->VarName(VAR::kVtxX), VtxXbinning));
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxY,
-							       task->VarName(VAR::kVtxY), VtxYbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxX,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxX), VtxXbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxY,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxY), VtxYbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the ZDC detector */
-  AliQnCorrectionsDetector *ZDC = new AliQnCorrectionsDetector("ZDC", VAR::kZDC);
+  AliQnCorrectionsDetector *ZDC = new AliQnCorrectionsDetector("ZDC", AliQnCorrectionsVarManagerTask::kZDC);
 
   /* the ZDCA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *ZDCAconf =
@@ -1378,7 +1383,10 @@ void AddFMDTaskForESDanalysis(){
   ret->SetOutputFileName("AliAOD.pass2.root");
   mgr->SetOutputEventHandler(ret);
 
+  #ifndef __CLING__
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/AddTaskForwardMult.C");
+  #endif
+
 
   ULong_t run = 0; // 0: get from data???
   UShort_t sys = 0; // 0: get from data, 1: pp, 2: AA
@@ -1425,14 +1433,14 @@ void AddFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
   AliQnCorrectionsEventClassVariablesSet *CorrEventClasses = new AliQnCorrectionsEventClassVariablesSet(nFMDdim);
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-							       task->VarName(VAR::kVtxZ), VtxZbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxZ,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   /* the FMD detector */
-  AliQnCorrectionsDetector *FMD = new AliQnCorrectionsDetector("FMD", VAR::kFMD);
+  AliQnCorrectionsDetector *FMD = new AliQnCorrectionsDetector("FMD", AliQnCorrectionsVarManagerTask::kFMD);
 
   /* the FMDA detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *FMDAconf =
@@ -1537,20 +1545,20 @@ void AddRawFMD(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManag
   AliQnCorrectionsEventClassVariablesSet *CorrEventClasses = new AliQnCorrectionsEventClassVariablesSet(nFMDdim);
   Double_t VtxZbinning[][2] = { { -10.0, 4} , {-7.0, 1}, {7.0, 8}, {10.0, 1}};
   Double_t Ctbinning[][2] = {{ 0.0, 2}, {100.0, 100 }};
-  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(VAR::kVtxZ,
-							       task->VarName(VAR::kVtxZ), VtxZbinning));
+  CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(AliQnCorrectionsVarManagerTask::kVtxZ,
+							       task->VarName(AliQnCorrectionsVarManagerTask::kVtxZ), VtxZbinning));
   CorrEventClasses->Add(new AliQnCorrectionsEventClassVariable(varForEventMultiplicity,
 							       Form("Centrality (%s)", task->VarName(varForEventMultiplicity)), Ctbinning));
   ////////// end of binning
 
   AliQnCorrectionsCutsSet *cutFMDA = new AliQnCorrectionsCutsSet();
-  cutFMDA->Add(new AliQnCorrectionsCutWithin(VAR::kFMDEta,0.0,6.0));
+  cutFMDA->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFMDEta,0.0,6.0));
 
   AliQnCorrectionsCutsSet *cutFMDC = new AliQnCorrectionsCutsSet();
-  cutFMDC->Add(new AliQnCorrectionsCutWithin(VAR::kFMDEta,-6.0,0.0));
+  cutFMDC->Add(new AliQnCorrectionsCutWithin(AliQnCorrectionsVarManagerTask::kFMDEta,-6.0,0.0));
 
   /* the FMD detector */
-  AliQnCorrectionsDetector *FMDraw = new AliQnCorrectionsDetector("FMDraw", VAR::kFMDraw);
+  AliQnCorrectionsDetector *FMDraw = new AliQnCorrectionsDetector("FMDraw", AliQnCorrectionsVarManagerTask::kFMDraw);
 
   /* the FMDAraw detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *FMDArawconf =
@@ -1643,148 +1651,148 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
     // Event wise histograms
     if(classStr.Contains("Event")) {
       histos->AddHistClass(classStr.Data());
-      histos->AddHistogram(classStr.Data(),"RunNo","Run numbers;Run", kFALSE, kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo);
-      histos->AddHistogram(classStr.Data(),"BC","Bunch crossing;BC", kFALSE,3000,0.,3000.,VAR::kBC);
+      histos->AddHistogram(classStr.Data(),"RunNo","Run numbers;Run", kFALSE, kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo);
+      histos->AddHistogram(classStr.Data(),"BC","Bunch crossing;BC", kFALSE,3000,0.,3000.,AliQnCorrectionsVarManagerTask::kBC);
       histos->AddHistogram(classStr.Data(),"IsPhysicsSelection","Physics selection flag;;", kFALSE,
-			   2,-0.5,1.5,VAR::kIsPhysicsSelection, 0,0.0,0.0,VAR::kNothing, 0,0.0,0.0,VAR::kNothing, "off;on");
+			   2,-0.5,1.5,AliQnCorrectionsVarManagerTask::kIsPhysicsSelection, 0,0.0,0.0,AliQnCorrectionsVarManagerTask::kNothing, 0,0.0,0.0,AliQnCorrectionsVarManagerTask::kNothing, "off;on");
 
-      histos->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-30.0,30.0,VAR::kVtxZ);
-      //histos->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-15.,15.,VAR::kVtxZ);
-      histos->AddHistogram(classStr.Data(),"VtxX","Vtx X;vtx X (cm)", kFALSE,300,-1.,1.,VAR::kVtxX);
-      histos->AddHistogram(classStr.Data(),"VtxY","Vtx Y;vtx Y (cm)", kFALSE,300,-1.,1.,VAR::kVtxY);
+      histos->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-30.0,30.0,AliQnCorrectionsVarManagerTask::kVtxZ);
+      //histos->AddHistogram(classStr.Data(),"VtxZ","Vtx Z;vtx Z (cm)", kFALSE,300,-15.,15.,AliQnCorrectionsVarManagerTask::kVtxZ);
+      histos->AddHistogram(classStr.Data(),"VtxX","Vtx X;vtx X (cm)", kFALSE,300,-1.,1.,AliQnCorrectionsVarManagerTask::kVtxX);
+      histos->AddHistogram(classStr.Data(),"VtxY","Vtx Y;vtx Y (cm)", kFALSE,300,-1.,1.,AliQnCorrectionsVarManagerTask::kVtxY);
 
 
       histos->AddHistogram(classStr.Data(),"CentVZEROvsMultPVZERO","Multiplicity percentile (VZERO);multiplicity VZERO (percents);centrality VZERO (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kVZEROMultPercentile, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kVZEROMultPercentile, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentVZEROvsCentSPD","Centrality(VZERO);centrality VZERO (percents);centrality SPD (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentVZERO, 100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPCvsCentSPD","Centrality(TPC);centrality TPC (percents);centrality SPD (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPCvsCentVZERO","Centrality(TPC);centrality TPC (percents);centrality VZERO (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentTPCvsCentZDC","Centrality(TPC);centrality TPC (percents);centrality ZDC (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentTPC, 100, 0.0, 100.0, VAR::kCentZDC);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentZDC);
       histos->AddHistogram(classStr.Data(),"CentZDCvsCentVZERO","Centrality(ZDC);centrality ZDC (percents);centrality VZERO (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentZDC, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentZDC, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentZDCvsCentSPD","Centrality(ZDC);centrality ZDC (percents);centrality SPD (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentZDC, 100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentZDC, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD);
 
       histos->AddHistogram(classStr.Data(),"MultVZEROvsCentVZERO","Multiplicity;multiplicity VZERO;VZERO centrality", kFALSE,
-			   100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100,0.,100., VAR::kCentVZERO);
+			   100, 0.0, 32000.0, AliQnCorrectionsVarManagerTask::kVZEROTotalMult, 100,0.,100., AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"MultSPDvsCentPSD","Multiplicity;SPD tracklets;SPD centrality", kFALSE,
-			   100, 0.0, 3000.0, VAR::kSPDntracklets, 100,0.,100., VAR::kCentSPD);
+			   100, 0.0, 3000.0, AliQnCorrectionsVarManagerTask::kSPDntracklets, 100,0.,100., AliQnCorrectionsVarManagerTask::kCentSPD);
       histos->AddHistogram(classStr.Data(),"MultTPCvsCentSPD","Multiplicity;TPC selected tracks;TPC centrality", kFALSE,
-			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100,0.,100., VAR::kCentTPC);
+			   100, 0.0, 3500.0, AliQnCorrectionsVarManagerTask::kNtracksSelected, 100,0.,100., AliQnCorrectionsVarManagerTask::kCentTPC);
       histos->AddHistogram(classStr.Data(),"MultZDCvsCentZDC","Multiplicity;multiplicity ZDC;ZDC centrality", kFALSE,
-			   100, 0.0, 300000.0, VAR::kZDCTotalEnergy, 100,0.,100., VAR::kCentZDC);
+			   100, 0.0, 300000.0, AliQnCorrectionsVarManagerTask::kZDCTotalEnergy, 100,0.,100., AliQnCorrectionsVarManagerTask::kCentZDC);
 
 
       histos->AddHistogram(classStr.Data(),"MultTPCvsMultVZERO","Multiplicity;tracks TPC;multiplicity VZERO", kFALSE,
-			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 32000.0, VAR::kVZEROTotalMult);
+			   100, 0.0, 3500.0, AliQnCorrectionsVarManagerTask::kNtracksSelected, 100, 0.0, 32000.0, AliQnCorrectionsVarManagerTask::kVZEROTotalMult);
       histos->AddHistogram(classStr.Data(),"MultTPCvsMultSPD","Multiplicity;tracklets SPD;tracks TPC", kFALSE,
-			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 3000.0, VAR::kSPDntracklets);
+			   100, 0.0, 3500.0, AliQnCorrectionsVarManagerTask::kNtracksSelected, 100, 0.0, 3000.0, AliQnCorrectionsVarManagerTask::kSPDntracklets);
       histos->AddHistogram(classStr.Data(),"MultSPDvsMultVZERO","Multiplicity;tracklets SPD;multiplicity VZERO", kFALSE,
-			   100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100, 0.0, 3000.0, VAR::kSPDntracklets);
+			   100, 0.0, 32000.0, AliQnCorrectionsVarManagerTask::kVZEROTotalMult, 100, 0.0, 3000.0, AliQnCorrectionsVarManagerTask::kSPDntracklets);
       histos->AddHistogram(classStr.Data(),"MultTPCvsMultZDC","Multiplicity;tracks TPC;energy ZDC", kFALSE,
-			   100, 0.0, 3500.0, VAR::kNtracksSelected, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   100, 0.0, 3500.0, AliQnCorrectionsVarManagerTask::kNtracksSelected, 100, 0.0, 300000.0, AliQnCorrectionsVarManagerTask::kZDCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultVZEROvsMultZDC","Multiplicity;multiplicity VZERO;energy ZDC", kFALSE,
-			   100, 0.0, 32000.0, VAR::kVZEROTotalMult, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   100, 0.0, 32000.0, AliQnCorrectionsVarManagerTask::kVZEROTotalMult, 100, 0.0, 300000.0, AliQnCorrectionsVarManagerTask::kZDCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultSPDvsMultZDC","Multiplicity;tracklets SPD;energy ZDC", kFALSE,
-			   100, 0.0, 3000.0, VAR::kSPDntracklets, 100, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   100, 0.0, 3000.0, AliQnCorrectionsVarManagerTask::kSPDntracklets, 100, 0.0, 300000.0, AliQnCorrectionsVarManagerTask::kZDCTotalEnergy);
 
 
 
       histos->AddHistogram(classStr.Data(),"MultVZERO","Multiplicity;multiplicity VZERO", kFALSE,
-			   320, 0.0, 25000.0, VAR::kVZEROTotalMult);
+			   320, 0.0, 25000.0, AliQnCorrectionsVarManagerTask::kVZEROTotalMult);
       histos->AddHistogram(classStr.Data(),"MultVZEROA","Multiplicity;multiplicity VZEROA", kFALSE,
-			   250, 0.0, 9500.0, VAR::kVZEROATotalMult);//10000.0
+			   250, 0.0, 9500.0, AliQnCorrectionsVarManagerTask::kVZEROATotalMult);//10000.0
       histos->AddHistogram(classStr.Data(),"MultVZEROC","Multiplicity;multiplicity VZEROC", kFALSE,
-			   250, 0.0, 16000.0, VAR::kVZEROCTotalMult);//15000.0
+			   250, 0.0, 16000.0, AliQnCorrectionsVarManagerTask::kVZEROCTotalMult);//15000.0
       histos->AddHistogram(classStr.Data(),"MultZDC","Multiplicity;multiplicity ZDC", kFALSE,
-			   200, 0.0, 300000.0, VAR::kZDCTotalEnergy);
+			   200, 0.0, 300000.0, AliQnCorrectionsVarManagerTask::kZDCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultZDCA","Multiplicity;multiplicity ZDCA", kFALSE,
-			   200, 0.0, 150000.0, VAR::kZDCATotalEnergy);
+			   200, 0.0, 150000.0, AliQnCorrectionsVarManagerTask::kZDCATotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultZDCC","Multiplicity;multiplicity ZDCC", kFALSE,
-			   200, 0.0, 150000.0, VAR::kZDCCTotalEnergy);
+			   200, 0.0, 150000.0, AliQnCorrectionsVarManagerTask::kZDCCTotalEnergy);
       histos->AddHistogram(classStr.Data(),"MultFMD1","Multiplicity;multiplicity FMD1", kFALSE,
-			   300, 0.0, 10000.0, VAR::kFMD1TotalMult);
+			   300, 0.0, 10000.0, AliQnCorrectionsVarManagerTask::kFMD1TotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD2I","Multiplicity;multiplicity FMD2I", kFALSE,
-			   300, 0.0, 10000.0, VAR::kFMD2ITotalMult);
+			   300, 0.0, 10000.0, AliQnCorrectionsVarManagerTask::kFMD2ITotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD2O","Multiplicity;multiplicity FMD2O", kFALSE,
-			   300, 0.0, 10000.0, VAR::kFMD2OTotalMult);
+			   300, 0.0, 10000.0, AliQnCorrectionsVarManagerTask::kFMD2OTotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD3I","Multiplicity;multiplicity FMD3I", kFALSE,
-			   300, 0.0, 10000.0, VAR::kFMD3ITotalMult);
+			   300, 0.0, 10000.0, AliQnCorrectionsVarManagerTask::kFMD3ITotalMult);
       histos->AddHistogram(classStr.Data(),"MultFMD3O","Multiplicity;multiplicity FMD3O", kFALSE,
-			   300, 0.0, 10000.0, VAR::kFMD3OTotalMult);
+			   300, 0.0, 10000.0, AliQnCorrectionsVarManagerTask::kFMD3OTotalMult);
       histos->AddHistogram(classStr.Data(),"MultTZEROA","Multiplicity;multiplicity TZEROA", kFALSE,
-			   300, 0.0, 3000.0, VAR::kTZEROATotalMult);
+			   300, 0.0, 3000.0, AliQnCorrectionsVarManagerTask::kTZEROATotalMult);
       histos->AddHistogram(classStr.Data(),"MultTZEROC","Multiplicity;multiplicity TZEROC", kFALSE,
-			   300, 0.0, 3000.0, VAR::kTZEROCTotalMult);
+			   300, 0.0, 3000.0, AliQnCorrectionsVarManagerTask::kTZEROCTotalMult);
 
 
 
 
       histos->AddHistogram(classStr.Data(),"MultPercentVZERO","Multiplicity percentile (VZERO);multiplicity VZERO (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kVZEROMultPercentile);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kVZEROMultPercentile);
       histos->AddHistogram(classStr.Data(),"CentVZERO","Centrality(VZERO);centrality VZERO (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentVZERO);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentSPD","Centrality(SPD);centrality SPD (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentSPD);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPC","Centrality(TPC);centrality TPC (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentTPC);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC);
       histos->AddHistogram(classStr.Data(),"CentZDC","Centrality(ZDC);centrality ZDC (percents)", kFALSE,
-			   100, 0.0, 100.0, VAR::kCentZDC);
+			   100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentZDC);
 
       histos->AddHistogram(classStr.Data(),"CentQuality","Centrality quality;centrality quality", kFALSE,
-			   100, -50.5, 49.5, VAR::kCentQuality);
+			   100, -50.5, 49.5, AliQnCorrectionsVarManagerTask::kCentQuality);
       histos->AddHistogram(classStr.Data(),"CentVZERO_Run_prof","<Centrality(VZERO)> vs run;Run; centrality VZERO (%)", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"CentSPD_Run_prof","<Centrality(SPD)> vs run;Run; centrality SPD (%)", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentSPD);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD);
       histos->AddHistogram(classStr.Data(),"CentTPC_Run_prof","<Centrality(TPC)> vs run;Run; centrality TPC (%)", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentTPC);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC);
       histos->AddHistogram(classStr.Data(),"CentZDC_Run_prof","<Centrality(ZDC)> vs run;Run; centrality ZDC (%)", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0.0, 100.0, VAR::kCentZDC);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentZDC);
 
 
       histos->AddHistogram(classStr.Data(),"NV0sTotal","Number of V0 candidates per event;# pairs", kFALSE,
-			   1000,0.,30000.,VAR::kNV0total);
+			   1000,0.,30000.,AliQnCorrectionsVarManagerTask::kNV0total);
       histos->AddHistogram(classStr.Data(),"NV0sSelected","Number of selected V0 candidates per event;# pairs", kFALSE,
-			   1000,0.,10000.,VAR::kNV0selected);
+			   1000,0.,10000.,AliQnCorrectionsVarManagerTask::kNV0selected);
       histos->AddHistogram(classStr.Data(),"NPairs","Number of candidates per event;# pairs", kFALSE,
-			   5000,0.,5000.,VAR::kNdielectrons);
+			   5000,0.,5000.,AliQnCorrectionsVarManagerTask::kNdielectrons);
       histos->AddHistogram(classStr.Data(),"NPairsSelected", "Number of selected pairs per event; #pairs", kFALSE,
-			   5000,0.,5000.,VAR::kNpairsSelected);
+			   5000,0.,5000.,AliQnCorrectionsVarManagerTask::kNpairsSelected);
       histos->AddHistogram(classStr.Data(),"NTracksTotal","Number of total tracks per event;# tracks", kFALSE,
-			   1000,0.,30000.,VAR::kNtracksTotal);
+			   1000,0.,30000.,AliQnCorrectionsVarManagerTask::kNtracksTotal);
       histos->AddHistogram(classStr.Data(),"NTracksSelected","Number of selected tracks per event;# tracks", kFALSE,
-			   1000,0.,30000.,VAR::kNtracksSelected);
+			   1000,0.,30000.,AliQnCorrectionsVarManagerTask::kNtracksSelected);
       histos->AddHistogram(classStr.Data(),"SPDntracklets", "SPD #tracklets; tracklets", kFALSE,
-			   3000, -0.5, 2999.5, VAR::kSPDntracklets);
+			   3000, -0.5, 2999.5, AliQnCorrectionsVarManagerTask::kSPDntracklets);
       histos->AddHistogram(classStr.Data(),"SPDnSingleClusters", "SPD #single clusters; tracklets", kFALSE,
-			   3000, -0.5, 2999.5, VAR::kSPDnSingleClusters);
+			   3000, -0.5, 2999.5, AliQnCorrectionsVarManagerTask::kSPDnSingleClusters);
 
       histos->AddHistogram(classStr.Data(),"NV0total_Run_prof", "<Number of total V0s> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNV0total);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kNV0total);
       histos->AddHistogram(classStr.Data(),"NV0selected_Run_prof", "<Number of selected V0s> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNV0selected);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kNV0selected);
       histos->AddHistogram(classStr.Data(),"Ndielectrons_Run_prof", "<Number of dielectrons> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNdielectrons);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kNdielectrons);
       histos->AddHistogram(classStr.Data(),"NpairsSelected_Run_prof", "<Number of selected pairs> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNpairsSelected);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kNpairsSelected);
       histos->AddHistogram(classStr.Data(),"NTracksTotal_Run_prof", "<Number of tracks> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNtracksTotal);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kNtracksTotal);
       histos->AddHistogram(classStr.Data(),"NTracksSelected_Run_prof", "<Number of selected tracks> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kNtracksSelected);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kNtracksSelected);
       histos->AddHistogram(classStr.Data(),"SPDntracklets_Run_prof", "<SPD ntracklets> per run; Run; #tracks", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 100, 0., 10000., VAR::kSPDntracklets);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 100, 0., 10000., AliQnCorrectionsVarManagerTask::kSPDntracklets);
 
       histos->AddHistogram(classStr.Data(),"VtxZ_CentVZERO","Centrality(VZERO) vs vtx. Z;vtx Z (cm); centrality VZERO (%)", kFALSE,
-			   300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentVZERO);
+			   300,-15.,15.,AliQnCorrectionsVarManagerTask::kVtxZ, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO);
       histos->AddHistogram(classStr.Data(),"VtxZ_CentSPD","Centrality(SPD) vs vtx. Z;vtx Z (cm); centrality SPD (%)", kFALSE,
-			   300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentSPD);
+			   300,-15.,15.,AliQnCorrectionsVarManagerTask::kVtxZ, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD);
       histos->AddHistogram(classStr.Data(),"VtxZ_CentTPC","Centrality(TPC) vs vtx. Z;vtx Z (cm); centrality TPC (%)", kFALSE,
-			   300,-15.,15.,VAR::kVtxZ, 100, 0.0, 100.0, VAR::kCentTPC);
+			   300,-15.,15.,AliQnCorrectionsVarManagerTask::kVtxZ, 100, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC);
       continue;
     }  // end if className contains "Event"
 
@@ -1794,22 +1802,22 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
 
       TString triggerNames = "";
-      for(Int_t i=0; i<64; ++i) {triggerNames += Form("%s",VAR::fOfflineTriggerNames[i]); triggerNames+=";";}
+      for(Int_t i=0; i<64; ++i) {triggerNames += Form("%s",AliQnCorrectionsVarManagerTask::fOfflineTriggerNames[i]); triggerNames+=";";}
 
       histos->AddHistogram(classStr.Data(), "Triggers", "Offline triggers fired; ; ;", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTrigger, 2, -0.5, 1.5, VAR::kOfflineTriggerFired, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data(), "off;on");
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTrigger, 2, -0.5, 1.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data(), "off;on");
       histos->AddHistogram(classStr.Data(), "Triggers2", "Offline triggers fired; ; ;", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 0, 0.0, 0.0, VAR::kNothing, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired2, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentVZERO_Triggers2", "Offline triggers fired vs centrality VZERO; ; centrality VZERO;", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentVZERO, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired2, 20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentTPC_Triggers2", "Offline triggers fired vs centrality TPC; ; centrality TPC;", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentTPC, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired2, 20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentTPC, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentSPD_Triggers2", "Offline triggers fired vs centrality SPD; ; centrality SPD;", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentSPD, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired2, 20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentSPD, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "CentZDC_Triggers2", "Offline triggers fired vs centrality ZDC; ; centrality ZDC;", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 20, 0.0, 100.0, VAR::kCentZDC, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired2, 20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentZDC, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data());
       histos->AddHistogram(classStr.Data(), "VtxZ_Triggers2", "Offline triggers fired vs vtxZ; ; vtx Z (cm.);", kFALSE,
-			   64, -0.5, 63.5, VAR::kOfflineTriggerFired2, 200, -20.0, 20.0, VAR::kVtxZ, 0, 0.0, 0.0, VAR::kNothing, triggerNames.Data());
+			   64, -0.5, 63.5, AliQnCorrectionsVarManagerTask::kOfflineTriggerFired2, 200, -20.0, 20.0, AliQnCorrectionsVarManagerTask::kVtxZ, 0, 0.0, 0.0, AliQnCorrectionsVarManagerTask::kNothing, triggerNames.Data());
       continue;
     }
 
@@ -1818,9 +1826,9 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
       for(Int_t ih=0; ih<6; ++ih) {
         histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_CentVZERO",ih+1), Form("<cos%d #varphi> vs (CentVZERO); centrality VZERO; <cos%d #varphi>", ih+1, ih+1), kTRUE,
-			     20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
+			     20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 500, -1., 1., AliQnCorrectionsVarManagerTask::kCosNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_CentVZERO",ih+1), Form("<sin%d #varphi> vs (CentVZERO); centrality VZERO; <sin%d #varphi>", ih+1, ih+1), kTRUE,
-			     20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+			     20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 500, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kSinNPhi+ih);
       }
     }
 
@@ -1830,69 +1838,69 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
 
       histos->AddHistogram(classStr.Data(), "Pt", "p_{T} distribution; p_{T} (GeV/c^{2});", kFALSE,
-			   1000, 0.0, 50.0, VAR::kPt);
+			   1000, 0.0, 50.0, AliQnCorrectionsVarManagerTask::kPt);
       histos->AddHistogram(classStr.Data(), "Eta", "#eta illumination; #eta;", kFALSE,
-			   1000, -1.5, 1.5, VAR::kEta);
+			   1000, -1.5, 1.5, AliQnCorrectionsVarManagerTask::kEta);
       histos->AddHistogram(classStr.Data(), "Phi", "#varphi illumination; #varphi;", kFALSE,
-			   1000, 0.0, 6.3, VAR::kPhi);
+			   1000, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi);
       histos->AddHistogram(classStr.Data(), "DCAxy", "DCAxy; DCAxy (cm.)", kFALSE,
-			   1000, -10.0, 10.0, VAR::kDcaXY);
+			   1000, -10.0, 10.0, AliQnCorrectionsVarManagerTask::kDcaXY);
       histos->AddHistogram(classStr.Data(), "DCAz", "DCAz; DCAz (cm.)", kFALSE,
-			   1000, -10.0, 10.0, VAR::kDcaZ);
+			   1000, -10.0, 10.0, AliQnCorrectionsVarManagerTask::kDcaZ);
       histos->AddHistogram(classStr.Data(), "TPCncls", "TPCncls; TPCncls", kFALSE,
-			   160, 0.0, 160.0, VAR::kTPCncls);
+			   160, 0.0, 160.0, AliQnCorrectionsVarManagerTask::kTPCncls);
       histos->AddHistogram(classStr.Data(), "TPCsa_TPCncls", "TPC standalone TPCncls; TPCncls", kFALSE,
-			   160, 0.0, 160.0, VAR::kTPCnclsIter1);
+			   160, 0.0, 160.0, AliQnCorrectionsVarManagerTask::kTPCnclsIter1);
 
       // run dependence
       histos->AddHistogram(classStr.Data(), "Pt_Run", "<p_{T}> vs run; run;", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, 0.0, 50.0, VAR::kPt);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 1000, 0.0, 50.0, AliQnCorrectionsVarManagerTask::kPt);
       histos->AddHistogram(classStr.Data(), "Eta_Run", "<#eta> vs run; run;", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -1.5, 1.5, VAR::kEta);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 1000, -1.5, 1.5, AliQnCorrectionsVarManagerTask::kEta);
       histos->AddHistogram(classStr.Data(), "Phi_Run", "<#varphi> vs run; run;", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, 0.0, 6.3, VAR::kPhi);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 1000, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi);
       histos->AddHistogram(classStr.Data(), "DCAxy_Run", "<DCAxy> vs run; run;", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -10.0, 10.0, VAR::kDcaXY);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 1000, -10.0, 10.0, AliQnCorrectionsVarManagerTask::kDcaXY);
       histos->AddHistogram(classStr.Data(), "DCAz_Run", "<DCAz> vs run; run;", kTRUE,
-			   kNRunBins, runHistRange[0], runHistRange[1], VAR::kRunNo, 1000, -10.0, 10.0, VAR::kDcaZ);
+			   kNRunBins, runHistRange[0], runHistRange[1], AliQnCorrectionsVarManagerTask::kRunNo, 1000, -10.0, 10.0, AliQnCorrectionsVarManagerTask::kDcaZ);
 
       // correlations between parameters
       histos->AddHistogram(classStr.Data(), "Eta_Pt_prof", "<p_{T}> vs #eta; #eta; p_{T} (GeV/c);", kTRUE,
-			   300, -1.5, +1.5, VAR::kEta, 100, 0.0, 10.0, VAR::kPt);
+			   300, -1.5, +1.5, AliQnCorrectionsVarManagerTask::kEta, 100, 0.0, 10.0, AliQnCorrectionsVarManagerTask::kPt);
       histos->AddHistogram(classStr.Data(), "Phi_Pt", "p_{T} vs #varphi; #varphi (rad.); p_{T} (GeV/c)", kFALSE,
-			   300, -0.01, 6.3, VAR::kPhi, 100, 0.0, 2.2, VAR::kPt);
+			   300, -0.01, 6.3, AliQnCorrectionsVarManagerTask::kPhi, 100, 0.0, 2.2, AliQnCorrectionsVarManagerTask::kPt);
       histos->AddHistogram(classStr.Data(), "Phi_Pt_prof", "<p_{T}> vs #varphi; #varphi (rad.); p_{T} (GeV/c)", kTRUE,
-			   300, 0.0, 6.3, VAR::kPhi, 100, 0.0, 10.0, VAR::kPt);
+			   300, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi, 100, 0.0, 10.0, AliQnCorrectionsVarManagerTask::kPt);
       histos->AddHistogram(classStr.Data(), "Eta_Phi", "#varphi vs #eta; #eta; #varphi (rad.);", kFALSE,
-			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi);
+			   200, -1.0, +1.0, AliQnCorrectionsVarManagerTask::kEta, 100, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi);
       histos->AddHistogram(classStr.Data(), "TPCncls_Eta_Phi_prof", "<TPC ncls> vs #varphi vs #eta; #eta; #varphi (rad.);TPC ncls", kTRUE,
-			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kTPCncls);
+			   200, -1.0, +1.0, AliQnCorrectionsVarManagerTask::kEta, 100, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi, 10, 0.0, 200., AliQnCorrectionsVarManagerTask::kTPCncls);
       histos->AddHistogram(classStr.Data(), "DCAxy_Eta_Phi_prof", "<DCAxy> vs #varphi vs #eta; #eta; #varphi (rad.);DCAxy (cm)", kTRUE,
-			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kDcaXY);
+			   200, -1.0, +1.0, AliQnCorrectionsVarManagerTask::kEta, 100, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi, 10, 0.0, 200., AliQnCorrectionsVarManagerTask::kDcaXY);
       histos->AddHistogram(classStr.Data(), "DCAz_Eta_Phi_prof", "<DCAz> vs #varphi vs #eta; #eta; #varphi (rad.);DCAz (cm)", kTRUE,
-			   200, -1.0, +1.0, VAR::kEta, 100, 0.0, 6.3, VAR::kPhi, 10, 0.0, 200., VAR::kDcaZ);
+			   200, -1.0, +1.0, AliQnCorrectionsVarManagerTask::kEta, 100, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kPhi, 10, 0.0, 200., AliQnCorrectionsVarManagerTask::kDcaZ);
       histos->AddHistogram(classStr.Data(), "Pt_DCAxy", "DCAxy vs p_{T}; p_{T} (GeV/c); DCA_{xy} (cm)", kFALSE,
-			   100, 0.0, 10.0, VAR::kPt, 500, -2.0, 2.0, VAR::kDcaXY);
+			   100, 0.0, 10.0, AliQnCorrectionsVarManagerTask::kPt, 500, -2.0, 2.0, AliQnCorrectionsVarManagerTask::kDcaXY);
       histos->AddHistogram(classStr.Data(), "Pt_DCAz", "DCAz vs p_{T}; p_{T} (GeV/c); DCA_{z} (cm)", kFALSE,
-			   100, 0.0, 10.0, VAR::kPt, 500, -2.0, 2.0, VAR::kDcaZ);
+			   100, 0.0, 10.0, AliQnCorrectionsVarManagerTask::kPt, 500, -2.0, 2.0, AliQnCorrectionsVarManagerTask::kDcaZ);
       histos->AddHistogram(classStr.Data(), "Eta_DCAxy", "DCAxy vs #eta; #eta; DCA_{xy} (cm)", kFALSE,
-			   100, -1.0, 1.0, VAR::kEta, 500, -2.0, 2.0, VAR::kDcaXY);
+			   100, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kEta, 500, -2.0, 2.0, AliQnCorrectionsVarManagerTask::kDcaXY);
       histos->AddHistogram(classStr.Data(), "Eta_DCAz", "DCAz vs #eta; #eta; DCA_{z} (cm)", kFALSE,
-			   100, -1.0, 1.0, VAR::kEta, 500, -2.0, 2.0, VAR::kDcaZ);
+			   100, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kEta, 500, -2.0, 2.0, AliQnCorrectionsVarManagerTask::kDcaZ);
 
       for(Int_t ih=0; ih<6; ++ih) {
         //histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_CentVZERO",ih+1), Form("<cos%d #varphi> vs (CentVZERO); centrality VZERO; <cos%d #varphi>", ih+1, ih+1), kTRUE,
-        //                   20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
+        //                   20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 500, -1., 1., AliQnCorrectionsVarManagerTask::kCosNPhi+ih);
         //histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_CentVZERO",ih+1), Form("<sin%d #varphi> vs (CentVZERO); centrality VZERO; <sin%d #varphi>", ih+1, ih+1), kTRUE,
-        //                   20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+        //                   20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 500, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kSinNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_Pt_Eta",ih+1), Form("<cos%d #varphi> vs (#eta,p_{T}); #eta; p_{T} (GeV/c); <cos%d #varphi>", ih+1, ih+1), kTRUE,
-			     20, -1.0, 1.0, VAR::kEta, 30, 0.0, 3.0, VAR::kPt, 500, -1.0, 1.0, VAR::kCosNPhi+ih);
+			     20, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kEta, 30, 0.0, 3.0, AliQnCorrectionsVarManagerTask::kPt, 500, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kCosNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_Pt_Eta",ih+1), Form("<sin%d #varphi> vs (#eta,p_{T}); #eta; p_{T} (GeV/c); <sin%d #varphi>", ih+1, ih+1), kTRUE,
-			     20, -1.0, 1.0, VAR::kEta, 30, 0.0, 3.0, VAR::kPt, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+			     20, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kEta, 30, 0.0, 3.0, AliQnCorrectionsVarManagerTask::kPt, 500, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kSinNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Cos%dPhi_CentVZERO_VtxZ",ih+1), Form("<cos%d #varphi> vs (CentVZERO,VtxZ); Z (cm.); centrality VZERO; <cos%d #varphi>", ih+1, ih+1), kTRUE,
-			     30, -15.0, 15.0, VAR::kVtxZ, 20, 0.0, 100.0, VAR::kCentVZERO, 500, -1., 1., VAR::kCosNPhi+ih);
+			     30, -15.0, 15.0, AliQnCorrectionsVarManagerTask::kVtxZ, 20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 500, -1., 1., AliQnCorrectionsVarManagerTask::kCosNPhi+ih);
         histos->AddHistogram(classStr.Data(), Form("Sin%dPhi_CentVZERO_VtxZ",ih+1), Form("<sin%d #varphi> vs (CentVZERO,VtxZ); Z (cm.); centrality VZERO; <sin%d #varphi>", ih+1, ih+1), kTRUE,
-			     30, -15.0, 15.0, VAR::kVtxZ, 20, 0.0, 100.0, VAR::kCentVZERO, 500, -1.0, 1.0, VAR::kSinNPhi+ih);
+			     30, -15.0, 15.0, AliQnCorrectionsVarManagerTask::kVtxZ, 20, 0.0, 100.0, AliQnCorrectionsVarManagerTask::kCentVZERO, 500, -1.0, 1.0, AliQnCorrectionsVarManagerTask::kSinNPhi+ih);
       }
     }
 
@@ -1901,11 +1909,11 @@ void DefineHistograms(AliQnCorrectionsManager* QnManager, AliQnCorrectionsHistos
       histos->AddHistClass(classStr.Data());
 
       histos->AddHistogram(classStr.Data(), "Eta", "#eta illumination; #eta;", kFALSE,
-			   1000, -3.0, 3.0, VAR::kSPDtrackletEta);
+			   1000, -3.0, 3.0, AliQnCorrectionsVarManagerTask::kSPDtrackletEta);
       histos->AddHistogram(classStr.Data(), "Phi", "#varphi illumination; #varphi;", kFALSE,
-			   300, -0.01, 6.3, VAR::kSPDtrackletPhi);
+			   300, -0.01, 6.3, AliQnCorrectionsVarManagerTask::kSPDtrackletPhi);
       histos->AddHistogram(classStr.Data(), "Eta_Phi", "#varphi vs #eta; #eta; #varphi (rad.);", kFALSE,
-			   200, -3.0, +3.0, VAR::kSPDtrackletEta, 100, 0.0, 6.3, VAR::kSPDtrackletPhi);
+			   200, -3.0, +3.0, AliQnCorrectionsVarManagerTask::kSPDtrackletEta, 100, 0.0, 6.3, AliQnCorrectionsVarManagerTask::kSPDtrackletPhi);
     }
 
   }

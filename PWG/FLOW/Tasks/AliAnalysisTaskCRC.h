@@ -25,6 +25,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliFlowCommonConstants.h"
+#include "TGrid.h"
 
 class TString;
 class TList;
@@ -44,7 +45,8 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-
+  virtual void NotifyRun();
+  
   // Common:
   void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
   Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};
@@ -260,7 +262,14 @@ public:
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
+  //@Shi set store QA for diff event planes
+  void SetStoreQAforDiffEventPlanes(Bool_t const cCRC) {this->fStoreQAforDiffEventPlanes = cCRC;};
+  Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
 
+  //@Shi set histogram for recentering
+  void SetZDCCalibListFinalCommonPart(TList* const kList) {this->fZDCCalibListFinalCommonPart = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalCommonPart() const {return this->fZDCCalibListFinalCommonPart;};
+  
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
   AliAnalysisTaskCRC& operator=(const AliAnalysisTaskCRC& aatqc);
@@ -348,6 +357,7 @@ private:
   Bool_t fVtxRbR;
   Bool_t fUseNUAforCRC;
   Bool_t fUseCRCRecenter;
+  Bool_t fStoreQAforDiffEventPlanes; //@Shi
   Double_t fCRCEtaMin;
   Double_t fCRCEtaMax;
   Int_t fnCenBin;
@@ -381,8 +391,10 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
-
-  ClassDef(AliAnalysisTaskCRC,14);
+  //@Shi ZDC calib recenter TList
+  TList *fZDCCalibListFinalCommonPart; //
+  
+  ClassDef(AliAnalysisTaskCRC,15);
 };
 
 //================================================================================================================

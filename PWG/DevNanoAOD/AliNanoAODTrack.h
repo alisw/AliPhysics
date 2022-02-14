@@ -13,33 +13,6 @@
 //     list of comma separated variables.
 //     Only those variables are actually allocated and saved with the track.
 //     Attempts to use any other variable produces an AliFatal
-//    
-//     Allowed kin var:
-//      pt, theta, phi, chi2perNDF, posx, posy, posz, covmat, posDCAx,
-//      posDCAy, pDCAx, pDCAy, pDCAz, RAtAbsorberEnd, TPCncls, TPCnclsF,
-//      TPCNCrossedRows, TrackPhiOnEMCal, TrackEtaOnEMCal,
-//      TrackPtOnEMCal, ITSsignal, TPCsignal, TPCsignalTuned,
-//      TPCsignalN, TPCmomentum, TPCTgl, TOFsignal, integratedLenght,
-//      TOFsignalTuned, HMPIDsignal, HMPIDoccupancy, TRDsignal,
-//      TRDChi2, TRDnSlices
-
-//    Custom vars
-//      if the var name begins by "cst", it allows to add a track
-//      property not initially foreseen in the Vtrack or in the
-//      original AOD. For instance, you can add the value of the
-//      bayesian probability to be a kaon by using cstKBayes. Custom
-//      variables can be set at once using
-//      AliNanoAODTrack::SetCustomVariables(Double_t *vars), by
-//      providing them in the same order as they are defined. // FIXME: to be implemented
-//
-//
-//     TODO
-//      - Go through class again after implementation
-//      - Decide if you want to create a short or int array
-//      - in the constructor, set the covariant matrix only if requested
-//
-//     INFO/TO BE DECIDED
-//      - I think this should not support muons, since muons have already their specialized AOD class
 //     Author: Michele Floris, CERN
 //-------------------------------------------------------------------------
 
@@ -69,7 +42,30 @@ class AliESDTrack;
 class AliNanoAODTrack : public AliVTrack, public AliNanoAODStorage {
 
 public:
+  enum ENanoPIDResponse {
+    kSigmaTPC = 0,
+    kSigmaTOF = 1,
+    kLAST = 2
+  };
   
+  enum ENanoFlags {
+    kNanoCharge = 0, // (0 -> negative | 1 -> positive)
+    kNanoHasTOFPID,
+    kNanoClusterITS0,
+    kNanoClusterITS1,
+    kNanoClusterITS2,
+    kNanoClusterITS3,
+    kNanoClusterITS4,
+    kNanoClusterITS5,
+    kIsMuonTrack,
+    kTRDrefit,
+    kIsDCA
+  };
+  
+  UInt_t GetNanoFlags() const { return fNanoFlags; }
+  virtual Short_t  Charge() const { return TESTBIT(fNanoFlags, kNanoCharge) ? 1 : -1; }
+  virtual Bool_t HasPointOnITSLayer(Int_t i) const { return TESTBIT(fNanoFlags, i+kNanoClusterITS0); }
+
   using TObject::ClassName;
   
   AliNanoAODTrack();
@@ -102,7 +98,8 @@ public:
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
   Double_t Chi2perNDF()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()); }  
-  UShort_t GetTPCNcls()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()); } // FIXME: should this be short?
+  virtual UShort_t GetTPCncls(Int_t /*row0*/=0, Int_t /*row1*/=159)  const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()); }
+  virtual UShort_t GetTPCNcls()  const { return GetTPCncls(); }
 
   virtual Double_t M() const { AliFatal("Not Implemented"); return -1; }
   Double_t M(AliAODTrack::AODTrkPID_t pid) const;
@@ -114,18 +111,16 @@ public:
   Double_t Y(Double_t m) const;
   
   virtual Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta())); }
-  virtual Short_t  Charge() const {return fCharge; } // FIXME: leave like this? Create shorts array?
-  virtual Double_t GetSign() const {return fCharge; }
+  virtual Double_t GetSign() const {return Charge(); }
   virtual Bool_t   PropagateToDCA(const AliVVertex *vtx, 
 				  Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]);
 
 
   // Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
-  ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
+  ULong64_t GetStatus() const { return (ULong64_t(GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus())) << 32) + GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus()+1); }
   // ULong_t GetFlags() const { return fFlags; }
 
-  //  Int_t   GetID() const { return (Int_t)fID; } // FIXME another int (short)
-  Int_t   GetID() const { AliFatal("Not Implemented"); return 0; } // FIXME another int (short)
+  Int_t   GetID() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetID()); }
   Int_t   GetLabel() const { return fLabel; }  // 
   // void    GetTOFLabel(Int_t *p) const;
 
@@ -152,7 +147,7 @@ public:
   
   template <typename T> Bool_t GetPosition(T *x) const {
     x[0]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()); x[1]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY()); x[2]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ());
-    return TestBit(AliAODTrack::kIsDCA);}
+    return TESTBIT(fNanoFlags, ENanoFlags::kIsDCA);}
 
   // FIXME: only allocate if listed?
   // template <typename T> void SetCovMatrix(const T *covMatrix) {
@@ -174,25 +169,15 @@ public:
 
   // void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 
-  Bool_t IsMuonTrack() const {
-  if (GetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack())==1) return kTRUE ; 
-  else return kFALSE;
-  } 
+  Bool_t IsMuonTrack() const { return TESTBIT(fNanoFlags, kIsMuonTrack); }
 
   Double_t XAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()); }
   Double_t YAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()); }
-  Double_t ZAtDCA() const { 
-    if (IsMuonTrack())  return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ());
-    else if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY());
-     else return -999.; }
+  Double_t ZAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()); }
 
   Bool_t   XYZAtDCA(Double_t x[3]) const { x[0] = XAtDCA(); x[1] = YAtDCA(); x[2] = ZAtDCA(); return kTRUE; }
   
-  Double_t DCA() const { 
-    if (IsMuonTrack()) return TMath::Sqrt(XAtDCA()*XAtDCA() + YAtDCA()*YAtDCA());
-    else if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()); // FIXME: Why does this return posX?
-    else return -999.; }
-
+  Double_t DCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetDCA()); }
   
   Double_t PxAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAX()); }
   Double_t PyAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAY()); }
@@ -203,17 +188,16 @@ public:
   Double_t GetRAtAbsorberEnd() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()); }
   
   // For this whole block of cluster maps I could simply define a cluster map in the int array. For the moment comment all maps. Maybe not neede 
-  UChar_t  GetITSClusterMap() const       { AliFatal("Not Implemented"); return 0;};
+  UChar_t  GetITSClusterMap() const       { AliFatal("Not Implemented. Use HasPointOnITSLayer!"); return 0;};
   // Int_t    GetITSNcls() const; 
-  // Bool_t   HasPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSClusterMap(),i); }
   // UShort_t GetHitsPatternInTrigCh() const { return (UShort_t)((fITSMuonClusterMap&0xff00)>>8); }// Fixme: array of uchars or of int?
   // UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; } // 
   // UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
   
-   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()))) != 0);}
+   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & GetFilterMap()) != 0);}
   // Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
   // void    SetFilterMap(UInt_t i){fFilterMap = i;}
-   UInt_t  GetFilterMap() const {return UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()));}
+   UInt_t  GetFilterMap() const {return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetFilterMap());}
 
   // const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   // const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}
@@ -231,9 +215,9 @@ public:
   void    SetTPCPointsF(UShort_t  findable){fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF()] = findable;}
   void    SetTPCNCrossedRows(UInt_t n)     {fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows()] = n;}
 
-  UShort_t GetTPCNclsF() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF());}
-  UShort_t GetTPCnclsS() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS());}
-  UShort_t GetTPCNCrossedRows()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows());}
+  UShort_t GetTPCNclsF() const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF());}  
+  UShort_t GetTPCnclsS() const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS());}  
+  UShort_t GetTPCNCrossedRows()  const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows());}  
   Float_t  GetTPCFoundFraction() const { return GetTPCNCrossedRows()>0 ? float(GetTPCNcls())/GetTPCNCrossedRows() : 0;}
 
   // Calorimeter Cluster
@@ -258,12 +242,12 @@ public:
   Double_t  GetTPCsignal()       const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCsignal());}
   Double_t  GetTPCsignalTunedOnData() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCsignalTuned());}
   void      SetTPCsignalTunedOnData(Double_t signal) {fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCsignalTuned()] = signal;}
-  UShort_t  GetTPCsignalN()      const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCsignalN());}// FIXME: what is this?
+  UShort_t  GetTPCsignalN()      const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCsignalN());}// FIXME: what is this? 
   //  virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;} // FIXME: is this needed?
   Double_t  GetTPCmomentum()     const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()); }
   Double_t  GetTPCTgl()          const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl());      } // FIXME: what is this?
   Double_t  GetTOFsignal()       const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignal());   } 
-  Double_t  GetIntegratedLength() const { AliFatal("Not implemented"); return 0;} // TODO: implement track lenght
+  Double_t  GetIntegratedLength() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLength()); } 
   void      SetIntegratedLength(Double_t/* l*/) {AliFatal("Not implemented");}
   Double_t  GetTOFsignalTunedOnData() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned());}
   void      SetTOFsignalTunedOnData(Double_t signal) {fVars[AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned()] = signal;}
@@ -282,7 +266,7 @@ public:
   //  Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   //  Int_t     GetHMPIDcluIdx()     const;// FIXME: array of ints?
   //   void      GetITSdEdxSamples(Double_t s[4]) const; // FIXME: To be reimplemented. Use one kin var for each sample
-  Int_t   GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const {AliFatal("Not Implemented"); return 0;};
+  Int_t   GetTOFBunchCrossing (Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing()); }  
   UChar_t   GetTRDncls(Int_t /*layer*/)                           const {AliFatal("Not Implemented"); return 0;}; 
   Double_t  GetTRDslice(Int_t /*plane*/, Int_t /*slice*/)         const {AliFatal("Not Implemented"); return 0;};
   Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {AliFatal("Not Implemented"); return 0;};
@@ -291,7 +275,7 @@ public:
   Double_t  GetTRDsignal()         const {return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDsignal());}
   Double_t  GetTRDchi2()           const {return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDChi2());}
   UChar_t   GetTRDncls()           const {return GetTRDncls(-1);}
-  Int_t     GetNumberOfTRDslices() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnSlices()); }
+  Int_t     GetNumberOfTRDslices() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnSlices()); }  
 
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}// FIXME: change to special event type
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
@@ -334,10 +318,8 @@ public:
   void SetXYAtDCA(Double_t x, Double_t y) {fVars[AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()] = x;  fVars[AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()]= y;}
   void SetPxPyPzAtDCA(Double_t pX, Double_t pY, Double_t pZ) {fVars[AliNanoAODTrackMapping::GetInstance()->GetPDCAX()] = pX; fVars[AliNanoAODTrackMapping::GetInstance()->GetPDCAY()] = pY; fVars[AliNanoAODTrackMapping::GetInstance()->GetPDCAZ()] = pZ;}
   
-void SetRAtAbsorberEnd(Double_t r) { fVars[AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()] = r; }
-  
-  void SetCharge(Short_t q) { fCharge = q; }
-void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()] = chi2perNDF; }
+  void SetRAtAbsorberEnd(Double_t r) { fVars[AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()] = r; }
+  void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()] = chi2perNDF; }
 
   // void SetITSClusterMap(UChar_t itsClusMap)                 { fITSMuonClusterMap = (fITSMuonClusterMap&0xffffff00)|(((UInt_t)itsClusMap)&0xff); }
   // void SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)hitsPatternInTrigCh)&0xff)<<8); }
@@ -357,10 +339,12 @@ void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInsta
   // Dummy: FIXME why is this dummy?
   Int_t    PdgCode() const {return 0;}
 
+  // Trasient PID object, is owned by the track
+  virtual void  SetDetectorPID(const AliDetectorPID *pid);
+  virtual const AliDetectorPID* GetDetectorPID() const { return fDetectorPID; }
+
   //  needed  to inherit from VTrack, but not implemented
-  virtual void  SetDetectorPID(const AliDetectorPID */*pid*/)  {AliFatal("Not Implemented"); return ;}; 
-  virtual const AliDetectorPID* GetDetectorPID() const {AliFatal("Not Implemented"); return 0;}; 
-  virtual UChar_t  GetTRDntrackletsPID() const  {AliFatal("Not Implemented"); return 0;}; 
+  virtual UChar_t  GetTRDntrackletsPID() const  { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTRDntrackletsPID()); }; 
   virtual void      GetHMPIDpid(Double_t */*p*/) const  {AliFatal("Not Implemented"); return;}; 
   virtual Double_t GetBz() const  {AliFatal("Not Implemented"); return 0;}; 
   virtual void     GetBxByBz(Double_t [3]/*b[3]*/) const  {AliFatal("Not Implemented"); return;}; 
@@ -369,7 +353,17 @@ void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInsta
   virtual Int_t    GetNcls(Int_t /*idet*/) const {AliFatal("Not Implemented"); return 0;}; 
   virtual const Double_t *PID() const {AliFatal("Not Implemented"); return 0;}; 
 
+  virtual void GetImpactParameters(Float_t &xy,Float_t &z) const;  
 
+  // PID access functions
+  static Int_t GetPIDIndex(ENanoPIDResponse r, AliPID::EParticleType p)  { return fgPIDIndexes[r][p]; }
+  static const char* GetPIDVarName(ENanoPIDResponse r, AliPID::EParticleType p) {  return Form("PID.%d.%s", r, AliPID::ParticleShortName(p)); }
+  static Bool_t InitPIDIndex();
+
+
+  /// NanoAOD information that cannot be retrieved with the same interface of AliAODtrack
+  bool   IsTRDrefit() { return TESTBIT(fNanoFlags, ENanoFlags::kTRDrefit); }
+  bool   HasTOFpid() { return TESTBIT(fNanoFlags, ENanoFlags::kNanoHasTOFPID); }
 
 private :
 
@@ -380,7 +374,12 @@ private :
   //  Double32_t    fPosition[3];       // position of first point on track or dca
   Int_t         fLabel;             // track label, points back to MC track
   TRef          fProdVertex;        // vertex of origin
-  Short_t       fCharge; // track charge
+  UInt_t        fNanoFlags;  // nano flags
+  
+  mutable const AliDetectorPID* fDetectorPID; //!<! transient object to cache calibrated PID information
+
+  static Int_t fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC];
+  
   const AliAODEvent* fAODEvent;     //! 
 
   ClassDef(AliNanoAODTrack, 1);
@@ -415,20 +414,20 @@ void AliNanoAODTrack::SetPosition(const T *x, const Bool_t dca)
 
   if (x) {
     if (!dca) {
-      ResetBit(AliAODTrack::kIsDCA);
+      fNanoFlags &= ~ENanoFlags::kIsDCA;
 
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosX()] = x[0];
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosY()] = x[1];
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosZ()] = x[2];
     } else {
-      SetBit(AliAODTrack::kIsDCA);
+      fNanoFlags |= ENanoFlags::kIsDCA;
       // don't know any better yet
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosX()] = -999.;
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosY()] = -999.;
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosZ()] = -999.;
     }
   } else {
-    ResetBit(AliAODTrack::kIsDCA);
+    fNanoFlags &= ~ENanoFlags::kIsDCA;
 
     fVars[AliNanoAODTrackMapping::GetInstance()->GetPosX()] = -999.;
     fVars[AliNanoAODTrackMapping::GetInstance()->GetPosY()] = -999.;

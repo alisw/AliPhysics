@@ -343,7 +343,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     AliWarning("Results List not Available");
     fResults = new TList();
     fResults->SetOwner();
-    fResults->SetName("ResultsSample");
+    fResults->SetName("Results");
   }
   if (fAnalysis->GetResultSampleList()) {
     fResultsSample = fAnalysis->GetResultSampleList();
@@ -432,7 +432,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
 void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
   if (fESDAnalysis) {
     AliESDEvent *Event = static_cast<AliESDEvent*>(fInputEvent);
-    AliMCEvent *mcEvent;
+    AliMCEvent *mcEvent=nullptr;
     if (fIsMC) {
       mcEvent = MCEvent();
     }

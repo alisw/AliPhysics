@@ -45,6 +45,7 @@
 #include <AliInputEventHandler.h>
 #include <AliVHeader.h>
 #include <AliAODMCHeader.h>
+#include <AliAODMCParticle.h>
 #include <AliGenPythiaEventHeader.h>
 
 #include "AliYAMLConfiguration.h"
@@ -132,8 +133,12 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fUseManualInternalEventCuts(false),
   fInternalEventCuts(),
   fEmbeddedEventUsed(true),
+  fValidatedPhysicsSelection(false),
+  fInternalEventTriggerMask(0),
   fCentMin(-999),
   fCentMax(-999),
+  fRandomRejectionFactor(1.),
+  fRandom(0),
   fAutoConfigurePtHardBins(false),
   fAutoConfigureBasePath(""),
   fAutoConfigureTrainTypePath(""),
@@ -145,6 +150,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fFilenames(),
   fConfigurationPath(""),
   fEmbeddedRunlist(),
+  fEmbeddedRunblock(),
+  fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -157,6 +164,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fHistManager(),
   fOutput(nullptr),
   fExternalEvent(nullptr),
+  fExternalMCEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
@@ -202,8 +210,12 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fUseManualInternalEventCuts(false),
   fInternalEventCuts(),
   fEmbeddedEventUsed(true),
+  fValidatedPhysicsSelection(false),
+  fInternalEventTriggerMask(0),
   fCentMin(-999),
   fCentMax(-999),
+  fRandomRejectionFactor(1.),
+  fRandom(0),
   fAutoConfigurePtHardBins(false),
   fAutoConfigureBasePath("alien:///alice/cern.ch/user/a/alitrain/"),
   fAutoConfigureTrainTypePath("PWGJE/Jets_EMC_PbPb/"),
@@ -215,6 +227,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fFilenames(),
   fConfigurationPath(""),
   fEmbeddedRunlist(),
+  fEmbeddedRunblock(),
+  fDataRunNumber(-1),
   fPythiaCrossSectionFilenames(),
   fExternalFile(nullptr),
   fChain(nullptr),
@@ -227,6 +241,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fHistManager(name),
   fOutput(nullptr),
   fExternalEvent(nullptr),
+  fExternalMCEvent(nullptr),
   fExternalHeader(nullptr),
   fPythiaHeader(nullptr),
   fPythiaTrials(0),
@@ -258,6 +273,7 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 {
   if (fgInstance == this) fgInstance = nullptr;
   if (fExternalEvent) delete fExternalEvent;
+  if (fExternalMCEvent) delete fExternalMCEvent;
   if (fExternalFile) {
     fExternalFile->Close();
     delete fExternalFile;
@@ -327,6 +343,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("filenameIndex", fFilenameIndex, false);
   // Configuration path makes no sense, as we are already using the %YAML configuration
   res = fYAMLConfig.GetProperty("runlist", fEmbeddedRunlist, false);
+  res = fYAMLConfig.GetProperty("runblock", fEmbeddedRunblock, false);
   // Generally should not be set
   res = fYAMLConfig.GetProperty("filenames", fFilenames, false);
   res = fYAMLConfig.GetProperty("fPythiaCrossSectionFilenames", fPythiaCrossSectionFilenames, false);
@@ -352,7 +369,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   // Physics selection
   res = fYAMLConfig.GetProperty({baseName, "physicsSelection"}, physicsSelection, false);
   if (res) {
-    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
+    fInternalEventTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
   }
 
   // Auto configure pt hard properties
@@ -360,6 +377,8 @@ void AliAnalysisTaskEmcalEmbeddingHelper::RetrieveTaskPropertiesFromYAMLConfig()
   res = fYAMLConfig.GetProperty("autoConfigureBasePath", fAutoConfigureBasePath, false);
   res = fYAMLConfig.GetProperty("autoConfigureTrainTypePath", fAutoConfigureTrainTypePath, false);
   res = fYAMLConfig.GetProperty("autoConfigureIdentifier", fAutoConfigureIdentifier, false);
+  // Random rejection 
+  res = fYAMLConfig.GetProperty("randomRejectionFactor", fRandomRejectionFactor, false);
 }
 
 /**
@@ -473,7 +492,6 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       if (usedFilePattern) {
         AliErrorStream() << "You set both the file pattern and the file list filename! The file list filename will override the pattern! Pattern: \"" << fFilePattern << "\", filename: \"" << fFileListFilename << "\"\nPlease check that this is the desired behavior!\n";
       }
-
       // Determine the local filename and copy file to local directory
       std::string alienFilename = fFileListFilename.Data();
       fFileListFilename = gSystem->BaseName(alienFilename.c_str());
@@ -533,7 +551,8 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   // NOTE: We invert the result of IsFileAccessible because we should return true for files that should be _removed_ (ie are inaccessible)
   fFilenames.erase(std::remove_if(fFilenames.begin(), fFilenames.end(), [](const std::string & filename) {return (::IsFileAccessible(filename) == false);} ), fFilenames.end());
 
-  AliInfoStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
+  // NOTE: This isn't necessarily a problem, but we want to clearly indicate what has happened for the user.
+  AliErrorStream() << "Found " << fFilenames.size() << " files to embed (" << (initialSize - fFilenames.size()) << " filename(s) inaccessible or invalid)\n";
 
   // Determine pythia filename
   DeterminePythiaXSecFilename();
@@ -542,7 +561,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 }
 
 /**
- * Determine the Pythia cross section filename by checking for the existance of files with various possible filenames.
+ * Determine the Pythia cross section filename by checking for the existence of files with various possible filenames.
  * Note that it uses the first input filename as a proxy for all other input files following the same pattern.
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::DeterminePythiaXSecFilename()
@@ -598,6 +617,79 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::IsRunInRunlist(const std::string & pat
     }
   }
   return false;
+}
+
+/**
+ * Get the data background run number from the data file path, and determine which run run block of 
+ * fEmbeddedRunblock it belongs to. Then filter the input list of MC files and select those anchored to this run block.
+ * Note that this functionality should only be used when train runs per run.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::FilterRunblockFilenames() 
+{
+  std::size_t nBlocks = fEmbeddedRunblock.size();
+ 
+  if ( nBlocks == 0 ) {
+    return ;
+  }
+  
+  AliInfoStream() << "nRunBlocks " << nBlocks << ".\n";
+  
+  // Recover the background data run number
+  //
+  Int_t runNumber = -1;
+  if ( AliAnalysisTaskSE::InputEvent() ) {
+    runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+    
+    if ( runNumber < 100000 || runNumber > 300000 ) {
+      AliFatal(Form("Data run number %d is not good!",runNumber));
+    }
+  }
+  
+  if ( fDataRunNumber != runNumber ) {
+    AliDebugStream(1) << "Set data run number, new "<< runNumber << ", previous "<<fDataRunNumber<<".\n";
+    fDataRunNumber = runNumber;
+  }
+  
+  AliInfoStream() << "Data run anchor "<<fDataRunNumber<<".\n";
+  
+  // Select the run block
+  //
+  Int_t runMin = -1, runMax = -1;
+  UInt_t iblock = 0;
+  for (iblock = 0; iblock < nBlocks-1; iblock++) 
+  {  
+    runMin = fEmbeddedRunblock.at(iblock  );
+    runMax = fEmbeddedRunblock.at(iblock+1);
+    
+    AliDebug(0,Form("\t block %d, run min %d, run max %d",iblock,runMin,runMax));
+    
+    if ( runMin <= fDataRunNumber && runMax > fDataRunNumber ) {
+      break ;
+    }
+  } // block loop
+  
+  AliInfoStream() << "Selected run range block "<< iblock <<": ["<<runMin<<","<<runMax<<"].\n";
+  
+  if ( runMin < 0 && runMax < 0 ) {
+    AliFatal("Runblock not found, stop!");
+    return ;
+  }
+
+  // Filter the list of files
+  //
+  AliInfoStream() << "Size of filenames list before filtering "<<  fFilenames.size() << ".\n"; 
+  
+  fFilenames.erase(std::remove_if( fFilenames.begin(), fFilenames.end(),
+                                  [runMin, runMax](const std::string& str) {
+    int run = AliAnalysisManager::GetRunFromAlienPath(str.c_str());
+    return (run < runMin || run >= runMax); }), 
+                   fFilenames.end() );
+  
+  AliInfoStream() << "Size of filenames list after filtering "<<  fFilenames.size() <<".\n"; 
+
+  for (auto v : fFilenames) {
+    AliDebugStream(1) << v << "\n";
+  }
 }
 
 /**
@@ -709,9 +801,9 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::AutoConfigurePtHardBins()
       config.WriteProperty(propertyName.str(), trainNumber, fAutoConfigureIdentifier);
       config.WriteConfiguration(filename, fAutoConfigureIdentifier);
 
-      // NOTE: Cannot clean up the yaml file on the last pt hard bin because the train can be launched
+      // NOTE: Cannot clean up the YAML file on the last pt hard bin because the train can be launched
       // multiple times due to tests, etc. Therefore, we have to accept that we are leaving around used
-      // yaml config files.
+      // YAML config files.
 
       // We are done - continue on.
       returnValue = true;
@@ -761,7 +853,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename(
  *
  * @param[in] filename String containing a filename with some number of extra trailing slashes.
  *
- * @return string without trailing slahes.
+ * @return string without trailing slashes.
  */
 std::string AliAnalysisTaskEmcalEmbeddingHelper::RemoveTrailingSlashes(std::string filename) const
 {
@@ -784,6 +876,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::DetermineFirstFileToEmbed()
     // Floor ensures that we it doesn't overflow
     TRandom3 rand(0);
     fFilenameIndex = TMath::FloorNint(rand.Rndm()*fFilenames.size());
+    
     // +1 to account for the fact that the filenames vector is 0 indexed.
     AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex+1));
   }
@@ -824,12 +917,13 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
     }
     else {
       // NOTE: On transition from one file to the next, this calls the next entry that would be expected.
-      //       However, if it is for the last file, it tries to GetEntry() of one entry past the end of the last file.
-      //       Normally, this would be a problem, however GetEntry() just doesn't fill the fields of an invalid index
-      //       instead of throwing an error. So "invalid values" are filled for a file that doesn't exist, but then 
-      //       they are immediately replaced by the lines below that reset the access values and re-init the tree.
-      //       The benefit of this approach is it simplies file counting (we don't need to carefully increment here
-      //       and in InitTree()) and preserves the desired behavior when we are not at the last file.
+      //       However, if it is for the last file, it tries to GetEntry() of one entry past the end of the last
+      //       file. Normally, this would be a problem, however GetEntry() just doesn't fill the fields of an
+      //       invalid index instead of throwing an error. So "invalid values" are filled for a file that doesn't
+      //       exist, but then they are immediately replaced by the lines below that reset the access values and
+      //       re-init the tree. The benefit of this approach is it simplies file counting (we don't need to
+      //       carefully increment here and in InitTree()) and preserves the desired behavior when we are not at
+      //       the last file.
       InitTree();
     }
 
@@ -894,13 +988,21 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetEmbeddedEventProperties()
 {
   AliDebug(4, "Set event properties");
   fExternalHeader = fExternalEvent->GetHeader();
-
+  
   // Handle pythia header if AOD
   AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fExternalEvent->FindListObject(AliAODMCHeader::StdBranchName()));
   if (aodMCH) {
     for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
       if (fPythiaHeader) break;
+    }
+    
+    // Get MC Event                                                                        
+    TClonesArray* mcParticles = static_cast<TClonesArray*> (fExternalEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if ( mcParticles ) {
+      if ( !fExternalMCEvent ) fExternalMCEvent = new AliMCEvent();
+      fExternalMCEvent->SetExternalHeader(aodMCH);
+      fExternalMCEvent->SetParticleArray(mcParticles);
     }
   }
 
@@ -1091,7 +1193,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
   }
 
   fExternalEvent->ReadFromTree(fChain, fTreeName);
-
+  
   return kTRUE;
 }
 
@@ -1102,7 +1204,11 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
-  SetupEmbedding();
+  if ( fEmbeddedRunblock.size() == 0 ) {
+    SetupEmbedding();
+  }
+  
+  // else, do it on UserExec() at least once
 
   // Reinitialize the YAML config after it was streamed so that it can be used properly.
   fYAMLConfig.Reinitialize();
@@ -1121,13 +1227,15 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
     bool useEventCutsAutomaticTriggerSelection = false;
     bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"internalEventSelection", "useEventCutsAutomaticTriggerSelection"}), useEventCutsAutomaticTriggerSelection, false);
     if (res && useEventCutsAutomaticTriggerSelection) {
-      // Use the autmoatic selection. Nothing to be done.
+      // Use the automatic selection. We will validate the trigger mask later because it
+      // isn't yet set if we're using automatic mode.
       AliDebugStream(1) << "Using the automatic trigger selection from AliEventCuts.\n";
     }
     else {
-      // Use the cuts selected by SelectCollisionCandidates()
-      AliDebugStream(1) << "Using the trigger selection specified with SelectCollisionCandidates()\n.";
-      fInternalEventCuts.OverrideAutomaticTriggerSelection(fOfflineTriggerMask);
+      // Use the cuts selected by via YAML.
+      std::bitset<32> triggerMask(fInternalEventTriggerMask);
+      AliDebugStream(1) << "Using the trigger selection specified via YAML: " << triggerMask << ".\n";
+      fInternalEventCuts.OverrideAutomaticTriggerSelection(fInternalEventTriggerMask);
     }
   }
   
@@ -1213,7 +1321,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
     // Internal event cut statistics
     histName = "fHistInternalEventCutsStats";
     histTitle = "Number of events to pass each cut";
-    binLabels = {"passedEventCuts", "centrality", "passedAllCuts"};
+    binLabels = {"passedEventCuts", "centrality", "passedRandomRejection", "passedAllCuts"};
     auto histInternalEventCutsStats = fHistManager.CreateTH1(histName, histTitle, binLabels.size(), 0, binLabels.size());
     // Set label names
     for (unsigned int i = 1; i <= binLabels.size(); i++) {
@@ -1251,6 +1359,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
+  // Find which MC run corresponds to the data run
+  if ( fEmbeddedRunblock.size() > 0 ) {
+    FilterRunblockFilenames();
+  }
+  
   // Determine which file to start with
   DetermineFirstFileToEmbed();
 
@@ -1309,7 +1422,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   if (fFilenames.size() > fMaxNumberOfFiles) {
     AliErrorStream() << "Number of input files (" << fFilenames.size() << ") is larger than the number of available files (" << fMaxNumberOfFiles << "). Something went wrong when adding some of those files to the TChain!\n";
   }
-
+  
   // Setup input event
   Bool_t res = InitEvent();
   if (!res) return kFALSE;
@@ -1424,7 +1537,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   }
   
   // Load first entry of the (next) file so that we can query information about it
-  // (it is unaccessible otherwise).
+  // (it is inaccessible otherwise).
   // Since fUpperEntry is the total number of entries, loading it will retrieve the
   // next tree (in the next file) since entries are indexed starting from 0.
   fChain->GetEntry(fUpperEntry);
@@ -1529,7 +1642,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
     }
     else {
       // Check if it's instead the histograms
-      // find the tlist we want to be independtent of the name so use the Tkey
+      // find the Tlist we want to be independent of the name so use the Tkey
       TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
       if (!key) return false;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
@@ -1537,7 +1650,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
       TProfile * crossSectionHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
       // check for failure
       if(!(crossSectionHist->GetEntries())) {
-        // No cross seciton information available - fall back to raw
+        // No cross section information available - fall back to raw
         AliErrorStream() << "No cross section information available in file \"" << fxsec->GetName() << "\". Will still attempt to extract cross section information from pythia header.\n";
       } else {
         // Cross section histogram filled - take it from there
@@ -1549,7 +1662,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
       nEvents = trialsHist->GetEntries();
     }
 
-    // If successful in retrieveing the values, normalizae the xsec and trials by the number of events
+    // If successful in retrieving the values, normalize the xsec and trials by the number of events
     // in the file. This way, we can use it as an approximate event-by-event value
     // We do not want to just use the overall value because some of the events may be rejected by various
     // event selections, so we only want that ones that were actually use. The easiest way to do so is by
@@ -1561,7 +1674,7 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
     return true;
   }
   else {
-    AliDebugStream(3) << "Unable to open file \"" << pythiaFileName << "\". Will attempt to use values from the hader.";
+    AliDebugStream(3) << "Unable to open file \"" << pythiaFileName << "\". Will attempt to use values from the header.";
   }
 
   // Could not open file
@@ -1576,8 +1689,26 @@ bool AliAnalysisTaskEmcalEmbeddingHelper::PythiaInfoFromCrossSectionFile(std::st
 void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 {
   if (!fInitializedEmbedding) {
-    AliError("Chain not initialized before running! Setting up now.");
+    if ( fEmbeddedRunblock.size() == 0 ) {
+      AliError("Chain not initialized before running! Setting up now.");
+    }
     SetupEmbedding();
+  }
+  
+  if ( fEmbeddedRunblock.size() > 0 ) {
+    // I do not think this is enough, I am not sure how to know if the train 
+    // was setup for run by run or run mixed analysis
+    Int_t runNumber = -1;
+    if ( AliAnalysisTaskSE::InputEvent() ) {
+      runNumber = AliAnalysisTaskSE::InputEvent()->GetRunNumber();
+    }
+    
+    if ( fDataRunNumber > -1 && fDataRunNumber != runNumber ) {
+      AliError(Form("CAREFUL! Check what you are doing, you are embedding a data run %d"
+                    " but block range was anchored to %d"
+                    " setup the train to do the analysis per Run",
+                    AliAnalysisTaskSE::InputEvent()->GetRunNumber(), fDataRunNumber));
+    }
   }
 
   // Apply internal event selection
@@ -1587,6 +1718,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
     {
       fEmbeddedEventUsed = true;
       fHistManager.FillTH1("fHistInternalEventCutsStats", "passedEventCuts", 1);
+
+      // Validate the event selection. We will only do this once, but we must wait
+      // until `AcceptEvent(...)` is called once in case automatic setup is used.
+      if (fValidatedPhysicsSelection == false) {
+        // Validate that the trigger selection in the other tasks is a subset of the internal event selection
+        AliDebugStream(1) << "Validating physics selection.\n";
+        ValidatePhysicsSelectionForInternalEventSelection();
+        fValidatedPhysicsSelection = true;
+        AliDebugStream(1) << "Successfully validated the physics selection!\n";
+      }
 
       // The event was accepted by AliEventCuts. Now check for additional cuts.
       // Centrality
@@ -1601,18 +1742,37 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
           fHistManager.FillTH1("fHistInternalEventCutsStats", "centrality", 1);
         }
       }
-
+      // Now reject events based on a rejection factor if set, where the fraction of events 
+      // kept is equal to 1 / fRandomRejectionFactor
+      if(fRandomRejectionFactor > 1.) {
+        Double_t rand = fRandom.Rndm();
+        if(fRandomRejectionFactor > 1./rand) {
+          fEmbeddedEventUsed = false;
+        }
+        else {
+          fHistManager.FillTH1("fHistInternalEventCutsStats", "passedRandomRejection", 1);
+        }
+      }
       if (fEmbeddedEventUsed) {
         // Record all cuts passed
         fHistManager.FillTH1("fHistInternalEventCutsStats", "passedAllCuts", 1);
       }
     }
 
-    // If the internal event was rejected, then record and move on.
+    // If the internal event was rejected, then record and skip this internal event by asking the
+    // analysis manager to break the execution.
     if (fEmbeddedEventUsed == false) {
       if (fCreateHisto) {
         PostData(1, fOutput);
       }
+      AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      if (!mgr) {
+        AliFatal("No analysis manager to connect to.");
+      }
+      // Ask the analysis manager to break execution, which will prevent any downstream tasks
+      // from executing.
+      AliDebugStream(3) << "Internal event rejected due to event selection. Breaking execution early.\n";
+      mgr->BreakExecutionChain(kTRUE);
       return;
     }
   }
@@ -1634,6 +1794,69 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 }
 
 /**
+ * Validate that the physics selection of the embedding helper is at least as broad
+ * as all other tasks. Also checks that the internal event selection isn't broader
+ * than the main physics selection. If either is not the case, it will throw an error.
+ *
+ * This ensures that other tasks are never accessing an old embedded event due to other
+ * tasks seeing events that the embedding helper is not selected for.
+ */
+void AliAnalysisTaskEmcalEmbeddingHelper::ValidatePhysicsSelectionForInternalEventSelection()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    AliFatal("No analysis manager to connect to.");
+  }
+
+  // Check that the internal event physics selection that has been applied is a subset of
+  // the collision candidates that are selected. Otherwise, it could be quite misleading.
+  // NOTE: We either set `fTriggerMask` to our internal event selection, or it was set automatically.
+  //       In either case, `fInternalEventCuts.fTriggerMask` should have the correct internal
+  //       event physics selection.
+  // For information on the comparison method, see: https://stackoverflow.com/a/8639510
+  UInt_t collisionCandidates = this->GetCollisionCandidates();
+  bool res = (fInternalEventCuts.fTriggerMask | collisionCandidates) == collisionCandidates;
+  if (res == false) {
+    std::stringstream message;
+    message << "Collision candidates selected for the embedding helper are more restrictive than"
+        << " the internal event physics selection! You will not have access to all of the events"
+        << " selected in the internal event physics selection. Please expand your trigger mask set"
+        << " via SelectCollisionCandidates().\n"
+        << std::bitset<32>(fInternalEventCuts.fTriggerMask) << " <- Embedding helper internal event physics selection\n"
+        << std::bitset<32>(collisionCandidates) << " <- Collision candidates\n";
+    AliFatal(message.str().c_str());
+  }
+
+  auto tasks = mgr->GetTasks();
+  for (auto t : *tasks)
+  {
+    auto task = dynamic_cast<AliAnalysisTaskSE *>(t);
+    if (!task || task->GetName() == GetName()) {
+      // Skip the task if it's not an analysis task or if it's the embedding
+      // helper, since it's allowed to have a broader physics selection than the
+      // internal event physics selection.
+      continue;
+    }
+
+    // Compare the selected collision candidates to the embedding helper physics selection.
+    // Every subsequent task must be a subset or equal to the embedding helper physics selection.
+    // Otherwise, subsequent tasks will be be selected for internal events where we haven't update
+    // the embedded event. This will lead to double counting, double corrections, etc.
+    // For information on the comparison method, see: https://stackoverflow.com/a/8639510
+    UInt_t taskCollisionCandidates = task->GetCollisionCandidates();
+    res = (taskCollisionCandidates | collisionCandidates) == collisionCandidates;
+    if (res == false) {
+      std::stringstream message;
+      message << "The physics selection of all tasks must be a subset of the physics selection used"
+          << " in the embedding helper.\n"
+          << std::bitset<32>(collisionCandidates) << " <- Embedding helper internal event physics selection\n"
+          << std::bitset<32>(taskCollisionCandidates) << " <- Task \"" << task->GetName() << "\" collision candidates\n";
+      AliFatal(message.str().c_str());
+    }
+  }
+}
+
+/**
  * This function is called once at the end of the analysis.
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::Terminate(Option_t*)
@@ -1642,7 +1865,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Terminate(Option_t*)
 
 /**
  * Remove the dummy task which had to be added by ConfigureEmcalEmbeddingHelperOnLEGOTrain()
- * from the Analysis Mangaer. This is the same function as in AliEmcalCorrectionTask.
+ * from the Analysis Manager. This is the same function as in AliEmcalCorrectionTask.
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::RemoveDummyTask() const
 {
@@ -1797,6 +2020,8 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   else {
     tempSS << "Internal event selection centrality range disabled.\n";
   }
+  tempSS << "Internal event physics selection via class (should propagate to AliEventCuts): " << std::bitset<32>(fInternalEventTriggerMask) << "\n";
+  tempSS << "Internal event physics selection via AliEventCuts: " << std::bitset<32>(fInternalEventCuts.fTriggerMask) << "\n";
 
   std::bitset<32> triggerMask(fTriggerMask);
   tempSS << "\nEmbedded event settings:\n";
@@ -1805,6 +2030,7 @@ std::string AliAnalysisTaskEmcalEmbeddingHelper::toString(bool includeFileList) 
   tempSS << "Pt hard jet pt rejection factor: " << fPtHardJetPtRejectionFactor << "\n";
   tempSS << "Z vertex cut: " << fZVertexCut << "\n";
   tempSS << "Max difference between internal and embedded vertex: " << fMaxVertexDist << "\n";
+  tempSS << "Random event rejection factor: " << fRandomRejectionFactor << "\n";
 
   if (includeFileList) {
     tempSS << "\nFiles to embed:\n";
@@ -1856,4 +2082,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Print(Option_t* opt) const
     includeFileList = true;
   }
   Printf("%s", toString(includeFileList).c_str());
+}
+
+/**
+*    @return String with path to the embedded MC signal file used. 
+* 
+*    IMPORTANT: Not to be used to get the file in your task,
+*    just to check what file was accessed for example 
+*    to get the Pt-Hard bin in jet-jet MC  productions  
+*/
+ TString AliAnalysisTaskEmcalEmbeddingHelper::GetExternalFilePath() const 
+{ 
+  return fChain->GetTree()->GetCurrentFile()->GetName(); 
 }

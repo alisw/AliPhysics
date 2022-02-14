@@ -19,7 +19,7 @@ class TH3F;
 class THn;
 class TList;
 class TObjArray;
-class TParticle;
+class AliVParticle;
 class AliAODMCParticle;
 class AliVEvent;
 
@@ -31,7 +31,7 @@ public:
                               AliCSPairAnalysis(const char *name);
   virtual                    ~AliCSPairAnalysis();
 
-  void                        ConfigureBinning(const char *configstring);
+  Bool_t                      ConfigureBinning(const char *configstring);
   TString                     GetBinningConfigurationString() const;
 
   void                        Initialize();
@@ -54,8 +54,7 @@ Bool_t                        SetPairEfficiency(const THn *h11, const THn *h12, 
   TList                      *GetHistogramsList() { return fOutput; }
   Bool_t                      StartEvent(Float_t vertexZ);
   Bool_t                      ProcessTrack(Int_t, AliVTrack *trk);
-  Bool_t                      ProcessTrack(Int_t, TParticle *par);
-  Bool_t                      ProcessTrack(Int_t, AliAODMCParticle *par);
+  Bool_t                      ProcessTrack(Int_t, AliVParticle *par);
   void                        ProcessEventData();
   void                        FinalizeProcess();
 

@@ -103,6 +103,8 @@ _debugLevel    ( 0),
 _singlesOnly   ( 0),
 PIDparticle   ( 0),
 use_pT_cut   ( 0),
+veto_Lambda   ( 0),
+veto_Lambda_left_sideband ( 0),
 useAliHelperPID( 0),
 useCircularCutPID_1( 0),
 useCircularCutPID_2( 0),
@@ -128,18 +130,25 @@ _centralityMin        (  0.),
 _centralityMax        (  0.),
 _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
-_dcaZMin              ( -3),
-_dcaZMax              (  3.),
-_dcaXYMin             ( -2.4),
-_dcaXYMax             (  2.4),
+_dcaZMin_1            ( -3),
+_dcaZMax_1            (  3.),
+_dcaXYMin_1           ( -2.4),
+_dcaXYMax_1           (  2.4),
+_dcaZMin_2            ( -3),
+_dcaZMax_2            (  3.),
+_dcaXYMin_2           ( -2.4),
+_dcaXYMax_2           (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       (0),
 fAnalysisType         ( "RealData" ),
 fSystemType           ( "PbPb" ),
+fGenToBeKept          ( "_NONE_"),
 fExcludeResonancesInMC ( kFALSE ),
 fExcludeElectronsInMC ( kFALSE ),
+fExcludeInjectedSignals (kFALSE),
+fUseMomentumOrder     ( kFALSE ),
 particleSpecies_1       ( 0 ),
 particleSpecies_2       ( 0 ),
 _tpcnclus             ( 50),
@@ -150,6 +159,7 @@ _mult0    ( 0 ),
 _mult1    ( 0 ),
 _mult2    ( 0 ),
 _mult3    ( 0 ),
+_mult4a   ( 0 ),
 _mult4    ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
@@ -342,6 +352,8 @@ _s2PtNNw_12_vsM    ( 0),
 _s2NPtNw_12_vsM    ( 0),
 _invMassKaon       ( 0),
 _invMassKaonSq     ( 0),
+_invMassLambda     ( 0),
+_invMassLambdaSq   ( 0),
 _invMassElec       ( 0),
 n1Name("NA"),
 n1NwName("NA"),
@@ -485,6 +497,8 @@ _debugLevel    ( 0),
 _singlesOnly   ( 0),
 PIDparticle    ( 0),
 use_pT_cut     ( 0),
+veto_Lambda   ( 0),
+veto_Lambda_left_sideband ( 0),
 useAliHelperPID( 0),
 useCircularCutPID_1( 0),
 useCircularCutPID_2( 0),
@@ -510,18 +524,25 @@ _centralityMin        (  0.),
 _centralityMax        (  1.),
 _requestedCharge_1    (   1),
 _requestedCharge_2    (  -1),
-_dcaZMin              ( -3),
-_dcaZMax              (  3.),
-_dcaXYMin             ( -2.4),
-_dcaXYMax             (  2.4),
+_dcaZMin_1            ( -3),
+_dcaZMax_1            (  3.),
+_dcaXYMin_1           ( -2.4),
+_dcaXYMax_1           (  2.4),
+_dcaZMin_2            ( -3),
+_dcaZMax_2            (  3.),
+_dcaXYMin_2           ( -2.4),
+_dcaXYMax_2           (  2.4),
 _dedxMin              ( 0),
 _dedxMax              ( 100000),
 _nClusterMin          ( 80),
 _trackFilterBit       ( 0),
 fAnalysisType         ( "RealData" ),
 fSystemType           ( "PbPb" ),
+fGenToBeKept          ( "_NONE_"),
 fExcludeResonancesInMC ( kFALSE ),
 fExcludeElectronsInMC ( kFALSE ),
+fExcludeInjectedSignals (kFALSE),
+fUseMomentumOrder     ( kFALSE ),
 particleSpecies_1       ( 0 ),
 particleSpecies_2       ( 0 ),
 _tpcnclus             ( 50),
@@ -533,6 +554,7 @@ _mult1    ( 0 ),
 _mult2    ( 0 ),
 _mult3    ( 0 ),
 _mult4    ( 0 ),
+_mult4a   ( 0 ),
 _mult5    ( 0 ),
 _mult6    ( 0 ),
 _mult7    ( 0 ),
@@ -723,6 +745,8 @@ _s2PtNNw_12_vsM    ( 0),
 _s2NPtNw_12_vsM    ( 0),
 _invMassKaon       ( 0),
 _invMassKaonSq     ( 0),
+_invMassLambda     ( 0),
+_invMassLambdaSq   ( 0),
 _invMassElec       ( 0),
 n1Name("NA"),
 n1NwName("NA"),
@@ -1124,8 +1148,8 @@ void  AliAnalysisTaskGeneralBF::createHistograms()
     name = "etadis_before_any_cuts";            _etadis_before_any_cuts   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
     name = "phidis_POI_AliHelperPID";          _phidis_POI_AliHelperPID   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
     name = "phidis_before_any_cuts";            _phidis_before_any_cuts   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-    name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
-    name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
+    name = "DCAz";    _dcaz     = createHisto1F(name,name, 1000, -5.0, 5.0, "dcaZ","counts");
+    name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 1000, -5.0, 5.0, "dcaXY","counts");
     name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
     name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
     name = "T0";       _t0_1d    = createHisto1F(name,name, 20000, -10000, 10000, "T0","counts");
@@ -1203,6 +1227,8 @@ void  AliAnalysisTaskGeneralBF::createHistograms()
     name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);
     name = "mInvKaon";   _invMassKaon   = createHisto1F(name,name, 80, 0.98, 1.06, "M_{KK}","counts");
     name = "mInvKaonSq"; _invMassKaonSq = createHisto1F(name,name, 120, 0.98, 1.10, "M_{KK}^2","counts");
+    name = "mInvLambda"; _invMassLambda = createHisto1F(name,name, 120, 1.09, 1.15, "M_{Lambda}","counts");
+    name = "mInvLambdaSq"; _invMassLambdaSq = createHisto1F(name,name, 140, 1.18, 1.32, "M_{Lambda}^2","counts");
     name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts");
   }
   
@@ -1266,6 +1292,8 @@ void  AliAnalysisTaskGeneralBF::finalizeHistograms()
 
 void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
 {
+  AliInfo("Got a new event!");
+
   int    k1,k2;
   int    iPhi, iEta, iEtaPhi, iPt, charge;
   int    IDrec_1;
@@ -1286,9 +1314,11 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
   int    nClus;
   bool   bitOK;
   const float mpion   = 0.139570; // GeV/c2
+  const float massPionSq = 0.0194797849; // GeV/c2
   const float mkaon   = 0.493677; // GeV/c2
   const float massKaonSq = 0.2437169803; // GeV/c2
   const float mproton = 0.938272; // GeV/c2
+  const float massProtonSq = 0.880354346; // GeV/c2
   Double_t c = TMath::C() * 1.E-9;// m/ns
   double EP = 0;
   
@@ -1451,11 +1481,20 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
     }
     
     
-    if      ( fSystemType == "PbPb" )
-    { if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
-    else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
-    { if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
-    else    return;
+//     if      ( fSystemType == "PbPb" )
+//     { if  ( centrality < _centralityMin || centrality > _centralityMax || fabs( v0Centr - trkCentr ) > 5.0 )  return; }
+//     else if ( fSystemType == "PbPb_2015_kTRUE" || fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pPb" || fSystemType == "pp" || fSystemType == "pp_V0A_kMB_kTRUE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kTRUE" || fSystemType == "pp_V0_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kTRUE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0A_kMB_Utils" || fSystemType == "pp_V0_kMB_Utils" || fSystemType == "pp_V0C_kMB_Utils" )
+//     { if  ( centrality < _centralityMin || centrality > _centralityMax )  return; }
+//     else    return;
+    
+    
+    if( centrality<_centralityMin || centrality>_centralityMax )  return;
+    
+    if( fSystemType=="PbPb" && fAnalysisType=="RealData" )
+    {
+      if( fabs(v0Centr-trkCentr)>5.0 )  return;
+    }
+    
     
     _eventAccounting -> Fill( 2 ); // count all events with right centrality
     
@@ -1480,6 +1519,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
     }
     
     iVertex = int( ( vertexZ - _min_vertexZ ) / _width_vertexZ );
+
     iVertexP1 = iVertex*_nBins_etaPhiPt_1;
     iVertexP2 = iVertex*_nBins_etaPhiPt_2;
     if ( iVertex<0 || iVertex >= _nBins_vertexZ )
@@ -1525,7 +1565,13 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         pz     = t -> Pz();
         eta    = t -> Eta();
         if ( fAnalysisType == "RealData" )    dedx = t -> GetTPCsignal();
-        else if ( fAnalysisType == "MCAODreco" )  dedx = fPIDResponse -> GetTPCsignalTunedOnData( t );
+        else if ( fAnalysisType == "MCAODreco" ) {
+          /* tracks from injected signals are excluded if so required */
+          if( FromInjectedSignal(t) ) continue;
+          /* tracks with negative label are excluded */
+          if(t->GetLabel() < 0) continue;
+          dedx = fPIDResponse -> GetTPCsignalTunedOnData( t );
+        }
         
         // QA for all the particles in the event
         if ( _singlesOnly )
@@ -1567,13 +1613,13 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         
         Double_t pos[3];
         t -> GetXYZ(pos);
-        Double_t DCAX = pos[0] - vertexX;
-        Double_t DCAY = pos[1] - vertexY;
-        Double_t DCAZ = pos[2] - vertexZ;
-        Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-        if (DCAZ     <  _dcaZMin ||
-            DCAZ     >  _dcaZMax ||
-            DCAXY    >  _dcaXYMax ) continue;
+        Double_t DCAX_1 = pos[0] - vertexX;
+        Double_t DCAY_1 = pos[1] - vertexY;
+        Double_t DCAZ_1 = pos[2] - vertexZ;
+        Double_t DCAXY_1 = TMath::Sqrt((DCAX_1*DCAX_1) + (DCAY_1*DCAY_1));
+        if (DCAZ_1     <  _dcaZMin_1 ||
+            DCAZ_1     >  _dcaZMax_1 ||
+            DCAXY_1    >  _dcaXYMax_1 ) continue;
         
         nClus = t -> GetTPCNcls();
         if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
@@ -1667,8 +1713,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_1 );
+              _dcaxy                     -> Fill( DCAXY_1 );
               _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
               _ydis_POI_AliHelperPID     -> Fill( y );
               _phidis_POI_AliHelperPID   -> Fill( phi );
@@ -1715,8 +1761,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_1 );
+              _dcaxy                     -> Fill( DCAXY_1 );
               _etadis_POI_AliHelperPID   -> Fill( eta );
               _phidis_POI_AliHelperPID   -> Fill( phi );
               _dedx_p_POI_AliHelperPID   -> Fill( p, dedx );
@@ -1736,10 +1782,18 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             return;
           }
           
+          /* WARNING: int arithmetic on negative numbers lies */
+          if (eta < _min_eta_1) {
+            continue;
+          }
           iEta    = int((eta-_min_eta_1)/_width_eta_1);
           if (iEta<0 || iEta>=_nBins_eta_1)
           {
             AliWarning(Form("AliAnalysisTaskGeneralBF::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
+            continue;
+          }
+          /* WARNING: int arithmetic on negative numbers lies */
+          if (pt < _min_pt_1) {
             continue;
           }
           iPt     = int((pt -_min_pt_1 )/_width_pt_1 );
@@ -1817,7 +1871,13 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         pz     = t -> Pz();
         eta    = t -> Eta();
         if ( fAnalysisType == "RealData" )    dedx = t -> GetTPCsignal();
-        else if ( fAnalysisType == "MCAODreco" )  dedx = fPIDResponse -> GetTPCsignalTunedOnData( t );
+        else if ( fAnalysisType == "MCAODreco" )  {
+          /* tracks from injected signals are excluded if so required */
+          if( FromInjectedSignal(t) ) continue;
+          /* tracks with negative label are excluded */
+          if(t->GetLabel() < 0) continue;
+          dedx = fPIDResponse -> GetTPCsignalTunedOnData( t );
+        }
         
         // QA for all the particles in the event
         if ( _singlesOnly )
@@ -1859,13 +1919,13 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         
         Double_t pos[3];
         t -> GetXYZ(pos);
-        Double_t DCAX = pos[0] - vertexX;
-        Double_t DCAY = pos[1] - vertexY;
-        Double_t DCAZ = pos[2] - vertexZ;
-        Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-        if (DCAZ     <  _dcaZMin ||
-            DCAZ     >  _dcaZMax ||
-            DCAXY    >  _dcaXYMax ) continue;
+        Double_t DCAX_2 = pos[0] - vertexX;
+        Double_t DCAY_2 = pos[1] - vertexY;
+        Double_t DCAZ_2 = pos[2] - vertexZ;
+        Double_t DCAXY_2 = TMath::Sqrt((DCAX_2*DCAX_2) + (DCAY_2*DCAY_2));
+        if (DCAZ_2     <  _dcaZMin_2 ||
+            DCAZ_2     >  _dcaZMax_2 ||
+            DCAXY_2    >  _dcaXYMax_2 ) continue;
         
         nClus = t -> GetTPCNcls();
         if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
@@ -1959,8 +2019,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_2 );
+              _dcaxy                     -> Fill( DCAXY_2 );
               _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
               _ydis_POI_AliHelperPID     -> Fill( y );
               _phidis_POI_AliHelperPID   -> Fill( phi );
@@ -2007,8 +2067,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             // QA for POI
             if ( _singlesOnly )
             {
-              _dcaz                      -> Fill( DCAZ );
-              _dcaxy                     -> Fill( DCAXY );
+              _dcaz                      -> Fill( DCAZ_2 );
+              _dcaxy                     -> Fill( DCAXY_2 );
               _etadis_POI_AliHelperPID   -> Fill( eta );
               _phidis_POI_AliHelperPID   -> Fill( phi );
               _dedx_p_POI_AliHelperPID   -> Fill( p, dedx );
@@ -2028,10 +2088,18 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             return;
           }
           
+          /* WARNING: int arithmetic on negative numbers lies */
+          if (eta < _min_eta_2) {
+            continue;
+          }
           iEta    = int((eta-_min_eta_2)/_width_eta_2);
           if (iEta<0 || iEta>=_nBins_eta_2)
           {
             AliWarning(Form("AliAnalysisTaskGeneralBF::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
+            continue;
+          }
+          /* WARNING: int arithmetic on negative numbers lies */
+          if (pt < _min_pt_2) {
             continue;
           }
           iPt     = int((pt -_min_pt_2 )/_width_pt_2 );
@@ -2096,7 +2164,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
       AliMCEvent * mcEvent = MCEvent();
       _nTracks = mcEvent -> GetNumberOfTracks();
       
-      //Track Loop starts here
+      //Track Loop for particle 1 starts here
       for ( int iTrack = 0; iTrack < _nTracks; iTrack++ )
       {
         AliAODMCParticle * t = ( AliAODMCParticle * ) mcEvent -> GetTrack( iTrack );
@@ -2107,6 +2175,9 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         }
         
         if( !t -> IsPhysicalPrimary() ) continue;
+        if( t -> IsSecondaryFromWeakDecay() )  continue;
+        if( t -> IsSecondaryFromMaterial() )  continue;
+        if( FromInjectedSignal(t) ) continue;
         
         q      = t -> Charge();
         
@@ -2196,10 +2267,16 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
                  || pdgCodeOfMother == 310 // K_Short
                  || pdgCodeOfMother == 130 // K_Long
+                 || pdgCodeOfMother == 313 // K_Star_0
+                 || pdgCodeOfMother == 323 // K_Star_+
                  || pdgCodeOfMother == 333 // phi
                  || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
                  || pdgCodeOfMother == 111 // pi0
                  || pdgCodeOfMother == 22 // photon
+                 || pdgCodeOfMother == 2224 // Delta_++
+                 || pdgCodeOfMother == 2214 // Delta_+
+                 || pdgCodeOfMother == 2114 // Delta_0
+                 || pdgCodeOfMother == 1114 // Delta_-
                  ) continue;
             }
           }
@@ -2293,7 +2370,142 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             }
           }
         } // if ( _requestedCharge_1 == charge )
+      } //Track Loop particle 1 ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      
+      
+      //------------------------------------------------------------------------------------------------------------------------------------------------
+      //Track Loop for particle 2 starts here
+      for ( int iTrack = 0; iTrack < _nTracks; iTrack++ )
+      {
+        AliAODMCParticle * t = ( AliAODMCParticle * ) mcEvent -> GetTrack( iTrack );
         
+        if ( !t ) {
+          AliError(Form("Could not receive track %d", iTrack));
+          continue;
+        }
+        
+        if( !t -> IsPhysicalPrimary() ) continue;
+        if( t -> IsSecondaryFromWeakDecay() )  continue;
+        if( t -> IsSecondaryFromMaterial() )  continue;
+        if( FromInjectedSignal(t) ) continue;
+        
+        q      = t -> Charge();
+        
+        //cout << "step 1 Au-Au: q = " << q << endl;
+        
+        charge = int( q/3. ); // particle charges are 3s in HIJING truth
+        
+        //cout << "step 2 Au-Au: charge = " << charge << endl;
+        
+        phi    = t -> Phi();
+        pt     = t -> Pt();
+        eta    = t -> Eta();
+        //y_direct = t -> Y(); // rapidity
+        y      = t -> Y();
+        
+        if ( _singlesOnly )
+        {
+          _etadis_before_any_cuts -> Fill( eta );
+          _phidis_before_any_cuts -> Fill( phi );
+        }
+        
+        /*
+         const float mpion = 0.1395701835; // GeV/c2
+         const float mkaon = 0.493667; // GeV/c2
+         const float mproton = 0.93827204621; // GeV/c2
+         if ( particleSpecies == 0 )  mass = mpion;
+         if ( particleSpecies == 1 )  mass = mkaon;
+         if ( particleSpecies == 2 )  mass = mproton;
+         y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y
+         
+         //check if 2 ways of getting rapidity give same results
+         if( TMath::Abs( t -> GetPdgCode() ) == 321  )
+         {
+         cout << " y = " << y << endl;
+         cout << " y_direct = " << y_direct << endl;
+         }
+         */
+        
+        // Kinematics cuts:
+        if( charge == 0 ) continue;
+        if( pt < _min_pt_2 || pt > ptUpperLimit_2 ) continue;
+        if( y < _min_eta_2 || y > _max_eta_2 ) continue;
+        
+        /*
+         int pdg = t -> GetPdgCode();
+         // Compare to http://pdg.lbl.gov/2007/reviews/montecarlorpp.pdf
+         // Important ones:
+         // proton: +/- 2212
+         // neutron 2212 (maybe +/- for anti-neutrons)
+         // charged kaon: +/- 321
+         // charged pion: +/- 211
+         // electron: +/- 11
+         // muon: +/- 13
+         // If you get any other number, double-check!
+         double mass = TParticlePDG::Mass( pdg );
+         */
+        
+        // fill track QA histograms
+        if ( _singlesOnly )  _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles
+        
+        if( particleSpecies_2 == 0 )
+        { if( TMath::Abs( t -> GetPdgCode() ) != 211  )  continue; }
+        else if( particleSpecies_2 == 1 )
+        { if( TMath::Abs( t -> GetPdgCode() ) != 321  )  continue; }
+        else if( particleSpecies_2 == 2 )
+        { if( TMath::Abs( t -> GetPdgCode() ) != 2212 )  continue; }
+        else   return;
+        
+        if ( _singlesOnly )
+        {
+          _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
+          _ydis_POI_AliHelperPID     -> Fill( y );
+          _phidis_POI_AliHelperPID   -> Fill( phi );
+          _y_Pt_POI_MCAODTruth -> Fill( y, pt ); //POI
+        }
+        //cout << "step 3 Au-Au: particle ID: " << t -> GetPdgCode() << endl;
+        
+        //Exclude resonances
+        if( fExcludeResonancesInMC )
+        {
+          Int_t gMotherIndex = t -> GetMother();
+          if( gMotherIndex != -1 ) {
+            AliAODMCParticle * motherTrack = dynamic_cast<AliAODMCParticle *>( mcEvent -> GetTrack( gMotherIndex ) );
+            if( motherTrack ) {
+              Int_t pdgCodeOfMother = motherTrack -> GetPdgCode();
+              
+              if( pdgCodeOfMother == 311 || pdgCodeOfMother == -311 // K0
+                 || pdgCodeOfMother == 310 // K_Short
+                 || pdgCodeOfMother == 130 // K_Long
+                 || pdgCodeOfMother == 313 // K_Star_0
+                 || pdgCodeOfMother == 323 // K_Star_+
+                 || pdgCodeOfMother == 333 // phi
+                 || pdgCodeOfMother == 3122 || pdgCodeOfMother == -3122 // Lambda
+                 || pdgCodeOfMother == 111 // pi0
+                 || pdgCodeOfMother == 22 // photon
+                 || pdgCodeOfMother == 2224 // Delta_++
+                 || pdgCodeOfMother == 2214 // Delta_+
+                 || pdgCodeOfMother == 2114 // Delta_0
+                 || pdgCodeOfMother == 1114 // Delta_-
+                 ) continue;
+            }
+          }
+        }
+        
+        //cout << "step 4 Au-Au" << endl;
+        
+        /*
+         //Exclude electrons with PDG
+         if( fExcludeElectronsInMC ) {
+         if( TMath::Abs( t -> GetPdgCode() ) == 11 ) continue;
+         }
+         */
+        
+        if ( _useRapidity )  eta = y;  //switch from eta to y
+        
+        //cout << "step 5 Au-Au" << endl;
+        
+        //Particle 2
         if ( _requestedCharge_2 == charge )
           //&& dedx >=  _dedxMin && dedx < _dedxMax)
         {
@@ -2360,8 +2572,10 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               return;
             }
           }
-        } //if ( _requestedCharge_2 == charge )
-      } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+        }//if ( _requestedCharge_2 == charge )
+      } //Track Loop particle 2 ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      
+      
     } //end of "if ( fAnalysisType == "MCAOD" )"
   } //if( fAODEvent )
   
@@ -2440,13 +2654,15 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               }
               
               corr      = corr_1*corr_2;
-              if (q_2>q_1 || (q_1>0 && q_2>0 && pt_2<=pt_1) || (q_1<0 && q_2<0 && pt_2>=pt_1))
-              {
-                ij = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
-              }
-              else // swap particles
-              {
-                ij = iEtaPhi_2*_nBins_etaPhi_1 + iEtaPhi_1;   ////cout << " ij:" << ij<< endl;
+              if (fUseMomentumOrder && !(fAnalysisType == "MCAOD")) {
+                if (q_2>q_1 || (q_1>0 && q_2>0 && pt_2<=pt_1) || (q_1<0 && q_2<0 && pt_2>=pt_1))
+                {
+                  ij = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
+                }
+                else // swap particles
+                {
+                  ij = iEtaPhi_2*_nBins_etaPhi_1 + iEtaPhi_1;   ////cout << " ij:" << ij<< endl;
+                }
               }
               
               __n2_12                  += corr;
@@ -2513,13 +2729,15 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               }
               
               corr      = corr_1*corr_2;
-              if ( q_2<q_1 || (q_1>0 && q_2>0 && pt_2>=pt_1) || (q_1<0 && q_2<0 && pt_2<=pt_1))
-              {
-                ij = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
-              }
-              else // swap particles
-              {
-                ij = iEtaPhi_2*_nBins_etaPhi_1 + iEtaPhi_1;   ////cout << " ij:" << ij<< endl;
+              if (fUseMomentumOrder && !(fAnalysisType == "MCAOD")) {
+                if ( q_2<q_1 || (q_1>0 && q_2>0 && pt_2>=pt_1) || (q_1<0 && q_2<0 && pt_2<=pt_1))
+                {
+                  ij = iEtaPhi_1*_nBins_etaPhi_1 + iEtaPhi_2;   ////cout << " ij:" << ij<< endl;
+                }
+                else // swap particles
+                {
+                  ij = iEtaPhi_2*_nBins_etaPhi_1 + iEtaPhi_1;   ////cout << " ij:" << ij<< endl;
+                }
               }
               
               __n2_12                  += corr;
@@ -2543,7 +2761,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         } //i1
       }
     }
-    else  // for like-sign pairs // filter 1 and 2 are different -- must do all particle pairs...
+    else  // for unlike-sign pairs // filter 1 and 2 are different -- must do all particle pairs...
     {
       _n1_1_vsM->Fill(centrality,      __n1_1);
       _s1pt_1_vsM->Fill(centrality,    __s1pt_1);
@@ -2595,6 +2813,61 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
               float mInvKaon = sqrt(mInvKaonSq);
               _invMassKaonSq->Fill(mInvKaonSq);
               _invMassKaon->Fill(mInvKaon);
+            }
+            
+            if ( particleSpecies_1 == 0 && particleSpecies_2 == 2 ) // lambda invariant mass calculation for pion-proton pairs
+            {
+              float EngyPionSq = massPionSq + pt_1*pt_1 + pz_1*pz_1;
+              float EngyProtonSq = massProtonSq + pt_2*pt_2 + pz_2*pz_2;
+              float mInvLambdaSq = massPionSq + massProtonSq + 2*sqrt(EngyPionSq*EngyProtonSq) - 2*(px_1*px_2 + py_1*py_2 + pz_1*pz_2);
+              float mInvLambda = sqrt(mInvLambdaSq);
+              
+              if (veto_Lambda) {
+                if (fAnalysisType == "MCAOD") {
+                  AliAODMCParticle * t1 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( id_1 );
+                  int mt1_ix = t1->GetMother();
+                  AliAODMCParticle * t2 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( id_2 );
+                  int mt2_ix = t2->GetMother();
+                  if (!(mt1_ix < 0) && !(mt2_ix <0)) {
+                    AliAODMCParticle * mt1 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( mt1_ix );
+                    AliAODMCParticle * mt2 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( mt2_ix );
+                    if ((mt1 != nullptr) && (mt2 != nullptr)) {
+                      if ((abs(mt1->GetPdgCode()) == 3122) && (abs(mt2->GetPdgCode()) == 3122)) {
+                        /* skip pair if both particles come from lambdas */
+                        continue;
+                      }
+                    }
+                  }
+                }
+                else {
+                  if ( mInvLambda>1.114683 && mInvLambda<1.116683 ) continue; // for both US and LS pion-proton correlations
+                }
+              }
+              
+              if (veto_Lambda_left_sideband) {
+                if (fAnalysisType == "MCAOD") {
+                  AliAODMCParticle * t1 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( id_1 );
+                  int mt1_ix = t1->GetMother();
+                  AliAODMCParticle * t2 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( id_2 );
+                  int mt2_ix = t2->GetMother();
+                  if (!(mt1_ix < 0) && !(mt2_ix <0)) {
+                    AliAODMCParticle * mt1 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( mt1_ix );
+                    AliAODMCParticle * mt2 = ( AliAODMCParticle * ) MCEvent() -> GetTrack( mt2_ix );
+                    if ((mt1 != nullptr) && (mt2 != nullptr)) {
+                      if ((abs(mt1->GetPdgCode()) == 3122) && (abs(mt2->GetPdgCode()) == 3122)) {
+                        /* skip pair if both particles come from lambdas */
+                        continue;
+                      }
+                    }
+                  }
+                }
+                else {
+                  if ( mInvLambda>1.1109 && mInvLambda<1.1131 ) continue; // for both US and LS pion-proton correlations
+                }
+              }
+              
+              _invMassLambdaSq->Fill(mInvLambdaSq);
+              _invMassLambda->Fill(mInvLambda);
             }
             
             corr      = corr_1*corr_2;

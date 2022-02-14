@@ -88,7 +88,6 @@ public:
   std::pair<float, float> GetProbProton() const { return std::make_pair(fPidProbProton[0], fPidProbProton[1]); }
   std::pair<float, float> GetProbMuon() const { return std::make_pair(fPidProbMuon[0], fPidProbMuon[1]); }
 
-
   bool GetLabel() const { return fLabel; }
   ULong64_t GetStatus() const { return fStatus; }
   int GetPIDmethod() const { return fPIDMethod; }
@@ -211,7 +210,7 @@ protected:   // here are the quantities I want to cut on...
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP);
   //
-  bool IsDeuteronNSigma(float mom,float massTOFDPG, float sigmaMass, float nsigmaTPC, float nsigmaTOF);
+  bool IsDeuteronNSigma(float mom,float massTOFDPG, float nsigmaTPC, float nsigmaTOF);
   bool IsTritonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsHe3NSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsAlphaNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
@@ -270,4 +269,5 @@ inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpac
 inline void AliFemtoESDTrackCut::SetElectronRejection(Bool_t setE) { fElectronRejection = setE; }
 
 #endif
+
 

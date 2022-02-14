@@ -16,6 +16,8 @@ TObject(),
   eta(-999),
   phi(-999),
   dedx(-999),
+  protNSigma(-999),
+  pionNSigma(-999),
   dcaxy(-999),
   dcaz(-999),
   mother(0),
@@ -26,9 +28,6 @@ TObject(),
   pid(-999),
   primary(-999),
   order(-1),
-//filterset1(0),
-// filterset2(0),
-//filterset3(0),
   tpcnclS(0)
 
 {
@@ -48,8 +47,9 @@ void DeDxTrack::Copy(TObject& object) const
   track->pttrue     = pttrue;    
   track->eta        = eta;       
   track->phi        = phi;       
-  track->dedx       = dedx;    
-  
+  track->dedx       = dedx;
+  track->protNSigma = protNSigma;
+  track->pionNSigma = pionNSigma;    
   track->dcaxy      = dcaxy;     
   track->dcaz       = dcaz;      
   track->mother     = mother;    
@@ -112,6 +112,7 @@ TObject(),
   dcadaughters(999),
   pdg(0),
   pdgmother(0),
+  oobPileupFlag(-1),
   primary(-1),  
   status(),  
   ptrack(),
@@ -131,7 +132,7 @@ void DeDxV0::Copy(TObject& object) const
 
   v0->p	            = p;		 
   v0->pt	    = pt;		 
-  v0->eta	    = eta;		 
+  v0->eta	    = eta;
   v0->phi	    = phi;		 
   v0->pdca	    = pdca;		 
   v0->ndca	    = ndca;		 
@@ -149,6 +150,7 @@ void DeDxV0::Copy(TObject& object) const
   v0->dcadaughters = dcadaughters;	 
   v0->pdg	    = pdg;		 
   v0->pdgmother	    = pdgmother;
+  v0->oobPileupFlag = oobPileupFlag;
   v0->primary       = primary;  	 
   v0->status  	    = status;  	 
 
@@ -213,10 +215,14 @@ TObject(),
   trackmult(-1),   // Track mult (no cuts)
   n(-1),           // Number of added tracks
   nTracks(-1),
+  refMult(-1),     // reference multiplicity
   trackmultMC(-1), // MC track mult (primary tracks)
   nMC(-1),         // MC number of added tracks 
   process(-2),     // MC process: -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
-  trig(-1)         // Was the event triggered
+  trig(-1),        // Was the event triggered
+  triggerInt(-1),     // 0 = kMB, 1 = kCent, 2 = kSemiCent
+  v0Finder(-1),    // 0 = oldFinder, 1 = newFinder
+  centFramework(-1)// 0 = AliCentrality, 1 = AliMultSelection 
 
 {
   // default constructor
@@ -243,8 +249,12 @@ void DeDxEvent::Copy(TObject& object) const
   eventIn->trackmult     = trackmult   ; 
   eventIn->n             = n           ;
   eventIn->nTracks       = nTracks     ;
+  eventIn->refMult       = refMult     ;
   eventIn->trackmultMC   = trackmultMC ; 
   eventIn->nMC           = nMC         ; 
   eventIn->process       = process     ; 
   eventIn->trig          = trig        ; 
- }
+  eventIn->triggerInt    = triggerInt  ; 
+  eventIn->v0Finder      = v0Finder    ;
+  eventIn->centFramework = centFramework;
+}

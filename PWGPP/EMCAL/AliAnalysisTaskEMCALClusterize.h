@@ -115,7 +115,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   AliEMCALRecoUtils* GetRecoUtils()                             { if(!fRecoUtils) fRecoUtils = new AliEMCALRecoUtils ;  
                                                                   return fRecoUtils            ; }
-  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Bool_t  bNonLin= kFALSE,  
+  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Int_t  bNonLin= kFALSE,  
                                         Bool_t  bRecalE= kTRUE , Bool_t  bBad   = kTRUE, Bool_t  bRecalT= kTRUE, Int_t   debug  = -1);
   
   void           InitClusterization();
@@ -314,6 +314,10 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetInducedTCardMaximumLowE(Float_t ma)         { fTCardCorrMaxInducedLowE = ma ; }
   
   void           PrintTCardParam();
+
+  void     SwitchUseMergedBCs(Bool_t doUseMergedBC)     { fDoMergedBCs     = doUseMergedBC; }
+
+  void     SetUse1DRecalibration(Bool_t use1D)     { fLoad1DRecalibFactors     = use1D; }
   
   //------------------------------------------
   
@@ -449,6 +453,9 @@ private:
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
+
+  Bool_t                fDoMergedBCs;              ///< flag whether to load four histos for the time calib or one merged histo
+  Bool_t                fLoad1DRecalibFactors;     ///< Flag to load 1D energy recalibration factors
   
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
@@ -457,7 +464,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 43) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 44) ;
   /// \endcond
 
 };

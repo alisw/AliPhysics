@@ -24,13 +24,14 @@
 /// \param badMapType: Int_t,settype of bad channel map acces
 /// \param badMapFileName: TString, file with bad channels map (absID)
 /// \param mostEneCellOnly: Bool_t, flag to calibrate only on most energetic cell in cluster
+/// \param PARFileName: TString, path to text file with the PAR information for the desired period
 ///
 /// \author Adam Matyja <adam.tomasz.matyja@ifj.edu.pl>, INP PAN Cracow
 ///
 
-AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile = "", // timeResults.root
+AliAnalysisTaskEMCALTimeCalib* AddTaskEMCALTimeCalibration(TString  outputFile = "", // timeResults.root
 							     TString  geometryName = "",//EMCAL_COMPLETE12SMV1_DCAL_8SM
-							     Double_t minClusterEne = 1.0,
+							     Double_t minClusterEne = 0.9,
 							     Double_t maxClusterEne = 500,
 							     Int_t    minNcells = 2,
 							     Int_t    maxNcells = 200,
@@ -43,13 +44,15 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 							     Double_t minTime = -20.,
 							     Double_t maxTime = 20.,
 							     Bool_t   pileupFromSPDFlag = kFALSE,
-							     TString  referenceFileName = "",//Reference.root
-							     TString  referenceSMFileName = "",//ReferenceSM.root
+							     TString  referenceFileName = "alien:///alice/cern.ch/user/j/jblair/TimeCalibRef/Reference_LHC17n_mcp1_step3.root",//Reference.root
+							     TString  referenceSMFileName = "alien:///alice/cern.ch/user/j/jblair/TimeCalibRef/ReferenceSM_LHC17n_mcp1_step1.root",//ReferenceSM.root
 							     Bool_t   badReconstruction = kFALSE,
-							     Bool_t   fillHeavyHistos = kFALSE,
-							     Int_t    badMapType = 0,
+							     Bool_t   fillHeavyHistos = kTRUE,
+							     Int_t    badMapType = 1,
 							     TString  badMapFileName = "",
-							     Bool_t   mostEneCellOnly = kFALSE)
+							     Bool_t   fillOneHistAllBCs=kFALSE,
+                                 Bool_t mostEneCellOnly = kFALSE,
+                                 TString  PARFileName = "")
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -84,6 +87,8 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
   taskmbemcal->SetMinTime          (minTime);	   
   taskmbemcal->SetMaxTime          (maxTime);
 
+  if(fillOneHistAllBCs) taskmbemcal->SwithOnFillOneHistAllBCs();
+
   if(fillHeavyHistos) taskmbemcal->SwithOnFillHeavyHisto();
   else taskmbemcal->SwithOffFillHeavyHisto();
 
@@ -115,9 +120,15 @@ AliAnalysisTaskEMCALTimeCalib  * AddTaskEMCALTimeCalibration(TString  outputFile
 
   //bad channel map
   taskmbemcal->SetBadChannelMapSource(badMapType);
-  if(badMapType==2) {
-    taskmbemcal->SetBadChannelFileName(badMapFileName);
-    taskmbemcal->LoadBadChannelMapFile();
+  if(badMapType==2){
+      taskmbemcal->SetBadChannelFileName(badMapFileName);
+      taskmbemcal->LoadBadChannelMap();
+  }
+
+  //set-up PAR file
+  if(PARFileName.Length()!=0){
+    //printf("We Got to the PAR part of the Add Task!");
+    taskmbemcal->SetPARInfo(PARFileName);
   }
 
   //taskmbemcal->PrintInfo();

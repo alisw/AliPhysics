@@ -8,6 +8,7 @@
 #ifndef ALIFEMTODREAMTRACKCUTS_H_
 #define ALIFEMTODREAMTRACKCUTS_H_
 #include "Rtypes.h"
+#include "TDatabasePDG.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamTrackMCHist.h"
 #include "AliFemtoDreamTrackHist.h"
@@ -21,6 +22,12 @@ class AliFemtoDreamTrackCuts {
   static AliFemtoDreamTrackCuts *PrimProtonCuts(bool isMC, bool DCAPlots,
                                                 bool CombSigma,
                                                 bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *PrimKaonCuts(bool isMC, bool DCAPlots = false,
+                                              bool CombSigma = false,
+                                              bool ContribSplitting = false);
+  static AliFemtoDreamTrackCuts *PrimDeuteronCuts(bool isMC, bool DCAPlots,
+                                                bool CombSigma,
+                                                bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayProtonCuts(bool isMC, bool PileUpRej,
                                                  bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayPionCuts(bool isMC, bool PileUpRej,
@@ -30,6 +37,11 @@ class AliFemtoDreamTrackCuts {
   static AliFemtoDreamTrackCuts *Xiv0ProtonCuts(bool isMC, bool PileUpRej,
                                                 bool ContribSplitting);
   static AliFemtoDreamTrackCuts *XiBachPionCuts(bool isMC, bool PileUpRej,
+                                                bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *OmegaBachKaonCuts(bool isMC, bool PileUpRej,
+                                                   bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *PrimPionCuts(bool isMC, bool DCAPlots,
+                                                bool CombSigma,
                                                 bool ContribSplitting);
   //  static AliFemtoDreamTrackCuts *OmegaKaonCuts(bool isMC,
   //                                               bool ContribSplitting);
@@ -47,6 +59,20 @@ class AliFemtoDreamTrackCuts {
     fDCAPlots = plot;
   }
   ;
+  void SetPlotTOFMass(bool mass) {
+    fTOFM = mass;
+  }
+  ;
+  void SetPlotTOFMassSq(bool massSq) {
+    fTOFMassSq = massSq;
+   }
+   ;
+  void SetOriginMultiplicityHists(bool plot) {
+    fDoMultBinning = plot;
+  }
+  void CheckParticleMothers(bool plot) {
+    fCheckMother = plot;
+  }
   void SetPlotCombSigma(bool plot) {
     fCombSigma = plot;
   }
@@ -87,6 +113,12 @@ class AliFemtoDreamTrackCuts {
     fcutPt = kTRUE;
   }
   ;
+  void SetPtExclusion(float exmin, float exmax) {
+    fpTexmin = exmin;
+    fpTexmax = exmax;
+    fexclPt = kTRUE;
+  }
+  ;
   void SetEtaRange(float etamin, float etamax) {
     fetamin = etamin;
     fetamax = etamax;
@@ -106,6 +138,10 @@ class AliFemtoDreamTrackCuts {
   ;
   void SetCheckPileUpITS(bool check) {
     fCheckPileUpITS = check;
+  }
+  ;
+  void SetCheckPileUpSPDTOF(bool check) {
+    fCheckPileUpSPDTOF = check;
   }
   ;
   void SetCheckPileUpTOF(bool check) {
@@ -168,13 +204,58 @@ class AliFemtoDreamTrackCuts {
     fRatioCrossedRows = ratio;
   }
   ;
-  void SetPID(AliPID::EParticleType pid, float pTPChresh, float sigVal = 3.) {
+
+  void SetPID(AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3.,
+                             bool AllowITSonly = false, float sigValITS = 3.) {
     fParticleID = pid;
-    fPIDPTPCThreshold = pTPChresh;
+    fPIDPTPCThreshold = pTPCThresh;
     fNSigValue = sigVal;
+    //fAllowITSonly = AllowITSonly; // the last two arguments are dummy now. oton.28.10.2021
+    //fNSigValueITS = sigValITS; // the last two arguments are dummy now. oton.28.10.2021
     fCutPID = kTRUE;
   }
   ;
+
+  void SetPIDkd(bool iskaon = true, bool isramona = false,
+                float COMBcut = 4., float TPCcut = 3., float EXCLUSIONcut = 3.) {
+    fPIDkd = true;//THIS WILL BE ALWAYS TRUE IF SETPIDKD IS CALLED FROM ADDTASK
+    fIsKaon = iskaon;
+    fIsRamona = isramona;
+    fcutCOMBkd = COMBcut;
+    fcutTPCkd = TPCcut;
+    fcutEXCLUSIONkd= EXCLUSIONcut;
+  }
+  ;
+
+  void SetCutITSPID(float pITSThresh = 0.0, double sigValITSmin = -3., double sigValITSmax = 3.) {
+    fPIDPITSThreshold = pITSThresh;
+    fNSigValueITSmin = sigValITSmin;
+    fNSigValueITSmax = sigValITSmax;
+  }
+  ;
+  void SetITSnSigmaCut(bool ITScut) {
+    fdoITSnSigmaCut = ITScut;
+  }
+  void SetCutTOFInvMass(bool cutit = false) {
+    fTOFInvMassCut = cutit;
+   }
+   ;
+  void SetCutPeakTOFInvMass(float sigmaUp,float sigmalLow) {
+    fTOFInvMassCutUp = sigmaUp;
+    fTOFInvMassCutLow = sigmalLow;
+    fCutArroundPeakTOFInvMass= true;
+  }
+  ;
+  void SetCutTOFMassForSB(float Ldown, float Lup, float Rdown, float Rup,bool cutLSB = false, bool cutRSB = false) {
+    fCutArroundPeakTOFInvMass = false;
+    fCutTOFInvMassSidebands = true;
+    fTOFInvMassCutLSBdown = Ldown;
+    fTOFInvMassCutLSBup = Lup;
+    fTOFInvMassCutRSBdown = Rdown;
+    fTOFInvMassCutRSBup = Rup;
+    fCutLSB = cutLSB;
+    fCutRSB = cutRSB;
+  }
   void SetRejLowPtPionsTOF(bool use) {
     fRejectPions = use;
   }
@@ -200,8 +281,12 @@ class AliFemtoDreamTrackCuts {
     return fHists->GetHistList();
   }
   ;
+  UInt_t GetFilterBit() const {
+    return fFilterBit;
+  }
+
   TList *GetMCQAHists() {
-    return fMCHists->GetHistList();
+    return fMCHists ? fMCHists->GetHistList() : nullptr;
   }
   ;
   TString ClassName() {
@@ -218,30 +303,48 @@ class AliFemtoDreamTrackCuts {
       fMCHists->SetName(name.Data());
   }
   ;
+  void SetMultDCAPlots(int min, int max) {
+    fMultDCAmin = min;
+    fMultDCAmax = max;
+  }
+  ;
  private:
   bool TrackingCuts(AliFemtoDreamTrack *Track);
   bool PIDCuts(AliFemtoDreamTrack *Track);
+  bool ITSPIDAODCuts(AliFemtoDreamTrack *Track);
+  bool PIDkd(AliFemtoDreamTrack *Track, bool TPCyes, bool TOFyes);
   bool SmallestNSig(AliFemtoDreamTrack *Track);
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
   void FillMCContributions(AliFemtoDreamTrack *Track);
+  float CalculateTOFMassSquared(AliFemtoDreamTrack *Track);
+  float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const;
+  float SigmaTOFMassSqdDeuteron(AliFemtoDreamTrack *Track) const;
   AliFemtoDreamTrackMCHist *fMCHists;  //!
   AliFemtoDreamTrackHist *fHists;     //!
   bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
+  bool fTOFM;                         //
+  bool fTOFMassSq;                    //
+  bool fDoMultBinning;                //
+  bool fCheckMother;                  //
   bool fCombSigma;                    //
   bool fContribSplitting;             //
   bool fFillQALater;                  //
   bool fCheckFilterBit;               // This one is used for AODs
   bool fCheckESDFiltering;  // This one checks if the filtering of ESDs to AODs with FB128 passes
   bool fCheckPileUpITS;               //
+  bool fCheckPileUpSPDTOF;               //
   bool fCheckPileUpTOF;               //
   bool fCheckPileUp;                //  Should only be used for Daughters of v0s
   UInt_t fFilterBit;                  //
   float fpTmin;                      //
   float fpTmax;                      //
+  float fpTexmin;                   //
+  float fpTexmax;                   //
   bool fcutPt;                        //
+  bool fexclPt;                        //
   float fetamin;                     //
   float fetamax;                     //
   bool fcutEta;                       //
@@ -265,12 +368,36 @@ class AliFemtoDreamTrackCuts {
   int fCrossedRows;                 //
   float fRatioCrossedRows;            //
   bool fCutPID;                       //
+  bool fAllowITSonly;                       //
   bool fCutHighPtSig;  // Reject tracks which have a lower Sigma for other particles (implemented for electrons, pion, kaons and protons)
   AliPID::EParticleType fParticleID;  //
-  float fNSigValue;                  // defaults to 3
-  float fPIDPTPCThreshold;           // defaults to 0
+  float fNSigValue;                   // defaults to 3
+  float fNSigValueITSmin;             // defaults to -3
+  float fNSigValueITSmax;             // defaults to +3
+  float fdoITSnSigmaCut;              // defaults is false
+  float fcutCOMBkd;                // defaults to 4
+  float fcutTPCkd;                // defaults to 3
+  float fcutEXCLUSIONkd;         // defaults to 3
+  bool fIsKaon;                // 
+  bool fIsRamona;                // 
+  float fPIDPTPCThreshold;            // defaults to 0
+  float fPIDPITSThreshold;            // defaults to 0, change it only if you want ITS in your analysis
+  float fMultDCAmin;            //
+  float fMultDCAmax;            //
   bool fRejectPions;  // Supress Pions at low pT with the TOF, if information is available
-ClassDef(AliFemtoDreamTrackCuts,3)
+  bool fTOFInvMassCut;                   //
+  bool fPIDkd;                   //
+  float fTOFInvMassCutUp;            //
+  float fTOFInvMassCutLow;            //
+  bool fCutArroundPeakTOFInvMass;            //
+  bool fCutTOFInvMassSidebands;         //
+  float fTOFInvMassCutLSBdown;           //
+  float fTOFInvMassCutLSBup;             //
+  float fTOFInvMassCutRSBdown;           //
+  float fTOFInvMassCutRSBup;             //
+  bool fCutLSB;                         //
+  bool fCutRSB;                         //
+ClassDef(AliFemtoDreamTrackCuts,11)
   ;
 };
 

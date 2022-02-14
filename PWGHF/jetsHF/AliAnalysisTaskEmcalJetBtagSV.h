@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKEMCALJETBTAGSV_H
-#define ALIANALYSISTASKEMCALJETBTAGSV_H
+#ifndef AliAnalysisTaskEmcalJetBtagSV_H
+#define AliAnalysisTaskEmcalJetBtagSV_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -18,15 +18,19 @@
 class TH1F;
 class TList;
 class TRandom3;
+class TRandom;
 class THn;
 class THnSparse;
 class TProfile;
 class AliAODMCHeader;
 class AliMultSelection;
+class AliFJWrapper; //EMB_clus
 
 //--AliRoot--
-#include "AliLog.h"
+
+#include "AliLog.h"  
 #include "AliAnalysisTaskEmcalJet.h"
+//#include "AliFJWrapper.h"  //EMB_clus
 
 class AliAnalysisUtils;
 class AliParticleContainer;
@@ -57,6 +61,8 @@ public:
 
   void SetDoRandomCone(Bool_t dorndm) {fDoRndmCone = dorndm;};
 
+  void SetDoStrangeAna(Bool_t dostrange) {fDoStrangeAna = dostrange;}; //StrangeAna
+
   void SetDoFillSecVtxQA(Bool_t doqa ) {fDoQAVtx  = doqa;};
 
   void SetDoFillV0Trks(Bool_t doV0) {fDoFillV0Trks = doV0;};
@@ -64,6 +70,10 @@ public:
   void SetDoDetRespMtx(Bool_t domtx) {fDoDetRespMtx = domtx;};
 
   void SetDoOnlyMtxAna(Bool_t onlyMtx) {fDoOnlyMtxAna = onlyMtx;};
+
+  void SetEmbeddPerpendicular(Bool_t EmbeddPerpendicular) {fEmbeddPerpendicular = EmbeddPerpendicular;};  //EMB_clus
+
+  
 
   void SetRecJetsBranch(const char* branch) {fRecJetsBranch = branch;}
 
@@ -78,6 +88,8 @@ public:
   void SetUseWeightOn() {fUseWeight = kTRUE;}
 
   void SetJetTaggingRadius(Double_t tagradius) {fTaggingRadius = tagradius;};
+  void SetDelPtSigmaCut(Double_t SigmaCut) { fSigmaSVCut = SigmaCut; }            //newDeltaPt//
+
 
   void SetGlLogLevel(Int_t level) { fGlLogLevel = level; };
   void SetLcDebLevel(Int_t level) { fLcDebLevel = level; };
@@ -118,6 +130,13 @@ public:
 
   void SetMaxFacPtHard(Float_t maxfacpthard){ fMaxFacPtHard = maxfacpthard;} //FK
 
+
+  void SetEmbedding(TString inhybrjets){  //EMB
+      fDoEmbedding         = kTRUE;                            //EMB
+      fHybridJetContName   = inhybrjets;                       //EMB
+  }
+
+
 protected:
   // Implementation of interface methods
   virtual void    UserCreateOutputObjects();
@@ -155,11 +174,17 @@ protected:
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
-
+  Int_t  FillDeltaPt(Double_t , Int_t , AliAODVertex* , vctr_pair_dbl_int ,  Double_t , Double_t , Double_t, Int_t ); 	 //EMB_clus_10
+  //Int_t  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t, Int_t);      //newDeltaPt//
+  Double_t GetDeltaPtRandomConeWithoutSignalPt (Double_t, Double_t, Double_t, Double_t);	 
   Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
+
+
 
 private:
 
+
+ 
   Bool_t      fCorrMode;             // enable correction or data modes
   Bool_t      fDoBkgRej;             // enable background rejection
   Bool_t      fDoRndmCone;           // enable random cone method
@@ -167,7 +192,10 @@ private:
   Bool_t      fDoFillV0Trks;         // enable V0 checks
   Bool_t      fDoDetRespMtx;        // enable detector repsonse matrix output
   Bool_t      fDoOnlyMtxAna;        // enable only det. matrix analysis
+  Bool_t      fDoStrangeAna;        // enable only det. matrix analysis//StrangeAna 
   Bool_t      fUseTriggerData;       // use emacal trigger
+  Bool_t      fEmbeddPerpendicular;  // EMB_clus use perpendicular track embedding
+
 
   const char* fRecJetsBranch;        // name of the AOD REC-jets branch
   const char* fGenJetsBranch;        // name of the AOD GEN-jets branch
@@ -183,38 +211,65 @@ private:
   TString     fMCRhoTaskName;        //  Name of the rho task
 
   Double_t    fTaggingRadius;        // radius used in tagging the jet flavour
-
+  Double_t    fSigmaSVCut;           // cut for delPt histogram                    //newDeltaPt//
   //
   // MC weights
   //
-  Double_t    fMCWeight;             ///<  pT-hard bin MC weight. It is used only internally.
-  Double_t    fMCXsec;
-  Double_t    fMCAvgTrials;
+  Double_t    fMCWeight;             //!<!  pT-hard bin MC weight. It is used only internally.
+  Double_t    fMCXsec;               //!<!
+  Double_t    fMCAvgTrials;          //!<!
 
-  Float_t     fZNApercentile;		 // multiplicity percentile, ZNA estimator
+  Float_t     fZNApercentile;        //!<! multiplicity percentile, ZNA estimator
 
-  TString     fCurrFileName;         ///<  Current file path name.
+  TString     fCurrFileName;         //!<!  Current file path name.
 
   Bool_t      fCheckMCCrossSection;  ///<  Retrieve from the pyxsec.root file the cross section, only if requested.
-  Bool_t      fSkipWeightInfo;
+  Bool_t      fSkipWeightInfo;       //!<!
   Bool_t      fUseWeight;
-  Bool_t      fInitialized;
+  Bool_t      fInitialized;          //!<! 
 
-  TList*                      fOutputList;       // list of output objects
+  TList*                      fOutputList;       //!<! list of output objects
 
   // AliHFJetsContainerVertex
   AliHFJetsContainerVertex*   fhJetVtxSim;       //!<! properties of vertices within the jet MC
+  AliHFJetsContainerVertex*   fhJetVtxSimFromK0Lambda;       //!<! properties of vertices within the jet MC, jet originating from K0 and Lamda //StrangeAna
+  AliHFJetsContainerVertex*   fhJetVtxSimFromSigmaXi;       //!<! properties of vertices within the jet MC, jet originating from sigma, xi etc //StrangeAna
+  AliHFJetsContainerVertex*   fhJetVtxSimFromOther;       //!<! properties of vertices within the jet MC, jet originating from other particles //StrangeAna
   AliHFJetsContainerVertex*   fhJetVtxData;      //!<! properties of vertices within the jet Data
   AliHFJetsContainerVertex*   fhQaVtx;           //!<! vertices properties
 
   TH1F*                       fhEntries;         //!<!
-  TH1F*						  fhZNApercentQa;	 //!<! QA histo for ZNA percentile
+  TH1F*	                      fhZNApercentQa;    //!<! QA histo for ZNA percentile
   TH1F*                       fhEvtRej;          //!<! Rejection criteria.
+  TH1F*                       fhEvtRejBitmap;          //!<! Rejection criteria bitmap.	
   TH1F*                       fhHFjetQa;         //!<! Various QA check on Jet.
-  TH1F*                       fhRhoQa;
-  TH1F*                       fhMCRhoQa;
-  TH1F* 					  fhDeltaPt;		 // delta pt distribution
-
+  TH1F*                       fhRhoQa;           //!<! 
+  TH1F*                       fhMCRhoQa;         //!<! 
+  TH1F*                       fhDeltaPt;         //!<! delta pt distribution
+  TH1F*                       fhDeltaPtLxy5;     //!<! delta pt distribution, Lxy=5 //newDeltaPt//
+  TH1F*                       fhDeltaPtLxy6;     //!<! delta pt distribution, Lxy=6 //newDeltaPt//
+  TH1F*                       fhDeltaPtLxy7;     //!<! delta pt distribution, Lxy=7 //newDeltaPt//	
+  TH1F*                       fhDeltaPtTrack10;  //!<! delta pt distribution, pt track > 10 //newDeltaPt//	
+	
+  TH1F*                       fZVertex;          //!<! Z vertex distribuition //AID//	
+  TH2F*                       fhTrackEta;        //!<! eta inclusive track distribuition //AID//	
+  TH2F*                       fhTrackPhi;        //!<! phi inclusive track distribuition //AID//	
+  TH2F*                       fhJetEta;          //!<! eta inclusive jet distribuition //AID//	
+  TH2F*                       fhJetPhi;          //!<! phi inclusice jet distribuition //AID//		
+  TH2F*                       fhOneOverPtVsPhiNeg;//!<! 1/p_T,track  versus phi for negative tracks //AID//		
+  TH2F*                       fhOneOverPtVsPhiPos;//!<! 1/p_T,track  versus phi for positive tracks //AID//		
+  TH2F*                       fhSigmaPtOverPtVsPt;//!<! resolution of 1/p_T,track  versus p_T,track //AID//		
+  TH2F*                       fhDCAinXVsPt;      //!<! X DCA versus pT  //AID// 
+  TH2F*                       fhDCAinYVsPt;      //!<! Y DCA versus pT  //AID//
+  TH2F*                       fhDCAinXVsPtPhysPrimary; //!<! X DCA versus pT for physical primaries  //AID// 
+  TH2F*                       fhDCAinYVsPtPhysPrimary; //!<! Y DCA versus pT for physical primaries  //AID//
+  TH2F*                       fhDCAinXVsPtSecondary; //!<! X DCA versus pT for secondaries //AID// 
+  TH2F*                       fhDCAinYVsPtSecondary; //!<! Y DCA versus pT for secondaries //AID//
+  TH2D*                       fhFractionOfSecInJet; //!<! Fraction of jet pT carried by secondaries //AID//
+  TH1D*                       fhPtTrkTruePrimRec; //!<! pt spectrum of true reconstructed primary tracks    
+  TH1D*                       fhPtTrkTruePrimGen; //!<! pt spectrum of true generated primary track    
+  TH1D*                       fhPtTrkSecOrFakeRec; //!<! pt spectrum of reconstructed fake or secondary tracks     
+	
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
   THn*                        fhnGenerated;      //!<! THn to fill MC generated histo
 
@@ -223,7 +278,7 @@ private:
 
   AliVEvent*                  fEvent;            //! Input event
   AliAODMCHeader*             fMCHeader;         //! Input MC header
-  AliMultSelection*			  fMultSelection;    //! multiplicity/centrality selector
+  AliMultSelection*           fMultSelection;    //! multiplicity/centrality selector
 
   AliHFJetsTaggingVertex*     fTagger;           // Jet Tagging object
 
@@ -238,16 +293,33 @@ private:
 
   TClonesArray*               fHFvertexing;      //! Array of reconstructed secondary vertex (b-tagged jets)
 
-  map_int_bool*               fV0gTrkMap;
+  map_int_bool*               fV0gTrkMap;        //!
 
-  TRandom3* 				  fRandom;     	     // used for throwing random cone
+  TRandom3*                   fRandom;     	 //! used for throwing random cone
 
-  Int_t                       fGlLogLevel;
-  Int_t                       fLcDebLevel;
-  Int_t                       fStartBin;
-  Float_t                     fMaxFacPtHard;  ///< Cut on  pthat events. How many times can be jet pT larger than pthat //FK
+  Int_t                       fGlLogLevel;       ///<
+  Int_t                       fLcDebLevel;       ///<
+  Int_t                       fStartBin;         //!
+  Float_t                     fMaxFacPtHard;     //<! Cut on  pthat events. How many times can be jet pT larger than pthat //FK
+  Double_t                    fPtCut;            //<! min cut on track pT   //AID  
+  Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 5);  // analysis task for MC study //FK
+  Bool_t                      fDoEmbedding;         ///< EMB flag to do embedding from file
+  TString                     fHybridJetContName;   ///< EMB Name of the hybrid jet container created from tracks and embedded tracks 
+  TClonesArray*               fHybridJetCont;       ///< EMB hybrid jet container
+  TH1F*                       fhDeltaPtEmbedd;      //!<! EMB delta pt distribution, based on embedding of tracks to event//  //AID_emb
+  TH2F*                       fhDeltaPtEmbeddCorrelation;  //!<! EMB
+
+
+  TH1F*                       fhDeltaPtEmbeddPerpendicular;      //!<! EMB_clus 
+  TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular;  //!<! EMB
+  TH1F*                       fhDeltaPtEmbeddPerpendicular10pT;      //!<! EMB_clus_10 
+  TH2F*                       fhDeltaPtEmbeddCorrelationPerpendicular10pT;  //!<! EMB_clus_10
+  AliFJWrapper*		      fFastJetWrapper;  	///< EMB_clus wrapper for fast jet finding
+  TRandom*		      fTrackGenerator; 		///< EMB_clus generator for track perpendicular to signal jet
+
+
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 14);  // analysis task for MC study //AID// //StrangeAna
 };
 
 //-------------------------------------------------------------------------------------

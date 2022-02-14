@@ -1,5 +1,5 @@
 
-AliAnalysisTaskPIDPerformCombIDPtDep *AddTaskPIDCombPerfIDPtDep(TString partType, Int_t fb, Bool_t useCentrality, Float_t centMin, Float_t centMax, TString centEst = "V0M"){
+AliAnalysisTaskPIDPerformCombIDPtDep *AddTaskPIDCombPerfIDPtDep(TString partType, Int_t fb, Bool_t useCentrality, Float_t centMin, Float_t centMax, TString centEst = "V0M", TString extraString=""){
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -26,7 +26,7 @@ AliAnalysisTaskPIDPerformCombIDPtDep *AddTaskPIDCombPerfIDPtDep(TString partType
   }
   
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("OutputList_%s_%d_%s_%.0f_%.0f", partType.Data(),fb, centEst.Data(), centMin, centMax), TList::Class(), AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("OutputList_%s_%d_%s_%.0f_%.0f_%s", partType.Data(),fb, centEst.Data(), centMin, centMax, extraString.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,outputFileName.Data());
   
   mgr->AddTask(taskPIDCombMC);
   mgr->ConnectInput(taskPIDCombMC, 0, mgr->GetCommonInputContainer());

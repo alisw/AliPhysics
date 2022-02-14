@@ -863,10 +863,10 @@ void LoadFileNamesAll(){
 	    filenames[iset][kassoc][jmes]=Form("%s/%sAverage%sDzeroDstarDplus%s_assoc%s.root",inputdatadirectory.Data(),avType.Data(),sets[iset].Data(),strmesonpt[jmes].Data(),pthadron[kassoc].Data());//pp data
 	  }
 	  else if(iset==5){
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),"",sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//POWHEG
 	  }
 	  else{
-	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtDzerofromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
+	    filenames[iset][kassoc][jmes] = Form("%s/%sCorrelationPlots%sPtAveragefromC%s_ptAssall%s_DeltaEta10.root",inputtemplatedirecotry.Data(),strsyst.Data(),sets[iset].Data(),strmesonMCpt[jmes].Data(),pthadron[kassoc].Data());//MC
 	  }
 	  cout<<iset<<"  "<<kassoc<<"  "<<jmes<<endl;
 	  cout<<filenames[iset][kassoc][jmes]<<endl;

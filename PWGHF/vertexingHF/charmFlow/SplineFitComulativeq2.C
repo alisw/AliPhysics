@@ -1,4 +1,4 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
+#if !defined (__CINT__) || defined (__CLING__)
 #include <Riostream.h>
 #include <TMath.h>
 #include <TFile.h>
@@ -23,13 +23,17 @@
 //                                           //
 //*******************************************//
 
+using namespace std;
+
+enum {kTaskHFvn, kTaskCharmHadronvn};
+
 const TString infilename = "./AnalysisResults.root";
-const TString indirname = "PWGHF_D2H_HFvn_Dplus_3050_Topod0Cut_QoverM_q2TPC_q2RecalcRemAllDau_VZERO_EvShape";
-const TString inlistname = "coutputv2Dplus_3050_Topod0Cut_QoverM_q2TPC_q2RecalcRemAllDau_VZERO_EvShape";
+const TString indirname = "PWGHF_D2H_HFvn_Dplus_3050VZERO_EvShapeEP";
+const TString inlistname = "coutputvnDplus_3050VZERO_EvShapeEP";
 
-const TString outfilename = "./Dplus_splines_3050_1centbin.root";
+const TString outfilename = "./Splines_3050.root";
 
-Int_t SplineFitCumulativeq2() {
+Int_t SplineFitCumulativeq2(int task = kTaskCharmHadronvn) {
     
   gStyle->SetOptStat(0);
   gStyle->SetPadLeftMargin(0.15);
@@ -38,21 +42,31 @@ Int_t SplineFitCumulativeq2() {
   gStyle->SetPadTickY(1);
   
   const Int_t nDet=6;
-  const TString detnames[nDet] = {"TPC","TPCNegEta","TPCPosEta","VZERO","VZEROA","VZEROC"};
+  TString detnames[nDet] = {"TPC","TPCNegEta","TPCPosEta","VZERO","VZEROA","VZEROC"};
 
   //input file
   TFile* infile = TFile::Open(infilename.Data(),"READ");
   if(!infile) {return 1;}
   TDirectoryFile* dir = (TDirectoryFile*)infile->Get(indirname.Data());
-  if(!dir) {std::cerr << "TDirectoryFile name wrong! Exit." << std::endl; return 2;}
+  if(!dir) {cerr << "TDirectoryFile name wrong! Exit." << endl; return 2;}
   TList* list = (TList*)dir->Get(inlistname.Data());
-  if(!list) {std::cerr << "TList name wrong! Exit." << std::endl; return 3;}
+  if(!list) {cerr << "TList name wrong! Exit." << endl; return 3;}
+  
+  TString histoname = "";
+  if(task==kTaskHFvn) 
+    histoname = "hq2vsCentr";
+  else if(task==kTaskCharmHadronvn) {
+    histoname = "fHistqnVsCentr";
+    for(Int_t iDet=3; iDet<nDet; iDet++) 
+      detnames[iDet].ReplaceAll("VZERO","V0");
+  }
+
   TH2F* hq2VsCentr[nDet];
   for(Int_t iDet=0; iDet<nDet; iDet++) {
-    hq2VsCentr[iDet] = (TH2F*)list->FindObject(Form("hq2vsCentr%s",detnames[iDet].Data()));
-    if(!hq2VsCentr[iDet]) {std::cerr << Form("hq2vsCentr%s not found! Exit.",detnames[iDet].Data()) << endl; return 4;}
+    hq2VsCentr[iDet] = (TH2F*)list->FindObject(Form("%s%s",histoname.Data(),detnames[iDet].Data()));
+    if(!hq2VsCentr[iDet]) {cerr << Form("%s%s not found! Exit.",histoname.Data(),detnames[iDet].Data()) << endl; return 4;}
   } 
-  
+
   //compute the splines in centrality bins for each detector
   const Int_t nCentrBins = hq2VsCentr[0]->GetXaxis()->GetNbins();
   const Int_t nq2Bins = hq2VsCentr[0]->GetYaxis()->GetNbins();
@@ -60,10 +74,12 @@ Int_t SplineFitCumulativeq2() {
   TSpline3* sq2Int[nDet][nCentrBins];
   TList* splinelist[nDet];
 
+  cout << "\n\n" << endl;
   for(Int_t iDet=0; iDet<nDet; iDet++) {
     splinelist[iDet] = new TList();
     splinelist[iDet]->SetOwner(0);
     
+    cout << Form("Fitting splines for qn%s",detnames[iDet].Data()) << endl;
     for(Int_t iCentr=0; iCentr<nCentrBins; iCentr++) {
       TH1F* hq2_CentrBin = (TH1F*)hq2VsCentr[iDet]->ProjectionY("hq2_CentrBin",iCentr+1,iCentr+1);
       Double_t q2integral=0;

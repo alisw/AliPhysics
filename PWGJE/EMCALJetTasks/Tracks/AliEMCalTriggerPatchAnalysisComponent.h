@@ -15,7 +15,9 @@
 
 class AliEMCALTriggerPatchInfo;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -238,11 +240,11 @@ protected:
   Bool_t                        fSwapOfflineThresholds;         ///< Swap trigger thresholds for offline patches
   Bool_t                        fWithEventSelection;            ///< Define whether patches are analysed with event selection
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerPatchAnalysisComponent, 1);     // Component for trigger patch analysis
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERPATCHANALYSISCOMPONENT_H */

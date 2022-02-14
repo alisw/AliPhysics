@@ -6,7 +6,7 @@
 /// \author Michal Broz
 ///
 
-AliAnalysisTask* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets,Bool_t withMuons)
+AliAnalysisTaskFilterUPCNanoAOD* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets,Bool_t withMuons,TString extraTriggers)
 {
   
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -16,15 +16,14 @@ AliAnalysisTask* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets,Bool_t withMuon
     return 0x0;
   }
   
-  AliInputEventHandler* input = mgr->GetInputEventHandler();
   
-  if (!input)
+  if (!mgr->GetInputEventHandler())
   {
     ::Error("AddTaskFilterUPCNanoAOD", "This task requires an input event handler");
     return 0x0;
   }
   
-  TString inputDataType = input->GetDataType(); // can be "ESD" or "AOD"
+  TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
   if (inputDataType != "AOD")
   {
@@ -32,16 +31,14 @@ AliAnalysisTask* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets,Bool_t withMuon
     return 0x0;
   }
   
-  AliAODHandler* aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
-  if (!aodHandler)
+  //AliAODHandler* aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
+  if (!mgr->GetOutputEventHandler())
   {
     ::Error("AddTaskFilterUPCNanoAOD", "This task requires an AOD output event handler");
     return 0x0;
   }
   
-  aodHandler->SetCreateNonStandardAOD();
-  
-  AliAnalysisTask* task = new AliAnalysisTaskFilterUPCNanoAOD(withSPDtracklets,withMuons);
+  AliAnalysisTaskFilterUPCNanoAOD* task = new AliAnalysisTaskFilterUPCNanoAOD(withSPDtracklets,withMuons,extraTriggers);
     
   mgr->AddTask(task);
     

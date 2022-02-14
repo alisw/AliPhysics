@@ -8,7 +8,7 @@
 
 #include "AliFemtoShareQualityCorrFctn.h"
 //#include "AliFemtoHisto.hh"
-#include <cstdio>
+#include <tuple>
 
 #ifdef __ROOT__
 ClassImp(AliFemtoShareQualityCorrFctn)
@@ -24,41 +24,27 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const char* title, co
   fTPCSepNumerator(0),
   fTPCSepDenominator(0)
 {
-  // set up numerator
-  //  title = "Num Qinv (MeV/c)";
-  char tTitNum[101] = "NumShare";
-  strncat(tTitNum,title, 100);
-  fShareNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,100,0.0,1.00001);
-  // set up denominator
-  //title = "Den Qinv (MeV/c)";
-  char tTitDen[101] = "DenShare";
-  strncat(tTitDen,title, 100);
-  fShareDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,100,0.0,1.00001);
 
-  char tTit2Num[101] = "NumQuality";
-  strncat(tTit2Num,title, 100);
-  fQualityNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,150,-0.500001,1.000001);
-  // set up denominator
-  //title = "Den Qinv (MeV/c)";
-  char tTit2Den[101] = "DenQuality";
-  strncat(tTit2Den,title, 100);
-  fQualityDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,150,-0.500001,1.000001);
-  // set up ratio
-  //title = "Ratio Qinv (MeV/c)";
-  // this next bit is unfortunately needed so that we can have many histos of same "title"
-  // it is neccessary if we typedef TH2D to TH1d (which we do)
-  //mShareNumerator->SetDirectory(0);
-  //mShareDenominator->SetDirectory(0);
-  //mRatio->SetDirectory(0);
+  const auto
+     share_params = std::make_tuple("; q_{inv} (GeV); Share Fraction", 100, 0.0, 1.00001),
+     qual_params = std::make_tuple("; q_{inv} (GeV); Share Quality", 150, -0.500001, 1.000001),
+     sep_params = std::make_tuple("; q_{inv} (GeV); TPC Entrace Separation (cm)", 150, 0.0, 100.0);
 
-  char tTit3Num[101] = "NumTPCSep";
-  strncat(tTit3Num,title, 100);
-  fTPCSepNumerator = new TH2D(tTit3Num,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
-  // set up denominator
-  //title = "Den Qinv (MeV/c)";
-  char tTit3Den[101] = "DenTPCSep";
-  strncat(tTit3Den,title, 100);
-  fTPCSepDenominator = new TH2D(tTit3Den,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
+  auto _new_hist = [=] (TString name, TString title, std::tuple<const char *, int, double, double> params)
+    {
+      return new TH2D(name, title + std::get<0>(params),
+                      nbins, QinvLo, QinvHi,
+                      std::get<1>(params), std::get<2>(params), std::get<3>(params));
+    };
+
+  fShareNumerator = _new_hist("NumShare", "Numerator Share Fraction vs Qinv", share_params);
+  fShareDenominator = _new_hist("DenShare", "Denominator Share Fraction vs Qinv", share_params);
+
+  fQualityNumerator = _new_hist("NumQuality", "Numerator Quality vs Qinv", qual_params);
+  fQualityDenominator = _new_hist("DenQuality", "Denominator Quality vs Qinv", qual_params);
+
+  fTPCSepNumerator = _new_hist("NumTPCSep", "Numerator TPC Separation vs Qinv", sep_params);
+  fTPCSepDenominator = _new_hist("DenTPCSep", "Denominator TPC Separation vs Qinv", sep_params);
 
   // to enable error bar calculation...
   fShareNumerator->Sumw2();
@@ -82,18 +68,12 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const AliFemtoShareQu
   fTPCSepDenominator(0)
 {
   // copy constructor
-  if (aCorrFctn.fShareNumerator)
-    fShareNumerator = new TH2D(*aCorrFctn.fShareNumerator);
-  if (aCorrFctn.fShareDenominator)
-    fShareDenominator = new TH2D(*aCorrFctn.fShareDenominator);
-  if (aCorrFctn.fQualityNumerator)
-    fQualityNumerator = new TH2D(*aCorrFctn.fQualityNumerator);
-  if (aCorrFctn.fQualityDenominator)
-    fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
-  if (aCorrFctn.fTPCSepNumerator)
-    fTPCSepNumerator = new TH2D(*aCorrFctn.fTPCSepNumerator);
-  if (aCorrFctn.fTPCSepDenominator)
-    fTPCSepDenominator = new TH2D(*aCorrFctn.fTPCSepDenominator);
+  fShareNumerator = new TH2D(*aCorrFctn.fShareNumerator);
+  fShareDenominator = new TH2D(*aCorrFctn.fShareDenominator);
+  fQualityNumerator = new TH2D(*aCorrFctn.fQualityNumerator);
+  fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
+  fTPCSepNumerator = new TH2D(*aCorrFctn.fTPCSepNumerator);
+  fTPCSepDenominator = new TH2D(*aCorrFctn.fTPCSepDenominator);
 }
 //____________________________
 AliFemtoShareQualityCorrFctn::~AliFemtoShareQualityCorrFctn(){
@@ -112,35 +92,18 @@ AliFemtoShareQualityCorrFctn& AliFemtoShareQualityCorrFctn::operator=(const AliF
   if (this == &aCorrFctn)
     return *this;
 
-  if (aCorrFctn.fShareNumerator)
-    fShareNumerator = new TH2D(*aCorrFctn.fShareNumerator);
-  else
-    fShareNumerator = 0;
-  if (aCorrFctn.fShareDenominator)
-    fShareDenominator = new TH2D(*aCorrFctn.fShareDenominator);
-  else
-    fShareDenominator = 0;
-  if (aCorrFctn.fQualityNumerator)
-    fQualityNumerator = new TH2D(*aCorrFctn.fQualityNumerator);
-  else
-    fQualityNumerator = 0;
-  if (aCorrFctn.fQualityDenominator)
-    fQualityDenominator = new TH2D(*aCorrFctn.fQualityDenominator);
-  else
-    fQualityDenominator = 0;
-  if (aCorrFctn.fTPCSepNumerator)
-    fTPCSepNumerator = new TH2D(*aCorrFctn.fTPCSepNumerator);
-  else
-    fTPCSepNumerator = 0;
-  if (aCorrFctn.fTPCSepDenominator)
-    fTPCSepDenominator = new TH2D(*aCorrFctn.fTPCSepDenominator);
-  else
-    fTPCSepDenominator = 0;
+  *fShareNumerator = *aCorrFctn.fShareNumerator;
+  *fShareDenominator = *aCorrFctn.fShareDenominator;
+  *fQualityNumerator = *aCorrFctn.fQualityNumerator;
+  *fQualityDenominator = *aCorrFctn.fQualityDenominator;
+  *fTPCSepNumerator = *aCorrFctn.fTPCSepNumerator;
+  *fTPCSepDenominator = *aCorrFctn.fTPCSepDenominator;
 
   return *this;
 }
 //_________________________
-void AliFemtoShareQualityCorrFctn::Finish(){
+void AliFemtoShareQualityCorrFctn::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -152,209 +115,50 @@ void AliFemtoShareQualityCorrFctn::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
+AliFemtoString AliFemtoShareQualityCorrFctn::Report()
+{
   // create report
-  string stemp = "Qinv Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fShareNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fShareDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "Qinv Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fShareNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fShareDenominator->GetEntries());
+  return report;
 }
-//____________________________
-void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
-  // add real (effect) pair
+
+void AliFemtoShareQualityCorrFctn::AddPair(const AliFemtoPair* pair, TH2 &share, TH2 &qual, TH2 &sep)
+{
+  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
+
+  double share_fraction, share_quality;
+  pair->CalcTrackShareQualFractions(share_fraction, share_quality);
+
+  const auto
+    &x1 = pair->Track1()->Track()->NominalTpcEntrancePoint(),
+    &x2 = pair->Track2()->Track()->NominalTpcEntrancePoint();
+
+  const double dist = (x1 - x2).Mag();
+
+  share.Fill(tQinv, share_fraction);
+  qual.Fill(tQinv, share_quality);
+  sep.Fill(tQinv, dist);
+}
+
+void AliFemtoShareQualityCorrFctn::AddRealPair(AliFemtoPair *pair)
+{
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
 
-  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
-  Int_t nh = 0;
-  Int_t an = 0;
-  Int_t ns = 0;
-
-  for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
-    // If both have clusters in the same row
-    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) &&
-	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
-      // Do they share it ?
-      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
-	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
-	{
-// 	  if (tQinv < 0.01) {
-// 	    cout << "Shared cluster in row " << imap << endl;
-// 	  }
-	  an++;
-	  nh+=2;
-	  ns+=2;
-	}
-
-      // Different hits on the same padrow
-      else {
-	an--;
-	nh+=2;
-      }
-    }
-    else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-	     pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
-      // One track has a hit, the other does not
-      an++;
-      nh++;
-    }
-  }
-//    if (tQinv < 0.01) {
-//     cout << "Qinv of the pair is " << tQinv << endl;
-//     cout << "Clusters: " << endl;
-//     for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
-//       cout << imap ;
-//       if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
-//       else cout << " 0 " ;
-//       if (pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
-//       else cout << " 0 " ;
-//       cout << "     ";
-//       if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
-//       else cout << " X ";
-//       if (pair->Track2()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
-//       else cout << " X ";
-//       cout << endl;
-//     }
-//   }
-
-  Float_t hsmval = 0.0;
-  Float_t hsfval = 0.0;
-
-  if (nh >0) {
-    hsmval = an*1.0/nh;
-    hsfval = ns*1.0/nh;
-  }
-
-//   if ((tQinv < 0.005) && (hsmval<-0.0)) {
-//     cout << "Quality  Sharity " << hsmval << " " << hsfval << " " << pair->Track1()->Track() << " " << pair->Track2()->Track() << endl;
-//     cout << "Qinv of the pair is " << tQinv << endl;
-//     cout << "Clusters: " << endl;
-//     for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
-//       cout << imap ;
-//       if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
-//       else cout << " 0 " ;
-//       if (pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) cout << " 1 ";
-//       else cout << " 0 " ;
-//       cout << "     ";
-//       if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
-//       else cout << " X ";
-//       if (pair->Track2()->Track()->TPCsharing().TestBitNumber(imap)) cout << " S ";
-//       else cout << " X ";
-//       cout << endl;
-//     }
-//     cout << "Momentum1 "
-// 	 << pair->Track1()->Track()->P().x() << " "
-// 	 << pair->Track1()->Track()->P().y() << " "
-// 	 << pair->Track1()->Track()->P().z() << " "
-// 	 << pair->Track1()->Track()->Label() << " "
-// 	 << pair->Track1()->Track()->TrackId() << " "
-// 	 << pair->Track1()->Track()->Flags() << " "
-// 	 << pair->Track1()->Track()->KinkIndex(0) << " "
-// 	 << pair->Track1()->Track()->KinkIndex(1) << " "
-// 	 << pair->Track1()->Track()->KinkIndex(2) << " "
-// 	 << pair->Track1()->Track()->ITSchi2() << " "
-// 	 << pair->Track1()->Track()->ITSncls() << " "
-// 	 << pair->Track1()->Track()->TPCchi2() << " "
-// 	 << pair->Track1()->Track()->TPCncls() << " "
-// 	 << endl;
-//     cout << "Momentum2 "
-// 	 << pair->Track2()->Track()->P().x() << " "
-// 	 << pair->Track2()->Track()->P().y() << " "
-// 	 << pair->Track2()->Track()->P().z() << " "
-// 	 << pair->Track2()->Track()->Label() << " "
-// 	 << pair->Track2()->Track()->TrackId() << " "
-// 	 << pair->Track2()->Track()->Flags() << " "
-// 	 << pair->Track2()->Track()->KinkIndex(0) << " "
-// 	 << pair->Track2()->Track()->KinkIndex(1) << " "
-// 	 << pair->Track2()->Track()->KinkIndex(2) << " "
-// 	 << pair->Track2()->Track()->ITSchi2() << " "
-// 	 << pair->Track2()->Track()->ITSncls() << " "
-// 	 << pair->Track2()->Track()->TPCchi2() << " "
-// 	 << pair->Track2()->Track()->TPCncls() << " "
-// 	 << endl;
-//   }
-
-  double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
-  double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
-  double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
-  double dist = sqrt(distx*distx + disty*disty + distz*distz);
-
-  fShareNumerator->Fill(tQinv, hsfval);
-  fQualityNumerator->Fill(tQinv, hsmval);
-  fTPCSepNumerator->Fill(tQinv, dist);
-
-  //  cout << "AliFemtoShareQualityCorrFctn::AddRealPair : " << pair->qInv() << " " << tQinv <<
-  //" " << pair->Track1().FourMomentum() << " " << pair->Track2().FourMomentum() << endl;
+  AddPair(pair, *fShareNumerator, *fQualityNumerator, *fTPCSepNumerator);
 }
-//____________________________
-void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
-  // add mixed (background) pair
+
+void AliFemtoShareQualityCorrFctn::AddMixedPair(AliFemtoPair *pair)
+{
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
 
-  double weight = 1.0;
-  double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
-  Int_t nh = 0;
-  Int_t an = 0;
-  Int_t ns = 0;
-
-  for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
-    // If both have clusters in the same row
-    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) &&
-	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
-      // Do they share it ?
-      if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
-	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
-	{
-	  //	  cout << "A shared cluster !!!" << endl;
-	  //	cout << "imap idx1 idx2 "
-	  //	     << imap << " "
-	  //	     << tP1idx[imap] << " " << tP2idx[imap] << endl;
-	  an++;
-	  nh+=2;
-	  ns+=2;
-	}
-
-      // Different hits on the same padrow
-      else {
-	an--;
-	nh+=2;
-      }
-    }
-    else if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) ||
-	     pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
-      // One track has a hit, the other does not
-      an++;
-      nh++;
-    }
-  }
-
-  Float_t hsmval = 0.0;
-  Float_t hsfval = 0.0;
-
-  if (nh >0) {
-    hsmval = an*1.0/nh;
-    hsfval = ns*1.0/nh;
-  }
-
-  double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
-  double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
-  double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
-  double dist = sqrt(distx*distx + disty*disty + distz*distz);
-
-  fShareDenominator->Fill(tQinv,hsfval,weight);
-  fQualityDenominator->Fill(tQinv,hsmval,weight);
-  fTPCSepDenominator->Fill(tQinv, dist, weight);
-
+  AddPair(pair, *fShareDenominator, *fQualityDenominator, *fTPCSepDenominator);
 }
-
 
 void AliFemtoShareQualityCorrFctn::WriteHistos()
 {
@@ -365,9 +169,8 @@ void AliFemtoShareQualityCorrFctn::WriteHistos()
   fQualityDenominator->Write();
   fTPCSepNumerator->Write();
   fTPCSepDenominator->Write();
-
 }
-//______________________________
+
 TList* AliFemtoShareQualityCorrFctn::GetOutputList()
 {
   // Prepare the list of objects to be written to the output

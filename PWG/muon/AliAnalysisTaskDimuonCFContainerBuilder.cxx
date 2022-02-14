@@ -544,8 +544,8 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 	AliAODMCParticle *mother = (AliAODMCParticle*) mcarray->At(numbMother);
 	if (mother->GetPdgCode()!=443) continue;
 	numbJpsis++;
-	Int_t daught0 = mother->GetDaughter(0);
-	Int_t daught1 = mother->GetDaughter(1);
+	Int_t daught0 = mother->GetDaughterLabel(0);
+	Int_t daught1 = mother->GetDaughterLabel(1);
 	AliAODMCParticle *mcDaughter0 = (AliAODMCParticle*) mcarray->At(daught0);
 	Double_t pxmc0 = mcDaughter0->Px();
 	Double_t pymc0 = mcDaughter0->Py();

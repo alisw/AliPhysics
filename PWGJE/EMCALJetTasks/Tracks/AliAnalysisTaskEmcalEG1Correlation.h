@@ -41,7 +41,9 @@ class Triggerinfo;
 }
 }
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalEG1Correlation : public AliAnalysisTaskSE {
 public:
@@ -69,6 +71,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalEG1Correlation, 1);
 };
+
+}
 
 }
 #endif

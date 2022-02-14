@@ -276,6 +276,20 @@ class AliEmcalJet : public AliVParticle
   void              Clear(Option_t */*option*/="");
 
   /**
+   * @brief Set pT, eta, phi of jet
+   * @param[in] pT jet pT
+   * @param[in] eta jet eta
+   * @param[in] phi jet phi
+   */
+  void              SetPtEtaPhi(Double_t pT, Double_t eta, Double_t phi) { fPt = pT; fEta = eta; fPhi = phi; }
+
+  /**
+   * @brief Set jet mass
+   * @param[in] mass jet mass
+   */
+  void              SetMass(Double_t mass) { fM = mass; }
+
+  /**
    * @brief Add new particle (track / mc particle) constituent to the given jet
    * Note: this will append the constituent. No sorting according to particle \f$ p_{t|\f$ is done
    * @param[in] part Particle constituent to be added to the jet

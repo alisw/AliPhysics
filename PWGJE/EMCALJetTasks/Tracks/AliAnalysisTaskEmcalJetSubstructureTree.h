@@ -28,6 +28,7 @@
 #define ALIANALYSISTASKEMCALJETSUBSTRUCTURETREE_H
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include <exception>
 #include <vector>
 #include <string>
@@ -45,7 +46,9 @@ class AliTrackContainer;
 
 #define EXPERIMENTAL_JETCONSTITUENTS
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @struct AliNSubjettinessResults
@@ -95,6 +98,7 @@ struct AliSoftdropDefinition {
   Double_t fZ;                              ///< Cut on z
   Double_t fBeta;                           ///< Cut on Beta
   fastjet::JetAlgorithm fRecluserAlgo;      ///< Reclusterization algorithm
+  Double_t fR0;                             ///< R0
 };
 
 struct AliJetSubstructureSettings {
@@ -156,7 +160,7 @@ struct AliJetTreeGlobalParameters {
  * @ingroup PWGJETASKS
  *
  */
-class AliAnalysisTaskEmcalJetSubstructureTree : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetSubstructureTree : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
   class ReclusterizerException : public std::exception {
   public:
@@ -243,9 +247,6 @@ protected:
   
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
-  std::string MatchTrigger(const std::string &triggerclass) const;
-  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
-
   bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:
@@ -283,9 +284,10 @@ private:
   Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
   Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
 
-	/// \cond CLASSIMP
+  AliAnalysisTaskEmcalJetSubstructureTree(const AliAnalysisTaskEmcalJetSubstructureTree &);
+  AliAnalysisTaskEmcalJetSubstructureTree &operator=(const AliAnalysisTaskEmcalJetSubstructureTree &);
+
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);
-	/// \endcond
 };
 
 /**
@@ -298,6 +300,8 @@ private:
  */
 void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type);
 
-} /* namespace EmcalTriggerJets */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALJETSUBSTRUCTURETREE_H */

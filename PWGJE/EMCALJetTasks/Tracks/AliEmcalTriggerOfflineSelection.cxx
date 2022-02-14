@@ -28,11 +28,9 @@
 #include "AliLog.h"
 #include "AliVEvent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEmcalTriggerOfflineSelection)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEmcalTriggerOfflineSelection)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 const TString AliEmcalTriggerOfflineSelection::fgkTriggerNames[AliEmcalTriggerOfflineSelection::kTrgn] = {
     "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"
@@ -188,5 +186,3 @@ Bool_t AliEmcalTriggerOfflineSelection::UseClusters() const {
 Bool_t AliEmcalTriggerOfflineSelection::UsePatches() const {
   return fEnergyDefinition == kFEEEnergy || fEnergyDefinition == kFEETransverseEnergy || fEnergyDefinition == kFEEADC || fEnergyDefinition == kFEETransverseADC;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

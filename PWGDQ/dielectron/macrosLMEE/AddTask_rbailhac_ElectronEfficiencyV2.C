@@ -1,7 +1,20 @@
+// ROOT6 modifications
+#ifdef __CLING__
+#include <AliAnalysisManager.h>
+#include <AliAODInputHandler.h>
+#include <AliDielectronVarCuts.h>
+
+// Tell ROOT where to find AliPhysics headers
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGDQ/dielectron/macrosLMEE/Config_rbailhac_ElectronEfficiencyV2.C>
+
+#endif
+
 AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2(TString name = "name",
-									   Bool_t isAOD,
+									   Bool_t isAOD = kTRUE,
 									   Bool_t getFromAlien = kFALSE,
-									   TString configFile="Config_rbailhac_ElectronEfficiencyV2.C")
+									   TString configFile="Config_rbailhac_ElectronEfficiencyV2.C",
+									   Bool_t tofcor = kTRUE)
 
 {
 
@@ -18,37 +31,66 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2(TStri
   // #########################################################
   // Loading individual config file either local or from Alien
 
+ 
+
+
+ // ROOT6 modifications
+#if defined(__CLING__)
+  // ROOT6-specific code here....
+  printf("ROOT6\n");
+
+  //TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
+  //TString configFile("Config_rbailhac_ElectronEfficiencyV2.C");
+  //TString configFilePath(configBasePath+configFile);
+  
+  //load dielectron configuration files
+  //if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())) {
+
+  //   Bool_t err=kFALSE;
+  //  err |= gROOT->LoadMacro(configFilePath.Data());
+  //  if (err) { Error("AddTask_rbailhac_ElectronEfficiencyV2","Config(s) could not be loaded!"); return 0x0; }
+  // }
+
+  //std::cout << "Configpath:  " << configFilePath << std::endl;
+  
+#elif defined(__CINT__)
+  // ROOT5-specific code here ...
+  
+  printf("ROOT5 !!!\n");
+
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+  //TString configBasePath= Form("%s/",gSystem->pwd());
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data()))))
     {
-    configBasePath=Form("%s/",gSystem->pwd());
+      configBasePath=Form("%s/",gSystem->pwd());
     }
   TString configFilePath(configBasePath+configFile);
-
+  
   // Loading config and cutlib
   Bool_t err=kFALSE;
   err |= gROOT->LoadMacro(configFilePath.Data());
   if (err) { Error("AddTask_rbailhac_ElectronEfficiencyV2","Config(s) could not be loaded!"); return 0x0; }
 
-  // Download resolution file (configured in your config.C)
-  // if (GetResolutionFromAlien == kTRUE)
-  //   std::cout << "Trying to download resolution file" << std::endl;
-  //   gSystem->Exec(Form("alien_cp alien://%s .",resoFilenameFromAlien.c_str()));
-  //   std::cout << "Load resolution file from AliEn" << std::endl;
-  // }
-  //
-  // // Download centrality file (configured in your config.C)
-  // if (GetCentralityFromAlien == kTRUE && !gSystem->Exec(Form("alien_cp alien://%s .",CentralityFilenameFromAlien.c_str()))){
-  //   std::cout << "Load centrality file from AliEn" << std::endl;
-  // }
+  std::cout << "Configpath:  " << configFilePath << std::endl;
+  
+#endif
+  
+  
 
   // #########################################################
   // #########################################################
   // Creating an instance of the task
   AliAnalysisTaskElectronEfficiencyV2* task = new AliAnalysisTaskElectronEfficiencyV2(name.Data());
 
+  // #########################################################
+  // #########################################################
+  // Set TOF correction
+  if(tofcor){
+    SetEtaCorrectionTOFRMS(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta);
+    SetEtaCorrectionTOFMean(task, AliDielectronVarManager::kP, AliDielectronVarManager::kEta); 
+  }
 
   // #########################################################
   // #########################################################
@@ -127,6 +169,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_rbailhac_ElectronEfficiencyV2(TStri
   TObjArray*  arrNames=names.Tokenize(";");
   const Int_t nDie=arrNames->GetEntriesFast();
 
+  printf("Add %d cuts\n",nDie);
   for (int iCut = 0; iCut < nDie; ++iCut){
     //TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(iCut, isAOD);

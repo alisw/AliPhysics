@@ -276,7 +276,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
 
   //list of trigger classes
 
-  trgClasses[ 1] = trigger.Contains("CMUP6-B"); // p-Pb FW
+  trgClasses[ 1] = trigger.Contains("CMUP6-B"); // 0MUL *0VBA
   trgClasses[ 2] = trigger.Contains("CMUP3-B"); // Pb-p FW
   trgClasses[ 3] = trigger.Contains("CMUP8-B"); // Pb-p FW
 
@@ -284,22 +284,12 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[ 5] = trigger.Contains("CMUP5-B"); // Pb-p SFW
   trgClasses[ 6] = trigger.Contains("CMUP9-B"); // Pb-p SFW
 
-  trgClasses[ 7] = trigger.Contains("CCUP7-B"); // p-Pb Pb-p CEN
-
   trgClasses[ 8]= trigger.Contains("CMUP1-B"); // PbPb FW  !0VBA & 0VBC & 0MSL
-
-  trgClasses[ 9]= trigger.Contains("CTRUE-B"); // p-Pb control trigger
-
-  trgClasses[10] = trigger.Contains("CCUP2-B");      // !0VBA & !0VBC & 0SH1 & 0OM2
-  trgClasses[11] = trigger.Contains("CCUP4-B");      // !0VBA & !0VBC & 0SH1 & 0OMU
-  trgClasses[12] = trigger.Contains("CCUP8-B");     // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU              (=CTEST57-B)
-  trgClasses[13] = trigger.Contains("CCUP9-B");     // *0VBA *0VBC *0UBA *0UBC 0STP                   (=CTEST59-B)
-  trgClasses[14] = trigger.Contains("CCUP10-B");    // *0VBA *0VBC *0UBA *0UBC 0SH1                   (=CTEST58-B)
 
   trgClasses[15] = trigger.Contains("CMUP10-B");    // *0VBA *0UBA *0UBC 0MSL                         (=CTEST63-B)
   trgClasses[16] = trigger.Contains("CMUP11-B");    // !0VBA & !0UBA & !0UBC & 0MUL                   (=CTEST64-B)
   trgClasses[17] = trigger.Contains("CMUP12-B");    // !0VBA & !0UBA & !0UBC & 0MSL & 0SMB
-
+/*/
   trgClasses[18] = trigger.Contains("CTEST62-B");    // !0VBA & !0UBA & !0UBC & 0VBC & 0MSL
   trgClasses[19] = trigger.Contains("CTEST63-B");    // !0VBA & !0UBA & !0UBC & 0MSL
   trgClasses[20] = trigger.Contains("CTEST64-B");    // !0VBA & !0UBA & !0UBC & 0MUL
@@ -309,7 +299,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[23] = trigger.Contains("CTEST59-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0STP
   trgClasses[24] = trigger.Contains("CTEST60-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0OM2
   trgClasses[25] = trigger.Contains("CTEST61-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0OMU
-  
+/*/  
   trgClasses[26] = trigger.Contains("CMUP14-B");   // 0MSL & !0VBA & !0UBA
   trgClasses[27] = trigger.Contains("CMUP15-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL
   trgClasses[28] = trigger.Contains("CMUP16-B");   // 0MSL *0VBA *0UBA *0UGC *0VGA
@@ -317,15 +307,8 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[30] = trigger.Contains("CMUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
   trgClasses[31] = trigger.Contains("CMUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MSL 0SMB
   trgClasses[32] = trigger.Contains("CMUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MUL
-  
-  trgClasses[33] = trigger.Contains("CCUP14-B");   // *0VBA *0UBA *0VC5 0OMU 0STG
-  trgClasses[34] = trigger.Contains("CCUP15-B");   // *0VBA *0UBA *0VC5 0SH1
-  trgClasses[35] = trigger.Contains("CCUP16-B");   // *0VBA *0UBA *0VC5 0OMU 0STG *0UGC *0VGA
-  trgClasses[36] = trigger.Contains("CCUP17-B");   // *0VBA *0UBA *0VC5 0SH1 *0UGC *0VGA
-  trgClasses[37] = trigger.Contains("CCUP20-B");   // *0VBA *0UBA *0VBC 0OMU 0STG *0SH2 *0UGC *0VG
-  trgClasses[38] = trigger.Contains("CCUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
-  trgClasses[39] = trigger.Contains("CCUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0STG 0OMU
-  trgClasses[40] = trigger.Contains("CCUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0SH1
+  trgClasses[33] = trigger.Contains("CMUP26-B");   // *0VBA *0UBA *0UBC 0MLL
+
   
   trgClasses[41] = trigger.Contains("CMUP13-B");   // 0MUL & !0UBA & !0UBC 
 
@@ -495,7 +478,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
       fMuonCounter->Fill( kMunEta );
 
       pdca = fMuonCuts->IsSelected(trk);
-      //if(!pdca) continue;
+      if(!pdca) continue;
       fMuonCounter->Fill( kMunPDCA );
 
       //muon track is accepted to put to the output
@@ -645,8 +628,8 @@ void AliAnalysisTaskUpcFilter::RunAODMC(TClonesArray *arrayMC, AliAODMCHeader *h
     part->SetStatusCode(aodmc->GetStatus());
     part->SetUniqueID(imc);
     part->SetFirstMother(aodmc->GetMother());
-    part->SetFirstDaughter(aodmc->GetFirstDaughter());
-    part->SetLastDaughter(aodmc->GetLastDaughter());
+    part->SetFirstDaughter(aodmc->GetDaughterFirst());
+    part->SetLastDaughter(aodmc->GetDaughterLast());
  
   }//loop over mc particles
 
@@ -887,7 +870,7 @@ void AliAnalysisTaskUpcFilter::RunESDMC()
     part->SetMomentum(esdmc->Px(), esdmc->Py(), esdmc->Pz(), esdmc->E());
     part->SetProductionVertex(esdmc->Xv(), esdmc->Yv(), esdmc->Zv(), 0.);
     part->SetFirstMother(esdmc->GetMother());
-    part->SetLastDaughter(esdmc->GetLastDaughter()-esdmc->GetFirstDaughter()+1);
+    part->SetLastDaughter(esdmc->GetDaughterLast()-esdmc->GetDaughterFirst()+1);
     part->SetPdgCode(esdmc->PdgCode());
     part->SetUniqueID(imc);
   }//loop over mc particles

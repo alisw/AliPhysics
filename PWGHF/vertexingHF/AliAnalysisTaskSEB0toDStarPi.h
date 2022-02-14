@@ -80,8 +80,8 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   void     SetMC(Bool_t bUseMCInfo) {fUseMCInfo = bUseMCInfo;}
   Bool_t   GetMC() const {return fUseMCInfo;}
 
-  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const;
-  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const;
+  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong *DStar) const;
+  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const;
 
   void     SetQuickSignalAnalysis(Int_t value){fQuickSignalAnalysis = value;}
   void     SetGetCutInfo(Bool_t value){fGetCutInfo = value;}
@@ -110,6 +110,12 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   void     SetCheckBackground(Bool_t value) {fCheckBackground = value;}
   Bool_t   GetCheckBackground() const {return fCheckBackground;}
 
+  void     SetCheckInjected(Bool_t value) {fCheckInjected = value;}
+  Bool_t   GetCheckInjected() const {return fCheckInjected;}
+
+  void     SetRemoveInjected(Int_t value) {fRemoveInjected = value;}
+  Int_t    GetRemoveInjected() const {return fRemoveInjected;}
+
  private:
   
   AliAnalysisTaskSEB0toDStarPi(const AliAnalysisTaskSEB0toDStarPi &source);
@@ -127,6 +133,8 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Int_t  fDegreePerRotation;                 //
   Int_t  fNumberOfRotations;                 //
   Bool_t fCheckBackground;                   //
+  Bool_t fCheckInjected;                     //
+  Int_t  fRemoveInjected;                    //
 
   TList *fOutput;                            //!<!  User output
   TList *fListCuts;                          //!<!  User output
@@ -167,13 +175,13 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TH1F* fDaughterHistogramArray[4][6][15];   //!
   TH2F* fDaughterHistogramArray2D[4][6];     //!
   TH1F* fDaughterHistogramArrayExtra[4][6];  //!
-  TH1F* fMotherHistogramArray[6][99][60];    //!
-  TH2F* fMotherHistogramArray2D[6][99][60];  //!
+  TH1F* fMotherHistogramArray[6][500][60];    //!
+  TH2F* fMotherHistogramArray2D[6][500][60];  //!
   TH1F* fMotherHistogramArrayExtra[7][10];   //!
-  TH3F* fMotherHistogramArray3D[6][99][60];  //!
+  TH3F* fMotherHistogramArray3D[6][500][60];  //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEB0toDStarPi,5);  // class for B0 spectra
+  ClassDef(AliAnalysisTaskSEB0toDStarPi,6);  // class for B0 spectra
   /// \endcond
 };
 

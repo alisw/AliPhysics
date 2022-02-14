@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TError.h>
 #include <TSystem.h>
+#include <TObjString.h>
 
 #ifndef ALIROOT_SVN_REVISION
 # define ALIROOT_SVN_REVISION 0

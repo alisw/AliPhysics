@@ -27,5 +27,6 @@
 
 /**
  *\defgroup JETFW The ALICE jet analysis framework
+ *\ingroup EMCALJETFW
  *\brief An analysis framework for jet related studies
  */

@@ -7,7 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
-
+#include "AliAnalysisUtils.h"
 
 class AliAODTrack;
 
@@ -38,6 +38,7 @@ class AliAnalysisTaskCorPIDTOFdiprot : public AliAnalysisTaskSE
         AliAODEvent*          fAOD;               //! input event
         TList*                fOutputList;        //! output list
 	AliPIDResponse*       fPIDResponse;
+	AliAnalysisUtils*     fAnalysisUtils;
 	
 	TH1F*                 fHistPt;                     //  1
 	TH2F*                 cent_ntracks;                //  2
@@ -64,23 +65,42 @@ class AliAnalysisTaskCorPIDTOFdiprot : public AliAnalysisTaskSE
 	TH2F*                 prot_phi_pt_pos;             // 20
 	TH2F*                 prot_phi_pt_neg;             // 21
 	
-	TH2F*                 prot_q2_pt_pos_pos;          // 22
-	TH2F*                 prot_q2_pt_pos_neg;          // 23
-	TH2F*                 prot_q2_pt_neg_neg;          // 24
+	TH2F*                 prot_p0_pt_pos_pos;          // 22
+	TH2F*                 prot_p0_pt_pos_neg;          // 23
+	TH2F*                 prot_p0_pt_neg_neg;          // 24
 
 	TH2F*                 di_prot_phi_pt;              // 25
 	TH2F*                 trig_05_phi_pt;              // 26
 	TH2F*                 trig_08_phi_pt;              // 27
 
-	TH2F*                 di_prot_dphi_q2_pos_pos_05;  // 28
-	TH2F*                 di_prot_dphi_q2_pos_neg_05;  // 29
-	TH2F*                 di_prot_dphi_q2_neg_neg_05;  // 30
+	TH2F*                 di_prot_dphi_p0_pos_pos_05;  // 28
+	TH2F*                 di_prot_dphi_p0_pos_neg_05;  // 29
+	TH2F*                 di_prot_dphi_p0_neg_neg_05;  // 30
 
+	TH2F*                 di_prot_dphi_p0_pos_pos_08;  // 31
+	TH2F*                 di_prot_dphi_p0_pos_neg_08;  // 32
+	TH2F*                 di_prot_dphi_p0_neg_neg_08;  // 33
+
+	TH1F*                 primary_vertex_z;            // 47
+	TH1F*                 primary_vertex_z_cut1;       // 48
+	TH1F*                 primary_vertex_z_cut2;       // 49
 	
-	TH2F*                 di_prot_dphi_q2_pos_pos_08;  // 31
-	TH2F*                 di_prot_dphi_q2_pos_neg_08;  // 32
-	TH2F*                 di_prot_dphi_q2_neg_neg_08;  // 33
+	TH1F*  di_prot_dphi_r02_pos_pos_05; // 28
+	TH1F*  di_prot_dphi_r02_pos_neg_05; // 29
+	TH1F*  di_prot_dphi_r02_neg_neg_05; // 30
 
+	TH1F*  di_prot_dphi_r02_pos_pos_08; // 31
+	TH1F*  di_prot_dphi_r02_pos_neg_08; // 32
+	TH1F*  di_prot_dphi_r02_neg_neg_08; // 33
+
+	TH1F*  di_prot_dphi_r04_pos_pos_05; // 28
+	TH1F*  di_prot_dphi_r04_pos_neg_05; // 29
+	TH1F*  di_prot_dphi_r04_neg_neg_05; // 30
+
+	TH1F*  di_prot_dphi_r04_pos_pos_08; // 31
+	TH1F*  di_prot_dphi_r04_pos_neg_08; // 32
+	TH1F*  di_prot_dphi_r04_neg_neg_08; // 33
+	
 //	TH2F*                 track_cor_radius_pt;         // 34
 //	TH2F*                 track_cor_radius_pt_cut;     // 35
 	

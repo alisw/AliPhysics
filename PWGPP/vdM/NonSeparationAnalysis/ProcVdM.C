@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
 
-void ProcVdM(Int_t fillNumber)
+void ProcVdM(Int_t fillNumber, Int_t bc=-1)
 {
   gROOT->LoadMacro("AliLuminousRegionFit.cxx+");
   gROOT->LoadMacro("PlotBkgd.C+");
@@ -12,7 +12,10 @@ void ProcVdM(Int_t fillNumber)
 
   gSystem->Exec(Form("mkdir -p {root,pdf}/%d", fillNumber));
 
-  MakeLumiRegion();
-  PlotLumiRegion();
-  PlotBkgdLumiRegion();
+//  MakeLumiRegion();
+  if (bc == -1)
+    PlotLumiRegion();
+  else
+    PlotLumiRegion(bc);
+//  PlotBkgdLumiRegion();
 }

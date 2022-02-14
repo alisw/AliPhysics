@@ -1,6 +1,6 @@
 /*
 ***********************************************************
-  Implementation of AliVarManager
+  Implementation of AliReducedVarManager
   Contact: iarsene@cern.ch
   2015/04/16
   *********************************************************
@@ -25,6 +25,7 @@ using std::ifstream;
 #include <TProfile.h>
 #include <TRandom.h>
 #include <TProfile2D.h>
+#include <TGraphErrors.h>
 #include <TFile.h>
 #include <THashList.h>
 
@@ -35,6 +36,7 @@ using std::ifstream;
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
 #include "AliReducedCaloClusterInfo.h"
+#include "AliReducedCaloClusterTrackMatcher.h"
 #include "AliKFParticle.h"
 
 #define BASEEVENT AliReducedBaseEvent
@@ -64,6 +66,7 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.11568, //ALambda
    1.019455, // Phi
    3.09691599, //Jpsi
+   3.686097,   // psi(2S)
    9.460300, //Upsilon
    1.86962, // D+-
    1.86962, // D+-
@@ -74,6 +77,7 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.86484, // D0
    1.86962, // D+-
    1.96850, // Ds
+   1.96850 // Ds
 };
 
 const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager::kNTrackingStatus] = {
@@ -100,7 +104,7 @@ const Char_t* AliReducedVarManager::fgkOfflineTriggerNames[64] = {
     "Central/HighMultV0",                           "SemiCentral",                                              "DG/DG5",                                "ZED",         
     "SPI7/SPI",                                             "INT8",                                                          "MuonSingleLowPt8",                "MuonSingleHighPt8", 
     "MuonLikeLowPt8",                               "MuonUnlikeLowPt8",                                    "MuonUnlikeLowPt0/INT6",       "UserDefined",      
-    "TRD",                                                   "N/A",                                                            "FastOnly",                               "N/A",         
+    "TRD",                                                   "MuonCalo/CaloOnly",                                                            "FastOnly",                               "N/A",         
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",              
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",
     "N/A",                                                    "N/A",                                                            "N/A",                                       "N/A",               
@@ -125,7 +129,7 @@ const Double_t AliReducedVarManager::fgkVZEROChannelRadii[64] = {
 };
 const Double_t AliReducedVarManager::fgkVZEROAz = 340.0;   // cm
 const Double_t AliReducedVarManager::fgkVZEROCz = 90.0;    // cm
-const Double_t AliReducedVarManager::fgkVZEROminMult = 0.5;   // minimum VZERO channel multiplicity
+const Double_t AliReducedVarManager::fgkVZEROminMult = -0.01;   // minimum VZERO channel multiplicity
 const Float_t  AliReducedVarManager::fgkTPCQvecRapGap = 0.8;    // symmetric interval in the middle of the TPC excluded from EP calculation
       Float_t  AliReducedVarManager::fgBeamMomentum = 1380.;   // beam momentum in GeV/c
      
@@ -136,45 +140,63 @@ const Double_t AliReducedVarManager::fgkSPDEtaCutsVsVtxZ[20][2] = {
    {-1.0, 1.0}, {-1.0, 0.9}, {-1.0, 0.8}, {-1.0, 0.7}, {-1.0, 0.6}
 };
      
-Int_t      AliReducedVarManager::fgCurrentRunNumber = -1;
-TString AliReducedVarManager::fgVariableNames[AliReducedVarManager::kNVars] = {""};
-TString AliReducedVarManager::fgVariableUnits[AliReducedVarManager::kNVars] = {""};
-AliReducedBaseEvent* AliReducedVarManager::fgEvent = 0x0;
-AliReducedEventPlaneInfo* AliReducedVarManager::fgEventPlane = 0x0;
-Bool_t AliReducedVarManager::fgUsedVars[AliReducedVarManager::kNVars] = {kFALSE};
-TH2F* AliReducedVarManager::fgTPCelectronCentroidMap = 0x0;
-TH2F* AliReducedVarManager::fgTPCelectronWidthMap = 0x0;
+Int_t                           AliReducedVarManager::fgCurrentRunNumber = -1;
+TString                         AliReducedVarManager::fgVariableNames[AliReducedVarManager::kNVars] = {""};
+TString                         AliReducedVarManager::fgVariableUnits[AliReducedVarManager::kNVars] = {""};
+AliReducedBaseEvent*            AliReducedVarManager::fgEvent = 0x0;
+AliReducedEventPlaneInfo*       AliReducedVarManager::fgEventPlane = 0x0;
+Bool_t                          AliReducedVarManager::fgUsedVars[AliReducedVarManager::kNVars] = {kFALSE};
+TH2F*                           AliReducedVarManager::fgTPCelectronCentroidMap = 0x0;
+TH2F*                           AliReducedVarManager::fgTPCelectronWidthMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyY = kNothing;
-TH2F* AliReducedVarManager::fgPairEffMap = 0x0;
+THnF*                           AliReducedVarManager::fgTPCpidCalibCentroid[3] = {0x0};
+THnF*                           AliReducedVarManager::fgTPCpidCalibWidth[3] = {0x0};
+THnI*                           AliReducedVarManager::fgTPCpidCalibStatus[3] = {0x0};
+AliReducedVarManager::Variables AliReducedVarManager::fgTPCpidCalibVars[4] = {kNothing, kNothing, kNothing, kNothing};
+TH1*                            AliReducedVarManager::fgPairEffMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyY = kNothing;
-TH1F* AliReducedVarManager::fgRunTotalLuminosity = 0x0;
-TH1F* AliReducedVarManager::fgRunTotalIntensity0 = 0x0;
-TH1F* AliReducedVarManager::fgRunTotalIntensity1 = 0x0;
-TH1I* AliReducedVarManager::fgRunLHCFillNumber = 0x0;
-TH1I* AliReducedVarManager::fgRunDipolePolarity = 0x0;
-TH1I* AliReducedVarManager::fgRunL3Polarity = 0x0;
-TH1I* AliReducedVarManager::fgRunTimeStart = 0x0;
-TH1I* AliReducedVarManager::fgRunTimeEnd = 0x0;
-std::vector<Int_t>  AliReducedVarManager::fgRunNumbers;
-Int_t AliReducedVarManager::fgRunID = -1;
-TH1* AliReducedVarManager::fgAvgMultVsVtxGlobal      [kNMultiplicityEstimators] = {0x0};
-TH1* AliReducedVarManager::fgAvgMultVsVtxRunwise     [kNMultiplicityEstimators] = {0x0};
-TH1* AliReducedVarManager::fgAvgMultVsRun            [kNMultiplicityEstimators] = {0x0};
-TH2* AliReducedVarManager::fgAvgMultVsVtxAndRun      [kNMultiplicityEstimators] = {0x0};
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyZ = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyXCorr = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyYCorr = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgEffMapVarDependencyZCorr = kNothing;
+TH1*                            AliReducedVarManager::fgAssocHadronEffMap = 0x0;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyX = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyY = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgAssocHadronEffMapVarDependencyZ = kNothing;
+TH1F*                           AliReducedVarManager::fgRunTotalLuminosity = 0x0;
+TH1F*                           AliReducedVarManager::fgRunTotalIntensity0 = 0x0;
+TH1F*                           AliReducedVarManager::fgRunTotalIntensity1 = 0x0;
+TH1I*                           AliReducedVarManager::fgRunLHCFillNumber = 0x0;
+TH1I*                           AliReducedVarManager::fgRunDipolePolarity = 0x0;
+TH1I*                           AliReducedVarManager::fgRunL3Polarity = 0x0;
+TH1I*                           AliReducedVarManager::fgRunTimeStart = 0x0;
+TH1I*                           AliReducedVarManager::fgRunTimeEnd = 0x0;
+TFile*                          AliReducedVarManager::fgGRPfile = 0x0;
+TGraphErrors*                   AliReducedVarManager::fgRunInstLumi = 0x0;
+std::vector<Int_t>              AliReducedVarManager::fgRunNumbers;
+Int_t                           AliReducedVarManager::fgRunID = -1;
+TH1*                            AliReducedVarManager::fgAvgMultVsVtxGlobal[kNMultiplicityEstimators] = {0x0};
+TH1*                            AliReducedVarManager::fgAvgMultVsVtxRunwise[kNMultiplicityEstimators] = {0x0};
+TH1*                            AliReducedVarManager::fgAvgMultVsRun[kNMultiplicityEstimators] = {0x0};
+TH2*                            AliReducedVarManager::fgAvgMultVsVtxAndRun[kNMultiplicityEstimators] = {0x0};
+Double_t                        AliReducedVarManager::fgRefMultVsVtxGlobal[kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
+Double_t                        AliReducedVarManager::fgRefMultVsVtxRunwise[kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
+Double_t                        AliReducedVarManager::fgRefMultVsRun[kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
+Double_t                        AliReducedVarManager::fgRefMultVsVtxAndRun[kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
 
-Double_t AliReducedVarManager::fgRefMultVsVtxGlobal  [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
-Double_t AliReducedVarManager::fgRefMultVsVtxRunwise [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
-Double_t AliReducedVarManager::fgRefMultVsRun        [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
-Double_t AliReducedVarManager::fgRefMultVsVtxAndRun  [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
-
-TString AliReducedVarManager::fgVZEROCalibrationPath = "";
-TProfile2D* AliReducedVarManager::fgAvgVZEROChannelMult[64] = {0x0};
-TProfile2D* AliReducedVarManager::fgVZEROqVecRecentering[4] = {0x0};
-Bool_t AliReducedVarManager::fgOptionCalibrateVZEROqVec = kFALSE;
-Bool_t AliReducedVarManager::fgOptionRecenterVZEROqVec = kFALSE;
-
+TString                         AliReducedVarManager::fgVZEROCalibrationPath = "";
+TProfile2D*                     AliReducedVarManager::fgAvgVZEROChannelMult[64] = {0x0};
+TProfile2D*                     AliReducedVarManager::fgVZEROqVecRecentering[4] = {0x0};
+TProfile2D*                     AliReducedVarManager::fgTPCqVecRecentering[2] = {0x0};
+Bool_t                          AliReducedVarManager::fgOptionCalibrateVZEROqVec = kFALSE;
+Bool_t                          AliReducedVarManager::fgOptionRecenterVZEROqVec = kFALSE;
+Bool_t                          AliReducedVarManager::fgOptionRecenterTPCqVec = kFALSE;
+Bool_t                          AliReducedVarManager::fgOptionEventRes = kFALSE;
+TH1F*                           AliReducedVarManager::fgReweightMCpt=0x0;
+TH3F*                           AliReducedVarManager::fgLegEfficiency=0x0;
+Bool_t                          AliReducedVarManager::fgUsePinForLegEffPropagation = kFALSE;
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
   TObject()
@@ -278,20 +300,22 @@ void AliReducedVarManager::SetVariableDependencies() {
     }
     for(Int_t iVZEROside=0; iVZEROside<3; ++iVZEROside) {
       if(fgUsedVars[kVZEROFlowVn+iVZEROside*6+ih] || fgUsedVars[kVZEROFlowSine+iVZEROside*6+ih] ||
-	 fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih]) {
-	fgUsedVars[kPhi] = kTRUE; fgUsedVars[kVZERORP+iVZEROside*6+ih] = kTRUE;
-	if(iVZEROside<2 && (fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih])) {
-	  fgUsedVars[kVZEROQvecX+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecX+1*6+ih] = kTRUE;
-          fgUsedVars[kVZEROQvecY+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+1*6+ih] = kTRUE;
-	}
-        if(iVZEROside==2) {
-	  fgUsedVars[kVZEROQvecX+2*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+2*6+ih] = kTRUE;
+         fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih] ||
+         fgUsedVars[kVZERODeltaPhiPsiN+iVZEROside*6+ih]) {
+        fgUsedVars[kPhi] = kTRUE; fgUsedVars[kVZERORP+iVZEROside*6+ih] = kTRUE;
+        if(iVZEROside<2 && (fgUsedVars[kVZEROuQ+iVZEROside*6+ih] || fgUsedVars[kVZEROuQsine+iVZEROside*6+ih])) {
           fgUsedVars[kVZEROQvecX+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecX+1*6+ih] = kTRUE;
           fgUsedVars[kVZEROQvecY+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+1*6+ih] = kTRUE;
-	}
+        }
+        if(iVZEROside==2) {
+          fgUsedVars[kVZEROQvecX+2*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+2*6+ih] = kTRUE;
+          fgUsedVars[kVZEROQvecX+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecX+1*6+ih] = kTRUE;
+          fgUsedVars[kVZEROQvecY+0*6+ih] = kTRUE; fgUsedVars[kVZEROQvecY+1*6+ih] = kTRUE;
+        }
       }
     }
-    if(fgUsedVars[kTPCFlowVn+ih] || fgUsedVars[kTPCFlowSine+ih] || fgUsedVars[kTPCuQ+ih] || fgUsedVars[kTPCuQsine+ih]) {
+    if(fgUsedVars[kTPCFlowVn+ih] || fgUsedVars[kTPCFlowSine+ih] || fgUsedVars[kTPCuQ+ih] || fgUsedVars[kTPCuQsine+ih] ||
+       fgUsedVars[kTPCDeltaPhiPsiN+ih]) {
       fgUsedVars[kPhi] = kTRUE;
       fgUsedVars[kTPCQvecXtotal+ih] = kTRUE;
       fgUsedVars[kTPCQvecYtotal+ih] = kTRUE;
@@ -304,14 +328,38 @@ void AliReducedVarManager::SetVariableDependencies() {
     }
   }
   if(fgUsedVars[kPtSquared]) fgUsedVars[kPt]=kTRUE;  
-  if(fgUsedVars[kTPCnSigCorrected+kElectron]) {
-     fgUsedVars[kTPCnSig+kElectron] = kTRUE; 
+  if(fgUsedVars[kTPCnSigCorrected+kElectron]) fgUsedVars[kTPCnSig+kElectron] = kTRUE; 
+  if(fgUsedVars[kTPCnSigCorrected+kPion])     fgUsedVars[kTPCnSig+kPion] = kTRUE; 
+  if(fgUsedVars[kTPCnSigCorrected+kProton])   fgUsedVars[kTPCnSig+kProton] = kTRUE;
+  if(fgUsedVars[kTPCnSigCorrected+kElectron] || fgUsedVars[kTPCnSigCorrected+kPion] || fgUsedVars[kTPCnSigCorrected+kProton]) {
      fgUsedVars[fgVarDependencyX] = kTRUE; 
      fgUsedVars[fgVarDependencyY] = kTRUE;
+     for(Int_t i=0;i<4;++i) fgUsedVars[fgTPCpidCalibVars[i]] = kTRUE;
+  }
+  
+  
+  if (fgUsedVars[kTriggerEffTimesAssocHadronEff]) {
+    fgUsedVars[kTriggerEff]             = kTRUE;
+    fgUsedVars[kAssocHadronEff]         = kTRUE;
+  }
+  if (fgUsedVars[kOneOverTriggerEffTimesAssocHadronEff]) {
+    fgUsedVars[kOneOverTriggerEff]      = kTRUE;
+    fgUsedVars[kOneOverAssocHadronEff]  = kTRUE;
   }
   if(fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]){
     fgUsedVars[fgEffMapVarDependencyX] = kTRUE;
     fgUsedVars[fgEffMapVarDependencyY] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyZ] = kTRUE;
+  }
+  if (fgUsedVars[kTriggerEff] || fgUsedVars[kOneOverTriggerEff]) {
+    fgUsedVars[fgEffMapVarDependencyXCorr] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyYCorr] = kTRUE;
+    fgUsedVars[fgEffMapVarDependencyZCorr] = kTRUE;
+  }
+  if(fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]){
+    fgUsedVars[fgAssocHadronEffMapVarDependencyX] = kTRUE;
+    fgUsedVars[fgAssocHadronEffMapVarDependencyY] = kTRUE;
+    fgUsedVars[fgAssocHadronEffMapVarDependencyZ] = kTRUE;
   }
   if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
@@ -332,6 +380,32 @@ void AliReducedVarManager::SetVariableDependencies() {
     fgUsedVars[kOneOverSqrtPt]    = kTRUE;
     fgUsedVars[kPt]               = kTRUE;
     fgUsedVars[kPairDcaXYSqrt]    = kTRUE;
+  }
+  if(fgUsedVars[kNTPCclustersFromPileupRelative]) {
+    fgUsedVars[kNTPCclusters] = kTRUE;
+    fgUsedVars[kNTPCclustersFromPileup] = kTRUE;
+  }
+  if(fgUsedVars[kNTracksTPCoutFromPileup]) {
+    fgUsedVars[kNTracksTPCoutBeforeClean] = kTRUE;
+    fgUsedVars[kVZEROTotalMultFromChannels] = kTRUE;
+  }
+  if(fgUsedVars[kPairEffDown_weight] || fgUsedVars[kPairEffUp_weight]) {
+    fgUsedVars[kPairEff_weight] = kTRUE;
+  }
+  if(fgUsedVars[kPtTimesPairEffDown_weight] || fgUsedVars[kPtTimesPairEffUp_weight]) {
+    fgUsedVars[kPtTimesPairEff_weight] = kTRUE;
+  }
+  if(fgUsedVars[kPairEff_weight]) {
+    fgUsedVars[kPairEffUp_weight] = kTRUE;
+    fgUsedVars[kPairEffDown_weight] = kTRUE;
+  }
+  if(fgUsedVars[kPtTimesPairEff_weight]) {
+    fgUsedVars[kPt_weight] = kTRUE;
+    fgUsedVars[kPairEff_weight] = kTRUE;
+    fgUsedVars[kPairEffUp_weight] = kTRUE;
+    fgUsedVars[kPairEffDown_weight] = kTRUE;
+    fgUsedVars[kPtTimesPairEffUp_weight] = kTRUE;
+    fgUsedVars[kPtTimesPairEffDown_weight] = kTRUE;
   }
 }
 
@@ -392,6 +466,10 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     if(fgRunL3Polarity) values[kL3Polarity] = fgRunL3Polarity->GetBinContent(fgRunL3Polarity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTimeStart) values[kRunTimeStart] = fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTimeEnd) values[kRunTimeEnd] = fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgGRPfile) {
+       fgRunInstLumi = (TGraphErrors*)fgGRPfile->Get(Form("InstLumi_Run%d", fgCurrentRunNumber));
+       //cout << "Lumi hist loaded " << fgRunInstLumi << endl;
+    }
     
     // VZERO calibration
     if(fgVZEROCalibrationPath.Data()[0]!='\0') {
@@ -404,6 +482,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
          cout << "                        Will run uncalibrated and not-recentered!" << endl;
          fgOptionCalibrateVZEROqVec = kFALSE;
          fgOptionRecenterVZEROqVec = kFALSE;
+         fgOptionRecenterTPCqVec = kFALSE;
       }
       cout << "AliReducedVarManager::Info  Loading VZERO calibration and/or recentering parameters for run " << fgCurrentRunNumber << endl;
       if(fgOptionCalibrateVZEROqVec) {
@@ -413,7 +492,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
            fgAvgVZEROChannelMult[iCh]->SetDirectory(0x0);
         }
       }
-      if(fgOptionRecenterVZEROqVec) {
+      if(fgOptionRecenterVZEROqVec){
          fgVZEROqVecRecentering[0] = (TProfile2D*)calibList->FindObject(Form("QvecX_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROA", fgCurrentRunNumber));
          fgVZEROqVecRecentering[0]->SetDirectory(0x0);
          fgVZEROqVecRecentering[1] = (TProfile2D*)calibList->FindObject(Form("QvecY_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROA", fgCurrentRunNumber));
@@ -422,6 +501,15 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
          fgVZEROqVecRecentering[2]->SetDirectory(0x0);
          fgVZEROqVecRecentering[3] = (TProfile2D*)calibList->FindObject(Form("QvecY_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROC", fgCurrentRunNumber));
          fgVZEROqVecRecentering[3]->SetDirectory(0x0);
+        
+      }
+      
+      if(fgOptionRecenterTPCqVec){
+         fgTPCqVecRecentering[0] = (TProfile2D*)calibList->FindObject(Form("QvecX_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecX_TPC", fgCurrentRunNumber));
+         fgTPCqVecRecentering[0]->SetDirectory(0x0);
+         fgTPCqVecRecentering[1] = (TProfile2D*)calibList->FindObject(Form("QvecY_TPC_h2_CentV0VtxZ_prof"))->Clone(Form("run%d_QvecY_TPC", fgCurrentRunNumber));
+         fgTPCqVecRecentering[1]->SetDirectory(0x0);
+         
       }
       calibFile->Close();
     }
@@ -484,15 +572,35 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kEventNumberInFile]    = event->EventNumberInFile();
   values[kBC]                   = event->BC();
   values[kTimeStamp]            = event->TimeStamp();
-  if(fgUsedVars[kTimeRelativeSOR]) values[kTimeRelativeSOR] = (event->TimeStamp() - values[kRunTimeStart]) / 60.;
+  Int_t timeSOR = 0; Int_t timeEOR = 0;
+  if(fgUsedVars[kTimeRelativeSOR] || fgUsedVars[kTimeRelativeSORfraction]) {
+     timeSOR = (fgRunTimeStart ? fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber))) : 0);
+     timeEOR = (fgRunTimeEnd ? fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber))) : 0);
+  }
+  if(fgUsedVars[kTimeRelativeSOR]) {
+     values[kTimeRelativeSOR] = Double_t(event->TimeStamp() - timeSOR) / 60.;     // in minutes
+  }
   if(fgUsedVars[kTimeRelativeSORfraction] && 
      (values[kRunTimeEnd]-values[kRunTimeStart])>1.)   // the run should be longer than 1 second ... 
-    values[kTimeRelativeSORfraction] = (event->TimeStamp() - values[kRunTimeStart]) / (values[kRunTimeEnd] - values[kRunTimeStart]);
+     values[kTimeRelativeSORfraction] = (event->TimeStamp() - timeSOR) / (timeEOR - timeSOR);
+  if(fgRunInstLumi) {
+     values[kInstLumi]          = fgRunInstLumi->Eval(event->TimeStamp()); 
+  }
   values[kEventType]            = event->EventType();
   values[kTriggerMask]          = event->TriggerMask();
   values[kINT7Triggered]        = event->TriggerMask() & kINT7 ?1:0;
+  values[kCentralTriggered]        = event->TriggerMask() & kCentral ?1:0;
+  values[kSemiCentralTriggered]        = event->TriggerMask() & kSemiCentral ?1:0;
+  values[kINT7orCentTriggered]  = (event->TriggerMask() & kINT7) | (event->TriggerMask() & kCentral) ?1:0;
+  values[kINT7orSemiCentTriggered] = (event->TriggerMask() & kINT7) | (event->TriggerMask() & kSemiCentral) ?1:0;
   values[kTRDTriggeredType]     = event->TRDfired();
   values[kHighMultV0Triggered]  = event->TriggerMask() & kHighMultV0 ?1:0;
+  values[kEMCEGATriggered]      = event->TriggerMask() & kEMCEGA ?1:0;
+  values[kEMCEGAHighTriggered]  = 0;
+  if (values[kEMCEGATriggered]) {
+    TString trgClasses = event->TriggerClass();
+    if (trgClasses.Contains("EG1") || trgClasses.Contains("DG1")) values[kEMCEGAHighTriggered] = 1;
+  }
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
   values[kIsSPDPileup]          = event->IsSPDPileup();
   values[kIsSPDPileup5]         = event->EventTag(11);
@@ -514,12 +622,24 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kVtxYspd]              = event->VertexSPD(1);
   values[kVtxZspd]              = event->VertexSPD(2);
   values[kNVtxSPDContributors]  = event->VertexSPDContributors();
-  
   if(fgUsedVars[kDeltaVtxZ]) values[kDeltaVtxZ] = values[kVtxZ] - values[kVtxZtpc];
   if(fgUsedVars[kDeltaVtxZspd]) values[kDeltaVtxZspd] = values[kVtxZ] - values[kVtxZspd];
+  values[kTPCpileupZAC]         = event->TPCpileupZ();
+  values[kTPCpileupZA]          = event->TPCpileupZ(1);
+  values[kTPCpileupZC]          = event->TPCpileupZ(2);
+  values[kTPCpileupContributorsAC] = event->TPCpileupContributors();
+  values[kTPCpileupContributorsA]  = event->TPCpileupContributors(1);
+  values[kTPCpileupContributorsC]  = event->TPCpileupContributors(2);
+  values[kTPCpileupZAC2]         = event->TPCpileupZ2();
+  values[kTPCpileupZA2]          = event->TPCpileupZ2(1);
+  values[kTPCpileupZC2]          = event->TPCpileupZ2(2);
+  values[kTPCpileupContributorsAC2] = event->TPCpileupContributors2();
+  values[kTPCpileupContributorsA2]  = event->TPCpileupContributors2(1);
+  values[kTPCpileupContributorsC2]  = event->TPCpileupContributors2(2);  
   
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
+  values[kNTracksTPCoutBeforeClean] = event->TracksWithTPCout();
   
   // set the fgUsedVars to true as these might have been set to false in the previous event
   fgUsedVars[kNTracksTPCoutVsITSout] = kTRUE;
@@ -555,7 +675,15 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
 
   values[ kVZEROATotalMult ] = event->MultVZEROA();
   values[ kVZEROCTotalMult ] = event->MultVZEROC();
-  values[ kVZEROTotalMult  ]  = event->MultVZERO();
+  values[ kVZEROTotalMult  ] = event->MultVZERO();
+  
+  values[ kVZEROATotalMultFromChannels ] = event->MultVZEROA(kTRUE);
+  values[ kVZEROCTotalMultFromChannels ] = event->MultVZEROC(kTRUE);
+  values[ kVZEROTotalMultFromChannels  ] = event->MultVZERO(kTRUE);
+  if(TMath::Abs(values[kVZEROTotalMultFromChannels])>1.0e-6) 
+     values[kVZEROTPCoutDiff] = (values[kVZEROTotalMultFromChannels]-values[kNTracksPerTrackingStatus+kTPCout]) / (values[kVZEROTotalMultFromChannels]);
+  else
+     values[kVZEROTPCoutDiff] = 0.0;
   
   values[ kVZEROACTotalMult ] = event->MultVZEROA() + event->MultVZEROC();
 
@@ -693,7 +821,11 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for(Int_t i=0;i<2;++i) values[kSPDFiredChips+i] = event->SPDFiredChips(i+1);
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
   values[kSPDnSingleClusters] = event->SPDnSingleClusters();
-
+  if(fgUsedVars[kSDDandSSDclusters]) {
+     values[kSDDandSSDclusters] = 0.0;
+     for(Int_t i=2;i<6;++i) values[kSDDandSSDclusters] += event->ITSClusters(i+1);  
+  }
+  
   //VZERO detector information
   fgUsedVars[kNTracksTPCoutVsVZEROTotalMult] = kTRUE;
   if(values[kVZEROTotalMult]>1.0e-5)
@@ -721,38 +853,88 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }
   }
   
-  fgUsedVars[kNTracksTPCoutFromPileup] = kTRUE;
-  if(values[kVZEROTotalMult]>0.0)
-     values[kNTracksTPCoutFromPileup] = values[kNTracksPerTrackingStatus+kTPCout] - (-2.55+TMath::Sqrt(2.55*2.55+4.0e-5*values[kVZEROTotalMult])) / 2.0e-5;
-  else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  if(values[kVZEROTotalMultFromChannels]>0.0) 
+     values[kNTracksTPCoutFromPileup] = values[kNTracksTPCoutBeforeClean] - (-3.2+TMath::Sqrt(3.2*3.2+4.0*1.6e-5*values[kVZEROTotalMultFromChannels]))/(2.0*1.6e-5);
   
-  if(!eventF && (fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1])) {
+  Float_t tpcClustersExpectationWOpileup = 0.001;
+  if(fgUsedVars[kNTPCclustersFromPileup] && values[kVZEROTotalMultFromChannels]>0.0) {
+     tpcClustersExpectationWOpileup = (-0.0132+TMath::Sqrt(0.0132*0.0132-4.0*(-200.0-values[kVZEROTotalMultFromChannels])*1.4e-9))/2.0/1.4e-9;
+     values[kNTPCclustersFromPileup] = values[kNTPCclusters] - tpcClustersExpectationWOpileup;
+  }
+  else 
+     values[kNTPCclustersFromPileup] = 0.0;
+  
+  if(fgUsedVars[kNTPCclustersFromPileupRelative] && values[kNTPCclusters]>0.0)
+     values[kNTPCclustersFromPileupRelative] = values[kNTPCclustersFromPileup] / tpcClustersExpectationWOpileup;
+  
+  if(fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1]) {
     Double_t qvecVZEROA[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
     Double_t qvecVZEROC[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
     if(fgOptionCalibrateVZEROqVec && fgAvgVZEROChannelMult[0]) {
-      Float_t calibVZEROMult[64] = {0.};
+       Float_t calibVZEROMult[64] = {0.};
+       Float_t refMult=0;
+      for(Int_t ich=0;ich<64;++ich) fgUsedVars[kVZEROChannelMultCalib+ich] = kTRUE; 
+       
       for(Int_t iCh=0; iCh<64; ++iCh) {
          if(event->MultChannelVZERO(iCh)>=fgkVZEROminMult) {
+                         
             Float_t avMult = fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->FindBin(event->Vertex(2), event->CentralitySPD()));
-            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0);
+            Int_t refCh = iCh-(iCh%8);
+            if(iCh==refCh)
+                refMult=fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->GetXaxis()->FindBin(0.0),fgAvgVZEROChannelMult[iCh]->GetYaxis()->FindBin(event->CentralitySPD()));
+            
+            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0)*refMult;
+            values[kVZEROChannelMultCalib+iCh]=calibVZEROMult[iCh];
+            
+          //  cout<<"V0 channel"<<" "<<iCh<<" "<<"Reference Channel "<<refCh<<" "<<"Reference multiplicity"<<refMult<<"Avg mult"<<avMult<<" "<<values[kVZEROChannelMult+iCh]<<" "<<values[kVZEROChannelMultCalib+iCh]<<endl;
+            
          }
+         else
+             fgUsedVars[kVZEROChannelMultCalib+iCh] = kFALSE; // will not be filled in histograms by the histogram manager
       }
       event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA, calibVZEROMult);
       event->GetVZEROQvector(qvecVZEROC, EVENTPLANE::kVZEROC, calibVZEROMult);
+      
+     
     }
     else {
       event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA);
       event->GetVZEROQvector(qvecVZEROC, EVENTPLANE::kVZEROC);
     }
     if(fgOptionRecenterVZEROqVec && fgVZEROqVecRecentering[0]) {
-       Float_t recenterOffset = fgVZEROqVecRecentering[0]->GetBinContent(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROA[1][0] -= recenterOffset;
-       recenterOffset = fgVZEROqVecRecentering[1]->GetBinContent(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROA[1][1] -= recenterOffset;
-       recenterOffset = fgVZEROqVecRecentering[2]->GetBinContent(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROC[1][0] -= recenterOffset;
-       recenterOffset = fgVZEROqVecRecentering[3]->GetBinContent(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
-       qvecVZEROC[1][1] -= recenterOffset;
+         Float_t recenterOffset = fgVZEROqVecRecentering[0]->GetBinContent(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+         Float_t widthEqVZERO = fgVZEROqVecRecentering[0]->GetBinError(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+
+         qvecVZEROA[1][0] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+             qvecVZEROA[1][0] /=widthEqVZERO;
+           else
+             qvecVZEROA[1][0]=0;
+                
+        recenterOffset = fgVZEROqVecRecentering[1]->GetBinContent(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        widthEqVZERO = fgVZEROqVecRecentering[1]->GetBinError(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        qvecVZEROA[1][1] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+              qvecVZEROA[1][1] /=widthEqVZERO;
+           else
+            qvecVZEROA[1][1]=0;
+          
+        recenterOffset = fgVZEROqVecRecentering[2]->GetBinContent(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        widthEqVZERO = fgVZEROqVecRecentering[2]->GetBinError(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        qvecVZEROC[1][0] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+              qvecVZEROC[1][0] /=widthEqVZERO;
+           else
+              qvecVZEROC[1][0]=0;
+       
+        recenterOffset = fgVZEROqVecRecentering[3]->GetBinContent(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        widthEqVZERO = fgVZEROqVecRecentering[3]->GetBinError(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+        qvecVZEROC[1][1] -= recenterOffset;
+           if(widthEqVZERO >0.0)
+              qvecVZEROC[1][1] /=widthEqVZERO;
+           else
+              qvecVZEROC[1][1]=0;
+     
     }
     for(Int_t ih=1; ih<2; ++ih) {
        // VZERO event plane variables
@@ -803,17 +985,123 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }    // end loop over harmonics
   }
   
+  // Get the TPC event plane in case it was written in the trees 
+  for(Int_t ih=0; ih<3; ++ih) {
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPC,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXtree+ih] = event->GetQx(EVENTPLANE::kTPC,ih+1);
+        values[kTPCQvecYtree+ih] = event->GetQy(EVENTPLANE::kTPC,ih+1);
+        values[kTPCRPtree+ih] = event->GetEventPlane(EVENTPLANE::kTPC,ih+1);
+        
+          //TPC Q vector recentering       
+          if(fgOptionRecenterTPCqVec && fgTPCqVecRecentering[0] && ih==1) {
+            Float_t recenterOffsetTPC = fgTPCqVecRecentering[0]->GetBinContent(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            Double_t widthEqTPC = fgTPCqVecRecentering[0]->GetBinError(fgTPCqVecRecentering[0]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            values[kTPCQvecXtree+1] -= recenterOffsetTPC;
+
+                if(widthEqTPC >0.0)
+                   values[kTPCQvecXtree+1] /=widthEqTPC;
+                else
+                   values[kTPCQvecXtree+1]=0;
+                
+            recenterOffsetTPC = fgTPCqVecRecentering[1]->GetBinContent(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            widthEqTPC = fgTPCqVecRecentering[1]->GetBinError(fgTPCqVecRecentering[1]->FindBin(event->CentralityVZERO(), event->Vertex(2)));
+            values[kTPCQvecYtree+1] -= recenterOffsetTPC;
+                
+                if(widthEqTPC >0.0)
+                   values[kTPCQvecYtree+1] /=widthEqTPC;
+                else
+                   values[kTPCQvecYtree+1]=0;
+                 
+            values[kTPCRPtree+ih]=TMath::ATan2(values[kTPCQvecYtree+1],values[kTPCQvecXtree+1])/Double_t(ih+1);
+      
+        }
+ 
+     }
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPCptWeights,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXptWeightsTree+ih] = event->GetQx(EVENTPLANE::kTPCptWeights,ih+1);
+        values[kTPCQvecYptWeightsTree+ih] = event->GetQy(EVENTPLANE::kTPCptWeights,ih+1);
+        values[kTPCRPptWeightsTree+ih] = event->GetEventPlane(EVENTPLANE::kTPCptWeights,ih+1);
+     }
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPCpos,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXposTree+ih] = event->GetQx(EVENTPLANE::kTPCpos,ih+1);
+        values[kTPCQvecYposTree+ih] = event->GetQy(EVENTPLANE::kTPCpos,ih+1);
+        values[kTPCRPposTree+ih] = event->GetEventPlane(EVENTPLANE::kTPCpos,ih+1);
+     }
+     if(event->GetEventPlaneStatus(EVENTPLANE::kTPCneg,ih+1)!=EVENTPLANE::kUnset) {
+        values[kTPCQvecXnegTree+ih] = event->GetQx(EVENTPLANE::kTPCneg,ih+1);
+        values[kTPCQvecYnegTree+ih] = event->GetQy(EVENTPLANE::kTPCneg,ih+1);
+        values[kTPCRPnegTree+ih] = event->GetEventPlane(EVENTPLANE::kTPCneg,ih+1);
+     }
+     
+      // TPC VZERO Q-vector correlations
+     if(fgUsedVars[kRPXtpcXvzeroa+ih]) 
+	values[kRPXtpcXvzeroa+ih] = values[kTPCQvecXtree+ih]*values[kVZEROQvecX+ih];
+     if(fgUsedVars[kRPXtpcXvzeroc+ih]) 
+	values[kRPXtpcXvzeroc+ih] = values[kTPCQvecXtree+ih]*values[kVZEROQvecX+6+ih];
+     if(fgUsedVars[kRPYtpcYvzeroa+ih]) 
+	values[kRPYtpcYvzeroa+ih] = values[kTPCQvecYtree+ih]*values[kVZEROQvecY+ih];
+     if(fgUsedVars[kRPYtpcYvzeroc+ih]) 
+	values[kRPYtpcYvzeroc+ih] = values[kTPCQvecYtree+ih]*values[kVZEROQvecY+6+ih];
+     if(fgUsedVars[kRPXtpcYvzeroa+ih]) 
+	values[kRPXtpcYvzeroa+ih] = values[kTPCQvecXtree+ih]*values[kVZEROQvecY+ih];
+     if(fgUsedVars[kRPXtpcYvzeroc+ih]) 
+	values[kRPXtpcYvzeroc+ih] = values[kTPCQvecXtree+ih]*values[kVZEROQvecY+6+ih];
+     if(fgUsedVars[kRPYtpcXvzeroa+ih]) 
+	values[kRPYtpcXvzeroa+ih] = values[kTPCQvecYtree+ih]*values[kVZEROQvecX+ih];
+     if(fgUsedVars[kRPYtpcXvzeroc+ih]) 
+	values[kRPYtpcXvzeroc+ih] = values[kTPCQvecYtree+ih]*values[kVZEROQvecX+6+ih];
+      // Psi_TPC - Psi_VZERO A/C      
+     if(fgUsedVars[kRPdeltaVZEROAtpc+ih]) 
+	values[kRPdeltaVZEROAtpc+ih] = DeltaPhi(values[kVZERORP+0*6+ih], values[kTPCRPtree+ih]);
+     if(fgUsedVars[kRPdeltaVZEROCtpc+ih])
+        values[kRPdeltaVZEROCtpc+ih] = DeltaPhi(values[kVZERORP+1*6+ih], values[kTPCRPtree+ih]);
+     
+     
+     // cos(n(EPtpc-EPvzero A/C))
+     for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
+          if(fgUsedVars[kTPCRPres+iVZEROside*6+ih]) {
+	  values[kTPCRPres+iVZEROside*6+ih] = DeltaPhi(values[kTPCRPtree+ih], values[kVZERORP+iVZEROside*6+ih]);
+          values[kTPCRPres+iVZEROside*6+ih] = TMath::Cos(values[kTPCRPres+iVZEROside*6+ih]*(ih+1));
+	}
+      }
+     // cout<<values[kCentVZERO]<<" "<<values[kCentSPD]<<" "<<values[kVtxZ]<<" "<<values[kTPCRPres+1*6+ih]<<" "<<values[kTPCRPres+0*6+ih]<<" "<<values[kVZERORPres+ih]<<endl;
+//      cout<<values[kTPCRPres+0*6+ih]<<endl;
+//      cout<<values[kTPCRPres+1*6+ih]<<endl;
+//      cout<<values[kVZERORPres+ih]<<endl;
+      //resolution of V0A, V0C or TPC as reference detector
+      if(fgOptionEventRes && (fgUsedVars[kVZEROARPres+ih]||fgUsedVars[kVZEROCRPres+ih]||fgUsedVars[kVZEROTPCRPres+ih])){
+         
+         if(values[kTPCRPres+1*6+ih]>1.0e-7 && values[kTPCRPres+0*6+ih]>1.0e-7 && values[kVZERORPres+ih]>1.0e-7){
+    
+          values[kVZEROARPres+ih] = TMath::Sqrt(values[kTPCRPres+1*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+0*6+ih]));
+          values[kVZEROCRPres+ih] = TMath::Sqrt(values[kTPCRPres+0*6+ih]/(values[kVZERORPres + ih]*values[kTPCRPres+1*6+ih]));
+          values[kVZEROTPCRPres+ih] = TMath::Sqrt(values[kVZERORPres+ih]/(values[kTPCRPres+0*6 + ih]*values[kTPCRPres+1*6+ih]));
+        }
+        else{
+          values[kVZEROARPres+ih]=0;
+          values[kVZEROCRPres+ih]=0;
+          values[kVZEROTPCRPres+ih]=0;
+        }
+    }//end if fgOptionEventRes
+     
+  }// end loop over harmonics
+  
+ 
+     
+    
+   
+  
   if(eventF) {
-    for(Int_t ih=0; ih<6; ++ih) {
-      // VZERO event plane variables
-      values[kVZEROQvecX+2*6+ih] = 0.0;
-      values[kVZEROQvecY+2*6+ih] = 0.0;
-      values[kVZERORP   +2*6+ih] = 0.0;
-      for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
-        values[kVZEROQvecX+iVZEROside*6+ih] = eventF->Qx(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
-        values[kVZEROQvecY+iVZEROside*6+ih] = eventF->Qy(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
-        if(fgUsedVars[kVZERORP+iVZEROside*6+ih]) 
-	  values[kVZERORP+iVZEROside*6+ih] = eventF->EventPlane(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+   for(Int_t ih=0; ih<6; ++ih) {
+     // VZERO event plane variables
+     values[kVZEROQvecX+2*6+ih] = 0.0;
+     values[kVZEROQvecY+2*6+ih] = 0.0;
+     values[kVZERORP   +2*6+ih] = 0.0;
+     for(Int_t iVZEROside=0; iVZEROside<2; ++iVZEROside) {
+       values[kVZEROQvecX+iVZEROside*6+ih] = eventF->Qx(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+       values[kVZEROQvecY+iVZEROside*6+ih] = eventF->Qy(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
+       if(fgUsedVars[kVZERORP+iVZEROside*6+ih]) 
+        values[kVZERORP+iVZEROside*6+ih] = eventF->EventPlane(EVENTPLANE::kVZEROA+iVZEROside, ih+1);
 	if(fgUsedVars[kVZEROQvecX+2*6+ih])
 	  values[kVZEROQvecX+2*6+ih] += values[kVZEROQvecX+iVZEROside*6+ih];
 	if(fgUsedVars[kVZEROQvecY+2*6+ih])
@@ -1032,27 +1320,14 @@ void AliReducedVarManager::FillTrackingStatus(TRACK* p, Float_t* values) {
     values[kTrackingStatus+i] = p->CheckTrackStatus(i)+10e-6;
 }
 
-//_________________________________________________________________
-/*void AliReducedVarManager::FillTrackingFlags(TRACK* p, Float_t* values) {
-  //
-  // Fill tracking flags
-  //
-  for(Int_t i=0; i<kNTrackingFlags; i++){
-    values[kTrackingFlags+i] = p->TestFlag(i)+10e-6;
-  }
-}*/
-
-
 
 //_________________________________________________________________
 void AliReducedVarManager::FillTrackingFlag(TRACK* track, UInt_t flag, Float_t* values) {
   //
   // fill the tracking flag
   //
-   //cout << "AliReducedVarManager::FillTrackingFlag track/flag/status :: " << track << "/" << flag << "/" << track->CheckTrackStatus(flag) << endl;
   values[kTrackingFlag] = -1;
   if(track->CheckTrackStatus(flag)) values[kTrackingFlag] = flag;
-  //cout << "AliReducedVarManager::FillTrackingFlag values[kTrackingFlag] :: " << values[kTrackingFlag] << endl;
 }
 
 //_________________________________________________________________
@@ -1113,6 +1388,23 @@ void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* 
      values[kOnlineTriggerFired2] = (((AliReducedEventInfo*)fgEvent)->TriggerMask()&(ULong_t(1)<<triggerBit2) ? triggerBit2 : -1.0);
 }
 
+//________________________________________________________________
+void AliReducedVarManager::FillV0Channel(Int_t ich, Float_t* values) {
+   //
+   // Update the V0 channel number
+   //
+   if(ich>=0 && ich<64) {
+      values[kVZEROCurrentChannel] = ich;
+      values[kVZEROCurrentChannelMult] = values[kVZEROChannelMult+ich];
+      values[kVZEROCurrentChannelMultCalib] = values[kVZEROChannelMultCalib+ich];
+   }
+   else {
+      values[kVZEROCurrentChannel] = -1;
+      values[kVZEROCurrentChannelMult] = -999.;
+      values[kVZEROCurrentChannelMultCalib] = -999.;
+   }
+}
+
 //_________________________________________________________________
 void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg1 /* = 0x0 */, TRACK* leg2 /* = 0x0 */) {
    //
@@ -1123,20 +1415,28 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    values[kPxMC] = p->MCmom(0);
    values[kPyMC] = p->MCmom(1);
    values[kPzMC] = p->MCmom(2);
+   if(fgUsedVars[kPt_weight]) values[kPt_weight] =  CalculateWeightFactor(values[kPtMC],values[kCentVZERO]);
+   
    if(fgUsedVars[kThetaMC]) values[kThetaMC] = p->ThetaMC();
    if(fgUsedVars[kEtaMC]) values[kEtaMC] = p->EtaMC();
    if(fgUsedVars[kPhiMC]) values[kPhiMC] = p->PhiMC();
    if(fgUsedVars[kMassMC]) {
       if(TMath::Abs(p->MCPdg(0))==443)
-      values[kMassMC] = fgkPairMass[AliReducedPairInfo::kJpsiToEE];  
+         values[kMassMC] = fgkPairMass[AliReducedPairInfo::kJpsiToEE];  
+      if(TMath::Abs(p->MCPdg(0))==100443)
+         values[kMassMC] = fgkPairMass[AliReducedPairInfo::kPsi2SToEE];  
    }
    if(fgUsedVars[kRapMC]) {
       if(TMath::Abs(p->MCPdg(0))==443)
          values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]); 
+      if(TMath::Abs(p->MCPdg(0))==100443)
+         values[kRapMC] = p->RapidityMC(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]); 
    }
   if(fgUsedVars[kRapMCAbs]) {
     if(TMath::Abs(p->MCPdg(0))==443)
       values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
+    if(TMath::Abs(p->MCPdg(0))==100443)
+       values[kRapMCAbs] = TMath::Abs(p->RapidityMC(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]));
   }
 
   if(fgUsedVars[kPseudoProperDecayTimeMC]){
@@ -1170,7 +1470,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       values[kEtaMCfromLegs] = (values[kEtaMCfromLegs]>1.0e-6 ? -1.0*TMath::Log(values[kEtaMCfromLegs]) : 0.0);
       values[kPhiMCfromLegs] = TMath::ATan2(values[kPyMCfromLegs],values[kPxMCfromLegs]);
       values[kPhiMCfromLegs] = (values[kPhiMCfromLegs]<0.0 ? (TMath::TwoPi()+values[kPhiMCfromLegs]) : values[kPhiMCfromLegs]);
-      if(TMath::Abs(p->MCPdg(0))==443) {
+      if(TMath::Abs(p->MCPdg(0))==443 || TMath::Abs(p->MCPdg(0))==100443) {
          Float_t m1 = fgkParticleMass[kElectron];
          Float_t m2 = fgkParticleMass[kElectron];
          values[kMassMCfromLegs] = m1*m1+m2*m2 + 
@@ -1207,6 +1507,73 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
 }
 
+
+//_________________________________________________________________
+void AliReducedVarManager::FillMCTruthInfo(TRACK* leg1, TRACK* leg2, Float_t* values) {
+   //
+   // Compute MC truth variables from decay legs only, no mother assumption used
+   // NOTE: This function is done specifically for pairs of MC particles which do not have any mother in the stack, e.g. electrons from gamma-gamma processes produced with Starlight
+   //      All quantities are computed just from the leg kinematics
+   //
+   
+   values[kPxMCfromLegs] = leg1->MCmom(0) + leg2->MCmom(0);
+   values[kPyMCfromLegs] = leg1->MCmom(1) + leg2->MCmom(1);
+   values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
+   values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
+   values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
+   values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
+   values[kEtaMCfromLegs] = TMath::Tan(0.5*values[kThetaMCfromLegs]);
+   values[kEtaMCfromLegs] = (values[kEtaMCfromLegs]>1.0e-6 ? -1.0*TMath::Log(values[kEtaMCfromLegs]) : 0.0);
+   values[kPhiMCfromLegs] = TMath::ATan2(values[kPyMCfromLegs],values[kPxMCfromLegs]);
+   values[kPhiMCfromLegs] = (values[kPhiMCfromLegs]<0.0 ? (TMath::TwoPi()+values[kPhiMCfromLegs]) : values[kPhiMCfromLegs]);
+   values[kPairLegPtMC+0] = TMath::Sqrt(leg1->MCmom(0)*leg1->MCmom(0)+leg1->MCmom(1)*leg1->MCmom(1));
+   values[kPairLegPtMC+1] = TMath::Sqrt(leg2->MCmom(0)*leg2->MCmom(0)+leg2->MCmom(1)*leg2->MCmom(1));
+   values[kPairLegPtMCSum] = values[kPairLegPtMC]+values[kPairLegPtMC+1];
+   
+   // NOTE: for other particle species, check the PDG code of the particles
+   Float_t m1 = fgkParticleMass[kElectron];
+   Float_t m2 = fgkParticleMass[kElectron];
+   values[kMassMCfromLegs] = m1*m1+m2*m2 + 
+      2.0*(TMath::Sqrt(m1*m1+leg1->P()*leg1->P())*TMath::Sqrt(m2*m2+leg2->P()*leg2->P()) - 
+            leg1->Px()*leg2->Px() - leg1->Py()*leg2->Py() - leg1->Pz()*leg2->Pz());
+   if(values[kMassMCfromLegs]<0.0) {
+      cout << "FillMCTruthInfo(track1, track2, values): Warning: Very small squared mass found. "
+      << "   Could be negative due to resolution of Float_t so it will be set to a small positive value." << endl; 
+      cout << "   mass^2: " << values[kMassMCfromLegs] << endl;
+      cout << "p1(p,x,y,z): " << leg1->P() << ", " << leg1->Px() << ", " << leg1->Py() << ", " << leg1->Pz() << endl;
+      cout << "p2(p,x,y,z): " << leg2->P() << ", " << leg2->Px() << ", " << leg2->Py() << ", " << leg2->Pz() << endl;
+      values[kMassMCfromLegs] = 0.0;
+   }
+   else
+      values[kMassMCfromLegs] = TMath::Sqrt(values[kMassMCfromLegs]);
+   values[kMassMC] = values[kMassMCfromLegs];
+   
+   Float_t e = TMath::Sqrt(values[kPMCfromLegs]*values[kPMCfromLegs] + values[kMassMCfromLegs] * values[kMassMCfromLegs]);
+   Float_t factor = e - values[kPzMCfromLegs];
+   values[kRapMCfromLegs] = (TMath::Abs(factor)>1.0e-6 ? (e+values[kPzMCfromLegs])/factor : 0.0);
+   values[kRapMCfromLegs] = (values[kRapMCfromLegs]>1.0e-6 ? 0.5*TMath::Log(values[kRapMCfromLegs]) : 0.0);
+   
+   values[kPtMC] = values[kPtMCfromLegs];
+   values[kPMC] = values[kPMCfromLegs];
+   values[kPxMC] = values[kPxMCfromLegs];
+   values[kPyMC] = values[kPyMCfromLegs];
+   values[kPzMC] = values[kPzMCfromLegs];
+   values[kThetaMC] = values[kThetaMCfromLegs];
+   values[kEtaMC] = values[kEtaMCfromLegs];
+   values[kPhiMC] = values[kPhiMCfromLegs];
+   values[kMassMC] = values[kMassMCfromLegs];
+   values[kRapMC] = values[kRapMCfromLegs];
+   values[kRapMCAbs] = TMath::Abs(values[kRapMCfromLegs]); 
+      
+   // polarization variables
+   Bool_t usePolarization=kFALSE;
+   if(leg1 && leg2 && (fgUsedVars[kPairThetaCS] || fgUsedVars[kPairThetaHE] || fgUsedVars[kPairPhiCS] || fgUsedVars[kPairPhiHE]))
+      usePolarization = kTRUE;
+   if(usePolarization)
+      GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
+}
+
+
 //_________________________________________________________________
 void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   //
@@ -1230,20 +1597,39 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kCosNPhi+ih-1]) values[kCosNPhi+ih-1] = TMath::Cos(p->Phi()*ih);
      if(fgUsedVars[kSinNPhi+ih-1]) values[kSinNPhi+ih-1] = TMath::Sin(p->Phi()*ih);
   }
-
+  values[kCharge] = p->Charge();
+  
   //pair efficiency variables
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
-    Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
-    if(binX==0) binX = 1;
-    if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
-    Int_t binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]);
-    if(binY==0) binY=1;
-    if(binY==fgPairEffMap->GetYaxis()->GetNbins()+1) binY -= 1;
-    Float_t pairEff = fgPairEffMap->GetBinContent(binX, binY);
-    Float_t oneOverPairEff = 1;
+    Int_t binX = 0;
+    if (fgEffMapVarDependencyX!=kNothing) {
+      binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgEffMapVarDependencyY!=kNothing) {
+      binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgPairEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgEffMapVarDependencyZ!=kNothing) {
+      binZ = fgPairEffMap->GetZaxis()->FindBin(values[fgEffMapVarDependencyZ]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgPairEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   pairEff = 1.;
+    if (binX && binY && binZ) pairEff = fgPairEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    else if (binX)            pairEff = fgPairEffMap->GetBinContent(binX);
+
+    Float_t               oneOverPairEff = 1.;
     if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
-    values[kPairEff] = pairEff;
-    values[kOneOverPairEff] = oneOverPairEff;
+
+    values[kPairEff]          = pairEff;
+    values[kOneOverPairEff]   = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
 
@@ -1254,6 +1640,16 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
            values[kVZEROFlowVn+iVZEROside*6+ih] = TMath::Cos((values[kPhi]-values[kVZERORP+iVZEROside*6+ih])*(ih+1));
         if(fgUsedVars[kVZEROFlowSine+iVZEROside*6+ih])
            values[kVZEROFlowSine+iVZEROside*6+ih] = TMath::Sin((values[kPhi]-values[kVZERORP+iVZEROside*6+ih])*(ih+1));
+        if(fgUsedVars[kVZERODeltaPhiPsiN+iVZEROside*6+ih]) {
+           // compute delta phi = phi - Psi
+           values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] = values[kPhi] - values[kVZERORP+iVZEROside*6+ih];
+           // transform to the interval [0; 2*pi/n]
+           values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] -= 
+                 2.0*TMath::Pi()/Double_t(ih+1) * TMath::Floor(Double_t(ih+1)/2.0/TMath::Pi()*values[kVZERODeltaPhiPsiN+iVZEROside*6+ih]);
+           // transform to [0; pi/n]
+           if(values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] > TMath::Pi()/Double_t(ih+1))
+             values[kVZERODeltaPhiPsiN+iVZEROside*6+ih] = 2.0*TMath::Pi()/Double_t(ih+1) - values[kVZERODeltaPhiPsiN+iVZEROside*6+ih];
+        }
         if(iVZEROside<2) {
            if(fgUsedVars[kVZEROuQ+iVZEROside*6+ih]) {
               values[kVZEROuQ+iVZEROside*6+ih] = TMath::Cos((values[kPhi]-values[kVZERORP+iVZEROside*6+ih])*(ih+1));
@@ -1277,18 +1673,19 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kTPCFlowSine+ih]) {tpcEPUsed = kTRUE; break;}
      if(fgUsedVars[kTPCuQ+ih]) {tpcEPUsed = kTRUE; break;}
      if(fgUsedVars[kTPCuQsine+ih]) {tpcEPUsed = kTRUE; break;}
+     if(fgUsedVars[kTPCDeltaPhiPsiN+ih]) {tpcEPUsed = kTRUE; break;}
   }
 
   if(tpcEPUsed) {
-     Float_t tpcEPsubtracted[6] = {0.0};
-     Double_t qVec[6][2] = {{0.0}};
-     for(Int_t ih=0; ih<6; ++ih) {qVec[ih][0]=values[kTPCQvecXtotal+ih]; qVec[ih][1]=values[kTPCQvecYtotal+ih];}
-     EVENT* eventInfo = NULL;
-     if(fgEvent->IsA()==EVENT::Class()) eventInfo = (EVENT*)fgEvent;
-     if((p->IsA() == AliReducedTrackInfo::Class()) && eventInfo) {
-        eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,-0.8,-0.5*fgkTPCQvecRapGap);
-        eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
-     }
+//      Float_t tpcEPsubtracted[6] = {0.0};
+//      Double_t qVec[6][2] = {{0.0}};
+//      for(Int_t ih=0; ih<6; ++ih) {qVec[ih][0]=values[kTPCQvecXtotal+ih]; qVec[ih][1]=values[kTPCQvecYtotal+ih];}
+//      EVENT* eventInfo = NULL;
+//      if(fgEvent->IsA()==EVENT::Class()) eventInfo = (EVENT*)fgEvent;
+//      if((p->IsA() == AliReducedTrackInfo::Class()) && eventInfo) {
+//         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,-0.8,-0.5*fgkTPCQvecRapGap);
+//         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)p,qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
+//      }
 
      // TODO: Make sure the pair legs are properly subtracted from the TPC event plane calculation
      //              For the moment this part of the code is commented out
@@ -1300,21 +1697,49 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
         eventInfo->SubtractParticleFromQvector((AliReducedTrackInfo*)eventInfo->GetTrack(((AliReducedPairInfo*)p)->LegId(1)),qVec,EVENTPLANE::kTPC,0.5*fgkTPCQvecRapGap,0.8);
      }  */
      // recalculate the TPC event plane
-     for(Int_t ih=0; ih<6;++ih) 
-        tpcEPsubtracted[ih] = TMath::ATan2(qVec[ih][1], qVec[ih][0])/Double_t(ih+1);
-     for(Int_t ih=0; ih<6; ++ih) {
+//      for(Int_t ih=0; ih<6;++ih) 
+//         tpcEPsubtracted[ih] = TMath::ATan2(qVec[ih][1], qVec[ih][0])/Double_t(ih+1);
+//      for(Int_t ih=0; ih<6; ++ih) {
+//         // vn using Psi_n
+//         if(fgUsedVars[kTPCFlowVn+ih])
+//            values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+//         if(fgUsedVars[kTPCFlowSine+ih]) 
+//            values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+//         if(fgUsedVars[kTPCuQ+ih]) {
+//            values[kTPCuQ+ih] = TMath::Cos((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
+//            values[kTPCuQ+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+//         }
+//         if(fgUsedVars[kTPCuQsine+ih]) {
+//            values[kTPCuQsine+ih] = TMath::Sin((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
+//            values[kTPCuQsine+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+//         }
+//      }
+
+        for(Int_t ih=0; ih<6; ++ih) {
         // vn using Psi_n
         if(fgUsedVars[kTPCFlowVn+ih])
-           values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+           values[kTPCFlowVn+ih] = TMath::Cos(DeltaPhi(values[kPhi],values[kTPCRPtree+ih])*(ih+1));
+        if(fgUsedVars[kTPCDeltaPhiPsiN+ih]) {
+           // compute delta phi = phi - Psi
+           values[kTPCDeltaPhiPsiN+ih] = values[kPhi] - values[kTPCRPtree+ih];
+           // transform to the interval [0; 2*pi/n]
+           values[kTPCDeltaPhiPsiN+ih] -= 
+                 2.0*TMath::Pi()/Double_t(ih+1) * TMath::Floor(Double_t(ih+1)/2.0/TMath::Pi()*values[kTPCDeltaPhiPsiN+ih]);
+           // transform to [0; pi/n]
+           if(values[kTPCDeltaPhiPsiN+ih] > TMath::Pi()/Double_t(ih+1))
+             values[kTPCDeltaPhiPsiN+ih] = 2.0*TMath::Pi()/Double_t(ih+1) - values[kTPCDeltaPhiPsiN+ih];
+        }
+            
+           //values[kTPCDeltaPhiPsiN+ih] = (values[kPhi]>TMath::Pi() ? values[kPhi]-2.0*TMath::Pi() : values[kPhi])/Double_t(ih+1)-values[kTPCRPtree+ih];  
         if(fgUsedVars[kTPCFlowSine+ih]) 
-           values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],tpcEPsubtracted[ih])*(ih+1));
+           values[kTPCFlowSine+ih] = TMath::Sin(DeltaPhi(values[kPhi],values[kTPCRPtree+ih])*(ih+1));
         if(fgUsedVars[kTPCuQ+ih]) {
-           values[kTPCuQ+ih] = TMath::Cos((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
-           values[kTPCuQ+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+           values[kTPCuQ+ih] = TMath::Cos((values[kPhi]-values[kTPCRPtree+ih])*(ih+1));
+           values[kTPCuQ+ih] *= TMath::Sqrt(values[kVZEROQvecX+ih]*values[kVZEROQvecX+ih] + values[kVZEROQvecY+ih]*values[kVZEROQvecY+ih]);
         }
         if(fgUsedVars[kTPCuQsine+ih]) {
-           values[kTPCuQsine+ih] = TMath::Sin((values[kPhi]-tpcEPsubtracted[ih])*(ih+1));
-           values[kTPCuQsine+ih] *= TMath::Sqrt(qVec[ih][0]*qVec[ih][0] + qVec[ih][1]*qVec[ih][1]);
+           values[kTPCuQsine+ih] = TMath::Sin((values[kPhi]-values[kTPCRPtree+ih])*(ih+1));
+           values[kTPCuQsine+ih] *= TMath::Sqrt(values[kVZEROQvecX+ih]*values[kVZEROQvecX+ih] + values[kVZEROQvecY+ih]*values[kVZEROQvecY+ih]);
         }
      }
   }
@@ -1333,7 +1758,6 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kDcaZ]        = pinfo->DCAz();
   values[kDcaXYTPC]    = pinfo->DCAxyTPC();
   values[kDcaZTPC]     = pinfo->DCAzTPC();
-  values[kCharge]      = pinfo->Charge();
 
   if(fgUsedVars[kITSncls]) values[kITSncls] = pinfo->ITSncls();
   values[kITSsignal] = pinfo->ITSsignal();
@@ -1370,6 +1794,13 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTPCcrossedRows] = pinfo->TPCCrossedRows();
   values[kTPCsignal]      = pinfo->TPCsignal();
   values[kTPCsignalN]     = pinfo->TPCsignalN();
+  values[kTPCActiveLength] = pinfo->TPCActiveLength();
+  values[kTPCGeomLength] = pinfo->TPCGeomLength();
+  for(Int_t i=0; i<4; ++i) {
+     values[kTPCdEdxQmax+i] = pinfo->TPCdEdxInfoQmax(i);
+     values[kTPCdEdxQtot+i] = pinfo->TPCdEdxInfoQtot(i);
+     values[kTPCdEdxQmaxOverQtot+i] = ( values[kTPCdEdxQtot+i]>1.0e-7 ? values[kTPCdEdxQmax+i] / values[kTPCdEdxQtot+i] : -999. );
+  }
   values[kTPCchi2] = pinfo->TPCchi2();
   if(fgUsedVars[kTPCNclusBitsFired]) values[kTPCNclusBitsFired] = pinfo->TPCClusterMapBitsFired();
   if(fgUsedVars[kTPCclustersPerBit]) {
@@ -1402,10 +1833,59 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      Float_t width = fgTPCelectronWidthMap->GetBinContent(binX, binY);
      if(TMath::Abs(width)<1.0e-6) width = 1.;
      values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;
-     /*Float_t deltaNsig = values[kTPCnSigCorrected+kElectron] - values[kTPCnSig+kElectron];
-     values[kTPCnSig+kPion] += deltaNsig;
-     values[kTPCnSig+kProton] += deltaNsig;
-     values[kTPCnSig+kKaon] += deltaNsig;*/
+  }
+  
+  
+  if(fgUsedVars[kTPCnSigCorrected+kElectron] && fgTPCpidCalibCentroid[0] && fgTPCpidCalibWidth[0] && fgTPCpidCalibStatus[0]) {
+     Int_t bin[4];
+     for(Int_t i=0; i<4; i++) {
+        bin[i] = fgTPCpidCalibCentroid[0]->GetAxis(i)->FindBin(values[fgTPCpidCalibVars[i]]);
+        if(bin[i]==0) bin[i] = 1;
+        if(bin[i]==fgTPCpidCalibCentroid[0]->GetAxis(i)->GetNbins()+1) bin[i] -= 1;
+     }
+     Int_t status = fgTPCpidCalibStatus[0]->GetBinContent(bin);
+     if(status<0) {
+        values[kTPCnSigCorrected+kElectron] = -999.0;
+     }
+     else {
+        Float_t centroid = fgTPCpidCalibCentroid[0]->GetBinContent(bin);
+        Float_t width = fgTPCpidCalibWidth[0]->GetBinContent(bin);
+        values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;
+     }
+  }
+  if(fgUsedVars[kTPCnSigCorrected+kPion] && fgTPCpidCalibCentroid[1] && fgTPCpidCalibWidth[1] && fgTPCpidCalibStatus[1]) {
+     Int_t bin[4];
+     for(Int_t i=0; i<4; i++) {
+        bin[i] = fgTPCpidCalibCentroid[1]->GetAxis(i)->FindBin(values[fgTPCpidCalibVars[i]]);
+        if(bin[i]==0) bin[i] = 1;
+        if(bin[i]==fgTPCpidCalibCentroid[1]->GetAxis(i)->GetNbins()+1) bin[i] -= 1;
+     }
+     Int_t status = fgTPCpidCalibStatus[1]->GetBinContent(bin);
+     if(status<0) {
+        values[kTPCnSigCorrected+kPion] = -999.0;
+     }
+     else {
+        Float_t centroid = fgTPCpidCalibCentroid[1]->GetBinContent(bin);
+        Float_t width = fgTPCpidCalibWidth[1]->GetBinContent(bin);
+        values[kTPCnSigCorrected+kPion] = (values[kTPCnSig+kPion] - centroid)/width;
+     }
+  }
+  if(fgUsedVars[kTPCnSigCorrected+kProton] && fgTPCpidCalibCentroid[2] && fgTPCpidCalibWidth[2] && fgTPCpidCalibStatus[2]) {
+     Int_t bin[4];
+     for(Int_t i=0; i<4; i++) {
+        bin[i] = fgTPCpidCalibCentroid[2]->GetAxis(i)->FindBin(values[fgTPCpidCalibVars[i]]);
+        if(bin[i]==0) bin[i] = 1;
+        if(bin[i]==fgTPCpidCalibCentroid[2]->GetAxis(i)->GetNbins()+1) bin[i] -= 1;
+     }
+     Int_t status = fgTPCpidCalibStatus[2]->GetBinContent(bin);
+     if(status<0) {
+        values[kTPCnSigCorrected+kProton] = -999.0;
+     }
+     else {
+        Float_t centroid = fgTPCpidCalibCentroid[2]->GetBinContent(bin);
+        Float_t width = fgTPCpidCalibWidth[2]->GetBinContent(bin);
+        values[kTPCnSigCorrected+kProton] = (values[kTPCnSig+kProton] - centroid)/width;
+     }        
   }
 
   values[kTRDpidProbabilitiesLQ1D]   = pinfo->TRDpidLQ1D(0);
@@ -1421,17 +1901,6 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDGTUpt]          = pinfo->TRDGTUpt();
   values[kTRDGTUsagitta]     = pinfo->TRDGTUsagitta();
   values[kTRDGTUPID]         = pinfo->TRDGTUPID();
-
-
-  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP]) {
-    values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
-    if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
-      CLUSTER* cluster = ((EVENT*)fgEvent)->GetCaloCluster(pinfo->CaloClusterId());
-      values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -999.0);
-      Float_t mom = pinfo->P();
-      values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -999.0);
-    }
-  }  
 
   FillTrackingStatus(pinfo,values);
   //FillTrackingFlags(pinfo,values);
@@ -1452,14 +1921,67 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   
   if(fgUsedVars[kRap] && pinfo->IsMCKineParticle())  {
      if(pinfo->MCPdg(0)==443) values[kRap] = p->Rapidity(fgkPairMass[AliReducedPairInfo::kJpsiToEE]);
+     if(pinfo->MCPdg(0)==100443) values[kRap] = p->Rapidity(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]);
      if(TMath::Abs(pinfo->MCPdg(0))==11) values[kRap] = p->Rapidity(fgkParticleMass[AliReducedVarManager::kElectron]);
   }
   if(fgUsedVars[kRapAbs] && pinfo->IsMCKineParticle())  {
     if(pinfo->MCPdg(0)==443) values[kRapAbs] = TMath::Abs(p->Rapidity(fgkPairMass[AliReducedPairInfo::kJpsiToEE]));
+    if(pinfo->MCPdg(0)==100443) values[kRapAbs] = TMath::Abs(p->Rapidity(fgkPairMass[AliReducedPairInfo::kPsi2SToEE]));
     if(TMath::Abs(pinfo->MCPdg(0))==11) values[kRapAbs] = TMath::Abs(p->Rapidity(fgkParticleMass[AliReducedVarManager::kElectron]));
   }
 }
 
+//_________________________________________________________________
+void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedBaseTrack* p, Float_t* values, TList* clusterList/*=0x0*/, AliReducedCaloClusterTrackMatcher* matcher/*=0x0*/) {
+  //
+  // fill calorimeter cluster matched track info
+  //
+  if(p->IsA()!=TRACK::Class()) return;
+  TRACK* pinfo = (TRACK*)p;
+
+  if (!fgUsedVars[kEMCALmatchedEnergy] &&
+      !fgUsedVars[kEMCALmatchedEOverP] &&
+      !fgUsedVars[kEMCALmatchedM02] &&
+      !fgUsedVars[kEMCALmatchedM20] &&
+      !fgUsedVars[kEMCALmatchedClusterId]) return;
+
+  if (fgEvent && (fgEvent->IsA()==EVENT::Class())) {
+    CLUSTER* cluster = NULL;
+    if (clusterList) {
+      for (Int_t i=0; i<clusterList->GetEntries(); ++i) {
+        cluster = (AliReducedCaloClusterInfo*)clusterList->At(i);
+        if (cluster->ClusterID()==pinfo->CaloClusterId()) break;
+        cluster = NULL;
+      }
+    } else {
+      cluster = ((EVENT*)fgEvent)->GetCaloClusterFromID(pinfo->CaloClusterId());
+    }
+    // track matcher:
+    Float_t deltaPhi  = -9999.;
+    Float_t deltaEta  = -9999.;
+    Float_t dist      = -9999.;
+    if (matcher) {
+      if (!matcher->IsClusterMatchedToTrack(pinfo, cluster, deltaPhi, deltaEta, dist)) cluster = NULL;
+    }
+    if (fgUsedVars[kEMCALmatchedClusterId])       values[kEMCALmatchedClusterId]      = (cluster ? pinfo->CaloClusterId() : -9999.);
+    if (fgUsedVars[kEMCALmatchedEnergy])          values[kEMCALmatchedEnergy]         = (cluster ? cluster->Energy() : -9999.);
+    if (fgUsedVars[kEMCALmatchedM02])             values[kEMCALmatchedM02]            = (cluster ? cluster->M02() : -9999.);
+    if (fgUsedVars[kEMCALmatchedM20])             values[kEMCALmatchedM20]            = (cluster ? cluster->M20() : -9999.);
+    if (fgUsedVars[kEMCALmatchedNCells])          values[kEMCALmatchedNCells]         = (cluster ? cluster->NCells() : -9999.);
+    if (fgUsedVars[kEMCALmatchedNMatchedTracks])  values[kEMCALmatchedNMatchedTracks] = (cluster ? cluster->NMatchedTracks() : -9999.);
+    if (fgUsedVars[kEMCALmatchedNSigmaElectron])  values[kEMCALmatchedNSigmaElectron] = (cluster ? pinfo->EMCALnSigEle() : -9999.);
+    if (fgUsedVars[kEMCALmatchedDeltaPhi])        values[kEMCALmatchedDeltaPhi]       = (cluster ? deltaPhi : -9999.);
+    if (fgUsedVars[kEMCALmatchedDeltaEta])        values[kEMCALmatchedDeltaEta]       = (cluster ? deltaEta : -9999.);
+    if (fgUsedVars[kEMCALmatchedDistance])        values[kEMCALmatchedDistance]       = (cluster ? dist : -9999.);
+    if (fgUsedVars[kEMCALmatchedEOverP]) {
+      Float_t               mom = 0.0;
+      if (pinfo->PonCalo()) mom = pinfo->PonCalo();
+      else                  mom = pinfo->P();
+      values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -9999.);
+    }
+    pinfo->SetMatchedEMCalClusterEnergy(values[kEMCALmatchedEnergy]);
+  }
+}
 
 //_________________________________________________________________
 void AliReducedVarManager::FillCaloClusterInfo(CLUSTER* cl, Float_t* values) {
@@ -1473,6 +1995,13 @@ void AliReducedVarManager::FillCaloClusterInfo(CLUSTER* cl, Float_t* values) {
   values[kEMCALm02] = cl->M02();
   values[kEMCALm20] = cl->M20();
   values[kEMCALdispersion] = cl->Dispersion();
+  values[kEMCALnCells] = cl->NCells();
+  values[kEMCALnMatchedTracks] = cl->NMatchedTracks();
+  TVector3 clusterVector(cl->X(), cl->Y(), cl->Z());
+  Float_t phiCluster = clusterVector.Phi();
+  if (phiCluster<0) phiCluster += 2*TMath::Pi();
+  values[kEMCALclusterPhi] = phiCluster;
+  values[kEMCALclusterEta] = clusterVector.Eta();
 }
 
 //_________________________________________________________________
@@ -1673,7 +2202,15 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
         values[kPseudoProperDecayTime] = pairKF.GetPseudoProperDecayTime(primVtx, fgkPairMass[type], &errPseudoProperTime2);
      if(fgUsedVars[kPairLxy]) values[kPairLxy] =  ( (pairKF.X() - primVtx.X())*p.Px() + (pairKF.Y() - primVtx.Y())*p.Py() )/p.Pt(); // = values[kPseudoProperDecayTime]*(p.Pt()/PAIR::fgkPairMass[type]);
   }
-  
+
+  if ((fgUsedVars[kPairLegEMCALmatchedEnergy] || fgUsedVars[kPairLegEMCALmatchedEnergy+1]) &&
+      (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+    TRACK* ti1=(TRACK*)t1;
+    TRACK* ti2=(TRACK*)t2;
+    values[kPairLegEMCALmatchedEnergy]    = ti1->MatchedEMCalClusterEnergy();
+    values[kPairLegEMCALmatchedEnergy+1]  = ti2->MatchedEMCalClusterEnergy();
+  }
+
   // fill MC information
   if(p.PairType()==1) {
      TRACK* pinfo1 = 0x0;
@@ -1687,11 +2224,39 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      else
         pMC.PxPyPz(t1->Px()+t2->Px(), t1->Py()+t2->Py(), t1->Pz()+t2->Pz());
      pMC.CandidateId(type);
+     
      if(fgUsedVars[kPtMC]) values[kPtMC] = pMC.Pt();
      if(fgUsedVars[kPMC]) values[kPMC] = pMC.P();
      values[kPxMC] = pMC.Px();
      values[kPyMC] = pMC.Py();
      values[kPzMC] = pMC.Pz();
+     values[kPt_weight]=0.0;
+     if(fgUsedVars[kPt_weight]) values[kPt_weight] =  CalculateWeightFactor(values[kPtMC],values[kCentVZERO]);
+
+     if(fgUsedVars[kPairEff_weight]){
+       if(pinfo1 && pinfo2 && !pinfo1->IsMCTruth() && !pinfo2->IsMCTruth()){
+         if(fgUsePinForLegEffPropagation == kTRUE){
+           values[kPairEffDown_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->Pin(), pinfo2->Pin(), pinfo1->Eta(), pinfo2->Eta(), 0);
+           values[kPairEff_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->Pin(), pinfo2->Pin(), pinfo1->Eta(), pinfo2->Eta(), 1);
+           values[kPairEffUp_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->Pin(), pinfo2->Pin(), pinfo1->Eta(), pinfo2->Eta(), 2);
+         }else{
+           values[kPairEffDown_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->P(), pinfo2->P(), pinfo1->Eta(), pinfo2->Eta(), 0);
+           values[kPairEff_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->P(), pinfo2->P(), pinfo1->Eta(), pinfo2->Eta(), 1);
+           values[kPairEffUp_weight] = GetPairEffWeightFactor(values[kCentVZERO], pinfo1->P(), pinfo2->P(), pinfo1->Eta(), pinfo2->Eta(), 2);
+         }
+       }else{
+         values[kPairEffDown_weight]=0.;
+         values[kPairEff_weight]=0.;
+         values[kPairEffUp_weight]=0.;
+       }
+     }
+
+     if(fgUsedVars[kPtTimesPairEff_weight]){
+       values[kPtTimesPairEffDown_weight] = values[kPt_weight]*values[kPairEffDown_weight];
+       values[kPtTimesPairEff_weight] = values[kPt_weight]*values[kPairEff_weight];
+       values[kPtTimesPairEffUp_weight] = values[kPt_weight]*values[kPairEffUp_weight];
+     }
+ 
      if(fgUsedVars[kThetaMC]) values[kThetaMC] = pMC.Theta();
      if(fgUsedVars[kEtaMC]) values[kEtaMC] = pMC.Eta();
      if(fgUsedVars[kPhiMC]) values[kPhiMC] = pMC.Phi();
@@ -1932,22 +2497,90 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   if(fgUsedVars[kPhi])    values[kPhi]    = p.Phi();
   if(fgUsedVars[kTheta])  values[kTheta]  = p.Theta();
   
+  if ((fgUsedVars[kPairLegEMCALmatchedEnergy] || fgUsedVars[kPairLegEMCALmatchedEnergy+1]) &&
+      (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+    TRACK* ti1=(TRACK*)t1;
+    TRACK* ti2=(TRACK*)t2;
+    values[kPairLegEMCALmatchedEnergy]    = ti1->MatchedEMCalClusterEnergy();
+    values[kPairLegEMCALmatchedEnergy+1]  = ti2->MatchedEMCalClusterEnergy();
+  }
+
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
-    Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
-    if(binX==0) binX = 1;
-    if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
-    Int_t binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]); //make sure the values[YVar] are filled for EM
-    if(binY==0) binY=1;
-    if(binY==fgPairEffMap->GetYaxis()->GetNbins()+1) binY -= 1;
-    Float_t pairEff = fgPairEffMap->GetBinContent(binX, binY);
-    Float_t oneOverPairEff = 1;
+    Int_t binX = 0;
+    if (fgEffMapVarDependencyX!=kNothing) {
+      binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
+      if(binX==0) binX = 1;
+      if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgEffMapVarDependencyY!=kNothing) {
+      binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyY]); //make sure the values[XVar] are filled for EM
+      if(binY==0) binY = 1;
+      if(binY==fgPairEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgEffMapVarDependencyZ!=kNothing) {
+      binZ = fgPairEffMap->GetZaxis()->FindBin(values[fgEffMapVarDependencyZ]); //make sure the values[ZVar] are filled for EM
+      if(binZ==0) binZ = 1;
+      if(binZ==fgPairEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   pairEff = 1.;
+    if (binX && binY && binZ) pairEff = fgPairEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    else if (binX)            pairEff = fgPairEffMap->GetBinContent(binX);
+
+    Float_t               oneOverPairEff = 1.;
     if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
-    values[kPairEff] = pairEff;
-    values[kOneOverPairEff] = oneOverPairEff;
+
+    values[kPairEff]          = pairEff;
+    values[kOneOverPairEff]   = oneOverPairEff;
     values[kOneOverPairEffSq] = oneOverPairEff*oneOverPairEff;
   }
+  
+  FillPairMEflow(t1, t2, values);
 }
 
+//____________________________________________________________________________________
+void AliReducedVarManager::FillPairMEflow(BASETRACK* t1, BASETRACK* t2, Float_t* values/*, Int_t idx /*=0*/) {
+    //
+    // make flow calculations for mixed event pairs
+    // NOTE: this function assumes that the function FillPairInfoME() was run just in front of this one
+    // NOTE: this function is called by the mixing handler so must be lightweight !
+    // NOTE: this implementation is implemented with jpsi->ee in mind, so leg1 refers to positive legs and 
+    //         leg2 refers to negative legs
+    //    idx: parameter that identifies the leg cut for which the leg v2 is required
+
+    // full method
+    TRACK* track1 = (TRACK*)t1;
+    TRACK* track2 = (TRACK*)t2;
+    if(fgUsedVars[kPairVZEROFlowSPNom+0*6+1] || fgUsedVars[kPairVZEROFlowSPDenom+0*6+1]) {
+        values[kPairVZEROFlowSPNom+0*6+1] = TMath::Cos(2.0*(t1->Phi()-values[kPhi]))*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(0)+TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(1));
+        values[kPairVZEROFlowSPNom+0*6+1] += TMath::Cos(2.0*(t2->Phi()-values[kPhi]))*(TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(0)+TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(1));
+        values[kPairVZEROFlowSPDenom+0*6+1] = 1.0 + 
+           2.0*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(0) + TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(1)) * 
+               (TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(0) + TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(1)) *
+               TMath::Cos(2.0*(t1->Phi()-t2->Phi()));
+    }
+    
+    if(fgUsedVars[kPairVZEROFlowSPNom+1*6+1] || fgUsedVars[kPairVZEROFlowSPDenom+1*6+1]) {
+        values[kPairVZEROFlowSPNom+1*6+1] = TMath::Cos(2.0*(t1->Phi()-values[kPhi]))*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(2)+TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(3));
+        values[kPairVZEROFlowSPNom+1*6+1] += TMath::Cos(2.0*(t2->Phi()-values[kPhi]))*(TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(2)+TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(3));
+        values[kPairVZEROFlowSPDenom+1*6+1] = 1.0 + 
+           2.0*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(2) + TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(3)) * 
+               (TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(2) + TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(3)) * 
+               TMath::Cos(2.0*(t1->Phi()-t2->Phi()));
+    }
+    
+    if(fgUsedVars[kPairTPCFlowSPNom+1] || fgUsedVars[kPairTPCFlowSPDenom+1]) {
+        values[kPairTPCFlowSPNom+1] = TMath::Cos(2.0*(t1->Phi()-values[kPhi]))*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(4)+TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(5));
+        values[kPairTPCFlowSPNom+1] += TMath::Cos(2.0*(t2->Phi()-values[kPhi]))*(TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(4)+TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(5));
+        values[kPairTPCFlowSPDenom+1] = 1.0 + 
+           2.0*(TMath::Cos(2.0*t1->Phi())*track1->CovMatrix(4) + TMath::Sin(2.0*t1->Phi())*track1->CovMatrix(5)) * 
+               (TMath::Cos(2.0*t2->Phi())*track2->CovMatrix(4) + TMath::Sin(2.0*t2->Phi())*track2->CovMatrix(5)) * 
+               TMath::Cos(2.0*(t1->Phi()-t2->Phi()));
+    }
+}
 
 //_________________________________________________________________
 void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Float_t* values) {
@@ -1995,6 +2628,114 @@ void AliReducedVarManager::FillPairInfo(PAIR* t1, BASETRACK* t2, Int_t type, Flo
 
 
 //__________________________________________________________________
+void AliReducedVarManager::FillPsiPrimeInfo(BASETRACK* trig, BASETRACK* pion1, BASETRACK* pion2, Float_t* values) {
+  //
+  // Fill psi prime information
+  // NOTE: decay channel used here is psi' -> jpsi + pi + pi
+  // note pion1 is positive (see calling FillPsiPrimeInfo in AliReducedAnalysisPsiPrime)  if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
+  
+  if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
+  if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
+  
+  if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = pion1->Pt();
+  if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = pion1->Eta();
+  if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = pion1->Phi();
+
+  if(fgUsedVars[kPPosPi]) values[kPPosPi] = pion1->P();
+  if(fgUsedVars[kPtPosPi]) values[kPtPosPi] = pion1->Pt();//same as kAssociatedPt
+
+  if(fgUsedVars[kAssociated2Pt]) values[kAssociated2Pt] = pion2->Pt();
+  if(fgUsedVars[kAssociated2Eta]) values[kAssociated2Eta] = pion2->Eta();
+  if(fgUsedVars[kAssociated2Phi]) values[kAssociated2Phi] = pion2->Phi();
+  
+  if(fgUsedVars[kPNegPi]) values[kPNegPi] = pion2->P();
+  if(fgUsedVars[kPtNegPi]) values[kPtNegPi] = pion2->Pt();
+  
+  if(fgUsedVars[kPJPsi]) values[kPJPsi] = trig->P();
+  if(fgUsedVars[kPtJPsi]) values[kPtJPsi] = trig->Pt();
+  
+  if (trig->IsA()==PAIR::Class() ) {    
+    TLorentzVector trigVec;
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), ((PAIR*)trig)->Mass());
+    // fill TLorentzVector for pion1 track
+    TLorentzVector pion1Vec;
+    pion1Vec.SetPtEtaPhiM(pion1->Pt(), pion1->Eta(), pion1->Phi(), 0.13957061); // NOTE: pion mass from PDG
+    // fill TLorentzVector for pion2 track
+    TLorentzVector pion2Vec;
+    pion2Vec.SetPtEtaPhiM(pion2->Pt(), pion2->Eta(), pion2->Phi(), 0.13957061); // NOTE: pion mass from PDG
+    //calculate psiprime mass
+    TLorentzVector DiPiVec = pion1Vec + pion2Vec;
+    values[kMassPionPair]=DiPiVec.M();
+    values[kP_PionPair]=DiPiVec.P();
+    values[kPt_PionPair]=DiPiVec.Pt();
+    values[kPhi_PionPair]=DiPiVec.Phi();
+    values[kEta_PionPair]=DiPiVec.Eta();
+
+    TLorentzVector psiprimeVec = DiPiVec + trigVec;
+    values[kMassPsiPrime]=psiprimeVec.M();
+    values[kPt_PsiPrime]=psiprimeVec.Pt();
+    values[kPhi_PsiPrime]=psiprimeVec.Phi();
+    values[kEta_PsiPrime]=psiprimeVec.Eta();
+    
+    //////////////////////////////////
+    // op angle mother daughters
+    values[kOpAngleMotherPosPion]=pion1Vec.Angle(psiprimeVec.Vect());
+    values[kOpAngleMotherNegPion]=pion2Vec.Angle(psiprimeVec.Vect());
+    values[kOpAngleMotherJPsi]=trigVec.Angle(psiprimeVec.Vect());
+    values[kOpAngleMotherDiPion]=DiPiVec.Angle(psiprimeVec.Vect());
+    //other oang
+    values[kJPsiPosPionOpeningAngle]=trigVec.Angle(pion1Vec.Vect());
+    values[kJPsiNegPionOpeningAngle]=trigVec.Angle(pion2Vec.Vect()); 
+    values[kPionsOpeningAngle]=pion1Vec.Angle(pion2Vec.Vect());
+    values[kJPsiDiPionOpeningAngle]=trigVec.Angle(DiPiVec.Vect());
+
+    //////////////////////////////////
+    // Delta R
+    // double SqrDeltaPhi_PosPi=(v1.Phi()-v2.Phi()) * (v1.Phi()-v2.Phi());
+    // double SqrDeltaEta_NegPi=(v1.Eta()-v2.Eta()) * (v1.Eta()-v2.Eta());
+    // double DeltaR_PosPi=TMath::Sqrt(SqrDeltaPhi_PosPi + SqrDeltaEta_PosPi);   
+  
+    values[kDeltaRPosPi]=TMath::Sqrt( ( psiprimeVec.Phi()-pion1Vec.Phi() ) *  ( psiprimeVec.Phi()-pion1Vec.Phi() ) +
+				      ( psiprimeVec.Eta()-pion1Vec.Eta() ) *  ( psiprimeVec.Eta()-pion1Vec.Eta() ) );
+
+    values[kDeltaRNegPi]=TMath::Sqrt( ( psiprimeVec.Phi()-pion2Vec.Phi() ) *  ( psiprimeVec.Phi()-pion2Vec.Phi() ) + 
+				      ( psiprimeVec.Eta()-pion2Vec.Eta() ) * ( psiprimeVec.Eta()-pion2Vec.Eta() ) );
+
+    values[kDeltaRJPsi]=TMath::Sqrt( ( psiprimeVec.Phi()-trigVec.Phi() ) *  ( psiprimeVec.Phi()-trigVec.Phi() ) + 
+				     ( psiprimeVec.Eta()-trigVec.Eta() ) *  ( psiprimeVec.Eta()-trigVec.Eta() ) );
+
+    values[kDeltaRDiPion]=TMath::Sqrt( ( psiprimeVec.Phi()-DiPiVec.Phi() ) * ( psiprimeVec.Phi()-DiPiVec.Phi() ) + 
+				       ( psiprimeVec.Eta()-DiPiVec.Eta() ) * ( psiprimeVec.Eta()-DiPiVec.Eta() ) );
+
+    //values[kQValue]=psiprimeVec.M()-trigVec.M()-DiPiVec.M();
+    values[kQValue]=psiprimeVec.M()-fgkPairMass[AliReducedPairInfo::kJpsiToEE]-DiPiVec.M(); // NOTE: jpsi mass from PDG
+    ////////////////////////////////////////////////
+    /// combine di-elec with pos pi then with neg pi
+    TLorentzVector JPsiPosPiVec = pion1Vec + trigVec;
+    values[kMassElecPairPosPion]=JPsiPosPiVec.M();
+    values[kPt_ElecPairPosPion]=JPsiPosPiVec.Pt();
+    values[kPhi_ElecPairPosPion]=JPsiPosPiVec.Phi();
+    values[kEta_ElecPairPosPion]=JPsiPosPiVec.Eta();
+
+    //To be removed
+    TLorentzVector psiprimeVecII = JPsiPosPiVec + pion2Vec;
+    values[kMassPsiPrime_II]=psiprimeVecII.M();
+    values[kPt_PsiPrime_II]=psiprimeVecII.Pt();
+    values[kEta_PsiPrime_II]=psiprimeVecII.Eta();
+    values[kJPsiPosPion_NegPionOpeningAngle]=JPsiPosPiVec.Angle(pion2Vec.Vect());
+
+
+    // //JPsi DeltaR
+    Double_t SqrDeltaPhi1JPsi=(pion1->Phi()-trigVec.Phi()) * (pion1->Phi()-trigVec.Phi());
+    Double_t SqrDeltaEta1JPsi=(pion1->Eta()-trigVec.Eta()) * (pion1->Eta()-trigVec.Eta());
+    values[kDeltaRPosPiJPsi]=TMath::Sqrt(SqrDeltaPhi1JPsi + SqrDeltaEta1JPsi);
+    Double_t SqrDeltaPhi2JPsi=(pion2->Phi()-trigVec.Phi()) * (pion2->Phi()-trigVec.Phi());
+    Double_t SqrDeltaEta2JPsi=(pion2->Eta()-trigVec.Eta()) * (pion2->Eta()-trigVec.Eta());
+    values[kDeltaRNegPiJPsi]=TMath::Sqrt(SqrDeltaPhi2JPsi + SqrDeltaEta1JPsi);
+  }
+}
+
+//__________________________________________________________________
 void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc, Float_t* values) {
   //
   // fill pair-track correlation information
@@ -2003,7 +2744,66 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kTriggerPt]) values[kTriggerPt] = trig->Pt();
   if(fgUsedVars[kTriggerRap] && (trig->IsA()==PAIR::Class())) 	  values[kTriggerRap]     = ((PAIR*)trig)->Rapidity();
   if(fgUsedVars[kTriggerRapAbs] && (trig->IsA()==PAIR::Class()))  values[kTriggerRapAbs]  = TMath::Abs(((PAIR*)trig)->Rapidity());
+  if(fgUsedVars[kTriggerPseudoProperDecayTime] && (trig->IsA()==PAIR::Class())) values[kTriggerPseudoProperDecayTime] = ((PAIR*)trig)->PsProper();
+  if(fgUsedVars[kTriggerPairTypeSPD] && (trig->IsA()==PAIR::Class()))           values[kTriggerPairTypeSPD]           = ((PAIR*)trig)->PairTypeSPD();
   if(fgUsedVars[kAssociatedPt]) values[kAssociatedPt] = assoc->Pt();
+  if(fgUsedVars[kAssociatedEta]) values[kAssociatedEta] = assoc->Eta();
+  if(fgUsedVars[kAssociatedPhi]) values[kAssociatedPhi] = assoc->Phi();
+
+  // associated pT / transverse trigger gamma
+  if (trig->IsA()==PAIR::Class() &&
+      (fgUsedVars[kAssociatedPtOverTriggerGammaT] || fgUsedVars[kTriggerGammaT])) {
+
+    // NOTE:  only interested in transverse beta (gamma) -> eta is set to zero for beta vector calculation
+    //        gives same result as 'manual' calculation, i.e.:  betaT  = pT / (m^2 + pT^2)
+    //                                                          gammaT = 1 / sqrt(1-betaT^2) = sqrt(1 + pT^2/m^2)
+    TLorentzVector trigVec;
+    trigVec.SetPtEtaPhiM(trig->Pt(), 0.0, trig->Phi(), 3.096916); //NOTE: J/psi mass from PDG
+    TVector3 betaVec = trigVec.BoostVector();
+
+    Float_t betaT   = betaVec.Mag();
+    Float_t gammaT  = 1./TMath::Sqrt(1-betaT*betaT);
+
+    if (fgUsedVars[kTriggerGammaT])                 values[kTriggerGammaT]                  = gammaT;
+    if (fgUsedVars[kAssociatedPtOverTriggerGammaT]) values[kAssociatedPtOverTriggerGammaT]  = assoc->Pt()/gammaT;
+  }
+
+  // values after boost of hadrons to pair rest frame
+  if (trig->IsA()==PAIR::Class() &&
+      (fgUsedVars[kDeltaPhiBoosted] || fgUsedVars[kDeltaPhiSymBoosted] || fgUsedVars[kDeltaThetaBoosted] || fgUsedVars[kDeltaEtaBoosted] ||
+       fgUsedVars[kDeltaEtaAbsBoosted] || fgUsedVars[kAssociatedPtBoosted] || fgUsedVars[kAssociatedEtaBoosted] || fgUsedVars[kAssociatedPhiBoosted])) {
+
+    // get boost vector
+    TLorentzVector trigVec;
+    trigVec.SetPtEtaPhiM(trig->Pt(), trig->Eta(), trig->Phi(), 3.096916); //NOTE: J/psi mass from PDG
+    TVector3 boostVec = trigVec.BoostVector();
+
+    // fill TLorentzVector for associated track
+    TLorentzVector assocVec;
+    assocVec.SetPtEtaPhiM(assoc->Pt(), assoc->Eta(), assoc->Phi(), 0.13957061); // NOTE: pion mass from PDG
+    assocVec.Boost(-boostVec);
+
+    if(fgUsedVars[kAssociatedPtBoosted]) values[kAssociatedPtBoosted] = assocVec.Pt();
+    if(fgUsedVars[kAssociatedEtaBoosted]) values[kAssociatedEtaBoosted] = assocVec.Eta();
+    if(fgUsedVars[kAssociatedPhiBoosted]) values[kAssociatedPhiBoosted] = assocVec.Phi();
+
+    if(fgUsedVars[kDeltaPhiBoosted]) {
+      Double_t delta = trig->Phi() - assocVec.Phi();
+      if(delta>3.0/2.0*TMath::Pi()) delta -= 2.0*TMath::Pi();
+      if(delta<-0.5*TMath::Pi()) delta += 2.0*TMath::Pi();
+      values[kDeltaPhiBoosted] = delta;
+    }
+    if(fgUsedVars[kDeltaPhiSymBoosted]) {
+      Double_t delta = TMath::Abs(trig->Phi() - assocVec.Phi());
+      if(delta>TMath::Pi()) delta = 2*TMath::Pi()-delta;
+      values[kDeltaPhiSymBoosted] = delta;
+    }
+
+    if(fgUsedVars[kDeltaThetaBoosted]) values[kDeltaThetaBoosted] = trig->Theta() - assocVec.Theta();
+
+    if(fgUsedVars[kDeltaEtaBoosted])     values[kDeltaEtaBoosted]     = trig->Eta() - assocVec.Eta();
+    if(fgUsedVars[kDeltaEtaAbsBoosted])  values[kDeltaEtaAbsBoosted]  = TMath::Abs(trig->Eta() - assocVec.Eta());
+  }
 
   if(fgUsedVars[kDeltaPhi]) {
     Double_t delta = trig->Phi() - assoc->Phi();
@@ -2022,6 +2822,79 @@ void AliReducedVarManager::FillCorrelationInfo(BASETRACK* trig, BASETRACK* assoc
   if(fgUsedVars[kDeltaEta])     values[kDeltaEta]     = trig->Eta() - assoc->Eta();
   if(fgUsedVars[kDeltaEtaAbs])  values[kDeltaEtaAbs]  = TMath::Abs(trig->Eta() - assoc->Eta());
   if(fgUsedVars[kMass] && (trig->IsA()==PAIR::Class())) values[kMass] = ((PAIR*)trig)->Mass();
+
+  // J/psi efficiency variables
+  if ((fgUsedVars[kTriggerEff] || fgUsedVars[kOneOverTriggerEff]) && fgPairEffMap) {
+    Int_t binX = 0;
+    if (fgEffMapVarDependencyXCorr!=kNothing) {
+      binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyXCorr]);
+      if(binX==0) binX = 1;
+      if(binX==fgPairEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgEffMapVarDependencyYCorr!=kNothing) {
+      binY = fgPairEffMap->GetYaxis()->FindBin(values[fgEffMapVarDependencyYCorr]);
+      if(binY==0) binY = 1;
+      if(binY==fgPairEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgEffMapVarDependencyZCorr!=kNothing) {
+      binZ = fgPairEffMap->GetZaxis()->FindBin(values[fgEffMapVarDependencyZCorr]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgPairEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   pairEff = 1.;
+    if (binX && binY && binZ) pairEff = fgPairEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    pairEff = fgPairEffMap->GetBinContent(binX, binY);
+    else if (binX)            pairEff = fgPairEffMap->GetBinContent(binX);
+
+    Float_t               oneOverPairEff = 1.;
+    if (pairEff > 1.0e-6) oneOverPairEff = 1/pairEff;
+
+    values[kTriggerEff]         = pairEff;
+    values[kOneOverTriggerEff]  = oneOverPairEff;
+  }
+
+  // hadron efficiency variables
+  if ((fgUsedVars[kAssocHadronEff] || fgUsedVars[kOneOverAssocHadronEff]) && fgAssocHadronEffMap) {
+    Int_t binX = 0;
+    if (fgAssocHadronEffMapVarDependencyX!=kNothing) {
+      binX = fgAssocHadronEffMap->GetXaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyX]);
+      if(binX==0) binX = 1;
+      if(binX==fgAssocHadronEffMap->GetXaxis()->GetNbins()+1) binX -= 1;
+    }
+    Int_t binY = 0;
+    if (fgAssocHadronEffMapVarDependencyY!=kNothing) {
+      binY = fgAssocHadronEffMap->GetYaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyY]);
+      if(binY==0) binY = 1;
+      if(binY==fgAssocHadronEffMap->GetXaxis()->GetNbins()+1) binY -= 1;
+    }
+    Int_t binZ = 0;
+    if (fgAssocHadronEffMapVarDependencyZ!=kNothing) {
+      binZ = fgAssocHadronEffMap->GetZaxis()->FindBin(values[fgAssocHadronEffMapVarDependencyZ]);
+      if(binZ==0) binZ = 1;
+      if(binZ==fgAssocHadronEffMap->GetZaxis()->GetNbins()+1) binZ -= 1;
+    }
+
+    Float_t                   hadronEff = 1.;
+    if (binX && binY && binZ) hadronEff = fgAssocHadronEffMap->GetBinContent(binX, binY, binZ);
+    else if (binX && binY)    hadronEff = fgAssocHadronEffMap->GetBinContent(binX, binY);
+    else if (binX)            hadronEff = fgAssocHadronEffMap->GetBinContent(binX);
+
+    Float_t                 oneOverHadronEff = 1.;
+    if (hadronEff > 1.0e-6) oneOverHadronEff = 1./hadronEff;
+
+    values[kAssocHadronEff]         = hadronEff;
+    values[kOneOverAssocHadronEff]  = oneOverHadronEff;
+  }
+
+  // J/psi x hadron efficiency variables
+  if ((fgUsedVars[kTriggerEffTimesAssocHadronEff] || fgUsedVars[kOneOverTriggerEffTimesAssocHadronEff]) &&
+      fgPairEffMap && fgAssocHadronEffMap) {
+    values[kTriggerEffTimesAssocHadronEff]        = values[kTriggerEff]*values[kAssocHadronEff];
+    values[kOneOverTriggerEffTimesAssocHadronEff] = values[kOneOverTriggerEff]*values[kOneOverAssocHadronEff];
+  }
 }
 
 
@@ -2143,6 +3016,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kRunID]                = "Run number";                      fgVariableUnits[kRunID]                = "";
   fgVariableNames[kLHCFillNumber]        = "LHC fill number";                 fgVariableUnits[kLHCFillNumber]        = ""; 
   fgVariableNames[kBeamEnergy]           = "Beam energy";                     fgVariableUnits[kBeamEnergy]           = "GeV";
+  fgVariableNames[kInstLumi]             = "Instantaneous luminosity";        fgVariableUnits[kInstLumi]             = "Hz/mb";   
   fgVariableNames[kDetectorMask]         = "Detector mask";                   fgVariableUnits[kDetectorMask]         = "";
   fgVariableNames[kNumberOfDetectors]    = "Number of active detectors";      fgVariableUnits[kNumberOfDetectors]    = "";  
   fgVariableNames[kDipolePolarity]       = "Dipole magnet polarity";          fgVariableUnits[kDipolePolarity]       = "";
@@ -2186,11 +3060,24 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kVtxXspd]              = "Vtx X SPD";                       fgVariableUnits[kVtxXspd]              = "cm";
   fgVariableNames[kVtxYspd]              = "Vtx Y SPD";                       fgVariableUnits[kVtxYspd]              = "cm";
   fgVariableNames[kVtxZspd]              = "Vtx Z SPD";                       fgVariableUnits[kVtxZspd]              = "cm";
-  fgVariableNames[kDeltaVtxZspd]            = "#Delta Z (global-SPD)";                        fgVariableUnits[kDeltaVtxZspd]            = "cm";
+  fgVariableNames[kDeltaVtxZspd]         = "#Delta Z (global-SPD)";           fgVariableUnits[kDeltaVtxZspd]         = "cm";
+  fgVariableNames[kTPCpileupZAC]         = "TPC pileup Z from A&C sides";     fgVariableUnits[kTPCpileupZAC]         = "cm";
+  fgVariableNames[kTPCpileupZA]          = "TPC pileup Z from A side";        fgVariableUnits[kTPCpileupZA]          = "cm";
+  fgVariableNames[kTPCpileupZC]          = "TPC pileup Z from C side";        fgVariableUnits[kTPCpileupZC]          = "cm";
+  fgVariableNames[kTPCpileupContributorsAC] = "TPC pileup n-contributors from A&C sides"; fgVariableUnits[kTPCpileupContributorsAC] = "";
+  fgVariableNames[kTPCpileupContributorsA]  = "TPC pileup n-contributors from A side"; fgVariableUnits[kTPCpileupContributorsA] = "";
+  fgVariableNames[kTPCpileupContributorsC]  = "TPC pileup n-contributors from C side"; fgVariableUnits[kTPCpileupContributorsC] = "";
+  fgVariableNames[kTPCpileupZAC2]         = "TPC pileup Z (2) from A&C sides";     fgVariableUnits[kTPCpileupZAC2]         = "cm";
+  fgVariableNames[kTPCpileupZA2]          = "TPC pileup Z (2) from A side";        fgVariableUnits[kTPCpileupZA2]          = "cm";
+  fgVariableNames[kTPCpileupZC2]          = "TPC pileup Z (2) from C side";        fgVariableUnits[kTPCpileupZC2]          = "cm";
+  fgVariableNames[kTPCpileupContributorsAC2] = "TPC pileup n-contributors (2) from A&C sides"; fgVariableUnits[kTPCpileupContributorsAC2] = "";
+  fgVariableNames[kTPCpileupContributorsA2]  = "TPC pileup n-contributors (2) from A side"; fgVariableUnits[kTPCpileupContributorsA2] = "";
+  fgVariableNames[kTPCpileupContributorsC2]  = "TPC pileup n-contributors (2) from C side"; fgVariableUnits[kTPCpileupContributorsC2] = "";
   for(Int_t iflag=0; iflag<kNTrackingStatus; ++iflag) {
     fgVariableNames[kNTracksPerTrackingStatus+iflag] = Form("Tracks with %s on", fgkTrackingStatusNames[iflag]); 
     fgVariableUnits[kNTracksPerTrackingStatus+iflag] = ""; 
   }
+  fgVariableNames[kNTracksTPCoutBeforeClean] = "Number of kTPCout before ESD cleanup"; fgVariableUnits[kNTracksTPCoutBeforeClean] = "";
   fgVariableNames[kNTracksTPCoutVsITSout]       = "TPCout/ITSout";                   fgVariableUnits[kNTracksTPCoutVsITSout] = "";
   fgVariableNames[kNTracksTRDoutVsITSout]       = "TRDout/ITSout";                   fgVariableUnits[kNTracksTRDoutVsITSout] = "";
   fgVariableNames[kNTracksTOFoutVsITSout]       = "TOFout/ITSout";                   fgVariableUnits[kNTracksTOFoutVsITSout] = "";
@@ -2243,8 +3130,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNtracksSubEvRight]           = "No.tracks sub-event right";       fgVariableUnits[kNtracksSubEvRight]      = "";  
   fgVariableNames[kNtracksEventPlane]           = "No.tracks";                       fgVariableUnits[kNtracksEventPlane]      = "";  
   fgVariableNames[kNCaloClusters]               = "No.calorimeter clusters";         fgVariableUnits[kNCaloClusters]          = "";
-  fgVariableNames[kNTPCclusters]                = "No. TPC clusters";                  fgVariableUnits[kNTPCclusters]  = "";
-
+  fgVariableNames[kNTPCclusters]                = "No. TPC clusters";                fgVariableUnits[kNTPCclusters]  = "";
+  fgVariableNames[kNTPCclustersFromPileup]      = "No. TPC clusters above expectation w/o pileup"; fgVariableUnits[kNTPCclustersFromPileup] = "";
+  fgVariableNames[kNTPCclustersFromPileupRelative] = "Relative no. TPC clusters above expectation w/o pileup"; fgVariableUnits[kNTPCclustersFromPileupRelative] = "";
+  
   TString multEstimators[kNMultiplicityEstimators] = {
     "SPDntracklets10",
     "SPDntracklets08",
@@ -2333,7 +3222,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
     }
   }
 
-  
+  fgVariableNames[kVZEROATotalMultFromChannels] = "VZERO-A total multiplicity"; fgVariableUnits[kVZEROATotalMultFromChannels] = "";
+  fgVariableNames[kVZEROCTotalMultFromChannels] = "VZERO-C total multiplicity"; fgVariableUnits[kVZEROCTotalMultFromChannels] = "";
+  fgVariableNames[kVZEROTotalMultFromChannels] = "VZERO total multiplicity"; fgVariableUnits[kVZEROTotalMultFromChannels] = "";
 
   for(Int_t il=0;il<2;++il) {
     fgVariableNames[kSPDFiredChips+il] = Form("Fired chips in SPD layer %d", il+1); 
@@ -2344,12 +3235,18 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableUnits[kITSnClusters+il] = "";
   }
   fgVariableNames[kSPDnSingleClusters]  = "SPD single clusters";    fgVariableUnits[kSPDnSingleClusters]  = "";  
+  fgVariableNames[kSDDandSSDclusters] = "SDD+SSD clusters";         fgVariableUnits[kSDDandSSDclusters] = "";
   fgVariableNames[kEventMixingId]       = "Event mixing id";        fgVariableUnits[kEventMixingId]       = "";  
+  fgVariableNames[kVZEROCurrentChannel] = "VZERO channel";          fgVariableUnits[kVZEROCurrentChannel] = "";
+  fgVariableNames[kVZEROCurrentChannelMult] = "VZERO channel multiplicity";   fgVariableUnits[kVZEROCurrentChannelMult] = "";
+  fgVariableNames[kVZEROCurrentChannelMultCalib] = "VZERO channel calibrated multiplicity";   fgVariableUnits[kVZEROCurrentChannelMultCalib] = "";
   fgVariableNames[kVZEROAemptyChannels] = "VZERO-A empty channels"; fgVariableUnits[kVZEROAemptyChannels] = "";
   fgVariableNames[kVZEROCemptyChannels] = "VZERO-C empty channels"; fgVariableUnits[kVZEROCemptyChannels] = "";
   for(Int_t ich=0;ich<64;++ich) {
     fgVariableNames[kVZEROChannelMult+ich] = Form("Multiplicity VZERO ch.%d", ich);
     fgVariableUnits[kVZEROChannelMult+ich] = "";
+    fgVariableNames[kVZEROChannelMultCalib+ich] = Form("Multiplicity VZERO ch.%d calibrated", ich);
+    fgVariableUnits[kVZEROChannelMultCalib+ich] = "";
     fgVariableNames[kVZEROChannelEta+ich] = Form("#eta for VZERO ch.%d", ich);
     fgVariableUnits[kVZEROChannelEta+ich] = "";
     fgVariableNames[kVZEROflowV2TPC+ich] = Form("v_{2}^{VZERO-ch%d}{EP,TPC}", ich);
@@ -2436,8 +3333,14 @@ void AliReducedVarManager::SetDefaultVarNames() {
 
 
   fgVariableNames[kINT7Triggered]       = "event was triggered with INT7";       fgVariableUnits[kINT7Triggered]       = "";
+  fgVariableNames[kCentralTriggered]     = "event was triggered with  Central trigger";       fgVariableUnits[kCentralTriggered]       = "";
+  fgVariableNames[kSemiCentralTriggered] = "event was triggered with  Semi-Central trigger";  fgVariableUnits[kSemiCentralTriggered]   = "";
+  fgVariableNames[kINT7orCentTriggered]     = "event was triggered with INT7 or Central trigger";       fgVariableUnits[kINT7orCentTriggered]       = "";
+  fgVariableNames[kINT7orSemiCentTriggered] = "event was triggered with INT7 or Semi-Central trigger";  fgVariableUnits[kINT7orSemiCentTriggered]   = "";
   fgVariableNames[kTRDTriggeredType]    = "event was triggered by TRD ele trigger"; fgVariableUnits[kTRDTriggeredType]       = "";
   fgVariableNames[kHighMultV0Triggered] = "event was triggered with HighMultV0"; fgVariableUnits[kHighMultV0Triggered] = "";
+  fgVariableNames[kEMCEGATriggered]     = "event was triggered with EMCEGA";              fgVariableUnits[kEMCEGATriggered] = "";
+  fgVariableNames[kEMCEGAHighTriggered] = "event was triggered with EMCEGA high thresh."; fgVariableUnits[kEMCEGAHighTriggered] = "";
 
   TString vzeroSideNames[3] = {"A","C","AC"};
   for(Int_t iHarmonic=0;iHarmonic<6;++iHarmonic) {
@@ -2452,6 +3355,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
       fgVariableUnits[kVZERORP+iSide*6+iHarmonic]       = "rad.";
       fgVariableNames[kVZEROFlowVn+iSide*6+iHarmonic]   = Form("v_{%d}{EP,VZERO-%s}",iHarmonic+1,vzeroSideNames[iSide].Data());
       fgVariableUnits[kVZEROFlowVn+iSide*6+iHarmonic]   = "";
+      fgVariableNames[kVZERODeltaPhiPsiN+iSide*6+iHarmonic]   = Form("#phi-#Psi_{%d}{VZERO-%s}",iHarmonic+1,vzeroSideNames[iSide].Data());
+      fgVariableUnits[kVZERODeltaPhiPsiN+iSide*6+iHarmonic]   = "rad.";
       fgVariableNames[kVZEROFlowSine+iSide*6+iHarmonic] = Form("sin(%d(#varphi-#Psi_{%d}^{VZERO-%s}))",
 								   iHarmonic+1,iHarmonic+1,vzeroSideNames[iSide].Data());
       fgVariableUnits[kVZEROFlowSine+iSide*6+iHarmonic] = "";
@@ -2467,6 +3372,12 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kVZERORPres+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C})}",
 						    iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kVZERORPres+iHarmonic] = "rad.^{1/2}";
+    fgVariableNames[kVZEROARPres+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-C}-#Psi_{%d}^{TPC}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))*cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROARPres+iHarmonic] = "rad.^{1/2}";
+    fgVariableNames[kVZEROCRPres+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))*cos(%d(#Psi_{%d}^{VZERO-C}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROCRPres+iHarmonic] = "rad.^{1/2}";
     fgVariableNames[kVZEROXaXc+iHarmonic] = Form("Q_{x,%d}^{VZERO-A} #times Q_{x,%d}^{VZERO-C}", iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kVZEROXaXc+iHarmonic] = "";
     fgVariableNames[kVZEROXaYa+iHarmonic] = Form("Q_{x,%d}^{VZERO-A} #times Q_{y,%d}^{VZERO-A}", iHarmonic+1, iHarmonic+1);
@@ -2497,9 +3408,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kTPCRPres+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{TPC}-#Psi_{%d}^{VZERO-A})}", 
 						  iHarmonic+1, iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kTPCRPres+iHarmonic] = "rad^{1/2}";
-    fgVariableNames[kTPCRPres+6+iHarmonic] = Form("#sqrt{%d(#Psi_{%d}^{TPC}-#Psi_{%d}^{VZERO-C})}", 
-						  iHarmonic+1, iHarmonic+1, iHarmonic+1);
-    fgVariableUnits[kTPCRPres+6+iHarmonic] = "rad^{1/2}";
+    fgVariableNames[kVZEROTPCRPres+6+iHarmonic] = Form("#sqrt{cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{VZERO-C}))/cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))*cos(%d(#Psi_{%d}^{VZERO-A}-#Psi_{%d}^{TPC}))}",
+						    iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1,iHarmonic+1);
+    fgVariableUnits[kVZEROTPCRPres+6+iHarmonic] = "rad^{1/2}";
     fgVariableNames[kRPXtpcXvzeroa+iHarmonic] = Form("Q_{x,%d}^{TPC} #times Q_{x,%d}^{VZERO-A}", iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kRPXtpcXvzeroa+iHarmonic] = "";
     fgVariableNames[kRPXtpcXvzeroc+iHarmonic] = Form("Q_{x,%d}^{TPC} #times Q_{x,%d}^{VZERO-C}", iHarmonic+1, iHarmonic+1);
@@ -2542,13 +3453,39 @@ void AliReducedVarManager::SetDefaultVarNames() {
 						      iHarmonic+1, iHarmonic+1, iHarmonic+1);
     fgVariableUnits[kTPCsubResCos+iHarmonic] = "";
     fgVariableNames[kTPCFlowVn+iHarmonic] = Form("v_{%d}{EP,TPC}", iHarmonic+1); 
-    fgVariableUnits[kTPCFlowVn] = "";
+    fgVariableUnits[kTPCFlowVn+iHarmonic] = "";
+    fgVariableNames[kTPCDeltaPhiPsiN+iHarmonic] = Form("#phi - #Psi_{%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCDeltaPhiPsiN+iHarmonic] = "rad.";
     fgVariableNames[kTPCFlowSine+iHarmonic] = Form("sin(%d(#varphi-#Psi_{%d}^{TPC}))", iHarmonic+1, iHarmonic+1); 
-    fgVariableUnits[kTPCFlowSine] = "";
+    fgVariableUnits[kTPCFlowSine+iHarmonic] = "";
     fgVariableNames[kTPCuQ+iHarmonic] = Form("cos(%d(#phi - #Psi_{%d}^{TPC})|Q^{TPC}_{%d}|", iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kTPCuQ+iHarmonic] = "";
     fgVariableNames[kTPCuQsine+iHarmonic] = Form("sin(%d(#phi - #Psi_{%d}^{TPC})|Q^{TPC}_{%d}|", iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kTPCuQsine+iHarmonic] = "";
+    fgVariableNames[kTPCQvecXtree+iHarmonic] = Form("Q_{x,%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXtree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYtree+iHarmonic] = Form("Q_{y,%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYtree+iHarmonic] = "";
+    fgVariableNames[kTPCRPtree+iHarmonic]    = Form("#Psi_{%d}^{TPC}", iHarmonic+1);
+    fgVariableUnits[kTPCRPtree+iHarmonic]    = "rad.";
+    fgVariableNames[kTPCQvecXptWeightsTree+iHarmonic] = Form("Q_{x,%d}^{TPC}, pt weights", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXptWeightsTree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYptWeightsTree+iHarmonic] = Form("Q_{y,%d}^{TPC}, pt weights", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYptWeightsTree+iHarmonic] = "";
+    fgVariableNames[kTPCRPptWeightsTree+iHarmonic]    = Form("#Psi_{%d}^{TPC}, pt weights", iHarmonic+1);
+    fgVariableUnits[kTPCRPptWeightsTree+iHarmonic]    = "rad.";
+    fgVariableNames[kTPCQvecXposTree+iHarmonic] = Form("Q_{x,%d}^{TPC}, positives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXposTree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYposTree+iHarmonic] = Form("Q_{y,%d}^{TPC}, positives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYposTree+iHarmonic] = "";
+    fgVariableNames[kTPCRPposTree+iHarmonic]    = Form("#Psi_{%d}^{TPC}, positives", iHarmonic+1);
+    fgVariableUnits[kTPCRPposTree+iHarmonic]    = "rad.";
+    fgVariableNames[kTPCQvecXnegTree+iHarmonic] = Form("Q_{x,%d}^{TPC}, negatives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecXnegTree+iHarmonic] = "";
+    fgVariableNames[kTPCQvecYnegTree+iHarmonic] = Form("Q_{y,%d}^{TPC}, negatives", iHarmonic+1);
+    fgVariableUnits[kTPCQvecYnegTree+iHarmonic] = "";
+    fgVariableNames[kTPCRPnegTree+iHarmonic]    = Form("#Psi_{%d}^{TPC}, negatives", iHarmonic+1);
+    fgVariableUnits[kTPCRPnegTree+iHarmonic]    = "rad.";
   }  // end loop over harmonics 
   
   fgVariableNames[kMCNch] = "N_{ch} in |#eta|<1"; fgVariableUnits[kMCNch] = ""; 
@@ -2635,6 +3572,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
      fgVariableNames[kPairLegPt+i] = Form("Leg%d p_{T}", i+1);
      fgVariableNames[kPairLegPtMC+i] = Form("Leg%d p^{MC}_{T}", i+1);
      fgVariableUnits[kPairLegPt+i] = "GeV/c"; fgVariableUnits[kPairLegPtMC+i] = "GeV/c";
+     fgVariableNames[kPairLegEMCALmatchedEnergy+i] = Form("Leg%d E_{calo cluster}", i+1);
+     fgVariableUnits[kPairLegEMCALmatchedEnergy+i] = "GeV";
   }
   fgVariableNames[kPairLegPtSum] = "Pair leg p_{T,1} + p_{T,2}"; fgVariableUnits[kPairLegPtSum] = "GeV/c";
   fgVariableNames[kPairLegPtMCSum] = "Pair leg p^{MC}_{T,1} + p^{MC}_{T,2}"; fgVariableUnits[kPairLegPtMCSum] = "GeV/c";
@@ -2681,8 +3620,22 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTPCnclsRatio2]     = "No.TPC clusters/crossed rows"; fgVariableUnits[kTPCnclsRatio2] = "";
   fgVariableNames[kTPCcrossedRowsOverFindableClusters] = "Crossed rows / findable clusters"; fgVariableUnits[kTPCcrossedRowsOverFindableClusters] = "";
   fgVariableNames[kTPCnclsRatio3]     = "No.TPC crossed rows/findable clusters"; fgVariableUnits[kTPCnclsRatio3] = "";
+  fgVariableNames[kTPCActiveLength]   = "Track length in active TPC";   fgVariableUnits[kTPCActiveLength] = "";
+  fgVariableNames[kTPCGeomLength]     = "Track relative geometric length in active TPC";   fgVariableUnits[kTPCGeomLength] = "";
   fgVariableNames[kTPCsignal]         = "TPC dE/dx";                    fgVariableUnits[kTPCsignal] = "";  
   fgVariableNames[kTPCsignalN]        = "No. TPC clusters PID";         fgVariableUnits[kTPCsignalN] = "";  
+  fgVariableNames[kTPCdEdxQmax+0]     = "TPC dE/dx Qmax from IROC";        fgVariableUnits[kTPCdEdxQmax+0] = "";
+  fgVariableNames[kTPCdEdxQmax+1]     = "TPC dE/dx Qmax from medium OROC";  fgVariableUnits[kTPCdEdxQmax+1] = "";
+  fgVariableNames[kTPCdEdxQmax+2]     = "TPC dE/dx Qmax from long OROC"; fgVariableUnits[kTPCdEdxQmax+2] = "";
+  fgVariableNames[kTPCdEdxQmax+3]     = "TPC dE/dx Qmax from all OROC";  fgVariableUnits[kTPCdEdxQmax+3] = "";
+  fgVariableNames[kTPCdEdxQtot+0]     = "TPC dE/dx Qtot from IROC";        fgVariableUnits[kTPCdEdxQtot+0] = "";
+  fgVariableNames[kTPCdEdxQtot+1]     = "TPC dE/dx Qtot from medium OROC";  fgVariableUnits[kTPCdEdxQtot+1] = "";
+  fgVariableNames[kTPCdEdxQtot+2]     = "TPC dE/dx Qtot from long OROC"; fgVariableUnits[kTPCdEdxQtot+2] = "";
+  fgVariableNames[kTPCdEdxQtot+3]     = "TPC dE/dx Qtot from all OROC";  fgVariableUnits[kTPCdEdxQtot+3] = "";
+  fgVariableNames[kTPCdEdxQmaxOverQtot+0] = "TPC dE/dx Qmax/Qtot from IROC";        fgVariableUnits[kTPCdEdxQmaxOverQtot+0] = "";
+  fgVariableNames[kTPCdEdxQmaxOverQtot+1] = "TPC dE/dx Qmax/Qtot from medium OROC"; fgVariableUnits[kTPCdEdxQmaxOverQtot+1] = "";
+  fgVariableNames[kTPCdEdxQmaxOverQtot+2] = "TPC dE/dx Qmax/Qtot from long OROC";   fgVariableUnits[kTPCdEdxQmaxOverQtot+2] = "";
+  fgVariableNames[kTPCdEdxQmaxOverQtot+3] = "TPC dE/dx Qmax/Qtot from all OROC";    fgVariableUnits[kTPCdEdxQmaxOverQtot+3] = "";
   fgVariableNames[kTPCnSig]           = "TPC n_{#sigma}^{e}";           fgVariableUnits[kTPCnSig] = "#sigma";  
   fgVariableNames[kTPCnSig+1]         = "TPC n_{#sigma}^{#pi}";         fgVariableUnits[kTPCnSig+1] = "#sigma";
   fgVariableNames[kTPCnSig+2]         = "TPC n_{#sigma}^{K}";           fgVariableUnits[kTPCnSig+2] = "#sigma";
@@ -2717,24 +3670,95 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedEnergy]    = "Calo energy";             fgVariableUnits[kEMCALmatchedEnergy] = "GeV";
   fgVariableNames[kEMCALmatchedClusterId] = "matched Calo cluster id"; fgVariableUnits[kEMCALmatchedClusterId] = "";
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  
-  fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";    
+  fgVariableNames[kEMCALmatchedM02]       = "Calo M02";                fgVariableUnits[kEMCALmatchedM02] = "";
+  fgVariableNames[kEMCALmatchedM20]       = "Calo M20";                fgVariableUnits[kEMCALmatchedM20] = "";
+  fgVariableNames[kEMCALmatchedNCells]          = "Calo No. cells";           fgVariableUnits[kEMCALmatchedNCells] = "";
+  fgVariableNames[kEMCALmatchedNMatchedTracks]  = "Calo No. matched tracks";  fgVariableUnits[kEMCALmatchedNMatchedTracks] = "";
+  fgVariableNames[kEMCALmatchedDeltaPhi]        = "#Delta#varphi track-cluster";  fgVariableUnits[kEMCALmatchedDeltaPhi] = "";
+  fgVariableNames[kEMCALmatchedDeltaEta]        = "#Delta#eta track-cluster";     fgVariableUnits[kEMCALmatchedDeltaEta] = "";
+  fgVariableNames[kEMCALmatchedDistance]        = "track-cluster distance";       fgVariableUnits[kEMCALmatchedDistance] = "";
+  fgVariableNames[kEMCALmatchedNSigmaElectron]  = "EMCal n_{#sigma}^{e}";         fgVariableUnits[kEMCALmatchedNSigmaElectron] = "#sigma";
+  fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  
   fgVariableNames[kEMCALdetector]         = "Calo detector";           fgVariableUnits[kEMCALdetector] = "";  
   fgVariableNames[kEMCALm20]              = "Cluster short axis M20";  fgVariableUnits[kEMCALm20] = "";  
   fgVariableNames[kEMCALm02]              = "Cluster short axis M02";  fgVariableUnits[kEMCALm02] = "";  
-  fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";  
-  fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";  
+  fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";
+  fgVariableNames[kEMCALnCells]           = "Cluster No. cells";       fgVariableUnits[kEMCALnCells] = "";
+  fgVariableNames[kEMCALnMatchedTracks]   = "Cluster No. matched tracks"; fgVariableUnits[kEMCALnMatchedTracks] = "";
+  fgVariableNames[kEMCALclusterPhi]       = "Cluster #varphi";         fgVariableUnits[kEMCALclusterPhi] = "rad.";
+  fgVariableNames[kEMCALclusterEta]       = "Cluster #eta";            fgVariableUnits[kEMCALclusterEta] = "";
+  fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";
   fgVariableNames[kTrackingStatus] = "Tracking status";  fgVariableUnits[kTrackingStatus] = "";  
-  fgVariableNames[kDeltaPhi]      = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]      = "rad.";
-  fgVariableNames[kDeltaPhiSym]   = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSym]   = "rad.";
-  fgVariableNames[kDeltaTheta]    = "#Delta #theta";              fgVariableUnits[kDeltaTheta]    = "rad.";
-  fgVariableNames[kDeltaEta]      = "#Delta #eta";                fgVariableUnits[kDeltaEta]      = "";
-  fgVariableNames[kDeltaEtaAbs]   = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbs]   = "";
-  fgVariableNames[kTriggerPt]     = "p_{T} trigger particle";     fgVariableUnits[kTriggerPt]     = "GeV/c";
-  fgVariableNames[kTriggerRap]    = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]    = "";
-  fgVariableNames[kTriggerRapAbs] = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs] = "";
-  fgVariableNames[kAssociatedPt]  = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]  = "GeV/c";
+  fgVariableNames[kDeltaPhi]              = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]              = "rad.";
+  fgVariableNames[kDeltaPhiBoosted]       = "#Delta #varphi";             fgVariableUnits[kDeltaPhiBoosted]       = "rad.";
+  fgVariableNames[kDeltaPhiSym]           = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSym]           = "rad.";
+  fgVariableNames[kDeltaPhiSymBoosted]    = "#Delta #varphi";             fgVariableUnits[kDeltaPhiSymBoosted]    = "rad.";
+  fgVariableNames[kDeltaTheta]            = "#Delta #theta";              fgVariableUnits[kDeltaTheta]            = "rad.";
+  fgVariableNames[kDeltaThetaBoosted]     = "#Delta #theta";              fgVariableUnits[kDeltaThetaBoosted]     = "rad.";
+  fgVariableNames[kDeltaEta]              = "#Delta #eta";                fgVariableUnits[kDeltaEta]              = "";
+  fgVariableNames[kDeltaEtaBoosted]       = "#Delta #eta";                fgVariableUnits[kDeltaEtaBoosted]       = "";
+  fgVariableNames[kDeltaEtaAbs]           = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbs]           = "";
+  fgVariableNames[kDeltaEtaAbsBoosted]    = "|#Delta #eta|";              fgVariableUnits[kDeltaEtaAbsBoosted]    = "";
+  fgVariableNames[kTriggerPt]             = "p_{T} trigger particle";     fgVariableUnits[kTriggerPt]             = "GeV/c";
+  fgVariableNames[kTriggerRap]            = "#it{y} trigger particle";    fgVariableUnits[kTriggerRap]            = "";
+  fgVariableNames[kTriggerRapAbs]         = "|#it{y}| trigger particle";  fgVariableUnits[kTriggerRapAbs]         = "";
+  fgVariableNames[kTriggerPseudoProperDecayTime]  = "t";                      fgVariableUnits[kTriggerPseudoProperDecayTime]  = "cm./c";
+  fgVariableNames[kTriggerPairTypeSPD]            = "trigger type spd legs";  fgVariableUnits[kTriggerPairTypeSPD]            = "";
+  fgVariableNames[kAssociatedPt]          = "p_{T} associated particle";  fgVariableUnits[kAssociatedPt]          = "GeV/c";
+  fgVariableNames[kAssociatedPtBoosted]   = "p_{T} associated particle (boosted)"; fgVariableUnits[kAssociatedPtBoosted] = "GeV/c";
+  fgVariableNames[kAssociatedPtOverTriggerGammaT] = "p_{T} associated particle / #gamma_{T} trigger particle"; fgVariableUnits[kAssociatedPtOverTriggerGammaT] = "GeV/c";
+  fgVariableNames[kTriggerGammaT]         = "#gamma_{T} trigger particle"; fgVariableUnits[kTriggerGammaT]        = "";
+  fgVariableNames[kAssociatedEta]         = "#eta associated particle";   fgVariableUnits[kAssociatedEta]         = "";
+  fgVariableNames[kAssociatedEtaBoosted]  = "#eta associated particle";   fgVariableUnits[kAssociatedEtaBoosted]  = "";
+  fgVariableNames[kAssociatedPhi]         = "#varphi associated particle";fgVariableUnits[kAssociatedPhi]         = "rad.";
+  fgVariableNames[kAssociatedPhiBoosted]  = "#varphi associated particle";fgVariableUnits[kAssociatedPhiBoosted]  = "rad.";
+  fgVariableNames[kTriggerEff]                            = "#epsilon_{trigger}";                           fgVariableUnits[kTriggerEff]                            = "";
+  fgVariableNames[kOneOverTriggerEff]                     = "1/#epsilon_{trigger}";                         fgVariableUnits[kOneOverTriggerEff]                     = "";
+  fgVariableNames[kAssocHadronEff]                        = "#epsilon_{assoc}";                             fgVariableUnits[kAssocHadronEff]                        = "";
+  fgVariableNames[kOneOverAssocHadronEff]                 = "1/#epsilon_{assoc}";                           fgVariableUnits[kOneOverAssocHadronEff]                 = "";
+  fgVariableNames[kTriggerEffTimesAssocHadronEff]         = "#epsilon_{trigger} #times #epsilon_{assoc}";   fgVariableUnits[kTriggerEffTimesAssocHadronEff]         = "";
+  fgVariableNames[kOneOverTriggerEffTimesAssocHadronEff]  = "1/#epsilon_{trigger} #times #epsilon_{assoc}"; fgVariableUnits[kOneOverTriggerEffTimesAssocHadronEff]  = "";
+
+////////////////////////////////////////////////
+  // PsiPrime related variables:
+  fgVariableNames[kDeltaRPosPiJPsi]  = "#Delta R";                  fgVariableUnits[kDeltaRPosPiJPsi]  = "";
+  fgVariableNames[kDeltaRNegPiJPsi]  = "#Delta R";                  fgVariableUnits[kDeltaRNegPiJPsi]  = "";
+
+  fgVariableNames[kAssociated2Pt]          = "p_{T} associated particle";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kAssociated2Eta]         = "#eta associated particle";   fgVariableUnits[kAssociated2Eta]         = "";
+  fgVariableNames[kAssociated2Phi]         = "#varphi associated particle";fgVariableUnits[kAssociated2Phi]         = "rad.";
+
+  fgVariableNames[kPPosPi]          = "p #pi^{+}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kPtPosPi]          = "p_{T} #pi^{+}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kPNegPi]          = "p #pi^{-}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+  fgVariableNames[kPtNegPi]          = "p_{T} #pi^{-}";  fgVariableUnits[kAssociated2Pt]          = "GeV/c";
+
+  fgVariableNames[kMassPionPair]         = "m";  fgVariableUnits[kMassPionPair] = "GeV/c^{2}";
+  fgVariableNames[kP_PionPair]          = "p";  fgVariableUnits[kPt_PionPair]          = "GeV/c";
+  fgVariableNames[kPt_PionPair]          = "p_{T}";  fgVariableUnits[kPt_PionPair]          = "GeV/c";
+  fgVariableNames[kPhi_PionPair]         = "#varphi";fgVariableUnits[kPhi_PionPair]         = "rad.";
+  fgVariableNames[kEta_PionPair]         = "#eta";   fgVariableUnits[kEta_PionPair]         = "";
+
+  fgVariableNames[kMassPsiPrime]         = "m"; fgVariableUnits[kMassPsiPrime] = "GeV/c^{2}";
+  fgVariableNames[kPt_PsiPrime]          = "p_{T} #psi(2S)";  fgVariableUnits[kPt_PsiPrime]          = "GeV/c";
+  fgVariableNames[kPhi_PsiPrime]         = "#varphi #psi(2S)";fgVariableUnits[kPhi_PsiPrime]         = "rad.";
+  fgVariableNames[kEta_PsiPrime]         = "#eta #psi(2S)";   fgVariableUnits[kEta_PsiPrime]         = "";
+
+  fgVariableNames[kJPsiPosPionOpeningAngle]= "OpAngle J#psi-#pi^{+}";fgVariableUnits[kJPsiPosPionOpeningAngle]         = "rad.";
+  fgVariableNames[kJPsiNegPionOpeningAngle]= "OpAngle J#psi-#pi^{-}";fgVariableUnits[kJPsiNegPionOpeningAngle]         = "rad.";
+  fgVariableNames[kPionsOpeningAngle]     = "OpAngle #pi^{+}-#pi^{+}";fgVariableUnits[kPionsOpeningAngle]         = "rad.";
+  fgVariableNames[kJPsiDiPionOpeningAngle] = "OpAngle J#psi-#pi^{+}#pi^{-}";fgVariableUnits[kJPsiDiPionOpeningAngle]         = "rad.";
+
+  fgVariableNames[kJPsiPosPion_NegPionOpeningAngle]= "OpAngle J#psi#pi^{+}-#pi^{-}";fgVariableUnits[kJPsiPosPion_NegPionOpeningAngle]         = "rad.";
+
+  fgVariableNames[kDeltaRPosPi]  = "#Delta R"; fgVariableUnits[kDeltaRPosPi]  = "";
+  fgVariableNames[kDeltaRNegPi]  = "#Delta R"; fgVariableUnits[kDeltaRNegPi]  = "";
+  fgVariableNames[kDeltaRJPsi]  = "#Delta R"; fgVariableUnits[kDeltaRJPsi]  = "";
+  fgVariableNames[kDeltaRDiPion]  = "#Delta R"; fgVariableUnits[kDeltaRDiPion]  = "";
+
+  fgVariableNames[kQValue]  = "Q"; fgVariableUnits[kQValue]  = "";
 }
 
 
@@ -2818,26 +3842,154 @@ void AliReducedVarManager::SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F*
 }
 
 //____________________________________________________________________________________
-void AliReducedVarManager::SetPairEfficiencyMap(TH2F* effMap, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY) {
+void AliReducedVarManager::SetTPCpidCalibMaps(Int_t pid, THnF* centroidMap, THnF* widthMap, THnI* statusMap) {
+   //
+   // initialize the 4D calibration histograms for a given particle (pid = 0-electron, 1-pion, 2-proton)
+   //
+   if(pid<0 || pid>2) {
+      cout << "AliReducedVarManager::SetTPCpidCalibMaps(): Invalid pid code used" << endl;
+      return;
+   }
+   fgTPCpidCalibCentroid[pid] = centroidMap;
+   fgTPCpidCalibWidth[pid] = widthMap;
+   fgTPCpidCalibStatus[pid] = statusMap;
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetTPCpidCalibDepVars(Variables vars[]) {
+   //
+   //
+   //
+   for(Int_t i=0; i<4; ++i) {
+      if(vars[i]>kNVars || vars[i]<=kNothing) {
+         cout << "AliReducedVarManager::SetTPCpidCalibDepVars(): Invalid dependence variable used" << endl;
+         return;
+      }
+      fgTPCpidCalibVars[i] = vars[i];
+      fgUsedVars[vars[i]] = kTRUE;
+      if(vars[i]==kTPCpileupZA || vars[i]==kTPCpileupZC) {
+         fgUsedVars[kTPCpileupZA] = kTRUE;
+         fgUsedVars[kTPCpileupZC] = kTRUE;
+      }
+      if(vars[i]==kTPCpileupContributorsA || vars[i]==kTPCpileupContributorsC) {
+         fgUsedVars[kTPCpileupContributorsA] = kTRUE;
+         fgUsedVars[kTPCpileupContributorsC] = kTRUE;
+      }
+   }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetPairEfficiencyMap(TH1* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY/*=kNothing*/, AliReducedVarManager::Variables varZ/*=kNothing*/) {
   //
   // initialize the pair efficiency map
   //
+  if (!map) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMap() No efficiency map provided!" << endl;
+    return;
+  }
   if(varX>kNVars || varX<=kNothing) {
     cout << "AliReducedVarManager::SetPairEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
     cout << "                           Efficiency map not used! Check it out!" << endl;
     return;
   }
-  if(varY>kNVars || varY<=kNothing) {
-    cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+  if (map->IsA()==TH3F::Class() || map->IsA()==TH3D::Class()) {
+    if (varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    if (varZ>kNVars || varZ<=kNothing) {
+      cout << "AliReducedVarManager::SetPairEfficiencyMap() The Z-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    fgEffMapVarDependencyX  = varX;
+    fgEffMapVarDependencyY  = varY;
+    fgEffMapVarDependencyZ  = varZ;
+    fgPairEffMap            = (TH3F*)map->Clone(Form("AliReducedVarManager_PairEffMap"));
+  } else if (map->IsA()==TH2F::Class() || map->IsA()==TH2D::Class()) {
+    if (varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetPairEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    fgEffMapVarDependencyX  = varX;
+    fgEffMapVarDependencyY  = varY;
+    fgPairEffMap            = (TH2F*)map->Clone(Form("AliReducedVarManager_PairEffMap"));
+  } else {
+    fgEffMapVarDependencyX  = varX;
+    fgPairEffMap            = (TH1F*)map->Clone(Form("AliReducedVarManager_PairEffMap"));
+  }
+  fgPairEffMap->SetDirectory(0x0);
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetPairEfficiencyMapDependeciesCorrelation(AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY/*=kNothing*/, AliReducedVarManager::Variables varZ/*=kNothing*/) {
+  //
+  // initialize variable dependencies for pair efficiency map used in correlation
+  //
+  if (!fgPairEffMap) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMapDependeciesCorrelation() No efficiency map provided!" << endl;
+    return;
+  }
+  if(varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetPairEfficiencyMapDependeciesCorrelation() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+    cout << "                           Efficiency map not used in correlation! Check it out!" << endl;
+    return;
+  }
+  fgEffMapVarDependencyXCorr = varX;
+  if (varY>kNothing && varY<=kNVars) fgEffMapVarDependencyYCorr = varY;
+  if (varZ>kNothing && varZ<=kNVars) fgEffMapVarDependencyZCorr = varZ;
+}
+
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetAssociatedHadronEfficiencyMap(TH1* map, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY/*=kNothing*/, AliReducedVarManager::Variables varZ/*=kNothing*/) {
+  //
+  // initialize the associated hadron efficiency map, used for correlation analysis
+  //
+  if (!map) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() No efficiency map provided!" << endl;
+    return;
+  }
+  if (fgAssocHadronEffMap) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() Efficiency map already defined!" << endl;
+    return;
+  }
+  if (varX>kNVars || varX<=kNothing) {
+    cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
     cout << "                           Efficiency map not used! Check it out!" << endl;
     return;
   }
-  fgEffMapVarDependencyX = varX; 
-  fgEffMapVarDependencyY = varY;
-  if(effMap) {
-    fgPairEffMap = (TH2F*)effMap->Clone(Form("AliReducedVarManager_PairEffMap"));
-    fgPairEffMap->SetDirectory(0x0);
+  if (map->IsA()==TH3F::Class() || map->IsA()==TH3D::Class()) {
+    if (varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    if (varZ>kNVars || varZ<=kNothing) {
+      cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Z-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    fgAssocHadronEffMapVarDependencyX   = varX;
+    fgAssocHadronEffMapVarDependencyY   = varY;
+    fgAssocHadronEffMapVarDependencyZ   = varZ;
+    fgAssocHadronEffMap                 = (TH3F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+  } else if (map->IsA()==TH2F::Class() || map->IsA()==TH2D::Class()) {
+    if (varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetAssociatedHadronEfficiencyMap() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Efficiency map not used! Check it out!" << endl;
+      return;
+    }
+    fgAssocHadronEffMapVarDependencyX   = varX;
+    fgAssocHadronEffMapVarDependencyY   = varY;
+    fgAssocHadronEffMap                 = (TH2F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
+  } else {
+    fgAssocHadronEffMapVarDependencyX   = varX;
+    fgAssocHadronEffMap                 = (TH1F*)map->Clone(Form("AliReducedVarManager_AssocHadronEffMap"));
   }
+  fgAssocHadronEffMap->SetDirectory(0x0);
 }
 
 //____________________________________________________________________________________
@@ -2887,6 +4039,30 @@ void AliReducedVarManager::SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity
 }
 
 //____________________________________________________________________________________
+void AliReducedVarManager::SetupGRPinformation(const Char_t* filename) {
+   //
+   // open the root file containing GRP information and initialize needed objects
+   //
+   fgGRPfile = new TFile(filename);
+   fgRunTotalLuminosity = (TH1F*)fgGRPfile->Get("lumiTotal")->Clone("AliReducedVarManager_TotalLuminosity");
+   fgRunTotalLuminosity->SetDirectory(0x0);
+   fgRunTotalIntensity0 = (TH1F*)fgGRPfile->Get("intTotal0")->Clone("AliReducedVarManager_TotalIntensity0");
+   fgRunTotalIntensity0->SetDirectory(0x0);
+   fgRunTotalIntensity1 = (TH1F*)fgGRPfile->Get("intTotal1")->Clone("AliReducedVarManager_TotalIntensity1");
+   fgRunTotalIntensity1->SetDirectory(0x0);
+   fgRunLHCFillNumber = (TH1I*)fgGRPfile->Get("fillNumber")->Clone("AliReducedVarManager_LHCFillNumber");
+   fgRunLHCFillNumber->SetDirectory(0x0);
+   fgRunDipolePolarity = (TH1I*)fgGRPfile->Get("dipolePolarity")->Clone("AliReducedVarManager_DipolePolarity");
+   fgRunDipolePolarity->SetDirectory(0x0);
+   fgRunL3Polarity = (TH1I*)fgGRPfile->Get("l3Polarity")->Clone("AliReducedVarManager_L3Polarity");
+   fgRunL3Polarity->SetDirectory(0x0);
+   fgRunTimeStart = (TH1I*)fgGRPfile->Get("timeStart")->Clone("AliReducedVarManager_TimeStart");
+   fgRunTimeStart->SetDirectory(0x0);
+   fgRunTimeEnd = (TH1I*)fgGRPfile->Get("timeEnd")->Clone("AliReducedVarManager_TimeEnd");
+   fgRunTimeEnd->SetDirectory(0x0);
+}
+
+//____________________________________________________________________________________
 void AliReducedVarManager::SetRunNumbers( TString runNumbers ){
   TObjArray* runNumbersArr = runNumbers.Tokenize(";");
   runNumbersArr->SetOwner();
@@ -2895,7 +4071,119 @@ void AliReducedVarManager::SetRunNumbers( TString runNumbers ){
     fgRunNumbers.push_back( runNumberString.Atoi() );
   }
 }
+//___________________________________________________________________________________
+void AliReducedVarManager::SetWeightSpectrum(TH1F *pTspectrum)
+{
+  if(pTspectrum){
+    fgReweightMCpt=pTspectrum;
+  }
+  else
+    {
+      cout<< "There is no pT reweight spectra, please double check !!!"<<endl;
+    }
+}
+//___________________________________________________________________________________
+void AliReducedVarManager::SetLegEfficiency(TH3F *LegPIDEfficiency, Bool_t usePin)
+{
+  if(LegPIDEfficiency){
+    fgLegEfficiency=LegPIDEfficiency;
+    fgUsePinForLegEffPropagation = usePin;
+  }
+  else
+  {
+      cout<< "Leg efficiency was not loaded. "<<endl;
+  }
+}
+//____________________________________________________________________________________
+Double_t AliReducedVarManager::CalculateWeightFactor( Double_t McpT, Double_t Centrality)
+{
+  // currently only one pT shape was used, this can be used for pp, more centralitys bins for PbPb
+  if(!fgReweightMCpt){
+    cout<< "No pT reweight spectra !!"<<endl;
+    return 0.0;
+  }
 
+  if(McpT<=fgReweightMCpt->GetBinCenter(fgReweightMCpt->GetNbinsX()))
+    {
+      Int_t bin=fgReweightMCpt->FindBin(McpT);
+      Double_t weight= fgReweightMCpt->GetBinContent(bin);
+      return weight;
+    }
+  else
+    {
+      cout<< " pt out the range of the reweight "<<endl;
+      return 0.0;
+    }
+}
+//____________________________________________________________________________________
+Float_t AliReducedVarManager::GetPairEffWeightFactor(Float_t Cent, Float_t P1, Float_t P2, Float_t Eta1, Float_t Eta2, Int_t type)// type 1 is for standard propagation, type 0 returns weight when setting leg PID efficiency to its value - 1 sigma, type 2 returns weight when setting leg PID efficiency to its value + 1 sigma
+{
+  if(!fgLegEfficiency){
+    cout<< "No leg PID efficiency!"<<endl;
+    return 0.0;
+  }
+
+  if((type != 0) && (type != 1) && (type != 2)){
+    cout<< "Wrong type! It is not standard case nor any case for propgation of statistical leg PID efficiency."<<endl;
+    return 0.0;
+  }
+
+  Int_t binX1 = 0;
+  binX1 = fgLegEfficiency->GetXaxis()->FindBin(Cent);
+  if(binX1==0) binX1 = 1;
+  if(binX1==fgLegEfficiency->GetXaxis()->GetNbins()+1) binX1 -= 1;
+
+  Int_t binX2 = 0;
+  binX2 = fgLegEfficiency->GetXaxis()->FindBin(Cent);
+  if(binX2==0) binX2 = 1;
+  if(binX2==fgLegEfficiency->GetXaxis()->GetNbins()+1) binX2 -= 1;
+
+  Int_t binY1 = 0;
+  binY1 = fgLegEfficiency->GetYaxis()->FindBin(P1);
+  if(binY1==0) binY1 = 1;
+  if(binY1==fgLegEfficiency->GetXaxis()->GetNbins()+1) binY1 -= 1;
+
+  Int_t binY2 = 0;
+  binY2 = fgLegEfficiency->GetYaxis()->FindBin(P2);
+  if(binY2==0) binY2 = 1;
+  if(binY2==fgLegEfficiency->GetXaxis()->GetNbins()+1) binY2 -= 1;
+
+  Int_t binZ1 = 0;
+  binZ1 = fgLegEfficiency->GetZaxis()->FindBin(Eta1);
+  if(binZ1==0) binZ1 = 1;
+  if(binZ1==fgLegEfficiency->GetZaxis()->GetNbins()+1) binZ1 -= 1;
+
+  Int_t binZ2 = 0;
+  binZ2 = fgLegEfficiency->GetZaxis()->FindBin(Eta2);
+  if(binZ2==0) binZ2 = 1;
+  if(binZ2==fgLegEfficiency->GetZaxis()->GetNbins()+1) binZ2 -= 1;
+
+
+  Float_t pairEff = 0.;
+
+  Float_t legEffDown1 = TMath::Max(0., fgLegEfficiency->GetBinContent(binX1,binY1,binZ1) - fgLegEfficiency->GetBinError(binX1,binY1,binZ1));
+  Float_t legEff1 = fgLegEfficiency->GetBinContent(binX1,binY1,binZ1);
+  Float_t legEffUp1 = TMath::Min(1., fgLegEfficiency->GetBinContent(binX1,binY1,binZ1) + fgLegEfficiency->GetBinError(binX1,binY1,binZ1));
+  Float_t legEffError1 = fgLegEfficiency->GetBinError(binX1,binY1,binZ1);
+
+
+  Float_t legEffDown2 = TMath::Max(0., fgLegEfficiency->GetBinContent(binX2,binY2,binZ2) - fgLegEfficiency->GetBinError(binX2,binY2,binZ2));
+  Float_t legEff2 = fgLegEfficiency->GetBinContent(binX2,binY2,binZ2);
+  Float_t legEffUp2 = TMath::Min(1., fgLegEfficiency->GetBinContent(binX2,binY2,binZ2) + fgLegEfficiency->GetBinError(binX2,binY2,binZ2));
+  Float_t legEffError2 = fgLegEfficiency->GetBinError(binX2,binY2,binZ2);
+
+
+
+  if(type == 0){
+    pairEff = gRandom->Gaus(legEffDown1, legEffError1)*gRandom->Gaus(legEffDown2, legEffError2);
+  }else if(type == 1){
+    pairEff = gRandom->Gaus(legEff1, legEffError1)*gRandom->Gaus(legEff2, legEffError2);
+  }else if(type == 2){
+    pairEff = gRandom->Gaus(legEffUp1, legEffError1)*gRandom->Gaus(legEffUp2, legEffError2);
+  }
+
+  return pairEff;
+}
 //____________________________________________________________________________________
 void AliReducedVarManager::SetMultiplicityProfile(TH2* profile, Int_t estimator) {
    //
@@ -2937,6 +4225,22 @@ void AliReducedVarManager::SetRecenterVZEROqVector(Bool_t option) {
    //   
    fgOptionRecenterVZEROqVec = option;
    //if(fgOptionRecenterVZEROqVec) fgOptionCalibrateVZEROqVec = kTRUE;
+}
+
+void AliReducedVarManager::SetRecenterTPCqVector(Bool_t option) {
+   //
+   // set the option whether to recenter the TPC event plane
+   //   
+   fgOptionRecenterTPCqVec = option;
+  
+}
+
+void AliReducedVarManager::SetEventResolution(Bool_t option) {
+   //
+   // set the option whether to divide by resolution the flow coefficients
+   //   
+   fgOptionEventRes = option;
+  
 }
 
 //____________________________________________________________________________________

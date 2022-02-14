@@ -148,7 +148,8 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
   fCascCuts->Init();
   fAntiCascCuts->Init();
   fGTI = new AliAODTrack*[fTrackBufferSize];
-  fEvent = new AliFemtoDreamEvent(fMVPileUp, fEvtCutQA, trigger);
+  fEvent = new AliFemtoDreamEvent(fMVPileUp, fEvtCutQA, trigger,
+                                  fEvtCuts->GetUseAliEventCuts());
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
   bool MinBooking = !((!fConfig->GetMinimalBookingME())
       || (!fConfig->GetMinimalBookingSample()));
@@ -168,8 +169,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
                                                 fConfig->GetMinimalBookingME());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample = new AliFemtoDreamControlSample(
-        fConfig, fConfig->GetMinimalBookingSample());
+    fControlSample = new AliFemtoDreamControlSample(fConfig);
   }
   return;
 }
@@ -292,7 +292,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AliFatal("No Standard AOD");
       return;
     }
-    fFemtoTrack->SetTrack(track, fEvent->GetMultiplicity());
+    fFemtoTrack->SetTrack(track);
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack);
     }
@@ -311,7 +311,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   int entriesV0 = v01->GetEntriesFast();
   for (int iv0 = 0; iv0 < entriesV0; iv0++) {
     AliAODv0 *v0 = evt->GetV0(iv0);
-    fFemtov0->Setv0(evt, v0, fEvent->GetMultiplicity());
+    fFemtov0->Setv0(evt, v0);
     if (fv0Cuts->isSelected(fFemtov0)) {
       Decays.push_back(*fFemtov0);
     }
@@ -319,11 +319,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
-  //  std::cout << "=====================================\n" ;
-  //  std::cout << "=====================================\n" ;
-  //  std::cout << "==========New event==================\n" ;
-  //  std::cout << "=====================================\n" ;
-  //  std::cout << "=====================================\n" ;
 
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
@@ -383,27 +378,17 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
-  if (fConfig->GetInvMassPairs()) {
-    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(0)),
-                                  2212,
-                                  (fPairCleaner->GetCleanParticles().at(4)),
-                                  3312, 0);
-    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(1)),
-                                  2212,
-                                  (fPairCleaner->GetCleanParticles().at(5)),
-                                  3312, 1);
-  }
   if (fConfig->GetUseEventMixing()) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
 }
 
 void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
+  std::cout << "New Event \n";
   if (!evt) {
     AliFatal("No Input Event");
   }
@@ -415,7 +400,7 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
   std::vector<AliFemtoDreamBasePart> AntiParticles;
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
     AliESDtrack *track = static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fFemtoTrack->SetTrack(track, mcEvent, fEvent->GetMultiplicity());
+    fFemtoTrack->SetTrack(track, mcEvent);
     if (fTrackCuts->isSelected(fFemtoTrack)) {
       Particles.push_back(*fFemtoTrack);
     }
@@ -423,13 +408,25 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
       AntiParticles.push_back(*fFemtoTrack);
     }
   }
-  std::vector<AliFemtoDreamBasePart> DummyDecays;
-  std::vector<AliFemtoDreamBasePart> AntiDummyDecays;
+  std::vector<AliFemtoDreamBasePart> Decays;
+  std::vector<AliFemtoDreamBasePart> AntiDecays;
+
+  for (int iv0 = 0; iv0 < evt->GetNumberOfV0s(); ++iv0) {
+    AliESDv0 *v0 = evt->GetV0(iv0);
+    fFemtov0->Setv0(evt, mcEvent, v0);
+    if (fv0Cuts->isSelected(fFemtov0)) {
+      Decays.push_back(*fFemtov0);
+    }
+    if (fAntiv0Cuts->isSelected(fFemtov0)) {
+      AntiDecays.push_back(*fFemtov0);
+    }
+  }
+
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
     AliESDcascade *esdCascade = evt->GetCascade(nCascade);
-    fFemtoCasc->SetCascade(evt, esdCascade);
+    fFemtoCasc->SetCascade(evt, mcEvent, esdCascade);
     if (fCascCuts->isSelected(fFemtoCasc)) {
       XiDecays.push_back(*fFemtoCasc);
     }
@@ -438,16 +435,20 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
     }
   }
   fPairCleaner->ResetArray();
+  fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 0);
   fPairCleaner->CleanTrackAndDecay(&Particles, &XiDecays, 2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 1);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiXiDecays, 3);
 
+  fPairCleaner->CleanDecay(&Decays, 0);
+  fPairCleaner->CleanDecay(&AntiDecays, 1);
   fPairCleaner->CleanDecay(&XiDecays, 2);
   fPairCleaner->CleanDecay(&AntiXiDecays, 3);
 
   fPairCleaner->StoreParticle(Particles);
   fPairCleaner->StoreParticle(AntiParticles);
-  fPairCleaner->StoreParticle(DummyDecays);  //Spaceholders for Lambdas to not crash the task.
-  fPairCleaner->StoreParticle(AntiDummyDecays);
+  fPairCleaner->StoreParticle(Decays);
+  fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
 
@@ -456,8 +457,7 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   }
   if (fConfig->GetUsePhiSpinning()) {
-    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                             fEvent->GetMultiplicity());
+    fControlSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
 }
 

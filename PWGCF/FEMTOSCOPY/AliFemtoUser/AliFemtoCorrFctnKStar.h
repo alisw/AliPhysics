@@ -67,6 +67,9 @@ public:
                         int aNbinskT,    double akTMin,    double akTMax);
   void SetKStarVsmTBins(int aNbinsKStar, double aKStarMin, double aKStarMax,
                         int aNbinsmT,    double amTMin,    double amTMax);
+  void SetKStarVsIndmTBins(int aNbinsKStar, double aKStarMin, double aKStarMax,
+                           int aNbinsmT1,    double amTMin1,    double amTMax1,
+                           int aNbinsmT2,    double amTMin2,    double amTMax2);
 
   void SetDEtaDPhiSBins(int aNbinsDEta,  double aDEtaMin,  double aDEtaMax,
                         int aNbinsDPhis, double aDPhiSMin, double aDPhiSMax);
@@ -81,14 +84,13 @@ public:
                                                              // about the z-axis
 
   float CalcMt(const AliFemtoPair* aPair);
-  float CalcMtv2(const AliFemtoPair* aPair);  //TODO testing effect of m_reduced vs 0.5(m1+m2) in calculation
-
 
   void SetCalculateDetaDphis(Bool_t, Double_t);
   void SetCalculatePairKinematics(Bool_t);
 
   void SetBuildkTBinned(Bool_t aBuild);
   void SetBuildmTBinned(Bool_t aBuild);
+  void SetBuildIndmTBinned(Bool_t aBuild);
   void SetBuild3d(Bool_t aBuild);
 
   //inline functions
@@ -127,9 +129,14 @@ protected:
   Bool_t fBuildmTBinned;
   TH2F *fNumerator_mT;
   TH2F *fDenominator_mT;
-  //TODO testing effect of m_reduced vs 0.5(m1+m2) in calculation
-  TH2F *fNumeratorv2_mT;
-  TH2F *fDenominatorv2_mT;
+
+  //Individual mT binned k* Cfs
+  Bool_t fBuildIndmTBinned;
+  TH2F *fNumerator_IndmT1;
+  TH2F *fDenominator_IndmT1;
+
+  TH2F *fNumerator_IndmT2;
+  TH2F *fDenominator_IndmT2;
 
   // 3D k*_out, _side, _long Cf
   Bool_t fBuild3d;

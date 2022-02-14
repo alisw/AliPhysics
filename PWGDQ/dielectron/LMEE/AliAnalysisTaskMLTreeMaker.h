@@ -14,6 +14,8 @@ class TH3D;
 #include "AliDielectronPID.h"
 #include "AliAnalysisFilter.h"
 #include "AliDielectronEventCuts.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
 #ifndef ALIANALYSISTASKSE_H
 #endif
 
@@ -22,7 +24,7 @@ class TH3D;
 
 class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskMLTreeMaker(const char *name);
+  AliAnalysisTaskMLTreeMaker(const char *name, TString TMVAWeightFileName);
   AliAnalysisTaskMLTreeMaker();
   ~AliAnalysisTaskMLTreeMaker(); 
   
@@ -37,6 +39,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   AliDielectronCutGroup* cuts;
   AliAnalysisFilter* filter; 
   
+
   // need this to use PID in dielectron framework
   AliDielectronVarManager* varManager;
      
@@ -46,12 +49,20 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   int CheckGenerator(int Index);
   
-  void SetCorrWidthMean(TH3D* width, TH3D* mean){
-      fmean=mean;
-      fwidth=width;
+  void SetCorrWidthMean(Int_t det, TH3D* width, TH3D* mean){
+    if(det==1){  fmeanITS=mean; fwidthITS=width;}
+    if(det==2){  fmeanTPC=mean; fwidthTPC=width;}
+    if(det==3){  fmeanTOF=mean; fwidthTOF=width;}   
   };
+
   void SetupTrackCuts(AliDielectronCutGroup* f);
   void SetupEventCuts(AliDielectronEventCuts* f);
+  void SetupTMVAReader(TString TMVAweight);
+  
+  Bool_t Is0STPfired(Int_t *vPhiInner, Int_t *vPhiOuter);
+  Bool_t IsTriggered(AliESDEvent *esd);
+  
+  void isMC(Bool_t isMC){hasMC=isMC;}
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
@@ -138,8 +149,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void SetUseCorr( Bool_t b){
       fuseCorr=b;
   }
+  
+  void SetUseTMVA(Bool_t b){
+      useTMVA=b;
+  }
  private:
- 
+     
+  TMVA::Reader* TMVAReader;     //-> 
+  Bool_t useTMVA;
   AliPIDResponse *fPIDResponse;     //! PID response object
 
   //AliPIDCombined *fPIDCombined;    
@@ -163,11 +180,29 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t runn;
   Int_t n;
   Double_t cent;
+  Double_t ZDCepA;
+  Double_t ZDCepC;
+  Double_t TPCep;
+  Double_t TPCepA;
+  Double_t TPCepC;
+  Double_t NTPCclsEv;
   
-  Double_t IsEventAccepted(AliVEvent *event);
+  TList* fQnList;
+  AliAnalysisManager *man;
+
+  // SPD effi
+  Bool_t isUsingEffi;
+  TString fEfficiencyFileName;
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;  
+  TString fTriggerName;  
+  
+//  Double_t IsEventAccepted(AliVEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
-  
+  Bool_t FillZDCEventPlane(Double_t* ZDCevArr);
+  void FillQnEventplanes(TList* qnlist);
   AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
@@ -270,10 +305,39 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> label;
   std::vector<Int_t> motherlabel;
   
-  TH3D* fwidth;
-  TH3D* fmean;
+  Float_t nITSTMVA;
+  Float_t ITS1SharedTMVA;
+  Float_t ITS2SharedTMVA;
+  Float_t ITS3SharedTMVA;
+  Float_t ITS4SharedTMVA;
+  Float_t ITS5SharedTMVA;
+  Float_t ITS6SharedTMVA;
+  Float_t nITSshared_fracTMVA;
+  Float_t NCrossedRowsTPCTMVA;
+  Float_t NClustersTPCTMVA;
+  Float_t NTPCSignalTMVA;
+  Float_t logDCAxyTMVA ;
+  Float_t logDCAzTMVA ;   
+  Float_t chi2GlobalPerNDFTMVA;
+  Float_t chi2ITSTMVA;
+  Float_t etaTMVA;
+  Float_t phiTMVA;
+  Float_t ptTMVA;   
+  Float_t centTMVA;
+  
+  std::vector<Float_t> MVAout;
+  
+  TString TMVAWeightFileName;
+  
+  TH3D* fwidthTPC;
+  TH3D* fmeanTPC;
+  TH3D* fwidthITS;
+  TH3D* fmeanITS;
+  TH3D* fwidthTOF;
+  TH3D* fmeanTOF;
   
   Bool_t fuseCorr;
+  Bool_t fIsTMVAInit;
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
 //  Double_t probs[AliPID::kSPECIESC];
@@ -286,7 +350,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution
 
 
-  ClassDef(AliAnalysisTaskMLTreeMaker, 1); //
+  ClassDef(AliAnalysisTaskMLTreeMaker, 1); 
 
 };
 

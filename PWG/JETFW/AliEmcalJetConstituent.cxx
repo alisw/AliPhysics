@@ -33,7 +33,9 @@ namespace PWG {
 namespace JETFW {
 
 AliEmcalJetConstituent::AliEmcalJetConstituent() :
-  TObject()
+  TObject(),
+  fIsFromEmbeddedEvent(false),
+  fGlobalIndex(0)
 {
 
 }

@@ -26,7 +26,13 @@ class AliFemtoEvent;
 class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 {
  public:
-  enum EventMult {kGlobalCount=0, kVZERO=1};
+  enum EventMult {kCentrality = 0, kGlobalCount = 1, kReference = 2,
+                  kTPCOnlyRef = 3, kVZERO = 4, kCentralityTRK = 5,
+                  kCentralityZNA = 6, kCentralityCL1 = 7, kCentralityCND = 9,
+                  kCentralityV0A = 10, kCentralityV0C = 11, kCentralityZNC = 12,
+                  kCentralityCL0 = 13, kCentralityFMD = 14, kCentralityTKL = 15,
+                  kCentralityNPA = 16
+                 };
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderAODKinematicsChain();
@@ -52,7 +58,7 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 
  protected:
   AliAODHeader *fAODheader;
- private:
+ protected:
   string         fFileName;      // name of input file with AOD filenames
   bool           fConstrained;   // flag to set which momentum from ESD file will be use
   int            fNumberofEvent; // number of Events in ESD file

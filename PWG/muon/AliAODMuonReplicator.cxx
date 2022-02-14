@@ -245,8 +245,8 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
       if ( IsParticleSelected(nmc) )
       {
         // 
-        Int_t d0 =  p->GetDaughter(0);
-        Int_t d1 =  p->GetDaughter(1);
+        Int_t d0 =  p->GetDaughterLabel(0);
+        Int_t d1 =  p->GetDaughterLabel(1);
         Int_t m =   p->GetMother();
         
         // other than for the track labels, negative values mean

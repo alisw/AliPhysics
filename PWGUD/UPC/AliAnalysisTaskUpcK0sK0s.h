@@ -5,6 +5,7 @@
 #ifndef ALIANALYSISTASKUPCK0SK0S_H
 #define ALIANALYSISTASKUPCK0SK0S_H
 
+class TObjString;
 class TClonesArray;
 class TTree;
 class TH1;

@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
+PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
     const char *mcparticlecontainername,
     const char *mcjetcontainername,
     const char *suffix
@@ -6,7 +6,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *densitytask = new EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity("densitytask");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensity *densitytask = new PWGJE::EMCALJetTasks::AliAnalysisTaskTrackDensity("densitytask");
   mgr->AddTask(densitytask);
   mgr->ConnectInput(densitytask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(densitytask, 1,
@@ -17,7 +17,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensity *AddTaskTrackDensity(
   densitytask->SetOffTrigger(AliVEvent::kINT7);
   densitytask->SetIsPythia(true);
   densitytask->SetUseAliAnaUtils(true, true);
-  densitytask->SetTrackSelection(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory("standard", isAOD));
+  densitytask->SetTrackSelection(PWGJE::EMCALJetTasks::AliEmcalAnalysisFactory::TrackCutsFactory("standard", isAOD));
 
   AliMCParticleContainer *partcont = densitytask->AddMCParticleContainer(mcparticlecontainername);
   partcont->SetName("MCParticles");

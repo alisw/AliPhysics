@@ -1879,8 +1879,11 @@ Bool_t AliMTRChEffAnalysis::CheckRanges ( TArrayI runRanges ) const
       Int_t iend = istart+1;
       Int_t firstRun = runRanges[istart];
       Int_t lastRun = runRanges[iend];
+      // Sometimes we can have a range made by just one run
+      // In this case the firstRun and lastRun coincide
+      // So the start and end must be tested separately
       if ( run == firstRun ) rangeOk[istart] = true;
-      else if ( run == lastRun ) rangeOk[iend] = true;
+      if ( run == lastRun ) rangeOk[iend] = true;
       if ( run >= firstRun && run <= lastRun ) {
         isInside = true;
         break;
@@ -2440,24 +2443,13 @@ void AliMTRChEffAnalysis::ZoomPad()
   TVirtualPad* pad = gPad;
   Int_t px = pad->GetEventX();
   Int_t py = pad->GetEventY();
+  TObjLink *lnk = pad->GetListOfPrimitives()->FirstLink();
   TCanvas* can = new TCanvas("zoom","zoom",px,py,600,600);
-  for ( Int_t iobj=0; iobj<pad->GetListOfPrimitives()->GetEntries(); iobj++ ) {
-    TObject* obj = pad->GetListOfPrimitives()->At(iobj);
-    obj = obj->Clone(Form("%s_zoom",obj->GetName()));
-    TString drawOpt = obj->GetOption();
-    if ( drawOpt.IsNull() ) {
-      if ( obj->InheritsFrom(TGraph::Class()) ) {
-        drawOpt = "p";
-        if ( iobj == 1 ) drawOpt.Append("a");
-        static_cast<TGraph*>(obj)->GetXaxis()->SetLabelSize();
-      }
-      else if ( obj->InheritsFrom(TH1::Class()) ) {
-        drawOpt = "e";
-        if ( iobj == 1 ) drawOpt.Append("same");
-        static_cast<TH1*>(obj)->GetXaxis()->SetLabelSize();
-      }
-    }
-    obj->Draw(drawOpt.Data());
+  can->cd();
+  while (lnk) {
+    TObject* obj = lnk->GetObject()->DrawClone(lnk->GetOption());
+    obj->SetBit(kCanDelete);
+    lnk = lnk->Next();
   }
   can->Modified();
   can->Update();

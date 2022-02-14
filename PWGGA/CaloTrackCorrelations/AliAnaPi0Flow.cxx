@@ -518,9 +518,9 @@ void AliAnaPi0Flow::GetVZEROEventPlane(Bool_t flattenEP)
     fEPV0A = ApplyFlatteningV0A(fEPV0A, fCentrality);
     fEPV0C = ApplyFlatteningV0C(fEPV0C, fCentrality);
     if (fEPTPC != -999.) fEPTPC = ApplyFlatteningTPC(fEPTPC, fCentrality);
-    while (fEPV0A<0.) fEPV0A+=TMath::Pi(); while (fEPV0A>TMath::Pi()) fEPV0A-=TMath::Pi();
-    while (fEPV0C<0.) fEPV0C+=TMath::Pi(); while (fEPV0C>TMath::Pi()) fEPV0C-=TMath::Pi();
-    while (fEPTPC<0.) fEPTPC+=TMath::Pi(); while (fEPTPC>TMath::Pi()) fEPTPC-=TMath::Pi();
+    while (fEPV0A<0.) {fEPV0A+=TMath::Pi();} while (fEPV0A>TMath::Pi()) {fEPV0A-=TMath::Pi();}
+    while (fEPV0C<0.) {fEPV0C+=TMath::Pi();} while (fEPV0C>TMath::Pi()) {fEPV0C-=TMath::Pi();}
+    while (fEPTPC<0.) {fEPTPC+=TMath::Pi();} while (fEPTPC>TMath::Pi()) {fEPTPC-=TMath::Pi();}
 
     fHistEPTPCFlatten->Fill(fCentrality, fEPTPC);
     fHistEPV0AFlatten->Fill(fCentrality, fEPV0A);

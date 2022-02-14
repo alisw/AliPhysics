@@ -14,14 +14,17 @@ ClassImp(AliMultVariable);
 
 //________________________________________________________________
 AliMultVariable::AliMultVariable() :
-  TNamed(), fIsInteger(kFALSE), fValue(0), fValueInteger(0), fMean(0)
+  TNamed(), fIsInteger(kFALSE), fValue(0), fValueInteger(0), fMean(0),
+  fCorrectVertexZ(kFALSE)
+  
 {
   // Constructor
   
 }
 //________________________________________________________________
 AliMultVariable::AliMultVariable(const char * name, const char * title):
-TNamed(name,title), fIsInteger(kFALSE), fValue(0), fValueInteger(0), fMean(0)
+  TNamed(name,title), fIsInteger(kFALSE), fValue(0), fValueInteger(0), fMean(0),
+  fCorrectVertexZ(kFALSE)
 {
   // Constructor
   

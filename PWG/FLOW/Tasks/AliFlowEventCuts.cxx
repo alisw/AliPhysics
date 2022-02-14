@@ -99,7 +99,12 @@ AliFlowEventCuts::AliFlowEventCuts():
   fImpactParameterMax(100.0),
   fhistTPCvsGlobalMult(0),
   fData2011(kFALSE),
-  fCheckPileUp(kFALSE)
+  fCheckPileUp(kFALSE),
+  fSphericityMin(-999.),
+  fSphericityMax(999.),
+  fUseSphericityCut(kFALSE),
+  fMinPtOfTrigger(0.0),
+  fUseMinPtOfTrigger(kFALSE)
 {
   //constructor 
 }
@@ -151,7 +156,12 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fImpactParameterMax(100.0),
   fhistTPCvsGlobalMult(0),
   fData2011(kFALSE),
-  fCheckPileUp(kFALSE)
+  fCheckPileUp(kFALSE),
+  fSphericityMin(-999.),
+  fSphericityMax(999.),
+  fUseSphericityCut(kFALSE),
+  fMinPtOfTrigger(0.0),
+  fUseMinPtOfTrigger(kFALSE)
 {
   //constructor 
 }
@@ -203,7 +213,12 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fImpactParameterMax(that.fImpactParameterMax),
   fhistTPCvsGlobalMult(that.fhistTPCvsGlobalMult),
   fData2011(that.fData2011),
-  fCheckPileUp(that.fCheckPileUp)
+  fCheckPileUp(that.fCheckPileUp),
+  fSphericityMin(that.fSphericityMin),
+  fSphericityMax(that.fSphericityMax),
+  fUseSphericityCut(that.fUseSphericityCut),
+  fMinPtOfTrigger(that.fMinPtOfTrigger),
+  fUseMinPtOfTrigger(that.fUseMinPtOfTrigger)
 {
   if (that.fQA) DefineHistograms();
   //copy constructor
@@ -319,367 +334,496 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
 {
   ///check if event passes cuts
   const AliVVertex* pvtx=event->GetPrimaryVertex();
-    Double_t pvtxx = 0.;
-    Double_t pvtxy = 0.;
-    Double_t pvtxz = 0.;
-    Int_t ncontrib = 0;
-    
-    if(pvtx){
-        pvtxx = pvtx->GetX();
-        pvtxy = pvtx->GetY();
-        pvtxz = pvtx->GetZ();
-        ncontrib = pvtx->GetNContributors();
-    }
-
+  Double_t pvtxx = 0.;
+  Double_t pvtxy = 0.;
+  Double_t pvtxz = 0.;
+  Int_t ncontrib = 0;
+  
+  if(pvtx){
+    pvtxx = pvtx->GetX();
+    pvtxy = pvtx->GetY();
+    pvtxz = pvtx->GetZ();
+    ncontrib = pvtx->GetNContributors();
+  }
+  
   Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
-    
-    Int_t multTPC = 0;
-    Int_t multGlobal = 0;
-    AliVAODHeader* header = (aodevent) ? static_cast<AliVAODHeader*>(aodevent->GetHeader()) : 0x0;
-    
-    //NanoAOD cuts
-    if(header && header->InheritsFrom("AliNanoAODStorage")){
-        AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) header;
+  
+  //Variables for the calculation of sphericity
+  Double_t sT = -999.;
+  Double_t s00 = 0., s11 = 0., s10 = 0.;
+  Double_t sumPt = 0.;
+  Double_t lambda1 = 0., lambda2 = 0.;
+  Int_t nAcceptedTracks = 0;
+  
+  //Variable for the min pT of the trigger per event
+  Int_t nTriggerParticlesAboveThreshold = 0;
 
-        if(fCheckPileUp){
-            Int_t pilepIndex = nanoAodHeader->GetVarIndex("cstPileUp");
-            if(nanoAodHeader->GetVar(pilepIndex)==0) pass = kTRUE;
-            if(nanoAodHeader->GetVar(pilepIndex)==1) pass = kFALSE;
-        }
+  Int_t multTPC = 0;
+  Int_t multGlobal = 0;
+  AliVAODHeader* header = (aodevent) ? static_cast<AliVAODHeader*>(aodevent->GetHeader()) : 0x0;
+  
+  //NanoAOD cuts
+  if(header && header->InheritsFrom("AliNanoAODStorage")){
+    AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) header;
+    
+    if(fCheckPileUp){
+      Int_t pilepIndex = nanoAodHeader->GetVarIndex("cstPileUp");
+      if(nanoAodHeader->GetVar(pilepIndex)==0) pass = kTRUE;
+      if(nanoAodHeader->GetVar(pilepIndex)==1) pass = kFALSE;
+    }
+    
+    if (fCutPrimaryVertexZ)
+      {
+	if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
+	  pass=kFALSE;
+      }
+    
+    if(fQA || fCutTPCmultiplicityOutliersAOD){
+      
+      Int_t nTracks(aodevent->GetNumberOfTracks());
+      for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
+	AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(aodevent->GetTrack(iTracks));
         
-        if (fCutPrimaryVertexZ)
-        {
-            if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
-            pass=kFALSE;
-        }
-
-        if(fQA || fCutTPCmultiplicityOutliersAOD){
-            
-            Int_t nTracks(aodevent->GetNumberOfTracks());
-            for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
-                AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(aodevent->GetTrack(iTracks));
-                
-                if(!track) continue;
-                if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || track->GetTPCsignal() < 10.0)  continue;
-                if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
-                if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
-                
-                Double_t b[2] = {-99., -99.};
-                Double_t bCov[3] = {-99., -99., -99.};
-                
-                AliNanoAODTrack copy(*track);
-                Double_t magField = nanoAodHeader->GetMagneticField();
-                
-                if (magField!=0){
-                    
-                    if (track->PropagateToDCA(aodevent->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
-                    
-                }
-            }
-            
-            if(fCutTPCmultiplicityOutliersAOD)
-            {
-                if(nanoAodHeader->GetRunNumber() < 209122) {
-                    if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) {
-                        pass = kFALSE;
-                    }
-                    else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
-                } else {
-                    if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) {
-                        pass = kFALSE;
-                    }
-                }
-            }
-
-            if (fQA)
-            {
-                QAbefore(0)->Fill(pvtxz);
-                QAbefore(1)->Fill(multGlobal,multTPC);
-            }
-            
-            if(!fUseNewCentralityFramework) {
-                AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
-                if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
-                    Double_t v0Centr  = nanoAodHeader->GetCentr("V0M");
-                    Double_t trkCentr = nanoAodHeader->GetCentr("TRK");
-                    
-                    if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
-                }
-                
-                if (fCutCentralityPercentile) {
-                    if (fUseCentralityUnchecked) {
-                        if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
-                                                                      fCentralityPercentileMax,
-                                                                      CentrMethName(fCentralityPercentileMethod) )) {
-                            pass = kFALSE;
-                        }
-                    } else {
-                        if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
-                                                             fCentralityPercentileMax,
-                                                             CentrMethName(fCentralityPercentileMethod) )) {
-                            pass = kFALSE;
-                        }
-                    }
-                }
-            }else {
-                if (fCutCentralityPercentile) {
-                    Float_t lPercentile = nanoAodHeader->GetCentr(CentrMethName(fCentralityPercentileMethod));
-                    
-                    if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
-                    {
-                        pass=kFALSE;
-                    }
-                }
-            }
-        }
-
-        if (fQA&&pass)
-        {
-            QAafter(0)->Fill(pvtxz);
-            QAafter(1)->Fill(multGlobal,multTPC);
-        }
+	if(!track) continue;
+	if (!track || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || track->GetTPCsignal() < 10.0)  continue;
+	if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+	if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
         
-    }else{
+	if(track->Pt() > fMinPtOfTrigger)  
+	  nTriggerParticlesAboveThreshold += 1;
 
+	if((track->Pt() < 0.2)||(track->Pt() > 5.0)) continue;
+
+	//sphericity variables
+	sumPt += track->Pt();
+	if(track->Pt() != 0.) {
+	  s00 += TMath::Power(track->Px(),2)/track->Pt();
+	  s11 += TMath::Power(track->Py(),2)/track->Pt();
+	  s10 += track->Px()*track->Py()/track->Pt();
+	}
+	
+	Double_t b[2] = {-99., -99.};
+	Double_t bCov[3] = {-99., -99., -99.};
+        
+	AliNanoAODTrack copy(*track);
+	Double_t magField = nanoAodHeader->GetMagneticField();
+        
+	if (magField!=0){
+	  
+	  if (track->PropagateToDCA(aodevent->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
+          
+	}
+	nAcceptedTracks += 1;
+      }
+      
+      if(fCutTPCmultiplicityOutliersAOD)
+	{
+	  if(nanoAodHeader->GetRunNumber() < 209122) {
+	    if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) {
+	      pass = kFALSE;
+	    }
+	    else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+	  } else {
+	    if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) {
+	      pass = kFALSE;
+	    }
+	  }
+	}
+
+      //==================================================//
+      //sphericity calculation: 
+      //currently for events with nAcceptedTracks >= 2
+      if(nAcceptedTracks >= 2) { 
+	if(sumPt != 0.) { 
+	  s00 /= sumPt;
+	  s11 /= sumPt;
+	  s10 /= sumPt;
+	  
+	  if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
+	    lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	    lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	    
+	    if((lambda1 + lambda2) != 0.) {
+	      sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
+	    }
+	  }
+	}
+      }
+      
+      if (fQA) {
+	QAbefore(0)->Fill(pvtxz);
+	QAbefore(1)->Fill(multGlobal,multTPC);
+	if(fUseSphericityCut) {
+	  QAbefore(2)->Fill(sT);
+	  QAbefore(3)->Fill(nAcceptedTracks,sT);
+	}
+      }
+      
+      //Use sphericity cut
+      if(fUseSphericityCut) {
+	if((fSphericityMin > sT)||(sT > fSphericityMax)) {
+		pass = kFALSE;
+	}
+      }
+
+      if(fUseMinPtOfTrigger) {
+	if(nTriggerParticlesAboveThreshold == 0) {
+	  pass = kFALSE;
+	}
+      }
+      
+      if(!fUseNewCentralityFramework) {
+	AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
+	if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
+	  Double_t v0Centr  = nanoAodHeader->GetCentr("V0M");
+	  Double_t trkCentr = nanoAodHeader->GetCentr("TRK");
+          
+	  if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+	}
+        
+	if (fCutCentralityPercentile) {
+	  if (fUseCentralityUnchecked) {
+	    if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+							   fCentralityPercentileMax,
+							   CentrMethName(fCentralityPercentileMethod) )) {
+	      pass = kFALSE;
+	    }
+	  } else {
+	    if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+						  fCentralityPercentileMax,
+						  CentrMethName(fCentralityPercentileMethod) )) {
+	      pass = kFALSE;
+	    }
+	  }
+	}
+      }else {
+	if (fCutCentralityPercentile) {
+	  Float_t lPercentile = nanoAodHeader->GetCentr(CentrMethName(fCentralityPercentileMethod));
+          
+	  if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
+	    {
+	      pass=kFALSE;
+	    }
+	}
+      }
+    }
     
+    if (fQA&&pass) {
+      QAafter(0)->Fill(pvtxz);
+      QAafter(1)->Fill(multGlobal,multTPC);
+      if(fUseSphericityCut) {
+	QAafter(2)->Fill(sT);
+	QAafter(3)->Fill(nAcceptedTracks,sT);
+      }
+    }
     
-  if(fCheckPileUp){
+  }else{
+    if(fCheckPileUp){
       // pile-up rejection
       if(!fUtils) {
-          fUtils = new AliAnalysisUtils();
-          fUtils->SetUseMVPlpSelection(kTRUE);
-          fUtils->SetUseOutOfBunchPileUp(kTRUE);
+	fUtils = new AliAnalysisUtils();
+	fUtils->SetUseMVPlpSelection(kTRUE);
+	fUtils->SetUseOutOfBunchPileUp(kTRUE);
       }
       if(fUtils->IsPileUpEvent(aodevent)) pass = kFALSE;
-   }
+    }
     
+    
+    // to remove multiplicity outliers, an explicit cut on the correlation 
+    // between global and tpc only tracks can be made by counting the two
+    // sets. as counting is expensive, only count when qa is requested or cut is enabeled
+    // the cut criteria are different for different data takign periods
+    // and (of course) cut criteria, specific routines exist for 10h, 11h data
+    // and esds (by calling AliFlowTrackCuts) or aods (evaluated here explicitely)
+    if(esdevent && (fQA || fCutTPCmultiplicityOutliers)) {
+      //this is pretty slow as we check the event track by track twice
+      //this cut will work for 2010 PbPb data and is dependent on
+      //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
+      multTPC = fStandardTPCcuts->Count(event);
+      multGlobal = fStandardGlobalCuts->Count(event);
+      if(fCutTPCmultiplicityOutliers) {
+	if (multTPC > ( 23+1.216*multGlobal)) pass = kFALSE;
+	if (multTPC < (-20+1.087*multGlobal)) pass = kFALSE;
+      }
+    }
+    
+    if(aodevent && (fQA || fCutTPCmultiplicityOutliersAOD)) {
+      //similar (slow) cut for aod's. will work for both 2010 and 2010 pbpb data
+      //but the user is responsible that this object is configured
+      //correctly to select the dataset
+      //FIXME data could dynamically be determined by this class via the
+      //runnumber
+      Int_t nTracks(aodevent->GetNumberOfTracks());
+      for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
+	AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(iTracks));
+	if(!track) continue;
+	if (!track || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
+	if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+	if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
+	
+	if(track->Pt() > fMinPtOfTrigger)  
+	  nTriggerParticlesAboveThreshold += 1;
+	
+	if((track->Pt() < 0.2)||(track->Pt() > 5.0)) 
+	  continue;
 
-  // to remove multiplicity outliers, an explicit cut on the correlation 
-  // between global and tpc only tracks can be made by counting the two
-  // sets. as counting is expensive, only count when qa is requested or cut is enabeled
-  // the cut criteria are different for different data takign periods
-  // and (of course) cut criteria, specific routines exist for 10h, 11h data
-  // and esds (by calling AliFlowTrackCuts) or aods (evaluated here explicitely)
-  if(esdevent && (fQA || fCutTPCmultiplicityOutliers)) 
-  {
-    //this is pretty slow as we check the event track by track twice
-    //this cut will work for 2010 PbPb data and is dependent on
-    //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
-    multTPC = fStandardTPCcuts->Count(event);
-    multGlobal = fStandardGlobalCuts->Count(event);
-    if(fCutTPCmultiplicityOutliers) {
-      if (multTPC > ( 23+1.216*multGlobal)) pass = kFALSE;
-      if (multTPC < (-20+1.087*multGlobal)) pass = kFALSE;
-    }
-  }
-  if(aodevent && (fQA || fCutTPCmultiplicityOutliersAOD)) 
-  {
-    //similar (slow) cut for aod's. will work for both 2010 and 2010 pbpb data
-    //but the user is responsible that this object is configured
-    //correctly to select the dataset
-    //FIXME data could dynamically be determined by this class via the
-    //runnumber
-    Int_t nTracks(aodevent->GetNumberOfTracks());
-    for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
-      AliAODTrack* track = dynamic_cast<AliAODTrack*>(aodevent->GetTrack(iTracks));
-      if(!track) continue;
-      if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
-      if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
-      if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
-      Double_t b[2] = {-99., -99.};
-      Double_t bCov[3] = {-99., -99., -99.};
-      AliAODTrack copy(*track);
-      if (copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
-    }
-    if(fCutTPCmultiplicityOutliersAOD) 
-    {
-      if(event->GetRunNumber() < 209122) {
-        if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
-        else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
-      } else {
-        if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) pass = kFALSE;
+	//sphericity variables
+	sumPt += track->Pt();
+	if(track->Pt() != 0.) {
+	  s00 += TMath::Power(track->Px(),2)/track->Pt();
+	  s11 += TMath::Power(track->Py(),2)/track->Pt();
+	  s10 += track->Px()*track->Py()/track->Pt();
+	}
+	
+	Double_t b[2] = {-99., -99.};
+	Double_t bCov[3] = {-99., -99., -99.};
+	AliAODTrack copy(*track);
+	if (copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
+	
+	nAcceptedTracks += 1;    
+      }
+      
+      if(fCutTPCmultiplicityOutliersAOD) {
+	if(event->GetRunNumber() < 209122) {
+	  if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
+	  else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+	} else {
+	  if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) pass = kFALSE;
+	}
       }
     }
-  }
 
-  if (fQA)
-  {
-    QAbefore(0)->Fill(pvtxz);
-    QAbefore(1)->Fill(multGlobal,multTPC);
-  }
- 
-  if (fCutNContributors)
-  {
-    if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax) pass=kFALSE;
-  }
-  if (fCutPrimaryVertexX)
-  {
-    if (pvtxx < fPrimaryVertexXmin || pvtxx >= fPrimaryVertexXmax) pass=kFALSE;
-  }
-  if (fCutPrimaryVertexY)
-  {
-    if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax) pass=kFALSE;
-  }
-  if (fCutPrimaryVertexZ)
-  {
-    if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
-      pass=kFALSE;
-  }
-  
-  // Handles ESD event
-  if (fCutCentralityPercentile&&esdevent)
-  {
-   if(!fUseNewCentralityFramework)
-   {
-    AliCentrality* centr = esdevent->GetCentrality();
-    if (fUseCentralityUnchecked)
-    {
-      if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
-                                                     fCentralityPercentileMax,
-                                                     CentrMethName(fCentralityPercentileMethod) ))
-      {
-        pass=kFALSE;
-      }
-    }
-    else
-    {
-      if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
-                                            fCentralityPercentileMax,
-                                            CentrMethName(fCentralityPercentileMethod) ))
-      {
-        pass=kFALSE;
-      }
-    }
-   } // if(!fUseNewCentralityFramework)
-   else
-   {
-    fMultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
-    Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
-    if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
-    {
-      pass=kFALSE;
-    }
-   } // else
-  }
-  if (fCutSPDvertexerAnomaly&&esdevent)
-  {
-    const AliESDVertex* sdpvertex = esdevent->GetPrimaryVertexSPD();
-    if (sdpvertex->GetNContributors()<1) pass=kFALSE;
-    if (sdpvertex->GetDispersion()>0.04) pass=kFALSE;
-    if (sdpvertex->GetZRes()>0.25) pass=kFALSE;
-    const AliESDVertex* tpcvertex = esdevent->GetPrimaryVertexTPC();
-    if (tpcvertex->GetNContributors()<1) pass=kFALSE;
-    const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
-    if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0)))
-    {
-      pass=kFALSE;
-    }
-  }
-  if (fCutZDCtiming&&esdevent)
-  {
-    if (!fTrigAna.ZDCTimeTrigger(esdevent))
-    {
-      pass=kFALSE;
-    }
-  }
-  if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
-                               event->GetNumberOfTracks() >= fNumberOfTracksMax ) pass=kFALSE;}
-  if((fCutRefMult&&mcevent)||(fCutRefMult&&esdevent))
-  {
-    //reference multiplicity still to be defined
-    Double_t refMult = RefMult(event,mcevent);
-    if (refMult < fRefMultMin || refMult >= fRefMultMax )
-    {
-      pass=kFALSE;
-    }
-  }
-
-  // Handles AOD event
-  if(aodevent) {
-    if(fCutSPDTRKVtxZ) {
-      Double_t tVtxZ = aodevent->GetPrimaryVertex()->GetZ();
-      Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
-      if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
-    }
-    if(!fUseNewCentralityFramework) {
-      AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
-      if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
-        Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
-        Double_t trkCentr = centr->GetCentralityPercentile("TRK");
-        if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
-      }
-      if (fCutCentralityPercentile) {
-        if (fUseCentralityUnchecked) {
-          if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
-                                                        fCentralityPercentileMax,
-                                                        CentrMethName(fCentralityPercentileMethod) )) {
-            pass = kFALSE;
-          }
-        } else {
-          if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
-                                               fCentralityPercentileMax,
-                                               CentrMethName(fCentralityPercentileMethod) )) {
-            pass = kFALSE;
-          }
-        }
-      }
-    }
-    else {
-      if (fCutCentralityPercentile) {
-        fMultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
-        Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
-        if(!fMultSelection){
-          AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
-        }
-        if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
-        {
-          pass=kFALSE;
-        }
-      }
-    }
-  }
-
-  if (fCutMeanPt)
-  {
-    Float_t meanpt=0.0;
-    Int_t ntracks=event->GetNumberOfTracks();
-    Int_t nselected=0;
-    for (Int_t i=0; i<ntracks; i++)
-    {
-      AliVParticle* track = event->GetTrack(i);
-      if (!track) continue;
-      Bool_t localpass=kTRUE;
-      if (fMeanPtCuts) localpass=fMeanPtCuts->IsSelected(track);
-      if (localpass) 
-      {
-        meanpt += track->Pt();
-        nselected++;
-      }
-    }
-    if (nselected) meanpt=meanpt/nselected;
-    if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) pass=kFALSE;
-  }
-
-  //impact parameter cut
-  if(fCutImpactParameter) {
-    Double_t gImpactParameter = 0.;
+    //==================================================//
+    //MC kine only
     if(mcevent) {
-      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(mcevent)->GenEventHeader());
-      if(headerH)
-	gImpactParameter = headerH->ImpactParameter();
-    }
-    if ((gImpactParameter < fImpactParameterMin) || (gImpactParameter >= fImpactParameterMax ))
-      pass=kFALSE;
-  }
+      for (Int_t iParticle = 0; iParticle < mcevent->GetNumberOfTracks(); iParticle++) {
+	AliMCParticle* gParticle = dynamic_cast<AliMCParticle *>(mcevent->GetTrack(iParticle));
+	if (!gParticle) {
+	  Printf(Form("Could not receive particle %d", iParticle));
+	  continue;
+	}
+	
+	//exclude non stable particles
+	if(!(mcevent->IsPhysicalPrimary(iParticle))) continue;
+    
+	//kinematic cuts cuts
+	Float_t pX  = gParticle->Px();
+	Float_t pY  = gParticle->Py();
+	Float_t pT  = gParticle->Pt();
+	Float_t eta = gParticle->Eta();
+	
+	// Kinematics cuts from ESD track cuts
+	if( pT < 0.2 || pT > 5.)      continue;
+	if( eta < -0.8 || eta > 0.8)  continue;
+    
+	sumPt += pT;
+	if(pT != 0.) {
+	  s00 += TMath::Power(pX,2)/pT;
+	  s11 += TMath::Power(pY,2)/pT;
+	  s10 += pX*pY/pT;
+	}
+	
+	nAcceptedTracks += 1;
+      } //particle loop
+    }//MC event
 
-  if (fQA&&pass) 
-  {
-    QAafter(1)->Fill(multGlobal,multTPC);
-    QAafter(0)->Fill(pvtxz);
-  }
+    //==================================================//
+    //sphericity calculation: 
+    //currently for events with nAcceptedTracks >= 2
+    if(nAcceptedTracks >= 2) { 
+      if(sumPt != 0.) { 
+	s00 /= sumPt;
+	s11 /= sumPt;
+	s10 /= sumPt;
+	
+	if((TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))) >= 0.) {
+	  lambda1 = (s00 + s11 + TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	  lambda2 = (s00 + s11 - TMath::Sqrt(TMath::Power((s00 + s11),2) - 4.*(s00*s11 - TMath::Power(s10,2))))/2.;
+	  
+	  if((lambda1 + lambda2) != 0.) {
+	    sT = 2.*TMath::Min(lambda1,lambda2)/(lambda1 + lambda2);
+	  }
+	}
+      }
     }
+
+
+    if (fQA) {
+      QAbefore(0)->Fill(pvtxz);
+      QAbefore(1)->Fill(multGlobal,multTPC);
+      if(fUseSphericityCut) {
+	QAbefore(2)->Fill(sT);
+	QAbefore(3)->Fill(nAcceptedTracks,sT);
+      }
+    }
+    
+    if (fCutNContributors) {
+      if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax) pass=kFALSE;
+    }
+    if (fCutPrimaryVertexX) {
+      if (pvtxx < fPrimaryVertexXmin || pvtxx >= fPrimaryVertexXmax) pass=kFALSE;
+    }
+    if (fCutPrimaryVertexY) {
+      if (pvtxy < fPrimaryVertexYmin || pvtxy >= fPrimaryVertexYmax) pass=kFALSE;
+    }
+    if (fCutPrimaryVertexZ) {
+      if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
+	pass=kFALSE;
+    }
+    
+    //Use sphericity cut
+    if(fUseSphericityCut) {
+      if((fSphericityMin > sT)||(sT > fSphericityMax)) {
+	pass = kFALSE;
+      }
+    }
+    
+    if(fUseMinPtOfTrigger) {
+      if(nTriggerParticlesAboveThreshold == 0) {
+	pass = kFALSE;
+      }
+    }
+
+    // Handles ESD event
+    if (fCutCentralityPercentile&&esdevent) {
+      if(!fUseNewCentralityFramework) {
+	AliCentrality* centr = esdevent->GetCentrality();
+	if (fUseCentralityUnchecked) {
+	  if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+							 fCentralityPercentileMax,
+							 CentrMethName(fCentralityPercentileMethod) )) {
+	    pass=kFALSE;
+	  }
+	}
+	else {
+	  if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+						fCentralityPercentileMax,
+						CentrMethName(fCentralityPercentileMethod) ))
+	    {
+	      pass=kFALSE;
+	    }
+	}
+      } // if(!fUseNewCentralityFramework)
+      else {
+	fMultSelection = (AliMultSelection *) esdevent->FindListObject("MultSelection");
+	Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+	if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax)) {
+	  pass=kFALSE;
+	}
+      } // else
+    }
+    if (fCutSPDvertexerAnomaly&&esdevent) {
+      const AliESDVertex* sdpvertex = esdevent->GetPrimaryVertexSPD();
+      if (sdpvertex->GetNContributors()<1) pass=kFALSE;
+      if (sdpvertex->GetDispersion()>0.04) pass=kFALSE;
+      if (sdpvertex->GetZRes()>0.25) pass=kFALSE;
+      const AliESDVertex* tpcvertex = esdevent->GetPrimaryVertexTPC();
+      if (tpcvertex->GetNContributors()<1) pass=kFALSE;
+      const AliMultiplicity* tracklets = esdevent->GetMultiplicity();
+      if (tpcvertex->GetNContributors()<(-10.0+0.25*tracklets->GetNumberOfITSClusters(0))) {
+	pass=kFALSE;
+      }
+    }
+    if (fCutZDCtiming&&esdevent) {
+      if (!fTrigAna.ZDCTimeTrigger(esdevent)) {
+	pass=kFALSE;
+      }
+    }
+    if(fCutNumberOfTracks) {if ( event->GetNumberOfTracks() < fNumberOfTracksMin ||
+				 event->GetNumberOfTracks() >= fNumberOfTracksMax ) pass=kFALSE;}
+    if((fCutRefMult&&mcevent)||(fCutRefMult&&esdevent)) {
+      //reference multiplicity still to be defined
+      Double_t refMult = RefMult(event,mcevent);
+      if (refMult < fRefMultMin || refMult >= fRefMultMax ) {
+	pass=kFALSE;
+      }
+    }
+    
+    // Handles AOD event
+    if(aodevent) {
+      if(fCutSPDTRKVtxZ) {
+	Double_t tVtxZ = aodevent->GetPrimaryVertex()->GetZ();
+	Double_t tSPDVtxZ = aodevent->GetPrimaryVertexSPD()->GetZ();
+	if( TMath::Abs(tVtxZ-tSPDVtxZ) > 0.5 ) pass = kFALSE;
+      }
+      if(!fUseNewCentralityFramework) {
+	AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
+	if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
+	  Double_t v0Centr  = centr->GetCentralityPercentile("V0M");
+	  Double_t trkCentr = centr->GetCentralityPercentile("TRK");
+	  if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+	}
+	if (fCutCentralityPercentile) {
+	  if (fUseCentralityUnchecked) {
+	    if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+							   fCentralityPercentileMax,
+							   CentrMethName(fCentralityPercentileMethod) )) {
+	      pass = kFALSE;
+	    }
+	  } else {
+	    if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+						  fCentralityPercentileMax,
+						  CentrMethName(fCentralityPercentileMethod) )) {
+	      pass = kFALSE;
+	    }
+	  }
+	}
+      }
+      else {
+	if (fCutCentralityPercentile) {
+	  fMultSelection = (AliMultSelection *) aodevent->FindListObject("MultSelection");
+	  Float_t lPercentile = fMultSelection->GetMultiplicityPercentile(CentrMethName(fCentralityPercentileMethod));
+	  if(!fMultSelection){
+	    AliWarning("AliMultSelection not found, did you Run AliMultSelectionTask? \n");
+	  }
+	  if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax)) {
+	    pass=kFALSE;
+	  }
+	}
+      }
+    }
+    
+    if (fCutMeanPt) {
+      Float_t meanpt=0.0;
+      Int_t ntracks=event->GetNumberOfTracks();
+      Int_t nselected=0;
+      for (Int_t i=0; i<ntracks; i++) {
+	AliVParticle* track = event->GetTrack(i);
+	if (!track) continue;
+	Bool_t localpass=kTRUE;
+	if (fMeanPtCuts) localpass=fMeanPtCuts->IsSelected(track);
+	if (localpass) {
+	  meanpt += track->Pt();
+	  nselected++;
+	}
+      }
+      if (nselected) meanpt=meanpt/nselected;
+      if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) pass=kFALSE;
+    }
+    
+    //impact parameter cut
+    if(fCutImpactParameter) {
+      Double_t gImpactParameter = 0.;
+      if(mcevent) {
+	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(dynamic_cast<AliMCEvent*>(mcevent)->GenEventHeader());
+	if(headerH)
+	  gImpactParameter = headerH->ImpactParameter();
+      }
+      if ((gImpactParameter < fImpactParameterMin) || (gImpactParameter >= fImpactParameterMax ))
+	pass=kFALSE;
+    }
+    
+    if (fQA&&pass) {
+      QAafter(1)->Fill(multGlobal,multTPC);
+      QAafter(0)->Fill(pvtxz);
+      if(fUseSphericityCut) {
+	QAafter(2)->Fill(sT);
+	QAafter(3)->Fill(nAcceptedTracks,sT);
+      }
+    }
+  }
   return pass;
 }
 
@@ -831,6 +975,10 @@ void AliFlowEventCuts::DefineHistograms()
   after->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.)); //0
   before->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
   after->Add(new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",600,0,3000,600,0,4000));//1
+  before->Add(new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05)); //2
+  after->Add(new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05)); //2
+  before->Add(new TH2F("fHistMultiplicityVsSphericity",";N_{acc.};S_{T};Counts",500,-0.5,499.5,501,-0.05,1.05));//3
+  after->Add(new TH2F("fHistMultiplicityVsSphericity",";N_{acc.};S_{T};Counts",500,-0.5,499.5,501,-0.05,1.05));//3
   TH1::AddDirectory(adddirstatus);
 }
 

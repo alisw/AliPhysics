@@ -2,7 +2,9 @@ AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
 				    const char* tenderName = "PHOStender",
 				    const char* options = "",
 				    Int_t pass = 1,
-				    Bool_t isMC = kFALSE
+				    Bool_t isMC = kFALSE,
+                                    const char* nonLinType = "",
+                                    Double_t zsSimulation = 0
 )
 {
   //Add a task with PHOS tender which works with AOD to the analysis train
@@ -29,10 +31,12 @@ AliPHOSTenderTask* AddAODPHOSTender(const char* taskName = "PHOSTenderTask",
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName) ;
   PHOSSupply->SetReconstructionPass(pass) ;
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
-  if(isMC) //handle MC data
+  if(isMC){ //handle MC data
     PHOSSupply->SetMCProduction(options) ;
-
-
+    PHOSSupply->ApplyZeroSuppression(zsSimulation);
+  }
+  PHOSSupply->SetNonlinearityVersion(nonLinType) ;
+  
   //Need MagFeild
   ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
 

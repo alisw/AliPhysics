@@ -107,7 +107,7 @@ private:
 /**
  * @class TestAliEmcalAODFilterBitCuts
  * @brief Unit test for AOD hybrid track cuts
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALTESTS
  * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
  * @since Dec 18, 2017
  * 

@@ -157,11 +157,16 @@ TList* AliFemtoModelCorrFctnKStar::GetOutputList()
 
 TList* AliFemtoModelCorrFctnKStar::AppendOutputList(TList *output_list)
 {
-  output_list->Add(fResNum);
-  output_list->Add(fResDen);
-  output_list->Add(fTrueNum);
-  output_list->Add(fTrueDen);
+  AddOutputObjectsTo(*output_list);
   return output_list;
+}
+
+void AliFemtoModelCorrFctnKStar::AddOutputObjectsTo(TCollection &output_list)
+{
+  output_list.Add(fResNum);
+  output_list.Add(fResDen);
+  output_list.Add(fTrueNum);
+  output_list.Add(fTrueDen);
 }
 
 bool AliFemtoModelCorrFctnKStar::PairContainsExpectedTypes(const AliFemtoPair *pair)

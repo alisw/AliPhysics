@@ -12,8 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
+#include <memory>
 
 #include <TClonesArray.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -34,6 +38,9 @@ ClassImp(AliJetContainer);
  */
 AliJetContainer::AliJetContainer():
   AliParticleContainer(),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -75,6 +82,9 @@ AliJetContainer::AliJetContainer():
  */
 AliJetContainer::AliJetContainer(const char *name):
   AliParticleContainer(name),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -127,6 +137,9 @@ AliJetContainer::AliJetContainer(const char *name):
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
   AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  fJetType(jetType),
+  fJetAlgorithm(jetAlgo),
+  fRecombinationScheme(recoScheme),
   fJetAcceptanceType(0),
   fJetRadius(radius),
   fRhoName(),
@@ -170,6 +183,18 @@ void AliJetContainer::SetArray(const AliVEvent *event)
   // Set jet array
 
   AliEmcalContainer::SetArray(event);
+}
+
+void AliJetContainer::UpdateArrayName(){
+  TString tag = "Jet";
+  if(fClArrayName.Length()) {
+    // obtain tag from previous name
+    std::unique_ptr<TObjArray> arrnametoks(fClArrayName.Tokenize("_")); 
+    tag = static_cast<TObjString *>(arrnametoks->At(0))->String();
+  }
+  TString updateName = GenerateJetName(fJetType, fJetAlgorithm, fRecombinationScheme, fJetRadius, fParticleContainer, fClusterContainer, tag);
+  std::cout << "[AliJetContainer] Update collection name of the jet container to " << updateName << std::endl;
+  SetArrayName(updateName);
 }
 
 /**
@@ -886,6 +911,9 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
     break;
   case kNeutralJet:
     typeString = "Neutral";
+    break;
+  case kUndefinedJetType:
+    typeString = "Undefined";
     break;
   }
 

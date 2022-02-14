@@ -25,6 +25,7 @@ Detailed description
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TObjString.h>
 #include "TSystem.h"
 
 #include "TMVA/Tools.h"
@@ -304,7 +305,7 @@ Bool_t AliDielectronTMVACuts::IsSelected(TObject* track)
   AliDielectronVarManager::Fill(track, values);
   
   for(Int_t i = 0; i < nInputFeatureActive; i++){
-    inputFeature[i] = values[inputFeatureNumber[i]];
+    inputFeature[i] = (Float_t) values[inputFeatureNumber[i]];
   }
 
   // evaluate MVA output value

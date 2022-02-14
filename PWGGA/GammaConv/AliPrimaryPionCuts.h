@@ -19,8 +19,8 @@
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
-class AliKFVertex;
-class AliKFParticle;
+class AliGAKFVertex;
+class AliGAKFParticle;
 class TH1F;
 class TH2F;
 class AliPIDResponse;
@@ -28,7 +28,7 @@ class AliAnalysisCuts;
 class iostream;
 class TList;
 class AliAnalysisManager;
-
+class TObjString;
 
 using namespace std;
 
@@ -80,10 +80,16 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 
 		// Cut Selection
     Bool_t PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent);
-	Bool_t TrackIsSelected(AliESDtrack* lTrack);
-	Bool_t PionIsSelected(AliESDtrack* lTrack);
+    Bool_t PionIsSelectedAODMC(Int_t labelParticle, TClonesArray *AODMCTrackArray);
+    Bool_t TrackIsSelected(AliESDtrack* lTrack);
+    Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
+    Bool_t PionIsSelected(AliESDtrack* lTrack);
+    Bool_t PionIsSelectedAOD(AliAODTrack* lTrack);
 	static AliPrimaryPionCuts * GetStandardCuts2010PbPb();
 	static AliPrimaryPionCuts * GetStandardCuts2010pp();
+	void  SetHybridTrackCutsAODFiltering(Int_t runflag);
+	void  SetPtDepDCACuts(Double_t pt);
+	Bool_t IsDCACutAccepted(AliAODTrack* lTrack);
 	Bool_t InitPIDResponse();
 	
 	void SetPIDResponse(AliPIDResponse * pidResponse) {fPIDResponse = pidResponse;}
@@ -113,13 +119,21 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
 	Bool_t SetTOFPionPIDCut(Int_t TOFelectronPID);
 	Bool_t SetMassCut(Int_t massCut);
+	void SetPeriodName(TString periodName){fPeriodName = periodName;}
 	Double_t GetMassCut(){return fMassCut;}
+    Double_t GetMassCut_WithNDM(){return fMassCut_WithNDM;}
+	void SetPrefilterRunFlag(Int_t runflag){fRunFlag = runflag;}
+    Bool_t MassCutFunction(Double_t MesonMass);
 	
 	// Request Flags
 	Double_t GetEtaCut(){ return  fEtaCut;}
-	Double_t GetNFindableClustersTPC(AliESDtrack* lTrack);
+    Double_t GetNFindableClustersTPC(AliVTrack* lTrack);
 	Bool_t   DoWeights(){return fDoWeights;}
 	Bool_t 	 DoMassCut(){return fDoMassCut;}
+    Bool_t 	 DoMassCut_byFunction(){return fDoMassCut_byFunction;}
+    Bool_t 	 DoMassCut_WithNDM(){return fDoMassCut_WithNDM;}
+	Bool_t 	 RequireVertexConstrain(){return fRequireVertexConstrain;}
+	Bool_t 	 Use4VecForMass(){return fUse4VecForMass;}
 	
 	protected:
 
@@ -127,6 +141,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t          fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliPIDResponse  *fPIDResponse;
 	AliESDtrackCuts *fEsdTrackCuts;
+	AliESDtrackCuts *fEsdTrackCutsGC;
 
 	Double_t fEtaCut; //eta cutç
 	Double_t fEtaShift;
@@ -136,6 +151,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Double_t fChi2PerClsTPC; // maximum Chi2 per cluster in the TPC
     Bool_t   fRequireTPCRefit; // require a refit in the TPC
 	Double_t fMinClsTPCToF; // minimum clusters to findable clusters
+    Double_t fMaxSharedClsTPCFrac; // maximum fraction of shared clusters to TPCnClus
+	Double_t fMaxSharedClsTPCAbsolute; // absolute max number of shared TPC clusters
+	Double_t fMinTPCPIDClusters; // minimum number of PID clusters in TPC
+	Double_t fMinClsITS; // minimum clustersin the ITS
 	Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
 	Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas
 	Bool_t   fDoTOFsigmaCut; // flag to use TOF pid cut RRnewTOF
@@ -148,10 +167,21 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
 	Bool_t   fUseTOFpid; // flag to use tof pid
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
-	Bool_t   fDoMassCut;
+    Bool_t   fDoMassCut;
+    Bool_t   fDoMassCut_WithNDM;
+    Bool_t   fDoMassCut_byFunction;
 	Double_t fMassCut;	
+    Double_t fMassCut_WithNDM;
+    Int_t fMassCut_FunctionNumber;
+	Bool_t fUse4VecForMass; // use only momentum 4vector to calculate inv mass
+	Bool_t fRequireVertexConstrain; // require contrain to primary vertex (only for AOD)
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
+    Double_t fMaxDCAToVertexXY;
+    Bool_t fUsePtDepXYDCA;
+    Bool_t fUseDCAToVertex2D;
+    TString fMaxDCAToVertexXYPtDep;
+	Int_t  fRunFlag; // runflag used to set track prefiltering
 	
 
 
@@ -174,8 +204,13 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH2F *fHistTrackDCAzPtafter;
 	TH2F *fHistTrackNFindClsPtTPCbefore;
 	TH2F *fHistTrackNFindClsPtTPCafter;
+	TH1F *fHistTrackSelectedEta;
+	TH1F *fHistTrackSelectedPhi;
+	TH1F *fHistTrackSelectedPt;
+	TH1F *fHistTrackSelectedPtWithoutITS;
 	
 	TString fStringITSClusterCut;
+	TString fPeriodName;
 	
 	private:
 
@@ -183,7 +218,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,6)
+    ClassDef(AliPrimaryPionCuts,15)
 };
 
 #endif

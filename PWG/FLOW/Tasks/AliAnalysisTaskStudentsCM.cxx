@@ -245,11 +245,6 @@ void AliAnalysisTaskStudentsCM::Terminate(Option_t *)
  // ...
 
 
- TFile *f = new TFile("AnalysisResults.root","RECREATE");		// {Name of the output file}
- fHistList->Write(fHistList->GetName(),TObject::kSingleKey);	// {Writing of the main TList in the output file}
-
- delete f;
-
 } // end of void AliAnalysisTaskStudentsCM::Terminate(Option_t *)
 
 //================================================================================================================

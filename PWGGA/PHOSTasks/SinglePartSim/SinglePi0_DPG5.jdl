@@ -1,0 +1,57 @@
+JobTag = {"comment:Single particle generator for PHOS "};
+Packages = {
+"VO_ALICE@AliDPG::prod-202001-01-1",
+"VO_ALICE@AliPhysics::vAN-20200405-1",
+"VO_ALICE@jemalloc::latest"
+};
+Executable="aliroot_dpgsim.sh";
+InputFile = {
+"LF:/alice/sim/2017/LHC17a2/OCDB/267110/OCDBsim.root",
+"LF:/alice/sim/2017/LHC17a2/OCDB/267110/OCDBrec.root",
+"LF:/alice/cern.ch/user/p/prsnko/Run2/macros/GeneratorCustom.C",
+"LF:/alice/cern.ch/user/p/prsnko/Run2/macros/Tagging.C",
+};
+Split = "production:1-500";
+SplitArguments = "--run 267110 --mode full --uid #alien_counter# --generator Custom --detector PhosOnly --simulation PhosOnly --reconstruction PhosOnly --nevents 5000  --ptmin 16.5 --ptmax 70. --ocdb alien";
+ValidationCommand = "/alice/validation/validation.sh";
+OutputDir = "/alice/cern.ch/user/p/prsnko/Run2/output/CustomPi0/#alien_counter_03i#";
+Output = {
+"log_archive:stderr.log,stdout.log,tag.log,sim.log,rec.log,qa.log,aod.log,simwatch.log,recwatch.log@disk=1",
+"root_archive.zip:histos*.root@disk=1"};
+OutputErrorE = {"log_archive.zip:*.log@disk=1"};
+Requirements = ( member(other.Packages,"VO_ALICE@AliDPG::prod-202001-01-1") ) && ( member(other.Packages,"VO_ALICE@AliPhysics::vAN-20200405-1") ) && ( member(other.Packages,"VO_ALICE@jemalloc::latest") ) && ( other.TTL > 72000 ) && ( other.Price <= 10 );
+TTL = 72000;
+Price = 10.0;
+MemorySize = "8GB";
+WorkDirectorySize = {"6000MB"};
+LPMChainID = "53581";
+LPMJobTypeID = "123456";
+JDLVariables = {
+"Packages",
+"OutputDir",
+"LPMAnchorPassName",
+"LPMMetaData",
+"LPMRunNumber",
+"LPMProductionType",
+"LPMInteractionType",
+"LPMProductionTag",
+"LPMAnchorRun",
+"LPMAnchorProduction",
+"LPMAnchorYear",
+"LPMJobTypeID"
+};
+LPMAnchorPassName = "pass1";
+LPMMetaData = "Packages=[VO_ALICE@AliDPG::prod-202001-01-1, VO_ALICE@AliPhysics::vAN-20200405-1, VO_ALICE@jemalloc::latest];
+OutputDir=/alice/cern.ch/user/p/prsnko/Run2/output/CustomPi0/#alien_counter_03i#; LPMAnchorPassName=pass1;LPMRunNumber=267110;LPMProductionType=MC;LPMInteractionType=pPb;LPMProductionTag=SinglePi0;LPMAnchorRun=267110;LPMAnchorProduction=LHC16r;LPMAnchorYear=2016;LPMJobTypeID=123456";
+LPMRunNumber = "267110";
+LPMProductionType = "MC";
+LPMInteractionType = "pPb";
+LPMProductionTag = "SinglePi0";
+LPMAnchorRun = "267110";
+LPMAnchorProduction = "LHC16r";
+LPMAnchorYear = "2016";
+Type = "Job";
+OCDBReferenceProduction = "123456";
+PWG = "COMMON";
+InputDataType = "NONE";
+Activity = "SIM";

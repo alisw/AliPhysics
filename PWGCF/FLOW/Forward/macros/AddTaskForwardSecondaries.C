@@ -1,120 +1,136 @@
 /**
  * @file   FTAddMyTask.C
  * @author Freja Thoresen <freja.thoresen@cern.ch>
- * 
- * @brief  Add Q-cummulant forward task to train 
- * 
- * 
+ *
+ * @brief  Add Q-cummulant forward task to train
+ *
+ *
  * @ingroup pwglf_forward_scripts_tasks
  */
-/** 
- * @defgroup pwglf_forward_flow Flow 
+/**
+ * @defgroup pwglf_forward_flow Flow
  *
- * Code to deal with flow 
+ * Code to deal with flow
  *
  * @ingroup pwglf_forward_topical
  */
-/** 
- * Add Flow task to train 
- * 
+/**
+ * Add Flow task to train
+ *
  * @ingroup pwglf_forward_flow
  */
-AliAnalysisTaskSE* AddTaskForwardSecondaries()
-{
-  Bool_t etagap = false;
-  Int_t mode = kRECON;
-  bool doNUA = true;
 
+AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString containerName){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+  if (nua_file.Contains("alien:")) {
+    std::cout << "I-AddTaskForwardSecondaries: Connecting to alien" << std::endl;
+    TGrid::Connect("alien:");
+  }
+  std::cout << nua_file << std::endl;
+  TFile* file;
+  file = TFile::Open(nua_file.Data(), "READ");
+
+  if(!file) { printf("E-AddTaskForwardSecondaries: Input file with differential weights not found!\n"); return NULL; }
+
+  TList* weights_list = new TList();
+  weights_list->SetName("nuaWeights");
+  
+  TH3F* nuacentral = new TH3F();
+  TH3F* nuaforward = new TH3F();
+
+  file->GetObject("nuacentral", nuacentral);
+  nuacentral->SetDirectory(0);
+  nuacentral->SetNameTitle("nuacentral","nuacentral");
+
+  file->GetObject("nuaforward", nuaforward);
+  nuaforward->SetDirectory(0);
+  nuaforward->SetNameTitle("nuaforward","nuaforward");
+  file->Close();
+
+  weights_list->Add(nuacentral);
+  weights_list->Add(nuaforward);
+
+  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+  weights->SetData(weights_list);
+  return weights;
+}
+
+void connectContainer(AliAnalysisDataContainer* container,AliForwardSecondariesTask* task){
+
+  task->fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );
+  task->fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuaforward") );
+  task->fSettings.nuacentral->SetDirectory(0);
+  task->fSettings.nuaforward->SetDirectory(0);
+}
+
+
+AliAnalysisDataContainer* makeEmptyContainer(){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+
+  TList* weights_list = new TList();
+  weights_list->SetName("empty");
+  
+  weights = mgr->CreateContainer("emptyContainer",TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+
+  return weights;
+}
+
+AliAnalysisTaskSE* AddTaskForwardSecondaries(TString taskname)
+{
   std::cout << "AddTaskForwardSecondaries" << std::endl;
+
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  if (!mgr) 
+  if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
   const char* name = Form("ForwardFlowQC");
-  AliForwardSecondaries* task = new AliForwardSecondaries(name);
+  AliForwardSecondariesTask* task = new AliForwardSecondariesTask(name);
+  TString resName = taskname;
 
-  TString resName = "awesome";
+  //TString nua_file =  "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/ESD/maxstrip0/fmdreco_tpcreco_runsz.root";
+  TString nua_file = "/home/thoresen/Documents/PhD/plots/nua/Datasets/LHC17i2f/ESD/fmdreco_tpcreco_runsz.root";
 
-  task->fSettings.doNUA = doNUA;
+  Bool_t doNUA = kFALSE;
+
+  task->fSettings.fileName = resName;
+  mgr->AddTask(task);
+
+  AliAnalysisDataContainer *coutput_recon =
+  mgr->CreateContainer(resName,
+   AliForwardFlowResultStorage::Class(), //TList::Class(),
+   AliAnalysisManager::kOutputContainer,
+   mgr->GetCommonFileName());
+  //task->fSettings.fDataType = task->fSettings.kRECON;
+  mgr->ConnectOutput(task, 1, coutput_recon);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
 
 
-  if (task->fSettings.doNUA){
+  if (doNUA){
+    std::cout << "doing NUA" << std::endl;
+    TObjArray* taskContainers = mgr->GetContainers();
+    AliAnalysisDataContainer* weights;
+    
+    TObjArray *tx = nua_file.Tokenize("/");
+    TObjArray *ty = ((TObjString *)(tx->At(tx->GetEntries()-1)))->String().Tokenize(".");
+    TString nuaobject =  ((TObjString *)(ty->At(0)))->String();
+    std::cout << "I-AddTaskForwardSecondaries: NUA container " << nuaobject << std::endl;
 
-    TString nua_filepath = std::getenv("NUA_FILE");
-    if (!nua_filepath) {
-      nua_filepath = "/home/thoresen/Documents/PhD/Analysis/nua.root"
-      std::cerr << "Environment variable 'NUA_FILE' not found (this should be a path to nua.root).\n";
-      std::cerr << "   Using default value: '" << nua_filepath << "'\n";
+    weights = (AliAnalysisDataContainer*) taskContainers->FindObject(nuaobject);
+    
+    if (!weights) {
+      std::cout << "I-AddTaskForwardSecondaries: " << nuaobject << " weights not defined - reading now. " << std::endl;
+      weights = makeWeightContainer(nua_file,nuaobject);
     }
-    TFile *file = new TFile(nua_filepath);
-
-    file->GetObject("nuacentral", task->fSettings.nuacentral);   
-    task->fSettings.nuacentral->SetDirectory(0);
-    file->GetObject("nuaforward", task->fSettings.nuaforward);   
-    task->fSettings.nuaforward->SetDirectory(0);
-    file->Close(); 
-  }
-
-
-  if (etagap){
-    // if etagap otherwise comment out, and it will be standard
-    task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
-    task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.5;
-  }
-  else {
-    task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
-  }
-  task->fSettings.fUseFMD = true;
-  // task->fSettings.fUseV0 = true;
-  // V0 has only 8 segments in phi
-  if (task->fSettings.fUseFMD) {
-    task->fSettings.fNPhiBins = 20;
-  } else if (task->fSettings.fUseV0) {
-    task->fSettings.fNPhiBins = 8;
+    connectContainer( weights, task);
   }
   
-  task->fSettings.fUseSPDtracklets = true;
-
-  task->fSettings.fZVtxAcceptanceLowEdge = -10;
-  task->fSettings.fZVtxAcceptanceUpEdge = 10;
-  task->fSettings.fNZvtxBins = 20;
-
-  // Remember to disable multselection framework if necessary!
-  task->fSettings.fMultEstimator = "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-  // task->fSettings.fMultEstimator = task->fSettings.fMultEstimatorValidTracks;
-
-
-  if (mode == kRECON) {
-    AliAnalysisDataContainer *coutput_recon =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
-    task->fSettings.fDataType = task->fSettings.kRECON;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_recon);
-  }
-  else if (mode == kTRUTH) {
-    AliAnalysisDataContainer *coutput_truth =
-    mgr->CreateContainer(resName,
-     TList::Class(),
-     AliAnalysisManager::kOutputContainer,
-     mgr->GetCommonFileName());
-
-    task->fSettings.fDataType = task->fSettings.kMCTRUTH;
-    mgr->AddTask(task);
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, coutput_truth);
-  }
-  else {
-    ::Error("AddTaskForwardSecondaries", "Invalid mode specified");
-  }
-
-
   return task;
 }
 /*

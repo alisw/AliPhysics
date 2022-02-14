@@ -36,13 +36,16 @@ using namespace std;
 ClassImp(AliTRDdigitsTask)
 
 //________________________________________________________________________
-AliTRDdigitsTask::AliTRDdigitsTask(const char *name) 
+AliTRDdigitsTask::AliTRDdigitsTask(const char *name)
 : AliAnalysisTaskSE(name),
-  fESD(0), fOutputList(0),
-  fV0cuts(0), fV0tags(0), fV0electrons(0), fV0pions(0),
+  fESDevent(0),
+  fOutputList(0),
+  fhArmenteros(0),
+  fDigMan(0),
+  fV0cuts(0),
   fDigitsInputFileName("TRD.Digits.root"), fDigitsOutputFileName(""),
   fDigitsInputFile(0), fDigitsOutputFile(0),
-  fDigMan(0),fGeo(0), fEventNoInFile(-2), fDigitsLoadedFlag(kFALSE)
+  fGeo(0), fEventNoInFile(-2), fDigitsLoadedFlag(kFALSE)
 {
   // Constructor
 
@@ -56,7 +59,7 @@ AliTRDdigitsTask::AliTRDdigitsTask(const char *name)
   // create the digits manager
   fDigMan = new AliTRDdigitsManager;
   fDigMan->CreateArrays();
-  
+
   // create a TRD geometry, needed for matching digits to tracks
   fGeo = new AliTRDgeometry;
   if (! fGeo) {
@@ -127,15 +130,101 @@ void AliTRDdigitsTask::UserCreateOutputObjects()
 
   // At this point, additional histograms can be created, maybe via a
   // virtual function.
+  CreateV0Plots();
 
-  
   PostData(1, fOutputList);
+}
+
+//________________________________________________________________________
+void AliTRDdigitsTask::CreateV0Plots()
+{
+
+  // V0 QA histograms
+  fhArmenteros  = new TH2F( "Armenteros","Armenteros plot",
+                            200,-1.,1.,200,0.,0.4);
+
+  // add everything to the list
+  if (fOutputList) {
+    fOutputList->Add(fhArmenteros);
+  }
+
+}
+
+//________________________________________________________________________
+void AliTRDdigitsTask::CreateTriggerHistos()
+{
+
+  fhTrgAll = new TH1F( "fhTrgAll", "Trigger classes of ALL events", 128,0.,128.);
+
+  fhTrgAcc = (TH1F*) fhTrgAll->Clone("fhTrgAcc");
+  fhTrgAcc->SetTitle("Trigger classes of ACCEPTED events");
+
+  // add everything to the list
+  if (fOutputList) {
+    fOutputList->Add(fhTrgAll);
+    fOutputList->Add(fhTrgAcc);
+  }
+
+}
+
+//________________________________________________________________________
+void AliTRDdigitsTask::FillTriggerHisto(TH1* hist)
+{
+
+  if (hist == NULL) return;
+
+  // variables for TString::Tokenize
+  Int_t from=0;
+  TString tok;
+
+  TString activetrg = fESDevent->GetESDRun()->GetActiveTriggerClasses();
+  TString firedtrg = fESDevent->GetFiredTriggerClasses();
+
+  // if (hist == fhTrgAll) {
+  //
+  //   AliInfo("Available trigger classes:");
+  //   while (activetrg.Tokenize(tok, from, "  ")) {
+  //     AliInfoF("    %s", tok.Data());
+  //   }
+  //
+  //   AliInfoF("Fired trigger classes: %s", firedtrg.Data());
+  //   from=0;
+  //   while (firedtrg.Tokenize(tok, from, "  ")) {
+  //     AliInfoF("    %s", tok.Data());
+  //   }
+  //
+  // }
+
+  if ( strlen(hist->GetXaxis()->GetBinLabel(1)) == 0 ) {
+
+    AliInfoF("Setting bin labels for %s", hist->GetName());
+    from = 1;
+    for (int i=1; i <= hist->GetXaxis()->GetNbins(); i++) {
+
+      if ( ! activetrg.Tokenize(tok, from, "  ") ) break;
+
+      //AliInfoF("   %3d -> %s", i, tok.Data());
+      hist->GetXaxis()->SetBinLabel(i,tok.Data());
+    }
+
+  }
+
+  from = 0;
+  while ( firedtrg.Tokenize(tok, from, " ") ) {
+    if ( tok==" " || tok=="" ) continue;
+    hist->Fill(tok.Data(), 1.0);
+    //AliInfoF("   %s", tok.Data());
+  }
+
 }
 
 
 
+
+
+
 //________________________________________________________________________
-Bool_t AliTRDdigitsTask::NextEvent(Bool_t preload) 
+Bool_t AliTRDdigitsTask::NextEvent(Bool_t preload)
 {
   fEventNoInFile++;
   fDigitsLoadedFlag = kFALSE;
@@ -148,7 +237,7 @@ Bool_t AliTRDdigitsTask::NextEvent(Bool_t preload)
 }
 
 //________________________________________________________________________
-void AliTRDdigitsTask::UserExec(Option_t *) 
+void AliTRDdigitsTask::UserExec(Option_t *)
 {
 
   // -----------------------------------------------------------------
@@ -161,57 +250,59 @@ void AliTRDdigitsTask::UserExec(Option_t *)
 
 
   if ( ! ReadDigits() ) return;
-  
+
   // -----------------------------------------------------------------
   // -----------------------------------------------------------------
   // The following is a generic example how to access digits and match
   // them to tracks found in the ESD
 
 
-  
+
   // -----------------------------------------------------------------
   // prepare event data structures
-  AliESDEvent* fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fESD) {
-    printf("ERROR: fESD not available\n");
+  fESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!fESDevent) {
+    printf("ERROR: fESDevent not available\n");
     return;
   }
+
+  AnalyseEvent();
 }
 
 //________________________________________________________________________
 void AliTRDdigitsTask::AnalyseEvent()
 {
 
-  
-  printf("There are %d tracks in this event\n", fESD->GetNumberOfTracks());
 
-  if (fESD->GetNumberOfTracks() == 0) {
+  printf("There are %d tracks in this event\n", fESDevent->GetNumberOfTracks());
+
+  if (fESDevent->GetNumberOfTracks() == 0) {
     // skip empty event
     return;
   }
 
   // make digits available
   ReadDigits();
-   
-  
-  
+
+
+
   // -----------------------------------------------------------------
   // Track loop to fill a pT spectrum
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    
+  for (Int_t iTracks = 0; iTracks < fESDevent->GetNumberOfTracks(); iTracks++) {
+
     // ---------------------------------------------------------------
     // gather track information
 
     // we always want the ESD track
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+    AliESDtrack* track = fESDevent->GetTrack(iTracks);
     if (!track) {
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
     }
 
     // the friend and TRD tracks are only necessary if we want to
-    // match via tracklets 
-    //AliESDfriendTrack* friendtrack = fESDfriend->GetTrack(iTracks);
+    // match via tracklets
+    //AliESDfriendTrack* friendtrack = fESDeventfriend->GetTrack(iTracks);
     // I do not handle missing friend tracks - I keep checking the
     // pointer when I access it
 
@@ -232,7 +323,7 @@ void AliTRDdigitsTask::AnalyseEvent()
       AliWarning(Form("Track %d has no OuterParam", iTracks));
       continue;
     }
-      
+
     // print some info about the track
     cout << " ====== TRACK " << iTracks
 	 << "   pT = " << track->Pt() << " GeV";
@@ -255,51 +346,51 @@ void AliTRDdigitsTask::AnalyseEvent()
 	det = det1;
 	row = row1;
 	col = col1;
-	
+
 	cout << "    tracklet: "
 	     << det1 << ":" << row1 << ":" << col1 << "   "
 	     << x << " / "<< y << " / "<< z
 	     << endl;
-		
+
       }
 
 
       Int_t det2,row2,col2;
       if ( FindDigits(track->GetOuterParam(),
-		      fESD->GetMagneticField(), ly,
+		      fESDevent->GetMagneticField(), ly,
 		      &det2,&row2,&col2) ) {
 
 	if (det>=0 && det!=det2) {
-	  AliWarning("DET mismatch between tracklet and extrapolation: " 
+	  AliWarning("DET mismatch between tracklet and extrapolation: "
 		     + TString(Form("%d != %d", det, det2)));
 
 	  if (row>=0 && row!=row2) {
-	    AliWarning("ROW mismatch between tracklet and extrapolation: " 
+	    AliWarning("ROW mismatch between tracklet and extrapolation: "
 		       + TString(Form("%d != %d", row, row2)));
 	  }
 	}
-	
+
 	det = det2;
 	row = row2;
 	col = col2;
-	
+
 	cout << "    outparam: "
 	     << det2 << ":" << row2 << ":" << col2 << "   "
 	     << track->GetOuterParam()->GetX() << " / "
 	     << track->GetOuterParam()->GetY() << " / "
-	     << track->GetOuterParam()->GetZ() 
+	     << track->GetOuterParam()->GetZ()
 	     << endl;
       }
-      
+
 
       if (det>=0) {
 	cout << "Found tracklet at "
 	     << det << ":" << row << ":" << col << endl;
-	
+
 	int np = 5;
 	if ( col-np < 0 || col+np >= 144 )
 	  continue;
-	
+
 	for (int c = col-np; c<=col+np;c++) {
 	  cout << "  " << setw(3) << c << " ";
 	  for (int t=0; t<fDigMan->GetDigits(det)->GetNtime(); t++) {
@@ -315,20 +406,20 @@ void AliTRDdigitsTask::AnalyseEvent()
 
   }
 
- 
+
   for (int det=0; det<540; det++) {
 
     if (!fDigMan->GetDigits(det)) {
       AliWarning(Form("No digits found for detector %d", det));
       continue;
     }
-    
+
     AliTRDpadPlane* padplane = fGeo->GetPadPlane(det);
     if (!padplane) {
       AliError(Form("AliTRDpadPlane for detector %d not found",det));
       continue;
     }
-    
+
 //    for (int row=0; row < padplane->GetNrows(); row++) {
 //      for (int col=0; col < padplane->GetNcols(); col++) {
 //	for (int tb=0; tb < fDigMan->GetDigits(det)->GetNtime(); tb++) {
@@ -338,14 +429,14 @@ void AliTRDdigitsTask::AnalyseEvent()
 //    }
 
   }
-   
+
 //  PostData(1, fOutputList);
-}      
+}
 
 
-  
+
 //________________________________________________________________________
-AliTRDtrackV1* AliTRDdigitsTask::FindTRDtrackV1(AliESDfriendTrack* friendtrack) 
+AliTRDtrackV1* AliTRDdigitsTask::FindTRDtrackV1(AliESDfriendTrack* friendtrack)
 {
   if (!friendtrack) {
     //AliWarning("ERROR: Could not receive friend track");
@@ -374,7 +465,7 @@ Int_t AliTRDdigitsTask::FindDigits(const AliExternalTrackParam* paramp,
 {
 
   if ( ! paramp ) return kFALSE;
-  
+
   // create a copy of the track params that we can propagate around
   AliExternalTrackParam par = *paramp;
 
@@ -386,13 +477,13 @@ Int_t AliTRDdigitsTask::FindDigits(const AliExternalTrackParam* paramp,
     AliWarning("Failed to propagate track param");
     return kFALSE;
   }
-      
-  
+
+
   Int_t st  = fGeo->GetStack(par.GetZ(),layer);
   if (st<0) {
     return kFALSE;
   }
-  
+
   *det = 30*sector + 6*st + layer;
   AliTRDpadPlane* padplane = fGeo->GetPadPlane(layer,st);
   *row = padplane->GetPadRowNumber(par.GetZ());
@@ -400,7 +491,7 @@ Int_t AliTRDdigitsTask::FindDigits(const AliExternalTrackParam* paramp,
 
   if (*row == -1) return kFALSE;
   if (*col == -1) return kFALSE;
-  
+
   return kTRUE;
 }
 
@@ -413,17 +504,17 @@ Int_t AliTRDdigitsTask::FindDigitsTrkl(const AliTRDtrackV1* trdTrack,
 {
 
   if ( ! trdTrack ) return kFALSE;
-  
+
   // loop over tracklets
   for(Int_t itr = 0; itr < 6; ++itr) {
-    
+
     AliTRDseedV1* tracklet = 0;
-    
+
     if(!(tracklet = trdTrack->GetTracklet(itr)))
       continue;
     if(!tracklet->IsOK())
       continue;
-    
+
     if ( tracklet->GetDetector()%6 == layer ) {
 
       AliTRDpadPlane *padplane = fGeo->GetPadPlane(tracklet->GetDetector());
@@ -441,9 +532,9 @@ Int_t AliTRDdigitsTask::FindDigitsTrkl(const AliTRDtrackV1* trdTrack,
   }
 
   return kFALSE; // no tracklet found
-  
-}  
-    
+
+}
+
 //    // AliTrackPoint tp;
 //    // for (int ip=0; ip<array->GetNPoints(); ip++) {
 //    //   array->GetPoint(tp,ip);
@@ -453,14 +544,14 @@ Int_t AliTRDdigitsTask::FindDigitsTrkl(const AliTRDtrackV1* trdTrack,
 //    // 	   << "   r = " << TMath::Hypot(tp.GetX(),tp.GetY())
 //    // 	   << endl;
 //    // }
-//    
-//
-//    
 //
 //
-//    
+//
+//
+//
+//
 //    fHistPt->Fill(track->Pt());
-//  } //track loop 
+//  } //track loop
 //
 //  delete geo;
 //
@@ -469,52 +560,24 @@ Int_t AliTRDdigitsTask::FindDigitsTrkl(const AliTRDtrackV1* trdTrack,
 //______________________________________________________________________________
 void AliTRDdigitsTask::FillV0PIDlist(){
 
-  // no need to run if the V0 cuts are not set
-  if (!fV0cuts) {
-    cout << "FillV0PIDlist: skip event - no V0 cuts" << endl;
-    return;
-  }
-  
-  // basic sanity check...
-  if (!fESD) {
-    cout << "FillV0PIDlist: skip event - no ESD event" << endl;
-    return;
-  }
+  //
+  // Fill the PID object arrays holding the pointers to identified particle tracks
+  //
 
-  const Int_t numTracks = fESD->GetNumberOfTracks();
+  // Dynamic cast to ESD events (DO NOTHING for AOD events)
+  AliESDEvent *event = dynamic_cast<AliESDEvent *>(InputEvent());
+  if ( !event )  return;
 
-  if (numTracks < 0) {
-    AliFatal("negative number of tracks?!?");
-  }
-  
-  // Ensure there is sufficient memory for the V0 tags
-  if (!fV0tags) {
-    //cout << "FillV0PIDlist: create fV0tags" << endl;
-    fV0tags = new Int_t[numTracks];
-  } else if ( sizeof(fV0tags)/sizeof(Int_t) < numTracks ) {
-    //cout << "FillV0PIDlist: re-create fV0tags" << endl;
-    delete fV0tags;
-    fV0tags = new Int_t[numTracks];
-  } else {
-    // there is more than enough space to store the tags, no need to
-    // do anything.
-  }
 
-  // Reset the V0 tags and reference particle arrays
-  for (Int_t i = 0; i < numTracks; i++) {
-    fV0tags[i] = 0;
-  }
-
-  fV0electrons->Clear();
-  fV0pions->Clear();
-
-  
   // V0 selection
+  // set event
+  fV0cuts->SetEvent(event);
+
+
   // loop over V0 particles
-  fV0cuts->SetEvent(fESD);
-  for(Int_t iv0=0; iv0<fESD->GetNumberOfV0s();iv0++){
-    
-    AliESDv0 *v0 = (AliESDv0 *) fESD->GetV0(iv0);
+  for(Int_t iv0=0; iv0<event->GetNumberOfV0s();iv0++){
+
+    AliESDv0 *v0 = (AliESDv0 *) event->GetV0(iv0);
 
     if(!v0) continue;
     if(v0->GetOnFlyStatus()) continue;
@@ -524,53 +587,33 @@ void AliTRDdigitsTask::FillV0PIDlist(){
     Int_t pdgV0, pdgP, pdgN;
     foundV0 = fV0cuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
     if(!foundV0) continue;
-
-    Int_t iTrackP = v0->GetPindex();  // positive track inded
+    Int_t iTrackP = v0->GetPindex();  // positive track
     Int_t iTrackN = v0->GetNindex();  // negative track
 
-    if (fV0tags[iTrackP]) {
-      printf("Warning: particle %d tagged more than once\n", iTrackP);
-    }
+    // v0 Armenteros plot (QA)
+    Float_t armVar[2] = {0.0,0.0};
+    fV0cuts->Armenteros(v0, armVar);
+    // if ( !(TMath::Power(armVar[0]/0.95,2)+TMath::Power(armVar[1]/0.05,2) < 1) ) continue;
 
-    if (fV0tags[iTrackN]) {
-      printf("Warning: particle %d tagged more than once\n", iTrackN);
-    }
+    if(fhArmenteros) fhArmenteros->Fill(armVar[0],armVar[1]);
 
-    
-    // fill the Object arrays
-    // positive particles
-    if( pdgP == -11){
-      //DigitsDictionary(iTrackP, iv0, pdgP);
-      fV0electrons->Add(fESD->GetTrack(iTrackP));
-      fV0tags[iTrackP] = pdgP;
-    }
-    else if( pdgP == 211){
-      //DigitsDictionary(iTrackP, iv0, pdgP);
-      fV0pions->Add(fESD->GetTrack(iTrackP));
-      fV0tags[iTrackP] = pdgP;
-    }
+    // fill the tags
 
+    if( pdgP ==   -11 ) { fPidTags[iTrackP] = kPidV0Electron; }
+    if( pdgN ==    11 ) { fPidTags[iTrackN] = kPidV0Electron; }
 
-    // negative particles
-    if( pdgN == 11){
-      //DigitsDictionary(iTrackN, -iv0, pdgN);
-      fV0electrons->Add(fESD->GetTrack(iTrackN));
-      fV0tags[iTrackN] = pdgN;
-    }
-    else if( pdgN == -211){
-      //DigitsDictionary(iTrackN, -iv0, pdgN);
-      fV0pions->Add(fESD->GetTrack(iTrackN));
-      fV0tags[iTrackN] = pdgN;
-    }
+    if( pdgP ==   211 ) { fPidTags[iTrackP] = kPidV0Pion; }
+    if( pdgN ==  -211 ) { fPidTags[iTrackN] = kPidV0Pion; }
+
+    if( pdgP ==  2212 ) { fPidTags[iTrackP] = kPidV0Proton; }
+    if( pdgN == -2212 ) { fPidTags[iTrackN] = kPidV0Proton; }
 
   }
-
 }
 
 
-
 //________________________________________________________________________
-void AliTRDdigitsTask::Terminate(Option_t *) 
+void AliTRDdigitsTask::Terminate(Option_t *)
 {
   // Draw result to the screen
   // Called once at the end of the query
@@ -580,13 +623,13 @@ void AliTRDdigitsTask::Terminate(Option_t *)
 //    printf("ERROR: Output list not available\n");
 //    return;
 //  }
-//  
+//
 //  fHistPt = dynamic_cast<TH1F*> (fOutputList->At(0));
 //  if (!fHistPt) {
 //    printf("ERROR: fHistPt not available\n");
 //    return;
 //  }
-//   
+//
   //TCanvas *c1 = new TCanvas("AliTRDdigitsTask","Pt",10,10,510,510);
   //c1->cd(1)->SetLogy();
   //fHistPt->DrawCopy("E");
@@ -599,12 +642,12 @@ Bool_t AliTRDdigitsTask::ReadDigits()
 
   // don't do anything if the digits have already been loaded
   if (fDigitsLoadedFlag) return kTRUE;
-  
+
   if (!fDigMan) {
     AliError("no digits manager");
     return kFALSE;
   }
-  
+
   // reset digit arrays
   for (Int_t det=0; det<540; det++) {
     fDigMan->ClearArrays(det);
@@ -617,7 +660,7 @@ Bool_t AliTRDdigitsTask::ReadDigits()
     return kFALSE;
   }
 
-  
+
   // read digits from file
   TTree* tr = (TTree*)fDigitsInputFile->Get(Form("Event%d/TreeD",
                                                  fEventNoInFile));
@@ -649,7 +692,7 @@ Bool_t AliTRDdigitsTask::WriteDigits()
     AliError("digits output file not available");
     return kFALSE;
   }
-  
+
   // compress digits for storage
   for (Int_t det=0; det<540; det++) {
     fDigMan->GetDigits(det)->Expand();
@@ -671,4 +714,3 @@ Bool_t AliTRDdigitsTask::WriteDigits()
 
   return kTRUE;
 }
-

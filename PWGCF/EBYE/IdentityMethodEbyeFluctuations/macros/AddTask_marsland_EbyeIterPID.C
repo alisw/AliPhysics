@@ -1,135 +1,122 @@
-TTree *GetLookUpTable(Bool_t fromAlien, Int_t index);
-
-AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1, Int_t lookUpTableIndex = 1)
+AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TString configFileName = "Config_marsland_EbyeIterPID.C",Int_t settingType = 0,Int_t lhcPeriod = 1, Int_t lookUpTableIndex = 1, const char* suffix = "", Int_t containerNameMode=0)
 {
-  //  
+  //
   //get the current analysis manager
   //
   /*
-   *   =================================================================================================
-   *   ======= eta Range --> [-0.8,0.8], momentum Range --> [0.2,3.2], dEdx Range --> [20,1020]* =======
-   *   Parameter 1: getFromAlien   --> decide if the config file will be taken from alien or hera
-   *   Parameter 2: configFileName --> config file which should exist both in alicen and hera
-   *   Parameter 3: settingType    --> an integer to decide which setting to use 
-   *   =================================================================================================
-   * 
-   *    Real data --> settingType = 
-   *    0.)  THnSparse is used: StandardTPCITScuts              16EtaBin_150pBins_9centBins (REFERENCE settings)
-   *    1.)  THnSparse is used: StandardTPCITScuts + TIGHTCUTS  16EtaBin_150pBins_9centBins (active length cut)
-   *    2.)  THnSparse is used: StandardTPCITScuts + DCAxySmall 16EtaBin_150pBins_9centBins  
-   *    3.)  THnSparse is used: StandardTPCITScuts + DCAxyLarge 16EtaBin_150pBins_9centBins  
-   *    4.)  THnSparse is used: StandardTPCITScuts + cRows60    16EtaBin_150pBins_9centBins  
-   *    5.)  THnSparse is used: StandardTPCITScuts + cRows100   16EtaBin_150pBins_9centBins  
-   *    6.)  THnSparse is used: StandardTPCITScuts + centEstCL1 16EtaBin_150pBins_9centBins  
-   *    7.)  THnSparse is used: StandardTPCITScuts + centEstTRK 16EtaBin_150pBins_9centBins  
-   *    8.)  THnSparse is used: StandardTPCITScuts + Vz8        16EtaBin_150pBins_9centBins  
-   *    9.)  THnSparse is used: StandardTPCITScuts + Vz12       16EtaBin_150pBins_9centBins  
-   *    10.) THnSparse is used: StandardTPCITScuts + Chi2Small  16EtaBin_150pBins_9centBins  
-   *    11.) THnSparse is used: StandardTPCITScuts + Chi2Large  16EtaBin_150pBins_9centBins  
-   *    12.) THnSparse is used: (REFERENCE settings) + allCuts are filled  
-   *    13.) THnSparse is used: (REFERENCE settings) + Bayesian Probabilities are filled  
-   *    14.) THnSparse is used: (REFERENCE settings) + dEdxTree is filled
-   *    15.) THnSparse is used: (REFERENCE settings) + 18centBins  
-   *    16.) THnSparse is used: (REFERENCE settings) + centBin 10  
-   *    17.) THnSparse is used: (REFERENCE settings) + centBin 5  
-   *    18.) THnSparse is used: ITS is OFF 
-   *    19.) THnSparse is used: (REFERENCE settings) + THnSparse is used: number of eta bins = 32 
-   *    20.) THnSparse is used: StandardTPCITScuts + TightCuts TPC dEdx preliminary plot 
-   *    21.) THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended 
-   * 
-   *    MC data --> settingType = 
-   *    100.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE
-   *    101.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings)
-   *    102.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins ETA DEPENDENCE
-   *    103.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins Momentum DEPENDENCE
-   *    104.) FullSinul is used: StandardTPCITScuts 16EtaBin_150pBins_9centBins EffMatrix
-   *    105.) FullSinul is used: Tight Cuts         16EtaBin_150pBins_9centBins EffMatrix
-   *    106.) FastSimul is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings): Fill only DnchDeta
-   *    107.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with TOF cut
-   *    108.) THnSparse is used: StandardTPCITScuts 8EtaBin_150pBins_9centBins (REFERENCE settings) MC CLOSURE with NO ITS cut 
-   *    109.) THnSparse is used: (REFERENCE settings) + allCuts + ArmPodTree filled + eta range extended
-   */
+  =================================================================================================
+  ======= eta Range --> [-0.8,0.8], momentum Range --> [0.2,3.2], dEdx Range --> [20,1020]* =======
+  Parameter 1: getFromAlien     --> decide if the config file will be taken from alien or hera
+  Parameter 2: configFileName   --> config file which should exist both in alicen and hera
+  Parameter 3: settingType      --> an integer to decide which setting to use
+  Parameter 4: lhcPeriod        --> an integer to decide which period 1,2 or 3
+  Parameter 5: lookUpTableIndex --> an integer to decide which lookup table to use
+  Parameter 6: suffix           --> used for naming conflicts in lego train --> each wagon has a different suffix
+  Parameter 7: containerNameMode--> decide either dump output files in a TDirectoryFile or not. 0 without 1 and 2 with TDirectoryFile,
+  =================================================================================================
+  */
   std::cout << " Info::marsland: ===== In the AddTask_marsland_EbyeIterPID ===== " << std::endl;
-  //   if (!getFromAlien) {
-  //       settingType = 201;
-  //       lhcPeriod = 1;
-  //       lookUpTableIndex =1;
-  //   }
-  
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTask_marsland_EbyeIterPID", "No analysis manager found.");
     return 0;
   }
   mgr->SetDebugLevel(0);
-  //   
-  //================================================== 
-  //      Add task to the ANALYSIS manager 
+  //
   //==================================================
-  //   
+  //      Add task to the ANALYSIS manager
+  //==================================================
+  //
   //Get the current train configuration
   TString configBasePath;
-  if (getFromAlien) 
+  if (getFromAlien)
   {
     gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/m/marsland/PWGCF/EBYE/IdentityMethodEbyeFluctuations/macros/%s .",configFileName.Data()));
     configBasePath=Form("%s/",gSystem->pwd());
   } else {
-    configBasePath = "/lustre/nyx/alice/users/marsland/train/trunk/marsland_EbyeRatios/";
+    std::cout << " Info::marsland: Settings for local testing " << std::endl;
+    configBasePath = "";
+    // gSystem->Load("libANALYSIS");
+    // gSystem->Load("libANALYSISalice");
+    // gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    // gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
+    //
+    // MC closure for higher moments
+    settingType = 0;      // 4 for Real data 100 for full MC
+    lhcPeriod   = 2;
+    lookUpTableIndex =0;
+    suffix = "test";
+    containerNameMode=0;
   }
   TString configFilePath(configBasePath+configFileName);
-  std::cout << "Info::marsland: Configpath:  " << configFilePath << std::endl;  
+  std::cout << " Info::marsland: Configpath:  " << configFilePath << std::endl;
+  //
   gROOT->LoadMacro(configFilePath.Data());
-  
-  //   gSystem->Load("libANALYSIS");
-  //   gSystem->Load("libANALYSISalice");
-  //   gSystem->AddIncludePath("-I$ALICE_ROOT/include"); 
-  //   gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
-  
-  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(settingType,lhcPeriod,lookUpTableIndex);
+  //
+  TString combinedName;
+  combinedName.Form("marslandEbyeIter_%s", suffix);
+  AliAnalysisTaskEbyeIterPID* task = Config_marsland_EbyeIterPID(getFromAlien,settingType,lhcPeriod,lookUpTableIndex,combinedName);
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   task->SetIsMCtrue(hasMC);
   printf(" ========================= MC info %d ========================= \n",hasMC);
-  task->Dump();
   mgr->AddTask(task);
-  mgr->Dump();
-  //   
+  // mgr->Dump(); task->Dump();
+  //
   //==================================================
-  //      Add task to the PID Response 
+  //      Add task to the PID Response
   //==================================================
-  //   
-  //   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-  //   Bool_t isMC=kTRUE; // kTRUE in case of MC
-  //   AddTaskPIDResponse(isMC); 
-  // 
+  //
+  // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  // Bool_t isMC=kTRUE; // kTRUE in case of MC
+  // AddTaskPIDResponse(isMC);
+  //
   //================================================
   //              data containers
   //================================================
-  //   
+  //
   // ****** Do not forget to "DefineOutput(5, TTree::Class());" In the contructor of the task ******
   //define output containers, please use 'username'_'somename'
-  AliAnalysisDataContainer *cinput,   *coutput1, *coutput2, *coutput3, *coutput4;
-  AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9, *coutput10, *coutput11, *coutput12, *coutput13, *coutput14, *coutput15;
-  
-  //  find input container // Output files --> File opening order is important
-  TString results = "AnalysisResults.root";
+  AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3, *coutput4;
+  AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9;
+  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13,*coutput14;
+  //
+  //  find and connect input container // Output files --> File opening order is important
   cinput  = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(task,  0, cinput);
-  // Output containers 
-  coutput1  = mgr->CreateContainer("cleanHists",    TList::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput2  = mgr->CreateContainer("tidtree",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput3  = mgr->CreateContainer("MCtidtree",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput4  = mgr->CreateContainer("dataTree",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput5  = mgr->CreateContainer("armPodTree",    TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput6  = mgr->CreateContainer("mcRec",         TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput7  = mgr->CreateContainer("mcGen",         TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput8  = mgr->CreateContainer("fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput9  = mgr->CreateContainer("fTreedEdxCheck",TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput10 = mgr->CreateContainer("fTreeBayes",    TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput11 = mgr->CreateContainer("fTreeCuts",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput12 = mgr->CreateContainer("dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput13 = mgr->CreateContainer("fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput14 = mgr->CreateContainer("resonance",       TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
-  coutput15 = mgr->CreateContainer("mcGenMoms",     TTree::Class(), AliAnalysisManager::kOutputContainer ,results.Data());
+  mgr->ConnectInput(task, 0, cinput);
+  //
+  // Get the output file name which is by default "AnalysisResults.root" --> Either write output into a TDirectoryFile or directly in "AnalysisResults.root"
+  char* outputFileName = AliAnalysisManager::GetCommonFileName();
+  TString dirName = "";
+  TString fileDirStructure = "";
+  TString listName = "";
+  if (containerNameMode==0){
+    fileDirStructure = Form("%s", outputFileName);  // TDirectoryFile name to put all containers; AnalysisResults.root --> trees and hists
+    listName = "cleanHists";
+  } else if (containerNameMode==1){
+    dirName = "PWGCF_marsland";                     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland --> trees and hists
+    fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
+    listName = combinedName+"_cleanHists";
+  } else if (containerNameMode==2){
+    dirName = Form("PWGCF_marsland_%s",suffix);     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland_<setting> --> trees and hists
+    fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
+    listName = combinedName+"_cleanHists";
+  }
+  //
+  // Output containers
+  coutput1  = mgr->CreateContainer(listName,                      TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput2  = mgr->CreateContainer(combinedName+"_armPodTree",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput3  = mgr->CreateContainer(combinedName+"_mcFull",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput4  = mgr->CreateContainer(combinedName+"_mcGen",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput5  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput6  = mgr->CreateContainer(combinedName+"_fTreedEdxCheck",TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput7  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput8  = mgr->CreateContainer(combinedName+"_dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput9  = mgr->CreateContainer(combinedName+"_fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput10 = mgr->CreateContainer(combinedName+"_resonance",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput11 = mgr->CreateContainer(combinedName+"_mcGenMoms",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput12 = mgr->CreateContainer(combinedName+"_events",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput13 = mgr->CreateContainer(combinedName+"_dscaled",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput14 = mgr->CreateContainer(combinedName+"_mcMoms",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
@@ -144,8 +131,7 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE,TString
   mgr->ConnectOutput (task,  12, coutput12);
   mgr->ConnectOutput (task,  13, coutput13);
   mgr->ConnectOutput (task,  14, coutput14);
-  mgr->ConnectOutput (task,  15, coutput15);
+
   std::cout << " Info::marsland: === Containers are ready === " << std::endl;
   return task;
 }
-

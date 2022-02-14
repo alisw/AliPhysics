@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/OADB
                    )
 
 # Sources in alphabetical order
@@ -61,9 +62,12 @@ if(FASTJET_FOUND)
            AliHFAODMCParticleContainer.cxx
            AliHFTrackContainer.cxx
            AliAnalysisTaskDmesonJets.cxx
+           AliAnalysisTaskDmesonJetsSub.cxx
            AliAnalysisTaskDmesonJetsDetectorResponse.cxx
+           AliAnalysisTaskHFSubstructure.cxx
            AliDJetTTreeReader.cxx
            AliDJetTHnReader.cxx
+           AliAnalysisTaskHFJetIPQA.cxx
            )
 endif(FASTJET_FOUND)
 
@@ -76,7 +80,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core Geom)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD STEERBase PWGJEEMCALJetTasks PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD OADB STEERBase PWGJEEMCALJetTasks PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGJETFW PWGTools PWGCaloTrackCorrBase PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies
@@ -91,7 +95,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${FASTJET_LIBS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

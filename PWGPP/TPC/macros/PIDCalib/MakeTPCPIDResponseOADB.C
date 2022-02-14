@@ -5,7 +5,10 @@
 #include "TError.h"
 #include "TROOT.h"
 #include "TPRegexp.h"
+#include "TClass.h"
+#include "TKey.h"
 
+#include "AliNDLocalRegression.h"
 #include "AliOADBContainer.h"
 #include "AliTPCPIDResponse.h"
 #include "AliPID.h"
@@ -18,9 +21,15 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
                                    const TString pass,
                                    const TString dEdxType="",
                                    const TString multCorr="",
-                                   const TString resolution="");
+                                   const TString resolution="",
+                                   const TString pileupDefinition="",
+                                   const AliTPCPIDResponse::EMultiplicityEstimator multEstimator = AliTPCPIDResponse::kNumberOfESDTracks);
+
 Bool_t CheckMultiplicityCorrection(const TString& corrections);
 TObjArray* SetupSplineArrayFromFile(const TString fileName);
+
+AliOADBContainer* GetOADBContainer(const TString fileName);
+TObject* GetObjectFromContainer(AliOADBContainer* c, const TString objName, int run = -1, TString pass = "");
 
 //______________________________________________________________________________
 void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root")
@@ -133,6 +142,7 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15h.pass1/v1/splines_15h.pass1.root", 229246, 235169, "1"); //includes 15g high field
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15i.pass1/v1/splines_15i.pass1.root", 235170, 236866, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15j.pass1/v1/splines_15j.pass1.root", 236867, 239154, "1"); //j-k
+//AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC15j.pass1/Iteration3/splines.root", 236867, 238653, "pass1"); // not needed, done by mistake. The ones by nicolas will stay in use
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC15l.pass1/splines_15l.pass1.root", 239155, 244299, "1"); //l-m
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15n.pass1/v1/splines_15n.pass1.root", 244300, 244639, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15o.pass1_highIR/v1/splines_15o.pass1.root", 244640, 247173, "1"); // 15o high IR
@@ -191,15 +201,24 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16q.pass1/splines_16q.pass1.root", 267139, 267388, "1", "",
                               "-1.609459e-06,-6.765851e-04,9.610860e-03,2.864834e-02,0 ; -2.121118e-07,-1.181542e-06, -0.5 ; 0.,0.,0.,0."); // same configuration as 16q, so use these splines
 
+  // ---| pass2 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC16k.pass2/Iteration3/splines.root", 256490, 258860, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC16l.pass2/Iteration3/splines.root", 258861, 260199, "2");
+
+  // ---| pPb periods |---------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16q.pass2/TPCPIDResponseOADB_2021_11_05_16q_pass2_It3_WithSigmaPar.root", 264896, 265533, "2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16t.pass2/TPCPIDResponseOADB_2021_11_17_16t_pass2_It3_WithSigmaPar.root", 267139, 267388, "2");
 
   //
   // ===| 2017 |================================================================
   //
   //
-  // For the moment use 17c for 17a-f
+  // For the moment use 17c for 17a-e
+  //                    17f for 17f
   //                    17g for 17g (low field)
-  //                    17c for 17h // no maps will be loaded
-  //                    17j for 17j-k // no maps will be loaded for k
+  //                    17h for 17h
+  //                    17j for 17j
+  //                    17k for 17k
   //                    17m for 17m
   //                    17n for 17n 
   //                    17o for 17o
@@ -215,12 +234,14 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   //                             17r   pp   13   TeV
   // ---| pass1 |---------------------------------------------------------------
 
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 268198, 270870, "1");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17g.pass1/splines_17G_pass1.root",     270871, 271785, "1");
-
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC17c.pass1/splines_17c.pass1.root", 271786, 273471, "1"); // temporary for 17h
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17c.pass1/Iteration2/splines.root", 268198, 270853, "1"); //a-e
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17f.pass1/Iteration2/splines.root", 270854, 270870, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17g.pass1/splines_17G_pass1.root",  270871, 271785, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17h.pass1/splines_17H_PASS1.root", 271786, 273471, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17i.pass1/splines_17I_PASS1.root", 273472, 274518, "1");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17j.pass1/splines_17j_pass1.root", 274519, 276533, "1"); // for k temporary
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17j.pass1/splines_17j_pass1.root", 274519, 274677, "1");
+  //AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17k.pass1/splines_17K.pass1.root", 274678, 276533, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17k.pass1_2nd/Iteration3/splines.root", 274678, 276533, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17l.pass1/splines_17L_PASS1.root", 276534, 278765, "1");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17m.pass1/splines_17M_PASS1.root", 278766, 280154, "1");
 
@@ -229,21 +250,40 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17o.pass1/splines_17O_PASS1.root", 280247, 281969, "1"); // temporary for 17o onwards
 
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1/splines_17P_PASS1.root", 281970, 282350, "1");
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17q.pass1/splines_17Q_PASS1.root", 282351, 282444, "1");
+  //AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1_CENT_wSDD/splines_17P_PASS1.root", 281970, 282350, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17p.pass1_CENT_wSDD_2nd/Iteration2/splines.root", 281970, 282350, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17q.pass1_CENT_wSDD/splines_17Q_PASS1.root", 282351, 282444, "1");
 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC17r.pass1/splines_17R_PASS1.root", 282445, 282955, "1"); // temporary for 17r onwards
 
   //
   // ===| 2018 |================================================================
   //
-  // For the moment use 16p splines (pp 13 TeV with Neon) for all 2018
+  // For the moment use 16p splines (pp 13 TeV with Neon) for 18a-b and 18e-
+  //                    18b for 18a-b
+  //                    18c for 18c
+  //                    18d for 18d-h
+  //                    18i for 18i -
   //
   // ---| pass1 |---------------------------------------------------------------
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  282956, 999999, "1"); // temporary for 2018 (back to Ne)
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18b.pass1/Iteration2/splines.root",             282956, 285451, "1"); // 18a-b
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18c.pass1_CENT_woSDD/Iteration2/splines.root",  285452, 285965, "1"); 
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18d.pass1/Iteration3/splines.root",             285966, 286358, "1");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18e.pass1/Iteration3/splines.root",             286359, 288842, "1");// last run in 18e: 286969, "1"); // LHC18e-h
+
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18i.pass1/Iteration3/splines.root",             288843, 290110, "1"); // 18i-l last run in 18i: 288920, "1");
+
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18m.pass1/Iteration3/splines.root",             290111, 295242, "1"); // 18m-p last run in 18m: 293253, "1"); // LHC18m
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC18r.pass1/Iteration4/splines.root",             295243, 999999, "1", "",
+      "-1.945069e-07,-5.163672e-04;-3.168292e-11,2.773070e-08;3.529986e-06,4.000030e-04,8.761510e-02,1.453940e-02"                             ); // 18q-r 18r range: 296631, 999999, "1"); // LHC18r
 
 
 
+  // ---| pass2 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18q.pass3/TPCPIDResponseOADB_2020_08_13_18q_pass3_It3_withDeuteron.root", 295243, 296630, "3", "",
+      "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18q
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/mciupek/LHC18r.pass3/TPCPIDResponseOADB_2020_07_22_18r_pass3_It8_withDeuteron.root", 296631, 999999, "3", "",
+      "", "", "", AliTPCPIDResponse::kNTPCTrackBeforeClean                             ); // 18r
 
 /*
   // ---| local test |----------------------------------------------------------
@@ -319,8 +359,14 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
                                    const TString pass,
                                    const TString dEdxType,
                                    const TString multCorr,
-                                   const TString resolution)
+                                   const TString resolution,
+                                   const TString pileupDefinition,
+                                   const AliTPCPIDResponse::EMultiplicityEstimator multEstimator)
 {
+
+  // ---| Check if input file is an OADB file already, get the OADB container |-
+  AliOADBContainer* contFromFile = GetOADBContainer(fileName);
+  Int_t refRun = (firstRun + lastRun) / 2;
 
   // ---| Master array for TPC PID response |-----------------------------------
   TObjArray *arrTPCPIDResponse = new TObjArray;
@@ -343,12 +389,17 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
   delete arrPeriod;
 
   // ---| Splines |-------------------------------------------------------------
-  TObjArray *arrSplines = SetupSplineArrayFromFile(fileName);
-  if (!arrSplines) {
-    ++fFailures;
-    return kFALSE;
+  if (contFromFile) {
+    arrTPCPIDResponse->Add(GetObjectFromContainer(contFromFile, "Splines", refRun, pass));
   }
-  arrTPCPIDResponse->Add(arrSplines);
+  else {
+    TObjArray *arrSplines = SetupSplineArrayFromFile(fileName);
+    if (!arrSplines) {
+      ++fFailures;
+      return kFALSE;
+    }
+    arrTPCPIDResponse->Add(arrSplines);
+  }
 
   // ---| PID config |----------------------------------------------------------
   if (!dEdxType.IsNull()) {
@@ -357,23 +408,121 @@ Bool_t AddOADBObjectFromSplineFile(const TString fileName,
   }
 
   // ---| multiplicity correction |---------------------------------------------
-  TObjArray *arrMultiplicityCorrection=0x0;
-  if (!multCorr.IsNull()) {
-    if ( (arrMultiplicityCorrection=AliTPCPIDResponse::GetMultiplicityCorrectionArrayFromString(multCorr)) ) {
-      TNamed *multCorrConfig = new TNamed("MultiplicityCorrection",multCorr.Data());
-      arrTPCPIDResponse->Add(multCorrConfig);
-      delete arrMultiplicityCorrection;
-    } else {
-      ++fFailures;
+  if (contFromFile && multCorr.IsNull()) {
+    arrTPCPIDResponse->Add(GetObjectFromContainer(contFromFile, "MultiplicityCorrection", refRun, pass));
+  }
+  else {
+    TObjArray *arrMultiplicityCorrection=0x0;
+    if (!multCorr.IsNull()) {
+      if ( (arrMultiplicityCorrection=AliTPCPIDResponse::GetMultiplicityCorrectionArrayFromString(multCorr)) ) {
+        TNamed *multCorrConfig = new TNamed("MultiplicityCorrection",multCorr.Data());
+        arrTPCPIDResponse->Add(multCorrConfig);
+        delete arrMultiplicityCorrection;
+      } else {
+        ++fFailures;
+      }
     }
   }
 
   // ---| resolution parametrisation |------------------------------------------
-  if (!resolution.IsNull()) {
+  if (!resolution.IsNull() && !resolution.EndsWith(".root")) {
     TNamed *resolutionParam = new TNamed("dEdxResolution", resolution.Data());
     arrTPCPIDResponse->Add(resolutionParam);
   }
 
+  // ---| Pileup correction |---------------------------------------------------
+  if (!pileupDefinition.IsNull()) {
+    if (pileupDefinition.BeginsWith("fileName:")) {
+      // if the string begins with 'fileName:' add the fileName to the array
+      TString fileName(pileupDefinition);
+      fileName.ReplaceAll("fileName:", "");
+      TNamed *pileupCorrectionFile = new TNamed("PileupCorrectionFile", fileName.Data());
+      arrTPCPIDResponse->Add(pileupCorrectionFile);
+    } else {
+      // else directly load the object from file and add it
+      AliNDLocalRegression* pileupCorrection = AliTPCPIDResponse::GetPileupCorrectionFromFile(pileupDefinition);
+      arrTPCPIDResponse->Add(pileupCorrection);
+    }
+  } else {
+    if (contFromFile) {
+      TObject* obj = GetObjectFromContainer(contFromFile, "PileupCorrection", refRun, pass);
+      if (obj) {
+        arrTPCPIDResponse->Add(obj);
+      }
+    }
+  }
+
+  // ---| multiplicity estimator |---
+  if (multEstimator != AliTPCPIDResponse::kNumberOfESDTracks) {
+    TNamed *multEstimatorDef = new TNamed("MultiplicityEstimator", Form("%d", (Int_t)multEstimator));
+    arrTPCPIDResponse->Add(multEstimatorDef);
+  }
+  else {
+    if (contFromFile) {
+      TObject* multEst = GetObjectFromContainer(contFromFile, "MultiplicityEstimator", refRun, pass);
+      if (multEst) {
+        arrTPCPIDResponse->Add(multEst);
+      }
+    }
+  }
+
+  // ---| TF1 sigma parametrization |-------------------------------------------
+  if (resolution.EndsWith(".root")) {
+    TFile* f = TFile::Open(resolution);
+    if (!f->IsOpen() || f->IsZombie()) {
+      Error("AddOADBObjectFromSplineFile", "Could not open '%s' to extract the TF1 sigma parametrization", resolution.Data());
+    } else {
+      TObject* tf1Sigma = f->Get("SigmaParametrization");
+      TObject* tf1SigmaParams = f->Get("SigmaParametrizationParams");
+      TObject* multEstimator = f->Get("MultiplicityNormalization");
+
+      if (!tf1Sigma) {
+        Fatal("AddOADBObjectFromSplineFile", "Could not get TF1 function with name 'SigmaParametrization' from file '%s'", resolution.Data());
+      }
+      if (tf1Sigma->IsA() != TNamed::Class()) {
+        Fatal("AddOADBObjectFromSplineFile", "'SigmaParametrization' from file '%s' has wrong type '%s' instead of '%s'", resolution.Data(), tf1Sigma->IsA()->GetName(), TNamed::Class()->GetName());
+      }
+
+      if (!tf1SigmaParams ) {
+        Fatal("AddOADBObjectFromSplineFile", "Could not get TF1 parameters with name 'SigmaParametrizationParams' from file '%s'", resolution.Data());
+      }
+      if (tf1SigmaParams->IsA() != TVectorD::Class()) {
+        Fatal("AddOADBObjectFromSplineFile", "'SigmaParametrizationParams' from file '%s' has wrong type '%s' instead of '%s'", resolution.Data(), tf1SigmaParams->IsA()->GetName(), TVectorD::Class()->GetName());
+      }
+
+      if (!multEstimator) {
+        Fatal("AddOADBObjectFromSplineFile", "Could not get 'MultiplicityNormalization' from file '%s'", resolution.Data());
+      }
+      if (multEstimator->IsA() != TNamed::Class()) {
+        Fatal("AddOADBObjectFromSplineFile", "'MultiplicityNormalization' from file '%s' has wrong type '%s' instead of '%s'", resolution.Data(), multEstimator->IsA()->GetName(), TNamed::Class()->GetName());
+      }
+
+      TObjArray* arrSigmaParam = new TObjArray;
+      arrSigmaParam->SetName("SigmaParametrization");
+      arrSigmaParam->Add(tf1Sigma);
+      arrSigmaParam->Add(tf1SigmaParams);
+      arrSigmaParam->Add(multEstimator);
+
+      arrTPCPIDResponse->Add(arrSigmaParam);
+    }
+  } else {
+    if (contFromFile) {
+      TObjArray* sigmaParam = (TObjArray*)GetObjectFromContainer(contFromFile, "SigmaParametrization", refRun, pass);
+      if (sigmaParam) {
+        // check consistency
+        if (sigmaParam->GetEntriesFast() != 3) {
+          Fatal("AddOADBObjectFromSplineFile", "Array with SigmaParametrization must be of size 3");
+        }
+        if (sigmaParam->At(0)->IsA() != TNamed::Class() || sigmaParam->At(1)->IsA() != TVectorD::Class() || sigmaParam->At(2)->IsA() != TNamed::Class()) {
+          Fatal("AddOADBObjectFromSplineFile", "Array with SigmaParametrization contains wrong types '%s', '%s', '%s'. Please check.", sigmaParam->At(0)->IsA()->GetName(), sigmaParam->At(1)->IsA()->GetName(), sigmaParam->At(2)->IsA()->GetName());
+        }
+
+        arrTPCPIDResponse->Add(sigmaParam);
+      }
+    }
+  }
+
+  // ---| Add everything to the container |-------------------------------------
   fContainer.AppendObject(arrTPCPIDResponse, firstRun, lastRun, pass);
 
   return kTRUE;
@@ -415,3 +564,35 @@ Bool_t CheckMultiplicityCorrection(const TString& corrections)
   return kTRUE;
 }
 
+TObject* GetObjectFromContainer(AliOADBContainer* c, const TString objName, int run, TString pass)
+{
+  TObjArray* arr = (TObjArray*)c->GetObjectByIndex(0);
+  if ( (run > 0) && (c->GetNumberOfEntries()>1) ) {
+    arr = (TObjArray*)c->GetObject(run, "", pass);
+    if (!arr) {
+      Fatal("GetObjectFromContainer", "Could not get array for %d, %s from %s", run, pass.Data(), c->GetName());
+    }
+  }
+
+  return arr->FindObject(objName);
+}
+
+AliOADBContainer* GetOADBContainer(const TString fileName)
+{
+  TFile f(fileName);
+  if (!f.IsOpen() || f.IsZombie()) {
+    Error("AddOADBObject","Could not open file '%s'",fileName.Data());
+    return 0x0;
+  }
+
+  TList* keys = f.GetListOfKeys();
+  if (keys->GetEntries()>0) {
+    TKey* key = (TKey*)keys->At(0);
+    if (TString(key->GetClassName()) == "AliOADBContainer") {
+      AliOADBContainer* c = (AliOADBContainer*)f.Get(key->GetName());
+      return c;
+    }
+  }
+
+  return 0x0;
+}

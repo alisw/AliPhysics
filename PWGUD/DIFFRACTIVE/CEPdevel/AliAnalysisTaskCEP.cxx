@@ -25,6 +25,7 @@
 #include <TObject.h>
 #include <TRandom3.h>
 
+#include "TGrid.h"
 #include "AliAnalysisManager.h"
 #include "AliProdInfo.h"
 #include "AliESDInputHandler.h"
@@ -351,7 +352,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   // three types of Bayes PID
   // 1. without priors
   // 2. with default TPC priors
-  // 3. with CEP priors
+  // 3. with own priors
   fPIDCombined1 = new AliPIDCombined;
   fPIDCombined1->SetSelectedSpecies(AliPID::kSPECIES);  // This is default
   
@@ -364,22 +365,17 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
   } else if (priorcc==2) {
   
      // 2. with TPC priors
+    printf("PIDResponse with default TPC priors\n");
     fPIDCombined1->SetEnablePriors(kTRUE);
     fPIDCombined1->SetDefaultTPCPriors();
   
  } else {
     
-    // 3. set CEP specific priors
-    //TString fnameMyPriors = TString(gSystem->Getenv("ALICE_PHYSICS"))+
-    //  TString("/PWGUD/DIFFRACTIVE/CEPdevel/priors/");
-    
-    // MC truth
-    //fnameMyPriors += TString("MCTruth_CEPPriors.root");
-      
-    // Pythia8CEP 
-    //fnameMyPriors += TString("Pythia8CEP_CEPPriors.root");
+    // specific priors 
+    TGrid::Connect("alien://");
     TString fnameMyPriors =
-      TString("alien:/alice/cern.ch/user/p/pbuhler/CEP/priors/Pythia8CEP_CEPPriors.root");
+      TString("alien:///alice/cern.ch/user/p/pbuhler/CEP/priors/");
+    fnameMyPriors += TString("MyOwnPriors.root");
     
     TH1F *priordistr[AliPID::kSPECIES];
     fCEPUtil->GetMyPriors(fnameMyPriors,priordistr);
@@ -666,11 +662,13 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   Double_t *CaloEnergy= new Double_t[2];
   if (flEMC) fCEPUtil->EMCAnalysis(fESDEvent,flEMC,nCaloCluster,CaloEnergy);
 
-  // count number of recorded triggers
-  // CINT11-B-NOPF-CENTNOTRD, DG trigger has to be replayed, LHC16[d,e,h]
-  // CCUP2-B-SPD1-CENTNOTRD, DG trigger has to be replayed, LHC16[h,i,j]
-  // CCUP13-B-SPD1-CENTNOTRD = DG trigger, LHC16[k,l,o,p], LHC17[f,h,i,k,l,m,o,r]
-  // CCUP25-B-SPD1-CENTNOTRD = DG trigger, LHC17[f,h,i,k,l,m,o,r]
+  // count number of recorded triggers of interest
+  // CINT11-B-NOPF-CENTNOTRD
+  // CCUP2-B-SPD1-CENTNOTRD
+  // CCUP13-B-SPD1-CENTNOTRD
+  // CCUP25-B-SPD1-CENTNOTRD
+  // CCUP26-B-SPD1-CENTNOTRD
+  // CCUP27-B-SPD1-CENTNOTRD
   TString firedTriggerClasses = fEvent->GetFiredTriggerClasses();
   
   if (firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD"))
@@ -681,36 +679,73 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     ((TH1F*)flQArnum->At(3))->Fill(fRun);
   if (firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"))
     ((TH1F*)flQArnum->At(4))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP26-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(5))->Fill(fRun);
+  if (firedTriggerClasses.Contains("CCUP27-B-SPD1-CENTNOTRD"))
+    ((TH1F*)flQArnum->At(6))->Fill(fRun);
   
-  // did the double-gap trigger (CCUP13-B-SPD1-CENTNOTRD) fire?
-  // in case of MC data and data containing no DG trigger
-  // the trigger needs to be replayed
-  // different triggers are considered
-  Bool_t isReplay = fMCEvent
-    || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
-    || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
   
-  // The following is needed to replay the DG trigger
-  // The OSTG trigger in 2016 required two online tracklets without additional
-  // topology (dphiMin=0)
-  // The OSTG trigger in 2017 required two online tracklets with
-  // min opening angle >=54 deg (dphiMin=4)
+  // is this a potential DG event?
+  // . did one of the DG triggers fire?
+  // . can a DG trigger be replayed?
+  //
+  // to replay triggers several pieces of information are needed
+  //  . OVBA/OVBC: V0
+  //    apply past/future protection
+  //  . OSMB/OSH1: fired SPD chips
+  //      <2016:      OSMB = IFO>=1 & OFO>=1
+  //      2016/2017:  OSMB = IFO>=1 | OFO>=1
+  //      2018:       OSH1 = IFO>=0 & OFO>=2
+  //  . OSTG: online tracklets
+  //      2016:       >=2 online tracklets, dphiMin>0 deg
+  //      >=2017:     >=2 online tracklets, dphiMin>54 deg
+  //  . OOM2: maxipad hits
+  //      OOM2 = >=2 TOF maxipad hits
+
+  // number of fired FastOR trigger chips (OSMB/OSH1)
+  // nFiredChips[0]: number of fastOR fired chips on inner layer (filled from clusters)
+  // nFiredChips[1]: number of fastOR fired chips on outer layer (filled from clusters)
+  // nFiredChips[2]: number of fastOR fired chips on inner layer (from hardware bits)
+  // nFiredChips[3]: number of fastOR fired chips on outer layer (from hardware bits)
+  Short_t nFiredChips[4] = {0};
   const AliMultiplicity *mult = (AliMultiplicity*)fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
   
-  // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a specific
-  // dphiMin
+  nFiredChips[0] = mult->GetNumberOfFiredChips(0);
+  nFiredChips[1] = mult->GetNumberOfFiredChips(1);
+  for (Int_t ii=0;    ii<400; ii++) nFiredChips[2] += foMap[ii]>0 ? 1 : 0;
+  for (Int_t ii=400; ii<1200; ii++) nFiredChips[3] += foMap[ii]>0 ? 1 : 0;
+  
+  // online tracklets (OSTG)
+  // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a
+  // specific dphiMin
   // fisSTGTriggerFired & (1<<0): OSTG 2016
   // fisSTGTriggerFired & (1<<4): OSTG 2017
   fisSTGTriggerFired  = IsSTGFired(&foMap,0) ? (1<<0) : 0;
   for (Int_t ii=1; ii<=10; ii++)
     fisSTGTriggerFired |= IsSTGFired(&foMap,ii) ? (1<<ii) : 0;
     
+  // TOF maxipad hits (OOM2)
+  fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
+  AliTOFTriggerMask *fTOFTriggerMask =
+    fEvent->GetTOFHeader()->GetTriggerMask();
+  
+  // trigger which are no DG triggers, but which potentially can be used
+  // for replay of DG condition
+  Bool_t isReplay = fMCEvent
+    || firedTriggerClasses.Contains("CINT11-B-NOPF-CENTNOTRD")
+    || firedTriggerClasses.Contains("CINT11-B-SPD1-CENTNOTRD")
+    || firedTriggerClasses.Contains("CCUP2-B-NOPF-CENTNOTRD")
+    || firedTriggerClasses.Contains("CCUP2-B-SPD1-CENTNOTRD");
+  
   Bool_t isDGTrigger = kFALSE;
   if (isReplay) {
     
     // this part of the code was proposed by Evgeny Kryshen
-    // to replay the DG trigger in MC data, counts number of hits in V0
+    // CINT11 = OSMB | SPD | V0
+    
+    // more is needed to replay the DG triggers, here however
+    // only !V0 and >=2 online tracklets are required
     Bool_t isV0Afired=0;
     Bool_t isV0Cfired=0;
     AliVVZERO* esdV0 = fEvent->GetVZEROData();
@@ -719,19 +754,20 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
 
     isDGTrigger = (fisSTGTriggerFired & (1<<0)) && !isV0Afired && !isV0Cfired;
     
-    //if (isDGTrigger) {
-    //  printf("DG trigger replayed: %i %i %i -> %i\n",
-    //    fisSTGTriggerFired,!isV0Afired,!isV0Cfired,isDGTrigger);
-    //}
-    
   } else {
   
     // LHC2010 data
     // there is no DG trigger
     
-    // LHC2016 and LHC2017 data
-    if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD") ||
-      firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD") ) {
+    // LHC2016, LHC2017, and LHC2018 data
+    if ( firedTriggerClasses.Contains("CCUP13-B-NOPF-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP25-B-NOPF-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP26-B-NOPF-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP26-B-SPD1-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP27-B-NOPF-CENTNOTRD")
+      || firedTriggerClasses.Contains("CCUP27-B-SPD1-CENTNOTRD") ) {
       isDGTrigger = kTRUE;
       
       // past-future trigger protection
@@ -743,16 +779,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isDGTrigger)
     fhStatsFlow->Fill(AliCEPBase::kBinDGTrigger);
     
-  // to replay the CCUP25-B-SPD1-CENTNOTRD two fired TOF maxiPads are required
-  // in addition to CCUP13
-  fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
-  AliTOFTriggerMask *fTOFTriggerMask =
-    fEvent->GetTOFHeader()->GetTriggerMask();
-  // if ( isDGTrigger ) {
-  //   printf("Number of fired TOF MaxiPads = %i / %i\n",
-  //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
-  // }
-  
   // number of tracklets and singles
   Int_t nTracklets = mult->GetNumberOfTracklets();
   Int_t nSingles   = mult->GetNumberOfSingleClusters();
@@ -762,24 +788,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   for (Int_t ii=0; ii<6; ii++)
     nITSCluster[ii] = mult->GetNumberOfITSClusters(ii);
   
-  // get the number of fired FastOR trigger chips
-  // this is needed to replay OSMB = IFO>=1 & OFO>=1
-  // nFiredChips[0]: number of fastOR fired chips on inner layer (filled from clusters)
-  // nFiredChips[1]: number of fastOR fired chips on outer layer (filled from clusters)
-  // nFiredChips[2]: number of fastOR fired chips on inner layer (from hardware bits)
-  // nFiredChips[3]: number of fastOR fired chips on outer layer (from hardware bits)
-  Short_t nFiredChips[4] = {0};
-  nFiredChips[0] = mult->GetNumberOfFiredChips(0);
-  nFiredChips[1] = mult->GetNumberOfFiredChips(1);
-  for (Int_t ii=0;    ii<400; ii++) nFiredChips[2] += foMap[ii]>0 ? 1 : 0;
-  for (Int_t ii=400; ii<1200; ii++) nFiredChips[3] += foMap[ii]>0 ? 1 : 0;
-  
-  // if (firedTriggerClasses.Contains("CCUP13-B-SPD1-CENTNOTRD")) {
-  //   printf("Triggers: %s\n",firedTriggerClasses.Data());
-  //   printf("Number of SPD chips: %i %i / %i %i\n",
-  //     nFiredChips[0],nFiredChips[1],nFiredChips[2],nFiredChips[3]);
-  // }
-         
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)
   // kV0A, kV0C: V0
@@ -826,10 +834,10 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if (isMBOR) fhStatsFlow->Fill(AliCEPBase::kBinMBOR);
   if (isMBAND) fhStatsFlow->Fill(AliCEPBase::kBinMBAND);
 
-  if (isMBOR) ((TH1F*)flQArnum->At(5))->Fill(fRun);
-  if (isV0DG) ((TH1F*)flQArnum->At(7))->Fill(fRun);
-  if (isADDG) ((TH1F*)flQArnum->At(8))->Fill(fRun);
-  if (isFMDDG)((TH1F*)flQArnum->At(9))->Fill(fRun);
+  if (isMBOR) ((TH1F*)flQArnum->At(7))->Fill(fRun);
+  if (isV0DG) ((TH1F*)flQArnum->At(9))->Fill(fRun);
+  if (isADDG) ((TH1F*)flQArnum->At(10))->Fill(fRun);
+  if (isFMDDG)((TH1F*)flQArnum->At(11))->Fill(fRun);
   
   
   // compare isSPD and isSTGtriggerFired
@@ -1047,14 +1055,14 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   if ( isToSave ) {
     
     // update fhStatsFlow
-    ((TH1F*)flQArnum->At(6))->Fill(fRun);
+    ((TH1F*)flQArnum->At(8))->Fill(fRun);
     fhStatsFlow->Fill(AliCEPBase::kBinSaved);
     if (isToSaveDG) {
-      ((TH1F*)flQArnum->At(10))->Fill(fRun);
+      ((TH1F*)flQArnum->At(12))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinDG);
     }
     if (isToSaveNDG) {
-      ((TH1F*)flQArnum->At(11))->Fill(fRun);
+      ((TH1F*)flQArnum->At(13))->Fill(fRun);
       fhStatsFlow->Fill(AliCEPBase::kBinNDG);
     }
     
@@ -1170,14 +1178,21 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       trk->SetChargeSign((Int_t)tmptrk->Charge());
       trk->SetGoldenChi2(tmptrk->GetChi2TPCConstrainedVsGlobal(vertex));
       
+      // ITS modules crossed by track
+      for (Int_t ii=0; ii<12;ii++)
+        trk->SetITSModuleIndex(ii,tmptrk->GetITSModuleIndex(ii));
+        
       trk->SetITSncls(tmptrk->GetITSClusterMap());
       trk->SetTPCncls(tmptrk->GetNumberOfTPCClusters());
       trk->SetTRDncls(tmptrk->GetNumberOfTRDClusters());
       trk->SetTPCnclsS(tmptrk->GetTPCnclsS());
       
-      Double_t dca[3] = {0.,0.,0.}; tmptrk->GetXYZ(dca);
-      trk->SetXYv(sqrt(pow(dca[0],2)+pow(dca[1],2)));
-      trk->SetZv(dca[2]);
+      // distance to vertex      
+      Float_t dcaToVertexXY;
+      Float_t dcaToVertexZ;
+      tmptrk->GetImpactParameters(dcaToVertexXY,dcaToVertexZ);
+      trk->SetXYv(dcaToVertexXY);
+      trk->SetZv(dcaToVertexZ);
       
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));

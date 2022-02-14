@@ -117,7 +117,11 @@ class AliFemtoDreamv0Hist {
     fInvMassPt->Fill(pT, mass);
   }
   ;
-  void FillCPAPtBins(float pT, float cpa, int multiplicity);
+  void FillArmenterosPodolandski(int i, float qT, float alpha) {
+    if (!fMinimalBooking)
+      fArmenterosPodolandski[i]->Fill(qT, alpha);
+  }
+  void FillCPAPtBins(float pT, float cpa);
   void FillInvMassPerRunNumber(int RunNumber, float mass) {
     if (!fMinimalBooking)
       fInvMassPerRunNumber->Fill(RunNumber, mass);
@@ -127,12 +131,6 @@ class AliFemtoDreamv0Hist {
     fHistList->SetName(name.Data());
   }
   ;
-  void SetMultRangeLow(int range) {
-    fMultRangeLow = range;
-  }
-  void SetMultRangeHigh(int range) {
-    fMultRangeHigh = range;
-  }
   TList *GetHistList() {
     return fHistList;
   }
@@ -141,8 +139,6 @@ class AliFemtoDreamv0Hist {
   bool fMinimalBooking;
   TList *fHistList;
   TList *fv0CutQA[2];
-  float fMultRangeLow;  //!
-  float fMultRangeHigh;  //!
   TProfile *fConfig;
   TH1F *fCutCounter;
   TH1F *fOnFly[2];
@@ -162,9 +158,10 @@ class AliFemtoDreamv0Hist {
   TH1F *fInvMassKaon;
   TH1F *fInvMassBefSelection;
   TH2F *fInvMassPt;
+  TH2F *fArmenterosPodolandski[2];
   TH2F *fCPAPtBins;
-  TH2F *fCPAPtBinsMult[3];  //!
-  TH2F *fInvMassPerRunNumber;ClassDef(AliFemtoDreamv0Hist,3)
+  TH2F *fInvMassPerRunNumber;
+  ClassDef(AliFemtoDreamv0Hist, 4)
 };
 
 #endif /* ALIFEMTODREAMV0HIST_H_ */

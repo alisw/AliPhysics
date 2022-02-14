@@ -44,6 +44,7 @@ public:
   void SetMinDEtaStar(Int_t type, Double_t minDEtaStar);
   void SetMinDPhiStar(Int_t type, Double_t minDPhiStar);
   void SetShiftPosition(Double_t rad);
+  void SetNanoAODAnalysis(bool aNanoAOD);
 
 protected:
   long fNPairsPassed;  ///< Number of pairs considered that passed the cut
@@ -70,6 +71,7 @@ private:
   Double_t fMinDPhiStarPos; ///< Minimum allowed delta phi* between primary track and positive daughter
   Double_t fMinDPhiStarNeg; ///< Minimum allowed delta phi* between primary track and negative daughter
   Double_t fMinRad;  ///< Radius at which the spatial position of the track in the shifted coordinate system is calculated
+  bool fNanoAODAnalysis;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -99,7 +101,8 @@ inline AliFemtoV0TrackPairCut::AliFemtoV0TrackPairCut(const AliFemtoV0TrackPairC
   fMinDEtaStarNeg(c.fMinDEtaStarNeg),
   fMinDPhiStarPos(c.fMinDPhiStarPos),
   fMinDPhiStarNeg(c.fMinDPhiStarNeg),
-  fMinRad(c.fMinRad)
+  fMinRad(c.fMinRad),
+  fNanoAODAnalysis(c.fNanoAODAnalysis)
 { /* no-op */
 }
 
@@ -109,4 +112,5 @@ inline AliFemtoPairCut *AliFemtoV0TrackPairCut::Clone()
   return c;
 }
 
+inline void AliFemtoV0TrackPairCut::SetNanoAODAnalysis(bool aNanoAOD) {fNanoAODAnalysis = aNanoAOD;}
 #endif

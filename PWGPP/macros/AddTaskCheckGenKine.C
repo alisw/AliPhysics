@@ -1,12 +1,3 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Rtypes.h>
-#include <TString.h>
-#include "AliAnalysisTaskCheckGenKine.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliPID.h"
-#endif
-
 AliAnalysisTaskCheckGenKine* AddTaskCheckGenKine(TString suffix = "")
 {
   // Get the current analysis manager

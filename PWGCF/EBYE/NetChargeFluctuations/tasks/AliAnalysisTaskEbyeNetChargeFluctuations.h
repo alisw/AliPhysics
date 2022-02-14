@@ -34,27 +34,32 @@ public:
     virtual void            Terminate(Option_t* option);
     virtual void            doAODEvent();
     virtual void            doMCAODEvent();
-    void                    SetAnalysisType(Int_t IsMC){fAnalysisType = IsMC;};
+    void                    SetAnalysisType(Bool_t IsMC = kTRUE){fAnalysisType = IsMC;};
     void                    FillMCEffMatrix();            // Prepare efficiency matrix
     AliEventCuts 	        fEventCuts;                   // Event cuts
+    void                    SetMaxTPCCluster(Int_t MaxTPCclus){fCutTPCMaxCls=MaxTPCclus;}
+    void                    SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
+    void                    SetDCACut(Double_t DCAxyCut,Double_t DCAzCut){
+                            fCutDCAxy=DCAxyCut;
+                            fCutDCAz=DCAzCut;
+                             }
+    void                    Setzvtxcut(Int_t zvtxcut){fzvtxcut=zvtxcut;};
+    void                    SettrackBit(Int_t trackBit){ftrackBit=trackBit;};
     
 private:
     Bool_t ProperVertex(AliVEvent *event) const;
     Bool_t AcceptTrack(AliAODTrack* aodtrack) const;
+    Bool_t PassDCA(AliAODEvent *fAOD,AliAODTrack* aodtrack) const;
     
     
     AliAODEvent            *fAOD;                   // input event
     TClonesArray           *fArrayMC;               // array of MC particles
     TTree                  *fTree;                  // Tree for real Data
     TTree                  *fTreeMCrec;             // Tree for MC rec
-    TTree                  *fTreeMCallrec;          // Tree for MC rec
     TTree                  *fTreeMCgen;             // Tree for MC gen
-    TTree                  *fTreeMCallgen;          // Tree for MC gen
-    TTree                  *fTreeTrackCuts;
-    TTree                  *fTreeMCTrackCuts;
     TTreeSRedirector       *fTreeSRedirector;       // temp tree to dump output
     
-    Int_t                   fAnalysisType;          // "MC",  "AOD"
+    Bool_t                 fAnalysisType;          // "MC",  "AOD"
     TH1F                   *fhCent;                 // helper histogram for centrality
     TH1D                   *fHistCentralityMultSelection; // centrality class selection by AliMultSelection
 
@@ -63,10 +68,6 @@ private:
     Float_t                 fpT;                    // transverse momentum
     Float_t                 fPhi;
     Short_t                 fCharge;                // charge information
-    Float_t                 fEtaMCall;              // pseudo rapidity
-    Float_t                 fpTMCall;               // transverse momentum
-    Float_t                 fPhiMCall;
-    Short_t                 fChargeMCall;           // charge information
     Float_t                 fCentrality;            // centrality information
     Int_t                   fPos;                   // positive charged particles
     Int_t                   fNeg;                   // negative charged particles
@@ -79,12 +80,6 @@ private:
     Float_t                 fpTMCgen;               // MC gen transverse momentum
     Float_t                 fPhiMCgen;
     Short_t                 fChargegen;             // charge information
-    Float_t                 fEtaMCallgen;           // MC gen pseudo rapidity
-    Float_t                 fpTMCallgen;            // MC gen transverse momentum
-    Float_t                 fPhiMCallgen;
-    Short_t                 fChargeMCallgen;        // charge information    
- //   Float_t                 fEtaMC;               // MC rec pseudo rapidity
- //   Float_t                 fpTMC;                // MC rec transverse momentum
     Double_t                fVxMax;                 // vxmax
     Double_t                fVyMax;                 // vymax
     Double_t                fVzMax;                 // vzmax
@@ -104,22 +99,7 @@ private:
     Int_t                   recMomentsCross;        // MC rec moment of positive and negative charged particles
     Int_t                   recMomentsPos;          // MC rec moment of positive charged particles
     Int_t                   recMomentsNeg;          // MC rec moment of negative charged particles
-    
-    Int_t                   allrecPos;              // MC all rec positive charged particles
-    Int_t                   allrecNeg;              // MC all rec negative charged particles
-    Int_t                   allrecNch;              // MC all rec total charged particles
-    Int_t                   allrecMomentsCross;     // MC all rec moment of pos and neg charged particles
-    Int_t                   allrecMomentsPos;       // MC all rec moment of positive charged particles
-    Int_t                   allrecMomentsNeg;       // MC all rec moment of negative charged particles
-    
-    Int_t                   allgenPos;              // MC all gen positive charged particles
-    Int_t                   allgenNeg;              // MC all gen negative charged particles
-    Int_t                   allgenNch;              // MC all rec total charged particles
 
-    Int_t                   allgenMomentsCross;     // MC all gen moment of positive and negative charged particles
-    Int_t                   allgenMomentsPos;       // MC all gen moment of positive charged particles
-    Int_t                   allgenMomentsNeg;       // MC all gen moment of negative charged particles
-    
     Int_t                   pdg;
     Int_t                   pdgMom;
     Int_t                   pdgMomPhysicalPrim;
@@ -127,26 +107,20 @@ private:
     Int_t                   pdgPhysicalPrim ;
     Int_t                   pdgPrim ;
     
-    Int_t                   allpdg;
-    Int_t                   allpdgMom;
-    Int_t                   allpdgMomPhysicalPrim;
-    Int_t                   allpdgMomPrim ;
-    Int_t                   allpdgPhysicalPrim ;
-    Int_t                   allpdgPrim ;
-    
     Int_t                   pdggen;
     Int_t                   pdgMomgen;
     Int_t                   pdgMomPhysicalPrimgen;
     Int_t                   pdgMomPrimgen;
     Int_t                   pdgPhysicalPrimgen ;
     Int_t                   pdgPrimgen;
+   
+    Int_t                   fzvtxcut;
+    Int_t                   ftrackBit;
+    Int_t                   fCutTPCMaxCls; // no. of TPC crossed rows
+    Int_t                   fCutTPCNCls;  // TPC n clusters
+    Double_t                fCutDCAxy ;   // DCA xy cut
+    Double_t                fCutDCAz ;    //DCA z
     
-    Int_t                   allpdggen;
-    Int_t                   allpdgMomgen;
-    Int_t                   allpdgMomPhysicalPrimgen;
-    Int_t                   allpdgMomPrimgen;
-    Int_t                   allpdgPhysicalPrimgen ;
-    Int_t                   allpdgPrimgen;
     
     Double_t                fEtaDown;
     Double_t                fEtaUp;
@@ -168,6 +142,9 @@ private:
     TH1I                    *fEventStatistics;         // cut-by-cut counter of events
     TH1D                    *fHistClustersTPC;
     TH1D                    *fHistChi2perNDF;
+    TH1F                    *fHistDCAz;
+    TH1F                    *fHistDCAxy;
+    TH1F                    *fHistMagneticField;
     TH1F                    *hGenPt;
     TH1F                    *hGenPhi;
     TH1F                    *hGenEta;

@@ -93,10 +93,18 @@ public:
   Int_t GetNDF() const {return fNDF;}
   Double_t GetReducedChiSquare() const {return fChiSquare/fNDF;}
   Double_t GetFitProbability() const {return fProb;}
+  Double_t GetSBVnPrefitChiSquare() const {return fSBVnPrefitChiSquare;}
+  Int_t GetSBVnPrefitNDF() const {return fSBVnPrefitNDF;}
+  Double_t GetSBVnPrefitReducedChiSquare() const {return fSBVnPrefitChiSquare/fSBVnPrefitNDF;}
+  Double_t GetSBVnPrefitProbability() const {return fSBVnPrefitProb;}
+  Double_t GetMassPrefitChiSquare() const {return fMassPrefitChiSquare;}
+  Int_t GetMassPrefitNDF() const {return fMassPrefitNDF;}
+  Double_t GetMassPrefitReducedChiSquare() const {return fMassPrefitChiSquare/fMassPrefitNDF;}
+  Double_t GetMassPrefitProbability() const {return fMassPrefitProb;}
   Double_t GetParticlePdgMass() const {return fMassParticle;}
   TH1F* GetTemplateReflections() {
-    if(fHistoTemplRfl) {return (TH1F*)fHistoTemplRfl->Clone();}
-    else if(fHistoTemplRflInit) {return (TH1F*)fHistoTemplRflInit->Clone();}
+    if(fHistoTemplRfl) {return (TH1F*)fHistoTemplRfl->Clone("fHistoTemplRfl");}
+    else if(fHistoTemplRflInit) {return (TH1F*)fHistoTemplRflInit->Clone("fHistoTemplRflInit");}
     else {return 0;}
   }
   void Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const;
@@ -105,13 +113,25 @@ public:
   void Background(Double_t min, Double_t max, Double_t &background,Double_t &errbackground) const;
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
-  TF1* GetMassTotFitFunc() {
+  TF1* GetMassTotFitFunc() const {
     if(fMassTotFunc) return fMassTotFunc;
-    else return 0x0;
+    else return nullptr;
   }
-  TF1* GetVnVsMassTotFitFunc() {
+  TF1* GetMassSignalFitFunc() const {
+    if(fMassSgnFunc) return fMassSgnFunc;
+    else return nullptr;
+  }
+  TF1* GetMassBkgFitFunc() const {
+    if(fMassBkgFunc) return fMassBkgFunc;
+    else return nullptr;
+  }
+  TF1* GetVnVsMassTotFitFunc() const {
     if(fVnTotFunc) return fVnTotFunc;
-    else return 0x0;
+    else return nullptr;
+  }
+  TF1* GetVnVsMassBkgFitFunc() const {
+    if(fVnBkgFunc) return fVnBkgFunc;
+    else return nullptr;
   }
 
   //struct for global chi2 (for simultaneus fit)
@@ -177,6 +197,12 @@ private:
   Double_t            fChiSquare;                   /// simultaneus fit chi square
   Int_t               fNDF;                         /// simultaneus fit number of degree of freedom
   Double_t            fProb;                        /// simultaneus fit probability
+  Double_t            fSBVnPrefitChiSquare;         /// vn SB prefit chi square
+  Int_t               fSBVnPrefitNDF;               /// vn SB prefit number of degree of freedom
+  Double_t            fSBVnPrefitProb;              /// vn SB prefit probability
+  Double_t            fMassPrefitChiSquare;         /// Mass prefit chi square
+  Int_t               fMassPrefitNDF;               /// Mass prefit number of degree of freedom
+  Double_t            fMassPrefitProb;              /// Mass prefit probability
   Int_t               fNSigmaForSB;                 /// number of sigma for sidebands region (vn bkg prefit)
   Double_t            fSigmaInit;                   /// initialization for peak width
   Double_t            fMeanInit;                    /// initialization for peak position
@@ -229,7 +255,7 @@ private:
   Int_t               fHarmonic;                    /// harmonic number for drawing
 
     /// \cond CLASSDEF
-  ClassDef(AliHFVnVsMassFitter,4);
+  ClassDef(AliHFVnVsMassFitter,5);
     /// \endcond
 };
 #endif //ALIHFVNVSMASSFITTER

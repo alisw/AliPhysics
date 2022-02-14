@@ -48,6 +48,10 @@ public:
   
   void             SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
 	 
+  Bool_t           IsMCParticleFromOutOfBunchPileupCollision(Int_t index)  const ;
+  Bool_t           IsPileupInGeneratedMCEvent(TString genname="")          const ;
+  Bool_t           IsSameBunchPileupInGeneratedMCEvent(TString genname="") const ;
+
 private:
   
   Bool_t           fConstrainTrack;            ///< Constrain Track to vertex.

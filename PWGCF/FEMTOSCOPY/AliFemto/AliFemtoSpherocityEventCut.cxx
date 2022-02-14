@@ -160,22 +160,18 @@ bool AliFemtoSpherocityEventCut::Pass(const AliFemtoEvent* event)
   // cout << "AliFemtoSpherocityEventCut:: return : " << goodEvent << endl;
 //     (fAcceptBadVertex || (event->PrimVertCov()[4] > -1000.0)) &&
 
-  return (goodEvent);
+  return goodEvent;
 }
 //------------------------------
 AliFemtoString AliFemtoSpherocityEventCut::Report()
 {
   // Prepare report
-  string stemp;
-  char ctemp[100];
-  snprintf(ctemp , 100, "\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
-  stemp = ctemp;
-  snprintf(ctemp , 100, "\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
-  stemp += ctemp;
-  snprintf(ctemp , 100, "\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report("AliFemtoSpherocityEventCut Report:\n");
+  report += Form("\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
+  report += Form("\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
+  report += Form("\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
+
+  return report;
 }
 void AliFemtoSpherocityEventCut::SetAcceptBadVertex(bool b)
 {

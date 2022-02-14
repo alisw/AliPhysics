@@ -27,11 +27,11 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
-#include "AliJDiHadronJtTask.h"
-#include "../AliJEventHeader.h"
-#include "../AliJRunHeader.h"
-#include "../AliJCORRANTask.h"
-#include "../AliJCard.h"
+#include <AliJDiHadronJtTask.h>
+#include <AliJEventHeader.h>
+#include <AliJRunHeader.h>
+#include <AliJCORRANTask.h>
+#include <AliJCard.h>
 
 //______________________________________________________________________________
 AliJDiHadronJtTask::AliJDiHadronJtTask() :   

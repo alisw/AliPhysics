@@ -1062,8 +1062,6 @@ AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString 
 void AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA_QAtrain(Int_t runnumber)
 {
   EBeamType_t beam = BeamTypeFromRunNumber(runnumber);
-  Int_t nCentBins = 0;
-  if (beam == kpA || beam == kAA) nCentBins = 4;
   std::vector<std::string> triggerClasses = {"CINT7", "CEMC7", "CDMC7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2" };
   for (auto triggerClass : triggerClasses) {
     TString suffix(triggerClass.c_str());

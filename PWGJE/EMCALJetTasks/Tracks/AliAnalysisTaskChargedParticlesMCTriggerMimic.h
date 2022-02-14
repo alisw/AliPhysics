@@ -19,7 +19,9 @@ class AliVParticle;
 
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks{
 
 class AliEMCalTriggerWeightHandler;
 
@@ -135,11 +137,11 @@ private:
   TBits                                 fObservables;               ///< Switch for observables
   TString                               fNameClusters;              ///< Cluster container name
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskChargedParticlesMCTriggerMimic, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKCHARGEDPARTICLEMCTRIGGERMIMIC_H */

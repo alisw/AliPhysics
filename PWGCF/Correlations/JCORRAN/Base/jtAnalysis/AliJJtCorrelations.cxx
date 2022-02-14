@@ -15,10 +15,10 @@
 
 // Implementation for correlation analysis
 
-#include "AliJJtCorrelations.h"
+#include <AliJJtCorrelations.h>
 
-#include "../AliJBaseTrack.h"
-#include "../AliJCard.h"
+#include <AliJBaseTrack.h>
+#include <AliJCard.h>
 
 
 AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *histosIn) :

@@ -30,8 +30,6 @@ public:
 	{
 	}
 
-	virtual void ConsiderGeneratedParticles(const EventFlags & eflags);
-
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 

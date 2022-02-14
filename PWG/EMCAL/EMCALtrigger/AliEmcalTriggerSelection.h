@@ -30,6 +30,7 @@
 #include <iosfwd>
 #include <TNamed.h>
 #include <TString.h>
+#include "AliEmcalTriggerSelectionCuts.h"
 
 class AliEMCALTriggerPatchInfo;
 class TClonesArray;
@@ -43,8 +44,8 @@ namespace PWG {
 
 namespace EMCAL {
 
+class AliEmcalTriggerAlias;
 class AliEmcalTriggerDecision;
-class AliEmcalTriggerSelectionCuts;
 
 /**
  * @class AliEmcalTriggerSelection
@@ -72,15 +73,22 @@ public:
    *
    * Initialises the trigger selection
    *
-   * @param name: name of the trigger selection
-   * @param cuts(optional): selection cuts to be applied
+   * @param name name of the trigger selection
+   * @param cuts(optional) selection cuts to be applied
+   * @param alias(optional) trigger alias
    */
-  AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts);
+  AliEmcalTriggerSelection(const char *name, const AliEmcalTriggerSelectionCuts * const cuts, const AliEmcalTriggerAlias *alias = nullptr);
 
   /**
    * @brief Destructor
    */
   virtual ~AliEmcalTriggerSelection() {}
+
+  /**
+   * @brief Get the trigger alias 
+   * @return Trigger alias (nullptr if not set)
+   */
+  const AliEmcalTriggerAlias *GetTriggerAlias() const { return fTriggerAlias; }
 
   /**
    * @brief Get the selection cuts used in the trigger selection
@@ -94,6 +102,8 @@ public:
    */
   void SetSelectionCuts(const AliEmcalTriggerSelectionCuts * const cuts) { fSelectionCuts = cuts; }
 
+  void SetTriggerAlias(const AliEmcalTriggerAlias *const alias) { fTriggerAlias = alias; }
+
   /**
    * Perform event selection based on user-defined criteria and create an output trigger decision containing
    * the threshold, the main patch which fired the decision, and all other patches which would have fired the
@@ -101,9 +111,10 @@ public:
    *
    * @param[in] reconstructedPatches A list of input patches, created by the trigger patch maker and read out from the
    * input event
+   * @param[in] rhocontainer Container with rho values for the given event
    * @return the trigger decision (an event is selected when it has a main patch that fired the decision)
    */
-  AliEmcalTriggerDecision * MakeDecison(const TClonesArray * const reconstructedPatches) const;
+  AliEmcalTriggerDecision * MakeDecison(const TClonesArray * const reconstructedPatches, const AliEmcalTriggerSelectionCuts::RhoForTrigger &rhocontainer) const;
 
   /**
    * @brief Output stream operator
@@ -117,6 +128,7 @@ public:
   friend std::ostream& ::operator<<(std::ostream &stream, const AliEmcalTriggerSelection &sel);
 protected:
   const AliEmcalTriggerSelectionCuts  *fSelectionCuts;    ///< Cuts used for the trigger patch selection
+  const AliEmcalTriggerAlias *fTriggerAlias;              ///< Trigger alias for the trigger selection
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerSelection, 1);    // EMCAL trigger selection component
@@ -138,6 +150,7 @@ private:
 
 }
 }
+
 
 
 #endif /* ALIEMCALTRIGGERSELECTION_H */

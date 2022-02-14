@@ -361,6 +361,18 @@ void Cluster(Int_t icalo)
     h2TrackMatchResPhiNeg[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegNoCut",icalo),iprod);
     h2TrackMatchResPhiPos[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosNoCut",icalo),iprod);
     
+    h2TrackMatchResEtaNegTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegTrackPtNoCut",icalo),iprod);
+    h2TrackMatchResEtaPosTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosTrackPtNoCut",icalo),iprod);
+    h2TrackMatchResPhiNegTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegTrackPtNoCut",icalo),iprod);
+    h2TrackMatchResPhiPosTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosTrackPtNoCut",icalo),iprod); 
+    
+    if ( !h2TrackMatchResEtaNeg[iprod] || !h2TrackMatchResEtaPos[iprod] || 
+         !h2TrackMatchResPhiNeg[iprod] || !h2TrackMatchResPhiPos[iprod] )
+    {
+      printf("No TM residual histograms \n");
+      continue;
+    }
+    
     Float_t emin = 0.5;
     Float_t emax = 2.5;
     if ( histoTag.Contains("L0") )
@@ -459,10 +471,6 @@ void Cluster(Int_t icalo)
     }
     
     // pt track bin
-    h2TrackMatchResEtaNegTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaNegTrackPtNoCut",icalo),iprod);
-    h2TrackMatchResEtaPosTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaPosTrackPtNoCut",icalo),iprod);
-    h2TrackMatchResPhiNegTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiNegTrackPtNoCut",icalo),iprod);
-    h2TrackMatchResPhiPosTrackPt[iprod] = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDPhiPosTrackPtNoCut",icalo),iprod);
     
     if ( !h2TrackMatchResEtaNegTrackPt[iprod] ) continue;
     
@@ -617,6 +625,8 @@ void Cluster(Int_t icalo)
   }
   
   // Cluster-Track Matching Residual
+  if ( h2TrackMatchResEtaNeg[0] && h2TrackMatchResEtaPos[0] && 
+       h2TrackMatchResPhiNeg[0] && h2TrackMatchResPhiPos[0] )
   {
     TGaxis::SetMaxDigits(3);
     
@@ -701,7 +711,7 @@ void Cluster(Int_t icalo)
     
     ccalo2->Print(Form("%s_MatchingResidualsComp.%s",histoTag.Data(),format.Data()));
   }
-  
+
   // Cluster-Track Matching Residual, pT track bin
   if ( h2TrackMatchResEtaNegTrackPt[0] )
   {

@@ -22,11 +22,9 @@
 #include "AliVVertex.h"
 #include "AliVCaloTrigger.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEGAMonitor)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEGAMonitor::AliAnalysisTaskEGAMonitor() :
     AliAnalysisTaskEmcal(),
@@ -193,5 +191,3 @@ bool AliAnalysisTaskEGAMonitor::IsPatchRejected(int col, int row){
   }
   return rejected;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

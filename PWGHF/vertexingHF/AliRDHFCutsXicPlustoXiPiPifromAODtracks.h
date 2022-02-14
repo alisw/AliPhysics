@@ -53,14 +53,17 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   AliAODPidHF* GetPidCascPr() const {return fPidObjCascPr;}
 
 
-  Bool_t SingleTrkCuts(AliAODTrack *trk);
+  Bool_t SingleTrkCuts(AliAODTrack *trk, const AliESDVertex *primaryVtx);
   Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
   Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2);
-
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
+  
   void SetProdTrackPtMin(Double_t a){fProdTrackPtMin=a;}
   void SetProdTrackEtaRange(Double_t a){fProdTrackEtaRange=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
+  void SetProdTrackNTPCCrossedRowsMin(Double_t a){fProdTrackNTPCCrossedRowsMin=a;}
+  void SetProdTrackNTPCCrossedOverFindalbleRatioMin(Double_t a){fProdTrackNTPCCrossedOverFindableRatioMin=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
   void SetProdMassTolXi(Double_t a){fProdMassTolXi=a;}
   void SetProdMassRejOmega(Double_t a){fProdMassRejOmega=a;}
@@ -81,7 +84,10 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   void SetProdRoughPtMin(Double_t a){fProdRoughPtMin=a;}
   void SetProdLikeSignDcaMax(Double_t a){fProdLikeSignDcaMax=a;}
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
-
+  void SetProdCascNTPCCrossedRowsMin(Double_t a){fProdCascNTPCCrossedRowsMin=a;}
+  void SetProdCascNTPCCrossedOverFindalbleRatioMin(Double_t a){fProdCascNTPCCrossedOverFindableRatioMin=a;}
+  void SetProdTrackTPCsignalNMin(Double_t a) {fProdTrackTPCsignalNMin=a;}
+  
   Double_t GetProdTrackPtMin(){return fProdTrackPtMin;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
@@ -105,8 +111,11 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdLikeSignDcaMax(){return fProdLikeSignDcaMax;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
-
-
+  Double_t GetProdCascNTPCCrossedRowsMin(){return fProdCascNTPCCrossedRowsMin;}
+  Double_t GetProdCascNTPCCrossedOverFindalbleRatioMin(){return fProdCascNTPCCrossedOverFindableRatioMin;}
+  Double_t GetProdTrackTPCsignalNMin() {return fProdTrackTPCsignalNMin;}
+  
+  
  protected:
 	
  private:
@@ -120,6 +129,8 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdTrackPtMin;         /// Minimum Bachelor pT
   Double_t fProdTrackEtaRange;      /// Bachelor Eta range
   Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
+  Double_t fProdTrackNTPCCrossedRowsMin;
+  Double_t fProdTrackNTPCCrossedOverFindableRatioMin;
   Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
   Double_t fProdMassRejOmega;          /// Rejection range of Omega mass from PDG value
@@ -136,13 +147,16 @@ class AliRDHFCutsXicPlustoXiPiPifromAODtracks : public AliRDHFCuts
   Double_t fProdDcaV0PiToPrimVertexMin;  /// Min Dca between v0-pion and PV
   Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
   Double_t fProdV0CosineOfPoiningAngleXiMin;  // /Min V0 cos pointing angle  to Xi vertex
-  Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
+  Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters -->obselete
+  Double_t fProdCascNTPCCrossedRowsMin;   
+  Double_t fProdCascNTPCCrossedOverFindableRatioMin;
+  Double_t fProdTrackTPCsignalNMin;
   Double_t fProdLikeSignDcaMax;     /// Maximum DCA of pions
   Double_t fProdRoughMassTol;       /// Tolerance of Xic mass from PDG value
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,4); 
+  ClassDef(AliRDHFCutsXicPlustoXiPiPifromAODtracks,6); 
   /// \endcond
 };
 

@@ -25,7 +25,7 @@ class AliVEvent;
 
 /**
  * @class AliEmcalCorrectionComponent
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Base class for correction components in the EMCal correction framework
  *
  * Base class for all correction components in the EMCal Correction Framework. Each correction
@@ -102,6 +102,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetNcentralityBins(Int_t n) { fNcentBins = n; }
   void SetVertex(Double_t * vertex) { fVertex[0] = vertex[0]; fVertex[1] = vertex[1]; fVertex[2] = vertex[2]; }
   void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
+  void SetCustomBadChannels(TString customBC) {fCustomBadChannelFilePath = customBC; }
 
   /// Set %YAML Configuration
   void SetYAMLConfiguration(PWG::Tools::AliYAMLConfiguration config) { fYAMLConfig = config; }
@@ -111,6 +112,7 @@ class AliEmcalCorrectionComponent : public TNamed {
  protected:
   PWG::Tools::AliYAMLConfiguration fYAMLConfig;           ///< Contains the %YAML configuration used to configure the component
   Bool_t                  fCreateHisto;                   ///< Flag to make some basic histograms
+  Bool_t                  fLoad1DBadChMap;                ///< Flag to load 1D bad channel map
   Int_t                   fRun;                           //!<! Run number
   TString                 fFilepass;                      ///< Input data pass number
   Bool_t                  fGetPassFromFileName;           ///< Get fFilepass from file name
@@ -133,13 +135,14 @@ class AliEmcalCorrectionComponent : public TNamed {
   TList                  *fOutput;                        //!<! List of output histograms
   
   TString                fBasePath;                       ///< Base folder path to get root files
+  TString                fCustomBadChannelFilePath;       ///< Custom path to bad channel map OADB file
 
  private:
   AliEmcalCorrectionComponent(const AliEmcalCorrectionComponent &);               // Not implemented
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 5); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 9); // EMCal correction component
   /// \endcond
 };
 

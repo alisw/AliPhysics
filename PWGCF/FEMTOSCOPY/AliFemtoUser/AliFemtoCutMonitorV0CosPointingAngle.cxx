@@ -112,6 +112,7 @@ double AliFemtoCutMonitorV0CosPointingAngle::GetMotherBin(AliFemtoModelHiddenInf
   int tPID = TMath::Abs(aInfo->GetPDGPid());
   int tMotherPID = TMath::Abs(aInfo->GetMotherPdgCode());
 
+/*
   //Note: subtract 0.5 from return value to place it within bin, instead of at boundary
   if(aInfo->GetOrigin()==2) return fParentPIDInfoVec.size()+3-0.5;
   if(tPID==fPrimaryPID)
@@ -124,6 +125,32 @@ double AliFemtoCutMonitorV0CosPointingAngle::GetMotherBin(AliFemtoModelHiddenInf
     return fParentPIDInfoVec.size()+1-0.5;
   }
   else return fParentPIDInfoVec.size()+2-0.5;
+*/
+
+  //Note: subtract 0.5 from return value to place it within bin, instead of at boundary
+  if(aInfo->GetOrigin()==2) return fParentPIDInfoVec.size()+3-0.5;  //Material
+  if(tPID==fPrimaryPID)  //real, not fake
+  {
+    if(tMotherPID==0)
+    {
+      if(aInfo->GetOrigin()==0) return 1-0.5;  //this is most certainly primary
+      else return -1;                          //Disagreement between tMotherPID and aInfo->GetOrigin()
+    }
+    for(unsigned int i=1; i<fParentPIDInfoVec.size(); i++)
+    {
+      if(tMotherPID==fParentPIDInfoVec[i].parentPID) 
+      {
+        if(tMotherPID==3212) return (i+1)-0.5;  //Sigma0, not sure what aInfo->GetOrigin() should be, as this is EM decay, not weak
+        else
+        {
+          if(aInfo->GetOrigin()==1) return (i+1)-0.5;  //This is secondary
+          else return -1;                              //Disagreement between tMotherPID and aInfo->GetOrigin()
+        }
+      }
+    }
+    return fParentPIDInfoVec.size()+1-0.5;  //Other
+  }
+  else return fParentPIDInfoVec.size()+2-0.5;  //Fake
 }
 
 

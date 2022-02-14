@@ -19,7 +19,7 @@ class AliFJWrapper;
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
 #include "TF1.h"
-const Int_t nVar = 28;
+
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -43,6 +43,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   enum DerivSubtrOrder {
     kSecondOrder = 0,
     kFirstOrder = 1
+  };
+  enum TreeSize {
+    nVar = 28
   };
 
   AliAnalysisTaskSubJetFraction();
@@ -82,10 +85,48 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetReclusteringAlgorithm(Int_t ReclusteringAlgorithm)     {fReclusteringAlgorithm = ReclusteringAlgorithm;}
   void SetSoftDropOn(Int_t SoftDropOn)                           {fSoftDropOn = SoftDropOn;}
+  void SetMLOn(Int_t MLOn)                           {fMLOn = MLOn;}
   Int_t GetSoftDropOn()                                          {return fSoftDropOn;}
+  Int_t GetMLOn()                                          {return fMLOn;}
   void SetRandomisationEqualPt(Bool_t RandmosationEqualPt)       {fRandomisationEqualPt = RandmosationEqualPt;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
+
+
+
+AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char * njetsData, //data jets
+								    const char * njetsTrue, //Pyhthia Particle Level
+								    const char * njetsDet,
+								    const char * njetsHybridUs,
+								    const char * njetsHybridS,
+								    const Double_t R,
+								    const char * nrhoBase, 
+								    const char * ntracksData,
+                                                                    const char * ntracksTrue,
+                                                                    const char * ntracksDet, 
+								    const char * ntracksHybridUs,
+								    const char * ntracksHybridS,
+								    const char * nclusters,
+								    const char *type,				      
+								    const char *CentEst,
+								    Double_t fSharedFractionPtMin,
+								    Int_t SubJetAlgorithm,
+								    Float_t SubJetRadius,
+								    Float_t SubJetMinPt,
+								    Int_t       pSel,
+								    TString     trigClass      = "",
+								    TString     kEmcalTriggers = "",
+								    TString     tag            = "",
+								    AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType = AliAnalysisTaskSubJetFraction::kTrue, // tobefixedbyauthor
+								    AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub = AliAnalysisTaskSubJetFraction::kNoSub, // tobefixedbyauthor
+								    AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection =AliAnalysisTaskSubJetFraction::kInclusive, // tobefixedbyauthor
+								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskSubJetFraction::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskSubJetFraction::kSecondOrder, Int_t SoftDropOn=0, Int_t MLOn=0);
+
+
+
+
+
+  
 
  protected:
   Bool_t                              RetrieveEventObjects();
@@ -113,7 +154,10 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
+  TreeSize                            fTreeSize;
   Double_t                            fShapesVar[nVar];                  // jet shapes used for the tagging
+  std::vector<std::vector<Double_t>>            fShapesVar_Tracks_Rec;
+  std::vector<std::vector<Double_t>>            fShapesVar_Tracks_Truth;
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
 
@@ -141,6 +185,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            fZCut;
   Int_t                               fReclusteringAlgorithm;
   Int_t                               fSoftDropOn;
+  Int_t                               fMLOn;
   Bool_t                              fRandomisationEqualPt;
 
   Bool_t                              fNsubMeasure;
@@ -257,13 +302,13 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1D                                *fhSubJettiness2to1_FJ_OP_WTA_KT;
   TH1D                                *fhSubJettiness2to1_FJ_OP_WTA_CA;
   TH1D                                *fhSubJettiness2to1_FJ_MIN; 
-  TTree                               *fTreeResponseMatrixAxis;  //Tree with tagging variables subtracted MC or true MC or raw 
+  TTree                               *fTreeResponseMatrixAxis;  //Tree with tagging variables subtracted MC or true MC or raw
+  TTree                               *fTreeTracks;
 
  private:
   AliAnalysisTaskSubJetFraction(const AliAnalysisTaskSubJetFraction&);            // not implemented
   AliAnalysisTaskSubJetFraction &operator=(const AliAnalysisTaskSubJetFraction&); // not implemented
 
-  ClassDef(AliAnalysisTaskSubJetFraction, 6)
+  ClassDef(AliAnalysisTaskSubJetFraction, 7)
 };
 #endif
-

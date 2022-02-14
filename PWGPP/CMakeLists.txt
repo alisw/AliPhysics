@@ -59,6 +59,8 @@ set ( SRCS1
   AliTrackComparisonESD.cxx
   AliOfflineTrigger.cxx
 		AliMCTreeTools.cxx
+	AliPIDtools.cxx	
+	AliESDtools.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
@@ -69,6 +71,7 @@ set ( SRCS2
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliAnalysisTaskCheckGenKine.cxx
+  global/AliAnalysisTaskCountEvents.cxx
   global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
   global/AliAnalysisTaskTrackRefsChecksMultipleSpecies.cxx
@@ -169,6 +172,7 @@ set ( SRCS8
   TPC/AliTPCPIDEtaTree.cxx
   TPC/AliTPCPIDEtaQA.cxx
   TPC/AliTPCcalibResidualPID.cxx
+  TPC/AliTPCcalibResidualPID_Modified.cxx
   )
 #file ( GLOB SRCS9 "TOF/*.cxx" )
 set ( SRCS9
@@ -208,6 +212,8 @@ set ( SRCS13
 #file ( GLOB SRCS14 "T0/*.cxx" )
 set ( SRCS14
   T0/AliT0AnalysisTaskQA.cxx
+  T0/spectrum/AliAnalysisTaskSpectrumT0.cxx
+  T0/spectrum/EventStructT0.cxx
   )
 #file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
 set (SRCS15
@@ -328,6 +334,10 @@ install(FILES HMPID/AddTaskHmpidQA.C DESTINATION PWGPP/HMPID)
 install(FILES HMPID/macros/copyHMPQAfiles.C
  	      HMPID/macros/makeHMPQA.C DESTINATION PWGPP/HMPID/macros)
 install(FILES T0/AddTaskT0QA.C
+        T0/spectrum/AddAnalysisTaskSpectrumT0.C
+        T0/spectrum/runListRCT2016_pp_tzero.root
+        T0/spectrum/runListRCT2017_pp_tzero.root
+        T0/spectrum/runListRCT2018_pp_tzero.root
 	      T0/MakeTrendT0.C
 	      T0/drawPerformanceT0QATrends.C
 	      DESTINATION PWGPP/T0)
@@ -391,17 +401,13 @@ install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
 	      EvTrkSelection/macros/main_AddSingleTrackEfficiencyTaskForAutomaticQA.C
 	      DESTINATION PWGPP/EvTrkSelection)
-install(FILES CalibMacros/CPass0/LoadLibraries.C
-	      CalibMacros/CPass0/ConfigCalibTrain.C
-	      CalibMacros/CPass0/AddTaskTPCCalib.C
+install(FILES CalibMacros/CPass0/AddTaskTPCCalib.C
 	      CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass0/AddTaskT0Calib.C
 	      CalibMacros/CPass0/AddTaskMeanVertexCalib.C
 	      CalibMacros/CPass0/AddTaskSDDCalib.C
 	      DESTINATION PWGPP/CalibMacros/CPass0)
-install(FILES CalibMacros/CPass1/LoadLibraries.C
-	      CalibMacros/CPass1/ConfigCalibTrain.C
-	      CalibMacros/CPass1/AddTaskTPCCalib.C
+install(FILES CalibMacros/CPass1/AddTaskTPCCalib.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
 	      CalibMacros/CPass1/AddTaskT0Calib.C

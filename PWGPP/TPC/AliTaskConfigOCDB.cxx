@@ -15,6 +15,7 @@
 
 #include "AliTaskConfigOCDB.h"
 
+#include <TObjString.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TGeoGlobalMagField.h>

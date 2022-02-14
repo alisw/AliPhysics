@@ -44,6 +44,8 @@
 #include "AliFemtoModelWeightGeneratorBasicLednicky.h"
 #include "AliFemtoModelCorrFctnKStarFull.h"
 
+#include "AliFemtoCorrFctnDirectYlm.h"
+
 #include <string>
 #include <iostream>
 #include <stdio.h>
@@ -109,11 +111,17 @@ struct AnalysisParams
   bool removeMisidentifiedMCParticles;
   bool setV0SharedDaughterCut;
 
+  bool addCutMonitors;
   bool monitorEvCutPassOnly;
   bool monitorPart1CutPassOnly;
   bool monitorPart2CutPassOnly;
   bool monitorPairCutPassOnly;
   bool useMCWeightGenerator;
+
+  bool buildSphericalHarmonics;
+  bool useLCMSforSH;
+
+  bool buildIndmTBinnedCfs;
 };
 
 struct EventCutParams
@@ -367,6 +375,7 @@ struct PairCutParams
   AliFemtoAvgSepCorrFctn* CreateAvgSepCorrFctn(const char* name, unsigned int bins, double min, double max);
   AliFemtoModelCorrFctnKStarFull* CreateModelCorrFctnKStarFull(const char* name, unsigned int bins, double min, double max);    //TODO check that enum to int is working
   AliFemtoV0PurityBgdEstimator* CreateV0PurityBgdEstimator();
+  AliFemtoCorrFctnDirectYlm* CreateCorrFctnDirectYlm(const char* name, int maxl, unsigned int bins, double min, double max, int useLCMS);
 
   void AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut);
   void SetAnalysis(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut);

@@ -1,27 +1,12 @@
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-// AliFemtoKTPairCut - a pair cut which selects pairs based on their       //
-// transverse momentum kT                                                  //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-/***************************************************************************
- *
- * $Id: AliFemtoKTPairCut.cxx,v 1.1.2.2 2007/11/09 11:20:35 akisiel Exp $
- *
- * Author: Adam Kisiel, Ohio State, kisiel@mps.ohio-state.edu
- ***************************************************************************
- *
- * Description: part of STAR HBT Framework: AliFemtoMaker package
- *   a cut to remove "shared" and "split" pairs
- *
- ***************************************************************************
- *
- *
- **************************************************************************/
+///
+/// \class AliFemtoKTPairCut.cxx
+///
+
 #include "AliFemtoKTPairCut.h"
-#include <string>
-#include <cstdio>
+
 #include <TMath.h>
+#include <string>
+
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -29,55 +14,41 @@
   /// \endcond
 #endif
 
-//__________________
 AliFemtoKTPairCut::AliFemtoKTPairCut():
-  AliFemtoPairCut(),
-  fKTMin(0),
-  fKTMax(1.0e6),
-  fPhiMin(0),
-  fPhiMax(360.0),
-  fPtMin(0.0),
-  fPtMax(1000.0)
+  AliFemtoKTPairCut(0, 1.0e6)
 {
-  fKTMin = 0;
-   fKTMax = 1.0e6;
-}
-//__________________
-AliFemtoKTPairCut::AliFemtoKTPairCut(double lo, double hi) :
-  AliFemtoPairCut(),
-  fKTMin(lo),
-  fKTMax(hi),
-  fPhiMin(0),
-  fPhiMax(360),
-  fPtMin(0.0),
-  fPtMax(1000.0)
-{
-}
-//__________________
-AliFemtoKTPairCut::AliFemtoKTPairCut(const AliFemtoKTPairCut& c) : 
-  AliFemtoPairCut(c),
-  fKTMin(0),
-  fKTMax(1.0e6),
-  fPhiMin(0),
-  fPhiMax(360),
-  fPtMin(0.0),
-  fPtMax(1000.0)
-{ 
-  fKTMin = c.fKTMin;
-  fKTMax = c.fKTMax;
-  fPhiMin = c.fPhiMin;
-  fPhiMax = c.fPhiMax;
-  fPtMin = c.fPtMin;
-  fPtMax = c.fPtMax;
 }
 
-//__________________
-AliFemtoKTPairCut::~AliFemtoKTPairCut(){
-  /* no-op */
+AliFemtoKTPairCut::AliFemtoKTPairCut(double lo, double hi):
+  AliFemtoPairCut()
+  , fKTMin(lo)
+  , fKTMax(hi)
+  , fPhiMin(0)
+  , fPhiMax(360)
+  , fPtMin(0.0)
+  , fPtMax(1000.0)
+{
 }
+
+AliFemtoKTPairCut::AliFemtoKTPairCut(const AliFemtoKTPairCut& c):
+  AliFemtoPairCut(c)
+  , fKTMin(c.fKTMin)
+  , fKTMax(c.fKTMax)
+  , fPhiMin(c.fPhiMin)
+  , fPhiMax(c.fPhiMax)
+  , fPtMin(c.fPtMin)
+  , fPtMax(c.fPtMax)
+{
+}
+
+AliFemtoKTPairCut::~AliFemtoKTPairCut()
+{
+}
+
 AliFemtoKTPairCut& AliFemtoKTPairCut::operator=(const AliFemtoKTPairCut& c)
 {
   if (this != &c) {
+    AliFemtoPairCut::operator=(c);
     fKTMin = c.fKTMin;
     fKTMax = c.fKTMax;
     fPhiMin = c.fPhiMin;
@@ -91,7 +62,7 @@ AliFemtoKTPairCut& AliFemtoKTPairCut::operator=(const AliFemtoKTPairCut& c)
 //__________________
 /*bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair){
   bool temp = true;
-  
+
   if (pair->KT() < fKTMin)
     temp = false;
 
@@ -100,36 +71,34 @@ AliFemtoKTPairCut& AliFemtoKTPairCut::operator=(const AliFemtoKTPairCut& c)
 
   return temp;
 }*/
-//__________________
-AliFemtoString AliFemtoKTPairCut::Report(){
+
+AliFemtoString AliFemtoKTPairCut::Report()
+{
   // Prepare a report from the execution
-  string stemp = "AliFemtoKT Pair Cut \n";  char ctemp[100];
-  snprintf(ctemp , 100, "Accept pair with kT in range %f , %f",fKTMin,fKTMax);
-  snprintf(ctemp , 100, "Accept pair with angle in range %f , %f",fPhiMin,fPhiMax);
-  stemp += ctemp;
-  AliFemtoString returnThis = stemp;
-  return returnThis;}
-//__________________
+  AliFemtoString report = "AliFemtoKT Pair Cut \n";
+  report += Form("Accept pair with kT in range %f , %f",fKTMin,fKTMax);
+  report += Form("Accept pair with pT in range %f , %f", fPtMin,fPtMax);
+  report += Form("Accept pair with angle in range %f , %f",fPhiMin,fPhiMax);
+
+  return report;
+}
 
 TList *AliFemtoKTPairCut::ListSettings()
 {
   // return a list of settings in a writable form
-  TList *tListSetttings =  new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoKTPairCut.ktmax=%f", fKTMax);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKTPairCut.ktmin=%f", fKTMin);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKTPairCut.phimax=%f", fPhiMax);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKTPairCut.phimin=%f", fPhiMin);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKTPairCut.ptmin=%f", fPtMin);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoKTPairCut.ptmax=%f", fPtMax);
-  tListSetttings->AddLast(new TObjString(buf));
+  TList *settings = new TList();
 
-  return tListSetttings;
+  settings->AddVector(
+    new TObjString(TString::Format("AliFemtoKTPairCut.ktmax=%f", fKTMax)),
+    new TObjString(TString::Format("AliFemtoKTPairCut.ktmin=%f", fKTMin)),
+    new TObjString(TString::Format("AliFemtoKTPairCut.phimax=%f", fPhiMax)),
+    new TObjString(TString::Format("AliFemtoKTPairCut.phimin=%f", fPhiMin)),
+    new TObjString(TString::Format("AliFemtoKTPairCut.ptmin=%f", fPtMin)),
+    new TObjString(TString::Format("AliFemtoKTPairCut.ptmax=%f", fPtMax)),
+    nullptr
+  );
+
+  return settings;
 }
 
 void AliFemtoKTPairCut::SetKTRange(double ktmin, double ktmax)
@@ -150,64 +119,48 @@ void AliFemtoKTPairCut::SetPTMin(double ptmin, double ptmax)
   fPtMax = ptmax;
 }
 
-//______________________________________________________
 bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair)
 {
-  bool temp = true;
-
-//Taking care of the Kt cut
-  if (pair->KT() < fKTMin)
-    temp = false;
-
-  if (pair->KT() > fKTMax)
-    temp = false;
-
-  if (!temp) return temp;
-
-  if ((fPtMin > 0.0) || (fPtMax<1000.0)) {
-//     double px1 = pair->Track1()->Track()->P().x();
-//     double py1 = pair->Track1()->Track()->P().y();
-
-//     double px2 = pair->Track2()->Track()->P().x();
-//     double py2 = pair->Track2()->Track()->P().y();
-    
-//     double pt1 = TMath::Hypot(px1, py1);
-//     double pt2 = TMath::Hypot(px2, py2);
-    
-//     if ((pt1<fPtMin) || (pt1>fPtMax)) return false;
-//     if ((pt2<fPtMin) || (pt2>fPtMax)) return false;
-    if ((pair->Track1()->Track()->Pt()<fPtMin) || (pair->Track1()->Track()->Pt()>fPtMax)) return false;
-    if ((pair->Track2()->Track()->Pt()<fPtMin) || (pair->Track2()->Track()->Pt()>fPtMax)) return false;
+  // Taking care of the kT cut
+  if (pair->KT() < fKTMin || fKTMax <= pair->KT()) {
+    return false;
   }
 
-//Taking care of the Phi cut
-//   double rpangle = (pair->GetPairAngleEP())*180/TMath::Pi();
+  // Taking care of the pT cut
+  if ((fPtMin > 0.0) || (fPtMax < 1000.0)) {
+    const double pt1 = pair->Track1()->Track()->Pt(),
+                 pt2 = pair->Track2()->Track()->Pt();
+
+    if (pt1 < fPtMin || fPtMax <= pt1) {
+      return false;
+    }
+
+    if (pt2 < fPtMin || fPtMax <= pt2) {
+      return false;
+    }
+  }
+
+  // Taking care of the Phi cut
   double rpangle = pair->GetPairAngleEP();
 
   if (rpangle > 180.0) rpangle -= 180.0;
   if (rpangle < 0.0) rpangle += 180.0;
-  
-  if (fPhiMin < 0) {
-    if ((rpangle > fPhiMax) && (rpangle < 180.0+fPhiMin)) 
-      temp = false;
+
+  // note: handle "wrap around" if the minimum phi is negative
+  if (fPhiMin < 0.0) {
+    return (rpangle < fPhiMax) || (180.0+fPhiMin <= rpangle);
   }
-  else {
-    if ((rpangle < fPhiMin) || (rpangle > fPhiMax))
-      temp = false;
-  }
-  return temp;
+
+  // return whether angle is within phi-range
+  return (fPhiMin <= rpangle) && (rpangle < fPhiMax);
 }
 
-//_____________________________________
 bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair, double aRPAngle)
 {
-//The same as above, but it is defined with RP Angle as input in all the Correlatin function classes.
+  // The same as above, but it is defined with RP Angle as input in
+  // all the Correlation function classes.
 
-  bool temp = (aRPAngle > 0.);
-  aRPAngle = true;
-   
-  if (!Pass(pair))
-	temp = false;
+  bool passes = (aRPAngle > 0.) && Pass(pair);
 
-  return temp;
+  return passes;
 }

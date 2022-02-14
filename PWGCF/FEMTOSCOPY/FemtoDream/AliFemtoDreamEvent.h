@@ -24,10 +24,11 @@ class AliFemtoDreamEvent {
     kV0C = 4,
   };
   AliFemtoDreamEvent();
-  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger);
+  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger, bool useEvtCuts = true, float LowPtSpherCalc = 0.5);
   AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
+  void SetEvent(AliVEvent *evt);
   void SetEvent(AliESDEvent *evt);
   TList *GetEvtCutList() const {
     return fEvtCutList;
@@ -61,6 +62,10 @@ class AliFemtoDreamEvent {
     return fzVtxSPD;
   }
   ;
+  float GetBField() const {
+    return fBField;
+  }
+  ;
   float GetZVertexTracks() const {
     return fzVtxTracks;
   }
@@ -73,12 +78,22 @@ class AliFemtoDreamEvent {
     return fSPDMult;
   }
   ;
-  void SetSPDCluster(int spdCluster) {
-    fNSPDCluster = spdCluster;
+  void SetSPDClusterLy1(int spdCluster) {
+    fNSPDClusterLy0 = spdCluster;
   }
   ;
-  int GetSPDCluster() const {
-    return fNSPDCluster;
+  void SetSPDClusterLy2(int spdCluster) {
+    fNSPDClusterLy1 = spdCluster;
+  }
+  ;
+  int GetSPDCluster(int ly) const {
+    if (ly == 0) {
+      return fNSPDClusterLy0;
+    } else if (ly == 1) {
+      return fNSPDClusterLy1;
+    } else {
+      return 0.;
+    }
   }
   ;
   void SetRefMult08(int refMult) {
@@ -109,6 +124,9 @@ class AliFemtoDreamEvent {
     return (fV0AMult + fV0CMult) / 2.;
   }
   ;
+  float GetV0ATime() const { return fV0ATime; }
+  float GetV0CTime() const { return fV0CTime; }
+
   float GetV0MCentrality() const {
     return fV0MCentrality;
   }
@@ -169,22 +187,53 @@ class AliFemtoDreamEvent {
     return "AliFemtoDreamEvent";
   }
   ;
+  void SetfLowPtSpherCalc(float LowPtSpherCalc) {
+    fLowPtSpherCalc = LowPtSpherCalc;
+  }
+  ;
+  void SetSpher(double spher) {
+    fspher = spher;
+  }
+  ;
+  float GetSpher() const {
+    return fspher;
+  }
+  ;
+  void SetSphero(double sphero) {
+    fsphero = sphero;
+  }
+  float GetSphero() const {
+    return fsphero;
+  }
+  void SetCalcSpherocity(bool calcsphero) {
+      fcalcsphero=calcsphero;
+  }
+
  private:
   AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
+  double CalculateSphericityEvent(AliAODEvent *evt, float lowerPtbound=0.5);
+  double CalculateSphericityEvent(AliVEvent *evt);
+  double CalculateSpherocityEvent(AliAODEvent *evt);
+  double CalculateSpherocityEvent(AliVEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
+  bool fuseAliEvtCuts;        //!
   TList *fEvtCutList;         //!
   float fxVtx;                //!
   float fyVtx;                //!
   float fzVtx;                //!
   float fzVtxTracks;          //!
   float fzVtxSPD;             //!
+  float fBField;              //!
   int fSPDMult;               //!
-  int fNSPDCluster;           //!
+  int fNSPDClusterLy0;        //!
+  int fNSPDClusterLy1;        //!
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!
+  float fV0ATime;             //!
+  float fV0CTime;             //!
   float fV0MCentrality;       //!
   int fnContrib;              //!
   bool fPassAliEvtSelection;  //!
@@ -193,7 +242,11 @@ class AliFemtoDreamEvent {
   bool fHasMagField;          //!
   bool fisSelected;           //!
   MultEstimator fEstimator;   //!
-ClassDef(AliFemtoDreamEvent,3)
+  double fspher;            //!
+  float fLowPtSpherCalc;      //!
+  double fsphero;            //!
+  bool fcalcsphero;         //!
+ClassDef(AliFemtoDreamEvent,7)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

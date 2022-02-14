@@ -32,6 +32,7 @@ AliAnalysisTaskPHOSEmbeddedDiffObjectCreator* AddTaskPHOSEmbeddedDiffObjectCreat
   task->SetMCFlag(isMC);
   task->SetBunchSpace(BunchSpace);//in unit of ns
   task->SetEmbeddedParticle(parname);
+  task->SetEmbedding(kTRUE);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

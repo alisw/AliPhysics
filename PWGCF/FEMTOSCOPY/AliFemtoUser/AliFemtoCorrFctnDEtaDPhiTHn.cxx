@@ -132,8 +132,10 @@ AliFemtoCorrFctnDEtaDPhiTHn::~AliFemtoCorrFctnDEtaDPhiTHn(){
 AliFemtoCorrFctnDEtaDPhiTHn& AliFemtoCorrFctnDEtaDPhiTHn::operator=(const AliFemtoCorrFctnDEtaDPhiTHn& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
+
     char title[]={"bad constructor"};
     Int_t aPhiBins=20;
     Int_t   aEtaBins=20;
@@ -189,15 +191,11 @@ void AliFemtoCorrFctnDEtaDPhiTHn::Finish(){
 //____________________________
 AliFemtoString AliFemtoCorrFctnDEtaDPhiTHn::Report(){
   // create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiDEtaNum->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDEtaDen->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "TPC Ncls Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fDPhiDEtaNum->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDPhiDEtaDen->GetEntries());
+  //  report += mCoulombWeight->Report();
+  return report;
 }
 
 //____________________________

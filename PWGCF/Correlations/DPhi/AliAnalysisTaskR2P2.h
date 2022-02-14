@@ -218,7 +218,6 @@ protected:
     AliAODEvent*             fAODEvent;             //! AOD Event
     AliESDEvent*             fESDEvent;             //! ESD Event
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler
-
     AliPIDResponse*          fPIDResponse; 
     AliHelperPID* fHelperPID;       // points to class for PID
     
@@ -456,7 +455,6 @@ protected:
     
     TH1F * _hPtEff_1;
     TH1F * _hPtEff_2;
-
     TH3F * _weight_1;
     TH3F * _weight_2;
     //    TProfile * _hProfPileupCut;
@@ -501,7 +499,6 @@ protected:
     TH1D *h1_chiSqNDF_NoMisID_NoWeakDecayed; 
     TH1D *h1_chiSqNDF_NoMisID_NoWeakDecayed_NoMaterial;
     */
-
 
     TH1F * _t0_1d;
     TH1F * _trackLength;

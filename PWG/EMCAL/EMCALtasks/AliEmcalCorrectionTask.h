@@ -19,7 +19,7 @@ class AliVEvent;
 
 /**
  * @class AliEmcalCorrectionTask
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Steering task for the EMCal correction framework
  *
  * This class is the steering class for the cell and cluster level corrections
@@ -228,7 +228,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   bool                        fIsEsd;                      ///< File type
   bool                        fEventInitialized;           ///< If the event is initialized properly
-  bool                        fRecycleUnusedEmbeddedEventsMode; ///< Allows the recycling of embedded events which fail internal event selection. See the embedding helper.
   Double_t                    fCent;                       //!<! Event centrality
   Int_t                       fCentBin;                    //!<! Event centrality bin
   Double_t                    fMinCent;                    ///< min centrality for event selection
@@ -250,7 +249,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 6); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 9); // EMCal correction task
   /// \endcond
 };
 

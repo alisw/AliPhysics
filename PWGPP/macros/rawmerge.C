@@ -174,7 +174,7 @@ Bool_t makeAlienInputEventList( TString outputFileName="wn.list",
                                 TString referenceFileName="filteredEvents.list",
                                 TString inputCollectionName="wn.xml" )
 {
-   TAlienCollection *coll = TAlienCollection::Open(inputCollectionName);
+   TGridCollection *coll = gGrid->OpenCollection(inputCollectionName);
    if (!coll)
    {
       ::Error("makeAlienInputEventList", "Cannot open collection from %s", xmlfile);

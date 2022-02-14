@@ -48,7 +48,7 @@
 
 #include "AliEmcalAnalysisFactory.h"
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstring, Bool_t aod){
   AliEmcalTrackSelection *result = NULL;
@@ -358,5 +358,3 @@ double AliEmcalAnalysisFactory::ValueDecoder(const char *cutstring, const char *
   Int_t value = valuestring.Atoi();
   return static_cast<double>(value) / 10.;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

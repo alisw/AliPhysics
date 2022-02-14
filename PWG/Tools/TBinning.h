@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+#include <TObject.h>
+
 /**
  * @class TBinning
  * @brief Interface for binnings used by the histogram handler
@@ -18,7 +20,7 @@
  * void CreateBinEdges(TArrayD &binedges) const.
  * ~~~
  */
-class TBinning {
+class TBinning : public TObject {
 public:
 
   /**
@@ -43,6 +45,8 @@ public:
    * @param [out] binedges Target array of bin edges
    */
   virtual void CreateBinEdges(TArrayD &binedges) const = 0;
+
+  ClassDef(TBinning, 1);
 };
 
 #endif // TBINNING_H

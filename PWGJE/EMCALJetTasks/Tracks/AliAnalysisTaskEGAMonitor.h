@@ -8,7 +8,9 @@ class AliOADBContainer;
 #include <TString.h>
 #include <vector>
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEGAMonitor
@@ -49,11 +51,11 @@ private:
   AliOADBContainer                        *fMaskedFastorOADB;       ///< OADB container with masked fastor information
   std::vector<int>                         fMaskedFastors;          ///< List of masked fastors
 
-  /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEGAMonitor, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEGAMONITOR_H */

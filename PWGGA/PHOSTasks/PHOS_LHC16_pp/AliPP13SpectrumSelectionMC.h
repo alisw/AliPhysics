@@ -11,6 +11,11 @@
 class AliPP13SpectrumSelectionMC : public AliPP13SpectrumSelection
 {
 public:
+	enum Particles
+	{
+		kGamma = 22, kPi0 = 111, kEta = 221, kK0s = 310
+	};
+	
 	AliPP13SpectrumSelectionMC(): AliPP13SpectrumSelection() {}
 	AliPP13SpectrumSelectionMC(const char * name, const char * title,
 			AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
@@ -20,7 +25,7 @@ public:
 	}
 
 protected:
-	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
+	virtual Bool_t IsPrimary(const AliAODMCParticle * particle, Double_t rcut=1.) const;
 	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
 	
 	AliPP13SpectrumSelectionMC(const AliPP13SpectrumSelectionMC &);

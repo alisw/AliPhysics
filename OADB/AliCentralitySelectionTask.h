@@ -39,8 +39,9 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void SetMCInput()                        {fIsMCInput = kTRUE;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
   void DontUseCleaning()                   {fUseCleaning=kFALSE;}
-  void SetFillHistos()                     {fFillHistos=kTRUE; DefineOutput(1, TList::Class());
-}
+  void SetFillHistos()                     {fFillHistos=kTRUE; DefineOutput(1, TList::Class()); }
+
+  static AliCentralitySelectionTask* AddTaskCentrality ( const Bool_t fillHistos=kTRUE, const Bool_t aod=kFALSE );
 
  private:
 
@@ -326,7 +327,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;           //control histogram for vertex SPD
   TH1F *fHOutVertexT0 ;         //control histogram for vertex T0
 
-  ClassDef(AliCentralitySelectionTask, 31); 
+  ClassDef(AliCentralitySelectionTask, 31);
 };
 
 #endif

@@ -15,39 +15,62 @@
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang OR CMAKE_COMPILER_IS_GNUCXX)
   if (NOT ${CMAKE_SYSTEM_VERSION} MATCHES el5)
-    message(STATUS "Treating warnings as errors under ${CMAKE_CURRENT_SOURCE_DIR}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+    #message(STATUS "Treating warnings as errors under ${CMAKE_CURRENT_SOURCE_DIR}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ")#-Werror
   endif()
 endif()
+
+
 
 #Module
 set (MODULE PWGCFFlowForward)
 
+
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Forward)
+include_directories(
+  ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Forward
+)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/OADB
   ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
-  ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/c2
+  ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/C2
   ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Forward
   ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
   )
 
 # Sources - alphabetical order
 set(SRCS
-  AliForwardFlowRun2Settings.cxx
+  AliForwardSettings.cxx
+  AliForwardTaskValidation.cxx
+  AliForwardFlowUtil.cxx
+  AliForwardWeights.cxx
   AliForwardNUATask.cxx
+  AliForwardNUETask.cxx
   AliForwardGenericFramework.cxx
-  AliForwardQCumulantRun2.cxx
   AliForwardFlowRun2Task.cxx
   AliForwardSecondariesTask.cxx
+  AliForwardFlowResultStorage.cxx
   )
 
 # Headers from sources
-string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+# string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+set(HDRS
+  AliForwardSettings.h
+  AliForwardTaskValidation.h
+  AliForwardFlowUtil.h
+  AliForwardWeights.h
+  AliForwardNUATask.h
+  AliForwardNUETask.h
+  AliForwardGenericFramework.h
+  AliForwardFlowRun2Task.h
+  AliForwardSecondariesTask.h
+  AliForwardFlowResultStorage.h
+  )
+
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -78,8 +101,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
-

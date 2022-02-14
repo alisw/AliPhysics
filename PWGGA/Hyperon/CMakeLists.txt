@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
@@ -40,12 +41,6 @@ set(SRCS
         AliAnalysisTaskSigma0.cxx
         AliAnalysisTaskSigma0Spectra.cxx
         AliCaloParticle.cxx
-        AliSigma0ParticleBase.cxx
-        AliSigma0ParticlePhotonMother.cxx
-        AliSigma0ParticleV0.cxx
-        AliSigma0V0Cuts.cxx
-        AliSigma0PhotonMotherCuts.cxx
-        AliAnalysisTaskSigma0Run2.cxx
    )
 
 # Headers from sources
@@ -57,7 +52,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGEMCALbase PWGEMCALtrigger PWGflowTasks PWGGAGammaConv)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGEMCALbase PWGEMCALtrigger PWGflowTasks PWGGAGammaConvBase PWGGAGammaConv)
 
 # Generate the ROOT map
 # Dependecies

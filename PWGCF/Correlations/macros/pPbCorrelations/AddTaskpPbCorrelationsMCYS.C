@@ -1,14 +1,24 @@
 AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
-								       TString  fListName      = "pPbCorrelations_1",
+								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype = "pPb",
+								       TString  fCollisiontype ="pPb",
 								       Bool_t  fDataType       =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD
+								       Bool_t fFMDcut          =kFALSE,
+								       TString anamode         ="TPCTPC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
 								       TString anacent         ="V0A",
-								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =5
+ 								       TString assomode        ="hadron",							 	                                                                                                             Int_t ffilterbit        =32,
+								       Int_t fFMDcutpar        =7,
+								       Bool_t fmakehole        =kFALSE,
+								       Bool_t fprim            =kFALSE,
+								       Bool_t fcentcalib       =kFALSE,
+								       Bool_t fptdiff          =kFALSE,
+								       Float_t fPtMin          =0.2,
+								       Float_t fPtMax          =8.,
+								       Bool_t fextractsec      =kFALSE,
+								       Bool_t ffillcorrelation =kTRUE,
+								       Bool_t fMCclosure=kFALSE
 								       )
 {
   // Get the current analysis manager.
@@ -39,6 +49,11 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   Double_t cent_mult_binlimitspPb[] = { 0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100};
   Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
 
+
+  //  Double_t cent_mult_binlimitsHMPP[] = { 0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1};
+  Double_t cent_mult_binlimitsHMPP[] = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,2,5,10,15,20,30,40,50,70,80,90,100};
+  Int_t cent_mult_bin_numbHMPP = sizeof(cent_mult_binlimitsHMPP)/sizeof(Double_t) - 1;
+  
   //Correlation task
   AliAnalysisTaskSEpPbCorrelationsMCYS *myTask = new AliAnalysisTaskSEpPbCorrelationsMCYS(fListName.Data());
 
@@ -46,24 +61,41 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   myTask->SetFilterBit(ffilterbit);
   myTask->SetAnalysisMode(anamode);
   myTask->SetAssociatedTrack(assomode);
-  myTask->SetIsAOD(kTRUE);
-  //	myTask->SetPID(fpid);
+  //myTask->SetPID(fpid);
   myTask->SetDatatype(fDataType);
+  myTask->SetCentCalib(fcentcalib);
   myTask->SetRunType(frun2);
+  myTask->SetFMDcut(fFMDcut);
+  myTask->SetFMDcutpar(fFMDcutpar);
+  myTask->Setacceptancehole(fmakehole);
 
+  myTask->SetMinNTracksInPool(5000);
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
-
-  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
-  if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
-  if(fCollisiontype=="pPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
-
+  myTask->Setmcprim(fprim);
+  myTask->SetPtdiff(fptdiff);
+  myTask->SetPtMax(fPtMax);
+  myTask->SetPtMin(fPtMin);
+  myTask->SetFillCorrelation(ffillcorrelation);
+  myTask->SetMCclosure(fMCclosure);
+  myTask->SetQAmode(kTRUE);
+  myTask->SetExtractSec(fextractsec);    
+  
+  //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
+  //  if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+  if(fCollisiontype=="pPb"||fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
+  else if(fCollisiontype=="HMPP"|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
   mgr->AddTask(myTask);
+
+  //cout<<"hogehoge"<<endl;
+  //  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/y/ysekiguc/correction.root ./");
+  //cout<<"hogehoge"<<endl;
+
 
   // Create containers for input/output
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  TString output1name="Corr";
-  TString output2name="QA";
+  ///  TString output1name="Corr";
+  //TString output2name="QA";
 
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(fListName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
@@ -74,6 +106,9 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   mgr->ConnectOutput(myTask,1,coutput);
   mgr->ConnectOutput(myTask,2,coutput2);
   mgr->ConnectOutput(myTask,3,coutput3);
+
+  
+  
 
   return myTask;
 }

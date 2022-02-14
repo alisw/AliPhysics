@@ -58,6 +58,13 @@ fOutputList(0),
 fTreeSRedirector(0x0),
 fEtaDown(-0.8),
 fEtaUp(0.8),
+fAnalysisType(kFALSE),
+fzvtxcut(100),
+ftrackBit(768),
+fCutTPCMaxCls(100.),
+fCutTPCNCls(80.),
+fCutDCAxy(2.4),
+fCutDCAz(3.2),
 fHistPosEffMatrixRec(0),
 fHistNegEffMatrixRec(0),
 fHistPosEffMatrixGen(0),
@@ -69,6 +76,9 @@ fHistZVertexCent(0),
 fEventStatistics(0),
 fHistClustersTPC(0),
 fHistChi2perNDF(0),
+fHistDCAz(0),
+fHistDCAxy(0),
+fHistMagneticField(0),
 fHistVx(0),
 fHistVy(0),
 fHistVz(0),
@@ -85,17 +95,10 @@ hGenPhi(0),
 hGenEta(0),
 fEventCuts(0),
 EventNumber(0),
-//fnCentbinsData(10),
-//fcentDownArr(0),
-//fcentUpArr(0),
 fEta(0),
 fpT(0),
 fPhi(0),
 fCharge(0),
-fEtaMCall(0),
-fpTMCall(0),
-fPhiMCall(0),
-fChargeMCall(0),
 fCentrality(0),
 fhCent(0),
 fPos(0),
@@ -107,44 +110,21 @@ fEtaMCgen(0),
 fpTMCgen(0),
 fPhiMCgen(0),
 fChargegen(0),
-fEtaMCallgen(0),
-fpTMCallgen(0),
-fPhiMCallgen(0),
-fChargeMCallgen(0),
-//fEtaMC(0),
-//fpTMC(0),
 genPos(0),
 genNeg(0),
-allgenPos(0),
-allgenNeg(0),
 Nch(0),
 genNch(0),
 recNch(0),
-allrecNch(0),
-allgenNch(0),
 genMomentsCross(0),
 genMomentsPos(0),
 genMomentsNeg(0),
-allgenMomentsCross(0),
-allgenMomentsPos(0),
-allgenMomentsNeg(0),
 recPos(0),
 recNeg(0),
 recMomentsCross(0),
 recMomentsPos(0),
 recMomentsNeg(0),
-allrecPos(0),
-allrecNeg(0),
-allrecMomentsCross(0),
-allrecMomentsPos(0),
-allrecMomentsNeg(0),
-fAnalysisType(0),
 fTree(0x0),
-fTreeTrackCuts(0x0),
-fTreeMCTrackCuts(0x0),
 fTreeMCrec(0x0),
-fTreeMCallrec(0x0),
-fTreeMCallgen(0x0),
 fTreeMCgen(0x0)
 {
     // default constructor
@@ -160,6 +140,13 @@ fOutputList(0),
 fTreeSRedirector(0x0),
 fEtaDown(-0.8),
 fEtaUp(0.8),
+fAnalysisType(kFALSE),
+fzvtxcut(100),
+ftrackBit(768),
+fCutTPCMaxCls(100.),
+fCutTPCNCls(80.),
+fCutDCAxy(2.4),
+fCutDCAz(3.2),
 fHistPosEffMatrixRec(0),
 fHistNegEffMatrixRec(0),
 fHistPosEffMatrixGen(0),
@@ -171,6 +158,9 @@ fHistZVertexCent(0),
 fEventStatistics(0),
 fHistClustersTPC(0),
 fHistChi2perNDF(0),
+fHistDCAz(0),
+fHistDCAxy(0),
+fHistMagneticField(0),
 fHistVx(0),
 fHistVy(0),
 fHistVz(0),
@@ -187,17 +177,10 @@ hGenPhi(0),
 hGenEta(0),
 fEventCuts(0),
 EventNumber(0),
-//fnCentbinsData(10),
-//fcentDownArr(0),
-//fcentUpArr(0),
 fEta(0),
 fpT(0),
 fPhi(0),
 fCharge(0),
-fEtaMCall(0),
-fpTMCall(0),
-fPhiMCall(0),
-fChargeMCall(0),
 fCentrality(0),
 fhCent(0),
 fPos(0),
@@ -209,44 +192,21 @@ fEtaMCgen(0),
 fpTMCgen(0),
 fPhiMCgen(0),
 fChargegen(0),
-fEtaMCallgen(0),
-fpTMCallgen(0),
-fPhiMCallgen(0),
-fChargeMCallgen(0),
-//fEtaMC(0),
-//fpTMC(0),
 genPos(0),
 genNeg(0),
-allgenPos(0),
-allgenNeg(0),
 Nch(0),
 genNch(0),
 recNch(0),
-allrecNch(0),
-allgenNch(0),
 genMomentsCross(0),
 genMomentsPos(0),
 genMomentsNeg(0),
-allgenMomentsCross(0),
-allgenMomentsPos(0),
-allgenMomentsNeg(0),
 recPos(0),
 recNeg(0),
 recMomentsCross(0),
 recMomentsPos(0),
 recMomentsNeg(0),
-allrecPos(0),
-allrecNeg(0),
-allrecMomentsCross(0),
-allrecMomentsPos(0),
-allrecMomentsNeg(0),
-fAnalysisType(0),
 fTree(0x0),
-fTreeTrackCuts(0x0),
-fTreeMCTrackCuts(0x0),
 fTreeMCrec(0x0),
-fTreeMCallrec(0x0),
-fTreeMCallgen(0x0),
 fTreeMCgen(0x0)
 {
     
@@ -259,8 +219,6 @@ fTreeMCgen(0x0)
     DefineOutput(2, TTree::Class());
     DefineOutput(3, TTree::Class());
     DefineOutput(4, TTree::Class());
-    DefineOutput(5, TTree::Class());
-    DefineOutput(6, TTree::Class());
     
 }
 //==========================================================
@@ -277,6 +235,10 @@ AliAnalysisTaskEbyeNetChargeFluctuations::~AliAnalysisTaskEbyeNetChargeFluctuati
     if (fhCent)               		    delete fhCent;
     if (fHistCentralityMultSelection)   delete fHistCentralityMultSelection;
     if (fEventStatistics)               delete fEventStatistics;
+    if (fHistDCAz)                      delete fHistDCAz;
+    if (fHistDCAxy)                     delete fHistDCAxy;
+    if (fHistMagneticField)             delete fHistMagneticField;
+  
 }
 //============================================================
 //--------------UserCreateOutputObjects-----------------------
@@ -284,6 +246,7 @@ AliAnalysisTaskEbyeNetChargeFluctuations::~AliAnalysisTaskEbyeNetChargeFluctuati
 void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
 {
     
+    cout << "=======User create Object=======" << endl;
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     
@@ -291,6 +254,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     fEventStatistics = new TH1I("fEventStatistics","",10,0,10);
     fOutputList->Add(fEventStatistics);
     
+       if(fAnalysisType == kTRUE){
     // ****************** Efficiency matrix histograms ************************
     // 0 --> particle type: 0 positive, 2, negative
     // 1 --> Centrality
@@ -321,29 +285,15 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     fOutputList->Add(fHistPosEffMatrixGen);
     fOutputList->Add(fHistNegEffMatrixGen);
     
-    // single-track QA plots
-    hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",120,0.0,6.0);
-    hTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    hTrackPt->GetYaxis()->SetTitle("Counts");
-    fOutputList->Add(hTrackPt);
-    hTrackPhi = new TH1F("hTrackPhi","track #varphi;#varphi;",160,0,TMath::TwoPi());
-    hTrackPhi->GetXaxis()->SetTitle("#Phi ");
-    hTrackPhi->GetYaxis()->SetTitle("Counts");
-    fOutputList->Add(hTrackPhi);
-    hTrackEta = new TH1F("hTrackEta","track #eta;#eta;",32, -0.8, 0.8);
-    hTrackEta->GetXaxis()->SetTitle("#eta ");
-    hTrackEta->GetYaxis()->SetTitle("Counts");
-    fOutputList->Add(hTrackEta);
-    
     hTrackPtallrec = new TH1F("hTrackPtallrec","track p_{T};p_{T} (GeV/c);",200,0.0,10.0);
     hTrackPtallrec->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hTrackPtallrec->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackPtallrec);
     hTrackPhiallrec = new TH1F("hTrackPhiallrec","track #varphi;#varphi;",160,0,TMath::TwoPi());
-    hTrackPhiallrec->GetXaxis()->SetTitle("#Phi ");
+    hTrackPhiallrec->GetXaxis()->SetTitle("#phi ");
     hTrackPhiallrec->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackPhiallrec);
-    hTrackEtaallrec = new TH1F("hTrackEtaallrec","track #eta;#eta;",32, -0.8, 0.8);
+    hTrackEtaallrec = new TH1F("hTrackEtaallrec","track #eta;#eta;",40, -1.0, 1.0);
     hTrackEtaallrec->GetXaxis()->SetTitle("#eta ");
     hTrackEtaallrec->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hTrackEtaallrec);
@@ -353,13 +303,28 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     hGenPt->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hGenPt);
     hGenPhi = new TH1F("hGenPhi","generated #varphi;#varphi;",160,0,TMath::TwoPi());
-    hGenPhi->GetXaxis()->SetTitle("#Phi ");
+    hGenPhi->GetXaxis()->SetTitle("#phi ");
     hGenPhi->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hGenPhi);
-    hGenEta = new TH1F("hGenEta","generated #eta;#eta;",32, -0.8, 0.8);
+    hGenEta = new TH1F("hGenEta","generated #eta;#eta;",40, -1.0, 1.0);
     hGenEta->GetXaxis()->SetTitle("#eta ");
     hGenEta->GetYaxis()->SetTitle("Counts");
     fOutputList->Add(hGenEta);
+    }
+    
+    // single-track QA plots
+    hTrackPt = new TH1F("hTrackPt","track p_{T};p_{T} (GeV/c);",120,0.0,6.0);
+    hTrackPt->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hTrackPt->GetYaxis()->SetTitle("Counts");
+    fOutputList->Add(hTrackPt);
+    hTrackPhi = new TH1F("hTrackPhi","track #varphi;#varphi;",160,0,TMath::TwoPi());
+    hTrackPhi->GetXaxis()->SetTitle("#phi ");
+    hTrackPhi->GetYaxis()->SetTitle("Counts");
+    fOutputList->Add(hTrackPhi);
+    hTrackEta = new TH1F("hTrackEta","track #eta;#eta;",40, -1.0, 1.0);
+    hTrackEta->GetXaxis()->SetTitle("#eta ");
+    hTrackEta->GetYaxis()->SetTitle("Counts");
+    fOutputList->Add(hTrackEta);
     
     // AliVEvent QA Cuts
     fEventCuts.AddQAplotsToList(fOutputList);
@@ -382,18 +347,25 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     fHistClustersTPC = new TH1D("fHistClustersTPC","N Clusters TPC;N_{TPC clusters};Entries",181,-0.5,180.5);
     fOutputList->Add(fHistClustersTPC);
     
-    fHistChi2perNDF = new TH1D("fHistChi2perNDF",";#chi^{2} / ndf;n tracks", 700, -1, 6);
+    fHistChi2perNDF = new TH1D("fHistChi2perNDF","Chi2perNDF", 100, -5, 5);
     fOutputList->Add(fHistChi2perNDF);
     
+    fHistDCAxy = new TH1F("fHistDCAxy","DCA xy", 200, -10.0, 10.0);
+    fOutputList->Add(fHistDCAxy);
+    
+    fHistDCAz = new TH1F("fHistDCAz","DCA z", 200, -10.0, 10.0);
+    fOutputList->Add(fHistDCAz);
+    
+    fHistMagneticField = new TH1F("fHistMagneticField","Magnetic Field", 200, -10.0, 10.0);
+    fOutputList->Add(fHistMagneticField);
+        
     // ************************************************************************
     
     // Tree for pt eta and centrality checks
     fTreeSRedirector    = new TTreeSRedirector();
     fTree               = ((*fTreeSRedirector)<<"Realdata").GetTree();
     fTreeMCrec          = ((*fTreeSRedirector)<<"MCrec").GetTree();
-    fTreeMCallrec       = ((*fTreeSRedirector)<<"MCallrec").GetTree();
     fTreeMCgen          = ((*fTreeSRedirector)<<"MCgen").GetTree();
-    fTreeMCallgen       = ((*fTreeSRedirector)<<"MCallgen").GetTree();
     
     cout << "============================================================" << endl;
     cout << "=================End of User Create Object=================="  << endl;
@@ -403,9 +375,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
     PostData(1, fOutputList);
     PostData(2, fTree);
     PostData(3, fTreeMCrec);
-    PostData(4, fTreeMCallrec);
-    PostData(5, fTreeMCgen);
-    PostData(6, fTreeMCallgen);
+    PostData(4, fTreeMCgen);
     
 }
 //============================================================
@@ -413,13 +383,13 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::UserCreateOutputObjects()
 //============================================================
 void AliAnalysisTaskEbyeNetChargeFluctuations::UserExec(Option_t *){
     
-    if(fAnalysisType == 0) {
+    if(fAnalysisType == kFALSE) {
         
         doAODEvent();
         
     } //====================Read data AOD-analysis
     
-    else if(fAnalysisType == 1) {
+    else if(fAnalysisType == kTRUE) {
         
         doMCAODEvent();
         FillMCEffMatrix();
@@ -437,7 +407,6 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     
     fEventStatistics->Fill("before cuts",1);
     
-    //  AliVEvent *event = fInputEvent();
     if (!fInputEvent) return;
     
     fEventStatistics->Fill("after event check",1);
@@ -446,6 +415,14 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     
     if(!fAOD) { Printf("ERROR: fAOD not available"); return; }
     fEventStatistics->Fill("after aod check",1);
+    
+    Int_t MagneticFieldSign = (fAOD->GetMagneticField() < 0) ? 1 : -1;
+    if (!MagneticFieldSign) {Printf( "Number of AOD tracks = %d, magnetic field = %f\n", fAOD->GetNumberOfTracks(), fAOD->GetMagneticField() );return; }
+  
+ //   cout <<"MagneticFieldSign " << MagneticFieldSign << endl;
+    Double_t BField = fAOD->GetMagneticField();
+    fHistMagneticField->Fill(BField);
+  //  Printf("BField = %f\n", BField);
     
     //Physics selection
     UInt_t fSelectMask= fInputHandler->IsEventSelected();
@@ -475,9 +452,9 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
     if(!MultSelection) return;
     fEventStatistics->Fill("found MultSelection object",1);
-    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
     
-    if (TMath::Abs(zv) > 10.0) return;
+    if (TMath::Abs(zv) > fzvtxcut ) return;
     fEventStatistics->Fill("vz cut",1);
     
     if(fCentrality < 0 || fCentrality >= 80) return;
@@ -503,12 +480,12 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     //    Double_t centUpArray[18] = {2.5,5.0,7.5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80};
     
     for (Int_t imom=0; imom<4; imom++){
-        for (Int_t ieta=0; ieta<8; ieta++){
+       for (Int_t ieta=0; ieta<8; ieta++){
             for (Int_t icent=0; icent<9; icent++){
                 
                 Double_t centBin = (centDownArray[icent]+centUpArray[icent])/2.;
                 
-                Double_t etaBin  = (TMath::Abs(etaDownArray[ieta])+etaUpArray[ieta]);
+               Double_t etaBin  = (TMath::Abs(etaDownArray[ieta])+etaUpArray[ieta]);
                 
                 // Initialize the positive and negative particles
                 fPos = 0;
@@ -528,8 +505,10 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                     }
                     
                     if(!AcceptTrack(track)) continue;
+                    
+                    if(!PassDCA(fAOD, track)) continue;
                 
-                    if ((track->Eta()<etaDownArray[ieta]) || (track->Eta()>etaUpArray[ieta])) continue;  // eta Cut
+                   if ((track->Eta()<etaDownArray[ieta]) || (track->Eta()>etaUpArray[ieta])) continue;  // eta Cut
                     
                     fpT     = track->Pt();
                     fEta    = track->Eta();
@@ -559,7 +538,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                 fRunNumber = fInputEvent->GetRunNumber();
                 
                 fEventStatistics->Fill("after event loop",1);
-                
+
                 // calculate second moments
                 fMomentsCross =  fPos * fNeg;
                 fMomentsPos    = fPos * fPos;
@@ -582,15 +561,12 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
                     "centUp="       << centUpArray[icent]  <<       // upper edge of cent bin
                     "momDown="      << momDownArray[imom]  <<       // lower edge of mom bin
                     "momUp="        << momUpArray[imom]    <<       // upper edge of mom bin
-                    "ieta="         << ieta                <<
+                   "ieta="          << ieta                <<
                     "icent="        << icent               <<
                     "imom="         << imom                <<
                     "centBin="      << centBin             <<       // centrality bining
-                    "etabin="       << etaBin              <<       // eta bin
+                   "etabin="        << etaBin              <<       // eta bin
                     "fRunNumber="   << fRunNumber          <<       // Run Number
-                    "fPt="          << fpT                 <<
-                    "fEta="         << fEta                <<
-                    "fPhi="         << fPhi                <<
                     "\n";
                 } //===========tree filling========
                 
@@ -602,9 +578,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doAODEvent(){
     PostData(1, fOutputList);
     PostData(2, fTree);
     PostData(3, fTreeMCrec);
-    PostData(4, fTreeMCallrec);
-    PostData(5, fTreeMCgen);
-    PostData(6, fTreeMCallgen);
+    PostData(4, fTreeMCgen);
     
 }
 
@@ -805,104 +779,6 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
                 } // trackcuts tree fill========
                 
                 // -----------------------------------------------------------------------------------------
-                // cout<< " -----------All reconstructed MC particles------------------------" << endl;
-                // -----------------------------------------------------------------------------------------
-                
-                
-                // Initialize
-                Int_t trCountMCallrec=0, sampleNo = 0;;
-                Int_t allrecPos = 0, allrecNeg = 0;
-                Int_t allrecTotalCharge = 0, allprimPhysicalCount = 0;
-                
-                // Loop over the reconstructed tracks
-                Int_t nTracks(fAOD->GetNumberOfTracks());
-                for(Int_t irec = 0; irec < nTracks; irec++) { // track loop
-                    
-                    // Initialize the variables
-                    allpdg = 0, allpdgMom=0, allpdgMomPhysicalPrim = 0, allpdgMomPrim = 0, allpdgPhysicalPrim = 0, allpdgPrim = 0;
-                    
-                    // get the AOD Tracks
-                    AliAODTrack* trackall = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(irec));
-                    if(!trackall) {
-                        AliError(Form("ERROR: Could not retrieve AODtrack %d",irec));
-                        continue;
-                    }
-                    
-                    // Track cuts from detector
-                    if(!AcceptTrack(trackall)) continue;
-                    
-                    fpTMCall      = trackall->Pt();
-                    fEtaMCall     = trackall->Eta();
-                    fPhiMCall     = trackall->Phi();
-                    fChargeMCall  = trackall->Charge();
-                    
-                    // MC track cuts
-                    if ((fEtaMCall < etaDownArray[ieta]) || fEtaMCall > etaUpArray[ieta]) continue;  // eta cut
-                    
-                    AliAODMCParticle* trackMCallrec = (AliAODMCParticle*)fArrayMC->At(TMath::Abs(trackall->GetLabel()));
-                    if(!trackMCallrec) continue;
-                    
-                    Int_t allpdg = trackMCallrec->GetPdgCode();
-                    
-                    // get the mother of the daughter particle
-                    Int_t allmomlab  = trackMCallrec->GetMother();
-                    AliVParticle *aodMother = mcEvent->GetTrack(allmomlab);
-                    if(aodMother) allpdgMom  = aodMother->PdgCode(); // pdg of mother particle
-                    
-                    //===================apply cuts on pt eta and centrality=====================
-                    if ((fpTMCall >= momDownArray[imom])
-                        &&(fpTMCall < momUpArray[imom])
-                        &&(fCentrality >= centDownArray[icent])
-                        &&(fCentrality < centUpArray[icent])){
-                        
-                        // calculate first moments
-                        if (fChargeMCall < 0 || fChargeMCall > 0) allrecNch++;
-                        if(fChargeMCall > 0) allrecPos++;
-                        if(fChargeMCall < 0) allrecNeg++;
-                        trCountMCallrec++;
-                       
-                    } // end loop of apply cuts
-                    
-                    hTrackPtallrec->Fill(fpTMCall);
-                    hTrackPhiallrec->Fill(fPhiMCall);
-                    hTrackEtaallrec->Fill(fEtaMCall);
-                    
-                } //============end of track loop====================
-                
-                fRunNumber = fInputEvent->GetRunNumber();
-                
-                // calculate second moments
-                allrecMomentsCross  = allrecPos * allrecNeg;
-                allrecMomentsPos    = allrecPos * allrecPos;
-                allrecMomentsNeg    = allrecNeg * allrecNeg;
-                
-                // Tree for all the cuts variables
-                if ( trCountMCallrec>0 ){
-                    if(!fTreeSRedirector) return;
-                    (*fTreeSRedirector)<<"MCallrec"<<
-                    "pos="                 << allrecPos               <<    // MC gen positive particles
-                    "neg="                 << allrecNeg               <<    // MC gen negative particles
-                    "isample1="      	   << subsample1              <<    // sample id for subsample method
-                    "momentscross="        << allrecMomentsCross      <<    // MC gen second moments of pos and neg
-                    "momentspos="          << allrecMomentsPos        <<    // MC gen second moments of pos
-                    "momentsneg="          << allrecMomentsNeg        <<    // MC gen second moments of neg
-                    "etaDown="             << etaDownArray[ieta]      <<    // lower edge of eta bin
-                    "etaUp="               << etaUpArray[ieta]        <<    // upper edge of eta bin
-                    "centDown="            << centDownArray[icent]    <<    // lower edge of cent bin
-                    "centUp="              << centUpArray[icent]      <<    // upper edge of cent bin
-                    "momDown="             << momDownArray[imom]      <<    // lower edge of mom bin
-                    "momUp="               << momUpArray[imom]        <<    // upper edge of mom bin
-                    "ieta="                << ieta                    <<    // eta index loop
-                    "icent="               << icent                   <<    // cent index loop
-                    "imom="                << imom                    <<    // mom index loop
-                    "centBin="             << centBin                 <<    // centrality bining
-                    "etabin="              << etaBin                  <<    // eta bin
-                    "fRunNumber="          << fRunNumber              <<    // Run Number
-                    "\n";
-                    
-                } // trackcuts tree fill========
-                
-                // -----------------------------------------------------------------------------------------
                 // cout<< " ------------------Generated MC particles------------------------" << endl;
                 // -----------------------------------------------------------------------------------------
                 // Initialize the positive and negative particles
@@ -974,7 +850,6 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
                 genMomentsPos    = genPos * genPos;
                 genMomentsNeg    = genNeg * genNeg;
                 
-                
                 // Fill the pt eta and centrality check in the tree
                 if ( trCountMCgen>0 ){
                     if(!fTreeSRedirector) return;
@@ -1001,91 +876,6 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
                     
                 } //===========tree filling========
                 
-                // -----------------------------------------------------------------------------------------
-                // cout<< " ------------------ALL Generated MC particles------------------------" << endl;
-                // -----------------------------------------------------------------------------------------
-                // Initialize the positive and negative particles
-                allgenPos = 0, allgenNeg = 0, allgenNch = 0;
-                Int_t alltrCountMCgen = 0;
-                
-                //=============================== track loop ==============================
-                
-                // Loop over the MC gen tracks
-                Int_t nMCallgenTracks = mcEvent->GetNumberOfTracks();
-                
-                for(Int_t iMC = 0; iMC < nMCallgenTracks; iMC++) {
-                    
-                    AliAODMCParticle *trackMCallgen  = (AliAODMCParticle*)mcEvent->GetTrack(iMC);
-                    if(!trackMCallgen) continue;
-                    
-                    fpTMCallgen         = trackMCallgen->Pt();
-                    fPhiMCallgen        = trackMCallgen->Phi();
-                    fChargeMCallgen     = trackMCallgen->Charge();
-                    fEtaMCallgen        = trackMCallgen->Eta();
-                    
-                    if (fChargeMCallgen == 0) continue;
-                    if (fpTMCallgen < 0.2) continue;
-                    
-                    // MC eta cut
-                    if ((fEtaMCallgen < etaDownArray[ieta]) || (fEtaMCallgen > etaUpArray[ieta])) continue;
-                    
-                    //     if (!trackMCgen->IsPhysicalPrimary()) continue;
-                    Int_t allpdggen     =   trackMCallgen->GetPdgCode();
-                    
-                    // get the mother of the daughter particle
-                    Int_t allmomlabgen                  = trackMCallgen->GetMother();
-                    AliVParticle *allaodMothergen       = mcEvent->GetTrack(allmomlabgen);
-                    if(allaodMothergen) allpdgMomgen    = allaodMothergen->PdgCode(); // pdg of mother particle
-                    
-                    //===================apply cuts on pt eta and centrality=====================
-                    if ((fpTMCallgen>=momDownArray[imom])
-                        &&(fpTMCallgen<momUpArray[imom])
-                        &&(fCentrality>=centDownArray[icent])
-                        &&(fCentrality<centUpArray[icent])){
-                        
-                        // calculate first moments
-                        if (fChargeMCallgen < 0 || fChargeMCallgen > 0) allgenNch++;
-                        if(fChargeMCallgen > 0) allgenPos++;
-                        if(fChargeMCallgen < 0) allgenNeg++;
-                        alltrCountMCgen++;
-                    
-                    } // end loop of apply cuts
-                    
-                } //============end of track loop====================
-                
-                fRunNumber = fInputEvent->GetRunNumber();
-                
-                // calculate second moments
-                allgenMomentsCross  = allgenPos * allgenNeg;
-                allgenMomentsPos    = allgenPos * allgenPos;
-                allgenMomentsNeg    = allgenNeg * allgenNeg;
-                
-                // Fill the pt eta and centrality check in the tree
-                if (alltrCountMCgen>0 ){
-                    if(!fTreeSRedirector) return;
-                    (*fTreeSRedirector)<<"MCallgen"<<
-                    "pos="                 << allgenPos                    <<    // MC gen positive particles
-                    "neg="                 << allgenNeg                    <<    // MC gen negative particles
-                    "isample1="      	   << subsample1                   <<    // sample id for subsample method
-                    "momentscross="        << allgenMomentsCross           <<    // MC gen second moments of pos and neg
-                    "momentspos="          << allgenMomentsPos             <<    // MC gen second moments of pos
-                    "momentsneg="          << allgenMomentsNeg             <<    // MC gen second moments of neg
-                    "etaDown="             << etaDownArray[ieta]           <<    // lower edge of eta bin
-                    "etaUp="               << etaUpArray[ieta]             <<    // upper edge of eta bin
-                    "centDown="            << centDownArray[icent]         <<    // lower edge of cent bin
-                    "centUp="              << centUpArray[icent]           <<    // upper edge of cent bin
-                    "momDown="             << momDownArray[imom]           <<    // lower edge of mom bin
-                    "momUp="               << momUpArray[imom]             <<    // upper edge of mom bin
-                    "ieta="                << ieta                         <<    // eta index loop
-                    "icent="               << icent                        <<    // cent index loop
-                    "imom="                << imom                         <<    // mom index loop
-                    "centBin="             << centBin                      <<    // centrality bin
-                    "etabin="              << etaBin                       <<    // eta bin
-                    "fRunNumber="          << fRunNumber                   <<    // Run Number
-                    "\n";
-                    
-                } //===========tree filling========
-                
             } //===========end of momentum loop
         } //===========end of eta loop
     } //===========end of centrality loop
@@ -1095,9 +885,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
     PostData(1, fOutputList);
     PostData(2, fTree);
     PostData(3, fTreeMCrec);
-    PostData(4, fTreeMCallrec);
-    PostData(5, fTreeMCgen);
-    PostData(6, fTreeMCallgen);
+    PostData(4, fTreeMCgen);
     
 }
 //--------------------------------------------------------------------------------
@@ -1275,25 +1063,57 @@ Bool_t AliAnalysisTaskEbyeNetChargeFluctuations::AcceptTrack(AliAODTrack* aodtra
     
     if(!aodtrack) return kFALSE;
     Double_t pt = aodtrack->Pt();
-    
+
     if(pt< 0.2) return kFALSE;
     if( aodtrack->Charge() == 0 ) return kFALSE;
-    if(!aodtrack->TestFilterBit(768)) return kFALSE;   // for hybrid tracks
-   // if(aodtrack->GetTPCNcls() < 80) return kFALSE;
-   // if(aodtrack->Chi2perNDF() > 4.0) return kFALSE;
     
-    fHistClustersTPC->Fill(aodtrack->GetTPCNcls());
-    fHistChi2perNDF->Fill(aodtrack->Chi2perNDF());
-    
+    if(!aodtrack->TestFilterBit(ftrackBit)) return kFALSE;   // for hybrid tracks
+
+     if(aodtrack->GetTPCCrossedRows() < fCutTPCMaxCls) return kFALSE;
+     if(aodtrack->GetTPCNcls() < fCutTPCNCls) return kFALSE;
+
     return kTRUE;
 }
 
+//------------------------------------------------------------------------------
+
+Bool_t AliAnalysisTaskEbyeNetChargeFluctuations::PassDCA(AliAODEvent *fAOD,AliAODTrack* aodtrack) const{
+
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    
+    const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
+    Double_t d0z0[2]={-999,-999}, cov[3];
+    Double_t DCAxyCut = fCutDCAxy, DCAzCut = fCutDCAz;
+    
+    Float_t dxy, dz ;
+    dxy = aodtrack->DCA();
+    dz  = aodtrack->ZAtDCA();
+    if(TMath ::Abs(dxy) > DCAxyCut || TMath ::Abs(dz) > DCAzCut) return kFALSE;
+    //  cout<<dxy<<dz<<endl;
+    
+    fHistDCAz->Fill(dz);
+    fHistDCAxy->Fill(dxy);
+    
+    if(aodtrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 100., d0z0, cov))
+    if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
+    
+ //   cout << d0z0[0] << "\t" << d0z0[1] << endl;
+    
+//    fHistDCAz->Fill(d0z0[1]);
+//    fHistDCAxy->Fill(d0z0[0]);
+    
+ 
+    
+    return kTRUE;
+    
+}
+    
 //------------------------------------------------------------------------------------------
 void AliAnalysisTaskEbyeNetChargeFluctuations::Terminate(Option_t *)
 {
     // terminate
     // called at the END of the analysis (when all events are processed)
-    Info("AliAnalysisEbyeNetChargeFluctuations"," Task Successfully finished");
+    Info("AliAnalysisTaskEbyeNetChargeFluctuations"," Task Successfully finished");
     AliInfo(Form("Found  %d MC events",EventNumber));
     
     

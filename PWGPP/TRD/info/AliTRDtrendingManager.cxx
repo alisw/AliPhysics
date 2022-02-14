@@ -8,6 +8,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#include <TObjString.h>
 #include "TFile.h"
 #include "TKey.h"
 #include "TObjArray.h"

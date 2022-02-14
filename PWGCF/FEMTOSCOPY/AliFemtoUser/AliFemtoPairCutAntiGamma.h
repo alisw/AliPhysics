@@ -30,29 +30,48 @@
 
 class AliFemtoPairCutAntiGamma : public AliFemtoShareQualityPairCut{
 public:
+
     AliFemtoPairCutAntiGamma();
     AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamma& c);
     virtual ~AliFemtoPairCutAntiGamma();
     AliFemtoPairCutAntiGamma& operator=(const AliFemtoPairCutAntiGamma& c);
-    
+
     virtual bool Pass(const AliFemtoPair* pair);
     virtual AliFemtoString Report();
     virtual TList *ListSettings();
-    virtual AliFemtoPairCut* Clone();
+    virtual AliFemtoPairCutAntiGamma* Clone() const;
     void SetMaxEEMinv(Double_t maxeeminv);
     void SetMaxThetaDiff(Double_t maxdtheta);
     void SetTPCEntranceSepMinimum(double dtpc);
     void SetAvgsepMinimum(double minAvgsep);
     /* void SetTPCExitSepMinimum(double dtpc); */
     void SetDataType(AliFemtoDataType type);
-    
+    void SetNanoAODAnalysis(bool aNanoAOD);
+
+    double GetMinAvgSep() const
+      { return fMinAvgsep; }
+
+    double GetMaxEEMinv() const
+      { return fMaxEEMinv; }
+
+    double GetMaxDTheta() const
+      { return fMaxDTheta; }
+
+    double GetDTPCMin() const
+      { return fDTPCMin; }
+
+    int GetDataType() const
+      { return fDataType; }
+
 protected:
     Double_t fMaxEEMinv; // Maximum allowed ee Minv
     Double_t fMaxDTheta; // Maximum polar angle difference
     Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
     Double_t fMinAvgsep;        // Minimum allowed pair avergae separation
     AliFemtoDataType fDataType; //Use ESD / AOD / Kinematics.
-    
+    bool fNanoAODAnalysis;
+
+
 private:
     bool TpcPointIsUnset(const AliFemtoThreeVector& v);
 #ifdef __ROOT__
@@ -60,6 +79,10 @@ private:
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutAntiGamma::Clone() { AliFemtoPairCutAntiGamma* c = new AliFemtoPairCutAntiGamma(*this); return c;}
+inline AliFemtoPairCutAntiGamma* AliFemtoPairCutAntiGamma::Clone() const
+{
+  return new AliFemtoPairCutAntiGamma(*this);
+}
+inline void AliFemtoPairCutAntiGamma::SetNanoAODAnalysis(bool aNanoAOD) {fNanoAODAnalysis = aNanoAOD;}
 
 #endif

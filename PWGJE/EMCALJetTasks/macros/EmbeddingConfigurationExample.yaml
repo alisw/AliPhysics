@@ -1,0 +1,12 @@
+name: "Embedding configuration for LHC12a15e_fix - 2.76 TeV PYTHIA"
+
+# May also want to provide a run list here
+#runList: [123456, 234567, ...]
+
+# Configure internal event selection.
+internalEventSelection:
+    enabled: true
+    centralityRange: [0, 50]
+    physicsSelection:
+        - "kAnyINT"
+        - "kCentral"

@@ -31,6 +31,7 @@
 
 /// \file AliQnCorrectionsQnVectorTwistAndRescale.cxx
 /// \brief Implementation of procedures for Qn vector twist and rescale corrections.
+#include <TObjString.h>
 #include "AliQnCorrectionsEventClassVariablesSet.h"
 #include "AliQnCorrectionsProfileComponents.h"
 #include "AliQnCorrectionsProfile3DCorrelations.h"

@@ -30,8 +30,8 @@ public:
   
   Bool_t      CheckForPrimaryVertex()  const ;
     
-  TClonesArray   * GetAODMCParticles() const ;
-  AliAODMCHeader * GetAODMCHeader   () const ;
+  TClonesArray     * GetAODMCParticles() const ;
+  AliAODMCHeader   * GetAODMCHeader   () const ;
   AliGenEventHeader* GetGenEventHeader() const ;
 
   TList *     GetCreateControlHistograms() ;
@@ -50,6 +50,10 @@ public:
   ULong_t     GetTrackFilterMaskComplementary()  const { return fTrackFilterMaskComplementary       ; }
   void        SetTrackFilterMaskComplementary(ULong_t bit) {    fTrackFilterMaskComplementary = bit ; }
   
+  Bool_t      IsMCParticleFromOutOfBunchPileupCollision(Int_t index)  const ;
+  Bool_t      IsPileupInGeneratedMCEvent(TString genname="")          const ;
+  Bool_t      IsSameBunchPileupInGeneratedMCEvent(TString genname="") const ;
+
   void        SwitchOnAODHybridTrackSelection()        { fSelectHybridTracks  = kTRUE  ; }
   void        SwitchOffAODHybridTrackSelection()       { fSelectHybridTracks  = kFALSE ; }
   
@@ -64,6 +68,8 @@ public:
   
   void        SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
   
+  void        Print(const Option_t * opt) const;
+
 private:
   
   AliVEvent * fOrgInputEvent;                   //!<! Original input event, not from filtering
@@ -80,7 +86,10 @@ private:
   
   Float_t     fCutTPCSharedClustersFraction;    ///< Fraction of TPC shared clusters to be accepted.
 
-  TH1F  *     fhCTSAODTrackCutsPt[4];           //!<! control histogram on the different CTS tracks selection cuts, pT
+  TH1F  *     fhCTSAODTrackCutsPt[8];           //!<! control histogram on the different CTS tracks selection cuts, pT
+  TH2F  *     fhCTSAODTrackCutsPtCen[8];        //!<! control histogram on the different CTS tracks selection cuts, pT vs centrality
+  TH1F  *     fhCTSAODTrackCutsPtSignal[8];     //!<! control histogram on the different CTS tracks selection cuts, pT. Embedded signal
+  TH2F  *     fhCTSAODTrackCutsPtCenSignal[8];  //!<! control histogram on the different CTS tracks selection cuts, pT vs centrality. Embedded signal
   
   /// Copy constructor not implemented.
   AliCaloTrackAODReader(              const AliCaloTrackAODReader & r) ; 
@@ -89,7 +98,7 @@ private:
   AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackAODReader,8) ;
+  ClassDef(AliCaloTrackAODReader,9) ;
   /// \endcond
 
 } ;

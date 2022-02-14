@@ -1,7 +1,7 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef *AddTaskEmcalOfflinePatchesRef(){
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOfflinePatchesRef *AddTaskEmcalOfflinePatchesRef(){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef("emcalOnlinePatchQA");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOfflinePatchesRef *task = new PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOfflinePatchesRef("emcalOnlinePatchQA");
   mgr->AddTask(task);
 
   TString outfile(mgr->GetCommonFileName());

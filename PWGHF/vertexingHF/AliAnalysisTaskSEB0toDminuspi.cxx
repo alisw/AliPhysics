@@ -783,10 +783,10 @@ void AliAnalysisTaskSEB0toDminuspi::UserExec(Option_t *)
 		if(!partMomDp)continue;
 		fCEvents->Fill(9); 
 		// AliAODMCParticle *partGranMomDp = (AliAODMCParticle*)mcArray->At(partMomDp->GetMother());	        
-	        if(TMath::Abs(partMomDp->GetPdgCode())==511 && ((partMomDp->GetLastDaughter()-partMomDp->GetFirstDaughter())==1)){
+	        if(TMath::Abs(partMomDp->GetPdgCode())==511 && ((partMomDp->GetDaughterLast()-partMomDp->GetDaughterFirst())==1)){
 		  AliAODMCParticle* B0Dau2=0;
-		  if(labDp== (partMomDp->GetFirstDaughter()-1)) B0Dau2 = (AliAODMCParticle*)mcArray->At(partMomDp->GetLastDaughter()-1);
-	          else if(labDp== (partMomDp->GetLastDaughter()-1)) B0Dau2 = (AliAODMCParticle*)mcArray->At(partMomDp->GetFirstDaughter()-1);
+		  if(labDp== (partMomDp->GetDaughterFirst()-1)) B0Dau2 = (AliAODMCParticle*)mcArray->At(partMomDp->GetDaughterLast()-1);
+	          else if(labDp== (partMomDp->GetDaughterLast()-1)) B0Dau2 = (AliAODMCParticle*)mcArray->At(partMomDp->GetDaughterFirst()-1);
 	          if (B0Dau2) {if(TMath::Abs(B0Dau2->GetPdgCode())==211) fCEvents->Fill(10);}
 		
 		}

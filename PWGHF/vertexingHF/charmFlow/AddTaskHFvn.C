@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFvn::DecChannel decCh=AliAnalysisTaskSEHFvn::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskSEHFvn::EventPlaneMeth flagep=AliAnalysisTaskSEHFvn::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFvn::FlowMethod meth=AliAnalysisTaskSEHFvn::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskSEHFvn::q2Method q2meth=AliAnalysisTaskSEHFvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1)
+AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFvn::DecChannel decCh=AliAnalysisTaskSEHFvn::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskSEHFvn::EventPlaneMeth flagep=AliAnalysisTaskSEHFvn::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFvn::FlowMethod meth=AliAnalysisTaskSEHFvn::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskSEHFvn::q2Method q2meth=AliAnalysisTaskSEHFvn::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=0)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -19,7 +19,8 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      Printf("FATAL: Input file not found : check your cut object");
+      return NULL;
     }
   }
   
@@ -66,10 +67,12 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
     pdgmes=421;
   }
   if(pdgmes==-1){
-    AliFatal("Wrong meson setting");
+    Printf("FATAL: Wrong meson setting");
+    return NULL;
   }
   if(!analysiscuts){
-    AliFatal("Specific AliRDHFCuts not found");
+    Printf("FATAL: Specific AliRDHFCuts not found");
+    return NULL;
   }
     
   // Analysis task

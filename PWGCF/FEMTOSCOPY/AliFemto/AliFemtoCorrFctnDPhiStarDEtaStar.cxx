@@ -343,17 +343,15 @@ void AliFemtoCorrFctnDPhiStarDEtaStar::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnDPhiStarDEtaStar::Report(){
+AliFemtoString AliFemtoCorrFctnDPhiStarDEtaStar::Report()
+{
   // Create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiStarDEtaStarNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiStarDEtaStarDenominator->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  AliFemtoString report = "DPhi* DEta* Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fDPhiStarDEtaStarNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDPhiStarDEtaStarDenominator->GetEntries());
+  //  report += mCoulombWeight->Report();
+
+  return report;
 }
 
 //____________________________

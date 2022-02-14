@@ -66,11 +66,13 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliMCEvent* mcevent, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
   
-  Int_t   CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName) ;  
-  Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, AliMCEvent* mcevent, 
-                      TString selectHeaderName, const TObjArray *arrayCluster = 0x0) ; 
+  Int_t   CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName, Float_t clusE) ;  
+  Int_t   CheckOrigin(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels, 
+                      AliMCEvent* mcevent, TString selectHeaderName, Float_t clusE,
+                      const TObjArray *arrayCluster = 0x0) ; 
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, const UShort_t * edepFrac, Int_t nlabels, 
+                                     Int_t mesonIndex, Float_t clusE, const AliMCEvent* mcevent, Int_t & tag); 
   
   void    CheckLostDecayPair(const TObjArray *arrayCluster, Int_t iMom, Int_t iParent, const AliMCEvent* mcevent, Int_t & tag); 
   
@@ -81,6 +83,8 @@ class AliMCAnalysisUtils : public TObject {
 
   TLorentzVector GetMotherWithPDG     (Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel);
   TLorentzVector GetFirstMotherWithPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
+  TLorentzVector GetFirstMotherWithPDGAndPrimary(Int_t label, Int_t pdg, 
+                                                const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
   
   void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent,
                                       Float_t & asy, Float_t & angle, Bool_t & ok);
@@ -101,6 +105,7 @@ class AliMCAnalysisUtils : public TObject {
   } 
   
   Bool_t  CheckTagBit(Int_t tag, UInt_t test) const {
+    if ( tag < 0 ) return kFALSE;
     // Check if in tag the bit test (mcTypes) is set.
     if (tag & (1<<test) ) return  kTRUE ;    
     else return kFALSE ;
@@ -126,6 +131,9 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   GetPythiaProcess()      const { return fPyProcess       ; }
   Int_t   GetPythiaFirstParticle()const { return fPyFirstParticle ; } 
   Int_t   GetPythiaVersion()      const { return fPyVersion       ; }
+  Int_t   GetPythiaMinPartParent()const { return fMinPartonicParent;}
+  Int_t   GetPythiaMaxPartParent()const { return fMaxPartonicParent;}
+  
   
   void    SetDebug(Int_t deb)           { fDebug=deb           ; }
   Int_t   GetDebug()              const { return fDebug        ; }	

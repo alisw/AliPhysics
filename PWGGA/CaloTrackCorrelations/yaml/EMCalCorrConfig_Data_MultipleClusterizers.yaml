@@ -1,0 +1,184 @@
+configurationName: "EMCal correction framework configuration for Run2 data using multiple clusterizers"
+inputObjects:
+    cells:
+        defaultCells:
+            branchName: "usedefault"
+    clusterContainers:
+        baseClusterContainer_V3ECell100:
+            branchName: "clusters_V3_ECell100"
+        baseClusterContainer_V1ECell100:
+            branchName: "clusters_V1_ECell100"
+        baseClusterContainer_5x5ECell100:
+            branchName: "clusters_5x5_ECell100"
+        baseClusterContainer_V1UnfECell100:
+            branchName: "clusters_V1Unf_ECell100"
+        baseClusterContainer_3x3ECell100:
+            branchName: "clusters_3x3_ECell100"
+        baseClusterContainer_V1ECell200:
+            branchName: "clusters_V1_ECell200"
+#        baseClusterContainer_V3ECell200:
+#            branchName: "clusters_V3_ECell200"
+
+#        baseClusterContainer_5x5ECell200:
+#            branchName: "clusters_5x5_ECell200"   
+   
+# Cell bad channel
+CellBadChannel:
+    createHistos: true
+CellBadChannel_0cells:
+    enabled: true
+    
+# Cell Energy Calib
+CellEnergy:
+    createHistos: true
+    enableNewTempCalib: true
+    enableShaperCorrection: true
+CellEnergy_0cells:
+    enabled: true
+    
+# Cell Time Calib
+CellTimeCalib:
+    createHistos: true
+    doCalibrateLowGain: true 
+    doCalibTimeEdep: true
+    doMergedBCs: true
+CellTimeCalib_0cells:
+    enabled: true    
+    
+# Clusterizer
+Clusterizer:
+    createHistos: true
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
+    clusterTimeLength: 1e6
+    recalDistToBadChannels: true                    
+    recalShowerShape: false     
+    cellsNames:
+        - defaultCells
+Clusterizer_V3ECell100:
+    enabled: true
+    clusterizer: kClusterizerv3
+    clusterContainersNames:
+        - baseClusterContainer_V3ECell100
+Clusterizer_V1ECell100:
+    enabled: true
+    clusterizer: kClusterizerv1
+    clusterContainersNames:
+        - baseClusterContainer_V1ECell100
+Clusterizer_5x5ECell100:
+    enabled: true
+    clusterizer: kClusterizerNxN
+    nxmRowDiff: 2                   
+    nxmColDiff: 2  
+    clusterContainersNames:
+        - baseClusterContainer_5x5ECell100
+Clusterizer_V1UnfECell100:
+    enabled: true
+    clusterizer: kClusterizerv1
+    unfold: true                                   
+    unfoldRejectBelowThreshold: true                #  split (false-default) or reject (true) cell energy below threshold after UF
+    unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding
+    unfoldMinCellEFrac: 0.0001                      #  apply a fraction of energy cut on cells after unfolding
+    clusterContainersNames:
+        - baseClusterContainer_V1UnfECell100
+Clusterizer_3x3ECell100:
+    enabled: true
+    clusterizer: kClusterizerNxN
+    nxmRowDiff: 1                   
+    nxmColDiff: 1  
+    clusterContainersNames:
+        - baseClusterContainer_3x3ECell100        
+Clusterizer_V1ECell200:
+    enabled: true
+    clusterizer: kClusterizerv1
+    cellE: 0.2
+    clusterContainersNames:
+        - baseClusterContainer_V1ECell200
+#Clusterizer_V3ECell200:
+#    enabled: true
+#    clusterizer: kClusterizerv3
+#    cellE: 0.2
+#    clusterContainersNames:
+#        - baseClusterContainer_V3ECell200        
+#Clusterizer_5x5ECell200:
+#      enabled: true
+#      clusterizer: kClusterizerNxN
+#      cellE: 0.2
+#      clusterContainersNames:
+#          - baseClusterContainer_5x5ECell200      
+            
+# Non-linearity
+ClusterNonLinearity:
+    setForceClusterE: true
+    createHistos: true
+    nonLinFunct: kTestBeamShaper  
+ClusterNonLinearity_V3ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V3ECell100
+ClusterNonLinearity_V1ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V1ECell100        
+ClusterNonLinearity_5x5ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_5x5ECell100
+ClusterNonLinearity_V1UnfECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V1UnfECell100        
+ClusterNonLinearity_3x3ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_3x3ECell100        
+ClusterNonLinearity_V1ECell200:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V1ECell200    
+#ClusterNonLinearity_V3ECell200:
+#    enabled: true
+#    clusterContainersNames:
+#        - baseClusterContainer_V3ECell200           
+#ClusterNonLinearity_5x5ECell200:
+#    enabled: true
+#    clusterContainersNames:
+#        - baseClusterContainer_5x5ECell200    
+    
+# Cluster-track matcher
+ClusterTrackMatcher:
+    createHistos: true
+ClusterTrackMatcher_V3ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V3ECell100
+ClusterTrackMatcher_V1ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V1ECell100
+ClusterTrackMatcher_5x5ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_5x5ECell100    
+ClusterTrackMatcher_V1UnfECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V1UnfECell100
+ClusterTrackMatcher_3x3ECell100:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_3x3ECell100            
+ClusterTrackMatcher_V1ECell200:
+    enabled: true
+    clusterContainersNames:
+        - baseClusterContainer_V1ECell200
+#ClusterTrackMatcher_5x5ECell200:
+#    enabled: true
+#    clusterContainersNames:
+#        - baseClusterContainer_5x5ECell200    
+#ClusterTrackMatcher_V3ECell200:
+#    enabled: true
+#    clusterContainersNames:
+#        - baseClusterContainer_V3ECell200  

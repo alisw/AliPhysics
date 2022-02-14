@@ -38,9 +38,9 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisTaskEmcalPatchMultCorr.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalPatchMultCorr)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMultCorr)
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalPatchMultCorr::AliAnalysisTaskEmcalPatchMultCorr():
   AliAnalysisTaskEmcal(),

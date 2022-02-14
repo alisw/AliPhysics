@@ -468,8 +468,8 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   }
   AliAODMCParticle* daughter = 0x0 ;
 
-  if (mcPart->GetDaughter(0)>0) {
-    daughter = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)));
+  if (mcPart->GetDaughterLabel(0)>0) {
+    daughter = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
     if (!daughter) {
       AliError("daughter casting failed");
       return;
@@ -526,14 +526,14 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   if ( fDecayChannel ) {
     Bool_t goodDecay = kTRUE ;
     Short_t nDaughters = 0 ;
-    if (mcPart->GetDaughter(0) >=0) nDaughters = 1 + mcPart->GetDaughter(1) - mcPart->GetDaughter(0);
+    if (mcPart->GetDaughterLabel(0) >=0) nDaughters = 1 + mcPart->GetDaughterLabel(1) - mcPart->GetDaughterLabel(0);
     
     if (nDaughters != fDecayChannel->NDaughters()) goodDecay = kFALSE ;
     if (goodDecay) {
       // now check if decay channel is respected
       // first try
       for (Int_t iDaughter = 0 ; iDaughter<nDaughters; iDaughter++) {
-	AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)+iDaughter));
+	AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)+iDaughter));
 	if (!daug) {
 	  AliError("daughter: casting failed");
 	  continue;
@@ -544,7 +544,7 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
 	//second try inverting the order of the daughters
 	goodDecay = kTRUE ;
 	for (Int_t iDaughter = 0 ; iDaughter<nDaughters; iDaughter++) {
-	  AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(1)-iDaughter));
+	  AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)-iDaughter));
 	  if (!daug) {AliFatal(""); return;}
 	  if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
 	}

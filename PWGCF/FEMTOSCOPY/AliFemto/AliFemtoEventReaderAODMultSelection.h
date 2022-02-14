@@ -20,15 +20,18 @@ class AliFemtoEvent;
 class AliFemtoEventReaderAODMultSelection : public AliFemtoEventReaderAODChain {
 public:
   /// Default Constructor
-  AliFemtoEventReaderAODMultSelection(){};
+  AliFemtoEventReaderAODMultSelection()
+    : AliFemtoEventReaderAODChain()
+  {}
+
+  AliAODEvent* GetAodSource()
+    { return fEvent; }
 
 protected:
   /// Returns a new AliFemtoEvent from the AliAODEvent pointed to by fEvent data member.
   virtual AliFemtoEvent* CopyAODtoFemtoEvent();
 
 };
-
-
 
 
 #endif

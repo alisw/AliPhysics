@@ -1,3 +1,4 @@
+#include <TObjString.h>
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TH2.h>
@@ -36,8 +37,8 @@ AliPHOSJetJetMC::AliPHOSJetJetMC():
   fPtHard(0),
   fXsection(0),
   fNTrials(0),
-  fPtHardAndJetPtFactor(3),
-  fPtHardAndSinglePtFactor(1.5),
+  fPtHardAndJetPtFactor(2.5),
+  fPtHardAndSinglePtFactor(1.25),
   fFirstJetIndex(-1),
   fLastJetIndex(-1),
   fGenJetID(-1),
@@ -55,8 +56,8 @@ AliPHOSJetJetMC::AliPHOSJetJetMC(Int_t pThardbin):
   fPtHard(0),
   fXsection(0),
   fNTrials(0),
-  fPtHardAndJetPtFactor(3),
-  fPtHardAndSinglePtFactor(1.5),
+  fPtHardAndJetPtFactor(2.5),
+  fPtHardAndSinglePtFactor(1.25),
   fFirstJetIndex(-1),
   fLastJetIndex(-1),
   fGenJetID(-1),

@@ -66,6 +66,26 @@ void GetSignalLossCorrection(){
   Requires(fHistTrueINELgt0Events,"fHistTrueINELgt0Events");
   fHistTrueINELgt0Events->SetDirectory(0);
 
+  output_file.cd();
+  fHistAccEvents->Write();
+  fHistTrueINELgt0Events->Write();
+  TH1F* fHistEventLoss = (TH1F*) fHistAccEvents->Clone("fHistEventLoss");
+  fHistEventLoss->Reset();
+  fHistEventLoss->GetYaxis()->SetTitle("#epsilon_{evt}");
+  fHistEventLoss->Divide(fHistAccEvents,fHistTrueINELgt0Events,1,1,"B");
+  output_file.cd();
+  fHistEventLoss->Write();
+
+  int NormAcc[kCentLength];
+  int NormTrue[kCentLength];
+  float ratioNorm[kCentLength];
+  for(int iC=0; iC<kCentLength; iC++){
+    NormAcc[iC]=fHistAccEvents->Integral(lowCentBin[iC],upCentBin[iC]);
+    NormTrue[iC]=fHistTrueINELgt0Events->Integral(lowCentBin[iC],upCentBin[iC]);
+    ratioNorm[iC] = (float)NormAcc[iC]/(float)NormTrue[iC];
+    printf("iC: %d NormAcc: %d NormTrue: %d ratioNorm: %f\n",iC,NormAcc[iC],NormTrue[iC],ratioNorm[iC]);
+  }
+
   TH3F* fHistGenPartsAcc_tmp[2];
   TH3F* fHistGenPartsINELgt0_tmp[2];
   for(int iS=0; iS<2; iS++){
@@ -87,16 +107,31 @@ void GetSignalLossCorrection(){
 
         TH1F* fHistPtAccepted = (TH1F* )fHistGenPartsAcc_tmp[iMatter]->ProjectionY(Form("Accepted_%s%s_%s",prtName_str[iSpecies],suffix[iMatter],kMultLab[iCentrality]),lowCentBin[iCentrality],upCentBin[iCentrality],iSpecies+1,iSpecies+1);
         fHistPtAccepted->Sumw2();
+        TH1F* fHistPtAcceptedNorm = (TH1F*) fHistPtAccepted->Clone("fHistPtAcceptedNorm");
+        fHistPtAcceptedNorm->Scale(1./NormAcc[iCentrality]);
 
         TH1F* fHistPtTrueINELgt0 = (TH1F* )fHistGenPartsINELgt0_tmp[iMatter]->ProjectionY(Form("TrueINEL_%s%s_%s",prtName_str[iSpecies],suffix[iMatter],kMultLab[iCentrality]),lowCentBin[iCentrality],upCentBin[iCentrality],iSpecies+1,iSpecies+1);
         fHistPtTrueINELgt0->Sumw2();
+        TH1F* fHistPtTrueINELgt0Norm = (TH1F*) fHistPtTrueINELgt0->Clone("fHistPtTrueINELgt0Norm");
+        fHistPtTrueINELgt0Norm->Scale(1./NormTrue[iCentrality]);
 
         TH1D *fHistSigLoss = (TH1D*)fHistPtTrueINELgt0->Clone(Form("sgnLoss_%s%s_%s",prtName_str[iSpecies],suffix[iMatter],kMultLab[iCentrality]));
         fHistSigLoss->SetTitle(";#it{p}_{T} (GeV/#it{c});1/#epsilon_{part}");
         fHistSigLoss->Divide(fHistPtTrueINELgt0, fHistPtAccepted, 1, 1, "B");
         fHistSigLoss->SetLineColor(iSpecies + 1);
 
+        TH1D *fHistSigLossNorm = (TH1D*)fHistPtTrueINELgt0Norm->Clone(Form("sgnLossNorm_%s%s_%s",prtName_str[iSpecies],suffix[iMatter],kMultLab[iCentrality]));
+        fHistSigLossNorm->SetTitle(";#it{p}_{T} (GeV/#it{c});#epsilon_{evt}/#epsilon_{part}");
+        fHistSigLossNorm->Divide(fHistPtTrueINELgt0Norm, fHistPtAcceptedNorm, 1, 1, "B");
+        fHistSigLossNorm->SetLineColor(iSpecies + 1);
+
+        TH1D* fHistCheck = (TH1D*)fHistPtAcceptedNorm->Clone(Form("fHistCheck_%s%s_%s",prtName_str[iSpecies],suffix[iMatter],kMultLab[iCentrality]));
+        fHistCheck->Multiply(fHistSigLoss);
+        fHistCheck->Divide(fHistPtTrueINELgt0Norm);
+
         out_list->Add(fHistSigLoss);
+        out_list->Add(fHistSigLossNorm);
+        out_list->Add(fHistCheck);
       }
       output_file.cd();
       out_list->Write("", TObject::kSingleKey);

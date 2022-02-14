@@ -29,7 +29,7 @@ class AliFemtoPairCutMergedFraction : public AliFemtoPairCutAntiGamma {
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  virtual AliFemtoPairCut* Clone();
+  virtual AliFemtoPairCutMergedFraction* Clone() const;
 
   void SetDistanceMax(double maxdistance);
   void SetMergedFractionLimit(double fractionlimit);
@@ -37,6 +37,7 @@ class AliFemtoPairCutMergedFraction : public AliFemtoPairCutAntiGamma {
   void SetMagneticFieldSign(int magsign);
   void SetRadiusMin(double radmin);
   void SetRadiusMax(double radmax);
+  void SetMagneticFieldValue(double magval);
   void SetMergedFractionDataType(AliFemtoDataType datatype);
 
  protected:
@@ -46,6 +47,7 @@ class AliFemtoPairCutMergedFraction : public AliFemtoPairCutAntiGamma {
   Double_t fRadiusMin;              // Minimum radius at which the pair separation is calculated [m]
   Double_t fRadiusMax;              // Maximum radius at which the pair separation is calculated [m]
   Int_t fMagSign;                   // Magnetic field sign (+1/-1)
+  Double_t fMagFieldVal; 			// Magnetic field value (default 0.5)
   AliFemtoDataType fMergedFractionDataType;       // Use ESD/AOD/Kinematics
 
 #ifdef __ROOT__
@@ -53,6 +55,9 @@ class AliFemtoPairCutMergedFraction : public AliFemtoPairCutAntiGamma {
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutMergedFraction::Clone() { AliFemtoPairCutMergedFraction* cPairCut = new AliFemtoPairCutMergedFraction(*this); return cPairCut;}
+inline AliFemtoPairCutMergedFraction* AliFemtoPairCutMergedFraction::Clone() const
+{
+  return new AliFemtoPairCutMergedFraction(*this);
+}
 
 #endif

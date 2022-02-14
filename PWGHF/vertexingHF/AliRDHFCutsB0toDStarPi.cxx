@@ -875,7 +875,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsSelected(TObject* obj,Int_t selectionLevel, AliA
     Double_t mB0PDG = TDatabasePDG::Instance()->GetParticle(511)->Mass();
     
     // delta mass PDG
-    Double_t deltaPDG = mD0PDG-mB0PDG;
+    Double_t deltaPDG = mB0PDG - mD0PDG;
    
     // Half width B0 mass
     UInt_t prongs[2];
@@ -3360,6 +3360,7 @@ Int_t AliRDHFCutsB0toDStarPi::SelectPID(AliAODTrack *track, Int_t type)
   //  here the PID
     
   Bool_t isParticle=kTRUE;
+  if(!fUsePID) return isParticle;
   Int_t match = fPidHF->GetMatch();
 
   if(match == 1){//n-sigma
@@ -3476,19 +3477,19 @@ Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong 
   e[2]=DStar->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2];
-  Double_t invMassDStar = TMath::Sqrt(esum*esum-DStar->P()*DStar->P());
+  Double_t invMassDStar = TMath::Sqrt(esum*esum-DStar->P2());
   Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
   return invMassDStar - invMassD0; 
 }
 //-------------------------------------------------------------------------------------
-Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const 
+Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const 
 {
   ///
   /// 4 prong invariant mass of the D0 daughters, the soft pion, and the B0 pion
   ///
 
-  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)B0->GetDaughter(1);
+  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)Bzero->GetDaughter(1);
   Int_t chargeDStar = DStar->Charge();
 
   Double_t e[4];
@@ -3512,10 +3513,10 @@ Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *
     return 0;
   }
   e[0]=DStar->EProng(0,211);
-  e[3]=B0->EProng(0,211);
+  e[3]=Bzero->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2]+e[3];
-  Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P()*B0->P());
+  Double_t invMassB0 = TMath::Sqrt(esum*esum-Bzero->P2());
 
   Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 

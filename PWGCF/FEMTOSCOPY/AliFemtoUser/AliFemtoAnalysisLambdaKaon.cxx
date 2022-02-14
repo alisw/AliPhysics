@@ -199,15 +199,18 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   if(fWritePairKinematics)
   {
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],62,0.,0.31); //TNtuple is huge, and I don't need data out to 1 GeV
+    KStarCf->SetBuildIndmTBinned(fAnalysisParams.buildIndmTBinnedCfs);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
   }
   else
   {
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
+    KStarCf->SetBuildIndmTBinned(fAnalysisParams.buildIndmTBinnedCfs);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
     if(fAnalysisType==kProtPiM || fAnalysisType==kAProtPiP || fAnalysisType==kPiPPiM) fCollectionOfCfs->push_back((AliFemtoV0PurityBgdEstimator*)CreateV0PurityBgdEstimator());
+    if(fAnalysisParams.buildSphericalHarmonics) fCollectionOfCfs->push_back((AliFemtoCorrFctnDirectYlm*)CreateCorrFctnDirectYlm(fAnalysisTags[fAnalysisType], 2, tNbinsKStar, tKStarMin, tKStarMax, fAnalysisParams.useLCMSforSH));
   }
 
   if(fIsMCRun)
@@ -1587,6 +1590,13 @@ AliFemtoV0PurityBgdEstimator* AliFemtoAnalysisLambdaKaon::CreateV0PurityBgdEstim
 }
 
 //___________________________________________________________________
+AliFemtoCorrFctnDirectYlm* AliFemtoAnalysisLambdaKaon::CreateCorrFctnDirectYlm(const char* name, int maxl, unsigned int bins, double min, double max, int useLCMS)
+{
+  AliFemtoCorrFctnDirectYlm *tCf = new AliFemtoCorrFctnDirectYlm(TString::Format("DirectYlmCf_%s", name), maxl, bins, min, max, useLCMS); 
+  return tCf;
+}
+
+//___________________________________________________________________
 void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut)
 {
   aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventMult("_EvPass"));
@@ -1772,7 +1782,7 @@ void AliFemtoAnalysisLambdaKaon::SetAnalysis(AliFemtoEventCut* aEventCut, AliFem
   AliFemtoParticleCut* tPartCut2 = aPartCut2->Clone(); 
   AliFemtoPairCut* tPairCut = aPairCut->Clone();
 
-  AddCutMonitors(tEventCut,tPartCut1,tPartCut2,tPairCut);
+  if(fAnalysisParams.addCutMonitors) AddCutMonitors(tEventCut,tPartCut1,tPartCut2,tPairCut);
 
   SetEventCut(tEventCut);
   SetFirstParticleCut(tPartCut1);
@@ -1837,11 +1847,17 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.removeMisidentifiedMCParticles = false;
   tReturnParams.setV0SharedDaughterCut = true;
 
+  tReturnParams.addCutMonitors = true;
   tReturnParams.monitorEvCutPassOnly = false;
   tReturnParams.monitorPart1CutPassOnly = false;
   tReturnParams.monitorPart2CutPassOnly = false;
   tReturnParams.monitorPairCutPassOnly = false;
   tReturnParams.useMCWeightGenerator = false;
+
+  tReturnParams.buildSphericalHarmonics = false;
+  tReturnParams.useLCMSforSH = false;
+
+  tReturnParams.buildIndmTBinnedCfs = false;
 
   return tReturnParams;
 }
@@ -2004,8 +2020,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.v0Type = 2;
 
   tReturnParams.mass = K0ShortMass;
-  tReturnParams.minInvariantMass = K0ShortMass-0.013677;
-  tReturnParams.maxInvariantMass = K0ShortMass+0.020323;
+  tReturnParams.minInvariantMass = K0ShortMass-0.017614; //0.480
+  tReturnParams.maxInvariantMass = K0ShortMass+0.017386; //0.515
 
   tReturnParams.useLooseInvMassCut = true;
   tReturnParams.minLooseInvMass = K0ShortMass-0.070;

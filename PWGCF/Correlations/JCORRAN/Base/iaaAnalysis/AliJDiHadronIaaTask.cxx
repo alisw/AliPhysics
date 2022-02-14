@@ -27,11 +27,11 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
-#include "AliJDiHadronIaaTask.h"
-#include "../AliJEventHeader.h"
-#include "../AliJRunHeader.h"
-#include "../AliJCORRANTask.h"
-#include "../AliJCard.h"
+#include <AliJDiHadronIaaTask.h>
+#include <AliJEventHeader.h>
+#include <AliJRunHeader.h>
+#include <AliJCORRANTask.h>
+#include <AliJCard.h>
 
 //______________________________________________________________________________
 AliJDiHadronIaaTask::AliJDiHadronIaaTask() :
@@ -114,7 +114,7 @@ void AliJDiHadronIaaTask::UserCreateOutputObjects()
 	fIaaAnalysis->SetHeaderList(fFilterTask->GetFilter()->GetHeaderList());
 	fIaaAnalysis->SetTrackList(fFilterTask->GetFilter()->GetTrackList());
 	fIaaAnalysis->SetMCTrackList(fFilterTask->GetFilter()->GetMCTrackList());
-	fIaaAnalysis->GetCard()->WriteCard(fOutput);
+//	fIaaAnalysis->GetCard()->WriteCard(fOutput);
 
 	PostData(1, fOutput);
 

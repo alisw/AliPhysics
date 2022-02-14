@@ -15,8 +15,6 @@
 // #include "AliFemtoCorr.h"
 
 class AliFemtoPair;
-class AliFemtoModelManager;
-class TRandom;
 
 
 /// \class AliFemtoModelCorrFctnTrueQ6D
@@ -47,7 +45,6 @@ public:
     Double_t qmax;
     BinMethod bin_method;
     TString title;
-    AliFemtoModelManager *mc_manager;
 
     Double_t qout_range_min;
     Double_t qout_range_max;
@@ -59,12 +56,11 @@ public:
     bool ignore_zeromass;
 
     Builder()
-      : bin_count(120)
-      , qmin(-0.3)
-      , qmax(0.3)
+      : bin_count(59)
+      , qmin(-0.295)
+      , qmax(0.295)
       , bin_method(kRecLSOGenOSL)
       , title("CF_TrueQ6D")
-      , mc_manager(NULL)
       , qout_range_min(0.0)
       , qout_range_max(0.0)
       , qside_range_min(0.0)
@@ -84,13 +80,6 @@ public:
 
       Builder b(*this);
       b.title = title;
-      return b;
-    }
-
-    Builder Manager(AliFemtoModelManager *manager) const
-    {
-      Builder b(*this);
-      b.mc_manager = manager;
       return b;
     }
 
@@ -136,8 +125,8 @@ public:
 
 
     #define CREATE_SETTER_METHOD(__name, __type, __target) \
-      Builder __name(__type x) const {                     \
-        Builder b(*this); b. __target = x; return b; }
+      Builder __name(__type x) const                       \
+        { Builder b(*this); b. __target = x; return b; }
 
     CREATE_SETTER_METHOD(NBins, Int_t, bin_count);
     CREATE_SETTER_METHOD(IgnoreZeroMass, Bool_t, ignore_zeromass);
@@ -145,17 +134,11 @@ public:
 
     #undef CREATE_SETTER_METHOD
 
-
     AliFemtoModelCorrFctnTrueQ6D* IntoCF()
-    {
-      return new AliFemtoModelCorrFctnTrueQ6D(*this);
-    }
+      { return new AliFemtoModelCorrFctnTrueQ6D(*this); }
 
     operator AliFemtoModelCorrFctnTrueQ6D*()
-    {
-      return IntoCF();
-
-    }
+      { return IntoCF(); }
   };
 
   static Builder Build()
@@ -171,29 +154,75 @@ public:
   AliFemtoModelCorrFctnTrueQ6D();
 
   /// Construct from data
-  AliFemtoModelCorrFctnTrueQ6D(const HistType &, AliFemtoModelManager *m=nullptr);
+  AliFemtoModelCorrFctnTrueQ6D(const HistType &);
 
   /// Building using pointer
-  AliFemtoModelCorrFctnTrueQ6D(HistType *&, AliFemtoModelManager *m=nullptr);
+  AliFemtoModelCorrFctnTrueQ6D(HistType *&);
 
   /// Custom title
   ///
   /// Use default binning parameters
+  ///
   AliFemtoModelCorrFctnTrueQ6D(const TString &title);
 
   /// Symmetric constructor
   ///
   /// Construct with nbins from -qmax to qmax in both directions
+  ///
   AliFemtoModelCorrFctnTrueQ6D(const TString &title,
                                UInt_t nbins,
                                Double_t qmax);
 
   /// Custom constructor
   ///
-  AliFemtoModelCorrFctnTrueQ6D(const TString &title,
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
                                UInt_t nbins,
                                Double_t aQinvLo,
-                               Double_t aQinvHi);
+                               Double_t aQinvHi,
+                               BinMethod binning=kRecGenOSL);
+
+  /// Asymmetric constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               Int_t nbins_out,
+                               Double_t qout_lo,
+                               Double_t qout_hi,
+                               Int_t nbins_side,
+                               Double_t qside_lo,
+                               Double_t qside_hi,
+                               Int_t nbins_long,
+                               Double_t qlong_lo,
+                               Double_t qlong_hi,
+                               BinMethod binning=kRecGenOSL);
+
+  /// Big Asymmetric constructor
+  ///
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               Int_t nbins_out,
+                               Double_t qout_lo,
+                               Double_t qout_hi,
+                               Int_t nbins_side,
+                               Double_t qside_lo,
+                               Double_t qside_hi,
+                               Int_t nbins_long,
+                               Double_t qlong_lo,
+                               Double_t qlong_hi,
+                               Int_t nbins_out_true,
+                               Double_t qout_lo_true,
+                               Double_t qout_hi_true,
+                               Int_t nbins_side_true,
+                               Double_t qside_lo_true,
+                               Double_t qside_hi_true,
+                               Int_t nbins_long_true,
+                               Double_t qlong_lo_true,
+                               Double_t qlong_hi_true,
+                               BinMethod binning=kRecGenOSL);
+
+  AliFemtoModelCorrFctnTrueQ6D(const TString &prefix,
+                               const std::vector<double> &obins,
+                               const std::vector<double> &sbins,
+                               const std::vector<double> &lbins,
+                               BinMethod binning=kRecGenOSL);
 
   /// Construct from parameter object
   ///
@@ -207,9 +236,6 @@ public:
 
   /// Destructor - histograms destroyed, ModelManager is NOT
   virtual ~AliFemtoModelCorrFctnTrueQ6D();
-
-  /// Set the MC model manager
-  virtual void SetManager(AliFemtoModelManager *);
 
   virtual AliFemtoString Report();
 
@@ -232,14 +258,13 @@ public:
   /// set q range
   void SetQrange(const double out[2], const double s[2], const double l[2]);
 
+  /// try to guess how bins are layed out by axis name
+  static BinMethod GuessBinMethod(const HistType &hist);
+
 protected:
-  AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
   /// Histogram of data
   HistType *fHistogram;
-
-  /// Random number generator used for randomizing order of pair momentums
-  TRandom *fRng;
 
   BinMethod fBinMethod;
   Bool_t fIgnoreZeroMassParticles;
@@ -251,14 +276,6 @@ protected:
 private:
   void AddPair(const AliFemtoParticle &, const AliFemtoParticle &);
 };
-
-inline
-void
-AliFemtoModelCorrFctnTrueQ6D::SetManager(AliFemtoModelManager *manager)
-{
-  fManager = manager;
-  std::cout << "fManager set to " << fManager << "\n";
-}
 
 inline
 void

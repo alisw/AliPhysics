@@ -47,7 +47,8 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetUseANDonTrackQualityFilterMap(Bool_t useAND=kTRUE) {fUseANDonTrackQualityMap=useAND;}
   
   void SetRejectPureMC(Bool_t reject=kTRUE) {fRejectPureMC=reject;}
-  
+  void SetApplyReweightMCpt(Bool_t reweight=kTRUE) {fReweightMCpt=reweight;}
+    
   void SetMCFilterMap(UInt_t map, Bool_t useAND=kTRUE) {fCutOnMCFilterMap = map; fUseANDonMCFilterMap=useAND;}
   void SetMCFilterBit(Int_t bit) {if(bit>=0 && bit<32) fCutOnMCFilterMap |= (UInt_t(1)<<bit);}
   void SetUseANDonMCFilterMap(Bool_t useAND=kTRUE) {fUseANDonMCFilterMap=useAND;}
@@ -60,6 +61,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   UInt_t GetTrackQualityFilterMap() const {return fCutOnTrackQualityMap;}
   Bool_t GetUseANDonTrackQualityFilterMap() const {return fUseANDonTrackQualityMap;}
   Bool_t GetRejectPureMC() const {return fRejectPureMC;}
+  Bool_t GetApplyReweightMCpt() const {return fReweightMCpt;}
   UInt_t GetMCFilterMap() const {return fCutOnMCFilterMap;}
   Bool_t GetUseANDonMCFilterMap() const {return fUseANDonMCFilterMap;}
   Bool_t GetRequestITSrefit() const {return fRequestITSrefit;}
@@ -89,7 +91,9 @@ class AliReducedTrackCut : public AliReducedVarCut {
   Bool_t    fUseANDonTrackFilterMap;  // if false, at least one of the enabled positions in the cut map should be on in the track filters map
    
    // Reject pure MC tracks
-   Bool_t   fRejectPureMC;    
+   Bool_t   fRejectPureMC;
+   //Apply or not re-weighting on MC
+   Bool_t fReweightMCpt;
    
    // selections on the MC signals bit map 
    UInt_t    fCutOnMCFilterMap;         // map encoding the various requests on MC signals

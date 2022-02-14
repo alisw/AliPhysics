@@ -210,9 +210,10 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet* jet,
             secAODVertex->AddDaughter(aodTrk_2);
             secAODVertex->AddDaughter(aodTrk_3);
 
-            if (!fCutsHFjets->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes))
+            if (!fCutsHFjets->IsVertexSelected(secAODVertex, aodEvent, magZkG, vtxRes)){
+              delete secAODVertex;
               continue;
-
+            }
             if (mapV0gTrks != NULL) {
               nVtxContributorsBelongToV0 =  (* mapV0gTrks)[aodTrk_1->GetID()] +
                                             (* mapV0gTrks)[aodTrk_2->GetID()] +
@@ -222,6 +223,7 @@ Int_t AliHFJetsTaggingVertex::FindVertices(const AliEmcalJet* jet,
             vecVtxDisp.push_back(make_pair(vtxRes, nVtxContributorsBelongToV0));
             nSecndVxtHF++;
           } // end if (vert)
+        delete secAODVertex;
         } // end for it3
       } // end else
     } // end for it2
@@ -258,6 +260,7 @@ AliAODVertex* AliHFJetsTaggingVertex::ReconstructSecondaryVertex(TObjArray*    t
 
 
     if (!vertexESD) {
+      delete vertexerTracks;
       // printf("CANNOT BUILD THE VTX \n");
       return NULL;
     }
@@ -266,6 +269,7 @@ AliAODVertex* AliHFJetsTaggingVertex::ReconstructSecondaryVertex(TObjArray*    t
     if (vertexESD->GetNContributors() != nProngTrks) {
 
       //AliDebug(2,"vertexing failed");
+      delete vertexerTracks;
       delete vertexESD; vertexESD = NULL;
       return NULL;
     }
@@ -273,6 +277,7 @@ AliAODVertex* AliHFJetsTaggingVertex::ReconstructSecondaryVertex(TObjArray*    t
     Double_t vertRadius2 = vertexESD->GetX() * vertexESD->GetX() + vertexESD->GetY() * vertexESD->GetY();
     if (vertRadius2 > 8.) {
       // printf(" vertex outside beam pipe (%f), reject candidate to avoid propagation through material",vertRadius2);
+      delete vertexerTracks;
       delete vertexESD; vertexESD = NULL;
       return NULL;
     }

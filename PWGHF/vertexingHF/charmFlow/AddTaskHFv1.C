@@ -1,4 +1,4 @@
-AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskHFv1::DecChannel decCh=AliAnalysisTaskHFv1::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskHFv1::EventPlaneMeth flagep=AliAnalysisTaskHFv1::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskHFv1::FlowMethod meth=AliAnalysisTaskHFv1::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskHFv1::q2Method q2meth=AliAnalysisTaskHFv1::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1, Bool_t scaling = kFALSE, TString fileeffname="", TString funceffname="")
+AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskHFv1::DecChannel decCh=AliAnalysisTaskHFv1::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskHFv1::EventPlaneMeth flagep=AliAnalysisTaskHFv1::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskHFv1::FlowMethod meth=AliAnalysisTaskHFv1::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskHFv1::q2Method q2meth=AliAnalysisTaskHFv1::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=0, Bool_t scaling = kFALSE, TString fileeffname="", TString funceffname="")
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -19,7 +19,7 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      Printf("FATAL: Input file not found : check your cut object");
     }
   }
   
@@ -58,10 +58,10 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
     pdgmes=431;
   }
   if(pdgmes==-1){
-    AliFatal("Wrong meson setting");
+    Printf("FATAL: Wrong meson setting");
   }
   if(!analysiscuts){
-    AliFatal("Specific AliRDHFCuts not found");
+    Printf("FATAL: Specific AliRDHFCuts not found");
   }
   
   TF1* eff = 0x0;
@@ -77,7 +77,7 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
     }
     else {
       eff = (TF1*)fileeff->Get(funceffname.Data());
-      if(!eff) AliFatal("Input efficiency file not found: check your input file for efficiency re-weighting");
+      if(!eff) Printf("FATAL: Input efficiency file not found: check your input file for efficiency re-weighting");
     }
   }
 

@@ -79,6 +79,8 @@
 #include "AliEventPoolManager.h"
 #include "AliAnalysisUtils.h"
 #include "AliPPVsMultUtils.h"
+
+#include <random>
 using namespace AliPIDNameSpace;
 using namespace std;
 
@@ -3506,7 +3508,9 @@ TObjArray* AliTwoParticlePIDCorr::GetShuffledTracks(TObjArray *tracks){//taken f
     chargeVector->push_back(track->Charge());
   }  
  
-  random_shuffle(chargeVector->begin(), chargeVector->end());
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(chargeVector->begin(), chargeVector->end(),engine);
   
   for(Int_t i = 0; i < tracks->GetEntriesFast(); i++){
     LRCParticlePID* track = (LRCParticlePID*) tracks->UncheckedAt(i);

@@ -482,8 +482,10 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 24
   TF1 *thrFit = new TF1("thrFit","1/(1+TMath::Exp(-x + [0]))",1,50);
   for(Int_t i = 0; i<16; i++){
   	thrFit->SetParameter(0,fCalibData->GetCalibDiscriThr(i));
-  	fitStatus = hThresholdShape[i]->Fit("thrFit","+R");
-	if(fitStatus == 0) thresholdData[i] = thrFit->GetParameter(0);
+	if(hThresholdShape[i]->Integral(1,50) > 1000){
+  		fitStatus = hThresholdShape[i]->Fit("thrFit","+R");
+		if(fitStatus == 0) thresholdData[i] = thrFit->GetParameter(0);
+		}
 	thresholdOCDB[i] = fCalibData->GetCalibDiscriThr(i);
   	}
   

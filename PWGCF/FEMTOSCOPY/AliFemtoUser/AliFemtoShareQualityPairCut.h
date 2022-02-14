@@ -31,7 +31,8 @@ public:
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  virtual AliFemtoPairCut* Clone();
+  virtual AliFemtoShareQualityPairCut* Clone() const;
+
   void SetShareQualityMax(Double_t aAliFemtoShareQualityMax);
   Double_t GetAliFemtoShareQualityMax() const;
   Double_t GetShareQualityMax() const;
@@ -42,9 +43,6 @@ public:
 
   void SetRemoveSameLabel(Bool_t aRemove);
   Bool_t GetRemoveSameLabel() const;
-
-  /// Select sharing-calculation algorithm
-  void SetAlternativeAlgorithm(Int_t code) { fAlternativeAlgorithm = code; }
 
   /// Putting the equality in sharequality
   bool operator==(const AliFemtoShareQualityPairCut &) const;
@@ -57,10 +55,6 @@ public:
   Double_t fShareQualityMax;   ///< Maximum allowed pair quality
   Double_t fShareFractionMax;  ///< Maximum allowed share fraction
   Bool_t   fRemoveSameLabel;   ///< Pairs with two tracks with the same label will be removed
-
-
-  /// Use the CountBit() method instead of TestBit()
-  Int_t fAlternativeAlgorithm;
 
 #ifdef __ROOT__
   ClassDef(AliFemtoShareQualityPairCut, 0)
@@ -76,7 +70,8 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   fRemoveSameLabel(c.fRemoveSameLabel)
 { /* no-op */ }
 
-inline AliFemtoPairCut* AliFemtoShareQualityPairCut::Clone() {
+inline AliFemtoShareQualityPairCut* AliFemtoShareQualityPairCut::Clone() const
+{
   AliFemtoShareQualityPairCut* c = new AliFemtoShareQualityPairCut(*this);
   return c;
 }

@@ -44,7 +44,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 endif(NOT CMAKE_BUILD_TYPE)
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
-set(CMAKE_ALLOWED_BUILD_TYPES DEBUG RELEASE RELWITHDEBINFO COVERAGE)
+set(CMAKE_ALLOWED_BUILD_TYPES DEBUG RELEASE RELWITHDEBINFO COVERAGE CUSTOM_EXTERNAL)
 list(FIND CMAKE_ALLOWED_BUILD_TYPES "${CMAKE_BUILD_TYPE}" VALID_BUILD_TYPE)
 if(${VALID_BUILD_TYPE} EQUAL -1)
   string(REPLACE ";" ", " CMAKE_ALLOWED_BUILD_TYPES_FLAT "${CMAKE_ALLOWED_BUILD_TYPES}")
@@ -97,6 +97,7 @@ endif()
 unset(isSystemDir)
 
 # Optional: Doxygen for reference doc generation
+set(DOXYGEN_EXECUTABLE "")
 find_package(Doxygen)
 if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
   message(STATUS "Doxygen ${DOXYGEN_VERSION} and Graphviz found: ${DOXYGEN_EXECUTABLE}, ${DOXYGEN_DOT_EXECUTABLE}")
@@ -137,6 +138,22 @@ else()
       if(NOT ROOT_HASALIEN)
           message(WARNING "ROOT has been built without AliEn support: some features might be unavailable!")
       endif(NOT ROOT_HASALIEN)
+
+      # find VMC standalone
+      # VMC standalone will fail if ROOT was found with VMC
+      find_package(VMC)
+      if(VMC_FOUND)
+        message(STATUS "Using standalone VMC")
+        # AliRoot's FindROOT module does not actually provide targets but only does link_libraries(ROOT_LIB_DIR).
+        # So AliRoot finds libs by name in that dir but not as a target.
+        # On the other hand VMCLibrary is linked against targets ROOT::Core etc which come in with a find_package(ROOT CONFIG).
+        # So Let's slightly modify the VMCLibrary target properties...
+        set(VMC_DEPS Core EG Geom Physics)
+        set_target_properties(VMCLibrary PROPERTIES INTERFACE_LINK_LIBRARIES "${VMC_DEPS}")
+        # Alias target before VMC was also found by name "VMC"
+        add_library(VMC ALIAS VMCLibrary)
+        include_directories(${VMC_INCLUDE_DIRS})
+      endif()
 
   else()
       message(FATAL_ERROR "ROOT installation not found!\nPlease point to the ROOT installation using -DROOTSYS=ROOT_INSTALL_DIR")
@@ -208,20 +225,12 @@ else()
   endif()
 
   # If no Fortran, i.e on Windows
-  # We need to specify ROOT fortran
-  # (f95 comes before gfortran in default module)
   include(CheckLanguage)
-
-  if(ROOT_FORTRAN)
-    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-  else()
-    message(STATUS "Using default system Fortran compiler")
-  endif(ROOT_FORTRAN)
 
   check_language(Fortran)
   if(CMAKE_Fortran_COMPILER)
     enable_language(Fortran OPTIONAL)
+    message(STATUS "Fortran compiler is ${CMAKE_Fortran_COMPILER}")
   else()
     message(STATUS "No Fortran support.")
   endif()
@@ -238,8 +247,17 @@ else()
   # FastJet
   find_package(FASTJET)
 
+  # RooUnfold
+  find_package(RooUnfold)
+
   # ZEROMQ
   find_package(ZeroMQ)
+
+  # KFParticke
+  find_package(KFParticle)
+
+  # Boost
+  find_package(Boost)
 
   # General flags -> Should be moved into a configuration file
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
@@ -277,6 +295,12 @@ else()
   add_subdirectory(PWGPP)
   add_subdirectory(PWGUD)
   add_subdirectory(PWGMM)
+  add_subdirectory (ML)
+
+  # Transition to Run3
+  if(ROOT_VERSION_MAJOR EQUAL 6)
+    add_subdirectory(RUN3)
+  endif()
 
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")
@@ -292,8 +316,9 @@ install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_PREFIX})
 foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    PATH=$ENV{PATH}
+    LD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:${ZEROMQ}/lib:${BOOST_ROOT}/lib:${TREELITE_ROOT}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:${ZEROMQ}/lib:${BOOST_ROOT}/lib:${TREELITE_ROOT}/lib:$ENV{DYLD_LIBRARY_PATH}
     ROOT_HIST=0
     root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()

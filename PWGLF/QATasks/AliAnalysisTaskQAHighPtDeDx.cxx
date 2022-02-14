@@ -68,20 +68,23 @@ using namespace std;
 
 
 const Double_t AliAnalysisTaskQAHighPtDeDx::fgkClight = 2.99792458e-2;
-Float_t magf = -1;
-TF1* cutLow  = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
-TF1* cutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
-Double_t DeDxMIPMin  = 30;
-Double_t DeDxMIPMax  = 65;
-const Int_t nHists = 9;
-Float_t centralityGlobal = -10;
-Int_t etaLow[nHists]  = {-8, -8, -6, -4, -2, 0, 2, 4, 6};
-Int_t etaHigh[nHists] = { 8, -6, -4, -2,  0, 2, 4, 6, 8};
+namespace {
+	Float_t magf = -1;
+	TF1 cutLow ("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
+	TF1 cutHigh("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
+	Double_t DeDxMIPMin  = 30;
+	Double_t DeDxMIPMax  = 65;
+	const Int_t nHists = 9;
+	Float_t centralityGlobal = -10;
+	Int_t etaLow[nHists]  = {-8, -8, -6, -4, -2, 0, 2, 4, 6};
+	Int_t etaHigh[nHists] = { 8, -6, -4, -2,  0, 2, 4, 6, 8};
 
-Int_t nDeltaPiBins   = 80;
-Double_t deltaPiLow  = 20;
-Double_t deltaPiHigh = 100;
-const Char_t *Pid[7]={"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
+	Int_t nDeltaPiBins   = 80;
+	Double_t deltaPiLow  = 20;
+	Double_t deltaPiHigh = 100;
+	const Char_t *Pid[7]={"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
+}
+
 ClassImp(AliAnalysisTaskQAHighPtDeDx)
 
 //_______________________________________________________
@@ -1149,7 +1152,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 		Double_t momentum = esdTrack->P();
 		Float_t  dedx    = esdTrack->GetTPCsignal();
 
-		if(!PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), magf, cutLow, cutHigh))
+		if(!PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), magf, &cutLow, &cutHigh))
 			continue;
 
 
@@ -1302,7 +1305,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 		Double_t momentum = aodTrack->P();
 
 
-		if(!PhiCut(aodTrack->Pt(), phi, aodTrack->Charge(), magf, cutLow, cutHigh))
+		if(!PhiCut(aodTrack->Pt(), phi, aodTrack->Charge(), magf, &cutLow, &cutHigh))
 			continue;
 
 
@@ -1605,7 +1608,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 						       if(track->GetTPCsignalN()<=70)continue;
 						       Double_t phi     = track->Phi();
 
-						       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, cutLow, cutHigh))
+						       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, &cutLow, &cutHigh))
 							       continue;
 
 
@@ -1695,7 +1698,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 
 					       if(track->GetTPCsignalN()<=70)continue;
 
-					       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, cutLow, cutHigh))
+					       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, &cutLow, &cutHigh))
 						       continue;
 
 					       for(Int_t nh = 0; nh < nHists; nh++) {
@@ -1847,11 +1850,11 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent ){
 
 						       Double_t phi     = track->Phi();
 
-						       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, cutLow, cutHigh))
+						       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, &cutLow, &cutHigh))
 							       continue;
 
 
-						       //if(!PhiCut(pt, phi, charge, magf, cutLow, cutHigh, hPhi))
+						       //if(!PhiCut(pt, phi, charge, magf, &cutLow, &cutHigh, hPhi))
 						       //	continue;
 
 						       Double_t eta  = track->Eta();
@@ -1936,7 +1939,7 @@ void AliAnalysisTaskQAHighPtDeDx::ProduceArrayV0AOD( AliAODEvent *AODevent ){
 
 					       if(track->GetTPCsignalN()<=70)continue;
 
-					       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, cutLow, cutHigh))
+					       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, &cutLow, &cutHigh))
 						       continue;
 
 					       for(Int_t nh = 0; nh < nHists; nh++) {

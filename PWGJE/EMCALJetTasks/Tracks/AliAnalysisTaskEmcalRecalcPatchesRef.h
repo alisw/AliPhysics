@@ -33,7 +33,9 @@
 
 class AliEMCALTriggerPatchInfo;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalRecalcPatchesRef : public AliAnalysisTaskEmcalTriggerBase {
 public:
@@ -59,11 +61,21 @@ public:
 
   void SetEnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
   void SetOnlineThreshold(ETriggerThreshold_t trigger, Int_t value) { fOnlineThresholds[static_cast<int>(trigger)] = value; }
-
+  void SetFillTHnSparse(bool doFill) { fFillTHnSparse = doFill; }
   void SetSwapPatches(Bool_t doSwap) { fSwapPatches = doSwap; }
 
   void AddRequiredTriggerOverlap(const char *trigger);
   void AddExcludedTriggerOverlap(const char *trigger);
+
+  /**
+   * @brief Set centrality selection.
+   *
+   * Note: Needs multiplicity task to run in front
+   *
+   * @param[in] min Min. value of the centrality interval
+   * @param[in] max Max. value of the centrality interval
+   */
+  void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); fRequestCentrality = true; }
 
   static AliAnalysisTaskEmcalRecalcPatchesRef *AddTaskEmcalRecalcPatches(const char *suffix);
 
@@ -72,7 +84,9 @@ protected:
   virtual void CreateUserHistos();
   virtual bool IsUserEventSelected();
   virtual bool Run();
+  virtual void RunChanged(Int_t newrun);
   virtual void UserFillHistosAfterEventSelection();
+  void LoadTriggerThresholdsFromCDB();
   std::vector<const AliEMCALTriggerPatchInfo *> SelectAllPatchesByType(const TClonesArray &patches, EPatchType_t patchtype) const;
   std::vector<const AliEMCALTriggerPatchInfo *> SelectFiredPatchesByTrigger(const TClonesArray &patches, ETriggerThreshold_t trigger) const;
   std::vector<std::string> GetAcceptedTriggerClusters(const char *triggerstring) const;
@@ -86,12 +100,19 @@ private:
   Bool_t                fSwapPatches;         ///< Look explicitly for the wrong patches
   TObjArray             fRequiredOverlaps;    ///< Add option to require overlap with certain triggers
   TObjArray             fExcludedOverlaps;    ///< Add option to exclude overlap with certain triggers
+  AliCutValueRange<double> fCentralityRange;  ///< Range of accepted event centralities
+  Bool_t                fUseRecalcPatches;    ///< Switch between offline (FEE) and recalc (L1) patches
+  Bool_t                fRequestCentrality;   ///< Switch for request of centrality selection
+  Bool_t                fFillTHnSparse;       ///< Switch for filling THnSparse
+  Double_t              fEventCentrality;     //!<! Event centrality
 
   AliAnalysisTaskEmcalRecalcPatchesRef(const AliAnalysisTaskEmcalRecalcPatchesRef &);
   AliAnalysisTaskEmcalRecalcPatchesRef &operator=(const AliAnalysisTaskEmcalRecalcPatchesRef &);
 
   ClassDef(AliAnalysisTaskEmcalRecalcPatchesRef, 1);
 };
+
+}
 
 }
 #endif

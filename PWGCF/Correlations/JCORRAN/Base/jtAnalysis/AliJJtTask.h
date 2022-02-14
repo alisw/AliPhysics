@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <AliAnalysisTaskSE.h>
-#include "AliJJtAna.h"
+#include <AliJJtAna.h>
 
 class AliJCatalystTask;
 //==============================================================

@@ -20,12 +20,10 @@
 #include "AliLog.h"
 #include "AliMCEvent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler)
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerWeightHandler)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerPtHardWeight)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliEMCalTriggerWeightHandler::AliEMCalTriggerWeightHandler() :
   TObject(),
@@ -141,5 +139,3 @@ const AliEMCalTriggerPtHardWeight *AliEMCalTriggerWeightHandler::FindWeight(Doub
   }
   return result;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

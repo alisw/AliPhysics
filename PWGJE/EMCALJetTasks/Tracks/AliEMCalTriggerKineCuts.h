@@ -15,7 +15,9 @@
 
 class AliVParticle;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * \class AliEMCalTriggerKineCuts
@@ -62,11 +64,11 @@ protected:
   AliCutValueRange<double>     fEtaCut;           ///< Cut range in \f$ \eta \f$
   AliCutValueRange<double>     fPhiCut;           ///< Cut range in \f$ \phi \f$
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerKineCuts, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERKINECUTS_H */

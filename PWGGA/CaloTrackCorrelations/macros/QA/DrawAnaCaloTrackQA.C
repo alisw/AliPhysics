@@ -757,11 +757,19 @@ void CaloQA(Int_t icalo)
   ccalo2->cd(3);
   gPad->SetLogz();
   
-  TH2F* hClusterActivity  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin0_Cluster_ColRow_PID",icalo));
+  TH3F* hClusterActivityEn  = (TH3F*) GetHisto(Form("AnaPhoton_Calo%d_hEnergyColRow_PID",icalo));
+  
+  if(histoTag.Contains("default")) hClusterActivityEn->SetAxisRange(0.5,3,"X");
+  else if(histoTag.Contains("L0")) hClusterActivityEn->SetAxisRange(2,5,"X");
+  else if(histoTag.Contains("L2")) hClusterActivityEn->SetAxisRange(5,12,"X");
+  else                             hClusterActivityEn->SetAxisRange(12,20,"X");
+  
+  TH2F* hClusterActivity  = (TH2F*) hClusterActivityEn->Project3D("zy");
     
   if(histoTag.Contains("default")) hClusterActivity->SetTitle("Clusters per col-row 0.5<#it{E}<3 GeV");
   else if(histoTag.Contains("L0")) hClusterActivity->SetTitle("Clusters per col-row 2<#it{E}<5 GeV");
-  else                             hClusterActivity->SetTitle("Clusters per col-row 5<#it{E}<12 GeV");
+  else if(histoTag.Contains("L2")) hClusterActivity->SetTitle("Clusters per col-row 5<#it{E}<12 GeV");
+  else                             hClusterActivity->SetTitle("Clusters per col-row 12<#it{E}<20 GeV");
   
   hClusterActivity->SetTitleOffset(1.5,"Y");
   hClusterActivity->SetZTitle("Entries");
@@ -820,11 +828,19 @@ void CaloQA(Int_t icalo)
   ccalo2->cd(4);
   gPad->SetLogz();
   
-  TH2F* hClusterActivity2  = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hEBin1_Cluster_ColRow_PID",icalo));
+  TH3F* hClusterActivityEn2  = (TH3F*) GetHisto(Form("AnaPhoton_Calo%d_hEnergyColRow_PID",icalo));
    
+   if(histoTag.Contains("default")) hClusterActivityEn2->SetAxisRange(3,100,"X");
+   else if(histoTag.Contains("L0")) hClusterActivityEn2->SetAxisRange(5,100,"X");
+   else if(histoTag.Contains("L2")) hClusterActivityEn2->SetAxisRange(12,100,"X");
+   else                             hClusterActivityEn2->SetAxisRange(20,100,"X");
+   
+   TH2F* hClusterActivity2  = (TH2F*) hClusterActivityEn2->Project3D("zy");
+     
   if(histoTag.Contains("default")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 3 GeV");
   else if(histoTag.Contains("L0")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 5 GeV");
-  else                             hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  else if(histoTag.Contains("L2")) hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 12 GeV");
+  else                             hClusterActivity2->SetTitle("Clusters per col-row #it{E} > 20 GeV");
   
   hClusterActivity2->SetTitleOffset(1.5,"Y");
   hClusterActivity2->SetZTitle("Entries");
@@ -1109,10 +1125,16 @@ void TrackQA()
   TH1F* hPt      = (TH1F*) GetHisto("AnaHadrons_hPt");
   TH1F* hPtSPD   = (TH1F*) GetHisto("AnaHadrons_hPtSPDRefit");
   TH1F* hPtNoSPD = (TH1F*) GetHisto("AnaHadrons_hPtNoSPDRefit");
+
+  if ( !hPt ) 
+  {
+    TH2F* hPtCent = (TH2F*) GetHisto("AnaHadrons_hPtCent");
+    hPt = (TH1F*) hPtCent->ProjectionX("hPtProj",0,100);
+  }
+  
   hPt     ->SetLineColor(1);
   hPtSPD  ->SetLineColor(2);
   hPtNoSPD->SetLineColor(4);
-  
   hPt     ->SetTitle("Hybrid track type #it{p}_{T}");
   hPt     ->SetYTitle("Entries");
   hPt     ->SetTitleOffset(1.5,"Y");
@@ -1891,86 +1913,105 @@ void IsolQA(Int_t icalo)
   TH2F* h2SumPtConeSubCluster = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConeSumPtEtaUESubCluster" ,icalo));
   TH2F* h2SumPtConeSub        = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConeSumPtEtaUESub"        ,icalo));
   
+  if ( !h2SumPtConeSub )
+  {
+    h2SumPtConeSubTrack   = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumUESubTrack"   ,icalo));
+    h2SumPtConeSubCluster = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumUESubCluster" ,icalo));
+    h2SumPtConeSub        = (TH2F*) GetHisto(Form("AnaIsolPhoton_Calo%d_hConePtSumUESub"        ,icalo));
+  }
+  
   TH1F* hSumPtCone            = (TH1F*) h2SumPtCone          ->ProjectionY(Form("%s_hSumPtCone_TrigEnMin%2.0fGeV"              ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   TH1F* hSumPtConeCluster     = (TH1F*) h2SumPtConeCluster   ->ProjectionY(Form("%s_hSumPtConeCluster_TrigEnMin%2.0fGeV"       ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   TH1F* hSumPtConeTrack       = (TH1F*) h2SumPtConeTrack     ->ProjectionY(Form("%s_hSumPtConeTrack_TrigEnMin%2.0fGeV"         ,histoTag.Data(),minClusterE),minClusterEBin,10000);
   TH1F* hSumPtConeTrackPerp   = (TH1F*) h2SumPtConeTrackPerp ->ProjectionY(Form("%s_hSumPtConePerp_TrigEnMin%2.0fGeV"          ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtEtaBandTrack    = (TH1F*) h2SumPtEtaBandTrack  ->ProjectionY(Form("%s_hSumPtConeEtaBandTrack_TrigEnMin%2.0fGeV"  ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtEtaBandCluster  = (TH1F*) h2SumPtEtaBandCluster->ProjectionY(Form("%s_hSumPtConeEtaBandCluster_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtConeSub         = (TH1F*) h2SumPtConeSub       ->ProjectionY(Form("%s_hSumPtConeSub_TrigEnMin%2.0fGeV"           ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtConeSubCluster  = (TH1F*) h2SumPtConeSubCluster->ProjectionY(Form("%s_hSumPtConeSubCluster_TrigEnMin%2.0fGeV"    ,histoTag.Data(),minClusterE),minClusterEBin,10000);
-  TH1F* hSumPtConeSubTrack    = (TH1F*) h2SumPtConeSubTrack  ->ProjectionY(Form("%s_hSumPtConeSubTrack_TrigEnMin%2.0fGeV"      ,histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtEtaBandTrack    = 0;
+  if ( h2SumPtEtaBandTrack ) 
+    hSumPtEtaBandTrack = (TH1F*) h2SumPtEtaBandTrack->ProjectionY(Form("%s_hSumPtConeEtaBandTrack_TrigEnMin%2.0fGeV",
+                                                                       histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtEtaBandCluster  = 0;
+  if ( h2SumPtEtaBandCluster ) 
+    hSumPtEtaBandTrack = (TH1F*) h2SumPtEtaBandCluster->ProjectionY(Form("%s_hSumPtConeEtaBandCluster_TrigEnMin%2.0fGeV",
+                                                                         histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSub         = 0;
+  if ( h2SumPtConeSub) hSumPtConeSub = (TH1F*) h2SumPtConeSub->ProjectionY(Form("%s_hSumPtConeSub_TrigEnMin%2.0fGeV"           ,
+                                                                                histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSubCluster  = 0; 
+  if ( h2SumPtConeSubCluster ) hSumPtConeSubCluster = (TH1F*) h2SumPtConeSubCluster->ProjectionY(Form("%s_hSumPtConeSubCluster_TrigEnMin%2.0fGeV"    ,
+                                                                                                      histoTag.Data(),minClusterE),minClusterEBin,10000);
+  TH1F* hSumPtConeSubTrack    = 0; 
+  if ( h2SumPtConeSubTrack )hSumPtConeSubTrack = (TH1F*) h2SumPtConeSubTrack->ProjectionY(Form("%s_hSumPtConeSubTrack_TrigEnMin%2.0fGeV"      ,
+                                                                                               histoTag.Data(),minClusterE),minClusterEBin,10000);
   
   hSumPtCone          ->Sumw2();
   hSumPtConeCluster   ->Sumw2();
   hSumPtConeTrack     ->Sumw2();
-  hSumPtConeSub       ->Sumw2();
-  hSumPtConeSubCluster->Sumw2();
-  hSumPtConeSubTrack  ->Sumw2();
+  if(hSumPtConeSub)        hSumPtConeSub       ->Sumw2();
+  if(hSumPtConeSubCluster) hSumPtConeSubCluster->Sumw2();
+  if(hSumPtConeSubTrack)   hSumPtConeSubTrack  ->Sumw2();
   hSumPtConeTrackPerp ->Sumw2();
-  hSumPtEtaBandCluster->Sumw2();
-  hSumPtEtaBandTrack  ->Sumw2();
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->Sumw2();
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->Sumw2();
   
   rb = 1;
   hSumPtCone          ->Rebin(rb);
   hSumPtConeCluster   ->Rebin(rb);
   hSumPtConeTrack     ->Rebin(rb);
-  hSumPtConeSub       ->Rebin(rb);
-  hSumPtConeSubCluster->Rebin(rb);
-  hSumPtConeSubTrack  ->Rebin(rb);
+  if(hSumPtConeSub)       hSumPtConeSub       ->Rebin(rb);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Rebin(rb);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Rebin(rb);
   hSumPtConeTrackPerp ->Rebin(rb);
-  hSumPtEtaBandCluster->Rebin(rb);
-  hSumPtEtaBandTrack  ->Rebin(rb);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->Rebin(rb);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->Rebin(rb);
   
   hSumPtCone          ->Scale(1./nTrig);
   hSumPtConeCluster   ->Scale(1./nTrig);
   hSumPtConeTrack     ->Scale(1./nTrig);
-  hSumPtConeSub       ->Scale(1./nTrig);
-  hSumPtConeSubCluster->Scale(1./nTrig);
-  hSumPtConeSubTrack  ->Scale(1./nTrig);
+  if(hSumPtConeSub)       hSumPtConeSub       ->Scale(1./nTrig);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Scale(1./nTrig);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Scale(1./nTrig);
   hSumPtConeTrackPerp ->Scale(1./nTrig);
-  hSumPtEtaBandCluster->Scale(1./nTrig);
-  hSumPtEtaBandTrack  ->Scale(1./nTrig);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->Scale(1./nTrig);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->Scale(1./nTrig);
   
   hSumPtCone          ->SetAxisRange(0,500);
   hSumPtConeCluster   ->SetAxisRange(0,500);
   hSumPtConeTrack     ->SetAxisRange(0,500);
-  hSumPtConeSub       ->SetAxisRange(-5,500);
-  hSumPtConeSubCluster->SetAxisRange(-5,500);
-  hSumPtConeSubTrack  ->SetAxisRange(-5,500);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetAxisRange(-5,500);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetAxisRange(-5,500);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetAxisRange(-5,500);
   hSumPtConeTrackPerp ->SetAxisRange(0,500);
-  hSumPtEtaBandCluster->SetAxisRange(0,500);
-  hSumPtEtaBandTrack  ->SetAxisRange(0,500);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetAxisRange(0,500);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetAxisRange(0,500);
   
   hSumPtCone          ->SetMarkerStyle(24);
   hSumPtConeCluster   ->SetMarkerStyle(20);
   hSumPtConeTrack     ->SetMarkerStyle(20);
-  hSumPtConeSub       ->SetMarkerStyle(25);
-  hSumPtConeSubCluster->SetMarkerStyle(25);
-  hSumPtConeSubTrack  ->SetMarkerStyle(25);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetMarkerStyle(25);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetMarkerStyle(25);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetMarkerStyle(25);
   hSumPtConeTrackPerp ->SetMarkerStyle(27);
-  hSumPtEtaBandCluster->SetMarkerStyle(21);
-  hSumPtEtaBandTrack  ->SetMarkerStyle(21);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetMarkerStyle(21);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetMarkerStyle(21);
   
   hSumPtCone          ->SetMarkerColor(1);
   hSumPtConeCluster   ->SetMarkerColor(2);
   hSumPtConeTrack     ->SetMarkerColor(4); 
-  hSumPtConeSub       ->SetMarkerColor(1);
-  hSumPtConeSubCluster->SetMarkerColor(2);
-  hSumPtConeSubTrack  ->SetMarkerColor(4);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetMarkerColor(1);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetMarkerColor(2);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetMarkerColor(4);
   hSumPtConeTrackPerp ->SetMarkerColor(4);
-  hSumPtEtaBandCluster->SetMarkerColor(2);
-  hSumPtEtaBandTrack  ->SetMarkerColor(4);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetMarkerColor(2);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetMarkerColor(4);
   
   hSumPtCone          ->SetLineColor(1);
   hSumPtConeCluster   ->SetLineColor(2);
   hSumPtConeTrack     ->SetLineColor(4);
-  hSumPtConeSub       ->SetLineColor(1);
-  hSumPtConeSubCluster->SetLineColor(2);
-  hSumPtConeSubTrack  ->SetLineColor(4);
+  if(hSumPtConeSub)       hSumPtConeSub       ->SetLineColor(1);
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->SetLineColor(2);
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->SetLineColor(4);
   hSumPtConeTrackPerp ->SetLineColor(4);
-  hSumPtEtaBandCluster->SetLineColor(2);
-  hSumPtEtaBandTrack  ->SetLineColor(4);
+  if(hSumPtEtaBandCluster)hSumPtEtaBandCluster->SetLineColor(2);
+  if(hSumPtEtaBandTrack)  hSumPtEtaBandTrack  ->SetLineColor(4);
   
   hSumPtCone->SetTitleOffset(1.5,"Y");
   hSumPtCone->SetYTitle("Entries / #it{N}_{candidates}");
@@ -1979,33 +2020,38 @@ void IsolQA(Int_t icalo)
   max = hSumPtCone->GetMaximum();
   if(max < hSumPtConeTrack     ->GetMaximum()) max = hSumPtConeTrack     ->GetMaximum();
   if(max < hSumPtConeCluster   ->GetMaximum()) max = hSumPtConeCluster   ->GetMaximum();
-  if(max < hSumPtConeSub       ->GetMaximum()) max = hSumPtConeSub       ->GetMaximum();
-  if(max < hSumPtConeSubTrack  ->GetMaximum()) max = hSumPtConeSubTrack  ->GetMaximum();
-  if(max < hSumPtConeSubCluster->GetMaximum()) max = hSumPtConeSubCluster->GetMaximum();
+  if(hSumPtConeSub){
+    if(max < hSumPtConeSub       ->GetMaximum()) max = hSumPtConeSub       ->GetMaximum();}
+  if(hSumPtConeSubTrack){
+    if(max < hSumPtConeSubTrack  ->GetMaximum()) max = hSumPtConeSubTrack  ->GetMaximum();}
+  if(hSumPtConeSubCluster){
+    if(max < hSumPtConeSubCluster->GetMaximum()) max = hSumPtConeSubCluster->GetMaximum();}
   if(max < hSumPtConeTrackPerp ->GetMaximum()) max = hSumPtConeTrackPerp ->GetMaximum();
-  if(max < hSumPtEtaBandCluster->GetMaximum()) max = hSumPtEtaBandCluster->GetMaximum();
-  if(max < hSumPtEtaBandTrack  ->GetMaximum()) max = hSumPtEtaBandTrack  ->GetMaximum();
+  if(hSumPtEtaBandCluster){
+    if(max < hSumPtEtaBandCluster->GetMaximum()) max = hSumPtEtaBandCluster->GetMaximum();}
+  if(hSumPtEtaBandTrack){
+    if(max < hSumPtEtaBandTrack  ->GetMaximum()) max = hSumPtEtaBandTrack  ->GetMaximum();}
   hSumPtCone->SetMaximum(max*2);
 
   hSumPtCone          ->Draw("");
   hSumPtConeCluster   ->Draw("same");
   hSumPtConeTrack     ->Draw("same");
-//  hSumPtConeSub       ->Draw("same");
-//  hSumPtConeSubCluster->Draw("same");
-//  hSumPtConeSubTrack  ->Draw("same");
+//  if(hSumPtConeSub)       hSumPtConeSub       ->Draw("same");
+//  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Draw("same");
+//  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Draw("same");
   hSumPtConeTrackPerp ->Draw("same");
-  hSumPtEtaBandCluster->Draw("same");
-  hSumPtEtaBandTrack  ->Draw("same");
+  if(hSumPtEtaBandCluster) hSumPtEtaBandCluster->Draw("same");
+  if(hSumPtEtaBandTrack)   hSumPtEtaBandTrack  ->Draw("same");
   
   l2.AddEntry(hSumPtCone          ,"Tracks+Clusters","P");
   l2.AddEntry(hSumPtConeCluster   ,"Clusters inside cone","P");
   l2.AddEntry(hSumPtConeTrack     ,"Tracks inside cone","P");
   l2.AddEntry(hSumPtConeTrackPerp ,"Tracks inside #perp cones","P");
-  l2.AddEntry(hSumPtEtaBandTrack  ,"Tracks #eta band","P");
-  l2.AddEntry(hSumPtEtaBandCluster,"Clusters #eta band","P");
-//  l2.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
-//  l2.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
-//  l2.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
+  if(hSumPtEtaBandCluster)l2.AddEntry(hSumPtEtaBandTrack  ,"Tracks #eta band","P");
+  if(hSumPtEtaBandTrack)  l2.AddEntry(hSumPtEtaBandCluster,"Clusters #eta band","P");
+//  if(hSumPtConeSub)       l2.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
+//  if(hSumPtConeSubCluster)l2.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
+//  if(hSumPtConeSubTrack)  l2.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
   
   l2.Draw("same");
   
@@ -2058,17 +2104,17 @@ void IsolQA(Int_t icalo)
   l3.SetBorderSize(0);
   l3.SetFillColor(0);
 
-  hSumPtConeSub->SetTitle(Form("Track/Cluster #Sigma #it{p}_{T}-#Sigma #eta band, p_{T,cand}>%2.0f GeV/#it{c}, #it{R}=0.4",minClusterE));
-  hSumPtConeSub->SetYTitle("Entries / #it{N}_{candidates}");
-  hSumPtConeSub->SetMaximum(max*2);
+  if(hSumPtConeSub)hSumPtConeSub->SetTitle(Form("Track/Cluster #Sigma #it{p}_{T}-#Sigma #eta band, p_{T,cand}>%2.0f GeV/#it{c}, #it{R}=0.4",minClusterE));
+  if(hSumPtConeSub)hSumPtConeSub->SetYTitle("Entries / #it{N}_{candidates}");
+  if(hSumPtConeSub)hSumPtConeSub->SetMaximum(max*2);
 
-  hSumPtConeSub       ->Draw("");
-  hSumPtConeSubCluster->Draw("same");
-  hSumPtConeSubTrack  ->Draw("same");
+  if(hSumPtConeSub)       hSumPtConeSub       ->Draw("");
+  if(hSumPtConeSubCluster)hSumPtConeSubCluster->Draw("same");
+  if(hSumPtConeSubTrack)  hSumPtConeSubTrack  ->Draw("same");
   
-  l3.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
-  l3.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
-  l3.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
+  if(hSumPtConeSub)       l3.AddEntry(hSumPtConeSub       ,"Tracks+Clusters-#eta band","P");
+  if(hSumPtConeSubCluster)l3.AddEntry(hSumPtConeSubCluster,"Clusters inside cone-#eta band","P");
+  if(hSumPtConeSubTrack)  l3.AddEntry(hSumPtConeSubTrack  ,"Tracks inside cone-#eta band","P");
 
   l3.Draw("same");
 
@@ -2278,7 +2324,8 @@ void CorrelQA(Int_t icalo)
   
   l.Draw("same");
   
-  // xE correlation
+  // xE, zT correlation
+  //
   cCorrelation->cd(2);
   gPad->SetLogy();
   
@@ -2290,32 +2337,72 @@ void CorrelQA(Int_t icalo)
   
   TH2F* hEXE   = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hXECharged"  ,icalo));
   TH2F* hEXEUE = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hXEUeCharged",icalo));
+  Int_t rebinXE = 2;
   
   TH1F* hXE  = (TH1F*) hEXE->ProjectionY(Form("%s_hXE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
   hXE->Sumw2();
-  hXE->Rebin(2);
+  hXE->Rebin(rebinXE);
   hXE->Scale(1./nTrig);
   hXE->SetAxisRange(0,1);
   hXE->SetMarkerStyle(24);
   hXE->SetMarkerColor(1);
   hXE->SetLineColor(1);
   hXE->SetTitleOffset(1.5,"Y");
+  hXE->SetXTitle("#it{x}_{E}, #it{z}_{T}");
   hXE->SetYTitle("#it{N}_{pairs} / #it{N}_{trig}");
   hXE->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
-  l2.AddEntry(hXE,"raw x_{E}","P");
+  l2.AddEntry(hXE,"raw #it{x}_{E}","P");
+  
+  hXE->SetMaximum(2e2);
+  hXE->SetMinimum(1e-5);
+  
   hXE->Draw();
-
+ 
   TH1F* hXEUE  = (TH1F*) hEXEUE->ProjectionY(Form("%s_hXEUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
   hXEUE->Sumw2();
-  hXEUE->Rebin(2);
+  hXEUE->Rebin(rebinXE);
   hXEUE->Scale(1./nTrig);
   hXEUE->SetAxisRange(0,1);
   hXEUE->SetMarkerStyle(25);
   hXEUE->SetMarkerColor(2);
   hXEUE->SetLineColor(2);
-  l2.AddEntry(hXEUE,"raw Und. Event x_{E}","P");
+
+  l2.AddEntry(hXEUE,"raw Und. Event #it{x}_{E}","P");
   hXEUE->Draw("same");
+
+  TH2F* hEZT   = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hZTCharged"  ,icalo));
+  TH2F* hEZTUE = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hZTUeCharged",icalo));
   
+  if(hEZT)
+  {
+    TH1F* hZT  = (TH1F*) hEZT->ProjectionY(Form("%s_hZT_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+    hZT->Sumw2();
+    hZT->Rebin(rebinXE);
+    hZT->Scale(1./nTrig);
+    hZT->SetAxisRange(0,1);
+    hZT->SetMarkerStyle(20);
+    hZT->SetMarkerColor(1);
+    hZT->SetLineColor(1);
+    hZT->SetTitleOffset(1.5,"Y");
+    //hZT->SetYTitle("#it{N}_{pairs} / #it{N}_{trig}");
+    //hZT->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
+    l2.AddEntry(hZT,"raw #it{z}_{T}","P");
+    hZT->Draw("same");
+  }
+  
+  if(hEZTUE)
+  {
+    TH1F* hZTUE  = (TH1F*) hEZTUE->ProjectionY(Form("%s_hZTUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+    hZTUE->Sumw2();
+    hZTUE->Rebin(rebinXE);
+    hZTUE->Scale(1./nTrig);
+    hZTUE->SetAxisRange(0,1);
+    hZTUE->SetMarkerStyle(21);
+    hZTUE->SetMarkerColor(2);
+    hZTUE->SetLineColor(2);
+    l2.AddEntry(hZTUE,"raw Und. Event #it{z}_{T}","P");
+    hZTUE->Draw("same");
+  }
   l2.Draw("same");
 
   // ok message
@@ -2358,7 +2445,20 @@ void CorrelQA(Int_t icalo)
     text[ok]->Draw();
   }
 
-  
+// Optional ratio xE, zT
+//  cCorrelation->cd(2);
+//  
+//  TH1F* hRatZTXE  = (TH1F*)hXE->Clone(Form("RatZTXE_%s",hXE->GetName()));
+//  hRatZTXE->Divide(hZT);
+//  hRatZTXE->SetYTitle("f(#it{x}_{E})/f(#it{z}_{T})");
+//  hRatZTXE->Draw();
+//  hRatZTXE->SetMaximum(2);
+//  hRatZTXE->SetMinimum(0);
+//
+//  TH1F* hRatZTXEUE  = (TH1F*)hXEUE->Clone(Form("RatZTXE_%s",hXEUE->GetName()));
+//  hRatZTXEUE->Divide(hZTUE);
+//  hRatZTXEUE->Draw("same");
+
   cCorrelation->Print(Form("%s_CorrelationHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save

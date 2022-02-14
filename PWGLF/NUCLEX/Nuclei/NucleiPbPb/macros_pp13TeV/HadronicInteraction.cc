@@ -13,12 +13,12 @@ using namespace plotting;
 
 void HadronicInteraction(){
   TFile signalfile(kSignalOutput.data());
-  TFile signalMCfile(Form("%ssignalMC.root",kBaseOutputDir.data()));
+  TFile signalMCfile(kSignalMCOutput.data());
 
   TFile output(Form("%sHadronicInteraction.root",kBaseOutputDir.data()),"recreate");
 
-  TH1D* hTPC3sigma[2];
-  TH1D* hTPC3sigmaMC[2];
+  TH1D* hTPC[2];
+  TH1D* hTPCMC[2];
   TH1D* hRawCounts[2];
   TH1D* hRawCountsMC[2];
 
@@ -35,22 +35,22 @@ void HadronicInteraction(){
   double frac_bins[nFracBins+1] = {0.9,1.0,1.1,1.2};//,1.4};
 
   TTList* list = (TTList*)signalfile.Get(kFilterListNames.data());
-  TTList* listmc = (TTList*)signalMCfile.Get(kFilterListNames.data());
+  TTList* listmc = (TTList*)signalMCfile.Get(kFilterListNamesMCasData.data());
   for(int iS=0; iS<2; iS++){
     cFraction[iS] = new TCanvas(Form("cFraction_%c",kLetter[iS]),Form("cFraction_%c",kLetter[iS]));
     //
     hRawCounts[iS] = (TH1D*)signalfile.Get(Form("%s/%s/Fits/hRawCounts%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
     Requires(hRawCounts[iS],Form("%s/%s/Fits/hRawCounts%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
     hRawCounts[iS]->SetDirectory(0);
-    hTPC3sigma[iS] = (TH1D*)signalfile.Get(Form("%s/%s/TPC3sigma/hTPC3sigma%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
-    Requires(hTPC3sigma[iS],Form("%s/%s/TPC3sigma/hTPC3sigms%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
-    hTPC3sigma[iS]->SetDirectory(0);
-    hRawCountsMC[iS] = (TH1D*)signalMCfile.Get(Form("%s/%s/Fits/hRawCounts%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
-      Requires(hRawCountsMC[iS],Form("%s/%s/Fits/hRawCountsMC%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
+    hTPC[iS] = (TH1D*)signalfile.Get(Form("%s/%s/TPConly/hRawCountsTPC%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
+    Requires(hTPC[iS],Form("%s/%s/TPConly/hRawCountsTPC%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
+    hTPC[iS]->SetDirectory(0);
+    hRawCountsMC[iS] = (TH1D*)signalMCfile.Get(Form("%s/%s/Fits/hRawCounts%c%i",listmc->GetName(),kNames[iS].data(),kLetter[iS],9));
+    Requires(hRawCountsMC[iS],Form("MC: %s/%s/Fits/hRawCounts%c%i",listmc->GetName(),kNames[iS].data(),kLetter[iS],9));
     hRawCountsMC[iS]->SetDirectory(0);
-    hTPC3sigmaMC[iS] = (TH1D*)signalMCfile.Get(Form("%s/%s/TPC3sigma/hTPC3sigma%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
-    Requires(hTPC3sigmaMC[iS],Form("MC: %s/%s/TPC3sigma/hTPC3sigma%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
-    hTPC3sigmaMC[iS]->SetDirectory(0);
+    hTPCMC[iS] = (TH1D*)signalMCfile.Get(Form("%s/%s/TPConly/hRawCountsTPC%c%i",listmc->GetName(),kNames[iS].data(),kLetter[iS],9));
+    Requires(hTPCMC[iS],Form("MC: %s/%s/TPConly/hRawCountsTPC%c%i",listmc->GetName(),kNames[iS].data(),kLetter[iS],9));
+    hTPCMC[iS]->SetDirectory(0);
     //
     fraction[iS] = new TH1D(Form("hFraction%c",kLetter[iS]),";#it{p}_{T} (GeV/#it{c}); TOF + TPC counts / TPC counts",nFracBins,frac_bins);
     SetHistStyle(fraction[iS],kBlue);
@@ -64,20 +64,22 @@ void HadronicInteraction(){
     leg.AddEntry(fraction[iS],"Data","PE");
     leg.AddEntry(fractionMC[iS],"MC","PE");
     float ratio=0., ratio_err=0., ratio_mc=0., ratio_mc_err=0.;
-    for(int iB=5; iB<=7; iB++){
+    for(int iB=1; iB<=kNPtBins; iB++){
+      float bin_center = (kPtBins[iB]+kPtBins[iB-1])/2;
+      if (bin_center < kPtHadronicInteractionRange[0] || bin_center > kPtHadronicInteractionRange[1]) continue;
       //
-      ratio = hRawCounts[iS]->GetBinContent(iB)/hTPC3sigma[iS]->GetBinContent(iB);
-      ratio_err = ratio * TMath::Sqrt( Sq(hRawCounts[iS]->GetBinError(iB)/hRawCounts[iS]->GetBinContent(iB)) + Sq(hTPC3sigma[iS]->GetBinError(iB)/hTPC3sigma[iS]->GetBinContent(iB)) );
+      ratio = hRawCounts[iS]->GetBinContent(iB)/hTPC[iS]->GetBinContent(iB);
+      ratio_err = ratio * TMath::Sqrt( Sq(hRawCounts[iS]->GetBinError(iB)/hRawCounts[iS]->GetBinContent(iB)) + Sq(hTPC[iS]->GetBinError(iB)/hTPC[iS]->GetBinContent(iB)) );
       fraction[iS]->SetBinContent(fraction[iS]->FindBin(hRawCounts[iS]->GetBinCenter(iB)),ratio);
       fraction[iS]->SetBinError(fraction[iS]->FindBin(hRawCounts[iS]->GetBinCenter(iB)),ratio_err);
       //
-      ratio_mc = hRawCountsMC[iS]->GetBinContent(iB)/hTPC3sigmaMC[iS]->GetBinContent(iB);
-      ratio_mc_err = ratio_mc * TMath::Sqrt( Sq(hRawCountsMC[iS]->GetBinError(iB)/hRawCountsMC[iS]->GetBinContent(iB)) + Sq(hTPC3sigmaMC[iS]->GetBinError(iB)/hTPC3sigmaMC[iS]->GetBinContent(iB)) );
+      ratio_mc = hRawCountsMC[iS]->GetBinContent(iB)/hTPCMC[iS]->GetBinContent(iB);
+      ratio_mc_err = ratio_mc * TMath::Sqrt( Sq(hRawCountsMC[iS]->GetBinError(iB)/hRawCountsMC[iS]->GetBinContent(iB)) + Sq(hTPCMC[iS]->GetBinError(iB)/hTPCMC[iS]->GetBinContent(iB)) );
       fractionMC[iS]->SetBinContent(fractionMC[iS]->FindBin(hRawCountsMC[iS]->GetBinCenter(iB)),ratio_mc);
       fractionMC[iS]->SetBinError(fractionMC[iS]->FindBin(hRawCountsMC[iS]->GetBinCenter(iB)),ratio_mc_err);
       //
       correction[iS].push_back(ratio/ratio_mc);
-      printf("matter: %c ratio: %f ratio_mc: %f ratio/ratio_mc: %f\n", kLetter[iS], ratio, ratio_mc, ratio/ratio_mc);
+      printf("bin_center: %f matter: %c ratio: %f ratio_mc: %f ratio/ratio_mc: %f\n", bin_center, kLetter[iS], ratio, ratio_mc, ratio/ratio_mc);
     }
     for(auto p : correction[iS]){
       printf("corr_%c: %f\n",kLetter[iS],p);
@@ -89,8 +91,8 @@ void HadronicInteraction(){
     output.cd();
     hRawCountsMC[iS]->Write(Form("TofMC_%c",kLetter[iS]));
     hRawCounts[iS]->Write(Form("Tof_%c",kLetter[iS]));
-    hTPC3sigma[iS]->Write(Form("Tpc_%c",kLetter[iS]));
-    hTPC3sigmaMC[iS]->Write(Form("TpcMC_%c",kLetter[iS]));
+    hTPC[iS]->Write(Form("Tpc_%c",kLetter[iS]));
+    hTPCMC[iS]->Write(Form("TpcMC_%c",kLetter[iS]));
     fraction[iS]->Write();
     fractionMC[iS]->Write();
     cFraction[iS]->cd();

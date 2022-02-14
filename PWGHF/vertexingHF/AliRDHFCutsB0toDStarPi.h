@@ -64,8 +64,8 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Double_t GetCircRadius() { return fCircRadius; }
   void SetCircRadius(Double_t radius) { fCircRadius = radius; }
 
-  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const;
-  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const;
+  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong *DStar) const;
+  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const;
 
   void SetCutsD0forD0ptbin(Int_t nVars,Int_t nPtBins,Float_t **cutsRDD0forD0ptbin);
   void SetCutsD0forD0ptbin(Int_t glIndex,Float_t *cutsRDD0forD0ptbin);

@@ -23,7 +23,7 @@ AliReducedEventPlaneInfo::AliReducedEventPlaneInfo() :
   //
   for(Int_t idet=0; idet<kNdetectors; ++idet) {
     for(Int_t ih=0; ih<fgkNMaxHarmonics; ++ih) {
-      fEventPlaneStatus[idet][ih] = 0;
+      fEventPlaneStatus[idet][ih] = kUnset;
       for(Int_t ic=0; ic<2; ++ic)
 	fQvector[idet][ih][ic] = 0.0;
     }
@@ -48,7 +48,7 @@ void AliReducedEventPlaneInfo::ClearEvent() {
   //
   for(Int_t idet=0; idet<kNdetectors; ++idet) {
     for(Int_t ih=0; ih<fgkNMaxHarmonics; ++ih) {
-      fEventPlaneStatus[idet][ih] = 0;
+      fEventPlaneStatus[idet][ih] = kUnset;
       for(Int_t ic=0; ic<2; ++ic)
 	fQvector[idet][ih][ic] = 0.0;
     }

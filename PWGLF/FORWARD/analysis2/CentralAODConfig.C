@@ -25,7 +25,7 @@ CentralAODConfig(AliCentralMultiplicityTask* task)
 
   // --- Set options on task -----------------------------------------
   // Whether to do correction for secondaries
-  task->SetUseSecondary(true);
+  task->SetUseSecondary(false/*true*/);
   // Whether to do correction for acceptance - deprecated
   // The tasks stores the per-event phi acceptance in the overflow bin 
   // and the eta coverage in the underflow bin.  Use these to correct the 

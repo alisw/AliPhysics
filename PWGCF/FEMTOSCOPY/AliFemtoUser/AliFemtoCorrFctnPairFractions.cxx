@@ -68,54 +68,32 @@ AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrF
   AliFemtoCorrFctn(),
   fPairFractions(0),
   fPairFractionsDen(0),
-  fphiL(0),
-  fphiT(0),
-  detadphi(0)
+  fphiL(aCorrFctn.fphiL),
+  fphiT(aCorrFctn.fphiT),
+  detadphi(aCorrFctn.detadphi)
 {
   // copy constructor
-  if (aCorrFctn.fPairFractions)
-    fPairFractions = new TH1F(*aCorrFctn.fPairFractions);
-  else
-    fPairFractions = 0;
+  fPairFractions = new TH1F(*aCorrFctn.fPairFractions);
+  fPairFractionsDen = new TH1F(*aCorrFctn.fPairFractionsDen);
 
-  if (aCorrFctn.fPairFractions)
-    fPairFractions = new TH1F(*aCorrFctn.fPairFractions);
-  else
-    fPairFractions = 0;
-
-  fphiL = aCorrFctn.fphiL;
-  fphiT = aCorrFctn.fphiT;
-
- if (detadphi && aCorrFctn.detadphi) {
-
+ if (detadphi) {
    for (int i = 0; i < 7; i++) {
-     if (aCorrFctn.fPairFractionsDEtaDPhi[i])
-       fPairFractionsDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDEtaDPhi[i]);
-     else
-       fPairFractionsDEtaDPhi[i] = 0;
-
-     if (aCorrFctn.fPairFractionsDenDEtaDPhi[i])
-       fPairFractionsDenDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDenDEtaDPhi[i]);
-     else
-       fPairFractionsDenDEtaDPhi[i] = 0;
+     fPairFractionsDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDEtaDPhi[i]);
+     fPairFractionsDenDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDenDEtaDPhi[i]);
    }
-
  }
 }
 //____________________________
 AliFemtoCorrFctnPairFractions::~AliFemtoCorrFctnPairFractions()
 {
   // destructor
-  if(fPairFractions)
-    delete fPairFractions;
-  if(fPairFractionsDen)
-    delete fPairFractionsDen;
+  delete fPairFractions;
+  delete fPairFractionsDen;
+
   if (detadphi) {
     for (int i = 0; i < 7; i++) {
-      if (fPairFractionsDEtaDPhi[i])
-	delete fPairFractionsDEtaDPhi[i];
-      if (fPairFractionsDenDEtaDPhi[i])
-	delete fPairFractionsDenDEtaDPhi[i];
+      delete fPairFractionsDEtaDPhi[i];
+      delete fPairFractionsDenDEtaDPhi[i];
     }
   }
 }
@@ -123,37 +101,37 @@ AliFemtoCorrFctnPairFractions::~AliFemtoCorrFctnPairFractions()
 AliFemtoCorrFctnPairFractions& AliFemtoCorrFctnPairFractions::operator=(const AliFemtoCorrFctnPairFractions& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
 
-    if (aCorrFctn.fPairFractions)
-      fPairFractions = new TH1F(*aCorrFctn.fPairFractions);
-    else
-      fPairFractions = 0;
-
-    if (aCorrFctn.fPairFractionsDen)
-      fPairFractionsDen = new TH1F(*aCorrFctn.fPairFractionsDen);
-    else
-      fPairFractionsDen = 0;
+  *fPairFractions = *aCorrFctn.fPairFractions;
+  *fPairFractionsDen = *aCorrFctn.fPairFractionsDen;
 
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
-  detadphi = aCorrFctn.detadphi;
-
-  if (detadphi) {
+  if (detadphi && aCorrFctn.detadphi) {
     for (int i = 0; i < 7; i++) {
-      if (aCorrFctn.fPairFractionsDEtaDPhi[i])
+        *fPairFractionsDEtaDPhi[i] = *aCorrFctn.fPairFractionsDEtaDPhi[i];
+        *fPairFractionsDenDEtaDPhi[i] = *aCorrFctn.fPairFractionsDenDEtaDPhi[i];
+    }
+  } else if (aCorrFctn.detadphi) {
+    for (int i = 0; i < 7; i++) {
         fPairFractionsDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDEtaDPhi[i]);
-      else
-        fPairFractionsDEtaDPhi[i] = 0;
-
-      if (aCorrFctn.fPairFractionsDenDEtaDPhi[i])
         fPairFractionsDenDEtaDPhi[i] = new TH2F(*aCorrFctn.fPairFractionsDenDEtaDPhi[i]);
-      else
-        fPairFractionsDenDEtaDPhi[i] = 0;
+    }
+  } else if (detadphi) {
+    for (int i = 0; i < 7; i++) {
+       delete fPairFractionsDEtaDPhi[i];
+       fPairFractionsDEtaDPhi[i] = nullptr;
+
+       delete fPairFractionsDenDEtaDPhi[i];
+       fPairFractionsDenDEtaDPhi[i] = nullptr;
     }
   }
+
+  detadphi = aCorrFctn.detadphi;
 
   return *this;
 }
@@ -174,15 +152,11 @@ void AliFemtoCorrFctnPairFractions::Finish()
 AliFemtoString AliFemtoCorrFctnPairFractions::Report()
 {
   // create report
-  string stemp = "Pair Fractions Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fPairFractions->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fPairFractions->GetEntries());
-  stemp += ctemp;
+  AliFemtoString report = "Pair Fractions Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fPairFractions->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fPairFractions->GetEntries());
   //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return report;
 }
 //____________________________
 void AliFemtoCorrFctnPairFractions::AddRealPair(AliFemtoPair* pair)

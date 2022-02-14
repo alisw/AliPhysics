@@ -26,9 +26,9 @@
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskCountITStracks)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskCountITStracks)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskCountITStracks::AliAnalysisTaskCountITStracks() :
     AliAnalysisTaskSE(),
@@ -91,7 +91,7 @@ void AliAnalysisTaskCountITStracks::UserExec(Option_t *){
     AliAODTrack *aodtrack(nullptr);
     float dr, dz;
     if((esdtrack = static_cast<AliESDtrack *>(trk))) {
-      if(!esdtrack->GetStatus() & AliESDtrack::kITSpureSA) continue;
+      if(!(esdtrack->GetStatus() & AliESDtrack::kITSpureSA)) continue;
       esdtrack->GetImpactParameters(dr, dz);
     } else if((aodtrack = static_cast<AliAODTrack *>(trk))) {
       if(!aodtrack->IsPureITSStandalone()) continue;
@@ -138,5 +138,3 @@ AliAnalysisTaskCountITStracks *AliAnalysisTaskCountITStracks::AddTaskCountITStra
   mgr->ConnectOutput(task, 1, mgr->CreateContainer("histosCountITStracks", TList::Class(), AliAnalysisManager::kOutputContainer, outputcont));
   return task;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

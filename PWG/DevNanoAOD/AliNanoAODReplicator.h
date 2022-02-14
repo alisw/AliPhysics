@@ -15,13 +15,7 @@
 #endif
 
 #include <iostream>
-
-/* #ifndef AliAOD3LH_H */
-/* #include "AliAOD3LH.h" */
-/* #endif */
-
-//#include "AliAOD3LH.h" 
-
+#include <list>
 //
 // Implementation of a branch replicator 
 // to produce nano AOD.
@@ -50,6 +44,7 @@ class AliAODVertex;
 class AliVertexerTracks;
 class AliESDv0; 
 class AliAODv0; 
+class AliAODConversionPhoton;
 class AliAODHeader;
 class AliNanoAODHeader;
 class AliAnalysisTaskSE;
@@ -58,20 +53,12 @@ class AliAODTrack;
 class AliNanoAODCustomSetter;
 class AliAODZDC;
 
-class TH1F;
-
 class AliNanoAODReplicator : public AliAODBranchReplicator
 {
  public:
   
   AliNanoAODReplicator();
-  AliNanoAODReplicator(const char* name,
-		       const char* title,
-		       const char * varlist=0,
-               const char * varListHeader=0,
-		       AliAnalysisCuts* trackCut=0x0,
-		       Int_t mcMode=0
-		       );
+  AliNanoAODReplicator(const char* name, const char* title);
   
   virtual ~AliNanoAODReplicator();
   
@@ -81,27 +68,35 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
 
   virtual void Terminate();
 
-  const char * GetVarList() { return fVarList; }
-  void  SetVarList (const char * var) { fVarList = var;}
+  const char * GetVarListTrack() { return fVarList; }
+  void  SetVarListTrack (const char * var) { fVarList = var;}
   const char * GetVarListHeader() { return fVarListHeader; }
   void  SetVarListHeader (const char * var) { fVarListHeader = var;}
-
-  // Call backs for custom variables
-  AliNanoAODCustomSetter * GetCustomSetter() { return fCustomSetter; }
-  void  SetCustomSetter (AliNanoAODCustomSetter * var) { fCustomSetter = var;  }
-    
-  void SetVzero(Int_t b) { fSaveVzero = b;}
-  void SetAODZDC(Int_t b) { fSaveAODZDC = b;}
   
-  Int_t GetSaveVzero() {return fSaveVzero;}
-  Int_t GetSaveAODZDC() {return fSaveAODZDC;}
+  void SetTrackCuts(AliAnalysisCuts* cuts) { fTrackCuts = cuts; }
+  void SetV0Cuts(AliAnalysisCuts* cuts) { fV0Cuts = cuts; }
+  void SetCascadeCuts(AliAnalysisCuts* cuts) { fCascadeCuts = cuts; }
+  void SetConversionPhotonCuts(AliAnalysisCuts* cuts) { fConversionPhotonCuts = cuts; }
+  void SetMCParticleCuts(AliAnalysisCuts* cuts) { fMCParticleCuts = cuts; }
 
-  void SetNumberOfHaederParam(Int_t var){fNumberOfHeaderParam=var;}
-  void SetNumberOfHaederParamInt(Int_t var){fNumberOfHeaderParamInt=var;}
+  void AddCustomSetter(AliNanoAODCustomSetter * var) { fCustomSetters.push_back(var);  }
+    
+  void SetSaveVzero(Bool_t b)  { fSaveVzero = b; }
+  void SetSaveZDC(Bool_t b)    { fSaveZDC = b; }
+  void SetSaveV0s(Bool_t b)    { fSaveV0s = b; }
+  void SetSaveCascades(Bool_t b) { fSaveCascades = b; }
+  void SetSaveConversionPhotons(Bool_t b) { fSaveConversionPhotons = b; }
+  void SetPhotonDeltaBranchName(TString name) {
+    fPhotonFromDeltas = true;
+    fDeltaAODBranchName = name;
+  }
+  
+  void SetMCMode(Int_t mode)  { fMCMode = mode; }
+  
   void SetInputArrayName(TString name) {fInputArrayName=name;}
   void SetOutputArrayName(TString name) {fOutputArrayName=name;}
 
-  void SetVarListHeaderStringVariable(TString var) {fVarListHeader_fTC=var;}
+  void SetVarListHeaderTC(TString var) {fVarListHeader_fTC=var;}
     
  private:
 
@@ -109,15 +104,20 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   Bool_t IsParticleSelected(Int_t i);
   void CreateLabelMap(const AliAODEvent& source);
   Int_t GetNewLabel(Int_t i);
+  void RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
   void FilterMC(const AliAODEvent& source);
+  AliAODVertex* CloneAndStoreVertex(AliAODVertex* toClone);
  
-
- private:
+  AliAnalysisCuts* fTrackCuts; // decides which tracks to keep
+  AliAnalysisCuts* fV0Cuts;    // decides which V0s to keep
+  AliAnalysisCuts* fCascadeCuts; // decides which cascades to keep
+  AliAnalysisCuts* fConversionPhotonCuts; // decides which conversion photons to keep
+  AliAnalysisCuts* fMCParticleCuts;  // decides which particles from the MC stack to keep
+                                                      // Here we need the actual object because we retrieve the MC
+                                                      // matching of the V0s from here
   
-  AliAnalysisCuts* fTrackCut; // decides which tracks to keep
   mutable TClonesArray* fTracks; //! internal array of arrays of NanoAOD tracks
   mutable AliNanoAODHeader* fHeader; //! internal array of headers
-  Int_t fNTracksVariables; //! Number of variables in the array
  
   mutable TClonesArray* fVertices; //! internal array of vertices
  
@@ -134,25 +134,32 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   TString fVarListHeader; // list of variables to be filtered (header)
   TString fVarListHeader_fTC;// list of fired Trigger Classes which are used in the NanoAOD generation 
 
-  AliNanoAODCustomSetter * fCustomSetter;  // Setter class for custom variables
+  std::list<AliNanoAODCustomSetter*> fCustomSetters;       // list of custom setters
     
   mutable AliAODVZERO* fVzero; //! internal array of AliAODVZEROs
   mutable AliAODZDC* fAodZDC; //! internal array of AliAODZDCs
-  Int_t fNumberOfHeaderParam; // number of parameters saved in AliNanoAODHeader
-  Int_t fNumberOfHeaderParamInt; // number of string parameters saved in AliNanoAODHeader
+  mutable TClonesArray* fV0s;    //! internal array of AliAODv0
+  mutable TClonesArray* fCascades;    //! internal array of AliAODcascade
+  mutable TClonesArray* fConversionPhotons;    //! internal array of AliAODConversionPhoton
     
-  Int_t fSaveAODZDC;  // if kTRUE AliAODZDC will be saved in AliAODEvent
-  Int_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
+  Bool_t fSaveZDC;    // if kTRUE AliAODZDC will be saved in AliAODEvent
+  Bool_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
+  Bool_t fSaveV0s;    // if kTRUE AliAODv0 will be saved in AliAODEvent
+  Bool_t fSaveCascades; // if kTRUE AliAODcascade will be saved in AliAODEvent
+  Bool_t fSaveConversionPhotons; // If kTRUE gamme conversions are stored (needs delta AOD)
+  Bool_t fPhotonFromDeltas; // If kTRUE gamma conversions will be directly taken from the Delta AOD
+  TString fDeltaAODBranchName; // Name of the photon branch in the Delta AOD
 
   TString fInputArrayName; // name of array if tracks are stored in a TObjectArray
   TString fOutputArrayName; // name of the output array, where the NanoAODTracks are stored
- private:
-
+  
+  std::map<AliAODVertex*, std::vector<TObject*> > fKeepDaughters; //! Tracks needed as references to V0s and cascades
+  std::map<AliAODVertex*, AliAODVertex*> fClonedVertices; //! avoid that vertices are stored several times
 
   AliNanoAODReplicator(const AliNanoAODReplicator&);
   AliNanoAODReplicator& operator=(const AliNanoAODReplicator&);
 
-  ClassDef(AliNanoAODReplicator,4) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliNanoAODReplicator, 7) // Branch replicator for ESD to muon AOD.
 };
 
 #endif

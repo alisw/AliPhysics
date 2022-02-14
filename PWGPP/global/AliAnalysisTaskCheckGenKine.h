@@ -76,6 +76,9 @@ class AliAnalysisTaskCheckGenKine : public AliAnalysisTaskSE {
   // multiplicity histos
   TH2F* fHistoTracklets;       //!<! histo of trackelts vs. gen mult
   TH2F* fHistoSelTracks;       //!<! histo of tracks (TPC+ITS) vs. gen mult
+  TH2F* fHistoGenMultVsb;      //!<! histo of generated multiplicity in |eta|<0.9
+  TH2F* fHistoTrackletsVsb;    //!<! histo of trackelts vs. imp par
+  TH2F* fHistoSelTracksVsb;    //!<! histo of tracks (TPC+ITS) vs. imp par
 
 
   // per-particle histos
@@ -84,15 +87,16 @@ class AliAnalysisTaskCheckGenKine : public AliAnalysisTaskSE {
   TH3F*  fPrimSec[kMaxNumOfSpeciesToCheck];      //!<! histo with prim/sec, prod radius, pt
   TH2F*  fNumOfDau[kMaxNumOfSpeciesToCheck];     //!<! histo with n daughters per species
   TH2F*  fDecLen[kMaxNumOfSpeciesToCheck];       //!<! histo with decay length per species
+  TH2F*  fCt[kMaxNumOfSpeciesToCheck];           //!<! histo with ct per species
   TH2F*  fMassDiff[kMaxNumOfSpeciesToCheck];     //!<! histo of mass mother - inv mass daughters
   TH2F*  fMomDiff[kMaxNumOfSpeciesToCheck];      //!<! histo of mass mother - inv mass daughters
-
-  Int_t  fPdgCodes[kMaxNumOfSpeciesToCheck];     //!<! array of pdg codes
+  TH3F*  fPrimSecb[kMaxNumOfSpeciesToCheck];     //!<! histo with prim/sec, prod radius, impact parameter (A-A)
+  Int_t  fPdgCodes[kMaxNumOfSpeciesToCheck];     // array of pdg codes
   Bool_t fIsAA;                                  // flag for AA config
   Int_t  fNumOfSpeciesToCheck;                   // actual number of species to be checked
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckGenKine,1);
+  ClassDef(AliAnalysisTaskCheckGenKine,4);
   /// \endcond
 };
 

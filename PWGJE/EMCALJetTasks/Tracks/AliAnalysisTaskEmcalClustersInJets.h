@@ -33,7 +33,9 @@
 
 class THistManager;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalClustersInJets : public AliAnalysisTaskEmcalJet {
 public:
@@ -59,6 +61,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalClustersInJets, 1)
 };
+
+}
 
 }
 #endif

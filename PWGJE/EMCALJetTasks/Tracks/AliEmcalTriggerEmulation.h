@@ -8,7 +8,9 @@
 
 class AliEmcalContainer;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+	
+namespace EMCALJetTasks {
 
 /**
  * @class AliEmcalTriggerEmulation
@@ -77,11 +79,11 @@ public:
 protected:
 	TF1                       fThresholdEngine;   ///< Engine for energy threshold calculation
 
-	/// \cond CLASSIMP
 	ClassDef(AliEmcalTriggerEmulation, 1);
-	/// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGEREMULATION_H */

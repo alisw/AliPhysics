@@ -45,6 +45,7 @@ public:
   void SetLeadingParticlePtMin(Double_t m){ fLeadingParticlePtMin=m; };
   void SetIsMC(Bool_t ismc){fIsMC = ismc;};
   void SetScalingFactorHist(TH1D* sfhist) {fScalingFactorHist = (TH1D*)sfhist->Clone();};
+  void SetPtHardBin(double b) {pthardbin = b;};
   Double1D& GetDijetPtPair(){return fDijetPtPair;};
   Double1D& GetDijetInvM(){return fDijetInvM;};
   Bool1D& GetDijetSelectionCut(){return fDijetSelectionCut;};
@@ -107,6 +108,7 @@ private:
   TLorentzVector                  p7;
   Double_t                        vertex[3];
   Bool_t                          IsGoodVertex = false;
+  Double_t                        pthardbin = 0.5; //first bin
   ClassDef(AliBSDiJetTask, 10)
 };
 #endif

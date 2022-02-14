@@ -32,9 +32,11 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   TString removeMCGen1        = "",       // name of generator input to be accepted
   TString removeMCGen2        = "",       // name of generator input to be accepted
   TString customBCmap         = "",       // location of custom bad channel map (full path including file)
-  Bool_t useRWTempCalibRun2   = kFALSE,   // switch for usage of temperature calib in run2
+  Bool_t useNewRWTempCalib    = kFALSE,   // switch for usage of new temperature calib parameters (available for run1 and run2)
   TString customSMtemps       = "",       // location of custom SM-wise temperature OADB file (full path including file)
-  TString customTempParams    = ""        // location of custom temperature calibration parameters OADB file (full path including file)
+  TString customTempParams    = "",        // location of custom temperature calibration parameters OADB file (full path including file)
+  Bool_t useOneHistAllBCS     = kFALSE,    // flag to use on histogram for the all the BCs
+  Bool_t load1DBCmap          = kFALSE     // Flag to load 1D bad channel map
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -92,12 +94,16 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
                                         cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut, diffEAggregation);
   #endif
 
+  EMCALSupply->SwitchUseMergedBCs(useOneHistAllBCS);
+
+  if(load1DBCmap) EMCALSupply->Load1DBadChannelMap();
+
   if (pass) 
     EMCALSupply->SetPass(pass);
   if (customBCmap!="")
     EMCALSupply->SetCustomBC(customBCmap);
-  if (useRWTempCalibRun2)
-    EMCALSupply->SwitchUseRunDepTempCalibRun2(useRWTempCalibRun2);
+  if (useNewRWTempCalib)
+    EMCALSupply->SwitchUseNewRunDepTempCalib(useNewRWTempCalib);
   if(customSMtemps!="" && customTempParams!="")
     EMCALSupply->SetCustomTimeCalibration(customSMtemps,customTempParams);
   if (evhand->InheritsFrom("AliESDInputHandler")) {
@@ -162,7 +168,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
       EMCALSupply->SetRecoUtils(ru);
     }
   }
-  
+
   mgr->AddTask(ana);
 
   // Create ONLY the output containers for the data produced by the task.

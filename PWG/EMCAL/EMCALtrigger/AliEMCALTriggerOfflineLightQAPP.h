@@ -56,6 +56,7 @@ public:
 
   void   SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
   void   SetFastORThresholds(Int_t l0, Int_t l1) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; }
+  void   SetEnableEnergyCorrelationSM(Bool_t doEnable) { fEnableEnergyCorrelationSM = doEnable; }
 
   // TRU bad channel
   void   AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
@@ -79,6 +80,7 @@ protected:
   Int_t                      fL0MaxTime;                   ///< Maximum L0 time
   UInt_t                     fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs
   UInt_t                     fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs
+  Bool_t                     fEnableEnergyCorrelationSM;   ///< Enable energy correlation per supermodule
   THistManager               fHistManager;                 ///< Histogram manager
 
   const AliEMCALTriggerPatchInfo  *fMaxPatchEMCal[fgkNTriggerTypes][fgkNPatchTypes];         //!<! EMCal max patch (will be reset each event)
@@ -90,7 +92,7 @@ private:
   AliEMCALTriggerOfflineLightQAPP &operator=(const AliEMCALTriggerOfflineLightQAPP &);
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALTriggerOfflineLightQAPP, 1);
+  ClassDef(AliEMCALTriggerOfflineLightQAPP, 2);
   /// \endcond
 };
 

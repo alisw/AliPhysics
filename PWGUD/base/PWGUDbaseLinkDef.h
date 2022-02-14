@@ -22,5 +22,6 @@
 #pragma link C++ class AliMultiplicityCorrection+;
 
 #pragma link C++ class AliAnalysisTaskdNdetaMC+;
+#pragma link C++ class AliUpcParticle+;
 
 #endif

@@ -273,6 +273,9 @@ void AliAnalysisTaskEpRatio::UserExec(Option_t *)
     if(nMatched<=0) continue;
     
     AliVTrack* esdTrack = dynamic_cast<AliVTrack*> (c1->GetTrackMatched(0));
+    // track was not found
+    if(!esdTrack) continue;
+
     if( !(TMath::Abs(esdTrack->Eta())< 0.8) ) continue;
 
     Short_t charge   = esdTrack->Charge();

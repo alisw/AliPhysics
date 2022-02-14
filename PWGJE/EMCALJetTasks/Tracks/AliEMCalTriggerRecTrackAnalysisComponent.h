@@ -19,7 +19,9 @@ class AliVTrack;
 class AliMCEvent;
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -85,11 +87,11 @@ protected:
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fDoMatchPatches;          ///< Request matching with trigger patches
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerRecTrackAnalysisComponent, 1);      // Analysis component for charged tracks
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERRECTRACKANALYSISCOMPONENT_H */

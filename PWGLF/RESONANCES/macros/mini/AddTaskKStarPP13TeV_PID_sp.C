@@ -1,13 +1,13 @@
 /***************************************************************************
               fbellini@cern.ch - last modified on 28/11/2013
-//
-//Lauches KStar analysis with rsn mini package
-//Allows basic configuration of pile-up check and event cuts
-//
-****************************************************************************/
+	      //Arvind Khuntia - last modified on 12/06/2019
+	      //Lauches KStar analysis with rsn mini package
+	      //Allows basic configuration of pile-up check and event cuts
+	      //
+	      ****************************************************************************/
 enum pairYCutSet { kPairDefault=0,
 		   kCentral //=1
-                 };
+};
 
 enum eventCutSet { kEvtDefault=0,
 		   kNoPileUpCut, //=1
@@ -18,21 +18,29 @@ enum eventCutSet { kEvtDefault=0,
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
 		   kNoEvtSel, //=8 
-		   kSpecial3//=9
-                 };
+		   kSpecial3,//=9
+		   kSpecial4 //10  [Multiplicity]
+};
 
 enum eventMixConfig { kDisabled = -1,
 		      kMixDefault,//=0 //10 events, Dvz = 1cm, DC = 10
 		      k5Evts, //=1 //5 events, Dvz = 1cm, DC = 10
 		      k5Cent,  //=2 //10 events, Dvz = 1cm, DC = 5
 		      k5Evts5Cent
-                    };
+};
 
 
 AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
 (
- Bool_t      useHIST = kTRUE,
- Bool_t      Sp = kFALSE,
+ Int_t       sp_bin=100,
+ Double_t    sp_min=0.0,
+ Double_t    sp_max=1.0,
+ Int_t       m_bin=11,
+ Double_t    m_min=0.0,
+ Double_t    m_max=11.0,
+ Bool_t      useESD = kFALSE,
+ Bool_t      useHIST = kFALSE,
+ Bool_t      Sp = kTRUE,
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kTRUE,
  TString     outNameSuffix = "tpc2stof3sveto",
@@ -51,7 +59,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
  Bool_t      useMixLS = 0,
  Bool_t      checkReflex = 0,
  AliRsnMiniValue::EType yaxisvar = AliRsnMiniValue::kPt
-)
+ )
 {  
 
   
@@ -74,7 +82,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
   
   if(evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
 
-   if(!isPP || isMC || MultBins) rejectPileUp=kFALSE;
+  if(!isPP || isMC || MultBins) rejectPileUp=kFALSE;
 
   //-------------------------------------------
   //pair cuts
@@ -106,78 +114,90 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
   // retrieve analysis manager
   //
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-      ::Error("AddAnalysisTaskTOFKStar", "No analysis manager to connect to.");
-      return NULL;
-   } 
+  if (!mgr) {
+    ::Error("AddAnalysisTaskTOFKStar", "No analysis manager to connect to.");
+    return NULL;
+  } 
 
-   // create the task and configure 
-   TString taskName = Form("TOFKStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
-   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-   //task->UseESDTriggerMask(triggerMask); //ESD
-   //task->SelectCollisionCandidates(triggerMask); //AOD
-   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
+  // create the task and configure 
+  TString taskName = Form("TOFKStar%s%s_%i%i", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), (Int_t)cutPiCandidate,(Int_t)cutKaCandidate );
+  AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
+  //task->UseESDTriggerMask(triggerMask); //ESD
+  //task->SelectCollisionCandidates(triggerMask); //AOD
 
+  if(useESD)
+     
+    {
+      if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->UseESDTriggerMask(triggerMask); //ESD
+    }
+  else {
+    if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
+  }
    
-    if(isPP){
+  if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
     else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
     else task->UseMultiplicity("QUALITY");
-    }else task->UseCentrality("V0M");
+  }else task->UseCentrality("V0M");
 
     
-   // set event mixing options
-   task->UseContinuousMix();
-   //task->UseBinnedMix();
-   task->SetNMix(nmix);
-   task->SetMaxDiffVz(maxDiffVzMix);
-   task->SetMaxDiffMult(maxDiffMultMix);
-   ::Info("AddTaskKsPP5TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+  // set event mixing options
+  task->UseContinuousMix();
+  //task->UseBinnedMix();
+  task->SetNMix(nmix);
+  task->SetMaxDiffVz(maxDiffVzMix);
+  task->SetMaxDiffMult(maxDiffMultMix);
+  ::Info("AddTaskKsPP5TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
    
-   mgr->AddTask(task);
+  mgr->AddTask(task);
    
-   //
-   // cut on primary vertex:
-   // - 2nd argument --> |Vz| range
-   // - 3rd argument --> minimum required number of contributors to vtx
-   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
+  //
+  // cut on primary vertex:
+  // - 2nd argument --> |Vz| range
+  // - 3rd argument --> minimum required number of contributors to vtx
+  // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
-   AliRsnCutPrimaryVertex* cutVertex=0;
+  AliRsnCutPrimaryVertex* cutVertex=0;
   if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel &&  (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
     if(!MultBins && evtCutSetID!=eventCutSet::kSpecial3){
-    cutVertex->SetCheckZResolutionSPD();
-    cutVertex->SetCheckDispersionSPD();
-    cutVertex->SetCheckZDifferenceSPDTrack();
+      cutVertex->SetCheckZResolutionSPD();
+      cutVertex->SetCheckDispersionSPD();
+      cutVertex->SetCheckZDifferenceSPDTrack();
     }
-   if (evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
+    if (evtCutSetID==eventCutSet::kSpecial3 || evtCutSetID==eventCutSet::kSpecial4) cutVertex->SetCheckGeneratedVertexZ();
   }
 
-
+  ///////----------AKhuntia----------//////
   
-   ///////----------AKhuntia----------//////
-   AliRsnCutEventUtils* cutEventUtils=0;
+  AliRsnCutEventUtils* cutEventUtils=0;
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
+    
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+    
     if(!MultBins){
       cutEventUtils->SetCheckIncompleteDAQ();
       cutEventUtils->SetCheckSPDClusterVsTrackletBG();
     }else{
-      //cutEventUtils->SetCheckInelGt0SPDtracklets();
+      
       cutEventUtils->SetRemovePileUppA2013(kFALSE);
-      cutEventUtils->SetCheckAcceptedMultSelection();
+      if( evtCutSetID!=eventCutSet::kSpecial4) cutEventUtils->SetCheckAcceptedMultSelection();
+      if( isMC && evtCutSetID==eventCutSet::kSpecial4) cutEventUtils->SetCheckInelGt0SPDtracklets();
     }
   }
 
+  
+  //----------------------------------------//
+  
 
- if(isPP && (!isMC) && cutVertex){ 
+  if(isPP && (!isMC) && cutVertex){ 
     cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup  
-    ::Info("AddTaskKsPP5TeV_PID", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+    ::Info("AddTaskKsPP13TeV_PID_sp", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
 
   
-   //------------------------------------
-   // define and fill cut set for event cut
+  //------------------------------------
+  // define and fill cut set for event cut
   AliRsnCutSet* eventCuts=0;
   if(cutEventUtils || cutVertex){
     eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
@@ -198,9 +218,9 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
   }
 
 
-   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
-   //   
-   //vertex
+  // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
+  //   
+  //vertex
   Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
   AliRsnMiniOutput* outVtx=task->CreateOutput("eventVtx","HIST","EVENT");
   outVtx->AddAxis(vtxID,240,-12.0,12.0);
@@ -218,59 +238,60 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
   hmc->GetYaxis()->SetTitle("QUALITY");
   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
-    //-------------------------------Arvind Spherocity QA-------------------------------------------
+  //-------------------------------Arvind Spherocity QA-------------------------------------------
 
-  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
-  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 200,0.,1.5);
+  //  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
+  
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 500,0.,1.0);
   task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
    
-   //
+  //
 
-   //
-   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
-   //
+  //
+  // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
+  //
    
-   AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-   cutY->SetRangeD(minYlab, maxYlab);
+  AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
+  cutY->SetRangeD(minYlab, maxYlab);
    
-   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
-   cutsPair->AddCut(cutY);
-   cutsPair->SetCutScheme(cutY->GetName());
-   
-   
-   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP13TeV_PID_sp.C");
-    //gROOT->LoadMacro("ConfigKStarPP13TeV_PID_sp.C");
-   
-   if (!ConfigKStarPP13TeV_PID_sp(task,useHIST, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+  AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
+  cutsPair->AddCut(cutY);
+  cutsPair->SetCutScheme(cutY->GetName());
    
    
-   //
-   // -- CONTAINERS --------------------------------------------------------------------------------
-   //
-   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-   //  outputFileName += ":Rsn";
-   Printf("AddAnalysisTaskTOFKStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
+  // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    
-    if(!useHIST)
-     { AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
-							   TList::Class(), 
-							   AliAnalysisManager::kOutputContainer, 
-							   outputFileName);
-   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(task, 1, output);
-   }
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP13TeV_PID_sp.C");
+  //gROOT->LoadMacro("ConfigKStarPP13TeV_PID_sp.C");
+   
+  if (!ConfigKStarPP13TeV_PID_sp(task,sp_bin,sp_min,sp_max,m_bin,m_min,m_max,useHIST, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+   
+   
+  //
+  // -- CONTAINERS --------------------------------------------------------------------------------
+  //
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  //  outputFileName += ":Rsn";
+  Printf("AddAnalysisTaskTOFKStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   
+  if(!useHIST)
+    { AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
+							      TList::Class(), 
+							      AliAnalysisManager::kOutputContainer, 
+							      outputFileName);
+      mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+      mgr->ConnectOutput(task, 1, output);
+    }
 
-   if(useHIST)
-     { AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_hist%s",outNameSuffix.Data()), 
-							   TList::Class(), 
-							   AliAnalysisManager::kOutputContainer, 
-							   outputFileName);
-   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(task, 1, output);
-   }
+  if(useHIST)
+    { AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_hist%s",outNameSuffix.Data()), 
+							      TList::Class(), 
+							      AliAnalysisManager::kOutputContainer, 
+							      outputFileName);
+      mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+      mgr->ConnectOutput(task, 1, output);
+    }
    
    
-   return task;
+  return task;
 }

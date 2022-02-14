@@ -13,14 +13,18 @@ const char* frameTitles[] = {
   "LSC"
 };
 
-void PlotLumiRegion()
+void PlotLumiRegion(Int_t bc=-1)
 {
+  TString bcName = (bc == -1
+                    ? ""
+                    : TString::Format("_bcid%d", bc));
+
   gROOT->LoadMacro("Util.C"); // DrawFrame
 
   Int_t   fill   = 6380;
   Float_t xMin    = -0.75;
   Float_t xMax    =  0.75;
-  TString pn     = "pdf/6380/LumiRegion_6380.pdf";
+  TString pn     = "pdf/6380/LumiRegion_6380"+bcName+".pdf";
 
   TCanvas *c1 = new TCanvas("c1", "", 600, 600);
   c1->SaveAs(pn+"[");
@@ -31,12 +35,16 @@ void PlotLumiRegion()
   for (Int_t i=0; i<5; ++i) {
     c1->Clear();
     c1->cd();
-    tt->DrawTextNDC(0.5, 0.97, Form("%s - fill %d", frameTitles[i], fill));
+    tt->DrawTextNDC(0.5, 0.97, Form("%s %s - fill %d", frameTitles[i], (bc==-1 ? "" : bcName(1,100).Data()), fill));
 
     TPad *pad = new TPad("pad", "", 0,0, 1,0.95);
     pad->Draw();
     pad->Divide(3,3);
-    TFile::Open(scans[i]);
+
+    TString s = scans[i];
+    if (bc != -1)
+      s.ReplaceAll(".root", bcName+".root");
+    TFile::Open(s);
     gesY->SetLineColor(4);
     gesY->SetMarkerColor(4);
 

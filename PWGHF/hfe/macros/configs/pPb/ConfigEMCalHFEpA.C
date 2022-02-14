@@ -1,4 +1,4 @@
-	//update Augsut 3rd, 2017
+	//update October, 20th, 2018
 	//new ShowerShape cuts for sys
 	//not cut from 0 to 100 in centrality (same events have centrality = 101)
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
@@ -148,7 +148,11 @@ Bool_t isTOFdet 		= kFALSE
 		else if(configIndex==127)task->SetM02Cut(0.01,0.3);
 		else task->SetM02Cut(0.0,2);
 			
-		
+        //without shower shape cut
+        if(configIndex==128){
+            task->SetM20Cut(0.0,2.0);
+            task->SetM02Cut(0.0,2.0);
+        }
 	}
 	
 	if(period == "d"){

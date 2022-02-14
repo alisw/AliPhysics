@@ -1,7 +1,7 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency *AddTaskEfficiencyEtaPhi(){
+PWGJE::EMCALJetTasks::AliAnalysisTaskEtaPhiEfficiency *AddTaskEfficiencyEtaPhi(){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency *efftask = new EMCalTriggerPtAnalysis::AliAnalysisTaskEtaPhiEfficiency("efficiencyTask");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEtaPhiEfficiency *efftask = new PWGJE::EMCALJetTasks::AliAnalysisTaskEtaPhiEfficiency("efficiencyTask");
   mgr->AddTask(efftask);
 
   TString outfile = mgr->GetCommonFileName();

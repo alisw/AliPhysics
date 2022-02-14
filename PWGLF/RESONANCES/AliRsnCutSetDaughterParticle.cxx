@@ -542,6 +542,20 @@ void AliRsnCutSetDaughterParticle::Init()
       SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
        break;     
 
+    case AliRsnCutSetDaughterParticle::kTPCpidTOFveto:
+      iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+      AddCut(fCutQuality);
+      iCutTOFNSigma->SinglePIDRange(fNsigmaTOF);
+
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ (TPCsigma & !TOFmatch) | (TPCsigma & TOFsigma) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))",fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(),iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+       break;     
+
     case AliRsnCutSetDaughterParticle::kCombinedPidBestPtDep:
       /* Set TPC  PID (if no TOF)*/
       // all   below  500 MeV: 3sigma
@@ -651,6 +665,30 @@ void AliRsnCutSetDaughterParticle::Init()
       }
       if (fPID==AliPID::kKaon) {
           iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+      }
+      
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      
+      /* set TPC+TOF PID*/
+      iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 10);
+      
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+      SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+      break;
+
+case    AliRsnCutSetDaughterParticle::kTPCTOFpidLstar_test1 :      
+      if (fPID==AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 1.0);
+      }
+      if (fPID==AliPID::kKaon) {
+          iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.5);
       }
       
       AddCut(fCutQuality);
@@ -1060,6 +1098,76 @@ void AliRsnCutSetDaughterParticle::Init()
 			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
 			 iCutTPCNSigma->GetName()) ) ;
       break;
+
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed_2018:
+      
+      /* 
+	 20/04/2019: Neelima Agrawal
+	 Roberto Preghenella (preghenella@bo.infn.it)
+	 
+	 Pb-Pb for pions, kaons and protons
+	 tuned for Pb-Pb 2010 data
+	 
+	 - TPC PID with progressive Nsigma
+	 Nsigma:       4      3      3      2
+	 kaons:   0.00 - 0.20 - 0.30 - 0.40 - 0.60 GeV/c
+	 protons: 0.00 - 0.25 - 0.50 - 0.70 - 1.10  GeV/c
+	 
+	 - TOF PID veto for
+	 pions   > 0.40 GeV/c
+	 kaon    > 0.45 GeV/c
+	 protons > 0.80 GeV
+	 
+	 - TOF PID required for
+	 kaons   > 0.60 GeV/c
+	 protons > 1.10 GeV/c
+      */
+      
+      /* pion cuts */
+      if (fPID == AliPID::kPion) {
+	iCutTPCNSigma->SinglePIDRange(3.0 * fNsigmaTPC);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.40);  
+	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.40, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0 * fNsigmaTPC);
+      }
+      /* kaon cuts */
+      if (fPID == AliPID::kKaon) {
+	iCutTPCNSigma->AddPIDRange(4.00 * fNsigmaTPC, 0.00, 0.20);
+	iCutTPCNSigma->AddPIDRange(3.00 * fNsigmaTPC, 0.20, 0.40);
+	iCutTPCNSigma->AddPIDRange(2.00 * fNsigmaTPC, 0.40, 0.60);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.45);  
+	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.45, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0 * fNsigmaTPC);
+      }
+      /* proton cuts */
+      if (fPID == AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(4.00 * fNsigmaTPC, 0.00, 0.25);
+	iCutTPCNSigma->AddPIDRange(3.00 * fNsigmaTPC, 0.25, 0.70);
+	iCutTPCNSigma->AddPIDRange(2.00 * fNsigmaTPC, 0.70, 1.10);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00 * fNsigmaTOF, 0.00, 0.80);  
+	iCutTOFNSigma->AddPIDRange(3.00 * fNsigmaTOF, 0.80, 1.e6);
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0 * fNsigmaTPC);
+      }
+      
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ ( TOFmatch & TOF & TPCTOF ) || ( TPConly ) ]
+      SetCutScheme( Form(" %s & ( ( %s & %s & %s ) | ( %s ) )",
+			 fCutQuality->GetName(),
+			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
+			 iCutTPCNSigma->GetName()) ) ;
+      break;
       
     case AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFveto:
       
@@ -1181,6 +1289,33 @@ void AliRsnCutSetDaughterParticle::Init()
 	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
 	break;
 
+      // PID cuts for Lstar analysis:
+      case    AliRsnCutSetDaughterParticle::kTOFTPCpidLstar :      
+	if (fPID==AliPID::kProton) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 1.1);
+	}
+	if (fPID==AliPID::kKaon) {
+	  iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 1.E20);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+	break;
+
 
     case AliRsnCutSetDaughterParticle::kTPCTOFvetoPhiXeXe:
 
@@ -1188,7 +1323,6 @@ void AliRsnCutSetDaughterParticle::Init()
 	 if TOF, 
 	 - Nsigma cut on TOF
 	 - 5sigma mismatch rejection with TPC
-
 	 otherwise TPC only:
 	 - 6 sigma, p < 0.3 GeV/c
 	 - 4 sigma, 0.3 < p < 0.4 GeV/c
@@ -1257,12 +1391,10 @@ void AliRsnCutSetDaughterParticle::Init()
 	 if TOF, 
 	 - Nsigma cut on TOF
 	 - 5sigma mismatch rejection with TPC
-
 	 otherwise TPC only:
 	 - 6 sigma, p < 0.3 GeV/c
 	 - 4 sigma, 0.3 < p < 0.4 GeV/c
 	 - nsigma, p > 0.4 GeV/c
-
 	 Electron rejection cut
 	 
       */

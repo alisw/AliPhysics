@@ -43,6 +43,7 @@
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliFlowEventSimple.h"
 #include "TRandom.h"
+#include <random>
 
 using std::cout;
 using std::endl;
@@ -94,6 +95,10 @@ AliFlowEventSimple::AliFlowEventSimple():
   fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
+  }
+  for(Int_t i(0); i < 5; i++) {
+	fTowZNCraw[i] = 0;
+	fTowZNAraw[i] = 0;
   }
   for(Int_t i=0; i < 4; i++) {
     fV0C[i] = AliFlowVector();
@@ -162,6 +167,10 @@ AliFlowEventSimple::AliFlowEventSimple( Int_t n,
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
   }
+  for(Int_t i(0); i < 5; i++) {
+	fTowZNCraw[i] = 0;
+	fTowZNAraw[i] = 0;
+  }
   for(Int_t i=0; i < 4; i++) {
     fV0C[i] = AliFlowVector();
     fV0A[i] = AliFlowVector();
@@ -216,6 +225,10 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
   memcpy(fNumberOfPOIs,anEvent.fNumberOfPOIs,fNumberOfPOItypes*sizeof(Int_t));
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
+  }
+  for(Int_t i(0); i < 5; i++) {
+	fTowZNCraw[i] = anEvent.fTowZNCraw[i];
+	fTowZNAraw[i] = anEvent.fTowZNAraw[i];
   }
   for(Int_t i=0; i < 4; i++) {
     fV0C[i] = anEvent.fV0C[i];
@@ -300,6 +313,10 @@ AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEv
   fAbsOrbit = anEvent.fAbsOrbit;
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = anEvent.fVtxPos[i];
+  }
+  for(Int_t i(0); i < 5; i++) {
+	fTowZNCraw[i] = anEvent.fTowZNCraw[i];
+	fTowZNAraw[i] = anEvent.fTowZNAraw[i];
   }
   for(Int_t i=0; i < 4; i++) {
     fV0C[i] = anEvent.fV0C[i];
@@ -440,7 +457,9 @@ void AliFlowEventSimple::ShuffleTracks()
     for (Int_t j=0; j<fNumberOfTracks; j++) { fShuffledIndexes[j]=j; }
   }
   //shuffle
-  std::random_shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks]);
+  std::random_device rd;
+  std::default_random_engine engine{rd()};
+  std::shuffle(&fShuffledIndexes[0], &fShuffledIndexes[fNumberOfTracks],engine);
   Printf("Tracks shuffled! tracks: %i",fNumberOfTracks);
 }
 
@@ -788,6 +807,50 @@ void AliFlowEventSimple::SetV02Qsub(Double_t QVCx, Double_t QVCy, Double_t MC, D
 
 //------------------------------------------------------------------------------
 
+void AliFlowEventSimple::GetTowZNCraw(Double_t* pos)
+{
+  pos[0] = fTowZNCraw[0];
+  pos[1] = fTowZNCraw[1];
+  pos[2] = fTowZNCraw[2];
+  pos[3] = fTowZNCraw[3];
+  pos[4] = fTowZNCraw[4];
+}
+
+//------------------------------------------------------------------------------
+
+void AliFlowEventSimple::SetTowZNCraw(Double_t* pos)
+{
+  fTowZNCraw[0] = pos[0];
+  fTowZNCraw[1] = pos[1];
+  fTowZNCraw[2] = pos[2];
+  fTowZNCraw[3] = pos[3];
+  fTowZNCraw[4] = pos[4];
+}
+
+//------------------------------------------------------------------------------
+
+void AliFlowEventSimple::GetTowZNAraw(Double_t* pos)
+{
+  pos[0] = fTowZNAraw[0];
+  pos[1] = fTowZNAraw[1];
+  pos[2] = fTowZNAraw[2];
+  pos[3] = fTowZNAraw[3];
+  pos[4] = fTowZNAraw[4];
+}
+
+//------------------------------------------------------------------------------
+
+void AliFlowEventSimple::SetTowZNAraw(Double_t* pos)
+{
+  fTowZNAraw[0] = pos[0];
+  fTowZNAraw[1] = pos[1];
+  fTowZNAraw[2] = pos[2];
+  fTowZNAraw[3] = pos[3];
+  fTowZNAraw[4] = pos[4];
+}
+
+//------------------------------------------------------------------------------
+
 void AliFlowEventSimple::GetVertexPosition(Double_t* pos)
 {
   pos[0] = fVtxPos[0];
@@ -944,6 +1007,10 @@ AliFlowEventSimple::AliFlowEventSimple( TTree* inputTree,
   fZNAQ = AliFlowVector();
   for(Int_t i(0); i < 3; i++) {
     fVtxPos[i] = 0.;
+  }
+  for(Int_t i(0); i < 5; i++) {
+	fTowZNCraw[i] = 0;
+	fTowZNAraw[i] = 0;
   }
   for(Int_t i=0; i < 4; i++) {
     fV0C[i] = AliFlowVector();

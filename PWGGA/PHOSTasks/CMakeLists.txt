@@ -19,30 +19,6 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/AutoTrendQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA/phys/
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CPVperf
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCalib
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2embedding
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_GAFlow
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_NeutralMeson
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb_MC
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPbQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_pi0
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_8TeV_2012
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Resonances
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -53,8 +29,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+		            ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
@@ -68,10 +45,12 @@ set(SRCS
     CaloCellQA/phys/AliAnalysisTaskCaloCellsPhysQA.cxx
     CaloCellQA/phys/AliCaloCellsPhysQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
+    ClusterSelection/AliCaloTriggerMimicHelper.cxx
     CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx
     PHOSCalib/AliAnalysisTaskPHOSTimeCalib.cxx
+    PHOSCorrectionFW/AliPHOSCorrectionFW.cxx
     PHOS_Correlation/AliPHOSCorrelations.cxx
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
@@ -79,9 +58,11 @@ set(SRCS
     PHOS_Run2embedding/AliPHOSEmbeddingRun2.cxx
     PHOS_Run2embedding/AliPHOSEventCounter.cxx
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
+    PHOS_Fluctuations/AliAnalysisPHOSFluctuations.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
     PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
+    PHOS_LHC16_pp/AliPP13AnalysisCluster.cxx
     PHOS_LHC16_pp/AliPP13ClusterCuts.cxx
     PHOS_LHC16_pp/AliPP13DetectorHistogram.cxx
     PHOS_LHC16_pp/AliPP13EfficiencySelectionMC.cxx
@@ -102,7 +83,10 @@ set(SRCS
     PHOS_LHC16_pp/AliPP13SelectionWeights.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelection.cxx
     PHOS_LHC16_pp/AliPP13SpectrumSelectionMC.cxx
+    PHOS_LHC16_pp/AliPP13SpectrumSelectionSimple.cxx
     PHOS_LHC16_pp/AliPP13TagAndProbeSelection.cxx
+    PHOS_LHC16_pp/AliPP13TriggerEfficiency.cxx
+    PHOS_LHC16_pp/AliPP13TriggerProperties.cxx
     PHOS_NeutralMeson/AliAnalysisTaskPHOSNeutralMeson.cxx
     PHOS_PbPb/AliAnalysisTaskPi0Flow.cxx
     PHOS_PbPb/AliAnalysisTaskGammaFlow.cxx
@@ -135,6 +119,7 @@ set(SRCS
     PHOS_Run2/AliAnalysisTaskPHOSEmbeddingEfficiency.cxx
     PHOS_Run2/AliAnalysisTaskPHOSSingleSim.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
+    PHOS_Tagging/AliAnalysisPhotonDDA.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
     UserTasks/AliCaloClusterInfo.cxx
@@ -153,7 +138,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice ESDfilter AOD CDB EMCALUtils ESD PHOSbase PHOSrec PHOSUtils PWGGAUtils PWGGAGammaConvBase STEER STEERBase Tender TenderSupplies PWGPPevcharQn PWGPPevcharQnInterface)
 
 # Generate the ROOT map
 # Dependecies

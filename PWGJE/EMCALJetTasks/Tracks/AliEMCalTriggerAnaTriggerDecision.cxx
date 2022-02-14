@@ -20,11 +20,9 @@
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 #include "AliEMCalTriggerEventData.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaTriggerDecision)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) and main constructor
@@ -99,7 +97,6 @@ void AliEMCalTriggerAnaTriggerDecision::MakeDecisionFromPatches(const TClonesArr
     else std::cout << "Using online patches\n";
   }
   int foundpatches[4] = {0,0,0,0};
-  int index = -1;
   while((mypatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter()))){
     if(fDoDebug) std::cout << "Next patch: " << (mypatch->IsOfflineSimple() ? "offline" : "online:") << std::endl;
 	  for(int icase = 0; icase < 4; icase++){
@@ -190,6 +187,3 @@ void AliEMCalTriggerAnaTriggerDecision::Print(Option_t*) const {
         << "], Patches[" << (fDecisionFromPatches[icase] ? "yes" : "no") << "]" << std::endl;
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */
-

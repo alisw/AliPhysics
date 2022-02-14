@@ -9,96 +9,61 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoCorrFctnInvMass.h"
-#include "AliFemtoModelHiddenInfo.h"
-//#include "AliFemtoHisto.hh"
-#include <cstdio>
 #include <TMath.h>
 
 #ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnInvMass)
 #endif
 
-#define PIH 1.57079632679489656
-#define PIT 6.28318530717958623
-
 //____________________________
 AliFemtoCorrFctnInvMass::AliFemtoCorrFctnInvMass(const char* title, const int& aBins=3000, const double& aMin = 1000, const double& aMax = 5000, const double& aMass1 = 0, const double& aMass2 = 0):
   AliFemtoCorrFctn(),
-  fNumInvMass(0),
-  fDenInvMass(0),
-  fBins(0),
-  fMin(0),
-  fMax(0),
-  fMass1(0)
+  fNumInvMass(nullptr),
+  fDenInvMass(nullptr),
+  fBins(aBins),
+  fMin(aMin),
+  fMax(aMax),
+  fMass1(aMass1),
+  fMass2(aMass2)
 {
-
-  fBins = aBins;
-  fMin = aMin;
-  fMax = aMax;
-
-  fMass1 = aMass1;
-  fMass2 = aMass2;
-  
-
   // set up numerator
-  char tTitNumD[101] = "NumInvMass";
-  strncat(tTitNumD,title, 100);
-  fNumInvMass = new TH1D(tTitNumD,title,aBins,aMin,aMax);
-  // set up denominator
-  char tTitDenD[101] = "DenInvMass";
-  strncat(tTitDenD,title, 100);
-  fDenInvMass = new TH1D(tTitDenD,title,aBins,aMin,aMax);
+  char *num_name = Form("NumInvMass%s", title);
+  char *num_title = Form("Minv Numerator - (masses = %g, %g); M_{inv} GeV", fMass1, fMass2);
+  fNumInvMass = new TH1D(num_name, num_title, aBins,aMin,aMax);
 
+  // set up denominator
+  char *den_name = Form("DenInvMass%s", title);
+  char *den_title = Form("Minv Denominator - (masses = %g, %g); M_{inv} GeV", fMass1, fMass2);
+  fDenInvMass = new TH1D(den_name, den_title, aBins,aMin,aMax);
 
   // to enable error bar calculation...
   fNumInvMass->Sumw2();
   fDenInvMass->Sumw2();
-
-
-
 }
 
 //____________________________
 AliFemtoCorrFctnInvMass::AliFemtoCorrFctnInvMass(const AliFemtoCorrFctnInvMass& aCorrFctn) :
-  AliFemtoCorrFctn(),
-  fNumInvMass(0),
-  fDenInvMass(0),
-  fBins(0),
-  fMin(0),
-  fMax(0),
-  fMass1(0),
-  fMass2(0)
+  AliFemtoCorrFctn(aCorrFctn),
+  fNumInvMass(nullptr),
+  fDenInvMass(nullptr),
+  fBins(aCorrFctn.fBins),
+  fMin(aCorrFctn.fMin),
+  fMax(aCorrFctn.fMax),
+  fMass1(aCorrFctn.fMass1),
+  fMass2(aCorrFctn.fMass2)
 {
   // copy constructor
-
-  fBins = aCorrFctn.fBins;
-  fMin = aCorrFctn.fMax;
-  fMax = aCorrFctn.fMax;
-
-  fMass1 = aCorrFctn.fMass1;
-  fMass2 = aCorrFctn.fMass2;
-
-  // copy constructor
-  if (aCorrFctn.fNumInvMass)
-    fNumInvMass = new TH1D(*aCorrFctn.fNumInvMass);
-  else
-    fNumInvMass= 0;
-  if (aCorrFctn.fDenInvMass)
-    fDenInvMass = new TH1D(*aCorrFctn.fDenInvMass);
-  else
-    fDenInvMass = 0;
-
-
-
-
+  fNumInvMass = new TH1D(*aCorrFctn.fNumInvMass);
+  fDenInvMass = new TH1D(*aCorrFctn.fDenInvMass);
 }
+
 //____________________________
-AliFemtoCorrFctnInvMass::~AliFemtoCorrFctnInvMass(){
+AliFemtoCorrFctnInvMass::~AliFemtoCorrFctnInvMass()
+{
   // destructor
 
   delete fNumInvMass;
   delete fDenInvMass;
-
 }
 
 //_________________________
@@ -115,22 +80,14 @@ AliFemtoCorrFctnInvMass& AliFemtoCorrFctnInvMass::operator=(const AliFemtoCorrFc
   fMass1 = aCorrFctn.fMass1;
   fMass2 = aCorrFctn.fMass2;
 
-
-  // copy constructor
-  if (aCorrFctn.fNumInvMass)
-    fNumInvMass = new TH1D(*aCorrFctn.fNumInvMass);
-  else
-    fNumInvMass= 0;
-  if (aCorrFctn.fDenInvMass)
-    fDenInvMass = new TH1D(*aCorrFctn.fDenInvMass);
-  else
-    fDenInvMass = 0;
-
+  *fNumInvMass = *aCorrFctn.fNumInvMass;
+  *fDenInvMass = *aCorrFctn.fDenInvMass;
 
   return *this;
 }
 //_________________________
-void AliFemtoCorrFctnInvMass::Finish(){
+void AliFemtoCorrFctnInvMass::Finish()
+{
   // here is where we should normalize, fit, etc...
   // we should NOT Draw() the histos (as I had done it below),
   // since we want to insulate ourselves from root at this level
@@ -142,27 +99,23 @@ void AliFemtoCorrFctnInvMass::Finish(){
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnInvMass::Report(){
+AliFemtoString AliFemtoCorrFctnInvMass::Report()
+{
   // create report
-  string stemp = "TPC Ncls Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumInvMass->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenInvMass->GetEntries());
-  stemp += ctemp;
+  AliFemtoString report = "Invariant Mass Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fNumInvMass->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n",fDenInvMass->GetEntries());
+  report += Form("Assumed masses:\t%g\t%g\n", fMass1, fMass2);
 
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return report;
 }
 //____________________________
-void AliFemtoCorrFctnInvMass::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnInvMass::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
-
-
 
   double px1 = 999999;
   double py1 = 999999;
@@ -181,9 +134,7 @@ void AliFemtoCorrFctnInvMass::AddRealPair( AliFemtoPair* pair){
   }
   double mass1 = fMass1;
 
-
-  
-  double E1 = TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+mass1*mass1); 
+  double E1 = TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+mass1*mass1);
 
   double px2 = 999999;
   double py2 = 999999;
@@ -201,29 +152,19 @@ void AliFemtoCorrFctnInvMass::AddRealPair( AliFemtoPair* pair){
     pz2 = pair->Track2()->V0()->MomV0().z();
   }
   double mass2 = fMass2;
-  
+
   double E2 = TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+mass2*mass2);
 
-
-
   double minv = TMath::Sqrt((E1+E2)*(E1+E2)-(px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
-
-
-
   fNumInvMass->Fill(minv);
-
-
-
-
-
 }
 //____________________________
-void AliFemtoCorrFctnInvMass::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnInvMass::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
   if (fPairCut && !fPairCut->Pass(pair)) {
     return;
   }
-
 
   double px1 = 999999;
   double py1 = 999999;
@@ -241,7 +182,7 @@ void AliFemtoCorrFctnInvMass::AddMixedPair( AliFemtoPair* pair){
     pz1 = pair->Track1()->V0()->MomV0().z();
   }
   double mass1 = fMass1;
-  
+
   double E1 = TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+mass1*mass1);
 
 
@@ -261,17 +202,11 @@ void AliFemtoCorrFctnInvMass::AddMixedPair( AliFemtoPair* pair){
     pz2 = pair->Track2()->V0()->MomV0().z();
   }
   double mass2 = fMass2;
-  
+
   double E2 = TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+mass2*mass2);
 
-  
-
   double minv = TMath::Sqrt((E1+E2)*(E1+E2)-(px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
-
-
-
   fDenInvMass->Fill(minv);
-
 }
 
 
@@ -280,8 +215,6 @@ void AliFemtoCorrFctnInvMass::WriteHistos()
   // Write out result histograms
   fNumInvMass->Write();
   fDenInvMass->Write();
- 
-
 }
 
 TList* AliFemtoCorrFctnInvMass::GetOutputList()
@@ -291,30 +224,24 @@ TList* AliFemtoCorrFctnInvMass::GetOutputList()
 
   tOutputList->Add(fNumInvMass);
   tOutputList->Add(fDenInvMass);
-  
 
   return tOutputList;
-
 }
-
-
-
-
-
 
 void AliFemtoCorrFctnInvMass::SetParticleMasses(double mass1, double mass2)
 {
   fMass1=mass1;
   fMass2=mass2;
+  fNumInvMass->SetTitle(Form("Minv Numerator - masses = %g, %g", fMass1, fMass2));
+  fDenInvMass->SetTitle(Form("Minv Denominator - masses = %g, %g", fMass1, fMass2));
 }
-
 
 void AliFemtoCorrFctnInvMass::SetParticle1Mass(double mass)
 {
-  fMass1=mass;
+  SetParticleMasses(mass, fMass2);
 }
 
 void AliFemtoCorrFctnInvMass::SetParticle2Mass(double mass)
 {
-  fMass2=mass;
+  SetParticleMasses(fMass1, mass);
 }

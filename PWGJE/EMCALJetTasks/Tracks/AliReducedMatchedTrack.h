@@ -130,6 +130,6 @@ private:
   /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace HighPtTracks */
 
 #endif /* ALIREDUCEDMATCHEDTRACK_H */

@@ -1,11 +1,16 @@
 #!/bin/bash
 useMB="$1"
 useExtended="$2"
+isMC="$3"
 
 if [ -z "$useExtended" ]; then
   argument="$useMB"
 else
-  argument="$useMB,$useExtended"
+  if [ -z "$isMC" ]; then
+    argument="$useMB,$useExtended"
+  else
+    argument="$useMB,$useExtended,$isMC"
+  fi
 fi
 
 rootver=$(root-config --version)

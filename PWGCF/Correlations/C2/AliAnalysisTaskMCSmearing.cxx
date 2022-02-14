@@ -197,13 +197,13 @@ std::vector< AliMCParticle* > AliAnalysisTaskMCSmearing::GetDaughters(AliMCParti
   std::vector< AliMCParticle* > daughters;
   // Find the decays ("edges") leading downstream from this particle ("vertex")
   AliMCParticle* daughterFirst =
-    static_cast< AliMCParticle* >(event->GetTrack(p->GetFirstDaughter()));
+    static_cast< AliMCParticle* >(event->GetTrack(p->GetDaughterFirst()));
   // p's mother does not have daughters (p == mother)
   if (!daughterFirst) {
     return daughters;
   }
   AliMCParticle* daughterLast =
-    static_cast< AliMCParticle* >(event->GetTrack(p->GetLastDaughter()));
+    static_cast< AliMCParticle* >(event->GetTrack(p->GetDaughterLast()));
   // We only have one daughter
   if (!daughterLast) {
     daughterLast = daughterFirst;

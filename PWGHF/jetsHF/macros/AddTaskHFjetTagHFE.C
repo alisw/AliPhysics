@@ -11,9 +11,24 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   const char *cutType            = "TPCfid",
   Int_t       leadhadtype        = 0,
   const char *suffix             = "",
-  Bool_t     iMC                 = kFALSE
+  Bool_t     iMC                 = kFALSE,
+  Bool_t     iNarrowEta          = kFALSE,
+	TString estimatorFilename = "alien:///alice/cern.ch/user/m/meshita/Multiplicity_pp13/estimator.root",
+	Double_t nref = 12
+	
 )
-{  
+{ 
+	 TFile *fEstimator = TFile::Open(estimatorFilename.Data());
+	 if(!fEstimator){
+			 return 0x0;
+	 }
+
+	 TProfile *multEstimatorAvgMB;
+	  multEstimatorAvgMB = (TProfile*)(fEstimator->Get("Trkl_mean"))->Clone("multEstimatorAvgMB");
+
+	 //Get weight for N_{tracklet}
+	 TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
+	 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -96,13 +111,21 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   }
 
   AliAnalysisHFjetTagHFE* jetTask = new AliAnalysisHFjetTagHFE(name);
-  jetTask->SetVzRange(-10,10);
+  jetTask->SetMultiProfileLHC16(multEstimatorAvgMB);
+	jetTask->SetNref(nref);
+
+	jetTask->SetVzRange(-10,10);
   jetTask->SetNeedEmcalGeom(kFALSE);
 
-  /*
-  AliParticleContainer *trackCont = jetTask->AddTrackContainer(trackName);
-  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(clusName);
-  */
+  jetTask->SetWeightNtrkl(weightNtrkl);
+  
+	Double_t JetEta = 0.9-jetradius;
+  if(iNarrowEta)JetEta = 0.6-jetradius;  // reference eta is EMC acc
+
+  cout << "<----------- JetEta =  " << JetEta << endl;
+  jetTask->SetJetEtaCut(JetEta);
+
+  AliTrackContainer* trackCont = 0;
 
   //if (trackName == "mcparticles") {
     //AliMCParticleContainer* mcpartCont = jetTask->AddMCParticleContainer(trackName);
@@ -110,7 +133,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   //}
   //else if (trackName == "tracks" || trackName == "Tracks") {
   if (trackName == "tracks" || trackName == "Tracks") {
-    AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+    //AliTrackContainer* trackCont = jetTask->AddTrackContainer(trackName);
+    trackCont = jetTask->AddTrackContainer(trackName);
     trackCont->SetFilterHybridTracks(kTRUE);
   }
   else if (!trackName.IsNull()) {
@@ -128,7 +152,6 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
   if (clusterCont) {
     clusterCont->SetClusECut(0.);
     clusterCont->SetClusPtCut(0.);
-    clusterCont->SetClusHadCorrEnergyCut(clusECut);
     clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
@@ -158,13 +181,14 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
       //AliJetContainer* jetContMC = jetTask->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, jetradius, AliJetContainer::kTPCfid, "JetMC");
       //AliJetContainer* jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
       AliJetContainer* jetContMC;
-      if(jetradius==0.3) = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
-      if(jetradius==0.2) = jetTask->AddJetContainer("JetMC_AKTChargedR020_mcparticles_pT0150_pt_scheme");
-      if(jetradius==0.4) = jetTask->AddJetContainer("JetMC_AKTChargedR040_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.3)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR030_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.2)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR020_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.4)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR040_mcparticles_pT0150_pt_scheme");
+      if(jetradius==0.6)jetContMC = jetTask->AddJetContainer("JetMC_AKTChargedR060_mcparticles_pT0150_pt_scheme");
      
       if (jetContMC) {
       //jetCont->SetRhoName(nrho);
-      //if(jetradius==0.3)jetareacut=0.2;
+       //if(jetradius==0.3)jetareacut=0.2;
       jetContMC->SetJetAreaCut(jetareacut);
       jetContMC->SetJetPtCut(jetptcut);
       jetContMC->ConnectParticleContainer(trackContMC);
@@ -174,6 +198,8 @@ AliAnalysisHFjetTagHFE* AddTaskHFjetTagHFE(
       jetContMC->SetZLeadingCut(0.98,0.98);
      }
    }
+
+	 if(!jetTask) return 0x0;
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

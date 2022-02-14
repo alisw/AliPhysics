@@ -567,7 +567,22 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod.BeginsWith("lhc18f5")) {
     dataSet = kLHC11h;
-  } else {
+  } else if (strPeriod.BeginsWith("lhc18g2")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc19a1")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc20k1")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod == ("lhc15o")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod == ("lhc15n")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod == ("lhc18q")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod == ("lhc18r")) {
+    dataSet = kLHC11h;
+  }
+  else {
     ::Error("AliEmcalESDTrackCutsGenerator::SteerDataSetFromString", "Dataset %s not recognized!", period.Data());
   }
 

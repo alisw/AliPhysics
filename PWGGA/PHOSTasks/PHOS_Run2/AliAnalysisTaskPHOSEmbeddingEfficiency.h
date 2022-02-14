@@ -34,6 +34,7 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
     void FillPhoton();
     void FillMgg();
     void FillMixMgg();
+    void MCPhotonPurity();
 
   protected:
     TString fParticleName;
@@ -42,7 +43,7 @@ class AliAnalysisTaskPHOSEmbeddingEfficiency : public AliAnalysisTaskPHOSPi0EtaT
     AliAnalysisTaskPHOSEmbeddingEfficiency(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
     AliAnalysisTaskPHOSEmbeddingEfficiency& operator=(const AliAnalysisTaskPHOSEmbeddingEfficiency&); // not implemented
 
-    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 12); // example of analysis
+    ClassDef(AliAnalysisTaskPHOSEmbeddingEfficiency, 13); // example of analysis
 };
 
 #endif

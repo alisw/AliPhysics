@@ -47,13 +47,15 @@ void AliMEStender::AliMESconfigTender::Print(Option_t *) const
   printf("MES TENDER CONFIGURATION\n   Event cuts : ");
   switch(fEventCuts){
     case kNoEC: printf("No\n"); break;
-    case kStandard: printf("Trigger[MB, HM], Vertex[Yes]\n"); break;
+		case k7TeV: printf("Trigger[MB, HM], Vertex[Yes]\n"); break;
+    case k13TeV: printf("13TeV: Trigger[MB, HM], Vertex[Yes]\n"); break;
     default: printf("Not defined [%d]\n", fEventCuts); break;
   }
   printf("   Track cuts : ");
   switch(fTrackCuts){
     case kNoTC: printf("No\n"); break;
-    case kStandardITSTPCTrackCuts2010: printf("StandardITSTPCTrackCuts2010\n"); break;
+		case kStandardITSTPCTrackCuts2010: printf("StandardITSTPCTrackCuts2010\n"); break;
+    case kStandardITSTPCTrackCuts2011: printf("StandardITSTPCTrackCuts2011\n"); break;
     default: printf("Not defined [%d]\n", fTrackCuts); break;
   }
   printf("   PID priors : ");
@@ -158,15 +160,20 @@ void AliMEStender::UserCreateOutputObjects()
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
   switch(fConfig.fTrackCuts){
-  case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
-    lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
-    fTrackFilter->AddCuts(lTrackCuts);
-    break;
-  case AliMESconfigTender::kNoTC:
-  default:
-    AliDebug(2, "No track cuts selected");
-    break;
+	  case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
+	    lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
+	    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
+	    fTrackFilter->AddCuts(lTrackCuts);
+	    break;
+		case AliMESconfigTender::kStandardITSTPCTrackCuts2011:
+	    lTrackCuts = new AliESDtrackCuts("std11TC", "Standard 2011");
+	    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
+	    fTrackFilter->AddCuts(lTrackCuts);
+	    break;
+	  case AliMESconfigTender::kNoTC:
+	  default:
+	    AliDebug(2, "No track cuts selected");
+	    break;
   }
 
   // PID priors
@@ -266,12 +273,24 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 
   // TRIGGER SELECTION
   // MB & HM triggers
-  Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
-         triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
+	Bool_t triggerMB = 0;
+	Bool_t triggerHM = 0;
+	switch(fConfig.fEventCuts){
+	  case AliMESconfigTender::k7TeV:
+			triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
+	    triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
+			break;
+		case AliMESconfigTender::k13TeV:
+			triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kINT7),
+			triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);	// to be checked
+			break;
+		default:
+			AliDebug(2, "No event cuts selected");
+	}
+
   if(!triggerHM && !triggerMB){
     AliDebug(2, "Miss trigger");
 //     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
-//     return;
   }
   if(triggerMB) fEvInfo->SetTriggerMB();
   if(triggerHM) fEvInfo->SetTriggerHM();
@@ -288,18 +307,17 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 //       return;
     }
   }
-/*
-  if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
-  if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
 
+//   if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
+// 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+//   }
+//   if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
+// 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+//   }
 // 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
-*/
+
 
   fEvInfo->SetVertexZ(vertex->GetZ());
 
@@ -395,6 +413,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // printf("event index = %i\n", fESD->GetEventNumberInFile());
 
   // leading particle
+  // printf("\n\nNew event!\n");
+
+  // printf("LP search\n");
   fEvInfo->FindLeadingParticle(fTracks);
   // shape
   fEvInfo->MakeDirectivity(fTracks);
@@ -487,16 +508,10 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     val[6] = 0.;
     if(H) H->Fill(val);
 
-    // define matching with ESD track array
-    for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
-      if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
-      if(tmesRec->GetLabel()!=ipart) continue;
-      tmesRec->SetLabel(fMCtracks->GetEntries()-1);
-      tmes->SetLabel(iesd);
-    }
   }
 
   // leading particle
+  // printf("generated LP search\n");
   fMCevInfo->FindLeadingParticle(fMCtracks);
   // shape
   fMCevInfo->MakeDirectivity(fMCtracks);
@@ -509,7 +524,21 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[3] = fMCevInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
 
-
+  // define matching with ESD track array
+  std::vector< Int_t > alreadyMatched;
+  for (Int_t ipart=0; ipart<fMCtracks->GetEntries(); ipart++) {
+    if( !(tmes= (AliMEStrackInfo*)fMCtracks->At(ipart)) ) continue;
+    for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
+      if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+      if (std::find(alreadyMatched.begin(), alreadyMatched.end(), iesd) != alreadyMatched.end()) continue;
+      if(tmesRec->GetLabel() != tmes->GetLabel()) continue;
+      alreadyMatched.push_back(iesd);
+      tmesRec->SetLabel(ipart);
+      tmes->SetLabel(iesd);
+      break;
+    }
+  }
+  
   // fill debug
   if(DebugLevel()>0){
 	  (*AliMESbaseTask::DebugStream()) << "evInfoMC"

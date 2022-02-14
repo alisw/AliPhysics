@@ -59,12 +59,22 @@ class AliAnalysisTaskPIDPerformCombIDPtDep : public AliAnalysisTaskSE {
   void SetBayesThreshold2(Float_t bth2) {fbayesth2 = bth2;}
   void SetBayesThreshold3(Float_t bth3) {fbayesth3 = bth3;}
 
+  void SetPIDMomCut(Float_t pidMomCut)  {fPIDMomCut = pidMomCut;}
+    
   void SetParticleOfInterest(AliPID::EParticleType partOfInterest) { fpartOfInterest = partOfInterest;}
     
   void SetRejectInjectedSignalsGenName(TString genToBeKept) {
         fGenToBeKept = genToBeKept;
         fRejectCheckGenName=kTRUE;
   }
+  
+  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC, Int_t minNTPCCrossedRows, Float_t minNTPCFindableCls){
+    fTPCchi2Cut      = maxTPCchi2;
+    fNClustersTPCCut = minNClustersTPC;
+    fMinTPCCrossedRows = minNTPCCrossedRows;
+    fMinTPCRowsOverFindableCls =  minNTPCFindableCls;
+  }
+  
   
   private:
 
@@ -127,8 +137,14 @@ class AliAnalysisTaskPIDPerformCombIDPtDep : public AliAnalysisTaskSE {
     
   TString fGenToBeKept;
   Bool_t fRejectCheckGenName;
+  Float_t fPIDMomCut;
 
-  ClassDef(AliAnalysisTaskPIDPerformCombIDPtDep, 1);
+  Double_t fTPCchi2Cut;//only used for AODs
+  Int_t fNClustersTPCCut;//only used for AODs
+  Int_t fMinTPCCrossedRows; //only used for AODs
+  Float_t fMinTPCRowsOverFindableCls; //only used for AODs
+
+  ClassDef(AliAnalysisTaskPIDPerformCombIDPtDep, 2);
 
 };
 #endif

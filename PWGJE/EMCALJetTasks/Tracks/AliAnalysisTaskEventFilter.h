@@ -21,7 +21,9 @@ class AliESDtrackCuts;
 class AliVTrack;
 class AliVEvent;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEventFilter: public AliAnalysisTaskSE {
 public:
@@ -51,6 +53,8 @@ private:
 
   ClassDef(AliAnalysisTaskEventFilter, 1);
 };
+
+}
 
 }
 

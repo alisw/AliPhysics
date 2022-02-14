@@ -1,3 +1,12 @@
+
+
+
+//----------------------------------------------------
+
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, Bool_t useWeight=kFALSE, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPbData = kFALSE, Double_t refMult=9.26, Bool_t isFineNtrkBin=kFALSE, TString multweighthistoname = "hNtrUnCorrEvWithCandWeight")
+//AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
+{
+
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
@@ -27,7 +36,7 @@ const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
-const Float_t fakemax = 2.5.;
+const Float_t fakemax = 2.5;
 const Float_t cosminXY = 0.95;
 const Float_t cosmaxXY = 1.0;
 const Float_t normDecLXYmin = 0;
@@ -43,13 +52,6 @@ const Float_t multmax_80_100 = 100;
 const Float_t multmin_100_400 = 100;
 const Float_t multmax_100_400 = 400;
 
-
-
-//----------------------------------------------------
-
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, Bool_t useWeight=kFALSE, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPbData = kFALSE, Double_t refMult=9.26, Bool_t isFineNtrkBin=kFALSE, TString multweighthistoname = "hNtrUnCorrEvWithCandWeight")
-//AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
-{
 	printf("Addig CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -63,9 +65,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
   else if (configuration == AliCFTaskVertexingHF::kESE){
     printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
   }
+  else if (configuration == AliCFTaskVertexingHF::kRT) {
+    printf("The configuration is set to be for RT analysis --> using pt, y, multiplicity, RT, delta-phi leading to fill the CF\n");
+  }
 	else{
 		printf("The configuration is not defined! returning\n");
-		return;
+		return NULL;
 	}
 
 	gSystem->Sleep(2000);
@@ -76,21 +81,21 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 
 	TString expected;
 	if (isSign == 0 && pdgCode < 0){
-		AliError(Form("Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode));
+		Printf("ERROR: Error setting PDG code (%d) and sign (0 --> particle (%d) only): they are not compatible, returning",pdgCode,isSign);
 		return 0x0;
 	}
 	else if (isSign == 1 && pdgCode > 0){
-		AliError(Form("Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode));
+		Printf("ERROR: Error setting PDG code (%d) and sign (1 --> antiparticle (%d) only): they are not compatible, returning",pdgCode,isSign);
 		return 0x0;
 	}
 	else if (isSign > 2 || isSign < 0){
-		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		Printf("ERROR: Sign not valid (%d, possible values are 0, 1, 2), returning",isSign);
 		return 0x0;
 	}
 
 	TFile* fileCuts = TFile::Open(cutFile);
 	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){
-	  AliFatal(" Cut file not found");
+	  Printf("FATAL:  Cut file not found");
 	  return 0x0;
 	}
 	AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
@@ -187,7 +192,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	const Int_t nbinfake = 3;  //bins in fake
 	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
 	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
-	const Int_t nbinmult = 49;  //bins in multiplicity (total number)
+	Int_t nbinmult = 49;  //bins in multiplicity (total number)
 	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 80
@@ -580,6 +585,48 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
     container -> SetVarTitle(ilocalmultESE, "local multiplicity");
     container -> SetVarTitle(iq2ESE, "q2");
   }
+ else if (configuration == AliCFTaskVertexingHF::kRT) {
+    //arrays for number of bins in each dimension
+    const Int_t nvar = 5;
+
+    const UInt_t ipTRT = 0;
+    const UInt_t iyRT = 1;
+    const UInt_t imultRT = 2;
+    const UInt_t iRT = 3;
+    const UInt_t idelphiRT = 4;
+
+    const Int_t iBinRT[nvar] = {iBin[ipT], iBin[iy], iBin[imult], 100, 100};
+
+    Double_t binLimRT[iBinRT[iRT]+1];
+    for (Int_t jRT = 0; jRT < iBinRT[iRT]+1; jRT++) {
+       binLimRT[jRT] = jRT / 10.;
+    }
+    
+    Double_t binLimDeltaPhi[iBinRT[idelphiRT]+1];
+    for (Int_t jDelPhi =0; jDelPhi < iBinRT[idelphiRT]+1; jDelPhi++) {
+       binLimDeltaPhi[jDelPhi] = -TMath::PiOver2() + (jDelPhi * TMath::TwoPi()/iBinRT[idelphiRT]);
+    }
+    
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinRT);
+    
+    container -> SetBinLimits(ipTRT,binLimpT);
+    printf("pt\n");
+    container -> SetBinLimits(iyRT,binLimy);
+    printf("y\n");
+    container -> SetBinLimits(imultRT,binLimmult);
+    printf("multiplicity\n");
+    container -> SetBinLimits(iRT,binLimRT);
+    printf("RT\n");
+    container -> SetBinLimits(idelphiRT,binLimDeltaPhi);
+    printf("delta phi leading\n");
+    
+    container -> SetVarTitle(ipTRT,"pt");
+    container -> SetVarTitle(iyRT,"y");
+    container -> SetVarTitle(imultRT,"multiplicity");
+    container -> SetVarTitle(iRT,"rt");
+    container -> SetVarTitle(idelphiRT,"deltaphileading");
+    
+  }
 
 	//return container;
 
@@ -680,7 +727,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	if(useNchWeight || useNtrkWeight){
 	  if(hMult) task->SetMCNchHisto(hMult);
 	  else{
-	    AliFatal("Histogram for multiplicity weights not found");
+	    Printf("FATAL: Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
 	  task->SetUseNchWeight(kTRUE);
@@ -712,8 +759,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
    } else{
      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
      if(!fileEstimator)  {
-       AliFatal("File with multiplicity estimator not found");
-       return;
+       Printf("FATAL: File with multiplicity estimator not found");
+       return NULL;
      }
      task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
      task->SetReferenceMultiplcity(refMult);
@@ -724,8 +771,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
          for (Int_t ip=0; ip < 2; ip++) {
             multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
             if (!multEstimatorAvg[ip]) {
-               AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-               return;
+               Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+               return NULL;
             }
          }
          task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
@@ -738,8 +785,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
          for(Int_t ip=0; ip<4; ip++) {
             multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
             if (!multEstimatorAvg[ip]) {
-               AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-               return;
+               Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+               return NULL;
             }
          }
          task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -790,7 +837,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-        Double_t** binEdges = new Double_t[2];
+        Double_t** binEdges = new Double_t*[2];
 
         // set bin limits
 
@@ -818,7 +865,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	// ----- output data -----
 
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="", output4name="", output5name="";
+	TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	output5name= "coutProfDp";
@@ -843,11 +890,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 		output4name= "Cuts_DplustoKpipi_All";
 		output5name+="_All";
 	}
+	output6name = "checkRT";
+	
 	outputfile += suffixName.Data();
 	output1name += suffixName.Data();
 	output4name += suffixName.Data();
 	output5name += suffixName.Data();
-
+	output6name += suffixName.Data();
+	
 	//now comes user's output objects :
 	// output TH1I for event counting
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(output1name, TH1I::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
@@ -858,7 +908,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 	// estimators list
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-
+	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	
 	mgr->AddTask(task);
 
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -867,6 +918,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
 	mgr->ConnectOutput(task,5,coutput5);
+	mgr->ConnectOutput(task,6,coutput6);
 
 	return task;
 }

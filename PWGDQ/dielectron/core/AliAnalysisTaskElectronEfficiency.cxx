@@ -1065,7 +1065,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if(fPostPIDCntrdCorrTOF) AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
   if(fPostPIDWdthCorrTOF)  AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
 
-  AliStack *fStack = mcEvent->Stack();
+ 
 
   Bool_t isESD=kTRUE;
   Bool_t isAOD=kFALSE; //currently not supported!
@@ -1164,7 +1164,6 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
   if(fResolutionCuts) ResolutionMask=(1<<fResolutionCuts->GetCuts()->GetEntries())-1;
   if(mcEvent){
     Int_t nMCtracks = mcEvent->GetNumberOfTracks();
-    //AliStack *fStack = mcEvent->Stack();
 
     for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++){
       // New:
@@ -1310,7 +1309,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         pTPC        = (innerParam) ? innerParam->P() : -1.; //Track parameters estimated at the inner wall of TPC using the TPC stand-alone
         // get MC track information
         pdgT          = mctrack->PdgCode();
-        labelmotherT  = mctrack->Particle()->GetFirstMother();
+        labelmotherT  = mctrack->GetMother();
         AliMCParticle *mother = 0x0;
         AliMCParticle *grandmother = 0x0;
         pdgmotherT            =   0;
@@ -1320,7 +1319,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           mother = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelmotherT));
         if(mother){
           pdgmotherT = mother->PdgCode();
-          labelgrandmotherT = mother->Particle()->GetFirstMother();
+          labelgrandmotherT = mother->GetMother();
         }
         if(labelgrandmotherT>=0)
           grandmother = (dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(labelgrandmotherT)));
@@ -1616,7 +1615,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
         AliMCParticle *part = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(label)));
         if(!part) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
         Int_t mcLabel = part->Label();
-        if(!fStack->IsPhysicalPrimary(mcLabel)) continue;
+        if(!mcEvent->IsPhysicalPrimary(mcLabel)) continue;
         if(TMath::Abs(part->PdgCode()) != 11) continue;
 
         Double_t mcPt     = part->Pt();
@@ -1687,7 +1686,7 @@ void AliAnalysisTaskElectronEfficiency::UserExec(Option_t *)
           if(!part2) { Printf("ERROR: Could not receive mc track %d", TMath::Abs(label)); continue; }
           if(track2->Charge() != part2->Charge()/3) continue;
           Int_t mcLabel2 = part2->Label();
-          if(!fStack->IsPhysicalPrimary(mcLabel2)) continue;
+          if(!mcEvent->IsPhysicalPrimary(mcLabel2)) continue;
           if(TMath::Abs(part2->PdgCode()) != 11) continue;
           l2Gen.SetPtEtaPhiM(part2 ->Pt(),part2 ->Eta(),part2 ->Phi(),AliPID::ParticleMass(AliPID::kElectron));
           l2Rec.SetPtEtaPhiM(track2->Pt(),track2->Eta(),track2->Phi(),AliPID::ParticleMass(AliPID::kElectron));
@@ -1728,13 +1727,12 @@ void AliAnalysisTaskElectronEfficiency::CalcPrefilterEff(AliMCEvent* mcEventLoca
   /// (by Patrick)
 
   Int_t nMCtracks  = mcEventLocal->GetNumberOfTracks();
-  AliStack *fStack = mcEventLocal->Stack();
   Double_t eleMass = AliPID::ParticleMass(AliPID::kElectron);
 
   for(Int_t iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++)
   {
     // select only primary, non-injected, charged pions:
-    if(!fStack->IsPhysicalPrimary(iMCtrack)) continue;
+    if(!mcEventLocal->IsPhysicalPrimary(iMCtrack)) continue;
     AliMCParticle *mcPion = dynamic_cast<AliMCParticle *>(mcEventLocal->GetTrack(iMCtrack));
     if( TMath::Abs(mcPion->PdgCode()) !=  211 ) continue;
 
@@ -2787,8 +2785,8 @@ Bool_t AliAnalysisTaskElectronEfficiency::CheckInvariantMassSM(AliMCEvent* mcEve
     printf("No mother for MC particle\n");
     return kFALSE;
   }
-  int k1 = motherpart->GetFirstDaughter();
-  int k2 = motherpart->GetLastDaughter();
+  int k1 = motherpart->GetDaughterFirst();
+  int k2 = motherpart->GetDaughterLast();
  
 
   //

@@ -535,7 +535,36 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
 
   }
 }
+//_____________________________________________________________________________
+void AliDielectronHistos::UserSparse(const char* histClass, const char*name, const char*title, Int_t ndim, Int_t *bins, Double_t *mins, Double_t *maxs, UInt_t *vars, UInt_t valTypeW)
+{
+  //
+  // THnSparse creation with linear binning
+  //
 
+  Bool_t isOk=kTRUE;
+  isOk&=IsHistogramOk(histClass,name);
+
+  THnSparseD *hist;
+  if (isOk) {
+    hist=new THnSparseD(name,title, ndim, bins, mins, maxs);
+
+    // store variales in axes
+    StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, 999);
+    else
+      UserHistogram(histClass, hist, 999);
+
+  }
+}
 //_____________________________________________________________________________
 void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW)
 {
@@ -589,7 +618,59 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
 
   }
 }
+//_____________________________________________________________________________
+void AliDielectronHistos::UserSparse(const char* histClass, const char* name, const char* title, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW)
+{
+  //
+  // THnSparse creation with non-linear binning
+  //
 
+  Bool_t isOk=kTRUE;
+  isOk&=(ndim==limits->GetEntriesFast());
+  if(!isOk) return;
+
+  //// set automatic histo name
+  //TString name;
+  //for(Int_t iv=0; iv < ndim; iv++)
+  //  name+=Form("%s_",AliDielectronVarManager::GetValueName(vars[iv]));
+  //name.Resize(name.Length()-1);
+
+  isOk&=IsHistogramOk(histClass,name);
+
+  THnSparseD *hist;
+  Int_t *bins=new Int_t[ndim];
+  if (isOk) {
+    // get number of bins
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      bins[idim]=vec->GetNrows()-1;
+    }
+
+    hist=new THnSparseD(name,title, ndim, bins, 0x0, 0x0);
+    delete [] bins;
+
+    // set binning
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      hist->SetBinEdges(idim,vec->GetMatrixArray());
+    }
+
+    // store variales in axes
+    StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist, 999);
+    else
+      UserHistogram(histClass, hist, 999);
+
+  }
+}
 //_____________________________________________________________________________
 void AliDielectronHistos::UserHistogram(const char* histClass, TObject* hist, UInt_t valTypes)
 {

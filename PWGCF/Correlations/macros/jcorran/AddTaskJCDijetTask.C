@@ -1,22 +1,41 @@
 //_____________________________________________________________________
 AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
                                     Bool_t isMC,
+                                    TString sJCatalyst        = "JCatalystTask",
+                                    TString sJCatalystDetMC   = "JCatalystDetMCTask",
+                                    UInt_t flags              = 0,
                                     TString centBins          = "0.0 5.0 10.0 20.0 30.0 40.0 50.0 60.0 70.0",
+                                    TString sDijetMBins       = "0, 20, 40, 45, 55, 65, 75, 85, 100, 120, 150, 250, 400, 500, 100000",
                                     double jetCone            = 0.4,
                                     double ktjetCone          = 0.4,
                                     int ktScheme              = 1,
-                                    Bool_t usePionMassInkt    = false,
+                                    int antiktScheme          = 1,
+                                    Bool_t usePionMass        = false,
                                     Bool_t useDeltaPhiBGSubtr = true,
                                     double particleEtaCut     = 0.8,
                                     double particlePtCut      = 0.15,
                                     double leadingJetCut      = 20.0,
                                     double subleadingJetCut   = 20.0,
+                                    double minJetPt           = 10.0,
                                     double constituentCut     = 5.0,
-                                    double deltaPhiCut        = 2.0){
+                                    double deltaPhiCut        = 2.0,
+                                    double matchingR          = 0.2,
+                                    double trackingIneff      = 0.0,
+                                    AliJCDijetAna::jetClasses lUnfJetClassTrue = AliJCDijetAna::iAcc,
+                                    AliJCDijetAna::jetClasses lUnfJetClassDet = AliJCDijetAna::iAcc){
+
     // Load Custom Configuration and parameters
     // override values with parameters
 
-    // kt-jet recombination schemes can be set with ktScheme argument:
+    // flags can manipulate event selection:
+    // 0: no additional events rejected.
+    // AliAnalysisTask::DIJET_VERTEX13PA: use IsVertexSelected2013pA
+    // AliAnalysisTask::DIJET_PILEUPSPD: use IsPileupFromSPD(3,0.6,3,2,5)
+    // AliAnalysisTask::DIJET_UTILSPILEUPSPD: use IsPileUpSPD(InputEvent())
+    // Combinations of these can be used by giving argument for example:
+    // AliAnalysisTask::DIJET_VERTEX13PA|AliAnalysisTask::DIJET_PILEUPSPD
+
+    // jet recombination schemes can be set with ktScheme argument:
     // E_scheme     = 0
     // pt_scheme    = 1
     // pt2_scheme   = 2
@@ -24,6 +43,8 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
     // Et2_scheme   = 4
     // BIpt_scheme  = 5
     // BIpt2_scheme = 6
+
+    cout<<"AddTaskJCDijetTask::flags = "<<flags<<endl;
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -57,16 +78,25 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
         ::Error("AddTaskJCDijetTask", "Invalid ktScheme set. Please choose a setting from 0 till 6. Terminating.");
         return NULL;
     }
+    if (antiktScheme < 0 || antiktScheme > 6) {
+        ::Error("AddTaskJCDijetTask", "Invalid antiktScheme set. Please choose a setting from 0 till 6. Terminating.");
+        return NULL;
+    }
+    cout << "MC: " << isMC << endl;
 
     //==== Set up the dijet task ====
     AliJCDijetTask *dijetTask = new AliJCDijetTask(taskName.Data(),"AOD");
     dijetTask->SetDebugLevel(5);
-    dijetTask->SetJCatalystTaskName("JCatalystTask");  // AliJCatalystTask has this name hard coded
+    dijetTask->SetJCatalystTaskName(sJCatalyst.Data());
+    dijetTask->SetJCatalystTaskNameDetMC(sJCatalystDetMC.Data());
     dijetTask->SetCentralityBins(vecCentBins);
+    dijetTask->SetDijetMBins(sDijetMBins);
     dijetTask->SetJetConeSize(jetCone, ktjetCone);
-    dijetTask->SetBGSubtrSettings(ktScheme, usePionMassInkt, useDeltaPhiBGSubtr);
+    dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr);
+    dijetTask->SetUnfoldingJetSets(lUnfJetClassTrue, lUnfJetClassDet);
     dijetTask->SetIsMC(isMC);
-    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, trackingIneff, minJetPt);
+    dijetTask->AddFlags(flags);
     cout << dijetTask->GetName() << endl;
 
 

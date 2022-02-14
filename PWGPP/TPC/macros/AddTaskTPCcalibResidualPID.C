@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrpPb = kFALSE,
+AliAnalysisTaskSE *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrpPb = kFALSE,
                                             Bool_t producePIDqa = kTRUE, Bool_t useTPCCutMIGeo = kTRUE,
                                             Bool_t writeAdditionalQA = kFALSE,
                                             Bool_t cutOnProdRadiusForV0el = kTRUE,

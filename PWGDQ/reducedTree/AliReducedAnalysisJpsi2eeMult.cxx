@@ -309,6 +309,7 @@ void AliReducedAnalysisJpsi2eeMult::FillTrackHistograms(TString trackClass /*= "
       //Int_t tpcSector = TMath::FloorNint(18.*track->Phi()/TMath::TwoPi());
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       FillTrackHistograms(track, Form("%s+", trackClass.Data()) );
       FillTrackHistograms(track, Form("%s", trackClass.Data()) );
    }
@@ -318,6 +319,7 @@ void AliReducedAnalysisJpsi2eeMult::FillTrackHistograms(TString trackClass /*= "
       //Int_t tpcSector = TMath::FloorNint(18.*track->Phi()/TMath::TwoPi());
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       FillTrackHistograms(track, Form("%s-", trackClass.Data()) );
       FillTrackHistograms(track, Form("%s", trackClass.Data()) );
       //cout << "Neg track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
@@ -389,6 +391,7 @@ void AliReducedAnalysisJpsi2eeMult::RunTrackSelection() {
       if(fOptionRunOverMC && track->IsMCTruth()) continue;
       //cout << "track " << it << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
       for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingStatus; ++iflag) {
          //cout << "track / tracking flags :: " << track << " / "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;

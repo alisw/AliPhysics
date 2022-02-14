@@ -15,11 +15,11 @@ AliEmcalJetUtilityEventSubtractor::AliEmcalJetUtilityEventSubtractor() :
   fRhomName(""),
   fRho(1e-6),
   fRhom(1e-6),
+  fMaxDelR(0),
   fJetsSub(0x0),
   fParticlesSub(0x0),
   fRhoParam(0),
-  fRhomParam(0),
-  fMaxDelR(0)
+  fRhomParam(0)
 {
   // Dummy constructor.
 
@@ -35,11 +35,11 @@ AliEmcalJetUtilityEventSubtractor::AliEmcalJetUtilityEventSubtractor(const char*
   fRhomName(""),
   fRho(1e-6),
   fRhom(1e-6),
+  fMaxDelR(0),
   fJetsSub(0x0),
   fParticlesSub(0x0),
   fRhoParam(0),
-  fRhomParam(0),
-  fMaxDelR(0)
+  fRhomParam(0)
 {
   // Default constructor.
 }

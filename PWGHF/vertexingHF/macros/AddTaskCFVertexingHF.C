@@ -1,3 +1,23 @@
+
+
+//
+// useWeight : flag for Pt weights (default are pp 2010 weights, functions per MC production existing)
+// useFlatPtWeight : flag to test flat Pt weights (computed for LHC10f7a MC)
+// useZWeight : flag to use z-vtx weight (used for systematics for now)
+// useNchWeight : flag to use weights on the distribution of simulated primary particles (default pp 2010)
+// useNtrkWeight : flag to use weights on the distribution of Ntracklets
+// isFinePtBin : flag for fine pt bin (100 MeV from 0 to 30 GeV)
+// multiplicityEstimator : varying the multiplicity (and not centrality) estimator
+// isPPData : flag to switch off centrality checks when runing on pp data (reduces a lot log files)
+// isPPbData : Flag for pPb data, changes the Ntrk bining
+// estimatorFilename, refMult : Ntrk vs z-vtx multiplicity correction file name and average value
+// isFineNtrkBin : gives Ntrk bins of 1 unit from 0-100 (200 for pPb)
+// isPP13TeVData : flag to enable loading tracklet profiles for 2016-17-18 pp @13 TeV datasets (for online Ntrk vs z-vtx correction)
+// histweightName : name of histogram with trkl mult event weights (containing data/MC trkl mult distribution, for runs with useNtrkWeight=kTRUE)
+//----------------------------------------------------
+
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isFineNtrkBin=kFALSE, Bool_t isPP13TeVData=kFALSE, TString histweightName="")
+{
 //DEFINITION OF A FEW CONSTANTS
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
@@ -11,7 +31,7 @@ const Double_t dcamin = 0;  // micron
 const Double_t dcamax = 600;  // micron
 const Double_t d0xd0min = -80000;  // micron
 const Double_t d0xd0max = 100000;  // micron
-const Double_t phimin = 0.0;  
+const Double_t phimin = 0.0;
 const Int_t    mintrackrefsTPC = 2 ;
 const Int_t    mintrackrefsITS = 3 ;
 const Int_t    charge  = 1 ;
@@ -33,7 +53,7 @@ const Float_t centmin_60_100 = 60.;
 const Float_t centmax_60_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
-const Float_t fakemax = 2.5.;
+const Float_t fakemax = 2.5;
 const Float_t cosminXY = 0.95;
 const Float_t cosmaxXY = 1.0;
 const Float_t normDecLXYmin = 0;
@@ -49,22 +69,7 @@ const Float_t multmax_80_100 = 100;
 const Float_t multmin_100_400 = 100; // Only for pPb
 const Float_t multmax_100_400 = 400; // Only for pPb
 
-//
-// useWeight : flag for Pt weights (default are pp 2010 weights, functions per MC production existing)
-// useFlatPtWeight : flag to test flat Pt weights (computed for LHC10f7a MC)
-// useZWeight : flag to use z-vtx weight (used for systematics for now)
-// useNchWeight : flag to use weights on the distribution of simulated primary particles (default pp 2010)
-// useNtrkWeight : flag to use weights on the distribution of Ntracklets
-// isFinePtBin : flag for fine pt bin (100 MeV from 0 to 30 GeV)
-// multiplicityEstimator : varying the multiplicity (and not centrality) estimator
-// isPPData : flag to switch off centrality checks when runing on pp data (reduces a lot log files)
-// isPPbData : Flag for pPb data, changes the Ntrk bining
-// estimatorFilename, refMult : Ntrk vs z-vtx multiplicity correction file name and average value
-// isFineNtrkBin : gives Ntrk bins of 1 unit from 0-100 (200 for pPb)
-//----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isFineNtrkBin=kFALSE)
-{
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
 		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
@@ -78,11 +83,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
   else if (configuration == AliCFTaskVertexingHF::kESE){
     printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
   }
+  else if (configuration == AliCFTaskVertexingHF::kRT) {
+    printf("The configuration is set to be for RT analysis --> using pt, y, multiplicity, RT, delta-phi leading to fill the CF\n");
+  }
 	else{
 		printf("The configuration is not defined! returning\n");
-		return;
+		return NULL;
 	}
-	       
+
 	gSystem->Sleep(2000);
 
 	// isSign = 0 --> D0 only
@@ -91,30 +99,30 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	TString expected;
 	if (isSign == 0 && pdgCode < 0){
-		AliError(Form("Error setting PDG code (%d) and sign (0 --> D0 only): they are not compatible, returning"));
+		Printf("ERROR:Error setting PDG code (%d) and sign (0 --> D0 only): they are not compatible, returning",pdgCode);
 		return 0x0;
 	}
 	else if (isSign == 1 && pdgCode > 0){
-		AliError(Form("Error setting PDG code (%d) and sign (1 --> D0bar only): they are not compatible, returning"));
+		Printf("ERROR:Error setting PDG code (%d) and sign (1 --> D0bar only): they are not compatible, returning",pdgCode);
 		return 0x0;
 	}
 	else if (isSign > 2 || isSign < 0){
-		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
+		Printf("ERROR:Sign not valid (%d, possible values are 0, 1, 2), returning",isSign);
 		return 0x0;
 	}
 
 	TFile* fileCuts = TFile::Open(cutFile);
-	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){ 
-	  AliError("Wrong cut file");
+	if(!fileCuts || (fileCuts && !fileCuts->IsOpen())){
+	  Printf("ERROR: Wrong cut file");
 	  return 0x0;
 	}
 
 	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get(cutObjectName.Data());
-	
+
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
 	if(isKeepDfromBOnly) isKeepDfromB = true;
-	
+
 	Double_t ptmin_0_6;
 	Double_t ptmax_0_6;
 	Double_t ptmin_6_8;
@@ -123,7 +131,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Double_t ptmax_8_16;
 	Double_t ptmin_16_24;
 	Double_t ptmax_16_24;
-	
+
 	ptmin_0_6 =  0.0 ;
 	ptmax_0_6 =  6.0 ;
 	ptmin_6_8 =  6.0 ;
@@ -137,11 +145,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	//CONTAINER DEFINITION
 	Info("AliCFTaskVertexingHF","SETUP CONTAINER");
 	const Double_t phimax = 2*TMath::Pi();
-	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
+	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID
 
 	//const UInt_t ipT, iy, icosThetaStar, ipTpi, ipTk, icT, idca, id0xd0, ipointing, iphi, izvtx, icent, ifake, ipointingXY, iNormDecayLXY, imult;
 	const Int_t nbiny  = 24 ; //bins in y
-	const Int_t nbincosThetaStar  = 42 ; //bins in cosThetaStar 
+	const Int_t nbincosThetaStar  = 42 ; //bins in cosThetaStar
 	const Int_t nbincT  = 15 ; //bins in cT
 	const Int_t nbindca  = 20 ; //bins in dca
 	const Int_t nbind0xd0  = 90 ; //bins in d0xd0
@@ -155,7 +163,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinfake = 3;  //bins in fake
 	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
 	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
-	const Int_t nbinmult = 49;  //bins in multiplicity (total number)
+	Int_t nbinmult = 49;  //bins in multiplicity (total number)
 	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 100
@@ -184,13 +192,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const UInt_t ipointingXY = 13;
 	const UInt_t inormDecayLXY = 14;
 	const UInt_t imult = 15;
-	
+
 	//Setting the bins: pt, ptPi, and ptK are considered seprately because for them you can either define the binning by hand, or using the cuts file
-	
+
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvarTot];
-	
-	//OPTION 1: defining the pt, ptPi, ptK bins by hand...		
+
+	//OPTION 1: defining the pt, ptPi, ptK bins by hand...
 	/*
 	  const Int_t nbinpt_0_6  = 6 ; //bins in pt from 0 to 6 GeV
 	  const Int_t nbinpt_6_8  = 1 ; //bins in pt from 6 to 8 GeV
@@ -210,56 +218,56 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	  Double_t *binLimpT=new Double_t[iBin[0]+1];
 	  Double_t *binLimpTpi=new Double_t[iBin[3]+1];
 	  Double_t *binLimpTk=new Double_t[iBin[4]+1];
-	  
+
 	  // values for bin lower bounds
 	  // pt
-	  for(Int_t i=0; i<=nbinpt_0_6; i++) binLimpT[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpt_0_6*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_0_6; i++) binLimpT[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpt_0_6*(Double_t)i ;
 	  if (binLimpT[nbinpt_0_6] != ptmin_6_8)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpt_6_8; i++) binLimpT[i+nbinpt_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpt_6_8*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_6_8; i++) binLimpT[i+nbinpt_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpt_6_8*(Double_t)i ;
 	  if (binLimpT[nbinpt_0_6+nbinpt_6_8] != ptmin_8_16)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpt_8_16; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpt_8_16*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_8_16; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpt_8_16*(Double_t)i ;
 	  if (binLimpT[nbinpt_0_6+nbinpt_6_8+nbinpt_8_16] != ptmin_16_24)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpt_16_24; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8+nbinpt_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpt_16_24*(Double_t)i ; 
-	  
+	  for(Int_t i=0; i<=nbinpt_16_24; i++) binLimpT[i+nbinpt_0_6+nbinpt_6_8+nbinpt_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpt_16_24*(Double_t)i ;
+
 	  // ptPi
-	  for(Int_t i=0; i<=nbinpTpi_0_6; i++) binLimpTpi[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTpi_0_6*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTpi_0_6; i++) binLimpTpi[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTpi_0_6*(Double_t)i ;
 	  if (binLimpTpi[nbinpTpi_0_6] != ptmin_6_8)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTpi_6_8; i++) binLimpTpi[i+nbinpTpi_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTpi_6_8*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTpi_6_8; i++) binLimpTpi[i+nbinpTpi_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTpi_6_8*(Double_t)i ;
 	  if (binLimpTpi[nbinpTpi_0_6+nbinpTpi_6_8] != ptmin_8_16)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTpi_8_16; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTpi_8_16*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTpi_8_16; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTpi_8_16*(Double_t)i ;
 	  if (binLimpTpi[nbinpTpi_0_6+nbinpTpi_6_8+nbinpTpi_8_16] != ptmin_16_24)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTpi_16_24; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpTpi_6_8+nbinpTpi_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTpi_16_24*(Double_t)i ; 
-	  
+	  for(Int_t i=0; i<=nbinpTpi_16_24; i++) binLimpTpi[i+nbinpTpi_0_6+nbinpTpi_6_8+nbinpTpi_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTpi_16_24*(Double_t)i ;
+
 	  // ptKa
-	  for(Int_t i=0; i<=nbinpTk_0_6; i++) binLimpTk[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTk_0_6*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_0_6; i++) binLimpTk[i]=(Double_t)ptmin_0_6 + (ptmax_0_6-ptmin_0_6)/nbinpTk_0_6*(Double_t)i ;
 	  if (binLimpTk[nbinpTk_0_6] != ptmin_6_8)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTk_6_8; i++) binLimpTk[i+nbinpTk_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTk_6_8*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_6_8; i++) binLimpTk[i+nbinpTk_0_6]=(Double_t)ptmin_6_8 + (ptmax_6_8-ptmin_6_8)/nbinpTk_6_8*(Double_t)i ;
 	  if (binLimpTk[nbinpTk_0_6+nbinpTk_6_8] != ptmin_8_16)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTk_8_16; i++) binLimpTk[i+nbinpTk_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTk_8_16*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_8_16; i++) binLimpTk[i+nbinpTk_0_6+nbinpt_6_8]=(Double_t)ptmin_8_16 + (ptmax_8_16-ptmin_8_16)/nbinpTk_8_16*(Double_t)i ;
 	  if (binLimpTk[nbinpTk_0_6+nbinpTk_6_8+nbinpTk_8_16] != ptmin_16_24)  {
 	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	  }
-	  for(Int_t i=0; i<=nbinpTk_16_24; i++) binLimpTk[i+nbinpTk_0_6+nbinpTk_6_8+nbinpTk_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTk_16_24*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpTk_16_24; i++) binLimpTk[i+nbinpTk_0_6+nbinpTk_6_8+nbinpTk_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbinpTk_16_24*(Double_t)i ;
 	*/
-	
+
 	//OPTION 2: ...or from the cuts file
-	
+
 	const Int_t nbinpt = cutsD0toKpi->GetNPtBins(); // bins in pT
 	iBin[ipT]=nbinpt;
 	iBin[ipTpi]=nbinpt;
@@ -274,8 +282,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		binLimpTpi[ibin0] = (Double_t)floatbinLimpT[ibin0];
 		binLimpTk[ibin0] = (Double_t)floatbinLimpT[ibin0];
 	}
-	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
-	
+	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);
+
 	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
 
 	Double_t *binLimpTFine=new Double_t[400+1];
@@ -303,7 +311,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinmultTot=nbinmultTmp;
 
 	// defining now the binning for the other variables:
-	
+
 	iBin[iy]=nbiny;
 	iBin[icosThetaStar]=nbincosThetaStar;
 	iBin[icT]=nbincT;
@@ -317,7 +325,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	iBin[ipointingXY]=nbinpointingXY;
 	iBin[inormDecayLXY]=nbinnormDecayLXY;
 	iBin[imult]=nbinmultTot;
-	
+
 	//arrays for lower bounds :
 	Double_t *binLimy=new Double_t[iBin[iy]+1];
 	Double_t *binLimcosThetaStar=new Double_t[iBin[icosThetaStar]+1];
@@ -339,7 +347,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	// cosThetaStar
 	for(Int_t i=0; i<=nbincosThetaStar; i++) binLimcosThetaStar[i]=(Double_t)cosminTS  + (cosmaxTS-cosminTS)  /nbincosThetaStar*(Double_t)i ;
-	
+
 	// cT
 	for(Int_t i=0; i<=nbincT; i++) binLimcT[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbincT*(Double_t)i ;
 
@@ -361,7 +369,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	}
 
 	// centrality
-	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
+	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ;
 	if (binLimcent[nbincent_0_10] != centmin_10_60)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
 	}
@@ -383,25 +391,25 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	for(Int_t i=0; i<=nbinnormDecayLXY; i++) binLimnormDecayLXY[i]=(Double_t)normDecLXYmin  + (normDecLXYmax-normDecLXYmin)  /nbinnormDecayLXY*(Double_t)i ;
 
 	// multiplicity
-	for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_80)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_50_80; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_80 + (multmax_50_80-multmin_50_80)/nbinmult_50_80*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_50_80; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_80 + (multmax_50_80-multmin_50_80)/nbinmult_50_80*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80] != multmin_80_100)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ; 
+	for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ;
 	if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100] != multmin_100_400)  {
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
 	}
 
 	if(isPPbData){
-	  for(Int_t i=0; i<=nbinmult_100_400; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100]=(Double_t)multmin_100_400 + (multmax_100_400-multmin_100_400)/nbinmult_100_400*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinmult_100_400; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100]=(Double_t)multmin_100_400 + (multmax_100_400-multmin_100_400)/nbinmult_100_400*(Double_t)i ;
 	}
 
 	if(multiplicityEstimator==AliCFTaskVertexingHF::kVZERO) {
@@ -419,10 +427,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		nameContainer="CFHFccontainer0DfromB";
 	}
 	else  {
-		nameContainer="CFHFccontainer0allD";	  
+		nameContainer="CFHFccontainer0allD";
 	}
 	nameContainer += suffix;
-	//Setting up the container grid... 
+	//Setting up the container grid...
 
 	AliCFContainer* container;
 
@@ -430,7 +438,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvarTot,iBin);
 		//setting the bin limits
 		printf("pt\n");
-		if(isFinePtBin) container -> SetBinLimits(ipT,binLimpTFine); 
+		if(isFinePtBin) container -> SetBinLimits(ipT,binLimpTFine);
 		else      	container -> SetBinLimits(ipT,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iy,binLimy);
@@ -506,7 +514,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinFast);
 		printf("pt\n");
-		if(isFinePtBin) container -> SetBinLimits(ipTFast,binLimpTFine); 
+		if(isFinePtBin) container -> SetBinLimits(ipTFast,binLimpTFine);
 		else      	container -> SetBinLimits(ipTFast,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iyFast,binLimy);
@@ -550,7 +558,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinSuperFast);
 		printf("pt\n");
-		if(isFinePtBin) container -> SetBinLimits(ipTSuperFast,binLimpTFine); 
+		if(isFinePtBin) container -> SetBinLimits(ipTSuperFast,binLimpTFine);
 		else      	container -> SetBinLimits(ipTSuperFast,binLimpT);
 		printf("y\n");
 		container -> SetBinLimits(iySuperFast,binLimy);
@@ -568,16 +576,16 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
   else if (configuration == AliCFTaskVertexingHF::kESE){
     //arrays for the number of bins in each dimension
     const Int_t nvar = 6;
-    
+
     const UInt_t ipTESE = 0;
     const UInt_t iyESE = 1;
     const UInt_t icentESE = 2;
     const UInt_t imultESE = 3;
     const UInt_t ilocalmultESE = 4;
     const UInt_t iq2ESE = 5;
-    
+
     const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,50,50,100};
-    
+
     Double_t binLimcentESE[iBinESE[icentESE]+1];
     for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
       binLimcentESE[iCent] = iCent;
@@ -594,7 +602,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
     for(Int_t iq2=0; iq2<iBinESE[iq2ESE]+1; iq2++) {
       binLimq2ESE[iq2] = iq2*5./iBinESE[iq2ESE];
     }
-    
+
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinESE);
     printf("pt\n");
     container -> SetBinLimits(ipTESE,binLimpT);
@@ -608,7 +616,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
     container -> SetBinLimits(ilocalmultESE,binLimlocalmultESE);
     printf("q2\n");
     container -> SetBinLimits(iq2ESE,binLimq2ESE);
-    
+
     container -> SetVarTitle(ipTESE,"pt");
     container -> SetVarTitle(iyESE,"y");
     container -> SetVarTitle(icentESE, "centrality");
@@ -617,6 +625,48 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
     container -> SetVarTitle(iq2ESE, "q2");
   }
 
+  else if (configuration == AliCFTaskVertexingHF::kRT) {
+    //arrays for number of bins in each dimension
+    const Int_t nvar = 5;
+
+    const UInt_t ipTRT = 0;
+    const UInt_t iyRT = 1;
+    const UInt_t imultRT = 2;
+    const UInt_t iRT = 3;
+    const UInt_t idelphiRT = 4;
+
+    const Int_t iBinRT[nvar] = {iBin[ipT], iBin[iy], iBin[imult], 100, 100};
+
+    Double_t binLimRT[iBinRT[iRT]+1];
+    for (Int_t jRT = 0; jRT < iBinRT[iRT]+1; jRT++) {
+       binLimRT[jRT] = jRT / 10.;
+    }
+
+    Double_t binLimDeltaPhi[iBinRT[idelphiRT]+1];
+    for (Int_t jDelPhi =0; jDelPhi < iBinRT[idelphiRT]+1; jDelPhi++) {
+       binLimDeltaPhi[jDelPhi] = -TMath::PiOver2() + (jDelPhi * TMath::TwoPi()/iBinRT[idelphiRT]);
+    }
+
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinRT);
+
+    container -> SetBinLimits(ipTRT,binLimpT);
+    printf("pt\n");
+    container -> SetBinLimits(iyRT,binLimy);
+    printf("y\n");
+    container -> SetBinLimits(imultRT,binLimmult);
+    printf("multiplicity\n");
+    container -> SetBinLimits(iRT,binLimRT);
+    printf("RT\n");
+    container -> SetBinLimits(idelphiRT,binLimDeltaPhi);
+    printf("delta phi leading\n");
+
+    container -> SetVarTitle(ipTRT,"pt");
+    container -> SetVarTitle(iyRT,"y");
+    container -> SetVarTitle(imultRT,"multiplicity");
+    container -> SetVarTitle(iRT,"rt");
+    container -> SetVarTitle(idelphiRT,"deltaphileading");
+
+  }
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
         container -> SetStepTitle(2, "MCAcc");
@@ -631,11 +681,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	//return container;
 
 	//CREATE THE  CUTS -----------------------------------------------
-	
+
 	// Gen-Level kinematic cuts
 	AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
-	
-	//Particle-Level cuts:  
+
+	//Particle-Level cuts:
 	AliCFParticleGenCuts* mcGenCuts = new AliCFParticleGenCuts("mcGenCuts","MC particle generation cuts");
 	Bool_t useAbsolute = kTRUE;
 	if (isSign != 2){
@@ -643,7 +693,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	}
 	mcGenCuts->SetRequirePdgCode(pdgCode, useAbsolute);  // kTRUE set in order to include D0_bar
 	mcGenCuts->SetAODMC(1); //special flag for reading MC in AOD tree (important)
-	
+
 	// Acceptance cuts:
 	AliCFAcceptanceCuts* accCuts = new AliCFAcceptanceCuts("accCuts", "Acceptance cuts");
 	AliCFTrackKineCuts *kineAccCuts = new AliCFTrackKineCuts("kineAccCuts","Kine-Acceptance cuts");
@@ -652,26 +702,26 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	// Rec-Level kinematic cuts
 	AliCFTrackKineCuts *recKineCuts = new AliCFTrackKineCuts("recKineCuts","rec-level kine cuts");
-	
+
 	AliCFTrackQualityCuts *recQualityCuts = new AliCFTrackQualityCuts("recQualityCuts","rec-level quality cuts");
-	
+
 	AliCFTrackIsPrimaryCuts *recIsPrimaryCuts = new AliCFTrackIsPrimaryCuts("recIsPrimaryCuts","rec-level isPrimary cuts");
-	
+
 	printf("CREATE MC KINE CUTS\n");
 	TObjArray* mcList = new TObjArray(0) ;
 	mcList->AddLast(mcKineCuts);
 	mcList->AddLast(mcGenCuts);
-	
+
 	printf("CREATE ACCEPTANCE CUTS\n");
 	TObjArray* accList = new TObjArray(0) ;
 	accList->AddLast(kineAccCuts);
 
 	printf("CREATE RECONSTRUCTION CUTS\n");
-	TObjArray* recList = new TObjArray(0) ;   // not used!! 
+	TObjArray* recList = new TObjArray(0) ;   // not used!!
 	recList->AddLast(recKineCuts);
 	recList->AddLast(recQualityCuts);
 	recList->AddLast(recIsPrimaryCuts);
-	
+
 	TObjArray* emptyList = new TObjArray(0);
 
 	//CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
@@ -680,22 +730,22 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	man->SetParticleContainer(container);
 	man->SetParticleCutsList(0 , mcList); // MC, Limited Acceptance
 	man->SetParticleCutsList(1 , mcList); // MC
-	man->SetParticleCutsList(2 , accList); // Acceptance 
-	man->SetParticleCutsList(3 , emptyList); // Vertex 
-	man->SetParticleCutsList(4 , emptyList); // Refit 
+	man->SetParticleCutsList(2 , accList); // Acceptance
+	man->SetParticleCutsList(3 , emptyList); // Vertex
+	man->SetParticleCutsList(4 , emptyList); // Refit
 	man->SetParticleCutsList(5 , emptyList); // AOD
 	man->SetParticleCutsList(6 , emptyList); // AOD in Acceptance
 	man->SetParticleCutsList(7 , emptyList); // AOD with required n. of ITS clusters
 	man->SetParticleCutsList(8 , emptyList); // AOD Reco (PPR cuts implemented in Task)
 	man->SetParticleCutsList(9 , emptyList); // AOD Reco PID
-	
+
 	// Get the pointer to the existing analysis manager via the static access method.
 	//==============================================================================
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) {
 	  ::Error("AddTaskCompareHF", "No analysis manager to connect to.");
 	  return NULL;
-	}   
+	}
 	//CREATE THE TASK
 	printf("CREATE TASK\n");
 
@@ -717,7 +767,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetIsPPData(isPPData);
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
-	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);	
+	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);
 
 	TF1* funcWeight = 0x0;
 	if (task->GetUseWeight()) {
@@ -734,25 +784,31 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	if(useNchWeight || useNtrkWeight){
 	  TH1F *hNchPrimaries;
 	  TH1F *hNchMeasured;
-	  if(isPPbData) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithCandWeight");
+	  if(isPPbData || isPP13TeVData) {
+	  	if(histweightName.EqualTo("")) histweightName="hNtrUnCorrEvWithCandWeight"; //default name of histogram (bkw compatible)
+	  	hNchPrimaries = (TH1F*)fileCuts->Get(histweightName.Data());
+	  }
 	  else hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
 	  hNchMeasured = (TH1F*)fileCuts->Get("hNchMeasured");
 	  if(hNchPrimaries) {
 	    task->SetUseNchWeight(kTRUE);
 	    task->SetMCNchHisto(hNchPrimaries);
-	    if(isPPbData) task->SetUseNchTrackletsWeight();
+	    if(isPPbData || isPP13TeVData) task->SetUseNchTrackletsWeight();
 	  } else {
-	    AliFatal("Histogram for multiplicity weights not found");
+	    Printf("FATAL: Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
 	  if(hNchMeasured) task->SetMeasuredNchHisto(hNchMeasured);
 	  if(useNtrkWeight) task->SetUseNchTrackletsWeight();
 	}
-	
-	if(isPPbData) { 
-	  task->SetIsPPbData(kTRUE); 
+
+	if(isPPbData) {
+	  task->SetIsPPbData(kTRUE);
 	}
-   
+	if(isPP13TeVData) {
+	  task->SetIsPP13TeVData(kTRUE);
+	}
+
 	if(estimatorFilename.EqualTo("") ) {
 	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
 	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
@@ -760,21 +816,34 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
 	  if(!fileEstimator)  {
-	    AliFatal("File with multiplicity estimator not found"); 
-	    return;
+	    Printf("FATAL: File with multiplicity estimator not found");
+	    return NULL;
 	  }
 
 	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
 	  task->SetReferenceMultiplcity(refMult);
 
-	  if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
+	  if (isPP13TeVData) {     //Use LHC16-17-18 periods for mult correction - To be loaded all from file 'fileEstimator' (one can also load dummies if wants to run on some periods year only)
+            const Char_t* periodNames[33] = 	{"LHC16d","LHC16e","LHC16g","LHC16h","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p", //2016
+                                     		"LHC17c","LHC17e","LHC17f","LHC17h","LHC17i","LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r", //2017
+                                     		"LHC18b","LHC18d","LHC18e","LHC18f","LHC18g","LHC18h","LHC18i","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"}; //2018
+            TProfile* multEstimatorAvg[33];
+            for(Int_t ip=0; ip<33; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+		return NULL;
+	      }
+	      task->SetMultiplVsZProfilePP13TeV(multEstimatorAvg[ip],ip);
+            }
+	  } else if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
             const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
             TProfile* multEstimatorAvg[2];
             for(Int_t ip=0; ip<2; ip++) {
 	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
 	      if (!multEstimatorAvg[ip]) {
-		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-		return;
+		Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+		return NULL;
 	      }
             }
             task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
@@ -786,8 +855,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
             for(Int_t ip=0; ip<4; ip++) {
 	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
 	      if (!multEstimatorAvg[ip]) {
-		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-		return;
+		Printf("FATAL: Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+		return NULL;
 	      }
             }
             task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -797,9 +866,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	  }
 
 	}
-	
 
-	Printf("***************** CONTAINER SETTINGS *****************");	
+
+	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
@@ -824,8 +893,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
         Bool_t AcceptanceUnf = kTRUE; // unfold at acceptance level, otherwise PPR
 
         Int_t thnDim[4];
-        
-        //first half  : reconstructed 
+
+        //first half  : reconstructed
         //second half : MC
 
         thnDim[0] = iBin[0];
@@ -847,7 +916,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	nameCorr += suffix;
 
         THnSparseD* correlation = new THnSparseD(nameCorr,"THnSparse with correlations",4,thnDim);
-        Double_t** binEdges = new Double_t[2];
+        Double_t** binEdges = new Double_t*[2];
 
         // set bin limits
 
@@ -862,19 +931,19 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
         correlation->SetBinEdges(3,binEdges[1]);
 
         correlation->Sumw2();
-  
+
         // correlation matrix ready
         //------------------------------------------------//
 
         task->SetCorrelationMatrix(correlation); // correlation matrix for unfolding
-	
+
 	// Create and connect containers for input/output
-	
+
 	// ------ input data ------
 	AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
-	
+
 	// ----- output data -----
-	
+
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
 	TString output1name="", output2name="", output3name="",output4name="", output5name="";
 	output2name=nameContainer;
@@ -922,7 +991,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 
 
 	mgr->AddTask(task);
-	
+
 	mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
 	mgr->ConnectOutput(task,1,coutput1);
 	mgr->ConnectOutput(task,2,coutput2);
@@ -931,6 +1000,5 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	mgr->ConnectOutput(task,5,coutput5);
 
 	return task;
-	
-}
 
+}

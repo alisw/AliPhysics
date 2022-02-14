@@ -2,7 +2,9 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 					  TString cFileName = "Config_rbailhac_lowmass.C",
 					  Char_t* outputFileName="LMEE.root",
 					  ULong64_t triggerMask = AliVEvent::kINT7,
-					  Bool_t pileupon = kFALSE
+					  Bool_t pileupon = kFALSE,
+					  Int_t wagon = 0,
+					  TString cAlienUserBasePath = "r/rbailhac/PWGDQ/dielectron/macrosLMEE"
                                              )
 {
 
@@ -15,7 +17,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/%s/%s .",cAlienUserBasePath.Data(),cFileName.Data()))) ){
     configBasePath=Form("%s/",gSystem->pwd());
   }
 
@@ -28,10 +30,15 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
   if(hasMC) kMix = 0;
 
   //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
-  gROOT->LoadMacro(configFilePath.Data());
-
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_rbailhac_lowmass")) {
+    printf("Load macro now\n");
+    gROOT->LoadMacro(configFilePath.Data());
+  }
+  
   //create task and add it to the manager (MB)
-  TString appendix(TString::Format("pileup%d",(Int_t)pileupon));
+  TString appendix;
+  if(wagon!=0) appendix += TString::Format("wagon%d_pileup%d",wagon,(Int_t)pileupon);
+  else appendix += TString::Format("pileup%d",(Int_t)pileupon);
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   if (!hasMC) task->UsePhysicsSelection();
@@ -40,7 +47,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
   task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter
-  task->SetEventFilter( GetEventCuts() );
+  task->SetEventFilter( GetEventCuts(wagon) );
 
   mgr->AddTask(task);
 

@@ -35,6 +35,7 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fMaxDistance(0.1),
   fUsePIDmass(kTRUE),
   fUseDCA(kTRUE),
+  fUseOuterParamInESDs(kFALSE),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
   fClusterContainerIndexMap(),
@@ -77,10 +78,19 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   
   GetProperty("usePIDmass", fUsePIDmass);
   GetProperty("useDCA", fUseDCA);
+  GetProperty("useOuterParamInESDs", fUseOuterParamInESDs);
   GetProperty("maxDist", fMaxDistance);
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
-  fDoPropagation = fEsdMode;
+  
+  // Track extrapolation to EMCal surface
+  //
+  // Calculate extrapolation for all tracks on ESDs
+  fDoPropagation = fEsdMode; 
+  // Attempt extrapolation of non extrapolated AOD tracks
+  GetProperty("extrapolateNotMatchedAOD", fAttemptProp);
+  // Attempt extrapolation of non extrapolated AOD tracks in EMCal acceptance
+  GetProperty("extrapolateNotMatchedAODInEMCal", fAttemptPropMatch); 
   
   Bool_t enableFracEMCRecalc = kFALSE;
   GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
@@ -103,7 +113,7 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
       SetNameOfMCGeneratorsToAccept(1,removeMCGen2);
     }
   }
-
+  
   return kTRUE;
 }
 
@@ -333,7 +343,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
         }
         
         // Propagate the track
-        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA, fUseOuterParamInESDs);
       }
 
       // Reset properties of the track to fix TRefArray errors which occur when AddTrackMatched(obj) is called.

@@ -260,4 +260,4 @@ Bool_t AliEmcalTriggerRejectionMaker::Run(){
 
   return true;
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace PWGJE::EMCALJetTasks */

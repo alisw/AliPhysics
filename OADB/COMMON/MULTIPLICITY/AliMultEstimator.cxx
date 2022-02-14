@@ -130,11 +130,15 @@ void AliMultEstimator::SetupFormula(const AliMultInput* lInput)
 Float_t AliMultEstimator::Evaluate(const AliMultInput* lInput)
 {
     if (!fFormula) return fValue = 0;
+    Float_t lVertexZ = lInput->GetVariable("fEvSel_VtxZ")->GetValue();
     for (Int_t i = 0; i < lInput->GetNVariables(); i++) {
         AliMultVariable* v = lInput->GetVariable(i);
-        fFormula->SetParameter(i, v->IsInteger() ?
-                               v->GetValueInteger() :
-                               v->GetValue());
+        Double_t lv = v->IsInteger() ? v->GetValueInteger() : v->GetValue();
+        if(v->GetUseVertexZCorrection()){
+          Float_t lCorrection = lInput->GetVtxZCorrection(v, lVertexZ)/lInput->GetVtxZCorrection(v, 0.0);
+          lv = lv / lCorrection; //automatic vertex correction if requested
+        }
+        fFormula->SetParameter(i, lv);
     }
     return fValue = fFormula->Eval(0);
 }

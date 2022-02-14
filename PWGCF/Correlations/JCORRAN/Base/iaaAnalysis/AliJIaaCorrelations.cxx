@@ -15,10 +15,10 @@
 
 // Implementation for correlation analysis
 
-#include "AliJIaaCorrelations.h"
+#include <AliJIaaCorrelations.h>
 
-#include "../AliJBaseTrack.h"
-#include "../AliJCard.h"
+#include <AliJBaseTrack.h>
+#include <AliJCard.h>
 
 double DeltaPhi(double phi1, double phi2) {
 	// dphi
@@ -267,7 +267,7 @@ void AliJIaaCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, 
 	fNearSide3D   = vTrigger.Vect().Dot(vAssoc.Vect()) > 0 ? true : false; // Near side definition using half ball around the trigger
 
 	fEtaGapBin     = fcard->GetBinFast( kEtaGapType, fabs(fDeltaEta));
-    fPhiGapBinNear = fcard->GetBin( kPhiGapType, fabs(fDeltaPhiPiPi) );
+  fPhiGapBinNear = fcard->GetBin( kPhiGapType, fabs(fDeltaPhiPiPi) );
 	fRGapBinNear   = fcard->GetBin( kRGapType, fabs(ftk1->DeltaR(*ftk2)));
 	fCentralityBin = CentBin;
 	fZBin = zBin;

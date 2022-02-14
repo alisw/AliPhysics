@@ -37,9 +37,9 @@
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalEG1Correlation)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalEG1Correlation)
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalEG1Correlation::AliAnalysisTaskEmcalEG1Correlation():
   AliAnalysisTaskSE(),

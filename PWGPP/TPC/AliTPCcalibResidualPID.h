@@ -45,6 +45,7 @@ class AliESDInputHandler;
 class AliESDv0KineCuts;
 class AliAnalysisManager;
 class AliCentrality;
+class AliAnalysisUtils;
 class TTree;
 class TSystem;
 class TStyle;
@@ -88,17 +89,23 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   virtual void SetUseTPCCutMIGeo(Bool_t newValue) { fUseTPCCutMIGeo = newValue; };
   
   virtual Bool_t GetIsPbpOrpPb() const { return fIsPbpOrpPb; };
-  virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };
+  virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };  
+  
+  virtual Bool_t GetIsPbPb() const { return fIsPbPb; };
+  virtual void SetIsPbPb(Bool_t newValue) { fIsPbPb = newValue; };
   
   Double_t GetZvtxCutEvent() const { return fZvtxCutEvent; };
   virtual void SetZvtxCutEvent(Double_t newValue) { fZvtxCutEvent = newValue; };
   
   Bool_t GetCorrectdEdxEtaDependence() const { return fCorrectdEdxEtaDependence; };
   virtual void SetCorrectdEdxEtaDependence(Bool_t flag) { fCorrectdEdxEtaDependence = flag; };
-  
+
   Bool_t GetCorrectdEdxMultiplicityDependence() const { return fCorrectdEdxMultiplicityDependence; };
   virtual void SetCorrectdEdxMultiplicityDependence(Bool_t flag) { fCorrectdEdxMultiplicityDependence = flag; };
-  
+
+  Bool_t GetCorrectdEdxPileupDependence() const { return fCorrectdEdxPileupDependence; };
+  virtual void SetCorrectdEdxPileupDependence(Bool_t flag) { fCorrectdEdxPileupDependence = flag; };
+
   Bool_t GetCutOnProdRadiusForV0el() const { return fCutOnProdRadiusForV0el; };
   virtual void SetCutOnProdRadiusForV0el(Bool_t flag) { fCutOnProdRadiusForV0el = flag; };
   
@@ -110,10 +117,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t GetWriteAdditionalOutput() const { return fWriteAdditionalOutput; };
   virtual void   SetWriteAdditionalOutput(Bool_t flag = kTRUE) { fWriteAdditionalOutput = flag; };
 
-  
   virtual Int_t GetV0motherIndex(Int_t trackIndex) const;
   virtual Int_t GetV0motherPDG(Int_t trackIndex) const;
-  
   //
   // static functions for postprocessing
   //
@@ -157,6 +162,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Bool_t TPCCutMIGeo(const AliVTrack* track, const AliInputEventHandler* evtHandler, TTreeStream* streamer = 0x0)
     { if (!evtHandler) return kFALSE; return TPCCutMIGeo(track, evtHandler->GetEvent(), streamer); };
 
+  static TString GetStringFitType(Int_t fitType);  
+    
   protected:
   static Double_t fgCutGeo;  // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr;  // Cut variable for TPCCutMIGeo concerning num crossed rows
@@ -164,9 +171,10 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
+  static Double_t Aleph(Double_t* xx, Double_t* par);
   
   static void BinLogAxis(THnSparseF *h, Int_t axisNumber);
-  static THnSparseF* InitialisePIDQAHist(TString name, TString title);
+  static THnSparseF* InitialisePIDQAHist(TString name, TString title, Bool_t IsPbPb = kFALSE);
   static void  SetAxisNamesFromTitle(const THnSparseF *h);
 
   static void FitSlicesY(TH2 *hist, Double_t heightFractionForRange, Int_t cutThreshold, TString fitOption, TObjArray *arr);
@@ -193,9 +201,11 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t fUseMCinfo;         // Use MC info, if available
   
   Bool_t fIsPbpOrpPb;      // Pbp/pPb collision or something else?
+  Bool_t fIsPbPb;          // PbPb collision?
   Double_t fZvtxCutEvent;  // Vertex z cut for the event (cm)
   
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
+  AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
   Bool_t fCutOnProdRadiusForV0el;      // Cut on production radius for V0 electrons
   Int_t fNumTagsStored;     // Number of entries of fV0tags
   Char_t* fV0tags;         //! Pointer to array with tags for identified particles from V0 decays
@@ -209,9 +219,11 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   THnSparseF * fHistPidQAlong;         //! histogram for the QA of the PID long pads
   THnSparseF * fHistPidQAoroc;         //! histogram for the QA of the PID full oroc
   //
-  Bool_t fProduceTPCSignalSparse;      //for setter
-  Bool_t fCorrectdEdxEtaDependence;    // Correct eta dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
+  Bool_t fProduceTPCSignalSparse;            // for setter
+  Bool_t fCorrectdEdxEtaDependence;          // Correct eta dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
   Bool_t fCorrectdEdxMultiplicityDependence; // Correct multiplicity dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
+  Bool_t fCorrectdEdxPileupDependence;       // Correct pileup dependence for fHistPidQA (NOTE: Not done for the pad-specific THnSparses)
+  //
   THnSparseF * fThnspTpc;              //! thnsparse containing the data
   //
   //
@@ -259,6 +271,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   AliTPCcalibResidualPID(const AliTPCcalibResidualPID&); // not implemented
   AliTPCcalibResidualPID& operator=(const AliTPCcalibResidualPID&); // not implemented
   
-  ClassDef(AliTPCcalibResidualPID, 5); 
+  ClassDef(AliTPCcalibResidualPID, 6); 
 };
+
 #endif

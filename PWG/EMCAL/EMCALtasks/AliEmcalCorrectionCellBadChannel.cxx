@@ -49,6 +49,11 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
 
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
+  TString customBCmapPath = "";
+  GetProperty("customBadChannelFilePath", customBCmapPath);
+  if (customBCmapPath!="")
+    AliEmcalCorrectionComponent::SetCustomBadChannels(customBCmapPath);
+
   Bool_t dead = kFALSE;
   GetProperty("acceptDead", dead);
   if ( dead ) fRecoUtils->SetDeadChannelAsGood();
@@ -60,6 +65,10 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
   Bool_t warm = kFALSE;
   GetProperty("acceptWarm", warm);
   if ( warm ) fRecoUtils->SetWarmChannelAsGood();
+
+  // Load 1D bad channel map
+  GetProperty("load1DBadChMap", fLoad1DBadChMap);
+  fRecoUtils->SetUse1DBadChannelMap(fLoad1DBadChMap);
   
   return kTRUE;
 }
@@ -72,9 +81,9 @@ void AliEmcalCorrectionCellBadChannel::UserCreateOutputObjects()
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
   if (fCreateHisto){
-    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",1000,0,10);
+    fCellEnergyDistBefore = new TH1F("hCellEnergyDistBefore","hCellEnergyDistBefore;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistBefore);
-    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",1000,0,10);
+    fCellEnergyDistAfter = new TH1F("hCellEnergyDistAfter","hCellEnergyDistAfter;E_{cell} (GeV)",7000,0,70);
     fOutput->Add(fCellEnergyDistAfter);
   }
 }

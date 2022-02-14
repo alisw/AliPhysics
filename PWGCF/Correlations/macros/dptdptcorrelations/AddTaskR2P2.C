@@ -753,7 +753,6 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 
 	      
 
-
 	      
 	      TFile  * inputFile  = 0;
 	      TList  * histoList  = 0;
@@ -821,8 +820,6 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 			}
 		    }
 		}
-
-	      
 	      //       cout << "baidyaTest before task: "  << endl;
 	      task = new  AliAnalysisTaskR2P2(taskName);
 	      //configure my task

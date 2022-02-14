@@ -6,7 +6,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 class AliAnalysisTaskEmcalEmbeddingHelper;
 
 
-AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingParticlePtMin, TString option, Double_t centmin, Double_t centmax ){
+AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingParticlePtMin, TString option ){
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr)
@@ -52,10 +52,14 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		// The pT hard bin and anchor run can also be set by adding a printf() wild card to the string (ie %d)
 		// See the documentation of AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 		//embeddingHelper->SetInputFilename("alice/data/2015/LHC15o/");
-		//embeddingHelper->SetInputFilename("pass1/AOD194");
 		//embeddingHelper->SetFilePattern("alien:///alice/data/2015/LHC15o/000246844/pass1/AOD194/");
 		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/15/246488/AOD200/");
-		embeddingHelper->SetFileListFilename("alien:///alice/cern.ch/user/k/kimb/Emb_LHC15o.txt");
+		//if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' | sort -R | head -300 > embfile.txt"));
+		if (option.Contains("LHC15o")) gSystem->Exec(Form("alien_find /alice/sim/2016/LHC16j5/ AliAOD.root | grep AOD200 | perl -nle'print \"alien://\".$_' > embfile.txt"));
+		embeddingHelper->SetFileListFilename("./embfile.txt");
+
+		//embeddingHelper->SetFilePattern("alien:///alice/sim/2016/LHC16j5/%d/%d/AOD200/");
+		//embeddingHelper->SetFileListFilename("alien:///alice/cern.ch/user/k/kimb/Emb_LHC15o.txt");
 		// If the embedded file is an ESD, then set:
 		embeddingHelper->SetAOD();
 		// Add additional configure as desired.
@@ -63,19 +67,19 @@ AliBSDiJetTask * AddTaskBSDiJet(TString taskname, bool isAA, Double_t leadingPar
 		// ... randomly select which file to start from:
 		embeddingHelper->SetRandomFileAccess(kTRUE);
 		// ... Start from a random event within each file
-		embeddingHelper->SetRandomEventNumberAccess(kTRUE);
+		//embeddingHelper->SetRandomEventNumberAccess(kTRUE);
 		embeddingHelper->SetTriggerMask(AliVEvent::kINT7);
 		embeddingHelper->SetZVertexCut(10);
 		//embeddingHelper->SetMaxVertexDistance(2);
-		embeddingHelper->SetCentralityRange(centmin,centmax);
-		embeddingHelper->SetUseManualInternalEventCuts(true) ;
-
+		//embeddingHelper->SetCentralityRange(centmin,centmax);
+		//embeddingHelper->SetUseManualInternalEventCuts(true) ;
 		// ... Set pt hard bin properties
-		//embeddingHelper->SetPtHardBin(4);
-		//embeddingHelper->SetNPtHardBins(11);
+		//embeddingHelper->SetPtHardBin(5);
+		//embeddingHelper->SetNPtHardBins(20);
 		// etc..
 		// As your last step, always initialize the helper!
 		embeddingHelper->Initialize();
+		AliAnalysisTaskBSEmbedding * preprocess = AliAnalysisTaskBSEmbedding::AddTaskBSEmbedding();
 	}
 
 

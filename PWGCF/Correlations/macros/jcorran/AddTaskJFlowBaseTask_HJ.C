@@ -8,7 +8,7 @@ AliAnalysisTask *AddTaskJFlowBaseTask_HJ(TString taskName,TString JCatalystName,
 	//==== Set up di-hadron correlation jT task ====
 	AliJFlowBaseTask *flowTask = new AliJFlowBaseTask(taskName.Data(),"AOD");
 	flowTask->SetDebugLevel(5);
-  	flowTask->SetJCatalystTaskName(JCatalystName.Data());  // AliJCatalystTask has this name hard coded
+  flowTask->SetJCatalystTaskName(JCatalystName.Data());  // AliJCatalystTask has this name hard coded
 	flowTask->SetIsMC(isMC);
 	cout << flowTask->GetName() << endl;
 

@@ -274,8 +274,6 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t beam)
   // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
   if (sys == AliForwardUtil::kPPb) 
     energy = CenterOfMassEnergy(beam, 82, 208, 1, 1);
-  if (sys == AliForwardUtil::kPPb) 
-    energy = CenterOfMassEnergy(beam, 54, 129, 1, 1);
   if (sys == AliForwardUtil::kPbp) 
     energy = CenterOfMassEnergy(beam, 1, 1, 82, 208);
   else if (sys == AliForwardUtil::kPbPb) 

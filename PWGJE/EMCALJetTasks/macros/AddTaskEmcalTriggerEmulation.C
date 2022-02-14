@@ -1,11 +1,11 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation *AddTaskEmcalTriggerEmulation(
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerEmulation *AddTaskEmcalTriggerEmulation(
     TString nametrackcont,
     TString nameclustercont,
     TString namemcparticlecont,
     const char *uff
     )
 {
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation *trgtask = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation(Form("trgtask%s", uff));
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerEmulation *trgtask = new PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerEmulation(Form("trgtask%s", uff));
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   mgr->AddTask(trgtask);
 

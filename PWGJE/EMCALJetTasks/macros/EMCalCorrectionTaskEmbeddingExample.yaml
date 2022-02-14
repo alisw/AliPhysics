@@ -102,6 +102,8 @@ CellCombineCollections_combined:
 # Clusterizer
 Clusterizer:
     createHistos: true
+    # Clusterizerv3 won't properly clusterizer embedded cells without additional preprocessing, so use v2 instead.
+    clusterizer: kClusterizerv2
 Clusterizer_combined:
     enabled: true
     cellTimeMin: -50e-9

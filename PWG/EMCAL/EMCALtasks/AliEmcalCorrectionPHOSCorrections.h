@@ -7,7 +7,7 @@
 
 /**
  * @class AliEmcalCorrectionPHOSCorrections
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Wrapper for PHOS Tender to be executed through the EMCal correction framework.
  *
  * @author James Mulligan <james.mulligan@yale.edu>, Yale University

@@ -547,7 +547,8 @@ void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
     hxsection->GetXaxis()->SetBinLabel(1,"<#sigma>");
   }
   
-  fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
+  if(fUseBuiltinEventSelection)
+    fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
 
 }
 
@@ -848,7 +849,8 @@ Bool_t AliAnalysisTaskPWGJEQA::IsEventSelected()
     }
   }
   else {
-    AliAnalysisTaskEmcal::IsEventSelected();
+    Bool_t answer = AliAnalysisTaskEmcal::IsEventSelected();
+    return answer;
   }
   return kTRUE;
 }
@@ -889,7 +891,7 @@ Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
 
           if (jet.Pt() > 4. * fPtHard) {
             //AliInfo(Form("Reject jet event with: pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), 4.));
-            if (fGeneralHistograms) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
+            if (fGeneralHistograms && fHistEventRejection) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
             return kFALSE;
           }
         }
@@ -919,7 +921,6 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
     
     Float_t xsection    = 0;
     Float_t trials      = 0;
-    Int_t   pthardbin   = 0;
     
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
@@ -930,7 +931,7 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
     TChain *chain = dynamic_cast<TChain*>(tree);
     if (chain) tree = chain->GetTree();
     
-    PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+    PythiaInfoFromFile(curfile->GetName(), xsection, trials);
     
     fHistManager.FillTH1("hNtrials", "#sum{ntrials}", trials);
     fHistManager.FillTH1("hXsec", "<#sigma>", xsection);

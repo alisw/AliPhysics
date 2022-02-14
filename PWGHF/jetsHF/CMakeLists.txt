@@ -18,11 +18,7 @@ set(MODULE PWGHFjetsHF)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWG/JETFW)
-
-include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/jetsHF)
-
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
@@ -36,13 +32,13 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
-                    ${AliRoot_SOURCE_DIR}/STEER/AOD
-                    ${AliRoot_SOURCE_DIR}/STEER/ESD
-                    ${AliRoot_SOURCE_DIR}/STEER/STEER
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+		    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     )
 
 
@@ -51,23 +47,29 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliHFJetsTagging.cxx
     AliHFJetTaggingIP.cxx
-    AliAnalysisTaskBJetTC.cxx	
-    AliAnalysisTaskHFJetIPQA.cxx	
     AliAnalysisHFjetTagHFE.cxx
     AliAnalysisTaskEmcalHFCJQA.cxx	    
     AliAnalysisTaskEmcalHFeJetCorrel.cxx		    
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
-    AliAnalysisTaskEmcalJetBtagSV.cxx          
-    AliAnalysisTaskJetExtractorHF.cxx
     AliRDHFJetsCuts.cxx
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
     AliHFJetsContainer.cxx
     AliHFJetsContainerVertex.cxx
     AliDJetRawYieldUncertainty.cxx
+    AliAnalysisTaskDJetCorrelations.cxx
+    AliAnalysisTaskDJetCorrelationsQA.cxx
+    AliAnalysisTaskDmesonsFilterCJ.cxx
+    AliEmbeddingEventForHFTask.cxx
+    AliAnalysisTaskIPCalib.cxx
 )
 
 if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+    AliAnalysisTaskEmcalJetBtagSV.cxx          
+    AliAnalysisTaskBJetTC.cxx		
+    AliATDJetCorrDev.cxx
+    )
 
 
     include_directories(#${AliPhysics_SOURCE_DIR}/HLT/FJWrapper
@@ -76,6 +78,7 @@ if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
+
 endif(FASTJET_FOUND)
 
 # Headers from sources
@@ -89,10 +92,10 @@ endif(FASTJET_FOUND)
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGJETFW STEERBase PWGTools PWGHFvertexingHF)
 
 # Generate the ROOT map
 # Dependecies
@@ -108,7 +111,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${FASTJET_LIBS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

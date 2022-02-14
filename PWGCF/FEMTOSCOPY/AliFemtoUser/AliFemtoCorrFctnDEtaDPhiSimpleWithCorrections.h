@@ -17,7 +17,7 @@
 
 class AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections : public AliFemtoCorrFctn {
 public:
-  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4, kPionMinus=5, kKaonMinus=6, kProtonMinus=7, kLambda=8, kLambdaMinus=9};
+  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4, kPionMinus=5, kKaonMinus=6, kProtonMinus=7, kLambda=8, kLambdaMinus=9,  kXiMinus=10, kXiPlus=11};
 
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(const char* title, const int& aPhiBins, const int& aEtaBins);
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections(const AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections& aCorrFctn);

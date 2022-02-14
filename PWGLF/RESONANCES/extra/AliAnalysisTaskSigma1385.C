@@ -28,7 +28,7 @@ void AliAnalysisTaskSigma1385()
    const char *collectionfile = "sigmaLHC10d1.xml";
 
 
-   TAlienCollection * myCollection  = TAlienCollection::Open(collectionfile);
+   TGridCollection * myCollection  = gGrid->OpenCollection(collectionfile);
 
    if (!myCollection) {
       Error("AliAnalysisTaskSigma1385", Form("Cannot create an AliEn collection from %s", collectionfile)) ;

@@ -65,7 +65,7 @@ class AliAnalysisTaskSEDplusCorrelations : public AliAnalysisTaskSE
     void SetMCGevEventType(Bool_t sel1=kFALSE){fMCGenEvType=sel1;}
     void SetPoolByPoolCorr(Bool_t sel2=kFALSE){fPoolByPool=sel2;}
     void SetCheckCutDistandChoice(Bool_t sel3=kFALSE, Bool_t sel4=kFALSE){fCheckCutDist=sel3;fRawCutQA=sel4;}
-    void SetAODMismatchProtection(Int_t sel5=1) {fAODProtection=sel5;}
+    void SetAODMismatchProtection(Int_t sel5=0) {fAODProtection=sel5;}
     void SetLeadPartCorrelation(Bool_t Sel){fLeadPartCorr = Sel;}
     void SetAutoSignalSBRange(Bool_t autosignalSBrange){fAutoSignalSBRange = autosignalSBrange;}
     void SetCutOptimizationFlag(Bool_t cutOptFlag){fCutoptDplus=cutOptFlag;}

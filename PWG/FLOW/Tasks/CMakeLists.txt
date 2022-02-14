@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
+		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
   )
 
 # Sources - alphabetical order
@@ -45,6 +46,7 @@ set(SRCS
   AliAnalysisTaskLYZEventPlane.cxx
   AliAnalysisTaskCRC.cxx
   AliAnalysisTaskCRCZDC.cxx 
+  AliAnalysisTaskQvec.cxx
   AliAnalysisTaskCumulants.cxx
   AliAnalysisTaskQCumulants.cxx 
   AliAnalysisTaskLeeYangZeros.cxx 
@@ -56,6 +58,7 @@ set(SRCS
   AliAnalysisTaskMixedHarmonics.cxx 
   AliAnalysisTaskFlowModes.cxx
   AliAnalysisTaskFlowModesMC.cxx
+  AliAnalysisTaskFlowModes_pPb.cxx
   AliAnalysisTaskNestedLoops.cxx 
   AliAnalysisTaskQAflow.cxx 
   AliAnalysisTaskPIDflowQA.cxx 
@@ -72,15 +75,44 @@ set(SRCS
   AliAnalysisTaskMultiparticleFemtoscopy.cxx
   AliAnalysisTaskForStudents.cxx
   AliAnalysisTaskZDCGainEq.cxx
-  AliAnalysisTaskZDCEP.cxx
   AliAnalysisTaskPiKpK0Lamba.cxx
   AliAnalysisTaskCmeEse.cxx
   AliAnalysisTaskCMEV0.cxx
   AliAnalysisTaskCMEV0PID.cxx
+  AliAnalysisTaskCMEMC.cxx
   AliAnalysisTaskStudentsCM.cxx
   AliAnalysisTaskStudentsML.cxx
   AliAnalysisTaskTwoMultiCorrelations.cxx
-  )
+  AliAnalysisTaskStudentsMW.cxx
+  AliAnalysisTaskCVE.cxx
+  AliAnalysisTaskNBodyFemtoscopy.cxx
+  AliAnalysisTaskCMW.cxx
+  AliAnalysisTaskCVEUNI.cxx
+  AliAnalysisTaskCMWPU.cxx
+  AliAnalysisTaskCMWPU2018.cxx
+  AliAnalysisTaskCMWPU2018eqAch.cxx
+  AliAnalysisTaskCMWPU2018dca.cxx
+  AliAnalysisTaskCMWPU2018eqAchdca.cxx
+  AliAnalysisTaskCMWPU2018eqAchmerge.cxx
+  AliAnalysisTaskCMWPU2018eqAchCL.cxx	
+  AliAnalysisTaskCMWPU2018eqAchmergedca.cxx	
+  AliAnalysisTaskCVEUNIpt.cxx
+  AliAnalysisTaskCMWPUeqAch.cxx
+  AliAnalysisTaskCMWPUuncAch.cxx
+  AliAnalysisTaskv2pt.cxx
+  AliAnalysisTaskv2vscent.cxx
+  AliAnalysisTaskMuPa.cxx
+  AliAnalysisTaskAR.cxx
+  AliAnalysisTaskEbECumulants.cxx
+  AliAnalysisTaskGammaDeltaPID.cxx
+  AliAnalysisTaskCMWESE.cxx
+  AliAnalysisTaskEPCalib.cxx
+  AliAnalysisTaskCMWESEsyst.cxx
+  AliAnalysisTaskGammaDeltaPIDSaveQvec.cxx
+  AliAnalysisTaskGammaDeltaPIDSaveQvecEvent.cxx
+  AliAnalysisTaskCMXQA.cxx
+  AliAnalysisTaskCMWPU2018eqAchCL.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")

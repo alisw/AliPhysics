@@ -360,7 +360,7 @@ Int_t AliAnalysisHadEt::GetCentralityBin(Int_t numberofbins,AliCentrality *centr
 }
 Int_t AliAnalysisHadEt::GetCentralityBin(Int_t numberofbins,AliMultSelection *centrality){
   Int_t centralitybin = -1;
-  Float_t lPercentile = centrality->GetMultiplicityPercentile(fCentralityMethod);
+  Float_t lPercentile = centrality->GetMultiplicityPercentile(fCentralityMethod,kTRUE);
   if(lPercentile<0) return centralitybin;
   if(numberofbins<21){//10% bins
     centralitybin= lPercentile/10;

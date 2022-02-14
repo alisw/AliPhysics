@@ -28,7 +28,7 @@
 /// \param bFillAOD: Bool, keep the new clusters in output file.
 /// \param bMC: Bool, simulation or data.
 /// \param exotic: Bool, remove exotic clusters.
-/// \param name: TString, name of clusterizer: V1, V2, V1Unfold, NxN.
+/// \param name: TString, name of clusterizer: V1, V2, V3 (faster V2), V1Unfold, NxN.
 /// \param trigger: TString, name of triggered events to be analyzed.
 /// \param tm: Bool, perform track matching recalculation.
 /// \param minEcell: float, minimum cell energy entering the cluster.
@@ -40,7 +40,7 @@
 /// \param bRecalE: Bool, recalibrate EMCal energy
 /// \param bBad: Bool, remove bad channels
 /// \param bRecalT: Bool, recalibrate EMCal time
-/// \param bNonLine: Bool, correct cluster non linearity
+/// \param iNonLine: Int, correct cluster non linearity
 /// \param minCen: Integer, minimum centrality, -1 no selection
 /// \param maxCen: Integer, maximum centrality, -1 no selection
 /// \param clusterEnergyCutEvent: Float, in case of event filtering, select events with at least one EMCal cluster with this energy
@@ -54,7 +54,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
                                                        const Int_t   bMC        = kFALSE,
                                                        const Bool_t  exotic     = kTRUE,
-                                                       const TString name       = "V1Unfold", // V1, V2, NxN, V1Unfold
+                                                       const TString name       = "V1Unfold", 
                                                        const TString trigger    = "", 
                                                        const Int_t   tm         = 1, 
                                                        const Int_t   minEcell   = 50,
@@ -66,7 +66,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
                                                        const Bool_t  bRecalE    = kTRUE,
                                                        const Bool_t  bBad       = kTRUE,
                                                        const Bool_t  bRecalT    = kTRUE,
-                                                       const Bool_t  bNonLine   = kFALSE,
+                                                       const Int_t   iNonLine   = 0,
                                                        const Int_t   minCen     = -1,
                                                        const Int_t   maxCen     = -1,
                                                        const Float_t clusterEnergyCutEvent = -1,
@@ -100,7 +100,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
   printf("\t Ecell %d, Eseed %d, dT %d, wT %d, minUnf %d, minFrac %d \n",
          minEcell, minEseed,maxDeltaT,timeWindow,minEUnf,minFrac);
   printf("\t recalE %d, bad %d, recalT %d, nonlin %d, minCen %d, maxCen %d, rowDiff %d, colDiff %d, t-card %d, cell update %d \n",
-         bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
+         bRecalE,bBad,bRecalT,iNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
 
   // Create name of task and AOD branch depending on different settings
   TString arrayName = clusArrTit;
@@ -191,6 +191,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
   //
   // Clusterizer type
   //
+  if(name.Contains("V3")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv3); // faster V2
   if(name.Contains("V2")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
   if(name.Contains("V1")) params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   if(name.Contains("NxN"))
@@ -236,9 +237,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit 
 //  
 //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
 //  
-//  ConfigureEMCALRecoUtils(reco,bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
-
-  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,bNonLine,bRecalE,bBad,bRecalT);
+  clusterize->ConfigureEMCALRecoUtils(bMC,exotic,iNonLine,bRecalE,bBad,bRecalT);
   
   //-------------------------------------------------------
   // Do track matching after clusterization

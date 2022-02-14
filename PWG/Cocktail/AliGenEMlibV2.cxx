@@ -33,6 +33,7 @@
 #include "AliLog.h"
 #include "AliGenEMlibV2.h"
 #include "TH1D.h"
+#include <TObjString.h>
 
 using std::cout;
 using std::endl;
@@ -1228,6 +1229,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
   }
   formulaBaseScaled = formulaBaseScaledTemp;
 
+  AliInfoClass(Form("Create TF1 for %s from isMeson = %d with norm = %f ... ",name.Data(), isMeson, norm));
   TF1* result = new TF1(name.Data(), Form("%.10f * (x/%s) * (%s)", norm, scaledPt.Data(), formulaBaseScaled.Data()), xmin, xmax);
   if (!isMeson && fPtParametrizationProton) {
     for (Int_t i=0; i<nPar; i++) {
@@ -1238,6 +1240,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
       result->SetParameter(i, fPtParametrization[0]->GetParameter(i));
     }
   }
+  AliInfoClass("...done");
   return result;
 }
 
@@ -1334,18 +1337,28 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
   if (!fParametrizationDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
 
   // check for pi0 parametrization
+  AliInfoClass("Get pi0 parametrization");
   TF1* fPtParametrizationTemp = (TF1*)fParametrizationDir->Get("111_pt");
   if (!fPtParametrizationTemp) AliFatalClass(Form("File %s doesn't contain pi0 parametrization",fileName.Data()));
-  fPtParametrization[0] = new TF1(*fPtParametrizationTemp);
+  // function needs to be recreated for ROOT6 compatibility
+  fPtParametrization[0] = new TF1("111_pt",fPtParametrizationTemp->GetExpFormula(),0,300);
+  for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
+    fPtParametrization[0]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+  }
   fPtParametrization[0]->SetName("111_pt");
 
   // check for proton parametrization (base for baryon mt scaling)
+  AliInfoClass("Get proton parametrization");
   TF1* fPtParametrizationProtonTemp = (TF1*)fParametrizationDir->Get("2212_pt");
   if (!fPtParametrizationProtonTemp) {
     AliWarningClass(Form("File %s doesn't contain proton parametrization, scaling baryons from pi0.", fileName.Data()));
     fPtParametrizationProton = NULL;
   } else {
-    fPtParametrizationProton = new TF1(*fPtParametrizationProtonTemp);
+    // function needs to be recreated for ROOT6 compatibility
+    fPtParametrizationProton = new TF1("2212_pt",fPtParametrizationProtonTemp->GetExpFormula(),0,300);
+    for (Int_t iparam = 0; iparam < fPtParametrizationProtonTemp->GetNpar(); iparam++ ){
+      fPtParametrizationProton->SetParameter(iparam,fPtParametrizationProtonTemp->GetParameter(iparam));
+    }
     fPtParametrizationProton->SetName("2212_pt");
   }
 
@@ -1355,9 +1368,14 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
   // get parametrizations from file
   for (Int_t i=1; i<26; i++) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
+    AliInfoClass(Form("Get %d parametrization",ip));
     fPtParametrizationTemp = (TF1*)fParametrizationDir->Get(Form("%d_pt", ip));
     if (fPtParametrizationTemp) {
-      fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
+      // function needs to be recreated for ROOT6 compatibility
+      fPtParametrization[i] = new TF1(Form("%d_pt", ip),fPtParametrizationTemp->GetExpFormula(),0,300);
+      for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
+        fPtParametrization[i]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+      }
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
     } else {
       if (i==7 || i==9 || i==10 || i==11 || i==12 || i==17 || (i>=20 && i<=25))

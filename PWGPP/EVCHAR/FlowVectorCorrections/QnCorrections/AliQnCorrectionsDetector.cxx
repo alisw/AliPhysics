@@ -34,7 +34,7 @@
 
 #include "AliQnCorrectionsDetector.h"
 #include "AliLog.h"
-
+#include <TObjString.h>
 /// \cond CLASSIMP
 ClassImp(AliQnCorrectionsDetector);
 /// \endcond

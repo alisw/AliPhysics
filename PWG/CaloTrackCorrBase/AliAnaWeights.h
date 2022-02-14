@@ -82,10 +82,11 @@ class AliAnaWeights : public TObject {
 
   void             SetPythiaEventHeader(AliGenPythiaEventHeader* py) { fPyEventHeader = py    ; }
   
-  void             SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection = kTRUE  ; }
-  void             SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection = kFALSE ; }
+  void             SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection    = kTRUE  ; }
+  void             SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection    = kFALSE ; }
 
-  void             SwitchOnMCCrossSectionHistoFill()       { fCheckMCCrossSection = kTRUE  ;  fJustFillCrossSecHist = kTRUE ; }
+  void             SwitchOnMCCrossSectionHistoFill()       { fCheckMCCrossSection    = kTRUE  ;  fJustFillCrossSecHist = kTRUE ; }
+  void             SwitchOffMCCrossSectionHistoFill()      { fJustFillCrossSecHist   = kFALSE ; }
 
   void             SwitchOnMCCrossSectionFromEventHeader() { fCheckPythiaEventHeader = kTRUE  ; }
   void             SwitchOffMCCrossSectionFromEventHeader(){ fCheckPythiaEventHeader = kFALSE ; }
@@ -100,7 +101,10 @@ class AliAnaWeights : public TObject {
   
   void             SwitchOnMCParticlePtWeights ()          { fDoMCParticlePtWeights = kTRUE  ; }
   void             SwitchOffMCParticlePtWeights()          { fDoMCParticlePtWeights = kFALSE ; }
+  void             CheckGeneratorName( Bool_t ch )         { fCheckGeneratorName    = ch     ; }
 
+  void             PrintParameters();
+  
  private:
     
   Int_t            fDebug ;               ///< Debug level.
@@ -124,6 +128,8 @@ class AliAnaWeights : public TObject {
   TF1 *            fEtaFunction;          //!<!  eta spectrum parametrization
   
   TF1 *            fPi0Function;          //!<!  pi0 spectrum parametrization
+  
+  Bool_t           fCheckGeneratorName;   ///< apply weight only for pi0/eta particle from a particular generator.
   
   //
   // MC weights, pT hard pythia
@@ -152,7 +158,7 @@ class AliAnaWeights : public TObject {
   AliAnaWeights& operator=(const AliAnaWeights&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaWeights, 3) ;
+  ClassDef(AliAnaWeights, 4) ;
   /// \endcond
   
 } ;

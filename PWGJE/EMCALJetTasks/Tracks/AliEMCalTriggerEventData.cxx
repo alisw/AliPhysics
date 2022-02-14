@@ -15,11 +15,9 @@
 
 #include "AliEMCalTriggerEventData.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventData)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerEventData)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Default constructor
@@ -27,8 +25,8 @@ namespace EMCalTriggerPtAnalysis {
 AliEMCalTriggerEventData::AliEMCalTriggerEventData() :
     TObject(),
     fRecEvent(NULL),
-    fTriggerBitSelection(0),
     fMCEvent(NULL),
+    fTriggerBitSelection(0),
     fClusterContainer(NULL),
     fTrackContainer(NULL),
     fParticleContainer(NULL),
@@ -44,8 +42,8 @@ AliEMCalTriggerEventData::AliEMCalTriggerEventData() :
 AliEMCalTriggerEventData::AliEMCalTriggerEventData(const AliEMCalTriggerEventData &ref) :
     TObject(ref),
     fRecEvent(ref.fRecEvent),
-    fTriggerBitSelection(ref.fTriggerBitSelection),
     fMCEvent(ref.fMCEvent),
+    fTriggerBitSelection(ref.fTriggerBitSelection),
     fClusterContainer(ref.fClusterContainer),
     fTrackContainer(ref.fTrackContainer),
     fParticleContainer(ref.fParticleContainer),
@@ -73,5 +71,3 @@ AliEMCalTriggerEventData &AliEMCalTriggerEventData::operator=(const AliEMCalTrig
   }
   return *this;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

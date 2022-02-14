@@ -8,13 +8,14 @@
 #include <AliMESpidTask.h>
 #endif
 
-AliMESpidTask *AddMESpidTask(Bool_t mc)
+AliMESpidTask *AddMESpidTask(Bool_t mc, Bool_t hm = kFALSE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESpidTask *pid = new AliMESpidTask("MESpid");
   mgr->AddTask(pid);
   pid->SetPostProcess(kFALSE);
   pid->SetMCdata(mc);
+  pid->SetTriggerHM(hm);
   pid->SetDebugLevel(0);
 
   mgr->ConnectInput(pid, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
@@ -44,4 +45,3 @@ AliMESpidTask *AddMESpidTask(Bool_t mc)
 
   return pid;
 }
-

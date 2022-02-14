@@ -54,7 +54,7 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   // Settings
   
   Bool_t   OnlyIsolated()                        const { return fSelectIsolated              ; }
-  void     SelectIsolated(Bool_t select)               { fSelectIsolated = select            ; }
+  Bool_t   GetIsolationMatters()                 const { return fIsolationMatters            ; }
   
   Float_t  GetConeSize()                         const { return fConeSize                    ; }
   Float_t  GetPtThresholdInCone()                const { return fPtThresholdInCone           ; }	   
@@ -70,6 +70,9 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   Double_t GetJetAreaFraction()                  const { return fJetAreaFraction             ; }
   Double_t GetGammaConeSize()                    const { return fGammaConeSize               ; }
 
+  void     SelectIsolated(Bool_t select)               { fSelectIsolated = select            ; }
+  void     SetIsolationMatters(Bool_t select)          { fIsolationMatters = select          ; }
+  
   void     SetConeSize(Float_t cone)                   { fConeSize = cone                    ; }
   void     SetPtThresholdInCone(Float_t pt)            { fPtThresholdInCone = pt             ; }
     
@@ -88,14 +91,14 @@ class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
   void     SetGammaConeSize(Float_t cone)              { fGammaConeSize   = cone             ; }
 
   // Settings for non standard jet branch
-  TString  GetJetBranchName()                    const { return fJetBranchName               ; }
-  void     SetJetBranchName(const char *name)          { fJetBranchName = name               ; }
+//TString  GetJetBranchName()                    const { return fJetBranchName               ; }
+//void     SetJetBranchName(const char *name)          { fJetBranchName = name               ; }
 //void     SwitchOnNonStandardJetFromReader()          { fNonStandardJetFromReader = kTRUE   ; }
 //void     SwitchOffNonStandardJetFromReader()         { fNonStandardJetFromReader = kFALSE  ; }
 //Bool_t   IsNonStandardJetFromReader()                { return fNonStandardJetFromReader    ; }
 
-  TString  GetBkgJetBranchName()                 const { return fBkgJetBranchName            ; }
-  void     SetBkgJetBranchName(const char *name)       { fBkgJetBranchName = name            ; }
+//  TString  GetBkgJetBranchName()                 const { return fBkgJetBranchName            ; }
+//  void     SetBkgJetBranchName(const char *name)       { fBkgJetBranchName = name            ; }
   void     SwitchOnBackgroundJetFromReader()           { fBackgroundJetFromReader = kTRUE    ; }
   void     SwitchOffBackgroundJetFromReader()          { fBackgroundJetFromReader = kFALSE   ; }
   Bool_t   IsBackgroundJetFromReader()                 { return fBackgroundJetFromReader     ; }
@@ -150,15 +153,16 @@ private:
   Bool_t     fUseJetRefTracks ;                   ///<  Use track references from JETAN not the AOD tracks to calculate fragmentation function
   Bool_t     fMakeCorrelationInHistoMaker ;       ///< Make particle-jet correlation in histogram maker
   Bool_t     fSelectIsolated ;                    ///<  Select only trigger particles isolated
-
+  Bool_t     fIsolationMatters ;                  ///<  flag if isolation matters
+ 
   Double_t   fJetConeSize ;                       ///<  Reconstructed jet cone size
   Double_t   fJetMinPt ;                          ///<  Minumum jet pt, default 5GeV/c
   Double_t   fJetMinPtBkgSub ;                    ///<  Minumum jet pt after bkg subtraction, default -100 GeV/c
   Double_t   fJetAreaFraction ;                   ///<  Jet area fraction X in X*pi*R^2, default 0.6
 //Bool_t     fNonStandardJetFromReader;           ///<  use non standard jet from reader //new
-  TString    fJetBranchName ;                     ///<  name of jet branch not set in reader part //new
+//  TString    fJetBranchName ;                     ///<  name of jet branch not set in reader part //new
   Bool_t     fBackgroundJetFromReader;            ///<  use background jet from reader //new
-  TString    fBkgJetBranchName ;                  ///<  name of background jet branch not set in reader part //new
+  //  TString    fBkgJetBranchName ;                  ///<  name of background jet branch not set in reader part //new
 
   Double_t   fGammaConeSize ;                     ///<  Isolation cone radius
   Bool_t     fUseBackgroundSubtractionGamma;      ///<  flag to use backgrouind subtraction for photons or not
@@ -219,7 +223,7 @@ private:
   TH2F * fhPtBefore;                              //!<!  jet pT vs trigger particle pT
   TH2F * fhDeltaPhi0PiCorrectBefore;              //!<!  Difference of jet phi and trigger particle phi (0,pi) as function of trigger particle pT
 
-  // temporary jet histograms
+  // jet histograms
   TH1F * fhJetPtBefore;                           //!<!  Pt of all jets
   TH1F * fhJetPtBeforeCut;                        //!<!  Pt of all jets after bkg correction, raw jet pt>fJetMinPt
   TH1F * fhJetPt;                                 //!<!  Pt of all jets after bkg correction
@@ -234,6 +238,8 @@ private:
   TH2F * fhJetChAreaVsPt;                         //!<!  area of each charged jet vs jet pt
   TH2F * fhTrackPhiVsEta;                         //!<!  Phi vs eta of all chosen tracks in all events
   TH1F * fhTrackAveTrackPt;                       //!<!  average track pt in event
+  TH1F * fhNoCTSTracks;                           //!<!  number of CTS tracks
+  TH1F * fhNoCTSTracksCut;                        //!<!  number of CTS tracks with pT>cut
   TH1F * fhJetNjetOverPtCut[10];                  //!<!  number of reconstructed jets in event over pT threshold
   TH2F * fhJetChBkgEnergyVsArea;                  //!<!  area of each charged jet vs jet background
   TH2F * fhJetRhoVsPt;                            //!<!  jet energy density vs jet pt
@@ -249,10 +255,10 @@ private:
   TH2F * fhJetNtrackRatioJet5GeV  [5];            //!<!  the same for pt jet above 5 GeV
   TH2F * fhJetNtrackRatioLead5GeV [5];            //!<!  the same for jet with leading particle pt>5GeV
 
-  // temporary background jet histograms
-  TH1F * fhBkgJetBackground[4];                   //!<!  background from jet bkg branch
-  TH1F * fhBkgJetSigma[4];                        //!<!  sigma of jet in backgroud branch
-  TH1F * fhBkgJetArea[4];                         //!<!  area of jet in bkg branch
+  // background jet histograms
+  TH1F * fhBkgJetBackground[3];                   //!<!  background from jet bkg branch
+  TH1F * fhBkgJetSigma[3];                        //!<!  sigma of jet in backgroud branch
+  TH1F * fhBkgJetArea[3];                         //!<!  area of jet in bkg branch
 
   // temporary photon histograms
   TH1F * fhPhotonPtMostEne;                       //!<!  most pt photon
@@ -276,11 +282,17 @@ private:
   TH2F * fhPhotonPtDiffVsNtracks;                 //!<!  correction vs Ntracks
   TH2F * fhPhotonPtDiffVsNclusters;               //!<!  correction vs Nclustres
 
-  TH1F * fhPhotonSumPtInCone;                     //!<!  sum pt in cone before correction
-  TH1F * fhPhotonSumPtCorrectInCone;              //!<!  sum pt in cone afrer correction
+  TH1F * fhPhotonSumPtInCone;                     //!<!  sum pt neutral in cone before correction
+  TH1F * fhPhotonSumPtCorrectInCone;              //!<!  sum pt neutral in cone afrer correction
   TH1F * fhPhotonSumPtChargedInCone;              //!<!  sum pt of charged tracks in the cone before correction
 
-
+  TH1F * fhPhotonNChargedInCone;                  //!<!  number of charged tracks in the cone before correction
+  TH1F * fhPhotonAvePtChargedInCone;              //!<!  average pt of charged tracks in the cone before correction
+  TH1F * fhPhotonRatioAvePtChargedInCone;         //!<!  ratio (average pt/gamma) of charged tracks in the cone before correction
+  TH1F * fhPhotonRatioSumPtChargedInCone;         //!<!  ratio (sum pt/gamma) of charged tracks in the cone before correction
+  TH1F * fhPhotonRatioMostPtChargedInCone;        //!<!  ratio (most pt/gamma) of charged tracks in the cone before correction
+ 
+  
   // temporary jet histograms after selection
   TH2F * fhSelectedJetPhiVsEta;	                  //!<!  phi vs eta of selected jet
   TH2F * fhSelectedJetChBkgEnergyVsPtJet;         //!<!  background energy of selected charged jet vs jet pt
@@ -377,7 +389,7 @@ private:
   AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleJetFinderCorrelation,3) ;
+  ClassDef(AliAnaParticleJetFinderCorrelation,4) ;
   /// \endcond
 
  } ;

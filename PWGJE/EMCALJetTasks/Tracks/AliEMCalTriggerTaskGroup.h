@@ -13,7 +13,9 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE{
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerAnaClassManager;
 class AliEMCalTriggerBinningComponent;
@@ -71,11 +73,11 @@ protected:
   const AliEMCalTriggerKineCuts               *fKineCuts;             ///< Kinematical cuts shared by the task group
   const AliEMCalTriggerWeightHandler          *fWeightHandler;        ///< Weight handler for event weighting
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerTaskGroup, 1);    // Group of analysis components with common event selection
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERTASKGROUP_H */

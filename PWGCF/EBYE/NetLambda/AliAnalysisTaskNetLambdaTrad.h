@@ -1,6 +1,7 @@
+
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//updated Aug 27
+//update Mar 2019
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -22,14 +23,9 @@ class TH3F;
 class AliAnalysisTaskNetLambdaTrad : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskNetLambdaTrad(const char* name="AliAnalysisTaskNetLambdaTrad");
-    virtual ~AliAnalysisTaskNetLambdaTrad(){};
+    virtual ~AliAnalysisTaskNetLambdaTrad ();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
-    
-    void SetIsMC(Bool_t val){fIsMC = val;};
-    Bool_t GetIsMC(){return fIsMC;};
-    void SetIsAOD(Bool_t val){fIsAOD = val;};
-    Bool_t GetIsAOD(){return fIsAOD;};
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
@@ -37,64 +33,54 @@ protected:
     AliAnalysisTaskNetLambdaTrad& operator=(const  AliAnalysisTaskNetLambdaTrad &task);
     
     AliESDEvent* fESD;
-    AliAODEvent* fAOD;
     AliPIDResponse* fPIDResponse;
     AliEventCuts fEventCuts;
     TList* fListHist;
-    TTree* fTreeV0;
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
+    TH1D*  hpVz;
+    TH2F*  hlmasseta;
+    TH2F*  hamasseta;
+ 
+ 
+    TH2F*  hpxy;
+    TH2F*  hprow;
+    TH2F*  hnrow;
+    TH2F*  hposp;
+    TH2F*  hnegp;
+    TH2F*  hpospi;
+    TH2F*  hnegpi;
+    TH2F*  hpostpc;
+    TH2F*  hnegtpc;
     
+    TH2F*  lhDCAd;
+    TH2F*  ahDCAd;
+    TH2F*  lhV0rad;
+    TH2F*  ahV0rad;
     
-    TH2F*  f2fHistGenCentVsPtLambda;
-    TH2F*  f2fHistGenCentVsPtAntiLambda;
-    TH2F*  f2fHistRecCentVsPtLambda;
-    TH2F*  f2fHistRecCentVsPtAntiLambda;
-    TH2F*  f2fHistInvMassVsPtLambda;
-    TH2F*  f2fHistInvMassVsPtAntiLambda;
-    TH2F*  f2fHistRecPrimariesCentVsPtLambda;
-    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambda;
-    TH2F*  f2fHistmassctLambda;
-    TH2F*  f2fHistmassctAntiLambda;
-    TH2F*  f2fHistLambdaSecFromWeakDecay;
-    TH2F*  f2fHistAntiLambdaSecFromWeakDecay;
-    TH2F*  f2fHistLambdaMaterial;
-    TH2F*  f2fHistAntiLambdaMaterial;
-    TH2F*  f2fHistLambdaMisId;
-    TH2F*  f2fHistAntiLambdaMisId;
-    TH2F*  f2fHistLRecstat;
-    TH2F*  f2fHistARecstat;
-    TH2F*  f2fHistLGenstat;
-    TH2F*  f2fHistAGenstat;
+    TH2F*  lhCosp;
+    TH2F*  ahCosp;
+    TH2F*  lhV0tPV;
+    TH2F*  ahV0tPV;
+    
+    TH2F*  lhntPV;
+    TH2F*  ahntPV;
+    TH2F*  lhptPV;
+    TH2F*  ahptPV;
+
     
     Float_t fCentrality;
-    Int_t fTreeVariablePID;
-    Int_t fTreeVariablePIDPositive;
-    Int_t fTreeVariablePIDNegative;
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
-    Float_t fTreeVariableInvMassLambda;
-    Float_t fTreeVariableInvMassAntiLambda;
-    Float_t fTreeVariableDcaV0Daughters;
-    Float_t fTreeVariableDcaV0ToPrimVertex;
-    Float_t fTreeVariableDcaPosToPrimVertex;
-    Float_t fTreeVariableDcaNegToPrimVertex;
-    
-    Bool_t fIsMC;
-    Bool_t fIsAOD;
     UInt_t fEvSel;
     Int_t  fNptBins;
-    
-    THnSparse *fPtBinNplusNminusCh;
-    THnSparse *fPtBinNplusNminusChTruth;
-    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
+ 
     Int_t    GetPtBin(Double_t pt);
-    
-    
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
 
 
 #endif
+

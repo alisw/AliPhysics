@@ -7,7 +7,7 @@
 
 #include "AliFemtoESDTrackCutNSigmaFilter.h"
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoESDTrackCutNSigmaFilter)
 #endif
 
@@ -129,7 +129,7 @@ bool AliFemtoESDTrackCutNSigmaFilter::Pass(const AliFemtoTrack* track)
     return false;
   }
 
-  if (track->TPCncls() > 0 && (track->TPCchi2() / track->TPCncls()) > fMaxTPCchiNdof) {
+  if (track->TPCchi2perNDF() > fMaxTPCchiNdof) {
     return false;
   }
 
@@ -249,11 +249,11 @@ bool AliFemtoESDTrackCutNSigmaFilter::Pass(const AliFemtoTrack* track)
       {
         if(IsProbableElectron(track)) return false;
       }
-      else 
+      else
       {
         if(IsElectronNSigma(track->P().Mag(), track->NSigmaTPCE(), track->NSigmaTOFE())) return false;
       }
-      
+
     }
     else
     {
@@ -664,4 +664,3 @@ bool AliFemtoESDTrackCutNSigmaFilter::IsProbableElectron(const AliFemtoTrack* tr
   else if((nsigmaTPCPoi > nsigmaTPCE) && (nsigmaTOFPoi > nsigmaTOFE)) return true;
   else return false;
 }
-

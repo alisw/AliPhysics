@@ -75,7 +75,7 @@ private:
 	AliPP13DetectorHistogram * fEpE[2]; //!
 	AliPP13DetectorHistogram * fEpPt[2]; //!
 	AliPP13DetectorHistogram * fPosition[4]; //!
-	TH2 * fPIDCriteria[7]; //!
+	TH2 * fPIDCriteria[9]; //!
 	TH2 * fTPCSignal[4]; //!
 	ClassDef(AliPP13EpRatioSelection, 2)
 };

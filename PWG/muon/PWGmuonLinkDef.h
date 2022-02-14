@@ -16,7 +16,6 @@
 #pragma link C++ class AliESDMuonTrackCuts+;
 #pragma link C++ class AliAnalysisTaskSingleMuESD+;
 #pragma link C++ class AliAnalysisTaskLinkToMC+;
-#pragma link C++ class AliCFMuonResTask1+;
 #pragma link C++ class AliCFMuonSingleTask1+;
 #pragma link C++ class AliEventPoolMuon+;
 #pragma link C++ class AliAnalysisTaskCreateMixedDimuons+;
@@ -24,16 +23,10 @@
 #pragma link C++ class AliAnalysisTaskMuonDistributions+;
 #pragma link C++ class AliMuonInfoStoreRD+;
 #pragma link C++ class AliDimuInfoStoreRD+;
-#pragma link C++ class AliMuonInfoStoreMC+;
-#pragma link C++ class AliDimuInfoStoreMC+;
-#pragma link C++ class AliMuonsHFHeader+;
-#pragma link C++ class AliAnalysisTaskSEMuonsHF+;
-#pragma link C++ class AliAnalysisTaskDimuonCFContainerBuilder+;
 #pragma link C++ class AliAnalysisTaskMuonTreeBuilder+;
 #pragma link C++ class AliHistogramCollection+;
 #pragma link C++ class AliHistogramCollectionIterator+;
 #pragma link C++ class AliAnalysisTaskMuonCollisionMultiplicity+;
-#pragma link C++ class AliCFMuonResUpsilon+;
 #pragma link C++ class AliMuonEventCuts+;
 #pragma link C++ class AliMuonTriggerCombo+;
 #pragma link C++ class AliMuonTrackCuts+;

@@ -69,7 +69,6 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomentum;           //!<! Avoid generating TLorentzVectors per event.
   
   //Constrol histograms 
-  TH1F     * fhE;                     //!<! E distribution
   TH1F     * fhPt;                    //!<! pT distribution
   TH2F     * fhPhi;                   //!<! phi distribution vs pT, negative
   TH2F     * fhEta;                   //!<! eta distribution vs pT, negative
@@ -82,7 +81,7 @@ class AliAnaRandomTrigger : public AliAnaCaloTrackCorrBaseClass {
   AliAnaRandomTrigger & operator = (const AliAnaRandomTrigger & r) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaRandomTrigger,4) ;
+  ClassDef(AliAnaRandomTrigger,5) ;
   /// \endcond
 
 } ;

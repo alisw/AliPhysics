@@ -35,8 +35,9 @@ namespace EMCAL{
 
 AliEmcalTriggerDecision::AliEmcalTriggerDecision():
   TNamed(),
-  fMainPatch(NULL),
-  fSelectionCuts(NULL),
+  fMainPatch(nullptr),
+  fSelectionCuts(nullptr),
+  fTriggerAlias(nullptr),
   fAcceptedPatches()
 {
   fAcceptedPatches.SetOwner(kFALSE);
@@ -44,8 +45,9 @@ AliEmcalTriggerDecision::AliEmcalTriggerDecision():
 
 AliEmcalTriggerDecision::AliEmcalTriggerDecision(const char *name, const char *title):
   TNamed(name, title),
-  fMainPatch(NULL),
-  fSelectionCuts(NULL),
+  fMainPatch(nullptr),
+  fSelectionCuts(nullptr),
+  fTriggerAlias(nullptr),
   fAcceptedPatches()
 {
   fAcceptedPatches.SetOwner(kFALSE);

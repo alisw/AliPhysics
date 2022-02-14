@@ -18,6 +18,8 @@
 #include <TLinearBinning.h>
 #include <TMath.h>
 
+ClassImp(TLinearBinning)
+
 TLinearBinning::TLinearBinning():
   TBinning(),
   fNbins(0),

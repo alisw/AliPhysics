@@ -1,3 +1,3 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef *AddTaskEmcalRecalcPatchesRef(const char *suffix) {
-  return EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalRecalcPatchesRef::AddTaskEmcalRecalcPatches(suffix);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalRecalcPatchesRef *AddTaskEmcalRecalcPatchesRef(const char *suffix) {
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalRecalcPatchesRef::AddTaskEmcalRecalcPatches(suffix);
 }

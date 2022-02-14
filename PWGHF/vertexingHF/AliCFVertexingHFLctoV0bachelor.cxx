@@ -239,8 +239,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetGeneratedValuesFromMCParticle(Double_t
     return bGenValues;
   }
 
-  Int_t daughter0lc = fmcPartCandidate->GetDaughter(0);
-  Int_t daughter1lc = fmcPartCandidate->GetDaughter(1);
+  Int_t daughter0lc = fmcPartCandidate->GetDaughterLabel(0);
+  Int_t daughter1lc = fmcPartCandidate->GetDaughterLabel(1);
   if (daughter0lc<=0 || daughter1lc<=0) {
     AliDebug(2,"Lc daughters are not in MC array");
     return bGenValues;
@@ -450,8 +450,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
     return checkCD;
   }
 
-  Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-  Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+  Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+  Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
   if (daughter0<=0 || daughter1<=0){
     AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
     return checkCD;
@@ -492,8 +492,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       return checkCD;
     }
 
-    Int_t daughter1D0 = mcPartDaughter1->GetDaughter(0);
-    Int_t daughter1D1 = mcPartDaughter1->GetDaughter(1);
+    Int_t daughter1D0 = mcPartDaughter1->GetDaughterLabel(0);
+    Int_t daughter1D1 = mcPartDaughter1->GetDaughterLabel(1);
     if (daughter1D0<=0 || daughter1D1<=0) {
       AliDebug(2, Form("The Lambda MC particle doesn't have correct daughters, skipping!!"));
       return checkCD;
@@ -551,7 +551,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       return checkCD;
     }
 
-    Int_t daughter = mcPartDaughter1->GetDaughter(0);
+    Int_t daughter = mcPartDaughter1->GetDaughterLabel(0);
     if (daughter<=0) {
       AliDebug(2, Form("The K0/K0bar MC particle doesn't have correct daughter, skipping!!"));
       return checkCD;
@@ -573,8 +573,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       return checkCD;
     }
 
-    Int_t daughterD0 = mcPartDaughter->GetDaughter(0);
-    Int_t daughterD1 = mcPartDaughter->GetDaughter(1);
+    Int_t daughterD0 = mcPartDaughter->GetDaughterLabel(0);
+    Int_t daughterD1 = mcPartDaughter->GetDaughterLabel(1);
     if (daughterD0<=0 || daughterD1<=0) {
       AliDebug(2, Form("The K0S MC particle doesn't have correct daughters, skipping!!"));
       return checkCD;
@@ -692,8 +692,8 @@ Double_t AliCFVertexingHFLctoV0bachelor::Ctau(AliAODMCParticle *mcPartCandidate)
 
   Double_t cTau = 999999.;
 
-  Int_t daughterD0 = mcPartCandidate->GetDaughter(0);
-  Int_t daughterD1 = mcPartCandidate->GetDaughter(1);
+  Int_t daughterD0 = mcPartCandidate->GetDaughterLabel(0);
+  Int_t daughterD1 = mcPartCandidate->GetDaughterLabel(1);
   if (daughterD0<=0 || daughterD1<=0) {
     AliDebug(2, Form("The Lc MC particle doesn't have correct daughters, skipping!!"));
     return cTau;
@@ -753,8 +753,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
     return checkCD;
   }
 
-  Int_t daughter0 = fmcPartCandidate->GetDaughter(0);
-  Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
+  Int_t daughter0 = fmcPartCandidate->GetDaughterLabel(0);
+  Int_t daughter1 = fmcPartCandidate->GetDaughterLabel(1);
   if (daughter0<=0 || daughter1<=0){
     AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
     return checkCD;
@@ -798,8 +798,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
       return checkCD;
     }
 
-    Int_t daughter1D0 = mcPartDaughter1->GetDaughter(0);
-    Int_t daughter1D1 = mcPartDaughter1->GetDaughter(1);
+    Int_t daughter1D0 = mcPartDaughter1->GetDaughterLabel(0);
+    Int_t daughter1D1 = mcPartDaughter1->GetDaughterLabel(1);
     if (daughter1D0<=0 || daughter1D1<=0) {
       AliDebug(2, Form("The Lambda MC particle doesn't have correct daughters, skipping!!"));
       delete [] fLabelArray;
@@ -886,7 +886,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
       return checkCD;
     }
 
-    Int_t daughter = mcPartDaughter1->GetDaughter(0);
+    Int_t daughter = mcPartDaughter1->GetDaughterLabel(0);
     if (daughter<=0) {
       AliDebug(2, Form("The K0/K0bar MC particle doesn't have correct daughter, skipping!!"));
       delete [] fLabelArray;
@@ -916,8 +916,8 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
       return checkCD;
     }
 
-    Int_t daughterD0 = mcPartDaughter->GetDaughter(0);
-    Int_t daughterD1 = mcPartDaughter->GetDaughter(1);
+    Int_t daughterD0 = mcPartDaughter->GetDaughterLabel(0);
+    Int_t daughterD1 = mcPartDaughter->GetDaughterLabel(1);
     if (daughterD0<=0 || daughterD1<=0) {
       AliDebug(2, Form("The K0S MC particle doesn't have correct daughters, skipping!!"));
       delete [] fLabelArray;
@@ -981,7 +981,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   if(!mcPartV0DaughterPos || !mcPartV0DaughterNeg) return bGenValues;
 
   if (TMath::Abs(mcPartDaughterK0->GetPdgCode())==311) {
-    Int_t daughterK0 = mcPartDaughterK0->GetDaughter(0);
+    Int_t daughterK0 = mcPartDaughterK0->GetDaughterLabel(0);
     if (daughterK0<=0) {
       AliDebug(2, Form("The K0/K0bar particle doesn't have correct daughter, skipping!!"));
       return bGenValues;

@@ -8,7 +8,7 @@
 /// \author : Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
-
+// Root6
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include <TString.h>
@@ -19,7 +19,9 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelection.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisDataContainer.h"
-#include "ConfigureEMCALRecoUtils.C"
+
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include "PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -31,7 +33,7 @@
 /// \param recalE    : Bool, recalibrate EMCal energy
 /// \param recalT    : Bool, recalibrate EMCal time
 /// \param rmBad     : Bool, remove bad channels
-/// \param nonLin    : Bool, correct cluster non linearity
+/// \param nonLin    : Int, correct cluster non linearity
 /// \param simu      : Bool, simulation or data.
 /// \param outputFile: TString with name of output file (AnalysisResults.root).
 /// \param trigSuffix :  A string with the trigger class, abbreviated, to run multiple triggers in same train
@@ -42,7 +44,7 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
  Bool_t  recalE    = kFALSE, 
  Bool_t  recalT    = kFALSE,
  Bool_t  rmBad     = kFALSE,
- Bool_t  nonlin    = kTRUE,
+ Int_t   nonlin    = 0,
  Bool_t  simu      = kFALSE,
  TString outputFile = "", // AnalysisResults.root
  const char *trigSuffix = ""
@@ -87,12 +89,22 @@ AliAnalysisTaskEMCALPi0CalibSelection * AddTaskEMCALPi0Calibration
 
   pi0calib->SetTriggerName(trigger);
   
+  // Centrality selection
+//  pi0calib->SwitchOnCentrality();
+//  pi0calib->SetCentralityRange(50.,90.);
+//  pi0calib->SetCentralityClass("V0M");
+  
+  //
   // Cluster recalculation, Reco Utils configuration
-  
-  
+  //
   AliEMCALRecoUtils * reco = pi0calib->GetEMCALRecoUtils();
   
+  // Root5
+#if defined(__CINT__)
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+
+#endif
   
   ConfigureEMCALRecoUtils(reco,
                           simu,                             

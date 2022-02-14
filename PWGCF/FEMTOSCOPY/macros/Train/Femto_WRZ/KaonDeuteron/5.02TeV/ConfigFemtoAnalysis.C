@@ -20,6 +20,7 @@
 #include "AliFemtoCutMonitorParticleVertPos.h"
 #include "AliFemtoCutMonitorParticleMomRes.h"
 #include "AliFemtoCutMonitorParticlePID.h"
+#include "AliFemtoCutMonitorParticlePIDBeta.h"
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
@@ -66,7 +67,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   double PionMass = 0.13957018;//0.13956995;
   double KaonMass = 0.493677;
   double ProtonMass = 0.938272013;
-  double DeuteronMass =2.225;
+  double DeuteronMass =1.8756;
 
   const int numOfMultBins = 7;  
   const int numOfChTypes = 4;
@@ -92,16 +93,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   int nbinssh = 200;
 
- //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-  AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
-  Reader->SetFilterBit(7);
-  //Reader->SetReadV0(1);
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetEPVZERO(kTRUE);
-  Reader->SetCentralityFlattening(kTRUE);
-  //if(mcAnalysis) Reader->SetReadMC(kTRUE);
+  //AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+   AliFemtoEventReaderAODMultSelection *Reader = new AliFemtoEventReaderAODMultSelection();
+  Reader->SetFilterMask(96);
   //Reader->SetCentralityPreSelection(0.001, 950);
-  
+
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
 
@@ -119,12 +115,12 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   AliFemtoESDTrackCut           *dtc2etaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutPass1PIDetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutFail1PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDBeta *cutPass1PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDBeta *cutFail1PIDetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutPass2YPtetaphitpc[size];
   AliFemtoCutMonitorParticleYPt *cutFail2YPtetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutPass2PIDetaphitpc[size];
-  AliFemtoCutMonitorParticlePID *cutFail2PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDBeta *cutPass2PIDetaphitpc[size];
+  AliFemtoCutMonitorParticlePIDBeta *cutFail2PIDetaphitpc[size];
   AliFemtoPairCutAntiGamma      *sqpcetaphitpc[size];
   //AliFemtoShareQualityTPCEntranceSepPairCut      *sqpcetaphitpc[20];
   //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[size];
@@ -220,7 +216,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  //Basic track cut for Deuterons:
 	  dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  dtc2etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	  dtc2etaphitpc[aniter]->SetNsigma(3.0);
+	  dtc2etaphitpc[aniter]->SetNsigma(2.0);
+	  dtc2etaphitpc[aniter]->SetNsigmaMass(0.5);// to zwykla liczba a nie sigma
 
 	  //Set charge of particles:
 	  if (ichg == 0) {
@@ -248,7 +245,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  dtc1etaphitpc[aniter]->SetMostProbableKaon();
 	  
 	  //Set particle 2:
-	  dtc2etaphitpc[aniter]->SetPt(0.7,4.0);
+	  dtc2etaphitpc[aniter]->SetPt(1,4.0);
           dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  dtc2etaphitpc[aniter]->SetMass(DeuteronMass);	  
 	  dtc2etaphitpc[aniter]->SetMostProbableDeuteron();
@@ -264,8 +261,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  }
 	  //The cut monitor for particles to study various aspects of the PID determination:
 	  if(turnOnMonitors == 1) {
-	    cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[ichg], imult),1);//0-pion,1-kaon,2-proton, 3-deuteron
-	    cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail1%stpcM%i", chrgs[ichg], imult),1);
+	    cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePIDBeta(Form("cutPass1%stpcM%i", chrgs[ichg], imult),1);//0-pion,1-kaon,2-proton, 3-deuteron
+	    cutFail1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePIDBeta(Form("cutFail1%stpcM%i", chrgs[ichg], imult),1);
 	    dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1PIDetaphitpc[aniter], cutFail1PIDetaphitpc[aniter]);
 	  }
 	  
@@ -277,8 +274,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2YPtetaphitpc[aniter], cutFail2YPtetaphitpc[aniter]);
 	  }
 	  if(turnOnMonitors == 1) {
-	    cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass2%stpcM%i", chrgs[ichg], imult),3);//0-pion,1-kaon,2-proton,3-deuteron
-	    cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutFail2%stpcM%i", chrgs[ichg], imult),3);
+	    cutPass2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePIDBeta(Form("cutPass2%stpcM%i", chrgs[ichg], imult),3,-20000.0,20000.0);//0-pion,1-kaon,2-proton,3-deuteron
+	    cutFail2PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePIDBeta(Form("cutFail2%stpcM%i", chrgs[ichg], imult),3,-20000.0,20000.0);
 	    dtc2etaphitpc[aniter]->AddCutMonitor(cutPass2PIDetaphitpc[aniter], cutFail2PIDetaphitpc[aniter]);
 	  }
 	  
@@ -409,23 +406,5 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   return Manager;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
