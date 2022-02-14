@@ -1342,7 +1342,7 @@ void AliAnalysisTaskMcKnoUeSystem::GetTrackingEfficiencyTPConly(){
 
         const Int_t label = TMath::Abs(track->GetLabel());
 
-        if( fMCStack->IsPhysicalPrimary(label) ){
+        if( fMC->IsPhysicalPrimary(label) ){
             hPtPrimRec->Fill(track->Pt());
         }
     }
