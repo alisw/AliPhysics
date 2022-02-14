@@ -274,6 +274,7 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
   AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
   fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
+  fTriggerAnalysis.ApplyPileupCuts(kTRUE);
   //read PHOS trigger bad map
   if (fUsePHOSBadMap){
     AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
