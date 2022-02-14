@@ -5,8 +5,6 @@
  *	Author:	Michael Jung
  */
 
-#include "AliAnalysisTaskLeuteronAOD.h"
-
 
 
 AliAnalysisTaskSE *AddTaskLeuteron(
