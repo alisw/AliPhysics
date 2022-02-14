@@ -2409,7 +2409,7 @@ void AddTask_GammaCalo_pp(
   //-----------  INT7 event cut variations
   } else if (trainConfig == 1901){  // pp 13 TeV variations: pile-up
     cuts.AddCutCalo("00010013","411790109fe30230000","0s631031000000d0"); // pileup not removed
-    cuts.AddCutCalo("00010213","411790109fe30230000","0s631031000000d0"); // +-2.225\mus no other interaction
+    cuts.AddCutCalo("00010313","411790109fe30230000","0s631031000000d0"); // +-100\ns no other interaction
     cuts.AddCutCalo("00010513","411790109fe30230000","0s631031000000d0"); // +-1.075\mus no other interaction
 
     //--------  INT7 Meson cut variations
@@ -2483,7 +2483,7 @@ void AddTask_GammaCalo_pp(
   //-----------  EG2 event cut variations
   } else if (trainConfig == 1931){  // pp 13 TeV variations: pile-up
     cuts.AddCutCalo("0008e013","411790109fe30230000","0s631031000000d0"); // pileup not removed
-    cuts.AddCutCalo("0008e213","411790109fe30230000","0s631031000000d0"); // +-2.225\mus no other interaction
+    cuts.AddCutCalo("0008e313","411790109fe30230000","0s631031000000d0"); // +-100\ns no other interaction
     cuts.AddCutCalo("0008e513","411790109fe30230000","0s631031000000d0"); // +-1.075\mus no other interaction
 
     //--------  EG2 Meson cut variations
@@ -2550,7 +2550,7 @@ void AddTask_GammaCalo_pp(
   //-----------  EG1 event cut variations
   } else if (trainConfig == 1961){  // pp 13 TeV variations: pile-up
     cuts.AddCutCalo("0008d013","411790109fe30230000","0s631031000000d0"); // pileup not removed
-    cuts.AddCutCalo("0008d213","411790109fe30230000","0s631031000000d0"); // +-2.225\mus no other interaction
+    cuts.AddCutCalo("0008d313","411790109fe30230000","0s631031000000d0"); // +-100\ns no other interaction
     cuts.AddCutCalo("0008d513","411790109fe30230000","0s631031000000d0"); // +-1.075\mus no other interaction
 
     //--------  EG1 Meson cut variations
