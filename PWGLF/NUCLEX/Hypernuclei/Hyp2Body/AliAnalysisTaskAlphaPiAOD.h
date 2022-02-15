@@ -9,6 +9,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
+class THistManager;
 class AliPIDResponse;
 class TH2F;
 class TList;
@@ -84,24 +85,24 @@ class AliAnalysisTaskAlphaPiAOD : public AliAnalysisTaskSE {
 
     void PostAllData();
 
-    TList *fList = nullptr;  //!<! List of the output histograms
     TTree *fTree = nullptr;  //!<! Tree for Hyper
 
     StructHyper *fRecHyper = nullptr;  //!<! Transient fRecHyper
     StructHyperMC fGenHyper;
     AliPIDResponse *fPID = nullptr;  //!<! ALICE PID framework
     bool fMC;
+    THistManager* fHistos;       //!
     bool fOnlyTrueCandidates = true;  ///< Save only true Hyperhydrogens
     bool fUseOnTheFly = false;
 
-    float fCustomBethe[5] = {-166.11733, -0.11020473, 0.10851357, 2.7018593, -0.087597824};  /// default values are for LHC18qr
-    float fCustomResolution = 0.05871;                                                       /// default values are for LHC18qr
-    double fMassRange[2] = {2.9, 3.1};
+    float fCustomBethe[5] = {1.28778e+00 / 50., 3.13539e+01, static_cast<float>(TMath::Exp(-3.16327e+01)), 1.87901e+00, 6.41583e+00};  /// default values are from AliAnalysisTaskAntiHe4.cxx
+    float fCustomResolution = 0.05871;                                                                             /// default values are for LHC18qr
+    double fMassRange[2] = {3.7, 4.1};
 
     float Eta2y(float pt, float m, float eta) const;
 
     /// \cond CLASSDEF
-    ClassDef(AliAnalysisTaskAlphaPiAOD, 1);
+    ClassDef(AliAnalysisTaskAlphaPiAOD, 2); // 2: Use THistManager class, add QA histograms for TPC PID of alpha.
     /// \endcond
 };
 
