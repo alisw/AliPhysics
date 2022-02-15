@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8, Bool_t UseAlternativeWeights = kFALSE, TString AlternativeWeightFile = "alien:///alice/cern.ch/user/m/mlesch/Weights/WeightsLHC10h_Filter768_OnlyPrimaries_vAN-20201209.root")
+AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8, Bool_t UseAlternativeWeights = kFALSE, TString AlternativeWeightFile = "alien:///alice/cern.ch/user/m/mlesch/Weights/WeightsLHC10h_Filter768_OnlyPrimaries_vAN-20201209.root", bool UseITS = false, double DCAzHybrid = 3.2, double DCAxyHybrid = 2.4)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -96,6 +96,9 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
       if(UseAlternativeWeights){
       	fJCatalyst[i]->SetInputAlternativeNUAWeights10h(kTRUE, AlternativeWeightFile);
       }
+      fJCatalyst[i]->SetDCAxyCut(DCAxyHybrid); 
+      fJCatalyst[i]->SetDCAzCut(DCAzHybrid); 
+      fJCatalyst[i]->SetITSCuts(UseITS,2);
     } else if (strcmp(configNames[i].Data(), "global") == 0) {
       fJCatalyst[i]->SetTestFilterBit(globalCut);
       if(UseAlternativeWeights){
