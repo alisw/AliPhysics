@@ -55,6 +55,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::AliAnalysisTaskSEVertexingHFRun3Conv
 AliAnalysisTaskSE(),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
+fDisableCascades(kFALSE),
 f2ProngCandidateTree(0x0),
 f3ProngCandidateTree(0x0),
 fDstarCandidateTree(0x0),
@@ -92,6 +93,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::AliAnalysisTaskSEVertexingHFRun3Conv
 AliAnalysisTaskSE(name),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
+fDisableCascades(kFALSE),
 f2ProngCandidateTree(0x0),
 f3ProngCandidateTree(0x0),
 fDstarCandidateTree(0x0),
@@ -258,7 +260,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
 
   AliPIDResponse *pidResp=fInputHandler->GetPIDResponse();
   fVHF->SetPidResponse(pidResp);
-
+  if(fDisableCascades) fVHF->SetCascadesOff();
   // heavy flavor vertexing
   fVHF->FindCandidates(event,
                        fVerticesHFTClArr,

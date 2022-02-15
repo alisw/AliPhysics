@@ -93,7 +93,10 @@ AliJCatalystTask::AliJCatalystTask():
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
 	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
-	fUseTightCuts(false)
+	fUseTightCuts(false),
+	fAddESDpileupCuts(false),
+	fESDpileup_slope(3.38), fESDpileup_inter(15000),
+	fSaveESDpileupQA(false)
 {
 	InitializeArrays(); //
 }
@@ -145,7 +148,10 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
 	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
-	fUseTightCuts(false)
+	fUseTightCuts(false),
+	fAddESDpileupCuts(false),
+	fESDpileup_slope(3.38), fESDpileup_inter(15000),
+	fSaveESDpileupQA(false)
 {
 // Main list to save the output of the QA.
   fMainList = new TList();
@@ -180,7 +186,12 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	bSaveAllQA(ap.bSaveAllQA),
 	bSaveHMOhist(ap.bSaveHMOhist),
 	fCentralityBins(ap.fCentralityBins),
-	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16)
+	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16),
+	fChi2perNDF_min(ap.fChi2perNDF_min), fChi2perNDF_max(ap.fChi2perNDF_max),
+	fDCAxy_max(ap.fDCAxy_max), fDCAz_max(ap.fDCAz_max),
+	fUseTightCuts(ap.fUseTightCuts), fAddESDpileupCuts(ap.fAddESDpileupCuts),
+	fESDpileup_slope(ap.fESDpileup_slope), fESDpileup_inter(ap.fESDpileup_inter),
+	fSaveESDpileupQA(ap.fSaveESDpileupQA)
 {
 	AliInfo("----DEBUG AliJCatalystTask COPY ----");
 }
@@ -668,6 +679,20 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 			FB32TOFTracks++;
 	}
 
+	// LOKI: Define the pileup cuts for EDStracks vs TPConlyTracks.
+	UInt_t M_ESD = 0;	// Multiplicity corresponding ESD tracks.
+	UInt_t M_TPC = 0;	// Multiplicity TPC only tracks
+	if (fAddESDpileupCuts) {
+		M_ESD = ((AliAODHeader*)event->GetHeader())->GetNumberOfESDTracks();
+		for (int it = 0; it < nTracks; it++) {
+			AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*>(event->GetTrack(it));
+			if (!trackAOD) {continue;}
+			if (trackAOD->TestFilterBit(128)) {M_TPC++;}
+		}
+		// Fill some QA histogram?
+	}
+
+
 	if(flags & FLUC_CUT_OUTLIERS){
 		if(fperiod == AliJRunTable::kLHC15o || fperiod == AliJRunTable::kLHC18q || fperiod == AliJRunTable::kLHC18r){
 			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
@@ -692,6 +717,13 @@ Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
 			double nsigma[] = {4.0,4.0};
 			if(tfb32tof < mu32tof-nsigma[0]*sigma32tof || tfb32tof > mu32tof+nsigma[1]*sigma32tof)
 				return kFALSE;
+
+			// if true, apply the pileup cut between ESD and TPConly tracks.
+			if (fAddESDpileupCuts) {
+				if (bSaveAllQA && fSaveESDpileupQA) {fESDpileupHistogram[thisCent][0]->Fill(M_TPC, M_ESD);}
+				if (!( (double)M_ESD < (fESDpileup_slope*(double)M_TPC + fESDpileup_inter) ))  {return kFALSE;}
+				if (bSaveAllQA && fSaveESDpileupQA) {fESDpileupHistogram[thisCent][1]->Fill(M_TPC, M_ESD);}
+			}
 
 		}
 		else if (fperiod == AliJRunTable::kLHC10h) {	// High multiplicity outlier cuts for LHC10h based on the SCklm analysis.
@@ -916,6 +948,7 @@ void AliJCatalystTask::InitializeArrays() {
 		  fEtaHistogram[icent][i] = NULL;
 		  fMultHistogram[icent][i] = NULL;
 		  fHMOsHistogram[icent][i] = NULL;
+		  fESDpileupHistogram[icent][i] = NULL;
 		}
 	    fPTHistogram[icent][2] = NULL;
 		  fPhiHistogram[icent][2] = NULL;
@@ -1092,6 +1125,17 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fProfileWeights[icent]->GetXaxis()->SetTitle("#varphi");
 	 fProfileWeights[icent]->GetYaxis()->SetTitle("weight");
 	 fControlHistogramsList[icent]->Add(fProfileWeights[icent]);
+
+	 // Save the TH2D for the ESD-TPC pileup cut in Run2.
+		fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1500, 0., 7000., 5000, 0., 25000.);
+	 	fESDpileupHistogram[icent][0]->GetXaxis()->SetTitle("M_{TPC}");
+	 	fESDpileupHistogram[icent][0]->GetYaxis()->SetTitle("M_{ESD}");
+	 	if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][0]);}
+
+	 	fESDpileupHistogram[icent][1] = new TH2D("fESDpileupHistogram_After","Correlations after ESD-TPC cuts", 1500, 0., 7000., 5000, 0., 25000.);
+	 	fESDpileupHistogram[icent][1]->GetXaxis()->SetTitle("M_{TPC}");
+	 	fESDpileupHistogram[icent][1]->GetYaxis()->SetTitle("M_{ESD}");
+	 	if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][1]);}
 
   }//for(Int_t icent=0; icent<fCentralityBins; icent++)
 }

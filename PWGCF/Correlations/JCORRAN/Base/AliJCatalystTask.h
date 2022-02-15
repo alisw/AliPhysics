@@ -146,6 +146,8 @@ public:
 
 // Methods to apply tighter cuts on Run2.
 	void SetTightCuts(bool usePrimary) {fUseTightCuts = usePrimary;}
+	void SetESDpileupCuts(bool ESDpileup, double slope, double intercept, bool saveQA) {fAddESDpileupCuts = ESDpileup;
+		fESDpileup_slope = slope; fESDpileup_inter = intercept; fSaveESDpileupQA = saveQA;}
 
 // Methods to use alternative correction weights.
 	Int_t GetRunIndex10h(Int_t runNumber);
@@ -206,6 +208,10 @@ private:
 
 // Data members for the use of tighter cuts in Run2.
 	bool fUseTightCuts;		// if kTRUE: apply tighter cuts on DCAxy and goldenChi2
+	bool fAddESDpileupCuts;	// if true: apply a cut on the correlations between ESD and TPConly tracks.
+	double fESDpileup_slope;	// Slope of the cut M_ESD >= 15000 + 3.38*M_TPC
+	double fESDpileup_inter;	// Intercept of the cut.
+	bool fSaveESDpileupQA;	// if true: save the TH2D for the QA.
 
   TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
   TH1F *fPTHistogram[16][3];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: After correction.
@@ -226,7 +232,8 @@ private:
   TH2D *fHMOsHistogram[16][2];		//! 0: Correlations between global and TPC tracks before, 1: after HMO cut.
   TH1F *fHistoPhiWeight[16][90];	// Histograms to save the NUA correction weights per centrality and runs.
   TProfile *fProfileWeights[16];	//! Profiles for the weights to apply per phi bins.
+  TH2D *fESDpileupHistogram[16][2];		//! 0: Correlations between ESD and TPC tracks before, 1: after cut.
 
-  ClassDef(AliJCatalystTask, 6);
+  ClassDef(AliJCatalystTask, 7);
 };
 #endif // AliJCatalystTask_H

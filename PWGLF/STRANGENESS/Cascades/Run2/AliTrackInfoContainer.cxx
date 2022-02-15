@@ -336,7 +336,7 @@ void AliTrackInfoContainer::Fill(const AliAODTrack* primTrack, const AliPIDRespo
     //________________________________________________________________________
     //GetKinkIndex condition
     fTreePrimVarIsKink = kFALSE;
-    if( primTrack->GetKinkIndex(0)>0 ) fTreePrimVarIsKink = kTRUE;
+    if( primTrack->GetProdVertex()->GetType() == AliAODVertex::kKink ) fTreePrimVarIsKink = kTRUE;
     
     //________________________________________________________________________
     //TOF info

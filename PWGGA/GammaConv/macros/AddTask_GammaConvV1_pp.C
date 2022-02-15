@@ -1126,8 +1126,8 @@ void AddTask_GammaConvV1_pp(
 
 
   //----------------------------- configuration for Jet analysis ----------------------------------------------------
-  } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017
-    cuts.AddCutPCM("00010113","00200009327000008250400000","2152103500000000"); //
+  } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017, updated 2022 02 12
+    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2152103500000000"); //
   } else if ( trainConfig == 501){
     cuts.AddCutPCM("00010113","00200009327000008250400000","3152103500000000"); // Jet QA
 

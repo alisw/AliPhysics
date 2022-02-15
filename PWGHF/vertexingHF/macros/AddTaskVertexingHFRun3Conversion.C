@@ -1,4 +1,4 @@
-AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename=""){
+AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TString configfilename="", Bool_t disableCasc=kFALSE){
   //
   // Creates a task for heavy flavour vertexing for conversion to AO2D
   // Extract parameters from environment variables
@@ -100,6 +100,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion *AddTaskVertexingHFRun3Conversion(TSt
   // Create the task, add it to the manager and configure it.
   //===========================================================================
   AliAnalysisTaskSEVertexingHFRun3Conversion *hfTask = new AliAnalysisTaskSEVertexingHFRun3Conversion("vertexing HF");
+  if(disableCasc) hfTask->ForceDisableCascades();
   mgr->AddTask(hfTask);
 
   //

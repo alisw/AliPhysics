@@ -770,7 +770,8 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
 
     // proton proton lambda
     int entriesPPLBeforeFill = fSameEventTripletArray[1]->Integral(bmin,bmax);
-    FillTripletDistribution( ParticleVector, 0, 2, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig);
+    //FillTripletDistribution( ParticleVector, 0, 2, 0, fSameEventTripletArray[1],PDGCodes, bins[1],fSameEventTripletMultArray[1], fSameEventTripletPhiThetaArray,0, *fConfig);
+    FillTripletDistribution( ParticleVector, 0, 0, 0, fSameEventTripletArray[3],PDGCodes, bins[1],fSameEventTripletMultArray[3], fSameEventTripletPhiThetaArray,2, *fConfig);
     int entriesPPLAfterFill = fSameEventTripletArray[1]->Integral(bmin,bmax);
 
 
@@ -778,7 +779,9 @@ void AliAnalysisTaskThreeBodyFemtoAOD::UserExec(Option_t *option) {
 
     // antiproton antiproton antilambda
     int entriesAPAPALBeforeFill = fSameEventTripletArray[2]->Integral(bmin,bmax);
-    FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig);
+    //FillTripletDistribution( ParticleVector, 3, 1, 1, fSameEventTripletArray[2],PDGCodes, bins[1],fSameEventTripletMultArray[2], fSameEventTripletPhiThetaArray,1, *fConfig);
+    FillTripletDistribution( ParticleVector, 1, 1, 1, fSameEventTripletArray[4],PDGCodes, bins[1],fSameEventTripletMultArray[4], fSameEventTripletPhiThetaArray,3, *fConfig);
+    
     int entriesAPAPALAfterFill = fSameEventTripletArray[2]->Integral(bmin,bmax);
 
 
@@ -1623,10 +1626,13 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
     }
   }
 
-  if((Protons.size()<2||Lambdas.size()<1)&&(AntiProtons.size()<2||AntiLambdas.size()<1)){
+  /*if((Protons.size()<2||Lambdas.size()<1)&&(AntiProtons.size()<2||AntiLambdas.size()<1)){
+      return false;
+  }*/
+
+  if((Protons.size()<3)&&(AntiProtons.size()<3)){
       return false;
   }
-
 
   fPairCleaner->ResetArray();
 
@@ -1643,14 +1649,19 @@ bool AliAnalysisTaskThreeBodyFemtoAOD::MyLovely3BodyTrigger(AliAODEvent *evt ,  
   std::vector<std::vector<AliFemtoDreamBasePart>> ParticleVector = fPairCleaner->GetCleanParticles();
 
 
-  if((ParticleVector[0].size()<2||ParticleVector[2].size()<1)&&(ParticleVector[1].size()<2||ParticleVector[3].size()<1)){
+  /*if((ParticleVector[0].size()<2||ParticleVector[2].size()<1)&&(ParticleVector[1].size()<2||ParticleVector[3].size()<1)){
+      return false;
+  }*/
+  if((ParticleVector[0].size()<3)&&(ParticleVector[1].size()<3)){
       return false;
   }
 
   float totalTripletsSumPartAntipart = 0.;
-  float minQ3Part = CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes);
+  //float minQ3Part = CalculatePPLTriggerQ3Min(ParticleVector, 0, 2, 0, PDGCodes);
+  float minQ3Part = CalculatePPLTriggerQ3Min(ParticleVector, 0, 0, 0, PDGCodes);
   totalTripletsSumPartAntipart = (float)ftotalTripletCount;
-  float minQ3AntiPart = CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes);
+  //float minQ3AntiPart = CalculatePPLTriggerQ3Min(ParticleVector, 1, 3, 1, PDGCodes);
+  float minQ3AntiPart = CalculatePPLTriggerQ3Min(ParticleVector, 1, 1, 1, PDGCodes);
   totalTripletsSumPartAntipart +=  (float)ftotalTripletCount-0.01;
 
   if(minQ3Part<fQ3Limit || minQ3AntiPart <fQ3Limit ){
