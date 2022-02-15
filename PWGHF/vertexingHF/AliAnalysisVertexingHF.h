@@ -94,6 +94,7 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetMixEventOff() { fMixEvent=kFALSE; }
   void SetInputAOD() { fInputAOD=kTRUE; }
   void SetMakeReducedRHF(Bool_t makeredAOD=kFALSE) { fMakeReducedRHF=makeredAOD; }
+  void SetUseTRefArrayForSecVert(Bool_t option=kTRUE) { fUseTRefArrayForSecVert=option; }
   Bool_t GetD0toKpi() const { return fD0toKpi; }
   Bool_t GetJPSItoEle() const { return fJPSItoEle; }
   Bool_t Get3Prong() const { return f3Prong; }
@@ -345,6 +346,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Int_t  fnTrksTotal;
   Int_t  fnSeleTrksTotal;
   Bool_t fMakeReducedRHF;// switch the reduction of dAOD size on/off
+  Bool_t fUseTRefArrayForSecVert;// flag to control the usage of TRefArray
 
   Double_t fMassDzero;
   Double_t fMassDplus;
@@ -429,7 +431,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisVertexingHF,30);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,31);  // Reconstruction of HF decay candidates
   /// \endcond
 };
 
