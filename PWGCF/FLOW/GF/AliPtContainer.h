@@ -16,19 +16,19 @@ class AliPtContainer: public TNamed {
         void Initialize(int nbinsx, double* xbins);
         void Initialize(int nbinsx, double xlow, double xhigh);
         void InitializeSubsamples(const int &nsub);
-        void FillObs(double inarr[15][15], const double &lMult, const double &rn);
+        void FillObs(double inarr[10][10], const double &lMult, const double &rn);
         TList* GetTermList() { return fTermList; }
         void CalculateCorrelation();
         TH1* getHist(int ind);
         Long64_t Merge(TCollection *collist);
     protected:
         TList* fTermList;
-        TList* fObsList;
+        TList* fMomentList;
         int mpar;
-        void FillMpt(double inarr[15][15], const double &lMult, const double &rn);
-        void FillCk(double inarr[15][15], const double &lMult, const double &rn);
-        void FillSkew(double inarr[15][15], const double &lMult, const double &rn);
-        void FillKurtosis(double inarr[15][15], const double &lMult, const double &rn);
+        void FillMpt(double inarr[10][10], const double &lMult, const double &rn);
+        void FillCk(double inarr[10][10], const double &lMult, const double &rn);
+        void FillSkew(double inarr[10][10], const double &lMult, const double &rn);
+        void FillKurtosis(double inarr[10][10], const double &lMult, const double &rn);
         void CalculateObs();
         TH1* RecalculateObsHists(vector<TH1*> inh);
         TH1* RecalculateCkHists(vector<TH1*> inh);

@@ -42,11 +42,15 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void OverrideMC(bool ismc) { fIsMC = ismc; }
     void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
-    void SetEta(int eta) { fEta = eta; }
+    void SetEta(double eta) { fEta = eta; }
+    void SetEtaGap(double eta) { fEtaGap = eta; }
+    void SetPtRange(double ptmin, double ptmax) { fPtMin = ptmin; fPtMax = ptmax; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
+  protected:
     AliEventCuts            fEventCuts;
-    
   private:
+    AliAnalysisTaskPtCorr(const AliAnalysisTaskPtCorr&);
+    AliAnalysisTaskPtCorr& operator=(const AliAnalysisTaskPtCorr&);
     static double           fFactorial[9];
     static int              fSign[9];
     TString*                fCentEst;
@@ -68,6 +72,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double*                 fPtBins; //!
     int                     fNPtBins; //!
     double                  fEta;
+    double                  fEtaGap;
     double                  fPtMin;
     double                  fPtMax;
     TRandom*                fRndm;
@@ -76,6 +81,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     int                     mpar;
     TH1D*                   fV0MMulti;    //!
     AliProfileBS**          fptcorr;     //!
+    AliProfileBS**          fptcorrP;     //!
+    AliProfileBS**          fptcorrN;     //!
     AliProfileBS*           pfmpt;      //!
     AliPtContainer*         fck;      //!
     AliPtContainer*         fskew;      //!
@@ -92,9 +99,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    //void FillCorrelationProfiles(const double &l_cent, double &rn);
-    void FillWPCounter(double inarr[15][15], double w, double p);
-    void getMomentumCorrelation(double wp[15][15], const double &l_cent, double &rn);
+    void FillWPCounter(double inarr[10][10], double w, double p);
+    void FillMomentumCorrelation(double wp[10][10], double wpP[10][10], double wpN[10][10], const double &l_cent, double &rn);
+    void CalculateSingleEvent(vector<double> &corr, vector<double> &sumw, double wp[10][10]);
+    void CalculateSubEvent(vector<double> &corrP, vector<double> &sumwP, vector<double> &corrN, vector<double> &sumwN, double wpP[10][10], double wpN[10][10]);
+    void FillCorrelationProfile(const vector<double> &corr, const vector<double> &sumw, const double &l_cent, double &rn);
+    void FillSubEventProfile(const vector<double> &corrP,const vector<double> &sumwP,const vector<double> &corrN, const vector<double> &sumwN, const double &l_cent, double &rn);
     double OrderedAddition(std::vector<double> vec, int size);
     double *GetBinsFromAxis(TAxis *inax);
     
