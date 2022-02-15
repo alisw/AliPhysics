@@ -157,7 +157,10 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::Init()
   }
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
-  if(fMakeReducedCandidates) fVHF->SetMakeReducedRHF(kTRUE);
+  if(fMakeReducedCandidates){
+    fVHF->SetMakeReducedRHF(kTRUE);
+    fVHF->SetUseTRefArrayForSecVert(kFALSE); // to avoid E-TRefArray::AddAtAndExpand error messages in logs
+  }
   fVHF->PrintStatus();
 
 
@@ -323,7 +326,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     fD0track1=dcand->GetProngID(1);
     fHF2pflag=1*dcand->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
     f2ProngCandidateTree->Fill();
-    //    printf("Event %d cand %d  tracks %d %d\n",fEventIndex,iD0,fD0track0,fD0track1);
+    //    printf("Event %d D0 cand %d  tracks %d %d\n",fEventIndex,iD0,fD0track0,fD0track1);
   }
   
   Int_t n3p=fCharm3ProngTClArr->GetEntriesFast();
@@ -334,6 +337,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     f3ptrack2=dcand->GetProngID(2);
     fHF3pflag=1*dcand->HasSelectionBit(AliRDHFCuts::kDplusCuts)+2*dcand->HasSelectionBit(AliRDHFCuts::kLcCuts)+4*dcand->HasSelectionBit(AliRDHFCuts::kDsCuts);
     f3ProngCandidateTree->Fill();
+    //    printf("Event %d 3p cand %d  tracks %d %d %d\n",fEventIndex,i3p,f3ptrack0,f3ptrack1,f3ptrack2);
   }
 
   Int_t nDst=fDstarTClArr->GetEntriesFast();
@@ -341,7 +345,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     AliAODRecoCascadeHF* dcand=(AliAODRecoCascadeHF*)fDstarTClArr->At(iDst);
     fDstSofPi=dcand->GetProngID(0);
     fDstD0=dcand->GetProngID(1);
-    //    printf("Event %d D0 from D* id %d  D0 %d\n",fEventIndex,iD0,fDstD0);
+    //    printf("Event %d D0 from D* id %d  D0 %d\n",fEventIndex,iDst,fDstD0);
     fDstarCandidateTree->Fill();
   }
 
@@ -359,6 +363,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
       fCasV0tr0=v0->GetPindex();
       fCasV0tr1=v0->GetNindex();
     }
+    //    printf("Event %d Casc id %d  tracks %d\n",fEventIndex,iCas,fCasBachl,fCasV0tr0,fCasV0tr1);
     fCascadeCandidateTree->Fill();
   }
 }
