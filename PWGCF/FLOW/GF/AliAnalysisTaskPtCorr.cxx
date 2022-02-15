@@ -57,6 +57,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fPtBins(0), 
     fNPtBins(0),
     fEta(0.8),
+    fEtaGap(0.4),
     fPtMin(0.2),
     fPtMax(3.0),
     fRndm(0),
@@ -65,6 +66,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     mpar(6),
     fV0MMulti(0),
     fptcorr(0),
+    fptcorrP(0),
+    fptcorrN(0),
     pfmpt(0),
     fck(0),
     fskew(0),
@@ -95,6 +98,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fPtBins(0), 
     fNPtBins(0),
     fEta(0.8),
+    fEtaGap(0.4),
     fPtMin(0.2),
     fPtMax(3.0),
     fRndm(0),
@@ -103,6 +107,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     mpar(6),
     fV0MMulti(0),
     fptcorr(0),
+    fptcorrP(0),
+    fptcorrN(0),
     pfmpt(0),
     fck(0),
     fskew(0),
@@ -158,8 +164,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     }
     fMultiBins = GetBinsFromAxis(fMultiAxis);
     fNMultiBins = fMultiAxis->GetNbins();
-    const int l_NPtBinsDefault = 18;
-    Double_t l_PtBinsDefault[l_NPtBinsDefault+1] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.5,5.0};   
+    const int l_NPtBinsDefault = 14;
+    Double_t l_PtBinsDefault[l_NPtBinsDefault+1] = {0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0};   
     if(!fPtAxis) SetPtBins(l_NPtBinsDefault,l_PtBinsDefault);
     fPtBins = GetBinsFromAxis(fPtAxis);
     fNPtBins = fPtAxis->GetNbins();
@@ -185,6 +191,18 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
       fCorrList->Add(new AliProfileBS(Form("corr_%ipar",i+1),Form("corr_%ipar",i+1),fNMultiBins,fMultiBins));
       fptcorr[i] = (AliProfileBS*)fCorrList->At(i);
     }
+    if(fEtaGap >= 0)
+    {
+      fptcorrN = new AliProfileBS*[9];
+      fptcorrP = new AliProfileBS*[9];
+      for(int i(0);i<mpar;++i) 
+      {
+        fCorrList->Add(new AliProfileBS(Form("corrP_%ipar",i+1),Form("corrP_%ipar",i+1),fNMultiBins,fMultiBins));
+        fptcorrP[i] = (AliProfileBS*)fCorrList->At(mpar+2*i);
+        fCorrList->Add(new AliProfileBS(Form("corrN_%ipar",i+1),Form("corrN_%ipar",i+1),fNMultiBins,fMultiBins));
+        fptcorrN[i] = (AliProfileBS*)fCorrList->At(mpar+(2*i+1));
+      }
+    }
     pfmpt = new AliProfileBS("meanpt","meanpt",fNMultiBins,fMultiBins);
     fCorrList->Add(pfmpt);
     fck = new AliPtContainer("ckcont","ckcont",fNMultiBins,fMultiBins,2);
@@ -194,7 +212,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     fCorrList->Add(fskew);
     fCorrList->Add(fkur);
     if(fNbootstrap) {
-      for(int i(0);i<mpar;++i) fptcorr[i]->InitializeSubsamples(fNbootstrap);             
+      for(int i(0);i<mpar;++i) fptcorr[i]->InitializeSubsamples(fNbootstrap);  
+      if(fEtaGap >= 0) for(int i(0);i<mpar;++i) { fptcorrP[i]->InitializeSubsamples(fNbootstrap); fptcorrN[i]->InitializeSubsamples(fNbootstrap); }
       pfmpt->InitializeSubsamples(fNbootstrap);
       fck->InitializeSubsamples(fNbootstrap);
       fskew->InitializeSubsamples(fNbootstrap);
@@ -320,7 +339,7 @@ bool AliAnalysisTaskPtCorr::AcceptAODEvent(AliAODEvent *ev, Double_t *inVtxXYZ)
     vtx->GetXYZ(inVtxXYZ);
     return kTRUE;
 };
-void AliAnalysisTaskPtCorr::FillWPCounter(double inarr[15][15], double w, double p)
+void AliAnalysisTaskPtCorr::FillWPCounter(double inarr[10][10], double w, double p)
 {
   for(int i=1;i<=mpar;++i)
   {
@@ -335,17 +354,40 @@ void AliAnalysisTaskPtCorr::FillWPCounter(double inarr[15][15], double w, double
 }
 void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_cent, double *vtxXYZ)
 {
-    double wp[15][15] = {{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-                                       {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+    double wp[10][10] = {{0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0}};
+    double wpP[10][10] = {{0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0}};
+    double wpN[10][10] = {{0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0},
+                        {0,0,0,0,0,0,0,0,0,0}};                               
     AliAODTrack *track;
     double trackXYZ[3];
-    double ptMin = fPtBins[0];
-    double ptMax = fPtBins[fNPtBins];
+    double ptMin = fPtMin;//fPtBins[0];
+    double ptMax = fPtMax;//fPtBins[fNPtBins];
     int iCent = fV0MMulti->FindBin(l_cent);
     if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
     iCent--;
@@ -365,6 +407,8 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           if (TMath::Abs(l_eta) > fEta) continue;
           double l_pt = track->Pt();
           if (l_pt<0.2 || l_pt>3.) continue;
+          if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
+          if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
           FillWPCounter(wp,1,l_pt);
       }    
     }
@@ -382,6 +426,8 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
         if (TMath::Abs(l_eta) > fEta) continue;
         double l_pt = part->Pt();
         if (l_pt<0.2 || l_pt>3.) continue;
+        if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
+        if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);
         FillWPCounter(wp,1,l_pt);
       }
     }
@@ -393,13 +439,15 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           track = (AliAODTrack*)ev->GetTrack(iTrack);
           if(!track) continue;
           double l_eta = track->Eta();
-          if(l_eta>0.8) continue;
           double trackXYZ[] = {0.,0.,0.};
           if(!AcceptAODTrack(track,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
           double l_pt = track->Pt();
           double wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
           if(wNUE==0.0) continue;
           wNUE = 1.0/wNUE;
+          if(TMath::Abs(l_eta)>0.8) continue;
+          if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,wNUE,l_pt);
+          if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,wNUE,l_pt);
           FillWPCounter(wp,wNUE,l_pt);
       }
     }
@@ -407,20 +455,36 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     fV0MMulti->Fill(l_cent);
     double l_rnd = fRndm->Rndm();
     pfmpt->FillProfile(l_cent,wp[1][1]/wp[1][0],wp[1][0],l_rnd);
-    getMomentumCorrelation(wp,l_cent,l_rnd);
-    //FillCorrelationProfiles(l_cent,l_rnd);
     //Test with explicit ck calculation
     fck->FillObs(wp,l_cent,l_rnd);
     fskew->FillObs(wp,l_cent,l_rnd);
     fkur->FillObs(wp,l_cent,l_rnd);
+    FillMomentumCorrelation(wp,wpP,wpN,l_cent,l_rnd);
+
     PostData(1,fCorrList);
 }
-void AliAnalysisTaskPtCorr::getMomentumCorrelation(double wp[15][15], const double &l_cent, double &rn)
+void AliAnalysisTaskPtCorr::FillMomentumCorrelation(double wp[10][10], double wpP[10][10], double wpN[10][10], const double &l_cent, double &rn)
 {
-  std::vector<double> corr;
-  std::vector<double> sumw;
-  corr.resize(mpar+1,0.0); corr[0] = 1;
-  sumw.resize(mpar+1,0.0); sumw[0] = 1;
+  if(fEtaGap < 0.0)
+  {
+    std::vector<double> corr(mpar+1,0.0); corr[0] = 1;
+    std::vector<double> sumw(mpar+1,0.0); sumw[0] = 1;
+    CalculateSingleEvent(corr,sumw,wp);
+    FillCorrelationProfile(corr, sumw, l_cent, rn);
+  }
+  else 
+  {
+    std::vector<double> corrP(mpar+1,0.0); corrP[0] = 1; 
+    std::vector<double> sumwP(mpar+1,0.0); sumwP[0] = 1;
+    std::vector<double> corrN(mpar+1,0.0); corrN[0] = 1;  
+    std::vector<double> sumwN(mpar+1,0.0); sumwN[0] = 1; 
+    CalculateSubEvent(corrP,sumwP,corrN,sumwN,wpP,wpN);
+    FillSubEventProfile(corrP,sumwP,corrN,sumwN,l_cent,rn);
+  }
+  return;
+}
+void AliAnalysisTaskPtCorr::CalculateSingleEvent(vector<double> &corr, vector<double> &sumw, double wp[10][10])
+{
   double sumNum = 0;
   double sumDenum = 0;
   std::vector<double> valNum;
@@ -432,15 +496,78 @@ void AliAnalysisTaskPtCorr::getMomentumCorrelation(double wp[15][15], const doub
       valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wp[k][k]);
       valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wp[k][0]);
     }
-    
     sumNum = OrderedAddition(valNum, m);
     sumDenum = OrderedAddition(valDenum, m);
-
     valNum.clear();
     valDenum.clear();
-    
+  
     corr[m] = sumNum;
     sumw[m] = sumDenum;
+  }
+  return; 
+}
+void AliAnalysisTaskPtCorr::CalculateSubEvent(vector<double> &corrP, vector<double> &sumwP, vector<double> &corrN, vector<double> &sumwN, double wpP[10][10], double wpN[10][10])
+{
+  double sumNumP = 0; double sumDenumP = 0;
+  double sumNumN = 0; double sumDenumN = 0;
+  std::vector<double> valNumP; std::vector<double> valDenumP;
+  std::vector<double> valNumN; std::vector<double> valDenumN;
+  for(int m(1); m<=mpar; ++m)
+  {
+    for(int k(1);k<=m;++k)
+    {
+      valNumP.push_back(fSign[k-1]*corrP[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wpP[k][k]);
+      valDenumP.push_back(fSign[k-1]*sumwP[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wpP[k][0]);
+      valNumN.push_back(fSign[k-1]*corrN[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wpN[k][k]);
+      valDenumN.push_back(fSign[k-1]*sumwN[m-k]*(fFactorial[m-1]/fFactorial[m-k])*wpN[k][0]);
+    }
+    sumNumP = OrderedAddition(valNumP, m);
+    sumDenumP = OrderedAddition(valDenumP, m);
+    sumNumN = OrderedAddition(valNumN, m);
+    sumDenumN = OrderedAddition(valDenumN, m);
+    valNumP.clear(); valDenumP.clear();
+    valNumN.clear(); valDenumN.clear();
+  
+    corrP[m] = sumNumP;
+    sumwP[m] = sumDenumP;
+    corrN[m] = sumNumN;
+    sumwN[m] = sumDenumN; 
+  }
+  return;
+}
+void AliAnalysisTaskPtCorr::FillSubEventProfile(const vector<double> &corrP, const vector<double> &sumwP, const vector<double> &corrN, const vector<double> &sumwN, const double &l_cent, double &rn)
+{
+  std::vector<double> corr_sub1(mpar+1,0.0); corr_sub1[0] = 1;
+  std::vector<double> sumw_sub1(mpar+1,0.0); sumw_sub1[0] = 1;
+  std::vector<double> corr_sub2(mpar+1,0.0); corr_sub2[0] = 1;
+  std::vector<double> sumw_sub2(mpar+1,0.0); sumw_sub2[0] = 1;
+  for(int m=1;m<=mpar;++m)
+  {
+    if(m%2)
+    {
+      corr_sub1[m] = corrP[ceil(m/2.)]*corrN[floor(m/2.)];
+      corr_sub2[m] = corrP[floor(m/2.)]*corrN[ceil(m/2.)];
+      sumw_sub1[m] = sumwP[ceil(m/2.)]*sumwN[floor(m/2.)];
+      sumw_sub2[m] = sumwP[floor(m/2.)]*sumwN[ceil(m/2.)];
+      if(sumw_sub1[m]) fptcorr[m-1]->FillProfile(l_cent,corr_sub1[m]/sumw_sub1[m],sumw_sub1[m],rn);
+      if(sumw_sub2[m]) fptcorr[m-1]->FillProfile(l_cent,corr_sub2[m]/sumw_sub2[m],sumw_sub2[m],rn);
+    }
+    else
+    {
+      corr_sub1[m] = corrP[m/2]*corrN[m/2];
+      sumw_sub1[m] = sumwP[m/2.]*sumwN[m/2];
+      if(sumw_sub1[m]) fptcorr[m-1]->FillProfile(l_cent,corr_sub1[m]/sumw_sub1[m],sumw_sub1[m],rn);
+    }
+    if(sumwP[m]) fptcorrP[m-1]->FillProfile(l_cent,corrP[m]/sumwP[m],sumwP[m],rn);
+    if(sumwN[m]) fptcorrN[m-1]->FillProfile(l_cent,corrN[m]/sumwN[m],sumwN[m],rn);
+    
+  }
+  return;
+}
+void AliAnalysisTaskPtCorr::FillCorrelationProfile(const vector<double> &corr, const vector<double> &sumw, const double &l_cent, double &rn)
+{
+  for(int m = 1; m<=mpar; ++m)
+  {
     if(sumw[m]==0.0) continue;
     fptcorr[m-1]->FillProfile(l_cent,corr[m]/sumw[m],sumw[m],rn);
   }
