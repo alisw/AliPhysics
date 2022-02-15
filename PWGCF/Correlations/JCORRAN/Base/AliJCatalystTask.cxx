@@ -93,6 +93,8 @@ AliJCatalystTask::AliJCatalystTask():
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
 	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
+	fUseITSMinClusters(false),
+	fITSMinClusters(2),
 	fUseTightCuts(false),
 	fAddESDpileupCuts(false),
 	fESDpileup_slope(3.38), fESDpileup_inter(15000),
@@ -148,6 +150,8 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 	fChi2perNDF_max(4.0),	// TBC: Same here, this is old 2010 value.
 	fDCAxy_max(2.4),	// TBC: Shall we keep 2010 default?
 	fDCAz_max(3.2),	// TBC: Shall we keep 2010 default?
+	fUseITSMinClusters(false),
+	fITSMinClusters(2),
 	fUseTightCuts(false),
 	fAddESDpileupCuts(false),
 	fESDpileup_slope(3.38), fESDpileup_inter(15000),
@@ -189,6 +193,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
 	fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16),
 	fChi2perNDF_min(ap.fChi2perNDF_min), fChi2perNDF_max(ap.fChi2perNDF_max),
 	fDCAxy_max(ap.fDCAxy_max), fDCAz_max(ap.fDCAz_max),
+	fUseITSMinClusters(ap.fUseITSMinClusters),fITSMinClusters(ap.fITSMinClusters),
 	fUseTightCuts(ap.fUseTightCuts), fAddESDpileupCuts(ap.fAddESDpileupCuts),
 	fESDpileup_slope(ap.fESDpileup_slope), fESDpileup_inter(ap.fESDpileup_inter),
 	fSaveESDpileupQA(ap.fSaveESDpileupQA)
@@ -477,23 +482,14 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 			if(track->GetTPCNcls() < fNumTPCClusters)
 				continue;
 
-			// New: Get the values of the DCA according to the type of tracks.
-			Double_t DCAxy = 0.;	// DCA in the transverse plane.
-			Double_t DCAz = 0.;		// DCA along the beam axis.
-			if(fFilterBit == 128) {	// Constrained TPC-only tracks.
-				DCAxy = track->DCA();
-				DCAz = track->ZAtDCA();
-			}
-		  else {	// For the unconstrained tracks. TBC!
-		    AliAODVertex *primaryVertex = (AliAODVertex*)aod->GetPrimaryVertex();
-		    Double_t v[3];    // Coordinates of the PV
-		    Double_t pos[3];  // Coordinates of the track closest to PV
+			if(fUseITSMinClusters && (track->GetITSNcls()<fITSMinClusters))
+				continue;
 
-		    primaryVertex->GetXYZ(v);
-		    track->GetXYZ(pos);
-		    DCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
-		    DCAz = pos[2] - v[2];
-		  }
+			// New: Get the values of the DCA according to the type of tracks.
+			Float_t DCAxy = 0.;	// DCA in the transverse plane.
+			Float_t DCAz = 0.;		// DCA along the beam axis.	
+
+		  	track->GetImpactParameters(DCAxy,DCAz);
 
 		  // Newer: Set the tighter cuts for PbPb Run2: primary cuts along with hybrids.
 		  if (fUseTightCuts){
@@ -993,17 +989,17 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
 	 
 	 // b) Book histogram to hold phi spectra
-	 fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",2000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][0]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
-	 fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",2000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][1]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
-	 fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,0.,TMath::TwoPi()); 
+	 fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",2000,0.,TMath::TwoPi()); 
 	 fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
 	 fPhiHistogram[icent][2]->SetLineColor(4);
 	 fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
@@ -1149,19 +1145,7 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
 	Float_t ValueDCAxy = 999.;   // DCA in the xy-plane.
 	Float_t ValueDCAz = 999.;    // DCA along z.
 
-	if (fFilterBit == 128)  // These methods work only for constrained TPConly tracks.
-	{ //These two quantities are the DCA from global tracks but not what we will cut on.
-	  ValueDCAxy = thisTrack->DCA();
-	  ValueDCAz = thisTrack->ZAtDCA();
-	}
-	else  //For the unconstrained tracks.
-	{
-	  Double_t pos[3];  //Coordinates of the track closest to PV?
-
-	  thisTrack->GetXYZ(pos);
-	  ValueDCAxy = TMath::Sqrt((pos[0] - v[0])*(pos[0] - v[0]) + (pos[1] - v[1])*(pos[1] - v[1]));
-	  ValueDCAz = pos[2] - v[2];
-	}
+	thisTrack->GetImpactParameters(ValueDCAxy,ValueDCAz);
 
 	fPTHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Pt());
 	fPhiHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Phi());

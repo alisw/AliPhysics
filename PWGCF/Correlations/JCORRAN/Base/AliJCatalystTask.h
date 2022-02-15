@@ -143,6 +143,10 @@ public:
 	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
 		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
+	void SetITSCuts(bool UseITSMinClusters, double ITSMinClusters){
+		fUseITSMinClusters = UseITSMinClusters;
+		fITSMinClusters = ITSMinClusters;
+	}
 
 // Methods to apply tighter cuts on Run2.
 	void SetTightCuts(bool usePrimary) {fUseTightCuts = usePrimary;}
@@ -205,6 +209,8 @@ private:
 	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
 	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
 	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
+	bool fUseITSMinClusters;	// if true use cut for minimum number of ITS clusters
+	double fITSMinClusters;		// minimum number of required ITS clusters
 
 // Data members for the use of tighter cuts in Run2.
 	bool fUseTightCuts;		// if kTRUE: apply tighter cuts on DCAxy and goldenChi2
