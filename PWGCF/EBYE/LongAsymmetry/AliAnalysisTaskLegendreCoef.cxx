@@ -26,22 +26,22 @@ ClassImp(AliAnalysisTaskLegendreCoef)
 
 AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef() : AliAnalysisTaskSE(),
   fAOD(0), fOutputList(0),
-  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
+  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEtaMin(-0.8), fEtaMax(0.8), fBit(96),
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0),
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0),  fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16),  fEventCuts(0)
 {
 
 }
 //_____________________________________________________________________________
 AliAnalysisTaskLegendreCoef::AliAnalysisTaskLegendreCoef(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0), fOutputList(0),
-  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEta(0.8), fBit(96),
+  fIsMC(0), fChi2DoF(3), fTPCNcls(70), fPtmin(0.2), fPtmax(2), fEtaMin(-0.8), fEtaMax(0.8), fBit(96),
   fIsPileUpCuts(0), fIsBuildBG(0), fIsBuildLG(0), 
   fPosBackgroundHist(0), fNegBackgroundHist(0), fChargedBackgroundHist(0), 
   fMCPosBackgroundHist(0), fMCNegBackgroundHist(0), fMCChargedBackgroundHist(0), fNeventCentHist(0),
-  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fEventCuts(0)
+  fGenName("Hijing"), fPileUpLevel(2), fTPCNCrossedRows(70), fPVzMax(8.0), fPVzMin(0.0), fPVzSign(0), fNetabins(16), fEventCuts(0)
 {
   // Default constructor
   // Define input and output slots here
@@ -76,17 +76,17 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
 
   if(fIsBuildBG){
     fOutputList->Add(new TH1D("NeventsCentHist", "nevents;centrality", 8,centbins));//output histogram when building background -  all tracks
-    fOutputList->Add(new TH2D("PosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  positive tracks
-    fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  negative tracks
-    fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output histogram when building background -  charged tracks
-    fOutputList->Add(new TH3D("PhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+    fOutputList->Add(new TH2D("PosBGHistOut", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output histogram when building background -  positive tracks
+    fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output histogram when building background -  negative tracks
+    fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output histogram when building background -  charged tracks
+    fOutputList->Add(new TH3D("PhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, fNetabins,fEtaMin,fEtaMax, 14, 0.01, 70.0));//QA hist phi vs eta
     fOutputList->Add(new TH2D("PtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
     if(fIsMC) {
-      fOutputList->Add(new TH2D("MCPosBGHistOut", "postrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  positive tracks
-      fOutputList->Add(new TH2D("MCNegBGHistOut", "negtrack;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  negative tracks
-      fOutputList->Add(new TH2D("MCChargedBGHistOut", "track;eta;centrality", 16,-fEta,fEta,8,centbins));//output MC histogram when building background -  charged tracks  
-      fOutputList->Add(new TH3D("GenPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
-      fOutputList->Add(new TH3D("RecPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, 16,-fEta,fEta, 14, 0.01, 70.0));//QA hist phi vs eta
+      fOutputList->Add(new TH2D("MCPosBGHistOut", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output MC histogram when building background -  positive tracks
+      fOutputList->Add(new TH2D("MCNegBGHistOut", "negtrack;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output MC histogram when building background -  negative tracks
+      fOutputList->Add(new TH2D("MCChargedBGHistOut", "track;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output MC histogram when building background -  charged tracks  
+      fOutputList->Add(new TH3D("GenPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, fNetabins,fEtaMin,fEtaMax, 14, 0.01, 70.0));//QA hist phi vs eta
+      fOutputList->Add(new TH3D("RecPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, fNetabins,fEtaMin,fEtaMax, 14, 0.01, 70.0));//QA hist phi vs eta
       fOutputList->Add(new TH2D("GenPtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
       fOutputList->Add(new TH2D("RecPtCentHist", "track;pt;centrality", 16,fPtmin,fPtmax,8,centbins));//QA hist pt 
     }
@@ -176,7 +176,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
 
-    if(fabs(track->Eta()) > fEta) continue;//eta cut
+    if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
     if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
     if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
     if(track->TestFilterBit(fBit)) {
@@ -229,7 +229,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
       if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
       if(!p1->IsPrimary()) continue;
       if(!p1->IsPhysicalPrimary()) continue;
-      if(fabs(p1->Eta()) > fEta ) continue;
+      if(p1->Eta()> fEtaMax || p1->Eta()<fEtaMin ) continue;
       if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         //build background
@@ -287,17 +287,17 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   TH1D *posSignal, *negSignal, *chargedSignal;
   TH1D *MCposSignal, *MCnegSignal, *MCchargedSignal;
 
-  posSignal = new TH1D("PosSignal", "postrack;eta;centrality", 16,-fEta,fEta);
-  negSignal = new TH1D("NegSignal", "postrack;eta;centrality", 16,-fEta,fEta);
-  chargedSignal = new TH1D("chargedSignal", "postrack;eta;centrality", 16,-fEta,fEta);
-  MCposSignal = new TH1D("MCPosSignal", "postrack;eta;centrality", 16,-fEta,fEta);
-  MCnegSignal = new TH1D("MCNegSignal", "postrack;eta;centrality", 16,-fEta,fEta);
-  MCchargedSignal = new TH1D("MCchargedSignal", "postrack;eta;centrality", 16,-fEta,fEta);
+  posSignal = new TH1D("PosSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
+  negSignal = new TH1D("NegSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
+  chargedSignal = new TH1D("chargedSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
+  MCposSignal = new TH1D("MCPosSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
+  MCnegSignal = new TH1D("MCNegSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
+  MCchargedSignal = new TH1D("MCchargedSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
 
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
-    if(fabs(track->Eta()) > fEta) continue;//eta cut
+    if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
     if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
     if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls, crossed rows and chi2/dof   
     if(track->TestFilterBit(fBit)) {
@@ -366,7 +366,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
       if(!p1->IsPrimary()) continue;
       if(!p1->IsPhysicalPrimary()) continue;
-      if(fabs(p1->Eta()) > fEta ) continue;
+      if(p1->Eta() > fEtaMax || p1->Eta()<fEtaMin ) continue;
       if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         // calculate signal    
@@ -415,7 +415,7 @@ void AliAnalysisTaskLegendreCoef::BuildCoefficients(TH1D *signal, TH1D *backgrou
 
   for (int s=0; s<5; s++){//5 random histograms
     n = sprintf (histname, "RanHist%i", s+1);
-    RanHist[s] = new TH1D(histname,histname, 16, -fEta, fEta);
+    RanHist[s] = new TH1D(histname,histname, fNetabins, fEtaMin, fEtaMax);
     RanHist[s]->Sumw2();
   }
 
@@ -452,18 +452,20 @@ void AliAnalysisTaskLegendreCoef::UserExec(Option_t *)
 Double_t AliAnalysisTaskLegendreCoef::GetSingleAnCoef(int order, TH1D *hist)
 {   
   double coef = 0.0;
+  double etawidth = (fEtaMax-fEtaMin)/2.0;
   for(Int_t i=1;i<=hist->GetNbinsX();i++){
-    coef += sqrt((1.0/fEta)*(order+0.5))*(hist->GetBinContent(i)-1)*LegPol(order,hist->GetBinCenter(i));
+    coef += sqrt((1.0/etawidth)*(order+0.5))*(hist->GetBinContent(i)-1)*LegPol(order,hist->GetBinCenter(i));
   }
   coef = coef*hist->GetBinWidth(1);    
   return coef;
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskLegendreCoef::LegPol(int order, Double_t x){
-    if( order == 1 ) return x/fEta;
-    if( order == 2 ) return 0.5*(3.0*pow(x/fEta,2)-1.0);
-    if( order == 3 ) return 0.5*(5.0*pow(x/fEta,3)-3.0*x/fEta);
-    if( order == 4 ) return (35.0*pow(x/fEta,4)-30.0*pow(x/fEta,2)+3.0)/8.0;
+    double etawidth = (fEtaMax-fEtaMin)/2.0;
+    if( order == 1 ) return x/etawidth;
+    if( order == 2 ) return 0.5*(3.0*pow(x/etawidth,2)-1.0);
+    if( order == 3 ) return 0.5*(5.0*pow(x/etawidth,3)-3.0*x/etawidth);
+    if( order == 4 ) return (35.0*pow(x/etawidth,4)-30.0*pow(x/etawidth,2)+3.0)/8.0;
     else return 0.0;
 }
 //_____________________________________________________________________________
