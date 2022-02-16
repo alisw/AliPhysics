@@ -233,6 +233,18 @@ public:
   };
 
   /**
+   * @enum LuminosityUnit_t
+   * @brief Unit in which the integrated luminosity is expressed
+   */
+  enum LuminosityUnit_t {
+    kPb,        ///< pb-1
+    kNb,        ///< nb-1
+    kMub,       ///< mub-1
+    kMb,         ///< mb-1
+    kB          ///< b-1
+  };
+
+  /**
    * @brief Construct a new Ali Emcal Trigger Luminosity object
    */
   AliEmcalTriggerLuminosity();
@@ -245,6 +257,14 @@ public:
    * @throw InputDataException Input data is not from the normalization task
    */
   AliEmcalTriggerLuminosity(const char *filename, const char *dirname  = "EmcalTriggerNormtask");
+
+  /**
+   * @brief Constructor, initializing from a list with histograms from the normalization task output
+   * @param luminosityHistograms List with histograms
+   * @throw AmbiguityException Year or collision system contain ambiguous information
+   * @throw InputDataException Input data is not from the normalization task
+   */
+  AliEmcalTriggerLuminosity(TList *luminosityHistograms);
 
   /**
    * @brief Destructor
@@ -268,6 +288,14 @@ public:
   void InitFromFile(const char *filename, const char *dirname);
 
   /**
+   * @brief Initialize with list of histograms from the normalization task output
+   * @param luminosityHistograms List of histograms from the normmalization task output
+   * @throw AmbiguityException Year or collision system contain ambiguous information
+   * @throw InputDataException Input data is not from the normalization task
+   */
+  void InitFromList(TList *luminosityHistograms);
+
+  /**
    * @brief Evaluate all luminosities
    * @throw UninitException Several required information was not initialized
    * 
@@ -280,12 +308,46 @@ public:
   /**
    * @brief Get the integrated luminosity evaluated for a certain trigger 
    * @param trigger Trigger for which to determine the luminosity
+   * @param unit Unit in which the luminosity is expressed
    * @return Integrated luminosity
    * @throw TriggerNotFoundException in case of access to unsupported trigger
    * 
-   * Access to luminosities calculated in Evaluate.
+   * Access to luminosities calculated in evaluate.
    */
-  double GetLuminosityForTrigger(const char *trigger);
+  double GetLuminosityForTrigger(const char *trigger, LuminosityUnit_t unit) const;
+  
+  /**
+   * @brief Get the effective integrated luminosity evaluated for a certain trigger based on the observed downscale factors
+   * @param trigger Trigger for which to determine the effective luminosity
+   * @param unit Unit in which the luminosity is expressed
+   * @return Effective integrated luminosity
+   * @throw TriggerNotFoundException in case of access to unsupported trigger
+   * 
+   * Access to effective luminosities calculated in evaluate.
+   */
+  double GetEffectiveLuminosityForTrigger(const char *trigger, LuminosityUnit_t unit) const;
+
+  /**
+   * @brief Get the uncertainty on integrated luminosity evaluated for a certain triggers
+   * @param trigger Trigger for which to determine the uncertainty
+   * @return Luminosity uncertainty
+   * @throw TriggerNotFoundException in case of access to unsupported trigger
+   * 
+   * Access to effective luminosities calculated in evaluate. Determination is done comparing
+   * the expected luminosity (based on configured downscale factor in the CTP - default) and 
+   * the observed luminosity (based on the observed downscale factor calculated offline).
+   */
+  double GetLuminosityUncertaintyForTrigger(const char *trigger) const;
+
+  /**
+   * @brief Get the effective downscale factors based on reference triggers
+   * @param trigger Trigger for which to determine the effective downscaling
+   * @return Effective downscale factor
+   * @throw TriggerNotFoundException in case of access to unsupported trigger
+   * 
+   * Access to effective downscale factor calculated in evaluate.
+   */
+  double GetEffectiveDownscalingForTrigger(const char *trigger)const;
 
   /**
    * @brief Set the collision system of the data used in the input file
@@ -353,6 +415,34 @@ protected:
    */
   double getTriggerClusterCounts(TH1 * clustercounter, const std::string &clustername) const;
 
+  /**
+   * @brief Get the effective downscaling factor
+   * @param correlationhist Histogram with trigger correlation
+   * @param triggerclass Trigger class for which to determine the effective downscaling
+   * @param reftrigger Reference trigger used for the effective downscaling
+   * @return Effective downscaling
+   * 
+   * The trigger must be a non-downscaled trigger (i.e. the high threshold triggers), in this
+   * case the min. bias trigger is a subset of the downscaled trigger where fraction selected
+   * is determined by the effective downscaling.
+   */
+  double getEffectiveDownscaling(TH2 * correlationhist, const std::string &triggerclass, const std::string &reftrigger) const;
+
+  /**
+   * @brief Convert luminosity into the requested unit 
+   * @param luminosityPB Luminosity in pb-1
+   * @param unit Requested unit
+   * @return Converted luminosity
+   */
+  double convertLuminosity(double luminosityPB, LuminosityUnit_t unit) const;
+
+  /**
+   * @brief Helper for getting the converions for cross section units with respect to pb
+   * @param unit Target unit
+   * @return conversion factor 
+   */
+  double getConversionToPB(LuminosityUnit_t unit) const;
+
 private:
   AliEmcalTriggerLuminosity(const AliEmcalTriggerLuminosity &);
   AliEmcalTriggerLuminosity &operator=(const AliEmcalTriggerLuminosity &);
@@ -361,7 +451,10 @@ private:
   int fYear;                                            ///< Year of the input file
   TH2 *fLuminosityHist;                                 ///< Raw luminosity histogram
   std::map<std::string, TH1 *> fClusterCounters;        ///< Cluster counter histogram for various trigger classes
-  std::map<std::string, double> fLuminosities;          ///< Evaluated integrated luminosities for all trigger classes
+  std::map<std::string, TH2 *> fCorrelationHistograms;  ///< Trigger correlation histograms for various trigger clusters
+  std::map<std::string, double> fLuminosities;          ///< Evaluated integrated luminosities for all trigger classes, in pb-1
+  std::map<std::string, double> fEffectiveDownscaling;  ///< Effective downscaling factors
+  std::map<std::string, double> fEffectiveLuminosity;   ///< Effective luminosity, calcuated from from INT7 event counts and effective downscalings, in pb-1
 
   ClassDef(AliEmcalTriggerLuminosity, 1);
 };
