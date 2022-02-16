@@ -16,7 +16,6 @@ AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1, const AliVEve
   {
     if (!man->IsDefaultStorageSet())
     {
-      man->SetDefaultStorage(Form("alien://folder=/alice/data/2015/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
       man->SetRun(event->GetRunNumber());
       AliGRPObject *grp = (AliGRPObject *)man->Get("GRP/GRP/Data")->GetObject();
     }
