@@ -110,11 +110,11 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   }
 
   //protons
-  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsProton->SetCutCharge(1);
 
-  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsAntiProton->SetCutCharge(-1);
 
