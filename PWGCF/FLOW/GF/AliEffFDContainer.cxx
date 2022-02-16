@@ -34,6 +34,7 @@ AliEffFDContainer::AliEffFDContainer():
   fDCA(0),
   fWithinDCA(0),
   fPurity(0),
+  fFDvsPhi(0),
   fIdentifier(new TNamed("Identifier","")),
   fSpNames({"","pi_","ka_","pr_"}),
   fPtBins(0),
@@ -79,6 +80,7 @@ AliEffFDContainer::AliEffFDContainer(TString lName, TString lTitle, Bool_t lIsMC
   fDCA(0),
   fWithinDCA(0),
   fPurity(0),
+  fFDvsPhi(0),
   fIdentifier(new TNamed("Identifier","")),
   fSpNames({"","pi_","ka_","pr_"}),
   fPtBins(0),
@@ -396,6 +398,9 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
         fPurity[lBayesPIDIndex-1][3]->Fill(pt,fCent);
       }
     };
+    //Fetch phi of the track and recenter:
+    Double_t l_phi = lTrack->Phi();
+    if(l_phi<0) l_phi+=TMath::TwoPi();
     //Start filling:
     //Filling DCA distributions doesn't make much sense
     //Also, everything passes the chi2 here (AOD tracks)
@@ -404,28 +409,43 @@ void AliEffFDContainer::Fill(AliAODEvent &inputAOD, AliMCEvent &inputMC) {
       fWithinDCA[0][1]->Fill(pt,0.,1.);
       fEff[0][1]->Fill(pt,fCent,CompWeight);
       fEff[0][3]->Fill(pt,fCent);
+      //Prim vs Phi. Primaries contribute to both, primaries and all
+      fFDvsPhi[0][0]->Fill(pt,fCent,l_phi,CompWeight);
+      fFDvsPhi[0][1]->Fill(pt,fCent,l_phi,CompWeight);
       //PID part
       if(fillPIDHists) {
         fWithinDCA[lBayesPIDIndex][0]->Fill(pt,0.,CompWeight);
         fWithinDCA[lBayesPIDIndex][1]->Fill(pt,0.,1.);
         fEff[lBayesPIDIndex][1]->Fill(pt,fCent,CompWeight);
         fEff[lBayesPIDIndex][3]->Fill(pt,fCent);
+        //Prim vs Phi. Primaries contribute to both, primaries and all
+        fFDvsPhi[lBayesPIDIndex][0]->Fill(pt,fCent,l_phi,CompWeight);
+        fFDvsPhi[lBayesPIDIndex][1]->Fill(pt,fCent,l_phi,CompWeight);
       };
     } else if(lPart->IsSecondaryFromWeakDecay()) {
       fWithinDCA[0][0]->Fill(pt,1.,secWeight);
       fWithinDCA[0][1]->Fill(pt,1.,1.);
+      //Prim vs Phi. Secondaries contribute to all
+      fFDvsPhi[0][1]->Fill(pt,fCent,l_phi,CompWeight);
       //PID part:
       if(fillPIDHists) {
         fWithinDCA[lBayesPIDIndex][0]->Fill(pt,1.,secWeight);
         fWithinDCA[lBayesPIDIndex][1]->Fill(pt,1.,1);
+        //Prim vs Phi. Secondaries contribute to all
+        fFDvsPhi[lBayesPIDIndex][1]->Fill(pt,fCent,l_phi,CompWeight);
+
       }
     } else if(lPart->IsSecondaryFromMaterial()) {
       fWithinDCA[0][0]->Fill(pt,2.,1.);
       fWithinDCA[0][1]->Fill(pt,2.,1.);
+      //Prim vs Phi. Secondaries contribute to all
+      fFDvsPhi[0][1]->Fill(pt,fCent,l_phi,CompWeight);
       //PID part:
       if(fillPIDHists) {
         fWithinDCA[lBayesPIDIndex][0]->Fill(pt,2.,1);
         fWithinDCA[lBayesPIDIndex][1]->Fill(pt,2.,1);
+        //Prim vs Phi. Secondaries contribute to all
+        fFDvsPhi[lBayesPIDIndex][1]->Fill(pt,fCent,l_phi,CompWeight);
       }
     }
   }
@@ -513,12 +533,18 @@ void AliEffFDContainer::CreateHistograms(Bool_t forceRecreate) {
   Int_t NbinsDCAFine = 300;
   Double_t binsType[4] = {-0.5,0.5,1.5,2.5};
   Int_t NbinsType = 3;
+  //Phi bins for FD vs phi:
+  const Int_t fNPhiBins=100;
+  Double_t fPhiBins[fNPhiBins+1];
+  for(Int_t i=0;i<=fNPhiBins;i++) fPhiBins[i] = TMath::TwoPi()/fNPhiBins * i;
+  //Setting up y-axis: either centrality or prim/secondary time
   Double_t *lYAxis = fIsMC?binsType:fCentBins;
   Int_t     nYAxis = fIsMC?NbinsType:fNCentBins;
   if(fAddPID) fNSpecies=4; else fNSpecies=1;
   fDCA       = new TH3D**[fNSpecies];
   fWithinDCA = new TH2D**[fNSpecies];
   fEff       = new TH2D**[fNSpecies];
+  fFDvsPhi   = new TH3D**[fNSpecies];
   if(fAddPID) fPurity = new TH2D**[fNSpecies-1]; //No need for purity for charged tracks
   for(Int_t iSpecie=0; iSpecie<fNSpecies; iSpecie++) {
     fDCA[iSpecie] = new TH3D*[2];
@@ -537,6 +563,11 @@ void AliEffFDContainer::CreateHistograms(Bool_t forceRecreate) {
     fEff[iSpecie][2] = new TH2D(makeName("nChGen_Uneighted",iSpecie),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
     fEff[iSpecie][3] = new TH2D(makeName("nChRec_Uneighted",iSpecie),"ChGen_Weighted; #it{p}_{T} (GeV/#it{c}); Cent.",fNPtBins,fPtBins,fNCentBins,fCentBins);
     for(Int_t i=0;i<4;i++) { fEff[iSpecie][i]->SetDirectory(0); fOutList->Add(fEff[iSpecie][i]); };
+    //Feeddown vs phi (in given eta bin)
+    fFDvsPhi[iSpecie] = new TH3D*[2];
+    fFDvsPhi[iSpecie][0] = new TH3D(makeName("PrimVsPhi",iSpecie),"PrimariesVsPhi; #it{p}_{T} (GeV/#it{c}); cent.; #varphi", fNPtBins, fPtBins, fNCentBins, fCentBins, fNPhiBins, fPhiBins);
+    fFDvsPhi[iSpecie][1] = new TH3D(makeName("AllVsPhi",iSpecie), "AllVsPhi; #it{p}_{T} (GeV/#it{c}); cent.; #varphi", fNPtBins, fPtBins, fNCentBins, fCentBins, fNPhiBins, fPhiBins);
+    for(Int_t i=0;i<2;i++) { fFDvsPhi[iSpecie][i]->SetDirectory(0); fOutList->Add(fFDvsPhi[iSpecie][i]); };
     if(fAddPID) {
       if(!iSpecie) continue; //Not adding it for charged. Then we have to be carefull when filling
       fPurity[iSpecie-1] = new TH2D*[4];

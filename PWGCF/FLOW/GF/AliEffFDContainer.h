@@ -55,7 +55,7 @@ class AliEffFDContainer: public TNamed {
     void SetUseGenPt(Bool_t newval) { fUseGenPt = newval; };
     void SetBayesianProbs(std::vector<Double_t> probs) {fMinBayesProb.clear(); for(auto i: probs) fMinBayesProb.push_back(i); };
     void SetAODSelectionFlags(UInt_t evFlag, UInt_t trFlags) { fEvNomFlag=evFlag; fTrNomFlag=trFlags; };
-    TH2 *getPureEfficiency2D(Int_t iSpecie, Bool_t weighted=kTRUE) {if(weighted) return get2DRatio("nChRec_Weighted","nChGen_Weighted",iSpecie); return get2DRatio("nChRec_Uneighted","nChGen_Uneighted",iSpecie); };
+    TH2 *getPureEfficiency2D(Int_t iSpecie, Bool_t weighted=kTRUE) {if(weighted) return                   get2DRatio("nChRec_Weighted","nChGen_Weighted",iSpecie); return get2DRatio("nChRec_Uneighted","nChGen_Uneighted",iSpecie); };
     TH1 *getPureEfficiency1D(Int_t iSpecie, Bool_t weighted=kTRUE, Int_t yb1=-1, Int_t yb2=-1) {if(weighted) return get1DRatio("nChRec_Weighted","nChGen_Weighted",iSpecie,yb1,yb2); return get1DRatio("nChRec_Uneighted","nChGen_Uneighted",iSpecie,yb1,yb2); };
     TH2 *getPurity2D(Int_t iSpecie, Bool_t weighted=kTRUE) {if(weighted) return get2DRatio("nChRec_Weighted","primary_weighted_IdentifiedAs",iSpecie); return get2DRatio("nChRec_Uneighted","primary_uneighted_IdentifiedAs",iSpecie); };
     TH1 *getPurity1D(Int_t iSpecie, Bool_t weighted=kTRUE, Int_t yb1=-1, Int_t yb2=-1) {if(weighted) return get1DRatio("nChRec_Weighted","primary_weighted_IdentifiedAs",iSpecie,yb1,yb2); return get1DRatio("nChRec_Uneighted","primary_uneighted_IdentifiedAs",iSpecie,yb1,yb2); };
@@ -108,6 +108,7 @@ class AliEffFDContainer: public TNamed {
     TH3D ***fDCA;//! Stored by TList
     TH2D ***fWithinDCA;//! Stored by TList
     TH2D ***fPurity;//! Stored by TList
+    TH3D ***fFDvsPhi;//! Stored by TList
     TNamed *fIdentifier; //
     std::vector<TString> fSpNames;//! No need to store, defined at initialization
     //Pointers to axes
