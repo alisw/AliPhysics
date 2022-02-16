@@ -143,10 +143,6 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
     fRunOfficialTwoBody=RunOfficialTwoBody;
   }
 
-  void SetDoTwoPrimary(bool DoTwoPrimary){
-    fDoTwoPrimary=DoTwoPrimary;
-  }
-
   void SetRunPlotPt(bool RunPlotPt){
     fRunPlotPt=RunPlotPt;
   }
@@ -154,18 +150,24 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void SetStandardMixing(bool StandardMixing){
     fStandardMixing = StandardMixing;
   }
-  void SetDeltaPhiMaxpp(double DeltaPhiMaxpp){
-    fDeltaPhiMaxpp = DeltaPhiMaxpp;
+  void SetDeltaPhiMaxPP(double DeltaPhiMaxPP){
+    fDeltaPhiMaxPP = DeltaPhiMaxPP;
   }      
-  void SetDeltaEtaMaxpp(double DeltaEtaMaxpp){
-    fDeltaEtaMaxpp = DeltaEtaMaxpp;
+  void SetDeltaEtaMaxPP(double DeltaEtaMaxPP){
+    fDeltaEtaMaxPP = DeltaEtaMaxPP;
   }      
-  void SetDeltaPhiMaxpKplus(double DeltaPhiMaxpKplus){
-    fDeltaPhiMaxpKplus = DeltaPhiMaxpKplus;
+  void SetDeltaPhiMaxPPrim(double DeltaPhiMaxPPrim){
+    fDeltaPhiMaxPPrim = DeltaPhiMaxPPrim;
   }      
-  void SetDeltaEtaMaxpKplus(double DeltaEtaMaxpKplus){
-    fDeltaEtaMaxpKplus = DeltaEtaMaxpKplus;
+  void SetDeltaEtaMaxPPrim(double DeltaEtaMaxPPrim){
+    fDeltaEtaMaxPPrim = DeltaEtaMaxPPrim;
+  }   
+  void SetDeltaPhiMaxPAPrim(double DeltaPhiMaxPAPrim){
+    fDeltaPhiMaxPAPrim = DeltaPhiMaxPAPrim;
   }      
+  void SetDeltaEtaMaxPAPrim(double DeltaEtaMaxPAPrim){
+    fDeltaEtaMaxPAPrim = DeltaEtaMaxPAPrim;
+  }   
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -240,15 +242,15 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fClosePairRejectionPPPorPPL; 
 
   double fQ3LimitForDeltaPhiDeltaEta;
-  double fDeltaPhiMaxpp;
-  double fDeltaEtaMaxpp;
-  double fDeltaPhiMaxpKplus;
-  double fDeltaEtaMaxpKplus;
-
+  double fDeltaPhiMaxPP;
+  double fDeltaEtaMaxPP;
+  double fDeltaPhiMaxPPrim;
+  double fDeltaEtaMaxPPrim;
+  double fDeltaPhiMaxPAPrim;
+  double fDeltaEtaMaxPAPrim;
 
   bool fCleanWithLambdas; //if kTRUE: reject Proton + Pi- / Antiproton + Pi+ from Lambda/AntiLambda
   bool fDoOnlyThreeBody; //if kTRUE: 3 Body analysis, else 2 Body
-  bool fDoTwoPrimary; //if kTRUE: Run also code where proton-primary-primary is analysed 
   bool fStandardMixing;
 
 
@@ -321,7 +323,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskThreeBodyProtonPrimary,5)
+  ClassDef(AliAnalysisTaskThreeBodyProtonPrimary,6)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKTHREEBODYPROTONPRIMARY_H_ */
