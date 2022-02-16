@@ -7681,8 +7681,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 18:
       label_case_18:
       if(isMC>0){
-         // pp 5 TeV LHC15n+LHC17pq anchored MCs combined
-         if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k16h3 || fCurrentMC == k18b8 || fCurrentMC == k18b10 || fCurrentMC==k18l2) {
+        // pp 5 TeV LHC15n+LHC17pq anchored MCs combined
+        if( fCurrentMC==k17l3b || fCurrentMC==k18j2 ||  fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k16h3 || fCurrentMC == k18b8 || fCurrentMC == k18b10 || fCurrentMC==k18l2) {
           if(fClusterType==4){
             energy /= (FunctionNL_kSDM(energy, 0.94723, -3.44986, -0.483821));
           }
@@ -7694,9 +7694,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
          // pp 13 TeV PCM-PHOS NL with PHOS finetuning
         //  if ( fCurrentMC==kPP13T16P1Pyt8 || fCurrentMC==kPP13T17P1Pyt8 || fCurrentMC==kPP13T18P1Pyt8 || fCurrentMC==kPP13T16P1JJ || fCurrentMC==kPP13T17P1JJ || fCurrentMC==kPP13T18P1JJ || fCurrentMC==kPP13T16P1JJTrigger  || fCurrentMC==kPP13T17P1JJTrigger || fCurrentMC==kPP13T18P1JJTrigger || fCurrentMC==kPP13T16P1Pyt8LowB || fCurrentMC==kPP13T17P1Pyt8LowB || fCurrentMC==kPP13T18P1Pyt8LowB || fCurrentMC==kPP13T16P1JJLowB){
            if(fClusterType==2) { //13 TeV PCM-PHOS Exponential function fitted, corrected by PHOS
-               energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
-               energy /= 1.022224;
-               energy /= FunctionNL_LinLogConst(energy,  0.374346, 2.08291, 1.12166, -0.33141, 0.00247156, -0.124062, -0.119848);
+              energy /= FunctionNL_kSDM(energy, 0.966115, -2.7256, -1.02957, 1.0);
+              energy /= 1.022224;
+              energy /= FunctionNL_LinLogConst(energy,  0.374346, 2.08291, 1.12166, -0.33141, 0.00247156, -0.124062, -0.119848);
+              if(fCurrentMC==kPPb5T16DPMJet){
+                energy /= FunctionNL_DPOW(energy, 1.0443938253, -0.0691830812, -0.1247555443, 1.1673716264, -0.1853095466, -0.0848801702);
+              }
           //  }
         } else fPeriodNameAvailable = kFALSE;
       } else if (isMC==0){
