@@ -88,6 +88,7 @@ struct RLightNucleus {
   Double32_t dcaz;           //[-2,2,10]
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
+  Double32_t chi2tpc;        //[0,10.16,8]
   char       centrality;
   char       trackingPID;
   unsigned char tpcPIDcls;
@@ -398,6 +399,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.dcaz = dca[1];
       fRecNucleus.tpcNsigma = GetTPCsigmas(track);
       fRecNucleus.tofNsigma = GetTOFsigmas(track);
+      fRecNucleus.chi2tpc = track->Chi2perNDF();
       fRecNucleus.centrality = fCentrality;
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
       fRecNucleus.flag = 0;
