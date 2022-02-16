@@ -2797,7 +2797,7 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
                 if(RJetPhotonCand < fConvJetReader->Get_Jet_Radius()){
                     //here the photon is really inside the jet cone
                     IsPhotonInsideJet = kTRUE;
-                    if(RJetPhotonCand < (fConvJetReader->Get_Jet_Radius() + 0.2 ){ //we also want photons slightly outside the cone
+                    if(RJetPhotonCand < (fConvJetReader->Get_Jet_Radius() + 0.2) ){ //we also want photons slightly outside the cone
                       fHistoRJetPhotonCand[fiCut]->Fill(RJetPhotonCand,gamma->Pt(),fWeightJetJetMC);
                     }
                     fHistoConvGammaPtinJet[fiCut]->Fill(gamma->Pt(),NTracks);
