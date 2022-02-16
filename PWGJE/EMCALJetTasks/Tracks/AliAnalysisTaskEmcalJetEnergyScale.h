@@ -28,6 +28,7 @@
 #define ALIANALYSISTASKEMCALJETENERGYSCALE_H
 
 #include <exception>
+#include <iosfwd>
 #include <string>
 #include <TString.h>
 #include "AliAnalysisTaskEmcalJet.h"
@@ -41,6 +42,74 @@ namespace PWGJE {
 
 namespace EMCALJetTasks{
 
+class AngularityHandler : public TObject{
+public:
+  class AngularityBin : public TObject {
+  public:
+    AngularityBin(): TObject(), fMin(-1.), fMax(-1.), fValue(-1.) {}
+    AngularityBin(double min, double max, double value) : TObject(), fMin(min), fMax(max), fValue(value) {}
+    virtual ~AngularityBin() {}
+          
+    double Min() const { return fMin; }
+    double Max() const { return fMax; }
+    double Value() const { return fValue; }
+
+    void SetMin(double min) { fMin = min; }
+    void SetMax(double max) { fMax = max; }
+    void SetValue(double value) { fValue = value; }
+
+    bool IsInRange(double entry) const { return entry >= fMin && entry < fMax; }
+    bool IsOK() const { return fMin > -1. && fMax > -1.; }
+
+    void PrintStream(std::ostream &stream) const;
+  private:
+    double fMin;          ///< Bin min
+    double fMax;          ///< Bin max
+    double fValue;        ///< Bin value
+
+    ClassDef(AngularityBin, 1);
+  };
+
+  class BinNotFoundException : public std::exception {
+  public:
+    BinNotFoundException(double pt) : fMessage(), fPt(pt) {
+      fMessage = Form("No bin found for pt %f", pt);
+    }
+    virtual ~BinNotFoundException() throw() {}
+
+    const char *what() const throw() {
+      return fMessage.c_str();
+    }
+
+    double getPt() const {return fPt; }
+  private:
+    std::string fMessage;   ///< Message
+    double      fPt;        ///< Pt
+  };
+
+  AngularityHandler() : TObject(), fRadius(-1), fBins() { fBins.SetOwner(true); }
+  AngularityHandler(double radius) : TObject(), fRadius(radius), fBins() { fBins.SetOwner(true); }
+  virtual ~AngularityHandler() {}
+
+  void InitFromFile(const char *filename);
+  void SetBin(double min, double max, double value);
+  void SetRadius(double radius) { fRadius = radius; }
+
+  double GetValue(double pt) const;
+  bool IsHigherAngularity(double pt, double angularity) const;
+
+
+  virtual void Print(Option_t * option = "") const;
+  void PrintStream(std::ostream &stream) const ;
+
+private:
+  AngularityBin FindBin(double pt) const; 
+  double fRadius;       ///< Jet raduius
+  TList fBins;          ///< Pt bins
+
+  ClassDef(AngularityHandler, 1);
+};
+
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
   class AngularityException : public std::exception{
@@ -53,63 +122,6 @@ public:
       }
   };
 
-  class AngularityHandler : public TObject{
-    public:
-      class AngularityBin : public TObject {
-        public:
-          AngularityBin(): TObject(), fMin(-1.), fMax(-1.), fValue(-1.) {}
-          AngularityBin(double min, double max, double value) : TObject(), fMin(min), fMax(max), fValue(value) {}
-          virtual ~AngularityBin() {}
-          
-          double Min() const { return fMin; }
-          double Max() const { return fMax; }
-          double Value() const { return fValue; }
-
-          void SetMin(double min) { fMin = min; }
-          void SetMax(double max) { fMax = max; }
-          void SetValue(double value) { fValue = value; }
-
-          bool IsInRange(double entry) const { return entry >= fMin && entry < fMax; }
-          bool IsOK() const { return fMin > -1. && fMax > -1.; }
-
-        private:
-          double fMin;          ///< Bin min
-          double fMax;          ///< Bin max
-          double fValue;        ///< Bin value
-      };
-      class BinNotFoundException : public std::exception {
-        public:
-          BinNotFoundException(double pt) : fMessage(), fPt(pt) {
-            fMessage = Form("No bin found for pt %f", pt);
-          }
-          virtual ~BinNotFoundException() throw() {}
-
-          const char *what() const throw() {
-            return fMessage.c_str();
-          }
-
-          double getPt() const {return fPt; }
-        private:
-          std::string fMessage;   ///< Message
-          double      fPt;        ///< Pt
-      };
-
-      AngularityHandler() : TObject(), fRadius(-1), fBins() { fBins.SetOwner(true); }
-      AngularityHandler(double radius) : TObject(), fRadius(radius), fBins() { fBins.SetOwner(true); }
-      virtual ~AngularityHandler() {}
-
-      void InitFromFile(const char *filename);
-      void SetBin(double min, double max, double value);
-      void SetRadius(double radius) { fRadius = radius; }
-
-      double GetValue(double pt) const;
-      bool IsHigherAngularity(double pt, double angularity) const;
-
-    private:
-      AngularityBin FindBin(double pt) const; 
-      double fRadius;       ///< Jet raduius
-      TList fBins;          ///< Pt bins
-  };
 
   enum EJetTypeOutliers_t {
     kOutlierPartJet,
@@ -201,4 +213,7 @@ private:
 }
 
 }
+
+std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler &);
+std::ostream &operator<<(std::ostream &stream, const PWGJE::EMCALJetTasks::AngularityHandler::AngularityBin &);
 #endif // ALIANALYSISTASKEMCALJETENERGYSCALE_H

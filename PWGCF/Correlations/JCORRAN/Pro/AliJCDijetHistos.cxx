@@ -24,7 +24,9 @@
 //int const nALICEBins = 8;
 //double ptBinsALICE[nALICEBins+1] = { 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 100.0, 120.0 };
 vector<double> AliJCDijetHistos::CentBin;
+vector<double> AliJCDijetHistos::dijetMBin;
 int AliJCDijetHistos::fNCentBin;
+int AliJCDijetHistos::fnNewBinsDijet1;
 
 //______________________________________________________________________________
 AliJCDijetHistos::AliJCDijetHistos() :
@@ -51,6 +53,10 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_rhomLinHighPt(),
     fh_jetPt(),
     fh_jetPt_ALICE(),
+    fh_jetPtLeadSublead_ALICE(),
+    fh_jetPtLeadSubleadDeltaPhi_ALICE(),
+    fh_jetPtLeadSubleadMBin_ALICE(),
+    fh_jetPtLeadSubleadDeltaPhiMBin_ALICE(),
     fh_jetPtTransBGSub(),
     fh_jetN(),
     fh_jetEta(),
@@ -89,17 +95,24 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetResponse(),
     fh_dijetResponseLin(),
     fh_doubleConeM(),
+    fh_doubleConeMAlt(),
     fh_jet2Cone1Dist(),
     fh_jet1Cone2Dist(),
     fh_jet1Cone2AltDist(),
     fh_localRho1(),
     fh_localRho2(),
+    fh_localRho2Alt(),
     fh_deltaRho1(),
     fh_deltaRho2(),
+    fh_deltaRho2Alt(),
     fh_deltaLocalRho(),
+    fh_deltaLocalRhoAlt(),
     fh_dijetdeltaM5(),
+    fh_dijetdeltaM5Alt(),
     fh_dijetdeltaM5NearCone(),
     fh_dijetdeltaM5NearConeAlt(),
+    fh_dijetMLocalRho(),
+    fh_dijetMLocalRhoAlt(),
     fh_deltaMResponse(),
     fh_dijetResponseTrunc(),
     fh_dijetResponseTrunc2(),
@@ -136,6 +149,10 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_rhomLinHighPt(obj.fh_rhomLinHighPt),
     fh_jetPt(obj.fh_jetPt),
     fh_jetPt_ALICE(obj.fh_jetPt_ALICE),
+    fh_jetPtLeadSublead_ALICE(obj.fh_jetPtLeadSublead_ALICE),
+    fh_jetPtLeadSubleadDeltaPhi_ALICE(obj.fh_jetPtLeadSubleadDeltaPhi_ALICE),
+    fh_jetPtLeadSubleadMBin_ALICE(obj.fh_jetPtLeadSubleadMBin_ALICE),
+    fh_jetPtLeadSubleadDeltaPhiMBin_ALICE(obj.fh_jetPtLeadSubleadDeltaPhiMBin_ALICE),
     fh_jetPtTransBGSub(obj.fh_jetPtTransBGSub),
     fh_jetN(obj.fh_jetN),
     fh_jetEta(obj.fh_jetEta),
@@ -174,17 +191,24 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetResponse(obj.fh_dijetResponse),
     fh_dijetResponseLin(obj.fh_dijetResponseLin),
     fh_doubleConeM(obj.fh_doubleConeM),
+    fh_doubleConeMAlt(obj.fh_doubleConeMAlt),
     fh_jet2Cone1Dist(obj.fh_jet2Cone1Dist),
     fh_jet1Cone2Dist(obj.fh_jet1Cone2Dist),
     fh_jet1Cone2AltDist(obj.fh_jet1Cone2AltDist),
     fh_localRho1(obj.fh_localRho1),
     fh_localRho2(obj.fh_localRho2),
+    fh_localRho2Alt(obj.fh_localRho2Alt),
     fh_deltaRho1(obj.fh_deltaRho1),
     fh_deltaRho2(obj.fh_deltaRho2),
+    fh_deltaRho2Alt(obj.fh_deltaRho2Alt),
     fh_deltaLocalRho(obj.fh_deltaLocalRho),
+    fh_deltaLocalRhoAlt(obj.fh_deltaLocalRhoAlt),
     fh_dijetdeltaM5(obj.fh_dijetdeltaM5),
+    fh_dijetdeltaM5Alt(obj.fh_dijetdeltaM5Alt),
     fh_dijetdeltaM5NearCone(obj.fh_dijetdeltaM5NearCone),
     fh_dijetdeltaM5NearConeAlt(obj.fh_dijetdeltaM5NearConeAlt),
+    fh_dijetMLocalRho(obj.fh_dijetMLocalRho),
+    fh_dijetMLocalRhoAlt(obj.fh_dijetMLocalRhoAlt),
     fh_deltaMResponse(obj.fh_deltaMResponse),
     fh_dijetResponseTrunc(obj.fh_dijetResponseTrunc),
     fh_dijetResponseTrunc2(obj.fh_dijetResponseTrunc2),
@@ -216,6 +240,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // set AliJBin here //
     fHistCentBin.Set("CentBin","CentBin","Cent:",AliJBin::kSingle).SetBin(fNCentBin);
     fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(7);
+    fMBin.Set("MBin","MBin","dijetM:%.0f-%.0f:").SetBin(fSMBins);
 
     // fh_events counts several things:
     // 0:  Number of events
@@ -366,6 +391,26 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     fh_jetPt_ALICE
         << TH1D("h_jetPt_ALICE","h_jetPt_ALICE", 300, 10, 310 )
         << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_jetPtLeadSublead_ALICE
+        << TH1D("h_jetPtLeadSublead_ALICE","h_jetPtLeadSublead_ALICE", 300, 10, 310 )
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_jetPtLeadSubleadDeltaPhi_ALICE
+        << TH1D("h_jetPtLeadSubleadDeltaPhi_ALICE","h_jetPtLeadSubleadDeltaPhi_ALICE", 300, 10, 310 )
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_jetPtLeadSubleadMBin_ALICE
+        << TH1D("h_jetPtLeadSubleadMBin_ALICE","h_jetPtLeadSubleadMBin_ALICE", 300, 10, 310 )
+        << fHistCentBin << fJetBin << fMBin
+        << "END" ;
+
+    fh_jetPtLeadSubleadDeltaPhiMBin_ALICE
+        << TH1D("h_jetPtLeadSubleadDeltaPhiMBin_ALICE","h_jetPtLeadSubleadDeltaPhiMBin_ALICE", 300, 10, 310 )
+        << fHistCentBin << fJetBin << fMBin
         << "END" ;
 
     fh_jetPtTransBGSub
@@ -556,6 +601,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     fh_doubleConeM
         << TH1D("h_doubleConeM", "h_doubleConeM", 500, 0, 500)
         << "END" ;
+
+    fh_doubleConeMAlt
+        << TH1D("h_doubleConeMAlt", "h_doubleConeMAlt", 500, 0, 500)
+        << "END" ;
     
     fh_jet2Cone1Dist
         << TH1D("fh_jet2Cone1Dist", "fh_jet2Cone1Dist", 40, 0, 4)
@@ -577,6 +626,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH1D("localRho2", "localRho2", 200, 0, 200)
         << "END" ;
     
+    fh_localRho2Alt
+        << TH1D("localRho2Alt", "localRho2Alt", 200, 0, 200)
+        << "END" ;
+    
     fh_deltaRho1
         << TH1D("deltaRho1", "deltaRho1", 251, -50.5, 200.5)
         << "END" ;
@@ -585,12 +638,24 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH1D("deltaRho2", "deltaRho2", 251, -50.5, 200.5)
         << "END" ;
     
+    fh_deltaRho2Alt
+        << TH1D("deltaRho2Alt", "deltaRho2Alt", 251, -50.5, 200.5)
+        << "END" ;
+    
     fh_deltaLocalRho
         << TH1D("deltaLocalRho", "deltaLocalRho", 401, -200.5, 200.5)
         << "END" ;
     
+    fh_deltaLocalRhoAlt
+        << TH1D("deltaLocalRhoAlt", "deltaLocalRhoAlt", 401, -200.5, 200.5)
+        << "END" ;
+    
     fh_dijetdeltaM5
         << TH1D("h_dijetdeltaM5", "h_dijetdeltaM5", 751, -250.5, 500.5)
+        << fJetBin << "END" ;
+
+    fh_dijetdeltaM5Alt
+        << TH1D("h_dijetdeltaM5Alt", "h_dijetdeltaM5Alt", 751, -250.5, 500.5)
         << fJetBin << "END" ;
 
     fh_dijetdeltaM5NearCone
@@ -603,6 +668,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetMLocalRho
         << TH1D("h_dijetMLocalRho", "h_dijetMLocalRho", 500, 0, 500)
+        << fJetBin << "END" ;
+
+    fh_dijetMLocalRhoAlt
+        << TH1D("h_dijetMLocalRhoAlt", "h_dijetMLocalRhoAlt", 500, 0, 500)
         << fJetBin << "END" ;
 
     fh_deltaMResponse
@@ -641,5 +710,18 @@ int AliJCDijetHistos::GetCentralityClass(Double_t fCent){
             return iCbin;
     }
     return -1;
+}
+
+//Overflow will be put into the last bin.
+int AliJCDijetHistos::GetDijetMClass(Double_t fMClass){
+    for(int iBin = 0; iBin < fnNewBinsDijet1; iBin++){
+        if(fMClass > dijetMBin.at(iBin) && fMClass < dijetMBin.at(iBin+1))
+            return iBin;
+    }
+    if(fMClass > dijetMBin.at(fnNewBinsDijet1))
+        return fnNewBinsDijet1;
+    if(fMClass <= 0.0)
+        return 0;
+    return 0;
 }
 

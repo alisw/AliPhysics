@@ -27,6 +27,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TF1.h"
 #include "TList.h"
 #include "TChain.h"
 #include "TVector2.h"
@@ -61,6 +62,8 @@ fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
 fScaleByRAA(kFALSE),
+fHistoRAA(0x0),
+fTF1RAA(0x0),
 fSelectonebbbar(kFALSE),
 hNEvents(0),
 hNEventsW(0),
@@ -188,6 +191,8 @@ fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
 fScaleByRAA(kFALSE),
+fHistoRAA(0x0),
+fTF1RAA(0x0),
 fSelectonebbbar(kFALSE),
 hNEvents(0),
 hNEventsW(0),
@@ -326,6 +331,8 @@ void AliAnalysisTaskBeauty::UserCreateOutputObjects()
   printf("  high-eta cut:         %f\n", fEtamax);
   printf("  low-eta cut:         %f\n", fEtamin);
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
+  if(fHistoRAA && fScaleByRAA) printf("  Use histo for HFE RAA\n");
+  if(fTF1RAA && fScaleByRAA) printf("  User TF1 for HFE RAA\n");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
   printf("  select only event wih one bbbar pair:    %s\n", fSelectonebbbar?"YES":"NO");
 
@@ -852,10 +859,11 @@ void AliAnalysisTaskBeauty::UserExec(Option_t *)
 
       // HFE R_AA scaling
       if (fScaleByRAA) {
+	//printf("Check: scale Raa %f for pt %f\n",scale_RAA(pt_i),pt_i);
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
-	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
+        ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
 
       ptweight2 = ptweight2*eventw*efficiency_i*efficiency_j;
@@ -1190,12 +1198,12 @@ void AliAnalysisTaskBeauty::CreateHistos(){
   hMeePtee_LS_eta_pt  = new TH2F("hMeePtee_LS_eta_pt" ,"e+e+ & e-e-;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400 = new TH2F("hMeePtee_ULS_eta08_pt400","e+e-,       |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt400  = new TH2F("hMeePtee_LS_eta08_pt400" ,"e+e+ & e-e-,|eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt200_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt200_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt200_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt200_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt300_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt300_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt300_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt300_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt400_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt400_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt400_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt400_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%i mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt200_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt200_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt200_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt200_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt300_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt300_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt300_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt300_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt400_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt400_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt400_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt400_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}",fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
 
   // Histograms for invariant mass spectra (ULS,LS),  b-->e , bBar->e
   // titles (eta, phenix) are messed up...
@@ -1500,11 +1508,23 @@ Double_t AliAnalysisTaskBeauty::pt_cutLow(Double_t pT) {
 }
 
 Double_t AliAnalysisTaskBeauty::scale_RAA(Double_t pT) {
-  //return 8.46749e-01 + (-1.30301e-01) * pT; // fit 0-10%
-  //return 9.03546e-01 + (-1.09215e-01) * pT; // fit 20-40%
-  return 0.885416 + (-0.114357) * pT; // fits for 10-20% + 20-40% combined
+  if(fHistoRAA) {
+    Int_t index = fHistoRAA->FindBin(pT);
+    Int_t n = fHistoRAA->GetNbinsX();
+    if(pT < fHistoRAA->GetBinLowEdge(1))        return fHistoRAA->GetBinContent(1);
+    else if(pT > fHistoRAA->GetBinLowEdge(n+1)) return fHistoRAA->GetBinContent(n);
+    return fHistoRAA->GetBinContent(index);
+  }
+  else if(fTF1RAA){
+    return fTF1RAA->Eval(pT);
+  }
+  else {
+    return 8.46749e-01 + (-1.30301e-01) * pT; // fit 0-10%
+    //return 9.03546e-01 + (-1.09215e-01) * pT; // fit 20-40%
+    //return 0.885416 + (-0.114357) * pT; // fits for 10-20% + 20-40% combined
+  }
+  
 }
-
 
 Bool_t AliAnalysisTaskBeauty::Inphenixacc(Double_t phi,Double_t pt, Int_t pdg){
   //

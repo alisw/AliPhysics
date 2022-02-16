@@ -77,7 +77,7 @@ class AliAnalysisTaskSELc2pKs0fromKFP : public AliAnalysisTaskSE
         void SetWriteLcQATree(Bool_t a) {fWriteLcQATree = a;}
         Bool_t GetWriteLcQATree() const {return fWriteLcQATree;}
         void FillEventROOTObjects(AliAODEvent* aodEvent);
-        void FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
+        void FillTreeGenLc(TClonesArray *mcArray, AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent);
         void FillTreeRecLcFromCascadeHF(AliAODRecoCascadeHF *Lc2pKs0orLpi, KFParticle kfpLc, AliAODTrack *trackBach, KFParticle kfpBach, KFParticle kfpV0, KFParticle kfpV0_massConstraint, AliAODTrack *v0Pos, AliAODTrack *v0Neg, KFParticle PV, TClonesArray *mcArray, Int_t lab_V0, Int_t lab_Lc, KFParticle kfpLc_woV0MassConst, AliAODEvent *aodEvent, AliAODVertex *ownPVtx);
         void SetWeightFunction(TF1* weight) {fWeight=weight;}
 

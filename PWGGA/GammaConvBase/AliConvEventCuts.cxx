@@ -382,18 +382,18 @@ AliConvEventCuts::~AliConvEventCuts() {
       delete fCutString;
       fCutString = NULL;
   }
-  if(fNotRejectedStart){
-      delete[] fNotRejectedStart;
-      fNotRejectedStart = NULL;
-  }
-  if(fNotRejectedEnd){
-      delete[] fNotRejectedEnd;
-      fNotRejectedEnd = NULL;
-  }
-  if(fGeneratorNames){
-      delete[] fGeneratorNames;
-      fGeneratorNames = NULL;
-  }
+  // if(fNotRejectedStart){
+  //     delete[] fNotRejectedStart;
+  //     fNotRejectedStart = NULL;
+  // }
+  // if(fNotRejectedEnd){
+  //     delete[] fNotRejectedEnd;
+  //     fNotRejectedEnd = NULL;
+  // }
+  // if(fGeneratorNames){
+  //     delete[] fGeneratorNames;
+  //     fGeneratorNames = NULL;
+  // }
   if(fUtils){
     delete fUtils;
     fUtils = NULL;
@@ -1899,26 +1899,34 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="";
       // AliInfo("Info: Nothing to be done");
       break;
-    case 1: // CEMC1 - V0OR and PHOS fired
+    case 1: // CPHI1 - V0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
       fSpecialTriggerName="AliVEvent::kPHI1";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI1";
       break;
-    case 2: // CEMC7 - V0AND and PHOS fired
+    case 2: // CPHI7 - V0AND and PHOS fired
       fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kPHI7;
       fSpecialTriggerName="AliVEvent::kPHI7";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI7";
       break;
-    case 3: // CEMC8  - T0OR and PHOS fired
+    case 3: // CPHI8  - T0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI8;
       fSpecialTriggerName="AliVEvent::kPHI8";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI8";
+      break;
+    case 4: // CPHI7 - V0AND and PHOS fired but with additional INEL>0 requirement
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fOfflineTriggerMask=AliVEvent::kPHI7;
+      fSpecialTriggerName="AliVEvent::kPHI7";
+      fSpecialSubTriggerName="CPHI7";
+      fINELgtZEROTrigger=kTRUE;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -2863,6 +2871,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC17j5a :
     case kLHC17j5b :
     case kLHC17j5c :
+    case kLHC21j8a :
     case kLHC17P1JJ :
     case kLHC17P1JJLowB :
     case kLHC18l6b1 :
@@ -5737,7 +5746,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 }
 
 //________________________________________________________________________
-Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
+Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event)
+{
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
     AliMultSelection* MultSelectionTask = (AliMultSelection*)event->FindListObject("MultSelection");
@@ -5746,8 +5756,62 @@ Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event){
       return kFALSE;
     }
     return MultSelectionTask->GetThisEventINELgtZERO();
-    // return MultSelectionTask->IsINELgtZERO(event);
   }
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsEventTrueINELgtZERO(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+
+  const AliVVertex* primVtxMC   = lMCevent->GetPrimaryVertex();
+  Double_t mcProdVtxX   = primVtxMC->GetX();
+  Double_t mcProdVtxY   = primVtxMC->GetY();
+  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
+  Bool_t isTrueINELgtZERO = kFALSE;
+  if(!event || event->IsA()==AliESDEvent::Class()){
+    for(Long_t i = 0; i < lMCevent->GetNumberOfTracks(); i++) {
+      if (IsConversionPrimaryESD( lMCevent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+
+        AliMCParticle* particle = (AliMCParticle *)lMCevent->GetTrack(i);
+        if (!particle) continue;
+        if(TMath::Abs(particle->Charge())<0.001) continue;
+        if(fabs(particle -> Eta()) < 1){
+          isTrueINELgtZERO = kTRUE;
+          break;
+        }
+      }
+    }
+  } else if(event->IsA()==AliAODEvent::Class()){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      // Loop over all primary MC particle
+      for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+        if (!particle) continue;
+
+        Bool_t isPrimary = IsConversionPrimaryAOD(event, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+        if (isPrimary){
+          if(fabs(particle -> Eta()) < 1){
+            isTrueINELgtZERO = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return isTrueINELgtZERO;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsMCTriggerSelected(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+  // if requested event class is INEL>0, check if it is INEL>0 on MC gen. level
+  if( GetUseINELgtZERO() && !IsEventTrueINELgtZERO(event, lMCevent)){
+    return kFALSE;
+  }
+  // standard, all events should be accepted (all inelastic collisions)
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -6410,7 +6474,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     if (!mimickedTrigger ) return kFALSE;
 
   if(fINELgtZEROTrigger)
-    if(!isINELgtZERO)         return kFALSE;
+    if(!isINELgtZERO)      return kFALSE;
 
   return kTRUE;
 
@@ -6432,18 +6496,18 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     return;
   }
 
-  if(fNotRejectedStart){
-    delete[] fNotRejectedStart;
-    fNotRejectedStart         = NULL;
-  }
-  if(fNotRejectedEnd){
-    delete[] fNotRejectedEnd;
-    fNotRejectedEnd         = NULL;
-  }
-  if(fGeneratorNames){
-    delete[] fGeneratorNames;
-    fGeneratorNames         = NULL;
-  }
+  // if(fNotRejectedStart){
+  //   delete[] fNotRejectedStart;
+  //   fNotRejectedStart         = NULL;
+  // }
+  // if(fNotRejectedEnd){
+  //   delete[] fNotRejectedEnd;
+  //   fNotRejectedEnd         = NULL;
+  // }
+  // if(fGeneratorNames){
+  //   delete[] fGeneratorNames;
+  //   fGeneratorNames         = NULL;
+  // }
 
   AliGenCocktailEventHeader *cHeader   = 0x0;
   AliAODMCHeader *cHeaderAOD       = 0x0;
@@ -6573,9 +6637,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     }
     if (fDebugLevel > 0 ) cout << "number of headers: " <<fnHeaders << endl;
 
-    fNotRejectedStart       = new Int_t[fnHeaders];
-    fNotRejectedEnd         = new Int_t[fnHeaders];
-    fGeneratorNames         = new TString[fnHeaders];
+    fNotRejectedStart.resize(fnHeaders);
+    fNotRejectedEnd.resize(fnHeaders);
+    fGeneratorNames.resize(fnHeaders);
 
     if(rejection == 1 || rejection == 3){
       // note: if we're here, we know we have fPeriodEnum!=kLHC20g10
@@ -6708,8 +6772,8 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       }
     }
   } else { // No Cocktail Header Found
-    fNotRejectedStart         = new Int_t[1];
-    fNotRejectedEnd         = new Int_t[1];
+    fNotRejectedStart.resize(1);
+    fNotRejectedEnd.resize(1);
 
     fnHeaders             = 1;
     fNotRejectedStart[0]       = 0;
@@ -6719,7 +6783,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       fNotRejectedEnd[0]       = -1;
     }
 
-    fGeneratorNames         = new TString[1];
+    fGeneratorNames.resize(1);
     fGeneratorNames[0]         = "NoCocktailGeneratorFound";
 //     SetRejectExtraSignalsCut(0);
   }
@@ -8637,6 +8701,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17P1Pyt8LowB") == 0 ||
               periodName.CompareTo("LHC17h3") ==0 ){
     fPeriodEnum = kLHC17P1Pyt8LowB;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17P1Pyt8NoB") == 0 ||
+              periodName.CompareTo("LHC21j8a") ==0 ){
+    fPeriodEnum = kLHC21j8a;
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC17P1JJ") == 0 ||
               periodName.CompareTo("LHC18f5") == 0 ){

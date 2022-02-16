@@ -18,7 +18,8 @@ AliGenerator *AddMCGenAmptPbPb(
                           Double_t alpha_s     = 1./3.,   // alpa in parton cascade
                           Int_t Flag_SM        = 4,       // flag for string melting
                           Int_t NTmax          = 3,     // NTMAX: number of timesteps
-                          Bool_t stringMelting = kTRUE   // string melting option
+                          Bool_t stringMelting = kTRUE,   // string melting option
+			  Bool_t randomRPangle = kTRUE   // Randomise Reaction Plane Angle. 
                            )
 {
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
@@ -56,7 +57,7 @@ AliGenerator *AddMCGenAmptPbPb(
   genAMPT->SetBoostLHC(1);
 
   // randomize reaction plane
-  genAMPT->SetRandomReactionPlane(kTRUE);
+  genAMPT->SetRandomReactionPlane(randomRPangle);
 
  return genAMPT;
 

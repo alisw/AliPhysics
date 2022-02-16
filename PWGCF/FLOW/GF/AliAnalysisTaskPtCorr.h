@@ -10,8 +10,9 @@
 #include "TString.h"
 #include "TRandom.h"
 #include "AliESDtrackCuts.h"
-#include "AliGFWWeights.h"
 #include "AliProfileBS.h"
+#include "AliCkContainer.h"
+#include "AliPtContainer.h"
 
 class TList;
 class TH1;
@@ -25,7 +26,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
 {
   public:
     AliAnalysisTaskPtCorr();
-    AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString analysisStage, TString ContSubfix);
+    AliAnalysisTaskPtCorr(const char *name, bool IsMC, TString ContSubfix);
     virtual ~AliAnalysisTaskPtCorr();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -41,44 +42,51 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void OverrideMC(bool ismc) { fIsMC = ismc; }
     void OnTheFly(bool otf) { fOnTheFly = otf; }
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
+    void SetEta(double eta) { fEta = eta; }
+    void SetEtaGap(double eta) { fEtaGap = eta; }
+    void SetPtRange(double ptmin, double ptmax) { fPtMin = ptmin; fPtMax = ptmax; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
+  protected:
     AliEventCuts            fEventCuts;
-    
   private:
-    static int              fFactorial[9];
+    AliAnalysisTaskPtCorr(const AliAnalysisTaskPtCorr&);
+    AliAnalysisTaskPtCorr& operator=(const AliAnalysisTaskPtCorr&);
+    static double           fFactorial[9];
     static int              fSign[9];
     TString*                fCentEst;
     int                     fRunNo; //!
     int                     fSystFlag;
     TString*                fContSubfix;
     bool                    fIsMC; 
-    TList*                  fOutput; //! output list
+    AliMCEvent*             fMCEvent; //!
     TList*                  fCorrList; //!
-    TList*                  fWeightList; //!
     TList*                  fEfficiencyList;
-    TH2D**                  fEfficiency;     
     TH1D**                  fEfficiencies;     
-    AliGFWWeights**         fWeights; //!
     TString                 fWeightSubfix;
     AliGFWCuts*             fGFWSelection; 
-    TAxis*                  fV0MAxis; //!
-    TAxis*                  fMultiAxis; //!
+    TAxis*                  fV0MAxis; 
+    TAxis*                  fMultiAxis; 
     double*                 fMultiBins; //!
-    double                  fNMultiBins; //!
-    TAxis*                  fPtAxis;  //!
+    int                     fNMultiBins; //!
+    TAxis*                  fPtAxis;  
     double*                 fPtBins; //!
     int                     fNPtBins; //!
     double                  fEta;
+    double                  fEtaGap;
     double                  fPtMin;
     double                  fPtMax;
-    int                     fAnalysisStage;
     TRandom*                fRndm;
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
     int                     mpar;
     TH1D*                   fV0MMulti;    //!
-    AliProfileBS          **fptcorr;     //!
-
+    AliProfileBS**          fptcorr;     //!
+    AliProfileBS**          fptcorrP;     //!
+    AliProfileBS**          fptcorrN;     //!
+    AliProfileBS*           pfmpt;      //!
+    AliPtContainer*         fck;      //!
+    AliPtContainer*         fskew;      //!
+    AliPtContainer*         fkur;      //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
@@ -90,15 +98,14 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool AcceptMCEvent(AliVEvent* inev);
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
-    void FillWeights(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    void FillCorrelationProfiles(double l_cent, double* ptcorr, double* w, double &rn);
-    void FillWPCounter(double* inarr, double w, double p);
-    void FillWCounter(double* inarr, double w);
-    void MomentumCorrelation(double* wp, double* w, double* ptcorr, double* sumw);
+    void FillWPCounter(double inarr[10][10], double w, double p);
+    void FillMomentumCorrelation(double wp[10][10], double wpP[10][10], double wpN[10][10], const double &l_cent, double &rn);
+    void CalculateSingleEvent(vector<double> &corr, vector<double> &sumw, double wp[10][10]);
+    void CalculateSubEvent(vector<double> &corrP, vector<double> &sumwP, vector<double> &corrN, vector<double> &sumwN, double wpP[10][10], double wpN[10][10]);
+    void FillCorrelationProfile(const vector<double> &corr, const vector<double> &sumw, const double &l_cent, double &rn);
+    void FillSubEventProfile(const vector<double> &corrP,const vector<double> &sumwP,const vector<double> &corrN, const vector<double> &sumwN, const double &l_cent, double &rn);
     double OrderedAddition(std::vector<double> vec, int size);
-    bool LoadWeights(const int &lRunNo);
-    int GetAnalysisStage(TString instr);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);

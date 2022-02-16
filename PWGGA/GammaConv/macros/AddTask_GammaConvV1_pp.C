@@ -2400,6 +2400,75 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("n2310113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
     cuts.AddCutPCM("n7a10113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
 
+
+    // ------------ Mult selection using V0M estimator for INEL >0 --------
+  } else if (trainConfig == 2790) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("r0015113", "0dm00009f9730000dge0404000", "0152103500000000"); // default
+    cuts.AddCutPCM("r0015113", "0dm00009f9730000dge0474000", "0152103500000000"); // select photons with ITS, TRD
+  } else if (trainConfig == 2791) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("n0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0 - 10% (V0M est.)
+    cuts.AddCutPCM("n1215113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 10 - 20% (V0M est.)
+    cuts.AddCutPCM("n2315113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 20 - 30% (V0M est.)
+    cuts.AddCutPCM("n3515113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 30 - 50% (V0M est.)
+  } else if (trainConfig == 2792) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("n5715113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 50 - 70% (V0M est.)
+    cuts.AddCutPCM("n7a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 70 - 100% (V0M est.)
+
+  } else if (trainConfig == 2793) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+    cuts.AddCutPCM("m1515113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 1 - 5% (V0M est.)
+    cuts.AddCutPCM("m5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 5 - 10% (V0M est.)
+  } else if (trainConfig == 2794) { // Multiplicity selection, ITS + TRD photons // same mult selection as for V0M high mult trigger
+    cuts.AddCutPCM("r0a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0. - 0.1% (V0M est.)
+    cuts.AddCutPCM("r0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0. - 0.01% (V0M est.)
+    cuts.AddCutPCM("r1515113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0.01 - 0.05% (V0M est.)
+    cuts.AddCutPCM("r5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0.05 - 0.1% (V0M est.)
+  } else if (trainConfig == 2795) { // Multiplicity selection, ITS + TRD photons // V0M high mult trigger
+    cuts.AddCutPCM("r0a78113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, V0M high mult trigg., 0. - 0.1% (V0M est.)
+    cuts.AddCutPCM("r0178113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, V0M high mult trigg., 0. - 0.01% (V0M est.)
+    cuts.AddCutPCM("r1578113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, V0M high mult trigg., 0.01 - 0.05% (V0M est.)
+    cuts.AddCutPCM("r5a78113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, V0M high mult trigg., 0.05 - 0.1% (V0M est.)
+
+  } else if (trainConfig == 2796) { // selection of multipliicties for efficiency studies
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+    cuts.AddCutPCM("m5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+    cuts.AddCutPCM("n2315113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+    cuts.AddCutPCM("n7a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // 
+
+// ------------ Mult selection using SPD estimator for INEL>0 --------
+  } else if (trainConfig == 2800) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("u0015113", "0dm00009f9730000dge0404000", "0152103500000000"); // INEL > 0 default
+    cuts.AddCutPCM("u0015113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL > 0 select photons with ITS, TRD
+
+  } else if (trainConfig == 2801) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("p0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0 - 10% (SPD est.)
+    cuts.AddCutPCM("p1215113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 10 - 20% (SPD est.)
+    cuts.AddCutPCM("p2315113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 20 - 30% (SPD est.)
+    cuts.AddCutPCM("p3515113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 30 - 50% (SPD est.)
+
+  } else if (trainConfig == 2802) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("p5715113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 50 - 70% (SPD est.)
+    cuts.AddCutPCM("p7a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 70 - 100% (SPD est.)
+
+  } else if (trainConfig == 2803) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("o0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (SPD est.)
+    cuts.AddCutPCM("o1515113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 1 - 5% (SPD est.)
+    cuts.AddCutPCM("o5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 5 - 10% (SPD est.)
+
+  } else if (trainConfig == 2804) { // Multiplicity selection, ITS + TRD photons // same mult selection as for V0M high mult trigger
+    cuts.AddCutPCM("u0a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0. - 1% (SPD est.)
+    cuts.AddCutPCM("u0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0. - 0.1% (SPD est.)
+    cuts.AddCutPCM("u1515113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0.1 - 0.5% (SPD est.)
+    cuts.AddCutPCM("u5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0.5 - 1% (SPD est.)
+  } else if (trainConfig == 2805) { // Multiplicity selection, ITS + TRD photons // INEL>0 SPD high mult trigger
+    cuts.AddCutPCM("u0a78113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0 SPD high mult trigg., 0. - 1% (SPD est.)
+    cuts.AddCutPCM("u0178113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0 SPD high mult trigg., 0. - 0.1% (SPD est.)
+    cuts.AddCutPCM("u1578113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0 SPD high mult trigg., 0.1 - 0.5% (SPD est.)
+    cuts.AddCutPCM("u5a78113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0 SPD high mult trigg., 0.5 - 1% (SPD est.)
+
+
+
+    
     
     // ------------ Mult selection using SPD estimator --------
   } else if (trainConfig == 2770) { // Multiplicity selection, ITS + TRD photons

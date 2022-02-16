@@ -69,6 +69,7 @@ const std::map<std::string, AliAnalysisTaskEmcalJetHUtils::EEfficiencyPeriodIden
   { "LHC15o", AliAnalysisTaskEmcalJetHUtils::kLHC15o},
   { "LHC18q", AliAnalysisTaskEmcalJetHUtils::kLHC18qr},
   { "LHC18r", AliAnalysisTaskEmcalJetHUtils::kLHC18qr},
+  { "LHC18qr", AliAnalysisTaskEmcalJetHUtils::kLHC18qr},
   { "LHC11a", AliAnalysisTaskEmcalJetHUtils::kLHC11a},
   { "pA", AliAnalysisTaskEmcalJetHUtils::kpA },
   { "pp", AliAnalysisTaskEmcalJetHUtils::kpp }
@@ -129,6 +130,41 @@ const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_50_90_pt[10] = {
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_50_90_eta[13] = { 1.1259,  0.0105, 0.1961, -0.1330, -0.0103,
                                      0.0440,  0.8421, 0.0066, 0.5061,  0.0580,
                                      -0.0379, 0.0651, 0.7786 };
+
+// For pt parameters, first 5 are low pt, next 6 are high pt
+// For eta parameters, first 6 are eta =< -0.04 (eta left in Eliane's def), next 6 are => -0.04 (eta right
+// in Eliane's def). The last parameter normalizes the eta values such that their maximum is 1. This was apparently
+// part of their definition, but was implementing by normalizing a TF1 afterwards. My implementation approach here
+// is more useful when not using a TF1.
+
+// 0-10% centrality
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_0_10_pt[11] = { 0.699603,         0.267286 ,         -0.195571 , 0.0678511,
+                                    -0.00933464,         0.938601,         -0.100949 , 0.0375783,
+                                    -0.00645743 , 0.000528983, -1.66575e-05    };
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_0_10_eta[11] = { 0.833875,  0.00307507, 0.304824, -0.0326049, 0.684159,
+                                     -0.0131913,  0.911178, 0.72371, 0.0067518,  0.70137,
+                                     0.670715};
+
+// 10-30% centrality
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_10_30_pt[11] = { 0.716997,         0.238892 ,         -0.16799 ,0.0575402,   			                      -0.00800868,       0.781638,   0.0612547,     -0.022832,                                          				      0.00427833,   -0.000382241,   1.29733e-05 };
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_10_30_eta[11] = { 0.812732, 0.00252395 , 0.335487 ,-0.0243217,0.692711,      			     		      -0.00910397,     0.872084,     0.732093, 0.0060846 , 0.682686, 
+				      0.680311};
+
+// 30-50% centrality
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_30_50_pt[11] = { 0.727383,         0.225829 ,      -0.157234,0.0546461,
+				      -0.00781778,       0.982269,  -0.13003,       0.0500213,
+				      -0.00909715, 0.000802507,   -2.75672e-05  };
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_30_50_eta[11] = {0.797942,  0.00226676, 0.362397, -0.0191437, 0.69744,
+				      -0.0083035, 0.873209, 0.736335, 0.00565254,  0.673817,
+				      0.677491};
+
+// 50-90% centrality
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_50_90_pt[11] = { 0.734614,          0.212767 ,     -0.14503, 0.0498915,
+				      -0.00713753,       0.738962,  0.102185,       -0.0349441,
+				      0.0059742, -0.000495631,     1.58505e-05  };
+const double AliAnalysisTaskEmcalJetHUtils::LHC18qrParam_50_90_eta[11] = {0.783412,  0.00219941, 0.389413, -0.0156538, 0.696907,
+				      -0.00357013, 0.903991, 0.734531, 0.0056072,  0.68324,
+				      0.659263};
 
 /**
  * Determine leading hadron pt in a jet. This is inspired by AliJetContainer::GetLeadingHadronMomentum(), but
@@ -244,7 +280,9 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     typedef void (AliEventCuts::*MFP)();
     std::map<std::string, MFP> eventCutsPeriods = { std::make_pair("LHC11h", &AliEventCuts::SetupRun1PbPb),
                             std::make_pair("LHC15o", &AliEventCuts::SetupLHC15o),
-                            std::make_pair("LHC18qr", &AliEventCuts::SetupPbPb2018) };
+                            std::make_pair("LHC18qr", &AliEventCuts::SetupPbPb2018),
+                            std::make_pair("LHC18q", &AliEventCuts::SetupPbPb2018),
+                            std::make_pair("LHC18r", &AliEventCuts::SetupPbPb2018) };
     std::string manualCutsPeriod = "";
     yamlConfig.GetProperty({ baseName, "cutsPeriod" }, manualCutsPeriod, true);
     auto eventCutsPeriod = eventCutsPeriods.find(manualCutsPeriod);
@@ -1039,6 +1077,189 @@ double AliAnalysisTaskEmcalJetHUtils::LHC15oTrackingEfficiency(const double trac
 }
 
 /**
+ * Calculate the track efficiency for LHC18qr - PbPb at 5.02 TeV. See the gamma-hadron analysis (from Eliane via Charles).
+ *
+ * @param[in] trackPt Track pt
+ * @param[in] trackEta Track eta
+ * @param[in] centralityBin Centrality bin of the current event.
+ * @param[in] taskName Name of the task which is calling this function (for logging purposes).
+ * @returns The efficiency of measuring the given single track.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrTrackingEfficiency(const double trackPt, const double trackEta, const int centralityBin, const std::string & taskName)
+{
+  // We use the switch to determine the parameters needed to call the functions.
+  // Assumes that the centrality bins follow (as defined in AliAnalysisTaskEmcal)
+  // 0 = 0-10%
+  // 1 = 10-30%
+  // 2 = 30-50%
+  // 3 = 50-90%
+  const double* ptParams = nullptr;
+  const double* etaParams = nullptr;
+  switch (centralityBin) {
+    case 0:
+      ptParams = LHC18qrParam_0_10_pt;
+      etaParams = LHC18qrParam_0_10_eta;
+      break;
+    case 1:
+      ptParams = LHC18qrParam_10_30_pt;
+      etaParams = LHC18qrParam_10_30_eta;
+      break;
+    case 2:
+      ptParams = LHC18qrParam_30_50_pt;
+      etaParams = LHC18qrParam_30_50_eta;
+      break;
+    case 3:
+      ptParams = LHC18qrParam_50_90_pt;
+      etaParams = LHC18qrParam_50_90_eta;
+      break;
+    default:
+      AliFatalGeneral(taskName.c_str(), "Invalid centrality for determine tracking efficiency.\n");
+  }
+
+  // Calculate the efficiency using the parameters.
+  double ptAxis = LHC18qrPtEfficiency(trackPt, ptParams);
+  double etaAxis = LHC18qrEtaEfficiency(trackEta, etaParams);
+  double efficiency = ptAxis * etaAxis;
+
+  return efficiency;
+}
+
+
+/**
+ * Determine the pt efficiency axis for LHC18qr. This is the main interface
+ * for getting the efficiency.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrPtEfficiency(const double trackPt, const double params[11])
+{
+  return ((trackPt <= 2.7) * LHC18qrLowPtEfficiencyImpl(trackPt, params, 0) +
+      (trackPt > 2.7 && trackPt <= 10) * LHC18qrMidPtEfficiencyImpl(trackPt, params, 5) +
+      (trackPt > 10) * LHC18qrHighPtEfficiencyImpl(params, 5));
+}
+
+/**
+ * Determine the pt efficiency axis for low pt tracks in LHC18qr. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrLowPtEfficiencyImpl(const double trackPt, const double params[11], const int index)
+{
+  return (params[index + 0] + params[index + 1] * trackPt + params[index + 2] * std::pow(trackPt, 2) + 
+      params[index + 3] * std::pow(trackPt, 3) + params[index + 4] * std::pow(trackPt, 4));
+}
+
+/**
+ * Determine the pt efficiency axis for middle pt tracks in LHC18qr. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrMidPtEfficiencyImpl(const double trackPt, const double params[11], const int index)
+{
+  return (params[index + 0] + params[index + 1] * trackPt + params[index + 2] * std::pow(trackPt, 2) + 
+      params[index + 3] * std::pow(trackPt, 3) + params[index + 4] * std::pow(trackPt, 4) + params[index + 5] * std::pow(trackPt, 5));
+}
+
+/**
+ * Determine the pt efficiency axis for high pt tracks in LHC18qr. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrHighPtEfficiencyImpl(const double params[11], const int index)
+{
+  return (params[index + 0] + params[index + 1] * 10 + params[index + 2] * std::pow(10, 2) +
+      params[index + 3] * std::pow(10, 3) + params[index + 4] * std::pow(10, 4) + params[index + 5] * std::pow(10, 5));
+}
+
+/**
+ * Determine the eta efficiency axis for LHC18qr.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrEtaEfficiency(const double trackEta, const double params[11])
+{
+  // Just modify the arguments - the function is the same.
+  return ((trackEta <= -0.1) * LHC18qrEtaEfficiencyNeg(trackEta, params, 0) +
+      (trackEta > -0.1 && trackEta <= 0.12) * LHC18qrEtaEfficiencyMid(trackEta, params, 4) +
+      (trackEta > 0.12 ) * LHC18qrEtaEfficiencyPos(trackEta, params, 7));
+}
+
+/**
+ * Determine the eta efficiency axis for LHC18qr. Negative Eta Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrEtaEfficiencyNeg(const double trackEta, const double params[11],
+                               const int index)
+{
+  // We need to multiply the track eta by -1 if we are looking at eta > 0 (which corresponds to
+  // the second set of parameters, such that the index is greater than 0).
+
+  int sign = index > 0 ? -1 : 1;
+  return (params[index + 0] *
+      std::exp(-1.0 * std::pow(params[index + 1] / std::abs(sign * trackEta + 0.91),params[index + 2])) +
+      params[index + 3] * trackEta ) / params[10];
+
+}
+
+
+/**
+ * Determine the eta efficiency axis for LHC18qr. Middle Eta Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrEtaEfficiencyMid(const double trackEta, const double params[11],
+                               const int index)
+{
+
+  return (params[index + 0] +
+      params[index + 1] * std::pow(trackEta,1) + params[index + 2] * std::pow(trackEta,2))
+      / params[10];
+}
+
+
+/**
+ * Determine the eta efficiency axis for LHC18qr. Positive Eta Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC18qrEtaEfficiencyPos(const double trackEta, const double params[11],
+                               const int index)
+{
+  // We need to multiply the track eta by -1 if we are looking at eta > 0 (which corresponds to
+  // the second set of parameters, such that the index is greater than 0).
+
+  int sign = index > 0 ? -1 : 1;
+  return (params[index + 0] *
+      std::exp(-1.0 * std::pow(params[index + 1] / std::abs(sign * trackEta + 0.91),params[index + 2])))
+      / params[10];
+
+}
+
+
+/**
  * Calculate the track efficiency for LHC11a - pp at 2.76 TeV. Calculated using LHC12f1a. See the jet-hadron
  * analysis note for more details.
  *
@@ -1048,6 +1269,7 @@ double AliAnalysisTaskEmcalJetHUtils::LHC15oTrackingEfficiency(const double trac
  * @param[in] taskName Name of the task which is calling this function (for logging purposes).
  * @returns The efficiency of measuring the given single track.
  */
+
 double AliAnalysisTaskEmcalJetHUtils::LHC11aTrackingEfficiency(const double trackPt, const double trackEta, const int centralityBin, const std::string & taskName)
 {
   // Pt axis
@@ -1102,6 +1324,8 @@ double AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(
       efficiency = LHC11aTrackingEfficiency(trackPt, trackEta, centralityBin, taskName);
       break;
     case AliAnalysisTaskEmcalJetHUtils::kLHC18qr:
+      efficiency = LHC18qrTrackingEfficiency(trackPt, trackEta, centralityBin, taskName);
+      break;
     case AliAnalysisTaskEmcalJetHUtils::kpA:
     case AliAnalysisTaskEmcalJetHUtils::kpp:
       // Intetionally fall through for LHC18, kpA

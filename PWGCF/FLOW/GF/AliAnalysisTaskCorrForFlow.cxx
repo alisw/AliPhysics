@@ -60,7 +60,13 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fNzVtxBins(10),
     fNCentBins(15),
     fMergingCut(0.0),
-    fSystematicsFlag("")
+    fSystematicsFlag(""),
+    fPVzCut(10.),
+    fCutDCAz(0.),
+    fCutDCAxySigma(0.),
+    fCutTPCchi2pCl(0.),
+    fTPCclMin(70.)
+
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t bUseEff) : AliAnalysisTaskSE(name),
@@ -104,7 +110,12 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t 
     fNzVtxBins(10),
     fNCentBins(15),
     fMergingCut(0.0),
-    fSystematicsFlag("")
+    fSystematicsFlag(""),
+    fPVzCut(10.),
+    fCutDCAz(0.),
+    fCutDCAxySigma(0.),
+    fCutTPCchi2pCl(0.),
+    fTPCclMin(70.)
 {
     DefineInput(0, TChain::Class());
     if(bUseEff) { DefineInput(1, TList::Class()); }
@@ -118,13 +129,13 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
 {
     OpenFile(1);
     PrintSetup();
-
+    // //
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
     fsampleBins = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
-
+    // //
     fOutputListCharged = new TList();
     fOutputListCharged->SetOwner(kTRUE);
-
+    // //
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",10,0,10);
     fOutputListCharged->Add(fhEventCounter);
     //
@@ -165,7 +176,7 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     fhChargedSE->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
     fhChargedSE->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
     fOutputListCharged->Add(fhChargedSE);
-
+    //
     fhChargedME = new AliTHn("fhChargedME", "fhChargedME", nSteps, sizeof(iBinningTPCTPC) / sizeof(Int_t), iBinningTPCTPC);
     fhChargedME->SetBinLimits(0, binning_deta_tpctpc);
     fhChargedME->SetBinLimits(1, binning_dphi);
@@ -180,14 +191,15 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     fhChargedME->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
     fhChargedME->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
     fOutputListCharged->Add(fhChargedME);
+    //
 
-    if(fUseEfficiency) {
       fInputListEfficiency = (TList*) GetInputData(1);
       if(fEfficiencyEtaDependent && fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
       if(fSystematicsFlag.IsNull()) fSystematicsFlag = "Ev0_Tr0";
       if(!AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
-    }
 
+
+    //
     PostData(1, fOutputListCharged);
 }
 //_____________________________________________________________________________
@@ -248,45 +260,47 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 	  delete fTracksAss;
 
     PostData(1, fOutputListCharged);
+    //
     return;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlow::Terminate(Option_t *)
 {
    if (fPoolMgr) delete fPoolMgr;
-   if(fOutputListCharged) delete fOutputListCharged;
+   // if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlow::IsEventSelected()
 {
-  fhEventCounter->Fill("EventOK",1);
+     fhEventCounter->Fill("EventOK",1);
 
-  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
-  UInt_t fSelectMask = inputHandler->IsEventSelected();
-  if(!(fSelectMask & fTrigger)) { return kFALSE; }
-  fhEventCounter->Fill("TriggerOK",1);
+     AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+     AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+     UInt_t fSelectMask = inputHandler->IsEventSelected();
+     if(!(fSelectMask & fTrigger)) { return kFALSE; }
+     fhEventCounter->Fill("TriggerOK",1);
 
-  if(fIsHMpp) fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
-  if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
-  fhEventCounter->Fill("CutsOK",1);
+     if(fIsHMpp) fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+     if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
+     fhEventCounter->Fill("CutsOK",1);
 
-  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-  if(!multSelection) { return kFALSE; }
-  fhEventCounter->Fill("MultOK",1);
-  Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
-  if(dPercentile > 100 || dPercentile < 0) { return kFALSE; }
-  fhEventCounter->Fill("PercOK",1);
+     AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+     if(!multSelection) { return kFALSE; }
+     fhEventCounter->Fill("MultOK",1);
 
-  if(fCentMax > 0.0 && (dPercentile < fCentMin || dPercentile > fCentMax)) { return kFALSE; }
-  fhEventCounter->Fill("CentOK",1);
-  fCentrality = (Double_t) dPercentile;
+     Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
+     if(dPercentile > 100 || dPercentile < 0) { return kFALSE; }
+     fhEventCounter->Fill("PercOK",1);
 
-  fPVz = fAOD->GetPrimaryVertex()->GetZ();
-  if(TMath::Abs(fPVz) >= 10.0) { return kFALSE; }
-  fhEventCounter->Fill("PVzOK",1);
+     if(fCentMax > 0.0 && (dPercentile < fCentMin || dPercentile > fCentMax)) { return kFALSE; }
+     fhEventCounter->Fill("CentOK",1);
+     fCentrality = (Double_t) dPercentile;
 
-  fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
+     fPVz = fAOD->GetPrimaryVertex()->GetZ();
+     if(TMath::Abs(fPVz) >= fPVzCut) { return kFALSE; }
+     fhEventCounter->Fill("PVzOK",1);
+
+     fbSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
 
   return kTRUE;
 }
@@ -294,9 +308,21 @@ Bool_t AliAnalysisTaskCorrForFlow::IsEventSelected()
 Bool_t AliAnalysisTaskCorrForFlow::IsTrackSelected(const AliAODTrack* track) const
 {
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
-  if(track->GetTPCNcls() < 70 && fFilterBit != 2) { return kFALSE; }
+  if(track->GetTPCNcls() < fTPCclMin && fFilterBit != 2) { return kFALSE; }
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
+  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[2] -= vtxXYZ[2];
+    if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+
+    Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
+    Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
+    if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }
+  }
+  if(fCutTPCchi2pCl > 0. && track->GetTPCchi2perCluster() > fCutTPCchi2pCl)  { return kFALSE; }
 
   return kTRUE;
 }
@@ -444,11 +470,11 @@ void AliAnalysisTaskCorrForFlow::FillCorrelationsMixed()
           }
         }
       }
-
+    }
       TObjArray* cloneArray = (TObjArray *)fTracksAss->Clone();
      cloneArray->SetOwner(kTRUE);
      pool->UpdatePool(cloneArray);
-}
+
  return;
 }
 //_____________________________________________________________________________

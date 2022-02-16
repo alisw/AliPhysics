@@ -256,6 +256,9 @@ else()
   # KFParticke
   find_package(KFParticle)
 
+  # Boost
+  find_package(Boost)
+
   # General flags -> Should be moved into a configuration file
   set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
   # Avoid problems with -fPIE (set automatically by the previous line).
@@ -314,8 +317,8 @@ foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
     PATH=$ENV{PATH}
-    LD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:${ZEROMQ}/lib:${BOOST_ROOT}/lib:${TREELITE_ROOT}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${KFPARTICLE}/lib:${CMAKE_INSTALL_PREFIX}/lib:${ZEROMQ}/lib:${BOOST_ROOT}/lib:${TREELITE_ROOT}/lib:$ENV{DYLD_LIBRARY_PATH}
     ROOT_HIST=0
     root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
 endforeach()

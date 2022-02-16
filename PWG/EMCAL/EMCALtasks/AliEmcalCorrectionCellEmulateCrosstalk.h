@@ -73,6 +73,7 @@ class AliEmcalCorrectionCellEmulateCrosstalk : public AliEmcalCorrectionComponen
   Float_t               fTCardCorrInduceEnerFracWidth[4][fgkNsm]; ///< Induced energy loss gauss witdth on 0-same row, diff col, 1-up/down cells left/right col 2-left/righ col, and 2nd row cells
   Float_t               fTCardCorrInduceEnerFracMax[fgkNsm];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the maximum fraction of induced energy per SM
   Float_t               fTCardCorrInduceEnerFracMin[fgkNsm];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the minimum fraction of induced energy per SM
+  Float_t               fTCardCorrInduceEnerFracMinCentralEta[fgkNsm];   ///< In case fTCardCorrInduceEnerFracP1  is non null, restrict the minimum fraction of induced energy per SM. Different at central |eta| < 0.22
   Float_t               fTCardCorrInduceEnerProb[fgkNsm];      ///< Probability to induce energy loss per SM
   
   TRandom3              fRandom;                   ///<  Random generator
@@ -97,7 +98,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEmulateCrosstalk> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEmulateCrosstalk, 3); // EMCal cell crosstalk emulation correction component
+  ClassDef(AliEmcalCorrectionCellEmulateCrosstalk, 4); // EMCal cell crosstalk emulation correction component
   /// \endcond
 };
 

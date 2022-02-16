@@ -23,7 +23,7 @@
 class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskOtonkd();
-  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth);
+  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth, bool doFDpairing);
   virtual ~AliAnalysisTaskOtonkd();
   Float_t GetMass2sq(AliFemtoDreamTrack *track)const;
   float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const;
@@ -72,6 +72,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   int fTrackBufferSize;                     //
   bool fIsMC;                               //
   bool fIsMCtruth;                               //
+  bool fdoFDpairing;                               //
   bool fdoSideband;                         //
   float fSigmaUp;                           //
   float fSigmaLow;                          //
@@ -133,6 +134,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTKaonPx[30];
   Float_t fTKaonPy[30];
   Float_t fTKaonPz[30];
+  Float_t fTKaonPTPC[30];
   Float_t fTKaonVPx[30];
   Float_t fTKaonVPy[30];
   Float_t fTKaonVPz[30];
@@ -172,6 +174,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Bool_t fTKaonIsFD[30];
   UInt_t fTKaonFilterBit[30];
   Int_t fTKaonPDG[30];
+  Int_t fTKaonMotherWeak[30];
   Short_t fTKaonOrigin[30];
 
 

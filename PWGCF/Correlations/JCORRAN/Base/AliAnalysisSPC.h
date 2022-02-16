@@ -149,6 +149,7 @@ private:
   TH1F *fMultHistogram[16][2]; 		//! 0: Mult. After Track Selection 1: Mult. After Track Selection (second)
   TH1I *fChargeHistogram[16]; 	//! Charge After Track Selection 
   TH1F *fCentralityHistogram[16]; 	//! Centrality After Corresponding Cut
+  TProfile *fPhiWeightProfile[16];	//! Profile to check phi weights
 
   //2.) SelectionCuts
   Bool_t bSaveAllQA;			// if kTRUE: All Standard QA Histograms are saved (default kTRUE)
@@ -214,7 +215,7 @@ private:
   TProfile *fProfileTrackCuts;  	//! Profile to save the cut values for track selection
   TList *fFinalResultsList[16];      	//! List to hold all histograms with final results for a specific centrality bin. Up to 16 centraliy bins possible
 
-  ClassDef(AliAnalysisSPC,4); 
+  ClassDef(AliAnalysisSPC,5); 
 };
 
 //================================================================================================================

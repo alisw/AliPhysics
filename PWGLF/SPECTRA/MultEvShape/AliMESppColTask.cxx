@@ -1,5 +1,6 @@
-//taskul ruleaza analiza de multiplicitate 
-// vertexZ < 5cm 
+//Multiplicity and sphericity analysis
+// variation of events in event mixing for a given sphericity
+
 
 #include "AliLog.h"
 
@@ -117,9 +118,9 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
  // These are meaningless as long as AliPPVsMultUtils:IsSelected() is used in AliMEStender
  // !!!!!!!!!!
 
-   if( !fEvInfo->HasVertex() ) return;
+//    if( !fEvInfo->HasVertex() ) return;
 
-   if( fEvInfo->IsPileUp() ) return;
+//    if( fEvInfo->IsPileUp() ) return;
 
 // // //    if (TMath::Abs(fEvInfo->GetVertexZ()) > 10.) return;
 
@@ -283,7 +284,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
   
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.0 && sfer<=0.3*/){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
 //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks1=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks1) break;
@@ -291,7 +292,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<5.0 /*&& sfer>0.3 && sfer<=0.6*/){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
 //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks2) break;
@@ -299,7 +300,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
       }
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<15.0 /*&& sfer>0.6 && sfer<=1.0*/){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
 //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks3) break;
@@ -313,7 +314,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<5.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
 // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
 			TObjArray *selectedTracksMC1=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
 		if(!selectedTracksMC1) return;
@@ -565,20 +566,20 @@ Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
   Int_t NzVtxBins1 = 5;
   Double_t ZvtxBins1[] = {-10., -5., -2.5, 2.5, 5., 10.}; 
   
-  Int_t NzVtxBins2 = 3;
-  Double_t ZvtxBins2[] = {-5., -2.5, 2.5, 5.}; 
+  Int_t NzVtxBins2 = 2;
+  Double_t ZvtxBins2[] = {-10., 0., 10.}; 
   
-  Int_t NzVtxBins3 = 7;
-  Double_t ZvtxBins3[] = {-15., -10., -5., -2.5, 2.5, 5., 10., 15.}; 
+  Int_t NzVtxBins3 = 10;
+  Double_t ZvtxBins3[] = {-10, -8., -6., -4, -2., 0., 2., 4., 6., 8., 10.}; 
   
     if(HasMCdata() && MC==1){
     fPoolMgrMC1 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins1, NzVtxBins1, ZvtxBins1);
     fPoolMgrMC1 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
     fPoolMgrMC1->SetDebug(0);
-    fPoolMgrMC2 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins2, NzVtxBins2, ZvtxBins2);
+    fPoolMgrMC2 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins2, NzVtxBins1, ZvtxBins1);
     fPoolMgrMC2 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
     fPoolMgrMC2->SetDebug(0);
-    fPoolMgrMC3 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins3, NzVtxBins3, ZvtxBins3);
+    fPoolMgrMC3 = new AliEventPoolManager(PoolMaxNEvents, PoolMinNTracks, NMultBins, MultBins3, NzVtxBins1, ZvtxBins1);
     fPoolMgrMC3 -> SetTargetValues(PoolMinNTracks, 0.1, 5);
     fPoolMgrMC3->SetDebug(0);
 //     if(!fPoolMgrMC) return kFALSE;
@@ -714,7 +715,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 		}
 	}
 
-	if(/*TMath::Abs(Zvtx)>=10.0 || */MultipOrCentMix>poolmax || MultipOrCentMix < poolmin){
+	if(TMath::Abs(Zvtx)>=10.0 || MultipOrCentMix>poolmax || MultipOrCentMix < poolmin){
       AliInfo(Form("pp Event with Zvertex = %.2f cm and multiplicity = %.0f out of pool bounds, SKIPPING",Zvtx,MultipOrCentMix));
       return;
 	}
@@ -782,7 +783,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool2->PrintInfo();
   // 		pool2->SetTargetEvents(5);
 
-        if (pool2->IsReady() || pool2->GetCurrentNEvents() > 5){
+        if (pool2->GetCurrentNEvents() >= 5  && pool2->GetCurrentNEvents() <= 15){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -834,7 +835,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool3->PrintInfo();
   // 		pool3->SetTargetEvents(5);
 
-        if (pool3->IsReady() || pool3->GetCurrentNEvents() > 5){
+        if (pool3->GetCurrentNEvents() >= 5  && pool3->GetCurrentNEvents() <= 180){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){

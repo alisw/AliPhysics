@@ -1,8 +1,5 @@
 //--- Task for investigation of the DoubleHyperHydrogen4 ---
 //---     Author: Janik Ditzel; janik.ditzel@cern.ch     ---
-//https://github.com/alisw/AliRoot/blob/master/ITS/ITSbase/AliITSV0Finder.h
-//https://github.com/alisw/AliRoot/blob/master/ITS/ITSbase/AliITStrackerMI.h
-//https://github.com/alisw/AliRoot/blob/master/ITS/ITSbase/AliITStrackMI.h
 
 #ifndef ALIANALYSISTASKDOUBLEHYPNUCTREE_H
 #define ALIANALYSISTASKDOUBLEHYPNUCTREE_H
@@ -15,6 +12,11 @@
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
+#include "AliInputEventHandler.h"
+#include "AliAODTrack.h"
+#include "AliPIDResponse.h"
+#include "AliAODVertex.h"
+#include "AliAODEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliESDpid.h"
@@ -30,6 +32,8 @@
 #include "AliStack.h"
 #include "AliVertexerTracks.h"
 #include "AliVVertex.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
 #include <fstream>
 #include "KFParticle.h"
 #include "KFVertex.h"
@@ -56,7 +60,10 @@ class AliESDEvent;
 class AliESDpid;
 class AliESDVertex;
 class AliESDTrack;
-//class AliKFParticle;
+class AliAODVertex;
+class AliAODTrack;
+class AliAODEvent;
+class AliVEvent;
 class KFParticle;
 class KFVertex;
 class AliKalmanTrack;
@@ -116,9 +123,12 @@ public:
 
 private:
   //-- General variables --
-  AliESDInputHandler    *fInputHandler;        
-  AliESDpid             *fPID;                 
-  AliESDEvent           *fESDevent;     
+  AliInputEventHandler    *fInputHandler;
+  AliPIDResponse        *fPID;
+  AliESDEvent           *fESDevent;
+  AliAODEvent           *fAODevent;
+  AliVHeader            *eventHeader;
+  AliVEvent             *fevent;
   AliMCEvent            *mcEvent;
   AliStack              *fStack;     
   AliEventCuts          fEventCuts; 
@@ -128,6 +138,8 @@ private:
   TTree                 *gTree;
   TTree                 *gTreeD;
   TTree                 *gTreeKF;
+  TTree                 *hTree;
+  TTree                 *hTreeKF;
   TTree                 *fTreeGen;
   TTree                 *gTreeGen;
   TList                 *fHistogramList; 
@@ -142,6 +154,8 @@ private:
   Int_t                 kVariante; 
   Int_t                 kStandardReco;
   Int_t                 kKFReco;
+  Int_t                 kSkip3LHAnalysis;
+  Int_t                 kAOD, kESD;
   //-- Trigger --
   Int_t                 MB, HMV0, HMSPD, HNU, HQU, Central, SemiCentral;
   //-- Tracks -- 
@@ -261,6 +275,8 @@ private:
   Double_t               xthiss; 
   Double_t               xpp; 
   //-- saved in Tree --
+  Int_t                  fEventID;
+  Int_t                  fParticleID;
   Int_t		         fPeriod; 
   Int_t                  fMagneticField;
   Int_t                  fCentrality;
@@ -311,9 +327,12 @@ private:
   Double_t               fDcaDaughterZKF, fDcaDaughter1ZKF, fDcaDaughter2ZKF, fDcaDaughter3ZKF, fDcaDaughter4ZKF, fDcaSecDaughterZKF, fDcaSecDaughter1ZKF, fDcaSecDaughter2ZKF, fDcaSecDaughter3ZKF, fDcaSecDaughter4ZKF;
   Double_t               fPrimVertexXErrKF, fPrimVertexYErrKF, fPrimVertexZErrKF, fSecVertexXErrKF, fSecVertexYErrKF, fSecVertexZErrKF, fTertVertexXErrKF, fTertVertexYErrKF, fTertVertexZErrKF;
   Double_t               fmMotherErrKF, fEMotherErrKF, fpxMotherErrKF, fpyMotherErrKF, fpzMotherErrKF, fptMotherErrKF, fpMotherErrKF, fctMotherErrKF;
-  Double_t               fmSubMotherErrKF, fESubMotherErrKF, fpxSubMotherErrKF, fpySubMotherErrKF, fpzSubMotherErrKF, fptSubMotherErrKF, fpSubMotherErrKF, fctSubMotherErrKF;  
+  Double_t               fmSubMotherErrKF, fESubMotherErrKF, fpxSubMotherErrKF, fpySubMotherErrKF, fpzSubMotherErrKF, fptSubMotherErrKF, fpSubMotherErrKF, fctSubMotherErrKF;
+  Double_t               fmSubMotherCheck, fmMotherCheck;
+  Double_t               fCovMatrixTrack[21], fCovMatrixTrack1[21], fCovMatrixTrack2[21], fCovMatrixTrack3[21], fCovMatrixTrack4[21];
+  Double_t               fTrackPar[7], fTrackPar1[7], fTrackPar2[7], fTrackPar3[7], fTrackPar4[7];
   //
-  Double_t               fthetaP, fthetaN;
+  Double_t               fthetaP, fthetaN;  
   //-- Functions --
   //-- only PID check --
   void dEdxCheck();

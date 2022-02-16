@@ -2397,7 +2397,7 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMC(AliAODRecoCascade
 
   AliVTrack *trk = dynamic_cast<AliVTrack*>(exobj->GetBachelor());
   if(!trk) return -1;
-  Int_t labEle = trk->GetLabel();
+  Int_t labEle = fabs(trk->GetLabel());
 	if(labEle<0) return -1;
 	AliAODMCParticle *mcetrk = (AliAODMCParticle*)mcArray->At(labEle);
 	if(!mcetrk) return -1;
@@ -2431,6 +2431,7 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMC(AliAODRecoCascade
 
 	AliAODMCParticle *mccasc = (AliAODMCParticle*)mcArray->At(labcasc);
 	if(!mccasc) return -1;
+    if(mccasc->GetNDaughters() !=2 ) return -1; // 2: Lambda,Kaon
 	labelarray_casc[0] = labcasc;
 	pdgarray_casc[0] = mccasc->GetPdgCode();
 	ngen_casc ++;
@@ -2476,11 +2477,11 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMCCascade(AliAODcasc
 
 	AliAODTrack *cptrack = (AliAODTrack*) theCascade->GetDaughter(0);
 	if(!cptrack) return -1;
-	Int_t label_p = cptrack->GetLabel();
+	Int_t label_p = fabs(cptrack->GetLabel());
 	if(label_p<0) return -1;
 	AliAODTrack *cntrack = (AliAODTrack*) theCascade->GetDaughter(1);
 	if(!cntrack) return -1;
-	Int_t label_n = cntrack->GetLabel();
+	Int_t label_n = fabs(cntrack->GetLabel());
 	if(label_n<0) return -1;
 	Int_t labv0 = theCascade->MatchToMC(pdgDgcasc[1],mcArray,2,pdgDgv0);
 	if(labv0<0) return -1;
@@ -2489,7 +2490,7 @@ Int_t AliAnalysisTaskSEOmegac2eleOmegafromAODtracks::MatchToMCCascade(AliAODcasc
 	AliAODTrack *cbtrack = (AliAODTrack*) theCascade->GetDecayVertexXi()->GetDaughter(0);
 	if(!cbtrack) return -1;
 
-    Int_t label_b = cbtrack->GetLabel();
+    Int_t label_b = fabs(cbtrack->GetLabel());
 	if(label_b<0) return -1;
 
 	AliAODMCParticle *mcpartb= (AliAODMCParticle*) mcArray->At(label_b);

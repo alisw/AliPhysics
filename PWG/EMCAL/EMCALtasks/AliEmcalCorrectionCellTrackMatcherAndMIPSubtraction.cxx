@@ -32,12 +32,15 @@ AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::AliEmcalCorrectionCellTrack
   fEmipData(0.2356),
   fEmipMC(0.2824),
   fDoPropagation(0),
+  fDoMatchPrimaryOnly(0),
+  fMaxDistToVtxPrim(0),
   fCellTrackMatchdEtadPhi(0),
   fCellTrackMatchdEtaDiff(0),
   fCellTrackMatchdPhiDiff(0),
   fCellNTrackMatch(0),
   fCellTrackMatchEbefore(0),
-  fCellTrackMatchEafter(0)
+  fCellTrackMatchEafter(0),
+  fHistoMatchingEfficiency(0)
 {
 }
 
@@ -59,6 +62,8 @@ Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::Initialize()
   GetProperty("EmipData", fEmipData);
   GetProperty("EmipMC", fEmipMC);
   GetProperty("DoPropagation", fDoPropagation);
+  GetProperty("MatchOnlyPrimaries", fDoMatchPrimaryOnly); // match only primaries in order to be able to fully reject conversions
+  GetProperty("MaxDistToVtxPrim", fMaxDistToVtxPrim);
 
   return kTRUE;
 }
@@ -73,18 +78,27 @@ void AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::UserCreateOutputObject
   if (fCreateHisto){
     fCellTrackMatchdEtadPhi = new TH2F("hCellTrackMatchdEtadPhi","hCellTrackMatchdEtadPhi",100,-0.04,0.04,100,-0.04,0.04);
     fOutput->Add(fCellTrackMatchdEtadPhi);
+
     if(fEsdMode || fDoPropagation){
       fCellTrackMatchdEtaDiff = new TH1D("hCellTrackMatchdEtaDiff","hCellTrackMatchdEtaDiff",100,-0.04,0.04);
       fOutput->Add(fCellTrackMatchdEtaDiff);
       fCellTrackMatchdPhiDiff = new TH1D("hCellTrackMatchdPhiDiff","hCellTrackMatchdPhiDiff",100,-0.04,0.04);
       fOutput->Add(fCellTrackMatchdPhiDiff);
     }
+
     fCellNTrackMatch = new TH2F("hCellNTrackMatch","hCellNTrackMatch",3,-0.5,2.5,500,0,20);
     fOutput->Add(fCellNTrackMatch);
     fCellTrackMatchEbefore = new TH1F("hCellTrackMatchEbefore","hCellTrackMatchEbefore",500,0,20);
     fOutput->Add(fCellTrackMatchEbefore);
     fCellTrackMatchEafter = new TH1F("hCellTrackMatchEafter","hCellTrackMatchEafter",500,0,20);
     fOutput->Add(fCellTrackMatchEafter);
+
+    fHistoMatchingEfficiency = new TH2F("HistoMatchingEfficiency","HistoMatchingEfficiency",2,-0.5,1.5,500, 0, 50);
+    fHistoMatchingEfficiency->GetXaxis()->SetBinLabel(1, "matched");
+    fHistoMatchingEfficiency->GetXaxis()->SetBinLabel(2, "not matched");
+    fHistoMatchingEfficiency->GetYaxis()->SetTitle("p_{T, track} (GeV/c)");
+    fOutput->Add(fHistoMatchingEfficiency);
+
   }
 
 
@@ -114,6 +128,17 @@ Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::Run()
     auto partItCont = partCont->accepted_momentum();
     for (AliParticleIterableMomentumContainer::iterator partIterator = partItCont.begin(); partIterator != partItCont.end(); ++partIterator) {
       track = static_cast<AliVTrack *>(partIterator->second);
+
+      if(fDoMatchPrimaryOnly){
+        Float_t bPos[2];
+        Float_t bCovPos[3];
+        track->GetImpactParameters(bPos,bCovPos);
+        Float_t dcaToVertexXYPos = bPos[0];
+        // Float_t dcaToVertexZPos  = bPos[1];
+        // radius has to be larger than 5 cm
+        if(dcaToVertexXYPos > fMaxDistToVtxPrim) continue;
+      }
+
       // only propagate tracks for ESDs. Take existing propagation for AODs or force propagation
       if(fEsdMode || fDoPropagation){
 
@@ -204,7 +229,22 @@ Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::Run()
         Bool_t cellHighGain = fCaloCells->GetHighGain(iCell);
         fCaloCells->GetCell(iCell, absId, ecell, tcell, mclabel, efrac);
         fGeom->EtaPhiFromIndex(absId, cellEta, cellPhi);
-        if (fCreateHisto) fCellNTrackMatch->Fill(0.,ecell);
+        if (fCreateHisto) {
+          fCellNTrackMatch->Fill(0.,ecell);
+
+          // calculate matching efficiency
+          // this is done on cell level. However, if track-hit is part of another cluster and the energy of another particle in this cell is high, it would count as not matched.
+          // Information of all particles in the cell is not available (only for the highest). ToDo: Is there a better way?
+          if(fMCEvent){
+            Int_t MCLabelCell = fCaloCells->GetMCLabel(iCell);
+            Int_t MCLabelTrack = track->GetLabel();
+            if(MCLabelCell == MCLabelTrack){
+              fHistoMatchingEfficiency->Fill(0., track->P());
+            } else {
+              fHistoMatchingEfficiency->Fill(1., track->P());
+            }
+          }
+        }
         if(ecell>0){
           if (fCreateHisto) {
             fCellTrackMatchdEtadPhi->Fill(cellEta-track->GetTrackEtaOnEMCal(),cellPhi-track->GetTrackPhiOnEMCal());

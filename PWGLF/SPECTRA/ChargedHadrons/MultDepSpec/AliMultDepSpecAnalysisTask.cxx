@@ -555,6 +555,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       } else {
         isValidParticle = InitParticle<AliAODMCParticle>(mcLabel);
       }
+      if (fMCIsInjectedSignal) continue;
     }
 
     if (count) {
@@ -699,6 +700,17 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (!particle) {
     AliFatal("Particle not found\n");
     return false;
+  }
+
+  // reject injected signal
+  fMCIsInjectedSignal = false;
+  if (!fMCSelectedGenerator.empty()) {
+    TString generator = "";
+    fMCEvent->GetCocktailGenerator(particleID, generator);
+    if (!generator.BeginsWith(fMCSelectedGenerator.data())) {
+      fMCIsInjectedSignal = true;
+      return false;
+    }
   }
 
   // reject all particles that come from simulated out-of-bunch pileup
@@ -1026,6 +1038,12 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if (!options.Contains("oldReco") &&
       (dataSet.find("pp_5TeV") != string::npos || dataSet.find("pp_13TeV") != string::npos || dataSet.find("pPb") != string::npos || dataSet.find("PbPb_5TeV") != string::npos)) {
     SetIsNewReco();
+  }
+
+  if (options.Contains("hasInjectedSignal")) {
+    if (dataSet.find("PbPb_2TeV") != string::npos) {
+      fMCSelectedGenerator = "Hijing";
+    }
   }
 
   int maxMultMeas = 100;

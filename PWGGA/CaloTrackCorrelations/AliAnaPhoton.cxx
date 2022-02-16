@@ -58,7 +58,7 @@ fTimeCutMin(-10000),          fTimeCutMax(10000),
 fNCellsCut(0),                fExoCut(2.),
 fNLMCutMin(-1),               fNLMCutMax(10),
 fFillSSHistograms(0),         fFillSSPerSMHistograms(0),
-fFillSSEtaHistograms(0),      fFillEMCALRegionSSHistograms(0),
+fFillSSEtaHistograms(0),      fFillSSEtaVzPosHistograms(0), fFillEMCALRegionSSHistograms(0),
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),  fFillCellsEnergyHisto(0),
@@ -135,10 +135,11 @@ fhMCParticleVsErecEgenDiffOverEgenCen(0), fhMCParticleVsErecEgenCen(0),
 fhMCParticleErecEgenDiffOverEgenNLMCen(0), fhMCParticleErecEgenNLMCen(0),
 fhMCParticleM02NLMCen(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
+fhPhiPrimMCPartonicPhoton(0), fhEtaPrimMCPartonicPhoton(0), fhYPrimMCPartonicPhoton(0),
 
 fhLam0NxNOrLam0(),            fhLam0NxNNLM(0),
 fhLam0NxNLam0PerNLM(),        fhMCLam0NxNOrLam0(),          fhEnNxNFracNLM(0),
-fhLam0NxNEta(),               fhLam0NxNEtaPerCen(0),
+fhLam0NxNEta(),               fhLam0NxNEtaVzPos(),          fhLam0NxNEtaPerCen(0),
 fhLam0NxNOrLam0Cen(),         fhLam0NxNNLMPerCen(0),
 fhLam0NxNLam0PerNLMPerCen(0), fhMCLam0NxNOrLam0Cen(),       fhEnNxNFracNLMPerCen(0),
 
@@ -180,7 +181,7 @@ fhPtClusterSM(0),                     fhPtPhotonSM(0),
 fhPtPhotonCentralitySM(0),
 
 fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
-fhLam0Eta(),                          fhLam0EtaPerCen(0),
+fhLam0Eta(),                          fhLam0EtaVzPos(),                 fhLam0EtaPerCen(0),
 //fhDistanceAddedPhotonAddedPrimarySignal  (0), fhDistanceHijingPhotonAddedPrimarySignal  (0),
 //fhDistanceAddedPhotonAddedSecondarySignal(0), fhDistanceHijingPhotonAddedSecondarySignal(0),
 //fhDistanceAddedPhotonHijingSecondary(0)
@@ -480,6 +481,8 @@ fhDistance2Hijing(0)
   {
     fhLam0Eta   [isector] = 0;
     fhLam0NxNEta[isector] = 0;
+    fhLam0EtaVzPos   [isector] = 0;
+    fhLam0NxNEtaVzPos[isector] = 0;
   }
   
   for(Int_t i = 0; i < 4; i++)
@@ -1454,6 +1457,13 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
     photonEta = fMomentum.Eta() ;
     photonPhi = fMomentum.Phi() ;
     
+    if ( i < 10 )
+    {
+      fhPhiPrimMCPartonicPhoton->Fill(photonPt , photonPhi, GetEventWeight()) ;
+      fhEtaPrimMCPartonicPhoton->Fill(photonPt , photonEta, GetEventWeight()) ;
+      fhYPrimMCPartonicPhoton  ->Fill(photonPt , photonY  , GetEventWeight()) ;
+    }
+
     if ( photonPhi < 0 )
       photonPhi+=TMath::TwoPi();
     
@@ -1939,7 +1949,13 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
     }
 
     if ( fFillSSEtaHistograms  && cluster->IsEMCAL() )
+    {
       fhLam0Eta[isector]->Fill(pt, lambda0, eta, GetEventWeight()*weightPt);
+      Double_t v[3] = {0,0,0}; //vertex ;
+      GetReader()->GetVertex(v);
+      if ( fFillSSEtaVzPosHistograms  && cluster->IsEMCAL() && v[2] > 0 )
+        fhLam0EtaVzPos[isector]->Fill(pt, lambda0, eta, GetEventWeight()*weightPt);
+    }
   }
   else
   {
@@ -2593,7 +2609,13 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t sm,
         fhLam0NxNPerSM[sm]->Fill(pt, l0NxN, GetEventWeight()*weightPt);
 
       if ( fFillSSEtaHistograms && cluster->IsEMCAL() )
+      {
         fhLam0NxNEta[isector]->Fill(pt, l0NxN, eta, GetEventWeight()*weightPt);
+        Double_t v[3] = {0,0,0}; //vertex ;
+        GetReader()->GetVertex(v);
+        if ( fFillSSEtaVzPosHistograms  && cluster->IsEMCAL() && v[2] > 0 )
+          fhLam0NxNEtaVzPos[isector]->Fill(pt, l0NxN, eta, GetEventWeight()*weightPt);
+      }
 
       if ( fFillNxNShowerShapeAllHisto )
       {
@@ -4131,6 +4153,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLam0Eta[isector]->SetZTitle("#eta");
           outputContainer->Add(fhLam0Eta[isector]) ;
         }
+
+        if ( fFillSSEtaVzPosHistograms )
+        {
+          for(Int_t isector = fFirstSector; isector <= fLastSector; isector++)
+          {
+            fhLam0EtaVzPos[isector] = new TH3F
+            (Form("hLam0EtaVzPos_Sector%d",isector),
+             Form("#it{p}_{T} vs #sigma^{2}_{long} vs #eta in sector %d, #it{v}_{#it{z}}>0",isector),
+              ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+              ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
+             etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+            fhLam0EtaVzPos[isector]->SetYTitle("#sigma^{2}_{long}");
+            fhLam0EtaVzPos[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhLam0EtaVzPos[isector]->SetZTitle("#eta");
+            outputContainer->Add(fhLam0EtaVzPos[isector]) ;
+          }
+        }
       }
 
       if ( fFillSSNLocMaxHisto && fFillControlClusterContentHisto )
@@ -4603,6 +4642,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
             fhLam0NxNEta[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             fhLam0NxNEta[isector]->SetZTitle("#eta");
             outputContainer->Add(fhLam0NxNEta[isector]) ;
+          }
+
+          if ( fFillSSEtaVzPosHistograms )
+          {
+            for(Int_t isector = fFirstSector; isector <= fLastSector; isector++)
+            {
+              fhLam0NxNEtaVzPos[isector] = new TH3F
+              (Form("hLam0%sEtaVzPos_Sector%d",nxnString.Data(),isector),
+               Form("#it{p}_{T} vs #sigma^{2}_{long} vs #eta in sector %d, #it{v}_{#it{z}}>0",isector),
+                ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+                ssBinsArray.GetSize() - 1,   ssBinsArray.GetArray(),
+               etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray());
+              fhLam0NxNEtaVzPos[isector]->SetYTitle("#sigma^{2}_{long}");
+              fhLam0NxNEtaVzPos[isector]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              fhLam0NxNEtaVzPos[isector]->SetZTitle("#eta");
+              outputContainer->Add(fhLam0NxNEtaVzPos[isector]) ;
+            }
           }
         }
       }
@@ -6056,6 +6112,24 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhPhiPrimMCAcc[i]) ;
       }
     }
+
+    fhPhiPrimMCPartonicPhoton  = new TH2F("hPhiPrim_MCPartonicPhoton","primary partonic photon: #varphi",
+                               nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+    fhPhiPrimMCPartonicPhoton->SetYTitle("#varphi (rad)");
+    fhPhiPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPhiPrimMCPartonicPhoton) ;
+
+    fhEtaPrimMCPartonicPhoton  = new TH2F("hEtaPrim_MCPartonicPhoton","primary partonic photon: #eta",
+                               nptbins,ptmin,ptmax,200,-2,2);
+    fhEtaPrimMCPartonicPhoton->SetYTitle("#eta");
+    fhEtaPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhEtaPrimMCPartonicPhoton) ;
+
+    fhYPrimMCPartonicPhoton  = new TH2F("hYPrim_MCPartonicPhoton","primary partonic photon: #it{y}",
+                               nptbins,ptmin,ptmax,200,-2,2);
+    fhYPrimMCPartonicPhoton->SetYTitle("#it{y}");
+    fhYPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhYPrimMCPartonicPhoton) ;
   }
 
   if ( IsDataMC() )
@@ -6072,7 +6146,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
                         "PhotonPrompt", "PhotonFragmentation","Conversion"      ,
                         "Hadron"      , "AntiNeutron"        , "AntiProton"    , 
                         "Neutron"     , "Proton"             , "ChPion"        ,
-                        "PhotonISR"     , "String"           } ;
+                        "PhotonISR"   , "String"           } ;
 
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {

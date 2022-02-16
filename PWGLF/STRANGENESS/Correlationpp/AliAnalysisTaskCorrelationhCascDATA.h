@@ -34,6 +34,7 @@ class AliAnalysisTaskCorrelationhCascDATA : public AliAnalysisTaskSE
   void SetEtaV0Assoc(Float_t EtaV0Assoc){fEtaV0Assoc = EtaV0Assoc;}
   void SetFilterBit(Int_t FilterBitValue){fFilterBitValue = FilterBitValue;}
   void SetYear (Int_t year = 2010) { fYear = year;}
+  void SetInclusive (Bool_t isInclusive = 1) {fisInclusiveINELgt0 = isInclusive;}
   void SetHM (Bool_t isHM) { fisHM = isHM;}
   void SetMinimumMultPercentile (Float_t PercentilesMin) { lPercentilesMin = PercentilesMin;}
   void SetMaximumMultPercentile (Float_t PercentilesMax) { lPercentilesMax = PercentilesMax;}
@@ -86,6 +87,7 @@ class AliAnalysisTaskCorrelationhCascDATA : public AliAnalysisTaskSE
   Float_t                  fEtaV0Assoc;
   Int_t                    fFilterBitValue;
   Int_t                    fYear;
+  Bool_t                   fisInclusiveINELgt0;
   Bool_t                   fisHM;
   Float_t                  lPercentilesMin;
   Float_t                  lPercentilesMax;

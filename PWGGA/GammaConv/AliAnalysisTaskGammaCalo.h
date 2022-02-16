@@ -59,8 +59,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
-    void ProcessMCParticles();
-    void ProcessAODMCParticles();
+    void ProcessMCParticles(Int_t isCurrentEventSelected = 0);
+    void ProcessAODMCParticles(Int_t isCurrentEventSelected = 0);
     void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Double_t clusterM02);
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Double_t clusterM02);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
@@ -245,6 +245,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoMCEtaWOEvtWeightPt;                             //! array of histos without event weights eta, pT
     TH1F**                fHistoMCPi0InAccPt;                                   //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                fHistoMCEtaInAccPt;                                   //! array of histos with weighted eta in acceptance, pT
+    TH1F**                fHistoMCPi0InAccPtNotTriggered;                       //! array of histos with weighted pi0 in acceptance, pT
+    TH1F**                fHistoMCEtaInAccPtNotTriggered;                       //! array of histos with weighted eta in acceptance, pT
     TH1F**                fHistoMCPi0WOEvtWeightInAccPt;                        //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                fHistoMCEtaWOEvtWeightInAccPt;                        //! array of histos without evt weight eta in acceptance, pT
     TH2F**                fHistoMCPi0PtY;                                       //! array of histos with weighted pi0, pT, Y
@@ -259,6 +261,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoMCSecEtaSource;                                 //! array of histos with secondary eta, source
     TH2F**                fHistoMCPi0PtJetPt;                                   //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                fHistoMCEtaPtJetPt;                                   //! array of histos with weighted eta, pT, hardest jet pt
+    TH1F**                fHistoMCPi0PtNotTriggered;                            //! array of histos with weighted pi0 in not triggered events, pT
+    TH1F**                fHistoMCPi0PtNoVertex;                            //! array of histos with weighted pi0 in not triggered events, pT
+    TH1F**                fHistoMCEtaPtNotTriggered;                            //! array of histos with weighted eta in not triggered events, pT
+    TH1F**                fHistoMCEtaPtNoVertex;                            //! array of histos with weighted eta in not triggered events, pT
+    TH1F**                fHistoMCGammaPtNotTriggered;                          //! array of histos with weighted gamm in not triggered events, pT
+    TH1F**                fHistoMCGammaPtNoVertex;                          //! array of histos with weighted gamm in not triggered events, pT
 
     // MC validated reconstructed quantities mesons
     TH2F**                fHistoTruePi0InvMassPt;                               //! array of histos with validated mothers, invMass, pt
@@ -605,7 +613,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 87);
+    ClassDef(AliAnalysisTaskGammaCalo, 89);
 };
 
 #endif

@@ -48,6 +48,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
 
   void GetEventDetails(AliMCEvent* mcEvent, Double_t& reactionplane, Double_t& zvtx, Double_t& centrality);
   TObjArray* SelectTracks(AliMCEvent* mcEvent);
+  TObjArray* SubSelectTracksEta(TObjArray* selectedTracks);
   void FillEventLevelQA(AliMCEvent* mcEvent);
   void FillEventPlaneHistograms(TObjArray* allTracks, Double_t reactionplane, Double_t& eventplaneV0);
   TH1D* FillVirtualV0(TObjArray* allTracks, Double_t etaMin, Double_t etaMax);
@@ -82,7 +83,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
   Int_t fNoSectorsV0; // The amount of sectors in phi that the simulated V0 detector has
   TString fCentralityEstimator; // The estimator used to determine the centrality. Choices: V0M, TRK, TKL, ZDC or FMD.
 
-  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 1);
+  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 2);
 };
 
 #endif

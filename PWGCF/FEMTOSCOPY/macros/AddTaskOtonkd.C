@@ -3,7 +3,8 @@
 
 AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
     int KaonCut = 0,
-    int DeuteronCut = 0
+    int DeuteronCut = 0,
+    int DoFDpairing = 0
     ) {
 
   // isMCint = 0 => DATA: isMC=false 
@@ -14,6 +15,8 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   if(isMCint>0) isMC = true;
   bool isMCtruth=false;
   if(isMCint==2)  isMCtruth=true;
+  bool doFDpairing = false;
+  if(DoFDpairing==1)  doFDpairing=true;
 
   const char fullBlastQA = true; //moved from arguments
   const char *cutVariation = "0"; //moved from arguments, for the moment I don't use it
@@ -45,6 +48,13 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsKaon->SetPIDkd(true,true);
    //TrackCutsKaon->SetNClsTPC(70);
    //TrackCutsKaon->SetDCAVtxZ(0.1);
+  }else if(KaonCut==2){ // Open cuts for syst by Oton
+   //open cuts for syst:
+   TrackCutsKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   TrackCutsKaon->SetEtaRange(-0.84, 0.84);
+   TrackCutsKaon->SetNClsTPC(70);
+   TrackCutsKaon->SetDCAVtxZ(0.25);
+   //TrackCutsKaon->SetDCAVtxXY(2.2);//This cut only for DCA fits/templates
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
@@ -57,6 +67,13 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiKaon->SetPIDkd(true,true);
    //TrackCutsAntiKaon->SetNClsTPC(70);
    //TrackCutsAntiKaon->SetDCAVtxZ(0.1);
+  }else if(KaonCut==2){ // Open cuts for syst by Oton
+   // Oton open cuts for syst:
+   TrackCutsAntiKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   TrackCutsAntiKaon->SetEtaRange(-0.84, 0.84);
+   TrackCutsAntiKaon->SetNClsTPC(70);
+   TrackCutsAntiKaon->SetDCAVtxZ(0.25);
+   //TrackCutsAntiKaon->SetDCAVtxXY(2.2);//This cut only for DCA fits/templates
   }
 
   //deuterons
@@ -67,6 +84,13 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsDeuteron->SetPIDkd(false);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
+  }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
+   //open cuts for syst:
+   TrackCutsDeuteron->SetPtRange(0.4,1.5);
+   TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
+   TrackCutsDeuteron->SetNClsTPC(70);
+   TrackCutsDeuteron->SetDCAVtxZ(0.25);
+   TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
@@ -76,14 +100,21 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiDeuteron->SetPIDkd(false);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
+  }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
+   //open cuts for syst:
+   TrackCutsAntiDeuteron->SetPtRange(0.4,1.5);
+   TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
+   TrackCutsAntiDeuteron->SetNClsTPC(70);
+   TrackCutsAntiDeuteron->SetDCAVtxZ(0.25);
+   TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
   }
 
   //protons
-  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsProton->SetCutCharge(1);
 
-  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsAntiProton->SetCutCharge(-1);
 
@@ -259,7 +290,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   //Define here the analysis task
   AliAnalysisTaskOtonkd *task =
-   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth);
+   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, doFDpairing);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);

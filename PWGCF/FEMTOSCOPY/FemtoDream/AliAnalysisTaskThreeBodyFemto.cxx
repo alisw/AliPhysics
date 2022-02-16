@@ -1475,6 +1475,16 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
   if(speciesME1!=speciesME2) {
     AliError("You chose different species ME1 and ME2 for mixing. This is not yet implemented! \n");
   }
+
+  if(fMixingChoice>0){
+    if((speciesSE==0&&speciesME1==0&&speciesME2==0)||(speciesSE==1&&speciesME1==1&&speciesME2==1)){
+      if(ParticleVector[speciesSE].size()<3) return;
+    }
+    if((speciesSE==2&&speciesME1==0&&speciesME2==0)||(speciesSE==3&&speciesME1==1&&speciesME2==1)){
+      if(ParticleVector[speciesSE].size()<2||ParticleVector[speciesME1].size()<1) return;
+    }
+  }
+
   auto ParticleSE = ParticleVector.begin()+speciesSE;
   auto MixedEvent1Container = fPartContainer.begin()+speciesME1;
   auto MixedEvent2Container = fPartContainer.begin()+speciesME2;
@@ -2132,9 +2142,7 @@ bool AliAnalysisTaskThreeBodyFemto::DeltaEtaDeltaPhi(
         dphiAvg += dphi;
       }
       if(fRunPlotPhiTheta){
-        if(Q3<fQ3LimitForDeltaPhiDeltaEta){
-          beforeHist->Fill(dphiAvg/ (float) size, deta);
-        }
+        beforeHist->Fill(dphiAvg/ (float) size, deta);
       }
       if (pass) {
         if ((dphiAvg / (float) size) * (dphiAvg / (float) size) / fDeltaPhiSqMax
@@ -2143,9 +2151,7 @@ bool AliAnalysisTaskThreeBodyFemto::DeltaEtaDeltaPhi(
         }
         else{
           if(fRunPlotPhiTheta){
-            if(Q3<fQ3LimitForDeltaPhiDeltaEta){
-              afterHist->Fill(dphiAvg/ (float) size, deta);
-            }
+            afterHist->Fill(dphiAvg/ (float) size, deta);
           }
         }
       }

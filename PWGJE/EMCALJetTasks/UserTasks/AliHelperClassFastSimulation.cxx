@@ -14,7 +14,7 @@
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 
-#include "AliAnalysisTaskPID.h"
+#include "AliAnalysisTaskMTFPID.h"
 #include "AliHelperClassFastSimulation.h"
 
 ClassImp(AliHelperClassFastSimulation)
@@ -71,7 +71,7 @@ void AliHelperClassFastSimulation::AddParticle(AliAODMCParticle* part) {
 }
 
 void AliHelperClassFastSimulation::AddInputVector(Double_t pT, Double_t phi, Double_t eta, Double_t mass, Int_t index, Double_t charge, Int_t pdgCode) {
-	Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdgCode);
+	Int_t mcID = AliAnalysisTaskMTFPID::PDGtoMCID(pdgCode);
 	
 	if (mcID == AliPID::kMuon || mcID >= AliPID::kSPECIES)
 		return;

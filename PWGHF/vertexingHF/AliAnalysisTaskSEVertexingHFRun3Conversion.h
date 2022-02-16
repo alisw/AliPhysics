@@ -17,6 +17,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 
+#include "TClass.h"
+
+#include <Rtypes.h>
+
 class TList;
 class TString;
 class TTree;
@@ -33,10 +37,11 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
+  virtual Bool_t Notify();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   void SetMakeReducedCandidates(Bool_t opt){fMakeReducedCandidates=opt;}
-  void ResetTreeAtEachEvent(Bool_t opt){fResetTreeAtEachEv=opt;}
+  void ForceDisableCascades() {fDisableCascades=kTRUE;}
   AliAnalysisVertexingHF *GetVertexingHF() const {return fVHF;}
   
  private:
@@ -46,19 +51,20 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
 
   AliAnalysisVertexingHF *fVHF;        /// Vertexer heavy flavour
   Bool_t       fMakeReducedCandidates; /// flag to use reduced size candidates
-  Bool_t       fResetTreeAtEachEv;     /// flag to reset trees at each event
-  TTree        *fD0CandidateTree;      //!<! output tree
+  Bool_t       fDisableCascades;       /// flag to disable Lc->pK0s
+  TTree        *f2ProngCandidateTree;  //!<! output tree
   TTree        *f3ProngCandidateTree;  //!<! output tree
   TTree        *fDstarCandidateTree;   //!<! output tree
   TTree        *fCascadeCandidateTree; //!<! output tree
   Int_t        fEventIndex;            //!<! tree variable
   Int_t        fD0track0;              //!<! tree variable
   Int_t        fD0track1;              //!<! tree variable
+  UChar_t      fHF2pflag;              //!<! tree variable
   Int_t        f3ptrack0;              //!<! tree variable
   Int_t        f3ptrack1;              //!<! tree variable
   Int_t        f3ptrack2;              //!<! tree variable
-  Int_t        fDstD0tr0;              //!<! tree variable
-  Int_t        fDstD0tr1;              //!<! tree variable
+  UChar_t      fHF3pflag;              //!<! tree variable
+  Int_t        fDstD0;                 //!<! tree variable
   Int_t        fDstSofPi;              //!<! tree variable
   Int_t        fCasV0ind;              //!<! tree variable
   Int_t        fCasV0tr0;              //!<! tree variable
@@ -76,7 +82,7 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   TClonesArray *fLikeSign3ProngTClArr; /// Array of LikeSign3Prong
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,3); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,6); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
   /// \endcond
 };
 
