@@ -181,12 +181,17 @@ private:
     TH2F *hnsigmaTPC_antideuterons_Rec_Syst;//!
     TH2F *hnsigmaTOF_deuterons_Rec_Syst;//!
     TH2F *hnsigmaTOF_antideuterons_Rec_Syst;//!
-    
+
+    //Efficiency vs. Rapidity
+    TH2F *hGeneratedDeuterons_vs_Rapidity;//!
+    TH2F *hGeneratedAntiDeuterons_vs_Rapidity;//!
+    TH2F *hReconstructedDeuterons_TPC_vs_Rapidity;//!
+    TH2F *hReconstructedAntiDeuterons_TPC_vs_Rapidity;//!
+    TH2F *hReconstructedDeuterons_TOF_vs_Rapidity;//!
+    TH2F *hReconstructedAntiDeuterons_TOF_vs_Rapidity;//!
+
     //****************************************************************************************
 
-    
-    
-    
     
     AliAnalysisTaskDeuteronsRT(const AliAnalysisTaskDeuteronsRT&);
     AliAnalysisTaskDeuteronsRT& operator=(const AliAnalysisTaskDeuteronsRT&);
