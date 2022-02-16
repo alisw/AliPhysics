@@ -2829,13 +2829,15 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
       }
     }
   }
-  //here, the events do not contain a jet
-  if(!fDoLightOutput) fHistoNEventsJetTriggers[fiCut]->Fill(1);
-  if(fGammaCandidates->GetEntries()>1){
-    for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
-      AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
-      if(gamma==NULL) continue;
-      fHistoConvGammaPtwithoutJet[fiCut]->Fill(gamma->Pt(),NTracks);
+  if(fConvJetReader->GetNJets()==0){
+    //here, the events do not contain a jet
+    if(!fDoLightOutput) fHistoNEventsJetTriggers[fiCut]->Fill(1);
+    if(fGammaCandidates->GetEntries()>1){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+        AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+        if(gamma==NULL) continue;
+        fHistoConvGammaPtwithoutJet[fiCut]->Fill(gamma->Pt(),NTracks);
+      }
     }
   }
 }
