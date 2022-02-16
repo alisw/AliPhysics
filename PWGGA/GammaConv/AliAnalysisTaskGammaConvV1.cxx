@@ -1570,7 +1570,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fJetHistograms[iCut]->Add(fHistoEtaPhiJetPi0Cand[iCut]);
         fHistoRJetPi0Cand[iCut] = new TH2F("ESD_RPi0Jet_Pt", "ESD_RPi0Jet_Pt", 35, 0, 3.5, nBinsPt, arrPtBinning);
         fJetHistograms[iCut]->Add(fHistoRJetPi0Cand[iCut]);
-        fHistoRJetPhotonCand[iCut] = new TH2F("ESD_RPhotonJet_Pt", "ESD_RPhotonJet_Pt", 35, 0, 3.5, nBinsPt, arrPtBinning);
+        fHistoRJetPhotonCand[iCut] = new TH2F("ESD_RPhotonJet_Pt", "ESD_RPhotonJet_Pt", 60, 0, 0.6, nBinsPt, arrPtBinning);
         fJetHistograms[iCut]->Add(fHistoRJetPhotonCand[iCut]);
         fHistoPi0InJetMotherInvMassPt[iCut] = new TH2F("ESD_Pi0inJet_Mother_InvMass_Pt", "ESD_Pi0inJet_Mother_InvMass_Pt", 800, 0, 0.8, nBinsPt, arrPtBinning);
         fJetHistograms[iCut]->Add(fHistoPi0InJetMotherInvMassPt[iCut]);
@@ -2797,7 +2797,9 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
                 if(RJetPhotonCand < fConvJetReader->Get_Jet_Radius()){
                     //here the photon is really inside the jet cone
                     IsPhotonInsideJet = kTRUE;
-                    fHistoRJetPhotonCand[fiCut]->Fill(RJetPhotonCand,gamma->Pt(),fWeightJetJetMC);
+                    if(RJetPhotonCand < (fConvJetReader->Get_Jet_Radius() + 0.2) ){ //we also want photons slightly outside the cone
+                      fHistoRJetPhotonCand[fiCut]->Fill(RJetPhotonCand,gamma->Pt(),fWeightJetJetMC);
+                    }
                     fHistoConvGammaPtinJet[fiCut]->Fill(gamma->Pt(),NTracks);
                 }
               }
@@ -2829,13 +2831,15 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
       }
     }
   }
-  //here, the events do not contain a jet
-  if(!fDoLightOutput) fHistoNEventsJetTriggers[fiCut]->Fill(1);
-  if(fGammaCandidates->GetEntries()>1){
-    for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
-      AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
-      if(gamma==NULL) continue;
-      fHistoConvGammaPtwithoutJet[fiCut]->Fill(gamma->Pt(),NTracks);
+  if(fConvJetReader->GetNJets()==0){
+    //here, the events do not contain a jet
+    if(!fDoLightOutput) fHistoNEventsJetTriggers[fiCut]->Fill(1);
+    if(fGammaCandidates->GetEntries()>1){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+        AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+        if(gamma==NULL) continue;
+        fHistoConvGammaPtwithoutJet[fiCut]->Fill(gamma->Pt(),NTracks);
+      }
     }
   }
 }
