@@ -4400,6 +4400,18 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010");
   } else if (trainConfig == 4115){
     cuts.AddCutCalo("00015113","24466190sa01cc00000","0163103100000010");
+  } else if (trainConfig == 4116){
+    cuts.AddCutCalo("m0164113","24466190sa01cc00000","0163103100000010");
+    cuts.AddCutCalo("m5a64113","24466190sa01cc00000","0163103100000010");
+    cuts.AddCutCalo("n2364113","24466190sa01cc00000","0163103100000010");
+    cuts.AddCutCalo("n7a64113","24466190sa01cc00000","0163103100000010");
+  } else if (trainConfig == 4117){
+    cuts.AddCutCalo("n0a64113","24466190sa01cc00000","0163103100000010");
+    cuts.AddCutCalo("n0a62113","24466190sa01cc00000","0163103100000010");
+    cuts.AddCutCalo("00064113","24466190sa01cc00000","0163103100000010");
+    cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010");
+  } else if (trainConfig == 4118){
+    cuts.AddCutCalo("00064113","24466190sa01cc00000","0163103100000010");
 
 ///////////////////////////////////   mult dep sys PHOS 13 TeV
 ///////////////////////////////////   0-100%
