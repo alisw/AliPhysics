@@ -111,7 +111,7 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   ,fAliEventCuts(0)
   ,fKeepOnlyPileUp(kFALSE)
   ,fnBinsDCAxy_histTpcItsMatch(30)
-  ,fUseMCWeights(kFALSE)
+  ,fUseMCWeights(kFALSE) // if set to TRUE (just call the method) weights the MC with the data/MC ratio by Patrick Huhn
   ,fAddPriVtxVars(kFALSE) // adds to the ThnSparse 4 more axes of primary vertex resolution and position
 {
 
@@ -924,32 +924,35 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
               if(fMC){
                 if(fDCAz)
                 {
-                  Double_t vec4Sparse[14];
-		  if(fAddPriVtxVars) vec4Sparse = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d, 0, 0, 0, 0};
-		  else               vec4Sparse = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
+		  Double_t pvv1, pvv2, pvv3, pvv4;
+		  if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		  else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+                  Double_t vec4Sparse[14] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
                   fHistMCTPConly->Fill(vec4Sparse,weight);
                 }
                 else{
-                  Double_t vec4Sparse[12];
-		  if(fAddPriVtxVars) vec4Sparse = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d, 0, 0, 0, 0};
-		  else               vec4Sparse = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
+		  Double_t pvv1, pvv2, pvv3, pvv4;
+		  if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		  else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+                  Double_t vec4Sparse[12] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
 		  fHistMCTPConly->Fill(vec4Sparse,weight);
                 }
               }
               else{
                 if(fTPConlyFIT){
                   if(fDCAz)
-                  {
-                    Double_t vec4Sparse[10];
-		    if(fAddPriVtxVars) vec4Sparse = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_d, 0, 0, 0, 0};
-		    else               vec4Sparse = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_d,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
-		    fHistData->Fill(vec4Sparse);
-                  }
+		    {
+		      Double_t pvv1, pvv2, pvv3, pvv4;
+		      if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		      else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+		      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
+		      fHistData->Fill(vec4Sparse);
+		    }
                   else {
-                    Double_t vec4Sparse[9];
-		    if(fAddPriVtxVars) vec4Sparse = {dca[0],pT,phi,eta,(Double_t)bcTOF_d, 0, 0, 0, 0};
-		    else               vec4Sparse = {dca[0],pT,phi,eta,(Double_t)bcTOF_d,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
-		    
+		    Double_t pvv1, pvv2, pvv3, pvv4;
+		    if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		    else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+                    Double_t vec4Sparse[9] = {dca[0],pT,phi,eta,(Double_t)bcTOF_d, pvv1, pvv2, pvv3, pvv4};
                     fHistData->Fill(vec4Sparse);
                   }
                 }
@@ -960,7 +963,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
         }
       }
     }
-
+    
     //apply back the cuts and go for ITS-TPC request
     fESDtrackCuts->SetRequireITSRefit(refit);
     fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(chi2tpc);
@@ -974,7 +977,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
       if(track->GetTOFBunchCrossing()!=0){
         bcTOF_n=1;
       }
-
+      
       for(int iSpec=0; iSpec<5; iSpec++) {
         if(fspecie&BIT(iSpec)) {
           if(IsConsistentWithPid(iSpec, track)) {
@@ -983,15 +986,17 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
             histTpcItsMatch->Fill(vecHistTpcItsMatch,weight);
             if(fMC){
               if(fDCAz){
-                Double_t vec4Sparse[14];
-		if(fAddPriVtxVars) vec4Sparse = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n, 0, 0, 0, 0};
-		else               vec4Sparse = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
+		Double_t pvv1, pvv2, pvv3, pvv4;
+		if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+                Double_t vec4Sparse[14] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
                 fHistMC->Fill(vec4Sparse,weight);
               }
               else {
-                Double_t vec4Sparse[12];
-		if(fAddPriVtxVars) vec4Sparse = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n, 0, 0, 0, 0};
-		else               vec4Sparse = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
+		Double_t pvv1, pvv2, pvv3, pvv4;
+		if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+                Double_t vec4Sparse[12] = {dca[0],pT,phi,eta,partType,label,specie,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
                 fHistMC->Fill(vec4Sparse,weight);
               }
             }
@@ -999,15 +1004,17 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
               if(!fTPConlyFIT){
                 if(fDCAz)
 		  {
-		    Double_t vec4Sparse[10];
-		    if(fAddPriVtxVars) vec4Sparse = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n,VresT, 0, 0, 0, 0};
-		    else               vec4Sparse = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
+		    Double_t pvv1, pvv2, pvv3, pvv4;
+		    if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		    else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+		    Double_t vec4Sparse[10] = {dca[0],dca[1],pT,phi,eta,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
 		    fHistData->Fill(vec4Sparse);
 		  }
                 else {
-                  Double_t vec4Sparse[9];
-		  if(fAddPriVtxVars) vec4Sparse = {dca[0],pT,phi,eta,(Double_t)bcTOF_n, 0, 0, 0, 0};
-		  else               vec4Sparse = {dca[0],pT,phi,eta,(Double_t)bcTOF_n,VresT,VresZ,Vchi2ndf,fVertex->GetZ()};
+		  Double_t pvv1, pvv2, pvv3, pvv4;
+		  if(fAddPriVtxVars) {pvv1=VresT; pvv2=VresZ; pvv3=Vchi2ndf; pvv4=fVertex->GetZ();}
+		  else {pvv1=0; pvv2=0; pvv3=0; pvv4=0;}
+                  Double_t vec4Sparse[9] = {dca[0],pT,phi,eta,(Double_t)bcTOF_n, pvv1, pvv2, pvv3, pvv4};
                   fHistData->Fill(vec4Sparse);
                 }
               }
