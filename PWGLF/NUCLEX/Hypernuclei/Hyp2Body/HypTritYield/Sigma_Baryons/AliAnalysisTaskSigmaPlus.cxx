@@ -245,6 +245,7 @@ fPairProtonIsPrimary(kFALSE),
 fPairProtonPx(-999),
 fPairProtonPy(-999),
 fPairProtonPz(-999),
+fPairProtonCharge(-999),
 fPairProtonDCAtoPVxy(-999),
 fPairProtonDCAtoPVz(-999),       
 fPairProtonNSigTPC(-999),      
@@ -422,6 +423,7 @@ fPairProtonIsPrimary(kFALSE),
 fPairProtonPx(-999),
 fPairProtonPy(-999),
 fPairProtonPz(-999),
+fPairProtonCharge(-999),
 fPairProtonDCAtoPVxy(-999),
 fPairProtonDCAtoPVz(-999),       
 fPairProtonNSigTPC(-999),      
@@ -694,6 +696,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTree->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
     fSigmaPairTree->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
     fSigmaPairTree->Branch("fPairProtonPz",&fPairProtonPz,"fPairProtonPz/F");
+    fSigmaPairTree->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");
     fSigmaPairTree->Branch("fPairProtonDCAtoPVxy",&fPairProtonDCAtoPVxy,"fPairProtonDCAtoPVxy/F");
     fSigmaPairTree->Branch("fPairProtonDCAtoPVz",&fPairProtonDCAtoPVz,"fPairProtonDCAtoPVz/F");
     fSigmaPairTree->Branch("fPairProtonNSigTPC",&fPairProtonNSigTPC,"fPairProtonNSigTPC/F");
@@ -719,6 +722,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fProtonTree->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
     fProtonTree->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
     fProtonTree->Branch("fPairProtonPz",&fPairProtonPz,"fPairProtonPz/F");
+    fProtonTree->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");    
     fProtonTree->Branch("fPairProtonDCAtoPVxy",&fPairProtonDCAtoPVxy,"fPairProtonDCAtoPVxy/F");
     fProtonTree->Branch("fPairProtonDCAtoPVz",&fPairProtonDCAtoPVz,"fPairProtonDCAtoPVz/F");
     fProtonTree->Branch("fPairProtonNSigTPC",&fPairProtonNSigTPC,"fPairProtonNSigTPC/F");
@@ -3225,7 +3229,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
             fPairProtonPx = pairprot->Px();        
             fPairProtonPy = pairprot->Py();        
-            fPairProtonPz = pairprot->Pz();        
+            fPairProtonPz = pairprot->Pz();
+            fPairProtonCharge = pairprot->Charge();        
             fPairProtonNSigTPC = fPIDResponse->NumberOfSigmasTPC(pairprot,AliPID::kProton);        
             fPairProtonNSigTOF = fPIDResponse->NumberOfSigmasTOF(pairprot,AliPID::kProton);
             fPairProtNSigTPCPion = fPIDResponse->NumberOfSigmasTPC(pairprot,AliPID::kPion);
