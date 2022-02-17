@@ -351,6 +351,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fPairProtonPx;        
         Float_t               fPairProtonPy;        
         Float_t               fPairProtonPz;        
+        Float_t               fPairProtonCharge;        
         Float_t               fPairProtonDCAtoPVxy;
         Float_t               fPairProtonDCAtoPVz;        
         Float_t               fPairProtonNSigTPC;        
