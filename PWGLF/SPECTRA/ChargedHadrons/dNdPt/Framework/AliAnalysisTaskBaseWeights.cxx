@@ -41,11 +41,11 @@ ClassImp(AliAnalysisTaskBaseWeights)
 AliAnalysisTaskBaseWeights::AliAnalysisTaskBaseWeights()
 : AliAnalysisTaskMKBase(), fCollSystem(CollisionSystem::pp),
 fUseRandomSeed(kFALSE), fRand(0), fMCSpectraWeights(0), fMCweight(1),
-fMCweightRandom(1), fMCweightSys(1), fMCweightSysRandom(1), fNch(0),
+fMCweightRandom(1), fMCweightSys(1), fMCweightSysDown(1), fMCweightSysRandom(1), fNch(0),
 fNchWeighted(0), fNchWeightedRandom(0), fNchWeightedSys(0),
 fNchWeightedSysRandom(0), fNacc(0), fNaccWeighted(0),
 fNaccWeightedRandom(0), fNaccWeightedSys(0),
-fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistEffContWeightedRandom{}, fHistEffContWeightedSys{}, fHistEffContWeightedSysRandom{}, fHistMultCorrelationNominal{}, fHistMultCorrelationWeighted{}, fHistMultCorrelationWeightedRandom{}, fHistMultCorrelationWeightedSys{}, fHistMultCorrelationWeightedSysRandom{} {
+fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistEffContWeightedRandom{}, fHistEffContWeightedSys{}, fHistEffContWeightedSysDown{}, fHistEffContWeightedSysRandom{}, fHistMultCorrelationNominal{}, fHistMultCorrelationWeighted{}, fHistMultCorrelationWeightedRandom{}, fHistMultCorrelationWeightedSys{}, fHistMultCorrelationWeightedSysRandom{}, fHistPionRec{}, fHistPionGen{} {
     // default contructor
 }
 
@@ -54,11 +54,11 @@ fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistE
 AliAnalysisTaskBaseWeights::AliAnalysisTaskBaseWeights(const char* name)
 : AliAnalysisTaskMKBase(name), fCollSystem(CollisionSystem::pp),
 fUseRandomSeed(kFALSE), fRand(0), fMCSpectraWeights(0), fMCweight(1),
-fMCweightRandom(1), fMCweightSys(1), fMCweightSysRandom(1), fNch(0),
+fMCweightRandom(1), fMCweightSys(1),fMCweightSysDown(1), fMCweightSysRandom(1), fNch(0),
 fNchWeighted(0), fNchWeightedRandom(0), fNchWeightedSys(0),
 fNchWeightedSysRandom(0), fNacc(0), fNaccWeighted(0),
 fNaccWeightedRandom(0), fNaccWeightedSys(0),
-fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistEffContWeightedRandom{}, fHistEffContWeightedSys{}, fHistEffContWeightedSysRandom{}, fHistMultCorrelationNominal{}, fHistMultCorrelationWeighted{}, fHistMultCorrelationWeightedRandom{}, fHistMultCorrelationWeightedSys{}, fHistMultCorrelationWeightedSysRandom{} {
+fNaccWeightedSysRandom(0), fHistEffContNominal{}, fHistEffContWeighted{}, fHistEffContWeightedRandom{}, fHistEffContWeightedSys{}, fHistEffContWeightedSysDown{}, fHistEffContWeightedSysRandom{}, fHistMultCorrelationNominal{}, fHistMultCorrelationWeighted{}, fHistMultCorrelationWeightedRandom{}, fHistMultCorrelationWeightedSys{}, fHistMultCorrelationWeightedSysRandom{}, fHistPionRec{}, fHistPionGen{} {
     // constructor
 }
 //_____________________________________________________________________________
@@ -272,12 +272,12 @@ void AliAnalysisTaskBaseWeights::AnaEventMC() {
     AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
     fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
 
-    if (fMCSpectraWeights) {
-        DebugPCC("found fMCSpectraWeights in this event\n");
-        DebugPCC("Status: " << fMCSpectraWeights->GetTaskStatus() << "\n");
-    } else {
-        DebugPCC("could not find fMCSpectraWeights in this event\n");
-    }
+//    if (fMCSpectraWeights) {
+//        DebugPCC("found fMCSpectraWeights in this event\n");
+//        DebugPCC("Status: " << fMCSpectraWeights->GetTaskStatus() << "\n");
+//    } else {
+//        DebugPCC("could not find fMCSpectraWeights in this event\n");
+//    }
 
     LoopOverAllParticles();
     LoopOverAllTracks();
@@ -339,13 +339,23 @@ void AliAnalysisTaskBaseWeights::AnaTrackMC(Int_t flag) {
     if (TMath::Abs(fMCQ > 1)) {
         Log("RecTrack.Q>1.PDG.", fMCPDGCode);
     }
-
+    if(fMCPileUpTrack){
+        Log("PileUpTrack");
+        return;
+    }
 
     // get the scaling factor
-    if(fMCSpectraWeights){
+    if(fMCSpectraWeights && 0==fMCPrimSec && fMCParticle->Particle()){ // only for primary particles
         fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
         fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
         fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
+    if(fMCSpectraWeights && 1==fMCPrimSec && fMCParticle->Particle()){ // only for secondaries from decay
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
+        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
         fMCweightRandom = GetRandomRoundDouble(fMCweight);
         fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
     }
@@ -409,17 +419,26 @@ void AliAnalysisTaskBaseWeights::AnaParticleMC(Int_t flag) {
     if (TMath::Abs(fMCQ > 1)) {
         Log("GenPrim.Q>1.PDG.", fMCPDGCode);
     }
+    if(fMCPileUpTrack){
+        Log("PileUpTrack");
+        return;
+    }
 
     // get the scaling factor
-    if(fMCSpectraWeights)
-    {
+    if(fMCSpectraWeights && 0==fMCPrimSec && fMCParticle->Particle()){ // only for primary particles
         fMCweight = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 0);
         fMCweightSys = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), 1);
         fMCweightSysDown = fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(), -1);
         fMCweightRandom = GetRandomRoundDouble(fMCweight);
         fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
     }
-
+    if(fMCSpectraWeights && 1==fMCPrimSec && fMCParticle->Particle()){ // only for secondaries from decay
+        fMCweight = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle());
+        fMCweightSys = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), 1);
+        fMCweightSysDown = fMCSpectraWeights->GetWeightForSecondaryParticle(fMCParticle->Particle(), -1);
+        fMCweightRandom = GetRandomRoundDouble(fMCweight);
+        fMCweightSysRandom = GetRandomRoundDouble(fMCweightSys);
+    }
     // fill histograms
     fHistEffContNominal.FillWeight(
                              static_cast<Double_t>(1), static_cast<Double_t>(fMCnPrim05), fMCPt,
