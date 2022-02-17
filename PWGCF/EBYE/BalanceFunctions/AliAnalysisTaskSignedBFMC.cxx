@@ -260,9 +260,12 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
   Double_t gReactionPlane       = -1.; 
   //Float_t bSign = 0.;
   Float_t gimpactPar = -111;
+
+  //Printf("Debug:: You are running Local Code 2022/02/17 ");
+  
   // get the event (for generator level: MCEvent())
   AliVEvent* eventMain = NULL;
-  if(fAnalysisLevel == "MC") {
+  if(fAnalysisLevel == "MC" || fAnalysisLevel == "MCFLY") {
     eventMain = dynamic_cast<AliVEvent*>(MCEvent());
   }
   else{
@@ -292,8 +295,10 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
     Printf("Debug: Could not get Centrality from Impact parameter! Exit \n");    
     return;
   }
-  
-  Printf("Debug:UserExec() ReactionPlane: %f, Impactpar: %f, and Centrality: %f  \n",gReactionPlane,gimpactPar,lMultiplicityVar);
+  if(gReactionPlane<-9){  /// should -pi to pi but if it is -10 then we did not get it right! 
+    gReactionPlane = 0;
+  }
+  //Printf("Debug:UserExec() ReactionPlane: %f, Impactpar: %f, and Centrality: %f  \n",gReactionPlane,gimpactPar,lMultiplicityVar);
 
   
   //Reset histograms
