@@ -219,7 +219,7 @@ AliMCWeightsTask::AddTaskAliMCWeightsTask(MCGeneratorType gen,  const char* coll
                                 "pp_5TeV_FirstTrain_LHC17l3b_p_210329.root";
             collisionSystem = "pp";
             break;
-        case MCGeneratorType::PP_EPOS-LHC:
+        case MCGeneratorType::PP_EPOS_LHC:
             stTrainOutputPath = "alien:///alice/cern.ch/user/p/phuhn/"
                                 "FirstTrain_pp_LHC17d20ab12_EPOSLHC.root";
             collisionSystem = "pp";
