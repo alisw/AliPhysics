@@ -510,6 +510,10 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   fTVz = PrimVtx[2];
   fTMult = fEvent->GetMultiplicity();
 
+  AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
+
+//#ifndef GEORGIOSDEBUGG
+
   for(int ii=0; ii<MAXv0; ii++){
    fTv0Charge[ii]=-10;
    fTv0DCA[ii]=-100000.;
@@ -591,7 +595,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   //Lambdas
   std::vector<AliFemtoDreamBasePart> Lambdas;
   std::vector<AliFemtoDreamBasePart> AntiLambdas;
-  AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
+
 
   fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
@@ -617,7 +621,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     if(IsAntiLambda){Fillv0(fv0, -1);}
   }
 
-
+//#endif //GEORGIOSDEBUGG
 
 
   //init tree Xi (Cascades)
@@ -746,9 +750,31 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 //  fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0);   // to be set
 //  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 1); // to be set
 
+ //deactivate the track cleaner
   fPairCleaner->CleanDecay(&Lambdas, 0);
   fPairCleaner->CleanDecay(&AntiLambdas, 1);
- 
+    
+  fPairCleaner->CleanDecay(&Xis, 0);
+  fPairCleaner->CleanDecay(&AntiXis, 1);
+  fPairCleaner->CleanDecay(&XisBGR, 0);
+  fPairCleaner->CleanDecay(&AntiXisBGR, 1);
+
+  fPairCleaner->CleanTrackAndDecay(&Lambdas, &XisBGR, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXisBGR, 1);
+  fPairCleaner->CleanTrackAndDecay(&Lambdas, &Xis, 0); //this is apparently working
+  fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXis, 1); //this is apparently working
+
+  fPairCleaner->StoreParticle(Lambdas);
+  fPairCleaner->StoreParticle(AntiLambdas);
+  fPairCleaner->StoreParticle(Xis);
+  fPairCleaner->StoreParticle(AntiXis);
+  fPairCleaner->StoreParticle(XisBGR);
+  fPairCleaner->StoreParticle(AntiXisBGR);
+
+  /*
+  fPairCleaner->CleanDecay(&Lambdas, 0);
+  fPairCleaner->CleanDecay(&AntiLambdas, 1);
+
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
 
@@ -766,7 +792,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(AntiXis);
   fPairCleaner->StoreParticle(XisBGR);
   fPairCleaner->StoreParticle(AntiXisBGR);
-
+  */
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
