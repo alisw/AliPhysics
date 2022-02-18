@@ -89,7 +89,10 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     AntiKaonCuts->SetMinimalBooking(true);
   }
 
-
+  double DeltaPhiMaxpp = 0.017;      
+  double DeltaEtaMaxpp = 0.017;
+  double DeltaPhiMaxpKplus = 0.04;
+  double DeltaEtaMaxpKplus = 0.012;
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto", false);
@@ -343,10 +346,16 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
     taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
-    taskNano->SetDoTwoPrimary(DoTwoPrimary);
+    //taskNano->SetDoTwoPrimary(DoTwoPrimary);
     taskNano->SetStandardMixing(StandardMixing);
     taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
     taskNano->SetRunPlotPt(RunPlotPt);
+    taskNano->SetDeltaPhiMaxPP(DeltaPhiMaxpp);      
+    taskNano->SetDeltaEtaMaxPP(DeltaEtaMaxpp);
+    taskNano->SetDeltaPhiMaxPPrim(DeltaPhiMaxpKplus);
+    taskNano->SetDeltaEtaMaxPPrim(DeltaEtaMaxpKplus);
+    taskNano->SetDeltaPhiMaxPAPrim(0.);
+    taskNano->SetDeltaEtaMaxPAPrim(0.);
 
     mgr->AddTask(taskNano);
 

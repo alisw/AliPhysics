@@ -1768,13 +1768,23 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
 
 
         }
+/*
 
+        if(fDalitzPlot){
+          TLorentzVector trackSum = part1_LorVec + part2_LorVec + part3_LorVec;
+          double PCM = trackSum.P();
+
+
+
+        }
+*/
 
         /*if(firstSpecies == 2 || firstSpecies == 3) InvMassSame->Fill(Q3, iPart1->GetInvMass());
         if(secondSpecies == 2 || secondSpecies == 3) InvMassSame->Fill(Q3, iPart2->GetInvMass());
         if(thirdSpecies == 2 || thirdSpecies == 3) InvMassSame->Fill(Q3, iPart3->GetInvMass());*/
 
       }
+
     }
   }
 }
@@ -2393,6 +2403,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
             Q3VskDistribution12->Fill(Q3, qSame12);
             Q3VskDistribution23->Fill(Q3, qSame23);
           }
+
         }
       }
     }
