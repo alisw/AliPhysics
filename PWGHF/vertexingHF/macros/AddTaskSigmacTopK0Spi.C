@@ -84,7 +84,7 @@ AliAnalysisTaskSESigmacTopK0Spi* AddTaskSigmacTopK0Spi(Int_t nvars, TString libr
     namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,V0positivePt,V0negativePt,v0Pt,dcaV0,bachelorEta,centrality"; 
   }
   else if (nvars == 7) {
-    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,nSigmapr";
+    namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,nSigmaTOFpr > -900 ? sqrt(nSigmaTOFpr*nSigmaTOFpr + nSigmaTPCpr*nSigmaTPCpr) : nSigmaTPCpr";
     nvarsSpectators = 8;
     namesTMVAvarsSpectators = "massLc2K0Sp,LcPt,V0positivePt,V0negativePt,v0Pt,dcaV0,bachelorEta,centrality"; 
   }
