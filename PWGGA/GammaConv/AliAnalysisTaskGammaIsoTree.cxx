@@ -458,7 +458,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_GenPhotonMCIsoCharged3(0),
   fBuffer_GenPhotonMCIsoBckPerp(0),
   fBuffer_GenPhotonIsConv(0),
-  fBuffer_GenPhotonMCTag(0)
+  fBuffer_GenPhotonMCTag(0),
+  fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
 
   SetEtaMatching(0.010,4.07,-2.5);
@@ -902,7 +903,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_GenPhotonMCIsoCharged3(0),
   fBuffer_GenPhotonMCIsoBckPerp(0),
   fBuffer_GenPhotonIsConv(0),
-  fBuffer_GenPhotonMCTag(0)
+  fBuffer_GenPhotonMCTag(0),
+  fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -4632,8 +4634,11 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
       
       pmc = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(p));
 
-      Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, pmc, mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
-      if(!isPrimary) continue;
+      // Do selection of charged particles according to AliMCParticleContainer
+      if ((pmc->GetFlag() & fMCFlag) != fMCFlag) {
+        continue;
+      }
+
    
       // found conversion, exclude e daughters from iso
       if(nFound == 2){
@@ -4704,16 +4709,7 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
 
 
   }
-  Float_t cf = 1; 
-  // Correct isolation for curren position in eta in case cone does not fit
-  for (Int_t r : fTrackIsolationR)
-  {
-      cf = CalculateIsoCorrectionFactor(thisEta, fEtaCut, fTrackIsolationR.at(r));
-      isoV.isolationCone.at(r) /= cf;
-      isoV.backgroundLeft.at(r) /= cf;
-      isoV.backgroundRight.at(r) /= cf;
-      isoV.backgroundBack.at(r) /= cf;
-  }
+
   return isoV;
 }
 
