@@ -174,7 +174,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserCreateOutputObjects()
   Hist_Pt = new TH1D("Hist_Pt","Hist_Pt", 500, 0, 5);
   
 
-  //histograms for ptcut 0.2 < pT < 2.0 GeV/c
+  //histograms for ptcut 0.15 < pT < 2.0 GeV/c
   Profile_mean_term1_ptmax2=new TProfile("Profile_mean_term1_ptmax2","Profile_mean_term1_ptmax2",3001,-0.5,3000.5);
   Profile_var_term1_ptmax2=new TProfile("Profile_var_term1_ptmax2","Profile_var_term1_ptmax2",3001,-0.5,3000.5);
   Profile_var_term2_ptmax2=new TProfile("Profile_var_term2_ptmax2","Profile_var_term2_ptmax2",3001,-0.5,3000.5);
@@ -606,7 +606,7 @@ void AliAnalysisTaskResonanceVsMultiplicity::UserExec(Option_t *)
       if(TMath::Abs(Track_eta)>fEtaMax)continue;
       if(TMath::Abs(trackcharge)!=1)continue;
       
-      if(Track_pt>0.2 && Track_pt<=2.0)
+      if(Track_pt>0.15 && Track_pt<=2.0)
 	{
 	  Q1[0]=Q1[0]+TMath::Power(Track_pt, 1.0);
 	  Q2[0]=Q2[0]+TMath::Power(Track_pt, 2.0);
