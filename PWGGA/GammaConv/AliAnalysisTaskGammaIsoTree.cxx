@@ -4309,11 +4309,11 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessChargedIsolation(AliAODCaloCluster
     // Correct isolation for curren position in eta in case cone does not fit
     for (Int_t r : fTrackIsolationR)
     {
-        cf = CalculateIsoCorrectionFactor(clusterEta, fEtaCut, fTrackIsolationR.at(r));
-        isoV.isolationCone.at(r) /= cf;
-        isoV.backgroundLeft.at(r) /= cf;
-        isoV.backgroundRight.at(r) /= cf;
-        isoV.backgroundBack.at(r) /= cf;
+        // cf = CalculateIsoCorrectionFactor(clusterEta, fEtaCut, fTrackIsolationR.at(r));
+        isoV.isolationCone.at(r);
+        isoV.backgroundLeft.at(r);
+        isoV.backgroundRight.at(r);
+        isoV.backgroundBack.at(r);
     }
 
     if(fUseHistograms) fHistoChargedIso->Fill(isoV.isolationCone.at(0)); // debug only
