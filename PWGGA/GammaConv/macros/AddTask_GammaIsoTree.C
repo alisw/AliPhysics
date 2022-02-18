@@ -874,6 +874,9 @@ void AddTask_GammaIsoTree(
 
   fQA->SetSignalMinM02(minSignalM02);
   fQA->SetSignalMaxM02(maxSignalM02);
+
+  UInt_t status_acc = 1<<16;
+  fQA->SetMCFlag(AliAODMCParticle::kPhysicalPrim | status_acc);
   
   mgr->AddTask(fQA);
 
