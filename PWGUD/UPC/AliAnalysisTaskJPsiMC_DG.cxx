@@ -661,7 +661,7 @@ void AliAnalysisTaskJPsiMC_DG::RunMCGenerated()
         AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
         if(!mcPart) continue;
     
-        if(TMath::Abs(mcPart->PdgCode()) == 13){ 
+        if(TMath::Abs(mcPart->PdgCode()) == 13 || TMath::Abs(mcPart->PdgCode()) == 11){ 
             // if mu+ or mu-
 
             if(mcPart->GetMother() == -1){
