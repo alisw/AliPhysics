@@ -24,8 +24,9 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        Bool_t PtWeight=kFALSE,
                                                        Int_t recoEstimator = AliAnalysisTaskSEDvsEventShapes::kNtrk10,
                                                        Int_t MCEstimator = AliAnalysisTaskSEDvsEventShapes::kEta10,
-							 Bool_t isPPbData=kFALSE,
-							 Int_t year=18)
+							                           Bool_t isPPbData=kFALSE,
+							                           Int_t year=18, 
+                                                       Bool_t unweightS0=kFALSE)
 {
     //
     // Macro for the AliAnalysisTaskSE for D candidates vs Multiplicity as a function of Event shape variables
@@ -83,6 +84,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     
     AliAnalysisTaskSEDvsEventShapes *dEvtShapeTask = new AliAnalysisTaskSEDvsEventShapes("dEvtShapeAnalysis",pdgMeson,analysiscuts,isPPbData);
     dEvtShapeTask->SetReadMC(readMC);
+    dEvtShapeTask->SetS0unweight(unweightS0);
     dEvtShapeTask->SetDebugLevel(0);
     dEvtShapeTask->SetUseBit(kTRUE);
     dEvtShapeTask->SetDoImpactParameterHistos(kFALSE);
