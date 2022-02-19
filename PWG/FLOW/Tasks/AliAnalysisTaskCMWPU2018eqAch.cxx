@@ -939,6 +939,20 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   fCentDistBeforCut->Fill(centrality);
   
 
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+  UInt_t fSelectMask = inputHandler->IsEventSelected();
+  Bool_t isTriggerSelected1 = kFALSE;
+  Bool_t isTriggerSelected2 = kFALSE;
+
+  isTriggerSelected1 = fSelectMask& AliVEvent::kCentral;
+  isTriggerSelected2 = fSelectMask& AliVEvent::kSemiCentral;
+
+
+  if (isTriggerSelected1==1 && centrality>10.0)
+    return ;
+  if (isTriggerSelected2==1 && (centrality<30.0 || centrality>50.0 ))
+    return ;
 
 
   
