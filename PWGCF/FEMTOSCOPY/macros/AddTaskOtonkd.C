@@ -4,17 +4,36 @@
 AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
     int KaonCut = 0,
     int DeuteronCut = 0,
+    int ProtonCut = 0,
     int DoFDpairing = 0
     ) {
 
-  // isMCint = 0 => DATA: isMC=false 
-  // isMCint = 1 => MC STD: isMC=true,  isMCtruth=false;
-  // isMCint = 2 => MC TRUTH: isMC=true,  isMCtruth=true;
+  // isMCint = 0 //  DATA: isMC=false 
+  // isMCint = 1 //  MC STD: isMC=true,  isMCtruth=false;
+  // isMCint = 2 //  MC TRUTH: isMC=true,  isMCtruth=true;
+  // isMCint = -1 //  DATA AGAIN WITH SOME PROTONS AS DEUTERONS: isMC=false,  isMCtruth=false, isIncludeSomeProtons=true
+
+  // KaonCut = 0 // Oton Std
+  // KaonCut = 1 // Ramona
+  // KaonCut = 0 // Oton open
+
+  // DeuteronCut = 0 // Oton 
+  // DeuteronCut = 1 // FD Std
+  // DeuteronCut = 2 // FD open
+
+  // ProtonCut = 0 // protons
+  // ProtonCut = 1 // pions
+
+  // DoFDpairing = 0 // no FD pairing
+  // DoFDpairing = 1 // YES do FD pairing
+
 
   bool isMC = false;
   if(isMCint>0) isMC = true;
   bool isMCtruth=false;
   if(isMCint==2)  isMCtruth=true;
+  bool isIncludeSomeProtons = false;
+  if(isMCint==-1) isIncludeSomeProtons = true;
   bool doFDpairing = false;
   if(DoFDpairing==1)  doFDpairing=true;
 
@@ -110,12 +129,48 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   }
 
   //protons
-  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
-        isMC, true, false, false);
+  AliFemtoDreamTrackCuts *TrackCutsProton;
+  if(ProtonCut==0){ //use protons
+   TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  }
+  if(ProtonCut==1){ //use pions
+   TrackCutsProton = new AliFemtoDreamTrackCuts();
+   TrackCutsProton->SetIsMonteCarlo(isMC);
+   TrackCutsProton->SetPtRange(0.14, 4.0);
+   TrackCutsProton->SetEtaRange(-0.8, 0.8);
+   TrackCutsProton->SetNClsTPC(80);
+   TrackCutsProton->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+   TrackCutsProton->SetFilterBit(128);//96); // Filterbit 5+6
+   TrackCutsProton->SetDCAVtxZ(0.3);
+   TrackCutsProton->SetDCAVtxXY(0.3);
+   TrackCutsProton->SetNClsTPC(80); // In Indico + additrotonal Chi²/NDF <4
+   TrackCutsProton->SetPID(AliPID::kPion, 0.5);
+   TrackCutsProton->SetRejLowPtPionsTOF(false);
+   TrackCutsProton->SetMinimalBooking(false);
+   TrackCutsProton->SetPlotDCADist(true);
+  }
   TrackCutsProton->SetCutCharge(1);
 
-  AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
-        isMC, true, false, false);
+  AliFemtoDreamTrackCuts *TrackCutsAntiProton;
+  if(ProtonCut==0){ //use protons
+   TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  }
+  if(ProtonCut==1){ //use pions
+   TrackCutsAntiProton = new AliFemtoDreamTrackCuts();
+   TrackCutsAntiProton->SetIsMonteCarlo(isMC);
+   TrackCutsAntiProton->SetPtRange(0.14, 4.0);
+   TrackCutsAntiProton->SetEtaRange(-0.8, 0.8);
+   TrackCutsAntiProton->SetNClsTPC(80);
+   TrackCutsAntiProton->SetDCAReCalculation(true);
+   TrackCutsAntiProton->SetFilterBit(128);//96);
+   TrackCutsAntiProton->SetDCAVtxZ(0.3);
+   TrackCutsAntiProton->SetDCAVtxXY(0.3);
+   TrackCutsAntiProton->SetNClsTPC(80);
+   TrackCutsAntiProton->SetPID(AliPID::kPion, 0.5);
+   TrackCutsAntiProton->SetRejLowPtPionsTOF(false);
+   TrackCutsAntiProton->SetMinimalBooking(false);
+   TrackCutsAntiProton->SetPlotDCADist(true);
+  }
   TrackCutsAntiProton->SetCutCharge(-1);
 
 
@@ -123,8 +178,14 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(321);//k
   PDGParticles.push_back(321);//k
-  PDGParticles.push_back(2212);
-  PDGParticles.push_back(2212);
+  if(ProtonCut==0){ //use protons
+   PDGParticles.push_back(2212);
+   PDGParticles.push_back(2212);
+  }
+  if(ProtonCut==1){ //use pions
+   PDGParticles.push_back(211);
+   PDGParticles.push_back(211);
+  }
   PDGParticles.push_back(1000010020);//d
   PDGParticles.push_back(1000010020);//d
 
@@ -290,7 +351,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   //Define here the analysis task
   AliAnalysisTaskOtonkd *task =
-   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, doFDpairing);
+   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, doFDpairing);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
