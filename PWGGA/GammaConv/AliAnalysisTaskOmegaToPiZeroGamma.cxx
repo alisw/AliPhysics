@@ -2271,7 +2271,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::ProcessTruePhotonCandidates(AliAODConver
     return; // Mother is no Photon
   }
 
-  if(posDaughter->GetUniqueID() != 5 || negDaughter->GetUniqueID() !=5) return;// check if the daughters come from a conversion
+  if(posDaughter->Particle()->GetUniqueID() != 5 || negDaughter->Particle()->GetUniqueID() !=5) return;// check if the daughters come from a conversion
 
   // True Photon
   TruePhotonCandidate->SetIsTrueConvertedPhoton();
@@ -4665,7 +4665,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculateOmegaRotationBackground(Int_t i
   // curcial requierment is that the event has at least 5 cluster candidates and one Pi0 candidate
   if( (fClusterCandidates->GetEntries() > 4 ) &&  (fPi0Candidates->GetEntries() > 0) )
   {
-    
+
     Double_t tempBGCandidateWeight       = fWeightJetJetMC;
 
     Double_t rotationAngle = TMath::Pi()/2.0; // rotaion angle 90°
@@ -5008,7 +5008,7 @@ void AliAnalysisTaskOmegaToPiZeroGamma::CalculatePi0RotationBackground(){
   // curcial requierment is that the event has at least 4 cluster candidates and
   // at least one pi0 candidate
   if( (fClusterCandidates->GetEntries() > 3) && (fPi0Candidates->GetEntries() > 0) ) {
-    
+
     Double_t rotationAngle = TMath::Pi()/2.0; //0.78539816339; // rotaion angle 90°
 
     TLorentzVector lvRotationPhoton1;   // photon candidates which get rotated
