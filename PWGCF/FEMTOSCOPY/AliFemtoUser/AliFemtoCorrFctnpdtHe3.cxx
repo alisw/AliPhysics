@@ -392,7 +392,7 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 
     double tKStar = fabs(fPair->KStar());
     fDenominator->Fill(tKStar);
-    if(fHighCF) fNumHigh3F->Fill(fPair->Track1()->Track()->Pt(),fPair->Track2()->Track()->Pt(),tKStar); 
+    if(fHighCF) fDenHigh3F->Fill(fPair->Track1()->Track()->Pt(),fPair->Track2()->Track()->Pt(),tKStar); 
     if(fSideBand) FillSideBandDum(fPair);
 
     int VelLabel = ReVelocityGate(fPair);
