@@ -3579,44 +3579,44 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
+  case 31: // v cluster swapping method with 10 random with TGenPhaseSpace no evt weighting
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
+    fNumberOfSwappsForBg        = 10;
     fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
-  case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
+  case 32: // w cluster swapping method with 10 random with TGenPhaseSpace with border criterium
     fDoGammaSwappForBg          = 1;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
-    fDistanceToBorderSwappBG    = 0;
+    fNumberOfSwappsForBg        = 10;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
+  case 33: // x cluster swapping method with 10 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
-    fNumberOfSwappsForBg        = 20;
+    fNumberOfSwappsForBg        = 10;
     fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
-  case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
+  case 34: // y cluster swapping method with 90 degree rotation angle border criterium (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
-    fDistanceToBorderSwappBG    = 0;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting (around Pi0 for the omega analyses)
+  case 35: // z cluster swapping method with 10 random with TGenPhaseSpace border criterium (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
-    fDistanceToBorderSwappBG    = 0;
+    fNumberOfSwappsForBg        = 10;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
   default:
