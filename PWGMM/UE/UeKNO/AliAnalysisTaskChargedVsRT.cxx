@@ -339,6 +339,10 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fTrackFilter = new AliAnalysisFilter("trackFilter");
     fTrackFilterwoDCA = new AliAnalysisFilter("trackFilterwoDCA");// wo DCA cut
     AliESDtrackCuts * fCuts = new AliESDtrackCuts();
+    
+    AliESDtrackCuts * fCutswoDCA = new AliESDtrackCuts();
+    
+    SetCutsFilterWoDCA(fCutswoDCA);
 
     fCuts->SetAcceptKinkDaughters(kFALSE);//
     fCuts->SetRequireTPCRefit(kTRUE);//
@@ -372,8 +376,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     else if (fDcazVar2) {fCuts->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
     else {fCuts->SetMaxDCAToVertexZ(2);}// Default
     
-    fTrackFilterwoDCA->AddCuts(fCuts);
-
     if (fChisqITSVar1) {fCuts->SetMaxChi2PerClusterITS(25);}//
     else if (fChisqITSVar2) {fCuts->SetMaxChi2PerClusterITS(49);}//
     else {fCuts->SetMaxChi2PerClusterITS(36);}// Default
@@ -383,13 +385,17 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     
     fTrackFilter->AddCuts(fCuts);
 
-
     // Define Hybrid 0 (global, 2011 track cuts)
     //
     fTrackFilterHybrid0 = new AliAnalysisFilter("trackFilterHybrid0");
     fTrackFilterHybrid0woDCA = new AliAnalysisFilter("trackFilterHybrid0woDCA");
     AliESDtrackCuts * fCutsHybrid0 = new AliESDtrackCuts();
     fCutsHybrid0 = new AliESDtrackCuts("fCutsHybrid0");
+    
+    AliESDtrackCuts * fCutsHybrid0woDCA = new AliESDtrackCuts();
+    fCutsHybrid0woDCA = new AliESDtrackCuts("fCutsHybrid0woDCA");
+    
+    SetCutsHybrid0WoDCA(fCutsHybrid0woDCA);
 
     //to be considered for systematics...
     fCutsHybrid0->SetMinNCrossedRowsTPC(70);       // TBC
@@ -404,8 +410,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCutsHybrid0->SetDCAToVertex2D(kFALSE);
     fCutsHybrid0->SetRequireSigmaToVertex(kFALSE);
     fCutsHybrid0->SetEtaRange(-0.8,0.8);
-
-    fTrackFilterHybrid0woDCA->AddCuts(fCutsHybrid0);
     fCutsHybrid0->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
     fCutsHybrid0->SetMaxChi2PerClusterITS(36);
     fTrackFilterHybrid0->AddCuts(fCutsHybrid0);
@@ -416,6 +420,11 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fTrackFilterHybrid1woDCA = new AliAnalysisFilter("trackFilterHybrid1woDCA");
     AliESDtrackCuts * fCutsHybrid1 = new AliESDtrackCuts();
     fCutsHybrid1 = new AliESDtrackCuts("fCutsHybrid1");
+    
+    AliESDtrackCuts * fCutsHybrid1woDCA = new AliESDtrackCuts();
+    fCutsHybrid1woDCA = new AliESDtrackCuts("fCutsHybrid1woDCA");
+    
+    SetCutsHybrid1WoDCA(fCutsHybrid1woDCA);
 
     //to be considered for systematics...
     fCutsHybrid1->SetMinNCrossedRowsTPC(70);            //TBC
@@ -430,8 +439,6 @@ void AliAnalysisTaskChargedVsRT::UserCreateOutputObjects()
     fCutsHybrid1->SetDCAToVertex2D(kFALSE);
     fCutsHybrid1->SetRequireSigmaToVertex(kFALSE);
     fCutsHybrid1->SetEtaRange(-0.8,0.8);
-
-    fTrackFilterHybrid1woDCA->AddCuts(fCutsHybrid1);
     fCutsHybrid1->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
     fCutsHybrid1->SetMaxChi2PerClusterITS(36);
     fTrackFilterHybrid1->AddCuts(fCutsHybrid1);
@@ -932,7 +939,7 @@ void AliAnalysisTaskChargedVsRT::GetMultiplicityDistributionsData(const vector<F
     hNchTSData->Fill(multTSrec);
     hNchData->Fill(multRec);
 
-    // Filling rec pT vs UE (for pT *** considering the hybrid track cuts or the 2015 track cuts ***)
+    // Filling rec pT vs UE (for pT *** considering the hybrid track cuts or the 2011 track cuts ***)
     for(Int_t i=0; i < multRec; ++i) {                 // loop over all these tracks
 
         if(i==fRecLeadIn)continue;
@@ -1408,3 +1415,73 @@ Int_t AliAnalysisTaskChargedVsRT::FillArray( vector<Float_t> &ptArray, vector<Fl
 
 }
 //________________________________________________________________________
+void AliAnalysisTaskChargedVsRT::SetCutsHybrid0WoDCA(AliESDtrackCuts * cIn){
+    cIn->SetMinNCrossedRowsTPC(70);       // TBC
+    cIn->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    cIn->SetMaxChi2PerClusterTPC(4);
+    cIn->SetMaxDCAToVertexZ(2);
+
+    cIn->SetAcceptKinkDaughters(kFALSE);
+    cIn->SetRequireTPCRefit(kTRUE);
+    cIn->SetRequireITSRefit(kTRUE);
+    cIn->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+    cIn->SetDCAToVertex2D(kFALSE);
+    cIn->SetRequireSigmaToVertex(kFALSE);
+    cIn->SetEtaRange(-0.8,0.8);
+
+    fTrackFilterHybrid0woDCA->AddCuts(cIn);
+    //fTrackFilterHybrid1woDCA->AddCuts(cIn);
+}
+//________________________________________________________________________
+void AliAnalysisTaskChargedVsRT::SetCutsHybrid1WoDCA(AliESDtrackCuts * cIn1){
+    cIn1->SetMinNCrossedRowsTPC(70);       // TBC
+    cIn1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    cIn1->SetMaxChi2PerClusterTPC(4);
+    cIn1->SetMaxDCAToVertexZ(2);
+
+    cIn1->SetAcceptKinkDaughters(kFALSE);
+    cIn1->SetRequireTPCRefit(kTRUE);
+    cIn1->SetRequireITSRefit(kFALSE);
+    cIn1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kNone);
+    cIn1->SetDCAToVertex2D(kFALSE);
+    cIn1->SetRequireSigmaToVertex(kFALSE);
+    cIn1->SetEtaRange(-0.8,0.8);
+
+    //fTrackFilterHybrid0woDCA->AddCuts(cIn);
+    fTrackFilterHybrid1woDCA->AddCuts(cIn1);
+}
+//________________________________________________________________________
+void AliAnalysisTaskChargedVsRT::SetCutsFilterWoDCA(AliESDtrackCuts * cFilterIn){
+    cFilterIn->SetMinNCrossedRowsTPC(70);       // TBC
+    cFilterIn->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    cFilterIn->SetMaxChi2PerClusterTPC(4);
+    cFilterIn->SetMaxDCAToVertexZ(2);
+
+    cFilterIn->SetAcceptKinkDaughters(kFALSE);
+    cFilterIn->SetRequireTPCRefit(kTRUE);
+    cFilterIn->SetRequireITSRefit(kTRUE);
+    cFilterIn->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    cFilterIn->SetDCAToVertex2D(kFALSE);
+    cFilterIn->SetRequireSigmaToVertex(kFALSE);
+    cFilterIn->SetEtaRange(-0.8,0.8);
+
+    if (fGeoTPCVar1) {cFilterIn->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar2) {cFilterIn->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar3) {cFilterIn->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);}//
+    else if (fGeoTPCVar4) {cFilterIn->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);}//
+    else {cFilterIn->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);}// Default
+
+    if (fNcrVar1) {cFilterIn->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}//
+    else if (fNcrVar2) {cFilterIn->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}//
+    else {cFilterIn->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);}// Default
+
+    if (fChisqTPCVar1) {cFilterIn->SetMaxChi2PerClusterTPC(3);}
+    else if (fChisqTPCVar2) {cFilterIn->SetMaxChi2PerClusterTPC(5);}
+    else {cFilterIn->SetMaxChi2PerClusterTPC(4);}// Default
+
+    if (fDcazVar1) {cFilterIn->SetMaxDCAToVertexZ(1);} // DCAz = 1 cm
+    else if (fDcazVar2) {cFilterIn->SetMaxDCAToVertexZ(5);} // DCAz = 5 cm
+    else {cFilterIn->SetMaxDCAToVertexZ(2);}// Default
+    
+    fTrackFilterwoDCA->AddCuts(cFilterIn);
+}
