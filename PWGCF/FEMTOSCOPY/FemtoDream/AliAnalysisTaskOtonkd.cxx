@@ -27,6 +27,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
     fIsMCtruth(false),
     fdoFDpairing(false),
     fisIncludeSomeProtons(false),
+    fisPions(false),
     fdoSideband(false),
     fSigmaUp(0.0),
     fSigmaLow(0.0),
@@ -72,7 +73,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd()
 }
 
 AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
-  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool doFDpairing)
+  const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
@@ -80,6 +81,7 @@ AliAnalysisTaskOtonkd::AliAnalysisTaskOtonkd(
     fIsMCtruth(isMCtruth),
     fdoFDpairing(doFDpairing),
     fisIncludeSomeProtons(isIncludeSomeProtons),
+    fisPions(isPions),
     fdoSideband(false),
     fSigmaUp(0.0),
     fSigmaLow(0.0),
@@ -568,12 +570,26 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
         }
 
         if (fTrackCutsProton->isSelected(fTrack)){
-          Protons.push_back(*fTrack);
-          IsProton = kTRUE;
+          if(!fisPions){
+           Protons.push_back(*fTrack);
+           IsProton = kTRUE;
+          }else{ //if isPions write only some of them
+           if(r3.Rndm()<.10){
+            Protons.push_back(*fTrack);
+            IsProton = kTRUE;
+           }
+          }
         }
         if (fTrackCutsAntiProton->isSelected(fTrack)){
-          AntiProtons.push_back(*fTrack);
-          IsProton = kTRUE;
+          if(!fisPions){
+           AntiProtons.push_back(*fTrack);
+           IsProton = kTRUE;
+          }else{ //if isPions write only some of them
+           if(r3.Rndm()<.10){
+            AntiProtons.push_back(*fTrack);
+            IsProton = kTRUE;
+           }
+          }
         }
 
         //FILL kaons and deuterons unless it is MCtruth:

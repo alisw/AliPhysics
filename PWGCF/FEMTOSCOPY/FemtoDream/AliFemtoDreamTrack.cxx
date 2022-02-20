@@ -658,11 +658,15 @@ void AliFemtoDreamTrack::SetPhiAtRadii(const float bfield) {
   float chg = GetCharge().at(0);
   std::vector<float> phiatRadius;
   for (int radius = 0; radius < 9; radius++) {
+   //20-Feb-2022
+   //Avoid NAN in asin for low momentum particle (particularly for pions)
+   if(TMath::Abs(0.1*chg*bfield*0.3*TPCradii[radius]*0.01/(2.*pt))< 1.){
     phiatRadius.push_back(
         phi0
             - TMath::ASin(
                 0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01
                     / (2. * pt)));
+   }//safety check for asin
   }
   fPhiAtRadius.push_back(phiatRadius);
   return;

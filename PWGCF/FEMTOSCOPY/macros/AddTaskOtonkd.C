@@ -36,6 +36,10 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
   if(isMCint==-1) isIncludeSomeProtons = true;
   bool doFDpairing = false;
   if(DoFDpairing==1)  doFDpairing=true;
+  //add a boolean when running with pions since we don't need all of them:
+  bool isPions = false;
+  if(ProtonCut==1) isPions = true;
+
 
   const char fullBlastQA = true; //moved from arguments
   const char *cutVariation = "0"; //moved from arguments, for the moment I don't use it
@@ -351,7 +355,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
 
   //Define here the analysis task
   AliAnalysisTaskOtonkd *task =
-   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, doFDpairing);
+   new AliAnalysisTaskOtonkd("ThisNameApparentlyStillUseless", isMC, isMCtruth, isIncludeSomeProtons, isPions, doFDpairing);
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
