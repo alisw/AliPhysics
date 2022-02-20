@@ -82,8 +82,8 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
   bool Use_AliHelperPID         =   0;   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
-  int pidType                   =  0;///2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
-  ///baidya AliHelperPIDNameSpace::PIDType_t  pidType =  kNSigmaTPCTOF;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
+  //int pidType                   =  0;///2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
+  AliHelperPIDNameSpace::PIDType_t  pidType =  kNSigmaTPC;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  0;///baidya1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
   double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
@@ -893,7 +893,8 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 	      // assign initial values to AliHelperPID object
 	      AliHelperPID* helperpid = new AliHelperPID();
 	      helperpid -> SetNSigmaCut( nSigmaCut );
-	      helperpid -> SetPIDType( (PIDType_t)pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+	      //helperpid -> SetPIDType( (PIDType_t)pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+	      helperpid -> SetPIDType( pidType );
 	      helperpid -> SetfRequestTOFPID( requestTOFPID );
 	      helperpid -> SetfPtTOFPID( ptTOFlowerMin );
 	      helperpid -> SetisMC( isMC );
