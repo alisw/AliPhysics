@@ -55,6 +55,7 @@ using std::string;
 #include "AliVEventHandler.h"
 #include "AliVTrack.h"
 #include "Math/Vector4D.h"
+#include "THistManager.h"
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskAlphaPiAOD);
@@ -80,6 +81,7 @@ constexpr double kHyperMass{3.931};  /// from AliPDG.cxx
 ///
 AliAnalysisTaskAlphaPiAOD::AliAnalysisTaskAlphaPiAOD(bool isMC, TString taskname) : AliAnalysisTaskSE(taskname.Data()),
                                                                                     fEventCut{false},
+                                                                                    fHistos{nullptr},
                                                                                     fMC{isMC} {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -91,8 +93,8 @@ AliAnalysisTaskAlphaPiAOD::AliAnalysisTaskAlphaPiAOD(bool isMC, TString taskname
 AliAnalysisTaskAlphaPiAOD::~AliAnalysisTaskAlphaPiAOD() {
     if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
         return;
-    if (fList)
-        delete fList;
+    if (fHistos)
+        delete fHistos;
     if (fTree)
         delete fTree;
     if (!fMC) {
@@ -104,11 +106,20 @@ AliAnalysisTaskAlphaPiAOD::~AliAnalysisTaskAlphaPiAOD() {
 /// \return void
 ///
 void AliAnalysisTaskAlphaPiAOD::UserCreateOutputObjects() {
-    fList = new TList();
-    fList->SetOwner(kTRUE);
-    fEventCut.AddQAplotsToList(fList);
-    fRecHyper = fMC ? &fGenHyper : new StructHyper;
+    fHistos = new THistManager("hyperhists");
+    fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms()); // EventCuts QA Histograms
 
+    // QA Histograms
+    fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});n_{#sigma} #alpha", 200, 0, 20, 200, 0, 200);
+    fHistos->CreateTH2("QA/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});n_{#sigma} #bar{#alpha}", 200, 0, 20, 200, 0, 200);
+
+    // MC QA Histograms
+    if (fMC) {
+        fHistos->CreateTH2("QA_MC/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});n_{#sigma} #alpha", 200, 0, 20, 200, 0, 200);
+        fHistos->CreateTH2("QA_MC/hTPCPIDAntiAlpha", "TPC PID #bar{#alpha};#it{p}_{T} (GeV/#it{c});n_{#sigma} #bar{#alpha}", 200, 0, 20, 200, 0, 200);
+    }
+
+    fRecHyper = fMC ? &fGenHyper : new StructHyper;
     OpenFile(2);
     fTree = new TTree("HyperTree", "HyperTree");
     if (fMC) {
@@ -241,6 +252,12 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
         if (std::abs(pNsigma) < 5 && std::abs(nNsigma) < 5) {
             continue;
         }
+        fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum(),customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal()));
+        fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(),customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal()));
+        if(fMC) {
+            fHistos->FillTH2("QA_MC/hTPCPIDAlpha", pTrack->GetTPCmomentum(),fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha));
+            fHistos->FillTH2("QA_MC/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(),fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha));
+        }
 
         fRecHyper->Matter = std::abs(pNsigma) < 5;
         auto alpha = fRecHyper->Matter ? pTrack : nTrack;
@@ -364,7 +381,7 @@ AliAnalysisTaskAlphaPiAOD *AliAnalysisTaskAlphaPiAOD::AddTask(bool isMC, TString
     AliAnalysisTaskAlphaPiAOD *task = new AliAnalysisTaskAlphaPiAOD(isMC, tskname.Data());
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
-        Form("%s_summary", tskname.Data()), TList::Class(),
+        Form("%s_output", tskname.Data()), TList::Class(),
         AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
 
     AliAnalysisDataContainer *coutput2 =
@@ -385,7 +402,7 @@ float AliAnalysisTaskAlphaPiAOD::Eta2y(float pt, float m, float eta) const {
 }
 
 void AliAnalysisTaskAlphaPiAOD::PostAllData() {
-    PostData(1, fList);
+    PostData(1, fHistos->GetListOfHistograms());
     PostData(2, fTree);
 }
 

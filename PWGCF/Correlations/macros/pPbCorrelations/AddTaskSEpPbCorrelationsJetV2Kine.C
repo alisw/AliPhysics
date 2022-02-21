@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA")
+AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA", TString sCen = "0_10")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -44,7 +44,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   mgr->AddTask(task);
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectInput(task, 1, cinput1);
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("listKineAmpt_%s",sMode.Data()),
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("listKineAmpt_%s_%s",sMode.Data(), sCen.Data()),
                                                    TList::Class(),
                                                    AliAnalysisManager::kOutputContainer,
                                                    AliAnalysisManager::GetCommonFileName()));

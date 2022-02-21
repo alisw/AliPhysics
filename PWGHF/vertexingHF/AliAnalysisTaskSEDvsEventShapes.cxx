@@ -115,6 +115,7 @@ fNImpParBins(400),
 fLowerImpPar(-2000.),
 fHigherImpPar(2000.),
 fReadMC(kFALSE),
+fS0unweight(kFALSE),
 fMCOption(0),
 fisPPbData(kFALSE),
 fUseBit(kTRUE),
@@ -216,6 +217,7 @@ fNImpParBins(400),
 fLowerImpPar(-2000.),
 fHigherImpPar(2000.),
 fReadMC(kFALSE),
+fS0unweight(kFALSE),
 fMCOption(0),
 fisPPbData(switchPPb),
 fUseBit(kTRUE),
@@ -612,15 +614,21 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3) fOutput->Add(fSparseEvtShapewithNoPid);
     if(fRecomputeSpherocity) fOutput->Add(fSparseEvtShapeRecSphero);
     
+    Int_t nbinsPromptAcc[5]={48, nMultBins, 20, 100, 20};
     Int_t nbinsPrompt[4]={48, nMultBins, 20, 100};
     Int_t nbinsFeeddown[4]={48, nMultBins, 20, 100};
+    Double_t xminPromptAcc[5] = {0.,firstMultBin, 0., -1., 0.};
+    Double_t xmaxPromptAcc[5] = {24.,lastMultBin, 1., 1., 1.};
     Double_t xminPrompt[4] = {0.,firstMultBin, 0., -1.};
     Double_t xmaxPrompt[4] = {24.,lastMultBin, 1., 1.};
     Double_t xminFeeddown[4] = {0.,firstMultBin, 0., -1.};
     Double_t xmaxFeeddown[4] = {24.,lastMultBin, 1., 1.};
     
+    Int_t nbinsRecSpheroPromptAcc[6]={48, nMultBins, 20, 100, 20, 20};
     Int_t nbinsRecSpheroPrompt[5]={48, nMultBins, 20, 100, 20};
     Int_t nbinsRecSpheroFeeddown[5]={48, nMultBins, 20, 100, 20};
+    Double_t xminRecSpheroPromptAcc[6] = {0.,firstMultBin, 0., -1., 0., 0.};
+    Double_t xmaxRecSpheroPromptAcc[6] = {24.,lastMultBin, 1., 1., 1., 1.};
     Double_t xminRecSpheroPrompt[5] = {0.,firstMultBin, 0., -1., 0.};
     Double_t xmaxRecSpheroPrompt[5] = {24.,lastMultBin, 1., 1., 1.};
     Double_t xminRecSpheroFeeddown[5] = {0.,firstMultBin, 0., -1., 0.};
@@ -641,18 +649,18 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         
         //Prompt
         if(fRecomputeSpherocity){
-            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt", "kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; - promptD",5,nbinsRecSpheroPrompt,xminRecSpheroPrompt,xmaxRecSpheroPrompt);
+            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt", "kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; GenSpherocity; - promptD",6,nbinsRecSpheroPromptAcc,xminRecSpheroPromptAcc,xmaxRecSpheroPromptAcc);
             fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; - promptD",5,nbinsRecSpheroPrompt,xminRecSpheroPrompt,xmaxRecSpheroPrompt);
         }
         else{
-            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; GenSpherocity; - promptD",5,nbinsPromptAcc,xminPromptAcc,xmaxPromptAcc);
             fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         }
         if(fCalculateSphericity){
             fMCAccGenPromptSpheri = new THnSparseD("hMCAccGenPromptSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
             fMCRecoPromptSpheri = new THnSparseD("hMCRecoPromptSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         }
-        fMCAccGenPromptEvSel = new THnSparseD("hMCAccGenPromptEvSel","kStepMCAcceptanceEvSel:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        fMCAccGenPromptEvSel = new THnSparseD("hMCAccGenPromptEvSel","kStepMCAcceptanceEvSel:; p_{T} [GeV/c]; Multipicity; Spherocity; y; GenSpherocity; - promptD",5,nbinsPromptAcc,xminPromptAcc,xmaxPromptAcc);
         
         //Feeddown
         if(fRecomputeSpherocity){
@@ -827,7 +835,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
         sphericity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
     }
-    AliVertexingHFUtils::GetSpherocity(aod, spherocity, phiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg);
+    AliVertexingHFUtils::GetSpherocity(aod, spherocity, phiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, 0, 0x0, fS0unweight);
     
     Double_t St=1;
     fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);
@@ -988,8 +996,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
         }
         
-        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
-        AliVertexingHFUtils::GetGeneratedSpherocity(arrayMC, genspherocity, genphiRef, fetaMin, fetaMax, fptMin, fptMax, fminMult, fphiStepSizeDeg);
+        AliVertexingHFUtils::GetGeneratedSpherocity(arrayMC, genspherocity, genphiRef, fetaMin, fetaMax, fptMin, fptMax, fminMult, fphiStepSizeDeg, fS0unweight);
+        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight, genspherocity);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
 
     }
     
@@ -1156,7 +1164,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(!t) continue;
                 idToSkip[iDau] = t->GetID();
             }
-            AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+            AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip, fS0unweight);
         }
         
         // remove D0 from Dstar at reconstruction !!
@@ -1629,7 +1637,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
 }
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight)
+void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight, Double_t genspherocity)
 {
     
     /// Fill MC acceptance histos at generator level
@@ -1713,7 +1721,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                     Int_t indexDau = TMath::Abs(mcGenPart->GetDaughterLabel(iDau));  //index of daughter i.e. label
                     idToSkip[iDau] = trkToSkip[indexDau];
                 }
-                AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+                AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip, fS0unweight);
             }
             if(fPdgMeson==421){
                 //Removal of D0 from Dstar at Generation !!
@@ -1740,8 +1748,8 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                 //for prompt
                 if(orig == 4){
                     //fill histo for prompt
-                    Double_t arrayMCGenRecSpheroPrompt[5] = {pt, countMult, spherocity, rapid, recSpherocity};
-                    Double_t arrayMCGenPrompt[4] = {pt, countMult, spherocity, rapid};
+                    Double_t arrayMCGenRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity};
+                    Double_t arrayMCGenPrompt[5] = {pt, countMult, spherocity, rapid, genspherocity};
                     if(fRecomputeSpherocity) fMCAccGenPrompt->Fill(arrayMCGenRecSpheroPrompt, fWeight);
                     else fMCAccGenPrompt->Fill(arrayMCGenPrompt, fWeight);
                     if(isEvSel) fMCAccGenPromptEvSel->Fill(arrayMCGenPrompt, fWeight);

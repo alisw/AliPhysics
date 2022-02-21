@@ -136,22 +136,30 @@ class AliAnalysisTaskEmcalJetHUtils {
   static const double LHC18qrParam_30_50_pt[11];                   //!<! 30-50% pt parameters
   static const double LHC18qrParam_50_90_pt[11];                   //!<! 50-90% pt parameters
   // Eta parameters
-  static const double LHC18qrParam_0_10_eta[13];                   //!<! 0-10% eta parameters
-  static const double LHC18qrParam_10_30_eta[13];                  //!<! 10-30% eta parameters
-  static const double LHC18qrParam_30_50_eta[13];                  //!<! 30-50% eta parameters
-  static const double LHC18qrParam_50_90_eta[13];                  //!<! 50-90% eta parameters
+  static const double LHC18qrParam_0_10_eta[11];                   //!<! 0-10% eta parameters
+  static const double LHC18qrParam_10_30_eta[11];                  //!<! 10-30% eta parameters
+  static const double LHC18qrParam_30_50_eta[11];                  //!<! 30-50% eta parameters
+  static const double LHC18qrParam_50_90_eta[11];                  //!<! 50-90% eta parameters
   // Helper functions for determining the LHC15o tracking efficiency
   static double LHC18qrPtEfficiency(const double trackPt, const double params[11]);
-  static double LHC18qrLowPtEfficiencyImpl(const double trackPt, const double params[11], const int index);
-  static double LHC18qrHighPtEfficiencyImpl(const double trackPt, const double params[11], const int index);
-  static double LHC18qrEtaEfficiency(const double trackEta, const double params[13]);
-  static double LHC18qrEtaEfficiencyImpl(const double trackEta, const double params[13], const int index);
+
+  static double LHC18qrLowPtEfficiencyImpl(const double trackPt, const double params[11], const int index); // pT < 2.7
+  static double LHC18qrMidPtEfficiencyImpl(const double trackPt, const double params[11], const int index); // 2.7 < pT < 10
+  static double LHC18qrHighPtEfficiencyImpl(const double params[11], const int index); // pT > 10
+
+  static double LHC18qrEtaEfficiency(const double trackEta, const double params[11]);
+
+  static double LHC18qrEtaEfficiencyNeg(const double trackEta, const double params[11], const int index); // eta < -0.1
+  static double LHC18qrEtaEfficiencyMid(const double trackEta, const double params[11], const int index); // -0.1  < eta < 0.12
+  static double LHC18qrEtaEfficiencyPos(const double trackEta, const double params[11], const int index); // eta > 0.12 
+ 
 };
 
 /**
  * All functions in the FlowVectorCorrections static class are copied diretly from the AddTask. I wish I didn't have
  * to do this, but I need it in compiled code, so I have no choice.
  */
+
 class FlowVectorCorrections {
  public:
   static void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager* QnManager, AliQnCorrectionsVarManagerTask::Variables varForEventMultiplicity);

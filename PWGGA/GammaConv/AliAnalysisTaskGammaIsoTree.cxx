@@ -416,6 +416,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_EventNtrials(0),
   fBuffer_EventNPrimaryTracks(0),
   fBuffer_EventIsTriggered(0),
+  fBuffer_EventZVertex(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
@@ -457,7 +458,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_GenPhotonMCIsoCharged3(0),
   fBuffer_GenPhotonMCIsoBckPerp(0),
   fBuffer_GenPhotonIsConv(0),
-  fBuffer_GenPhotonMCTag(0)
+  fBuffer_GenPhotonMCTag(0),
+  fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
 
   SetEtaMatching(0.010,4.07,-2.5);
@@ -859,6 +861,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_EventNtrials(0),
   fBuffer_EventNPrimaryTracks(0),
   fBuffer_EventIsTriggered(0),
+  fBuffer_EventZVertex(0),
   fBuffer_ClusterE(0), 
   fBuffer_ClusterPx(0), 
   fBuffer_ClusterPy(0), 
@@ -900,7 +903,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_GenPhotonMCIsoCharged3(0),
   fBuffer_GenPhotonMCIsoBckPerp(0),
   fBuffer_GenPhotonIsConv(0),
-  fBuffer_GenPhotonMCTag(0)
+  fBuffer_GenPhotonMCTag(0),
+  fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -2494,6 +2498,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     if(fIsMC>0) fAnalysisTree->Branch("Event_Ntrials", &fBuffer_EventNtrials,"Event_Ntrials/s");
     fAnalysisTree->Branch("Event_NPrimaryTracks", &fBuffer_EventNPrimaryTracks,"Event_NPrimaryTracks/s");
     fAnalysisTree->Branch("Event_IsTriggered", &fBuffer_EventIsTriggered,"Event_IsTriggered/O");
+    fAnalysisTree->Branch("Event_ZVertex", &fBuffer_EventZVertex,"Event_ZVertex/D");
     fAnalysisTree->Branch("Cluster_E","std::vector<Float_t>",&fBuffer_ClusterE);
     fAnalysisTree->Branch("Cluster_Px","std::vector<Float_t>",&fBuffer_ClusterPx);
     fAnalysisTree->Branch("Cluster_Py","std::vector<Float_t>",&fBuffer_ClusterPy);
@@ -2715,6 +2720,7 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // vertex
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+  fBuffer_EventZVertex = vertex[2]; // store Z coordinate in tree
 
   if(fSaveConversions) ProcessConversionPhotons();
   // auto startCalo = std::chrono::high_resolution_clock::now();
@@ -4303,11 +4309,11 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessChargedIsolation(AliAODCaloCluster
     // Correct isolation for curren position in eta in case cone does not fit
     for (Int_t r : fTrackIsolationR)
     {
-        cf = CalculateIsoCorrectionFactor(clusterEta, fEtaCut, fTrackIsolationR.at(r));
-        isoV.isolationCone.at(r) /= cf;
-        isoV.backgroundLeft.at(r) /= cf;
-        isoV.backgroundRight.at(r) /= cf;
-        isoV.backgroundBack.at(r) /= cf;
+        // cf = CalculateIsoCorrectionFactor(clusterEta, fEtaCut, fTrackIsolationR.at(r));
+        isoV.isolationCone.at(r);
+        isoV.backgroundLeft.at(r);
+        isoV.backgroundRight.at(r);
+        isoV.backgroundBack.at(r);
     }
 
     if(fUseHistograms) fHistoChargedIso->Fill(isoV.isolationCone.at(0)); // debug only
@@ -4628,8 +4634,11 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
       
       pmc = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(p));
 
-      Bool_t isPrimary = fEventCuts->IsConversionPrimaryAOD(fInputEvent, pmc, mcProdVtxX, mcProdVtxY, mcProdVtxZ); 
-      if(!isPrimary) continue;
+      // Do selection of charged particles according to AliMCParticleContainer
+      if ((pmc->GetFlag() & fMCFlag) != fMCFlag) {
+        continue;
+      }
+
    
       // found conversion, exclude e daughters from iso
       if(nFound == 2){
@@ -4700,16 +4709,7 @@ isoValues AliAnalysisTaskGammaIsoTree::ProcessMCIsolation(Int_t mclabel){
 
 
   }
-  Float_t cf = 1; 
-  // Correct isolation for curren position in eta in case cone does not fit
-  for (Int_t r : fTrackIsolationR)
-  {
-      cf = CalculateIsoCorrectionFactor(thisEta, fEtaCut, fTrackIsolationR.at(r));
-      isoV.isolationCone.at(r) /= cf;
-      isoV.backgroundLeft.at(r) /= cf;
-      isoV.backgroundRight.at(r) /= cf;
-      isoV.backgroundBack.at(r) /= cf;
-  }
+
   return isoV;
 }
 

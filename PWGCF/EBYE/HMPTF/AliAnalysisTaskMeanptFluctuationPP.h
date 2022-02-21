@@ -60,6 +60,10 @@ class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
   {
     fVertexZMax = VzMax;
   }
+ void SetDCAXYRangeMax(Double_t dcaxy)          
+  {
+    fDCAxyMax = dcaxy;
+  }
   void SetDCAXYPtDep_choice(Int_t dcaxy_choice)          
   {
     fDCAxy_ptdep = dcaxy_choice;

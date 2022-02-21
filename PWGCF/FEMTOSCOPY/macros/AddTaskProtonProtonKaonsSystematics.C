@@ -1009,14 +1009,17 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
     taskNano->SetCleanWithLambdas(false);
     taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
     taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
-    taskNano->SetDoTwoPrimary(DoTwoPrimary);
+    //taskNano->SetDoTwoPrimary(DoTwoPrimary);
     taskNano->SetStandardMixing(StandardMixing);
     taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
     taskNano->SetRunPlotPt(RunPlotPt);
-    taskNano->SetDeltaPhiMaxpp(DeltaPhiMaxpp);      
-    taskNano->SetDeltaEtaMaxpp(DeltaEtaMaxpp);
-    taskNano->SetDeltaPhiMaxpKplus(DeltaPhiMaxpKplus);
-    taskNano->SetDeltaEtaMaxpKplus(DeltaEtaMaxpKplus);
+    taskNano->SetDeltaPhiMaxPP(DeltaPhiMaxpp);      
+    taskNano->SetDeltaEtaMaxPP(DeltaEtaMaxpp);
+    taskNano->SetDeltaPhiMaxPPrim(DeltaPhiMaxpKplus);
+    taskNano->SetDeltaEtaMaxPPrim(DeltaEtaMaxpKplus);
+    taskNano->SetDeltaPhiMaxPAPrim(0.);
+    taskNano->SetDeltaEtaMaxPAPrim(0.);
+
 
     mgr->AddTask(taskNano);
 

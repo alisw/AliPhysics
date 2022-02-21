@@ -11,7 +11,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProtonPion", int trigger = 0, bool RunPlotInvMassTriplet = false, bool RunPlotQ3Vsq = false, bool RunPlotPhiTheta = false, bool RunPlotOtherHistos = false, bool RunPlotMult = false, int MixingDepth = 10, bool fullBlastQA = true, bool isMC = false, bool isNano = true, float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01, const char *cutVariation = "0", bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = true, bool DoTwoPrimary = false){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMassTriplet = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false ){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -154,8 +154,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProto
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(0.017);
-  config->SetDeltaPhiMax(0.017);
+  config->SetDeltaEtaMax(0.0);
+  config->SetDeltaPhiMax(0.0);
   config->SetExtendedQAPairs(pairQA);
   config->SetMixingDepth(MixingDepth);
   config->SetUseEventMixing(true);
@@ -361,17 +361,30 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProto
     taskNano->SetAntiPrimaryCuts(TrackCutsAntiPion);
     taskNano->SetCorrelationConfig(config);
     taskNano->SetRunThreeBodyHistograms(true);
+
     taskNano->SetRunPlotInvMassTriplet(RunPlotInvMassTriplet);
     taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
     taskNano->SetRunPlotPhiTheta(RunPlotPhiTheta);
+    taskNano->SetRunPlotPt(RunPlotPt); 
     taskNano->SetRunPlotOtherHistos(RunPlotOtherHistos);
     taskNano->SetRunPlotMult(RunPlotMult);
+
     taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
     taskNano->SetCleanWithLambdas(false);
-    taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
-    taskNano->SetDoTwoPrimary(DoTwoPrimary);
-    
+    taskNano->SetDoOnlyThreeBody(DoThreeBody);
+    taskNano->SetStandardMixing(StandardMixing); 
+
+
+    taskNano->SetDeltaPhiMaxPP(PhiPP);    
+    taskNano->SetDeltaEtaMaxPP(EtaPP);
+    taskNano->SetDeltaPhiMaxPPrim(PhiPPion);
+    taskNano->SetDeltaEtaMaxPPrim(EtaPPion);
+    taskNano->SetDeltaPhiMaxPAPrim(PhiPAPion);
+    taskNano->SetDeltaEtaMaxPAPrim(EtaPAPion);
+
+    taskNano->SetQ3LimitForDeltaPhiDeltaEta(Q3LimitForDeltaPhiDeltaEta);
+
     
     mgr->AddTask(taskNano);
 
@@ -394,59 +407,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(TString taskName = "ThreeBodyProto
     }
   }
   else{
-/*
-    taskAOD= new AliAnalysisTaskThreeBodyProtonPrimaryAOD("femtoAODProtonProtonPions", isMC, triggerOn);
-    if (!fullBlastQA)
-    {
-      taskAOD->SetRunTaskLightWeight(true);
-    }
-
-    if (trigger == 0) {
-        taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-      } else if (trigger == 1){
-        taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);
-      }
-    taskAOD->SetEventCuts(evtCuts);
-    taskAOD->SetProtonCuts(TrackCuts);
-    taskAOD->SetAntiProtonCuts(AntiTrackCuts);
-    taskAOD->Setv0Cuts(TrackCutsPion);
-    taskAOD->SetAntiv0Cuts(TrackCutsAntiPion);
-    taskAOD->SetCorrelationConfig(config);
-    taskAOD->SetRunThreeBodyHistograms(true);
-    //taskAOD->SetTriggerOn(triggerOn);
-    taskAOD->SetIsMC(isMC);
-
-
-
-
-    taskAOD->SetQ3Limit(Q3Limit);
-    taskAOD->SetQ3LimitSample(Q3LimitSample) ;
-    taskAOD->SetQ3LimitSample2(Q3LimitSample2) ;
-    taskAOD->SetQ3LimitSampleFraction( Q3LimitSampleFraction) ;
-    taskAOD->SetQ3LimitSampleFraction2( Q3LimitSampleFraction2) ;
-    taskAOD->SetQ3LimitFraction( Q3LimitFraction) ;
-
-
-    mgr->AddTask(taskAOD);
-
-    mgr->ConnectInput(taskAOD, 0, cinput);
-    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);
-    mgr->ConnectOutput(taskAOD, 2, couputTrkCuts);
-    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);
-    mgr->ConnectOutput(taskAOD, 4, coutputPionCuts);
-    mgr->ConnectOutput(taskAOD, 5, coutputAntiPionCuts);
-    mgr->ConnectOutput(taskAOD, 6, coutputResults);
-    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);
-    mgr->ConnectOutput(taskAOD, 8, coutputResultsSample);
-    mgr->ConnectOutput(taskAOD, 9, coutputResultsSampleQA);
-    mgr->ConnectOutput(taskAOD, 10, coutputThreeBody);
-    if (isMC) {
-      mgr->ConnectOutput(taskAOD, 16, coutputTrkCutsMC);
-      mgr->ConnectOutput(taskAOD, 17, coutputAntiTrkCutsMC);
-      mgr->ConnectOutput(taskAOD, 18, coutputPionCutsMC);
-      mgr->ConnectOutput(taskAOD, 19, coutputAntiPionCutsMC);
-    }
-*/
+     //fill later
   }
 
 

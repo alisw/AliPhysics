@@ -51,6 +51,9 @@ class AliAnalysisTaskChargedVsRT : public AliAnalysisTaskSE
         void       SetMCclosureTest(Bool_t mcc = kFALSE)    {fIsMCclosure = mcc;}
         void       SetIsHybridAnalysis(Bool_t isHy = kFALSE)    {fIsHybAna = isHy;}
         bool       HasRecVertex();
+        void       SetCutsHybrid0WoDCA(AliESDtrackCuts *name);
+        void       SetCutsHybrid1WoDCA(AliESDtrackCuts *name);
+        void       SetCutsFilterWoDCA(AliESDtrackCuts *name);
         //Systematic ============================
 //         void       SetTPCclustersVar1(Bool_t TPCclustersVar1 = kFALSE) {fTPCclustersVar1 = TPCclustersVar1;}
 //         void       SetTPCclustersVar2(Bool_t TPCclustersVar2 = kFALSE) {fTPCclustersVar2 = TPCclustersVar2;}

@@ -37,9 +37,11 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   virtual void UserCreateOutputObjects();
   virtual void Init();
   virtual void LocalInit() {Init();}
+  virtual Bool_t Notify();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
   void SetMakeReducedCandidates(Bool_t opt){fMakeReducedCandidates=opt;}
+  void ForceDisableCascades() {fDisableCascades=kTRUE;}
   AliAnalysisVertexingHF *GetVertexingHF() const {return fVHF;}
   
  private:
@@ -49,6 +51,7 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
 
   AliAnalysisVertexingHF *fVHF;        /// Vertexer heavy flavour
   Bool_t       fMakeReducedCandidates; /// flag to use reduced size candidates
+  Bool_t       fDisableCascades;       /// flag to disable Lc->pK0s
   TTree        *f2ProngCandidateTree;  //!<! output tree
   TTree        *f3ProngCandidateTree;  //!<! output tree
   TTree        *fDstarCandidateTree;   //!<! output tree
@@ -79,7 +82,7 @@ class AliAnalysisTaskSEVertexingHFRun3Conversion : public AliAnalysisTaskSE
   TClonesArray *fLikeSign3ProngTClArr; /// Array of LikeSign3Prong
 
   /// \cond CLASSIMP     
-  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,5); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHFRun3Conversion,6); /// AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
   /// \endcond
 };
 

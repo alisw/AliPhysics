@@ -1329,7 +1329,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       fTracksTrig[i] = new TObjArray;
     }
   }
-  if(fDoV0){ AliError("MC not prepared for V0s. Returning!"); return kFALSE; }
+  if(fDoV0){
+    for(Int_t i(4); i < 6; i++){
+      fTracksTrig[i] = new TObjArray;
+    }
+  }
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};
@@ -1337,7 +1341,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
     if(!part->IsPhysicalPrimary()) continue;
-    if(part->Charge()==0.) continue;
     Double_t partEta = part->Eta();
     Double_t partPt = part->Pt();
     Double_t partPhi = part->Phi();
@@ -1351,6 +1354,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(partPDG == 211) partIdx = 1;
       else if(partPDG == 321) partIdx = 2;
       else if(partPDG == 2212) partIdx = 3;
+      else if(partPDG == 310) partIdx = 4;
+      else if(partPDG == 3122) partIdx = 5;
+
+      if(partIdx < 4 && part->Charge()==0.) continue;
 
       if(fAnalType == eTPCTPC){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){

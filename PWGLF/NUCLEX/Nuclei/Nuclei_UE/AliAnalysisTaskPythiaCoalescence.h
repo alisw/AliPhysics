@@ -120,13 +120,13 @@ private:
 
     //p_{T} Spectra: Deuterons (Wigner Gaussian) true
     TH1D *hDeuteronsINELgtZERO_TruewignerGaus;//!
-    TH1D *hDeuterons_Toward_TruewignerGaus;//!
-    TH1D *hDeuterons_Transv_TruewignerGaus;//!
+    TH1D *hDeuterons_Toward_TruewignerGaus[50];//!
+    TH1D *hDeuterons_Transv_TruewignerGaus[50];//!
 
     //p_{T} Spectra: Deuterons (Wigner Gaussian)
     TH1D *hDeuteronsINELgtZERO_TruewignerDoubleGaus;//!
-    TH1D *hDeuterons_Toward_TruewignerDoubleGaus;//!
-    TH1D *hDeuterons_Transv_TruewignerDoubleGaus;//!
+    TH1D *hDeuterons_Toward_TruewignerDoubleGaus[50];//!
+    TH1D *hDeuterons_Transv_TruewignerDoubleGaus[50];//!
 
     //p_{T} Spectra: Deuterons (Wigner Argonne)
     TH1D *hDeuteronsINELgtZERO_wignerArg[50];//!

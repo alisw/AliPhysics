@@ -49,11 +49,11 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 //===========================================================================
   //Train:
-  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   //Local:
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
   //taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName);
+  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName);
   mgr->AddTask(taskfemto);
 
   //MC PID (not needed for data):
@@ -68,8 +68,8 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("KpKp_MC",  TList::Class(),
-  							       AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("KpKp_MC",  TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  //AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
 
    mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());

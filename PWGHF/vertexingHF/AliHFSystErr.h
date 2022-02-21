@@ -407,6 +407,7 @@ class AliHFSystErr : public TNamed
   void InitNonPromptDzerotoKpi2018PbPb5TeV3050ML();
   void InitNonPromptDplustoKpipi2017pp5TeVML();
   void InitNonPromptLctopK0s20161718pp13TeVML();
+  void InitNonPromptLctopKpi20161718pp13TeVML();
   void InitNonPromptDstoKKpi2017pp5TeVML();
   void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
 

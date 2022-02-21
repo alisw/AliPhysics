@@ -55,6 +55,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::AliAnalysisTaskSEVertexingHFRun3Conv
 AliAnalysisTaskSE(),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
+fDisableCascades(kFALSE),
 f2ProngCandidateTree(0x0),
 f3ProngCandidateTree(0x0),
 fDstarCandidateTree(0x0),
@@ -92,6 +93,7 @@ AliAnalysisTaskSEVertexingHFRun3Conversion::AliAnalysisTaskSEVertexingHFRun3Conv
 AliAnalysisTaskSE(name),
 fVHF(0),
 fMakeReducedCandidates(kTRUE),
+fDisableCascades(kFALSE),
 f2ProngCandidateTree(0x0),
 f3ProngCandidateTree(0x0),
 fDstarCandidateTree(0x0),
@@ -155,7 +157,10 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::Init()
   }
 
   fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");
-  if(fMakeReducedCandidates) fVHF->SetMakeReducedRHF(kTRUE);
+  if(fMakeReducedCandidates){
+    fVHF->SetMakeReducedRHF(kTRUE);
+    fVHF->SetUseTRefArrayForSecVert(kFALSE); // to avoid E-TRefArray::AddAtAndExpand error messages in logs
+  }
   fVHF->PrintStatus();
 
 
@@ -223,6 +228,28 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserCreateOutputObjects()
   }
 }
 
+Bool_t AliAnalysisTaskSEVertexingHFRun3Conversion::Notify()
+{
+  // HACK set the pointers to 0 instead of deleting because they are still attached to the old file. Causes a small leak per input file
+  if (f2ProngCandidateTree != nullptr) {
+    fInputHandler->GetUserInfo()->Remove(f2ProngCandidateTree);
+    f2ProngCandidateTree = nullptr;
+  }
+  if (f3ProngCandidateTree != nullptr) {
+    fInputHandler->GetUserInfo()->Remove(f3ProngCandidateTree);
+    f3ProngCandidateTree = nullptr;
+  }
+  if (fDstarCandidateTree != nullptr) {
+    fInputHandler->GetUserInfo()->Remove(fDstarCandidateTree);
+    fDstarCandidateTree = nullptr;
+  }
+  if (fCascadeCandidateTree != nullptr) {
+    fInputHandler->GetUserInfo()->Remove(fCascadeCandidateTree);
+    fCascadeCandidateTree = nullptr;
+  }
+  return AliAnalysisTaskSE::Notify();
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
 {
@@ -234,12 +261,9 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
   // event in memory rather than the input (ESD) event. (A.G. 27/04/09)
   if (AODEvent() && IsStandardAOD()) event = dynamic_cast<AliVEvent*> (AODEvent());
 
-
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+  AliPIDResponse *pidResp=fInputHandler->GetPIDResponse();
   fVHF->SetPidResponse(pidResp);
-
+  if(fDisableCascades) fVHF->SetCascadesOff();
   // heavy flavor vertexing
   fVHF->FindCandidates(event,
                        fVerticesHFTClArr,
@@ -254,17 +278,17 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
   
   // Trees need to be created each time
   if (f2ProngCandidateTree != nullptr) {
-    inputHandler->GetUserInfo()->Remove(f2ProngCandidateTree);
+    fInputHandler->GetUserInfo()->Remove(f2ProngCandidateTree);
     delete f2ProngCandidateTree;
   }
   f2ProngCandidateTree = new TTree("hf2ProngCandidateTree", "Tree of 2prong candidates");
   f2ProngCandidateTree->Branch("trackId0",&fD0track0,"trackId0/I");
   f2ProngCandidateTree->Branch("trackId1",&fD0track1,"trackId1/I");
   f2ProngCandidateTree->Branch("hfflag",&fHF2pflag,"hfflag/b");
-  inputHandler->GetUserInfo()->Add(f2ProngCandidateTree);
+  fInputHandler->GetUserInfo()->Add(f2ProngCandidateTree);
 
   if (f3ProngCandidateTree != nullptr) {
-    inputHandler->GetUserInfo()->Remove(f3ProngCandidateTree);
+    fInputHandler->GetUserInfo()->Remove(f3ProngCandidateTree);
     delete f3ProngCandidateTree;
   }
   f3ProngCandidateTree = new TTree("hf3ProngCandidateTree", "Tree of c->3prong candidates");
@@ -272,19 +296,19 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
   f3ProngCandidateTree->Branch("trackId1",&f3ptrack1,"trackId1/I");
   f3ProngCandidateTree->Branch("trackId2",&f3ptrack2,"trackId2/I");
   f3ProngCandidateTree->Branch("hfflag",&fHF3pflag,"hfflag/b");
-  inputHandler->GetUserInfo()->Add(f3ProngCandidateTree);
+  fInputHandler->GetUserInfo()->Add(f3ProngCandidateTree);
   
   if (fDstarCandidateTree != nullptr) {
-    inputHandler->GetUserInfo()->Remove(fDstarCandidateTree);
+    fInputHandler->GetUserInfo()->Remove(fDstarCandidateTree);
     delete fDstarCandidateTree;
   }
   fDstarCandidateTree = new TTree("hfDstarCandidateTree", "Tree of D*->D0pi candidates");
   fDstarCandidateTree->Branch("trackD0",&fDstD0,"trackD0/I");
   fDstarCandidateTree->Branch("trackSoftPi",&fDstSofPi,"trackSoftPi/I");
-  inputHandler->GetUserInfo()->Add(fDstarCandidateTree);
+  fInputHandler->GetUserInfo()->Add(fDstarCandidateTree);
 
   if (fCascadeCandidateTree != nullptr) {
-    inputHandler->GetUserInfo()->Remove(fCascadeCandidateTree);
+    fInputHandler->GetUserInfo()->Remove(fCascadeCandidateTree);
     delete fCascadeCandidateTree;
   }
   fCascadeCandidateTree = new TTree("hfCascadeCandidateTree", "Tree of Lc->V0+bach candidates");
@@ -292,7 +316,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
   fCascadeCandidateTree->Branch("trackV0Dau0",&fCasV0tr0,"trackV0Dau0/I");
   fCascadeCandidateTree->Branch("trackV0Dau1",&fCasV0tr1,"trackV0Dau1/I");
   fCascadeCandidateTree->Branch("trackBachel",&fCasBachl,"trackBachel/I");
-  inputHandler->GetUserInfo()->Add(fCascadeCandidateTree);
+  fInputHandler->GetUserInfo()->Add(fCascadeCandidateTree);
 
   fEventIndex=event->GetEventNumberInFile();
   Int_t nD0=fD0toKpiTClArr->GetEntriesFast();
@@ -302,7 +326,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     fD0track1=dcand->GetProngID(1);
     fHF2pflag=1*dcand->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
     f2ProngCandidateTree->Fill();
-    //    printf("Event %d cand %d  tracks %d %d\n",fEventIndex,iD0,fD0track0,fD0track1);
+    //    printf("Event %d D0 cand %d  tracks %d %d\n",fEventIndex,iD0,fD0track0,fD0track1);
   }
   
   Int_t n3p=fCharm3ProngTClArr->GetEntriesFast();
@@ -313,6 +337,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     f3ptrack2=dcand->GetProngID(2);
     fHF3pflag=1*dcand->HasSelectionBit(AliRDHFCuts::kDplusCuts)+2*dcand->HasSelectionBit(AliRDHFCuts::kLcCuts)+4*dcand->HasSelectionBit(AliRDHFCuts::kDsCuts);
     f3ProngCandidateTree->Fill();
+    //    printf("Event %d 3p cand %d  tracks %d %d %d\n",fEventIndex,i3p,f3ptrack0,f3ptrack1,f3ptrack2);
   }
 
   Int_t nDst=fDstarTClArr->GetEntriesFast();
@@ -320,7 +345,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
     AliAODRecoCascadeHF* dcand=(AliAODRecoCascadeHF*)fDstarTClArr->At(iDst);
     fDstSofPi=dcand->GetProngID(0);
     fDstD0=dcand->GetProngID(1);
-    //    printf("Event %d D0 from D* id %d  D0 %d\n",fEventIndex,iD0,fDstD0);
+    //    printf("Event %d D0 from D* id %d  D0 %d\n",fEventIndex,iDst,fDstD0);
     fDstarCandidateTree->Fill();
   }
 
@@ -338,6 +363,7 @@ void AliAnalysisTaskSEVertexingHFRun3Conversion::UserExec(Option_t */*option*/)
       fCasV0tr0=v0->GetPindex();
       fCasV0tr1=v0->GetNindex();
     }
+    //    printf("Event %d Casc id %d  tracks %d\n",fEventIndex,iCas,fCasBachl,fCasV0tr0,fCasV0tr1);
     fCascadeCandidateTree->Fill();
   }
 }

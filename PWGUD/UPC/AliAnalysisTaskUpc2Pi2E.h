@@ -17,6 +17,8 @@ class AliPIDResponse;
 class AliESDEvent;
 class TBits;
 class AliTOFTriggerMask;
+class TBits;
+class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -38,10 +40,13 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
  	void SetTrigger(TString _fTriggerName){ fTriggerName = _fTriggerName; }
  	void SetTPCNcls(Int_t _fTPCNcls) {fTPCNcls = _fTPCNcls;}
  	void SetOption(TString _fOption){fOption = _fOption;}
-
+        void    SetCrossed(Int_t spd[4], TBits &crossed);
+        Int_t   GetChipId(Int_t index, Int_t &chipId2, Bool_t debug = 0);
+        Bool_t  IsSTGFired(TBits bits, Int_t dphiMin = 4, Int_t dphiMax = 10, Bool_t tolerance = 1);
   private:
   	Bool_t Is0STPfired(Int_t *, Int_t *);
   	Bool_t IsTriggered(AliESDEvent *);
+	AliESDtrackCuts *fTrackCutsBit4;
 
   	Bool_t isMC;
   	Bool_t debugMode;
@@ -81,6 +86,8 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	Float_t ZDCCtime_T[4];
 	Float_t PIDTPCPion_T[28];
 	Float_t PIDTPCMuon_T[28];
+	Float_t PIDTPCKaon_T[28];
+	Float_t PIDTPCProton_T[28];
 	Float_t PIDTPCElectron_T[28];
 	Int_t TPCsignal_T[28];
 	Bool_t TPCrefit_T[28];
@@ -88,6 +95,8 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	Bool_t ITSO_T[28];
 	Bool_t ITSI_T[28];
 	Bool_t ITSSA_T[28];
+	Bool_t TrackCuts_T[28];
+	Bool_t fMatchingSPD_T[28];
 	Int_t TPCNcls_T[28];
 	Int_t ITSNcls_T[28];
 	Float_t TPCchi2_T[28];
@@ -164,11 +173,12 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	TString fTOFFileName;
 	TH2F *hTOFeff;
 	AliTOFTriggerMask *fTOFmask;
+        TBits fFOCrossFiredChips;
 
 	AliAnalysisTaskUpc2Pi2E(const AliAnalysisTaskUpc2Pi2E&); //not implemented
 	AliAnalysisTaskUpc2Pi2E& operator =(const AliAnalysisTaskUpc2Pi2E&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpc2Pi2E, 2); 
+ 	ClassDef(AliAnalysisTaskUpc2Pi2E, 3); 
 
 };
 

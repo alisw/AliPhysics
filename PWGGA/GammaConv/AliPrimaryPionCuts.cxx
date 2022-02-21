@@ -75,6 +75,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
   fRequireTPCRefit(kFALSE), // require a refit in the TPC
 	fMinClsTPCToF(0), // minimum clusters to findable clusters
     fMaxSharedClsTPCFrac(99), // maximum fraction of shared clusters to TPCnClus
+    fMaxSharedClsTPCAbsolute(999), // maximum fraction of shared clusters to TPCnClus
+	fMinTPCPIDClusters(0),
 	fMinClsITS(0), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(kFALSE),
 	fDodEdxSigmaTPCCut(kTRUE),
@@ -152,6 +154,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
     fRequireTPCRefit(ref.fRequireTPCRefit), // require a refit in the TPC
 	fMinClsTPCToF(ref.fMinClsTPCToF), // minimum clusters to findable clusters
     fMaxSharedClsTPCFrac(ref.fMaxSharedClsTPCFrac), // maximum fraction of shared clusters to TPCnClus
+    fMaxSharedClsTPCAbsolute(ref.fMaxSharedClsTPCAbsolute), // maximum absolute number of shared clusters to TPCnClus
+    fMinTPCPIDClusters(ref.fMinTPCPIDClusters), // minimum number of TPC PID cluster
 	fMinClsITS(ref.fMinClsITS), // minimum clusters to findable clusters
 	fDodEdxSigmaITSCut(ref.fDodEdxSigmaITSCut),
 	fDodEdxSigmaTPCCut(ref.fDodEdxSigmaTPCCut),
@@ -535,6 +539,8 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
   Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
+  Double_t abs_SharedClus = Double_t(lTrack->GetTPCnclsS());
+  Double_t ntpcpidclusters =  Double_t(lTrack->GetTPCsignalN());
   if( ! fEsdTrackCuts->AcceptTrack(lTrack) && ! fEsdTrackCutsGC->AcceptTrack(lTrack)){
     return kFALSE;
   }
@@ -545,6 +551,8 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
 
   if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
+  if (abs_SharedClus > fMaxSharedClsTPCAbsolute){ return kFALSE; }
+  if (ntpcpidclusters < fMinTPCPIDClusters){return kFALSE;}
  
   if( fDoEtaCut ) {
     if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
@@ -575,6 +583,8 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
   Double_t frac_SharedClus = Double_t(lTrack->GetTPCnclsS()) / Double_t(lTrack->GetTPCncls());
+  Double_t abs_SharedClus = Double_t(lTrack->GetTPCnclsS());
+  Double_t ntpcpidclusters =  Double_t(lTrack->GetTPCsignalN());
   // apply filter bits 
   if( ! lTrack->IsHybridGlobalConstrainedGlobal()){
     return kFALSE;
@@ -591,6 +601,8 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
 
 	// Absolute TPC Cluster cut
     if (frac_SharedClus > fMaxSharedClsTPCFrac){ return kFALSE; }
+    if (abs_SharedClus > fMaxSharedClsTPCAbsolute){ return kFALSE; }
+    if (ntpcpidclusters < fMinTPCPIDClusters){ return kFALSE; }
 	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
 	if(lTrack->GetTPCchi2perCluster()>fChi2PerClsTPC) return kFALSE;
   // DCA cut 
@@ -1226,10 +1238,12 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fMinClsTPC= 70.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+			break;
         case 17:  //h 100 + refit
             fMinClsTPC= 100.;
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+			break;
         case 18:  //i 80 + refit, 35% of findable clusters
             fMinClsTPC = 80.;
             fRequireTPCRefit    = kTRUE;
@@ -1244,9 +1258,22 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fMinClsTPCToF= 0.6;
             fUseCorrectedTPCClsInfo=0;
             break;
-				default:
-						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
-						return kFALSE;
+		case 20: // k cut on absolute number of max shared TPC cluster 10
+			fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+			fMaxSharedClsTPCAbsolute = 10;
+			break;
+		case 21: // l cut on absolute number of max shared TPC cluster and min TPC PID clusters
+			fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+			fMaxSharedClsTPCAbsolute = 10;
+			fMinTPCPIDClusters       = 50;
+			break;
+		default:
+				cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
+				return kFALSE;
 	}
 	return kTRUE;
 }

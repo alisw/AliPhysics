@@ -88,6 +88,7 @@ struct RLightNucleus {
   Double32_t dcaz;           //[-2,2,10]
   Double32_t tofNsigma;      //[-12.8,12.8,12]
   Double32_t tpcNsigma;      //[-6.4,6.4,8]
+  Double32_t chi2tpc;        //[0,10.16,8]
   char       centrality;
   char       trackingPID;
   unsigned char tpcPIDcls;
@@ -369,6 +370,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
 
   if (!acceptedTrack) return;
+  bool rejectTrack = false;
 
   if (fSaveTrees && track->Pt() < 10.) {
     //double mcPt = 0;
@@ -382,8 +384,13 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
         fRecoNucleiMCindex.emplace_back(mcId);
       } else
         good2save = false;
+
+      if (fPtShape) {
+        if (std::find(fRejectedParticles.begin(), fRejectedParticles.end(), mcId) != fRejectedParticles.end())
+          rejectTrack = true;
+      }
     }
-    if (good2save) {
+    if (good2save && !rejectTrack) {
       AliTOFPIDResponse& tofPID = fPID->GetTOFResponse();
 
       fRecNucleus.pt = track->Pt() * track->Charge();
@@ -392,6 +399,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.dcaz = dca[1];
       fRecNucleus.tpcNsigma = GetTPCsigmas(track);
       fRecNucleus.tofNsigma = GetTOFsigmas(track);
+      fRecNucleus.chi2tpc = track->Chi2perNDF();
       fRecNucleus.centrality = fCentrality;
       fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
       fRecNucleus.flag = 0;
@@ -421,14 +429,10 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
+  if(rejectTrack) return;
 
-  int mcId = TMath::Abs(track->GetLabel());
-  if (fPtShape) {
-    if (std::find(fRejectedParticles.begin(), fRejectedParticles.end(), mcId) != fRejectedParticles.end()) {
-      return;
-    }
-  }
   if (fIsMC) {
+    int mcId = std::abs(track->GetLabel());
     AliAODMCParticle *part = (AliAODMCParticle*)MCEvent()->GetTrack(mcId);
     /// Workaround: if the AOD are filtered with an AliRoot tag before v5-08-18, hyper-nuclei prongs
     /// are marked as SecondaryFromMaterial.

@@ -264,6 +264,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetDebugFlag(Int_t debug = 1){
       fDebug = debug;
     }
+    void SetMCFlag(UInt_t m){ fMCFlag= m ;}
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -716,6 +717,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     UShort_t fBuffer_EventNtrials; //
     UShort_t fBuffer_EventNPrimaryTracks; //
     Bool_t fBuffer_EventIsTriggered; //
+    Double_t fBuffer_EventZVertex; //
 
     std::vector<Float_t> fBuffer_ClusterE;     //!<! array buffer
     std::vector<Float_t> fBuffer_ClusterPx;     //!<! array buffer
@@ -760,6 +762,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_GenPhotonMCIsoBckPerp;
     std::vector<Bool_t> fBuffer_GenPhotonIsConv;
     std::vector<Int_t> fBuffer_GenPhotonMCTag;
+
+    UInt_t fMCFlag;                        ///< select MC particles with flags    
 
 
 
@@ -814,7 +818,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 41);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 43);
 
 };
 

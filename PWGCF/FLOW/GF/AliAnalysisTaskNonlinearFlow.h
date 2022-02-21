@@ -272,6 +272,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		const char* ReturnPPperiod(const Int_t runNumber) const;
+		const char* ReturnPPperiodMC(const Int_t runNumber) const;
 		const char* GetSpeciesName(const PartSpecies species) const;
 
 		AliEventCuts	fEventCuts;					// Event cuts

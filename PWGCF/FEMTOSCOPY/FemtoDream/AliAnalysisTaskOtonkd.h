@@ -23,7 +23,7 @@
 class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskOtonkd();
-  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth, bool doFDpairing);
+  AliAnalysisTaskOtonkd(const char *name, bool isMC, bool isMCtruth, bool isIncludeSomeProtons, bool isPions, bool doFDpairing);
   virtual ~AliAnalysisTaskOtonkd();
   Float_t GetMass2sq(AliFemtoDreamTrack *track)const;
   float MeanTOFMassSqdDeuteron(AliFemtoDreamTrack *track) const;
@@ -55,7 +55,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
 
   Bool_t FillKaon(AliFemtoDreamTrack *TheTrack);
   Bool_t FillProton(AliFemtoDreamTrack *TheTrack);
-  Bool_t FillDeuteron(AliFemtoDreamTrack *TheTrack);
+  Bool_t FillDeuteron(AliFemtoDreamTrack *TheTrack, int IsBkgProton = 0);
 
 
 
@@ -73,6 +73,8 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   bool fIsMC;                               //
   bool fIsMCtruth;                               //
   bool fdoFDpairing;                               //
+  bool fisIncludeSomeProtons;                               //
+  bool fisPions;                               //
   bool fdoSideband;                         //
   float fSigmaUp;                           //
   float fSigmaLow;                          //

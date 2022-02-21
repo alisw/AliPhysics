@@ -7,6 +7,9 @@
 
 #ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGEORGIOSNTUPLE_H_
 #define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKGEORGIOSNTUPLE_H_
+
+#include "TMath.h"
+#include "TTree.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamEvent.h"
@@ -20,7 +23,8 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
-#include "TTree.h"
+
+#define GEORGIOSDEBUGG
 
 //#define MONTECARLO
 

@@ -27,6 +27,8 @@
 #include "AliVVertex.h"
 #include "AliStack.h"
 #include "AliJCorrectionMapTask.h"
+#include "TH1F.h"
+#include "TFile.h"
 
 //==============================================================
 
@@ -141,7 +143,19 @@ public:
 	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
 		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
+	void SetITSCuts(bool UseITSMinClusters, double ITSMinClusters){
+		fUseITSMinClusters = UseITSMinClusters;
+		fITSMinClusters = ITSMinClusters;
+	}
 
+// Methods to apply tighter cuts on Run2.
+	void SetTightCuts(bool usePrimary) {fUseTightCuts = usePrimary;}
+	void SetESDpileupCuts(bool ESDpileup, double slope, double intercept, bool saveQA) {fAddESDpileupCuts = ESDpileup;
+		fESDpileup_slope = slope; fESDpileup_inter = intercept; fSaveESDpileupQA = saveQA;}
+
+// Methods to use alternative correction weights.
+	Int_t GetRunIndex10h(Int_t runNumber);
+	void SetInputAlternativeNUAWeights10h(bool UseAltWeight, TString fileWeight);
 
 private:
 	TClonesArray * fInputList;  // tracklist
@@ -181,6 +195,7 @@ private:
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
 	UInt_t phiMapIndex; //
+	Bool_t bUseAlternativeWeights; //
 
 // Data members for the QA of the catalyst.
 	TList *fMainList;		// Mother list containing all possible output of the catalyst task.
@@ -194,10 +209,19 @@ private:
 	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
 	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
 	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
+	bool fUseITSMinClusters;	// if true use cut for minimum number of ITS clusters
+	double fITSMinClusters;		// minimum number of required ITS clusters
 
-	TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
-  TH1F *fPTHistogram[16][2];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection.
-  TH1F *fPhiHistogram[16][2];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection.
+// Data members for the use of tighter cuts in Run2.
+	bool fUseTightCuts;		// if kTRUE: apply tighter cuts on DCAxy and goldenChi2
+	bool fAddESDpileupCuts;	// if true: apply a cut on the correlations between ESD and TPConly tracks.
+	double fESDpileup_slope;	// Slope of the cut M_ESD >= 15000 + 3.38*M_TPC
+	double fESDpileup_inter;	// Intercept of the cut.
+	bool fSaveESDpileupQA;	// if true: save the TH2D for the QA.
+
+  TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
+  TH1F *fPTHistogram[16][3];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: After correction.
+  TH1F *fPhiHistogram[16][3];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: after correction.
   TH1F *fEtaHistogram[16][2];		//! 0: Eta Before Track Selection, 1: Eta After Track Selection.
   TH1F *fMultHistogram[16][2];		//! 0: Multiplicity Before Track Selection, 1: Mult. After Track Selection.
   TH1F *fTPCClustersHistogram[16][2];		//! 0: TPC Clusters Before Track Selection, 1: TPC Clusters After Track Selection.
@@ -212,7 +236,10 @@ private:
   TH1F *fVertexYHistogram[16][2];		//! 0: Vertex Y Before Corresponding, 1: Vertex Y After Corresponding Cut.
   TH1F *fVertexZHistogram[16][2];		//! 0: Vertex Z Before Corresponding, 1: Vertex Z After Corresponding Cut.
   TH2D *fHMOsHistogram[16][2];		//! 0: Correlations between global and TPC tracks before, 1: after HMO cut.
+  TH1F *fHistoPhiWeight[16][90];	// Histograms to save the NUA correction weights per centrality and runs.
+  TProfile *fProfileWeights[16];	//! Profiles for the weights to apply per phi bins.
+  TH2D *fESDpileupHistogram[16][2];		//! 0: Correlations between ESD and TPC tracks before, 1: after cut.
 
-	ClassDef(AliJCatalystTask, 4);
+  ClassDef(AliJCatalystTask, 7);
 };
 #endif // AliJCatalystTask_H

@@ -24,11 +24,7 @@ fV0ASignal                  (0.),
 fV0CSignal                  (0.),
 
 fIsCollisionCandidate       (kFALSE),
-fIsEventSelected            (0),
-
 fTriggerMask                (0), 
-
-fVertexStatus               (kFALSE),
 
 //Event info
 fMagField                   (0.),
@@ -46,6 +42,7 @@ fIsIncompleteDAQ            (kFALSE),
 fIsINELgtZERO               (kFALSE),
 fHasNoInconsistentVertices  (kFALSE),
 fIsNotAsymmetricInVZERO     (kFALSE),
+fHasGoodVertex2016			(kFALSE),
 //---------------PILE-UP-INFO---------------------
 fIsPileupMV                 (kFALSE),
 fIsPileupOOB                (kFALSE),
@@ -89,7 +86,6 @@ TObject(source)
     fV0CSignal                  = source.fV0CSignal;         
 
     fIsCollisionCandidate       = source.fIsCollisionCandidate;
-    fIsEventSelected            = source.fIsEventSelected;
     fTriggerMask                = source.fTriggerMask;             
 
     //Event info
@@ -114,13 +110,13 @@ TObject(source)
     fPrimVertexCov  [4]         = source.fPrimVertexCov [4];             
     fPrimVertexCov  [5]         = source.fPrimVertexCov [5]; 
     
-    fVertexStatus               = source.fVertexStatus;
     //---------------PILE-UP-INFO---------------------
     fIsSPDClusterVsTrackletBG   = source.fIsSPDClusterVsTrackletBG;
     fIsIncompleteDAQ            = source.fIsIncompleteDAQ;         
     fIsINELgtZERO               = source.fIsINELgtZERO;            
     fHasNoInconsistentVertices  = source.fHasNoInconsistentVertices;
     fIsNotAsymmetricInVZERO     = source.fIsNotAsymmetricInVZERO;   
+	fHasGoodVertex2016			= source.fHasGoodVertex2016;
     //---------------PILE-UP-INFO---------------------
     fIsPileupMV                 = source.fIsPileupMV;               
     fIsPileupOOB                = source.fIsPileupOOB;              
@@ -153,7 +149,6 @@ void AliEventContainer::Reset()
     fV0CSignal                  = 0.;
 
     fIsCollisionCandidate       = kFALSE;
-    fIsEventSelected            = 0;
     fTriggerMask                = 0; 
 
     //Event info
@@ -178,13 +173,13 @@ void AliEventContainer::Reset()
     fPrimVertexCov  [4]         = -1;
     fPrimVertexCov  [5]         = -1;
     
-    fVertexStatus               = kFALSE;
     //---------------PILE-UP-INFO---------------------
     fIsSPDClusterVsTrackletBG   = kFALSE;
     fIsIncompleteDAQ            = kFALSE;
     fIsINELgtZERO               = kFALSE;
     fHasNoInconsistentVertices  = kFALSE;
     fIsNotAsymmetricInVZERO     = kFALSE;
+	fHasGoodVertex2016			= kFALSE;
     //---------------PILE-UP-INFO---------------------
     fIsPileupMV                 = kFALSE;
     fIsPileupOOB                = kFALSE; 
@@ -235,16 +230,20 @@ void AliEventContainer::Fill(AliMultSelection* MultSelection, AliAnalysisUtils* 
     fProximityCut    = kTRUE;
     fVertexSelected2015pp = SelectVertex2015pp(AODEvent,kTRUE,&fHasSPDANDTrkVtx,&fProximityCut);
     
-    fIsSPDClusterVsTrackletBG   = Utils->IsSPDClusterVsTrackletBG(AODEvent);          
-    fIsIncompleteDAQ            = AODEvent->IsIncompleteDAQ();         
+    //fIsSPDClusterVsTrackletBG   = Utils->IsSPDClusterVsTrackletBG(AODEvent);
+	//fIsIncompleteDAQ            = AODEvent->IsIncompleteDAQ();         
+	fIsSPDClusterVsTrackletBG   = !MultSelection->GetThisEventPassesTrackletVsCluster();          
+    fIsIncompleteDAQ            = !MultSelection->GetThisEventIsNotIncompleteDAQ();  
     
     fIsINELgtZERO               = MultSelection->GetThisEventINELgtZERO();   
     fHasNoInconsistentVertices  = MultSelection->GetThisEventHasNoInconsistentVertices();
     fIsNotAsymmetricInVZERO     = MultSelection->GetThisEventIsNotAsymmetricInVZERO();   
+	fHasGoodVertex2016			= MultSelection->GetThisEventHasGoodVertex2016();
     
     fIsPileupMV                 = !MultSelection->GetThisEventIsNotPileupMV();      
-    fIsPileupOOB                = Utils->IsOutOfBunchPileUp(AODEvent);             
-    fIsPileupFromSPD            = AODEvent->IsPileupFromSPD();       
+    fIsPileupOOB                = Utils->IsOutOfBunchPileUp(AODEvent);     
+	//fIsPileupFromSPD			= AODevent->IsPileupFromSPD();       
+    fIsPileupFromSPD            = !MultSelection->GetThisEventIsNotPileup(); 
     fIsPileupFromSPDInMultBins  = AODEvent->IsPileupFromSPDInMultBins(); 
     fIsPileupInMultBins         = !MultSelection->GetThisEventIsNotPileupInMultBins();    
 }
@@ -254,8 +253,10 @@ Bool_t AliEventContainer::SelectVertex2015pp(AliAODEvent *aod,  Bool_t checkSPDr
   if (!aod) return kFALSE;
   const AliAODVertex * trkVertex = aod->GetPrimaryVertexTracks();
   const AliAODVertex * spdVertex = aod->GetPrimaryVertexSPD();
-  Bool_t hasSPD = spdVertex->GetStatus();
-  Bool_t hasTrk = trkVertex->GetStatus();
+//   Bool_t hasSPD = spdVertex->GetStatus();
+//   Bool_t hasTrk = trkVertex->GetStatus();
+  Bool_t hasSPD = GetVertexStatus(spdVertex);
+  Bool_t hasTrk = GetVertexStatus(trkVertex);
   //Note that AliVertex::GetStatus checks that N_contributors is > 0
   //reject events if both are explicitly requested and none is available
   //MOD: do not reject if SPD&Trk vtx. not there, but store it to the variable, if requested:
@@ -297,4 +298,12 @@ Bool_t AliEventContainer::IsGoodSPDvertexRes(const AliAODVertex * spdVertex)
   spdVertex->GetCovarianceMatrix(covmatrix);
   if (spdVertex->IsFromVertexerZ() && !(/*spdVertex->GetDispersion()<0.04 &&*/ TMath::Sqrt(covmatrix[5]) <0.25)) return kFALSE;
   return kTRUE;
+};
+//_____________________________________________________________________________
+Bool_t AliEventContainer::GetVertexStatus(const AliAODVertex *vertex)
+{
+    TString title = vertex->GetTitle();
+    if(vertex->GetNContributors()>0 || (title.Contains("cosmics") && !title.Contains("failed"))) return 1;
+    if(title.Contains("smearMC")) return 1;
+    return 0;
 };

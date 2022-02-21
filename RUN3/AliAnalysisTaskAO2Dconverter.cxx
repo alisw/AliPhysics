@@ -108,7 +108,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2v0_001",
   "O2cascade_001",
   "O2tof",
-  "O2mcparticle",
+  "O2mcparticle_001",
   "O2mccollision",
   "O2mctracklabel",
   "O2mccalolabel",
@@ -274,6 +274,7 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
   AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
   fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
+  fTriggerAnalysis.ApplyPileupCuts(kTRUE);
   //read PHOS trigger bad map
   if (fUsePHOSBadMap){
     AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
@@ -1069,10 +1070,9 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
       Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
 
-      Kinematics->Branch("fIndexMcParticles_Mother0", &mcparticle.fIndexMcParticles_Mother0, "fIndexMcParticles_Mother0/I");
-      Kinematics->Branch("fIndexMcParticles_Mother1", &mcparticle.fIndexMcParticles_Mother1, "fIndexMcParticles_Mother1/I");
-      Kinematics->Branch("fIndexMcParticles_Daughter0", &mcparticle.fIndexMcParticles_Daughter0, "fIndexMcParticles_Daughter0/I");
-      Kinematics->Branch("fIndexMcParticles_Daughter1", &mcparticle.fIndexMcParticles_Daughter1, "fIndexMcParticles_Daughter1/I");
+      Kinematics->Branch("fIndexArray_Mothers_size", &mcparticle.fIndexArray_Mothers_size, "fIndexArray_Mothers_size/I");
+      Kinematics->Branch("fIndexArray_Mothers", &mcparticle.fIndexArray_Mothers, "fIndexArray_Mothers[fIndexArray_Mothers_size]/I");
+      Kinematics->Branch("fIndexSlice_Daughters", &mcparticle.fIndexSlice_Daughters, "fIndexSlice_Daughters[2]/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
 
       Kinematics->Branch("fPx", &mcparticle.fPx, "fPx/F");
@@ -1149,7 +1149,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     {
       tHFCascade->Branch("fIndexV0s", &hfCascades.fIndexV0s, "fIndexV0s/I");
       tHFCascade->Branch("fIndexTracks_0", &hfCascades.fIndexTracks_0, "fIndexTracks_0/I");
-      tHFCascade->Branch("fHFflag", &hfCascades.fHFflag, "fHFflag/b");
       tHFCascade->SetBasketSize("*", fBasketSizeEvents);
     }
   }
@@ -1573,16 +1572,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
       
-      mcparticle.fIndexMcParticles_Mother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
-      if (mcparticle.fIndexMcParticles_Mother0 > -1)
-        mcparticle.fIndexMcParticles_Mother0 = kineIndex[mcparticle.fIndexMcParticles_Mother0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Mother0] + fOffsetLabel : -1;
-      mcparticle.fIndexMcParticles_Mother1 = -1;
-      mcparticle.fIndexMcParticles_Daughter0 = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
-      if (mcparticle.fIndexMcParticles_Daughter0 > -1)
-        mcparticle.fIndexMcParticles_Daughter0 = kineIndex[mcparticle.fIndexMcParticles_Daughter0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter0] + fOffsetLabel : -1;
-      mcparticle.fIndexMcParticles_Daughter1 = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
-      if (mcparticle.fIndexMcParticles_Daughter1 > -1)
-        mcparticle.fIndexMcParticles_Daughter1 = kineIndex[mcparticle.fIndexMcParticles_Daughter1] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter1] + fOffsetLabel : -1;
+      mcparticle.fIndexArray_Mothers_size = 1;
+      mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();
+      if (mcparticle.fIndexArray_Mothers[0] > -1)
+        mcparticle.fIndexArray_Mothers[0] = kineIndex[mcparticle.fIndexArray_Mothers[0]] > -1 ? kineIndex[mcparticle.fIndexArray_Mothers[0]] + fOffsetLabel : -1;
+
+      mcparticle.fIndexSlice_Daughters[0] = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
+      if (mcparticle.fIndexSlice_Daughters[0] > -1)
+        mcparticle.fIndexSlice_Daughters[0] = kineIndex[mcparticle.fIndexSlice_Daughters[0]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[0]] + fOffsetLabel : -1;
+      mcparticle.fIndexSlice_Daughters[1] = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
+      if (mcparticle.fIndexSlice_Daughters[1] > -1)
+        mcparticle.fIndexSlice_Daughters[1] = kineIndex[mcparticle.fIndexSlice_Daughters[1]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[1]] + fOffsetLabel : -1;
+      if (mcparticle.fIndexSlice_Daughters[0] > -1 && mcparticle.fIndexSlice_Daughters[1] == -1)
+        mcparticle.fIndexSlice_Daughters[1] = mcparticle.fIndexSlice_Daughters[0];
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
@@ -2654,7 +2656,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         Int_t v0Index = -1;
         hfCascadeCandidateTree->SetBranchAddress("v0index", &v0Index);
         hfCascadeCandidateTree->SetBranchAddress("trackBachel", &hfCascades.fIndexTracks_0);
-        hfCascadeCandidateTree->SetBranchAddress("hfflag", &hfCascades.fHFflag);
 
         Int_t nhfcascades_filled = 0;
         for (int i=0; i<hfCascadeCandidateTree->GetEntries(); i++) {

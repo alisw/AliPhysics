@@ -314,6 +314,12 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
       DefineInput(inputslot, TList::Class());
       inputslot++;
     }
+    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+        fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
+		    ) {
+      DefineInput(inputslot, TList::Class());
+      inputslot++;
+    }
   }
 }
 
@@ -639,7 +645,10 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   if(fNUE) {
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
       fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
-    } else if (fPeriod.EqualTo("LHC16qt")) {
+    } else if (fPeriod.EqualTo("LHC16qt") ||
+		fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+		fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
+		    ) {
       fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
       inSlotCounter++;
       fFlowFeeddownList = (TList*) GetInputData(inSlotCounter);
@@ -909,6 +918,7 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
+    /*
     //..get phi-weight for NUA correction
     double weight = 1;
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
@@ -916,6 +926,7 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
     } else {
       if(fNUA == 1) weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
     }
+    */
     double weightPt = 1;
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
       if(fNUE == 1) weightPt = GetPtWeightKatarina(aodTrk->Pt(), aodTrk->Eta(), fVtxZ);
@@ -1857,7 +1868,10 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   weight = 1./efficiency; //..taking into account errors
   //weight = 1./eff;
 
-  if (fPeriod.EqualTo("LHC16qt")) {
+  if (fPeriod.EqualTo("LHC16qt") ||
+      fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+      fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview") 
+		  ) {
     double binPt = fPtWeightsFeeddown->GetXaxis()->FindBin(pt);
     double feeddown = fPtWeightsFeeddown->GetBinContent(binPt);
     weight /= feeddown;
@@ -1906,15 +1920,27 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 
   // If the period is not pPb LHC16qt
   if (!fPeriod.EqualTo("LHC16qt")) {
+    // Only if it is the new LHC16,17,18, We need the period NUA
+    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18")) {
+      std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
+      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
+      if(!fWeightsSystematics)
+      {
+        printf("Weights could not be found in list!\n");
+        return kFALSE;
+      }
+      fWeightsSystematics->CreateNUA();
+    } else {
+      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+      if(!fWeightsSystematics)
+      {
+        printf("Weights could not be found in list!\n");
+        return kFALSE;
+      }
+      fWeightsSystematics->CreateNUA();
+    }
 
-  if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
-  else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
-  if(!fWeightsSystematics)
-  {
-    printf("Weights could not be found in list!\n");
-    return kFALSE;
-  }
-  fWeightsSystematics->CreateNUA();
   } 
   // If it is the pPb LHC16qt
   else {
@@ -1949,7 +1975,10 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
   int EvFlag = 0, TrFlag = 0;
 
   // If the period is **NOT** pPb LHC16qt
-  if ( ! fPeriod.EqualTo("LHC16qt")) {
+  if ( !fPeriod.EqualTo("LHC16qt") &&
+       !fPeriod.EqualTo("LHC16") && !fPeriod.EqualTo("LHC17") && !fPeriod.EqualTo("LHC18") &&
+       !fPeriod.EqualTo("LHC16Preview") && !fPeriod.EqualTo("LHC17Preview") && !fPeriod.EqualTo("LHC18Preview")
+		  ) {
     if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
     else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
     if(!fPtWeightsSystematics)
@@ -1974,14 +2003,25 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
     if (fCurrSystFlag == 18) EvFlag = 2, TrFlag = 0;
     if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
 
-    fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag));
+    if (fPeriod.EqualTo("LHC16qt")) {
+        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag));
 
-    cout << "Trying to load" << Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag) << endl;
-    fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag));
-    if(!fPtWeightsSystematics)
-    {
-      printf("pPb: PtWeights could not be found in list!\n");
-      return kFALSE;
+        cout << "Trying to load" << Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag) << endl;
+        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag));
+        if(!fPtWeightsSystematics)
+        {
+            printf("pPb: PtWeights could not be found in list!\n");
+            return kFALSE;
+        }
+    } else {
+	std::string period = ReturnPPperiodMC(fAOD->GetRunNumber());
+        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("%s_ch_Eta_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
+        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("%s_ch_Eta_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
+        if(!fPtWeightsSystematics)
+        {
+            printf("pp: PtWeights could not be found in list!\n");
+            return kFALSE;
+        }
     }
   }
   return kTRUE;
@@ -2485,9 +2525,15 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   // LHC15i, LHC15l, LHC16, LHC17, LHC18: means: pp sample
   if (fPeriod.EqualTo("LHC15i") ||
       fPeriod.EqualTo("LHC15l") ||
+      fPeriod.EqualTo("LHC16Preview") ||
+      fPeriod.EqualTo("LHC17Preview") ||
+      fPeriod.EqualTo("LHC18Preview") || 
       fPeriod.EqualTo("LHC16") ||
       fPeriod.EqualTo("LHC17") ||
-      fPeriod.EqualTo("LHC18")) {
+      fPeriod.EqualTo("LHC18") || 
+      fPeriod.EqualTo("LHC16ZM") ||
+      fPeriod.EqualTo("LHC17ZM") ||
+      fPeriod.EqualTo("LHC18ZM") ) {
     fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
   }
 
@@ -3234,6 +3280,52 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
     }
   }
 
+}
+
+const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiodMC(const Int_t runNumber) const
+{
+  if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
+    if(runNumber >= 252235 && runNumber <= 252375) return "17f6";
+    if(runNumber >= 253437 && runNumber <= 253591) return "17f9";
+    if(runNumber >= 254128 && runNumber <= 254332) return "17d17";
+    if(runNumber >= 254604 && runNumber <= 255467) return "17f5";
+    if(runNumber >= 255539 && runNumber <= 255618) return "17d3";
+    if(runNumber >= 256219 && runNumber <= 256418) return "17e5";
+    if(runNumber >= 256941 && runNumber <= 258537) return "18f1";
+    if(runNumber >= 258962 && runNumber <= 259888) return "18d8";
+    if(runNumber >= 262424 && runNumber <= 264035) return "17d16";
+    if(runNumber >= 264076 && runNumber <= 264347) return "17d18";
+  }
+
+  if(runNumber >= 270581 && runNumber <= 282704){ // LHC17
+    if(runNumber >= 270581 && runNumber <= 270667) return "18d3";
+    if(runNumber >= 270822 && runNumber <= 270830) return "17h1";
+    if(runNumber >= 270854 && runNumber <= 270865) return "18d3";
+    if(runNumber >= 271870 && runNumber <= 273103) return "18c12";
+    if(runNumber >= 273591 && runNumber <= 274442) return "17k4";
+    if(runNumber >= 274593 && runNumber <= 274671) return "17h11";
+    if(runNumber >= 274690 && runNumber <= 276508) return "18c13";
+    if(runNumber >= 276551 && runNumber <= 278216) return "18a8";
+    if(runNumber >= 278914 && runNumber <= 280140) return "17l5";
+    if(runNumber >= 280282 && runNumber <= 281961) return "18a9";
+    if(runNumber >= 282528 && runNumber <= 282704) return "18a1";
+  }
+
+  if(runNumber >= 285009 && runNumber <= 294925){ // LHC18
+    if(runNumber >= 285009 && runNumber <= 285396) return "18g4";
+    if(runNumber >= 285978 && runNumber <= 286350) return "18g5";
+    if(runNumber >= 286380 && runNumber <= 286937) return "18g6";
+    if(runNumber >= 287000 && runNumber <= 287658) return "18h2";
+    if(runNumber >= 288619 && runNumber <= 289201) return "18h4"; //g,h,i,j,k
+    if(runNumber >= 289240 && runNumber <= 289971) return "18j1";
+    if(runNumber >= 290323 && runNumber <= 292839) return "18j4";
+    if(runNumber >= 293357 && runNumber <= 293359) return "18k1";
+    if(runNumber >= 293475 && runNumber <= 293898) return "18k2";
+    if(runNumber >= 294009 && runNumber <= 294925) return "18k3";
+  }
+
+  AliWarning("PP period identifier was called and based on the run number did not pick up the correct efficiency. Setting up efficiencies from LHC18j4.");
+  return "18j4";
 }
 
 const char* AliAnalysisTaskNonlinearFlow::ReturnPPperiod(const Int_t runNumber) const

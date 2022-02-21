@@ -46,7 +46,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   ) {
 
   AliCutHandlerPCM cuts(13);
-
+  Bool_t usePionPreselection = kTRUE;
   //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
 
@@ -63,7 +63,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
         cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      } else if(tempStr.Contains("NoPionPreselection")){
+        usePionPreselection = kFALSE;
       }
+
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
@@ -164,7 +167,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   if(periodNameV0Reader.Contains("LHC11") ||
      periodNameV0Reader.Contains("LHC14k1") ||
      periodNameV0Reader.Contains("LHC14b7") ||
-     periodNameV0Reader.Contains("LHC16c2")){
+     periodNameV0Reader.Contains("LHC16c2") ||
+     !usePionPreselection){
        PionCuts      = "000000000";
   }
   //================================================
@@ -1542,6 +1546,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070f","0103103x00000000","0453503000000000"); // INT7, Ch.Pi<650MeV
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070k","0103103x00000000","0453503000000000"); // INT7, Ch.Pi<480MeV
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c51070n","0103103x00000000","0453503000000000"); // INT7, Ch.Pi<1000MeV
+  } else if(trainConfig == 2207)  { //EMCal + DCal INT7 shared cluster + TPC pid clusters
+    // WARNING: this variation has NO cut on nSigma and is used for general dEdx plot with only track cuts
+    // WARNING: this variation has NO cut on pion mass
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32c510000","0103103x00000000","0453503000000000"); // INT7 default cut  
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32k510000","0103103x00000000","0453503000000000"); // INT7 max shared clusters 10
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe30220000","32l510000","0103103x00000000","0453503000000000"); // INT7 max shared clusters 10 + min TPC PID clusters 50
+    
     //-----
     //INT7: Neutral Meson (Pi0) Cut Variations
     //-----
