@@ -129,6 +129,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         void SetMixing (Bool_t setmixing) {fsetmixing = setmixing;}
         void SetIsAA (Bool_t isaa) {IsAA = isaa;}
         void SetIsMC (Bool_t ismc) {IsMC = ismc;}
+        void EnableJetTask (Bool_t enable) {jetTaskEnabled = enable;}
         void SetParticleType(Int_t partype) {fParticleType = partype;}
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
@@ -252,6 +253,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
         Bool_t                          IsDGV0FMD=kFALSE;
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
+        Bool_t                          jetTaskEnabled=kFALSE;
         THistManager*                   fHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         Int_t                           fParticleType = 99999;

@@ -432,10 +432,12 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( fOption.Contains("SmallCone") ) JetConeSize = 0.2;
 	double JetEtaAccpetance = 0.8 - JetConeSize;
 
+	if(jetTaskEnabled){
 	if( !fOption.Contains("HighMult") && !fOption.Contains("SmallCone") )		fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTask" ));
 	else if( fOption.Contains("HighMult") && !fOption.Contains("SmallCone") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskHighMult" ));
 	else if( !fOption.Contains("HighMult") && fOption.Contains("SmallCone") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskSmallCone" ));
 	else if( fOption.Contains("HighMult") && fOption.Contains("SmallCone") )	fJetTask = (AliJJetTask*)(AliAnalysisManager::GetAnalysisManager()->GetTask( "AliJJetTaskSmallConeHighMult" ));
+	}
 
 	sel = (AliMultSelection*) fEvt -> FindListObject("MultSelection");
 	if( sel ){ 
@@ -471,27 +473,34 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		Charged_kt_mcparticle_index = 5;
 	}
 
-	auto antiktjets = fJetTask->GetJetContainer(Charged_anti_kt_index);
-	auto ktjets = fJetTask->GetJetContainer(Charged_kt_index);
+	AliJetContainer *antiktjets;
+	AliJetContainer *ktjets;
 
 	AliJetContainer* antiktjets_mcp;
 	AliJetContainer* ktjets_mcp;
+
+	double rho = 0.0;
+	double rhomc = 0.0;	
+
+	if(jetTaskEnabled){
+
+	antiktjets = fJetTask->GetJetContainer(Charged_anti_kt_index);
+	ktjets = fJetTask->GetJetContainer(Charged_kt_index);
 
 	if( IsMC ){
 		antiktjets_mcp = fJetTask->GetJetContainer(Charged_anti_kt_mcparticle_index);
 		ktjets_mcp = fJetTask->GetJetContainer(Charged_kt_mcparticle_index);
 	}
 
-	TObjArray* fjets = (TObjArray*)fJetTask->GetAliJJetList(Charged_anti_kt_index);
+	//TObjArray* fjets = (TObjArray*)fJetTask->GetAliJJetList(Charged_anti_kt_index);
 
-	double rho = 0.0;
 	this->RhoSparse(ktjets, antiktjets, 2);
 	rho = RHO;
 	
-	double rhomc = 0.0;	
 	if( IsMC ){
 		this->RhoSparse(ktjets_mcp, antiktjets_mcp, 2);		
 		rhomc = RHO;
+	}
 	}
 
 	double area = 0.0;
@@ -509,6 +518,12 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	}
 */
 	AliEmcalJet* Cjet;
+	AliEmcalJet* LjetMC;
+	AliEmcalJet* CjetMC;
+	fJetPtMC = 0.0;
+	double areaMC = 0.0;
+
+	if(jetTaskEnabled){
 	for(int i=0;i<antiktjets->GetNJets();i++){
 		Cjet = dynamic_cast<AliEmcalJet*>( antiktjets->GetJet(i) );
 		if( fabs( Cjet->Eta() ) > JetEtaAccpetance || Cjet->Pt() < 0.1 ){ continue; }
@@ -520,10 +535,6 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 		}
 	}
 
-	AliEmcalJet* LjetMC;
-	AliEmcalJet* CjetMC;
-	fJetPtMC = 0.0;
-	double areaMC = 0.0;
 	if( IsMC ){
 /*
 		LjetMC = dynamic_cast<AliEmcalJet*>( antiktjets_mcp->GetJet(0) );
@@ -541,6 +552,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 				areaMC = CjetMC->Area();
 			}
 		}
+	}
 	}
 
         const AliVVertex* trackVtx = fEvt->GetPrimaryVertexTPC() ;
@@ -653,6 +665,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 	if( IsTriggered && IsNotPileup && IsValidVtx && IsGoodVtx && IsSelectedFromAliMultSelection && IsMultiplicityInsideBin ){
 	        fHistos->FillTH1("hEventNumbers","IsMultiplicityInsideBin",1);
 
+		if(jetTaskEnabled){
 		if( fJetPt>0.1 ){
 			fHistos->FillTH1("hLJetPt",fJetPt,1.0);
 			fHistos->FillTH1("hLJetEta",JetEta,1.0);
@@ -692,6 +705,7 @@ void AliAnalysisTaskRidge::Exec(Option_t* )
 
 		fJetPt -= rho*area;
 		fJetPtMC -= rhomc*areaMC;
+		}
 
 	        if( !fOption.Contains("HighMult") ){
 	                fHistos->FillTH1("hMB",fCent,1);
