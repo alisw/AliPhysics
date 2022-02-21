@@ -19,10 +19,10 @@ Double_t BBDcorrection(Double_t sep, Double_t d1, Double_t d2)
 
 //-------------------------------------------------------
 // Correct the separations for beam-beam deflection using the
-// fit of orbit-drift data
+// fit of orbit-drift data for fill 7483
 //-------------------------------------------------------
 
-void Get_BBD_separations(Int_t scan, Int_t opt)
+void Get_BBD_separations_7483(Int_t scan, Int_t opt)
 // opt: 0 => nominal separations
 // opt: 1 =>  separations corrected for orbit drift
 {
@@ -167,6 +167,135 @@ void Get_BBD_separations(Int_t scan, Int_t opt)
 
 
 //-------------------------------------------------------
+// Correct the separations for beam-beam deflection
+// this is valid for fills 4937, 6012 and 6864 (up to now)
+//-------------------------------------------------------
+
+void Get_BBD_separations(Int_t opt, const char* sys_opt)
+// opt: 0 => nominal separations
+// opt: 1 => separations corrected for orbit drift
+// sys_opt = "" default, other options are for systematic studies:
+// "+Q", "+xi", "-Q", "-xi"  
+{
+  // -- get number of separations for first scan
+  // For fills 4937, 6012 and 6864
+  // is the same for both scans and for x and y
+  Int_t n_sep = FindNumberSeparations(1, 0);
+  Double_t *sep_x = new Double_t[n_sep];
+  Double_t *sep_y = new Double_t[n_sep];  
+ 
+  // create names for BBD separation files created by Ivan
+  // ** WARNING: Directory structure and nameing convention
+  //    valid for fills 4937, 6012 and 6864
+  char *bbd_file_name = new char[kg_string_size];
+  if (opt == 0)
+	  //sprintf(bbd_file_name,"../Fill-%d/Corr-%d-sys/FBCT-NOM/ROOT/bbroot_%d_V0%s.root",
+	  sprintf(bbd_file_name,"../Fill-%d/Corr-%d-sys/FBCT-Nom/ROOT/bbroot_%d_V0%s.root", //kimc
+			  g_vdm_Fill,g_vdm_Fill,g_vdm_Fill,sys_opt);
+  else
+	  sprintf(bbd_file_name,"../Fill-%d/Corr-%d-sys/FBCT/ROOT/bbroot_%d_V0%s.root",
+			  g_vdm_Fill,g_vdm_Fill,g_vdm_Fill,sys_opt);
+   
+  // open  file and get the trees
+  TFile *bbd_file = new TFile(bbd_file_name);
+  TTree *sep_tree = (TTree *) bbd_file->Get("beamsep");
+  sep_tree->ResetBranchAddresses();
+  Int_t bc;
+  Int_t nseps;
+  Double_t *sepx = new Double_t [n_sep*2];
+  Double_t *sepy = new Double_t [n_sep*2];  
+  Double_t *dx1 = new Double_t [n_sep*2];
+  Double_t *dy1 = new Double_t [n_sep*2];  
+  Double_t *dx2 = new Double_t [n_sep*2];
+  Double_t *dy2 = new Double_t [n_sep*2];  
+  sep_tree->SetBranchAddress("bc",&bc);
+  sep_tree->SetBranchAddress("nseps",&nseps);  
+  sep_tree->SetBranchAddress("sepx",sepx);  
+  sep_tree->SetBranchAddress("sepy",sepy);  
+  sep_tree->SetBranchAddress("dx1",dx1);  
+  sep_tree->SetBranchAddress("dy1",dy1);  
+  sep_tree->SetBranchAddress("dx2",dx2);  
+  sep_tree->SetBranchAddress("dy2",dy2);  
+
+  // info in Ivan's trees seems to be organised
+  // in an outer loop over scans, then over bc
+  // and for each bc, half the info is x the other y sep.
+
+  // get number of BCs and of entries
+  Int_t nIBC = GetNumberInteractingBunchCrossings();
+  Int_t nEntries = sep_tree->GetEntries();
+
+  //  names of output
+  char *sep_file_name_x = new char[kg_string_size];
+  char *sep_file_name_y = new char[kg_string_size];    
+  
+  for(Int_t scan=0; scan<2;scan++) {
+    cout << " doing  scan " << scan << endl;
+    // prepare file names for the output
+    if (opt == 0) {
+      sprintf(sep_file_name_x,"../Fill-%d/NomBBD%sSep_x_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
+      sprintf(sep_file_name_y,"../Fill-%d/NomBBD%sSep_y_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
+    } else {
+      sprintf(sep_file_name_x,"../Fill-%d/ODCBBD%sSep_x_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
+      sprintf(sep_file_name_y,"../Fill-%d/ODCBBD%sSep_y_Scan_%d.root",
+	      g_vdm_Fill,sys_opt,scan);
+    } 
+    // -- create tree with separations
+    TFile *BBDFile_x = new TFile(sep_file_name_x,"recreate");
+    TTree *bbd_sep_tree_x = new TTree("Separations","Separations");
+    char *txt_tmp = new char[kg_string_size];
+    sprintf(txt_tmp,"separation[%d]/D",n_sep);
+    bbd_sep_tree_x->Branch("separation",sep_x,txt_tmp);
+    TFile *BBDFile_y = new TFile(sep_file_name_y,"recreate");
+    TTree *bbd_sep_tree_y = new TTree("Separations","Separations");  
+    bbd_sep_tree_y->Branch("separation",sep_y,txt_tmp);
+
+    // loop over bunches
+    for(Int_t k=0;k<nIBC;k++) {
+      sep_tree->GetEntry(k+nIBC*scan);
+      Int_t nseps_half = nseps>>1;  
+      for(Int_t isep = 0;isep<nseps_half;isep++) {
+       sep_x[isep] = BBDcorrection(sepx[isep],dx1[isep],dx2[isep]);
+       sep_y[isep] = BBDcorrection(sepy[isep+nseps_half],dy1[isep+nseps_half],dy2[isep+nseps_half]);
+      }
+      BBDFile_x->cd();
+      bbd_sep_tree_x->Fill();
+      BBDFile_y->cd();     
+      bbd_sep_tree_y->Fill();     
+    } // loop over BCid
+
+    // save
+    BBDFile_x->cd();
+    bbd_sep_tree_x->Write();
+    BBDFile_x->Close();
+    BBDFile_y->cd();     
+    bbd_sep_tree_y->Write();     
+    BBDFile_y->Close();  
+  } // end loop over scans
+
+  //
+  bbd_file->Close();
+  
+  // clean up
+  delete [] sep_file_name_x;
+  delete [] sep_file_name_y;
+  delete [] bbd_file_name;
+  delete [] sep_x;
+  delete [] sep_y;
+  delete [] sepx;
+  delete [] sepy;
+  delete [] dx1;
+  delete [] dx2;
+  delete [] dy1;
+  delete [] dy2;
+
+}
+
+
+//-------------------------------------------------------
 // Create root files with the information of
 // the separations corrected for beam-beam deflection (bbd)
 // Note that as input you would need the files produced by Ivan
@@ -174,7 +303,9 @@ void Get_BBD_separations(Int_t scan, Int_t opt)
 // to orbit-drift-corrected separations 
 //-------------------------------------------------------
 
-void Create_BBD_separation_file(Int_t Fill)
+void Create_BBD_separation_file(Int_t Fill, const char* sys_opt)
+// sys_opt = "" default, other options are for systematic studies:
+// "+Q", "+xi", "-Q", "-xi"
 {
 
   // get name of files and set pointers to trees
@@ -183,12 +314,18 @@ void Create_BBD_separation_file(Int_t Fill)
 
   // create separation files  corrected for
   // beam-beam deflection
-  
-  for(Int_t i=0;i<g_n_Scans_in_Fill;i++) {
-    // nominal separations
-    Get_BBD_separations(i,0);
-    // separations corrected for orbit drift
-    Get_BBD_separations(i,1);
+
+  if (Fill == 7483) {
+    for(Int_t i=0;i<g_n_Scans_in_Fill;i++) {
+      // nominal separations
+      Get_BBD_separations_7483(i,0);
+      // separations corrected for orbit drift
+      Get_BBD_separations_7483(i,1);
+    }
+  } else {
+    Get_BBD_separations(0,sys_opt);
+    Get_BBD_separations(1,sys_opt); 
   }
+
 
 }

@@ -8,7 +8,7 @@
 // Compute hx or hy for a scan
 //-------------------------------------------------------
 void Compute_RateIntegral(Int_t Fill, Int_t scan_type, Int_t scan,
-		const char *rate_name, const char *rate_type, const char *sep_type,	Int_t fit_type, bool systChk
+		const char *rate_name, const char *rate_type, const char *sep_type,	Int_t fit_type
 		)
 // scan_type: 1 => x-scan; 2 => y-scan
 // First get the right files and the trees inside them
@@ -17,11 +17,10 @@ void Compute_RateIntegral(Int_t Fill, Int_t scan_type, Int_t scan,
 	// first get the files and trees
 	// --> create rate file name
 	char *rate_file_name = new char[kg_string_size];
-	const char* sfx = systChk?"_syst":"";
 	if (scan_type == 1) sprintf(rate_file_name,
-			"../Fill-%d/%sRate_%s_x_Scan_%d%s.root", g_vdm_Fill,rate_type,rate_name,scan,sfx);
+			"../Fill-%d/%sRate_%s_x_Scan_%d.root", g_vdm_Fill,rate_type,rate_name,scan);
 	if (scan_type == 2) sprintf(rate_file_name,
-			"../Fill-%d/%sRate_%s_y_Scan_%d%s.root", g_vdm_Fill,rate_type,rate_name,scan,sfx);
+			"../Fill-%d/%sRate_%s_y_Scan_%d.root", g_vdm_Fill,rate_type,rate_name,scan);
 
 	// --> create separation file name
 	char *sep_file_name = new char[kg_string_size];
@@ -63,10 +62,10 @@ void Compute_RateIntegral(Int_t Fill, Int_t scan_type, Int_t scan,
 
 	// --> file
 	char *h_file_name = new char[kg_string_size];
-	if (scan_type == 1) sprintf(h_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_x_Scan_%d_Fit_%s%s.root",
-			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type],sfx);
-	if (scan_type == 2) sprintf(h_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_y_Scan_%d_Fit_%s%s.root",
-			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type],sfx);  
+	if (scan_type == 1) sprintf(h_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_x_Scan_%d_Fit_%s.root",
+			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type]);
+	if (scan_type == 2) sprintf(h_file_name,"../Fill-%d/hxy_%sRate_%s_%sSep_y_Scan_%d_Fit_%s.root",
+			g_vdm_Fill,rate_type,rate_name,sep_type,scan,g_fit_model_name[fit_type]);  
 	TFile *hFile = new TFile(h_file_name,"recreate");
 
 	// --> tree
@@ -94,14 +93,17 @@ void Compute_RateIntegral(Int_t Fill, Int_t scan_type, Int_t scan,
 		sep_tree->GetEntry(k);
 
 		// do fit
-		chi2_dof = Fit_rate_separation(
-				n_sep, sep, rate, rate_error, fit_type, area, rate_zero,
-				par, par_err, scan, scan_type, k, rate_type, rate_name, sep_type
-				);
+		const char* cName1 = Form("Fill%i_%s_%s_%s_F%i", Fill, sep_type, rate_type, rate_name, fit_type);
+		const char* cName2 = Form("%s_scan%i_i%i_bc%i", cName1, scan, k, Bunches[k]);
+		const char* cName3 = "WRONG_SCAN_TYPE";
+		if (scan_type == 1) cName3 = Form("%s_x", cName2);
+		if (scan_type == 2) cName3 = Form("%s_y", cName2);
+		chi2_dof = Fit_rate_separation(n_sep,sep, rate,rate_error, fit_type,area,rate_zero, par,par_err, cName3);
 
 		/*
-		chi2_dof = Fit_rate_separation_minuit(n_sep,sep, rate, rate_error, fit_type, area,
-				rate_zero, par, par_err, scan, scan_type, bc);
+		chi2_dof = Fit_rate_separation_minuit(
+				n_sep, sep, rate, rate_error, fit_type, area, rate_zero, par, par_err, scan, scan_type, bc
+				);
 				*/
 
 		// save output
@@ -133,12 +135,9 @@ void Compute_RateIntegral(Int_t Fill, Int_t scan_type, Int_t scan,
 //-------------------------------------------------------
 
 void Create_hxhy_file(
-		Int_t Fill, const char *rate_name, const char *rate_type, const char *sep_type, Int_t fit_type,
-		bool systChk = false
+		Int_t Fill, const char *rate_name, const char *rate_type, const char *sep_type, Int_t fit_type
 		)
 {
-    if (systChk) cout <<" WARNING: you're about to generate an output for syst. err check!" <<endl;
-
 	// initialize
 	Set_input_file_names(Fill);
 	Set_pointers_to_input_files_and_trees();
@@ -147,8 +146,8 @@ void Create_hxhy_file(
 	// create files for all scans
 	for (Int_t i=0;i<g_n_Scans_in_Fill;i++)
 	{
-		Compute_RateIntegral(Fill, 1, i, rate_name, rate_type, sep_type, fit_type, systChk); //x-scans
-		Compute_RateIntegral(Fill, 2, i, rate_name, rate_type, sep_type, fit_type, systChk); //y-scans
+		Compute_RateIntegral(Fill, 1, i, rate_name, rate_type, sep_type, fit_type); //x-scans
+		Compute_RateIntegral(Fill, 2, i, rate_name, rate_type, sep_type, fit_type); //y-scans
 	}
 	// gROOT->SetBatch(kFALSE); 
 

@@ -7,7 +7,7 @@
 // Compute the background correction factor for each scan
 //-------------------------------------------------------
 
-void Create_bkgd_correction_file(Int_t scan_type, Int_t scan, Int_t rate_type, bool systChk)
+void Create_bkgd_correction_file(Int_t scan_type, Int_t scan, Int_t rate_type, bool systBG)
 // scan_type: 1 => x-scan; 2 => y-scan
 // rate_type: 1 => V0; 2 => T0
 
@@ -34,13 +34,13 @@ void Create_bkgd_correction_file(Int_t scan_type, Int_t scan, Int_t rate_type, b
 	if (rate_type == 1)
 	{
 		//g_vdm_Tree->SetBranchAddress("bv0acc_setv0", acc_all);
-		g_vdm_Tree->SetBranchAddress(systChk?"bv0sys_setv0":"bv0acc_setv0", acc_all);
+		g_vdm_Tree->SetBranchAddress(systBG?"bv0sys_setv0":"bv0acc_setv0", acc_all);
 		g_vdm_Tree->SetBranchAddress("bv0tot_setv0", tot_all);
 	}
 	else if  (rate_type == 2)
 	{
 		//g_vdm_Tree->SetBranchAddress("bt0acc_sett0", acc_all);
-		g_vdm_Tree->SetBranchAddress(systChk?"bt0sys_sett0":"bt0acc_sett0", acc_all);
+		g_vdm_Tree->SetBranchAddress(systBG?"bt0sys_sett0":"bt0acc_sett0", acc_all);
 		g_vdm_Tree->SetBranchAddress("bt0tot_sett0", tot_all);
 	} 
 
@@ -51,9 +51,8 @@ void Create_bkgd_correction_file(Int_t scan_type, Int_t scan, Int_t rate_type, b
 	const char* strScan = "";
 	if (scan_type == 1) strScan = "x";
 	if (scan_type == 2) strScan = "y";
-	const char* strSyst = (systChk)?"_syst":"";
-	const char* file_name = Form("../Fill-%i/BkgdCorr_%s_%s_Scan_%i%s.root",
-			g_vdm_Fill, strRate, strScan, scan, strSyst);
+	const char* file_name = Form("../Fill-%i/BkgdCorr_%s%s_%s_Scan_%i.root",
+			g_vdm_Fill, strRate, systBG?"SystBG":"", strScan, scan);
 
 	TFile *CorrFile = new TFile(file_name,"recreate");
 	Double_t *correction = new Double_t[n_separations];
@@ -124,10 +123,10 @@ void Create_bkgd_correction_file(Int_t scan_type, Int_t scan, Int_t rate_type, b
 	return;
 }
 
-void Create_bkgd_correction_file_V0T0(Int_t Fill, Int_t rate_type, bool systChk = false) //rate_type: 1=>V0; 2=>T0
+void Create_bkgd_correction_file_V0T0(Int_t Fill, Int_t rate_type, bool systBG = false) //rate_type: 1=>V0; 2=>T0
 {
 	cout << " Starting, this will take some time " << endl;
-	if (systChk) cout <<" WARNING: you're about to generate an output for syst. err check!" <<endl;
+	if (systBG) cout <<"\n WARNING: you're about to generate an output file for systematic err check!!!\n\n";
 
 	// get name of files and set pointers to trees
 	Set_input_file_names(Fill);
@@ -136,8 +135,8 @@ void Create_bkgd_correction_file_V0T0(Int_t Fill, Int_t rate_type, bool systChk 
 	// create files for all scans
 	for (Int_t i=0;i<g_n_Scans_in_Fill;i++)
 	{
-		Create_bkgd_correction_file(1, i, rate_type, systChk); //x-scans
-		Create_bkgd_correction_file(2, i, rate_type, systChk); //y-scans
+		Create_bkgd_correction_file(1, i, rate_type, systBG); //x-scans
+		Create_bkgd_correction_file(2, i, rate_type, systBG); //y-scans
 	}
 
 	return;
