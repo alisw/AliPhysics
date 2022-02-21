@@ -306,16 +306,16 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   if(isLowPt){
 
     // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(0.4,1.4);
-    TrackCuts4->SetPtRange(0.4,1.4);
+    TrackCuts3->SetPtRange(0.5,1.4);
+    TrackCuts4->SetPtRange(0.5,1.4);
 
   }
  
   if(isHighPt){
 
     // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(1.4,2.0);
-    TrackCuts4->SetPtRange(1.4,2.0);
+    TrackCuts3->SetPtRange(1.5,4.0);
+    TrackCuts4->SetPtRange(1.5,4.0);
 
   }
 
@@ -842,11 +842,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    std::cout << "before taskAOD = new..." << std::endl;
 
     taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isPbPb,isFullBlastQA,isFullBlastQA);
 
-    std::cout << "after taskAOD = new..." << std::endl;
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
       return nullptr;
@@ -864,10 +862,9 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     if(isPbPb){
 
 	std::cout << "Adding PbPb Trigger" << std::endl;
-	taskAOD->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-//	taskAOD->SelectCollisionCandidates(AliVEvent::kCentral);
+//	taskAOD->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+	taskAOD->SelectCollisionCandidates(AliVEvent::kCentral);
 //	taskAOD->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-	std::cout << "Added PbPb Trigger" << std::endl;
 
       
     } else{
