@@ -4121,6 +4121,15 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2594){  // Standard cut, No NCell cut, with non-Lin for nomB which can also be applied to low-B
     cuts.AddCutCalo("00010113","411799309fe30230000","0s631031000000d0"); // INT7 NL 01, (new FT)
 
+  } else if (trainConfig == 2595){  // run1 checks
+    cuts.AddCutCalo("00010103","111110106fe30220000","0s631031000000d0"); // INT7 NL 01
+    cuts.AddCutCalo("00010103","111110106fe30220003","0s631031000000d0"); // INT7 NL 01, NLM <=2
+    cuts.AddCutCalo("00010103","111110106fe3n220003","0s631031000000d0"); // INT7 NL 01, NLM <=2, NCells >= 2
+  } else if (trainConfig == 2596){  // run1 checks
+    cuts.AddCutCalo("00081103","111110106fe30220000","0s631031000000d0"); // INT7 NL 01
+    cuts.AddCutCalo("00081103","111110106fe30220003","0s631031000000d0"); // INT7 NL 01, NLM <=2
+
+
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
     //*************************************************************************************************
