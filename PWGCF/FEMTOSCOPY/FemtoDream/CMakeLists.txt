@@ -114,7 +114,8 @@ set(SRCS
   AliAnalysisTaskNanoTreeLPhi.cxx;
   AliAnalysisTaskNanoLambdaKaon.cxx;
   AliAnalysisTaskNanoLKr.cxx
-  AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx
+  AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
+  AliAnalysisTaskNanoBenchmark.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
