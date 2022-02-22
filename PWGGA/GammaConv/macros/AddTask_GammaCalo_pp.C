@@ -4442,7 +4442,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00015113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
     cuts.AddCutCalo("00015113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
 
-///////////////////////////////////  50-100%
+///////////////////////////////////  50-104%
   } else if (trainConfig == 4300){ //
     cuts.AddCutCalo("n5a15113","24466190sa01cc00000","0163103100000010");
   } else if (trainConfig == 4301){ // track matching variation std a == pt dependent
@@ -4462,9 +4462,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n5a15113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
 
 ///////////////////////////////////   0-1%
-  } else if (trainConfig == 4200){ //
+  } else if (trainConfig == 4400){ //
     cuts.AddCutCalo("m0115113","24466190sa01cc00000","0163103100000010");
-  } else if (trainConfig == 4201){ // track matching variation std a == pt dependent
+  } else if (trainConfig == 4401){ // track matching variation std a == pt dependent
     cuts.AddCutCalo("m0115113","24466190s001cc00000","0163103100000010"); //0
     cuts.AddCutCalo("m0115113","24466190s101cc00000","0163103100000010"); //1
     cuts.AddCutCalo("m0115113","24466190s401cc00000","0163103100000010"); //4
@@ -4475,7 +4475,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m0115113","24466190sa013200000","0163103100000010"); //320:   min nCells = 3, all E
     cuts.AddCutCalo("m0115113","24466190sa01dc00000","0163103100000010"); //dc0:   min nCells = 3, E>1GeV; minM02==0.1 off for E<1GeV
     cuts.AddCutCalo("m0115113","24466190sa01cd00000","0163103100000010"); //cd0:   min nCells = 2, E>1GeV; minM02==0.2 off for E<1GeV
-  } else if (trainConfig == 4203){ // min nCells & M02 variation, std cc
+  } else if (trainConfig == 4403){ // min nCells & M02 variation, std cc
     cuts.AddCutCalo("m0115113","24466190sa011000000","0163103100000010"); //100:   min nCells = 1, minM02 off
     cuts.AddCutCalo("m0115113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
     cuts.AddCutCalo("m0115113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
