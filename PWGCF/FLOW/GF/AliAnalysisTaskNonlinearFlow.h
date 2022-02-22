@@ -223,6 +223,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 		virtual void   SetUseFlippedEta(bool flag = true) {fUseFlippedEta = flag;}
+		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
@@ -302,6 +303,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t      fAddTPCPileupCuts;                                  // Additional TPC pileup cuts
 		Bool_t      fUseCorrectedNTracks;                               // Use corrected Ntracks in the filling of xbins;
 		Bool_t      fUseFlippedEta;                                     // Flip the eta region to merge the pPb and Pbp sample;
+                Bool_t      fUseNarrowBin;                                      // Use Narrow bin
 		Double_t                fEtaGap3Sub;                            // The Eta Gap for 3 sub sample, the default is 0.4
 
 		// Output objects
@@ -473,7 +475,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		bool fuQThreeSub = 0; //!
 		bool fuQGapScan  = 0; //!
 
-		double xbins[300] = {}; //!
+		double xbins[3000+10] = {}; //!
 		int nn = 0; //!
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
