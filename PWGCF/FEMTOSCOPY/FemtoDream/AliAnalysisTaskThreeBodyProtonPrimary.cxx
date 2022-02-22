@@ -1919,15 +1919,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
               auto Eta2 = iPart2->GetEta().at(0);
               deltaetaMin = abs(Eta1-Eta2);
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart2->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart3->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart3->GetPhi().at(0));
+              deltaDeta = abs(iPart1->GetEta().at(0) - iPart3->GetEta().at(0));
+              deltaPhi = abs(iPart1->GetPhi().at(0) - iPart3->GetPhi().at(0));
             }else{
               thetaMin = theta31;
               thetaMax = theta12;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart2->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart2->GetPhi().at(0));
+              deltaDeta = abs(iPart1->GetEta().at(0) - iPart2->GetEta().at(0));
+              deltaPhi = abs(iPart1->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }
             thetaPP = theta23;
           }
@@ -1940,15 +1940,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
               auto Eta2 = iPart2->GetEta().at(0);
               deltaetaMin = abs(Eta1-Eta2);
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart2->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart3->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart3->GetPhi().at(0));
+              deltaDeta = abs(iPart2->GetEta().at(0) - iPart3->GetEta().at(0));
+              deltaPhi = abs(iPart2->GetPhi().at(0) - iPart3->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta12;
               deltaetaMin = abs(iPart2->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart2->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart1->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart1->GetPhi().at(0));
+              deltaDeta = abs(iPart2->GetEta().at(0) - iPart1->GetEta().at(0));
+              deltaPhi = abs(iPart2->GetPhi().at(0) - iPart1->GetPhi().at(0));
             }
             thetaPP = theta31;
           }
@@ -1959,20 +1959,20 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
               thetaMax = theta23;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart2->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart2->GetPhi().at(0));
+              deltaDeta = abs(iPart3->GetEta().at(0) - iPart2->GetEta().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta31;
               deltaetaMin = abs(iPart2->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart2->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart1->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart1->GetPhi().at(0));
+              deltaDeta = abs(iPart3->GetEta().at(0) - iPart1->GetEta().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart1->GetPhi().at(0));
             }
             thetaPP = theta12;
           }
 
-          if(abs(*itPDGPar1)==321||abs(*itPDGPar2)==321||abs(*itPDGPar3)==321){
+          if((abs(*itPDGPar1)==321||abs(*itPDGPar2)==321||abs(*itPDGPar3)==321)&&Q3<1.2){
             hPrimAngles->Fill(thetaMin,thetaPP);
             hDeta->Fill(deltaetaMin,deltaDeta);
             hDphi->Fill(deltaphiMin,deltaPhi);
@@ -2092,7 +2092,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
           }
 
           if(abs(*itPDGPar1)==321||abs(*itPDGPar2)==321||abs(*itPDGPar3)==321){
-            hKinematics->Fill(thetaMin+thetaMid,thetaMid-thetaMin);
+            if(Q3<1.2) hKinematics->Fill(thetaMin+thetaMid,thetaMid-thetaMin);
           }
 
 //          cout<<thetaMin<<"  "<<thetaMid<<" "<<thetaMax<<endl;
@@ -2506,15 +2506,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
               thetaMax = theta31;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart2->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart2->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart3->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart3->GetPhi().at(0));
+              deltaDeta = abs(iPart1->GetEta().at(0) - iPart3->GetEta().at(0));
+              deltaPhi = abs(iPart1->GetPhi().at(0) - iPart3->GetPhi().at(0));
             }else{
               thetaMin = theta31;
               thetaMax = theta12;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart2->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart2->GetPhi().at(0));
+              deltaDeta = abs(iPart1->GetEta().at(0) - iPart2->GetEta().at(0));
+              deltaPhi = abs(iPart1->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }
             thetaPP = theta23;
           }
@@ -2525,15 +2525,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
               thetaMax = theta23;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart2->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart2->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart3->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart3->GetPhi().at(0));
+              deltaDeta = abs(iPart2->GetEta().at(0) - iPart3->GetEta().at(0));
+              deltaPhi = abs(iPart2->GetPhi().at(0) - iPart3->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta12;
               deltaetaMin = abs(iPart2->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart2->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart1->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart1->GetPhi().at(0));
+              deltaDeta = abs(iPart2->GetEta().at(0) - iPart1->GetEta().at(0));
+              deltaPhi = abs(iPart2->GetPhi().at(0) - iPart1->GetPhi().at(0));
             }
             thetaPP = theta31;
           }
@@ -2544,20 +2544,20 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
               thetaMax = theta23;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart2->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart2->GetPhi().at(0));
+              deltaDeta = abs(iPart3->GetEta().at(0) - iPart2->GetEta().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta31;
               deltaetaMin = abs(iPart2->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart2->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart1->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart1->GetPhi().at(0));
+              deltaDeta = abs(iPart3->GetEta().at(0) - iPart1->GetEta().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart1->GetPhi().at(0));
             }
             thetaPP = theta12;
           }
 
-          if(abs(*itPDGParSE)==321||abs(*itPDGParME1)==321||abs(*itPDGParME2)==321){
+          if((abs(*itPDGParSE)==321||abs(*itPDGParME1)==321||abs(*itPDGParME2)==321)&&Q3<1.2){
             hPrimAngles->Fill(thetaMin,thetaPP);
             hDeta->Fill(deltaetaMin,deltaDeta);
             hDphi->Fill(deltaphiMin,deltaPhi);
@@ -2675,7 +2675,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionME(std::vecto
           }
 
           if(abs(*itPDGParSE)==321||abs(*itPDGParME1)==321||abs(*itPDGParME2)==321){
-            hKinematics->Fill(thetaMin+thetaMid,thetaMid-thetaMin);
+            if(Q3<1.2) hKinematics->Fill(thetaMin+thetaMid,thetaMid-thetaMin);
           }
 
 //          cout<<thetaMin<<"  "<<thetaMid<<" "<<thetaMax<<endl;
@@ -2972,15 +2972,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
               thetaMax = theta31;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart2->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart2->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart3->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart3->GetPhi().at(0));
+              deltaDeta = abs(iPart1->GetEta().at(0) - iPart3->GetEta().at(0));
+              deltaPhi = abs(iPart1->GetPhi().at(0) - iPart3->GetPhi().at(0));
             }else{
               thetaMin = theta31;
               thetaMax = theta12;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart2->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart2->GetPhi().at(0));
+              deltaDeta = abs(iPart1->GetEta().at(0) - iPart2->GetEta().at(0));
+              deltaPhi = abs(iPart1->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }
             thetaPP = theta23;
           }
@@ -2991,15 +2991,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
               thetaMax = theta23;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart2->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart2->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart3->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart3->GetPhi().at(0));
+              deltaDeta = abs(iPart2->GetEta().at(0) - iPart3->GetEta().at(0));
+              deltaPhi = abs(iPart2->GetPhi().at(0) - iPart3->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta12;
               deltaetaMin = abs(iPart2->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart2->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart1->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart1->GetPhi().at(0));
+              deltaDeta = abs(iPart2->GetEta().at(0) - iPart1->GetEta().at(0));
+              deltaPhi = abs(iPart2->GetPhi().at(0) - iPart1->GetPhi().at(0));
             }
             thetaPP = theta31;
           }
@@ -3010,20 +3010,20 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
               thetaMax = theta23;
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart2->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart2->GetPhi().at(0));
+              deltaDeta = abs(iPart3->GetEta().at(0) - iPart2->GetEta().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta31;
               deltaetaMin = abs(iPart2->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart2->GetPhi().at(0)-iPart3->GetPhi().at(0));
-              deltaDeta = abs(deltaetaMin - iPart1->GetEta().at(0));
-              deltaPhi = abs(deltaphiMin - iPart1->GetPhi().at(0));
+              deltaDeta = abs(iPart3->GetEta().at(0) - iPart1->GetEta().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart1->GetPhi().at(0));
             }
             thetaPP = theta12;
           }
 
-          if(abs(*itPDGParSE1)==321||abs(*itPDGParSE2)==321||abs(*itPDGParME)==321){
+          if((abs(*itPDGParSE1)==321||abs(*itPDGParSE2)==321||abs(*itPDGParME)==321)&&Q3<1.2){
             hPrimAngles->Fill(thetaMin,thetaPP);
             hDeta->Fill(deltaetaMin,deltaDeta);
             hDphi->Fill(deltaphiMin,deltaPhi);
@@ -3142,7 +3142,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
           }
 
           if(abs(*itPDGParSE1)==321||abs(*itPDGParSE2)==321||abs(*itPDGParME)==321){
-            hKinematics->Fill(thetaMin+thetaMid,thetaMid-thetaMin);
+            if(Q3<1.2) hKinematics->Fill(thetaMin+thetaMid,thetaMid-thetaMin);
           }
 
 //          cout<<thetaMin<<"  "<<thetaMid<<" "<<thetaMax<<endl;
