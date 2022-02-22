@@ -83,6 +83,7 @@ set(SRCS
   iaaAnalysis/AliJIaaHistograms.cxx
   AliJPartLifetime.cxx
   AliJCatalystTask.cxx
+  AliJFFlucJCTask.cxx
   AliJCorrectionMapTask.cxx
   jtAnalysis/AliJJtTask.cxx
   jtAnalysis/AliJJtAna.cxx
