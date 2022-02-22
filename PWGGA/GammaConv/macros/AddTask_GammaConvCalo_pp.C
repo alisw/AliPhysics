@@ -2736,6 +2736,12 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111110106fe30220000","0r63103100000010"); // EGA, NL 01
     cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111110106fe30220003","0r63103100000010"); // EGA, NL 01, NLM <=2
 
+    // run1 settings for NonLin studies
+  } else if (trainConfig == 2168){ // nom Bfield
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111119606fe30220000","0r63103100000010"); // INT7, only TBNL
+  } else if (trainConfig == 2169){ // nom Bfield
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111119606fe30220000","0r63103100000010"); // EGA, only TBNL
+
 
     // no scale in NL, without MC finetuning
   } else if (trainConfig == 2170){ // nom Bfield
