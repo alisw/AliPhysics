@@ -4129,6 +4129,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00081103","111110106fe30220000","0s631031000000d0"); // INT7 NL 01
     cuts.AddCutCalo("00081103","111110106fe30220003","0s631031000000d0"); // INT7 NL 01, NLM <=2
 
+  } else if (trainConfig == 2597){  // run1 checks
+    cuts.AddCutCalo("00010103","111119606fe30220000","0s631031000000d0"); // INT7 NL 01
+  } else if (trainConfig == 2598){  // run1 checks
+    cuts.AddCutCalo("00081103","111119606fe30220000","0s631031000000d0"); // INT7 NL 01
+
 
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
