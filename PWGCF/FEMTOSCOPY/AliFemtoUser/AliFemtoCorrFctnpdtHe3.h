@@ -56,9 +56,14 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetTF1ParaUp2Sigma(float para0,float para1,float para2,float para3);
 	void SetTF1ParaLow2Sigma(float para0,float para1,float para2,float para3);
 	void SetTF1ParaLow3Sigma(float para0,float para1,float para2,float para3);
+	void SetTF1PareSideBandUp(float para0,float para1,float para2,float para3);
+	void SetTF1PareSideBandLow(float para0,float para1,float para2,float para3);
+	
 	
 	void FillSideBandNum(AliFemtoPair* aPair);
 	void FillSideBandDum(AliFemtoPair* aPair);
+
+	void SetfUsePt(int aUsePt);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -81,11 +86,15 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	bool fHighCF;
 	bool fSideBand;
 	// TF1 for TOF mass cut band!
+	
 	TF1 *p2Up3Sigma;
 	TF1 *p2Up2Sigma;
 	TF1 *p2Low2Sigma;
 	TF1 *p2Low3Sigma;
 
+	TF1 *SideBandUp;
+	TF1 *SideBandLow;
+	
 	// 8 area for mass side band!
 	//\----------------
 	// num!
@@ -116,6 +125,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	// merge
 	TH1D *A1A2SideBandDum;
 	TH1D *B1B2SideBandDum;
+
+	int fUsePt;
 	
 	
 	
