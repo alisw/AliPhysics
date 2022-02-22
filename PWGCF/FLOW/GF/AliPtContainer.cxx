@@ -6,27 +6,45 @@ If used, modified, or distributed, please aknowledge the original author of this
 */
 #include "AliPtContainer.h"
 
+double AliPtContainer::fFactorial[9] = {1.,1.,2.,6.,24.,120.,720.,5040.,40320.};
+int AliPtContainer::fSign[9] = {1,-1,1,-1,1,-1,1,-1,1};
+
+using namespace PtSpace;
 AliPtContainer::AliPtContainer():
     fTermList(0),
-    fMomentList(0)
+    fCorrList(0),
+    fMomentList(0),
+    fCumulantList(0),
+    fNormList(0),
+    mpar(0),
+    fEventWeight(kWeight::kWmaxperm)
 {};
 AliPtContainer::~AliPtContainer()
 {
+    delete fCorrList;
     delete fTermList;
 };
 AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, double* xbins, int m):
     TNamed(name,title),
     fTermList(0),
+    fCorrList(0),
     fMomentList(0),
-    mpar(m)
+    fCumulantList(0),
+    fNormList(0),
+    mpar(m),
+    fEventWeight(kWeight::kWmaxperm)
 {
     Initialize(nbinsx,xbins);
 };
 AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, double xlow, double xhigh, int m):
     TNamed(name,title),
     fTermList(0),
+    fCorrList(0),
     fMomentList(0),
-    mpar(m)
+    fCumulantList(0),
+    fNormList(0),
+    mpar(m),
+    fEventWeight(kWeight::kWmaxperm)
 {
     Initialize(nbinsx,xlow,xhigh);
 };
@@ -35,6 +53,9 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins)
     if(fTermList) delete fTermList;
     fTermList = new TList();
     fTermList->SetOwner(kTRUE);
+    if(fCorrList) delete fCorrList;
+    fCorrList = new TList();
+    fCorrList->SetOwner(kTRUE);
     vector<AliProfileBS*> fTerms;
     fTerms.clear();
     for(int i=0;i<=mpar;++i)
@@ -42,12 +63,20 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins)
         fTerms.push_back(new AliProfileBS(Form("%s_p%i",this->GetName(),i),this->GetTitle(),nbinsx,xbins));
         fTermList->Add(fTerms[i]);
     }
+    for(int m=0;m<mpar;++m)
+    {
+        fCorrList->Add(new AliProfileBS(Form("corr_%ipar",m+1),this->GetTitle(),nbinsx,xbins));
+    }
+
 };
 void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
 {
     if(fTermList) delete fTermList;
     fTermList = new TList();
     fTermList->SetOwner(kTRUE);
+    if(fCorrList) delete fCorrList;
+    fCorrList = new TList();
+    fCorrList->SetOwner(kTRUE);
     vector<AliProfileBS*> fTerms;
     fTerms.clear();
     for(int i=0;i<=mpar;++i)
@@ -55,14 +84,66 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
         fTerms.push_back(new AliProfileBS(Form("%s_p%i",this->GetName(),i),this->GetTitle(),nbinsx,xlow,xhigh));
         fTermList->Add(fTerms[i]);
     }
+    for(int m=0;m<mpar;++m)
+    {
+        fCorrList->Add(new AliProfileBS(Form("corr_%ipar",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
+    }
 };
 void AliPtContainer::InitializeSubsamples(const int &nsub)
 {
-    if(!fTermList) return;
+    if(!fTermList || !fCorrList) return;
     for(int i=0; i<fTermList->GetEntries();++i)
         ((AliProfileBS*)fTermList->At(i))->InitializeSubsamples(nsub);
+    for(int i=0; i<fCorrList->GetEntries();++i)
+        ((AliProfileBS*)fCorrList->At(i))->InitializeSubsamples(nsub);
     return;
 };
+void AliPtContainer::FillRecursive(double inarr[10][10],const double &lMult, const double &rn)
+{
+  vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
+  vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
+  double sumNum = 0;
+  double sumDenum = 0;
+  vector<double> valNum;
+  vector<double> valDenum;
+  for(int m(1); m<=mpar; ++m)
+  {
+    for(int k(1);k<=m;++k)
+    {
+      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][k]);
+      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][0]);
+    }
+    sumNum = OrderedAddition(valNum, m);
+    sumDenum = OrderedAddition(valDenum, m);
+    valNum.clear();
+    valDenum.clear();
+  
+    corr[m] = sumNum;
+    sumw[m] = sumDenum;
+    if(sumw[m]==0) return;  //Need all weights to be non-zero, so skips filling if any weight is zero
+  }
+  FillRecursiveProfiles(corr,sumw,lMult,rn);
+  return;
+}
+void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn)
+{
+    for(int m=1;m<=mpar;++m)
+    {
+        ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
+    }
+    return;
+}
+double AliPtContainer::OrderedAddition(vector<double> vec, int size)
+{
+  double sum = 0;
+  std::sort(vec.begin(), vec.end());
+
+  for(int i = 0; i < size; i++)
+  {
+    sum += vec[i];
+  }
+  return sum;
+}
 void AliPtContainer::FillObs(double inarr[10][10], const double &lMult, const double &rn)
 {
     switch(mpar)
@@ -97,7 +178,7 @@ void AliPtContainer::FillCk(double inarr[10][10], const double &lMult, const dou
     Double_t lwpt = inarr[1][0];
     if(lwck==0 || lwpt==0) return;
     ((AliProfileBS*)fTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1] - inarr[2][2])/lwck,lwck,rn);
-    ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(-inarr[2][1]+inarr[1][1]*inarr[1][0])/lwck,lwck,rn);
+    ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][0]-inarr[2][1])/lwck,lwck,rn);
     ((AliProfileBS*)fTermList->At(2))->FillProfile(lMult,inarr[1][1]/lwpt,lwpt,rn);
     return;
 }
@@ -240,6 +321,117 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh)
   delete hWeights;
   return (TH1*)inh[0]->Clone("hRec");
 }
+TH1* AliPtContainer::getRercusiveHist(int ind, int m, unsigned int l_obs)
+{
+  if(l_obs==kObs::kCorr) return ((AliProfileBS*)fCorrList->At(m-1))->getHist(ind);
+  if(l_obs==kObs::kCum) 
+  {
+      if(!fCumulantList) CalculateRecursive(false);
+      if(!fCumulantList) return 0;
+      if(ind+1<fCumulantList->GetEntries()) return (TH1*)fCumulantList->At((ind+1)*mpar+m-1);
+  } 
+  if(l_obs==kObs::kNorm)
+  {
+      if(!fNormList) CalculateRecursive(true);
+      if(!fNormList) return 0;
+      if(ind+1<fNormList->GetEntries()) return (TH1*)fNormList->At((ind+1)*mpar+m-1);
+  }
+  return 0;
+}
+void AliPtContainer::CalculateRecursive(bool normalized)
+{ 
+    if(normalized)
+    {
+        if(fNormList) delete fNormList;
+        fNormList = new TList();
+        fNormList->SetOwner(); 
+        if(!fCumulantList)
+        {
+            fCumulantList = new TList();
+            fCumulantList->SetOwner();  
+        }
+    }
+    else
+    {
+        if(fCumulantList) delete fCumulantList;
+        fCumulantList = new TList();
+        fCumulantList->SetOwner();
+    }
+    for(int i=0;i<mpar;++i)
+        ((AliProfileBS*)fCorrList->At(i))->PresetWeights((AliProfileBS*)fTermList->At(mpar));
+    for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
+        vector<TH1*> hTs;
+        for(int j=0;j<mpar;++j) {
+            ((AliProfileBS*)fCorrList->At(j))->SetErrorOption("g");
+            hTs.push_back(((AliProfileBS*)fCorrList->At(j))->getHist(i));
+        }
+        CalculateCumulantHists(hTs,i,normalized);
+    }
+    ((AliProfileBS*)fTermList->At(0))->PresetWeights(0);
+    return;
+}
+void AliPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized) 
+{
+    auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
+    if((normalized && fCumulantList->GetEntries()<1) || !normalized)
+    {
+        for(int m=1;m<=mpar;++m)
+        {
+            TH1* reth = (TH1*)inh[m-1]->Clone(Form("h%i%i_%i",m,ind,normalized));
+            TH1* hWeights = (TH1*)inh[m-1]->Clone(Form("hWeights%i%i_%i",m,ind,normalized));
+            for(int k=1;k<m;++k)
+            {
+                TH1* corrh = (TH1*)inh[m-k-1]->Clone(Form("h%i%i%i_%i",m,k,ind,normalized));
+                corrh->Multiply((TH1*)fCumulantList->At((ind+1)*mpar+k-1));
+                corrh->Scale(binomial(m-1,k-1));
+                reth->Add(corrh,-1);
+                delete corrh;
+            }
+            for(int i=1;i<=hWeights->GetNbinsX();++i) reth->SetBinError(i,hWeights->GetBinError(i));
+            delete hWeights;
+            fCumulantList->Add(reth->Clone(Form("reth%i%i",m,ind)));
+        }
+    }
+    else
+    {
+        TH1* sigmah = (TH1*)fCumulantList->At((ind+1)*mpar+1)->Clone(Form("sigmah%i",ind));
+        for(int m = 0; m<mpar;++m)
+        {
+            TH1* normh = (TH1*)fCumulantList->At((ind+1)*mpar+m-1)->Clone(Form("normh%i%i",m,ind));
+            normh->Divide(getPowerHist(sigmah,0.5*(m+1)));
+            fNormList->Add(normh);
+        }
+    }
+
+    return;
+}
+TH1* AliPtContainer::getPowerHist(TH1* inh, double p)
+{
+    TH1D* reth = (TH1D*)inh->Clone("reth");
+    reth->SetName(Form("power%.2f_%s",p,inh->GetName()));
+    for(int i=1;i<=inh->GetNbinsX();i++) {
+        if(inh->GetBinContent(i)>=0 || std::floor(p) == p)
+        {
+            reth->SetBinContent(i,pow(inh->GetBinContent(i),p));
+            reth->SetBinError(i,p*pow(reth->GetBinContent(i),p-1)*inh->GetBinError(i));
+        }
+        else
+        {
+            reth->SetBinContent(i,-999);
+            reth->SetBinError(i,0.000000001);
+        }
+
+    }   
+    return reth;
+}
+int AliPtContainer::GetWeightIndex(int m)
+{
+    if(fEventWeight==kOne) return 0;
+    if(fEventWeight==kWpt) return 1;
+    if(fEventWeight==kWperms) return m;
+    if(fEventWeight==kWmaxperm) return mpar;
+    return m;
+}
 Long64_t AliPtContainer::Merge(TCollection *collist) {
   Long64_t nmerged=0;
   TIter all_PTC(collist);
@@ -247,6 +439,9 @@ Long64_t AliPtContainer::Merge(TCollection *collist) {
   while ((l_PTC = ((AliPtContainer*) all_PTC()))) {
       TList *t_Term = l_PTC->fTermList;
       TList *t_Mom  = l_PTC->fMomentList;
+      TList* t_Corr = l_PTC->fCorrList;
+      TList* t_Cum = l_PTC->fCumulantList;
+      TList* t_Norm = l_PTC->fNormList;
       if(t_Term) {
         if(!fTermList) fTermList = (TList*)t_Term->Clone();
         else MergeBSLists(fTermList,t_Term);
@@ -256,6 +451,18 @@ Long64_t AliPtContainer::Merge(TCollection *collist) {
         if(!fMomentList) fMomentList = (TList*)t_Mom->Clone();
         else MergeBSLists(fMomentList,t_Mom);
       };
+      if(t_Corr) {
+          if(!fCorrList) fCorrList = (TList*)t_Corr->Clone();
+          else MergeBSLists(fCorrList,t_Corr);
+      };
+      if(t_Cum) {
+          if(!fCumulantList) fCumulantList = (TList*)t_Cum->Clone();
+          else MergeBSLists(fCumulantList,t_Cum);
+      };
+      if(t_Norm) {
+          if(!fNormList) fNormList = (TList*)t_Norm->Clone();
+          else MergeBSLists(fNormList,t_Norm);
+      }
   }
   return nmerged;
 }

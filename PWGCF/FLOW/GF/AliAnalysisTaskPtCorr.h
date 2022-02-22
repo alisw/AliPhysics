@@ -45,6 +45,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetEta(double eta) { fEta = eta; }
     void SetEtaGap(double eta) { fEtaGap = eta; }
     void SetPtRange(double ptmin, double ptmax) { fPtMin = ptmin; fPtMax = ptmax; }
+    void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
   protected:
     AliEventCuts            fEventCuts;
@@ -79,6 +80,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
     int                     mpar;
+    unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!
     AliProfileBS**          fptcorr;     //!
     AliProfileBS**          fptcorrP;     //!
@@ -87,6 +89,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     AliPtContainer*         fck;      //!
     AliPtContainer*         fskew;      //!
     AliPtContainer*         fkur;      //!
+    AliPtContainer*         f5;      //!
+    AliPtContainer*         f6;      //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
