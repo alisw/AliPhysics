@@ -67,6 +67,7 @@ fSeparateConvertedDistributions(0),
 fUseNxNShowerShape(0),        fFillNxNShowerShapeAllHisto(0),  
 fNxNShowerShapeColRowDiffNumber(2), 
 fNxNShowerShapeOnlyNeigbours(1), fNxNShowerShapeMinEnCell(0.1),
+fFillPromptPhotonGenRecoEtaPhi(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fPrimaryMom2(),              fProdVertex(),
@@ -134,6 +135,12 @@ fhMCPrimParticleCen(0),       fhMCPrimParticleAccCen(0),
 fhMCParticleVsErecEgenDiffOverEgenCen(0), fhMCParticleVsErecEgenCen(0),
 fhMCParticleErecEgenDiffOverEgenNLMCen(0), fhMCParticleErecEgenNLMCen(0),
 fhMCParticleM02NLMCen(0),
+fhMCPromptPhotonDeltaPhiRecGen(0), fhMCPromptPhotonDeltaEtaRecGen(0),
+fhMCPromptPhotonEtaPhiGenAssociatedReco(0),
+fhMCPromptPhotonAssociatedPtGen(0),fhMCPromptPhotonAssociatedPtGenInFidCut(0),
+fhMCPromptPhotonDeltaPhiRecGenConv(0), fhMCPromptPhotonDeltaEtaRecGenConv(0),
+fhMCPromptPhotonEtaPhiGenConvAssociatedReco(0),
+fhMCPromptPhotonAssociatedPtGenConv(0), fhMCPromptPhotonAssociatedPtGenConvInFidCut(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
 fhPhiPrimMCPartonicPhoton(0), fhEtaPrimMCPartonicPhoton(0), fhYPrimMCPartonicPhoton(0),
 
@@ -3774,6 +3781,98 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
     if ( !IsHighMultiplicityAnalysisOn() )
     {
+      if ( fFillPromptPhotonGenRecoEtaPhi )
+      {
+        Int_t ndPhibins  = GetHistogramRanges()->GetHistoDeltaPhiBins();
+        Float_t dPhimax  = GetHistogramRanges()->GetHistoDeltaPhiMax();
+        Float_t dPhimin  = GetHistogramRanges()->GetHistoDeltaPhiMin();
+
+        Int_t ndEtabins  = GetHistogramRanges()->GetHistoDeltaEtaBins();
+        Float_t dEtamax  = GetHistogramRanges()->GetHistoDeltaEtaMax();
+        Float_t dEtamin  = GetHistogramRanges()->GetHistoDeltaEtaMin();
+        fhMCPromptPhotonDeltaPhiRecGen = new TH2F
+        ("hMCPromptPhotonDeltaPhiRecGen",
+         "Prompt #gamma cluster #it{p}_{T} vs #Delta #varphi_{reco-gen}",
+         nptbins,ptmin,ptmax, ndPhibins,dPhimin,dPhimax);
+        fhMCPromptPhotonDeltaPhiRecGen->SetYTitle("#Delta #varphi_{reco-gen}(rad)");
+        fhMCPromptPhotonDeltaPhiRecGen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonDeltaPhiRecGen) ;
+
+        fhMCPromptPhotonDeltaPhiRecGenConv = new TH2F
+        ("hMCPromptPhotonDeltaPhiRecGenConv",
+         "Prompt #gamma (converted) cluster #it{p}_{T} vs #Delta #varphi_{reco-gen}",
+         nptbins,ptmin,ptmax,  ndPhibins,dPhimin,dPhimax);
+        fhMCPromptPhotonDeltaPhiRecGenConv->SetYTitle("#Delta #varphi_{reco-gen} (rad)");
+        fhMCPromptPhotonDeltaPhiRecGenConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonDeltaPhiRecGenConv) ;
+
+        fhMCPromptPhotonDeltaEtaRecGen = new TH2F
+        ("hMCPromptPhotonDeltaEtaRecGen",
+         "Prompt #gamma cluster #it{p}_{T} vs #Delta #eta_{reco-gen}",
+         nptbins,ptmin,ptmax,  ndEtabins,dEtamin,dEtamax);
+        fhMCPromptPhotonDeltaEtaRecGen->SetYTitle("#Delta #eta_{reco-gen}");
+        fhMCPromptPhotonDeltaEtaRecGen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonDeltaEtaRecGen) ;
+
+        fhMCPromptPhotonDeltaEtaRecGenConv = new TH2F
+        ("hMCPromptPhotonDeltaEtaRecGenConv",
+         "Prompt #gamma (converted) cluster #it{p}_{T} vs #Delta #eta_{reco-gen}",
+         nptbins,ptmin,ptmax,  ndEtabins,dEtamin,dEtamax);
+        fhMCPromptPhotonDeltaEtaRecGenConv->SetYTitle("#Delta #eta_{reco-gen}");
+        fhMCPromptPhotonDeltaEtaRecGenConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonDeltaEtaRecGenConv) ;
+
+        fhMCPromptPhotonEtaPhiGenAssociatedReco =  new TH3F
+        ("hMCPromptPhotonEtaPhiGenAssociatedReco",
+         "Generated  prompt photon #eta vs #varphi vs #it{p}_{T} when associated to a cluster",
+         ptWideBinsArray.GetSize() - 1,  ptWideBinsArray.GetArray(),
+         etaBinsArray   .GetSize() - 1,  etaBinsArray   .GetArray(),
+         phiBinsArray   .GetSize() - 1,  phiBinsArray   .GetArray());
+        fhMCPromptPhotonEtaPhiGenAssociatedReco->SetZTitle("#varphi (rad)");
+        fhMCPromptPhotonEtaPhiGenAssociatedReco->SetYTitle("#eta");
+        fhMCPromptPhotonEtaPhiGenAssociatedReco->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhMCPromptPhotonEtaPhiGenAssociatedReco) ;
+
+        fhMCPromptPhotonEtaPhiGenConvAssociatedReco =  new TH3F
+        ("hMCPromptPhotonEtaPhiGenConvAssociatedReco",
+         "Generated prompt photon #eta vs #varphi vs #it{p}_{T} when associated to a cluster (converted)",
+         ptWideBinsArray.GetSize() - 1,  ptWideBinsArray.GetArray(),
+         etaBinsArray   .GetSize() - 1,  etaBinsArray   .GetArray(),
+         phiBinsArray   .GetSize() - 1,  phiBinsArray   .GetArray());
+        fhMCPromptPhotonEtaPhiGenConvAssociatedReco->SetZTitle("#varphi (rad)");
+        fhMCPromptPhotonEtaPhiGenConvAssociatedReco->SetYTitle("#eta");
+        fhMCPromptPhotonEtaPhiGenConvAssociatedReco->SetXTitle("#it{E} (GeV)");
+        outputContainer->Add(fhMCPromptPhotonEtaPhiGenConvAssociatedReco) ;
+
+        fhMCPromptPhotonAssociatedPtGen = new TH1F
+        ("fhMCPromptPhotonAssociatedPtGen",
+         "Prompt #gamma generated #it{p}_{T}, associated to cluster",
+         nptbins,ptmin,ptmax);
+        fhMCPromptPhotonAssociatedPtGen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonAssociatedPtGen) ;
+
+        fhMCPromptPhotonAssociatedPtGenConv = new TH1F
+        ("fhMCPromptPhotonAssociatedPtGenConv",
+         "Prompt #gamma (converted) generated #it{p}_{T}, associated to cluster",
+         nptbins,ptmin,ptmax);
+        fhMCPromptPhotonAssociatedPtGenConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonAssociatedPtGenConv) ;
+
+        fhMCPromptPhotonAssociatedPtGenInFidCut = new TH1F
+        ("fhMCPromptPhotonAssociatedPtGenInFidCut",
+         "Prompt #gamma generated #it{p}_{T}, associated to cluster, apply same fiducial cut as cluster",
+         nptbins,ptmin,ptmax);
+        fhMCPromptPhotonAssociatedPtGenInFidCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonAssociatedPtGenInFidCut) ;
+
+        fhMCPromptPhotonAssociatedPtGenConvInFidCut = new TH1F
+        ("fhMCPromptPhotonAssociatedPtGenConvInFidCut",
+         "Prompt #gamma (converted) generated #it{p}_{T}, associated to cluster, apply same fiducial cut as cluster",
+         nptbins,ptmin,ptmax);
+        fhMCPromptPhotonAssociatedPtGenConvInFidCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhMCPromptPhotonAssociatedPtGenConvInFidCut) ;
+      }
+
       if ( fFillSSNLocMaxHisto && !GetReader()->AreMCPromptPhotonsSelected() )
       {
         fhMCParticleNLM  = new TH3F
@@ -7397,6 +7496,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     Int_t   noverlaps = -1;
     Float_t egen      =  0;
     Float_t ptgen     =  0;
+    Bool_t  bConverted=  kFALSE;
     Float_t eRecoRes  = -10000;
     Bool_t conversion = kFALSE; 
     Int_t   index     = 0;
@@ -7468,6 +7568,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
           //       mcLabel,momLabel,gparentLabel,egen,fPrimaryMom.E());
           egen  = fPrimaryMom.E();
           ptgen = fPrimaryMom.Pt();
+          bConverted = kTRUE;
         }
         
         if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)        ) mcbin = 0.5;
@@ -7744,8 +7845,34 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         }
         
         if ( egen > 0.1 )
+        {
           fhMCParticleVsErecEgenDiffOverEgen[3]->Fill(fMomentum.Pt(), mcbin, eRecoRes, GetEventWeight()*weightPt);
-        fhMCParticleVsErecEgen[3]->Fill(fMomentum.Pt(), mcbin, ptgen, GetEventWeight()*weightPt);
+          fhMCParticleVsErecEgen            [3]->Fill(fMomentum.Pt(), mcbin, ptgen   , GetEventWeight()*weightPt);
+
+          if ( fFillPromptPhotonGenRecoEtaPhi && GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt) )
+          {
+            Float_t genPhi = fPrimaryMom.Phi();
+            Float_t genEta = fPrimaryMom.Eta();
+            Bool_t in = GetFiducialCut()->IsInFiducialCut(fPrimaryMom.Eta(),fPrimaryMom.Phi(),GetCalorimeter()) ;
+
+            if ( !bConverted )
+            {
+              fhMCPromptPhotonDeltaPhiRecGen->Fill(fMomentum.Pt(),fMomentum.Phi()-genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonDeltaEtaRecGen->Fill(fMomentum.Pt(),fMomentum.Eta()-genEta, GetEventWeight()*weightPt);
+              fhMCPromptPhotonEtaPhiGenAssociatedReco->Fill(fMomentum.Pt(),genEta,genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonAssociatedPtGen->Fill(ptgen, GetEventWeight()*weightPt);
+              if ( in ) fhMCPromptPhotonAssociatedPtGenInFidCut->Fill(ptgen, GetEventWeight()*weightPt);
+            }
+            else
+            {
+              fhMCPromptPhotonDeltaPhiRecGenConv->Fill(fMomentum.Pt(),fMomentum.Phi()-genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonDeltaEtaRecGenConv->Fill(fMomentum.Pt(),fMomentum.Eta()-genEta, GetEventWeight()*weightPt);
+              fhMCPromptPhotonEtaPhiGenConvAssociatedReco->Fill(fMomentum.Pt(),genEta,genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonAssociatedPtGenConv->Fill(ptgen, GetEventWeight()*weightPt);
+              if ( in ) fhMCPromptPhotonAssociatedPtGenConvInFidCut->Fill(ptgen, GetEventWeight()*weightPt);
+            }
+          }
+        }
         
 //        if (ener-egen > 4 && mcbin == 0.5)
 //        {
