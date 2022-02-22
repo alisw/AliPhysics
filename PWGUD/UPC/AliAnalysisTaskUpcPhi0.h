@@ -1,7 +1,6 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice */
 /* $Id$ */
-/* Modified by Abdennacer Hamdi */
 
 #ifndef ALIANALYSISTASKUPCPHI0_H
 #define ALIANALYSISTASKUPCPHI0_H
@@ -51,6 +50,8 @@ class AliAnalysisTaskUpcPhi0 : public AliAnalysisTaskSE {
   	// tree
   	TTree *fTree;
 	// tree variables and branches
+	static const Int_t Maxtrk = 7;
+	Int_t nTrack_T;
 	Int_t RunNum_T;
 	UShort_t BunchCrossNumber_T;
 	UInt_t OrbitNumber_T;
@@ -67,6 +68,10 @@ class AliAnalysisTaskUpcPhi0 : public AliAnalysisTaskSE {
 	Int_t V0Cdecision_T;
 	Int_t ADAdecision_T;
 	Int_t ADCdecision_T;
+	Float_t ADATime_T;
+	Float_t ADCTime_T;
+	Float_t NbPMADA_T;
+	Float_t NbPMADC_T;
 	Bool_t UBAfired_T;
 	Bool_t UBCfired_T;
 	Bool_t VBAfired_T;
@@ -75,14 +80,10 @@ class AliAnalysisTaskUpcPhi0 : public AliAnalysisTaskSE {
 	Float_t ZNCenergy_T;
 	Float_t ZPAenergy_T;
 	Float_t ZPCenergy_T;
+	Float_t ZEM1Energy_T;
+	Float_t ZEM2Energy_T;
 	Float_t ZDCAtime_T[4];
 	Float_t ZDCCtime_T[4];
-	Float_t PIDTPCPion_T[2];
-	Float_t PIDTPCKaon_T[2];
-	Float_t PIDTPCElectron_T[2];
-	Float_t PIDTPCMuon_T[2];
-	Int_t TPCsignal_T[2];
-	Float_t TrackP_T[2];
 	Float_t Vertex_T[3];
 	Int_t VtxContrib_T;
 	Float_t VtxChi2_T,VtxNDF_T;
@@ -90,17 +91,49 @@ class AliAnalysisTaskUpcPhi0 : public AliAnalysisTaskSE {
 	Int_t SpdVtxContrib_T;
 	Int_t Ntracklets_T;
 	Float_t Phi_T;
-	Float_t TrackEta_T[2];
-	Float_t TrackPhi_T[2];
-	Float_t TrackPx_T[2];
-	Float_t TrackPy_T[2];
-	Float_t TrackPz_T[2];
-	Float_t TrackPt_T[2];
 	Bool_t ChipCut_T;
 	Bool_t TriggerTOF_T;
 	Bool_t TriggerSPD_T;
-	Int_t ITSModuleInner_T[2];
-	Int_t ITSModuleOuter_T[2];
+	Float_t Lets_Theta_T[177];
+	Float_t Lets_Phi_T[177];
+	Int_t nTrig;
+  	Int_t TrigPara_T[177];
+	Float_t nBBAV0_T;
+	Float_t nBBCV0_T;
+	Float_t NbPMV0A_T;
+	Float_t NbPMV0C_T;
+	Int_t TPCsignal_T[Maxtrk];
+	Float_t PIDTPCPion_T[Maxtrk];
+	Float_t PIDTPCKaon_T[Maxtrk];
+	Float_t PIDTPCElectron_T[Maxtrk];
+	Float_t PIDTPCMuon_T[Maxtrk];
+	Int_t ITSsignal_T[Maxtrk];
+	Float_t PIDITSPion_T[Maxtrk];
+	Float_t PIDITSKaon_T[Maxtrk];
+	Float_t PIDITSElectron_T[Maxtrk];
+	Float_t PIDITSMuon_T[Maxtrk];
+	Int_t TrackQ_T[Maxtrk]; // charge of the track
+	Int_t PIDTrack_T[Maxtrk];
+	Float_t TrackP_T[Maxtrk];
+	Float_t TrackEta_T[Maxtrk];
+	Float_t TrackPhi_T[Maxtrk];
+	Float_t TrackPx_T[Maxtrk];
+	Float_t TrackPy_T[Maxtrk];
+	Float_t TrackPz_T[Maxtrk];
+	Float_t TrackPt_T[Maxtrk];
+	Int_t ITSModuleInner_T[Maxtrk];
+	Int_t ITSModuleOuter_T[Maxtrk];
+	Bool_t TPCrefit_T[Maxtrk];
+    Bool_t ITSrefit_T[Maxtrk];
+	Int_t TPCNcls_T[Maxtrk];
+	Int_t ITSNcls_T[Maxtrk];
+	Float_t TPCchi2_T[Maxtrk];
+	Float_t ITSchi2_T[Maxtrk];
+	Bool_t ITSSA_T[Maxtrk];
+	Float_t dca_0_T[Maxtrk];
+	Float_t dca_1_T[Maxtrk];
+	Bool_t HasPointOnITSLayer_0_T[Maxtrk];
+	Bool_t HasPointOnITSLayer_1_T[Maxtrk];
 
 	// MC tree
 	TTree *fMCTree;
