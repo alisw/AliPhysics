@@ -167,6 +167,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
 	fWh_phidiff(0),
+	fhad_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
@@ -357,6 +358,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
 	fWh_phidiff(0),
+	fhad_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
@@ -529,6 +531,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
         Double_t xminWh[5]={ 20,   0, -2.0,   0,   0};
         Double_t xmaxWh[5]={ 70,  60,  6.0, 0.5,   2};
 	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",5,binsWh, xminWh, xmaxWh);
+	fhad_phidiff = new THnSparseD("fhad_phidiff","pT vs. dphi differnce had",5,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
@@ -707,6 +710,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fRiso_phidiff_35);
 	fOutputList->Add(fRiso_phidiff_LS_35);
 	fOutputList->Add(fWh_phidiff);
+	fOutputList->Add(fhad_phidiff);
 	fOutputList->Add(fzvtx_Ntrkl);
 	fOutputList->Add(fzvtx_Nch);
 	fOutputList->Add(fzvtx_Ntrkl_V0);
@@ -1529,6 +1533,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                            fEop_iso->Fill(TrkPt,eop);
                           }
 
+                         // h-h correlation
+                         if(TrkPt>30.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
+
 			//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
 			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m20>CutM20[0] && m20<CutM20[1]){
 				fM02_2->Fill(TrkPt,m02);
@@ -1547,7 +1554,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
                                      //////////// ---- W-h correlation /////////////
 
-                                     if(NtrackCone<3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
+                                     if(NtrackCone<=3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
 
 				if(pid_eleP)
 				{
@@ -2209,7 +2216,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto)
+void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto, Int_t iWevt)
 {
 
 	//##################### Systematic Parameters ##################### //
@@ -2264,7 +2271,8 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		if(ptWasso <1.0) continue;
+		//if(ptWasso <1.0) continue;
+		if(ptWasso <3.0) continue;
 
 		/////////////////////////
 		// track cut
@@ -2309,8 +2317,16 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
                    {
                     Double_t valwh[5];
                     valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; valwh[3] = Riso; valwh[4] = ptWasso/TrackPt;
-                    fWh_phidiff->Fill(valwh);
-                   }
+                    if(iWevt==1)
+                      {
+                       fWh_phidiff->Fill(valwh);
+                      }
+                    else
+                      {
+                       fhad_phidiff->Fill(valwh);
+                      }
+                     }
+                   //}
 
 	}
 
