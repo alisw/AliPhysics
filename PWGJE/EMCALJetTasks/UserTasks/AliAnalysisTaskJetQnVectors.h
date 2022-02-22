@@ -32,15 +32,13 @@ public:
     enum Det{kFullTPC,kPosTPC,kNegTPC,kFullV0,kV0A,kV0C};
 
     AliAnalysisTaskJetQnVectors();
-    AliAnalysisTaskJetQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName);
+    AliAnalysisTaskJetQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName1, TString oadbFileName2);
     virtual ~AliAnalysisTaskJetQnVectors();
 
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
 
-    AliJEQnVectorHandler* GetQnVectorHandler() const                                                     {return fJEQnVecHandler;}
     TDirectoryFile*  GetSplineForqnPercentileList(int det=kFullTPC) const;
-    void SetUseAODBCalibrations(TString oadbFileName)                                                    {fOADBFileName = oadbFileName; fCalibType = AliJEQnVectorHandler::kQnCalib;}
     void SetUseQnFrameworkCalibrations()                                                                 {fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
     void SetNormalisationMethod(int normmethod)                                                          {fNormMethod = normmethod;}
     void SetTriggerInfo(TString trigClass, unsigned long long mask=0)                                    {fTriggerClass = trigClass; fTriggerMask = mask;}
@@ -75,12 +73,14 @@ private:
     bool fEnableTPCPhiVsCentrDistr;                  /// flag to enable histos of phi vs. centr
     bool fEnableQvecTPCVsCentrDistr;                 /// flag to enable histos of TPC Q-vector vs. centr
 
-    AliJEQnVectorHandler* fJEQnVecHandler;           /// Qn-vector handler
+    AliJEQnVectorHandler* fJEQnVecHandler1;           /// Qn-vector handler
+    AliJEQnVectorHandler* fJEQnVecHandler2;           /// Qn-vector handler
     int fHarmonic;                                   /// Qn-vector harmonic
     int fCalibType;                                  /// type of calibrations used by handler
     int fNormMethod;                                 /// normalisation of Q vector
 
-    TString fOADBFileName;                           /// OADB input file name
+    TString fOADBFileName1;                           /// OADB input file name
+    TString fOADBFileName2;                           /// OADB input file name
 
     TDirectoryFile* fSplineListqnPercTPC[3];         /// Splines for qn percentile calibration for TPC
     TDirectoryFile* fSplineListqnPercV0[3];          /// Splines for qn percentile calibration for V0
@@ -98,7 +98,7 @@ private:
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 6);
+    ClassDef(AliAnalysisTaskJetQnVectors, 7);
 };
 
 #endif

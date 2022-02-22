@@ -6,15 +6,10 @@
 //*************************************************************************************
 // \class AliJEQnVectorHandler
 // \brief helper class to handle the Qn-vectors computed with different calibrations
+// \adapted from HF task
 // \authors:
-// F. Grosa, fabrizio.grosa@cern.ch
-// F. Catalano, fabio.catalano@cern.ch
-// A. Dobrin, alexandru.dobrin@cern.ch
-// A. Festanti, andrea.festanti@cern.ch
-// G. Luparello, grazia.luparello@cern.ch
-// F. Prino, prino@to.infn.it
-// A. Rossi, andrea.rossi@cern.ch
-// S. Trogolo, stefano.trogolo@cern.ch
+// C. Beattie, caitlin.beattie@cern.ch
+// M. Sas, mike.sas@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <TGrid.h>
