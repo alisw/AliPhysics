@@ -26,6 +26,8 @@ AliFemtoESDTrackCut()
     fUseTOFMassCut = 0; 
     TOFMassLowLimit = 0.;
     TOFMassUpLimit = 10.;
+
+    fUsePtCut = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -51,6 +53,7 @@ AliFemtoESDTrackCut(aCut)
     TOFMassLowLimit = aCut.TOFMassLowLimit;
     TOFMassUpLimit = aCut.TOFMassUpLimit;
 
+    fUsePtCut = aCut.fUsePtCut;
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -86,6 +89,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     TOFMassLowLimit = aCut.TOFMassLowLimit;
     TOFMassUpLimit = aCut.TOFMassUpLimit;
 
+    fUsePtCut = aCut.fUsePtCut;
     return *this;
 }
 
@@ -184,7 +188,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     float tRapidity = 0.;
     float tPt = 0.;
     float tEta = 0.;
-
+    float tTotalP = 0.;
     if(fMostProbable == 15){
         TLorentzVector thisTrackMom;
         tEnergy = ::sqrt(track->P().Mag2() * 4. + fMass * fMass);
@@ -193,6 +197,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
             //tRapidity = 0.5 * ::log((tEnergy + 2. * track->P().z())/(tEnergy- 2. * track->P().z()));
             tRapidity = thisTrackMom.Rapidity();
         tPt = thisTrackMom.Pt();
+        tTotalP = thisTrackMom.P();
         tEta = thisTrackMom.PseudoRapidity();
     }
     else{
@@ -200,6 +205,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
         if (tEnergy-track->P().z() != 0 && (tEnergy + track->P().z()) / (tEnergy-track->P().z()) > 0)
             tRapidity = 0.5 * ::log((tEnergy + track->P().z())/(tEnergy-track->P().z()));
         tPt = track->P().Perp();
+	tTotalP = track->P().Mag();
         tEta = track->P().PseudoRapidity();
     }
 
@@ -219,9 +225,19 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
         fNTracksFailed++;
         return false;
     }
-    if ((tPt < fPt[0]) || (tPt > fPt[1])) {
-        fNTracksFailed++;
-        return false;
+
+    // dowang 2.22
+    if(fUsePtCut){
+	    if ((tPt < fPt[0]) || (tPt > fPt[1])) {
+		fNTracksFailed++;
+		return false;
+	    }
+    }
+    else{
+	    if ((tTotalP < fPt[0]) || (tTotalP > fPt[1])) {
+		fNTracksFailed++;
+		return false;
+	    }
     }
 
 
@@ -562,4 +578,7 @@ float AliFemtoTrackCutPdtHe3::ReturnTOFMass(const AliFemtoTrack* track){
 	
 	return massTOF;
 
+}
+void AliFemtoTrackCutPdtHe3::SetfUsePtCut(int aUsePtCut){
+	fUsePtCut = aUsePtCut;
 }
