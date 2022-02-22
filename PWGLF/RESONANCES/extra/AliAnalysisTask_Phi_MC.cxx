@@ -166,6 +166,8 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
     //>-> Starting Mandatory Checks
     //>->____________________________________________________________________//
     //
+    fMCD = MCEvent();
+    //
     // Check the event is there
     if ( !MCEvent() )  {
         uFillEventEnumerate("fAOD-fMCD");
@@ -192,7 +194,6 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
 
 bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           {
     //
-    /*
     fCurrent_E08 = 0;
     fCurrent_E10 = 0;
     fCurrent_V0A = 0;
@@ -208,7 +209,7 @@ bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           
         if ( !fCurrent_Particle )                           continue;
         if ( !fCurrent_Particle->GetPDG())                  continue;
         if (  fCurrent_Particle->GetPDG()->Charge() == 0 )  continue;
-        //if ( !fMCD->IsPhysicalPrimary( iTrack ) )           continue;
+        if ( !fMCD->IsPhysicalPrimary( iTrack ) )           continue;
         //
         //  --- #eta 0.8
         if (  fabs( fCurrent_Particle->Eta() ) < 0.8 )  fCurrent_E08++;
@@ -228,7 +229,6 @@ bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           
     fQC_Event_Enum_V0A  ->  Fill( fCurrent_V0A );
     fQC_Event_Enum_V0M  ->  Fill( fCurrent_V0M );
     //
-     */
     return true;
 }
 
