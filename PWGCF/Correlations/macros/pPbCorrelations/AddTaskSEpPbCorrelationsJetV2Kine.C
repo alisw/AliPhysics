@@ -1,4 +1,4 @@
-AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA", TString sCen = "0_10")
+AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TString sMode = "TPCTPCFMDA", TString sNameList = "0_10")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -32,11 +32,11 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   TFile *file = TFile::Open("alien:///alice/cern.ch/user/s/sitang/AMPT_Centrality_Calibration/Centrality.root");
 
 //  TFile *file = TFile::Open("./Centrality/Centrality.root");
-  TH1D *h_Charge  = (TH1D*)file->Get("hChargeV0A"); h_Charge->SetDirectory(0);
+  TH1D *h_Charge  = (TH1D*)file->Get("hChargeV0A"); h_Charge->SetName(Form("hChargeV0A_%s_%s",sMode.Data(),sNameList.Data())); h_Charge->SetDirectory(0);
   file->Close();
 
   // create input container
-  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("h_centrality",
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer(Form("h_centrality_%s_%s",sMode.Data(), sNameList.Data()),
                                     TH1D::Class(),
                                     AliAnalysisManager::kInputContainer);
   cinput1->SetData(h_Charge);
@@ -44,7 +44,7 @@ AliAnalysisTaskSEpPbCorrelationsJetV2Kine *AddTaskSEpPbCorrelationsJetV2Kine(TSt
   mgr->AddTask(task);
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectInput(task, 1, cinput1);
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("listKineAmpt_%s_%s",sMode.Data(), sCen.Data()),
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("listKineAmpt_%s_%s",sMode.Data(), sNameList.Data()),
                                                    TList::Class(),
                                                    AliAnalysisManager::kOutputContainer,
                                                    AliAnalysisManager::GetCommonFileName()));
