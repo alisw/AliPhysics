@@ -3011,7 +3011,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
               deltaetaMin = abs(iPart1->GetEta().at(0)-iPart3->GetEta().at(0));
               deltaphiMin = abs(iPart1->GetPhi().at(0)-iPart3->GetPhi().at(0));
               deltaDeta = abs(iPart3->GetEta().at(0) - iPart2->GetEta().at(0));
-              deltaPhi = abs(iPart3->GetEta().at(0) - iPart2->GetPhi().at(0));
+              deltaPhi = abs(iPart3->GetPhi().at(0) - iPart2->GetPhi().at(0));
             }else{
               thetaMin = theta23;
               thetaMax = theta31;
