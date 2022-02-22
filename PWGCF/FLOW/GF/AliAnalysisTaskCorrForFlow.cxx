@@ -65,7 +65,8 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow() : AliAnalysisTaskSE(),
     fCutDCAz(0.),
     fCutDCAxySigma(0.),
     fCutTPCchi2pCl(0.),
-    fTPCclMin(70.)
+    fTPCclMin(70.),
+    fEtaPolarity(0)
 
 {}
 //_____________________________________________________________________________
@@ -115,7 +116,8 @@ AliAnalysisTaskCorrForFlow::AliAnalysisTaskCorrForFlow(const char* name, Bool_t 
     fCutDCAz(0.),
     fCutDCAxySigma(0.),
     fCutTPCchi2pCl(0.),
-    fTPCclMin(70.)
+    fTPCclMin(70.),
+    fEtaPolarity(0)
 {
     DefineInput(0, TChain::Class());
     if(bUseEff) { DefineInput(1, TList::Class()); }
@@ -147,6 +149,7 @@ void AliAnalysisTaskCorrForFlow::UserCreateOutputObjects()
     //
     fhTrigTracks = new TH3D("fhTrigTracks", "fhTrigTracks; pT (trig); PVz; sample", fPtBinsTrigCharged.size() - 1, fPtBinsTrigCharged.data(), fzVtxBins.size()-1, fzVtxBins.data(), fsampleBins.size()-1, fsampleBins.data());
     fOutputListCharged->Add(fhTrigTracks);
+
     //
     // //mixing
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins, fCentBins.data(), fNzVtxBins, fzVtxBins.data());
@@ -233,10 +236,20 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
         if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
           fTracksAss->Add((AliAODTrack*)track);
           fNofTracks++;
-        }
+     }
         if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
-          fTracksTrigCharged->Add((AliAODTrack*)track);
-          fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          if(fEtaPolarity == 0){
+               fTracksTrigCharged->Add((AliAODTrack*)track);
+               fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          }
+          else if(fEtaPolarity == -1 && track->Eta() < 0){
+               fTracksTrigCharged->Add((AliAODTrack*)track);
+               fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          }
+          else if(fEtaPolarity == 1 && track->Eta() > 0){
+               fTracksTrigCharged->Add((AliAODTrack*)track);
+               fhTrigTracks->Fill(trackPt, fPVz, fSampleIndex);
+          }
         }
 
         //example histogram
