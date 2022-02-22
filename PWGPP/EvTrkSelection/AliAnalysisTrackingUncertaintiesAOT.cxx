@@ -82,6 +82,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fHistMC(0x0),
   fHistMCTPConly(0x0),
   fHistMCWeights(0x0),
+  fHistVtxResT(0x0),
+  fHistVtxResZ(0x0),
+  fHistVtxZpos(0x0),
+  fHistVtxChi2(0x0),
   fHistData(0x0),
   fHistAllV0multNTPCout(0),
   fHistSelV0multNTPCout(0),
@@ -139,6 +143,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fHistMC(0x0),
   fHistMCTPConly(0x0),
   fHistMCWeights(0x0),
+  fHistVtxResT(0x0),
+  fHistVtxResZ(0x0),
+  fHistVtxZpos(0x0),
+  fHistVtxChi2(0x0),
   fHistData(0x0),
   fHistAllV0multNTPCout(0),
   fHistSelV0multNTPCout(0),
@@ -191,6 +199,10 @@ AliAnalysisTrackingUncertaintiesAOT::~AliAnalysisTrackingUncertaintiesAOT()
     delete fHistMC;
     delete fHistMCTPConly;
     delete fHistMCWeights;
+    delete fHistVtxResT;
+    delete fHistVtxResZ;
+    delete fHistVtxZpos;
+    delete fHistVtxChi2;
     delete fHistData;
 
     delete fHistAllV0multNTPCout;
@@ -320,10 +332,10 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   if(fMC) {
     if(fDCAz){
       const Int_t nvars = 14;
-      Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,    2, 80, 80, 40, 50};
-      if(fmakefinerpTbin)   nBins[2]*=2;
-      Double_t xmin[nvars] = {-3., -3.2,  0.5,  0.5, 0.  , -fMaxEta, -0.5, -2., -0.5, -0.5, 0.,  0. ,  0., -15. };
-      Double_t xmax[nvars] = { 3.,  3.2, 15.0, 15,   6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5, 0.001, 0.002,  5.,  15. };
+      Int_t nBins[nvars]   = {600,   64,   29, 29,  18,   nEtaBins,    3,  2,    5,    2,   80,    60,     30,   50 };
+      if(fmakefinerpTbin)   nBins[2]*=2;						                              
+      Double_t xmin[nvars] = {-3., -3.2,  0.5,  0.5, 0.  , -fMaxEta, -0.5, -2., -0.5, -0.5,  0.,    0.,     0., -12.};
+      Double_t xmax[nvars] = { 3.,  3.2, 15.0, 15,   6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5,  0.008, 0.012, 15.,  12.};
       TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc",
 			      "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
       fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
@@ -335,10 +347,10 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     }
     else{
       const Int_t nvars = 12;
-      Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2, 80, 80, 40, 50};
-      if(fmakefinerpTbin)   nBins[1]*=2;
-      Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5, 0., 0., 0., -15.};
-      Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5, 0.001, 0.002, 5., 15.};
+      Int_t nBins[nvars]   = {600,   29,  18,   nEtaBins,    3,  2,    5,    2,   80,    60,     30,   50 };
+      if(fmakefinerpTbin)   nBins[1]*=2;					                            
+      Double_t xmin[nvars] = {-3.,   0.5,  0.,   -fMaxEta, -0.5, -2., -0.5, -0.5,  0.,    0.,     0., -12.};
+      Double_t xmax[nvars] = {3.,   15.0,  6.28,  fMaxEta,  2.5,  2.,  4.5,  1.5,  0.008, 0.012, 15.,  12.};
       TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc",
 			      "VresT", "VresZ", "Vchi2ndf","VtxZ"};
       fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
@@ -348,6 +360,21 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
         fHistMCTPConly->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
       }
     }
+    fListHist->Add(fHistMC);
+    fListHist->Add(fHistMCTPConly);
+    //
+    // store the distribution of vtx axes added to the thnsparse
+    fHistVtxResT=new TH1F("fHistVtxResT","fHistVtxResT",80,  0.0,0.008);
+    fHistVtxResZ=new TH1F("fHistVtxResZ","fHistVtxResZ",60,  0.0,0.012);
+    fHistVtxChi2=new TH1F("fHistVtxChi2","fHistVtxChi2",30,  0.0,15.00);
+    fHistVtxZpos=new TH1F("fHistVtxZpos","fHistVtxZpos",50,-12.0,12.00);
+    //
+    fListHist->Add(fHistVtxResT);
+    fListHist->Add(fHistVtxResZ);
+    fListHist->Add(fHistVtxChi2);
+    fListHist->Add(fHistVtxZpos);
+    //
+    //
     fHistMCWeights=new TH2F("fHistMCWeights","fHistMCWeights",300,0.0,3.0,6,0.5,6.5);
     fHistMCWeights->GetYaxis()->SetBinLabel(1,"pions");
     fHistMCWeights->GetYaxis()->SetBinLabel(2,"kaons");
@@ -356,27 +383,25 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     fHistMCWeights->GetYaxis()->SetBinLabel(5,"Lambda");
     fHistMCWeights->GetYaxis()->SetBinLabel(6,"Other");
     //
-    fListHist->Add(fHistMC);
-    fListHist->Add(fHistMCTPConly);
     fListHist->Add(fHistMCWeights);
   }
   else {
     if(fDCAz){
       const Int_t nvars = 10;
-      Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,    2, 80, 80, 40, 50};
-      if(fmakefinerpTbin)   nBins[2]*=2;
-      Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5, 0. ,   0. ,  0., -15.};
-      Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5, 0.001, 0.002, 5.,  15.};
+      Int_t nBins[nvars]   = {600,   64,    29,    18,  nEtaBins,    2,  80,    60,     30,   50 };
+      if(fmakefinerpTbin)   nBins[2]*=2;				                           
+      Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5,   0.,    0.,     0., -12.};
+      Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5,   0.008, 0.012, 15.,  12.};
       TString axis[nvars]  = {"DCAxy", "DCAz", "track p_{T}", "phi", "eta", "TOFbc", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
       fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
       for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
     }
     else{
       const Int_t nvars = 9;
-      Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2, 80, 80, 40, 50};
-      if(fmakefinerpTbin)   nBins[1]*=2;
-      Double_t xmin[nvars] = {-3.,   0.5,    0.,   -fMaxEta, -0.5, 0., 0., 0.,   -15.};
-      Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5, .001, .002, 5., 15.};
+      Int_t nBins[nvars]   = {600,   29,    18,  nEtaBins,    2,   80,    60,     30,   50 };
+      if(fmakefinerpTbin)   nBins[1]*=2;			                             
+      Double_t xmin[nvars] = {-3.,   0.5,    0.,   -fMaxEta, -0.5,  0.,    0.,     0., -12.};
+      Double_t xmax[nvars] = {3.,    15.0,  6.28,   fMaxEta,  1.5,  0.008, 0.012, 15.,  12.};
       TString axis[nvars]  = {"DCAxy","track p_{T}","phi","eta","TOFbc", "VresT", "VresZ", "Vchi2ndf", "VtxZ"};
       fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
       for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
@@ -650,7 +675,15 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
   Float_t VresT=TMath::Sqrt(fVertex->GetXRes()*fVertex->GetXRes()+fVertex->GetYRes()*fVertex->GetYRes());
   Float_t VresZ=fVertex->GetZRes();
   Float_t Vchi2ndf=fVertex->GetChi2toNDF();
-
+  
+  //
+  //  vtx variables (which are per-event...) variables are filled here
+  //
+  fHistVtxResT->Fill();
+  fHistVtxResZ->Fill();
+  fHistVtxChi2->Fill();
+  fHistVtxZpos->Fill();
+  
   //
   //  start loop on tracks
   //
