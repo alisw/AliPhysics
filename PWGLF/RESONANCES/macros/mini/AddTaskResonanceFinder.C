@@ -3520,7 +3520,7 @@ Bool_t Config_k0Sigmastar(
         
         if(!pairID) out->SetPairCuts(cutsPairSame);
         else out->SetPairCuts(cutsPairMix);
-        out->SetMotherPDG(3124);
+        out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
         
         if(k<=7){
@@ -9362,7 +9362,7 @@ Bool_t Config_KstarxLambda(
         
         if(k!=1) out->SetPairCuts(cutsPairSame);
         else out->SetPairCuts(cutsPairMix);
-        out->SetMotherPDG(3124);
+        out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
         
         if(k<=6){
