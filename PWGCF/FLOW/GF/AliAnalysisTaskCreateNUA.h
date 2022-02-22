@@ -28,6 +28,7 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
 		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
 		virtual void   SetUseHM(Bool_t useHM){fUseHM = useHM;}
 		virtual void   SetUseCuts(Bool_t useCuts){fUseCuts = useCuts;}
+		virtual void   SetPbPbDataset(Bool_t usePbPb){fPbPb = usePbPb;}
 
     private:
         AliAODEvent*            fAOD;           //! input event
@@ -36,6 +37,7 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
         std::vector<int>        RunNumber_LHC16;//!
         std::vector<int>        RunNumber_LHC17;//!
         std::vector<int>        RunNumber_LHC18;//!
+        std::vector<int>        RunNumber_LHC15;//!
         Int_t                   Last_RunNumer;  //!
         Int_t                   Last_Position;  //!
 
@@ -44,6 +46,7 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
         Bool_t                  fIsMC;          //
         Bool_t                  fUseHM;         // if use High Multiplicity Trigger
         Bool_t                  fUseCuts;       // if use Cuts in code
+        Bool_t                  fPbPb;          // if use Pb-Pb dataset
 
         //Standard Cuts and Systematics
         AliEventCuts	fEventCuts;					// Event cuts
