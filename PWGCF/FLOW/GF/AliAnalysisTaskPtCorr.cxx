@@ -64,6 +64,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fNbootstrap(10),
     fUseWeightsOne(false),
     mpar(6),
+    fEventWeight(PtSpace::kWmaxperm),
     fV0MMulti(0),
     fptcorr(0),
     fptcorrP(0),
@@ -72,6 +73,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fck(0),
     fskew(0),
     fkur(0),
+    f5(0),
+    f6(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -105,6 +108,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fNbootstrap(10),
     fUseWeightsOne(false),
     mpar(6),
+    fEventWeight(PtSpace::kWmaxperm),
     fV0MMulti(0),
     fptcorr(0),
     fptcorrP(0),
@@ -113,6 +117,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fck(0),
     fskew(0),
     fkur(0),
+    f5(0),
+    f6(0),
     fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
     fOnTheFly(false),
     fImpactParameter(0)
@@ -206,11 +212,20 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     pfmpt = new AliProfileBS("meanpt","meanpt",fNMultiBins,fMultiBins);
     fCorrList->Add(pfmpt);
     fck = new AliPtContainer("ckcont","ckcont",fNMultiBins,fMultiBins,2);
+    fck->SetEventWeight(fEventWeight);
     fskew = new AliPtContainer("skewcont","skewcont",fNMultiBins,fMultiBins,3);
+    fskew->SetEventWeight(fEventWeight);
     fkur = new AliPtContainer("kurcont","kurcont",fNMultiBins,fMultiBins,4);
+    fkur->SetEventWeight(fEventWeight);
+    f5 = new AliPtContainer("p5cont","p5cont",fNMultiBins,fMultiBins,5);
+    f5->SetEventWeight(fEventWeight);
+    f6 = new AliPtContainer("p6cont","p6cont",fNMultiBins,fMultiBins,6);
+    f6->SetEventWeight(fEventWeight);
     fCorrList->Add(fck);
     fCorrList->Add(fskew);
     fCorrList->Add(fkur);
+    fCorrList->Add(f5);
+    fCorrList->Add(f6);
     if(fNbootstrap) {
       for(int i(0);i<mpar;++i) fptcorr[i]->InitializeSubsamples(fNbootstrap);  
       if(fEtaGap >= 0) for(int i(0);i<mpar;++i) { fptcorrP[i]->InitializeSubsamples(fNbootstrap); fptcorrN[i]->InitializeSubsamples(fNbootstrap); }
@@ -218,6 +233,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
       fck->InitializeSubsamples(fNbootstrap);
       fskew->InitializeSubsamples(fNbootstrap);
       fkur->InitializeSubsamples(fNbootstrap);
+      f5->InitializeSubsamples(fNbootstrap);
+      f6->InitializeSubsamples(fNbootstrap);
     }
     fCorrList->Add(fV0MMulti);
     PostData(1,fCorrList);
@@ -444,7 +461,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
           double l_pt = track->Pt();
           double wNUE = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(l_pt));
           if(wNUE==0.0) continue;
-          wNUE = 1.0/wNUE;
+          wNUE = (fUseWeightsOne)?1.0:1.0/wNUE;
           if(TMath::Abs(l_eta)>0.8) continue;
           if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,wNUE,l_pt);
           if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,wNUE,l_pt);
@@ -454,13 +471,19 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
     if(wp[1][0]==0) return;
     fV0MMulti->Fill(l_cent);
     double l_rnd = fRndm->Rndm();
-    pfmpt->FillProfile(l_cent,wp[1][1]/wp[1][0],wp[1][0],l_rnd);
+    double wpt = wp[1][0];
+
+    pfmpt->FillProfile(l_cent,wp[1][1]/wpt,wpt,l_rnd);    
+    FillMomentumCorrelation(wp,wpP,wpN,l_cent,l_rnd);
     //Test with explicit ck calculation
     fck->FillObs(wp,l_cent,l_rnd);
+    fck->FillRecursive(wp,l_cent,l_rnd);
     fskew->FillObs(wp,l_cent,l_rnd);
-    fkur->FillObs(wp,l_cent,l_rnd);
-    FillMomentumCorrelation(wp,wpP,wpN,l_cent,l_rnd);
-
+    fskew->FillRecursive(wp,l_cent,l_rnd);
+    fskew->FillObs(wp,l_cent,l_rnd);
+    fskew->FillRecursive(wp,l_cent,l_rnd);
+    f5->FillRecursive(wp,l_cent,l_rnd);
+    f6->FillRecursive(wp,l_cent,l_rnd);
     PostData(1,fCorrList);
 }
 void AliAnalysisTaskPtCorr::FillMomentumCorrelation(double wp[10][10], double wpP[10][10], double wpN[10][10], const double &l_cent, double &rn)
