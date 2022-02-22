@@ -96,6 +96,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fAddTPCPileupCuts(false),
     fUseCorrectedNTracks(false),
     fUseFlippedEta(false),
+    fUseNarrowBin(false),
     fEtaGap3Sub(0.4),
 
     fListOfObjects(0),
@@ -209,6 +210,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fAddTPCPileupCuts(false),
   fUseCorrectedNTracks(false),
   fUseFlippedEta(false),
+  fUseNarrowBin(false),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -350,6 +352,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fAddTPCPileupCuts(false),
   fUseCorrectedNTracks(false),
   fUseFlippedEta(false),
+  fUseNarrowBin(false),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -509,13 +512,18 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   }
 
   if (fNtrksName == "Mult") {
-    nn = 200 + 56;
-    // 56 = (3000-200)/50
-    for (int i = 0; i <= 200; i++) {
-      xbins[i] = i + 0.5;
-    }
-    for (int i = 1; i <= 56; i++) {
-      xbins[200+i] = 50*i + 200 + 0.5;
+    if (!fUseNarrowBin) {
+       nn = 200 + 56;
+       // 56 = (3000-200)/50
+       for (int i = 0; i <= 200; i++) {
+         xbins[i] = i + 0.5;
+       }
+       for (int i = 1; i <= 56; i++) {
+         xbins[200+i] = 50*i + 200 + 0.5;
+       } 
+    } else {
+       nn = 3000;
+       for (int i = 0; i <= 3000; i++) xbins[i] = i;  
     }
   } else {
     nn = 10;
