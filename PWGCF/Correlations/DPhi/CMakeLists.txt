@@ -31,7 +31,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2
-		    ${AliPhysics_SOURCE_DIR}/EVENTMIX
   )
 
 # Sources - alphabetical order
@@ -52,7 +51,6 @@ set(SRCS
     AliAnalysisTaskHadronPhiCorr.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
-    AliAnalysisTaskLongFluctuations2PC.cxx
     AliAnalysisTaskMinijet.cxx
     AliAnalysisTaskMinijetV2.cxx
     AliAnalysisTaskPhiCorrelations.cxx
@@ -65,23 +63,11 @@ set(SRCS
     AliAnalysisTaskPythiaMpi.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
-    AliAnalysisTaskR2P2.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
-    AliAnalysisTaskSEpPbCorrelationsMCYS.cxx
-    AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
-    AliTrigAssoPairST.cxx
-    AliAnalysisTaskSEpPbCorrelationsJetV2.cxx
-    AliAnalysisTaskSEpPbCorrelationsJetV2Kine.cxx
-    AliAnalysisTaskSEPbPbCorrelationsJetV2.cxx
     AliAnaTaskMomScan.cxx
     AliAnalysisTaskTwoPlusOne.cxx
     AliDptDptInMC.cxx
     AliLeadingV0Correlation.cxx
-    AliAnalysisTaskV0ChCorrelation.cxx
-    AliAnalysisTaskV0ChCorrelationpp.cxx
-    AliAnalysisTaskV0ChCorrelationppsys.cxx
-    AliAnalysisTaskV0ChCorrelationsys.cxx
-    AliAnalysisTaskLambdaK0s.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx
     AliAnalysisTaskEPCorrPP.cxx
@@ -90,7 +76,7 @@ set(SRCS
     AliAnalysisTaskPIDBFDptDpt.cxx
     AliAnalysisTaskGeneralBF.cxx
     AliCorrelationAnalysis.cxx
-    AliEPDependentDiHadronOnTheFlyMCTask.cxx
+    AliAnalysisTaskR2P2multClass.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
     DiHadronPID/AliAODEventCutsDiHadronPID.cxx
@@ -119,8 +105,6 @@ set(SRCS
     Unfoldedhistos/AliCSTrackMaps.cxx
     Unfoldedhistos/AliCSTrackSelection.cxx
     Unfoldedhistos/AliDptDptCorrelations.cxx
-    Unfoldedhistos/Ali2PCorrelations.cxx
-    Unfoldedhistos/AliTwoParticleCorrelationsBase.cxx
    )
 
 # Headers from sources
@@ -132,7 +116,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB PWGDevNanoAOD EventMixing)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW PWGmuon PWGCFCorrelationsBase PWGJETFW OADB PWGDevNanoAOD)
 
 # Generate the ROOT map
 # Dependecies
@@ -184,4 +168,3 @@ set(LIBDEPS )
 
 # Macros
 install(FILES MuonHadron/AddAnalysisTaskMuonHadronCorrelations.C DESTINATION PWGCF/Correlations/DPhi/MuonHadron/)
-
