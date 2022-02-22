@@ -33,7 +33,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone);
 
 		virtual void            IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone);
-		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
+		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto, Int_t iWevt);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta);
@@ -191,6 +191,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
 		THnSparseD*             fWh_phidiff;
+		THnSparseD*             fhad_phidiff;
 		THnSparseD*             fIsoArray;      
 		THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;
