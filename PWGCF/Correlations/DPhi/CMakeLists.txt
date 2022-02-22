@@ -66,6 +66,7 @@ set(SRCS
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskR2P2.cxx
+    AliAnalysisTaskR2P2multClass.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
