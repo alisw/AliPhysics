@@ -4442,7 +4442,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00015113","24466190sa01cc70000","0163103100000010"); //cc7:   maxM02 == 1.3
     cuts.AddCutCalo("00015113","24466190sa01cc80000","0163103100000010"); //cc8:   maxM02 == 2.5
 
-///////////////////////////////////  50-104%
+///////////////////////////////////  50-100%
   } else if (trainConfig == 4300){ //
     cuts.AddCutCalo("n5a15113","24466190sa01cc00000","0163103100000010");
   } else if (trainConfig == 4301){ // track matching variation std a == pt dependent
