@@ -122,6 +122,10 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
     //  --- --- Allocating tree and setting branches
     tParticle_0333      =   new TTree   ( Form( "PhiCandidate_%s", fRunName.Data() ), "Data Tree for Phi Candidates" );
     tParticle_0333      ->  Branch      ( "n0333",      &fTNParticle_0333,      "fTNParticle_0333/I");
+    tParticle_0333      ->  Branch      ( "E10",        &fCurrent_E10,          "fCurrent_E10/F" );
+    tParticle_0333      ->  Branch      ( "E05",        &fCurrent_E08,          "fCurrent_E08/F" );
+    tParticle_0333      ->  Branch      ( "V0A",        &fCurrent_V0A,          "fCurrent_V0A/F" );
+    tParticle_0333      ->  Branch      ( "V0M",        &fCurrent_V0M,          "fCurrent_V0M/F" );
     tParticle_0333      ->  Branch      ( "Px",         &fTPx,                  "fTPx[fTNParticle_0333]/F" );
     tParticle_0333      ->  Branch      ( "Py",         &fTPy,                  "fTPy[fTNParticle_0333]/F" );
     tParticle_0333      ->  Branch      ( "Pz",         &fTPz,                  "fTPz[fTNParticle_0333]/F" );
@@ -142,7 +146,7 @@ void        AliAnalysisTask_Phi_MC::UserExec( Option_t* )                      {
         //
         //  Check it is a requested particle
         if ( !fCurrent_Particle )                       continue;
-        if (  fCurrent_Particle->GetPdgCode() == 333 )  continue;
+        if (  fCurrent_Particle->GetPdgCode() != 333 )  continue;
         //
         //  --- Save Kinematics
         fTPx[fTNParticle_0333]  =   fCurrent_Particle->Px();
@@ -186,6 +190,10 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
     //
     //  --- Zero all counters
     fTNParticle_0333    = 0;
+    fCurrent_E08        = 0;
+    fCurrent_E10        = 0;
+    fCurrent_V0A        = 0;
+    fCurrent_V0M        = 0;
     //
     return true;
 }
@@ -193,11 +201,6 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
 //_____________________________________________________________________________
 
 bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           {
-    //
-    fCurrent_E08 = 0;
-    fCurrent_E10 = 0;
-    fCurrent_V0A = 0;
-    fCurrent_V0M = 0;
     //
     //  --- Loop on MC particles
     for ( Int_t iTrack = 0; iTrack < fMCD->GetNumberOfTracks(); iTrack++ )    {
