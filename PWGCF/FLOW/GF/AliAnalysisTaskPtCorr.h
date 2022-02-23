@@ -52,8 +52,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
   private:
     AliAnalysisTaskPtCorr(const AliAnalysisTaskPtCorr&);
     AliAnalysisTaskPtCorr& operator=(const AliAnalysisTaskPtCorr&);
-    static double           fFactorial[9];
-    static int              fSign[9];
     TString*                fCentEst;
     int                     fRunNo; //!
     int                     fSystFlag;
@@ -82,15 +80,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     int                     mpar;
     unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!
-    AliProfileBS**          fptcorr;     //!
-    AliProfileBS**          fptcorrP;     //!
-    AliProfileBS**          fptcorrN;     //!
     AliProfileBS*           pfmpt;      //!
     AliPtContainer*         fck;      //!
     AliPtContainer*         fskew;      //!
     AliPtContainer*         fkur;      //!
-    AliPtContainer*         f5;      //!
-    AliPtContainer*         f6;      //!
+    AliPtContainer*         fp5;      //!
+    AliPtContainer*         fp6;      //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
@@ -104,12 +99,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double getCentrality();
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
     void FillWPCounter(double inarr[10][10], double w, double p);
-    void FillMomentumCorrelation(double wp[10][10], double wpP[10][10], double wpN[10][10], const double &l_cent, double &rn);
-    void CalculateSingleEvent(vector<double> &corr, vector<double> &sumw, double wp[10][10]);
-    void CalculateSubEvent(vector<double> &corrP, vector<double> &sumwP, vector<double> &corrN, vector<double> &sumwN, double wpP[10][10], double wpN[10][10]);
-    void FillCorrelationProfile(const vector<double> &corr, const vector<double> &sumw, const double &l_cent, double &rn);
-    void FillSubEventProfile(const vector<double> &corrP,const vector<double> &sumwP,const vector<double> &corrN, const vector<double> &sumwN, const double &l_cent, double &rn);
-    double OrderedAddition(std::vector<double> vec, int size);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);
