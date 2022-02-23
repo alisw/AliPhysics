@@ -2040,8 +2040,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
         }
     } else {
 	std::string period = ReturnPPperiodMC(fAOD->GetRunNumber());
-        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("%s_ch_Eta_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
-        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("%s_ch_Eta_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
+        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC%s_ch_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
+        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC%s_ch_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
         if(!fPtWeightsSystematics)
         {
             printf("pp: PtWeights could not be found in list!\n");
