@@ -108,7 +108,7 @@ AliRDHFCuts(name),
 	fSigmaElectronTOFMax(9999.),
 	fConversionMassMax(-1.),
 	fEleXiMassMax(2.5),
-    fEleXiMassMin(0)
+    fEleXiMassMin(1.3)
   
 {
   //
