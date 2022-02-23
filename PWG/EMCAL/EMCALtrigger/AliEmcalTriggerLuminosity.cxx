@@ -217,7 +217,7 @@ void AliEmcalTriggerLuminosity::evaluatePP13TeV() {
     fEffectiveDownscaling["EG1"] = getEffectiveDownscaling(corrhist, "EG1", "EG1");
     fEffectiveDownscaling["EG2"] = getEffectiveDownscaling(corrhist, "EG2", "EG1");
     fEffectiveDownscaling["EJ1"] = getEffectiveDownscaling(corrhist, "EJ1", "EJ1");
-    fEffectiveDownscaling["EJ2"] = getEffectiveDownscaling(corrhist, "EJ2", "EJ2");
+    fEffectiveDownscaling["EJ2"] = getEffectiveDownscaling(corrhist, "EJ2", "EJ1");
     fEffectiveDownscaling["DMC7"] = getEffectiveDownscaling(corrhist, "DMC7", "DG1");
     fEffectiveDownscaling["DG1"] = getEffectiveDownscaling(corrhist, "DG1", "DG1");
     fEffectiveDownscaling["DG2"] = getEffectiveDownscaling(corrhist, "DG2", "DG1");
@@ -285,7 +285,7 @@ void AliEmcalTriggerLuminosity::evaluatePPB8TeV() {
     fEffectiveDownscaling["EG1"] = getEffectiveDownscaling(corrhist, "EG1", "EG1");
     fEffectiveDownscaling["EG2"] = getEffectiveDownscaling(corrhist, "EG2", "EG1");
     fEffectiveDownscaling["EJ1"] = getEffectiveDownscaling(corrhist, "EJ1", "EJ1");
-    fEffectiveDownscaling["EJ2"] = getEffectiveDownscaling(corrhist, "EJ2", "EJ2");
+    fEffectiveDownscaling["EJ2"] = getEffectiveDownscaling(corrhist, "EJ2", "EJ1");
     fEffectiveDownscaling["DMC7"] = getEffectiveDownscaling(corrhist, "DMC7", "DG1");
     fEffectiveDownscaling["DG1"] = getEffectiveDownscaling(corrhist, "DG1", "DG1");
     fEffectiveDownscaling["DG2"] = getEffectiveDownscaling(corrhist, "DG2", "DG1");
