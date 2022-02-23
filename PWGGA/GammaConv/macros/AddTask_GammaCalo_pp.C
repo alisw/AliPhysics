@@ -4562,7 +4562,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("m0115113","24466190s401cc00000","0163103100000010"); //4
     cuts.AddCutCalo("m0115113","24466190s501cc00000","0163103100000010"); //5
     cuts.AddCutCalo("m0115113","24466190s601cc00000","0163103100000010"); //6
-  } else if (trainConfig == 4202){ // min nCells & M02 variation, std cc
+  } else if (trainConfig == 4402){ // min nCells & M02 variation, std cc
     cuts.AddCutCalo("m0115113","24466190sa012200000","0163103100000010"); //220:   min nCells = 2, all E
     cuts.AddCutCalo("m0115113","24466190sa013200000","0163103100000010"); //320:   min nCells = 3, all E
     cuts.AddCutCalo("m0115113","24466190sa01dc00000","0163103100000010"); //dc0:   min nCells = 3, E>1GeV; minM02==0.1 off for E<1GeV
