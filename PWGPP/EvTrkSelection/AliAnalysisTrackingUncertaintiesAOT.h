@@ -159,7 +159,14 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
   TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
   TH2F *fHistMCWeights;             //! histo of MC weights per particle type
+  TH1F *fHistVtxResT;               //! histo with number of events		       
+  TH1F *fHistVtxResZ;               //! histo for the centrality 		       
+  TH1F *fHistVtxZpos;               //! sparse of the tracks on MC and ITS-TOC matching
+  TH1F *fHistVtxChi2;               //! sparse of the tracks on MC and only TPC request
 
+
+
+  
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
   Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
