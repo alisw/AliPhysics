@@ -199,58 +199,59 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
 		  //---------------end of ESD loop for leading determination--------------------
 
 		  // //basic track info sparse  
-//     Double_t vec_hbTrk[6];
-// 	THnSparseD *hbTrk = (THnSparseD*)fHistosQA->At(147);
-//     Double_t vec_hbMCTrk[6];
-//     THnSparseD *hbMCTrk = (THnSparseD*)fHistosQA->At(148);
-// 
-//     for(Int_t it(0); it<fTracks->GetEntries(); it++){
-//     if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
-// 	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-// 	 if( TMath::Abs(t->Eta())> 0.8 ) continue;
-// 	 if( t->Pt()< 0.2 ) continue;
-// 	 if( HasMCdata() ){
-// 		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
-// 	}
-//         vec_hbTrk[0]=mult_comb08;
-//         if(sfer > 0.0 ) {vec_hbTrk[1]=sfer;}
-//             else vec_hbTrk[1]= -999.;
-//         if(idLead == it) {vec_hbTrk[2]= pTlead; vec_hbTrk[6]= 1;} 
-//             else {vec_hbTrk[2]= -999.; vec_hbTrk[6]= -1;}
-//         if(((t->Pt()) < pTlead) && (idLead != it)) {vec_hbTrk[3] = t->Pt();
-//                                                     vec_hbTrk[4] = etaL - t->Eta();
-//                                                     vec_hbTrk[5] = RangePhi(phiL- t->Phi());
-//                                                     vec_hbTrk[6]= 0;
-//                                                     } 
-//             else {vec_hbTrk[3] = -999.;
-//                   vec_hbTrk[4] = -999.;
-//                   vec_hbTrk[5] = -999.;
-//                 }
-//   }
-// 
-// 		if( HasMCdata() ){
-// 	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
-//     	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
-// 		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
-// 		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
-// 		if( tMC->Pt()< 0.2 ) continue;
-//             vec_hbMCTrk[0]=MC_mult_glob08;
-//             if(MC_sfer > 0.0 ) {vec_hbMCTrk[1]=MC_sfer;}
-//                 else vec_hbMCTrk[1]= -999.;
-//             if(idMCLead == it) {vec_hbMCTrk[2]= pTMClead; vec_hbMCTrk[6]= 1;} 
-//                 else {vec_hbMCTrk[2]= -999.; vec_hbMCTrk[6]= -1;}
-//             if(((tMC->Pt()) < pTMClead) && (idMCLead != it)) {vec_hbMCTrk[3] = tMC->Pt();
-//                                                               vec_hbMCTrk[4] = etaMCL - tMC->Eta();
-//                                                               vec_hbMCTrk[5] = RangePhi(phiMCL- tMC->Phi());
-//                                                               vec_hbMCTrk[6]= 0;
-//                                                             } 
-//                 else {vec_hbMCTrk[3] = -999.;
-//                     vec_hbMCTrk[4] = -999.;
-//                     vec_hbMCTrk[5] = -999.;
-//                 }
-//             hbMCTrk->Fill(vec_hbMCTrk);
-// 	  }
-// 	}
+    Double_t vec_hbTrk[6];
+	THnSparseD *hbTrk = (THnSparseD*)fHistosQA->At(147);
+    Double_t vec_hbMCTrk[6];
+    THnSparseD *hbMCTrk = (THnSparseD*)fHistosQA->At(148);
+
+    for(Int_t it(0); it<fTracks->GetEntries(); it++){
+    if(!(t = (AliMEStrackInfo*)fTracks->At(it))) continue;
+	 if( !(t->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+	 if( TMath::Abs(t->Eta())> 0.8 ) continue;
+	 if( t->Pt()< 0.2 ) continue;
+	 if( HasMCdata() ){
+		if( !(tMC= (AliMEStrackInfo*)fMCtracks->At(t->GetLabel())) ) continue;
+	}
+        vec_hbTrk[0]=mult_comb08;
+        if(sfer > 0.0 ) {vec_hbTrk[1]=sfer;}
+            else vec_hbTrk[1]= -999.;
+        if(idLead == it) {vec_hbTrk[2]= pTlead; vec_hbTrk[6]= 1;} 
+            else {vec_hbTrk[2]= -999.; vec_hbTrk[6]= -1;}
+        if(((t->Pt()) < pTlead) && (idLead != it)) {vec_hbTrk[3] = t->Pt();
+                                                    vec_hbTrk[4] = etaL - t->Eta();
+                                                    vec_hbTrk[5] = RangePhi(phiL- t->Phi());
+                                                    vec_hbTrk[6]= 0;
+                                                    } 
+            else {vec_hbTrk[3] = -999.;
+                  vec_hbTrk[4] = -999.;
+                  vec_hbTrk[5] = -999.;
+                }
+        hbTrk->Fill(vec_hbTrk);
+  }
+
+		if( HasMCdata() ){
+	  for(Int_t it(0); it<fMCtracks->GetEntries(); it++){
+    	if(!(tMC = (AliMEStrackInfo*)fMCtracks->At(it))) continue;
+		if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
+		if( TMath::Abs(tMC->Eta())> 0.8 ) continue;
+		if( tMC->Pt()< 0.2 ) continue;
+            vec_hbMCTrk[0]=MC_mult_glob08;
+            if(MC_sfer > 0.0 ) {vec_hbMCTrk[1]=MC_sfer;}
+                else vec_hbMCTrk[1]= -999.;
+            if(idMCLead == it) {vec_hbMCTrk[2]= pTMClead; vec_hbMCTrk[6]= 1;} 
+                else {vec_hbMCTrk[2]= -999.; vec_hbMCTrk[6]= -1;}
+            if(((tMC->Pt()) < pTMClead) && (idMCLead != it)) {vec_hbMCTrk[3] = tMC->Pt();
+                                                              vec_hbMCTrk[4] = etaMCL - tMC->Eta();
+                                                              vec_hbMCTrk[5] = RangePhi(phiMCL- tMC->Phi());
+                                                              vec_hbMCTrk[6]= 0;
+                                                            } 
+                else {vec_hbMCTrk[3] = -999.;
+                    vec_hbMCTrk[4] = -999.;
+                    vec_hbMCTrk[5] = -999.;
+                }
+            hbMCTrk->Fill(vec_hbMCTrk);
+	  }
+	}
 	//	  ---------------end of ESD loop for basic info trk sparse --------------------
 
 	//Debuging
@@ -284,7 +285,7 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
   
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 /*&& sfer>0.6 && sfer<=1.0*/){
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.0 && sfer<=0.3){
 //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
 			TObjArray *selectedTracks1=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks1) break;
@@ -292,29 +293,29 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
-// //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks2) break;
-//         selectedTracks2->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
-//       }
-//       if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
-// //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
-// 			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
-//         if(!selectedTracks3) break;
-//         selectedTracks3->SetOwner(kTRUE);
-//         FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
-//         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
-//       }
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.3 && sfer<=0.6){
+//         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
+			TObjArray *selectedTracks2=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks2) break;
+        selectedTracks2->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
+      }
+      if((pTlead>=1. && pTlead<=2.) && mult_comb08>=0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && sfer>0.6 && sfer<=1.0){
+//         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
+			TObjArray *selectedTracks3=SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
+        if(!selectedTracks3) break;
+        selectedTracks3->SetOwner(kTRUE);
+        FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
+        FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
+      }
         ESD=0;
     }while(ESD==1);
 
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.0 && MC_sfer<=0.3*/){
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.0 && MC_sfer<=0.3){
 // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
 			TObjArray *selectedTracksMC1=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
 		if(!selectedTracksMC1) return;
@@ -322,22 +323,22 @@ if( RequestTriggerHM() ){  // default trigger setting is MB => wantTriggerHM = k
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC1, 3, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC1, 3, 1);
       }
-//       if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.3 && MC_sfer<=0.6*/){
-// // // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
-// 			TObjArray *selectedTracksMC2=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
-// 		if(!selectedTracksMC2) return;
-// 		selectedTracksMC2->SetOwner(kTRUE);
-//         FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1, MC_sfer);
-//         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
-//       }
-//       if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 /*&& MC_sfer>0.6 && MC_sfer<=1.0*/){
-// // // 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
-// 			TObjArray *selectedTracksMC3=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
-// 		if(!selectedTracksMC3) return;
-// 		selectedTracksMC3->SetOwner(kTRUE);
-//         FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1, MC_sfer);
-//         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
-//       }
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.3 && MC_sfer<=0.6){
+// // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
+			TObjArray *selectedTracksMC2=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
+		if(!selectedTracksMC2) return;
+		selectedTracksMC2->SetOwner(kTRUE);
+        FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1, MC_sfer);
+        FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
+      }
+      if((pTMClead>=1.0 && pTMClead<=2.0) && MC_mult_glob08>=0 && MC_mult_glob08<=80 && TMath::Abs(fMCevInfo->GetVertexZ())<10.0 && MC_sfer>0.6 && MC_sfer<=1.0){
+// // 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
+			TObjArray *selectedTracksMC3=SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
+		if(!selectedTracksMC3) return;
+		selectedTracksMC3->SetOwner(kTRUE);
+        FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1, MC_sfer);
+        FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
+      }
     }
   
 }
@@ -783,7 +784,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool2->PrintInfo();
   // 		pool2->SetTargetEvents(5);
 
-        if (pool2->GetCurrentNEvents() >= 5  && pool2->GetCurrentNEvents() <= 15){
+        if (pool2->IsReady() || pool2->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -835,7 +836,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool3->PrintInfo();
   // 		pool3->SetTargetEvents(5);
 
-        if (pool3->GetCurrentNEvents() >= 5  && pool3->GetCurrentNEvents() <= 180){
+        if (pool3->IsReady() || pool3->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -936,7 +937,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC2->PrintInfo();
   // 		poolMC2->SetTargetEvents(5);
 
-        if (poolMC2->GetCurrentNEvents() >= 5 && poolMC2->GetCurrentNEvents() <= 15){
+        if (poolMC2->IsReady() || poolMC2->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC2->GetEvent(jMix);
@@ -985,7 +986,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC3->PrintInfo();
   // 		poolMC3->SetTargetEvents(5);
 
-        if (poolMC3->GetCurrentNEvents() >= 5 && poolMC3->GetCurrentNEvents() <= 180){
+        if (poolMC3->IsReady() || poolMC3->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC3->GetEvent(jMix);
