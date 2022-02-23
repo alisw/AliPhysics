@@ -122,7 +122,7 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
     //  --- --- Allocating tree and setting branches
     tParticle_0333      =   new TTree   ( Form( "PhiCandidate_%s", fRunName.Data() ), "Data Tree for Phi Candidates" );
     tParticle_0333      ->  Branch      ( "n0333",      &fTNParticle_0333,      "fTNParticle_0333/I");
-    tParticle_0333      ->  Branch      ( "E05",        &fCurrent_E05,          "fCurrent_E05/F" );
+    tParticle_0333      ->  Branch      ( "E10",        &fCurrent_E10,          "fCurrent_E10/F" );
     tParticle_0333      ->  Branch      ( "E05",        &fCurrent_E08,          "fCurrent_E08/F" );
     tParticle_0333      ->  Branch      ( "V0A",        &fCurrent_V0A,          "fCurrent_V0A/F" );
     tParticle_0333      ->  Branch      ( "V0M",        &fCurrent_V0M,          "fCurrent_V0M/F" );
