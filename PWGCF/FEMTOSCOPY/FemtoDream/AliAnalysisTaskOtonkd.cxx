@@ -596,7 +596,8 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
         if(!fIsMCtruth){
          if(IsKaon) FillKaon(fTrack);
          if(IsDeuteron) FillDeuteron(fTrack);
-         if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.001) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
+         //if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.001) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
+         if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.01) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
         }
       }//end of track loop
 
