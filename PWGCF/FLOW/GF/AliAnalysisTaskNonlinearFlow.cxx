@@ -97,6 +97,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fUseCorrectedNTracks(false),
     fUseFlippedEta(false),
     fUseNarrowBin(false),
+    fExtremeEfficiency(0),
     fEtaGap3Sub(0.4),
 
     fListOfObjects(0),
@@ -211,6 +212,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fUseCorrectedNTracks(false),
   fUseFlippedEta(false),
   fUseNarrowBin(false),
+  fExtremeEfficiency(0),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -353,6 +355,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fUseCorrectedNTracks(false),
   fUseFlippedEta(false),
   fUseNarrowBin(false),
+  fExtremeEfficiency(0),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -1883,6 +1886,20 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
     double binPt = fPtWeightsFeeddown->GetXaxis()->FindBin(pt);
     double feeddown = fPtWeightsFeeddown->GetBinContent(binPt);
     weight /= feeddown;
+  }
+  if (fExtremeEfficiency == 1) {
+    // Soft: Lower region: higher efficiency, lower weight
+    if (pt < 1.5) return weight * 0.98; 
+    if (pt > 1.5) return weight * 1.02; 
+  } else if (fExtremeEfficiency == 2) {
+    if (pt < 1.5) return weight * 1.02;
+    if (pt > 1.5) return weight * 0.98;
+  } else if (fExtremeEfficiency == 3) {
+    if (pt < 1.5) return weight * 0.96; 
+    if (pt > 1.5) return weight * 1.04; 
+  } else if (fExtremeEfficiency == 4) {
+    if (pt < 1.5) return weight * 1.04;
+    if (pt > 1.5) return weight * 0.96;
   }
   return weight;
 

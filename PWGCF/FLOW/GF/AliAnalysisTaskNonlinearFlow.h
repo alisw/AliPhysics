@@ -224,6 +224,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 		virtual void   SetUseFlippedEta(bool flag = true) {fUseFlippedEta = flag;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
+		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
@@ -298,12 +299,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TString                 fNtrksName;                             // Cent or Mult
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
-		Bool_t      fSpringMode;                                        // The mode with spring cuts.
-		Bool_t      fLowMultiplicityMode;                               // The mode to consider low-multiplicity region 
-		Bool_t      fAddTPCPileupCuts;                                  // Additional TPC pileup cuts
-		Bool_t      fUseCorrectedNTracks;                               // Use corrected Ntracks in the filling of xbins;
-		Bool_t      fUseFlippedEta;                                     // Flip the eta region to merge the pPb and Pbp sample;
-                Bool_t      fUseNarrowBin;                                      // Use Narrow bin
+		Bool_t                  fSpringMode;                            // The mode with spring cuts.
+		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
+		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
+		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
+		Bool_t                  fUseFlippedEta;                         // Flip the eta region to merge the pPb and Pbp sample;
+                Bool_t                  fUseNarrowBin;                          // Use Narrow bin
+		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fEtaGap3Sub;                            // The Eta Gap for 3 sub sample, the default is 0.4
 
 		// Output objects
@@ -480,7 +482,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 12);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 13);    //Analysis task
 };
 
 #endif
