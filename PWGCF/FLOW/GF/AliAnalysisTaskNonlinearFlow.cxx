@@ -94,10 +94,12 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fSpringMode(false),
     fLowMultiplicityMode(false),
     fAddTPCPileupCuts(false),
+    fESDvsTPConlyLinearCut(15000.),
     fUseCorrectedNTracks(false),
     fUseFlippedEta(false),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
+    fTPCchi2perCluster(4.0),
     fEtaGap3Sub(0.4),
 
     fListOfObjects(0),
@@ -209,10 +211,12 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fSpringMode(false),
   fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000.),
   fUseCorrectedNTracks(false),
   fUseFlippedEta(false),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
+  fTPCchi2perCluster(4.0),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -352,10 +356,12 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fSpringMode(false),
   fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000.),
   fUseCorrectedNTracks(false),
   fUseFlippedEta(false),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
+  fTPCchi2perCluster(4.0),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -719,10 +725,9 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 //_________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::NotifyRun() {
     if (fAddTPCPileupCuts) {
-    Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
-    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-    if(fGFWSelection->GetSystFlagIndex()==22)
-      fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
     }
 }
 
@@ -2040,8 +2045,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
         }
     } else {
 	std::string period = ReturnPPperiodMC(fAOD->GetRunNumber());
-        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("%s_ch_Eta_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
-        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("%s_ch_Eta_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
+        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC%s_ch_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
+        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC%s_ch_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
         if(!fPtWeightsSystematics)
         {
             printf("pp: PtWeights could not be found in list!\n");
@@ -2615,6 +2620,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
+
+  // Additional cut for TPCchi2perCluster
+  if (mtr->GetTPCchi2perCluster()>fTPCchi2perCluster) return kFALSE;
 
   if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
     return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
