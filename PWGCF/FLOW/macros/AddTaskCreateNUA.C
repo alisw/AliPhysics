@@ -2,7 +2,7 @@ AliAnalysisTaskCreateNUA* AddTaskCreateNUA(
     TString fPeriod         ="LHC17",
     Int_t   fSystFlag       =0,
     Bool_t   fPbPbFlag       =false,
-    Bool_t fUseHM            =true;
+    Bool_t fUseHM            =true,
     TString	uniqueID    = "Default"
 )
 {
