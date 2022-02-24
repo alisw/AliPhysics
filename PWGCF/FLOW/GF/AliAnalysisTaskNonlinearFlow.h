@@ -227,6 +227,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
+		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
+		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
 		virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
@@ -310,6 +312,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
                 Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
+		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
+		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
 		Double_t                fEtaGap3Sub;                            // The Eta Gap for 3 sub sample, the default is 0.4
 
 		// Output objects
@@ -486,7 +490,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 14);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 15);    //Analysis task
 };
 
 #endif

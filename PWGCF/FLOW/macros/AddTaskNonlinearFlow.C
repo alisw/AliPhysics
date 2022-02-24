@@ -216,7 +216,10 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
 		if (fPeriod.EqualTo("LHC15oKatarina")) {
 		    weight_list = dynamic_cast<TList*>(inNUA->Get("weightList"));
                     cin_NUA->SetData(weight_list); 
-                } else {
+                } else if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18")) {
+		    weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList_Default"));
+		    cin_NUA->SetData(weight_list);
+		} else {
 		    weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
 		    cin_NUA->SetData(weight_list);
                 }
