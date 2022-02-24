@@ -1135,7 +1135,7 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
         IterativeParents(jet3, fMatchedJetSplittings, false);
         if (fStoreDetLevelJets) {
           fDetLevelJetSplittings.SetJetPt(jet2->Pt());
-          IterativeParents(jet2, fDetLevelJetSplittings, false);
+          IterativeParents(jet2, fDetLevelJetSplittings, false, true);
         }
       }
 
@@ -1153,10 +1153,12 @@ Bool_t AliAnalysisTaskJetDynamicalGrooming::FillHistograms()
  * @param[in] jet Jet to be declustered.
  * @param[in, out] jetSplittings Jet substructure output object which will be used to store the splittings.
  * @param[in] isData If True, treat the splitting as coming from data. This means that ghosts are utilized and track resolution may be considered.
+ * @param[in] isDetLevelInEmbedding If True, the input particles are from detector level in embedding (which means their masses should be assumed to be the pion mass)
  */
 void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
                               SubstructureTree::JetSubstructureSplittings & jetSplittings,
-                              bool isData)
+                              bool isData,
+                              bool isDetLevelInEmbedding)
 {
   AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   std::vector<fastjet::PseudoJet> inputVectors;
@@ -1170,7 +1172,16 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
       continue;
     }
     // Set the PseudoJet and add it to the inputs.
-    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    // NOTE: We want to use the charged pion mass hypothesis for data.
+    //       We need to explicitly set it here - otherwise, it will use some sort of mass hypotheis
+    //       derived from PID information. However, in the case of MC, we have the truth info, so
+    //       we may as well take advantage of it.
+    double E = part->E();
+    if (isData || isDetLevelInEmbedding) {
+      //std::cout << "using charged pion mass hypothesis. " << std::boolalpha << "isData=" << isData << ", isDetLevelInEmbedding=" << isDetLevelInEmbedding << "\n";
+      E = std::sqrt(std::pow(part->P(), 2) + std::pow(0.139, 2));
+    }
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), E);
     // NOTE: This must be the constituent index to allow the subjets to properly determine which constituents are included
     //       in each subjet.
     pseudoTrack.set_user_index(constituentIndex);
