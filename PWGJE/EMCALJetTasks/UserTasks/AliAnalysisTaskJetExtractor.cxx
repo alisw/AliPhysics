@@ -579,7 +579,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fqnVectorReader(0),
   fQ2VectorValue(0.),
   fQ2VectorCheck(0.),
-  fEPangle(0.)
+  fEPangle(0.),
+  fRejectTPCPileup(kFALSE)
 
 {
   fRandomGenerator = new TRandom3();
@@ -636,7 +637,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fqnVectorReader(0),
   fQ2VectorValue(0.),
   fQ2VectorCheck(0.),
-  fEPangle(0.)
+  fEPangle(0.),
+  fRejectTPCPileup(kFALSE)
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -721,6 +723,7 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
 
+  if(fRejectTPCPileup)       fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
 
   // ### If there is an embedding track container, set flag that an embedded event is used
   for(Int_t iCont=0; iCont<fParticleCollArray.GetEntriesFast(); iCont++)
@@ -806,6 +809,12 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     return kFALSE;
   if(fRandomGenerator->Rndm() >= fEventPercentage)
     return kFALSE;
+
+  if (fRejectTPCPileup)   {            //possible bug occurs here, use with caution
+      Bool_t acceptEventCuts = fAliEventCuts.AcceptEvent(InputEvent());
+      if(!acceptEventCuts)     return kFALSE;
+    }
+
 
   // ################################### EVENT PROPERTIES
   FillEventControlHistograms();

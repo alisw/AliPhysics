@@ -45,12 +45,14 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
+    fRejectTPCPileup(false),
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
-    fEPangleV0C(0)
+    fEPangleV0C(0),
+    fEventCuts("")
 {
     //
     // default constructor
@@ -87,12 +89,14 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
+    fRejectTPCPileup(false),
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
-    fEPangleV0C(0)
+    fEPangleV0C(0),
+    fEventCuts("")
 {
     //
     // standard constructor
@@ -157,13 +161,14 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(true);
 
-    fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",4,0.5,4.5);
+    fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",5,0.5,5.5);
     fHistNEvents->Sumw2();
     fHistNEvents->SetMinimum(0);
     fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
     fHistNEvents->GetXaxis()->SetBinLabel(2,"Pass Phys. Sel. + Trig");
     fHistNEvents->GetXaxis()->SetBinLabel(3,"Centrality > 90%");
     fHistNEvents->GetXaxis()->SetBinLabel(4,"No vertex");
+    fHistNEvents->GetXaxis()->SetBinLabel(5,"Fail Pileup");
     fOutputList->Add(fHistNEvents);
 
     fHistCentrality = new TH1F("fHistCentrality","Centrality distribution;;Number of events",100,0.,100.);
@@ -249,6 +254,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         return;
     }
 
+
     AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
     if(!multSelection){
         AliWarning("AliMultSelection could not be found in the aod event list of objects");
@@ -267,6 +273,13 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     if(!vertex || TMath::Abs(vertex->GetZ())>10. || vertex->GetNContributors()<=0) {
         fHistNEvents->Fill(4);
         return;
+    }
+    if (fRejectTPCPileup)   {
+        fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+        Bool_t acceptEventCuts = fEventCuts.AcceptEvent(InputEvent());
+        if(!acceptEventCuts)   { 
+           fHistNEvents->Fill(5);
+            return;}
     }
 
     //choose calibration file to use (run numbers specific to 2018 pass3)
