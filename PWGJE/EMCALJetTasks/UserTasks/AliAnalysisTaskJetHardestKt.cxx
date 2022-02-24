@@ -1022,8 +1022,10 @@ int AliAnalysisTaskJetHardestKt::GetConstituentID(int constituentIndex, AliVPart
  * @param[in] jet Jet to be declustered.
  * @param[in] prefix Prefix under which the jet splitting properties will be stored.
  * @param[in] isData If True, treat the splitting as coming from data. This means that ghosts are utilized and track resolution may be considered.
+ * @param[in] jetR Jet parameter
+ * @param[in] isDetLevelInEmbedding If True, the input particles are from detector level in embedding (which means their masses should be assumed to be the pion mass)
  */
-std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData, double jetR)
+std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(AliEmcalJet* jet, const std::string & prefix, bool isData, double jetR, bool isDetLevelInEmbedding)
 {
   AliDebugStream(1) << "Beginning iteration through the splittings.\n";
   std::vector<fastjet::PseudoJet> inputVectors;
@@ -1037,8 +1039,18 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
     if (isData == true && fDoTwoTrack == kTRUE && CheckClosePartner(jet, part)) {
       continue;
     }
+
     // Set the PseudoJet and add it to the inputs.
-    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), part->E());
+    // NOTE: We want to use the charged pion mass hypothesis for data.
+    //       We need to explicitly set it here - otherwise, it will use some sort of mass hypotheis
+    //       derived from PID information. However, in the case of MC, we have the truth info, so
+    //       we may as well take advantage of it.
+    double E = part->E();
+    if (isData || isDetLevelInEmbedding) {
+      //std::cout << "using charged pion mass hypothesis. " << std::boolalpha << "isData=" << isData << ", isDetLevelInEmbedding=" << isDetLevelInEmbedding << "\n";
+      E = std::sqrt(std::pow(part->P(), 2) + std::pow(0.139, 2));
+    }
+    pseudoTrack.reset(part->Px(), part->Py(), part->Pz(), E);
     pseudoTrack.set_user_index(GetConstituentID(constituentIndex, part, jet));
     inputVectors.push_back(pseudoTrack);
 
