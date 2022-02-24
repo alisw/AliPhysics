@@ -73,6 +73,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetLightTreeMode(Bool_t val)                        { fLightTreeMode = val;}
   void                        SetQ2Detector(Int_t val)                            { fQ2Detector = val;}
   void                        SetEPDetector(Int_t val)                            { fEPDetector = val;}
+  void                        SetRejectTPCPileup(Bool_t val)                      { fRejectTPCPileup = val;}
   
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
@@ -163,6 +164,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                     fQ2VectorValue;                          ///< Calibrated q2 value 
   Double_t                     fQ2VectorCheck;                          ///< q2 value from separate detector
   Double_t                     fEPangle;                                ///< Calibrated event-plane angle
+  Bool_t                       fRejectTPCPileup;                        ///< TPC pileup rejection
 
   // ################## HELPER FUNCTIONS
   Double_t                    GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
@@ -183,7 +185,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 16) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 17) // Jet extraction task
   /// \endcond
 };
 

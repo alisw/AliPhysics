@@ -23,7 +23,7 @@
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
 #include "AliJEQnVectorHandler.h"
-
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskJetQnVectors : public AliAnalysisTaskSE {
 
@@ -42,6 +42,7 @@ public:
     void SetUseQnFrameworkCalibrations()                                                                 {fCalibType = AliJEQnVectorHandler::kQnFrameworkCalib;}
     void SetNormalisationMethod(int normmethod)                                                          {fNormMethod = normmethod;}
     void SetTriggerInfo(TString trigClass, unsigned long long mask=0)                                    {fTriggerClass = trigClass; fTriggerMask = mask;}
+    void SetRejectTPCPileup(bool val)                                                                    {fRejectTPCPileup = val;}
     void LoadSplinesForqnPercentile(TString splinesfilepath);
 
     void EnableTPCPhiVsCentrDistrHistosVsRun()                                                           {fEnableTPCPhiVsCentrDistr=true;}
@@ -53,6 +54,9 @@ public:
     double GetEPangleV0M()                                                                               {return fEPangleV0M;}
     double GetEPangleV0A()                                                                               {return fEPangleV0A;}
     double GetEPangleV0C()                                                                               {return fEPangleV0C;}
+
+protected:
+    AliEventCuts fEventCuts;                         //!<! Event selection  
 
 private:
 
@@ -69,6 +73,7 @@ private:
 
     TH2F* fTPCPhiVsCentrDistr[2];                    //!<! histos of phi vs. centr of selected TPC tracks in eta>0 and eta<0
     TH2F* fQvecTPCVsCentrDistr[3];                   //!<! histos of TPC Q-vector vs. centr for tracks with eta>0 and eta<0
+
 
     bool fEnableTPCPhiVsCentrDistr;                  /// flag to enable histos of phi vs. centr
     bool fEnableQvecTPCVsCentrDistr;                 /// flag to enable histos of TPC Q-vector vs. centr
@@ -90,6 +95,7 @@ private:
 
     TString fTriggerClass;                           /// trigger class
     unsigned long long fTriggerMask;                 /// trigger mask
+    bool fRejectTPCPileup;                           /// TPC pileup rejection
 
     double fq2V0M;                                   /// q2 vector from the V0M   
     double fq2V0A;                                   /// q2 vector from the V0A    
@@ -98,7 +104,7 @@ private:
     double fEPangleV0C;                              /// EP Angle with calibrations from V0A
     double fEPangleV0A;                              /// EP Angle with calibrations from V0C
 
-    ClassDef(AliAnalysisTaskJetQnVectors, 7);
+    ClassDef(AliAnalysisTaskJetQnVectors, 8);
 };
 
 #endif
