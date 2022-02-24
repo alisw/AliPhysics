@@ -8,7 +8,7 @@
 #include <AliMEStenderV2.h>
 #endif
 
-AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 0)
+AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1, const AliVEvent *event)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
