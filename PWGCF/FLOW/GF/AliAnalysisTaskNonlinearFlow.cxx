@@ -100,6 +100,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
     fTPCchi2perCluster(4.0),
+    fUseAdditionalDCACut(false),
+    fUseDefaultWeight(false),
     fEtaGap3Sub(0.4),
 
     fListOfObjects(0),
@@ -217,6 +219,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
+  fUseAdditionalDCACut(false),
+  fUseDefaultWeight(false),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -362,6 +366,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
+  fUseAdditionalDCACut(false),
+  fUseDefaultWeight(false),
   fEtaGap3Sub(0.4),
 
   fListOfObjects(0),
@@ -947,7 +953,11 @@ void AliAnalysisTaskNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
     if (fPeriod.EqualTo("LHC15oKatarina") ) {
       if(fNUE == 1) weightPt = GetPtWeightKatarina(aodTrk->Pt(), aodTrk->Eta(), fVtxZ);
     } else {
+      // This is to make sure the extreme efficiency is only applied when calculating the Qs.
+      double extremeEfficiency = fExtremeEfficiency;
+      fExtremeEfficiency = 0;
       if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
+      fExtremeEfficiency = extremeEfficiency;
     }
 
     NTracksUncorrected += 1;
@@ -1051,6 +1061,17 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
     aodTrk->GetXYZ(pos);
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
+
+    if (fUseAdditionalDCACut) {
+       double pos[3];
+       aodTrk->GetXYZ(pos);
+       double dcaX = pos[0] - vtxp[0]; 
+       double dcaY = pos[1] - vtxp[1];
+       double dcaZ = abs(pos[2] - vtxp[2]);
+       double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
+       if (dcaXY > 1) continue;
+       if (dcaZ > 1) continue;
+    }
 
     NtrksAfter += 1;
 
@@ -1961,7 +1982,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
       }
       fWeightsSystematics->CreateNUA();
     } else {
-      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
