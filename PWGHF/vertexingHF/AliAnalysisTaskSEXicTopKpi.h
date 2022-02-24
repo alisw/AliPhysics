@@ -108,8 +108,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
      fminpT_treeFill = min;
      fmaxpT_treeFill = max;
    }
-
-  void SetFastLoopParamsSingleTrack(Double_t ptLoop1,Double_t ptLoop2,Double_t ptLoop3,Double_t minptTracksFastLoop,Double_t maxDCATracksFastLoop,Double_t DCApar1,Double_t DCApar2,Double_t DCApar3,Double_t DCApar4){
+  void SetFastLoopParamsSingleTrack(Double_t ptLoop1,Double_t ptLoop2,Double_t ptLoop3,Double_t minptTracksFastLoop,Double_t maxDCATracksFastLoop,Double_t DCApar1,Double_t DCApar2,Double_t DCApar3,Double_t DCApar4,Double_t maxFastDZ12,Double_t maxFastDZ13,Double_t maxFastDZ23){
     fptLoop1=ptLoop1;
   fptLoop2=ptLoop2;
   fptLoop3=ptLoop3;
@@ -119,6 +118,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   fFastLoopDCApar2=DCApar2;
   fFastLoopDCApar3=DCApar3;
   fFastLoopDCApar4=DCApar4;
+  fMaxFastDZ12=maxFastDZ12;
+  fMaxFastDZ13=maxFastDZ13;
+  fMaxFastDZ23=maxFastDZ23;
   }
 
 
@@ -200,7 +202,7 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   }
   void SwitchToFastLoops(){fFastLoopPbPb=kTRUE;}
   void SwitchOnFastSelections(Bool_t fastsel=kTRUE){fFastLoopPbPbFastSelections=fastsel;}
-
+  void ExtendSparseVariables(Bool_t extendSparse=kTRUE){fextendSparseForLb=extendSparse;}
   // avoid SigmaC analysis
   void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
   void SetFillNtupleFastVar(Bool_t fillNt=kTRUE){fFillFastVarForDebug=fillNt;}
@@ -224,8 +226,12 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
     if(cosPxyFast<0)fMinFastCosPointXYSq=-1;
     else fMinFastCosPointXYSq=cosPxyFast*cosPxyFast;
   }
+  void SetMinCosPointAngle3DFast(Double_t cosPxyFast){
+    if(cosPxyFast<0)fMinFastCosPoint3DSq=-1;
+    else fMinFastCosPoint3DSq=cosPxyFast*cosPxyFast;
+  }
 void EnableSparseReflections(){fFillSparseReflections=kTRUE;} 
-
+ 
 // build background of Lc candidates with rotated pion
 void SetBuildRotBkgLc(){fLcRotationBkg=kTRUE;};
 void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse, Int_t massHypo);
@@ -529,7 +535,7 @@ void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse
   Int_t floop1;  //!<! internal number of selected tracks for loop1
   Int_t floop2;  //!<! internal number of selected tracks for loop2
   Int_t floop3;  //!<! internal number of selected tracks for loop3
-  TNtuple *ftnFastVariables; //!<!  ntuple with fast variable and correlation with full calculation
+  TNtuple *ftnFastVariables; //!  ntuple with fast variable and correlation with full calculation
   Bool_t fFillFastVarForDebug; // flag to fill ntuple with fast variables
   Double_t fMinFastLxy12Sq; // variable used in fast selection
   Double_t fMinFastLxy13Sq; // variable used in fast selection
@@ -553,11 +559,13 @@ void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse
   Double_t fFastLoopDCApar2;// internal parameter for fast loops
   Double_t fFastLoopDCApar3;// internal parameter for fast loops
   Double_t fFastLoopDCApar4;// internal parameter for fast loops
-
+  Double_t fMaxFastDZ12;// internal parameter for fast loops
+  Double_t fMaxFastDZ13;// internal parameter for fast loops
+  Double_t fMaxFastDZ23;// internal parameter for fast loops
+  Double_t fMinFastCosPoint3DSq;// internal parameter for fast loops
   Bool_t fLcRotationBkg;  // build background of Lc candidates with rotated pion
-  
-  ClassDef(AliAnalysisTaskSEXicTopKpi,27); /// AliAnalysisTaskSE for Xic->pKpi
-
+  Bool_t fextendSparseForLb; // change range of some variables in default sparse
+  ClassDef(AliAnalysisTaskSEXicTopKpi,28); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 

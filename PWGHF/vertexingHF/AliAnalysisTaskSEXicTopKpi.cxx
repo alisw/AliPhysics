@@ -50,6 +50,7 @@
 #include <TNtuple.h>
 #include <TTree.h>
 #include <TList.h>
+#include <TDirectory.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -258,7 +259,12 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fFastLoopDCApar2(0.01)
   ,fFastLoopDCApar3(0.005)
   ,fFastLoopDCApar4(0.1)
+  ,fMaxFastDZ12(999)
+  ,fMaxFastDZ13(999)
+  ,fMaxFastDZ23(999)
+  ,fMinFastCosPoint3DSq(-1)
   ,fLcRotationBkg(kFALSE)
+  ,fextendSparseForLb(kFALSE)
 {
   /// Default constructor
 
@@ -426,7 +432,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fRejFactorFastAnalysis(1.1)
   ,fFillSparseReflections(kFALSE)
   ,fLoopOverSignalOnly(kFALSE)
-    ,fptLoop1(2.)
+  ,fptLoop1(2.)
   ,fptLoop2(1.)
   ,fptLoop3(0.7)
   ,fminptTracksFastLoop(0.3)
@@ -435,7 +441,12 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fFastLoopDCApar2(0.01)
   ,fFastLoopDCApar3(0.005)
   ,fFastLoopDCApar4(0.1)
+  ,fMaxFastDZ12(999)
+  ,fMaxFastDZ13(999)
+  ,fMaxFastDZ23(999)
+  ,fMinFastCosPoint3DSq(-1)
   ,fLcRotationBkg(kFALSE)
+  ,fextendSparseForLb(kFALSE)
 {
   /// Default constructor
   
@@ -443,6 +454,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   DefineOutput(2,AliNormalizationCounter::Class());
   DefineOutput(3,TList::Class());
   DefineOutput(4,TTree::Class());
+  DefineOutput(5,TNtuple::Class());
   fCuts=cuts;
 }
 
@@ -860,6 +872,12 @@ void AliAnalysisTaskSEXicTopKpi::UserCreateOutputObjects()
   Int_t nbinsSparse[9]={24,125,10,16,20,10,23,11,6};
   Double_t lowEdges[9]={0,2.15,0.,0,0.8,0,-0.5,-0.5,-1.5};
   Double_t upEdges[9]={24,2.65,0.0500,8,1.,5,22.5,10.5,4.5};
+  if(fextendSparseForLb){
+    nbinsSparse[2]=20;
+    upEdges[2]=0.2;
+    upEdges[3]=16;
+  }
+    
   if(fIsCdeuteronAnalysis){
     lowEdges[1] = 2.95;
     upEdges[1] = 3.45;
@@ -1035,8 +1053,7 @@ if(!fFillTree){
 
 
   //  ftnFastVariables=new TNtuple("ftnFastVariables","ftnFastVariables","ptFast:cosPointXYsqFast:LxyFast:xvtxFast:yvtxFast:pt:cosPointXYsq:Lxy:xvtx:yvtx:");
-
-    ftnFastVariables=new TNtuple("ftnFastVariables","ftnFastVariables","ptFast:cosPointXYsqFast:LxyFast:xvtxFast:cosPointXYsq:Lxy:xvtx:ptP:ptK:ptPi:dcaP:dcaK:dcapi:lxyTrue:xvtxTrue:decaychannel:checkorigin");
+  ftnFastVariables=new TNtuple("ftnFastVariables","ftnFastVariables","ptFast:cosPointXYFast:LxyFast:xvtxFast:cosPointXY:Lxy:xvtx:ptP:ptK:ptPi:dcaP:dcaK:dcapi:lxyTrue:xvtxTrue:decaychannel:checkorigin:dzFast12:dzFast13:dzFast23:cosPoint3DFast:cosPoint3D:distVtx1223",128000);
 
   fHistFastInvMass=new TH2D("fHistFastInvMass","Inv Mass Fast;M(p,K,pi);pt",400,2.18,2.58,48,0,24);
   fOutput->Add(fDist12Signal);
@@ -1091,7 +1108,7 @@ if(!fFillTree){
   fOutput->Add(fHistoPtSelPion);
   fOutput->Add(fHistoPtd0plane);
   fOutput->Add(fHistoPtd0planeAfterFastLoopSel);
-  fOutput->Add(ftnFastVariables);
+  // fOutput->Add(ftnFastVariables);
   fOutput->Add(fHistFastInvMass);
 
   // Post the data
@@ -1099,7 +1116,7 @@ if(!fFillTree){
   PostData(2,fCounter);  
   PostData(3,fOutput);
   PostData(4,fTreeVar);
-
+  PostData(5,ftnFastVariables);
   return;
 }
 
@@ -1260,6 +1277,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(2,fCounter);  
       PostData(3,fOutput);
       PostData(4,fTreeVar);
+      PostData(5,ftnFastVariables);
       return;
     }
   }
@@ -1311,6 +1329,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     PostData(2,fCounter);  
     PostData(3,fOutput);
     PostData(4,fTreeVar);
+    PostData(5,ftnFastVariables);
     return;
   }
 
@@ -1326,6 +1345,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(2,fCounter);
       PostData(3,fOutput);
       PostData(4,fTreeVar);
+      PostData(5,ftnFastVariables);
       return;
     }
   }
@@ -1341,6 +1361,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(2,fCounter);  
       PostData(3,fOutput);
       PostData(4,fTreeVar);
+      PostData(5,ftnFastVariables);
       return;
     }
   }
@@ -1400,9 +1421,11 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     Double_t x1[3],p1[3];
     track1->GetXYZ(x1);
     track1->GetPxPyPz(p1);
-    if(TMath::Abs(p1[0])<1.e-8)p1[0]=1.e-8;// this is just to facilitate treatment of tracks // y axis
+    if(TMath::Abs(p1[0])<1.e-8)p1[0]=1.e-8;// this is just to facilitate treatment of tracks perpendicular to x axis (x=const straight lines)
     Double_t mStraightLine1=p1[1]/p1[0];
     Double_t y1AtXeq0=x1[1]-mStraightLine1*x1[0];
+    Double_t mzStraightLine1=p1[2]/p1[0];
+    Double_t z1AtXeq0=x1[2]-mzStraightLine1*x1[0];
 
     
     for(Int_t itrackfast2=itrackfast1+1;itrackfast2<floop1+floop2;itrackfast2++){// Second loop
@@ -1430,13 +1453,21 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       track2->GetXYZ(x2);
       track2->GetPxPyPz(p2);
 
-      if(TMath::Abs(p2[0])<1.e-8)p2[0]=1.e-8;// this is just to facilitate treatment of tracks // y axis
+      if(TMath::Abs(p2[0])<1.e-8){
+	p2[0]=1.e-8;// this is just to facilitate treatment of tracks perpendicular to x axis (x=const straight lines)
+      }     
       Double_t mStraightLine2=p2[1]/p2[0];
       Double_t y2AtXeq0=x2[1]-mStraightLine2*x2[0];
+      Double_t mzStraightLine2=p2[2]/p2[0];
+      Double_t z2AtXeq0=x2[2]-mzStraightLine2*x2[0];
 
       // get intersection point
       Double_t ip12x=(y1AtXeq0-y2AtXeq0)/(mStraightLine2-mStraightLine1);
       Double_t ip12y=mStraightLine2*ip12x+y2AtXeq0;
+      // get z at xy intersection point
+      Double_t ipz1_12xy=mzStraightLine1*ip12x+z1AtXeq0;
+      Double_t ipz2_12xy=mzStraightLine2*ip12x+z2AtXeq0;
+      Double_t deltaIpz12=ipz2_12xy-ipz1_12xy;
       // the following lines for comparison/debugging, DO NOT CANCEL THEM
       // Float_t dxy[2],cdxy[3];
       // track1->GetImpactParameters(dxy,cdxy);
@@ -1448,6 +1479,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       // Cut on Fast Lxy12
       if(fFastLoopPbPbFastSelections){
 	if((ip12x-posPrimVtx[0])*(ip12x-posPrimVtx[0])+(ip12y-posPrimVtx[1])*(ip12y-posPrimVtx[1])<fMinFastLxy12Sq)continue;
+	if(TMath::Abs(deltaIpz12)>fMaxFastDZ12)continue;
       }
       
       // THIRD LOOP 
@@ -1556,53 +1588,82 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	}
 
 	
-	if(TMath::Abs(p3[0])<1.e-8)p3[0]=1.e-8;// this is just to facilitate treatment of tracks // y axis
+	if(TMath::Abs(p3[0])<1.e-8)p3[0]=1.e-8;// this is just to facilitate treatment of tracks perpendicular to x axis (x=const straight lines)
 	Double_t mStraightLine3=p3[1]/p3[0];
 	Double_t y3AtXeq0=x3[1]-mStraightLine3*x3[0];
-	Float_t arrayTupleFast[17]={0};
+		Double_t mzStraightLine3=p3[2]/p3[0];
+	Double_t z3AtXeq0=x3[2]-mzStraightLine3*x3[0];
+	Float_t arrayTupleFast[23]={0};
 	if(fFastLoopPbPbFastSelections){
 	  // get intersection point 1-3
 	  Double_t ip13x=(y1AtXeq0-y3AtXeq0)/(mStraightLine3-mStraightLine1);
 	  Double_t ip13y=mStraightLine3*ip13x+y3AtXeq0;
+	  // get z at xy 1-3 intersection point
+	  Double_t ipz1_13xy=mzStraightLine1*ip13x+z1AtXeq0;
+	  Double_t ipz2_13xy=mzStraightLine2*ip13x+z2AtXeq0;
+	  Double_t deltaIpz13=ipz2_13xy-ipz1_13xy;
 	  //  Cut on Fast Lxy13
 	  if((ip13x-posPrimVtx[0])*(ip13x-posPrimVtx[0])+(ip13y-posPrimVtx[1])*(ip13y-posPrimVtx[1])<fMinFastLxy13Sq)continue;
 	  // require vtxXy12 and 13 are close
-	  if((ip13x-ip12x)*(ip13x-ip12x)+(ip13y-ip12y)*(ip13y-ip12y)<fMaxFastDist12_13Sq)continue;
+	  if((ip13x-ip12x)*(ip13x-ip12x)+(ip13y-ip12y)*(ip13y-ip12y)>fMaxFastDist12_13Sq)continue;
+	  // check that also in z tracks are close enough
+	  if(TMath::Abs(deltaIpz13)>fMaxFastDZ13)continue;
 	  // get intersection point 2-3
 	  Double_t ip23x=(y2AtXeq0-y3AtXeq0)/(mStraightLine3-mStraightLine2);
 	  Double_t ip23y=mStraightLine3*ip23x+y3AtXeq0;
+	   Double_t ipz1_23xy=mzStraightLine1*ip23x+z1AtXeq0;
+	  Double_t ipz2_23xy=mzStraightLine2*ip23x+z2AtXeq0;
+	  Double_t deltaIpz23=ipz2_23xy-ipz1_23xy;
+	  Double_t pxyzcand[3]={p1[0]+p2[0]+p3[0],p1[1]+p2[1]+p3[1],p1[2]+p2[2]+p3[2]};
+
 	  // NOW Cut on Fast Lxy23
 	  if((ip23x-posPrimVtx[0])*(ip23x-posPrimVtx[0])+(ip23y-posPrimVtx[1])*(ip23y-posPrimVtx[1])<fMinFastLxy23Sq)continue;
+	  // check that also in z tracks are close enough
+	  if(TMath::Abs(deltaIpz23)>fMaxFastDZ23)continue;
+
 	  // require vtxXy12 and 23 are close
-	  if((ip23x-ip12x)*(ip23x-ip12x)+(ip23y-ip12y)*(ip23y-ip12y)<fMaxFastDist12_23Sq)continue;
+	  if((ip23x-ip12x)*(ip23x-ip12x)+(ip23y-ip12y)*(ip23y-ip12y)>fMaxFastDist12_23Sq)continue;
 	  // fast pointing angle xy (cosine squared)
-	  Double_t lxy[2]={(ip12x+ip13x+ip23x)/3.-posPrimVtx[0],(ip12y+ip13y+ip23y)/3.-posPrimVtx[1]}; // not in use anymore, superseded by next definition
-	  Double_t xySecVtx[2]={ip12x,ip12y};
+	  Double_t lxy[3]={(ip12x+ip13x+ip23x)/3.-posPrimVtx[0],(ip12y+ip13y+ip23y)/3.-posPrimVtx[1],(ipz1_23xy+ipz2_23xy+ipz1_13xy)/3.-posPrimVtx[2]}; // not in use anymore, superseded by next definition
+	  Double_t xyzSecVtx[3]={ip12x,ip12y,0.5*(ipz1_12xy+ipz2_12xy)};
 	  // check prongs with higher pt
 	  if(p3[0]*p3[0]+p3[1]*p3[1]>p2[0]*p2[0]+p2[1]*p2[1]){
-	    xySecVtx[0]=ip13x;
-	    xySecVtx[1]=ip13y;
+	    xyzSecVtx[0]=ip13x;
+	    xyzSecVtx[1]=ip13y;
+	    xyzSecVtx[2]=0.5*(ipz1_13xy+ipz2_13xy);
 	    if(p2[0]*p2[0]+p2[1]*p2[1]>p1[0]*p1[0]+p1[1]*p1[1]){
-	      xySecVtx[0]=ip23x;
-	      xySecVtx[1]=ip23y;
+	      xyzSecVtx[0]=ip23x;
+	      xyzSecVtx[1]=ip23y;
+	      xyzSecVtx[2]=0.5*(ipz1_23xy+ipz2_23xy);
+
 	    }
 	  }
-	  lxy[0]=xySecVtx[0]-posPrimVtx[0];
-	  lxy[1]=xySecVtx[1]-posPrimVtx[1];
+	  lxy[0]=xyzSecVtx[0]-posPrimVtx[0];
+	  lxy[1]=xyzSecVtx[1]-posPrimVtx[1];
+	  lxy[2]=xyzSecVtx[2]-posPrimVtx[2];
 	  if(lxy[0]*lxy[0]+lxy[1]*lxy[1]<fMinFastLxySq)continue;
 	  
-	  Double_t pxycand[2]={p1[0]+p2[0]+p3[0],p1[1]+p2[1]+p3[1]};
-	  Double_t ptSqfastcand=pxycand[0]*pxycand[0]+pxycand[1]*pxycand[1];
-	  Double_t cosnum=lxy[0]*pxycand[0]+lxy[1]*pxycand[1];
+	  Double_t ptSqfastcand=pxyzcand[0]*pxyzcand[0]+pxyzcand[1]*pxyzcand[1];
+	  Double_t pSqfastcand=ptSqfastcand+pxyzcand[2]*pxyzcand[2];
+	  Double_t cosnum=lxy[0]*pxyzcand[0]+lxy[1]*pxyzcand[1];
+	  Double_t cosnum3d=cosnum+lxy[2]*pxyzcand[2];
 	  Double_t cospSqfast=(cosnum*cosnum)/((lxy[0]*lxy[0]+lxy[1]*lxy[1])*ptSqfastcand);
-	  if(fMinFastCosPointXYSq>0.&&(cospSqfast<fMinFastCosPointXYSq||cosnum<0))continue; 
+	  Double_t cosp3DSqfast=(cosnum3d*cosnum3d)/((lxy[0]*lxy[0]+lxy[1]*lxy[1]+lxy[2]*lxy[2])*pSqfastcand);
+	  if(fMinFastCosPointXYSq>0.&&(cospSqfast<fMinFastCosPointXYSq||cosnum<0))continue;
+	  if(fMinFastCosPoint3DSq>0.&&(cosp3DSqfast<fMinFastCosPoint3DSq||cosnum<0))continue;
 	  if(fFillFastVarForDebug){
 	    arrayTupleFast[0]=TMath::Sqrt(ptSqfastcand);
 	    arrayTupleFast[1]=TMath::Sqrt(cospSqfast);
 	    arrayTupleFast[2]=TMath::Sqrt(lxy[0]*lxy[0]+lxy[1]*lxy[1]);
 	    arrayTupleFast[3]=(ip12x+ip13x+ip23x)/3.-posPrimVtx[0];
 	    // arrayTupleFast[4]=(ip12y+ip13y+ip23y)/3.-posPrimVtx[1];
-	    
+	    arrayTupleFast[17]=deltaIpz12;
+	    arrayTupleFast[18]=deltaIpz13;
+	    arrayTupleFast[19]=deltaIpz23;
+	    arrayTupleFast[20]=TMath::Sqrt(cosp3DSqfast);
+	    //	    arrayTupleFast[22]=TMath::Sqrt((ip13x-ip12x)*(ip13x-ip12x)+(ip13y-ip12y)*(ip13y-ip12y));
+	    Double_t transvDiff1223=((ip23x-ip12x)*pxyzcand[1]+(ip23y-ip12y)*pxyzcand[0]);
+	    arrayTupleFast[22]=TMath::Sqrt(transvDiff1223*transvDiff1223/ptSqfastcand);
 	  }
 	  // cut on cand pt>2
 	  if(ptSqfastcand<fMinFastPtCand)continue;
@@ -1627,6 +1688,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	 if(fFillFastVarForDebug){
 	   //arrayTupleFast[5]=io3Prong->Pt();
 	   arrayTupleFast[4]=TMath::Abs(io3Prong->CosPointingAngleXY());
+	   arrayTupleFast[21]=TMath::Abs(io3Prong->CosPointingAngle());
 	   arrayTupleFast[5]=io3Prong->DecayLengthXY();
 	   AliAODVertex *vtxRD = (AliAODVertex*)io3Prong->GetSecondaryVtx();
 	   arrayTupleFast[6]=vtxRD->GetX()-posPrimVtx[0];
@@ -1797,6 +1859,27 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 				    , io3Prong->Pt());
 	    }
 	  }
+	}
+	else {
+
+
+	  if(fFillFastVarForDebug){
+	      Int_t pkpi[3]={-1,-1,-1};
+	      AliAODTrack *atrar[3]={track1,track2,track3};
+	      Double_t secVtxMC[3] = {-999,-999,-999};
+	      for(Int_t itra=0;itra<3;itra++){
+		// Int_t label=atrar[itra]->GetLabel();
+		// AliAODMCParticle *mcp=(AliAODMCParticle*)fmcArray->At(TMath::Abs(label));
+		// if(!mcp)break;
+		// Int_t ipdg=mcp->GetPdgCode();
+		Float_t dxy[2],cdxy[3];
+		atrar[itra]->GetImpactParameters(dxy,cdxy);
+		arrayTupleFast[7+itra]= atrar[itra]->Pt();
+		arrayTupleFast[10+itra]= dxy[0];	    
+	      }
+
+	    }
+	  
 	}
 	
 	
@@ -2117,7 +2200,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 	  point[7]=0;
 	  // this two filling fill the sparse with PID in cut object always
 	  if(fhSparseAnalysis && !fExplore_PIDstdCuts){
-
 	    if(fReadMC) {
  	      if(converted_isTrueLcXic==2 || converted_isTrueLcXic==6 || converted_isTrueLcXic==8 || converted_isTrueLcXic==11 || converted_isTrueLcXic==15 || converted_isTrueLcXic==17 || converted_isTrueLcXic==21){
 		/// these are real Lc,Xic->pKpi that are correctly reconstructed
@@ -2129,7 +2211,6 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
 		if(fKeepGenPtMC)  point[0]=part->Pt();  // use gen. pT for reconstructed candidates
 		fhSparseAnalysisReflections->Fill(point);
 	      }
-
 	    }
 	    if(!fReadMC || (fReadMC&&fIsXicUpgradeAnalysis&&fIsKeepOnlyBkgXicUpgradeAnalysis) ){
         fhSparseAnalysis->Fill(point);
@@ -2281,6 +2362,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   PostData(2,fCounter);
   PostData(3,fOutput);
   PostData(4,fTreeVar);
+  PostData(5,ftnFastVariables);
 
   return;
 }
@@ -4562,7 +4644,6 @@ Int_t AliAnalysisTaskSEXicTopKpi::DefinePbPbfilteringLoop(const AliAODTrack *tra
   return loop;
   
 }
-
 //____________________________________________________________________
 //____________________________________________________________________
 /// Build rotated Lc candidates and fill the analysis sparse with them
