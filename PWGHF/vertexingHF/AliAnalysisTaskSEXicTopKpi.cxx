@@ -433,7 +433,6 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fFillSparseReflections(kFALSE)
   ,fLoopOverSignalOnly(kFALSE)
   ,fptLoop1(2.)
-  ,fptLoop1(2.)
   ,fptLoop2(1.)
   ,fptLoop3(0.7)
   ,fminptTracksFastLoop(0.3)
