@@ -599,76 +599,38 @@ void AliAnalysisTaskKnoUeChecks::GetDetectorResponseDataDriven()
     Int_t multTS1_measured = 0;
     Int_t multTS2_measured = 0;
 
-    vector<Float_t> ptArray;
-    vector<Float_t> phiArray;
-    vector<Int_t>   indexArray;
-
+    
     // loop over reconstructed tracks
     for (Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
+        if (i == fRecLeadIn) continue;
+        
         AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!track) continue;
         if (!fTrackFilter->IsSelected(track)) continue;
         if (TMath::Abs(track->Eta()) > fEtaCut) continue;
         if (track->Pt() < fPtMin) continue;
 
-        if (i != fRecLeadIn) {
-            Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-            if (TMath::Abs(DPhi)< pi/3.0) {// near side
-                continue;
-            }
-            else if (TMath::Abs(DPhi-pi)< pi/3.0) {// away side
-                continue;
-            }
-            else {// transverse side
-                mult_true[0]++;
-                if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
-                    multTS1_true++;
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
 
-                } else {
-                    multTS2_true++;
-                }
-            }
-        }
+	if (TMath::Abs(DPhi)< pi/3.0) {// near side
+	    continue;
+	}
+	else if (TMath::Abs(DPhi-pi)< pi/3.0) {// away side
+	    continue;
+	}
+	else {// transverse side
+	    mult_true[0]++;
+	    if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+		multTS1_true++;
 
+	    } else {
+		multTS2_true++;
+	    }
+	}
+    
         // second track selection following the efficiency
         if (f_Eff3->Eval(track->Pt()) < gRandom->Uniform(0,1)) continue;
-        ptArray.push_back(track->Pt());
-        phiArray.push_back(track->Phi());
-        indexArray.push_back(i);
-    }
-
-    hNchTSDataTrue->Fill(mult_true[0]);
-
-    if (multTS2_true >= multTS1_true) {
-        mult_true[1] = multTS1_true;
-        mult_true[2] = multTS2_true;
-    } else {
-        mult_true[1] = multTS2_true;
-        mult_true[2] = multTS1_true;
-    }
-    hNchTSminDataTrue->Fill(mult_true[1]);
-    hNchTSmaxDataTrue->Fill(mult_true[2]);
-
-
-
-    // data driven
-    Float_t flPt = 0;
-    Float_t flPhi = 0;
-    Int_t flIndex = 0;
-    Int_t ntrk = ptArray.size();
-
-    for (Int_t i = 0; i < ntrk; ++i){
-        if (flPt < ptArray[i]){
-            flPt  = ptArray[i];
-            flPhi = phiArray[i];
-            flIndex = indexArray[i];
-        }
-    }
-
-    for (Int_t i = 0; i < ntrk; ++i) {
-        if (indexArray[i]==flIndex) continue;
-
-        Double_t DPhi = DeltaPhi(phiArray[i], flPhi);
+        
         if (TMath::Abs(DPhi) < pi/3.0) {// near side
             continue;
         }
@@ -687,6 +649,19 @@ void AliAnalysisTaskKnoUeChecks::GetDetectorResponseDataDriven()
         }
     }
 
+    hNchTSDataTrue->Fill(mult_true[0]);
+    
+    if (multTS2_true >= multTS1_true) {
+        mult_true[1] = multTS1_true;
+        mult_true[2] = multTS2_true;
+    } else {
+        mult_true[1] = multTS2_true;
+        mult_true[2] = multTS1_true;
+    }
+    hNchTSminDataTrue->Fill(mult_true[1]);
+    hNchTSmaxDataTrue->Fill(mult_true[2]);
+
+    
     hNchTSDataMeasured->Fill(mult_measured[0]);
 
     if (multTS2_measured >= multTS1_measured) {
@@ -703,11 +678,6 @@ void AliAnalysisTaskKnoUeChecks::GetDetectorResponseDataDriven()
     hNchTSminDataResponse->Fill(mult_measured[1], mult_true[1]);
     hNchTSmaxDataResponse->Fill(mult_measured[2], mult_true[2]);
 
-
-
-    ptArray.clear();
-    phiArray.clear();
-    indexArray.clear();
 }
 
 //______________________________________________________________ 
@@ -719,77 +689,39 @@ void AliAnalysisTaskKnoUeChecks::GetMultiplicityDistributionsDataDriven()
     Int_t multTS2_true = 0;
     Int_t multTS1_measured = 0;
     Int_t multTS2_measured = 0;
-
-    vector<Float_t> ptArray;
-    vector<Float_t> phiArray;
-    vector<Int_t>   indexArray;
+    
 
     // loop over reconstructed tracks
     for (Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
+        if (i == fRecLeadIn) continue;
+        
         AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!track) continue;
         if (!fTrackFilter->IsSelected(track)) continue;
         if (TMath::Abs(track->Eta()) > fEtaCut) continue;
         if (track->Pt() < fPtMin) continue;
 
-        if (i != fRecLeadIn) {
-            Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
-            if (TMath::Abs(DPhi)< pi/3.0) {// near side
-                continue;
-            }
-            else if (TMath::Abs(DPhi-pi)< pi/3.0) {// away side
-                continue;
-            }
-            else {// transverse side
-                mult_true[0]++;
-                if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
-                    multTS1_true++;
-
-                } else {
-                    multTS2_true++;
-                }
+        
+        Double_t DPhi = DeltaPhi(track->Phi(), fRecLeadPhi);
+        if (TMath::Abs(DPhi)< pi/3.0) {// near side
+            continue;
+        }
+        else if (TMath::Abs(DPhi-pi)< pi/3.0) {// away side
+            continue;
+        }
+        else {// transverse side
+            mult_true[0]++;
+            if (DPhi>pi/3.0 && DPhi<2*pi/3.0) {
+                multTS1_true++;
+                
+            } else {
+                multTS2_true++;
             }
         }
-
+        
         // second track selection following the efficiency
         if (f_Eff3->Eval(track->Pt()) < gRandom->Uniform(0,1)) continue;
-        ptArray.push_back(track->Pt());
-        phiArray.push_back(track->Phi());
-        indexArray.push_back(i);
-    }
-
-    hNchTSDataTrueTest->Fill(mult_true[0]);
-
-    if (multTS2_true >= multTS1_true) {
-        mult_true[1] = multTS1_true;
-        mult_true[2] = multTS2_true;
-    } else {
-        mult_true[1] = multTS2_true;
-        mult_true[2] = multTS1_true;
-    }
-    hNchTSminDataTrueTest->Fill(mult_true[1]);
-    hNchTSmaxDataTrueTest->Fill(mult_true[2]);
-
-
-
-    // data driven
-    Float_t flPt = 0;
-    Float_t flPhi = 0;
-    Int_t flIndex = 0;
-    Int_t ntrk = ptArray.size();
-
-    for (Int_t i = 0; i < ntrk; ++i){
-        if (flPt < ptArray[i]){
-            flPt  = ptArray[i];
-            flPhi = phiArray[i];
-            flIndex = indexArray[i];
-        }
-    }
-
-    for (Int_t i = 0; i < ntrk; ++i) {
-        if (indexArray[i]==flIndex) continue;
-
-        Double_t DPhi = DeltaPhi(phiArray[i], flPhi);
+        
         if (TMath::Abs(DPhi) < pi/3.0) {// near side
             continue;
         }
@@ -808,6 +740,19 @@ void AliAnalysisTaskKnoUeChecks::GetMultiplicityDistributionsDataDriven()
         }
     }
 
+    hNchTSDataTrueTest->Fill(mult_true[0]);
+
+    if (multTS2_true >= multTS1_true) {
+        mult_true[1] = multTS1_true;
+        mult_true[2] = multTS2_true;
+    } else {
+        mult_true[1] = multTS2_true;
+        mult_true[2] = multTS1_true;
+    }
+    hNchTSminDataTrueTest->Fill(mult_true[1]);
+    hNchTSmaxDataTrueTest->Fill(mult_true[2]);
+
+
     hNchTSDataMeasuredTest->Fill(mult_measured[0]);
 
     if (multTS2_measured >= multTS1_measured) {
@@ -819,12 +764,6 @@ void AliAnalysisTaskKnoUeChecks::GetMultiplicityDistributionsDataDriven()
     }
     hNchTSminDataMeasuredTest->Fill(mult_measured[1]);
     hNchTSmaxDataMeasuredTest->Fill(mult_measured[2]);
-
-    
-
-    ptArray.clear();
-    phiArray.clear();
-    indexArray.clear();
 }
 
 //______________________________________________________________
