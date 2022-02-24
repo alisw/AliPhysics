@@ -2348,7 +2348,7 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, con
 
 	if(mtype==0)
 	{
-		if(fEMCEG1)
+		if(fEMCEG1 && Nref>15) // ref =  12 for MB
 		{
 			if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklEG1_LHC16k"); 
 			if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklEG1_LHC16l"); 
