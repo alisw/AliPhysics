@@ -658,7 +658,7 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
     fESDtrackCuts_Deuteron -> SetClusterRequirementITS (AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
     fESDtrackCuts_Deuteron -> SetMaxChi2PerClusterITS(36);
     fESDtrackCuts_Deuteron -> SetMaxChi2PerClusterTPC(5);
-    fESDtrackCuts_Deuteron -> SetEtaRange(-0.8,0.8);
+    fESDtrackCuts_Deuteron -> SetEtaRange(-2.0,2.0);
     fESDtrackCuts_Deuteron -> SetMaxDCAToVertexXY(2);
     fESDtrackCuts_Deuteron -> SetMaxDCAToVertexZ(2);
     fESDtrackCuts_Deuteron -> SetDCAToVertex2D(kFALSE);
@@ -1019,8 +1019,7 @@ void AliAnalysisTaskDeuteronsRT::ProcessSimEvent ()  {
             if (!track) continue;
 
             //Basic Track Quality Cuts
-            if ( track->GetTPCsignalN() < 50 )                  continue;
-            if ( !fESDtrackCuts_Deuteron->AcceptTrack (track) ) continue;
+            if (!PassedBasicTrackQualityCuts_NoRapidityCut (track)) continue;
             
             //Rapidity
             Double_t mass = AliPID::ParticleMass(AliPID::kDeuteron);
@@ -1197,8 +1196,9 @@ Bool_t AliAnalysisTaskDeuteronsRT::PassedBasicTrackQualityCuts (AliESDtrack *tra
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
     
-    if ( track->GetTPCsignalN() < 50 )         return passedTrkSelection;
+    if ( track->GetTPCsignalN() < 50 )                  return passedTrkSelection;
     if ( !fESDtrackCuts_Deuteron->AcceptTrack (track) ) return passedTrkSelection;
+    if ( TMath::Abs(track->Eta()) > 0.8 )               return passedTrkSelection;
 
     
     //Rapidity Cut
