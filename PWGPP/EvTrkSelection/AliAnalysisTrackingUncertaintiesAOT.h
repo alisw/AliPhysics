@@ -30,7 +30,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
  public:
     
   enum {
-    kNumberOfAxes = 8
+    kNumberOfAxes = 12
   };
   enum ESpecies_t {
     kSpecElectron = BIT(0),
@@ -153,16 +153,16 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     
   TH1F *fHistNEvents;               //! histo with number of events
   TH1F *fHistCent;                  //! histo for the centrality 
-  THnSparse *fHistMC;               //! sparse of the tracks on MC and ITS-TOC matching
-  THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
-  THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
+  TH1F *fHistVtxResT;               //! primary vertex resolution in bending plane
+  TH1F *fHistVtxResZ;               //! primary vertex resolution in z
+  TH1F *fHistVtxZpos;               //! primary vertex z position
+  TH1F *fHistVtxChi2;               //! primary vertex chi2/ndf
   TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
   TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
   TH2F *fHistMCWeights;             //! histo of MC weights per particle type
-  TH1F *fHistVtxResT;               //! histo with number of events		       
-  TH1F *fHistVtxResZ;               //! histo for the centrality 		       
-  TH1F *fHistVtxZpos;               //! sparse of the tracks on MC and ITS-TOC matching
-  TH1F *fHistVtxChi2;               //! sparse of the tracks on MC and only TPC request
+  THnSparse *fHistMC;               //! sparse of the tracks on MC and ITS-TOC matching
+  THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
+  THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
 
 
 
