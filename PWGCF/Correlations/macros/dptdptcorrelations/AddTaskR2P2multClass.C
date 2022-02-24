@@ -1,4 +1,4 @@
-//  Macro designed for use with the AliAnalysisTaskR2P2 task.
+//  Macro designed for use with the AliAnalysisTaskR2P2multClass task.
 //  Author: (Baidyanath Sahoo, Basanta Kumar Nandi), IIT Bombay & Claude Pruneau, Wayne State University
 //                      Year
 //   PbPb               10:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
@@ -18,7 +18,7 @@
 // pp18_V0_kMB_kFALSE   18:     centralityMethod = 4 (V0),        trigger = kFALSE (AliVEvent::kMB).
 /////////////////////////////////////////////////////////////////////////////////
 
-AliAnalysisTaskR2P2 * AddTaskR2P2multClass
+AliAnalysisTaskR2P2multClass * AddTaskR2P2multClass
 (
  TString AnalysisDataType       = "MCAODreco", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString prefixName             = "reco_",
@@ -628,7 +628,7 @@ AliAnalysisTaskR2P2 * AddTaskR2P2multClass
   int iTask = 0; // task counter
   AliAnalysisDataContainer *taskInputContainer;
   AliAnalysisDataContainer *taskOutputContainer;
-  AliAnalysisTaskR2P2* task;
+  AliAnalysisTaskR2P2multClass* task;
   
   for (int iChSet=0; iChSet < nChSet; ++iChSet)
     {
@@ -821,7 +821,7 @@ AliAnalysisTaskR2P2 * AddTaskR2P2multClass
 		    }
 		}
 	      //       cout << "baidyaTest before task: "  << endl;
-	      task = new  AliAnalysisTaskR2P2(taskName);
+	      task = new  AliAnalysisTaskR2P2multClass(taskName);
 	      //configure my task
 	      task->SetDebugLevel(          debugLevel      );
 	      task->SetSameFilter(          sameFilter      );
