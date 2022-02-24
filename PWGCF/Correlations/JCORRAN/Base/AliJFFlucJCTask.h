@@ -11,6 +11,9 @@ public:
 	//
 	void UserCreateOutputObjects(); 
 	void UserExec(Option_t *);
+
+  void SetJCatalystTaskName(TString name) {fJCatalystTaskName = name;}	/// New
+
 	enum{
 		FLUC_PHI_CORRECTION  = 0x1,
 		FLUC_EBE_WEIGHTING   = 0x2,
@@ -25,6 +28,7 @@ public:
 	inline void SelectSubevents(UInt_t _subeventMask){
 		subeventMask = _subeventMask;
 	}
+
 private:
 	AliJCatalystTask *fJCatalystTask;
 	TString fTaskName;

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool setNUAmap = kFALSE, bool useTightCuts = kFALSE, bool ESDpileup = false, double slope = 3.38, double intercept = 15000, bool saveQApileup = false, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, int setNUAmap = 2, bool useTightCuts = kFALSE, bool ESDpileup = true, double slope = 3.38, double intercept = 15000, bool saveQApileup = false, bool getSC3h = kFALSE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
 { 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -25,11 +25,11 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     if (iOldConfig == iConfig) {break;}
 
     switch(iConfig) { // Hardcoded names to prevent typo in phi weights files.
-    case 0 :  // Default: hybrid.
-      configNames.push_back("hybrid");
-      break;
-    case 1 :  // Syst: global.
+    case 0 :  // Default: global.
       configNames.push_back("global");
+      break;
+    case 1 :  // Syst: hybrid.
+      configNames.push_back("hybrid");
       break;
     case 2 :  // Syst: nqq. TBI
       configNames.push_back("nqq");
@@ -72,12 +72,22 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   }
 
   for (int i = 0; i < Nsets; i++) {
-    if (setNUAmap) {  // Use the same minPt = 0.2 map for all config of minPt.
+    switch (setNUAmap) {
+    case 0:   // 0: Coarse binning, minPt = 0.2 for all.
       MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
         MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
-    } else {  // Use minPt dependent map.
+      break;
+    case 1:   // 1: Coarse binning, tuned minPt map.
       MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
         MAPdirname.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
+      break;
+    case 2:   // 2; Fine binning, minPt = 0.2 for all.
+      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_finerBins_pt02_s_%s.root",
+        MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+      break;
+    default:
+      std::cout << "ERROR: Invalid configuration index. Skipping this element."
+        << std::endl;   
     }
     cmaptask->EnablePhiCorrection(i, MAPfilenames[i]);  // i: index for 'SetPhiCorrectionIndex(i)'.
   }

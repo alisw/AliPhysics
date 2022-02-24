@@ -19,7 +19,7 @@
 #include "AliJFFlucJCTask.h"
 
 AliJFFlucJCTask::AliJFFlucJCTask(): fJCatalystTask(0), fTaskName("AliJFFlucJCTask"), fJCatalystTaskName("JCatalystTask"),
-	subeventMask(SUBEVENT_A|SUBEVENT_B),
+	pfa(NULL), subeventMask(SUBEVENT_A|SUBEVENT_B),
 	flags(0){
 	//
 }
@@ -29,6 +29,7 @@ AliJFFlucJCTask::AliJFFlucJCTask(const char *name):
 	fJCatalystTask(0),
 	fTaskName(name),
 	fJCatalystTaskName("JCatalystTask"),
+	pfa(NULL),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	flags(0){
 	DefineOutput(1,TList::Class());
@@ -37,9 +38,10 @@ AliJFFlucJCTask::AliJFFlucJCTask(const char *name):
 // ------------------------------------------------------------------------- //
 AliJFFlucJCTask::AliJFFlucJCTask(const AliJFFlucJCTask &a):
 	AliAnalysisTaskSE(a.GetName()), 
-	fTaskName(a.fTaskName),
 	fJCatalystTask(a.fJCatalystTask),
+	fTaskName(a.fTaskName),
 	fJCatalystTaskName(a.fJCatalystTaskName),
+	pfa(a.pfa),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	flags(0){ 
 	//

@@ -1123,12 +1123,12 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 	 fControlHistogramsList[icent]->Add(fProfileWeights[icent]);
 
 	 // Save the TH2D for the ESD-TPC pileup cut in Run2.
-		fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1500, 0., 7000., 5000, 0., 25000.);
+		fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1200, 0., 6000., 7000, 0., 35000.);
 	 	fESDpileupHistogram[icent][0]->GetXaxis()->SetTitle("M_{TPC}");
 	 	fESDpileupHistogram[icent][0]->GetYaxis()->SetTitle("M_{ESD}");
 	 	if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][0]);}
 
-	 	fESDpileupHistogram[icent][1] = new TH2D("fESDpileupHistogram_After","Correlations after ESD-TPC cuts", 1500, 0., 7000., 5000, 0., 25000.);
+	 	fESDpileupHistogram[icent][1] = new TH2D("fESDpileupHistogram_After","Correlations after ESD-TPC cuts", 1200, 0., 6000., 7000, 0., 35000.);
 	 	fESDpileupHistogram[icent][1]->GetXaxis()->SetTitle("M_{TPC}");
 	 	fESDpileupHistogram[icent][1]->GetYaxis()->SetTitle("M_{ESD}");
 	 	if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][1]);}
