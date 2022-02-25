@@ -80,7 +80,6 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
 	// task->SelectCollisionCandidates(AliVEvent::kINT7);
 	mgr->AddTask(task);
 
-      Printf("task done!");
 	// Create ONLY the output containers for the data produced by the
 	// task.  Get and connect other common input/output containers via
 	// the manager as below

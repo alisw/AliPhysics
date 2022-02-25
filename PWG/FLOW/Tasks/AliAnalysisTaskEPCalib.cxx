@@ -627,7 +627,7 @@ void AliAnalysisTaskEPCalib::UserCreateOutputObjects()
   // Copy TList
   Int_t inSlotCounter=1;
   if(fVZEROCalib18 || fFillVZEROQMean18) {
-    if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18q")) {
+    if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
       fListV0MCorr = (TList*) GetInputData(inSlotCounter);
       inSlotCounter++;
       if (!fListV0MCorr) {
@@ -1482,6 +1482,7 @@ void AliAnalysisTaskEPCalib::UserExec(Option_t *)
       fRunNum = run;
       fRunNumBin = GetRunNumBin(fRunNum);
       if (fRunNumBin<0) return;
+      // cout<<"run num bin : "<<fRunNum<<"    "<<fRunNumBin<<endl;
   } 
   hRunNumBin->Fill(fRunNumBin);
   hEvtCount->Fill(4);
@@ -1983,7 +1984,7 @@ void AliAnalysisTaskEPCalib::V0Plane(AliAODEvent* fAOD)
         double multCorGEC = -1;
 
         int ibinV0 = fHCorrectV0ChWeghts->FindBin(vz,iCh);
-        double V0chGE = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0); 
+        double V0chGE = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
         multCorGEC = mult*V0chGE;
         if (multCorGEC<0) continue;
 

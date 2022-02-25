@@ -223,6 +223,22 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				inSlotCounter++;
 				printf("qnSp already loaded\n");
 			}
+
+                		TFile *wCent;
+                		if(!AllContainers->FindObject("wCent")) {
+				AliAnalysisDataContainer *cin_wCent = mgr->CreateContainer(Form("wCent"), TList::Class(), AliAnalysisManager::kInputContainer);                			
+                			wCent = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/weightCent.root");
+				// Ref V0 qn percentail data copied from alien:////alice/cern.ch/user/a/adobrin/cmeESE15oP2/calibSpq2V0C15oP2.root
+                			TList* wCent_list = NULL;
+				wCent_list = dynamic_cast<TList*>(wCent->Get("15owCent"));
+                		    	cin_wCent->SetData(wCent_list); 
+                		    	mgr->ConnectInput(task,inSlotCounter,cin_wCent);
+                		    	inSlotCounter++;                		 
+                		}else {
+				mgr->ConnectInput(task,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("wCent"));
+				inSlotCounter++;
+				printf("wCent already loaded\n");
+			}
 		}
 	}
 	
