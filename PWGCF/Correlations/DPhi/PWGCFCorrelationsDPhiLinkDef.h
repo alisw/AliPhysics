@@ -114,5 +114,6 @@
 #pragma link C++ class AliV0ChParticle+;
 #pragma link C++ class AliAnalysisTaskR2P2+;
 #pragma link C++ class AliAnalysisTaskR2P2multClass+;
+#pragma link C++ class AliAnalysisTaskR2P2pp+;
 #endif
 
