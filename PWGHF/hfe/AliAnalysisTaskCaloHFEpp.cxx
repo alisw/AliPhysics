@@ -1151,10 +1151,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
-                if(clust->GetIsExotic())continue;
+                //if(clust->GetIsExotic())continue;
 
 		if(clust && clust->IsEMCAL())
 		{
+
+                        if(clust->GetIsExotic())continue;
 
                         Float_t tof = clust->GetTOF()*1e+9; // ns
 
@@ -1381,10 +1383,13 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		if(fFlagEMCalCorrection) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
-                if(clustMatch->GetIsExotic())continue;
+                //if(clustMatch->GetIsExotic())continue;
 
 		if(clustMatch && clustMatch->IsEMCAL())
 		{
+
+                        if(clustMatch->GetIsExotic())continue;
+
 			fHistMatchPt->Fill(TrkPt);
 
                         Float_t tof = clustMatch->GetTOF()*1e+9; // ns
@@ -2074,12 +2079,15 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 		
-                if(Assoclust->GetIsExotic())continue;
+                //if(Assoclust->GetIsExotic())continue;
 
                 ConeR = 0.;
 
 		if(Assoclust && Assoclust->IsEMCAL())
 		{
+
+                        if(Assoclust->GetIsExotic())continue;
+
 			Float_t Assoclpos[3] = {0.};
 			Assoclust->GetPosition(Assoclpos);
 
