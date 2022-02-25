@@ -118,6 +118,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   fListNUE(NULL),
   fListNUA(NULL), 
   fListVZEROCALIB(NULL),
+  fListwCent(NULL),
+  hwCent(NULL),
   fNegEtaQ(-999., -999.),
   fNegEtaQStar(-999., -999.),
   fPosEtaQ(-999., -999.),
@@ -176,6 +178,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   for (int i = 0; i < 90; ++i) splQ2c[i]=NULL; 
 
   for (int i = 0; i < 2; ++i) hCent[i]=NULL;
+  for (int i = 0; i < 138; ++i) hCentRBR[i]=NULL; 
   for (int i = 0; i < 2; ++i) hVz[i]=NULL;
 
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
@@ -249,6 +252,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   fListNUE(NULL),
   fListNUA(NULL), 
   fListVZEROCALIB(NULL),
+  fListwCent(NULL),
+  hwCent(NULL),
   fNegEtaQ(-999., -999.),
   fNegEtaQStar(-999., -999.),
   fPosEtaQ(-999., -999.),
@@ -307,6 +312,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   for (int i = 0; i < 90; ++i) splQ2c[i]=NULL; 
 
   for (int i = 0; i < 2; ++i) hCent[i]=NULL;
+  for (int i = 0; i < 138; ++i) hCentRBR[i]=NULL; 
   for (int i = 0; i < 2; ++i) hVz[i]=NULL;
 
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
@@ -368,6 +374,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
     if (fV0CalibOn) {
       DefineInput(inputslot, TList::Class());
       inputslot++;
+      DefineInput(inputslot, TList::Class());
+      inputslot++;   
     } 
   }
 
@@ -413,6 +421,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   fListNUE(NULL),
   fListNUA(NULL), 
   fListVZEROCALIB(NULL),
+  fListwCent(NULL),
+  hwCent(NULL),
   fNegEtaQ(-999., -999.),
   fNegEtaQStar(-999., -999.),
   fPosEtaQ(-999., -999.),
@@ -471,6 +481,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   for (int i = 0; i < 90; ++i) splQ2c[i]=NULL; 
 
   for (int i = 0; i < 2; ++i) hCent[i]=NULL;
+  for (int i = 0; i < 138; ++i) hCentRBR[i]=NULL; 
   for (int i = 0; i < 2; ++i) hVz[i]=NULL;
 
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
@@ -577,6 +588,8 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
       hRunNumBin = new TH1I("runNumBin","",150,0,150);
       for (int i=0; i<138; ++i){    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,runNumList[i].Data());
+        hCentRBR[i] = new TH1D(Form("hCentDist%i", (int)runNumList[i].Atoi()), "", 100, 0., 100.);
+        fOutputList->Add(hCentRBR[i]);
       }
       fOutputList->Add(hRunNumBin);
   }
@@ -662,6 +675,14 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
             };
             //TSplines in 1% centralicities
             for (Int_t isp = 0; isp < 90; isp++) splQ2c[isp] = (TSpline3*)fListVZEROCALIB->FindObject(Form("sp_q2V0C_%d", isp));
+
+            fListwCent = (TList*) GetInputData(inSlotCounter);   
+            inSlotCounter++;   
+            if (!fListwCent) {
+             AliError(Form("%s: weight of centrality for 15o cannot be opened.", GetName()));
+              return;
+            };  
+            hwCent = (TH1D*)fListwCent->FindObject("weightCent");
       }
   }
 
@@ -1041,6 +1062,7 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
     if (!RejectEvtTFFit (fAOD)) return; // 15o_pass2
   }
   hCent[1]->Fill(fCent);
+  hCentRBR[fRunNumBin]->Fill(fCent);
   hEvtCount->Fill(7);
   if (fDebug) Printf("pile-up done!");
 
@@ -1256,10 +1278,15 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
   //------------------
   // covariance
   //------------------
-  pRefFlow[fCentBin]->Add(pRefFlow_thisEvt);
-  pIntd2[fCentBin]->Add(pIntd2_thisEvt);
+  double wCent = 1.0; 
+  if (fPeriod.EqualTo("LHC15o")) {
+    int centBin = hwCent->FindBin(fCent);
+    wCent = hwCent->GetBinContent(centBin);
+  }
+  pRefFlow[fCentBin]->Add(pRefFlow_thisEvt, wCent);
+  pIntd2[fCentBin]->Add(pIntd2_thisEvt, wCent);
   pIntd2_thisEvt->Scale(mAch); 
-  pIntd2Ach[fCentBin]->Add(pIntd2_thisEvt);
+  pIntd2Ach[fCentBin]->Add(pIntd2_thisEvt, wCent);
   hEvtCount->Fill(14);
   return true;
 }
@@ -1690,37 +1717,37 @@ bool AliAnalysisTaskCMWESE::AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack *track
     hEta[1]->Fill(eta);
     hNhits[1]->Fill(nhits);
     hPDedx->Fill(track->P()*charge, dedx);
-    if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
-      //------------------
-      // dca cut
-      //------------------
-      double mag = fAOD->GetMagneticField(); 
-      double dcaxy  = 999.;
-      double dcaz   = 999.;
-      double r[3];
-      double dca[2];
-      double cov[3];
-      double vx    = fVtx->GetX();
-      double vy    = fVtx->GetY();
-      double vz    = fVtx->GetZ();
-      bool proptodca = track->PropagateToDCA(fVtx, mag, 100., dca, cov);
-      if (track->GetXYZ(r)) {
-        dcaxy = r[0];
-        dcaz  = r[1];
-      } else {
-        double dcax = r[0] - vx;
-        double dcay = r[1] - vy;
-        dcaz  = r[2] - vz;
-        dcaxy = sqrt(dcax*dcax + dcay*dcay);
-        // dcaxy = dca[0];
-      }
-      hDcaXy[0]->Fill(dcaxy);
-      if (fabs(dcaxy)>fDcaCutxy) return false;
-      hDcaXy[1]->Fill(dcaxy);
-      hDcaZ[0]->Fill(dcaz);
-      if (fabs(dcaz)>fDcaCutz) return false;
-      hDcaZ[1]->Fill(dcaz);     
-    }
+    // if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
+    //   //------------------
+    //   // dca cut
+    //   //------------------
+    //   double mag = fAOD->GetMagneticField(); 
+    //   double dcaxy  = 999.;
+    //   double dcaz   = 999.;
+    //   double r[3];
+    //   double dca[2];
+    //   double cov[3];
+    //   double vx    = fVtx->GetX();
+    //   double vy    = fVtx->GetY();
+    //   double vz    = fVtx->GetZ();
+    //   bool proptodca = track->PropagateToDCA(fVtx, mag, 100., dca, cov);
+    //   if (track->GetXYZ(r)) {
+    //     dcaxy = r[0];
+    //     dcaz  = r[1];
+    //   } else {
+    //     double dcax = r[0] - vx;
+    //     double dcay = r[1] - vy;
+    //     dcaz  = r[2] - vz;
+    //     dcaxy = sqrt(dcax*dcax + dcay*dcay);
+    //     // dcaxy = dca[0];
+    //   }
+    //   hDcaXy[0]->Fill(dcaxy);
+    //   if (fabs(dcaxy)>fDcaCutxy) return false;
+    //   hDcaXy[1]->Fill(dcaxy);
+    //   hDcaZ[0]->Fill(dcaz);
+    //   if (fabs(dcaz)>fDcaCutz) return false;
+    //   hDcaZ[1]->Fill(dcaz);     
+    // }
 
     return true;
 }
