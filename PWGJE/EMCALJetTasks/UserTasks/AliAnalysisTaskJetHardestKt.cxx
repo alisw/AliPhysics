@@ -1039,14 +1039,32 @@ std::shared_ptr<SelectedSubjets> AliAnalysisTaskJetHardestKt::IterativeParents(A
     if (isData == true && fDoTwoTrack == kTRUE && CheckClosePartner(jet, part)) {
       continue;
     }
-
     // Set the PseudoJet and add it to the inputs.
-    // NOTE: We want to use the charged pion mass hypothesis for data.
-    //       We need to explicitly set it here - otherwise, it will use some sort of mass hypotheis
-    //       derived from PID information. However, in the case of MC, we have the truth info, so
-    //       we may as well take advantage of it.
+    // NOTE: The mass arguments here are a bit complicated.
+    //       The jet constituents store the AliVParticle rather than the AliTLorentzVector. In the
+    //       case of particles from reconstruction, those particles will use some sort of mass
+    //       hypothesis derived from PID information, which isn't what we want in that case (as in
+    //       the main jet finding, we usually want to use the charged pion mass hypothesis). However,
+    //       there are other cases such as MC truth (where we have the true mass) or constituent
+    //       subtraction (where the algorithm handles the mass and sets it to some particular value)
+    //       where we do want to take the mass from the AliVParticle. The cases are summarized below:
+    //
+    // pp:
+    //  - Use charged pion mass hypothesis. Called with isData == true, so uses pion mass
+    // pythia:
+    //  - Det level: Use charged pion mass hypothesis. Called with isData == true, so uses pion mass
+    //  - Part level: Use true mass in AliVParticle. Called with isData == false, so will use true mass
+    // PbPb:
+    //  - Using CS: Use the AliVParticle mass. Called with isData == true, but the sub type is CS, so
+    //              it will use the existing mass.
+    //  - Non CS: Use charged pion mass hypothesis. Called with isData == true and the sub type is not CS,
+    //            so uses pion mass.
+    // embedPythia
+    //  - Hybrid: Same cases as PbPb data.
+    //  - Det level: Use charged pion mass hypothesis. Called with isDetLevelInEmbedding == true, so uses pion mass
+    //  - Part level: Use true mass in AliVParticle. Called with isData == false, so will use true mass
     double E = part->E();
-    if (isData || isDetLevelInEmbedding) {
+    if (isDetLevelInEmbedding || (isData && fJetShapeSub != kConstSub)) {
       //std::cout << "using charged pion mass hypothesis. " << std::boolalpha << "isData=" << isData << ", isDetLevelInEmbedding=" << isDetLevelInEmbedding << "\n";
       E = std::sqrt(std::pow(part->P(), 2) + std::pow(0.139, 2));
     }
