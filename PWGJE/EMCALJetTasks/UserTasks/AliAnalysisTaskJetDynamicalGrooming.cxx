@@ -1676,7 +1676,7 @@ std::string AliAnalysisTaskJetDynamicalGrooming::toString() const
 {
   std::stringstream tempSS;
   tempSS << std::boolalpha;
-  tempSS << "Dynmical grooming analysis task:\n";
+  tempSS << "Dynamical grooming analysis task:\n";
   tempSS << "Jet properties:\n";
   tempSS << "\tShared momentum fraction: " << fMinFractionShared << "\n";
   tempSS << "\tJet shape type: " << GetKeyFromMapValue(fJetShapeType, fgkJetShapeTypeMap) << "\n";
