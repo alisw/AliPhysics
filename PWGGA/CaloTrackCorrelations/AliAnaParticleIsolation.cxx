@@ -5292,7 +5292,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if ( !fFidCutGenLevel ) // Use same as reconstruction level
+    if ( !fCheckFidCutGenLevel ) // Use same as reconstruction level
     {
       if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
     }
