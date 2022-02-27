@@ -197,6 +197,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SetM02CutForSignal    (Float_t min, Float_t max ) { fM02Narrow[0] = min ; fM02Narrow[1] = max; }
   void         SetM02CutForBackground(Float_t min, Float_t max ) { fM02Wide  [0] = min ; fM02Wide  [1] = max; }
 
+  Bool_t       IsFiducialCutGenLevelOn()       const { return fCheckFidCutGenLevel           ; }
+  void         SwitchOnFiducialCutGenLevel()         { fCheckFidCutGenLevel = kTRUE ;
+                  if ( !fCheckFidCutGenLevel )  fFidCutGenLevel   = new AliFiducialCut()     ; }
+  void           SwitchOffFiducialCutGenLevel()      { fCheckFidCutGenLevel = kFALSE         ; }
+  AliFiducialCut  * GetFiducialCutGenLevel()         { if(!fCheckFidCutGenLevel)  fFidCutGenLevel  = new AliFiducialCut();
+                                                         return  fFidCutGenLevel             ; }
+  void         SetFiducialCutGenLevel(AliFiducialCut * fc) { delete fFidCutGenLevel;
+                                                         fFidCutGenLevel  = fc               ; }
+
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
@@ -318,6 +327,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliVCaloCells* fCaloCells;                          //!<! Temporary AliVCaloCells pointer for selected calorimeter candidate, avoid creation per event.
   Bool_t         fIsExoticTrigger;                    //!<! Trigger cluster considered as exotic
   Float_t        fClusterExoticity;                   //!<! Temporary container or currently analyzed cluster exoticity
+
+  Bool_t         fCheckFidCutGenLevel ;               ///< Do analysis for generated particles in defined region.
+  AliFiducialCut * fFidCutGenLevel;                   ///< Acceptance cuts at generator level, detector dependent.
 
   // Histograms  
   
@@ -717,7 +729,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,52) ;
+  ClassDef(AliAnaParticleIsolation,53) ;
   /// \endcond
 
 } ;
