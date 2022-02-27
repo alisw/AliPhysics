@@ -173,6 +173,43 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   if(Cent>70.0 || Cent<0.01) return;
   ((TH1D*) fOutputList->FindObject("NeventsCentHist"))->Fill(Cent);//Nevents vs centrality
 
+  if(fIsMC){
+    int nMCTracks;
+    if (!stack) nMCTracks = 0;
+    else nMCTracks = stack->GetEntries();
+    
+    if(fIsPileUpCuts){
+      AliAODMCHeader *mcHeader = 0;
+      mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if(!mcHeader) {
+        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+        return;
+      }
+      Bool_t isPileupInGeneratedEvent = kFALSE;
+      isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
+      if(isPileupInGeneratedEvent) return;
+    }
+    ((TH1D*) fOutputList->FindObject("GenNeventsCentHist"))->Fill(Cent);//Nevents vs centrality
+    for (Int_t i(0); i < nMCTracks; i++) {
+      AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
+      if (!p1) continue;
+      if(p1->Charge()==0)continue;//only get charged tracks
+      if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
+      if(!p1->IsPrimary()) continue;
+      if(!p1->IsPhysicalPrimary()) continue;
+      if(p1->Eta()> fEtaMax || p1->Eta()<fEtaMin ) continue;
+      if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
+      if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
+        //build background
+        ((TH2D*) fOutputList->FindObject("MCChargedBGHistOut"))->Fill(p1->Eta(), Cent);
+        if(p1->Charge() > 0) ((TH2D*) fOutputList->FindObject("MCPosBGHistOut"))->Fill(p1->Eta(), Cent);
+        if(p1->Charge() < 0) ((TH2D*) fOutputList->FindObject("MCNegBGHistOut"))->Fill(p1->Eta(), Cent);
+        ((TH3D*) fOutputList->FindObject("GenPhiEtaCentHist"))->Fill(p1->Phi(),p1->Eta(), Cent);
+        ((TH2D*) fOutputList->FindObject("GenPtCentHist"))->Fill(p1->Pt(), Cent);
+      }
+    }
+  }
+
 //fill hist nevent vs cent
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
@@ -205,43 +242,6 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
           ((TH3D*) fOutputList->FindObject("RecPhiEtaCentHist"))->Fill(mcTrack->Phi(),mcTrack->Eta(), Cent);
           ((TH2D*) fOutputList->FindObject("RecPtCentHist"))->Fill(mcTrack->Pt(), Cent);
         }
-      }
-    }
-  }
-  
-  if(fIsMC){
-    int nMCTracks;
-    if (!stack) nMCTracks = 0;
-    else nMCTracks = stack->GetEntries();
-    
-    if(fIsPileUpCuts){
-      AliAODMCHeader *mcHeader = 0;
-      mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-      if(!mcHeader) {
-        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
-        return;
-      }
-        Bool_t isPileupInGeneratedEvent = kFALSE;
-        isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
-        if(isPileupInGeneratedEvent) return;
-    }
-    ((TH1D*) fOutputList->FindObject("GenNeventsCentHist"))->Fill(Cent);//Nevents vs centrality
-    for (Int_t i(0); i < nMCTracks; i++) {
-      AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
-      if (!p1) continue;
-      if(p1->Charge()==0)continue;//only get charged tracks
-      if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
-      if(!p1->IsPrimary()) continue;
-      if(!p1->IsPhysicalPrimary()) continue;
-      if(p1->Eta()> fEtaMax || p1->Eta()<fEtaMin ) continue;
-      if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
-      if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
-        //build background
-        ((TH2D*) fOutputList->FindObject("MCChargedBGHistOut"))->Fill(p1->Eta(), Cent);
-        if(p1->Charge() > 0) ((TH2D*) fOutputList->FindObject("MCPosBGHistOut"))->Fill(p1->Eta(), Cent);
-        if(p1->Charge() < 0) ((TH2D*) fOutputList->FindObject("MCNegBGHistOut"))->Fill(p1->Eta(), Cent);
-        ((TH3D*) fOutputList->FindObject("GenPhiEtaCentHist"))->Fill(p1->Phi(),p1->Eta(), Cent);
-        ((TH2D*) fOutputList->FindObject("GenPtCentHist"))->Fill(p1->Pt(), Cent);
       }
     }
   }
@@ -298,6 +298,42 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
   MCnegSignal = new TH1D("MCNegSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
   MCchargedSignal = new TH1D("MCchargedSignal", "postrack;eta;centrality", fNetabins,fEtaMin,fEtaMax);
 
+
+  if(fIsMC){
+    int nMCTracks;
+    if (!stack) nMCTracks = 0;
+    else nMCTracks = stack->GetEntries();
+  
+    if(fIsPileUpCuts){
+      AliAODMCHeader *mcHeader = 0;
+      mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if(!mcHeader) {
+        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+        return;
+      }
+      Bool_t isPileupInGeneratedEvent = kFALSE;
+      isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,fGenName);
+      if(isPileupInGeneratedEvent) return;
+    }
+  
+    for (Int_t i(0); i < nMCTracks; i++) {
+      AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
+      if (!p1) continue;
+      if(p1->Charge()==0)continue;//only get charged tracks
+      if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
+      if(!p1->IsPrimary()) continue;
+      if(!p1->IsPhysicalPrimary()) continue;
+      if(p1->Eta() > fEtaMax || p1->Eta()<fEtaMin ) continue;
+      if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
+      if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
+        // calculate signal    
+        MCchargedSignal->Fill(p1->Eta());
+        if(p1->Charge() > 0) MCposSignal->Fill(p1->Eta());
+        if(p1->Charge() < 0) MCnegSignal->Fill(p1->Eta());        
+      }
+    }
+
+
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {                 // loop over all these tracks
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
@@ -349,39 +385,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     }
   }
 
-  if(fIsMC){
-    int nMCTracks;
-    if (!stack) nMCTracks = 0;
-    else nMCTracks = stack->GetEntries();
-  
-    if(fIsPileUpCuts){
-      AliAODMCHeader *mcHeader = 0;
-      mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-      if(!mcHeader) {
-        printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
-        return;
-      }
-      Bool_t isPileupInGeneratedEvent = kFALSE;
-      isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,fGenName);
-      if(isPileupInGeneratedEvent) return;
-    }
-  
-    for (Int_t i(0); i < nMCTracks; i++) {
-      AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
-      if (!p1) continue;
-      if(p1->Charge()==0)continue;//only get charged tracks
-      if(p1->Charge()!=-3 && p1->Charge()!=+3) continue;// x3 by convention
-      if(!p1->IsPrimary()) continue;
-      if(!p1->IsPhysicalPrimary()) continue;
-      if(p1->Eta() > fEtaMax || p1->Eta()<fEtaMin ) continue;
-      if(p1->Pt() < fPtmin|| p1->Pt() > fPtmax) continue;
-      if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
-        // calculate signal    
-        MCchargedSignal->Fill(p1->Eta());
-        if(p1->Charge() > 0) MCposSignal->Fill(p1->Eta());
-        if(p1->Charge() < 0) MCnegSignal->Fill(p1->Eta());        
-      }
-    }
+
     //calculate coefficients if histogram is full
     if(MCchargedSignal->Integral()>0) {
       TH1D *MCchargedBG = fMCChargedBackgroundHist->ProjectionX("MCchargedbackground", ncentbin,ncentbin);
