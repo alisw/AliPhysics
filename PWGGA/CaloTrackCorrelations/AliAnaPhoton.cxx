@@ -939,13 +939,11 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, Int_t sm, Int_t nMaxima
   Float_t ptcluster  = fMomentum.Pt();
   Float_t ecluster   = fMomentum.E();
   Float_t etacluster = fMomentum.Eta();
-  Float_t phicluster = fMomentum.Phi();
+  Float_t phicluster = GetPhi(fMomentum.Phi());
 
   Float_t eRecoRes   = -10000;
   if ( egen > 0.1 ) eRecoRes = (ecluster-egen) / egen;
   
-  if ( phicluster < 0 ) phicluster+=TMath::TwoPi();
-
   AliDebug(2,Form("Current Event %d; Before selection : E %2.2f, pT %2.2f, phi %2.2f, eta %2.2f",
            GetReader()->GetEventNumber(),
            ecluster, ptcluster, phicluster*TMath::RadToDeg(), etacluster));
@@ -7851,23 +7849,23 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 
           if ( fFillPromptPhotonGenRecoEtaPhi && GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt) )
           {
-            Float_t genPhi = fPrimaryMom.Phi();
+            Float_t genPhi = GetPhi(fPrimaryMom.Phi());
             Float_t genEta = fPrimaryMom.Eta();
-            Bool_t in = GetFiducialCut()->IsInFiducialCut(fPrimaryMom.Eta(),fPrimaryMom.Phi(),GetCalorimeter()) ;
+            Bool_t in = GetFiducialCut()->IsInFiducialCut(genEta,genPhi,GetCalorimeter()) ;
 
             if ( !bConverted )
             {
-              fhMCPromptPhotonDeltaPhiRecGen->Fill(fMomentum.Pt(),fMomentum.Phi()-genPhi, GetEventWeight()*weightPt);
-              fhMCPromptPhotonDeltaEtaRecGen->Fill(fMomentum.Pt(),fMomentum.Eta()-genEta, GetEventWeight()*weightPt);
-              fhMCPromptPhotonEtaPhiGenAssociatedReco->Fill(fMomentum.Pt(),genEta,genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonDeltaPhiRecGen->Fill(pt, phi-genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonDeltaEtaRecGen->Fill(pt, eta-genEta, GetEventWeight()*weightPt);
+              fhMCPromptPhotonEtaPhiGenAssociatedReco->Fill(pt, genEta, genPhi, GetEventWeight()*weightPt);
               fhMCPromptPhotonAssociatedPtGen->Fill(ptgen, GetEventWeight()*weightPt);
               if ( in ) fhMCPromptPhotonAssociatedPtGenInFidCut->Fill(ptgen, GetEventWeight()*weightPt);
             }
             else
             {
-              fhMCPromptPhotonDeltaPhiRecGenConv->Fill(fMomentum.Pt(),fMomentum.Phi()-genPhi, GetEventWeight()*weightPt);
-              fhMCPromptPhotonDeltaEtaRecGenConv->Fill(fMomentum.Pt(),fMomentum.Eta()-genEta, GetEventWeight()*weightPt);
-              fhMCPromptPhotonEtaPhiGenConvAssociatedReco->Fill(fMomentum.Pt(),genEta,genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonDeltaPhiRecGenConv->Fill(pt, phi-genPhi, GetEventWeight()*weightPt);
+              fhMCPromptPhotonDeltaEtaRecGenConv->Fill(pt, eta-genEta, GetEventWeight()*weightPt);
+              fhMCPromptPhotonEtaPhiGenConvAssociatedReco->Fill(pt, genEta, genPhi, GetEventWeight()*weightPt);
               fhMCPromptPhotonAssociatedPtGenConv->Fill(ptgen, GetEventWeight()*weightPt);
               if ( in ) fhMCPromptPhotonAssociatedPtGenConvInFidCut->Fill(ptgen, GetEventWeight()*weightPt);
             }
