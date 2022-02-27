@@ -107,7 +107,7 @@ AliAnalysisTaskAlphaPiAOD::~AliAnalysisTaskAlphaPiAOD() {
 ///
 void AliAnalysisTaskAlphaPiAOD::UserCreateOutputObjects() {
     fHistos = new THistManager("hyperhists");
-    fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms()); // EventCuts QA Histograms
+    fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms());  // EventCuts QA Histograms
 
     // QA Histograms
     fHistos->CreateTH2("QA/hTPCPIDAlpha", "TPC PID #alpha;#it{p}_{T} (GeV/#it{c});n_{#sigma} #alpha", 200, 0, 20, 200, 0, 200);
@@ -244,19 +244,23 @@ void AliAnalysisTaskAlphaPiAOD::UserExec(Option_t *) {
                 continue;
         }
 
-        double pNsigma{fMC ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha) : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
-        double nNsigma{fMC ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha) : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
+        double pNsigma{fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
+                       : fMC         ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
+                                     : customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal())};
+        double nNsigma{fUseCustomPID ? fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha)
+                       : fMC         ? fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha)
+                                     : customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal())};
         if (std::abs(pNsigma) > 5 && std::abs(nNsigma) > 5) {
             continue;
         }
         if (std::abs(pNsigma) < 5 && std::abs(nNsigma) < 5) {
             continue;
         }
-        fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum(),customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal()));
-        fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(),customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal()));
-        if(fMC) {
-            fHistos->FillTH2("QA_MC/hTPCPIDAlpha", pTrack->GetTPCmomentum(),fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha));
-            fHistos->FillTH2("QA_MC/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(),fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha));
+        fHistos->FillTH2("QA/hTPCPIDAlpha", pTrack->GetTPCmomentum(), customNsigma(pTrack->GetTPCmomentum(), pTrack->GetTPCsignal()));
+        fHistos->FillTH2("QA/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(), customNsigma(nTrack->GetTPCmomentum(), nTrack->GetTPCsignal()));
+        if (fMC) {
+            fHistos->FillTH2("QA_MC/hTPCPIDAlpha", pTrack->GetTPCmomentum(), fPID->NumberOfSigmasTPC(pTrack, AliPID::kAlpha));
+            fHistos->FillTH2("QA_MC/hTPCPIDAntiAlpha", nTrack->GetTPCmomentum(), fPID->NumberOfSigmasTPC(nTrack, AliPID::kAlpha));
         }
 
         fRecHyper->Matter = std::abs(pNsigma) < 5;
