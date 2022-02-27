@@ -199,10 +199,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t       IsFiducialCutGenLevelOn()       const { return fCheckFidCutGenLevel           ; }
   void         SwitchOnFiducialCutGenLevel()         { fCheckFidCutGenLevel = kTRUE ;
-                  if ( !fCheckFidCutGenLevel )  fFidCutGenLevel   = new AliFiducialCut()     ; }
+                            if ( !fFidCutGenLevel )  fFidCutGenLevel   = new AliFiducialCut(); }
   void           SwitchOffFiducialCutGenLevel()      { fCheckFidCutGenLevel = kFALSE         ; }
-  AliFiducialCut  * GetFiducialCutGenLevel()         { if(!fCheckFidCutGenLevel)  fFidCutGenLevel  = new AliFiducialCut();
-                                                         return  fFidCutGenLevel             ; }
+  AliFiducialCut  * GetFiducialCutGenLevel()         { if ( !fFidCutGenLevel ) fFidCutGenLevel  = new AliFiducialCut() ;
+                                                      return  fFidCutGenLevel                ; }
   void         SetFiducialCutGenLevel(AliFiducialCut * fc) { delete fFidCutGenLevel;
                                                          fFidCutGenLevel  = fc               ; }
 
