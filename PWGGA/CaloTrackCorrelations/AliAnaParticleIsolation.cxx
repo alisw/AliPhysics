@@ -82,6 +82,7 @@ fMomDaugh1(),                     fMomDaugh2(),
 fTrackVector(),                   fProdVertex(),
 fCluster(0),                      fClustersArr(0),                          fCaloCells(0),                
 fIsExoticTrigger(0),              fClusterExoticity(1),
+fCheckFidCutGenLevel (0),         fFidCutGenLevel(0x0),
 // Histograms
 
 fhPtInConeExoTrigger(0),          fhPtClusterInConeExoTrigger(0),           fhPtTrackInConeExoTrigger(0),
@@ -5291,8 +5292,14 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
-    if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
-    
+    if ( !fFidCutGenLevel ) // Use same as reconstruction level
+    {
+      if ( !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
+    }
+    else // use a bit larger acceptance than reco level
+    {
+      if ( !fFidCutGenLevel->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),fIsoDetector) ) continue ;
+    }
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
