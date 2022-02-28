@@ -90,16 +90,46 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     
     void                    FillTreeElectron(AliAODTrack* trk, AliAODEvent *aodEvent, TClonesArray * mcArray);
     
+     // ----------- mixing
+    void                    SetEventMixingWithPools(Bool_t domixing){fDoEventMixing= domixing;}
+    Bool_t                  GetEventMixingWithPools() const { return fDoEventMixing;}
+    void                    SetNumberOfEventsForMixing(Int_t events){fNumberOfEventsForMixing=events;}
+    
+    void                    SetPoolZVertBinLimits(Int_t NzVertPoolsLimSize, const Double_t *zVertPoolLims){
+                            fNzVertPoolsLimSize = NzVertPoolsLimSize;
+                            for (int ix =0; ix< fNzVertPoolsLimSize+1; ix++ ) {fzVertPoolLims[ix] = zVertPoolLims[ix]; }
+                            }
+    void                    SetMultiplicityBinLimits(Int_t NMultPoolsLimSize, const Double_t *MultPoolLims){
+                            fNMultPoolsLimSize = NMultPoolsLimSize;
+                            for (int ix =0; ix < fNMultPoolsLimSize+1; ix++ ) { fMultPoolLims[ix] = MultPoolLims[ix]; }
+                            }
+    void                    DoEventMixingWithPools(Int_t index,AliAODEvent *aodEvent, Bool_t *seleCascFlags, KFParticle PV,  TClonesArray *mcArray);
+    void                    ResetPool(Int_t poolIndex);
+    Int_t                   GetPoolIndex(Double_t zvert, Double_t mult);
+    
+    void                    FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV , TClonesArray *mcArray, AliAODEvent *aodEvent,  Int_t decaytype);
+    
+    void                    SetWriteMixedEventTree(Bool_t a){fWriteMixedEventTree =a;}
+    Bool_t                  GetWriteMixedEventTree() const {return fWriteMixedEventTree;  }
+    
+    void                    SetWriteTrackRotation(Bool_t a){fWriteTrackRotation =a;}
+    Bool_t                  GetwriteTrackRotation() const {return fWriteTrackRotation; }
+    
+    
     //--- private
     
 private:
+    AliAnalysisTaskSESemileptonicOmegac0KFP(const AliAnalysisTaskSESemileptonicOmegac0KFP &source);
+    AliAnalysisTaskSESemileptonicOmegac0KFP& operator=(const AliAnalysisTaskSESemileptonicOmegac0KFP& source);
+    
     void                     DefineEvent();
     void                     DefineTreeRecoOmegac0();
     void                     DefineTreeRecoOmegac0_QA();
     void                     DefineTreeMCGenOmegac0();
     void                     DefineAnaHist();
     void                     DefineTreeElectron();
-  
+    void                     DefineTreeMixedEvent();
+    
     AliPIDResponse*          fPID; ///<
     AliRDHFCutsOmegactoeleOmegafromKFP*   fAnalCuts; /// !<! Cuts
     AliAODVertex*           fpVtx;                //!<! primary vertex
@@ -136,8 +166,32 @@ private:
     THnSparse*              fHistoMassConversions;          //!<! electron-pairs mass conversion
     THnSparse*              fHistoElectronTPCTOFSelPID;     //!<! TPC, TOF electron PID
     
+    // ----------- mixing
+    Double_t                fVtxZ; /// zVertex
+    Bool_t                  fDoEventMixing; ///< flag for event mixing
+    Int_t                   fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
+  
+    Int_t                   fNzVertPoolsLimSize;       /// number of pools in z vertex for event mixing +1
+    Double_t                fzVertPoolLims[100];        //[fNzVertPoolsLimSize] limits of the pools in zVertex
+    Int_t                   fNMultPoolsLimSize;        /// number of pools in multiplicity for event mixing +1
+    Double_t                fMultPoolLims[100];         //[fNMultPoolsLimSize] limits of the pools in multiplicity
+    
+    Int_t                   fNOfPools; /// number of pools
+    TTree**                 fEventBuffer;   //!<! structure for event mixing
+    TObjString*             fEventInfo; ///unique event id for mixed event check
+    TObjArray*              fElectronTracks; /// array of electron-compatible tracks
+  
+    ULong64_t               fEventID;  /// eventID to store
+    Double_t                fMultiplicityEM;        /// multiplicity for ev mix pools
+    TH2F*                   fHistEventTrackletZvME;          //!<! hist. of evnt Tracklet vs. Zv for Mixed Event (ME)
+    Bool_t                  fWriteMixedEventTree;  ///< flag to decide whether to write MixedEvent tree
+    TTree*                  fTree_MixedEvent;           //!<! tree of mixed event
+    Float_t*                fVar_MixedEvent;              //!<! variables of mixed event to be written to the tree
+    Bool_t                  fWriteTrackRotation;  ///< flag to switch track rotation
+    
+    
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,3);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,4);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 
