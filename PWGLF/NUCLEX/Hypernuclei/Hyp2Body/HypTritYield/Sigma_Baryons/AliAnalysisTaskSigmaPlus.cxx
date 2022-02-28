@@ -3104,8 +3104,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             Double_t kstar = TMath::Sqrt((vara*vara-cProtonMass*cProtonMass*cSigmaMass*cSigmaMass)/(2*vara+cProtonMass*cProtonMass+cSigmaMass*cSigmaMass));
             
             if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar);   //Do some preselection and save as QA
-            if(prot->Charge()>0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&DCAxy>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistSigmaProtonkstar",kstar);                                    
-            if(prot->Charge()<0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&DCAxy>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistAntiSigmaProtonkstar",kstar);                                    
+            if(prot->Charge()>0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&TMath::Abs(DCAxy)>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistSigmaProtonkstar",kstar);                                    
+            if(prot->Charge()<0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&TMath::Abs(DCAxy)>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistAntiSigmaProtonkstar",kstar);                                    
             if(kstar<flowkstar) pairslowkstar++;
             if(kstar<fverylowkstar) pairsverylowkstar++;
             if(kstar<fveryverylowkstar) pairsveryverylowkstar++;
@@ -3116,7 +3116,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           if(isReallySigma) fIsMCSigma = kTRUE;
           fIsMCPrimary = kFALSE;
           if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
-          if(pi0mass>fMinPairPi0Mass&&pi0mass<fMaxPairPi0Mass&&SigmaPointingAngle<fMaxPairSigmaPA&&DCAxy>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
+          if(pi0mass>fMinPairPi0Mass&&pi0mass<fMaxPairPi0Mass&&SigmaPointingAngle<fMaxPairSigmaPA&&TMath::Abs(DCAxy)>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
           else fIsGoodCandidate = kFALSE;
           fIsV01fromFinder = kTRUE;
           fIsV02fromFinder = kTRUE;
@@ -3193,7 +3193,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           if(pi0mass<fMinPairPi0Mass) continue;
           if(pi0mass>fMaxPairPi0Mass) continue;
           if(SigmaPointingAngle>fMaxPairSigmaPA) continue;
-          if(DCAxy<fMinPairProtonDCAxy) continue;
+          if(TMath::Abs(DCAxy)<fMinPairProtonDCAxy) continue;
           if(sigmaplusmass<fMinPairSigmaMass) continue; 
           if(sigmaplusmass>fMaxPairSigmaMass) continue;
 
@@ -3562,8 +3562,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff() {
             Double_t kstar = TMath::Sqrt((vara*vara-cProtonMass*cProtonMass*cSigmaMass*cSigmaMass)/(2*vara+cProtonMass*cProtonMass+cSigmaMass*cSigmaMass));
 
             if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar);
-            if(prot->Charge()>0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&DCAxy>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistSigmaProtonkstar",kstar);                                    
-            if(prot->Charge()<0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&DCAxy>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistAntiSigmaProtonkstar",kstar);                                    
+            if(prot->Charge()>0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&TMath::Abs(DCAxy)>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistSigmaProtonkstar",kstar);                                    
+            if(prot->Charge()<0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&TMath::Abs(DCAxy)>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistAntiSigmaProtonkstar",kstar);                                    
             if(kstar<flowkstar) pairslowkstar++;
             if(kstar<fverylowkstar) pairsverylowkstar++;
             if(kstar<fveryverylowkstar) pairsveryverylowkstar++;
@@ -3574,7 +3574,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff() {
           if(isReallySigma) fIsMCSigma = kTRUE;
           fIsMCPrimary = kFALSE;
           if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
-          if(pi0mass>fMinPairPi0Mass&&pi0mass<fMaxPairPi0Mass&&SigmaPointingAngle<fMaxPairSigmaPA&&DCAxy>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
+          if(pi0mass>fMinPairPi0Mass&&pi0mass<fMaxPairPi0Mass&&SigmaPointingAngle<fMaxPairSigmaPA&&TMath::Abs(DCAxy)>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
           else fIsGoodCandidate = kFALSE;
           fIsV01fromFinder = kFALSE;
           fIsV02fromFinder = kTRUE;
@@ -3959,8 +3959,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff2() {
             Double_t kstar = TMath::Sqrt((vara*vara-cProtonMass*cProtonMass*cSigmaMass*cSigmaMass)/(2*vara+cProtonMass*cProtonMass+cSigmaMass*cSigmaMass));
 
             if(isReallySigma) FillHistogram("fHistMCSigmaProtonkstar",kstar);
-            if(prot->Charge()>0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&DCAxy>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistSigmaProtonkstar",kstar);                                    
-            if(prot->Charge()<0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&DCAxy>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistAntiSigmaProtonkstar",kstar);                                    
+            if(prot->Charge()>0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&TMath::Abs(DCAxy)>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistSigmaProtonkstar",kstar);                                    
+            if(prot->Charge()<0&&pi0mass>0.1&&pi0mass<0.16&&SigmaPointingAngle<0.04&&TMath::Abs(DCAxy)>0.01&&sigmaplusmass>1.17&&sigmaplusmass<1.2) FillHistogram("fHistAntiSigmaProtonkstar",kstar);                                    
             if(kstar<flowkstar) pairslowkstar++;
             if(kstar<fverylowkstar) pairsverylowkstar++;
             if(kstar<fveryverylowkstar) pairsveryverylowkstar++;
@@ -3971,7 +3971,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOff2() {
           if(isReallySigma) fIsMCSigma = kTRUE;
           fIsMCPrimary = kFALSE;
           if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
-          if(pi0mass>fMinPairPi0Mass&&pi0mass<fMaxPairPi0Mass&&SigmaPointingAngle<fMaxPairSigmaPA&&DCAxy>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
+          if(pi0mass>fMinPairPi0Mass&&pi0mass<fMaxPairPi0Mass&&SigmaPointingAngle<fMaxPairSigmaPA&&TMath::Abs(DCAxy)>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
           else fIsGoodCandidate = kFALSE;
           fIsV01fromFinder = kFALSE;
           fIsV02fromFinder = kFALSE;
@@ -4258,7 +4258,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesOneGamma() {
       if(isReallySigma) fIsMCSigma = kTRUE;
       fIsMCPrimary = kFALSE;
       if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
-      if(SigmaPointingAngle<fMaxPairSigmaPA&&DCAxy>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
+      if(SigmaPointingAngle<fMaxPairSigmaPA&&TMath::Abs(DCAxy)>fMinPairProtonDCAxy&&sigmaplusmass>fMinPairSigmaMass&&sigmaplusmass<fMaxPairSigmaMass) fIsGoodCandidate = kTRUE;
       else fIsGoodCandidate = kFALSE;
       fIsV0fromFinder = kTRUE;
       fIsV0Onthefly = v0->GetOnFlyStatus();
