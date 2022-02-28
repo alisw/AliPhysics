@@ -57,9 +57,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr() : AliAnalysisTaskSE(),
     fEtaGap(-1),
     fPtMin(0.2),
     fPtMax(3.0),
+    fPUcut(1500),
     fRndm(0),
     fNbootstrap(10),
     fUseWeightsOne(false),
+    fPileupOff(false),
     mpar(6),
     fEventWeight(PtSpace::kWmaxperm),
     fV0MMulti(0),
@@ -98,9 +100,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, bool IsMC, TStrin
     fEtaGap(-1),
     fPtMin(0.2),
     fPtMax(3.0),
+    fPUcut(1500),
     fRndm(0),
     fNbootstrap(10),
     fUseWeightsOne(false),
+    fPileupOff(false),
     mpar(6),
     fEventWeight(PtSpace::kWmaxperm),
     fV0MMulti(0),
@@ -135,11 +139,11 @@ AliAnalysisTaskPtCorr::~AliAnalysisTaskPtCorr()
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
-    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    if(!fPileupOff) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 
     //Then override PU cut if required:
-    if(fGFWSelection->GetSystFlagIndex()==22)
-      fEventCuts.fESDvsTPConlyLinearCut[0] = 1500.;
+    if(fGFWSelection->GetSystFlagIndex()==22 && !fPileupOff)
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fPUcut;
 }
 void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
 {
