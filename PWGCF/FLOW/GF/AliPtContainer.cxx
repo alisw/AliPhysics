@@ -242,6 +242,20 @@ void AliPtContainer::FillKurtosis(double inarr[10][10], const double &lMult, con
     ((AliProfileBS*)fTermList->At(4))->FillProfile(lMult,inarr[1][1]/lwpt,lwpt,rn);
     return;
 }
+void AliPtContainer::RebinMulti(Int_t nbins) 
+{   
+    if(fTermList) for(Int_t i=0;i<fTermList->GetEntries();i++) ((AliProfileBS*)fTermList->At(i))->RebinMulti(nbins); 
+    if(fCorrList) for(Int_t i=0;i<fCorrList->GetEntries();i++) ((AliProfileBS*)fCorrList->At(i))->RebinMulti(nbins); 
+    if(fSubList) for(Int_t i=0;i<fSubList->GetEntries();i++) ((AliProfileBS*)fSubList->At(i))->RebinMulti(nbins); 
+    return;
+}
+void AliPtContainer::RebinMulti(Int_t nbins, Double_t *binedges) 
+{
+    if(fTermList) for(Int_t i=0;i<fTermList->GetEntries();i++) ((AliProfileBS*)fTermList->At(i))->RebinMulti(nbins,binedges); 
+    if(fCorrList) for(Int_t i=0;i<fCorrList->GetEntries();i++) ((AliProfileBS*)fCorrList->At(i))->RebinMulti(nbins,binedges); 
+    if(fSubList) for(Int_t i=0;i<fSubList->GetEntries();i++) ((AliProfileBS*)fSubList->At(i))->RebinMulti(nbins,binedges); 
+    return;
+}
 TH1* AliPtContainer::getHist(int ind)
 {
   if(!fMomentList) CalculateObs();

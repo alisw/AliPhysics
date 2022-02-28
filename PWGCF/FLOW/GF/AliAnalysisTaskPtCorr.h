@@ -44,6 +44,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetTrigger(unsigned int newval) {fTriggerType = newval; };
     void SetEta(double eta) { fEta = eta; }
     void SetEtaGap(double eta) { fEtaGap = eta; }
+    void TurnOffPileup(bool off) { fPileupOff = off; }
+    void SetPileupCut(double cut) { fPUcut = cut; }
     void SetPtRange(double ptmin, double ptmax) { fPtMin = ptmin; fPtMax = ptmax; }
     void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
@@ -74,9 +76,11 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double                  fEtaGap;
     double                  fPtMin;
     double                  fPtMax;
+    double                  fPUcut;
     TRandom*                fRndm;
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
+    bool                    fPileupOff;
     int                     mpar;
     unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!

@@ -39,6 +39,8 @@ class AliPtContainer: public TNamed {
         void CalculateCorrelation();
         TH1* getHist(int ind);
         TH1* getAltHist(int ind);
+        void RebinMulti(Int_t nbins);
+        void RebinMulti(Int_t nbins, Double_t *binedges);
         TH1* getRercusiveHist(int ind, int m, unsigned int l_obs, bool sub = false);
         Long64_t Merge(TCollection *collist);
     protected:
