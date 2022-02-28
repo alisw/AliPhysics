@@ -8,7 +8,7 @@
 #include <AliMEStenderV2.h>
 #endif
 
-AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1, const AliVEvent *event)
+AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -27,7 +27,7 @@ AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1, const AliVEve
 		case 1:
 			tender->ConfigTask( AliMEStenderV2::AliMESconfigTender::k13TeV,       // event cuts
 					AliMEStenderV2::AliMESconfigTender::kStandardITSTPCTrackCuts2011, // track cuts
-					AliMEStenderV2::AliMESconfigTender::kTPC);                  // PID priors
+					AliMEStenderV2::AliMESconfigTender::kIterative);                  // PID priors
 			break;
 		default: printf("Configuration not defined\n");
 			break;
@@ -55,4 +55,3 @@ AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1, const AliVEve
   return tender;
 
 }
-
