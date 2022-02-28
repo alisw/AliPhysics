@@ -80,7 +80,11 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins)
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xbins));
         }
     }
-
+    fCorrList->Add(new AliProfileBS(Form("meanpt"),this->GetTitle(),nbinsx,xbins));
+    if(fSubevent) {
+        fSubList->Add(new AliProfileBS(Form("meanpt_subP"),this->GetTitle(),nbinsx,xbins));
+        fSubList->Add(new AliProfileBS(Form("meanpt_subN"),this->GetTitle(),nbinsx,xbins));
+    }
 };
 void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
 {
@@ -107,6 +111,11 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subP",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
         }
+    }
+    fCorrList->Add(new AliProfileBS(Form("meanpt"),this->GetTitle(),nbinsx,xlow,xhigh));
+    if(fSubevent) {
+        fSubList->Add(new AliProfileBS(Form("meanpt_subP"),this->GetTitle(),nbinsx,xlow,xhigh));
+        fSubList->Add(new AliProfileBS(Form("meanpt_subN"),this->GetTitle(),nbinsx,xlow,xhigh));
     }
 };
 void AliPtContainer::InitializeSubsamples(const int &nsub)
@@ -145,13 +154,13 @@ void AliPtContainer::FillRecursive(double inarr[10][10],const double &lMult, con
   
     corr[m] = sumNum;
     sumw[m] = sumDenum;
-    if(sumw[m]==0) return;  //Need all weights to be non-zero, so skips filling if any weight is zero
   }
   FillRecursiveProfiles(corr,sumw,lMult,rn,sub);
   return;
 }
 void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub)
 {
+    for(int m=0;m<=mpar;++m) if(sumw[m]==0) return;
     for(int m=1;m<=mpar;++m)
     {
         if(sub.IsNull())
@@ -161,6 +170,12 @@ void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vec
         if(sub.Contains("subN"))
             ((AliProfileBS*)fSubList->At(2*(m-1)+1))->FillProfile(lMult,corr[m]/sumw[m],sumw[GetWeightIndex(m)],rn);
     }
+    if(sub.IsNull())
+        ((AliProfileBS*)fCorrList->At(mpar))->FillProfile(lMult,corr[1]/sumw[1],sumw[1],rn);
+    if(sub.Contains("subP"))
+        ((AliProfileBS*)fSubList->At(2*mpar))->FillProfile(lMult,corr[1]/sumw[1],sumw[1],rn);
+    if(sub.Contains("subN"))
+        ((AliProfileBS*)fSubList->At(2*mpar+1))->FillProfile(lMult,corr[1]/sumw[1],sumw[1],rn);
     return;
 }
 double AliPtContainer::OrderedAddition(vector<double> vec, int size)
