@@ -65,6 +65,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
   TH1D* fHistReactionPlane; // The distribution of the 2-reactionplane
   TH1D* fHistEventReactionPlane; // The 2-eventplane w.r.t. the 2-reactionplane.
   TH1D* fHistTrueEventReactionPlane; // The distribution of the the 2-eventplane as determined with all particles w.r.t. the 2-reactionplane.
+  TH2D* fHistSingleParticles; // The single particle distribution in eta-phi after relevant cuts that are performed for the dihadron distribution
   AliUEHistograms* fHistos; // Handles the dihadron histograms for resp allplane, in-plane, mid-plane and out-of-plane triggers.
   AliUEHistograms* fHistosIn;
   AliUEHistograms* fHistosMid;

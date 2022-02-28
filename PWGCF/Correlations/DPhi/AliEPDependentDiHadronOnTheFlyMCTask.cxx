@@ -41,6 +41,7 @@ fProfileFractionPrimaryTracks(0x0),
 fHistReactionPlane(0x0),
 fHistEventReactionPlane(0x0),
 fHistTrueEventReactionPlane(0x0),
+fHistSingleParticles(0x0),
 fHistos(0x0),
 fHistosIn(0x0),
 fHistosMid(0x0),
@@ -54,7 +55,7 @@ fNoSectorsV0(8),
 fCentralityEstimator("V0M")
 {
   // Default constructor
-  //AliInfo("Constructing Event Plane based on fictional VZERO\n");
+  AliInfo("Constructing Event Plane based on fictional VZERO\n");
   DefineOutput(1, TList::Class());
 }
 
@@ -68,6 +69,7 @@ fProfileFractionPrimaryTracks(0x0),
 fHistReactionPlane(0x0),
 fHistEventReactionPlane(0x0),
 fHistTrueEventReactionPlane(0x0),
+fHistSingleParticles(0x0),
 fHistos(0x0),
 fHistosIn(0x0),
 fHistosMid(0x0),
@@ -81,7 +83,7 @@ fNoSectorsV0(8),
 fCentralityEstimator("V0M")
 {
   // Constructor with name
-  //AliInfo("Constructing Event Plane based on fictional VZERO including NAME\n");
+  AliInfo("Constructing Event Plane based on fictional VZERO including NAME\n");
   DefineOutput(1, TList::Class());
 }
 
@@ -124,6 +126,9 @@ void AliEPDependentDiHadronOnTheFlyMCTask::UserCreateOutputObjects()
 
   fHistTrueEventReactionPlane = new TH1D("TrueEventReactionPlane", "All particle two-event plane w.r.t. the two-reactionplane", 100, 0.0, TMath::Pi());
   fListOutputHistograms->Add(fHistTrueEventReactionPlane);
+
+  fHistSingleParticles = new TH2D("SingleParticleDistribution", "Distribution of all particles that are used in the dihadron distributions", 128, -TMath::Pi(), 3*TMath::Pi(), 80, -4.0, 4.0);
+  fListOutputHistograms->Add(fHistSingleParticles);
 
   fHistos = new AliUEHistograms("AliUEHistogramsSame-1", "4R", fCustomBinning);
   fHistos->SetTrackEtaCut(fTrackEtaCut);
@@ -254,6 +259,7 @@ TObjArray* AliEPDependentDiHadronOnTheFlyMCTask::SubSelectTracksEta(TObjArray* s
 
       if( TMath::Abs(track->Eta()) > fTrackEtaCut) continue;
 
+      fHistSingleParticles->Fill(track->Phi(), track->Eta());
       subselectedTracks->Add(track);
     }
   }
