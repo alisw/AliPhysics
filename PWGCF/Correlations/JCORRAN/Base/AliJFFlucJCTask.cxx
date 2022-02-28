@@ -32,7 +32,8 @@ AliJFFlucJCTask::AliJFFlucJCTask(const char *name):
 	pfa(NULL),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	flags(0){
-	DefineOutput(1,TList::Class());
+	//DefineOutput(1,TList::Class());
+	DefineOutput(1,TDirectory::Class());
 }
 
 // ------------------------------------------------------------------------- //
