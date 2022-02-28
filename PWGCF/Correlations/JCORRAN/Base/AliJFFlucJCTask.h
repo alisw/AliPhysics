@@ -37,7 +37,7 @@ private:
 	UInt_t subeventMask;
 	UInt_t flags;
 
-	ClassDef(AliJFFlucJCTask,1);
+	ClassDef(AliJFFlucJCTask,2);
 };
 
 #endif
