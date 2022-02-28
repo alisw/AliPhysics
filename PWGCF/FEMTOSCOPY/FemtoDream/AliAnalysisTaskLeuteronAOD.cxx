@@ -418,8 +418,8 @@ void AliAnalysisTaskLeuteronAOD::UserExec(Option_t *){
 	  StoreGlobalTrackReference(track);
 	}
 
-    double centrality_min = 0.0;
-    double centrality_max = 10.0;
+    double centrality_min = 30.0;
+    double centrality_max = 50.0;
     double centrality = -999.0;
 
     AliMultSelection *MultSelection = (AliMultSelection*) Event->FindListObject("MultSelection");
