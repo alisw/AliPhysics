@@ -19,6 +19,7 @@
 // Author: Tiantian Cheng (1,2)
 // (1) Central China Normal University
 // (2) GSI Helmholtz Centre for Heavy Ion Research
+//     E-mail: chengtiantian@mails.ccnu.edu.cn
 
 /////////////////////////////////////////////////////////////
 
