@@ -88,6 +88,7 @@ public:
     Bool_t      GetInputEvent ();
     Bool_t      PassedTrackQualityCutsNoDCA (AliESDtrack *track);
     Bool_t      PassedTrackQualityCuts      (AliESDtrack *track);
+    Bool_t      IsTritonCandidate           (AliESDtrack *track);
     Bool_t      IsCleanTritonCandidate      (AliESDtrack *track);
     Double_t    Centered_nsigmaTPC          (AliESDtrack *track);
     Double_t    Centered_nsigmaTOF          (AliESDtrack *track);
@@ -169,7 +170,37 @@ private:
     TH2F *histoNsigmaTPCtriton_vs_p_notof;//!
     TH2F *histoNsigmaTPCantitriton_vs_p_notof;//!
     
-    
+    //Reduced Trees
+    TTree *reducedTree_Triton;//!
+
+    Double_t multPercentile_V0M;//
+    Double_t pt;//
+    Double_t p;//
+    Double_t eta;//
+    Double_t y;//
+    Int_t q;//
+    Double_t dcaxy;//
+    Double_t dcaz;//
+    Int_t nTPC_Clusters;//
+    Int_t nTRD_Clusters;//
+    Int_t nITS_Clusters;//
+    Int_t nTPC_FindableClusters;//
+    Int_t nTPC_CrossedRows;//
+    Int_t nTPC_Clusters_dEdx;//
+    bool HasPointOnITSLayer0;//
+    bool HasPointOnITSLayer1;//
+    bool HasSharedPointOnITSLayer0;//
+    bool HasSharedPointOnITSLayer1;//
+    Double_t chi2_TPC;//check
+    Double_t chi2_NDF;//check
+    Double_t chi2_ITS;//check
+    Double_t ITSsignal;
+    Double_t TPCsignal;
+    Double_t TOFsignal;
+    Double_t TRDsignal;
+    Double_t nSigmaTPC_Trit;//
+    Double_t nSigmaTOF_Trit;//
+    Double_t nSigmaTRD_Trit;//
     
 
     AliAnalysisTaskTritonESD_PbPb(const AliAnalysisTaskTritonESD_PbPb&);
