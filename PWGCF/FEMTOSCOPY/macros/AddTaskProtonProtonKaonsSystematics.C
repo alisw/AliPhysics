@@ -64,7 +64,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
   KaonCuts->SetFilterBit(128);
   KaonCuts->SetCutCharge(1);
   if(KaonCut==0){ // cuts by Oton
-   KaonCuts->SetPIDkd();
+   KaonCuts->SetPIDkd(true,false,3,3,3);
   }else if(KaonCut==1){ // cuts by Ramona
    KaonCuts->SetPIDkd(true,true);
   }
@@ -76,7 +76,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
   AntiKaonCuts->SetFilterBit(128);
   AntiKaonCuts->SetCutCharge(-1);
   if(KaonCut==0){ // cuts by Oton
-   AntiKaonCuts->SetPIDkd();
+   AntiKaonCuts->SetPIDkd(true,false,3,3,3);
   }else if(KaonCut==1){ // cuts by Ramona
    AntiKaonCuts->SetPIDkd(true,true);
   }
@@ -202,8 +202,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "2") {
@@ -239,8 +239,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPtRange(0.4, 1.4);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      
@@ -252,8 +252,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCuts->SetNClsTPC(90);
       AntiTrackCuts->SetNClsTPC(90);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "6") {
@@ -263,8 +263,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       DeltaPhiMaxpp = 0.019;      
       DeltaEtaMaxpp = 0.019;
       DeltaPhiMaxpKplus = 0.045;
@@ -306,8 +306,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
     } else if (suffix == "10") {
       TrackCuts->SetPtRange(0.4, 4.05);
       AntiTrackCuts->SetPtRange(0.4, 4.05);
@@ -319,8 +319,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.1, 10);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      
@@ -336,8 +336,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(90);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "12") {
@@ -347,8 +347,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      
@@ -368,8 +368,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.2, 10);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "14") {
@@ -381,8 +381,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(70);
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(70);
       AntiKaonCuts->SetNClsTPC(70);
       //config->SetDeltaEtaMax(0.019);
@@ -402,8 +402,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.1, 10);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       //config->SetDeltaEtaMax(0.015);
       //config->SetDeltaPhiMax(0.015);
       DeltaPhiMaxpp = 0.019;      
@@ -423,8 +423,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.1, 10);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "17") {
@@ -432,8 +432,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       TrackCuts->SetNClsTPC(70);
       AntiTrackCuts->SetNClsTPC(70);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       KaonCuts->SetNClsTPC(70);
       AntiKaonCuts->SetNClsTPC(70);
       //config->SetDeltaEtaMax(0.019);
@@ -466,8 +466,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(70);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(70);
       AntiKaonCuts->SetNClsTPC(70);
       //config->SetDeltaEtaMax(0.019);
@@ -502,8 +502,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
     } else if (suffix == "22") {
       TrackCuts->SetEtaRange(-0.77, 0.77);
       AntiTrackCuts->SetEtaRange(-0.77, 0.77);
@@ -513,8 +513,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(90);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
       //config->SetDeltaEtaMax(0.019);
@@ -545,8 +545,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       KaonCuts->SetPtRange(0.2, 10);
       AntiKaonCuts->SetPtRange(0.2, 10);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      
@@ -562,8 +562,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(90);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "26") {
@@ -582,8 +582,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.1, 10);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
-      AntiKaonCuts->SetPIDkd(true,false,3.7,2.7,3.3);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      
@@ -610,8 +610,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(70);
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(70);
       AntiKaonCuts->SetNClsTPC(70);
       //config->SetDeltaEtaMax(0.015);
@@ -629,8 +629,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(90);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
     } else if (suffix == "31") {
@@ -668,8 +668,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(70);
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(70);
       AntiKaonCuts->SetNClsTPC(70);
       //config->SetDeltaEtaMax(0.019);
@@ -706,8 +706,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(90);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
       //config->SetDeltaEtaMax(0.019);
@@ -740,8 +740,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetNClsTPC(90);
       KaonCuts->SetPtRange(0.1, 10);
       AntiKaonCuts->SetPtRange(0.1, 10);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       KaonCuts->SetNClsTPC(90);
       AntiKaonCuts->SetNClsTPC(90);
       //config->SetDeltaEtaMax(0.019);
@@ -770,8 +770,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.1, 10);
       KaonCuts->SetEtaRange(-0.77, 0.77);
       AntiKaonCuts->SetEtaRange(-0.77, 0.77);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       //config->SetDeltaEtaMax(0.015);
       //config->SetDeltaPhiMax(0.015);
       DeltaPhiMaxpp = 0.019;      
@@ -785,8 +785,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
       KaonCuts->SetPtRange(0.2, 10);
       AntiKaonCuts->SetPtRange(0.2, 10);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
     } else if (suffix == "41") {
       TrackCuts->SetPtRange(0.6, 4.05);
       AntiTrackCuts->SetPtRange(0.6, 4.05);
@@ -798,8 +798,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiKaonCuts->SetPtRange(0.2, 10);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      
@@ -813,8 +813,8 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
       KaonCuts->SetEtaRange(-0.83, 0.83);
       AntiKaonCuts->SetEtaRange(-0.83, 0.83);
-      KaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
-      AntiKaonCuts->SetPIDkd(true,false,4.3,3.3,2.7);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
       //config->SetDeltaEtaMax(0.019);
       //config->SetDeltaPhiMax(0.019);
       DeltaPhiMaxpp = 0.019;      

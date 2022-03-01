@@ -27,7 +27,7 @@ AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1)
 		case 1:
 			tender->ConfigTask( AliMEStenderV2::AliMESconfigTender::k13TeV,       // event cuts
 					AliMEStenderV2::AliMESconfigTender::kStandardITSTPCTrackCuts2011, // track cuts
-					AliMEStenderV2::AliMESconfigTender::kTPC);                  // PID priors
+					AliMEStenderV2::AliMESconfigTender::kNoPP);                  // PID priors
 			break;
 		default: printf("Configuration not defined\n");
 			break;
