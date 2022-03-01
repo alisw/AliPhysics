@@ -35,6 +35,7 @@ fPIDResponse(NULL),
 fESDeventCuts(),
 fUtils(NULL),
 fOutputList(NULL),
+reducedTree_Triton(NULL),
 //fQAList(NULL),
 fCentralityMin(0),
 fCentralityMax(0),
@@ -64,7 +65,35 @@ fpar0_sigma_TPC(0),
 fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
-fpar1_sigma_TOF(0)
+fpar1_sigma_TOF(0),
+multPercentile_V0M(-1),
+pt(0),
+p(0),
+eta(0),
+y(0),
+q(0),
+dcaxy(0),
+dcaz(0),
+nTPC_Clusters(0),
+nTRD_Clusters(0),
+nITS_Clusters(0),
+nTPC_FindableClusters(0),
+nTPC_CrossedRows(0),
+nTPC_Clusters_dEdx(0),
+HasPointOnITSLayer0(0),
+HasPointOnITSLayer1(0),
+HasSharedPointOnITSLayer0(0),
+HasSharedPointOnITSLayer1(0),
+chi2_TPC(0),
+chi2_NDF(0),
+chi2_ITS(0),
+ITSsignal(0),
+TPCsignal(0),
+TOFsignal(0),
+TRDsignal(0),
+nSigmaTPC_Trit(0),
+nSigmaTOF_Trit(0),
+nSigmaTRD_Trit(0)
 {}
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskTritonESD_PbPb::AliAnalysisTaskTritonESD_PbPb(const char *name):
@@ -74,6 +103,7 @@ fPIDResponse(NULL),
 fESDeventCuts(),
 fUtils(NULL),
 fOutputList(NULL),
+reducedTree_Triton(NULL),
 //fQAList(NULL),
 fCentralityMin(0),
 fCentralityMax(0),
@@ -103,11 +133,40 @@ fpar0_sigma_TPC(0),
 fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
-fpar1_sigma_TOF(0)
+fpar1_sigma_TOF(0),
+multPercentile_V0M(-1),
+pt(0),
+p(0),
+eta(0),
+y(0),
+q(0),
+dcaxy(0),
+dcaz(0),
+nTPC_Clusters(0),
+nTRD_Clusters(0),
+nITS_Clusters(0),
+nTPC_FindableClusters(0),
+nTPC_CrossedRows(0),
+nTPC_Clusters_dEdx(0),
+HasPointOnITSLayer0(0),
+HasPointOnITSLayer1(0),
+HasSharedPointOnITSLayer0(0),
+HasSharedPointOnITSLayer1(0),
+chi2_TPC(0),
+chi2_NDF(0),
+chi2_ITS(0),
+ITSsignal(0),
+TPCsignal(0),
+TOFsignal(0),
+TRDsignal(0),
+nSigmaTPC_Trit(0),
+nSigmaTOF_Trit(0),
+nSigmaTRD_Trit(0)
 {
     fUtils = new AliAnalysisUtils();
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
+    DefineOutput(2, TTree::Class());
     //DefineOutput(2, TList::Class());
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
@@ -118,6 +177,7 @@ AliAnalysisTaskTritonESD_PbPb::~AliAnalysisTaskTritonESD_PbPb()
     delete fPIDResponse;
     delete fUtils;
     delete fOutputList;
+    delete reducedTree_Triton;
     //delete fQAList;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
@@ -217,9 +277,41 @@ void AliAnalysisTaskTritonESD_PbPb::UserCreateOutputObjects()
     fOutputList -> Add (histoDCAxyAntiTriton_vs_pt);
 
     
-    
+    //Reduced Tree (Triton)
+    reducedTree_Triton = new TTree("reducedTree_Triton","reducedTree_Triton");
+    reducedTree_Triton -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+    reducedTree_Triton -> Branch("pt",&pt,"pt/D");
+    reducedTree_Triton -> Branch("p",&p,"p/D");
+    reducedTree_Triton -> Branch("eta",&eta,"eta/D");
+    reducedTree_Triton -> Branch("y",&y,"y/D");
+    reducedTree_Triton -> Branch("q",&q,"q/I");
+    reducedTree_Triton -> Branch("dcaxy",&dcaxy,"dcaxy/D");
+    reducedTree_Triton -> Branch("dcaz",&dcaz,"dcaz/D");
+    reducedTree_Triton -> Branch("nTPC_Clusters",&nTPC_Clusters,"nTPC_Clusters/I");
+    reducedTree_Triton -> Branch("nTRD_Clusters",&nTRD_Clusters,"nTRD_Clusters/I");
+    reducedTree_Triton -> Branch("nITS_Clusters",&nITS_Clusters,"nITS_Clusters/I");
+    reducedTree_Triton -> Branch("nTPC_FindableClusters",&nTPC_FindableClusters,"nTPC_FindableClusters/I");
+    reducedTree_Triton -> Branch("nTPC_CrossedRows",&nTPC_CrossedRows,"nTPC_CrossedRows/I");
+    reducedTree_Triton -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/O");
+    reducedTree_Triton -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/O");
+    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer0",&HasSharedPointOnITSLayer0,"HasSharedPointOnITSLayer0/O");
+    reducedTree_Triton -> Branch("HasSharedPointOnITSLayer1",&HasSharedPointOnITSLayer1,"HasSharedPointOnITSLayer1/O");
+    reducedTree_Triton -> Branch("chi2_TPC",&chi2_TPC,"chi2_TPC/D");
+    reducedTree_Triton -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/D");
+    reducedTree_Triton -> Branch("ITSsignal",&ITSsignal,"ITSsignal/D");
+    reducedTree_Triton -> Branch("TPCsignal",&TPCsignal,"TPCsignal/D");
+    reducedTree_Triton -> Branch("TOFsignal",&TOFsignal,"TOFsignal/D");
+    reducedTree_Triton -> Branch("TRDsignal",&TRDsignal,"TRDsignal/D");
+    reducedTree_Triton -> Branch("nSigmaTPC_Trit",&nSigmaTPC_Trit,"nSigmaTPC_Trit/D");
+    reducedTree_Triton -> Branch("nSigmaTOF_Trit",&nSigmaTOF_Trit,"nSigmaTOF_Trit/D");
+    reducedTree_Triton -> Branch("nSigmaTRD_Trit",&nSigmaTRD_Trit,"nSigmaTRD_Trit/D");
+  
+
     
     PostData(1, fOutputList);
+    PostData(2,reducedTree_Triton);
+
     //PostData(2, fQAList);
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
@@ -296,10 +388,58 @@ void AliAnalysisTaskTritonESD_PbPb::UserExec(Option_t *)
             
             
         }
+
+        pt = track -> Pt();
+        p = track -> P();
+        
+        q  = (Int_t) track -> Charge();
+        eta = track -> Eta();
+        
+        //Rapidity Calculation
+        Double_t m  = AliPID::ParticleMass(AliPID::kTriton);
+        Double_t px = track -> Px();
+        Double_t py = track -> Py();
+        Double_t pz = track -> Pz();
+        Double_t E = TMath::Sqrt(m*m + px*px + py*py + pz*pz);
+        TLorentzVector P (px,py,pz,E);
+        y = P.Rapidity();
+
+        //DCA
+        dcaz  = GetDCAz  (track);
+        dcaxy = GetDCAxy (track);
+
+        nTPC_Clusters = track->GetTPCNcls();
+        nTRD_Clusters = track->GetTRDncls();
+        nITS_Clusters = track->GetITSNcls();
+
+        nTPC_FindableClusters = track->GetTPCNclsF();
+        nTPC_CrossedRows = track->GetTPCCrossedRows();
+        nTPC_Clusters_dEdx = track -> GetTPCsignalN();
+
+        HasPointOnITSLayer0 = track->HasPointOnITSLayer(0);
+        HasPointOnITSLayer1 = track->HasPointOnITSLayer(1);
+
+        HasSharedPointOnITSLayer0 = track->HasSharedPointOnITSLayer(0);
+        HasSharedPointOnITSLayer1 = track->HasSharedPointOnITSLayer(1);
+
+        chi2_TPC = track -> GetTPCchi2();//    check -> seems to be 0
+        chi2_ITS = track -> GetITSchi2();//    check
+
+        ITSsignal = track->GetITSsignal();
+        TPCsignal = track->GetTPCsignal();
+        TOFsignal = track->GetTOFsignal();
+        TRDsignal = track->GetTRDsignal();
+
+        nSigmaTPC_Trit = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
+        nSigmaTOF_Trit = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
+        nSigmaTRD_Trit = fPIDResponse -> NumberOfSigmasTRD(track,AliPID::kTriton);
+
+        if(IsTritonCandidate(track)) reducedTree_Triton -> Fill();
     }
     
     
     PostData(1, fOutputList);
+    PostData(2,reducedTree_Triton);
     //PostData(2, fQAList);
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
@@ -341,7 +481,26 @@ Bool_t AliAnalysisTaskTritonESD_PbPb::GetInputEvent ()  {
     if ( vertex->GetNContributors() < fNumberVertexContributorsMin ) return false;
     histoNumberOfEvents -> Fill(6.5);
     
-   
+    multPercentile_V0M              = multiplicitySelection->GetMultiplicityPercentile("V0M");
+
+    // GetPrimaryVertex
+    AliESDVertex *vertex_tracks = (AliESDVertex*) fESDevent->GetPrimaryVertexTracks();
+    if (!vertex_tracks) return false;
+    if ( vertex_tracks->GetNContributors() < 1 ) return false;
+    
+    //Primary Vertex SPD
+    AliESDVertex *vertex_SPD = (AliESDVertex*) fESDevent->GetPrimaryVertexSPD();
+    if (!vertex_SPD) return false;
+    
+    //Vertex Contributors SPD
+    if ( vertex_SPD->GetNContributors() < 1 ) return false;
+    //SPD Pile-up in Mult Bins
+    if (fESDevent->IsPileupFromSPDInMultBins()) return false;
+    
+    //Primary Vertex Selection
+    if ( vertex_tracks->GetZ() < -10.0 ) return false;
+    if ( vertex_tracks->GetZ() > +10.0 ) return false;
+
     return true;
     
 }
@@ -441,6 +600,20 @@ Bool_t AliAnalysisTaskTritonESD_PbPb::PassedTrackQualityCutsNoDCA (AliESDtrack* 
 
     
     return true;
+}
+//_______________________________________________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskTritonESD_PbPb::IsTritonCandidate (AliESDtrack *track)  {
+
+  Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
+  if (track->Pt() < 1.5) {
+    if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+  } else {
+    Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
+    if ( TMath::Abs(nsigmaTOF) > 7. ) return false;
+    if ( TMath::Abs(nsigmaTPC) > 6. ) return false;
+  }
+
+  return true;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskTritonESD_PbPb::IsCleanTritonCandidate (AliESDtrack *track)  {
