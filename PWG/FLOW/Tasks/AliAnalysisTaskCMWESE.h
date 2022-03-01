@@ -175,7 +175,7 @@ private:
     const float        fEtaCut; // eta cut
     const float        fDedxCut; //dedx cut
     float                  fZvtxCut; // z-vertex selection for collision  
-    int                     fPUSyst;                  
+    int                     fPUSyst; // 0: default; 1: Tight PU cut; 2: TOF PU cut; 3: Fill PU effect QA; 4: with new Para       
     // Weight List   
     TList*                fListNUE; // read list for NUE
     TList*                fListNUA; // read lists for NUA
