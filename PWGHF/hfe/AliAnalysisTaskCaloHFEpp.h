@@ -163,6 +163,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHist_trackPt;        //! dummy histogram
 		TH1F*                   fHistMatchPt;        
 		TH1F*                   fHistSelectPt;        
+		TH1F*                   fHistCheff0;        
+		TH1F*                   fHistCheff1;        
 		TH1F*                   fHist_ClustE;        //! dummy histogram
 		TH1F*                   fHist_SelectClustE;
 		TH1F*                   fHist_SelectClustE_time;
