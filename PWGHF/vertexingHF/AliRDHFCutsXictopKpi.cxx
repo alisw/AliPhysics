@@ -1765,4 +1765,7 @@ void AliRDHFCutsXictopKpi::IsSelectedCombinedPID_testTOFmatching_MCsignal(AliAOD
         arr_isCombTPCTOFsel[2] = TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton];
       }
     }
+
+    /// restore
+    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
 }
