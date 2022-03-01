@@ -6,12 +6,17 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0,
-  std::string configArray = "0 1 2 4 5 8 11 13", bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000, bool saveQApileup = false)
+
+AliAnalysisTask *AddTaskJFFlucJCMasterCorrOn(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0,
+  std::string configArray = "0", bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000, bool saveQApileup = false)
+
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // Less essential global variables.
+
+  // Enable only one Config for now because of map memory
+
   bool removeBadArea = kFALSE;
   int debug = 0;
   bool useTightCuts = kFALSE;
@@ -103,6 +108,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   TString MAPfilenames;  // Azimuthal corrections.
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
+
   TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
 
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
@@ -111,10 +117,6 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   } else if (period == lhc15o) {    // 2015 PbPb dataset.
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root", speriod[period].Data()));
   }  
-
-  MAPfilenames = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root", MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
-  cmaptask->EnablePhiCorrection(0, MAPfilenames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
-  mgr->AddTask((AliAnalysisTask *) cmaptask);
  
 
   // Set the general variables.
@@ -132,9 +134,15 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   const int Nsets = index;
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
   for (int i = 0; i < Nsets; i++) {
+
+    MAPfilenames = Form("%sPhiWeights_LHC%s_Error_finerBins_pt02_s_%s.root", MAPdirname.Data(), speriod[period].Data(), configNames[i].Data());
+    cmaptask->EnablePhiCorrection(i, MAPfilenames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
+    mgr->AddTask((AliAnalysisTask *) cmaptask);
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveQA);
+    fJCatalyst[i]->SetPhiCorrectionIndex(i); // same as line for cmaptask
+
 
     /// Trigger and centrality selection.
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
