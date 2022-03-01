@@ -484,7 +484,7 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::PassedTOFSelection (AliAODTrack
 Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::PassedTPCSelection (AliAODTrack *track)  {
     
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
-    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax && (track->GetStatus()&AliAODTrack::kTOFout)==0) return false;
+    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax || (track->GetStatus()&AliAODTrack::kTOFout)!=0) return false;
 
     //TPC-TOF Matching
 //   if ((track->GetStatus()&AliAODTrack::kTOFout)==0) hasTOFhit=0;//Track with no TOF hit
