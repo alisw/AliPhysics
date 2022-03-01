@@ -127,17 +127,18 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 
 
 	TString filenameNUA = "";
-	if (uniqueID.EqualTo("10h_Default") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1.root";
+	if (period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1.root";
 	if (uniqueID.EqualTo("10h_ChiHg3") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1ChiHg3.root";
 	if (uniqueID.EqualTo("10h_Nhits60") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1Nhits60.root";
 	if (uniqueID.EqualTo("10h_Nhits80") && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB1Nhits80.root";
 	if (uniqueID.EqualTo("10h_FB768")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB768.root";
 	if (uniqueID.EqualTo("10h_FB272")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB272.root";
 	if (uniqueID.EqualTo("10h_FB768_ChiHg2")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB768_ChiHg2.root";
+	if (uniqueID.EqualTo("10h_FB768_ChiHg3")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB768_ChiHg3.root";
 	if (uniqueID.EqualTo("10h_FB768_Nhits80")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB768_Nhits80.root";
 	if (uniqueID.EqualTo("10h_FB768_Nhits60")   && period.EqualTo("LHC10h")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc10h/10hNUAFB768_Nhits60.root";
 
-	if (uniqueID.EqualTo("15o_Default")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root";
+	if (period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root";
 	if (uniqueID.EqualTo("15o_ChiHg3")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_ChiHg3.root";
 	if (uniqueID.EqualTo("15o_Nhits60")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_Nhits60.root";
 	if (uniqueID.EqualTo("15o_Nhits80")  && period.EqualTo("LHC15o")) filenameNUA = "alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/LHC15o_pass2_NUA_Nhits80.root";
@@ -239,6 +240,7 @@ AliAnalysisTaskCMWESE* AddTaskCMWESE(
 				inSlotCounter++;
 				printf("wCent already loaded\n");
 			}
+			
 		}
 	}
 	
