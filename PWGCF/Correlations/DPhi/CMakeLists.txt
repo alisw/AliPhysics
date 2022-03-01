@@ -66,6 +66,7 @@ set(SRCS
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskR2P2.cxx
+    AliAnalysisTaskR2P2Base.cxx
     AliAnalysisTaskR2P2multClass.cxx
     AliAnalysisTaskR2P2pp.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
@@ -186,4 +187,3 @@ set(LIBDEPS )
 
 # Macros
 install(FILES MuonHadron/AddAnalysisTaskMuonHadronCorrelations.C DESTINATION PWGCF/Correlations/DPhi/MuonHadron/)
-
