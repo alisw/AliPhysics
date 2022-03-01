@@ -28,7 +28,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     return NULL;
   }   
 
-  TString filename="",out1name="", out2name="", out3name="", out4name="" ,out5name="",inname="";
+  TString filename="",out1name="", out2name="", out3name="", out4name="" ,out5name="" ,out6name="",inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
 
@@ -39,6 +39,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     out3name="outputList";
     out4name="varTree";
     out5name="varFastNtuple";
+    out6name="testTOFreqBayesPIDNTuple";
     filename+=suffix.Data();
     
     inname="cinputmassD0_1";
@@ -50,6 +51,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
     out3name += suffix.Data();
     out4name += suffix.Data();
     out5name += suffix.Data();
+    out6name += suffix.Data();
 
    //setting my cut values
 
@@ -146,6 +148,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
   AliAnalysisDataContainer *coutputmass3 = mgr->CreateContainer(out3name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
   AliAnalysisDataContainer *coutputmass4 = mgr->CreateContainer(out4name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
   AliAnalysisDataContainer *coutputmass5 = mgr->CreateContainer(out5name,TNtuple::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
+  AliAnalysisDataContainer *coutputmass6 = mgr->CreateContainer(out6name,TNtuple::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
 
   mgr->ConnectInput(massXicTask,0,mgr->GetCommonInputContainer());
 
@@ -154,6 +157,7 @@ AliAnalysisTaskSEXicTopKpi *AddTaskSEXicTopKpi(Bool_t readMC=kFALSE,
   mgr->ConnectOutput(massXicTask,3,coutputmass3);
   mgr->ConnectOutput(massXicTask,4,coutputmass4);
   mgr->ConnectOutput(massXicTask,5,coutputmass5);
+  mgr->ConnectOutput(massXicTask,6,coutputmass6);
 
   return massXicTask;
 }

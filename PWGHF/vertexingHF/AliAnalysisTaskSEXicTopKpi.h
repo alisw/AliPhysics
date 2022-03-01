@@ -235,6 +235,10 @@ void EnableSparseReflections(){fFillSparseReflections=kTRUE;}
 // build background of Lc candidates with rotated pion
 void SetBuildRotBkgLc(){fLcRotationBkg=kTRUE;};
 void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse, Int_t massHypo);
+
+// fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+void SetFillTuplePID_TOFreq(Bool_t flag=kTRUE){fFillTuplePID_TOFreq=flag;}
+void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   
 /*   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;} */
 /*   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;} */
@@ -565,7 +569,9 @@ void BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidate, Double_t* pointFillSparse
   Double_t fMinFastCosPoint3DSq;// internal parameter for fast loops
   Bool_t fLcRotationBkg;  // build background of Lc candidates with rotated pion
   Bool_t fextendSparseForLb; // change range of some variables in default sparse
-  ClassDef(AliAnalysisTaskSEXicTopKpi,28); /// AliAnalysisTaskSE for Xic->pKpi  
+  Bool_t fFillTuplePID_TOFreq;  // fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+  TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+  ClassDef(AliAnalysisTaskSEXicTopKpi,29); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 
