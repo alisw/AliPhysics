@@ -134,11 +134,31 @@ void CalibratePeriod_LHC18r(TString lPeriodName = "LHC18r"){
   // --- Definition of Estimators ---
   //============================================================
   
-    AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0MNew = new AliMultEstimator("V0MNew", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mplus05 = new AliMultEstimator("V0Mplus05", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mplus10 = new AliMultEstimator("V0Mplus10", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mminus05 = new AliMultEstimator("V0Mminus05", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
+  AliMultEstimator *fEstV0Mminus10 = new AliMultEstimator("V0Mminus10", "", "((fAmplitude_V0A)+(fAmplitude_V0C))");
   
   fEstV0M -> SetUseAnchor        ( kTRUE   ) ;
   fEstV0M -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
   fEstV0M -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0MNew -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0MNew -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0MNew -> SetAnchorPercentile ( 91.5 ) ;
+  fEstV0Mplus05 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mplus05 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mplus05 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0Mplus10 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mplus10 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mplus10 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0Mminus05 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mminus05 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mminus05 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
+  fEstV0Mminus10 -> SetUseAnchor        ( kTRUE   ) ;
+  fEstV0Mminus10 -> SetAnchorPoint      ( lDefaultV0MAnchor     ) ;
+  fEstV0Mminus10 -> SetAnchorPercentile ( lDefaultV0MPercentile ) ;
   
   
   //Only do this in run 2, AD didn't exist in Run 1
@@ -158,9 +178,13 @@ void CalibratePeriod_LHC18r(TString lPeriodName = "LHC18r"){
   //lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
   //lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
   
-  
   //Univeral: V0
   lMultSelDefault -> AddEstimator( fEstV0M );
+  lMultSelDefault -> AddEstimator( fEstV0MNew );
+  lMultSelDefault -> AddEstimator( fEstV0Mminus10 );
+  lMultSelDefault -> AddEstimator( fEstV0Mminus05 );
+  lMultSelDefault -> AddEstimator( fEstV0Mplus05 );
+  lMultSelDefault -> AddEstimator( fEstV0Mplus10 );
   
   //Needed as basis of MC calibrator -- keep this here, please!
   AliMultEstimator *fEstnSPDTracklets = new AliMultEstimator("SPDTracklets", "", "(fnTracklets)");
