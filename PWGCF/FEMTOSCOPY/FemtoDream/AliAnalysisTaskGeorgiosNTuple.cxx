@@ -200,7 +200,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserCreateOutputObjects() {
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
+    fPairCleaner = new AliFemtoDreamPairCleaner(0, 0,
                                                 fConfig->GetMinimalBookingME());
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
@@ -720,7 +720,7 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
     fCascade->SetCascade(fInputEvent, casc);           
 
     if (fXiBGR->isSelected(fCascade)) {
-      Xis.push_back(*fCascade);
+      XisBGR.push_back(*fCascade);
       IsXiBGR = kTRUE;
     }
     if (fAntiXiBGR->isSelected(fCascade)) {
@@ -751,25 +751,26 @@ void AliAnalysisTaskGeorgiosNTuple::UserExec(Option_t *option) {
 //  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiLambdas, 1); // to be set
 
  //deactivate the track cleaner
+ /*
   fPairCleaner->CleanDecay(&Lambdas, 0);
   fPairCleaner->CleanDecay(&AntiLambdas, 1);
     
-  fPairCleaner->CleanDecay(&Xis, 0);
-  fPairCleaner->CleanDecay(&AntiXis, 1);
-  fPairCleaner->CleanDecay(&XisBGR, 0);
-  fPairCleaner->CleanDecay(&AntiXisBGR, 1);
+  fPairCleaner->CleanDecay(&Xis, 2);
+  fPairCleaner->CleanDecay(&AntiXis, 3);
+  fPairCleaner->CleanDecay(&XisBGR, 4);
+  fPairCleaner->CleanDecay(&AntiXisBGR, 5);
 
   fPairCleaner->CleanTrackAndDecay(&Lambdas, &XisBGR, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXisBGR, 1);
-  fPairCleaner->CleanTrackAndDecay(&Lambdas, &Xis, 0); //this is apparently working
-  fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXis, 1); //this is apparently working
-
+  fPairCleaner->CleanTrackAndDecay(&Lambdas, &Xis, 2); //this is apparently working
+  fPairCleaner->CleanTrackAndDecay(&AntiLambdas, &AntiXis, 3); //this is apparently working
+*/
   fPairCleaner->StoreParticle(Lambdas);
   fPairCleaner->StoreParticle(AntiLambdas);
-  fPairCleaner->StoreParticle(Xis);
-  fPairCleaner->StoreParticle(AntiXis);
   fPairCleaner->StoreParticle(XisBGR);
   fPairCleaner->StoreParticle(AntiXisBGR);
+  fPairCleaner->StoreParticle(Xis);
+  fPairCleaner->StoreParticle(AntiXis);
 
   /*
   fPairCleaner->CleanDecay(&Lambdas, 0);
