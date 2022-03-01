@@ -85,7 +85,8 @@ void SetupTRD2013(TF1* neg[4], TF1* pos[4]) {
 }
 
 double kHe3Mass = 2.809230089;
-
+const std::vector<int> kPdgCodes{211, -211, 321, -321, 2212, -2212, 2112, -2112, 1000010020, -1000010020,3122,-3122,3312,-3312,3334,-3334};
+const std::vector<std::string> kParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "n", "#bar{n}", "d", "#bar{d}", "#Lambda", "#bar{#Lambda}", "#Xi^{+}", "#Xi^{-}", "#Omega^{+}", "#Omega^{-}"};
 constexpr double Sq(double x) { return x * x; }
 
 double Dist(const double a[3], const double b[3]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1]) + Sq(a[2] - b[2])); }
@@ -304,8 +305,14 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   if (fIsMC) {
     fProduction = new TH1F("fProduction",";#it{p} (GeV/#it{c});Entries",100,-10,10);
     fList->Add(fProduction);
+    fParticleProd = new TH3F("fParticleProd",";Centrality (%); Species; #it{p}_{T} (GeV/#it{c});", 90, 0, 90, kParticleNames.size(), -0.5, kParticleNames.size() - 0.5, 30, 0, 3);
+    for (int iB = 1; iB <= kParticleNames.size(); ++iB) {
+      fParticleProd->GetYaxis()->SetBinLabel(iB,kParticleNames[iB-1].data());
+    }
+    fList->Add(fParticleProd);
 
     for (int iC = 0; iC < 2; ++iC) {
+
       fTotal[iC] = new TH2F(Form("f%cTotal",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); Counts",
           nCentBins,centBins,nPtBins,pTbins);
       fPtCorrection[iC] = new TH2F(Form("f%cPtCorrection",letter[iC]),
@@ -580,6 +587,14 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int pdg = std::abs(part->GetPdgCode());
       const int iC = part->Charge() > 0 ? 1 : 0;
       const int mult = -1 + 2 * iC;
+      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
+      if (part->IsPhysicalPrimary()) {
+        for (unsigned int iPDG{0}; iPDG < kPdgCodes.size(); iPDG++) {
+          if (kPdgCodes[iPDG] == part->GetPdgCode()) {
+            fParticleProd->Fill(fCentrality, iPDG, part->Pt());
+          }
+        }
+      }
       if (pdg != fPDG) continue;
       if (fPtShape) {
         if (part->IsPhysicalPrimary() && gRandom->Uniform(0, fPtShapeMaximum) > fPtShape->Eval(part->Pt())) {
@@ -588,7 +603,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
       if (fIsMC) fProduction->Fill(mult * part->P());
-      if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (fSaveTrees) {
         fAbsorptionCt = -1;
         if(part->GetNDaughters()>0){
