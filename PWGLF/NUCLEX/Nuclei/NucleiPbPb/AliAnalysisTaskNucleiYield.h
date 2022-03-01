@@ -322,6 +322,7 @@ private:
   TH2F                 *fNormalisationHist;     //!<! Normalisation per centrality classes
 
   // MC only histograms
+  TH3F                 *fParticleProd;           //!<! *(MC only)* Total number of produced particles
   TH1F                 *fProduction;             //!<! *(MC only)* Total number of produced particles
   TH2F                 *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
   TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
