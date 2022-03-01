@@ -1482,7 +1482,7 @@ void AliAnalysisTaskEPCalib::UserExec(Option_t *)
       fRunNum = run;
       fRunNumBin = GetRunNumBin(fRunNum);
       if (fRunNumBin<0) return;
-      cout<<"run num bin : "<<fRunNum<<"    "<<fRunNumBin<<endl;
+      // cout<<"run num bin : "<<fRunNum<<"    "<<fRunNumBin<<endl;
   } 
   hRunNumBin->Fill(fRunNumBin);
   hEvtCount->Fill(4);
