@@ -265,6 +265,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi():
   ,fMinFastCosPoint3DSq(-1)
   ,fLcRotationBkg(kFALSE)
   ,fextendSparseForLb(kFALSE)
+  ,fFillTuplePID_TOFreq(kFALSE)
+  ,fTuplePID_TOFreq(0x0)
 {
   /// Default constructor
 
@@ -447,6 +449,8 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   ,fMinFastCosPoint3DSq(-1)
   ,fLcRotationBkg(kFALSE)
   ,fextendSparseForLb(kFALSE)
+  ,fFillTuplePID_TOFreq(kFALSE)
+  ,fTuplePID_TOFreq(0x0)
 {
   /// Default constructor
   
@@ -455,6 +459,7 @@ AliAnalysisTaskSEXicTopKpi::AliAnalysisTaskSEXicTopKpi(const char *name,AliRDHFC
   DefineOutput(3,TList::Class());
   DefineOutput(4,TTree::Class());
   DefineOutput(5,TNtuple::Class());
+  DefineOutput(6,TNtuple::Class());
   fCuts=cuts;
 }
 
@@ -556,7 +561,9 @@ AliAnalysisTaskSEXicTopKpi::~AliAnalysisTaskSEXicTopKpi()
     delete ftnFastVariables;
   }
   if(fHistFastInvMass)delete fHistFastInvMass;
-
+  if(fTuplePID_TOFreq){
+    delete fTuplePID_TOFreq;
+  }
        
 }
 
@@ -1055,6 +1062,8 @@ if(!fFillTree){
   //  ftnFastVariables=new TNtuple("ftnFastVariables","ftnFastVariables","ptFast:cosPointXYsqFast:LxyFast:xvtxFast:yvtxFast:pt:cosPointXYsq:Lxy:xvtx:yvtx:");
   ftnFastVariables=new TNtuple("ftnFastVariables","ftnFastVariables","ptFast:cosPointXYFast:LxyFast:xvtxFast:cosPointXY:Lxy:xvtx:ptP:ptK:ptPi:dcaP:dcaK:dcapi:lxyTrue:xvtxTrue:decaychannel:checkorigin:dzFast12:dzFast13:dzFast23:cosPoint3DFast:cosPoint3D:distVtx1223",128000);
 
+  fTuplePID_TOFreq=new TNtuple("fTuplePID_TOFreq","fTuplePID_TOFreq","pt_LcpKpi:mass_LcpKpi:daug0_isTPCsel:daug1_isTPCsel:daug2_isTPCsel:daug0_isTOFmatched:daug1_isTOFmatched:daug2_isTOFmatched:daug0_isCombTPCTOFSel:daug1_isCombTPCTOFSel:daug2_isCombTPCTOFSel",128000);
+
   fHistFastInvMass=new TH2D("fHistFastInvMass","Inv Mass Fast;M(p,K,pi);pt",400,2.18,2.58,48,0,24);
   fOutput->Add(fDist12Signal);
   fOutput->Add(fDist12SignalFilter);
@@ -1117,6 +1126,7 @@ if(!fFillTree){
   PostData(3,fOutput);
   PostData(4,fTreeVar);
   PostData(5,ftnFastVariables);
+  PostData(6,fTuplePID_TOFreq);
   return;
 }
 
@@ -1278,6 +1288,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(3,fOutput);
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
+      PostData(6,fTuplePID_TOFreq);
       return;
     }
   }
@@ -1330,6 +1341,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
     PostData(3,fOutput);
     PostData(4,fTreeVar);
     PostData(5,ftnFastVariables);
+    PostData(6,fTuplePID_TOFreq);
     return;
   }
 
@@ -1346,6 +1358,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(3,fOutput);
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
+      PostData(6,fTuplePID_TOFreq);
       return;
     }
   }
@@ -1362,6 +1375,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       PostData(3,fOutput);
       PostData(4,fTreeVar);
       PostData(5,ftnFastVariables);
+      PostData(6,fTuplePID_TOFreq);
       return;
     }
   }
@@ -2110,6 +2124,10 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
       }
     }
 
+    // tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
+    /// NB: it work only with Bayes PID !!!
+    if( fReadMC && fFillTuplePID_TOFreq && (fSwitchOffTopCuts || resp_onlyCuts > 0) ) FillTuplePID_TOFreq(io3Prong, isTrueLambdaCorXic);
+
 	  //
 	  //
 
@@ -2363,6 +2381,7 @@ void AliAnalysisTaskSEXicTopKpi::UserExec(Option_t */*option*/)
   PostData(3,fOutput);
   PostData(4,fTreeVar);
   PostData(5,ftnFastVariables);
+  PostData(6,fTuplePID_TOFreq);
 
   return;
 }
@@ -4726,6 +4745,62 @@ void AliAnalysisTaskSEXicTopKpi::BuildRotLcBkg(AliAODRecoDecayHF3Prong* candidat
 
     } // end of piKp hypothesis possible
   } // end of loop
+
+  return;
+}
+//____________________________________________________________________
+//____________________________________________________________________
+/// Fill tuple related to PID efficiency.
+/// Useful for offline analysis on influence of material budget description in MC.
+/// NB: function implemented only for Bayes PID !!!
+void AliAnalysisTaskSEXicTopKpi::FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc){
+
+  Float_t mass = 0;
+  Int_t is_pKpi_MC = 0;  /// 1: pKpi, 2: piKp
+  if(isTrueLc==40 || isTrueLc==50){
+    /// matched prompt (40) or non-prompt (50) Lc->pKpi
+    mass = candidate->InvMassLcpKpi();
+    is_pKpi_MC = 1;
+  }
+  else if(isTrueLc==80 || isTrueLc==100){
+    /// matched prompt (80) or non-prompt (100) Lc->piKp
+    mass = candidate->InvMassLcpiKp();
+    is_pKpi_MC = 2;
+  }
+  else  return; /// not a MC-matched Lc->pKpi, piKp
+
+  Float_t array_fill_tuple[11] = {
+    /* [0] */  (Float_t) candidate->Pt()  /// pt
+    /* [1] */ ,mass                       /// invariant mass
+    /* [2] */ ,0                          /// daughter 0 : is selected by PID in TPC
+    /* [3] */ ,0                          /// daughter 1 : is selected by PID in TPC
+    /* [4] */ ,0                          /// daughter 2 : is selected by PID in TPC
+    /* [5] */ ,0                          /// daughter 0 : usable for PID in TOF
+    /* [6] */ ,0                          /// daughter 1 : usable for PID in TOF
+    /* [7] */ ,0                          /// daughter 2 : usable for PID in TOF
+    /* [8] */ ,0                          /// daughter 0 : is selected by PID in TPC && TOF (combined)
+    /* [9] */ ,0                          /// daughter 1 : is selected by PID in TPC && TOF (combined)
+    /* [10] */,0                          /// daughter 2 : is selected by PID in TPC && TOF (combined)
+  };
+
+  Float_t array_isTPCsel[3] = {0,0,0};
+  Float_t array_isTOFok[3] = {0,0,0};
+  Float_t array_isCombTPCTOFsel[3] = {0,0,0};
+
+  /// Function that elaborates the candidate
+  if(fCutsXic)  fCutsXic->IsSelectedCombinedPID_testTOFmatching_MCsignal(candidate,is_pKpi_MC,array_isTPCsel,array_isTOFok,array_isCombTPCTOFsel);
+
+  /// Fill the tuple
+  array_fill_tuple[2] = array_isTPCsel[0];  /// daughter 0 : is selected by PID in TPC
+  array_fill_tuple[3] = array_isTPCsel[1];  /// daughter 1 : is selected by PID in TPC
+  array_fill_tuple[4] = array_isTPCsel[2];  /// daughter 2 : is selected by PID in TPC
+  array_fill_tuple[5] = array_isTOFok[0]; /// daughter 0 : usable for PID in TOF
+  array_fill_tuple[6] = array_isTOFok[1]; /// daughter 1 : usable for PID in TOF
+  array_fill_tuple[7] = array_isTOFok[2]; /// daughter 2 : usable for PID in TOF
+  array_fill_tuple[8] = array_isCombTPCTOFsel[0];   /// daughter 0 : is selected by PID in TPC && TOF (combined)
+  array_fill_tuple[9] = array_isCombTPCTOFsel[1];   /// daughter 1 : is selected by PID in TPC && TOF (combined)
+  array_fill_tuple[10] = array_isCombTPCTOFsel[2];  /// daughter 2 : is selected by PID in TPC && TOF (combined)
+  if(fTuplePID_TOFreq)  fTuplePID_TOFreq->Fill(array_fill_tuple);
 
   return;
 }
