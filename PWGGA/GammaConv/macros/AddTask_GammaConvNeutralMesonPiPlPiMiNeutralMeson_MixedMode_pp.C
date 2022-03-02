@@ -1968,6 +1968,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa012200000","32c51070a","0103103m00000000","0453503000000000"); // INT7 220: min nCells = 2, all E
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa013200000","32c51070a","0103103m00000000","0453503000000000"); // INT7 320: min nCells = 3, all E
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01dc00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 dc0: min nCells = 3, E>1GeV; minM02==0.1 off for E<1GeV
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cd00000","32c51070a","0103103m00000000","0453503000000000"); // INT7 cd0: min nCells = 3, E>1GeV; minM02==0.1 off for E<1GeV
   } else if(trainConfig == 6105)  { //PHOS INT7, Calo cut var. NCell & M02, Std cc -> min nCells = 2 >1GeV; M02 max=100, min=0.1, part 2
     //                            00010113   0dm00009f9730000dge0404000   24466190sa01cc00000   32c51070a   0103103m00000000   0453503000000000
     //                                                                                |||
