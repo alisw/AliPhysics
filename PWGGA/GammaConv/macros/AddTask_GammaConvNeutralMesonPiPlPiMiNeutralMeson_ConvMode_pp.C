@@ -512,8 +512,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   } else if(trainConfig == 2206)  { //PCM INT7, Ch.Pi cut var. Ch.Pi Mass, Std a -> Ch.Pi<850MeV
     //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
     //                                                                        |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070f","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<650MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070k","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<480MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070r","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<800MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070s","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<825MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070t","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<875MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070u","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<900MeV
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070n","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<1000MeV
     //-----
     //INT7: Neutral Meson (Pi0) Cut Variations
@@ -530,11 +532,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103105z00000000","0453503000000000"); // INT7 alpha 0-0.75
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103108z00000000","0453503000000000"); // INT7 alpha 0-0.6
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103101z00000000","0453503000000000"); // alpha meson pT dependent
-  } else if(trainConfig == 2305)  { //PCM INT7, N.Pi cut var. Selection Window, Std 5 -> 2 sigma
+  } else if(trainConfig == 2305)  { //PCM INT7, N.Pi cut var. Selection Window, Std z -> 3 sigma
     //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
     //                                                                                   |
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0453503000000000"); //INT7, 2.0 sigma
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103p00000000","0453503000000000"); //INT7, 4.0 sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103o00000000","0453503000000000"); //INT7, 2.5 sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103n00000000","0453503000000000"); //INT7, 3.5 sigma
   } else if(trainConfig == 2306)  { //PCM INT7, N.Pi cut var. open. angle, Std 0 -> off
     //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
     //                                                                                          |
