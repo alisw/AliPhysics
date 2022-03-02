@@ -47,6 +47,12 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
     fEventCuts = evtCuts;
   }
 
+void SethasFemtoTrackCleaning(bool hasFemtoTrackCleaning){
+    fhasFemtoTrackCleaning = hasFemtoTrackCleaning;
+}
+void SethasFemtoPairCleaning(bool hasFemtoPairCleaning){
+    fhasFemtoPairCleaning = hasFemtoPairCleaning;
+}
 //Lambda
   void SetLambdaCuts(AliFemtoDreamv0Cuts* v0Cuts){
     fLambda = v0Cuts;
@@ -81,7 +87,8 @@ class AliAnalysisTaskGeorgiosNTuple : public AliAnalysisTaskSE {
   AliFemtoDreamEventCuts* fEventCuts;//
   TList* fEvtList;//!
 
-
+bool fhasFemtoTrackCleaning;
+bool fhasFemtoPairCleaning;
 //Lambda
   AliFemtoDreamv0* fv0;
   AliFemtoDreamv0Cuts* fLambda;
