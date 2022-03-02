@@ -19,6 +19,8 @@ class AliAODv0;*/
 #include "AliPIDResponse.h"
 #include "AliAODv0.h"
 #include "AliAODVertex.h"
+#include "AliESDtrackCuts.h"
+
 
 //#include "THnSparse.h"
 //#include "TRandom3.h"
@@ -32,6 +34,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
     virtual void     UserCreateOutputObjects();
     virtual void     SetTrackCuts(Double_t c1, Double_t c2, Double_t c3, Double_t c4);
     virtual void     SetV0TrackCuts(Double_t c5, Double_t c6, Double_t c7, Double_t c8, Double_t c9, Double_t c10, Double_t c11, Double_t c12, Double_t c13, Double_t c14, Double_t c15);
+    Bool_t AcceptTrackCh(const AliAODTrack* trackch);
     Bool_t AcceptTrack(const AliAODTrack* track);
     Bool_t AcceptV0(const AliAODv0 *v0, Double_t *vertex);
     virtual void     UserExec(Option_t *option);
@@ -41,21 +44,34 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE {
 
     AliAODEvent     *fAOD;                   //! AOD event
 	TList           *fOutput;        // Output list
-    AliAODVertex    *fPrimaryVtx;            //! AOD vertex
     AliPIDResponse	*fPIDResponse;	 // PID
     AliEventCuts    *fEventCuts;
+    //AliESDtrackCuts *fESDtrackCuts;
+
+    
+    TH2D            *fPID;
+    TH2D            *fPIDPt;
+    TH2D            *fHistPt;
+    TH2D            *fnsigmakaon;
+    TH1F            *fHistMK0Cuts;
     TH2F            *fHistCFPhi;
     TH2F            *fHistCFPhiCuts;
     TH2F            *fHistCFPhiLCuts;
     TH2F            *fHistK0Phi;
     TH2F            *fHistKPosPhi;
     TH2F            *fHistKNegPhi;
+    TH2F            *fHistPosPhi;
+    TH2F            *fHistNegPhi;
     TH2F            *fHistCFEta;
     TH2F            *fHistKPosEta;
     TH2F            *fHistKNegEta;
     TH2F            *fHistK0Eta;
+    TH2F            *fHistPosEta;
+    TH2F            *fHistNegEta;
     TH1F            *fHistV0M;
     
+    //Double_t        fTPCNcls;
+    //Double_t        fChi2DoF;
     Double_t        fLpTCut;        //not a pointer???
 	Double_t        fUpTCut;
     Double_t        fEtaCut;
