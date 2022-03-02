@@ -12,7 +12,9 @@
 
 AliAnalysisTaskSE *AddTaskGeorgiosNTuple(bool fullBlastQA = true,
 		                         bool isMC=false,
-					 const char *cutVariation = "0") {
+					 const char *cutVariation = "0",
+           bool hasFemtoTrackCleaning=false, bool hasFemtoPairCleaning=false,
+           TString taskName="default") {
   //set fullBlastQA and suffix (cut variation)
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -441,11 +443,13 @@ printf("====> alive AddTask 2 \n");
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
-  AliAnalysisTaskGeorgiosNTuple* task = new AliAnalysisTaskGeorgiosNTuple("GeorgiosNTuple",true);
+  AliAnalysisTaskGeorgiosNTuple* task = new AliAnalysisTaskGeorgiosNTuple(Form("GeorgiosNTuple_%s",taskName.Data()),true);
   if (suffix != "0" && suffix != "999") {
     task->SetRunTaskLightWeight(true);
   }
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+  task->SethasFemtoTrackCleaning(hasFemtoTrackCleaning);
+  task->SethasFemtoPairCleaning(hasFemtoPairCleaning);
   task->SetEventCuts(evtCuts);
   task->SetLambdaCuts(v0Cuts);
   task->SetAntiLambdaCuts(Antiv0Cuts);
