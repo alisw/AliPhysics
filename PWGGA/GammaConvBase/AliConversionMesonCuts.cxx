@@ -2180,7 +2180,7 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
       fMaxPt = 25.;
       fDoMaxPtCut = kTRUE;
       break;
-  case 33: //y
+  case 34: //y
       fMinPt = 0.;
       fDoMinPtCut = kFALSE;
       fMaxPt = 22.;
