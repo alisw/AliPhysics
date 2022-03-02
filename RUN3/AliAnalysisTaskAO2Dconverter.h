@@ -608,8 +608,8 @@ private:
 
   struct {
     // D* -> D0pi candidates
-    Int_t fIndexHf2Prong = -1; /// D0 index
-    Int_t fIndexTracks_0 = -1; /// Track index of soft pion
+    Int_t fIndexHf2Prongs = -1; /// D0 index
+    Int_t fIndexTracks_0 = -1;  /// Track index of soft pion
   } hfDStar;
 
   /// Offsets to convert the IDs within one collision to global IDs
@@ -648,7 +648,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 27);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 28);
 };
 
 #endif

@@ -1140,7 +1140,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     if (fTreeStatus[kHFDStar])
     {
       tHFDStar->Branch("fIndexTracks_0", &hfDStar.fIndexTracks_0, "fIndexTracks_0/I");
-      tHFDStar->Branch("fIndexHf2Prong", &hfDStar.fIndexHf2Prong, "fIndexHf2Prong/I");
+      tHFDStar->Branch("fIndexHf2Prongs", &hfDStar.fIndexHf2Prongs, "fIndexHf2Prongs/I");
       tHFDStar->SetBasketSize("*", fBasketSizeEvents);
     }
 
@@ -2641,12 +2641,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         TTree *hfDstarCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfDstarCandidateTree");
         Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
         hfDstarCandidateTree->SetBranchAddress("trackSoftPi", &hfDStar.fIndexTracks_0);
-        hfDstarCandidateTree->SetBranchAddress("trackD0", &hfDStar.fIndexHf2Prong);
+        hfDstarCandidateTree->SetBranchAddress("trackD0", &hfDStar.fIndexHf2Prongs);
 
         for (int i=0; i<hfDstarCandidateTree->GetEntries(); i++) {
           hfDstarCandidateTree->GetEntry(i);
           hfDStar.fIndexTracks_0 += fOffsetTrack;
-          hfDStar.fIndexHf2Prong += fOffsetHF2Prong;
+          hfDStar.fIndexHf2Prongs += fOffsetHF2Prong;
           FillTree(kHFDStar);
         }
         eventextra.fNentries[kHFDStar] = hfDstarCandidateTree->GetEntries();
