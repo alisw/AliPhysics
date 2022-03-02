@@ -3148,7 +3148,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::v
 
 
 
-        } if(fDoKinematicsPlots)
+        } //if(fDoKinematicsPlots)
 
 
          if(fRunPlotInvMass)
