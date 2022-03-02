@@ -13,12 +13,14 @@ class AliMultGlauberNBDFitter : public TNamed {
 public:
   //basic functionality
   AliMultGlauberNBDFitter();
-  AliMultGlauberNBDFitter(const char * name, const char * title = "Glauber+NBD fitter");
+  AliMultGlauberNBDFitter(const char *name, const char * title = "Glauber+NBD fitter");
   ~AliMultGlauberNBDFitter();
   
   //Master fitter function
   Double_t ProbDistrib(Double_t *x, Double_t *par);
-
+  
+  void InitAncestor(); 
+  
   //Do Fit: where everything happens 
   Bool_t DoFit();
   
@@ -35,6 +37,11 @@ public:
   //Helper
   Bool_t InitializeNpNc();
   
+  //Interface for debug
+  void  SetAncestorMode(Int_t lAncMode = 0){ fAncestorMode = lAncMode; } 
+  Int_t GetAncestorMode() { return fAncestorMode; } 
+  TH1D *GetAncestorHistogram() { return fhNanc; } 
+  
   //Interface to set vals
   void SetMu ( Double_t lVal ) {fMu = lVal;}
   void Setk ( Double_t lVal ) {fk = lVal;}
@@ -49,6 +56,13 @@ public:
   
   void SetFitRange  (Double_t lMin, Double_t lMax);
   void SetFitOptions(TString lOpt);
+  void SetFitNpx    (Long_t lNpx);
+  
+  //For ancestor mode 2
+  Double_t ContinuousNBD(Double_t n, Double_t mu, Double_t k);
+  
+  //For estimating Npart, Ncoll in multiplicity bins
+  void CalculateAvNpNc(TProfile *lNPartProf, TProfile *lNCollProf); 
   
   //void    Print(Option_t *option="") const;
   
@@ -68,6 +82,9 @@ private:
   Bool_t ffChanged;
   Double_t fCurrentf;
   
+  //0: truncation, 1: rounding, 2: analytical continuation
+  Int_t fAncestorMode;
+  
   //Buffer for (Npart, Ncoll) pairs in memory
   Double_t *fNpart;
   Double_t *fNcoll;
@@ -81,8 +98,9 @@ private:
   Double_t ff;
   Double_t fnorm;
   
-  TString fFitOptions; 
+  TString fFitOptions;
+  Long_t fFitNpx; 
   
-  ClassDef(AliMultGlauberNBDFitter, 1);
+  ClassDef(AliMultGlauberNBDFitter, 2);
 };
 #endif

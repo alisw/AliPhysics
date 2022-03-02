@@ -157,6 +157,11 @@ CellEmulateCrosstalk:                               # Component to emulate cross
         values: {0 : [3.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [3.5e-3], 5 : [3.5e-3], 6 : [3.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3],
                  10: [5.0e-3], 11: [5.0e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3],
                  20: [3.5e-3], 21: [3.5e-3]}
+    inducedEnergyLossMinimumFractionCentralEta:      # Minimum induced energy fraction when linear dependency is set. For |eta| < 0.22, if false no difference in eta. NOT TUNED for TESTING.
+        enabled: false                               # Enable setting these values, OFF by default, enable if you are sure. For TESTING.
+        values: {0 : [6.8e-3], 1 : [7.5e-3], 2 : [6.8e-3], 3 : [9.0e-3], 4 : [6.8e-3], 5 : [6.8e-3], 6 : [6.8e-3], 7 : [9.0e-3], 8 : [5.2e-3], 9 : [5.2e-3],
+                 10: [7.5e-3], 11: [6.8e-3], 12: [6.8e-3], 13: [6.8e-3], 14: [5.2e-3], 15: [5.2e-3], 16: [6.8e-3], 17: [5.2e-3], 18: [5.2e-3], 19: [5.2e-3],
+                 20: [5.2e-3], 21: [5.2e-3]}
        #values: {"all" : [0.008]}                   # Values are [minimum fraction]
     inducedEnergyLossMaximumFraction:               # Maximum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values
@@ -327,6 +332,8 @@ CellTrackMatcherAndMIPSubtraction:                  # Cell energy shift correcti
     EmipData: 0.2356                                # Energy to be subtracted, in case of a match, for cells in data
     EmipMC: 0.2824                                  # Energy to be subtracted, in case of a match, for cells in MC
     DoPropagation: false                            # Whether track propagation should be performed. In case of AODs its not recommended to enable it
+    MatchOnlyPrimaries: false                       # Whether only primary tracks (r < MaxDistToVtxPrimcm) should be matched. Needed as clusters from conversion electrons should be track matched
+    MaxDistToVtxPrim: 5                             # Maximum DCA in XY for which a track is considered primary
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection

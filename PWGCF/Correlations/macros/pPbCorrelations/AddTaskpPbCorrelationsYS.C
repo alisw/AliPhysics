@@ -2,21 +2,21 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="pPb",//MBPP,HMPPV0,HMPPSPD, pPb,PbPb
+								       TString  fCollisiontype ="PbPbperi",//MBPP,HMPPV0,HMPPSPD, pPb,PbPb
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
-								       Bool_t fFMDcut          =kFALSE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SE__CA
-								       TString anacent         ="V0A",
+								       Bool_t fFMDcut          =kTRUE,
+								       TString anamode         ="FMDFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SE__CA
+								       TString anacent         ="V0M",
 								       TString assomode        ="hadron",
-								       Int_t ffilterbit        =768,
+								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
-								       Bool_t fptdiff          =kTRUE,
-								       Float_t fmaxpt          =8.0,
+								       Bool_t fptdiff          =kFALSE,
+								       Float_t fmaxpt          =3.0,
 								       Int_t fMinNTracksInPool =5000,
 								       Int_t fMinNEventsInPool =5,
-								       Bool_t fefficalib       =kTRUE,
+								       Bool_t fefficalib       =kFALSE,
 								       Float_t fminpt=0.2,
 								       Float_t fcuthighmult=0,
 									   Int_t calibmode=0,
@@ -103,7 +103,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
       else if(fCollisiontype.Contains("pPb"))myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPbManual,cent_mult_binlimitspPbManual);
       else if(fCollisiontype.Contains("PbPb"))myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
     }else{
-      if(fCollisiontype=="pPb" ||fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
+      if(fCollisiontype=="pPb" ||fCollisiontype.Contains("PbPb")){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
       else if(fCollisiontype.Contains("HMPP")|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
     }
     

@@ -121,6 +121,7 @@ void AliAnalysisTaskMeanptFluctuationPP::UserCreateOutputObjects()
       
       fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
+      /*
       //++++++++++++++Track parameters to be varied for systematics++++++++++++++
       if(fDCAxy_ptdep == 0)//default
 	{
@@ -137,6 +138,8 @@ void AliAnalysisTaskMeanptFluctuationPP::UserCreateOutputObjects()
 	  // 5*(0.0015+0.0050/pt^1.1)
 	  fESDtrackCuts->SetMaxDCAToVertexXYPtDep("0.0075+0.0250/pt^1.1");
 	}
+      */
+      fESDtrackCuts->SetMaxDCAToVertexXY(fDCAxyMax);
       fESDtrackCuts->SetMaxDCAToVertexZ(fDCAzMax);
       fESDtrackCuts->SetMaxChi2PerClusterTPC(fChi2TPC);
       fESDtrackCuts->SetMaxChi2PerClusterITS(fChi2ITS);
@@ -146,7 +149,10 @@ void AliAnalysisTaskMeanptFluctuationPP::UserCreateOutputObjects()
       
     }
 
-  
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //Container 1
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   OpenFile(1);
   fTreeEvent = new TTree(fTreeName,"Event");
   fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
@@ -174,6 +180,13 @@ void AliAnalysisTaskMeanptFluctuationPP::UserCreateOutputObjects()
   */
 
   PostData(1, fTreeEvent);
+
+
+
+  
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //Container 2
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   OpenFile(2);
   fListHist = new TList();
@@ -298,6 +311,10 @@ void AliAnalysisTaskMeanptFluctuationPP::UserCreateOutputObjects()
   PostData(2, fListHist);
 
 
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //Container 3
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   OpenFile(3);
   fQAList = new TList();
   fEventCuts.AddQAplotsToList(fQAList,kTRUE);
@@ -405,7 +422,7 @@ void AliAnalysisTaskMeanptFluctuationPP::UserExec(Option_t *)
       cl1Centr = multSelection->GetMultiplicityPercentile("CL1");
       cl0Centr = multSelection->GetMultiplicityPercentile("CL0");
     }
-  if(v0Centr>=90.||v0Centr<0) 
+  if(v0Centr>=100.||v0Centr<0) 
     {
       PostData(1, fTreeEvent);
       PostData(2, fListHist);
@@ -629,7 +646,7 @@ void AliAnalysisTaskMeanptFluctuationPP::UserExec(Option_t *)
       if(TMath::Abs(Track_eta)>0.8)continue;
       if(TMath::Abs(trackcharge)!=1)continue;
       
-      if(Track_pt>0.2 && Track_pt<=2.0)
+      if(Track_pt>0.15 && Track_pt<=2.0)
 	{
 	  Q1[0]=Q1[0]+TMath::Power(Track_pt, 1.0);
 	  Q2[0]=Q2[0]+TMath::Power(Track_pt, 2.0);

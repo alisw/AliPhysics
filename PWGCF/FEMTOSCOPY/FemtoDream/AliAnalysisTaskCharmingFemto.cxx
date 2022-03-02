@@ -269,8 +269,11 @@ void AliAnalysisTaskCharmingFemto::LocalInit()
 //____________________________________________________________________________________________________
 void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fInputEvent = static_cast<AliAODEvent*>(InputEvent());
-  if (fIsMC)
+  TClonesArray *fArrayMCAOD = nullptr;
+  if (fIsMC) {
     fMCEvent = MCEvent();
+    fArrayMCAOD = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  }
 
   // PREAMBLE - CHECK EVERYTHING IS THERE
   if (!fInputEvent) {
@@ -344,6 +347,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     return;
   }
 
+  if (fIsMC && !fArrayMCAOD) {
+    AliError("No MC AOD array");
+    return;
+  }
+
   if (!fEvtCuts) {
     AliError("Event Cuts missing");
     return;
@@ -361,6 +369,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fEvent->SetEvent(fInputEvent);
   if (!fEvtCuts->isSelected(fEvent))
     return;
+
+  if(fCheckProtonSPDHit) { // force usage of global tracks since TPC only tracks have no ITS hits
+    fTrackCutsPartProton->SetFilterBit(96);
+    fTrackCutsPartAntiProton->SetFilterBit(96);
+  }
 
   // PROTON SELECTION
   ResetGlobalTrackReference();
@@ -404,18 +417,17 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fProtonTrack->SetInvMass(DmesonBuddyMass);
 
     int mcpdg = 0;
+    AliAODMCParticle *mcPart = nullptr;
     if (fUseMCTruthReco && track->GetLabel() >= 0){ // Fake tracks have label < 0. Reject them.
-      TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
-      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
-      AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
+      mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
       }
     }
 
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode()){
+      if (fUseMCTruthReco && mcpdg == fTrackCutsPartProton->GetPDGCode() && mcPart && SelectBuddyOrigin(mcPart)){
         protons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth) {
@@ -423,7 +435,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) {
+      if(fUseMCTruthReco && mcpdg == fTrackCutsPartAntiProton->GetPDGCode() && mcPart && SelectBuddyOrigin(mcPart)) {
         antiprotons.push_back(*fProtonTrack);
       }
       else if (!fIsMCtruth) {
@@ -441,8 +453,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   float DmesonPtMax=DmesonPtBins[fRDHFCuts->GetNPtBins()];
 
   if (fIsMCtruth) {
-    TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(
-        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     int noPart = fArrayMCAOD->GetEntriesFast();
   
     for (int iPart = 1; iPart < noPart; iPart++) {
@@ -544,11 +554,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
           }
         }
       }
-
-
     }
-
- 
   }
 
   // D MESON SELECTION
@@ -605,6 +611,9 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fArrayMCAOD->At(dMesonLabel);
       if(mcPart->Pt() < DmesonPtMin || mcPart->Pt() > DmesonPtMax) {
+        continue;
+      }
+      if(!SelectDmesonOrigin(fArrayMCAOD, mcPart)) {
         continue;
       }
     } else {

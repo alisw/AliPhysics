@@ -65,12 +65,19 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     void SetMaxMassWindowV0(Double_t lParameter) { fV0MassWindowCut = lParameter; }
     void SetMaxMassWindowXi(Double_t lParameter) { fXiMassWindowCut = lParameter; }
     void SetExoticMaxOpenAngle(Double_t lParameter) { fExoticMaxOpenAngle = lParameter; }
+    void SetSkipFillingHistogram(Double_t lParameter) { fSkipFillingHisto = lParameter; }
 
     void SetXi1530RapidityCutHigh(Double_t lParameter) {
         fXi1530YCutHigh = lParameter;
     }
     void SetXi1530RapidityCutLow(Double_t lParameter) {
         fXi1530YCutLow = lParameter;
+    }
+    void SetXi1530MassCutHigh(Double_t lParameter) {
+        fXi1530MassHigh = lParameter;
+    }
+    void SetXi1530MassCutLow(Double_t lParameter) {
+        fXi1530MassLow = lParameter;
     }
 
     Bool_t GoodTracksSelection();
@@ -133,18 +140,19 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     TNtupleD *fNtupleXi1530;  //!
     TClonesArray *fMCArray;   //!
 
-    Bool_t fIsAOD;            //!
-    Bool_t fIsNano;           //!
-    Bool_t fSetMixing;        //
-    Bool_t fUseBuiltinMixer;  //
-    Bool_t fFillQAPlot;       //
-    Bool_t fIsMC;             //
-    Bool_t fIsPrimaryMC;      //
-    Bool_t fFillnTuple;       //
-    Bool_t fIsINEL;           //
-    Bool_t fIsHM;             //
-    Bool_t fLambdaCPAtoXi;    //
-    Bool_t fExoticFinder;     //
+    Bool_t fIsAOD;             //!
+    Bool_t fIsNano;            //!
+    Bool_t fSetMixing;         //
+    Bool_t fUseBuiltinMixer;   //
+    Bool_t fFillQAPlot;        //
+    Bool_t fIsMC;              //
+    Bool_t fIsPrimaryMC;       //
+    Bool_t fFillnTuple;        //
+    Bool_t fIsINEL;            //
+    Bool_t fIsHM;              //
+    Bool_t fLambdaCPAtoXi;     //
+    Bool_t fExoticFinder;      //
+    Bool_t fSkipFillingHisto;  //
 
     mixingpool fEMpool;  //!
     TAxis fBinCent;      //!
@@ -189,13 +197,16 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     Double_t fExoticMaxOpenAngle;  //
     Double_t fXi1530YCutHigh;      //
     Double_t fXi1530YCutLow;       //
+    Double_t fXi1530MassHigh;      //
+    Double_t fXi1530MassLow;       //
 
     // Good track/cascade vector array
     std::vector<UInt_t> fGoodTrackArray;  //
     std::vector<UInt_t> fGoodXiArray;     //
 
-    ClassDef(AliAnalysisTaskXi1530PbPb, 2);
-    // Code beautify, fix minor bugs
+    ClassDef(AliAnalysisTaskXi1530PbPb, 3);
+    // 2. Code beautify, fix minor bugs
+    // 3. Add secondary vertex option
 };
 
 #endif

@@ -57,6 +57,7 @@ set(SRCS
   AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
   AliProfileBS.cxx
+  AliPtContainer.cxx
   AliCkContainer.cxx
   AliUniFlowCorrTask.cxx
   AliAnalysisDecorrTask.cxx
@@ -66,6 +67,8 @@ set(SRCS
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS AliAnalysisTaskCreateNUA.cxx)
+  list(APPEND SRCS AliAnalysisTaskCreatePeriodNUA.cxx)
   list(APPEND SRCS AliAnalysisTaskEffFDExample.cxx)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
   list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)

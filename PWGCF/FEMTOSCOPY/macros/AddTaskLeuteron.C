@@ -6,6 +6,7 @@
  */
 
 
+
 AliAnalysisTaskSE *AddTaskLeuteron(
   bool isFullBlastQA = false,
   bool isMC = false,
@@ -15,6 +16,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isSidebandSignal = false,
   bool isUpperSideband = false,
   bool isLowerSideband = false,
+  bool isPbPb = false,
   bool isSystematics = false,
   bool DoITSPID = false,
   const char *CutVariation = "0"){
@@ -75,7 +77,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts1->SetIsMonteCarlo(isMC);
   TrackCuts1->SetCutCharge(1);				// set electrical charge of particle 1
   TrackCuts1->SetFilterBit(128);			// 128 is TPC only
-  TrackCuts1->SetPtRange(0.4,4.0);			// set range for the transverse momentum (GeV/c)
+  TrackCuts1->SetPtRange(0.5,4.0);			// set range for the transverse momentum (GeV/c)
   TrackCuts1->SetEtaRange(-0.8,0.8);			// set range of the pseudo-rapidity
   TrackCuts1->SetNClsTPC(80);				// set lower limit of clusters per track in the TPC
   TrackCuts1->SetDCAReCalculation(true);		// recalculate the DCA by PropagateToVertex or use information stored in AOD
@@ -111,7 +113,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
   TrackCuts2->SetFilterBit(128);
-  TrackCuts2->SetPtRange(0.4,4.0);
+  TrackCuts2->SetPtRange(0.5,4.0);
   TrackCuts2->SetEtaRange(-0.8,0.8);
   TrackCuts2->SetNClsTPC(80);
   TrackCuts2->SetDCAReCalculation(true);
@@ -141,7 +143,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
   TrackCuts3->SetFilterBit(256);
-  TrackCuts3->SetPtRange(0.4,4.0);
+  TrackCuts3->SetPtRange(0.5,4.0);
   TrackCuts3->SetEtaRange(-0.8,0.8);
   TrackCuts3->SetNClsTPC(80);
   TrackCuts3->SetDCAReCalculation(true);
@@ -176,7 +178,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
   TrackCuts4->SetFilterBit(256);
-  TrackCuts4->SetPtRange(0.4,4.0);
+  TrackCuts4->SetPtRange(0.5,4.0);
   TrackCuts4->SetEtaRange(-0.8,0.8);
   TrackCuts4->SetNClsTPC(80);			
   TrackCuts4->SetDCAReCalculation(true);
@@ -304,16 +306,16 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   if(isLowPt){
 
     // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(0.4,1.4);
-    TrackCuts4->SetPtRange(0.4,1.4);
+    TrackCuts3->SetPtRange(0.5,1.4);
+    TrackCuts4->SetPtRange(0.5,1.4);
 
   }
  
   if(isHighPt){
 
     // Deuterons and Antideuterons
-    TrackCuts3->SetPtRange(1.4,2.0);
-    TrackCuts4->SetPtRange(1.4,2.0);
+    TrackCuts3->SetPtRange(0.5,4.0);
+    TrackCuts4->SetPtRange(0.5,4.0);
 
   }
 
@@ -840,18 +842,31 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   
   } else{
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isFullBlastQA,isFullBlastQA);
+
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isPbPb,isFullBlastQA,isFullBlastQA);
 
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
       return nullptr;
     }
 
+    std::cout << "before trigger settings..." << std::endl;
+
     if(isHighMultV0){
 
-      taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-      std::cout << "Added kHighMultV0 Trigger" << std::endl;
+	taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+	std::cout << "Added kHighMultV0 Trigger" << std::endl;
 
+    } 
+
+    if(isPbPb){
+
+	std::cout << "Adding PbPb Trigger" << std::endl;
+	taskAOD->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+//	taskAOD->SelectCollisionCandidates(AliVEvent::kCentral);
+//	taskAOD->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+
+      
     } else{
 
       taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);

@@ -84,6 +84,9 @@ void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
   double massPDGP=0.938272013;
   double massPDGD=1.8756;
   
+  // dowang 2022.1.20
+  double massPDGT=2.8089;
+  double massPDGHe3=2.8084;
   if(beta!=0){
     massTOF= tMom*tMom/c/c*(1/(beta*beta)-1);
  
@@ -96,6 +99,10 @@ void AliFemtoCutMonitorParticlePIDBeta::Fill(const AliFemtoTrack* aTrack)
       fDifference->Fill(massTOF-massPDGP*massPDGP);
     else if(AliFemtoCutMonitorParticlePID::fTOFParticle==3)
       fDifference->Fill(massTOF-massPDGD*massPDGD);
+    else if(AliFemtoCutMonitorParticlePID::fTOFParticle==4)
+      fDifference->Fill(massTOF-massPDGD*massPDGT);
+    else if(AliFemtoCutMonitorParticlePID::fTOFParticle==5)
+      fDifference->Fill(massTOF-massPDGHe3*massPDGHe3/2./2.);
     
     
   }

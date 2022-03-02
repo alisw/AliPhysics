@@ -198,20 +198,20 @@ fUseMultiplicity(kTRUE), fUseMBFractions(kFALSE) {
     };
 
     if ("pp" == fstCollisionSystem) {
-//        fAllSystematicFlags.push_back(
-//                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
-//        fAllSystematicFlags.push_back(
-//                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
+        fAllSystematicFlags.push_back(
+                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
+        fAllSystematicFlags.push_back(
+                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
 //        fAllSystematicFlags.push_back(
 //                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
 //        fAllSystematicFlags.push_back(
 //                                      AliMCSpectraWeights::SysFlag::kHagedornLower);
     } else if ("ppb" == fstCollisionSystem) {
-//        fAllSystematicFlags.push_back(
-//                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
-//        fAllSystematicFlags.push_back(
-//                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
+        fAllSystematicFlags.push_back(
+                                      AliMCSpectraWeights::SysFlag::kBylinkinUpper);
+        fAllSystematicFlags.push_back(
+                                      AliMCSpectraWeights::SysFlag::kBylinkinLower);
         fAllSystematicFlags.push_back(AliMCSpectraWeights::SysFlag::kHagedorn);
 //        fAllSystematicFlags.push_back(
 //                                      AliMCSpectraWeights::SysFlag::kHagedornUpper);
@@ -767,41 +767,36 @@ bool AliMCSpectraWeights::CorrectFractionsforRest() {
 #endif
     //    DebugPCC("Correct data fractions for not having rest particles
     //    measured\n");
-    for (int icent = 0; icent < fNCentralities; ++icent) {
-        if (fUseMBFractions && "pp" == fstCollisionSystem && icent > 0)
-            continue;
-        auto multTuple = AliMCSpectraWeights::GetMultTupleFromCent(icent);
-        auto _multFront = multTuple.front();
-        auto _multBack = multTuple.back();
-        if (fUseMBFractions && "pp" == fstCollisionSystem) {
-            _multFront = 0;
-            _multBack = 49.9;
-        }
-        //        DebugPCC("\t cent: " << icent << " = " << _multFront << "-" <<
-        //        _multBack
-        //                             << "\n");
-        auto _bin1 =
-        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multFront);
-        auto _bin2 =
-        fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(_multBack);
+    auto dMultHigh = 49;
+    if (fstCollisionSystem.find("ppb") != std::string::npos)
+        dMultHigh = 299;
+    else if (fstCollisionSystem.find("pbpb") != std::string::npos)
+        dMultHigh = 3499;
 
-        auto h1pTMCAll = (TH1D*)fHistMCGenPrimTrackParticle->ProjectionX(
-                                                                         "h1pTMCAll", _bin1, _bin2, 1,
-                                                                         fHistMCGenPrimTrackParticle->GetNbinsZ(), "e");
-        if (!h1pTMCAll) {
-            std::cerr
-            << "AliMCSpectraWeights::ERROR could not create h1pTMCAll\n";
-            return false;
-        }
-        //        DebugPCC("\t created MC all spectra\n");
-        auto const _iRestPos = AliMCSpectraWeights::GetPartTypeNumber("Rest");
-        auto const _RestBin =
-        fHistMCGenPrimTrackParticle->GetZaxis()->FindBin(_iRestPos);
-        auto h1RestCorrFactor = fHistMCGenPrimTrackParticle->ProjectionX(
-                                                                         Form("h1RestCorrFactor_%d", icent), _bin1, _bin2, 1, _RestBin - 1,
-                                                                         "e");
-        h1RestCorrFactor->Divide(h1pTMCAll);
-        //        DebugPCC("\t calculated correction factor\n");
+
+    auto _bin1 =
+    fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(0.);
+    auto _bin2 =
+    fHistMCGenPrimTrackParticle->GetYaxis()->FindBin(dMultHigh);
+
+    auto h1pTMCAll = (TH1D*)fHistMCGenPrimTrackParticle->ProjectionX(
+                                                                     "h1pTMCAll", _bin1, _bin2, 1,
+                                                                     fHistMCGenPrimTrackParticle->GetNbinsZ(), "e");
+    if (!h1pTMCAll) {
+        std::cerr
+        << "AliMCSpectraWeights::ERROR could not create h1pTMCAll\n";
+        return false;
+    }
+    //        DebugPCC("\t created MC all spectra\n");
+    auto const _iRestPos = AliMCSpectraWeights::GetPartTypeNumber("Rest");
+    auto const _RestBin =
+    fHistMCGenPrimTrackParticle->GetZaxis()->FindBin(_iRestPos);
+    auto h1RestCorrFactor = fHistMCGenPrimTrackParticle->ProjectionX(
+                                                                     "h1RestCorrFactor", _bin1, _bin2, 1, _RestBin - 1,
+                                                                     "e");
+    h1RestCorrFactor->Divide(h1pTMCAll);
+    //        DebugPCC("\t calculated correction factor\n");
+    for (int icent = 0; icent < fNCentralities; ++icent){
         for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
             //            DebugPCC("\t\t correct " << fstPartTypes[ipart] <<
             //            "\n");
@@ -835,9 +830,9 @@ bool AliMCSpectraWeights::CorrectFractionsforRest() {
                                                   value * _RestCorrVal);
             }
         }
-        delete h1pTMCAll;
-        delete h1RestCorrFactor;
     }
+    delete h1pTMCAll;
+    delete h1RestCorrFactor;
     DebugPCC("\t ...correction finished\n");
 #ifdef __AliMCSpectraWeights_DebugTiming__
     auto t2 = std::chrono::high_resolution_clock::now();

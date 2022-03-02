@@ -139,6 +139,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fHist_trackPt(0),
 	fHistMatchPt(0),
 	fHistSelectPt(0),
+        fHistCheff0(0),
+        fHistCheff1(0),
 	fHist_ClustE(0),
 	fHist_SelectClustE(0),
 	fHist_SelectClustE_time(0),
@@ -167,6 +169,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
 	fWh_phidiff(0),
+	fhad_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
@@ -329,6 +332,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fHist_trackPt(0),
 	fHistMatchPt(0),
 	fHistSelectPt(0),
+        fHistCheff0(0),
+        fHistCheff1(0),
 	fHist_ClustE(0),
 	fHist_SelectClustE(0),
 	fHist_SelectClustE_time(0),
@@ -357,6 +362,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fRiso_phidiff_35(0),
 	fRiso_phidiff_LS_35(0),
 	fWh_phidiff(0),
+	fhad_phidiff(0),
         fIsoArray(0),
         fHFArray(0),
 	fzvtx_Ntrkl(0),
@@ -474,6 +480,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_trackPt = new TH1F("fHist_trackPt", "EMCAL cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHistMatchPt = new TH1F("fHistMatchPt", "EMCAL matched cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHistSelectPt = new TH1F("fHistSelectPt", "EMCAL Slected cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
+	fHistCheff0 = new TH2F("fHistCheff0", "track eff gene; pt(GeV/c); counts", 301,-0.5,300.5, 100, 0, 100);       // create your histogra
+	fHistCheff1 = new TH2F("fHistCheff1", "track eff reco; pt(GeV/c); counts", 301,-0.5,300.5, 100, 0, 100);       // create your histogra
 	fHist_ClustE = new TH1F("fHist_ClustE", "fHist_ClustE; EMCAL cluster energy distribution; counts", 1000, 0, 100);      
 	fHist_SelectClustE = new TH1F("fHist_SelectClustE", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
 	fHist_SelectClustE_time = new TH1F("fHist_SelectClustE_time", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
@@ -525,10 +533,11 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[4]=   { 50,  60,   80,  50}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xminWh[4]={ 20,   0, -2.0,   0};
-        Double_t xmaxWh[4]={ 70,  60,  6.0, 0.5};
-	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",4,binsWh, xminWh, xmaxWh);
+        Int_t binsWh[5]=   { 50,  60,   80,  50, 200}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[5]={ 20,   0, -2.0,   0,   0};
+        Double_t xmaxWh[5]={ 70,  60,  6.0, 0.5,   2};
+	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",5,binsWh, xminWh, xmaxWh);
+	fhad_phidiff = new THnSparseD("fhad_phidiff","pT vs. dphi differnce had",5,binsWh, xminWh, xmaxWh);
 	
         Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
         Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
@@ -679,6 +688,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHist_trackPt);          
 	fOutputList->Add(fHistMatchPt);          
 	fOutputList->Add(fHistSelectPt);          
+	fOutputList->Add(fHistCheff0);          
+	fOutputList->Add(fHistCheff1);          
 	fOutputList->Add(fHist_ClustE);          
 	fOutputList->Add(fHist_SelectClustE);          
 	fOutputList->Add(fHist_SelectClustE_time);          
@@ -707,6 +718,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fRiso_phidiff_35);
 	fOutputList->Add(fRiso_phidiff_LS_35);
 	fOutputList->Add(fWh_phidiff);
+	fOutputList->Add(fhad_phidiff);
 	fOutputList->Add(fzvtx_Ntrkl);
 	fOutputList->Add(fzvtx_Nch);
 	fOutputList->Add(fzvtx_Ntrkl_V0);
@@ -996,7 +1008,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//////////////////////////////
 	// Get generated W
 	//////////////////////////////
-	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	//if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 
@@ -1130,6 +1142,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	fNevents->Fill(7); 
 
 
+	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1],correctednAcc);
+
 	//////////////////////////////
 	// EMCal cluster loop
 	//////////////////////////////
@@ -1147,10 +1161,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
-                if(clust->GetIsExotic())continue;
+                //if(clust->GetIsExotic())continue;
 
 		if(clust && clust->IsEMCAL())
 		{
+
+                        if(clust->GetIsExotic())continue;
 
                         Float_t tof = clust->GetTOF()*1e+9; // ns
 
@@ -1254,6 +1270,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		fHistEta_track->Fill(track->Eta());            
 		fHistPhi_track->Fill(track->Phi());             
 		fTPCCrossedRow->Fill(track -> GetTPCCrossedRows());
+                fHistCheff1->Fill(correctednAcc,TrkP);
 
 
 		///////////////////////
@@ -1377,10 +1394,13 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		if(fFlagEMCalCorrection) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 
-                if(clustMatch->GetIsExotic())continue;
+                //if(clustMatch->GetIsExotic())continue;
 
 		if(clustMatch && clustMatch->IsEMCAL())
 		{
+
+                        if(clustMatch->GetIsExotic())continue;
+
 			fHistMatchPt->Fill(TrkPt);
 
                         Float_t tof = clustMatch->GetTOF()*1e+9; // ns
@@ -1529,6 +1549,9 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                            fEop_iso->Fill(TrkPt,eop);
                           }
 
+                         // h-h correlation
+                         if(TrkPt>30.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
+
 			//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
 			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m20>CutM20[0] && m20<CutM20[1]){
 				fM02_2->Fill(TrkPt,m02);
@@ -1547,7 +1570,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
                                      //////////// ---- W-h correlation /////////////
 
-                                     if(NtrackCone<3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE);
+                                     if(NtrackCone<=3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
 
 				if(pid_eleP)
 				{
@@ -1828,7 +1851,7 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
   }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
+void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta, Int_t Nmult)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
  NpureMC = 0;
@@ -1891,6 +1914,8 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 	     if(TMath::Abs(pdgEta)>CutEta)continue;
 
 	     fCheckEtaMC->Fill(pdgEta);
+
+             if(isPhysPrim && chargetrue!=0)fHistCheff0 -> Fill(Nmult,pTtrue);
 
 	     Int_t pdgMom = -99;
 	     Int_t pdgorg = -99;
@@ -2067,12 +2092,15 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 
 		fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
 		
-                if(Assoclust->GetIsExotic())continue;
+                //if(Assoclust->GetIsExotic())continue;
 
                 ConeR = 0.;
 
 		if(Assoclust && Assoclust->IsEMCAL())
 		{
+
+                        if(Assoclust->GetIsExotic())continue;
+
 			Float_t Assoclpos[3] = {0.};
 			Assoclust->GetPosition(Assoclpos);
 
@@ -2193,8 +2221,11 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
                if(EMCalIndex_TrCone<0)continue;
 	       AliVCluster *Assoclust_TrCone = 0x0;     
 	       Assoclust_TrCone = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex_TrCone)); 
-
-	       risoTrack += Assoclust_TrCone->E();
+ 
+               if(Assoclust_TrCone)
+                 {
+	          risoTrack += Assoclust_TrCone->E();
+                }
                //cout << "risoTrack = " << risoTrack << endl;
 
                NtrackCone++;
@@ -2209,7 +2240,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto)
+void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto, Int_t iWevt)
 {
 
 	//##################### Systematic Parameters ##################### //
@@ -2264,7 +2295,8 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 		TrackPhi        = track->Phi();
 
-		if(ptWasso <1.0) continue;
+		//if(ptWasso <1.0) continue;
+		if(ptWasso <3.0) continue;
 
 		/////////////////////////
 		// track cut
@@ -2307,10 +2339,18 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 
                 //if(Riso<0.05)
                    {
-                    Double_t valwh[4];
-                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; valwh[3] = Riso; 
-                    fWh_phidiff->Fill(valwh);
-                   }
+                    Double_t valwh[5];
+                    valwh[0] = TrackPt; valwh[1] = ptWasso; valwh[2] = Wphidiff; valwh[3] = Riso; valwh[4] = ptWasso/TrackPt;
+                    if(iWevt==1)
+                      {
+                       fWh_phidiff->Fill(valwh);
+                      }
+                    else
+                      {
+                       fhad_phidiff->Fill(valwh);
+                      }
+                     }
+                   //}
 
 	}
 
@@ -2332,7 +2372,7 @@ TProfile* AliAnalysisTaskCaloHFEpp::GetEstimatorHistogram(TFile* fEstimator, con
 
 	if(mtype==0)
 	{
-		if(fEMCEG1)
+		if(fEMCEG1 && Nref>15) // ref =  12 for MB
 		{
 			if (runNo>=256941 && runNo<=258537) sprintf(periodNames, "SPDTrklEG1_LHC16k"); 
 			if (runNo>=258962 && runNo<=259888) sprintf(periodNames, "SPDTrklEG1_LHC16l"); 

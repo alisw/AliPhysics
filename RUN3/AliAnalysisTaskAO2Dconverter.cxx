@@ -105,10 +105,10 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2fv0c",
   "O2ft0",
   "O2fdd",
-  "O2v0",
-  "O2cascade",
+  "O2v0_001",
+  "O2cascade_001",
   "O2tof",
-  "O2mcparticle",
+  "O2mcparticle_001",
   "O2mccollision",
   "O2mctracklabel",
   "O2mccalolabel",
@@ -116,7 +116,12 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2bc",
   "O2run2bcinfo",
   "O2origin",
-  "O2hmpid"};
+  "O2hmpid",
+  "O2hf2prong",
+  "O2hf3prong",
+  "O2hfcascade",
+  "O2hfdstar"
+  };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "Collision tree",
@@ -144,7 +149,11 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "BC info",
   "Run 2 BC Info",
   "DF ids",
-  "HMPID info"};
+  "HMPID info",
+  "HF 2 prong candidates",
+  "HF 3 prong candidates",
+  "HF cascade candidates",
+  "HF D* candidates"};
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -235,6 +244,10 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     fdd(),
     v0s(),
     cascs(),
+    hf2Prong(),
+    hf3Prong(),
+    hfCascades(),
+    hfDStar(),
     fMetaData()
 {
   DefineInput(0, TChain::Class());
@@ -261,6 +274,7 @@ void AliAnalysisTaskAO2Dconverter::NotifyRun(){
   if (!triggerContainer) AliFatal("Cannot fetch OADB container for trigger analysis");
   AliOADBTriggerAnalysis* oadbTriggerAnalysis = (AliOADBTriggerAnalysis*) triggerContainer->GetObject(fCurrentRunNumber, "Default");
   fTriggerAnalysis.SetParameters(oadbTriggerAnalysis);
+  fTriggerAnalysis.ApplyPileupCuts(kTRUE);
   //read PHOS trigger bad map
   if (fUsePHOSBadMap){
     AliOADBContainer phosBadmapContainer(Form("phosTriggerBadMap"));
@@ -386,6 +400,13 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true);
 
   PostData(1, fOutputList);
+
+  if (!fStoreHF) {
+    DisableTree(kHF2Prong);
+    DisableTree(kHF3Prong);
+    DisableTree(kHFCascade);
+    DisableTree(kHFDStar);
+  }
 } // void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
 
 void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
@@ -576,7 +597,7 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   if (!suffix.IsNull())
     fileName += ":" + suffix; // create a subfolder in the file
   // now we create an instance of your task
-  AliAnalysisTaskAO2Dconverter *task = new AliAnalysisTaskAO2Dconverter((TString("AO2Dfriend") + suffix).Data());
+  AliAnalysisTaskAO2Dconverter *task = new AliAnalysisTaskAO2Dconverter((TString("AO2D converter") + suffix).Data());
   if (!task)
     return nullptr;
   // add your task to the manager
@@ -591,6 +612,7 @@ AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suff
   //   mgr->ConnectOutput(task, 2 + i, mgr->CreateContainer(TreeName[i], TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   // in the end, this macro returns a pointer to your task. this will be convenient later on
   // when you will run your analysis in an analysis train on grid
+
   return task;
 } // AliAnalysisTaskAO2Dconverter *AliAnalysisTaskAO2Dconverter::AddTask(TString suffix)
 
@@ -619,6 +641,8 @@ void AliAnalysisTaskAO2Dconverter::Prune()
     Bool_t found = kFALSE;
     for (Int_t j = 0; j < kTrees; j++)
     {
+      if (!fTreeStatus[j])
+        continue;
       TObjArray *branches = fTree[j]->GetListOfBranches();
       for (Int_t k = 0; k < branches->GetEntries(); k++)
       {
@@ -658,6 +682,8 @@ void AliAnalysisTaskAO2Dconverter::WriteTree(TreeIndex t)
 
 void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 {
+  Printf("Initializing TF %lld", tfId);
+
   // Reset the event count
   fTFCount++;
   fCollisionCount = 0;
@@ -669,6 +695,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   fOffsetTrack = 0;
   fOffsetV0 = 0;
   fOffsetLabel = 0;
+  fOffsetHF2Prong = 0;
 
   // Reset the content of eventextra
   for (auto i = 0; i < kTrees; ++i)
@@ -974,6 +1001,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tV0s = CreateTree(kV0s);
   if (fTreeStatus[kV0s])
   {
+    tV0s->Branch("fIndexCollisions", &v0s.fIndexCollisions, "fIndexCollisions/I");
     tV0s->Branch("fIndexTracks_Pos", &v0s.fIndexTracksPos, "fIndexTracks_Pos/I");
     tV0s->Branch("fIndexTracks_Neg", &v0s.fIndexTracksNeg, "fIndexTracks_Neg/I");
     tV0s->SetBasketSize("*", fBasketSizeTracks);
@@ -983,6 +1011,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tCascades = CreateTree(kCascades);
   if (fTreeStatus[kCascades])
   {
+    tCascades->Branch("fIndexCollisions", &cascs.fIndexCollisions, "fIndexCollisions/I");
     tCascades->Branch("fIndexV0s", &cascs.fIndexV0s, "fIndexV0s/I");
     tCascades->Branch("fIndexTracks", &cascs.fIndexTracks, "fIndexTracks/I");
     tCascades->SetBasketSize("*", fBasketSizeTracks);
@@ -1041,10 +1070,9 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       Kinematics->Branch("fStatusCode", &mcparticle.fStatusCode, "fStatusCode/I");
       Kinematics->Branch("fFlags", &mcparticle.fFlags, "fFlags/b");
 
-      Kinematics->Branch("fIndexMcParticles_Mother0", &mcparticle.fIndexMcParticles_Mother0, "fIndexMcParticles_Mother0/I");
-      Kinematics->Branch("fIndexMcParticles_Mother1", &mcparticle.fIndexMcParticles_Mother1, "fIndexMcParticles_Mother1/I");
-      Kinematics->Branch("fIndexMcParticles_Daughter0", &mcparticle.fIndexMcParticles_Daughter0, "fIndexMcParticles_Daughter0/I");
-      Kinematics->Branch("fIndexMcParticles_Daughter1", &mcparticle.fIndexMcParticles_Daughter1, "fIndexMcParticles_Daughter1/I");
+      Kinematics->Branch("fIndexArray_Mothers_size", &mcparticle.fIndexArray_Mothers_size, "fIndexArray_Mothers_size/I");
+      Kinematics->Branch("fIndexArray_Mothers", &mcparticle.fIndexArray_Mothers, "fIndexArray_Mothers[fIndexArray_Mothers_size]/I");
+      Kinematics->Branch("fIndexSlice_Daughters", &mcparticle.fIndexSlice_Daughters, "fIndexSlice_Daughters[2]/I");
       Kinematics->Branch("fWeight", &mcparticle.fWeight, "fWeight/F");
 
       Kinematics->Branch("fPx", &mcparticle.fPx, "fPx/F");
@@ -1084,6 +1112,44 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       tCollisionLabels->Branch("fIndexMcCollisions", &mccollisionlabel.fIndexMcCollisions, "fIndexMcCollisions/I");
       tCollisionLabels->Branch("fMcMask", &mccollisionlabel.fMcMask, "fMcMask/s");
       tCollisionLabels->SetBasketSize("*", fBasketSizeEvents);
+    }
+  }
+
+  if (fStoreHF) {
+    // HF 2 prong candidates
+    TTree *tHF2Prong = CreateTree(kHF2Prong);
+    if (fTreeStatus[kHF2Prong])
+    {
+      tHF2Prong->Branch("fIndexTracks_0", &hf2Prong.fIndexTracks_0, "fIndexTracks_0/I");
+      tHF2Prong->Branch("fIndexTracks_1", &hf2Prong.fIndexTracks_1, "fIndexTracks_1/I");
+      tHF2Prong->Branch("fHFflag", &hf2Prong.fHFflag, "fHFflag/b");
+      tHF2Prong->SetBasketSize("*", fBasketSizeEvents);
+    }
+
+    TTree *tHF3Prong = CreateTree(kHF3Prong);
+    if (fTreeStatus[kHF3Prong])
+    {
+      tHF3Prong->Branch("fIndexTracks_0", &hf3Prong.fIndexTracks_0, "fIndexTracks_0/I");
+      tHF3Prong->Branch("fIndexTracks_1", &hf3Prong.fIndexTracks_1, "fIndexTracks_1/I");
+      tHF3Prong->Branch("fIndexTracks_2", &hf3Prong.fIndexTracks_2, "fIndexTracks_2/I");
+      tHF3Prong->Branch("fHFflag", &hf3Prong.fHFflag, "fHFflag/b");
+      tHF3Prong->SetBasketSize("*", fBasketSizeEvents);
+    }
+
+    TTree *tHFDStar = CreateTree(kHFDStar);
+    if (fTreeStatus[kHFDStar])
+    {
+      tHFDStar->Branch("fIndexTracks_0", &hfDStar.fIndexTracks_0, "fIndexTracks_0/I");
+      tHFDStar->Branch("fIndexHf2Prongs", &hfDStar.fIndexHf2Prongs, "fIndexHf2Prongs/I");
+      tHFDStar->SetBasketSize("*", fBasketSizeEvents);
+    }
+
+    TTree *tHFCascade = CreateTree(kHFCascade);
+    if (fTreeStatus[kHFCascade])
+    {
+      tHFCascade->Branch("fIndexV0s", &hfCascades.fIndexV0s, "fIndexV0s/I");
+      tHFCascade->Branch("fIndexTracks_0", &hfCascades.fIndexTracks_0, "fIndexTracks_0/I");
+      tHFCascade->SetBasketSize("*", fBasketSizeEvents);
     }
   }
 
@@ -1506,16 +1572,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
       
-      mcparticle.fIndexMcParticles_Mother0 = particle ? particle->GetMother(0) : aodmcpt->GetMother();
-      if (mcparticle.fIndexMcParticles_Mother0 > -1)
-        mcparticle.fIndexMcParticles_Mother0 = kineIndex[mcparticle.fIndexMcParticles_Mother0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Mother0] + fOffsetLabel : -1;
-      mcparticle.fIndexMcParticles_Mother1 = -1;
-      mcparticle.fIndexMcParticles_Daughter0 = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
-      if (mcparticle.fIndexMcParticles_Daughter0 > -1)
-        mcparticle.fIndexMcParticles_Daughter0 = kineIndex[mcparticle.fIndexMcParticles_Daughter0] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter0] + fOffsetLabel : -1;
-      mcparticle.fIndexMcParticles_Daughter1 = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
-      if (mcparticle.fIndexMcParticles_Daughter1 > -1)
-        mcparticle.fIndexMcParticles_Daughter1 = kineIndex[mcparticle.fIndexMcParticles_Daughter1] > -1 ? kineIndex[mcparticle.fIndexMcParticles_Daughter1] + fOffsetLabel : -1;
+      mcparticle.fIndexArray_Mothers_size = 1;
+      mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();
+      if (mcparticle.fIndexArray_Mothers[0] > -1)
+        mcparticle.fIndexArray_Mothers[0] = kineIndex[mcparticle.fIndexArray_Mothers[0]] > -1 ? kineIndex[mcparticle.fIndexArray_Mothers[0]] + fOffsetLabel : -1;
+
+      mcparticle.fIndexSlice_Daughters[0] = particle ? particle->GetFirstDaughter() : aodmcpt->GetDaughterFirst();
+      if (mcparticle.fIndexSlice_Daughters[0] > -1)
+        mcparticle.fIndexSlice_Daughters[0] = kineIndex[mcparticle.fIndexSlice_Daughters[0]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[0]] + fOffsetLabel : -1;
+      mcparticle.fIndexSlice_Daughters[1] = particle ? particle->GetLastDaughter() : aodmcpt->GetDaughterLast();
+      if (mcparticle.fIndexSlice_Daughters[1] > -1)
+        mcparticle.fIndexSlice_Daughters[1] = kineIndex[mcparticle.fIndexSlice_Daughters[1]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[1]] + fOffsetLabel : -1;
+      if (mcparticle.fIndexSlice_Daughters[0] > -1 && mcparticle.fIndexSlice_Daughters[1] == -1)
+        mcparticle.fIndexSlice_Daughters[1] = mcparticle.fIndexSlice_Daughters[0];
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
@@ -2129,6 +2198,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude/mPHOSCalib, 0xFFF); //12 bit
     calo.fTime = AliMathBase::TruncateFloatFraction(time, 0x1FFF);  //13 bit
     calo.fCellType = phoscells->GetHighGain(icp) ? 0. : 1.; 
+    calo.fCaloType = phoscells->GetType();
 
     FillTree(kCalo);
     if (fTreeStatus[kCalo])
@@ -2399,33 +2469,38 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   }
 
   Int_t nv0_filled = 0; // total number of v0's filled per event
+  Int_t n2prong_filled = 0;
   if (fillCollision)
   {
     //---------------------------------------------------------------------------
-    // V0s (Lambda and KS)
+    // V0s (Lambda and K0S)
     Int_t nv0 = fVEvent->GetNumberOfV0s();
+    Int_t* v0Lookup = new Int_t[nv0]; // needed for HF indices
+    v0s.fIndexCollisions = fCollisionCount;
     for (Int_t iv0 = 0; iv0 < nv0; ++iv0) {
+      v0Lookup[iv0] = -1; // not stored
       if (fESD) {
 	AliESDv0 *v0 = fESD->GetV0(iv0);
 	// select only "offline" V0s, skip the "on-the-fly" ones
-	if (v0 && !v0->GetOnFlyStatus()) {
-	  Int_t pidx = v0->GetPindex();
-	  Int_t nidx = v0->GetNindex();
-	  v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-	  v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
-	}
+	if (!v0 || v0->GetOnFlyStatus())
+          continue;
+        Int_t pidx = v0->GetPindex();
+        Int_t nidx = v0->GetNindex();
+        v0s.fIndexTracksPos = TMath::Abs(pidx) + fOffsetTrack; // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Abs(nidx) + fOffsetTrack; // Negative track ID
       }
       else {
 	AliAODv0 *v0 = fAOD->GetV0(iv0);
 	// select only "offline" V0s, skip the "on-the-fly" ones
-	if (v0 && !v0->GetOnFlyStatus()) {
-	  Int_t pidx = v0->GetPosID();
-	  Int_t nidx = v0->GetNegID();
-	  v0s.fIndexTracksPos = TMath::Sign(TMath::Abs(pidx) + fOffsetTrack, pidx); // Positive track ID
-	  v0s.fIndexTracksNeg = TMath::Sign(TMath::Abs(nidx) + fOffsetTrack, nidx); // Negative track ID
-	}
+	if (!v0 || v0->GetOnFlyStatus())
+          continue;
+        Int_t pidx = v0->GetPosID();
+        Int_t nidx = v0->GetNegID();
+        v0s.fIndexTracksPos = TMath::Abs(pidx) + fOffsetTrack; // Positive track ID
+        v0s.fIndexTracksNeg = TMath::Abs(nidx) + fOffsetTrack; // Negative track ID
       }
       
+      v0Lookup[iv0] = nv0_filled; // stored
       FillTree(kV0s);
       if (fTreeStatus[kV0s])
 	nv0_filled++;
@@ -2512,6 +2587,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       //Sort cascades
       TMath::Sort(ncastosort, packedV0indices, sortV0Idx, kFALSE);
       //Fill cascades only after V0 sorting
+      cascs.fIndexCollisions = fCollisionCount;
       for (Int_t icas = 0; icas < ncastosort; ++icas){
         //Fill tree only with ordered information
         cascs.fIndexV0s    = packedV0indices[sortV0Idx[icas]];
@@ -2527,6 +2603,76 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       delete[] packedV0indices;
       delete[] packedbachelorindices;
       delete[] sortV0Idx;
+
+      // Store HF here when we have the V0 infos in place
+      if (fStoreHF) {
+        // Read input from HF task
+        TTree *hf2ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf2ProngCandidateTree");
+        Printf("HF hf2ProngCandidateTree has %lld entries", hf2ProngCandidateTree->GetEntries());
+        hf2ProngCandidateTree->SetBranchAddress("trackId0", &hf2Prong.fIndexTracks_0);
+        hf2ProngCandidateTree->SetBranchAddress("trackId1", &hf2Prong.fIndexTracks_1);
+        hf2ProngCandidateTree->SetBranchAddress("hfflag", &hf2Prong.fHFflag);
+
+        for (int i=0; i<hf2ProngCandidateTree->GetEntries(); i++) {
+          hf2ProngCandidateTree->GetEntry(i);
+          hf2Prong.fIndexTracks_0 += fOffsetTrack;
+          hf2Prong.fIndexTracks_1 += fOffsetTrack;
+          FillTree(kHF2Prong);
+          n2prong_filled++;
+        }
+        eventextra.fNentries[kHF2Prong] = n2prong_filled;
+
+        TTree *hf3ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf3ProngCandidateTree");
+        Printf("HF hf3ProngCandidateTree has %lld entries", hf3ProngCandidateTree->GetEntries());
+        hf3ProngCandidateTree->SetBranchAddress("trackId0", &hf3Prong.fIndexTracks_0);
+        hf3ProngCandidateTree->SetBranchAddress("trackId1", &hf3Prong.fIndexTracks_1);
+        hf3ProngCandidateTree->SetBranchAddress("trackId2", &hf3Prong.fIndexTracks_2);
+        hf3ProngCandidateTree->SetBranchAddress("hfflag", &hf3Prong.fHFflag);
+
+        for (int i=0; i<hf3ProngCandidateTree->GetEntries(); i++) {
+          hf3ProngCandidateTree->GetEntry(i);
+          hf3Prong.fIndexTracks_0 += fOffsetTrack;
+          hf3Prong.fIndexTracks_1 += fOffsetTrack;
+          hf3Prong.fIndexTracks_2 += fOffsetTrack;
+          FillTree(kHF3Prong);
+        }
+        eventextra.fNentries[kHF3Prong] = hf3ProngCandidateTree->GetEntries();
+
+        TTree *hfDstarCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfDstarCandidateTree");
+        Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
+        hfDstarCandidateTree->SetBranchAddress("trackSoftPi", &hfDStar.fIndexTracks_0);
+        hfDstarCandidateTree->SetBranchAddress("trackD0", &hfDStar.fIndexHf2Prongs);
+
+        for (int i=0; i<hfDstarCandidateTree->GetEntries(); i++) {
+          hfDstarCandidateTree->GetEntry(i);
+          hfDStar.fIndexTracks_0 += fOffsetTrack;
+          hfDStar.fIndexHf2Prongs += fOffsetHF2Prong;
+          FillTree(kHFDStar);
+        }
+        eventextra.fNentries[kHFDStar] = hfDstarCandidateTree->GetEntries();
+
+        TTree *hfCascadeCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfCascadeCandidateTree");
+        Printf("HF hfCascadeCandidateTree has %lld entries", hfCascadeCandidateTree->GetEntries());
+        Int_t v0Index = -1;
+        hfCascadeCandidateTree->SetBranchAddress("v0index", &v0Index);
+        hfCascadeCandidateTree->SetBranchAddress("trackBachel", &hfCascades.fIndexTracks_0);
+
+        Int_t nhfcascades_filled = 0;
+        for (int i=0; i<hfCascadeCandidateTree->GetEntries(); i++) {
+          hfCascadeCandidateTree->GetEntry(i);
+          hfCascades.fIndexTracks_0 += fOffsetTrack;
+          if (v0Lookup[v0Index] == -1) {
+            AliWarning(Form("V0 %d is requested for a HF cascade but not planned to be stored. Skipping this HF cascade.", v0Index));
+          } else {
+            hfCascades.fIndexV0s = v0Lookup[v0Index] + fOffsetV0;
+            FillTree(kHFCascade);
+            nhfcascades_filled++;
+          }
+        }
+        eventextra.fNentries[kHFCascade] = nhfcascades_filled;
+      }
+
+      delete[] v0Lookup;
     } // End if V0s
     eventextra.fNentries[kCascades] = ncascades_filled;
   }
@@ -2609,6 +2755,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   fOffsetTrack += ntrk_filled + ntracklet_filled;
   fOffsetMuTrackID += nmu_filled;
   fOffsetV0 += nv0_filled;
+  fOffsetHF2Prong += n2prong_filled;
 
   // Update event counters
   if (fillCollision)

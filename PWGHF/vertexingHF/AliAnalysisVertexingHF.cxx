@@ -154,6 +154,7 @@ fOKInvMassLctoV0(kFALSE),
 fnTrksTotal(0),
 fnSeleTrksTotal(0),
 fMakeReducedRHF(kFALSE),
+fUseTRefArrayForSecVert(kTRUE),
 fMassDzero(0.),
 fMassDplus(0.),
 fMassDs(0.),
@@ -253,6 +254,7 @@ fOKInvMassLctoV0(source.fOKInvMassLctoV0),
 fnTrksTotal(0),
 fnSeleTrksTotal(0),
 fMakeReducedRHF(kFALSE),
+fUseTRefArrayForSecVert(kTRUE),
 fMassDzero(source.fMassDzero),
 fMassDplus(source.fMassDplus),
 fMassDs(source.fMassDs),
@@ -746,7 +748,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           // Define the AODv0 from ESDv0 if reading ESDs
 	  twoTrackArrayV0->AddAt(posVV0track,0);
 	  twoTrackArrayV0->AddAt(negVV0track,1);
-          v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
+	  v0 = TransformESDv0toAODv0(esdV0,twoTrackArrayV0);
 	  twoTrackArrayV0->Clear();
         }
 
@@ -818,7 +820,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
             vCasc->AddDaughter(v0); // fill the 2prong V0
           }
           rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
-        }
+	}
 
 
         // Clean up
@@ -889,7 +891,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       // Vertexing
       twoTrackArray1->AddAt(postrack1,0);
       twoTrackArray1->AddAt(negtrack1,1);
-      AliAODVertex *vertexp1n1 = ReconstructSecondaryVertex(twoTrackArray1,dispersion);
+      AliAODVertex *vertexp1n1 = ReconstructSecondaryVertex(twoTrackArray1,dispersion,fUseTRefArrayForSecVert);
       if(!vertexp1n1) {
 	twoTrackArray1->Clear();
 	negtrack1=0;
@@ -1188,7 +1190,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	// 3 prong candidates
 	if(f3Prong && massCutOK) {
 	  
-	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
+	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion,fUseTRefArrayForSecVert);
 	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap2n1,dcap1p2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
             AliAODVertex *v3Prong=0x0;
@@ -1250,7 +1252,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
           threeTrackArray->AddAt(postrack1,0);
           threeTrackArray->AddAt(negtrack1,1);
 	  threeTrackArray->AddAt(postrack2,2);
-          AliAODVertex* vertexp1n1p2 = ReconstructSecondaryVertex(threeTrackArray,dispersion);
+          AliAODVertex* vertexp1n1p2 = ReconstructSecondaryVertex(threeTrackArray,dispersion,fUseTRefArrayForSecVert);
 
 	  // 3rd LOOP  ON  NEGATIVE  TRACKS (for 4 prong)
 	  for(iTrkN2=iTrkN1+1; iTrkN2<nSeleTrks; iTrkN2++) {
@@ -1307,7 +1309,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    }
 
 	    // Vertexing
-	    AliAODVertex* secVert4PrAOD = ReconstructSecondaryVertex(fourTrackArray,dispersion);
+	    AliAODVertex* secVert4PrAOD = ReconstructSecondaryVertex(fourTrackArray,dispersion,fUseTRefArrayForSecVert);
 	    io4Prong = Make4Prong(fourTrackArray,event,secVert4PrAOD,vertexp1n1,vertexp1n1p2,dcap1n1,dcap1n2,dcap2n1,dcap2n2,ok4Prong);
 	    if(ok4Prong) {
 	      rd = new(aodCharm4ProngRef[i4Prong++])AliAODRecoDecayHF4Prong(*io4Prong);
@@ -1447,7 +1449,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	twoTrackArray2->AddAt(negtrack2,1);
 
 	if(f3Prong) {
-	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion);
+	  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray,dispersion,fUseTRefArrayForSecVert);
 	  io3Prong = Make3Prong(threeTrackArray,event,secVert3PrAOD,dispersion,vertexp1n1,twoTrackArray2,dcap1n1,dcap1n2,dcan1n2,okForLcTopKpi,okForDsToKKpi,ok3Prong);
 	  if(ok3Prong) {
 	    AliAODVertex *v3Prong = 0x0;
@@ -1746,7 +1748,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3P
   dca3 = esdt3->GetDCA(postrack1,fBzkG,xdummy,ydummy);
   Double_t dispersion;
 
-  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray, dispersion);
+  AliAODVertex* secVert3PrAOD = ReconstructSecondaryVertex(threeTrackArray, dispersion,fUseTRefArrayForSecVert);
   if (!secVert3PrAOD) {
     threeTrackArray->Clear();
     threeTrackArray->Delete(); delete threeTrackArray;
@@ -1808,7 +1810,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2P
   if(!fVertexerTracks)fVertexerTracks=new AliVertexerTracks(fBzkG);
 
 
-  AliAODVertex *vtxRec = ReconstructSecondaryVertex(twoTrackArray1, dispersion);
+  AliAODVertex *vtxRec = ReconstructSecondaryVertex(twoTrackArray1, dispersion,fUseTRefArrayForSecVert);
   if(!vtxRec) {
     twoTrackArray1->Clear();
     twoTrackArray1->Delete();  delete twoTrackArray1;
@@ -2550,7 +2552,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
     the3Prong->SetSecondaryVtx(secVert);
     AddDaughterRefs(secVert,(AliAODEvent*)event,threeTrackArray);
     Double_t dummyDisp;
-    AliAODVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2,dummyDisp);
+    AliAODVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2,dummyDisp,fUseTRefArrayForSecVert);
     if(!vertexp2n1) ok3Prong=kFALSE;
     else{
       dist12=TMath::Sqrt((vertexp1n1->GetX()-pos[0])*(vertexp1n1->GetX()-pos[0])+(vertexp1n1->GetY()-pos[1])*(vertexp1n1->GetY()-pos[1])+(vertexp1n1->GetZ()-pos[2])*(vertexp1n1->GetZ()-pos[2]));
@@ -3038,7 +3040,6 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
   chi2perNDF = vertexESD->GetChi2toNDF();
   dispersion = vertexESD->GetDispersion();
   delete vertexESD; vertexESD=NULL;
-
   Int_t nprongs= (useTRefArray ? 0 : trkArray->GetEntriesFast());
   vertexAOD = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
 
@@ -3762,7 +3763,7 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
 
   AliAODv0 *aodV0 = new AliAODv0(vertexV0,dcaV0Daughters,dcaV0ToPrimVertex,pmom,nmom,dcaV0DaughterToPrimVertex);
   aodV0->SetOnFlyStatus(esdV0->GetOnFlyStatus());
-
+  aodV0->SetOwnSecondaryVtx(vertexV0);
   delete trackesdV0;
   delete primVertexAOD;
 

@@ -50,6 +50,7 @@ class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
   Double_t      GetTOFBeta(AliVTrack *esdtrack);
   Bool_t        MatchTOF(AliVTrack *vtrack);
 
+  //Functions for AddTask
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   void SetTreeName(TString TreeName)
   {
@@ -58,6 +59,10 @@ class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
   void SetVzRangeMax(Double_t VzMax)
   {
     fVertexZMax = VzMax;
+  }
+ void SetDCAXYRangeMax(Double_t dcaxy)          
+  {
+    fDCAxyMax = dcaxy;
   }
   void SetDCAXYPtDep_choice(Int_t dcaxy_choice)          
   {
@@ -79,6 +84,9 @@ class AliAnalysisTaskMeanptFluctuationPP : public AliAnalysisTaskSE {
   {
     fNCrossedRowsTPC = nCrossedRow;
   }
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
  
  private:
   enum

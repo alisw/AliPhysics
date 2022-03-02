@@ -467,6 +467,11 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
     AliError("fEvent not available\n");
     return false;
   }
+  if (fMinCent >= 0. && InitCentrality()) {
+    if (fCent < fMinCent || fCent > fMaxCent) {
+      return false;
+    }
+  }
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
   fEventPassesPhysSel = bool(handl->IsEventSelected());
@@ -555,6 +560,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       } else {
         isValidParticle = InitParticle<AliAODMCParticle>(mcLabel);
       }
+      if (fMCIsInjectedSignal) continue;
     }
 
     if (count) {
@@ -699,6 +705,17 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (!particle) {
     AliFatal("Particle not found\n");
     return false;
+  }
+
+  // reject injected signal
+  fMCIsInjectedSignal = false;
+  if (!fMCSelectedGenerator.empty()) {
+    TString generator = "";
+    fMCEvent->GetCocktailGenerator(particleID, generator);
+    if (!generator.BeginsWith(fMCSelectedGenerator.data())) {
+      fMCIsInjectedSignal = true;
+      return false;
+    }
   }
 
   // reject all particles that come from simulated out-of-bunch pileup
@@ -1028,6 +1045,12 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     SetIsNewReco();
   }
 
+  if (options.Contains("hasInjectedSignal")) {
+    if (dataSet.find("PbPb_2TeV") != string::npos) {
+      fMCSelectedGenerator = "Hijing";
+    }
+  }
+
   int maxMultMeas = 100;
   int maxMultTrue = 100;
 
@@ -1065,6 +1088,10 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if (options.Contains("highPtMode::100")) {
     fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
+  }
+
+  if (options.Contains("selectCentral")) {
+    SetCentRange(0., 10.);
   }
 
   DefineDefaultAxes(maxMultMeas, maxMultTrue);

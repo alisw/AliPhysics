@@ -35,7 +35,14 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         void SetHe3Nsigma(float Nsigma);
         void SetRejectionNsigma(float Nsigma);
 	void SetOtherNsigmacutLabel(int OtherNsigmaLabel);
+	void SetMinTPCFoundFraction(float MinTPCFoundFraction);
+	// set TOF Mass cut for side band
+	void SetUseTOFMassCut(int UseTOFMassCut);
+        void SetTOFMassLimit(float LowMass,float UpMass);
+	float ReturnTOFMass(const AliFemtoTrack* track,int imost);
+	void SetfUsePtCut(int aUsePtCut);
 
+	void SetfOnlyTPCreject(int aOnlyTPCreject);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -53,6 +60,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         int fdEdxcut;
 	// 11.30
 	int fOtherNsigmacut;
+	// 2022.1.20
+	float fMinTPCFoundFraction;
         
         bool IsProtonNSigma(    float mom, float nsigmaTPCP, float nsigmaTOFP);
         bool IsDeuteronNSigma(  float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
@@ -69,7 +78,15 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
         bool IsKaonNSigmaRejection(     float mom, float nsigmaTPCK, float nsigmaTOFK);
         bool IsProtonNSigmaRejection(   float mom, float nsigmaTPCP, float nsigmaTOFP);
         
-       
+	//\ 2022.1.26
+	int fUseTOFMassCut;
+	float TOFMassLowLimit;
+	float TOFMassUpLimit;
+     
+	//
+	int fUsePtCut;
+        // for Nsigma reject
+	int fOnlyTPCreject;
 
 };
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }

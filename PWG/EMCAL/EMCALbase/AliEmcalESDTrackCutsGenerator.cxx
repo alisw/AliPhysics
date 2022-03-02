@@ -571,6 +571,8 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod.BeginsWith("lhc19a1")) {
     dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc20k1")) {
+    dataSet = kLHC11h;
   } else if (strPeriod == ("lhc15o")) {
     dataSet = kLHC11h;
   } else if (strPeriod == ("lhc15n")) {

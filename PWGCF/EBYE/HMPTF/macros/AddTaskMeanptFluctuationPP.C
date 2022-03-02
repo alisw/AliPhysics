@@ -1,5 +1,5 @@
 
-void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Int_t fdcaxy_ptdep=0, Double_t fdcaz=2, Double_t fchi2tpc=4.0, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileDir = "_default")
+void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Int_t fdcaxy_ptdep=0, Double_t fdcaz=2, Double_t fchi2tpc=4.0, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileDir = "_default")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -52,8 +52,10 @@ void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100
   task_Mpt->SetVzRangeMin(fVzMin);
   */
 
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   task_Mpt->SetVzRangeMax(fVzMax);
   //Track cuts:
+  task_Mpt->SetDCAXYRangeMax(fdcaxy);
   task_Mpt->SetDCAXYPtDep_choice(fdcaxy_ptdep);
   task_Mpt->SetDCAZRangeMax(fdcaz);
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
@@ -67,6 +69,7 @@ void AddTaskMeanptFluctuationPP(Int_t fCentralityMin=0, Int_t fCentralityMax=100
   
   mgr->AddTask(task_Mpt);                        // connect the task to the analysis manager
   mgr->ConnectInput(task_Mpt, 0, cinput);        
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
   AliAnalysisDataContainer  *cOutPut1;

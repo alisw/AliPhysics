@@ -2180,6 +2180,12 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
       fMaxPt = 25.;
       fDoMaxPtCut = kTRUE;
       break;
+  case 34: //y
+      fMinPt = 0.;
+      fDoMinPtCut = kFALSE;
+      fMaxPt = 22.;
+      fDoMaxPtCut = kTRUE;
+      break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -2443,6 +2449,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaLow  = 2.;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
+      break;
     case 5: //PCM-PCM 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
@@ -2511,10 +2518,10 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 5;
       break;
-    case 14: // e PCM-EMC 1.5 sigma
+    case 14: // e PCM-EMC 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaLow  = 3.5;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 1;
       break;
@@ -2532,10 +2539,10 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 1;
       break;
-    case 17: // h PHOS-PHOS 1.5 sigma
+    case 17: // h PHOS-PHOS 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaLow  = 3.5;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
@@ -2553,10 +2560,10 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 7;
       break;
-    case 20: // k PCM-PHOS 1.5 sigma
+    case 20: // k PCM-PHOS 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaLow  = 3.5;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
       break;
@@ -2574,10 +2581,10 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
       break;
-    case 23: // n// PCM-PCM 13TeV 1.5 sigma
+    case 23: // n// PCM-PCM 13TeV 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaLow  = 3.5;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 4;
       break;
@@ -2602,12 +2609,12 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
-    case 27: // r // PCM-PHOS 1 sigma
+    case 27: // r // EMC-EMC 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaLow  = 3.5;
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
-      fMassParamFunction   = 3;
+      fMassParamFunction   = 0;
       break;
     case 28: // s //PHOS-PHOS 3 sigma
       fAcceptMesonMass     = kFALSE;
@@ -3579,44 +3586,44 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
+  case 31: // v cluster swapping method with 10 random with TGenPhaseSpace no evt weighting
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
+    fNumberOfSwappsForBg        = 10;
     fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
-  case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
+  case 32: // w cluster swapping method with 10 random with TGenPhaseSpace with border criterium
     fDoGammaSwappForBg          = 1;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
-    fDistanceToBorderSwappBG    = 0;
+    fNumberOfSwappsForBg        = 10;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
+  case 33: // x cluster swapping method with 10 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
-    fNumberOfSwappsForBg        = 20;
+    fNumberOfSwappsForBg        = 10;
     fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
-  case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
+  case 34: // y cluster swapping method with 90 degree rotation angle border criterium (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
-    fDistanceToBorderSwappBG    = 0;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting (around Pi0 for the omega analyses)
+  case 35: // z cluster swapping method with 10 random with TGenPhaseSpace border criterium (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
-    fDistanceToBorderSwappBG    = 0;
+    fNumberOfSwappsForBg        = 10;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
   default:
@@ -4737,12 +4744,12 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
               pt=(meson->Pt());
           }
           //[0]+[1]*exp(-[2]*(x-[3]))
-          //Parameter 0: 6855.12 +- 1.41421
-          //Parameter 1: 0.980296 +- 1.41421
-          //Parameter 2: -51.0261 +- 0
-          //Parameter 3: -0.906353 +- 198.955
+          //Parameter 0: 0.00526618 +- 2.85152e-05
+          //Parameter 1: 0.164035 +- 0.18279
+          //Parameter 2: 0.967652 +- 0.0461525
+          //Parameter 3: -3.44249 +- 1.15896
 
-          sigma = (6855.12)+(0.980296)*exp(-(-51.0261)*(pt-(-0.906353)));
+          sigma = (0.00526618)+(0.164035)*exp(-(0.967652)*(pt-(-3.44249)));
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;

@@ -217,7 +217,15 @@ class AliAnalysisTaskPhiSAR : public AliAnalysisTaskSE {
     TH3F *fhInvMassLikeMMSAEPvzeroC[9];//!
     TH3F *fhInvMassMixSAEPvzeroC[9];//!
     */
-
+    
+    THnSparse *fhInvMassSAEPvzeroA;//!
+    THnSparse *fhInvMassLikePPSAEPvzeroA;//!
+    THnSparse *fhInvMassLikeMMSAEPvzeroA;//!
+    THnSparse *fhInvMassMixSAEPvzeroA;//!
+    THnSparse *fhInvMassSAEPvzeroC;//!
+    THnSparse *fhInvMassMixSAEPvzeroC;//!
+    /*
+ 
     THnSparse *fhInvMassSAEPvzeroA[9];//!
     THnSparse *fhInvMassLikePPSAEPvzeroA[9];//!
     THnSparse *fhInvMassLikeMMSAEPvzeroA[9];//!
@@ -226,6 +234,7 @@ class AliAnalysisTaskPhiSAR : public AliAnalysisTaskSE {
     THnSparse *fhInvMassLikePPSAEPvzeroC[9];//!
     THnSparse *fhInvMassLikeMMSAEPvzeroC[9];//!
     THnSparse *fhInvMassMixSAEPvzeroC[9];//!
+    */
 
     TH3F *fhInvMassv2[9];//!
     TH3F *fhInvMassSinv2[9];//!
@@ -279,6 +288,7 @@ class AliAnalysisTaskPhiSAR : public AliAnalysisTaskSE {
 
     Bool_t   PassEvent(AliVEvent *event);
     Int_t    GetCentrality(AliVEvent *evt);
+    Float_t    GetCentralityValue(AliVEvent *evt);
     Bool_t   PassTrack(AliVTrack *track);
     Int_t    MakeRealPair(TVector2 *qvA, TVector2 *qvC);
     Int_t    MakeLikePair(TVector2 *qvA, TVector2 *qvC);
@@ -299,7 +309,7 @@ class AliAnalysisTaskPhiSAR : public AliAnalysisTaskSE {
     Bool_t   IsSelectedPION(AliVTrack *track);//subhash
     Bool_t   IsSelectedKAON(AliVTrack *track);//subhash
     Bool_t   GetStatus(const AliVTrack *track);
-    Bool_t   MatchTOF(const AliVTrack *vtrack);
+    Bool_t   MatchTOF(AliVTrack *vtrack);
     Double_t GetTOFBeta( AliVTrack *vtrack);
     void     ReSet();   
 

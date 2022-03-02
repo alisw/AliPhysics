@@ -59,6 +59,11 @@ public:
     fMinPt = minPt;
     fMaxPt = maxPt;
   }
+  void SetCentRange(double minCent, double maxCent)
+  {
+    fMinCent = minCent;
+    fMaxCent = maxCent;
+  }
 
   // Configure this object for a train run
   static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, TString options,
@@ -96,7 +101,8 @@ protected:
   AliESDtrackCuts* fTrackCuts{nullptr};       //-> track cuts
   std::unique_ptr<TRandom3> fRand{};          //!<! random generator
 
-  std::string fTrainMetadata{}; ///<  metadata of the train run used to generate the output
+  std::string fTrainMetadata{};       ///<  metadata of the train run used to generate the output
+  std::string fMCSelectedGenerator{}; ///<  selected generator (used in case of MCs with embedded signal to select the MB event)
 
   unsigned int fMCEventClass{EventClass::fiducial}; ///< baseline event class that this measurement should be corrected to
   bool fIsNominalSetting{};                         ///< flag to  propagate if this is the nominal cut setting
@@ -113,6 +119,8 @@ protected:
   double fMaxEta{0.8};                                          ///< maximum eta cut
   double fMinPt{0.15};                                          ///< minimum pT cut
   double fMaxPt{10.0};                                          ///< maximum pT cut
+  double fMinCent{-1.};                                         ///< minimum cent cut
+  double fMaxCent{101};                                         ///< maximum cent cut
 
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
@@ -201,6 +209,7 @@ protected:
 
   int fMCLabel{}; //!<! mc label
 
+  bool fMCIsInjectedSignal{};   //!<! is injected signal?
   bool fMCIsChargedPrimary{};   //!<! is charged primary?
   bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 

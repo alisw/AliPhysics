@@ -20,6 +20,7 @@
 #include "AliMultSelection.h"
 #include "AliAODVertex.h"
 #include "AliDataFile.h"
+#include "TGrid.h"
 
 using namespace std;
 
@@ -33,21 +34,25 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fHistCentrality(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
-    fJEQnVecHandler(nullptr),
+    fJEQnVecHandler1(nullptr),
+    fJEQnVecHandler2(nullptr),
     fHarmonic(2),
     fCalibType(AliJEQnVectorHandler::kQnCalib),
     fNormMethod(AliJEQnVectorHandler::kQoverM),
-    fOADBFileName(""),
+    fOADBFileName1(""),
+    fOADBFileName2(""),
     fAOD(nullptr),
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
+    fRejectTPCPileup(false),
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
-    fEPangleV0C(0)
+    fEPangleV0C(0),
+    fEventCuts("")
 {
     //
     // default constructor
@@ -66,28 +71,32 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName) :
+AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int harmonic, int calibType, TString oadbFileName1, TString oadbFileName2) :
     AliAnalysisTaskSE(name),
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
-    fJEQnVecHandler(nullptr),
+    fJEQnVecHandler1(nullptr),
+    fJEQnVecHandler2(nullptr),
     fHarmonic(harmonic),
     fCalibType(calibType),
     fNormMethod(AliJEQnVectorHandler::kQoverSqrtM),
-    fOADBFileName(oadbFileName),
+    fOADBFileName1(oadbFileName1),
+    fOADBFileName2(oadbFileName2),
     fAOD(nullptr),
     fPrevEventRun(-1),
     fTriggerClass(""),
     fTriggerMask(AliVEvent::kAny),
+    fRejectTPCPileup(false),
     fq2V0M(0),
     fq2V0A(0),
     fq2V0C(0),
     fEPangleV0M(0),
     fEPangleV0A(0),
-    fEPangleV0C(0)
+    fEPangleV0C(0),
+    fEventCuts("")
 {
     //
     // standard constructor
@@ -131,7 +140,8 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 		}
 		delete fOutputList;
     }
-    if(fJEQnVecHandler) delete fJEQnVecHandler;
+    if(fJEQnVecHandler1) delete fJEQnVecHandler1;
+    if(fJEQnVecHandler2) delete fJEQnVecHandler2;
     for(int iDet=0; iDet<3; iDet++) {
         if(fQvecTPCVsCentrDistr[iDet]) delete fQvecTPCVsCentrDistr[iDet];
         if(iDet<2) {
@@ -143,19 +153,22 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 //________________________________________________________________________
 void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
 {
-    fJEQnVecHandler = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName);
-    fJEQnVecHandler->EnablePhiDistrHistos();
+    fJEQnVecHandler1 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName1);
+    fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
+    fJEQnVecHandler1->EnablePhiDistrHistos();
+    fJEQnVecHandler2->EnablePhiDistrHistos();
 
     fOutputList = new TList();
     fOutputList->SetOwner(true);
 
-    fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",4,0.5,4.5);
+    fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",5,0.5,5.5);
     fHistNEvents->Sumw2();
     fHistNEvents->SetMinimum(0);
     fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
     fHistNEvents->GetXaxis()->SetBinLabel(2,"Pass Phys. Sel. + Trig");
     fHistNEvents->GetXaxis()->SetBinLabel(3,"Centrality > 90%");
     fHistNEvents->GetXaxis()->SetBinLabel(4,"No vertex");
+    fHistNEvents->GetXaxis()->SetBinLabel(5,"Fail Pileup");
     fOutputList->Add(fHistNEvents);
 
     fHistCentrality = new TH1F("fHistCentrality","Centrality distribution;;Number of events",100,0.,100.);
@@ -177,9 +190,11 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     if(fCalibType==AliJEQnVectorHandler::kQnCalib) {
         if(fEnableTPCPhiVsCentrDistr) {
             OpenFile(2);
-            fTPCPhiVsCentrDistr[0] = dynamic_cast<TH2F*>(fJEQnVecHandler->GetPhiDistrHistosTPCPosEta()->Clone());
+            fTPCPhiVsCentrDistr[0] = dynamic_cast<TH2F*>(fJEQnVecHandler1->GetPhiDistrHistosTPCPosEta()->Clone());
+            fTPCPhiVsCentrDistr[0]->Add(dynamic_cast<TH2F*>(fJEQnVecHandler2->GetPhiDistrHistosTPCPosEta()->Clone())); 
             OpenFile(3);
-            fTPCPhiVsCentrDistr[1] = dynamic_cast<TH2F*>(fJEQnVecHandler->GetPhiDistrHistosTPCNegEta()->Clone());
+            fTPCPhiVsCentrDistr[1] = dynamic_cast<TH2F*>(fJEQnVecHandler1->GetPhiDistrHistosTPCNegEta()->Clone());
+            fTPCPhiVsCentrDistr[1]->Add(dynamic_cast<TH2F*>(fJEQnVecHandler2->GetPhiDistrHistosTPCNegEta()->Clone()));
         }
         if(fEnableQvecTPCVsCentrDistr) {
             OpenFile(4);
@@ -239,6 +254,7 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         return;
     }
 
+
     AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
     if(!multSelection){
         AliWarning("AliMultSelection could not be found in the aod event list of objects");
@@ -258,6 +274,18 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         fHistNEvents->Fill(4);
         return;
     }
+    if (fRejectTPCPileup)   {
+        fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+        Bool_t acceptEventCuts = fEventCuts.AcceptEvent(InputEvent());
+        if(!acceptEventCuts)   { 
+           fHistNEvents->Fill(5);
+            return;}
+    }
+
+    //choose calibration file to use (run numbers specific to 2018 pass3)
+    AliJEQnVectorHandler *fJEQnVecHandler;
+    if (fAOD->GetRunNumber() <= 296623) fJEQnVecHandler = fJEQnVecHandler1;   //child1
+    if (fAOD->GetRunNumber() >  296623) fJEQnVecHandler = fJEQnVecHandler2;   //child2
 
     fJEQnVecHandler->ResetAODEvent();
     fJEQnVecHandler->SetAODEvent(fAOD);
@@ -362,13 +390,19 @@ void AliAnalysisTaskJetQnVectors::LoadSplinesForqnPercentile(TString splinesFile
     TString listnameV0[3] = {"SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
 
     TString pathToFileCMVFNS = AliDataFile::GetFileName(splinesFilePath.Data());
-    // Check access to CVMFS (will only be displayed locally)
-    if (pathToFileCMVFNS.IsNull())
-        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+    TString pathToFileLocal = splinesFilePath;
 
-    TFile* splinesfile = TFile::Open(pathToFileCMVFNS.Data());
-    if(!splinesfile)
-        AliFatal("File with splines for qn percentiles not found!");
+      TFile* splinesfile;
+      if (splinesFilePath.BeginsWith("alien://") && !gGrid)
+        {
+          AliInfo("Trying to connect to AliEn ...");
+          TGrid::Connect("alien://");
+        }
+      // Check access to CVMFS (will only be displayed locally)
+      if (!pathToFileCMVFNS.IsNull())   splinesfile = TFile::Open(pathToFileCMVFNS.Data());
+      if (pathToFileCMVFNS.IsNull())    splinesfile = TFile::Open(splinesFilePath.Data());
+   
+      if(!splinesfile)    AliFatal("File with splines for qn percentiles not found!");
 
     for(int iDet=0; iDet<3; iDet++) {
         fSplineListqnPercTPC[iDet] = (TDirectoryFile*)splinesfile->Get(listnameTPC[iDet].Data());

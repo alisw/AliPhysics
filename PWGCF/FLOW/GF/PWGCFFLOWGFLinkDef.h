@@ -19,6 +19,7 @@
 #pragma link C++ class AliPartSimpleForCorr+;
 #pragma link C++ class AliProfileSubset+;
 #pragma link C++ class AliProfileBS+;
+#pragma link C++ class AliPtContainer+;
 #pragma link C++ class AliCkContainer+;
 #pragma link C++ class AliGFWFlowContainer+;
 #pragma link C++ class AliUniFlowCorrTask+;
@@ -33,6 +34,8 @@
 
 #ifdef __CLING__
 
+#pragma link C++ class AliAnalysisTaskCreateNUA+;
+#pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;

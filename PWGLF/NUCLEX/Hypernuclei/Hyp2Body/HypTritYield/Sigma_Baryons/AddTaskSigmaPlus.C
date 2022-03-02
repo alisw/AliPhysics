@@ -11,44 +11,35 @@
 
 AliAnalysisTaskSigmaPlus* AddTaskSigmaPlus(TString name = "SigmaPlus")
 {
-    // get the manager via the static access member. since it's static, you don't need
+    // Get the analysis manager via the static access member. Since it is static there is no need
     // to create an instance of the class here to call the function
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         return 0x0;
     }
-    // get the input event handler, again via a static method. 
-    // this handler is part of the managing system and feeds events
-    // to your task
+    // Get the input event handler, via a static method. 
+    // This handler is part of the managing system and feeds events to the task
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-    // by default, a file is open for writing. here, we get the filename
+    // By default, a file is opened for writing. Get the filename:
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":SigmaBaryons";  // create a subfolder in the file
-    // now we create an instance of your task
+    // Create an instance of the task
     AliAnalysisTaskSigmaPlus* task = new AliAnalysisTaskSigmaPlus(name.Data());   
     if(!task) return 0x0;
     // Trigger settings
-    //MB:
-    //task->SelectCollisionCandidates(AliVEvent::kINT7);
-    //task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    //task->SelectCollisionCandidates(AliVEvent::kAny);
-    //pp:
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0||AliVEvent::kINT7);
-    //PbPb:
-    //task->SelectCollisionCandidates(AliVEvent::kCentral);
-    //task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
-    //task->SelectCollisionCandidates(AliVEvent::kINT7||AliVEvent::kCentral||AliVEvent::kSemiCentral);
-    // add your task to the manager
+        // Select Trigger in Wagon Configuration!
+    // Add the task to the manager
     mgr->AddTask(task);
-    // your task needs input: here we connect the manager to your task
+    // Connect the input data to the task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    // same for the output
+    // Connect the output containers to the task
     mgr->ConnectOutput(task,1,mgr->CreateContainer("Histogram_List", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2,mgr->CreateContainer("Sigma_Candidate_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3,mgr->CreateContainer("Sigma_Candidate_Extra_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    // in the end, this macro returns a pointer to your task. this will be convenient later on
-    // when you will run your analysis in an analysis train on grid
+    mgr->ConnectOutput(task,4,mgr->CreateContainer("Sigma_Pair_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer("Proton_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    // Finally, a pointer to the created task is returned
     return task;
 }

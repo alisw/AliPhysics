@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
-{
+AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 3 4 6", bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, int setNUAmap = 2, bool useTightCuts = kFALSE, bool ESDpileup = true, double slope = 3.38, double intercept = 15000, bool saveQApileup = false, bool getSC3h = kFALSE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+{ 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
 // Prepare the configuration of the wagons.
@@ -25,11 +25,11 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     if (iOldConfig == iConfig) {break;}
 
     switch(iConfig) { // Hardcoded names to prevent typo in phi weights files.
-    case 0 :  // Default: hybrid.
-      configNames.push_back("hybrid");
-      break;
-    case 1 :  // Syst: global.
+    case 0 :  // Default: global.
       configNames.push_back("global");
+      break;
+    case 1 :  // Syst: hybrid.
+      configNames.push_back("hybrid");
       break;
     case 2 :  // Syst: nqq. TBI
       configNames.push_back("nqq");
@@ -62,7 +62,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   TString MAPfilenames[Nsets];  // Azimuthal corrections.
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
-  TString sCorrection[3] = { "17i2a", "18q", "18r" }; // 17i2a for 15o.
+  TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
 
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root", speriod[period].Data()));
@@ -72,8 +72,23 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   }
 
   for (int i = 0; i < Nsets; i++) {
-    MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
-      MAPdirname.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
+    switch (setNUAmap) {
+    case 0:   // 0: Coarse binning, minPt = 0.2 for all.
+      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
+        MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+      break;
+    case 1:   // 1: Coarse binning, tuned minPt map.
+      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
+        MAPdirname.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
+      break;
+    case 2:   // 2; Fine binning, minPt = 0.2 for all.
+      MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_finerBins_pt02_s_%s.root",
+        MAPdirname.Data(), sCorrection[period].Data(), configNames[i].Data());
+      break;
+    default:
+      std::cout << "ERROR: Invalid configuration index. Skipping this element."
+        << std::endl;   
+    }
     cmaptask->EnablePhiCorrection(i, MAPfilenames[i]);  // i: index for 'SetPhiCorrectionIndex(i)'.
   }
   mgr->AddTask((AliAnalysisTask *) cmaptask);
@@ -100,6 +115,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   // Set the correct flags to use.
     if (strcmp(configNames[i].Data(), "pileup") != 0) {
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
+      fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);
     }
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}
 
@@ -136,6 +152,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
+    fJCatalyst[i]->SetTightCuts(useTightCuts);
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
 

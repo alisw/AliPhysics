@@ -93,7 +93,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fUtils(nullptr)
 {
     // Constructor
-    AliInfo("---- AliJCDijetTask Constructor ----");
+    AliInfo(Form("---- AliJCDijetTask Constructor: %s ----",name));
     DefineOutput (1, TDirectory::Class());
 }
 
@@ -163,7 +163,7 @@ AliJCDijetTask::~AliJCDijetTask()
 void AliJCDijetTask::UserCreateOutputObjects()
 {  
     //=== create the jcorran outputs objects
-    if(fDebug > 1) printf("AliJCDijetTask::UserCreateOutPutData() \n");
+    if(fDebug > 1) printf("AliJCDijetTask::UserCreateOutPutObjects() \n");
     //=== Get AnalysisManager
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
@@ -177,6 +177,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
+    fhistos->SetDijetMBinsHistos(fsDijetMBins);
     fhistos->CreateEventTrackHistos();
     fhistos->fHMG->Print();
     fana = new AliJCDijetAna();
@@ -185,6 +186,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
         fhistosDetMC = new AliJCDijetHistos();
         fhistosDetMC->SetName("jcdijetDetMC");
         fhistosDetMC->SetCentralityBinsHistos(fcentralityBins);
+        fhistosDetMC->SetDijetMBinsHistos(fsDijetMBins);
         fhistosDetMC->CreateEventTrackHistos();
         fhistosDetMC->fHMG->Print();
         fanaMC = new AliJCDijetAna();
@@ -238,6 +240,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Centrality bins:            ";
     for(unsigned i=0; i< fcentralityBins.size(); i++) cout << fcentralityBins.at(i) << " ";
     cout << endl;
+    cout << "Dijet M bins:               " << fsDijetMBins.Data() << endl;
     cout << "Jet cone size:              " << fjetCone << endl;
     cout << "kt-jet cone size:           " << fktJetCone << endl;
     cout << "Using kt-jet scheme:        " << sktScheme.Data() << endl;
@@ -423,9 +426,9 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtr,AliJCDijetAna::iBGSubtr);
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCutsRaw,AliJCDijetAna::iBGSubtrCutsRaw);
         //we can run custom configuration with an argument
-        if((iUnfJetClassTrue!=AliJCDijetAna::iAcc            && iUnfJetClassDet!=AliJCDijetAna::iAcc)
-        || (iUnfJetClassTrue!=AliJCDijetAna::iBGSubtr        && iUnfJetClassDet!=AliJCDijetAna::iBGSubtr)
-        || (iUnfJetClassTrue!=AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet!=AliJCDijetAna::iBGSubtrCutsRaw)) {
+        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc            && iUnfJetClassDet==AliJCDijetAna::iAcc)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr        && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw))) {
             fana->CalculateResponse(fanaMC,fhistosDetMC,iUnfJetClassTrue,iUnfJetClassDet);
         }
 #endif

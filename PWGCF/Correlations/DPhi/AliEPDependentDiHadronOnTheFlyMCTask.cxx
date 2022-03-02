@@ -33,7 +33,7 @@ ClassImp(AliEPDependentDiHadronOnTheFlyMCTask)
 
 
 AliEPDependentDiHadronOnTheFlyMCTask::AliEPDependentDiHadronOnTheFlyMCTask():
-AliAnalysisTaskSE("EPDependentDiHadronOnTheFlyMCTask"),
+AliAnalysisTaskSE(),
 fListOutputHistograms(0x0),
 fHistNoEvents(0x0),
 fHistImpactVsMultiplicity(0x0),
@@ -41,6 +41,7 @@ fProfileFractionPrimaryTracks(0x0),
 fHistReactionPlane(0x0),
 fHistEventReactionPlane(0x0),
 fHistTrueEventReactionPlane(0x0),
+fHistSingleParticles(0x0),
 fHistos(0x0),
 fHistosIn(0x0),
 fHistosMid(0x0),
@@ -54,6 +55,7 @@ fNoSectorsV0(8),
 fCentralityEstimator("V0M")
 {
   // Default constructor
+  AliInfo("Constructing Event Plane based on fictional VZERO\n");
   DefineOutput(1, TList::Class());
 }
 
@@ -67,6 +69,7 @@ fProfileFractionPrimaryTracks(0x0),
 fHistReactionPlane(0x0),
 fHistEventReactionPlane(0x0),
 fHistTrueEventReactionPlane(0x0),
+fHistSingleParticles(0x0),
 fHistos(0x0),
 fHistosIn(0x0),
 fHistosMid(0x0),
@@ -80,6 +83,7 @@ fNoSectorsV0(8),
 fCentralityEstimator("V0M")
 {
   // Constructor with name
+  AliInfo("Constructing Event Plane based on fictional VZERO including NAME\n");
   DefineOutput(1, TList::Class());
 }
 
@@ -123,6 +127,9 @@ void AliEPDependentDiHadronOnTheFlyMCTask::UserCreateOutputObjects()
   fHistTrueEventReactionPlane = new TH1D("TrueEventReactionPlane", "All particle two-event plane w.r.t. the two-reactionplane", 100, 0.0, TMath::Pi());
   fListOutputHistograms->Add(fHistTrueEventReactionPlane);
 
+  fHistSingleParticles = new TH2D("SingleParticleDistribution", "Distribution of all particles that are used in the dihadron distributions", 128, -TMath::Pi(), 3*TMath::Pi(), 80, -4.0, 4.0);
+  fListOutputHistograms->Add(fHistSingleParticles);
+
   fHistos = new AliUEHistograms("AliUEHistogramsSame-1", "4R", fCustomBinning);
   fHistos->SetTrackEtaCut(fTrackEtaCut);
   fListOutputHistograms->Add(fHistos);
@@ -162,24 +169,27 @@ void AliEPDependentDiHadronOnTheFlyMCTask::UserExec(Option_t* option)
 
 //  TODO: bepaal centrality
 
+  // Cut on central barrel acceptancy
+  TObjArray* etacutTracks = SubSelectTracksEta(allTracks);
+
   // Divide the leading tracks with respect to the event plane. Done in a single loop to save on computation time
   TObjArray* inplaneTracks = new TObjArray; // cutOnEventPlaneAngle(allTracks, 0.0, TMath::Pi()/6);
   TObjArray* midplaneTracks = new TObjArray; // cutOnEventPlaneAngle(allTracks, TMath::Pi()/6, TMath::Pi()/3);
   TObjArray* outplaneTracks = new TObjArray; // cutOnEventPlaneAngle(allTracks, TMath::Pi()/3, TMath::Pi()/2);
-  for(Int_t part = 0; part < allTracks->GetEntriesFast(); part++) {
-    AliMCParticle* track = dynamic_cast<AliMCParticle*>(allTracks->At(part));
+  for(Int_t part = 0; part < etacutTracks->GetEntries(); part++) {
+    AliMCParticle* track = dynamic_cast<AliMCParticle*>(etacutTracks->At(part));
     Double_t dphi = piToHalfPi(twoPiToPi(angleBetween(track->Phi(), reactionplane)));
     if(dphi < TMath::Pi()/6) inplaneTracks->Add(track);
     if((dphi >= TMath::Pi()/6) && (dphi < TMath::Pi()/3)) midplaneTracks->Add(track);
     if(dphi >= TMath::Pi()/3) outplaneTracks->Add(track);
   }
 
-  fHistos->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, allTracks, allTracks, 1);
-  fHistosIn->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, inplaneTracks, allTracks, 1);
-  fHistosMid->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, midplaneTracks, allTracks, 1);
-  fHistosOut->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, outplaneTracks, allTracks, 1);
+  fHistos->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, etacutTracks, etacutTracks, 1);
+  fHistosIn->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, inplaneTracks, etacutTracks, 1);
+  fHistosMid->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, midplaneTracks, etacutTracks, 1);
+  fHistosOut->FillCorrelations(centrality, zvtx, AliUEHist::kCFStepAll, outplaneTracks, etacutTracks, 1);
 
-  delete allTracks; delete inplaneTracks; delete midplaneTracks; delete outplaneTracks;
+  delete allTracks; delete etacutTracks; delete inplaneTracks; delete midplaneTracks; delete outplaneTracks;
 }
 
 
@@ -197,7 +207,6 @@ void AliEPDependentDiHadronOnTheFlyMCTask::FillEventLevelQA(AliMCEvent* mcEvent)
 TObjArray* AliEPDependentDiHadronOnTheFlyMCTask::SelectTracks(AliMCEvent* mcEvent)
 {
   TObjArray* acceptedTracks = new TObjArray;
-//  acceptedTracks->SetOwner(kTRUE);
 
   if(!mcEvent) {
     AliError("No correct mcEvent provided to SelectTracks");
@@ -216,10 +225,10 @@ TObjArray* AliEPDependentDiHadronOnTheFlyMCTask::SelectTracks(AliMCEvent* mcEven
         continue;
       }
     
-    // Allways exclude non-primary particles
+      // Allways exclude non-primary particles
       if( ! mcEvent->IsPhysicalPrimary(iTrack) ) continue;
     
-    // TODO: See AliAnalysisTaskBFPsi::GetAcceptedTracks for other idea's about what to exclude
+      // TODO: See AliAnalysisTaskBFPsi::GetAcceptedTracks for other idea's about what to exclude
 
       if( track->Charge() == 0 ) continue;
 
@@ -228,6 +237,34 @@ TObjArray* AliEPDependentDiHadronOnTheFlyMCTask::SelectTracks(AliMCEvent* mcEven
   }
 
   return acceptedTracks;
+}
+
+TObjArray* AliEPDependentDiHadronOnTheFlyMCTask::SubSelectTracksEta(TObjArray* selectedTracks)
+{
+  TObjArray* subselectedTracks = new TObjArray;
+
+  if(!selectedTracks) {
+    AliError("TObjArray passed to SubSelectTracksEta is invalid.");
+    return 0x0;
+  }
+
+  if(selectedTracks) {
+    Int_t nTracks = selectedTracks->GetEntries();
+    for(Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+      AliMCParticle* track = dynamic_cast<AliMCParticle*>(selectedTracks->At(iTrack));
+      if(!track) {
+        AliError(Form("Object number %d in the selectedTracks was not an AliMCParticle.", iTrack));
+        continue;
+      }
+
+      if( TMath::Abs(track->Eta()) > fTrackEtaCut) continue;
+
+      fHistSingleParticles->Fill(track->Phi(), track->Eta());
+      subselectedTracks->Add(track);
+    }
+  }
+
+  return subselectedTracks;
 }
 
 

@@ -74,7 +74,10 @@ AliAnalysisTask *AddTaskJSPCMasterClosure(TString taskName = "JSPCMaster10h", do
   //MC True
   fJCatalyst[0] = new AliJCatalystTask("JCatalystTaskMC");
   cout << "Setting the catalyst: " << fJCatalyst[0]->GetJCatalystTaskName() << endl;
-  fJCatalyst[0]->AddFlags(AliJCatalystTask::FLUC_MC|AliJCatalystTask::FLUC_EXCLUDEWDECAY);
+  fJCatalyst[0]->AddFlags(AliJCatalystTask::FLUC_ALICE_IPINFO|AliJCatalystTask::FLUC_MC|AliJCatalystTask::FLUC_EXCLUDEWDECAY); 
+  //fJCatalyst[0]->AddFlags(AliJCatalystTask::FLUC_ALICE_IPINFO|AliJCatalystTask::FLUC_KINEONLY|AliJCatalystTask::FLUC_EXCLUDEWDECAY);
+  //fJCatalyst[0]->AddFlags(AliJCatalystTask::FLUC_ALICE_IPINFO|AliJCatalystTask::FLUC_MC|AliJCatalystTask::FLUC_EXCLUDEWDECAY);
+
   fJCatalyst[0]->SelectCollisionCandidates(selEvt);
   fJCatalyst[0]->SetSaveAllQA(kTRUE);
   fJCatalyst[0]->SetSaveHMOhist(kFALSE);

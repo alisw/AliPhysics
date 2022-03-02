@@ -424,13 +424,20 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) 
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
 
-  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+  if(fCutDCAz > 0.){
     Double_t vtxXYZ[3], trXYZ[3];
     track->GetXYZ(trXYZ);
     fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
     trXYZ[2] -= vtxXYZ[2];
     if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+  }
 
+  if(fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[0] -= vtxXYZ[0];
+    trXYZ[1] -= vtxXYZ[1];
     Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
     Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
     if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }
@@ -964,6 +971,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
       if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[p].Data(),fSystematicsFlag.Data())); return kFALSE; }
       if(!fDoPID) break;
     }
+    fhEventCounter->Fill("Efficiencies loaded",1);
+    return kTRUE;
   }
 
   return kFALSE;
@@ -1320,7 +1329,11 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       fTracksTrig[i] = new TObjArray;
     }
   }
-  if(fDoV0){ AliError("MC not prepared for V0s. Returning!"); return kFALSE; }
+  if(fDoV0){
+    for(Int_t i(4); i < 6; i++){
+      fTracksTrig[i] = new TObjArray;
+    }
+  }
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};
@@ -1328,7 +1341,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
     if(!part->IsPhysicalPrimary()) continue;
-    if(part->Charge()==0.) continue;
     Double_t partEta = part->Eta();
     Double_t partPt = part->Pt();
     Double_t partPhi = part->Phi();
@@ -1342,6 +1354,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(partPDG == 211) partIdx = 1;
       else if(partPDG == 321) partIdx = 2;
       else if(partPDG == 2212) partIdx = 3;
+      else if(partPDG == 310) partIdx = 4;
+      else if(partPDG == 3122) partIdx = 5;
+
+      if(partIdx < 4 && part->Charge()==0.) continue;
 
       if(fAnalType == eTPCTPC){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){

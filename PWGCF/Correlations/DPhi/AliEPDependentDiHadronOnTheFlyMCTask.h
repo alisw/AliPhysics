@@ -48,6 +48,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
 
   void GetEventDetails(AliMCEvent* mcEvent, Double_t& reactionplane, Double_t& zvtx, Double_t& centrality);
   TObjArray* SelectTracks(AliMCEvent* mcEvent);
+  TObjArray* SubSelectTracksEta(TObjArray* selectedTracks);
   void FillEventLevelQA(AliMCEvent* mcEvent);
   void FillEventPlaneHistograms(TObjArray* allTracks, Double_t reactionplane, Double_t& eventplaneV0);
   TH1D* FillVirtualV0(TObjArray* allTracks, Double_t etaMin, Double_t etaMax);
@@ -64,6 +65,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
   TH1D* fHistReactionPlane; // The distribution of the 2-reactionplane
   TH1D* fHistEventReactionPlane; // The 2-eventplane w.r.t. the 2-reactionplane.
   TH1D* fHistTrueEventReactionPlane; // The distribution of the the 2-eventplane as determined with all particles w.r.t. the 2-reactionplane.
+  TH2D* fHistSingleParticles; // The single particle distribution in eta-phi after relevant cuts that are performed for the dihadron distribution
   AliUEHistograms* fHistos; // Handles the dihadron histograms for resp allplane, in-plane, mid-plane and out-of-plane triggers.
   AliUEHistograms* fHistosIn;
   AliUEHistograms* fHistosMid;
@@ -82,7 +84,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
   Int_t fNoSectorsV0; // The amount of sectors in phi that the simulated V0 detector has
   TString fCentralityEstimator; // The estimator used to determine the centrality. Choices: V0M, TRK, TKL, ZDC or FMD.
 
-  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 1);
+  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 2);
 };
 
 #endif

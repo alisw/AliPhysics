@@ -175,12 +175,13 @@ private:
     const float        fEtaCut; // eta cut
     const float        fDedxCut; //dedx cut
     float                  fZvtxCut; // z-vertex selection for collision  
-    int                     fPUSyst;                  
+    int                     fPUSyst; // 0: default; 1: Tight PU cut; 2: TOF PU cut; 3: Fill PU effect QA; 4: with new Para       
     // Weight List   
     TList*                fListNUE; // read list for NUE
     TList*                fListNUA; // read lists for NUA
     TList*                fListVZEROCALIB; // read list fpr V0 Calib
-
+    TList*                fListwCent;
+    TH1D*               hwCent;
     // Q QStar event-wise
     TComplex        fNegEtaQ;
     TComplex        fNegEtaQStar;
@@ -244,6 +245,7 @@ private:
 
     // Output QA
     TH1D*             hCent[2];
+    TH1D*             hCentRBR[138];
     TH1D*             hVz[2];
     TH2D*             hCentQA[8];
     TH2D*             hMultCentQA[2];

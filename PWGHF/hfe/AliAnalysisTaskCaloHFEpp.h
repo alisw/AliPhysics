@@ -33,9 +33,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone);
 
 		virtual void            IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone);
-		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
+		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto, Int_t iWevt);
 
-		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
+		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta, Int_t Nmult);
 		virtual void            CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
@@ -163,6 +163,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHist_trackPt;        //! dummy histogram
 		TH1F*                   fHistMatchPt;        
 		TH1F*                   fHistSelectPt;        
+		TH2F*                   fHistCheff0;        
+		TH2F*                   fHistCheff1;        
 		TH1F*                   fHist_ClustE;        //! dummy histogram
 		TH1F*                   fHist_SelectClustE;
 		TH1F*                   fHist_SelectClustE_time;
@@ -191,6 +193,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fRiso_phidiff_35;
 		TH2F*                   fRiso_phidiff_LS_35;
 		THnSparseD*             fWh_phidiff;
+		THnSparseD*             fhad_phidiff;
 		THnSparseD*             fIsoArray;      
 		THnSparseD*             fHFArray;      
 		TH2F*                   fzvtx_Ntrkl;

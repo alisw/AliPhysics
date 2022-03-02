@@ -161,6 +161,9 @@ public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
+  
+  // Max number of tracks
+  static const Int_t kTrack = 90000;
   //---------------------------------------------------------------------------------------
   
 private:
@@ -182,7 +185,7 @@ private:
   Bool_t fkSkipMCHeaders; //if true, don't try to read headers
   Bool_t fkPreferSuperCalib; //if true, prefer supercalib if available
   Bool_t fkLightTree; //if true, disable typically unused branches of TTree for size
-  Bool_t fkPropDCA;     //if true, propagate tracks to DCA 
+  Bool_t fkPropDCA;     //if true, propagate tracks to DCA
   
   //Debug Options
   Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -310,13 +313,16 @@ private:
   AliMultVariable *fNTracksTPCout;             //!  no. tracks
   
   Int_t fNTracksITSrefit;
+  Int_t fNTracksHasPointOnITSLayer;
   Float_t fNTracksDCAxyABS;
   Float_t fNTracksDCAzABS;
   Float_t fNTracksDCAxySQ;
   Float_t fNTracksDCAzSQ;
-  Float_t fNTracksMaxDCAz;
-  Float_t fNTracksMaxDCAz01;
   Float_t fNTracksMaxDCAz00;
+  Int_t BunchCrossingIDNotZero;
+  Int_t fNumberOfTracks;
+  Float_t fTrackDCAz[kTrack];
+  Bool_t fTrackIsPileup[kTrack];
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
@@ -414,7 +420,7 @@ private:
   AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
   AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
   
-  ClassDef(AliMultSelectionTask, 14);
+  ClassDef(AliMultSelectionTask, 15);
   //3 - extra QA histograms
   //8 - fOADB ponter
   //13 - vertex Z

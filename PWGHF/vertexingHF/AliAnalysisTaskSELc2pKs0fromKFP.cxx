@@ -579,7 +579,6 @@ void AliAnalysisTaskSELc2pKs0fromKFP::Terminate(Option_t *)
     TLine *lLPDG = new TLine(7.89, 0, 7.89, 1e10);
     lLPDG->SetLineColor(2);
     lLPDG->Draw();
-
     TCanvas *c2 = new TCanvas();
     fHistDecayLXiMinus->Draw();
     TLine *lXiPDG = new TLine(4.91, 0, 4.91, 1e10);
@@ -675,7 +674,7 @@ Bool_t AliAnalysisTaskSELc2pKs0fromKFP::MakeMCAnalysis(TClonesArray *mcArray, Al
           }
           if ( TMath::Abs(mcPart->Y()) < 0.8 ) {
             Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-            FillTreeGenLc(mcPart, CheckOrigin, mcHeader, aodEvent);
+            FillTreeGenLc(mcArray, mcPart, CheckOrigin, mcHeader, aodEvent);
           }
         }
       }
@@ -707,7 +706,7 @@ Bool_t AliAnalysisTaskSELc2pKs0fromKFP::MakeMCAnalysis(TClonesArray *mcArray, Al
           if ( (TMath::Abs(pdgLamDaugh0)==2212 && TMath::Abs(pdgLamDaugh1)==211) || (TMath::Abs(pdgLamDaugh0)==211 && TMath::Abs(pdgLamDaugh1)==2212) ) {
             if ( TMath::Abs(mcPart->Y()) < 0.8 ) {
               Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcPart,kTRUE);
-              FillTreeGenLc(mcPart, CheckOrigin, mcHeader, aodEvent);
+              FillTreeGenLc(mcArray, mcPart, CheckOrigin, mcHeader, aodEvent);
             }
           }
         }
@@ -720,13 +719,13 @@ Bool_t AliAnalysisTaskSELc2pKs0fromKFP::MakeMCAnalysis(TClonesArray *mcArray, Al
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent)
+void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(TClonesArray *mcArray,AliAODMCParticle *mcpart, Int_t CheckOrigin, AliAODMCHeader *mcHeader, AliAODEvent *aodEvent)
 {
   // Fill histograms or tree depending
 
   if(!mcpart) return;
 
-  for(Int_t i=0;i<12;i++){
+  for(Int_t i=0;i<13;i++){
     fVar_LcMCGen[i] = -9999.;
   }
 
@@ -738,14 +737,15 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeGenLc(AliAODMCParticle *mcpart, In
 //  if (mcpart->IsFromSubsidiaryEvent()) fVar_LcMCGen[1] = 5;
   fVar_LcMCGen[ 1] = mcpart->Y();
   fVar_LcMCGen[ 2] = mcpart->Pt();
-  fVar_LcMCGen[ 3] = CheckOrigin;
-  fVar_LcMCGen[4] = mcpart->Xv();
-  fVar_LcMCGen[5] = mcpart->Yv();
-  fVar_LcMCGen[6] = mcpart->Zv();
+  fVar_LcMCGen[ 3] = AliVertexingHFUtils::GetBeautyMotherPt(mcArray, mcpart);
+  fVar_LcMCGen[ 4] = CheckOrigin;
+  fVar_LcMCGen[5] = mcpart->Xv();
+  fVar_LcMCGen[6] = mcpart->Yv();
+  fVar_LcMCGen[7] = mcpart->Zv();
   if (fUseWeights && CheckOrigin>=0) { //add branches for MC pT weights
-    fVar_LcMCGen[7] = fFuncWeightPythia->Eval(mcpart->Pt()); // weight pT flat
-    fVar_LcMCGen[8] = fFuncWeightFONLL5overLHC13d3->Eval(mcpart->Pt()); // weight pT flat
-    fVar_LcMCGen[9] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcpart->Pt()); // weight pT flat
+    fVar_LcMCGen[8] = fFuncWeightPythia->Eval(mcpart->Pt()); // weight pT flat
+    fVar_LcMCGen[9] = fFuncWeightFONLL5overLHC13d3->Eval(mcpart->Pt()); // weight pT flat
+    fVar_LcMCGen[10] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcpart->Pt()); // weight pT flat
 
   }
   if (fUseMult) { // add multiplicity branches for MC gen
@@ -1339,7 +1339,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
   if (!fIsAnaLc2Lpi){
     if (!fKeepAllVariables){
       if (fIsMC){
-        nVar = 36;
+        nVar = 37;
         fVar_Lc = new Float_t[nVar];
         fVarNames = new TString[nVar];
       }
@@ -1350,7 +1350,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
       }
     }
     if (fKeepAllVariables){
-      nVar = 49;
+      nVar = 50;
       fVar_Lc = new Float_t[nVar];
       fVarNames = new TString[nVar];
     }
@@ -1404,29 +1404,31 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Rec()
     if (fIsMC && !fKeepAllVariables) {
       ///Only needed in MC
       fVarNames[32] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
-      fVarNames[33] = "weightPtFlat"; // flat pT weight for MC
-      fVarNames[34] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-      fVarNames[35] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+      fVarNames[33] = "pt_B"; //pt of B hadron
+      fVarNames[34] = "weightPtFlat"; // flat pT weight for MC
+      fVarNames[35] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+      fVarNames[36] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
     }
     if (fKeepAllVariables){
       fVarNames[32] = "Source_Lc"; //flag for Lc MC truth (“>=0” signal, “<0” background)
-      fVarNames[33] = "weightPtFlat"; // flat pT weight for MC
-      fVarNames[34] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-      fVarNames[35] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+      fVarNames[33] = "pt_B"; //pt of B hadron
+      fVarNames[34] = "weightPtFlat"; // flat pT weight for MC
+      fVarNames[35] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+      fVarNames[36] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
       /// Additional variables
-      fVarNames[36]  = "DCA_Ks0Dau"; //Distance between pions coming from K0s (calculated from AOD v0)
-      fVarNames[37]  = "chi2geo_Ks0"; //chi2_geometry of K0s (without mass constraint)
-      fVarNames[38] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Ks0)
-      fVarNames[39] = "pt_Ks0"; //pt of Ks0 (without mass const.)
-      fVarNames[40] = "mass_Ks0"; //mass of Ks0 (without mass const.)
-      fVarNames[41] = "pt_PiPlus"; //pt of pion+
-      fVarNames[42] = "pt_PiMinus"; //pt of pion-
-      fVarNames[43] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
-      fVarNames[44] = "cosThetaStar"; //cos-thetastar of decay
-      fVarNames[45] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
-      fVarNames[46] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
-      fVarNames[47] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
-      fVarNames[48] = "nTrackletsRaw"; // raw Ntrk
+      fVarNames[37]  = "DCA_Ks0Dau"; //Distance between pions coming from K0s (calculated from AOD v0)
+      fVarNames[38]  = "chi2geo_Ks0"; //chi2_geometry of K0s (without mass constraint)
+      fVarNames[39] = "chi2geo_Lc"; //chi2_geometry of Lc (with mass const. of Ks0)
+      fVarNames[40] = "pt_Ks0"; //pt of Ks0 (without mass const.)
+      fVarNames[41] = "mass_Ks0"; //mass of Ks0 (without mass const.)
+      fVarNames[42] = "pt_PiPlus"; //pt of pion+
+      fVarNames[43] = "pt_PiMinus"; //pt of pion-
+      fVarNames[44] = "d0_Ks0ToPV"; //rphi impact params of Ks0 w.r.t. Primary Vtx [cm]
+      fVarNames[45] = "cosThetaStar"; //cos-thetastar of decay
+      fVarNames[46] = "armenteros_K0s"; // armenteros qT/|alpha| for cascade
+      fVarNames[47] = "cos_p_K0s";   // cos pointing angle of V0 from RecoCascadeHF
+      fVarNames[48] = "d_len_K0s";    // decay length of V0 from RecoCascadeHF
+      fVarNames[49] = "nTrackletsRaw"; // raw Ntrk
 
     }
 
@@ -1617,23 +1619,23 @@ void AliAnalysisTaskSELc2pKs0fromKFP::DefineTreeLc_Gen()
 {
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   fTree_LcMCGen = new TTree(nameoutput,"Lc MC variables tree");
-  Int_t nVar = 12;
+  Int_t nVar = 13;
   fVar_LcMCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
   fVarNames[ 0] = "Centrality";
   fVarNames[ 1] = "LcY";
   fVarNames[ 2] = "LcPt";
-  fVarNames[ 3] = "LcSource";
-  fVarNames[ 4] = "Vertex_X"; //Primary vertex X position
-  fVarNames[ 5] = "Vertex_Y"; //Primary vertex Y position
-  fVarNames[ 6] = "Vertex_Z"; //Primary vertex Z position
-  fVarNames[ 7] = "weightPtFlat"; // flat pT weight for MC
-  fVarNames[ 8] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
-  fVarNames[ 9] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
-  fVarNames[10] = "nTrackletsRaw"; // raw Ntrk
-    fVarNames[11] = "nTrackletsCorr"; // corrected Ntrk
-
+  fVarNames[ 3] = "BPt";
+  fVarNames[ 4] = "LcSource";
+  fVarNames[ 5] = "Vertex_X"; //Primary vertex X position
+  fVarNames[ 6] = "Vertex_Y"; //Primary vertex Y position
+  fVarNames[ 7] = "Vertex_Z"; //Primary vertex Z position
+  fVarNames[ 8] = "weightPtFlat"; // flat pT weight for MC
+  fVarNames[ 9] = "weightFONLL5overLHC13d3"; // FONLL / LHC13d3 weight (default D meson)
+  fVarNames[ 10] = "weightFONLL5overLHC13d3Lc"; // FONLL/LHC13d3 weight (modified for baryon)
+  fVarNames[11] = "nTrackletsRaw"; // raw Ntrk
+  fVarNames[12] = "nTrackletsCorr"; // corrected Ntrk
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_LcMCGen->Branch(fVarNames[ivar].Data(),&fVar_LcMCGen[ivar],Form("%s/F",fVarNames[ivar].Data()));
@@ -1700,7 +1702,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   if (!fIsAnaLc2Lpi){
     if (!fKeepAllVariables){
       if (fIsMC){
-        for (Int_t i=0; i<36; i++) {
+        for (Int_t i=0; i<37; i++) {
           fVar_Lc[i] = -9999.;
         }
       }
@@ -1711,7 +1713,7 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
       }
     }
     if (fKeepAllVariables){
-      for (Int_t i=0; i<49; i++) {
+      for (Int_t i=0; i<50; i++) {
         fVar_Lc[i] = -9999.;
       }
     }
@@ -1814,7 +1816,6 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   kfpLam.Construct(vLamDaughters, 2);
   Float_t massLam_rec, err_massLam;
   kfpLam.GetMass(massLam_rec, err_massLam);
-
   // === mass of AntiLam ===
   KFParticle kfpAntiProton = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, -2212);
   KFParticle kfpPionPlus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, 211);
@@ -1823,7 +1824,6 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
   kfpAntiLam.Construct(vAntiLamDaughters, 2);
   Float_t massAntiLam_rec, err_massAntiLam;
   kfpAntiLam.GetMass(massAntiLam_rec, err_massAntiLam);
-
   // === mass of Gamma ===
   KFParticle kfpElePlus    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Pos, -11);
   KFParticle kfpEleMinus   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(v0Neg, 11);
@@ -2017,27 +2017,28 @@ void AliAnalysisTaskSELc2pKs0fromKFP::FillTreeRecLcFromCascadeHF(AliAODRecoCasca
     // fVar_Lc[30] = ownPVtx->GetZ();
     if (fIsMC && lab_Lc >= 0){
       fVar_Lc[32] = lab_Lc;
+      fVar_Lc[33] = AliVertexingHFUtils::GetBeautyMotherPt(mcArray, mcLc);
       if (fUseWeights) {
-        fVar_Lc[33] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat
-        fVar_Lc[34] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat
-        fVar_Lc[35] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat
+        fVar_Lc[34] = fFuncWeightPythia->Eval(mcLc->Pt()); // weight pT flat
+        fVar_Lc[35] = fFuncWeightFONLL5overLHC13d3->Eval(mcLc->Pt()); // weight pT flat
+        fVar_Lc[36] = fFuncWeightFONLL5overLHC13d3Lc->Eval(mcLc->Pt()); // weight pT flat
       }
     }
     if (fKeepAllVariables) {
-      fVar_Lc[36]  = v0->GetDCA(); // DCA_V0Dau
-      fVar_Lc[37]  = kfpV0.GetChi2()/kfpV0.GetNDF(); //chi2_geometry of V0 (without mass constraint)
-      fVar_Lc[38] = kfpLc.GetChi2()/kfpLc.GetNDF(); // chi2geo_Lc
-      fVar_Lc[39] = kfpV0.GetPt();
-      fVar_Lc[40] = mass_V0_rec;
-      fVar_Lc[41] = v0Pos->Pt(); // pion+
-      fVar_Lc[42] = v0Neg->Pt(); // pion-
-      fVar_Lc[43] = Lc2pKs0orLpi->Getd0Prong(1); ////rphi impact params of V0 w.r.t. Primary Vtx [cm]
-      fVar_Lc[44] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
-      fVar_Lc[45] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0()); //armenteros qT/|alpha|
-      fVar_Lc[46] = cosPA_V0;
-      fVar_Lc[47] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
+      fVar_Lc[37]  = v0->GetDCA(); // DCA_V0Dau
+      fVar_Lc[38]  = kfpV0.GetChi2()/kfpV0.GetNDF(); //chi2_geometry of V0 (without mass constraint)
+      fVar_Lc[39] = kfpLc.GetChi2()/kfpLc.GetNDF(); // chi2geo_Lc
+      fVar_Lc[40] = kfpV0.GetPt();
+      fVar_Lc[41] = mass_V0_rec;
+      fVar_Lc[42] = v0Pos->Pt(); // pion+
+      fVar_Lc[43] = v0Neg->Pt(); // pion-
+      fVar_Lc[44] = Lc2pKs0orLpi->Getd0Prong(1); ////rphi impact params of V0 w.r.t. Primary Vtx [cm]
+      fVar_Lc[45] = AliVertexingHFUtils::CosThetaStarFromKF(0, 4122, 2212, 310, kfpLc, kfpBach_Lc, kfpV0_Lc);  ///cos theta-star
+      fVar_Lc[46] = v0->PtArmV0() / TMath::Abs(v0->AlphaV0()); //armenteros qT/|alpha|
+      fVar_Lc[47] = cosPA_V0;
+      fVar_Lc[48] = AliVertexingHFUtils::DecayLengthFromKF(kfpV0,PV) ;   //d_len_K0s;
       if (fUseMult){
-        fVar_Lc[48] = nTrackletsEta10;
+        fVar_Lc[49] = nTrackletsEta10;
       }
     }
   }

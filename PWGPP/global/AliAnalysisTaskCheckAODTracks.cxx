@@ -174,6 +174,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fUsePileupCut(kTRUE),
   fUsePbPbOutOfBunchPileupCutsITSTPC(0),
   fRejectPbPbEventsWithGeneratedPileup(kFALSE),
+  fKeepOnlyEventsWithPileup(kFALSE),
   fTriggerMask(AliVEvent::kAnyINT),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
@@ -449,7 +450,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistNTracks);
   fHistNTracksVsTPCclusters = new TH2F("hNTracksVsTPCclusters"," ; N_{TPCclusters} ; N_{tracks}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
   fHistNTracksVsITSclusters = new TH2F("hNTracksVsITSclusters"," ; N_{ITSclusters} ; N_{tracks}",100,0.,10*fMaxMult,100,0.,fMaxMult);
-  fHistITSclustersVsTPCclusters = new TH2F("hITSclustersVsTPCclusters"," ;  N_{ITSclusters} ; N_{TPCclusters}",100,0.,300.*fMaxMult,100,0.,10*fMaxMult);
+  fHistITSclustersVsTPCclusters = new TH2F("hITSclustersVsTPCclusters"," ;  N_{TPCclusters} ; N_{ITSclusters}",100,0.,300.*fMaxMult,100,0.,10*fMaxMult);
   fHistNTracksFB4VsTPCclusters = new TH2F("hNTracksFB4VsTPCclusters"," ; N_{TPCclusters} ; N_{tracks,FB4}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
   fHistNTracksFB4VsITSclusters = new TH2F("hNTracksFB4VsITSclusters"," ; N_{ITSclusters} ; N_{tracks,FB4}",100,0.,10*fMaxMult,100,0.,fMaxMult);
   fOutput->Add(fHistNTracksVsTPCclusters);
@@ -857,7 +858,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     else if(runNumb >= 295369 && runNumb <= 297624) evc.SetupPbPb2018();
     evc.SetRejectTPCPileupWithITSTPCnCluCorr(true, fUsePbPbOutOfBunchPileupCutsITSTPC);
     evc.AcceptEvent(aod);
-    if(!evc.PassedCut(AliEventCuts::kTPCPileUp)) return;
+    if(fKeepOnlyEventsWithPileup && evc.PassedCut(AliEventCuts::kTPCPileUp)) return;
+    if(!fKeepOnlyEventsWithPileup && !evc.PassedCut(AliEventCuts::kTPCPileUp)) return;
   }
   fHistNEvents->Fill(6);
 
@@ -867,6 +869,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     Bool_t isPileupAODheader = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMcHeader,"ijing");
     fHistGenPilTag->Fill(isPileupMCEvent,isPileupAODheader);
     if(fRejectPbPbEventsWithGeneratedPileup && isPileupAODheader) return;
+    if(fKeepOnlyEventsWithPileup && !isPileupAODheader) return;
   }
   fHistNEvents->Fill(7);
   

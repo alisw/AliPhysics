@@ -314,8 +314,8 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 	//fEventCuts.fPileUpCutMV = true;
 
 
-	//Create an AliGFWCuts Selection
-	fGFWSelection = new AliGFWCuts();
+	//Create an AliGFWNFCuts Selection
+	fGFWSelection = new AliGFWNFCuts();
     fGFWSelection->PrintSetup();
 
 
@@ -607,10 +607,11 @@ void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {
 
 		NTracksUncorrected += 1;
     	NTracksCorrected += weightPt;
+		//std::cout<<"WeightPt: "<<weightPt<<std::endl;
 		//Count track
 		//NtrksCounter += 1;
 	} // end loop of all track
-
+	
 	if (!fUseCorrectedNTracks) {
     	NtrksCounter = NTracksUncorrected;
   	} else {

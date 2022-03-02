@@ -119,7 +119,7 @@ AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTre
 }
 
 //________________________________________________________________________
-Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Float_t QVector, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0)
+Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters, Float_t QVector, Float_t QCheck, Double_t* vertex, Float_t rho, Float_t rhoMass, Float_t centrality, Int_t multiplicity, Long64_t eventID, Float_t magField, Double_t eventPlaneV0)
 {
   if(!fInitialized)
     AliFatal("Tree is not initialized.");
@@ -164,6 +164,7 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, 
   fBuffer_Event_ID                              = eventID;
   fBuffer_Event_MagneticField                   = magField;
   fBuffer_Event_Q2Vector                        = QVector;   //retrieves qvector from JetQnVectors task
+  fBuffer_Event_Q2Check                         = QCheck;
 
   // Extract basic constituent track properties directly from AliEmcalJet object
   fBuffer_NumTracks = 0;
@@ -374,6 +375,7 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
   if(saveQVector)
   {
     fJetTree->Branch("Event_Q2Vector",&fBuffer_Event_Q2Vector,"Event_Q2Vector/F");
+    fJetTree->Branch("Event_Q2Check",&fBuffer_Event_Q2Check, "Event_Q2Check/F");
   }
 
   if(saveMCInformation)
@@ -576,7 +578,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fSimpleSecVertices(),
   fqnVectorReader(0),
   fQ2VectorValue(0.),
-  fEPangle(0.)
+  fQ2VectorCheck(0.),
+  fEPangle(0.),
+  fRejectTPCPileup(kFALSE)
 
 {
   fRandomGenerator = new TRandom3();
@@ -632,7 +636,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fSimpleSecVertices(),
   fqnVectorReader(0),
   fQ2VectorValue(0.),
-  fEPangle(0.)
+  fQ2VectorCheck(0.),
+  fEPangle(0.),
+  fRejectTPCPileup(kFALSE)
 {
   fRandomGenerator = new TRandom3();
   fRandomGeneratorCones = new TRandom3();
@@ -717,6 +723,7 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
 {
   AliAnalysisTaskEmcalJet::ExecOnce();
 
+  if(fRejectTPCPileup)       fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
 
   // ### If there is an embedding track container, set flag that an embedded event is used
   for(Int_t iCont=0; iCont<fParticleCollArray.GetEntriesFast(); iCont++)
@@ -802,6 +809,12 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     return kFALSE;
   if(fRandomGenerator->Rndm() >= fEventPercentage)
     return kFALSE;
+
+  if (fRejectTPCPileup)   {            //possible bug occurs here, use with caution
+      Bool_t acceptEventCuts = fAliEventCuts.AcceptEvent(InputEvent());
+      if(!acceptEventCuts)     return kFALSE;
+    }
+
 
   // ################################### EVENT PROPERTIES
   FillEventControlHistograms();
@@ -926,9 +939,15 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
     if (fSaveQVector) 
     {
        //connect to JetQnVectors Task 
-       if (fQ2Detector == 0)       fQ2VectorValue = fqnVectorReader->Getq2V0M(); 
-       if (fQ2Detector == 1)       fQ2VectorValue = fqnVectorReader->Getq2V0A(); 
-       if (fQ2Detector == 2)       fQ2VectorValue = fqnVectorReader->Getq2V0C(); 
+       if (fQ2Detector == 0)       {
+              fQ2VectorValue = fqnVectorReader->Getq2V0M();
+              fQ2VectorCheck = 9999.9;} 
+       if (fQ2Detector == 1)       {   
+              fQ2VectorValue = fqnVectorReader->Getq2V0A(); 
+              fQ2VectorCheck = fqnVectorReader->Getq2V0C();}
+       if (fQ2Detector == 2)       {
+              fQ2VectorValue = fqnVectorReader->Getq2V0C();
+              fQ2VectorCheck = fqnVectorReader->Getq2V0A();} 
        if (fEPDetector == 0)       fEPangle = fqnVectorReader->GetEPangleV0M();    //include calibrated V0M Event Plane
        if (fEPDetector == 1)       fEPangle = fqnVectorReader->GetEPangleV0A();    //include calibrated V0A Event Plane
        if (fEPDetector == 2)       fEPangle = fqnVectorReader->GetEPangleV0C();    //include calibrated V0C Event Plane
@@ -970,7 +989,7 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 
 
     // Fill jet to tree (here adding the minimum properties)
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, fQ2VectorValue, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPangle);
+    Bool_t accepted = fJetTree->AddJetToTree(jet, fSaveConstituents, fSaveConstituentsIP, fSaveCaloClusters, fQ2VectorValue, fQ2VectorCheck, vtx, GetJetContainer(0)->GetRhoVal(), GetJetContainer(0)->GetRhoMassVal(), fCent, fMultiplicity, eventID, InputEvent()->GetMagneticField(), fEPangle);
     if(accepted)
       FillHistogram("hJetPtExtracted", jet->Pt() - GetJetContainer(0)->GetRhoVal()*jet->Area(), fCent);
     jetCount++;
