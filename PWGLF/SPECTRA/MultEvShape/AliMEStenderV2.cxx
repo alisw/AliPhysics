@@ -777,8 +777,10 @@ void AliMEStenderV2::UserExec(Option_t * /*opt*/)
 
     (*AliMESbaseTask::DebugStream()) << "evInfo"
                                      << "ev.=" << fEvInfo
-                                     << "trks.=" << fTracksIO
                                      << "MCev.=" << fMCevInfo
+                                     << "\n";
+    (*AliMESbaseTask::DebugStream()) << "trkInfo"
+                                     << "trks.=" << fTracksIO
                                      << "MCtrks.=" << fMCtracksIO
                                      << "\n";
     // printf("tracksIn %d tracksOut %d\n", fTracks->GetEntries(), fTracksIO->GetEntries());
