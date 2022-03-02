@@ -480,8 +480,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHist_trackPt = new TH1F("fHist_trackPt", "EMCAL cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHistMatchPt = new TH1F("fHistMatchPt", "EMCAL matched cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
 	fHistSelectPt = new TH1F("fHistSelectPt", "EMCAL Slected cluster pt distributiont; pt(GeV/c); counts", 1000, 0, 100);       // create your histogra
-	fHistCheff0 = new TH1F("fHistCheff0", "track eff gene; pt(GeV/c); counts", 100, 0, 100);       // create your histogra
-	fHistCheff1 = new TH1F("fHistCheff1", "track eff reco; pt(GeV/c); counts", 100, 0, 100);       // create your histogra
+	fHistCheff0 = new TH2F("fHistCheff0", "track eff gene; pt(GeV/c); counts", 301,-0.5,300.5, 100, 0, 100);       // create your histogra
+	fHistCheff1 = new TH2F("fHistCheff1", "track eff reco; pt(GeV/c); counts", 301,-0.5,300.5, 100, 0, 100);       // create your histogra
 	fHist_ClustE = new TH1F("fHist_ClustE", "fHist_ClustE; EMCAL cluster energy distribution; counts", 1000, 0, 100);      
 	fHist_SelectClustE = new TH1F("fHist_SelectClustE", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
 	fHist_SelectClustE_time = new TH1F("fHist_SelectClustE_time", "fHistE; EMCAL cluster energy distribution before selection; counts", 1000, 0, 100);      
@@ -1008,7 +1008,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	//////////////////////////////
 	// Get generated W
 	//////////////////////////////
-	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
+	//if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 
@@ -1142,6 +1142,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	fNevents->Fill(7); 
 
 
+	if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1],correctednAcc);
+
 	//////////////////////////////
 	// EMCal cluster loop
 	//////////////////////////////
@@ -1268,7 +1270,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 		fHistEta_track->Fill(track->Eta());            
 		fHistPhi_track->Fill(track->Phi());             
 		fTPCCrossedRow->Fill(track -> GetTPCCrossedRows());
-                fHistCheff1->Fill(TrkP);
+                fHistCheff1->Fill(correctednAcc,TrkP);
 
 
 		///////////////////////
@@ -1849,7 +1851,7 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
   }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
+void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta, Int_t Nmult)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
  NpureMC = 0;
@@ -1913,7 +1915,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 
 	     fCheckEtaMC->Fill(pdgEta);
 
-             fHistCheff0 -> Fill(pTtrue);
+             if(isPhysPrim && chargetrue!=0)fHistCheff0 -> Fill(Nmult,pTtrue);
 
 	     Int_t pdgMom = -99;
 	     Int_t pdgorg = -99;
