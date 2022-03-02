@@ -59,6 +59,11 @@ public:
     fMinPt = minPt;
     fMaxPt = maxPt;
   }
+  void SetCentRange(double minCent, double maxCent)
+  {
+    fMinCent = minCent;
+    fMaxCent = maxCent;
+  }
 
   // Configure this object for a train run
   static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, TString options,
@@ -114,6 +119,8 @@ protected:
   double fMaxEta{0.8};                                          ///< maximum eta cut
   double fMinPt{0.15};                                          ///< minimum pT cut
   double fMaxPt{10.0};                                          ///< maximum pT cut
+  double fMinCent{-1.};                                         ///< minimum cent cut
+  double fMaxCent{101};                                         ///< maximum cent cut
 
   std::map<unsigned int, Hist::Axis> fAxes{}; ///< axis definitions used in the histograms
 
