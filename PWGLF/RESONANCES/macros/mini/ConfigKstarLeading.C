@@ -86,13 +86,13 @@ Bool_t ConfigKstarLeading(
 
         out->AddAxis(imID, 85, 0.77, 1.20);
         out->AddAxis(ptID, 8, 2., 10.);
-        if(!isPP ) out->AddAxis(multID,10,0.,100.);
+        if(!isPP ) out->AddAxis(multID,9,0.,90.);
         else out->AddAxis(multID, 10, 0., 100.); 
 
 
        out->AddAxis(alID, 36, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 13, 4., 30.); 
-        out->AddAxis(detaID, 16, -1.6, 1.6);   
+       // out->AddAxis(detaID, 16, -1.6, 1.6);   
        // out->AddAxis(philID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
        // out->AddAxis(phiID, 18, -0.5 * TMath::Pi(), 1.5 * TMath::Pi());
     }
