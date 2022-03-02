@@ -333,8 +333,8 @@ void AliAnalysisTaskMCPredictions::UserCreateOutputObjects()
   fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
   
   //Settings for transverse momentum
-  Int_t lNPtBins = 200;
-  Double_t lMaxPt = 20.0;
+  Int_t lNPtBins = 250;
+  Double_t lMaxPt = 25.0;
   
   Int_t lNEtaBins = fkNEtaBins;
   Double_t lMaxAbsEta = 4;
