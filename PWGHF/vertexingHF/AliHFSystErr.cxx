@@ -540,7 +540,8 @@ void AliHFSystErr::Init(Int_t decay){
     case 6: // Lc->pK0S
       if (fCollisionType==0) {
         if (fRunNumber == 17 || fRunNumber == 2017){
-          InitLctopK0S2017pp5TeV();
+          if (fIsBDTAnalysis) {InitLctopK0S2017pp5TeVBDT();}
+          else {InitLctopK0S2017pp5TeV();}
         }
 	else if (fRunNumber == 18 || fRunNumber == 2018){
 	  if (fIsBDTAnalysis) InitLctopK0S20161718pp13TeVBDT();
@@ -9348,6 +9349,82 @@ void AliHFSystErr::InitLctopK0S2017pp5TeV() {
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",nBins,limits);
   fCutsEff->SetBinContent(1,0.03);
+  fCutsEff->SetBinContent(2,0.03);
+  fCutsEff->SetBinContent(3,0.03);
+  fCutsEff->SetBinContent(4,0.03);
+  fCutsEff->SetBinContent(5,0.03);
+  fCutsEff->SetBinContent(6,0.03);
+  fCutsEff->SetBinContent(7,0.03);
+  fCutsEff->SetBinContent(8,0.04);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",nBins,limits);
+  fPIDEff->SetBinContent(1,0.02);
+  fPIDEff->SetBinContent(2,0.03);
+  fPIDEff->SetBinContent(3,0.03);
+  fPIDEff->SetBinContent(4,0.04);
+  fPIDEff->SetBinContent(5,0.04);
+  fPIDEff->SetBinContent(6,0.04);
+  fPIDEff->SetBinContent(7,0.04);
+  fPIDEff->SetBinContent(8,0.04);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nBins,limits); // quadratic sum of ptshape and multiplicity dependence
+  fMCPtShape->SetBinContent(1,0.00);
+  fMCPtShape->SetBinContent(2,0.00);
+  fMCPtShape->SetBinContent(3,0.00);
+  fMCPtShape->SetBinContent(4,0.00);
+  fMCPtShape->SetBinContent(5,0.00);
+  fMCPtShape->SetBinContent(6,0.00);
+  fMCPtShape->SetBinContent(7,0.00);
+  fMCPtShape->SetBinContent(8,0.00);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",nBins,limits);
+  for(Int_t i=1;i<=nBins;i++) fBR->SetBinContent(i,0.05);
+
+}
+//-------------------------------------------------------------------------
+void AliHFSystErr::InitLctopK0S2017pp5TeVBDT() {
+  //
+  // Lc->pK0S syst errors. Responsible: J. Wilkinson
+  //  2017 pp 5 TeV sample, BDT analysis for low pT
+  //
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2017pp5TeVBDT");
+
+  const Int_t nBins=9;
+  Float_t limits[nBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.,24.};
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",nBins,limits);
+  for(Int_t i=1;i<=nBins;i++) fNorm->SetBinContent(i,0.037); // 3.7% error
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
+  fTrackingEff->SetBinContent(1,0.03);
+  fTrackingEff->SetBinContent(2,0.03);
+  fTrackingEff->SetBinContent(3,0.03);
+  fTrackingEff->SetBinContent(4,0.04);
+  fTrackingEff->SetBinContent(5,0.04);
+  fTrackingEff->SetBinContent(6,0.04);
+  fTrackingEff->SetBinContent(7,0.04);
+  fTrackingEff->SetBinContent(8,0.05);
+  fTrackingEff->SetBinContent(9,0.06);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",nBins,limits);
+  fRawYield->SetBinContent(1,0.08);
+  fRawYield->SetBinContent(2,0.08);
+  fRawYield->SetBinContent(3,0.06);
+  fRawYield->SetBinContent(4,0.07);
+  fRawYield->SetBinContent(5,0.10);
+  fRawYield->SetBinContent(6,0.07);
+  fRawYield->SetBinContent(7,0.07);
+  fRawYield->SetBinContent(8,0.09);
+
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",nBins,limits);
+  fCutsEff->SetBinContent(1,0.09);
   fCutsEff->SetBinContent(2,0.03);
   fCutsEff->SetBinContent(3,0.03);
   fCutsEff->SetBinContent(4,0.03);
