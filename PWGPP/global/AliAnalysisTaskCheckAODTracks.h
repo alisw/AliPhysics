@@ -75,6 +75,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetRejectPbPbEventsWithGeneratedPileup(Bool_t opt=kTRUE){
     fRejectPbPbEventsWithGeneratedPileup=opt;
   }
+  void KeepOnlyEventsWithPileup(){
+    fKeepOnlyEventsWithPileup=kTRUE;
+  }
   void SetTPCTrackCuts(AliESDtrackCuts* cuts){
     if(fTrCutsTPC) delete fTrCutsTPC;
     fTrCutsTPC=new AliESDtrackCuts(*cuts);
@@ -287,6 +290,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
   Int_t   fUsePbPbOutOfBunchPileupCutsITSTPC; /// switch for additional cuts for out-of-bunch pileup based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
   Bool_t  fRejectPbPbEventsWithGeneratedPileup;  // flag to rejct MC with pileup
+  Bool_t fKeepOnlyEventsWithPileup; // flag to keep only the events with pileup (for debug only)
   Int_t   fTriggerMask;        // mask used in physics selection
   Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
   Double_t fMinCentrality;     // centrality: lower limit
@@ -306,7 +310,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,30);
+  ClassDef(AliAnalysisTaskCheckAODTracks,31);
 };
 
 
