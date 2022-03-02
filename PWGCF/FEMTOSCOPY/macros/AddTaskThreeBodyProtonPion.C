@@ -11,7 +11,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMassTriplet = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false ){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMass = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false ){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -362,7 +362,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC
     taskNano->SetCorrelationConfig(config);
     taskNano->SetRunThreeBodyHistograms(true);
 
-    taskNano->SetRunPlotInvMassTriplet(RunPlotInvMassTriplet);
+    taskNano->SetRunPlotInvMass(RunPlotInvMass);
     taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
     taskNano->SetRunPlotPhiTheta(RunPlotPhiTheta);
     taskNano->SetRunPlotPt(RunPlotPt); 
