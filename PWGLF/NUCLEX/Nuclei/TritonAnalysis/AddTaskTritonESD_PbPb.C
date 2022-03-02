@@ -40,10 +40,13 @@ AliAnalysisTask *AddTaskTritonESD_PbPb(unsigned long fTriggerMask, Double_t Cent
     mgr -> AddTask(task);
     
     AliAnalysisDataContainer *outputData = mgr -> CreateContainer("Input",TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-//    AliAnalysisDataContainer *outputQA   = mgr -> CreateContainer("InputQA",TList::Class(),AliAnalysisManager::kOutputContainer,"QA.root");
+    AliAnalysisDataContainer *cTritonTree = mgr->CreateContainer("reducedTree_Triton", TTree::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    //AliAnalysisDataContainer *outputQA   = mgr -> CreateContainer("InputQA",TList::Class(),AliAnalysisManager::kOutputContainer,"QA.root");
+    
     mgr -> ConnectInput (task,0,input);
     mgr -> ConnectOutput(task,1,outputData);
-//    mgr -> ConnectOutput(task,2,outputQA);
+    mgr -> ConnectOutput(task,2,cTritonTree);
+    //mgr -> ConnectOutput(task,2,outputQA);
     
     
 
