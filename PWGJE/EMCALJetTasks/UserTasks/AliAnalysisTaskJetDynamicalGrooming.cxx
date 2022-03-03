@@ -1196,7 +1196,7 @@ void AliAnalysisTaskJetDynamicalGrooming::IterativeParents(AliEmcalJet* jet,
     //  - Det level: Use charged pion mass hypothesis. Called with isDetLevelInEmbedding == true, so uses pion mass
     //  - Part level: Use true mass in AliVParticle. Called with isData == false, so will use true mass
     double E = part->E();
-    if (isDetLevelInEmbedding || (isData && fJetShapeSub != kConstSub)) {
+    if (isDetLevelInEmbedding || (isData && fJetShapeSub != kConstSub && fJetShapeSub != kEventSub)) {
       //std::cout << "using charged pion mass hypothesis. " << std::boolalpha << "isData=" << isData << ", isDetLevelInEmbedding=" << isDetLevelInEmbedding << "\n";
       E = std::sqrt(std::pow(part->P(), 2) + std::pow(0.139, 2));
     }
