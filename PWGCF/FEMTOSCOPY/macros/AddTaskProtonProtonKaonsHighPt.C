@@ -359,6 +359,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsHighPt(int trigger = 0, bool fullBlas
     taskNano->SetDeltaEtaMaxPPrim(DeltaEtaMaxpKplus);
     taskNano->SetDeltaPhiMaxPAPrim(0.);
     taskNano->SetDeltaEtaMaxPAPrim(0.);
+    if (isMC) taskNano->SetPlotsMC(true);
 
     mgr->AddTask(taskNano);
 

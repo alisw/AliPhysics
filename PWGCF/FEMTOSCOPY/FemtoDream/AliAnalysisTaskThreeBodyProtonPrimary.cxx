@@ -10,6 +10,9 @@
 #include "AliFemtoDreamHigherPairMath.h"
 #include "AliNanoAODTrack.h"
 #include "Riostream.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
+
 
 ClassImp(AliAnalysisTaskThreeBodyProtonPrimary)
 AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
@@ -25,7 +28,6 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
       fAntiProtonMCList(nullptr),
-      fPrimaryTrack(nullptr),
       fPrimary(nullptr),
       fPrimaryList(nullptr),
       fPrimaryMCList(nullptr),
@@ -74,6 +76,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
       fRunPlotPt(false),
+      fPlotsMC(false),
       fRunOfficialTwoBody(false), // ADDED BY RAFFA
       fDoKinematicsPlots(false),
       fClosePairRejectionForAll(false),
@@ -146,6 +149,14 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fTripletInvMassPDGAnti(nullptr),
       fTripletInvMassDetMixedAnti(nullptr),
       fTripletInvMassPDGMixedAnti(nullptr),
+      fpTvsEtaTrueKaons(nullptr),
+      fpTvsEtaTrueAntiKaons(nullptr),
+      fpTvsEtaTrueProtons(nullptr),
+      fpTvsEtaTrueAntiProtons(nullptr),
+      fpTvsEtaRecoKaons(nullptr),
+      fpTvsEtaRecoAntiKaons(nullptr),
+      fpTvsEtaRecoProtons(nullptr),
+      fpTvsEtaRecoAntiProtons(nullptr),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -168,7 +179,6 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
       fAntiProtonMCList(nullptr),
-      fPrimaryTrack(nullptr),
       fPrimary(nullptr),
       fPrimaryList(nullptr),
       fPrimaryMCList(nullptr),
@@ -216,6 +226,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fRunPlotOtherHistos(true),
       fRunPlotMult(true),
       fRunPlotPt(false),
+      fPlotsMC(false),
       fRunOfficialTwoBody(false), // ADDED BY RAFFA
       fDoKinematicsPlots(false),
       fClosePairRejectionForAll(false),
@@ -288,6 +299,14 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fTripletInvMassPDGAnti(nullptr),
       fTripletInvMassDetMixedAnti(nullptr),
       fTripletInvMassPDGMixedAnti(nullptr),
+      fpTvsEtaTrueKaons(nullptr),
+      fpTvsEtaTrueAntiKaons(nullptr),
+      fpTvsEtaTrueProtons(nullptr),
+      fpTvsEtaTrueAntiProtons(nullptr),
+      fpTvsEtaRecoKaons(nullptr),
+      fpTvsEtaRecoAntiKaons(nullptr),
+      fpTvsEtaRecoProtons(nullptr),
+      fpTvsEtaRecoAntiProtons(nullptr),
       fResultsQA(nullptr),
       fSample(nullptr),
       fResultsSample(nullptr),
@@ -335,9 +354,6 @@ AliAnalysisTaskThreeBodyProtonPrimary::~AliAnalysisTaskThreeBodyProtonPrimary() 
   }
   if (fAntiProton) {
     delete fAntiProton;
-  }
-  if (fPrimaryTrack) {
-    delete fPrimaryTrack;
   }
   if (fPrimary) {
     delete fPrimary;
@@ -428,12 +444,9 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(
-      fProton->GetIsMonteCarlo() || fAntiProton->GetIsMonteCarlo());
+      fProton->GetIsMonteCarlo() || fAntiProton->GetIsMonteCarlo()||fPrimary->GetIsMonteCarlo() || fAntiPrimary->GetIsMonteCarlo());
 
-  fPrimaryTrack = new AliFemtoDreamTrack();
-  fPrimaryTrack->SetUseMCInfo(
-      fPrimary->GetIsMonteCarlo() || fAntiPrimary->GetIsMonteCarlo());
-
+/* 
   fv0 = new AliFemtoDreamv0();
   if(fCleanWithLambdas){
     fv0->SetUseMCInfo(
@@ -447,7 +460,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fv0->GetNegDaughter()->SetUseMCInfo(
         fLambda->GetIsMonteCarlo() || fAntiLambda->GetIsMonteCarlo());
   }
-
+*/
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
   } else {
@@ -460,11 +473,12 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
   fAntiProtonList = fAntiProton->GetQAHists();
   fPrimaryList = fPrimary->GetQAHists();
   fAntiPrimaryList = fAntiPrimary->GetQAHists();
+  /*
   if(fCleanWithLambdas){
      fLambdaList = fLambda->GetQAHists();
      fAntiLambdaList = fAntiLambda->GetQAHists();
   }
-
+*/
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
@@ -480,6 +494,13 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fResults->SetOwner();
     fResults->SetName("Results");
   }
+
+
+
+
+
+
+
   if (fRunThreeBody){
 
     fResultsThreeBody = new TList();
@@ -1053,6 +1074,29 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
           fKinematicsPlots->Add(fDphiME[i]);
 
       }
+
+
+      fpTvsEtaTrueKaons = new TH2F("fpTvsEtaTrueKaons","fpTvsEtaTrueKaons",5000,0, 5, 200, -10,10);
+      fpTvsEtaTrueAntiKaons = new TH2F("fpTvsEtaTrueAntiKaons","fpTvsEtaTrueAntiKaons",5000,0, 5, 200, -10,10);
+      fpTvsEtaTrueProtons = new TH2F("fpTvsEtaTrueProtons","fpTvsEtaTrueProtons",5000,0, 5, 200, -10,10);
+      fpTvsEtaTrueAntiProtons = new TH2F("fpTvsEtaTrueAntiProtons","fpTvsEtaTrueAntiProtons",5000,0, 5, 200, -10,10);
+      fpTvsEtaRecoKaons = new TH2F("fpTvsEtaRecoKaons","fpTvsEtaRecoKaons",5000,0, 5, 200, -10,10);
+      fpTvsEtaRecoAntiKaons = new TH2F("fpTvsEtaRecoAntiKaons","fpTvsEtaRecoAntiKaons",5000,0, 5, 200, -10,10);
+      fpTvsEtaRecoProtons = new TH2F("fpTvsEtaRecoProtons","fpTvsEtaRecoProtons",5000,0, 5, 200, -10,10);
+      fpTvsEtaRecoAntiProtons = new TH2F("fpTvsEtaRecoAntiProtons","fpTvsEtaRecoAntiProtons",5000,0, 5, 200, -10,10);
+  
+     if(fPlotsMC){
+
+      fKinematicsPlots->Add(fpTvsEtaTrueKaons);
+      fKinematicsPlots->Add(fpTvsEtaTrueAntiKaons);
+      fKinematicsPlots->Add(fpTvsEtaTrueProtons);
+      fKinematicsPlots->Add(fpTvsEtaTrueAntiProtons);
+      fKinematicsPlots->Add(fpTvsEtaRecoKaons);
+      fKinematicsPlots->Add(fpTvsEtaRecoAntiKaons);
+      fKinematicsPlots->Add(fpTvsEtaRecoProtons);
+      fKinematicsPlots->Add(fpTvsEtaRecoAntiProtons);
+      }
+
       
       fResultsThreeBody->Add(fKinematicsPlots);
     }
@@ -1124,13 +1168,15 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
 
     //...............................................................................................
     //Invariant Mass
+    fInvMass = new TH2F*[16];
+    TString histTitlesInvMass[16] = {"InvMassPPPrim","InvMassAPAPAPrim", "InvMassPPP", "InvMassAPAPAP", "InvMassPPAPrim","InvMassAPAPPrim", "InvMassPPSamePrimMixed", "InvMassPPrimSamePMixed", "InvMassAPAPSameAPrimMixed", "InvMassAPAPrimSameAPMixed", "InvMassPPSamePMixed", "InvMassAPAPSameAPMixed", "InvMassPPSameAPrimMixed", "InvMassPAPrimSamePMixed", "InvMassAPAPSamePrimMixed", "InvMassAPPrimSameAPMixed"};
+
+
     if (fRunPlotInvMass){
       fInvMassList = new TList();
       fInvMassList->SetOwner();
       fInvMassList->SetName("InvMass");
 
-      fInvMass = new TH2F*[16];
-      TString histTitlesInvMass[16] = {"InvMassPPPrim","InvMassAPAPAPrim", "InvMassPPP", "InvMassAPAPAP", "InvMassPPAPrim","InvMassAPAPPrim", "InvMassPPSamePrimMixed", "InvMassPPrimSamePMixed", "InvMassAPAPSameAPrimMixed", "InvMassAPAPrimSameAPMixed", "InvMassPPSamePMixed", "InvMassAPAPSameAPMixed", "InvMassPPSameAPrimMixed", "InvMassPAPrimSamePMixed", "InvMassAPAPSamePrimMixed", "InvMassAPPrimSameAPMixed"};
 
       for(int i=0;i<16;i++){
         fInvMass[i] = new TH2F(histTitlesInvMass[i],histTitlesInvMass[i], 500, 0., 5., 12, 0., 1.2);
@@ -1216,7 +1262,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
     }
     PostData(16, fAntiPrimaryMCList);
   }
-
+/*
   if(fCleanWithLambdas){
     if (fLambda->GetIsMonteCarlo()) {
       if (!fLambda->GetMinimalBooking()) {
@@ -1239,7 +1285,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserCreateOutputObjects() {
       PostData(18, fAntiLambdaMCList);
     }
   }
-
+*/
  // Mixed event distribution ------------------------------------------------------------------------------
       // Take care of the mixing PartContainer for three particles
     auto ZVtxBinsSize = fConfig->GetNZVtxBins();
@@ -1340,57 +1386,61 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
   //a.0) Proton Selection ------------------------------
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
+  std::vector<AliFemtoDreamBasePart> Primaries;
+  std::vector<AliFemtoDreamBasePart> AntiPrimaries;
+
+
+
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) { // TO DO: think about double track selection
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
     fTrack->SetTrack(track, fInputEvent);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
+      //if (fPlotsMC) fpTvsEtaRecoProtons->Fill(track->Pt(),track->Eta());
     }
     if (fAntiProton->isSelected(fTrack)) {
       AntiProtons.push_back(*fTrack);
+      //if (fPlotsMC) fpTvsEtaRecoAntiProtons->Fill(track->Pt(),track->Eta());
     }
-  }//for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
-
-  //a.1) General Primary Selection ------------------------------
-  std::vector<AliFemtoDreamBasePart> Primaries;
-  std::vector<AliFemtoDreamBasePart> AntiPrimaries;
-  fPrimaryTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
-    AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fPrimaryTrack->SetTrack(track, fInputEvent);
-    if (fPrimary->isSelected(fPrimaryTrack)) {
-      Primaries.push_back(*fPrimaryTrack);
+    if (fPrimary->isSelected(fTrack)) {
+      Primaries.push_back(*fTrack);
+      //if (fPlotsMC) fpTvsEtaRecoKaons->Fill(track->Pt(),track->Eta());
     }
-    if (fAntiPrimary->isSelected(fPrimaryTrack)) {
-      AntiPrimaries.push_back(*fPrimaryTrack);
+    if (fAntiPrimary->isSelected(fTrack)) {
+      AntiPrimaries.push_back(*fTrack);
+      //if (fPlotsMC) fpTvsEtaRecoAntiKaons->Fill(track->Pt(),track->Eta());
     }
-  }//for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
-
-  //a.2) General optional V0 (Lambda) Selection ------------------------------
-  std::vector<AliFemtoDreamBasePart> Lambdas;
-  std::vector<AliFemtoDreamBasePart> AntiLambdas;
-  if(fCleanWithLambdas)
-  {
-	  AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
-	  fv0->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-	  for (int iv0 = 0;
-	      iv0 < static_cast<TClonesArray *>(aodEvt->GetV0s())->GetEntriesFast();
-	      ++iv0) {
-	    AliAODv0* casc = aodEvt->GetV0(iv0);
-	    fv0->Setv0(fInputEvent, casc);
-	    if (fLambda->isSelected(fv0)) {
-	      Lambdas.push_back(*fv0);
-	    }
-	    if (fAntiLambda->isSelected(fv0)) {
-	      AntiLambdas.push_back(*fv0);
-	    }
-	  }//for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
   }
+
+
+
+  if (fPlotsMC) {
+    AliAODInputHandler *eventHandler =
+      dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
+                                        ->GetInputEventHandler());
+    AliMCEvent* fMC = eventHandler->MCEvent();
+
+    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+      if (mcPart->IsPhysicalPrimary()) {
+        if (mcPart->GetPdgCode() == fProton->GetPDGCode()) {
+          fpTvsEtaTrueProtons ->Fill(mcPart->Pt(),mcPart->Eta());
+        } else if (mcPart->GetPdgCode() == fAntiProton->GetPDGCode()) {
+          fpTvsEtaTrueAntiProtons ->Fill(mcPart->Pt(),mcPart->Eta());
+        } else if (mcPart->GetPdgCode() == fPrimary->GetPDGCode()) {
+          fpTvsEtaTrueKaons ->Fill(mcPart->Pt(),mcPart->Eta());
+        } else if (mcPart->GetPdgCode() == fAntiPrimary->GetPDGCode()) {
+          fpTvsEtaTrueAntiKaons ->Fill(mcPart->Pt(),mcPart->Eta());
+        }
+      }
+    }
+  }
+
 
   //b) Optional pair cleaning +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  fPairCleaner->ResetArray();
-
+/*
   if(fCleanWithLambdas)
   {
      fPairCleaner->CleanTrackAndDecay(&Protons, &Lambdas, 0);
@@ -1399,13 +1449,11 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
      fPairCleaner->CleanDecay(&Lambdas, 0);
      fPairCleaner->CleanDecay(&AntiLambdas, 1);
   }
-
+*/
   fPairCleaner->StoreParticle(Protons);
   fPairCleaner->StoreParticle(AntiProtons);
   fPairCleaner->StoreParticle(Primaries);
   fPairCleaner->StoreParticle(AntiPrimaries);
-
-
 
 
   int ContainerIdPPP;
@@ -1449,7 +1497,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector = fPairCleaner->GetCleanParticles();
 
     if(fDoOnlyThreeBody){
-   
+
        // Proton Proton Primary
        FillTripletDistribution( ParticleVector, 2, 0, 0, fSameEventTripletArray[0],PDGCodes, bins[1],fSameEventTripletMultArray[0], fSameEventTripletPtPrimaries[0], fSameEventTripletPtProtons[0], fSameEventTripletPtPrimaries2[0], fSameEventTripletPtProtons2[0], fSameEventTripletPtvsQ3Primaries[0], fSameEventTripletPtvsQ3Protons[0], fSameEventTripletPhiThetaArray_SamePair, fSameEventTripletPhiThetaArray_DifferentPair,0, *fConfig, fKinematics[0], fPrimAngles[0], fDeta[0], fDphi[0], fInvMass[0]);
        // Antiproton Antiproton Antiprimary
@@ -1462,6 +1510,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
        FillTripletDistribution( ParticleVector, 3, 0, 0, fSameEventTripletArray[4],PDGCodes, bins[1],fSameEventTripletMultArray[4], fSameEventTripletPtPrimaries[4], fSameEventTripletPtProtons[4], fSameEventTripletPtPrimaries2[4], fSameEventTripletPtProtons2[4], fSameEventTripletPtvsQ3Primaries[4], fSameEventTripletPtvsQ3Protons[4], fSameEventTripletPhiThetaArray_SamePair, fSameEventTripletPhiThetaArray_DifferentPair,4, *fConfig, fKinematics[4], fPrimAngles[4], fDeta[4], fDphi[4], fInvMass[4]);
        // Antiproton Antiproton Primary
        FillTripletDistribution( ParticleVector, 2, 1, 1, fSameEventTripletArray[5],PDGCodes, bins[1],fSameEventTripletMultArray[5], fSameEventTripletPtPrimaries[5], fSameEventTripletPtProtons[5], fSameEventTripletPtPrimaries2[5], fSameEventTripletPtProtons2[5], fSameEventTripletPtvsQ3Primaries[5], fSameEventTripletPtvsQ3Protons[5], fSameEventTripletPhiThetaArray_SamePair, fSameEventTripletPhiThetaArray_DifferentPair,5, *fConfig, fKinematics[5], fPrimAngles[5], fDeta[5], fDphi[5], fInvMass[5]);
+
     }//if(fDoOnlyThreeBody)
     else {
       //Two Body Analyses...........
@@ -1521,6 +1570,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
 
       //c.1.0) Same 2, Mixed 1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       if(fDoOnlyThreeBody){
+
          // Proton Proton Primary
         FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerIdPPPrim], 0, 0, 2, fSameEventTripletArray[10], PDGCodes, bins[1],fSameEventTripletMultArray[10], fSameEventTripletPtPrimaries[10], fSameEventTripletPtProtons[10], fSameEventTripletPtPrimaries2[10], fSameEventTripletPtProtons2[10], fSameEventTripletPhiThetaArray_SamePair, fSameEventTripletPhiThetaArray_DifferentPair, 10, *fConfig, fQ3VskDistributionsArrayq12[0],fQ3VskDistributionsArrayq23[0], fKinematics[6], fPrimAngles[6], fDeta[6], fDphi[6], fInvMass[6]);
 
@@ -1564,8 +1614,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
            FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPAPrim], 3, 0, 0, fMixedEventTripletArray[4], PDGCodes, bins[1],fMixedEventTripletMultArray[4], fMixedEventTripletPtPrimaries[4], fMixedEventTripletPtProtons[4], fMixedEventTripletPtPrimaries2[4], fMixedEventTripletPtProtons2[4], fMixedEventTripletPtvsQ3Primaries[4], fMixedEventTripletPtvsQ3Protons[4], fMixedEventTripletPhiThetaArray_SamePair, fMixedEventTripletPhiThetaArray_DifferentPair,4, *fConfig, fQ3VskDistributionsArrayq12Mixed[4], fQ3VskDistributionsArrayq23Mixed[4], fKinematicsME[4], fPrimAnglesME[4], fDetaME[4], fDphiME[4]);
 
            FillTripletDistributionME(ParticleVector, *VectItMult[ContainerIdPPAPrim], 2, 1, 1, fMixedEventTripletArray[5], PDGCodes, bins[1],fMixedEventTripletMultArray[5], fMixedEventTripletPtPrimaries[5], fMixedEventTripletPtProtons[5], fMixedEventTripletPtPrimaries2[5], fMixedEventTripletPtProtons2[5], fMixedEventTripletPtvsQ3Primaries[5], fMixedEventTripletPtvsQ3Protons[5], fMixedEventTripletPhiThetaArray_SamePair, fMixedEventTripletPhiThetaArray_DifferentPair,5, *fConfig, fQ3VskDistributionsArrayq12Mixed[5], fQ3VskDistributionsArrayq23Mixed[5], fKinematicsME[5], fPrimAnglesME[5], fDetaME[5], fDphiME[5]);
-
-      
+  
       } else {
         //Two Body Analyses...........
 
@@ -1633,10 +1682,12 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
   PostData(3, fAntiProtonList);
   PostData(4, fPrimaryList);
   PostData(5, fAntiPrimaryList);
+  /*
   if(fCleanWithLambdas){
     PostData(6, fLambdaList);
     PostData(7, fAntiLambdaList);
   }
+  */
   if(fRunOfficialTwoBody){ // ADDED BY RAFFA
     PostData(8, fResults);
     PostData(9, fResultsQA);
@@ -1656,6 +1707,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
   if (fAntiPrimary->GetIsMonteCarlo()) {
     PostData(16, fAntiPrimaryMCList);
   }
+  /*
   if(fCleanWithLambdas){
     if (fLambda->GetIsMonteCarlo()) {
       PostData(17, fLambdaMCList);
@@ -1664,7 +1716,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
       PostData(18, fAntiLambdaMCList);
     }
   }
-
+  */
 }
 
 //==================================================================================================================================================
@@ -2106,7 +2158,7 @@ void AliAnalysisTaskThreeBodyProtonPrimary::FillTripletDistribution(std::vector<
 
            InvMass->Fill(Sum12.Mag(),Q3);
            InvMass->Fill(Sum23.Mag(),Q3);
-	   InvMass->Fill(Sum13.Mag(),Q3);
+	         InvMass->Fill(Sum13.Mag(),Q3);
            InvMass->Fill(Sum123.Mag(),Q3);
 
         }//if(fRunPlotInvMass)
