@@ -553,10 +553,10 @@ AliAnalysisTaskR2P2Base * AddTaskR2P2Base
     {
       switch ( chargeSet )
         {
-	case 0: part1Name = "P_"; part2Name = "P_"; requestedCharge1 =  1; requestedCharge2 =  1; sameFilter = 1;   break;
-	case 1: part1Name = "P_"; part2Name = "M_"; requestedCharge1 =  1; requestedCharge2 = -1; sameFilter = 0;   break;
-	case 2: part1Name = "M_"; part2Name = "P_"; requestedCharge1 = -1; requestedCharge2 =  1; sameFilter = 0;   break;
-	case 3: part1Name = "M_"; part2Name = "M_"; requestedCharge1 = -1; requestedCharge2 = -1; sameFilter = 1;   break;
+	case 0: part1Name = "P"; part2Name = "P"; requestedCharge1 =  1; requestedCharge2 =  1; sameFilter = 1;   break;
+	case 1: part1Name = "P"; part2Name = "M"; requestedCharge1 =  1; requestedCharge2 = -1; sameFilter = 0;   break;
+	case 2: part1Name = "M"; part2Name = "P"; requestedCharge1 = -1; requestedCharge2 =  1; sameFilter = 0;   break;
+	case 3: part1Name = "M"; part2Name = "M"; requestedCharge1 = -1; requestedCharge2 = -1; sameFilter = 1;   break;
         }
         
       partName = "pt";
@@ -564,6 +564,8 @@ AliAnalysisTaskR2P2Base * AddTaskR2P2Base
       partName += "to";
       partName += int(10*ptCUTupperMax);
 
+      part1Name += part2Name;
+      part1Name += "_";
       part1Name += "pt";
       part1Name += int(10*ptMin);
       part1Name += "to";
@@ -577,8 +579,8 @@ AliAnalysisTaskR2P2Base * AddTaskR2P2Base
 
       baseName     =   prefixName;      
       baseName     +=  part1Name;
-      baseName     +=  "_";
-      baseName     +=  part2Name;
+      //baseName     +=  "_";
+      //   baseName     +=  part2Name;
       baseName     +=  eventName;
       baseName     +=  "_";
       baseName     +=  particleID;
