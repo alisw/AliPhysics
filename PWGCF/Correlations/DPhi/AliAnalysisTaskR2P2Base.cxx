@@ -1374,7 +1374,8 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
   int    iPhi=0, iEta=0, iEtaPhi=0, iPt=0, charge=0;
   int    IDrec=0;
   float  q=0., phi=0., pt=0., eta=0., y=0., y_direct=0., mass=0., corr=0., corrPt=0., px=0., py=0., pz=0., dedx=0.,p=0.,l=0., timeTOF=0., beta=0., t0=0., msquare=0.; // Au-Au put p here to make _dedx_p and _beta_p plots.
-  float  chi2ndf = 0.;
+  Double_t  chi2ndf = 0.;
+  Int_t countMult = 0;
   int    ij=0;
   int    id_1=0, q_1=0, iEtaPhi_1=0, iPt_1=0;
   float  pt_1=0., px_1=0., py_1=0., pz_1=0., corr_1=0., dedx_1=0.;
@@ -1436,7 +1437,7 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
       fAODEvent = dynamic_cast<AliAODEvent*>(event); // create pointer to event
 
     }
-  else  fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent()); // create pointer to event
+  //baidya2 else  fAODEvent = dynamic_cast<AliAODEvent*>(InputEvent()); // create pointer to event
     
   if ( !fAODEvent ) { return; }
   //cout<<"baidyaTest 3"<<endl;
@@ -1561,7 +1562,8 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
 	  }
         }
       else if ( fSystemType == "PbPb_2015_kFALSE" || fSystemType == "pp_V0A_kMB_kFALSE" || fSystemType == "pp_V0C_kMB_kFALSE" || fSystemType == "pp_V0_kMB_kFALSE"|| fSystemType == "pp18_V0_kMB_kFALSE" )
-	{ 
+	{
+	   
 	  AliMultSelection *multSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
 	  //If get this warning, please check that the AliMultSelectionTask actually ran (before your task)
 	  if (!multSelection)    AliWarning("MultSelection not found in input event");
@@ -1664,7 +1666,7 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
 
 	   
 	  Int_t dcacoverrors = 0;
-	   
+	  countMult = 0;
 	  //Track Loop starts here
 	  for (int iTrack = 0; iTrack < _nTracks; iTrack++ )
 	    {
@@ -1787,10 +1789,13 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
 		   DCAZ = pos[2] - vertexZ;             
 		   DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));             
 		}
-	      
+	      /*baidya2
 	      if (DCAZ     <  _dcaZMin ||
 		  DCAZ     >  _dcaZMax ||
 		  DCAXY    >  _dcaXYMax ) continue;       
+	      */
+	      if (TMath::Abs(DCAXY) > _dcaXYMax) continue;
+	      if (TMath::Abs(DCAZ)  > _dcaZMax) continue;
 
 	      chi2ndf = t->Chi2perNDF();
 	      if (chi2ndf < 0.3)continue;
@@ -1917,7 +1922,7 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
 			if(!particle1 ->IsPrimary()) continue;	
 		      }
 		    }
-		  
+		  countMult++;
 		  // QA for POI
 		  if ( _singlesOnly )
 		    {
@@ -1968,7 +1973,7 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
 
 		  if ( _correctionPtEff_1 )   corr = 1./Double_t(_correctionPtEff_1[ iPt ]); 
 		  else   corr = 1;				
-
+		  //cout<<" corr1: "<<corr<<endl;
 		  if ( iZEtaPhiPt < 0 || iZEtaPhiPt >= _nBins_zEtaPhiPt_1 )
 		    {
 		      AliWarning("AliAnalysisTaskR2P2Base::analyze(AliceEvent * event) iZEtaPhiPt<0 || iZEtaPhiPt>=_nBins_zEtaPhiPt_1");
@@ -2119,7 +2124,7 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
 
 		  if ( _correctionPtEff_2 )   corr = 1./Double_t(_correctionPtEff_2[ iPt ]);
 		  else   corr = 1;		
-
+		  //cout<<" corr2: "<<corr<<endl;
 		  if (_singlesOnly)
 		    {
 		      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
@@ -2530,7 +2535,7 @@ void  AliAnalysisTaskR2P2Base::UserExec(Option_t */*option*/)
   // Fill event QA histos
   _m0->Fill(_mult0);
   _m1->Fill(_mult1);
-  _m2->Fill(_mult2);
+  _m2->Fill(Double_t(countMult));
   _m3->Fill(_mult3);
   _m4->Fill(_mult4);
   _m5->Fill(_mult5);
