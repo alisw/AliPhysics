@@ -37,8 +37,6 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fHighCF(false),
     fSideBand(false),
     p2Up3Sigma(nullptr),
-    p2Up2Sigma(nullptr),
-    p2Low2Sigma(nullptr),
     p2Low3Sigma(nullptr),
     SideBandUp(nullptr),
     SideBandLow(nullptr),
@@ -46,19 +44,13 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     A1SideBandNum(nullptr),
     S1SideBandNum(nullptr),
     A2SideBandNum(nullptr),
-    B1SideBandNum(nullptr),
-    S2SideBandNum(nullptr),
-    B2SideBandNum(nullptr),
     A1A2SideBandNum(nullptr),
-    B1B2SideBandNum(nullptr),
+    SignalAndSideCFNum(nullptr),
     A1SideBandDum(nullptr),
     S1SideBandDum(nullptr),
     A2SideBandDum(nullptr),
-    B1SideBandDum(nullptr),
-    S2SideBandDum(nullptr),
-    B2SideBandDum(nullptr),
     A1A2SideBandDum(nullptr),
-    B1B2SideBandDum(nullptr),
+    SignalAndSideCFDum(nullptr),
     fUsePt(0)	
 {
     
@@ -101,27 +93,19 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fHighCF(aCorrFctn.fHighCF),
     fSideBand(aCorrFctn.fSideBand),
     p2Up3Sigma(aCorrFctn.p2Up3Sigma),
-    p2Up2Sigma(aCorrFctn.p2Up2Sigma),
-    p2Low2Sigma(aCorrFctn.p2Low2Sigma),
     p2Low3Sigma(aCorrFctn.p2Low3Sigma),
     SideBandUp(aCorrFctn.SideBandUp),
     SideBandLow(aCorrFctn.SideBandLow),
     A1SideBandNum(aCorrFctn.A1SideBandNum),
     S1SideBandNum(aCorrFctn.S1SideBandNum),
     A2SideBandNum(aCorrFctn.A2SideBandNum),
-    B1SideBandNum(aCorrFctn.B1SideBandNum),
-    S2SideBandNum(aCorrFctn.S2SideBandNum),
-    B2SideBandNum(aCorrFctn.B2SideBandNum),
     A1A2SideBandNum(aCorrFctn.A1A2SideBandNum),
-    B1B2SideBandNum(aCorrFctn.B1B2SideBandNum),
+    SignalAndSideCFNum(aCorrFctn.SignalAndSideCFNum),
     A1SideBandDum(aCorrFctn.A1SideBandDum),
     S1SideBandDum(aCorrFctn.S1SideBandDum),
     A2SideBandDum(aCorrFctn.A2SideBandDum),
-    B1SideBandDum(aCorrFctn.B1SideBandDum),
-    S2SideBandDum(aCorrFctn.S2SideBandDum),
-    B2SideBandDum(aCorrFctn.B2SideBandDum),
     A1A2SideBandDum(aCorrFctn.A1A2SideBandDum),
-    B1B2SideBandDum(aCorrFctn.B1B2SideBandDum),
+    SignalAndSideCFDum(aCorrFctn.SignalAndSideCFDum),
     fUsePt(aCorrFctn.fUsePt)
 {
     
@@ -143,8 +127,6 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete fDenHigh3F;
 
     delete p2Up3Sigma;
-    delete p2Up2Sigma;
-    delete p2Low2Sigma;
     delete p2Low3Sigma;
     delete SideBandUp;
     delete SideBandLow;
@@ -152,20 +134,15 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete A1SideBandNum;
     delete S1SideBandNum;
     delete A2SideBandNum;
-    delete B1SideBandNum;
-    delete S2SideBandNum;
-    delete B2SideBandNum;
     delete A1A2SideBandNum;
-    delete B1B2SideBandNum;
+    delete SignalAndSideCFNum;
 
     delete A1SideBandDum;
     delete S1SideBandDum;
     delete A2SideBandDum;
-    delete B1SideBandDum;
-    delete S2SideBandDum;
-    delete B2SideBandDum;
     delete A1A2SideBandDum;
-    delete B1B2SideBandDum;
+    delete SignalAndSideCFDum;
+    
     
 
 }
@@ -210,10 +187,6 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
 
     if(p2Up3Sigma) delete p2Up3Sigma;
 	p2Up3Sigma = new TF1(*aCorrFctn.p2Up3Sigma);
-    if(p2Up2Sigma) delete p2Up2Sigma;
-	p2Up2Sigma = new TF1(*aCorrFctn.p2Up2Sigma);
-    if(p2Low2Sigma) delete p2Low2Sigma;
-	p2Low2Sigma = new TF1(*aCorrFctn.p2Low2Sigma);
     if(p2Low3Sigma) delete p2Low3Sigma;
 	p2Low3Sigma = new TF1(*aCorrFctn.p2Low3Sigma);
     if(SideBandUp) delete SideBandUp;
@@ -227,34 +200,20 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
 			S1SideBandNum = new TH1D(*aCorrFctn.S1SideBandNum);
 	if(A2SideBandNum) delete A2SideBandNum;
 			A2SideBandNum = new TH1D(*aCorrFctn.A2SideBandNum);
-	if(B1SideBandNum) delete B1SideBandNum;
-			B1SideBandNum = new TH1D(*aCorrFctn.B1SideBandNum);
-	if(S2SideBandNum) delete S2SideBandNum;
-			S2SideBandNum = new TH1D(*aCorrFctn.S2SideBandNum);
-	if(B2SideBandNum) delete B2SideBandNum;
-			B2SideBandNum = new TH1D(*aCorrFctn.B2SideBandNum);
 	if(A1A2SideBandNum) delete A1A2SideBandNum;
 			A1A2SideBandNum = new TH1D(*aCorrFctn.A1A2SideBandNum);
-	if(B1B2SideBandNum) delete B1B2SideBandNum;
-			B1B2SideBandNum = new TH1D(*aCorrFctn.B1B2SideBandNum);
-
+	if(SignalAndSideCFNum) delete SignalAndSideCFNum;
+			SignalAndSideCFNum = new TH1D(*aCorrFctn.SignalAndSideCFNum);
 	if(A1SideBandDum) delete A1SideBandDum;
 			A1SideBandDum 	= new TH1D(*aCorrFctn.A1SideBandDum);
 	if(S1SideBandDum) delete S1SideBandDum;
 			S1SideBandDum 	= new TH1D(*aCorrFctn.S1SideBandDum);
 	if(A2SideBandDum) delete A2SideBandDum;
 			A2SideBandDum 	= new TH1D(*aCorrFctn.A2SideBandDum);
-	if(B1SideBandDum) delete B1SideBandDum;
-			B1SideBandDum 	= new TH1D(*aCorrFctn.B1SideBandDum);
-	if(S2SideBandDum) delete S2SideBandDum;
-			S2SideBandDum 	= new TH1D(*aCorrFctn.S2SideBandDum);
-	if(B2SideBandDum) delete B2SideBandDum;
-			B2SideBandDum 	= new TH1D(*aCorrFctn.B2SideBandDum);
 	if(A1A2SideBandDum) delete A1A2SideBandDum;
 			A1A2SideBandDum = new TH1D(*aCorrFctn.A1A2SideBandDum);
-	if(B1B2SideBandDum) delete B1B2SideBandDum;
-			B1B2SideBandDum = new TH1D(*aCorrFctn.B1B2SideBandDum);
-
+	if(SignalAndSideCFDum) delete SignalAndSideCFDum;
+			SignalAndSideCFDum = new TH1D(*aCorrFctn.SignalAndSideCFDum);
     fUsePt = aCorrFctn.fUsePt;
 
     return *this;
@@ -289,20 +248,14 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 	    tOutputList->Add(A1SideBandNum);
 	    tOutputList->Add(S1SideBandNum);
 	    tOutputList->Add(A2SideBandNum);
-	    tOutputList->Add(B1SideBandNum);
-	    tOutputList->Add(S2SideBandNum);
-	    tOutputList->Add(B2SideBandNum);
 	    tOutputList->Add(A1A2SideBandNum);
-	    tOutputList->Add(B1B2SideBandNum);
-
+	    tOutputList->Add(SignalAndSideCFNum);
+	    
 	    tOutputList->Add(A1SideBandDum);
 	    tOutputList->Add(S1SideBandDum);
 	    tOutputList->Add(A2SideBandDum);
-	    tOutputList->Add(B1SideBandDum);
-	    tOutputList->Add(S2SideBandDum);
-	    tOutputList->Add(B2SideBandDum);
 	    tOutputList->Add(A1A2SideBandDum);
-	    tOutputList->Add(B1B2SideBandDum);
+	    tOutputList->Add(SignalAndSideCFDum);
     }
     return tOutputList;
 }
@@ -328,20 +281,15 @@ void AliFemtoCorrFctnpdtHe3::Write()
 	    A1SideBandNum->Write();
 	    S1SideBandNum->Write();
 	    A2SideBandNum->Write();
-	    B1SideBandNum->Write();
-	    S2SideBandNum->Write();
-	    B2SideBandNum->Write();
 	    A1A2SideBandNum->Write();
-	    B1B2SideBandNum->Write();
+	    SignalAndSideCFNum->Write();
 
 	    A1SideBandDum->Write();
 	    S1SideBandDum->Write();
 	    A2SideBandDum->Write();
-	    B1SideBandDum->Write();
-	    S2SideBandDum->Write();
-	    B2SideBandDum->Write();
 	    A1A2SideBandDum->Write();
-	    B1B2SideBandDum->Write();
+	    SignalAndSideCFDum->Write();
+	    
     }
 	
 
@@ -532,30 +480,25 @@ void AliFemtoCorrFctnpdtHe3::SetfSideBand(bool aSideBand){
 void AliFemtoCorrFctnpdtHe3::SetSideBandTF1Init(bool aSideBand){
     if(aSideBand){
 	    //\ dowang 2022.2.15 side band
-	    // [0]*TMath::Power(x,3)+[1]*TMath::Power(x,2)+[2]*x+[3]
-	    p2Up3Sigma	= new TF1(TString::Format("TF1_p2Up3Sigma_%s", fTitle.Data()),"[0]*x*x*x+[1]*x*x+[2]*x+[3]",0,5);
-	    p2Up3Sigma->SetParameters(1,1,1,1);
-	    p2Up3Sigma->SetParNames(TString::Format("TF1_p2Up3Sigma_para0_%s", fTitle.Data()),TString::Format("TF1_p2Up3Sigma_para1_%s", fTitle.Data()),TString::Format("TF1_p2Up3Sigma_para2_%s", fTitle.Data()),TString::Format("TF1_p2Up3Sigma_para3_%s", fTitle.Data()));
+	    // signal/side band region:
+	    // mTOF2 = mu + p7 + p8 * f
+	    // mu = p0 + p1*(1-p2/pT)^p3
+	    // f  = p4*pT + p5*pT^2 + p6*pT
+	    // 
+	    p2Up3Sigma	= new TF1(TString::Format("TF1_p2Up3Sigma_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    p2Up3Sigma->SetParameters(1,1,1,1,1,1,1,1);
 
-	    p2Up2Sigma  = new TF1(TString::Format("TF1_p2Up2Sigma_%s", fTitle.Data()),"[0]*x*x*x+[1]*x*x+[2]*x+[3]",0,5);
-	    p2Up2Sigma->SetParameters(1,1,1,1);
-	    p2Up2Sigma->SetParNames(TString::Format("TF1_p2Up2Sigma_para0_%s", fTitle.Data()),TString::Format("TF1_p2Up2Sigma_para1_%s", fTitle.Data()),TString::Format("TF1_p2Up2Sigma_para2_%s", fTitle.Data()),TString::Format("TF1_p2Up2Sigma_para3_%s", fTitle.Data()));
+	    p2Low3Sigma = new TF1(TString::Format("TF1_p2Low3Sigma_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    p2Low3Sigma->SetParameters(1,1,1,1,1,1,1,1);
+	   
 
-	    p2Low2Sigma = new TF1(TString::Format("TF1_p2Low2Sigma_%s", fTitle.Data()),"[0]*x*x*x+[1]*x*x+[2]*x+[3]",0,5);
-            p2Low2Sigma->SetParameters(1,1,1,1);
-	    p2Low2Sigma->SetParNames(TString::Format("TF1_p2Low2Sigma_para0_%s", fTitle.Data()),TString::Format("TF1_p2Low2Sigma_para1_%s", fTitle.Data()),TString::Format("TF1_p2Low2Sigma_para2_%s", fTitle.Data()),TString::Format("TF1_p2Low2Sigma_para3_%s", fTitle.Data()));
+	    SideBandUp = new TF1(TString::Format("TF1_SideBandUp_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    SideBandUp->SetParameters(0,0,0,6,1,1,1,1);
+	
 
-	    p2Low3Sigma = new TF1(TString::Format("TF1_p2Low3Sigma_%s", fTitle.Data()),"[0]*x*x*x+[1]*x*x+[2]*x+[3]",0,5);
-	    p2Low3Sigma->SetParameters(1,1,1,1);
-	    p2Low2Sigma->SetParNames(TString::Format("TF1_p2Low3Sigma_para0_%s", fTitle.Data()),TString::Format("TF1_p2Low3Sigma_para1_%s", fTitle.Data()),TString::Format("TF1_p2Low3Sigma_para2_%s", fTitle.Data()),TString::Format("TF1_p2Low3Sigma_para3_%s", fTitle.Data()));
-
-	    SideBandUp = new TF1(TString::Format("TF1_SideBandUp_%s", fTitle.Data()),"[0]*x*x*x+[1]*x*x+[2]*x+[3]",0,5);
-	    SideBandUp->SetParameters(0,0,0,6);
-	    SideBandUp->SetParNames(TString::Format("TF1_SideBandUp_para0_%s", fTitle.Data()),TString::Format("TF1_SideBandUp_para1_%s", fTitle.Data()),TString::Format("TF1_SideBandUp_para2_%s", fTitle.Data()),TString::Format("TF1_SideBandUp_para3_%s", fTitle.Data()));
-
-	    SideBandLow = new TF1(TString::Format("TF1_SideBandLow_%s", fTitle.Data()),"[0]*x*x*x+[1]*x*x+[2]*x+[3]",0,5);
-	    SideBandLow->SetParameters(0,0,0,2);
-	    SideBandLow->SetParNames(TString::Format("TF1_SideBandLow_para0_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para1_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para2_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para3_%s", fTitle.Data()));
+	    SideBandLow = new TF1(TString::Format("TF1_SideBandLow_%s", fTitle.Data()),MassBandFunc,0,5,9);
+	    SideBandLow->SetParameters(0,0,0,2,1,1,1,1);
+	    //SideBandLow->SetParNames(TString::Format("TF1_SideBandLow_para0_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para1_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para2_%s", fTitle.Data()),TString::Format("TF1_SideBandLow_para3_%s", fTitle.Data()));
     }
 
 }
@@ -564,39 +507,27 @@ void AliFemtoCorrFctnpdtHe3::SetSideBandHistInit(bool aSideBand){
 	    A1SideBandNum	= new TH1D(TString::Format("A1SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1SideBandNum->Sumw2();
 	    S1SideBandNum	= new TH1D(TString::Format("S1SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);S1SideBandNum->Sumw2();
 	    A2SideBandNum	= new TH1D(TString::Format("A2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A2SideBandNum->Sumw2();
-	    B1SideBandNum	= new TH1D(TString::Format("B1SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);B1SideBandNum->Sumw2();
-	    S2SideBandNum	= new TH1D(TString::Format("S2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);S2SideBandNum->Sumw2();
-	    B2SideBandNum	= new TH1D(TString::Format("B2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);B2SideBandNum->Sumw2();
 	    A1A2SideBandNum	= new TH1D(TString::Format("A1A2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1A2SideBandNum->Sumw2();
-	    B1B2SideBandNum	= new TH1D(TString::Format("B1B2SideBandNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);B1B2SideBandNum->Sumw2();
+	    SignalAndSideCFNum  = new TH1D(TString::Format("SignalAndSideCFNum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);SignalAndSideCFNum->Sumw2();
 
 	    A1SideBandDum	= new TH1D(TString::Format("A1SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1SideBandDum->Sumw2();
 	    S1SideBandDum	= new TH1D(TString::Format("S1SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);S1SideBandDum->Sumw2();
 	    A2SideBandDum	= new TH1D(TString::Format("A2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A2SideBandDum->Sumw2();
-	    B1SideBandDum	= new TH1D(TString::Format("B1SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);B1SideBandDum->Sumw2();
-	    S2SideBandDum	= new TH1D(TString::Format("S2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);S2SideBandDum->Sumw2();
-	    B2SideBandDum	= new TH1D(TString::Format("B2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);B2SideBandDum->Sumw2();
 	    A1A2SideBandDum	= new TH1D(TString::Format("A1A2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);A1A2SideBandDum->Sumw2();
-	    B1B2SideBandDum	= new TH1D(TString::Format("B1B2SideBandDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);B1B2SideBandDum->Sumw2();
+	    SignalAndSideCFDum  = new TH1D(TString::Format("SignalAndSideCFDum%s", fTitle.Data()), " ",fNbinsKStar,fKStarLow,fKStarHigh);SignalAndSideCFDum->Sumw2();
     }
 }
-void AliFemtoCorrFctnpdtHe3::SetTF1ParaUp3Sigma(float para0,float para1,float para2,float para3){
-    p2Up3Sigma->SetParameters(para0,para1,para2,para3);
+void AliFemtoCorrFctnpdtHe3::SetTF1ParaUp3Sigma(float *para){
+    p2Up3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
 }
-void AliFemtoCorrFctnpdtHe3::SetTF1ParaUp2Sigma(float para0,float para1,float para2,float para3){
-    p2Up2Sigma->SetParameters(para0,para1,para2,para3);
+void AliFemtoCorrFctnpdtHe3::SetTF1ParaLow3Sigma(float *para){
+    p2Low3Sigma->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
 }
-void AliFemtoCorrFctnpdtHe3::SetTF1ParaLow2Sigma(float para0,float para1,float para2,float para3){
-    p2Low2Sigma->SetParameters(para0,para1,para2,para3);
+void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandUp(float *para){
+    SideBandUp->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
 }
-void AliFemtoCorrFctnpdtHe3::SetTF1ParaLow3Sigma(float para0,float para1,float para2,float para3){
-    p2Low3Sigma->SetParameters(para0,para1,para2,para3);
-}
-void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandUp(float para0,float para1,float para2,float para3){
-    SideBandUp->SetParameters(para0,para1,para2,para3);
-}
-void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandLow(float para0,float para1,float para2,float para3){
-    SideBandLow->SetParameters(para0,para1,para2,para3);
+void AliFemtoCorrFctnpdtHe3::SetTF1PareSideBandLow(float *para){
+    SideBandLow->SetParameters(para[0],para[1],para[2],para[3],para[4],para[5],para[6],para[7]);
 }
 void AliFemtoCorrFctnpdtHe3::FillSideBandNum(AliFemtoPair* aPair){
 
@@ -621,14 +552,15 @@ void AliFemtoCorrFctnpdtHe3::FillSideBandNum(AliFemtoPair* aPair){
     // return if out of range
     if(massTOF > EvalMassSideBandUp) return;
     if(massTOF < EvalMassSideBandLow) return;
+   
+    
 
     float EvalMassp2Up3Sigma 	= p2Up3Sigma->Eval(tMom);
-    float EvalMassp2Up2Sigma 	= p2Up2Sigma->Eval(tMom);
-    float EvalMassp2Low2Sigma 	= p2Low2Sigma->Eval(tMom);
     float EvalMassp2Low3Sigma 	= p2Low3Sigma->Eval(tMom);
 
     float tKStar = fabs(aPair->KStar());
-
+    // total signal
+    SignalAndSideCFNum->Fill(tKStar);
 	//\ 3 sigma
     if(EvalMassp2Up3Sigma <= massTOF){ 
 	A1SideBandNum->Fill(tKStar);
@@ -640,16 +572,7 @@ void AliFemtoCorrFctnpdtHe3::FillSideBandNum(AliFemtoPair* aPair){
 	A1A2SideBandNum->Fill(tKStar);
     }
     
-	//\ 2 sigma
-    if(EvalMassp2Up2Sigma <= massTOF){
-	B1SideBandNum->Fill(tKStar);
-	B1B2SideBandNum->Fill(tKStar);
-    }
-    if(EvalMassp2Low2Sigma <= massTOF && massTOF < EvalMassp2Up2Sigma) S2SideBandNum->Fill(tKStar);
-    if(massTOF < EvalMassp2Low2Sigma){
-	B2SideBandNum->Fill(tKStar);
-	B1B2SideBandNum->Fill(tKStar);
-    }
+
 
 
 }
@@ -677,15 +600,12 @@ void AliFemtoCorrFctnpdtHe3::FillSideBandDum(AliFemtoPair* aPair){
     if(massTOF < EvalMassSideBandLow) return;
 
     float EvalMassp2Up3Sigma 	= p2Up3Sigma->Eval(tMom);
-    float EvalMassp2Up2Sigma 	= p2Up2Sigma->Eval(tMom);
-    float EvalMassp2Low2Sigma 	= p2Low2Sigma->Eval(tMom);
     float EvalMassp2Low3Sigma 	= p2Low3Sigma->Eval(tMom);
-
-
-
 	
     float tKStar = fabs(aPair->KStar());
-
+    // total signal
+    SignalAndSideCFDum->Fill(tKStar);
+    
     if(EvalMassp2Up3Sigma <= massTOF){
  	A1SideBandDum->Fill(tKStar);
 	A1A2SideBandDum->Fill(tKStar);
@@ -697,17 +617,32 @@ void AliFemtoCorrFctnpdtHe3::FillSideBandDum(AliFemtoPair* aPair){
     }
     
 
-    if(EvalMassp2Up2Sigma <= massTOF){
- 	B1SideBandDum->Fill(tKStar);
-	B1B2SideBandDum->Fill(tKStar);
-    }
-    if(EvalMassp2Low2Sigma <= massTOF && massTOF <EvalMassp2Up2Sigma) 	S2SideBandDum->Fill(tKStar);
-    if(massTOF < EvalMassp2Low2Sigma){
-	B2SideBandDum->Fill(tKStar);
-	B1B2SideBandDum->Fill(tKStar);
-    }
 
 }
 void AliFemtoCorrFctnpdtHe3::SetfUsePt(int aUsePt){
 	fUsePt = aUsePt;
 }
+Double_t MassBandFunc(Double_t *x, Double_t *par){
+    Float_t xx          = x[0];
+    float p0            = par[0];
+    float p1            = par[1];
+    float p2            = par[2];
+    float p3            = par[3];
+	
+    float p4            = par[4];
+    float p5            = par[5];
+    float p6            = par[6];
+    float constIn11     = par[7];
+    float Beforef       = par[8];
+
+    float mu = p0 + p1 * TMath::Power((1. - p2/xx),p3);
+
+    Double_t f   = 0.;
+    f = p4 * xx + p5 * TMath::Power(xx,2) + p6 * TMath::Power(xx,3);
+
+    Double_t re = 0.;
+    re = mu + constIn11 + Beforef * f;
+    return re;
+
+}
+
