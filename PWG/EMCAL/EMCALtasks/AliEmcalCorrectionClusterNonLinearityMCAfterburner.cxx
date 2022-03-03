@@ -220,6 +220,7 @@ TString AliEmcalCorrectionClusterNonLinearityMCAfterburner::SummarizeMCProductio
   else if ( namePeriod.CompareTo("kTestBeamFinalMCRun2LowB") == 0  )    return "kTestBeamFinalMCRun2LowB";
   else if ( namePeriod.CompareTo("kTestBeamFinalMCRun213TeV") == 0  )    return "kTestBeamFinalMCRun213TeV";
   else if ( namePeriod.CompareTo("kTestBeamFinalMCRun1") == 0  )    return "kTestBeamFinalMCRun1";
+  else if ( namePeriod.CompareTo("kTestBeamDefaultMCRun1") == 0  )    return "kTestBeamDefaultMCRun1";
   //...MC anchored to 2015 Data...
   // pp 13 TeV
   // - 2015 MB pass 2
@@ -457,6 +458,19 @@ void AliEmcalCorrectionClusterNonLinearityMCAfterburner::InitNonLinearityParam(T
         fNLAfterburnerPara[2] = -0.273207;
         //Iteration-2 parameters
         fNLAfterburnerPara[3] = 1.0125; // Run1 additional correction factor of 1.25%
+        fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
+        fNLAfterburnerPara[5] = 0;
+      }
+      // new default run1 FT (has to be used together with data: kTestBeamShaper (no scale on cell level), MC: kTestBeamFinalMC )
+      else if( !namePeriod.CompareTo("kTestBeamDefaultMCRun1")) {
+        fNonLinearityAfterburnerFunction = 4;
+        //There are no extracted parameters yet
+        //Iteration-1 paramters
+        fNLAfterburnerPara[0] = 1.00483;
+        fNLAfterburnerPara[1] = -3.88706;
+        fNLAfterburnerPara[2] = -0.141753;
+        //Iteration-2 parameters
+        fNLAfterburnerPara[3] = 1.;
         fNLAfterburnerPara[4] = 0.99; // factor to be applied on 1 cell clusters only
         fNLAfterburnerPara[5] = 0;
       }
