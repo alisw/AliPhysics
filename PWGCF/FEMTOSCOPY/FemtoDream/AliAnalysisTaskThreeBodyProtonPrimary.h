@@ -166,6 +166,12 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
     fDoKinematicsPlots = DoKinematicsPlots;
   }   
 
+  void SetPlotsMC(bool PlotsMC){
+    fPlotsMC = PlotsMC;
+  }   
+
+
+
 
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
  private:
@@ -182,7 +188,6 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts* fAntiProton;//
   TList* fAntiProtonList;//!
   TList* fAntiProtonMCList;//!
-  AliFemtoDreamTrack* fPrimaryTrack;//! 
   AliFemtoDreamTrackCuts* fPrimary;// 
   TList* fPrimaryList;//!
   TList* fPrimaryMCList;//!
@@ -252,6 +257,7 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fCleanWithLambdas; //if kTRUE: reject Proton + Pi- / Antiproton + Pi+ from Lambda/AntiLambda
   bool fDoOnlyThreeBody; //if kTRUE: 3 Body analysis, else 2 Body
   bool fStandardMixing;
+  bool fPlotsMC;
 
 
   TH1F **fSameEventTripletArray;
@@ -314,6 +320,16 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   // Inv Mass fits 
   TH2F **fInvMass;
 
+  TH2F *fpTvsEtaTrueKaons;
+  TH2F *fpTvsEtaTrueAntiKaons;
+  TH2F *fpTvsEtaTrueProtons;
+  TH2F *fpTvsEtaTrueAntiProtons;
+  TH2F *fpTvsEtaRecoKaons;
+  TH2F *fpTvsEtaRecoAntiKaons;
+  TH2F *fpTvsEtaRecoProtons;
+  TH2F *fpTvsEtaRecoAntiProtons;
+
+
   TH2F *fTripletInvMassDet;//!
   TH2F *fTripletInvMassPDG;//!
   TH2F *fTripletInvMassDetMixed;//!
@@ -323,6 +339,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TH2F *fTripletInvMassPDGAnti;//!
   TH2F *fTripletInvMassDetMixedAnti;//!
   TH2F *fTripletInvMassPDGMixedAnti;//!
+
+ 
 
   TList *fResultsQA;//!
   AliFemtoDreamControlSample *fSample;   //!

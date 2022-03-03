@@ -357,6 +357,7 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     taskNano->SetDeltaPhiMaxPAPrim(0.);
     taskNano->SetDeltaEtaMaxPAPrim(0.);
     taskNano->SetDoKinematicsPlots(true);
+    if (isMC) taskNano->SetPlotsMC(true);
 
     mgr->AddTask(taskNano);
 
