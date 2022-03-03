@@ -1663,7 +1663,6 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
         lXimomsum(999), lXieta(999), radiusV0(999), radiusXi(999);
     Double_t lPosXi[3], lPosV0[3], lMomXi[3], pos[3], cov[6], lPosRsnVtx[3], dztemp[2], covartemp[3], chi2perNDF, dispersion;
     Double_t cv[21], xdummy, ydummy, dca, radiusRsn;
-    ;
     Float_t b[2];     // Float due to the function input
     Float_t bCov[3];  // Float due to the function input
 
@@ -1982,7 +1981,17 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
                     tmp[28] = 2;  // MCflag -> not true
             } else
                 tmp[28] = 0;               // MCflag -> data
-            tmp[29] = (isXiAnti) ? 1 : 0;  // Antiflag
+            // Charge
+            auto chargeFlag = 0;
+            if (isXiAnti)
+                chargeFlag++;
+            if(track1->Charge() < 0)
+                chargeFlag = chargeFlag + 2;
+            tmp[29] = chargeFlag;  // Antiflag -> Charge flag
+                                   // 0: Xi- + pi+
+                                   // 1: Xi+ + pi+ // LS
+                                   // 2: Xi- + pi- // LS
+                                   // 3: Xi+ + pi-
             fNtupleXi1530->Fill(tmp);
         }  // pion loop
     }
