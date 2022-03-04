@@ -2468,7 +2468,61 @@ void AddTask_GammaConvV1_pp(
 
 
 
-    
+  } else if (trainConfig == 2810) { // Multiplicity selection, ITS + TRD photons
+    cuts.AddCutPCM("00015113", "0dm00009f9730000dge0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2811) { // Multiplicity selection, ITS + TRD photons  cosPointing angle
+    cuts.AddCutPCM("00015113", "0dm00009f9730000dge0674000", "0152103500000000"); // 0-100% 
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000dge0674000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dge0674000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2812) { // Multiplicity selection, ITS + TRD photons  cosPointing angle
+    cuts.AddCutPCM("00015113", "0dm00009f9730000dge0374000", "0152103500000000"); // 0-100% 
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000dge0374000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dge0374000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2813) { // Multiplicity selection, ITS + TRD photons nsig electron -2.5,4
+    cuts.AddCutPCM("00015113", "0dm0000969730000dge0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm0000969730000dge0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm0000969730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2814) { // Multiplicity selection, ITS + TRD photons nsig electron -2.5,4
+    cuts.AddCutPCM("00015113", "0dm0000939730000dge0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm0000939730000dge0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm0000939730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2815) { // Multiplicity selection, ITS + TRD photons nsig pion 2,-10
+    cuts.AddCutPCM("00015113", "0dm00009f5730000dge0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f5730000dge0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f5730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2816) { // Multiplicity selection, ITS + TRD photons // nsig pion 0,-10
+    cuts.AddCutPCM("00015113", "0dm00009f1730000dge0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f1730000dge0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f1730000dge0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2817) { // Multiplicity selection, ITS + TRD photons // qT
+    cuts.AddCutPCM("00015113", "0dm00009f9730000age0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000age0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000age0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2818) { // Multiplicity selection, ITS + TRD photons // qT
+    cuts.AddCutPCM("00015113", "0dm00009f9730000ege0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000ege0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000ege0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2819) { // Multiplicity selection, ITS + TRD photons // psipair-chi2
+    cuts.AddCutPCM("00015113", "0dm00009f9730000dfe0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000dfe0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dfe0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
+  } else if (trainConfig == 2820) { // Multiplicity selection, ITS + TRD photons // psipair-chi2
+    cuts.AddCutPCM("00015113", "0dm00009f9730000dgg0474000", "0152103500000000"); // 0-100%select photons with ITS, TRD
+    cuts.AddCutPCM("n5a15113", "0dm00009f9730000dgg0474000", "0152103500000000"); // INEL>0, 50 - 100% (V0M est.)
+    cuts.AddCutPCM("m0115113", "0dm00009f9730000dgg0474000", "0152103500000000"); // INEL>0, 0 - 1% (V0M est.)
+
     
     // ------------ Mult selection using SPD estimator --------
   } else if (trainConfig == 2770) { // Multiplicity selection, ITS + TRD photons
