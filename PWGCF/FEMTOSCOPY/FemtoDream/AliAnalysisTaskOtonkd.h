@@ -187,6 +187,7 @@ class AliAnalysisTaskOtonkd : public AliAnalysisTaskSE {
   Float_t fTDeuteronPx[10];
   Float_t fTDeuteronPy[10];
   Float_t fTDeuteronPz[10];
+  Float_t fTDeuteronPTPC[10];
   Float_t fTDeuteronVPx[10];
   Float_t fTDeuteronVPy[10];
   Float_t fTDeuteronVPz[10];
