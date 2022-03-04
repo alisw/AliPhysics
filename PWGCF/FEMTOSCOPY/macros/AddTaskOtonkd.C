@@ -73,11 +73,10 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    //TrackCutsKaon->SetDCAVtxZ(0.1);
   }else if(KaonCut==2){ // Open cuts for syst by Oton
    //open cuts for syst:
-   TrackCutsKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   TrackCutsKaon->SetPIDkd(true,false,3.5,3.5);
    TrackCutsKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsKaon->SetNClsTPC(70);
-   TrackCutsKaon->SetDCAVtxZ(0.25);
-   //TrackCutsKaon->SetDCAVtxXY(2.2);//This cut only for DCA fits/templates
+   TrackCutsKaon->SetDCAVtxZ(0.24);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
@@ -92,54 +91,67 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    //TrackCutsAntiKaon->SetDCAVtxZ(0.1);
   }else if(KaonCut==2){ // Open cuts for syst by Oton
    // Oton open cuts for syst:
-   TrackCutsAntiKaon->SetPIDkd(true,false,4.5,3.5,2.5);
+   TrackCutsAntiKaon->SetPIDkd(true,false,3.5,3.5);
    TrackCutsAntiKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiKaon->SetNClsTPC(70);
-   TrackCutsAntiKaon->SetDCAVtxZ(0.25);
-   //TrackCutsAntiKaon->SetDCAVtxXY(2.2);//This cut only for DCA fits/templates
+   TrackCutsAntiKaon->SetDCAVtxZ(0.24);
   }
 
   //deuterons
   AliFemtoDreamTrackCuts *TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsDeuteron->SetCutCharge(1);
+  TrackCutsDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
    TrackCutsDeuteron->SetPIDkd(false);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
   }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
-   //open cuts for syst:
    TrackCutsDeuteron->SetPtRange(0.4,1.5);
    TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsDeuteron->SetNClsTPC(70);
    TrackCutsDeuteron->SetDCAVtxZ(0.25);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
-  }else if(DeuteronCut==3){ // Deuterons by Oton with VERY OPEN pid cuts
-   TrackCutsDeuteron->SetPIDkd(false,false,4,8);
+  }else if(DeuteronCut==3){ // Deuterons by Oton with open cuts for PID/DCA fits
+   TrackCutsDeuteron->SetPIDkd(false,false,3,5);
+   TrackCutsDeuteron->SetDCAVtxZ(0.5);
   }else if(DeuteronCut==4){ // cuts by FemtoDream with tight PID req
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 1.4);//1.4 sigmas as well!
+  }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
+   TrackCutsDeuteron->SetNClsTPC(70);
+   TrackCutsDeuteron->SetDCAVtxZ(0.24);
   }
+
+
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsAntiDeuteron->SetCutCharge(-1);
+  TrackCutsAntiDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
    TrackCutsAntiDeuteron->SetPIDkd(false);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
   }else if(DeuteronCut==2){ // Open cuts for syst by FemtoDream
-   //open cuts for syst:
    TrackCutsAntiDeuteron->SetPtRange(0.4,1.5);
    TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiDeuteron->SetNClsTPC(70);
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.25);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
-  }else if(DeuteronCut==3){ // Deuterons by Oton with VERY OPEN pid cuts
-   TrackCutsAntiDeuteron->SetPIDkd(false,false,4,8);
+  }else if(DeuteronCut==3){ // Deuterons by Oton with open cuts for PID/DCA fits
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,5);
+   TrackCutsAntiDeuteron->SetDCAVtxZ(0.5);
   }else if(DeuteronCut==4){ // cuts by FemtoDream with tight PID req
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4,1.4);//1.4 sigmas as well!
+  }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
+   TrackCutsAntiDeuteron->SetNClsTPC(70);
+   TrackCutsAntiDeuteron->SetDCAVtxZ(0.24);
   }
 
   //protons

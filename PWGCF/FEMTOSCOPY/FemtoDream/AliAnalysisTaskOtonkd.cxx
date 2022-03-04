@@ -295,7 +295,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   if(!fIsMCtruth)fTree->Branch("KaonCharge",&fTKaonCharge,"fTKaonCharge[fTnKaon]/S");
 //  fTree->Branch("KaonITSsigma_e",&fTKaonITSsigma_e,"fTKaonITSsigma_e[fTnKaon]/F");
   if(!fIsMCtruth)fTree->Branch("KaonTPCsigma_e",&fTKaonTPCsigma_e,"fTKaonTPCsigma_e[fTnKaon]/F");
-//  fTree->Branch("KaonTOFsigma_e",&fTKaonTOFsigma_e,"fTKaonTOFsigma_e[fTnKaon]/F");
+  fTree->Branch("KaonTOFsigma_e",&fTKaonTOFsigma_e,"fTKaonTOFsigma_e[fTnKaon]/F");
 //  fTree->Branch("KaonITSsigma_pi",&fTKaonITSsigma_pi,"fTKaonITSsigma_pi[fTnKaon]/F");
   if(!fIsMCtruth)fTree->Branch("KaonTPCsigma_pi",&fTKaonTPCsigma_pi,"fTKaonTPCsigma_pi[fTnKaon]/F");
   if(!fIsMCtruth)fTree->Branch("KaonTOFsigma_pi",&fTKaonTOFsigma_pi,"fTKaonTOFsigma_pi[fTnKaon]/F");
@@ -318,7 +318,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/S");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
   if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
   if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
 
@@ -327,21 +327,22 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   fTree->Branch("DeuteronPx",&fTDeuteronPx,"fTDeuteronPx[fTnDeuteron]/F");
   fTree->Branch("DeuteronPy",&fTDeuteronPy,"fTDeuteronPy[fTnDeuteron]/F");
   fTree->Branch("DeuteronPz",&fTDeuteronPz,"fTDeuteronPz[fTnDeuteron]/F");
+  if(!fIsMCtruth)fTree->Branch("DeuteronPTPC",&fTDeuteronPTPC,"fTDeuteronPTPC[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronEta",&fTDeuteronEta,"fTDeuteronEta[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronCharge",&fTDeuteronCharge,"fTDeuteronCharge[fTnDeuteron]/S");
-  if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_e",&fTDeuteronITSsigma_e,"fTDeuteronITSsigma_e[fTnDeuteron]/F");
+  //if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_e",&fTDeuteronITSsigma_e,"fTDeuteronITSsigma_e[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTPCsigma_e",&fTDeuteronTPCsigma_e,"fTDeuteronTPCsigma_e[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFsigma_e",&fTDeuteronTOFsigma_e,"fTDeuteronTOFsigma_e[fTnDeuteron]/F");
-  if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_pi",&fTDeuteronITSsigma_pi,"fTDeuteronITSsigma_pi[fTnDeuteron]/F");
+  //if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_pi",&fTDeuteronITSsigma_pi,"fTDeuteronITSsigma_pi[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTPCsigma_pi",&fTDeuteronTPCsigma_pi,"fTDeuteronTPCsigma_pi[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFsigma_pi",&fTDeuteronTOFsigma_pi,"fTDeuteronTOFsigma_pi[fTnDeuteron]/F");
-  if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_k",&fTDeuteronITSsigma_k,"fTDeuteronITSsigma_k[fTnDeuteron]/F");
+  //if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_k",&fTDeuteronITSsigma_k,"fTDeuteronITSsigma_k[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTPCsigma_k",&fTDeuteronTPCsigma_k,"fTDeuteronTPCsigma_k[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFsigma_k",&fTDeuteronTOFsigma_k,"fTDeuteronTOFsigma_k[fTnDeuteron]/F");
-  if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_p",&fTDeuteronITSsigma_p,"fTDeuteronITSsigma_p[fTnDeuteron]/F");
+  //if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_p",&fTDeuteronITSsigma_p,"fTDeuteronITSsigma_p[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTPCsigma_p",&fTDeuteronTPCsigma_p,"fTDeuteronTPCsigma_p[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFsigma_p",&fTDeuteronTOFsigma_p,"fTDeuteronTOFsigma_p[fTnDeuteron]/F");
-  if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_d",&fTDeuteronITSsigma_d,"fTDeuteronITSsigma_d[fTnDeuteron]/F");
+  //if(!fIsMCtruth)fTree->Branch("DeuteronITSsigma_d",&fTDeuteronITSsigma_d,"fTDeuteronITSsigma_d[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTPCsigma_d",&fTDeuteronTPCsigma_d,"fTDeuteronTPCsigma_d[fTnDeuteron]/F");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFsigma_d",&fTDeuteronTOFsigma_d,"fTDeuteronTOFsigma_d[fTnDeuteron]/F");
   fTree->Branch("DeuteronNcl",&fTDeuteronNcl,"fTDeuteronNcl[fTnDeuteron]/I");//used also in MCtruth
@@ -353,7 +354,7 @@ void AliAnalysisTaskOtonkd::UserCreateOutputObjects() {
   if(!fIsMCtruth)fTree->Branch("DeuteronITStime",&fTDeuteronITStime,"fTDeuteronITStime[fTnDeuteron]/O");
   if(!fIsMCtruth)fTree->Branch("DeuteronTOFtime",&fTDeuteronTOFtime,"fTDeuteronTOFtime[fTnDeuteron]/O");
   if(fIsMC||fIsMCtruth)fTree->Branch("DeuteronPDG",&fTDeuteronPDG,"fTDeuteronPDG[fTnDeuteron]/I");
-  if(fIsMC||fIsMCtruth)fTree->Branch("DeuteronOrigin",&fTDeuteronOrigin,"fTDeuteronOrigin[fTnDeuteron]/S");
+  if(fIsMC||fIsMCtruth)fTree->Branch("DeuteronOrigin",&fTDeuteronOrigin,"fTDeuteronOrigin[fTnDeuteron]/I");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -442,6 +443,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
    fTDeuteronPx[ii]=-100000.;
    fTDeuteronPy[ii]=-100000.;
    fTDeuteronPz[ii]=-100000.;
+   fTDeuteronPTPC[ii]=-100000.;
    fTDeuteronCharge[ii]=-10;
    fTDeuteronDCA[ii]=-100000.;
    fTDeuteronDCAz[ii]=-100000.;
@@ -596,8 +598,7 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
         if(!fIsMCtruth){
          if(IsKaon) FillKaon(fTrack);
          if(IsDeuteron) FillDeuteron(fTrack);
-         //if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.001) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
-         if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.01) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
+         if(fisIncludeSomeProtons && IsProton && r3.Rndm()<.03) FillDeuteron(fTrack, 1); //the "1" to tag Bkg protons
         }
       }//end of track loop
 
@@ -755,14 +756,9 @@ void AliAnalysisTaskOtonkd::UserExec(Option_t*) {
 //---coalesence cheap toy model end --- //
 
 
-
       //fill tree:
       //----------
-      //if(!fIsMC&&!fIsMCtruth) {
-       if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); // std kd 
-      //}else{
-      // if( (fTnKaon>0&&fTnDeuteron>0)||IsKaonWeak ) fTree->Fill(); // For DCA mc templates
-      //}
+      if(fTnKaon>0&&fTnDeuteron>0) fTree->Fill(); // std kd 
 
 
      bool FemtoDreamPairing = false; // Skip FD pairing/mixing for now (to save computing time)
@@ -914,6 +910,9 @@ Bool_t AliAnalysisTaskOtonkd::FillKaon(AliFemtoDreamTrack *TheTrack) {
  fTKaonPDG[fTnKaon] = TheTrack->GetMCPDGCode();
  fTKaonMotherWeak[fTnKaon] = TheTrack->GetMotherWeak();
 
+
+
+
  AliFemtoDreamBasePart::PartOrigin org = TheTrack->GetParticleOrigin();
     fTKaonOrigin[fTnKaon] = -1;
     switch (org) {
@@ -947,6 +946,7 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack, int IsB
  fTDeuteronPx[fTnDeuteron] = mom.X();
  fTDeuteronPy[fTnDeuteron] = mom.Y();
  fTDeuteronPz[fTnDeuteron] = mom.Z();
+ fTDeuteronPTPC[fTnDeuteron] = TheTrack->GetMomTPC();
  fTDeuteronEta[fTnDeuteron] = TheTrack->GetEta().at(0);
  fTDeuteronCharge[fTnDeuteron] = TheTrack->GetCharge().at(0);
  fTDeuteronNcl[fTnDeuteron] = TheTrack->GetNClsTPC();
@@ -991,8 +991,6 @@ Bool_t AliAnalysisTaskOtonkd::FillDeuteron(AliFemtoDreamTrack *TheTrack, int IsB
         fTDeuteronOrigin[fTnDeuteron] = 3;
         break;
      }
-
-
 
  fTnDeuteron++;
  Filled = kTRUE;

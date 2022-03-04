@@ -217,13 +217,13 @@ class AliFemtoDreamTrackCuts {
   ;
 
   void SetPIDkd(bool iskaon = true, bool isramona = false,
-                float COMBcut = 4., float TPCcut = 3., float EXCLUSIONcut = 3.) {
+                float COMBcut = 3., float TPCcut = 3., float EXCLUSIONcut = 3.) {
     fPIDkd = true;//THIS WILL BE ALWAYS TRUE IF SETPIDKD IS CALLED FROM ADDTASK
     fIsKaon = iskaon;
     fIsRamona = isramona;
-    fcutCOMBkd = COMBcut;
+    fcutCOMBkd = COMBcut; 
     fcutTPCkd = TPCcut;
-    fcutEXCLUSIONkd= EXCLUSIONcut;
+    fcutEXCLUSIONkd= EXCLUSIONcut; // this is dummy now
   }
   ;
 
