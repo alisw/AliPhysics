@@ -27,6 +27,7 @@
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisHelperJetTasks.h"
+#include "AliEventCuts.h"
 
 
 
@@ -82,12 +83,16 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         enum{
             DIJET_VERTEX13PA      = 0x1,
             DIJET_PILEUPSPD       = 0x2,
-            DIJET_UTILSPILEUPSPD  = 0x4
+            DIJET_UTILSPILEUPSPD  = 0x4,
+            DIJET_ALIEVENTCUT     = 0x8,
+            DIJET_CATALYST        = 0x100
         };
 
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
         void SetJCatalystTaskNameDetMC(TString name){ fJCatalystDetMCTaskName=name; } // Setter for filter task name
+
+        AliEventCuts fEventCuts; // Event cut object
 
     private:
 
