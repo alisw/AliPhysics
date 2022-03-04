@@ -234,9 +234,20 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
 
         Double_t trackPt = track->Pt();
         if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
-          fTracksAss->Add((AliAODTrack*)track);
-          fNofTracks++;
+             if(fEtaPolarity == 0){
+             fTracksAss->Add((AliAODTrack*)track);
+             fNofTracks++;
+             }
+             else if(fEtaPolarity == -1 && track->Eta() > 0){
+             fTracksAss->Add((AliAODTrack*)track);
+             fNofTracks++; 
+             }
+             else if(fEtaPolarity == 1 && track->Eta() < 0){
+             fTracksAss->Add((AliAODTrack*)track);
+             fNofTracks++; 
+             }          
      }
+     
         if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
           if(fEtaPolarity == 0){
                fTracksTrigCharged->Add((AliAODTrack*)track);
