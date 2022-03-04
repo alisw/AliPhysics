@@ -1721,12 +1721,12 @@ void AliRDHFCutsXictopKpi::IsSelectedCombinedPID_testTOFmatching_MCsignal(AliAOD
     fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
     if( !(obj->Pt()<3. && track0->P()<1.) ) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
     /// Daughter 1
-    if( !(obj->Pt()<3. && track0->P()<0.55) ) {
+    if( !(obj->Pt()<3. && track1->P()<0.55) ) {
       fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
       arr_isTOFok[1] = 1;
     }
-    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
-    if( !(obj->Pt()<3. && track0->P()<0.55) ) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+    if( !(obj->Pt()<3. && track1->P()<0.55) ) fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC);
     /// Daughter 2
     if( !(obj->Pt()<3. && track2->P()<1.) ) {
       fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
