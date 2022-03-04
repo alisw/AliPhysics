@@ -467,7 +467,6 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
     fTree = new TTree("Xi1530Tree", "Xi1530Tree");
     if (fIsMC) {
         fTree->Branch("Xi1530TreeMC", &fTreeXi1530Gen);
-        fMCEvent = MCEvent();
     } else {
         fTree->Branch("StructXi1530PbPb", fTreeXi1530Rec);
     }
