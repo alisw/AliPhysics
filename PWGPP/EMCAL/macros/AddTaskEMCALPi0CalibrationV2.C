@@ -29,7 +29,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// The parameters for the analysis are:
 /// \param calibPath : TString with full path and name of file with calibration factors from previous iteration.
 /// \param trigger   : TString, event that triggered must contain this string. Leave for backward compatibility with old wagons
-/// \param recalE    : Bool, recalibrate EMCal energy all other settings for clusterization & EMCal calibration are handled by correction frame work and correspodning yaml file
 /// \param simu      : Int, 0: data, 1: MC, 2: JJ MC
 /// \param fSaveCells: Bool, save the tree output for cells
 /// \param fSaveClusters : Bool, save the tree output for clusters
@@ -47,7 +46,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   TString calibPath              = "", // "alienpath/RecalibrationFactors.root"
   TString trigger                = "",
-  Bool_t  recalE                 = kFALSE, 
   Int_t  simu                    = 0,
   Bool_t  fSaveHistos            = kTRUE,
   Bool_t  fSaveCells             = kFALSE,
@@ -116,7 +114,7 @@ AliAnalysisTaskEMCALPi0CalibSelectionV2 * AddTaskEMCALPi0CalibrationV2(
   
   pi0calib->SetGeometryName("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   pi0calib->SwitchOnLoadOwnGeometryMatrices();
-//   pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
+  // pi0calib->SetOADBFilePath("/home/ewa/alice/AliPhysics/OADB/OADB/EMCAL");
   pi0calib->SetCorrectionTaskSetting(corrTaskSetting);
 
   if( simu == 1 ) {
