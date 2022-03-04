@@ -317,16 +317,23 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
   //pair histograms
   fOutputContainer->Add(new TH2F("hPairMvsPhiV","m_{ee} vs.#varphi_{V};#varphi_{V} (rad.);m_{ee} (GeV/c^{2})",100,0,TMath::Pi(),100,0,0.1));
 
-  const Int_t Nmee = 167;
-  Double_t mee[Nmee] = {};
-  for(Int_t i=0  ;i<110; i++) mee[i] = 0.01 * (i-  0) + 0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
-  for(Int_t i=110;i<128; i++) mee[i] = 0.1  * (i-110) + 1.1;//from 1.1 to 2.9 GeV/c2, every 0.1 GeV/c2
-  for(Int_t i=128;i<158; i++) mee[i] = 0.01 * (i-128) + 2.9;//from 2.9 to 3.2 GeV/c2, every 0.01 GeV/c2 for J/psi
-  for(Int_t i=158;i<Nmee;i++) mee[i] = 0.1  * (i-158) + 3.2;//from 3.2 to 4 GeV/c2, every 0.1 GeV/c2
+  //const Int_t Nmee = 167;
+  //Double_t mee[Nmee] = {};
+  //for(Int_t i=0  ;i<110; i++) mee[i] = 0.01 * (i-  0) + 0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
+  //for(Int_t i=110;i<128; i++) mee[i] = 0.1  * (i-110) + 1.1;//from 1.1 to 2.9 GeV/c2, every 0.1 GeV/c2
+  //for(Int_t i=128;i<158; i++) mee[i] = 0.01 * (i-128) + 2.9;//from 2.9 to 3.2 GeV/c2, every 0.01 GeV/c2 for J/psi
+  //for(Int_t i=158;i<Nmee;i++) mee[i] = 0.1  * (i-158) + 3.2;//from 3.2 to 4 GeV/c2, every 0.1 GeV/c2
+  
+  Double_t mee[] = {0,0.02,0.04,0.06,0.08,0.1,0.14,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.4,1.7,2.0,2.4,2.7,2.8,2.9,3.0,3.1,3.2,3.3,3.4,3.5,4.,5};
+  const Int_t Nmee = sizeof(mee)/sizeof(mee[0]);
+
+  Double_t pTee[] = {0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.5,3.0,3.5,4.,4.5,5,6,7,8,9,10};
+  const Int_t NpTee = sizeof(pTee)/sizeof(pTee[0]);
+
   const Int_t Ndim_TAP = 4;//mee, pT, eta, phi
-  Int_t Nbin_TAP[Ndim_TAP]    = {Nmee-1, 100, 20,             18};
-  Double_t xmin_TAP[Ndim_TAP] = {     0,   0, -1,              0};
-  Double_t xmax_TAP[Ndim_TAP] = {     4,  10, +1, TMath::TwoPi()};
+  Int_t Nbin_TAP[Ndim_TAP]    = {Nmee-1, NpTee-1, 20,             18};
+  Double_t xmin_TAP[Ndim_TAP] = {     0,       0, -1,              0};
+  Double_t xmax_TAP[Ndim_TAP] = {     5,      10, +1, TMath::TwoPi()};
   const TString probetype[2]  = {"Probe","PassingProbe"};
   const TString chargetype[3]  = {"ULS","LSpp","LSnn"};
   const TString eventtype[2] = {"same","mix"};
@@ -337,6 +344,7 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
           THnSparseF *hsTAP_p = new THnSparseF(Form("hs%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),
                                                Form("hs%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data()),Ndim_TAP,Nbin_TAP,xmin_TAP,xmax_TAP);
           hsTAP_p->SetBinEdges(0,mee);
+          hsTAP_p->SetBinEdges(0,pTee);
           hsTAP_p->GetAxis(0)->SetTitle("m_{ee} (GeV/c^{2})");
           hsTAP_p->GetAxis(1)->SetTitle("p_{T,e} (GeV/c)");
           hsTAP_p->GetAxis(2)->SetTitle("#eta_{e}");
@@ -354,6 +362,7 @@ void AliAnalysisTaskTagAndProbe::UserCreateOutputObjects()
           THnSparseF *hsTAP_pp = new THnSparseF(Form("hs%s_%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data(),fListPassingProbeFilters->At(i)->GetName()),
                                                 Form("hs%s_%s_%s_%s",probetype[ip].Data(),chargetype[ic].Data(),eventtype[ie].Data(),fListPassingProbeFilters->At(i)->GetName()),Ndim_TAP,Nbin_TAP,xmin_TAP,xmax_TAP);
           hsTAP_pp->SetBinEdges(0,mee);
+          hsTAP_pp->SetBinEdges(0,pTee);
           hsTAP_pp->GetAxis(0)->SetTitle("m_{ee} (GeV/c^{2})");
           hsTAP_pp->GetAxis(1)->SetTitle("p_{T,e} (GeV/c)");
           hsTAP_pp->GetAxis(2)->SetTitle("#eta_{e}");
