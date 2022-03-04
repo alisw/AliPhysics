@@ -258,6 +258,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Tracking ineff for DetMC:   " << ftrackingIneff << endl;
     cout << "Unfolding with true MC set: " << iUnfJetClassTrue << endl;
     cout << "Unfolding with det  MC set: " << iUnfJetClassDet << endl;
+    cout << "Event selection flag:       " << flags << endl;
     cout << endl;
 
     if(fusePionMass && (fktScheme!=0 || fantiktScheme!=0)) {
@@ -334,8 +335,15 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         fhistosDetMC->fh_eventSel->Fill("events wo/ cuts",1.0);
         if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
         fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
-        if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
-        fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+        if(flags & DIJET_CATALYST) {
+            if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
+            fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+        }
+
+        if(flags & DIJET_ALIEVENTCUT) {
+            if( !fEventCuts.AcceptEvent(InputEvent()) ) return;
+            fhistosDetMC->fh_eventSel->Fill("alieventcut ok",1.0);
+        }
 
         if(flags & DIJET_VERTEX13PA) {
             if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
@@ -389,8 +397,15 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
     }
 
     fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
-    if( !fJCatalystTask->GetIsGoodEvent() ) return;
-    fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+    if(flags & DIJET_CATALYST) {
+        if( !fJCatalystTask->GetIsGoodEvent() ) return;
+        fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+    }
+
+    if(flags & DIJET_ALIEVENTCUT) {
+        if( !fEventCuts.AcceptEvent(InputEvent()) ) return;
+        fhistos->fh_eventSel->Fill("alieventcut ok",1.0);
+    }
 
     if(flags & DIJET_VERTEX13PA) {
         if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
