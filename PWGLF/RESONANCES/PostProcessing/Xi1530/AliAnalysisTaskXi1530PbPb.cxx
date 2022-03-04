@@ -2045,6 +2045,7 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                 fTreeXi1530Gen.MCflag = 1;
                 fTreeXi1530Gen.ptMC = mcInputTrack->Pt();
                 fTreeXi1530Gen.Antiflag = (mcInputTrack->GetPdgCode() > 0) ? 0 : 3;
+                fTree->Fill();
             }
         }
     } else {
@@ -2084,6 +2085,7 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                 fTreeXi1530Gen.MCflag = 1;
                 fTreeXi1530Gen.ptMC = mcInputTrack->Pt();
                 fTreeXi1530Gen.Antiflag = (mcInputTrack->GetPdgCode() > 0) ? 0 : 3;
+                fTree->Fill();
             }
         }
     }
