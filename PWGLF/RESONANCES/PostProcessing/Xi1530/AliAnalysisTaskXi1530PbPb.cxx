@@ -127,7 +127,6 @@ ClassImp(AliAnalysisTaskXi1530PbPb)
                                                              fMCEvent(nullptr),
                                                              fHistos(nullptr),
                                                              fVertex(nullptr),
-                                                             fNtupleXi1530(nullptr),
                                                              fMCArray(nullptr),
                                                              fIsAOD(kFALSE),
                                                              fIsNano(kFALSE),
@@ -136,7 +135,7 @@ ClassImp(AliAnalysisTaskXi1530PbPb)
                                                              fFillQAPlot(kTRUE),
                                                              fIsMC(kFALSE),
                                                              fIsPrimaryMC(kFALSE),
-                                                             fFillnTuple(kFALSE),
+                                                             fFillTree(kFALSE),
                                                              fIsINEL(kFALSE),
                                                              fIsHM(kFALSE),
                                                              fLambdaCPAtoXi(kFALSE),
@@ -203,7 +202,6 @@ AliAnalysisTaskXi1530PbPb::AliAnalysisTaskXi1530PbPb(const char *name,
                                                                       fMCEvent(nullptr),
                                                                       fHistos(nullptr),
                                                                       fVertex(nullptr),
-                                                                      fNtupleXi1530(nullptr),
                                                                       fMCArray(nullptr),
                                                                       fIsAOD(kFALSE),
                                                                       fIsNano(kFALSE),
@@ -212,7 +210,7 @@ AliAnalysisTaskXi1530PbPb::AliAnalysisTaskXi1530PbPb(const char *name,
                                                                       fFillQAPlot(kTRUE),
                                                                       fIsMC(MCcase),
                                                                       fIsPrimaryMC(kFALSE),
-                                                                      fFillnTuple(kFALSE),
+                                                                      fFillTree(kFALSE),
                                                                       fIsINEL(kFALSE),
                                                                       fIsHM(kFALSE),
                                                                       fLambdaCPAtoXi(kFALSE),
@@ -264,7 +262,17 @@ AliAnalysisTaskXi1530PbPb::AliAnalysisTaskXi1530PbPb(const char *name,
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskXi1530PbPb::~AliAnalysisTaskXi1530PbPb() {}
+AliAnalysisTaskXi1530PbPb::~AliAnalysisTaskXi1530PbPb() {
+    if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
+        return;
+    if (fHistos)
+        delete fHistos;
+    if (fTree)
+        delete fTree;
+    if (!fIsMC) {
+        delete fTreeXi1530Rec;
+    }
+}
 
 //___________________________________________________________________
 void AliAnalysisTaskXi1530PbPb::SetCutOpen() {
@@ -453,17 +461,19 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
     if (fUseBuiltinMixer)
         fEMpool.resize(fBinCent.GetNbins() + 1,
                        std::vector<eventpool>(fBinZ.GetNbins() + 1));
-
-    fNtupleXi1530 = new TNtupleD(
-        "fNtupleXi1530", "Xi1530",
-        "TPCNsigXi1530Pion:Xi1530PionEta:Xi1530PionPVz:Xi1530PionXYVertexSigma:"
-        "TPCNsigLambdaProton:TPCNsigLambdaPion:TPCNsigBachelorPion:DCALambdaDaughters:"
-        "DCAXiDaughters:DCALambdaPV:DCALambdaProtonPV:DCALambdaPionPV:DCABachelorPionPV:"
-        "DCAXiPV:V0CPA:XiCPA:XiEta:LambdaRadius:XiRadius:V0Mass:XiMass:Xi1530Pt:"
-        "Xi1530Mass:Xi1530Radius:Xi1530DCA:Xi1530CPA:Centrality:zVertex:MCflag:Antiflag");
+    
+    fTreeXi1530Rec = fIsMC ? &fTreeXi1530Gen : new StructXi1530PbPb;
+    OpenFile(2);
+    fTree = new TTree("Xi1530Tree", "Xi1530Tree");
+    if (fIsMC) {
+        fTree->Branch("Xi1530TreeMC", &fTreeXi1530Gen);
+        fMCEvent = MCEvent();
+    } else {
+        fTree->Branch("StructXi1530PbPb", fTreeXi1530Rec);
+    }
 
     PostData(1, fHistos->GetListOfHistograms());
-    PostData(2, fNtupleXi1530);
+    PostData(2, fTree);
 }
 
 //_____________________________________________________________________________
@@ -471,7 +481,7 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
     AliVEvent *event = InputEvent();
     if (!event) {
         PostData(1, fHistos->GetListOfHistograms());
-        PostData(2, fNtupleXi1530);
+        PostData(2, fTree);
         AliInfo("Could not retrieve event");
         return;
     }
@@ -486,7 +496,7 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
         fIsAOD = true;
     if (!fEvt) {
         PostData(1, fHistos->GetListOfHistograms());
-        PostData(2, fNtupleXi1530);
+        PostData(2, fTree);
         return;
     }
 
@@ -581,7 +591,7 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
 
     if (!IsEvtSelected) {
         PostData(1, fHistos->GetListOfHistograms());
-        PostData(2, fNtupleXi1530);
+        PostData(2, fTree);
         return;  // event cut
     }
 
@@ -612,8 +622,8 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
     if (checkPion && checkCascade) {
         if (!fSkipFillingHisto)
             FillTracks();  // Fill the histogram
-        if (fFillnTuple)
-            FillNtuples();
+        if (fFillTree)
+            FillTree();
     }
 
     if (fUseBuiltinMixer && fSetMixing && fGoodTrackArray.size()) {
@@ -621,7 +631,7 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
     }
 
     PostData(1, fHistos->GetListOfHistograms());
-    PostData(2, fNtupleXi1530);
+    PostData(2, fTree);
 }
 
 //_____________________________________________________________________________
@@ -1649,8 +1659,8 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
     }
 }
 
-void AliAnalysisTaskXi1530PbPb::FillNtuples() {
-    // FillNtuples will fill the ntuples for Tree Analysis
+void AliAnalysisTaskXi1530PbPb::FillTree() {
+    // FillTree will fill the ntuples for Tree Analysis
     // It can be turned on by using SetFillnTuple() Default: Off
 
     AliVTrack *track1 = nullptr;
@@ -1668,11 +1678,7 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
 
     Int_t pID, nID, bID;
     Bool_t isXiAnti = kFALSE;
-    Double_t tmp[30];
-
-    for (UInt_t i = 0; i < 30; i++)
-        tmp[i] = -999;  // initial value
-
+    
     TLorentzVector vecXi, vecPion;
     TLorentzVector vecXi1530;
     const UInt_t nXi = fGoodXiArray.size();
@@ -1750,24 +1756,24 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
             lMassXi = xiESD->GetEffMassXi();
             lMassV0 = xiESD->GetEffMass();
 
-            // nTuple
-            tmp[4] = lTPCNSigProton;        // TPCNsigLambdaProton
-            tmp[5] = lTPCNSigLambdaPion;    // TPCNsigLambdaPion
-            tmp[6] = lTPCNSigBachelorPion;  // TPCNsigBachelorPion
-            tmp[7] = lDCALambdaDaughters;   // DCALambdaDaughters
-            tmp[8] = lDCAXiDaughters;       // DCAXiDaughters
-            tmp[9] = lDCALambdaPV;          // DCALambdaPV
-            tmp[10] = lDCALambdaProtonPV;   // DCALambdaProtonPV
-            tmp[11] = lDCALambdaPionPV;     // DCALambdaPionPV
-            tmp[12] = lDCABachelorPionPV;   // DCABachelorPionPV
-            tmp[13] = lDCAXiPV;             // DCAXiPV
-            tmp[14] = lLambdaCPA;           // V0CPA
-            tmp[15] = lXiCPA;               // XiCPA
-            tmp[16] = lXieta;               // XiEta
-            tmp[17] = radiusV0;             // LambdaRadius
-            tmp[18] = radiusXi;             // XiRadius
-            tmp[19] = lMassV0;              // V0Mass
-            tmp[20] = lMassXi;              // XiMass
+            // Tree
+            fTreeXi1530Rec->TPCNsigLambdaProton = lTPCNSigProton;
+            fTreeXi1530Rec->TPCNsigLambdaPion = lTPCNSigLambdaPion;
+            fTreeXi1530Rec->TPCNsigBachelorPion = lTPCNSigBachelorPion;
+            fTreeXi1530Rec->DCALambdaDaughters = lDCALambdaDaughters;
+            fTreeXi1530Rec->DCAXiDaughters = lDCAXiDaughters;
+            fTreeXi1530Rec->DCALambdaPV = lDCALambdaPV;
+            fTreeXi1530Rec->DCALambdaProtonPV = lDCALambdaProtonPV;
+            fTreeXi1530Rec->DCALambdaPionPV = lDCALambdaPionPV;
+            fTreeXi1530Rec->DCABachelorPionPV = lDCABachelorPionPV;
+            fTreeXi1530Rec->DCAXiPV = lDCAXiPV;
+            fTreeXi1530Rec->V0CPA = lLambdaCPA;
+            fTreeXi1530Rec->XiCPA = lXiCPA;
+            fTreeXi1530Rec->XiEta = lXieta;
+            fTreeXi1530Rec->LambdaRadius = radiusV0;
+            fTreeXi1530Rec->XiRadius = radiusXi;
+            fTreeXi1530Rec->V0Mass = lMassV0;
+            fTreeXi1530Rec->XiMass = lMassXi;
         } else {
             xiAOD = ((AliAODEvent *)fEvt)->GetCascade(fGoodXiArray[i]);
             if (!xiAOD)
@@ -1854,24 +1860,24 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
             else
                 lMassV0 = xiAOD->MassAntiLambda();
 
-            // nTuple
-            tmp[4] = lTPCNSigProton;        // TPCNsigLambdaProton
-            tmp[5] = lTPCNSigLambdaPion;    // TPCNsigLambdaPion
-            tmp[6] = lTPCNSigBachelorPion;  // TPCNsigBachelorPion
-            tmp[7] = lDCALambdaDaughters;   // DCALambdaDaughters
-            tmp[8] = lDCAXiDaughters;       // DCAXiDaughters
-            tmp[9] = lDCALambdaPV;          // DCALambdaPV
-            tmp[10] = lDCALambdaProtonPV;   // DCALambdaProtonPV
-            tmp[11] = lDCALambdaPionPV;     // DCALambdaPionPV
-            tmp[12] = lDCABachelorPionPV;   // DCABachelorPionPV
-            tmp[13] = lDCAXiPV;             // DCAXiPV
-            tmp[14] = lLambdaCPA;           // V0CPA
-            tmp[15] = lXiCPA;               // XiCPA
-            tmp[16] = lXieta;               // XiEta
-            tmp[17] = radiusV0;             // LambdaRadius
-            tmp[18] = radiusXi;             // XiRadius
-            tmp[19] = lMassV0;              // V0Mass
-            tmp[20] = lMassXi;              // XiMass
+            // Tree
+            fTreeXi1530Rec->TPCNsigLambdaProton = lTPCNSigProton;
+            fTreeXi1530Rec->TPCNsigLambdaPion = lTPCNSigLambdaPion;
+            fTreeXi1530Rec->TPCNsigBachelorPion = lTPCNSigBachelorPion;
+            fTreeXi1530Rec->DCALambdaDaughters = lDCALambdaDaughters;
+            fTreeXi1530Rec->DCAXiDaughters = lDCAXiDaughters;
+            fTreeXi1530Rec->DCALambdaPV = lDCALambdaPV;
+            fTreeXi1530Rec->DCALambdaProtonPV = lDCALambdaProtonPV;
+            fTreeXi1530Rec->DCALambdaPionPV = lDCALambdaPionPV;
+            fTreeXi1530Rec->DCABachelorPionPV = lDCABachelorPionPV;
+            fTreeXi1530Rec->DCAXiPV = lDCAXiPV;
+            fTreeXi1530Rec->V0CPA = lLambdaCPA;
+            fTreeXi1530Rec->XiCPA = lXiCPA;
+            fTreeXi1530Rec->XiEta = lXieta;
+            fTreeXi1530Rec->LambdaRadius = radiusV0;
+            fTreeXi1530Rec->XiRadius = radiusXi;
+            fTreeXi1530Rec->V0Mass = lMassV0;
+            fTreeXi1530Rec->XiMass = lMassXi;
         }
 
         for (UInt_t j = 0; j < nTracks; j++) {
@@ -1896,9 +1902,6 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
             if ((vecXi1530.Rapidity() > fXi1530YCutHigh) ||
                 (vecXi1530.Rapidity() < fXi1530YCutLow)) continue;
 
-            tmp[23] = 0.0;
-            tmp[24] = 0.0;
-            tmp[25] = 0.0;
             // DCA and CPA cut for resonance
             if (!fIsAOD) {  // Only for ESD
                 for (int i = 0; i < 21; i++)
@@ -1954,45 +1957,50 @@ void AliAnalysisTaskXi1530PbPb::FillNtuples() {
                     Double_t cos = mom.Dot(fline) / TMath::Sqrt(ptot2);
                     if (cos > 1.0) cos = 1.0;
                     if (cos < -1.0) cos = -1.0;
-                    tmp[25] = cos;
+                    fTreeXi1530Rec->Xi1530CPA = cos;
                 } else
-                    tmp[25] = 0.0;
+                    fTreeXi1530Rec->Xi1530CPA = 0.0;
 
-                tmp[23] = radiusRsn;
-                tmp[24] = dca;
+                fTreeXi1530Rec->Xi1530Radius = radiusRsn;
+                fTreeXi1530Rec->Xi1530DCA = dca;
+            }
+            else {
+                fTreeXi1530Rec->Xi1530Radius = -999;
+                fTreeXi1530Rec->Xi1530DCA = -999;
+                fTreeXi1530Rec->Xi1530CPA = -999;
             }
 
             GetImpactParam(track1, b, bCov);
 
-            tmp[0] = GetTPCnSigma(track1, AliPID::kPion);                  // TPCNsigXi1530Pion
-            tmp[1] = track1->Eta();                                        // Xi1530PionEta
-            tmp[2] = TMath::Abs(b[1]);                                     // Xi1530PionPVz
-            tmp[3] = TMath::Abs(b[0]) / (0.0026 + 0.0050 / track1->Pt());  // Xi1530PionXYVertexSigma
+            fTreeXi1530Rec->TPCNsigXi1530Pion = GetTPCnSigma(track1, AliPID::kPion);                  
+            fTreeXi1530Rec->Xi1530PionEta = track1->Eta();                                        
+            fTreeXi1530Rec->Xi1530PionPVz = TMath::Abs(b[1]);                                     
+            fTreeXi1530Rec->Xi1530PionXYVertexSigma = TMath::Abs(b[0]) / (0.0026 + 0.0050 / track1->Pt());  
 
-            tmp[21] = vecXi1530.Pt();  // Xi1530Pt
-            tmp[22] = vecXi1530.M();   // Xi1530Mass
-            tmp[26] = fCent;           // Centrality
-            tmp[27] = fPosPV[2];       // zVertex
+            fTreeXi1530Rec->Xi1530Pt = vecXi1530.Pt();  
+            fTreeXi1530Rec->Xi1530Mass = vecXi1530.M();   
+            fTreeXi1530Rec->Centrality = fCent;           
+            fTreeXi1530Rec->zVertex = fPosPV[2];       
 
             if (fIsMC) {
                 if (IsTrueXi1530(fGoodXiArray[i], fGoodTrackArray[j]))
-                    tmp[28] = 1;  // MCflag Xi1530
+                    fTreeXi1530Gen.MCflag = 1;  // MCflag Xi1530
                 else
-                    tmp[28] = 2;  // MCflag -> not true
-            } else
-                tmp[28] = 0;               // MCflag -> data
+                    fTreeXi1530Gen.MCflag = 2;  // MCflag -> not true
+                fTreeXi1530Gen.isReconstructed = true;
+            }
             // Charge
             auto chargeFlag = 0;
             if (isXiAnti)
                 chargeFlag++;
             if(track1->Charge() < 0)
                 chargeFlag = chargeFlag + 2;
-            tmp[29] = chargeFlag;  // Antiflag -> Charge flag
-                                   // 0: Xi- + pi+
-                                   // 1: Xi+ + pi+ // LS
-                                   // 2: Xi- + pi- // LS
-                                   // 3: Xi+ + pi-
-            fNtupleXi1530->Fill(tmp);
+            fTreeXi1530Rec->Antiflag = chargeFlag;  // Antiflag -> Charge flag
+                                                     // 0: Xi- + pi+
+                                                     // 1: Xi+ + pi+ // LS
+                                                     // 2: Xi- + pi- // LS
+                                                     // 3: Xi+ + pi-
+            fTree->Fill();
         }  // pion loop
     }
 }
@@ -2032,6 +2040,12 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                            (double)fCent,
                            mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
+            if (fFillTree) {
+                fTreeXi1530Gen.isReconstructed = false;
+                fTreeXi1530Gen.MCflag = 1;
+                fTreeXi1530Gen.ptMC = mcInputTrack->Pt();
+                fTreeXi1530Gen.Antiflag = (mcInputTrack->GetPdgCode() > 0) ? 0 : 3;
+            }
         }
     } else {
         for (Int_t it = 0; it < fMCArray->GetEntriesFast(); it++) {
@@ -2065,6 +2079,12 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                            (double)fCent,
                            mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
+            if (fFillTree) {
+                fTreeXi1530Gen.isReconstructed = false;
+                fTreeXi1530Gen.MCflag = 1;
+                fTreeXi1530Gen.ptMC = mcInputTrack->Pt();
+                fTreeXi1530Gen.Antiflag = (mcInputTrack->GetPdgCode() > 0) ? 0 : 3;
+            }
         }
     }
 }
