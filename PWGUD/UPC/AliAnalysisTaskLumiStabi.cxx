@@ -59,8 +59,10 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi()
       fV0McentPercMinu05(300),
       fV0McentPercMinu10(300),
       fV0McentPercentNew(300),
-      fV0McentPercNewPlu(300),
-      fV0McentPercNewMin(300),
+      fV0McentPercNewP05(300),
+      fV0McentPercNewP10(300),
+      fV0McentPercNewM05(300),
+      fV0McentPercNewM10(300),
       fTrgClassCINTZAC(0),
       fTrgClassV0L(0),
       fTrgInputV0M(0),
@@ -91,8 +93,10 @@ AliAnalysisTaskLumiStabi::AliAnalysisTaskLumiStabi(const char *name)
       fV0McentPercMinu05(300),
       fV0McentPercMinu10(300),
       fV0McentPercentNew(300),
-      fV0McentPercNewPlu(300),
-      fV0McentPercNewMin(300),
+      fV0McentPercNewP05(300),
+      fV0McentPercNewP10(300),
+      fV0McentPercNewM05(300),
+      fV0McentPercNewM10(300),
       fTrgClassCINTZAC(0),
       fTrgClassV0L(0),
       fTrgInputV0M(0),
@@ -148,8 +152,10 @@ void AliAnalysisTaskLumiStabi::UserCreateOutputObjects()
 	tOutput ->Branch("fV0McentPercMinu05", &fV0McentPercMinu05);
 	tOutput ->Branch("fV0McentPercMinu10", &fV0McentPercMinu10);
 	tOutput ->Branch("fV0McentPercentNew", &fV0McentPercentNew);
-	tOutput ->Branch("fV0McentPercNewPlu", &fV0McentPercNewPlu);
-	tOutput ->Branch("fV0McentPercNewMin", &fV0McentPercNewMin);
+	tOutput ->Branch("fV0McentPercNewP05", &fV0McentPercNewP05);
+	tOutput ->Branch("fV0McentPercNewP10", &fV0McentPercNewP10);
+	tOutput ->Branch("fV0McentPercNewM05", &fV0McentPercNewM05);
+	tOutput ->Branch("fV0McentPercNewM10", &fV0McentPercNewM10);
 	tOutput ->Branch("fZNATDCm", &fZNATDCm,"fZNATDCm[4]/F");
 	tOutput ->Branch("fZNCTDCm", &fZNCTDCm,"fZNCTDCm[4]/F");
 //  tOutput ->Branch("fCentrality", &fCentrality);
@@ -247,8 +253,10 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
 		fV0McentPercMinu05 = centrality->GetMultiplicityPercentile("V0Mminus05",kTRUE);
 		fV0McentPercMinu10 = centrality->GetMultiplicityPercentile("V0Mminus10",kTRUE);
 		fV0McentPercentNew = centrality->GetMultiplicityPercentile("V0MNew",kTRUE);
-		fV0McentPercNewPlu = centrality->GetMultiplicityPercentile("V0MNewPlus1",kTRUE);
-		fV0McentPercNewMin = centrality->GetMultiplicityPercentile("V0MNewMinus1",kTRUE);
+		fV0McentPercNewP05 = centrality->GetMultiplicityPercentile("V0MNewplus05",kTRUE);
+		fV0McentPercNewP10 = centrality->GetMultiplicityPercentile("V0MNewplus10",kTRUE);
+		fV0McentPercNewM05 = centrality->GetMultiplicityPercentile("V0MNewminus05",kTRUE);
+		fV0McentPercNewM10 = centrality->GetMultiplicityPercentile("V0MNewminus10",kTRUE);
 	}
 
 	if (fTrgClassCINTZAC) hTriggerClassesCounter->Fill(fRunNumber);
