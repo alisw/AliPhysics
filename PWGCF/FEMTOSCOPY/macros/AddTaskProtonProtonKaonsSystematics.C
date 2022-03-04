@@ -839,10 +839,49 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool ful
       KaonCuts->SetDCAVtxXY(0.12);
       KaonCuts->SetDCAVtxZ(0.24);
       AntiKaonCuts->SetDCAVtxXY(0.12);
+    }else if (suffix == "50") {
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+    }else if (suffix == "51") {
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+    }else if (suffix == "52") {
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+    }else if (suffix == "53") {
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+    }else if (suffix == "54") {
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+    }else if (suffix == "55") {
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+    }else if (suffix == "56") {
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+    }else if (suffix == "57") {
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    }else if (suffix == "58") {
+      KaonCuts->SetDCAVtxZ(0.18);
+      AntiKaonCuts->SetDCAVtxZ(0.18);
+    }else if (suffix == "59") {
+      KaonCuts->SetDCAVtxZ(0.22);
+      AntiKaonCuts->SetDCAVtxZ(0.22);
+    }else if (suffix == "60") {
+      KaonCuts->SetDCAVtxXY(0.19);
+      AntiKaonCuts->SetDCAVtxXY(0.19);
+    }else if (suffix == "61") {
+      KaonCuts->SetDCAVtxXY(0.11);
+      AntiKaonCuts->SetDCAVtxXY(0.11);
+    }else if (suffix == "62") {
+      KaonCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+      AntiKaonCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+    }else if (suffix == "63") {
+      KaonCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+      AntiKaonCuts->SetCutTPCCrossedRows(true, 77, 0.80);
     }
-
-
-
 
 //===================================
 
