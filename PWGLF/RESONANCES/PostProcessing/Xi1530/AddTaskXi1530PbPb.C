@@ -83,11 +83,11 @@ AliAnalysisTaskXi1530PbPb *AddTaskXi1530PbPb(
         AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     mgr->ConnectOutput(taskXi1530PbPb, 1, coutputXi1530PbPb);
 
-    AliAnalysisDataContainer *coutputXi1530PbPbTuple = mgr->CreateContainer(
-        Form("%s%s_tree", taskname, suffix), TNtupleD::Class(), AliAnalysisManager::kOutputContainer,
+    AliAnalysisDataContainer *coutputXi1530PbPbTree = mgr->CreateContainer(
+        Form("%s%s_tree", taskname, suffix), TTree::Class(), AliAnalysisManager::kOutputContainer,
         "AnalysisResults.root");
-    coutputXi1530PbPbTuple->SetSpecialOutput();
-    mgr->ConnectOutput(taskXi1530PbPb, 2, coutputXi1530PbPbTuple);
+    coutputXi1530PbPbTree->SetSpecialOutput();
+    mgr->ConnectOutput(taskXi1530PbPb, 2, coutputXi1530PbPbTree);
 
     return taskXi1530PbPb;
 }
