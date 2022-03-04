@@ -541,9 +541,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
 	fHistphoEtaMC(0),//photonic e from eta without emb
 	fNtrklRhoarea(0),
 	fHistPtfracB(0),
-        fHistPtfracD(0),
-        fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
-        fDelta_pT(0),	
+	fHistPtfracD(0),
+	fbgfracFile("alien:///alice/cern.ch/user/s/ssakai/Delta_pT_pPb5/deltapt.root"),
+	fDelta_pT(0),	
 
 //======parameter============
         fNref(0),
@@ -1217,13 +1217,13 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fOutput->Add(fNtrklRhoarea);
 
   //pT fraction of HFE from B
-  Int_t nBinfrac[3] = {100,60,200};
-  Double_t minfrac[3]={0.0,0.0,0.0};
-  Double_t maxfrac[3]={50.0,30.0,2};
-  fHistPtfracB = new THnSparseD("fHistPtfracB","pT distribution;p_{T}^{B};p_{T}^{HFE};p_{T} fraction",3, nBinfrac, minfrac,maxfrac);
+  Int_t nBinfrac[5] = {100,60,200,60,200};
+  Double_t minfrac[5]={0.0,0.0,0.0,0.0,0.0};
+  Double_t maxfrac[5]={50.0,30.0,2,30.0,2};
+  fHistPtfracB = new THnSparseD("fHistPtfracB","pT distribution;p_{T}^{B};p_{T}^{HFE};p_{T} fraction;p_{T,true}^{HFE};p_{T} fraction MC",5, nBinfrac, minfrac,maxfrac);
   fOutput->Add(fHistPtfracB);
 	
-  fHistPtfracD = new THnSparseD("fHistPtfracD","pT distribution;p_{T}^{D};p_{T}^{HFE};p_{T} fraction",3, nBinfrac, minfrac,maxfrac);
+  fHistPtfracD = new THnSparseD("fHistPtfracD","pT distribution;p_{T}^{D};p_{T}^{HFE};p_{T} fraction;p_{T,true}^{HFE};p_{T} fraction MC",5, nBinfrac, minfrac,maxfrac);
   fOutput->Add(fHistPtfracD);
 
 
@@ -2114,11 +2114,15 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      //HFE from B
       if(TMath::Abs(pidM)==511 || TMath::Abs(pidM)==513 || TMath::Abs(pidM)==521 || TMath::Abs(pidM)==523 || TMath::Abs(pidM)==531)
         {
+						Double_t pTtrue_B = fMCparticle->Pt();
 						Double_t ptfrac = pt/pTmom; 
-						Double_t ptfracvals[3];
+						Double_t ptfrac_MC = pTtrue_B/pTmom; 
+						Double_t ptfracvals[5];
 						ptfracvals[0]=pTmom;
 						ptfracvals[1]=pt;
 						ptfracvals[2]=ptfrac;
+						ptfracvals[3]=pTtrue_B;
+						ptfracvals[4]=ptfrac_MC;
 	          fHistPtfracB->Fill(ptfracvals);
 
 				}
@@ -2126,12 +2130,16 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	    
     //HFE from D
       if(TMath::Abs(pidM)==411 || TMath::Abs(pidM)==413 || TMath::Abs(pidM)==421 || TMath::Abs(pidM)==423 || TMath::Abs(pidM)==431)
-        {
+        
+						Double_t pTtrue_D = fMCparticle->Pt();
 						Double_t ptfracD = pt/pTmom; 
-						Double_t ptfracDvals[3];
+						Double_t ptfracD_MC = pTtrue_D/pTmom; 
+						Double_t ptfracDvals[5];
 						ptfracDvals[0]=pTmom;
 						ptfracDvals[1]=pt;
 						ptfracDvals[2]=ptfracD;
+						ptfracDvals[3]=pTtrue_D;
+						ptfracDvals[4]=ptfracD_MC;
 	          fHistPtfracD->Fill(ptfracDvals);
 
 				}
