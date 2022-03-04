@@ -32,6 +32,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
+    fHistResolutionV0A(nullptr),
+    fHistResolutionV0C(nullptr),
+    fHistResolutionTPC(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -76,6 +79,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
+    fHistResolutionV0A(nullptr),
+    fHistResolutionV0C(nullptr),
+    fHistResolutionTPC(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -129,11 +135,14 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 		if(!fOutputList->IsOwner()) {
 			delete fHistNEvents;
 			delete fHistCentrality;
+                        delete fHistResolutionV0A;
+                        delete fHistResolutionV0C;
+                        delete fHistResolutionTPC;
 			for(int iDet=0; iDet<3; iDet++) {
 				delete fHistEventPlaneTPC[iDet];
-				delete fHistEventPlaneV0[iDet];
+                                delete fHistEventPlaneV0[iDet];
 				delete fHistqnVsCentrTPC[iDet];
-				delete fHistqnVsCentrV0[iDet];
+      				delete fHistqnVsCentrV0[iDet];
 				if(fSplineListqnPercTPC[iDet]) delete fSplineListqnPercTPC[iDet];
 				if(fSplineListqnPercV0[iDet]) delete fSplineListqnPercV0[iDet];
 			}
@@ -157,7 +166,7 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
     fJEQnVecHandler1->EnablePhiDistrHistos();
     fJEQnVecHandler2->EnablePhiDistrHistos();
-
+    
     fOutputList = new TList();
     fOutputList->SetOwner(true);
 
@@ -173,6 +182,13 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
 
     fHistCentrality = new TH1F("fHistCentrality","Centrality distribution;;Number of events",100,0.,100.);
     fOutputList->Add(fHistCentrality);
+    
+    fHistResolutionV0A = new TH2F("fHistResolutionV0A", "fHistResolutionV0A", 2000, 0., 2., 15000, 0., 15.);
+    fOutputList->Add(fHistResolutionV0A);
+    fHistResolutionV0C = new TH2F("fHistResolutionV0C", "fHistResolutionV0C", 2000, 0., 2., 15000, 0., 15.);
+    fOutputList->Add(fHistResolutionV0C);
+    fHistResolutionTPC = new TH2F("fHistResolutionTPC", "fHistResolutionTPC", 2000, 0., 2., 15000, 0., 15.);
+    fOutputList->Add(fHistResolutionTPC);
 
     TString TPCNames[3] = {"FullTPC","PosTPC","NegTPC"};
     TString V0Names[3] = {"FullV0","V0A","V0C"};
@@ -323,6 +339,15 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 	fHistqnVsCentrV0[0]->Fill(cent,qnFullV0);
 	fHistqnVsCentrV0[1]->Fill(cent,qnV0A);
 	fHistqnVsCentrV0[2]->Fill(cent,qnV0C);
+
+    //fill histos with resolution
+    double resolutionV0A = sqrt(abs(cos(2*(PsinV0A-PsinV0C)))*abs(cos(2*(PsinV0A-PsinFullTPC)))/abs(cos(2*(PsinV0C-PsinFullTPC))));
+    double resolutionV0C = sqrt(abs(cos(2*(PsinV0C-PsinV0A)))*abs(cos(2*(PsinV0C-PsinFullTPC)))/abs(cos(2*(PsinV0A-PsinFullTPC))));
+    double resolutionTPC = sqrt(abs(cos(2*(PsinFullTPC-PsinV0A)))*abs(cos(2*(PsinFullTPC-PsinV0C)))/abs(cos(2*(PsinV0A-PsinV0C))));
+
+    fHistResolutionV0A->Fill(resolutionV0A, qnV0A);
+    fHistResolutionV0C->Fill(resolutionV0C, qnV0C);
+    fHistResolutionTPC->Fill(resolutionTPC, qnFullV0);
 
     int runnumber = fAOD->GetRunNumber();
 
