@@ -85,6 +85,7 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins)
         fSubList->Add(new AliProfileBS(Form("meanpt_subP"),this->GetTitle(),nbinsx,xbins));
         fSubList->Add(new AliProfileBS(Form("meanpt_subN"),this->GetTitle(),nbinsx,xbins));
     }
+    printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
 void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
 {
@@ -117,6 +118,7 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh)
         fSubList->Add(new AliProfileBS(Form("meanpt_subP"),this->GetTitle(),nbinsx,xlow,xhigh));
         fSubList->Add(new AliProfileBS(Form("meanpt_subN"),this->GetTitle(),nbinsx,xlow,xhigh));
     }
+    printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
 void AliPtContainer::InitializeSubsamples(const int &nsub)
 {
@@ -132,7 +134,7 @@ void AliPtContainer::InitializeSubsamples(const int &nsub)
     }
     return;
 };
-void AliPtContainer::FillRecursive(double inarr[10][10],const double &lMult, const double &rn, TString sub)
+void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub)
 {
   vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
   vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
@@ -160,7 +162,7 @@ void AliPtContainer::FillRecursive(double inarr[10][10],const double &lMult, con
 }
 void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub)
 {
-    for(int m=0;m<=mpar;++m) if(sumw[m]==0) return;
+    for(int m=0;m<=mpar;++m) if(sumw[m]==0) return; 
     for(int m=1;m<=mpar;++m)
     {
         if(sub.IsNull())
@@ -189,7 +191,7 @@ double AliPtContainer::OrderedAddition(vector<double> vec, int size)
   }
   return sum;
 }
-void AliPtContainer::FillObs(double inarr[10][10], const double &lMult, const double &rn)
+void AliPtContainer::FillObs(const vector<vector<double>> &inarr, const double &lMult, const double &rn)
 {
     switch(mpar)
     {
@@ -210,24 +212,24 @@ void AliPtContainer::FillObs(double inarr[10][10], const double &lMult, const do
     }
     return;
 }
-void AliPtContainer::FillMpt(double inarr[10][10], const double &lMult, const double &rn)
+void AliPtContainer::FillMpt(const vector<vector<double>> &inarr, const double &lMult, const double &rn)
 {
     Double_t lwpt = inarr[1][0];
     if(lwpt==0) return;
     ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1])/lwpt,lwpt,rn);
     return;
 }
-void AliPtContainer::FillCk(double inarr[10][10], const double &lMult, const double &rn)
+void AliPtContainer::FillCk(const vector<vector<double>> &inarr, const double &lMult, const double &rn)
 {
     Double_t lwck = inarr[1][0]*inarr[1][0] - inarr[2][0];
     Double_t lwpt = inarr[1][0];
     if(lwck==0 || lwpt==0) return;
     ((AliProfileBS*)fTermList->At(0))->FillProfile(lMult,(inarr[1][1]*inarr[1][1] - inarr[2][2])/lwck,lwck,rn);
-    ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[1][1]*inarr[1][0]-inarr[2][1])/lwck,lwck,rn);
+    ((AliProfileBS*)fTermList->At(1))->FillProfile(lMult,(inarr[2][1]-inarr[1][1]*inarr[1][0])/lwck,lwck,rn);
     ((AliProfileBS*)fTermList->At(2))->FillProfile(lMult,inarr[1][1]/lwpt,lwpt,rn);
     return;
 }
-void AliPtContainer::FillSkew(double inarr[10][10], const double &lMult, const double &rn)
+void AliPtContainer::FillSkew(const vector<vector<double>> &inarr, const double &lMult, const double &rn)
 {
     double lwpt = inarr[1][0];
     double lwskew = lwpt*lwpt*lwpt - 3*inarr[2][0]*inarr[1][0]+2*inarr[3][0];
@@ -238,7 +240,7 @@ void AliPtContainer::FillSkew(double inarr[10][10], const double &lMult, const d
     ((AliProfileBS*)fTermList->At(3))->FillProfile(lMult,inarr[1][1]/lwpt,lwpt,rn);
     return;
 }
-void AliPtContainer::FillKurtosis(double inarr[10][10], const double &lMult, const double &rn)
+void AliPtContainer::FillKurtosis(const vector<vector<double>> &inarr, const double &lMult, const double &rn)
 {
     double lwpt = inarr[1][0];
     double lwkur = lwpt*lwpt*lwpt*lwpt-6*inarr[2][0]*lwpt*lwpt+8*lwpt*inarr[3][0]+3*inarr[2][0]*inarr[2][0]-6*inarr[4][0];
@@ -327,7 +329,7 @@ TH1 *AliPtContainer::RecalculateCkHists(vector<TH1*> inh)
   TH1 *mptsq = (TH1*)inh[2]->Clone("mptSquared");
   mptsq->Multiply(inh[2]);
   TH1 *hWeights = (TH1*)inh[0]->Clone("ForErrors");
-  inh[0]->Add(inh[1],-1);
+  inh[0]->Add(inh[1]);
   inh[0]->Add(mptsq);
   delete mptsq;
   for(Int_t i=1;i<=hWeights->GetNbinsX();i++) inh[0]->SetBinError(i,hWeights->GetBinError(i));
@@ -380,7 +382,7 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh)
   delete hWeights;
   return (TH1*)inh[0]->Clone("hRec");
 }
-TH1* AliPtContainer::getRercusiveHist(int ind, int m, unsigned int l_obs, bool sub)
+TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub)
 {
   if(l_obs==kObs::kCorr) {
       if(!sub) return ((AliProfileBS*)fCorrList->At(m-1))->getHist(ind);

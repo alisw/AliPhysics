@@ -49,6 +49,9 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     void SetPtRange(double ptmin, double ptmax) { fPtMin = ptmin; fPtMax = ptmax; }
     void SetEventWeight(unsigned int weight) { fEventWeight = weight; }
     void SetUseWeightsOne(bool use) { fUseWeightsOne = use; }
+    void SetUseRecNchForMc(bool userec) { fUseRecNchForMC = userec; }
+    void SetUseNch(bool usench) { fUseNch = usench; }
+    void SetEtaNch(double etanch) { fEtaNch = etanch; }
   protected:
     AliEventCuts            fEventCuts;
   private:
@@ -61,10 +64,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     bool                    fIsMC; 
     AliMCEvent*             fMCEvent; //!
     TList*                  fCorrList; //!
+    TList*                  fQAList; //!
     TList*                  fEfficiencyList;
     TH1D**                  fEfficiencies;     
     TString                 fWeightSubfix;
     AliGFWCuts*             fGFWSelection; 
+    AliGFWCuts*             fGFWnTrackSelection;
     TAxis*                  fV0MAxis; 
     TAxis*                  fMultiAxis; 
     double*                 fMultiBins; //!
@@ -73,6 +78,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     double*                 fPtBins; //!
     int                     fNPtBins; //!
     double                  fEta;
+    double                  fEtaNch;
     double                  fEtaGap;
     double                  fPtMin;
     double                  fPtMax;
@@ -80,8 +86,13 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     TRandom*                fRndm;
     int                     fNbootstrap; 
     bool                    fUseWeightsOne;
+    bool                    fUseRecNchForMC;
     bool                    fPileupOff;
+    bool                    fUseNch;
     int                     mpar;
+    vector<vector<double>>  wp;
+    vector<vector<double>>  wpP;
+    vector<vector<double>>  wpN;
     unsigned int            fEventWeight;
     TH1D*                   fV0MMulti;    //!
     AliProfileBS*           pfmpt;      //!
@@ -90,6 +101,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     AliPtContainer*         fkur;      //!
     AliPtContainer*         fp5;      //!
     AliPtContainer*         fp6;      //!
+    TH2D*                   fNchTrueVsRec; //!
+    TH2D*                   fV0MvsMult; //!
     unsigned int            fTriggerType;
     bool                    fOnTheFly;
     double                  fImpactParameter; 
@@ -97,12 +110,14 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE
     
 
     bool AcceptAODTrack(AliAODTrack *tr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp);
+    bool AcceptAODTrack(AliAODTrack *mtr, double *ltrackXYZ, const double &ptMin, const double &ptMax, double *vtxp, int &nTot);
     bool AcceptAODEvent(AliAODEvent *ev, double *vtxXYZ);
     bool AcceptMCEvent(AliVEvent* inev);
     bool CheckTrigger(Double_t lCent);
     double getCentrality();
     void FillPtCorr(AliVEvent* ev, const double &VtxZ, const double &l_Cent, double *vtxXYZ);
-    void FillWPCounter(double inarr[10][10], double w, double p);
+    void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
+    int GetNTracks(AliVEvent* ev, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
     double *GetBinsFromAxis(TAxis *inax);
     
   ClassDef(AliAnalysisTaskPtCorr,1);

@@ -43,8 +43,10 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
   };
   printf("Inputs connected!\n");
   AliAnalysisDataContainer *cPtcorr = mgr->CreateContainer(Form("Correlations%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+  AliAnalysisDataContainer *cQA = mgr->CreateContainer(Form("QA%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   printf("Output containers created!\n");
   mgr->ConnectOutput(task,1,cPtcorr);
+  mgr->ConnectOutput(task,2,cQA);
   return task;
 }
 
