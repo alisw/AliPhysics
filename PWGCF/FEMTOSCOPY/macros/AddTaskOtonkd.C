@@ -114,7 +114,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
   }else if(DeuteronCut==3){ // Deuterons by Oton with open cuts for PID/DCA fits
    TrackCutsDeuteron->SetPIDkd(false,false,3,5);
-   TrackCutsDeuteron->SetDCAVtxZ(0.5);
+   TrackCutsDeuteron->SetDCAVtxXY(0.5);
   }else if(DeuteronCut==4){ // cuts by FemtoDream with tight PID req
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 1.4);//1.4 sigmas as well!
@@ -143,7 +143,7 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
   }else if(DeuteronCut==3){ // Deuterons by Oton with open cuts for PID/DCA fits
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,5);
-   TrackCutsAntiDeuteron->SetDCAVtxZ(0.5);
+   TrackCutsAntiDeuteron->SetDCAVtxXY(0.5);
   }else if(DeuteronCut==4){ // cuts by FemtoDream with tight PID req
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4,1.4);//1.4 sigmas as well!
