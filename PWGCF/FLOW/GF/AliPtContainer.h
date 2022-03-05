@@ -31,8 +31,8 @@ class AliPtContainer: public TNamed {
         void Initialize(int nbinsx, double* xbins);
         void Initialize(int nbinsx, double xlow, double xhigh);
         void InitializeSubsamples(const int &nsub);
-        void FillObs(double inarr[10][10], const double &lMult, const double &rn);
-        void FillRecursive(double inarr[10][10],const double &lMult, const double &rn, TString sub = "");
+        void FillObs(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
+        void FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub = "");
         TList* GetTermList() { return fTermList; }
         TList* GetCorrList() { return fCorrList; }
         void SetEventWeight(const unsigned int &lWeight) { fEventWeight = lWeight; };
@@ -41,7 +41,7 @@ class AliPtContainer: public TNamed {
         TH1* getAltHist(int ind);
         void RebinMulti(Int_t nbins);
         void RebinMulti(Int_t nbins, Double_t *binedges);
-        TH1* getRercusiveHist(int ind, int m, unsigned int l_obs, bool sub = false);
+        TH1* getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub = false);
         Long64_t Merge(TCollection *collist);
     protected:
         TList* fTermList;
@@ -50,15 +50,15 @@ class AliPtContainer: public TNamed {
         TList* fMomentList;
         TList* fCumulantList;
         TList* fNormList;
-        int mpar;
+        const int mpar;
         unsigned int fEventWeight;
         bool fSubevent;
         double OrderedAddition(vector<double> vec, int size);
         TH1* getPowerHist(TH1* inh, double p);
-        void FillMpt(double inarr[10][10], const double &lMult, const double &rn);
-        void FillCk(double inarr[10][10], const double &lMult, const double &rn);
-        void FillSkew(double inarr[10][10], const double &lMult, const double &rn);
-        void FillKurtosis(double inarr[10][10], const double &lMult, const double &rn);
+        void FillMpt(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
+        void FillCk(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
+        void FillSkew(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
+        void FillKurtosis(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
         void FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub);
         void CalculateObs();
         TH1* RecalculateObsHists(vector<TH1*> inh);
