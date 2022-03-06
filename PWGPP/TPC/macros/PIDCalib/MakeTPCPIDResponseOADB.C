@@ -191,6 +191,10 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16o.pass1/splines_16o.pass1.root",  261929, 264611, "1"); 
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16p.pass1/splines_16p.pass1.root",  264612, 264895, "1"); 
 
+  // ---| pass 2 |--------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16d.pass2.offline_clusters/TPCPIDResponseOADB_2022_02_21_16d_offline_pass2_It4_WithSigmaPar.root",  252140, 252536, "offlineclusters_pass2");
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/malavika/LHC16d.pass2.hlt_clusters/TPCPIDResponseOADB_2022_02_21_16d_HLT_pass2_It3_WithSigmaPar.root",  252140, 252536, "pass2");
+
   // ---| pPb periods |---------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC16q.pass1/splines_16q.pass1.root", 264896, 265533, "1", "",
                              "-1.609459e-06,-6.765851e-04,9.610860e-03,2.864834e-02,0 ; -2.121118e-07,-1.181542e-06, -0.5 ; 0.,0.,0.,0.");
