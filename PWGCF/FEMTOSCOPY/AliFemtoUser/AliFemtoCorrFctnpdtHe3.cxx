@@ -315,17 +315,17 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
     fNumerator->Fill(tKStar);
 
     if(fHighCF){
-	float tMom1 = 0.;
-	float tMom2 = 0.;
+	float FillMom1 = 0.;
+	float FillMom2 = 0.;
 	if(fUsePt){
-		tMom1 = fPair->Track1()->Track()->Pt();
-		tMom2 = fPair->Track2()->Track()->Pt();
+		FillMom1 = fPair->Track1()->Track()->Pt();
+		FillMom2 = fPair->Track2()->Track()->Pt();
 	}
 	else{
-		tMom1 = fPair->Track1()->Track()->P().Mag();
-		tMom2 = fPair->Track2()->Track()->P().Mag();
+		FillMom1 = fPair->Track1()->Track()->P().Mag();
+		FillMom2 = fPair->Track2()->Track()->P().Mag();
 	}
-	fNumHigh3F->Fill(tMom1,tMom2,tKStar); 
+	fNumHigh3F->Fill(FillMom1,FillMom2,tKStar); 
 	}
     if(fSideBand){
 	FillSideBandNum(fPair);
@@ -365,17 +365,17 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
     double tKStar = fabs(fPair->KStar());
     fDenominator->Fill(tKStar);
     if(fHighCF){
-	float tMom1 = 0.;
-	float tMom2 = 0.;
+	float FillMom1 = 0.;
+	float FillMom2 = 0.;
 	if(fUsePt){
-		tMom1 = fPair->Track1()->Track()->Pt();
-		tMom2 = fPair->Track2()->Track()->Pt();
+		FillMom1 = fPair->Track1()->Track()->Pt();
+		FillMom2 = fPair->Track2()->Track()->Pt();
 	}
 	else{
-		tMom1 = fPair->Track1()->Track()->P().Mag();
-		tMom2 = fPair->Track2()->Track()->P().Mag();
+		FillMom1 = fPair->Track1()->Track()->P().Mag();
+		FillMom2 = fPair->Track2()->Track()->P().Mag();
 	}
-	fDenHigh3F->Fill(tMom1,tMom2,tKStar);
+	fDenHigh3F->Fill(FillMom1,FillMom2,tKStar);
     }
     if(fSideBand) FillSideBandDum(fPair);
 
@@ -534,17 +534,8 @@ void AliFemtoCorrFctnpdtHe3::FillSideBandNum(AliFemtoPair* aPair){
     float c = 1.;
     float beta = aPair->Track2()->Track()->VTOF();
     if(beta==0) return;
-
-    float tMom = 0.;
-    if(fUsePt){
-	tMom = aPair->Track2()->Track()->Pt();
-    }
-    else{
-	tMom = aPair->Track2()->Track()->P().Mag();
-		
-    }
 	
-    
+    float tMom = aPair->Track2()->Track()->P().Mag();
     float massTOF = tMom*tMom/c/c*(1./(beta*beta)-1);
 
     float EvalMassSideBandUp 	= SideBandUp->Eval(tMom);
@@ -582,15 +573,7 @@ void AliFemtoCorrFctnpdtHe3::FillSideBandDum(AliFemtoPair* aPair){
     float beta = aPair->Track2()->Track()->VTOF();
     if(beta==0.) return;
 
-    float tMom = 0.;
-    if(fUsePt){
-	tMom = aPair->Track2()->Track()->Pt();
-    }
-    else{
-	tMom = aPair->Track2()->Track()->P().Mag();	
-    }
-
-    
+    float tMom = aPair->Track2()->Track()->P().Mag();
     float massTOF = tMom*tMom/c/c*(1./(beta*beta)-1);
 
     float EvalMassSideBandUp 	= SideBandUp->Eval(tMom);
