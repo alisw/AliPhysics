@@ -42,6 +42,16 @@ private:
   TH2D *fPairPtKstar2part;   // pair pt vs k* 
   TH2D *fPairPtKstarDen2part;   // pair pt vs k* mixed pairs 
 
+  for(int i=0;i<=3;i++){
+  TH2D *fPtKstar_kT[i];   // pt vs k* for kT 
+  TH2D *fPtKstarDen_kT[i];   // pt vs k* mixed pairs for kT
+  TH2D *fPtKstar2part_kT[i];   // pt vs k* for kT
+  TH2D *fPtKstarDen2part_kT[i];   // pt vs k* mixed pairs for kT
+  TH2D *fPairPtKstar2part_kT[i];   // pair pt vs k* for kT
+  TH2D *fPairPtKstarDen2part_kT[i];   // pair pt vs k* mixed pairs for kT 
+  }
+
+  
   TH2D *fKstarBetaT;  //k* vs BetaT
   
 #ifdef __ROOT__
