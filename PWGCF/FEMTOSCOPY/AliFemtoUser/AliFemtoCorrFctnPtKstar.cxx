@@ -184,19 +184,19 @@ void AliFemtoCorrFctnPtKstar::AddRealPair( AliFemtoPair* pair){
 
  fPairPtKstar2part->Fill(tKStar,tPairPt);
 
- if((tPairPt>400)&&(tPairPt<=500)){
+ if((tPairPt>0.4)&&(tPairPt<=0.5)){
  fPtKstar_kT[1]->Fill(tKStar,pT);
  fPtKstar2part_kT[1]->Fill(tKStar,pT2);
  fPairPtKstar2part_kT[1]->Fill(tKStar,tPairPt);
  }
 
- else  if((tPairPt>500)&&(tPairPt<=600)){
+ else  if((tPairPt>0.5)&&(tPairPt<=0.6)){
  fPtKstar_kT[2]->Fill(tKStar,pT);
  fPtKstar2part_kT[2]->Fill(tKStar,pT2);
  fPairPtKstar2part_kT[2]->Fill(tKStar,tPairPt);
  }
 
- else  if((tPairPt>600)&&(tPairPt<=700)){
+ else  if((tPairPt>0.6)&&(tPairPt<=0.7)){
  fPtKstar_kT[3]->Fill(tKStar,pT);
  fPtKstar2part_kT[3]->Fill(tKStar,pT2);
  fPairPtKstar2part_kT[3]->Fill(tKStar,tPairPt);
