@@ -50,8 +50,10 @@ private:
 		Float_t fV0McentPercMinu05 = 300;
 		Float_t fV0McentPercMinu10 = 300;
 		Float_t fV0McentPercentNew = 300;
-		Float_t fV0McentPercNewPlu = 300;
-		Float_t fV0McentPercNewMin = 300;
+		Float_t fV0McentPercNewP05 = 300;
+		Float_t fV0McentPercNewP10 = 300;
+		Float_t fV0McentPercNewM05 = 300;
+		Float_t fV0McentPercNewM10 = 300;
 		Float_t fZNATDCm[4], fZNCTDCm[4];
 //  AliMultSelection *fCentrality = 0x0;
 

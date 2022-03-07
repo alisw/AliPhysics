@@ -764,7 +764,7 @@ void AliJCDijetAna::CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSuble
     fhistos->fh_dijetdeltaM5[iJetSet]->Fill(fDeltaM);
     fhistos->fh_dijetdeltaM5Alt[iJetSet]->Fill(fDeltaMAlt);
     if(bConeNearJet)    fhistos->fh_dijetdeltaM5NearCone[iJetSet]->Fill(fDeltaM);
-    if(bConeNearJetAlt) fhistos->fh_dijetdeltaM5NearConeAlt[iJetSet]->Fill(fDeltaM);
+    if(bConeNearJetAlt) fhistos->fh_dijetdeltaM5NearConeAlt[iJetSet]->Fill(fDeltaMAlt);
     if(bConesOverlap) fhistos->fh_events[lcentBin]->Fill("cones overlap", 1.0);
     if(bConesOverlapAlt) fhistos->fh_events[lcentBin]->Fill("cones overlap alt", 1.0);
     fhistos->fh_dijetMLocalRho[iJetSet]->Fill(doubleDeltaCone_fifth.m());
@@ -1061,6 +1061,7 @@ void AliJCDijetAna::InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBi
     histos->fh_eventSel->Fill("events wo/ cuts",0.0);
     histos->fh_eventSel->Fill("catalyst entry ok",0.0);
     histos->fh_eventSel->Fill("catalyst ok",0.0);
+    histos->fh_eventSel->Fill("alieventcut ok",0.0);
     histos->fh_eventSel->Fill("vertex2013pA ok",0.0);
     histos->fh_eventSel->Fill("pileupSPD ok",0.0);
     histos->fh_eventSel->Fill("utils pileupSPD ok",0.0);

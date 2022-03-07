@@ -28,8 +28,6 @@
 //---------------------------------------------------------------------------
 
 #include <vector>
-#include <fstream>
-#include <iostream>
 
 
 // Root includes
@@ -335,7 +333,6 @@ protected:
 
   std::vector<UShort_t>     fVBuffer_Cell_ID;
   std::vector<UShort_t>     fVBuffer_Cell_E;                                // Float_t * 1000
-  std::vector<Float_t>      fVFBuffer_Cell_E;
   std::vector<Short_t>      fVBuffer_Cell_t;                                // Float_t * 1e9
   std::vector<Bool_t>       fVBuffer_Cell_gain;
   std::vector<Short_t>      fVBuffer_Cell_MCParticleID;

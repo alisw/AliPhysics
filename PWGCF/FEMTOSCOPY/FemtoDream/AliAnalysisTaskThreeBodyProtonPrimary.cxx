@@ -1397,19 +1397,19 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
     fTrack->SetTrack(track, fInputEvent);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
-      //if (fPlotsMC) fpTvsEtaRecoProtons->Fill(track->Pt(),track->Eta());
+      if (fPlotsMC) fpTvsEtaRecoProtons->Fill(track->Pt(),track->Eta());
     }
     if (fAntiProton->isSelected(fTrack)) {
       AntiProtons.push_back(*fTrack);
-      //if (fPlotsMC) fpTvsEtaRecoAntiProtons->Fill(track->Pt(),track->Eta());
+      if (fPlotsMC) fpTvsEtaRecoAntiProtons->Fill(track->Pt(),track->Eta());
     }
     if (fPrimary->isSelected(fTrack)) {
       Primaries.push_back(*fTrack);
-      //if (fPlotsMC) fpTvsEtaRecoKaons->Fill(track->Pt(),track->Eta());
+      if (fPlotsMC) fpTvsEtaRecoKaons->Fill(track->Pt(),track->Eta());
     }
     if (fAntiPrimary->isSelected(fTrack)) {
       AntiPrimaries.push_back(*fTrack);
-      //if (fPlotsMC) fpTvsEtaRecoAntiKaons->Fill(track->Pt(),track->Eta());
+      if (fPlotsMC) fpTvsEtaRecoAntiKaons->Fill(track->Pt(),track->Eta());
     }
   }
 
