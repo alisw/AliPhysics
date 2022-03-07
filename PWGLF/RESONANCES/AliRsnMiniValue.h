@@ -44,6 +44,7 @@ public:
       kCosThetaTransversity, // polarization angle in transversity frame
       kCosThetaHe,     //polarisation angle in HE frame
       kCosThetaHeAbs,  //polarisation angle in HE frame
+      kCosThetaCsAbs,  // polarisation angle in CS frame 
       kPhiHePbPb5,     //angle[phi] in HE frame
       kPhiHePP5,       //angle[phi] in HE frame
       kCosThetaToEventPlane, // polarization angle with respect to Event Plane
