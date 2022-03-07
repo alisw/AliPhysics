@@ -188,6 +188,32 @@ Double_t AliRsnMiniPair::CosThetaHe(Bool_t useMC)
     return thetaHE;
 }
 
+Double_t AliRsnMiniPair::CosThetaCsAbs(Bool_t useMC)
+{
+    // calculate CosTheta in CS frame (akhuntia@cern.ch)
+    Double_t Ebeam = 2510;
+    Double_t beamMass = 0.93827231;
+    Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+    // return one daughter to the resonance rest frame //ak
+    TLorentzVector &mother   = fSum[ID(useMC)];
+    TLorentzVector daughter1 = fP1[ID(useMC)]; //don't add reference
+    // write four vector of projectile and target //projectile in the muon-arm direction
+    TLorentzVector pProjCM(0,0,-Pbeam,Ebeam);//projectile
+    TLorentzVector pTargCM(0,0,Pbeam,Ebeam);//target
+    // compute components of beta
+    Double_t betaX = -mother.X() / mother.E();
+    Double_t betaY = -mother.Y() / mother.E();
+    Double_t betaZ = -mother.Z() / mother.E();
+    // boost daughter particle(s) to resonance rest frame
+    daughter1.Boost(betaX, betaY, betaZ);
+    pProjCM.Boost(betaX, betaY, betaZ);
+    pTargCM.Boost(betaX, betaY, betaZ);
+    // get the z-axis for the CS frame
+    TVector3 zAxisCS = (((pProjCM.Vect()).Unit())-((pTargCM.Vect()).Unit())).Unit();
+    Double_t thetaCS = TMath::Abs(zAxisCS.Dot((daughter1.Vect()).Unit()));
+    return thetaCS;
+}
+
 Double_t AliRsnMiniPair::CosThetaHeAbs(Bool_t useMC)
 {
     // Return cosine of angle of one daughter to the resonance momentum in its rest frame //ak
