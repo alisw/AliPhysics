@@ -363,7 +363,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: UserCreateOutputObjects()
         fEventBuffer[i]->Branch("multiplicity", &fMultiplicityEM);
         fEventBuffer[i]->Branch("eventInfo", "TObjString",&fEventInfo);
         fEventBuffer[i]->Branch("earray", "TObjArray", &fElectronTracks);
-        fEventBuffer[i]->Branch("eventID", &fEventID);
+       // fEventBuffer[i]->Branch("eventID", &fEventID);
     }
  
     return;
@@ -829,7 +829,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: ResetPool(Int_t poolIndex){
     fEventBuffer[poolIndex]->Branch("multiplicity", &fMultiplicityEM);
     fEventBuffer[poolIndex]->Branch("eventInfo", "TObjString",&fEventInfo);
     fEventBuffer[poolIndex]->Branch("earray", "TObjArray",&fElectronTracks);
-    fEventBuffer[poolIndex]->Branch("eventID", &fEventID);
+ //  fEventBuffer[poolIndex]->Branch("eventID", &fEventID);
 
     return;
     
@@ -869,7 +869,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         if(!trk) continue;
         
         Float_t nSigmaTOF_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trk, AliPID::kElectron);
-        Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);  // need to know the data type conversion
+        Float_t nSigmaTPC_Ele = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trk, AliPID::kElectron);
         nSigmaCombined_Ele = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_Ele, nSigmaTOF_Ele);
         
         Double_t mass =9999.; Double_t mass_ss = 9999.;
@@ -898,9 +898,10 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
     } // nTracks
     
     //------------------ Mixing ------------
-    if(fDoEventMixing && fElectronTracks) fElectronTracks -> Delete();
+    
+   // if(fDoEventMixing && fElectronTracks) fElectronTracks -> Delete();
     fMultiplicityEM = ((AliAODHeader*)aodEvent->GetHeader())->GetRefMultiplicityComb08();
-    fEventID =  ((AliAODHeader*)aodEvent->GetHeader())->GetEventIdAsLong();
+   // fEventID =  ((AliAODHeader*)aodEvent->GetHeader())->GetEventIdAsLong(); // do not use this, since it is not unique
     fEventInfo->SetString(Form("Ev%d_esd%d_E%d",AliAnalysisManager::GetAnalysisManager()->GetNcalls(),((AliAODHeader*)aodEvent->GetHeader())->GetEventNumberESDFile(),fElectronTracks->GetEntries()));
     
     if(fDoEventMixing){
@@ -1090,7 +1091,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                 if(trkBE->Charge()>0 ) {
                    
                     decaytype = 1; // RS
-                    kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
+                    kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
            
                     //================= reconstrcut Omegac0_RS with Omega mass conostraint ===========
                     const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
@@ -1143,7 +1144,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
                 if(trkBE->Charge()<0 ) {
                     
                     decaytype = 0; // WS
-                    kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
+                    kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
            
                     //================= reconstrcut Omegac0_WS with Omega mass conostraint ===========
                     const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
@@ -1330,7 +1331,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
             if (trkBE->Charge() <0 ){
                 
                 decaytype = 1; // RS
-                kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
+                kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
             
                 //============== reconstruct Anti-Omegac0_RS with Omega mass constraint =========
                 const KFParticle *vOmegac0Ds[2] = {&kfpBE, &kfpOmegaPlus_m};
@@ -1386,7 +1387,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
             if (trkBE->Charge() >0 ){
                 
                 decaytype = 0; // WS
-                kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
+                kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
             
                 //================= reconstrcut AntiOmegac0_WS with Omega mass conostraint ===========
                 const KFParticle *vOmegac0Ds[2] = {&kfpBE, &kfpOmegaPlus_m};
@@ -1590,16 +1591,16 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
     TObjArray* earray =0x0;
     Double_t zVertex,mult;
     TObjString* eventInfo=0x0;
-    ULong64_t eventID;
+  //  ULong64_t eventID;
     
     fEventBuffer[poolIndex]->SetBranchAddress("eventInfo",&eventInfo);
     fEventBuffer[poolIndex]->SetBranchAddress("zVertex", &zVertex);
     fEventBuffer[poolIndex]->SetBranchAddress("multiplicity", &mult);
     fEventBuffer[poolIndex]->SetBranchAddress("earray", &earray);
-    fEventBuffer[poolIndex]->SetBranchAddress("eventID", &eventID);
+   // fEventBuffer[poolIndex]->SetBranchAddress("eventID", &eventID);
     
-    ULong64_t eventID_casc;
-    ULong64_t eventID_ele;
+  //  ULong64_t eventID_casc;
+  //  ULong64_t eventID_ele;
     
     Double_t zVertex1, zVertex2;
     Double_t mult1, mult2;
@@ -1620,7 +1621,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
         AliAODTrack *ntrack = (AliAODTrack*)(casc->GetDaughter(1));
         AliAODTrack *btrack = (AliAODTrack*)(casc->GetDecayVertexXi()->GetDaughter(0));
         
-        eventID_casc = eventID;
+     //   eventID_casc = eventID;
         sscanf((eventInfo->String()).Data(), "Ev%d_esd%d", &evId1, &esdId1);
         
         if( !ptrack || !ntrack || !btrack) continue;
@@ -1724,25 +1725,25 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
                 fEventBuffer[poolIndex]->GetEvent(iEv+nEvents-fNumberOfEventsForMixing);
                 TObjArray* earray1 = (TObjArray*)earray->Clone();
                 Int_t nElectrons = earray1->GetEntries();
-                
-                eventID_ele = eventID;
-                if(eventID_ele == eventID_casc ){
-                    printf("DoEventWithMixingPools: ERROR: same event");
-                    delete earray1;
-                    continue;
-                }
+              
+              //  eventID_ele = eventID;
+              //  if(eventID_ele == eventID_casc ){
+              //      printf("DoEventWithMixingPools: ERROR: same event");
+              //      delete earray1;
+              //      continue;
+              // }
                 
                 sscanf( ( eventInfo ->String()).Data(), "EV%d_esd%d", &evId2, &esdId2);
                 if(evId2 == evId1 && esdId2 == esdId1){
-                    printf("DoEventWithMixingPools: ERROR: same event");
+                    printf("DoEventMixingWithPools: ERROR: same event");
                     delete earray1;
                     continue;
                 }
                 zVertex2 = zVertex;
                 mult2 = mult;
                 if (TMath::Abs(zVertex2-zVertex1) <0.0001 && TMath::Abs(mult2-mult1)<0.001){
-                    printf("DoEventWithMixingPools: ERROR: same event");
-                    delete earray1;
+                    printf("DoEventMixingWithPools: ERROR: same event");
+                   // delete earray1;
                     continue;
                 }
                 for(Int_t iTr1=0; iTr1<nElectrons; iTr1++){
@@ -1760,7 +1761,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
                     //--- RS eOmega pairs
                     if(trkBE->Charge()>0){
                         decaytype = 1; // RS
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE,-11);
+                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
                
                         const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
                         kfpOmegac0.Construct(vOmegacZeroDs,NDaughters);
@@ -1787,7 +1788,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
                     //----- WS eOmega pairs
                     if(trkBE->Charge()<0){
                         decaytype = 0; // WS
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
+                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
                         
                         const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
                         kfpOmegac0.Construct(vOmegacZeroDs,NDaughters);
@@ -1889,24 +1890,24 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
                 TObjArray* earray1 = (TObjArray*)earray->Clone();
                 Int_t nElectrons = earray1->GetEntries();
             
-                eventID_ele = eventID;
-                if(eventID_ele == eventID_casc ){
-                    printf("DoEventWithMixingPools: ERROR: same event");
-                    delete earray1;
-                    continue;
-                }
+             //   eventID_ele = eventID;
+             //   if(eventID_ele == eventID_casc ){
+             //       printf("DoEventWithMixingPools: ERROR: same event");
+             //       delete earray1;
+             //      continue;
+             //   }
                 
                 sscanf( ( eventInfo ->String()).Data(), "EV%d_esd%d", &evId2, &esdId2);
                 if(evId2 == evId1 && esdId2 == esdId1){
-                    printf("DoEventWithMixingPools: loop ERROR: same event");
+                    printf("DoEventMixingWithPools: loop ERROR: same event");
                     delete earray1;
                     continue;
                 }
                 zVertex2 = zVertex;
                 mult2 = mult;
                 if (TMath::Abs(zVertex2-zVertex1)<0.0001 && TMath::Abs(mult2-mult1)<0.001){
-                    printf("DoEventWithMixingPools: loop ERROR: same event");
-                    delete earray1;
+                    printf("DoEventMixingWithPools: loop ERROR: same event");
+                   // delete earray1;
                     continue;
                 }
                 for(Int_t iTr1=0; iTr1<nElectrons; iTr1++){
@@ -1923,7 +1924,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
                     //---- RS eOmega pairs
                     if(trkBE->Charge()<0){
                         decaytype = 1;
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
+                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
                     
                         const KFParticle *vOmegac0Ds[2] = {&kfpBE, &kfpOmegaPlus_m};
                         kfpAntiOmegac0.Construct(vOmegac0Ds, NDaughters);
@@ -1952,7 +1953,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DoEventMixingWithPools(Int_t poo
                     //---- WS eOmega pairs
                     if(trkBE->Charge()>0){
                         decaytype = 0; // WS
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
+                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
                         
                         const KFParticle *vOmegac0Ds[2] = {&kfpBE, &kfpOmegaPlus_m};
                         kfpAntiOmegac0.Construct(vOmegac0Ds, NDaughters);

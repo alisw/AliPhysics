@@ -68,14 +68,16 @@ AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString f
    
  //-------------- bins for mult. and Vz
    // PVz binning for pools pp
-   Double_t zVertbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12 };
+ //  Double_t zVertbinlimits[] = {-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12 };
+   Double_t zVertbinlimits[] = {-10 ,-7.5, -5, -2.5, 0, 2.5, 5, 7.5, 10};
    Int_t  NzVertbin = sizeof(zVertbinlimits)/sizeof(Double_t) - 1;
    task -> SetPoolZVertBinLimits(NzVertbin, zVertbinlimits);
     
    // Mult binning for pools pp
-   Double_t Multbinlimits[] = {0, 100};
+  // Double_t Multbinlimits[] = {0, 100};
+   Double_t Multbinlimits[] = {0, 5, 10, 15, 20, 25, 30, 40, 100000};
    Int_t NMultbin = sizeof(Multbinlimits)/sizeof(Double_t) - 1;
-   task -> SetMultiplicityBinLimits(NMultbin,Multbinlimits );
+   task -> SetMultiplicityBinLimits(NMultbin, Multbinlimits);
    task -> SetNumberOfEventsForMixing(20);
     
    mgr->AddTask(task);
