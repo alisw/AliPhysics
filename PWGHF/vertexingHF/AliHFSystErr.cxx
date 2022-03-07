@@ -546,11 +546,11 @@ void AliHFSystErr::Init(Int_t decay){
           if (fIsBDTAnalysis) {InitLctopK0S2017pp5TeVBDT();}
           else {InitLctopK0S2017pp5TeV();}
         }
-	else if (fRunNumber == 18 || fRunNumber == 2018){
-	  if (fIsBDTAnalysis) InitLctopK0S20161718pp13TeVBDT();
-    else if(fIsDataDrivenFDAnalysis) {InitNonPromptLctopK0s20161718pp13TeVML();}
-	  else AliFatal("Not yet implemented");
-	}
+        else if (fRunNumber == 18 || fRunNumber == 2018){
+          if (fIsBDTAnalysis) InitLctopK0S20161718pp13TeVBDT();
+          else if(fIsDataDrivenFDAnalysis) {InitNonPromptLctopK0s20161718pp13TeVML();}
+          else AliFatal("Not yet implemented");
+        }
         else InitLctopK0S2010pp();
       }
       else if (fCollisionType==1) {
@@ -3136,8 +3136,7 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
   for(Int_t i=1;i<=2;i++) fMCPtShape->SetBinContent(i,1.00);
-  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,0.03);
-  for(Int_t i=5;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=3;i<=12;i++) fMCPtShape->SetBinContent(i,0.05);
   for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,1.00);
 
   // FD
