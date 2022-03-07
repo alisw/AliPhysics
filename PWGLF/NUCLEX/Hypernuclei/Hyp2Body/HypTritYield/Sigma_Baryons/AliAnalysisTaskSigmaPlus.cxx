@@ -3201,7 +3201,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             AliAODTrack *pairprot;
             pairprot = (AliAODTrack*)aodEvent->GetTrack(fProtonArray.at(q));
             if(!pairprot) continue;
-            if(pairprot->Charge()!=prot->Charge()) continue;
+            //if(pairprot->Charge()!=prot->Charge()) continue;
 
             //If the Sigma made it here, check properties of all Protons in the Event and write them to a tree
 
