@@ -193,7 +193,7 @@ AliAnalysisTaskR2P2Corr::AliAnalysisTaskR2P2Corr()
   _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
   _nBins_M7(100),       _min_M7(0),        _max_M7(1),              _width_M7(0.01),
   _nBins_M8(100),       _min_M8(0),        _max_M8(1),              _width_M8(0.01),
-  _nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ(0.5),
+  _nBins_vertexZ(0),   _min_vertexZ(0), _max_vertexZ(0),        _width_vertexZ(0.5),
 
   _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
   _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
@@ -605,7 +605,7 @@ AliAnalysisTaskR2P2Corr::AliAnalysisTaskR2P2Corr(const TString & name)
   _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
   _nBins_M7(100),       _min_M7(0),        _max_M7(1),              _width_M7(0.01),
   _nBins_M8(100),       _min_M8(0),        _max_M8(1),              _width_M8(0.01),
-  _nBins_vertexZ(40),   _min_vertexZ(-10), _max_vertexZ(10),        _width_vertexZ(0.5),
+  _nBins_vertexZ(0),   _min_vertexZ(0), _max_vertexZ(0),        _width_vertexZ(0.5),
 
   _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
   _nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
@@ -1971,7 +1971,7 @@ void  AliAnalysisTaskR2P2Corr::UserExec(Option_t */*option*/)
 		  iEtaPhi = iEta * _nBins_phi_1 + iPhi;
 		  iZEtaPhiPt = iVertexP1 + iEtaPhi * _nBins_pt_1 + iPt;
 
-		  if ( _correctionPtEff_1 )   corr = 1./Double_t(_correctionPtEff_1[ iPt ]); 
+		  if ( _correctionPtEff_1 )   corr = _correctionPtEff_1[ iPt ]; 
 		  else   corr = 1;				
 		  //cout<<" corr1: "<<corr<<endl;
 		  if ( iZEtaPhiPt < 0 || iZEtaPhiPt >= _nBins_zEtaPhiPt_1 )
@@ -2122,7 +2122,7 @@ void  AliAnalysisTaskR2P2Corr::UserExec(Option_t */*option*/)
 		      continue;
 		    }
 
-		  if ( _correctionPtEff_2 )   corr = 1./Double_t(_correctionPtEff_2[ iPt ]);
+		  if ( _correctionPtEff_2 )   corr = _correctionPtEff_2[ iPt ];
 		  else   corr = 1;		
 		  //cout<<" corr2: "<<corr<<endl;
 		  if (_singlesOnly)
@@ -2243,7 +2243,7 @@ void  AliAnalysisTaskR2P2Corr::UserExec(Option_t */*option*/)
 	{
 	  AliMCEvent * mcEvent = MCEvent();
 	  _nTracks = mcEvent -> GetNumberOfTracks();
-	
+	  countMult = 0;
 	  //Track Loop starts here
 	  for ( int iTrack = 0; iTrack < _nTracks; iTrack++ )
 	    {
@@ -2300,7 +2300,7 @@ void  AliAnalysisTaskR2P2Corr::UserExec(Option_t */*option*/)
 	      if( pt < _min_pt_1 || pt > ptUpperLimit ) continue;         
 	      //if( y < _min_eta_1 || y > _max_eta_1 ) continue;
 	      if( eta < _min_eta_1 || eta > _max_eta_1 ) continue;
-
+	      countMult++;
 	      /*
 		int pdg = t -> GetPdgCode();
 		// Compare to http://pdg.lbl.gov/2007/reviews/montecarlorpp.pdf
@@ -2415,8 +2415,7 @@ void  AliAnalysisTaskR2P2Corr::UserExec(Option_t */*option*/)
 		  iEtaPhi = iEta*_nBins_phi_1+iPhi;
 		  iZEtaPhiPt = iVertexP1 + iEtaPhi*_nBins_pt_1 + iPt;
                 
-		  //if (_correctionPtEff_1)  corr = _correctionWeight_1[iZEtaPhiPt];
-		  //else
+
 		  corr = 1;
 
 		  //cout << "step 8 Au-Au" << endl;
@@ -2492,8 +2491,6 @@ void  AliAnalysisTaskR2P2Corr::UserExec(Option_t */*option*/)
 		      continue;
 		    }   
                 
-		  //if (_correctionPtEff_2)  corr = _correctionWeight_2[iZEtaPhiPt];
-		  //else
 		  corr = 1;
                 
 		  if (_singlesOnly)
