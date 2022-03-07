@@ -77,9 +77,9 @@ class AliAnalysisTaskSignedBFMC : public AliAnalysisTaskSE {
  private:
   Double_t    IsEventAccepted(AliVEvent* event);
   Double_t    GetEventPlane(AliVEvent* event);
-  Double_t    GetEventPlaneMC(AliVEvent *event, Float_t &gImpactPar);
+  Double_t    GetEventPlaneMC(AliMCEvent *gMCEvent, Float_t &gImpactPar);
   Double_t    GetCentralityFromImpactPar(Float_t gimpact);
-  void ProcessEvent(AliVEvent *event, Double_t gCentrality, Double_t gReactionPlane);
+  void ProcessEvent(AliMCEvent *eventMC, Double_t gCentrality, Double_t gReactionPlane);
   void FillBFHistograms(TObjArray *tracksAccepted, Double_t gCentrality, Double_t gReactionPlane, Int_t i1);
   void CalculateSignedBFEbyE(TObjArray *cObjAcceptedParticles, 
 			     Double_t gCentrality,
@@ -97,7 +97,8 @@ class AliAnalysisTaskSignedBFMC : public AliAnalysisTaskSE {
   TH1F *fHistMultiplicity;//multiplicity distribution
   TH2F *fHistMultiplicityvsPercentile;//multiplicity vs multiplicity percentile correlation
   TH2F *fHistEventPlane;//event plane angle
-
+  TH2F *fHistEPResolution;//event plane Resolution
+  
   TH1F *fHistNumberOfAcceptedParticles; //accepted particles,
   TH1F *fHistNumberOfAcceptedPositiveParticles; //acepted positive particles
   TH1F *fHistNumberOfAcceptedNegativeParticles; //acepted negative particles

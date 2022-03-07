@@ -49,6 +49,7 @@ AliAnalysisTaskSignedBFMC::AliAnalysisTaskSignedBFMC(const char *name)
   fHistMultiplicity(0),
   fHistMultiplicityvsPercentile(0),
   fHistEventPlane(0),
+  fHistEPResolution(0),
   fHistNumberOfAcceptedParticles(0),
   fHistNumberOfAcceptedPositiveParticles(0),
   fHistNumberOfAcceptedNegativeParticles(0),
@@ -151,6 +152,8 @@ void AliAnalysisTaskSignedBFMC::UserCreateOutputObjects() {
   //Event plane
   fHistEventPlane = new TH2F("fHistEventPlane",";#Psi_{2} [deg.];Centrality percentile;Counts",100,0,TMath::Pi(),220,-5,105);
   fListQA->Add(fHistEventPlane);
+  fHistEPResolution = new TH2F("fHistEPResolution",";Resolution;Centrality percentile;Counts",100,0,TMath::Pi(),220,-5,105);
+  fListQA->Add(fHistEPResolution); 
 
   fHistNumberOfAcceptedParticles = new TH1F("fHistNumberOfAcceptedParticles",";N_{acc.};Entries",10000,0,10000);
   fListQA->Add(fHistNumberOfAcceptedParticles);
@@ -265,22 +268,24 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
   
   // get the event (for generator level: MCEvent())
   AliVEvent* eventMain = NULL;
+  AliMCEvent* eventMC = NULL;
   if(fAnalysisLevel == "MC" || fAnalysisLevel == "MCFLY") {
-    eventMain = dynamic_cast<AliVEvent*>(MCEvent());
+    eventMC = dynamic_cast<AliMCEvent*>(MCEvent());
   }
   else{
     eventMain = dynamic_cast<AliVEvent*>(InputEvent());
     // for HBT like cuts need magnetic field sign
     //bSign = (eventMain->GetMagneticField() > 0) ? 1 : -1;
   }
-  if(!eventMain) {
-    AliError("eventMain not available");
+  if(!eventMain && !eventMC) {
+    AliError("AliVEvent or MCevent is not available");
     return;
   }
 
 
   if(fAnalysisLevel == "MCFLY"){
     lMultiplicityVar = GetCentralityFromImpactPar(lMultiplicityVar);
+    gReactionPlane = GetEventPlaneMC(eventMC,gimpactPar);
   }
   else{
     lMultiplicityVar = IsEventAccepted(eventMain);
@@ -288,8 +293,8 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
   }
 
 
-  gReactionPlane = GetEventPlaneMC(eventMain,gimpactPar);
-  fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
+
+  //fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
 
   if(lMultiplicityVar < 0) { 
     Printf("Debug: Could not get Centrality from Impact parameter! Exit \n");    
@@ -320,7 +325,7 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
   fHistP->Reset(); fHistN->Reset();
   
   //process the event
-  ProcessEvent(eventMain, lMultiplicityVar, gReactionPlane);
+  ProcessEvent(eventMC, lMultiplicityVar, gReactionPlane);
 
   //Printf("Good: Processing the Event was successful \n");
   
@@ -621,9 +626,9 @@ void AliAnalysisTaskSignedBFMC::FillBFHistograms(TObjArray *tracksAccepted,
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSignedBFMC::ProcessEvent(AliVEvent *event,
-					   Double_t gCentrality,
-					   Double_t gReactionPlane) {
+void AliAnalysisTaskSignedBFMC::ProcessEvent(AliMCEvent *mcEvent,
+					      Double_t gCentrality,
+					      Double_t gReactionPlane) {
   // Loop over tracks in event
   Short_t vCharge = 0;
   Float_t vEta = 0.0;
@@ -647,12 +652,73 @@ void AliAnalysisTaskSignedBFMC::ProcessEvent(AliVEvent *event,
   tracksAccepted->SetOwner(kTRUE);
 
   if(fAnalysisLevel=="MC"||fAnalysisLevel=="MCFLY"){
-    AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(event);
+    
+    //AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(event);
     Int_t  nMCParticles = mcEvent->GetNumberOfTracks();
 
     Double_t trkPt=0,trkPhi=0,trkEta=0,vzMC=0;
     Int_t trkChrg=0,LabelOfMother=0;
-    
+
+    Double_t sumQxpos=0.,sumQypos=0.,sumQxneg=0.,sumQyneg=0.;
+    Int_t  numEtapos=0,numEtaneg=0;
+
+ 
+    for (Int_t iTracks = 0; iTracks < nMCParticles; iTracks++) {
+      AliAODMCParticle *mcTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTracks); 
+      if (!mcTrack) {
+	AliError(Form("ERROR: Could not receive track %d (mc loop)", iTracks));
+	continue;
+      }
+      //---------------------- Bare minimum cuts for Primary ----------------
+      TString generatorName;    
+      Bool_t hasGenerator = mcEvent->GetCocktailGenerator(iTracks,generatorName);
+      //if((!hasGenerator) || (!generatorName.Contains("AMPT")))  continue;      
+      LabelOfMother = mcTrack->GetMother();
+      if(LabelOfMother>0)               continue; //only using primary track
+      if(!mcTrack->IsPhysicalPrimary()) continue; //only using primary track         
+      vzMC = mcTrack->Zv();
+      if(TMath::Abs(vzMC) > fVzMax)     continue;
+      vCharge = mcTrack->Charge();
+      if(!vCharge)              	continue;
+      //-------------------------------------------------------------------- 
+      vEta = mcTrack->Eta();
+      vPt   = mcTrack->Pt();
+      trkPhi = mcTrack->Phi();
+	
+      if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;     //eta coverage  
+      if((vPt < 0.2) || (vPt > 2.0))           continue;     //pt coverage
+
+      if(vEta>=0.1){
+	sumQxpos += TMath::Cos(2.*trkPhi);
+	sumQypos += TMath::Sin(2.*trkPhi);
+	numEtapos+=1;
+      }
+      else if(vEta<=-0.1){
+	sumQxneg += TMath::Cos(2.*trkPhi);
+	sumQyneg += TMath::Sin(2.*trkPhi);
+	numEtaneg+=1;
+      }
+      
+       
+    }//mc track loop for Event Plane.
+
+    Double_t gEPpos=0,gEPneg=0;
+    //sumQxpos,
+    if(numEtapos>0){
+      gEPpos = 0.5*TMath::ATan2(sumQypos,sumQxpos);
+      if(gEPpos<0) gEPpos += TMath::Pi();
+    }
+    if(numEtaneg){
+      gEPneg = 0.5*TMath::ATan2(sumQyneg,sumQxneg);
+      if(gEPneg<0) gEPneg += TMath::Pi();
+    }
+
+
+    gReactionPlane = gEPpos; /// using +ve Eta EP for the calculation.
+
+    fHistEventPlane->Fill(gReactionPlane,gCentrality);
+    fHistEPResolution->Fill(TMath::Cos(2*(gEPpos - gEPneg)),gCentrality);
+
     
     for (Int_t iTracks = 0; iTracks < nMCParticles; iTracks++) {
       AliAODMCParticle *mcTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTracks); 
@@ -712,6 +778,8 @@ void AliAnalysisTaskSignedBFMC::ProcessEvent(AliVEvent *event,
       i1 += 1;      
     }//mc generated track loop    
   }//if MC Event
+
+  /*
   else{
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
@@ -758,7 +826,7 @@ void AliAnalysisTaskSignedBFMC::ProcessEvent(AliVEvent *event,
       gNumberOfAcceptedParticles += 1;
       i1 += 1;
     }//loop over AOD tracks
-  }
+  }*/
 
   
   fHistNumberOfAcceptedParticles->Fill(gNumberOfAcceptedParticles);
@@ -1160,19 +1228,19 @@ Double_t AliAnalysisTaskSignedBFMC::IsEventAccepted(AliVEvent *event){
   // in all other cases return -1 (event not accepted)
   return -1;
 }
-Double_t AliAnalysisTaskSignedBFMC::GetEventPlaneMC(AliVEvent *event, Float_t &gImpactPar) {
+Double_t AliAnalysisTaskSignedBFMC::GetEventPlaneMC(AliMCEvent *gMCEvent, Float_t &gImpactPar) {
   //MC: from reaction plane
-  Float_t gVZEROEventPlane    = -10.;
-  Float_t gReactionPlane      = -10.;
+  Double_t gVZEROEventPlane    = -10.;
+  Double_t gReactionPlane      = -10.;
   Double_t qxTot = 0.0, qyTot = 0.0;
-  Int_t gHarmonic = 2;
+  Int_t    gHarmonic = 2;
  
-  if(!event) {
+  if(!gMCEvent) {
     AliError("mcEvent not available");
     return 0x0;
   }
   
-  AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
+  //AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
   //if(gMCEvent) Printf("Debug: Got MC event for reading plane from header\n"); 
 
   TList *ltgen = (TList*) gMCEvent->GetCocktailList();
@@ -1195,7 +1263,7 @@ Double_t AliAnalysisTaskSignedBFMC::GetEventPlaneMC(AliVEvent *event, Float_t &g
       gReactionPlane = headerH->ReactionPlaneAngle();  // for AMPT it should be zero.
       gImpactPar = headerH->ImpactParameter();
       Printf("Debug: Found real headerH. The MC event plane: %f, Impactpar:%f \n",gReactionPlane,gImpactPar);
-      return gReactionPlane;
+      //return gReactionPlane;
     }
     else{
       //Printf("Debug: Found the Right Generator but not the headerH !!! \n");
@@ -1208,11 +1276,16 @@ Double_t AliAnalysisTaskSignedBFMC::GetEventPlaneMC(AliVEvent *event, Float_t &g
       gReactionPlane = headerH->ReactionPlaneAngle();  // for AMPT it should be zero.
       gImpactPar = headerH->ImpactParameter();
       //Printf("Debug:Alternate headerH MC event plane from header = %f, Impactpar:%f \n",gReactionPlane,gImpactPar);
-      return gReactionPlane;
+      //return gReactionPlane;
     }
-  }  
+  }
   return gReactionPlane;  
 }
+
+
+
+
+
   
 //________________________________________________________________________
 Double_t AliAnalysisTaskSignedBFMC::GetEventPlane(AliVEvent *event) {
