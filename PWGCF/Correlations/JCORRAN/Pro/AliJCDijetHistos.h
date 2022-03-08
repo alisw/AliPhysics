@@ -49,7 +49,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         void SetDijetMBinsHistos( TString sMBins ) {
             fSMBins = sMBins;
             std::vector<TString> ar = Tokenize( sMBins, "\t ,");
-            fnNewBinsDijet1=ar.size();
+            fnNewBinsDijet1=ar.size()-1;
             for (unsigned i=0; i<ar.size(); i++) {
                 dijetMBin.push_back(ar.at(i).Atof());
             }
