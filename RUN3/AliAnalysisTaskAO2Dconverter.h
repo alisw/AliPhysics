@@ -564,8 +564,8 @@ private:
   struct {
     /// FDD (AD)
     Int_t fIndexBCs = 0u;                /// Index to BC table
-    Float_t fAmplitudeA[4] = {0.f};   /// Multiplicity for each A-side channel
-    Float_t fAmplitudeC[4] = {0.f};   /// Multiplicity for each C-side channel
+    int16_t fAmplitudeA[8] = {0u};   /// Multiplicity for each A-side channel
+    int16_t fAmplitudeC[8] = {0u};   /// Multiplicity for each C-side channel
     Float_t fTimeA = 0.f;             /// Average A-side time
     Float_t fTimeC = 0.f;             /// Average C-side time
     uint8_t fTriggerMask = 0;         /// Trigger info
@@ -648,7 +648,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 27);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 28);
 };
 
 #endif
