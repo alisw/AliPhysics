@@ -95,6 +95,12 @@ class AliRDHFCutsXictopKpi : public AliRDHFCuts
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
+  void IsSelectedCombinedPID_testTOFmatching_MCsignal(AliAODRecoDecayHF* obj
+                                            ,Int_t is_pKpi_MC
+                                            ,Float_t arr_isTPCsel[3]
+                                            ,Float_t arr_isTOFok[3]
+                                            ,Float_t arr_isCombTPCTOFsel[3]
+  );
   Int_t IsSelectedCombinedPIDOnlyProton(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDSoft(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDpPb(AliAODRecoDecayHF* obj);

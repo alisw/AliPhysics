@@ -2,14 +2,13 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
     Bool_t getFromAlien = kFALSE,
     TString cFileName = "Config_dsekihat_TAP_PbPb.C",
     TString lFileName = "LMEECutLib_dsekihat.C",
-		TString calibFileName = "",
+    TString calibFileName = "",
     UInt_t trigger = AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral,
     const Int_t CenMin =  0,
     const Int_t CenMax = 10,
     const Int_t Nmix   = 10,
-		const TString type = "PID",//what kind of efficiency do you want to measure by TAP?//PID, Tracking, etc
-		const TString cutname = "DefaultTrackCut_Nsc01_TPChadrejORTOFrec_Pair1",//same as real anslysis used in AliAnalysisTaskMultDielectron
-		const TString outname = "LMEE.root",
+    const TString type = "PID",//what kind of efficiency do you want to measure by TAP?//PID, Tracking, etc
+    const TString outname = "LMEE.root",
     const Bool_t isMC = kFALSE
     )
 {
@@ -27,13 +26,13 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
     return NULL;
   }
 
-	//load config files and cut library
+  //load config files and cut library
 
-  TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  //TString configBasePath= "./";
+  //TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
+  TString configBasePath= "./";
   if(getFromAlien
-    && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data())))
-    && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",lFileName.Data())))
+    && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s file:./",cFileName.Data())))
+    && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s file:./",lFileName.Data())))
     ){
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -47,20 +46,20 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
   gROOT->LoadMacro(libFilePath.Data());//library first
   gROOT->LoadMacro(configFilePath.Data());
 
-	TString triggername = "NULL";
-	if(trigger == (UInt_t)AliVEvent::kINT7)             triggername = "kINT7";
-	else if(trigger == (UInt_t)AliVEvent::kCentral)     triggername = "kCentral";
-	else if(trigger == (UInt_t)AliVEvent::kSemiCentral) triggername = "kSemiCentral";
-	else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral)) triggername = "kCombinedCentralityTriggers";
-	else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral))                           triggername = "kCombinedCentral";
-	else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
+  TString triggername = "NULL";
+  if(trigger == (UInt_t)AliVEvent::kINT7)             triggername = "kINT7";
+  else if(trigger == (UInt_t)AliVEvent::kCentral)     triggername = "kCentral";
+  else if(trigger == (UInt_t)AliVEvent::kSemiCentral) triggername = "kSemiCentral";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral)) triggername = "kCombinedCentralityTriggers";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral))                           triggername = "kCombinedCentral";
+  else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kSemiCentral))                       triggername = "kCombinedSemiCentral";
 
-  TString taskname = Form("TAP_%sEff_%s_Cen%d_%d_%s",type.Data(),cutname.Data(),CenMin,CenMax,triggername.Data());
+  TString taskname = Form("TAP_%sEff_Cen%d_%d_%s",type.Data(),CenMin,CenMax,triggername.Data());
   AliAnalysisTaskTagAndProbe* task = new AliAnalysisTaskTagAndProbe(taskname);
   gROOT->GetListOfSpecials()->Add(task);//this is only for ProcessLine(Config_dsekihat(taskname));
 
   task->SelectCollisionCandidates(trigger);
-	task->SetTriggerMask(trigger);
+  task->SetTriggerMask(trigger);
   task->SetCentralityMin(CenMin);
   task->SetCentralityMax(CenMax);
   task->SetDepthNMixed(Nmix);
@@ -68,14 +67,14 @@ AliAnalysisTaskTagAndProbe* AddTask_dsekihat_TAP_PbPb(
   task->SetCentralityEstimator("V0M");
 
   task->SetMC(isMC);
-	//task->SetPhivCutRange(0.05,2.0);
+  //task->SetPhivCutRange(0.05,2.0);
 
   task->GetEventFilter()->AddCuts(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
 
-	gROOT->ProcessLine(Form("Config_dsekihat_TAP_PbPb(%s,\"%s\",\"%s\")",task->GetName(),type.Data(),cutname.Data()));
+  gROOT->ProcessLine(Form("Config_dsekihat_TAP_PbPb(%s,\"%s\",%d)",task->GetName(),type.Data(),isMC));
 
-	//PID calibration
-	TFile *rootfile = 0x0;
+  //PID calibration
+  TFile *rootfile = 0x0;
 
   if(calibFileName.Contains("MC")){//for MC
     printf("reading : %s for PID calibration\n",calibFileName.Data());

@@ -48,6 +48,7 @@ private:
   Bool_t                 fUseNewRunDepTempCalib;     ///< Off by default the check in the OADB of the new run dependent temp calib Run1/Run2
   Bool_t                 fDisableTempCalib;          ///< Off by default, disables temp calibration totally
   Bool_t                 fUseShaperCorrection;       ///< Off by default the correction for the shaper nonlinearity
+  Bool_t                 fUseDetermineLowGain;       ///< Instead of using cell info, determine if cell is LG or HG from ADC values
   Bool_t                 fUseAdditionalScale;        ///< Off by default, enables an energy scale shift on cell level. Highly experimental!
   std::vector<Float_t>   fAdditionalScaleSM;         ///< values for additionalScale shift for 3 different types of SM: Full, 2/3 and 1/3
   TString                fCustomRecalibFilePath;     ///< Empty string by default the path to the OADB file of the custom energy recalibration
@@ -60,7 +61,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEnergy, 9); // EMCal cell energy correction component
+  ClassDef(AliEmcalCorrectionCellEnergy, 10); // EMCal cell energy correction component
   /// \endcond
 };
 

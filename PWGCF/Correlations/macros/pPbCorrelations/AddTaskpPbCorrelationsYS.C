@@ -2,15 +2,15 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       TString  fListName      ="pPbCorrelations_1",
 								       TString  fListName1     ="Corr_1",
 								       TString  fListName2     ="QA_1",
-								       TString  fCollisiontype ="HMPPV0",//MBPP,HMPP, pPb,PbPb
+								       TString  fCollisiontype ="PbPbperi",//MBPP,HMPPV0,HMPPSPD, pPb,PbPb
 								       Bool_t  fDataType       =kTRUE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kTRUE,
-								       TString anamode         ="TPCFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SE__CA
-								       TString anacent         ="Manual",
+								       TString anamode         ="FMDFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SE__CA
+								       TString anacent         ="V0M",
 								       TString assomode        ="hadron",
 								       Int_t ffilterbit        =32,
-								       Int_t fFMDcutpar        =12,
+								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
 								       Float_t fmaxpt          =3.0,
@@ -18,8 +18,9 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
 								       Int_t fMinNEventsInPool =5,
 								       Bool_t fefficalib       =kFALSE,
 								       Float_t fminpt=0.2,
-								       Float_t fcuthighmult=0.1
-								       //Bool_t fFillcorrelation=kTR
+								       Float_t fcuthighmult=0,
+									   Int_t calibmode=0,
+								       Bool_t fFillcorrelation=kTRUE
 								       )
 {
   // Get the current analysis manager.
@@ -86,8 +87,13 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
   myTask->SetAnalysisCent(anacent);//0:V0A 1:ZNA 2:
   myTask->SetAnalysisCollisionType(fCollisiontype);
   
-  //  myTask->SetFillCorrelation(kFALSE);
+
+  //   myTask->SetFillCorrelation(kFALSE);
+  myTask->SetFillCorrelation(fFillcorrelation);
+
+  
   myTask->SetEfficiencyCorrection(fefficalib);
+  myTask->SetEfficiencyCorrectionmode(calibmode);
 
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);}
@@ -97,7 +103,7 @@ AliAnalysisTaskSEpPbCorrelationsYS* AddTaskpPbCorrelationsYS(
       else if(fCollisiontype.Contains("pPb"))myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPbManual,cent_mult_binlimitspPbManual);
       else if(fCollisiontype.Contains("PbPb"))myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
     }else{
-      if(fCollisiontype=="pPb" ||fCollisiontype=="PbPb"){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
+      if(fCollisiontype=="pPb" ||fCollisiontype.Contains("PbPb")){myTask->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);}    
       else if(fCollisiontype.Contains("HMPP")|| fCollisiontype=="PP"||fCollisiontype=="MBPP") myTask->SetPoolCentBinLimits(cent_mult_bin_numbHMPP,cent_mult_binlimitsHMPP);
     }
     

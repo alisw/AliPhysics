@@ -69,6 +69,7 @@ public:
   }
 
   void SetUseGeneratedKine(bool flag) {fUseGeneratedKine=flag;}
+  void RejectEventsWithSameBunchPileup(bool flag) {fRejectEventsWithSameBunchPileup=flag;}
   void RejectGeneratedParticlesFromPileup(bool flag) {fRejectPileupParticles=flag;}
   void RejectTracksOfPileupParticles(bool flag) {fRejectTracksOfPileupPart=flag;}
   
@@ -106,6 +107,7 @@ private:
 
   bool fUseTrackCutsForAOD;       /// flag to switch off/on fTrackCuts for AOD
   bool fUseGeneratedKine;         /// flag to use the generated pt, eta phi
+  bool fRejectEventsWithSameBunchPileup; /// flag to reject events with generated same-bunch pileup
   bool fRejectPileupParticles;    /// flag to reject from generated particles those from pileup
   bool fRejectTracksOfPileupPart; /// flag to reject from reco particles those from pileup
   int  fPrimarySelectionOpt;      /// 0=no selection, 1=IsPhysicalPrimary, 2= cut on the origin
@@ -140,7 +142,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 11);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 12);
   /// \endcond
 };
 

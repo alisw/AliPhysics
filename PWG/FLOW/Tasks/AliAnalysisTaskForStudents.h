@@ -23,7 +23,7 @@ class AliAnalysisTaskForStudents : public AliAnalysisTaskSE{
  public:
   
   AliAnalysisTaskForStudents();
-  AliAnalysisTaskForStudents(const char *name, Bool_t useParticleWeights=kFALSE);
+  AliAnalysisTaskForStudents(const char *name);
   virtual ~AliAnalysisTaskForStudents(); 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);

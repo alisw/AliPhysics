@@ -100,7 +100,15 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TH1F* hNEvents=(TH1F*)l->FindObject("hNEvents");
   Int_t nReadEvents=hNEvents->GetBinContent(1);
   Int_t nPhysSelEvents=hNEvents->GetBinContent(2);
-  Int_t nSelectedEvents=hNEvents->GetBinContent(6);
+  Int_t nSelectedEvents=hNEvents->GetBinContent(7);
+  if(hNEvents->GetBinContent(7)<0.001){
+    TString bin6tit=hNEvents->GetXaxis()->GetBinLabel(6);
+    if(bin6tit.Contains("ileup")){
+      printf("Old task version, event counts taken from bin 6\n");
+      nSelectedEvents=hNEvents->GetBinContent(6);
+    }
+  }
+
   TH1F* hNTracks=(TH1F*)l->FindObject("hNTracks");
   TH1F* hNTracksBackg=(TH1F*)l->FindObject("hNTracksBackg");
   TH1F* hNTracksEmbed=(TH1F*)l->FindObject("hNTracksEmbed");
@@ -394,7 +402,11 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   TLegend * legtrhyp=new TLegend(0.6,0.5,0.89,0.89);
   legtrhyp->SetHeader("Mass Hypo in tracking");
   for(Int_t jsp=0; jsp<9; jsp++){ 
-    hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCsel%s",partNames[jsp].Data()));
+    hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCselNoTOFbc%s",partNames[jsp].Data()));
+    if(!hdEdxVsPTPCsel[jsp]){
+      // old version of the task
+      hdEdxVsPTPCsel[jsp]=(TH2F*)l->FindObject(Form("hdEdxVsPTPCsel%s",partNames[jsp].Data()));
+    }
     hdEdxVsPTPCsel[jsp]->GetXaxis()->SetTitle("p_{TPC} (GeV/c)");
     hdEdxVsPTPCsel[jsp]->GetYaxis()->SetTitle("TPC dE/dx");
     hdEdxVsPTPCsel[jsp]->SetTitle(Form("Tracked with %s mass hypothesis - TPC cuts",partNames[jsp].Data()));
@@ -474,7 +486,6 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   cdedxAll->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
  
-
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtNegEtaSPDany=ComputeMatchEff(hPtEtaNegTPCselSPDany,hPtEtaNegTPCsel,"hMatchEffVsPtNegEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
@@ -868,23 +879,30 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   cdist2->SaveAs(plotFileName.Data());
   if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
-
   TH1D* hPtEtaNegTPCselNormEv=(TH1D*)hPtEtaNegTPCsel->Clone("hPtEtaNegTPCselNormEv");
   TH1D* hPtEtaPosTPCselNormEv=(TH1D*)hPtEtaPosTPCsel->Clone("hPtEtaPosTPCselNormEv");
+  TH1D* hPtEtaNegTPCselITSrefNormEv=(TH1D*)hPtEtaNegTPCselITSref->Clone("hPtEtaNegTPCselITSrefNormEv");
+  TH1D* hPtEtaPosTPCselITSrefNormEv=(TH1D*)hPtEtaPosTPCselITSref->Clone("hPtEtaPosTPCselITSrefNormEv");
   TH1D* hPtEtaNegTPCselSPDanyNormEv=(TH1D*)hPtEtaNegTPCselSPDany->Clone("hPtEtaNegTPCselSPDanyNormEv");
   TH1D* hPtEtaPosTPCselSPDanyNormEv=(TH1D*)hPtEtaPosTPCselSPDany->Clone("hPtEtaPosTPCselSPDanyNormEv");
   hPtEtaNegTPCselNormEv->Scale(1./nSelectedEvents);
   hPtEtaPosTPCselNormEv->Scale(1./nSelectedEvents);
+  hPtEtaNegTPCselITSrefNormEv->Scale(1./nSelectedEvents);
+  hPtEtaPosTPCselITSrefNormEv->Scale(1./nSelectedEvents);
   hPtEtaNegTPCselSPDanyNormEv->Scale(1./nSelectedEvents);
   hPtEtaPosTPCselSPDanyNormEv->Scale(1./nSelectedEvents);
   hPtEtaNegTPCselNormEv->SetTitle("Tracks/event - #eta<0");
   hPtEtaPosTPCselNormEv->SetTitle("Tracks/event - #eta>0");
+  hPtEtaNegTPCselNormEv->SetStats(0);
+  hPtEtaPosTPCselNormEv->SetStats(0);
+  hPtEtaNegTPCselITSrefNormEv->SetTitle("Tracks/event - #eta<0");
+  hPtEtaPosTPCselITSrefNormEv->SetTitle("Tracks/event - #eta>0");
+  hPtEtaNegTPCselITSrefNormEv->SetStats(0);
+  hPtEtaPosTPCselITSrefNormEv->SetStats(0);
   hPtEtaNegTPCselSPDanyNormEv->SetTitle("Tracks/event - #eta<0");
   hPtEtaPosTPCselSPDanyNormEv->SetTitle("Tracks/event - #eta>0");
   hPtEtaNegTPCselSPDanyNormEv->SetStats(0);
   hPtEtaPosTPCselSPDanyNormEv->SetStats(0);
-  hPtEtaNegTPCselNormEv->SetStats(0);
-  hPtEtaPosTPCselNormEv->SetStats(0);
   
   TCanvas* cdistN=new TCanvas("cdistN","Pt Distrib per event",1200,600);
   cdistN->Divide(2,1);
@@ -1345,14 +1363,19 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   
   TH3F* hptresTPC3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCsel");
   if(!hptresTPC3d) hptresTPC3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCsel"); // old name
+  TH3F* hptresTPCTOF3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselTOFbc");
   TH3F* hptresITS3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselITSref");
   if(!hptresITS3d) hptresITS3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselITSref");
   TH3F* hptresSPD3d=(TH3F*)l->FindObject("hSig1ptCovMatPhiPtTPCselSPDany");
   if(!hptresSPD3d) hptresSPD3d=(TH3F*)l->FindObject("hTPCsig1ptPerClusPhiPtTPCselSPDany");
   TH2D* hptresTPC=(TH2D*)hptresTPC3d->Project3D("xy");
+  TH2D* hptresTPCTOF=0x0;
+  if(hptresTPCTOF3d) hptresTPCTOF=(TH2D*)hptresTPCTOF3d->Project3D("xy");
   TH2D* hptresITS=(TH2D*)hptresITS3d->Project3D("xy");
   TH2D* hptresSPD=(TH2D*)hptresSPD3d->Project3D("xy");
   TProfile* pptresTPC=hptresTPC->ProfileX("pptresTPC");
+  TProfile* pptresTPCTOF=0x0;
+  if(hptresTPCTOF) pptresTPCTOF=hptresTPCTOF->ProfileX("pptresTPCTOF");
   TProfile* pptresITS=hptresITS->ProfileX("pptresITS");
   TProfile* pptresSPD=hptresSPD->ProfileX("pptresSPD");
   pptresTPC->GetYaxis()->SetTitle(hptresTPC3d->GetXaxis()->GetTitle());
@@ -1361,6 +1384,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   pptresTPC->SetTitle("p_{T} resolution from cov. matrix");
   pptresTPC->SetLineColor(1);
   pptresTPC->SetMarkerStyle(20);
+  pptresTPC->SetMarkerColor(1);
+  if(pptresTPCTOF){
+    pptresTPCTOF->SetLineColor(kGray+1);
+    pptresTPCTOF->SetMarkerStyle(22);
+    pptresTPCTOF->SetMarkerColor(kGray+1);
+  }
   pptresTPC->SetMarkerColor(1);
   pptresITS->SetLineColor(kRed+1);
   pptresITS->SetMarkerStyle(25);
@@ -1379,10 +1408,12 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
   pptresTPC->SetMinimum(0);
   pptresTPC->SetMaximum(0.08);
   pptresTPC->Draw();
+  if(pptresTPCTOF) pptresTPCTOF->Draw("same");
   pptresITS->Draw("same");
   pptresSPD->Draw("same");
   TLegend* leg=new TLegend(0.17,0.7,0.4,0.87);
   leg->AddEntry(pptresTPC,"TPC only","P");
+  if(pptresTPCTOF) leg->AddEntry(pptresTPCTOF,"TPC only, TOF bc=0","P");
   leg->AddEntry(pptresITS,"ITSrefit","P");
   leg->AddEntry(pptresSPD,"SPD any","P");
   leg->Draw();
@@ -1963,6 +1994,38 @@ void PlotESDtrackQA(TString filename="QAresults.root", TString suffix="QA", Int_
     l->Write(l->GetName(),1);
     fouttree->Close();
     delete fouttree;
+  }else{
+    TFile* fouthistos=new TFile("outHistos.root","recreate");
+    hPtEtaNegTPCselNormEv->Write();
+    hPtEtaPosTPCselNormEv->Write();
+    hPtEtaNegTPCselITSrefNormEv->Write();
+    hPtEtaPosTPCselITSrefNormEv->Write();
+    hPtEtaNegTPCselSPDanyNormEv->Write();
+    hPtEtaPosTPCselSPDanyNormEv->Write();  
+    hMatchEffVsPtNegEta->Write();
+    hMatchEffVsPtPosEta->Write();
+    hMatchEffVsPtNegEtaSPDany->Write();
+    hMatchEffVsPtPosEtaSPDany->Write();
+    hMatchEffVsPtNegEtaTOFbc->Write();
+    hMatchEffVsPtPosEtaTOFbc->Write();
+    hMatchEffVsPtNegEtaSPDanyTOFbc->Write();
+    hMatchEffVsPtPosEtaSPDanyTOFbc->Write();
+    hMatchEffVsPhiNegEtaLowPt->Write();
+    hMatchEffVsPhiPosEtaLowPt->Write();
+    hMatchEffVsPhiNegEtaSPDanyLowPt->Write();
+    hMatchEffVsPhiPosEtaSPDanyLowPt->Write();
+    hMatchEffVsPhiNegEtaHighPt->Write();
+    hMatchEffVsPhiPosEtaHighPt->Write();
+    hMatchEffVsPhiNegEtaSPDanyHighPt->Write();
+    hMatchEffVsPhiPosEtaSPDanyHighPt->Write();
+    hMatchEffVsPhiNegEtaLowPtTOFbc->Write();
+    hMatchEffVsPhiPosEtaLowPtTOFbc->Write();
+    hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc->Write();
+    hMatchEffVsPhiPosEtaSPDanyLowPtTOFbc->Write();
+    hMatchEffVsPhiNegEtaHighPtTOFbc->Write();
+    hMatchEffVsPhiPosEtaHighPtTOFbc->Write();
+    hMatchEffVsPhiNegEtaSPDanyHighPtTOFbc->Write();
+    hMatchEffVsPhiPosEtaSPDanyHighPtTOFbc->Write();
   }
 
   if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsESDTrackQA.pdf %s",pdfFileNames.Data()));

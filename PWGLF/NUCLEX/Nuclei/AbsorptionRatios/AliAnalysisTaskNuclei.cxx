@@ -21,7 +21,21 @@
 //#include "AliMultSelection.h"
 #include "AliTrackReference.h"
 #include "AliESDtrackCuts.h"
-
+#include "AliAnalysisTaskNuclei.h"
+#include "TSystem.h"
+#include "AliAnalysisManager.h"
+#include "AliAODInputHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliAnalysisTaskPIDResponse.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliMultSelectionTask.h"
+#include "TChain.h"
+#include "TMacro.h"
+#include "TROOT.h"
+#include "AliEventCuts.h"
+#include "AliAODTrack.h"
+#include "TNtuple.h"
+#include "AliAnalysisAlien.h"
 #include "AliAnalysisTaskNuclei.h"
 
 class AliAnalysisTaskNuclei;
@@ -81,9 +95,9 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei()
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
-,fEventCut(false)
 ,fEstimator(0)
-,fYlimit(-999)
+,fYlimit(0.8)
+,fEventCut(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -141,71 +155,71 @@ AliAnalysisTaskNuclei::AliAnalysisTaskNuclei(const char* name)
 ,fMomTOFDeut(10.)
 ,kAnalyseAllParticles(kFALSE)
 ,fTrackCuts(0)
-,fEventCut(false)
 ,fEstimator(0)
-,fYlimit(-999)
+,fYlimit(0.8)
+,fEventCut(0)
 {
-    // constructor
-    
-    fHistsProton.clear();
-    fHistsAProton.clear();
-    fHistsDeuteron.clear();
-    fHistsADeuteron.clear();
-	fHistsHe3.clear();
-	fHistsAHe3.clear();
-	//fHistsTriton.clear();
-	//fHistsATriton.clear();
-    
-    DefineInput(0, TChain::Class());    // a 'chain' of events created by the analysis manager automatically
-    DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
-    // one can add more output objects by calling DefineOutput(2, classname::Class())
-    // make sure to connect them properly in AddTask and to call PostData() for all of them!
+  // constructor
+  
+  fHistsProton.clear();
+  fHistsAProton.clear();
+  fHistsDeuteron.clear();
+  fHistsADeuteron.clear();
+  fHistsHe3.clear();
+  fHistsAHe3.clear();
+  //fHistsTriton.clear();
+  //fHistsATriton.clear();
+  
+  DefineInput(0, TChain::Class());    // a 'chain' of events created by the analysis manager automatically
+  DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms
+  // one can add more output objects by calling DefineOutput(2, classname::Class())
+  // make sure to connect them properly in AddTask and to call PostData() for all of them!
     
 }
 
 //________________________________________________________________________
 AliAnalysisTaskNuclei::~AliAnalysisTaskNuclei()
 {
-    // destructor
-    if(fOutputList) {
-        delete fOutputList;
-    }
+  // destructor
+  if(fOutputList) {
+      delete fOutputList;
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskNuclei::UserCreateOutputObjects()
 {
-    // Called once at the start of the analysis
-    
-    // retrieve PID object from the input handler
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-    fPIDResponse = inputHandler->GetPIDResponse();
-    
-    // create output lists
-    fOutputList = new TList();
-    fOutputList->SetName("Output");
-    fOutputList->SetOwner(kTRUE); // the list is owner of all objects it contains and will delete them
-    
-    fOutputEvent = new TList();
-    fOutputEvent->SetName("Event");
-    fOutputEvent->SetOwner(kTRUE);
-    
-    fOutputProtons = new TList();
-    fOutputProtons->SetName("Triton");
-    fOutputProtons->SetOwner(kTRUE);
-    
-    fOutputAProtons = new TList();
-    fOutputAProtons->SetName("ATriton");
-    fOutputAProtons->SetOwner(kTRUE);
-    
-    fOutputDeuterons = new TList();
-    fOutputDeuterons->SetName("He4");
-    fOutputDeuterons->SetOwner(kTRUE);
-    
-    fOutputADeuterons = new TList();
-    fOutputADeuterons->SetName("AHe4");
-    fOutputADeuterons->SetOwner(kTRUE);
+  // Called once at the start of the analysis
+  
+  // retrieve PID object from the input handler
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+  
+  // create output lists
+  fOutputList = new TList();
+  fOutputList->SetName("Output");
+  fOutputList->SetOwner(kTRUE); // the list is owner of all objects it contains and will delete them
+  
+  fOutputEvent = new TList();
+  fOutputEvent->SetName("Event");
+  fOutputEvent->SetOwner(kTRUE);
+  
+  fOutputProtons = new TList();
+  fOutputProtons->SetName("Triton");
+  fOutputProtons->SetOwner(kTRUE);
+  
+  fOutputAProtons = new TList();
+  fOutputAProtons->SetName("ATriton");
+  fOutputAProtons->SetOwner(kTRUE);
+  
+  fOutputDeuterons = new TList();
+  fOutputDeuterons->SetName("He4");
+  fOutputDeuterons->SetOwner(kTRUE);
+  
+  fOutputADeuterons = new TList();
+  fOutputADeuterons->SetName("AHe4");
+  fOutputADeuterons->SetOwner(kTRUE);
 
 	fOutputHe3 = new TList();
 	fOutputHe3->SetName("He3");
@@ -225,7 +239,7 @@ void AliAnalysisTaskNuclei::UserCreateOutputObjects()
 
 	*/
 
-    fOutputList->Add(fOutputEvent);
+  fOutputList->Add(fOutputEvent);
 	if (kAnalyseAllParticles) {
 			fOutputList->Add(fOutputProtons);
 			fOutputList->Add(fOutputAProtons);
@@ -237,46 +251,46 @@ void AliAnalysisTaskNuclei::UserCreateOutputObjects()
 	//fOutputList->Add(fOutputATriton);
 	//fOutputList->Add(fOutputTriton);
 
-    
-    // create event histograms
-    fEventStat = new TH1I("fEventStat", "Event statistics", kNbinsEvent, 0, kNbinsEvent);
-    fEventStat->GetXaxis()->SetBinLabel(1,"After Phys. Sel. and trigger");
-    fEventStat->GetXaxis()->SetBinLabel(2,"kINT7 selected (cross-check)");
-    fEventStat->GetXaxis()->SetBinLabel(3,"DAQ imcomplete (cross-check)");
-    fEventStat->GetXaxis()->SetBinLabel(4,"V0 timing (cross-check)");
-    fEventStat->GetXaxis()->SetBinLabel(5,"Cluster-tracklet cut (cross-check)");
-    fEventStat->GetXaxis()->SetBinLabel(6,"Vertex Z position");
-    fEventStat->GetXaxis()->SetBinLabel(7,"N of vtx contrib");
-    fEventStat->GetXaxis()->SetBinLabel(8,"SPD pile-up in mult. bins");
-    fEventStat->GetXaxis()->SetBinLabel(9,"Vertex displacement");
-    fEventStat->GetXaxis()->SetBinLabel(10,"Vertex Z resolution");
-    fOutputEvent->Add(fEventStat);
-    
-    fVertexZ = new TH1F("fVertexZ", "Vertex Z distribution", 300, -15., 15.);
-    fVertexZ->GetXaxis()->SetTitle("vertex Z, cm");
-    fVertexZ->Sumw2();
-    fOutputEvent->Add(fVertexZ);
-    
-    fVtxContrib = new TH1F("fVtxContrib", "N vertex contributors", 200, 0., 200.);
-    fVtxContrib->GetXaxis()->SetTitle("N vertex contrib.");
-    fOutputEvent->Add(fVtxContrib);
-    
-    fSPDVtxResol = new TH1F("fSPDVtxResol", "SPD vertex resolution", 100, 0., 1.);
-    fSPDVtxResol->GetXaxis()->SetTitle("SPD vertex resolution, cm");
-    fOutputEvent->Add(fSPDVtxResol);
-    
-    fVtxDisplacement = new TH2F("fVtxDisplacement", "SPD vertex displacement", 300, -15., 15.,300, -15., 15.);
-    fVtxDisplacement->GetXaxis()->SetTitle("SPD vertex position, cm");
-    fVtxDisplacement->GetYaxis()->SetTitle("Track vertex position, cm");
-    fOutputEvent->Add(fVtxDisplacement);
-    
-    fMultV0 = new TH1F("fMultV0", "Mult V0 distrobution", 2000, 0., 2000.);
-    fMultV0->GetXaxis()->SetTitle("V0 mult.");
-    fOutputEvent->Add(fMultV0);
-    
-    fCentV0M = new TH1F("fCentV0M", "Centrality V0M", 351, -50., 301.);
-    fCentV0M->GetXaxis()->SetTitle("V0M percentile");
-    fOutputEvent->Add(fCentV0M);
+  
+  // create event histograms
+  fEventStat = new TH1I("fEventStat", "Event statistics", kNbinsEvent, 0, kNbinsEvent);
+  fEventStat->GetXaxis()->SetBinLabel(1,"After Phys. Sel. and trigger");
+  fEventStat->GetXaxis()->SetBinLabel(2,"kINT7 selected (cross-check)");
+  fEventStat->GetXaxis()->SetBinLabel(3,"DAQ imcomplete (cross-check)");
+  fEventStat->GetXaxis()->SetBinLabel(4,"V0 timing (cross-check)");
+  fEventStat->GetXaxis()->SetBinLabel(5,"Cluster-tracklet cut (cross-check)");
+  fEventStat->GetXaxis()->SetBinLabel(6,"Vertex Z position");
+  fEventStat->GetXaxis()->SetBinLabel(7,"N of vtx contrib");
+  fEventStat->GetXaxis()->SetBinLabel(8,"SPD pile-up in mult. bins");
+  fEventStat->GetXaxis()->SetBinLabel(9,"Vertex displacement");
+  fEventStat->GetXaxis()->SetBinLabel(10,"Vertex Z resolution");
+  fOutputEvent->Add(fEventStat);
+  
+  fVertexZ = new TH1F("fVertexZ", "Vertex Z distribution", 300, -15., 15.);
+  fVertexZ->GetXaxis()->SetTitle("vertex Z, cm");
+  fVertexZ->Sumw2();
+  fOutputEvent->Add(fVertexZ);
+  
+  fVtxContrib = new TH1F("fVtxContrib", "N vertex contributors", 200, 0., 200.);
+  fVtxContrib->GetXaxis()->SetTitle("N vertex contrib.");
+  fOutputEvent->Add(fVtxContrib);
+  
+  fSPDVtxResol = new TH1F("fSPDVtxResol", "SPD vertex resolution", 100, 0., 1.);
+  fSPDVtxResol->GetXaxis()->SetTitle("SPD vertex resolution, cm");
+  fOutputEvent->Add(fSPDVtxResol);
+  
+  fVtxDisplacement = new TH2F("fVtxDisplacement", "SPD vertex displacement", 300, -15., 15.,300, -15., 15.);
+  fVtxDisplacement->GetXaxis()->SetTitle("SPD vertex position, cm");
+  fVtxDisplacement->GetYaxis()->SetTitle("Track vertex position, cm");
+  fOutputEvent->Add(fVtxDisplacement);
+  
+  fMultV0 = new TH1F("fMultV0", "Mult V0 distrobution", 2000, 0., 2000.);
+  fMultV0->GetXaxis()->SetTitle("V0 mult.");
+  fOutputEvent->Add(fMultV0);
+  
+  fCentV0M = new TH1F("fCentV0M", "Centrality V0M", 351, -50., 301.);
+  fCentV0M->GetXaxis()->SetTitle("V0M percentile");
+  fOutputEvent->Add(fCentV0M);
 
 	fCentV0MZoomed = new TH1F("fCentV0MZoomed", "Centrality V0M", 100, 0.0, 1.0);
 	fCentV0MZoomed->GetXaxis()->SetTitle("V0M percentile");
@@ -291,64 +305,55 @@ void AliAnalysisTaskNuclei::UserCreateOutputObjects()
 	fOutputEvent->Add(fNchHeader);
 
 
-	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
-	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
-	fNtupleHe4 = new TNtuple("fNtupleHe4", "fNtupleHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
-	fNtupleAHe4 = new TNtuple("fNtupleAHe4", "fNtupleAHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
-	fNtupleTriton = new TNtuple("fNtupleTriton", "fNtupleTriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
-	fNtupleATriton = new TNtuple("fNtupleATriton", "fNtupleATriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal");
+	fNtupleHe3 = new TNtuple("fNtupleHe3", "fNtupleHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCSharedClusters:Chi2TPCConstrainedVsGlobal:Y:multiplitityPercentile");
+	fNtupleAHe3 = new TNtuple("fNtupleAHe3", "fNtupleAHe3", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal:Y:multiplitityPercentile");
+	fNtupleHe4 = new TNtuple("fNtupleHe4", "fNtupleHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal:Y:multiplitityPercentile");
+	fNtupleAHe4 = new TNtuple("fNtupleAHe4", "fNtupleAHe4", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal:Y:multiplitityPercentile");
+	fNtupleTriton = new TNtuple("fNtupleTriton", "fNtupleTriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal:Y:multiplitityPercentile");
+	fNtupleATriton = new TNtuple("fNtupleATriton", "fNtupleATriton", "p:pt:TPCSignal:TPCnSigmaHe3:Charge:TOF_beta:DCAxy:DCAz:TOFm2:TPCNClusters:ITSNClusters:TPCClusters4dEdx:Eta:ITSnSigmaHe3:Chi2TPC:Chi2ITS:TPCCrossedRows:pTPC:TPCnSigmaHe4:TPCnSigmaTriton:TPCSharedClusters:Chi2TPCConstrainedVsGlobal:Y:multiplitityPercentile");
 
 
-    // track cuts config
-    fHistTrackCuts = new TProfile("fHistTrackCuts", "TrackCuts config", 10, 0, 10);
-    fHistTrackCuts->GetXaxis()->SetBinLabel(1,"Filter Bit");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(2,"low #it{p} cut");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(3,"#eta cut");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(4,"Min. N ITS cl");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(5,"Max. DCAxy cut");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(6,"Max. DCAxy ana");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(7,"Max. DCAz");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(8,"TPCnSigma cut");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(9,"TOFnSigma cut");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(10,"TOFmomentum prot");
-    fHistTrackCuts->GetXaxis()->SetBinLabel(11,"TOFmomentum deut");
-    fOutputList->Add(fHistTrackCuts);
-    
-    fHistTrackCuts->Fill(0.0,fFilterBit);
-    fHistTrackCuts->Fill(1,fLowPCut);
-    fHistTrackCuts->Fill(2,fEtaCut);
-    fHistTrackCuts->Fill(3,fMinClIts);
-    fHistTrackCuts->Fill(4,fMaxDCAxyCut);
-    fHistTrackCuts->Fill(5,fMaxDCAxyAna);
-    fHistTrackCuts->Fill(6,fMaxDCAz);
-    fHistTrackCuts->Fill(7,fMaxTPCnSigma);
-    fHistTrackCuts->Fill(8,fMaxTOFnSigma);
-    fHistTrackCuts->Fill(9,fMomTOFProt);
-    fHistTrackCuts->Fill(10,fMomTOFDeut);
-    
-    // (anti)proton histograms
+  // track cuts config
+  fHistTrackCuts = new TProfile("fHistTrackCuts", "TrackCuts config", 10, 0, 10);
+  fHistTrackCuts->GetXaxis()->SetBinLabel(1,"Filter Bit");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(2,"low #it{p} cut");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(3,"#eta cut");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(4,"Min. N ITS cl");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(5,"Max. DCAxy cut");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(6,"Max. DCAxy ana");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(7,"Max. DCAz");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(8,"TPCnSigma cut");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(9,"TOFnSigma cut");
+  fHistTrackCuts->GetXaxis()->SetBinLabel(10,"TOFmomentum prot");
+  fOutputList->Add(fHistTrackCuts);
+  
+  fHistTrackCuts->Fill(0.0,fFilterBit);
+  fHistTrackCuts->Fill(1,fLowPCut);
+  fHistTrackCuts->Fill(2,fEtaCut);
+  fHistTrackCuts->Fill(3,fMinClIts);
+  fHistTrackCuts->Fill(4,fMaxDCAxyCut);
+  fHistTrackCuts->Fill(5,fMaxDCAxyAna);
+  fHistTrackCuts->Fill(6,fMaxDCAz);
+  fHistTrackCuts->Fill(7,fMaxTPCnSigma);
+  fHistTrackCuts->Fill(8,fMaxTOFnSigma);
+  fHistTrackCuts->Fill(9,fMomTOFProt);
+  fHistTrackCuts->Fill(10,fMomTOFDeut);
+  
+  // (anti)proton histograms
 	// CreateHistosTrack() creates a list of histograms which are added to the vector to be accessed later. Since the addition of more histograms changes the numberings, these have to be handled carefully.
-    if (kAnalyseAllParticles) {
-			CreateHistosTrack(fHistsProton);  
-			for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
-				fOutputProtons->Add(fHistsProton.at(i));
-			}
-			
-			CreateHistosTrack(fHistsAProton);
-			for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
-				fOutputAProtons->Add(fHistsAProton.at(i));
-			}
-			
-			// (anti)deuteron histograms
-			CreateHistosTrack(fHistsDeuteron);
-			for (Int_t i=0;i<(int)(fHistsDeuteron.size()); i++){
-				fOutputDeuterons->Add(fHistsDeuteron.at(i));
-			}
-			
-			CreateHistosTrack(fHistsADeuteron);
-			for (Int_t i=0;i<(int)(fHistsADeuteron.size()); i++){
-				fOutputADeuterons->Add(fHistsADeuteron.at(i));
-			}
+  if (kAnalyseAllParticles) {
+    
+    
+    // (anti)deuteron histograms
+    CreateHistosTrack(fHistsDeuteron);
+    for (Int_t i=0;i<(int)(fHistsDeuteron.size()); i++){
+      fOutputDeuterons->Add(fHistsDeuteron.at(i));
+    }
+    
+    CreateHistosTrack(fHistsADeuteron);
+    for (Int_t i=0;i<(int)(fHistsADeuteron.size()); i++){
+      fOutputADeuterons->Add(fHistsADeuteron.at(i));
+    }
 	}
 
 	//Histograms to study the effect of MCS on the TOF reconstruction. 
@@ -372,6 +377,19 @@ void AliAnalysisTaskNuclei::UserCreateOutputObjects()
 	}
 	fOutputAHe3->Add(fNtupleAHe3);
 	fOutputAHe3->Add(fAHe3TOFCutVariation);
+
+  CreateHistosTrack(fHistsProton);  
+  for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
+    fOutputProtons->Add(fHistsProton.at(i));
+  }
+  
+  CreateHistosTrack(fHistsAProton);
+  for (Int_t i=0;i<(int)(fHistsProton.size()); i++){
+    fOutputAProtons->Add(fHistsAProton.at(i));
+  }
+
+
+
 
 	fOutputADeuterons->Add(fNtupleAHe4);
 	fOutputDeuterons->Add(fNtupleHe4);
@@ -415,12 +433,12 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
     fEventStat->Fill(kSelectedEvents); // all events after trigger and physics selection
     // only for cross-check: is kINT7 selected
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    Bool_t isINT7selected = fSelectMask and AliVEvent::kINT7;
+    Bool_t isINT7selected = fSelectMask and AliVEvent::kINT7; //this is not used
     //Make sure that the HighMultTrigger is selected, which is added in the addTask macro
-	if (!fSelectMask) {
-		PostData(1, fOutputList);
-		return;
-	}
+    if (!fSelectMask) {
+      PostData(1, fOutputList);
+      return;
+    }
     /*
     if (!isINT7selected){
         PostData(1, fOutputList);
@@ -468,6 +486,7 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
         return;
     }
     fEventStat->Fill(kVertexZ);
+
     
     if (!lVertexNcontrib){
         PostData(1, fOutputList);
@@ -501,75 +520,80 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
 
 	AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAODEvent->GetHeader());
 	
+  
     
-     
-    // V0 information
-    Int_t MultV0A = 0;
-    Int_t MultV0C = 0;
-    for(Int_t i=0; i<32; ++i) {
-        MultV0A += vzeroData->GetMultiplicityV0A(i);
-        MultV0C += vzeroData->GetMultiplicityV0C(i);
-    }
-    fMultV0->Fill(MultV0A + MultV0C);
-    
-    // centrality distribution
-    Float_t lPercentile = 300;
-    /*AliMultSelection *MultSelection = 0x0;
-    MultSelection = (AliMultSelection * ) fVEvent->FindListObject("MultSelection");
-    if( !MultSelection) {
-        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
-    }else{
-        lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-    }*/
-    float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
-    if (Multiplicity_percentile>0.1) {
-		PostData(1, fOutputList);
-		return;
-	}
-    lPercentile = Multiplicity_percentile;
+  // V0 information
+  Int_t MultV0A = 0;
+  Int_t MultV0C = 0;
+  for(Int_t i=0; i<32; ++i) {
+      MultV0A += vzeroData->GetMultiplicityV0A(i);
+      MultV0C += vzeroData->GetMultiplicityV0C(i);
+  }
+  fMultV0->Fill(MultV0A + MultV0C);
+  
+  // centrality distribution
+  Float_t lPercentile = 300;
+  /*AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection * ) fVEvent->FindListObject("MultSelection");
+  if( !MultSelection) {
+      //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+      AliWarning("AliMultSelection object not found!");
+  }else{
+      lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }*/
+  //cout<<"\n\n#####\n"<<fEstimator<<endl<<"\n\n#####\n";
+  float Multiplicity_percentile = fEventCut.GetCentrality(fEstimator);
+  bool isMultSelected = kFALSE;//(Multiplicity_percentile>99.9);// The multiplicity selection will always pass. The variable is passed to track cuts to make the cut there. This allows to test with the dataset we need to use, and only the number of events are left in the end.
+  if (isMultSelected) {
+    cout<<"Multiplicity selection failed"<<endl;
+    PostData(1, fOutputList);
+    return;
+  }
+  //lPercentile = 0.05;//Multiplicity_percentile for debugging;
 
-    int Nch = 0;
+  int Nch = 0;
+  
+  // track loop
+  for (Int_t iTrack = 0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++){
+        
+    AliAODTrack* track = (AliAODTrack*)fAODEvent->GetTrack(iTrack);
+    if (!track) { Printf("ERROR: Could not receive track %d", iTrack); continue; }
+    // To do: track label for AOD data?
+    Int_t label = track->GetLabel();
+    Double_t trackP   = track->P();
+    Double_t trackEta = track->Eta();
     
-    // track loop
-    for (Int_t iTrack = 0; iTrack < fAODEvent->GetNumberOfTracks(); iTrack++){
-        
-        AliAODTrack* track = (AliAODTrack*)fAODEvent->GetTrack(iTrack);
-        if (!track) { Printf("ERROR: Could not receive track %d", iTrack); continue; }
-        // To do: track label for AOD data?
-        Int_t label = track->GetLabel();
-        Double_t trackP   = track->P();
-        Double_t trackEta = track->Eta();
-        
-        // ===================== track cuts =====================
-        // filter bit, pt and eta
+    // ===================== track cuts =====================
+    // filter bit, pt and eta
 		// todo: implement method so that if event doesnt have anything that passes track cuts, it doesnt fill Nch. This should solve the Nch 0 issue. Or increment Nch before track cuts
-        if (!(track->TestFilterBit(fFilterBit)))          continue;
-        if (trackP < fLowPCut || trackP > fHighPCut)      continue;
-        if (TMath::Abs(trackEta) > fEtaCut)               continue;
-        if (track->GetITSNcls() < fMinClIts)              continue;
-	if (TMath::Abs(track->Y())>fYlimit)		  continue; //If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.5
+    if (!(track->TestFilterBit(fFilterBit)))          {/*cout<<"failed filterbit"<<endl;*/ continue;}
+    if (trackP < fLowPCut || trackP > fHighPCut)      {/*cout<<"failed pt cuts"<<endl;*/ continue;}
+    if (TMath::Abs(trackEta) > fEtaCut)               {/*cout<<"failed eta cut"<<endl;*/ continue;}
+    if (track->GetITSNcls() < fMinClIts)              {/*cout<<"failed ITSNClst cut"<<endl;*/ continue;}
+    if (TMath::Abs(track->Y())>fYlimit)		  					{/*cout<<"failed Y cut"<<"Y cut: "<<fYlimit<<endl;*/ continue;}//If the fYlimit flag is set, it rejects tracks with rapidity greater than 0.8
+    //The fYlimit flag setting is currently not working in the AddTask. The variable is passed ot the Ntuple and the cut can be performed there.
+    //cout<<"Track passed cuts. Moving to PID"<<endl;
+    //cout<<"Y cut: "<<fYlimit<<endl;
 
-
-        
-        // DCA information
-        double DCAxy = -99.;
-        double DCAz  = -99.;
-        double dcaVals[2] = {-99., -99.};
-        double covar[3]={0.,0.,0.};
-        AliAODTrack copy(*track);
-        const AliVVertex *AODeventVtx = copy.GetAODEvent()->GetPrimaryVertex();
-        Double_t AODeventMagneticF = copy.GetAODEvent()->GetMagneticField();
-        if (copy.PropagateToDCA(AODeventVtx, AODeventMagneticF,10, dcaVals, covar)){
-            DCAxy = dcaVals[0];
-            DCAz  = dcaVals[1];
-        } else {
-            DCAxy = -99.; // track->DCA();
-            DCAz  = -99.; // track->ZAtDCA();
-        }
-        
-        if (TMath::Abs(DCAz ) > fMaxDCAz)        continue;
-        if (TMath::Abs(DCAxy) > fMaxDCAxyCut)    continue;
+    
+    // DCA information
+    double DCAxy = -99.;
+    double DCAz  = -99.;
+    double dcaVals[2] = {-99., -99.};
+    double covar[3]={0.,0.,0.};
+    AliAODTrack copy(*track);
+    const AliVVertex *AODeventVtx = copy.GetAODEvent()->GetPrimaryVertex();
+    Double_t AODeventMagneticF = copy.GetAODEvent()->GetMagneticField();
+    if (copy.PropagateToDCA(AODeventVtx, AODeventMagneticF,10, dcaVals, covar)){
+        DCAxy = dcaVals[0];
+        DCAz  = dcaVals[1];
+    } else {
+        DCAxy = -99.; // track->DCA();
+        DCAz  = -99.; // track->ZAtDCA();
+    }
+    
+    if (TMath::Abs(DCAz ) > fMaxDCAz)        continue;
+    if (TMath::Abs(DCAxy) > fMaxDCAxyCut)    continue;
 		// ===================== Multiplicity counter ==========
 		// After track cuts and secondary (DCA) cut
 
@@ -578,10 +602,10 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
 
 
 
-        // ===================== PID selection =====================
-        // TPC
-        Float_t nSigmaTPCprot = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-        Float_t nSigmaTPCdeut = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+    // ===================== PID selection =====================
+    // TPC
+    Float_t nSigmaTPCprot = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    Float_t nSigmaTPCdeut = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
 		Float_t nSigmaTPCTriton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kTriton);
 		Float_t nSigmaTPCHe3 = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kHe3);
 		Float_t nSigmaTPCHe4 = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kAlpha);
@@ -589,138 +613,127 @@ void AliAnalysisTaskNuclei::UserExec(Option_t *)
 		//Float_t nSigmaTPCTriton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kTriton);
 		//Float_t nSigmaTPCHe4 = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kAlpha);
         
-        // ITS (not used for selection)
-        Float_t nSigmaITSprot = fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton);
-        Float_t nSigmaITSdeut = fPIDResponse->NumberOfSigmasITS(track, AliPID::kDeuteron);
+    // ITS (not used for selection)
+    Float_t nSigmaITSprot = fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton);
+    Float_t nSigmaITSdeut = fPIDResponse->NumberOfSigmasITS(track, AliPID::kDeuteron);
+    
+    // TOF
+    Bool_t isTOF = (track->GetStatus() & AliVTrack::kTOFout)
+                && (track->GetStatus() & AliVTrack::kTIME);
+    
+    Float_t nSigmaTOFpion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+    Float_t nSigmaTOFprot = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+    Float_t nSigmaTOFdeut = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron);
+    
+    // TO DO: check TOF matching in data and MC
+    // ESD data: GetTOFsignalDz(), GetTOFsignalDx()
+    
+    Bool_t TOFpid_prot = isTOF;
+    Bool_t TOFpid_deut = isTOF;
+    
+    if (fUseTOFPidCut){
         
-        // TOF
-        Bool_t isTOF = (track->GetStatus() & AliVTrack::kTOFout)
-                    && (track->GetStatus() & AliVTrack::kTIME);
-        
-        Float_t nSigmaTOFpion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
-        Float_t nSigmaTOFprot = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-        Float_t nSigmaTOFdeut = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron);
-        
-        // TO DO: check TOF matching in data and MC
-        // ESD data: GetTOFsignalDz(), GetTOFsignalDx()
-        
-        Bool_t TOFpid_prot = isTOF;
-        Bool_t TOFpid_deut = isTOF;
-        
-        if (fUseTOFPidCut){
-            
-            TOFpid_prot = (isTOF && TMath::Abs(nSigmaTOFprot) < fMaxTOFnSigma);
-            TOFpid_deut = (isTOF && TMath::Abs(nSigmaTOFdeut) < fMaxTOFnSigma);
-        
-        }
+        TOFpid_prot = (isTOF && TMath::Abs(nSigmaTOFprot) < fMaxTOFnSigma);
+        TOFpid_deut = (isTOF && TMath::Abs(nSigmaTOFdeut) < fMaxTOFnSigma);
+    
+    }
 		Double_t TOFm2 = AliAnalysisTaskNuclei::GetMass2TOF(GetTOFBeta(track), track);
         
-        // protons
-        Bool_t isHe4Selected   = (TMath::Abs(nSigmaTPCHe4) < 5);
-        
-        // deuterons
-        Bool_t isTritonSelected = ((nSigmaTPCTriton>-4 and nSigmaTPCTriton<4 and trackP<2.0) or (TMath::Abs(nSigmaTPCTriton)<4 and TMath::Abs(TOFm2-7.78)<2 and trackP>2.0));
-        
+    // protons
+    Bool_t isHe4Selected   = (TMath::Abs(nSigmaTPCHe4) < 5);
+    
+    // deuterons
+    Bool_t isTritonSelected = ((nSigmaTPCTriton>-6 and nSigmaTPCTriton<6 and trackP<2.0) or (TMath::Abs(nSigmaTPCTriton)<6 and TMath::Abs(TOFm2-7.78)<2 and trackP>2.0));
+    
 		Bool_t isHelium3Selected = ((nSigmaTPCHe3 > -6.0) and (nSigmaTPCHe3 < 5));
 		if (not (isHelium3Selected or isTritonSelected or isHe4Selected)) {continue;}
 		//Edit 3: Condition relaxed to 10 in order to fit larger background in low statistics bins. 
-				Float_t vars[22];
-			   	vars[0] = track->P();
-			   	vars[1] = track->Pt();
-			   	vars[2] = track->GetTPCsignal();
-				vars[3] = nSigmaTPCHe3;
-				vars[4] = track->Charge();
-				vars[5] = GetTOFBeta(track);
-				vars[6] = DCAxy;
-				vars[7] = DCAz;
-				vars[8] = GetMass2TOF(GetTOFBeta(track), track);
-				vars[9] = track->GetTPCNcls();
-				vars[10] = track->GetITSNcls();
-				vars[11] = track->GetTPCsignalN();
-				vars[12] = track->Eta();
-				vars[13] = fPIDResponse->NumberOfSigmasITS(track, AliPID::kTriton);
-				vars[14] = track->Chi2perNDF();
-				vars[15] = track->GetITSchi2();
-				vars[16] = track->GetTPCClusterInfo(2, 1);
-				vars[17] = track->GetTPCmomentum();
-				vars[18] = nSigmaTPCHe4;
-				vars[19] = nSigmaTPCTriton;
-	    			vars[20] = track->GetTPCnclsS();
-	    			vars[21] = track->GetChi2TPCConstrainedVsGlobal();
+    Float_t vars[24];
+    vars[0] = track->P();
+    vars[1] = track->Pt();
+    vars[2] = track->GetTPCsignal();
+    vars[3] = nSigmaTPCHe3;
+    vars[4] = track->Charge();
+    vars[5] = GetTOFBeta(track);
+    vars[6] = DCAxy;
+    vars[7] = DCAz;
+    vars[8] = GetMass2TOF(GetTOFBeta(track), track);
+    vars[9] = track->GetTPCNcls();
+    vars[10] = track->GetITSNcls();
+    vars[11] = track->GetTPCsignalN();
+    vars[12] = track->Eta();
+    vars[13] = fPIDResponse->NumberOfSigmasITS(track, AliPID::kTriton);
+    vars[14] = track->Chi2perNDF();
+    vars[15] = track->GetITSchi2();
+    vars[16] = track->GetTPCClusterInfo(2, 1);
+    vars[17] = track->GetTPCmomentum();
+    vars[18] = nSigmaTPCHe4;
+    vars[19] = nSigmaTPCTriton;
+    vars[20] = track->GetTPCnclsS();
+    vars[21] = track->GetChi2TPCConstrainedVsGlobal();
+    vars[22] = track->Y();
+    vars[23] = Multiplicity_percentile;
 
-
-		//Bool_t isTritonSelected = kFALSE;;//(TMath::Abs(nSigmaTPCTriton)<4);
-        // ===================== fill track histos =====================
-		/*
-        if (kFALSE){
-            if (track->Charge() > 0){
-                FillHistosTrack(fHistsTriton,track);
-                
-            } else if (track->Charge() < 0){
-                FillHistosTrack(fHistsATriton,track);
-                
-            }
-		}*/
-
-        if (isTritonSelected && kAnalyseAllParticles){
-            if (track->Charge() > 0){
-                FillHistosTrack(fHistsProton,track);
-				fNtupleTriton->Fill(vars);
-                
-            } else if (track->Charge() < 0){
-                FillHistosTrack(fHistsAProton,track);
-				fNtupleATriton->Fill(vars);
-                
-            }
+    if (isTritonSelected){
+        if (track->Charge() > 0){
+          FillHistosTrack(fHistsProton,track);
+          fNtupleTriton->Fill(vars);
+          FillHistosTrack(fHistsProton, track);
+        } else if (track->Charge() < 0){
+          FillHistosTrack(fHistsAProton,track);
+          fNtupleATriton->Fill(vars);      
+          FillHistosTrack(fHistsAProton, track);
         }
+    }
+    
+    if (isHe4Selected && kAnalyseAllParticles){
+          if (track->Charge() > 0){
+              FillHistosTrack(fHistsDeuteron,track);
+      fNtupleHe4->Fill(vars);
+              
+          } else if (track->Charge() < 0){
+              FillHistosTrack(fHistsADeuteron,track);
+      fNtupleAHe4->Fill(vars);
+              
+          }
+    }
+
+    if (isHelium3Selected){
+				
+
+      //The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
+      if (track->Charge() > 0){
+        FillHistosTrack(fHistsHe3, track);
+        if (track->GetTPCsignal() <100) {fNtupleHe3->Fill(vars);} else {continue;}
+        //need to fill the TOF cut histogram here
+        /* Pseudocode:
+        * Fill Histos with default //crosscheck
+        * fTrackCuts->SetFlagCutTOFdistance(kTRUE); //makes it so that the ESD cut cuts on the TOF distance.
+        * fTrackCuts->SetCutTOFdistance(10); //sets it to largest distance
+        * if (fTrackCuts->IsTrackSelected(track) {Fill Histo;} else {continue;} //if loosest cuts are not passed, none of the others will be either;
+        * repeat for all the cutting distances.
+        */
         
-        if (isHe4Selected && kAnalyseAllParticles){
-            if (track->Charge() > 0){
-                FillHistosTrack(fHistsDeuteron,track);
-				fNtupleHe4->Fill(vars);
-                
-            } else if (track->Charge() < 0){
-                FillHistosTrack(fHistsADeuteron,track);
-				fNtupleAHe4->Fill(vars);
-                
-            }
-        }
+      } else if (track->Charge() < 0) {
+        FillHistosTrack(fHistsAHe3,track);
+        if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(vars);} else {continue;}
+        
 
-		if (isHelium3Selected){
-				
-
-		//The TPC Signal requirement is to exclude the large amount of well seperated background which would make the Ntuple too large to compile & analyse. The histograms do not have this requirement and the seperation of the two signals can be seen in them.
-			if (track->Charge() > 0){
-				FillHistosTrack(fHistsHe3, track);
-				if (track->GetTPCsignal() <100) {fNtupleHe3->Fill(vars);} else {continue;}
-				//need to fill the TOF cut histogram here
-				/* Pseudocode:
-				 * Fill Histos with default //crosscheck
-				 * fTrackCuts->SetFlagCutTOFdistance(kTRUE); //makes it so that the ESD cut cuts on the TOF distance.
-				 * fTrackCuts->SetCutTOFdistance(10); //sets it to largest distance
-				 * if (fTrackCuts->IsTrackSelected(track) {Fill Histo;} else {continue;} //if loosest cuts are not passed, none of the others will be either;
-				 * repeat for all the cutting distances.
-				 */
-				
-			} else if (track->Charge() < 0) {
-				FillHistosTrack(fHistsAHe3,track);
-				if (track->GetTPCsignal() > 100) {fNtupleAHe3->Fill(vars);} else {continue;}
-				
-
-			}
-		}
+      }
+    }
         
     } // track loop
 	fNch->Fill(Nch);//Filled here to check how many events were completely excluded by the filterbit cut. Just cut off the zero bin for the correct number. Normalization can come from Vertex z distr.
+  fVertexZ->Fill(vertex->GetZ());
+  fVtxContrib->Fill(vertex->GetNContributors());
+  fSPDVtxResol->Fill(zRes);
+  fVtxDisplacement->Fill(vtxSPD->GetZ(),vertex->GetZ());
+  fCentV0M->Fill(lPercentile);
+  fCentV0MZoomed->Fill(lPercentile);		
 
 	if (Nch>0) { //filled here to exclude filterbit bias with normalization
 			// fill event histograms
-			fVertexZ->Fill(vertex->GetZ());
-			fVtxContrib->Fill(vertex->GetNContributors());
-			fSPDVtxResol->Fill(zRes);
-			fVtxDisplacement->Fill(vtxSPD->GetZ(),vertex->GetZ());
-			fCentV0M->Fill(lPercentile);
-			fCentV0MZoomed->Fill(lPercentile);		
+			
 			fNchHeader->Fill(header->GetRefMultiplicity());
 	}
   

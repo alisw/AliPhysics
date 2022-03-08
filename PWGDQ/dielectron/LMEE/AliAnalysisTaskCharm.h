@@ -19,6 +19,7 @@
 class TH1F;
 class TH2F;
 class TH3F;
+class TF1;
 class TList;
 class TGraph;
 class AliMCEvent;
@@ -41,7 +42,10 @@ public:
   void         SetPtCutHigh(Double_t max)                   { fPtCutHigh = max; }
   void         SetPtCutLow(Double_t min)                    { fPtCutLow = min; }
   void         SetEtaCutMinMax(Double_t min, Double_t max)  { fEtamin = min; fEtamax = max;}
-  void         ScaleByRAA(Bool_t b)                         { fScaleByRAA = b; }
+  void         SetMinOpAng(Double_t opAng)                  { fMinOpAng = opAng;}
+  void         ScaleByRAA(Bool_t b)                         { fScaleByRAA = b;}
+  void         SetTH1FRAA(TH1F *h1RAA)                      { fHistoRAA = h1RAA;}
+  void         SetTF1RAA(TF1 *f1RAA)                        { fTF1RAA = f1RAA;}
   void         ScaleByCNM(Bool_t b,TGraph *cnmgraph)        { fScaleByCNM = b; fgraphCNM = cnmgraph;}
   void         TakeptOfDCNM(Bool_t b)                       { fTakeptOfDCNM = b; }
   void         SetNbEvent(Int_t b)                          { fNbEvent = b;  }
@@ -73,7 +77,10 @@ protected:
   Double_t                 fPtCutLow;
   Double_t                 fEtamin;
   Double_t                 fEtamax;
+  Double_t                 fMinOpAng;
   Bool_t                   fScaleByRAA;
+  TH1F                    *fHistoRAA;
+  TF1                     *fTF1RAA;
   Bool_t                   fScaleByCNM;
   TGraph                  *fgraphCNM;
   Bool_t                   fTakeptOfDCNM;
@@ -183,12 +190,12 @@ protected:
   TH2F *hMeePtee_LS_eta08_pt300;                       //!
   TH2F *hMeePtee_ULS_eta08_pt400;                      //!
   TH2F *hMeePtee_LS_eta08_pt400;                       //!
-  TH2F *hMeePtee_ULS_eta08_pt200_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt200_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt300_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt300_opAngle50;             //!
-  TH2F *hMeePtee_ULS_eta08_pt400_opAngle50;            //!
-  TH2F *hMeePtee_LS_eta08_pt400_opAngle50;             //!
+  TH2F *hMeePtee_ULS_eta08_pt200_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt200_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt300_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt300_opAngleCut;             //!
+  TH2F *hMeePtee_ULS_eta08_pt400_opAngleCut;            //!
+  TH2F *hMeePtee_LS_eta08_pt400_opAngleCut;             //!
   // opening angle
   TH2F *hMeeOpAngle_ULS_eta08_pt200;                   //!
   TH2F *hMeeOpAngle_LS_eta08_pt200;                    //!
@@ -207,7 +214,7 @@ protected:
   AliAnalysisTaskCharm(const AliAnalysisTaskCharm &c); // not implemented
   AliAnalysisTaskCharm& operator= (const AliAnalysisTaskCharm &c); // not implemented
   
-  ClassDef(AliAnalysisTaskCharm,3)
+  ClassDef(AliAnalysisTaskCharm,5)
 };
 
 #endif

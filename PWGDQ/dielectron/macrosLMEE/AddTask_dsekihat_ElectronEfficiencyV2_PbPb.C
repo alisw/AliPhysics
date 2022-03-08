@@ -28,8 +28,8 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
     configBasePath=Form("%s/",gSystem->pwd());
   }
 	else if(getFromAlien
-			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
-			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s .",libFile.Data())))
+			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s file:./",configFile.Data())))
+			&& (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/d/dsekihat/PWGDQ/dielectron/macrosLMEE/%s file:./",libFile.Data())))
 		){
 		configBasePath=Form("%s/",gSystem->pwd());
 	}
@@ -85,6 +85,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetEnablePhysicsSelection(kTRUE);//always ON in Run2 analyses for both data and MC.
   task->SetTriggerMask(trigger);
   task->SetEventFilter(reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("LMEECutLib::SetupEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,kTRUE,"V0M"))));//kTRUE is for Run2
+  task->SetRejectParticleFromOOB(kTRUE);
 
   //if(pileupcut == ""){
   //  printf("analyze all events in M.C.\n");
@@ -123,11 +124,13 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_dsekihat_ElectronEfficiencyV2_PbPb(
   task->SetPhiBinsLinear  (0, TMath::TwoPi(), 36);
   task->SetThetaBinsLinear(0, TMath::TwoPi(), 60);
 
-  const Int_t Nmee = 150;
+  const Int_t Nmee = 195;
   Double_t mee[Nmee] = {};
-  for(Int_t i=0  ;i<110 ;i++) mee[i] = 0.01 * (i-  0) +  0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
-  for(Int_t i=110;i<Nmee;i++) mee[i] = 0.1  * (i-110) +  1.1;//from 1.1 to 5 GeV/c2, evety 0.1 GeV/c2
-	std::vector<double> v_mee(mee,std::end(mee));
+  for(Int_t i=0  ;i<110; i++) mee[i] = 0.01 * (i-  0) + 0.0;//from 0 to 1.1 GeV/c2, every 0.01 GeV/c2
+  for(Int_t i=110;i<126; i++) mee[i] = 0.1  * (i-110) + 1.1;//from 1.1 to 2.7 GeV/c2, every 0.1 GeV/c2
+  for(Int_t i=126;i<176; i++) mee[i] = 0.01 * (i-126) + 2.7;//from 2.7 to 3.2 GeV/c2, every 0.01 GeV/c2 for J/psi
+  for(Int_t i=176;i<Nmee;i++) mee[i] = 0.1  * (i-176) + 3.2;//from 3.2 to 5 GeV/c2, every 0.1 GeV/c2
+  std::vector<double> v_mee(mee,std::end(mee));
 
   const Int_t NpTee = 146;
   Double_t pTee[NpTee] = {};

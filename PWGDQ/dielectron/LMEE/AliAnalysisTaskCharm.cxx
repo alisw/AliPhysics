@@ -26,6 +26,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TF1.h"
 #include "TList.h"
 #include "TChain.h"
 #include "TVector2.h"
@@ -60,7 +61,10 @@ fPtCutHigh(1e6),
 fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
+fMinOpAng(0.0),
 fScaleByRAA(kFALSE),
+fHistoRAA(0x0),
+fTF1RAA(0x0),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
 fTakeptOfDCNM(kFALSE),
@@ -150,12 +154,12 @@ hMeePtee_ULS_eta08_pt300(0),
 hMeePtee_LS_eta08_pt300(0),
 hMeePtee_ULS_eta08_pt400(0),
 hMeePtee_LS_eta08_pt400(0),
-hMeePtee_ULS_eta08_pt200_opAngle50(0),
-hMeePtee_LS_eta08_pt200_opAngle50(0),
-hMeePtee_ULS_eta08_pt300_opAngle50(0),
-hMeePtee_LS_eta08_pt300_opAngle50(0),
-hMeePtee_ULS_eta08_pt400_opAngle50(0),
-hMeePtee_LS_eta08_pt400_opAngle50(0),
+hMeePtee_ULS_eta08_pt200_opAngleCut(0),
+hMeePtee_LS_eta08_pt200_opAngleCut(0),
+hMeePtee_ULS_eta08_pt300_opAngleCut(0),
+hMeePtee_LS_eta08_pt300_opAngleCut(0),
+hMeePtee_ULS_eta08_pt400_opAngleCut(0),
+hMeePtee_LS_eta08_pt400_opAngleCut(0),
 hMeeOpAngle_ULS_eta08_pt200(0),
 hMeeOpAngle_LS_eta08_pt200(0),
 hMotherPt_ULS_eta08_pt200(0),
@@ -182,7 +186,10 @@ fPtCutHigh(1e6),
 fPtCutLow(0.2),
 fEtamin(-0.8),
 fEtamax(0.8),
+fMinOpAng(0.0),
 fScaleByRAA(kFALSE),
+fHistoRAA(0x0),
+fTF1RAA(0x0),
 fScaleByCNM(kFALSE),
 fgraphCNM(0),
 fTakeptOfDCNM(kFALSE),
@@ -272,12 +279,12 @@ hMeePtee_ULS_eta08_pt300(0),
 hMeePtee_LS_eta08_pt300(0),
 hMeePtee_ULS_eta08_pt400(0),
 hMeePtee_LS_eta08_pt400(0),
-hMeePtee_ULS_eta08_pt200_opAngle50(0),
-hMeePtee_LS_eta08_pt200_opAngle50(0),
-hMeePtee_ULS_eta08_pt300_opAngle50(0),
-hMeePtee_LS_eta08_pt300_opAngle50(0),
-hMeePtee_ULS_eta08_pt400_opAngle50(0),
-hMeePtee_LS_eta08_pt400_opAngle50(0),
+hMeePtee_ULS_eta08_pt200_opAngleCut(0),
+hMeePtee_LS_eta08_pt200_opAngleCut(0),
+hMeePtee_ULS_eta08_pt300_opAngleCut(0),
+hMeePtee_LS_eta08_pt300_opAngleCut(0),
+hMeePtee_ULS_eta08_pt400_opAngleCut(0),
+hMeePtee_LS_eta08_pt400_opAngleCut(0),
 hMeeOpAngle_ULS_eta08_pt200(0),
 hMeeOpAngle_LS_eta08_pt200(0),
 hMotherPt_ULS_eta08_pt200(0),
@@ -317,9 +324,12 @@ void AliAnalysisTaskCharm::UserCreateOutputObjects()
   printf("  high-pt cut:         %f\n", fPtCutHigh);
   printf("  low-pt cut:         %f\n", fPtCutLow);
   printf("  etamin %f and etamax %f\n", fEtamin, fEtamax);
+  printf("  min. Opening angle %f\n", fMinOpAng);
   printf("  use CNM scaling:    %s\n", fScaleByCNM?"YES":"NO");
   printf("  Take pt of D meson:    %s\n", fTakeptOfDCNM?"YES":"NO");
   printf("  use R_AA scaling:    %s\n", fScaleByRAA?"YES":"NO");
+  if(fTF1RAA && fScaleByRAA) printf("  Scale HFE RAA with function\n");
+  if(fHistoRAA && fScaleByRAA) printf("  Scale HFE RAA with histo\n");
   printf("  use Decay weight:    %s\n", fApplywm?"YES":"NO");
   printf("  use Event weight:    %s\n", fEventWeight?"YES":"NO");
  
@@ -370,7 +380,7 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
 
   int nparticles = fMcEvent->GetNumberOfTracks();
  
-  double opAngle50   =0.05; // 50 mrad
+  double opAngleCut   = fMinOpAng; // 50 mrad
 
   // one can intialize it out of the event loop (if one reset this in the event loop after each event) :
   bool IsDmeson_totaly    = kFALSE;
@@ -1305,10 +1315,11 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
       
       // HFE R_AA scaling
       if (fScaleByRAA) {
+	//printf("Check: scale Raa %f for pt %f\n",scale_RAA(pt_i),pt_i);
         ptweight2 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight3 *= scale_RAA(pt_i) * scale_RAA(pt_j);
         ptweight4 *= scale_RAA(pt_i) * scale_RAA(pt_j);
-	ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
+        ptweight5 *= scale_RAA(pt_i) * scale_RAA(pt_j);
       }
 
       
@@ -1359,10 +1370,10 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
             hMeePtee_ULS_eta08_pt300->Fill(mass,pt_pair,ptweight3); // pt>0.3
             hMeePtee_ULS_eta08_pt400->Fill(mass,pt_pair,ptweight4); // pt>0.4
             hMeeOpAngle_ULS_eta08_pt200->Fill(mass,opAngle,ptweight2); // opening angle
-            if (opAngle > opAngle50) { // cut on smeared opening angle
-              hMeePtee_ULS_eta08_pt200_opAngle50->Fill(mass,pt_pair,ptweight2); // pt>0.2
-              hMeePtee_ULS_eta08_pt300_opAngle50->Fill(mass,pt_pair,ptweight3); // pt>0.3
-              hMeePtee_ULS_eta08_pt400_opAngle50->Fill(mass,pt_pair,ptweight4); // pt>0.4
+            if (opAngle > opAngleCut) { // cut on smeared opening angle
+              hMeePtee_ULS_eta08_pt200_opAngleCut->Fill(mass,pt_pair,ptweight2); // pt>0.2
+              hMeePtee_ULS_eta08_pt300_opAngleCut->Fill(mass,pt_pair,ptweight3); // pt>0.3
+              hMeePtee_ULS_eta08_pt400_opAngleCut->Fill(mass,pt_pair,ptweight4); // pt>0.4
             }
 	    // 3D
 	    hPhiee_ULS_eta08_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
@@ -1424,10 +1435,10 @@ void AliAnalysisTaskCharm::UserExec(Option_t *)
             hMeePtee_LS_eta08_pt300->Fill(mass,pt_pair,ptweight3); // pt>0.3
             hMeePtee_LS_eta08_pt400->Fill(mass,pt_pair,ptweight4); // pt>0.4
             hMeeOpAngle_LS_eta08_pt200->Fill(mass,opAngle,ptweight2); // opening angle
-            if (opAngle > opAngle50) { // cut on smeared opening angle
-              hMeePtee_LS_eta08_pt200_opAngle50->Fill(mass,pt_pair,ptweight2); // pt>0.2
-              hMeePtee_LS_eta08_pt300_opAngle50->Fill(mass,pt_pair,ptweight3); // pt>0.3
-              hMeePtee_LS_eta08_pt400_opAngle50->Fill(mass,pt_pair,ptweight4); // pt>0.4
+            if (opAngle > opAngleCut) { // cut on smeared opening angle
+              hMeePtee_LS_eta08_pt200_opAngleCut->Fill(mass,pt_pair,ptweight2); // pt>0.2
+              hMeePtee_LS_eta08_pt300_opAngleCut->Fill(mass,pt_pair,ptweight3); // pt>0.3
+              hMeePtee_LS_eta08_pt400_opAngleCut->Fill(mass,pt_pair,ptweight4); // pt>0.4
             }
 	    // 3D
 	    hPhiee_LS_eta08_pt200->Fill(deltaphi,mass,pt_pair,ptweight2);
@@ -1651,12 +1662,12 @@ void AliAnalysisTaskCharm::CreateHistos(){
   hMeePtee_LS_eta08_pt300  = new TH2F("hMeePtee_LS_eta08_pt300" ,"e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_ULS_eta08_pt400 = new TH2F("hMeePtee_ULS_eta08_pt400","e+e-,        |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   hMeePtee_LS_eta08_pt400  = new TH2F("hMeePtee_LS_eta08_pt400" ,"e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt200_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt200_opAngle50","e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt200_opAngle50  = new TH2F("hMeePtee_LS_eta08_pt200_opAngle50" ,"e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt300_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt300_opAngle50","e+e-,        |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt300_opAngle50  = new TH2F("hMeePtee_LS_eta08_pt300_opAngle50" ,"e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_ULS_eta08_pt400_opAngle50 = new TH2F("hMeePtee_ULS_eta08_pt400_opAngle50","e+e-,        |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
-  hMeePtee_LS_eta08_pt400_opAngle50  = new TH2F("hMeePtee_LS_eta08_pt400_opAngle50" ,"e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>50 mrad;m_{ee};p_{T,ee}",nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt200_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt200_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}", fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt200_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt200_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.2 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}", fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt300_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt300_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}", fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt300_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt300_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.3 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}", fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_ULS_eta08_pt400_opAngleCut = new TH2F("hMeePtee_ULS_eta08_pt400_opAngleCut",Form("e+e-,        |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}", fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
+  hMeePtee_LS_eta08_pt400_opAngleCut  = new TH2F("hMeePtee_LS_eta08_pt400_opAngleCut" ,Form("e+e- & e-e-, |eta|<0.8 , pt>0.4 GeV/c , #theta_{ee}>%lf mrad;m_{ee};p_{T,ee}", fMinOpAng),nBinMass,MassMin,MassMax,nBinPairPt,PairPtMin,PairPtMax);
   // opening angle
   hMeeOpAngle_ULS_eta08_pt200 = new TH2F("hMeeOpAngle_ULS_eta08_pt200","e+e-,        |eta|<0.8 , pt>0.2 GeV/c",nBinMass,MassMin,MassMax,128,0,3.2);
   hMeeOpAngle_LS_eta08_pt200  = new TH2F("hMeeOpAngle_LS_eta08_pt200" ,"e+e-,        |eta|<0.8 , pt>0.2 GeV/c",nBinMass,MassMin,MassMax,128,0,3.2);
@@ -1753,12 +1764,12 @@ void AliAnalysisTaskCharm::CreateHistos(){
   hMeePtee_LS_eta08_pt300->Sumw2();
   hMeePtee_ULS_eta08_pt400->Sumw2();
   hMeePtee_LS_eta08_pt400->Sumw2();
-  hMeePtee_ULS_eta08_pt200_opAngle50->Sumw2();
-  hMeePtee_LS_eta08_pt200_opAngle50->Sumw2();
-  hMeePtee_ULS_eta08_pt300_opAngle50->Sumw2();
-  hMeePtee_LS_eta08_pt300_opAngle50->Sumw2();
-  hMeePtee_ULS_eta08_pt400_opAngle50->Sumw2();
-  hMeePtee_LS_eta08_pt400_opAngle50->Sumw2();
+  hMeePtee_ULS_eta08_pt200_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt200_opAngleCut->Sumw2();
+  hMeePtee_ULS_eta08_pt300_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt300_opAngleCut->Sumw2();
+  hMeePtee_ULS_eta08_pt400_opAngleCut->Sumw2();
+  hMeePtee_LS_eta08_pt400_opAngleCut->Sumw2();
   hMeeOpAngle_ULS_eta08_pt200->Sumw2();
   hMeeOpAngle_LS_eta08_pt200->Sumw2();
   hMotherPt_ULS_eta08_pt200->Sumw2();
@@ -1887,9 +1898,21 @@ Double_t AliAnalysisTaskCharm::pt_cutLow(Double_t pT) {
 }
 
 Double_t AliAnalysisTaskCharm::scale_RAA(Double_t pT) {
-  //return 8.46749e-01 + (-1.30301e-01) * pT; // fit 0-10%
-  //return 9.03546e-01 + (-1.09215e-01) * pT; // fit 20-40%
-  return 0.885416 + (-0.114357) * pT; // fits for 10-20% + 20-40% combined
+  if(fHistoRAA) {
+    Int_t index = fHistoRAA->FindBin(pT);
+    Int_t n = fHistoRAA->GetNbinsX();
+    if(pT < fHistoRAA->GetBinLowEdge(1))        return fHistoRAA->GetBinContent(1);
+    else if(pT > fHistoRAA->GetBinLowEdge(n+1)) return fHistoRAA->GetBinContent(n);
+    return fHistoRAA->GetBinContent(index);
+  }
+  else if(fTF1RAA) {
+    return fTF1RAA->Eval(pT);
+  }
+  else {
+    return 8.46749e-01 + (-1.30301e-01) * pT; // fit 0-10%
+    //return 9.03546e-01 + (-1.09215e-01) * pT; // fit 20-40%
+    //return 0.885416 + (-0.114357) * pT; // fits for 10-20% + 20-40% combined
+  }
 }
 
 Double_t AliAnalysisTaskCharm::scale_CNM(Double_t pT) {

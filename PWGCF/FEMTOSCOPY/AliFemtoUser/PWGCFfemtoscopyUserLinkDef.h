@@ -198,3 +198,7 @@
 #pragma link C++ class AliFemtoCorrFctnPairsForCorrFit;
 #pragma link C++ class AliFemtoWRzTrackCut;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimpleWithCorrections;
+
+// p-d/t/He3 track cut
+#pragma link C++ class AliFemtoTrackCutPdtHe3;
+#pragma link C++ class AliFemtoCorrFctnpdtHe3;

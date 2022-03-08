@@ -4,29 +4,28 @@
 #ifndef AliAnalysisTaskSEXic0Semileptonic_H
 #define AliAnalysisTaskSEXic0Semileptonic_H
 
-#include "TROOT.h"
-#include "TVector.h"
-#include "TVector2.h"
-#include "TSystem.h"
-#include "TProfile.h"
-#include "THistManager.h"
-#include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
-#include "AliESDEvent.h"
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
-#include "AliRDHFCuts.h"
 #include "AliAODMCParticle.h" //kimc, Mar. 18
 #include "AliAODRecoDecayHF.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDEvent.h"
 #include "AliNormalizationCounter.h"
+#include "AliPID.h"
+#include "AliPIDCombined.h"
+#include "AliPIDResponse.h"
+#include "AliRDHFCuts.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h"
-#include <vector>
+
+#include "THistManager.h"
+#include "TProfile.h"
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TVector.h"
+#include "TVector2.h"
 
 #include <iostream>
+#include <vector>
 using namespace std;
-
-class AliNormalizationCounter;
 
 class AliAnalysisTaskSEXic0RunTable
 {
@@ -122,6 +121,11 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		AliNormalizationCounter *fCounter_MB_0p1to30 = nullptr;
 		AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
 		AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
+		//Add new counters for INEL>0: kimc, June 23, 2021
+		AliNormalizationCounter *fCntINEL0_MB_0to100  = nullptr;
+		AliNormalizationCounter *fCntINEL0_MB_0p1to30 = nullptr;
+		AliNormalizationCounter *fCntINEL0_MB_30to100 = nullptr;
+		AliNormalizationCounter *fCntINEL0_HMV0_0to0p1 = nullptr;
 
 		TString fOption; //!
 		Bool_t  IsMC = kTRUE;
@@ -154,6 +158,7 @@ class AliAnalysisTaskSEXic0Semileptonic : public AliAnalysisTaskSE
 		Float_t fRunOffset  = 0;    //!
 		Float_t fCentralSPD = 9999; //kimc
 		Float_t fVtxZ       = 9999; //kimc
+		Float_t fPileupStat = 9999;
 
 		Double_t MassTolLambda = 0.008;
 		Double_t MassTolXi     = 0.01;

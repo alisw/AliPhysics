@@ -56,7 +56,8 @@ public:
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetSaveTriggerPool(Bool_t input)                      { fSaveTriggerPool = input  ; }
   void                        SetDownScaleMixTrigger(Float_t input)                 { fDownScaleMT     = input  ; }
-  void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
+  void                        SetPoolTrackDepth(Int_t input)                        { fMETrackDepth    = input  ; }
+  void                        SetPoolTargetEvents(Int_t input)                      { fMETargetEvents  = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetPi0MassSelection(Int_t input);
@@ -83,7 +84,7 @@ public:
   void                        SetMakePSHists(Bool_t input)                          { bEnablePosSwapHists = input;}
   void                        SetPSCorrectionLogMode(Bool_t input)                  { bLogPSMod          = input;}
   void                        SetEnableClusPairRot(Bool_t input)                     { if (input) {fDoPosSwapMixing = 2; bEnableClusPairRot=input;} else bEnableClusPairRot = 0;}
-  void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
+  void                        SetClusterDepth(Int_t input)                          { fMEClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
   void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
@@ -152,6 +153,9 @@ public:
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
+
+  Double_t                    GetEventMixingAngle(Double_t fRawEventPlaneAngle);
+
   Double_t                    GetTrackEff(Double_t pT, Double_t eta)                        ;
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
@@ -182,6 +186,7 @@ public:
  // static const Int_t          kNvertBins=20;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNvertBins=10;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
+  static const Int_t          kNEPMixingBins=7;             ///< Event bins in which the ME are mixed
   static const Int_t          kNClusVertBins=7;             ///< vertex bins in which the clusters are mixed
   static const Int_t          kNEMCalMultBins=4;              ///< EMCal multiplicity bins in which the clusters are mixed
   static const Int_t          kUsedPi0TriggerPtBins = 5; ///< Number of Bins used for Pi0 Triggers in Correlation mode
@@ -221,9 +226,10 @@ public:
   TAxis                      *fMixBEMCalMult;            ///< TAxis for EMCAL Multiplicity bins for the mixed clusters
   TAxis                      *fMixBClusZvtx;             ///< TAxis for vertex bins for the mixed clusters
   AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
-  Int_t                       fTrackDepth;               ///<  #tracks to fill pool
-  Double_t                    fTargetFraction;           ///<  fraction of track depth before pool declared ready
-  Int_t                       fClusterDepth;             ///<  #clusters to fill cluster mixing pool
+  Int_t                       fMETrackDepth;             ///<  #tracks to fill pool
+  Int_t                       fMETargetEvents;           ///<  #events to fill pool
+  Double_t                    fMETargetFraction;         ///<  fraction of track depth before pool declared ready
+  Int_t                       fMEClusterDepth;             ///<  #clusters to fill cluster mixing pool
   Int_t                       fPoolSize;                 ///<  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
   //..Event selection types
@@ -360,6 +366,7 @@ public:
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
 
   TH1F           *fHistEventHash;            //!<! Histogram tracking the event hash for dividing data
+  TH2F           *fHistEventHashVsMixingAngle; //!<! Histogram tracking event hash (even or odd) vs event plane angle used in mixing.
 
   // Position Swap Correction Histograms
   Bool_t          bEnablePosSwapHists;  ///<  Whether to produce the following histograms for investigating the position swap method (very memory intensive, should have high cluster cut)
@@ -414,6 +421,6 @@ public:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 12) // Class to analyse gamma hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 13) // Class to analyse gamma hadron correlations
 };
 #endif

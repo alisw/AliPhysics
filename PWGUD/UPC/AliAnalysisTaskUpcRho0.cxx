@@ -62,7 +62,9 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   	ZPAenergy_T(0), ZPCenergy_T(0), VtxContrib_T(0), SpdVtxContrib_T(0),
   	VtxChi2_T(0),VtxNDF_T(0), TriggerTOF_T(0), TriggerSPD_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
-  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
+  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), N_MC_T(0),
+	Pt1_MC_T(0), Phi1_MC_T(0),Q1_MC_T(0), Eta1_MC_T(0),
+	Pt2_MC_T(0), Phi2_MC_T(0),Q2_MC_T(0), Eta2_MC_T(0),	 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
 	fTOFfile(0),fTOFFileName(0), hTOFeff(0), fTOFmask(0), isUsingTOFeff(0),
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
@@ -85,7 +87,9 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   	ZPAenergy_T(0), ZPCenergy_T(0),VtxContrib_T(0), SpdVtxContrib_T(0),
   	VtxChi2_T(0),VtxNDF_T(0), TriggerTOF_T(0), TriggerSPD_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
-  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
+  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), N_MC_T(0),
+	Pt1_MC_T(0), Phi1_MC_T(0),Q1_MC_T(0), Eta1_MC_T(0),
+	Pt2_MC_T(0), Phi2_MC_T(0),Q2_MC_T(0), Eta2_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0),
 	fTOFfile(0), fTOFFileName(0), hTOFeff(0), fTOFmask(0), isUsingTOFeff(0),
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
@@ -212,6 +216,18 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fMCTree->Branch("Pt_MC_T",&Pt_MC_T,"Pt_MC_T/F");
 	fMCTree->Branch("Rapidity_MC_T",&Rapidity_MC_T,"Rapidity_MC_T/F");
 	fMCTree->Branch("Phi_MC_T",&Phi_MC_T,"Phi_MC_T/F");
+	
+	fMCTree->Branch("N_MC_T",&N_MC_T,"N_MC_T/I");
+	fMCTree->Branch("Pt1_MC_T",&Pt1_MC_T,"Pt1_MC_T/F");
+	fMCTree->Branch("Phi1_MC_T",&Phi1_MC_T,"Phi1_MC_T/F");
+	fMCTree->Branch("Q1_MC_T",&Q1_MC_T,"Q1_MC_T/I");
+	fMCTree->Branch("Eta1_MC_T",&Eta1_MC_T,"Eta1_MC_T/F");
+	
+	fMCTree->Branch("Pt2_MC_T",&Pt2_MC_T,"Pt2_MC_T/F");
+	fMCTree->Branch("Phi2_MC_T",&Phi2_MC_T,"Phi2_MC_T/F");
+	fMCTree->Branch("Q2_MC_T",&Q2_MC_T,"Q2_MC_T/I");
+	fMCTree->Branch("Eta2_MC_T",&Eta2_MC_T,"Eta2_MC_T/F");
+
 	}
 
 	if(debugMode) std::cout<<"Defining TList..."<<std::endl;
@@ -323,12 +339,22 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		part->SetPdgCode(mcPart->PdgCode());
 		part->SetUniqueID(imc);
 	  } // loop over mc particles
+	  N_MC_T = nmc;
 	  if(nmc == 2){
 	  	TParticle *mcp0,*mcp1;
 		TLorentzVector lv0,lv1,lvSum;
 		//load particle
 		mcp0 = (TParticle*) GenPart_T->At(0);
 		mcp1 = (TParticle*) GenPart_T->At(1);
+		//store 4 vector variables
+		Pt1_MC_T = mcp0->Pt();
+		Phi1_MC_T = mcp0->Phi();
+		Q1_MC_T = mcp0->GetPdgCode(); 
+		Eta1_MC_T = mcp0->Eta();
+		Pt2_MC_T = mcp1->Pt();
+		Phi2_MC_T = mcp1->Phi();
+		Q2_MC_T = mcp1->GetPdgCode(); 
+		Eta2_MC_T = mcp1->Eta();
 		//create fourvector
 		lv0.SetPxPyPzE(mcp0->Px(), mcp0->Py(), mcp0->Pz(), mcp0->Energy());
 		lv1.SetPxPyPzE(mcp1->Px(), mcp1->Py(), mcp1->Pz(), mcp1->Energy());

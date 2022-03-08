@@ -45,7 +45,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// Configure the EMCal/DCal cluster filtering cuts done in AliCaloTrackReader
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
-/// \param clutsString : string indicating cuts to activate: "PileUp", "EventCuts","PtHardCut"+"JetJet" or "GamJet" or "GamJetGen", "RemoveLEDEvents"+"1" or "2"+"Strip"
+/// \param clutsString : string indicating cuts to activate: "PileUp", "EventCuts","PtHardCut"+"JetJet" or "GamJetGen", "RemoveLEDEvents"+"1" or "2"+"Strip"
 /// \param col: A string with the colliding system
 /// \param year: The year the data was taken, used to configure time cut
 /// \param simulation : A bool identifying the data as simulation
@@ -142,12 +142,6 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
       printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking prompt photon pT\n");
       reader->SetPtHardAndPromptPhotonPtComparison(kTRUE);
       reader->SetPtHardAndPromptPhotonPtFactor(2);
-    }
-    else if (  cutsString.Contains("GamJet")  )
-    {    
-      printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Reject outliers checking cluster energy\n");
-      reader->SetPtHardAndClusterPtComparison(kTRUE);
-      reader->SetPtHardAndClusterPtFactor(1.5);
     }
     
     // Set here generator name, default pythia
@@ -697,7 +691,6 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 ///    * NoTracks: Do not filter the tracks, not used in analysis
 ///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
 ///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
-///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
 ///       * GamJetGen: Compare prompt photon pt and generated parton pt, careful, test before using
 ///    * FullCalo: Use EMCal+DCal acceptances
 ///    * RemoveLEDEvents1/2: Remove events contaminated with LED, 1: LHC11a, 2: Run2 pp
@@ -962,7 +955,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
       // Reject MinBias or L0 trigger
       if ( caloTriggerString.Contains("G1") || caloTriggerString.Contains("J1") || 
            caloTriggerString.Contains("G2") || caloTriggerString.Contains("J2") || 
-           caloTriggerString.Contains("EGA")) 
+           caloTriggerString.Contains("GA"))
       {
         maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kINT7);
         maker->GetReader()->SetRejectEventsWithBit(AliVEvent::kMB);
@@ -985,11 +978,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     {
       maker->GetReader()->SwitchOffEventTriggerAtSE();
       maker->GetReader()->SetEventTriggerMask(mask); 
-      // what to do with caloTriggerString?
       
-      // Careful, not all productions work with kMB, try kINT7, kINT1, kAnyINT
-      //reader->SetMixEventTriggerMask(AliVEvent::kMB); 
-      maker->GetReader()->SetMixEventTriggerMask(AliVEvent::kINT7); 
+      maker->GetReader()->SetMixEventTriggerMask( AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB );
       
       printf("AddTaskCaloTrackCorrBase::Main() << Trigger selection done in AliCaloTrackReader!!! >>> \n");
     }

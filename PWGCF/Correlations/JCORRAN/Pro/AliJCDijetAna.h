@@ -37,8 +37,8 @@ class AliJCDijetAna : public TObject
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<vector<fastjet::PseudoJet>> GetJets() { return jets; }
         vector<vector<vector<fastjet::PseudoJet>>> GetDijets() { return dijets; }
-        bool HasDijet() { return bHasDijet; }
-        bool HasDeltaPhiDijet() { return bHasDeltaPhiDijet; }
+        bool HasDijet(int iSet) { return bHasDijet.at(iSet); }
+        bool HasDeltaPhiDijet(int iSet) { return bHasDeltaPhiDijet.at(iSet); }
         void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins);
 
         void SetSettings(int    lDebug,
@@ -62,13 +62,17 @@ class AliJCDijetAna : public TObject
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
         void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
-        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos);
+        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos);
+        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         double DeltaR(double eta1, double eta2, double phi1, double phi2);
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
+
 #endif
+        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, iBGSubtrCutsRaw, iBGSubtrConstCutCutsRaw, jetClassesSize};
+        TString sDijetTypes[jetClassesSize] = {"raw", "bg. subtr.", "bg. subtr. const. cut", "const. cut", "kt", "bg. subtr. cuts raw", "bg. subtr. const. cut cuts raw"};
 
     private:
         int fDebug;
@@ -90,15 +94,14 @@ class AliJCDijetAna : public TObject
         double ftrackingIneff;
         bool bEvtHasAreaInfo;
 
-        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, jetClassesSize};
         double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, deltaRMin, deltaR;
         bool leadingTrackOverThreshold;
         unsigned noTracks;
         bool removed;
         //For loops:
         unsigned utrack, uktjet, ujet, ujet2, uconst, udijet, ujetDetMC;
-        bool bHasDijet;
-        bool bHasDeltaPhiDijet;
+        std::vector<bool> bHasDijet;
+        std::vector<bool> bHasDeltaPhiDijet;
         bool bHasDeltaPhiSubLeadJet;
         TRandom3 *randomGenerator;
         double fDeltaPt;
@@ -106,6 +109,7 @@ class AliJCDijetAna : public TObject
         double randConePhi;
         double randConeEta;
         double randConePt;
+        double fDeltaM;
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         vector<fastjet::PseudoJet> chparticles;

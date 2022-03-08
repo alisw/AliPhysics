@@ -2,7 +2,7 @@
 AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t period = 0, double ptmin = 0.5, Bool_t removebadarea = kFALSE, Bool_t mapsmooth = kFALSE){
 	// Load Custom Configuration and parameters
 	enum { lhc15o=0, lhc18q=1, lhc18r=2 };
-	TString speriod[3]= {"15o","18q","18r"}; //needed string to load correct map config based on string
+	const TString speriod[3]= {"15o","18q","18r"}; //needed string to load correct map config based on string
 	cout << "AddTaskJFFlucMaster:: period=" << period <<"\t ptmin="<< ptmin << endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	//-------- Loading Correction Maps ----------
@@ -10,7 +10,7 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	//-------- JFlucWagons -------
     const int Nsets  = 7; // number of configurations
  	AliJFFlucTask *myTask[Nsets];
-	TString configNames[Nsets] = {
+	const TString configNames[Nsets] = {
 		"hybrid", // 0
 		"global",
 		"nqq",    // 2
@@ -21,9 +21,9 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	};
 	//loading correction map
 	TString s_smooth = "";
-	if(mapsmooth) s_smooth = "Smooth_";
-	TString MAPfilenames[Nsets]; 
-	TString MAPdirname="alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
+	if(mapsmooth) s_smooth = "Smooth_"; //enable when needed again
+	const TString MAPdirname="alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
+	//const TString MAPdirname="alien:///alice/cern.ch/user/j/jparkkil/legotrain/NUA/";
 	AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
 	if(period == lhc18q || period == lhc18r) {
 		cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",speriod[period].Data()));//centrality flattening
@@ -32,9 +32,23 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	if(period == lhc15o) {
 		cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",speriod[period].Data()));//efficiency cirrection
 	}
-	for(int i=0;i<Nsets;i++) {
-		MAPfilenames[i] = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[i].Data()); //azimuthal correction
-		cmaptask->EnablePhiCorrection(i,MAPfilenames[i]); // i is index for set file correction ->SetPhiCorrectionIndex(i);
+	//const TString mapFilesLHC15o[Nsets] = { //correction maps used for 2020 publication
+	//	"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_global_3d-rebin-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_charge_nqq_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_hybrid_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_SPD_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_zvtx_3d-rebin2-ROOT5.root",
+	//	"PhiWeights_LHC15o_s_pileup_3d-rebin2-ROOT5.root"
+	//};
+	//cout<<"Using LHC15o correction maps.\n";
+	//Load phi correction maps for a limited set of configurations. The rest of the configs will use the map for the default configuration.
+	const UInt_t mapIndices[] = {0,1,2,4,5};
+	for(UInt_t i = 0; i < sizeof(mapIndices)/sizeof(mapIndices[0]); ++i){
+		UInt_t ci = mapIndices[i];
+		TString MAPfilename = Form("%sPhiWeights_LHC%s_Error_%spt%02d_s_%s.root",MAPdirname.Data(), speriod[period].Data(),s_smooth.Data(), Int_t(ptmin*10), configNames[ci].Data()); //azimuthal correction
+		cout << MAPfilename.Data() << endl;
+		cmaptask->EnablePhiCorrection(i,MAPfilename);
 	}
 	mgr->AddTask((AliAnalysisTask*) cmaptask);
     
@@ -57,14 +71,23 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 		myTask[i]->SetTestFilterBit(hybridCut);
 		myTask[i]->SetEtaRange(0.4, 0.8);
 		myTask[i]->SetPtRange(ptmin, 5.0);
-		myTask[i]->SetEffConfig(0,hybridCut);
-		myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
+		myTask[i]->SetEffConfig(1,hybridCut);
+		//myTask[i]->SetPhiCorrectionIndex(i);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
+		//Find if this configuration uses its own phi correction map, otherwise, use default.
+		UInt_t mapIndex = 0;
+		for(UInt_t j = 0; j < sizeof(mapIndices)/sizeof(mapIndices[0]); ++j)
+			if(mapIndices[j] == i){
+				mapIndex = j;
+				break;
+			}
+		myTask[i]->SetPhiCorrectionIndex(mapIndex);//cmaptask->EnablePhiCorrection(i,MAPfilenames[i]);
 		myTask[i]->SetRemoveBadArea(removebadarea);
+		myTask[i]->SetZVertexCut(8.);
 	}
 	// s_global
 	int iS = 1;
 	myTask[iS]->SetTestFilterBit(globalCut);
-	myTask[iS]->SetEffConfig(0,globalCut);
+	myTask[iS]->SetEffConfig(1,globalCut);
 	// s_nqq
 	iS = 2;
 	myTask[iS]->SetParticleCharge(-1);
@@ -78,15 +101,11 @@ AliAnalysisTask *AddTaskJFFlucMaster(TString taskName="JFFlucMaster", UInt_t per
 	myTask[iS]->SetCentDetName("CL1");
 	// s_zvtx
 	iS = 5;
-	myTask[iS]->SetZVertexCut(8);
+	myTask[iS]->SetZVertexCut(10.);
 	// s_pileup
 	iS = 6;
-	if(period==lhc18q || period==lhc18r) {
-		myTask[iS]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING|AliJFFlucTask::FLUC_CENT_FLATTENING); // CAN|T overwrite Flags!!!
-	} else if(period==lhc15o) {
-		myTask[iS]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING); // CAN|T overwrite Flags!!! no weightening for 15o
-	}
-	
+	myTask[iS]->AddFlags(AliJFFlucTask::FLUC_EBE_WEIGHTING|AliJFFlucTask::FLUC_PHI_CORRECTION); // CAN|T overwrite Flags!!! no weightening for 15o
+	if(period == lhc18q || period == lhc18r) myTask[iS]->AddFlags(AliJFFlucTask::FLUC_CENT_FLATTENING);
 	// Must add the tasks
 	for(int i=0;i<Nsets;i++) mgr->AddTask((AliAnalysisTask*) myTask[i]);
 	// Create containers for input/output

@@ -11,7 +11,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
 					       Int_t rejpileup = 1,
 					       Int_t vermix = 0,
 					       Int_t version = 0,
-					       TString EffFileName = "")
+					       TString EffFileName = "",
+					       TString CentralityEstimator = "")
 {
 
   //get the current analysis manager
@@ -53,6 +54,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   //create task and add it to the manager (MB)
   TString appendix;
   appendix += TString::Format("Cen%d_%d_%s_rejpileup%d_%d",CenMin,CenMax,triggername.Data(),rejpileup,version);
+  if(CentralityEstimator.Contains("V0")) appendix += TString::Format("_Cen%s",CentralityEstimator.Data());
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   task->UsePhysicsSelection();
@@ -251,8 +253,14 @@ AliAnalysisTask *AddTask_rbailhac_lowmass_PbPb(Bool_t getFromAlien=kFALSE,
   }//loop
 
   //Add event filter
-  task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,"V0M")))));
-
+  if(CentralityEstimator.Contains("V0")){
+    printf("Use %s centrality estimator for event selection\n",CentralityEstimator.Data());
+    task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,CentralityEstimator.Data())))));
+  } else {
+    printf("Use default old centrality estimator V0M for event selection\n");
+    task->SetEventFilter((reinterpret_cast<AliDielectronEventCuts*>(gROOT->ProcessLine(Form("GetEventCuts(%f,%f,%d,\"%s\")",(Float_t)CenMin,(Float_t)CenMax,rejpileup,"V0M")))));
+  }
+  
   mgr->AddTask(task);
 
  

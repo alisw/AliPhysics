@@ -79,9 +79,9 @@ AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) :
 			"inv. mass (MKo*-MKpi) [GeV]",
 			"Abs(CosineKpiPhiRFrame)^3",
 			"CosPiDsLabFrame",
-			"decLenXY [cm]"
+			"decLenXY [cm]",
 			"NormdecLen",
-			"NormdecLenXY [cm]",
+			"NormdecLenXY",
 			"cosThetaPointXY"};
 			
   Bool_t isUpperCut[20]={kTRUE,

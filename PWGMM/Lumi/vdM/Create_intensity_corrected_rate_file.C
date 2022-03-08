@@ -9,26 +9,25 @@
 //-------------------------------------------------------
 
 void Create_one_intensity_corrected_rate_file(
-		Int_t scan_type, Int_t scan, const char *rate_name, const char *intensity_corr_name, bool systChk)
+		Int_t scan_type, Int_t scan, const char *rate_name, const char *intensity_corr_name)
 // scan_type: 1 => x-scan; 2 => y-scan
 {
 	// create names for files
 	char *file_name_rate = new char[kg_string_size];  
 	char *file_name_corr = new char[kg_string_size];
 	char *file_name_new_rate = new char[kg_string_size];
-	const char* sfx = systChk?"_syst":"";
 	if (scan_type == 1)
 	{
 		sprintf(file_name_corr,"../Fill-%d/%sCorr_x_Scan_%d.root", g_vdm_Fill,intensity_corr_name,scan);
-		sprintf(file_name_rate,"../Fill-%d/PileupCorrRate_%s_x_Scan_%d%s.root", g_vdm_Fill,rate_name,scan,sfx);
-		sprintf(file_name_new_rate,"../Fill-%d/IntensityCorr%sRate_%s_x_Scan_%d%s.root",
-				g_vdm_Fill,intensity_corr_name,rate_name,scan,sfx);
+		sprintf(file_name_rate,"../Fill-%d/PileupCorrRate_%s_x_Scan_%d.root", g_vdm_Fill,rate_name,scan);
+		sprintf(file_name_new_rate,"../Fill-%d/IntensityCorr%sRate_%s_x_Scan_%d.root",
+				g_vdm_Fill,intensity_corr_name,rate_name,scan);
 	}
 	if (scan_type == 2) {
 		sprintf(file_name_corr,"../Fill-%d/%sCorr_y_Scan_%d.root", g_vdm_Fill,intensity_corr_name,scan);
-		sprintf(file_name_rate,"../Fill-%d/PileupCorrRate_%s_y_Scan_%d%s.root", g_vdm_Fill,rate_name,scan,sfx);
-		sprintf(file_name_new_rate,"../Fill-%d/IntensityCorr%sRate_%s_y_Scan_%d%s.root",
-				g_vdm_Fill,intensity_corr_name,rate_name,scan,sfx);
+		sprintf(file_name_rate,"../Fill-%d/PileupCorrRate_%s_y_Scan_%d.root", g_vdm_Fill,rate_name,scan);
+		sprintf(file_name_new_rate,"../Fill-%d/IntensityCorr%sRate_%s_y_Scan_%d.root",
+				g_vdm_Fill,intensity_corr_name,rate_name,scan);
 	}
 
 	// open files and get trees
@@ -105,11 +104,9 @@ void Create_one_intensity_corrected_rate_file(
 //-------------------------------------------------------
 
 void Create_intensity_corrected_rate_file(
-		Int_t Fill, const char *rate_name, const char *intensity_corr_name, bool systChk = false
+		Int_t Fill, const char *rate_name, const char *intensity_corr_name
 		)
 {
-	if (systChk) cout <<" WARNING: you're about to generate an output for syst. err check!" <<endl;
-
 	// get name of files and set pointers to trees
 	Set_input_file_names(Fill);
 	Set_pointers_to_input_files_and_trees();
@@ -117,8 +114,8 @@ void Create_intensity_corrected_rate_file(
 	// create files for all scans
 	for(Int_t i=0;i<g_n_Scans_in_Fill;i++)
 	{
-		Create_one_intensity_corrected_rate_file(1, i, rate_name, intensity_corr_name, systChk); //x-scans
-		Create_one_intensity_corrected_rate_file(2, i, rate_name, intensity_corr_name, systChk); //y-scans
+		Create_one_intensity_corrected_rate_file(1, i, rate_name, intensity_corr_name); //x-scans
+		Create_one_intensity_corrected_rate_file(2, i, rate_name, intensity_corr_name); //y-scans
 	}
 
 	return;

@@ -60,6 +60,7 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fTriggerBitConfig(nullptr),
   fPatchFinder(nullptr),
   fLevel0PatchFinder(nullptr),
+  fSmearEngine(nullptr),
   fL0MinTime(7),
   fL0MaxTime(10),
   fApplyL0TimeCut(true),
@@ -112,6 +113,7 @@ AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
   delete fPatchFinder;
   delete fLevel0PatchFinder;
   if(fTriggerBitConfig) delete fTriggerBitConfig;
+  if(fSmearEngine) delete fSmearEngine;
 }
 
 void AliEmcalTriggerMakerKernel::Init(){
@@ -141,6 +143,8 @@ void AliEmcalTriggerMakerKernel::Init(){
     fPatchEnergySimpleSmeared = new AliEMCALTriggerDataGrid<double>;
     fPatchEnergySimpleSmeared->Allocate(48, nrows);
   }
+
+  fSmearEngine = new TRandom(0);
 }
 
 void AliEmcalTriggerMakerKernel::AddL1TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize)
@@ -511,7 +515,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
         double energysmear = energyorig;
         if(energyorig > fSmearThreshold){
           double mean = fSmearModelMean->Eval(energyorig), sigma = fSmearModelSigma->Eval(energyorig);
-          energysmear =  gRandom->Gaus(mean, sigma);
+          energysmear =  fSmearEngine->Gaus(mean, sigma);
           if(energysmear < 0) energysmear = 0;      // only accept positive or 0 energy values
           AliDebugStream(1) << "Original energy " << energyorig << ", mean " << mean << ", sigma " << sigma << ", smeared " << energysmear << std::endl;
         }
@@ -522,7 +526,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
         }
         if(fAddGaussianNoiseFEESmear) {
           // Accept also the negative part of the gaussian to simulate underfluctuations
-          double noisevalue = gRandom->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
+          double noisevalue = fSmearEngine->Gaus(fMeanNoiseFEESmear, fSigmaNoiseFEESmear);
           if(noisevalue < 0. && !fUseNegPartGaussNoise) 
             noisevalue = 0.;
           (*fPatchEnergySimpleSmeared)(icol, irow) += noisevalue;

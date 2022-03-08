@@ -280,7 +280,7 @@ TComplex AliGFW::Calculate(Int_t poi, Int_t ref, vector<Int_t> hars, Int_t ptbin
 };
 TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap) {
   if(corconf.Regs.size()==0) return TComplex(0,0); //Check if we have any regions at all
-  TComplex retval(1,1);
+  TComplex retval(1,0);
   for(Int_t i=0;i<(Int_t)corconf.Regs.size();i++) { //looping over all regions
     if(corconf.Regs.at(i).size()==0)  return TComplex(0,0); //again, if no regions in the current subevent, then quit immediatelly
     //picking up the indecies of regions...

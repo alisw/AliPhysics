@@ -199,7 +199,6 @@ private:
 
   // Event Pool for mixing
   AliEventPoolManager *fPoolMgr;  //  event pool manager for Event Mixing
-  AliEventPoolManager *fPoolMgr1; //  event pool manager for Event Mixing
   Int_t fPoolMaxNEvents;   // set maximum number of events in the pool
   Int_t fPoolMinNTracks;   // set minimum number of tracks in the pool
   Int_t fMinEventsToMix;   // set the minimum number of events want to mix
@@ -237,9 +236,7 @@ private:
   TH2D*  fh2_pt_trig_asso;
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
-  TH2D*  fh2_ITS_acceptance;
   TH2F*  fh2_SPD_multcorr;
-  TH2F*  fh2_SPDV0_multcorr;
   TH2F*  fh2_SPDtrack_multcorr;
   TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;

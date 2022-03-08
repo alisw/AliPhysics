@@ -173,10 +173,10 @@ void AliAODConversionPhoton::CalculateDistanceOfClossetApproachToPrimVtx(const A
 void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t enableSort, Bool_t mergedAnalysis, AliVCluster* cluster){
 
 
-  TParticle* PhotonDummyMerged;
-  TParticle* PhotonDummyMergedMother;
-  TParticle* PhotonDummyMergedGrandMother;
-  TParticle* PhotonDummyMergedGGMother;
+  AliMCParticle* PhotonDummyMerged;
+  AliMCParticle* PhotonDummyMergedMother;
+  AliMCParticle* PhotonDummyMergedGrandMother;
+  AliMCParticle* PhotonDummyMergedGGMother;
   Int_t photonDummyMergedPDG= -1;
   Int_t photonDummyMergedMotherPDG= -1;
   Int_t photonDummyMergedGrandMotherPDG= -1;
@@ -187,32 +187,32 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     for (Int_t j = 0; j< fNCaloPhotonMCLabels; j++){
       neutralPionLabel = -1;
       foundNeutralPion = kFALSE;
-      PhotonDummyMerged        = mcEvent->Particle(GetCaloPhotonMCLabel(j)); // main particle
-      photonDummyMergedPDG = PhotonDummyMerged->GetPdgCode();
+      PhotonDummyMerged        = (AliMCParticle*) mcEvent->GetTrack(GetCaloPhotonMCLabel(j)); // main particle
+      photonDummyMergedPDG = PhotonDummyMerged->PdgCode();
       if(TMath::Abs(photonDummyMergedPDG)==111){
         foundNeutralPion = kTRUE;
         neutralPionLabel = GetCaloPhotonMCLabel(j);
       }
-      if(PhotonDummyMerged->GetMother(0)>-1 && !foundNeutralPion){
-        PhotonDummyMergedMother  = mcEvent->Particle(PhotonDummyMerged->GetMother(0)); // mother
-        photonDummyMergedMotherPDG = PhotonDummyMergedMother->GetPdgCode();
+      if(PhotonDummyMerged->GetMother()>-1 && !foundNeutralPion){
+        PhotonDummyMergedMother  = (AliMCParticle*) mcEvent->GetTrack(PhotonDummyMerged->GetMother()); // mother
+        photonDummyMergedMotherPDG = PhotonDummyMergedMother->PdgCode();
         if(TMath::Abs(photonDummyMergedMotherPDG)==111){
           foundNeutralPion = kTRUE;
-          neutralPionLabel = PhotonDummyMerged->GetMother(0);
+          neutralPionLabel = PhotonDummyMerged->GetMother();
         }
-        if(PhotonDummyMergedMother->GetMother(0)>-1 && !foundNeutralPion){
-          PhotonDummyMergedGrandMother  = mcEvent->Particle(PhotonDummyMergedMother->GetMother(0)); // grandmother
-          photonDummyMergedGrandMotherPDG = PhotonDummyMergedGrandMother->GetPdgCode();
+        if(PhotonDummyMergedMother->GetMother()>-1 && !foundNeutralPion){
+          PhotonDummyMergedGrandMother  = (AliMCParticle*) mcEvent->GetTrack(PhotonDummyMergedMother->GetMother()); // grandmother
+          photonDummyMergedGrandMotherPDG = PhotonDummyMergedGrandMother->PdgCode();
           if(TMath::Abs(photonDummyMergedGrandMotherPDG)==111){
             foundNeutralPion = kTRUE;
-            neutralPionLabel = PhotonDummyMergedMother->GetMother(0);
+            neutralPionLabel = PhotonDummyMergedMother->GetMother();
           }
-          if(PhotonDummyMergedGrandMother->GetMother(0)>-1 && !foundNeutralPion){
-            PhotonDummyMergedGGMother  = mcEvent->Particle(PhotonDummyMergedGrandMother->GetMother(0)); // grand-grandmother
-            photonDummyMergedGGMotherPDG = PhotonDummyMergedGGMother->GetPdgCode();
+          if(PhotonDummyMergedGrandMother->GetMother()>-1 && !foundNeutralPion){
+            PhotonDummyMergedGGMother  = (AliMCParticle*) mcEvent->GetTrack(PhotonDummyMergedGrandMother->GetMother()); // grand-grandmother
+            photonDummyMergedGGMotherPDG = PhotonDummyMergedGGMother->PdgCode();
             if(TMath::Abs(photonDummyMergedGGMotherPDG)==111){
               foundNeutralPion = kTRUE;
-              neutralPionLabel = PhotonDummyMergedGrandMother->GetMother(0);
+              neutralPionLabel = PhotonDummyMergedGrandMother->GetMother();
             }
           }
         }
@@ -250,24 +250,24 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
       for(Int_t l=0; l<fNCaloPhotonMCLabels; l++){
         if(fLeadingNeutralPionDaughterIndex>-1)
           continue;
-        PhotonDummyMerged        = mcEvent->Particle(GetCaloPhotonMCLabel(l)); // main particle
-        if(PhotonDummyMerged->GetMother(0)>-1){
-          if(PhotonDummyMerged->GetMother(0)==fNeutralPionLabels[fLeadingNeutralPionIndex]){
+        PhotonDummyMerged        = (AliMCParticle*) mcEvent->GetTrack(GetCaloPhotonMCLabel(l)); // main particle
+        if(PhotonDummyMerged->GetMother()>-1){
+          if(PhotonDummyMerged->GetMother()==fNeutralPionLabels[fLeadingNeutralPionIndex]){
             fLeadingNeutralPionDaughterIndex = l;
           }else{
-            PhotonDummyMergedMother        = mcEvent->Particle(PhotonDummyMerged->GetMother(0));
-            if(PhotonDummyMergedMother->GetMother(0)>-1){
-              if(PhotonDummyMergedMother->GetMother(0)==fNeutralPionLabels[fLeadingNeutralPionIndex]){
+            PhotonDummyMergedMother        = (AliMCParticle*) mcEvent->GetTrack(PhotonDummyMerged->GetMother());
+            if(PhotonDummyMergedMother->GetMother()>-1){
+              if(PhotonDummyMergedMother->GetMother()==fNeutralPionLabels[fLeadingNeutralPionIndex]){
                 fLeadingNeutralPionDaughterIndex = l;
               }else{
-                PhotonDummyMergedGrandMother        = mcEvent->Particle(PhotonDummyMergedMother->GetMother(0));
-                if(PhotonDummyMergedGrandMother->GetMother(0)>-1){
-                  if(PhotonDummyMergedGrandMother->GetMother(0)==fNeutralPionLabels[fLeadingNeutralPionIndex]){
+                PhotonDummyMergedGrandMother        = (AliMCParticle*) mcEvent->GetTrack(PhotonDummyMergedMother->GetMother());
+                if(PhotonDummyMergedGrandMother->GetMother()>-1){
+                  if(PhotonDummyMergedGrandMother->GetMother()==fNeutralPionLabels[fLeadingNeutralPionIndex]){
                     fLeadingNeutralPionDaughterIndex = l;
                   }else{
-                    PhotonDummyMergedGGMother        = mcEvent->Particle(PhotonDummyMergedGrandMother->GetMother(0));
-                    if(PhotonDummyMergedGGMother->GetMother(0)>-1){
-                      if(PhotonDummyMergedGGMother->GetMother(0)==fNeutralPionLabels[fLeadingNeutralPionIndex]){
+                    PhotonDummyMergedGGMother        = (AliMCParticle*) mcEvent->GetTrack(PhotonDummyMergedGrandMother->GetMother());
+                    if(PhotonDummyMergedGGMother->GetMother()>-1){
+                      if(PhotonDummyMergedGGMother->GetMother()==fNeutralPionLabels[fLeadingNeutralPionIndex]){
                         fLeadingNeutralPionDaughterIndex = l;
                       }
                     }
@@ -294,9 +294,9 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   Bool_t isSubLeadingEM             = kFALSE; // cluster contains at least one electron or photon from a pi0, eta or eta_prime in subleading contribution
   Bool_t isElectronFromFragPhoton   = kFALSE; // largest contribution to cluster is from converted electron, but photon stems from fragmentation photon ( q -> q gamma)
 
-  TParticle* Photon = 0x0;
-  TParticle* PhotonMother = 0x0;
-  TParticle* PhotonGrandMother = 0x0;
+  AliMCParticle* Photon = 0x0;
+  AliMCParticle* PhotonMother = 0x0;
+  AliMCParticle* PhotonGrandMother = 0x0;
   if (fNCaloPhotonMCLabels==0) return;
 
   if (enableSort){
@@ -309,11 +309,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
       for (Int_t i = 0; i < fNCaloPhotonMCLabels; i++){
         orginalContrib[i]       = fCaloPhotonMCLabels[i];
         if (fCaloPhotonMCLabels[i]> -1){
-          TParticle* dummy  = mcEvent->Particle(fCaloPhotonMCLabels[i]);
+          AliMCParticle* dummy  = (AliMCParticle*) mcEvent->GetTrack(fCaloPhotonMCLabels[i]);
           if (dummy){
-            energyPerPart[i]  = dummy->Energy();
+            energyPerPart[i] = dummy->E();
             // suppress energy of hadrons !!! DIRTY hack !!!
-            if (!(TMath::Abs(dummy->GetPdgCode())== 11 || TMath::Abs(dummy->GetPdgCode())== 22)){
+            if (!(TMath::Abs(dummy->PdgCode())== 11 || TMath::Abs(dummy->PdgCode())== 22)){
               // cout << "suppressed hadron energy for:" << dummy->GetPdgCode() << endl;
               energyPerPart[i]= 0.25; // put energy to mip
             }
@@ -341,11 +341,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     // -> if the leading daughter index is not 0
     // -> the leading neutral pion has a larger cluster energy fraction than the cluster label 0
     // load particle corresponding to largest daughter of leading pi0
-    Photon                            = mcEvent->Particle(GetCaloPhotonMCLabel(fLeadingNeutralPionDaughterIndex));
+    Photon                            = (AliMCParticle*) mcEvent->GetTrack(GetCaloPhotonMCLabel(fLeadingNeutralPionDaughterIndex));
   } else {
     // load particle corresponding to MC label 0 in cluster
     if(GetCaloPhotonMCLabel(0)>-1)
-      Photon                            = mcEvent->Particle(GetCaloPhotonMCLabel(0));
+      Photon                            = (AliMCParticle*) mcEvent->GetTrack(GetCaloPhotonMCLabel(0));
   }
 
 
@@ -353,7 +353,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
     return;
   }
 
-  Int_t particleMotherLabel           = Photon->GetMother(0);
+  Int_t particleMotherLabel           = Photon->GetMother();
   Int_t particleGrandMotherLabel      = -1;
   Int_t particleGrandMotherX2Label    = -1;
   Int_t particleGrandMotherX3Label    = -1;
@@ -374,36 +374,36 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   Int_t particleGrandMotherNDaugthers = 0;
 
   if (particleMotherLabel > -1){
-    PhotonMother                      = mcEvent->Particle(particleMotherLabel);
+    PhotonMother                      = (AliMCParticle*) mcEvent->GetTrack(particleMotherLabel);
     particleMotherNDaugthers          = PhotonMother->GetNDaughters();
-    particleGrandMotherLabel          = PhotonMother->GetMother(0);
-    particleMotherPDG                 = PhotonMother->GetPdgCode();
+    particleGrandMotherLabel          = PhotonMother->GetMother();
+    particleMotherPDG                 = PhotonMother->PdgCode();
     if (particleGrandMotherLabel > -1){
-      PhotonGrandMother               = mcEvent->Particle(particleGrandMotherLabel);
-      particleGrandMotherPDG          = PhotonGrandMother->GetPdgCode();
+      PhotonGrandMother               = (AliMCParticle*) mcEvent->GetTrack(particleGrandMotherLabel);
+      particleGrandMotherPDG          = PhotonGrandMother->PdgCode();
       particleGrandMotherNDaugthers   = PhotonGrandMother->GetNDaughters();
-      particleGrandMotherX2Label      = PhotonGrandMother->GetMother(0);
-      TParticle* dummyGMM             = 0x0;
+      particleGrandMotherX2Label      = PhotonGrandMother->GetMother();
+      AliMCParticle* dummyGMM         = 0x0;
       if (particleGrandMotherX2Label > -1){
-        dummyGMM                        = mcEvent->Particle(particleGrandMotherX2Label);
-        particleGrandMotherX2PDG        = dummyGMM->GetPdgCode();
-        particleGrandMotherX3Label      = dummyGMM->GetMother(0);
+        dummyGMM                        = (AliMCParticle*) mcEvent->GetTrack(particleGrandMotherX2Label);
+        particleGrandMotherX2PDG        = dummyGMM->PdgCode();
+        particleGrandMotherX3Label      = dummyGMM->GetMother();
         if (particleGrandMotherX3Label > -1){
-          dummyGMM                        = mcEvent->Particle(particleGrandMotherX3Label);
-          particleGrandMotherX3PDG        = dummyGMM->GetPdgCode();
-          particleGrandMotherX4Label      = dummyGMM->GetMother(0);
+          dummyGMM                        = (AliMCParticle*) mcEvent->GetTrack(particleGrandMotherX3Label);
+          particleGrandMotherX3PDG        = dummyGMM->PdgCode();
+          particleGrandMotherX4Label      = dummyGMM->GetMother();
           if (particleGrandMotherX4Label > -1){
-            dummyGMM                        = mcEvent->Particle(particleGrandMotherX4Label);
-            particleGrandMotherX4PDG        = dummyGMM->GetPdgCode();
-            particleGrandMotherX5Label      = dummyGMM->GetMother(0);
+            dummyGMM                        = (AliMCParticle*) mcEvent->GetTrack(particleGrandMotherX4Label);
+            particleGrandMotherX4PDG        = dummyGMM->PdgCode();
+            particleGrandMotherX5Label      = dummyGMM->GetMother();
             if (particleGrandMotherX5Label > -1){
-              dummyGMM                        = mcEvent->Particle(particleGrandMotherX5Label);
-              particleGrandMotherX5PDG        = dummyGMM->GetPdgCode();
-              particleGrandMotherX6Label      = dummyGMM->GetMother(0);
+              dummyGMM                        = (AliMCParticle*) mcEvent->GetTrack(particleGrandMotherX5Label);
+              particleGrandMotherX5PDG        = dummyGMM->PdgCode();
+              particleGrandMotherX6Label      = dummyGMM->GetMother();
               if (particleGrandMotherX6Label > -1){
-                dummyGMM                        = mcEvent->Particle(particleGrandMotherX6Label);
-                particleGrandMotherX6PDG        = dummyGMM->GetPdgCode();
-                particleGrandMotherX7Label      = dummyGMM->GetMother(0);
+                dummyGMM                        = (AliMCParticle*) mcEvent->GetTrack(particleGrandMotherX6Label);
+                particleGrandMotherX6PDG        = dummyGMM->PdgCode();
+                particleGrandMotherX7Label      = dummyGMM->GetMother();
               }
             }
           }
@@ -428,7 +428,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   }
 
   // Check whether the first contribution was photon
-  if(TMath::Abs(Photon->GetPdgCode()) == 22){
+  if(TMath::Abs(Photon->PdgCode()) == 22){
     isPhoton                          = kTRUE;
     // did it decay via the dalitz channel
     if (particleMotherLabel > -1 && particleMotherNDaugthers == 3)
@@ -444,7 +444,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   }
 
   // Check whether the first contribution was electron
-  if( TMath::Abs(Photon->GetPdgCode()) == 11 ){
+  if( TMath::Abs(Photon->PdgCode()) == 11 ){
     isElectron                        = kTRUE;
     if (particleMotherLabel > -1) {
       // was it a conversion
@@ -475,22 +475,22 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
 
     // consider the case, where a photon stems from a photon which stems from a photon etc...which is common for frag. photons
     if (particleMotherLabel > -1){
-      TParticle *dummyMother = mcEvent->Particle(particleMotherLabel);
+      AliMCParticle *dummyMother = (AliMCParticle*) mcEvent->GetTrack(particleMotherLabel);
       Bool_t originReached   = kFALSE;
       if (dummyMother){
-        while (dummyMother->GetPdgCode() == 22 && !originReached){ // follow conversion photon's history, as long as the mother is a photon
-          if (dummyMother->GetMother(0) > -1){
-            dummyMother = mcEvent->Particle(dummyMother->GetMother(0));
-            if ((TMath::Abs(dummyMother->GetPdgCode()) == 11) || (TMath::Abs(dummyMother->GetPdgCode()) == 22)){ // in case of additional conversion skip to photon's grandma, which should be a photon
-              if (dummyMother->GetMother(0) > -1){                                                               // also mother of photon could be a photon (can happen for fragmentation)
-                dummyMother   = mcEvent->Particle(dummyMother->GetMother(0));
+        while (dummyMother->PdgCode() == 22 && !originReached){ // follow conversion photon's history, as long as the mother is a photon
+          if (dummyMother->GetMother() > -1){
+            dummyMother = (AliMCParticle*) mcEvent->GetTrack(dummyMother->GetMother());
+            if ((TMath::Abs(dummyMother->PdgCode()) == 11) || (TMath::Abs(dummyMother->PdgCode()) == 22)){ // in case of additional conversion skip to photon's grandma, which should be a photon
+              if (dummyMother->GetMother() > -1){                                                               // also mother of photon could be a photon (can happen for fragmentation)
+                dummyMother   = (AliMCParticle*) mcEvent->GetTrack(dummyMother->GetMother());
               } else {
                 originReached = kTRUE;
               }
             } else {
               originReached = kTRUE;
             }
-            isElectronFromFragPhoton = (TMath::Abs(dummyMother->GetPdgCode()) < 6);// photon stems from quark = fragmentation photon
+            isElectronFromFragPhoton = (TMath::Abs(dummyMother->PdgCode()) < 6);// photon stems from quark = fragmentation photon
           } else {
             originReached = kTRUE;
           }
@@ -505,27 +505,27 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
 
   // check whether there were other contributions to the cluster
   if (fNCaloPhotonMCLabels>1){
-    TParticle* dummyPart            =NULL;
-    TParticle* dummyPartMother      =NULL;
-    TParticle* dummyPartGrandMother =NULL;
+    AliMCParticle* dummyPart            =NULL;
+    AliMCParticle* dummyPartMother      =NULL;
+    AliMCParticle* dummyPartGrandMother =NULL;
 
     for (Int_t i = 1; i< fNCaloPhotonMCLabels; i++){
       if (enablePrintOuts) cout << "checking particle: " <<  i << endl;
       if (GetCaloPhotonMCLabel(i) < 0) continue;
-      dummyPart = mcEvent->Particle(GetCaloPhotonMCLabel(i));
-      Int_t dummyPartMotherLabel      = dummyPart->GetMother(0);
+      dummyPart = (AliMCParticle*) mcEvent->GetTrack(GetCaloPhotonMCLabel(i));
+      Int_t dummyPartMotherLabel      = dummyPart->GetMother();
       Int_t dummyPartGrandMotherLabel = -1;
       Int_t dummyPartMotherPDG        = -1;
       Int_t dummyPartGrandMotherPDG   = -1;
       // check whether this particle has a mother & obtain the pdg code
       if (dummyPartMotherLabel > -1){
-        dummyPartMother               = mcEvent->Particle(dummyPartMotherLabel);
-        dummyPartGrandMotherLabel     = dummyPartMother->GetMother(0);
-        dummyPartMotherPDG            = dummyPartMother->GetPdgCode();
+        dummyPartMother               = (AliMCParticle*) mcEvent->GetTrack(dummyPartMotherLabel);
+        dummyPartGrandMotherLabel     = dummyPartMother->GetMother();
+        dummyPartMotherPDG            = dummyPartMother->PdgCode();
         // check whether this particle has a grandmother & obtain its pdg code
         if (dummyPartGrandMotherLabel > -1){
-          dummyPartGrandMother        = mcEvent->Particle(dummyPartGrandMotherLabel);
-          dummyPartGrandMotherPDG     = dummyPartGrandMother->GetPdgCode();
+          dummyPartGrandMother        = (AliMCParticle*) mcEvent->GetTrack(dummyPartGrandMotherLabel);
+          dummyPartGrandMotherPDG     = dummyPartGrandMother->PdgCode();
         }
       }
       // largest contribution was from photon and is not from shower or electron mother
@@ -536,10 +536,10 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
             isMerged                  = kTRUE;                        // test whether current and first particle have the same mother => i.e. other gamma from decay or dalitz electron
           if (dummyPartGrandMotherLabel > -1){                        // test whether first particle has a grandmother
             // check whether particle is an electron from a conversion of a photon from the original mother
-            if (TMath::Abs(dummyPart->GetPdgCode()) == 11 && dummyPartGrandMotherLabel == particleMotherLabel )
+            if (TMath::Abs(dummyPart->PdgCode()) == 11 && dummyPartGrandMotherLabel == particleMotherLabel )
               isMergedPartConv        = kTRUE;
             // check whether particle is an electron from a dalitz decay from the original mother
-            if (TMath::Abs(dummyPart->GetPdgCode()) == 11 && dummyPartMotherLabel == particleMotherLabel )
+            if (TMath::Abs(dummyPart->PdgCode()) == 11 && dummyPartMotherLabel == particleMotherLabel )
               isDalitzMerged          = kTRUE;
           }
         }
@@ -549,10 +549,10 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
       if (isElectron && !isShower){
         if (enablePrintOuts) cout << "lead electron" << endl;
         if (dummyPartMotherLabel > -1 && particleMotherLabel > -1){     // test whether first particle has a mother
-          if ( TMath::Abs(dummyPart->GetPdgCode()) == 11 && isConversion && dummyPartMotherLabel == particleMotherLabel  ) {
+          if ( TMath::Abs(dummyPart->PdgCode()) == 11 && isConversion && dummyPartMotherLabel == particleMotherLabel  ) {
             isConversionFullyContained  = kTRUE;                        // test whether conversion is fully contained in cluster
             if (enablePrintOuts) cout << "found full conversion" << endl;
-          } else if (TMath::Abs(dummyPart->GetPdgCode()) == 11) { // current particle is an electron
+          } else if (TMath::Abs(dummyPart->PdgCode()) == 11) { // current particle is an electron
             if (enablePrintOuts) cout << "current is electron" << endl;
             // check whether current particle is a shower
             Bool_t isShowerCurrent    = kFALSE;
@@ -591,7 +591,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
                 isMerged                = kTRUE;
               }
             }
-          } else if (TMath::Abs(dummyPart->GetPdgCode()) == 22){                 // test whether this particle is a photon
+          } else if (TMath::Abs(dummyPart->PdgCode()) == 22){                 // test whether this particle is a photon
             // check whether current particle is a shower
             Bool_t isShowerCurrent    = kFALSE;
             if (TMath::Abs(dummyPartMotherPDG) == 11)
@@ -614,7 +614,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
 
 
       if (dummyPartMotherLabel > -1){ // test whether particle has a mother
-        if (TMath::Abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
+        if (TMath::Abs(dummyPart->PdgCode()) == 22){ // test whether particle is a photon
           //check if photon directly comes from a pion/eta/eta_prime decay
           Bool_t helpN                    = true;
           for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
@@ -628,7 +628,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
           }
           if ((TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron)
             isSubLeadingEM                = kTRUE;
-        } else if (TMath::Abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
+        } else if (TMath::Abs(dummyPart->PdgCode()) == 11){ //test whether particle is an electron
           //check if electron comes from a pion decay
           if ( TMath::Abs(dummyPartMotherPDG) != 22 ){
             Bool_t helpN                    = true;
@@ -833,7 +833,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArr
     }
   }
 
-  if(mergedAnalysis && fNNeutralPionLabels>0 && fLeadingNeutralPionDaughterIndex!=0 && fNeutralPionEnergyFraction[fLeadingNeutralPionIndex]>cluster->GetClusterMCEdepFraction(0)){
+  if(mergedAnalysis && fNNeutralPionLabels>0 && fLeadingNeutralPionDaughterIndex!=0 && fLeadingNeutralPionIndex>=0 && fNeutralPionEnergyFraction[fLeadingNeutralPionIndex]>cluster->GetClusterMCEdepFraction(0)){
     // check if leading pi0 comes not from label 0 in cluster
     // for this do:
     // -> check if neutral pions were found in cluster
@@ -1167,16 +1167,16 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArr
 void AliAODConversionPhoton::PrintCaloMCLabelsAndInfo(AliMCEvent *mcEvent){
   cout << endl << endl << "particles contributing: " << endl;
   for (Int_t i =0 ; i < fNCaloPhotonMCLabels; i++ ){
-    TParticle *dummy    = NULL;
+    AliMCParticle *dummy    = NULL;
     if (fCaloPhotonMCLabels[i]>0){
-      dummy             = (TParticle*)mcEvent->Particle(fCaloPhotonMCLabels[i]);
-      cout << i << "\t"<< fCaloPhotonMCLabels[i] << "\t pdg code: " <<dummy->GetPdgCode() << "\t prod radius: "<< dummy->R() << "\t energy: " << dummy->Energy() ;
-      if (dummy->GetMother(0) > -1){
-          TParticle* dummyMother   = (TParticle*)mcEvent->Particle(dummy->GetMother(0));
-          cout << "\t mother part: " << dummy->GetMother(0) << "\t mother pdg code: " << dummyMother->GetPdgCode() << "\t energy: " << dummyMother->Energy() << endl;
-          if (dummyMother->GetMother(0) > -1){
-            TParticle* dummyGrandMother   = (TParticle*)mcEvent->Particle(dummyMother->GetMother(0));
-            cout << "\t grandmother part: " << dummyMother->GetMother(0) << "\t grandmother pdg code: " << dummyGrandMother->GetPdgCode() << "\t energy: " << dummyGrandMother->Energy() << endl;
+      dummy             = (AliMCParticle*)mcEvent->GetTrack(fCaloPhotonMCLabels[i]);
+      cout << i << "\t"<< fCaloPhotonMCLabels[i] << "\t pdg code: " <<dummy->PdgCode() << "\t prod radius: "<< dummy->Particle()->R() << "\t energy: " << dummy->E() ;
+      if (dummy->GetMother() > -1){
+          AliMCParticle* dummyMother   = (AliMCParticle*)mcEvent->GetTrack(dummy->GetMother());
+          cout << "\t mother part: " << dummy->GetMother() << "\t mother pdg code: " << dummyMother->PdgCode() << "\t energy: " << dummyMother->E() << endl;
+          if (dummyMother->GetMother() > -1){
+            AliMCParticle* dummyGrandMother   = (AliMCParticle*)mcEvent->GetTrack(dummyMother->GetMother());
+            cout << "\t grandmother part: " << dummyMother->GetMother() << "\t grandmother pdg code: " << dummyGrandMother->PdgCode() << "\t energy: " << dummyGrandMother->E() << endl;
           } else {
               cout << endl;
           }
@@ -1188,10 +1188,10 @@ void AliAODConversionPhoton::PrintCaloMCLabelsAndInfo(AliMCEvent *mcEvent){
   }
   cout << "mothers contributing: " << endl;
   for (Int_t i =0 ; i < fNCaloPhotonMotherMCLabels; i++ ){
-    TParticle *dummy    = NULL;
+    AliMCParticle *dummy    = NULL;
     if (fCaloPhotonMotherMCLabels[i]>0){
-      dummy             = (TParticle*)mcEvent->Particle(fCaloPhotonMotherMCLabels[i]);
-      cout << i << "\t"<< fCaloPhotonMotherMCLabels[i] << "\t pdg code: " <<dummy->GetPdgCode() << "\t prod radius: "<< dummy->R() << "\t energy: " << dummy->Energy() << endl;
+      dummy             = (AliMCParticle*)mcEvent->GetTrack(fCaloPhotonMotherMCLabels[i]);
+      cout << i << "\t"<< fCaloPhotonMotherMCLabels[i] << "\t pdg code: " <<dummy->PdgCode() << "\t prod radius: "<< dummy->Particle()->R() << "\t energy: " << dummy->E() << endl;
 
 
     }

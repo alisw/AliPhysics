@@ -1,5 +1,5 @@
 // TODO LIST
-// TODO: You're all set!
+// TODO: Add Invariant Mass to the Efficiency ( Migrate from canidate MC tree ? Add rec px, py, pz ? ) to check the Invariant Mass dependence of the Phi meson ( Rec (Gen IM) / Gen (Gen IM) ) not ( Rec (Rec IM) / Gen (Gen IM) )
 
 #ifndef AliAnalysisTaskPhiCount_H
 #define AliAnalysisTaskPhiCount_H
@@ -36,6 +36,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetMCFlag                   ( Bool_t    MCFlag )            { kMCbool = MCFlag; };
     void                        SetPhiFlag                  ( Bool_t    PhiFlag )           { kPhibool = PhiFlag; };
     void                        SetKaonFlag                 ( Bool_t    KaonFlag )          { kKaonbool = KaonFlag; };
+    void                        SetSPCompute                ( Bool_t    SPFlag )            { kComputeSpherocity = SPFlag; };
+    void                        SetSPWighted                ( Bool_t    SPWeightFlag )      { kSpherocityPTWeight = SPWeightFlag; };
+    void                        SetRTCompute                ( Bool_t    RTFlag )            { kComputeRT = RTFlag; };
     void                        SetFilterBit                ( Int_t     FilterBit )         { kFilterBit = FilterBit; };
     void                        SetVertexCut                ( Float_t   VertexCut )         { kVertexCut = VertexCut; };
     void                        SetDCAzCut                  ( Float_t   DCAzCut )           { kDCAzCut = DCAzCut; };
@@ -44,6 +47,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        SetChi2ITScluster           ( Float_t   Chi2ITScluster )    { kChi2ITScluster = Chi2ITScluster; };
     void                        SetNSigmaPtDepXYDCA         ( Float_t   NSigmaPtDepXYDCA )  { kNSigmaPtDepXYDCA = NSigmaPtDepXYDCA; };
     void                        SetChi2TPCGlobal            ( Float_t   Chi2TPCGlobal )     { kChi2TPCGlobal = Chi2TPCGlobal; };
+    void                        SetTPCClsOverFndbl          ( Float_t   TPCClsOverFndbl )   { kTPCClsOverFndbl = TPCClsOverFndbl; };
     void                        SetkSgTPC_Alone             ( Float_t   TPCSigma )          { kSgTPC_Alone = TPCSigma; };
     void                        SetkSgTPC_TOFVt             ( Float_t   TPCSigma )          { kSgTPC_TOFVt = TPCSigma; };
     void                        SetkSgTOF_Veto              ( Float_t   TOFSigma )          { kSgTOF_Veto = TOFSigma; };
@@ -67,6 +71,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     void                        fSetZero                    ( );
     //
     Bool_t                      kMCbool;                    //  MC Flag
+    Bool_t                      kComputeSpherocity;         //  Spherocity Flag
+    Bool_t                      kSpherocityPTWeight;        //  Spherocity PT Weighted Flag
+    Bool_t                      kComputeRT;                 //  RT Flag
     Bool_t                      kPhibool;                   //  Phi tree Flag
     Bool_t                      kKaonbool;                  //  Kaon tree Flag
     Float_t                     kVertexCut;                 //  VertexCut
@@ -77,6 +84,7 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     kChi2TPCcluster;            //  Maximum Chi2 per TPC cluster
     Float_t                     kChi2TPCGlobal;             //  Maximum Chi2 per TPC Global
     Float_t                     kChi2ITScluster;            //  Maximum Chi2 per ITS cluster
+    Float_t                     kTPCClsOverFndbl;           //  TPC Crossed Rows over findable
     TString                     fRunName;                   //  MultiRun name
     ULong64_t                   kTriggerMask;               //  TriggerMask
     //
@@ -97,6 +105,10 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     bool                        fCheckINELgt0               ( );
     void                        fFillEventEnumerate         ( Int_t iIndex );
     void                        fFillEventEnumerate         ( TString iBinName );
+    void                        uCalculateSpherocity        ( );
+    void                        uCalculateRT                ( );
+    void                        uGuessCollisionSystem       ( );
+    Float_t                     uTrackLengthInActiveTPC     ( AliExternalTrackParam* fCurrentTrackExternalParameters, Double_t deltaY, Double_t deltaZ );
     //
     AliAODEvent                *fAOD;                       //! input event AOD Format
     AliESDEvent                *fESD;                       //! input event ESD Format
@@ -105,6 +117,9 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     AliPIDResponse             *fPIDResponse;               //! PID Response obj
     AliAODVertex               *fPrimaryVertex;             //! AOD Vertex obj
     AliPPVsMultUtils           *fMultSelection;             //! Multiplicity Utility
+    Bool_t                      fIs_p_p;                    //! Collision system flag for pp
+    Bool_t                      fIs_p_Pb;                   //! Collision system flag for pPb
+    Bool_t                      fIs_Pb_Pb;                  //! Collision system flag for PbPb
     //
     //>->->     Vertex Selection
     //
@@ -144,8 +159,8 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     Float_t                     fBetaFromTOFSignal;         //! Particle beta from TOF signal
     Float_t                     fTPCSignal;                 //! Particle dE/dX in TPC
     Float_t                     kSgTPC_Alone;               // TPC Alone Sigma limit
-    Float_t                     kSgTPC_TOFVt;               // TPC Alone Sigma limit
-    Float_t                     kSgTOF_Veto;                // TPC Alone Sigma limit
+    Float_t                     kSgTPC_TOFVt;               // TPC TOF Veto Sigma limit
+    Float_t                     kSgTOF_Veto;                // TOF Veto Sigma limit
     //
     //>->->     PID Kaons QC
     //
@@ -163,6 +178,10 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH2D                       *fQC_Event_Enum_V0T;         //! Event Multiplicity Counter w/ SPD Tracklets
     TH1F                       *fQC_Event_Vertex_Fll;       //! Event Vertex Position
     TH1F                       *fQC_Event_Vertex_Cut;       //! Event Vertex Position w/ Cuts
+    TH1F                       *fQC_Event_Spherocity;       //! Event Spherocity
+    TH1F                       *fQC_Event_FullRT;           //! Event R Transverse
+    TH1F                       *fQC_Event_FullRF;           //! Event R Forward
+    TH1F                       *fQC_Event_FullRB;           //! Event R Backward
     //
     //>->->     Tracks
     //
@@ -180,6 +199,11 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH3F                       *fQC_Tracks_TOF_PT;          //! Acc. tracks TOF Signal in Transverse Momentum
     TH3F                       *fQC_Tracks_TPC_P;           //! Acc. tracks TPC Signal in Momentum
     TH3F                       *fQC_Tracks_TPC_PT;          //! Acc. tracks TPC Signal in Transverse Momentum
+    TH1F                       *fQC_Tracks_TPC_CLS;         //! Acc. tracks TPC Clusters
+    TH1F                       *fQC_Tracks_TPC_FRC;         //! Acc. tracks TPC Clusters over findable
+    TH1F                       *fQC_Tracks_TPC_CHI;         //! Acc. tracks TPC Chi^2 over Clusters
+    TH1F                       *fQC_Tracks_TPC_CNS;         //! Acc. tracks TPC Global Constrained
+    TH1F                       *fQC_Tracks_ITS_CHI;         //! Acc. tracks ITS Chi^2 over Clusters
     //
     //>->->->       Tracks: Kaons
     //
@@ -198,9 +222,6 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH3F                       *fQC_Kaons_TOF_PT;           //! Kaons TOF Signal in Transverse Momentum
     TH3F                       *fQC_Kaons_TPC_P;            //! Kaons TPC Signal in Momentum
     TH3F                       *fQC_Kaons_TPC_PT;           //! Kaons TPC Signal in Transverse Momentum
-    
-    /* - - - */
-    
     //
     //>->->     PID
     //
@@ -221,17 +242,26 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     TH3F                       *fQC_PID_TPC_Sgnl_SEL_Kaons_P;   //! Analysis output list
     TH3F                       *fQC_PID_TPC_Sgnl_SEL_Kaons_PT;  //! Analysis output list
     //
+    //>->->     GENERAL
+    //
+    TH2F                       *fQC_Phi_InvMass_Rec;            //! Test
+    TH2F                       *fQC_Phi_InvMass_Gen;            //! Test
+    TH2F                       *fQC_Phi_InvMass_Eff;            //! Test
+    //
+    
     //>->->->->->->->->->->->->->->->->->->->->->->->->->-> Output
     //
     // Event Variables
     //
     //>->   General Utilities
+    Float_t                     fCurrent_SPH;               //! Event Spherocity
     Float_t                     fCurrent_V0M;               //! Event Multiplicity
     Float_t                     fCurrent_TRK;               //! Event Multiplicity
+    Float_t                     fCurrent_RT;                //! Event RTransverse
     Int_t                       fCurrent_Run;               //! Current Run Number
-    Int_t                       fKaonLabels     [1024];     //! Kaon Labels
+    Int_t                       fKaonLabels     [2048];     //! Kaon Labels
     Int_t                       fnPhiRec;                   //! Recordable Phi Number
-    AliAODMCParticle*           fPhiRecParticles[1024];     //! Recordable Phi Labels
+    AliAODMCParticle*           fPhiRecParticles[2048];     //! Recordable Phi Labels
     //
     //>->->->   Data Event Mask
     UChar_t                     fEventMask;                 //! Event Mask
@@ -247,33 +277,33 @@ class AliAnalysisTaskPhiCount : public AliAnalysisTaskSE
     //
     Bool_t                      fIsPhiCandidate             ( TLorentzVector fPhi );
     //
-    UChar_t                     fnPhi;                      //! Number of Phis produced found
-    Float_t                     fInvMass        [1024];     //! Invariant Mass
-    Float_t                     fPhiPx          [1024];     //! Phi Px
-    Float_t                     fPhiPy          [1024];     //! Phi Py
-    Float_t                     fPhiPz          [1024];     //! Phi Pz
-    UChar_t                     fiKaon          [1024];     //! iKaon
-    UChar_t                     fjKaon          [1024];     //! jKaon
-    Float_t                     fTrueInvMass    [1024];     //! True Invariant Mass
+    Int_t                       fnPhi;                      //! Number of Phis produced found
+    Float_t                     fInvMass        [2048];     //! Invariant Mass
+    Float_t                     fPhiPx          [2048];     //! Phi Px
+    Float_t                     fPhiPy          [2048];     //! Phi Py
+    Float_t                     fPhiPz          [2048];     //! Phi Pz
+    Int_t                       fiKaon          [2048];     //! iKaon
+    Int_t                       fjKaon          [2048];     //! jKaon
+    Float_t                     fTrueInvMass    [2048];     //! True Invariant Mass
     //
     TTree                      *fKaonCandidate;             //! output tree for Signal
-    UChar_t                     fnKaon;                     //! Number of Phis produced found
-    Float_t                     fKaonPx         [1024];     //! Kaon Px
-    Float_t                     fKaonPy         [1024];     //! Kaon Py
-    Float_t                     fKaonPz         [1024];     //! Kaon Pz
-    Char_t                      fCharge         [1024];     //! Kaon Charge
-    Char_t                      fTOFSigma       [1024];     //! PID TOF
-    Char_t                      fTPCSigma       [1024];     //! PID TPC
+    Int_t                       fnKaon;                     //! Number of Phis produced found
+    Float_t                     fKaonPx         [2048];     //! Kaon Px
+    Float_t                     fKaonPy         [2048];     //! Kaon Py
+    Float_t                     fKaonPz         [2048];     //! Kaon Pz
+    Char_t                      fCharge         [2048];     //! Kaon Charge
+    Char_t                      fTOFSigma       [2048];     //! PID TOF
+    Char_t                      fTPCSigma       [2048];     //! PID TPC
     //
     TTree                      *fPhiEfficiency;             //! output tree for MC Truth
-    UChar_t                     fnPhiTru;                   //! Number of Phis produced found
-    Float_t                     fPhiTruPx       [1024];     //! Phi Px
-    Float_t                     fPhiTruPy       [1024];     //! Phi Py
-    Float_t                     fPhiTruPz       [1024];     //! Phi Pz
-    UChar_t                     fSelection      [1024];     //! Selection integer
+    Int_t                       fnPhiTru;                   //! Number of Phis produced found
+    Float_t                     fPhiTruPx       [2048];     //! Phi Px
+    Float_t                     fPhiTruPy       [2048];     //! Phi Py
+    Float_t                     fPhiTruPz       [2048];     //! Phi Pz
+    UChar_t                     fSelection      [2048];     //! Selection integer
     //
     TTree                      *fKaonEfficiency;            //! output tree for MC Truth
-    UChar_t                     fnKaonTru;                  //! Number of Kaons produced found
+    Int_t                     fnKaonTru;                  //! Number of Kaons produced found
     //
     // List
     TList                      *fAnalysisOutputList;        //! Analysis output list

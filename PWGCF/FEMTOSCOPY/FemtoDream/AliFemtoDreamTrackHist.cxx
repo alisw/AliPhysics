@@ -432,8 +432,8 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   }
   if (DCADist) {
     TString dcaPtBinName = Form("DCAXYPtBinningTot");
-    fDCAXYPtBins = new TH2F(dcaPtBinName.Data(), dcaPtBinName.Data(), 20, pTmin,
-                            pTmax, 500, -5, 5);
+    fDCAXYPtBins = new TH2F(dcaPtBinName.Data(), dcaPtBinName.Data(), 200, pTmin,
+                            pTmax, 5000, -5, 5);
     fDCAXYPtBins->GetXaxis()->SetTitle("P#_{T}");
     fDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fHistList->Add(fDCAXYPtBins);

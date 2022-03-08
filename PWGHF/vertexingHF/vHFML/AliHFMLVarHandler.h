@@ -79,7 +79,7 @@ class AliHFMLVarHandler : public TObject
         void SetFillOnlySignal(bool fillopt = true) {fFillOnlySignal = fillopt;}
         void SetFillBeautyMotherPt(bool fillopt = true) {fEnableBMotherPt = fillopt;}
         void SetFillBeautyMotherPDG(bool fillopt = true) {fEnableBMotherPDG = fillopt;}
-        void SetAddGlobalEventVariables(bool filltrkl = true, bool fillcent = false, std::string centestim = "V0M") {fEnableNtracklets = filltrkl; fCentPercentile = fillcent; fCentEstimator = centestim;}
+        void SetAddGlobalEventVariables(bool filltrkl = true, bool fillcent = false, std::string centestim = "V0M") {fEnableNtracklets = filltrkl; fEnableCentPercentile = fillcent; fCentEstimator = centestim;}
 
     protected:  
         //constant variables

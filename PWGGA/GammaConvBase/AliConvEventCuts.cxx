@@ -41,6 +41,7 @@
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionTask.h"
 #include "AliOADBContainer.h"
 #include "TList.h"
 #include "TFile.h"
@@ -204,6 +205,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fMaxFacPtHard(2.5),
   fMaxFacPtHardSingleParticle(1.5),
   fMimicTrigger(kFALSE),
+  fINELgtZEROTrigger(kFALSE),
   fPathTriggerMimicSpecialInput(""),
   fRejectTriggerOverlap(kFALSE),
   fDoMultiplicityWeighting(kFALSE),
@@ -347,7 +349,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMinFacPtHard(ref.fMinFacPtHard),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
-  fMimicTrigger(ref.fMimicTrigger),
+  fINELgtZEROTrigger(ref.fINELgtZEROTrigger),
   fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
   fDoMultiplicityWeighting(ref.fDoMultiplicityWeighting),
@@ -380,18 +382,18 @@ AliConvEventCuts::~AliConvEventCuts() {
       delete fCutString;
       fCutString = NULL;
   }
-  if(fNotRejectedStart){
-      delete[] fNotRejectedStart;
-      fNotRejectedStart = NULL;
-  }
-  if(fNotRejectedEnd){
-      delete[] fNotRejectedEnd;
-      fNotRejectedEnd = NULL;
-  }
-  if(fGeneratorNames){
-      delete[] fGeneratorNames;
-      fGeneratorNames = NULL;
-  }
+  // if(fNotRejectedStart){
+  //     delete[] fNotRejectedStart;
+  //     fNotRejectedStart = NULL;
+  // }
+  // if(fNotRejectedEnd){
+  //     delete[] fNotRejectedEnd;
+  //     fNotRejectedEnd = NULL;
+  // }
+  // if(fGeneratorNames){
+  //     delete[] fGeneratorNames;
+  //     fGeneratorNames = NULL;
+  // }
   if(fUtils){
     delete fUtils;
     fUtils = NULL;
@@ -551,7 +553,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoEventCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoEventCuts);
 
-    hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",37,-0.5,36.5);
+    hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",38,-0.5,37.5);
     hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
     hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
     hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
@@ -589,10 +591,11 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClass->GetXaxis()->SetBinLabel(35,"kCaloOnly");
     hTriggerClass->GetXaxis()->SetBinLabel(36,"failed Physics Selection");
     hTriggerClass->GetXaxis()->SetBinLabel(37,"mimickedTrigger");
+    hTriggerClass->GetXaxis()->SetBinLabel(38,"INEL>0");
     fHistograms->Add(hTriggerClass);
   }
   if(!preCut){
-    hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",35,-0.5,34.5);
+    hTriggerClassSelected= new TH1F(Form("OfflineTriggerSelected %s",GetCutNumber().Data()),"OfflineTriggerSelected",36,-0.5,35.5);
     hTriggerClassSelected->GetXaxis()->SetBinLabel( 1,"kMB");
     hTriggerClassSelected->GetXaxis()->SetBinLabel( 2,"kINT7");
     hTriggerClassSelected->GetXaxis()->SetBinLabel( 3,"kMUON");
@@ -628,6 +631,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClassSelected->GetXaxis()->SetBinLabel(33,"V0AND");
     hTriggerClassSelected->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
     hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
+    hTriggerClassSelected->GetXaxis()->SetBinLabel(36,"INEL>0");
     fHistograms->Add(hTriggerClassSelected);
 
     if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
@@ -1636,6 +1640,14 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialTrigger=1;
       fSpecialSubTrigger=1;
       break;
+    case 5: //with VZERO general implementation of V0AND (like case 0) but with additional INEL>0 requirement
+      fSpecialTrigger=0;
+      fSpecialSubTrigger=0;
+      fOfflineTriggerMask=AliVEvent::kINT7;
+      fTriggerSelectedManually = kTRUE;
+      fSpecialTriggerName="AliVEvent::kINT7";
+      fINELgtZEROTrigger=kTRUE;
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -1887,26 +1899,34 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="";
       // AliInfo("Info: Nothing to be done");
       break;
-    case 1: // CEMC1 - V0OR and PHOS fired
+    case 1: // CPHI1 - V0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI1;
       fSpecialTriggerName="AliVEvent::kPHI1";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI1";
       break;
-    case 2: // CEMC7 - V0AND and PHOS fired
+    case 2: // CPHI7 - V0AND and PHOS fired
       fSpecialSubTrigger=1;
       fOfflineTriggerMask=AliVEvent::kPHI7;
       fSpecialTriggerName="AliVEvent::kPHI7";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI7";
       break;
-    case 3: // CEMC8  - T0OR and PHOS fired
+    case 3: // CPHI8  - T0OR and PHOS fired
       fOfflineTriggerMask=AliVEvent::kPHI8;
       fSpecialTriggerName="AliVEvent::kPHI8";
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CPHI8";
+      break;
+    case 4: // CPHI7 - V0AND and PHOS fired but with additional INEL>0 requirement
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fOfflineTriggerMask=AliVEvent::kPHI7;
+      fSpecialTriggerName="AliVEvent::kPHI7";
+      fSpecialSubTriggerName="CPHI7";
+      fINELgtZEROTrigger=kTRUE;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -1954,6 +1974,22 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialTriggerName="V0Mult";
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CVHMV0M-B-SPD2";
+      break;
+    case 7: // SPD high mult trigger and event has to be INEL>0
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="SPMult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMSH2-B-";
+      fINELgtZEROTrigger=kTRUE;
+      break;
+    case 8: // V0 high mult trigger with pileup condition on and event has to be INEL>0
+      fSpecialSubTrigger=1;
+      fOfflineTriggerMask=AliVEvent::kAny;
+      fSpecialTriggerName="V0Mult";
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CVHMV0M-B-SPD2";
+      fINELgtZEROTrigger=kTRUE;
       break;
 
     default:
@@ -2082,6 +2118,24 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerNameAdditional="8DG2";
       fTriggersEMCALSelected= 0;
       SETBIT(fTriggersEMCALSelected, kG2);
+      break;
+    case 17: //h) Gamma Low EMC and DMC (like case 13) + INEL>0 condition
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG1";
+      fSpecialSubTriggerNameAdditional="7DG1";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG1);
+      fINELgtZEROTrigger = kTRUE;
+      break;
+    case 18: //i) Gamma Low EMC and DMC (like case 14) + INEL>0 condition
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="7EG2";
+      fSpecialSubTriggerNameAdditional="7DG2";
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      fINELgtZEROTrigger = kTRUE;
       break;
 
     default:
@@ -2360,6 +2414,24 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=2;
       fSpecialSubTriggerName="CEMC8";
       fSpecialSubTriggerNameAdditional="CDMC8";
+      break;
+    case 28: // V0AND and EMCAL OR DCAL fired - s
+      fSpecialSubTrigger=1;
+      fSpecialTriggerName="AliVEvent::kCaloOnly/AliVEvent::kEMC7";
+      fNSpecialSubTriggerOptions=2;
+      fSpecialSubTriggerName="CEMC7";
+      fSpecialSubTriggerNameAdditional="CDMC7";
+      fINELgtZEROTrigger = kTRUE;
+      break;
+    case 29: // Gamma Low EMC and DMC - t
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EG2";
+      fSpecialSubTriggerName="7EG2";
+      fSpecialSubTriggerNameAdditional="7DG2";
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=2;
+      fTriggersEMCALSelected= 0;
+      SETBIT(fTriggersEMCALSelected, kG2);
+      fINELgtZEROTrigger = kTRUE;
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -2817,6 +2889,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC17j5a :
     case kLHC17j5b :
     case kLHC17j5c :
+    case kLHC21j8a :
     case kLHC17P1JJ :
     case kLHC17P1JJLowB :
     case kLHC18l6b1 :
@@ -4355,7 +4428,6 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
       if (mcEvent){
         for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
-          // TParticle* particle = (TParticle *)mcEvent->Particle(i);
           AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
           if (!particle) continue;
           // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -5692,6 +5764,75 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 }
 
 //________________________________________________________________________
+Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event)
+{
+  AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
+  if(aodEvent){
+    AliMultSelection* MultSelectionTask = (AliMultSelection*)event->FindListObject("MultSelection");
+    if(!MultSelectionTask){
+      AliWarning ("MultSelectionTask object not found !");
+      return kFALSE;
+    }
+    return MultSelectionTask->GetThisEventINELgtZERO();
+  }
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsEventTrueINELgtZERO(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+
+  const AliVVertex* primVtxMC   = lMCevent->GetPrimaryVertex();
+  Double_t mcProdVtxX   = primVtxMC->GetX();
+  Double_t mcProdVtxY   = primVtxMC->GetY();
+  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
+  Bool_t isTrueINELgtZERO = kFALSE;
+  if(!event || event->IsA()==AliESDEvent::Class()){
+    for(Long_t i = 0; i < lMCevent->GetNumberOfTracks(); i++) {
+      if (IsConversionPrimaryESD( lMCevent, i, mcProdVtxX, mcProdVtxY, mcProdVtxZ)){
+
+        AliMCParticle* particle = (AliMCParticle *)lMCevent->GetTrack(i);
+        if (!particle) continue;
+        if(TMath::Abs(particle->Charge())<0.001) continue;
+        if(fabs(particle -> Eta()) < 1){
+          isTrueINELgtZERO = kTRUE;
+          break;
+        }
+      }
+    }
+  } else if(event->IsA()==AliAODEvent::Class()){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray){
+      // Loop over all primary MC particle
+      for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(i));
+        if (!particle) continue;
+
+        Bool_t isPrimary = IsConversionPrimaryAOD(event, particle, mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+        if (isPrimary){
+          if(fabs(particle -> Eta()) < 1){
+            isTrueINELgtZERO = kTRUE;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return isTrueINELgtZERO;
+}
+
+//________________________________________________________________________
+Bool_t AliConvEventCuts::IsMCTriggerSelected(AliVEvent *event, AliMCEvent  *lMCevent)
+{
+  // if requested event class is INEL>0, check if it is INEL>0 on MC gen. level
+  if( GetUseINELgtZERO() && !IsEventTrueINELgtZERO(event, lMCevent)){
+    return kFALSE;
+  }
+  // standard, all events should be accepted (all inelastic collisions)
+  return kTRUE;
+}
+
+//________________________________________________________________________
 Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 {
 
@@ -6222,7 +6363,8 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
             }
             if(CheckClass.Contains("0")) isSelected = 0;
           }
-          else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
+          // commented out as trigger overlap rejection "disabled" by that condition
+          // else if(firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
         }
       }
     }
@@ -6240,10 +6382,14 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   Bool_t mimickedTrigger = kTRUE;
   if (fMimicTrigger) mimickedTrigger = MimicTrigger(event, isMC);
   // cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
+
+  Bool_t isINELgtZERO = kFALSE;
+  if(fINELgtZEROTrigger) isINELgtZERO = IsEventINELgtZERO(event);
+
   // Fill Histogram
   if(hTriggerClass){
     if (fIsSDDFired) hTriggerClass->Fill(34);
-    if (mimickedTrigger){
+    if (mimickedTrigger && (!fINELgtZEROTrigger || (fINELgtZEROTrigger && isINELgtZERO))){
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(0);
       if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClass->Fill(1);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMUON)hTriggerClass->Fill(2);
@@ -6288,11 +6434,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(35);
     }
     if (mimickedTrigger && fMimicTrigger) hTriggerClass->Fill(36);
+    if (fINELgtZEROTrigger && isINELgtZERO) hTriggerClass->Fill(37);
   }
 
   if(hTriggerClassSelected && isSelected){
 
-    if (mimickedTrigger){
+    if (mimickedTrigger && (!fINELgtZEROTrigger || (fINELgtZEROTrigger && isINELgtZERO))){
       if (!fIsSDDFired) hTriggerClassSelected->Fill(33);
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassSelected->Fill(0);
       if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassSelected->Fill(1);
@@ -6336,11 +6483,17 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClassSelected->Fill(31);
     }
     if (mimickedTrigger && fMimicTrigger) hTriggerClassSelected->Fill(34);
+    if (fINELgtZEROTrigger && isINELgtZERO) hTriggerClassSelected->Fill(35);
   }
 
   if(!isSelected)return kFALSE;
+
   if (fMimicTrigger)
     if (!mimickedTrigger ) return kFALSE;
+
+  if(fINELgtZEROTrigger)
+    if(!isINELgtZERO)      return kFALSE;
+
   return kTRUE;
 
 }
@@ -6361,18 +6514,18 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     return;
   }
 
-  if(fNotRejectedStart){
-    delete[] fNotRejectedStart;
-    fNotRejectedStart         = NULL;
-  }
-  if(fNotRejectedEnd){
-    delete[] fNotRejectedEnd;
-    fNotRejectedEnd         = NULL;
-  }
-  if(fGeneratorNames){
-    delete[] fGeneratorNames;
-    fGeneratorNames         = NULL;
-  }
+  // if(fNotRejectedStart){
+  //   delete[] fNotRejectedStart;
+  //   fNotRejectedStart         = NULL;
+  // }
+  // if(fNotRejectedEnd){
+  //   delete[] fNotRejectedEnd;
+  //   fNotRejectedEnd         = NULL;
+  // }
+  // if(fGeneratorNames){
+  //   delete[] fGeneratorNames;
+  //   fGeneratorNames         = NULL;
+  // }
 
   AliGenCocktailEventHeader *cHeader   = 0x0;
   AliAODMCHeader *cHeaderAOD       = 0x0;
@@ -6430,9 +6583,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
                 if(fMCEvent){
                   if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
                     if (fDebugLevel > 2 )cout << "number of produced particle: " <<  gh->NProduced() << endl;
-                    if (fDebugLevel > 2 )cout << "pdg-code of first particle: " <<  fMCEvent->Particle(firstindexA)->GetPdgCode() << endl;
-                    if (fMCEvent->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
-                      if (gh->NProduced() > 10 && fMCEvent->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                    if (fDebugLevel > 2 )cout << "pdg-code of first particle: " <<  fMCEvent->GetTrack(firstindexA)->PdgCode() << endl;
+                    if (fMCEvent->GetTrack(firstindexA)->PdgCode() == fAddedSignalPDGCode ) {
+                      if (gh->NProduced() > 10 && fMCEvent->GetTrack(firstindexA+10)->PdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
                         if (fDebugLevel > 0 ) cout << "cond 1: "<< fnHeaders << endl;
                         fnHeaders++;
                         continue;
@@ -6502,9 +6655,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     }
     if (fDebugLevel > 0 ) cout << "number of headers: " <<fnHeaders << endl;
 
-    fNotRejectedStart       = new Int_t[fnHeaders];
-    fNotRejectedEnd         = new Int_t[fnHeaders];
-    fGeneratorNames         = new TString[fnHeaders];
+    fNotRejectedStart.resize(fnHeaders);
+    fNotRejectedEnd.resize(fnHeaders);
+    fGeneratorNames.resize(fnHeaders);
 
     if(rejection == 1 || rejection == 3){
       // note: if we're here, we know we have fPeriodEnum!=kLHC20g10
@@ -6544,9 +6697,9 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
             if (GeneratorInList.Contains("PARAM") || GeneratorInList.CompareTo("BOX") == 0 ){
               if(fMCEvent){
                 if (fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ){
-                  if (fMCEvent->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
+                  if (fMCEvent->GetTrack(firstindex)->PdgCode() == fAddedSignalPDGCode ) {
                     if (fDebugLevel > 0 ) cout << "produced " << gh->NProduced() << " with box generator" << endl;
-                    if (gh->NProduced() > 10 && fMCEvent->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
+                    if (gh->NProduced() > 10 && fMCEvent->GetTrack(firstindex+10)->PdgCode() == fAddedSignalPDGCode && GeneratorInList.CompareTo("BOX") == 0){
                       if (fDebugLevel > 0 ) cout << "one of them was a pi0 or eta" <<  endl;
                       fNotRejectedStart[number] = firstindex;
                       fNotRejectedEnd[number] = lastindex;
@@ -6637,8 +6790,8 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       }
     }
   } else { // No Cocktail Header Found
-    fNotRejectedStart         = new Int_t[1];
-    fNotRejectedEnd         = new Int_t[1];
+    fNotRejectedStart.resize(1);
+    fNotRejectedEnd.resize(1);
 
     fnHeaders             = 1;
     fNotRejectedStart[0]       = 0;
@@ -6648,7 +6801,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       fNotRejectedEnd[0]       = -1;
     }
 
-    fGeneratorNames         = new TString[1];
+    fGeneratorNames.resize(1);
     fGeneratorNames[0]         = "NoCocktailGeneratorFound";
 //     SetRejectExtraSignalsCut(0);
   }
@@ -6703,8 +6856,8 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
   if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
     if(!mcEvent) return 0; // no mcEvent available, return 0
     if(index >= mcEvent->GetNumberOfPrimaries()){ // initial particle is secondary particle
-      if( ((TParticle*)mcEvent->Particle(index))->GetMother(0) < 0) return 0; // material particle, return 0
-      return IsParticleFromBGEvent(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent, debug);
+      if( ((AliMCParticle*) mcEvent->GetTrack(index))->GetMother() < 0) return 0; // material particle, return 0
+      return IsParticleFromBGEvent(((AliMCParticle*) mcEvent->GetTrack(index))->GetMother(),mcEvent,InputEvent, debug);
     }
     for(Int_t i = 0;i<fnHeaders;i++){
       //       if (debug > 2 ) cout << "header " << fGeneratorNames[i].Data() << ":"<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
@@ -6767,8 +6920,8 @@ TString AliConvEventCuts::GetParticleHeaderName(Int_t index, AliMCEvent *mcEvent
     if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
       if(!mcEvent) return headername; // no mcEvent available, return 0
       if(index >= mcEvent->GetNumberOfPrimaries()){ // initial particle is secondary particle
-        if( ((TParticle*)mcEvent->Particle(index))->GetMother(0) < 0) return headername; // material particle, return 0
-        return GetParticleHeaderName(((TParticle*)mcEvent->Particle(index))->GetMother(0),mcEvent,InputEvent, debug);
+        if( (mcEvent->GetTrack(index))->GetMother() < 0) return headername; // material particle, return 0
+        return GetParticleHeaderName((mcEvent->GetTrack(index))->GetMother(),mcEvent,InputEvent, debug);
       }
 
       // Loop over gen headers
@@ -6819,11 +6972,11 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   Bool_t isMC = kFALSE;
   if (mcEvent){isMC = kTRUE;}
 
-  if ( !IsTriggerSelected(event, isMC) )
-    return 3;
-
   if( !(IsCentralitySelected(event,mcEvent)))
     return 1; // Check Centrality --> Not Accepted => eventQuality = 1
+
+  if ( !IsTriggerSelected(event, isMC) )
+    return 3;
 
   Bool_t hasV0And = ReaderCuts->HasV0AND();
   Bool_t isSDDFired = ReaderCuts->IsSDDFired();
@@ -7171,9 +7324,9 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   //Double_t mesonMass = 0;
   Int_t PDGCode = 0;
   if(!event || event->IsA()==AliESDEvent::Class()){
-    mesonPt = ((TParticle*)mcEvent->Particle(index))->Pt();
-    //mesonMass = ((TParticle*)mcEvent->Particle(index))->GetCalcMass();
-    PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
+    mesonPt = ((AliMCParticle*) mcEvent->GetTrack(index))->Pt();
+    //mesonMass = ((AliMCParticle*)mcEvent->GetTrack(index))->GetCalcMass();
+    PDGCode = ((AliMCParticle*) mcEvent->GetTrack(index))->PdgCode();
   } else if(event->IsA()==AliAODEvent::Class()){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
     if (fAODMCTrackArray){
@@ -7258,7 +7411,7 @@ Float_t AliConvEventCuts::GetWeightForGamma(Int_t index, Double_t gammaPTrec, Al
   Int_t PDGCode = 0;
 
   if(!event || event->IsA()==AliESDEvent::Class()){
-    PDGCode = ((TParticle*)mcEvent->Particle(index))->GetPdgCode();
+    PDGCode = ((AliMCParticle*) mcEvent->GetTrack(index))->PdgCode();
 
   } else if(event->IsA()==AliAODEvent::Class()){
     if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -7529,21 +7682,21 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* event, const char *
 Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eventpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
 
   if (eventpos < 0) return kFALSE;
-  TParticle* particle = (TParticle *)mcEvent->Particle(eventpos);
+  AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(eventpos);
   if (!particle) return kFALSE;
-  if (TMath::Abs(particle->GetPdgCode()) == 11 ){
-    if (particle->GetMother(0) != -1){
-      TParticle* particleMother = (TParticle *)mcEvent->Particle(particle->GetMother(0));
+  if (TMath::Abs(particle->PdgCode()) == 11 ){
+    if (particle->GetMother() != -1){
+      AliMCParticle* particleMother = (AliMCParticle*) mcEvent->GetTrack(particle->GetMother());
       if (particleMother){
-        if (TMath::Abs(particleMother->GetPdgCode()) == 22)
+        if (TMath::Abs(particleMother->PdgCode()) == 22)
           particle = particleMother;
       }
     }
   }
-  if (particle->GetMother(0) != -1){
-    Double_t deltaX = particle->Vx() - prodVtxX;
-    Double_t deltaY = particle->Vy() - prodVtxY;
-    Double_t deltaZ = particle->Vz() - prodVtxZ;
+  if (particle->GetMother() != -1){
+    Double_t deltaX = particle->Xv() - prodVtxX;
+    Double_t deltaY = particle->Yv() - prodVtxY;
+    Double_t deltaZ = particle->Zv() - prodVtxZ;
 
     //Double_t realRadius2D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
     Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
@@ -7551,17 +7704,17 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
 
     Bool_t dalitzCand = kFALSE;
 
-    TParticle* firstmother = (TParticle *)mcEvent->Particle(particle->GetMother(0));
+    AliMCParticle* firstmother = (AliMCParticle*) mcEvent->GetTrack(particle->GetMother());
     if (!firstmother) return kFALSE;
-    Int_t pdgCodeFirstMother     = firstmother->GetPdgCode();
+    Int_t pdgCodeFirstMother = firstmother->PdgCode();
     Bool_t intDecay = kFALSE;
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
-    if ( intDecay && TMath::Abs(particle->GetPdgCode()) == 11 ){
+    if ( intDecay && TMath::Abs(particle->PdgCode()) == 11 ){
       dalitzCand = kTRUE;
       // cout << "dalitz candidate found" << endl;
     }
 
-    Long_t source = particle->GetMother(0);
+    Long_t source = particle->GetMother();
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
@@ -7573,10 +7726,10 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliMCEvent *mcEvent, Long_t eve
       //   cout << particle->GetPdgCode() << "\t" << particle->R() << "\t" << realRadius2D << "\t" << realRadius3D << endl;
       // }
       while (depth < 20){
-        TParticle* mother   = (TParticle *)mcEvent->Particle(source);
-        source         = mother->GetMother(0);
+        AliMCParticle* mother   = (AliMCParticle*) mcEvent->GetTrack(source);
+        source = mother->GetMother();
         // if (particle->GetPdgCode() == 22)cout << "eventposition: "<< source << endl;
-        Int_t pdgCodeMother     = mother->GetPdgCode();
+        Int_t pdgCodeMother = mother->PdgCode();
         // if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
         if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
@@ -7734,43 +7887,43 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *event, AliAODMCPartic
 
 
 //________________________________________________________________________
-Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliMCEvent* mcEvent, Bool_t isConversion ){
+Int_t AliConvEventCuts::SecondaryClassificationPhoton( AliMCParticle *particle, AliMCEvent* mcEvent, Bool_t isConversion ){
   if (particle != NULL && mcEvent != NULL){
     Int_t pdgSecondary      = 0;
     if (!isConversion){
       //Bool_t hasMother        = kFALSE;
       //Bool_t hasGrandMother   = kFALSE;
-      Long_t motherID         = particle->GetMother(0);
+      Long_t motherID         = particle->GetMother();
       Long_t grandMotherID    = -1;
       // is the photon a direct photons, without a mother?
       if (motherID > -1){
         //hasMother             = kTRUE;
-        grandMotherID         = mcEvent->Particle(motherID)->GetMother(0);
+        grandMotherID         = mcEvent->GetTrack(motherID)->GetMother();
         // is the meson a primary?
         if (grandMotherID > -1){
           //hasGrandMother      = kTRUE;
-          pdgSecondary        = mcEvent->Particle(grandMotherID)->GetPdgCode();
+          pdgSecondary        = mcEvent->GetTrack(grandMotherID)->PdgCode();
         }
       }
     } else {
       //Bool_t hasMother            = kFALSE;
       //Bool_t hasGrandMother       = kFALSE;
       //Bool_t hasGreatGrandMother  = kFALSE;
-      Long_t motherID             = particle->GetMother(0);
+      Long_t motherID             = particle->GetMother();
       Long_t grandMotherID        = -1;
       Long_t greatGrandMotherID   = -1;
       // is the electron a direct electron, without a mother?
       if (motherID > -1){
         //hasMother                 = kTRUE;
-        grandMotherID             = mcEvent->Particle(motherID)->GetMother(0);
+        grandMotherID             = mcEvent->GetTrack(motherID)->GetMother();
         // is the photon a direct photons, without a mother?
         if (grandMotherID > -1){
           //hasGrandMother          = kTRUE;
-          greatGrandMotherID      = mcEvent->Particle(grandMotherID)->GetMother(0);
+          greatGrandMotherID      = mcEvent->GetTrack(grandMotherID)->GetMother();
           // is the meson a primary?
           if (greatGrandMotherID > -1){
             //hasGreatGrandMother   = kTRUE;
-            pdgSecondary          = mcEvent->Particle(greatGrandMotherID)->GetPdgCode();
+            pdgSecondary          = mcEvent->GetTrack(greatGrandMotherID)->PdgCode();
           }
         }
       }
@@ -8566,6 +8719,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17P1Pyt8LowB") == 0 ||
               periodName.CompareTo("LHC17h3") ==0 ){
     fPeriodEnum = kLHC17P1Pyt8LowB;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC17P1Pyt8NoB") == 0 ||
+              periodName.CompareTo("LHC21j8a") ==0 ){
+    fPeriodEnum = kLHC21j8a;
     fEnergyEnum = k13TeV;
   } else if ( periodName.CompareTo("LHC17P1JJ") == 0 ||
               periodName.CompareTo("LHC18f5") == 0 ){

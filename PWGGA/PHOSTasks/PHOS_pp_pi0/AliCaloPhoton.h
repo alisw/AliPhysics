@@ -110,7 +110,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetTagInfo(Int_t bits){fTagInfo=bits;}
    void ResetTagWeights(){for(int i=0;i<18; i++)fTagWeights[i]=0.;}
    void SetTagWeight(Int_t i,Double_t w){fTagWeights[i]=w;}
-   Float_t GetTagWeight(Int_t i){return fTagWeights[i];}
+   Double_t GetTagWeight(Int_t i){return fTagWeights[i];}
    void SetTime(Double_t t) {fTime=t ;}
    void SetTOFBit(Bool_t tof){fTof = tof ;} 
    void SetTrig(Bool_t trig){fTrig=trig;}
@@ -146,7 +146,7 @@ private:
   Int_t     fModule ;   //Module number
   Int_t     fBC ;       //Bunch crossing number (BC=0 is main-main collision)
   Int_t     fBadDist ;  //Distance to bad module in module units
-  Double_t   fBadDistfp ;  //Distance to the closest bad cell in cell units with floating point.
+  Double_t  fBadDistfp ;  //Distance to the closest bad cell in cell units with floating point.
   Int_t     fNCells ;   //Number of cells in cluster
   Int_t     fFiducialArea ; //class of fiducial areas
   Int_t     fPi0Decayflag; //if this photon is from pi0 decay (from simulation)
@@ -169,7 +169,7 @@ private:
   Double_t  fNsigmaFullDisp ; //shower dispersion of a full cluster in unit of sigma
   Double_t  fNsigmaCoreDisp ; //shower dispersion at a core of a cluster in unit of sigma
   Double_t  fTOFCutEfficiency; //TOF cut effciency at a cluster level
-  Float_t   fTagWeights[18];   //weights of partner photons for MC
+  Double_t  fTagWeights[18];   //weights of partner photons for MC
   Int_t fEmbEventID;//event ID used in only embedding analysis for re-shuffle
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 

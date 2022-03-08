@@ -9,6 +9,7 @@ class TH3F;
 class TH2F;
 
 #include "AliAnalysisTask.h"
+#include "AliAnalysisFilter.h"
 
 class AliTaskLeadingMC : public AliAnalysisTask {
  public:
@@ -33,6 +34,7 @@ class AliTaskLeadingMC : public AliAnalysisTask {
   void loopMC(AliMCEvent *mcEvent);
   void loopTrackRef(TTree *treeTR, AliMCEvent *mcEvent);
   void loopTrack(AliMCEvent *mcEvent);
+  void  SetTrackCuts(AliAnalysisFilter* fTrackFilter);
 
   void SetZDCPGeo(float xmin=9.,float xmax=27.,float ymin=-7.,float ymax=7.,float zmin=10000.,float zmax=13000.);
   void SetZDCNGeo(float xmin=-4.,float xmax=4.,float ymin=-4.,float ymax=4.,float zmin=11000.,float zmax=12500.);
@@ -45,6 +47,11 @@ private:
   // 1=(C)lockwise - 2=(A)nticlockwise
 
   static const int fgkDim = 50; // max array dimension
+  Double_t ComputeSpherocity();
+  AliAnalysisFilter   *fTrackFilter;       //!<! track filter for spherocity estimator 
+  Float_t             fSpherocity;        ///< stores value of spherocity
+  Int_t fNTracksSpherocity; //! number of tracks to calculate spherocity
+
 
   bool fAskTrackRef = false;
 

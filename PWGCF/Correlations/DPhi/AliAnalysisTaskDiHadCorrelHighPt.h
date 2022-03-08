@@ -259,7 +259,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Bool_t                  fTestPions; // for testing MC trains
 
         TH2D *                  fHistPosNegTracks; //!
-        TH3F *                  fHistLambdaFeedDown; //! 
+        THnSparse *             fHistLambdaFeedDown; //! 
         Bool_t                  fAnalyseFeedDown;
         Double_t                fPtAssocMax; // maximal pt of associated Particle
         Double_t                fPtTrigMax; // maximal pt of trigger Particle
@@ -326,7 +326,7 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 38);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 39);
 };
 
 class AliV0ChParticle : public AliVParticle

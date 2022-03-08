@@ -488,6 +488,7 @@ Bool_t AliCaloPID::IsInPi0M02Range(Float_t energy, Float_t m02,  Int_t nlm) cons
     // the parameter cannot be smaller than 0.3 or larger than 4-5
     if( minCut < fSplitM02MinCut) minCut = fSplitM02MinCut;
     if( maxCut > fSplitM02MaxCut) maxCut = fSplitM02MaxCut;
+    if( maxCut < minCut+0.1) maxCut = minCut+0.1;
     if( nlm > 2 ) maxCut+=fM02MaxParamShiftNLMN;
     
     //if(energy > 7) printf("\t \t E %2.2f, nlm %d, m02 %2.2f, minM02 %2.2f, maxM02 %2.2f\n",energy, nlm, m02,minCut,maxCut);

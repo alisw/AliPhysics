@@ -74,7 +74,7 @@ void Canvas_intensity(Int_t Fill, Int_t opt, Int_t scan)
 	bi2_H->SetMarkerStyle(20);
 	bi2_H->Draw("p");
 
-	bi_C->Print(Form("c1a_%s_fill%i_opt%i_scan%i.png", (const char*)txt, Fill, opt, scan));
+	bi_C->Print(Form("c1a_%s_fill%i_opt%i_scan%i.%s", (const char*)txt, Fill, opt, scan, FFormat));
 
 	// clean
 	delete [] bunch_intensity_1;

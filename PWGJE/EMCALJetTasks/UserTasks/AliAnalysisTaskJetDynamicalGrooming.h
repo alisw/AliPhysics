@@ -376,7 +376,7 @@ class AliAnalysisTaskJetDynamicalGrooming : public AliAnalysisTaskEmcalJet
   /// Calculate TimeDrop (a = 2) for the earliest splitting.
   double CalculateTimeDrop(const fastjet::PseudoJet & subjet1, const fastjet::PseudoJet & subjet2, const fastjet::PseudoJet & parent, const double R) const;
 
-  void IterativeParents(AliEmcalJet* jet, SubstructureTree::JetSubstructureSplittings& jetSplittings, bool isData);
+  void IterativeParents(AliEmcalJet* jet, SubstructureTree::JetSubstructureSplittings& jetSplittings, bool isData, bool isDetLevelInEmbedding = false);
   void ExtractJetSplittings(SubstructureTree::JetSubstructureSplittings & jetSplittings, fastjet::PseudoJet & inputJet, int splittingNodeIndex, bool followingIterativeSplitting);
   void CheckSubjetResolution(AliEmcalJet* fJet, AliEmcalJet* fJetM);
   bool CheckClosePartner(const AliEmcalJet* jet, const AliVParticle * part1);

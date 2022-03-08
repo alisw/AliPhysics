@@ -46,6 +46,6 @@ public TObject
   Int_t fCascPdg;
   Bool_t fCascPrimary;
 
-  ClassDef(AliAnalysisPIDCascade, 3);
+  ClassDef(AliAnalysisPIDCascade, 4);
 };
 #endif

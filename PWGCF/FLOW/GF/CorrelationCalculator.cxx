@@ -1,3 +1,6 @@
+/*
+ * Maintainer: Mingrui Zhao
+ */
 #include "CorrelationCalculator.h"
 
 ClassImp(CorrelationCalculator);

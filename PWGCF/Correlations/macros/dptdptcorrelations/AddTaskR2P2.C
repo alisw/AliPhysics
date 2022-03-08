@@ -20,14 +20,18 @@
 
 AliAnalysisTaskR2P2 * AddTaskR2P2
 (
- TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
- TString prefixName             = "data_",
+ TString AnalysisDataType       = "MCAODreco", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
+ TString prefixName             = "reco_",
  
  //************ for Stage2_Step1 starts ************************
 
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
+
+ int    usePtEff                =  0,   // 0: no                   1: yes  
+ char *inputPtEffFileName       = (char*)"alien:///alice/cern.ch/user/s/sbaidyan/efficiency_rmPi0nPhoton_14jan22.root", 
+ 
  int    useWeights              =  0,   // 0: no                   1: yes  
- char *inputHistogramFileName   = (char*)"alien:///alice/cern.ch/user/s/sbaidyan/data_fb1_vz2_lhc18i.root", 
+ char *inputHistogramFileName   = (char*)"alien:///alice/cern.ch/user/s/sbaidyan/data_lhc18i_runAll.root", 
  
  //************ for Stage2_Step1 ends ************************
  
@@ -38,12 +42,12 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
  int    CentralityGroup         =  13,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    PtGroup                 =  1,  // Diff Pt Groups dealing w/ memory limit & weight file 500M Alien limit
  double ptWidthBin              =  0.1, // pt bin width in histos
- double ptTOFlowerMin           =  0.5, // boundary between TPC & TOF region
+ double ptTOFlowerMin           =  0.8, // boundary between TPC & TOF region
  double zMax                    =  8.,  // set vertexZ cut   
  double vZwidth                 =  0.5, // zMin, zMax & vZwidth determine _nBins_vertexZ.
- int    trackFilterBit          =  1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
+ int    trackFilterBit          =  96,/// 1,   // PbPb10(Global=1;TPConly=128;Hybrid=272); pPb13(Global=?;TPConly=?;Hybrid=768); pp10(Global=1;TPConly=?; Hybrid=?)
  double  chi2ndfMax             =  4.0,
- int    nClusterMin             =  100,
+ int    nClusterMin             =  70,//70
  double eta1Max                 =  0.8, // set y1max acturally if useRapidity==1
  double etaBinWidth             =  0.1, // set yBinWidth acturally if useRapidity==1
  double dcaZMax                 =  0.2,/// 3.2,
@@ -53,15 +57,15 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
  double nSigmaCut               =  2.0,
  double nSigmaCut_veto          =  3.0,
  double ElectronVetoCut         =  1.0,
- int nBinsPhi                   =  36,  // 36 is default value
- Bool_t NoResonances            = kTRUE, // only for MCAOD
+ int nBinsPhi                   =  72,  // 72 is default value
+ Bool_t NoResonances            = kFALSE, // only for MCAOD
  Bool_t NoElectron              = kTRUE, // only for MCAOD
  bool   PurePIDinMC             = 1,///0,   // 0: MisID in MCAODreco;       1: No MisID in MCAODreco
  bool   PureNoWeakinMC          = 1,///0,   // 0: No MisID but Secondaries from weak decays in MCAODreco;       1: No MisID and No Secondaries from weak decays in MCAODreco
  bool   PureNoWeakMaterialinMC  = 1,///0,   // 0: No MisID and No Secondaries from weak decays but Secondaries from material in MCAODreco;       1: No MisID and No Secondaries from weak decays and material in MCAODreco
  
  bool   NoMisIDWeakMaterialInClosure = 1,///0,   // 0: allow MisID and No Secondaries from weak decays and material in MC Closure test       1: No MisID and Secondaries from weak decays and material in MC Closure test
- double SharedFractionPairCut   = 0.2 // check track splitting
+ double SharedFractionPairCut   = 0.005 // check track splitting
  
  )
 {
@@ -78,8 +82,8 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
   double  EventPlaneMin         = -3.1415927/6;
   double  EventPlaneMax         =  3.1415927/6;
   bool Use_AliHelperPID         =   0;   // 0: Not Use_AliHelperPID       1: Use_AliHelperPID
-  int pidType                   =  0;///2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
-  ///baidya AliHelperPIDNameSpace::PIDType_t  pidType =  kNSigmaTPCTOF;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
+  //int pidType                   =  0;///2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
+  AliHelperPIDNameSpace::PIDType_t  pidType =  kNSigmaTPC;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  0;///baidya1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
   double eta2Max                =  eta1Max; // set y2max acturally if useRapidity==1
@@ -117,9 +121,11 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
   else {
     nChSet = 3;
     chargeSet[0] = 1;  taskname[0] = "ChPM";
-    chargeSet[1] = 0;  taskname[1] = "ChPP";
-    chargeSet[2] = 3;  taskname[2] = "ChMM";
-  } 
+    chargeSet[1] = 0;  taskname[1] = "ChPP";                                 
+    chargeSet[2] = 3;  taskname[2] = "ChMM";                                 
+       
+  }
+
   
   double ptMin[15]; // pt range lower limit cut ( also for pt histos )
   double ptCUTupperMax[15]; // pt range upper limit cut
@@ -144,14 +150,14 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
       ptMin[1] = 2.;  ptCUTupperMax[1]  = 4.;   ptMax[1] = 5.0;
       ptMin[2] = 4.;  ptCUTupperMax[2]  = 10.;  ptMax[2] = 11.0;
     }
-  else  if ( PtGroup == 4 )
+  else  if ( PtGroup == 5 )
     {
-      nPt = 4;
+      nPt = 5;
       ptMin[0] = 0.2; ptCUTupperMax[0]  = 2.;   ptMax[0] = 3.0;
       ptMin[1] = 0.2;  ptCUTupperMax[1]  = 1.;   ptMax[1] = 2.0;
       ptMin[2] = 1.;  ptCUTupperMax[2]  = 2.;  ptMax[2] = 3.0;
       ptMin[3] = 2.;  ptCUTupperMax[3]  = 4.;  ptMax[3] = 5.0;
-      ptMin[4] = 4.;  ptCUTupperMax[4]  = 10.;  ptMax[4] = 11.0;
+      ptMin[4] = 4.;  ptCUTupperMax[4]  = 10.;  ptMax[4] = 10.0;
     }
   else   if ( PtGroup == 9 )
     {
@@ -165,7 +171,24 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
       ptMin[6] = 4.0; ptCUTupperMax[6]  = 7.0;   ptMax[6] = 8.0;
       ptMin[7] = 4.0; ptCUTupperMax[7]  = 8.0;   ptMax[7] = 9.0;
       ptMin[8] = 4.0; ptCUTupperMax[8]  = 9.0;   ptMax[8] = 10.0;
-      // ptMin[9] = 4.0; ptCUTupperMax[9]  = 10.0;   ptMax[9] = 11.0;           
+      ptMin[9] = 4.0; ptCUTupperMax[9]  = 10.0;   ptMax[9] = 11.0;           
+      ptMin[10] = 4.0; ptCUTupperMax[10]  = 100.0;   ptMax[10] = 101.0;           
+      
+    }
+
+  else   if ( PtGroup == 8 )
+    {
+      nPt = 8;
+      ptMin[0] = 0.2; ptCUTupperMax[0]  = 2.0;   ptMax[0] = 3.0;
+      ptMin[1] = 2.; ptCUTupperMax[1]  = 4.0;   ptMax[1] = 5.0;
+      ptMin[2] = 4.; ptCUTupperMax[2]  = 10.0;   ptMax[2] = 11.0;
+      ptMin[3] = 4.; ptCUTupperMax[3]  = 100.0;   ptMax[3] = 101.0;
+
+      ptMin[4] = 0.2; ptCUTupperMax[4]  = 1.0;   ptMax[4] = 2.0;
+      ptMin[5] = 1.0; ptCUTupperMax[5]  = 2.0;   ptMax[5] = 3.0;
+      ptMin[6] = 2.0; ptCUTupperMax[6]  = 3.0;   ptMax[6] = 4.0;
+      ptMin[7] = 3.0; ptCUTupperMax[7]  = 4.0;   ptMax[7] = 5.0;
+
       
     }
   
@@ -537,7 +560,7 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
     {
       nCentrality = 8;
 
-      minCentrality[0] = 0.;     maxCentrality[0]  = 80.;
+      minCentrality[0] = 0.;     maxCentrality[0]  = 100.;
       minCentrality[1] = 0.;     maxCentrality[1]  = 5.;
       minCentrality[2] = 5.;     maxCentrality[2]  = 10.;
       minCentrality[3] = 10.;     maxCentrality[3]  = 20.;
@@ -651,6 +674,85 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 	      
 	      outputHistogramFileName = baseName;
 	      outputHistogramFileName += ".root";      
+
+
+
+
+
+	      
+	      //------pt-efficiency starts ---------------
+	      TFile  * inputFilePtEff  = 0;
+	      TH1F   * hPtEff_1   = 0;
+	      TH1F   * hPtEff_2   = 0;
+	      if ( usePtEff )
+		{
+		  TGrid::Connect("alien:");
+		  inputFilePtEff = TFile::Open(inputPtEffFileName,"OLD");
+		  if (inputFilePtEff)
+		    {
+		      cout << "\n\n\n\n ====================================================" << endl;
+		      cout << " Requested file:" << inputPtEffFileName << " was opened." << endl;
+		      cout << "\n\n\n\n ====================================================" << endl;
+		    }
+		  else if (!inputFilePtEff)
+		    {
+		      cout << "\n\n\n\n ====================================================" << endl;
+		      cout << " Requested file:" << inputPtEffFileName << " was not opened. ABORT." << endl;
+		      cout << "\n\n\n\n ====================================================" << endl;
+		      return 0;
+		    }
+		  TString nameHistoBasePtEff = "hEff_";
+		  TString nameHistoPtEff;
+		  nameHistoBasePtEff += partName;
+		  nameHistoBasePtEff += eventName;
+		  cout <<"\n\n\n nameHistoBasePtEff: "<<nameHistoBasePtEff<<endl;
+		  if (requestedCharge1 == 1)
+		    {
+		      nameHistoPtEff = nameHistoBasePtEff + "_p";
+		      cout << "\n\n\n Input Histogram named: " << nameHistoPtEff << endl;
+		      hPtEff_1 = (TH1F *) inputFilePtEff->Get(nameHistoPtEff);
+		    }
+		  else
+		    {
+		      nameHistoPtEff = nameHistoBasePtEff + "_m";
+		      cout << "\n\n\n Input Histogram named: " << nameHistoPtEff << endl;
+		      hPtEff_1 = (TH1F *) inputFilePtEff->Get(nameHistoPtEff);
+		    }
+		  if (!hPtEff_1)
+		    {
+		      cout << "\n\n\n Requested histogram 'ptEff_p/m' was not found. ABORT." << endl;
+		      return 0;
+		    }
+		  
+		  if (!sameFilter)
+		    {
+		      hPtEff_2 = 0;
+		      if (requestedCharge2 == 1)
+			{
+			  nameHistoPtEff = nameHistoBasePtEff + "_p";
+			  cout << "\n\n\n Input Histogram named: " << nameHistoPtEff << endl;
+			  hPtEff_2 = (TH1F *) inputFilePtEff->Get(nameHistoPtEff);
+			}
+		      else
+			{
+			  nameHistoPtEff = nameHistoBasePtEff + "_m";
+			  cout << "\n\n\n Input Histogram named: " << nameHistoPtEff << endl;
+			  hPtEff_2 = (TH1F *) inputFilePtEff->Get(nameHistoPtEff);
+			}
+		      if (!hPtEff_2)
+			{
+			  cout << "\n \n \n Requested histogram 'ptEff_p/m' was not found. ABORT." << endl;
+			  return 0;
+			}
+		    }
+		}
+
+
+	      //------pt-efficiency ends ---------------
+
+
+	      
+
 	      
 	      TFile  * inputFile  = 0;
 	      TList  * histoList  = 0;
@@ -730,6 +832,7 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 	      task->SetIfContaminationWeakInMC( PureNoWeakinMC );
 	      task->SetIfContaminationWeakMaterialInMC( PureNoWeakMaterialinMC );
 	      task->SetIfMisIDWeakMaterialInMCClosure( NoMisIDWeakMaterialInClosure );
+	      task->SetUsePtEff(          usePtEff      );
 	      task->SetUseWeights(          useWeights      );
 	      task->SetUseRapidity(         useRapidity     );
 	      task->SetEventPlane(         useEventPlane     );
@@ -768,6 +871,8 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 	      task->SetTrackFilterBit(      trackFilterBit  );
 	      task->SetRequestedCharge_1(   requestedCharge1);
 	      task->SetRequestedCharge_2(   requestedCharge2);
+	      task->SetPtEff_1(            hPtEff_1        );
+	      task->SetPtEff_2(            hPtEff_2        );
 	      task->SetWeigth_1(            weight_1        );
 	      task->SetWeigth_2(            weight_2        );
 	      task->SetParticleSpecies(     particleID      );
@@ -788,7 +893,8 @@ AliAnalysisTaskR2P2 * AddTaskR2P2
 	      // assign initial values to AliHelperPID object
 	      AliHelperPID* helperpid = new AliHelperPID();
 	      helperpid -> SetNSigmaCut( nSigmaCut );
-	      helperpid -> SetPIDType( (PIDType_t)pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+	      //helperpid -> SetPIDType( (PIDType_t)pidType );// kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF
+	      helperpid -> SetPIDType( pidType );
 	      helperpid -> SetfRequestTOFPID( requestTOFPID );
 	      helperpid -> SetfPtTOFPID( ptTOFlowerMin );
 	      helperpid -> SetisMC( isMC );

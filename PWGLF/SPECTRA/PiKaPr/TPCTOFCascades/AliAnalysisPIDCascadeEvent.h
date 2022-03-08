@@ -31,10 +31,15 @@ public TObject
   void SetMCMultiplicity(Int_t value) {fMCMultiplicity = value;}; // setter
 
   void SetV0Mmultiplicity(Float_t multi) { fV0Mmultiplicity = multi;}; // setter
+  void SetV0Amultiplicity(Float_t multi) { fV0Amultiplicity = multi;}; // setter */
+  void SetV0Cmultiplicity(Float_t multi) { fV0Cmultiplicity = multi;}; // setter   */
+  void SetV0Asignal(Float_t multi) { fV0Asignal = multi;}; // setter 
+  void SetV0Csignal(Float_t multi) { fV0Csignal = multi;}; // setter 
   void SetRefMult08(Float_t multi) { fRefMult08 = multi;}; // setter
   void SetRefMult05(Float_t multi) { fRefMult05 = multi;}; // setter
   void SetSPDTracklets(Float_t multi) { fSPDTracklets = multi;}; // setter
 
+  
   void SetEventFlags(Int_t NewFlag) { fEventFlags = NewFlag; };
   Int_t GetEventFlags() { return fEventFlags; };
   Bool_t HasEventFlag(Int_t CheckFlag) { return (fEventFlags&CheckFlag)==CheckFlag; };
@@ -48,6 +53,14 @@ public TObject
   Bool_t AcceptVertex() const; // accept vertex
 
   Float_t GetV0Mmultiplicity() { return fV0Mmultiplicity;}; //getter
+  Float_t GetV0Amultiplicity() { return fV0Amultiplicity;}; //getter 
+  Float_t GetV0Cmultiplicity() { return fV0Cmultiplicity;}; //getter 
+
+  
+   Float_t GetV0Asignal() { return fV0Asignal;}; //getter 
+   Float_t GetV0Csignal() { return fV0Csignal;}; //getter 
+
+  
   Float_t GetRefMult08() { return fRefMult08;};
   Float_t GetRefMult05() { return fRefMult05;};
   Float_t GetSPDTracklets() { return fSPDTracklets;};
@@ -101,6 +114,11 @@ public TObject
   UChar_t fCentralityQuality; // centrality quality
   Int_t fReferenceMultiplicity; // reference multiplicity in eta 0.8
   Float_t fV0Mmultiplicity;
+  Float_t fV0Amultiplicity; 
+  Float_t fV0Cmultiplicity; 
+  Float_t fV0Asignal; 
+  Float_t fV0Csignal; 
+  
   Float_t fRefMult08;
   Float_t fRefMult05;
   Float_t fSPDTracklets;
@@ -125,7 +143,7 @@ public TObject
   /*** corrections ***/
   static Int_t fgFlagToCheck; //! check flag
 
-  ClassDef(AliAnalysisPIDCascadeEvent, 2);
+  ClassDef(AliAnalysisPIDCascadeEvent, 3);
 
 };
 

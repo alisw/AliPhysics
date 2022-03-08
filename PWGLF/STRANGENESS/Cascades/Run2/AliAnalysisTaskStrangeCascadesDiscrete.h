@@ -3,9 +3,12 @@
 #ifndef ALIANALYSISTASKSTRANGECASCADESDISCRETE_H
 #define ALIANALYSISTASKSTRANGECASCADESDISCRETE_H
 
+#include <TObject.h>
+#include <AliESDcascade.h>
+#include <AliExternalTrackParam.h>
+
 class AliAnalysisManager;
 class AliMultSelection;
-class AliExternalTrackParam;
 
 //Class which saves the cascade daughter tracks
 class AliRunningCascadeCandidate : public TObject
@@ -28,15 +31,15 @@ private:
     Short_t dca_pos_to_neg; //0..1.5 cm
     Short_t dca_bach_to_Lambda; //0...2.0 cm
     Short_t dca_bach_to_baryon; // 0..500.0 cm
-    
+
     Short_t CosPointingAngle; //also stores the charge of the bachelor track! (cos(THeta)*e_bach)
     Short_t WrongCosPointingAngle; //to get rid of correlated background.
 
     Float_t CascadeDecayPos[3]; //
     Float_t V0fromCascadePos[3];  //
     Short_t TrackLengthTPC[3]; // 0 - pos, 1 - neg, 2-bach
-    
-    
+
+
     //extra PID info
     //ITS
     UShort_t ITSstatusPosTrack[6], ITSstatusNegTrack[6], ITSstatusBachTrack[6];// 2 byte, unsigned out:from 0 to 6.
@@ -47,28 +50,28 @@ private:
     Short_t nSigma_ITS_pos[2]; //
     Short_t nSigma_ITS_neg[2]; //
     Short_t nSigma_ITS_bach[2];//
-    
+
     //TPC
     Short_t TPCsignal[3]; // [0]: pos track, [1]: neg track, [2]: bach track
-    
+
     UShort_t TPCcls[3]; // GetTPCNcls() (not TPCNclsF())
     UShort_t TPCclsF[3]; // findable clusters! theoretically to expect
     UShort_t TPCchi2[3]; //
     Short_t nSigma_dEdx_pos[2]; // pos is either [0]=proton(if Omega-) or [1]=pion(if Omega+)
     Short_t nSigma_dEdx_neg[2]; // neg is either [0]=pion(Omega-) or [1]=proton
     Short_t nSigma_dEdx_bach[2]; // bach is either [0]=kaon(Omega) or [1]=pion(Xi)
-    
+
     //TOF
     Float_t TOFsignal[3];//
     UShort_t TOFrefitFlag[3]; //
     Short_t nSigma_TOF_pos[2]; //
     Short_t nSigma_TOF_neg[2]; //
     Short_t nSigma_TOF_bach[2]; //
-    
-    
-    
-    
-    
+
+
+
+
+
 public:
     //default constructor: for my classed, inherited by TOBject, should be empty as possible
     AliRunningCascadeCandidate():pos_ptr(),neg_ptr(),bach_ptr(), dca_V0_to_prim(-10),dca_Omega_to_prim(-10),
@@ -91,12 +94,12 @@ public:
     //default destructor
     virtual ~AliRunningCascadeCandidate()
     {
-        
-        
+
+
     }
-    
+
     //----------------------------------------------------------------
-    
+
     //setters
     void set_pos_daughter(AliExternalTrackParam *ptr){ pos_ptr = *ptr; }
     void set_neg_daughter(const AliExternalTrackParam* ptr){ neg_ptr = *ptr;}
@@ -129,18 +132,18 @@ public:
         V0fromCascadePos[1] = f2;
         V0fromCascadePos[2] = f3;
     }
-    
+
     void set_TrackLengthTPC(Float_t l1, Float_t l2, Float_t l3){
         TrackLengthTPC[0] = (Short_t)l1; TrackLengthTPC[1] = (Short_t)l2; TrackLengthTPC[2] = (Short_t)l3;
     }
-    
-    
+
+
     //ITS setters
     void set_ITSstatusPosTrack(Int_t l0, Int_t l1,Int_t l2, Int_t l3,Int_t l4, Int_t l5){
         ITSstatusPosTrack[0] = (UShort_t)l0; ITSstatusPosTrack[1] = (UShort_t)l1; ITSstatusPosTrack[2] = (UShort_t)l2;
         ITSstatusPosTrack[3] = (UShort_t)l3; ITSstatusPosTrack[4] = (UShort_t)l4; ITSstatusPosTrack[5] = (UShort_t)l5;;
     }
-    
+
     void set_ITSstatusNegTrack(Int_t l0, Int_t l1,Int_t l2, Int_t l3,Int_t l4, Int_t l5){
         ITSstatusNegTrack[0] = (UShort_t)l0; ITSstatusNegTrack[1] = (UShort_t)l1; ITSstatusNegTrack[2] = (UShort_t)l2;
         ITSstatusNegTrack[3] = (UShort_t)l3; ITSstatusNegTrack[4] = (UShort_t)l4; ITSstatusNegTrack[5] = (UShort_t)l5;;
@@ -155,7 +158,7 @@ public:
         ITSpointPosTrack[0] = (UShort_t)l0; ITSpointPosTrack[1] = (UShort_t)l1; ITSpointPosTrack[2] = (UShort_t)l2;
         ITSpointPosTrack[3] = (UShort_t)l3; ITSpointPosTrack[4] = (UShort_t)l4; ITSpointPosTrack[5] = (UShort_t)l5;;
     }
-    
+
     void set_ITSpointNegTrack(Int_t l0, Int_t l1,Int_t l2, Int_t l3,Int_t l4, Int_t l5){
         ITSpointNegTrack[0] = (UShort_t)l0; ITSpointNegTrack[1] = (UShort_t)l1; ITSpointNegTrack[2] = (UShort_t)l2;
         ITSpointNegTrack[3] = (UShort_t)l3; ITSpointNegTrack[4] = (UShort_t)l4; ITSpointNegTrack[5] = (UShort_t)l5;;
@@ -164,38 +167,38 @@ public:
         ITSpointBachTrack[0] = (UShort_t)l0; ITSpointBachTrack[1] = (UShort_t)l1; ITSpointBachTrack[2] = (UShort_t)l2;
         ITSpointBachTrack[3] = (UShort_t)l3; ITSpointBachTrack[4] = (UShort_t)l4;ITSpointBachTrack[5] = (UShort_t)l5;;
     }
-    
-    
+
+
     void set_ITSPosSharedPoints(Int_t s0, Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5){
         ITSPosSharedPoints[0] = (UShort_t)s0,   ITSPosSharedPoints[1] = (UShort_t)s1,   ITSPosSharedPoints[2] = (UShort_t)s2,
         ITSPosSharedPoints[3] = (UShort_t)s3,   ITSPosSharedPoints[4] = (UShort_t)s4,   ITSPosSharedPoints[5] = (UShort_t)s5;
     }
-    
+
     void set_ITSNegSharedPoints(Int_t s0, Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5){
         ITSNegSharedPoints[0] = (UShort_t)s0,   ITSNegSharedPoints[1] = (UShort_t)s1,   ITSNegSharedPoints[2] = (UShort_t)s2,
         ITSNegSharedPoints[3] = (UShort_t)s3,   ITSNegSharedPoints[4] = (UShort_t)s4,   ITSNegSharedPoints[5] = (UShort_t)s5;
     }
-    
+
     void set_ITSBachSharedPoints(Int_t s0, Int_t s1,Int_t s2,Int_t s3,Int_t s4,Int_t s5){
         ITSBachSharedPoints[0] = (UShort_t)s0,   ITSBachSharedPoints[1] = (UShort_t)s1,   ITSBachSharedPoints[2] = (UShort_t)s2,
         ITSBachSharedPoints[3] = (UShort_t)s3,   ITSBachSharedPoints[4] = (UShort_t)s4,   ITSBachSharedPoints[5] = (UShort_t)s5;
     }
-    
+
     void set_ITSrefitFlag(Int_t refitPos, Int_t refitNeg, Int_t refitBach){
         ITSrefitFlag[0] = (UShort_t)refitPos; ITSrefitFlag[1]= (UShort_t)refitNeg; ITSrefitFlag[2] = (UShort_t)refitBach;
     }
-    
+
     void set_ITSchi2(Double_t itschi2pos, Double_t itschi2neg, Double_t itschi2bach){
         ITSchi2[0] = (Short_t)(itschi2pos*100); ITSchi2[1] = (Short_t)(itschi2neg*100); ITSchi2[2] = (Short_t)(itschi2bach*100);
     }
-    
+
     void set_ITSsignal(Double_t spos, Double_t sneg, Double_t sbach){
         ITSsignal[0] = (Short_t)(spos*10); ITSsignal[1] = (Short_t)(sneg*10); ITSsignal[2] = (Short_t)(sbach*10);
     }
     void set_nSigma_ITS_pos(Float_t f1, Float_t f2)   { nSigma_ITS_pos[0]   = (Short_t)(f1*100); nSigma_ITS_pos[1]   = (Short_t)(f2*100); }
     void set_nSigma_ITS_neg(Float_t f1, Float_t f2)   { nSigma_ITS_neg[0]   = (Short_t)(f1*100); nSigma_ITS_neg[1]   = (Short_t)(f2*100); }
     void set_nSigma_ITS_bach(Float_t f1, Float_t f2)   { nSigma_ITS_bach[0]   = (Short_t)(f1*100); nSigma_ITS_bach[1]   = (Short_t)(f2*100); }
-    
+
     //TPC setters
     void set_TPCsignal(Double_t TPCsignalPos, Double_t TPCsignalNeg, Double_t TPCsignalBach){
         TPCsignal[0] = (Short_t)(TPCsignalPos*10.); TPCsignal[1] = (Short_t)(TPCsignalNeg*10.); TPCsignal[2] = (Short_t)(TPCsignalBach*10.);
@@ -203,19 +206,19 @@ public:
     void set_TPCcls(Int_t clpos, Int_t clneg, Int_t clbach){
         TPCcls[0] = (UShort_t)clpos;  TPCcls[1] = (UShort_t)clneg; TPCcls[2] = (UShort_t)clbach;
     }
-    
+
     void set_TPCclsF(Int_t clposF, Int_t clnegF, Int_t clbachF){
         TPCclsF[0] = (UShort_t)clposF;  TPCclsF[1] = (UShort_t)clnegF; TPCclsF[2] = (UShort_t)clbachF;
     }
-    
+
     void set_TPCchi2(Double_t chi2pos, Double_t chi2neg, Double_t chi2bach){
         TPCchi2[0] = (UShort_t)(chi2pos*100); TPCchi2[1] = (UShort_t)(chi2neg*100); TPCchi2[2] = (UShort_t)(chi2bach*100);
     }
     void set_nSigma_dEdx_pos(Float_t f1, Float_t f2)   { nSigma_dEdx_pos[0]   = (Short_t)(f1*100); nSigma_dEdx_pos[1]   = (Short_t)(f2*100); }
     void set_nSigma_dEdx_neg(Float_t f1, Float_t f2)   { nSigma_dEdx_neg[0]   = (Short_t)(f1*100); nSigma_dEdx_neg[1]   = (Short_t)(f2*100); }
     void set_nSigma_dEdx_bach(Float_t f1, Float_t f2)   { nSigma_dEdx_bach[0]   = (Short_t)(f1*100); nSigma_dEdx_bach[1]   = (Short_t)(f2*100); }
-    
-    
+
+
     //TOF
     void set_TOFrefitFlag(Int_t refitPos, Int_t refitNeg, Int_t refitBach){
         TOFrefitFlag[0] = (UShort_t)refitPos; TOFrefitFlag[1]= (UShort_t)refitNeg; TOFrefitFlag[2] = (UShort_t)refitBach;
@@ -226,11 +229,11 @@ public:
     void set_nSigma_TOF_pos(Float_t f1, Float_t f2)   { nSigma_TOF_pos[0]   = (Short_t)(f1*100); nSigma_TOF_pos[1]   = (Short_t)(f2*100); }
     void set_nSigma_TOF_neg(Float_t f1, Float_t f2)   { nSigma_TOF_neg[0]   = (Short_t)(f1*100); nSigma_TOF_neg[1]   = (Short_t)(f2*100); }
     void set_nSigma_TOF_bach(Float_t f1, Float_t f2)   { nSigma_TOF_bach[0]   = (Short_t)(f1*100); nSigma_TOF_bach[1]   = (Short_t)(f2*100); }
-    
-    
-    
-    
-    
+
+
+
+
+
     //getters
     // void get_pos_daughter(AliExternalTrackParam* return_ptr) {return_ptr = pos_ptr;}
     AliExternalTrackParam get_pos_daughter() const {return pos_ptr;}
@@ -251,9 +254,9 @@ public:
     Float_t get_dca_pos_to_neg() const { return ((Float_t)dca_pos_to_neg)/100.0; }
     Float_t get_dca_bach_to_Lambda()  const { return ((Float_t)dca_bach_to_Lambda)/100.0; }
     Float_t get_dca_bach_to_baryon() const { return ((Float_t)dca_bach_to_baryon)/10.0; }
-    
-    
-    
+
+
+
     Float_t get_CosPointingAngle()  const  {return ((Float_t)CosPointingAngle)/1000.;} //pay attention to cos! should not be negative
     Float_t get_WrongCosPointingAngle()  const  {return ((Float_t)WrongCosPointingAngle)/1000.;} //test this as well!
 
@@ -261,7 +264,7 @@ public:
     Float_t  get_CascadeDecayPos(Int_t i) const {return CascadeDecayPos[i];}
     Float_t  get_V0fromCascadePos(Int_t i) const {return V0fromCascadePos[i];}
     Float_t get_TrackLengthTPC(Int_t i) const{return (Float_t)TrackLengthTPC[i];}
-    
+
     //ITS
     UShort_t get_ITSstatusPosTrack(Int_t i) const {return ITSstatusPosTrack[i];}
     UShort_t get_ITSstatusNegTrack(Int_t i) const {return ITSstatusNegTrack[i];}
@@ -270,18 +273,18 @@ public:
     UShort_t get_ITSpointPosTrack(Int_t i) const {return ITSpointPosTrack[i];}
     UShort_t get_ITSpointNegTrack(Int_t i) const {return ITSpointNegTrack[i];}
     UShort_t get_ITSpointBachTrack(Int_t i) const {return ITSpointBachTrack[i];}
-    
+
     UShort_t get_ITSPosSharedPoints(Int_t i) const {return ITSPosSharedPoints[i];}
     UShort_t get_ITSNegSharedPoints(Int_t i) const {return ITSNegSharedPoints[i];}
     UShort_t get_ITSBachSharedPoints(Int_t i) const {return ITSBachSharedPoints[i];}
-    
+
     Int_t get_ITSrefitFlag(Int_t i)const {return (Int_t)ITSrefitFlag[i];}
     Float_t get_ITSchi2(Int_t i)const {return ((Float_t)ITSchi2[i])/100.;}
     Float_t get_ITSsignal(Int_t i)const {return ((Float_t)ITSsignal[i])/10.;}
     Float_t get_nSigma_ITS_pos(Int_t i) const  { return ((Float_t)nSigma_ITS_pos[i])/100.;}
     Float_t get_nSigma_ITS_neg(Int_t i) const  { return ((Float_t)nSigma_ITS_neg[i])/100.;}
     Float_t get_nSigma_ITS_bach(Int_t i) const  {return ((Float_t)nSigma_ITS_bach[i])/100.;}
-    
+
     //TPC
     Float_t get_TPCsignal(Int_t i) const {return ((Float_t)TPCsignal[i])/10.;}
     Int_t get_TPCcls(Int_t i) const{return (Int_t)TPCcls[i];}
@@ -290,19 +293,19 @@ public:
     Float_t get_nSigma_dEdx_pos(Int_t i)  const { return ((Float_t)nSigma_dEdx_pos[i])/100.; }
     Float_t get_nSigma_dEdx_neg(Int_t i)  const {return ((Float_t)nSigma_dEdx_neg[i])/100.;}
     Float_t get_nSigma_dEdx_bach(Int_t i)const   { return ((Float_t)nSigma_dEdx_bach[i])/100.; }
-    
-    
+
+
     //TOF
     Float_t get_TOFsignal(Int_t i) const {return TOFsignal[i];}
     UShort_t get_TOFrefitFlag(Int_t i)const {return TOFrefitFlag[i];}
     Float_t get_nSigma_TOF_pos(Int_t i) const  { return ((Float_t)nSigma_TOF_pos[i])/100.;}
     Float_t get_nSigma_TOF_neg(Int_t i) const  { return ((Float_t)nSigma_TOF_neg[i])/100.;}
     Float_t get_nSigma_TOF_bach(Int_t i) const  {return ((Float_t)nSigma_TOF_bach[i])/100.;}
-    
-    
-    
+
+
+
     ClassDef(AliRunningCascadeCandidate,3);
-    
+
     //----------------------------------------------------------------
 };
 
@@ -326,8 +329,8 @@ private:
     UShort_t fNumSelectedCascades; //number of selected cascades, i.e. survive the cuts
     //  UShort_t fNumSelectedCascadeCandidates; //number of preselected candidates
     TClonesArray* fTracks; //->
-    
-    
+
+
 public:
     //default constructor
     AliRunningCascadeEvent()
@@ -335,7 +338,7 @@ public:
     idi(-1),periodnumber(-1),centrality(-1), MVPPileUpFlag(kFALSE), multiplicity(-1), trigger_word(0), magfield(0),
     fNumCascadeCandidates(0),fNumSelectedCascades(0),fTracks(0)
     {
-        
+
     }
     //explicit constructor
     AliRunningCascadeEvent(Int_t i):x(-100),y(-100),z(-100),N_tracks(-1),
@@ -343,7 +346,7 @@ public:
     fNumCascadeCandidates(0),fNumSelectedCascades(0),fTracks(0)
     {
         fTracks = new TClonesArray( "AliRunningCascadeCandidate", 10000);
-        
+
     }
     //copy constructor
     AliRunningCascadeEvent(const AliRunningCascadeEvent&):TObject(),x(-100),y(-100),z(-100),N_tracks(-1),
@@ -360,87 +363,87 @@ public:
     //destructor
     virtual ~AliRunningCascadeEvent(){
     }
-    
-    
+
+
     //setters and getters
     //-----------------------------------------------------------------------------
     void       setx(Float_t r)                    { x = r;                         }
     Float_t    getx() const                       { return x;                      }
-    
+
     void       sety(Float_t r)                    { y = r;                         }
     Float_t    gety() const                       { return y;                      }
-    
+
     void       setz(Float_t r)                    { z = r;                         }
     Float_t    getz() const                       { return z;                      }
-    
+
     void       setN_tracks(Int_t r)               { N_tracks = r;                   }
     Int_t      getN_tracks() const                { return N_tracks;                }
-    
+
     void       setid(Int_t  r)                    { idi = r;                        }
     Int_t      getid() const                      { return idi;                     }
-    
+
     void       set_periodnumber(UInt_t  r)                    { periodnumber = r;                        }
     UInt_t     get_periodnumber() const                      { return periodnumber;                     }
-    
+
     void       setcentrality(Float_t r)             {centrality  = r;                }
     Float_t    getcentrality() const              { return centrality;             }
-    
+
     void       setMVPPileUpFlag(Bool_t r)             {MVPPileUpFlag  = r;                }
     Bool_t      getMVPPileUpFlag() const              { return MVPPileUpFlag;             }
-    
+
     void       setmultiplicity(Int_t r)             {multiplicity  = r;                }
     Int_t      getmultiplicity() const              { return multiplicity;             }
-    
+
     void       settrigger_word(Long64_t r)             { trigger_word = r;                }
     Long64_t      gettrigger_word() const              { return trigger_word;             }
-    
+
     void       setmagfield(Short_t r)             { magfield = r;                }
     Long64_t      getmagfield() const              { return magfield;             }
-    
+
     void     setNumCascadeCandidates(UShort_t r)      {fNumCascadeCandidates = r;}
     UShort_t getNumCascadeCandidates() const        {return fNumCascadeCandidates;}
-    
+
     void    setNumSelectedCascades(UShort_t r)  {fNumSelectedCascades = r;}
     UShort_t getNumSelectedCascades() const {return fNumSelectedCascades;}
-    
+
     //-----------------------------------------------------------------------------
-    
+
     void ClearTrackList()
     {
         //  fNumCascadeCandidates = 0;
         fNumSelectedCascades = 0;
         fTracks ->Clear();
     }
-    
-    
+
+
     //previous version up to 20.01.2020.
     AliRunningCascadeCandidate* AddCandidate(Int_t i){
-        
+
         new ((*fTracks)[i]) AliRunningCascadeCandidate();
         return (AliRunningCascadeCandidate*)((*fTracks)[i]);
     }
-    
-    
+
+
     //new version:
     AliRunningCascadeCandidate* AddCandidate(){
         new ((*fTracks)[fNumCascadeCandidates++]) AliRunningCascadeCandidate;
         return (AliRunningCascadeCandidate*)((*fTracks)[fNumCascadeCandidates -1]);
     }
-    
-    
+
+
     AliRunningCascadeCandidate* getTrack(UShort_t i) const
     {
         // return i < fNumCascadeCandidates ? (AliRunningCascadeCandidate*)((*fTracks)[i]) : NULL;
         return i < fNumSelectedCascades ? (AliRunningCascadeCandidate*)((*fTracks)[i]) : NULL;
     }
-    
+
     Int_t GetSizeEvent(){
         Int_t size(0);
         size = fTracks -> GetEntries();
         return size;
     }
-    
-    
+
+
     ClassDef(AliRunningCascadeEvent, 3);
 };
 
@@ -450,9 +453,9 @@ public:
 
 
 class AliAnalysisTaskStrangeCascadesDiscrete: public AliAnalysisTaskSE {
-    
+
 private:
-    
+
     //variables which are used in addtask
     Bool_t fguard_CheckTrackQuality;
     Bool_t fguard_CheckCascadeQuality;
@@ -461,7 +464,7 @@ private:
     Bool_t fkRunVertexers;
     Bool_t fkUseLightVertexer;
     Bool_t fkUseOnTheFlyV0Cascading;
-    
+
     //variables for creating objects
     AliPIDResponse *fPIDResponse;     //!
     AliESDtrackCuts *fESDtrackCuts;   //!
@@ -470,7 +473,7 @@ private:
     AliAnalysisUtils *fUtils;         //!
     TRandom3 *fRand; //!
     Bool_t fkDebugOOBPileup; //for studying the pileup with standard cuts
-    
+
     //pointers
     AliAnalysisManager *man;
     AliInputEventHandler* inputHandler;         //!
@@ -495,7 +498,7 @@ private:
     AliExternalTrackParam *fbTrackXi;
 
 
-    
+
     //variables used in the userexec
     Float_t fMagneticField; //magnetic field in an event
     Float_t fPV_X; //event primary vertex x coordinate
@@ -503,15 +506,15 @@ private:
     Float_t fPV_Z; //event primary vertex z coordinate
     Float_t sigmamaxrunning;
     Float_t fkOmegaCleanMassWindow;
-    
-    
+
+
     //variables which are not necessarily defined in the impl.file
     Double_t fV0VertexerSels[7];
     Double_t fCascadeVertexerSels[8]; // Array to store the 8 values for the different selections Casc. related
 
     AliAnalysisTaskStrangeCascadesDiscrete(const AliAnalysisTaskStrangeCascadesDiscrete&);  //not implemented
     AliAnalysisTaskStrangeCascadesDiscrete& operator =(const AliAnalysisTaskStrangeCascadesDiscrete&); //not implemented
-    
+
 public:
     //constructors, copies and destructor
     AliAnalysisTaskStrangeCascadesDiscrete();
@@ -541,13 +544,13 @@ public:
                                            Float_t lOmegaCleanMassWindow,
                                            const char *name);
     virtual ~AliAnalysisTaskStrangeCascadesDiscrete();
-    
+
     //regular main members
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *);
-    
-    
+
+
     //Task configurations
 
     //My members
@@ -558,9 +561,9 @@ public:
     Bool_t GoodCandidatesTPCPID(AliESDtrack* pTrackXi, AliESDtrack* nTrackXi, AliESDtrack* bachTrackXi, Float_t sigmamax);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
 
-    
-    
-    
+
+
+
     ClassDef(AliAnalysisTaskStrangeCascadesDiscrete, 3);
 };
 

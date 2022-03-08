@@ -25,7 +25,7 @@ class AliFemtoCutMonitorParticlePIDBeta : public AliFemtoCutMonitorParticlePID{
 
 public:
   AliFemtoCutMonitorParticlePIDBeta();
-  AliFemtoCutMonitorParticlePIDBeta(const char *aName, Int_t aTOFParticle, Double_t yTOFTimeMin= -4000.0, Double_t yTOFTimeMax=4000.0);
+  AliFemtoCutMonitorParticlePIDBeta(const char *aName, Int_t aTOFParticle, Double_t yTOFTimeMin= -4000.0, Double_t yTOFTimeMax=4000.0, int MassBin = 250, float LowMass = -1.0, float UpMass = 10.0);
   AliFemtoCutMonitorParticlePIDBeta(const AliFemtoCutMonitorParticlePIDBeta &aCut);
   virtual ~AliFemtoCutMonitorParticlePIDBeta();
   AliFemtoCutMonitorParticlePIDBeta& operator=(const AliFemtoCutMonitorParticlePIDBeta& aCut);

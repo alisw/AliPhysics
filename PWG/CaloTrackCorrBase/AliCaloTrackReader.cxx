@@ -671,7 +671,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     fhNEventsAfterCut->Fill(3.5);
   }
-  
+
   //-------------------------------------------------------------------------------------
   // Reject or accept events depending on the trigger bit
   //-------------------------------------------------------------------------------------
@@ -686,7 +686,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   AliDebug(1,"Pass event bit rejection");
   
   fhNEventsAfterCut->Fill(4.5);
-  
+
   //----------------------------------------------------------------------
   // Do not count events that were likely triggered by an exotic cluster
   // or out BC cluster
@@ -718,13 +718,15 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if ( IsEventDCALL1Gamma1CaloOnly () && IsEventDCALL1Gamma2CaloOnly () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
       
       // Coincidence L0-L2
-      if ( IsEventDCALL0CaloOnly() && IsEventDCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
-      if ( IsEventDCALL0CaloOnly() && IsEventDCALL1Gamma1CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+      if ( IsEventDCALL0CaloOnly () && IsEventDCALL1Gamma2CaloOnly () && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
+      if ( IsEventDCALL0CaloOnly () && IsEventDCALL1Gamma1CaloOnly () && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
+      if ( IsEventEMCALL0CaloOnly() && IsEventEMCALL1Gamma2CaloOnly() && fFiredTriggerClassName.Contains("G2") ) return kFALSE;
+      if ( IsEventEMCALL0CaloOnly() && IsEventEMCALL1Gamma1CaloOnly() && fFiredTriggerClassName.Contains("G1") ) return kFALSE;
     }
     
      fhNEventsAfterCut->Fill(5.5);
   }
-  
+
   // Reject events from centrality triggers with centrality out of expected range
   //
   if ( fRemoveCentralityTriggerOutliers  )
@@ -758,14 +760,14 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
           if (  ( (fEventTriggerMask & AliVEvent::kCentral) && fEventTrigCentral && centrality >= 10) || !fEventTrigCentral )
           {
             //printf("%s\n",GetFiredTriggerClasses().Data());
-            AliInfo(Form("Skip semi-central event with centrality %2.1f, out of [%d,%d]",
+            AliDebug(1,Form("Skip semi-central event with centrality %2.1f, out of [%d,%d]",
                          centrality, centMin, centMax));
             return kFALSE;
           }
         }
         else if  ( centrality >= centMax  ) 
         {
-          AliInfo(Form("Skip semi-central event with centrality %2.1f, out of [%d,%d]",
+          AliDebug(1,Form("Skip semi-central event with centrality %2.1f, out of [%d,%d]",
                        centrality, centMin, centMax));
           return kFALSE;
         }
@@ -775,7 +777,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
       if ( fEventTrigCentral && centrality >= 10  && (fEventTriggerMask & AliVEvent::kCentral) ) 
       {
         //printf("%s\n",GetFiredTriggerClasses().Data());
-        AliInfo(Form("Skip central event with centrality %2.1f",centrality));
+        AliDebug(1,Form("Skip central event with centrality %2.1f",centrality));
         return kFALSE;
       }
       
@@ -789,7 +791,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
         if ( centrality < 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G2"))
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
-          AliInfo(Form("Skip L1-G2 event with centrality %2.1f",centrality));
+          AliDebug(1,Form("Skip L1-G2 event with centrality %2.1f",centrality));
           return kFALSE;
         }
       } // L1-Low threshold
@@ -800,14 +802,14 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
         if ( centrality > 50 && fInputEvent->GetRunNumber() > 295274 && fFiredTriggerClassName.Contains("G1") )
         {
           //printf("%s\n",GetFiredTriggerClasses().Data());
-          AliInfo(Form("Skip L1-G1 event with centrality %2.1f",centrality));
+          AliDebug(1,Form("Skip L1-G1 event with centrality %2.1f",centrality));
           return kFALSE;
         }
       } // L1-High threshold
     } // EMCal triggers
     
   } //  fRemoveCentralityTriggerOutliers
-  
+
   // Match triggers
   //
   if ( fTriggerPatchClusterMatch &&
@@ -916,12 +918,12 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
           else AliError("No cluster list");
         }
       
-        AliInfo(Form("Trigger Maker, event rejected! EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d, EMCL0 %d, DMCL0 %d; request %s",
-                     trgsel->IsEventSelected("EG1")  , trgsel->IsEventSelected("EG2"),
-                     trgsel->IsEventSelected("DG1")  , trgsel->IsEventSelected("DG2"),
-                     trgsel->IsEventSelected("EGA")  ,
-                     trgsel->IsEventSelected("EMCL0"), trgsel->IsEventSelected("DMCL0"),
-                     fFiredTriggerClassName.Data()));
+        AliDebug(1,Form("Trigger Maker, event rejected! EG1 %d, EG2 %d, DG1 %d, DG2 %d, EGA %d, EMCL0 %d, DMCL0 %d; request %s",
+                        trgsel->IsEventSelected("EG1")  , trgsel->IsEventSelected("EG2"),
+                        trgsel->IsEventSelected("DG1")  , trgsel->IsEventSelected("DG2"),
+                        trgsel->IsEventSelected("EGA")  ,
+                        trgsel->IsEventSelected("EMCL0"), trgsel->IsEventSelected("DMCL0"),
+                        fFiredTriggerClassName.Data()));
         
         return kFALSE;
       }
@@ -945,7 +947,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
     
     fhNEventsAfterCut->Fill(7.5);
   }
-  
+
   //-------------------------------------------------------------------------------------
   // Reject event if large clusters with large energy
   // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
@@ -1013,7 +1015,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processN
       // Compare jet pT and pt Hard
       if ( jet->Pt() > fPtHardAndJetPtFactor * ptHard )
       {
-        AliInfo(Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f",
+        AliDebug(1,Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f",
                      process, processName.Data(), ptHard, jet->Pt(), fPtHardAndJetPtFactor));
 
         return kFALSE;
@@ -1068,8 +1070,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
 
         if ( ecluster > fPtHardAndClusterPtFactor * ptHard )
         {
-          AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
-                       process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
+          AliDebug(1,Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                          process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
           
           return kFALSE;
         }
@@ -1110,8 +1112,8 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString proc
 
         if ( ecluster > fPtHardAndClusterPtFactor * ptHard )
         {
-          AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
-                       process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
+          AliDebug(1,Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                          process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
 
           return kFALSE;
         }
@@ -1183,11 +1185,11 @@ Bool_t AliCaloTrackReader::ComparePtHardAndPromptPhotonPt(Int_t process, TString
 
     if ( ptHard > 0 )
       fhPtHardPromptPhotonPtRatio->Fill(primary->Pt()/ptHard);
-
+    
     if ( primary->Pt() > fPtHardAndPromptPhotonPtFactor * ptHard )
     {
-      AliInfo(Form("Reject : process %d <%s>, prompt photon %2.2f, factor %2.2f, ptHard %f",
-                   process, processName.Data(), primary->Pt(), fPtHardAndPromptPhotonPtFactor,ptHard));
+      AliDebug(1,Form("Reject : process %d <%s>, prompt photon %2.2f, factor %2.2f, ptHard %f",
+                      process, processName.Data(), primary->Pt(), fPtHardAndPromptPhotonPtFactor,ptHard));
 
       return kFALSE;
     }
@@ -1703,7 +1705,7 @@ AliHeader* AliCaloTrackReader::GetHeader() const
   }
   else
   {
-    AliInfo("Header is not available");
+    AliWarning("Header is not available");
     return 0x0 ;
   }
 }
@@ -1714,7 +1716,7 @@ AliHeader* AliCaloTrackReader::GetHeader() const
 //_________________________________________________________
 TClonesArray* AliCaloTrackReader::GetAODMCParticles() const
 {  
-  AliInfo("Input are not AODs");
+  AliWarning("Input are not AODs");
   
   return NULL ;
 }
@@ -1725,7 +1727,7 @@ TClonesArray* AliCaloTrackReader::GetAODMCParticles() const
 //________________________________________________________
 AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader() const
 {  
-  AliInfo("Input are not AODs");
+  AliWarning("Input are not AODs");
   
   return NULL ;
 }
@@ -2129,7 +2131,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   //fCurrentFileName = TString(currentFileName);
   if ( !fInputEvent )
   {
-    AliInfo("Input event not available, skip event analysis");
+    AliWarning("Input event not available, skip event analysis");
     return kFALSE;
   }
   
@@ -2550,7 +2552,7 @@ Float_t AliCaloTrackReader::GetEventCentralityF() const
     else if(fCentralityOpt ==  20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
     else
     {
-      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100",fCentralityOpt));
+      AliWarning(Form("Unknown centrality option %d, use 10, 20 or 100",fCentralityOpt));
       return -1;
     }
   }
@@ -2748,7 +2750,7 @@ void AliCaloTrackReader::FillInputCTS()
       } // track loop
     } 
     else 
-      AliInfo(Form("No external event for embed mc %d embed data %d",fEmbeddedEvent[0], fEmbeddedEvent[1]));
+      AliWarning(Form("No external event for embed mc %d embed data %d",fEmbeddedEvent[0], fEmbeddedEvent[1]));
   }
   
   if( fRecalculateVertexBC && (fVertexBC == 0 || fVertexBC == AliVTrack::kTOFBCNA))
@@ -3371,7 +3373,7 @@ void AliCaloTrackReader::FillInputEMCALSelectCluster(AliVCluster * clus, Int_t i
   
   if ( nDiff == 0 && clus->E() > fEMCALHighEnergyNdiffCut )
   {
-    AliInfo(Form("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d",
+    AliDebug(1,Form("** Reader: Reject cluster with E = %2.1f (min %2.1f) and n cells in diff TCard = %d, for Ecell min = %1.2f; m02 %2.2f, ncells %d",
            clus->E(),fEMCALHighEnergyNdiffCut,nDiff,fEMCALMinCellEnNdiffCut,clus->GetM02(),clus->GetNCells()));
     return;
   }
@@ -3942,8 +3944,9 @@ TArrayI AliCaloTrackReader::GetTriggerPatches(Int_t tmin, Int_t tmax )
     } // trigger iterator
   } // go through triggers
   
-  if(patches.GetSize()<=0) AliInfo(Form("No patch found! for triggers: %s and selected <%s>",
-                                        GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
+  if ( patches.GetSize() <=0 )
+    AliDebug(1,Form("No patch found! for triggers: %s and selected <%s>",
+                    GetFiredTriggerClasses().Data(),fFiredTriggerClassName.Data()));
   //else                     printf(">>>>> N patches %d, test %d,first %d, last %d\n",patches.GetSize(), nPatch, patches.At(0), patches.At(patches.GetSize()-1));
                  
   return patches;
@@ -4925,14 +4928,26 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
         if ( GetFiredTriggerClasses().Contains("DJ2") ) fEventTrigDCALL1Jet2CaloOnly = kTRUE;
       }
       
-      if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
-      {
-        fEventTrigDCALL0CaloOnly = kTRUE;
-      }
+      Int_t runNumber = fInputEvent->GetRunNumber();
       
-      if ( GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CALOPLUS") )
+      if ( runNumber >= 295584 )
       {
-        fEventTrigMinBiasCaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("CDMC7PER") )
+        {
+          fEventTrigDCALL0CaloOnly = kTRUE;
+        }
+
+        if ( GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CALOPLUS") )
+        {
+          fEventTrigMinBiasCaloOnly = kTRUE;
+        }
+      } // LHC18qr
+      else
+      {
+        if ( GetFiredTriggerClasses().Contains("CDMC7-B-NOPF-CALOFAST") )
+          fEventTrigDCALL0CaloOnly = kTRUE;
+        if ( GetFiredTriggerClasses().Contains("CEMC7-B-NOPF-CALOFAST") )
+          fEventTrigEMCALL0CaloOnly = kTRUE;
       }
     }
     //------------
@@ -4970,8 +4985,7 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
                   fEventTrigDCALL0 , fEventTrigDCALL1Gamma1 , fEventTrigDCALL1Gamma2 , fEventTrigDCALL1Jet1     , fEventTrigDCALL1Jet2 ,
                   fEventTrigEMCALL0CaloOnly, fEventTrigEMCALL1Gamma1CaloOnly, fEventTrigEMCALL1Gamma2CaloOnly, fEventTrigEMCALL1Jet1CaloOnly, fEventTrigEMCALL1Jet2CaloOnly,
                   fEventTrigDCALL0CaloOnly , fEventTrigDCALL1Gamma1CaloOnly , fEventTrigDCALL1Gamma2CaloOnly , fEventTrigDCALL1Jet1CaloOnly , fEventTrigDCALL1Jet2CaloOnly  )  );
-  
-  
+
   // L1 trigger bit
   if ( fBitEGA == 0 && fBitEJE == 0 )
   {
@@ -5011,8 +5025,8 @@ void AliCaloTrackReader::SetEventTriggerBit(UInt_t mask)
           fBitEGA = 6;
           fBitEJE = 8;
         }
-	    }  else AliInfo("AliCaloTrackReader()::SetEventTriggerBit() - Streamer info for trigger class not available, bit not changed");
-    } else AliInfo("AliCaloTrackReader::SetEventTriggerBit() -  Streamer list not available!, bit not changed");
+	    }  else AliDebug(1,"AliCaloTrackReader()::SetEventTriggerBit() - Streamer info for trigger class not available, bit not changed");
+    } else AliDebug(1,"AliCaloTrackReader::SetEventTriggerBit() -  Streamer list not available!, bit not changed");
     
   } // set once the EJE, EGA trigger bit
 }

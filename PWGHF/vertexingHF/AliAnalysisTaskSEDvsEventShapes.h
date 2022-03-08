@@ -57,6 +57,7 @@ public:
         fHigherImpPar=dmax;
     }
     void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
+    void SetS0unweight(Bool_t S0unweight=kFALSE){fS0unweight=S0unweight;}
     void SetMCOption(Int_t option=0){ fMCOption = option; }
     void SetIsPPbData(Bool_t flag=kTRUE){
         fisPPbData=flag;
@@ -321,7 +322,7 @@ private:
     void CreateMeasuredNchHisto();
     Bool_t FillTrackControlHisto(AliAODEvent* aod, Int_t nSelTrkCorr, Double_t spherocity, Double_t genspherocity, Int_t nSelectedEvwithCand);
     void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight);
-    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight);
+    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight, Double_t genspherocity);
     
     TList  *fOutput; //! list send on output slot 1
     TList  *fListCuts; // list of cuts
@@ -398,6 +399,7 @@ private:
     Double_t fHigherImpPar; // higher limit in impact parameter (um)
     
     Bool_t fReadMC;    //flag for access to MC
+    Bool_t fS0unweight;   //flag for unweighted definition of Spherocity
     Int_t  fMCOption;  // 0=keep all cand, 1=keep only signal, 2= keep only back
     Bool_t fisPPbData; // flag to run on pPb data (differen histogram bining)
     Bool_t fUseBit;    // flag to use bitmask

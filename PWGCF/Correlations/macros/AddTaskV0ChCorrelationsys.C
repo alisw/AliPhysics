@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskV0ChCorrelationsys task
 
-AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(TString taskName = "",float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskV0ChCorrelationsys* AddTaskV0ChCorrelationsys(TString taskName = "",int trigger,float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
   
  
 
@@ -29,10 +29,12 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
   // create task
 
   AliAnalysisTaskV0ChCorrelationsys* task = new AliAnalysisTaskV0ChCorrelationsys(taskName.Data(),  cenMin,cenMax,effCorr);  
-
+  task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetAnalysisMC(isMC);
   task->SetV0h(kTRUE);
   task->Sethh(kTRUE);
+  task->SetPileUpRead(kTRUE);
+
   //------------------------------Mixing part------------------------------
   task->SetMixingTracks(50000);
    task->SetPoolSize(200); 
