@@ -9465,7 +9465,7 @@ void AliHFSystErr::InitLctopK0S2017pp5TeVBDT() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",nBins,limits);
-  for(Int_t i=1;i<=nBins;i++) fNorm->SetBinContent(i,0.037); // 3.7% error
+  for(Int_t i=1;i<=nBins;i++) fNorm->SetBinContent(i,0.021); // 2.1% error on sigmaV0AND
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
