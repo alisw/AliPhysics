@@ -180,8 +180,6 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
   if(Cent>70.0 || Cent<0.01) return;
   ((TH1D*) fOutputList->FindObject("NeventsCentHist"))->Fill(Cent);//Nevents vs centrality
 
-  if(!fTreeSRedirector) return;
-
   if(fIsMC){
     int nMCTracks;
     if (!stack) nMCTracks = 0;
