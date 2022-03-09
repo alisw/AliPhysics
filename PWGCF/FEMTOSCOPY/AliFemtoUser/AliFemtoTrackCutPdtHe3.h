@@ -43,6 +43,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetfUsePtCut(int aUsePtCut);
 
 	void SetfOnlyTPCreject(int aOnlyTPCreject);
+	
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -87,6 +88,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	int fUsePtCut;
         // for Nsigma reject
 	int fOnlyTPCreject;
+	
+	// real reject, now, only for p
+	bool RejectFakeP(const AliFemtoTrack* track, float mom);
+	bool RejectFakeD(const AliFemtoTrack* track, float mom);
 
 };
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
