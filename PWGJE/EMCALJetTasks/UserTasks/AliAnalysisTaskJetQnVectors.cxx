@@ -32,9 +32,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
-    fHistResolutionV0A(nullptr),
-    fHistResolutionV0C(nullptr),
-    fHistResolutionTPC(nullptr),
+    fHistResolution1(nullptr),
+    fHistResolution2(nullptr),
+    fHistResolution3(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -79,9 +79,9 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
-    fHistResolutionV0A(nullptr),
-    fHistResolutionV0C(nullptr),
-    fHistResolutionTPC(nullptr),
+    fHistResolution1(nullptr),
+    fHistResolution2(nullptr),
+    fHistResolution3(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -123,6 +123,7 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     DefineOutput(1, TList::Class());
     DefineOutput(2, TH2F::Class());
     DefineOutput(3, TH2F::Class());
+    DefineOutput(4, TH3F::Class());
 }
 
 //________________________________________________________________________
@@ -135,9 +136,9 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 		if(!fOutputList->IsOwner()) {
 			delete fHistNEvents;
 			delete fHistCentrality;
-                        delete fHistResolutionV0A;
-                        delete fHistResolutionV0C;
-                        delete fHistResolutionTPC;
+                        delete fHistResolution1;
+                        delete fHistResolution2;
+                        delete fHistResolution3;
 			for(int iDet=0; iDet<3; iDet++) {
 				delete fHistEventPlaneTPC[iDet];
                                 delete fHistEventPlaneV0[iDet];
@@ -183,12 +184,12 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     fHistCentrality = new TH1F("fHistCentrality","Centrality distribution;;Number of events",100,0.,100.);
     fOutputList->Add(fHistCentrality);
     
-    fHistResolutionV0A = new TH2F("fHistResolutionV0A", "fHistResolutionV0A", 2000, 0., 2., 15000, 0., 15.);
-    fOutputList->Add(fHistResolutionV0A);
-    fHistResolutionV0C = new TH2F("fHistResolutionV0C", "fHistResolutionV0C", 2000, 0., 2., 15000, 0., 15.);
-    fOutputList->Add(fHistResolutionV0C);
-    fHistResolutionTPC = new TH2F("fHistResolutionTPC", "fHistResolutionTPC", 2000, 0., 2., 15000, 0., 15.);
-    fOutputList->Add(fHistResolutionTPC);
+    fHistResolution1 = new TH3F("fHistResolution1", "fHistResolution1", 200, -1., 1., 150, 0., 15., 100, 0., 100.);
+    fOutputList->Add(fHistResolution1);
+    fHistResolution2 = new TH3F("fHistResolution2", "fHistResolution2", 200, -1., 1., 150, 0., 15., 100, 0., 100.);
+    fOutputList->Add(fHistResolution2);
+    fHistResolution3 = new TH3F("fHistResolution3", "fHistResolution3", 200, -1., 1., 150, 0., 15., 100, 0., 100.);
+    fOutputList->Add(fHistResolution3);
 
     TString TPCNames[3] = {"FullTPC","PosTPC","NegTPC"};
     TString V0Names[3] = {"FullV0","V0A","V0C"};
@@ -341,13 +342,14 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 	fHistqnVsCentrV0[2]->Fill(cent,qnV0C);
 
     //fill histos with resolution
-    double resolutionV0A = sqrt(abs(cos(2*(PsinV0A-PsinV0C)))*abs(cos(2*(PsinV0A-PsinFullTPC)))/abs(cos(2*(PsinV0C-PsinFullTPC))));
-    double resolutionV0C = sqrt(abs(cos(2*(PsinV0C-PsinV0A)))*abs(cos(2*(PsinV0C-PsinFullTPC)))/abs(cos(2*(PsinV0A-PsinFullTPC))));
-    double resolutionTPC = sqrt(abs(cos(2*(PsinFullTPC-PsinV0A)))*abs(cos(2*(PsinFullTPC-PsinV0C)))/abs(cos(2*(PsinV0A-PsinV0C))));
+    double resolution1 = cos(2*(PsinV0C-PsinV0A));
+    double resolution2 = cos(2*(PsinV0C-PsinFullTPC));
+    double resolution3 = cos(2*(PsinV0A-PsinFullTPC));
 
-    fHistResolutionV0A->Fill(resolutionV0A, qnV0A);
-    fHistResolutionV0C->Fill(resolutionV0C, qnV0C);
-    fHistResolutionTPC->Fill(resolutionTPC, qnFullV0);
+    fHistResolution1->Fill(resolution1, qnV0C, cent);  //used to calculate resolution in post-processing
+    fHistResolution2->Fill(resolution2, qnV0C, cent);  //fill 2nd argument with value for detector being used
+    fHistResolution3->Fill(resolution3, qnV0C, cent);
+
 
     int runnumber = fAOD->GetRunNumber();
 
