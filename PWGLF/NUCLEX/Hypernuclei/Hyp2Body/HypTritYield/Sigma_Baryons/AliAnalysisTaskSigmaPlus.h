@@ -249,8 +249,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMinPairPi0Mass = 0.1;    
         Double_t              fMaxPairPi0Mass = 0.16;    
         Double_t              fMaxPairSigmaPA = 0.06;     
-        Double_t              fMinPairSigmaMass = 1.16;    
-        Double_t              fMaxPairSigmaMass = 1.22;    
+        Double_t              fMinPairSigmaMass = 1.14;    
+        Double_t              fMaxPairSigmaMass = 1.24;    
         Double_t              fMinPairProtonDCAxy = 0.005;    
         Double_t              fMaxPairkstar = 0.5;    
         void SetPairPi0MinMass(Double_t minpi0mass) {fMinPairPi0Mass = minpi0mass;}
