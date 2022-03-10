@@ -51,12 +51,12 @@ using namespace std;
 
 ClassImp(AliAnalysisTask_Phi_MC)
 
-AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC() : AliAnalysisTaskSE(), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0), fMCD(0), AODMCTrackArray(0), fMultSelection(0), fCurrent_SPH(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_RT(0), fCurrent_Run(0), fTrueEventMask(0), tParticle_0333(0), fTNParticle_0333(0), lQCParticle_0333(0), lAnalysisOutputList(0)  {
+AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC() : AliAnalysisTaskSE(), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0), fMCD(0), AODMCTrackArray(0), fMultSelection(0), fCurrent_SPH(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_RT(0), fCurrent_Run(0), fTrueEventMask(0), tParticle(0), fTNParticle(0), lQCParticle(0), lAnalysisOutputList(0)  {
             }
 
 //_____________________________________________________________________________
 
-            AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC(const char* name) : AliAnalysisTaskSE(name), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0), fMCD(0), AODMCTrackArray(0), fMultSelection(0), fCurrent_SPH(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_RT(0), fCurrent_Run(0), fTrueEventMask(0), tParticle_0333(0), fTNParticle_0333(0), lQCParticle_0333(0), lAnalysisOutputList(0) {
+            AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC(const char* name) : AliAnalysisTaskSE(name), kComputeSpherocity(0), kSpherocityPTWeight(0), kComputeRT(0), fIs_p_p(0), fIs_p_Pb(0), fIs_Pb_Pb(0), fRunName(0), fQC_Event_Enum_FLL(0), fMCD(0), AODMCTrackArray(0), fMultSelection(0), fCurrent_SPH(0), fCurrent_V0M(0), fCurrent_TRK(0), fCurrent_RT(0), fCurrent_Run(0), fTrueEventMask(0), tParticle(0), fTNParticle(0), lQCParticle(0), lAnalysisOutputList(0) {
                 // Define Input
                 DefineInput(0, TChain::Class());
 
@@ -70,10 +70,10 @@ AliAnalysisTask_Phi_MC::AliAnalysisTask_Phi_MC() : AliAnalysisTaskSE(), kCompute
 
             AliAnalysisTask_Phi_MC::~AliAnalysisTask_Phi_MC()                 {
                 // Deleting TLists
-                if  ( lQCParticle_0333 )    delete lQCParticle_0333;
+                if  ( lQCParticle )    delete lQCParticle;
                 if  ( lAnalysisOutputList ) delete lAnalysisOutputList;
                 // Deleting TTrees
-                if  ( tParticle_0333 )      delete tParticle_0333;
+                if  ( tParticle )      delete tParticle;
             }
 
 //_____________________________________________________________________________
@@ -86,50 +86,56 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
     PostData ( 1, lAnalysisOutputList );
     //
     //  --- Particle QC Histograms List
-    lQCParticle_0333    =   new TList();
-    lQCParticle_0333    ->  SetOwner( kTRUE );
+    lQCParticle    =   new TList();
+    lQCParticle    ->  SetOwner( kTRUE );
     //
     fQC_Event_Enum_FLL              = new TH1D("fQC_Event_Enum_FLL",       "Event Selection",                                  29, -0.5, 28.5);
     fQC_Event_Enum_FLL              ->  GetXaxis()  ->  SetTitle("");
     fQC_Event_Enum_FLL              ->  GetYaxis()  ->  SetTitle("Accepted Events");
     uSetEventCountLabels(fQC_Event_Enum_FLL);
-    lQCParticle_0333    ->  Add(fQC_Event_Enum_FLL);
+    lQCParticle    ->  Add(fQC_Event_Enum_FLL);
+    //
+    fQC_Event_Enum_E05              = new TH1D("fQC_Event_Enum_E05",       "Events with tracks in #eta < 0.5",                  5000,   0., 5000.);
+    fQC_Event_Enum_E05              ->  GetXaxis()  ->  SetTitle("N Tracks");
+    fQC_Event_Enum_E05              ->  GetYaxis()  ->  SetTitle("Accepted Events");
+    lQCParticle    ->  Add(fQC_Event_Enum_E05);
     //
     fQC_Event_Enum_E08              = new TH1D("fQC_Event_Enum_E08",       "Events with tracks in #eta < 0.8",                  5000,   0., 5000.);
     fQC_Event_Enum_E08              ->  GetXaxis()  ->  SetTitle("N Tracks");
     fQC_Event_Enum_E08              ->  GetYaxis()  ->  SetTitle("Accepted Events");
-    lQCParticle_0333    ->  Add(fQC_Event_Enum_E08);
+    lQCParticle    ->  Add(fQC_Event_Enum_E08);
     //
     fQC_Event_Enum_E10              = new TH1D("fQC_Event_Enum_E10",       "Events with tracks in #eta < 1.0",                  5000,   0., 5000.);
     fQC_Event_Enum_E10              ->  GetXaxis()  ->  SetTitle("N Tracks");
     fQC_Event_Enum_E10              ->  GetYaxis()  ->  SetTitle("Accepted Events");
-    lQCParticle_0333    ->  Add(fQC_Event_Enum_E10);
+    lQCParticle    ->  Add(fQC_Event_Enum_E10);
     //
     fQC_Event_Enum_V0A              = new TH1D("fQC_Event_Enum_V0A",       "Events with tracks in V0A acceptance",              5000,   0., 5000.);
     fQC_Event_Enum_V0A              ->  GetXaxis()  ->  SetTitle("N Tracks");
     fQC_Event_Enum_V0A              ->  GetYaxis()  ->  SetTitle("Accepted Events");
-    lQCParticle_0333    ->  Add(fQC_Event_Enum_V0A);
+    lQCParticle    ->  Add(fQC_Event_Enum_V0A);
     //
     fQC_Event_Enum_V0M              = new TH1D("fQC_Event_Enum_V0M",       "Events with tracks in V0M acceptance",              5000,   0., 5000.);
     fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("N Tracks");
     fQC_Event_Enum_V0M              ->  GetYaxis()  ->  SetTitle("Accepted Events");
-    lQCParticle_0333    ->  Add(fQC_Event_Enum_V0M);
+    lQCParticle    ->  Add(fQC_Event_Enum_V0M);
     //
-    PostData ( 2, lQCParticle_0333 );
+    PostData ( 2, lQCParticle );
     //
     //  --- Particle Tree
     OpenFile(3);
     //  --- --- Allocating tree and setting branches
-    tParticle_0333      =   new TTree   ( Form( "PhiCandidate_%s", fRunName.Data() ), "Data Tree for Phi Candidates" );
-    tParticle_0333      ->  Branch      ( "n0333",      &fTNParticle_0333,      "fTNParticle_0333/I");
-    tParticle_0333      ->  Branch      ( "E10",        &fCurrent_E10,          "fCurrent_E10/F" );
-    tParticle_0333      ->  Branch      ( "E05",        &fCurrent_E08,          "fCurrent_E08/F" );
-    tParticle_0333      ->  Branch      ( "V0A",        &fCurrent_V0A,          "fCurrent_V0A/F" );
-    tParticle_0333      ->  Branch      ( "V0M",        &fCurrent_V0M,          "fCurrent_V0M/F" );
-    tParticle_0333      ->  Branch      ( "Px",         &fTPx,                  "fTPx[fTNParticle_0333]/F" );
-    tParticle_0333      ->  Branch      ( "Py",         &fTPy,                  "fTPy[fTNParticle_0333]/F" );
-    tParticle_0333      ->  Branch      ( "Pz",         &fTPz,                  "fTPz[fTNParticle_0333]/F" );
-    PostData(3, tParticle_0333);
+    tParticle      =   new TTree   ( Form( "PhiCandidate_%s", fRunName.Data() ), "Data Tree for Phi Candidates" );
+    tParticle      ->  Branch      ( "nPart",       &fTNParticle,       "fTNParticle/I");
+    tParticle      ->  Branch      ( "Eta_10",      &fCurrent_E10,      "fCurrent_E10/F" );
+    tParticle      ->  Branch      ( "Eta_08",      &fCurrent_E08,      "fCurrent_E08/F" );
+    tParticle      ->  Branch      ( "Eta_05",      &fCurrent_E08,      "fCurrent_E05/F" );
+    tParticle      ->  Branch      ( "V0A",         &fCurrent_V0A,      "fCurrent_V0A/F" );
+    tParticle      ->  Branch      ( "V0M",         &fCurrent_V0M,      "fCurrent_V0M/F" );
+    tParticle      ->  Branch      ( "Px",          &fTPx,              "fTPx[fTNParticle]/F" );
+    tParticle      ->  Branch      ( "Py",          &fTPy,              "fTPy[fTNParticle]/F" );
+    tParticle      ->  Branch      ( "Pz",          &fTPz,              "fTPz[fTNParticle]/F" );
+    PostData(3, tParticle);
 }
 
 //_____________________________________________________________________________
@@ -145,14 +151,14 @@ void        AliAnalysisTask_Phi_MC::UserExec( Option_t* )                      {
         TParticle* fCurrent_Particle = static_cast<TParticle*>( fMCD->Particle(iTrack) );
         //
         //  Check it is a requested particle
-        if ( !fCurrent_Particle )                       continue;
-        if (  fCurrent_Particle->GetPdgCode() != 333 )  continue;
+        if ( !fCurrent_Particle )                               continue;
+        if (  fCurrent_Particle->GetPdgCode() != kParticlePDG ) continue;
         //
         //  --- Save Kinematics
-        fTPx[fTNParticle_0333]  =   fCurrent_Particle->Px();
-        fTPy[fTNParticle_0333]  =   fCurrent_Particle->Py();
-        fTPz[fTNParticle_0333]  =   fCurrent_Particle->Pz();
-        fTNParticle_0333++;
+        fTPx[fTNParticle]  =   fCurrent_Particle->Px();
+        fTPy[fTNParticle]  =   fCurrent_Particle->Py();
+        fTPz[fTNParticle]  =   fCurrent_Particle->Pz();
+        fTNParticle++;
     }
     // Saving output
     fFillTrees();
@@ -189,7 +195,8 @@ bool        AliAnalysisTask_Phi_MC::fIsEventCandidate ()                       {
     uFillEventEnumerate("Accepted");
     //
     //  --- Zero all counters
-    fTNParticle_0333    = 0;
+    fTNParticle         = 0;
+    fCurrent_E05        = 0;
     fCurrent_E08        = 0;
     fCurrent_E10        = 0;
     fCurrent_V0A        = 0;
@@ -213,20 +220,24 @@ bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           
         if ( !fCurrent_Particle->GetPDG())                  continue;
         if (  fCurrent_Particle->GetPDG()->Charge() == 0 )  continue;
         if ( !fMCD->IsPhysicalPrimary( iTrack ) )           continue;
+        if (  fCurrent_Particle->Pt() < 0.15 )              continue;
         //
-        //  --- #eta 0.8
+        //  --- Eta Nch Estimators
+        //  --- --- #eta 0.5
+        if (  fabs( fCurrent_Particle->Eta() ) < 0.5 )  fCurrent_E08++;
+        //  --- --- #eta 0.8
         if (  fabs( fCurrent_Particle->Eta() ) < 0.8 )  fCurrent_E08++;
-        //
-        //  --- #eta 1.0
+        //  --- --- #eta 1.0
         if (  fabs( fCurrent_Particle->Eta() ) < 1.0 )  fCurrent_E10++;
         //
         //  --- V0 Estimators
         //  --- --- V0A & M
-        if ( (fCurrent_Particle->Eta() < 5.1) && (fCurrent_Particle->Eta() > 2.8) )   { fCurrent_V0A++; fCurrent_V0M++; }
+        if ( (fCurrent_Particle->Eta() < +5.1) && (fCurrent_Particle->Eta() > +2.8) )   { fCurrent_V0A++; fCurrent_V0M++; }
         //  --- --- V0M
         if ( (fCurrent_Particle->Eta() < -1.7) && (fCurrent_Particle->Eta() > -3.7) )   fCurrent_V0M++;
     }
     //
+    fQC_Event_Enum_E05  ->  Fill( fCurrent_E05 );
     fQC_Event_Enum_E08  ->  Fill( fCurrent_E08 );
     fQC_Event_Enum_E10  ->  Fill( fCurrent_E10 );
     fQC_Event_Enum_V0A  ->  Fill( fCurrent_V0A );
@@ -247,14 +258,14 @@ void        AliAnalysisTask_Phi_MC::Terminate( Option_t* )                     {
 void        AliAnalysisTask_Phi_MC::fPostData( )                               {
     // Post-data for TLists
     PostData(1, lAnalysisOutputList );
-    PostData(2, lQCParticle_0333 );
-    if ( fTNParticle_0333 > 0 ) PostData(3, tParticle_0333 );
+    PostData(2, lQCParticle );
+    if ( fTNParticle > 0 ) PostData(3, tParticle );
 }
 
 //_____________________________________________________________________________
 
 void        AliAnalysisTask_Phi_MC::fFillTrees( )                              {
-    if ( fTNParticle_0333 > 0 ) tParticle_0333->Fill();
+    if ( fTNParticle > 0 ) tParticle->Fill();
 }
 
 //_____________________________________________________________________________
