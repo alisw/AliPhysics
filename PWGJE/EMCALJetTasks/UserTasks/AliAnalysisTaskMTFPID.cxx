@@ -95,6 +95,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
   , fkDeltaPrimeLowLimit(0.02)
   , fkDeltaPrimeUpLimit(40.0)
   , fConvolutedGausDeltaPrime(0x0)
+  , fConvolutedGaussLambda(2)
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
@@ -205,7 +206,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID()
 {
   // default Constructor
   
-  AliLog::SetClassDebugLevel("AliAnalysisTaskMTFPID", AliLog::kInfo); 
+  AliLog::SetClassDebugLevel("AliAnalysisTaskMTFPID", AliLog::kInfo);
   
   fConvolutedGausDeltaPrime = new TF1("convolutedGausDeltaPrime", this, &AliAnalysisTaskMTFPID::ConvolutedGaus,
                                       fkDeltaPrimeLowLimit, fkDeltaPrimeUpLimit,
@@ -271,6 +272,7 @@ AliAnalysisTaskMTFPID::AliAnalysisTaskMTFPID(const char *name)
   , fkDeltaPrimeLowLimit(0.02)
   , fkDeltaPrimeUpLimit(40.0)
   , fConvolutedGausDeltaPrime(0x0)
+  , fConvolutedGaussLambda(2.0)
   , fTOFmode(1)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
@@ -905,8 +907,16 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
                                        binsJt[nJtBins] };
   
   Double_t *xmax = fStoreAdditionalJetInformation? &xmaxJets[0] : &xmaxNoJets[0];
+
   
-  fConvolutedGausDeltaPrime->SetNpx(deltaPrimeNBins);
+  if (fUseConvolutedGaus) {
+    fConvolutedGausDeltaPrime->SetNpx(deltaPrimeNBins);
+    
+    if (fConvolutedGaussTransitionPars[1] < -998) {
+      // Transition parameters not yet set. In this case (can happen on grid) we have to recalculate transition parameters 
+      SetConvolutedGaussLambdaParameter(fConvolutedGaussLambda);
+    }
+  }
 
   if (fDoPID) {
     fhPIDdataAll = new THnSparseD("hPIDdataAll","", nBins, bins, xmin, xmax);
@@ -2831,7 +2841,7 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::GenerateDetectorResponse
     ownErrCode = SetParamsForConvolutedGaus(mean, sigma);
     if (ownErrCode == kError)
       return kError;
-    
+
     hProbDensity = fConvolutedGausDeltaPrime->GetHistogram();
     
     for (Int_t i = 0; i < nResponses; i++) {
@@ -3905,6 +3915,7 @@ Bool_t AliAnalysisTaskMTFPID::ProcessTrack(const AliVTrack* track, Int_t particl
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskMTFPID::SetConvolutedGaussLambdaParameter(Double_t lambda)
 {
+  fConvolutedGaussLambda = lambda;
   // Set the lambda parameter of the convolution to the desired value. Automatically
   // calculates the parameters for the transition (restricted) gauss -> convoluted gauss.
   fConvolutedGaussTransitionPars[2] = lambda;
@@ -4123,6 +4134,7 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGa
   par[0] = gausMean - fConvolutedGaussTransitionPars[0] * par[1] / fgkSigmaReferenceForTransitionPars;
   
   ErrorCode errCode = kNoErrors;
+  
   fConvolutedGausDeltaPrime->SetParameters(par);
   
   if(fDebug > 3)
@@ -4208,6 +4220,23 @@ AliAnalysisTaskMTFPID::ErrorCode AliAnalysisTaskMTFPID::SetParamsForConvolutedGa
   
     //  For small values of the maximum: Need more precision, since finer binning!
     rangeEnd = fConvolutedGausDeltaPrime->GetX(maximumFraction, upBoundSearchBoundLow, upBoundSearchBoundUp, (maxX < 0.4) ? 1e-5 : 0.001);
+    
+    if (!fDeltaPrimeAxis) {
+      const Int_t deltaPrimeNBins = 600;
+      Double_t deltaPrimeBins[deltaPrimeNBins + 1];
+
+      const Double_t fromLow = fkDeltaPrimeLowLimit;
+      const Double_t toHigh = fkDeltaPrimeUpLimit;
+      const Double_t factor = TMath::Power(toHigh/fromLow, 1./deltaPrimeNBins);
+
+      // Log binning for whole deltaPrime range
+      deltaPrimeBins[0] = fromLow;
+      for (Int_t i = 0 + 1; i <= deltaPrimeNBins; i++) {
+        deltaPrimeBins[i] = factor * deltaPrimeBins[i - 1];
+      }
+      
+      fDeltaPrimeAxis = new TAxis(deltaPrimeNBins, deltaPrimeBins);
+    }
     
     fConvolutedGausDeltaPrime->SetRange(rangeStart,rangeEnd);
     fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
