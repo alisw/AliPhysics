@@ -21,9 +21,9 @@ AliAnalysisTask_Phi_MC* AddAnalysisTask_Phi_MC( TString fName = "PhiCount_STD", 
 
     //  Task settings
     SetParticlePDG          ( kParticlePDG );
-    SetSPCompute            ( kParticlePDG );   // Not implemented
-    SetSPWighted            ( kParticlePDG );   // Not implemented
-    SetRTCompute            ( kParticlePDG );   // Not implemented
+    SetSPCompute            ( kFALSE );   // Not implemented
+    SetSPWighted            ( kFALSE );   // Not implemented
+    SetRTCompute            ( kFALSE );   // Not implemented
     
     // Input
     fAliAnlManager->ConnectInput(fAliAnlTask,0,fAliAnlManager->GetCommonInputContainer());
