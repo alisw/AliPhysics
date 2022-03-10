@@ -425,29 +425,28 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0dm00009f9730000dge0404000", "204c6400d63f02223c10", "0152103500000000");//kBoth 8 % GG shared 1, mas 0.02
 
     //V0M mult slices
-    } else if (trainConfig == 440) {//10% mult slices part I
-    cuts.AddCutPCMDalitz("n0110113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-10%
-    cuts.AddCutPCMDalitz("n1210113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//10-20%
-    cuts.AddCutPCMDalitz("n2310113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//20-30%
-    cuts.AddCutPCMDalitz("n3510113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//30-50%
-    } else if (trainConfig == 441) {//10% mult slices part II
-    cuts.AddCutPCMDalitz("n5710113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//50-70%
-    cuts.AddCutPCMDalitz("n7a10113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//70-100%
-    } else if (trainConfig == 442) {//1-5-10% mult slices
-    cuts.AddCutPCMDalitz("m0110113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-1%
-    cuts.AddCutPCMDalitz("m1510113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//1-5%
-    cuts.AddCutPCMDalitz("m5a10113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//5-10%
-    } else if (trainConfig == 443) {//0.01% mult slices
-    cuts.AddCutPCMDalitz("r0110113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-0.01%
-    cuts.AddCutPCMDalitz("r1510113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.01-0.05%
-    cuts.AddCutPCMDalitz("r5a10113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.05-0.1%
-    cuts.AddCutPCMDalitz("r0a10113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-1%
-  } else if (trainConfig == 444) {//0.01% mult slices, V0M high mult triggered
-    cuts.AddCutPCMDalitz("r0176113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-0.01%      V0M high mult trigger
-    cuts.AddCutPCMDalitz("r1576113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.01-0.05%   V0M high mult trigger
-    cuts.AddCutPCMDalitz("r5a76113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.05-0.1%    V0M high mult trigger
-    cuts.AddCutPCMDalitz("r0a76113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-1%         V0M high mult trigger
-
+  } else if (trainConfig == 440) {//10% mult slices part I Update
+    cuts.AddCutPCMDalitz("n0115113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-10%
+    cuts.AddCutPCMDalitz("n1215113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//10-20%
+    cuts.AddCutPCMDalitz("n2315113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//20-30%
+    cuts.AddCutPCMDalitz("n3515113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//30-50%
+  } else if (trainConfig == 441) {//10% mult slices part II Update
+    cuts.AddCutPCMDalitz("n5715113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//50-70%
+    cuts.AddCutPCMDalitz("n7a15113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//70-100%
+  } else if (trainConfig == 442) {//1-5-10% mult slices Update
+    cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-1%
+    cuts.AddCutPCMDalitz("m1515113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//1-5%
+    cuts.AddCutPCMDalitz("m5a15113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//5-10%
+  } else if (trainConfig == 443) {//0.01% mult slices
+    cuts.AddCutPCMDalitz("r0115113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-0.01%
+    cuts.AddCutPCMDalitz("r1515113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.01-0.05%
+    cuts.AddCutPCMDalitz("r5a15113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.05-0.1%
+    cuts.AddCutPCMDalitz("r0a15113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-1%
+  } else if (trainConfig == 444) {//0.01% mult slices, V0M high mult triggered Update
+    cuts.AddCutPCMDalitz("r0178113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-0.01%      V0M high mult trigger
+    cuts.AddCutPCMDalitz("r1578113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.01-0.05%   V0M high mult trigger
+    cuts.AddCutPCMDalitz("r5a78113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0.05-0.1%    V0M high mult trigger
+    cuts.AddCutPCMDalitz("r0a78113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-1%         V0M high mult trigger
   } else if (trainConfig == 445) {//10% mult slices 5 TeV Mike
     cuts.AddCutPCMDalitz("n0210113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//0-20%
     cuts.AddCutPCMDalitz("n2410113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//20-40%
@@ -483,6 +482,16 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("p2410113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//20-40%
     cuts.AddCutPCMDalitz("p4610113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//40-60%
     cuts.AddCutPCMDalitz("p6a10113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");//60-100%
+
+  } else if (trainConfig == 459) {//Selection of multiplicties for efficiency studies
+    cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000"); //0-1%
+    cuts.AddCutPCMDalitz("m5a15113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000"); //5-10%
+    cuts.AddCutPCMDalitz("n2315113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000"); //20-30%
+    cuts.AddCutPCMDalitz("n7a15113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000"); //70-100%
+
+  } else if (trainConfig == 460) {//Exclusive MC train with no Cuts
+    cuts.AddCutPCMDalitz("00115113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");// MC train with no cut in the event
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
