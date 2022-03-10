@@ -697,7 +697,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPhi = track->Phi();
       Double_t trigCharge = track->Charge();
       Double_t trigEff = 1.0;
-      if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      if(fUseEfficiency) {
+        trigEff = GetEff(trigPt, spec, trigEta);
+        if(trigEff < 0.001) continue;
+      }
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
@@ -712,7 +715,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assCharge = trackAss->Charge();
         Double_t assEff = 1.0;
-        if(fUseEfficiency) assEff = GetEff(assPt, 0, assEta);
+        if(fUseEfficiency) {
+          assEff = GetEff(assPt, 0, assEta);
+          if(assEff < 0.001) continue;
+        }
 
         if(!fIsMC && spec < 4 && trackAOD->GetID() == trackAODAss->GetID()) continue;
 
@@ -756,7 +762,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
       Double_t trigEff = 1.0;
-      if(fUseEfficiency) trigEff = GetEff(trigPt, spec, trigEta);
+      if(fUseEfficiency) {
+        trigEff = GetEff(trigPt, spec, trigEta);
+        if(trigEff < 0.001) continue;
+      }
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
