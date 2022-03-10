@@ -38,7 +38,6 @@
 class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
 
  public:
-  AliEPDependentDiHadronOnTheFlyMCTask();
   AliEPDependentDiHadronOnTheFlyMCTask(const char* name);
   virtual ~AliEPDependentDiHadronOnTheFlyMCTask();
 

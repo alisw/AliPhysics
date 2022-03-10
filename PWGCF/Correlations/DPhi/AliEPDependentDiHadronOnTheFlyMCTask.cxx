@@ -32,33 +32,6 @@
 ClassImp(AliEPDependentDiHadronOnTheFlyMCTask)
 
 
-AliEPDependentDiHadronOnTheFlyMCTask::AliEPDependentDiHadronOnTheFlyMCTask():
-AliAnalysisTaskSE(),
-fListOutputHistograms(0x0),
-fHistNoEvents(0x0),
-fHistImpactVsMultiplicity(0x0),
-fProfileFractionPrimaryTracks(0x0),
-fHistReactionPlane(0x0),
-fHistEventReactionPlane(0x0),
-fHistTrueEventReactionPlane(0x0),
-fHistSingleParticles(0x0),
-fHistos(0x0),
-fHistosIn(0x0),
-fHistosMid(0x0),
-fHistosOut(0x0),
-fEtaMinV0A(2.8),
-fEtaMaxV0A(5.1),
-fEtaMinV0C(-3.7),
-fEtaMaxV0C(-1.7),
-fTrackEtaCut(1e9),
-fNoSectorsV0(8),
-fCentralityEstimator("V0M")
-{
-  // Default constructor, used for ROOT I/O
-  // Don't allocate memory; don't use DefineOutput
-}
-
-
 AliEPDependentDiHadronOnTheFlyMCTask::AliEPDependentDiHadronOnTheFlyMCTask(const char* name):
 AliAnalysisTaskSE(name),
 fListOutputHistograms(0x0),
