@@ -492,6 +492,60 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   } else if (trainConfig == 460) {//Exclusive MC train with no Cuts
     cuts.AddCutPCMDalitz("00115113", "0dm00009f9730000dge0404000", "204c6400863f02223710", "0152103500000000");// MC train with no cut in the event
 
+///////////////////////////////// Multiplicity selection, ITS + TRD photons 0-100% ///////////////////////////
+} else if (trainConfig == 461) {// Systematics
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000dge0474000", "0152103500000000"); // Multiplicity selection, ITS + TRD photons
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000dge0674000", "0152103500000000"); // cosPointing angle 0.9
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000dge0374000", "0152103500000000"); // cosPointing angle 0.75
+  cuts.AddCutPCMDalitz("00015113", "0dm0000969730000dge0474000", "0152103500000000"); // photons nsig electron -4,5
+
+} else if (trainConfig == 462) {// Systematics
+  cuts.AddCutPCMDalitz("00015113", "0dm0000939730000dge0474000", "0152103500000000"); // photons nsig electron -2.5,4
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f5730000dge0474000", "0152103500000000"); // photons nsig pion 2,-10
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f1730000dge0474000", "0152103500000000"); // photons nsig pion 0,-10
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000age0474000", "0152103500000000"); // qT<0.110pT (2D) alpha<0.99
+
+} else if (trainConfig == 463) {// Systematics
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000ege0474000", "0152103500000000"); // qT<0.130pT (2D) alpha<0.99
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000dfe0474000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2)
+  cuts.AddCutPCMDalitz("00015113", "0dm00009f9730000dgg0474000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2)
+
+///////////////////////////////// Multiplicity selection, ITS + TRD photons 50-100% ///////////////////////////
+} else if (trainConfig == 461) {// Systematics
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000dge0474000", "0152103500000000"); // Multiplicity selection, ITS + TRD photons
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000dge0674000", "0152103500000000"); // cosPointing angle 0.9
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000dge0374000", "0152103500000000"); // cosPointing angle 0.75
+  cuts.AddCutPCMDalitz("n5a15113", "0dm0000969730000dge0474000", "0152103500000000"); // photons nsig electron -4,5
+
+} else if (trainConfig == 462) {// Systematics
+  cuts.AddCutPCMDalitz("n5a15113", "0dm0000939730000dge0474000", "0152103500000000"); // photons nsig electron -2.5,4
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f5730000dge0474000", "0152103500000000"); // photons nsig pion 2,-10
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f1730000dge0474000", "0152103500000000"); // photons nsig pion 0,-10
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000age0474000", "0152103500000000"); // qT<0.110pT (2D) alpha<0.99
+
+} else if (trainConfig == 463) {// Systematics
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000ege0474000", "0152103500000000"); // qT<0.130pT (2D) alpha<0.99
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000dfe0474000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2)
+  cuts.AddCutPCMDalitz("n5a15113", "0dm00009f9730000dgg0474000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2)
+
+///////////////////////////////// Multiplicity selection, ITS + TRD photons 0-1% ///////////////////////////
+} else if (trainConfig == 461) {// Systematics
+  cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dge0474000", "0152103500000000"); // Multiplicity selection, ITS + TRD photons
+  cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dge0674000", "0152103500000000"); // cosPointing angle 0.9
+  cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dge0374000", "0152103500000000"); // cosPointing angle 0.75
+  cuts.AddCutPCMDalitz("m0115113", "0dm0000969730000dge0474000", "0152103500000000"); // photons nsig electron -4,5
+
+} else if (trainConfig == 462) {// Systematics
+  cuts.AddCutPCMDalitz("m015113", "0dm0000939730000dge0474000", "0152103500000000"); // photons nsig electron -2.5,4
+  cuts.AddCutPCMDalitz("m015113", "0dm00009f5730000dge0474000", "0152103500000000"); // photons nsig pion 2,-10
+  cuts.AddCutPCMDalitz("m015113", "0dm00009f1730000dge0474000", "0152103500000000"); // photons nsig pion 0,-10
+  cuts.AddCutPCMDalitz("m015113", "0dm00009f9730000age0474000", "0152103500000000"); // qT<0.110pT (2D) alpha<0.99
+
+} else if (trainConfig == 463) {// Systematics
+  cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000ege0474000", "0152103500000000"); // qT<0.130pT (2D) alpha<0.99
+  cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dfe0474000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2)
+  cuts.AddCutPCMDalitz("m0115113", "0dm00009f9730000dgg0474000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2)
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////  6XX for lowB,    65X  lowB and MBW ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
