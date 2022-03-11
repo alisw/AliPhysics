@@ -120,7 +120,7 @@ class AliAnalysisTaskCentralJpsi_DG : public AliAnalysisTaskSE
         AliAnalysisTaskCentralJpsi_DG(const AliAnalysisTaskCentralJpsi_DG&); // not implemented
         AliAnalysisTaskCentralJpsi_DG& operator=(const AliAnalysisTaskCentralJpsi_DG&); // not implemented
 
-        ClassDef(AliAnalysisTaskCentralJpsi_DG, 2);
+        ClassDef(AliAnalysisTaskCentralJpsi_DG, 3);
 };
 
 #endif
