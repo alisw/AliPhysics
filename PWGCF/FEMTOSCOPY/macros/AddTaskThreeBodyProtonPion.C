@@ -11,7 +11,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMass = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false ){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMass = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false, bool UseFemtoPionCuts = false ){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -55,57 +55,69 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC
 
   // Track Cuts for Pions  =================================================================================================================
 
-  AliFemtoDreamTrackCuts *TrackCutsPion=new AliFemtoDreamTrackCuts();
-  TrackCutsPion->SetIsMonteCarlo(isMC);
-  TrackCutsPion->SetCutCharge(1);
-  TrackCutsPion->SetPtRange(0.14, 4.0);
-  TrackCutsPion->SetEtaRange(-0.8, 0.8);
-  TrackCutsPion->SetNClsTPC(80);
-  // Not mention in AN oder Indico
-  TrackCutsPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-  TrackCutsPion->SetFilterBit(128);//96); // Filterbit 5+6
-  TrackCutsPion->SetDCAVtxZ(0.3);
-  TrackCutsPion->SetDCAVtxXY(0.3);
-  // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
+  AliFemtoDreamTrackCuts *TrackCutsPion = NULL;
+  AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
-  // FOR NOW OF BEACUSE OF MAX's INFORMATION
-  //TrackCutsPion->SetCutSharedCls(true);
+  if(UseFemtoPionCuts)
+  {
+    TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+    TrackCutsPion->SetFilterBit(96);
+    TrackCutsPion->SetCutCharge(1);
+    TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+    TrackCutsAntiPion->SetFilterBit(96);
+    TrackCutsAntiPion->SetCutCharge(-1);
 
-  TrackCutsPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
-  TrackCutsPion->SetPID(AliPID::kPion, 0.5);
-  TrackCutsPion->SetRejLowPtPionsTOF(false);
-  TrackCutsPion->SetMinimalBooking(false);
-  //this checks if the sigma of the wanted hypothesis is the smallest, and if
-  //another particle has a smaller sigma, the track is rejected.
-  // Not mention in AN oder Indico
-  //TrackCutsPion->SetCutSmallestSig(true);
-  TrackCutsPion->SetPlotDCADist(true);
+  } else {
 
- //The same things for negative pions
-  AliFemtoDreamTrackCuts *TrackCutsAntiPion=new AliFemtoDreamTrackCuts();
-  TrackCutsAntiPion->SetIsMonteCarlo(isMC);
-  TrackCutsAntiPion->SetCutCharge(-1);
-  TrackCutsAntiPion->SetPtRange(0.14, 4.0);
-  TrackCutsAntiPion->SetEtaRange(-0.8, 0.8);
-  TrackCutsAntiPion->SetNClsTPC(80);
-  TrackCutsAntiPion->SetDCAReCalculation(true);
+	TrackCutsPion = new AliFemtoDreamTrackCuts();
+	TrackCutsPion->SetIsMonteCarlo(isMC);
+	TrackCutsPion->SetCutCharge(1);
+	TrackCutsPion->SetPtRange(0.14, 4.0);
+	TrackCutsPion->SetEtaRange(-0.8, 0.8);
+	TrackCutsPion->SetNClsTPC(80);
+	// Not mention in AN oder Indico
+	TrackCutsPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+	TrackCutsPion->SetFilterBit(128);//96); // Filterbit 5+6
+	TrackCutsPion->SetDCAVtxZ(0.3);
+	TrackCutsPion->SetDCAVtxXY(0.3);
+	// Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
 
-  // FOR NOW OF BEACUSE OF MAX's INFORMATION
-  //TrackCutsAntiPion->SetCutSharedCls(true);}
+	// FOR NOW OF BEACUSE OF MAX's INFORMATION
+	//TrackCutsPion->SetCutSharedCls(true);
 
-  TrackCutsAntiPion->SetNClsTPC(80);
-  TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5);
-  TrackCutsAntiPion->SetRejLowPtPionsTOF(false);
-  TrackCutsAntiPion->SetMinimalBooking(false);
-  //TrackCutsAntiPion->SetCutSmallestSig(true);
-  TrackCutsAntiPion->SetPlotDCADist(true);
+	TrackCutsPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
+	TrackCutsPion->SetPID(AliPID::kPion, 0.5);
+	TrackCutsPion->SetRejLowPtPionsTOF(false);
+	TrackCutsPion->SetMinimalBooking(false);
+	//this checks if the sigma of the wanted hypothesis is the smallest, and if
+	//another particle has a smaller sigma, the track is rejected.
+	// Not mention in AN oder Indico
+	//TrackCutsPion->SetCutSmallestSig(true);
+	TrackCutsPion->SetPlotDCADist(true);
 
-  TrackCutsAntiPion->SetFilterBit(128);//96);
-  TrackCutsAntiPion->SetDCAVtxZ(0.3);
-  TrackCutsAntiPion->SetDCAVtxXY(0.3);
 
-  //TrackCutsAntiPion->SetCutSharedCls(true);
+	TrackCutsAntiPion = new AliFemtoDreamTrackCuts();
+	TrackCutsAntiPion->SetIsMonteCarlo(isMC);
+	TrackCutsAntiPion->SetCutCharge(-1);
+	TrackCutsAntiPion->SetPtRange(0.14, 4.0);
+	TrackCutsAntiPion->SetEtaRange(-0.8, 0.8);
+	TrackCutsAntiPion->SetNClsTPC(80);
+	TrackCutsAntiPion->SetDCAReCalculation(true);
 
+	// FOR NOW OF BEACUSE OF MAX's INFORMATION
+	//TrackCutsAntiPion->SetCutSharedCls(true);}
+
+	TrackCutsAntiPion->SetNClsTPC(80);
+	TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5);
+	TrackCutsAntiPion->SetRejLowPtPionsTOF(false);
+	TrackCutsAntiPion->SetMinimalBooking(false);
+	//TrackCutsAntiPion->SetCutSmallestSig(true);
+	TrackCutsAntiPion->SetPlotDCADist(true);
+
+	TrackCutsAntiPion->SetFilterBit(128);//96);
+	TrackCutsAntiPion->SetDCAVtxZ(0.3);
+	TrackCutsAntiPion->SetDCAVtxXY(0.3);
+  }
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
@@ -115,8 +127,6 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC
     TrackCutsAntiPion->SetMinimalBooking(true);
     //GANESHA add here stuff for v0
   }
-
-
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto", false);
