@@ -104,15 +104,16 @@ fLargeMultRange(2000),
 fRebinFactor(1),
 fkNBBins(1),
 fkNNpartBins(1),
-fkNEtaBins(800),
+fkNEtaBins(1),
 fkSelectINELgtZERO(kTRUE),
-fkALICE3SiliconMode(kTRUE),
+fkALICE3SiliconMode(kFALSE),
 fkWideRapiditySpeciesStudy(kFALSE),
 fkDoImpactParameterStudy(kFALSE),
 fkDoNpartStudy(kFALSE),
 fkDoNMPIStudy(kTRUE),
 fkDoRapidityStudy(kFALSE),
 fkMinimumMultiplicity(-1),
+fCheckOriginThirdArgument(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -213,13 +214,14 @@ fkNBBins(lNBBins),
 fkNNpartBins(lNNpartBins),
 fkNEtaBins(lNEtaBins),
 fkSelectINELgtZERO(kTRUE),
-fkALICE3SiliconMode(kTRUE),
+fkALICE3SiliconMode(kFALSE),
 fkWideRapiditySpeciesStudy(kFALSE),
 fkDoImpactParameterStudy(kFALSE),
 fkDoNpartStudy(kFALSE),
 fkDoNMPIStudy(kTRUE),
 fkDoRapidityStudy(kFALSE),
 fkMinimumMultiplicity(-1),
+fCheckOriginThirdArgument(kTRUE),
 fHistV0MMult(0),
 fHistSPDMult(0),
 fHistNchVsV0MMult(0),
@@ -1018,15 +1020,15 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if( fMinPtTrigger < gpt &&  gpt < fMaxPtTrigger && fMinEtaTrigger < geta && geta < fMaxEtaTrigger){
       Bool_t lGoodD0 = kTRUE, lGoodXiC = kTRUE, lGoodXiB = kTRUE;
       if(lThisParticle->GetPdgCode()==421) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodD0 = kFALSE;
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)!=4 ) lGoodD0 = kFALSE;
         if ( lGoodD0 ) lD0trigger[lND0trigger++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()==4232) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodXiC = kFALSE;
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)!=4 ) lGoodXiC = kFALSE;
         if ( lGoodXiC ) lXiC[lNXiC++] = iCurrentLabelStack;
       }
       if(lThisParticle->GetPdgCode()==5132) {
-        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) lGoodXiB = kFALSE;
+        if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)!=4 ) lGoodXiB = kFALSE;
         if ( lGoodXiB ) lXiB[lNXiB++] = iCurrentLabelStack;
       }
     }
@@ -1034,10 +1036,10 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if( TMath::Abs(geta)<4.0 ){
       if(lThisParticle->GetPdgCode()== 2212 && lIsPhysicalPrimary ) lProtons[lNProtons++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()==-2212 && lIsPhysicalPrimary ) lAntiProtons[lNAntiProtons++] = iCurrentLabelStack;
-      if(lThisParticle->GetPdgCode()==  421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0[lND0++] = iCurrentLabelStack;
-      if(lThisParticle->GetPdgCode()== -421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lD0bar[lND0bar++] = iCurrentLabelStack;
-      if(lThisParticle->GetPdgCode()== +521 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lBPlus[lNBPlus++] = iCurrentLabelStack;
-      if(lThisParticle->GetPdgCode()== -521 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)==4 ) lBMinus[lNBMinus++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()==  421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)==4 ) lD0[lND0++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()== -421 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)==4 ) lD0bar[lND0bar++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()== +521 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)==4 ) lBPlus[lNBPlus++] = iCurrentLabelStack;
+      if(lThisParticle->GetPdgCode()== -521 && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)==4 ) lBMinus[lNBMinus++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()== +321 && lIsPhysicalPrimary ) lKPlus[lNKPlus++] = iCurrentLabelStack;
       if(lThisParticle->GetPdgCode()== -321 && lIsPhysicalPrimary ) lKMinus[lNKMinus++] = iCurrentLabelStack;
     }
@@ -1081,7 +1083,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
       if( lThisPDG == lPDGCodes[ih] ) {
         //Check if primary (if needed) and if not don't use this particle
         if( lCheckIsPhysicalPrimary[ih] == kTRUE && lIsPhysicalPrimary == kFALSE ) continue;
-        if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+        if( lCheckHFFeeddown[ih] == kTRUE && AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)!=4 ) continue;
         //Fill Histograms
         if(fHistEta[ih] && lDistanceFromZero > 1e-12 ) fHistEta[ih] -> Fill ( lPart -> Eta() );
         if(fHistEtaTriggeredMeson[ih] && lND0trigger > 0 && lDistanceFromZero > 1e-12 ) fHistEtaTriggeredMeson[ih] -> Fill ( lPart -> Eta(), lThisPt );
@@ -1699,7 +1701,7 @@ void AliAnalysisTaskMCPredictions::UserExec(Option_t *)
     if( gpt  < fMinPtTrigger  || fMaxPtTrigger  < gpt  ) continue;
     if( geta < fMinEtaTrigger || fMaxEtaTrigger < geta ) continue;
     
-    if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, kTRUE)!=4 ) continue;
+    if( AliVertexingHFUtils::CheckOrigin(lMCevent, lMCPart, fCheckOriginThirdArgument)!=4 ) continue;
     
     if(lThisParticle->GetPdgCode()==421) {
       //Add to buffer

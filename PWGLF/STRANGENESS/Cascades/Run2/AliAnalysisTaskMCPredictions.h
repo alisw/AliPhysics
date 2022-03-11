@@ -75,6 +75,7 @@ public:
   void SetDoRapidityStudy ( Bool_t lOpt = kTRUE) { fkDoRapidityStudy = lOpt; }
   
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
+  void SetCheckOriginThirdArgument ( Bool_t lVal ) { fCheckOriginThirdArgument = lVal; } ; 
   
   //---------------------------------------------------------------------------------------
   
@@ -104,7 +105,9 @@ private:
   Bool_t fkDoNpartStudy;
   Bool_t fkDoNMPIStudy;
   Bool_t fkDoRapidityStudy;
-  Long_t fkMinimumMultiplicity; 
+  Long_t fkMinimumMultiplicity;
+  
+  Bool_t fCheckOriginThirdArgument;
   
   //Basic Histograms for counting events as a function of V0M percentiles...
   TH1D *fHistV0MMult; //!
