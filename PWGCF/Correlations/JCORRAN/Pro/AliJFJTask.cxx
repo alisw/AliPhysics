@@ -235,7 +235,8 @@ void AliJFJTask::UserCreateOutputObjects()
                       fMinJetPt,
                       fdeltaPhiCut,
                       fmatchingR,
-                      0.0); //Tracking ineff only for det level.
+                      0.0, //Tracking ineff only for det level.
+                      false); //Todo: implement the C*rho method flag for this code as well.
 #endif
     // Load Custom Configuration and parameters
     // override values with parameters

@@ -49,7 +49,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         void SetDijetMBinsHistos( TString sMBins ) {
             fSMBins = sMBins;
             std::vector<TString> ar = Tokenize( sMBins, "\t ,");
-            fnNewBinsDijet1=ar.size();
+            fnNewBinsDijet1=ar.size()-1;
             for (unsigned i=0; i<ar.size(); i++) {
                 dijetMBin.push_back(ar.at(i).Atof());
             }
@@ -90,6 +90,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_rhoLinHighPt;  //! // for event pt density when high pt jets in event. Linear bins
         AliJTH1D fh_rhomLin;       //! // for event mt density. Linear bins
         AliJTH1D fh_rhomLinHighPt; //! // for event mt density when high pt jets in event. Linear bins
+        AliJTH1D fh_coveredRatio;        //! // for event pt density
 
         AliJTH1D fh_jetPt;      //! // for pt dist of jets
         AliJTH1D fh_jetPt_ALICE;//! // for pt dist of jets, with ALICE bins

@@ -56,7 +56,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
         void    SetDijetMBins( TString dijetMBins ) {fsDijetMBins=dijetMBins; }
         void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
-        void    SetBGSubtrSettings(int ktScheme, int antiktScheme, Bool_t usePionMass, Bool_t useDeltaPhiBGSubtr) {fktScheme=ktScheme; fantiktScheme=antiktScheme; fusePionMass=usePionMass; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; }
+        void    SetBGSubtrSettings(int ktScheme, int antiktScheme, Bool_t usePionMass, Bool_t useDeltaPhiBGSubtr, Bool_t luseCrho) {fktScheme=ktScheme; fantiktScheme=antiktScheme; fusePionMass=usePionMass; fuseDeltaPhiBGSubtr=useDeltaPhiBGSubtr; bUseCrho=luseCrho;}
         void    SetUnfoldingJetSets(AliJCDijetAna::jetClasses lJetClassTrue, AliJCDijetAna::jetClasses lJetClassDet) { iUnfJetClassTrue = lJetClassTrue; iUnfJetClassDet = lJetClassDet;}
         Bool_t  IsMC()const{ return fIsMC; }
         void    SetIsMC(Bool_t b) { fIsMC=b; }
@@ -131,6 +131,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         int fDetMCFlag;
         AliJCDijetAna::jetClasses iUnfJetClassTrue;
         AliJCDijetAna::jetClasses iUnfJetClassDet;
+        bool bUseCrho;
 
         ClassDef(AliJCDijetTask, 1); 
 };

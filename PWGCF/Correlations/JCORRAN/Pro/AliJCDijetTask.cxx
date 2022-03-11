@@ -258,6 +258,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
     cout << "Tracking ineff for DetMC:   " << ftrackingIneff << endl;
     cout << "Unfolding with true MC set: " << iUnfJetClassTrue << endl;
     cout << "Unfolding with det  MC set: " << iUnfJetClassDet << endl;
+    cout << "Use C-rho estimation:       " << bUseCrho << endl;
     cout << "Event selection flag:       " << flags << endl;
     cout << endl;
 
@@ -282,7 +283,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fMinJetPt,
                       fdeltaPhiCut,
                       fmatchingR,
-                      0.0); //Tracking ineff only for det level.
+                      0.0, //Tracking ineff only for det level.
+                      bUseCrho);
 
     if(fIsMC) {
         fanaMC->SetSettings(fDebug,
@@ -300,7 +302,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fMinJetPt,
                             fdeltaPhiCut,
                             fmatchingR,
-                            ftrackingIneff);
+                            ftrackingIneff,
+                            bUseCrho);
     }
 
     // Save information about the settings used.

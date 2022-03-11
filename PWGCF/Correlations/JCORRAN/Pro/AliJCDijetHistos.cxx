@@ -51,6 +51,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_rhoLinHighPt(),
     fh_rhomLin(),
     fh_rhomLinHighPt(),
+    fh_coveredRatio(),
     fh_jetPt(),
     fh_jetPt_ALICE(),
     fh_jetPtLeadSublead_ALICE(),
@@ -147,6 +148,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_rhoLinHighPt(obj.fh_rhoLinHighPt),
     fh_rhomLin(obj.fh_rhomLin),
     fh_rhomLinHighPt(obj.fh_rhomLinHighPt),
+    fh_coveredRatio(obj.fh_coveredRatio),
     fh_jetPt(obj.fh_jetPt),
     fh_jetPt_ALICE(obj.fh_jetPt_ALICE),
     fh_jetPtLeadSublead_ALICE(obj.fh_jetPtLeadSublead_ALICE),
@@ -379,6 +381,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_rhomLinHighPt
         << TH1D("h_rhomLinHighPt", "h_rhomLinHighPt", 501, -0.1, 100.1)
+        << fHistCentBin
+        << "END" ;
+
+    fh_coveredRatio
+        << TH1D("h_coveredRatio", "h_coveredRatio", 101, 0, 1.01)
         << fHistCentBin
         << "END" ;
 
