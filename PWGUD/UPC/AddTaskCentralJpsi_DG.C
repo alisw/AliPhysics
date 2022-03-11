@@ -1,6 +1,5 @@
-AliAnalysisTaskCentralJpsi_DG *AddTaskCentralJpsi_DG()
+AliAnalysisTaskCentralJpsi_DG *AddTaskCentralJpsi_DG(Bool_t neutral, const char* suffix = "")
 {
-    TString name = "CentralJpsi2018";
     // get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -12,24 +11,28 @@ AliAnalysisTaskCentralJpsi_DG *AddTaskCentralJpsi_DG()
         Error("AddTaskCentralJpsi_DG", "This task requires an input event handler");
         return 0;
     }
+    // check if this is an analysis of MC data 
     Bool_t isMC = kFALSE;
     if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
 
-    // create task
-    AliAnalysisTaskCentralJpsi_DG* task = new AliAnalysisTaskCentralJpsi_DG(name.Data());
+    // create the task and configure it
+    TString combinedName;
+    combinedName.Form("fOutputList%s", suffix);
+    AliAnalysisTaskCentralJpsi_DG* task = new AliAnalysisTaskCentralJpsi_DG(combinedName.Data());
     task->SetIsMC(isMC);
-    // add task to the manager
+    task->SetIsNeutral(neutral);
+    // add the task to the analysis manager
     mgr->AddTask(task);
 
     // get the name of the file that is created and create subfolder
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":AnalysisOutput";      
 
+    // create container for output
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(combinedName, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data());
+    // connect input and output containers with the manager
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("fTreeJpsi", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer("fTreeJpsiMCGen", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer("fOutputList", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,coutput);
 
     return task;
 }
