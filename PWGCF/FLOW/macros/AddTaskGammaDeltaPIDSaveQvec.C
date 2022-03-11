@@ -6,7 +6,7 @@ void AddTaskGammaDeltaPIDSaveQvec(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Dou
 
   // ====================================================================
   printf("===================================================================================\n");
-  printf("                   Initialising Task: AddTaskGammaDeltaPID                         \n");
+  printf("           Initialising Task: AliAnalysisTaskGammaDeltaPIDSaveQvec                 \n");
   printf("===================================================================================\n");
 
   TGrid::Connect("alien://");                                //@Shi
