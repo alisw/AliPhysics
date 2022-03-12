@@ -317,7 +317,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   static const Int_t fgkNSectors = 10;     
 
   /// Total number basic cluster cuts
-  static const Int_t fgkNClusterCuts = 12 ;
+  static const Int_t fgkNClusterCuts = 13 ;
   TH1F * fhClusterCutsE [fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, E
   TH1F * fhClusterCutsPt[fgkNClusterCuts];          //!<! control histogram on the different photon selection cuts, pT
   TH2F * fhClusterCutsECen [fgkNClusterCuts];       //!<! control histogram on the different photon selection cuts, E vs centrality
@@ -528,9 +528,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEtaPrimMCAcc[fgkNmcPrimTypes];           //!<! Phi of generted photon, in calorimeter acceptance
   TH2F * fhYPrimMCAcc  [fgkNmcPrimTypes];           //!<! Rapidity of generated photon, in calorimeter acceptance
   
-  TH2F * fhPhiPrimMCPartonicPhoton;                 //!<! Phi of generted partonic photon, in calorimeter acceptance
-  TH2F * fhEtaPrimMCPartonicPhoton;                 //!<! Phi of generted partonic photon, in calorimeter acceptance
-  TH2F * fhYPrimMCPartonicPhoton  ;                 //!<! Rapidity of generated partonic photon, in calorimeter acceptance
+//  TH2F * fhPhiPrimMCPartonicPhoton;                 //!<! Phi of generted partonic photon, in calorimeter acceptance
+//  TH2F * fhEtaPrimMCPartonicPhoton;                 //!<! Phi of generted partonic photon, in calorimeter acceptance
+//  TH2F * fhYPrimMCPartonicPhoton  ;                 //!<! Rapidity of generated partonic photon, in calorimeter acceptance
 
   // Shower Shape MC
     
@@ -841,7 +841,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,62) ;
+  ClassDef(AliAnaPhoton,63) ;
   /// \endcond
 
 } ;

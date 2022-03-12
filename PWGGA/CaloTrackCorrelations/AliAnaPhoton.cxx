@@ -142,7 +142,7 @@ fhMCPromptPhotonDeltaPhiRecGenConv(0), fhMCPromptPhotonDeltaEtaRecGenConv(0),
 fhMCPromptPhotonEtaPhiGenConvAssociatedReco(0),
 fhMCPromptPhotonAssociatedPtGenConv(0), fhMCPromptPhotonAssociatedPtGenConvInFidCut(0),
 //fhMCPhotonELambda0NoOverlap(0),       fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
-fhPhiPrimMCPartonicPhoton(0), fhEtaPrimMCPartonicPhoton(0), fhYPrimMCPartonicPhoton(0),
+//fhPhiPrimMCPartonicPhoton(0), fhEtaPrimMCPartonicPhoton(0), fhYPrimMCPartonicPhoton(0),
 
 fhLam0NxNOrLam0(),            fhLam0NxNNLM(0),
 fhLam0NxNLam0PerNLM(),        fhMCLam0NxNOrLam0(),          fhEnNxNFracNLM(0),
@@ -1462,12 +1462,12 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
     photonEta = fMomentum.Eta() ;
     photonPhi = fMomentum.Phi() ;
     
-    if ( i < 10 )
-    {
-      fhPhiPrimMCPartonicPhoton->Fill(photonPt , photonPhi, GetEventWeight()) ;
-      fhEtaPrimMCPartonicPhoton->Fill(photonPt , photonEta, GetEventWeight()) ;
-      fhYPrimMCPartonicPhoton  ->Fill(photonPt , photonY  , GetEventWeight()) ;
-    }
+//    if ( i < 10 )
+//    {
+//      fhPhiPrimMCPartonicPhoton->Fill(photonPt , photonPhi, GetEventWeight()) ;
+//      fhEtaPrimMCPartonicPhoton->Fill(photonPt , photonEta, GetEventWeight()) ;
+//      fhYPrimMCPartonicPhoton  ->Fill(photonPt , photonY  , GetEventWeight()) ;
+//    }
 
     if ( photonPhi < 0 )
       photonPhi+=TMath::TwoPi();
@@ -1562,6 +1562,8 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
     } // Other origin
     
     if ( mcIndex != kmcPPrompt && GetReader()->AreMCPromptPhotonsSelected() ) continue;
+    if ( (mcIndex == kmcPFragmentation || mcIndex == kmcPISR || mcIndex == kmcPPrompt) &&
+        GetReader()->AreMCFragmentationPhotonsRejected() ) continue;
 
     if ( !takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay) ) takeIt = kTRUE ;
 
@@ -3185,20 +3187,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   
   // Init the histograms
   //
-  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","Exo","PID","Embed"};
+  TString cut[] = {"Open","Reader","E","Time","NCells","NLM","Fidutial","Matching","Bad","Exo","PID","Embed","MCFilter"};
 
   for (Int_t i = 0; i < fgkNClusterCuts ;  i++)
   {
     if ( cut[i] == "PID"      && !IsCaloPIDOn()         ) continue;
     if ( cut[i] == "Embed"    && !SelectEmbededSignal() ) continue;
-    if ( cut[i] == "Embed"    && SelectEmbededSignal() && GetReader()->AreMCPromptPhotonsSelected() ) continue;
+    if ( cut[i] == "MCFilter" && !GetReader()->AreMCPromptPhotonsSelected() && !GetReader()->AreMCFragmentationPhotonsRejected()  ) continue;
     if ( cut[i] == "Time"     && (fTimeCutMin < -1200 || fTimeCutMax > 1200) ) continue;
     if ( cut[i] == "NLM"      && fNLMCutMax > 10        ) continue;
     if ( cut[i] == "Fidutial" && !IsFiducialCutOn()     ) continue;
     if ( cut[i] == "Matching" && !fRejectTrackMatch     ) continue;
     if ( cut[i] == "NCells"   && (fNCellsCut <= 0 || fNCellsCut <= GetReader()->GetEMCALNCellsCut())         ) continue;
     if ( cut[i] == "Bad"      && (fMinDist   <= 0 || fMinDist   <= GetReader()->GetEMCALBadChannelMinDist()) ) continue;
-    if ( cut[i] == "Exo"      && (fExoCut    >=  1 ||
+    if ( cut[i] == "Exo"      && (fExoCut    >= 1 ||
                                   fExoCut    >= GetCaloUtils()->GetEMCALRecoUtils()->GetExoticCellFractionCut())) continue;
 
     if ( !IsHighMultiplicityAnalysisOn() )
@@ -3843,28 +3845,28 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         outputContainer->Add(fhMCPromptPhotonEtaPhiGenConvAssociatedReco) ;
 
         fhMCPromptPhotonAssociatedPtGen = new TH1F
-        ("fhMCPromptPhotonAssociatedPtGen",
+        ("hMCPromptPhotonAssociatedPtGen",
          "Prompt #gamma generated #it{p}_{T}, associated to cluster",
          nptbins,ptmin,ptmax);
         fhMCPromptPhotonAssociatedPtGen->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPromptPhotonAssociatedPtGen) ;
 
         fhMCPromptPhotonAssociatedPtGenConv = new TH1F
-        ("fhMCPromptPhotonAssociatedPtGenConv",
+        ("hMCPromptPhotonAssociatedPtGenConv",
          "Prompt #gamma (converted) generated #it{p}_{T}, associated to cluster",
          nptbins,ptmin,ptmax);
         fhMCPromptPhotonAssociatedPtGenConv->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPromptPhotonAssociatedPtGenConv) ;
 
         fhMCPromptPhotonAssociatedPtGenInFidCut = new TH1F
-        ("fhMCPromptPhotonAssociatedPtGenInFidCut",
+        ("hMCPromptPhotonAssociatedPtGenInFidCut",
          "Prompt #gamma generated #it{p}_{T}, associated to cluster, apply same fiducial cut as cluster",
          nptbins,ptmin,ptmax);
         fhMCPromptPhotonAssociatedPtGenInFidCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhMCPromptPhotonAssociatedPtGenInFidCut) ;
 
         fhMCPromptPhotonAssociatedPtGenConvInFidCut = new TH1F
-        ("fhMCPromptPhotonAssociatedPtGenConvInFidCut",
+        ("hMCPromptPhotonAssociatedPtGenConvInFidCut",
          "Prompt #gamma (converted) generated #it{p}_{T}, associated to cluster, apply same fiducial cut as cluster",
          nptbins,ptmin,ptmax);
         fhMCPromptPhotonAssociatedPtGenConvInFidCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -6210,23 +6212,23 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       }
     }
 
-    fhPhiPrimMCPartonicPhoton  = new TH2F("hPhiPrim_MCPartonicPhoton","primary partonic photon: #varphi",
-                               nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
-    fhPhiPrimMCPartonicPhoton->SetYTitle("#varphi (rad)");
-    fhPhiPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPhiPrimMCPartonicPhoton) ;
-
-    fhEtaPrimMCPartonicPhoton  = new TH2F("hEtaPrim_MCPartonicPhoton","primary partonic photon: #eta",
-                               nptbins,ptmin,ptmax,200,-2,2);
-    fhEtaPrimMCPartonicPhoton->SetYTitle("#eta");
-    fhEtaPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhEtaPrimMCPartonicPhoton) ;
-
-    fhYPrimMCPartonicPhoton  = new TH2F("hYPrim_MCPartonicPhoton","primary partonic photon: #it{y}",
-                               nptbins,ptmin,ptmax,200,-2,2);
-    fhYPrimMCPartonicPhoton->SetYTitle("#it{y}");
-    fhYPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhYPrimMCPartonicPhoton) ;
+//    fhPhiPrimMCPartonicPhoton  = new TH2F("hPhiPrim_MCPartonicPhoton","primary partonic photon: #varphi",
+//                               nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+//    fhPhiPrimMCPartonicPhoton->SetYTitle("#varphi (rad)");
+//    fhPhiPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//    outputContainer->Add(fhPhiPrimMCPartonicPhoton) ;
+//
+//    fhEtaPrimMCPartonicPhoton  = new TH2F("hEtaPrim_MCPartonicPhoton","primary partonic photon: #eta",
+//                               nptbins,ptmin,ptmax,200,-2,2);
+//    fhEtaPrimMCPartonicPhoton->SetYTitle("#eta");
+//    fhEtaPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//    outputContainer->Add(fhEtaPrimMCPartonicPhoton) ;
+//
+//    fhYPrimMCPartonicPhoton  = new TH2F("hYPrim_MCPartonicPhoton","primary partonic photon: #it{y}",
+//                               nptbins,ptmin,ptmax,200,-2,2);
+//    fhYPrimMCPartonicPhoton->SetYTitle("#it{y}");
+//    fhYPrimMCPartonicPhoton->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//    outputContainer->Add(fhYPrimMCPartonicPhoton) ;
   }
 
   if ( IsDataMC() )
@@ -7447,7 +7449,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     // Select only clusters with MC signal and data background
     //
-    if ( SelectEmbededSignal() && !GetReader()->AreMCPromptPhotonsSelected() )
+    if ( SelectEmbededSignal() )
     {
       if ( nlabels == 0 || mcLabel < 0 ) continue;
       //else printf("Embedded cluster,  %d, n label %d label %d  \n",icalo,calo->GetNLabels(),calo->GetLabel());
@@ -7531,6 +7533,24 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       {
         AliInfo(Form("Cluster with En %2.2f tagged as FSR or ISR rejected\n",calo->E()));
         continue ;
+      }
+
+      if ( GetReader()->AreMCPromptPhotonsSelected() || GetReader()->AreMCFragmentationPhotonsRejected() )
+      {
+        if ( !IsHighMultiplicityAnalysisOn () )
+        {
+          fhClusterCutsPt[12]->Fill(fMomentum.Pt(), GetEventWeight());
+
+          if ( !fFillOnlyPtHisto )
+            fhClusterCutsE[12]->Fill(fMomentum.E(), GetEventWeight());
+        }
+        else
+        {
+          fhClusterCutsPtCen[12]->Fill(fMomentum.Pt(), cen, GetEventWeight());
+
+          if ( !fFillOnlyPtHisto )
+            fhClusterCutsECen[12]->Fill(fMomentum.E(), cen, GetEventWeight());
+        }
       }
 
       conversion = GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion);
