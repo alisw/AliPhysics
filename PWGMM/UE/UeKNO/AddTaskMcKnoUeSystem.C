@@ -48,7 +48,7 @@ AliAnalysisTaskMcKnoUeSystem* AddTaskMcKnoUeSystem(
     taskUE->SetUpMaxFractionSharedTPCClusters(fCutMaxFractionSharedTPCClusters);  //0.4(default), 0.2, 1.0
     taskUE->SetUpMinRatioCrossedRowsOverFindableClustersTPC(fCutMinRatioCrossedRowsOverFindableClustersTPC);  //0.8(default), 0.7, 0.9
     taskUE->SetUpCutGeoNcrNcl(fCutGeoNcrNclZone, fCutGeoNcrNclLength);  //3cm(default), 2cm, 4cm;     130(default), 120, 140
-    taskUE->SetUpClusterRequirementITS(fIsRequirementSPD);    //kTRUE--kAny(default), kFALSE--kNone
+    taskUE->SetUpClusterRequirementITS(fIsRequirementSPD);    //kTRUE--kAny(default), kFALSE--don't use that cut
     taskUE->SetUpMaxChi2PerClusterITS(fCutMaxChi2PerClusterITS); //36(default), 25, 49
     taskUE->SetUpMaxChi2PerClusterTPC(fCutMaxChi2PerClusterTPC); //4(default), 3, 5
     taskUE->SetUpMaxChi2TPCConstrainedGlobal(fCutMaxChi2TPCConstrainedVsGlobal); //36(default), 25, 49
@@ -92,7 +92,7 @@ AliAnalysisTaskMcKnoUeSystem* AddTaskMcKnoUeSystem(
     Float_t  trk2 = fCutMinRatioCrossedRowsOverFindableClustersTPC;  //0.8(default), 0.7, 0.9
     Float_t  trk3_1 = fCutGeoNcrNclZone;       //3cm(default), 2cm, 4cm;
     Float_t  trk3_2 = fCutGeoNcrNclLength;     //130(default), 120, 140
-    Bool_t   trk4 = fIsRequirementSPD;         //kTRUE--kAny(default), kFALSE--kNone
+    Bool_t   trk4 = fIsRequirementSPD;         //kTRUE--kAny(default), kFALSE--don't use that cut
     Float_t  trk5 = fCutMaxChi2PerClusterITS;  //36(default), 25, 49
     Float_t  trk6 = fCutMaxChi2PerClusterTPC;  //4(default), 3, 5
     Float_t  trk7 = fCutMaxChi2TPCConstrainedVsGlobal;  //36(default), 25, 49
