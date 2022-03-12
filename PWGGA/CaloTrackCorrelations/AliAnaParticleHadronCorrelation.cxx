@@ -5697,7 +5697,7 @@ void AliAnaParticleHadronCorrelation::MakeChargedMixCorrelation(AliCaloTrackPart
         {
           fhMixXECharged       ->Fill(ptTrig, xE, GetEventWeight());
           if ( fFillHBPHistograms  && xE > 0 )
-            fhMixHbpXECharged    ->Fill(ptTrig, TMath::Log(1./xE), GetEventWeight());
+            fhMixHbpXECharged    ->Fill(ptTrig, hbpXE, GetEventWeight());
         }
 
         if ( fFillZTHistograms )
