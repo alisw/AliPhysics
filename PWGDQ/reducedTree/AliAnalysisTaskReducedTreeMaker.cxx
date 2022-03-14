@@ -984,8 +984,14 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
         fReducedEvent->fCentrality[5] = multSelection->GetMultiplicityPercentile("V0C");
         fReducedEvent->fCentrality[6] = multSelection->GetMultiplicityPercentile("ZNA");
         fReducedEvent->fCentrality[7] = multSelection->GetMultiplicityPercentile("V0MNew");
-        fReducedEvent->fCentrality[8] = multSelection->GetMultiplicityPercentile("V0MNewPlus1");
-        fReducedEvent->fCentrality[9] = multSelection->GetMultiplicityPercentile("V0MNewMinus1");
+        fReducedEvent->fCentrality[8] = multSelection->GetMultiplicityPercentile("V0MNewplus05");
+        fReducedEvent->fCentrality[9] = multSelection->GetMultiplicityPercentile("V0MNewminus05");
+        fReducedEvent->fCentrality[10] = multSelection->GetMultiplicityPercentile("V0MNewplus10");
+        fReducedEvent->fCentrality[11] = multSelection->GetMultiplicityPercentile("V0MNewminus10");
+        fReducedEvent->fCentrality[12] = multSelection->GetMultiplicityPercentile("V0Mplus05");
+        fReducedEvent->fCentrality[13] = multSelection->GetMultiplicityPercentile("V0Mminus05");
+        fReducedEvent->fCentrality[14] = multSelection->GetMultiplicityPercentile("V0Mplus10");
+        fReducedEvent->fCentrality[15] = multSelection->GetMultiplicityPercentile("V0Mminus10");
         fReducedEvent->fCentQuality   = multSelection->GetEvSelCode();
     }
   }
