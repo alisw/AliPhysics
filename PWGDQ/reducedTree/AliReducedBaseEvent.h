@@ -121,7 +121,7 @@ class AliReducedBaseEvent : public TObject {
   AliReducedBaseEvent& operator= (const AliReducedBaseEvent &c);
   AliReducedBaseEvent(const AliReducedBaseEvent &c);
 
-  ClassDef(AliReducedBaseEvent, 4);
+  ClassDef(AliReducedBaseEvent, 5);
 };
 
 #endif

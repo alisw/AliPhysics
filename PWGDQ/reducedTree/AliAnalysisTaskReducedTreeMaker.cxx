@@ -976,6 +976,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   else {
      multSelection = (AliMultSelection*)event->FindListObject("MultSelection");
      if(multSelection) {
+        Bool_t is2015PbPb = (event->GetRunNumber() <= 246994 && event->GetRunNumber() >= 244917);
         fReducedEvent->fCentrality[0] = multSelection->GetMultiplicityPercentile("V0M");
         fReducedEvent->fCentrality[1] = multSelection->GetMultiplicityPercentile("CL1");
         fReducedEvent->fCentrality[2] = multSelection->GetMultiplicityPercentile("TRK");
@@ -984,10 +985,17 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
         fReducedEvent->fCentrality[5] = multSelection->GetMultiplicityPercentile("V0C");
         fReducedEvent->fCentrality[6] = multSelection->GetMultiplicityPercentile("ZNA");
         fReducedEvent->fCentrality[7] = multSelection->GetMultiplicityPercentile("V0MNew");
-        fReducedEvent->fCentrality[8] = multSelection->GetMultiplicityPercentile("V0MNewplus05");
-        fReducedEvent->fCentrality[9] = multSelection->GetMultiplicityPercentile("V0MNewminus05");
-        fReducedEvent->fCentrality[10] = multSelection->GetMultiplicityPercentile("V0MNewplus10");
-        fReducedEvent->fCentrality[11] = multSelection->GetMultiplicityPercentile("V0MNewminus10");
+        if(!is2015PbPb) {
+          fReducedEvent->fCentrality[8] = multSelection->GetMultiplicityPercentile("V0MNewplus05");
+          fReducedEvent->fCentrality[9] = multSelection->GetMultiplicityPercentile("V0MNewminus05");
+        }
+        if (is2015PbPb) {
+          fReducedEvent->fCentrality[10] = multSelection->GetMultiplicityPercentile("V0MNewPlus1");
+          fReducedEvent->fCentrality[11] = multSelection->GetMultiplicityPercentile("V0MNewMinus1");
+        } else {
+          fReducedEvent->fCentrality[10] = multSelection->GetMultiplicityPercentile("V0MNewplus10");
+          fReducedEvent->fCentrality[11] = multSelection->GetMultiplicityPercentile("V0MNewminus10");       
+        }
         fReducedEvent->fCentrality[12] = multSelection->GetMultiplicityPercentile("V0Mplus05");
         fReducedEvent->fCentrality[13] = multSelection->GetMultiplicityPercentile("V0Mminus05");
         fReducedEvent->fCentrality[14] = multSelection->GetMultiplicityPercentile("V0Mplus10");
