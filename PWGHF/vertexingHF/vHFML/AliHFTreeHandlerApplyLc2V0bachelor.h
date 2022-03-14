@@ -38,6 +38,8 @@ public:
   
   void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
   void SetReducePbPbBranches(bool b) { fReducePbPbBranches = b; }
+  void SetIsMixedEvent(bool b) { fIsMixedEvent = b; }
+  void SetProtonPIDvariables(float nsigTPC, float nsigTOF, float ncomb) { fnsigTPCPr = nsigTPC; fnsigTOFPr = nsigTOF; fnsigCombPr = ncomb; }
 
   void SetIsLctoLpi(int isSeltoLpi, int isSelTopotoLpi, int isSelPIDtoLpi) {
     if(isSeltoLpi) fCandType |= kLctoLpi;
@@ -67,9 +69,13 @@ private:
   float fV0radius;                         /// K0s radius
   int fCalcSecoVtx;                        /// flag to calculate secondary vertex for Lc (if false, CommonDmesonVarBranches are not filled)
   bool fReducePbPbBranches;                /// variable to disable unnecessary branches in PbPb
+  bool fIsMixedEvent;                      /// variable to set the proton PID variables manually and disable the signed d0 in case of mixed event background
+  float fnsigCombPr;                       /// Combined TPC+TOF proton PID
+  float fnsigTPCPr;                        /// nSigma TPC proton PID
+  float fnsigTOFPr;                        /// nSigma TOF proton PID
 
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 4); ///
+  ClassDef(AliHFTreeHandlerApplyLc2V0bachelor, 5); ///
   /// \endcond
 };
 #endif

@@ -15,6 +15,7 @@
 
 #include <TROOT.h>
 #include <TSystem.h>
+#include "TVector.h"
 #include <TNtuple.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -107,6 +108,10 @@ public:
   Bool_t GetReducePbPbBranches() const { return fReducePbPbBranches; }
   void SetSaveSTDSelection(Bool_t b) { fSaveSTDSelection = b; }
   Bool_t GetSaveSTDSelection() const { return fSaveSTDSelection; }
+  void SetSaveMixedEventBkg(Bool_t b) { fSaveMixedEventBkg = b; }
+  Bool_t GetSaveMixedEventBkg() const { return fSaveMixedEventBkg; }
+  void SetNumberOfEventsForMixing(Int_t opt=10) { fNumberOfEventsForMixing = opt; }
+  Int_t GetNumberOfEventsForMixing() const { return fNumberOfEventsForMixing; }
 
   void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
   Int_t GetGoodTrackFilterBit() const { return fGoodTrackFilterBit; }
@@ -154,6 +159,10 @@ public:
   void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
   void ProcessMCGen(TClonesArray *mcarray, AliAODMCHeader *mcHeader);
 
+  void DoEventMixingLc2V0bachelor(AliAODEvent *aodEvent);
+  void ProcessCascMixEv(std::vector<TVector * > mixTypeP, AliAODEvent *aod, Float_t bfield);
+  Int_t GetPoolIndex(Double_t zvert, Double_t cent);
+
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
   Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
   void SelectGoodTrackForReconstruction(AliAODEvent *aod, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
@@ -193,12 +202,14 @@ private:
 
   TTree                   *fVariablesTreeDs;                     //!<! tree of the candidate variables
   TTree                   *fVariablesTreeLc2V0bachelor;          //!<! tree of the candidate variables
+  TTree                   *fVariablesTreeLc2V0bachelorMixEv;     //!<! tree of the candidate variables from mixed events
   TTree                   *fGenTreeDs;                           //!<! tree of the gen Ds variables
   TTree                   *fGenTreeLc2V0bachelor;                //!<! tree of the gen Lc2V0bachelor variables
   TTree                   *fTreeEvChar;                          //!<! tree of event variables
 
   AliHFTreeHandlerApplyDstoKKpi       *fTreeHandlerDs;                //!<! handler object for the tree with topological variables
   AliHFTreeHandlerApplyLc2V0bachelor  *fTreeHandlerLc2V0bachelor;     //!<! handler object for the tree with topological variables
+  AliHFTreeHandlerApplyLc2V0bachelor  *fTreeHandlerLc2V0bachelorMixEv;//!<! handler object for the tree with topological variables from mixed events
   AliHFTreeHandlerApplyDstoKKpi       *fTreeHandlerGenDs;             //!<! handler object for the tree with topological variables
   AliHFTreeHandlerApplyLc2V0bachelor  *fTreeHandlerGenLc2V0bachelor;  //!<! handler object for the tree with topological variables
 
@@ -289,9 +300,23 @@ private:
   AliHFMLResponse* fMLResponse;                                  //!<! object to handle ML response
   Bool_t fReducePbPbBranches;                                    /// variable to disable unnecessary branches in PbPb
   Bool_t fSaveSTDSelection;                                      /// variable to store candidates that pass std cuts as well, even when ML < MLcut
-
+  
+  //Mixed event (track level)
+  Bool_t fSaveMixedEventBkg;                                     /// variable to enable + store background from mixed events (default = Lc->pK0s)
+  Int_t  fNumberOfEventsForMixing;                               /// maximum number of events to be used in event mixing
+  Int_t fNzVtxBins;                                              /// number of z vrtx bins
+  Double_t fZvtxBins[100];                                       // [fNzVtxBinsDim]
+  Int_t fNCentBins;                                              /// number of centrality bins
+  Double_t fCentBins[100];                                       // [fNCentBinsDim]
+  Int_t fNOfPools;                                               /// number of pools
+  Int_t fPoolIndex;                                              /// pool index
+  std::vector<Int_t> fNextResVec;                                //!<! Vector storing next reservoir ID
+  std::vector<Bool_t> fReservoirsReady;                          //!<! Vector storing if the reservoirs are ready
+  std::vector<std::vector<std::vector<TVector*>>> fReservoirP;   //!<! reservoir
+  AliHFMLResponseLctoV0bachelor* fMLResponseMixEv;               //!<! object to handle ML response
+  
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,7);
+  ClassDef(AliAnalysisTaskSEHFTreeCreatorApply,8);
   /// \endcond
 };
 
