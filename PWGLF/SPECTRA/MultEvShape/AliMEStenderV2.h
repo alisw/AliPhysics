@@ -5,9 +5,9 @@
 //  Tender for Multiplicity and Event Shape group                         //
 //  Tender configuration                                                  //
 //  Authors:                                                              //
+//    Amelia Lindner <amelia.lindner@cern.ch>                             //
+//    Alex Bercuci (a.bercuci@gsi.de)                                     //
 //    Cristi Andrei <Cristian.Andrei@cern.ch>                             //
-//    Andrei Herghelegiu <aherghe@niham.nipne.ro>                         //
-//    Madalina Tarzila <mtarzila@niham.nipne.ro>                          //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
