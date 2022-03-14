@@ -48,7 +48,11 @@ fsignd0(-9999.),
 fArmqTOverAlpha(-9999.),
 fV0radius(-9999.),
 fCalcSecoVtx(0),
-fReducePbPbBranches(false)
+fReducePbPbBranches(false),
+fIsMixedEvent(false),
+fnsigCombPr(-999),
+fnsigTPCPr(-999),
+fnsigTOFPr(-999)
 {
   //
   // Standard constructor
@@ -118,6 +122,11 @@ TTree* AliHFTreeHandlerApplyLc2V0bachelor::BuildTree(TString name, TString title
       AddPidBranches(prongusepid, false, false, true, true, true);
     }
   }
+  if(fIsMixedEvent){
+    fTreeVar->Branch("nsigComb_Pr_0", &fnsigCombPr);
+    fTreeVar->Branch("nsigTPC_Pr_0", &fnsigTPCPr);
+    fTreeVar->Branch("nsigTOF_Pr_0", &fnsigTOFPr);
+  }
   
   return fTreeVar;
 }
@@ -185,22 +194,25 @@ bool AliHFTreeHandlerApplyLc2V0bachelor::SetVariables(int runnumber, int eventID
   Double_t cts = TMath::Cos(vpr.Angle(vlc.Vect()));
   fCosThetaStar=cts;
   
-  // Sign of d0 proton (different from regular d0)
-  // (from AliRDHFCutsLctoV0)
-  AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
-  AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
-  Double_t d0z0bach[2], covd0z0bach[3];
-  bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
-  Double_t tx[3];
-  bachelor->GetXYZ(tx);
-  tx[0] -= primvert->GetX();
-  tx[1] -= primvert->GetY();
-  tx[2] -= primvert->GetZ();
-  Double_t innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
-  Double_t signd0 = 1.;
-  if(innerpro<0.) signd0 = -1.;
-  signd0 = signd0*TMath::Abs(d0z0bach[0]);
-  fsignd0=signd0;
+  if(!fIsMixedEvent){
+    //Possibility to disable this variable, because of the many AliAODTrack warnings/errors
+    // Sign of d0 proton (different from regular d0)
+    // (from AliRDHFCutsLctoV0)
+    AliAODTrack *bachelor = (AliAODTrack*)((AliAODRecoCascadeHF*)cand)->GetBachelor();
+    AliAODVertex *primvert = dynamic_cast<AliAODVertex*>(cand->GetPrimaryVtx());
+    Double_t d0z0bach[2], covd0z0bach[3];
+    bachelor->PropagateToDCA(primvert, bfield, kVeryBig, d0z0bach, covd0z0bach); // HOW DO WE SET THE B FIELD?; kVeryBig should come from AliExternalTrackParam
+    Double_t tx[3];
+    bachelor->GetXYZ(tx);
+    tx[0] -= primvert->GetX();
+    tx[1] -= primvert->GetY();
+    tx[2] -= primvert->GetZ();
+    Double_t innerpro = tx[0]*cand->Px()+tx[1]*cand->Py();
+    Double_t signd0 = 1.;
+    if(innerpro<0.) signd0 = -1.;
+    signd0 = signd0*TMath::Abs(d0z0bach[0]);
+    fsignd0=signd0;
+  }
   
   //Armenteros qT/|alpha|
   fArmqTOverAlpha= v0part->PtArmV0()/TMath::Abs(v0part->AlphaV0());
