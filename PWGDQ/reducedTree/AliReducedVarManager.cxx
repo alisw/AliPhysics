@@ -444,8 +444,14 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kCentVZEROC]       = baseEvent->CentralityVZEROC();
   values[kCentZNA]          = baseEvent->CentralityZNA();
   values[kCentV0MNew]       = baseEvent->CentralityV0MNew();
-  values[kCentV0MNewPlus1]  = baseEvent->CentralityV0MNewPlus1();
-  values[kCentV0MNewMinus1] = baseEvent->CentralityV0MNewMinus1();
+  values[kCentV0MNewPlus10]  = baseEvent->CentralityV0MNewPlus10();
+  values[kCentV0MNewMinus10] = baseEvent->CentralityV0MNewMinus10();
+  values[kCentV0MNewPlus05]  = baseEvent->CentralityV0MNewPlus05();
+  values[kCentV0MNewMinus05] = baseEvent->CentralityV0MNewMinus05();
+  values[kCentV0MPlus10]  = baseEvent->CentralityV0MPlus10();
+  values[kCentV0MMinus10] = baseEvent->CentralityV0MMinus10();
+  values[kCentV0MPlus05]  = baseEvent->CentralityV0MPlus05();
+  values[kCentV0MMinus05] = baseEvent->CentralityV0MMinus05();
   values[kCentQuality]      = baseEvent->CentralityQuality();
   
   values[kNV0total]             = baseEvent->NV0CandidatesTotal();
@@ -3102,8 +3108,14 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kCentVZEROC]                  = "VZERO-C centrality";              fgVariableUnits[kCentVZEROC]     = "%";
   fgVariableNames[kCentZNA]                     = "ZNA centrality";                  fgVariableUnits[kCentZNA]        = "%";
   fgVariableNames[kCentV0MNew]                  = "V0MNew centrality";               fgVariableUnits[kCentV0MNew]     = "%";
-  fgVariableNames[kCentV0MNewPlus1]             = "V0MNewPlus1 centrality";          fgVariableUnits[kCentV0MNewPlus1] = "%";
-  fgVariableNames[kCentV0MNewMinus1]            = "V0MNewMinus1 centrality";         fgVariableUnits[kCentV0MNewMinus1] = "%";
+  fgVariableNames[kCentV0MNewPlus05]            = "V0MNewPlus05 centrality";         fgVariableUnits[kCentV0MNewPlus05] = "%";
+  fgVariableNames[kCentV0MNewMinus05]           = "V0MNewMinus05 centrality";        fgVariableUnits[kCentV0MNewMinus05] = "%";
+  fgVariableNames[kCentV0MNewPlus10]            = "V0MNewPlus10 centrality";         fgVariableUnits[kCentV0MNewPlus10] = "%";
+  fgVariableNames[kCentV0MNewMinus10]           = "V0MNewMinus10 centrality";        fgVariableUnits[kCentV0MNewMinus10] = "%";
+  fgVariableNames[kCentV0MPlus05]               = "V0MPlus05 centrality";            fgVariableUnits[kCentV0MPlus05] = "%";
+  fgVariableNames[kCentV0MMinus05]              = "V0MMinus05 centrality";           fgVariableUnits[kCentV0MMinus05] = "%";
+  fgVariableNames[kCentV0MPlus10]               = "V0MPlus10 centrality";            fgVariableUnits[kCentV0MPlus10] = "%";
+  fgVariableNames[kCentV0MMinus10]              = "V0MMinus10 centrality";           fgVariableUnits[kCentV0MMinus10] = "%";
   fgVariableNames[kCentQuality]                 = "Centrality quality";              fgVariableUnits[kCentQuality]    = "";
   fgVariableNames[kNV0total]                    = "Total number of V0s";             fgVariableUnits[kNV0total]       = "";  
   fgVariableNames[kNV0selected]                 = "Number of selected V0s";          fgVariableUnits[kNV0selected]    = "";  
