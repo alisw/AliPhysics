@@ -141,6 +141,8 @@ private:
   double      GetEventPlane(double qx, double qy);
   int             GetPercCode(double perc);
   void          OpenInfoCalbration(Int_t run);
+  void          OpenInfoCalbration18(Int_t run);
+
     // Cuts and options
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
@@ -198,6 +200,7 @@ private:
     TH3F*              hCorrectNUAPos; // Protty
     TH3F*              hCorrectNUANeg; // Protty
     TH2D*             hMultV0Read;
+    TH2F*             fHCorrectV0ChWeghts;
     TH2D*             hQnPercentile;
     TH1D*             hQnPercentile_centThisEvt;
     TSpline3*        sp; 
