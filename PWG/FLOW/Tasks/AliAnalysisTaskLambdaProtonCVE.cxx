@@ -2029,8 +2029,8 @@ bool AliAnalysisTaskLambdaProtonCVE::PairLambda()
       fNegTPCQyTemp = fNegTPCQyTemp/fNegTPCMult;
     } else continue;
 
-    double fPsi2PosTPCNoAuto = GetEventPlane(fPosTPCQyTemp,fPosTPCQxTemp,2.);   //AutoCorrelation Removed Pos EP.
-    double fPsi2NegTPCNoAuto = GetEventPlane(fNegTPCQyTemp,fNegTPCQxTemp,2.);   //AutoCorrelation Removed Neg EP.
+    double fPsi2PosTPCNoAuto = GetEventPlane(fPosTPCQxTemp,fPosTPCQyTemp,2.);   //AutoCorrelation Removed Pos EP.
+    double fPsi2NegTPCNoAuto = GetEventPlane(fNegTPCQxTemp,fNegTPCQyTemp,2.);   //AutoCorrelation Removed Neg EP.
     if (TMath::IsNaN(fPsi2PosTPCNoAuto) || TMath::IsNaN(fPsi2NegTPCNoAuto)) continue;
 
     //Check the PID Flow
@@ -2418,7 +2418,6 @@ bool AliAnalysisTaskLambdaProtonCVE::RejectEvtMultComp() // 15o_pass1, old pile-
     fHist2DMultMultQA[1]->Fill(multGlobal,multTPCFE);
 
     //TODO
-    ///???
     TString fMultComp = "pileupByGlobalTPC1";
 
     if (fMultComp.EqualTo("pileupByEDSTPC128") ) { // Rihan
