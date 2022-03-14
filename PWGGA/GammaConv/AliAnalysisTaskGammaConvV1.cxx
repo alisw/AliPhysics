@@ -2794,12 +2794,12 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
               }
               RJetPhotonCand = TMath::Sqrt(pow((DeltaEta),2)+pow((DeltaPhi),2));
               if(fConvJetReader->Get_Jet_Radius() > 0 ){
+                if(RJetPhotonCand < (fConvJetReader->Get_Jet_Radius() + 0.2) ){ //we also want photons slightly outside the cone
+                      fHistoRJetPhotonCand[fiCut]->Fill(RJetPhotonCand,gamma->Pt(),fWeightJetJetMC);
+                }
                 if(RJetPhotonCand < fConvJetReader->Get_Jet_Radius()){
                     //here the photon is really inside the jet cone
                     IsPhotonInsideJet = kTRUE;
-                    if(RJetPhotonCand < (fConvJetReader->Get_Jet_Radius() + 0.2) ){ //we also want photons slightly outside the cone
-                      fHistoRJetPhotonCand[fiCut]->Fill(RJetPhotonCand,gamma->Pt(),fWeightJetJetMC);
-                    }
                     fHistoConvGammaPtinJet[fiCut]->Fill(gamma->Pt(),NTracks);
                 }
               }
@@ -4193,15 +4193,15 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                               Double_t dotproduct = fVectorJetPx.at(i)*pi0cand->Px() + fVectorJetPy.at(i)*pi0cand->Py() + fVectorJetPz.at(i)*pi0cand->Pz();
                               Double_t magn = pow(fVectorJetPx.at(i),2) + pow(fVectorJetPy.at(i),2) + pow(fVectorJetPz.at(i),2);
                               Double_t z = dotproduct/magn;
-                              if(fVectorJetPt.at(i) > 5){
+                              if(fVectorJetPt.at(i) > 10){
                                 fHistoUnfoldingAsData[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingAsDataInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
-                              if(fVectorJetPt.at(i) < 5 && fTrueVectorJetPt.at(match) > 5){
+                              if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) > 10){
                                 fHistoUnfoldingMissed[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingMissedInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
-                              if(fVectorJetPt.at(i) > 5 && fTrueVectorJetPt.at(match) < 5){
+                              if(fVectorJetPt.at(i) > 10 && fTrueVectorJetPt.at(match) < 10){
                                 fHistoUnfoldingReject[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingRejectInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
