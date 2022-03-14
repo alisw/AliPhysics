@@ -75,18 +75,18 @@ public:
     ,kMCtrkInfo
     ,kNqa
   };
-  enum myContainers
+  enum MEStenderV2Containers
   {
-      kQA = 1,
-      kEventInfo = 1,
-      kTracks,
-      kTree,
-      kMCeventInfo,
-      kMCtracks,
-      kTreeMC,
-      kTreeGen,
-      kTreeMiss,
-      kNcontainers
+    kQA = 1,
+    kEventInfo = 1,
+    kTracks,
+    kTree,
+    kMCeventInfo,
+    kMCtracks,
+    kTreeMC,
+    kTreeGen,
+    kTreeMiss,
+    kNcontainers
   };
   AliMEStenderV2();
   AliMEStenderV2(const char *name);
