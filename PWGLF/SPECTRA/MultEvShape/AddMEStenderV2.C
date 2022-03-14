@@ -6,6 +6,7 @@
 #include <AliAnalysisDataContainer.h>
 #include <AliMESbaseTask.h>
 #include <AliMEStenderV2.h>
+#include <AliMESeventInfo.h>
 #endif
 
 AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1)
@@ -38,17 +39,21 @@ AliMEStenderV2 *AddMEStenderV2(Bool_t mc, Int_t configuration = 1)
   mgr->ConnectInput (tender, 0, mgr->GetCommonInputContainer());
 
   // create output containers
-  AliAnalysisDataContainer *co[AliMESbaseTask::kNcontainers] = {NULL};
+  AliAnalysisDataContainer *co[AliMEStenderV2::kNcontainers] = {NULL};
   co[0]                          = mgr->CreateContainer("tenderQA", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:MES", mgr->GetCommonFileName()));
-  co[AliMESbaseTask::kEventInfo] = mgr->CreateContainer("MESeventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-  co[AliMESbaseTask::kTracks]    = mgr->CreateContainer("MEStracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliMEStenderV2::kEventInfo] = mgr->CreateContainer("MESeventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliMEStenderV2::kTracks]    = mgr->CreateContainer("MEStracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliMEStenderV2::kTree] = mgr->CreateContainer("MEStree", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   if(mc){
-	  co[AliMESbaseTask::kMCeventInfo] = mgr->CreateContainer("MESMCeventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
-	  co[AliMESbaseTask::kMCtracks]    = mgr->CreateContainer("MESMCtracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+	  co[AliMEStenderV2::kMCeventInfo] = mgr->CreateContainer("MESMCeventInfo", AliMESeventInfo::Class(), AliAnalysisManager::kExchangeContainer);
+	  co[AliMEStenderV2::kMCtracks]    = mgr->CreateContainer("MESMCtracks", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+    co[AliMEStenderV2::kTreeMC]      = mgr->CreateContainer("MESMCtree", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName() );
+    co[AliMEStenderV2::kTreeGen]     = mgr->CreateContainer("MESGen", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
+    co[AliMEStenderV2::kTreeMiss]    = mgr->CreateContainer("MESMiss", TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   }
 
   // connect output
-  for(Int_t ios(0);ios<AliMESbaseTask::kNcontainers;ios++)
+  for(Int_t ios(0);ios<AliMEStenderV2::kNcontainers;ios++)
 	  if(co[ios]) mgr->ConnectOutput(tender, ios+1, co[ios]);
 
 

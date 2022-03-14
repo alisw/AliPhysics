@@ -23,6 +23,8 @@ class TObjArray;
 class TClonesArray;
 class AliMESeventInfo;
 class AliAnalysisUtils;
+class TTree;
+
 #include "AliEventCuts.h"
 class AliMEStenderV2 : public AliAnalysisTaskSE
 {
@@ -73,6 +75,19 @@ public:
     ,kMCtrkInfo
     ,kNqa
   };
+  enum myContainers
+  {
+      kQA = 1,
+      kEventInfo = 1,
+      kTracks,
+      kTree,
+      kMCeventInfo,
+      kMCtracks,
+      kTreeMC,
+      kTreeGen,
+      kTreeMiss,
+      kNcontainers
+  };
   AliMEStenderV2();
   AliMEStenderV2(const char *name);
   virtual ~AliMEStenderV2();
@@ -107,13 +122,17 @@ private:
   AliPIDCombined     *fPIDcomb;      // working PID combined service
 
   TObjArray *fTracks;       //!
-  TClonesArray *fTracksIO;       //!
+  TClonesArray *fTracksIO;  //!
   AliMESeventInfo *fEvInfo; //!
   TObjArray *fMCtracks;  //!
   TClonesArray *fMCtracksIO; //!
   AliMESeventInfo *fMCevInfo;  //!
   TClonesArray *fMCGenTracksIO;   //!
   TClonesArray *fMCtracksMissIO; //!
+  TTree *fTree; //!
+  TTree *fTreeMC; //!
+  TTree *fTreeGen; //!
+  TTree *fTreeMiss; //!
 
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!
