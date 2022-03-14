@@ -104,12 +104,14 @@ set(SRCS
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronCoalescence.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskPythiaCoalescence.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeHypertriton.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
+  Nuclei/TritonAnalysis/AliAnalysisTaskTritonESD_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
@@ -133,6 +135,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	  ${SRCS}
       Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
       Hypernuclei/Hyp2Body/AliAnalysisTaskHe3piAOD.cxx
+      Hypernuclei/Hyp2Body/AliAnalysisTaskAlphaPiAOD.cxx
 			Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
       Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
       Hypernuclei/Hyp3Body/Hypertriton3structures.cxx

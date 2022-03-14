@@ -545,7 +545,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
 
   Int_t nVar; 
   if (fUseMCInfo)  nVar = 54; //"full" tree if MC
-  else nVar = 33; //"reduced" tree if data
+  else nVar = 34; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -652,6 +652,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::UserCreateOutputObjects() {
     //fCandidateVariableNames[36] = "CosPALc";
     fCandidateVariableNames[31] = "CosThetaStarSoftPi";
     fCandidateVariableNames[32] = "nSigmaTOFka";
+    fCandidateVariableNames[33] = "bachelorP";
   }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -1928,7 +1929,15 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	inputVars[6] = signd0;
 	inputVars[7] = probProton;
       }
-      
+     else if (fNVars == 7) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = nSigmaTOFpr > -900 ? TMath::Sqrt(nSigmaTOFpr*nSigmaTOFpr + nSigmaTPCpr*nSigmaTPCpr) : nSigmaTPCpr;
+     }	
       for (Int_t i = 0; i < fNVars; i++) {
 	fVarsTMVA[i] = inputVars[i];
       }
@@ -2123,6 +2132,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 	  fCandidateVariables[30] = 0;
 	  fCandidateVariables[31] = cosThetaStarSoftPi;
 	  fCandidateVariables[32] = nSigmaTOFka;
+	  fCandidateVariables[33] = bachelor->P();
 	}
       }
       
@@ -2337,6 +2347,7 @@ void AliAnalysisTaskSESigmacTopK0Spi::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *p
 		fCandidateVariables[30] = deltaM;
 		fCandidateVariables[31] = cosThetaStarSoftPi;
 		fCandidateVariables[32] = nSigmaTOFka;
+		fCandidateVariables[33] = bachelor->P();
 	      }
 	    }
 	    

@@ -182,8 +182,7 @@ void AliAnalysisTaskNanoLKr::UserCreateOutputObjects() {
     }
 
   fEvent = new AliFemtoDreamEvent(true, true, fTrigger);
-  ///fEvent->SetCalcSpherocity(fEventCuts->GetDoSpherocityCuts());
-
+  
   fTrack = new AliFemtoDreamTrack();
 
   fTrack->SetUseMCInfo(

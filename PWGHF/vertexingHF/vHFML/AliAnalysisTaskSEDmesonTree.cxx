@@ -1092,7 +1092,7 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             break;
         case kDstartoD0pi:
             massMin = 0.138;
-            massMax = 0.160;
+            massMax = 0.188;
             massTitle = "#it{M}(K#pi#pi) #minus #it{M}(K#pi) (GeV/#it{c})";
             break;
     }

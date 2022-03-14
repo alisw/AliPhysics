@@ -36,6 +36,8 @@
 //           M. Vala (martin.vala@cern.ch)
 //  developers: F. Bellini (fbellini@cern.ch)
 //
+//Modified by Prottay 23/01/2022(prottay.das@cern.ch) to fill K0s inv mass for a given bin of K*+/-
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "Riostream.h"
@@ -123,6 +125,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kCosThetaTransversity:    return "CosThetaTransversity";
       case kCosThetaHe:   return "CosThetaHe";
       case kCosThetaHeAbs:   return "CosThetaHeAbs";
+      case kCosThetaCsAbs:  return "CosThetaCsAbs";
       case kPhiHePbPb5:   return "PhiHePbPb5";
       case kPhiHePP5:   return "PhiHePP5";
       case kCosThetaToEventPlane:    return "CosThetaToEventPlane";
@@ -132,6 +135,7 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kSecondDaughterPt: return "SecondDaughterPt";
       case kFirstDaughterP: return "FirstDaughterP";
       case kSecondDaughterP: return "SecondDaughterP";
+   case kFirstDaughterIM: return "FirstDaughterIM"; //K0s IM (prottay) 
       case kDCAproduct:   return "DaughterDCAproduct";
       case kFirstDaughterDCA: return "FirstDaughterDCA";
       case kSecondDaughterDCA: return "SecondDaughterDCA";
@@ -236,6 +240,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
            return pair->CosThetaHe(fUseMCInfo);
       case kCosThetaHeAbs:
            return pair->CosThetaHeAbs(fUseMCInfo);
+      case kCosThetaCsAbs:
+	   return pair->CosThetaCsAbs(fUseMCInfo);
       case kPhiHePbPb5:
            return pair->PhiHePbPb5(fUseMCInfo);
       case kPhiHePP5:
@@ -275,6 +281,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kSecondDaughterP:
          pair->DaughterPxPyPz(1,fUseMCInfo, p3);
          return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
+      case kFirstDaughterIM:
+         return pair->DaughterIM();
       case kDCAproduct:
          return pair->DCAProduct();
       case kFirstDaughterDCA:

@@ -30,24 +30,45 @@
 #include "AliNormalizationCounter.h"
 #include "AliHFMLResponse.h"
 #include "AliHFMLResponseDstartoD0pi.h"
+#include "AliHFMLResponseD0toKpi.h"
 
 class AliAnalysisTaskSEDstarPolarization : public AliAnalysisTaskSE
 {
 public:
 
+    enum
+    {
+        kDstartoD0pi = 0,
+        kD0toKpi,
+    };
+
     AliAnalysisTaskSEDstarPolarization();
     AliAnalysisTaskSEDstarPolarization(const char *name, AliRDHFCuts *analysiscuts);
     virtual ~AliAnalysisTaskSEDstarPolarization();
 
-    void SetReadMC(bool readMC = true)                                                            {fReadMC = readMC;}
-    void SetAODMismatchProtection(int opt = 0)                                                    {fAODProtection = opt;}
-    void SetAnalysisCuts(AliRDHFCuts *cuts)                                                       {fRDCuts = cuts;}
-    void SetUseFinePtBinsForSparse(bool useFineBins = true)                                       {fUseFinPtBinsForSparse = useFineBins;}
-    void SetFillNSparseAcceptanceLevel(bool fill = true)                                          {fFillAcceptanceLevel = fill;}
+    void SetReadMC(bool readMC = true)                                                                          {fReadMC = readMC;}
+    void SetAODMismatchProtection(int opt = 0)                                                                  {fAODProtection = opt;}
+    void SetAnalysisCuts(AliRDHFCuts *cuts)                                                                     {fRDCuts = cuts;}
+    void SetUseFinePtBinsForSparse(bool useFineBins = true)                                                     {fUseFinPtBinsForSparse = useFineBins;}
+    void SetFillNSparseAcceptanceLevel(bool fill = true)                                                        {fFillAcceptanceLevel = fill;}
 
     /// methods for ML application
-    void SetDoMLApplication(bool flag = true, bool isMultiClass = false)                          {fApplyML = flag; fMultiClass = isMultiClass;}
-    void SetMLConfigFile(std::string path = "")                                                   {fConfigPath = path;}
+    void SetDoMLApplication(bool flag = true)                                                                   {fApplyML = flag;}
+    void SetMLConfigFile(std::string path = "")                                                                 {fConfigPath = path;}
+
+    void SetIsDependentOnMLSelector(bool flag=true, std::string name="MLSelector") {
+        fDependOnMLSelector = flag;
+        fMLSelectorName = name;
+    }
+
+    void SetCheckWithD0()                                                                                       {fDecChannel = kD0toKpi;}
+    void SetFillBkgSparse()                                                                                     {fFillBkgSparse = true;}
+
+    void SetBinsForMLAxes(std::array<int, 3> nBins, std::array<double, 3> mins, std::array<double, 3> maxs) {
+        fNBinsML = nBins;
+        fMLOutputMin = mins;
+        fMLOutputMax = maxs;
+    }
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -57,20 +78,23 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 6,
-        knVarForSparseReco   = 7,
+        knVarForSparseAcc    = 7,
+        knVarForSparseReco   = 11,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
     AliAnalysisTaskSEDstarPolarization &operator=(const AliAnalysisTaskSEDstarPolarization &source);
 
-    int IsCandidateSelected(AliAODRecoCascadeHF *&dStar, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx);
+    int IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx,
+                            std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond);
     void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, double centrality);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
     void CreateRecoSparses();
 
     AliAODEvent* fAOD = nullptr;                                                    /// AOD event
+
+    int fDecChannel = kDstartoD0pi;                                                 /// decay channel to analyse (main D*, D0 for analysis validation)
 
     TList *fOutput = nullptr;                                                       //!<! list send on output slot 0
     TH1F *fHistNEvents = nullptr;                                                   //!<! hist. for No. of events
@@ -92,18 +116,28 @@ private:
     THnSparseF* fnSparseRecoThetaPhiStar[4] = {nullptr, nullptr, nullptr, nullptr}; //!<! THnSparse for reco candidates
 
     bool fApplyML = false;                                                          /// flag to enable ML application
-    bool fMultiClass = false;                                                       /// flag to enable multi-class models (Bkg, Prompt, FD)
     std::string fConfigPath = "";                                                   /// path to ML config file
-    AliHFMLResponseDstartoD0pi* fMLResponse = nullptr;                              //!<! object to handle ML response
+    AliHFMLResponse* fMLResponse = nullptr;                                         //!<! object to handle ML response
+
+    bool fDependOnMLSelector = false;                                               /// flag to read ML scores from a AliAnalysisTaskSECharmHadronMLSelector task
+    std::vector<float> fPtLimsML{};                                                 /// pT bins in case application of ML model is done in MLSelector task   
+    std::vector<std::vector<double> > fMLScoreCuts{};                               /// score cuts used in case application of ML model is done in MLSelector task   
+    std::vector<std::vector<std::string> > fMLOptScoreCuts{};                       /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task                                           
+    std::string fMLSelectorName = "MLSelector";                                     /// name of MLSelector task
+
+    std::array<int, 3> fNBinsML = {100, 100, 100};                                  /// number of bins for the ML output scores in the THnSparse
+    std::array<double, 3> fMLOutputMin = {0., 0., 0.};                              /// minimum axis value for the ML output scores in the THnSparse
+    std::array<double, 3> fMLOutputMax = {1., 1., 1.};                              /// maximum axis value for the ML output scores in the THnSparse
 
     ROOT::Math::PxPyPzMVector fourVecDstar{};                                       /// four vector for reconstructed D* in the lab
     ROOT::Math::PxPyPzMVector fourVecD0{};                                          /// four vector for reconstructed D0 in the lab
     ROOT::Math::PxPyPzMVector fourVecPi{};                                          /// four vector for reconstructed pion in the lab
-    ROOT::Math::PxPyPzMVector fourVecD0CM{};                                        /// four vector for reconstructed D0 in the D* RF
     ROOT::Math::PxPyPzMVector fourVecPiCM{};                                        /// four vector for reconstructed pion in the D* RF
 
+    bool fFillBkgSparse = false;                                                    /// flag to fill or not fill bkg sparses
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 3); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 6); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

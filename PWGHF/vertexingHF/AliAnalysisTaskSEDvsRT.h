@@ -104,6 +104,8 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fPTDistributionGlobal; //!<! hist for Pt distribution of charged particles in all regions
    TH1F *fPhiDistributionGlobalTracks; //!<! hist for Phi distribution of selected global tracks
    TH1F *fPhiDistributionComplementaryTracks; //!<! hist for Phi distribution of selected complementary tracks
+   TH1F *fPhiDistributionHybridTracks; //!<! hist for Phi distribution of selected hybrid tracks
+   TH2F *fPhiEtaDistributionHybridTracks; //!<! hist for PhiEta distribution of selected hybrid tracks
    
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC

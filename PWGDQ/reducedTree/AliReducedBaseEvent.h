@@ -65,6 +65,9 @@ class AliReducedBaseEvent : public TObject {
   Float_t   CentralityVZEROA()                const {return fCentrality[4];}
   Float_t   CentralityVZEROC()                const {return fCentrality[5];}
   Float_t   CentralityZNA()                   const {return fCentrality[6];}
+  Float_t   CentralityV0MNew()                const {return fCentrality[7];}
+  Float_t   CentralityV0MNewPlus1()           const {return fCentrality[8];}
+  Float_t   CentralityV0MNewMinus1()          const {return fCentrality[9];}
   Int_t     CentralityQuality()               const {return fCentQuality;}
   Int_t     NTracksTotal()                    const {return fNtracks[0];}
   Int_t     NTracks()                         const {return fNtracks[1];}
@@ -95,7 +98,7 @@ class AliReducedBaseEvent : public TObject {
   Int_t     fRunNo;                 // run number
   Float_t   fVtx[3];                // global event vertex vector in cm
   Int_t     fNVtxContributors;      // global event vertex contributors
-  Float_t   fCentrality[7];         // centrality; 0-V0M, 1-CL1, 2-TRK, 3-ZEMvsZDC, 4-V0A, 5-V0C, 6-ZNA
+  Float_t   fCentrality[10];        // centrality; 0-V0M, 1-CL1, 2-TRK, 3-ZEMvsZDC, 4-V0A, 5-V0C, 6-ZNA, 7-VOMNew, 8-V0MNewPlus1, 9-V0MNewMinus1
   Int_t     fCentQuality;           // quality flag for the centrality 
   Int_t     fNtracks[2];            // number of tracks, [0]-total, [1]-selected for the tree
   Int_t     fNV0candidates[2];      // number of V0 candidates, [0]-total, [1]-selected for the tree
@@ -112,7 +115,7 @@ class AliReducedBaseEvent : public TObject {
   AliReducedBaseEvent& operator= (const AliReducedBaseEvent &c);
   AliReducedBaseEvent(const AliReducedBaseEvent &c);
 
-  ClassDef(AliReducedBaseEvent, 3);
+  ClassDef(AliReducedBaseEvent, 4);
 };
 
 #endif

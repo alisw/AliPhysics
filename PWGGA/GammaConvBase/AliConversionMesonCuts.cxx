@@ -2180,6 +2180,12 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
       fMaxPt = 25.;
       fDoMaxPtCut = kTRUE;
       break;
+  case 34: //y
+      fMinPt = 0.;
+      fDoMinPtCut = kFALSE;
+      fMaxPt = 22.;
+      fDoMaxPtCut = kTRUE;
+      break;
   default:
     cout<<"Warning: pT cut not defined"<<PtCut<<endl;
     return kFALSE;
@@ -2420,34 +2426,35 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 0;
       break;
     case 2: // PCM-EMC 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 1;
       break;
     case 3: // PHOS-PHOS 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
     case 4: // PCM-PHOS 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
+      break;
     case 5: //PCM-PCM 2 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 4;
       break;
     // Variations for 5 TeV
@@ -2511,39 +2518,39 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 5;
       break;
-    case 14: // e PCM-EMC 1.5 sigma
+    case 14: // e PCM-EMC 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
-      fSelectionNSigmaHigh = 1.5;
+      fSelectionNSigmaLow  = 3.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 1;
       break;
     case 15: // f PCM-EMC 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.5;
-      fSelectionNSigmaHigh = 2.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 1;
       break;
     case 16: // g PCM-EMC 3 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 1;
       break;
-    case 17: // h PHOS-PHOS 1.5 sigma
+    case 17: // h PHOS-PHOS 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
-      fSelectionNSigmaHigh = 1.5;
+      fSelectionNSigmaLow  = 3.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
     case 18: // i PHOS-PHOS 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.5;
-      fSelectionNSigmaHigh = 2.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
     case 19: // j PHOS-PHOS 4 sigma
@@ -2553,77 +2560,74 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fSelectionNSigmaHigh = 4.;
       fMassParamFunction   = 7;
       break;
-    case 20: // k PCM-PHOS 1.5 sigma
+    case 20: // k PCM-PHOS 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
-      fSelectionNSigmaHigh = 1.5;
+      fSelectionNSigmaLow  = 3.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
       break;
     case 21: // l PCM-PHOS 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 2.5;
-      fSelectionNSigmaHigh = 2.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
       break;
     case 22: // m PCM-PHOS 3 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
       break;
-    case 23: // n// PCM-PCM 13TeV 1.5 sigma
+    case 23: // n// PCM-PCM 13TeV 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fUseGammaSelection   = kTRUE;
-      fSelectionNSigmaLow  = 1.5;
-      fSelectionNSigmaHigh = 1.5;
+      fSelectionNSigmaLow  = 3.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 4;
       break;
     case 24: // o // PCM-PCM 13TeV 2.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.5;
-      fSelectionNSigmaHigh = 2.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 4;
       break;
     case 25: // p // PCM-PCM 4 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 4.;
-      fSelectionNSigmaHigh = 4.;
-      fMassParamFunction   = 9;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 4;
       break;
-    case 26: // q // PHOS-PHOS 1 sigma
+    case 26: // q // PHOS-PHOS 4 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.;
-      fSelectionNSigmaHigh = 1.;
+      fSelectionNSigmaLow  = 4;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
-    case 27: // r // PCM-PHOS 1 sigma
+    case 27: // r // EMC-EMC 3.5 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 1.;
-      fSelectionNSigmaHigh = 1.;
-      fMassParamFunction   = 3;
+      fSelectionNSigmaLow  = 3.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 0;
       break;
     case 28: // s //PHOS-PHOS 3 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 2;
       break;
-    case 29: // t // PCM-PHOS 3 sigma
+    case 29: // t // PCM-PHOS 4 sigma
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
-      fSelectionNSigmaLow  = 3.;
-      fSelectionNSigmaHigh = 3.;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 3;
       break;
       // Varation for 13 TeV EDC
@@ -2632,7 +2636,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 1.5;
-      fSelectionNSigmaHigh = 1.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 0;
       break;
     case 31: // v // EMC-EMC - 2.5 sigma - gamma selection
@@ -2640,7 +2644,7 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 2.5;
-      fSelectionNSigmaHigh = 2.5;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 0;
       break;
     case 32: // w // EMC-EMC - 4 sigma - gamma selection
@@ -2648,16 +2652,30 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
       fSelectionNSigmaLow  = 4.;
-      fSelectionNSigmaHigh = 4.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 0;
       break;
-    case 33: // x // EMC-EMC - 2 sigma - gamma selection
+    case 33: // x // EMC-EMC - 3 sigma - gamma selection
       fAcceptMesonMass     = kFALSE;
       fUsePtDepSelectionWindow = kTRUE;
       fUseGammaSelection   = kTRUE;
-      fSelectionNSigmaLow  = 2.;
-      fSelectionNSigmaHigh = 2.;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 0;
+      break;
+    case 34: // y PCM-EMC 4 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 1;
+      break;
+    case 35: // z // PCM-PCM 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 4;
       break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
@@ -3568,44 +3586,44 @@ Bool_t AliConversionMesonCuts::SetBackgroundScheme(Int_t BackgroundScheme){
     fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 31: // v cluster swapping method with 20 random with TGenPhaseSpace no evt weighting
+  case 31: // v cluster swapping method with 10 random with TGenPhaseSpace no evt weighting
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
+    fNumberOfSwappsForBg        = 10;
     fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
-  case 32: // w cluster swapping method with 20 random with TGenPhaseSpace with event weighting
+  case 32: // w cluster swapping method with 10 random with TGenPhaseSpace with border criterium
     fDoGammaSwappForBg          = 1;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
-    fDistanceToBorderSwappBG    = 0;
+    fNumberOfSwappsForBg        = 10;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 33: // x cluster swapping method with 20 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
+  case 33: // x cluster swapping method with 10 random with TGenPhaseSpace with event weighting & forbid decays that are similar to original decay
     fDoGammaSwappForBg          = 1;
     fDoWeightingInSwappBg       = kTRUE;
     fGammaSwappMethodBg         = 11;
-    fNumberOfSwappsForBg        = 20;
+    fNumberOfSwappsForBg        = 10;
     fDistanceToBorderSwappBG    = 0;
     fBackgroundHandler          = 2;
     break;
-  case 34: // y cluster swapping method with 90 degree rotation angle (around Pi0 for the omega analyses)
+  case 34: // y cluster swapping method with 90 degree rotation angle border criterium (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
     fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 0;
     fNumberOfSwappsForBg        = 1;
-    fDistanceToBorderSwappBG    = 0;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
-  case 35: // z cluster swapping method with 20 random with TGenPhaseSpace with event weighting (around Pi0 for the omega analyses)
+  case 35: // z cluster swapping method with 10 random with TGenPhaseSpace border criterium (around Pi0 for the omega analyses)
     fDoGammaSwappForBg          = 2;
-    fDoWeightingInSwappBg       = kTRUE;
+    fDoWeightingInSwappBg       = kFALSE;
     fGammaSwappMethodBg         = 10;
-    fNumberOfSwappsForBg        = 20;
-    fDistanceToBorderSwappBG    = 0;
+    fNumberOfSwappsForBg        = 10;
+    fDistanceToBorderSwappBG    = 1;
     fBackgroundHandler          = 2;
     break;
   default:
@@ -4609,124 +4627,221 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
-          if ((meson->Pt())<2.0){
-              pt=2.0;
-          } else if ((meson->Pt())>50.0) {
-              pt=50.;
+          //--------------------------------------------------
+          //          EMC 13TeV
+          //--------------------------------------------------
+          //Mass
+          //----------
+          if ((meson->Pt())<1.25){
+              pt=1.25;
+          } else if ((meson->Pt())>19.5){
+              pt=19.5;
           } else {
-              pt = (meson->Pt());
+              pt=(meson->Pt());
           }
-          mass = (0.123412) + ((0.00592567) * pt) + ((-0.000965584) * pt * pt) + ((7.25294e-05) * pt * pt * pt) + ((-2.50606e-06) * pt * pt * pt * pt) + ((4.19909e-08) * pt * pt * pt * pt * pt) + ((-2.73255e-10) * pt * pt * pt * pt * pt * pt);
-          if ((meson->Pt())<3.0){
-              pt=3.0;
-          } else if ((meson->Pt())>35.0) {
-              pt=35.;
-          } else {
-              pt = (meson->Pt());
-          }
-          sigma = (0.0141177) + ((-0.00103254) * pt ) + ((9.33798e-05) * pt * pt) + ((-2.89213e-07) * pt * pt * pt);
+          //pol4
+          //Parameter 0: 0.123842 +- 0.00026777
+          //Parameter 1: 0.00555053 +- 0.000212877
+          //Parameter 2: -0.000837645 +- 5.43594e-05
+          //Parameter 3: 5.30997e-05 +- 5.23354e-06
+          //Parameter 4: -1.05527e-06 +- 1.63344e-07
 
+          mass = (0.123842)+(0.00555053)*pt+(-0.000837645)*pt*pt+(5.30997e-05)*pt*pt*pt+(-1.05527e-06)*pt*pt*pt*pt;
+          //----------
+          //Width
+          //----------
+          if ((meson->Pt())<1.25){
+              pt=1.25;
+          } else if ((meson->Pt())>19.5){
+              pt=19.5;
+          } else {
+              pt=(meson->Pt());
+          }
+          //pol5
+          //Parameter 0: 0.0178729 +- 0.000159405
+          //Parameter 1: -0.00507216 +- 0.000107677
+          //Parameter 2: 0.00119111 +- 2.29606e-05
+          //Parameter 3: -0.000130104 +- 1.86762e-06
+          //Parameter 4: 6.62354e-06 +- 7.99564e-08
+          //Parameter 5: -1.22922e-07 +- 2.4273e-09
+
+          sigma = (0.0178729)+(-0.00507216)*pt+(0.00119111)*pt*pt+(-0.000130104)*pt*pt*pt+(6.62354e-06)*pt*pt*pt*pt+(-1.22922e-07)*pt*pt*pt*pt*pt;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 1: // PCM-EMC
+          //--------------------------------------------------
+          //          PCMEMC 13TeV
+          //--------------------------------------------------
+          //Mass
+          //----------
           if ((meson->Pt())<1.6){
               pt=1.6;
-          } else if ((meson->Pt())>35.0) {
-              pt=35.;
+          } else if ((meson->Pt())>55){
+              pt=55;
           } else {
-              pt = (meson->Pt());
+              pt=(meson->Pt());
           }
-          //pol4
-          //Parameter 0: 0.132086 +- 0.000141512
-          //Parameter 1: 0.00117846 +- 4.14296e-05
-          //Parameter 2: -0.000116076 +- 3.02581e-06
-          //Parameter 3: 4.10772e-06 +- 1.28843e-07
-          //Parameter 4: -5.00353e-08 +- 3.01244e-09
+          //pol3
+          //Parameter 0: 0.133944 +- 4.42928e-05
+          //Parameter 1: 0.000501946 +- 1.60038e-05
+          //Parameter 2: -1.51579e-05 +- 1.09856e-06
+          //Parameter 3: 1.58729e-07 +- 2.08324e-08
 
-          mass = (0.132086) + ((0.00117846) * pt) + ((-0.000116076) * pt * pt) + ((4.10772e-06) * pt * pt * pt) + ((-5.00353e-08) * pt * pt * pt * pt);
-          //pol5
-          //Parameter 0: 0.0108724 +- 0.000391574
-          //Parameter 1: -0.00149224 +- 0.000298747
-          //Parameter 2: 0.000209682 +- 6.9573e-05
-          //Parameter 3: -9.95503e-06 +- 5.77476e-06
-          //Parameter 4: 2.27248e-07 +- 1.89042e-07
-          //Parameter 5: -2.00548e-09 +- 2.08627e-09
+          mass = (0.133944)+(0.000501946)*pt+(-1.51579e-05)*pt*pt+(1.58729e-07)*pt*pt*pt;
+          //----------
+          //Width
+          //----------
+          if ((meson->Pt())<0.5){
+              pt=0.5;
+          } else if ((meson->Pt())>55){
+              pt=55;
+          } else {
+              pt=(meson->Pt());
+          }
+          //[0]+[1]*exp(-[2]*(x-[3]))+[4]*x+[5]*x*x+[6]*x*x*x+[7]*x*x*x*x
+          //Parameter 0: 0.00802387 +- 0.000125787
+          //Parameter 1: 0.000688345 +- 0.000190864
+          //Parameter 2: 1.06486 +- 0.0913911
+          //Parameter 3: 2.31291 +- 0.260417
+          //Parameter 4: -0.000284176 +- 2.58324e-05
+          //Parameter 5: 3.75977e-05 +- 1.84167e-06
+          //Parameter 6: -6.47403e-07 +- 6.46535e-08
+          //Parameter 7: 2.22675e-09 +- 9.40487e-10
 
-          sigma =   (0.0108724) + ((-0.00149224) * pt) + ((0.000209682) * pt * pt) + ((-9.95503e-06) * pt * pt * pt) + ((2.27248e-07) * pt * pt * pt * pt) + ((-2.00548e-09) * pt * pt * pt * pt * pt);
+          sigma = (0.00802387)+(0.000688345)*exp(-(1.06486)*(pt-(2.31291)))+(-0.000284176)*pt+(3.75977e-05)*pt*pt+(-6.47403e-07)*pt*pt*pt+(2.22675e-09)*pt*pt*pt*pt;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 2: // PHOS-PHOS
-          if ((meson->Pt())<0.8){
-              pt=0.8;
-          } else if ((meson->Pt())>45.0) {
-              pt=45.;
+          //--------------------------------------------------
+          //          PHOS 13TeV
+          //--------------------------------------------------
+          //Mass
+          //----------
+          if ((meson->Pt())<1){
+              pt=1;
+          } else if ((meson->Pt())>15){
+              pt=15;
           } else {
-              pt = (meson->Pt());
+              pt=(meson->Pt());
           }
-          //pol4
-          //Parameter 0: 0.134655 +- 0.000271382
-          //Parameter 1: -3.36029e-05 +- 6.43544e-05
-          //Parameter 2: 1.12821e-05 +- 5.31143e-06
-          //Parameter 3: -2.95147e-07 +- 1.97866e-07
-          //Parameter 4: 2.15293e-09 +- 2.72161e-09
-          mass = (0.134655) + ((-3.36029e-05) * pt) + ((1.12821e-05) * pt * pt) + ((-2.95147e-07) * pt * pt * pt) + ((2.15293e-09) * pt * pt * pt * pt);
-          //pol4
-          //Parameter 0: 0.00959887 +- 0.000414761
-          //Parameter 1: -0.00100671 +- 0.000123867
-          //Parameter 2: 9.25995e-05 +- 1.2902e-05
-          //Parameter 3: -3.01397e-06 +- 5.36484e-07
-          //Parameter 4: 3.41454e-08 +- 7.5969e-09
-          sigma =   (0.00959887) + ((-0.00100671) * pt) + ((9.25995e-05) * pt * pt) + ((-3.01397e-06) * pt * pt * pt) + ((3.41454e-08) * pt * pt * pt * pt);
+          //[0]+[1]*exp(-[2]*(x-[3]))
+          //Parameter 0: 0.134694 +- 3.52198e-05
+          //Parameter 1: -0.00071188 +- 0.00014893
+          //Parameter 2: 0.754934 +- 0.0599759
+          //Parameter 3: 1.73854 +- 0.276929
+
+          mass = (0.134694)+(-0.00071188)*exp(-(0.754934)*(pt-(1.73854)));
+          //----------
+          //Width
+          //----------
+          if ((meson->Pt())<1){
+              pt=1;
+          } else if ((meson->Pt())>15){
+              pt=15;
+          } else {
+              pt=(meson->Pt());
+          }
+          //[0]+[1]*exp(-[2]*(x-[3]))
+          //Parameter 0: 0.00526618 +- 2.85152e-05
+          //Parameter 1: 0.164035 +- 0.18279
+          //Parameter 2: 0.967652 +- 0.0461525
+          //Parameter 3: -3.44249 +- 1.15896
+
+          sigma = (0.00526618)+(0.164035)*exp(-(0.967652)*(pt-(-3.44249)));
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 3: // PCM-PHOS
-
-          if ((meson->Pt())>25.0) {
-              pt=25.;
+          //--------------------------------------------------
+          //          PCMPHOS 13TeV
+          //--------------------------------------------------
+          //Mass
+          //----------
+          if ((meson->Pt())<0.5){
+              pt=0.5;
+          } else if ((meson->Pt())>12){
+              pt=12;
           } else {
-              pt = (meson->Pt());
+              pt=(meson->Pt());
           }
-          //pol2
-          //Parameter 0: 0.135184 +- 0.000419845
-          //Parameter 1: 5.69406e-05 +- 8.58616e-05
-          //Parameter 2: -4.62682e-06 +- 3.58782e-06
+          //[0]+[1]*exp(-[2]*(x-[3]))+[4]*x+[5]*x*x+[6]*x*x*x+[7]*x*x*x*x+[8]*x*x*x*x*x
+          //Parameter 0: 0.181004 +- 0.000148027
+          //Parameter 1: -1.29329e-06 +- 4.06931e-09
+          //Parameter 2: -0.0288629 +- 8.82763e-06
+          //Parameter 3: -361.55 +- 0.111002
+          //Parameter 4: -0.00126556 +- 3.11989e-05
+          //Parameter 5: 0.00103592 +- 6.62636e-06
+          //Parameter 6: -0.00017686 +- 7.54389e-07
+          //Parameter 7: 1.38637e-05 +- 7.3911e-08
+          //Parameter 8: -3.99044e-07 +- 4.71381e-09
 
+          mass = (0.181004)+(-1.29329e-06)*exp(-(-0.0288629)*(pt-(-361.55)))+(-0.00126556)*pt+(0.00103592)*pt*pt+(-0.00017686)*pt*pt*pt+(1.38637e-05)*pt*pt*pt*pt+(-3.99044e-07)*pt*pt*pt*pt*pt;
+          //----------
+          //Width
+          //----------
+          if ((meson->Pt())<0.5){
+              pt=0.5;
+          } else if ((meson->Pt())>17.5){
+              pt=17.5;
+          } else {
+              pt=(meson->Pt());
+          }
+          //pol5
+          //Parameter 0: 0.00763113 +- 8.10086e-05
+          //Parameter 1: -0.00222875 +- 7.49557e-05
+          //Parameter 2: 0.000617225 +- 2.13295e-05
+          //Parameter 3: -7.41816e-05 +- 2.56345e-06
+          //Parameter 4: 4.07355e-06 +- 1.80269e-07
+          //Parameter 5: -8.21976e-08 +- 5.64794e-09
 
-          mass = (0.135184) + ((5.69406e-05) * pt) + ((-4.62682e-06) * pt * pt);
-          //pol2
-          //Parameter 0: 0.00565745 +- 0.000475353
-          //Parameter 1: 9.01408e-06 +- 0.00010717
-          //Parameter 2: 5.60582e-06 +- 4.70987e-06
-
-
-          sigma =   (0.00565745) + ((9.01408e-06) * pt) + ((5.60582e-06) * pt * pt);
+          sigma = (0.00763113)+(-0.00222875)*pt+(0.000617225)*pt*pt+(-7.41816e-05)*pt*pt*pt+(4.07355e-06)*pt*pt*pt*pt+(-8.21976e-08)*pt*pt*pt*pt*pt;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 4: // PCM-PCM
-          if ((meson->Pt())<0.4){
-              pt=0.4;
-          } else if ((meson->Pt())>12.0) {
-              pt=12.;
+          //--------------------------------------------------
+          //          PCM 13TeV
+          //--------------------------------------------------
+          //Mass
+          //----------
+          if ((meson->Pt())<0.25){
+              pt=0.25;
+          } else if ((meson->Pt())>10){
+              pt=10;
           } else {
-              pt = (meson->Pt());
+              pt=(meson->Pt());
           }
-          //"[0]+[1]*exp(-[2]*(x-[3]))+[4]*x+[5]*x*x"
-          //Parameter 0: 0.134825 +- 0.000262373
-          //Parameter 1: 0.000223328 +- 0.00268334
-          //Parameter 2: 1.67677 +- 0.855974
-          //Parameter 3: 1.39264 +- 7.19466
-          //Parameter 4: -4.90045e-05 +- 0.000100735
-          //Parameter 5: 1.5052e-06 +- 9.00314e-06
+          //[0]+[1]*exp(-[2]*(x-[3]))+[4]*x
+          //Parameter 0: 0.135489 +- 2.44975e-05
+          //Parameter 1: 0.000180863 +- 0.000296534
+          //Parameter 2: 3.25391 +- 0.267133
+          //Parameter 3: 1.0611 +- 0.504804
+          //Parameter 4: -8.01121e-05 +- 8.72642e-06
 
-          mass = (0.134825)+(0.000223328)*exp(-(1.67677)*(pt-(1.39264)))+(-4.90045e-05)*pt+(1.5052e-06)*pt*pt;
-          //pol1
-          //Parameter 0: 0.00377736 +- 2.1841e-05
-          //Parameter 1: 6.89211e-06 +- 1.41007e-05
-          sigma =   (0.00377736) + ( (6.89211e-06) * pt );
+          mass = (0.135489)+(0.000180863)*exp(-(3.25391)*(pt-(1.0611)))+(-8.01121e-05)*pt;
+          //----------
+          //Width
+          //----------
+          if ((meson->Pt())<1){
+              pt=1;
+          } else if ((meson->Pt())>10){
+              pt=10;
+          } else {
+              pt=(meson->Pt());
+          }
+          //pol7
+          //Parameter 0: 0.00525653 +- 6.36518e-05
+          //Parameter 1: -0.00922274 +- 9.8622e-05
+          //Parameter 2: 0.0110674 +- 4.93229e-05
+          //Parameter 3: -0.00642853 +- 1.38843e-05
+          //Parameter 4: 0.00203376 +- 2.77503e-06
+          //Parameter 5: -0.000354503 +- 6.02398e-07
+          //Parameter 6: 3.18462e-05 +- 1.76752e-07
+          //Parameter 7: -1.14849e-06 +- 1.28858e-08
+
+          sigma = (0.00525653)+(-0.00922274)*pt+(0.0110674)*pt*pt+(-0.00642853)*pt*pt*pt+(0.00203376)*pt*pt*pt*pt+(-0.000354503)*pt*pt*pt*pt*pt+(3.18462e-05)*pt*pt*pt*pt*pt*pt+(-1.14849e-06)*pt*pt*pt*pt*pt*pt*pt;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;

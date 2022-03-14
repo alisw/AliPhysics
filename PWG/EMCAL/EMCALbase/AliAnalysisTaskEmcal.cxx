@@ -179,9 +179,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -304,9 +306,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -430,6 +434,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
 
+    fHistWeightsAfterSel = new TH1F("fHistWeightsAfterSel", "fHistWeightsAfterSel", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeightsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeightsAfterSel);
+
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", fNPtHardBins, 0, fNPtHardBins);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
@@ -444,6 +453,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
+
+    fHistWeights = new TH1F("fHistWeights", "fHistWeights", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeights->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeights->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeights);
 
     // Set the bin labels
     Bool_t binningAvailable = false;
@@ -469,10 +483,12 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
         fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEventsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsectionAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeightsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
 
         fHistTrials->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsection->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEvents->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeights->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
       }
     } else {
       AliErrorStream() << "No suitable binning available - skipping bin labels" << std::endl;
@@ -585,6 +601,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     // and after selection
     fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, 1);
     fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fNTrials);
+    fHistWeightsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
     fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard, weight);
     if(fPtHardInitialized){
@@ -661,6 +678,12 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   // depends on it.
   if(fPtHard < fMinPtHard || fPtHard > fMaxPtHard) return;
 
+  // Fill weights before event selection
+  if(fIsPythia || fIsHerwig || fIsHepMC) {
+    auto weight = GetEventWeightFromHeader();
+    fHistWeights->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
+  }
+
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
     AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
@@ -678,8 +701,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     }
     */
     fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
-    fHistTrials->Fill(fPtHardBin);
-    fHistEvents->Fill(fPtHardBin);
+    fHistTrials->Fill(fPtHardBinGlobal);
+    fHistEvents->Fill(fPtHardBinGlobal);
   }
 
   if(fIsHepMC && fHepMCHeader) {
@@ -2163,7 +2186,7 @@ AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDatase
   namedataset.ToLower();
   PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
   MCProductionType_t prodtype = MCProductionType_t::kNoMC;
-  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4", "lhc21b8"};
+  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc16j5", "lhc18b8", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4", "lhc21b8"};
   std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
   std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
   std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};

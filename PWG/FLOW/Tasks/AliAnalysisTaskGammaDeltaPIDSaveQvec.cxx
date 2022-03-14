@@ -178,6 +178,12 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
+  fHCorrectNUAkPIDPosPion(NULL),
+  fHCorrectNUAkPIDNegPion(NULL),
+  fHCorrectNUAkPIDPosKaon(NULL),
+  fHCorrectNUAkPIDNegKaon(NULL),
+  fHCorrectNUAkPIDPosProton(NULL),
+  fHCorrectNUAkPIDNegProton(NULL),
   
   hAvgV2TPCvsCent(NULL),
   hAvgV2TPCvsCentPion(NULL),
@@ -386,6 +392,42 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec(const
     }
   }
 
+  fZDCCAvgTow1EnergyFraction = NULL;
+  fZDCCAvgTow2EnergyFraction = NULL;
+  fZDCCAvgTow3EnergyFraction = NULL;
+  fZDCCAvgTow4EnergyFraction = NULL;
+  fZDCAAvgTow1EnergyFraction = NULL;
+  fZDCAAvgTow2EnergyFraction = NULL;
+  fZDCAAvgTow3EnergyFraction = NULL;
+  fZDCAAvgTow4EnergyFraction = NULL;
+  fZDCCCommonTowVsSumTow2D = NULL;
+  fZDCACommonTowVsSumTow2D = NULL;
+  fZDCCTotEnergyFraction = NULL;
+  fZDCATotEnergyFraction = NULL;
+  
+  fZDCCAvgTow1EnergyLRFraction = NULL;
+  fZDCCAvgTow2EnergyLRFraction = NULL;
+  fZDCCAvgTow3EnergyLRFraction = NULL;
+  fZDCCAvgTow4EnergyLRFraction = NULL;
+  fZDCAAvgTow1EnergyLRFraction = NULL;
+  fZDCAAvgTow2EnergyLRFraction = NULL;
+  fZDCAAvgTow3EnergyLRFraction = NULL;
+  fZDCAAvgTow4EnergyLRFraction = NULL;
+  fZDCCCommonTowVsSumTow2DLR = NULL;
+  fZDCACommonTowVsSumTow2DLR = NULL;
+  fZDCCTotEnergyFractionLR = NULL;
+  fZDCATotEnergyFractionLR = NULL;
+  
+  fZDCCTow0LRHRratio = NULL;
+  fZDCCTow1LRHRratio = NULL;
+  fZDCCTow2LRHRratio = NULL;
+  fZDCCTow3LRHRratio = NULL;
+  fZDCCTow4LRHRratio = NULL;
+  fZDCATow0LRHRratio = NULL;
+  fZDCATow1LRHRratio = NULL;
+  fZDCATow2LRHRratio = NULL;
+  fZDCATow3LRHRratio = NULL;
+  fZDCATow4LRHRratio = NULL;
   
   //Must be here:
   DefineInput(0,TChain::Class());
@@ -503,6 +545,12 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
   fHCorrectNUAChrgNeg(NULL),
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
+  fHCorrectNUAkPIDPosPion(NULL),
+  fHCorrectNUAkPIDNegPion(NULL),
+  fHCorrectNUAkPIDPosKaon(NULL),
+  fHCorrectNUAkPIDNegKaon(NULL),
+  fHCorrectNUAkPIDPosProton(NULL),
+  fHCorrectNUAkPIDNegProton(NULL),
   
   hAvgV2TPCvsCent(NULL),
   hAvgV2TPCvsCentPion(NULL),
@@ -710,7 +758,43 @@ AliAnalysisTaskGammaDeltaPIDSaveQvec::AliAnalysisTaskGammaDeltaPIDSaveQvec():
       fCMEMultProtonBothCharge[c][h] = NULL;
     }
   }
-    
+  
+  fZDCCAvgTow1EnergyFraction = NULL;
+  fZDCCAvgTow2EnergyFraction = NULL;
+  fZDCCAvgTow3EnergyFraction = NULL;
+  fZDCCAvgTow4EnergyFraction = NULL;
+  fZDCAAvgTow1EnergyFraction = NULL;
+  fZDCAAvgTow2EnergyFraction = NULL;
+  fZDCAAvgTow3EnergyFraction = NULL;
+  fZDCAAvgTow4EnergyFraction = NULL;
+  fZDCCCommonTowVsSumTow2D = NULL;
+  fZDCACommonTowVsSumTow2D = NULL;
+  fZDCCTotEnergyFraction = NULL;
+  fZDCATotEnergyFraction = NULL;
+  
+  fZDCCAvgTow1EnergyLRFraction = NULL;
+  fZDCCAvgTow2EnergyLRFraction = NULL;
+  fZDCCAvgTow3EnergyLRFraction = NULL;
+  fZDCCAvgTow4EnergyLRFraction = NULL;
+  fZDCAAvgTow1EnergyLRFraction = NULL;
+  fZDCAAvgTow2EnergyLRFraction = NULL;
+  fZDCAAvgTow3EnergyLRFraction = NULL;
+  fZDCAAvgTow4EnergyLRFraction = NULL;
+  fZDCCCommonTowVsSumTow2DLR = NULL;
+  fZDCACommonTowVsSumTow2DLR = NULL;
+  fZDCCTotEnergyFractionLR = NULL;
+  fZDCATotEnergyFractionLR = NULL;
+  
+  fZDCCTow0LRHRratio = NULL;
+  fZDCCTow1LRHRratio = NULL;
+  fZDCCTow2LRHRratio = NULL;
+  fZDCCTow3LRHRratio = NULL;
+  fZDCCTow4LRHRratio = NULL;
+  fZDCATow0LRHRratio = NULL;
+  fZDCATow1LRHRratio = NULL;
+  fZDCATow2LRHRratio = NULL;
+  fZDCATow3LRHRratio = NULL;
+  fZDCATow4LRHRratio = NULL;
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
@@ -927,7 +1011,32 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   //----------------------------------------------
 
 
-
+  UInt_t period = fAOD->GetPeriodNumber();
+  UInt_t orbit24 = fAOD->GetOrbitNumber();
+  
+  if (period > 255) { // 8 bits
+	  cout<<"invalid period number"<<endl;
+	  period = 255;
+	  orbit24 = (1<<24)-1;
+  }
+  
+  
+  if (orbit24 >= (1<<24)) { // 24 bits
+	  cout<<"invalid orbit number"<<endl;
+	  period = 255;
+	  orbit24 = (1<<24)-1;
+  }
+  
+  UInt_t orbit = period * (1<<24) + orbit24;
+  
+  UShort_t bunchCrossNumber = fAOD->GetBunchCrossNumber();
+  UInt_t timeStamp = fAOD->GetTimeStamp();
+  
+  fpQvecEvent->setRawPeriod(period);
+  fpQvecEvent->setRawOrbitNumber24(orbit24);
+  fpQvecEvent->setOrbitNumber(orbit);
+  fpQvecEvent->setBunchCrossNumber(bunchCrossNumber);
+  fpQvecEvent->setTimeStamp(timeStamp);
   
   Bool_t kPileupEvent = kFALSE;
 
@@ -1161,6 +1270,9 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   else if(aodZDC){
     const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
     const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
+    const Double_t *fZNATowerRawAODLR = aodZDC->GetZNATowerEnergyLR();
+    const Double_t *fZNCTowerRawAODLR = aodZDC->GetZNCTowerEnergyLR();
+    
     //const Double_t *fZPATowerRawAOD = aodZDC->GetZPATowerEnergy();
     //const Double_t *fZPCTowerRawAOD = aodZDC->GetZPCTowerEnergy();  
     //const Int_t nZDCChannel = 5;
@@ -1176,7 +1288,44 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	fpQvecEvent->setTowZNAraw2(fZNATowerRawAOD[2]);
 	fpQvecEvent->setTowZNAraw3(fZNATowerRawAOD[3]);
 	fpQvecEvent->setTowZNAraw4(fZNATowerRawAOD[4]);
-
+	
+	fZDCCAvgTow1EnergyFraction->Fill(fZNCTowerRawAOD[1]/fZNCTowerRawAOD[0]);
+	fZDCCAvgTow2EnergyFraction->Fill(fZNCTowerRawAOD[2]/fZNCTowerRawAOD[0]);
+	fZDCCAvgTow3EnergyFraction->Fill(fZNCTowerRawAOD[3]/fZNCTowerRawAOD[0]);
+	fZDCCAvgTow4EnergyFraction->Fill(fZNCTowerRawAOD[4]/fZNCTowerRawAOD[0]);
+	fZDCAAvgTow1EnergyFraction->Fill(fZNATowerRawAOD[1]/fZNATowerRawAOD[0]);
+	fZDCAAvgTow2EnergyFraction->Fill(fZNATowerRawAOD[2]/fZNATowerRawAOD[0]);
+	fZDCAAvgTow3EnergyFraction->Fill(fZNATowerRawAOD[3]/fZNATowerRawAOD[0]);
+	fZDCAAvgTow4EnergyFraction->Fill(fZNATowerRawAOD[4]/fZNATowerRawAOD[0]);
+	fZDCCCommonTowVsSumTow2D->Fill(fZNCTowerRawAOD[0], fZNCTowerRawAOD[1]+fZNCTowerRawAOD[2]+fZNCTowerRawAOD[3]+fZNCTowerRawAOD[4]);
+	fZDCACommonTowVsSumTow2D->Fill(fZNATowerRawAOD[0], fZNATowerRawAOD[1]+fZNATowerRawAOD[2]+fZNATowerRawAOD[3]+fZNATowerRawAOD[4]);
+	fZDCCTotEnergyFraction->Fill((fZNCTowerRawAOD[1]+fZNCTowerRawAOD[2]+fZNCTowerRawAOD[3]+fZNCTowerRawAOD[4])/fZNCTowerRawAOD[0]);
+	fZDCATotEnergyFraction->Fill((fZNATowerRawAOD[1]+fZNATowerRawAOD[2]+fZNATowerRawAOD[3]+fZNATowerRawAOD[4])/fZNATowerRawAOD[0]);
+	
+	fZDCCAvgTow1EnergyLRFraction->Fill(fZNCTowerRawAODLR[1]/fZNCTowerRawAODLR[0]);
+	fZDCCAvgTow2EnergyLRFraction->Fill(fZNCTowerRawAODLR[2]/fZNCTowerRawAODLR[0]);
+	fZDCCAvgTow3EnergyLRFraction->Fill(fZNCTowerRawAODLR[3]/fZNCTowerRawAODLR[0]);
+	fZDCCAvgTow4EnergyLRFraction->Fill(fZNCTowerRawAODLR[4]/fZNCTowerRawAODLR[0]);
+	fZDCAAvgTow1EnergyLRFraction->Fill(fZNATowerRawAODLR[1]/fZNATowerRawAODLR[0]);
+	fZDCAAvgTow2EnergyLRFraction->Fill(fZNATowerRawAODLR[2]/fZNATowerRawAODLR[0]);
+	fZDCAAvgTow3EnergyLRFraction->Fill(fZNATowerRawAODLR[3]/fZNATowerRawAODLR[0]);
+	fZDCAAvgTow4EnergyLRFraction->Fill(fZNATowerRawAODLR[4]/fZNATowerRawAODLR[0]);
+	fZDCCCommonTowVsSumTow2DLR->Fill(fZNCTowerRawAODLR[0], fZNCTowerRawAODLR[1]+fZNCTowerRawAODLR[2]+fZNCTowerRawAODLR[3]+fZNCTowerRawAODLR[4]);
+	fZDCACommonTowVsSumTow2DLR->Fill(fZNATowerRawAODLR[0], fZNATowerRawAODLR[1]+fZNATowerRawAODLR[2]+fZNATowerRawAODLR[3]+fZNATowerRawAODLR[4]);
+	fZDCCTotEnergyFractionLR->Fill((fZNCTowerRawAODLR[1]+fZNCTowerRawAODLR[2]+fZNCTowerRawAODLR[3]+fZNCTowerRawAODLR[4])/fZNCTowerRawAODLR[0]);
+	fZDCATotEnergyFractionLR->Fill((fZNATowerRawAODLR[1]+fZNATowerRawAODLR[2]+fZNATowerRawAODLR[3]+fZNATowerRawAODLR[4])/fZNATowerRawAODLR[0]);
+	
+	fZDCCTow0LRHRratio->Fill(fZNCTowerRawAODLR[0]/fZNCTowerRawAOD[0]);
+	fZDCCTow1LRHRratio->Fill(fZNCTowerRawAODLR[1]/fZNCTowerRawAOD[1]);
+	fZDCCTow2LRHRratio->Fill(fZNCTowerRawAODLR[2]/fZNCTowerRawAOD[2]);
+	fZDCCTow3LRHRratio->Fill(fZNCTowerRawAODLR[3]/fZNCTowerRawAOD[3]);
+	fZDCCTow4LRHRratio->Fill(fZNCTowerRawAODLR[4]/fZNCTowerRawAOD[4]);
+	fZDCATow0LRHRratio->Fill(fZNATowerRawAODLR[0]/fZNATowerRawAOD[0]);
+	fZDCATow1LRHRratio->Fill(fZNATowerRawAODLR[1]/fZNATowerRawAOD[1]);
+	fZDCATow2LRHRratio->Fill(fZNATowerRawAODLR[2]/fZNATowerRawAOD[2]);
+	fZDCATow3LRHRratio->Fill(fZNATowerRawAODLR[3]/fZNATowerRawAOD[3]);
+	fZDCATow4LRHRratio->Fill(fZNATowerRawAODLR[4]/fZNATowerRawAOD[4]);
+  
   }
 
   // ================================================================================> Set event info 
@@ -1289,8 +1438,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	ptWgtMCPIDtrk1 = 1.0;
 
 
-	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);    
-	WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);       
+	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);          
 	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0);
 
 	wgtComb1Ch  = WgtNUAChtrk1*ptWgtMCChtrk1;    /// Charge
@@ -1308,6 +1456,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	isTrk1Pion = CheckPIDofParticle(AODtrack1,1); // 1 for pion
 	if (isTrk1Pion) {
 		ptWgtMCPiontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,1);
+		WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg,1); 
 		wgtComb1PIDPion = WgtNUAPIDtrk1*ptWgtMCPiontrk1;
 	}
 	
@@ -1316,6 +1465,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	isTrk1Kaon = CheckPIDofParticle(AODtrack1,2); // 2 for kaon
 	if (isTrk1Kaon) {
 		ptWgtMCKaontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,2);
+		WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg,2); 
 		wgtComb1PIDKaon = WgtNUAPIDtrk1*ptWgtMCKaontrk1;
 	}
 	
@@ -1324,6 +1474,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 	isTrk1Proton = CheckPIDofParticle(AODtrack1,3); // 3 for proton
 	if (isTrk1Proton) {
 		ptWgtMCProtontrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,3);
+		WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg,3); 
 		wgtComb1PIDProton = WgtNUAPIDtrk1*ptWgtMCProtontrk1;
 	}
 	
@@ -1397,6 +1548,17 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		hAvgV2TPCvsCentProton->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNEvent),wgtComb1PIDProton);
 	  }
 	}
+	
+	// save v2 for each plane
+	Double_t fPsi2TPC = 0;
+	
+	fPsi2TPC = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
+	if(fPsi2TPC < 0) fPsi2TPC += TMath::TwoPi()/2;
+	
+	
+
+	
+
 
 	// ================================ save Qvec ===================================
 
@@ -1410,6 +1572,17 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		fCMEQRe[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.)*TMath::Cos((h+1.)*trk1Phi));
 		fCMEQIm[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.)*TMath::Sin((h+1.)*trk1Phi));
 		fCMEMult[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.));
+		if (h == 0) {
+			fCMEQ2Re4[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
+			fCMEQ3Re2[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,3)*TMath::Cos(2*trk1Phi)); // w^3*cos(2phi)
+			fCMEQ2Im4[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,2)*TMath::Sin(4*trk1Phi)); // w^2*sin(4phi)
+			fCMEQ3Im2[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,3)*TMath::Sin(2*trk1Phi)); // w^3*sin(2phi)
+			fCMEw0[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,0));
+			fCMEw1[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,1));
+			fCMEw2[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,2));
+			fCMEw3[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,3));
+			fCMEw4[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,4));
+		}
 		
 		fCMEQReBothCharge[0][h]->Fill(trk1Eta,wgtComb1Ch*TMath::Cos((h+1.)*trk1Phi));
 		fCMEQImBothCharge[0][h]->Fill(trk1Eta,wgtComb1Ch*TMath::Sin((h+1.)*trk1Phi));
@@ -1417,51 +1590,87 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		fCMEQReBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.)*TMath::Cos((h+1.)*trk1Phi));
 		fCMEQImBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.)*TMath::Sin((h+1.)*trk1Phi));
 		fCMEMultBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.));
-		if (isTrk1Pion) {
-			// pion 
-			fCMEQRePion[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
-			fCMEQImPion[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultPion[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDPion);
-			fCMEQRePion[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImPion[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultPion[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.));
-			
-			fCMEQRePionBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImPionBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultPionBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDPion);
-			fCMEQRePionBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImPionBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultPionBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.));
-		} else if (isTrk1Kaon) {
-			// kaon
-			fCMEQReKaon[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
-			fCMEQImKaon[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultKaon[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDKaon);
-			fCMEQReKaon[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImKaon[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultKaon[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.));
-			
-			fCMEQReKaonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImKaonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultKaonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDKaon);
-			fCMEQReKaonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImKaonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultKaonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.));
-		} else if (isTrk1Proton) {
-			// proton
-			fCMEQReProton[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
-			fCMEQImProton[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultProton[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDProton);
-			fCMEQReProton[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImProton[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultProton[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.));
-			
-			fCMEQReProtonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImProtonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultProtonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDProton);
-			fCMEQReProtonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQImProtonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMultProtonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.));
+		
+		if (trk1Pt <= 2.0) { // beyond 2 GeV the purity drops
+			if (isTrk1Pion) {
+				// pion 
+				fCMEQRePion[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
+				fCMEQImPion[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultPion[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDPion);
+				fCMEQRePion[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImPion[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultPion[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.));
+				if (h == 0) {
+					fCMEQ2Re4Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ3Re2Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,3)*TMath::Cos(2*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ2Im4Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,2)*TMath::Sin(4*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ3Im2Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,3)*TMath::Sin(2*trk1Phi)); // w^2*cos(4phi)
+					fCMEw0Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,0));
+					fCMEw1Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,1));
+					fCMEw2Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,2));
+					fCMEw3Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,3));
+					fCMEw4Pion[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDPion,4));
+				}
+				
+				fCMEQRePionBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImPionBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDPion*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultPionBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDPion);
+				fCMEQRePionBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImPionBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.)*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultPionBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDPion,2.));
+			} else if (isTrk1Kaon) {
+				// kaon
+				fCMEQReKaon[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
+				fCMEQImKaon[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultKaon[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDKaon);
+				fCMEQReKaon[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImKaon[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultKaon[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.));
+				if (h == 0) {
+					fCMEQ2Re4Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ3Re2Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,3)*TMath::Cos(2*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ2Im4Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2)*TMath::Sin(4*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ3Im2Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,3)*TMath::Sin(2*trk1Phi)); // w^2*cos(4phi)
+					fCMEw0Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,0));
+					fCMEw1Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,1));
+					fCMEw2Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2));
+					fCMEw3Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,3));
+					fCMEw4Kaon[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDKaon,4));
+				}
+				
+				fCMEQReKaonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImKaonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDKaon*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultKaonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDKaon);
+				fCMEQReKaonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImKaonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.)*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultKaonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDKaon,2.));
+			} else if (isTrk1Proton) {
+				// proton
+				fCMEQReProton[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
+				fCMEQImProton[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultProton[chargeIndex][h]->Fill(trk1Eta,wgtComb1PIDProton);
+				fCMEQReProton[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImProton[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultProton[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.));
+				if (h == 0) {
+					fCMEQ2Re4Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ3Re2Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,3)*TMath::Cos(2*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ2Im4Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,2)*TMath::Sin(4*trk1Phi)); // w^2*cos(4phi)
+					fCMEQ3Im2Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,3)*TMath::Sin(2*trk1Phi)); // w^2*cos(4phi)
+					fCMEw0Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,0));
+					fCMEw1Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,1));
+					fCMEw2Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,2));
+					fCMEw3Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,3));
+					fCMEw4Proton[chargeIndex]->Fill(trk1Eta,pow(wgtComb1PIDProton,4));
+				}
+				
+				fCMEQReProtonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImProtonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDProton*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultProtonBothCharge[0][h]->Fill(trk1Eta,wgtComb1PIDProton);
+				fCMEQReProtonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Cos((h+1.)*trk1Phi));
+				fCMEQImProtonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.)*TMath::Sin((h+1.)*trk1Phi));
+				fCMEMultProtonBothCharge[1][h]->Fill(trk1Eta,pow(wgtComb1PIDProton,2.));
+			}
 		}
 		
 	}
@@ -1501,7 +1710,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 
 
 		WgtNUAChtrk2  = GetNUAWeightForTrack(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);    
-		WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);       
 		ptWgtMCChtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,0);
 		
 		wgtComb2Ch  = WgtNUAChtrk2*ptWgtMCChtrk2;      /// Combined weight for trk2 Ch
@@ -1520,6 +1728,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		isTrk2Pion = CheckPIDofParticle(AODtrack2,1); // 1 for pion
 		if (isTrk2Pion) {
 			ptWgtMCPionTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,1);
+			WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg,1);
 			wgtComb2PIDPion = WgtNUAPIDtrk2*ptWgtMCPionTrk2;
 		}
 		
@@ -1528,6 +1737,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		isTrk2Kaon = CheckPIDofParticle(AODtrack2,2); // 2 for kaon
 		if (isTrk2Kaon) {
 			ptWgtMCKaonTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,2);
+			WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg,2);
 			wgtComb2PIDKaon = WgtNUAPIDtrk2*ptWgtMCKaonTrk2;
 		}
 		
@@ -1536,6 +1746,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		isTrk2Proton = CheckPIDofParticle(AODtrack2,3); // 2 for proton
 		if (isTrk2Proton) {
 			ptWgtMCProtonTrk2= GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,3);
+			WgtNUAPIDtrk2 = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg,3);
 			wgtComb2PIDProton = WgtNUAPIDtrk2*ptWgtMCProtonTrk2;
 		}
 	
@@ -1562,7 +1773,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		  localMultTPC= fMultPos;
 		}
 		
-		if(trk2Pt < 2.0 && !((trk2Eta >= fEtaGapNeg) && (trk2Eta <= fEtaGapPos))){ // trk pt less than 2 GeV ????????
+		if(trk2Pt < 2.0 && !((trk2Eta >= fEtaGapNeg) && (trk2Eta <= fEtaGapPos))){ // 
 		  localSumQ2x -= WgtNUAChtrk2*trk2Pt*TMath::Cos(2*trk2Phi);
 		  localSumQ2y -= WgtNUAChtrk2*trk2Pt*TMath::Sin(2*trk2Phi);
 		  localSumQ3x -= WgtNUAChtrk2*trk2Pt*TMath::Cos(3*trk2Phi);
@@ -1588,278 +1799,284 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
 		fPsi3Event = fPsi3TPCPos;
 	      
 	      if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
-		hAvg3pC112vsCentOS->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2Ch);
-		hAvg3pC123vsCentOS->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2Ch);
+		    hAvg3pC112vsCentOS->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2Ch);
+		    hAvg3pC123vsCentOS->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2Ch);
 				
-		hAvgDelta1vsCentOS->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2Ch);
-		hAvgDelta2vsCentOS->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2Ch);
-		hAvgDelta3vsCentOS->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2Ch);
-		hAvgDelta4vsCentOS->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2Ch);		
+		    hAvgDelta1vsCentOS->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2Ch);
+		    hAvgDelta2vsCentOS->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2Ch);
+		    hAvgDelta3vsCentOS->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2Ch);
+		    hAvgDelta4vsCentOS->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2Ch);		
 		
-			if(isTrk1Pion && isTrk2Pion) {
-				hAvg3pC112vsCentOSPionPion->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvg3pC123vsCentOSPionPion->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2PIDPion);
-						
-				hAvgDelta1vsCentOSPionPion->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta2vsCentOSPionPion->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta3vsCentOSPionPion->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta4vsCentOSPionPion->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);		
-			} else if(isTrk1Kaon && isTrk2Kaon) {
-				hAvg3pC112vsCentOSKaonKaon->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvg3pC123vsCentOSKaonKaon->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2PIDKaon);
-						
-				hAvgDelta1vsCentOSKaonKaon->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta2vsCentOSKaonKaon->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta3vsCentOSKaonKaon->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta4vsCentOSKaonKaon->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);	
-			} else if(isTrk1Proton && isTrk2Proton) {
-				hAvg3pC112vsCentOSProtonProton->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvg3pC123vsCentOSProtonProton->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2PIDProton);
-						
-				hAvgDelta1vsCentOSProtonProton->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta2vsCentOSProtonProton->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta3vsCentOSProtonProton->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta4vsCentOSProtonProton->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);	
-			}
-				
-			if(isTrk1Pion || isTrk2Pion) {
-				if(isTrk1Pion) {
-					hAvg3pC112vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2Ch);
-					hAvg3pC123vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2Ch);
+			if(trk1Pt <= 2.0 && trk2Pt <= 2.0) {
+				if(isTrk1Pion && isTrk2Pion) {
+					hAvg3pC112vsCentOSPionPion->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvg3pC123vsCentOSPionPion->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2PIDPion);
 							
-					hAvgDelta1vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta2vsCentOSPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta3vsCentOSPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta4vsCentOSPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);		
-				} else if(isTrk2Pion) {
-					hAvg3pC112vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDPion);
-					hAvg3pC123vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDPion);
+					hAvgDelta1vsCentOSPionPion->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta2vsCentOSPionPion->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta3vsCentOSPionPion->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta4vsCentOSPionPion->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);		
+				} else if(isTrk1Kaon && isTrk2Kaon) {
+					hAvg3pC112vsCentOSKaonKaon->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvg3pC123vsCentOSKaonKaon->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2PIDKaon);
 							
-					hAvgDelta1vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta2vsCentOSPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta3vsCentOSPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta4vsCentOSPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);	
+					hAvgDelta1vsCentOSKaonKaon->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta2vsCentOSKaonKaon->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta3vsCentOSKaonKaon->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta4vsCentOSKaonKaon->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);	
+				} else if(isTrk1Proton && isTrk2Proton) {
+					hAvg3pC112vsCentOSProtonProton->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvg3pC123vsCentOSProtonProton->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2PIDProton);
+							
+					hAvgDelta1vsCentOSProtonProton->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta2vsCentOSProtonProton->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta3vsCentOSProtonProton->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta4vsCentOSProtonProton->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);	
 				}
-			} else if(isTrk1Kaon || isTrk2Kaon) {
-				if(isTrk1Kaon) {
-					hAvg3pC112vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvg3pC123vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2Ch);
-							
-					hAvgDelta1vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta2vsCentOSKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta3vsCentOSKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta4vsCentOSKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);	
-				} else if(isTrk2Kaon) {
-					hAvg3pC112vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvg3pC123vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDKaon);
-							
-					hAvgDelta1vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta2vsCentOSKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta3vsCentOSKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta4vsCentOSKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);	
+					
+				if(isTrk1Pion || isTrk2Pion) {
+					if(isTrk1Pion) {
+						hAvg3pC112vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2Ch);
+						hAvg3pC123vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2Ch);
+								
+						hAvgDelta1vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta2vsCentOSPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta3vsCentOSPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta4vsCentOSPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);		
+					} else if(isTrk2Pion) {
+						hAvg3pC112vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDPion);
+						hAvg3pC123vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDPion);
+								
+						hAvgDelta1vsCentOSPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta2vsCentOSPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta3vsCentOSPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta4vsCentOSPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);	
+					}
+				} else if(isTrk1Kaon || isTrk2Kaon) {
+					if(isTrk1Kaon) {
+						hAvg3pC112vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvg3pC123vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2Ch);
+								
+						hAvgDelta1vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta2vsCentOSKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta3vsCentOSKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta4vsCentOSKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);	
+					} else if(isTrk2Kaon) {
+						hAvg3pC112vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvg3pC123vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDKaon);
+								
+						hAvgDelta1vsCentOSKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta2vsCentOSKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta3vsCentOSKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta4vsCentOSKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);	
+					}
+				} else if(isTrk1Proton || isTrk2Proton) {
+					if(isTrk1Proton) {
+						hAvg3pC112vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2Ch);
+						hAvg3pC123vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2Ch);
+								
+						hAvgDelta1vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta2vsCentOSProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta3vsCentOSProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta4vsCentOSProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);	
+					} else if(isTrk2Proton) {
+						hAvg3pC112vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDProton);
+						hAvg3pC123vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDProton);
+								
+						hAvgDelta1vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta2vsCentOSProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta3vsCentOSProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta4vsCentOSProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);	
+					}
+					
 				}
-			} else if(isTrk1Proton || isTrk2Proton) {
-				if(isTrk1Proton) {
-					hAvg3pC112vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2Ch);
-					hAvg3pC123vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2Ch);
-							
-					hAvgDelta1vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta2vsCentOSProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta3vsCentOSProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta4vsCentOSProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);	
-				} else if(isTrk2Proton) {
-					hAvg3pC112vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDProton);
-					hAvg3pC123vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDProton);
-							
-					hAvgDelta1vsCentOSProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta2vsCentOSProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta3vsCentOSProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta4vsCentOSProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);	
-				}
-				
-			}
+		    }
 		
 	      }		
 	      else if(trk1Chrg > 0 && trk2Chrg > 0){		      
-		hAvg3pC112vsCentPP->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2Ch);
-		hAvg3pC123vsCentPP->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb2Ch);
+		    hAvg3pC112vsCentPP->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2Ch);
+		    hAvg3pC123vsCentPP->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb2Ch);
 				
-		hAvgDelta1vsCentPP->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb2Ch);
-		hAvgDelta2vsCentPP->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb2Ch);
-		hAvgDelta3vsCentPP->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2Ch);
-		hAvgDelta4vsCentPP->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2Ch);		
-		
-			if(isTrk1Pion && isTrk2Pion) {
-				hAvg3pC112vsCentPPPionPion->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvg3pC123vsCentPPPionPion->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2PIDPion);
-						
-				hAvgDelta1vsCentPPPionPion->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta2vsCentPPPionPion->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta3vsCentPPPionPion->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta4vsCentPPPionPion->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);		
-			} else if(isTrk1Kaon && isTrk2Kaon) {
-				hAvg3pC112vsCentPPKaonKaon->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvg3pC123vsCentPPKaonKaon->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2PIDKaon);
-						
-				hAvgDelta1vsCentPPKaonKaon->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta2vsCentPPKaonKaon->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta3vsCentPPKaonKaon->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta4vsCentPPKaonKaon->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);	
-			} else if(isTrk1Proton && isTrk2Proton) {
-				hAvg3pC112vsCentPPProtonProton->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvg3pC123vsCentPPProtonProton->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2PIDProton);
-						
-				hAvgDelta1vsCentPPProtonProton->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta2vsCentPPProtonProton->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta3vsCentPPProtonProton->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta4vsCentPPProtonProton->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);	
-			}
-				
-			if(isTrk1Pion || isTrk2Pion) {
-				if(isTrk1Pion) {
-					hAvg3pC112vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2Ch);
-					hAvg3pC123vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2Ch);
+		    hAvgDelta1vsCentPP->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb2Ch);
+		    hAvgDelta2vsCentPP->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb2Ch);
+		    hAvgDelta3vsCentPP->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2Ch);
+		    hAvgDelta4vsCentPP->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2Ch);		
+		    
+		    if(trk1Pt <= 2.0 && trk2Pt <= 2.0) {
+				if(isTrk1Pion && isTrk2Pion) {
+					hAvg3pC112vsCentPPPionPion->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvg3pC123vsCentPPPionPion->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2PIDPion);
 							
-					hAvgDelta1vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta2vsCentPPPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta3vsCentPPPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta4vsCentPPPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);		
-				} else if(isTrk2Pion) {
-					hAvg3pC112vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDPion);
-					hAvg3pC123vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDPion);
+					hAvgDelta1vsCentPPPionPion->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta2vsCentPPPionPion->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta3vsCentPPPionPion->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta4vsCentPPPionPion->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);		
+				} else if(isTrk1Kaon && isTrk2Kaon) {
+					hAvg3pC112vsCentPPKaonKaon->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvg3pC123vsCentPPKaonKaon->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2PIDKaon);
 							
-					hAvgDelta1vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta2vsCentPPPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta3vsCentPPPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta4vsCentPPPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);	
+					hAvgDelta1vsCentPPKaonKaon->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta2vsCentPPKaonKaon->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta3vsCentPPKaonKaon->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta4vsCentPPKaonKaon->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);	
+				} else if(isTrk1Proton && isTrk2Proton) {
+					hAvg3pC112vsCentPPProtonProton->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvg3pC123vsCentPPProtonProton->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2PIDProton);
+							
+					hAvgDelta1vsCentPPProtonProton->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta2vsCentPPProtonProton->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta3vsCentPPProtonProton->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta4vsCentPPProtonProton->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);	
 				}
-			} else if(isTrk1Kaon || isTrk2Kaon) {
-				if(isTrk1Kaon) {
-					hAvg3pC112vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvg3pC123vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2Ch);
-							
-					hAvgDelta1vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta2vsCentPPKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta3vsCentPPKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta4vsCentPPKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);	
-				} else if(isTrk2Kaon) {
-					hAvg3pC112vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvg3pC123vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDKaon);
-							
-					hAvgDelta1vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta2vsCentPPKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta3vsCentPPKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta4vsCentPPKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);	
-				}
-			} else if(isTrk1Proton || isTrk2Proton) {
-				if(isTrk1Proton) {
-					hAvg3pC112vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2Ch);
-					hAvg3pC123vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2Ch);
-							
-					hAvgDelta1vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta2vsCentPPProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta3vsCentPPProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta4vsCentPPProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);	
-				} else if(isTrk2Proton) {
-					hAvg3pC112vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDProton);
-					hAvg3pC123vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDProton);
-							
-					hAvgDelta1vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta2vsCentPPProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta3vsCentPPProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta4vsCentPPProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);	
+					
+				if(isTrk1Pion || isTrk2Pion) {
+					if(isTrk1Pion) {
+						hAvg3pC112vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2Ch);
+						hAvg3pC123vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2Ch);
+								
+						hAvgDelta1vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta2vsCentPPPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta3vsCentPPPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta4vsCentPPPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);		
+					} else if(isTrk2Pion) {
+						hAvg3pC112vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDPion);
+						hAvg3pC123vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDPion);
+								
+						hAvgDelta1vsCentPPPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta2vsCentPPPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta3vsCentPPPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta4vsCentPPPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);	
+					}
+				} else if(isTrk1Kaon || isTrk2Kaon) {
+					if(isTrk1Kaon) {
+						hAvg3pC112vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvg3pC123vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2Ch);
+								
+						hAvgDelta1vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta2vsCentPPKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta3vsCentPPKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta4vsCentPPKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);	
+					} else if(isTrk2Kaon) {
+						hAvg3pC112vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvg3pC123vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDKaon);
+								
+						hAvgDelta1vsCentPPKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta2vsCentPPKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta3vsCentPPKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta4vsCentPPKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);	
+					}
+				} else if(isTrk1Proton || isTrk2Proton) {
+					if(isTrk1Proton) {
+						hAvg3pC112vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2Ch);
+						hAvg3pC123vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2Ch);
+								
+						hAvgDelta1vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta2vsCentPPProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta3vsCentPPProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta4vsCentPPProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);	
+					} else if(isTrk2Proton) {
+						hAvg3pC112vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDProton);
+						hAvg3pC123vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDProton);
+								
+						hAvgDelta1vsCentPPProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta2vsCentPPProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta3vsCentPPProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta4vsCentPPProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);	
+					}
 				}
 			}
 	      }
 	      //else if(trk1Chrg < 0 && trk2Chrg < 0){  ///this is obvious!
 	      else{
-		hAvg3pC112vsCentNN->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2Ch);
-		hAvg3pC123vsCentNN->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb2Ch);
+		    hAvg3pC112vsCentNN->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2Ch);
+		    hAvg3pC123vsCentNN->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb2Ch);
 		
-		hAvgDelta1vsCentNN->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb2Ch);
-		hAvgDelta2vsCentNN->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb2Ch);
-		hAvgDelta3vsCentNN->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2Ch);
-		hAvgDelta4vsCentNN->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2Ch);
-		
-			if(isTrk1Pion && isTrk2Pion) {
-				hAvg3pC112vsCentNNPionPion->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvg3pC123vsCentNNPionPion->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2PIDPion);
-						
-				hAvgDelta1vsCentNNPionPion->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta2vsCentNNPionPion->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta3vsCentNNPionPion->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
-				hAvgDelta4vsCentNNPionPion->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);		
-			} else if(isTrk1Kaon && isTrk2Kaon) {
-				hAvg3pC112vsCentNNKaonKaon->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvg3pC123vsCentNNKaonKaon->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2PIDKaon);
-						
-				hAvgDelta1vsCentNNKaonKaon->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta2vsCentNNKaonKaon->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta3vsCentNNKaonKaon->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
-				hAvgDelta4vsCentNNKaonKaon->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);	
-			} else if(isTrk1Proton && isTrk2Proton) {
-				hAvg3pC112vsCentNNProtonProton->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvg3pC123vsCentNNProtonProton->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2PIDProton);
-						
-				hAvgDelta1vsCentNNProtonProton->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta2vsCentNNProtonProton->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta3vsCentNNProtonProton->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
-				hAvgDelta4vsCentNNProtonProton->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);	
-			}
-				
-			if(isTrk1Pion || isTrk2Pion) {
-				if(isTrk1Pion) {
-					hAvg3pC112vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2Ch);
-					hAvg3pC123vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2Ch);
+		    hAvgDelta1vsCentNN->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb2Ch);
+		    hAvgDelta2vsCentNN->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb2Ch);
+		    hAvgDelta3vsCentNN->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2Ch);
+		    hAvgDelta4vsCentNN->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2Ch);
+		    
+		    if(trk1Pt <= 2.0 && trk2Pt <= 2.0) {
+				if(isTrk1Pion && isTrk2Pion) {
+					hAvg3pC112vsCentNNPionPion->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvg3pC123vsCentNNPionPion->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2PIDPion);
 							
-					hAvgDelta1vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta2vsCentNNPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta3vsCentNNPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
-					hAvgDelta4vsCentNNPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);		
-				} else if(isTrk2Pion) {
-					hAvg3pC112vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDPion);
-					hAvg3pC123vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDPion);
+					hAvgDelta1vsCentNNPionPion->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta2vsCentNNPionPion->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta3vsCentNNPionPion->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);
+					hAvgDelta4vsCentNNPionPion->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2PIDPion);		
+				} else if(isTrk1Kaon && isTrk2Kaon) {
+					hAvg3pC112vsCentNNKaonKaon->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvg3pC123vsCentNNKaonKaon->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2PIDKaon);
 							
-					hAvgDelta1vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta2vsCentNNPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta3vsCentNNPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
-					hAvgDelta4vsCentNNPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);	
+					hAvgDelta1vsCentNNKaonKaon->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta2vsCentNNKaonKaon->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta3vsCentNNKaonKaon->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);
+					hAvgDelta4vsCentNNKaonKaon->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2PIDKaon);	
+				} else if(isTrk1Proton && isTrk2Proton) {
+					hAvg3pC112vsCentNNProtonProton->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvg3pC123vsCentNNProtonProton->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2PIDProton);
+							
+					hAvgDelta1vsCentNNProtonProton->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta2vsCentNNProtonProton->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta3vsCentNNProtonProton->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);
+					hAvgDelta4vsCentNNProtonProton->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2PIDProton);	
 				}
-			} else if(isTrk1Kaon || isTrk2Kaon) {
-				if(isTrk1Kaon) {
-					hAvg3pC112vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvg3pC123vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2Ch);
-							
-					hAvgDelta1vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta2vsCentNNKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta3vsCentNNKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
-					hAvgDelta4vsCentNNKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);	
-				} else if(isTrk2Kaon) {
-					hAvg3pC112vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvg3pC123vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDKaon);
-							
-					hAvgDelta1vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta2vsCentNNKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta3vsCentNNKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
-					hAvgDelta4vsCentNNKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);	
-				}
-			} else if(isTrk1Proton || isTrk2Proton) {
-				if(isTrk1Proton) {
-					hAvg3pC112vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2Ch);
-					hAvg3pC123vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2Ch);
-							
-					hAvgDelta1vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta2vsCentNNProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta3vsCentNNProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
-					hAvgDelta4vsCentNNProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);	
-				} else if(isTrk2Proton) {
-					hAvg3pC112vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDProton);
-					hAvg3pC123vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDProton);
-							
-					hAvgDelta1vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta2vsCentNNProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta3vsCentNNProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
-					hAvgDelta4vsCentNNProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);	
+					
+				if(isTrk1Pion || isTrk2Pion) {
+					if(isTrk1Pion) {
+						hAvg3pC112vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDPion*wgtComb2Ch);
+						hAvg3pC123vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDPion*wgtComb2Ch);
+								
+						hAvgDelta1vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta2vsCentNNPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta3vsCentNNPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);
+						hAvgDelta4vsCentNNPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDPion*wgtComb2Ch);		
+					} else if(isTrk2Pion) {
+						hAvg3pC112vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDPion);
+						hAvg3pC123vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDPion);
+								
+						hAvgDelta1vsCentNNPionCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta2vsCentNNPionCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta3vsCentNNPionCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);
+						hAvgDelta4vsCentNNPionCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDPion);	
+					}
+				} else if(isTrk1Kaon || isTrk2Kaon) {
+					if(isTrk1Kaon) {
+						hAvg3pC112vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvg3pC123vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDKaon*wgtComb2Ch);
+								
+						hAvgDelta1vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta2vsCentNNKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta3vsCentNNKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);
+						hAvgDelta4vsCentNNKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDKaon*wgtComb2Ch);	
+					} else if(isTrk2Kaon) {
+						hAvg3pC112vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvg3pC123vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDKaon);
+								
+						hAvgDelta1vsCentNNKaonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta2vsCentNNKaonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta3vsCentNNKaonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);
+						hAvgDelta4vsCentNNKaonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDKaon);	
+					}
+				} else if(isTrk1Proton || isTrk2Proton) {
+					if(isTrk1Proton) {
+						hAvg3pC112vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1PIDProton*wgtComb2Ch);
+						hAvg3pC123vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1PIDProton*wgtComb2Ch);
+								
+						hAvgDelta1vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta2vsCentNNProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta3vsCentNNProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);
+						hAvgDelta4vsCentNNProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1PIDProton*wgtComb2Ch);	
+					} else if(isTrk2Proton) {
+						hAvg3pC112vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb1Ch*wgtComb2PIDProton);
+						hAvg3pC123vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi + 2*trk2Phi - 3*fPsi3Event),wgtComb1Ch*wgtComb2PIDProton);
+								
+						hAvgDelta1vsCentNNProtonCharge->Fill(centrality,TMath::Cos(trk1Phi - trk2Phi),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta2vsCentNNProtonCharge->Fill(centrality,TMath::Cos(2.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta3vsCentNNProtonCharge->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);
+						hAvgDelta4vsCentNNProtonCharge->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb1Ch*wgtComb2PIDProton);	
+					}
 				}
 			}
 	      }
@@ -1914,6 +2131,49 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
     }
   }
   
+  for(Int_t c=0;c<2;c++) {
+	if(fCMEQ2Re4[c]) fCMEQ2Re4[c]->Reset(); // w^2*cos(4phi)
+    if(fCMEQ3Re2[c]) fCMEQ3Re2[c]->Reset(); // w^3*cos(2phi)
+    if(fCMEQ2Im4[c]) fCMEQ2Im4[c]->Reset(); // w^2*sin(4phi)
+    if(fCMEQ3Im2[c]) fCMEQ3Im2[c]->Reset(); // w^3*sin(2phi)
+    if(fCMEw0[c]) fCMEw0[c]->Reset();    // w^0
+    if(fCMEw1[c]) fCMEw1[c]->Reset();    // w^1
+    if(fCMEw2[c]) fCMEw2[c]->Reset();    // w^2
+    if(fCMEw3[c]) fCMEw3[c]->Reset();    // w^3
+    if(fCMEw4[c]) fCMEw4[c]->Reset();    // w^4
+  
+	if(fCMEQ2Re4Pion[c]) fCMEQ2Re4Pion[c]->Reset(); // w^2*cos(4phi)
+    if(fCMEQ3Re2Pion[c]) fCMEQ3Re2Pion[c]->Reset(); // w^3*cos(2phi)
+    if(fCMEQ2Im4Pion[c]) fCMEQ2Im4Pion[c]->Reset(); // w^2*sin(4phi)
+    if(fCMEQ3Im2Pion[c]) fCMEQ3Im2Pion[c]->Reset(); // w^3*sin(2phi)
+    if(fCMEw0Pion[c]) fCMEw0Pion[c]->Reset();    // w^0
+    if(fCMEw1Pion[c]) fCMEw1Pion[c]->Reset();    // w^1
+    if(fCMEw2Pion[c]) fCMEw2Pion[c]->Reset();    // w^2
+    if(fCMEw3Pion[c]) fCMEw3Pion[c]->Reset();    // w^3
+    if(fCMEw4Pion[c]) fCMEw4Pion[c]->Reset();    // w^4
+    
+    if(fCMEQ2Re4Kaon[c]) fCMEQ2Re4Kaon[c]->Reset(); // w^2*cos(4phi)
+    if(fCMEQ3Re2Kaon[c]) fCMEQ3Re2Kaon[c]->Reset(); // w^3*cos(2phi)
+    if(fCMEQ2Im4Kaon[c]) fCMEQ2Im4Kaon[c]->Reset(); // w^2*sin(4phi)
+    if(fCMEQ3Im2Kaon[c]) fCMEQ3Im2Kaon[c]->Reset(); // w^3*sin(2phi)
+    if(fCMEw0Kaon[c]) fCMEw0Kaon[c]->Reset();    // w^0
+    if(fCMEw1Kaon[c]) fCMEw1Kaon[c]->Reset();    // w^1
+    if(fCMEw2Kaon[c]) fCMEw2Kaon[c]->Reset();    // w^2
+    if(fCMEw3Kaon[c]) fCMEw3Kaon[c]->Reset();    // w^3
+    if(fCMEw4Kaon[c]) fCMEw4Kaon[c]->Reset();    // w^4
+    
+    if(fCMEQ2Re4Proton[c]) fCMEQ2Re4Proton[c]->Reset(); // w^2*cos(4phi)
+    if(fCMEQ3Re2Proton[c]) fCMEQ3Re2Proton[c]->Reset(); // w^3*cos(2phi)
+    if(fCMEQ2Im4Proton[c]) fCMEQ2Im4Proton[c]->Reset(); // w^2*sin(4phi)
+    if(fCMEQ3Im2Proton[c]) fCMEQ3Im2Proton[c]->Reset(); // w^3*sin(2phi)
+    if(fCMEw0Proton[c]) fCMEw0Proton[c]->Reset();    // w^0
+    if(fCMEw1Proton[c]) fCMEw1Proton[c]->Reset();    // w^1
+    if(fCMEw2Proton[c]) fCMEw2Proton[c]->Reset();    // w^2
+    if(fCMEw3Proton[c]) fCMEw3Proton[c]->Reset();    // w^3
+    if(fCMEw4Proton[c]) fCMEw4Proton[c]->Reset();    // w^4
+  }
+  
+  
   fDebugwEventCount->Fill(9.1); ///Left for Analysis
   
   fHistVertexZcm->Fill(pVtxZ);
@@ -1922,11 +2182,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::UserExec(Option_t*) {
   PostData(1,fListHist);
 
 }//---------------- UserExec ----------------------
-
-
-
-
-
 
 
 
@@ -2449,6 +2704,159 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::SetupAnalysisHistograms(){
       fTempList->Add(fCMEMultProtonBothCharge[c][h]);
     }
   }
+  
+  for(Int_t c=0;c<2;c++) {
+	fCMEQ2Re4[c] = new TH1D(Form("fCMEQ2Re4[%d]",c),Form("fCMEQ2Re4[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Re4[c]);
+    fCMEQ3Re2[c] = new TH1D(Form("fCMEQ3Re2[%d]",c),Form("fCMEQ3Re2[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Re2[c]);
+    fCMEQ2Im4[c] = new TH1D(Form("fCMEQ2Im4[%d]",c),Form("fCMEQ2Im4[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Im4[c]);
+    fCMEQ3Im2[c] = new TH1D(Form("fCMEQ3Im2[%d]",c),Form("fCMEQ3Im2[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Im2[c]);
+    fCMEw0[c] = new TH1D(Form("fCMEw0[%d]",c),Form("fCMEw0[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw0[c]);
+    fCMEw1[c] = new TH1D(Form("fCMEw1[%d]",c),Form("fCMEw1[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw1[c]);
+    fCMEw2[c] = new TH1D(Form("fCMEw2[%d]",c),Form("fCMEw2[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw2[c]);
+    fCMEw3[c] = new TH1D(Form("fCMEw3[%d]",c),Form("fCMEw3[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw3[c]);
+    fCMEw4[c] = new TH1D(Form("fCMEw4[%d]",c),Form("fCMEw4[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw4[c]);
+    
+    fCMEQ2Re4Pion[c] = new TH1D(Form("fCMEQ2Re4Pion[%d]",c),Form("fCMEQ2Re4Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Re4Pion[c]);
+    fCMEQ3Re2Pion[c] = new TH1D(Form("fCMEQ3Re2Pion[%d]",c),Form("fCMEQ3Re2Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Re2Pion[c]);
+    fCMEQ2Im4Pion[c] = new TH1D(Form("fCMEQ2Im4Pion[%d]",c),Form("fCMEQ2Im4Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Im4Pion[c]);
+    fCMEQ3Im2Pion[c] = new TH1D(Form("fCMEQ3Im2Pion[%d]",c),Form("fCMEQ3Im2Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Im2Pion[c]);
+    fCMEw0Pion[c] = new TH1D(Form("fCMEw0Pion[%d]",c),Form("fCMEw0Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw0Pion[c]);
+    fCMEw1Pion[c] = new TH1D(Form("fCMEw1Pion[%d]",c),Form("fCMEw1Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw1Pion[c]);
+    fCMEw2Pion[c] = new TH1D(Form("fCMEw2Pion[%d]",c),Form("fCMEw2Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw2Pion[c]);
+    fCMEw3Pion[c] = new TH1D(Form("fCMEw3Pion[%d]",c),Form("fCMEw3Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw3Pion[c]);
+    fCMEw4Pion[c] = new TH1D(Form("fCMEw4Pion[%d]",c),Form("fCMEw4Pion[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw4Pion[c]);
+    
+    fCMEQ2Re4Kaon[c] = new TH1D(Form("fCMEQ2Re4Kaon[%d]",c),Form("fCMEQ2Re4Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Re4Kaon[c]);
+    fCMEQ3Re2Kaon[c] = new TH1D(Form("fCMEQ3Re2Kaon[%d]",c),Form("fCMEQ3Re2Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Re2Kaon[c]);
+    fCMEQ2Im4Kaon[c] = new TH1D(Form("fCMEQ2Im4Kaon[%d]",c),Form("fCMEQ2Im4Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Im4Kaon[c]);
+    fCMEQ3Im2Kaon[c] = new TH1D(Form("fCMEQ3Im2Kaon[%d]",c),Form("fCMEQ3Im2Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Im2Kaon[c]);
+    fCMEw0Kaon[c] = new TH1D(Form("fCMEw0Kaon[%d]",c),Form("fCMEw0Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw0Kaon[c]);
+    fCMEw1Kaon[c] = new TH1D(Form("fCMEw1Kaon[%d]",c),Form("fCMEw1Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw1Kaon[c]);
+    fCMEw2Kaon[c] = new TH1D(Form("fCMEw2Kaon[%d]",c),Form("fCMEw2Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw2Kaon[c]);
+    fCMEw3Kaon[c] = new TH1D(Form("fCMEw3Kaon[%d]",c),Form("fCMEw3Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw3Kaon[c]);
+    fCMEw4Kaon[c] = new TH1D(Form("fCMEw4Kaon[%d]",c),Form("fCMEw4Kaon[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw4Kaon[c]);
+    
+    fCMEQ2Re4Proton[c] = new TH1D(Form("fCMEQ2Re4Proton[%d]",c),Form("fCMEQ2Re4Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Re4Proton[c]);
+    fCMEQ3Re2Proton[c] = new TH1D(Form("fCMEQ3Re2Proton[%d]",c),Form("fCMEQ3Re2Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Re2Proton[c]);
+    fCMEQ2Im4Proton[c] = new TH1D(Form("fCMEQ2Im4Proton[%d]",c),Form("fCMEQ2Im4Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ2Im4Proton[c]);
+    fCMEQ3Im2Proton[c] = new TH1D(Form("fCMEQ3Im2Proton[%d]",c),Form("fCMEQ3Im2Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEQ3Im2Proton[c]);
+    fCMEw0Proton[c] = new TH1D(Form("fCMEw0Proton[%d]",c),Form("fCMEw0Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw0Proton[c]);
+    fCMEw1Proton[c] = new TH1D(Form("fCMEw1Proton[%d]",c),Form("fCMEw1Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw1Proton[c]);
+    fCMEw2Proton[c] = new TH1D(Form("fCMEw2Proton[%d]",c),Form("fCMEw2Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw2Proton[c]);
+    fCMEw3Proton[c] = new TH1D(Form("fCMEw3Proton[%d]",c),Form("fCMEw3Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw3Proton[c]);
+    fCMEw4Proton[c] = new TH1D(Form("fCMEw4Proton[%d]",c),Form("fCMEw4Proton[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
+    fTempList->Add(fCMEw4Proton[c]);
+  }
+  
+  fZDCCAvgTow1EnergyFraction = new TH1D("fZDCCAvgTow1EnergyFraction","fZDCCAvgTow1EnergyFraction",100,0,1);
+  fZDCCAvgTow2EnergyFraction = new TH1D("fZDCCAvgTow2EnergyFraction","fZDCCAvgTow2EnergyFraction",100,0,1);
+  fZDCCAvgTow3EnergyFraction = new TH1D("fZDCCAvgTow3EnergyFraction","fZDCCAvgTow3EnergyFraction",100,0,1);
+  fZDCCAvgTow4EnergyFraction = new TH1D("fZDCCAvgTow4EnergyFraction","fZDCCAvgTow4EnergyFraction",100,0,1);
+  fZDCAAvgTow1EnergyFraction = new TH1D("fZDCAAvgTow1EnergyFraction","fZDCAAvgTow1EnergyFraction",100,0,1);
+  fZDCAAvgTow2EnergyFraction = new TH1D("fZDCAAvgTow2EnergyFraction","fZDCAAvgTow2EnergyFraction",100,0,1);
+  fZDCAAvgTow3EnergyFraction = new TH1D("fZDCAAvgTow3EnergyFraction","fZDCAAvgTow3EnergyFraction",100,0,1);
+  fZDCAAvgTow4EnergyFraction = new TH1D("fZDCAAvgTow4EnergyFraction","fZDCAAvgTow4EnergyFraction",100,0,1);
+  fZDCCCommonTowVsSumTow2D = new TH2D("fZDCCCommonTowVsSumTow2D","fZDCCCommonTowVsSumTow2D",100,20000,150000,100,20000,150000);
+  fZDCACommonTowVsSumTow2D = new TH2D("fZDCACommonTowVsSumTow2D","fZDCACommonTowVsSumTow2D",100,20000,150000,100,20000,150000);
+  fZDCCTotEnergyFraction = new TH1D("fZDCCTotEnergyFraction","fZDCCTotEnergyFraction",100,0.5,1.2);
+  fZDCATotEnergyFraction = new TH1D("fZDCATotEnergyFraction","fZDCATotEnergyFraction",100,0,1.2);
+  
+  fZDCCAvgTow1EnergyLRFraction = new TH1D("fZDCCAvgTow1EnergyLRFraction","fZDCCAvgTow1EnergyLRFraction",100,0,1);
+  fZDCCAvgTow2EnergyLRFraction = new TH1D("fZDCCAvgTow2EnergyLRFraction","fZDCCAvgTow2EnergyLRFraction",100,0,1);
+  fZDCCAvgTow3EnergyLRFraction = new TH1D("fZDCCAvgTow3EnergyLRFraction","fZDCCAvgTow3EnergyLRFraction",100,0,1);
+  fZDCCAvgTow4EnergyLRFraction = new TH1D("fZDCCAvgTow4EnergyLRFraction","fZDCCAvgTow4EnergyLRFraction",100,0,1);
+  fZDCAAvgTow1EnergyLRFraction = new TH1D("fZDCAAvgTow1EnergyLRFraction","fZDCAAvgTow1EnergyLRFraction",100,0,1);
+  fZDCAAvgTow2EnergyLRFraction = new TH1D("fZDCAAvgTow2EnergyLRFraction","fZDCAAvgTow2EnergyLRFraction",100,0,1);
+  fZDCAAvgTow3EnergyLRFraction = new TH1D("fZDCAAvgTow3EnergyLRFraction","fZDCAAvgTow3EnergyLRFraction",100,0,1);
+  fZDCAAvgTow4EnergyLRFraction = new TH1D("fZDCAAvgTow4EnergyLRFraction","fZDCAAvgTow4EnergyLRFraction",100,0,1);
+  fZDCCCommonTowVsSumTow2DLR = new TH2D("fZDCCCommonTowVsSumTow2DLR","fZDCCCommonTowVsSumTow2DLR",100,2000,100000,100,2000,100000);
+  fZDCACommonTowVsSumTow2DLR = new TH2D("fZDCACommonTowVsSumTow2DLR","fZDCACommonTowVsSumTow2DLR",100,2000,100000,100,2000,100000);
+  fZDCCTotEnergyFractionLR = new TH1D("fZDCCTotEnergyFractionLR","fZDCCTotEnergyFractionLR",100,0.5,1.2);
+  fZDCATotEnergyFractionLR = new TH1D("fZDCATotEnergyFractionLR","fZDCATotEnergyFractionLR",100,0,1.2);
+  
+  fZDCCTow0LRHRratio = new TH1D("fZDCCTow0LRHRratio","fZDCCTow0LRHRratio",100,0,1);
+  fZDCCTow1LRHRratio = new TH1D("fZDCCTow1LRHRratio","fZDCCTow1LRHRratio",100,0,1);
+  fZDCCTow2LRHRratio = new TH1D("fZDCCTow2LRHRratio","fZDCCTow2LRHRratio",100,0,1);
+  fZDCCTow3LRHRratio = new TH1D("fZDCCTow3LRHRratio","fZDCCTow3LRHRratio",100,0,1);
+  fZDCCTow4LRHRratio = new TH1D("fZDCCTow4LRHRratio","fZDCCTow4LRHRratio",100,0,1);
+  fZDCATow0LRHRratio = new TH1D("fZDCATow0LRHRratio","fZDCATow0LRHRratio",100,0,1);
+  fZDCATow1LRHRratio = new TH1D("fZDCATow1LRHRratio","fZDCATow1LRHRratio",100,0,1);
+  fZDCATow2LRHRratio = new TH1D("fZDCATow2LRHRratio","fZDCATow2LRHRratio",100,0,1);
+  fZDCATow3LRHRratio = new TH1D("fZDCATow3LRHRratio","fZDCATow3LRHRratio",100,0,1);
+  fZDCATow4LRHRratio = new TH1D("fZDCATow4LRHRratio","fZDCATow4LRHRratio",100,0,1);
+  
+  
+  fListHist->Add(fZDCCAvgTow1EnergyFraction);
+  fListHist->Add(fZDCCAvgTow2EnergyFraction);
+  fListHist->Add(fZDCCAvgTow3EnergyFraction);
+  fListHist->Add(fZDCCAvgTow4EnergyFraction);
+  fListHist->Add(fZDCAAvgTow1EnergyFraction);
+  fListHist->Add(fZDCAAvgTow2EnergyFraction);
+  fListHist->Add(fZDCAAvgTow3EnergyFraction);
+  fListHist->Add(fZDCAAvgTow4EnergyFraction);
+  fListHist->Add(fZDCCCommonTowVsSumTow2D);
+  fListHist->Add(fZDCACommonTowVsSumTow2D);
+  fListHist->Add(fZDCCTotEnergyFraction);
+  fListHist->Add(fZDCATotEnergyFraction);
+
+  fListHist->Add(fZDCCAvgTow1EnergyLRFraction);
+  fListHist->Add(fZDCCAvgTow2EnergyLRFraction);
+  fListHist->Add(fZDCCAvgTow3EnergyLRFraction);
+  fListHist->Add(fZDCCAvgTow4EnergyLRFraction);
+  fListHist->Add(fZDCAAvgTow1EnergyLRFraction);
+  fListHist->Add(fZDCAAvgTow2EnergyLRFraction);
+  fListHist->Add(fZDCAAvgTow3EnergyLRFraction);
+  fListHist->Add(fZDCAAvgTow4EnergyLRFraction);
+  fListHist->Add(fZDCCCommonTowVsSumTow2DLR);
+  fListHist->Add(fZDCACommonTowVsSumTow2DLR);
+  fListHist->Add(fZDCCTotEnergyFractionLR);
+  fListHist->Add(fZDCATotEnergyFractionLR);
+
+  fListHist->Add(fZDCCTow0LRHRratio);
+  fListHist->Add(fZDCCTow1LRHRratio);
+  fListHist->Add(fZDCCTow2LRHRratio);
+  fListHist->Add(fZDCCTow3LRHRratio);
+  fListHist->Add(fZDCCTow4LRHRratio);
+  fListHist->Add(fZDCATow0LRHRratio);
+  fListHist->Add(fZDCATow1LRHRratio);
+  fListHist->Add(fZDCATow2LRHRratio);
+  fListHist->Add(fZDCATow3LRHRratio);
+  fListHist->Add(fZDCATow4LRHRratio);
 }
 
 
@@ -2470,6 +2878,27 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   Double_t uPReTPCNegEta=0., uPImTPCNegEta=0., uP2ReTPCNegEta=0., uP2ImTPCNegEta=0., uP2Re2TPCNegEta=0., uP2Im2TPCNegEta=0., uPMTPCNegEta=0., uP2MTPCNegEta=0.;
   Double_t uNReTPCNegEta=0., uNImTPCNegEta=0., uN2ReTPCNegEta=0., uN2ImTPCNegEta=0., uN2Re2TPCNegEta=0., uN2Im2TPCNegEta=0., uNMTPCNegEta=0., uN2MTPCNegEta=0.;
 
+  Double_t uP4Re2TPCPosEta=0., uP4Im2TPCPosEta=0., uP2Re3TPCPosEta=0., uP2Im3TPCPosEta=0.;
+  Double_t uN4Re2TPCPosEta=0., uN4Im2TPCPosEta=0., uN2Re3TPCPosEta=0., uN2Im3TPCPosEta=0.;
+  
+  Double_t uP4Re2TPCNegEta=0., uP4Im2TPCNegEta=0., uP2Re3TPCNegEta=0., uP2Im3TPCNegEta=0.;
+  Double_t uN4Re2TPCNegEta=0., uN4Im2TPCNegEta=0., uN2Re3TPCNegEta=0., uN2Im3TPCNegEta=0.;
+
+  Double_t uP0MTPCPosEta=0., uP3MTPCPosEta=0., uP4MTPCPosEta=0.;
+  Double_t uN0MTPCPosEta=0., uN3MTPCPosEta=0., uN4MTPCPosEta=0.;
+  Double_t uP0MTPCNegEta=0., uP3MTPCNegEta=0., uP4MTPCNegEta=0.;
+  Double_t uN0MTPCNegEta=0., uN3MTPCNegEta=0., uN4MTPCNegEta=0.;
+  
+  Double_t uP4Re2TPCSubPosEta=0., uP4Im2TPCSubPosEta=0., uP2Re3TPCSubPosEta=0., uP2Im3TPCSubPosEta=0.;
+  Double_t uN4Re2TPCSubPosEta=0., uN4Im2TPCSubPosEta=0., uN2Re3TPCSubPosEta=0., uN2Im3TPCSubPosEta=0.;
+  
+  Double_t uP4Re2TPCSubNegEta=0., uP4Im2TPCSubNegEta=0., uP2Re3TPCSubNegEta=0., uP2Im3TPCSubNegEta=0.;
+  Double_t uN4Re2TPCSubNegEta=0., uN4Im2TPCSubNegEta=0., uN2Re3TPCSubNegEta=0., uN2Im3TPCSubNegEta=0.;
+
+  Double_t uP0MTPCSubPosEta=0., uP3MTPCSubPosEta=0., uP4MTPCSubPosEta=0.;
+  Double_t uN0MTPCSubPosEta=0., uN3MTPCSubPosEta=0., uN4MTPCSubPosEta=0.;
+  Double_t uP0MTPCSubNegEta=0., uP3MTPCSubNegEta=0., uP4MTPCSubNegEta=0.;
+  Double_t uN0MTPCSubNegEta=0., uN3MTPCSubNegEta=0., uN4MTPCSubNegEta=0.;
 
   Double_t uPNReTPCPion=0., uPNImTPCPion=0., uPN2ReTPCPion=0., uPN2ImTPCPion=0., uPN2Re2TPCPion=0., uPN2Im2TPCPion=0., uPNMTPCPion=0., uPN2MTPCPion=0.;
   Double_t uPNReTPCPionPosEta=0., uPNImTPCPionPosEta=0., uPN2ReTPCPionPosEta=0., uPN2ImTPCPionPosEta=0., uPN2Re2TPCPionPosEta=0., uPN2Im2TPCPionPosEta=0., uPNMTPCPionPosEta=0., uPN2MTPCPionPosEta=0.;
@@ -2481,6 +2910,27 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   Double_t uPReTPCPionNegEta=0., uPImTPCPionNegEta=0., uP2ReTPCPionNegEta=0., uP2ImTPCPionNegEta=0., uP2Re2TPCPionNegEta=0., uP2Im2TPCPionNegEta=0., uPMTPCPionNegEta=0., uP2MTPCPionNegEta=0.;
   Double_t uNReTPCPionNegEta=0., uNImTPCPionNegEta=0., uN2ReTPCPionNegEta=0., uN2ImTPCPionNegEta=0., uN2Re2TPCPionNegEta=0., uN2Im2TPCPionNegEta=0., uNMTPCPionNegEta=0., uN2MTPCPionNegEta=0.;
   
+  Double_t uP4Re2TPCPionPosEta=0., uP4Im2TPCPionPosEta=0., uP2Re3TPCPionPosEta=0., uP2Im3TPCPionPosEta=0.;
+  Double_t uN4Re2TPCPionPosEta=0., uN4Im2TPCPionPosEta=0., uN2Re3TPCPionPosEta=0., uN2Im3TPCPionPosEta=0.;
+  
+  Double_t uP4Re2TPCPionNegEta=0., uP4Im2TPCPionNegEta=0., uP2Re3TPCPionNegEta=0., uP2Im3TPCPionNegEta=0.;
+  Double_t uN4Re2TPCPionNegEta=0., uN4Im2TPCPionNegEta=0., uN2Re3TPCPionNegEta=0., uN2Im3TPCPionNegEta=0.;
+
+  Double_t uP0MTPCPionPosEta=0., uP3MTPCPionPosEta=0., uP4MTPCPionPosEta=0.;
+  Double_t uN0MTPCPionPosEta=0., uN3MTPCPionPosEta=0., uN4MTPCPionPosEta=0.;
+  Double_t uP0MTPCPionNegEta=0., uP3MTPCPionNegEta=0., uP4MTPCPionNegEta=0.;
+  Double_t uN0MTPCPionNegEta=0., uN3MTPCPionNegEta=0., uN4MTPCPionNegEta=0.;
+  
+  Double_t uP4Re2TPCPionSubPosEta=0., uP4Im2TPCPionSubPosEta=0., uP2Re3TPCPionSubPosEta=0., uP2Im3TPCPionSubPosEta=0.;
+  Double_t uN4Re2TPCPionSubPosEta=0., uN4Im2TPCPionSubPosEta=0., uN2Re3TPCPionSubPosEta=0., uN2Im3TPCPionSubPosEta=0.;
+  
+  Double_t uP4Re2TPCPionSubNegEta=0., uP4Im2TPCPionSubNegEta=0., uP2Re3TPCPionSubNegEta=0., uP2Im3TPCPionSubNegEta=0.;
+  Double_t uN4Re2TPCPionSubNegEta=0., uN4Im2TPCPionSubNegEta=0., uN2Re3TPCPionSubNegEta=0., uN2Im3TPCPionSubNegEta=0.;
+
+  Double_t uP0MTPCPionSubPosEta=0., uP3MTPCPionSubPosEta=0., uP4MTPCPionSubPosEta=0.;
+  Double_t uN0MTPCPionSubPosEta=0., uN3MTPCPionSubPosEta=0., uN4MTPCPionSubPosEta=0.;
+  Double_t uP0MTPCPionSubNegEta=0., uP3MTPCPionSubNegEta=0., uP4MTPCPionSubNegEta=0.;
+  Double_t uN0MTPCPionSubNegEta=0., uN3MTPCPionSubNegEta=0., uN4MTPCPionSubNegEta=0.;
   
   Double_t uPNReTPCKaon=0., uPNImTPCKaon=0., uPN2ReTPCKaon=0., uPN2ImTPCKaon=0., uPN2Re2TPCKaon=0., uPN2Im2TPCKaon=0., uPNMTPCKaon=0., uPN2MTPCKaon=0.;
   Double_t uPNReTPCKaonPosEta=0., uPNImTPCKaonPosEta=0., uPN2ReTPCKaonPosEta=0., uPN2ImTPCKaonPosEta=0., uPN2Re2TPCKaonPosEta=0., uPN2Im2TPCKaonPosEta=0., uPNMTPCKaonPosEta=0., uPN2MTPCKaonPosEta=0.;
@@ -2492,6 +2942,27 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   Double_t uPReTPCKaonNegEta=0., uPImTPCKaonNegEta=0., uP2ReTPCKaonNegEta=0., uP2ImTPCKaonNegEta=0., uP2Re2TPCKaonNegEta=0., uP2Im2TPCKaonNegEta=0., uPMTPCKaonNegEta=0., uP2MTPCKaonNegEta=0.;
   Double_t uNReTPCKaonNegEta=0., uNImTPCKaonNegEta=0., uN2ReTPCKaonNegEta=0., uN2ImTPCKaonNegEta=0., uN2Re2TPCKaonNegEta=0., uN2Im2TPCKaonNegEta=0., uNMTPCKaonNegEta=0., uN2MTPCKaonNegEta=0.;
   
+  Double_t uP4Re2TPCKaonPosEta=0., uP4Im2TPCKaonPosEta=0., uP2Re3TPCKaonPosEta=0., uP2Im3TPCKaonPosEta=0.;
+  Double_t uN4Re2TPCKaonPosEta=0., uN4Im2TPCKaonPosEta=0., uN2Re3TPCKaonPosEta=0., uN2Im3TPCKaonPosEta=0.;
+  
+  Double_t uP4Re2TPCKaonNegEta=0., uP4Im2TPCKaonNegEta=0., uP2Re3TPCKaonNegEta=0., uP2Im3TPCKaonNegEta=0.;
+  Double_t uN4Re2TPCKaonNegEta=0., uN4Im2TPCKaonNegEta=0., uN2Re3TPCKaonNegEta=0., uN2Im3TPCKaonNegEta=0.;
+
+  Double_t uP0MTPCKaonPosEta=0., uP3MTPCKaonPosEta=0., uP4MTPCKaonPosEta=0.;
+  Double_t uN0MTPCKaonPosEta=0., uN3MTPCKaonPosEta=0., uN4MTPCKaonPosEta=0.;
+  Double_t uP0MTPCKaonNegEta=0., uP3MTPCKaonNegEta=0., uP4MTPCKaonNegEta=0.;
+  Double_t uN0MTPCKaonNegEta=0., uN3MTPCKaonNegEta=0., uN4MTPCKaonNegEta=0.;
+  
+  Double_t uP4Re2TPCKaonSubPosEta=0., uP4Im2TPCKaonSubPosEta=0., uP2Re3TPCKaonSubPosEta=0., uP2Im3TPCKaonSubPosEta=0.;
+  Double_t uN4Re2TPCKaonSubPosEta=0., uN4Im2TPCKaonSubPosEta=0., uN2Re3TPCKaonSubPosEta=0., uN2Im3TPCKaonSubPosEta=0.;
+  
+  Double_t uP4Re2TPCKaonSubNegEta=0., uP4Im2TPCKaonSubNegEta=0., uP2Re3TPCKaonSubNegEta=0., uP2Im3TPCKaonSubNegEta=0.;
+  Double_t uN4Re2TPCKaonSubNegEta=0., uN4Im2TPCKaonSubNegEta=0., uN2Re3TPCKaonSubNegEta=0., uN2Im3TPCKaonSubNegEta=0.;
+
+  Double_t uP0MTPCKaonSubPosEta=0., uP3MTPCKaonSubPosEta=0., uP4MTPCKaonSubPosEta=0.;
+  Double_t uN0MTPCKaonSubPosEta=0., uN3MTPCKaonSubPosEta=0., uN4MTPCKaonSubPosEta=0.;
+  Double_t uP0MTPCKaonSubNegEta=0., uP3MTPCKaonSubNegEta=0., uP4MTPCKaonSubNegEta=0.;
+  Double_t uN0MTPCKaonSubNegEta=0., uN3MTPCKaonSubNegEta=0., uN4MTPCKaonSubNegEta=0.;
   
   Double_t uPNReTPCProton=0., uPNImTPCProton=0., uPN2ReTPCProton=0., uPN2ImTPCProton=0., uPN2Re2TPCProton=0., uPN2Im2TPCProton=0., uPNMTPCProton=0., uPN2MTPCProton=0.;
   Double_t uPNReTPCProtonPosEta=0., uPNImTPCProtonPosEta=0., uPN2ReTPCProtonPosEta=0., uPN2ImTPCProtonPosEta=0., uPN2Re2TPCProtonPosEta=0., uPN2Im2TPCProtonPosEta=0., uPNMTPCProtonPosEta=0., uPN2MTPCProtonPosEta=0.;
@@ -2503,9 +2974,33 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   Double_t uPReTPCProtonNegEta=0., uPImTPCProtonNegEta=0., uP2ReTPCProtonNegEta=0., uP2ImTPCProtonNegEta=0., uP2Re2TPCProtonNegEta=0., uP2Im2TPCProtonNegEta=0., uPMTPCProtonNegEta=0., uP2MTPCProtonNegEta=0.;
   Double_t uNReTPCProtonNegEta=0., uNImTPCProtonNegEta=0., uN2ReTPCProtonNegEta=0., uN2ImTPCProtonNegEta=0., uN2Re2TPCProtonNegEta=0., uN2Im2TPCProtonNegEta=0., uNMTPCProtonNegEta=0., uN2MTPCProtonNegEta=0.; 
   
+  Double_t uP4Re2TPCProtonPosEta=0., uP4Im2TPCProtonPosEta=0., uP2Re3TPCProtonPosEta=0., uP2Im3TPCProtonPosEta=0.;
+  Double_t uN4Re2TPCProtonPosEta=0., uN4Im2TPCProtonPosEta=0., uN2Re3TPCProtonPosEta=0., uN2Im3TPCProtonPosEta=0.;
+  
+  Double_t uP4Re2TPCProtonNegEta=0., uP4Im2TPCProtonNegEta=0., uP2Re3TPCProtonNegEta=0., uP2Im3TPCProtonNegEta=0.;
+  Double_t uN4Re2TPCProtonNegEta=0., uN4Im2TPCProtonNegEta=0., uN2Re3TPCProtonNegEta=0., uN2Im3TPCProtonNegEta=0.;
+
+  Double_t uP0MTPCProtonPosEta=0., uP3MTPCProtonPosEta=0., uP4MTPCProtonPosEta=0.;
+  Double_t uN0MTPCProtonPosEta=0., uN3MTPCProtonPosEta=0., uN4MTPCProtonPosEta=0.;
+  Double_t uP0MTPCProtonNegEta=0., uP3MTPCProtonNegEta=0., uP4MTPCProtonNegEta=0.;
+  Double_t uN0MTPCProtonNegEta=0., uN3MTPCProtonNegEta=0., uN4MTPCProtonNegEta=0.;
+  
+  Double_t uP4Re2TPCProtonSubPosEta=0., uP4Im2TPCProtonSubPosEta=0., uP2Re3TPCProtonSubPosEta=0., uP2Im3TPCProtonSubPosEta=0.;
+  Double_t uN4Re2TPCProtonSubPosEta=0., uN4Im2TPCProtonSubPosEta=0., uN2Re3TPCProtonSubPosEta=0., uN2Im3TPCProtonSubPosEta=0.;
+  
+  Double_t uP4Re2TPCProtonSubNegEta=0., uP4Im2TPCProtonSubNegEta=0., uP2Re3TPCProtonSubNegEta=0., uP2Im3TPCProtonSubNegEta=0.;
+  Double_t uN4Re2TPCProtonSubNegEta=0., uN4Im2TPCProtonSubNegEta=0., uN2Re3TPCProtonSubNegEta=0., uN2Im3TPCProtonSubNegEta=0.;
+
+  Double_t uP0MTPCProtonSubPosEta=0., uP3MTPCProtonSubPosEta=0., uP4MTPCProtonSubPosEta=0.;
+  Double_t uN0MTPCProtonSubPosEta=0., uN3MTPCProtonSubPosEta=0., uN4MTPCProtonSubPosEta=0.;
+  Double_t uP0MTPCProtonSubNegEta=0., uP3MTPCProtonSubNegEta=0., uP4MTPCProtonSubNegEta=0.;
+  Double_t uN0MTPCProtonSubNegEta=0., uN3MTPCProtonSubNegEta=0., uN4MTPCProtonSubNegEta=0.;
+  
   Double_t uPNReTPCSubPosEta = 0, uPNImTPCSubPosEta = 0, uPN2ReTPCSubPosEta = 0, uPN2ImTPCSubPosEta = 0, uPN2Re2TPCSubPosEta = 0, uPN2Im2TPCSubPosEta = 0, uPNMTPCSubPosEta = 0, uPN2MTPCSubPosEta = 0, uPReTPCSubPosEta = 0, uPImTPCSubPosEta = 0, uP2ReTPCSubPosEta = 0, uP2ImTPCSubPosEta = 0, uP2Re2TPCSubPosEta = 0, uP2Im2TPCSubPosEta = 0, uPMTPCSubPosEta = 0, uP2MTPCSubPosEta = 0, uNReTPCSubPosEta = 0, uNImTPCSubPosEta = 0, uN2ReTPCSubPosEta = 0, uN2ImTPCSubPosEta = 0, uN2Re2TPCSubPosEta = 0, uN2Im2TPCSubPosEta = 0, uNMTPCSubPosEta = 0, uN2MTPCSubPosEta = 0, uPNReTPCPionSubPosEta = 0, uPNImTPCPionSubPosEta = 0, uPN2ReTPCPionSubPosEta = 0, uPN2ImTPCPionSubPosEta = 0, uPN2Re2TPCPionSubPosEta = 0, uPN2Im2TPCPionSubPosEta = 0, uPNMTPCPionSubPosEta = 0, uPN2MTPCPionSubPosEta = 0, uPReTPCPionSubPosEta = 0, uPImTPCPionSubPosEta = 0, uP2ReTPCPionSubPosEta = 0, uP2ImTPCPionSubPosEta = 0, uP2Re2TPCPionSubPosEta = 0, uP2Im2TPCPionSubPosEta = 0, uPMTPCPionSubPosEta = 0, uP2MTPCPionSubPosEta = 0, uNReTPCPionSubPosEta = 0, uNImTPCPionSubPosEta = 0, uN2ReTPCPionSubPosEta = 0, uN2ImTPCPionSubPosEta = 0, uN2Re2TPCPionSubPosEta = 0, uN2Im2TPCPionSubPosEta = 0, uNMTPCPionSubPosEta = 0, uN2MTPCPionSubPosEta = 0, uPNReTPCKaonSubPosEta = 0, uPNImTPCKaonSubPosEta = 0, uPN2ReTPCKaonSubPosEta = 0, uPN2ImTPCKaonSubPosEta = 0, uPN2Re2TPCKaonSubPosEta = 0, uPN2Im2TPCKaonSubPosEta = 0, uPNMTPCKaonSubPosEta = 0, uPN2MTPCKaonSubPosEta = 0, uPReTPCKaonSubPosEta = 0, uPImTPCKaonSubPosEta = 0, uP2ReTPCKaonSubPosEta = 0, uP2ImTPCKaonSubPosEta = 0, uP2Re2TPCKaonSubPosEta = 0, uP2Im2TPCKaonSubPosEta = 0, uPMTPCKaonSubPosEta = 0, uP2MTPCKaonSubPosEta = 0, uNReTPCKaonSubPosEta = 0, uNImTPCKaonSubPosEta = 0, uN2ReTPCKaonSubPosEta = 0, uN2ImTPCKaonSubPosEta = 0, uN2Re2TPCKaonSubPosEta = 0, uN2Im2TPCKaonSubPosEta = 0, uNMTPCKaonSubPosEta = 0, uN2MTPCKaonSubPosEta = 0, uPNReTPCProtonSubPosEta = 0, uPNImTPCProtonSubPosEta = 0, uPN2ReTPCProtonSubPosEta = 0, uPN2ImTPCProtonSubPosEta = 0, uPN2Re2TPCProtonSubPosEta = 0, uPN2Im2TPCProtonSubPosEta = 0, uPNMTPCProtonSubPosEta = 0, uPN2MTPCProtonSubPosEta = 0, uPReTPCProtonSubPosEta = 0, uPImTPCProtonSubPosEta = 0, uP2ReTPCProtonSubPosEta = 0, uP2ImTPCProtonSubPosEta = 0, uP2Re2TPCProtonSubPosEta = 0, uP2Im2TPCProtonSubPosEta = 0, uPMTPCProtonSubPosEta = 0, uP2MTPCProtonSubPosEta = 0, uNReTPCProtonSubPosEta = 0, uNImTPCProtonSubPosEta = 0, uN2ReTPCProtonSubPosEta = 0, uN2ImTPCProtonSubPosEta = 0, uN2Re2TPCProtonSubPosEta = 0, uN2Im2TPCProtonSubPosEta = 0, uNMTPCProtonSubPosEta = 0, uN2MTPCProtonSubPosEta = 0;
   
   Double_t uPNReTPCSubNegEta = 0, uPNImTPCSubNegEta = 0, uPN2ReTPCSubNegEta = 0, uPN2ImTPCSubNegEta = 0, uPN2Re2TPCSubNegEta = 0, uPN2Im2TPCSubNegEta = 0, uPNMTPCSubNegEta = 0, uPN2MTPCSubNegEta = 0, uPReTPCSubNegEta = 0, uPImTPCSubNegEta = 0, uP2ReTPCSubNegEta = 0, uP2ImTPCSubNegEta = 0, uP2Re2TPCSubNegEta = 0, uP2Im2TPCSubNegEta = 0, uPMTPCSubNegEta = 0, uP2MTPCSubNegEta = 0, uNReTPCSubNegEta = 0, uNImTPCSubNegEta = 0, uN2ReTPCSubNegEta = 0, uN2ImTPCSubNegEta = 0, uN2Re2TPCSubNegEta = 0, uN2Im2TPCSubNegEta = 0, uNMTPCSubNegEta = 0, uN2MTPCSubNegEta = 0, uPNReTPCPionSubNegEta = 0, uPNImTPCPionSubNegEta = 0, uPN2ReTPCPionSubNegEta = 0, uPN2ImTPCPionSubNegEta = 0, uPN2Re2TPCPionSubNegEta = 0, uPN2Im2TPCPionSubNegEta = 0, uPNMTPCPionSubNegEta = 0, uPN2MTPCPionSubNegEta = 0, uPReTPCPionSubNegEta = 0, uPImTPCPionSubNegEta = 0, uP2ReTPCPionSubNegEta = 0, uP2ImTPCPionSubNegEta = 0, uP2Re2TPCPionSubNegEta = 0, uP2Im2TPCPionSubNegEta = 0, uPMTPCPionSubNegEta = 0, uP2MTPCPionSubNegEta = 0, uNReTPCPionSubNegEta = 0, uNImTPCPionSubNegEta = 0, uN2ReTPCPionSubNegEta = 0, uN2ImTPCPionSubNegEta = 0, uN2Re2TPCPionSubNegEta = 0, uN2Im2TPCPionSubNegEta = 0, uNMTPCPionSubNegEta = 0, uN2MTPCPionSubNegEta = 0, uPNReTPCKaonSubNegEta = 0, uPNImTPCKaonSubNegEta = 0, uPN2ReTPCKaonSubNegEta = 0, uPN2ImTPCKaonSubNegEta = 0, uPN2Re2TPCKaonSubNegEta = 0, uPN2Im2TPCKaonSubNegEta = 0, uPNMTPCKaonSubNegEta = 0, uPN2MTPCKaonSubNegEta = 0, uPReTPCKaonSubNegEta = 0, uPImTPCKaonSubNegEta = 0, uP2ReTPCKaonSubNegEta = 0, uP2ImTPCKaonSubNegEta = 0, uP2Re2TPCKaonSubNegEta = 0, uP2Im2TPCKaonSubNegEta = 0, uPMTPCKaonSubNegEta = 0, uP2MTPCKaonSubNegEta = 0, uNReTPCKaonSubNegEta = 0, uNImTPCKaonSubNegEta = 0, uN2ReTPCKaonSubNegEta = 0, uN2ImTPCKaonSubNegEta = 0, uN2Re2TPCKaonSubNegEta = 0, uN2Im2TPCKaonSubNegEta = 0, uNMTPCKaonSubNegEta = 0, uN2MTPCKaonSubNegEta = 0, uPNReTPCProtonSubNegEta = 0, uPNImTPCProtonSubNegEta = 0, uPN2ReTPCProtonSubNegEta = 0, uPN2ImTPCProtonSubNegEta = 0, uPN2Re2TPCProtonSubNegEta = 0, uPN2Im2TPCProtonSubNegEta = 0, uPNMTPCProtonSubNegEta = 0, uPN2MTPCProtonSubNegEta = 0, uPReTPCProtonSubNegEta = 0, uPImTPCProtonSubNegEta = 0, uP2ReTPCProtonSubNegEta = 0, uP2ImTPCProtonSubNegEta = 0, uP2Re2TPCProtonSubNegEta = 0, uP2Im2TPCProtonSubNegEta = 0, uPMTPCProtonSubNegEta = 0, uP2MTPCProtonSubNegEta = 0, uNReTPCProtonSubNegEta = 0, uNImTPCProtonSubNegEta = 0, uN2ReTPCProtonSubNegEta = 0, uN2ImTPCProtonSubNegEta = 0, uN2Re2TPCProtonSubNegEta = 0, uN2Im2TPCProtonSubNegEta = 0, uNMTPCProtonSubNegEta = 0, uN2MTPCProtonSubNegEta = 0;
+  
+  
   
   for(Int_t EBin=1; EBin<=fCMEQRe[0][0]->GetNbinsX(); EBin++) {
     // both charge all region [0][h]: first index is the power of weight, h is cos((h+1)phi)
@@ -2567,6 +3062,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCPosEta += fCMEMult[0][h]->GetBinContent(EBin); // w
 		uP2MTPCPosEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCPosEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCPosEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCPosEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCPosEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCPosEta += fCMEw0[0]->GetBinContent(EBin); // w^0
+		uP3MTPCPosEta += fCMEw3[0]->GetBinContent(EBin); // w^3
+		uP4MTPCPosEta += fCMEw4[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCPosEta += fCMEQRe[1][h]->GetBinContent(EBin);
 		uNImTPCPosEta += fCMEQIm[1][h]->GetBinContent(EBin);
@@ -2576,6 +3079,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCPosEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
 		uNMTPCPosEta += fCMEMult[1][h]->GetBinContent(EBin);
 		uN2MTPCPosEta += fCMEMult[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCPosEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCPosEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCPosEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCPosEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCPosEta += fCMEw0[1]->GetBinContent(EBin); // w^0
+		uN3MTPCPosEta += fCMEw3[1]->GetBinContent(EBin); // w^3
+		uN4MTPCPosEta += fCMEw4[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Pion =======================
 		// both charge pos eta region
@@ -2598,6 +3109,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCPionPosEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
 		uP2MTPCPionPosEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCPionPosEta += fCMEQ2Re4Pion[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCPionPosEta += fCMEQ2Im4Pion[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCPionPosEta += fCMEQ3Re2Pion[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCPionPosEta += fCMEQ3Im2Pion[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCPionPosEta += fCMEw0Pion[0]->GetBinContent(EBin); // w^0
+		uP3MTPCPionPosEta += fCMEw3Pion[0]->GetBinContent(EBin); // w^3
+		uP4MTPCPionPosEta += fCMEw4Pion[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCPionPosEta += fCMEQRePion[1][h]->GetBinContent(EBin);
 		uNImTPCPionPosEta += fCMEQImPion[1][h]->GetBinContent(EBin);
@@ -2607,6 +3126,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCPionPosEta += fCMEQImPion[3][h+1]->GetBinContent(EBin);
 		uNMTPCPionPosEta += fCMEMultPion[1][h]->GetBinContent(EBin);
 		uN2MTPCPionPosEta += fCMEMultPion[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCPionPosEta += fCMEQ2Re4Pion[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCPionPosEta += fCMEQ2Im4Pion[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCPionPosEta += fCMEQ3Re2Pion[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCPionPosEta += fCMEQ3Im2Pion[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCPionPosEta += fCMEw0Pion[1]->GetBinContent(EBin); // w^0
+		uN3MTPCPionPosEta += fCMEw3Pion[1]->GetBinContent(EBin); // w^3
+		uN4MTPCPionPosEta += fCMEw4Pion[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Kaon =======================
 		// both charge pos eta region
@@ -2629,6 +3156,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCKaonPosEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
 		uP2MTPCKaonPosEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCKaonPosEta += fCMEQ2Re4Kaon[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCKaonPosEta += fCMEQ2Im4Kaon[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCKaonPosEta += fCMEQ3Re2Kaon[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCKaonPosEta += fCMEQ3Im2Kaon[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCKaonPosEta += fCMEw0Kaon[0]->GetBinContent(EBin); // w^0
+		uP3MTPCKaonPosEta += fCMEw3Kaon[0]->GetBinContent(EBin); // w^3
+		uP4MTPCKaonPosEta += fCMEw4Kaon[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCKaonPosEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
 		uNImTPCKaonPosEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
@@ -2638,6 +3173,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCKaonPosEta += fCMEQImKaon[3][h+1]->GetBinContent(EBin);
 		uNMTPCKaonPosEta += fCMEMultKaon[1][h]->GetBinContent(EBin);
 		uN2MTPCKaonPosEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCKaonPosEta += fCMEQ2Re4Kaon[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCKaonPosEta += fCMEQ2Im4Kaon[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCKaonPosEta += fCMEQ3Re2Kaon[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCKaonPosEta += fCMEQ3Im2Kaon[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCKaonPosEta += fCMEw0Kaon[1]->GetBinContent(EBin); // w^0
+		uN3MTPCKaonPosEta += fCMEw3Kaon[1]->GetBinContent(EBin); // w^3
+		uN4MTPCKaonPosEta += fCMEw4Kaon[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Proton =======================
 		// both charge pos eta region
@@ -2660,6 +3203,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCProtonPosEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
 		uP2MTPCProtonPosEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCProtonPosEta += fCMEQ2Re4Proton[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCProtonPosEta += fCMEQ2Im4Proton[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCProtonPosEta += fCMEQ3Re2Proton[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCProtonPosEta += fCMEQ3Im2Proton[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCProtonPosEta += fCMEw0Proton[0]->GetBinContent(EBin); // w^0
+		uP3MTPCProtonPosEta += fCMEw3Proton[0]->GetBinContent(EBin); // w^3
+		uP4MTPCProtonPosEta += fCMEw4Proton[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCProtonPosEta += fCMEQReProton[1][h]->GetBinContent(EBin);
 		uNImTPCProtonPosEta += fCMEQImProton[1][h]->GetBinContent(EBin);
@@ -2669,6 +3220,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCProtonPosEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
 		uNMTPCProtonPosEta += fCMEMultProton[1][h]->GetBinContent(EBin);
 		uN2MTPCProtonPosEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCProtonPosEta += fCMEQ2Re4Proton[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCProtonPosEta += fCMEQ2Im4Proton[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCProtonPosEta += fCMEQ3Re2Proton[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCProtonPosEta += fCMEQ3Im2Proton[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCProtonPosEta += fCMEw0Proton[1]->GetBinContent(EBin); // w^0
+		uN3MTPCProtonPosEta += fCMEw3Proton[1]->GetBinContent(EBin); // w^3
+		uN4MTPCProtonPosEta += fCMEw4Proton[1]->GetBinContent(EBin); // w^4
 	} else if (EBin == fCMEQRe[0][h]->FindBin(-0.4)) { // negative eta region
 		// both charge neg eta region
 		uPNReTPCNegEta += fCMEQReBothCharge[0][h]->GetBinContent(EBin);
@@ -2680,17 +3239,25 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCNegEta += fCMEMultBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCNegEta += fCMEMultBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
-		uPReTPCNegEta += fCMEQRe[0][h]->GetBinContent(EBin);
-		uPImTPCNegEta += fCMEQIm[0][h]->GetBinContent(EBin);
-		uP2ReTPCNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin);
-		uP2ImTPCNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin);
-		uP2Re2TPCNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin);
-		uP2Im2TPCNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin);
-		uPMTPCNegEta += fCMEMult[0][h]->GetBinContent(EBin);
-		uP2MTPCNegEta += fCMEMult[2][h]->GetBinContent(EBin);
+		// pegitive charge negitive eta region
+		uPReTPCNegEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCNegEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCNegEta += fCMEMult[0][h]->GetBinContent(EBin); // w
+		uP2MTPCNegEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCNegEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCNegEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCNegEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCNegEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCNegEta += fCMEw0[0]->GetBinContent(EBin); // w^0
+		uP3MTPCNegEta += fCMEw3[0]->GetBinContent(EBin); // w^3
+		uP4MTPCNegEta += fCMEw4[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCNegEta += fCMEQRe[1][h]->GetBinContent(EBin);
 		uNImTPCNegEta += fCMEQIm[1][h]->GetBinContent(EBin);
 		uN2ReTPCNegEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
@@ -2699,6 +3266,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCNegEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
 		uNMTPCNegEta += fCMEMult[1][h]->GetBinContent(EBin);
 		uN2MTPCNegEta += fCMEMult[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCNegEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCNegEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCNegEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCNegEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCNegEta += fCMEw0[1]->GetBinContent(EBin); // w^0
+		uN3MTPCNegEta += fCMEw3[1]->GetBinContent(EBin); // w^3
+		uN4MTPCNegEta += fCMEw4[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Pion =======================
 		// both charge neg eta region
@@ -2711,7 +3286,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCPionNegEta += fCMEMultPionBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCPionNegEta += fCMEMultPionBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
+		// pegitive charge negitive eta region
 		uPReTPCPionNegEta += fCMEQRePion[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCPionNegEta += fCMEQImPion[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCPionNegEta += fCMEQRePion[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2721,7 +3296,15 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCPionNegEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
 		uP2MTPCPionNegEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCPionNegEta += fCMEQ2Re4Pion[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCPionNegEta += fCMEQ2Im4Pion[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCPionNegEta += fCMEQ3Re2Pion[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCPionNegEta += fCMEQ3Im2Pion[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCPionNegEta += fCMEw0Pion[0]->GetBinContent(EBin); // w^0
+		uP3MTPCPionNegEta += fCMEw3Pion[0]->GetBinContent(EBin); // w^3
+		uP4MTPCPionNegEta += fCMEw4Pion[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCPionNegEta += fCMEQRePion[1][h]->GetBinContent(EBin);
 		uNImTPCPionNegEta += fCMEQImPion[1][h]->GetBinContent(EBin);
 		uN2ReTPCPionNegEta += fCMEQRePion[1][h+1]->GetBinContent(EBin);
@@ -2731,8 +3314,16 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uNMTPCPionNegEta += fCMEMultPion[1][h]->GetBinContent(EBin);
 		uN2MTPCPionNegEta += fCMEMultPion[3][h]->GetBinContent(EBin);
 		
+		uN4Re2TPCPionNegEta += fCMEQ2Re4Pion[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCPionNegEta += fCMEQ2Im4Pion[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCPionNegEta += fCMEQ3Re2Pion[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCPionNegEta += fCMEQ3Im2Pion[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCPionNegEta += fCMEw0Pion[1]->GetBinContent(EBin); // w^0
+		uN3MTPCPionNegEta += fCMEw3Pion[1]->GetBinContent(EBin); // w^3
+		uN4MTPCPionNegEta += fCMEw4Pion[1]->GetBinContent(EBin); // w^4
+		
 		// ========================== Kaon =======================
-		// both charge neg eta region
+		// both charge Neg eta region
 		uPNReTPCKaonNegEta += fCMEQReKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPNImTPCKaonNegEta += fCMEQImKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2ReTPCKaonNegEta += fCMEQReKaonBothCharge[0][h+1]->GetBinContent(EBin);
@@ -2742,7 +3333,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCKaonNegEta += fCMEMultKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCKaonNegEta += fCMEMultKaonBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
+		// positive charge negitive eta region
 		uPReTPCKaonNegEta += fCMEQReKaon[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCKaonNegEta += fCMEQImKaon[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCKaonNegEta += fCMEQReKaon[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2752,7 +3343,15 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCKaonNegEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
 		uP2MTPCKaonNegEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCKaonNegEta += fCMEQ2Re4Kaon[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCKaonNegEta += fCMEQ2Im4Kaon[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCKaonNegEta += fCMEQ3Re2Kaon[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCKaonNegEta += fCMEQ3Im2Kaon[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCKaonNegEta += fCMEw0Kaon[0]->GetBinContent(EBin); // w^0
+		uP3MTPCKaonNegEta += fCMEw3Kaon[0]->GetBinContent(EBin); // w^3
+		uP4MTPCKaonNegEta += fCMEw4Kaon[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCKaonNegEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
 		uNImTPCKaonNegEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
 		uN2ReTPCKaonNegEta += fCMEQReKaon[1][h+1]->GetBinContent(EBin);
@@ -2761,6 +3360,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCKaonNegEta += fCMEQImKaon[3][h+1]->GetBinContent(EBin);
 		uNMTPCKaonNegEta += fCMEMultKaon[1][h]->GetBinContent(EBin);
 		uN2MTPCKaonNegEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCKaonNegEta += fCMEQ2Re4Kaon[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCKaonNegEta += fCMEQ2Im4Kaon[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCKaonNegEta += fCMEQ3Re2Kaon[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCKaonNegEta += fCMEQ3Im2Kaon[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCKaonNegEta += fCMEw0Kaon[1]->GetBinContent(EBin); // w^0
+		uN3MTPCKaonNegEta += fCMEw3Kaon[1]->GetBinContent(EBin); // w^3
+		uN4MTPCKaonNegEta += fCMEw4Kaon[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Proton =======================
 		// both charge neg eta region
@@ -2773,7 +3380,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCProtonNegEta += fCMEMultProtonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCProtonNegEta += fCMEMultProtonBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
+		// positive charge negitive eta region
 		uPReTPCProtonNegEta += fCMEQReProton[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCProtonNegEta += fCMEQImProton[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCProtonNegEta += fCMEQReProton[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2783,7 +3390,15 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCProtonNegEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
 		uP2MTPCProtonNegEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCProtonNegEta += fCMEQ2Re4Proton[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCProtonNegEta += fCMEQ2Im4Proton[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCProtonNegEta += fCMEQ3Re2Proton[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCProtonNegEta += fCMEQ3Im2Proton[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCProtonNegEta += fCMEw0Proton[0]->GetBinContent(EBin); // w^0
+		uP3MTPCProtonNegEta += fCMEw3Proton[0]->GetBinContent(EBin); // w^3
+		uP4MTPCProtonNegEta += fCMEw4Proton[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCProtonNegEta += fCMEQReProton[1][h]->GetBinContent(EBin);
 		uNImTPCProtonNegEta += fCMEQImProton[1][h]->GetBinContent(EBin);
 		uN2ReTPCProtonNegEta += fCMEQReProton[1][h+1]->GetBinContent(EBin);
@@ -2792,6 +3407,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCProtonNegEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
 		uNMTPCProtonNegEta += fCMEMultProton[1][h]->GetBinContent(EBin);
 		uN2MTPCProtonNegEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCProtonNegEta += fCMEQ2Re4Proton[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCProtonNegEta += fCMEQ2Im4Proton[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCProtonNegEta += fCMEQ3Re2Proton[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCProtonNegEta += fCMEQ3Im2Proton[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCProtonNegEta += fCMEw0Proton[1]->GetBinContent(EBin); // w^0
+		uN3MTPCProtonNegEta += fCMEw3Proton[1]->GetBinContent(EBin); // w^3
+		uN4MTPCProtonNegEta += fCMEw4Proton[1]->GetBinContent(EBin); // w^4
 	} else if (EBin == fCMEQRe[0][h]->FindBin(0.05)) { // sub pos eta region
 		// both charge pos eta region
 		uPNReTPCSubPosEta += fCMEQReBothCharge[0][h]->GetBinContent(EBin);
@@ -2813,6 +3436,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCSubPosEta += fCMEMult[0][h]->GetBinContent(EBin); // w
 		uP2MTPCSubPosEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCSubPosEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCSubPosEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCSubPosEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCSubPosEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCSubPosEta += fCMEw0[0]->GetBinContent(EBin); // w^0
+		uP3MTPCSubPosEta += fCMEw3[0]->GetBinContent(EBin); // w^3
+		uP4MTPCSubPosEta += fCMEw4[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCSubPosEta += fCMEQRe[1][h]->GetBinContent(EBin);
 		uNImTPCSubPosEta += fCMEQIm[1][h]->GetBinContent(EBin);
@@ -2822,6 +3453,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCSubPosEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
 		uNMTPCSubPosEta += fCMEMult[1][h]->GetBinContent(EBin);
 		uN2MTPCSubPosEta += fCMEMult[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCSubPosEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCSubPosEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCSubPosEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCSubPosEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCSubPosEta += fCMEw0[1]->GetBinContent(EBin); // w^0
+		uN3MTPCSubPosEta += fCMEw3[1]->GetBinContent(EBin); // w^3
+		uN4MTPCSubPosEta += fCMEw4[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Pion =======================
 		// both charge pos eta region
@@ -2844,6 +3483,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCPionSubPosEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
 		uP2MTPCPionSubPosEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCPionSubPosEta += fCMEQ2Re4Pion[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCPionSubPosEta += fCMEQ2Im4Pion[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCPionSubPosEta += fCMEQ3Re2Pion[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCPionSubPosEta += fCMEQ3Im2Pion[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCPionSubPosEta += fCMEw0Pion[0]->GetBinContent(EBin); // w^0
+		uP3MTPCPionSubPosEta += fCMEw3Pion[0]->GetBinContent(EBin); // w^3
+		uP4MTPCPionSubPosEta += fCMEw4Pion[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCPionSubPosEta += fCMEQRePion[1][h]->GetBinContent(EBin);
 		uNImTPCPionSubPosEta += fCMEQImPion[1][h]->GetBinContent(EBin);
@@ -2853,6 +3500,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCPionSubPosEta += fCMEQImPion[3][h+1]->GetBinContent(EBin);
 		uNMTPCPionSubPosEta += fCMEMultPion[1][h]->GetBinContent(EBin);
 		uN2MTPCPionSubPosEta += fCMEMultPion[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCPionSubPosEta += fCMEQ2Re4Pion[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCPionSubPosEta += fCMEQ2Im4Pion[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCPionSubPosEta += fCMEQ3Re2Pion[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCPionSubPosEta += fCMEQ3Im2Pion[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCPionSubPosEta += fCMEw0Pion[1]->GetBinContent(EBin); // w^0
+		uN3MTPCPionSubPosEta += fCMEw3Pion[1]->GetBinContent(EBin); // w^3
+		uN4MTPCPionSubPosEta += fCMEw4Pion[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Kaon =======================
 		// both charge pos eta region
@@ -2875,6 +3530,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCKaonSubPosEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
 		uP2MTPCKaonSubPosEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCKaonSubPosEta += fCMEQ2Re4Kaon[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCKaonSubPosEta += fCMEQ2Im4Kaon[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCKaonSubPosEta += fCMEQ3Re2Kaon[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCKaonSubPosEta += fCMEQ3Im2Kaon[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCKaonSubPosEta += fCMEw0Kaon[0]->GetBinContent(EBin); // w^0
+		uP3MTPCKaonSubPosEta += fCMEw3Kaon[0]->GetBinContent(EBin); // w^3
+		uP4MTPCKaonSubPosEta += fCMEw4Kaon[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCKaonSubPosEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
 		uNImTPCKaonSubPosEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
@@ -2884,6 +3547,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCKaonSubPosEta += fCMEQImKaon[3][h+1]->GetBinContent(EBin);
 		uNMTPCKaonSubPosEta += fCMEMultKaon[1][h]->GetBinContent(EBin);
 		uN2MTPCKaonSubPosEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCKaonSubPosEta += fCMEQ2Re4Kaon[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCKaonSubPosEta += fCMEQ2Im4Kaon[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCKaonSubPosEta += fCMEQ3Re2Kaon[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCKaonSubPosEta += fCMEQ3Im2Kaon[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCKaonSubPosEta += fCMEw0Kaon[1]->GetBinContent(EBin); // w^0
+		uN3MTPCKaonSubPosEta += fCMEw3Kaon[1]->GetBinContent(EBin); // w^3
+		uN4MTPCKaonSubPosEta += fCMEw4Kaon[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Proton =======================
 		// both charge pos eta region
@@ -2906,6 +3577,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCProtonSubPosEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
 		uP2MTPCProtonSubPosEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
 		
+		uP4Re2TPCProtonSubPosEta += fCMEQ2Re4Proton[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCProtonSubPosEta += fCMEQ2Im4Proton[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCProtonSubPosEta += fCMEQ3Re2Proton[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCProtonSubPosEta += fCMEQ3Im2Proton[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCProtonSubPosEta += fCMEw0Proton[0]->GetBinContent(EBin); // w^0
+		uP3MTPCProtonSubPosEta += fCMEw3Proton[0]->GetBinContent(EBin); // w^3
+		uP4MTPCProtonSubPosEta += fCMEw4Proton[0]->GetBinContent(EBin); // w^4
+		
 		// negative charge positive eta region
 		uNReTPCProtonSubPosEta += fCMEQReProton[1][h]->GetBinContent(EBin);
 		uNImTPCProtonSubPosEta += fCMEQImProton[1][h]->GetBinContent(EBin);
@@ -2915,6 +3594,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCProtonSubPosEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
 		uNMTPCProtonSubPosEta += fCMEMultProton[1][h]->GetBinContent(EBin);
 		uN2MTPCProtonSubPosEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCProtonSubPosEta += fCMEQ2Re4Proton[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCProtonSubPosEta += fCMEQ2Im4Proton[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCProtonSubPosEta += fCMEQ3Re2Proton[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCProtonSubPosEta += fCMEQ3Im2Proton[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCProtonSubPosEta += fCMEw0Proton[1]->GetBinContent(EBin); // w^0
+		uN3MTPCProtonSubPosEta += fCMEw3Proton[1]->GetBinContent(EBin); // w^3
+		uN4MTPCProtonSubPosEta += fCMEw4Proton[1]->GetBinContent(EBin); // w^4
 	} else if (EBin == fCMEQRe[0][h]->FindBin(-0.05)) { // negative eta region
 		// both charge neg eta region
 		uPNReTPCSubNegEta += fCMEQReBothCharge[0][h]->GetBinContent(EBin);
@@ -2926,17 +3613,25 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCSubNegEta += fCMEMultBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCSubNegEta += fCMEMultBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
-		uPReTPCSubNegEta += fCMEQRe[0][h]->GetBinContent(EBin);
-		uPImTPCSubNegEta += fCMEQIm[0][h]->GetBinContent(EBin);
-		uP2ReTPCSubNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin);
-		uP2ImTPCSubNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin);
-		uP2Re2TPCSubNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin);
-		uP2Im2TPCSubNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin);
-		uPMTPCSubNegEta += fCMEMult[0][h]->GetBinContent(EBin);
-		uP2MTPCSubNegEta += fCMEMult[2][h]->GetBinContent(EBin);
+		// pegitive charge negitive eta region
+		uPReTPCSubNegEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
+		uPImTPCSubNegEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
+		uP2ReTPCSubNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
+		uP2ImTPCSubNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
+		uP2Re2TPCSubNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
+		uP2Im2TPCSubNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
+		uPMTPCSubNegEta += fCMEMult[0][h]->GetBinContent(EBin); // w
+		uP2MTPCSubNegEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCSubNegEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCSubNegEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCSubNegEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCSubNegEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCSubNegEta += fCMEw0[0]->GetBinContent(EBin); // w^0
+		uP3MTPCSubNegEta += fCMEw3[0]->GetBinContent(EBin); // w^3
+		uP4MTPCSubNegEta += fCMEw4[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCSubNegEta += fCMEQRe[1][h]->GetBinContent(EBin);
 		uNImTPCSubNegEta += fCMEQIm[1][h]->GetBinContent(EBin);
 		uN2ReTPCSubNegEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
@@ -2945,6 +3640,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCSubNegEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
 		uNMTPCSubNegEta += fCMEMult[1][h]->GetBinContent(EBin);
 		uN2MTPCSubNegEta += fCMEMult[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCSubNegEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCSubNegEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCSubNegEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCSubNegEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCSubNegEta += fCMEw0[1]->GetBinContent(EBin); // w^0
+		uN3MTPCSubNegEta += fCMEw3[1]->GetBinContent(EBin); // w^3
+		uN4MTPCSubNegEta += fCMEw4[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Pion =======================
 		// both charge neg eta region
@@ -2957,7 +3660,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCPionSubNegEta += fCMEMultPionBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCPionSubNegEta += fCMEMultPionBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
+		// pegitive charge negitive eta region
 		uPReTPCPionSubNegEta += fCMEQRePion[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCPionSubNegEta += fCMEQImPion[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCPionSubNegEta += fCMEQRePion[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2967,7 +3670,15 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCPionSubNegEta += fCMEMultPion[0][h]->GetBinContent(EBin); // w
 		uP2MTPCPionSubNegEta += fCMEMultPion[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCPionSubNegEta += fCMEQ2Re4Pion[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCPionSubNegEta += fCMEQ2Im4Pion[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCPionSubNegEta += fCMEQ3Re2Pion[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCPionSubNegEta += fCMEQ3Im2Pion[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCPionSubNegEta += fCMEw0Pion[0]->GetBinContent(EBin); // w^0
+		uP3MTPCPionSubNegEta += fCMEw3Pion[0]->GetBinContent(EBin); // w^3
+		uP4MTPCPionSubNegEta += fCMEw4Pion[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCPionSubNegEta += fCMEQRePion[1][h]->GetBinContent(EBin);
 		uNImTPCPionSubNegEta += fCMEQImPion[1][h]->GetBinContent(EBin);
 		uN2ReTPCPionSubNegEta += fCMEQRePion[1][h+1]->GetBinContent(EBin);
@@ -2977,8 +3688,16 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uNMTPCPionSubNegEta += fCMEMultPion[1][h]->GetBinContent(EBin);
 		uN2MTPCPionSubNegEta += fCMEMultPion[3][h]->GetBinContent(EBin);
 		
+		uN4Re2TPCPionSubNegEta += fCMEQ2Re4Pion[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCPionSubNegEta += fCMEQ2Im4Pion[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCPionSubNegEta += fCMEQ3Re2Pion[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCPionSubNegEta += fCMEQ3Im2Pion[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCPionSubNegEta += fCMEw0Pion[1]->GetBinContent(EBin); // w^0
+		uN3MTPCPionSubNegEta += fCMEw3Pion[1]->GetBinContent(EBin); // w^3
+		uN4MTPCPionSubNegEta += fCMEw4Pion[1]->GetBinContent(EBin); // w^4
+		
 		// ========================== Kaon =======================
-		// both charge neg eta region
+		// both charge Neg eta region
 		uPNReTPCKaonSubNegEta += fCMEQReKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPNImTPCKaonSubNegEta += fCMEQImKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2ReTPCKaonSubNegEta += fCMEQReKaonBothCharge[0][h+1]->GetBinContent(EBin);
@@ -2988,7 +3707,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCKaonSubNegEta += fCMEMultKaonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCKaonSubNegEta += fCMEMultKaonBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
+		// positive charge negitive eta region
 		uPReTPCKaonSubNegEta += fCMEQReKaon[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCKaonSubNegEta += fCMEQImKaon[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCKaonSubNegEta += fCMEQReKaon[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -2998,7 +3717,15 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCKaonSubNegEta += fCMEMultKaon[0][h]->GetBinContent(EBin); // w
 		uP2MTPCKaonSubNegEta += fCMEMultKaon[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCKaonSubNegEta += fCMEQ2Re4Kaon[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCKaonSubNegEta += fCMEQ2Im4Kaon[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCKaonSubNegEta += fCMEQ3Re2Kaon[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCKaonSubNegEta += fCMEQ3Im2Kaon[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCKaonSubNegEta += fCMEw0Kaon[0]->GetBinContent(EBin); // w^0
+		uP3MTPCKaonSubNegEta += fCMEw3Kaon[0]->GetBinContent(EBin); // w^3
+		uP4MTPCKaonSubNegEta += fCMEw4Kaon[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCKaonSubNegEta += fCMEQReKaon[1][h]->GetBinContent(EBin);
 		uNImTPCKaonSubNegEta += fCMEQImKaon[1][h]->GetBinContent(EBin);
 		uN2ReTPCKaonSubNegEta += fCMEQReKaon[1][h+1]->GetBinContent(EBin);
@@ -3007,6 +3734,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCKaonSubNegEta += fCMEQImKaon[3][h+1]->GetBinContent(EBin);
 		uNMTPCKaonSubNegEta += fCMEMultKaon[1][h]->GetBinContent(EBin);
 		uN2MTPCKaonSubNegEta += fCMEMultKaon[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCKaonSubNegEta += fCMEQ2Re4Kaon[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCKaonSubNegEta += fCMEQ2Im4Kaon[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCKaonSubNegEta += fCMEQ3Re2Kaon[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCKaonSubNegEta += fCMEQ3Im2Kaon[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCKaonSubNegEta += fCMEw0Kaon[1]->GetBinContent(EBin); // w^0
+		uN3MTPCKaonSubNegEta += fCMEw3Kaon[1]->GetBinContent(EBin); // w^3
+		uN4MTPCKaonSubNegEta += fCMEw4Kaon[1]->GetBinContent(EBin); // w^4
 		
 		// ========================== Proton =======================
 		// both charge neg eta region
@@ -3019,7 +3754,7 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPNMTPCProtonSubNegEta += fCMEMultProtonBothCharge[0][h]->GetBinContent(EBin);
 		uPN2MTPCProtonSubNegEta += fCMEMultProtonBothCharge[1][h]->GetBinContent(EBin);
 		
-		// positive charge negative eta region
+		// positive charge negitive eta region
 		uPReTPCProtonSubNegEta += fCMEQReProton[0][h]->GetBinContent(EBin); // w*cos(phi)
 		uPImTPCProtonSubNegEta += fCMEQImProton[0][h]->GetBinContent(EBin); // w*sin(phi)
 		uP2ReTPCProtonSubNegEta += fCMEQReProton[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
@@ -3029,7 +3764,15 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uPMTPCProtonSubNegEta += fCMEMultProton[0][h]->GetBinContent(EBin); // w
 		uP2MTPCProtonSubNegEta += fCMEMultProton[2][h]->GetBinContent(EBin); // w^2
 		
-		// negative charge negative eta region
+		uP4Re2TPCProtonSubNegEta += fCMEQ2Re4Proton[0]->GetBinContent(EBin); // w^2*cos(4phi)
+		uP4Im2TPCProtonSubNegEta += fCMEQ2Im4Proton[0]->GetBinContent(EBin); // w^2*sin(4phi)
+		uP2Re3TPCProtonSubNegEta += fCMEQ3Re2Proton[0]->GetBinContent(EBin); // w^3*cos(2phi)
+		uP2Im3TPCProtonSubNegEta += fCMEQ3Im2Proton[0]->GetBinContent(EBin); // w^3*sin(2phi)
+		uP0MTPCProtonSubNegEta += fCMEw0Proton[0]->GetBinContent(EBin); // w^0
+		uP3MTPCProtonSubNegEta += fCMEw3Proton[0]->GetBinContent(EBin); // w^3
+		uP4MTPCProtonSubNegEta += fCMEw4Proton[0]->GetBinContent(EBin); // w^4
+		
+		// negative charge negitive eta region
 		uNReTPCProtonSubNegEta += fCMEQReProton[1][h]->GetBinContent(EBin);
 		uNImTPCProtonSubNegEta += fCMEQImProton[1][h]->GetBinContent(EBin);
 		uN2ReTPCProtonSubNegEta += fCMEQReProton[1][h+1]->GetBinContent(EBin);
@@ -3038,6 +3781,14 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
 		uN2Im2TPCProtonSubNegEta += fCMEQImProton[3][h+1]->GetBinContent(EBin);
 		uNMTPCProtonSubNegEta += fCMEMultProton[1][h]->GetBinContent(EBin);
 		uN2MTPCProtonSubNegEta += fCMEMultProton[3][h]->GetBinContent(EBin);
+		
+		uN4Re2TPCProtonSubNegEta += fCMEQ2Re4Proton[1]->GetBinContent(EBin); // w^2*cos(4phi)
+		uN4Im2TPCProtonSubNegEta += fCMEQ2Im4Proton[1]->GetBinContent(EBin); // w^2*sin(4phi)
+		uN2Re3TPCProtonSubNegEta += fCMEQ3Re2Proton[1]->GetBinContent(EBin); // w^3*cos(2phi)
+		uN2Im3TPCProtonSubNegEta += fCMEQ3Im2Proton[1]->GetBinContent(EBin); // w^3*sin(2phi)
+		uN0MTPCProtonSubNegEta += fCMEw0Proton[1]->GetBinContent(EBin); // w^0
+		uN3MTPCProtonSubNegEta += fCMEw3Proton[1]->GetBinContent(EBin); // w^3
+		uN4MTPCProtonSubNegEta += fCMEw4Proton[1]->GetBinContent(EBin); // w^4
 		
 	}
   }
@@ -3054,6 +3805,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2PosChPosEta( uP2Im2TPCPosEta ); // w^2 * sin(2theta+) eta+
   fpQvecEvent->setTPCMPosChPosEta( uPMTPCPosEta );   // w ch+ eta+
   fpQvecEvent->setTPC2MPosChPosEta( uP2MTPCPosEta );   // w^2 ch+ eta+
+  fpQvecEvent->setTPC4Re2PosChPosEta( uP4Re2TPCPosEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2PosChPosEta( uP4Im2TPCPosEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3PosChPosEta( uP2Re3TPCPosEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3PosChPosEta( uP2Im3TPCPosEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MPosChPosEta( uP0MTPCPosEta );   // w^0 ch+ eta+
+  fpQvecEvent->setTPC3MPosChPosEta( uP3MTPCPosEta );   // w^3 ch+ eta+
+  fpQvecEvent->setTPC4MPosChPosEta( uP4MTPCPosEta );   // w^4 ch+ eta+
   
   fpQvecEvent->setTPCRePosChNegEta( uPReTPCNegEta ); // w * cos(theta+) eta-
   fpQvecEvent->setTPCImPosChNegEta( uPImTPCNegEta ); // w * sin(theta+) eta-
@@ -3063,6 +3821,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2PosChNegEta( uP2Im2TPCNegEta ); // w^2 * sin(2theta+) eta-
   fpQvecEvent->setTPCMPosChNegEta( uPMTPCNegEta );   // w ch+ eta-
   fpQvecEvent->setTPC2MPosChNegEta( uP2MTPCNegEta );   // w^2 ch+ eta-
+  fpQvecEvent->setTPC4Re2PosChNegEta( uP4Re2TPCNegEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2PosChNegEta( uP4Im2TPCNegEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3PosChNegEta( uP2Re3TPCNegEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3PosChNegEta( uP2Im3TPCNegEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MPosChNegEta( uP0MTPCNegEta );   // w^0 ch+ eta-
+  fpQvecEvent->setTPC3MPosChNegEta( uP3MTPCNegEta );   // w^3 ch+ eta-
+  fpQvecEvent->setTPC4MPosChNegEta( uP4MTPCNegEta );   // w^4 ch+ eta-
   
   fpQvecEvent->setTPCReNegChPosEta( uNReTPCPosEta ); // w * cos(theta-) eta+
   fpQvecEvent->setTPCImNegChPosEta( uNImTPCPosEta ); // w * sin(theta-) eta+
@@ -3072,6 +3837,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2NegChPosEta( uN2Im2TPCPosEta ); // w^2 * sin(2theta-) eta+
   fpQvecEvent->setTPCMNegChPosEta( uNMTPCPosEta );   // w ch- eta+
   fpQvecEvent->setTPC2MNegChPosEta( uN2MTPCPosEta );   // w^2  h- eta+
+  fpQvecEvent->setTPC4Re2NegChPosEta( uN4Re2TPCPosEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2NegChPosEta( uN4Im2TPCPosEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3NegChPosEta( uN2Re3TPCPosEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3NegChPosEta( uN2Im3TPCPosEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MNegChPosEta( uN0MTPCPosEta );   // w^0 ch- eta+
+  fpQvecEvent->setTPC3MNegChPosEta( uN3MTPCPosEta );   // w^3 ch- eta+
+  fpQvecEvent->setTPC4MNegChPosEta( uN4MTPCPosEta );   // w^4 ch- eta+
   
   fpQvecEvent->setTPCReNegChNegEta( uNReTPCNegEta ); // w * cos(theta-) eta-
   fpQvecEvent->setTPCImNegChNegEta( uNImTPCNegEta ); // w * sin(theta-) eta-
@@ -3081,7 +3853,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2NegChNegEta( uN2Im2TPCNegEta ); // w^2 * sin(2theta-) eta-
   fpQvecEvent->setTPCMNegChNegEta( uNMTPCNegEta );   // w ch- eta-
   fpQvecEvent->setTPC2MNegChNegEta( uN2MTPCNegEta );   // w^2 ch- eta-
-  
+  fpQvecEvent->setTPC4Re2NegChNegEta( uN4Re2TPCNegEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2NegChNegEta( uN4Im2TPCNegEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3NegChNegEta( uN2Re3TPCNegEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3NegChNegEta( uN2Im3TPCNegEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MNegChNegEta( uN0MTPCNegEta );   // w^0 ch- eta-
+  fpQvecEvent->setTPC3MNegChNegEta( uN3MTPCNegEta );   // w^3 ch- eta-
+  fpQvecEvent->setTPC4MNegChNegEta( uN4MTPCNegEta );   // w^4 ch- eta-
   
   fpQvecEvent->setTPCPionRePosChPosEta( uPReTPCPionPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCPionImPosChPosEta( uPImTPCPionPosEta ); // w * sin(theta+) eta+
@@ -3118,8 +3896,36 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCPion2Im2NegChNegEta( uN2Im2TPCPionNegEta ); // w^2 * sin(2theta-) eta-
   fpQvecEvent->setTPCPionMNegChNegEta( uNMTPCPionNegEta );   // w ch- eta-
   fpQvecEvent->setTPCPion2MNegChNegEta( uN2MTPCPionNegEta );   // w^2 ch- eta-
-
-
+  
+  fpQvecEvent->setTPCPion4Re2PosChPosEta( uP4Re2TPCPionPosEta );
+  fpQvecEvent->setTPCPion4Im2PosChPosEta( uP4Im2TPCPionPosEta );
+  fpQvecEvent->setTPCPion2Re3PosChPosEta( uP2Re3TPCPionPosEta );
+  fpQvecEvent->setTPCPion2Im3PosChPosEta( uP2Im3TPCPionPosEta );
+  fpQvecEvent->setTPCPion0MPosChPosEta( uP0MTPCPionPosEta );
+  fpQvecEvent->setTPCPion3MPosChPosEta( uP3MTPCPionPosEta );
+  fpQvecEvent->setTPCPion4MPosChPosEta( uP4MTPCPionPosEta );
+  fpQvecEvent->setTPCPion4Re2PosChNegEta( uP4Re2TPCPionNegEta );
+  fpQvecEvent->setTPCPion4Im2PosChNegEta( uP4Im2TPCPionNegEta );
+  fpQvecEvent->setTPCPion2Re3PosChNegEta( uP2Re3TPCPionNegEta );
+  fpQvecEvent->setTPCPion2Im3PosChNegEta( uP2Im3TPCPionNegEta );
+  fpQvecEvent->setTPCPion0MPosChNegEta( uP0MTPCPionNegEta );
+  fpQvecEvent->setTPCPion3MPosChNegEta( uP3MTPCPionNegEta );
+  fpQvecEvent->setTPCPion4MPosChNegEta( uP4MTPCPionNegEta );
+  fpQvecEvent->setTPCPion4Re2NegChPosEta( uN4Re2TPCPionPosEta );
+  fpQvecEvent->setTPCPion4Im2NegChPosEta( uN4Im2TPCPionPosEta );
+  fpQvecEvent->setTPCPion2Re3NegChPosEta( uN2Re3TPCPionPosEta );
+  fpQvecEvent->setTPCPion2Im3NegChPosEta( uN2Im3TPCPionPosEta );
+  fpQvecEvent->setTPCPion0MNegChPosEta( uN0MTPCPionPosEta );
+  fpQvecEvent->setTPCPion3MNegChPosEta( uN3MTPCPionPosEta );
+  fpQvecEvent->setTPCPion4MNegChPosEta( uN4MTPCPionPosEta );
+  fpQvecEvent->setTPCPion4Re2NegChNegEta( uN4Re2TPCPionNegEta );
+  fpQvecEvent->setTPCPion4Im2NegChNegEta( uN4Im2TPCPionNegEta );
+  fpQvecEvent->setTPCPion2Re3NegChNegEta( uN2Re3TPCPionNegEta );
+  fpQvecEvent->setTPCPion2Im3NegChNegEta( uN2Im3TPCPionNegEta );
+  fpQvecEvent->setTPCPion0MNegChNegEta( uN0MTPCPionNegEta );
+  fpQvecEvent->setTPCPion3MNegChNegEta( uN3MTPCPionNegEta );
+  fpQvecEvent->setTPCPion4MNegChNegEta( uN4MTPCPionNegEta );
+  
   fpQvecEvent->setTPCKaonRePosChPosEta( uPReTPCKaonPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCKaonImPosChPosEta( uPImTPCKaonPosEta ); // w * sin(theta+) eta+
   fpQvecEvent->setTPCKaon2RePosChPosEta( uP2ReTPCKaonPosEta ); // w * cos(2theta+) eta+
@@ -3156,6 +3962,34 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCKaonMNegChNegEta( uNMTPCKaonNegEta );   // w ch- eta-
   fpQvecEvent->setTPCKaon2MNegChNegEta( uN2MTPCKaonNegEta );   // w^2 ch- eta-
   
+  fpQvecEvent->setTPCKaon4Re2PosChPosEta( uP4Re2TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon4Im2PosChPosEta( uP4Im2TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon2Re3PosChPosEta( uP2Re3TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon2Im3PosChPosEta( uP2Im3TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon0MPosChPosEta( uP0MTPCKaonPosEta );
+  fpQvecEvent->setTPCKaon3MPosChPosEta( uP3MTPCKaonPosEta );
+  fpQvecEvent->setTPCKaon4MPosChPosEta( uP4MTPCKaonPosEta );
+  fpQvecEvent->setTPCKaon4Re2PosChNegEta( uP4Re2TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon4Im2PosChNegEta( uP4Im2TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon2Re3PosChNegEta( uP2Re3TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon2Im3PosChNegEta( uP2Im3TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon0MPosChNegEta( uP0MTPCKaonNegEta );
+  fpQvecEvent->setTPCKaon3MPosChNegEta( uP3MTPCKaonNegEta );
+  fpQvecEvent->setTPCKaon4MPosChNegEta( uP4MTPCKaonNegEta );
+  fpQvecEvent->setTPCKaon4Re2NegChPosEta( uN4Re2TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon4Im2NegChPosEta( uN4Im2TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon2Re3NegChPosEta( uN2Re3TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon2Im3NegChPosEta( uN2Im3TPCKaonPosEta );
+  fpQvecEvent->setTPCKaon0MNegChPosEta( uN0MTPCKaonPosEta );
+  fpQvecEvent->setTPCKaon3MNegChPosEta( uN3MTPCKaonPosEta );
+  fpQvecEvent->setTPCKaon4MNegChPosEta( uN4MTPCKaonPosEta );
+  fpQvecEvent->setTPCKaon4Re2NegChNegEta( uN4Re2TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon4Im2NegChNegEta( uN4Im2TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon2Re3NegChNegEta( uN2Re3TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon2Im3NegChNegEta( uN2Im3TPCKaonNegEta );
+  fpQvecEvent->setTPCKaon0MNegChNegEta( uN0MTPCKaonNegEta );
+  fpQvecEvent->setTPCKaon3MNegChNegEta( uN3MTPCKaonNegEta );
+  fpQvecEvent->setTPCKaon4MNegChNegEta( uN4MTPCKaonNegEta );
   
   fpQvecEvent->setTPCProtonRePosChPosEta( uPReTPCProtonPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCProtonImPosChPosEta( uPImTPCProtonPosEta ); // w * sin(theta+) eta+
@@ -3193,7 +4027,34 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCProtonMNegChNegEta( uNMTPCProtonNegEta );   // w ch- eta-
   fpQvecEvent->setTPCProton2MNegChNegEta( uN2MTPCProtonNegEta );   // w^2 ch- eta-
   
-  
+  fpQvecEvent->setTPCProton4Re2PosChPosEta( uP4Re2TPCProtonPosEta );
+  fpQvecEvent->setTPCProton4Im2PosChPosEta( uP4Im2TPCProtonPosEta );
+  fpQvecEvent->setTPCProton2Re3PosChPosEta( uP2Re3TPCProtonPosEta );
+  fpQvecEvent->setTPCProton2Im3PosChPosEta( uP2Im3TPCProtonPosEta );
+  fpQvecEvent->setTPCProton0MPosChPosEta( uP0MTPCProtonPosEta );
+  fpQvecEvent->setTPCProton3MPosChPosEta( uP3MTPCProtonPosEta );
+  fpQvecEvent->setTPCProton4MPosChPosEta( uP4MTPCProtonPosEta );
+  fpQvecEvent->setTPCProton4Re2PosChNegEta( uP4Re2TPCProtonNegEta );
+  fpQvecEvent->setTPCProton4Im2PosChNegEta( uP4Im2TPCProtonNegEta );
+  fpQvecEvent->setTPCProton2Re3PosChNegEta( uP2Re3TPCProtonNegEta );
+  fpQvecEvent->setTPCProton2Im3PosChNegEta( uP2Im3TPCProtonNegEta );
+  fpQvecEvent->setTPCProton0MPosChNegEta( uP0MTPCProtonNegEta );
+  fpQvecEvent->setTPCProton3MPosChNegEta( uP3MTPCProtonNegEta );
+  fpQvecEvent->setTPCProton4MPosChNegEta( uP4MTPCProtonNegEta );
+  fpQvecEvent->setTPCProton4Re2NegChPosEta( uN4Re2TPCProtonPosEta );
+  fpQvecEvent->setTPCProton4Im2NegChPosEta( uN4Im2TPCProtonPosEta );
+  fpQvecEvent->setTPCProton2Re3NegChPosEta( uN2Re3TPCProtonPosEta );
+  fpQvecEvent->setTPCProton2Im3NegChPosEta( uN2Im3TPCProtonPosEta );
+  fpQvecEvent->setTPCProton0MNegChPosEta( uN0MTPCProtonPosEta );
+  fpQvecEvent->setTPCProton3MNegChPosEta( uN3MTPCProtonPosEta );
+  fpQvecEvent->setTPCProton4MNegChPosEta( uN4MTPCProtonPosEta );
+  fpQvecEvent->setTPCProton4Re2NegChNegEta( uN4Re2TPCProtonNegEta );
+  fpQvecEvent->setTPCProton4Im2NegChNegEta( uN4Im2TPCProtonNegEta );
+  fpQvecEvent->setTPCProton2Re3NegChNegEta( uN2Re3TPCProtonNegEta );
+  fpQvecEvent->setTPCProton2Im3NegChNegEta( uN2Im3TPCProtonNegEta );
+  fpQvecEvent->setTPCProton0MNegChNegEta( uN0MTPCProtonNegEta );
+  fpQvecEvent->setTPCProton3MNegChNegEta( uN3MTPCProtonNegEta );
+  fpQvecEvent->setTPCProton4MNegChNegEta( uN4MTPCProtonNegEta );
   
   // SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0
   fpQvecEvent->setTPCRePosChSubPosEta( uPReTPCSubPosEta ); // w * cos(theta+) eta+
@@ -3204,6 +4065,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2PosChSubPosEta( uP2Im2TPCSubPosEta ); // w^2 * sin(2theta+) eta+
   fpQvecEvent->setTPCMPosChSubPosEta( uPMTPCSubPosEta );   // w ch+ eta+
   fpQvecEvent->setTPC2MPosChSubPosEta( uP2MTPCSubPosEta );   // w^2 ch+ eta+
+  fpQvecEvent->setTPC4Re2PosChSubPosEta( uP4Re2TPCSubPosEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2PosChSubPosEta( uP4Im2TPCSubPosEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3PosChSubPosEta( uP2Re3TPCSubPosEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3PosChSubPosEta( uP2Im3TPCSubPosEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MPosChSubPosEta( uP0MTPCSubPosEta );   // w^0 ch+ eta+
+  fpQvecEvent->setTPC3MPosChSubPosEta( uP3MTPCSubPosEta );   // w^3 ch+ eta+
+  fpQvecEvent->setTPC4MPosChSubPosEta( uP4MTPCSubPosEta );   // w^4 ch+ eta+
   
   fpQvecEvent->setTPCRePosChSubNegEta( uPReTPCSubNegEta ); // w * cos(theta+) eta-
   fpQvecEvent->setTPCImPosChSubNegEta( uPImTPCSubNegEta ); // w * sin(theta+) eta-
@@ -3213,6 +4081,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2PosChSubNegEta( uP2Im2TPCSubNegEta ); // w^2 * sin(2theta+) eta-
   fpQvecEvent->setTPCMPosChSubNegEta( uPMTPCSubNegEta );   // w ch+ eta-
   fpQvecEvent->setTPC2MPosChSubNegEta( uP2MTPCSubNegEta );   // w^2 ch+ eta-
+  fpQvecEvent->setTPC4Re2PosChSubNegEta( uP4Re2TPCSubNegEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2PosChSubNegEta( uP4Im2TPCSubNegEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3PosChSubNegEta( uP2Re3TPCSubNegEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3PosChSubNegEta( uP2Im3TPCSubNegEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MPosChSubNegEta( uP0MTPCSubNegEta );   // w^0 ch+ eta-
+  fpQvecEvent->setTPC3MPosChSubNegEta( uP3MTPCSubNegEta );   // w^3 ch+ eta-
+  fpQvecEvent->setTPC4MPosChSubNegEta( uP4MTPCSubNegEta );   // w^4 ch+ eta-
   
   fpQvecEvent->setTPCReNegChSubPosEta( uNReTPCSubPosEta ); // w * cos(theta-) eta+
   fpQvecEvent->setTPCImNegChSubPosEta( uNImTPCSubPosEta ); // w * sin(theta-) eta+
@@ -3222,6 +4097,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2NegChSubPosEta( uN2Im2TPCSubPosEta ); // w^2 * sin(2theta-) eta+
   fpQvecEvent->setTPCMNegChSubPosEta( uNMTPCSubPosEta );   // w ch- eta+
   fpQvecEvent->setTPC2MNegChSubPosEta( uN2MTPCSubPosEta );   // w^2  h- eta+
+  fpQvecEvent->setTPC4Re2NegChSubPosEta( uN4Re2TPCSubPosEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2NegChSubPosEta( uN4Im2TPCSubPosEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3NegChSubPosEta( uN2Re3TPCSubPosEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3NegChSubPosEta( uN2Im3TPCSubPosEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MNegChSubPosEta( uN0MTPCSubPosEta );   // w^0 ch- eta+
+  fpQvecEvent->setTPC3MNegChSubPosEta( uN3MTPCSubPosEta );   // w^3 ch- eta+
+  fpQvecEvent->setTPC4MNegChSubPosEta( uN4MTPCSubPosEta );   // w^4 ch- eta+
   
   fpQvecEvent->setTPCReNegChSubNegEta( uNReTPCSubNegEta ); // w * cos(theta-) eta-
   fpQvecEvent->setTPCImNegChSubNegEta( uNImTPCSubNegEta ); // w * sin(theta-) eta-
@@ -3231,7 +4113,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPC2Im2NegChSubNegEta( uN2Im2TPCSubNegEta ); // w^2 * sin(2theta-) eta-
   fpQvecEvent->setTPCMNegChSubNegEta( uNMTPCSubNegEta );   // w ch- eta-
   fpQvecEvent->setTPC2MNegChSubNegEta( uN2MTPCSubNegEta );   // w^2 ch- eta-
-  
+  fpQvecEvent->setTPC4Re2NegChSubNegEta( uN4Re2TPCSubNegEta); // w^2*cos(4phi)
+  fpQvecEvent->setTPC4Im2NegChSubNegEta( uN4Im2TPCSubNegEta); // w^2*sin(4phi)
+  fpQvecEvent->setTPC2Re3NegChSubNegEta( uN2Re3TPCSubNegEta); // w^3*cos(2phi)
+  fpQvecEvent->setTPC2Im3NegChSubNegEta( uN2Im3TPCSubNegEta); // w^3*sin(2phi)
+  fpQvecEvent->setTPC0MNegChSubNegEta( uN0MTPCSubNegEta );   // w^0 ch- eta-
+  fpQvecEvent->setTPC3MNegChSubNegEta( uN3MTPCSubNegEta );   // w^3 ch- eta-
+  fpQvecEvent->setTPC4MNegChSubNegEta( uN4MTPCSubNegEta );   // w^4 ch- eta-
   
   fpQvecEvent->setTPCPionRePosChSubPosEta( uPReTPCPionSubPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCPionImPosChSubPosEta( uPImTPCPionSubPosEta ); // w * sin(theta+) eta+
@@ -3268,8 +4156,36 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCPion2Im2NegChSubNegEta( uN2Im2TPCPionSubNegEta ); // w^2 * sin(2theta-) eta-
   fpQvecEvent->setTPCPionMNegChSubNegEta( uNMTPCPionSubNegEta );   // w ch- eta-
   fpQvecEvent->setTPCPion2MNegChSubNegEta( uN2MTPCPionSubNegEta );   // w^2 ch- eta-
-
-
+  
+  fpQvecEvent->setTPCPion4Re2PosChSubPosEta( uP4Re2TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion4Im2PosChSubPosEta( uP4Im2TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion2Re3PosChSubPosEta( uP2Re3TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion2Im3PosChSubPosEta( uP2Im3TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion0MPosChSubPosEta( uP0MTPCPionSubPosEta );
+  fpQvecEvent->setTPCPion3MPosChSubPosEta( uP3MTPCPionSubPosEta );
+  fpQvecEvent->setTPCPion4MPosChSubPosEta( uP4MTPCPionSubPosEta );
+  fpQvecEvent->setTPCPion4Re2PosChSubNegEta( uP4Re2TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion4Im2PosChSubNegEta( uP4Im2TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion2Re3PosChSubNegEta( uP2Re3TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion2Im3PosChSubNegEta( uP2Im3TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion0MPosChSubNegEta( uP0MTPCPionSubNegEta );
+  fpQvecEvent->setTPCPion3MPosChSubNegEta( uP3MTPCPionSubNegEta );
+  fpQvecEvent->setTPCPion4MPosChSubNegEta( uP4MTPCPionSubNegEta );
+  fpQvecEvent->setTPCPion4Re2NegChSubPosEta( uN4Re2TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion4Im2NegChSubPosEta( uN4Im2TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion2Re3NegChSubPosEta( uN2Re3TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion2Im3NegChSubPosEta( uN2Im3TPCPionSubPosEta );
+  fpQvecEvent->setTPCPion0MNegChSubPosEta( uN0MTPCPionSubPosEta );
+  fpQvecEvent->setTPCPion3MNegChSubPosEta( uN3MTPCPionSubPosEta );
+  fpQvecEvent->setTPCPion4MNegChSubPosEta( uN4MTPCPionSubPosEta );
+  fpQvecEvent->setTPCPion4Re2NegChSubNegEta( uN4Re2TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion4Im2NegChSubNegEta( uN4Im2TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion2Re3NegChSubNegEta( uN2Re3TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion2Im3NegChSubNegEta( uN2Im3TPCPionSubNegEta );
+  fpQvecEvent->setTPCPion0MNegChSubNegEta( uN0MTPCPionSubNegEta );
+  fpQvecEvent->setTPCPion3MNegChSubNegEta( uN3MTPCPionSubNegEta );
+  fpQvecEvent->setTPCPion4MNegChSubNegEta( uN4MTPCPionSubNegEta );
+  
   fpQvecEvent->setTPCKaonRePosChSubPosEta( uPReTPCKaonSubPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCKaonImPosChSubPosEta( uPImTPCKaonSubPosEta ); // w * sin(theta+) eta+
   fpQvecEvent->setTPCKaon2RePosChSubPosEta( uP2ReTPCKaonSubPosEta ); // w * cos(2theta+) eta+
@@ -3306,6 +4222,34 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCKaonMNegChSubNegEta( uNMTPCKaonSubNegEta );   // w ch- eta-
   fpQvecEvent->setTPCKaon2MNegChSubNegEta( uN2MTPCKaonSubNegEta );   // w^2 ch- eta-
   
+  fpQvecEvent->setTPCKaon4Re2PosChSubPosEta( uP4Re2TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon4Im2PosChSubPosEta( uP4Im2TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon2Re3PosChSubPosEta( uP2Re3TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon2Im3PosChSubPosEta( uP2Im3TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon0MPosChSubPosEta( uP0MTPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon3MPosChSubPosEta( uP3MTPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon4MPosChSubPosEta( uP4MTPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon4Re2PosChSubNegEta( uP4Re2TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon4Im2PosChSubNegEta( uP4Im2TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon2Re3PosChSubNegEta( uP2Re3TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon2Im3PosChSubNegEta( uP2Im3TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon0MPosChSubNegEta( uP0MTPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon3MPosChSubNegEta( uP3MTPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon4MPosChSubNegEta( uP4MTPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon4Re2NegChSubPosEta( uN4Re2TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon4Im2NegChSubPosEta( uN4Im2TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon2Re3NegChSubPosEta( uN2Re3TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon2Im3NegChSubPosEta( uN2Im3TPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon0MNegChSubPosEta( uN0MTPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon3MNegChSubPosEta( uN3MTPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon4MNegChSubPosEta( uN4MTPCKaonSubPosEta );
+  fpQvecEvent->setTPCKaon4Re2NegChSubNegEta( uN4Re2TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon4Im2NegChSubNegEta( uN4Im2TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon2Re3NegChSubNegEta( uN2Re3TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon2Im3NegChSubNegEta( uN2Im3TPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon0MNegChSubNegEta( uN0MTPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon3MNegChSubNegEta( uN3MTPCKaonSubNegEta );
+  fpQvecEvent->setTPCKaon4MNegChSubNegEta( uN4MTPCKaonSubNegEta );
   
   fpQvecEvent->setTPCProtonRePosChSubPosEta( uPReTPCProtonSubPosEta ); // w * cos(theta+) eta+
   fpQvecEvent->setTPCProtonImPosChSubPosEta( uPImTPCProtonSubPosEta ); // w * sin(theta+) eta+
@@ -3342,6 +4286,35 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::CalculateCMESPPP()
   fpQvecEvent->setTPCProton2Im2NegChSubNegEta( uN2Im2TPCProtonSubNegEta ); // w^2 * sin(2theta-) eta-
   fpQvecEvent->setTPCProtonMNegChSubNegEta( uNMTPCProtonSubNegEta );   // w ch- eta-
   fpQvecEvent->setTPCProton2MNegChSubNegEta( uN2MTPCProtonSubNegEta );   // w^2 ch- eta-
+  
+  fpQvecEvent->setTPCProton4Re2PosChSubPosEta( uP4Re2TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton4Im2PosChSubPosEta( uP4Im2TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton2Re3PosChSubPosEta( uP2Re3TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton2Im3PosChSubPosEta( uP2Im3TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton0MPosChSubPosEta( uP0MTPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton3MPosChSubPosEta( uP3MTPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton4MPosChSubPosEta( uP4MTPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton4Re2PosChSubNegEta( uP4Re2TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton4Im2PosChSubNegEta( uP4Im2TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton2Re3PosChSubNegEta( uP2Re3TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton2Im3PosChSubNegEta( uP2Im3TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton0MPosChSubNegEta( uP0MTPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton3MPosChSubNegEta( uP3MTPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton4MPosChSubNegEta( uP4MTPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton4Re2NegChSubPosEta( uN4Re2TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton4Im2NegChSubPosEta( uN4Im2TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton2Re3NegChSubPosEta( uN2Re3TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton2Im3NegChSubPosEta( uN2Im3TPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton0MNegChSubPosEta( uN0MTPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton3MNegChSubPosEta( uN3MTPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton4MNegChSubPosEta( uN4MTPCProtonSubPosEta );
+  fpQvecEvent->setTPCProton4Re2NegChSubNegEta( uN4Re2TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton4Im2NegChSubNegEta( uN4Im2TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton2Re3NegChSubNegEta( uN2Re3TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton2Im3NegChSubNegEta( uN2Im3TPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton0MNegChSubNegEta( uN0MTPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton3MNegChSubNegEta( uN3MTPCProtonSubNegEta );
+  fpQvecEvent->setTPCProton4MNegChSubNegEta( uN4MTPCProtonSubNegEta );
   
 }
 
@@ -3647,6 +4620,13 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvec::GetNUACorrectionHist(Int_t run, Int_t
     
     fHCorrectNUAkPIDPos = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d",kParticleID,run)); 
     fHCorrectNUAkPIDNeg = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d",kParticleID,run)); 
+    
+    fHCorrectNUAkPIDPosPion = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID10Pos_Run%d",run)); 
+    fHCorrectNUAkPIDNegPion = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID10Neg_Run%d",run));
+    fHCorrectNUAkPIDPosKaon = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID20Pos_Run%d",run)); 
+    fHCorrectNUAkPIDNegKaon = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID20Neg_Run%d",run));
+    fHCorrectNUAkPIDPosProton = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID30Pos_Run%d",run)); 
+    fHCorrectNUAkPIDNegProton = (TH3F *) fListNUACorr->FindObject(Form("fHist_NUA_VzPhiEta_kPID30Neg_Run%d",run));
     
     if(fHCorrectNUAChrgPos && fHCorrectNUAChrgNeg){
       cout<<" ===========> Info:: Setting up NUA corrections for Charge, run = "<<run<<endl;   
@@ -4171,6 +5151,56 @@ Double_t AliAnalysisTaskGammaDeltaPIDSaveQvec::GetNUAWeightForTrackPID(Double_t 
   return WgtNUAtrk1;
 }
 
+
+Double_t AliAnalysisTaskGammaDeltaPIDSaveQvec::GetNUAWeightForTrackPID(Double_t fVtxZ,Double_t fPhi,Double_t fEta,Int_t gChrg,Int_t gPID){
+
+  Double_t WgtNUAtrk1 = 1.0;
+  Int_t    iBinforNUA = 0;
+
+  /// It is responsibility of User to Set the Correct NUA file for the PID needed. 
+  if(gChrg>0){
+	if(gPID==1) {// pion
+      if(fHCorrectNUAkPIDPosPion){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDPosPion->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDPosPion->GetBinContent(iBinforNUA);
+      }
+	} else if(gPID==2) {//kaon
+	  if(fHCorrectNUAkPIDPosKaon){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDPosKaon->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDPosKaon->GetBinContent(iBinforNUA);
+      }
+	} else if (gPID==3) {//proton
+	  if(fHCorrectNUAkPIDPosProton){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDPosProton->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDPosProton->GetBinContent(iBinforNUA);
+      }
+	} else {
+	  printf("\n\n **WARNING** ::GetNUAWeightForTrackPID() Unknown PID.\n\n");
+	}
+  }
+  else{
+    if(gPID==1) {// pion
+      if(fHCorrectNUAkPIDNegPion){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDNegPion->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDNegPion->GetBinContent(iBinforNUA);
+      }
+	} else if(gPID==2) {//kaon
+	  if(fHCorrectNUAkPIDNegKaon){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDNegKaon->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDNegKaon->GetBinContent(iBinforNUA);
+      }
+	} else if (gPID==3) {//proton
+	  if(fHCorrectNUAkPIDNegProton){ /// safety measures for breaks!
+        iBinforNUA = fHCorrectNUAkPIDNegProton->FindBin(fVtxZ,fPhi,fEta);
+        WgtNUAtrk1 = fHCorrectNUAkPIDNegProton->GetBinContent(iBinforNUA);
+      }
+	} else {
+	  printf("\n\n **WARNING** ::GetNUAWeightForTrackPID() Unknown PID.\n\n");
+	}
+  }
+  
+  return WgtNUAtrk1;
+}
 
 
 void AliAnalysisTaskGammaDeltaPIDSaveQvec::ApplyTPCqVectRecenter(Float_t fCent,Int_t gPsiN,Double_t& qxEtaNeg, Double_t& qyEtaNeg,Double_t& qxEtaPos,Double_t& qyEtaPos){

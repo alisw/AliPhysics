@@ -412,6 +412,8 @@ void AliAnalysisTaskHFJetIPQA::SetDefaultAnalysisCuts(){
     fAnalysisCuts[bAnalysisCut_HasTPCrefit]=1;
     fAnalysisCuts[bAnalysisCut_HasITSrefit]=1;
     fAnalysisCuts[bAnalysisCut_KinkCand]=1;
+    fAnalysisCuts[bAnalysisCut_NCrossedRows]=-1;
+    fAnalysisCuts[bAnalysisCut_NCrossedRowsOverFClusters]=-1;
 
     //Jet Cuts
     fAnalysisCuts[bAnalysisCut_MinJetPt]        =0;  //only for settings output. Not really used as cuts are done in .C file
@@ -2336,7 +2338,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           AliAODTrack *trackV = dynamic_cast<AliAODTrack*>(vtrack);
 
           if (!trackV || !jetrec)            continue;
-          if(!IsTrackAccepted((AliAODTrack*)trackV,fJetFlavour)) continue;
+          if(!IsTrackAccepted((AliAODTrack*)trackV,1)) continue;
           if(!GetImpactParameterWrtToJet((AliAODTrack*)trackV,(AliAODEvent*)InputEvent(),jetrec,dca,cov,xyzatcda,sign, fJetFlavour)) continue;
           if(fEventVertex) {
            delete fEventVertex;
@@ -2509,7 +2511,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   Printf("Analysing Jets with Radius: R=%f\n",fJetRadius);
 
-  TString BJetCuts[29] = {
+  TString BJetCuts[35] = {
     "#sigma_{Dia}",  //0
     "#sigma_{z}",       //1
     "#sigma_{y}",       //2
@@ -2531,14 +2533,20 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     "p_{T,Jet}^{max}",//18
     "#eta_{Jet}^{min}",       //19
     "#eta_{Jet}^{max}",        //20
-    "SPD Hits", //21
-    "SDD Hits",//22
-    "SSD Hits",//23
-    "Kink",//24
-    "TPC Refit",//25
-    "ITS Refit", //26
-    "PtHard", //27
-    "MinNewVtx" //28
+    "JetArea",        //21
+    "SPD Hits", //22
+    "SDD Hits",//23
+    "SSD Hits",//24
+    "Kink",//25
+    "TPC Refit",//26
+    "ITS Refit", //27
+    "PtHard", //28
+    "MinNewVtx", //29
+    "SDz", //30
+    "SDbeta", //31
+    "MaxIPLNJP", //32
+    "Cross/F", //33
+    "Cross", //34
   };
 
   TString sV0Cuts[18] = {
@@ -2655,14 +2663,14 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
     fHistManager.CreateTH1("fh1dJetTrueMatchedPtb_Response","detector level jets;pt (GeV/c); count",300,0,300,"s");
   }
 
-  fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",30,0,30);
-  fh1dCutudg=(TH1D*)AddHistogramm("fh1dCutudg","fh1dCutudg",30,0,30);
-  fh1dCutc=(TH1D*)AddHistogramm("fh1dCutc","fh1dCutc",30,0,30);
-  fh1dCutb=(TH1D*)AddHistogramm("fh1dCutb","fh1dCutb",30,0,30);
-  fh1dCuts=(TH1D*)AddHistogramm("fh1dCuts","fh1dCuts",30,0,30);
+  fh1DCutInclusive=(TH1D*)AddHistogramm("fh1DCutInclusive","fh1DCutInclusive",35,0,35);
+  fh1dCutudg=(TH1D*)AddHistogramm("fh1dCutudg","fh1dCutudg",35,0,35);
+  fh1dCutc=(TH1D*)AddHistogramm("fh1dCutc","fh1dCutc",35,0,35);
+  fh1dCutb=(TH1D*)AddHistogramm("fh1dCutb","fh1dCutb",35,0,35);
+  fh1dCuts=(TH1D*)AddHistogramm("fh1dCuts","fh1dCuts",35,0,35);
   fh1dCuts->GetXaxis()->LabelsOption("v");
 
-  for(Int_t iBin = 0; iBin < 29; iBin++){
+  for(Int_t iBin = 0; iBin < 35; iBin++){
           fh1DCutInclusive->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
           if(fIsPythia){
                   fh1dCutudg->GetXaxis()->SetBinLabel(iBin + 1, BJetCuts[iBin].Data());
@@ -3286,7 +3294,9 @@ Double_t AliAnalysisTaskHFJetIPQA::GetValImpactParameter(TTypeImpPar type,Double
 
 //____________________________________________________
 void AliAnalysisTaskHFJetIPQA::FillCandidateJet(Int_t CutIndex, Int_t JetFlavor){
-        if(JetFlavor>0) fh1DCutInclusive->Fill(CutIndex);
+        if(JetFlavor>0){
+          fh1DCutInclusive->Fill(CutIndex);
+        }
         if(fIsPythia){
                 if(JetFlavor==1)fh1dCutudg->Fill(CutIndex);
                 if(JetFlavor==2)fh1dCutc->Fill(CutIndex);
@@ -3390,8 +3400,23 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(const AliVTrack* track , int je
         if(((AliAODTrack*)track)->Chi2perNDF()>=fAnalysisCuts[bAnalysisCut_MinTrackChi2]){
             FillCandidateJet(bAnalysisCut_MinTrackChi2,jetflavour);
             //printf("Throw away due flav=%i chi2 %f, cutvalue=%f\n",jetflavour,((AliAODTrack*)track)->Chi2perNDF(),fAnalysisCuts[bAnalysisCut_MinTrackChi2]);
+            FillCandidateJet(bAnalysisCut_MinTrackChi2,jetflavour);
             return kFALSE;
         }
+
+        if(((AliAODTrack*)track)->GetTPCCrossedRows()<fAnalysisCuts[bAnalysisCut_NCrossedRows]){
+            //printf("Omit track with %f crossed rows\n",((AliAODTrack*)track)->GetTPCCrossedRows());
+            FillCandidateJet(bAnalysisCut_NCrossedRows,jetflavour);
+            return kFALSE;
+        }
+
+        Double_t fCrossedOverFClusters=((AliAODTrack*)track)->GetTPCCrossedRows()/((AliAODTrack*)track)->GetTPCNclsF();
+        if(fCrossedOverFClusters<fAnalysisCuts[bAnalysisCut_NCrossedRowsOverFClusters]){
+            FillCandidateJet(bAnalysisCut_NCrossedRowsOverFClusters,jetflavour);
+            //printf("Omit track with %f crossed rows/findable\n",fCrossedOverFClusters);
+            return kFALSE;
+        }
+
 
         return kTRUE;
     }

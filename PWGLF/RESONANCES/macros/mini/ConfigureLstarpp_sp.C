@@ -167,10 +167,12 @@ Bool_t ConfigureLstarpp_sp
 
     // axis Z: centrality-multiplicity
     // axis Z: centrality-multiplicity
-    if (!isPP)
-      out->AddAxis(centID, 100, 0.5, 100.5);
-    else 
-      out->AddAxis(centID, 100, 0.5, 100.5);
+
+     
+     if(isPP && !MultBins)  out->AddAxis(centID, 400, 0., 400.);
+     else out->AddAxis(centID, 110, 0., 110.);
+    
+   	  
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity

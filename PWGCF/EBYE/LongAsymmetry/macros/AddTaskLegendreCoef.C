@@ -26,7 +26,8 @@ AliAnalysisTaskLegendreCoef* AddTaskLegendreCoef(const char *suffix = "")
     task->SetPileUpRead(kFALSE);
     task->SetChi2DoF(4);
     task->SetPtLimits(0.2, 2.0);
-    task->SetEtaLimit(0.8);
+    task->SetEtaMinLimit(-0.8);
+    task->SetEtaMaxLimit(0.8);
     task->SetBuildBackground(kFALSE);
     task->SetBuildLegendre(kFALSE);
     printf("Container name is %s\n",name.Data());
@@ -34,10 +35,21 @@ AliAnalysisTaskLegendreCoef* AddTaskLegendreCoef(const char *suffix = "")
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
-    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+    AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3;
+    cinput  = mgr->GetCommonInputContainer();
+    mgr->ConnectInput(task, 0, cinput);
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(name.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    // in the end, this macro returns a pointer to your task. this will be convenient later on
-    // when you will run your analysis in an analysis train on grid
+    TString dirName = "";
+    TString fileDirStructure = AliAnalysisManager::GetCommonFileName();
+    TString listName = "";
+    listName = "LegCoef";
+    coutput1  = mgr->CreateContainer(listName,                      TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    //these containers are only filled locally
+    coutput2  = mgr->CreateContainer("mcRec",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+    coutput3  = mgr->CreateContainer("mcGen",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+
+    mgr->ConnectOutput(task,  1, coutput1);
+    mgr->ConnectOutput(task,  2, coutput2);
+    mgr->ConnectOutput(task,  3, coutput3);
     return task;
 }

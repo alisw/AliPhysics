@@ -14,6 +14,7 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskEPCalib();
+  AliAnalysisTaskEPCalib(const char *name, TString PR);
   AliAnalysisTaskEPCalib(const char *name);
   virtual ~AliAnalysisTaskEPCalib();
 
@@ -45,11 +46,20 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   bool    GetFillVZEROQMean(){return fFillVZEROQMean;}
   void    SetFillVZEROQMean(bool x){fFillVZEROQMean = x;}
 
+  bool    GetFillVZEROQMean18(){return fFillVZEROQMean18;}
+  void    SetFillVZEROQMean18(bool x){fFillVZEROQMean18 = x;}
+
   bool    GetVZEROCalib(){return fVZEROCalib;}
   void    SetVZEROCalib(bool x){fVZEROCalib = x;}
 
+  bool    GetVZEROCalib18(){return fVZEROCalib18;}
+  void    SetVZEROCalib18(bool x){fVZEROCalib18 = x;}
+
   bool    GetfQAV0(){return fQAV0;}
   void    SetfQAV0(bool x){fQAV0 = x;}
+
+  bool    GetfFillWNUA(){return fFillWeightNUA;}
+  void    SetfFillWNUA(bool x){fFillWeightNUA = x;}
 
   int       GetDebug(){return fDebug;}
   void     SetDebug(int x){fDebug = x;}
@@ -57,8 +67,8 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   double  GerHarmonic(){return fHarmonic;}
   void      SetHarmonic(double x)  {fHarmonic = x;}
 
-  int       GetTrigger(){return fTrigger;}
-  void    SetTrigger(int x){fTrigger = x;}
+  TString GetTrigger(){return fTrigger;}
+  void      SetTrigger(TString x){fTrigger = x;}
 
   int       GetFilterBit(){return fFltbit;}
   void    SetFilterBit(int x){fFltbit = x;}
@@ -102,18 +112,18 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
  private:
 
   static const int NCENTBINS = 10;
-  static const int NRUNNUM=68;
+  static const int NRUNNUM=150;
 
   int                     GetRunNumBin(int runNum);
   // pile-up        
   bool                  RejectEvtTFFit(AliAODEvent* fAOD);
   bool                  RemovalForRun1 (AliAODEvent* fAOD, AliAnalysisUtils* fUtils);
   bool                  AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack *track, AliAODVertex* fVtx);
-  void                  TPCPlane(AliAODEvent* fAOD);
+  void                  TPCPlane(AliAODEvent* fAOD, AliAODVertex* fVtx);
   void                  V0Plane(AliAODEvent* fAOD);
   double              GetEventPlane(double qx, double qy);
   double              GetNUACor(int charge, double phi, double eta, double vz);
-
+  void                  GetV0MCorrectionHist(Int_t run);
   bool                  fTPCEstOn;
   bool                  fTPCNUAWeight;
   bool                  fFillTPCQMean;
@@ -122,13 +132,16 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   bool                  fVZEROEstOn ;
   bool                  fVZEROGainEq;
   bool                  fFillVZEROQMean;
+  bool                  fFillVZEROQMean18;
   bool                  fVZEROCalib;
+  bool                  fVZEROCalib18;
   bool                  fQAV0;
+  bool                  fFillWeightNUA;
 
   // Cuts and options
   int                     fDebug; // debug level controls amount of output statements
   double              fHarmonic;
-  int                     fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+  TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
   int                     fFltbit; // AOD filter bit selection
   int                     fNclsCut; // ncls cut for all tracks 
   float                  fChi2Hg; // upper limmit for chi2
@@ -155,10 +168,14 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   TList*               fListNUA1;
   TList*               fListNUA2;
   TList*               fListNUA3;
+  TList*               fListV0MCorr;  // List for V0 Corr of 18q/r !! (Specific!) 
   TH2D*             hNUAweightPlus;
   TH2D*             hNUAweightMinus;
   TH3F*              hCorrectNUAPos;
   TH3F*              hCorrectNUANeg;
+  // 18q/r V0Calib
+  TH2F*              fHCorrectV0ChWeghts;
+  // PU
   TF1*                fSPDCutPU;
   TF1*                fV0CutPU;
   TF1*                fCenCutLowPU;
@@ -197,7 +214,7 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   TProfile*          pV0YMeanFill[NRUNNUM][3];
   TH1D*             hQxnmV0[NRUNNUM][3];
   TH1D*             hQynmV0[NRUNNUM][3];
-  TH2D*             hQnCentCor[3];
+  TH2D*             hQnCentCor[5][2];
   TH2D*             hQxCentCor[3];
   TH2D*             hQyCentCor[3];
   TH2D*             hQxCentRaw[3];
@@ -218,6 +235,7 @@ class AliAnalysisTaskEPCalib : public AliAnalysisTaskSE
   TProfile2D*     pTPCShiftFillCoeffSin[3];
   TH2D*             hTPCShiftReadCoeffCos[3];
   TH2D*             hTPCShiftReadCoeffSin[3];
+  TH3F*             hFillNUA[NRUNNUM][2];
   AliAnalysisTaskEPCalib(const AliAnalysisTaskEPCalib&);
   AliAnalysisTaskEPCalib& operator=(const AliAnalysisTaskEPCalib&);
 

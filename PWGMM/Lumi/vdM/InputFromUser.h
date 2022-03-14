@@ -12,14 +12,18 @@ void Set_input_file_names(Int_t Fill)
 	{
 		// set fill and number of scans in the fill
 		g_vdm_Fill = Fill;
-		g_n_Scans_in_Fill = 2; 
+		g_n_Scans_in_Fill = 2;
+
+		const char* CUT = "5.5m11.5_11.5p17.5";
+		//cout <<" Following V0/T0 timing cut is being used: " <<CUT <<endl;
 		// set name of input files
-		sprintf(g_Input_vdm_File,"../Fill-%d/vdm_time_4937_6m11_12p17_1_v3.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_DDL2_File,"../Fill-%d/vdm_DDL2_4937-6m11_12p17_1_v3.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_BPTX_File,"../Fill-%d/vdm_time_4937_6m11_12p17_1_v3-BPTX.root",g_vdm_Fill);
+		sprintf(g_Input_vdm_File,      "../Fill-%d/vdm_time_4937_%s_1_v3.root",      g_vdm_Fill, CUT);
+		sprintf(g_Input_vdm_DDL2_File, "../Fill-%d/vdm_DDL2_4937-%s_1_v3.root",      g_vdm_Fill, CUT);
+		sprintf(g_Input_vdm_BPTX_File, "../Fill-%d/vdm_time_4937_%s_1_v3-BPTX.root", g_vdm_Fill, CUT);
+
 		// charge of beams
 		gBeamA = 1; // proton
-		gBeamB = 1; // proton    
+		gBeamB = 1; // proton
 	}
 	else if (Fill == 5533) // p-Pb @ 8.16 TeV, Nov 23, 2016
 	{
@@ -39,10 +43,13 @@ void Set_input_file_names(Int_t Fill)
 		// set fill and number of scans in the fill
 		g_vdm_Fill = Fill;
 		g_n_Scans_in_Fill = 2; 
-		// set name of input files
-		sprintf(g_Input_vdm_File,"../Fill-%d/vdm_time_6012_6m11_12p17_1_v3.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_DDL2_File,"../Fill-%d/vdm_DDL2_6012-6m11_12p17_1_v3.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_BPTX_File,"../Fill-%d/vdm_time_6012_6m11_12p17_1_v3-BPTX.root",g_vdm_Fill);
+
+		const char* CUT = "5.5m11.5_11.5p17.5";
+		//cout <<" Following V0/T0 timing cut is being used: " <<CUT <<endl;
+		sprintf(g_Input_vdm_File,      "../Fill-%d/vdm_time_6012_%s_1_v3.root",      g_vdm_Fill, CUT);
+		sprintf(g_Input_vdm_DDL2_File, "../Fill-%d/vdm_DDL2_6012-%s_1_v3.root",      g_vdm_Fill, CUT);
+		sprintf(g_Input_vdm_BPTX_File, "../Fill-%d/vdm_time_6012_%s_1_v3-BPTX.root", g_vdm_Fill, CUT);
+
 		// charge of beams
 		gBeamA = 1; // proton
 		gBeamB = 1; // proton    
@@ -52,16 +59,13 @@ void Set_input_file_names(Int_t Fill)
 		// set fill and number of scans in the fill
 		g_vdm_Fill = Fill;
 		g_n_Scans_in_Fill = 2; 
-		// set name of input files
-		/*
-		sprintf(g_Input_vdm_File,"../Fill-%d/vdm_time_6864_6m11_12p17_1_v3.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_DDL2_File,"../Fill-%d/vdm_DDL2_6864-6m11.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_BPTX_File,"../Fill-%d/vdm_time_6864_6m11_12p17_1_v3-BPTX.root",g_vdm_Fill);
-		*/
-		// these are used by Hermann
-		sprintf(g_Input_vdm_File,"../Fill-%d/vdm_time_6864_5m11.5_11p17.5_1_v3.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_DDL2_File,"../Fill-%d/vdm_DDL2_6864-5m11.5.root",g_vdm_Fill);
-		sprintf(g_Input_vdm_BPTX_File,"../Fill-%d/vdm_time_6864_5m11.5_11p17.5_1_v3-BPTX.root",g_vdm_Fill);
+
+		const char* CUT1 = "5.5m11.5"; const char* CUT2 = "11.5p17.5";
+		//cout <<"Following V0/T0 timing cut is being used: " <<CUT1 <<", " <<CUT2 <<endl;
+		sprintf(g_Input_vdm_File,      "../Fill-%d/vdm_time_6864_%s_%s_1_v3.root",      g_vdm_Fill, CUT1, CUT2);
+		sprintf(g_Input_vdm_DDL2_File, "../Fill-%d/vdm_DDL2_6864-%s.root",              g_vdm_Fill, CUT1);
+		sprintf(g_Input_vdm_BPTX_File, "../Fill-%d/vdm_time_6864_%s_%s_1_v3-BPTX.root", g_vdm_Fill, CUT1, CUT2);
+
 		// charge of beams
 		gBeamA = 1; // proton
 		gBeamB = 1; // proton    

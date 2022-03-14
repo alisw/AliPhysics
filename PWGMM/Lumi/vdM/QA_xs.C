@@ -9,18 +9,20 @@
 // the cross section
 //-------------------------------------------------------
 
-void QA_xs(Int_t Fill, const char *rate_name, const char *rate_type,
-		const char *sep_type, const char *intensity_type, Int_t fit_type, Int_t scan, bool systChk = false)
+void QA_xs(Int_t Fill,
+		const char *rate_name, const char *rate_type,
+		const char *sep_type, const char *intensity_type,
+		Int_t fit_type, Int_t scan
+		)
 {
 	// initialize
 	Set_input_file_names(Fill);
 	Set_pointers_to_input_files_and_trees();
-	const char* sfx = systChk?"_syst":"";
 
 	// get xs file and tree
 	char *xs_file_name = new char[kg_string_size];
-	sprintf(xs_file_name,"../Fill-%d/xs_%sRate_%s_%sSep_%s_Scan_%d_Fit_%s%s.root",
-			g_vdm_Fill,rate_type,rate_name,sep_type,intensity_type,scan,g_fit_model_name[fit_type],sfx);
+	sprintf(xs_file_name,"../Fill-%d/xs_%sRate_%s_%sSep_%s_Scan_%d_Fit_%s.root",
+			g_vdm_Fill,rate_type,rate_name,sep_type,intensity_type,scan,g_fit_model_name[fit_type]);
 	TFile *xs_file = new TFile(xs_file_name);
 	TTree *xs_tree = (TTree *) xs_file->Get("XS");
 
@@ -77,10 +79,11 @@ void QA_xs(Int_t Fill, const char *rate_name, const char *rate_type,
 	}
 
 	// plot histo
-	const char* TYPE = Form("Fill%i_%s_%s_%s_%s_fit%i_scan%i%s",
-			Fill, sep_type, intensity_type, rate_name, rate_type, fit_type, scan, sfx); //kimc
-	yMin = 54;
-	yMax = 58;
+	const char* TYPE = Form("Fill%i_%s_%s_%s_%s_fit%i_scan%i",
+			Fill, sep_type, intensity_type, rate_name, rate_type, fit_type, scan); //kimc
+
+	if      (!strcmp(rate_name, "VBAandVBC")) { yMin = 54; yMax = 58; }
+	else if (!strcmp(rate_name, "TVX"))       { yMin = 26; yMax = 30; }
 
 	gStyle->SetOptStat(0);
 	gStyle->SetOptFit(1);
@@ -108,7 +111,7 @@ void QA_xs(Int_t Fill, const char *rate_name, const char *rate_type,
 	L1->SetFillStyle(3001);
 	L1->SetMargin(0.3);
 	L1->Draw();
-	bi_C->Print(Form("c3a_XSvsBC_%s.png", TYPE)); //kimc
+	bi_C->Print(Form("c3a_XSvsBC_%s.%s", TYPE, FFormat)); //kimc
 
 	// clean
 	delete [] xs_all;

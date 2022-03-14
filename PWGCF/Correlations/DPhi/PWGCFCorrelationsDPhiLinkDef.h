@@ -32,6 +32,7 @@
 #pragma link C++ class AliAnalysisTaskCompareAODTrackCuts+;
 #pragma link C++ class AliAnalysisTaskDiJetCorrelationsAllb2b+;
 #pragma link C++ class AliDPhiBasicParticleDiJet+;
+#pragma link C++ class AliEPDependentDiHadronOnTheFlyMCTask+;
 #pragma link C++ class AliEvtPoolManager+;
 #pragma link C++ class AliEvtPool+;
 #pragma link C++ class AliMiniTrack+;
@@ -49,6 +50,8 @@
 #pragma link C++ class AliV0hParticles+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelationsys+;
 #pragma link C++ class AliV0XiParticles+;
+#pragma link C++ class AliAnalysisTaskLambdaK0s+;
+#pragma link C++ class AliV0XiParticleall+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
 #pragma link C++ class AliAnalysisTaskLongFluctuations2PC+;
 #pragma link C++ class LRCParticle;
@@ -110,4 +113,8 @@
 #pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;
 #pragma link C++ class AliV0ChParticle+;
 #pragma link C++ class AliAnalysisTaskR2P2+;
+#pragma link C++ class AliAnalysisTaskR2P2Base+;
+#pragma link C++ class AliAnalysisTaskR2P2Corr+;
+#pragma link C++ class AliAnalysisTaskR2P2multClass+;
+#pragma link C++ class AliAnalysisTaskR2P2pp+;
 #endif

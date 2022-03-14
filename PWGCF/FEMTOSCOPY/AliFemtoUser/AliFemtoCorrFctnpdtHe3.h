@@ -5,6 +5,8 @@
 #include "TH2D.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TF1.h"
+#include "TMath.h"
 #include "TNtuple.h"
 #include "TString.h"
 
@@ -18,7 +20,7 @@
 ///         Based on AliFemtoCorrFctnKStar.cxx!
 /// \authors  Dong-Fang Wang, Fudan University, China, <dongfang.wang@cern.ch>
 ///
-
+Double_t MassBandFunc(Double_t *x, Double_t *par);
 class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
     public:
         AliFemtoCorrFctnpdtHe3();
@@ -41,6 +43,25 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
         AliFemtoPair * ChangeP2Mom(AliFemtoPair* aPair);
         int ReVelocityGate(AliFemtoPair* aPair);
         void SetP1AndP2Mass(float p1Mass,float p2Mass);
+
+	//\ 2022.2.15
+	void SetfHighCF(bool aHighCF);
+	void SetHighCFInit(bool aHighCF);
+
+	void SetfSideBand(bool aSideBand);
+	void SetSideBandTF1Init(bool aSideBand);
+	void SetSideBandHistInit(bool aSideBand);
+
+	void SetTF1ParaUp3Sigma(float *para);
+	void SetTF1ParaLow3Sigma(float *para);
+	void SetTF1PareSideBandUp(float *para);
+	void SetTF1PareSideBandLow(float *para);
+	
+	
+	void FillSideBandNum(AliFemtoPair* aPair);
+	void FillSideBandDum(AliFemtoPair* aPair);
+
+	void SetfUsePt(int aUsePt);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -51,17 +72,56 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
         TH1D* fNumerator;          // numerator - real pairs
         TH1D* fDenominator;        // denominator - mixed pairs
 
-        std::vector<TH1D*> fQANumerator;    // QA numerator [0]: for p1 pt > 0.2GeV/c; [1]: for p1 pt > 0.3GeV/c; [2]: for p1 pt > 0.4GeV/c
-        std::vector<TH1D*> fQADenominator;  // QA denominator
-
         // velocity gate 11.23
         TH1D *fP1EarlierP2Num;
         TH1D *fP1EarlierP2Dum;
         TH1D *fP2EarlierP1Num;
         TH1D *fP2EarlierP1Dum;
+ 
+        TH3F *fNumHigh3F;
+        TH3F *fDenHigh3F;
+	// control highD hist & mass side band
+	bool fHighCF;
+	bool fSideBand;
+	// TF1 for TOF mass cut band!
+	
+	TF1 *p2Up3Sigma;
+	TF1 *p2Low3Sigma;
 
+	TF1 *SideBandUp;
+	TF1 *SideBandLow;
+	
+	// 8 area for mass side band!
+	//\----------------
+	// num!
+	//\----------------
+	// cut by 3 sigma
+	TH1D *A1SideBandNum;
+	TH1D *S1SideBandNum;
+	TH1D *A2SideBandNum;
+	// merge
+	TH1D *A1A2SideBandNum;
+	TH1D *SignalAndSideCFNum;
+	
+
+	//\----------------	
+	//\ dum!
+	//\----------------
+	// cut by 3 sigma
+	TH1D *A1SideBandDum;
+	TH1D *S1SideBandDum;
+	TH1D *A2SideBandDum;
+	// merge
+	TH1D *A1A2SideBandDum;
+	TH1D *SignalAndSideCFDum;
+
+	int fUsePt;
+	
+	
+	
       
 };
+
 #endif
 
 

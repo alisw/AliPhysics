@@ -134,16 +134,52 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
   TH1D *fCMEQRe[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQIm[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMult[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fCMEQ2Re4[2]; // w^2*cos(4phi)
+  TH1D *fCMEQ3Re2[2]; // w^3*cos(2phi)
+  TH1D *fCMEQ2Im4[2]; // w^2*sin(4phi)
+  TH1D *fCMEQ3Im2[2]; // w^3*sin(2phi)
+  TH1D *fCMEw0[2];    // w^0
+  TH1D *fCMEw1[2];    // w^1
+  TH1D *fCMEw2[2];    // w^2
+  TH1D *fCMEw3[2];    // w^3
+  TH1D *fCMEw4[2];    // w^4
+  
   TH1D *fCMEQRePion[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQImPion[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMultPion[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fCMEQ2Re4Pion[2]; // w^2*cos(4phi)
+  TH1D *fCMEQ3Re2Pion[2]; // w^3*cos(2phi)
+  TH1D *fCMEQ2Im4Pion[2]; // w^2*sin(4phi)
+  TH1D *fCMEQ3Im2Pion[2]; // w^3*sin(2phi)
+  TH1D *fCMEw0Pion[2];    // w^0
+  TH1D *fCMEw1Pion[2];    // w^1
+  TH1D *fCMEw2Pion[2];    // w^2
+  TH1D *fCMEw3Pion[2];    // w^3
+  TH1D *fCMEw4Pion[2];    // w^4
   TH1D *fCMEQReKaon[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQImKaon[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMultKaon[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fCMEQ2Re4Kaon[2]; // w^2*cos(4phi)
+  TH1D *fCMEQ3Re2Kaon[2]; // w^3*cos(2phi)
+  TH1D *fCMEQ2Im4Kaon[2]; // w^2*sin(4phi)
+  TH1D *fCMEQ3Im2Kaon[2]; // w^3*sin(2phi)
+  TH1D *fCMEw0Kaon[2];    // w^0
+  TH1D *fCMEw1Kaon[2];    // w^1
+  TH1D *fCMEw2Kaon[2];    // w^2
+  TH1D *fCMEw3Kaon[2];    // w^3
+  TH1D *fCMEw4Kaon[2];    // w^4
   TH1D *fCMEQReProton[4][fCRCnHar]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEQImProton[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fCMEMultProton[4][fCRCnHar]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
-
+  TH1D *fCMEQ2Re4Proton[2]; // w^2*cos(4phi)
+  TH1D *fCMEQ3Re2Proton[2]; // w^3*cos(2phi)
+  TH1D *fCMEQ2Im4Proton[2]; // w^2*sin(4phi)
+  TH1D *fCMEQ3Im2Proton[2]; // w^3*sin(2phi)
+  TH1D *fCMEw0Proton[2];    // w^0
+  TH1D *fCMEw1Proton[2];    // w^1
+  TH1D *fCMEw2Proton[2];    // w^2
+  TH1D *fCMEw3Proton[2];    // w^3
+  TH1D *fCMEw4Proton[2];    // w^4
   
   //@shi add Qvector for both charge (begin)
   TH1D *fCMEQReBothCharge[2][fCRCnHar]; //! real part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
@@ -159,6 +195,55 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
   TH1D *fCMEQImProtonBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
   TH1D *fCMEMultProtonBothCharge[2][fCRCnHar]; //! imaginary part [2]: power of weight, [fCRCnHar]: cos((h+1)*phi)
   //@shi add Qvector for both charge (end)
+  
+  // QA hist for ZDC-C and ZDC-A tower energy
+  //const static Int_t nBinQAZDCAvgTowEnergyFraction = 18;
+  //TProfile *fZDCCAvgTow1EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCCAvgTow2EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCCAvgTow3EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCCAvgTow4EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCAAvgTow1EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCAAvgTow2EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCAAvgTow3EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  //TProfile *fZDCAAvgTow4EnergyFraction[nBinQAZDCAvgTowEnergyFraction]; //0-90 centrality
+  
+  TH1D *fZDCCAvgTow1EnergyFraction;
+  TH1D *fZDCCAvgTow2EnergyFraction;
+  TH1D *fZDCCAvgTow3EnergyFraction;
+  TH1D *fZDCCAvgTow4EnergyFraction;
+  TH1D *fZDCAAvgTow1EnergyFraction;
+  TH1D *fZDCAAvgTow2EnergyFraction;
+  TH1D *fZDCAAvgTow3EnergyFraction;
+  TH1D *fZDCAAvgTow4EnergyFraction;
+  TH2D *fZDCCCommonTowVsSumTow2D;
+  TH2D *fZDCACommonTowVsSumTow2D;
+  TH1D *fZDCCTotEnergyFraction;
+  TH1D *fZDCATotEnergyFraction;
+  
+  TH1D *fZDCCAvgTow1EnergyLRFraction;
+  TH1D *fZDCCAvgTow2EnergyLRFraction;
+  TH1D *fZDCCAvgTow3EnergyLRFraction;
+  TH1D *fZDCCAvgTow4EnergyLRFraction;
+  TH1D *fZDCAAvgTow1EnergyLRFraction;
+  TH1D *fZDCAAvgTow2EnergyLRFraction;
+  TH1D *fZDCAAvgTow3EnergyLRFraction;
+  TH1D *fZDCAAvgTow4EnergyLRFraction;
+  TH2D *fZDCCCommonTowVsSumTow2DLR;
+  TH2D *fZDCACommonTowVsSumTow2DLR;
+  TH1D *fZDCCTotEnergyFractionLR;
+  TH1D *fZDCATotEnergyFractionLR;
+  
+  TH1D *fZDCCTow0LRHRratio;
+  TH1D *fZDCCTow1LRHRratio;
+  TH1D *fZDCCTow2LRHRratio;
+  TH1D *fZDCCTow3LRHRratio;
+  TH1D *fZDCCTow4LRHRratio;
+  TH1D *fZDCATow0LRHRratio;
+  TH1D *fZDCATow1LRHRratio;
+  TH1D *fZDCATow2LRHRratio;
+  TH1D *fZDCATow3LRHRratio;
+  TH1D *fZDCATow4LRHRratio;
+  
   
   //Track Variables to be used:
   Int_t                 gHarmonic;  //
@@ -262,7 +347,13 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
   TH3F          *fHCorrectNUAChrgNeg;    //!
   TH3F          *fHCorrectNUAkPIDPos;    //!
   TH3F          *fHCorrectNUAkPIDNeg;    //!
-
+  TH3F          *fHCorrectNUAkPIDPosPion;    //!
+  TH3F          *fHCorrectNUAkPIDNegPion;    //!
+  TH3F          *fHCorrectNUAkPIDPosKaon;    //!
+  TH3F          *fHCorrectNUAkPIDNegKaon;    //!
+  TH3F          *fHCorrectNUAkPIDPosProton;    //!
+  TH3F          *fHCorrectNUAkPIDNegProton;    //!
+  
   //// V2 
   TProfile      *hAvgV2TPCvsCent;  //!
   TProfile      *hAvgV2TPCvsCentPion;  //!
@@ -445,7 +536,7 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
   //TProfile     *fHistVyvsVzMinBias;  //!
   TProfile2D     *hAvgV0ChannelsvsVz;   //!
 
-
+  
   
   //// Some more functions:
   void  SetupQAHistograms();
@@ -470,6 +561,7 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvec : public AliAnalysisTaskSE {
  
   Double_t GetNUAWeightForTrack(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
   Double_t GetNUAWeightForTrackPID(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1);
+  Double_t GetNUAWeightForTrackPID(Double_t fVtxZ=0,Double_t fPhi=0,Double_t fEta=0,Int_t gChrg=1,Int_t gPID=0);
   Double_t GetMCEfficiencyWeightForTrack(Double_t fPt=1.0,Int_t gChrg=1,Int_t kPID=0);
 
 

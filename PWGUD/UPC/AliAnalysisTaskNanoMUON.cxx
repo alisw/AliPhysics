@@ -75,21 +75,22 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
   // fZNAEnergy0NH(0), fZNCEnergy0NH(0)
-  fRecTree(0), fRunNum(0), fL0inputs(0),
-  // fTracklets(0),
-  fZNCEnergy(-999), fZNAEnergy(-999), 
+  fRecTree(0), fRunNum(0), fL0inputs(0), fTracklets(0),
+  fZNAEnergy(-999), fZNCEnergy(-999), fZNATDC{-999}, fZNCTDC{-999}, fIsZNAFired(-10), fIsZNCFired(-10),
   // fZPCEnergy(0), fZPAEnergy(0),
-  fV0ADecision(-10), fV0CDecision(-10),  fV0AFiredCells(-10), fV0CFiredCells(-10), fADADecision(-10), fADCDecision(-10), fIsZNAFired(-10), fIsZNCFired(-10),
+  fV0ADecision(-10), fV0CDecision(-10), fV0AFiredCells(-10), fV0CFiredCells(-10), fV0AOfflineTrigger{0}, fV0COfflineTrigger{0}, 
+  fADADecision(-10), fADCDecision(-10), 
   // fIR1Map(0), fIR2Map(0), 
-  fMuMuPt(0), 
-  // fMuMuPhi(0), 
-  fMuMuY(0), fMuMuM(0), 
-  // fMuPt1(0), fMuPt2(0), fMuEta1(0), fMuEta2(0), fMuPhi1(0), fMuPhi2(0), fMuQ1(0), fMuQ2(0),
+  fMuMuPt(0), fMuMuPhi(0), fMuMuY(0), fMuMuM(0), 
+  fMuPt1(0), fMuPt2(0), fMuEta1(0), fMuEta2(0), fMuPhi1(0), fMuPhi2(0), 
+  // fMuQ1(0), fMuQ2(0),
+  fGenMuMuPt(0), fGenMuMuPhi(0), fGenMuMuY(0), fGenMuMuM(0),
+  fGenMuPt1(0), fGenMuPt2(0), fGenMuEta1(0), fGenMuEta2(0), fGenMuPhi1(0), fGenMuPhi2(0),
   fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10),
-  fGenPart(0), fGenTree(0), fMCRunNum(0), fMCMuMuPt(0),
-  // fMCMuMuPhi(0), 
-  fMCMuMuY(0), fMCMuMuM(0),
-  // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0),
+  fGenPart(0), fGenTree(0), fMCRunNum(0), 
+  fMCMuMuPt(0), fMCMuMuPhi(0), fMCMuMuY(0), fMCMuMuM(0),
+  fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0),
+  // fMCMuPDG1(0), fMCMuPDG2(0),
   fTrgTree(0), fTrgRunNum(0), 
   fCMUP6(-10), fCMUP10(-10), fCMUP11(-10)
 {
@@ -98,27 +99,28 @@ AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON() : AliAnalysisTaskSE(),
 }
 // ----------------------------------------------------------------------------------------------------------------------------------
 AliAnalysisTaskNanoMUON::AliAnalysisTaskNanoMUON(const char* name) : AliAnalysisTaskSE(name),
-  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fIsScalingOn(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0), 
+  fMuonTrackCuts(0x0), fPeriod(0), fTrigger(0), fIsMC(0), fIsScalingOn(0), fAOD(0), fMC(0), fOutputList(0),fCounterH(0), fNumberMuonsH(0), fNumberMCMuonsH(0),  
   fMapRunAndLumi(), fMapAnalysedMC(),
   // fRAbsMuonH(0), fMuMuMassPtH(0),  
   // fZNAEnergyTimingH(0), fZNCEnergyTimingH(0), fZNATDCTimingH(0), fZNCTDCTimingH(0),
   // fZNAEnergyTimingAllH(0), fZNCEnergyTimingAllH(0), fZNATDCTimingAllH(0), fZNCTDCTimingAllH(0),
   // fZNAEnergy0NH(0), fZNCEnergy0NH(0)
-  fRecTree(0), fRunNum(0), fL0inputs(0),
-  // fTracklets(0),
-  fZNCEnergy(-999), fZNAEnergy(-999), 
+  fRecTree(0), fRunNum(0), fL0inputs(0), fTracklets(0),
+  fZNAEnergy(-999), fZNCEnergy(-999), fZNATDC{-999}, fZNCTDC{-999}, fIsZNAFired(-10), fIsZNCFired(-10),
   // fZPCEnergy(0), fZPAEnergy(0),
-  fV0ADecision(-10), fV0CDecision(-10),  fV0AFiredCells(-10), fV0CFiredCells(-10), fADADecision(-10), fADCDecision(-10), fIsZNAFired(-10), fIsZNCFired(-10),
+  fV0ADecision(-10), fV0CDecision(-10), fV0AFiredCells(-10), fV0CFiredCells(-10), fV0AOfflineTrigger{0}, fV0COfflineTrigger{0}, 
+  fADADecision(-10), fADCDecision(-10), 
   // fIR1Map(0), fIR2Map(0), 
-  fMuMuPt(0), 
-  // fMuMuPhi(0), 
-  fMuMuY(0), fMuMuM(0), 
-  // fMuPt1(0), fMuPt2(0), fMuEta1(0), fMuEta2(0), fMuPhi1(0), fMuPhi2(0), fMuQ1(0), fMuQ2(0),
+  fMuMuPt(0), fMuMuPhi(0), fMuMuY(0), fMuMuM(0), 
+  fMuPt1(0), fMuPt2(0), fMuEta1(0), fMuEta2(0), fMuPhi1(0), fMuPhi2(0), 
+  // fMuQ1(0), fMuQ2(0),
+  fGenMuMuPt(0), fGenMuMuPhi(0), fGenMuMuY(0), fGenMuMuM(0),
+  fGenMuPt1(0), fGenMuPt2(0), fGenMuEta1(0), fGenMuEta2(0), fGenMuPhi1(0), fGenMuPhi2(0),
   fCMUP6Decision(-10), fCMUP10Decision(-10), fCMUP11Decision(-10),
-  fGenPart(0), fGenTree(0), fMCRunNum(0), fMCMuMuPt(0),
-  // fMCMuMuPhi(0), 
-  fMCMuMuY(0), fMCMuMuM(0),
-  // fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0), fMCMuPDG1(0), fMCMuPDG2(0),
+  fGenPart(0), fGenTree(0), fMCRunNum(0), 
+  fMCMuMuPt(0), fMCMuMuPhi(0), fMCMuMuY(0), fMCMuMuM(0),
+  fMCMuPt1(0), fMCMuPt2(0), fMCMuEta1(0), fMCMuEta2(0), fMCMuPhi1(0), fMCMuPhi2(0),
+  // fMCMuPDG1(0), fMCMuPDG2(0),
   fTrgTree(0), fTrgRunNum(0), 
   fCMUP6(-10), fCMUP10(-10), fCMUP11(-10)
 {
@@ -165,19 +167,21 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   fRecTree = new TTree("fRecTree", "fRecTree");
   fRecTree ->Branch("fRunNum", &fRunNum, "fRunNum/I");
   fRecTree ->Branch("fL0inputs", &fL0inputs, "fL0inputs/i");
-  // fRecTree ->Branch("fTracklets", &fTracklets, "fTracklets/I");	
+  fRecTree ->Branch("fTracklets", &fTracklets, "fTracklets/I");	
   fRecTree ->Branch("fZNCEnergy", &fZNCEnergy, "fZNCEnergy/F");  
   fRecTree ->Branch("fZNAEnergy", &fZNAEnergy, "fZNAEnergy/F");
-  // fRecTree ->Branch("fZPCEnergy", &fZPCEnergy, "fZPCEnergy/D");
-  // fRecTree ->Branch("fZPAEnergy", &fZPAEnergy, "fZPAEnergy/D");  
+  // fRecTree ->Branch("fZPCEnergy", &fZPCEnergy, "fZPCEnergy/F");
+  // fRecTree ->Branch("fZPAEnergy", &fZPAEnergy, "fZPAEnergy/F");  
   fRecTree ->Branch("fZNATDC", &fZNATDC[0], "fZNATDC[4]/F");
   fRecTree ->Branch("fZNCTDC", &fZNCTDC[0], "fZNCTDC[4]/F");  
-  // fRecTree ->Branch("fZPATDC", &fZPATDC[0], "fZPATDC[4]/D");
-  // fRecTree ->Branch("fZPCTDC", &fZPCTDC[0], "fZPCTDC[4]/D"); 
+  // fRecTree ->Branch("fZPATDC", &fZPATDC[0], "fZPATDC[4]/F");
+  // fRecTree ->Branch("fZPCTDC", &fZPCTDC[0], "fZPCTDC[4]/F"); 
   fRecTree ->Branch("fV0ADecision", &fV0ADecision, "fV0ADecision/I");
   fRecTree ->Branch("fV0CDecision", &fV0CDecision, "fV0CDecision/I");
   fRecTree ->Branch("fV0AFiredCells", &fV0AFiredCells, "fV0AFiredCells/I");
   fRecTree ->Branch("fV0CFiredCells", &fV0CFiredCells, "fV0CFiredCells/I");
+  fRecTree ->Branch("fV0AOfflineTrigger", &fV0AOfflineTrigger[0], "fV0AOfflineTrigger[32]/O");
+  fRecTree ->Branch("fV0COfflineTrigger", &fV0COfflineTrigger[0], "fV0COfflineTrigger[32]/O");
   fRecTree ->Branch("fADADecision", &fADADecision, "fADADecision/I");
   fRecTree ->Branch("fADCDecision", &fADCDecision, "fADCDecision/I");
   fRecTree ->Branch("fIsZNAFired", &fIsZNAFired, "fIsZNAFired/I");
@@ -185,17 +189,27 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
   // fRecTree ->Branch("fIR1Map", &fIR1Map);
   // fRecTree ->Branch("fIR2Map", &fIR2Map);  
   fRecTree ->Branch("fMuMuPt", &fMuMuPt, "fMuMuPt/F");
-  // fRecTree ->Branch("fMuMuPhi", &fMuMuPhi, "fMuMuPhi/D");
+  fRecTree ->Branch("fMuMuPhi", &fMuMuPhi, "fMuMuPhi/F");
   fRecTree ->Branch("fMuMuY", &fMuMuY, "fMuMuY/F");
   fRecTree ->Branch("fMuMuM", &fMuMuM, "fMuMuM/F");
-  // fRecTree ->Branch("fMuPt1", &fMuPt1, "fMuPt1/D");
-  // fRecTree ->Branch("fMuPt2", &fMuPt2, "fMuPt2/D");
-  // fRecTree ->Branch("fMuEta1", &fMuEta1, "fMuEta1/D");
-  // fRecTree ->Branch("fMuEta2", &fMuEta2, "fMuEta2/D");
-  // fRecTree ->Branch("fMuPhi1", &fMuPhi1, "fMuPhi1/D");
-  // fRecTree ->Branch("fMuPhi2", &fMuPhi2, "fMuPhi2/D");
-  // fRecTree ->Branch("fMuQ1", &fMuQ1, "fMuQ1/D");
-  // fRecTree ->Branch("fMuQ2", &fMuQ2, "fMuQ2/D");
+  fRecTree ->Branch("fMuPt1", &fMuPt1, "fMuPt1/F");
+  fRecTree ->Branch("fMuPt2", &fMuPt2, "fMuPt2/F");
+  fRecTree ->Branch("fMuEta1", &fMuEta1, "fMuEta1/F");
+  fRecTree ->Branch("fMuEta2", &fMuEta2, "fMuEta2/F");
+  fRecTree ->Branch("fMuPhi1", &fMuPhi1, "fMuPhi1/F");
+  fRecTree ->Branch("fMuPhi2", &fMuPhi2, "fMuPhi2/F");
+  // fRecTree ->Branch("fMuQ1", &fMuQ1, "fMuQ1/I");
+  // fRecTree ->Branch("fMuQ2", &fMuQ2, "fMuQ2/I");
+  fRecTree ->Branch("fGenMuMuPt", &fGenMuMuPt, "fGenMuMuPt/F");
+  fRecTree ->Branch("fGenMuMuPhi", &fGenMuMuPhi, "fGenMuMuPhi/F");
+  fRecTree ->Branch("fGenMuMuY", &fGenMuMuY, "fGenMuMuY/F");
+  fRecTree ->Branch("fGenMuMuM", &fGenMuMuM, "fGenMuMuM/F");
+  fRecTree ->Branch("fGenMuPt1", &fGenMuPt1, "fGenMuPt1/F");
+  fRecTree ->Branch("fGenMuPt2", &fGenMuPt2, "fGenMuPt2/F");
+  fRecTree ->Branch("fGenMuEta1", &fGenMuEta1, "fGenMuEta1/F");
+  fRecTree ->Branch("fGenMuEta2", &fGenMuEta2, "fGenMuEta2/F");
+  fRecTree ->Branch("fGenMuPhi1", &fGenMuPhi1, "fGenMuPhi1/F");
+  fRecTree ->Branch("fGenMuPhi2", &fGenMuPhi2, "fGenMuPhi2/F");
   fRecTree ->Branch("fCMUP6Decision", &fCMUP6Decision, "fCMUP6Decision/I");
   fRecTree ->Branch("fCMUP10Decision", &fCMUP10Decision, "fCMUP10Decision/I");
   fRecTree ->Branch("fCMUP11Decision", &fCMUP11Decision, "fCMUP11Decision/I");
@@ -210,17 +224,17 @@ void AliAnalysisTaskNanoMUON::UserCreateOutputObjects()
     fGenPart = new TClonesArray("TParticle", 1000);
     fGenTree ->Branch("fMCRunNum", &fMCRunNum, "fMCRunNum/I");
     fGenTree ->Branch("fMCMuMuPt", &fMCMuMuPt, "fMCMuMuPt/F");
-    // fGenTree ->Branch("fMCMuMuPhi", &fMCMuMuPhi, "fMCMuMuPhi/D");
+    fGenTree ->Branch("fMCMuMuPhi", &fMCMuMuPhi, "fMCMuMuPhi/F");
     fGenTree ->Branch("fMCMuMuY", &fMCMuMuY, "fMCMuMuY/F");
     fGenTree ->Branch("fMCMuMuM", &fMCMuMuM, "fMCMuMuM/F");
-    // fGenTree ->Branch("fMCMuPt1", &fMCMuPt1, "fMCMuPt1/D");
-    // fGenTree ->Branch("fMCMuPt2", &fMCMuPt2, "fMCMuPt2/D");
-    // fGenTree ->Branch("fMCMuEta1", &fMCMuEta1, "fMCMuEta1/D");
-    // fGenTree ->Branch("fMCMuEta2", &fMCMuEta2, "fMCMuEta2/D");
-    // fGenTree ->Branch("fMCMuPhi1", &fMCMuPhi1, "fMCMuPhi1/D");
-    // fGenTree ->Branch("fMCMuPhi2", &fMCMuPhi2, "fMCMuPhi2/D");
-    // fGenTree ->Branch("fMCMuPDG1", &fMCMuPDG1, "fMCMuPDG1/D");
-    // fGenTree ->Branch("fMCMuPDG2", &fMCMuPDG2, "fMCMuPDG2/D");
+    // fGenTree ->Branch("fMCMuPt1", &fMCMuPt1, "fMCMuPt1/F");
+    // fGenTree ->Branch("fMCMuPt2", &fMCMuPt2, "fMCMuPt2/F");
+    // fGenTree ->Branch("fMCMuEta1", &fMCMuEta1, "fMCMuEta1/F");
+    // fGenTree ->Branch("fMCMuEta2", &fMCMuEta2, "fMCMuEta2/F");
+    // fGenTree ->Branch("fMCMuPhi1", &fMCMuPhi1, "fMCMuPhi1/F");
+    // fGenTree ->Branch("fMCMuPhi2", &fMCMuPhi2, "fMCMuPhi2/F");
+    // fGenTree ->Branch("fMCMuPDG1", &fMCMuPDG1, "fMCMuPDG1/I");
+    // fGenTree ->Branch("fMCMuPDG2", &fMCMuPDG2, "fMCMuPDG2/I");
     // post data
   }  
   PostData(3, fGenTree);
@@ -306,19 +320,35 @@ void AliAnalysisTaskNanoMUON::TwoMuonAna(Int_t *idxPosMuons, Int_t *idxNegMuons)
 
   // set tree variables
   fMuMuPt = MuMu.Pt(); 
-  // fMuMuPhi = MuMu.Phi();
+  fMuMuPhi = MuMu.Phi();
   fMuMuY = MuMu.Rapidity(); 
   fMuMuM = MuMu.M();
 
-  // fMuPt1 = PosTrack->Pt(); 
-  // fMuEta1 = PosTrack->Eta(); 
-  // fMuPhi1 = PosTrack->Phi();
+  fMuPt1 = PosTrack->Pt(); 
+  fMuEta1 = PosTrack->Eta(); 
+  fMuPhi1 = PosTrack->Phi();
   // fMuQ1 = PosTrack->Charge(); 
 
-  // fMuPhi2 = NegTrack->Phi();
-  // fMuEta2 = NegTrack->Eta();
-  // fMuPt2 = NegTrack->Pt();
+  fMuPhi2 = NegTrack->Phi();
+  fMuEta2 = NegTrack->Eta();
+  fMuPt2 = NegTrack->Pt();
   // fMuQ2 = NegTrack->Charge();
+
+  // Set generated particle info
+  if(fIsMC){
+    fGenMuMuM = fMCMuMuM;
+    fGenMuMuPt = fMCMuMuPt;
+    fGenMuMuY = fMCMuMuY;
+    fGenMuMuPhi = fMCMuMuPhi;
+
+    fGenMuPt1 = fMCMuPt1; 
+    fGenMuEta1 = fMCMuEta1; 
+    fGenMuPhi1 = fMCMuPhi1;
+
+    fGenMuPhi2 = fMCMuPhi2;
+    fGenMuEta2 = fMCMuEta2;
+    fGenMuPt2 = fMCMuPt2; 
+  }
 }
 // ----------------------------------------------------------------------------------------------------------------------------------
 void AliAnalysisTaskNanoMUON::TwoMCMuonAna(Int_t *idxMCPosMuons, Int_t *idxMCNegMuons)
@@ -340,16 +370,16 @@ void AliAnalysisTaskNanoMUON::TwoMCMuonAna(Int_t *idxMCPosMuons, Int_t *idxMCNeg
   fMCMuMuM = MCMuMu.M();
   fMCMuMuPt = MCMuMu.Pt();
   fMCMuMuY = MCMuMu.Rapidity();
-  // fMCMuMuPhi = MCMuMu.Phi();
+  fMCMuMuPhi = MCMuMu.Phi();
 
-  // fMCMuPt1 = PosMCPart->Pt(); 
-  // fMCMuEta1 = PosMCPart->Eta(); 
-  // fMCMuPhi1 = PosMCPart->Phi();
+  fMCMuPt1 = PosMCPart->Pt(); 
+  fMCMuEta1 = PosMCPart->Eta(); 
+  fMCMuPhi1 = PosMCPart->Phi();
   // fMCMuPDG1 = PosMCPart->PdgCode();
 
-  // fMCMuPhi2 = NegMCPart->Phi();
-  // fMCMuEta2 = NegMCPart->Eta();
-  // fMCMuPt2 = NegMCPart->Pt(); 
+  fMCMuPhi2 = NegMCPart->Phi();
+  fMCMuEta2 = NegMCPart->Eta();
+  fMCMuPt2 = NegMCPart->Pt(); 
   // fMCMuPDG2 = NegMCPart->PdgCode();
 }
 // ----------------------------------------------------------------------------------------------------------------------------------
@@ -610,7 +640,7 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
   // info to determine exclusivity
   ////////////////////////////////////////////
   // ---SPD
-  // fTracklets = fAOD->GetTracklets()->GetNumberOfTracklets();
+  fTracklets = fAOD->GetTracklets()->GetNumberOfTracklets();
 
   // ---ZDC 
   AliAODZDC *dataZDC = dynamic_cast<AliAODZDC*>(fAOD->GetZDCData());
@@ -699,6 +729,11 @@ void AliAnalysisTaskNanoMUON::UserExec(Option_t *)
 
   fV0CFiredCells = nV0CFiredCells;
   fV0AFiredCells = nV0AFiredCells;
+
+  for(Int_t i=0;i<32;i++) {
+    fV0AOfflineTrigger[i] = dataVZERO->BBTriggerV0A(i);
+    fV0COfflineTrigger[i] = dataVZERO->BBTriggerV0C(i);
+  }
 
   // ---AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());

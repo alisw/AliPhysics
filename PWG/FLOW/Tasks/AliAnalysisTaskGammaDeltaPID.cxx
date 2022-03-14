@@ -80,6 +80,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   fListTRKCorr(NULL),
   fListNUACorr(NULL),
   fListV0MCorr(NULL),
+  fListZDCCorr(NULL),
+  fListTemp(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
@@ -114,6 +116,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   bSkipNestedLoop(kFALSE),
   bUseV0EventPlane(kFALSE),
   bAnalysLambdaPairs(kFALSE),
+  bUseZDCSpectatorPlane(kFALSE),
+  bRecenterFailOrNot(kTRUE),
   fV0PtMin(0.5),
   fV0CPAMin(0.995),
   fV0RapidityMax(0.5),
@@ -204,6 +208,50 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
   
+  fHZDCCparameters(NULL),
+  fHZDCAparameters(NULL),
+  
+  hZDCCPsiSpectatorPlane(NULL),
+  hZDCAPsiSpectatorPlane(NULL),
+  hZDCCAPsiSpectatorPlane(NULL),
+	
+  hZDCCPsivsTPCPsi2(NULL),
+  hZDCCPsivsTPCPosPsi2(NULL),
+  hZDCCPsivsTPCNegPsi2(NULL),
+  hZDCCPsivsV0CAPsi2(NULL),
+  hZDCCPsivsV0CPsi2(NULL),
+  hZDCCPsivsV0APsi2(NULL),
+	
+  hZDCAPsivsTPCPsi2(NULL),
+  hZDCAPsivsTPCPosPsi2(NULL),
+  hZDCAPsivsTPCNegPsi2(NULL),
+  hZDCAPsivsV0CAPsi2(NULL),
+  hZDCAPsivsV0CPsi2(NULL),
+  hZDCAPsivsV0APsi2(NULL),
+	
+  hZDCCAPsivsTPCPsi2(NULL),
+  hZDCCAPsivsTPCPosPsi2(NULL),
+  hZDCCAPsivsTPCNegPsi2(NULL),
+  hZDCCAPsivsV0CAPsi2(NULL),
+  hZDCCAPsivsV0CPsi2(NULL),
+  hZDCCAPsivsV0APsi2(NULL),
+  
+  hV2TPCvsCent(NULL),
+  hV2V0CvsCent(NULL),
+  hV2V0AvsCent(NULL),
+  hV2V0CAvsCent(NULL),
+  hV2ZDCCvsCent(NULL),
+  hV2ZDCAvsCent(NULL),
+  hV2ZDCCACombinevsCent(NULL),
+  hV2ZDCCAvsCent(NULL),
+  
+  hPOIQRe(NULL),
+  hPOIQIm(NULL),
+  hPOIMul(NULL),
+  hFlowQC2Pro(NULL),
+  hFlowQC4Pro(NULL),
+  hFlowwCov24Pro(NULL),
+  
   hAvg3pC112vsCentPP(NULL),
   hAvg3pC112vsCentNN(NULL),    
   hAvg3pC112vsCentOS(NULL),
@@ -222,6 +270,19 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   hAvgDelta4vsCentPP(NULL),
   hAvgDelta4vsCentNN(NULL),    
   hAvgDelta4vsCentOS(NULL),
+  
+  hAvg3pC112vsCentPPUsingZDCC(NULL),
+  hAvg3pC112vsCentNNUsingZDCC(NULL),
+  hAvg3pC112vsCentOSUsingZDCC(NULL),
+  hAvg3pC112vsCentPPUsingZDCA(NULL),
+  hAvg3pC112vsCentNNUsingZDCA(NULL),
+  hAvg3pC112vsCentOSUsingZDCA(NULL),
+  hAvg3pC112vsCentPPUsingZDCCACombine(NULL),
+  hAvg3pC112vsCentNNUsingZDCCACombine(NULL),
+  hAvg3pC112vsCentOSUsingZDCCACombine(NULL),
+  hAvg3pC112vsCentPPUsingZDCCA(NULL),
+  hAvg3pC112vsCentNNUsingZDCCA(NULL),
+  hAvg3pC112vsCentOSUsingZDCCA(NULL),
   
   hAvgQNXvsCentV0C(NULL),
   hAvgQNYvsCentV0C(NULL),
@@ -350,6 +411,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fListTRKCorr(NULL),
   fListNUACorr(NULL),
   fListV0MCorr(NULL),
+  fListZDCCorr(NULL),
+  fListTemp(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
@@ -384,6 +447,8 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   bSkipNestedLoop(kFALSE),
   bUseV0EventPlane(kFALSE),
   bAnalysLambdaPairs(kFALSE),
+  bUseZDCSpectatorPlane(kFALSE),
+  bRecenterFailOrNot(kTRUE),
   fV0PtMin(0.5),
   fV0CPAMin(0.995),
   fV0RapidityMax(0.5),
@@ -475,6 +540,50 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   fHCorrectNUAkPIDPos(NULL),
   fHCorrectNUAkPIDNeg(NULL),
   
+  fHZDCCparameters(NULL),
+  fHZDCAparameters(NULL),
+  
+  hZDCCPsiSpectatorPlane(NULL),
+  hZDCAPsiSpectatorPlane(NULL),
+  hZDCCAPsiSpectatorPlane(NULL),
+	
+  hZDCCPsivsTPCPsi2(NULL),
+  hZDCCPsivsTPCPosPsi2(NULL),
+  hZDCCPsivsTPCNegPsi2(NULL),
+  hZDCCPsivsV0CAPsi2(NULL),
+  hZDCCPsivsV0CPsi2(NULL),
+  hZDCCPsivsV0APsi2(NULL),
+	
+  hZDCAPsivsTPCPsi2(NULL),
+  hZDCAPsivsTPCPosPsi2(NULL),
+  hZDCAPsivsTPCNegPsi2(NULL),
+  hZDCAPsivsV0CAPsi2(NULL),
+  hZDCAPsivsV0CPsi2(NULL),
+  hZDCAPsivsV0APsi2(NULL),
+	
+  hZDCCAPsivsTPCPsi2(NULL),
+  hZDCCAPsivsTPCPosPsi2(NULL),
+  hZDCCAPsivsTPCNegPsi2(NULL),
+  hZDCCAPsivsV0CAPsi2(NULL),
+  hZDCCAPsivsV0CPsi2(NULL),
+  hZDCCAPsivsV0APsi2(NULL),
+  
+  hV2TPCvsCent(NULL),
+  hV2V0CvsCent(NULL),
+  hV2V0AvsCent(NULL),
+  hV2V0CAvsCent(NULL),
+  hV2ZDCCvsCent(NULL),
+  hV2ZDCAvsCent(NULL),
+  hV2ZDCCACombinevsCent(NULL),
+  hV2ZDCCAvsCent(NULL),
+  
+  hPOIQRe(NULL),
+  hPOIQIm(NULL),
+  hPOIMul(NULL),
+  hFlowQC2Pro(NULL),
+  hFlowQC4Pro(NULL),
+  hFlowwCov24Pro(NULL),
+  
   hAvg3pC112vsCentPP(NULL),
   hAvg3pC112vsCentNN(NULL),    
   hAvg3pC112vsCentOS(NULL),
@@ -493,6 +602,19 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   hAvgDelta4vsCentPP(NULL),
   hAvgDelta4vsCentNN(NULL),    
   hAvgDelta4vsCentOS(NULL),
+  
+  hAvg3pC112vsCentPPUsingZDCC(NULL),
+  hAvg3pC112vsCentNNUsingZDCC(NULL),
+  hAvg3pC112vsCentOSUsingZDCC(NULL),
+  hAvg3pC112vsCentPPUsingZDCA(NULL),
+  hAvg3pC112vsCentNNUsingZDCA(NULL),
+  hAvg3pC112vsCentOSUsingZDCA(NULL),
+  hAvg3pC112vsCentPPUsingZDCCACombine(NULL),
+  hAvg3pC112vsCentNNUsingZDCCACombine(NULL),
+  hAvg3pC112vsCentOSUsingZDCCACombine(NULL),
+  hAvg3pC112vsCentPPUsingZDCCA(NULL),
+  hAvg3pC112vsCentNNUsingZDCCA(NULL),
+  hAvg3pC112vsCentOSUsingZDCCA(NULL),
   
   hAvgQNXvsCentV0C(NULL),
   hAvgQNYvsCentV0C(NULL),
@@ -615,6 +737,8 @@ AliAnalysisTaskGammaDeltaPID::~AliAnalysisTaskGammaDeltaPID()
   if(fListTRKCorr)   delete fListTRKCorr;
   if(fListNUACorr)   delete fListNUACorr;
   if(fListV0MCorr)   delete fListV0MCorr;
+  if(fListZDCCorr)   delete fListZDCCorr;
+  if(fListTemp)      delete fListTemp;
 
   if(fV0CutPU)      delete fV0CutPU;
   if(fSPDCutPU)     delete fSPDCutPU;
@@ -659,7 +783,9 @@ void AliAnalysisTaskGammaDeltaPID::UserCreateOutputObjects()
   fListHist = new TList();
   fListHist->SetOwner(kTRUE);
 
-
+  fListTemp = new TList();
+  fListTemp->SetOwner(kTRUE);
+  
   SetupQAHistograms();
   SetupAnalysisHistograms();
   SetupPileUpRemovalFunctions();
@@ -809,6 +935,9 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     if(fListV0MCorr){
       GetV0MCorrectionHist(runNumber);
     }
+    if(fListZDCCorr){
+	  GetZDCCorrectionHist(runNumber);
+	}
     gOldRunNumber = runNumber;
   }
   //----------------------------------------------
@@ -910,7 +1039,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   Double_t fPsi4TPCPos = 0., fPsi4TPCNeg = 0.;
   
   if(fQ2xPos != 0 && fQ2yPos != 0){
-    fPsiNTPCPos = (1./2)*TMath::ATan2(fQ2yPos,fQ2xPos);
+    fPsiNTPCPos = (1./2)*TMath::ATan2(fQ2yPos,fQ2xPos); // @Shi NTPC really is just 2TPC
     if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;
     fPsi3TPCPos = (1./3)*TMath::ATan2(fQ3yPos,fQ3xPos);
     if(fPsi3TPCPos < 0) fPsi3TPCPos += TMath::TwoPi()/3;
@@ -946,7 +1075,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   ///==========>  Get V0 Event Planes <===============
      
   Double_t fQnxV0C=0, fQnyV0C=0, fQnxV0A=0, fQnyV0A=0; 
-  Bool_t kPassV0 = GetGainCorrectedV0Qvector(fAOD, fVertexZEvent, 2, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A);
+  Bool_t kPassV0 = GetGainCorrectedV0Qvector(fAOD, fVertexZEvent, 2, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A); // @Shi hard coded 2, fQnxV0 is really fQ2xV0
 
   Double_t fQ3xV0C=0, fQ3yV0C=0, fQ3xV0A=0, fQ3yV0A=0;
   kPassV0 = GetGainCorrectedV0Qvector(fAOD, fVertexZEvent, 3, fQ3xV0C, fQ3yV0C, fQ3xV0A, fQ3yV0A);
@@ -985,8 +1114,9 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   Double_t fPsiNV0C = 0., fPsiNV0A = 0.;
   Double_t fPsi3V0C = 0., fPsi3V0A = 0.;
+  Bool_t kPassZNC = kFALSE;
     
-  fPsiNV0C = (1./gHarmonic)*TMath::ATan2(fQnyV0C,fQnxV0C);
+  fPsiNV0C = (1./gHarmonic)*TMath::ATan2(fQnyV0C,fQnxV0C); // @Shi actually gHarmonic does not really make sense here, fQnxV0 is hard coded to be fQ2xV0
   if(fPsiNV0C < 0) fPsiNV0C += TMath::TwoPi()/gHarmonic;
   fPsiNV0A = (1./gHarmonic)*TMath::ATan2(fQnyV0A,fQnxV0A);
   if(fPsiNV0A < 0) fPsiNV0A += TMath::TwoPi()/gHarmonic;
@@ -1012,8 +1142,142 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   hV0CTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0C));
   hV0ATPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0A));
 
+ 
+  ///--------> Get ZDC Event Planes
+  Double_t fQxZNCC=0, fQyZNCC=0, fQxZNCA=0, fQyZNCA=0; 
+  Double_t fPsiZNCC = 0., fPsiZNCA = 0., fPsiZNCCA = 0; // fPsiZNCCA combine ZNCC and ZNCA
+  
+  AliAODZDC *aodZDC = fAOD->GetZDCData();
+	
+  if(!aodZDC) {
+    printf("\n ********* Error: could not find ZDC data ************ \n ");
+  }
+  else if(aodZDC && bUseZDCSpectatorPlane){
+    const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
+    const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
+	
+	Double_t towZNCraw1GainEq = 0, towZNCraw2GainEq = 0, towZNCraw3GainEq = 0, towZNCraw4GainEq = 0;
+	towZNCraw1GainEq = fZNCTowerRawAOD[1]*fHZDCCparameters->GetBinContent(1);
+	towZNCraw2GainEq = fZNCTowerRawAOD[2]*fHZDCCparameters->GetBinContent(2);
+	towZNCraw3GainEq = fZNCTowerRawAOD[3]*fHZDCCparameters->GetBinContent(3);
+	towZNCraw4GainEq = fZNCTowerRawAOD[4]*fHZDCCparameters->GetBinContent(4);
 
+	Double_t towZNAraw1GainEq = 0, towZNAraw2GainEq = 0, towZNAraw3GainEq = 0, towZNAraw4GainEq = 0;
+	towZNAraw1GainEq = fZNATowerRawAOD[1]*fHZDCAparameters->GetBinContent(1);
+	towZNAraw2GainEq = fZNATowerRawAOD[2]*fHZDCAparameters->GetBinContent(2);
+	towZNAraw3GainEq = fZNATowerRawAOD[3]*fHZDCAparameters->GetBinContent(3);
+	towZNAraw4GainEq = fZNATowerRawAOD[4]*fHZDCAparameters->GetBinContent(4);
+	
+	
+	const Double_t xZDCC[4] = {-1, 1, -1, 1}; // directional vector
+    const Double_t yZDCC[4] = {-1, -1, 1, 1};
+    const Double_t xZDCA[4] = {1, -1, 1, -1};
+    const Double_t yZDCA[4] = {-1, -1, 1, 1};
+    
+    Double_t towZNC[5] = {fZNCTowerRawAOD[0], towZNCraw1GainEq, towZNCraw2GainEq, towZNCraw3GainEq, towZNCraw4GainEq};
+    Double_t towZNA[5] = {fZNATowerRawAOD[0], towZNAraw1GainEq, towZNAraw2GainEq, towZNAraw3GainEq, towZNAraw4GainEq};
+    
+	
+    Double_t EZNC = 0, wZNC = 0, denZNC = 0, numXZNC = 0, numYZNC = 0;
+    Double_t EZNA = 0, wZNA = 0, denZNA = 0, numXZNA = 0, numYZNA = 0; 
+    
+    for(Int_t i=0; i<4; i++){
+		// ZNC part
+        // get energy
+        EZNC = towZNC[i+1];
 
+        // build ZDCC centroid
+        wZNC = TMath::Max(0., 4.0 + TMath::Log(towZNC[i+1]/fZNCTowerRawAOD[0]));
+        numXZNC += xZDCC[i]*wZNC;
+        numYZNC += yZDCC[i]*wZNC;
+        denZNC += wZNC;
+        
+        // ZNA part
+        // get energy
+        EZNA = towZNA[i+1];
+        
+        // build ZDCA centroid
+        wZNA = TMath::Max(0., 4.0 + TMath::Log(towZNA[i+1]/fZNATowerRawAOD[0]));
+        numXZNA += xZDCA[i]*wZNA;
+        numYZNA += yZDCA[i]*wZNA;
+        denZNA += wZNA;
+        
+	}
+	
+  
+	bRecenterFailOrNot = kTRUE;
+	
+	if (denZNC==0) {bRecenterFailOrNot = kFALSE; return;}
+	if (denZNA==0) {bRecenterFailOrNot = kFALSE; return;}
+
+	Double_t ZDCCxPosFromLogWeight = numXZNC/denZNC;
+	Double_t ZDCCyPosFromLogWeight = numYZNC/denZNC;
+	Double_t ZDCAxPosFromLogWeight = numXZNA/denZNA;
+	Double_t ZDCAyPosFromLogWeight = numYZNA/denZNA;
+	
+	Double_t ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(5)*centrality + fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9);
+	Double_t ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(10)*centrality + fHZDCCparameters->GetBinContent(11)*pVtxX + fHZDCCparameters->GetBinContent(12)*pVtxY + fHZDCCparameters->GetBinContent(13)*pVtxZ + fHZDCCparameters->GetBinContent(14);
+	
+	Double_t ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(5)*centrality + fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9);
+	Double_t ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(10)*centrality + fHZDCAparameters->GetBinContent(11)*pVtxX + fHZDCAparameters->GetBinContent(12)*pVtxY + fHZDCAparameters->GetBinContent(13)*pVtxZ + fHZDCAparameters->GetBinContent(14);
+	
+	
+	fQxZNCC = ZDCCxPosFromLogWeight - ZDCCAvgxPosFromVtxFit;
+	fQyZNCC = ZDCCyPosFromLogWeight - ZDCCAvgyPosFromVtxFit;
+	
+	fQxZNCA = ZDCAxPosFromLogWeight - ZDCAAvgxPosFromVtxFit;
+	fQyZNCA = ZDCAyPosFromLogWeight - ZDCAAvgyPosFromVtxFit;
+	
+	
+	// Event plane
+
+	fPsiZNCA = TMath::ATan2(fQyZNCA,fQxZNCA); // Psi_{1,A} spectator plane -pi to pi
+	if (fPsiZNCA < 0) { // Psi_{1,A} should be differ to Psi_{1,C} by pi. 
+	  fPsiZNCA = fPsiZNCA + TMath::Pi();
+	} else if (fPsiZNCA >= 0) {
+	  fPsiZNCA = fPsiZNCA - TMath::Pi();
+	}
+
+	fPsiZNCC = TMath::ATan2(fQyZNCC,fQxZNCC); // Psi_{1,C} spectator plane 
+
+	fPsiZNCCA = TMath::ATan2((fQyZNCC-fQyZNCA),(fQxZNCC-fQxZNCA));
+	
+	// QAs for ZDC 
+	hZDCCPsiSpectatorPlane->Fill(fPsiZNCC);
+	hZDCAPsiSpectatorPlane->Fill(fPsiZNCA);
+	hZDCCAPsiSpectatorPlane->Fill(fPsiZNCCA);
+	
+	Double_t fPsiZNCCProj = fPsiZNCC;
+	Double_t fPsiZNCAProj = fPsiZNCA;
+	Double_t fPsiZNCCAProj = fPsiZNCCA;
+	if (fPsiZNCCProj<0) fPsiZNCCProj += TMath::TwoPi()/2;
+	if (fPsiZNCAProj<0) fPsiZNCAProj += TMath::TwoPi()/2;
+	if (fPsiZNCCAProj<0) fPsiZNCCAProj += TMath::TwoPi()/2;
+	
+	hZDCCPsivsZDCAPsi->Fill(fPsiZNCC, fPsiZNCA);
+	hZDCCPsivsTPCPsi2->Fill((fPsiNTPCPos+fPsiNTPCNeg)/2, fPsiZNCCProj);
+	hZDCCPsivsTPCPosPsi2->Fill(fPsiNTPCPos, fPsiZNCCProj);
+	hZDCCPsivsTPCNegPsi2->Fill(fPsiNTPCNeg, fPsiZNCCProj);
+	hZDCCPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCCProj);
+	hZDCCPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCCProj);
+	hZDCCPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCCProj);
+	
+	hZDCAPsivsTPCPsi2->Fill((fPsiNTPCPos+fPsiNTPCNeg)/2, fPsiZNCAProj);
+	hZDCAPsivsTPCPosPsi2->Fill(fPsiNTPCPos, fPsiZNCAProj);
+	hZDCAPsivsTPCNegPsi2->Fill(fPsiNTPCNeg, fPsiZNCAProj);
+	hZDCAPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCAProj);
+	hZDCAPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCAProj);
+	hZDCAPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCAProj);
+	
+	hZDCCAPsivsTPCPsi2->Fill((fPsiNTPCPos+fPsiNTPCNeg)/2, fPsiZNCCAProj);
+	hZDCCAPsivsTPCPosPsi2->Fill(fPsiNTPCPos, fPsiZNCCAProj);
+	hZDCCAPsivsTPCNegPsi2->Fill(fPsiNTPCNeg, fPsiZNCCAProj);
+	hZDCCAPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCCAProj);
+	hZDCCAPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCCAProj);
+	hZDCCAPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCCAProj);
+
+  }
+  
   
 
   //If we skip the nested loops and main Analysis:
@@ -1156,7 +1420,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
       trk1Chi2  = AODtrack1->Chi2perNDF();
       trk1TpcNC = AODtrack1->GetTPCNcls();
       trk1DCAxy = AODtrack1->DCA();
-      trk1DCAz  = AODtrack1->ZAtDCA();            
+      trk1DCAz  = AODtrack1->ZAtDCA(); 
       trk1dEdx  = AODtrack1->GetDetPid()->GetTPCsignal();  
      
       //Apply track cuts here:
@@ -1168,8 +1432,8 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	ptWgtMCPIDtrk1 = 1.0;
 
 
-	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);    
-	WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);       
+	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);
+	WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);
 	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0);
 	ptWgtMCPIDtrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,kPIDtrk1);
 
@@ -1253,31 +1517,98 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	  fPsi3Event = fSelectedTPCPsi3;	    
 	}
 
+	if(gEPeta < 0){
+	  localSumQ2x = fSumQnxNeg[0];            /// We need the full Q-sum. Then remove only qx,qy for current track
+	  localSumQ2y = fSumQnyNeg[0];
+	  localSumQ3x = fSumQnxNeg[1];
+	  localSumQ3y = fSumQnyNeg[1];
+	  localMultTPC= fMultNeg;
+	}
+	else{
+	  localSumQ2x = fSumQnxPos[0];
+	  localSumQ2y = fSumQnyPos[0];
+	  localSumQ3x = fSumQnxPos[1];
+	  localSumQ3y = fSumQnyPos[1];
+	  localMultTPC= fMultPos;
+	}
+	
 	///remove Autocorrelation for track-1 only if both EP and track1 are on the same eta side.
 	if(!bUseV0EventPlane && trk1Pt < 2.0 && (gEPeta*trk1Eta) > 0){   /// we used pT<2.0 tracks for EP.
-	  if(gEPeta < 0){
-	    localSumQ2x = fSumQnxNeg[0];            /// We need the full Q-sum. Then remove only qx,qy for current track
-	    localSumQ2y = fSumQnyNeg[0];
-	    localSumQ3x = fSumQnxNeg[1];
-	    localSumQ3y = fSumQnyNeg[1];
-	    localMultTPC= fMultNeg;
-	  }
-	  else{
-	    localSumQ2x = fSumQnxPos[0];
-	    localSumQ2y = fSumQnyPos[0];
-	    localSumQ3x = fSumQnxPos[1];
-	    localSumQ3y = fSumQnyPos[1];
-	    localMultTPC= fMultPos;
-	  }
-	  localSumQ2x -= WgtNUAChtrk1*TMath::Cos(2*trk1Phi);   /// wgts and phi of track1
-	  localSumQ2y -= WgtNUAChtrk1*TMath::Sin(2*trk1Phi);
-	  localSumQ3x -= WgtNUAChtrk1*TMath::Cos(3*trk1Phi);
-	  localSumQ3y -= WgtNUAChtrk1*TMath::Sin(3*trk1Phi);
-	  localMultTPC-= WgtNUAChtrk1; 	  
+	  if(gEPeta > 0 && trk1Eta >= 0.1) { // exclude tracks falling into eta gap
+	    localSumQ2x -= WgtNUAChtrk1*TMath::Cos(2*trk1Phi);   /// wgts and phi of track1
+	    localSumQ2y -= WgtNUAChtrk1*TMath::Sin(2*trk1Phi);
+	    localSumQ3x -= WgtNUAChtrk1*TMath::Cos(3*trk1Phi);
+	    localSumQ3y -= WgtNUAChtrk1*TMath::Sin(3*trk1Phi);
+	    localMultTPC-= WgtNUAChtrk1; 	  
+      }
+      else if(gEPeta < 0 && trk1Eta <= -0.1) {
+	    localSumQ2x -= WgtNUAChtrk1*TMath::Cos(2*trk1Phi);   /// wgts and phi of track1
+	    localSumQ2y -= WgtNUAChtrk1*TMath::Sin(2*trk1Phi);
+	    localSumQ3x -= WgtNUAChtrk1*TMath::Cos(3*trk1Phi);
+	    localSumQ3y -= WgtNUAChtrk1*TMath::Sin(3*trk1Phi);
+	    localMultTPC-= WgtNUAChtrk1; 	  
+      }
 	}
 
-
+    
+	// save v2 for each plane
+	if(localMultTPC>0){
+		localSumQ2x = localSumQ2x/localMultTPC;
+		localSumQ2y = localSumQ2y/localMultTPC;
 	
+		Double_t fPsi2TPC = 0;
+		
+		fPsi2TPC = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
+		if(fPsi2TPC < 0) fPsi2TPC += TMath::TwoPi()/2;
+		
+		if(gParticleID==0){
+		  hV2TPCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsi2TPC), wgtComb1Ch);
+		  hV2V0CvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNV0C),wgtComb1Ch);
+		  hV2V0AvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNV0A),wgtComb1Ch);
+		  hV2V0CAvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - (fPsiNV0C+fPsiNV0A)),wgtComb1Ch);
+		  hV2ZDCCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiZNCC),wgtComb1Ch);
+		  hV2ZDCAvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiZNCA),wgtComb1Ch);
+		  hV2ZDCCACombinevsCent->Fill(centrality,TMath::Cos(2*trk1Phi - (fPsiZNCC+fPsiZNCA)),wgtComb1Ch);
+		  hV2ZDCCAvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiZNCCA),wgtComb1Ch);
+		  
+		  // for four particle cumulant 
+		  hPOIQRe->Fill(0.5,wgtComb1Ch*TMath::Cos(2*trk1Phi)); // w*cos(2phi)
+		  hPOIQRe->Fill(1.5,pow(wgtComb1Ch,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
+		  hPOIQRe->Fill(2.5,pow(wgtComb1Ch,3)*TMath::Cos(2*trk1Phi)); // w^3*cos(2phi)
+		  hPOIQIm->Fill(0.5,wgtComb1Ch*TMath::Sin(2*trk1Phi)); // w*sin(2phi)
+		  hPOIQIm->Fill(1.5,pow(wgtComb1Ch,2)*TMath::Sin(4*trk1Phi)); // w^2*sin(4phi)
+		  hPOIQIm->Fill(2.5,pow(wgtComb1Ch,3)*TMath::Sin(2*trk1Phi)); // w^3*sin(2phi)
+		  hPOIMul->Fill(0.5,pow(wgtComb1Ch,0)); // 1
+		  hPOIMul->Fill(1.5,pow(wgtComb1Ch,1)); // w
+		  hPOIMul->Fill(2.5,pow(wgtComb1Ch,2)); // w^2
+		  hPOIMul->Fill(3.5,pow(wgtComb1Ch,3)); // w^3
+		  hPOIMul->Fill(4.5,pow(wgtComb1Ch,4)); // w^4
+		}
+		else if(gParticleID < 10){/// Both Particles are Identified. Not considering gParticleID>10
+		  hV2TPCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsi2TPC), wgtComb1PID);
+		  hV2V0CvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNV0C),wgtComb1PID);
+		  hV2V0AvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiNV0A),wgtComb1PID);
+		  hV2V0CAvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - (fPsiNV0C+fPsiNV0A)),wgtComb1PID);
+		  hV2ZDCCvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiZNCC),wgtComb1PID);
+		  hV2ZDCAvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiZNCA),wgtComb1PID);
+		  hV2ZDCCACombinevsCent->Fill(centrality,TMath::Cos(2*trk1Phi - (fPsiZNCC+fPsiZNCA)),wgtComb1PID);
+		  hV2ZDCCAvsCent->Fill(centrality,TMath::Cos(2*trk1Phi - 2*fPsiZNCCA),wgtComb1PID);
+		  
+		  // for four particle cumulant 
+		  hPOIQRe->Fill(0.5,wgtComb1PID*TMath::Cos(2*trk1Phi)); // w*cos(2phi)
+		  hPOIQRe->Fill(1.5,pow(wgtComb1PID,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
+		  hPOIQRe->Fill(2.5,pow(wgtComb1PID,3)*TMath::Cos(2*trk1Phi)); // w^3*cos(2phi)
+		  hPOIQIm->Fill(0.5,wgtComb1PID*TMath::Sin(2*trk1Phi)); // w*sin(2phi)
+		  hPOIQIm->Fill(1.5,pow(wgtComb1PID,2)*TMath::Sin(4*trk1Phi)); // w^2*sin(4phi)
+		  hPOIQIm->Fill(2.5,pow(wgtComb1PID,3)*TMath::Sin(2*trk1Phi)); // w^3*sin(2phi)
+		  hPOIMul->Fill(0.5,pow(wgtComb1PID,0)); // 1
+		  hPOIMul->Fill(1.5,pow(wgtComb1PID,1)); // w
+		  hPOIMul->Fill(2.5,pow(wgtComb1PID,2)); // w^2
+		  hPOIMul->Fill(3.5,pow(wgtComb1PID,3)); // w^3
+		  hPOIMul->Fill(4.5,pow(wgtComb1PID,4)); // w^4
+		  
+		}
+	}
 	
 	///---> 2nd track Loop   
 	for(Int_t jTrack = 0; jTrack < ntracks; jTrack++) { 
@@ -1309,7 +1640,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		bPIDoktrk2 = CheckPIDofParticle(AODtrack2,kPIDtrk2); //
 	      }
 	      else if(bPIDoktrk2){
-		bPIDoktrk1 = CheckPIDofParticle(AODtrack2,kPIDtrk1);
+		bPIDoktrk1 = CheckPIDofParticle(AODtrack2,kPIDtrk1); 
 	      }
 
 	      if(!bPIDoktrk1 && !bPIDoktrk2)    /// the track1 and track2 is None of the desired PID, skip this pair..
@@ -1342,36 +1673,46 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
 
 	      ///remove Autocorrelation for track-2 only if both EP and track2 are on the same eta side.
-	      if(!bUseV0EventPlane && trk2Pt < 2.0 && (gEPeta*trk2Eta) > 0){   /// We used pT<2.0 tracks for EP.
-
-		localSumQ2xs = localSumQ2x;                          /// We need the the Qsum (with first track q removed), For Each track-2 
+	      
+	    localSumQ2xs = localSumQ2x;                          /// We need the the Qsum (with first track q removed), For Each track-2 
 		localSumQ2ys = localSumQ2y;                          /// Otherwise we reduce the sum to zero in this 2nd loop.!!
 		localSumQ3xs = localSumQ3x;
 		localSumQ3ys = localSumQ3y;
 		localMultTPCs = localMultTPC;
-		localSumQ2xs -= WgtNUAChtrk2*TMath::Cos(2*trk2Phi);  /// wgts and phi of track2
-		localSumQ2ys -= WgtNUAChtrk2*TMath::Sin(2*trk2Phi);
-		localSumQ3xs -= WgtNUAChtrk2*TMath::Cos(3*trk2Phi);
-		localSumQ3ys -= WgtNUAChtrk2*TMath::Sin(3*trk2Phi);
-		localMultTPCs-= WgtNUAChtrk2; 	  
-	      }
-
-	      if(!bUseV0EventPlane){
- 		
-		if(localMultTPCs>0){
-		  localSumQ2xs = localSumQ2xs/localMultTPCs;
-		  localSumQ2ys = localSumQ2ys/localMultTPCs;
-		  localSumQ3xs = localSumQ3xs/localMultTPCs;
-		  localSumQ3ys = localSumQ3ys/localMultTPCs;
-		}
 		
-		fPsiNEvent = (1./2)*TMath::ATan2(localSumQ2ys,localSumQ2xs);
-		if(fPsiNEvent < 0) fPsiNEvent += TMath::TwoPi()/2;		
-		fPsi3Event = (1./3)*TMath::ATan2(localSumQ3ys,localSumQ3xs);
-		if(fPsi3Event < 0) fPsi3Event += TMath::TwoPi()/3;
-		//fPsi4TPCPos = (1./4)*TMath::ATan2(fQ4yPos,fQ4xPos);
-		//if(fPsi4TPCPos < 0) fPsi4TPCPos += TMath::TwoPi()/4;  		
-	      }
+	    if(!bUseV0EventPlane && trk2Pt < 2.0 && (gEPeta*trk2Eta) > 0){   /// We used pT<2.0 tracks for EP.
+		  if(gEPeta > 0 && trk2Eta >= 0.1) {
+		    localSumQ2xs -= WgtNUAChtrk2*TMath::Cos(2*trk2Phi);  /// wgts and phi of track2
+		    localSumQ2ys -= WgtNUAChtrk2*TMath::Sin(2*trk2Phi);
+		    localSumQ3xs -= WgtNUAChtrk2*TMath::Cos(3*trk2Phi);
+		    localSumQ3ys -= WgtNUAChtrk2*TMath::Sin(3*trk2Phi);
+		    localMultTPCs-= WgtNUAChtrk2;
+		  }
+		  else if(gEPeta < 0 && trk2Eta <= -0.1) {
+		    localSumQ2xs -= WgtNUAChtrk2*TMath::Cos(2*trk2Phi);  /// wgts and phi of track2
+		    localSumQ2ys -= WgtNUAChtrk2*TMath::Sin(2*trk2Phi);
+		    localSumQ3xs -= WgtNUAChtrk2*TMath::Cos(3*trk2Phi);
+		    localSumQ3ys -= WgtNUAChtrk2*TMath::Sin(3*trk2Phi);
+		    localMultTPCs-= WgtNUAChtrk2;
+		  }
+	    }
+
+	    if(!bUseV0EventPlane){
+ 		
+		  if(localMultTPCs>0){
+		    localSumQ2xs = localSumQ2xs/localMultTPCs;
+		    localSumQ2ys = localSumQ2ys/localMultTPCs;
+		    localSumQ3xs = localSumQ3xs/localMultTPCs;
+		    localSumQ3ys = localSumQ3ys/localMultTPCs;
+		  }
+		
+		  fPsiNEvent = (1./2)*TMath::ATan2(localSumQ2ys,localSumQ2xs);
+		  if(fPsiNEvent < 0) fPsiNEvent += TMath::TwoPi()/2;		
+	  	  fPsi3Event = (1./3)*TMath::ATan2(localSumQ3ys,localSumQ3xs);
+		  if(fPsi3Event < 0) fPsi3Event += TMath::TwoPi()/3;
+		  //fPsi4TPCPos = (1./4)*TMath::ATan2(fQ4yPos,fQ4xPos);
+		  //if(fPsi4TPCPos < 0) fPsi4TPCPos += TMath::TwoPi()/4;  		
+	    }
 
 
 	      
@@ -1403,6 +1744,34 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		hAvgDelta3vsCentNN->Fill(centrality,TMath::Cos(3.*(trk1Phi - trk2Phi)),wgtComb2part);
 		hAvgDelta4vsCentNN->Fill(centrality,TMath::Cos(4.*(trk1Phi - trk2Phi)),wgtComb2part);		
 	      }
+	      
+	      
+	      // ZDC spectator plane part
+	      if(bUseZDCSpectatorPlane) {
+			  if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
+			hAvg3pC112vsCentOSUsingZDCC->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCC),wgtComb2part);
+			hAvg3pC112vsCentOSUsingZDCA->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCA),wgtComb2part);
+			hAvg3pC112vsCentOSUsingZDCCACombine->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - (fPsiZNCC+fPsiZNCA)),wgtComb2part);
+			hAvg3pC112vsCentOSUsingZDCCA->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCCA),wgtComb2part);
+					
+			  }		
+			  else if(trk1Chrg > 0 && trk2Chrg > 0){ ///pos-pos       
+			hAvg3pC112vsCentPPUsingZDCC->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCC),wgtComb2part);
+			hAvg3pC112vsCentPPUsingZDCA->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCA),wgtComb2part);
+			hAvg3pC112vsCentPPUsingZDCCACombine->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - (fPsiZNCC+fPsiZNCA)),wgtComb2part);
+			hAvg3pC112vsCentPPUsingZDCCA->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCCA),wgtComb2part);
+					
+			  }
+			  //else if(trk1Chrg < 0 && trk2Chrg < 0){  ///this is obviously last option (and every microseconds counts!)
+			  else{
+			hAvg3pC112vsCentNNUsingZDCC->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCC),wgtComb2part);
+			hAvg3pC112vsCentNNUsingZDCA->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCA),wgtComb2part);
+			hAvg3pC112vsCentNNUsingZDCCACombine->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - (fPsiZNCC+fPsiZNCA)),wgtComb2part);
+			hAvg3pC112vsCentNNUsingZDCCA->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiZNCCA),wgtComb2part);
+			
+			  }
+			  
+		  }
 	      
 	      
 	    }//j-track trackCuts applied
@@ -1780,8 +2149,8 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     }
   }////--------- Lambda Histograms are Filled ----------
  
-
-  
+  CalculateVnfromQC(centrality); //@ Shi calculate v2{4} for ZDC resolution
+  ResetEventByEventQuantities();
 
   fDebugwEventCount->Fill(9.1); ///Left for Analysis
   
@@ -1792,12 +2161,62 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
 }//---------------- UserExec ----------------------
 
+void AliAnalysisTaskGammaDeltaPID::CalculateVnfromQC(Double_t cent){
+
+	Double_t QRe = hPOIQRe->GetBinContent(1);
+	Double_t QIm = hPOIQIm->GetBinContent(1);
+	Double_t Q2Re2 = hPOIQRe->GetBinContent(2);
+	Double_t Q2Im2 = hPOIQIm->GetBinContent(2);
+	Double_t QRe3 = hPOIQRe->GetBinContent(3);
+	Double_t QIm3 = hPOIQIm->GetBinContent(3);
+
+	Double_t QM0 = hPOIMul->GetBinContent(1);
+	Double_t QM  = hPOIMul->GetBinContent(2);
+	Double_t QM2 = hPOIMul->GetBinContent(3);
+	Double_t QM3 = hPOIMul->GetBinContent(4);
+	Double_t QM4 = hPOIMul->GetBinContent(5);
+	
+	Double_t IQM2 = QM*QM-QM2;
+    Double_t WQM2 = IQM2;
+    Double_t IQC2 = -99.;
+    
+    Bool_t Q2f = kFALSE, Q4f = kFALSE;
+    
+	if(QM0>1) {
+	  IQC2 = (QRe*QRe+QIm*QIm-QM2)/IQM2;
+	  hFlowQC2Pro->Fill(cent,IQC2,WQM2);
+	  Q2f = kTRUE;
+	}
+      
+	Double_t IQM4 = QM*QM*QM*QM - 6.*QM2*QM*QM + 8.*QM3*QM + 3.*QM2*QM2 - 6.*QM4;
+    Double_t WQM4 = IQM4;
+    Double_t IQC4 = -99.;
+    if(QM0>3) {
+      IQC4 = ((QRe*QRe+QIm*QIm)*(QRe*QRe+QIm*QIm)
+                  - 2.*(QRe*QRe*Q2Re2+2.*QRe*QIm*Q2Im2-QIm*QIm*Q2Re2)
+                  + 8.*(QRe3*QRe+QIm3*QIm)
+                  + (Q2Re2*Q2Re2+Q2Im2*Q2Im2)
+                  - 4.*QM2*(QRe*QRe+QIm*QIm)
+                  - 6.*QM4 + 2.*QM2*QM2) / IQM4;
+
+      hFlowQC4Pro->Fill(cent,IQC4,WQM4);
+      Q4f = kTRUE;
+    }
+    
+    // product of correlations or covariances
+	if(Q2f && Q4f) {
+	  hFlowwCov24Pro->Fill(cent,IQC2*IQC4,WQM2*WQM4);
+	}
+
+}
 
 
-
-
-
-
+void AliAnalysisTaskGammaDeltaPID::ResetEventByEventQuantities(){
+	if(hPOIQRe) hPOIQRe->Reset();    // 
+	if(hPOIQIm) hPOIQIm->Reset();    // 
+	if(hPOIMul) hPOIMul->Reset();    // 
+	
+}
 
 void AliAnalysisTaskGammaDeltaPID::SetupAnalysisHistograms(){
   
@@ -1807,6 +2226,52 @@ void AliAnalysisTaskGammaDeltaPID::SetupAnalysisHistograms(){
 
   //// CME PID ANALYSIS Histograms/Profiles:
 
+  //// different types of v2
+  hV2TPCvsCent = new TProfile("hV2TPCvsCent"," v2_{TPC} vs Cent; Cent; v2_{TPC}",18,0,90);
+  hV2TPCvsCent->Sumw2();
+  fListHist->Add(hV2TPCvsCent);
+  hV2V0CvsCent = new TProfile("hV2V0CvsCent"," v2_{V0C} vs Cent; Cent; v2_{V0C}",18,0,90);
+  hV2V0CvsCent->Sumw2();
+  fListHist->Add(hV2V0CvsCent);
+  hV2V0AvsCent = new TProfile("hV2V0AvsCent"," v2_{V0A} vs Cent; Cent; v2_{V0A}",18,0,90);
+  hV2V0AvsCent->Sumw2();
+  fListHist->Add(hV2V0AvsCent);
+  hV2V0CAvsCent = new TProfile("hV2V0CAvsCent"," v2_{V0CA} vs Cent; Cent; v2_{V0CA}",18,0,90);
+  hV2V0CAvsCent->Sumw2();
+  fListHist->Add(hV2V0CAvsCent);
+  hV2ZDCCvsCent = new TProfile("hV2ZDCCvsCent"," v2_{ZDCC} vs Cent; Cent; v2_{ZDCC}",18,0,90);
+  hV2ZDCCvsCent->Sumw2();
+  fListHist->Add(hV2ZDCCvsCent);
+  hV2ZDCAvsCent = new TProfile("hV2ZDCAvsCent"," v2_{ZDCA} vs Cent; Cent; v2_{ZDCA}",18,0,90);
+  hV2ZDCAvsCent->Sumw2();
+  fListHist->Add(hV2ZDCAvsCent);
+  hV2ZDCCACombinevsCent = new TProfile("hV2ZDCCACombinevsCent"," v2_{ZDCC+ZDCA} vs Cent; Cent; v2_{ZDCC+ZDCA}",18,0,90);
+  hV2ZDCCACombinevsCent->Sumw2();
+  fListHist->Add(hV2ZDCCACombinevsCent);
+  hV2ZDCCAvsCent = new TProfile("hV2ZDCCAvsCent"," v2_{ZDCCA} vs Cent; Cent; v2_{ZDCCA}",18,0,90);
+  hV2ZDCCAvsCent->Sumw2();
+  fListHist->Add(hV2ZDCCAvsCent);
+  
+  hPOIQRe = new TH1D("hPOIQRe"," hPOIQRe",3,0,3);
+  hPOIQRe->Sumw2();
+  fListTemp->Add(hPOIQRe);
+  hPOIQIm = new TH1D("hPOIQIm"," hPOIQIm",3,0,3);
+  hPOIQIm->Sumw2();
+  fListTemp->Add(hPOIQIm);
+  hPOIMul = new TH1D("hPOIMul"," hPOIMul",5,0,5);
+  hPOIMul->Sumw2();
+  fListTemp->Add(hPOIMul);
+  
+  hFlowQC2Pro = new TProfile("hFlowQC2Pro"," QC2 vs Cent; Cent; QC2",18,0,90);
+  hFlowQC2Pro->Sumw2();
+  fListHist->Add(hFlowQC2Pro);
+  hFlowQC4Pro = new TProfile("hFlowQC4Pro"," QC4 vs Cent; Cent; QC4",18,0,90);
+  hFlowQC4Pro->Sumw2();
+  fListHist->Add(hFlowQC4Pro);
+  hFlowwCov24Pro = new TProfile("hFlowwCov24Pro","Cov24Pro vs Cent; Cent; v2_{ZDCCA}",18,0,90);
+  hFlowwCov24Pro->Sumw2();
+  fListHist->Add(hFlowwCov24Pro);
+  
   //// 3p correlators PID:
   hAvg3pC112vsCentPP = new TProfile("hAvg3pC112vsCentPP"," <3p> vs Cent; Cent; <#gamma112>",18,0,90);
   hAvg3pC112vsCentPP->Sumw2();
@@ -1869,7 +2334,46 @@ void AliAnalysisTaskGammaDeltaPID::SetupAnalysisHistograms(){
   hAvgDelta4vsCentOS->Sumw2();
   fListHist->Add(hAvgDelta4vsCentOS);
   
-   
+  /// 3p correlators PID using SP from ZDC
+  hAvg3pC112vsCentPPUsingZDCC = new TProfile("hAvg3pC112vsCentPPUsingZDCC"," <3p> vs Cent; Cent; <#gamma112> Using ZDCC",18,0,90);
+  hAvg3pC112vsCentPPUsingZDCC->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentPPUsingZDCC);
+  hAvg3pC112vsCentNNUsingZDCC = new TProfile("hAvg3pC112vsCentNNUsingZDCC"," <3p> vs Cent; Cent; <#gamma112> Using ZDCC",18,0,90);  
+  hAvg3pC112vsCentNNUsingZDCC->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentNNUsingZDCC);
+  hAvg3pC112vsCentOSUsingZDCC = new TProfile("hAvg3pC112vsCentOSUsingZDCC"," <3p> vs Cent; Cent; <#gamma112> Using ZDCC",18,0,90);
+  hAvg3pC112vsCentOSUsingZDCC->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentOSUsingZDCC);
+  
+  hAvg3pC112vsCentPPUsingZDCA = new TProfile("hAvg3pC112vsCentPPUsingZDCA"," <3p> vs Cent; Cent; <#gamma112> Using ZDCA",18,0,90);
+  hAvg3pC112vsCentPPUsingZDCA->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentPPUsingZDCA);
+  hAvg3pC112vsCentNNUsingZDCA = new TProfile("hAvg3pC112vsCentNNUsingZDCA"," <3p> vs Cent; Cent; <#gamma112> Using ZDCA",18,0,90);  
+  hAvg3pC112vsCentNNUsingZDCA->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentNNUsingZDCA);
+  hAvg3pC112vsCentOSUsingZDCA = new TProfile("hAvg3pC112vsCentOSUsingZDCA"," <3p> vs Cent; Cent; <#gamma112> Using ZDCA",18,0,90);
+  hAvg3pC112vsCentOSUsingZDCA->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentOSUsingZDCA);
+  
+  hAvg3pC112vsCentPPUsingZDCCACombine = new TProfile("hAvg3pC112vsCentPPUsingZDCCACombine"," <3p> vs Cent; Cent; <#gamma112> Using ZDCCA Combine",18,0,90);
+  hAvg3pC112vsCentPPUsingZDCCACombine->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentPPUsingZDCCACombine);
+  hAvg3pC112vsCentNNUsingZDCCACombine = new TProfile("hAvg3pC112vsCentNNUsingZDCCACombine"," <3p> vs Cent; Cent; <#gamma112> Using ZDCCA Combine",18,0,90);  
+  hAvg3pC112vsCentNNUsingZDCCACombine->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentNNUsingZDCCACombine);
+  hAvg3pC112vsCentOSUsingZDCCACombine = new TProfile("hAvg3pC112vsCentOSUsingZDCCACombine"," <3p> vs Cent; Cent; <#gamma112> Using ZDCCA Combine",18,0,90);
+  hAvg3pC112vsCentOSUsingZDCCACombine->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentOSUsingZDCCACombine);
+  
+  hAvg3pC112vsCentPPUsingZDCCA = new TProfile("hAvg3pC112vsCentPPUsingZDCCA"," <3p> vs Cent; Cent; <#gamma112> Using ZDCCA",18,0,90);
+  hAvg3pC112vsCentPPUsingZDCCA->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentPPUsingZDCCA);
+  hAvg3pC112vsCentNNUsingZDCCA = new TProfile("hAvg3pC112vsCentNNUsingZDCCA"," <3p> vs Cent; Cent; <#gamma112> Using ZDCCA",18,0,90);  
+  hAvg3pC112vsCentNNUsingZDCCA->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentNNUsingZDCCA);
+  hAvg3pC112vsCentOSUsingZDCCA = new TProfile("hAvg3pC112vsCentOSUsingZDCCA"," <3p> vs Cent; Cent; <#gamma112> Using ZDCCA",18,0,90);
+  hAvg3pC112vsCentOSUsingZDCCA->Sumw2();
+  fListHist->Add(hAvg3pC112vsCentOSUsingZDCCA);
 
   ///TPC Event Plane Correlations for Resolution Estimation
   hTPCPsiNCorrelation = new TProfile("hTPCPsiNCorrelation",Form("Psi_{%d} Res. vs Cent; Cent; Resolution",gHarmonic),90,0,90);
@@ -1970,7 +2474,138 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
   fHistV0ADetqVectorvsCent = new TH2F("fHistV0ADetqVectorvsCent","q V0Adet  vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
   fListHist->Add(fHistV0ADetqVectorvsCent);  
 
+  /// ZDC Spectator Planes:
+  hZDCCPsiSpectatorPlane = new TH1F("hZDCCPsiSpectatorPlane","hZDCCPsiSpectatorPlane",100,-TMath::Pi(),TMath::Pi());
+  hZDCCPsiSpectatorPlane->Sumw2();
+  hZDCCPsiSpectatorPlane->SetXTitle("#Psi_{ZDCC}");
+  fListHist->Add(hZDCCPsiSpectatorPlane);
   
+  hZDCAPsiSpectatorPlane = new TH1F("hZDCAPsiSpectatorPlane","hZDCAPsiSpectatorPlane",100,-TMath::Pi(),TMath::Pi());
+  hZDCAPsiSpectatorPlane->Sumw2();
+  hZDCAPsiSpectatorPlane->SetXTitle("#Psi_{ZDCA}");
+  fListHist->Add(hZDCAPsiSpectatorPlane);
+  
+  hZDCCAPsiSpectatorPlane = new TH1F("hZDCCAPsiSpectatorPlane","hZDCCAPsiSpectatorPlane",100,-TMath::Pi(),TMath::Pi());
+  hZDCCAPsiSpectatorPlane->Sumw2();
+  hZDCCAPsiSpectatorPlane->SetXTitle("#Psi_{ZDCCA}");
+  fListHist->Add(hZDCCAPsiSpectatorPlane);
+  
+  hZDCCPsivsZDCAPsi = new TH2F("hZDCCPsivsZDCAPsi","hZDCCPsivsZDCAPsi",100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi());
+  hZDCCPsivsZDCAPsi->Sumw2();
+  hZDCCPsivsZDCAPsi->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsZDCAPsi->SetYTitle("#Psi_{ZDCA}");
+  fListHist->Add(hZDCCPsivsZDCAPsi);
+  
+  hZDCCPsivsTPCPsi2 = new TH2F("hZDCCPsivsTPCPsi2","hZDCCPsivsTPCPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsTPCPsi2->Sumw2();
+  hZDCCPsivsTPCPsi2->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsTPCPsi2->SetYTitle("#Psi_{TPC}");
+  fListHist->Add(hZDCCPsivsTPCPsi2);
+  
+  hZDCCPsivsTPCPosPsi2 = new TH2F("hZDCCPsivsTPCPosPsi2","hZDCCPsivsTPCPosPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsTPCPosPsi2->Sumw2();
+  hZDCCPsivsTPCPosPsi2->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsTPCPosPsi2->SetYTitle("#Psi_{TPC+}");
+  fListHist->Add(hZDCCPsivsTPCPosPsi2);
+  
+  hZDCCPsivsTPCNegPsi2 = new TH2F("hZDCCPsivsTPCNegPsi2","hZDCCPsivsTPCNegPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsTPCNegPsi2->Sumw2();
+  hZDCCPsivsTPCNegPsi2->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsTPCNegPsi2->SetYTitle("#Psi_{TPC-}");
+  fListHist->Add(hZDCCPsivsTPCNegPsi2);
+  
+  hZDCCPsivsV0CAPsi2 = new TH2F("hZDCCPsivsV0CAPsi2","hZDCCPsivsV0CAPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsV0CAPsi2->Sumw2();
+  hZDCCPsivsV0CAPsi2->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsV0CAPsi2->SetYTitle("#Psi_{V0CA}");
+  fListHist->Add(hZDCCPsivsV0CAPsi2);
+  
+  hZDCCPsivsV0CPsi2 = new TH2F("hZDCCPsivsV0CPsi2","hZDCCPsivsV0CPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsV0CPsi2->Sumw2();
+  hZDCCPsivsV0CPsi2->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsV0CPsi2->SetYTitle("#Psi_{V0C}");
+  fListHist->Add(hZDCCPsivsV0CPsi2);
+  
+  hZDCCPsivsV0APsi2 = new TH2F("hZDCCPsivsV0APsi2","hZDCCPsivsV0APsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsV0APsi2->Sumw2();
+  hZDCCPsivsV0APsi2->SetXTitle("#Psi_{ZDCC}");
+  hZDCCPsivsV0APsi2->SetYTitle("#Psi_{V0A}");
+  fListHist->Add(hZDCCPsivsV0APsi2);
+  
+  
+  hZDCAPsivsTPCPsi2 = new TH2F("hZDCAPsivsTPCPsi2","hZDCAPsivsTPCPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsTPCPsi2->Sumw2();
+  hZDCAPsivsTPCPsi2->SetXTitle("#Psi_{ZDCA}");
+  hZDCAPsivsTPCPsi2->SetYTitle("#Psi_{TPC}");
+  fListHist->Add(hZDCAPsivsTPCPsi2);
+  
+  hZDCAPsivsTPCPosPsi2 = new TH2F("hZDCAPsivsTPCPosPsi2","hZDCAPsivsTPCPosPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsTPCPosPsi2->Sumw2();
+  hZDCAPsivsTPCPosPsi2->SetXTitle("#Psi_{ZDCA}");
+  hZDCAPsivsTPCPosPsi2->SetYTitle("#Psi_{TPC+}");
+  fListHist->Add(hZDCAPsivsTPCPosPsi2);
+  
+  hZDCAPsivsTPCNegPsi2 = new TH2F("hZDCAPsivsTPCNegPsi2","hZDCAPsivsTPCNegPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsTPCNegPsi2->Sumw2();
+  hZDCAPsivsTPCNegPsi2->SetXTitle("#Psi_{ZDCA}");
+  hZDCAPsivsTPCNegPsi2->SetYTitle("#Psi_{TPC-}");
+  fListHist->Add(hZDCAPsivsTPCNegPsi2);
+  
+  hZDCAPsivsV0CAPsi2 = new TH2F("hZDCAPsivsV0CAPsi2","hZDCAPsivsV0CAPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsV0CAPsi2->Sumw2();
+  hZDCAPsivsV0CAPsi2->SetXTitle("#Psi_{ZDCA}");
+  hZDCAPsivsV0CAPsi2->SetYTitle("#Psi_{V0CA}");
+  fListHist->Add(hZDCAPsivsV0CAPsi2);
+  
+  hZDCAPsivsV0CPsi2 = new TH2F("hZDCAPsivsV0CPsi2","hZDCAPsivsV0CPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsV0CPsi2->Sumw2();
+  hZDCAPsivsV0CPsi2->SetXTitle("#Psi_{ZDCA}");
+  hZDCAPsivsV0CPsi2->SetYTitle("#Psi_{V0C}");
+  fListHist->Add(hZDCAPsivsV0CPsi2);
+  
+  hZDCAPsivsV0APsi2 = new TH2F("hZDCAPsivsV0APsi2","hZDCAPsivsV0APsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsV0APsi2->Sumw2();
+  hZDCAPsivsV0APsi2->SetXTitle("#Psi_{ZDCA}");
+  hZDCAPsivsV0APsi2->SetYTitle("#Psi_{V0A}");
+  fListHist->Add(hZDCAPsivsV0APsi2);
+  
+  
+  hZDCCAPsivsTPCPsi2 = new TH2F("hZDCCAPsivsTPCPsi2","hZDCCAPsivsTPCPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsTPCPsi2->Sumw2();
+  hZDCCAPsivsTPCPsi2->SetXTitle("#Psi_{ZDCCA}");
+  hZDCCAPsivsTPCPsi2->SetYTitle("#Psi_{TPC}");
+  fListHist->Add(hZDCCAPsivsTPCPsi2);
+  
+  hZDCCAPsivsTPCPosPsi2 = new TH2F("hZDCCAPsivsTPCPosPsi2","hZDCCAPsivsTPCPosPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsTPCPosPsi2->Sumw2();
+  hZDCCAPsivsTPCPosPsi2->SetXTitle("#Psi_{ZDCCA}");
+  hZDCCAPsivsTPCPosPsi2->SetYTitle("#Psi_{TPC+}");
+  fListHist->Add(hZDCCAPsivsTPCPosPsi2);
+  
+  hZDCCAPsivsTPCNegPsi2 = new TH2F("hZDCCAPsivsTPCNegPsi2","hZDCCAPsivsTPCNegPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsTPCNegPsi2->Sumw2();
+  hZDCCAPsivsTPCNegPsi2->SetXTitle("#Psi_{ZDCCA}");
+  hZDCCAPsivsTPCNegPsi2->SetYTitle("#Psi_{TPC-}");
+  fListHist->Add(hZDCCAPsivsTPCNegPsi2);
+  
+  hZDCCAPsivsV0CAPsi2 = new TH2F("hZDCCAPsivsV0CAPsi2","hZDCCAPsivsV0CAPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsV0CAPsi2->Sumw2();
+  hZDCCAPsivsV0CAPsi2->SetXTitle("#Psi_{ZDCCA}");
+  hZDCCAPsivsV0CAPsi2->SetYTitle("#Psi_{V0CA}");
+  fListHist->Add(hZDCCAPsivsV0CAPsi2);
+  
+  hZDCCAPsivsV0CPsi2 = new TH2F("hZDCCAPsivsV0CPsi2","hZDCCAPsivsV0CPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsV0CPsi2->Sumw2();
+  hZDCCAPsivsV0CPsi2->SetXTitle("#Psi_{ZDCCA}");
+  hZDCCAPsivsV0CPsi2->SetYTitle("#Psi_{V0C}");
+  fListHist->Add(hZDCCAPsivsV0CPsi2);
+  
+  hZDCCAPsivsV0APsi2 = new TH2F("hZDCCAPsivsV0APsi2","hZDCCAPsivsV0APsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsV0APsi2->Sumw2();
+  hZDCCAPsivsV0APsi2->SetXTitle("#Psi_{ZDCCA}");
+  hZDCCAPsivsV0APsi2->SetYTitle("#Psi_{V0A}");
+  fListHist->Add(hZDCCAPsivsV0APsi2);
+
   
   /// Centrality Correlations and PileUp QA
   fHistTPConlyVsCL1Before = new TH2F("fHistTPConlyVsCL1Before","Before;Cent(CL1); TPC(FB128)",100,0,100,250,0,gMaxTPCcorrmult);
@@ -1992,6 +2627,7 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
   fListHist->Add(fHistTPCVsESDTrkBefore);
   fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",100,0,5000,200,0,20000);
   fListHist->Add(fHistTPCVsESDTrkAfter);
+
 
 
   /// V0 Mult vs Channel,Vz:
@@ -2565,6 +3201,20 @@ void AliAnalysisTaskGammaDeltaPID::GetV0MCorrectionHist(Int_t run){
   } 
 }
 
+void AliAnalysisTaskGammaDeltaPID::GetZDCCorrectionHist(Int_t run){ 
+  if(fListZDCCorr){
+	fHZDCCparameters = (TH1D*)(fListZDCCorr->FindObject(Form("Run %d", run))->FindObject(Form("fZDCCparameters[%d]",run)));
+	fHZDCAparameters = (TH1D*)(fListZDCCorr->FindObject(Form("Run %d", run))->FindObject(Form("fZDCAparameters[%d]",run)));
+	if(fHZDCCparameters && fHZDCAparameters){
+      printf("\n ===========> Info:: ZDC Channel Weights Found for Run %d \n ",run);
+    }
+  }
+  else{
+	fHZDCCparameters=NULL;
+	fHZDCAparameters=NULL;
+	printf("\n ===========> Info:: ZDC Channel Weights NOT Found for Run %d \n ",run);
+  }
+}
 
 Bool_t AliAnalysisTaskGammaDeltaPID::CheckPIDofParticle(AliAODTrack* ftrack,Int_t pidToCheck){
   
@@ -3226,6 +3876,7 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetGainCorrectedV0Qvector(AliAODEvent *faod
   }
   
 }
+
 
 void AliAnalysisTaskGammaDeltaPID::Terminate(Option_t *)  {
   //fOutputList = dynamic_cast<TList*> (GetOutputData(1));

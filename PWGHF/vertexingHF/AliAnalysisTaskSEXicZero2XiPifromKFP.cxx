@@ -1270,10 +1270,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
 
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file, so if you want
-  fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Rec);
-  fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Gen);
-  fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Rec);
-  fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Gen);
+  if (fIsAnaOmegac0) {
+    fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Rec);
+    fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Gen);
+    fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Rec);
+    fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Gen);
+  }
   /*
   fOutputList->Add(fHTrigger);
   fOutputList->Add(fCounterGen_Cuts_Lambda);
@@ -3728,7 +3730,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
     }
 
     // === Check Omega efficiency (20211014) ===
-    if (fIsMC) {
+    if (fIsMC && fIsAnaOmegac0) {
       Int_t lab_OmegaMother = -9999;
       if (btrack->Charge()<0) lab_OmegaMother = MatchToMCOmegaMinus(ptrack, ntrack, btrack, mcArray);
       if (btrack->Charge()>0) lab_OmegaMother = MatchToMCOmegaPlus(ntrack, ptrack, btrack, mcArray);
@@ -4373,6 +4375,7 @@ Int_t AliAnalysisTaskSEXicZero2XiPifromKFP::MatchToMCOmegaMinus(AliAODTrack *tra
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[2]));
   if ( mcMother->GetPdgCode() != 3334 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Omega
 
+  if (mcMother->GetMother()<0) return -1;
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(mcMother->GetMother()));
   return abs(mcMother->GetPdgCode());
 }
@@ -4411,6 +4414,7 @@ Int_t AliAnalysisTaskSEXicZero2XiPifromKFP::MatchToMCOmegaPlus(AliAODTrack *trac
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(IndexMother[2]));
   if ( mcMother->GetPdgCode() != -3334 || mcMother->GetNDaughters()!=2 ) return -1; // check mother is Omega
 
+  if (mcMother->GetMother()<0) return -1;
   mcMother = static_cast<AliAODMCParticle*>(mcArray->At(mcMother->GetMother()));
   return abs(mcMother->GetPdgCode());
 }

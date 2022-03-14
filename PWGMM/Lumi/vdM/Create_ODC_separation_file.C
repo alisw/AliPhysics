@@ -111,11 +111,11 @@ Double_t Get_ODC_y_scan_5568(Double_t mid_time)
 
 Double_t Get_ODC_x_scan_6012(Double_t mid_time)
 {
-	Double_t p0 = 1501174853;
-	Double_t p1 = -5.14364;
-	Double_t p2 = -0.00424986;
-	Double_t p3 = 3.97933e-10;
-	Double_t p4 = 5.5189e-14;
+	Double_t p0 = 1501171786;   //1501174853;
+	Double_t p1 = 0.812369;     //-5.14364;
+	Double_t p2 = 0.00045667;   //-0.00424986;
+	Double_t p3 = -5.36988e-10; //3.97933e-10;
+	Double_t p4 = 8.65826e-14;  //5.5189e-14;
 	Double_t x = (mid_time-p0);
 	// divide by 1000 to go from mum to mm
 	return (p1+p2*x+p3*x*x*x+p4*x*x*x*x)/1000; 
@@ -123,9 +123,9 @@ Double_t Get_ODC_x_scan_6012(Double_t mid_time)
 
 Double_t Get_ODC_y_scan_6012(Double_t mid_time)
 {
-	Double_t p0 = 1501173798;
-	Double_t p1 = 2.19271;
-	Double_t p2 = 0.00103011;
+	Double_t p0 = 1501173133;  //1501173798;
+	Double_t p1 = 0.324359;    //2.19271;
+	Double_t p2 = 0.000940862; //0.00103011;
 	Double_t x = (mid_time-p0);
 	// divide by 1000 to go from mum to mm
 	return (p1+p2*x)/1000; 

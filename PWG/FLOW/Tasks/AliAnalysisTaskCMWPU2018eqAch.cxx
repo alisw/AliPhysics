@@ -589,12 +589,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       ////Charge:
       sprintf(name,"fHistv2AchChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPos[i][j]);
       sprintf(name,"fHistv2AchChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNeg[i][j]);
 
@@ -602,12 +602,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
       sprintf(name,"fHistv2AchChrgPosChrgNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgPosChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgPosChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgPosChrgNeg[i][j]);
       sprintf(name,"fHistv2AchChrgNegChrgPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchChrgNegChrgPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgNegChrgPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNegChrgPos[i][j]);
 
@@ -617,12 +617,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Pion:
       sprintf(name,"fHistv2AchPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPos[i][j]);
       sprintf(name,"fHistv2AchPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNeg[i][j]);
 
@@ -630,12 +630,12 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       
       sprintf(name,"fHistv2AchPionPosPionNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionPosPionNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionPosPionNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionPosPionNeg[i][j]);
       sprintf(name,"fHistv2AchPionNegPionPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchPionNegPionPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchPionNegPionPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchPionNegPionPos[i][j]);  
       
@@ -643,24 +643,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Kaon:
       sprintf(name,"fHistv2AchKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPos[i][j]);
       sprintf(name,"fHistv2AchKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchKaonPosKaonNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonPosKaonNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonPosKaonNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonPosKaonNeg[i][j]);
       sprintf(name,"fHistv2AchKaonNegKaonPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchKaonNegKaonPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchKaonNegKaonPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchKaonNegKaonPos[i][j]);      
             
@@ -668,24 +668,24 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       //// Proton:
       sprintf(name,"fHistv2AchProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPos[i][j]);
       sprintf(name,"fHistv2AchProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNeg[i][j]);
 
 
       sprintf(name,"fHistv2AchProtPosProtNeg_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtPosProtNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtPosProtNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtPosProtNeg[i][j]);
       sprintf(name,"fHistv2AchProtNegProtPos_Method%d_Cent%d",i,j);
       sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
-      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,9,fAchBinSelect,"");
+      fHistv2AchProtNegProtPos[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchProtNegProtPos[i][j]->Sumw2();
       fListHist->Add(fHistv2AchProtNegProtPos[i][j]);    
     }
@@ -765,7 +765,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
     ////Charge:
     sprintf(name,"fHistv2cumAchChrgAllQcumCent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[i],centRange[i+1]);
-    fHistv2cumAchChrgAll[i] = new TProfile(name,title,9,fAchBinSelect,"");
+    fHistv2cumAchChrgAll[i] = new TProfile(name,title,10,fAchBinSelect,"");
     fHistv2cumAchChrgAll[i]->Sumw2();
     fListHist->Add(fHistv2cumAchChrgAll[i]);    
 
@@ -938,6 +938,23 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
   
   fCentDistBeforCut->Fill(centrality);
   
+
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+  UInt_t fSelectMask = inputHandler->IsEventSelected();
+  Bool_t isTriggerSelected1 = kFALSE;
+  Bool_t isTriggerSelected2 = kFALSE;
+  Bool_t isTriggerSelected3 = kFALSE;
+
+  isTriggerSelected1 = fSelectMask& AliVEvent::kCentral;
+  isTriggerSelected2 = fSelectMask& AliVEvent::kSemiCentral;
+  isTriggerSelected3 = fSelectMask& AliVEvent::kINT7;
+
+
+  if (isTriggerSelected1==1 && centrality>10.0 && isTriggerSelected3==0)
+    return ;
+  if (isTriggerSelected2==1 && (centrality<30.0 || centrality>50.0 ) && isTriggerSelected3==0)
+    return ;
 
 
 

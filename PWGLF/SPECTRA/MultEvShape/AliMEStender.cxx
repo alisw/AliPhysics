@@ -307,18 +307,17 @@ void AliMEStender::UserExec(Option_t */*opt*/)
 //       return;
     }
   }
-/*
-  if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
-  if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
-	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
 
+//   if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
+// 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+//   }
+//   if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
+// 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
+// 	  return;
+//   }
 // 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
-*/
+
 
   fEvInfo->SetVertexZ(vertex->GetZ());
 

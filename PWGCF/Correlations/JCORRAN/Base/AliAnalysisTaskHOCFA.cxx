@@ -132,14 +132,15 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     iEta[iTrack] = aTrack->Eta();
     iPhi[iTrack] = aTrack->Phi();
 
-    fHistoPt[fCentralityBin]->Fill(aTrack->Pt());
-    fHistoEta[fCentralityBin]->Fill(iEta[iTrack]);
-    fHistoPhi[fCentralityBin]->Fill(iPhi[iTrack]);
-    fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
-
     if (fUseWeightsNUE) {iEffCorr = aTrack->GetTrackEff();}
-    if(fUseWeightsNUA) {iPhiModuleCorr = aTrack->GetWeight();}
+    if (fUseWeightsNUA) {iPhiModuleCorr = aTrack->GetWeight();}
+    if (fDebugLevel > 10) printf("iEffCorr: %.6f iPhiModuleCorr: %.6f \n", iEffCorr, iPhiModuleCorr);
     iWeights[iTrack] = (1.0/iEffCorr)/iPhiModuleCorr;
+
+    fHistoPt[fCentralityBin]->Fill(aTrack->Pt(), (1./iEffCorr));
+    fHistoEta[fCentralityBin]->Fill(iEta[iTrack]);
+    fHistoPhi[fCentralityBin]->Fill(iPhi[iTrack], (1./iPhiModuleCorr));
+    fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
   }
 
 // Compute the Q-vectors and multiparticle correlations.
@@ -277,7 +278,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
 
     fHistoPt[i] = new TH1D("", "", 500, 0., 5.);
     fHistoPt[i]->SetName(Form("fHistoPt_Bin%d", i));
-    fHistoPt[i]->SetTitle(Form("Transverse momentum distribution, bin%d", i));
+    fHistoPt[i]->SetTitle(Form("Corrected transverse momentum distribution, bin%d", i));
     fHistoPt[i]->SetStats(kTRUE);
     fCentralityList[i]->Add(fHistoPt[i]);
 
@@ -289,7 +290,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
 
     fHistoPhi[i] = new TH1D("", "", 630, -TMath::Pi(),TMath::Pi());
     fHistoPhi[i]->SetName(Form("fHistoPhi_Bin%d", i));
-    fHistoPhi[i]->SetTitle(Form("Azimuthal angle distribution, bin%d", i));
+    fHistoPhi[i]->SetTitle(Form("Corrected azimuthal angle distribution, bin%d", i));
     fHistoPhi[i]->SetStats(kTRUE);
     fCentralityList[i]->Add(fHistoPhi[i]);
 

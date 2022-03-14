@@ -13,6 +13,45 @@ class THistManager;
 class AliPIDResponse;
 class AliESDtrackCuts;
 
+struct StructXi1530PbPb {
+    Double32_t TPCNsigXi1530Pion;
+    Double32_t TPCNsigLambdaProton;
+    Double32_t TPCNsigLambdaPion;
+    Double32_t TPCNsigBachelorPion;
+    Double32_t Xi1530PionEta;
+    Double32_t Xi1530PionPVz;
+    Double32_t Xi1530PionXYVertexSigma;
+    Double32_t DCALambdaDaughters;
+    Double32_t DCAXiDaughters;
+    Double32_t DCALambdaPV;
+    Double32_t DCALambdaProtonPV;
+    Double32_t DCALambdaPionPV;
+    Double32_t DCABachelorPionPV;
+    Double32_t DCAXiPV;
+    Double32_t V0CPA;
+    Double32_t XiCPA;
+    Double32_t XiEta;
+    Double32_t LambdaRadius;
+    Double32_t XiRadius;
+    Double32_t V0Mass;
+    Double32_t XiMass;
+    Double32_t Xi1530Pt;
+    Double32_t Xi1530Mass;
+    Double32_t Xi1530Radius;
+    Double32_t Xi1530DCA;
+    Double32_t Xi1530CPA;
+    Double32_t Centrality;
+    Double32_t zVertex;
+    Int_t Antiflag;
+};
+
+struct StructXi1530PbPbMC : public StructXi1530PbPb {
+    float MCflag;
+    float ptMC;
+    Int_t Antiflag;
+    bool isReconstructed;
+};
+
 class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
    public:
     AliAnalysisTaskXi1530PbPb();
@@ -34,7 +73,7 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
     void SetINEL(Bool_t input) { fIsINEL = input; }
     void SetHighMult(Bool_t input) { fIsHM = input; }
-    void SetFillnTuple(Bool_t fillntuple = kTRUE) { fFillnTuple = fillntuple; }
+    void SetFillnTuple(Bool_t fillntuple = kTRUE) { fFillTree = fillntuple; }
     void SetTurnOnExoFinder(Bool_t input = kTRUE) { fExoticFinder = input; }
     void SetLambdaCPAtoXi(Bool_t input = kTRUE) { fLambdaCPAtoXi = input; }
 
@@ -65,6 +104,7 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     void SetMaxMassWindowV0(Double_t lParameter) { fV0MassWindowCut = lParameter; }
     void SetMaxMassWindowXi(Double_t lParameter) { fXiMassWindowCut = lParameter; }
     void SetExoticMaxOpenAngle(Double_t lParameter) { fExoticMaxOpenAngle = lParameter; }
+    void SetSkipFillingHistogram(Double_t lParameter) { fSkipFillingHisto = lParameter; }
 
     void SetXi1530RapidityCutHigh(Double_t lParameter) {
         fXi1530YCutHigh = lParameter;
@@ -72,11 +112,17 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     void SetXi1530RapidityCutLow(Double_t lParameter) {
         fXi1530YCutLow = lParameter;
     }
+    void SetXi1530MassCutHigh(Double_t lParameter) {
+        fXi1530MassHigh = lParameter;
+    }
+    void SetXi1530MassCutLow(Double_t lParameter) {
+        fXi1530MassLow = lParameter;
+    }
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
     void FillTracks();
-    void FillNtuples();
+    void FillTree();
     void FillMCinput(AliMCEvent *fMCEvent, int Fillbin = 0);
     void FillTrackToEventPool();
     Bool_t IsTrueXi1530(UInt_t v0, UInt_t pion);
@@ -130,21 +176,24 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     AliMCEvent *fMCEvent;     //!
     THistManager *fHistos;    //!
     AliAODVertex *fVertex;    //!
-    TNtupleD *fNtupleXi1530;  //!
+    TTree *fTree = nullptr;   //!<! Tree for Xi1530
+    StructXi1530PbPb *fTreeXi1530Rec = nullptr;  //!<! Transient fRecXi1530
+    StructXi1530PbPbMC fTreeXi1530Gen;
     TClonesArray *fMCArray;   //!
 
-    Bool_t fIsAOD;            //!
-    Bool_t fIsNano;           //!
-    Bool_t fSetMixing;        //
-    Bool_t fUseBuiltinMixer;  //
-    Bool_t fFillQAPlot;       //
-    Bool_t fIsMC;             //
-    Bool_t fIsPrimaryMC;      //
-    Bool_t fFillnTuple;       //
-    Bool_t fIsINEL;           //
-    Bool_t fIsHM;             //
-    Bool_t fLambdaCPAtoXi;    //
-    Bool_t fExoticFinder;     //
+    Bool_t fIsAOD;             //!
+    Bool_t fIsNano;            //!
+    Bool_t fSetMixing;         //
+    Bool_t fUseBuiltinMixer;   //
+    Bool_t fFillQAPlot;        //
+    Bool_t fIsMC;              //
+    Bool_t fIsPrimaryMC;       //
+    Bool_t fFillTree;        //
+    Bool_t fIsINEL;            //
+    Bool_t fIsHM;              //
+    Bool_t fLambdaCPAtoXi;     //
+    Bool_t fExoticFinder;      //
+    Bool_t fSkipFillingHisto;  //
 
     mixingpool fEMpool;  //!
     TAxis fBinCent;      //!
@@ -189,13 +238,17 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     Double_t fExoticMaxOpenAngle;  //
     Double_t fXi1530YCutHigh;      //
     Double_t fXi1530YCutLow;       //
+    Double_t fXi1530MassHigh;      //
+    Double_t fXi1530MassLow;       //
 
     // Good track/cascade vector array
     std::vector<UInt_t> fGoodTrackArray;  //
     std::vector<UInt_t> fGoodXiArray;     //
 
-    ClassDef(AliAnalysisTaskXi1530PbPb, 2);
-    // Code beautify, fix minor bugs
+    ClassDef(AliAnalysisTaskXi1530PbPb, 4);
+    // 2. Code beautify, fix minor bugs
+    // 3. Add secondary vertex option
+    // 4. Update nTuples to Tree
 };
 
 #endif

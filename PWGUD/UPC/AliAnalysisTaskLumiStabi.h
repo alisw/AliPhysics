@@ -19,39 +19,48 @@ class AliAODZDC;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskLumiStabi : public AliAnalysisTaskSE {
- public:
-  AliAnalysisTaskLumiStabi();
-  AliAnalysisTaskLumiStabi(const char *name);
-  virtual ~AliAnalysisTaskLumiStabi();
+public:
+		AliAnalysisTaskLumiStabi();
+		AliAnalysisTaskLumiStabi(const char *name);
+		virtual ~AliAnalysisTaskLumiStabi();
 
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t *);
+		virtual void UserCreateOutputObjects();
+		virtual void UserExec(Option_t *option);
+		virtual void Terminate(Option_t *);
 
-  Bool_t IsSatellite(AliAODZDC *ZDCdata);
+		Bool_t IsSatellite(AliAODZDC *ZDCdata);
 
- private:
-  TList *fOutputList;
-   
-  TTree *tOutput;
+private:
+		TList *fOutputList;
 
-  TH1I *hDummyCounter;
-  TH1I *hTriggerClassesCounter;
-  TH1I *hTriggerInputsCounter;
-  TH1D *hCentralityV0M;
-  TH1D *hCentralityV0MandPS;
-  TH1D *hCentralityV0MandSat;
-  Bool_t fTrgClassCINTZAC, fTrgClassV0L, fTrgInputV0M, fSelectPhysics, fIsSatellite;
-  Int_t fRunNumber;
-  UInt_t fL0inputs;
-  Float_t fV0McentPercentile = 300;
-  Float_t fZNATDCm[4], fZNCTDCm[4];
+		TTree *tOutput;
+
+		TH1I *hDummyCounter;
+		TH1I *hTriggerClassesCounter;
+		TH1I *hTriggerInputsCounter;
+		TH1D *hCentralityV0M;
+		TH1D *hCentralityV0MandPS;
+		TH1D *hCentralityV0MandSat;
+		Bool_t fTrgClassCINTZAC, fTrgClassV0L, fTrgInputV0M, fSelectPhysics, fIsSatellite;
+		Int_t fRunNumber;
+		UInt_t fL0inputs;
+		Float_t fV0McentPercentile = 300;
+		Float_t fV0McentPercPlus05 = 300;
+		Float_t fV0McentPercPlus10 = 300;
+		Float_t fV0McentPercMinu05 = 300;
+		Float_t fV0McentPercMinu10 = 300;
+		Float_t fV0McentPercentNew = 300;
+		Float_t fV0McentPercNewP05 = 300;
+		Float_t fV0McentPercNewP10 = 300;
+		Float_t fV0McentPercNewM05 = 300;
+		Float_t fV0McentPercNewM10 = 300;
+		Float_t fZNATDCm[4], fZNCTDCm[4];
 //  AliMultSelection *fCentrality = 0x0;
-  
-  AliAnalysisTaskLumiStabi(const AliAnalysisTaskLumiStabi&); //not implemented
-  AliAnalysisTaskLumiStabi& operator =(const AliAnalysisTaskLumiStabi&); //not implemented
-  
-  ClassDef(AliAnalysisTaskLumiStabi, 1);
+
+		AliAnalysisTaskLumiStabi(const AliAnalysisTaskLumiStabi&); //not implemented
+		AliAnalysisTaskLumiStabi& operator =(const AliAnalysisTaskLumiStabi&); //not implemented
+
+		ClassDef(AliAnalysisTaskLumiStabi, 3);
 };
 
 #endif

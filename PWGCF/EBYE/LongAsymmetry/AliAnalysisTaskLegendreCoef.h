@@ -7,10 +7,17 @@
 
 #ifndef AliAnalysisTaskLegendreCoef_H
 #define AliAnalysisTaskLegendreCoef_H
+class TH1;
+class THn;
+class TH1F;
+class TH2D;
+class TH3D;
+class TList;
+class TTree;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-
+#include <TTreeStream.h>
 #define PI 3.1415927
 
 class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
@@ -29,7 +36,8 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetChi2DoF(Double_t Chi2DoF) { fChi2DoF = Chi2DoF; }
     void            SetNclTPC(Int_t ncl) { fTPCNcls = ncl; }
     void            SetPtLimits(Double_t ptmin, Double_t ptmax) { fPtmin = ptmin; fPtmax=ptmax; }
-    void            SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+    void            SetEtaMinLimit(Double_t etalowlimit) { fEtaMin = etalowlimit; }
+    void            SetEtaMaxLimit(Double_t etauplimit) { fEtaMax = etauplimit; }
     void            SetFilterBit(Int_t filterbit) { fBit = filterbit; }
     void            SetPileUpRead(Bool_t flag) {fIsPileUpCuts = flag;}
     void            SetBuildBackground(Bool_t flag) {fIsBuildBG = flag; }
@@ -44,6 +52,11 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     void            SetGeneratorName(TString generator) {fGenName = generator; }
     void            SetPileUpLevel(Int_t level) {fPileUpLevel = level; }
     void            SetTPCNCrossedRows(UShort_t crossedrows) { fTPCNCrossedRows = crossedrows; }
+    void            SetPVzMinLimit(Float_t pvzmin) {fPVzMin=pvzmin;}
+    void            SetPVzMaxLimit(Float_t pvzmax) {fPVzMax=pvzmax;}
+    void            SetPVzSign(Int_t sign) {fPVzSign=sign;}//-1 then negative pvz, +1 then positive pvz, 0 then absolute value (to test effect from the TPC membrane)
+    void            SetNEtaBins(Int_t Netabins) {fNetabins=Netabins;}//default 16
+    void            SetEfficiencyTree(Bool_t flag) {fEffTree = flag;}//enable efficiency tree when building background
 
   private:
     Double_t GetSingleAnCoef(int order, TH1D *hist); //method to get direct an
@@ -60,7 +73,8 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     Int_t fTPCNcls; //limit for TPC Ncls
     Double_t fPtmin; //min PT
     Double_t fPtmax; //max PT
-    Double_t fEta; //max eta
+    Double_t fEtaMin; //min eta
+    Double_t fEtaMax; //max eta
     Int_t fBit; //filter bit - 96 default
     Bool_t fIsPileUpCuts; //pile up cuts flag
     Bool_t fIsBuildBG; //build background flag
@@ -75,6 +89,15 @@ class AliAnalysisTaskLegendreCoef : public AliAnalysisTaskSE
     TString fGenName; //MC generator name
     Int_t fPileUpLevel;
     UShort_t  fTPCNCrossedRows;  
+    Float_t fPVzMax; //max PVz
+    Float_t fPVzMin; //min PVz
+    Int_t fPVzSign; //sign of PVz
+    Int_t fNetabins; //number of bins in eta
+    Bool_t fEffTree; //enable eff tree in output
+    TTreeSRedirector *fTreeSRedirector;        //! temp tree to dump output
+    TTree            *fTreeMCrec;              // tree for reconstructed 
+    TTree            *fTreeMCgen;              // tree for generatec
+
     AliEventCuts fEventCuts;
 
     AliAnalysisTaskLegendreCoef(const AliAnalysisTaskLegendreCoef&); // not implemented

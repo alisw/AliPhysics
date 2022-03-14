@@ -84,7 +84,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   AliAnalysisTaskSE(), 
   fDebug(0),
   fHarmonic(2.),
-  fTrigger(1),
+  fTrigger("kMB"),
   fFltbit(1),
   fNclsCut(70),
   fChi2Hg(4.0),
@@ -96,7 +96,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   fCbinHg(8),
   fCbinLo(0),
   fPeriod("LHC10h"),
-  fMultComp("pileupByEDSTPC128"),
+  fMultComp("none"),
   fEtaGap(0.3),  
   fV0CalibOn(true),
   fTPCCalibOn(false),
@@ -114,11 +114,12 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   fEtaCut(0.8),
   fDedxCut(10.0),
   fZvtxCut(10.0),
+  fPUSyst(0),
   fListNUE(NULL),
-  fListNUA1(NULL),
-  fListNUA2(NULL),
-  fListNUA3(NULL), 
+  fListNUA(NULL), 
   fListVZEROCALIB(NULL),
+  fListwCent(NULL),
+  hwCent(NULL),
   fNegEtaQ(-999., -999.),
   fNegEtaQStar(-999., -999.),
   fPosEtaQ(-999., -999.),
@@ -166,22 +167,18 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   for (int i = 0; i < 3; ++i)   pV0XMeanRead[i]=NULL; 
   for (int i = 0; i < 3; ++i)   pV0YMeanRead[i]=NULL;
 
-  for (int i = 0; i < 138; ++i){
-    hMultV0[i]=NULL; //Dobrin
-    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
-  }
+  hMultV0=NULL; //Dobrin
+  for (int i = 0; i < 2; ++i)   hQxnmV0[i]=NULL;
+  for (int i = 0; i < 2; ++i)   hQynmV0[i]=NULL;
+
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0YMean[i]=-999.;
-  for (int i = 0; i < 3; ++i)   fV0XSigma[i]=-999.;
-  for (int i = 0; i < 3; ++i)   fV0YSigma[i]=-999.;
 
   for (int i = 0; i < 90; ++i) splQ2c[i]=NULL; 
 
   for (int i = 0; i < 2; ++i) hCent[i]=NULL;
+  for (int i = 0; i < 138; ++i) hCentRBR[i]=NULL; 
   for (int i = 0; i < 2; ++i) hVz[i]=NULL;
 
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
@@ -210,12 +207,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE() :
   for (int i = 0; i < NCENTBINS; ++i) pIntd2Ach[i]=NULL;
   for (int i = 0; i < NCENTBINS; ++i) pAch[i]=NULL;
 
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) hMult[i][j]=NULL;
-  }
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) hAch[i][j]=NULL;
-  }
+  for (int i = 0; i < NQNBINS; ++i) hMultMb[i]=NULL;
+  for (int i = 0; i < NQNBINS; ++i) hAchMb[i]=NULL;
 
 }
 
@@ -225,7 +218,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   AliAnalysisTaskSE(name), 
   fDebug(0),
   fHarmonic(2.),
-  fTrigger(1),
+  fTrigger("kMB"),
   fFltbit(1),
   fNclsCut(70),
   fChi2Hg(4.0),
@@ -237,7 +230,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   fCbinHg(8),
   fCbinLo(0),
   fPeriod(_PR),
-  fMultComp("pileupByEDSTPC128"),
+  fMultComp("none"),
   fEtaGap(0.3),  
   fV0CalibOn(_V0Calib),
   fTPCCalibOn(false),
@@ -255,11 +248,12 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   fEtaCut(0.8),
   fDedxCut(10.0),
   fZvtxCut(10.0),
+  fPUSyst(0),
   fListNUE(NULL),
-  fListNUA1(NULL),
-  fListNUA2(NULL),
-  fListNUA3(NULL), 
+  fListNUA(NULL), 
   fListVZEROCALIB(NULL),
+  fListwCent(NULL),
+  hwCent(NULL),
   fNegEtaQ(-999., -999.),
   fNegEtaQStar(-999., -999.),
   fPosEtaQ(-999., -999.),
@@ -307,22 +301,18 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   for (int i = 0; i < 3; ++i)   pV0XMeanRead[i]=NULL; 
   for (int i = 0; i < 3; ++i)   pV0YMeanRead[i]=NULL;
 
-  for (int i = 0; i < 138; ++i){
-    hMultV0[i]=NULL; //Dobrin
-    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
-  }
+  hMultV0=NULL; //Dobrin
+  for (int i = 0; i < 2; ++i)   hQxnmV0[i]=NULL;
+  for (int i = 0; i < 2; ++i)   hQynmV0[i]=NULL;
+
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0YMean[i]=-999.;
-  for (int i = 0; i < 3; ++i)   fV0XSigma[i]=-999.;
-  for (int i = 0; i < 3; ++i)   fV0YSigma[i]=-999.;
 
   for (int i = 0; i < 90; ++i) splQ2c[i]=NULL; 
 
   for (int i = 0; i < 2; ++i) hCent[i]=NULL;
+  for (int i = 0; i < 138; ++i) hCentRBR[i]=NULL; 
   for (int i = 0; i < 2; ++i) hVz[i]=NULL;
 
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
@@ -351,12 +341,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
   for (int i = 0; i < NCENTBINS; ++i) pIntd2Ach[i]=NULL;
   for (int i = 0; i < NCENTBINS; ++i) pAch[i]=NULL;
 
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) hMult[i][j]=NULL;
-  }
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) hAch[i][j]=NULL;
-  }
+  for (int i = 0; i < NQNBINS; ++i) hMultMb[i]=NULL;
+  for (int i = 0; i < NQNBINS; ++i) hAchMb[i]=NULL;
 
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
@@ -388,6 +374,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name, TString _PR, bool
     if (fV0CalibOn) {
       DefineInput(inputslot, TList::Class());
       inputslot++;
+      DefineInput(inputslot, TList::Class());
+      inputslot++;   
     } 
   }
 
@@ -399,7 +387,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   AliAnalysisTaskSE(name), 
   fDebug(0),
   fHarmonic(2.),
-  fTrigger(1),
+  fTrigger("kMB"),
   fFltbit(1),
   fNclsCut(70),
   fChi2Hg(4.0),
@@ -411,7 +399,7 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   fCbinHg(8),
   fCbinLo(0),
   fPeriod("LHC10h"),
-  fMultComp("pileupByEDSTPC128"),
+  fMultComp("none"),
   fEtaGap(0.3),  
   fV0CalibOn(true),
   fTPCCalibOn(false),
@@ -429,11 +417,12 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   fEtaCut(0.8),
   fDedxCut(10.0),
   fZvtxCut(10.0),
+  fPUSyst(0),
   fListNUE(NULL),
-  fListNUA1(NULL),
-  fListNUA2(NULL),
-  fListNUA3(NULL), 
+  fListNUA(NULL), 
   fListVZEROCALIB(NULL),
+  fListwCent(NULL),
+  hwCent(NULL),
   fNegEtaQ(-999., -999.),
   fNegEtaQStar(-999., -999.),
   fPosEtaQ(-999., -999.),
@@ -481,22 +470,18 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   for (int i = 0; i < 3; ++i)   pV0XMeanRead[i]=NULL; 
   for (int i = 0; i < 3; ++i)   pV0YMeanRead[i]=NULL;
 
-  for (int i = 0; i < 138; ++i){
-    hMultV0[i]=NULL; //Dobrin
-    for (int j = 0; j < 2; ++j)   hQx2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2mV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQx2sV0[i][j]=NULL;
-    for (int j = 0; j < 2; ++j)   hQy2sV0[i][j]=NULL;
-  }
+  hMultV0=NULL; //Dobrin
+  for (int i = 0; i < 2; ++i)   hQxnmV0[i]=NULL;
+  for (int i = 0; i < 2; ++i)   hQynmV0[i]=NULL;
+
   for (int i = 0; i < 64; ++i) fMultV0Ch[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0XMean[i]=-999.;
   for (int i = 0; i < 3; ++i)   fV0YMean[i]=-999.;
-  for (int i = 0; i < 3; ++i)   fV0XSigma[i]=-999.;
-  for (int i = 0; i < 3; ++i)   fV0YSigma[i]=-999.;
 
   for (int i = 0; i < 90; ++i) splQ2c[i]=NULL; 
 
   for (int i = 0; i < 2; ++i) hCent[i]=NULL;
+  for (int i = 0; i < 138; ++i) hCentRBR[i]=NULL; 
   for (int i = 0; i < 2; ++i) hVz[i]=NULL;
 
   for (int i = 0; i < 8; ++i) hCentQA[i]=NULL;
@@ -525,12 +510,8 @@ AliAnalysisTaskCMWESE::AliAnalysisTaskCMWESE(const char *name) :
   for (int i = 0; i < NCENTBINS; ++i) pIntd2Ach[i]=NULL;
   for (int i = 0; i < NCENTBINS; ++i) pAch[i]=NULL;
 
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) hMult[i][j]=NULL;
-  }
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) hAch[i][j]=NULL;
-  }
+  for (int i = 0; i < NQNBINS; ++i) hMultMb[i]=NULL;
+  for (int i = 0; i < NQNBINS; ++i) hAchMb[i]=NULL;
 
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
@@ -607,147 +588,12 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
       hRunNumBin = new TH1I("runNumBin","",150,0,150);
       for (int i=0; i<138; ++i){    
         hRunNumBin->GetXaxis()->SetBinLabel(i+1,runNumList[i].Data());
+        if (fPUSyst==3){
+          hCentRBR[i] = new TH1D(Form("hCentDist%i", (int)runNumList[i].Atoi()), "", 100, 0., 100.);
+          fOutputList->Add(hCentRBR[i]);
+        }
       }
       fOutputList->Add(hRunNumBin);
-
-      // Open Info for A.Dobrin V0 Calib
-      if (!gGrid) {
-          TGrid::Connect("alien://");
-      }
-      TFile* fileV0Calib15o = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibV015oP2.root");
-      if(!fileV0Calib15o){
-          printf("OADB V0 calibration file cannot be opened\n");
-          return;
-      }
-  
-      // Mult
-      AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib15o->Get("hMultV0BefCorPfpx");
-      if(!contMult){
-          printf("OADB object hMultV0BefCorr is not available in the file\n");
-          return;
-      }
-  
-      // V0C Qx Mean 
-      AliOADBContainer* contQx2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2m");
-      if(!contQx2cm){
-          printf("OADB object fqxc2m is not available in the file\n");
-          return;
-      }
-  
-      // V0C Qy Mean 
-      AliOADBContainer* contQy2cm = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2m");
-      if(!contQy2cm){
-          printf("OADB object fqyc2m is not available in the file\n");
-          return;
-      }
-  
-      // V0A Qx Mean 
-      AliOADBContainer* contQx2am = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2m");
-      if(!contQx2am){
-          printf("OADB object fqxa2m is not available in the file\n");
-          return;
-      }
-  
-      // V0A Qy Mean 
-      AliOADBContainer* contQy2am = (AliOADBContainer*) fileV0Calib15o->Get("fqya2m");
-      if(!contQy2am){
-          printf("OADB object fqya2m is not available in the file\n");
-          return;
-      }
-  
-      // V0C Qx Sigma
-      AliOADBContainer* contQx2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqxc2s");
-      if(!contQx2cs){
-          printf("OADB object fqxc2s is not available in the file\n");
-          return;
-      }
-  
-      // V0C Qy Sigma
-      AliOADBContainer* contQy2cs = (AliOADBContainer*) fileV0Calib15o->Get("fqyc2s");
-      if(!contQy2cs){
-          printf("OADB object fqyc2s is not available in the file\n");
-          return;
-      }
-  
-       // V0A Qx Sigma
-      AliOADBContainer* contQx2as = (AliOADBContainer*) fileV0Calib15o->Get("fqxa2s");
-      if(!contQx2as){
-          printf("OADB object fqxa2s is not available in the file\n");
-          return;
-      }
-  
-      // V0A Qy Sigma
-      AliOADBContainer* contQy2as = (AliOADBContainer*) fileV0Calib15o->Get("fqya2s");
-      if(!contQy2as){
-          printf("OADB object fqya2s is not available in the file\n");
-          return;
-      }
-  
-      for (int iRun = 0; iRun < 138; ++iRun){
-  
-        // Mult   
-        if(!(contMult->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hMultV0[iRun] = ((TH1D*) contMult->GetObject(runNumList[iRun].Atoi()));
-  
-        // V0C Qx Mean 
-        if(!(contQx2cm->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxc2m is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQx2mV0[iRun][0] = ((TH1D*) contQx2cm->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0C Qy Mean 
-        if(!(contQy2cm->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqyc2m is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQy2mV0[iRun][0] = ((TH1D*) contQy2cm->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0A Qx Mean
-        if(!(contQx2am->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxa2m is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQx2mV0[iRun][1] = ((TH1D*) contQx2am->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0A Qy Mean
-        if(!(contQy2am->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqya2m is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQy2mV0[iRun][1] = ((TH1D*) contQy2am->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0C Qx Sigma
-        if(!(contQx2cs->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxc2s is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQx2sV0[iRun][0] = ((TH1D*) contQx2cs->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0C Qy Sigma
-        if(!(contQy2cs->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqyc2s is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQy2sV0[iRun][0] = ((TH1D*) contQy2cs->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0A Qx Sigma
-        if(!(contQx2as->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqxa2s is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQx2sV0[iRun][1] = ((TH1D*) contQx2as->GetObject(runNumList[iRun].Atoi() ) );
-  
-        // V0A Qy Sigma
-        if(!(contQy2as->GetObject(runNumList[iRun].Atoi() ) ) ){
-            printf("OADB object fqya2s is not available for run %i\n", runNumList[iRun].Atoi() );
-            return;
-        }
-        hQy2sV0[iRun][1] = ((TH1D*) contQy2as->GetObject(runNumList[iRun].Atoi() ) );    
-      }
   }
 
   // Copy TList
@@ -774,25 +620,25 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
 
   if(fDoNUA) {
     if (fPeriod.EqualTo("LHC10h") ) {
-      fListNUA1 = (TList*) GetInputData(inSlotCounter);
-      if (fDebug) fListNUA1->ls();
+      fListNUA = (TList*) GetInputData(inSlotCounter);
+      if (fDebug) fListNUA->ls();
       inSlotCounter++;
-      if (!fListNUA1) {
+      if (!fListNUA) {
         AliError(Form("%s: Wrong NUA file 10h.", GetName()));
         return;
       };
     } else if (fPeriod.EqualTo("LHC11h") ){
-      fListNUA1 = (TList*) GetInputData(inSlotCounter);
+      fListNUA = (TList*) GetInputData(inSlotCounter);
       inSlotCounter++;
-      if (!fListNUA1) {        
+      if (!fListNUA) {        
         AliError(Form("%s: Wrong NUA file 11h.", GetName()));
         return;
       }
     } else if (fPeriod.EqualTo("LHC15o") ){ //Rihan's NUA
-      fListNUA1 = (TList*) GetInputData(inSlotCounter);
-      if (fDebug) fListNUA1->ls();
+      fListNUA = (TList*) GetInputData(inSlotCounter);
+      if (fDebug) fListNUA->ls();
       inSlotCounter++;
-      if (!fListNUA1) {        
+      if (!fListNUA) {        
         AliError(Form("%s: Wrong NUA file 15o2.", GetName()));
         return;
       }
@@ -819,7 +665,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
             pV0YMeanRead[2] = (TProfile3D*)fListVZEROCALIB->FindObject("pV0ASinMean");
 
             // Read Percentail histo (x_y) : (intCent_percentile)
-            hQnPercentile = (TH2D*)fListVZEROCALIB->FindObject("h_qnPercentile");
+            hQnPercentile = (TH2D*)fListVZEROCALIB->FindObject("h_qncPercentile");
 
       } else if (fPeriod.EqualTo("LHC15o") ) {
             fListVZEROCALIB = (TList*) GetInputData(inSlotCounter);
@@ -831,6 +677,14 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
             };
             //TSplines in 1% centralicities
             for (Int_t isp = 0; isp < 90; isp++) splQ2c[isp] = (TSpline3*)fListVZEROCALIB->FindObject(Form("sp_q2V0C_%d", isp));
+
+            fListwCent = (TList*) GetInputData(inSlotCounter);   
+            inSlotCounter++;   
+            if (!fListwCent) {
+             AliError(Form("%s: weight of centrality for 15o cannot be opened.", GetName()));
+              return;
+            };  
+            hwCent = (TH1D*)fListwCent->FindObject("weightCent");
       }
   }
 
@@ -911,22 +765,12 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     fOutputList->Add(hMultMultQA[5]);
   }
 
-  for (int i = 0; i < NCENTBINS+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j){
-      if (i==0) {
-        hMult[i][j] = new TH1D(Form("hMultMbQn%i", j ), "", 100, 0., 5000.);
-        hAch[i][j] = new TH1D(Form("hAchMbQn%i", j ), "", 200, -1., 1.);             
-      }
-      else {
-        hMult[i][j] = new TH1D(Form("hMultCent%iQn%i", i-1, j ), "", 100, 0., 5000.);
-        hAch[i][j] = new TH1D(Form("hAchCent%iQn%i", i-1, j ), "", 200, -1., 1.);      
-      }
-    }
+  for (int i = 0; i < NQNBINS; ++i){
+    hMultMb[i] = new TH1D(Form("hMultMbQn%i", i ), "", 100, 0., 5000.);
+    hAchMb[i] = new TH1D(Form("hAchMbQn%i", i ), "", 200, -1., 1.);                
   }
-  for (int i = fCbinLo; i < fCbinHg+1; ++i) {
-    for (int j = 0; j < NQNBINS; ++j) fOutputList->Add(hMult[i][j]); 
-    for (int j = 0; j < NQNBINS; ++j) fOutputList->Add(hAch[i][j]); 
-  }
+  for (int i = 0; i < NQNBINS; ++i) fOutputList->Add(hMultMb[i]); 
+  for (int i = 0; i < NQNBINS; ++i) fOutputList->Add(hAchMb[i]); 
 
   // track-wise
   hPt = new TH1D("hPt", "", 200, 0., 20.);
@@ -964,7 +808,7 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     hQnCentRecenter[0] = new TH2D("hqnV0MRecenter","",100, 0, 100, 570, 0, 12); 
     hQnCentRecenter[1] = new TH2D("hqnV0CRecenter","",100, 0, 100, 570, 0, 12); 
     hQnCentRecenter[2] = new TH2D("hqnV0ARecenter","",100, 0, 100, 570, 0, 12); 
-    fOutputList->Add(hQnCentRecenter[0]);
+    // fOutputList->Add(hQnCentRecenter[0]);
     fOutputList->Add(hQnCentRecenter[1]);
     fOutputList->Add(hQnCentRecenter[2]); 
     hQxCentRecenter[0] = new TH2D("hqxRecenterV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
@@ -973,23 +817,23 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
     hQyCentRecenter[0] = new TH2D("hqyRecenterV0MvsCentSPD","",100, 0, 100, 32, -600, 600);
     hQyCentRecenter[1] = new TH2D("hqyRecenterV0CvsCentSPD","",100, 0, 100, 32, -600, 600);
     hQyCentRecenter[2] = new TH2D("hqyRecenterV0AvsCentSPD","",100, 0, 100, 32, -600, 600);
-    for (int i = 0; i < 3; ++i) fOutputList->Add(hQxCentRecenter[i]);
-    for (int i = 0; i < 3; ++i) fOutputList->Add(hQyCentRecenter[i]); 
+    for (int i = 1; i < 3; ++i) fOutputList->Add(hQxCentRecenter[i]);
+    for (int i = 1; i < 3; ++i) fOutputList->Add(hQyCentRecenter[i]); 
     hQxVtxRecenter[0] = new TH2D("hqxRecenterV0MvsVz","",20, -10, 10, 32, -600, 600);
     hQxVtxRecenter[1] = new TH2D("hqxRecenterV0CvsVz","",20, -10, 10, 32, -600, 600);
     hQxVtxRecenter[2] = new TH2D("hqxRecenterV0AvsVz","",20, -10, 10, 32, -600, 600);
     hQyVtxRecenter[0] = new TH2D("hqyRecenterV0MvsVz","",20, -10, 10, 32, -600, 600);
     hQyVtxRecenter[1] = new TH2D("hqyRecenterV0CvsVz","",20, -10, 10, 32, -600, 600);
     hQyVtxRecenter[2] = new TH2D("hqyRecenterV0AvsVz","",20, -10, 10, 32, -600, 600);
-    for (int i = 0; i < 3; ++i) fOutputList->Add(hQxVtxRecenter[i]); 
-    for (int i = 0; i < 3; ++i) fOutputList->Add(hQyVtxRecenter[i]);
+    for (int i = 1; i < 3; ++i) fOutputList->Add(hQxVtxRecenter[i]); 
+    for (int i = 1; i < 3; ++i) fOutputList->Add(hQyVtxRecenter[i]);
     for (int iCent = 0; iCent < NCENTBINS; ++iCent){
       hPsiV0Recenter[iCent][0] = new TH1D(Form("hpsiV0MRecenterCent%i", iCent),"", 360, 0., 2*TMath::Pi());
       hPsiV0Recenter[iCent][1] = new TH1D(Form("hpsiV0CRecenterCent%i", iCent),"", 360, 0., 2*TMath::Pi());
       hPsiV0Recenter[iCent][2] = new TH1D(Form("hpsiV0ARecenterCent%i", iCent),"", 360, 0., 2*TMath::Pi());
     } 
     for (int iCent = fCbinLo; iCent < fCbinHg; ++iCent){
-      for (int i = 0; i < 3; ++i) fOutputList->Add(hPsiV0Recenter[iCent][i]);    
+      for (int i = 1; i < 3; ++i) fOutputList->Add(hPsiV0Recenter[iCent][i]);    
     } 
   }
   
@@ -1029,41 +873,61 @@ void AliAnalysisTaskCMWESE::UserCreateOutputObjects()
   }
 
   // Dobrin 15o pass2 V0 Calib
-  fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
+  if (fPeriod.EqualTo("LHC15o") && (fPUSyst!=4) ){
+    fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
+      
+    Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+      
+    Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
+      
+    Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    fMultCutPU->SetParameters(parFB32);
+  }
+
+  // Dobrin 15o pass2 V0 Calib; new Para
+  if (fPeriod.EqualTo("LHC15o")&& fPUSyst==4){
+   fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
+   Double_t parV0[8] = {33.4127, 0.95351, 0.0716651, 227.19, 8.78312, -0.000549686, 0.000275397, -6.68358e-07};
+
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+
+    Double_t parV0CL0[6] = {0.0224258, 0.975612, 0.676298, 0.0292538, -0.000550616, 5.87181e-06};
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 6.*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
+
+    Double_t parFB32[9] = {-814.463, 6.43163, 5423.19, -0.382271, 0.0299549, -26.5402, 321.52, -0.8256, 0.0168231};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    fMultCutPU->SetParameters(parFB32);
+  }
+
+  if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")){
+    // Rihan Pile-up function 18
+    fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
+
+    Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+    fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
     
-  Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
-  fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
-  fV0CutPU->SetParameters(parV0);
-    
-  Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
-  fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-  fCenCutLowPU->SetParameters(parV0CL0);
-  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-  fCenCutHighPU->SetParameters(parV0CL0);
-    
-  Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
-  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
-  fMultCutPU->SetParameters(parFB32);
+    Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
+    fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
 
-
-  // Rihan Pile-up function 18
-  // fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
-
-  // Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
-  // fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
-  // fV0CutPU->SetParameters(parV0);
-  
-  // Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
-  // fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-  // fCenCutLowPU->SetParameters(parV0CL0);
-  // fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-  // fCenCutHighPU->SetParameters(parV0CL0);
-
-  // Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
-  // fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
-  // fMultCutPU->SetParameters(parFB32);
-
-
+    Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
+    fMultCutPU->SetParameters(parFB32);
+  }
 
   PostData(1,fOutputList); 
   if (fDebug) Printf("Post Data Success!");
@@ -1113,11 +977,11 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
   //----------------------------
   ULong64_t mask = handler->IsEventSelected();
   Bool_t isTrigselected = false;
-        if (fTrigger == 0) { // Run2
+        if (fTrigger.EqualTo("kINT7")) { // Run2
       isTrigselected = mask&AliVEvent::kINT7;
-        } else if (fTrigger == 1) {
+        } else if (fTrigger.EqualTo("kMB")) {
       isTrigselected = mask&AliVEvent::kMB; //10h
-        } else if (fTrigger == 2) {
+        } else if (fTrigger.EqualTo("kMB+kCentral+kSemiCentral")) {
       isTrigselected = mask&AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral; //11h
         }
   if(isTrigselected == false) return;
@@ -1128,9 +992,16 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
   // event-wise selection
   //----------------------------
   // run number
-  fRunNum = fAOD->GetRunNumber();
-  fRunNumBin = GetRunNumBin(fRunNum);
-  if (fRunNumBin<0) return;
+  Int_t run = fAOD->GetRunNumber();
+  if (run < 200000 && fPeriod.EqualTo("LHC15o")) return;
+  if (run > 200000 && fPeriod.EqualTo("LHC11h")) return;
+  if(run != fRunNum){
+      // Load the calibrations run dependent
+      if (fPeriod.EqualTo("LHC15o")) OpenInfoCalbration(run);
+      fRunNum = run;
+      fRunNumBin = GetRunNumBin(fRunNum);
+      if (fRunNumBin<0) return;
+  } 
   hRunNumBin->Fill(fRunNumBin);
   hEvtCount->Fill(4);
   if (fDebug) Printf("run nummbr done!");
@@ -1201,7 +1072,7 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
   if (fDebug) Printf("centrality done!");
 
   // pile up
-  if (fPeriod.EqualTo("LHC10h")) {if(!RemovalForRun1(fAOD, fUtils) ) return;}
+  if (fPUSyst==0 && fPeriod.EqualTo("LHC10h")) {if(!RemovalForRun1(fAOD, fUtils) ) return;}
   if (fPeriod.EqualTo("LHC11h")) {if(!RemovalForRun1(fAOD, fUtils) ) return;}
   if (fPeriod.EqualTo("LHC15o")) {
     // hMultCentQA[0]->Fill(fCent, fAOD->GetNumberOfTracks()); // raw Trk Multi Vs Cent(V0M)
@@ -1212,6 +1083,7 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
     if (!RejectEvtTFFit (fAOD)) return; // 15o_pass2
   }
   hCent[1]->Fill(fCent);
+  if (fPeriod.EqualTo("LHC15o") && fPUSyst==3) hCentRBR[fRunNumBin]->Fill(fCent);
   hEvtCount->Fill(7);
   if (fDebug) Printf("pile-up done!");
 
@@ -1246,8 +1118,6 @@ void AliAnalysisTaskCMWESE::ResetHists()
   hMQNeg_weight_thisEvt ->Reset();  
   pRefFlow_thisEvt ->Reset();  
   pIntd2_thisEvt->Reset();
-  fRunNum=-999;
-  fRunNumBin=-999;
   fVzBin=-999;
   fCentBin=-999;
   fCent=-999;
@@ -1280,6 +1150,16 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
     }
     if (!track->TestFilterBit(fFltbit)) continue; 
     if (!AcceptAODTrack(fAOD, track, fVtx)) continue;
+
+    if (fPUSyst==2 && fPeriod.EqualTo("LHC15o")){
+        if(TMath::Abs(track->GetTOFsignalDz())>10.)
+            continue;
+        if(track->GetTOFsignal() < 12000.)
+            continue;
+        if(track->GetTOFsignal() > 25000.)
+            continue;
+    }
+
     int    charge = track->Charge();
     //------------------
     // NUE & NUA
@@ -1429,11 +1309,23 @@ bool AliAnalysisTaskCMWESE::AnalyzeAOD(AliAODEvent* fAOD, AliAODVertex* fVtx)
   //------------------
   // covariance
   //------------------
-  pRefFlow[fCentBin]->Add(pRefFlow_thisEvt);
-  pIntd2[fCentBin]->Add(pIntd2_thisEvt);
-  pIntd2_thisEvt->Scale(mAch); 
-  pIntd2Ach[fCentBin]->Add(pIntd2_thisEvt);
-  hEvtCount->Fill(14);
+  if (fPeriod.EqualTo("LHC15o")&&fPUSyst==3) {
+    double wCent = 1.0; 
+    int centBin = hwCent->FindBin(fCent);
+    wCent = hwCent->GetBinContent(centBin);
+    pRefFlow[fCentBin]->Add(pRefFlow_thisEvt, wCent);
+    pIntd2[fCentBin]->Add(pIntd2_thisEvt, wCent);
+    pIntd2_thisEvt->Scale(mAch); 
+    pIntd2Ach[fCentBin]->Add(pIntd2_thisEvt, wCent);
+    hEvtCount->Fill(14);
+  }
+  else {
+    pRefFlow[fCentBin]->Add(pRefFlow_thisEvt);
+    pIntd2[fCentBin]->Add(pIntd2_thisEvt);
+    pIntd2_thisEvt->Scale(mAch); 
+    pIntd2Ach[fCentBin]->Add(pIntd2_thisEvt);
+    hEvtCount->Fill(14);
+  }
   return true;
 }
 
@@ -1494,8 +1386,8 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
   double weightNUA = 1;
   if (fVzBin<0 || fCentBin<0 || fRunNum<0) return -1;
   if (fPeriod.EqualTo("LHC10h")){
-    hNUAweightPlus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_plus",fRunNum, fVzBin));
-    hNUAweightMinus = (TH2D*)fListNUA1->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_minus",fRunNum, fVzBin));
+    hNUAweightPlus = (TH2D*)fListNUA->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_plus",fRunNum, fVzBin));
+    hNUAweightMinus = (TH2D*)fListNUA->FindObject(Form("weightdPhidEta_run%i_cent0_vz%i_minus",fRunNum, fVzBin));
     if(!hNUAweightPlus || !hNUAweightMinus) return -1;
     if (charge>0){ 
       int phiBin = hNUAweightPlus->GetXaxis()->FindBin(phi);
@@ -1510,13 +1402,13 @@ double AliAnalysisTaskCMWESE::GetNUACor(int charge, double phi, double eta, doub
     } 
   } else if (fPeriod.EqualTo("LHC15o")){ // Rihan and Protty 's NUA Results
     if (charge>0){ 
-      hCorrectNUAPos = (TH3F*) fListNUA1->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%d",fRunNum));
+      hCorrectNUAPos = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Pos_Cent0_Run%i",fRunNum));
       if (!hCorrectNUAPos) return -1;
       int iBinNUA = hCorrectNUAPos->FindBin(vz,phi,eta); 
       if (hCorrectNUAPos->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUAPos->GetBinContent(iBinNUA);
       return  weightNUA;
     } else if (charge<0){
-      hCorrectNUANeg = (TH3F*) fListNUA1->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%d",fRunNum));
+      hCorrectNUANeg = (TH3F*) fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_Charge_Neg_Cent0_Run%i",fRunNum));
       if (!hCorrectNUANeg) return -1;
       int iBinNUA = hCorrectNUANeg->FindBin(vz,phi,eta); 
       if (hCorrectNUANeg->GetBinContent(iBinNUA)>0) weightNUA = (double)hCorrectNUANeg->GetBinContent(iBinNUA);
@@ -1704,6 +1596,9 @@ bool AliAnalysisTaskCMWESE::RejectEvtTFFit(AliAODEvent* fAOD)
   UShort_t multV0cOn = aodV0->GetTriggerChargeC();
   UShort_t multV0On = multV0aOn + multV0cOn;
 
+  Int_t tpcClsTot = fAOD->GetNumberOfTPCClusters();
+  Float_t nclsDif = Float_t(tpcClsTot) - (53182.6 + 113.326*multV0Tot - 0.000831275*multV0Tot*multV0Tot);
+
   // pile-up cuts
   if (centCL0 < fCenCutLowPU->Eval(centV0M)) return false;        
   if (centCL0 > fCenCutHighPU->Eval(centV0M)) return false;
@@ -1717,6 +1612,11 @@ bool AliAnalysisTaskCMWESE::RejectEvtTFFit(AliAODEvent* fAOD)
   if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
 
   if (fAOD->IsIncompleteDAQ()) return false;
+
+  if (fPUSyst==1){
+     if (nclsDif > 150000)//can be varied to 150000, 200000
+      return false;
+  }
 
   hMultCentQA[1]->Fill(centV0M, multTrk); //  Mult(FB32) Vs Cent(V0M)
   return true;
@@ -1863,37 +1763,37 @@ bool AliAnalysisTaskCMWESE::AcceptAODTrack(AliAODEvent* fAOD, AliAODTrack *track
     hEta[1]->Fill(eta);
     hNhits[1]->Fill(nhits);
     hPDedx->Fill(track->P()*charge, dedx);
-    if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
-      //------------------
-      // dca cut
-      //------------------
-      double mag = fAOD->GetMagneticField(); 
-      double dcaxy  = 999.;
-      double dcaz   = 999.;
-      double r[3];
-      double dca[2];
-      double cov[3];
-      double vx    = fVtx->GetX();
-      double vy    = fVtx->GetY();
-      double vz    = fVtx->GetZ();
-      bool proptodca = track->PropagateToDCA(fVtx, mag, 100., dca, cov);
-      if (track->GetXYZ(r)) {
-        dcaxy = r[0];
-        dcaz  = r[1];
-      } else {
-        double dcax = r[0] - vx;
-        double dcay = r[1] - vy;
-        dcaz  = r[2] - vz;
-        dcaxy = sqrt(dcax*dcax + dcay*dcay);
-        // dcaxy = dca[0];
-      }
-      hDcaXy[0]->Fill(dcaxy);
-      if (fabs(dcaxy)>fDcaCutxy) return false;
-      hDcaXy[1]->Fill(dcaxy);
-      hDcaZ[0]->Fill(dcaz);
-      if (fabs(dcaz)>fDcaCutz) return false;
-      hDcaZ[1]->Fill(dcaz);     
-    }
+    // if (fPeriod.EqualTo("LHC11h") || fPeriod.EqualTo("LHC10h")){
+    //   //------------------
+    //   // dca cut
+    //   //------------------
+    //   double mag = fAOD->GetMagneticField(); 
+    //   double dcaxy  = 999.;
+    //   double dcaz   = 999.;
+    //   double r[3];
+    //   double dca[2];
+    //   double cov[3];
+    //   double vx    = fVtx->GetX();
+    //   double vy    = fVtx->GetY();
+    //   double vz    = fVtx->GetZ();
+    //   bool proptodca = track->PropagateToDCA(fVtx, mag, 100., dca, cov);
+    //   if (track->GetXYZ(r)) {
+    //     dcaxy = r[0];
+    //     dcaz  = r[1];
+    //   } else {
+    //     double dcax = r[0] - vx;
+    //     double dcay = r[1] - vy;
+    //     dcaz  = r[2] - vz;
+    //     dcaxy = sqrt(dcax*dcax + dcay*dcay);
+    //     // dcaxy = dca[0];
+    //   }
+    //   hDcaXy[0]->Fill(dcaxy);
+    //   if (fabs(dcaxy)>fDcaCutxy) return false;
+    //   hDcaXy[1]->Fill(dcaxy);
+    //   hDcaZ[0]->Fill(dcaz);
+    //   if (fabs(dcaz)>fDcaCutz) return false;
+    //   hDcaZ[1]->Fill(dcaz);     
+    // }
 
     return true;
 }
@@ -1927,52 +1827,52 @@ bool AliAnalysisTaskCMWESE::DoCumulants()
   fNegEtaQ = TComplex(negEtaRe, negEtaIm);
   fNegEtaQStar = TComplex::Conjugate(fNegEtaQ);
 
-  //------------------
-  // Q+
-  //------------------
-  double negEtaRePos = hReQPos_thisEvt->Integral(1, 100, 1, hReQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
-  double negEtaImPos = hImQPos_thisEvt->Integral(1, 100, 1, hImQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
-  if (hMQPos_thisEvt->Integral(1, 100, 1,  hMQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6)) < 2) return false;
-  double negEtaMQPos =  hMQPos_weight_thisEvt->Integral(1, 100, 1,  hMQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
-  TComplex negEtaQPos(negEtaRePos, negEtaImPos);
-  TComplex negEtaQStarPos = TComplex::Conjugate(negEtaQPos);
+  // //------------------
+  // // Q+
+  // //------------------
+  // double negEtaRePos = hReQPos_thisEvt->Integral(1, 100, 1, hReQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
+  // double negEtaImPos = hImQPos_thisEvt->Integral(1, 100, 1, hImQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
+  // if (hMQPos_thisEvt->Integral(1, 100, 1,  hMQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6)) < 2) return false;
+  // double negEtaMQPos =  hMQPos_weight_thisEvt->Integral(1, 100, 1,  hMQPos_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
+  // TComplex negEtaQPos(negEtaRePos, negEtaImPos);
+  // TComplex negEtaQStarPos = TComplex::Conjugate(negEtaQPos);
 
-  double posEtaRePos = hReQPos_thisEvt->Integral(1, 100, hReQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
-  double posEtaImPos = hImQPos_thisEvt->Integral(1, 100, hImQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
-  if (hMQPos_thisEvt->Integral(1, 100,  hMQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32) < 2) return false;
-  double posEtaMQPos =  hMQPos_weight_thisEvt->Integral(1, 100,  hMQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
-  TComplex posEtaQPos(posEtaRePos, posEtaImPos);
-  TComplex posEtaQStarPos = TComplex::Conjugate(posEtaQPos);
+  // double posEtaRePos = hReQPos_thisEvt->Integral(1, 100, hReQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
+  // double posEtaImPos = hImQPos_thisEvt->Integral(1, 100, hImQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
+  // if (hMQPos_thisEvt->Integral(1, 100,  hMQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32) < 2) return false;
+  // double posEtaMQPos =  hMQPos_weight_thisEvt->Integral(1, 100,  hMQPos_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
+  // TComplex posEtaQPos(posEtaRePos, posEtaImPos);
+  // TComplex posEtaQStarPos = TComplex::Conjugate(posEtaQPos);
 
-  //------------------
-  // Q-
-  //------------------
-  double negEtaReNeg = hReQNeg_thisEvt->Integral(1, 100, 1, hReQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
-  double negEtaImNeg = hImQNeg_thisEvt->Integral(1, 100, 1, hImQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
-  if (hMQNeg_thisEvt->Integral(1, 100, 1,  hMQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6)) < 2) return false;
-  double negEtaMQNeg =  hMQNeg_weight_thisEvt->Integral(1, 100, 1,  hMQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
-  TComplex negEtaQNeg(negEtaReNeg, negEtaImNeg);
-  TComplex negEtaQStarNeg = TComplex::Conjugate(negEtaQNeg);
+  // //------------------
+  // // Q-
+  // //------------------
+  // double negEtaReNeg = hReQNeg_thisEvt->Integral(1, 100, 1, hReQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
+  // double negEtaImNeg = hImQNeg_thisEvt->Integral(1, 100, 1, hImQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
+  // if (hMQNeg_thisEvt->Integral(1, 100, 1,  hMQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6)) < 2) return false;
+  // double negEtaMQNeg =  hMQNeg_weight_thisEvt->Integral(1, 100, 1,  hMQNeg_thisEvt->GetYaxis()->FindBin(-fEtaGap-1e-6));
+  // TComplex negEtaQNeg(negEtaReNeg, negEtaImNeg);
+  // TComplex negEtaQStarNeg = TComplex::Conjugate(negEtaQNeg);
 
-  double posEtaReNeg = hReQNeg_thisEvt->Integral(1, 100, hReQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
-  double posEtaImNeg = hImQNeg_thisEvt->Integral(1, 100, hImQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
-  if (hMQNeg_thisEvt->Integral(1, 100,  hMQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32) < 2) return false;
-  double posEtaMQNeg =  hMQNeg_weight_thisEvt->Integral(1, 100,  hMQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
-  TComplex posEtaQNeg(posEtaReNeg, posEtaImNeg);
-  TComplex posEtaQStarNeg = TComplex::Conjugate(posEtaQNeg);
+  // double posEtaReNeg = hReQNeg_thisEvt->Integral(1, 100, hReQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
+  // double posEtaImNeg = hImQNeg_thisEvt->Integral(1, 100, hImQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
+  // if (hMQNeg_thisEvt->Integral(1, 100,  hMQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32) < 2) return false;
+  // double posEtaMQNeg =  hMQNeg_weight_thisEvt->Integral(1, 100,  hMQNeg_thisEvt->GetYaxis()->FindBin(fEtaGap+1e-6), 32);
+  // TComplex posEtaQNeg(posEtaReNeg, posEtaImNeg);
+  // TComplex posEtaQStarNeg = TComplex::Conjugate(posEtaQNeg);
 
   //------------------
   // c{2}
   //------------------
   pRefFlow_thisEvt->Fill(0.,  (fNegEtaQ*fPosEtaQStar).Re()       / (fNegEtaMQ*fPosEtaMQ),       (fNegEtaMQ*fPosEtaMQ));
-  pRefFlow_thisEvt->Fill(1.,  (fNegEtaQ*posEtaQStarPos).Re()    / (fNegEtaMQ*posEtaMQPos),    (fNegEtaMQ*posEtaMQPos));
-  pRefFlow_thisEvt->Fill(2.,  (negEtaQPos*fPosEtaQStar).Re()    / (negEtaMQPos*fPosEtaMQ),    (negEtaMQPos*fPosEtaMQ));
-  pRefFlow_thisEvt->Fill(3.,  (fNegEtaQ*posEtaQStarNeg).Re()    / (fNegEtaMQ*posEtaMQNeg),    (fNegEtaMQ*posEtaMQNeg));
-  pRefFlow_thisEvt->Fill(4.,  (negEtaQNeg*fPosEtaQStar).Re()    / (negEtaMQNeg*fPosEtaMQ),    (negEtaMQNeg*fPosEtaMQ));
-  pRefFlow_thisEvt->Fill(5.,  (negEtaQPos*posEtaQStarPos).Re() / (negEtaMQPos*posEtaMQPos), (negEtaMQPos*posEtaMQPos));
-  pRefFlow_thisEvt->Fill(6.,  (negEtaQNeg*posEtaQStarNeg).Re() / (negEtaMQNeg*posEtaMQNeg), (negEtaMQNeg*posEtaMQNeg));
-  pRefFlow_thisEvt->Fill(7.,  (negEtaQPos*posEtaQStarNeg).Re() / (negEtaMQPos*posEtaMQNeg), (negEtaMQPos*posEtaMQNeg));
-  pRefFlow_thisEvt->Fill(8.,  (negEtaQNeg*posEtaQStarPos).Re() / (negEtaMQNeg*posEtaMQPos), (negEtaMQNeg*posEtaMQPos));
+  // pRefFlow_thisEvt->Fill(1.,  (fNegEtaQ*posEtaQStarPos).Re()    / (fNegEtaMQ*posEtaMQPos),    (fNegEtaMQ*posEtaMQPos));
+  // pRefFlow_thisEvt->Fill(2.,  (negEtaQPos*fPosEtaQStar).Re()    / (negEtaMQPos*fPosEtaMQ),    (negEtaMQPos*fPosEtaMQ));
+  // pRefFlow_thisEvt->Fill(3.,  (fNegEtaQ*posEtaQStarNeg).Re()    / (fNegEtaMQ*posEtaMQNeg),    (fNegEtaMQ*posEtaMQNeg));
+  // pRefFlow_thisEvt->Fill(4.,  (negEtaQNeg*fPosEtaQStar).Re()    / (negEtaMQNeg*fPosEtaMQ),    (negEtaMQNeg*fPosEtaMQ));
+  // pRefFlow_thisEvt->Fill(5.,  (negEtaQPos*posEtaQStarPos).Re() / (negEtaMQPos*posEtaMQPos), (negEtaMQPos*posEtaMQPos));
+  // pRefFlow_thisEvt->Fill(6.,  (negEtaQNeg*posEtaQStarNeg).Re() / (negEtaMQNeg*posEtaMQNeg), (negEtaMQNeg*posEtaMQNeg));
+  // pRefFlow_thisEvt->Fill(7.,  (negEtaQPos*posEtaQStarNeg).Re() / (negEtaMQPos*posEtaMQNeg), (negEtaMQPos*posEtaMQNeg));
+  // pRefFlow_thisEvt->Fill(8.,  (negEtaQNeg*posEtaQStarPos).Re() / (negEtaMQNeg*posEtaMQPos), (negEtaMQNeg*posEtaMQPos));
  return true;
 }
 
@@ -1991,7 +1891,7 @@ bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVt
       return true;
   } else if (fPeriod.EqualTo("LHC15o") ){ // A.Dobrin's V0Calib; "calibV0HIR.root"
       for(int iCh = 0; iCh < 64; ++iCh) {
-        fMultV0Ch[iCh] = hMultV0[fRunNumBin]->GetBinContent(iCh+1);
+        fMultV0Ch[iCh] = hMultV0->GetBinContent(iCh+1);
       } 
       // AliCentrality* centrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
       // Double_t centSPD = centrality->GetCentralityPercentile("CL1");
@@ -2004,12 +1904,9 @@ bool AliAnalysisTaskCMWESE::GetV0CalibHisto(AliAODEvent* fAOD, AliAODVertex* fVt
       Int_t iCentSPD = (Int_t)centrCL1;
       if (iCentSPD >= 90) return false;
       fV0XMean[0] = -999.; fV0YMean[0] = -999.; 
-      fV0XSigma[0] = -999.; fV0YSigma[0] = -999.; 
       for(int i = 0; i < 2; ++i) {   // [1]: C; [2]: A;
-        fV0XMean[i+1] = hQx2mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-        fV0YMean[i+1] = hQy2mV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-        fV0XSigma[i+1] = hQx2sV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
-        fV0YSigma[i+1] = hQy2sV0[fRunNumBin][i]->GetBinContent(iCentSPD+1);
+        fV0XMean[i+1] = hQxnmV0[i]->GetBinContent(iCentSPD+1);
+        fV0YMean[i+1] = hQynmV0[i]->GetBinContent(iCentSPD+1);
       }   
   }
   else return false;
@@ -2132,12 +2029,9 @@ int AliAnalysisTaskCMWESE::GetQnPercV0(double qn_thisEvt, double mAch, double Mu
     sp = new TSpline3(hQnPercentile_centThisEvt);
     double pec = 100* sp->Eval(qn_thisEvt);
     int QnBin = GetPercCode(pec);
-    hAch[0][QnBin]->Fill(mAch);
-    hMult[0][QnBin]->Fill(Mult); //mb
+    hAchMb[QnBin]->Fill(mAch);
+    hMultMb[QnBin]->Fill(Mult); //mb
 
-    hAch[fCentBin+1][QnBin]->Fill(mAch);
-    hMult[fCentBin+1][QnBin]->Fill(Mult);  
-    
     hQnPercentile->GetXaxis()->SetRange(1,100); 
     return QnBin;   
   } 
@@ -2145,12 +2039,8 @@ int AliAnalysisTaskCMWESE::GetQnPercV0(double qn_thisEvt, double mAch, double Mu
   else if (fPeriod.EqualTo("LHC15o")){
     double pec = 100.* splQ2c[(int)fCent]->Eval(qn_thisEvt);
     int QnBin = GetPercCode(pec);
-    hAch[0][QnBin]->Fill(mAch);
-    hMult[0][QnBin]->Fill(Mult); //mb
-
-    hAch[fCentBin+1][QnBin]->Fill(mAch);
-    hMult[fCentBin+1][QnBin]->Fill(Mult);
-    
+    hAchMb[QnBin]->Fill(mAch);
+    hMultMb[QnBin]->Fill(Mult); //mb
     return QnBin;
   }
   return -1;
@@ -2185,4 +2075,91 @@ int AliAnalysisTaskCMWESE::GetPercCode(double perc)
 
     return percCode;
 
+}
+
+void AliAnalysisTaskCMWESE::OpenInfoCalbration(Int_t run)
+{
+      if (!gGrid) {
+          TGrid::Connect("alien://");
+      }
+  
+      TFile* fileV0Calib = NULL;
+      if (fPeriod.EqualTo("LHC15o")) fileV0Calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc15o/calibV015oP2.root");
+      if (fPeriod.EqualTo("LHC11h")) fileV0Calib = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc11h/calibV011h_2P2.root");
+
+      if(!fileV0Calib){
+          printf("OADB V0 calibration file cannot be opened\n");
+          return;
+      }
+  
+      // Mult
+      AliOADBContainer* contMult = (AliOADBContainer*) fileV0Calib->Get("hMultV0BefCorPfpx");
+      if(!contMult){
+          printf("OADB object hMultV0BefCorr is not available in the file\n");
+          return;
+      }
+  
+      // V0C Qx Mean 
+      AliOADBContainer* contQxncm = (AliOADBContainer*) fileV0Calib->Get(Form("fqxc%im",(int)fHarmonic));
+      if(!contQxncm){
+          printf("OADB object fqxcnm is not available in the file\n");
+          cout<<fHarmonic<<endl;
+          return;
+      }
+  
+      // V0C Qy Mean 
+      AliOADBContainer* contQyncm = (AliOADBContainer*) fileV0Calib->Get(Form("fqyc%im",(int)fHarmonic));
+      if(!contQyncm){
+          printf("OADB object fqycnm is not available in the file\n");
+          return;
+      }
+  
+      // V0A Qx Mean 
+      AliOADBContainer* contQxnam = (AliOADBContainer*) fileV0Calib->Get(Form("fqxa%im",(int)fHarmonic));
+      if(!contQxnam){
+          printf("OADB object fqxanm is not available in the file\n");
+          return;
+      }
+  
+      // V0A Qy Mean 
+      AliOADBContainer* contQynam = (AliOADBContainer*) fileV0Calib->Get(Form("fqya%im",(int)fHarmonic));
+      if(!contQynam){
+          printf("OADB object fqyanm is not available in the file\n");
+          return;
+      }
+
+        // Mult   
+        if(!(contMult->GetObject(run) ) ){
+            printf("OADB object hMultV0BefCorPfpx is not available for run %i\n", run);
+            return;
+        }
+        hMultV0 = ((TH1D*) contMult->GetObject(run ) );
+  
+        // V0C Qx Mean 
+        if(!(contQxncm->GetObject(run) ) ){
+            printf("OADB object fqxcnm is not available for run %i\n", run);
+            return;
+        }
+        hQxnmV0[0] = ((TH1D*) contQxncm->GetObject(run) );
+  
+        // V0C Qy Mean 
+        if(!(contQyncm->GetObject(run) ) ){
+            printf("OADB object fqycnm is not available for run %i\n", run);
+            return;
+        }
+        hQynmV0[0] = ((TH1D*) contQyncm->GetObject(run) );
+  
+        // V0A Qx Mean
+        if(!(contQxnam->GetObject(run) ) ){
+            printf("OADB object fqxanm is not available for run %i\n", run);
+            return;
+        }
+        hQxnmV0[1] = ((TH1D*) contQxnam->GetObject(run) );
+  
+        // V0A Qy Mean
+        if(!(contQynam->GetObject(run) ) ){
+            printf("OADB object fqyanm is not available for run %i\n", run);
+            return;
+        }
+        hQynmV0[1] = ((TH1D*) contQynam->GetObject(run) );    
 }

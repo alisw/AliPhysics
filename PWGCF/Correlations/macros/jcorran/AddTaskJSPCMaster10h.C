@@ -6,7 +6,7 @@
 #include <vector>
 #include <TString.h>
 
-AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8)
+AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE, TString taskName = "JSPCMaster10h", double ptMin = 0.2, std::string Variations = "tpconly", Bool_t applyHMOcut = kTRUE, Bool_t saveCatalystQA = kFALSE, Bool_t saveHMOQA = kFALSE, Bool_t newWeightNaming = kTRUE, Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8, Bool_t UseAlternativeWeights = kFALSE, TString AlternativeWeightFile = "alien:///alice/cern.ch/user/m/mlesch/Weights/WeightsLHC10h_Filter768_OnlyPrimaries_vAN-20201209.root", bool UseITS = false, double DCAzHybrid = 3.2, double DCAxyHybrid = 2.4)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -21,8 +21,8 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
   //-------- Read in passed Variations -------- 
   std::istringstream iss(Variations);
 
-  const int NPossibleVariations = 13;
-  std::string PossibleVariations[NPossibleVariations] = { "tpconly","hybrid", "V0M","zvtx6","zvtx12","zvtx", "chi03", "chi35", "dcaxy1", "dcaz2", "ntpc80", "ntpc90", "ntpc100" }; //for reference, these variations are allowed
+  const int NPossibleVariations = 14;
+  std::string PossibleVariations[NPossibleVariations] = { "tpconly","hybrid", "V0M","zvtx6","zvtx12","zvtx", "chi03", "chi35", "dcaxy1", "dcaz2", "ntpc80", "ntpc90", "ntpc100", "global" }; //for reference, these variations are allowed
     
   int PassedVariations = 0;
   std::vector<TString> configNames;
@@ -53,6 +53,9 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
 
   cMapTask->EnableEffCorrection ("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC10h-LHC11a10a_bis-0-Lists.root"); // Efficiency correction.
   for (Int_t i = 0; i < PassedVariations; i++) {
+
+    if (strcmp(configNames[i].Data(), "global") == 0) { continue; } //no map for global
+
     if (newWeightNaming) {
       MAPfilenames[i] = Form("%sPhiWeights_LHC10h_%s_pt%02d_9904.root", MAPdirname.Data(), configNames[i].Data(), Int_t (ptMin * 10));  // Azimuthal correction.
     }
@@ -66,6 +69,7 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
 // Setting of the general parameters.
   Int_t tpconlyCut = 128;
   Int_t hybridCut = 768;
+  Int_t globalCut = 96;
 
   UInt_t selEvt;
   selEvt = AliVEvent::kMB;// Minimum bias trigger for LHC10h.
@@ -89,6 +93,17 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
     }
     if (strcmp(configNames[i].Data(), "hybrid") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
+      if(UseAlternativeWeights){
+      	fJCatalyst[i]->SetInputAlternativeNUAWeights10h(kTRUE, AlternativeWeightFile);
+      }
+      fJCatalyst[i]->SetDCAxyCut(DCAxyHybrid); 
+      fJCatalyst[i]->SetDCAzCut(DCAzHybrid); 
+      fJCatalyst[i]->SetITSCuts(UseITS,2);
+    } else if (strcmp(configNames[i].Data(), "global") == 0) {
+      fJCatalyst[i]->SetTestFilterBit(globalCut);
+      if(UseAlternativeWeights){
+      	fJCatalyst[i]->SetInputAlternativeNUAWeights10h(kTRUE, AlternativeWeightFile);
+      }
     } else {
       fJCatalyst[i]->SetTestFilterBit(tpconlyCut); // default
     }
@@ -129,7 +144,8 @@ AliAnalysisTask *AddTaskJSPCMaster10h(Int_t doSPC = 0, Bool_t useWeightsNUE = kT
 
     fJCatalyst[i]->SetPtRange(ptMin, 5.0);
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
-    fJCatalyst[i]->SetPhiCorrectionIndex(i);
+    if (strcmp(configNames[i].Data(), "global") != 0) { fJCatalyst[i]->SetPhiCorrectionIndex(i); } //enable map only if we don't have global
+   
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
 

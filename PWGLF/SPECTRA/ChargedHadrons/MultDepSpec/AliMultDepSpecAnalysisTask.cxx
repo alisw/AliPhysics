@@ -114,7 +114,7 @@ void AliMultDepSpecAnalysisTask::FillTrackQA(AliESDtrack* track)
 
   fHist_itsNCls.Fill(track->GetITSclusters(0));
   for (unsigned int i = 0; i < 6; i++) {
-    if (track->GetITSClusterMap() & (1 << i)) fHist_itsHits.Fill(i + 1);
+    if (track->GetITSClusterMap() & (1 << i)) fHist_itsHits.Fill(i);
   }
   fHist_itsChi2NCl.Fill((track->GetITSclusters(0) > 0.) ? (track->GetITSchi2() / track->GetITSclusters(0)) : -1.);
 
@@ -254,6 +254,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     BookHistogram(fHist_multPtSpec_trk_prim_meas, "multPtSpec_trk_prim_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_sec_meas, "multPtSpec_trk_sec_meas", {mult_meas, pt_meas});
     BookHistogram(fHist_multPtSpec_trk_meas_evtcont, "multPtSpec_trk_meas_evtcont", {mult_meas, pt_meas});
+    BookHistogram(fHist_multPtSpec_trk_inter, "multPtSpec_trk_inter", {mult_true, pt_meas});
   }
 
   // check required memory
@@ -278,6 +279,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_multPtSpec_prim_meas.GetSize() +
     fHist_multPtSpec_trk_prim_meas.GetSize() +
     fHist_multPtSpec_trk_sec_meas.GetSize() +
+    fHist_multPtSpec_trk_inter.GetSize() +
     fHist_signed1Pt.GetSize() +
     fHist_eta.GetSize() +
     fHist_phi.GetSize() +
@@ -293,7 +295,7 @@ void AliMultDepSpecAnalysisTask::BookHistograms()
     fHist_tpcGeomLength.GetSize();
 
   // max allowed memory per train job: 8 GiB
-  AliError(Form("\n\nEstimated memory usage of histograms: %.2f MiB. For all 23 systematic variations: %.2f MiB\n", requiredMemory / 1048576, 23 * requiredMemory / 1048576));
+  AliError(Form("\n\nEstimated memory usage of histograms: %.2f MiB. For all 21 systematic variations: %.2f MiB\n", requiredMemory / 1048576, 21 * requiredMemory / 1048576));
 }
 
 //**************************************************************************************************
@@ -422,21 +424,22 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t*)
         if (!recoPass.empty()) trainInfo += period + "_" + recoPass;
       }
       trainInfo += ", " + fTrainMetadata;
-      if (fMCEventClass == EventClass::triggered) {
-        trainInfo += ", triggered";
-      } else if (fMCEventClass == EventClass::fiducial) {
-        trainInfo += ", fiducial";
-      } else if (fMCEventClass == EventClass::inelgt0) {
-        trainInfo += ", INEL>0";
-      } else {
-        trainInfo += ", all";
-      }
-      trainInfo += " events";
+      if (fIsMC) {
+        if (fMCEventClass == EventClass::triggered) {
+          trainInfo += ", triggered";
+        } else if (fMCEventClass == EventClass::fiducial) {
+          trainInfo += ", fiducial";
+        } else if (fMCEventClass == EventClass::inelgt0) {
+          trainInfo += ", INEL>0";
+        } else {
+          trainInfo += ", all";
+        }
+        trainInfo += " events";
 
-      if (!fMCEnableDDC || !fMCSpectraWeights) {
-        trainInfo += ", no DDCs";
+        if (!fMCEnableDDC || !fMCSpectraWeights) {
+          trainInfo += ", no DDCs";
+        }
       }
-
       fHist_trainInfo.Fill(trainInfo.data());
       fIsFirstEventInJob = false;
     }
@@ -463,6 +466,11 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
   if (!fEvent) {
     AliError("fEvent not available\n");
     return false;
+  }
+  if (fMinCent >= 0. && InitCentrality()) {
+    if (fCent < fMinCent || fCent > fMaxCent) {
+      return false;
+    }
   }
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -552,6 +560,7 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
       } else {
         isValidParticle = InitParticle<AliAODMCParticle>(mcLabel);
       }
+      if (fMCIsInjectedSignal) continue;
     }
 
     if (count) {
@@ -573,22 +582,25 @@ void AliMultDepSpecAnalysisTask::LoopMeas(bool count)
           if (!fMCAcceptEvent) {
             // contamination originating from undesired events (wrong event class or true zvtex outside fiducial region)
             fHist_multPtSpec_trk_meas_evtcont.Fill(fMultMeas, fPt);
-          } else if (isValidParticle) {
-            if (fIsNominalSetting) {
-              // true pt resolution (QA variable)
-              fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
-            }
-            if (fMCIsChargedPrimary) {
-              // part of measurement that comes from primaries (as function of measured quantities -> for contamination)
-              fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
-              // part of measurement that comes from primaries (as function of true quantities -> for efficiency)
-              fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
-              // correlation matrices used for the unfolding
-              fHist_ptCorrel_prim.Fill(fPt, fMCPt);
-              fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
-            } else {
-              // contamination from secondaries
-              fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+          } else {
+            fHist_multPtSpec_trk_inter.Fill(fMultTrue, fPt);
+            if (isValidParticle) {
+              if (fIsNominalSetting) {
+                // true pt resolution (QA variable)
+                fHist_deltaPt.Fill(fPt, TMath::Abs(fPt - fMCPt) / fPt);
+              }
+              if (fMCIsChargedPrimary) {
+                // part of measurement that comes from primaries (as function of measured quantities -> for contamination)
+                fHist_multPtSpec_trk_prim_meas.Fill(fMultMeas, fPt);
+                // part of measurement that comes from primaries (as function of true quantities -> for efficiency)
+                fHist_multPtSpec_prim_meas.Fill(fMultTrue, fMCPt);
+                // correlation matrices used for the unfolding
+                fHist_ptCorrel_prim.Fill(fPt, fMCPt);
+                fHist_multCorrel_prim.Fill(fMultMeas, fMultTrue);
+              } else {
+                // contamination from secondaries
+                fHist_multPtSpec_trk_sec_meas.Fill(fMultMeas, fPt);
+              }
             }
           }
         }
@@ -693,6 +705,17 @@ bool AliMultDepSpecAnalysisTask::InitParticle(int particleID)
   if (!particle) {
     AliFatal("Particle not found\n");
     return false;
+  }
+
+  // reject injected signal
+  fMCIsInjectedSignal = false;
+  if (!fMCSelectedGenerator.empty()) {
+    TString generator = "";
+    fMCEvent->GetCocktailGenerator(particleID, generator);
+    if (!generator.BeginsWith(fMCSelectedGenerator.data())) {
+      fMCIsInjectedSignal = true;
+      return false;
+    }
   }
 
   // reject all particles that come from simulated out-of-bunch pileup
@@ -922,13 +945,13 @@ bool AliMultDepSpecAnalysisTask::InitTask(bool isMC, bool isAOD, string dataSet,
     fTrackCuts->SetMaxChi2PerClusterITS(49.);
   } else if (cutMode == 103) {
     if (fIsNewReco) {
-      fTrackCuts->SetMaxChi2PerClusterTPC(1.7);
+      fTrackCuts->SetMaxChi2PerClusterTPC(2.0);
     } else {
       fTrackCuts->SetMaxChi2PerClusterTPC(3.0);
     }
   } else if (cutMode == 104) {
     if (fIsNewReco) {
-      fTrackCuts->SetMaxChi2PerClusterTPC(3.4);
+      fTrackCuts->SetMaxChi2PerClusterTPC(3.0);
     } else {
       fTrackCuts->SetMaxChi2PerClusterTPC(5.0);
     }
@@ -1022,6 +1045,12 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     SetIsNewReco();
   }
 
+  if (options.Contains("hasInjectedSignal")) {
+    if (dataSet.find("PbPb_2TeV") != string::npos) {
+      fMCSelectedGenerator = "Hijing";
+    }
+  }
+
   int maxMultMeas = 100;
   int maxMultTrue = 100;
 
@@ -1039,8 +1068,8 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
       maxMultTrue = 3200;
     }
     if (dataSet.find("XeXe") != string::npos) {
-      maxMultMeas = 1800;
-      maxMultTrue = 2800;
+      maxMultMeas = 2000;
+      maxMultTrue = 3200;
     }
   }
 
@@ -1059,6 +1088,10 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
   if (options.Contains("highPtMode::100")) {
     fHighPtMode = 3;
     SetPtRange(0.15, 100.0);
+  }
+
+  if (options.Contains("selectCentral")) {
+    SetCentRange(0., 10.);
   }
 
   DefineDefaultAxes(maxMultMeas, maxMultTrue);

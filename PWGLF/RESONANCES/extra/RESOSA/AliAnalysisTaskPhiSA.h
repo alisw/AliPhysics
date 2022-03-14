@@ -84,7 +84,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
   
  private:
     enum {
-      kDim    = 2000,//Maximum number of tracks.
+      kDim    = 50000,//Maximum number of tracks.
       kDimBuf = 500,//NmixEvent * (NveterxBin + NCentralitiyBin) = 5 * (10+90)
       kCenBin=9,
     };
@@ -187,7 +187,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     
     TH2F  *fHistPionVsKaonMult;//!
     
-    TH1F  *fHistTPCClusterRP;//!
+    /*TH1F  *fHistTPCClusterRP;//!
     TH1F  *fHistITSClusterRP;//!
     TH1F  *fHistChiSqrPerNdfTPCRP;//!
     TH1F  *fHistChiSqrPerNdfITSRP;//!
@@ -203,7 +203,7 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TH1F  *fHistnCrossRowsPOI;//!
     TH1F  *fHistratioCrossedRowsOverFindableClustersTPC;//!
     TH1F  *fHistDCAxyPOI;//!
-    TH1F  *fHistDCAzPOI;//!
+    TH1F  *fHistDCAzPOI;//!*/
     TProfile *fProCosResThreeSubEventPsiAB;//!
     TProfile *fProCosResThreeSubEventPsiAC;//!
     TProfile *fProCosResThreeSubEventPsiBC;//!
@@ -217,15 +217,6 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TH3F *fhInvMassLikeMMSAEPvzeroC[9];//!
     TH3F *fhInvMassMixSAEPvzeroC[9];//!
     */
-
-    THnSparse *fhInvMassSAEPvzeroA[9];//!
-    THnSparse *fhInvMassLikePPSAEPvzeroA[9];//!
-    THnSparse *fhInvMassLikeMMSAEPvzeroA[9];//!
-    THnSparse *fhInvMassMixSAEPvzeroA[9];//!
-    THnSparse *fhInvMassSAEPvzeroC[9];//!
-    THnSparse *fhInvMassLikePPSAEPvzeroC[9];//!
-    THnSparse *fhInvMassLikeMMSAEPvzeroC[9];//!
-    THnSparse *fhInvMassMixSAEPvzeroC[9];//!
 
 
     TH1F  *fHistEPTPC[9];//!
@@ -254,6 +245,8 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TH1F  *fHistEPV0A_sc[9];//!
     TH1F  *fHistEPV0C_sc[9];//!
 
+
+
     // Shift correction
     TProfile2D           *fShiftCosTerm_V0A;   // profile holding av. cosine terms for full and sub events
     TProfile2D           *fShiftSinTerm_V0A;   // profile holding av. sine terms for full and sub events
@@ -265,10 +258,20 @@ class AliAnalysisTaskPhiSA : public AliAnalysisTaskSE {
     TProfile2D *fFullSinTerm_V0A;
     TProfile2D *fFullCosTerm_V0C;  
     TProfile2D *fFullSinTerm_V0C;
+
+    THnSparse *fhInvMassSAEPvzeroA;//!
+    THnSparse *fhInvMassLikePPSAEPvzeroA;//!
+    THnSparse *fhInvMassLikeMMSAEPvzeroA;//!
+    THnSparse *fhInvMassMixSAEPvzeroA;//!
+    THnSparse *fhInvMassSAEPvzeroC;//!
+    THnSparse *fhInvMassLikePPSAEPvzeroC;//!
+    THnSparse *fhInvMassLikeMMSAEPvzeroC;//!
+    THnSparse *fhInvMassMixSAEPvzeroC;//!
     
 
     Bool_t   PassEvent(AliVEvent *event);
     Int_t    GetCentrality(AliVEvent *evt);
+    Float_t  GetCentralityValue(AliVEvent *evt);
     Bool_t   PassTrack(AliVTrack *track);
     Int_t    MakeRealPair(TVector2 *qvA, TVector2 *qvC);
     Int_t    MakeLikePair(TVector2 *qvA, TVector2 *qvC);

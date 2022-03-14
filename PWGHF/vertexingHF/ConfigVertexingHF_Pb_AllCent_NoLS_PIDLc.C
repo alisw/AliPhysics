@@ -1,7 +1,7 @@
 AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
-  vHF = new AliAnalysisVertexingHF();
+  AliAnalysisVertexingHF* vHF = new AliAnalysisVertexingHF();
   //Set Reduce Size dAOD
   vHF->SetMakeReducedRHF(kTRUE);
  

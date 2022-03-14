@@ -28,7 +28,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
   public:
 
     AliAnalysisTaskLeuteronAOD();									// class constructor without parameters
-    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool doEventQAPlots, bool doResultsQAPlots);	// class constructor with parameters
+    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool isPbPb,bool doEventQAPlots, bool doResultsQAPlots);	// class constructor with parameters
     AliAnalysisTaskLeuteronAOD& operator = (const AliAnalysisTaskLeuteronAOD &task);			// copy assignment operator
     AliAnalysisTaskLeuteronAOD(const AliAnalysisTaskLeuteronAOD &task);					// copy constructor
     virtual ~AliAnalysisTaskLeuteronAOD();								// class destructor
@@ -76,6 +76,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     bool fisSidebandSignal;
     bool fisUpperSideband;
     bool fisLowerSideband;
+    bool fisPbPb;
     int fTrackBufferSize;			  
 
     TList			    *fEventList;		// list for the event cuts
@@ -91,6 +92,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     TList			    *fResultsList;		// list for the results
     TList			    *fResultsQAList;		// list for the QA of the results
     TH1F			    *fSimpleEventCounter;	// count the number of events
+    TH1F			    *fEventCentrality;		// centrality of PbPb events
 
     AliFemtoDreamEvent		    *fEvent;
     AliFemtoDreamTrack		    *fTrack;

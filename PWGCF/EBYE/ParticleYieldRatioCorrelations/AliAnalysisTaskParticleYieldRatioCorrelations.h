@@ -48,7 +48,7 @@ public:
         Vertexmin = f_Vertexmin;
         Vertexmax = f_Vertexmax;
     }
-    virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, int f_nSigma, int f_nCrossedRows, int f_movePhi)
+    virtual void SetParams(Bool_t f_IsMC, Bool_t f_pbpb, Float_t f_nSigma, int f_nCrossedRows, int f_movePhi)
     {
         IsMC = f_IsMC;
         pbpb = f_pbpb; // pp if false
@@ -56,7 +56,26 @@ public:
         nCrossedRows = f_nCrossedRows;
         movePhi = f_movePhi;
     }
-    
+    virtual void SetCentralities(int f_nCentrClassesUsed, Float_t cent0, Float_t cent1, Float_t cent2, Float_t cent3, Float_t cent4, Float_t cent5)
+    {
+        nCentrClassesUsed = f_nCentrClassesUsed;
+        Float_t f_CentrPercentiles[] = {cent0, cent1, cent2, cent3, cent4, cent5};
+        for (int i = 0; i < nCentrClassesUsed+1; i++)
+        {
+        CentrPercentiles[i] = f_CentrPercentiles[i];
+        }
+    }
+    virtual void SetCuts(Bool_t f_SPDvsV0MCut, Bool_t f_LargeTPCCut)
+    {
+        SPDvsV0MCut = f_SPDvsV0MCut;
+        LargeTPCCut = f_LargeTPCCut;
+    }
+    virtual void SetCorrections(Bool_t f_PIDCorr, Bool_t f_TrackingCorr)
+    {
+        f_PIDCorr = PIDCorr;
+        f_TrackingCorr = TrackingCorr;
+    }
+
 private:
     AliAODEvent *fAOD;            //! input event
     AliPIDResponse *fPIDResponse; //! pid response object
@@ -66,10 +85,13 @@ private:
     TH1F *fHistTracksCut;         //! QA tracks
     UInt_t filterBit;             //
     Bool_t IsMC, pbpb;           // is MC or not; is Pb-Pb or pp
+    Bool_t SPDvsV0MCut, LargeTPCCut,  PIDCorr, TrackingCorr;
     AliEventCuts *fAliEventCuts;  //!
-    int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nSigma, nCrossedRows, movePhi;
-    static const int nCentrClasses = 4, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
-    Float_t minP, maxP, Vertexmin, Vertexmax;
+    int nPhiBins, nVertexBins, nPBins, minCent, maxCent, nCrossedRows, movePhi;
+    static const int nCentrClasses = 10, nEtaClasses = 16, nSorts = 8, nSubsamples = 20, nPhiWindows = 16;
+    Float_t minP, maxP, Vertexmin, Vertexmax, nSigma;
+    Float_t CentrPercentiles[10];
+    int nCentrClassesUsed;
     static const int SortPairs = 6 * (6 + 1) / 2;
 
     //Declare hists of efficiency maps
@@ -138,7 +160,12 @@ private:
     TH1D *fHistQAClustersITS;           //! Number of ITS clusters distribution
                                         //
     TH2D *fHistQAEtaPhi;                //!
-    TH2D *fHistQASPDTrackletsvsV0MCent; //!
+    TH2D *fHistQAMomPt;                //!
+    TH2D *fHistQASPDTrackletsvsV0MCent[3]; //!
+    TH2D *fHistQAMultTPCvsESD[2]; //!
+    TH2D *fHistQAMultTPCvsV0[2]; //!
+    TH2D *fHistQAMultTrkvsMultTrkTOF[2]; //!
+
 
     AliAnalysisTaskParticleYieldRatioCorrelations(const AliAnalysisTaskParticleYieldRatioCorrelations &);            // not implemented
     AliAnalysisTaskParticleYieldRatioCorrelations &operator=(const AliAnalysisTaskParticleYieldRatioCorrelations &); // not implemented

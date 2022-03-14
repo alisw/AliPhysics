@@ -29,13 +29,12 @@
 
 #include <vector>
 
+
 // Root includes
 class TH1F;
 #include "TH2I.h"
 #include "TObjArray.h"
 #include "TLorentzVector.h"
-
-#include <vector>
 
 // AliRoot includes
 #include "AliAnalysisTaskSE.h"
@@ -154,6 +153,8 @@ public:
 
   void    SetSaveClusters()                              { fSaveClusters = kTRUE; }
 
+  void    SetSaveFullTree()                              { fSaveFullTree = kTRUE; }
+
   void    SetHeavyIon()                                  { fIsHeavyIon = kTRUE; }
   
   void    SetNContributorsCut()                          { fNContributorsCutEnabled = kTRUE; }
@@ -201,7 +202,8 @@ private:
   Bool_t              fSaveHistos;
   Bool_t              fSaveCells;
   Bool_t              fSaveClusters;     ///<
-  Bool_t              fIsHeavyIon;        ///<
+  Bool_t              fSaveFullTree;     ///<
+  Bool_t              fIsHeavyIon;       ///<
   Bool_t              fNContributorsCutEnabled;
     
   TString             fOADBFilePath ;    ///<  Default path $ALICE_PHYSICS/OADB/EMCAL, if needed change.
@@ -339,9 +341,15 @@ protected:
   std::vector<UShort_t>     fVBuffer_Cluster_E;               // Float_t * 1000
   std::vector<Short_t>      fVBuffer_Cluster_Eta;             // Float_t * 1000
   std::vector<UShort_t>     fVBuffer_Cluster_Phi;             // Float_t * 1000
+  std::vector<UShort_t>     fVBuffer_Cluster_LeadCellId;            
   std::vector<Short_t>      fVBuffer_Cluster_t;
   std::vector<Double_t>     fVBuffer_Cluster_M02;
   std::vector<Short_t>      fVBuffer_TrueCluster_MCId;
+  std::vector<Int_t>        fVBuffer_Cluster_NCells;
+
+  std::vector<Float_t>      fVFBuffer_Cluster_E;               
+  std::vector<Float_t>      fVFBuffer_Cluster_Eta;             
+  std::vector<Float_t>      fVFBuffer_Cluster_Phi; 
   std::vector<Float_t>      fVBuffer_Cluster_X;
   std::vector<Float_t>      fVBuffer_Cluster_Y;
   std::vector<Float_t>      fVBuffer_Cluster_Z;

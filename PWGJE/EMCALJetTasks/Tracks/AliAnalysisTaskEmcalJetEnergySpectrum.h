@@ -53,6 +53,12 @@ public:
     kEventWeightType,
     kNoWeightType 
   };
+  enum EnergyDefinition_t {
+    kDefaultEnergy,       ///< Uncorrected energy measurement
+    kNonLinCorrEnergy,    ///< Energy corrected for non-linearity
+    kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
+  };
+
   AliAnalysisTaskEmcalJetEnergySpectrum();
   AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
@@ -85,6 +91,9 @@ public:
   void SetEMCALClusterBias(double minE)            { fEMCALClusterBias = minE; }
   void SetTimeRangeEMCALCusterBias(Double_t mintime, Double_t maxtime) { fMinTimeClusterBias = mintime; fMaxTimeClusterBias = maxtime; }
   void SetMimicEJData(bool doMimic)                { fMimicEJData = doMimic; if(fMimicEJData) fUseTriggerSelectionForData = true; }
+  void SetMakeClusterHistos1D(bool doMake)         { fMakeClusterHistos1D = doMake; }
+  void SetEnergyDefinition(EnergyDefinition_t edef){ fEnergyDefinition = edef; }
+
 
   void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
   double GetDeltaPtRandomCone();
@@ -158,6 +167,9 @@ private:
   Double_t                      fMaxTimeClusterBias;            ///< Max. time cut for cluster bias
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
+  Bool_t                        fMakeClusterHistos1D;           ///< Make 1D emcal cluster energy histogram
+  EnergyDefinition_t            fEnergyDefinition;              ///< Energy definition used for a given cluster
+
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };

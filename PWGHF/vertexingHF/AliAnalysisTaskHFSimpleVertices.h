@@ -34,6 +34,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   void SetUseVertexerTracks(){fSecVertexerAlgo=0;}
   void SetUseO2Vertexer(){fSecVertexerAlgo=1;}
   void SetUseKFParticleVertexer(){fSecVertexerAlgo=2;}
+  void SetFindVertexForCascades(Bool_t opt){fFindVertexForCascades=opt;}
   void SetReadMC(Bool_t read){fReadMC=read;}
   void SetUseCandidateAnalysisCuts(){fCandidateCutLevel=2;}
   void SetUseCandidateSkimCuts(){fCandidateCutLevel=1;}
@@ -100,6 +101,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
 
   TList*  fOutput;                   //!<!  list of output histos
   TH1F* fHistNEvents;                //!<!  histo with N of events
+  TH1F* fHistTrackStatus;            //!<!  histo with counts of tracks passing cuts
   TH1F* fHistPtAllTracks;            //!<!  histo with pt all tracks
   TH1F* fHistPtSelTracks;            //!<!  histo with pt selected tracks
   TH1F* fHistTglAllTracks;           //!<!  histo with tgl all tracks
@@ -204,6 +206,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   TH1F *fHistDecLenLc;               //!<!  histo with LcpKpi+ decay length
   TH1F *fHistCosPointLc;             //!<!  histo with LcpKpi+ cosine of pointing angle
 
+  TH1F *fHistInvMassK0s;            //!<!  histo with K0s inv mass
   TH1F *fHistInvMassLcK0sp;         //!<!  histo with LcpKpi+ inv mass
   TH1F *fHistPtLcK0sp;              //!<!  histo with LcpKpi+ pt
 
@@ -303,6 +306,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];     // [fNPtBinsJpsi+1] limits of pt bins
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc]; // LcpKpi+ cuts
   Int_t fSelectLcpKpi;                          // flag to activate cuts for LcpKpi
+  Bool_t fFindVertexForCascades;                // flag to activate vertex reco for V0+bachelor
   Double_t fMinPtV0;                            // minimum V0 pt for Lc->pK0s
   Double_t fMinCosPointV0;                      // K0s cuts for Lc->pK0s
   Double_t fCutOnK0sMass;                       // K0s cuts for Lc->pK0s
@@ -310,7 +314,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE {
   Bool_t fEnableCPUTimeCheck;                   //flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds;              // flag to switch from seconds (default) to milliseconds
   
-  ClassDef(AliAnalysisTaskHFSimpleVertices,24);
+  ClassDef(AliAnalysisTaskHFSimpleVertices,25);
 };
 
 

@@ -49,6 +49,7 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   void EnablePID(Bool_t newval) {fAddPID = newval; };
   void SetBayesianPIDProbs(std::vector<Double_t> probs) {fBayesPIDProbs.clear(); for(auto i: probs) fBayesPIDProbs.push_back(i); };
   void SetVertexCut(Double_t newval) {fVtxZCut = newval; };
+  void SetupFlagsByIndex(Int_t ind);
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -76,6 +77,8 @@ class AliAnalysisTaskEffFDExample : public AliAnalysisTaskSE {
   TString fCentEst;
   TList *fTCtoAdd;
   Int_t fFBtoAdd;
+  UInt_t fEvNomFlag; //Relevant for AODs
+  UInt_t fTrNomFlag; //Relevant for AODs
   Double_t *GetBinsFromAxis(TAxis *inax);
   void l_CreateTCList() { if(fTCtoAdd) return; fTCtoAdd = new TList(); fTCtoAdd->SetOwner(kTRUE); };
   void l_ClearTCList() { if(fTCtoAdd) fTCtoAdd->Clear(); };

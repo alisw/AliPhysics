@@ -56,7 +56,8 @@ class AliJCDijetAna : public TObject
                          double lMinJetPt,
                          double lDeltaPhiCut,
                          double lmatchingR,
-                         double ltrackingIneff);
+                         double ltrackingIneff,
+                         double luseCrho);
 
         int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
@@ -72,6 +73,7 @@ class AliJCDijetAna : public TObject
 
 #endif
         enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, iBGSubtrCutsRaw, iBGSubtrConstCutCutsRaw, jetClassesSize};
+        TString sDijetTypes[jetClassesSize] = {"raw", "bg. subtr.", "bg. subtr. const. cut", "const. cut", "kt", "bg. subtr. cuts raw", "bg. subtr. const. cut cuts raw"};
 
     private:
         int fDebug;
@@ -92,6 +94,7 @@ class AliJCDijetAna : public TObject
         double matchingR;
         double ftrackingIneff;
         bool bEvtHasAreaInfo;
+        bool bUseCrho;
 
         double phi, eta, pt, pt2, rho, rhom, area, mjj, ptpair, dPhi, deltaRMin, deltaR;
         bool leadingTrackOverThreshold;
@@ -136,7 +139,8 @@ class AliJCDijetAna : public TObject
 
         fastjet::Selector selectorAllButTwo;
         fastjet::Selector selectorEta;
-        fastjet::Selector selectorBoth;
+        fastjet::Selector selectorNoGhosts;
+        fastjet::Selector selectorNoGhostsAllButTwo;
         fastjet::JetMedianBackgroundEstimator bge;
 
         unique_ptr<fastjet::ClusterSequenceArea> cs;

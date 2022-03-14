@@ -6,6 +6,7 @@
 #define AliAnalysisTaskFlowPPTask_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -215,6 +216,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetPeriod(TString period) { fPeriod = period; }
         virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
         virtual int    GetSystFlag() { return fCurrSystFlag; }
+		virtual void	SetOnlineTrackCorrection(Bool_t UseCorrectedNTracks){fUseCorrectedNTracks = UseCorrectedNTracks;}
         
         //===================================================================================
 
@@ -249,6 +251,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         
 
 		AliEventCuts	fEventCuts;					// Event cuts
+		AliGFWNFCuts*     fGFWSelection;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
 		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
@@ -281,6 +284,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TString                 fNtrksName;                             // Cent or Mult
 		TString			fPeriod;				// period
                 Int_t                   fCurrSystFlag;                          // Systematics flag
+		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -341,6 +345,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		// Event histograms
 		TH1D*			hEventCount;			//! counting events passing given event cuts
+		TH2D*			hTracksCorrection2d;	//! Correlation table for number of tracks table
+		TProfile*		hnCorrectedTracks;		//! Number of corrected tracks in a ntracks bin
 		TH1F*			hMult;				//! multiplicity distribution
 		TH1F*			hMultfBin[12]; 			//! multiplicity distribution in fBin
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
@@ -392,6 +398,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int NtrksAfter3subL = 0;            //!
 		int NtrksAfter3subM = 0;            //!
 		int NtrksAfter3subR = 0;            //!
+		int NTracksCorrected = 0;			//!
+		int NTracksUncorrected = 0;			//!
         
 		PhysicsProfilePPTask multProfile;          //!
 		PhysicsProfilePPTask multProfile_bin[30];  //!
@@ -405,6 +413,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		int nn;                             //!
 		TH1F* MyEventNumber;					//!
         
+		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		void CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks);
 		void InitProfile(PhysicsProfilePPTask& profile, TString);
         

@@ -833,7 +833,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(TClonesArray *AODMCTrackArr
     }
   }
 
-  if(mergedAnalysis && fNNeutralPionLabels>0 && fLeadingNeutralPionDaughterIndex!=0 && fNeutralPionEnergyFraction[fLeadingNeutralPionIndex]>cluster->GetClusterMCEdepFraction(0)){
+  if(mergedAnalysis && fNNeutralPionLabels>0 && fLeadingNeutralPionDaughterIndex!=0 && fLeadingNeutralPionIndex>=0 && fNeutralPionEnergyFraction[fLeadingNeutralPionIndex]>cluster->GetClusterMCEdepFraction(0)){
     // check if leading pi0 comes not from label 0 in cluster
     // for this do:
     // -> check if neutral pions were found in cluster

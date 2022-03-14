@@ -51,6 +51,17 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setVtxPosZ( Double_t vtxPosZ ) { this->fVtxPosZ = vtxPosZ; }
   Double_t getVtxPosZ() { return fVtxPosZ; }
   
+  void setRawPeriod(UInt_t period) {this->fRawPeriod = period;}
+  UInt_t getRawPeriod() { return fRawPeriod; }
+  void setRawOrbitNumber24(UInt_t orbit24) {this->fRawOrbitNumber24 = orbit24;}
+  UInt_t getRawOrbitNumber24() { return fRawOrbitNumber24; }
+  void setOrbitNumber(UInt_t orbit) {this->fOrbitNumber = orbit;}
+  UInt_t getOrbitNumber() { return fOrbitNumber; }
+  void setBunchCrossNumber(UShort_t bunchCrossNumber) {this->fBunchCrossNumber = bunchCrossNumber;}
+  UShort_t getBunchCrossNumber() { return fBunchCrossNumber; }
+  void setTimeStamp(UInt_t timeStamp) {this->fTimeStamp = timeStamp;}
+  UInt_t getTimeStamp() { return fTimeStamp; }
+  
   void setVZCRe( Double_t VZCRe ) { this->fVZCRe = VZCRe; }
   Double_t getVZCRe() { return fVZCRe; }
   void setVZCIm( Double_t VZCIm ) { this->fVZCIm = VZCIm; }
@@ -155,6 +166,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setTPC2MNegChNegEta( Double_t TPC2MNegChNegEta ) { this->fTPC2MNegChNegEta = TPC2MNegChNegEta; }
   Double_t getTPC2MNegChNegEta() { return fTPC2MNegChNegEta; }
   
+  void setTPC4Re2PosChPosEta( Double_t TPC4Re2PosChPosEta ) { this->fTPC4Re2PosChPosEta = TPC4Re2PosChPosEta; }
+  Double_t getTPC4Re2PosChPosEta() { return fTPC4Re2PosChPosEta; }
+  void setTPC4Im2PosChPosEta( Double_t TPC4Im2PosChPosEta ) { this->fTPC4Im2PosChPosEta = TPC4Im2PosChPosEta; }
+  Double_t getTPC4Im2PosChPosEta() { return fTPC4Im2PosChPosEta; }
+  void setTPC2Re3PosChPosEta( Double_t TPC2Re3PosChPosEta ) { this->fTPC2Re3PosChPosEta = TPC2Re3PosChPosEta; }
+  Double_t getTPC2Re3PosChPosEta() { return fTPC2Re3PosChPosEta; }
+  void setTPC2Im3PosChPosEta( Double_t TPC2Im3PosChPosEta ) { this->fTPC2Im3PosChPosEta = TPC2Im3PosChPosEta; }
+  Double_t getTPC2Im3PosChPosEta() { return fTPC2Im3PosChPosEta; }
+  void setTPC0MPosChPosEta( Double_t TPC0MPosChPosEta ) { this->fTPC0MPosChPosEta = TPC0MPosChPosEta; }
+  Double_t getTPC0MPosChPosEta() { return fTPC0MPosChPosEta; }
+  void setTPC3MPosChPosEta( Double_t TPC3MPosChPosEta ) { this->fTPC3MPosChPosEta = TPC3MPosChPosEta; }
+  Double_t getTPC3MPosChPosEta() { return fTPC3MPosChPosEta; }
+  void setTPC4MPosChPosEta( Double_t TPC4MPosChPosEta ) { this->fTPC4MPosChPosEta = TPC4MPosChPosEta; }
+  Double_t getTPC4MPosChPosEta() { return fTPC4MPosChPosEta; }
+  void setTPC4Re2PosChNegEta( Double_t TPC4Re2PosChNegEta ) { this->fTPC4Re2PosChNegEta = TPC4Re2PosChNegEta; }
+  Double_t getTPC4Re2PosChNegEta() { return fTPC4Re2PosChNegEta; }
+  void setTPC4Im2PosChNegEta( Double_t TPC4Im2PosChNegEta ) { this->fTPC4Im2PosChNegEta = TPC4Im2PosChNegEta; }
+  Double_t getTPC4Im2PosChNegEta() { return fTPC4Im2PosChNegEta; }
+  void setTPC2Re3PosChNegEta( Double_t TPC2Re3PosChNegEta ) { this->fTPC2Re3PosChNegEta = TPC2Re3PosChNegEta; }
+  Double_t getTPC2Re3PosChNegEta() { return fTPC2Re3PosChNegEta; }
+  void setTPC2Im3PosChNegEta( Double_t TPC2Im3PosChNegEta ) { this->fTPC2Im3PosChNegEta = TPC2Im3PosChNegEta; }
+  Double_t getTPC2Im3PosChNegEta() { return fTPC2Im3PosChNegEta; }
+  void setTPC0MPosChNegEta( Double_t TPC0MPosChNegEta ) { this->fTPC0MPosChNegEta = TPC0MPosChNegEta; }
+  Double_t getTPC0MPosChNegEta() { return fTPC0MPosChNegEta; }
+  void setTPC3MPosChNegEta( Double_t TPC3MPosChNegEta ) { this->fTPC3MPosChNegEta = TPC3MPosChNegEta; }
+  Double_t getTPC3MPosChNegEta() { return fTPC3MPosChNegEta; }
+  void setTPC4MPosChNegEta( Double_t TPC4MPosChNegEta ) { this->fTPC4MPosChNegEta = TPC4MPosChNegEta; }
+  Double_t getTPC4MPosChNegEta() { return fTPC4MPosChNegEta; }
+  void setTPC4Re2NegChPosEta( Double_t TPC4Re2NegChPosEta ) { this->fTPC4Re2NegChPosEta = TPC4Re2NegChPosEta; }
+  Double_t getTPC4Re2NegChPosEta() { return fTPC4Re2NegChPosEta; }
+  void setTPC4Im2NegChPosEta( Double_t TPC4Im2NegChPosEta ) { this->fTPC4Im2NegChPosEta = TPC4Im2NegChPosEta; }
+  Double_t getTPC4Im2NegChPosEta() { return fTPC4Im2NegChPosEta; }
+  void setTPC2Re3NegChPosEta( Double_t TPC2Re3NegChPosEta ) { this->fTPC2Re3NegChPosEta = TPC2Re3NegChPosEta; }
+  Double_t getTPC2Re3NegChPosEta() { return fTPC2Re3NegChPosEta; }
+  void setTPC2Im3NegChPosEta( Double_t TPC2Im3NegChPosEta ) { this->fTPC2Im3NegChPosEta = TPC2Im3NegChPosEta; }
+  Double_t getTPC2Im3NegChPosEta() { return fTPC2Im3NegChPosEta; }
+  void setTPC0MNegChPosEta( Double_t TPC0MNegChPosEta ) { this->fTPC0MNegChPosEta = TPC0MNegChPosEta; }
+  Double_t getTPC0MNegChPosEta() { return fTPC0MNegChPosEta; }
+  void setTPC3MNegChPosEta( Double_t TPC3MNegChPosEta ) { this->fTPC3MNegChPosEta = TPC3MNegChPosEta; }
+  Double_t getTPC3MNegChPosEta() { return fTPC3MNegChPosEta; }
+  void setTPC4MNegChPosEta( Double_t TPC4MNegChPosEta ) { this->fTPC4MNegChPosEta = TPC4MNegChPosEta; }
+  Double_t getTPC4MNegChPosEta() { return fTPC4MNegChPosEta; }
+  void setTPC4Re2NegChNegEta( Double_t TPC4Re2NegChNegEta ) { this->fTPC4Re2NegChNegEta = TPC4Re2NegChNegEta; }
+  Double_t getTPC4Re2NegChNegEta() { return fTPC4Re2NegChNegEta; }
+  void setTPC4Im2NegChNegEta( Double_t TPC4Im2NegChNegEta ) { this->fTPC4Im2NegChNegEta = TPC4Im2NegChNegEta; }
+  Double_t getTPC4Im2NegChNegEta() { return fTPC4Im2NegChNegEta; }
+  void setTPC2Re3NegChNegEta( Double_t TPC2Re3NegChNegEta ) { this->fTPC2Re3NegChNegEta = TPC2Re3NegChNegEta; }
+  Double_t getTPC2Re3NegChNegEta() { return fTPC2Re3NegChNegEta; }
+  void setTPC2Im3NegChNegEta( Double_t TPC2Im3NegChNegEta ) { this->fTPC2Im3NegChNegEta = TPC2Im3NegChNegEta; }
+  Double_t getTPC2Im3NegChNegEta() { return fTPC2Im3NegChNegEta; }
+  void setTPC0MNegChNegEta( Double_t TPC0MNegChNegEta ) { this->fTPC0MNegChNegEta = TPC0MNegChNegEta; }
+  Double_t getTPC0MNegChNegEta() { return fTPC0MNegChNegEta; }
+  void setTPC3MNegChNegEta( Double_t TPC3MNegChNegEta ) { this->fTPC3MNegChNegEta = TPC3MNegChNegEta; }
+  Double_t getTPC3MNegChNegEta() { return fTPC3MNegChNegEta; }
+  void setTPC4MNegChNegEta( Double_t TPC4MNegChNegEta ) { this->fTPC4MNegChNegEta = TPC4MNegChNegEta; }
+  Double_t getTPC4MNegChNegEta() { return fTPC4MNegChNegEta; }
+  
   
   void setTPCRePosChSubPosEta( Double_t TPCRePosChSubPosEta ) { this->fTPCRePosChSubPosEta = TPCRePosChSubPosEta; }
   Double_t getTPCRePosChSubPosEta() { return fTPCRePosChSubPosEta; }
@@ -221,6 +289,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t getTPC2Im2NegChSubNegEta() { return fTPC2Im2NegChSubNegEta; }
   void setTPC2MNegChSubNegEta( Double_t TPC2MNegChSubNegEta ) { this->fTPC2MNegChSubNegEta = TPC2MNegChSubNegEta; }
   Double_t getTPC2MNegChSubNegEta() { return fTPC2MNegChSubNegEta; }
+  
+  void setTPC4Re2PosChSubPosEta( Double_t TPC4Re2PosChSubPosEta ) { this->fTPC4Re2PosChSubPosEta = TPC4Re2PosChSubPosEta; }
+  Double_t getTPC4Re2PosChSubPosEta() { return fTPC4Re2PosChSubPosEta; }
+  void setTPC4Im2PosChSubPosEta( Double_t TPC4Im2PosChSubPosEta ) { this->fTPC4Im2PosChSubPosEta = TPC4Im2PosChSubPosEta; }
+  Double_t getTPC4Im2PosChSubPosEta() { return fTPC4Im2PosChSubPosEta; }
+  void setTPC2Re3PosChSubPosEta( Double_t TPC2Re3PosChSubPosEta ) { this->fTPC2Re3PosChSubPosEta = TPC2Re3PosChSubPosEta; }
+  Double_t getTPC2Re3PosChSubPosEta() { return fTPC2Re3PosChSubPosEta; }
+  void setTPC2Im3PosChSubPosEta( Double_t TPC2Im3PosChSubPosEta ) { this->fTPC2Im3PosChSubPosEta = TPC2Im3PosChSubPosEta; }
+  Double_t getTPC2Im3PosChSubPosEta() { return fTPC2Im3PosChSubPosEta; }
+  void setTPC0MPosChSubPosEta( Double_t TPC0MPosChSubPosEta ) { this->fTPC0MPosChSubPosEta = TPC0MPosChSubPosEta; }
+  Double_t getTPC0MPosChSubPosEta() { return fTPC0MPosChSubPosEta; }
+  void setTPC3MPosChSubPosEta( Double_t TPC3MPosChSubPosEta ) { this->fTPC3MPosChSubPosEta = TPC3MPosChSubPosEta; }
+  Double_t getTPC3MPosChSubPosEta() { return fTPC3MPosChSubPosEta; }
+  void setTPC4MPosChSubPosEta( Double_t TPC4MPosChSubPosEta ) { this->fTPC4MPosChSubPosEta = TPC4MPosChSubPosEta; }
+  Double_t getTPC4MPosChSubPosEta() { return fTPC4MPosChSubPosEta; }
+  void setTPC4Re2PosChSubNegEta( Double_t TPC4Re2PosChSubNegEta ) { this->fTPC4Re2PosChSubNegEta = TPC4Re2PosChSubNegEta; }
+  Double_t getTPC4Re2PosChSubNegEta() { return fTPC4Re2PosChSubNegEta; }
+  void setTPC4Im2PosChSubNegEta( Double_t TPC4Im2PosChSubNegEta ) { this->fTPC4Im2PosChSubNegEta = TPC4Im2PosChSubNegEta; }
+  Double_t getTPC4Im2PosChSubNegEta() { return fTPC4Im2PosChSubNegEta; }
+  void setTPC2Re3PosChSubNegEta( Double_t TPC2Re3PosChSubNegEta ) { this->fTPC2Re3PosChSubNegEta = TPC2Re3PosChSubNegEta; }
+  Double_t getTPC2Re3PosChSubNegEta() { return fTPC2Re3PosChSubNegEta; }
+  void setTPC2Im3PosChSubNegEta( Double_t TPC2Im3PosChSubNegEta ) { this->fTPC2Im3PosChSubNegEta = TPC2Im3PosChSubNegEta; }
+  Double_t getTPC2Im3PosChSubNegEta() { return fTPC2Im3PosChSubNegEta; }
+  void setTPC0MPosChSubNegEta( Double_t TPC0MPosChSubNegEta ) { this->fTPC0MPosChSubNegEta = TPC0MPosChSubNegEta; }
+  Double_t getTPC0MPosChSubNegEta() { return fTPC0MPosChSubNegEta; }
+  void setTPC3MPosChSubNegEta( Double_t TPC3MPosChSubNegEta ) { this->fTPC3MPosChSubNegEta = TPC3MPosChSubNegEta; }
+  Double_t getTPC3MPosChSubNegEta() { return fTPC3MPosChSubNegEta; }
+  void setTPC4MPosChSubNegEta( Double_t TPC4MPosChSubNegEta ) { this->fTPC4MPosChSubNegEta = TPC4MPosChSubNegEta; }
+  Double_t getTPC4MPosChSubNegEta() { return fTPC4MPosChSubNegEta; }
+  void setTPC4Re2NegChSubPosEta( Double_t TPC4Re2NegChSubPosEta ) { this->fTPC4Re2NegChSubPosEta = TPC4Re2NegChSubPosEta; }
+  Double_t getTPC4Re2NegChSubPosEta() { return fTPC4Re2NegChSubPosEta; }
+  void setTPC4Im2NegChSubPosEta( Double_t TPC4Im2NegChSubPosEta ) { this->fTPC4Im2NegChSubPosEta = TPC4Im2NegChSubPosEta; }
+  Double_t getTPC4Im2NegChSubPosEta() { return fTPC4Im2NegChSubPosEta; }
+  void setTPC2Re3NegChSubPosEta( Double_t TPC2Re3NegChSubPosEta ) { this->fTPC2Re3NegChSubPosEta = TPC2Re3NegChSubPosEta; }
+  Double_t getTPC2Re3NegChSubPosEta() { return fTPC2Re3NegChSubPosEta; }
+  void setTPC2Im3NegChSubPosEta( Double_t TPC2Im3NegChSubPosEta ) { this->fTPC2Im3NegChSubPosEta = TPC2Im3NegChSubPosEta; }
+  Double_t getTPC2Im3NegChSubPosEta() { return fTPC2Im3NegChSubPosEta; }
+  void setTPC0MNegChSubPosEta( Double_t TPC0MNegChSubPosEta ) { this->fTPC0MNegChSubPosEta = TPC0MNegChSubPosEta; }
+  Double_t getTPC0MNegChSubPosEta() { return fTPC0MNegChSubPosEta; }
+  void setTPC3MNegChSubPosEta( Double_t TPC3MNegChSubPosEta ) { this->fTPC3MNegChSubPosEta = TPC3MNegChSubPosEta; }
+  Double_t getTPC3MNegChSubPosEta() { return fTPC3MNegChSubPosEta; }
+  void setTPC4MNegChSubPosEta( Double_t TPC4MNegChSubPosEta ) { this->fTPC4MNegChSubPosEta = TPC4MNegChSubPosEta; }
+  Double_t getTPC4MNegChSubPosEta() { return fTPC4MNegChSubPosEta; }
+  void setTPC4Re2NegChSubNegEta( Double_t TPC4Re2NegChSubNegEta ) { this->fTPC4Re2NegChSubNegEta = TPC4Re2NegChSubNegEta; }
+  Double_t getTPC4Re2NegChSubNegEta() { return fTPC4Re2NegChSubNegEta; }
+  void setTPC4Im2NegChSubNegEta( Double_t TPC4Im2NegChSubNegEta ) { this->fTPC4Im2NegChSubNegEta = TPC4Im2NegChSubNegEta; }
+  Double_t getTPC4Im2NegChSubNegEta() { return fTPC4Im2NegChSubNegEta; }
+  void setTPC2Re3NegChSubNegEta( Double_t TPC2Re3NegChSubNegEta ) { this->fTPC2Re3NegChSubNegEta = TPC2Re3NegChSubNegEta; }
+  Double_t getTPC2Re3NegChSubNegEta() { return fTPC2Re3NegChSubNegEta; }
+  void setTPC2Im3NegChSubNegEta( Double_t TPC2Im3NegChSubNegEta ) { this->fTPC2Im3NegChSubNegEta = TPC2Im3NegChSubNegEta; }
+  Double_t getTPC2Im3NegChSubNegEta() { return fTPC2Im3NegChSubNegEta; }
+  void setTPC0MNegChSubNegEta( Double_t TPC0MNegChSubNegEta ) { this->fTPC0MNegChSubNegEta = TPC0MNegChSubNegEta; }
+  Double_t getTPC0MNegChSubNegEta() { return fTPC0MNegChSubNegEta; }
+  void setTPC3MNegChSubNegEta( Double_t TPC3MNegChSubNegEta ) { this->fTPC3MNegChSubNegEta = TPC3MNegChSubNegEta; }
+  Double_t getTPC3MNegChSubNegEta() { return fTPC3MNegChSubNegEta; }
+  void setTPC4MNegChSubNegEta( Double_t TPC4MNegChSubNegEta ) { this->fTPC4MNegChSubNegEta = TPC4MNegChSubNegEta; }
+  Double_t getTPC4MNegChSubNegEta() { return fTPC4MNegChSubNegEta; }
   
   // TPC pion
   void setTPCPionRePosChPosEta( Double_t TPCPionRePosChPosEta ) { this->fTPCPionRePosChPosEta = TPCPionRePosChPosEta; }
@@ -289,6 +414,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setTPCPion2MNegChNegEta( Double_t TPCPion2MNegChNegEta ) { this->fTPCPion2MNegChNegEta = TPCPion2MNegChNegEta; }
   Double_t getTPCPion2MNegChNegEta() { return fTPCPion2MNegChNegEta; }
   
+  void setTPCPion4Re2PosChPosEta( Double_t TPCPion4Re2PosChPosEta ) { this->fTPCPion4Re2PosChPosEta = TPCPion4Re2PosChPosEta; }
+  Double_t getTPCPion4Re2PosChPosEta() { return fTPCPion4Re2PosChPosEta; }
+  void setTPCPion4Im2PosChPosEta( Double_t TPCPion4Im2PosChPosEta ) { this->fTPCPion4Im2PosChPosEta = TPCPion4Im2PosChPosEta; }
+  Double_t getTPCPion4Im2PosChPosEta() { return fTPCPion4Im2PosChPosEta; }
+  void setTPCPion2Re3PosChPosEta( Double_t TPCPion2Re3PosChPosEta ) { this->fTPCPion2Re3PosChPosEta = TPCPion2Re3PosChPosEta; }
+  Double_t getTPCPion2Re3PosChPosEta() { return fTPCPion2Re3PosChPosEta; }
+  void setTPCPion2Im3PosChPosEta( Double_t TPCPion2Im3PosChPosEta ) { this->fTPCPion2Im3PosChPosEta = TPCPion2Im3PosChPosEta; }
+  Double_t getTPCPion2Im3PosChPosEta() { return fTPCPion2Im3PosChPosEta; }
+  void setTPCPion0MPosChPosEta( Double_t TPCPion0MPosChPosEta ) { this->fTPCPion0MPosChPosEta = TPCPion0MPosChPosEta; }
+  Double_t getTPCPion0MPosChPosEta() { return fTPCPion0MPosChPosEta; }
+  void setTPCPion3MPosChPosEta( Double_t TPCPion3MPosChPosEta ) { this->fTPCPion3MPosChPosEta = TPCPion3MPosChPosEta; }
+  Double_t getTPCPion3MPosChPosEta() { return fTPCPion3MPosChPosEta; }
+  void setTPCPion4MPosChPosEta( Double_t TPCPion4MPosChPosEta ) { this->fTPCPion4MPosChPosEta = TPCPion4MPosChPosEta; }
+  Double_t getTPCPion4MPosChPosEta() { return fTPCPion4MPosChPosEta; }
+  void setTPCPion4Re2PosChNegEta( Double_t TPCPion4Re2PosChNegEta ) { this->fTPCPion4Re2PosChNegEta = TPCPion4Re2PosChNegEta; }
+  Double_t getTPCPion4Re2PosChNegEta() { return fTPCPion4Re2PosChNegEta; }
+  void setTPCPion4Im2PosChNegEta( Double_t TPCPion4Im2PosChNegEta ) { this->fTPCPion4Im2PosChNegEta = TPCPion4Im2PosChNegEta; }
+  Double_t getTPCPion4Im2PosChNegEta() { return fTPCPion4Im2PosChNegEta; }
+  void setTPCPion2Re3PosChNegEta( Double_t TPCPion2Re3PosChNegEta ) { this->fTPCPion2Re3PosChNegEta = TPCPion2Re3PosChNegEta; }
+  Double_t getTPCPion2Re3PosChNegEta() { return fTPCPion2Re3PosChNegEta; }
+  void setTPCPion2Im3PosChNegEta( Double_t TPCPion2Im3PosChNegEta ) { this->fTPCPion2Im3PosChNegEta = TPCPion2Im3PosChNegEta; }
+  Double_t getTPCPion2Im3PosChNegEta() { return fTPCPion2Im3PosChNegEta; }
+  void setTPCPion0MPosChNegEta( Double_t TPCPion0MPosChNegEta ) { this->fTPCPion0MPosChNegEta = TPCPion0MPosChNegEta; }
+  Double_t getTPCPion0MPosChNegEta() { return fTPCPion0MPosChNegEta; }
+  void setTPCPion3MPosChNegEta( Double_t TPCPion3MPosChNegEta ) { this->fTPCPion3MPosChNegEta = TPCPion3MPosChNegEta; }
+  Double_t getTPCPion3MPosChNegEta() { return fTPCPion3MPosChNegEta; }
+  void setTPCPion4MPosChNegEta( Double_t TPCPion4MPosChNegEta ) { this->fTPCPion4MPosChNegEta = TPCPion4MPosChNegEta; }
+  Double_t getTPCPion4MPosChNegEta() { return fTPCPion4MPosChNegEta; }
+  void setTPCPion4Re2NegChPosEta( Double_t TPCPion4Re2NegChPosEta ) { this->fTPCPion4Re2NegChPosEta = TPCPion4Re2NegChPosEta; }
+  Double_t getTPCPion4Re2NegChPosEta() { return fTPCPion4Re2NegChPosEta; }
+  void setTPCPion4Im2NegChPosEta( Double_t TPCPion4Im2NegChPosEta ) { this->fTPCPion4Im2NegChPosEta = TPCPion4Im2NegChPosEta; }
+  Double_t getTPCPion4Im2NegChPosEta() { return fTPCPion4Im2NegChPosEta; }
+  void setTPCPion2Re3NegChPosEta( Double_t TPCPion2Re3NegChPosEta ) { this->fTPCPion2Re3NegChPosEta = TPCPion2Re3NegChPosEta; }
+  Double_t getTPCPion2Re3NegChPosEta() { return fTPCPion2Re3NegChPosEta; }
+  void setTPCPion2Im3NegChPosEta( Double_t TPCPion2Im3NegChPosEta ) { this->fTPCPion2Im3NegChPosEta = TPCPion2Im3NegChPosEta; }
+  Double_t getTPCPion2Im3NegChPosEta() { return fTPCPion2Im3NegChPosEta; }
+  void setTPCPion0MNegChPosEta( Double_t TPCPion0MNegChPosEta ) { this->fTPCPion0MNegChPosEta = TPCPion0MNegChPosEta; }
+  Double_t getTPCPion0MNegChPosEta() { return fTPCPion0MNegChPosEta; }
+  void setTPCPion3MNegChPosEta( Double_t TPCPion3MNegChPosEta ) { this->fTPCPion3MNegChPosEta = TPCPion3MNegChPosEta; }
+  Double_t getTPCPion3MNegChPosEta() { return fTPCPion3MNegChPosEta; }
+  void setTPCPion4MNegChPosEta( Double_t TPCPion4MNegChPosEta ) { this->fTPCPion4MNegChPosEta = TPCPion4MNegChPosEta; }
+  Double_t getTPCPion4MNegChPosEta() { return fTPCPion4MNegChPosEta; }
+  void setTPCPion4Re2NegChNegEta( Double_t TPCPion4Re2NegChNegEta ) { this->fTPCPion4Re2NegChNegEta = TPCPion4Re2NegChNegEta; }
+  Double_t getTPCPion4Re2NegChNegEta() { return fTPCPion4Re2NegChNegEta; }
+  void setTPCPion4Im2NegChNegEta( Double_t TPCPion4Im2NegChNegEta ) { this->fTPCPion4Im2NegChNegEta = TPCPion4Im2NegChNegEta; }
+  Double_t getTPCPion4Im2NegChNegEta() { return fTPCPion4Im2NegChNegEta; }
+  void setTPCPion2Re3NegChNegEta( Double_t TPCPion2Re3NegChNegEta ) { this->fTPCPion2Re3NegChNegEta = TPCPion2Re3NegChNegEta; }
+  Double_t getTPCPion2Re3NegChNegEta() { return fTPCPion2Re3NegChNegEta; }
+  void setTPCPion2Im3NegChNegEta( Double_t TPCPion2Im3NegChNegEta ) { this->fTPCPion2Im3NegChNegEta = TPCPion2Im3NegChNegEta; }
+  Double_t getTPCPion2Im3NegChNegEta() { return fTPCPion2Im3NegChNegEta; }
+  void setTPCPion0MNegChNegEta( Double_t TPCPion0MNegChNegEta ) { this->fTPCPion0MNegChNegEta = TPCPion0MNegChNegEta; }
+  Double_t getTPCPion0MNegChNegEta() { return fTPCPion0MNegChNegEta; }
+  void setTPCPion3MNegChNegEta( Double_t TPCPion3MNegChNegEta ) { this->fTPCPion3MNegChNegEta = TPCPion3MNegChNegEta; }
+  Double_t getTPCPion3MNegChNegEta() { return fTPCPion3MNegChNegEta; }
+  void setTPCPion4MNegChNegEta( Double_t TPCPion4MNegChNegEta ) { this->fTPCPion4MNegChNegEta = TPCPion4MNegChNegEta; }
+  Double_t getTPCPion4MNegChNegEta() { return fTPCPion4MNegChNegEta; }
+  
   
   void setTPCPionRePosChSubPosEta( Double_t TPCPionRePosChSubPosEta ) { this->fTPCPionRePosChSubPosEta = TPCPionRePosChSubPosEta; }
   Double_t getTPCPionRePosChSubPosEta() { return fTPCPionRePosChSubPosEta; }
@@ -355,6 +537,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t getTPCPion2Im2NegChSubNegEta() { return fTPCPion2Im2NegChSubNegEta; }
   void setTPCPion2MNegChSubNegEta( Double_t TPCPion2MNegChSubNegEta ) { this->fTPCPion2MNegChSubNegEta = TPCPion2MNegChSubNegEta; }
   Double_t getTPCPion2MNegChSubNegEta() { return fTPCPion2MNegChSubNegEta; }
+  
+  void setTPCPion4Re2PosChSubPosEta( Double_t TPCPion4Re2PosChSubPosEta ) { this->fTPCPion4Re2PosChSubPosEta = TPCPion4Re2PosChSubPosEta; }
+  Double_t getTPCPion4Re2PosChSubPosEta() { return fTPCPion4Re2PosChSubPosEta; }
+  void setTPCPion4Im2PosChSubPosEta( Double_t TPCPion4Im2PosChSubPosEta ) { this->fTPCPion4Im2PosChSubPosEta = TPCPion4Im2PosChSubPosEta; }
+  Double_t getTPCPion4Im2PosChSubPosEta() { return fTPCPion4Im2PosChSubPosEta; }
+  void setTPCPion2Re3PosChSubPosEta( Double_t TPCPion2Re3PosChSubPosEta ) { this->fTPCPion2Re3PosChSubPosEta = TPCPion2Re3PosChSubPosEta; }
+  Double_t getTPCPion2Re3PosChSubPosEta() { return fTPCPion2Re3PosChSubPosEta; }
+  void setTPCPion2Im3PosChSubPosEta( Double_t TPCPion2Im3PosChSubPosEta ) { this->fTPCPion2Im3PosChSubPosEta = TPCPion2Im3PosChSubPosEta; }
+  Double_t getTPCPion2Im3PosChSubPosEta() { return fTPCPion2Im3PosChSubPosEta; }
+  void setTPCPion0MPosChSubPosEta( Double_t TPCPion0MPosChSubPosEta ) { this->fTPCPion0MPosChSubPosEta = TPCPion0MPosChSubPosEta; }
+  Double_t getTPCPion0MPosChSubPosEta() { return fTPCPion0MPosChSubPosEta; }
+  void setTPCPion3MPosChSubPosEta( Double_t TPCPion3MPosChSubPosEta ) { this->fTPCPion3MPosChSubPosEta = TPCPion3MPosChSubPosEta; }
+  Double_t getTPCPion3MPosChSubPosEta() { return fTPCPion3MPosChSubPosEta; }
+  void setTPCPion4MPosChSubPosEta( Double_t TPCPion4MPosChSubPosEta ) { this->fTPCPion4MPosChSubPosEta = TPCPion4MPosChSubPosEta; }
+  Double_t getTPCPion4MPosChSubPosEta() { return fTPCPion4MPosChSubPosEta; }
+  void setTPCPion4Re2PosChSubNegEta( Double_t TPCPion4Re2PosChSubNegEta ) { this->fTPCPion4Re2PosChSubNegEta = TPCPion4Re2PosChSubNegEta; }
+  Double_t getTPCPion4Re2PosChSubNegEta() { return fTPCPion4Re2PosChSubNegEta; }
+  void setTPCPion4Im2PosChSubNegEta( Double_t TPCPion4Im2PosChSubNegEta ) { this->fTPCPion4Im2PosChSubNegEta = TPCPion4Im2PosChSubNegEta; }
+  Double_t getTPCPion4Im2PosChSubNegEta() { return fTPCPion4Im2PosChSubNegEta; }
+  void setTPCPion2Re3PosChSubNegEta( Double_t TPCPion2Re3PosChSubNegEta ) { this->fTPCPion2Re3PosChSubNegEta = TPCPion2Re3PosChSubNegEta; }
+  Double_t getTPCPion2Re3PosChSubNegEta() { return fTPCPion2Re3PosChSubNegEta; }
+  void setTPCPion2Im3PosChSubNegEta( Double_t TPCPion2Im3PosChSubNegEta ) { this->fTPCPion2Im3PosChSubNegEta = TPCPion2Im3PosChSubNegEta; }
+  Double_t getTPCPion2Im3PosChSubNegEta() { return fTPCPion2Im3PosChSubNegEta; }
+  void setTPCPion0MPosChSubNegEta( Double_t TPCPion0MPosChSubNegEta ) { this->fTPCPion0MPosChSubNegEta = TPCPion0MPosChSubNegEta; }
+  Double_t getTPCPion0MPosChSubNegEta() { return fTPCPion0MPosChSubNegEta; }
+  void setTPCPion3MPosChSubNegEta( Double_t TPCPion3MPosChSubNegEta ) { this->fTPCPion3MPosChSubNegEta = TPCPion3MPosChSubNegEta; }
+  Double_t getTPCPion3MPosChSubNegEta() { return fTPCPion3MPosChSubNegEta; }
+  void setTPCPion4MPosChSubNegEta( Double_t TPCPion4MPosChSubNegEta ) { this->fTPCPion4MPosChSubNegEta = TPCPion4MPosChSubNegEta; }
+  Double_t getTPCPion4MPosChSubNegEta() { return fTPCPion4MPosChSubNegEta; }
+  void setTPCPion4Re2NegChSubPosEta( Double_t TPCPion4Re2NegChSubPosEta ) { this->fTPCPion4Re2NegChSubPosEta = TPCPion4Re2NegChSubPosEta; }
+  Double_t getTPCPion4Re2NegChSubPosEta() { return fTPCPion4Re2NegChSubPosEta; }
+  void setTPCPion4Im2NegChSubPosEta( Double_t TPCPion4Im2NegChSubPosEta ) { this->fTPCPion4Im2NegChSubPosEta = TPCPion4Im2NegChSubPosEta; }
+  Double_t getTPCPion4Im2NegChSubPosEta() { return fTPCPion4Im2NegChSubPosEta; }
+  void setTPCPion2Re3NegChSubPosEta( Double_t TPCPion2Re3NegChSubPosEta ) { this->fTPCPion2Re3NegChSubPosEta = TPCPion2Re3NegChSubPosEta; }
+  Double_t getTPCPion2Re3NegChSubPosEta() { return fTPCPion2Re3NegChSubPosEta; }
+  void setTPCPion2Im3NegChSubPosEta( Double_t TPCPion2Im3NegChSubPosEta ) { this->fTPCPion2Im3NegChSubPosEta = TPCPion2Im3NegChSubPosEta; }
+  Double_t getTPCPion2Im3NegChSubPosEta() { return fTPCPion2Im3NegChSubPosEta; }
+  void setTPCPion0MNegChSubPosEta( Double_t TPCPion0MNegChSubPosEta ) { this->fTPCPion0MNegChSubPosEta = TPCPion0MNegChSubPosEta; }
+  Double_t getTPCPion0MNegChSubPosEta() { return fTPCPion0MNegChSubPosEta; }
+  void setTPCPion3MNegChSubPosEta( Double_t TPCPion3MNegChSubPosEta ) { this->fTPCPion3MNegChSubPosEta = TPCPion3MNegChSubPosEta; }
+  Double_t getTPCPion3MNegChSubPosEta() { return fTPCPion3MNegChSubPosEta; }
+  void setTPCPion4MNegChSubPosEta( Double_t TPCPion4MNegChSubPosEta ) { this->fTPCPion4MNegChSubPosEta = TPCPion4MNegChSubPosEta; }
+  Double_t getTPCPion4MNegChSubPosEta() { return fTPCPion4MNegChSubPosEta; }
+  void setTPCPion4Re2NegChSubNegEta( Double_t TPCPion4Re2NegChSubNegEta ) { this->fTPCPion4Re2NegChSubNegEta = TPCPion4Re2NegChSubNegEta; }
+  Double_t getTPCPion4Re2NegChSubNegEta() { return fTPCPion4Re2NegChSubNegEta; }
+  void setTPCPion4Im2NegChSubNegEta( Double_t TPCPion4Im2NegChSubNegEta ) { this->fTPCPion4Im2NegChSubNegEta = TPCPion4Im2NegChSubNegEta; }
+  Double_t getTPCPion4Im2NegChSubNegEta() { return fTPCPion4Im2NegChSubNegEta; }
+  void setTPCPion2Re3NegChSubNegEta( Double_t TPCPion2Re3NegChSubNegEta ) { this->fTPCPion2Re3NegChSubNegEta = TPCPion2Re3NegChSubNegEta; }
+  Double_t getTPCPion2Re3NegChSubNegEta() { return fTPCPion2Re3NegChSubNegEta; }
+  void setTPCPion2Im3NegChSubNegEta( Double_t TPCPion2Im3NegChSubNegEta ) { this->fTPCPion2Im3NegChSubNegEta = TPCPion2Im3NegChSubNegEta; }
+  Double_t getTPCPion2Im3NegChSubNegEta() { return fTPCPion2Im3NegChSubNegEta; }
+  void setTPCPion0MNegChSubNegEta( Double_t TPCPion0MNegChSubNegEta ) { this->fTPCPion0MNegChSubNegEta = TPCPion0MNegChSubNegEta; }
+  Double_t getTPCPion0MNegChSubNegEta() { return fTPCPion0MNegChSubNegEta; }
+  void setTPCPion3MNegChSubNegEta( Double_t TPCPion3MNegChSubNegEta ) { this->fTPCPion3MNegChSubNegEta = TPCPion3MNegChSubNegEta; }
+  Double_t getTPCPion3MNegChSubNegEta() { return fTPCPion3MNegChSubNegEta; }
+  void setTPCPion4MNegChSubNegEta( Double_t TPCPion4MNegChSubNegEta ) { this->fTPCPion4MNegChSubNegEta = TPCPion4MNegChSubNegEta; }
+  Double_t getTPCPion4MNegChSubNegEta() { return fTPCPion4MNegChSubNegEta; }
   
   // TPC kaon
   void setTPCKaonRePosChPosEta( Double_t TPCKaonRePosChPosEta ) { this->fTPCKaonRePosChPosEta = TPCKaonRePosChPosEta; }
@@ -423,6 +662,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setTPCKaon2MNegChNegEta( Double_t TPCKaon2MNegChNegEta ) { this->fTPCKaon2MNegChNegEta = TPCKaon2MNegChNegEta; }
   Double_t getTPCKaon2MNegChNegEta() { return fTPCKaon2MNegChNegEta; }
   
+  void setTPCKaon4Re2PosChPosEta( Double_t TPCKaon4Re2PosChPosEta ) { this->fTPCKaon4Re2PosChPosEta = TPCKaon4Re2PosChPosEta; }
+  Double_t getTPCKaon4Re2PosChPosEta() { return fTPCKaon4Re2PosChPosEta; }
+  void setTPCKaon4Im2PosChPosEta( Double_t TPCKaon4Im2PosChPosEta ) { this->fTPCKaon4Im2PosChPosEta = TPCKaon4Im2PosChPosEta; }
+  Double_t getTPCKaon4Im2PosChPosEta() { return fTPCKaon4Im2PosChPosEta; }
+  void setTPCKaon2Re3PosChPosEta( Double_t TPCKaon2Re3PosChPosEta ) { this->fTPCKaon2Re3PosChPosEta = TPCKaon2Re3PosChPosEta; }
+  Double_t getTPCKaon2Re3PosChPosEta() { return fTPCKaon2Re3PosChPosEta; }
+  void setTPCKaon2Im3PosChPosEta( Double_t TPCKaon2Im3PosChPosEta ) { this->fTPCKaon2Im3PosChPosEta = TPCKaon2Im3PosChPosEta; }
+  Double_t getTPCKaon2Im3PosChPosEta() { return fTPCKaon2Im3PosChPosEta; }
+  void setTPCKaon0MPosChPosEta( Double_t TPCKaon0MPosChPosEta ) { this->fTPCKaon0MPosChPosEta = TPCKaon0MPosChPosEta; }
+  Double_t getTPCKaon0MPosChPosEta() { return fTPCKaon0MPosChPosEta; }
+  void setTPCKaon3MPosChPosEta( Double_t TPCKaon3MPosChPosEta ) { this->fTPCKaon3MPosChPosEta = TPCKaon3MPosChPosEta; }
+  Double_t getTPCKaon3MPosChPosEta() { return fTPCKaon3MPosChPosEta; }
+  void setTPCKaon4MPosChPosEta( Double_t TPCKaon4MPosChPosEta ) { this->fTPCKaon4MPosChPosEta = TPCKaon4MPosChPosEta; }
+  Double_t getTPCKaon4MPosChPosEta() { return fTPCKaon4MPosChPosEta; }
+  void setTPCKaon4Re2PosChNegEta( Double_t TPCKaon4Re2PosChNegEta ) { this->fTPCKaon4Re2PosChNegEta = TPCKaon4Re2PosChNegEta; }
+  Double_t getTPCKaon4Re2PosChNegEta() { return fTPCKaon4Re2PosChNegEta; }
+  void setTPCKaon4Im2PosChNegEta( Double_t TPCKaon4Im2PosChNegEta ) { this->fTPCKaon4Im2PosChNegEta = TPCKaon4Im2PosChNegEta; }
+  Double_t getTPCKaon4Im2PosChNegEta() { return fTPCKaon4Im2PosChNegEta; }
+  void setTPCKaon2Re3PosChNegEta( Double_t TPCKaon2Re3PosChNegEta ) { this->fTPCKaon2Re3PosChNegEta = TPCKaon2Re3PosChNegEta; }
+  Double_t getTPCKaon2Re3PosChNegEta() { return fTPCKaon2Re3PosChNegEta; }
+  void setTPCKaon2Im3PosChNegEta( Double_t TPCKaon2Im3PosChNegEta ) { this->fTPCKaon2Im3PosChNegEta = TPCKaon2Im3PosChNegEta; }
+  Double_t getTPCKaon2Im3PosChNegEta() { return fTPCKaon2Im3PosChNegEta; }
+  void setTPCKaon0MPosChNegEta( Double_t TPCKaon0MPosChNegEta ) { this->fTPCKaon0MPosChNegEta = TPCKaon0MPosChNegEta; }
+  Double_t getTPCKaon0MPosChNegEta() { return fTPCKaon0MPosChNegEta; }
+  void setTPCKaon3MPosChNegEta( Double_t TPCKaon3MPosChNegEta ) { this->fTPCKaon3MPosChNegEta = TPCKaon3MPosChNegEta; }
+  Double_t getTPCKaon3MPosChNegEta() { return fTPCKaon3MPosChNegEta; }
+  void setTPCKaon4MPosChNegEta( Double_t TPCKaon4MPosChNegEta ) { this->fTPCKaon4MPosChNegEta = TPCKaon4MPosChNegEta; }
+  Double_t getTPCKaon4MPosChNegEta() { return fTPCKaon4MPosChNegEta; }
+  void setTPCKaon4Re2NegChPosEta( Double_t TPCKaon4Re2NegChPosEta ) { this->fTPCKaon4Re2NegChPosEta = TPCKaon4Re2NegChPosEta; }
+  Double_t getTPCKaon4Re2NegChPosEta() { return fTPCKaon4Re2NegChPosEta; }
+  void setTPCKaon4Im2NegChPosEta( Double_t TPCKaon4Im2NegChPosEta ) { this->fTPCKaon4Im2NegChPosEta = TPCKaon4Im2NegChPosEta; }
+  Double_t getTPCKaon4Im2NegChPosEta() { return fTPCKaon4Im2NegChPosEta; }
+  void setTPCKaon2Re3NegChPosEta( Double_t TPCKaon2Re3NegChPosEta ) { this->fTPCKaon2Re3NegChPosEta = TPCKaon2Re3NegChPosEta; }
+  Double_t getTPCKaon2Re3NegChPosEta() { return fTPCKaon2Re3NegChPosEta; }
+  void setTPCKaon2Im3NegChPosEta( Double_t TPCKaon2Im3NegChPosEta ) { this->fTPCKaon2Im3NegChPosEta = TPCKaon2Im3NegChPosEta; }
+  Double_t getTPCKaon2Im3NegChPosEta() { return fTPCKaon2Im3NegChPosEta; }
+  void setTPCKaon0MNegChPosEta( Double_t TPCKaon0MNegChPosEta ) { this->fTPCKaon0MNegChPosEta = TPCKaon0MNegChPosEta; }
+  Double_t getTPCKaon0MNegChPosEta() { return fTPCKaon0MNegChPosEta; }
+  void setTPCKaon3MNegChPosEta( Double_t TPCKaon3MNegChPosEta ) { this->fTPCKaon3MNegChPosEta = TPCKaon3MNegChPosEta; }
+  Double_t getTPCKaon3MNegChPosEta() { return fTPCKaon3MNegChPosEta; }
+  void setTPCKaon4MNegChPosEta( Double_t TPCKaon4MNegChPosEta ) { this->fTPCKaon4MNegChPosEta = TPCKaon4MNegChPosEta; }
+  Double_t getTPCKaon4MNegChPosEta() { return fTPCKaon4MNegChPosEta; }
+  void setTPCKaon4Re2NegChNegEta( Double_t TPCKaon4Re2NegChNegEta ) { this->fTPCKaon4Re2NegChNegEta = TPCKaon4Re2NegChNegEta; }
+  Double_t getTPCKaon4Re2NegChNegEta() { return fTPCKaon4Re2NegChNegEta; }
+  void setTPCKaon4Im2NegChNegEta( Double_t TPCKaon4Im2NegChNegEta ) { this->fTPCKaon4Im2NegChNegEta = TPCKaon4Im2NegChNegEta; }
+  Double_t getTPCKaon4Im2NegChNegEta() { return fTPCKaon4Im2NegChNegEta; }
+  void setTPCKaon2Re3NegChNegEta( Double_t TPCKaon2Re3NegChNegEta ) { this->fTPCKaon2Re3NegChNegEta = TPCKaon2Re3NegChNegEta; }
+  Double_t getTPCKaon2Re3NegChNegEta() { return fTPCKaon2Re3NegChNegEta; }
+  void setTPCKaon2Im3NegChNegEta( Double_t TPCKaon2Im3NegChNegEta ) { this->fTPCKaon2Im3NegChNegEta = TPCKaon2Im3NegChNegEta; }
+  Double_t getTPCKaon2Im3NegChNegEta() { return fTPCKaon2Im3NegChNegEta; }
+  void setTPCKaon0MNegChNegEta( Double_t TPCKaon0MNegChNegEta ) { this->fTPCKaon0MNegChNegEta = TPCKaon0MNegChNegEta; }
+  Double_t getTPCKaon0MNegChNegEta() { return fTPCKaon0MNegChNegEta; }
+  void setTPCKaon3MNegChNegEta( Double_t TPCKaon3MNegChNegEta ) { this->fTPCKaon3MNegChNegEta = TPCKaon3MNegChNegEta; }
+  Double_t getTPCKaon3MNegChNegEta() { return fTPCKaon3MNegChNegEta; }
+  void setTPCKaon4MNegChNegEta( Double_t TPCKaon4MNegChNegEta ) { this->fTPCKaon4MNegChNegEta = TPCKaon4MNegChNegEta; }
+  Double_t getTPCKaon4MNegChNegEta() { return fTPCKaon4MNegChNegEta; }
+  
   
   void setTPCKaonRePosChSubPosEta( Double_t TPCKaonRePosChSubPosEta ) { this->fTPCKaonRePosChSubPosEta = TPCKaonRePosChSubPosEta; }
   Double_t getTPCKaonRePosChSubPosEta() { return fTPCKaonRePosChSubPosEta; }
@@ -489,6 +785,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t getTPCKaon2Im2NegChSubNegEta() { return fTPCKaon2Im2NegChSubNegEta; }
   void setTPCKaon2MNegChSubNegEta( Double_t TPCKaon2MNegChSubNegEta ) { this->fTPCKaon2MNegChSubNegEta = TPCKaon2MNegChSubNegEta; }
   Double_t getTPCKaon2MNegChSubNegEta() { return fTPCKaon2MNegChSubNegEta; }
+  
+  void setTPCKaon4Re2PosChSubPosEta( Double_t TPCKaon4Re2PosChSubPosEta ) { this->fTPCKaon4Re2PosChSubPosEta = TPCKaon4Re2PosChSubPosEta; }
+  Double_t getTPCKaon4Re2PosChSubPosEta() { return fTPCKaon4Re2PosChSubPosEta; }
+  void setTPCKaon4Im2PosChSubPosEta( Double_t TPCKaon4Im2PosChSubPosEta ) { this->fTPCKaon4Im2PosChSubPosEta = TPCKaon4Im2PosChSubPosEta; }
+  Double_t getTPCKaon4Im2PosChSubPosEta() { return fTPCKaon4Im2PosChSubPosEta; }
+  void setTPCKaon2Re3PosChSubPosEta( Double_t TPCKaon2Re3PosChSubPosEta ) { this->fTPCKaon2Re3PosChSubPosEta = TPCKaon2Re3PosChSubPosEta; }
+  Double_t getTPCKaon2Re3PosChSubPosEta() { return fTPCKaon2Re3PosChSubPosEta; }
+  void setTPCKaon2Im3PosChSubPosEta( Double_t TPCKaon2Im3PosChSubPosEta ) { this->fTPCKaon2Im3PosChSubPosEta = TPCKaon2Im3PosChSubPosEta; }
+  Double_t getTPCKaon2Im3PosChSubPosEta() { return fTPCKaon2Im3PosChSubPosEta; }
+  void setTPCKaon0MPosChSubPosEta( Double_t TPCKaon0MPosChSubPosEta ) { this->fTPCKaon0MPosChSubPosEta = TPCKaon0MPosChSubPosEta; }
+  Double_t getTPCKaon0MPosChSubPosEta() { return fTPCKaon0MPosChSubPosEta; }
+  void setTPCKaon3MPosChSubPosEta( Double_t TPCKaon3MPosChSubPosEta ) { this->fTPCKaon3MPosChSubPosEta = TPCKaon3MPosChSubPosEta; }
+  Double_t getTPCKaon3MPosChSubPosEta() { return fTPCKaon3MPosChSubPosEta; }
+  void setTPCKaon4MPosChSubPosEta( Double_t TPCKaon4MPosChSubPosEta ) { this->fTPCKaon4MPosChSubPosEta = TPCKaon4MPosChSubPosEta; }
+  Double_t getTPCKaon4MPosChSubPosEta() { return fTPCKaon4MPosChSubPosEta; }
+  void setTPCKaon4Re2PosChSubNegEta( Double_t TPCKaon4Re2PosChSubNegEta ) { this->fTPCKaon4Re2PosChSubNegEta = TPCKaon4Re2PosChSubNegEta; }
+  Double_t getTPCKaon4Re2PosChSubNegEta() { return fTPCKaon4Re2PosChSubNegEta; }
+  void setTPCKaon4Im2PosChSubNegEta( Double_t TPCKaon4Im2PosChSubNegEta ) { this->fTPCKaon4Im2PosChSubNegEta = TPCKaon4Im2PosChSubNegEta; }
+  Double_t getTPCKaon4Im2PosChSubNegEta() { return fTPCKaon4Im2PosChSubNegEta; }
+  void setTPCKaon2Re3PosChSubNegEta( Double_t TPCKaon2Re3PosChSubNegEta ) { this->fTPCKaon2Re3PosChSubNegEta = TPCKaon2Re3PosChSubNegEta; }
+  Double_t getTPCKaon2Re3PosChSubNegEta() { return fTPCKaon2Re3PosChSubNegEta; }
+  void setTPCKaon2Im3PosChSubNegEta( Double_t TPCKaon2Im3PosChSubNegEta ) { this->fTPCKaon2Im3PosChSubNegEta = TPCKaon2Im3PosChSubNegEta; }
+  Double_t getTPCKaon2Im3PosChSubNegEta() { return fTPCKaon2Im3PosChSubNegEta; }
+  void setTPCKaon0MPosChSubNegEta( Double_t TPCKaon0MPosChSubNegEta ) { this->fTPCKaon0MPosChSubNegEta = TPCKaon0MPosChSubNegEta; }
+  Double_t getTPCKaon0MPosChSubNegEta() { return fTPCKaon0MPosChSubNegEta; }
+  void setTPCKaon3MPosChSubNegEta( Double_t TPCKaon3MPosChSubNegEta ) { this->fTPCKaon3MPosChSubNegEta = TPCKaon3MPosChSubNegEta; }
+  Double_t getTPCKaon3MPosChSubNegEta() { return fTPCKaon3MPosChSubNegEta; }
+  void setTPCKaon4MPosChSubNegEta( Double_t TPCKaon4MPosChSubNegEta ) { this->fTPCKaon4MPosChSubNegEta = TPCKaon4MPosChSubNegEta; }
+  Double_t getTPCKaon4MPosChSubNegEta() { return fTPCKaon4MPosChSubNegEta; }
+  void setTPCKaon4Re2NegChSubPosEta( Double_t TPCKaon4Re2NegChSubPosEta ) { this->fTPCKaon4Re2NegChSubPosEta = TPCKaon4Re2NegChSubPosEta; }
+  Double_t getTPCKaon4Re2NegChSubPosEta() { return fTPCKaon4Re2NegChSubPosEta; }
+  void setTPCKaon4Im2NegChSubPosEta( Double_t TPCKaon4Im2NegChSubPosEta ) { this->fTPCKaon4Im2NegChSubPosEta = TPCKaon4Im2NegChSubPosEta; }
+  Double_t getTPCKaon4Im2NegChSubPosEta() { return fTPCKaon4Im2NegChSubPosEta; }
+  void setTPCKaon2Re3NegChSubPosEta( Double_t TPCKaon2Re3NegChSubPosEta ) { this->fTPCKaon2Re3NegChSubPosEta = TPCKaon2Re3NegChSubPosEta; }
+  Double_t getTPCKaon2Re3NegChSubPosEta() { return fTPCKaon2Re3NegChSubPosEta; }
+  void setTPCKaon2Im3NegChSubPosEta( Double_t TPCKaon2Im3NegChSubPosEta ) { this->fTPCKaon2Im3NegChSubPosEta = TPCKaon2Im3NegChSubPosEta; }
+  Double_t getTPCKaon2Im3NegChSubPosEta() { return fTPCKaon2Im3NegChSubPosEta; }
+  void setTPCKaon0MNegChSubPosEta( Double_t TPCKaon0MNegChSubPosEta ) { this->fTPCKaon0MNegChSubPosEta = TPCKaon0MNegChSubPosEta; }
+  Double_t getTPCKaon0MNegChSubPosEta() { return fTPCKaon0MNegChSubPosEta; }
+  void setTPCKaon3MNegChSubPosEta( Double_t TPCKaon3MNegChSubPosEta ) { this->fTPCKaon3MNegChSubPosEta = TPCKaon3MNegChSubPosEta; }
+  Double_t getTPCKaon3MNegChSubPosEta() { return fTPCKaon3MNegChSubPosEta; }
+  void setTPCKaon4MNegChSubPosEta( Double_t TPCKaon4MNegChSubPosEta ) { this->fTPCKaon4MNegChSubPosEta = TPCKaon4MNegChSubPosEta; }
+  Double_t getTPCKaon4MNegChSubPosEta() { return fTPCKaon4MNegChSubPosEta; }
+  void setTPCKaon4Re2NegChSubNegEta( Double_t TPCKaon4Re2NegChSubNegEta ) { this->fTPCKaon4Re2NegChSubNegEta = TPCKaon4Re2NegChSubNegEta; }
+  Double_t getTPCKaon4Re2NegChSubNegEta() { return fTPCKaon4Re2NegChSubNegEta; }
+  void setTPCKaon4Im2NegChSubNegEta( Double_t TPCKaon4Im2NegChSubNegEta ) { this->fTPCKaon4Im2NegChSubNegEta = TPCKaon4Im2NegChSubNegEta; }
+  Double_t getTPCKaon4Im2NegChSubNegEta() { return fTPCKaon4Im2NegChSubNegEta; }
+  void setTPCKaon2Re3NegChSubNegEta( Double_t TPCKaon2Re3NegChSubNegEta ) { this->fTPCKaon2Re3NegChSubNegEta = TPCKaon2Re3NegChSubNegEta; }
+  Double_t getTPCKaon2Re3NegChSubNegEta() { return fTPCKaon2Re3NegChSubNegEta; }
+  void setTPCKaon2Im3NegChSubNegEta( Double_t TPCKaon2Im3NegChSubNegEta ) { this->fTPCKaon2Im3NegChSubNegEta = TPCKaon2Im3NegChSubNegEta; }
+  Double_t getTPCKaon2Im3NegChSubNegEta() { return fTPCKaon2Im3NegChSubNegEta; }
+  void setTPCKaon0MNegChSubNegEta( Double_t TPCKaon0MNegChSubNegEta ) { this->fTPCKaon0MNegChSubNegEta = TPCKaon0MNegChSubNegEta; }
+  Double_t getTPCKaon0MNegChSubNegEta() { return fTPCKaon0MNegChSubNegEta; }
+  void setTPCKaon3MNegChSubNegEta( Double_t TPCKaon3MNegChSubNegEta ) { this->fTPCKaon3MNegChSubNegEta = TPCKaon3MNegChSubNegEta; }
+  Double_t getTPCKaon3MNegChSubNegEta() { return fTPCKaon3MNegChSubNegEta; }
+  void setTPCKaon4MNegChSubNegEta( Double_t TPCKaon4MNegChSubNegEta ) { this->fTPCKaon4MNegChSubNegEta = TPCKaon4MNegChSubNegEta; }
+  Double_t getTPCKaon4MNegChSubNegEta() { return fTPCKaon4MNegChSubNegEta; }
   
   // TPC proton
   void setTPCProtonRePosChPosEta( Double_t TPCProtonRePosChPosEta ) { this->fTPCProtonRePosChPosEta = TPCProtonRePosChPosEta; }
@@ -557,6 +910,63 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setTPCProton2MNegChNegEta( Double_t TPCProton2MNegChNegEta ) { this->fTPCProton2MNegChNegEta = TPCProton2MNegChNegEta; }
   Double_t getTPCProton2MNegChNegEta() { return fTPCProton2MNegChNegEta; }
   
+  void setTPCProton4Re2PosChPosEta( Double_t TPCProton4Re2PosChPosEta ) { this->fTPCProton4Re2PosChPosEta = TPCProton4Re2PosChPosEta; }
+  Double_t getTPCProton4Re2PosChPosEta() { return fTPCProton4Re2PosChPosEta; }
+  void setTPCProton4Im2PosChPosEta( Double_t TPCProton4Im2PosChPosEta ) { this->fTPCProton4Im2PosChPosEta = TPCProton4Im2PosChPosEta; }
+  Double_t getTPCProton4Im2PosChPosEta() { return fTPCProton4Im2PosChPosEta; }
+  void setTPCProton2Re3PosChPosEta( Double_t TPCProton2Re3PosChPosEta ) { this->fTPCProton2Re3PosChPosEta = TPCProton2Re3PosChPosEta; }
+  Double_t getTPCProton2Re3PosChPosEta() { return fTPCProton2Re3PosChPosEta; }
+  void setTPCProton2Im3PosChPosEta( Double_t TPCProton2Im3PosChPosEta ) { this->fTPCProton2Im3PosChPosEta = TPCProton2Im3PosChPosEta; }
+  Double_t getTPCProton2Im3PosChPosEta() { return fTPCProton2Im3PosChPosEta; }
+  void setTPCProton0MPosChPosEta( Double_t TPCProton0MPosChPosEta ) { this->fTPCProton0MPosChPosEta = TPCProton0MPosChPosEta; }
+  Double_t getTPCProton0MPosChPosEta() { return fTPCProton0MPosChPosEta; }
+  void setTPCProton3MPosChPosEta( Double_t TPCProton3MPosChPosEta ) { this->fTPCProton3MPosChPosEta = TPCProton3MPosChPosEta; }
+  Double_t getTPCProton3MPosChPosEta() { return fTPCProton3MPosChPosEta; }
+  void setTPCProton4MPosChPosEta( Double_t TPCProton4MPosChPosEta ) { this->fTPCProton4MPosChPosEta = TPCProton4MPosChPosEta; }
+  Double_t getTPCProton4MPosChPosEta() { return fTPCProton4MPosChPosEta; }
+  void setTPCProton4Re2PosChNegEta( Double_t TPCProton4Re2PosChNegEta ) { this->fTPCProton4Re2PosChNegEta = TPCProton4Re2PosChNegEta; }
+  Double_t getTPCProton4Re2PosChNegEta() { return fTPCProton4Re2PosChNegEta; }
+  void setTPCProton4Im2PosChNegEta( Double_t TPCProton4Im2PosChNegEta ) { this->fTPCProton4Im2PosChNegEta = TPCProton4Im2PosChNegEta; }
+  Double_t getTPCProton4Im2PosChNegEta() { return fTPCProton4Im2PosChNegEta; }
+  void setTPCProton2Re3PosChNegEta( Double_t TPCProton2Re3PosChNegEta ) { this->fTPCProton2Re3PosChNegEta = TPCProton2Re3PosChNegEta; }
+  Double_t getTPCProton2Re3PosChNegEta() { return fTPCProton2Re3PosChNegEta; }
+  void setTPCProton2Im3PosChNegEta( Double_t TPCProton2Im3PosChNegEta ) { this->fTPCProton2Im3PosChNegEta = TPCProton2Im3PosChNegEta; }
+  Double_t getTPCProton2Im3PosChNegEta() { return fTPCProton2Im3PosChNegEta; }
+  void setTPCProton0MPosChNegEta( Double_t TPCProton0MPosChNegEta ) { this->fTPCProton0MPosChNegEta = TPCProton0MPosChNegEta; }
+  Double_t getTPCProton0MPosChNegEta() { return fTPCProton0MPosChNegEta; }
+  void setTPCProton3MPosChNegEta( Double_t TPCProton3MPosChNegEta ) { this->fTPCProton3MPosChNegEta = TPCProton3MPosChNegEta; }
+  Double_t getTPCProton3MPosChNegEta() { return fTPCProton3MPosChNegEta; }
+  void setTPCProton4MPosChNegEta( Double_t TPCProton4MPosChNegEta ) { this->fTPCProton4MPosChNegEta = TPCProton4MPosChNegEta; }
+  Double_t getTPCProton4MPosChNegEta() { return fTPCProton4MPosChNegEta; }
+  void setTPCProton4Re2NegChPosEta( Double_t TPCProton4Re2NegChPosEta ) { this->fTPCProton4Re2NegChPosEta = TPCProton4Re2NegChPosEta; }
+  Double_t getTPCProton4Re2NegChPosEta() { return fTPCProton4Re2NegChPosEta; }
+  void setTPCProton4Im2NegChPosEta( Double_t TPCProton4Im2NegChPosEta ) { this->fTPCProton4Im2NegChPosEta = TPCProton4Im2NegChPosEta; }
+  Double_t getTPCProton4Im2NegChPosEta() { return fTPCProton4Im2NegChPosEta; }
+  void setTPCProton2Re3NegChPosEta( Double_t TPCProton2Re3NegChPosEta ) { this->fTPCProton2Re3NegChPosEta = TPCProton2Re3NegChPosEta; }
+  Double_t getTPCProton2Re3NegChPosEta() { return fTPCProton2Re3NegChPosEta; }
+  void setTPCProton2Im3NegChPosEta( Double_t TPCProton2Im3NegChPosEta ) { this->fTPCProton2Im3NegChPosEta = TPCProton2Im3NegChPosEta; }
+  Double_t getTPCProton2Im3NegChPosEta() { return fTPCProton2Im3NegChPosEta; }
+  void setTPCProton0MNegChPosEta( Double_t TPCProton0MNegChPosEta ) { this->fTPCProton0MNegChPosEta = TPCProton0MNegChPosEta; }
+  Double_t getTPCProton0MNegChPosEta() { return fTPCProton0MNegChPosEta; }
+  void setTPCProton3MNegChPosEta( Double_t TPCProton3MNegChPosEta ) { this->fTPCProton3MNegChPosEta = TPCProton3MNegChPosEta; }
+  Double_t getTPCProton3MNegChPosEta() { return fTPCProton3MNegChPosEta; }
+  void setTPCProton4MNegChPosEta( Double_t TPCProton4MNegChPosEta ) { this->fTPCProton4MNegChPosEta = TPCProton4MNegChPosEta; }
+  Double_t getTPCProton4MNegChPosEta() { return fTPCProton4MNegChPosEta; }
+  void setTPCProton4Re2NegChNegEta( Double_t TPCProton4Re2NegChNegEta ) { this->fTPCProton4Re2NegChNegEta = TPCProton4Re2NegChNegEta; }
+  Double_t getTPCProton4Re2NegChNegEta() { return fTPCProton4Re2NegChNegEta; }
+  void setTPCProton4Im2NegChNegEta( Double_t TPCProton4Im2NegChNegEta ) { this->fTPCProton4Im2NegChNegEta = TPCProton4Im2NegChNegEta; }
+  Double_t getTPCProton4Im2NegChNegEta() { return fTPCProton4Im2NegChNegEta; }
+  void setTPCProton2Re3NegChNegEta( Double_t TPCProton2Re3NegChNegEta ) { this->fTPCProton2Re3NegChNegEta = TPCProton2Re3NegChNegEta; }
+  Double_t getTPCProton2Re3NegChNegEta() { return fTPCProton2Re3NegChNegEta; }
+  void setTPCProton2Im3NegChNegEta( Double_t TPCProton2Im3NegChNegEta ) { this->fTPCProton2Im3NegChNegEta = TPCProton2Im3NegChNegEta; }
+  Double_t getTPCProton2Im3NegChNegEta() { return fTPCProton2Im3NegChNegEta; }
+  void setTPCProton0MNegChNegEta( Double_t TPCProton0MNegChNegEta ) { this->fTPCProton0MNegChNegEta = TPCProton0MNegChNegEta; }
+  Double_t getTPCProton0MNegChNegEta() { return fTPCProton0MNegChNegEta; }
+  void setTPCProton3MNegChNegEta( Double_t TPCProton3MNegChNegEta ) { this->fTPCProton3MNegChNegEta = TPCProton3MNegChNegEta; }
+  Double_t getTPCProton3MNegChNegEta() { return fTPCProton3MNegChNegEta; }
+  void setTPCProton4MNegChNegEta( Double_t TPCProton4MNegChNegEta ) { this->fTPCProton4MNegChNegEta = TPCProton4MNegChNegEta; }
+  Double_t getTPCProton4MNegChNegEta() { return fTPCProton4MNegChNegEta; }
+  
   
   void setTPCProtonRePosChSubPosEta( Double_t TPCProtonRePosChSubPosEta ) { this->fTPCProtonRePosChSubPosEta = TPCProtonRePosChSubPosEta; }
   Double_t getTPCProtonRePosChSubPosEta() { return fTPCProtonRePosChSubPosEta; }
@@ -624,12 +1034,77 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   void setTPCProton2MNegChSubNegEta( Double_t TPCProton2MNegChSubNegEta ) { this->fTPCProton2MNegChSubNegEta = TPCProton2MNegChSubNegEta; }
   Double_t getTPCProton2MNegChSubNegEta() { return fTPCProton2MNegChSubNegEta; }
   
+  void setTPCProton4Re2PosChSubPosEta( Double_t TPCProton4Re2PosChSubPosEta ) { this->fTPCProton4Re2PosChSubPosEta = TPCProton4Re2PosChSubPosEta; }
+  Double_t getTPCProton4Re2PosChSubPosEta() { return fTPCProton4Re2PosChSubPosEta; }
+  void setTPCProton4Im2PosChSubPosEta( Double_t TPCProton4Im2PosChSubPosEta ) { this->fTPCProton4Im2PosChSubPosEta = TPCProton4Im2PosChSubPosEta; }
+  Double_t getTPCProton4Im2PosChSubPosEta() { return fTPCProton4Im2PosChSubPosEta; }
+  void setTPCProton2Re3PosChSubPosEta( Double_t TPCProton2Re3PosChSubPosEta ) { this->fTPCProton2Re3PosChSubPosEta = TPCProton2Re3PosChSubPosEta; }
+  Double_t getTPCProton2Re3PosChSubPosEta() { return fTPCProton2Re3PosChSubPosEta; }
+  void setTPCProton2Im3PosChSubPosEta( Double_t TPCProton2Im3PosChSubPosEta ) { this->fTPCProton2Im3PosChSubPosEta = TPCProton2Im3PosChSubPosEta; }
+  Double_t getTPCProton2Im3PosChSubPosEta() { return fTPCProton2Im3PosChSubPosEta; }
+  void setTPCProton0MPosChSubPosEta( Double_t TPCProton0MPosChSubPosEta ) { this->fTPCProton0MPosChSubPosEta = TPCProton0MPosChSubPosEta; }
+  Double_t getTPCProton0MPosChSubPosEta() { return fTPCProton0MPosChSubPosEta; }
+  void setTPCProton3MPosChSubPosEta( Double_t TPCProton3MPosChSubPosEta ) { this->fTPCProton3MPosChSubPosEta = TPCProton3MPosChSubPosEta; }
+  Double_t getTPCProton3MPosChSubPosEta() { return fTPCProton3MPosChSubPosEta; }
+  void setTPCProton4MPosChSubPosEta( Double_t TPCProton4MPosChSubPosEta ) { this->fTPCProton4MPosChSubPosEta = TPCProton4MPosChSubPosEta; }
+  Double_t getTPCProton4MPosChSubPosEta() { return fTPCProton4MPosChSubPosEta; }
+  void setTPCProton4Re2PosChSubNegEta( Double_t TPCProton4Re2PosChSubNegEta ) { this->fTPCProton4Re2PosChSubNegEta = TPCProton4Re2PosChSubNegEta; }
+  Double_t getTPCProton4Re2PosChSubNegEta() { return fTPCProton4Re2PosChSubNegEta; }
+  void setTPCProton4Im2PosChSubNegEta( Double_t TPCProton4Im2PosChSubNegEta ) { this->fTPCProton4Im2PosChSubNegEta = TPCProton4Im2PosChSubNegEta; }
+  Double_t getTPCProton4Im2PosChSubNegEta() { return fTPCProton4Im2PosChSubNegEta; }
+  void setTPCProton2Re3PosChSubNegEta( Double_t TPCProton2Re3PosChSubNegEta ) { this->fTPCProton2Re3PosChSubNegEta = TPCProton2Re3PosChSubNegEta; }
+  Double_t getTPCProton2Re3PosChSubNegEta() { return fTPCProton2Re3PosChSubNegEta; }
+  void setTPCProton2Im3PosChSubNegEta( Double_t TPCProton2Im3PosChSubNegEta ) { this->fTPCProton2Im3PosChSubNegEta = TPCProton2Im3PosChSubNegEta; }
+  Double_t getTPCProton2Im3PosChSubNegEta() { return fTPCProton2Im3PosChSubNegEta; }
+  void setTPCProton0MPosChSubNegEta( Double_t TPCProton0MPosChSubNegEta ) { this->fTPCProton0MPosChSubNegEta = TPCProton0MPosChSubNegEta; }
+  Double_t getTPCProton0MPosChSubNegEta() { return fTPCProton0MPosChSubNegEta; }
+  void setTPCProton3MPosChSubNegEta( Double_t TPCProton3MPosChSubNegEta ) { this->fTPCProton3MPosChSubNegEta = TPCProton3MPosChSubNegEta; }
+  Double_t getTPCProton3MPosChSubNegEta() { return fTPCProton3MPosChSubNegEta; }
+  void setTPCProton4MPosChSubNegEta( Double_t TPCProton4MPosChSubNegEta ) { this->fTPCProton4MPosChSubNegEta = TPCProton4MPosChSubNegEta; }
+  Double_t getTPCProton4MPosChSubNegEta() { return fTPCProton4MPosChSubNegEta; }
+  void setTPCProton4Re2NegChSubPosEta( Double_t TPCProton4Re2NegChSubPosEta ) { this->fTPCProton4Re2NegChSubPosEta = TPCProton4Re2NegChSubPosEta; }
+  Double_t getTPCProton4Re2NegChSubPosEta() { return fTPCProton4Re2NegChSubPosEta; }
+  void setTPCProton4Im2NegChSubPosEta( Double_t TPCProton4Im2NegChSubPosEta ) { this->fTPCProton4Im2NegChSubPosEta = TPCProton4Im2NegChSubPosEta; }
+  Double_t getTPCProton4Im2NegChSubPosEta() { return fTPCProton4Im2NegChSubPosEta; }
+  void setTPCProton2Re3NegChSubPosEta( Double_t TPCProton2Re3NegChSubPosEta ) { this->fTPCProton2Re3NegChSubPosEta = TPCProton2Re3NegChSubPosEta; }
+  Double_t getTPCProton2Re3NegChSubPosEta() { return fTPCProton2Re3NegChSubPosEta; }
+  void setTPCProton2Im3NegChSubPosEta( Double_t TPCProton2Im3NegChSubPosEta ) { this->fTPCProton2Im3NegChSubPosEta = TPCProton2Im3NegChSubPosEta; }
+  Double_t getTPCProton2Im3NegChSubPosEta() { return fTPCProton2Im3NegChSubPosEta; }
+  void setTPCProton0MNegChSubPosEta( Double_t TPCProton0MNegChSubPosEta ) { this->fTPCProton0MNegChSubPosEta = TPCProton0MNegChSubPosEta; }
+  Double_t getTPCProton0MNegChSubPosEta() { return fTPCProton0MNegChSubPosEta; }
+  void setTPCProton3MNegChSubPosEta( Double_t TPCProton3MNegChSubPosEta ) { this->fTPCProton3MNegChSubPosEta = TPCProton3MNegChSubPosEta; }
+  Double_t getTPCProton3MNegChSubPosEta() { return fTPCProton3MNegChSubPosEta; }
+  void setTPCProton4MNegChSubPosEta( Double_t TPCProton4MNegChSubPosEta ) { this->fTPCProton4MNegChSubPosEta = TPCProton4MNegChSubPosEta; }
+  Double_t getTPCProton4MNegChSubPosEta() { return fTPCProton4MNegChSubPosEta; }
+  void setTPCProton4Re2NegChSubNegEta( Double_t TPCProton4Re2NegChSubNegEta ) { this->fTPCProton4Re2NegChSubNegEta = TPCProton4Re2NegChSubNegEta; }
+  Double_t getTPCProton4Re2NegChSubNegEta() { return fTPCProton4Re2NegChSubNegEta; }
+  void setTPCProton4Im2NegChSubNegEta( Double_t TPCProton4Im2NegChSubNegEta ) { this->fTPCProton4Im2NegChSubNegEta = TPCProton4Im2NegChSubNegEta; }
+  Double_t getTPCProton4Im2NegChSubNegEta() { return fTPCProton4Im2NegChSubNegEta; }
+  void setTPCProton2Re3NegChSubNegEta( Double_t TPCProton2Re3NegChSubNegEta ) { this->fTPCProton2Re3NegChSubNegEta = TPCProton2Re3NegChSubNegEta; }
+  Double_t getTPCProton2Re3NegChSubNegEta() { return fTPCProton2Re3NegChSubNegEta; }
+  void setTPCProton2Im3NegChSubNegEta( Double_t TPCProton2Im3NegChSubNegEta ) { this->fTPCProton2Im3NegChSubNegEta = TPCProton2Im3NegChSubNegEta; }
+  Double_t getTPCProton2Im3NegChSubNegEta() { return fTPCProton2Im3NegChSubNegEta; }
+  void setTPCProton0MNegChSubNegEta( Double_t TPCProton0MNegChSubNegEta ) { this->fTPCProton0MNegChSubNegEta = TPCProton0MNegChSubNegEta; }
+  Double_t getTPCProton0MNegChSubNegEta() { return fTPCProton0MNegChSubNegEta; }
+  void setTPCProton3MNegChSubNegEta( Double_t TPCProton3MNegChSubNegEta ) { this->fTPCProton3MNegChSubNegEta = TPCProton3MNegChSubNegEta; }
+  Double_t getTPCProton3MNegChSubNegEta() { return fTPCProton3MNegChSubNegEta; }
+  void setTPCProton4MNegChSubNegEta( Double_t TPCProton4MNegChSubNegEta ) { this->fTPCProton4MNegChSubNegEta = TPCProton4MNegChSubNegEta; }
+  Double_t getTPCProton4MNegChSubNegEta() { return fTPCProton4MNegChSubNegEta; }
+  
  private:
   Int_t fRunNum;
   Double_t fCentrality;
   Double_t fVtxPosX;
   Double_t fVtxPosY;
   Double_t fVtxPosZ;
+  
+  // period, orbit number, bunch cross, time stamp
+  UInt_t fRawPeriod;
+  UInt_t fRawOrbitNumber24;
+  UInt_t fOrbitNumber;
+  UShort_t fBunchCrossNumber;
+  UInt_t fTimeStamp;
+  
   // VZ eta < 0
   Double_t fVZCRe;
   Double_t fVZCIm;
@@ -688,6 +1163,34 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPC2Im2NegChNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPC2MNegChNegEta;    // w^2 eta-
   
+  Double_t fTPC4Re2PosChPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPC4Im2PosChPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPC2Re3PosChPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPC2Im3PosChPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPC0MPosChPosEta;   // w^0 eta+
+  Double_t fTPC3MPosChPosEta;   // w^3 eta+
+  Double_t fTPC4MPosChPosEta;   // w^4 eta+
+  Double_t fTPC4Re2PosChNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPC4Im2PosChNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPC2Re3PosChNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPC2Im3PosChNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPC0MPosChNegEta;   // w^0 eta-
+  Double_t fTPC3MPosChNegEta;   // w^3 eta-
+  Double_t fTPC4MPosChNegEta;   // w^4 eta-
+  Double_t fTPC4Re2NegChPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPC4Im2NegChPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPC2Re3NegChPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPC2Im3NegChPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPC0MNegChPosEta;   // w^0 eta+
+  Double_t fTPC3MNegChPosEta;   // w^3 eta+
+  Double_t fTPC4MNegChPosEta;   // w^4 eta+
+  Double_t fTPC4Re2NegChNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPC4Im2NegChNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPC2Re3NegChNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPC2Im3NegChNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPC0MNegChNegEta;   // w^0 eta-
+  Double_t fTPC3MNegChNegEta;   // w^3 eta-
+  Double_t fTPC4MNegChNegEta;   // w^4 eta-
   
   Double_t fTPCRePosChSubPosEta; // w * cos(theta+) eta+
   Double_t fTPCImPosChSubPosEta; // w * sin(theta+) eta+
@@ -722,6 +1225,35 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPC2Re2NegChSubNegEta; // w^2 * cos(2theta-) eta-
   Double_t fTPC2Im2NegChSubNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPC2MNegChSubNegEta;    // w^2 eta-
+  
+  Double_t fTPC4Re2PosChSubPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPC4Im2PosChSubPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPC2Re3PosChSubPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPC2Im3PosChSubPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPC0MPosChSubPosEta;   // w^0 eta+
+  Double_t fTPC3MPosChSubPosEta;   // w^3 eta+
+  Double_t fTPC4MPosChSubPosEta;   // w^4 eta+
+  Double_t fTPC4Re2PosChSubNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPC4Im2PosChSubNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPC2Re3PosChSubNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPC2Im3PosChSubNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPC0MPosChSubNegEta;   // w^0 eta-
+  Double_t fTPC3MPosChSubNegEta;   // w^3 eta-
+  Double_t fTPC4MPosChSubNegEta;   // w^4 eta-
+  Double_t fTPC4Re2NegChSubPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPC4Im2NegChSubPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPC2Re3NegChSubPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPC2Im3NegChSubPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPC0MNegChSubPosEta;   // w^0 eta+
+  Double_t fTPC3MNegChSubPosEta;   // w^3 eta+
+  Double_t fTPC4MNegChSubPosEta;   // w^4 eta+
+  Double_t fTPC4Re2NegChSubNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPC4Im2NegChSubNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPC2Re3NegChSubNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPC2Im3NegChSubNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPC0MNegChSubNegEta;   // w^0 eta-
+  Double_t fTPC3MNegChSubNegEta;   // w^3 eta-
+  Double_t fTPC4MNegChSubNegEta;   // w^4 eta-
   
   // TPC Pion (Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1, SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0)
   Double_t fTPCPionRePosChPosEta; // w * cos(theta+) eta+
@@ -758,6 +1290,34 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPCPion2Im2NegChNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPCPion2MNegChNegEta;    // w^2 eta-
   
+  Double_t fTPCPion4Re2PosChPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPCPion4Im2PosChPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPCPion2Re3PosChPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPCPion2Im3PosChPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPCPion0MPosChPosEta;   // w^0 eta+
+  Double_t fTPCPion3MPosChPosEta;   // w^3 eta+
+  Double_t fTPCPion4MPosChPosEta;   // w^4 eta+
+  Double_t fTPCPion4Re2PosChNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPCPion4Im2PosChNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPCPion2Re3PosChNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPCPion2Im3PosChNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPCPion0MPosChNegEta;   // w^0 eta-
+  Double_t fTPCPion3MPosChNegEta;   // w^3 eta-
+  Double_t fTPCPion4MPosChNegEta;   // w^4 eta-
+  Double_t fTPCPion4Re2NegChPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPCPion4Im2NegChPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPCPion2Re3NegChPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPCPion2Im3NegChPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPCPion0MNegChPosEta;   // w^0 eta+
+  Double_t fTPCPion3MNegChPosEta;   // w^3 eta+
+  Double_t fTPCPion4MNegChPosEta;   // w^4 eta+
+  Double_t fTPCPion4Re2NegChNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPCPion4Im2NegChNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPCPion2Re3NegChNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPCPion2Im3NegChNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPCPion0MNegChNegEta;   // w^0 eta-
+  Double_t fTPCPion3MNegChNegEta;   // w^3 eta-
+  Double_t fTPCPion4MNegChNegEta;   // w^4 eta-
   
   Double_t fTPCPionRePosChSubPosEta; // w * cos(theta+) eta+
   Double_t fTPCPionImPosChSubPosEta; // w * sin(theta+) eta+
@@ -792,6 +1352,35 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPCPion2Re2NegChSubNegEta; // w^2 * cos(2theta-) eta-
   Double_t fTPCPion2Im2NegChSubNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPCPion2MNegChSubNegEta;    // w^2 eta-
+  
+  Double_t fTPCPion4Re2PosChSubPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPCPion4Im2PosChSubPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPCPion2Re3PosChSubPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPCPion2Im3PosChSubPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPCPion0MPosChSubPosEta;   // w^0 eta+
+  Double_t fTPCPion3MPosChSubPosEta;   // w^3 eta+
+  Double_t fTPCPion4MPosChSubPosEta;   // w^4 eta+
+  Double_t fTPCPion4Re2PosChSubNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPCPion4Im2PosChSubNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPCPion2Re3PosChSubNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPCPion2Im3PosChSubNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPCPion0MPosChSubNegEta;   // w^0 eta-
+  Double_t fTPCPion3MPosChSubNegEta;   // w^3 eta-
+  Double_t fTPCPion4MPosChSubNegEta;   // w^4 eta-
+  Double_t fTPCPion4Re2NegChSubPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPCPion4Im2NegChSubPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPCPion2Re3NegChSubPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPCPion2Im3NegChSubPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPCPion0MNegChSubPosEta;   // w^0 eta+
+  Double_t fTPCPion3MNegChSubPosEta;   // w^3 eta+
+  Double_t fTPCPion4MNegChSubPosEta;   // w^4 eta+
+  Double_t fTPCPion4Re2NegChSubNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPCPion4Im2NegChSubNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPCPion2Re3NegChSubNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPCPion2Im3NegChSubNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPCPion0MNegChSubNegEta;   // w^0 eta-
+  Double_t fTPCPion3MNegChSubNegEta;   // w^3 eta-
+  Double_t fTPCPion4MNegChSubNegEta;   // w^4 eta-
   
   // TPC Kaon (Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1, SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0)
   Double_t fTPCKaonRePosChPosEta; // w * cos(theta+) eta+
@@ -828,6 +1417,34 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPCKaon2Im2NegChNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPCKaon2MNegChNegEta;    // w^2 eta-
   
+  Double_t fTPCKaon4Re2PosChPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPCKaon4Im2PosChPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPCKaon2Re3PosChPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPCKaon2Im3PosChPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPCKaon0MPosChPosEta;   // w^0 eta+
+  Double_t fTPCKaon3MPosChPosEta;   // w^3 eta+
+  Double_t fTPCKaon4MPosChPosEta;   // w^4 eta+
+  Double_t fTPCKaon4Re2PosChNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPCKaon4Im2PosChNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPCKaon2Re3PosChNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPCKaon2Im3PosChNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPCKaon0MPosChNegEta;   // w^0 eta-
+  Double_t fTPCKaon3MPosChNegEta;   // w^3 eta-
+  Double_t fTPCKaon4MPosChNegEta;   // w^4 eta-
+  Double_t fTPCKaon4Re2NegChPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPCKaon4Im2NegChPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPCKaon2Re3NegChPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPCKaon2Im3NegChPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPCKaon0MNegChPosEta;   // w^0 eta+
+  Double_t fTPCKaon3MNegChPosEta;   // w^3 eta+
+  Double_t fTPCKaon4MNegChPosEta;   // w^4 eta+
+  Double_t fTPCKaon4Re2NegChNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPCKaon4Im2NegChNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPCKaon2Re3NegChNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPCKaon2Im3NegChNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPCKaon0MNegChNegEta;   // w^0 eta-
+  Double_t fTPCKaon3MNegChNegEta;   // w^3 eta-
+  Double_t fTPCKaon4MNegChNegEta;   // w^4 eta-
   
   Double_t fTPCKaonRePosChSubPosEta; // w * cos(theta+) eta+
   Double_t fTPCKaonImPosChSubPosEta; // w * sin(theta+) eta+
@@ -862,6 +1479,35 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPCKaon2Re2NegChSubNegEta; // w^2 * cos(2theta-) eta-
   Double_t fTPCKaon2Im2NegChSubNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPCKaon2MNegChSubNegEta;    // w^2 eta-
+  
+  Double_t fTPCKaon4Re2PosChSubPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPCKaon4Im2PosChSubPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPCKaon2Re3PosChSubPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPCKaon2Im3PosChSubPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPCKaon0MPosChSubPosEta;   // w^0 eta+
+  Double_t fTPCKaon3MPosChSubPosEta;   // w^3 eta+
+  Double_t fTPCKaon4MPosChSubPosEta;   // w^4 eta+
+  Double_t fTPCKaon4Re2PosChSubNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPCKaon4Im2PosChSubNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPCKaon2Re3PosChSubNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPCKaon2Im3PosChSubNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPCKaon0MPosChSubNegEta;   // w^0 eta-
+  Double_t fTPCKaon3MPosChSubNegEta;   // w^3 eta-
+  Double_t fTPCKaon4MPosChSubNegEta;   // w^4 eta-
+  Double_t fTPCKaon4Re2NegChSubPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPCKaon4Im2NegChSubPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPCKaon2Re3NegChSubPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPCKaon2Im3NegChSubPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPCKaon0MNegChSubPosEta;   // w^0 eta+
+  Double_t fTPCKaon3MNegChSubPosEta;   // w^3 eta+
+  Double_t fTPCKaon4MNegChSubPosEta;   // w^4 eta+
+  Double_t fTPCKaon4Re2NegChSubNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPCKaon4Im2NegChSubNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPCKaon2Re3NegChSubNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPCKaon2Im3NegChSubNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPCKaon0MNegChSubNegEta;   // w^0 eta-
+  Double_t fTPCKaon3MNegChSubNegEta;   // w^3 eta-
+  Double_t fTPCKaon4MNegChSubNegEta;   // w^4 eta-
   
   // TPC Proton (0.1<|eta|<0.8)
   Double_t fTPCProtonRePosChPosEta; // w * cos(theta+) eta+
@@ -898,6 +1544,34 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPCProton2Im2NegChNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPCProton2MNegChNegEta;    // w^2 eta-
   
+  Double_t fTPCProton4Re2PosChPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPCProton4Im2PosChPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPCProton2Re3PosChPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPCProton2Im3PosChPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPCProton0MPosChPosEta;   // w^0 eta+
+  Double_t fTPCProton3MPosChPosEta;   // w^3 eta+
+  Double_t fTPCProton4MPosChPosEta;   // w^4 eta+
+  Double_t fTPCProton4Re2PosChNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPCProton4Im2PosChNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPCProton2Re3PosChNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPCProton2Im3PosChNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPCProton0MPosChNegEta;   // w^0 eta-
+  Double_t fTPCProton3MPosChNegEta;   // w^3 eta-
+  Double_t fTPCProton4MPosChNegEta;   // w^4 eta-
+  Double_t fTPCProton4Re2NegChPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPCProton4Im2NegChPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPCProton2Re3NegChPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPCProton2Im3NegChPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPCProton0MNegChPosEta;   // w^0 eta+
+  Double_t fTPCProton3MNegChPosEta;   // w^3 eta+
+  Double_t fTPCProton4MNegChPosEta;   // w^4 eta+
+  Double_t fTPCProton4Re2NegChNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPCProton4Im2NegChNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPCProton2Re3NegChNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPCProton2Im3NegChNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPCProton0MNegChNegEta;   // w^0 eta-
+  Double_t fTPCProton3MNegChNegEta;   // w^3 eta-
+  Double_t fTPCProton4MNegChNegEta;   // w^4 eta-
   
   Double_t fTPCProtonRePosChSubPosEta; // w * cos(theta+) eta+
   Double_t fTPCProtonImPosChSubPosEta; // w * sin(theta+) eta+
@@ -932,6 +1606,35 @@ class AliAnalysisTaskGammaDeltaPIDSaveQvecEvent {
   Double_t fTPCProton2Re2NegChSubNegEta; // w^2 * cos(2theta-) eta-
   Double_t fTPCProton2Im2NegChSubNegEta; // w^2 * sin(2theta-) eta-
   Double_t fTPCProton2MNegChSubNegEta;    // w^2 eta-
+  
+  Double_t fTPCProton4Re2PosChSubPosEta; // w^2*cos(4phi+) eta+
+  Double_t fTPCProton4Im2PosChSubPosEta; // w^2*sin(4phi+) eta+
+  Double_t fTPCProton2Re3PosChSubPosEta; // w^3*cos(2phi+) eta+
+  Double_t fTPCProton2Im3PosChSubPosEta; // w^3*sin(2phi+) eta+
+  Double_t fTPCProton0MPosChSubPosEta;   // w^0 eta+
+  Double_t fTPCProton3MPosChSubPosEta;   // w^3 eta+
+  Double_t fTPCProton4MPosChSubPosEta;   // w^4 eta+
+  Double_t fTPCProton4Re2PosChSubNegEta; // w^2*cos(4phi+) eta-
+  Double_t fTPCProton4Im2PosChSubNegEta; // w^2*sin(4phi+) eta-
+  Double_t fTPCProton2Re3PosChSubNegEta; // w^3*cos(2phi+) eta-
+  Double_t fTPCProton2Im3PosChSubNegEta; // w^3*sin(2phi+) eta-
+  Double_t fTPCProton0MPosChSubNegEta;   // w^0 eta-
+  Double_t fTPCProton3MPosChSubNegEta;   // w^3 eta-
+  Double_t fTPCProton4MPosChSubNegEta;   // w^4 eta-
+  Double_t fTPCProton4Re2NegChSubPosEta; // w^2*cos(4phi-) eta+
+  Double_t fTPCProton4Im2NegChSubPosEta; // w^2*sin(4phi-) eta+
+  Double_t fTPCProton2Re3NegChSubPosEta; // w^3*cos(2phi-) eta+
+  Double_t fTPCProton2Im3NegChSubPosEta; // w^3*sin(2phi-) eta+
+  Double_t fTPCProton0MNegChSubPosEta;   // w^0 eta+
+  Double_t fTPCProton3MNegChSubPosEta;   // w^3 eta+
+  Double_t fTPCProton4MNegChSubPosEta;   // w^4 eta+
+  Double_t fTPCProton4Re2NegChSubNegEta; // w^2*cos(4phi-) eta-
+  Double_t fTPCProton4Im2NegChSubNegEta; // w^2*sin(4phi-) eta-
+  Double_t fTPCProton2Re3NegChSubNegEta; // w^3*cos(2phi-) eta-
+  Double_t fTPCProton2Im3NegChSubNegEta; // w^3*sin(2phi-) eta-
+  Double_t fTPCProton0MNegChSubNegEta;   // w^0 eta-
+  Double_t fTPCProton3MNegChSubNegEta;   // w^3 eta-
+  Double_t fTPCProton4MNegChSubNegEta;   // w^4 eta-
   
   ClassDef(AliAnalysisTaskGammaDeltaPIDSaveQvecEvent, 1);
 };

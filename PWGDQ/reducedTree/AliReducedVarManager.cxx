@@ -77,6 +77,7 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.86484, // D0
    1.86962, // D+-
    1.96850, // Ds
+   1.96850 // Ds
 };
 
 const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager::kNTrackingStatus] = {
@@ -435,14 +436,17 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kVtxZ]                      = baseEvent->Vertex(2);
   values[kNVtxContributors]= baseEvent->VertexNContributors(); 
   
-  values[kCentVZERO]         = baseEvent->CentralityVZERO();
-  values[kCentSPD]              = baseEvent->CentralitySPD();
-  values[kCentTPC]              = baseEvent->CentralityTPC();
-  values[kCentZDC]             = baseEvent->CentralityZEMvsZDC();
-  values[kCentVZEROA]      = baseEvent->CentralityVZEROA();
-  values[kCentVZEROC]      = baseEvent->CentralityVZEROC();
-  values[kCentZNA]             = baseEvent->CentralityZNA();
-  values[kCentQuality]        = baseEvent->CentralityQuality();
+  values[kCentVZERO]        = baseEvent->CentralityVZERO();
+  values[kCentSPD]          = baseEvent->CentralitySPD();
+  values[kCentTPC]          = baseEvent->CentralityTPC();
+  values[kCentZDC]          = baseEvent->CentralityZEMvsZDC();
+  values[kCentVZEROA]       = baseEvent->CentralityVZEROA();
+  values[kCentVZEROC]       = baseEvent->CentralityVZEROC();
+  values[kCentZNA]          = baseEvent->CentralityZNA();
+  values[kCentV0MNew]       = baseEvent->CentralityV0MNew();
+  values[kCentV0MNewPlus1]  = baseEvent->CentralityV0MNewPlus1();
+  values[kCentV0MNewMinus1] = baseEvent->CentralityV0MNewMinus1();
+  values[kCentQuality]      = baseEvent->CentralityQuality();
   
   values[kNV0total]             = baseEvent->NV0CandidatesTotal();
   values[kNV0selected]       = baseEvent->NV0Candidates();
@@ -3097,6 +3101,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kCentVZEROA]                  = "VZERO-A centrality";              fgVariableUnits[kCentVZEROA]     = "%";
   fgVariableNames[kCentVZEROC]                  = "VZERO-C centrality";              fgVariableUnits[kCentVZEROC]     = "%";
   fgVariableNames[kCentZNA]                     = "ZNA centrality";                  fgVariableUnits[kCentZNA]        = "%";
+  fgVariableNames[kCentV0MNew]                  = "V0MNew centrality";               fgVariableUnits[kCentV0MNew]     = "%";
+  fgVariableNames[kCentV0MNewPlus1]             = "V0MNewPlus1 centrality";          fgVariableUnits[kCentV0MNewPlus1] = "%";
+  fgVariableNames[kCentV0MNewMinus1]            = "V0MNewMinus1 centrality";         fgVariableUnits[kCentV0MNewMinus1] = "%";
   fgVariableNames[kCentQuality]                 = "Centrality quality";              fgVariableUnits[kCentQuality]    = "";
   fgVariableNames[kNV0total]                    = "Total number of V0s";             fgVariableUnits[kNV0total]       = "";  
   fgVariableNames[kNV0selected]                 = "Number of selected V0s";          fgVariableUnits[kNV0selected]    = "";  

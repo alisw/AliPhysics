@@ -3,8 +3,10 @@ AliAnalysisTaskJetQnVectors* AddTaskJEQnVectors(TString taskname = "JetQnVectors
                                                              int harmonic = 2, 
                                                              int normmethod = 1,//AliJEQnVectorHandler::kQoverM,
                                                              int calibType = 0,//AliJEQnVectorHandler::kQnCalib, 
-                                                             TString AODBfileName = "",
-                                                             TString qnSplineFileName = "",
+                                                             TString AODBfileName1 = "",
+                                                             TString AODBfileName2 = "",
+                                                             TString qnSplineFileName1 = "",
+                                                             TString qnSplineFileName2 = "",
                                                              bool enableTPCphivscentrhistos=false,
                                                              bool enableTPCQvecvscentrhistos=false)
 {
@@ -25,9 +27,10 @@ AliAnalysisTaskJetQnVectors* AddTaskJEQnVectors(TString taskname = "JetQnVectors
     }
 
     //========= Add task for standard analysis to the ANALYSIS manager ====
-    AliAnalysisTaskJetQnVectors *task = new AliAnalysisTaskJetQnVectors(taskname.Data(),harmonic,calibType,AODBfileName);
+    AliAnalysisTaskJetQnVectors *task = new AliAnalysisTaskJetQnVectors(taskname.Data(),harmonic,calibType,AODBfileName1,AODBfileName2);
     task->SetNormalisationMethod(normmethod);
-    if(qnSplineFileName!="") task->LoadSplinesForqnPercentile(qnSplineFileName);
+    if(qnSplineFileName1!="") task->LoadSplinesForqnPercentile(qnSplineFileName1);
+    if(qnSplineFileName2!="") task->LoadSplinesForqnPercentile(qnSplineFileName2);
     if(enableTPCphivscentrhistos) task->EnableTPCPhiVsCentrDistrHistosVsRun();
     if(enableTPCQvecvscentrhistos) task->EnableQVecTPCVsCentrDistrHistosVsRun();
     mgr->AddTask(task);
