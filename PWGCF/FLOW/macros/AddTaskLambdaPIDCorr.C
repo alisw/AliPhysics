@@ -1,5 +1,47 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TString.h"
+#include "TObjArray.h"
+#include "TGrid.h"
+#include "AliLog.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisTaskGammaDeltaPID.h"
+#endif
 
-void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bDaughterUseTOF = kFALSE,Double_t fDautPtMax=2.0,Double_t fDautEtaMin=-0.8, Double_t fDautEtaMax=0.8,Double_t fChi2max=4.0,Int_t gNclustTPC=70,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M", Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t vnHarmonic=2, TString sDetForEP="TPC", TString sMCfilePath="alien:///alice/cern.ch/user/m/mhaque/calib2021/efficiencyBothpol18qnew.root", TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", TString sDetWgtsFile = "alien:///alice/cern.ch/user/m/mhaque/calib2021/CalibV0GainCorrectionLHC18q_Sept2021NoAvgQ.root",Bool_t bSkipAnalysis=kFALSE,Double_t fV0MassMean = 1.115683, Double_t fV0MassCut = 0.005, Double_t fV0CosPAmin = 0.995, Double_t fV0RapidityMax=0.5, Double_t fV0DecLengthMin=3.0, Double_t fV0DecLengthMax=100, Double_t fV0DCAToPrimVtx=1.5, Double_t fV0DCADiffDautMax=1.0, Double_t fV0DautDCAToPrimVtxMin = 0.02, Bool_t bCheckPIDFlow = kFALSE ,const char *suffix = "")
+void AddTaskLambdaPIDCorr(
+  Int_t gFilterBit = 768,
+  Double_t fV0PtMin = 0.2,
+  Bool_t bDaughterUseTOF = kFALSE,
+  Double_t fDautPtMax = 2.0,
+  Double_t fDautEtaMin = -0.8, 
+  Double_t fDautEtaMax = 0.8,
+  Double_t fChi2max = 4.0,
+  Int_t gNclustTPC = 70,
+  Double_t nSigTPC = 3.0, 
+  Double_t nSigTOF = 3.0, 
+  Bool_t bSkipPileUp = kFALSE, 
+  TString sCentEstimator = "V0M", 
+  Float_t fVzMin = -10.0, 
+  Float_t fVzMax = 10.0, 
+  TString sTrigger = "kINT7", 
+  Int_t vnHarmonic = 2, 
+  TString sDetForEP = "TPC", 
+  TString sMCfilePath="alien:///alice/cern.ch/user/m/mhaque/calib2021/efficiencyBothpol18qnew.root", 
+  TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", 
+  TString sDetWgtsFile = "alien:///alice/cern.ch/user/m/mhaque/calib2021/CalibV0GainCorrectionLHC18q_Oct2021.root",
+  Bool_t bSkipAnalysis = kFALSE,
+  Bool_t bUseZDCSpectatorPlane = kTRUE,
+  TString sZDCCorrFile = "alien:///alice/cern.ch/user/s/sqiu/RecenteringResultFinal_2018q.root",
+  Double_t fV0MassCut = 0.005, 
+  Double_t fV0CosPAmin = 0.995, 
+  Double_t fV0RapidityMax = 0.5, 
+  Double_t fV0DecLengthMin = 3.0, 
+  Double_t fV0DecLengthMax = 100, 
+  Double_t fV0DCAToPrimVtx = 1.5, 
+  Double_t fV0DCADiffDautMax = 1.0, 
+  Double_t fV0DautDCAToPrimVtxMin = 0.02, 
+  Bool_t bCheckPIDFlow = kTRUE,
+  const char *suffix = "")
 {
 
   printf("===================================================================================\n");
@@ -51,7 +93,7 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
 
 
 
-  cout<<"=========> AddTaskCMW::Info() setting Event Plane Det: "<<sDetForEP<<endl;
+  std::cout<<"=========> AddTaskCMW::Info() setting Event Plane Det: "<<sDetForEP<<std::endl;
   taskLambda->SetDetectorforEventPlane(sDetForEP);
 
 
@@ -81,7 +123,10 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
   taskLambda->SetFlagUseKinkTracks(kFALSE);
   taskLambda->SetCumulantHarmonic(vnHarmonic);
   taskLambda->SetTrackCutNclusterMin(gNclustTPC);  
- 
+
+  //Use ZDC Plane
+  taskLambda->SetUseZDCSpectatorPlane(bUseZDCSpectatorPlane);
+
   ///----- Functions For Lambda-X correlation  =>   
   Bool_t bFillLambda=kTRUE;
   taskLambda->SetFlagAnalyseLambda(bFillLambda);
@@ -102,7 +147,7 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
   taskLambda->SetV0DcaBetweenDaughtersMax(fV0DCADiffDautMax);
   taskLambda->SetDaughtersDCAToPrimVtxMin(fV0DautDCAToPrimVtxMin);
   //Lambda Mass Cut
-  taskLambda->SetMassMean(fV0MassMean);                             
+  taskLambda->SetMassMean(1.115683);                             
   taskLambda->SetLambdaMassCut(fV0MassCut);
   taskLambda->IsCheckPIDFlow(bCheckPIDFlow);
   //--------------------------------------------------------------------------
@@ -111,7 +156,7 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
 
 
 
-
+  if (!gGrid) TGrid::Connect("alien://");
   //========================= Setup Correction Files ======================> 
   TFile *fMCFile = TFile::Open(sMCfilePath,"READ");
   TList *fListMC=NULL;
@@ -119,6 +164,7 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
   if(fMCFile) {
     
     fListMC = dynamic_cast <TList*> (fMCFile->FindObjectAny("fMcEffiHij"));
+    std::cout<<" \n ==============> TList found for MC wgts.. GOOD! "<<std::endl;
 
     if(fListMC) {
       taskLambda->SetListForTrkCorr(fListMC); 
@@ -158,7 +204,7 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
 
   if(fV0ZDCWgtsFile) {    
     fListDetWgts = dynamic_cast <TList*> (fV0ZDCWgtsFile->FindObjectAny("fWgtsV0ZDC"));
-    std::cout<<" \n ==============> TList found for V0/ZDC wgts.. GOOD! ";
+    std::cout<<" \n ==============> TList found for V0 wgts.. GOOD! ";
     // fListDetWgts->ls(); 
 
     if(fListDetWgts) {
@@ -171,6 +217,26 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
   }
   else{
     printf("\n\n *** AddTask::WARNING => NO File Found for V0/ZDC Wgts!!\n AddTask::Info() ===> No V0/ZDC Correction!! \n\n");
+  }
+  //-----------------------------------------------------------------------------
+  
+  TFile* fZDCRecenterFile = TFile::Open(sZDCCorrFile, "READ");
+  TList* fListZDCCorr=NULL;
+  
+  if(fZDCRecenterFile) {
+	fListZDCCorr = dynamic_cast <TList*> (fZDCRecenterFile->FindObjectAny("fOutputRecenter"));
+    std::cout<<" \n ==============> TList found for ZDC wgts.. GOOD! "<<std::endl;
+	
+	if(fListZDCCorr) {
+	  taskLambda->SetListForZDCCorr(fListZDCCorr);
+    }
+    else{
+	  printf("\n\n *** AddTask::WARNING => ZDC Recentering file Exist, But TList Not Found!!");
+      printf("\n May be wrong TList name? No Correction for ZDC recentering !! \n\n");
+	}
+  
+  } else{
+	printf("\n\n *** AddTask::WARNING => NO File Found for ZDC recentering!!\n AddTask::Info() ===> No ZDC Correction!! \n\n");
   }
   //=================================================================================
 
@@ -192,7 +258,7 @@ void AddTaskLambdaPIDCorr(Int_t gFilterBit = 768,Double_t fV0PtMin=0.2,Bool_t bD
   mgr->ConnectOutput(taskLambda, 1, cOutPut1);
   
  
-  printf("\n\n ================> AddTask() Configured properly <==================\n\n");
+  printf("\n\n ================> AddTask was Configured properly... <==================\n\n");
 
 
 }//Task Ends

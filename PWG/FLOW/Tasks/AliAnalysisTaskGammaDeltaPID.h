@@ -461,6 +461,24 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TProfile       *fProfileGammaV0A_AntiLambda_Proton;     //!
   TProfile       *fProfileGammaV0A_AntiLambda_AntiProton; //!
   
+  TProfile       *fProfileGammaZNC_Lambda_hPos; //!
+  TProfile       *fProfileGammaZNC_Lambda_hNeg; //!
+  TProfile       *fProfileGammaZNC_Lambda_Proton;     //!
+  TProfile       *fProfileGammaZNC_Lambda_AntiProton; //!
+  TProfile       *fProfileGammaZNC_AntiLambda_hPos; //!
+  TProfile       *fProfileGammaZNC_AntiLambda_hNeg; //!
+  TProfile       *fProfileGammaZNC_AntiLambda_Proton;     //!
+  TProfile       *fProfileGammaZNC_AntiLambda_AntiProton; //!
+
+  TProfile       *fProfileGammaZNA_Lambda_hPos; //!
+  TProfile       *fProfileGammaZNA_Lambda_hNeg; //!
+  TProfile       *fProfileGammaZNA_Lambda_Proton;     //!
+  TProfile       *fProfileGammaZNA_Lambda_AntiProton; //!
+  TProfile       *fProfileGammaZNA_AntiLambda_hPos; //!
+  TProfile       *fProfileGammaZNA_AntiLambda_hNeg; //!
+  TProfile       *fProfileGammaZNA_AntiLambda_Proton;     //!
+  TProfile       *fProfileGammaZNA_AntiLambda_AntiProton; //!
+  
   TH1F          *hEmptyPointerFortheList;  //!  
 
   Double_t           fCurrentVtx[3];//!
@@ -484,12 +502,12 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
   TProfile         *fProfileAntiLambdaMassVsPt[2]; //!
   ///Check PID Flow
   Bool_t           bCheckPIDFlow;
-  TH3D             *fHist3DdNdPhiCentPthPos[3];
-  TH3D             *fHist3DdNdPhiCentPthNeg[3];  
-  TH3D             *fHist3DdNdPhiCentPtProton[3];
-  TH3D             *fHist3DdNdPhiCentPtAntiProton[3];
-  TH3D             *fHist3DdNdPhiCentPtLambda[4];
-  TH3D             *fHist3DdNdPhiCentPtAntiLambda[4];
+  TProfile2D       *fProfile2DRawFlowCentPthPos[5];//TPC/V0C/V0A/ZNC/ZNA
+  TProfile2D       *fProfile2DRawFlowCentPthNeg[5];  
+  TProfile2D       *fProfile2DRawFlowCentPtProton[5];
+  TProfile2D       *fProfile2DRawFlowCentPtAntiProton[5];
+  TProfile2D       *fProfile2DRawFlowCentPtLambda[6];
+  TProfile2D       *fProfile2DRawFlowCentPtAntiLambda[6];//TPCPos/TPCNeg/V0C/V0A/ZNC/ZNA
 
   
   //// Some more functions:
