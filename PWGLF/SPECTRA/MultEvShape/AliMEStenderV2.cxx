@@ -228,7 +228,6 @@ void AliMEStenderV2::UserCreateOutputObjects()
   PostData(kEventInfo + 1, fEvInfo);
   PostData(kTracks + 1, fTracks);
   PostData(kTree + 1, fTree);
-  gSystem->Unlink("mestenderV2Tree.root");
 
   fUtils = new AliPPVsMultUtils();
 
