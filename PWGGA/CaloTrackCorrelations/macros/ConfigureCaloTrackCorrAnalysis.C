@@ -2154,7 +2154,7 @@ AliAnaParticleJetFinderCorrelation* ConfigureGammaJetAnalysis
 ///   Options for analysisString:
 ///    * Analysis: "Photon","InvMass","Electron", "DecayPi0", "MergedPi0", "Charged", "QA", "Isolation", "Correlation", "Generator", "Random","ClusterShape","Exo", "GammaJet"
 ///    * Isolation analysis: "MultiIsoUESubMethods","MutiIsoR", "MultiIsoRUESubMethods","TightAcc","OpenAcc","FixIsoConeExcess","IsoBandUEGap","IsoBandUEGapFix05"
-///    * Correlation analysis: "M02PtDepCut"
+///    * Correlation analysis: "M02PtDepCut","CorrelationNarrowM02" (activate only photon shower shape cut correlation), "CorrelationIsoNarrowM02"  (activate only isolated photon shower shape cut correlation)
 ///    * Common: "SelectEmbed","HighMult","MCRealCaloAcc","PerSM","PerTCard","PerNCells","Bkg"
 ///                * Track Matching E/P cut: "TMEoP10","TMEoP5",""TMEoP3","TMEoP2","TMEoP1.7","TMEoP1.5"
 ///    * QA: QACellsOnly, QAClustersOnly
@@ -2471,13 +2471,13 @@ void ConfigureCaloTrackCorrAnalysis
     //
     if( analysisString.Contains("Correlation") )
     {
-      if ( !analysisString.Contains("MultiIso") )
+      if ( !analysisString.Contains("MultiIso") && !analysisString.Contains("CorrelationIsoNarrowM02") )
       {
         anaList->AddAt(ConfigureHadronCorrelationAnalysis
                        ("Photon", leading, kFALSE, shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
 
-        if ( !analysisString.Contains("Pi0Merged") )
+        if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
         {
           anaList->AddAt(ConfigureHadronCorrelationAnalysis
                          ("Photon", leading, kFALSE, 0.4, 2.0, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
@@ -2491,7 +2491,7 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Photon", leading, kTRUE,  shshMin, shshMax, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString) , n++); 
 
-        if ( !analysisString.Contains("Pi0Merged") )
+        if ( !analysisString.Contains("Pi0Merged") && !analysisString.Contains("NarrowM02") )
         {
           anaList->AddAt(ConfigureHadronCorrelationAnalysis
                          ("Photon", leading, kTRUE,  0.4, 2.0, isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
