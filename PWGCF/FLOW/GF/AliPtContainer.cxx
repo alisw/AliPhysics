@@ -296,6 +296,7 @@ void AliPtContainer::CalculateObs()
     TH1 *hRec = RecalculateObsHists(hTs);
     hRec->SetName(Form("%s_Recalculated%i",this->GetName(),i+1));
     fMomentList->Add(hRec);
+    hTs.clear();
   };
   //reset mpt weights
   ((AliProfileBS*)fTermList->At(mpar))->PresetWeights(0);
