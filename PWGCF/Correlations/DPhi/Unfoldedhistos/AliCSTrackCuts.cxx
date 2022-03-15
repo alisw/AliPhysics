@@ -831,12 +831,18 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC18bp:
+      fBaseSystem = k2011based;
+      basename = "2011";
+      system = "p-p";
+      period = "2018bp";
+      break;
   case kLHC18q:
-    fBaseSystem = k2011based;
-    basename = "2011";
-    system = "Pb-Pb";
-    period = "2018q";
-    break;
+      fBaseSystem = k2011based;
+      basename = "2011";
+      system = "Pb-Pb";
+      period = "2018q";
+      break;
   case kLHC18r:
     fBaseSystem = k2011based;
     basename = "2011";
