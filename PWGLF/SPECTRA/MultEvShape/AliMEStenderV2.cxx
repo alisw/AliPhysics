@@ -179,8 +179,10 @@ AliMEStenderV2::~AliMEStenderV2()
     delete fMCtracks;
   }
 
-  if (fUtils)
-    delete fUtils;
+  if(fTreeFile)
+    delete fTreeFile;
+
+  if (fUtils) delete fUtils;
 
   if (DebugLevel()>1)
     AliMESbaseTask::CloseDebugStream();
