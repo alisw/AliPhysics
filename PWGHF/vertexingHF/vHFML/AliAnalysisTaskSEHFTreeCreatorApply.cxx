@@ -225,6 +225,7 @@ fMLResponseMixEv(0x0)
 
     if(fWriteVariableTreeDs) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
     else if(fWriteVariableTreeLc2V0bachelor) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLc2V0bachelor->Clone();
+    else if(fSaveMixedEventBkg) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLc2V0bachelor->Clone();
     else {
       if(fFiltCutsDstoKKpi) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsDstoKKpi->Clone();
       else if(fFiltCutsLc2V0bachelor) fEvSelectionCuts = (AliRDHFCuts*)fFiltCutsLc2V0bachelor->Clone();
@@ -391,6 +392,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserCreateOutputObjects()
   Int_t nEnabledTrees = 1; // event tree always enabled
   if(fWriteVariableTreeDs) nEnabledTrees++;
   if(fWriteVariableTreeLc2V0bachelor) nEnabledTrees++;
+  if(fSaveMixedEventBkg) nEnabledTrees++;
   if(fReadMC && fFillMCGenTrees) {
     nEnabledTrees = (nEnabledTrees-1)*2+1;
   }
@@ -652,7 +654,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
 
   if(fWriteVariableTreeDs)
     isSameEvSelDs=!((fFiltCutsDstoKKpi->IsEventSelected(aod) && !fCutsDstoKKpi->IsEventSelected(aod))||(!fFiltCutsDstoKKpi->IsEventSelected(aod) && fCutsDstoKKpi->IsEventSelected(aod)));
-  if(fWriteVariableTreeLc2V0bachelor)
+  if(fWriteVariableTreeLc2V0bachelor || fSaveMixedEventBkg)
     isSameEvSelLc2V0bachelor=!((fFiltCutsLc2V0bachelor->IsEventSelected(aod) && !fCutsLc2V0bachelor->IsEventSelected(aod))||(!fFiltCutsLc2V0bachelor->IsEventSelected(aod) && fCutsLc2V0bachelor->IsEventSelected(aod)));
   
   Bool_t isSameEvSel = isSameEvSelDs && isSameEvSelLc2V0bachelor;
@@ -661,7 +663,7 @@ void AliAnalysisTaskSEHFTreeCreatorApply::UserExec(Option_t */*option*/){
     return;
   }
   
-  if((fWriteVariableTreeDs && fWriteVariableTreeLc2V0bachelor && (fFiltCutsDstoKKpi->IsEventSelected(aod)!=fFiltCutsLc2V0bachelor->IsEventSelected(aod)))){
+  if((fWriteVariableTreeDs && (fWriteVariableTreeLc2V0bachelor || fSaveMixedEventBkg) && (fFiltCutsDstoKKpi->IsEventSelected(aod)!=fFiltCutsLc2V0bachelor->IsEventSelected(aod)))){
     Printf("AliAnalysisTaskSEHFTreeCreatorApply::UserExec: differences in the event selection cuts different meson");
     return;
   }
