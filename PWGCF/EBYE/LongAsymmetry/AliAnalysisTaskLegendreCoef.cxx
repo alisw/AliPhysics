@@ -83,7 +83,7 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
     fOutputList->Add(new TH2D("NegBGHistOut", "negtrack;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output histogram when building background -  negative tracks
     fOutputList->Add(new TH2D("ChargedBGHistOut", "track;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output histogram when building background -  charged tracks
     fOutputList->Add(new TH3D("PhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, fNetabins,fEtaMin,fEtaMax, 100, 0.01, 70.0));//QA hist phi vs eta
-    fOutputList->Add(new TH2D("PtCentHist", "track;pt;centrality", 50,fPtmin,fPtmax,8,centbins));//QA hist pt 
+    fOutputList->Add(new TH2D("PtCentHist", "track;pt;centrality", 70,fPtmin,fPtmax,8,centbins));//QA hist pt 
     if(fIsMC) {
       fOutputList->Add(new TH1D("GenNeventsCentHist", "nevents;centrality", 8,centbins));//output histogram when building background -  all tracks
       fOutputList->Add(new TH1D("RecNeventsCentHist", "nevents;centrality", 8,centbins));//output histogram when building background -  all tracks
@@ -92,8 +92,8 @@ void AliAnalysisTaskLegendreCoef::UserCreateOutputObjects()
       fOutputList->Add(new TH2D("MCChargedBGHistOut", "track;eta;centrality", fNetabins,fEtaMin,fEtaMax,8,centbins));//output MC histogram when building background -  charged tracks  
       fOutputList->Add(new TH3D("GenPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, fNetabins,fEtaMin,fEtaMax, 100, 0.01, 70.0));//QA hist phi vs eta
       fOutputList->Add(new TH3D("RecPhiEtaCentHist", "track;phi;eta;centrality", 24, 0 ,TMath::Pi()*2.0, fNetabins,fEtaMin,fEtaMax, 100, 0.01, 70.0));//QA hist phi vs eta
-      fOutputList->Add(new TH2D("GenPtCentHist", "track;pt;centrality", 50,fPtmin,fPtmax,8,centbins));//QA hist pt 
-      fOutputList->Add(new TH2D("RecPtCentHist", "track;pt;centrality", 50,fPtmin,fPtmax,8,centbins));//QA hist pt
+      fOutputList->Add(new TH2D("GenPtCentHist", "track;pt;centrality", 70,fPtmin,fPtmax,8,centbins));//QA hist pt 
+      fOutputList->Add(new TH2D("RecPtCentHist", "track;pt;centrality", 70,fPtmin,fPtmax,8,centbins));//QA hist pt
     }
   }
     
@@ -200,7 +200,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
     for (Int_t i(0); i < nMCTracks; i++) {
       AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
       if (!p1) continue;
-      if(p1->Charge()==0)continue;//only get charged tracks
+      if(abs(p1->Charge())<1) continue;
       if(!p1->IsPhysicalPrimary()) continue;
       if((fabs(p1->GetPdgCode())==211)||(fabs(p1->GetPdgCode())==2212)||(fabs(p1->GetPdgCode())==321)){
         //build background
@@ -225,8 +225,6 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
         if(p1->Charge() < 0) ((TH2D*) fOutputList->FindObject("MCNegBGHistOut"))->Fill(etaMCgen, Cent);
         ((TH3D*) fOutputList->FindObject("GenPhiEtaCentHist"))->Fill(phiMCgen,etaMCgen, Cent);
         ((TH2D*) fOutputList->FindObject("GenPtCentHist"))->Fill(pTMCgen, Cent);
-
-
       }
     }
   }
@@ -236,7 +234,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
     AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
     if(!track) continue;
     if(!fIsMC){
-      if(track->Charge()==0)continue;//only get charged tracks
+      if(track->Charge()<1)continue;//only get charged tracks
       if(track->Eta() > fEtaMax || track->Eta() < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
       if(track->GetTPCNcls()<fTPCNcls || track->GetTPCNCrossedRows()<fTPCNCrossedRows || track->Chi2perNDF() > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
@@ -253,7 +251,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
       int label = TMath::Abs(track->GetLabel());
       AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
       if (!mcTrack) continue;
-      if(mcTrack->Charge()==0)continue;//only get charged tracks
+      if(mcTrack->Charge()<1)continue;//only get charged tracks
       if(!mcTrack->IsPhysicalPrimary()) continue;  
       if((fabs(mcTrack->GetPdgCode())==211)||(fabs(mcTrack->GetPdgCode())==2212)||(fabs(mcTrack->GetPdgCode())==321)){
         Float_t pTrec   = mcTrack->Pt();
@@ -279,7 +277,7 @@ void AliAnalysisTaskLegendreCoef::BuildBackground()
           "\n";
         }
         if(isfb==0) continue;//choose filterbit
-        if(mcTrack->Charge()==0)continue;//only get charged tracks
+        if(mcTrack->Charge()<1)continue;//only get charged tracks
         if(etarec > fEtaMax || etarec < fEtaMin) continue;//eta cut
         if(pTrec < fPtmin|| pTrec > fPtmax) continue; //pt cut
         if(ncl<fTPCNcls || crossedrows<fTPCNCrossedRows || chi2 > fChi2DoF) continue;// cut in TPC Ncls , crossed rows and chi2/dof  
@@ -359,7 +357,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     for (Int_t i(0); i < nMCTracks; i++) {
       AliAODMCParticle *p1=(AliAODMCParticle*)stack->UncheckedAt(i);
       if (!p1) continue;
-      if(p1->Charge()==0)continue;//only get charged tracks
+      if(p1->Charge()<1)continue;//only get charged tracks
       if(!p1->IsPhysicalPrimary()) continue;
       Float_t etaMCgen = p1->Eta();
       if(etaMCgen > fEtaMax || etaMCgen<fEtaMin ) continue;
@@ -378,7 +376,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
     if(!track) continue;
     if(!fIsMC){
     //build signal for raw data
-      if(track->Charge()==0)continue;//only get charged tracks
+      if(track->Charge()<1)continue;//only get charged tracks
       Float_t etaRaw = track->Eta();
       if(etaRaw > fEtaMax || etaRaw < fEtaMin) continue;//eta cut
       if(track->Pt() < fPtmin|| track->Pt() > fPtmax) continue; //pt cut
@@ -393,7 +391,7 @@ void AliAnalysisTaskLegendreCoef::BuildSignal()
       int label = TMath::Abs(track->GetLabel());
       AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(stack->At(label));
       if (!mcTrack) continue;
-      if(mcTrack->Charge()==0)continue;//only get charged tracks
+      if(mcTrack->Charge()<1)continue;//only get charged tracks
       if(!mcTrack->IsPhysicalPrimary()) continue;    
       Float_t etaRec = mcTrack->Eta();
       if(etaRec> fEtaMax || etaRec < fEtaMin) continue;//eta cut
