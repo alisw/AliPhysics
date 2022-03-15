@@ -115,11 +115,40 @@ void        AliAnalysisTask_Phi_MC::UserCreateOutputObjects()                  {
     fQC_Event_Enum_V0A              ->  GetYaxis()  ->  SetTitle("Accepted Events");
     lQCParticle    ->  Add(fQC_Event_Enum_V0A);
     //
+    fQC_Event_Enum_V0A_05           = new TH2D("fQC_Event_Enum_V0A",       "Events with tracks in V0A acceptance vs Mult Eta05",5000,   0., 5000., 5000,   0., 5000.);
+    fQC_Event_Enum_V0A_05           ->  GetXaxis()  ->  SetTitle("N Tracks V0A");
+    fQC_Event_Enum_V0A_05           ->  GetYaxis()  ->  SetTitle("N Tracks |#eta| < 0.5");
+    lQCParticle    ->  Add(fQC_Event_Enum_V0A_05);
+    //
+    fQC_Event_Enum_V0A_08           = new TH2D("fQC_Event_Enum_V0A",       "Events with tracks in V0A acceptance vs Mult Eta08",5000,   0., 5000., 5000,   0., 5000.);
+    fQC_Event_Enum_V0A_08           ->  GetXaxis()  ->  SetTitle("N Tracks V0A");
+    fQC_Event_Enum_V0A_08           ->  GetYaxis()  ->  SetTitle("N Tracks |#eta| < 0.8");
+    lQCParticle    ->  Add(fQC_Event_Enum_V0A_08);
+    //
+    fQC_Event_Enum_V0A_10           = new TH2D("fQC_Event_Enum_V0A",       "Events with tracks in V0A acceptance vs Mult Eta10",5000,   0., 5000., 5000,   0., 5000.);
+    fQC_Event_Enum_V0A_10           ->  GetXaxis()  ->  SetTitle("N Tracks V0A");
+    fQC_Event_Enum_V0A_10           ->  GetYaxis()  ->  SetTitle("N Tracks |#eta| < 1.0");
+    lQCParticle    ->  Add(fQC_Event_Enum_V0A_10);
+    //
     fQC_Event_Enum_V0M              = new TH1D("fQC_Event_Enum_V0M",       "Events with tracks in V0M acceptance",              5000,   0., 5000.);
     fQC_Event_Enum_V0M              ->  GetXaxis()  ->  SetTitle("N Tracks");
     fQC_Event_Enum_V0M              ->  GetYaxis()  ->  SetTitle("Accepted Events");
     lQCParticle    ->  Add(fQC_Event_Enum_V0M);
     //
+    fQC_Event_Enum_V0M_05           = new TH2D("fQC_Event_Enum_V0M",       "Events with tracks in V0M acceptance vs Mult Eta05",5000,   0., 5000., 5000,   0., 5000.);
+    fQC_Event_Enum_V0M_05           ->  GetXaxis()  ->  SetTitle("N Tracks V0A");
+    fQC_Event_Enum_V0M_05           ->  GetYaxis()  ->  SetTitle("N Tracks |#eta| < 0.5");
+    lQCParticle    ->  Add(fQC_Event_Enum_V0M_05);
+    //
+    fQC_Event_Enum_V0M_08           = new TH2D("fQC_Event_Enum_V0M",       "Events with tracks in V0M acceptance vs Mult Eta08",5000,   0., 5000., 5000,   0., 5000.);
+    fQC_Event_Enum_V0M_08           ->  GetXaxis()  ->  SetTitle("N Tracks V0A");
+    fQC_Event_Enum_V0M_08           ->  GetYaxis()  ->  SetTitle("N Tracks |#eta| < 0.8");
+    lQCParticle    ->  Add(fQC_Event_Enum_V0M_08);
+    //
+    fQC_Event_Enum_V0M_10           = new TH2D("fQC_Event_Enum_V0M",       "Events with tracks in V0M acceptance vs Mult Eta10",5000,   0., 5000., 5000,   0., 5000.);
+    fQC_Event_Enum_V0M_10           ->  GetXaxis()  ->  SetTitle("N Tracks V0A");
+    fQC_Event_Enum_V0M_10           ->  GetYaxis()  ->  SetTitle("N Tracks |#eta| < 1.0");
+    lQCParticle    ->  Add(fQC_Event_Enum_V0M_10);
     PostData ( 2, lQCParticle );
     //
     //  --- Particle Tree
@@ -224,7 +253,7 @@ bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           
         //
         //  --- Eta Nch Estimators
         //  --- --- #eta 0.5
-        if (  fabs( fCurrent_Particle->Eta() ) < 0.5 )  fCurrent_E08++;
+        if (  fabs( fCurrent_Particle->Eta() ) < 0.5 )  fCurrent_E05++;
         //  --- --- #eta 0.8
         if (  fabs( fCurrent_Particle->Eta() ) < 0.8 )  fCurrent_E08++;
         //  --- --- #eta 1.0
@@ -237,11 +266,17 @@ bool        AliAnalysisTask_Phi_MC::uIsEventMultiplicityAvailable ( )           
         if ( (fCurrent_Particle->Eta() < -1.7) && (fCurrent_Particle->Eta() > -3.7) )   fCurrent_V0M++;
     }
     //
-    fQC_Event_Enum_E05  ->  Fill( fCurrent_E05 );
-    fQC_Event_Enum_E08  ->  Fill( fCurrent_E08 );
-    fQC_Event_Enum_E10  ->  Fill( fCurrent_E10 );
-    fQC_Event_Enum_V0A  ->  Fill( fCurrent_V0A );
-    fQC_Event_Enum_V0M  ->  Fill( fCurrent_V0M );
+    fQC_Event_Enum_E05      ->  Fill( fCurrent_E05 );
+    fQC_Event_Enum_E08      ->  Fill( fCurrent_E08 );
+    fQC_Event_Enum_E10      ->  Fill( fCurrent_E10 );
+    fQC_Event_Enum_V0A      ->  Fill( fCurrent_V0A );
+    fQC_Event_Enum_V0M      ->  Fill( fCurrent_V0M );
+    fQC_Event_Enum_V0A_05   ->  Fill( fCurrent_V0A, fCurrent_E05 );
+    fQC_Event_Enum_V0M_05   ->  Fill( fCurrent_V0M, fCurrent_E05 );
+    fQC_Event_Enum_V0A_08   ->  Fill( fCurrent_V0A, fCurrent_E08 );
+    fQC_Event_Enum_V0M_08   ->  Fill( fCurrent_V0M, fCurrent_E08 );
+    fQC_Event_Enum_V0A_10   ->  Fill( fCurrent_V0A, fCurrent_E10 );
+    fQC_Event_Enum_V0M_10   ->  Fill( fCurrent_V0M, fCurrent_E10 );
     //
     return true;
 }
