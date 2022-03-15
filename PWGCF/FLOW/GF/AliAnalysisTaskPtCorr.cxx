@@ -443,7 +443,7 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliVEvent* ev, const double &VtxZ, const 
         double l_eta = part->Eta();
         if (TMath::Abs(l_eta) > fEta) continue;
         double l_pt = part->Pt();
-        if (l_pt<fPtMax || l_pt>fPtMax) continue;
+        if (l_pt<fPtMin || l_pt>fPtMax) continue;
         if(TMath::Abs(l_eta)<fEtaNch) nTracksMC++; 
         if(fEtaGap >= 0 && l_eta > fEtaGap) FillWPCounter(wpP,1,l_pt);
         if(fEtaGap >= 0 && l_eta < -fEtaGap) FillWPCounter(wpN,1,l_pt);

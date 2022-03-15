@@ -123,6 +123,7 @@ public:
   void SetCalculateSpherocityMC ( Bool_t lVar ) { fkDebugMCSpherocity = lVar; }
   void SetPreferSuperCalib( Bool_t lVar ) { fkPreferSuperCalib = lVar; }
   void SetPropDCA      ( Bool_t lVar ) { fkPropDCA     = lVar; } ;
+  void SetEtaCut(Float_t lVar) {fEtaCut  = lVar;};
   
   //override for getting estimator definitions from different OADB file
   //FIXME: should preferably be protected, extra functionality required
@@ -320,9 +321,16 @@ private:
   Float_t fNTracksDCAzSQ;
   Float_t fNTracksMaxDCAz00;
   Int_t BunchCrossingIDNotZero;
+  Int_t fNPileUpVertices;
   Int_t fNumberOfTracks;
   Float_t fTrackDCAz[kTrack];
+  Int_t fTrackBCID[kTrack];
+  Float_t fTrackEta[kTrack];
+  Float_t fTrackPhi[kTrack];
+  Int_t fTrackPileupVxt[kTrack];
+  Bool_t fTrackITSrefit[kTrack];
   Bool_t fTrackIsPileup[kTrack];
+  Float_t fEtaCut;
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
   AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
