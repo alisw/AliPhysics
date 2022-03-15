@@ -330,6 +330,7 @@ private:
   Int_t fTrackPileupVxt[kTrack];
   Bool_t fTrackITSrefit[kTrack];
   Bool_t fTrackIsPileup[kTrack];
+  Bool_t fTrackTPC[kTrack];
   Float_t fEtaCut;
   
   AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
