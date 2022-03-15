@@ -43,11 +43,11 @@ AliAnalysisTaskSEHFTreeCreatorApply *AddTaskHFTreeCreatorApply(Bool_t readMC=kFA
   AliRDHFCutsDstoKKpi*     looseCutsDstoKKpi       =(AliRDHFCutsDstoKKpi*)filecuts->Get("DstoKKpiFilteringCuts");
   if(!looseCutsDstoKKpi && fillTreeDs)        ::Fatal("AddTaskHFTreeCreatorApply", "looseCutsDstoKKpi : check your cut file");
   AliRDHFCutsLctoV0* looseCutsLc2V0bachelor        =(AliRDHFCutsLctoV0*)filecuts->Get("Lc2V0bachelorFilteringCuts");
-  if(!looseCutsLc2V0bachelor && fillTreeLc2V0bachelor)    ::Fatal("AddTaskHFTreeCreatorApply", "looseCutsLc2V0bachelor : check your cut file");
+  if(!looseCutsLc2V0bachelor && (fillTreeLc2V0bachelor || fillMixEvBkg))    ::Fatal("AddTaskHFTreeCreatorApply", "looseCutsLc2V0bachelor : check your cut file");
   AliRDHFCutsDstoKKpi*     analysisCutsDstoKKpi    =(AliRDHFCutsDstoKKpi*)filecuts->Get("DstoKKpiAnalysisCuts");
   if(!analysisCutsDstoKKpi && fillTreeDs)     ::Fatal("AddTaskHFTreeCreatorApply", "analysisCutsDstoKKpi : check your cut file");
   AliRDHFCutsLctoV0* analysisCutsLc2V0bachelor=(AliRDHFCutsLctoV0*)filecuts->Get("Lc2V0bachelorAnalysisCuts");
-  if(!analysisCutsLc2V0bachelor && fillTreeLc2V0bachelor) ::Fatal("AddTaskHFTreeCreatorApply", "analysisCutsLc2V0bachelor : check your cut file");
+  if(!analysisCutsLc2V0bachelor && (fillTreeLc2V0bachelor || fillMixEvBkg)) ::Fatal("AddTaskHFTreeCreatorApply", "analysisCutsLc2V0bachelor : check your cut file");
   
   TList *cutsList=new TList();
   cutsList->SetOwner(kTRUE);
